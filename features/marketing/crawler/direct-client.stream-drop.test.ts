@@ -36,6 +36,7 @@ jest.mock("@/lib/diagnostics/errorCaptureStore", () => ({
   captureError: jest.fn(),
 }));
 jest.mock("@/features/marketing/crawler/follow-session", () => ({
+  ...jest.requireActual("@/features/marketing/crawler/follow-session"),
   followCrawlSession: jest.fn(),
 }));
 

@@ -16,8 +16,9 @@ import { isJsonRecord, type CrawlEvent } from "@/features/marketing/types";
 import type { CrawlRenderMode } from "@/features/marketing/crawler/crawl-options";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
 import {
-  CRAWL_FOLLOW_STALL_MS,
+  crawlStallMessage,
   followCrawlSession,
+  type CrawlStallReason,
 } from "@/features/marketing/crawler/follow-session";
 
 /**
@@ -639,13 +640,20 @@ export class CrawlRunStalledError extends Error {
   readonly sessionId: string;
   readonly siteId: string;
   readonly lastSequence: number;
+  readonly reason: CrawlStallReason;
 
-  constructor(input: { sessionId: string; siteId: string; lastSequence: number }) {
-    super("The run stopped making progress.");
+  constructor(input: {
+    sessionId: string;
+    siteId: string;
+    lastSequence: number;
+    reason: CrawlStallReason;
+  }) {
+    super(crawlStallMessage(input.reason));
     this.name = "CrawlRunStalledError";
     this.sessionId = input.sessionId;
     this.siteId = input.siteId;
     this.lastSequence = input.lastSequence;
+    this.reason = input.reason;
   }
 }
 
@@ -697,16 +705,19 @@ async function followAfterDrop(input: {
     },
   });
   if (outcome.status === "stalled") {
+    const reason = outcome.stallReason ?? "no_progress";
     captureCrawlerError({
       path,
-      message: `Session ${sessionId} still reads running but nothing moved for ${Math.round(CRAWL_FOLLOW_STALL_MS / 60_000)} minutes.`,
-      userMessage: "The run stopped making progress.",
+      message: `Session ${sessionId} still reads running; follow ended: ${reason} (${crawlStallMessage(reason)}).`,
+      userMessage: crawlStallMessage(reason),
+      code: `crawl_follow_${reason}`,
       details: `last sequence ${outcome.lastSequence}`,
     });
     throw new CrawlRunStalledError({
       sessionId,
       siteId,
       lastSequence: outcome.lastSequence,
+      reason,
     });
   }
   if (outcome.status === "failed") {

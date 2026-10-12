@@ -116,6 +116,18 @@ export const DOWNGRADE_RULES: DowngradeRule[] = [
   // pinned annotation IS the "critical platform violation" classification.)
   // ══════════════════════════════════════════════════════════════════════
   {
+    id: "hard-navigation-by-the-person",
+    tier: "yellow",
+    persist: true,
+    reason:
+      "A full page load the PERSON caused (reload button, typed URL, a link out of the app router, back/forward) cut a live stream. Worked as designed — the run continues on the server and the next page rejoins it — so it is filed for the record at the silent tier, never an alarm. `declared:*` and `script-*` causes (our own code reloading) stay red.",
+    addedAt: "2026-10-12",
+    match: {
+      source: "hard-navigation",
+      code: ["browser-reload", "browser-navigation", "link", "back-forward"],
+    },
+  },
+  {
     id: "session-barrier-recovered",
     tier: "orange",
     persist: false,

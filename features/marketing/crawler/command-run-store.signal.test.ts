@@ -1,5 +1,5 @@
 jest.mock("@/features/marketing/crawler/follow-session", () => ({
-  CRAWL_FOLLOW_STALL_MS: 600_000,
+  ...jest.requireActual("@/features/marketing/crawler/follow-session"),
   followCrawlSession: jest.fn(),
 }));
 

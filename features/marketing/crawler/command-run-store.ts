@@ -19,14 +19,19 @@
  */
 
 import {
+  cancelCrawl,
   CrawlRunStalledError,
+  followCrawlRun,
   mergeCrawlLiveEvents,
   siteCommandProgressFromEvent,
   type CrawlLiveEvent,
   type CrawlStreamCallbacks,
   type CrawlStreamResult,
 } from "@/features/marketing/crawler/direct-client";
-import { CRAWL_FOLLOW_STALL_MS } from "@/features/marketing/crawler/follow-session";
+import {
+  crawlStallMessage,
+  type CrawlStallReason,
+} from "@/features/marketing/crawler/follow-session";
 import {
   SITE_COMMAND_COPY,
   siteCommandKey,
@@ -37,7 +42,13 @@ export type SiteCommandStatus =
   | "connecting"
   | "running"
   | "complete"
-  | "failed";
+  | "failed"
+  /**
+   * Still `running` on the server, but this tab stopped following it (no
+   * progress, record unreachable, or the follow's time cap). Never "failed":
+   * the server never said so. The window offers Keep watching and Cancel.
+   */
+  | "stalled";
 
 export interface SiteCommandRunState {
   key: string;
@@ -59,6 +70,8 @@ export interface SiteCommandRunState {
   finishedAt: number | null;
   /** True when this run was rejoined from a durable session, not started here. */
   reattached: boolean;
+  /** Set while `status` is `stalled`: why, and where Keep watching resumes. */
+  stall: { reason: CrawlStallReason; lastSequence: number } | null;
 }
 
 type Listener = () => void;
@@ -108,6 +121,7 @@ export function subscribeSiteCommandRun(
 export function clearSiteCommandRun(key: string): void {
   controllers.get(key)?.abort();
   controllers.delete(key);
+  lateCompletions.delete(key);
   if (!runs.delete(key)) return;
   emit(key);
 }
@@ -139,6 +153,7 @@ function seed(input: {
     startedAt: input.startedAt,
     finishedAt: null,
     reattached: input.reattached,
+    stall: null,
   });
   emit(input.key);
 }
@@ -217,21 +232,152 @@ export interface StartSiteCommandInput {
   target?: string | null;
   /** The `direct-client` wrapper for this command, already bound to its args. */
   run: (callbacks: CrawlStreamCallbacks) => Promise<CrawlStreamResult>;
+  /**
+   * The run completed only after it stalled and the person chose Keep
+   * watching — `startSiteCommandRun` had already resolved null by then.
+   */
+  onLateComplete?: (result: CrawlStreamResult) => void | Promise<void>;
+}
+
+/** Per-run follow-up for Keep watching (kept beside the controller). */
+const lateCompletions = new Map<
+  string,
+  (result: CrawlStreamResult) => void | Promise<void>
+>();
+
+function streamCallbacks(
+  key: string,
+  signal: AbortSignal,
+): CrawlStreamCallbacks {
+  return {
+    signal,
+    onConnected: ({ sessionId }) => patch(key, { sessionId, status: "running" }),
+    onEvent: (_streamEvent, crawlEvent) => {
+      if (!crawlEvent) return;
+      const current = runs.get(key);
+      if (!current) return;
+      const progress = siteCommandProgressFromEvent(crawlEvent);
+      patch(key, {
+        status: "running",
+        events: mergeCrawlLiveEvents(current.events, [crawlEvent]),
+        message: progress?.message || current.message,
+        summary: progress?.summary ?? current.summary,
+        warnings: progress?.errors.length ? progress.errors : current.warnings,
+      });
+    },
+    // The socket dropped; the command follows the run from its session
+    // row and keeps feeding events above. Say so — it is not a failure.
+    onTransportLost: () =>
+      patch(key, {
+        status: "running",
+        message: "Connection dropped — still following the run.",
+      }),
+  };
 }
 
 /**
- * Launch a command and stream it into the store. Rejects exactly as the
- * underlying command does — the caller still owns error reporting; this only
- * makes the run watchable while it happens.
+ * Drive one stream or follow to its end and settle the run. Resolves null
+ * when the run did NOT settle here — cleared, relaunched, or stalled (still
+ * running on the server). Rejects only for a real failure.
+ */
+async function driveRun(
+  key: string,
+  mode: SiteCommandMode,
+  controller: AbortController,
+  run: (callbacks: CrawlStreamCallbacks) => Promise<CrawlStreamResult>,
+): Promise<CrawlStreamResult | null> {
+  controllers.get(key)?.abort();
+  controllers.set(key, controller);
+  try {
+    const result = await run(streamCallbacks(key, controller.signal));
+    if (controller.signal.aborted || result.followedStatus === "aborted") {
+      // Cleared or relaunched: the server run goes on; this buffer is done.
+      return null;
+    }
+    const settled = runs.get(key);
+    patch(key, {
+      status: "complete",
+      sessionId: result.sessionId,
+      finishedAt: Date.now(),
+      stall: null,
+      message:
+        settled?.message && settled.message !== SITE_COMMAND_COPY[mode].startingMessage
+          ? settled.message
+          : "Finished.",
+    });
+    return result;
+  } catch (error) {
+    if (controller.signal.aborted) return null;
+    if (error instanceof CrawlRunStalledError) {
+      patch(key, {
+        status: "stalled",
+        sessionId: error.sessionId,
+        message: crawlStallMessage(error.reason),
+        stall: { reason: error.reason, lastSequence: error.lastSequence },
+      });
+      return null;
+    }
+    patch(key, {
+      status: "failed",
+      finishedAt: Date.now(),
+      stall: null,
+      error: error instanceof Error ? error.message : String(error),
+    });
+    throw error;
+  } finally {
+    if (controllers.get(key) === controller) controllers.delete(key);
+  }
+}
+
+/**
+ * Keep watching a stalled run: follow its record again from where it
+ * stopped, with fresh stall clocks (so "10 minutes" on screen stays true).
+ */
+export async function keepWatchingSiteCommandRun(key: string): Promise<void> {
+  const current = runs.get(key);
+  if (!current || current.status !== "stalled" || !current.sessionId || !current.stall) {
+    return;
+  }
+  const { siteId, sessionId, mode } = current;
+  const { lastSequence } = current.stall;
+  patch(key, {
+    status: "running",
+    stall: null,
+    message: "Watching the run again.",
+  });
+  const result = await driveRun(key, mode, new AbortController(), (callbacks) =>
+    followCrawlRun(siteId, sessionId, lastSequence, callbacks),
+  ).catch(() => null);
+  if (result) await lateCompletions.get(key)?.(result);
+}
+
+/**
+ * Ask the server to cancel a stalled run, then follow it to the outcome the
+ * server records — a cancel is a request, so the row settles it.
+ */
+export async function cancelSiteCommandRun(key: string): Promise<void> {
+  const current = runs.get(key);
+  if (!current?.sessionId) return;
+  await cancelCrawl(current.sessionId);
+  if (current.status !== "stalled" || !current.stall) return;
+  patch(key, { message: "Cancellation requested." });
+  await keepWatchingSiteCommandRun(key);
+}
+
+/**
+ * Launch a command and stream it into the store. Resolves with the result
+ * when the run settled here, null when it did not (cleared, relaunched, or
+ * STALLED — still running on the server, shown in the window with Keep
+ * watching and Cancel). Rejects only for a real failure; the caller reports it.
  */
 export async function startSiteCommandRun(
   input: StartSiteCommandInput,
-): Promise<CrawlStreamResult> {
+): Promise<CrawlStreamResult | null> {
   const target = input.target ?? null;
   const key = siteCommandKey(input.siteId, input.mode, target);
+  if (input.onLateComplete) lateCompletions.set(key, input.onLateComplete);
+  else lateCompletions.delete(key);
   controllers.get(key)?.abort();
-  const controller = new AbortController();
-  controllers.set(key, controller);
   seed({
     key,
     siteId: input.siteId,
@@ -242,64 +388,5 @@ export async function startSiteCommandRun(
     startedAt: Date.now(),
     reattached: false,
   });
-
-  try {
-    const result = await input.run({
-      signal: controller.signal,
-      onConnected: ({ sessionId }) =>
-        patch(key, { sessionId, status: "running" }),
-      onEvent: (_streamEvent, crawlEvent) => {
-        if (!crawlEvent) return;
-        const current = runs.get(key);
-        if (!current) return;
-        const progress = siteCommandProgressFromEvent(crawlEvent);
-        patch(key, {
-          status: "running",
-          events: mergeCrawlLiveEvents(current.events, [crawlEvent]),
-          message: progress?.message || current.message,
-          summary: progress?.summary ?? current.summary,
-          warnings: progress?.errors.length
-            ? progress.errors
-            : current.warnings,
-        });
-      },
-      // The socket dropped; the command follows the run from its session
-      // row and keeps feeding events above. Say so — it is not a failure.
-      onTransportLost: () =>
-        patch(key, {
-          status: "running",
-          message: "Connection dropped — still following the run.",
-        }),
-    });
-    if (controller.signal.aborted || result.followedStatus === "aborted") {
-      // Cleared or relaunched: the server run goes on; this buffer is done.
-      return result;
-    }
-    const settled = runs.get(key);
-    patch(key, {
-      status: "complete",
-      sessionId: result.sessionId,
-      finishedAt: Date.now(),
-      message:
-        settled?.message && settled.message !== SITE_COMMAND_COPY[input.mode].startingMessage
-          ? settled.message
-          : "Finished.",
-    });
-    return result;
-  } catch (error) {
-    if (controller.signal.aborted) throw error;
-    patch(key, {
-      status: "failed",
-      finishedAt: Date.now(),
-      error:
-        error instanceof CrawlRunStalledError
-          ? `No progress for ${Math.round(CRAWL_FOLLOW_STALL_MS / 60_000)} minutes — the run looks stuck.`
-          : error instanceof Error
-            ? error.message
-            : String(error),
-    });
-    throw error;
-  } finally {
-    if (controllers.get(key) === controller) controllers.delete(key);
-  }
+  return driveRun(key, input.mode, new AbortController(), input.run);
 }

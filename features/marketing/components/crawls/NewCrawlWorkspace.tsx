@@ -54,7 +54,7 @@ import {
 import { marketingKeys } from "@/features/marketing/data/hooks";
 import { extractErrorMessage } from "@/utils/errors";
 import { isStreamTransportLost } from "@ai-matrx/api";
-import { CRAWL_FOLLOW_STALL_MS } from "@/features/marketing/crawler/follow-session";
+import { crawlStallMessage } from "@/features/marketing/crawler/follow-session";
 import { crawlRunVerdict } from "@/features/marketing/crawler/crawl-run-outcome";
 import { pageIsLeaving } from "@ai-matrx/chat/agents/redux/execution-system/utils/page-leaving";
 import { Textarea } from "@/components/ui/textarea";
@@ -329,7 +329,7 @@ export function NewCrawlWorkspace() {
         setLocalSessionId(runError.sessionId);
         setLocalStatus("stalled");
         crawlActivity.refresh();
-        toast.warning("The crawl stopped making progress");
+        toast.warning(crawlStallMessage(runError.reason));
         return;
       }
       if (runError instanceof CrawlAlreadyRunningError) {
@@ -716,7 +716,7 @@ export function NewCrawlWorkspace() {
             {status === "stalled" && stalled ? (
               <div className="flex shrink-0 items-center gap-2 border-t border-border bg-amber-500/5 px-3 py-2 text-xs">
                 <span className="min-w-0 flex-1 truncate">
-                  No progress for {Math.round(CRAWL_FOLLOW_STALL_MS / 60_000)} minutes
+                  {crawlStallMessage(stalled.reason)}
                 </span>
                 <Button
                   icon={<Eye />}

@@ -16,11 +16,17 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { AlertTriangle, ArrowRight, CheckCircle2, Loader2, Radar } from "lucide-react";
+import { AlertTriangle, ArrowRight, Ban, CheckCircle2, Eye, Loader2, Radar } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import type { SiteCommandRunState } from "@/features/marketing/crawler/command-run-store";
+import { Button } from "@/components/ui/button";
+import { toast } from "@/lib/toast";
+import {
+  cancelSiteCommandRun,
+  keepWatchingSiteCommandRun,
+  type SiteCommandRunState,
+} from "@/features/marketing/crawler/command-run-store";
 import {
   presentLiveCrawlEvent,
   type PresentedCrawlEvent,
@@ -169,6 +175,8 @@ export function SiteCommandFeed({
           <Loader2 className="h-3.5 w-3.5 shrink-0 animate-spin text-primary" />
         ) : run.status === "complete" ? (
           <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-emerald-600" />
+        ) : run.status === "stalled" ? (
+          <AlertTriangle className="h-3.5 w-3.5 shrink-0 text-amber-600 dark:text-amber-500" />
         ) : (
           <AlertTriangle className="h-3.5 w-3.5 shrink-0 text-destructive" />
         )}
@@ -222,6 +230,32 @@ export function SiteCommandFeed({
           {run.status === "failed" ? <ErrorAlchemyMenu error={run.error} /> : null}
         </p>
       </div>
+
+      {run.status === "stalled" ? (
+        // Still running on the server; this tab stopped following it.
+        <div className="flex shrink-0 items-center gap-2 border-b border-border bg-amber-500/5 px-3 py-1.5">
+          <Button
+            icon={<Eye />}
+            variant="outline"
+            onClick={() => void keepWatchingSiteCommandRun(run.key)}
+          >
+            Keep watching
+          </Button>
+          <Button
+            icon={<Ban />}
+            variant="danger"
+            onClick={() =>
+              void cancelSiteCommandRun(run.key).catch((error: unknown) =>
+                toast.error("Could not cancel the run", {
+                  description: error instanceof Error ? error.message : String(error),
+                }),
+              )
+            }
+          >
+            Cancel
+          </Button>
+        </div>
+      ) : null}
 
       {counters.length ? (
         <div className="grid shrink-0 grid-cols-2 border-b border-border bg-muted/25 sm:grid-cols-3">

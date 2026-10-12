@@ -25,9 +25,36 @@
  * it; Next.js's own hard-navigation fallback lands here), `link` (a person
  * clicked something that left the app router), `browser-reload` /
  * `browser-navigation` / `back-forward` (browser UI: no page code involved).
+ * Only `declared:*` and `script-*` are defects (red). The person's own
+ * reload/link/back is worked-as-designed: filed, but at the silent tier
+ * (rule `hard-navigation-by-the-person` in errorTierRules.ts).
  */
 
 import { captureError } from "@/lib/diagnostics/errorCaptureStore";
+import { shortenChunkPaths } from "@/lib/diagnostics/sanitizeErrorContextForAi";
+
+/**
+ * Origin + path ONLY. A query or hash can carry a credential (`?code=`, a
+ * magic link, a share token), and this record is filed to the server, so
+ * neither is ever kept — not in `from`, `to`, the stream labels or the stack.
+ */
+export function urlWithoutQuery(url: string): string {
+  try {
+    const parsed = new URL(url, window.location.origin);
+    return `${parsed.origin}${parsed.pathname}`;
+  } catch {
+    return url.split(/[?#]/, 1)[0] ?? "";
+  }
+}
+
+/** A stack with chunk noise shortened and every URL's query/hash removed. */
+export function sanitizeNavigationStack(stack: string | undefined): string | null {
+  if (!stack) return null;
+  return shortenChunkPaths(stack.replace(/(https?:\/\/[^\s?#)]+)[?#][^\s)]*?(?=:\d+:\d+(?:\)|\s|$)|\)|\s|$)/gm, "$1"))
+    .split("\n")
+    .slice(1, 12)
+    .join("\n");
+}
 
 const RECORD_KEY = "matrx:hard-navigation:v1";
 /** Kept in sync with ChunkRecoveryBootScript's KEY (its one allowed copy). */
@@ -88,7 +115,7 @@ export function trackLiveStream(label: string): {
   const id = nextStreamId++;
   const now = Date.now();
   streams.set(id, {
-    label,
+    label: urlWithoutQuery(label),
     openedAt: now,
     lastByteAt: now,
     closedAt: null,
@@ -120,7 +147,7 @@ function streamSnapshot(now: number): LeaveRecord["streams"] {
 }
 
 function currentPath(): string {
-  return `${window.location.pathname}${window.location.search}`;
+  return urlWithoutQuery(window.location.href);
 }
 
 function writeRecord(phase: "beforeunload" | "pagehide"): void {
@@ -197,6 +224,14 @@ export function hardNavigationCause(
 }
 
 function reportPreviousLeave(): void {
+  try {
+    fileLeaveRecord();
+  } catch {
+    /* the trace must never cost the page its other global listeners */
+  }
+}
+
+function fileLeaveRecord(): void {
   const record = readRecord();
   try {
     window.sessionStorage.removeItem(RECORD_KEY);
@@ -255,10 +290,10 @@ export function installHardNavigationTrace(): void {
     if (navigate.destination?.sameDocument) return;
     lastNavigation = {
       at: Date.now(),
-      to: navigate.destination?.url ?? "",
+      to: urlWithoutQuery(navigate.destination?.url ?? ""),
       navigationType: navigate.navigationType,
       userInitiated: Boolean(navigate.userInitiated),
-      stack: new Error("hard navigation").stack?.split("\n").slice(1, 12).join("\n") ?? null,
+      stack: sanitizeNavigationStack(new Error("hard navigation").stack),
     };
   });
   window.addEventListener("beforeunload", () => {

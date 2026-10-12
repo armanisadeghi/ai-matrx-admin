@@ -84,7 +84,9 @@ export default function SiteCommandRunWindow({
       ? copy.runningLabel
       : run.status === "failed"
         ? `${copy.doneLabel} — failed`
-        : `${copy.doneLabel} — done`;
+        : run.status === "stalled"
+          ? `${copy.runningLabel} — stalled`
+          : `${copy.doneLabel} — done`;
 
   // Page-local by design: the feed's rows are transient stream messages, not
   // a durable identity with its own entity token (see CrawlLogsTable, which

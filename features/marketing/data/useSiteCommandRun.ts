@@ -74,8 +74,12 @@ export interface SiteCommandRunHandle {
   state: SiteCommandRunState | null;
   /** True while the command is working — including a rejoined server run. */
   isActive: boolean;
-  /** Launch it. Rejects with the command's own error; the caller reports it. */
-  launch: () => Promise<CrawlStreamResult>;
+  /**
+   * Launch it. Resolves null when the run did not settle here (stalled — still
+   * running on the server, shown in its window — or cleared). Rejects only
+   * with a real failure; the caller reports it.
+   */
+  launch: () => Promise<CrawlStreamResult | null>;
   /** Bring the run's window back after the user closed it. */
   openWindow: () => void;
 }
@@ -239,6 +243,9 @@ export function useSiteCommandRun(
   const isActive =
     state?.status === "connecting" ||
     state?.status === "running" ||
+    // Still running on the server: the button reopens the window, where
+    // Keep watching and Cancel live.
+    state?.status === "stalled" ||
     Boolean(remoteSession);
 
   const launch = useCallback(async () => {
@@ -250,6 +257,10 @@ export function useSiteCommandRun(
         siteId,
         mode,
         target,
+        onLateComplete: async (late) => {
+          crawlActivity.refresh();
+          await onCompleteRef.current?.(late);
+        },
         run: (callbacks) =>
           runRef.current({
             ...callbacks,
@@ -265,7 +276,7 @@ export function useSiteCommandRun(
       void queryClient.invalidateQueries({
         queryKey: marketingKeys.activeSessions(siteId),
       });
-      await onCompleteRef.current?.(result);
+      if (result) await onCompleteRef.current?.(result);
       return result;
     } catch (error) {
       crawlActivity.refresh();

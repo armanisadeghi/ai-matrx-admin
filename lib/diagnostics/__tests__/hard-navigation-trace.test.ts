@@ -88,4 +88,65 @@ describe("hard-navigation trace", () => {
 
     expect(captureError).not.toHaveBeenCalled();
   });
+  it("never keeps a query or hash — from, streams and stack are origin + path only", () => {
+    window.history.replaceState(null, "", "/marketing/viva?code=SECRET123#tok=SECRET456");
+    const leaving = freshModule();
+    leaving.installHardNavigationTrace();
+    const stream = leaving.trackLiveStream("https://scraper.example.test/api/run?token=SECRET789");
+    window.dispatchEvent(new Event("beforeunload"));
+    const stored = window.sessionStorage.getItem("matrx:hard-navigation:v1") ?? "";
+    expect(stored).not.toContain("SECRET");
+    expect(stored).toContain("/marketing/viva");
+
+    freshModule().installHardNavigationTrace();
+    const filed = JSON.stringify(jest.mocked(captureError).mock.calls);
+    expect(filed).not.toContain("SECRET");
+    stream.close("ended");
+    window.history.replaceState(null, "", "/");
+  });
+
+  it("strips queries from every URL in a navigating script's stack", () => {
+    const { sanitizeNavigationStack } = freshModule();
+    const stack = [
+      "Error: hard navigation",
+      "    at go (https://www.aimatrx.com/_next/static/chunks/app.js?dpl=abc:3:9)",
+      "    at https://www.aimatrx.com/login?code=SECRET:1:2",
+    ].join("\n");
+    expect(sanitizeNavigationStack(stack)).not.toContain("SECRET");
+    expect(sanitizeNavigationStack(stack)).not.toContain("dpl=");
+  });
+
+  it("files the person's own reload at the silent tier, our code's reload as red", () => {
+    const { classifyTier } = jest.requireActual(
+      "@/lib/diagnostics/errorTierRules",
+    ) as typeof import("@/lib/diagnostics/errorTierRules");
+    const base = { source: "hard-navigation", message: "m" } as Parameters<typeof classifyTier>[0];
+    for (const code of ["browser-reload", "browser-navigation", "link", "back-forward"]) {
+      expect(classifyTier({ ...base, code })).toMatchObject({ tier: "yellow", persist: true });
+    }
+    for (const code of ["script-reload", "script-navigation", "declared:auth-session-watcher:expired"]) {
+      expect(classifyTier({ ...base, code }).tier).toBe("red");
+    }
+  });
+
+  it("a failure while filing the previous leave never skips the page's own listeners", () => {
+    const leaving = freshModule();
+    leaving.installHardNavigationTrace();
+    const crawl = leaving.trackLiveStream("/api/scraper/crawler/sites/site-1/sessions");
+    window.dispatchEvent(new Event("beforeunload"));
+    crawl.close("ended");
+
+    jest.mocked(captureError).mockImplementationOnce(() => {
+      throw new Error("capture store broke");
+    });
+    const next = freshModule();
+    expect(() => next.installHardNavigationTrace()).not.toThrow();
+
+    // The next page's own leave is still recorded.
+    const live = next.trackLiveStream("/ai/chat");
+    window.dispatchEvent(new Event("beforeunload"));
+    expect(window.sessionStorage.getItem("matrx:hard-navigation:v1")).toContain("/ai/chat");
+    live.close("ended");
+  });
 });
+

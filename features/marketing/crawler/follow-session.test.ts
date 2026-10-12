@@ -10,6 +10,7 @@ import { captureError } from "@/lib/diagnostics/errorCaptureStore";
 import {
   CRAWL_FOLLOW_EVENT_PAGE_SIZE,
   CRAWL_FOLLOW_MAX_BACKOFF_MS,
+  CRAWL_FOLLOW_MAX_MS,
   CRAWL_FOLLOW_POLL_MS,
   CRAWL_FOLLOW_STALL_MS,
   followCrawlSession,
@@ -225,7 +226,12 @@ describe("followCrawlSession — a dropped crawler stream follows the run's reco
         { siteId: "site-1", sessionId: "session-1", afterSequence: 7, onEvent: () => {} },
         deps,
       ),
-    ).resolves.toEqual({ status: "stalled", lastSequence: 7, error: null });
+    ).resolves.toEqual({
+      status: "stalled",
+      stallReason: "no_progress",
+      lastSequence: 7,
+      error: null,
+    });
   });
 
   it("drains a backlog larger than one page, so the completion event is never lost", async () => {
@@ -255,6 +261,85 @@ describe("followCrawlSession — a dropped crawler stream follows the run's reco
     expect(outcome.lastSequence).toBe(CRAWL_FOLLOW_EVENT_PAGE_SIZE + 4);
     expect(seen.at(-1)).toBe("crawl_completed");
     expect(seen).toHaveLength(CRAWL_FOLLOW_EVENT_PAGE_SIZE + 4);
+  });
+
+  /** Follow a session that never ends, with `nextEvent` as each poll's one new row. */
+  async function followEndless(nextEvent: (n: number) => CrawlEvent) {
+    let polls = 0;
+    const deps = scriptedDeps({ sessions: [], events: [] });
+    deps.readSession = jest.fn(async () => ({ status: "running", error: null }));
+    deps.readEventsAfter = jest.fn(async () => {
+      polls += 1;
+      return [nextEvent(polls)];
+    });
+    const outcome = await followCrawlSession(
+      { siteId: "site-1", sessionId: "session-1", afterSequence: 0, onEvent: () => {} },
+      deps,
+    );
+    return { outcome, waited: deps.sleeps.reduce((total, ms) => total + ms, 0) };
+  }
+
+  it("a heartbeat carrying a clock, uptime or byte count is not movement", async () => {
+    const { outcome, waited } = await followEndless((n) =>
+      row(n, "crawl_progress", {
+        pages_fetched: 6,
+        uptime_s: n * 5,
+        last_activity_at: `2026-10-12T21:${String(n % 60).padStart(2, "0")}:00Z`,
+        bytes_downloaded: 1_356_185 + n,
+      }),
+    );
+    expect(outcome).toMatchObject({ status: "stalled", stallReason: "no_progress" });
+    expect(waited).toBeLessThanOrEqual(CRAWL_FOLLOW_STALL_MS);
+  });
+
+  it("alternating payloads (A, B, A, B) are not movement", async () => {
+    const { outcome } = await followEndless((n) =>
+      row(n, "crawl_progress", { pages_fetched: n % 2 === 0 ? 6 : 7 }),
+    );
+    expect(outcome).toMatchObject({ status: "stalled", stallReason: "no_progress" });
+  });
+
+  it("a rising work counter of a non-crawl command is movement", async () => {
+    let polls = 0;
+    const deps = scriptedDeps({ sessions: [], events: [] });
+    deps.readSession = jest.fn(async () => ({
+      status: polls > (CRAWL_FOLLOW_STALL_MS / CRAWL_FOLLOW_POLL_MS) * 2 ? "complete" : "running",
+      error: null,
+    }));
+    deps.readEventsAfter = jest.fn(async () => {
+      polls += 1;
+      return [
+        row(polls, "analysis_progress", {
+          status: "progress",
+          summary: { pages_analyzed: polls, timings: { load: polls } },
+        }),
+      ];
+    });
+    const outcome = await followCrawlSession(
+      { siteId: "site-1", sessionId: "session-1", afterSequence: 0, onEvent: () => {} },
+      deps,
+    );
+    expect(outcome.status).toBe("complete");
+  });
+
+  it("ends at the overall cap however much the run moves", async () => {
+    const { outcome, waited } = await followEndless((n) =>
+      row(n, "page_fetched", { url: `https://example.com/${n}` }),
+    );
+    expect(outcome).toMatchObject({ status: "stalled", stallReason: "time_cap" });
+    expect(waited).toBeGreaterThanOrEqual(CRAWL_FOLLOW_MAX_MS - CRAWL_FOLLOW_POLL_MS);
+  });
+
+  it("says the record was unreachable when reads keep failing", async () => {
+    const deps = scriptedDeps({ sessions: [], events: [] });
+    deps.readEventsAfter = jest.fn(async () => {
+      throw new Error("network down");
+    });
+    const outcome = await followCrawlSession(
+      { siteId: "site-1", sessionId: "session-1", afterSequence: 0, onEvent: () => {} },
+      deps,
+    );
+    expect(outcome).toMatchObject({ status: "stalled", stallReason: "unreachable" });
   });
 
   it("stops quietly when the caller aborts", async () => {
