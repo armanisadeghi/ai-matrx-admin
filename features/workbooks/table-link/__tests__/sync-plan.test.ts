@@ -15,7 +15,7 @@ import {
   type SheetCell,
   type WorkbookLike,
 } from "../link-model";
-import { describeIssue, matchRowsToRecords, planToSheet, planToTable } from "../sync-plan";
+import { addOffListKey, changeOffListKey, describeIssue, matchRowsToRecords, offListCells, planToSheet, planToTable, resolveOffList } from "../sync-plan";
 
 const field = (field_name: string, display_name: string, data_type: string, format?: unknown) =>
   ({ field_name, display_name, data_type, metadata: format ? { format } : {} }) as Parameters<typeof linkedFieldFor>[0];
@@ -232,5 +232,42 @@ describe("multi-choice cells", () => {
     expect(json).toEqual({ ok: true, value: ["Imaging", "Labs"] });
     expect(comma).toEqual({ ok: true, value: ["Imaging", "Labs"] });
     expect(sameValue(services, ["imaging", "labs"], json.value)).toBe(true);
+  });
+});
+
+
+describe("a Choice word the list does not have never fails the batch", () => {
+  const withWord = () => {
+    const wb = clone(exported());
+    setCell(wb, 1, col("Stage"), { v: "Won Back", t: 1 });
+    const added = 4;
+    setCell(wb, added, col("Company"), { v: "Cedar Row Vets", t: 1 });
+    setCell(wb, added, col("Stage"), { v: "Reactivated", t: 1 });
+    const parsed = parseSheet(wb, SHEET)!;
+    return planToTable({ sheet: parsed, baseline: parseSheet(exported(), SHEET), link, tableRows: ROWS });
+  };
+
+  it("names each cell and lets the person add the word or skip the row", () => {
+    const cells = offListCells(withWord());
+    expect(cells.map((c) => [c.header, c.word])).toEqual(expect.arrayContaining([["Stage", "Reactivated"], ["Stage", "Won Back"]]));
+    expect(cells).toHaveLength(2);
+  });
+
+  it("skip drops only that row; add returns the word for the list; the rest still applies", () => {
+    const plan = withWord();
+    const edited = plan.changed.find((r) => r.id === "rec-1")!;
+    const resolved = resolveOffList(plan, { [changeOffListKey("rec-1", "stage")]: "skip" });
+    expect(resolved.plan.changed.some((r) => r.id === "rec-1")).toBe(false);
+    expect(resolved.skipped).toBe(1);
+    expect(edited.changes.some((c) => c.notInList)).toBe(true);
+    expect(resolved.plan.added).toHaveLength(1);
+    expect(resolved.words.get("stage")).toEqual(["Reactivated"]);
+    const all = resolveOffList(plan, {});
+    expect(all.words.get("stage")?.sort()).toEqual(["Reactivated", "Won Back"]);
+    expect(all.skipped).toBe(0);
+    const none = resolveOffList(plan, { [addOffListKey(plan.added[0].row, "stage")]: "skip", [changeOffListKey("rec-1", "stage")]: "skip" });
+    expect(none.plan.added).toHaveLength(0);
+    expect(none.plan.changed).toHaveLength(0);
+    expect(none.words.size).toBe(0);
   });
 });

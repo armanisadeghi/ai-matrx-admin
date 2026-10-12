@@ -13,6 +13,7 @@ import { supabase } from "@/utils/supabase/client";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
 import { createWorkbook, saveSnapshot } from "@/features/workbooks/workbook-service";
 import {
+  addChoicesToColumn,
   addTableColumn,
   bulkWrite,
   getCompleteTable,
@@ -301,6 +302,25 @@ export async function applyPlanToTable(tableId: string, plan: ToTablePlan, choic
       refused,
     },
   };
+}
+
+/** Words the person chose to add to a Choice column's list, before the rows that use them are written. */
+export async function addWordsToChoices(tableId: string, words: ReadonlyMap<string, string[]>): Promise<LinkResult<number>> {
+  if ([...words.values()].every((w) => w.length === 0)) return { ok: true, data: 0 };
+  const table = await readTableForSheet(tableId);
+  if (!table.ok) return table;
+  let added = 0;
+  for (const [fieldName, list] of words) {
+    if (list.length === 0) continue;
+    const column = table.data.columns.find((c) => c.field_name === fieldName);
+    const id = (column as { id?: string } | undefined)?.id;
+    if (!column || !id) return fail(`The "${fieldName}" column could not be found to add its choices`);
+    const format = (column.metadata as { format?: unknown } | null)?.format as never;
+    const done = await addChoicesToColumn({ tableId, fieldId: id, words: list, format });
+    if (isServiceFailure(done)) return fail(done.error);
+    added += list.length;
+  }
+  return { ok: true, data: added };
 }
 
 /** Make the sheet columns the person picked into fields; their values ride the next update. */

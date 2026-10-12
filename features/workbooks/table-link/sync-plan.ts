@@ -115,6 +115,8 @@ export interface FieldChange {
   conflict: boolean;
   /** The sheet's value does not fit the field (the store will judge it). */
   problem?: string;
+  /** A Choice cell holds a word the list does not have: the person decides (add it, or skip the row). */
+  notInList?: boolean;
 }
 
 export interface RowChange {
@@ -129,7 +131,7 @@ export interface RowAdd {
   row: number;
   label: string;
   values: Record<string, unknown>;
-  problems: Array<{ header: string; problem: string }>;
+  problems: Array<{ header: string; problem: string; field_name?: string; notInList?: boolean; value?: string }>;
 }
 
 export interface RowRemove {
@@ -151,6 +153,8 @@ function labelFrom(link: Pick<TableLink, "fields">, values: Record<string, unkno
   return fallback;
 }
 
+export const NOT_IN_LIST = "Not in the list";
+
 function readRow(fields: readonly LinkedField[], columns: Map<string, number>, cells: ParsedSheet["rows"][number]["cells"]) {
   const values: Record<string, unknown> = {};
   const problems: Record<string, string> = {};
@@ -161,7 +165,7 @@ function readRow(fields: readonly LinkedField[], columns: Map<string, number>, c
     values[f.field_name] = read.value;
     if (!read.ok) problems[f.field_name] = read.problem;
     else if (f.kind === "choice" && f.choices && f.choices.length > 0 && typeof read.value === "string" && read.value && !f.choices.some((c) => c.toLowerCase() === (read.value as string).toLowerCase())) {
-      problems[f.field_name] = "Not in the list";
+      problems[f.field_name] = NOT_IN_LIST;
     }
   }
   return { values, problems };
@@ -235,7 +239,12 @@ export function planToTable(args: {
         row: rowNo,
         label: labelFrom(link, values, `Row ${rowNo}`),
         values: Object.fromEntries(fields.filter((f) => located.columns.has(f.field_name)).map((f) => [f.field_name, values[f.field_name]])),
-        problems: Object.entries(problems).map(([name, problem]) => ({ header: link.fields.find((f) => f.field_name === name)?.header ?? name, problem })),
+        problems: Object.entries(problems).map(([name, problem]) => ({
+          header: link.fields.find((f) => f.field_name === name)?.header ?? name,
+          problem,
+          field_name: name,
+          ...(problem === NOT_IN_LIST ? { notInList: true, value: String(values[name] ?? "") } : {}),
+        })),
       });
       continue;
     }
@@ -258,7 +267,7 @@ export function planToTable(args: {
         continue;
       }
       const conflict = !!before && !sameValue(f, tableValue, before[f.field_name]);
-      changes.push({ field_name: f.field_name, header: f.header, from: tableValue ?? null, to: sheetValue, conflict, ...(problems[f.field_name] ? { problem: problems[f.field_name] } : {}) });
+      changes.push({ field_name: f.field_name, header: f.header, from: tableValue ?? null, to: sheetValue, conflict, ...(problems[f.field_name] ? { problem: problems[f.field_name] } : {}), ...(problems[f.field_name] === NOT_IN_LIST ? { notInList: true } : {}) });
     }
     for (const f of readonly) {
       if (!located.columns.has(f.field_name)) continue;
@@ -437,4 +446,75 @@ export function matchRowsToRecords(
     } else unmatched.push(row.row + 1);
   }
   return { matched, unmatched };
+}
+
+
+// ─── words the list does not have: the person decides ────────────────────────
+
+export type ListDecision = "add" | "skip";
+
+/** One cell holding a Choice word the column's list lacks, in a row the update would write. */
+export interface OffListCell {
+  key: string;
+  row: number | null;
+  label: string;
+  field_name: string;
+  header: string;
+  word: string;
+}
+
+export const addOffListKey = (row: number, field_name: string) => `add:${row}:${field_name}`;
+export const changeOffListKey = (id: string, field_name: string) => `chg:${id}:${field_name}`;
+
+/** Every off-list Choice cell the plan would write. */
+export function offListCells(plan: Pick<ToTablePlan, "added" | "changed">): OffListCell[] {
+  const out: OffListCell[] = [];
+  for (const a of plan.added) {
+    for (const p of a.problems) {
+      if (p.notInList && p.field_name) out.push({ key: addOffListKey(a.row, p.field_name), row: a.row, label: a.label, field_name: p.field_name, header: p.header, word: p.value ?? "" });
+    }
+  }
+  for (const r of plan.changed) {
+    for (const c of r.changes) {
+      if (c.notInList) out.push({ key: changeOffListKey(r.id, c.field_name), row: r.row, label: r.label, field_name: c.field_name, header: c.header, word: String(c.to ?? "") });
+    }
+  }
+  return out;
+}
+
+/**
+ * Apply the person's answers: a row with a "skip" cell leaves the update whole (the rest applies);
+ * an "add" cell's word is returned so the list can take it before the write. Unanswered = add.
+ */
+export function resolveOffList(
+  plan: ToTablePlan,
+  decisions: Readonly<Record<string, ListDecision>>,
+  include: { added: boolean; changed: boolean } = { added: true, changed: true },
+): { plan: ToTablePlan; words: Map<string, string[]>; skipped: number } {
+  const words = new Map<string, string[]>();
+  let skipped = 0;
+  const take = (field_name: string, word: string) => {
+    const list = words.get(field_name) ?? [];
+    if (word && !list.some((w) => w.toLowerCase() === word.toLowerCase())) list.push(word);
+    words.set(field_name, list);
+  };
+  const added = plan.added.filter((a) => {
+    const cells = a.problems.filter((p) => p.notInList && p.field_name);
+    if (cells.some((p) => decisions[addOffListKey(a.row, p.field_name!)] === "skip")) {
+      skipped += 1;
+      return false;
+    }
+    if (include.added) for (const p of cells) take(p.field_name!, p.value ?? "");
+    return true;
+  });
+  const changed = plan.changed.filter((r) => {
+    const cells = r.changes.filter((c) => c.notInList);
+    if (cells.some((c) => decisions[changeOffListKey(r.id, c.field_name)] === "skip")) {
+      skipped += 1;
+      return false;
+    }
+    if (include.changed) for (const c of cells) take(c.field_name, String(c.to ?? ""));
+    return true;
+  });
+  return { plan: { ...plan, added, changed }, words, skipped };
 }

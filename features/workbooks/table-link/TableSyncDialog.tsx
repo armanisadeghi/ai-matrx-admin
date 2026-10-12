@@ -21,8 +21,8 @@ import { saveSnapshot } from "@/features/workbooks/workbook-service";
 import { isServiceFailure } from "@/features/data-tables/types";
 
 import { RECORD_ID_HEADER, displayText, linkStyles, parseSheet, type ParsedSheet, type TableLink } from "./link-model";
-import { describeIssue, planToSheet, planToTable, type CellWrite, type ToSheetPlan, type ToTablePlan } from "./sync-plan";
-import { addColumnsAsFields, applyPlanToTable, openTableAsWorkbook, readBaseline, readTableForSheet, writeLink, type PlanChoice } from "./link-service";
+import { describeIssue, offListCells, planToSheet, planToTable, resolveOffList, type CellWrite, type ListDecision, type ToSheetPlan, type ToTablePlan } from "./sync-plan";
+import { addColumnsAsFields, addWordsToChoices, applyPlanToTable, openTableAsWorkbook, readBaseline, readTableForSheet, writeLink, type PlanChoice } from "./link-service";
 
 export type SyncDirection = "to_table" | "to_sheet";
 
@@ -130,6 +130,7 @@ export function TableSyncDialog({
   const [loaded, setLoaded] = useState<Loaded>({ state: "loading" });
   const [choice, setChoice] = useState<PlanChoice>({ added: true, changed: true, removed: true, conflicts: true });
   const [extras, setExtras] = useState<Set<number>>(new Set());
+  const [decisions, setDecisions] = useState<Record<string, ListDecision>>({});
   const [busy, setBusy] = useState<null | "apply" | "fresh">(null);
   const [round, setRound] = useState(0);
 
@@ -137,6 +138,7 @@ export function TableSyncDialog({
     if (!open) return;
     let cancelled = false;
     setLoaded({ state: "loading" });
+    setDecisions({});
     (async () => {
       const sheet = parseSheet(liveSnapshot(apiRef.current), link.sheet_id);
       if (!sheet) return { state: "error", error: "The linked sheet is no longer in this workbook" } as const;
@@ -202,6 +204,11 @@ export function TableSyncDialog({
           fields = table.data.fields;
           plan = planToTable({ sheet: loaded.sheet, baseline, link: { fields }, tableRows: table.data.rows });
         }
+        // Words the list lacks: the person's answer (add it / skip the row); the rest applies either way.
+        const resolved = resolveOffList(plan, decisions, { added: choice.added, changed: choice.changed });
+        plan = resolved.plan;
+        const taught = await addWordsToChoices(link.table_id, resolved.words);
+        if (!taught.ok) throw new Error(taught.error);
         const applied = await applyPlanToTable(link.table_id, plan, choice);
         if (!applied.ok) throw new Error(applied.error);
         const idCol = plan.located.idCol;
@@ -213,7 +220,7 @@ export function TableSyncDialog({
         onSynced({ ...link, fields, last_synced_at: new Date().toISOString(), last_sync_direction: "to_table" });
         const { added, changed, removed } = applied.data.counts;
         if (applied.data.refused.length > 0) toast.error(`Some rows were refused: ${applied.data.refused.slice(0, 3).join("; ")}`);
-        toast.success(`Table updated: ${added} added, ${changed} changed, ${removed} archived`);
+        toast.success(`Table updated: ${added} added, ${changed} changed, ${removed} archived${resolved.skipped > 0 ? `, ${plural(resolved.skipped, "row")} skipped` : ""}`);
       } else {
         const plan = loaded.plan;
         writeCells(api, link.sheet_id, plan.writes, linkStyles(link.fields));
@@ -248,6 +255,7 @@ export function TableSyncDialog({
     const p = loaded.plan;
     const conflicts = p.changed.reduce((n, r) => n + r.changes.filter((c) => c.conflict).length, 0);
     nothing = p.added.length + p.changed.length + p.removed.length === 0 && extras.size === 0;
+    const offList = offListCells(p);
     body = (
       <>
         {p.added.length > 0 && (
@@ -255,7 +263,7 @@ export function TableSyncDialog({
             {p.added.map((a) => (
               <Line key={a.row}>
                 Row {a.row} · {a.label}
-                {a.problems.length > 0 && <span className="text-amber-600 dark:text-amber-500"> · {a.problems.map((x) => `${x.header}: ${x.problem}`).join(", ")}</span>}
+                {a.problems.filter((x) => !x.notInList).length > 0 && <span className="text-amber-600 dark:text-amber-500"> · {a.problems.filter((x) => !x.notInList).map((x) => `${x.header}: ${x.problem}`).join(", ")}</span>}
               </Line>
             ))}
           </Section>
@@ -267,11 +275,32 @@ export function TableSyncDialog({
                 <Line key={`${r.id}-${c.field_name}`}>
                   Row {r.row} · {r.label} · {c.header}: {shown(c.from)} <ArrowRight className="size-3" aria-hidden /> {shown(c.to)}
                   {c.conflict && <span className="text-amber-600 dark:text-amber-500"> · also changed in table</span>}
-                  {c.problem && <span className="text-amber-600 dark:text-amber-500"> · {c.problem}</span>}
+                  {c.problem && !c.notInList && <span className="text-amber-600 dark:text-amber-500"> · {c.problem}</span>}
                 </Line>
               )),
             )}
           </Section>
+        )}
+        {offList.length > 0 && (
+          <div className="rounded-md border border-amber-500/40 bg-amber-500/5 px-2 py-1 text-xs" data-table-sync-offlist="">
+            <div className="py-0.5 text-amber-600 dark:text-amber-500">{plural(offList.length, "word")} not in the choice list</div>
+            {offList.map((c) => {
+              const decision = decisions[c.key] ?? "add";
+              return (
+                <div key={c.key} className="flex flex-wrap items-center gap-2 py-0.5" data-table-sync-offlist-cell={c.key}>
+                  <span className="min-w-0 flex-1 truncate">
+                    Row {c.row} · {c.header}: &ldquo;{c.word}&rdquo;
+                  </span>
+                  <Button variant={decision === "add" ? "primary" : "outline"} onClick={() => setDecisions({ ...decisions, [c.key]: "add" })} aria-pressed={decision === "add"}>
+                    Add as a choice
+                  </Button>
+                  <Button variant={decision === "skip" ? "primary" : "outline"} onClick={() => setDecisions({ ...decisions, [c.key]: "skip" })} aria-pressed={decision === "skip"}>
+                    Skip this row
+                  </Button>
+                </div>
+              );
+            })}
+          </div>
         )}
         {conflicts > 0 && (
           <Section title={`Use the sheet's value in ${plural(conflicts, "conflict")}`} checked={choice.conflicts} onChecked={(v) => setChoice({ ...choice, conflicts: v })} tone="warn" />
