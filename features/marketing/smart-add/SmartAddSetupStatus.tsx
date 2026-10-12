@@ -48,14 +48,13 @@ function useSetupRun(brandId: string, organizationId: string) {
  * waits for "Confirm your brand profile basics". Nothing after it (the brand intake, research,
  * any AI) can start until it is answered — the engine holds the run, this only shows the panel.
  */
-export function SmartAddBasicsGate({ brandId, organizationId }: { brandId: string; organizationId: string }) {
+export function SmartAddBasicsGate({ brandId }: { brandId: string; organizationId?: string }) {
   const queryClient = useQueryClient();
-  const run = useSetupRun(brandId, organizationId);
-  if (run.data?.status !== "interrupted") return null;
   return (
-    <div className="mt-3 max-w-2xl">
+    <div className="mt-3 max-w-2xl empty:hidden">
       <HumanGatePanel
-        runId={run.data.runId}
+        entityType="web_brand"
+        entityId={brandId}
         onAnswered={() => void queryClient.invalidateQueries({ queryKey: ["marketing", "smart-add-setup", brandId] })}
       />
     </div>

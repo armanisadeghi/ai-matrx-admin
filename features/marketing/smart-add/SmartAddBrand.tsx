@@ -400,7 +400,20 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
               subject: `brand:${brand.id}`,
               organizationId,
               sourceFeature: "marketing",
-              inputs: { brand_id: brand.id, images: basics.images, accounts, max_posts: postsPerAccount },
+              inputs: {
+                brand_id: brand.id,
+                images: basics.images,
+                accounts,
+                max_posts: postsPerAccount,
+                // Where each basic came from and how sure the extractor was — the setup's
+                // "Confirm your brand profile basics" gate shows both beside each item.
+                evidence: [...items.values()].map((i) => ({
+                  field: i.field,
+                  value: i.value,
+                  confidence: i.confidence,
+                  source: i.source.where ?? i.source.kind,
+                })),
+              },
             },
             "The background setup could not start.",
           );
