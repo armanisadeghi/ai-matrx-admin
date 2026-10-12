@@ -247,7 +247,7 @@ export function auditApiRoutes(
       where: path,
       what: "calls auth.getUser() in an API route — an auth-server round trip per HTTP request",
       remedy:
-        'Use `getClaimsUser(client)` from "@/utils/supabase/resolveUser" — the same ' +
+        'Use `getClaimsUser(client)` from "@ai-matrx/auth" — the same ' +
         "`{ data: { user }, error }` envelope, verified locally against the cached JWKS. " +
         "For a route that takes a Bearer token, `resolveUser(request)` is the door. " +
         "If this route genuinely reads created_at / updated_at / identities / " +
