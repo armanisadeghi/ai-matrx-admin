@@ -40,6 +40,7 @@ import { useLiveAgentRun } from "@ai-matrx/chat/agents/hooks/useLiveAgentRun";
 import { useOpenLiveRunWindow } from "@/features/overlays/openers/liveRunWindow";
 import { resolveEntityDoors } from "@/components/official/entity-ref/doors";
 import { CRM_SAVE_CONTACT_AGENT_MANDATE } from "../constants";
+import { confirmSavedContact } from "../confirmSavedContact";
 import {
   parseContactSelection,
   type ParsedContactSelection,
@@ -178,12 +179,13 @@ export function SaveContactFromSelectionDialog({
         toast.info(result.summary || "Nothing there to save as a contact.");
         return;
       }
-      const href = resolveEntityDoors("party", result.party_id).href ?? "";
+      // The agent's word is not proof. Read the row back before saying it exists.
+      const stored = await confirmSavedContact(result.party_id);
+      const href = resolveEntityDoors("party", stored.id).href ?? "";
       toast.success(
-        result.summary ||
-          (result.created
-            ? `Saved ${result.display_name}`
-            : `${result.display_name} was already in your CRM`),
+        result.created
+          ? `Saved ${stored.display_name}`
+          : `${stored.display_name} was already in your CRM`,
         {
           description: result.created
             ? undefined
