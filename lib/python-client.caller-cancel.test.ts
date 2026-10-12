@@ -85,30 +85,11 @@ describe("python-client and a cancelled request", () => {
   });
 });
 
-/** The upload transport is an XHR: a minimal stand-in that only knows abort. */
-class FakeXhr {
-  upload = { addEventListener: () => {} };
-  timeout = 0;
-  private listeners: Record<string, Array<() => void>> = {};
-  open() {}
-  setRequestHeader() {}
-  send() {}
-  addEventListener(type: string, fn: () => void) {
-    (this.listeners[type] ??= []).push(fn);
-  }
-  abort() {
-    for (const fn of this.listeners.abort ?? []) fn();
-  }
-}
-
+/** Upload rides `sendMatrxRequest` (`onUploadProgress`); outside a browser it is one fetch. */
 describe("uploadWithProgress and a cancelled upload", () => {
-  const original = (globalThis as { XMLHttpRequest?: unknown }).XMLHttpRequest;
   beforeEach(() => {
     jest.clearAllMocks();
-    (globalThis as { XMLHttpRequest?: unknown }).XMLHttpRequest = FakeXhr;
-  });
-  afterAll(() => {
-    (globalThis as { XMLHttpRequest?: unknown }).XMLHttpRequest = original;
+    hangUntilAborted();
   });
 
   function upload(signal: AbortSignal) {
@@ -126,19 +107,11 @@ describe("uploadWithProgress and a cancelled upload", () => {
     expect(captureMock).not.toHaveBeenCalled();
   });
 
-  it("an abort the caller never asked for is filed", async () => {
-    const controller = new AbortController();
-    let xhr: FakeXhr | undefined;
-    (globalThis as { XMLHttpRequest?: unknown }).XMLHttpRequest = class extends FakeXhr {
-      constructor() {
-        super();
-        xhr = this;
-      }
-    };
-    const pending = upload(controller.signal);
-    await new Promise((r) => setTimeout(r, 0));
-    xhr!.abort();
-    await expect(pending).rejects.toBeDefined();
+  it("a transport failure the caller never asked for is filed", async () => {
+    global.fetch = jest.fn(async () => {
+      throw new TypeError("Failed to fetch");
+    }) as unknown as typeof fetch;
+    await expect(upload(new AbortController().signal)).rejects.toBeDefined();
     expect(captureMock).toHaveBeenCalledTimes(1);
   });
 });

@@ -138,7 +138,8 @@ describe("python-client getJson transient recovery", () => {
         organizationId: TEST_ORG_ID,
         signal: controller.signal,
       }),
-    ).rejects.toThrow("Failed to fetch");
+    ).rejects.toThrow("The request was cancelled.");
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 });
 

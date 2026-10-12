@@ -149,7 +149,7 @@ describe("python-client organization admission (sender-side, fail-closed)", () =
     ).resolves.toMatchObject({ data: { ok: true } });
 
     const [, init] = fetchMock.mock.calls[0] as [string, RequestInit];
-    expect((init.headers as Record<string, string>)["X-Organization-Id"]).toBe(
+    expect((init.headers as Record<string, string>)["x-organization-id"]).toBe(
       TEST_ORG_ID,
     );
   });
@@ -229,7 +229,7 @@ describe("python-client organization admission (sender-side, fail-closed)", () =
       void _evt;
     }
     const [, init] = fetchMock.mock.calls[0] as [string, RequestInit];
-    expect((init.headers as Record<string, string>)["X-Organization-Id"]).toBe(
+    expect((init.headers as Record<string, string>)["x-organization-id"]).toBe(
       TEST_ORG_ID,
     );
   });
