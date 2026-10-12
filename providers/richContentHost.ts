@@ -14,6 +14,7 @@ import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { ResourcePeekHost } from "@/features/organizations/peek/ResourcePeekHost";
 import { useOpenSaveToTable } from "@/features/overlays/openers/saveToTable";
 import { useRouter } from "next/navigation";
+import { useTableDoors } from "@/features/rich-content-host/useTableDoors";
 import { withIrEnvelope } from "@ai-matrx/rich-content/kinds/registry/region-envelope-memo";
 import { envelopeForCompletedFenceRegion, envelopeForCompletedXmlRegion } from "@/features/content-ir/surfaces/xml-finalize";
 import { registerKindCorrector } from "@ai-matrx/rich-content/kinds/registry/kind-correctors";
@@ -53,6 +54,8 @@ configureRichContent({
   },
   useOpenSaveToTable: useOpenSaveToTable as never,
   // "Open table" after Turn into a table: the table's own page, in-app navigation.
+  // "Save to notes" and "Send to an agent" in every table's "…" menu.
+  useTableDoors,
   useOpenDataTable: () => {
     const router = useRouter();
     return (tableId: string) => router.push(`/data/${encodeURIComponent(tableId)}`);

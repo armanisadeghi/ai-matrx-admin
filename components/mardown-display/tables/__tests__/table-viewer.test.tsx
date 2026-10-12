@@ -33,7 +33,7 @@ jest.mock("@/hooks/useToastManager", () => ({
   useToastManager: () => ({ success: jest.fn(), error: jest.fn(), info: jest.fn() }),
 }));
 
-import MarkdownTable from "@ai-matrx/rich-content/display/tables/MarkdownTable";
+import { StreamingTableRenderer } from "@ai-matrx/rich-content/display/blocks/table/StreamingTableRenderer";
 import { phoneStackCellProps, plainHeaderLabel } from "@ai-matrx/rich-content/display/tables/table-viewer";
 
 const GRINDERS = {
@@ -49,7 +49,12 @@ const GRINDERS = {
 };
 
 function render(): string {
-  return renderToStaticMarkup(<MarkdownTable data={GRINDERS} content="| Grinder |" />);
+  const md = [
+    `| ${GRINDERS.headers.join(" | ")} |`,
+    `| ${GRINDERS.headers.map(() => "---").join(" | ")} |`,
+    ...GRINDERS.rows.map((r) => `| ${r.join(" | ")} |`),
+  ].join("\n");
+  return renderToStaticMarkup(<StreamingTableRenderer content={md} />);
 }
 
 describe("the table's action row", () => {

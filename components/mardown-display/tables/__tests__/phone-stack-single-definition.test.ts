@@ -35,7 +35,6 @@ describe("phone-stack card list", () => {
   it("has no per-renderer class copy of it", () => {
     for (const f of [
       "node_modules/@ai-matrx/rich-content/dist/display/tables/table-viewer.js",
-      "node_modules/@ai-matrx/rich-content/dist/display/tables/MarkdownTable.js",
       "node_modules/@ai-matrx/rich-content/dist/display/blocks/table/StreamingTableRenderer.js",
     ]) {
       const src = read(f);

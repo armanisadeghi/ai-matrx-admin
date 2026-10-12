@@ -3,8 +3,7 @@ import React from "react";
 import MarkdownCore from "@ai-matrx/rich-content/markdown-core/MarkdownCore";
 import { cn } from "@/styles/themes/utils";
 import CodeBlock from "@ai-matrx/rich-content/code-block/CodeBlock";
-import { parseMarkdownTable } from "@ai-matrx/rich-content/display/markdown-classification/processors/bock-processors/parse-markdown-table";
-import MarkdownTable from "@ai-matrx/rich-content/display/tables/TableWithSeparatedControls";
+import { SourceTable } from "@ai-matrx/rich-content/display/tables/SourceTable";
 import { RichCopySplit } from "@ai-matrx/chat/agent-copy/RichCopySplit";
 import { ContentView } from "@ai-matrx/rich-content/copy/ContentActions";
 import { KindTextGate } from "@ai-matrx/rich-content/display/chat-markdown/KindTextGate";
@@ -47,7 +46,6 @@ const MarkdownRendererBody: React.FC<MarkdownRendererProps> = ({
 }) => {
   // This item's Plain / Formatted switch (the copy set's Plain icon).
   const viewKey = `markdown-renderer-${React.useId()}`;
-  const tableData = parseMarkdownTable(content);
 
   const components = {
     p: ({ node, ...props }) => (
@@ -204,19 +202,18 @@ const MarkdownRendererBody: React.FC<MarkdownRendererProps> = ({
         {...props}
       />
     ),
-    table: () => {
-      if (!tableData?.markdown) return null;
-      return (
-        <div className="border-2 border-border">
-          <MarkdownTable data={tableData.markdown} />
-        </div>
-      );
-    },
-    thead: () => null,
-    tbody: () => null,
-    tr: () => null,
-    th: () => null,
-    td: () => null,
+    // THE one table (rich-content SourceTable): this table's own markdown, every action.
+    table: ({ node, children, ...props }) => (
+      <SourceTable
+        source={content}
+        node={node}
+        fallback={
+          <table className="w-full text-sm border-collapse" {...props}>
+            {children}
+          </table>
+        }
+      />
+    ),
   } as Components;
 
   const containerStyles = cn(
