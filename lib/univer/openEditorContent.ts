@@ -56,3 +56,33 @@ export async function showSavedSnapshot(
   await replace(row);
   return true;
 }
+
+/**
+ * THE CONTENT-SWAP GUARD. A swap is dispose-then-create; if the create throws, the unit is gone and
+ * the grid would stay blank. `swap(snapshot)` is the editor's own dispose+create (it disposes
+ * whatever unit is open, if any). On a throw this puts the content that was open before straight
+ * back (synchronously — never a blank grid) and says so; the editor then reloads the latest SAVED
+ * version and still raises the original error, so the person is told.
+ */
+export function swapContentGuarded(args: {
+  swap: (snapshot: unknown) => void;
+  next: unknown;
+  /** What was open before (`workbook.save()` taken before the swap), or null when nothing was. */
+  previous: unknown | null;
+}): { ok: true } | { ok: false; error: unknown; previousRestored: boolean } {
+  try {
+    args.swap(args.next);
+    return { ok: true };
+  } catch (error) {
+    let previousRestored = false;
+    if (args.previous) {
+      try {
+        args.swap(args.previous);
+        previousRestored = true;
+      } catch {
+        /* the latest saved version is tried next, by the caller */
+      }
+    }
+    return { ok: false, error, previousRestored };
+  }
+}

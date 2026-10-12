@@ -102,7 +102,7 @@ import { resolveExportImage } from "@/lib/univer/matrxImagePorts";
 import { workbookHistoryToggleInput } from "@/lib/univer/historyKinds";
 import { WorkbookSheetReferenceCopyButton } from "@/features/workbooks/components/WorkbookSheetReferenceCopyButton";
 import { WorkbookTableLink } from "@/features/workbooks/table-link/WorkbookTableLink";
-import { registerOpenEditorContent, type SavedEditorSnapshot } from "@/lib/univer/openEditorContent";
+import { swapContentGuarded, registerOpenEditorContent, type SavedEditorSnapshot } from "@/lib/univer/openEditorContent";
 
 import { getClaimsUser } from "@/utils/supabase/claimsUser";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
@@ -569,21 +569,43 @@ export default function WorkbookEditor({
     const session = collabSessionRef.current;
     collabSelectionDisposerRef.current?.dispose();
     collabSelectionDisposerRef.current = null;
-    const swap = () => {
+    const swapTo = (content: unknown) => {
       const current = api.getActiveWorkbook();
-      const snapshot = { ...(row.snapshot as Partial<IWorkbookData>) };
+      const snapshot = { ...(content as Partial<IWorkbookData>) };
       if (current) {
         snapshot.id = current.getId();
         api.disposeUnit(current.getId());
       }
       api.createWorkbook(snapshot);
     };
+    const previous = api.getActiveWorkbook()?.save() ?? null;
+    // Guarded: if the new content cannot be created, the old content is put back at once (never a
+    // blank grid), then the latest saved version is reloaded; the error still reaches the caller.
+    const guarded = () => swapContentGuarded({ swap: swapTo, next: row.snapshot, previous });
     replacingRef.current = true;
+    let swapped: ReturnType<typeof guarded>;
     try {
-      if (session) session.muteWhile(swap);
-      else swap();
+      swapped = session ? session.muteWhile(guarded) : guarded();
     } finally {
       replacingRef.current = false;
+    }
+    if (!swapped.ok) {
+      wireCollabSelection();
+      void (async () => {
+        const latest = await getLatestSnapshot(workbookId);
+        if (isServiceFailure(latest) || !latest.data?.snapshot) return;
+        replacingRef.current = true;
+        try {
+          swapTo(latest.data.snapshot);
+          shownSnapshotIdRef.current = latest.data.id;
+        } catch (err) {
+          console.warn("[workbook] could not show the latest saved version after a failed swap", err);
+        } finally {
+          replacingRef.current = false;
+        }
+        wireCollabSelection();
+      })();
+      throw swapped.error instanceof Error ? swapped.error : new Error(String(swapped.error));
     }
     shownSnapshotIdRef.current = row.id;
     setSaveStatus("idle");
