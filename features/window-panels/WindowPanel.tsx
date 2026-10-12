@@ -1677,9 +1677,13 @@ export function WindowPanel({
       <div
         className={cn(
           "flex h-full w-full min-h-0 flex-col",
+          // Opaque window surface: a window is a solid card, never glass —
+          // glass belongs only on bars floating over moving content (tap-target
+          // placement rule 1). A see-through window let the page underneath
+          // read through its content (Watch AI, 2026-10-12).
           isMaximized
-            ? "bg-card/98 backdrop-blur-md border border-border shadow-2xl"
-            : "rounded-xl bg-card/95 backdrop-blur-md border border-border shadow-xl",
+            ? "bg-card border border-border shadow-2xl"
+            : "rounded-xl bg-card border border-border shadow-xl",
           "overflow-hidden",
         )}
       >

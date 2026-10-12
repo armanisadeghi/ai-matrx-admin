@@ -1,0 +1,188 @@
+{
+  "source_snapshot_id": "6e2324c6-118e-4821-a978-c1b4b3d075db",
+  "request": {
+    "model": "qwen-3.8-27b",
+    "tools": [
+      {
+        "type": "function",
+        "function": {
+          "name": "web",
+          "parameters": {
+            "type": "object",
+            "required": [
+              "action"
+            ],
+            "properties": {
+              "url": {
+                "type": "string",
+                "description": "read: URL."
+              },
+              "urls": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "batch_read: 1-10 URLs."
+              },
+              "chars": {
+                "type": "integer",
+                "default": 8000,
+                "description": "read, batch_read: max chars per URL per call, 1-40000."
+              },
+              "action": {
+                "enum": [
+                  "search",
+                  "read",
+                  "batch_read"
+                ],
+                "type": "string",
+                "description": ""
+              },
+              "offset": {
+                "type": "integer",
+                "default": 0,
+                "description": "read, batch_read: char offset (next_offset from the previous call)."
+              },
+              "queries": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "search: 1-5 queries."
+              },
+              "freshness": {
+                "type": "string",
+                "description": "search: Brave freshness: pd, pw, pm, py, or YYYY-MM-DDtoYYYY-MM-DD."
+              },
+              "summarize": {
+                "type": "boolean",
+                "default": false,
+                "description": "read: summarize the page; needs instructions."
+              },
+              "instructions": {
+                "type": "string",
+                "description": "read: what the summary should extract; required for summarize."
+              },
+              "max_content_length": {
+                "type": "integer",
+                "default": 8000,
+                "description": "Deprecated alias for chars."
+              },
+              "max_results_per_query": {
+                "type": "integer",
+                "default": 5,
+                "description": "search: results per query, 1-20."
+              }
+            },
+            "additionalProperties": false
+          },
+          "description": "Web search and page reading.\nsearch: queries -> Brave results per query.\nread: url -> page text in a chars window from offset; result has next_offset/has_more, …"
+        }
+      },
+      {
+        "type": "function",
+        "function": {
+          "name": "ask_person",
+          "parameters": {
+            "type": "object",
+            "required": [
+              "kind",
+              "message"
+            ],
+            "properties": {
+              "kind": {
+                "enum": [
+                  "approve",
+                  "choose_one",
+                  "confirm_details",
+                  "upload_file"
+                ],
+                "type": "string",
+                "description": "approve: yes/no on one exact action. choose_one: pick an option. confirm_details: show what you have, they fix it. upload_file. pick_time. credential_capture: a…"
+              },
+              "message": {
+                "type": "string",
+                "description": "One sentence to the person, in their words: what this is and why you need it. It is the text they receive and the line above the page. Must be at least 1 charac…"
+              },
+              "payload": {
+                "type": "object",
+                "description": "Per kind. approve: {action, detail?, consequence_note?}. choose_one: {question, options:[{value,label,detail?}] (2-8)}. confirm_details: {title, rows:[{label,va…"
+              },
+              "timeout_seconds": {
+                "type": "integer",
+                "description": "Optional. Stop waiting after this many seconds; you then get status expired with timed_out true. Never longer than the kind's own wait. Must be at least 30, at …"
+              }
+            },
+            "additionalProperties": false
+          },
+          "description": "Ask the person you work for to do exactly one thing on a page built for it — an approval, a choice, a check of details, a file, a time, a website sign-in or oth…"
+        }
+      },
+      {
+        "type": "function",
+        "function": {
+          "name": "apply_surface_write",
+          "parameters": {
+            "type": "object",
+            "required": [
+              "target",
+              "value"
+            ],
+            "properties": {
+              "item": {
+                "type": "object",
+                "required": [
+                  "resource_type",
+                  "resource_id"
+                ],
+                "properties": {
+                  "resource_id": {
+                    "type": "string"
+                  },
+                  "resource_type": {
+                    "type": "string"
+                  }
+                },
+                "description": "Optional: the record to change, for a target that edits one of several open records (its line says so). Pass that record's reference exactly as the page values …"
+              },
+              "value": {
+                "type": [
+                  "string",
+                  "number",
+                  "boolean",
+                  "array"
+                ],
+                "description": "The value for the chosen target, shaped exactly as that target's description specifies. For an object or array target send the object/array itself — not a JSON-…"
+              },
+              "target": {
+                "enum": [
+                  "canvas_item_content"
+                ],
+                "type": "string",
+                "description": "The declared write target to apply."
+              },
+              "surface": {
+                "type": "string",
+                "description": "Optional: the surface the target is on (the name after `on` in its line). Only needed when two open screens list the same target, or to file `surface_feedback` …"
+              }
+            },
+            "additionalProperties": false
+          },
+          "description": "Write a value into the page the user is currently looking at, through one of its declared write targets. The page itself applies the value through its own handl…"
+        }
+      }
+    ],
+    "messages": [
+      {
+        "role": "system",
+        "content": "<!--matrx:current_date-->Current date: 2026-10-11<!--matrx:/current_date-->\n\nYou are an expert at analyzing managerial communications and extracting the underly…"
+      },
+      {
+        "role": "user",
+        "content": "Here is what the manager communicated to the developer:\n\n---\nThe biggest problem we currently have with this system is very simple. It's the fact that we have a…"
+      }
+    ],
+    "reasoning_effort": "medium",
+    "max_completion_tokens": 12419
+  }
+}

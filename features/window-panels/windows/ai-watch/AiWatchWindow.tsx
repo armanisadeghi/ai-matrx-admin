@@ -290,6 +290,13 @@ function AiWatchRunView({
   }
 
   const status = liveStatus ?? record?.status ?? "loading";
+  const liveError = live?.error
+    ? (live.error.user_message ?? live.error.message ?? null)
+    : null;
+  const runError = liveError ?? record?.error ?? null;
+  // A run refused or failed before its first token has no output: show only
+  // its error, never an empty stream body ("Processing…").
+  const liveHasOutput = Boolean(live && (!liveDone || live.chunkCount > 0));
 
   return (
     <div className="flex flex-col gap-2 p-2 text-xs">
@@ -300,7 +307,7 @@ function AiWatchRunView({
         ) : null}
       </div>
       {loadError ? <ErrorNotice title="The run's record could not be read" message={loadError} /> : null}
-      {!live && record?.error ? <ErrorNotice title="The run did not finish" message={record.error} /> : null}
+      {(!live || liveDone) && runError ? <ErrorNotice title="The run did not finish" message={runError} /> : null}
 
       {isAdmin ? (
         <AdminMetrics live={live} record={record} iterations={iterations} userRequestId={userRequestId} requestId={requestId} />
@@ -328,8 +335,10 @@ function AiWatchRunView({
       </Section>
 
       <Section title="Response">
-        {requestId && live ? (
+        {requestId && live && liveHasOutput ? (
           <LiveRunDisplay requestId={requestId} variant="bare" bodyClassName="max-h-none" />
+        ) : runError && !record?.snapshots.length ? (
+          <div className="text-muted-foreground">No output</div>
         ) : record ? (
           iterations.map((it) => (
             <pre key={it.key} className="whitespace-pre-wrap break-words rounded bg-muted/40 p-2 font-mono text-[11px]">
@@ -400,9 +409,11 @@ function RequestView({
           Call {iteration ?? "?"} · {provider ?? ""} {model ?? ""}
         </div>
       ) : null}
-      {body ? (
+      {body && !parts.shape ? (
+        <Block label="Request (raw)" value={body} open />
+      ) : body ? (
         <>
-          <Block label="System / instructions" value={parts.system ?? "(none)"} open />
+          <Block label="System / instructions" value={parts.system ?? "Not set in this request"} open />
           <Block label={`Messages and inputs (${parts.messages.length})`} value={parts.messages} open />
           <Block label={`Tools offered (${parts.tools.length})`} value={parts.tools} />
           <Block label="Settings" value={parts.settings} />

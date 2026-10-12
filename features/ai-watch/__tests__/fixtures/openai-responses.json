@@ -1,0 +1,134 @@
+{
+  "source_snapshot_id": "31f1080d-182b-44e9-9378-7a6ade8205bb",
+  "request": {
+    "input": [
+      {
+        "role": "developer",
+        "content": [
+          {
+            "text": "<!--matrx:current_date-->Current date: 2026-10-11<!--matrx:/current_date-->\n\nYou help Dana Whitfield plan a trip.\n\n  Keep answers short.\n\n<org_catalog condensed…",
+            "type": "input_text"
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "text": "Where should I go in May?\n\n   Two lines,\ttabbed.",
+            "type": "input_text"
+          }
+        ]
+      }
+    ],
+    "model": "gpt-5-nano",
+    "tools": [
+      {
+        "name": "scope_system",
+        "type": "function",
+        "strict": false,
+        "parameters": {
+          "type": "object",
+          "required": [
+            "action"
+          ],
+          "properties": {
+            "action": {
+              "enum": [
+                "list_organizations",
+                "overview",
+                "expand_scope",
+                "expand_scope_type"
+              ],
+              "type": "string",
+              "description": ""
+            },
+            "offset": {
+              "type": "integer",
+              "default": 0,
+              "description": "Read actions: start char of the page. Must be at least 0."
+            },
+            "item_key": {
+              "type": "string",
+              "default": "",
+              "description": "expand_context_item: one item's key; omit for all items of the type."
+            },
+            "clearance": {
+              "enum": [
+                "public",
+                "internal",
+                "restricted",
+                "privileged"
+              ],
+              "type": "string",
+              "default": "privileged",
+              "description": "Read actions: highest sensitivity shown; items above it render withheld."
+            },
+            "max_chars": {
+              "type": "integer",
+              "default": 40000,
+              "description": "Read actions: page size. Must be at least 1, at most 40000."
+            },
+            "operations": {
+              "type": "array",
+              "default": [],
+              "description": "apply: [{op, ...}] where op is set_value (scope_key, item_key, value) | upsert_scope (scope_type_key, key, name, parent_key?) | upsert_context_item (scope_type_…"
+            },
+            "scope_slug": {
+              "type": "string",
+              "default": "",
+              "description": "Required for expand_scope."
+            },
+            "organization_id": {
+              "type": "string",
+              "default": "",
+              "description": "An organization you belong to; default is the request's organization."
+            },
+            "scope_type_slug": {
+              "type": "string",
+              "default": "",
+              "description": "Required for expand_scope_type, expand_context_item; disambiguates expand_scope."
+            },
+            "detail_variation": {
+              "enum": [
+                "children",
+                "attributes"
+              ],
+              "type": "string",
+              "default": "children",
+              "description": "expand_context_item: fields as child elements or as attributes."
+            },
+            "overview_variation": {
+              "enum": [
+                "identifiers",
+                "labels"
+              ],
+              "type": "string",
+              "default": "identifiers",
+              "description": "overview: slugs only, or with labels."
+            },
+            "foreign_key_variation": {
+              "enum": [
+                "tool_param",
+                "column_name"
+              ],
+              "type": "string",
+              "default": "tool_param",
+              "description": "Read actions: references named as apply's *_key params (tool_param) or as *_id columns (column_name)."
+            }
+          },
+          "additionalProperties": false
+        },
+        "description": "Read or edit the organization's scope system (scope types, their scopes, context items and values) in slug/key space, never UUIDs. Tier A context is injected au…"
+      }
+    ],
+    "include": [
+      "reasoning.encrypted_content"
+    ],
+    "reasoning": {
+      "effort": "minimal"
+    },
+    "prompt_cache_key": "matrx_adaf1aca18b2a651590d1b3d5e7a4f70a664fe29a844378d82b5257ca0",
+    "max_output_tokens": 64
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "source_snapshot_id": "b9d2718e-f5f7-4659-96b9-46bad366a9cd",
+  "request": {
+    "model": "grok-build-0.1",
+    "tools": [
+      "scope_system"
+    ],
+    "top_p": null,
+    "max_tokens": 64,
+    "temperature": null,
+    "tool_choice": null,
+    "message_count": 2,
+    "response_format": null,
+    "reasoning_effort": null
+  }
+}

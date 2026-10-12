@@ -1,0 +1,22 @@
+{
+  "source_snapshot_id": "8d7c9c69-1e62-4d09-ba85-3a52c51798fc",
+  "request": {
+    "model": "openai/gpt-oss-20b",
+    "messages": [
+      {
+        "role": "system",
+        "content": "<!--matrx:current_date-->Current date: 2026-10-12<!--matrx:/current_date-->\n\nYou specialize in analyzing chat conversations and extracting structured metadata f…"
+      },
+      {
+        "role": "user",
+        "content": "Please give this conversation a short sidebar title, a summary and search keywords. It was started by our agent \"Conversation Vision Extractor\" — N/A\n\nWhat I fi…"
+      }
+    ],
+    "temperature": 0.6,
+    "response_format": {
+      "type": "json_object"
+    },
+    "reasoning_effort": "low",
+    "max_completion_tokens": 2048
+  }
+}

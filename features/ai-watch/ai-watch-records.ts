@@ -175,45 +175,112 @@ export async function fetchAiWatchRuns(scope: {
   });
 }
 
-/** The parts of a provider request a person reads first. */
-export function splitProviderRequest(body: Record<string, unknown> | null): {
+export interface SplitProviderRequest {
+  /** Which request family was recognised; null means show the raw JSON. */
+  shape: "anthropic" | "gemini" | "openai-responses" | "chat-completions" | null;
   system: unknown;
   messages: unknown[];
   tools: unknown[];
   settings: Record<string, unknown>;
-} {
-  if (!body) return { system: null, messages: [], tools: [], settings: {} };
-  const {
-    system,
-    systemInstruction,
-    system_instruction,
-    messages,
-    contents,
-    input,
-    tools,
-    ...rest
-  } = body as Record<string, unknown>;
-  const allMessages = Array.isArray(messages)
-    ? messages
-    : Array.isArray(contents)
-      ? contents
-      : Array.isArray(input)
-        ? input
-        : [];
-  // OpenAI-style requests carry the system prompt as the first message(s).
-  const systemMessages = allMessages.filter(
-    (m) => obj(m)?.role === "system" || obj(m)?.role === "developer",
-  );
-  const otherMessages = allMessages.filter((m) => !systemMessages.includes(m));
-  const explicitSystem = system ?? systemInstruction ?? system_instruction ?? null;
-  return {
-    system:
-      explicitSystem ??
-      (systemMessages.length ? systemMessages.map((m) => obj(m)?.content) : null),
-    messages: otherMessages,
-    tools: Array.isArray(tools) ? tools : [],
-    settings: rest,
-  };
+  raw: Record<string, unknown> | null;
+}
+
+const dropNulls = (o: Record<string, unknown>): Record<string, unknown> =>
+  Object.fromEntries(Object.entries(o).filter(([, v]) => v !== null && v !== undefined));
+
+/** Gemini tools: function declarations flattened, plus any built-in tool switched on. */
+function geminiTools(tools: unknown): unknown[] {
+  if (!Array.isArray(tools)) return [];
+  const out: unknown[] = [];
+  for (const t of tools) {
+    const tool = obj(t);
+    if (!tool) continue;
+    const decls = tool.function_declarations ?? tool.functionDeclarations;
+    if (Array.isArray(decls)) out.push(...decls);
+    for (const [k, v] of Object.entries(tool)) {
+      if (k === "function_declarations" || k === "functionDeclarations") continue;
+      if (v !== null && v !== undefined) out.push({ [k]: v });
+    }
+  }
+  return out;
+}
+
+const isSystemRole = (m: unknown) => {
+  const role = obj(m)?.role;
+  return role === "system" || role === "developer";
+};
+
+/**
+ * The parts of a provider request a person reads first, for every request
+ * family we send: Anthropic Messages, Gemini (SDK `config` and REST
+ * `systemInstruction`/`generationConfig`), OpenAI Responses, and Chat
+ * Completions (OpenAI chat, Groq, Cerebras, xAI chat, …). A shape we do not
+ * recognise is never shown as "(none)": `shape` is null and the window shows
+ * the raw JSON.
+ */
+export function splitProviderRequest(body: Record<string, unknown> | null): SplitProviderRequest {
+  const empty = { system: null, messages: [], tools: [], settings: {} };
+  if (!body) return { shape: null, ...empty, raw: null };
+
+  // Gemini — SDK form {model, contents, config:{system_instruction, tools, …}}
+  // or REST form {contents, systemInstruction, tools, generationConfig}.
+  if (Array.isArray(body.contents)) {
+    const { contents, config, systemInstruction, system_instruction, tools, ...rest } = body;
+    const cfg = obj(config) ?? {};
+    const { system_instruction: cfgSystem, systemInstruction: cfgSystem2, tools: cfgTools, ...cfgRest } = cfg;
+    return {
+      shape: "gemini",
+      system: systemInstruction ?? system_instruction ?? cfgSystem ?? cfgSystem2 ?? null,
+      messages: contents as unknown[],
+      tools: geminiTools(tools ?? cfgTools),
+      settings: dropNulls({ ...rest, ...cfgRest }),
+      raw: body,
+    };
+  }
+
+  // OpenAI Responses — {input, instructions?, tools}; system rides as
+  // `instructions` or as developer/system items in `input`.
+  if (Array.isArray(body.input) || typeof body.input === "string") {
+    const { input, instructions, tools, ...rest } = body;
+    const items = Array.isArray(input) ? input : [{ role: "user", content: input }];
+    const systemItems = items.filter(isSystemRole);
+    return {
+      shape: "openai-responses",
+      system: instructions ?? (systemItems.length ? systemItems : null),
+      messages: items.filter((m) => !isSystemRole(m)),
+      tools: Array.isArray(tools) ? tools : [],
+      settings: dropNulls(rest),
+      raw: body,
+    };
+  }
+
+  if (Array.isArray(body.messages)) {
+    const { messages, system, tools, ...rest } = body;
+    // Anthropic Messages — top-level `system`.
+    const anthropicTools = Array.isArray(tools) && tools.some((t) => obj(t)?.input_schema !== undefined);
+    if (system !== undefined || anthropicTools) {
+      return {
+        shape: "anthropic",
+        system: system ?? null,
+        messages,
+        tools: Array.isArray(tools) ? tools : [],
+        settings: dropNulls(rest),
+        raw: body,
+      };
+    }
+    // Chat Completions — system/developer messages inside `messages`.
+    const systemMessages = messages.filter(isSystemRole);
+    return {
+      shape: "chat-completions",
+      system: systemMessages.length ? systemMessages.map((m) => obj(m)?.content) : null,
+      messages: messages.filter((m) => !isSystemRole(m)),
+      tools: Array.isArray(tools) ? tools : [],
+      settings: dropNulls(rest),
+      raw: body,
+    };
+  }
+
+  return { shape: null, ...empty, raw: body };
 }
 
 /** The response text of a recorded provider response, best effort across providers. */

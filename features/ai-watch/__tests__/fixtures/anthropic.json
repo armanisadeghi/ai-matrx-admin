@@ -1,0 +1,326 @@
+{
+  "source_snapshot_id": "af4b09e2-77f3-4f09-9482-2776b07bfc91",
+  "request": {
+    "model": "claude-sonnet-5-5",
+    "tools": [
+      {
+        "name": "web",
+        "description": "Web search and page reading.\nsearch: queries -> Brave results per query.\nread: url -> page text in a chars window from offset; result has next_offset/has_more, …",
+        "input_schema": {
+          "type": "object",
+          "required": [
+            "action"
+          ],
+          "properties": {
+            "url": {
+              "type": "string",
+              "description": "read: URL."
+            },
+            "urls": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "batch_read: 1-10 URLs."
+            },
+            "chars": {
+              "type": "integer",
+              "default": 8000,
+              "description": "read, batch_read: max chars per URL per call, 1-40000."
+            },
+            "action": {
+              "enum": [
+                "search",
+                "read",
+                "batch_read"
+              ],
+              "type": "string",
+              "description": ""
+            },
+            "offset": {
+              "type": "integer",
+              "default": 0,
+              "description": "read, batch_read: char offset (next_offset from the previous call)."
+            },
+            "queries": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "search: 1-5 queries."
+            },
+            "freshness": {
+              "type": "string",
+              "description": "search: Brave freshness: pd, pw, pm, py, or YYYY-MM-DDtoYYYY-MM-DD."
+            },
+            "summarize": {
+              "type": "boolean",
+              "default": false,
+              "description": "read: summarize the page; needs instructions."
+            },
+            "instructions": {
+              "type": "string",
+              "description": "read: what the summary should extract; required for summarize."
+            },
+            "max_content_length": {
+              "type": "integer",
+              "default": 8000,
+              "description": "Deprecated alias for chars."
+            },
+            "max_results_per_query": {
+              "type": "integer",
+              "default": 5,
+              "description": "search: results per query, 1-20."
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      {
+        "name": "research_web",
+        "description": "Deep web research: runs the queries concurrently, scrapes the top results in full, and has a research agent write a cited report following instructions. Slow; o…",
+        "input_schema": {
+          "type": "object",
+          "required": [
+            "queries",
+            "instructions"
+          ],
+          "properties": {
+            "country": {
+              "type": "string",
+              "default": "us",
+              "description": "Two-letter search locale."
+            },
+            "queries": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "maxItems": 5,
+              "minItems": 1,
+              "description": "Run concurrently; 2–4 queries from different angles work best."
+            },
+            "freshness": {
+              "enum": [
+                "pd",
+                "pw",
+                "pm",
+                "py"
+              ],
+              "type": "string",
+              "description": "Recency: past day, week, month, year."
+            },
+            "instructions": {
+              "type": "string",
+              "description": "What the report must focus on and answer."
+            },
+            "research_depth": {
+              "enum": [
+                "shallow",
+                "medium",
+                "deep",
+                "very_deep"
+              ],
+              "type": "string",
+              "default": "medium",
+              "description": "URLs scraped per query: shallow 3, medium 5, deep 8, very_deep 12."
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      {
+        "name": "load_chrome_tools",
+        "description": "Load a category of Chrome-extension tools that run inside the user's own Chrome browser via the Matrx extension (matrx-extend). ONLY works when the Chrome-exten…",
+        "input_schema": {
+          "type": "object",
+          "required": [
+            "category"
+          ],
+          "properties": {
+            "category": {
+              "enum": [
+                "core",
+                "reading",
+                "interaction",
+                "tabs"
+              ],
+              "type": "string",
+              "description": "Which category of browser tools to load. Pick the category whose tools cover the user's immediate task; you can re-call this tool with a different category late…"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      {
+        "name": "credential_login",
+        "description": "Signs in to a website with the person's saved logins; you never see a credential value. Path: open the sign-in page with cloud_browser, then auto. If auto canno…",
+        "input_schema": {
+          "type": "object",
+          "required": [
+            "action"
+          ],
+          "properties": {
+            "host": {
+              "type": "string",
+              "description": "list: exact host, e.g. \"github.com\"; matches saved logins allowing that host."
+            },
+            "kind": {
+              "enum": [
+                "secret_exposed",
+                "wrong_verdict",
+                "recipe_wrong",
+                "other"
+              ],
+              "type": "string",
+              "description": "report (required): what went wrong."
+            },
+            "notes": {
+              "type": "string",
+              "description": "propose_recipe: notes for future agents."
+            },
+            "query": {
+              "type": "string",
+              "description": "list: case-insensitive match on a saved login's name, definition key or hosts."
+            },
+            "steps": {
+              "type": "array",
+              "description": "attempt: multi-screen flow, each {fields: [declared selectors], submit, wait_for}. Exactly one of steps or submit."
+            },
+            "where": {
+              "type": "string",
+              "description": "report (required): where it appeared, never the value."
+            },
+            "action": {
+              "enum": [
+                "list",
+                "auto",
+                "discover",
+                "attempt"
+              ],
+              "type": "string",
+              "description": "auto: sign in with the saved login matching the page; try first. discover: the saved login's field names for this page. attempt: one complete explicit fill and …"
+            },
+            "expect": {
+              "type": "object",
+              "description": "auto, attempt, authenticator: outcome check {success_url_prefix, success_selector, failure_selector, challenge_selector, timeout_ms}."
+            },
+            "fields": {
+              "type": "array",
+              "description": "attempt (required): [{selector, field_key | literal, clear_first}], at least one field_key naming a Vault field; literal only for non-secret values. capture (re…"
+            },
+            "submit": {
+              "description": "attempt, authenticator (required): {kind: click|press_enter|none, selector}. propose_recipe: the submit shape that worked."
+            },
+            "verbose": {
+              "type": "boolean",
+              "description": "list: full records (allowed URLs, match mode, field names) instead of summary lines."
+            },
+            "field_map": {
+              "type": "array",
+              "description": "propose_recipe (required): the selectors that worked, [{selector, field_key, literal_key, step}]."
+            },
+            "attempt_id": {
+              "type": "string",
+              "description": "report: the attempt being reported."
+            },
+            "session_id": {
+              "type": "string",
+              "description": "Cloud Browser session. Required on the server for every action except list and report; omit in Matrx Extend (it uses its assigned tab)."
+            },
+            "description": {
+              "type": "string",
+              "description": "report: extra detail. capture: plain-language description of the account."
+            },
+            "display_name": {
+              "type": "string",
+              "description": "capture (required): name for the new saved login."
+            },
+            "provider_key": {
+              "type": "string",
+              "description": "capture, propose_recipe: known provider identifier."
+            },
+            "code_selector": {
+              "type": "string",
+              "description": "authenticator (required): selector of the one-time-code input."
+            },
+            "failure_signals": {
+              "type": "array",
+              "description": "propose_recipe: same shape; what a wrong password shows."
+            },
+            "submit_selector": {
+              "type": "string",
+              "description": "capture, propose_recipe: selector of the submit control."
+            },
+            "success_signals": {
+              "type": "array",
+              "description": "propose_recipe: [{kind, value, direction, label, weight}] proving sign-in succeeded."
+            },
+            "challenge_signals": {
+              "type": "array",
+              "description": "propose_recipe: same shape; what a verification or 2FA challenge looks like."
+            },
+            "credential_item_id": {
+              "type": "string",
+              "description": "auto, discover, attempt: a specific saved login; omit to match on the page URL. authenticator (required): the same saved login that just signed in."
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    ],
+    "system": [
+      {
+        "text": "<!--matrx:current_date-->Current date: 2026-10-12<!--matrx:/current_date-->\n\nYou are Matrx Browser Agent — an expert browser automation assistant. You help user…",
+        "type": "text",
+        "cache_control": {
+          "type": "ephemeral"
+        }
+      },
+      {
+        "text": "<turn_context source=\"platform\">\nReference material the AI Matrx platform assembled for this turn. It is part of your instructions, not part of the conversation…",
+        "type": "text"
+      }
+    ],
+    "messages": [
+      {
+        "role": "user",
+        "content": [
+          {
+            "text": "Help me with my writing",
+            "type": "text"
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "text": "I'd be happy to help with your writing. What do you need? For example, I can:\n\n- **Proofread or edit** a draft for grammar, clarity, and tone\n- **Rewrite or tig…",
+            "type": "text"
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "text": "Poecilia vandepolli is a poeciliid fish native to Aruba, Bonaire, and Curaçao. It is one of the most common fish in its range, inhabiting fresh, brackish, salt,…",
+            "type": "text",
+            "cache_control": {
+              "type": "ephemeral"
+            }
+          }
+        ]
+      }
+    ],
+    "thinking": {
+      "type": "adaptive",
+      "display": "summarized"
+    },
+    "max_tokens": 16000,
+    "output_config": {
+      "effort": "medium"
+    }
+  }
+}
