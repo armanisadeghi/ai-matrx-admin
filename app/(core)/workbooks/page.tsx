@@ -579,7 +579,7 @@ export default function WorkbooksLandingPage() {
         </BottomSheetBody>
       </BottomSheet>
       <div className="h-full overflow-y-auto scrollbar-none">
-        <div className="w-full space-y-4 px-4 pb-4 pt-[calc(var(--shell-header-h)+1rem)]">
+        <div className="w-full space-y-4 p-1.5 pt-[var(--shell-header-h)]">
           <GoogleHomeStrip
             kind="workbook"
             linked={workbooks.flatMap((wb) => {

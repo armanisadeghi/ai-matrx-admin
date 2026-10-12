@@ -27,7 +27,7 @@
  */
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { History, Loader2, Save } from "lucide-react";
 
 import {
@@ -145,6 +145,8 @@ type Props = {
    * exactly as a keystroke.
    */
   onBodyPort?: (port: DocumentBodyPort | null) => void;
+  /** The record's File menu, in the same place the workbook editor puts it (left of History). */
+  toolbarRightSlot?: ReactNode;
 };
 
 export default function DocumentEditor({
@@ -153,6 +155,7 @@ export default function DocumentEditor({
   documentName,
   collab = false,
   onBodyPort,
+  toolbarRightSlot,
 }: Props) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const apiRef = useRef<FUniver | null>(null);
@@ -575,8 +578,10 @@ export default function DocumentEditor({
               title="Save a labeled snapshot now (bypass autosave debounce)"
             >
               <Save className="size-3" />
+              <span className="hidden sm:inline">Save now</span>
             </Button>
           )}
+          {bootState === "ready" && toolbarRightSlot}
           <Button
             variant="ghost"
             size="sm"
@@ -586,6 +591,7 @@ export default function DocumentEditor({
             title="View snapshot history"
           >
             <History className="size-3" />
+            <span className="hidden sm:inline">History</span>
           </Button>
         </div>
       </div>

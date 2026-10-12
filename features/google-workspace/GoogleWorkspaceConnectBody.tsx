@@ -634,13 +634,14 @@ function GoogleWorkspaceConnectBodyContent({
             </Button>
 
             <Button
-              variant="outline"
+              variant="quiet"
               onClick={connectInThisTab}
               disabled={authorizationActionDisabled}
+              className="self-start"
             >
               {busy === "connect-redirect"
                 ? "Opening Google…"
-                : "Continue with Google in this tab"}
+                : "Use this tab instead"}
             </Button>
           </div>
         ) : (

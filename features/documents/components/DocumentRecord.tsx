@@ -466,7 +466,6 @@ export function DocumentRecord({
         variant="ghost"
         size="sm"
       />
-      {fileMenu}
     </div>
   ) : null;
 
@@ -510,6 +509,7 @@ export function DocumentRecord({
               editable={canEdit}
               collab
               onBodyPort={lendBodyPort}
+              toolbarRightSlot={fileMenu}
             />
             </div>
           ) : (

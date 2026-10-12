@@ -19,6 +19,7 @@ export function DocumentPageReferenceCopyButton({
   return (
     <CompoundReferenceCopyButton
       size="sm"
+      visibleLabel="Page reference"
       title={`Copy reference for page ${pageIndex}`}
       toastLabel={
         documentName
