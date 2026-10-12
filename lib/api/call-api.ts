@@ -611,7 +611,7 @@ export function resolveBaseUrl(
  * so a request whose organization one of those seams JUST resolved uses it.
  */
 /** GET and HEAD are reads by HTTP contract; every other method is a write. */
-function isReadMethod(method: string): boolean {
+export function isReadMethod(method: string): boolean {
   const upper = method.toUpperCase();
   return upper === "GET" || upper === "HEAD";
 }
@@ -620,7 +620,7 @@ function isReadMethod(method: string): boolean {
  * True when, after the platform's bounded wait for a restore in flight, no
  * organization is selected. Never picks one; only answers the question.
  */
-async function readHasNoOrganization(getState: () => RootState): Promise<boolean> {
+export async function readHasNoOrganization(getState: () => RootState): Promise<boolean> {
   // THE ADMIN SEAT binds the platform tenant (lib/api/admin-lane.ts).
   if (adminLaneOrganizationId()) return false;
   if (selectOrganizationId(getState())) return false;
@@ -923,7 +923,9 @@ export function callApi<
         : isGuestLane
           ? requireOrganizationContext(null, guestOverrideOrganizationId)
           : await ensureOrganizationContextForCall(
-              state.appContext?.organization_id,
+              // Fresh, not the `state` captured before the bounded wait: a restore that lands
+              // DURING it selects the organization this read must carry (a stale null refused it).
+              getState().appContext?.organization_id,
               config.scopeOverrides?.organization_id,
               config.method,
             );

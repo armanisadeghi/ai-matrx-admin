@@ -218,15 +218,15 @@ describe("createMatrxTransport (global, callApi parity)", () => {
     await expect(settled).resolves.toBe("rejected");
   });
 
-  it("refuses a READ without an organization context (callApi parity; a write holds on ensureOrgId instead)", async () => {
+  it("a READ with no organization selected is sent naming none - never refused (access law; callApi's rule)", async () => {
+    const spy = jest
+      .spyOn(globalThis, "fetch")
+      .mockImplementation(async () => new Response("{}", { status: 200 }));
     const transport = createMatrxTransport(stateOf({ organizationId: null }));
-    await expect(
-      transport.fetch("/ai/agents/a-1", {
-        method: "GET",
-        headers: {},
-      }),
-    ).rejects.toMatchObject({ code: "organization_context_required" });
-    expect(mockedFetch).not.toHaveBeenCalled();
+    await transport.fetch("/cms/html-pages", { method: "GET", headers: {} });
+    expect(spy).toHaveBeenCalledTimes(1);
+    const init = spy.mock.calls[0]?.[1] as RequestInit | undefined;
+    expect(new Headers(init?.headers).get("x-organization-id")).toBeNull();
   });
 
   // An Applet job's run carries its own org (withRunOrganization). With no

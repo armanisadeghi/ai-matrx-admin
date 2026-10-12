@@ -42,6 +42,8 @@ import {
 } from "@ai-matrx/agents/matrx";
 import {
   ensureOrganizationContextForCall,
+  isReadMethod,
+  readHasNoOrganization,
   resolveBaseUrl,
   waitForAuthReady,
   type ApiCallError,
@@ -204,7 +206,17 @@ export function createMatrxTransport(
       const callOrganizationId =
         readCallOrganizationId(request.headers) ?? options.organizationId;
       let organizationId: string | null = null;
-      if (isAuthenticated) {
+      // A READ IS NEVER REFUSED FOR A MISSING ORGANIZATION (access law; callApi's rule, one rule):
+      // the person's access decides what a read returns, never the selection. With none selected after
+      // the bounded wait for a restore, the read is sent naming none.
+      if (
+        isAuthenticated &&
+        !callOrganizationId &&
+        isReadMethod(request.method) &&
+        (await readHasNoOrganization(getState))
+      ) {
+        organizationId = null;
+      } else if (isAuthenticated) {
         organizationId = await ensureOrganizationContextForCall(
           hasAppContext ? selectOrganizationId(state) : undefined,
           callOrganizationId,

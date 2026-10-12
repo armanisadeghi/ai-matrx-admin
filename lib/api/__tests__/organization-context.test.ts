@@ -32,6 +32,22 @@ jest.mock("@/lib/organizations/ensureOrgId", () => ({
   },
 }));
 
+// The bounded wait for an organization restore can be made to land a selection mid-call.
+const mockAdmission: { during: (() => void) | null } = { during: null };
+jest.mock("@/lib/api/organization-admission", () => {
+  const actual = jest.requireActual("@/lib/api/organization-admission");
+  return {
+    ...actual,
+    waitForOrganizationAdmission: async (...args: unknown[]) => {
+      if (mockAdmission.during) {
+        mockAdmission.during();
+        return "ready";
+      }
+      return actual.waitForOrganizationAdmission(...args);
+    },
+  };
+});
+
 const ORGANIZATION_ID = "5dc930e9-bd65-44a1-8369-af773f6e1a5b";
 const OTHER_ORGANIZATION_ID = "39c38960-d30c-4840-b0c1-c9960de95582";
 
@@ -216,6 +232,36 @@ describe("callApi organization context", () => {
     const headers = (init.headers ?? {}) as Record<string, string>;
     expect(headers["X-Organization-Id"]).toBeUndefined();
     expect(String(url)).not.toContain(ORGANIZATION_ID);
+  });
+
+  // The page that listed a person's HTML pages was refused with "Select an organization": the
+  // restore landed an organization DURING the bounded wait, and the call then carried the
+  // organization it had read BEFORE the wait (null). A read takes the selection as it is NOW.
+  it("a READ whose organization is restored during the wait carries that organization, never a refusal", async () => {
+    const fetchMock = jest.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      statusText: "OK",
+      headers: new Headers(),
+      json: async () => [],
+    } as Response);
+    global.fetch = fetchMock;
+    let state = requestState(null);
+    mockAdmission.during = () => {
+      state = requestState(ORGANIZATION_ID);
+    };
+    try {
+      const result = await callApi({
+        path: "/cms/html-pages",
+        method: "GET",
+        _testOverrides: { forceBaseUrl: "https://server.test" },
+      })(jest.fn(), () => state, undefined);
+      expect(result.error).toBeUndefined();
+      const [, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+      expect((init.headers as Record<string, string>)["X-Organization-Id"]).toBe(ORGANIZATION_ID);
+    } finally {
+      mockAdmission.during = null;
+    }
   });
 
   // A POST that is a READ on an organization-free admin route (the mandate
