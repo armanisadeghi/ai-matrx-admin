@@ -26,6 +26,7 @@ import { LiveCrawlFeed } from "@/features/marketing/components/crawls/LiveCrawlF
 import { CrawlScheduleCard } from "@/features/marketing/components/crawls/CrawlScheduleCard";
 import {
   cancelCrawl,
+  CrawlAlreadyRunningError,
   mergeCrawlLiveEvents,
   startSiteCrawl,
   type CrawlLiveEvent,
@@ -279,6 +280,13 @@ export function NewCrawlWorkspace() {
         toast.error("Crawl failed");
       }
     } catch (runError) {
+      if (runError instanceof CrawlAlreadyRunningError) {
+        // The site's crawl lane is held by a live run: that is the crawl the person wants, not a failure.
+        setLocalStatus("idle");
+        crawlActivity.refresh();
+        toast.info("A crawl is already running for this site");
+        return;
+      }
       if (isStreamTransportLost(runError)) {
         // Only reachable when the run could not be followed (no site id on
         // the response). The crawl is still running: hand the status to the
