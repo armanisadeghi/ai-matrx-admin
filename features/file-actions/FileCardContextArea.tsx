@@ -29,7 +29,20 @@ export function FileCardContextArea({
       onContextMenu={(event) => {
         if (event.shiftKey) return;
         event.preventDefault();
-        setOpen(true);
+        // The menu drops from the card's ⋯ and can land UNDER the pointer; the right button's own
+        // release would then press an item (Radix items act on pointer-up) and close it again.
+        // So while the button is still down, open on its release.
+        if ((event.buttons & 2) === 0) {
+          setOpen(true);
+          return;
+        }
+        const release = () => {
+          window.removeEventListener("pointerup", release, true);
+          window.removeEventListener("mouseup", release, true);
+          setTimeout(() => setOpen(true), 0);
+        };
+        window.addEventListener("pointerup", release, true);
+        window.addEventListener("mouseup", release, true);
       }}
     >
       {children(menu({ open, onOpenChange: setOpen }))}
