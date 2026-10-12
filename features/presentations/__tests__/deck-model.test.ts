@@ -58,6 +58,9 @@ describe("deckReducer", () => {
     expect(titles(next)).toEqual(["b", "c", "a"]);
     expect(next.current).toBe(2);
     expect(deckReducer(st(deckOf("a", "b")), { type: "moveSlide", from: 0, to: 9 }).deck.slides[1]!.title).toBe("a");
+    // Moving another slide across the selected one keeps the selection on the same slide.
+    const across = deckReducer(st(deckOf("a", "b", "c", "d"), 1), { type: "moveSlide", from: 3, to: 0 });
+    expect(across.deck.slides[across.current]!.title).toBe("b");
   });
   it("edits a field in place by path, including nested stats and columns", () => {
     let s = st(deckOf("a"));

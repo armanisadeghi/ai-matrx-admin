@@ -36,7 +36,9 @@ export function PaperSlide({
   deck,
   slide,
   className,
-  fullScreen = false,
+  // The stage is always 960×540, so "full screen" type IS the slide's real size: the editor, the
+  // rail, the cards and Present all show the same slide (WYSIWYG), only scaled.
+  fullScreen = true,
   children,
 }: {
   deck: Pick<Deck, "theme">;

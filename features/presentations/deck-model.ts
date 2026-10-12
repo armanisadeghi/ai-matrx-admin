@@ -239,7 +239,9 @@ export function deckReducer(state: DeckState, action: DeckAction): DeckState {
       const slides = deck.slides.slice();
       const [moved] = slides.splice(from, 1);
       slides.splice(to, 0, moved!);
-      const cur = state.current === from ? to : state.current;
+      // The selection stays on the slide it was on, wherever the move put it.
+      const selected = deck.slides[state.current];
+      const cur = selected ? slides.indexOf(selected) : to;
       return { deck: { ...deck, slides }, current: cur };
     }
     case "setLayout":

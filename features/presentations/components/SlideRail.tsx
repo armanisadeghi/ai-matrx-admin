@@ -78,7 +78,9 @@ function RailItem({
             {...attributes}
             {...listeners}
           >
-            <PaperSlide deck={deck} slide={slide} className="pointer-events-none absolute inset-0" />
+            <span className="pointer-events-none absolute inset-0">
+              <PaperSlide deck={deck} slide={slide} className="h-full w-full" />
+            </span>
           </button>
         </div>
       </ContextMenuTrigger>
