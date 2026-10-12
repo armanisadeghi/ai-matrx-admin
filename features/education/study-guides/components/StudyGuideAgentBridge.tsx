@@ -20,7 +20,7 @@ import { useEffect, type MutableRefObject } from "react";
 import { useSidecar } from "@/features/rich-document/annotations/AnnotationSidecar";
 import { addComment, createHighlight } from "@/features/rich-document/annotations/service";
 import { newRequestId } from "@/features/rich-document/annotations/useAnnotationSidecar";
-import type { ResolvedItem } from "@/features/rich-document/annotations/types";
+import { commentThreadsOf, personalAnnotationsOf } from "@/features/rich-document/annotations/agent-snapshot";
 import { collectionWriteHandlers } from "@ai-matrx/chat/surfaces/runtime/collection-write-targets";
 import { useSurfaceWriteHandlers } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
 import { refuseSurfaceWrite } from "@ai-matrx/chat/surfaces/runtime/surface-writeback";
@@ -49,43 +49,6 @@ export interface StudyGuideAnnotationSnapshot {
 
 const short = (text: string, max = 40) => (text.length > max ? `${text.slice(0, max - 1)}…` : text);
 
-function personalOf(items: readonly ResolvedItem[]): PersonalAnnotationScope[] {
-  const seen = new Set<string>();
-  const out: PersonalAnnotationScope[] = [];
-  for (const item of items) {
-    if ((item.kind !== "highlight" && item.kind !== "note") || item.saveState !== "confirmed" || !item.annotationDocumentId) continue;
-    if (seen.has(item.annotationDocumentId)) continue;
-    seen.add(item.annotationDocumentId);
-    out.push({
-      id: item.annotationDocumentId,
-      kind: item.anchor ? "highlight" : "note",
-      quote: item.anchor?.exact ?? null,
-      note: item.body,
-      color: item.color ?? "yellow",
-      attached: !item.anchor || item.resolution?.status !== "orphaned",
-      created_at: item.createdAt,
-    });
-  }
-  return out;
-}
-
-function commentsOf(items: readonly ResolvedItem[]): GuideCommentScope[] {
-  return items
-    .filter((item) => (item.kind === "comment" || item.kind === "suggestion") && item.saveState === "confirmed" && item.commentId)
-    .map((item) => ({
-      id: item.commentId!,
-      quote: item.anchor?.exact ?? null,
-      body: item.body,
-      suggested_text: item.suggestedText ?? null,
-      author: item.author.name,
-      mine: item.mine,
-      resolved: Boolean(item.resolvedAt),
-      attached: !item.anchor || item.resolution?.status !== "orphaned",
-      created_at: item.createdAt,
-      replies: item.replies.map((reply) => ({ id: reply.id, body: reply.body, author: reply.author.name, mine: reply.mine, created_at: reply.createdAt })),
-    }));
-}
-
 export function StudyGuideAgentBridge({
   snapshotRef,
   isEditing,
@@ -98,8 +61,8 @@ export function StudyGuideAgentBridge({
   const { items, loading, error } = api.state;
 
   // Publish for getScope. Only a completed read reports lists.
-  const personal = personalOf(items);
-  const comments = commentsOf(items);
+  const personal = personalAnnotationsOf(items);
+  const comments = commentThreadsOf(items);
   useEffect(() => {
     snapshotRef.current = loading ? {} : error ? { error } : { personal, comments };
   });

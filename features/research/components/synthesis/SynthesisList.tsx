@@ -2,15 +2,16 @@
 
 import { readOf } from "@ai-matrx/design-system";
 import { useState, useMemo } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import type { Layout } from "react-resizable-panels";
+import { Badge as StatusBadge } from "@ai-matrx/design-system/controls";
+import { ResearchRecordReader, type ResearchReaderRecord } from "../reader/ResearchRecordReader";
 import {
   Layers,
-  ChevronDown,
-  ChevronUp,
   RefreshCw,
   Loader2,
   AlertCircle,
 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@ai-matrx/design-system";
 import { cn } from "@/lib/utils";
 import { useTopicContext, useStreamDebug } from "../../context/ResearchContext";
@@ -30,7 +31,6 @@ import type { ResearchSynthesis, ResearchDataEvent } from "../../types";
 import { idMatchesQuery } from "@ai-matrx/kit/search-scoring";
 import { RichContent } from "@ai-matrx/rich-content/levels/RichContent";
 import { AnswerValueView } from "@/components/official/structured-value/AnswerValueView";
-import { RichDocumentActions } from "@ai-matrx/rich-content/rich-document/RichDocumentActions";
 import { buildApplicationScopeFromMenuContext } from "@ai-matrx/context-menu/engine";
 import {
   normalizeSynthesisScope,
@@ -85,117 +85,52 @@ const structuredToMarkdown = (data: unknown): string => {
   }
 };
 
-function SynthesisCard({
-  synthesis,
-  label,
-}: {
-  synthesis: ResearchSynthesis;
-  label: string;
-}) {
-  const [expanded, setExpanded] = useState(false);
-  const { topic, progress } = useTopicContext();
+function synthesisKind(s: ResearchSynthesis): string {
+  return normalizeSynthesisScope(s.scope) === "topic" ? "topic report" : "keyword synthesis";
+}
 
-  // Surface agent context (matrx-user/research) — read-only over the displayed
-  // synthesis so a right-click offers agent actions on what the user reads.
-  const synthesisBody = hasText(synthesis.result)
-    ? synthesis.result
-    : synthesis.result_structured
-      ? structuredToMarkdown(synthesis.result_structured)
-      : "";
-  const synthesisContextData = buildResearchContextData({
-    topic,
-    progress,
-    primaryText: synthesisBody,
-    synthesisText: synthesisBody,
-    displayTitle: label,
-  });
-  // Plain fn (React Compiler memoizes) — reads the live DOM selection at click.
-  const getSynthesisApplicationScope = () => {
-    const selectedText =
-      typeof window !== "undefined"
-        ? (window.getSelection()?.toString() ?? "")
-        : "";
-    return buildApplicationScopeFromMenuContext({
-      selectedText,
-      selectionRange: null,
-      contextData: synthesisContextData,
-    });
-  };
+const STATUS_TONE: Record<string, "success" | "warning" | "destructive" | "neutral"> = {
+  complete: "success",
+  success: "success",
+  pending: "warning",
+  error: "destructive",
+  failed: "destructive",
+};
 
-  const statusColors: Record<string, string> = {
-    complete:
-      "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
-    success:
-      "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
-    pending:
-      "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400",
-    error: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
-    failed: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
-  };
-
+/** The selected synthesis's own row: identity, status, version, model, its copy pair. */
+function SynthesisHeader({ synthesis, label }: { synthesis: ResearchSynthesis; label: string }) {
+  const { progress } = useTopicContext();
   const kpis = researchKpis(progress, null);
-
   return (
-    <div className="group/synthesis rounded-xl border border-border/50 bg-card/60 backdrop-blur-sm overflow-hidden">
-      <div className="flex items-center">
-      <button
-        onClick={() => setExpanded((v) => !v)}
-        className="flex-1 min-w-0 flex items-center gap-2.5 px-3 py-2 text-left hover:bg-accent/30 transition-colors min-h-[44px]"
-      >
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-1.5 flex-wrap">
-            <span className="type-secondary font-semibold truncate">{label}</span>
-            <Badge
-              variant="secondary"
-              className={cn(
-                "text-[10px] font-normal capitalize",
-                statusColors[synthesis.status] ?? "",
-              )}
-            >
-              {synthesis.status}
-            </Badge>
-            <span className="type-meta text-muted-foreground capitalize">
-              {synthesis.scope}
-            </span>
+    <div className="mb-3 space-y-2">
+      <div className="flex items-center gap-2">
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-1.5">
+            <h1 className="truncate text-lg font-semibold tracking-tight text-foreground">{label}</h1>
+            <StatusBadge tone={STATUS_TONE[synthesis.status] ?? "neutral"}>{synthesis.status}</StatusBadge>
           </div>
-          <p className="type-meta text-muted-foreground mt-0.5">
-            {synthesis.created_at
-              ? new Date(synthesis.created_at).toLocaleDateString()
-              : "Unknown date"}
-            {synthesis.capture_version != null
-              ? ` · v${synthesis.capture_version}`
-              : null}
+          <p className="type-meta mt-0.5 text-muted-foreground">
+            <span className="capitalize">{synthesisKind(synthesis)}</span>
+            {" · "}
+            {synthesis.created_at ? new Date(synthesis.created_at).toLocaleDateString() : "Unknown date"}
+            {synthesis.capture_version != null ? ` · v${synthesis.capture_version}` : null}
             {synthesis.model_id ? (
               <span className="ml-1 inline-flex align-middle">
                 ·
-                <AiModelRef
-                  modelId={synthesis.model_id}
-                  showIcon={false}
-                  disableNavigation
-                  className="ml-1"
-                />
+                <AiModelRef modelId={synthesis.model_id} showIcon={false} disableNavigation className="ml-1" />
               </span>
             ) : null}
           </p>
         </div>
-        {expanded ? (
-          <ChevronUp className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-        ) : (
-          <ChevronDown className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-        )}
-      </button>
-        {/* Record pair — sibling of the toggle, never nested inside it. */}
         <CopyButtons
           size="icon"
-          className="pr-2 opacity-0 transition-opacity group-hover/synthesis:opacity-100 focus-within:opacity-100"
           label={`Synthesis — ${label}`}
           human={() => synthesisSummary(synthesis)}
           agent={() => ({
             kind: "research-synthesis",
             location: researchLocation("Synthesis"),
             description: `A single research synthesis (${synthesis.scope}) as rendered on the synthesis page.`,
-            // Full result, never the 20k display clip — the card truncates for
-            // the screen, the payload must not lie to the agent.
+            // Full result, never a display clip — the payload must not lie to the agent.
             data: { synthesis, page_kpis: kpis },
             summary: synthesisSummary(synthesis),
             attributes: {
@@ -210,100 +145,126 @@ function SynthesisCard({
           json={() => synthesis}
         />
       </div>
-
-      {expanded && (
-        <div className="border-t border-border/50 px-3 py-3">
-          {hasText(synthesis.result) ? (
-            <div className="space-y-2">
-              {synthesis.status === "failed" && (
-                <StoppedEarlyNote
-                  reason={synthesis.error || "Synthesis stopped early."}
-                />
-              )}
-              <NonEditableContextMenu
-                {...RESEARCH_CONTEXT_MENU_PROPS}
-                getApplicationScope={getSynthesisApplicationScope}
-                contextData={synthesisContextData}
-              >
-                <div>
-                  <RichContent level="full" imagePolicy="ai" source={synthesis.result} />
-                </div>
-              </NonEditableContextMenu>
-              <div className="flex justify-end">
-                <RichDocumentActions
-                  content={synthesis.result}
-                  source={{ type: "raw", title: label }}
-                  actions={{ metadata: {
-                    synthesisId: synthesis.id,
-                    scope: synthesis.scope,
-                    version: synthesis.capture_version,
-                    model_id: synthesis.model_id ?? undefined,
-                    keyword_id: synthesis.keyword_id ?? undefined,
-                  } }}
-                />
-              </div>
-            </div>
-          ) : synthesis.result_structured ? (
-            // Completed with structured-only output — surface it honestly
-            // rather than showing nothing for a paid-for call.
-            <div>
-              {synthesis.status === "failed" && (
-                <StoppedEarlyNote
-                  reason={synthesis.error || "Synthesis stopped early."}
-                />
-              )}
-              <NonEditableContextMenu
-                {...RESEARCH_CONTEXT_MENU_PROPS}
-                getApplicationScope={getSynthesisApplicationScope}
-                contextData={synthesisContextData}
-              >
-                <div>
-                  <AnswerValueView value={synthesis.result_structured} />
-                </div>
-              </NonEditableContextMenu>
-            </div>
-          ) : synthesis.error ? (
-            // No content at all + an error → a real failure.
-            <div className="flex items-start gap-2 rounded-lg bg-destructive/10 border border-destructive/20 px-2.5 py-1.5 type-secondary text-destructive-ink">
-              <AlertCircle className="h-3.5 w-3.5 mt-0.5 shrink-0" />
-              {synthesis.error}
-              <ErrorAlchemyMenu error={synthesis.error} />
-            </div>
-          ) : isTerminalStatus(synthesis.status) ? (
-            // Terminal but empty — be explicit instead of an endless spinner.
-            <div className="flex items-start gap-2 rounded-lg bg-amber-500/10 border border-amber-500/20 px-2.5 py-2 type-secondary text-amber-700 dark:text-amber-400">
-              <AlertCircle className="h-3.5 w-3.5 mt-0.5 shrink-0" />
-              <span>
-                This synthesis completed but produced no text output. Re-run the
-                synthesis to regenerate it.
-              </span>
-            </div>
-          ) : (
-            <div className="flex items-center gap-2 py-3 type-secondary text-muted-foreground">
-              <Loader2 className="h-3 w-3 animate-spin" />
-              Processing...
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Superseded versions. A rebuild flips the old row's `is_current` and
-          inserts a new version — nothing is destroyed. Showing them is what
-          makes "your previous version is kept" a claim the user can verify. */}
-      {expanded && (
-        <SynthesisVersionHistory
-          topicId={synthesis.topic_id}
-          scope={synthesis.scope}
-          keywordId={synthesis.keyword_id ?? undefined}
-          label={synthesis.keyword_id ? "keyword synthesis" : "topic report"}
-        />
+      {synthesis.status === "failed" && hasText(synthesis.result) && (
+        <StoppedEarlyNote reason={synthesis.error || "Synthesis stopped early."} />
       )}
     </div>
   );
 }
 
-export default function SynthesisList() {
+/** A selected synthesis with no text to read: structured output, a failure, empty, or still running. */
+function SynthesisWithoutText({ synthesis, label }: { synthesis: ResearchSynthesis; label: string }) {
+  const { topic, progress } = useTopicContext();
+  if (synthesis.result_structured) {
+    // Completed with structured-only output — surface it honestly rather than
+    // showing nothing for a paid-for call.
+    const contextData = buildResearchContextData({
+      topic,
+      progress,
+      primaryText: structuredToMarkdown(synthesis.result_structured),
+      synthesisText: structuredToMarkdown(synthesis.result_structured),
+      displayTitle: label,
+    });
+    return (
+      <div>
+        {synthesis.status === "failed" && <StoppedEarlyNote reason={synthesis.error || "Synthesis stopped early."} />}
+        <NonEditableContextMenu
+          {...RESEARCH_CONTEXT_MENU_PROPS}
+          getApplicationScope={() =>
+            buildApplicationScopeFromMenuContext({
+              selectedText: typeof window !== "undefined" ? (window.getSelection()?.toString() ?? "") : "",
+              selectionRange: null,
+              contextData,
+            })
+          }
+          contextData={contextData}
+        >
+          <div>
+            <AnswerValueView value={synthesis.result_structured} />
+          </div>
+        </NonEditableContextMenu>
+      </div>
+    );
+  }
+  if (synthesis.error) {
+    // No content at all + an error → a real failure.
+    return (
+      <div className="flex items-start gap-2 rounded-lg border border-destructive/20 bg-destructive/10 px-2.5 py-1.5 type-secondary text-destructive-ink">
+        <AlertCircle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+        {synthesis.error}
+        <ErrorAlchemyMenu error={synthesis.error} />
+      </div>
+    );
+  }
+  if (isTerminalStatus(synthesis.status)) {
+    // Terminal but empty — be explicit instead of an endless spinner.
+    return (
+      <div className="flex items-start gap-2 rounded-lg border border-amber-500/20 bg-amber-500/10 px-2.5 py-2 type-secondary text-amber-700 dark:text-amber-400">
+        <AlertCircle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+        <span>This synthesis finished with no text. Run it again to regenerate it.</span>
+      </div>
+    );
+  }
+  return (
+    <div className="flex items-center gap-2 py-3 type-secondary text-muted-foreground">
+      <Loader2 className="h-3 w-3 animate-spin" />
+      Processing...
+    </div>
+  );
+}
+
+/** The left column's list of syntheses, grouped like the old page's sections. */
+function SynthesisNavigator({
+  groups,
+  selectedId,
+  onSelect,
+}: {
+  groups: { title: string; items: { synthesis: ResearchSynthesis; label: string }[] }[];
+  selectedId: string | null;
+  onSelect: (id: string) => void;
+}) {
+  return (
+    <nav aria-label="Syntheses" className="mb-2 grid gap-2">
+      {groups.filter((g) => g.items.length > 0).map((group) => (
+        <section key={group.title}>
+          <p className="flex items-center gap-1.5 px-1.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+            <Layers className="h-3 w-3" aria-hidden />
+            {group.title}
+            <span className="font-normal">{group.items.length}</span>
+          </p>
+          <ul className="grid list-none gap-0.5 p-0">
+            {group.items.map(({ synthesis, label }) => (
+              <li key={synthesis.id}>
+                <button
+                  type="button"
+                  onClick={() => onSelect(synthesis.id)}
+                  aria-current={synthesis.id === selectedId ? "true" : undefined}
+                  className={cn(
+                    "w-full rounded-md px-2 py-1.5 text-left text-sm transition-colors",
+                    synthesis.id === selectedId ? "bg-primary/10 text-primary-ink" : "hover:bg-accent",
+                  )}
+                >
+                  <span className="block truncate font-medium">{label}</span>
+                  <span className="block truncate text-[11px] text-muted-foreground">
+                    {synthesis.status}
+                    {synthesis.capture_version != null ? ` · v${synthesis.capture_version}` : ""}
+                    {synthesis.created_at ? ` · ${new Date(synthesis.created_at).toLocaleDateString()}` : ""}
+                  </span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ))}
+    </nav>
+  );
+}
+
+export default function SynthesisList({ defaultLayout }: { defaultLayout?: Layout }) {
   const { topicId, progress, refreshProgress } = useTopicContext();
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   // Shared ledger — never re-derived locally (see `readiness.ts`).
   const reportStale = deriveReadiness(progress).report.readiness === "stale";
   const api = useResearchApi();
@@ -662,9 +623,136 @@ export default function SynthesisList() {
     </>
   );
 
+  // ── The reader: one synthesis open at a time (URL ?record=<id>) ──────────
+  const groups = [
+    { title: "Topic Report", items: topicSyntheses.map((s) => ({ synthesis: s, label: "Topic Report" })) },
+    { title: "Keyword Syntheses", items: keywordSyntheses.map((s) => ({ synthesis: s, label: getKeywordLabel(s.keyword_id) })) },
+  ];
+  const ordered = groups.flatMap((g) => g.items);
+  const requested = searchParams.get("record");
+  const selected =
+    ordered.find((item) => item.synthesis.id === requested) ??
+    ordered.find((item) => item.synthesis.is_current && hasText(item.synthesis.result)) ??
+    ordered[0] ??
+    null;
+  const selectSynthesis = (id: string) => {
+    const next = new URLSearchParams(searchParams.toString());
+    next.set("record", id);
+    router.replace(`${pathname}?${next.toString()}`, { scroll: false });
+  };
+  const readerRecord: ResearchReaderRecord | null =
+    selected && hasText(selected.synthesis.result)
+      ? {
+          type: "research_synthesis",
+          id: selected.synthesis.id,
+          title: selected.label,
+          version: selected.synthesis.capture_version ?? 1,
+          kind: synthesisKind(selected.synthesis),
+          body: selected.synthesis.result,
+          href: `/research/topics/${topicId}/synthesis?record=${selected.synthesis.id}`,
+        }
+      : null;
+
+  const topNotices = (
+    <>
+      {/* The topic report predates the newest keyword synthesis — it was
+          written without that material. `/run` will NOT fix this on its own
+          (aidream research/service.py:2014 refuses a second topic synthesis
+          once one exists), so the choice has to be offered here explicitly.
+          Both options preserve the current report as a previous version. */}
+      {reportStale && (
+        <div className="mb-3 flex flex-wrap items-center gap-2 rounded-xl border border-amber-500/35 bg-amber-500/[0.05] p-2.5">
+          <AlertCircle className="h-3.5 w-3.5 shrink-0 text-amber-600 dark:text-amber-400" />
+          <p className="min-w-0 flex-1 type-meta leading-snug text-muted-foreground">
+            <span className="font-medium text-foreground">Topic report out of date</span>{" "}
+            · open comments go to the writer
+          </p>
+          <div className="flex shrink-0 items-center gap-1.5">
+            <button
+              type="button"
+              onClick={() => void handleRunTopicSynthesis("rebuild")}
+              disabled={stream.isStreaming}
+              className="inline-flex items-center gap-1 h-7 px-2.5 rounded-full matrx-glass-card text-[11px] font-medium text-foreground/80 hover:text-foreground disabled:opacity-40 transition-colors"
+            >
+              Rebuild
+            </button>
+            <button
+              type="button"
+              onClick={() => void handleRunTopicSynthesis("update")}
+              disabled={stream.isStreaming}
+              className="inline-flex items-center gap-1.5 h-7 px-3 rounded-full bg-primary text-primary-foreground text-[11px] font-medium hover:bg-primary/90 disabled:opacity-40 transition-all"
+            >
+              {stream.isStreaming && <Loader2 className="h-3 w-3 animate-spin" />}
+              Update
+            </button>
+          </div>
+        </div>
+      )}
+      {/* Live streaming synthesis — shown while the writer works */}
+      {stream.isStreaming && (streamingText || streamingLabel) && (
+        <div className="mb-3 overflow-hidden rounded-xl border border-primary/30 bg-card/60">
+          <div className="flex items-center gap-2 border-b border-border px-3 py-2">
+            <Loader2 className="h-3.5 w-3.5 shrink-0 animate-spin text-primary" />
+            <span className="type-secondary font-medium text-primary">
+              {streamingLabel ? `Synthesizing ${streamingLabel}…` : "Synthesizing…"}
+            </span>
+          </div>
+          {streamingText && (
+            <div className="px-3 py-3">
+              <RichContent level="full" imagePolicy="ai" source={streamingText} isStreaming />
+            </div>
+          )}
+        </div>
+      )}
+      {synthError && synthList.length > 0 && (
+        <StaleDataNotice hasData what="this topic's syntheses" onRetry={refetchSyntheses} retrying={synthLoading} detail={synthError} />
+      )}
+    </>
+  );
+
+  const placeholder = synthLoading ? (
+    <div className="space-y-3">
+      {Array.from({ length: 4 }).map((_, i) => (
+        <Skeleton key={i} className="h-14 rounded-xl" />
+      ))}
+    </div>
+  ) : synthError && filtered.length === 0 ? (
+    <ReadFailure error={synthError} what="this topic's syntheses" onRetry={refetchSyntheses} />
+  ) : selected ? (
+    <>
+      <SynthesisHeader synthesis={selected.synthesis} label={selected.label} />
+      <SynthesisWithoutText synthesis={selected.synthesis} label={selected.label} />
+    </>
+  ) : stream.isStreaming ? null : (
+    <div className="flex min-h-[280px] flex-col items-center justify-center gap-3 px-4 text-center">
+      <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/8">
+        <Layers className="h-6 w-6 text-primary/40" />
+      </div>
+      <div>
+        <p className="type-secondary font-medium text-foreground/70">{synthList.length === 0 ? "No syntheses yet" : "No matches"}</p>
+        <p className="type-meta mt-1 max-w-[240px] text-muted-foreground">
+          {synthList.length === 0 ? "Turn your sources and analyses into one report." : "Try other filters or search."}
+        </p>
+      </div>
+      {synthList.length === 0 && (
+        <button
+          onClick={() => void handleRunTopicSynthesis("initial")}
+          disabled={stream.isStreaming}
+          className="inline-flex min-h-[44px] items-center gap-1.5 h-8 px-4 rounded-full text-xs font-medium bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-40 transition-all"
+        >
+          {stream.isStreaming ? <Loader2 className="h-3 w-3 animate-spin" /> : <Layers className="h-3 w-3" />}
+          Run Synthesis
+        </button>
+      )}
+    </div>
+  );
+
   return (
-    <div className="h-full flex flex-col overflow-hidden">
-      <div className="flex-shrink-0 px-3 sm:px-4 pt-3 pb-2">
+    <ResearchRecordReader
+      groupKey="research-synthesis-reader"
+      defaultLayout={defaultLayout}
+      record={readerRecord}
+      toolbar={
         <ResearchFilterBar
           title="Synthesis"
           count={`${filtered.length}/${synthList.length}`}
@@ -675,164 +763,36 @@ export default function SynthesisList() {
           searchPlaceholder="Search content, keywords..."
           trailing={copyControls}
         />
-      </div>
-
-      <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-4">
-        {/* The topic report predates the newest keyword synthesis — it was
-            written without that material. `/run` will NOT fix this on its own
-            (aidream research/service.py:2014 refuses a second topic synthesis
-            once one exists), so the choice has to be offered here explicitly.
-            Both options preserve the current report as a previous version. */}
-        {reportStale && (
-          <div className="flex flex-wrap items-center gap-2 rounded-xl border border-amber-500/35 bg-amber-500/[0.05] p-2.5">
-            <AlertCircle className="h-3.5 w-3.5 shrink-0 text-amber-600 dark:text-amber-400" />
-            <p className="min-w-0 flex-1 type-meta leading-snug text-muted-foreground">
-              <span className="font-medium text-foreground">
-                Your topic report is out of date.
-              </span>{" "}
-              It was written before the newest keyword synthesis. Update folds
-              the new material in; Rebuild rewrites from scratch. Either way the
-              current one is kept as a previous version.
-            </p>
-            <div className="flex shrink-0 items-center gap-1.5">
-              <button
-                type="button"
-                onClick={() => void handleRunTopicSynthesis("rebuild")}
-                disabled={stream.isStreaming}
-                className="inline-flex items-center gap-1 h-7 px-2.5 rounded-full matrx-glass-card text-[11px] font-medium text-foreground/80 hover:text-foreground disabled:opacity-40 transition-colors"
-              >
-                Rebuild
-              </button>
-              <button
-                type="button"
-                onClick={() => void handleRunTopicSynthesis("update")}
-                disabled={stream.isStreaming}
-                className="inline-flex items-center gap-1.5 h-7 px-3 rounded-full bg-primary text-primary-foreground text-[11px] font-medium hover:bg-primary/90 disabled:opacity-40 transition-all"
-              >
-                {stream.isStreaming && (
-                  <Loader2 className="h-3 w-3 animate-spin" />
-                )}
-                Update
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* Live streaming synthesis card — shown while LLM is writing */}
-        {stream.isStreaming && (streamingText || streamingLabel) && (
-          <div className="rounded-xl border border-primary/30 bg-card/60 overflow-hidden">
-            <div className="flex items-center gap-2 px-3 py-2 border-b border-border">
-              <Loader2 className="h-3.5 w-3.5 text-primary animate-spin shrink-0" />
-              <span className="type-secondary font-medium text-primary">
-                {streamingLabel
-                  ? `Synthesizing ${streamingLabel}…`
-                  : "Synthesizing…"}
-              </span>
-            </div>
-            {streamingText && (
-              <div className="px-3 py-3">
-                <RichContent level="full" imagePolicy="ai" source={streamingText} isStreaming />
-              </div>
-            )}
-          </div>
-        )}
-        {synthError && synthList.length > 0 && (
-          <StaleDataNotice
-            hasData
-            what="this topic's syntheses"
-            onRetry={refetchSyntheses}
-            retrying={synthLoading}
-            detail={synthError}
-          />
-        )}
-        {synthLoading ? (
-          <div className="space-y-3">
-            {Array.from({ length: 4 }).map((_, i) => (
-              <Skeleton key={i} className="h-14 rounded-xl" />
-            ))}
-          </div>
-        ) : synthError && filtered.length === 0 ? (
-          <ReadFailure
-            error={synthError}
-            what="this topic's syntheses"
-            onRetry={refetchSyntheses}
-          />
-        ) : !synthLoading && filtered.length === 0 && !stream.isStreaming ? (
-          <div className="flex flex-col items-center justify-center min-h-[280px] gap-3 text-center px-4">
-            <div className="h-12 w-12 rounded-2xl bg-primary/8 flex items-center justify-center">
-              <Layers className="h-6 w-6 text-primary/40" />
-            </div>
-            <div>
-              <p className="type-secondary font-medium text-foreground/70">
-                {synthList.length === 0 ? "No syntheses yet" : "No matches"}
-              </p>
-              <p className="type-meta text-muted-foreground mt-1 max-w-[240px]">
-                {synthList.length === 0
-                  ? "Synthesize the content you've read and your analyses into cohesive research summaries."
-                  : "Try adjusting your search or filters to find what you're looking for."}
-              </p>
-            </div>
-            {synthList.length === 0 && (
-              <button
-                onClick={() => void handleRunTopicSynthesis("initial")}
-                disabled={stream.isStreaming}
-                className="inline-flex items-center gap-1.5 h-8 px-4 rounded-full text-xs font-medium bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-40 transition-all min-h-[44px]"
-              >
-                {stream.isStreaming ? (
-                  <Loader2 className="h-3 w-3 animate-spin" />
-                ) : (
-                  <Layers className="h-3 w-3" />
-                )}
-                Run Synthesis
-              </button>
-            )}
-          </div>
-        ) : (
-          <>
-            {topicSyntheses.length > 0 && (
-              <section className="space-y-2">
-                <div className="flex items-center gap-1.5 px-0.5">
-                  <Layers className="h-3 w-3 text-muted-foreground" />
-                  <span className="type-meta font-semibold text-muted-foreground uppercase tracking-wider">
-                    Topic Report
-                  </span>
-                  <Badge variant="secondary" className="text-[9px] h-4 px-1.5">
-                    {topicSyntheses.length}
-                  </Badge>
-                </div>
-                {topicSyntheses.map((s) => (
-                  <SynthesisCard
-                    key={s.id}
-                    synthesis={s}
-                    label="Topic Report"
+      }
+      navigator={<SynthesisNavigator groups={groups} selectedId={selected?.synthesis.id ?? null} onSelect={selectSynthesis} />}
+      header={
+        <>
+          {topNotices}
+          {readerRecord && selected && <SynthesisHeader synthesis={selected.synthesis} label={selected.label} />}
+        </>
+      }
+      placeholder={placeholder}
+      extraTabs={
+        selected
+          ? [
+              {
+                id: "versions",
+                label: "Versions",
+                content: (
+                  // Superseded versions. A rebuild flips the old row's `is_current` and
+                  // inserts a new version — nothing is destroyed.
+                  <SynthesisVersionHistory
+                    key={selected.synthesis.id}
+                    topicId={selected.synthesis.topic_id}
+                    scope={selected.synthesis.scope}
+                    keywordId={selected.synthesis.keyword_id ?? undefined}
+                    label={selected.synthesis.keyword_id ? "keyword synthesis" : "topic report"}
                   />
-                ))}
-              </section>
-            )}
-
-            {keywordSyntheses.length > 0 && (
-              <section className="space-y-2">
-                <div className="flex items-center gap-1.5 px-0.5">
-                  <Layers className="h-3 w-3 text-muted-foreground" />
-                  <span className="type-meta font-semibold text-muted-foreground uppercase tracking-wider">
-                    Keyword Syntheses
-                  </span>
-                  <Badge variant="secondary" className="text-[9px] h-4 px-1.5">
-                    {keywordSyntheses.length}
-                  </Badge>
-                </div>
-                {keywordSyntheses.map((s) => (
-                  <SynthesisCard
-                    key={s.id}
-                    synthesis={s}
-                    label={getKeywordLabel(s.keyword_id)}
-                  />
-                ))}
-              </section>
-            )}
-          </>
-        )}
-      </div>
-    </div>
+                ),
+              },
+            ]
+          : []
+      }
+    />
   );
 }

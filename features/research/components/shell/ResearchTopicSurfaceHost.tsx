@@ -12,7 +12,11 @@
  * values come from and where the write path's refresh lives.
  */
 
-import type { ReactNode } from "react";
+import type { MutableRefObject, ReactNode } from "react";
+import {
+  ResearchReadingRecordProvider,
+  type ResearchReadingRecord,
+} from "@/features/research/agent-context/readingRecord";
 import {
   useTopicData,
   useTopicProgress,
@@ -25,13 +29,27 @@ import {
 import { buildApplicationScopeFromMenuContext } from "@ai-matrx/context-menu/engine";
 import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
 
-export function ResearchTopicSurfaceHost({
+export function ResearchTopicSurfaceHost(props: {
+  activeView: string;
+  children: ReactNode;
+}) {
+  return (
+    <ResearchReadingRecordProvider>
+      {(readingRecordRef) => <ResearchTopicSurface {...props} readingRecordRef={readingRecordRef} />}
+    </ResearchReadingRecordProvider>
+  );
+}
+
+function ResearchTopicSurface({
   activeView,
   children,
+  readingRecordRef,
 }: {
   /** Which part of the topic is on screen (`overview`, `document`, `sources`…). */
   activeView: string;
   children: ReactNode;
+  /** The record open in the annotated reader, published by its bridge. */
+  readingRecordRef: MutableRefObject<ResearchReadingRecord | null>;
 }) {
   const { topic } = useTopicData();
   const progress = useTopicProgress();
@@ -43,7 +61,12 @@ export function ResearchTopicSurfaceHost({
           ? (window.getSelection()?.toString() ?? "")
           : "",
       selectionRange: null,
-      contextData: buildResearchContextData({ topic, progress, activeView }),
+      contextData: buildResearchContextData({
+        topic,
+        progress,
+        activeView,
+        readingRecord: readingRecordRef.current,
+      }),
     });
 
   return (

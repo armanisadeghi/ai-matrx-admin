@@ -10,6 +10,10 @@ import type {
   ResearchProgress,
   ResearchKeyword,
 } from "@/features/research/types";
+import {
+  readingRecordScopeValues,
+  type ResearchReadingRecord,
+} from "@/features/research/agent-context/readingRecord";
 
 /**
  * Placement display for the research surface menu.
@@ -91,6 +95,12 @@ export interface BuildResearchContextDataArgs {
    * mounts outside a topic workspace omit it.
    */
   activeView?: string | null;
+  /**
+   * The record open in the annotated reader (synthesis / document tabs) with
+   * its comment threads and the person's own highlights. Its body becomes the
+   * baseline `content` when no explicit `primaryText` is passed.
+   */
+  readingRecord?: ResearchReadingRecord | null;
 }
 
 /** Coerce a Supabase `Json` column to a plain object, or undefined. */
@@ -139,6 +149,7 @@ export function buildResearchContextData(
     draftTopicName,
     draftTopicDescription,
     activeView,
+    readingRecord = null,
   } = args;
 
   const topicOpen = topic != null;
@@ -147,7 +158,11 @@ export function buildResearchContextData(
   const keywordList = normalizeKeywords(keywords);
 
   // The body the agent acts on: the displayed document/synthesis/query.
-  const bodyText = hasText(primaryText) ? primaryText : "";
+  const bodyText = hasText(primaryText)
+    ? primaryText
+    : readingRecord && hasText(readingRecord.body)
+      ? readingRecord.body
+      : "";
   // The "current synthesis": an explicit synthesis body, else — when no topic
   // is open (the wizard) — the typed query, so the value is never empty just
   // because the user hasn't run the pipeline yet.
@@ -159,7 +174,7 @@ export function buildResearchContextData(
 
   const name = topic?.name || draftTopicName || "";
   const description = topic?.description || draftTopicDescription || "";
-  const title = displayTitle || name || undefined;
+  const title = displayTitle || readingRecord?.title || name || undefined;
 
   const activeScopeKind: "selection" | "synthesis" | "topic" | "empty" =
     !topicOpen && !bodyText
@@ -278,6 +293,9 @@ export function buildResearchContextData(
     tone_profile: topic?.tone_profile || undefined,
     good_scrape_threshold: topic?.good_scrape_threshold,
     topic_metadata: asObject(topic?.metadata),
+
+    // ── The record open in the reader ─────────────────────────────────
+    ...readingRecordScopeValues(readingRecord),
   });
 
   return scope as Record<string, unknown>;

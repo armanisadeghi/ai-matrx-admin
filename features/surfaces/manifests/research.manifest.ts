@@ -42,6 +42,7 @@ import type {
 } from "@ai-matrx/chat/surfaces/types";
 import { mergeBaselineValues, pickBaseline } from "@ai-matrx/chat/surfaces/manifests/_baseline.manifest";
 import { MATRX_WEB_APP_EXECUTOR } from "@ai-matrx/chat/surfaces/executor";
+import { COMMENT_THREAD_SHAPE, PERSONAL_ANNOTATION_SHAPE, type RecordCommentThread, type RecordPersonalAnnotation } from "@/features/rich-document/annotations/agent-snapshot";
 
 const groups: SurfaceValueGroup[] = [
   {
@@ -589,6 +590,40 @@ const surfaceSpecific: SurfaceValue[] = [
     group: "material",
     sortOrder: 920,
   },
+  // ── The record open in the reader (synthesis / document tabs) ─────────────
+  {
+    name: "open_record",
+    label: "Open record",
+    description:
+      'The research record open in the reader, as { type: "research_synthesis" | "research_document", id, title, version, kind }. kind says which output it is (topic report, keyword synthesis, tag consolidation, document). Its full text rides in the baseline `content`. Absent when no record is open.',
+    valueType: "object",
+    alwaysAvailable: false,
+    typicalCharCount: 200,
+    group: "outputs",
+    sortOrder: 690,
+  },
+  {
+    name: "record_comments",
+    label: "Comments on the open record",
+    description: `Comment threads on the open record, oldest first, as ${COMMENT_THREAD_SHAPE}. quote is the passage a comment is pinned to (null = the whole record); suggested_text is a proposed replacement for that passage; resolved threads are included. Everyone who can read the record sees these; Update/Rebuild/Regenerate also hand the open (unresolved) ones to the writer. Part of the record, shown in full. Absent while loading or when no record is open; an empty array when there are none.`,
+    valueType: "array",
+    alwaysAvailable: false,
+    typicalCharCount: 1500,
+    inlineUpTo: 1000,
+    group: "outputs",
+    sortOrder: 692,
+  },
+  {
+    name: "my_record_notes",
+    label: "My highlights and notes",
+    description: `The person's PRIVATE highlights (a marked passage, optional note) and whole-record notes on the open record, oldest first, as ${PERSONAL_ANNOTATION_SHAPE}. attached is false when the passage can no longer be found. Only this person sees them. Absent while loading or when no record is open; an empty array when there are none.`,
+    valueType: "array",
+    alwaysAvailable: false,
+    typicalCharCount: 1000,
+    inlineUpTo: 1000,
+    group: "outputs",
+    sortOrder: 694,
+  },
 ];
 
 /**
@@ -767,6 +802,10 @@ export function createResearchScope(values: {
   tone_profile?: string;
   good_scrape_threshold?: number;
   topic_metadata?: Record<string, unknown>;
+  // The record open in the reader
+  open_record?: { type: string; id: string; title: string; version: number; kind: string };
+  record_comments?: RecordCommentThread[];
+  my_record_notes?: RecordPersonalAnnotation[];
 }): SurfaceScopePayload {
   return values as SurfaceScopePayload;
 }

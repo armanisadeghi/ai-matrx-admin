@@ -1,0 +1,91 @@
+"use client";
+
+// features/research/components/reader/ResearchRecordReader.tsx
+//
+// A research record (a synthesis or the assembled document) in THE annotated
+// reader (`features/rich-document/reader/AnnotatedReader`): outline, the full
+// reading set, Notes & comments — plus the research surface on top: the
+// right-click menu and the topic's agents read the open record, its comment
+// threads and the person's own highlights (`ResearchReadingRecordBridge`).
+
+import type { ReactNode } from "react";
+import type { Layout } from "react-resizable-panels";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
+import { buildApplicationScopeFromMenuContext } from "@ai-matrx/context-menu/engine";
+import { AnnotatedReader, type ReaderTab } from "@/features/rich-document/reader/AnnotatedReader";
+import type { AnnotationSource } from "@/features/rich-document/annotations/types";
+import { useTopicContext } from "../../context/ResearchContext";
+import {
+  buildResearchContextData,
+  RESEARCH_CONTEXT_MENU_PROPS,
+} from "../../agent-context/buildResearchContextData";
+import {
+  ResearchReadingRecordBridge,
+  useResearchReadingRecordRef,
+  type ResearchReadingRecord,
+} from "../../agent-context/readingRecord";
+
+export type ResearchReaderRecord = Omit<ResearchReadingRecord, "comments" | "notes"> & { href: string };
+
+export function ResearchRecordReader({
+  groupKey,
+  defaultLayout,
+  record,
+  navigator,
+  toolbar,
+  header,
+  placeholder,
+  extraTabs,
+}: {
+  groupKey: string;
+  defaultLayout?: Layout;
+  /** The record to read; null shows `placeholder` (loading, empty, failed, streaming). */
+  record: ResearchReaderRecord | null;
+  navigator?: ReactNode;
+  toolbar?: ReactNode;
+  header?: ReactNode;
+  placeholder?: ReactNode;
+  extraTabs?: readonly ReaderTab[];
+}) {
+  const { topic, progress } = useTopicContext();
+  const recordRef = useResearchReadingRecordRef();
+
+  const source: AnnotationSource | null = record
+    ? { token: record.type, id: record.id, title: record.title, body: record.body, contentVersion: Math.max(1, record.version), href: record.href }
+    : null;
+
+  const contextData = () =>
+    buildResearchContextData({
+      topic,
+      progress,
+      displayTitle: record?.title,
+      readingRecord: recordRef?.current ?? (record ? { ...record } : null),
+    });
+  // Plain fn (React Compiler memoizes) — reads the live selection and reading set at click.
+  const getApplicationScope = () =>
+    buildApplicationScopeFromMenuContext({
+      selectedText: typeof window !== "undefined" ? (window.getSelection()?.toString() ?? "") : "",
+      selectionRange: null,
+      contextData: contextData(),
+    });
+
+  return (
+    <AnnotatedReader
+      groupKey={groupKey}
+      defaultLayout={defaultLayout}
+      source={source}
+      navigator={navigator}
+      toolbar={toolbar}
+      header={header}
+      placeholder={placeholder}
+      extraTabs={extraTabs}
+      wrapBody={(body) => (
+        <NonEditableContextMenu {...RESEARCH_CONTEXT_MENU_PROPS} getApplicationScope={getApplicationScope} contextData={contextData()}>
+          <div>{body}</div>
+        </NonEditableContextMenu>
+      )}
+    >
+      {record && <ResearchReadingRecordBridge record={record} />}
+    </AnnotatedReader>
+  );
+}

@@ -63,6 +63,7 @@ import type {
 } from "@ai-matrx/chat/surfaces/types";
 import { mergeBaselineValues, pickBaseline } from "@ai-matrx/chat/surfaces/manifests/_baseline.manifest";
 import { MATRX_WEB_APP_EXECUTOR } from "@ai-matrx/chat/surfaces/executor";
+import { COMMENT_THREAD_SHAPE, PERSONAL_ANNOTATION_SHAPE, type RecordCommentThread, type RecordPersonalAnnotation } from "@/features/rich-document/annotations/agent-snapshot";
 
 export const EDUCATION_STUDY_GUIDE_SURFACE_NAME = "matrx-user/education-study-guide";
 
@@ -74,10 +75,8 @@ const groups: SurfaceValueGroup[] = [
   { key: "key_terms", label: "Key terms", sortOrder: 500, description: "Flashcard terms from the decks linked to this guide." },
 ];
 
-const PERSONAL_NOTE_SHAPE =
-  '{ id, kind: "highlight" | "note", quote: string | null, note: string, color: "yellow" | "green" | "blue" | "pink" | "purple", attached: boolean, created_at }';
-const COMMENT_SHAPE =
-  "{ id, quote: string | null, body, suggested_text: string | null, author, mine: boolean, resolved: boolean, attached: boolean, created_at, replies: [{ id, body, author, mine, created_at }] }";
+const PERSONAL_NOTE_SHAPE = PERSONAL_ANNOTATION_SHAPE;
+const COMMENT_SHAPE = COMMENT_THREAD_SHAPE;
 
 const surfaceSpecific: SurfaceValue[] = [
   {
@@ -295,29 +294,11 @@ export interface StudyGuideRecordScope {
 }
 
 /** One entry of `personal_annotations`. */
-export interface PersonalAnnotationScope {
-  id: string;
-  kind: "highlight" | "note";
-  quote: string | null;
-  note: string;
-  color: string;
-  attached: boolean;
-  created_at: string;
-}
+/** One entry of `personal_annotations` (the shared reading-set projection). */
+export type PersonalAnnotationScope = RecordPersonalAnnotation;
 
 /** One entry of `guide_comments`. */
-export interface GuideCommentScope {
-  id: string;
-  quote: string | null;
-  body: string;
-  suggested_text: string | null;
-  author: string;
-  mine: boolean;
-  resolved: boolean;
-  attached: boolean;
-  created_at: string;
-  replies: { id: string; body: string; author: string; mine: boolean; created_at: string }[];
-}
+export type GuideCommentScope = RecordCommentThread;
 
 /**
  * Type-safe payload helper. Required keys mirror `alwaysAvailable: true`;
