@@ -149,6 +149,14 @@ it("a super admin sees a badge into the entity registry for an unlinkable kind",
   await mount();
   const section = host.querySelector('[data-section="back-links"]');
   expect(section?.getAttribute("data-state")).toBe("unlinkable");
-  expect(section?.querySelector("a")?.getAttribute("href")).toBe("/administration/database/relationships/entity-types");
+  expect(section?.querySelector("a")?.getAttribute("href")).toBe("/administration/database/relationships/rules");
   superAdmin = false;
+});
+
+it("only the unlinkable-kind refusal counts as unlinkable; other 22023s stay errors", () => {
+  const { isUnlinkableKind } = jest.requireActual("@/features/unified-data/components/useKeptEntityBackLinks");
+  const hint = "select token, label from custom.entity_reference_kinds() lists every kind a link may name.";
+  expect(isUnlinkableKind({ code: "invalid_argument", sqlstate: "22023", hint, message: "" })).toBe(true);
+  expect(isUnlinkableKind({ code: "invalid_argument", sqlstate: "22023", message: "Name the record whose links you want" })).toBe(false);
+  expect(isUnlinkableKind({ code: "invalid_argument", sqlstate: "22P02", hint, message: "" })).toBe(false);
 });

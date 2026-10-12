@@ -86,6 +86,11 @@ export interface EntityCustomFieldsProps {
   organizationId?: string | null;
   /** The heading. Defaults to the section's own. */
   title?: string;
+  /**
+   * `false` for a kind that is deliberately not a link target (a machine-made row with no title: a
+   * screenshot, a collection run), so no "Linked records" section and no admin badge. Default `true`.
+   */
+  backLinks?: boolean;
   className?: string;
 }
 
@@ -339,7 +344,7 @@ export function EntityCustomFields(props: EntityCustomFieldsProps) {
   return (
     <>
       <EntityCustomFieldsSection {...props} />
-      <EntityBackLinks entityToken={props.entityToken} recordId={props.recordId} organizationId={organizationId} />
+      {props.backLinks === false ? null : <EntityBackLinks entityToken={props.entityToken} recordId={props.recordId} organizationId={organizationId} />}
     </>
   );
 }

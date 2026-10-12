@@ -30,6 +30,15 @@ class BackLinksRefused extends Error {
 /** The kept answer: the store's, or "this kind is not a thing a record may link to" (22023). */
 type KeptAnswer = EntityBackLinks | { unlinkable: true };
 
+/**
+ * The store's refusal of a kind no `record → <kind>` rule names: SQLSTATE 22023 with the hint pointing at
+ * `custom.entity_reference_kinds()`. Matched exactly - every other 22023 (a missing id, a bad argument) is
+ * still an error the section shows.
+ */
+export function isUnlinkableKind(error: RecordsError): boolean {
+  return error.sqlstate === "22023" && (error.hint ?? "").includes("entity_reference_kinds");
+}
+
 export interface KeptEntityBackLinks {
   /** True when the platform has not registered this kind as linkable (the admin fixes it in the registry). */
   unlinkable: boolean;
@@ -66,7 +75,7 @@ export function useKeptEntityBackLinks(
       const answered = await client.entityBackLinks(args());
       if (!answered.ok) {
         // 22023: the kind is not registered as linkable. A state, not a failure; kept so a remount asks nothing.
-        if (answered.error.code === "invalid_argument") return { unlinkable: true };
+        if (isUnlinkableKind(answered.error)) return { unlinkable: true };
         throw new BackLinksRefused(answered.error);
       }
       return answered.data;

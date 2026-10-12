@@ -36,8 +36,8 @@ import { ErrorNotice } from "@ai-matrx/design-system";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectIsSuperAdminPerson } from "@/lib/redux/selectors/userSelectors";
 
-/** The registry page where a kind is made linkable. */
-const ENTITY_REGISTRY_HREF = "/administration/database/relationships/entity-types";
+/** The relationship rules page, where a `record → <kind>` rule makes a kind linkable. */
+const ENTITY_REGISTRY_HREF = "/administration/database/relationships/rules";
 export interface EntityBackLinksProps {
   entityToken: string;
   recordId: string;

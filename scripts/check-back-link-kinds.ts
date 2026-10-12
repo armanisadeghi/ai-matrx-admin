@@ -26,7 +26,8 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const STRICT = process.argv.includes("--strict");
 const LINKED_ANOTHER_WAY = new Set(["file", "user", "person", "user_profile", "record", "custom_record"]);
 const SKIP_DIRS = new Set(["node_modules", ".next", ".git", "migrations", "tmp", ".wt", "__tests__"]);
-const MOUNT = /<(EntityCustomFields|EntityBackLinks)\b[^>]*?\bentityToken="([a-z0-9_]+)"/gs;
+const TAG = /<(EntityCustomFields|EntityBackLinks)\b([\s\S]*?)\/>/g;
+const TOKEN = /\bentityToken="([a-z0-9_]+)"/;
 
 function* walk(dir: string): Generator<string> {
   for (const name of readdirSync(dir)) {
@@ -42,10 +43,13 @@ function mounts(): Map<string, string[]> {
   const found = new Map<string, string[]>();
   for (const file of walk(ROOT)) {
     const text = readFileSync(file, "utf8");
-    for (const m of text.matchAll(MOUNT)) {
-      const list = found.get(m[2]!) ?? [];
+    for (const m of text.matchAll(TAG)) {
+      const token = TOKEN.exec(m[2]!)?.[1];
+      // A mount that opts out (`backLinks={false}`) asks nothing of the registry.
+      if (!token || /\bbackLinks=\{false\}/.test(m[2]!)) continue;
+      const list = found.get(token) ?? [];
       list.push(relative(ROOT, file));
-      found.set(m[2]!, list);
+      found.set(token, list);
     }
   }
   return found;
@@ -65,7 +69,7 @@ async function main(): Promise<number> {
     const bad = [...asked].filter(([token]) => !linkable.has(token) && !LINKED_ANOTHER_WAY.has(token));
     for (const [token, files] of bad) {
       console.log(
-        `NOT LINKABLE  ${token}  mounted in ${files.join(", ")}\n  fix: register record -> ${token} in platform.association_types (admin: /administration/database/relationships/entity-types)`,
+        `NOT LINKABLE  ${token}  mounted in ${files.join(", ")}\n  fix: add a record -> ${token} rule (admin: /administration/database/relationships/rules), or mount with backLinks={false}`,
       );
     }
     console.log(`${asked.size} mounted kinds checked, ${bad.length} not linkable.`);
