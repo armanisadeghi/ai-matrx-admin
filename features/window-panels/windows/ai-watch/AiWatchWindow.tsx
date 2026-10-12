@@ -142,12 +142,25 @@ export default function AiWatchWindow({
     };
   }, [listScope, workflowRunId, conversationId]);
 
+  // Watching a conversation follows its newest live turn, so a chat (or any
+  // conversation-backed run) is watchable while it streams, not only after.
+  const conversationLiveId = useAppSelector((s) => {
+    if (requestId || !conversationId) return null;
+    const ids = (s as unknown as { activeRequests: { byConversationId: Record<string, string[]> } })
+      .activeRequests.byConversationId?.[conversationId];
+    return ids?.length ? ids[ids.length - 1] : null;
+  });
+  const liveRequestId = requestId ?? conversationLiveId;
   const live = useAppSelector((s) =>
-    requestId ? (s as unknown as RootLike).activeRequests.byRequestId[requestId] : undefined,
+    liveRequestId ? (s as unknown as RootLike).activeRequests.byRequestId[liveRequestId] : undefined,
   );
   const liveUserRequestId = useLiveUserRequestId(live);
   const recordId = selectedId ?? liveUserRequestId ?? null;
-  const showLive = Boolean(requestId && live && (!selectedId || selectedId === liveUserRequestId));
+  // A new live turn in a watched conversation takes the view.
+  useEffect(() => {
+    if (conversationLiveId && liveUserRequestId) setSelectedId(liveUserRequestId);
+  }, [conversationLiveId, liveUserRequestId]);
+  const showLive = Boolean(liveRequestId && live && (!selectedId || selectedId === liveUserRequestId));
 
   const title = label ? `Watch AI — ${label}` : "Watch AI";
 
@@ -192,7 +205,7 @@ export default function AiWatchWindow({
       ) : null}
       <div className="min-h-0 min-w-0 flex-1 overflow-y-auto">
         <AiWatchRunView
-          requestId={showLive ? requestId : null}
+          requestId={showLive ? liveRequestId : null}
           live={showLive ? live : undefined}
           userRequestId={recordId}
         />
@@ -287,6 +300,7 @@ function AiWatchRunView({
         ) : null}
       </div>
       {loadError ? <ErrorNotice title="The run's record could not be read" message={loadError} /> : null}
+      {!live && record?.error ? <ErrorNotice title="The run did not finish" message={record.error} /> : null}
 
       {isAdmin ? (
         <AdminMetrics live={live} record={record} iterations={iterations} userRequestId={userRequestId} requestId={requestId} />

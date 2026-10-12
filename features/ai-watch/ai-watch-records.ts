@@ -67,6 +67,18 @@ const num = (v: unknown): number | null => {
 const obj = (v: unknown): Record<string, unknown> | null =>
   v && typeof v === "object" && !Array.isArray(v) ? (v as Record<string, unknown>) : null;
 
+/** `user_request.error` is often a JSON envelope; show its message. */
+function errorMessage(v: unknown): string | null {
+  const text = str(v);
+  if (!text || !text.startsWith("{")) return text;
+  try {
+    const parsed = JSON.parse(text) as Record<string, unknown>;
+    return str(parsed.user_message) ?? str(parsed.message) ?? text;
+  } catch {
+    return text;
+  }
+}
+
 function toRecord(row: Row, snapshots: AiWatchSnapshot[]): AiWatchRecord {
   const metadata = obj(row.metadata) ?? {};
   const usageByModel = obj(metadata.usage_by_model) ?? {};
@@ -88,7 +100,7 @@ function toRecord(row: Row, snapshots: AiWatchSnapshot[]): AiWatchRecord {
     iterations: num(row.iterations),
     toolCalls: num(row.total_tool_calls),
     finishReason: str(row.finish_reason),
-    error: str(row.error),
+    error: errorMessage(row.error),
     createdAt: String(row.created_at ?? ""),
     completedAt: str(row.completed_at),
     mandateKey: str(metadata.mandate_key),

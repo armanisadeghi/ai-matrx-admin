@@ -1,4 +1,5 @@
 import { getHydrator, registerPanelHydrator } from "./UrlPanelRegistry";
+import { watchAiRunAction } from "@/features/overlays/openers/aiWatchWindow";
 import { restoreUnsentLaunch } from "@ai-matrx/chat/agents/redux/execution-system/instance-user-input/restore-unsent-launch.thunk";
 import { loadConversation } from "@ai-matrx/chat/agents/redux/execution-system/thunks/load-conversation.thunk";
 import { followWhatIsStillInFlight } from "@ai-matrx/chat/agents/runtime-reconnect/follow-what-is-still-in-flight";
@@ -191,6 +192,16 @@ export function initUrlHydration() {
   });
 
   // Voice Pad — simple
+  // Watch AI — ?panels=ai-watch:c-<conversationId> | u-<userRequestId> | w-<workflowRunId> | r-<requestId>
+  registerPanelHydrator("ai-watch", (dispatch, id) => {
+    const [kind, ...rest] = id.split("-");
+    const value = rest.join("-");
+    if (!value) return;
+    const key =
+      kind === "c" ? "conversationId" : kind === "u" ? "userRequestId" : kind === "w" ? "workflowRunId" : "requestId";
+    dispatch(watchAiRunAction({ [key]: value }));
+  });
+
   registerPanelHydrator("voice", (dispatch, id) => {
     dispatch(openOverlay({ overlayId: "voicePad", instanceId: id }));
   });

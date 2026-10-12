@@ -933,7 +933,9 @@
     "check:amend-idempotent:self-test": "tsx scripts/apply-migration.ts --amend-idempotent --self-test",
     "check:popover-sizing": "jest scripts/__tests__/popover-sizing-guard.test.ts --no-coverage",
     "check:relation-halves-agree": "./scripts/check-relation-halves-agree.sh",
-    "check:rich-content-packaged": "node scripts/check-rich-content-packaged.mjs && node scripts/check-rich-content-packaged.mjs --self-test"
+    "check:rich-content-packaged": "node scripts/check-rich-content-packaged.mjs && node scripts/check-rich-content-packaged.mjs --self-test",
+    "check:ai-watch": "node scripts/check-ai-watch.mjs",
+    "check:ai-watch:self-test": "node scripts/check-ai-watch.mjs --self-test"
   },
   "dependencies": {
     "@ai-matrx/agents": "latest",
