@@ -34,7 +34,7 @@ export async function svgToPngBlob(svg: string): Promise<Blob> {
 }
 
 export async function renderAndStoreThumbnail(
-  kind: TemplateKind,
+  kind: Exclude<TemplateKind, "presentation">,
   snapshot: unknown,
   lane: TemplateLane,
   templateId: string,

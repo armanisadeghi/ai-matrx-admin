@@ -15,11 +15,15 @@ import { useChannel } from "@ai-matrx/realtime/react";
 const fileNameChannel = defineChannelNamespace({
   namespace: "file-record-name",
   parts: ["table", "id"],
-  description: "renames of one workbench file record (udt_workbooks / udt_documents)",
+  description: "renames of one workbench file record (udt_workbooks / udt_documents / presentation)",
 });
 
 export function useLiveFileName(
-  target: { table: "udt_workbooks" | "udt_documents"; column: "workbook_name" | "document_name"; id: string | null },
+  target: {
+    table: "udt_workbooks" | "udt_documents" | "presentation";
+    column: "workbook_name" | "document_name" | "name";
+    id: string | null;
+  },
   onName: (name: string) => void,
 ) {
   const { table, column, id } = target;

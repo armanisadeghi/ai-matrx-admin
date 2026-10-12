@@ -22,6 +22,16 @@ import {
   restoreDocument,
 } from "@/features/documents/document-service";
 import { downloadSheetAsCsv, downloadSheetAsPdf } from "@/features/workbooks/sheet-output";
+import {
+  copyPresentation,
+  deletePresentation,
+  getPresentation,
+  movePresentation,
+  renamePresentation,
+  restorePresentation,
+  type PresentationRow,
+} from "@/features/presentations/presentation-service";
+import { deckDownloads } from "@/features/presentations/deck-export";
 import type { FileDownload, FileKindAdapter } from "./types";
 
 async function latestWorkbookSnapshot(id: string): Promise<unknown> {
@@ -107,4 +117,25 @@ export const DOCUMENT_ADAPTER: FileKindAdapter<DocumentRow> = {
         await exportContent(markdown, format, name);
       },
     })),
+};
+
+async function savedDeck(id: string) {
+  const res = await getPresentation(id);
+  if (isServiceFailure(res)) throw new Error(res.error);
+  return res.data.deck;
+}
+
+export const PRESENTATION_ADAPTER: FileKindAdapter<PresentationRow> = {
+  noun: "presentation",
+  resourceType: "presentation",
+  entityType: "presentation",
+  nameOf: (p) => p.name,
+  projectIdOf: (p) => p.project_id,
+  hrefFor: (id) => `/presentations/${id}`,
+  rename: renamePresentation,
+  copy: copyPresentation,
+  move: movePresentation,
+  trash: deletePresentation,
+  restore: restorePresentation,
+  downloads: (id, name) => deckDownloads(() => savedDeck(id), name),
 };

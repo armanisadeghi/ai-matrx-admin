@@ -7,6 +7,7 @@ import {
   LANE_VISIBILITY,
   SYSTEM_ORGANIZATION_ID,
   TEMPLATE_CATEGORIES,
+  templateKindOf,
   toSummary,
   type SaveTemplateLane,
   type TemplateKind,
@@ -46,8 +47,11 @@ export type TemplatePorts = {
   setThumbnail: (templateId: string, fileId: string) => Promise<void>;
   latestRecordSnapshot: (kind: TemplateKind, recordId: string) => Promise<unknown | null>;
   createRecord: (kind: TemplateKind, name: string, orgId: string, snapshot: unknown) => Promise<string>;
-  /** Renders + stores the thumbnail; returns its file id. */
-  renderThumbnail: (kind: TemplateKind, snapshot: unknown, lane: TemplateLane, templateId: string) => Promise<string>;
+  /**
+   * Renders + stores the thumbnail; returns its file id — or null for a kind whose tile is drawn
+   * live by its own renderer (a presentation's first slide).
+   */
+  renderThumbnail: (kind: TemplateKind, snapshot: unknown, lane: TemplateLane, templateId: string) => Promise<string | null>;
 };
 
 export class TemplateError extends Error {}
@@ -74,7 +78,7 @@ export function createTemplateService(ports: TemplatePorts) {
   async function createFromTemplate(templateId: string): Promise<{ kind: TemplateKind; id: string }> {
     const { row, snapshot } = await ports.getSnapshot(templateId);
     if (!snapshot) throw new TemplateError("This template has no content.");
-    const kind: TemplateKind = row.kind === "document" ? "document" : "workbook";
+    const kind: TemplateKind = templateKindOf(row.kind);
     const orgId = await ports.activeOrgId();
     const id = await ports.createRecord(kind, row.name, orgId, snapshot);
     return { kind, id };
@@ -110,7 +114,7 @@ export function createTemplateService(ports: TemplatePorts) {
     });
     const summary = toSummary(row);
     const fileId = await ports.renderThumbnail(kind, snapshot, summary.lane, row.id);
-    await ports.setThumbnail(row.id, fileId);
+    if (fileId) await ports.setThumbnail(row.id, fileId);
     return { ...summary, thumbnailUrl: fileId };
   }
 

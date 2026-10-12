@@ -7,7 +7,12 @@ import type { TemplateKind } from "../types";
 import { TemplateGallery } from "./TemplateGallery";
 
 export function TemplateGalleryPage({ kind }: { kind: TemplateKind }): ReactNode {
-  const parent = kind === "workbook" ? { label: "Workbooks", href: "/workbooks" } : { label: "Documents", href: "/documents" };
+  const parent =
+    kind === "workbook"
+      ? { label: "Workbooks", href: "/workbooks" }
+      : kind === "presentation"
+        ? { label: "Presentations", href: "/presentations" }
+        : { label: "Documents", href: "/documents" };
   return (
     <>
       <RecordPageHeader parents={[parent]} record={{ name: "Template gallery" }} />

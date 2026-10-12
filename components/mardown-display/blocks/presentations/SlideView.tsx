@@ -16,6 +16,7 @@ import React, { useEffect, useState } from "react";
 import { InlineMediaRef } from "@ai-matrx/media/react";
 
 import { resolveUnsplashImage, type ResolvedImage } from "./slide-images";
+import { RichText, SlideField, useSlideEditing } from "./slide-edit";
 
 export type SlideVariant = "generic" | "fancy" | "deluxe";
 
@@ -52,25 +53,6 @@ export const palette = (t: SlideTheme) => ({
   accent: t.accentColor || "#06B6D4",
   text: t.textColor || "#0F172A",
 });
-
-/** Bold-aware text. */
-function RichText({ text, className }: { text?: string; className?: string }) {
-  if (!text) return null;
-  const parts = text.split(/(\*\*.*?\*\*)/g);
-  return (
-    <span className={className}>
-      {parts.map((p, i) =>
-        p.startsWith("**") && p.endsWith("**") ? (
-          <strong key={i} className="font-bold">
-            {p.slice(2, -2)}
-          </strong>
-        ) : (
-          <span key={i}>{p}</span>
-        ),
-      )}
-    </span>
-  );
-}
 
 /** Normalize the layout name from explicit `layout` or the legacy `type`. */
 function resolveLayout(slide: SlideData): string {
@@ -142,6 +124,7 @@ export function SlideView({
   fullScreen: boolean;
 }) {
   const c = palette(theme);
+  const editing = useSlideEditing();
   const layout = resolveLayout(slide);
   const fancy = variant !== "generic";
   const big = fullScreen;
@@ -165,11 +148,11 @@ export function SlideView({
             className={`font-bold leading-[1.05] ${big ? "text-6xl" : "text-4xl"}`}
             style={fancy ? gradientText(c.primary, c.secondary) : { color: c.primary }}
           >
-            <RichText text={slide.title} />
+            <SlideField path="title" text={slide.title} placeholder="Click to add title" />
           </h1>
-          {slide.subtitle && (
+          {(slide.subtitle || editing) && (
             <p className={`mx-auto mt-5 max-w-2xl text-muted-foreground ${big ? "text-2xl" : "text-lg"}`}>
-              <RichText text={slide.subtitle} />
+              <SlideField path="subtitle" text={slide.subtitle} placeholder="Click to add subtitle" />
             </p>
           )}
           {fancy && <div className="mx-auto mt-7 h-1 w-24 rounded-full" style={{ background: `linear-gradient(90deg, ${c.primary}, ${c.accent})` }} />}
@@ -185,11 +168,11 @@ export function SlideView({
         <div className="flex h-full flex-col justify-center">
           {eyebrow && <Eyebrow text={eyebrow} color="#ffffff" onDark />}
           <h2 className={`font-bold leading-tight text-white ${big ? "text-6xl" : "text-4xl"}`}>
-            <RichText text={slide.title} />
+            <SlideField path="title" text={slide.title} placeholder="Click to add section title" />
           </h2>
-          {slide.description && (
+          {(slide.description || editing) && (
             <p className={`mt-4 max-w-3xl text-white/80 ${bodySize}`}>
-              <RichText text={slide.description} />
+              <SlideField path="description" text={slide.description} placeholder="Click to add text" />
             </p>
           )}
         </div>
@@ -206,10 +189,12 @@ export function SlideView({
             &ldquo;
           </div>
           <blockquote className={`-mt-4 font-medium leading-snug text-foreground ${big ? "text-3xl" : "text-xl"}`}>
-            <RichText text={slide.quote || slide.title} />
+            <SlideField path={slide.quote || !slide.title ? "quote" : "title"} text={slide.quote || slide.title} placeholder="Click to add quote" />
           </blockquote>
-          {slide.author && (
-            <figcaption className={`mt-5 text-muted-foreground ${big ? "text-lg" : "text-sm"}`}>— {slide.author}</figcaption>
+          {(slide.author || editing) && (
+            <figcaption className={`mt-5 text-muted-foreground ${big ? "text-lg" : "text-sm"}`}>
+              — <SlideField path="author" text={slide.author} placeholder="Author" />
+            </figcaption>
           )}
         </figure>
       </Frame>
@@ -226,9 +211,11 @@ export function SlideView({
           {stats.map((s, i) => (
             <div key={i} className="rounded-xl border border-border bg-card/60 p-5 text-center">
               <div className={`font-bold ${big ? "text-5xl" : "text-3xl"}`} style={gradientText(c.primary, c.accent)}>
-                {s.value}
+                <SlideField path={`extra.stats.${i}.value`} text={s.value} placeholder="42%" />
               </div>
-              <div className={`mt-1 text-muted-foreground ${big ? "text-base" : "text-xs"}`}>{s.label}</div>
+              <div className={`mt-1 text-muted-foreground ${big ? "text-base" : "text-xs"}`}>
+                <SlideField path={`extra.stats.${i}.label`} text={s.label} placeholder="Label" />
+              </div>
             </div>
           ))}
         </div>
@@ -245,8 +232,12 @@ export function SlideView({
         <div className="mt-7 grid grid-cols-2 gap-6">
           {cols.map((col, i) => (
             <div key={i}>
-              {col.title && <h3 className={`mb-3 font-semibold ${big ? "text-xl" : "text-base"}`} style={{ color: c.primary }}>{col.title}</h3>}
-              <BulletList bullets={col.bullets ?? []} c={c} fancy={fancy} big={big} />
+              {(col.title || editing) && (
+                <h3 className={`mb-3 font-semibold ${big ? "text-xl" : "text-base"}`} style={{ color: c.primary }}>
+                  <SlideField path={`extra.columns.${i}.title`} text={col.title} placeholder="Column heading" />
+                </h3>
+              )}
+              <BulletList bullets={col.bullets ?? []} c={c} fancy={fancy} big={big} basePath={`extra.columns.${i}.bullets`} />
             </div>
           ))}
         </div>
@@ -275,9 +266,13 @@ export function SlideView({
       <Frame variant={variant} c={c} sectionGradient center>
         <div className="text-center">
           <h2 className={`font-bold text-white ${big ? "text-5xl" : "text-3xl"}`}>
-            <RichText text={slide.title || "Thank you"} />
+            <SlideField path="title" text={editing ? slide.title : slide.title || "Thank you"} placeholder="Thank you" />
           </h2>
-          {slide.subtitle && <p className={`mx-auto mt-4 max-w-2xl text-white/80 ${bodySize}`}><RichText text={slide.subtitle} /></p>}
+          {(slide.subtitle || editing) && (
+            <p className={`mx-auto mt-4 max-w-2xl text-white/80 ${bodySize}`}>
+              <SlideField path="subtitle" text={slide.subtitle} placeholder="Click to add subtitle" />
+            </p>
+          )}
         </div>
       </Frame>
     );
@@ -288,7 +283,7 @@ export function SlideView({
     <Frame variant={variant} c={c}>
       <SlideHeading slide={slide} c={c} fancy={fancy} big={big} eyebrow={eyebrow} />
       <div className="mt-6">
-        <BulletList bullets={slide.bullets ?? []} c={c} fancy={fancy} big={big} />
+        <BulletList bullets={slide.bullets ?? []} c={c} fancy={fancy} big={big} basePath="bullets" />
       </div>
     </Frame>
   );
@@ -342,15 +337,16 @@ function SlideHeading({
   big: boolean;
   eyebrow?: string;
 }) {
+  const editing = useSlideEditing();
   return (
     <div>
       {eyebrow && <Eyebrow text={eyebrow} color={c.accent} />}
       <h2 className={`font-bold leading-tight ${big ? "text-4xl" : "text-2xl"}`} style={fancy ? gradientText(c.primary, c.secondary) : { color: c.primary }}>
-        <RichText text={slide.title} />
+        <SlideField path="title" text={slide.title} placeholder="Click to add title" />
       </h2>
-      {slide.description && (
+      {(slide.description || editing) && (
         <p className={`mt-2 text-muted-foreground ${big ? "text-lg" : "text-sm"}`}>
-          <RichText text={slide.description} />
+          <SlideField path="description" text={slide.description} placeholder="Click to add subtitle" />
         </p>
       )}
     </div>
@@ -362,15 +358,20 @@ function BulletList({
   c,
   fancy,
   big,
+  basePath,
 }: {
   bullets: string[];
   c: ReturnType<typeof palette>;
   fancy: boolean;
   big: boolean;
+  /** The list's path in the slide ("bullets", "extra.columns.0.bullets") — editable in the editor. */
+  basePath?: string;
 }) {
+  const editing = useSlideEditing();
+  const items = editing && basePath && bullets.length === 0 ? [""] : bullets;
   return (
     <ul className="space-y-2.5">
-      {bullets.map((b, i) => (
+      {items.map((b, i) => (
         <li
           key={i}
           className={`flex items-start gap-3 rounded-lg ${fancy ? "bg-muted/40 p-3 transition-transform hover:translate-x-0.5" : "py-1"}`}
@@ -378,7 +379,7 @@ function BulletList({
         >
           <span className={`mt-2 h-2 w-2 shrink-0 rounded-full ${big ? "mt-2.5" : ""}`} style={{ background: `linear-gradient(135deg, ${c.primary}, ${c.accent})` }} />
           <span className={`leading-relaxed text-foreground ${big ? "text-lg" : "text-sm"}`}>
-            <RichText text={b} />
+            {basePath ? <SlideField path={`${basePath}.${i}`} text={b} placeholder="Click to add text" list /> : <RichText text={b} />}
           </span>
         </li>
       ))}
@@ -437,6 +438,7 @@ function ImageFullSlide({
   bodySize: string;
 }) {
   const { url, credit, creditUrl, loading } = useSlideImage(slide);
+  const editing = useSlideEditing();
   return (
     <div className="relative h-full w-full overflow-hidden rounded-xl">
       <div className="absolute inset-0">
@@ -450,11 +452,11 @@ function ImageFullSlide({
       <div className={`absolute inset-x-0 bottom-0 ${big ? "p-12" : "p-7"}`}>
         {eyebrow && <Eyebrow text={eyebrow} color={c.accent} onDark />}
         <h2 className={`font-bold leading-tight text-white ${titleSize}`}>
-          <RichText text={slide.title} />
+          <SlideField path="title" text={slide.title} placeholder="Click to add title" />
         </h2>
-        {slide.description && (
+        {(slide.description || editing) && (
           <p className={`mt-3 max-w-3xl text-white/85 ${bodySize}`}>
-            <RichText text={slide.description} />
+            <SlideField path="description" text={slide.description} placeholder="Click to add text" />
           </p>
         )}
       </div>
@@ -487,7 +489,7 @@ function ImageSplitSlide({
         <div className={imageRight ? "order-1" : "order-2"}>
           <SlideHeading slide={slide} c={c} fancy={fancy} big={big} eyebrow={eyebrow} />
           <div className="mt-5">
-            <BulletList bullets={slide.bullets ?? []} c={c} fancy={fancy} big={big} />
+            <BulletList bullets={slide.bullets ?? []} c={c} fancy={fancy} big={big} basePath="bullets" />
           </div>
         </div>
         <div className={`${imageRight ? "order-2" : "order-1"} relative h-full max-h-full overflow-hidden rounded-xl`}>

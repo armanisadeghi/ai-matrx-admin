@@ -73,7 +73,7 @@ export function FileHomeTable<Row>({
       filter: "text",
       cell: (l) => (
         <span className="flex min-w-0 items-center gap-2" title={l.item.description ?? undefined}>
-          <kind.Icon className={cn("size-4 shrink-0", kind.kind === "workbook" ? "text-success" : "text-info")} aria-hidden />
+          <kind.Icon className={cn("size-4 shrink-0", kind.iconTone)} aria-hidden />
           <EntityRef token={kind.token} id={l.item.id} name={l.item.name} showIcon={false} className="min-w-0 truncate text-sm font-medium" />
           {userId !== null && l.item.ownerId !== userId ? <Users className="size-3.5 shrink-0 text-muted-foreground" aria-label="Not owned by me" /> : null}
           {starredIds.has(l.item.id) ? <Star className="size-3.5 shrink-0 fill-current text-warning" aria-label="Starred" /> : null}

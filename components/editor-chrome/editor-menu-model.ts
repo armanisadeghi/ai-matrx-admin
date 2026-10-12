@@ -130,7 +130,8 @@ export function matchesShortcut(
   if (!!s.mod !== mod) return false;
   if (!!s.shift !== e.shiftKey) return false;
   if (!!s.alt !== e.altKey) return false;
-  return eventKey(e) === s.key.toLowerCase();
+  // Named keys ("ArrowUp", "Enter", "Delete") arrive cased; letters arrive lower-cased.
+  return eventKey(e).toLowerCase() === s.key.toLowerCase();
 }
 
 /** The actions whose shortcut the chrome binds itself. */

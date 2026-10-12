@@ -4,14 +4,15 @@
  */
 
 import type { ComponentType } from "react";
-import { FileSpreadsheet, FileText } from "lucide-react";
+import { FileSpreadsheet, FileText, Presentation } from "lucide-react";
 import { GoogleDocsMark, GoogleSheetsMark } from "@/features/google-workspace/linked/marks";
+import { GoogleSlidesLogo } from "@/components/icons/google-brand";
 import type { FileEntityType } from "../useFileFavorites";
 
 export interface HomeKind {
-  kind: "workbook" | "document";
+  kind: "workbook" | "document" | "presentation";
   /** The entity-registry token (row doors, peek). */
-  token: "workbook" | "udt_document";
+  token: "workbook" | "udt_document" | "presentation";
   entityType: FileEntityType;
   /** "workbook" / "document" — the band title ("Start a new workbook"); our lexicon, not Google's "spreadsheet". */
   startNoun: string;
@@ -19,6 +20,8 @@ export interface HomeKind {
   pluralNoun: string;
   href: (id: string) => string;
   Icon: ComponentType<{ className?: string }>;
+  /** The kind icon's colour (Sheets green, Docs blue, Slides amber). */
+  iconTone: string;
   GoogleMark: ComponentType<{ className?: string }>;
   googleApp: string;
 }
@@ -31,6 +34,7 @@ export const WORKBOOK_HOME: HomeKind = {
   pluralNoun: "workbooks",
   href: (id) => `/workbooks/${id}`,
   Icon: FileSpreadsheet,
+  iconTone: "text-success",
   GoogleMark: GoogleSheetsMark,
   googleApp: "Google Sheets",
 };
@@ -43,6 +47,20 @@ export const DOCUMENT_HOME: HomeKind = {
   pluralNoun: "documents",
   href: (id) => `/documents/${id}`,
   Icon: FileText,
+  iconTone: "text-info",
   GoogleMark: GoogleDocsMark,
   googleApp: "Google Docs",
+};
+
+export const PRESENTATION_HOME: HomeKind = {
+  kind: "presentation",
+  token: "presentation",
+  entityType: "presentation",
+  startNoun: "presentation",
+  pluralNoun: "presentations",
+  href: (id) => `/presentations/${id}`,
+  Icon: Presentation,
+  iconTone: "text-warning",
+  GoogleMark: GoogleSlidesLogo,
+  googleApp: "Google Slides",
 };

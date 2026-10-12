@@ -2,7 +2,7 @@
 
 /**
  * EditorDocumentHeader — the full-bleed page-top template for a document
- * editor (workbook, document), shaped like Google Sheets / Docs:
+ * editor (workbook, document, presentation), shaped like Google Sheets / Docs / Slides:
  *
  *   [icon] Title ☆ ⇢ ☁                         [history] [comments] [extras] [Share]
  *          File Edit View Insert Format …
@@ -29,7 +29,7 @@ export type EditorDocumentHeaderProps = {
   backLabel: string;
   /** The product mark (a 24px glyph); drawn on its tile colour. */
   productIcon: ReactNode;
-  productTone: "sheets" | "docs";
+  productTone: "sheets" | "docs" | "slides";
   /** Title field, then its marks (star, move, save status). */
   title: ReactNode;
   titleMarks?: ReactNode;
@@ -46,6 +46,7 @@ export type EditorDocumentHeaderProps = {
 const TONE: Record<EditorDocumentHeaderProps["productTone"], string> = {
   sheets: "bg-emerald-600 text-white",
   docs: "bg-blue-600 text-white",
+  slides: "bg-amber-500 text-white",
 };
 
 export function EditorDocumentHeader({

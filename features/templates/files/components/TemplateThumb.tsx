@@ -8,29 +8,32 @@
  */
 import { useEffect, useState, type ReactNode } from "react";
 import { InlineMediaRef } from "@ai-matrx/media/react";
-import { FileSpreadsheet, FileText } from "lucide-react";
+import { FileSpreadsheet, FileText, Presentation } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import type { TemplateSummary } from "../types";
 import { snapshotPreviewSvg } from "../thumbnail/snapshot-preview-svg";
 import { getTemplateSnapshot } from "../template-service";
+// A presentation template's tile is its first slide, drawn live by the deck renderer.
+import { DeckFirstSlide } from "@/features/presentations/components/DeckFirstSlide";
 
-function useLivePreview(template: TemplateSummary): string | null {
-  const [svg, setSvg] = useState<string | null>(null);
-  const missing = !template.thumbnailUrl;
+
+function useTemplateSnapshot(template: TemplateSummary): unknown {
+  const [snapshot, setSnapshot] = useState<unknown>(null);
+  const wanted = template.kind === "presentation" || !template.thumbnailUrl;
   useEffect(() => {
-    if (!missing) return undefined;
+    if (!wanted) return undefined;
     let cancelled = false;
     void getTemplateSnapshot(template.id)
-      .then((snapshot) => {
-        if (!cancelled) setSvg(snapshotPreviewSvg(template.kind, snapshot));
+      .then((s) => {
+        if (!cancelled) setSnapshot(s);
       })
       .catch((err) => console.warn(`[templates] preview for ${template.id} failed`, err));
     return () => {
       cancelled = true;
     };
-  }, [missing, template]);
-  return svg;
+  }, [wanted, template]);
+  return snapshot;
 }
 
 export function TemplateThumb({
@@ -48,8 +51,11 @@ export function TemplateThumb({
   /** Placement only (width). */
   className?: string;
 }): ReactNode {
-  const liveSvg = useLivePreview(template);
-  const KindIcon = template.kind === "workbook" ? FileSpreadsheet : FileText;
+  const snapshot = useTemplateSnapshot(template);
+  const isDeck = template.kind === "presentation";
+  const liveSvg =
+    !isDeck && !template.thumbnailUrl && snapshot ? snapshotPreviewSvg(template.kind as "workbook" | "document", snapshot) : null;
+  const KindIcon = template.kind === "workbook" ? FileSpreadsheet : isDeck ? Presentation : FileText;
   return (
     <div className={cn("flex w-36 min-w-0 flex-col gap-1.5", className)}>
       <button
@@ -60,12 +66,19 @@ export function TemplateThumb({
         title={template.description ?? template.name}
         onClick={() => onSelect?.(template)}
         className={cn(
-          "relative aspect-[320/414] w-full overflow-hidden rounded-md border border-border bg-white transition-colors",
+          "relative w-full overflow-hidden rounded-md border border-border bg-white transition-colors",
+          isDeck ? "aspect-video" : "aspect-[320/414]",
           "hover:border-primary focus-visible:border-primary focus-visible:outline-none",
           busy && "opacity-60",
         )}
       >
-        {template.thumbnailUrl ? (
+        {isDeck ? (
+          snapshot ? (
+            <DeckFirstSlide deck={snapshot} className="pointer-events-none absolute inset-0" />
+          ) : (
+            <span aria-hidden className="block size-full animate-pulse bg-muted" />
+          )
+        ) : template.thumbnailUrl ? (
           <InlineMediaRef
             ref={template.thumbnailUrl}
             size="fill"

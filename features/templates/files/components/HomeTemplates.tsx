@@ -40,7 +40,7 @@ export function useHomeTemplates(kind: TemplateKind) {
             template={t}
             busy={busyId === t.id}
             onSelect={(tpl) => void create(tpl)}
-            className="w-28 shrink-0 sm:w-36"
+            className={kind === "presentation" ? "w-40 shrink-0 sm:w-48" : "w-28 shrink-0 sm:w-36"}
           />
         ))
       : null;

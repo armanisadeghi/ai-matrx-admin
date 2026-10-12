@@ -2255,6 +2255,17 @@
     "is_active": true
   },
   {
+    "resource_type": "presentation",
+    "table_name": "presentation",
+    "id_column": "id",
+    "owner_column": "created_by",
+    "is_public_column": null,
+    "display_label": "Presentation",
+    "url_path_template": "/presentations/{id}",
+    "rls_uses_has_permission": true,
+    "is_active": true
+  },
+  {
     "resource_type": "processed_document",
     "table_name": "processed_documents",
     "id_column": "id",

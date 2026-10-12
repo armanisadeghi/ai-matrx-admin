@@ -13,7 +13,7 @@ import { useCallback, useEffect, useSyncExternalStore } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { toast } from "@/lib/toast";
 
-export type FileEntityType = "workbook" | "udt_document";
+export type FileEntityType = "workbook" | "udt_document" | "presentation";
 
 type Store = {
   ids: ReadonlySet<string>;

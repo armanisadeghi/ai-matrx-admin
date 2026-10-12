@@ -1253,6 +1253,17 @@ export const primaryNavItems: ShellNavItem[] = [
         group: "Write",
       },
       {
+        label: "Presentations",
+        href: "/presentations",
+        iconName: "Presentation",
+        description: "Slide decks — edit in place, present, share",
+        color: "amber",
+        profileMenu: true,
+        dashboard: true,
+        guestHidden: true,
+        group: "Write",
+      },
+      {
         label: "Visual Maps",
         href: "/maps",
         iconName: "Network",

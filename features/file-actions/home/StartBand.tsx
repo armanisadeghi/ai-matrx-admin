@@ -48,6 +48,7 @@ export function StartTile({
   busy = false,
   disabled = false,
   title,
+  shape = "page",
 }: {
   label: string;
   face: ReactNode;
@@ -55,9 +56,11 @@ export function StartTile({
   busy?: boolean;
   disabled?: boolean;
   title?: string;
+  /** "page" (Docs/Sheets, portrait) or "slide" (Slides, 16:9). */
+  shape?: "page" | "slide";
 }) {
   return (
-    <div className="flex w-28 shrink-0 flex-col gap-1.5 sm:w-36">
+    <div className={cn("flex shrink-0 flex-col gap-1.5", shape === "slide" ? "w-40 sm:w-48" : "w-28 sm:w-36")}>
       <button
         type="button"
         data-clickable
@@ -65,7 +68,10 @@ export function StartTile({
         aria-label={label}
         title={title ?? label}
         onClick={onClick}
-        className="relative flex aspect-[320/414] w-full items-center justify-center overflow-hidden rounded-md border border-border bg-white transition-colors hover:border-primary focus-visible:border-primary focus-visible:outline-none disabled:opacity-60"
+        className={cn(
+          "relative flex w-full items-center justify-center overflow-hidden rounded-md border border-border bg-white transition-colors hover:border-primary focus-visible:border-primary focus-visible:outline-none disabled:opacity-60",
+          shape === "slide" ? "aspect-video" : "aspect-[320/414]",
+        )}
       >
         {busy ? <Spinner size="sm" label="Creating" /> : face}
       </button>
@@ -74,9 +80,18 @@ export function StartTile({
   );
 }
 
-export function BlankTile({ onCreate, creating }: { onCreate: () => void; creating: boolean }) {
+export function BlankTile({
+  onCreate,
+  creating,
+  shape = "page",
+}: {
+  onCreate: () => void;
+  creating: boolean;
+  shape?: "page" | "slide";
+}) {
   return (
     <StartTile
+      shape={shape}
       label="Blank"
       busy={creating}
       onClick={onCreate}

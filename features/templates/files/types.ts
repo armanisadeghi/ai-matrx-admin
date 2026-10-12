@@ -11,7 +11,7 @@
  * Frozen interface: H-tpl ↔ H-home contract (contract-templates.md).
  */
 
-export type TemplateKind = "workbook" | "document";
+export type TemplateKind = "workbook" | "document" | "presentation";
 export type TemplateLane = "featured" | "mine" | "org" | "community";
 export type SaveTemplateLane = Exclude<TemplateLane, "featured">;
 
@@ -66,6 +66,10 @@ export type TemplateRow = {
   sort_order: number;
 };
 
+export function templateKindOf(kind: string): TemplateKind {
+  return kind === "document" || kind === "presentation" ? kind : "workbook";
+}
+
 export function laneOf(row: Pick<TemplateRow, "organization_id" | "visibility">): TemplateLane {
   if (row.organization_id === SYSTEM_ORGANIZATION_ID) return "featured";
   if (row.visibility === "public") return "community";
@@ -76,7 +80,7 @@ export function laneOf(row: Pick<TemplateRow, "organization_id" | "visibility">)
 export function toSummary(row: TemplateRow): TemplateSummary {
   return {
     id: row.id,
-    kind: row.kind === "document" ? "document" : "workbook",
+    kind: templateKindOf(row.kind),
     name: row.name,
     category: row.category,
     ...(row.description ? { description: row.description } : {}),

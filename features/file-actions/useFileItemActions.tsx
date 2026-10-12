@@ -19,11 +19,11 @@ import { FileMenu } from "./FileMenu";
 import { savedRecordGoogleAdapter } from "@/features/google-workspace/linked/EditorGoogleLinks";
 import { useFileFavorites } from "./useFileFavorites";
 import { copyRecord, moveRecord, renameRecord, restoreRecord, runDownload, trashRecord } from "./ops";
-import type { FileKindAdapter, FileMenuPayload } from "./types";
+import { FILE_NOUN_LABEL, type FileKindAdapter, type FileMenuPayload } from "./types";
 
 export type { FileKindAdapter } from "./types";
 
-const noun = (a: { noun: string }) => (a.noun === "workbook" ? "Workbook" : "Document");
+const noun = (a: { noun: FileKindAdapter<{ id: string; user_id: string }>["noun"] }) => FILE_NOUN_LABEL[a.noun];
 
 export function useFileItemActions<Row extends { id: string; user_id: string }>(
   adapter: FileKindAdapter<Row>,
@@ -141,7 +141,7 @@ export function useFileItemActions<Row extends { id: string; user_id: string }>(
         trashed={trashed}
         projectId={adapter.projectIdOf(row)}
         google={
-          userId !== null && row.user_id === userId
+          userId !== null && row.user_id === userId && adapter.noun !== "presentation"
             ? { adapter: savedRecordGoogleAdapter(adapter.noun, row.id, name), editable: true }
             : undefined
         }

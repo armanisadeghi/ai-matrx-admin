@@ -100,11 +100,16 @@ export interface FileHomeProps<Row extends { id: string; user_id: string }> {
   startBand: ReactNode;
   /** Our Google strip, between the band and Recent. */
   googleStrip?: ReactNode;
-  /** The folder icon in the Recent header: open the device's file picker. */
-  onPickFile: () => void;
+  /** The folder icon in the Recent header: open the device's file picker (absent: no file import for this kind). */
+  onPickFile?: () => void;
   pickingFile?: boolean;
   /** Small marks after the date on a card / in a row (Google link, table link, source file). */
   marksFor?: (row: Row, where: "card" | "table") => ReactNode;
+  /**
+   * A card's picture when the kind draws its own (a presentation's first slide); default is
+   * `RecordThumb` (first sheet / first page).
+   */
+  thumbFor?: (row: Row) => ReactNode;
   /** The page's RouteHeader. */
   header: ReactNode;
   /**
@@ -214,13 +219,15 @@ export function FileHome<Row extends { id: string; user_id: string }>(props: Fil
                   ))}
                 </DropdownMenuContent>
               </DropdownMenu>
-              <TapTargetButtonForGroup
-                icon={props.pickingFile ? <Spinner size="xs" label="Opening" /> : <FolderOpen className="size-4" />}
-                ariaLabel="Open a file from this device"
-                tooltip="Open a file"
-                disabled={props.pickingFile}
-                onClick={props.onPickFile}
-              />
+              {props.onPickFile ? (
+                <TapTargetButtonForGroup
+                  icon={props.pickingFile ? <Spinner size="xs" label="Opening" /> : <FolderOpen className="size-4" />}
+                  ariaLabel="Open a file from this device"
+                  tooltip="Open a file"
+                  disabled={props.pickingFile}
+                  onClick={props.onPickFile}
+                />
+              ) : null}
             </TapTargetButtonGroup>
           </div>
           {dialogs}
@@ -303,6 +310,7 @@ export function FileHome<Row extends { id: string; user_id: string }>(props: Fil
                             navigating={navigatingId === d.item.id}
                             onOpen={open}
                             marks={props.marksFor?.(d.item.row, "card")}
+                            thumb={props.thumbFor?.(d.item.row)}
                           />
                         )}
                       </FileCardContextArea>
@@ -337,6 +345,7 @@ function RecentCard<Row>({
   navigating,
   onOpen,
   marks,
+  thumb,
 }: {
   kind: HomeKind;
   dated: DatedItem<Row>;
@@ -347,13 +356,18 @@ function RecentCard<Row>({
   navigating: boolean;
   onOpen: (id: string, e: React.MouseEvent) => void;
   marks?: ReactNode;
+  thumb?: ReactNode;
 }) {
   const { item } = dated;
   const href = kind.href(item.id);
   return (
     <div className="group/entity-ref relative flex min-w-0 flex-col overflow-hidden rounded-lg border border-border bg-card transition-colors hover:border-primary/60">
       <Link href={href} onClick={(e) => onOpen(item.id, e)} className="block" aria-label={item.name} tabIndex={-1}>
-        <RecordThumb kind={kind.kind} id={item.id} stamp={item.updatedAt} className="aspect-[4/3] w-full border-b border-border" />
+        {thumb ?? (
+          kind.kind === "presentation" ? null : (
+            <RecordThumb kind={kind.kind} id={item.id} stamp={item.updatedAt} className="aspect-[4/3] w-full border-b border-border" />
+          )
+        )}
       </Link>
       <div className="flex min-w-0 flex-col gap-1 px-3 pb-2 pt-2">
         <Link
@@ -365,7 +379,7 @@ function RecentCard<Row>({
           {item.name}
         </Link>
         <div className="flex h-7 min-w-0 items-center gap-1.5 text-xs text-muted-foreground">
-          <kind.Icon className={cn("size-4 shrink-0", kind.kind === "workbook" ? "text-success" : "text-info")} aria-hidden />
+          <kind.Icon className={cn("size-4 shrink-0", kind.iconTone)} aria-hidden />
           {shared ? <Users className="size-3.5 shrink-0" aria-label="Not owned by me" /> : null}
           {starred ? <Star className="size-3.5 shrink-0 fill-current text-warning" aria-label="Starred" /> : null}
           <span className="min-w-0 flex-1 truncate">
@@ -418,7 +432,7 @@ function PhoneRows<Row>({
                         onClick={(e) => onOpen(d.item.id, e)}
                         className="flex min-w-0 flex-1 items-center gap-3"
                       >
-                        <kind.Icon className={cn("size-6 shrink-0", kind.kind === "workbook" ? "text-success" : "text-info")} aria-hidden />
+                        <kind.Icon className={cn("size-6 shrink-0", kind.iconTone)} aria-hidden />
                         <span className="flex min-w-0 flex-col">
                           <span className="truncate text-base text-foreground">{d.item.name}</span>
                           <span className="flex min-w-0 items-center gap-1 text-xs text-muted-foreground">

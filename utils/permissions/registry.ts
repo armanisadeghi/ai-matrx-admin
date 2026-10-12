@@ -716,6 +716,19 @@ export const SHAREABLE_RESOURCE_REGISTRY = {
     urlPathTemplate: "/documents/{id}",
     rlsUsesHasPermission: true,
   },
+  // The Presentations home (2026-10-12): a canonical entity (platform.create_entity_table) whose
+  // `deck` column is the presentation_deck kind; `visibility` enum, so no boolean column.
+  presentation: {
+    resourceType: "presentation",
+    tableName: "presentation",
+    schemaName: "workbench",
+    idColumn: "id",
+    ownerColumn: "created_by",
+    isPublicColumn: null,
+    displayLabel: "Presentation",
+    urlPathTemplate: "/presentations/{id}",
+    rlsUsesHasPermission: true,
+  },
   // Active DB registry row that predates this mirror; surfaced by the parity
   // snapshot regen during the structured-list rename. Mirrored here so the
   // TS↔DB guard stays green.

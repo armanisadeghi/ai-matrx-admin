@@ -20,6 +20,10 @@ import {
 } from "@/features/documents/document-service";
 import { isServiceFailure } from "@/features/data-tables/types";
 import {
+  createPresentation,
+  getPresentation,
+} from "@/features/presentations/presentation-service";
+import {
   TEMPLATE_SUMMARY_COLUMNS,
   TemplateError,
   createTemplateService,
@@ -84,6 +88,11 @@ const ports: TemplatePorts = {
     }
   },
   async latestRecordSnapshot(kind, recordId) {
+    if (kind === "presentation") {
+      const res = await getPresentation(recordId);
+      if (isServiceFailure(res)) throw new TemplateError(res.error);
+      return res.data.deck.slides.length ? res.data.deck : null;
+    }
     if (kind === "workbook") {
       const res = await getLatestSnapshot(recordId);
       if (isServiceFailure(res)) throw new TemplateError(res.error);
@@ -94,6 +103,11 @@ const ports: TemplatePorts = {
     return res.data?.snapshot ?? null;
   },
   async createRecord(kind, name, orgId, snapshot) {
+    if (kind === "presentation") {
+      const created = await createPresentation({ name, organizationId: orgId, deck: snapshot, source: "template" });
+      if (isServiceFailure(created)) throw new TemplateError(created.error);
+      return created.data.id;
+    }
     if (kind === "workbook") {
       const created = await createWorkbook({ name, organizationId: orgId });
       if (isServiceFailure(created)) throw new TemplateError(created.error);
@@ -107,7 +121,9 @@ const ports: TemplatePorts = {
     if (isServiceFailure(saved)) throw new TemplateError(saved.error);
     return created.data.id;
   },
-  renderThumbnail: renderAndStoreThumbnail,
+  // A presentation template's tile is its first slide drawn live (TemplateThumb), never a PNG.
+  renderThumbnail: (kind, snapshot, lane, templateId) =>
+    kind === "presentation" ? Promise.resolve(null) : renderAndStoreThumbnail(kind, snapshot, lane, templateId),
 };
 
 const service = createTemplateService(ports);

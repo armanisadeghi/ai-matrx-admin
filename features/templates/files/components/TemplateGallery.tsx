@@ -30,7 +30,7 @@ const LANE_TABS: readonly { value: LaneTab; label: string }[] = [
 const ALL_CATEGORIES = "all";
 
 export function recordHref(kind: TemplateKind, id: string): string {
-  return kind === "workbook" ? `/workbooks/${id}` : `/documents/${id}`;
+  return kind === "workbook" ? `/workbooks/${id}` : kind === "presentation" ? `/presentations/${id}` : `/documents/${id}`;
 }
 
 /** Create from a template and open it — the one door every tile uses. */
@@ -132,7 +132,13 @@ export function TemplateGallery({
         sections.map((s) => (
           <section key={s.category} className="flex flex-col gap-2">
             <h3 className="text-sm font-medium text-foreground">{s.category}</h3>
-            <div className="grid grid-cols-[repeat(auto-fill,minmax(9rem,1fr))] gap-x-4 gap-y-5">
+            <div
+              className={
+                kind === "presentation"
+                  ? "grid grid-cols-[repeat(auto-fill,minmax(12rem,1fr))] gap-x-4 gap-y-5"
+                  : "grid grid-cols-[repeat(auto-fill,minmax(9rem,1fr))] gap-x-4 gap-y-5"
+              }
+            >
               {s.items.map((t) => (
                 <TemplateThumb
                   key={t.id}

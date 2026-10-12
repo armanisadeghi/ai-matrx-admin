@@ -5,11 +5,19 @@ import type { FileEntityType } from "./useFileFavorites";
 
 type Result<T> = ServiceResult<T>;
 
+/** Title-case label per kind (menu section titles). */
+export const FILE_NOUN_LABEL: Record<FileKindAdapter<{ id: string; user_id: string }>["noun"], string> = {
+  workbook: "Workbook",
+  document: "Document",
+  presentation: "Presentation",
+};
+
 /** One downloadable format of a record; `run` throws to report failure. */
 export type FileDownload = { label: string; run: () => Promise<void> };
 
 export type FileKindAdapter<Row extends { id: string; user_id: string }> = {
-  noun: "workbook" | "document";
+  /** The record kind (also the template kind); "Presentation" etc. come from `FILE_NOUN_LABEL`. */
+  noun: "workbook" | "document" | "presentation";
   resourceType: ResourceType;
   entityType: FileEntityType;
   nameOf: (row: Row) => string;

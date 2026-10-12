@@ -584,7 +584,7 @@ export interface ListsPreferences {
    * The Workbooks / Documents homes' "Hide templates" (Google Docs' ⋮ on its template band), per
    * home. A person's own choice, synced; absent = templates shown.
    */
-  fileHomeTemplatesHidden?: Partial<Record<"workbook" | "document", boolean>>;
+  fileHomeTemplatesHidden?: Partial<Record<"workbook" | "document" | "presentation", boolean>>;
 }
 
 /**
