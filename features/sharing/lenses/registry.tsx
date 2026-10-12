@@ -35,6 +35,7 @@ import { ConversationShareLens } from "@/features/sharing/lenses/conversation-le
 import { FlashcardSetShareLens } from "@/features/sharing/lenses/flashcard-set-lens";
 import { RecordShareLens } from "@/features/sharing/lenses/record-lens";
 import { DocumentShareLens, WorkbookShareLens } from "@/features/sharing/lenses/file-record-lens";
+import { PresentationShareLens } from "@/features/sharing/lenses/presentation-lens";
 
 export interface ShareLensProps {
   /** The resolved share payload (registry `public_columns` projection). */
@@ -78,6 +79,7 @@ const SHARE_LENS_REGISTRY: Record<string, ShareLensRender> = {
   record: (p) => <RecordShareLens result={p.result} token={p.token} />,
   workbook: (p) => <WorkbookShareLens result={p.result} token={p.token} />,
   udt_document: (p) => <DocumentShareLens result={p.result} token={p.token} />,
+  presentation: (p) => <PresentationShareLens result={p.result} token={p.token} />,
   seo_collection_run: (p) => (
     <AiVisibilityRenderer result={p.result} token={p.token} />
   ),
