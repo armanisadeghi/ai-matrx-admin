@@ -455,6 +455,10 @@
         {
           "file": "features/marketing/seo/ai-visibility/__tests__/try-one-prompt-prices-then-asks.test.tsx",
           "why": "PROVABLY NOT A DISPLAY FORMATTER: the `$${usd}` here is a test FIXTURE reproducing, byte for byte, the over_max_cost error message aidream's tool dispatcher sends (\"estimated at $X (N points), above your max_cost_usd of $Y\"). The test proves the UI turns that server sentence into points; formatting the fixture through formatUsd would make it lie about what the server sends. Nothing in this file renders money. (2026-10-07 formatter-drain lane)"
+        },
+        {
+          "file": "features/templates/files/thumbnail/snapshot-preview-svg.ts",
+          "reason": "NOT formatUsd: the template thumbnail renders a spreadsheet cell through the cell's OWN Excel number-format pattern (currency, percent, grouping and decimals all read from the pattern), the same engine role as design-system's field-format registry. formatUsd's fixed $ voice cannot honour a user-authored pattern. Checked 2026-10-12."
         }
       ],
       "shapeCensus": [
