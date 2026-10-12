@@ -227,7 +227,7 @@ export function OvertimeQueueTable({ rows, isLoading, hrefFor, read, query, sour
         emptyState={{
           title: "No overtime requests",
           description:
-            "Requests appear here when someone asks to work overtime in advance, when a manager plans coverage, or when overtime is worked without a request — those last are paid and flagged so a manager can look at them.",
+            "Requests show when overtime is asked for, planned or worked.",
         }}
       />
     </NonEditableContextMenu>

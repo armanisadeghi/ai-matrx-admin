@@ -31,6 +31,7 @@ import { Button } from "@/components/ui/button";
 import { formatHours } from "../../shared/format";
 import type { OvertimeEvaluation } from "../api/overtimeReads";
 import { graceSentence, thresholdAxisLabel } from "../overtimeVocabulary";
+import { InfoHint } from "@/components/official/InfoHint";
 
 export interface ApproachingWatchlistProps {
   /** One evaluation per watched employment, with the person's name beside it. */
@@ -51,12 +52,8 @@ export function ApproachingWatchlist({
         <h3 className="flex items-center gap-2 text-[13px] font-semibold text-foreground">
           <TrendingUp className="h-4 w-4 text-muted-foreground" aria-hidden />
           Approaching overtime
+          <InfoHint text="Live projections against weekly, daily, double-time and seventh-day thresholds; pay comes from the closed workweek." />
         </h3>
-        <p className="mt-1 max-w-2xl text-[12px] leading-relaxed text-muted-foreground">
-          Live projections against this organization&apos;s resolved thresholds — weekly, daily,
-          double time and the seventh consecutive day where they apply. These are projections, not
-          paid hours: the figure that gets paid is calculated from the closed workweek.
-        </p>
       </div>
 
       {isLoading ? (

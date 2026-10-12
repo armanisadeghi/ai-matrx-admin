@@ -55,6 +55,7 @@ import { PunchCorrectionDialog, type PunchCorrectionMode } from "./PunchCorrecti
 import { PunchRegisterScopePicker } from "./PunchRegisterScopePicker";
 import { downloadPunchRegisterCsv, punchRegisterToCsv } from "./registerCsv";
 import { readOf } from "@ai-matrx/design-system";
+import { InfoHint } from "@/components/official/InfoHint";
 
 const DEFAULT_PAGE_SIZE = 50;
 
@@ -132,11 +133,10 @@ export function PunchRegister({
   return (
     <div className="flex h-full min-h-0 flex-col gap-3 px-3 py-3 sm:px-4">
       <header className="space-y-1">
-        <p className="text-xs text-muted-foreground">
-          Exactly what the clock recorded, in the time zone each punch was stamped in. Nothing on
-          this page is calculated — no hours, no rounding, no totals. Voided punches are shown struck
-          through, never removed.
-        </p>
+        <h1 className="flex items-center gap-1.5 text-sm font-semibold text-foreground">
+          Punch register
+          <InfoHint text="Raw clock records in each punch's own time zone, never calculated; voided punches stay visible, struck through." />
+        </h1>
       </header>
 
       {/*

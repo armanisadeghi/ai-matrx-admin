@@ -310,9 +310,7 @@ export function OvertimeRequestPanel({
         <section className="rounded-lg border border-border bg-card p-4">
           <h3 className="text-[13px] font-semibold text-foreground">What happens next</h3>
           <p className="mt-1.5 text-[12px] leading-relaxed text-muted-foreground">
-            Your manager decides whether this overtime should be worked. Whatever they decide, any
-            overtime you actually work is paid — a decision here is about whether the overtime should
-            happen, never about whether you are paid for it.
+            Your manager decides; any overtime you work is paid.
           </p>
           <p className="mt-1.5 text-[12px] leading-relaxed text-muted-foreground">
             {NO_DECISION_ESCALATES}

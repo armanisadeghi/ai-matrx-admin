@@ -29,6 +29,7 @@ import { DeviceFleetTable } from "./DeviceFleetTable";
 import { PairingCodeDialogBody } from "./PairingCodePanel";
 import type { KioskDeviceAdminSource } from "./deviceAdminSource";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { InfoHint } from "@/components/official/InfoHint";
 
 export function KioskDevicesPanel({ source }: { source: KioskDeviceAdminSource }) {
   const [rows, setRows] = useState<KioskDeviceRow[] | null>(null);
@@ -55,11 +56,10 @@ export function KioskDevicesPanel({ source }: { source: KioskDeviceAdminSource }
     <section className="flex flex-col gap-5">
       <header className="flex flex-wrap items-start justify-between gap-3">
         <div className="flex flex-col gap-1">
-          <h2 className="text-lg font-semibold text-foreground">Time clock tablets</h2>
-          <p className="text-sm text-muted-foreground">
-            Pair a tablet, approve it, and revoke it. Revoking stops a tablet from recording time
-            within a minute, wherever it is.
-          </p>
+          <h2 className="flex items-center gap-1.5 text-lg font-semibold text-foreground">
+            Time clock tablets
+            <InfoHint text="Revoking stops a tablet recording time within a minute, wherever it is." />
+          </h2>
         </div>
         <Button
           icon={<Plus />}

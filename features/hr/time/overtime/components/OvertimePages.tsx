@@ -22,6 +22,7 @@ import { ApproachingWatchlist } from "./ApproachingWatchlist";
 import { OvertimeQueueTable } from "./OvertimeQueueTable";
 import { OvertimeRequestPanel } from "./OvertimeRequestPanel";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { InfoHint } from "@/components/official/InfoHint";
 
 export function OvertimeQueuePage() {
   const hr = useHrContext();
@@ -45,12 +46,10 @@ export function OvertimeQueuePage() {
     <div className="h-full overflow-y-auto bg-textured pt-[var(--shell-header-h)]">
       <div className="mx-auto max-w-[1600px] space-y-4 px-4 py-6 sm:px-6 lg:px-8">
         <header>
-          <h1 className="text-base font-semibold text-foreground">Overtime pre-approval</h1>
-          <p className="mt-1 max-w-3xl text-[12px] leading-relaxed text-muted-foreground">
-            Requests awaiting a decision, and who is close to crossing an overtime threshold.
-            Pre-approval decides whether overtime should be <em>worked</em>. It never decides whether
-            it is paid — overtime that is worked is paid, approved or not.
-          </p>
+          <h1 className="flex items-center gap-1.5 text-base font-semibold text-foreground">
+            Overtime pre-approval
+            <InfoHint text="Pre-approval decides whether overtime should be worked; overtime that is worked is paid, approved or not." />
+          </h1>
         </header>
 
         {watchlistQueue.failure ? (

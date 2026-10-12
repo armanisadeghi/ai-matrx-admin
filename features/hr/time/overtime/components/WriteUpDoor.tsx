@@ -32,6 +32,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { announceComingSoon } from "@/lib/coming-soon/announce";
 import { UNAPPROVED_OT_IS_PAID } from "../overtimeVocabulary";
+import { InfoHint } from "@/components/official/InfoHint";
 
 export interface WriteUpDoorProps {
   /** Employee-relations authority over THIS subject. Without it the door does not render at all. */
@@ -58,10 +59,9 @@ export function WriteUpDoor({
     return (
       <section className="rounded-lg border border-border bg-card p-4">
         <h4 className="text-[13px] font-semibold text-foreground">Corrective action</h4>
-        <p className="mt-1 text-[12px] leading-relaxed text-muted-foreground">
-          These hours are already cited in a corrective action. The link is one-way evidence —
-          resolving anything here never edits it, and voiding it never rewrites the attendance
-          record.
+        <p className="mt-1 flex items-center gap-1.5 text-[12px] leading-relaxed text-muted-foreground">
+          These hours are cited in a corrective action.
+          <InfoHint text="One-way link: nothing here edits it, and voiding it never rewrites the attendance record." />
         </p>
         <Button
           icon={<FileText aria-hidden />}
@@ -80,12 +80,10 @@ export function WriteUpDoor({
 
   return (
     <section className="rounded-lg border border-border bg-card p-4">
-      <h4 className="text-[13px] font-semibold text-foreground">Corrective action</h4>
-      <p className="mt-1 max-w-2xl text-[12px] leading-relaxed text-muted-foreground">
-        Optional, and never automatic — nothing about this overtime creates a write-up on its own. If
-        you decide there is a pattern worth documenting, this opens one pre-filled with the objective
-        facts: dates, hours, thresholds crossed, alerts delivered, and whether a request was denied.
-      </p>
+      <h4 className="flex items-center gap-1.5 text-[13px] font-semibold text-foreground">
+        Corrective action
+        <InfoHint text="Never automatic; opening one pre-fills dates, hours, thresholds crossed, alerts delivered and any denied request." />
+      </h4>
       <p className="mt-1.5 text-[12px] leading-relaxed text-muted-foreground">
         {UNAPPROVED_OT_IS_PAID}
       </p>

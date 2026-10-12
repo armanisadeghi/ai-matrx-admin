@@ -25,6 +25,7 @@
 import { CalendarClock } from "lucide-react";
 
 import { SetKioskPinCard } from "@/features/hr/time/clock/SetKioskPinCard";
+import { InfoHint } from "@/components/official/InfoHint";
 
 export interface EmployeeTimePanelProps {
   /** Resolved as of today by the server. `null` where this person has no spell today. */
@@ -89,10 +90,9 @@ export function EmployeeTimePanel({
       */}
       <div className="flex items-start gap-2 rounded-md border border-border bg-muted/40 px-3 py-2">
         <CalendarClock className="mt-0.5 size-4 shrink-0 text-muted-foreground" aria-hidden />
-        <p className="text-sm text-muted-foreground">
-          This person&apos;s timesheet, punch history and schedule will appear here. Their hours are
-          recorded and correct in the meantime — the per-person view on this tab is what is still to
-          come.
+        <p className="flex items-center gap-1.5 text-sm text-muted-foreground">
+          Timesheet, punches and schedule are coming soon.
+          <InfoHint text="Their hours are already recorded correctly; only this per-person view is still to come." />
         </p>
       </div>
     </div>

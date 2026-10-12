@@ -42,6 +42,7 @@ import {
 } from "./clockStateView";
 import type { AttestationResponse, ClockState } from "@/features/hr/time/api/types";
 import { ProTextarea } from "@/components/official/ProTextarea";
+import { InfoHint } from "@/components/official/InfoHint";
 
 export interface ClockOutAttestationCardProps {
   state: ClockState;
@@ -161,11 +162,10 @@ export function ClockOutAttestationCard({
   return (
     <section className="flex flex-col gap-6 rounded-xl border border-border bg-card p-5">
       <header className="flex flex-col gap-1">
-        <h2 className="text-lg font-semibold text-foreground">Before you clock out</h2>
-        <p className="text-sm text-muted-foreground">
-          Answer honestly. Nothing here stops you clocking out — a disagreement is recorded and goes
-          to your manager.
-        </p>
+        <h2 className="flex items-center gap-1.5 text-lg font-semibold text-foreground">
+          Before you clock out
+          <InfoHint text="A disagreement is recorded and sent to your manager; it never stops you clocking out." />
+        </h2>
       </header>
 
       {/* Rule 1: the total this attestation is ABOUT, stated. Server-computed, never derived here. */}

@@ -107,7 +107,7 @@ export function KioskPairingSurface({ mockCase }: { mockCase?: HrFixtureCase }) 
         <div className="flex flex-col items-center gap-2 text-center">
           <h1 className="text-4xl font-semibold text-foreground">Set up this time clock</h1>
           <p className="max-w-xl text-xl text-muted-foreground">
-            Enter the pairing code an administrator generated for this tablet.
+            Enter the pairing code from an administrator.
           </p>
         </div>
 

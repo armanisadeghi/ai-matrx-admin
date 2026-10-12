@@ -75,7 +75,7 @@ export function DeviceFleetTable({
     const ok = await confirm({
       title: destructive ? `Revoke ${row.deviceName}?` : `Pause ${row.deviceName}?`,
       description: destructive
-        ? "This tablet stops recording time within a minute and cannot be used again until it is paired from scratch. Anyone standing at it will see a message telling them to speak to their manager."
+        ? "It stops recording time within a minute and must be paired again to work. People at it are told to see their manager."
         : "This tablet stops recording time within a minute. You can approve it again at any time.",
       confirmLabel: destructive ? "Revoke this tablet" : "Pause this tablet",
       variant: destructive ? "destructive" : "default",
