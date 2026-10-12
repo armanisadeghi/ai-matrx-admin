@@ -4,7 +4,7 @@
 //
 // THE headline flow: paste any HuggingFace / Civitai / direct URL →
 // POST {aidream}/api/catalog-resolver/resolve (user's Supabase JWT bearer via
-// the canonical BackendClient) → pick a file → a prefilled entry editor opens
+// postJsonAsUser) → pick a file → a prefilled entry editor opens
 // with the resolver's suggestions pre-applied. The admin reviews and saves
 // through the normal diff-confirmed RPC path — the resolver never writes.
 //

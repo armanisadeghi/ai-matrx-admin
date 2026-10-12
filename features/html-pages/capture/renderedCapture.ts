@@ -16,7 +16,7 @@
  * with `webContents.capturePage`.
  */
 
-import { BackendClient } from "@/lib/api/backend-client";
+import { postJsonAsUser } from "@/lib/api/post-json-as-user";
 import { BackendApiError } from "@/lib/api/errors";
 import { AIDREAM_PRODUCTION_URL } from "@/lib/api/endpoints";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
@@ -110,13 +110,15 @@ export async function captureRecordOnServer(
   } = await supabase.auth.getSession();
   if (!session?.access_token) throw new Error("Sign in to capture.");
   const organizationId = await ensureOrgId(null);
-  const client = new BackendClient({
-    baseUrl: AIDREAM_PRODUCTION_URL,
-    auth: { type: "token", token: session.access_token },
-    scope: { organization_id: organizationId ?? undefined },
-    // The request model forbids extra fields; the org rides the header.
-    sendScopeInBody: false,
-  });
+  // The request model forbids extra fields; the org rides the header.
+  const post = () =>
+    postJsonAsUser({
+      baseUrl: AIDREAM_PRODUCTION_URL,
+      accessToken: session.access_token,
+      organizationId,
+      path: "/rendered-output/capture",
+      body: payload,
+    });
   const payload = {
     record_type: request.recordType,
     record_id: request.recordId,
@@ -131,12 +133,12 @@ export async function captureRecordOnServer(
   };
   let body: unknown;
   try {
-    body = await client.postJson("/rendered-output/capture", payload);
+    body = await post();
   } catch (error) {
     if (!isTransientCaptureFailure(error)) throw error;
     console.warn("[capture] the capture engine was busy — retrying once", error);
     await new Promise((resolve) => setTimeout(resolve, CAPTURE_RETRY_BACKOFF_MS));
-    body = await client.postJson("/rendered-output/capture", payload);
+    body = await post();
   }
   if (
     !isRecord(body) ||

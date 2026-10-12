@@ -8,8 +8,8 @@
  *    so a body copy of the organization comes back 422 and `/staff` shows a
  *    validation error instead of the person's thread. The repo's usual
  *    transport (`callApi`) injects that field unconditionally on the JWT lane,
- *    which is exactly why this door uses `BackendClient` with
- *    `sendScopeInBody: false`. Switch it back and this test goes red.
+ *    which is exactly why this door uses `postJsonAsUser`,
+ *    which sends the organization in the header only. Switch it back and this test goes red.
  *
  * 2. THE REFUSAL SENTENCE MUST BE THE SERVER'S. `door.py` writes each refusal
  *    for a person to read; the screen renders it verbatim. A parser that
@@ -44,20 +44,17 @@ const THREAD = {
 };
 
 function okResponse(body: unknown): Response {
-  return {
-    ok: true,
+  return new Response(JSON.stringify(body), {
     status: 200,
-    json: async () => body,
-  } as unknown as Response;
+    headers: { "content-type": "application/json" },
+  });
 }
 
 function errorResponse(status: number, body: unknown): Response {
-  return {
-    ok: false,
+  return new Response(JSON.stringify(body), {
     status,
-    json: async () => body,
-    text: async () => JSON.stringify(body),
-  } as unknown as Response;
+    headers: { "content-type": "application/json" },
+  });
 }
 
 describe("the staff door's request", () => {

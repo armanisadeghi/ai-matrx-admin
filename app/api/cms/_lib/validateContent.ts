@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { BackendClient } from "@/lib/api/backend-client";
+import { postJsonAsUser } from "@/lib/api/post-json-as-user";
 import { AIDREAM_PRODUCTION_URL, ENDPOINTS } from "@/lib/api/endpoints";
 import { OrganizationContextError } from "@/lib/api/organization-context";
 
@@ -156,24 +156,21 @@ export async function validateContent(
   }
 
   try {
-    const client = new BackendClient({
+    // aidream's `CmsValidationRequest` is `extra="forbid"`: the organization
+    // travels in the header (which is what the admission gate reads) and
+    // must NOT be merged into this body.
+    const payload: unknown = await postJsonAsUser({
       baseUrl: validationBaseUrl,
-      auth: { type: "token", token: input.accessToken },
-      scope: { organization_id: input.organizationId },
-      // aidream's `CmsValidationRequest` is `extra="forbid"`: the organization
-      // travels in the header (which is what the admission gate reads) and
-      // must NOT be merged into this body.
-      sendScopeInBody: false,
-    });
-    const payload: unknown = await client.postJson(
-      ENDPOINTS.cms.validate,
-      {
+      accessToken: input.accessToken,
+      organizationId: input.organizationId,
+      path: ENDPOINTS.cms.validate,
+      body: {
         content,
         site_id: input.siteId ?? null,
         page_id: input.pageId ?? null,
       },
-      AbortSignal.timeout(VALIDATION_TIMEOUT_MS),
-    );
+      signal: AbortSignal.timeout(VALIDATION_TIMEOUT_MS),
+    });
     if (!isValidationResponse(payload)) {
       return skippedValidation(
         "aidream returned a malformed validation response",

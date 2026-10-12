@@ -28,13 +28,12 @@
  * the change is whatever the reviewed row already holds, so a browser can never
  * approve something other than what the reader was shown.
  *
- * Transport: the canonical `BackendClient`. `sendScopeInBody` is FALSE because
- * both endpoints' request models declare `extra="forbid"`; the organization
- * still rides the `X-Organization-Id` header, which is what the server's
+ * Transport: `postJsonAsUser`. The organization stays out of the body because
+ * both endpoints' request models declare `extra="forbid"`; it rides the `X-Organization-Id` header, which is what the server's
  * admission gate reads.
  */
 
-import { BackendClient } from "@/lib/api/backend-client";
+import { postJsonAsUser } from "@/lib/api/post-json-as-user";
 import { AIDREAM_PRODUCTION_URL, ENDPOINTS } from "@/lib/api/endpoints";
 import { createClient } from "@/utils/supabase/client";
 import type { ApprovalDecisionReply } from "./types";
@@ -96,14 +95,16 @@ async function callDoor(
   if (!session?.access_token) {
     throw new Error("Sign in to decide content exceptions.");
   }
-  const client = new BackendClient({
-    baseUrl: AIDREAM_PRODUCTION_URL,
-    auth: { type: "token", token: session.access_token },
-    scope: { organization_id: organizationId ?? undefined },
-    sendScopeInBody: false,
-  });
   try {
-    return decision(await client.postJson(path, body));
+    return decision(
+      await postJsonAsUser({
+        baseUrl: AIDREAM_PRODUCTION_URL,
+        accessToken: session.access_token,
+        organizationId,
+        path,
+        body,
+      }),
+    );
   } catch (error) {
     // The server's own refusal (403 with the reason, 400 with the remedy) is
     // what a person needs; only a bare transport failure gets the fallback.

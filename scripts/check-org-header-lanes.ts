@@ -43,7 +43,7 @@ const LEGACY_COMPLIANCE_SIGNALS = [
   "getBackendProxyAuthHeaders", ".authHeaders", "authHeaders,", "authHeaders:",
 ];
 const LEGACY_COMPLIANT_IMPORTS = [
-  "@/lib/api/call-api", "@/lib/api/backend-client", "@/lib/api/matrx-transport",
+  "@/lib/api/call-api", "@/lib/api/post-json-as-user", "@/lib/api/matrx-transport",
   "@/lib/api/context-api", "@/lib/api/typed-client", "@/lib/api/hr-contract-client",
   "@/lib/api/proxy-backend-auth-headers", "@/lib/python-client", "@/hooks/useApiAuth",
   "@/features/files/media-client/client", "@/components/api-test-config/useApiTestConfig",

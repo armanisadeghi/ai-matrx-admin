@@ -22,18 +22,17 @@
  * paints its header and its chat column on the server (see
  * `app/(core)/staff/page.tsx`); only the thread id arrives from here.
  *
- * 🚨 WHY `BackendClient` AND NOT `callApi`. `callApi` injects
+ * 🚨 WHY `postJsonAsUser` AND NOT `callApi`. `callApi` injects
  * `organization_id` into every JWT-lane POST body, and `OpenStaffThreadRequest`
- * declares `extra="forbid"` — the body copy would come back 422. `BackendClient`
- * with `sendScopeInBody: false` is the documented answer to exactly that shape
- * (see its `sendScopeInBody` docstring, and `app/api/cms/_lib/validateContent.ts`
- * for the precedent). The organization still rides the header, fail-closed,
+ * declares `extra="forbid"` — the body copy would come back 422. `postJsonAsUser`
+ * puts the organization in the header only, which is the answer to exactly that
+ * shape (see `app/api/cms/_lib/validateContent.ts` for the precedent). The organization still rides the header, fail-closed,
  * through the one `requireOrganizationContext` kernel.
  */
 
 import type { components } from "@ai-matrx/agents/generated/api-types";
 
-import { BackendClient } from "@/lib/api/backend-client";
+import { postJsonAsUser } from "@/lib/api/post-json-as-user";
 import { BackendApiError } from "@/lib/api/errors";
 import { resolveBaseUrl } from "@/lib/python-client";
 import {
@@ -107,20 +106,16 @@ export async function openStaffThread({
   baseUrl,
   signal,
 }: OpenStaffThreadArgs): Promise<StaffThread> {
-  const client = new BackendClient({
+  // The request model forbids extra fields — the organization rides the
+  // header only. See the module header.
+  return postJsonAsUser<StaffThread>({
     baseUrl: baseUrl ?? resolveBaseUrl(),
-    auth: { type: "token", token: accessToken },
-    scope: { organization_id: organizationId },
-    // The request model forbids extra fields — the organization rides the
-    // header only. See the module header.
-    sendScopeInBody: false,
-  });
-  const response = await client.rawPost(
-    STAFF_DOOR_PATH,
-    { channel: STAFF_WEB_CHANNEL },
+    accessToken,
+    organizationId,
+    path: STAFF_DOOR_PATH,
+    body: { channel: STAFF_WEB_CHANNEL },
     signal,
-  );
-  return (await response.json()) as StaffThread;
+  });
 }
 
 /**

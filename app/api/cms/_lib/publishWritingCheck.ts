@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { BackendClient } from "@/lib/api/backend-client";
+import { postJsonAsUser } from "@/lib/api/post-json-as-user";
 import { AIDREAM_PRODUCTION_URL } from "@/lib/api/endpoints";
 import { BackendApiError } from "@/lib/api/errors";
 import { OrganizationContextError } from "@/lib/api/organization-context";
@@ -190,18 +190,15 @@ export async function publishWritingCheck(input: {
 
   if (!input.accessToken) return didNotRun("the signed-in access token is unavailable");
   try {
-    const client = new BackendClient({
-      baseUrl: (input.baseUrl ?? AIDREAM_PRODUCTION_URL).replace(/\/$/, ""),
-      auth: { type: "token", token: input.accessToken },
-      scope: { organization_id: input.organizationId },
-      // The server's request model is extra="forbid": the organization rides the header only.
-      sendScopeInBody: false,
+    // The server's request model is extra="forbid": the organization rides the header only.
+    const payload: unknown = await postJsonAsUser({
+      baseUrl: input.baseUrl ?? AIDREAM_PRODUCTION_URL,
+      accessToken: input.accessToken,
+      organizationId: input.organizationId,
+      path: CMS_PUBLISH_CHECK_PATH,
+      body: input.liveEdit ? { page_id: input.pageId, live_edit: input.liveEdit } : { page_id: input.pageId },
+      signal: AbortSignal.timeout(CHECK_TIMEOUT_MS),
     });
-    const payload: unknown = await client.postJson(
-      CMS_PUBLISH_CHECK_PATH,
-      input.liveEdit ? { page_id: input.pageId, live_edit: input.liveEdit } : { page_id: input.pageId },
-      AbortSignal.timeout(CHECK_TIMEOUT_MS),
-    );
     const body = (payload ?? {}) as Record<string, unknown>;
     if (typeof body.allowed !== "boolean" || !isLift(body.lift)) {
       return didNotRun("aidream returned a malformed publish-check response");

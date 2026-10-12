@@ -2,13 +2,13 @@
 //
 // Client for the aidream link resolver:
 //   POST {base}/api/catalog-resolver/resolve  { url, kind_hint? }
-// Authenticated with the user's Supabase JWT via the canonical BackendClient
-// (lib/api/backend-client.ts — same bearer path every aidream call uses).
+// Authenticated with the user's Supabase JWT via `postJsonAsUser`
+// (lib/api/post-json-as-user.ts — @ai-matrx/api transport, bearer + org header).
 // The endpoint ships in a parallel aidream session — a 404 / network failure
 // is reported as "resolver not deployed yet", never as a crash.
 // Contract: common-docs/systems/apps/remote-catalogs/FEATURE.md
 
-import { createAuthenticatedClient } from "@/lib/api/backend-client";
+import { postJsonAsUser } from "@/lib/api/post-json-as-user";
 import { BackendApiError } from "@/lib/api/errors";
 import { probeUrl } from "@/features/admin/shared/UrlProbeField";
 import { formatFileSize } from "@ai-matrx/kit/format";
@@ -116,18 +116,19 @@ export async function resolveCatalogLink(params: {
   kindHint: string | null;
   signal?: AbortSignal;
 }): Promise<ResolveOutcome> {
-  const client = createAuthenticatedClient(params.accessToken, params.baseUrl, {
-    organization_id: params.organizationId,
-  });
   try {
-    const data = await client.postJson(
-      "/api/catalog-resolver/resolve",
-      {
+    const data = await postJsonAsUser({
+      baseUrl: params.baseUrl,
+      accessToken: params.accessToken,
+      organizationId: params.organizationId,
+      path: "/api/catalog-resolver/resolve",
+      body: {
         url: params.url,
         kind_hint: params.kindHint,
+        organization_id: params.organizationId,
       },
-      params.signal,
-    );
+      signal: params.signal,
+    });
     const result = parseResolveResult(data);
     if (!result) {
       return {
