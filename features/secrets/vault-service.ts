@@ -83,7 +83,7 @@ import {
   type Holdings,
   type HoldingRow,
 } from "./empty-read";
-import type { components } from "@ai-matrx/agents/generated/api-types";
+import type { components } from "@ai-matrx/api/types";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
 
 const assertVaultData = makeAssertData("load your vault");

@@ -31,7 +31,7 @@ import {
   parseStreamError,
 } from "@ai-matrx/api";
 import { isErrorEvent, type TypedStreamEvent } from "@/lib/api/types";
-import type { components } from "@ai-matrx/agents/generated/api-types";
+import type { components } from "@ai-matrx/api/types";
 
 import { listKeywordEdges, listKeywordsWithMarket } from "./data/queries";
 import { normalizeClusterPhrase } from "./types";

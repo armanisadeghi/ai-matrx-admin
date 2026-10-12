@@ -18,7 +18,7 @@
 import { postJson, postNdjson } from "@/lib/python-client";
 import { apiGet } from "@/lib/api/typed-client";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
-import type { components } from "@ai-matrx/agents/generated/api-types";
+import type { components } from "@ai-matrx/api/types";
 import type { ImageGenerateSize } from "@/features/image-studio/constants/generation-options";
 import type {
   GeneratedImageFileItem,

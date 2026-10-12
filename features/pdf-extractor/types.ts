@@ -2,7 +2,7 @@
  * PDF Extractor — frontend type surface.
  *
  * Re-exports the OpenAPI-generated schemas the backend team ships at
- * `@ai-matrx/agents/generated/api-types`. Always import PDF request/response
+ * `@ai-matrx/api/types`. Always import PDF request/response
  * shapes from this file rather than reaching directly into the generated
  * file — that keeps the import path stable when the generated layout changes.
  *
@@ -10,10 +10,10 @@
  *   `pnpm update-api-types` (against the staging backend)
  *   `pnpm update-api-types:local` (against http://localhost:8000)
  *
- * Do not edit `@ai-matrx/agents/generated/api-types` by hand.
+ * Do not edit `@ai-matrx/api/types` by hand.
  */
 
-import type { components } from "@ai-matrx/agents/generated/api-types";
+import type { components } from "@ai-matrx/api/types";
 import type {
   PdfClassifyCompleteData,
   PdfExtractedTableItem,

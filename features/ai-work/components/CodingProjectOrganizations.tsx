@@ -16,7 +16,7 @@ import type {
   ProjectOrganizationsReport,
 } from "@ai-matrx/coding-sessions/projects";
 import { ProjectOrganizations } from "@ai-matrx/coding-sessions/projects/react";
-import type { components } from "@ai-matrx/agents/generated/api-types";
+import type { components } from "@ai-matrx/api/types";
 
 import { apiGet, apiPut } from "@/lib/api/typed-client";
 import { putJson } from "@/lib/python-client";

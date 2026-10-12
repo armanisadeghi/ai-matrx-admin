@@ -16,7 +16,7 @@
  *   POST /api/scraper/search-and-scrape-limited — single keyword, limited pages
  */
 
-import type { components } from "@ai-matrx/agents/generated/api-types";
+import type { components } from "@ai-matrx/api/types";
 import { useState, useCallback, useRef, useEffect } from "react";
 import { useBackendApi } from "@/hooks/useBackendApi";
 import { ENDPOINTS } from "@ai-matrx/api";

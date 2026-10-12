@@ -25,7 +25,7 @@ import type {
 } from "@ai-matrx/design-system/data-table/types";
 import { apiGet } from "@/lib/api/typed-client";
 import { EntityRef } from "@/components/official/entity-ref/EntityRef";
-import type { components } from "@ai-matrx/agents/generated/api-types";
+import type { components } from "@ai-matrx/api/types";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { readOf } from "@ai-matrx/design-system";
 import { DrillExplorer } from "@/components/official/drill-explorer/DrillExplorer";

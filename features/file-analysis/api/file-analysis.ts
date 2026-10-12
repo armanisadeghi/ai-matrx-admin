@@ -58,7 +58,7 @@ import { apiGet, apiPost, apiPut, buildPath } from "@/lib/api/typed-client";
 // Every request about one file carries THAT file's organization (read from the file, never
 // the picker) — the same rule as features/files/api/files.ts (VERIFIER-23 #4 sibling census).
 import { withFileOrganization } from "@/features/files/api/fileOrganization";
-import type { components } from "@ai-matrx/agents/generated/api-types";
+import type { components } from "@ai-matrx/api/types";
 import type { TypedStreamEvent } from "@ai-matrx/agents/generated/stream-events";
 
 // ─── Type re-exports (named locally for callers) ────────────────────────────

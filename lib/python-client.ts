@@ -323,6 +323,8 @@ export interface RequestOptions {
    */
   requestId?: string;
   signal?: AbortSignal;
+  /** Upload progress (multipart POSTs only); XHR in browsers. */
+  onUploadProgress?: (progress: { loaded: number; total: number }) => void;
   /** Override base URL (tests, staging, etc.). */
   baseUrlOverride?: string;
   /**
@@ -893,7 +895,8 @@ export async function delJson<T = null, B = unknown>(
 }
 
 /**
- * Multipart upload WITHOUT progress. Use `uploadWithProgress` for UI.
+ * Multipart upload. Pass `opts.onUploadProgress` for progress (XHR in browsers,
+ * inside `sendMatrxRequest`); `uploadWithProgress` is the progress-first form.
  */
 export async function postMultipart<T>(
   path: string,
@@ -915,12 +918,13 @@ export async function postMultipart<T>(
       headers: built.headers,
       body: form,
     } satisfies RequestInit;
-    const response = opts.timeoutMs
-      ? await sendMatrxRequest(url, init, {
-        signal: opts.signal,
-        timeoutMs: opts.timeoutMs,
-      })
-      : await sendMatrxRequest(url, { ...init, signal: opts.signal });
+    const response = await sendMatrxRequest(url, init, {
+      ...(opts.signal ? { signal: opts.signal } : {}),
+      ...(opts.timeoutMs ? { timeoutMs: opts.timeoutMs } : {}),
+      ...(opts.onUploadProgress
+        ? { onUploadProgress: opts.onUploadProgress }
+        : {}),
+    });
     const data = await readMatrxJsonResponse<T>(response);
     return { data, meta: meta(response, requestId) };
   } catch (err) {
@@ -984,201 +988,22 @@ async function noticeNotAMemberRefusalIn(response: Response): Promise<void> {
   });
 }
 
-/**
- * Turn a non-2xx XHR into a BackendApiError using the SAME parser `fetch`
- * callers use (`parseHttpErrorBody`), so an XHR transport never surfaces a
- * thinner error than a fetch would for the identical response body.
- *
- * Only safe for XHRs left at the default `responseType` — a `blob` response
- * throws on `responseText`.
- */
-function parseXhrError(
-  xhr: XMLHttpRequest,
-  requestId: string,
-  fallbackUserMessage: string,
-): BackendApiError {
-  const text = (xhr.responseText ?? "").trim();
-  let body: Record<string, unknown> | null = null;
-  try {
-    body = JSON.parse(text) as Record<string, unknown>;
-  } catch {
-    body = null;
-  }
-  if (body) {
-    if (xhr.status === 402) noticeUsageRefusalInBody(body);
-    const parsed = parseHttpErrorBody(body, xhr.status);
-    return new BackendApiError({
-      code: parsed.code,
-      detail: parsed.detail,
-      userMessage: parsed.userMessage,
-      details: parsed.details,
-      requestId: parsed.requestId || requestId,
-      status: xhr.status,
-    });
-  }
-  // Non-JSON body: keep the server's own text — it beats "HTTP 500".
-  return new BackendApiError({
-    code: statusToCloudFilesCode(xhr.status) as BackendApiError["code"],
-    detail: text || `HTTP ${xhr.status}`,
-    userMessage: text || fallbackUserMessage,
-    requestId,
-    status: xhr.status,
-  });
-}
-
-/**
- * Multipart upload WITH progress via XMLHttpRequest.
- * `fetch` doesn't expose upload progress — XHR is still the only path.
- */
 export interface UploadProgressEvent {
   loaded: number;
   total: number;
 }
 
-export async function uploadWithProgress<T>(
+/** Multipart upload with progress; a stalled upload fails after 10 minutes. */
+export function uploadWithProgress<T>(
   path: string,
   form: FormData,
   onProgress: (event: UploadProgressEvent) => void,
   opts: RequestOptions = {},
 ): Promise<{ data: T; meta: ResponseMeta }> {
-  const token = await getAccessTokenOrNull();
-  const fingerprint = opts.guestFingerprint ?? getCachedFingerprint();
-  if (!token && !fingerprint) {
-    throw new BackendApiError({
-      code: "auth_required",
-      detail: "No active session and no guest fingerprint available",
-      userMessage: "Please sign in to continue.",
-      status: 401,
-    });
-  }
-  // Mandatory, fail-closed, same kernel as buildHeaders — this XHR transport
-  // built its own headers by hand and had never attached X-Organization-Id
-  // at all (a gap distinct from, and worse than, the rest of this file's
-  // "optional if passed" behaviour). Resolved BEFORE any XHR is opened.
-  const organizationId = resolveRequestOrganizationId(opts);
-  const requestId = opts.requestId ?? newRequestId();
-  const url = buildAndLogTargetUrl(
-    path,
-    opts.baseUrlOverride,
-    "uploadWithProgress",
-    "POST",
-  );
-
-  return new Promise((resolve, reject) => {
-    // A cancel the caller asked for (its signal aborted -> xhr.abort()) is not
-    // filed — the same rule as `failClient`; a stalled or failed upload is.
-    const rejectCaptured = (error: BackendApiError) => {
-      if (!cancelledByCaller(opts.signal)) captureClientError(error, "POST", path, url);
-      reject(error);
-    };
-
-    const xhr = new XMLHttpRequest();
-    xhr.open("POST", url, true);
-    if (token) xhr.setRequestHeader("Authorization", `Bearer ${token}`);
-    if (fingerprint) xhr.setRequestHeader("X-Guest-Fingerprint", fingerprint);
-    if (opts.idempotencyKey)
-      xhr.setRequestHeader("X-Idempotency-Key", opts.idempotencyKey);
-    if (opts.cloudFilesBypass)
-      xhr.setRequestHeader("X-Cloud-Files-Bypass", opts.cloudFilesBypass);
-    xhr.setRequestHeader("X-Request-Id", requestId);
-    xhr.setRequestHeader("X-Organization-Id", organizationId);
-    for (const [name, value] of Object.entries(adminLaneHeadersFor(organizationId)))
-      xhr.setRequestHeader(name, value);
-    xhr.setRequestHeader("Accept", "application/json");
-
-    xhr.upload.addEventListener("progress", (ev) => {
-      if (ev.lengthComputable) {
-        onProgress({ loaded: ev.loaded, total: ev.total });
-      }
-    });
-
-    xhr.addEventListener("load", () => {
-      if (xhr.status >= 200 && xhr.status < 300) {
-        try {
-          const data = JSON.parse(xhr.responseText) as T;
-          resolve({
-            data,
-            meta: {
-              requestId,
-              status: xhr.status,
-              serverRequestId: xhr.getResponseHeader("x-request-id") ?? null,
-            },
-          });
-        } catch (err) {
-          rejectCaptured(
-            new BackendApiError({
-              code: "internal",
-              detail: `Failed to parse upload response: ${extractErrorMessage(err)}`,
-              userMessage: "Upload succeeded but response was malformed.",
-              status: xhr.status,
-              requestId,
-            }),
-          );
-        }
-        return;
-      }
-
-      // Error path — parse through the ONE canonical body parser. Reading
-      // only top-level `error`/`message` here (as this used to) throws away
-      // FastAPI's `{"detail": {...}}` envelope, which is the shape EVERY
-      // matrx-files error uses: a 500 whose body said
-      // `{"detail":{"error":"internal","message":"File operation failed"}}`
-      // reached the user as a bare `Upload failed (500)` with details:null,
-      // and cost a full debugging session to attribute.
-      rejectCaptured(
-        parseXhrError(xhr, requestId, `Upload failed (${xhr.status})`),
-      );
-    });
-
-    xhr.addEventListener("error", () => {
-      rejectCaptured(
-        new BackendApiError({
-          code: "internal",
-          detail: "Network error during upload",
-          userMessage: "Upload failed — check your connection.",
-          requestId,
-        }),
-      );
-    });
-
-    xhr.addEventListener("abort", () => {
-      rejectCaptured(
-        new BackendApiError({
-          code: "invalid_request",
-          detail: "Upload aborted",
-          userMessage: "Upload cancelled.",
-          requestId,
-        }),
-      );
-    });
-
-    // A stalled connection must NEVER hang the upload promise forever — an
-    // unsettled promise upstream reads as "the file just disappeared" (button
-    // spinner stuck, no toast, no error). 10 min covers large files on slow
-    // links; a genuinely stalled transfer fails loudly instead of silently.
-    xhr.timeout = 10 * 60 * 1000;
-    xhr.addEventListener("timeout", () => {
-      rejectCaptured(
-        new BackendApiError({
-          code: "internal",
-          detail: "Upload timed out (no response within 10 minutes)",
-          userMessage: "Upload timed out — check your connection and retry.",
-          requestId,
-        }),
-      );
-    });
-
-    if (opts.signal) {
-      if (opts.signal.aborted) {
-        xhr.abort();
-      } else {
-        opts.signal.addEventListener("abort", () => xhr.abort(), {
-          once: true,
-        });
-      }
-    }
-
-    xhr.send(form);
+  return postMultipart<T>(path, form, {
+    ...opts,
+    timeoutMs: opts.timeoutMs ?? 10 * 60 * 1000,
+    onUploadProgress: onProgress,
   });
 }
 

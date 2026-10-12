@@ -19,7 +19,7 @@
  * Pure — no React, no Redux, no fetch.
  */
 
-import type { components } from "@ai-matrx/agents/generated/api-types";
+import type { components } from "@ai-matrx/api/types";
 
 /**
  * The wire rows, straight from the generated OpenAPI schema — never mirrored.

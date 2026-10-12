@@ -8,7 +8,7 @@
 // below are typed by the published api-types.
 
 import { failureSentence } from "../serverFailure";
-import type { components } from "@ai-matrx/agents/generated/api-types";
+import type { components } from "@ai-matrx/api/types";
 import { callApi } from "@/lib/api/call-api";
 import type { AppDispatch } from "@/lib/redux/store";
 import { supabase } from "@/utils/supabase/client";

@@ -21,7 +21,7 @@
  */
 
 import { apiGet, apiPost, buildPath, withQuery } from "@/lib/api/typed-client";
-import type { components } from "@ai-matrx/agents/generated/api-types";
+import type { components } from "@ai-matrx/api/types";
 
 export type OwnPlanProvider = components["schemas"]["OwnPlanProvider"];
 export type OwnPlanState = components["schemas"]["OwnPlanState"];

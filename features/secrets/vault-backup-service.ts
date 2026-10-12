@@ -4,7 +4,7 @@ import { requireSelectedOrgId } from "@/lib/organizations/activeOrg";
 import { createClient } from "@/utils/supabase/client";
 import { getClaimsUser } from "@ai-matrx/auth";
 
-import type { components } from "@ai-matrx/agents/generated/api-types";
+import type { components } from "@ai-matrx/api/types";
 import {
   buildMatrxRequestUrl,
   extractMatrxErrorCode,

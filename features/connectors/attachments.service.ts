@@ -31,7 +31,7 @@ import {
   extractMatrxErrorMessage,
   sendMatrxRequest,
 } from "@ai-matrx/api";
-import type { paths } from "@ai-matrx/agents/generated/api-types";
+import type { paths } from "@ai-matrx/api/types";
 import type {
   ConversationAttachment,
   PendingAttachment,

@@ -5,7 +5,7 @@
  * Everything goes through `callApi`, the ONE door to the Python server, so auth,
  * base-URL resolution, organization scope, error capture and the NDJSON reader
  * are the platform's and not this feature's. Paths and bodies are typed by the
- * GENERATED contract (`@ai-matrx/agents/generated/api-types`): the `/media/*`
+ * GENERATED contract (`@ai-matrx/api/types`): the `/media/*`
  * operations landed there on 2026-09-18 and the contract-ahead augmentation
  * that stood in for them deleted itself, exactly as its header promised. What
  * that generated contract does NOT carry, this file no longer calls — see the

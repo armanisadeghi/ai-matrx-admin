@@ -8,7 +8,7 @@
  *
  * WHY A SECOND CLIENT MODULE AND NOT AN EDIT TO `typed-client.ts`
  * ---------------------------------------------------------------
- * `lib/api/typed-client.ts` is generic over `@ai-matrx/agents/generated/api-types` — the LIVE
+ * `lib/api/typed-client.ts` is generic over `@ai-matrx/api/types` — the LIVE
  * server contract. HR's 60 paths are not in it and must not be faked into it: the day a family
  * lands for real, its types appear there for the first time and the diff against this stub is the
  * drift detector §6.3 step 4 is built around. Widening the shared client's path union to include

@@ -48,7 +48,7 @@ or partial provider failure.
 - UI: `components/assignment-demo/AgentAssignmentsDemo.tsx`
 - RTK state/thunks: `redux/agent-assignments/`
 - Typed HTTP wrappers: `lib/api/call-api.ts`
-- Generated schemas: `@ai-matrx/agents/generated/api-types` and
+- Generated schemas: `@ai-matrx/api/types` and
   `stream-events.ts`
 
 The demo covers single random assignment, paired blog rows, independent random

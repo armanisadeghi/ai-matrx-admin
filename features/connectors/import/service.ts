@@ -10,7 +10,7 @@
  */
 
 import { getJson, postJson } from "@/lib/python-client";
-import type { components } from "@ai-matrx/agents/generated/api-types";
+import type { components } from "@ai-matrx/api/types";
 import type {
   ContactFieldChoicePending,
   ContactFieldSpecPending,

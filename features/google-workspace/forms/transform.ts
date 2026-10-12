@@ -1,4 +1,4 @@
-import type { components } from "@ai-matrx/agents/generated/api-types";
+import type { components } from "@ai-matrx/api/types";
 
 type Preview = components["schemas"]["SelectedFormResponsesPreview"];
 type Response = components["schemas"]["SelectedFormResponse"];

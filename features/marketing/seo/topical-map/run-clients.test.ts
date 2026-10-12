@@ -347,7 +347,7 @@ describe("the generated contract carries these three paths", () => {
   );
 
   it.each([MAP_PAGES_PATH, MAP_REGIONS_PATH, PROPOSE_INTENTS_PATH])(
-    "%s is in @ai-matrx/agents/generated/api-types",
+    "%s is in @ai-matrx/api/types",
     (path) => {
       expect(existsSync(apiTypesPath)).toBe(true);
       expect(readFileSync(apiTypesPath, "utf-8")).toContain(`    "${path}": {`);

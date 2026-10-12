@@ -9,7 +9,7 @@
 
 import { callApi } from "@/lib/api/call-api";
 import type { AppDispatch } from "@/lib/redux/store";
-import type { components } from "@ai-matrx/agents/generated/api-types";
+import type { components } from "@ai-matrx/api/types";
 
 export type DeliveryBody = components["schemas"]["DeliveryBody"];
 export type ResumeResponse = components["schemas"]["ResumeResponse"];

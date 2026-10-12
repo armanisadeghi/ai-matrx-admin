@@ -22,7 +22,7 @@ import {
   isDocumentRequest,
 } from "@/lib/api/credential-door";
 import { resolveOrchestratorByTier } from "@/lib/sandbox/orchestrator-routing";
-import type { components } from "@ai-matrx/agents/generated/api-types";
+import type { components } from "@ai-matrx/api/types";
 import { isJsonObject } from "@/types/json";
 import { getClaimsUser } from "@ai-matrx/auth";
 

@@ -13,7 +13,7 @@
 // the run still goes ahead as asked when the person confirms
 // (common-docs/policies/limits-are-knobs-agents-set-them.md).
 
-import type { components } from "@ai-matrx/agents/generated/api-types";
+import type { components } from "@ai-matrx/api/types";
 import type {
   MediaResearchProgressData,
   MediaResearchResultData,

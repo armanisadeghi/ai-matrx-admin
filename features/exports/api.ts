@@ -2,7 +2,7 @@
 //
 // Every call BRING YOUR EXPORT makes to the aidream `/media` export endpoints.
 // One file, so the day the server contract lands in
-// `@ai-matrx/agents/generated/api-types` there is exactly one place to move to
+// `@ai-matrx/api/types` there is exactly one place to move to
 // `lib/api/typed-client`'s `apiGet`/`apiPost` (which cannot be used yet — it is
 // generic over a path LITERAL that must exist in the generated `paths`, and
 // none of these do).

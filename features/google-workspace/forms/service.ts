@@ -1,4 +1,4 @@
-import type { components } from "@ai-matrx/agents/generated/api-types";
+import type { components } from "@ai-matrx/api/types";
 import { postGoogleBackend } from "@/features/marketing/google/service";
 import { requireOrganizationContext } from "@/lib/api/organization-context";
 

@@ -39,7 +39,7 @@ export interface SelectedGoogleFile {
    * none (most commonly: the caller sent no `organization_id`).
    *
    * Hand-typed: the generated `SelectedFileResponse`
-   * (`@ai-matrx/agents/generated/api-types`) does not carry these four fields yet.
+   * (`@ai-matrx/api/types`) does not carry these four fields yet.
    * Run `pnpm sync-types`, then read them off the generated type instead and
    * delete this comment.
    */

@@ -10,7 +10,7 @@
 // cytoscape wants edges keyed `source` / `target` — the backend already emits
 // those names, so these flow straight into <CytoscapeComponent> elements.
 
-import type { components } from "@ai-matrx/agents/generated/api-types";
+import type { components } from "@ai-matrx/api/types";
 
 /** One entity node. `mention_count` / `source_count` / `confidence_avg` come
  *  from NER mentions (0 until the NER backfill runs on a user's org). */

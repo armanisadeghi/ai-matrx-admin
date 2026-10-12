@@ -5,7 +5,7 @@
 // detect-fields (real work) go to aidream. The RPC names and arguments are not loosened from the generated
 // types: every RPC call is checked against `types/database.types.ts`.
 
-import type { components } from "@ai-matrx/agents/generated/api-types";
+import type { components } from "@ai-matrx/api/types";
 import { callApi, type ApiCallResult } from "@/lib/api/call-api";
 import type { AppDispatch } from "@/lib/redux/store";
 import type { Database } from "@/types/database.types";

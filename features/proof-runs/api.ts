@@ -36,7 +36,7 @@ import {
   type ProofMandateCatalogResponse,
   type ProofScenariosResponse,
 } from "@/features/proof-runs/types";
-import type { components } from "@ai-matrx/agents/generated/api-types";
+import type { components } from "@ai-matrx/api/types";
 
 const BASE = "/proof-runs";
 

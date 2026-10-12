@@ -208,7 +208,7 @@ item-presentation type map (`itemType.tsx` → `features/item-presentation/regis
 - `types.ts` — the row (from the generated database types) and the refresh response.
   🚨 The response interface is HAND-TYPED from aidream's `DocumentRecordResponse`
   (`aidream/api/routers/google_sync.py`) because the `google_sync` routes are not in
-  `@ai-matrx/agents/generated/api-types` yet; when `pnpm sync-types` regenerates the contract
+  `@ai-matrx/api/types` yet; when `pnpm sync-types` regenerates the contract
   that interface is DELETED and the generated one imported.
 - `record.ts` — pure: the row → detail-row projection (the health producer looks for a
   `provider` column and the product whose grant refreshes the row, and this table names
@@ -274,7 +274,7 @@ ONE component with three mounts.
 - `types.ts` — the row (from the generated database types), Google's RSVP vocabulary, and the
   refresh response. 🚨 The response interface is HAND-TYPED (`*Pending`) from aidream's
   `CalendarRefreshResponse` because the `google_sync` routes are not in
-  `@ai-matrx/agents/generated/api-types` yet; when `pnpm sync-types` regenerates the contract it
+  `@ai-matrx/api/types` yet; when `pnpm sync-types` regenerates the contract it
   is DELETED and the generated one imported.
 - `record.ts` — pure, no clock of its own: the day grouping, the attendee reader, the freshness
   sentence, the staleness rule, the curated field list, the `google.calendar.agenda_days`
@@ -586,7 +586,7 @@ through `mergeJsonColumn`); Drive scope is `drive.file`, so the Google Picker (`
   off `SelectedFileResponse`, added in aidream `37600daa78` (F-57, R29). A pin below a field
   the client reads lets `pnpm sync-types:live` accept a server that answers without it, and
   the drop guard cannot speak for a field nothing reads off the generated type. The floor is
-  now `37600daa78`. STILL OPEN: `@ai-matrx/agents/generated/api-types` predates F-57, so
+  now `37600daa78`. STILL OPEN: `@ai-matrx/api/types` predates F-57, so
   `SelectedGoogleFile` (`types.ts`) and `AttachableResource.record_table`
   (`features/connectors/attachable-resources.ts`) remain HAND-TYPED TWINS of the contract and
   nothing forces them to agree. Regenerating needs `pnpm sync-types`, whose offline emit
@@ -1073,7 +1073,7 @@ through `mergeJsonColumn`); Drive scope is `drive.file`, so the Google Picker (`
   ⚠️ **`pnpm sync-types` still cannot run in this environment** — same failure F-69 found: full
   mode fails at Step 1 (`pnpm db-types`) with `LegacyPlatformAuthRequiredError: Access token not
   provided` (no `SUPABASE_ACCESS_TOKEN`/`supabase login` in this sandbox); `--fast` mode needs a
-  local Python backend at `localhost:8000`, absent here. `@ai-matrx/agents/generated/api-types`
+  local Python backend at `localhost:8000`, absent here. `@ai-matrx/api/types`
   was left untouched; `SelectedGoogleFile`'s four new fields stay hand-typed until a session with
   the token or the local server can regenerate the contract and this comment is deleted.
 

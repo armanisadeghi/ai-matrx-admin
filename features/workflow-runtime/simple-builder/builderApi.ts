@@ -11,7 +11,7 @@
 // `BuilderSpecView`, `TableWorkflows`, `BuilderRuns`, `PublishedBuilder`, `OnOff`,
 // `FireResponse`; swap them for `components["schemas"][…]` aliases then.
 
-import type { paths } from "@ai-matrx/agents/generated/api-types";
+import type { paths } from "@ai-matrx/api/types";
 import { callApi } from "@/lib/api/call-api";
 import { parseCallApiError } from "@ai-matrx/api";
 import type { AppDispatch } from "@/lib/redux/store";

@@ -362,7 +362,7 @@ test("a mid-stream info event (pre-spend) does not cancel the after-call refresh
 
 test("every paid-AI path in the census is a real POST endpoint of the server", () => {
   const types = readFileSync(
-    require.resolve("@ai-matrx/agents/generated/api-types").replace(
+    require.resolve("@ai-matrx/api/types").replace(
       /api-types\.c?js$/,
       "api-types.d.ts",
     ),

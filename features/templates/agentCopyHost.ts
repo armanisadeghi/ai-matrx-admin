@@ -11,7 +11,7 @@ import { resolveSystemOrgId } from "@/lib/organizations/systemOrg";
 import { duplicateAgent, saveAgentField } from "@/features/agents/redux/builder-write.thunks";
 import { nameCopiedAgent, writeAgent } from "./agentWrites";
 import { callApi } from "@/lib/api/call-api";
-import type { components } from "@ai-matrx/agents/generated/api-types";
+import type { components } from "@ai-matrx/api/types";
 import {
   createTemplateAgentArchiver,
   createTemplateAgentCopier,

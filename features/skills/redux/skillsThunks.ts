@@ -37,7 +37,7 @@ import {
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
 import { selectUserId } from "@/lib/redux/slices/userSlice";
 import { selectAdminFeature } from "@/lib/redux/selectors/userSelectors";
-import type { components } from "@ai-matrx/agents/generated/api-types";
+import type { components } from "@ai-matrx/api/types";
 import type { Database } from "@/types/database.types";
 
 /** Generated body types from the synced OpenAPI schema. Replaces the

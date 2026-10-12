@@ -30,7 +30,7 @@
  * through the one `requireOrganizationContext` kernel.
  */
 
-import type { components } from "@ai-matrx/agents/generated/api-types";
+import type { components } from "@ai-matrx/api/types";
 
 import { postJsonAsUser } from "@/lib/api/post-json-as-user";
 import { BackendApiError } from "@ai-matrx/api";

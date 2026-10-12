@@ -15,7 +15,7 @@
 import { failureSentence, wasAnswered } from "../serverFailure";
 import { callApi, type ApiCallResult } from "@/lib/api/call-api";
 import type { AppDispatch } from "@/lib/redux/store";
-import type { components } from "@ai-matrx/agents/generated/api-types";
+import type { components } from "@ai-matrx/api/types";
 
 import type { FieldPatch, FieldValue, FieldValues } from "../contract/fieldModel";
 import { DoorRefusal, SessionEnded, type AdoptInput, type MarkTarget, type SignerDoorApi, type SignerLoadV2 } from "../contract/signerDoor";

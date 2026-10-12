@@ -102,9 +102,9 @@ export type {
   components,
   operations,
   paths,
-} from "@ai-matrx/agents/generated/api-types";
+} from "@ai-matrx/api/types";
 
-import type { components } from "@ai-matrx/agents/generated/api-types";
+import type { components } from "@ai-matrx/api/types";
 
 // Named aliases — every one of these resolves to a generated schema.
 // If a schema is renamed/removed in Python, TypeScript will error here immediately.

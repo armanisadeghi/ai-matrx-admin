@@ -1,4 +1,4 @@
-import type { components } from "@ai-matrx/agents/generated/api-types";
+import type { components } from "@ai-matrx/api/types";
 import { postJson } from "@/lib/python-client";
 
 export type CalendarRescheduleRequest = components["schemas"]["CalendarEventRescheduleRequest"];

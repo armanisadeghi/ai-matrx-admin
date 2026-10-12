@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { apiGet } from "@/lib/api/typed-client";
 import { isOrganizationRequiredError } from "@ai-matrx/auth/organizations";
-import type { components } from "@ai-matrx/agents/generated/api-types";
+import type { components } from "@ai-matrx/api/types";
 import type { PodcastSpeaker } from "./types";
 import type { VoiceProvider } from "./voiceCatalog";
 

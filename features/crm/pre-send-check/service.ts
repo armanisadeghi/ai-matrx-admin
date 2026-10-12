@@ -9,7 +9,7 @@
 // Callers: the single-send dialog's "Review before send" + per-recipient fit, and the outreach
 // list's send step (outlet groups). Server: aidream `aidream/services/pitch_advisories/pre_send.py`.
 
-import type { components } from "@ai-matrx/agents/generated/api-types";
+import type { components } from "@ai-matrx/api/types";
 import { apiPost } from "@/lib/api/typed-client";
 
 export type PreSendCheckRequest = components["schemas"]["PreSendCheckDoorRequest"];

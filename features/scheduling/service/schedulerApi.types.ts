@@ -13,7 +13,7 @@ import type {
   Surface,
   TriggerType,
 } from "../types";
-import type { components as ApiComponents } from "@ai-matrx/agents/generated/api-types";
+import type { components as ApiComponents } from "@ai-matrx/api/types";
 
 // ── Task ───────────────────────────────────────────────────────────────────
 

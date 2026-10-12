@@ -1,7 +1,7 @@
 // features/esign/envelopes/types.ts — the sender's view of an e-signature envelope.
 
 import type { ListScopeKind } from "@/lib/list-scope/types";
-import type { components } from "@ai-matrx/agents/generated/api-types";
+import type { components } from "@ai-matrx/api/types";
 
 /** All = what I sent, was given, or must sign · Mine = what I sent. */
 export const ENVELOPE_LIST_SCOPES: ListScopeKind[] = ["all", "mine"];

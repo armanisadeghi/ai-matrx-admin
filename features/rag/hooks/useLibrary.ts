@@ -24,7 +24,7 @@ import { selectUserId } from "@/lib/redux/selectors/userSelectors";
 import { supabase } from "@/utils/supabase/client";
 import { ragDb } from "@/utils/supabase/ragDb";
 import { abortByCaller } from "@/lib/diagnostics/cancelledByCaller";
-import type { components } from "@ai-matrx/agents/generated/api-types";
+import type { components } from "@ai-matrx/api/types";
 import type {
   DocStatus,
   LibraryDocDetail,

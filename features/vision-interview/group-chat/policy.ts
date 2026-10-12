@@ -5,7 +5,7 @@
 // policy is a 422, never clamped — so `policyProblem` names what the controls would send wrong
 // BEFORE it is sent, and the save is held until it is fixed.
 
-import type { components } from "@ai-matrx/agents/generated/api-types";
+import type { components } from "@ai-matrx/api/types";
 
 export type ViewPolicy = components["schemas"]["ViewPolicy"];
 export type GroupParticipant = components["schemas"]["Participant"];

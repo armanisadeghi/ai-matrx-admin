@@ -15,7 +15,7 @@
  */
 import type { z } from "zod";
 
-import type { components } from "@ai-matrx/agents/generated/api-types";
+import type { components } from "@ai-matrx/api/types";
 import type { Database } from "@/types/database.types";
 import type {
   credentialDefinitionSchema,

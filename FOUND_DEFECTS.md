@@ -540,7 +540,7 @@ says someone meant to write it.
 `Interface 'AttachableAvailability' incorrectly extends` the generated
 availability shape it widens (`McpAvailability` in
 `features/connectors/connection-state.ts`, aliased from
-`@ai-matrx/agents/generated/api-types`). Found while type-checking lane F-7's own
+`@ai-matrx/api/types`). Found while type-checking lane F-7's own
 files — this one is UNRELATED to that work and the file is untouched by it. It
 did not report on a run earlier in the same session, so the most likely cause is
 the generated-contract sync in `00d99946` moving the server shape underneath the

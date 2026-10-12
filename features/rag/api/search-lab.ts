@@ -11,7 +11,7 @@
 import { getJson, postJson, postNdjson } from "@/lib/python-client";
 import { adminDoorOpen, adminDoorPath } from "@/lib/api/adminDoor";
 import { apiPost } from "@/lib/api/typed-client";
-import type { components } from "@ai-matrx/agents/generated/api-types";
+import type { components } from "@ai-matrx/api/types";
 
 // ---------------------------------------------------------------------------
 // /expand — multi-query + HyDE preview

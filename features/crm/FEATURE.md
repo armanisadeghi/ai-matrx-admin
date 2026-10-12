@@ -1068,7 +1068,7 @@ Settings → Configuration, Marketing → Public Relations). 🚨 `service.ts` c
 
 ## Not built yet
 
-- A regenerated `@ai-matrx/agents/generated/api-types` for this endpoint. It still
+- A regenerated `@ai-matrx/api/types` for this endpoint. It still
   carries the pre-spine shape (five request fields, `message_id` alone), because
   `pnpm sync-types` cannot run without database environment — the two exact
   failures are in the header of `gmail/reviewed-send-contract.ts`, which holds the

@@ -10,7 +10,7 @@
 // A report NEVER refuses. Every surface renders it with <PitchAdvisoryPanel> above its action
 // button and lets the action run (common-docs/policies/limits-are-knobs-agents-set-them.md).
 
-import type { components } from "@ai-matrx/agents/generated/api-types";
+import type { components } from "@ai-matrx/api/types";
 import { apiPost } from "@/lib/api/typed-client";
 import { createClient } from "@/utils/supabase/client";
 
