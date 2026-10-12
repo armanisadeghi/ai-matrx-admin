@@ -9,7 +9,7 @@
  *   Ours / Not us · accounts: Ours / Not us · contact: Primary / Ours / Not us · about: Use / Not us.
  */
 
-import { Check, Globe, X } from "lucide-react";
+import { Check, Globe, Star, Tag, X } from "lucide-react";
 import { Button } from "@ai-matrx/design-system/controls";
 import { formatCount } from "@ai-matrx/kit/format";
 import { profileAvatarDoor } from "@/features/marketing/social/server";
@@ -189,7 +189,7 @@ function SlotRow({
             disabled={locked}
             onClick={() => onDecide(item.key, c.decision)}
           >
-            {c.decision === "no" ? <X className="size-3.5 sm:hidden" /> : <Check className="size-3.5 sm:hidden" />}
+            <ChoiceIcon decision={c.decision} />
             <span className="hidden sm:inline">{c.label}</span>
           </Button>
         ))}
@@ -250,4 +250,13 @@ function Avatar({ item }: { item: EvidenceItem }) {
       <PlatformMark platform={item.platform ?? ""} size={16} />
     </span>
   );
+}
+
+/** On phones the choice is an icon (the label is its accessible name): one shape per meaning. */
+function ChoiceIcon({ decision }: { decision: Decision }) {
+  const cls = "size-3.5 sm:hidden";
+  if (decision === "preferred") return <Star className={cls} />;
+  if (decision === "alias") return <Tag className={cls} />;
+  if (decision === "no") return <X className={cls} />;
+  return <Check className={cls} />;
 }
