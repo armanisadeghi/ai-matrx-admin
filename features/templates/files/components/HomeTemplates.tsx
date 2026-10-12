@@ -12,7 +12,7 @@ import type { TemplateKind, TemplateSummary } from "../types";
 import { TemplateGallery, useCreateFromTemplate } from "./TemplateGallery";
 import { TemplateThumb } from "./TemplateThumb";
 
-const BAND_TILES = 6;
+const BAND_TILES = 4;
 
 export function useHomeTemplates(kind: TemplateKind) {
   const [open, setOpen] = useState(false);

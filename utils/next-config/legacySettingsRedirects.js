@@ -81,6 +81,7 @@ const LEGACY_PAGE_TABS = {
   "/settings/profile/voice": "account.writingVoice",
   "/settings/voice": "voice.diagnostics",
   "/settings/integrations": "integrations",
+  "/settings/google-workspace": "integrations.googleWorkspace",
   "/settings/sandbox": "sandboxDefaults",
   "/settings/sandbox-storage": "sandboxStorage",
   "/settings/organizations": "organizations",

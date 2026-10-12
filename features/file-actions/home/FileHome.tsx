@@ -427,10 +427,11 @@ function PhoneRows<Row>({
                             <span className="truncate">
                               {d.verb} {homeDateLabel(d.at, now)}
                             </span>
-                            {marksFor?.(d.item.row, "card")}
                           </span>
                         </span>
                       </Link>
+                      {/* Outside the Link: a mark is itself a link (Google), and a link never nests in a link. */}
+                      <span className="flex shrink-0 items-center gap-1">{marksFor?.(d.item.row, "card")}</span>
                       <span className="matrx-touch-targets shrink-0">{menu}</span>
                       {navigatingId === d.item.id ? <Navigating /> : null}
                     </div>

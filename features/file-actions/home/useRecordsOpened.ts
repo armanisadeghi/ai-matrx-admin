@@ -43,7 +43,14 @@ function load(type: FileEntityType, force = false): Promise<void> {
   if (s.loaded && !force) return Promise.resolve();
   if (s.loading) return s.loading;
   s.loading = (async () => {
-    const { data, error } = await createClient().rpc("ues_list", {});
+    // Filter on the server: the unfiltered list is every row a person has ever touched (thousands for a
+    // busy account) and PostgREST's row cap would cut it before any workbook or document appears.
+    const { data, error } = await createClient()
+      .rpc("ues_list", {})
+      .eq("entity_type", type)
+      .not("last_viewed_at", "is", null)
+      .order("last_viewed_at", { ascending: false })
+      .limit(1000);
     s.loading = null;
     if (error) {
       s.error = error.message;
