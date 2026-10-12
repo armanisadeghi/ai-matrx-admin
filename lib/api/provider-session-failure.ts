@@ -28,7 +28,6 @@ import {
   type ProviderSessionFailureVerdict,
   type ProviderSessionUsage,
 } from "@ai-matrx/api";
-import { waitForAuthReady } from "@/lib/api/call-api";
 import { createMatrxTransport } from "@/lib/api/matrx-transport";
 import { getStoreSingleton } from "@/lib/redux/store-singleton";
 
@@ -49,7 +48,6 @@ export function reportBrowserProviderFailure(
 > {
   return async (_dispatch, getState) => {
     try {
-      await waitForAuthReady(getState);
       const transport = createMatrxTransport(getState, {
         source: "providerSessionFailure",
       });
@@ -98,7 +96,6 @@ const usageReporter = createProviderUsageReporter({
     if (!store) return "retry";
     try {
       const getState = store.getState as () => RootState;
-      await waitForAuthReady(getState);
       return await reportProviderSessionUsage(
         createMatrxTransport(getState, { source: "providerSessionUsage" }),
         usage,

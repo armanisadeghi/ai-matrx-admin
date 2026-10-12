@@ -80,7 +80,7 @@ describe("hr-contract-client organization context", () => {
     await hrApiGet("/hr/exports/formats", {
       baseUrlOverride: "https://hr.example.test",
     });
-    expect(headersOf(fetchMock)["X-Organization-Id"]).toBe(ORGANIZATION_ID);
+    expect(headersOf(fetchMock)["x-organization-id"]).toBe(ORGANIZATION_ID);
   });
 
   it("stamps X-Organization-Id and X-Idempotency-Key on a mutating POST", async () => {
@@ -98,8 +98,8 @@ describe("hr-contract-client organization context", () => {
       },
     );
     const headers = headersOf(fetchMock);
-    expect(headers["X-Organization-Id"]).toBe(ORGANIZATION_ID);
-    expect(headers["X-Idempotency-Key"]).toBe(
+    expect(headers["x-organization-id"]).toBe(ORGANIZATION_ID);
+    expect(headers["x-idempotency-key"]).toBe(
       "intent-key-reused-across-retries",
     );
   });
@@ -110,7 +110,7 @@ describe("hr-contract-client organization context", () => {
       baseUrlOverride: "https://hr.example.test",
       organizationId: OTHER_ORGANIZATION_ID,
     });
-    expect(headersOf(fetchMock)["X-Organization-Id"]).toBe(
+    expect(headersOf(fetchMock)["x-organization-id"]).toBe(
       OTHER_ORGANIZATION_ID,
     );
     expect(requireSelectedOrgIdMock).not.toHaveBeenCalled();

@@ -100,8 +100,12 @@ export const AUTH_READY_WAIT_MS = 8000;
 /** The app's Redux-backed credential source — read fresh per call, after auth hydration. */
 function credentialsFromState(getState: () => RootState): CredentialsPort {
   return {
-    get: async (): Promise<MatrxCredential | null> => {
+    // The package awaits this (bounded by `readyTimeoutMs`) before every
+    // credential read, so a call issued while the session hydrates waits.
+    ready: async (): Promise<void> => {
       await waitForAuthReady(getState, AUTH_READY_WAIT_MS);
+    },
+    get: async (): Promise<MatrxCredential | null> => {
       const state = getState();
       const accessToken = selectAccessToken(state);
       if (accessToken) return { kind: "user", accessToken };
@@ -239,6 +243,7 @@ export function createMatrxTransport(
       };
     },
     credentials: credentialsFromState(getState),
+    readyTimeoutMs: AUTH_READY_WAIT_MS,
     aiApiVersion: () => selectAiApiVersion(getState()),
     diagnostics: diagnosticsFromState(getState),
     ...(options.expectedErrorStatuses
@@ -294,7 +299,6 @@ export function cancelAgentRunRequest(
   Action
 > {
   return async (_dispatch, getState) => {
-    await waitForAuthReady(getState);
     const base = createMatrxTransport(getState);
     const transport =
       seenSeq === undefined

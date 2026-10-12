@@ -21,7 +21,6 @@ import {
 } from "@ai-matrx/api";
 import type { RootState } from "@/lib/redux/store";
 import type { TypedStreamEvent } from "@ai-matrx/agents/generated/stream-events";
-import { waitForAuthReady } from "@/lib/api/call-api";
 import { createMatrxTransport } from "@/lib/api/matrx-transport";
 
 type AppThunk<T> = ThunkAction<Promise<T>, RootState, unknown, Action>;
@@ -46,7 +45,6 @@ export function resumeOrRejoinThunk(
   args: ResumeOrRejoinArgs,
 ): AppThunk<ResumeOrRejoinOutcome> {
   return async (_dispatch, getState) => {
-    await waitForAuthReady(getState);
     const transport = createMatrxTransport(getState, {
       ...(args.organizationId ? { organizationId: args.organizationId } : {}),
       // 409 is the server saying "rejoin, don't re-run" — an answer, not an incident.
@@ -84,7 +82,6 @@ export function rejoinOperationThunk(args: {
   onEvent: (event: TypedStreamEvent) => void;
 }): AppThunk<void> {
   return async (_dispatch, getState) => {
-    await waitForAuthReady(getState);
     const transport = createMatrxTransport(getState, {
       ...(args.organizationId ? { organizationId: args.organizationId } : {}),
       expectedErrorStatuses: [409],
