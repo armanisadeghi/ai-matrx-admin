@@ -6,7 +6,7 @@
 // Outputs for the report that feeds the publishing generators.
 
 import { MessageSquareText } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { Chip } from "@ai-matrx/design-system/controls";
 
 export function ReadingSetSwitches({
   counts,
@@ -18,28 +18,15 @@ export function ReadingSetSwitches({
   onChange: (next: { comments: boolean; notes: boolean }) => void;
 }) {
   const toggles = [
-    { key: "comments", label: "Comments", count: counts.open, on: value.comments, hint: "Open comment threads ride along. Resolved ones never do." },
-    { key: "notes", label: "My notes", count: counts.notes, on: value.notes, hint: "Your own private highlights and notes ride along." },
+    { key: "comments", label: `Comments ${counts.open}`, on: value.comments, hint: "Open comment threads ride along. Resolved ones never do." },
+    { key: "notes", label: `My notes ${counts.notes}`, on: value.notes, hint: "Your own private highlights and notes ride along." },
   ] as const;
   return (
     <>
       {toggles.map((toggle) => (
-        <button
-          key={toggle.key}
-          type="button"
-          aria-pressed={toggle.on}
-          title={toggle.hint}
-          onClick={() => onChange({ ...value, [toggle.key]: !toggle.on })}
-          className={cn(
-            "inline-flex h-5 items-center gap-1 rounded-full border px-2 text-[10px] tabular-nums transition-colors",
-            toggle.on
-              ? "border-primary/40 bg-primary/10 text-foreground"
-              : "border-border/60 text-muted-foreground hover:text-foreground",
-          )}
-        >
-          <MessageSquareText className="h-2.5 w-2.5" aria-hidden />
-          {toggle.label} {toggle.count}
-        </button>
+        <Chip key={toggle.key} asChild pressed={toggle.on} label={toggle.label} icon={<MessageSquareText aria-hidden />} title={toggle.hint}>
+          <button type="button" onClick={() => onChange({ ...value, [toggle.key]: !toggle.on })} />
+        </Chip>
       ))}
     </>
   );
