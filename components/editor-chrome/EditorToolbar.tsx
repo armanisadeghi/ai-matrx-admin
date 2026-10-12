@@ -25,7 +25,7 @@ import {
   type EditorMenuEntry,
   type EditorShortcut,
 } from "./editor-menu-model";
-import { renderMenuEntries } from "./EditorMenuBar";
+import { rememberEditorFocus, renderMenuEntries, restoreEditorFocus } from "./EditorMenuBar";
 
 type IconType = React.ComponentType<{ className?: string }>;
 
@@ -169,6 +169,7 @@ export function EditorToolbar({
       role="toolbar"
       aria-label="Editing tools"
       data-editor-toolbar=""
+      onPointerDownCapture={rememberEditorFocus}
       className={cn(
         "matrx-touch-targets mx-2 mb-1 flex h-10 shrink-0 items-center gap-0.5 overflow-x-auto rounded-full bg-muted/50 px-1.5 [scrollbar-width:none]",
         className,
@@ -230,7 +231,11 @@ export function EditorToolbar({
                 />
               )}
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="max-h-[70vh] min-w-[12rem] overflow-y-auto">
+            <DropdownMenuContent
+              align="start"
+              className="max-h-[70vh] min-w-[12rem] overflow-y-auto"
+              onCloseAutoFocus={restoreEditorFocus}
+            >
               {renderMenuEntries(it.items, `${it.id}/`)}
             </DropdownMenuContent>
           </DropdownMenu>

@@ -25,6 +25,7 @@ import {
   type GoogleLinkAdapter,
 } from "@/features/google-workspace/linked/GoogleLinkControl";
 import { FileMenuItems, type FileMenuItemsProps } from "./FileMenuItems";
+import { restoreEditorFocus } from "@/components/editor-chrome/EditorMenuBar";
 import { MoveToProjectDialog } from "./MoveToProjectDialog";
 import { SaveAsTemplateDialog } from "@/features/templates/files/components/SaveAsTemplateDialog";
 import type { TemplateKind } from "@/features/templates/files/types";
@@ -169,6 +170,7 @@ export function FileMenu({
                 )}
               </DropdownMenuTrigger>
               <DropdownMenuContent
+                {...(isValidElement(trigger) ? { onCloseAutoFocus: restoreEditorFocus } : {})}
                 align={isValidElement(trigger) ? "start" : "end"}
                 className={isValidElement(trigger) ? "max-h-[75vh] min-w-[15rem] overflow-y-auto" : "min-w-[11rem]"}
               >

@@ -25,6 +25,23 @@ import {
 import { cn } from "@/lib/utils";
 import { formatShortcut, type EditorMenu, type EditorMenuEntry } from "./editor-menu-model";
 
+/**
+ * Google returns the caret to the document after a menu or toolbar choice.
+ * Radix would focus the trigger instead (and Univer would stop hearing keys), so
+ * the element that had focus before a menu opened gets it back on close.
+ */
+let focusBeforeMenu: HTMLElement | null = null;
+export function rememberEditorFocus() {
+  const el = document.activeElement;
+  if (el instanceof HTMLElement && !el.closest("[data-editor-menubar],[data-editor-toolbar],[role=menu]")) focusBeforeMenu = el;
+}
+export function restoreEditorFocus(e: Event) {
+  const el = focusBeforeMenu;
+  if (!el || !el.isConnected) return;
+  e.preventDefault();
+  el.focus({ preventScroll: true });
+}
+
 /** The text trigger of one menu (also handed to the File menu host). */
 export const MenuBarTrigger = forwardRef<
   HTMLButtonElement,
@@ -36,8 +53,9 @@ export const MenuBarTrigger = forwardRef<
       ref={ref}
       type="button"
       data-editor-menubar-trigger=""
+      onPointerDownCapture={rememberEditorFocus}
       className={cn(
-        "h-6 shrink-0 rounded px-1.5 text-[13px] leading-6 text-foreground/90 hover:bg-accent data-[state=open]:bg-accent",
+        "h-6 shrink-0 rounded px-1.5 text-[13px] leading-6 text-foreground/90 outline-none hover:bg-accent focus-visible:bg-accent data-[state=open]:bg-accent",
         active && "bg-accent",
         className,
       )}
@@ -137,7 +155,11 @@ export function EditorMenuBar({
               {m.label}
             </MenuBarTrigger>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="start" className="max-h-[75vh] min-w-[15rem] overflow-y-auto">
+          <DropdownMenuContent
+            align="start"
+            className="max-h-[75vh] min-w-[15rem] overflow-y-auto"
+            onCloseAutoFocus={restoreEditorFocus}
+          >
             {renderMenuEntries(m.items, `${m.id}/`)}
           </DropdownMenuContent>
         </DropdownMenu>
