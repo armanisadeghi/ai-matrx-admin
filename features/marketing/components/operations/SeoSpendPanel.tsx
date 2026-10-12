@@ -2,7 +2,6 @@
 
 import { useClipboard } from "@ai-matrx/kit/clipboard";
 import { copyNotify } from "@/lib/clipboard/copy-notify";
-import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
 /**
  * SEO provider spend rollup panel (M-9 / WS-7 UI tranche) — the third
  * `/marketing/cost` mode, alongside "By site" / "By client". Reads
@@ -25,7 +24,6 @@ import { useCostDisplay } from "@/components/cost/useCostDisplay";
 import {
   useSeoSpendSummary,
   type SeoBudgetRejectionRow,
-  type SeoProviderSpendRow,
 } from "@/features/marketing/data/spend";
 import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import type { ContextMenuExtraSection } from "@ai-matrx/context-menu/engine";
@@ -39,69 +37,6 @@ import { useOrgFilterParam } from "@/lib/entity-list/orgFilterUrl";
 import { useUserOrganizations } from "@/features/organizations/hooks";
 import { RegionSkeleton } from "@ai-matrx/design-system/controls";
 import { NO_RAW_ROW_WINDOW } from "@/features/marketing/social/row-open";
-
-/** Vendor names as their owners write them; anything else is humanized. */
-const PROVIDER_LABELS: Record<string, string> = {
-  dataforseo: "DataForSEO",
-  serpapi: "SerpApi",
-  gsc: "Search Console",
-  aidream: "AI Dream",
-  scrapecreators: "ScrapeCreators",
-};
-const providerLabel = (provider: string): string =>
-  PROVIDER_LABELS[provider.trim().toLowerCase()] ?? (humanizeIdentifier(provider) || provider);
-
-function ProviderRow({ row }: { row: SeoProviderSpendRow }) {
-  const { unit, rate: costRate } = useCostDisplay();
-  const pct = Math.max(0, Math.min(100, row.pct_used));
-  const over = row.pct_used >= 100;
-  const warn = row.pct_used >= 80 && !over;
-  return (
-    <div className="grid grid-cols-[1fr_auto] items-center gap-x-3 gap-y-1 rounded-md border border-border bg-card p-2.5">
-      <span className="text-xs font-medium text-foreground">
-        {providerLabel(row.provider)}
-      </span>
-      <span className="text-right font-mono text-xs font-semibold tabular-nums">
-        {formatRuntimeCost(row.effective_cost, costRate, unit)}{" "}
-        <span className="font-normal text-muted-foreground">
-          / {formatRuntimeCost(row.ceiling_usd, costRate, unit)}
-        </span>
-      </span>
-      <div className="col-span-2 h-1.5 overflow-hidden rounded-full bg-muted">
-        <div
-          className={
-            over
-              ? "h-full bg-destructive"
-              : warn
-                ? "h-full bg-amber-500"
-                : "h-full bg-primary"
-          }
-          style={{ width: `${pct}%` }}
-        />
-      </div>
-      <span className="col-span-2 text-xs text-muted-foreground">
-        {row.run_count} paid run{row.run_count === 1 ? "" : "s"} ·{" "}
-        {row.pct_used.toFixed(1)}% of monthly ceiling
-      </span>
-    </div>
-  );
-}
-
-/** The social-data provider's own admin row (its spend comes as the social line, not as a provider row). */
-function SocialProviderRow({ usd, calls }: { usd: number | null; calls: number | null }) {
-  const { unit, rate: costRate } = useCostDisplay();
-  return (
-    <div className="grid grid-cols-[1fr_auto] items-center gap-x-3 gap-y-1 rounded-md border border-border bg-card p-2.5">
-      <span className="text-xs font-medium text-foreground">Scrape Creators</span>
-      <span className="text-right font-mono text-xs font-semibold tabular-nums">
-        {usd == null ? "—" : formatRuntimeCost(usd, costRate, unit)}
-      </span>
-      <span className="col-span-2 text-xs text-muted-foreground">
-        {calls ?? 0} paid call{calls === 1 ? "" : "s"} · social data
-      </span>
-    </div>
-  );
-}
 
 /** The person-facing line: an activity (SEO data, Web search, Social data…), never a vendor. */
 function CategoryRow({ row }: { row: SpendCategoryRow }) {
@@ -174,12 +109,6 @@ export function SeoSpendPanel() {
   }
 
   const data = spend.data;
-  const paidThisMonth = data.this_month.filter(
-    (row) => row.effective_cost > 0 || row.run_count > 0,
-  );
-  const hasSocialRow =
-    ((data.social_this_month_usd ?? 0) > 0 || (data.social_this_month_calls ?? 0) > 0) &&
-    !paidThisMonth.some((r) => r.provider.trim().toLowerCase() === "scrapecreators");
   const categories = groupSpendByCategory(data.this_month, {
     usd: data.social_this_month_usd,
     calls: data.social_this_month_calls,
@@ -188,11 +117,11 @@ export function SeoSpendPanel() {
     {
       id: "provider",
       accessorKey: "provider",
-      header: isPlatformAdmin ? "Provider" : "Activity",
+      header: "Activity",
       filter: "select",
       cell: (row) => (
         <span className="capitalize">
-          {isPlatformAdmin ? providerLabel(row.provider) : spendCategory(row.provider)}
+          {spendCategory(row.provider)}
         </span>
       ),
     },
@@ -258,7 +187,7 @@ export function SeoSpendPanel() {
     if (!row) return null;
     return {
       content: [
-        `${isPlatformAdmin ? row.provider : spendCategory(row.provider)} — ${row.ceiling ?? "budget exceeded"}`,
+        `${spendCategory(row.provider)} — ${row.ceiling ?? "budget exceeded"}`,
         `spent=${row.spent_usd ?? "—"} limit=${row.limit_usd ?? "—"}`,
         `occurred: ${row.occurred_at}`,
         `run: ${row.run_id}`,
@@ -269,9 +198,7 @@ export function SeoSpendPanel() {
   const rejectionMenuSection: ContextMenuExtraSection = {
     id: "seo-budget-rejection-row",
     label: clickedRejection
-      ? isPlatformAdmin
-        ? clickedRejection.provider
-        : spendCategory(clickedRejection.provider)
+      ? spendCategory(clickedRejection.provider)
       : "This rejection",
     anchor: "after-compare",
     items: [
@@ -318,19 +245,6 @@ export function SeoSpendPanel() {
             ))}
           </div>
         )}
-        {isPlatformAdmin && (paidThisMonth.length > 0 || hasSocialRow) ? (
-          <div className="mt-3 border-t border-border pt-3">
-            <h3 className="mb-2 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
-              Platform admin · by provider
-            </h3>
-            <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-              {paidThisMonth.map((row) => (
-                <ProviderRow key={row.provider} row={row} />
-              ))}
-              {hasSocialRow ? <SocialProviderRow usd={data.social_this_month_usd} calls={data.social_this_month_calls} /> : null}
-            </div>
-          </div>
-        ) : null}
         {data.unreadOrganizationIds.length > 0 ? (
           <p className="mt-2 text-xs text-amber-600 dark:text-amber-400">
             {data.unreadOrganizationIds.length} of your organizations could not

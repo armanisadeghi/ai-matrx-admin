@@ -101,7 +101,20 @@ export function formatKnobValue(value: unknown, unit?: string | null): string {
   if (!unit || value === null || value === undefined) return word;
   const trimmed = unit.trim();
   if (trimmed === "") return word;
-  return GLUED_UNITS.has(trimmed) ? `${word}${trimmed}` : `${word} ${trimmed}`;
+  if (GLUED_UNITS.has(trimmed)) return `${word}${trimmed}`;
+  return `${word} ${Number(value) === 1 ? singularUnit(trimmed) : trimmed}`;
+}
+
+/** "posts" -> "post" for a count of exactly one. Only plain plural words; "ms", "requests/minute" stay. */
+function singularUnit(unit: string): string {
+  return /^[A-Za-z]{4,}s$/.test(unit) && !/(ss|us)$/i.test(unit) ? unit.slice(0, -1) : unit;
+}
+
+/** "0 – 5,000 posts": the unit said once, never "0 posts – 5000 posts". */
+export function formatKnobRange(min: number, max: number, unit?: string | null): string {
+  const trimmed = unit?.trim() ?? "";
+  if (trimmed === "" || GLUED_UNITS.has(trimmed)) return `${formatKnobValue(min, unit)} \u2013 ${formatKnobValue(max, unit)}`;
+  return `${min} \u2013 ${formatKnobValue(max, unit)}`;
 }
 
 /** Friendly, lower-case rung names. Used in sentences, so never a slug. */

@@ -38,6 +38,12 @@ export interface MyCostRecord {
   conversationId: string | null;
   linkKind: string | null;
   linkId: string | null;
+  /** The thing a social charge was for: an account or a post (null when the row did not record one). */
+  subjectKind: "account" | "post" | null;
+  subjectPlatform: string | null;
+  subjectId: string | null;
+  /** The brand whose page opens it. */
+  subjectBrandId: string | null;
   costUsd: number | null;
   points: number;
   chargedPoints: number;
@@ -125,6 +131,10 @@ export async function fetchMyCostRecords(period: MyCostPeriod, filter: MyCostRec
     conversationId: (r.conversation_id as string | null) ?? null,
     linkKind: (r.link_kind as string | null) ?? null,
     linkId: (r.link_id as string | null) ?? null,
+    subjectKind: r.subject_kind === "account" || r.subject_kind === "post" ? r.subject_kind : null,
+    subjectPlatform: (r.subject_platform as string | null) ?? null,
+    subjectId: (r.subject_id as string | null) ?? null,
+    subjectBrandId: (r.subject_brand_id as string | null) ?? null,
     costUsd: nn(r.cost_usd),
     points: n(r.points),
     chargedPoints: n(r.charged_points),

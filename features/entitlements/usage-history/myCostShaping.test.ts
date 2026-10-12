@@ -1,4 +1,4 @@
-import { NO_DRILL, chargeHref, costDisplay, dayWindow, drillInto, levelFor } from "./myCostShaping";
+import { NO_DRILL, chargeHref, chargeLink, costDisplay, dayWindow, drillInto, levelFor } from "./myCostShaping";
 import { periodFor } from "./myCostService";
 
 describe("my cost: periods", () => {
@@ -64,5 +64,21 @@ describe("my cost: every charge opens what it was for", () => {
     expect(chargeHref(r("research", "rs_topic", "not-an-id"))).toBe("/research");
     expect(chargeHref(r("media", "image_generate"))).toBe("/images");
     expect(chargeHref(r("other", "mystery"))).toBeNull();
+  });
+});
+
+describe("my cost: where a charge opens", () => {
+  const base = { feature: "social_data", linkKind: "external_api", linkId: null, conversationId: null };
+  it("a social charge opens the account it was for", () => {
+    const r = { ...base, subjectKind: "account" as const, subjectPlatform: "tiktok", subjectId: "p-1", subjectBrandId: "b-1" };
+    expect(chargeHref(r)).toBe("/marketing/b-1/socials/tiktok/p-1");
+    expect(chargeLink(r)).toEqual({ href: "/marketing/b-1/socials/tiktok/p-1", label: "Open" });
+  });
+  it("a social charge opens the post it was for", () => {
+    expect(chargeHref({ ...base, subjectKind: "post", subjectPlatform: "instagram", subjectId: "post-1", subjectBrandId: "b-1" })).toBe("/marketing/b-1/socials/post/post-1");
+  });
+  it("without a recorded subject it falls back to the list, and says so", () => {
+    expect(chargeLink(base)).toEqual({ href: "/marketing/social", label: "All social", hint: expect.any(String) });
+    expect(chargeLink({ ...base, subjectKind: "account", subjectPlatform: "tiktok", subjectId: "p-1", subjectBrandId: null })?.label).toBe("All social");
   });
 });

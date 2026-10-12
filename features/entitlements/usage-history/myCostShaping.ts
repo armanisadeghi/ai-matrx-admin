@@ -60,7 +60,9 @@ const FEATURE_HOME: Record<string, string> = {
  * Where a charge opens what it was for. The exact record when its source names one, else the home of
  * its activity, so a row is never a dead end ("other" is the only row with no link).
  */
-export function chargeHref(r: Pick<MyCostRecord, "feature" | "linkKind" | "linkId" | "conversationId">): string | null {
+export function chargeHref(r: Pick<MyCostRecord, "feature" | "linkKind" | "linkId" | "conversationId"> & Partial<Pick<MyCostRecord, "subjectKind" | "subjectPlatform" | "subjectId" | "subjectBrandId">>): string | null {
+  const subject = subjectHref(r);
+  if (subject) return subject;
   const id = r.linkId && /^[0-9a-f-]{36}$/i.test(r.linkId) ? r.linkId : null;
   if (r.conversationId) return `/chat/${r.conversationId}`;
   switch (r.linkKind) {
@@ -74,4 +76,21 @@ export function chargeHref(r: Pick<MyCostRecord, "feature" | "linkKind" | "linkI
     case "scraper_data_fetch_job": return "/scraper";
     default: return FEATURE_HOME[r.feature] ?? null;
   }
+}
+
+/** The exact account or post a social charge was for, or null when the row did not record one. */
+function subjectHref(r: Partial<Pick<MyCostRecord, "subjectKind" | "subjectPlatform" | "subjectId" | "subjectBrandId">>): string | null {
+  if (!r.subjectKind || !r.subjectId || !r.subjectBrandId) return null;
+  if (r.subjectKind === "post") return `/marketing/${r.subjectBrandId}/socials/post/${r.subjectId}`;
+  return r.subjectPlatform ? `/marketing/${r.subjectBrandId}/socials/${r.subjectPlatform}/${r.subjectId}` : null;
+}
+
+/** The door a charge row shows: the exact record, else its activity's home, said plainly. */
+export function chargeLink(r: Parameters<typeof chargeHref>[0]): { href: string; label: string; hint?: string } | null {
+  const href = chargeHref(r);
+  if (!href) return null;
+  if (r.feature === "social_data" && href === FEATURE_HOME.social_data) {
+    return { href, label: "All social", hint: "This charge did not record which account or post it was for." };
+  }
+  return { href, label: "Open" };
 }

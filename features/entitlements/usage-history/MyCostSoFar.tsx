@@ -33,7 +33,7 @@ import {
   type MyCostPeriodKey,
   type MyCostRecord,
 } from "./myCostService";
-import { NO_DRILL, chargeHref, costDisplay, dayWindow, drillInto, levelFor, type MyCostDrill, type MyCostTab } from "./myCostShaping";
+import { NO_DRILL, chargeLink, costDisplay, dayWindow, drillInto, levelFor, type MyCostDrill, type MyCostTab } from "./myCostShaping";
 
 const PERIODS: { key: Exclude<MyCostPeriodKey, "custom">; label: string }[] = [
   { key: "today", label: "Today" },
@@ -114,9 +114,13 @@ export function MyCostSoFar() {
   useEffect(() => {
     if (!admin) { setUnattr(null); return; }
     let live = true;
-    void fetchMyCostBreakdown(period, "feature", { scope: "unattributed" }).then((r) => live && setUnattr(r)).catch(() => live && setUnattr(null));
+    // The same window and filter as the charges listed below it, so the card and the list agree.
+    const window: MyCostPeriod = drill.day ? { key: "custom", ...dayWindow(drill.day) } : period;
+    void fetchMyCostBreakdown(window, drill.feature ? "activity" : "feature", { scope: "unattributed", feature: drill.feature?.key ?? null })
+      .then((r) => live && setUnattr(drill.activity ? r.filter((x) => x.key === drill.activity?.key) : r))
+      .catch(() => live && setUnattr(null));
     return () => { live = false; };
-  }, [admin, period, retry]);
+  }, [admin, period, drill, retry]);
 
   // The table for the current level.
   useEffect(() => {
@@ -129,6 +133,15 @@ export function MyCostSoFar() {
   }, [period, level, orgId, drill.feature, retry]);
 
   const total = useMemo(() => sumRows(rows), [rows]);
+  const showUnattr = Boolean(admin && unattr && unattr.length > 0);
+  const unattributedOn = unattributed && showUnattr;
+  // How many charges the selection holds, from the same grouped read the table above uses.
+  const knownTotal = unattributedOn
+    ? sumRows(unattr).calls
+    : !rows ? null
+    : drill.activity ? rows.find((r) => r.key === drill.activity?.key)?.calls ?? null
+    : drill.day ? rows.find((r) => r.key === drill.day)?.calls ?? null
+    : total.calls;
 
   const choosePeriod = (p: MyCostPeriod) => { setPeriod(p); setDrill(NO_DRILL); };
   const applyCustom = () => {
@@ -196,8 +209,14 @@ export function MyCostSoFar() {
         {PERIODS.map((p) => (
           <Button key={p.key} variant={period.key === p.key ? "primary" : "outline"} onClick={() => choosePeriod(periodFor(p.key))}>{p.label}</Button>
         ))}
-        <Input type="date" aria-label="From date" value={customFrom} onChange={(e) => setCustomFrom(e.target.value)} width="md" />
-        <Input type="date" aria-label="To date" value={customTo} onChange={(e) => setCustomTo(e.target.value)} width="md" />
+        <label className="flex items-center gap-1.5 type-secondary text-muted-foreground">
+          From
+          <Input type="date" aria-label="From date" value={customFrom} onChange={(e) => setCustomFrom(e.target.value)} width="md" />
+        </label>
+        <label className="flex items-center gap-1.5 type-secondary text-muted-foreground">
+          To
+          <Input type="date" aria-label="To date" value={customTo} onChange={(e) => setCustomTo(e.target.value)} width="md" />
+        </label>
         <Button variant={period.key === "custom" ? "primary" : "outline"} disabled={!customFrom && !customTo} onClick={applyCustom}>Custom range</Button>
         <Select value={orgId ?? ALL_ORGS} onValueChange={(v) => { setOrg(v === ALL_ORGS ? null : { id: v, label: orgOptions.find((o) => o.key === v)?.label ?? "" }); setDrill(NO_DRILL); }}>
           <SelectTrigger aria-label="Organization filter" width="md"><SelectValue /></SelectTrigger>
@@ -226,17 +245,17 @@ export function MyCostSoFar() {
         </nav>
       ) : null}
 
-      {admin && unattr && unattr.length > 0 ? (
+      {showUnattr ? (
         <div className="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-md border border-dashed border-border p-2 sm:p-3" aria-label="Unattributed">
           <div>
             <div className="type-secondary text-muted-foreground">Unattributed · {periodLabel}</div>
             <div className="font-semibold"><Money usd={sumRows(unattr).usd} points={sumRows(unattr).points} /> <span className="type-secondary font-normal text-muted-foreground">{sumRows(unattr).calls.toLocaleString()} charges</span></div>
           </div>
-          <Button variant={unattributed ? "primary" : "outline"} onClick={() => setUnattributed((v) => !v)}>{unattributed ? "Back to my costs" : "See records"}</Button>
+          <Button variant={unattributedOn ? "primary" : "outline"} onClick={() => setUnattributed((v) => !v)}>{unattributedOn ? "Back to my costs" : "See records"}</Button>
         </div>
       ) : null}
 
-      {!drill.activity && !drill.day && !unattributed ? (
+      {!drill.activity && !drill.day && !unattributedOn ? (
         <div className="mt-2">
           {!rows ? <Skeleton className="h-40 w-full rounded-md" aria-label="Loading your costs" /> : (
             <MatrxDataTable
@@ -260,12 +279,12 @@ export function MyCostSoFar() {
           )}
         </div>
       ) : null}
-      <MyCostRecords period={period} orgId={orgId} drill={drill} admin={admin} unattributed={unattributed} />
+      <MyCostRecords period={period} orgId={orgId} drill={drill} admin={admin} unattributed={unattributedOn} knownTotal={knownTotal} />
     </SettingsSection>
   );
 }
 
-function MyCostRecords({ period, orgId, drill, admin, unattributed }: { period: MyCostPeriod; orgId: string | null; drill: MyCostDrill; admin: boolean; unattributed: boolean }) {
+function MyCostRecords({ period, orgId, drill, admin, unattributed, knownTotal }: { period: MyCostPeriod; orgId: string | null; drill: MyCostDrill; admin: boolean; unattributed: boolean; knownTotal: number | null }) {
   const [records, setRecords] = useState<MyCostRecord[]>([]);
   const [more, setMore] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -305,7 +324,7 @@ function MyCostRecords({ period, orgId, drill, admin, unattributed }: { period: 
     { id: "org", header: "Organization", accessorFn: (r) => r.organizationName ?? "—", filter: "select", width: 170, mobileHidden: true },
     { id: "cost", header: admin ? "Cost" : "Points used", accessorFn: (r) => r.costUsd ?? r.points, filter: "number", width: 190, align: "right", cell: (r) => <Money usd={r.costUsd} points={r.points} /> },
     { id: "charged", header: "Counted against plan", accessorFn: (r) => r.chargedPoints, filter: "number", width: 150, align: "right", mobileHidden: true, cell: (r) => formatPoints(r.chargedPoints) },
-    { id: "open", header: "", accessorFn: (r) => chargeHref(r) ?? "", width: 80, cell: (r) => { const href = chargeHref(r); return href ? <Link className="underline-offset-2 hover:underline" href={href}>Open</Link> : null; } },
+    { id: "open", header: "", accessorFn: (r) => chargeLink(r)?.href ?? "", width: 90, cell: (r) => { const link = chargeLink(r); return link ? <Link className="underline-offset-2 hover:underline" href={link.href} title={link.hint}>{link.label}</Link> : null; } },
   ], [admin]);
 
   const title = unattributed ? "Unattributed charges (no person on them)" : drill.activity ? `Charges: ${drill.activity.label}` : drill.feature ? `Charges: ${drill.feature.label}` : drill.day ? `Charges on ${drill.day}` : "Every charge, newest first";
@@ -326,15 +345,15 @@ function MyCostRecords({ period, orgId, drill, admin, unattributed }: { period: 
           defaultSort={{ id: "at", direction: "desc" }}
           mobileCardsBreakpoint="md"
           mobileCards={(r) => {
-            const href = chargeHref(r);
+            const link = chargeLink(r);
             return (
               <div className="py-1">
                 <div className="flex items-start justify-between gap-3"><div className="min-w-0"><div className="truncate font-medium">{r.detail}</div><div className="type-secondary text-muted-foreground">{when(r.createdAt)}{r.organizationName ? ` · ${r.organizationName}` : ""}</div></div><div className="shrink-0 text-right"><Money usd={r.costUsd} points={r.points} /></div></div>
-                {href ? <Link className="type-secondary underline-offset-2 hover:underline" href={href}>Open</Link> : null}
+                {link ? <Link className="type-secondary underline-offset-2 hover:underline" href={link.href} title={link.hint}>{link.label}</Link> : null}
               </div>
             );
           }}
-          coverage={{ noun: "charge", answeredBy: "client", loaded: records.length, total: more ? undefined : records.length }}
+          coverage={{ noun: "charge", answeredBy: "client", loaded: records.length, total: knownTotal ?? (more ? undefined : records.length) }}
           emptyState={{ title: "No charges here", description: "Nothing in this selection had a cost." }}
         />
       )}

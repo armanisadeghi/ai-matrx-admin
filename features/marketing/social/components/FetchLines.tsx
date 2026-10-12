@@ -9,12 +9,12 @@ import { SOCIAL_LIMITS_HREF } from "../post-count";
 import type { SocialLimitApplied } from "../types";
 
 const SETTING_LABELS: Record<string, string> = {
-  profile_posts_max: "Max posts per account",
-  comments_max: "Max comments per post",
+  profile_posts_max: "Most posts per account",
+  comments_max: "Most comments per post",
   reuse_hours_profile: "Reuse window (hours)",
 };
 
-/** "Limited to 500 by Max posts per account · Change" — no hidden limits. */
+/** "Limited to 500 by Most posts per account · Change" — no hidden limits. */
 export function LimitLine({ limit, organizationId }: { limit: SocialLimitApplied | null | undefined; organizationId: string }) {
   if (!limit) return null;
   const bare = limit.setting.replace(/^social\./, "");
@@ -32,10 +32,10 @@ export function LimitLine({ limit, organizationId }: { limit: SocialLimitApplied
 export function stoppedText(reason: string | null | undefined): string | null {
   switch (reason) {
     case "points_limit": return "Stopped early: points limit reached. Posts already loaded are kept.";
-    case "provider_error": return "Stopped early: the provider had a problem. Posts already loaded are kept.";
+    case "provider_error": return "Stopped early: the source had a problem. Posts already loaded are kept.";
     case "cursor_expired": return "Couldn't pick up where the last fetch stopped. Use Refresh now.";
     case "no_saved_place": return "Load more isn't available yet for this account. Use Refresh now once.";
-    case "nothing_more": return "Everything the provider has is already loaded.";
+    case "nothing_more": return "Everything available is already loaded.";
     default: return null;
   }
 }

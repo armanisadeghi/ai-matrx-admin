@@ -6,25 +6,24 @@
  * reader (`useSeoSpendSummary`, All organizations) so both screens show one number; the platform
  * total for admins comes from `GET /social/credits` and reads in points through the one cost formatter.
  *
- * Vendor names and the vendor's own credit balance are our business, not the
- * member's (Arman, 2026-10-09): only a system admin seat sees them.
+ * Vendor names and the vendor's own credit balance are our business: they never render here,
+ * for anyone (the admin app carries them).
  * Every number is the server's; a failed call says so, never a zero.
  */
 
 import { useQuery } from "@tanstack/react-query";
-import { Coins, Database, Receipt } from "lucide-react";
+import { Database, Receipt } from "lucide-react";
 
 import { Skeleton } from "@ai-matrx/design-system";
 import { Badge } from "@/components/ui/badge";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectOrganizationId } from "@/lib/redux/slices/appContextSlice";
 
-import { useCostDisplay, useSeesDollars } from "@/components/cost/useCostDisplay";
+import { useCostDisplay } from "@/components/cost/useCostDisplay";
 
 import { useSeoSpendSummary } from "@/features/marketing/data/spend";
 import { getCapabilities, getCredits } from "../server";
 import { SOCIAL_PLATFORMS, type SocialSpend, type SocialSpendFigure } from "../types";
-import { providerName } from "./ProviderFallbackNotice";
 import { platformLabel } from "./PlatformMark";
 
 /** Platforms a provider can serve at least one capability on. */
@@ -47,10 +46,6 @@ export function unsupportedPlatforms(
   return SOCIAL_PLATFORMS.filter((platform) => !served.has(platform));
 }
 
-function formatCredits(n: number | null | undefined): string {
-  return typeof n === "number" ? Math.round(n).toLocaleString() : "Not reported";
-}
-
 export function formatSpend(
   spend: SocialSpend | null | undefined,
   error: string | null | undefined,
@@ -66,7 +61,6 @@ export function formatSpend(
 export function SocialProviderCard() {
   const organizationId = useAppSelector(selectOrganizationId) ?? "";
   const enabled = Boolean(organizationId);
-  const seesVendor = useSeesDollars();
   const { format } = useCostDisplay();
   // The Cost page's own reader and window (this month, All organizations): one number for one period.
   const spendRollup = useSeoSpendSummary(null);
@@ -93,9 +87,9 @@ export function SocialProviderCard() {
         ? { variant: "success" as const, text: `${ready.length} ready` }
         : { variant: "secondary" as const, text: "Not configured" };
 
-  const balances = Object.entries(credits.data?.balances ?? {});
-  const primary = ready[0]?.[0] ?? "scrapecreators";
-  const covered = caps.data ? coverageOf(caps.data.platforms, primary) : [];
+  const covered = caps.data
+    ? [...new Set(Object.keys(caps.data.providers).flatMap((p) => coverageOf(caps.data.platforms, p)))].sort()
+    : [];
   const unsupported = caps.data
     ? unsupportedPlatforms(caps.data.platforms, Object.keys(caps.data.providers))
     : [];
@@ -115,29 +109,9 @@ export function SocialProviderCard() {
       <div className="mt-4 divide-y divide-border rounded-lg border border-border">
         {providers.length === 0 ? (
           <Row icon={Database} label="Status" detail={caps.isError ? "Status unavailable" : ""} loading={!caps.isError} />
-        ) : seesVendor ? (
-          providers.map(([name, status]) => (
-            <Row key={name} icon={Database} label={providerName(name)} detail={status === "ready" ? "Ready" : "Not configured"} title={status === "ready" ? undefined : status} />
-          ))
         ) : (
           <Row icon={Database} label="Status" detail={ready.length ? "Ready" : "Not configured"} />
         )}
-        {seesVendor ? (
-          <Row
-            icon={Coins}
-            label="Credits remaining"
-            loading={credits.isPending}
-            detail={
-              credits.isPending
-                ? ""
-                : credits.isError
-                  ? "Balance unavailable"
-                  : balances.length === 0
-                    ? "No provider reports a balance"
-                    : balances.map(([name, n]) => `${providerName(name)} ${formatCredits(n)}`).join(" · ")
-            }
-          />
-        ) : null}
         <Row
           icon={Receipt}
           label="This month · all your organizations"

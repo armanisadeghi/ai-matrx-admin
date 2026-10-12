@@ -26,9 +26,16 @@ import { UsageHistory } from "@/features/entitlements/usage-history/UsageHistory
 import { useUserOrganizations } from "@/features/organizations/hooks";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
+import { selectUsageGateFreePeriod, selectUsageGatePlanName } from "@/features/entitlements/state/selectors";
 
 export function PlanUsageTab() {
   const userId = useAppSelector(selectUserId);
+  const planName = useAppSelector(selectUsageGatePlanName);
+  const freePeriod = useAppSelector(selectUsageGateFreePeriod);
+  const effectivePlan = {
+    name: planName ?? null,
+    freeUntilIso: freePeriod?.status === "active" ? (freePeriod.endsAt ?? null) : null,
+  };
   const { organizations, loading: organizationsLoading } = useUserOrganizations();
   const [billingOrganizationId, setBillingOrganizationId] = useState<string | null>(null);
   const organizationId = billingOrganizationId;
@@ -39,7 +46,7 @@ export function PlanUsageTab() {
         title="Plan & usage"
         icon={Gauge}
       />
-      {userId ? <BillingSummary scope={{ kind: "personal", userId }} /> : null}
+      {userId ? <BillingSummary scope={{ kind: "personal", userId }} effectivePlan={effectivePlan} /> : null}
       <SettingsSubHeader title="Effective usage" icon={UserRound} />
       <MyUsageCard />
       <MyCostSoFar />

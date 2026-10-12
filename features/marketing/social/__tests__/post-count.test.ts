@@ -133,8 +133,8 @@ describe("Load more quote", () => {
 describe("fetch outcome words", () => {
   it("names the limit and the early stop", () => {
     const text = fetchOutcomeText("20 new posts, 0 updated", { limit_applied: { setting: "profile_posts_max", value: 500, requested: 900 }, stopped_reason: "provider_error" });
-    expect(text).toContain("Limited to 500 by Max posts per account");
-    expect(text).toContain("provider had a problem");
+    expect(text).toContain("Limited to 500 by Most posts per account");
+    expect(text).toContain("source had a problem");
     expect(fetchOutcomeText("ok", {})).toBe("ok");
     expect(stoppedText("points_limit")).toContain("points limit");
     expect(stoppedText(null)).toBeNull();

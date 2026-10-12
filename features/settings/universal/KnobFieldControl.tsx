@@ -57,6 +57,7 @@ import {
   type VoiceSetId,
 } from "@/lib/voices/voiceSets";
 import {
+  formatKnobRange,
   formatKnobValue,
   type KnobControl,
   type KnobLadder,
@@ -384,7 +385,7 @@ function SliderField({
           {formatKnobValue(shown, knob.unit)}
         </span>
         <span className="text-xs text-muted-foreground tabular-nums">
-          {formatKnobValue(min, knob.unit)} – {formatKnobValue(max, knob.unit)}
+          {formatKnobRange(min, max, knob.unit)}
         </span>
       </div>
       <Slider

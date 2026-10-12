@@ -12,6 +12,7 @@ import {
   type BillingSummaryRead,
 } from "../billing-summary";
 import { usePlanCatalog } from "../catalog/usePlanCatalog";
+
 import { captureError } from "@/lib/diagnostics/errorCaptureStore";
 import { ErrorNotice } from "@ai-matrx/design-system";
 import { InfoHint } from "@/components/official/InfoHint";
@@ -51,7 +52,16 @@ function dateLabel(value: string | null): string | null {
     : null;
 }
 
-export function BillingSummary({ scope }: { scope: BillingScope }) {
+/**
+ * The plan the person is ACTUALLY on can be a free grant above what they buy; the personal
+ * heading names it first (`effectivePlan`, from the usage gate) and the paid plan second.
+ */
+export interface EffectivePlan {
+  name: string | null;
+  freeUntilIso: string | null;
+}
+
+export function BillingSummary({ scope, effectivePlan }: { scope: BillingScope; effectivePlan?: EffectivePlan }) {
   const openFeedback = useOpenFeedbackWindow();
   const [livemode, setLivemode] = useState<boolean | null>(null);
   const [modeError, setModeError] = useState<string | null>(null);
@@ -280,6 +290,11 @@ export function BillingSummary({ scope }: { scope: BillingScope }) {
       ? catalog.plans.find((item) => item.planKey === subscription.plan_key)
       : null;
   const periodEnd = dateLabel(subscription.current_period_end);
+  const boughtName = plan?.name ?? subscription.plan_key;
+  const freeUntil =
+    scope.kind === "personal" && effectivePlan?.freeUntilIso ? dateLabel(effectivePlan.freeUntilIso) : null;
+  const effectivePlanName = effectivePlan?.name ?? null;
+  const onHigherFreePlan = Boolean(effectivePlanName && freeUntil && effectivePlanName !== boughtName);
   const recovering = ["past_due", "unpaid", "incomplete"].includes(
     subscription.status,
   );
@@ -293,14 +308,18 @@ export function BillingSummary({ scope }: { scope: BillingScope }) {
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <p className="text-sm font-semibold text-foreground">
-            Purchased plan
+            {onHigherFreePlan ? "Your plan" : "Purchased plan"}
           </p>
           <p className="mt-1 text-sm text-muted-foreground">
-            {plan?.name ?? subscription.plan_key}
-            {priceLabel(activeRead.price)
-              ? ` · ${priceLabel(activeRead.price)}`
-              : ""}
+            {onHigherFreePlan
+              ? `${effectivePlanName} · free until ${freeUntil}`
+              : `${boughtName}${priceLabel(activeRead.price) ? ` · ${priceLabel(activeRead.price)}` : ""}`}
           </p>
+          {onHigherFreePlan ? (
+            <p className="mt-0.5 text-xs text-muted-foreground">
+              {`You pay for ${boughtName}${priceLabel(activeRead.price) ? ` · ${priceLabel(activeRead.price)}` : ""}`}
+            </p>
+          ) : null}
         </div>
         <span className="rounded bg-muted px-2 py-1 text-xs font-medium text-foreground">
           {billingStatusLabel(subscription.status)}
