@@ -24,11 +24,8 @@ import {
 
 import { ReadFailure } from "@ai-matrx/design-system";
 
-import { formatCount, formatDurationMs } from "@ai-matrx/kit/format";
-import { ProInput } from "@/components/official/ProInput";
-import { Spinner } from "@/components/ui/spinner";
+import { formatCount } from "@ai-matrx/kit/format";
 import { useOrganizationRequired } from "@/features/organizations/useOrganizationRequired";
-import { cn } from "@/lib/utils";
 
 import { useBoardOrganizationId } from "../items/board-organization";
 import type { ItemBodyProps } from "../items/types";
@@ -48,6 +45,8 @@ import { fetchData, getJob } from "../../data-sources/server";
 import { provenanceOf, readDataFetchMeta, withDataFetchMeta, type DataFetchDraft } from "./tile-meta";
 
 import { RefusalView } from "../../data-sources/RefusalView";
+import { FetchProgress } from "../../data-sources/FetchProgress";
+import { SourceInputFields, modeOf } from "../../data-sources/SourceInputFields";
 
 const TABLE_ENTITY = "data-table";
 
@@ -104,8 +103,8 @@ export function GetDataBody({ tileId, source, onSource }: Pick<ItemBodyProps, "t
   if (savedJob && run.status !== "failed" && run.status !== "done") {
     return (
       <div className="flex h-full">
-        <ProgressView
-          source={catalog.data?.sources.find((s) => s.key === draft.sourceKey) ?? null}
+        <FetchProgress
+          label={catalog.data?.sources.find((s) => s.key === draft.sourceKey)?.label ?? "Fetching"}
           progress={run.status === "running" ? run.progress : null}
           startedAt={run.status === "running" ? run.startedAt : Date.now()}
         />
@@ -130,11 +129,11 @@ export function GetDataBody({ tileId, source, onSource }: Pick<ItemBodyProps, "t
     );
   }
 
-  const fetchNow = (src: DataSource, values: Record<string, string>, count: number) => {
-    const input = buildInput(src, values).input;
+  const fetchNow = (src: DataSource, values: Record<string, string>, count: number, option: string | null) => {
+    const input = buildInput(src, values, modeOf(src, option).option).input;
     if (!input) return;
     const request = { sourceKey: src.key, sourceLabel: src.label, input, count };
-    saveDraft({ sourceKey: src.key, values, count, request });
+    saveDraft({ sourceKey: src.key, values, option: option ?? undefined, count, request });
     startRun(tileId, (onProgress) => fetchData({ sourceKey: src.key, input, maxRecords: count }, { organizationId, onProgress }));
   };
 
@@ -171,7 +170,7 @@ function SourcePicker({
   running: { progress: DataFetchProgress | null; startedAt: number } | null;
   refusal: DataFetchRefusal | null;
   onDraft: (next: DataFetchDraft) => void;
-  onFetch: (source: DataSource, values: Record<string, string>, count: number) => void;
+  onFetch: (source: DataSource, values: Record<string, string>, count: number, option: string | null) => void;
   onDismissRefusal: () => void;
 }) {
   const [query, setQuery] = useState("");
@@ -220,7 +219,7 @@ function SourcePicker({
                     className="w-full"
                     onClick={() => {
                       setPickedKey(s.key);
-                      onDraft({ ...draft, sourceKey: s.key, values: {}, request: undefined });
+                      onDraft({ ...draft, sourceKey: s.key, values: {}, option: undefined, request: undefined });
                     }}
                   >
                     {s.label}
@@ -235,7 +234,7 @@ function SourcePicker({
         {refusal ? (
           <RefusalView refusal={refusal} organizationId={organizationId} onBack={onDismissRefusal} />
         ) : running ? (
-          <ProgressView source={picked} progress={running.progress} startedAt={running.startedAt} />
+          <FetchProgress label={picked?.label ?? "Fetching"} progress={running.progress} startedAt={running.startedAt} />
         ) : picked ? (
           <SourceForm
             key={picked.key}
@@ -244,7 +243,7 @@ function SourcePicker({
             organizationId={organizationId}
             draft={draft}
             onDraft={onDraft}
-            onFetch={(values, count) => onFetch(picked, values, count)}
+            onFetch={(values, count, option) => onFetch(picked, values, count, option)}
           />
         ) : (
           <EmptyState icon={<DownloadCloud className="h-5 w-5" />} title="Pick a source" line="Reviews, places, jobs, companies and more." />
@@ -269,10 +268,11 @@ function SourceForm({
   organizationId: string;
   draft: DataFetchDraft;
   onDraft: (next: DataFetchDraft) => void;
-  onFetch: (values: Record<string, string>, count: number) => void;
+  onFetch: (values: Record<string, string>, count: number, option: string | null) => void;
 }) {
   const limit = catalog.limits.max_records_per_fetch;
   const [values, setValues] = useState<Record<string, string>>(draft.sourceKey === source.key ? draft.values ?? {} : {});
+  const [option, setOption] = useState<string | null>(draft.sourceKey === source.key ? draft.option ?? null : null);
   const initial = capCount(draft.count ?? 50, limit?.value);
   const [choice, setChoice] = useState<CountChoice>(
     (["10", "50", "100", "500"] as const).find((c) => Number(c) === initial) ?? "custom",
@@ -280,16 +280,16 @@ function SourceForm({
   const [custom, setCustom] = useState(initial);
   const count = capCount(choice === "custom" ? custom : Number(choice), limit?.value);
   const estimate = useFetchEstimate()(source, count);
-  const built = buildInput(source, values);
+  const built = buildInput(source, values, modeOf(source, option).option);
   const settingHref = limit ? limitSettingHref(organizationId, limit.setting) : null;
-  const saveValues = () => onDraft({ ...draft, sourceKey: source.key, values, count });
+  const saveValues = () => onDraft({ ...draft, sourceKey: source.key, values, option: option ?? undefined, count });
 
   return (
     <form
       className="flex max-w-xl flex-col gap-4"
       onSubmit={(e) => {
         e.preventDefault();
-        if (built.input) onFetch(values, count);
+        if (built.input) onFetch(values, count, modeOf(source, option).option);
       }}
     >
       <div className="flex items-center gap-2">
@@ -298,24 +298,17 @@ function SourceForm({
         {!source.verified && <Badge tone="warning">Unverified</Badge>}
       </div>
 
-      {source.input.fields.map((f) => (
-        <label key={f.name} className="flex flex-col gap-1">
-          <span className="text-xs font-medium text-muted-foreground">
-            {f.label}
-            {f.required ? "" : " (optional)"}
-          </span>
-          <ProInput
-            value={values[f.name] ?? ""}
-            placeholder={f.example ?? (source.input.kind === "url" ? source.example_url ?? "https://" : "")}
-            enableCleanup={false}
-            enableVoice={source.input.kind === "keyword"}
-            onChange={(e) => setValues((v) => ({ ...v, [f.name]: e.target.value }))}
-            onBlur={saveValues}
-            aria-label={f.label}
-            data-field={f.name}
-          />
-        </label>
-      ))}
+      <SourceInputFields
+        source={source}
+        values={values}
+        option={option}
+        onValues={setValues}
+        onOption={(next) => {
+          setOption(next);
+          onDraft({ ...draft, sourceKey: source.key, values, option: next ?? undefined, count });
+        }}
+        onBlur={saveValues}
+      />
 
       <div className="flex flex-col gap-1">
         <div className="flex items-center gap-2">
@@ -375,33 +368,5 @@ function SourceForm({
         </Button>
       </div>
     </form>
-  );
-}
-
-const elapsed = (startedAt: number, now: number): string => formatDurationMs(Math.max(0, now - startedAt));
-
-function ProgressView({ source, progress, startedAt }: { source: DataSource | null; progress: DataFetchProgress | null; startedAt: number }) {
-  const [now, setNow] = useState(() => Date.now());
-  useEffect(() => {
-    const t = setInterval(() => setNow(Date.now()), 1000);
-    return () => clearInterval(t);
-  }, []);
-  const share = progress?.current != null && progress.total ? Math.min(1, progress.current / progress.total) : null;
-  return (
-    <div className="m-auto flex w-full max-w-sm flex-col items-center gap-3 text-center" aria-live="polite" data-fetch-progress="">
-      <Spinner className="h-6 w-6 text-primary" />
-      <div className="text-sm font-medium text-foreground">{source?.label ?? "Fetching"}</div>
-      <div className="text-xs text-muted-foreground">
-        {progress?.label ?? "Starting"}
-        {progress?.current != null && progress.total != null ? ` · ${progress.current} of ${progress.total}` : ""}
-      </div>
-      <div className="h-1 w-full overflow-hidden rounded-full bg-muted">
-        <div
-          className={cn("h-full origin-left bg-primary", share == null && "animate-pulse")}
-          style={{ transform: `scaleX(${share ?? 0.15})` }}
-        />
-      </div>
-      <div className="text-[11px] text-muted-foreground">{elapsed(startedAt, now)} · Keeps going if you leave</div>
-    </div>
   );
 }

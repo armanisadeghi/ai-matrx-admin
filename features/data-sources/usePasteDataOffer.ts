@@ -12,19 +12,19 @@ import { dataSourcesKey } from "./hooks";
 import { asWebAddress, dataTableOffer } from "./offer";
 import { getDataSources } from "./server";
 
-/** The address of the Get data page prefilled for a source (pure). */
+/** The Data library prefilled for a source: it opens that source with the pasted link in place (pure). */
 export function getDataHref(opts: { sourceKey?: string; field?: string; value?: string } = {}): string {
   const q = new URLSearchParams();
   if (opts.sourceKey) q.set("source", opts.sourceKey);
   if (opts.field) q.set("field", opts.field);
   if (opts.value) q.set("value", opts.value);
   const s = q.toString();
-  return s ? `/data/get?${s}` : "/data/get";
+  return s ? `/data/library?${s}` : "/data/library";
 }
 
 /**
  * The one paste handler: a pasted address that a data source covers → a toast OFFER "Get as data
- * table" (opens the Get data page prefilled). Never fetches on paste; the paste itself lands as usual.
+ * table" (opens the Data library on that source, link filled in). Never fetches on paste; the paste itself lands as usual.
  */
 function usePasteOfferHandler(disabled: boolean) {
   const router = useRouter();

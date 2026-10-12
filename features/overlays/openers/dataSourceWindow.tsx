@@ -21,8 +21,8 @@ export interface DataSourceWindowHandle {
 export function useOpenDataSourceWindow() {
   const dispatch = useAppDispatch();
   return useCallback(
-    (sourceKey: string): DataSourceWindowHandle => {
-      dispatch(openOverlay({ overlayId: OVERLAY_ID, data: { sourceKey } }));
+    (sourceKey: string, values?: Record<string, string>): DataSourceWindowHandle => {
+      dispatch(openOverlay({ overlayId: OVERLAY_ID, data: values ? { sourceKey, values } : { sourceKey } }));
       return { close: () => dispatch(closeOverlay({ overlayId: OVERLAY_ID })) };
     },
     [dispatch],

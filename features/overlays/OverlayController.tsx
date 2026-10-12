@@ -8013,11 +8013,16 @@ export default function OverlayController() {
         const data = dataById.dataSourceWindow as
           Record<string, unknown> | null | undefined;
         const sourceKey = typeof data?.sourceKey === "string" ? data.sourceKey : null;
+        const values =
+          data?.values && typeof data.values === "object"
+            ? (data.values as Record<string, string>)
+            : undefined;
         if (!isOpen || !sourceKey) return null;
         return (
           <DataSourceWindow
             isOpen
             sourceKey={sourceKey}
+            initialValues={values}
             onClose={() =>
               dispatch(closeOverlay({ overlayId: "dataSourceWindow" }))
             }

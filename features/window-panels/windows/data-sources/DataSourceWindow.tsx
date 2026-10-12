@@ -11,7 +11,7 @@ import { useLibrary, useLibraryOrganizationId } from "@/features/data-sources/li
 
 const OVERLAY_ID = "dataSourceWindow";
 
-export default function DataSourceWindow({ isOpen, onClose, sourceKey }: { isOpen: boolean; onClose: () => void; sourceKey: string }) {
+export default function DataSourceWindow({ isOpen, onClose, sourceKey, initialValues }: { isOpen: boolean; onClose: () => void; sourceKey: string; initialValues?: Record<string, string> }) {
   const library = useLibrary(useLibraryOrganizationId());
   if (!isOpen) return null;
   const label = library.data?.sources.find((s) => s.key === sourceKey)?.label ?? "Data source";
@@ -28,7 +28,7 @@ export default function DataSourceWindow({ isOpen, onClose, sourceKey }: { isOpe
       onClose={onClose}
       bodyClassName="overflow-y-auto"
     >
-      <SourceDetail sourceKey={sourceKey} />
+      <SourceDetail sourceKey={sourceKey} initialValues={initialValues} />
     </WindowPanel>
   );
 }

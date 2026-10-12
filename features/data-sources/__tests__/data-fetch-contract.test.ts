@@ -6,6 +6,10 @@ import {
   countChoices,
   estimateUsd,
   getMoreCount,
+  inputFieldsFor,
+  parseResult,
+  quotePoints,
+  searchOptions,
   parseSpec,
   refusalOf,
   groupSources,
@@ -183,5 +187,97 @@ describe("server deltas (aidream data_fetch FEATURE.md)", () => {
   it("parses the table's spec row", () => {
     expect(parseSpec({ id: "j", source_key: "trustpilot_reviews", max_records: 25, status: "done", rows_created: 25, rows_updated: 0, finished_at: "2026-10-11T20:00:00Z" })).toMatchObject({ jobId: "j", maxRecords: 25 });
     expect(parseSpec(null)).toBeNull();
+  });
+});
+
+describe("keyword mode (By search) and per-source prices", () => {
+  const maps = parseCatalog({
+    points_per_usd: 20000,
+    usd_per_record_default: 0.0015,
+    sources: [
+      {
+        key: "maps_places",
+        label: "Places",
+        group: "Maps",
+        input: {
+          kind: "url",
+          fields: [
+            { name: "url", label: "Place link", required: true, type: "url" },
+            { name: "keyword", label: "Keyword", required: false, example: "dentist" },
+            { name: "country", label: "Country", required: false, example: "US" },
+          ],
+          discover_options: { keywords: ["keyword", "country"] },
+        },
+        usd_per_record: 0.002,
+        points_per_record: 40,
+      },
+      { key: "plain", label: "Plain", group: "Maps", input: { kind: "url", fields: [{ name: "url", label: "Link", required: true }] }, usd_per_record: null },
+    ],
+  });
+  const places = maps.sources[0];
+
+  it("reads the discover options and offers them as search modes with the option's fields", () => {
+    expect(places.input.discover_options).toEqual({ keywords: ["keyword", "country"] });
+    expect(searchOptions(places).map((o) => [o.name, o.fields.map((f) => f.name)])).toEqual([["keywords", ["keyword", "country"]]]);
+    expect(searchOptions(maps.sources[1])).toEqual([]);
+  });
+  it("by link asks only for the link; by search asks for the option's fields and sends inputs", () => {
+    expect(inputFieldsFor(places, null).map((f) => f.name)).toEqual(["url"]);
+    expect(inputFieldsFor(places, "keywords").map((f) => f.name)).toEqual(["keyword", "country"]);
+    expect(buildInput(places, { url: "https://x.com/a" }, null).input).toEqual({ url: "https://x.com/a" });
+    expect(buildInput(places, { keyword: "dentist" }, "keywords")).toEqual({ input: null, missing: ["Country"] });
+    expect(buildInput(places, { keyword: " dentist ", country: "US", url: "ignored" }, "keywords").input).toEqual({
+      inputs: [{ keyword: "dentist", country: "US" }],
+    });
+  });
+  it("quotes each source's own points price; a null price takes the catalog default", () => {
+    expect(quotePoints(places, 5)).toBe(200);
+    expect(maps.sources[1].usd_per_record).toBe(0.0015);
+    expect(maps.sources[1].points_per_record).toBe(30);
+    expect(quotePoints(maps.sources[1], 5)).toBe(150);
+    expect(quotePoints({ points_per_record: null }, 5)).toBeNull();
+  });
+  it("carries the result's notices and key basis", () => {
+    const r = parseResult({ job_id: "j", table_id: "t", key_basis: "record_hash", notices: ["Fingerprint keys", "", 4] });
+    expect(r?.notices).toEqual(["Fingerprint keys"]);
+    expect(r?.key_basis).toBe("record_hash");
+  });
+});
+
+describe("paste a link → the server's url_pattern regexes", () => {
+  const GOOGLE = String.raw`(^|\.)google\.[a-z.]+$`;
+  const patterned = parseCatalog({
+    sources: [
+      { key: "trustpilot_reviews", label: "Trustpilot reviews", group: "Reviews", input: { kind: "url", fields: [] }, verified_live: true, verified: true, url_pattern: { host: String.raw`(^|\.)trustpilot\.com$`, path: "^/review/" } },
+      { key: "google_maps_place", label: "Google Maps place", group: "Places", input: { kind: "url", fields: [] }, verified: true, url_pattern: { host: GOOGLE, path: String.raw`^/maps/place/.*(data=.*!1s0x|[?&]q=place_id:)` } },
+      { key: "google_maps_reviews", label: "Google Maps reviews", group: "Places", input: { kind: "url", fields: [] }, verified: false, url_pattern: { host: GOOGLE, path: "^/maps/place/" } },
+      { key: "amazon_product", label: "Amazon product", group: "Shopping", input: { kind: "url", fields: [] }, verified: true, url_pattern: { host: String.raw`(^|\.)amazon\.[a-z.]+$`, path: String.raw`(/dp/|/gp/product/)` } },
+      { key: "linkedin_company", label: "LinkedIn company", group: "Companies", input: { kind: "url", fields: [] }, verified: true, url_pattern: { host: String.raw`(^|\.)linkedin\.com$`, path: "^/company/" } },
+      // no pattern: the example address is the fallback
+      { key: "old_style", label: "Old style", group: "Other", input: { kind: "url", fields: [] }, verified: true, example_url: "https://shop.example.org/item/1" },
+    ],
+  });
+  const key = (u: string) => matchSourceForUrl(u, patterned.sources)?.key ?? null;
+  it("Trustpilot", () => {
+    expect(key("https://www.trustpilot.com/review/stripe.com")).toBe("trustpilot_reviews");
+    expect(key("https://www.trustpilot.com/categories")).toBeNull();
+  });
+  it("a Google Maps place_id link is the place source; a name-only link is reviews-only", () => {
+    expect(key("https://www.google.com/maps/place/?q=place_id:ChIJN1t_tDeuEmsRUsoyG83frY4")).toBe("google_maps_place");
+    expect(key("https://www.google.com/maps/place/Joe/data=!4m2!3m1!1s0x80dcd5f8d1b5b:0x1")).toBe("google_maps_place");
+    expect(key("https://www.google.com/maps/place/Joe's+Pizza/@40.7,-73.9")).toBe("google_maps_reviews");
+    expect(key("https://www.google.com/search?q=pizza")).toBeNull();
+  });
+  it("an Amazon /dp/ link on any Amazon domain", () => {
+    expect(key("https://www.amazon.com/Some-Product-Name/dp/B08N5WRWNW/ref=sr_1_1")).toBe("amazon_product");
+    expect(key("https://www.amazon.co.uk/gp/product/B08N5WRWNW")).toBe("amazon_product");
+    expect(key("https://www.amazon.com/s?k=lamp")).toBeNull();
+  });
+  it("a LinkedIn company link, not a person", () => {
+    expect(key("https://www.linkedin.com/company/stripe/")).toBe("linkedin_company");
+    expect(key("https://www.linkedin.com/in/someone")).toBeNull();
+  });
+  it("a source without a pattern keeps the example-address rule", () => {
+    expect(key("https://shop.example.org/item/99")).toBe("old_style");
   });
 });

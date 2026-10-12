@@ -11,7 +11,7 @@
 
 import { usdToPoints } from "@ai-matrx/kit/format";
 
-import type { DataLimit, DataSource, DataSourceField, DataSourceInputKind } from "../contract";
+import { discoverOptionsOf, resolvePrice, urlPatternOf, type DataLimit, type DataSource, type DataSourceField, type DataSourceInputKind } from "../contract";
 
 export interface LibrarySource extends DataSource {
   subgroup: string | null;
@@ -93,6 +93,7 @@ function inputOf(raw: unknown, exampleUrl: string | null): DataSource["input"] {
   return {
     kind,
     fields: kind === "url" && fields.length === 0 ? [{ name: "url", label: "Page address", required: true, example: exampleUrl, type: "url" }] : fields,
+    discover_options: discoverOptionsOf(input.discover_options),
   };
 }
 
@@ -112,6 +113,7 @@ export function parseLibrary(raw: unknown): Library {
     const verified = s.verified === true || s.verified_live === true;
     const featured = s.featured === true;
     if ("featured" in s) anyFeatured = anyFeatured || featured;
+    const price = resolvePrice(s, o);
     sources.push({
       key,
       label,
@@ -120,13 +122,15 @@ export function parseLibrary(raw: unknown): Library {
       description: str(s.description),
       input: inputOf(s.input, exampleUrl),
       example_url: exampleUrl,
+      url_pattern: urlPatternOf(s.url_pattern),
       verified,
-      usd_per_record: num(s.usd_per_record),
+      usd_per_record: price.usd,
+      points_per_record: price.points,
       outputFields: outputFieldsOf(s.output_fields),
       featured,
       confirmed: typeof s.verified_live === "boolean" ? s.verified_live : s.verified === true,
       knownIssue: knownIssueOf(s.known_issue),
-      pointsPerRecord: num(s.points_per_record),
+      pointsPerRecord: price.points,
     });
   }
   // No featured flags from the server yet: the confirmed sources are the shelf.

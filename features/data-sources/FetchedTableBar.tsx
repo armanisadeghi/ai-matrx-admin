@@ -35,6 +35,8 @@ export interface FetchedFacts {
   rows: number;
   valuesAsText?: number;
   limitApplied?: { setting: string; value: number } | null;
+  /** The server's honest notes about the fetch (a known issue, a fallback record key). */
+  notices?: string[];
 }
 
 /** Re-renders every 30 s so "2 minutes ago" keeps moving. */
@@ -141,6 +143,7 @@ function Bar({
   const moreCost = estimate(catalogSource, moreCount);
   const textValues = fetched?.valuesAsText ?? 0;
   const trimmed = fetched?.limitApplied ?? null;
+  const notices = fetched?.notices ?? [];
   const settingHref = trimmed ? limitSettingHref(organizationId, trimmed.setting) : limit ? limitSettingHref(organizationId, limit.setting) : null;
 
   if (run.status === "failed") {
@@ -196,6 +199,13 @@ function Bar({
           </TooltipContent>
         </Tooltip>
       </div>
+      {notices.length > 0 && (
+        <div className="flex flex-col text-[11px] text-warning" data-fetch-notices="">
+          {notices.map((n) => (
+            <span key={n}>{n}</span>
+          ))}
+        </div>
+      )}
       {(textValues > 0 || trimmed) && (
         <div className="flex items-center gap-1 text-[11px] text-muted-foreground" data-fetch-notes="">
           {textValues > 0 && <span>{formatCount(textValues)} values kept as text</span>}

@@ -74,12 +74,15 @@ function LibraryBody({ library }: { library: Library }) {
   const params = useSearchParams();
   const opened = useRef<string | null>(null);
   const linked = params.get("source");
+  // `&field=<name>&value=<text>` (a pasted address): that field starts filled; nothing is fetched until Get data.
+  const linkedField = params.get("field") ?? "url";
+  const linkedValue = params.get("value");
   useEffect(() => {
     if (linked && opened.current !== linked && library.sources.some((s) => s.key === linked)) {
       opened.current = linked;
-      openSource(linked);
+      openSource(linked, linkedValue ? { [linkedField]: linkedValue } : undefined);
     }
-  }, [linked, library.sources, openSource]);
+  }, [linked, linkedField, linkedValue, library.sources, openSource]);
 
   const searching = query.trim().length > 0;
   const inView = view.kind === "group" ? library.sources.filter((s) => s.group === view.group) : library.sources;

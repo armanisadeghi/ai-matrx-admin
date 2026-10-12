@@ -2,11 +2,10 @@
 
 import { useQuery } from "@tanstack/react-query";
 
-import { useCostDisplay } from "@/components/cost/useCostDisplay";
-
 import { createClient } from "@/utils/supabase/client";
 
-import { estimateUsd, parseFetchedTables, parseSpec, type FetchedTable, type DataFetchSpec, type DataSource } from "./contract";
+import { parseFetchedTables, parseSpec, type FetchedTable, type DataFetchSpec, type DataSource } from "./contract";
+import { usePriceText } from "./library/hooks";
 import { getDataSources } from "./server";
 
 export const dataSourcesKey = (organizationId: string | null) => ["data-sources", "catalog", organizationId] as const;
@@ -21,12 +20,16 @@ export function useDataSources(organizationId: string | null) {
   });
 }
 
-/** "≈ 38 points" for `n` records of `source` (dollars only for an admin who flipped the switch). */
+/**
+ * "≈ 38 points" for `n` records of `source`: the source's OWN points price × the count (dollars
+ * only for an admin who flipped the switch). Null when the server named no price.
+ */
 export function useFetchEstimate() {
-  const { format } = useCostDisplay();
-  return (source: Pick<DataSource, "usd_per_record"> | null | undefined, n: number): string | null => {
-    const usd = estimateUsd(source, n);
-    return usd == null ? null : `≈ ${format(usd)}`;
+  const price = usePriceText();
+  return (source: Pick<DataSource, "usd_per_record" | "points_per_record"> | null | undefined, n: number): string | null => {
+    if (!source || n <= 0) return null;
+    const text = price({ pointsPerRecord: source.points_per_record ?? null, usd_per_record: source.usd_per_record }, n);
+    return text == null ? null : `≈ ${text}`;
   };
 }
 

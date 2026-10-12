@@ -13,6 +13,8 @@ export const DATA_FETCH_META_KEY = "data_fetch";
 export interface DataFetchDraft {
   sourceKey?: string;
   values?: Record<string, string>;
+  /** The search option chosen ("By search"); absent = by link. */
+  option?: string;
   count?: number;
   /** The job the server is running for this tile (reconnect after a reload). */
   jobId?: string;
@@ -37,6 +39,7 @@ export interface DataFetchProvenance {
   jobId?: string;
   valuesAsText?: number;
   limitApplied?: { setting: string; value: number } | null;
+  notices?: string[];
 }
 
 export interface DataFetchTileMeta {
@@ -75,6 +78,7 @@ export function provenanceOf(
     jobId: result.job_id || undefined,
     valuesAsText: result.values_as_text,
     limitApplied: result.limit_applied,
+    notices: result.notices?.length ? result.notices : previous?.notices,
   };
 }
 

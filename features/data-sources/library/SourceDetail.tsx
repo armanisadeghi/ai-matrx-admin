@@ -14,12 +14,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import {
-  CheckCircle2,
-  DownloadCloud,
-  LayoutDashboard,
-  Table2,
-} from "lucide-react";
+import { CheckCircle2, DownloadCloud, Table2 } from "lucide-react";
 import {
   Badge,
   Button,
@@ -33,10 +28,11 @@ import {
 import { ReadFailure } from "@ai-matrx/design-system";
 import { formatCount } from "@ai-matrx/kit/format";
 
-import { ProInput } from "@/components/official/ProInput";
 import { createClient } from "@/utils/supabase/client";
 
 import { buildInput, capCount, countChoices } from "../contract";
+import { AddToBoard } from "../AddToBoard";
+import { SourceInputFields, modeOf } from "../SourceInputFields";
 import { limitSettingHref, fetchedTablesKey } from "../hooks";
 import { RefusalView } from "../RefusalView";
 import { FetchProgress } from "../FetchProgress";
@@ -56,7 +52,7 @@ const OPEN_STATUSES = ["queued", "fetching", "waiting_for_provider", "storing"];
 export const libraryRunKey = (sourceKey: string) => `library:${sourceKey}`;
 
 /** The window body: reads the library (cached) and shows the one source. */
-export function SourceDetail({ sourceKey }: { sourceKey: string }) {
+export function SourceDetail({ sourceKey, initialValues }: { sourceKey: string; initialValues?: Record<string, string> }) {
   const organizationId = useLibraryOrganizationId();
   const library = useLibrary(organizationId);
   if (library.isLoading) {
@@ -93,6 +89,7 @@ export function SourceDetail({ sourceKey }: { sourceKey: string }) {
       source={source}
       library={library.data}
       organizationId={organizationId}
+      initialValues={initialValues}
     />
   );
 }
@@ -125,10 +122,12 @@ function SourceRun({
   source,
   library,
   organizationId,
+  initialValues,
 }: {
   source: LibrarySource;
   library: Library;
   organizationId: string;
+  initialValues?: Record<string, string>;
 }) {
   const key = libraryRunKey(source.key);
   const run = useRun(key);
@@ -190,6 +189,11 @@ function SourceRun({
               Lowered to your limit of {formatCount(done.limit_applied.value)}
             </div>
           )}
+          {(done.notices ?? []).map((n) => (
+            <p key={n} className="text-xs text-warning" data-fetch-notice="">
+              {n}
+            </p>
+          ))}
           <div className="flex flex-wrap justify-center gap-2 pt-1">
             <Button
               asChild
@@ -200,17 +204,7 @@ function SourceRun({
                 Open table
               </Link>
             </Button>
-            <Button
-              asChild
-              variant="outline"
-              icon={<LayoutDashboard className="h-4 w-4" />}
-            >
-              <Link
-                href={`/board?add=data-table&id=${encodeURIComponent(done.table_id)}`}
-              >
-                Add to a board
-              </Link>
-            </Button>
+            <AddToBoard tableId={done.table_id} />
           </div>
           <Button variant="quiet" onClick={() => clearRun(key)}>
             Get more
@@ -224,6 +218,7 @@ function SourceRun({
       source={source}
       library={library}
       organizationId={organizationId}
+      initialValues={initialValues}
       onFetch={(input, count) =>
         startRun(
           key,
@@ -273,18 +268,21 @@ function SourceForm({
   source,
   library,
   organizationId,
+  initialValues,
   onFetch,
 }: {
   source: LibrarySource;
   library: Library;
   organizationId: string;
+  initialValues?: Record<string, string>;
   onFetch: (
     input: NonNullable<ReturnType<typeof buildInput>["input"]>,
     count: number,
   ) => void;
 }) {
   const limit = library.limits.max_records_per_fetch;
-  const [values, setValues] = useState<Record<string, string>>({});
+  const [values, setValues] = useState<Record<string, string>>(initialValues ?? {});
+  const [option, setOption] = useState<string | null>(null);
   const [choice, setChoice] = useState<CountChoice>(
     limit && limit.value < 10 ? "custom" : "10",
   );
@@ -296,7 +294,7 @@ function SourceForm({
   const price = usePriceText();
   const unit = price(source, 1);
   const total = price(source, count);
-  const built = buildInput(source, values);
+  const built = buildInput(source, values, modeOf(source, option).option);
   const settingHref = limit
     ? limitSettingHref(organizationId, limit.setting)
     : null;
@@ -367,42 +365,13 @@ function SourceForm({
       </Section>
 
       <Section title="What to enter">
-        {source.input.fields.map((f) => (
-          <label key={f.name} className="flex flex-col gap-1">
-            <span className="text-xs font-medium text-muted-foreground">
-              {f.label}
-              {f.required ? "" : " (optional)"}
-            </span>
-            <ProInput
-              value={values[f.name] ?? ""}
-              placeholder={
-                f.example ??
-                (source.input.kind === "url"
-                  ? (source.example_url ?? "https://")
-                  : "")
-              }
-              enableCleanup={false}
-              enableVoice={source.input.kind === "keyword"}
-              onChange={(e) =>
-                setValues((v) => ({ ...v, [f.name]: e.target.value }))
-              }
-              aria-label={f.label}
-              data-field={f.name}
-            />
-            {f.example && !values[f.name] && (
-              <Button
-                type="button"
-                variant="quiet"
-                className="self-start"
-                onClick={() =>
-                  setValues((v) => ({ ...v, [f.name]: f.example ?? "" }))
-                }
-              >
-                Use example
-              </Button>
-            )}
-          </label>
-        ))}
+        <SourceInputFields
+          source={source}
+          values={values}
+          option={option}
+          onValues={setValues}
+          onOption={setOption}
+        />
       </Section>
 
       <Section

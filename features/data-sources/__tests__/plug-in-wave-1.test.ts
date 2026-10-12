@@ -64,11 +64,11 @@ describe("the shared address offer", () => {
     expect(dataTableOffer("see trustpilot.com/review/stripe.com", [trustpilot])).toBeNull();
     expect(asWebAddress("hello")).toBeNull();
   });
-  it("the Get data page address carries the source and the pasted link", () => {
+  it("the Data library address carries the source and the pasted link", () => {
     expect(getDataHref({ sourceKey: "trustpilot_reviews", field: "url", value: "https://x.com/a?b=1" })).toBe(
-      "/data/get?source=trustpilot_reviews&field=url&value=https%3A%2F%2Fx.com%2Fa%3Fb%3D1",
+      "/data/library?source=trustpilot_reviews&field=url&value=https%3A%2F%2Fx.com%2Fa%3Fb%3D1",
     );
-    expect(getDataHref()).toBe("/data/get");
+    expect(getDataHref()).toBe("/data/library");
   });
 });
 
