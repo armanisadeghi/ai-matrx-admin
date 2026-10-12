@@ -37,6 +37,8 @@ import type { SocialPlatform } from "@/features/marketing/social/types";
 import { customItem, websiteHost, type EvidenceItem } from "./evidence";
 import type { RoundView } from "./SmartAddRound";
 import { Shared } from "./stage/Shared";
+import { addUtmSource } from "@/utils/url-utm";
+import { proxiedExternalImageUrl } from "@/lib/media/external-image";
 import styles from "./stage/stage.module.css";
 
 type Mode = "website" | "social" | "name";
@@ -157,11 +159,15 @@ export function SmartAddHero({
   return (
     <MotionConfig reducedMotion="user">
       <section
-        className="relative flex min-h-full w-full flex-col items-center px-4 pb-16 pt-[calc(var(--shell-header-h,3rem)+9vh)] sm:pt-[calc(var(--shell-header-h,3rem)+13vh)]"
+        className={`relative flex min-h-full w-full flex-col items-center px-4 pb-12 ${
+          compact
+            ? "justify-start pt-[calc(var(--shell-header-h,3rem)+5vh)]"
+            : "justify-center pt-[calc(var(--shell-header-h,3rem)+2rem)]"
+        }`}
         data-smart-add-stage="intake"
         data-testid="smart-add-hero"
       >
-        <motion.div layout transition={SPRING} className="flex w-full max-w-[44rem] flex-col items-center">
+        <motion.div layout transition={SPRING} className={`flex w-full flex-col items-center ${phase === "choose" ? "max-w-[60rem]" : "max-w-[44rem]"}`}>
           <AnimatePresence mode="popLayout" initial={false}>
             {compact ? null : (
               <motion.div
@@ -357,11 +363,85 @@ export function SmartAddHero({
 
 // ── Choices ──────────────────────────────────────────────────────────────────
 
-const CHOICES: { mode: Mode; title: string; hint: string; icon: typeof Globe }[] = [
-  { mode: "website", title: "Website", hint: "yourbrand.com", icon: Globe },
-  { mode: "social", title: "Social", hint: "Any profile or @handle", icon: AtSign },
-  { mode: "name", title: "Company or Person", hint: "A name and a city", icon: Building2 },
+const CHOICES: { mode: Mode; title: string; hint: string }[] = [
+  { mode: "website", title: "Website", hint: "yourbrand.com" },
+  { mode: "social", title: "Social", hint: "Any profile or @handle" },
+  { mode: "name", title: "Company or Person", hint: "A name and a city" },
 ];
+
+/** A tiny browser window: the site you already have. */
+function WebsiteVisual() {
+  return (
+    <span className="relative flex h-[5.5rem] w-36 flex-col overflow-hidden rounded-lg border border-border bg-card shadow-[0_14px_30px_-16px_hsl(var(--foreground)/0.45)] transition-transform duration-300 group-hover:-rotate-1 group-hover:scale-[1.04]">
+      <span className="flex h-4 items-center gap-1 border-b border-border/70 px-1.5">
+        <span className="size-1.5 rounded-full bg-foreground/25" />
+        <span className="size-1.5 rounded-full bg-foreground/25" />
+        <span className="size-1.5 rounded-full bg-foreground/25" />
+        <span className="ml-1.5 h-2 flex-1 rounded-full bg-foreground/[0.08]" />
+      </span>
+      <span className="flex flex-1 gap-2 p-2">
+        <span className="w-10 rounded bg-gradient-to-br from-primary/60 to-primary/20" />
+        <span className="flex flex-1 flex-col gap-1 pt-0.5">
+          <span className="h-1.5 w-full rounded-full bg-foreground/20" />
+          <span className="h-1.5 w-4/5 rounded-full bg-foreground/[0.12]" />
+          <span className="h-1.5 w-3/5 rounded-full bg-foreground/[0.12]" />
+          <span className="mt-auto h-2.5 w-10 rounded-sm bg-primary/70" />
+        </span>
+      </span>
+    </span>
+  );
+}
+
+const CLUSTER: { p: SocialPlatform; x: number; y: number; r: number }[] = [
+  { p: "instagram", x: 0, y: 0, r: -8 },
+  { p: "facebook", x: 38, y: -10, r: 6 },
+  { p: "x", x: 76, y: 4, r: -4 },
+  { p: "tiktok", x: 14, y: 40, r: 7 },
+  { p: "linkedin", x: 52, y: 32, r: -6 },
+  { p: "youtube", x: 90, y: 42, r: 5 },
+];
+
+/** The real platform marks, as they are, loosely stacked; they fan out on hover. */
+function SocialVisual() {
+  return (
+    <span className="relative block h-[5.5rem] w-[8.5rem]">
+      {CLUSTER.map((c, i) => (
+        <span
+          key={c.p}
+          className="absolute transition-transform duration-300 ease-out group-hover:[transform:translate(var(--dx),var(--dy))_rotate(0deg)]"
+          style={{
+            left: c.x,
+            top: c.y + 10,
+            transform: `rotate(${c.r}deg)`,
+            ["--dx" as string]: `${(i % 3) * 3 - 3}px`,
+            ["--dy" as string]: `${i < 3 ? -4 : 4}px`,
+          }}
+        >
+          <PlatformMark platform={c.p} size={34} />
+        </span>
+      ))}
+    </span>
+  );
+}
+
+/** A building beside a portrait: a business or a person. */
+function NameVisual() {
+  return (
+    <span className="relative flex h-[5.5rem] w-36 items-end justify-center gap-1">
+      <Building2 className="size-[4.5rem] text-foreground/70 transition-transform duration-300 group-hover:-translate-x-1" strokeWidth={1.1} />
+      <svg viewBox="0 0 64 64" className="size-[3.75rem] text-foreground/70 transition-transform duration-300 group-hover:translate-x-1" aria-hidden>
+        <circle cx="32" cy="22" r="11" fill="currentColor" opacity="0.85" />
+        <path d="M10 62c1.5-13 10.5-21 22-21s20.5 8 22 21z" fill="currentColor" opacity="0.85" />
+      </svg>
+    </span>
+  );
+}
+
+const VISUAL: Record<Mode, () => ReactNode> = {
+  website: WebsiteVisual,
+  social: SocialVisual,
+  name: NameVisual,
+};
 
 function ChoiceCards({ onChoose }: { onChoose: (m: Mode) => void }) {
   const refs = useRef<(HTMLButtonElement | null)[]>([]);
@@ -380,10 +460,10 @@ function ChoiceCards({ onChoose }: { onChoose: (m: Mode) => void }) {
       onKeyDown={onKey}
       initial={false}
       exit={{ opacity: 0 }}
-      className="grid w-full grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4"
+      className="grid w-full grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-5"
     >
       {CHOICES.map((c, i) => {
-        const Icon = c.icon;
+        const Visual = VISUAL[c.mode];
         return (
           <motion.button
             key={c.mode}
@@ -398,14 +478,17 @@ function ChoiceCards({ onChoose }: { onChoose: (m: Mode) => void }) {
             exit={{ opacity: 0, scale: 0.96 }}
             onClick={() => onChoose(c.mode)}
             data-clickable
-            className={`${styles.card} group flex items-center gap-4 rounded-[1.25rem] border border-glass-edge p-4 text-left sm:min-h-44 sm:flex-col sm:items-start sm:justify-between sm:gap-6 sm:p-6`}
+            className={`${styles.card} group flex items-center gap-4 overflow-hidden rounded-[1.5rem] border border-glass-edge p-3 pr-4 text-left sm:min-h-[19rem] sm:flex-col sm:items-stretch sm:gap-0 sm:p-0`}
           >
-            <span className={`${styles.cardIcon} flex size-12 shrink-0 items-center justify-center rounded-2xl text-primary sm:size-14`}>
-              <Icon className="size-6 sm:size-7" strokeWidth={1.75} />
+            {/* The picture: a phone shows it small at the left, a desktop gives it the stage. */}
+            <span className="flex h-20 w-24 shrink-0 items-center justify-center overflow-hidden sm:h-44 sm:w-full">
+              <span className="origin-center scale-[0.6] sm:scale-125">
+                <Visual />
+              </span>
             </span>
-            <span className="flex min-w-0 flex-1 flex-col gap-0.5 sm:flex-none">
-              <span className="text-lg font-semibold tracking-tight text-foreground">{c.title}</span>
-              <span className="truncate text-sm text-muted-foreground">{c.hint}</span>
+            <span className="flex min-w-0 flex-1 flex-col gap-1 sm:flex-none sm:px-6 sm:pb-6">
+              <span className="text-lg font-semibold tracking-tight text-foreground sm:text-xl">{c.title}</span>
+              <span className="text-sm text-muted-foreground sm:text-[0.95rem]">{c.hint}</span>
             </span>
             <kbd className="absolute right-4 top-4 hidden rounded-md border border-border/70 px-1.5 font-mono text-[11px] text-muted-foreground/70 sm:block">
               {i + 1}
@@ -545,7 +628,7 @@ function QuietButton({ onClick, icon, children }: { onClick: () => void; icon: R
     <button
       type="button"
       onClick={onClick}
-      className="inline-flex h-9 items-center gap-1.5 rounded-full px-3 font-medium text-muted-foreground transition-colors hover:bg-foreground/5 hover:text-foreground"
+      className="inline-flex h-9 items-center gap-1.5 rounded-lg px-3 font-medium text-muted-foreground transition-colors hover:bg-foreground/5 hover:text-foreground"
     >
       {icon}
       {children}
@@ -771,11 +854,12 @@ function Centerpiece({
   platform: SocialPlatform | null;
   typedName: string | null;
 }) {
-  const real = items.filter((i) => i.source.where !== "the address itself" && i.source.kind !== "typed");
+  const real = realFindings(items);
   const logos = real.filter((i) => i.field === "logo" && (i.image_url || i.profile_id));
-  const logo = logos.find((i) => i.source.kind === "website") ?? logos[0] ?? null;
+  const logo = stageLogo(items);
   const names = real.filter((i) => i.field === "name");
-  const nameItem = names.find((i) => i.source.kind === "website") ?? names[0] ?? null;
+  const nameItem = stageName(items);
+  const colors = useLogoColors(logo?.image_url ?? null);
   const sub = real.find((i) => i.field === "tagline") ?? real.find((i) => i.field === "category") ?? null;
   const socials = real.filter((i) => i.field === "social").slice(0, 5);
   const photoByPlatform = new Map<string, EvidenceItem>();
@@ -834,12 +918,12 @@ function Centerpiece({
       {/* The name types out as it arrives; reserved height so nothing below moves. */}
       <div className={`flex h-11 w-full items-center justify-center px-2 sm:h-12 ${settled ? "mt-2" : "mt-8"}`}>
         {nameItem ? (
-          <Shared id={nameItem.key} className="max-w-full truncate text-[1.75rem] font-semibold tracking-[-0.03em] sm:text-4xl">
+          <Shared id={nameItem.key} positionOnly className="max-w-full truncate text-[1.75rem] font-semibold tracking-[-0.03em] sm:text-4xl">
             <Typewriter text={nameItem.value} />
           </Shared>
         ) : typedName ? (
           // Their own word, already confirmed: it flies to the name slot like any finding.
-          <Shared id={customItem("name", typedName).key} className="max-w-full truncate text-[1.75rem] font-semibold tracking-[-0.03em] sm:text-4xl">
+          <Shared id={customItem("name", typedName).key} positionOnly className="max-w-full truncate text-[1.75rem] font-semibold tracking-[-0.03em] sm:text-4xl">
             {typedName}
           </Shared>
         ) : settled ? (
@@ -863,18 +947,39 @@ function Centerpiece({
         </AnimatePresence>
       </div>
 
+      {/* The logo's own colors, sampled from the real image; nothing shows when it cannot be read. */}
+      <div className={`flex w-full items-center justify-center gap-2 ${settled ? "hidden" : "mt-3 h-7"}`}>
+        <AnimatePresence>
+          {colors.map((c, i) => (
+            <motion.span
+              key={c}
+              title={c}
+              initial={{ opacity: 0, y: -14, scale: 0.6 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              transition={{ ...SPRING, delay: 0.25 + i * 0.08 }}
+              className="size-6 rounded-full shadow-[0_6px_14px_-6px_hsl(var(--foreground)/0.5)] ring-1 ring-inset ring-foreground/10"
+              style={{ backgroundColor: c }}
+            />
+          ))}
+        </AnimatePresence>
+      </div>
+
       {/* Accounts pop in with their real photos. */}
       <div className={`flex w-full flex-wrap items-center justify-center gap-2 ${settled ? "hidden" : "mt-5 min-h-11"}`}>
         <AnimatePresence>
           {socials.map((s, i) => {
             const photo = s.profile_id ? s : photoByPlatform.get(s.platform ?? "");
             return (
-              <motion.span
+              <motion.a
                 key={s.key}
+                href={referralHref(s.url ?? s.value)}
+                target="_blank"
+                rel="noopener"
+                title={platformLabel(s.platform ?? "")}
                 initial={{ opacity: 0, scale: 0.6, y: 8 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 transition={{ ...SPRING, delay: i * 0.06 }}
-                className="inline-flex h-11 items-center gap-2.5 rounded-2xl border border-glass-edge bg-card/70 px-1.5 text-sm font-medium shadow-sm backdrop-blur-md"
+                className="inline-flex min-h-11 max-w-[18rem] items-center gap-2.5 rounded-2xl border border-glass-edge bg-card/70 px-1.5 py-1.5 text-left text-sm font-medium leading-tight shadow-sm backdrop-blur-md transition-colors hover:bg-card"
               >
                 <Shared id={s.key} className="flex size-8 shrink-0 items-center justify-center">
                   {photo?.profile_id ? (
@@ -888,9 +993,9 @@ function Centerpiece({
                     <PlatformMark platform={s.platform ?? ""} size={28} />
                   )}
                 </Shared>
-                <span className="max-w-40 truncate">@{s.handle ?? ""}</span>
-                {photo?.profile_id ? <PlatformMark platform={s.platform ?? ""} size={16} className="mr-1" /> : <span className="w-1" />}
-              </motion.span>
+                <span className="min-w-0 break-words [overflow-wrap:anywhere]">{accountLabel(s, names)}</span>
+                {photo?.profile_id ? <PlatformMark platform={s.platform ?? ""} size={16} className="mr-1 shrink-0" /> : <span className="w-1 shrink-0" />}
+              </motion.a>
             );
           })}
         </AnimatePresence>
@@ -916,6 +1021,108 @@ function Centerpiece({
       </div>
     </motion.div>
   );
+}
+
+/** Real findings only: never the typed address echoed back, never the person's own words. */
+function realFindings(items: EvidenceItem[]): EvidenceItem[] {
+  return items.filter((i) => i.source.where !== "the address itself" && i.source.kind !== "typed");
+}
+
+/** The logo the stage shows (and the landing card uses): the site's own first, else a profile photo. */
+export function stageLogo(items: EvidenceItem[]): EvidenceItem | null {
+  const logos = realFindings(items).filter((i) => i.field === "logo" && (i.image_url || i.profile_id));
+  return logos.find((i) => i.source.kind === "website") ?? logos[0] ?? null;
+}
+
+/** The name the stage shows (and the landing card uses): the site's own first. */
+export function stageName(items: EvidenceItem[]): EvidenceItem | null {
+  const names = realFindings(items).filter((i) => i.field === "name");
+  return names.find((i) => i.source.kind === "website") ?? names[0] ?? null;
+}
+
+/**
+ * A found account opens with our referral mark (utm_source=aimatrx, utm_medium=referral).
+ * TODO(outbound-referral): the comparison lane's outboundHref (SmartAddExtras) is the same rule and
+ * lands separately; both move to the canonical primitive together.
+ */
+function referralHref(url: string): string {
+  const absolute = /^https?:\/\//i.test(url) ? url : `https://${url}`;
+  try {
+    const out = new URL(addUtmSource(absolute));
+    out.searchParams.set("utm_medium", "referral");
+    return out.toString();
+  } catch {
+    return absolute;
+  }
+}
+
+/** A YouTube channel id ("UC…") is not something a person reads. */
+const CHANNEL_ID = /^UC[A-Za-z0-9_-]{20,}$/;
+
+/** How an account reads on its chip: its @handle, or its real name when all we have is an id. */
+function accountLabel(s: EvidenceItem, names: EvidenceItem[]): string {
+  const handle = s.handle ?? "";
+  if (handle && !CHANNEL_ID.test(handle)) return `@${handle}`;
+  const fromProfile = names.find(
+    (n) => n.source.kind === "social_profile" && n.source.url && (n.source.url === s.url || (handle && n.source.url.includes(handle))),
+  );
+  return s.label ?? fromProfile?.value ?? platformLabel(s.platform ?? "");
+}
+
+/**
+ * The dominant colors of the real logo, sampled on a small canvas. A host that does not allow the
+ * read (no CORS) leaves the list empty, so nothing is ever invented.
+ */
+function useLogoColors(url: string | null): string[] {
+  const [colors, setColors] = useState<string[]>([]);
+  useEffect(() => {
+    setColors([]);
+    if (!url) return;
+    let alive = true;
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => {
+      if (!alive) return;
+      try {
+        const size = 48;
+        const canvas = document.createElement("canvas");
+        canvas.width = size;
+        canvas.height = size;
+        const ctx = canvas.getContext("2d", { willReadFrequently: true });
+        if (!ctx) return;
+        ctx.drawImage(img, 0, 0, size, size);
+        const data = ctx.getImageData(0, 0, size, size).data;
+        const buckets = new Map<number, { n: number; r: number; g: number; b: number }>();
+        for (let k = 0; k < data.length; k += 4) {
+          const [r, g, b, a] = [data[k], data[k + 1], data[k + 2], data[k + 3]];
+          if (a < 200) continue;
+          if (r > 236 && g > 236 && b > 236) continue; // paper white is the canvas, not the brand
+          const key = ((r >> 4) << 8) | ((g >> 4) << 4) | (b >> 4);
+          const cur = buckets.get(key) ?? { n: 0, r: 0, g: 0, b: 0 };
+          buckets.set(key, { n: cur.n + 1, r: cur.r + r, g: cur.g + g, b: cur.b + b });
+        }
+        const ranked = [...buckets.values()]
+          .filter((v) => v.n >= 6)
+          .sort((x, y) => y.n - x.n)
+          .map((v) => [Math.round(v.r / v.n), Math.round(v.g / v.n), Math.round(v.b / v.n)] as const);
+        const picked: (readonly [number, number, number])[] = [];
+        for (const c of ranked) {
+          if (picked.every((p) => Math.hypot(p[0] - c[0], p[1] - c[1], p[2] - c[2]) > 64)) picked.push(c);
+          if (picked.length === 4) break;
+        }
+        setColors(picked.map((c) => `#${c.map((v) => v.toString(16).padStart(2, "0")).join("")}`));
+      } catch {
+        // A tainted canvas (the host refused the read): no swatches, never made-up ones.
+        setColors([]);
+      }
+    };
+    // Through our image proxy: same origin, so the canvas may read the pixels.
+    img.src = proxiedExternalImageUrl(url);
+    return () => {
+      alive = false;
+    };
+  }, [url]);
+  return colors;
 }
 
 function Typewriter({ text }: { text: string }) {

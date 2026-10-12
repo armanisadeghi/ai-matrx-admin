@@ -110,7 +110,7 @@ export function SmartAddSlots({
       <Slot title={person ? "Name" : "Brand name"} empty={of("name").length ? null : empty} after={custom("name", person ? "Your name" : "Brand name")}>
         {of("name").map((i) => (
           <Row key={i.key} item={i} decision={decisions[i.key] ?? null} actions={choices(i, NAME_CHOICES)}>
-            <Shared id={i.key} className="inline-block max-w-full truncate align-top text-lg font-semibold leading-tight">{i.value}</Shared>
+            <Shared id={i.key} positionOnly className="inline-block max-w-full truncate align-top text-lg font-semibold leading-tight">{i.value}</Shared>
           </Row>
         ))}
       </Slot>

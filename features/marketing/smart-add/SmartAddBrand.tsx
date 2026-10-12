@@ -39,7 +39,7 @@ import {
 import { runHref } from "@/features/workflow-runtime/run-doors";
 import { initializeSite } from "@/features/marketing/crawler/direct-client";
 import { SmartAddSlots } from "./SmartAddSlots";
-import { SmartAddHero } from "./SmartAddHero";
+import { SmartAddHero, stageLogo, stageName } from "./SmartAddHero";
 import { Shared, riseIn } from "./stage/Shared";
 import { useSessionKnob } from "@/lib/scoped-config/sessionKnob";
 import { useAppSelector } from "@/lib/redux/hooks";
@@ -87,11 +87,9 @@ const WORKFLOW_KEY = "smart_add_brand_identify";
 const SETUP_KEY = "smart_add_brand_setup";
 /** Typing settles this long before a round starts; a newer value supersedes. */
 const IDENTIFY_DEBOUNCE_MS = 700;
-/** While a run is still working, the stage holds this long after the first real finding so the
- *  centerpiece can gather (logo, name, accounts) before the structured page takes over. */
-const STAGE_DWELL_MS = 2_600;
-/** When the work is already done (or the person answered), a short beat, then the morph. */
-const STAGE_SETTLE_MS = 1_800;
+/** The stage holds this long after the first real finding — however fast the site answered — so
+ *  people see the logo, name, colors and accounts gather before the structured page takes over. */
+const STAGE_HOLD_MS = 3_000;
 /** Only the person's own answers (no run): just long enough to see them land. */
 const STAGE_ANSWER_MS = 900;
 /** Confirmations within this window go out as one round. */
@@ -302,6 +300,22 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
   const costUsd = roundViews.reduce((sum, v) => sum + (v?.steps.reduce((s, x) => s + x.costUsd, 0) ?? 0), 0);
   const visible = orderedEvidence(items.values());
   const basics = confirmedBasics(items, decisions, person);
+  // The landing card shows the best found name and logo until the person confirms their own, so
+  // what the stage found has a real place to land (it is never created from these: Create reads basics).
+  const foundLogo = stageLogo([...items.values()]);
+  const foundName = stageName([...items.values()]);
+  const cardBasics =
+    basics.name && basics.images.length
+      ? basics
+      : {
+          ...basics,
+          name: basics.name ?? foundName?.value ?? null,
+          images: basics.images.length
+            ? basics.images
+            : foundLogo?.image_url
+              ? [{ url: foundLogo.image_url, kind: "logo" as const, primary: true, source: foundLogo.source.where }]
+              : [],
+        };
   // Recent posts fetched per confirmed account after Create: its own setting (platform 30, org/person override).
   const postsKnob = Number(useSessionKnob("social.smart_add_posts_default"));
   const postsPerAccount = Number.isFinite(postsKnob) && postsKnob >= 0 ? postsKnob : 30;
@@ -477,11 +491,21 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
   // Something to show = a real finding or an answer the person gave (the quick questions);
   // never the address they typed echoed back.
   const hasFindings = [...items.values()].some((i) => i.source.where !== "the address itself");
+  const firstFindingAt = useRef<number | null>(null);
+  // The hold clock starts when the stage has something to SHOW (a logo, a name, an account) — a
+  // phone number read off the page counts as a finding but never appears on the stage.
+  const showable =
+    Boolean(foundLogo || foundName) ||
+    [...items.values()].some((i) => i.field === "social" && i.source.kind !== "typed" && i.source.where !== "the address itself");
   useEffect(() => {
     if (structured || !hasFindings) return;
-    const timer = setTimeout(() => setStructured(true), working ? STAGE_DWELL_MS : rounds.length ? STAGE_SETTLE_MS : STAGE_ANSWER_MS);
+    if (rounds.length && working && !showable) return;
+    firstFindingAt.current ??= Date.now();
+    const held = Date.now() - firstFindingAt.current;
+    const wait = rounds.length ? Math.max(STAGE_HOLD_MS - held, 0) : STAGE_ANSWER_MS;
+    const timer = setTimeout(() => setStructured(true), wait);
     return () => clearTimeout(timer);
-  }, [hasFindings, structured, working, rounds.length]);
+  }, [hasFindings, structured, rounds.length, working, showable]);
   useLayoutEffect(() => {
     if (structured) riseIn(pageRef.current);
   }, [structured]);
@@ -604,7 +628,7 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
 
       {/* The brand as it stands: the primary choices, building as the person confirms. */}
       <div className="motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-3 motion-safe:duration-500">
-      <BrandCard basics={basics} person={person} location={basics.facts.find((f) => f.field === "address")?.value ?? null} />
+      <BrandCard basics={cardBasics} person={person} location={basics.facts.find((f) => f.field === "address")?.value ?? null} />
       </div>
       <p className="text-xs text-muted-foreground">Everything found is kept — only “Not us” is left out.</p>
 

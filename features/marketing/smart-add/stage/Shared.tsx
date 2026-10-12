@@ -25,16 +25,19 @@ export function Shared({
   children,
   className,
   as = "span",
+  positionOnly = false,
 }: {
   /** The evidence item key (or a fixed element name like "signals"). */
   id: string;
   children: ReactNode;
   className?: string;
   as?: "span" | "div";
+  /** Text: fly the position only, so letters never stretch between two font sizes. */
+  positionOnly?: boolean;
 }) {
   const Tag = as === "div" ? motion.div : motion.span;
   return (
-    <Tag layoutId={sharedId(id)} transition={FLIGHT} className={`relative z-10 ${className ?? ""}`} {...{ [SHARED_ATTR]: "" }}>
+    <Tag layoutId={sharedId(id)} layout={positionOnly ? "position" : true} transition={FLIGHT} className={`relative z-10 ${className ?? ""}`} {...{ [SHARED_ATTR]: "" }}>
       {children}
     </Tag>
   );

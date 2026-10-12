@@ -19,40 +19,43 @@
   width: 72vmax;
   height: 72vmax;
   border-radius: 9999px;
-  opacity: 0.9;
+  opacity: 1;
+  /* Light paper needs more saturation to read as color rather than haze. */
+  filter: saturate(1.35);
   will-change: transform;
 }
 
 .blobA {
-  top: -34vmax;
-  left: -18vmax;
-  background: radial-gradient(closest-side, hsl(var(--primary) / 0.55), hsl(var(--primary) / 0) 72%);
+  top: -30vmax;
+  left: -20vmax;
+  background: radial-gradient(closest-side, hsl(var(--primary) / 0.62), hsl(var(--primary) / 0) 70%);
   animation: driftA 34s ease-in-out infinite alternate;
 }
 
 .blobB {
   top: -26vmax;
   right: -30vmax;
-  background: radial-gradient(closest-side, hsl(var(--chart-2) / 0.5), hsl(var(--chart-2) / 0) 72%);
+  background: radial-gradient(closest-side, hsl(var(--chart-2) / 0.6), hsl(var(--chart-2) / 0) 70%);
   animation: driftB 41s ease-in-out infinite alternate;
 }
 
 .blobC {
-  bottom: -44vmax;
-  left: 8vmax;
-  background: radial-gradient(closest-side, hsl(var(--chart-5) / 0.42), hsl(var(--chart-5) / 0) 72%);
+  bottom: -36vmax;
+  left: -6vmax;
+  background: radial-gradient(closest-side, hsl(var(--chart-5) / 0.42), hsl(var(--chart-5) / 0) 70%);
   animation: driftC 38s ease-in-out infinite alternate;
 }
 
 .blobD {
   bottom: -36vmax;
   right: -14vmax;
-  background: radial-gradient(closest-side, hsl(var(--chart-4) / 0.4), hsl(var(--chart-4) / 0) 72%);
+  background: radial-gradient(closest-side, hsl(var(--chart-4) / 0.38), hsl(var(--chart-4) / 0) 70%);
   animation: driftD 46s ease-in-out infinite alternate;
 }
 
 :global(.dark) .blob {
-  opacity: 0.75;
+  opacity: 0.7;
+  filter: none;
 }
 
 /* Fades the aurora into the page base toward the bottom, so content below the fold reads calmly. */
@@ -60,8 +63,7 @@
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(60% 45% at 50% 38%, hsl(var(--background) / 0.35) 0%, transparent 100%),
-    linear-gradient(to bottom, transparent 70%, hsl(var(--background) / 0.6) 100%);
+    radial-gradient(55% 40% at 50% 45%, hsl(var(--background) / 0.4) 0%, transparent 100%);
 }
 
 .grain {
