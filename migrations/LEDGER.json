@@ -1,6 +1,6 @@
 {
   "note": "Checked-in snapshot of public._schema_migrations for the files under migrations/campaign and migrations/inverse. Written by `pnpm db:apply` on every successful production apply and refreshed whole by the nightly catch-up. Never hand-edited: a self-written checksum is a claim nobody can check. Guard: pnpm check:ledgered-files-unedited.",
-  "generated_at": "2026-10-11T09:16:15.309Z",
+  "generated_at": "2026-10-11T22:56:57.153Z",
   "files": {
     "migrations/campaign/a_chunk_is_the_size_the_client_door_can_actually_carry.sql": {
       "source": "matrx-frontend",
@@ -10795,6 +10795,12 @@
       "filename": "contract_follows_its_invariant_when_the_body_moves_down.sql",
       "checksum": "eee4b5b66f0b4fe1f5d1928be8ea43d692a2c5e68de42819f53de06fefe63e12",
       "applied_at": "2026-09-22 09:01:42.531256+00"
+    },
+    "migrations/inverse/esign_parity_28_retire_the_old_sign_request_minting_door.sql": {
+      "source": "matrx-frontend",
+      "filename": "esign_parity_28_retire_the_old_sign_request_minting_door.sql",
+      "checksum": "ff4d5a3fb7162cb01ea7347816e517a7fc109fd3c35348cebdb83b693569abd1",
+      "applied_at": "2026-10-11 22:56:55.554334+00"
     },
     "migrations/inverse/fieldtruth_the_deferred_guard_comes_off.sql": {
       "source": "matrx-frontend",
