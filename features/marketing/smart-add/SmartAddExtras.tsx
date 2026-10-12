@@ -194,19 +194,36 @@ interface SourceGroup {
 }
 
 function groupBySource(items: EvidenceItem[]): SourceGroup[] {
-  const groups = new Map<string, SourceGroup>();
-  for (const item of items) {
-    const id = item.source.kind === "typed" ? "typed" : (item.source.url ?? item.source.node);
-    const g = groups.get(id) ?? { id, title: "", photo: null, items: [] };
-    g.items.push(item);
-    if (item.field === "social" && item.source.kind === "social_profile") {
-      g.title = item.label ?? `@${item.handle}`;
-      g.photo = item;
-    }
-    if (!g.title && item.source.url) g.title = websiteHost(item.source.url);
-    groups.set(id, g);
+  // One card for the website, one per account — each account carries what its own profile said and
+  // its real photo (the same photo source as the image library), never a bare host name.
+  const photos = items.filter((i) => i.field === "logo" && i.profile_id);
+  const accounts = items.filter((i) => i.field === "social");
+  const claimedByAccount = new Set<string>();
+  const groups: SourceGroup[] = accounts.map((acct) => {
+    const fromProfile =
+      acct.source.kind === "social_profile" && acct.source.url
+        ? items.filter((i) => i.source.kind === "social_profile" && i.source.url === acct.source.url)
+        : [acct];
+    for (const i of fromProfile) claimedByAccount.add(i.key);
+    claimedByAccount.add(acct.key);
+    const photo =
+      (acct.profile_id ? acct : null) ??
+      photos.find((p) => p.source.url && p.source.url === acct.source.url) ??
+      photos.find((p) => p.platform === acct.platform) ??
+      null;
+    return {
+      id: acct.key,
+      title: acct.label ?? `@${acct.handle ?? ""}`,
+      photo: { ...acct, profile_id: photo?.profile_id ?? null, image_url: photo?.image_url ?? acct.image_url },
+      items: fromProfile.includes(acct) ? fromProfile : [acct, ...fromProfile],
+    };
+  });
+  const site = items.filter((i) => !claimedByAccount.has(i.key) && i.source.kind !== "typed");
+  if (site.length) {
+    const url = site.find((i) => i.source.url)?.source.url;
+    groups.unshift({ id: "site", title: url ? websiteHost(url) : "Website", photo: null, items: site });
   }
-  return [...groups.values()].filter((g) => g.id !== "typed");
+  return groups;
 }
 
 export function CompareSources({
@@ -222,7 +239,7 @@ export function CompareSources({
   return (
     <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3" data-testid="smart-add-compare">
       {groups.map((g) => {
-        const name = g.items.find((i) => i.field === "name")?.value ?? g.title;
+        const name = g.photo ? g.title : (g.items.find((i) => i.field === "name")?.value ?? g.title);
         const rejected = g.items.every((i) => decisions[i.key] === "no");
         const claimed = g.items.some((i) => decisions[i.key] === "yes" || decisions[i.key] === "preferred");
         return (

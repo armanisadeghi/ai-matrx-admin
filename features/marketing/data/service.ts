@@ -2983,6 +2983,20 @@ export async function listBrandSites(
 const PROPERTY_COLUMNS =
   "id, organization_id, created_at, updated_at, created_by, updated_by, deleted_at, version, metadata, custom_fields, brand_id, kind, url, handle, display_name, status, site_id, connection, settings, owner_kind, owner_party_id";
 
+/** Crawled pages per site (exact counts; a site never crawled answers 0). */
+export async function countSitePages(siteIds: string[]): Promise<Record<string, number>> {
+  const db = await authenticatedWebDb(supabase);
+  const out: Record<string, number> = {};
+  await Promise.all(
+    siteIds.map(async (id) => {
+      const response = await db.from("page").select("id", { count: "exact", head: true }).eq("site_id", id);
+      if (response.error) throw new Error(response.error.message);
+      out[id] = response.count ?? 0;
+    }),
+  );
+  return out;
+}
+
 export async function listBrandProperties(
   brandId: string,
   signal?: AbortSignal,

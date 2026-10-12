@@ -6,6 +6,10 @@
  * by a restart that was never picked back up) a "Resume setup" action that continues the SAME run
  * from its last checkpoint through the workflow system — finished steps are never re-run or re-paid.
  * (An interrupted run — "cancelled" by a restart — is resumed by the platform's recovery sweep.)
+ * When a run can NOT continue (its steps were replaced, or the resume is refused) or the brand's sites
+ * were never crawled, "Run setup again" starts a fresh setup from what is already confirmed on the
+ * brand: its tracked accounts get their post history, sites with no crawled pages get the crawl;
+ * images already saved are not saved again.
  */
 
 import { useState } from "react";
@@ -19,7 +23,10 @@ import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
 import { extractErrorMessage } from "@/utils/errors";
 import { toast } from "@/lib/toast";
 import { runHref } from "@/features/workflow-runtime/run-doors";
-import { lookupSystemRun } from "@/features/education/kits/systemRuns";
+import { lookupSystemRun, startSystemRun } from "@/features/education/kits/systemRuns";
+import { countSitePages, listBrandProperties, listBrandSites } from "@/features/marketing/data/service";
+import { initializeSite } from "@/features/marketing/crawler/direct-client";
+import { useSessionKnob } from "@/lib/scoped-config/sessionKnob";
 
 const SETUP_KEY = "smart_add_brand_setup";
 const STOPPED = new Set(["failed", "errored", "cancelled", "stopped"]);
@@ -28,6 +35,19 @@ export function SmartAddSetupStatus({ brandId, organizationId }: { brandId: stri
   const dispatch = useAppDispatch();
   const queryClient = useQueryClient();
   const [resuming, setResuming] = useState(false);
+  const [resumeRefused, setResumeRefused] = useState(false);
+  const [rerunning, setRerunning] = useState(false);
+  const postsKnob = Number(useSessionKnob("social.smart_add_posts_default"));
+  const maxPosts = Number.isFinite(postsKnob) && postsKnob >= 0 ? postsKnob : 30;
+  const sites = useQuery({
+    queryKey: ["marketing", "smart-add-setup-sites", brandId],
+    queryFn: async () => {
+      const list = await listBrandSites(brandId);
+      const pages = await countSitePages(list.map((x) => x.id));
+      return list.map((x) => ({ id: x.id, pages: pages[x.id] ?? 0 }));
+    },
+    staleTime: 60_000,
+  });
   const run = useQuery({
     queryKey: ["marketing", "smart-add-setup", brandId],
     queryFn: () => lookupSystemRun(dispatch, SETUP_KEY, `brand:${brandId}`, organizationId, "Setup status could not be read."),
@@ -36,8 +56,47 @@ export function SmartAddSetupStatus({ brandId, organizationId }: { brandId: stri
     staleTime: 10_000,
   });
   const r = run.data;
-  if (!r || r.status === "completed") return null;
+  const uncrawled = (sites.data ?? []).filter((x) => x.pages === 0);
+  if (!r) return null;
   const stopped = STOPPED.has(r.status);
+  const canRunAgain = (stopped && (r.status !== "errored" || resumeRefused)) || (r.status === "completed" && uncrawled.length > 0);
+  if (r.status === "completed" && !canRunAgain) return null;
+
+  const runAgain = async () => {
+    setRerunning(true);
+    try {
+      await ensureOrgId(organizationId);
+      const properties = await listBrandProperties(brandId);
+      const accounts = properties
+        .filter((p) => p.kind !== "website" && (p.url || p.handle))
+        .map((p) => ({ handle_or_url: p.url ?? p.handle ?? "", platform: p.kind, property_id: p.id }));
+      for (const site of uncrawled) void initializeSite(site.id).catch(() => undefined);
+      if (accounts.length) {
+        await startSystemRun(
+          dispatch,
+          SETUP_KEY,
+          {
+            subject: `brand:${brandId}`,
+            organizationId,
+            sourceFeature: "marketing",
+            // Images already saved are not saved again; accounts re-link (no duplicates) then fetch history.
+            inputs: { brand_id: brandId, images: [], accounts, max_posts: maxPosts },
+          },
+          "The setup could not start again.",
+        );
+      }
+      toast.success(
+        `Setup started again${uncrawled.length ? ` · crawling ${uncrawled.length} site${uncrawled.length === 1 ? "" : "s"}` : ""}`,
+      );
+      setResumeRefused(false);
+      await queryClient.invalidateQueries({ queryKey: ["marketing", "smart-add-setup", brandId] });
+      await queryClient.invalidateQueries({ queryKey: ["marketing", "smart-add-setup-sites", brandId] });
+    } catch (error) {
+      toast.error(`Could not run the setup again: ${extractErrorMessage(error)}`);
+    } finally {
+      setRerunning(false);
+    }
+  };
 
   const resume = async () => {
     setResuming(true);
@@ -60,6 +119,8 @@ export function SmartAddSetupStatus({ brandId, organizationId }: { brandId: stri
       toast.success("Setup resumed");
       await queryClient.invalidateQueries({ queryKey: ["marketing", "smart-add-setup", brandId] });
     } catch (error) {
+      // The run cannot continue (e.g. its steps were replaced): offer a fresh setup instead.
+      setResumeRefused(true);
       toast.error(`Could not resume the setup: ${extractErrorMessage(error)}`);
     } finally {
       setResuming(false);
@@ -69,15 +130,20 @@ export function SmartAddSetupStatus({ brandId, organizationId }: { brandId: stri
   return (
     <span className="inline-flex items-center gap-1" data-testid="smart-add-setup-status">
       <Badge tone={stopped ? "warning" : "neutral"}>
-        {stopped ? "Setup stopped" : (
+        {r.status === "completed" ? "Site not crawled" : stopped ? "Setup stopped" : (
           <span className="inline-flex items-center gap-1">
             <Loader2 className="size-3 animate-spin" /> Setting up
           </span>
         )}
       </Badge>
-      {r.status === "errored" ? (
+      {r.status === "errored" && !resumeRefused ? (
         <Button variant="outline" icon={resuming ? <Loader2 className="animate-spin" /> : <RotateCcw />} disabled={resuming} onClick={() => void resume()}>
           Resume setup
+        </Button>
+      ) : null}
+      {canRunAgain ? (
+        <Button variant="outline" icon={rerunning ? <Loader2 className="animate-spin" /> : <RotateCcw />} disabled={rerunning} onClick={() => void runAgain()}>
+          Run setup again
         </Button>
       ) : null}
       <a href={runHref(r.runId)} target="_blank" rel="noreferrer" className="inline-flex items-center gap-0.5 text-xs text-primary">
