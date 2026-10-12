@@ -42,9 +42,8 @@ export function ExportSupersedeDialog({
       description={
         <>
           <p>
-            This builds a fresh file as version {exportVersion + 1} and marks
-            version {exportVersion} as replaced. Both files are kept — the old
-            one stays as a record of what was nearly sent.
+            Builds a fresh file as version {exportVersion + 1} and marks
+            version {exportVersion} as replaced. Both files are kept.
           </p>
           <p className="mt-2 font-medium text-foreground">
             Safe because nobody has been paid from version {exportVersion} yet.

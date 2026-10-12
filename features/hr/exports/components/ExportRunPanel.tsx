@@ -488,9 +488,8 @@ export function ExportRunPanel({
           <Info className="h-4 w-4" aria-hidden />
           <AlertTitle>The build was accepted</AlertTitle>
           <AlertDescription>
-            This environment is running against fixtures, so its progress
-            can&apos;t be followed here. On a real server the file appears in
-            the history below when it finishes.
+            Running against fixtures, so progress can&apos;t be followed here.
+            On a real server the file appears in the history below.
           </AlertDescription>
         </Alert>
       ) : null}
