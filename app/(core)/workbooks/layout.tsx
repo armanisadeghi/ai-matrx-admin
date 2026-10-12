@@ -2,6 +2,7 @@ import React from "react";
 
 import { createRouteMetadata } from "@/utils/route-metadata";
 import WorkbooksLanding from "@/features/auth/components/module-landing/landings/WorkbooksLanding";
+import { OfficeLookSeed } from "@/features/file-actions/skin/OfficeLookSeed";
 import { getSessionVerdict } from "@/utils/supabase/sessionVerdict";
 
 export const metadata = createRouteMetadata("/workbooks", {
@@ -21,11 +22,13 @@ export default async function WorkbooksLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { isAuthenticated } = await getSessionVerdict();
+  const { isAuthenticated, user } = await getSessionVerdict();
   if (!isAuthenticated) return <WorkbooksLanding />;
   return (
-    <div className="w-full h-full bg-background text-foreground scrollbar-none">
-      {children}
-    </div>
+    <OfficeLookSeed userId={user.id}>
+      <div className="w-full h-full bg-background text-foreground scrollbar-none">
+        {children}
+      </div>
+    </OfficeLookSeed>
   );
 }

@@ -1,6 +1,6 @@
 /**
  * The Google link a workbook or document carries: `metadata.google_link` on
- * `workbench.udt_workbooks` / `workbench.udt_documents`.
+ * `workbench.udt_workbooks` / `workbench.udt_documents` / `workbench.presentation`.
  *
  * One object per record, beside (never inside) the custom-table link Lane B
  * keeps in `metadata.table_links` — each kind of link owns its own key, so the
@@ -13,10 +13,10 @@ import { mergeJsonColumn } from "@ai-matrx/data/db";
 
 import { supabase } from "@/utils/supabase/client";
 
-export type LinkedRecordKind = "workbook" | "document";
+export type LinkedRecordKind = "workbook" | "document" | "presentation";
 
 export interface GoogleFileLink {
-  kind: "google_sheet" | "google_doc";
+  kind: "google_sheet" | "google_doc" | "google_slides";
   connectionId: string;
   fileId: string;
   name: string;
@@ -40,9 +40,10 @@ export interface GoogleFileLink {
   lastDirection: "to_google" | "from_google";
 }
 
-const TABLE: Record<LinkedRecordKind, "udt_workbooks" | "udt_documents"> = {
+const TABLE: Record<LinkedRecordKind, "udt_workbooks" | "udt_documents" | "presentation"> = {
   workbook: "udt_workbooks",
   document: "udt_documents",
+  presentation: "presentation",
 };
 
 type MetaRow = { id: string; version: number; metadata: unknown };

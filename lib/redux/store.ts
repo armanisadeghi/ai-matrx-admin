@@ -38,6 +38,7 @@ import { chatMiddlewares } from "@ai-matrx/chat/store/middlewares";
 import { setStoreSingleton as setChatStoreSingleton } from "@ai-matrx/chat/store/store-singleton";
 import { mandateOrgSwitchCacheMiddleware } from "@/features/mandates/redux/org-switch-cache-middleware";
 import { activeOrgCookieMiddleware } from "@/lib/organizations/activeOrgCookieMiddleware";
+import { officeLookCookieMiddleware } from "@/lib/redux/preferences/officeLookCookieMiddleware";
 import { tabOrganizationMiddleware } from "@/lib/organizations/tabOrganization";
 import { scopeTreeInvalidationMiddleware } from "@/features/scopes/redux/scopeTreeInvalidationMiddleware";
 import { overlayRenderWatchdogMiddleware } from "@/features/window-panels/diagnostics/overlayRenderWatchdog";
@@ -288,6 +289,7 @@ export const makeStore = (initialState?: Partial<BaseReduxState>) => {
         ...chatMiddlewares(),
         mandateOrgSwitchCacheMiddleware,
         activeOrgCookieMiddleware,
+        officeLookCookieMiddleware,
         tabOrganizationMiddleware,
         scopeTreeInvalidationMiddleware,
         windowPersistenceCloseMiddleware,

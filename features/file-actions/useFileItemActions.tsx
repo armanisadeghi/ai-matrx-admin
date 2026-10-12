@@ -141,7 +141,7 @@ export function useFileItemActions<Row extends { id: string; user_id: string }>(
         trashed={trashed}
         projectId={adapter.projectIdOf(row)}
         google={
-          userId !== null && row.user_id === userId && adapter.noun !== "presentation"
+          userId !== null && row.user_id === userId
             ? { adapter: savedRecordGoogleAdapter(adapter.noun, row.id, name), editable: true }
             : undefined
         }

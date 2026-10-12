@@ -179,7 +179,7 @@ export async function pushMarkdownToDoc(
 export async function readRemoteVersion(
   connectionId: string,
   fileId: string,
-  kind: "sheet" | "doc",
+  kind: "sheet" | "doc" | "slide",
 ): Promise<GoogleRemoteVersion> {
   const response = await postGoogleBackend(
     "/api/google-workspace/linked/version",
@@ -187,4 +187,34 @@ export async function readRemoteVersion(
     "Unable to check the Google file.",
   );
   return remoteFrom(await responseRecord(response));
+}
+
+/** A deck becomes a Google Slides file: the .pptx the app exports is uploaded and Drive converts it. */
+export async function createSlidesFromPptx(
+  connectionId: string,
+  title: string,
+  pptxBase64: string,
+): Promise<GoogleWriteOutcome<LinkedCreate>> {
+  const organizationId = await effectiveOrganizationId();
+  const response = await postGoogleBackend(
+    "/api/google-workspace/linked/presentations/from-pptx",
+    { connection_id: connectionId, title, pptx_base64: pptxBase64, organization_id: organizationId },
+    "Unable to create the Google Slides file.",
+    organizationId,
+  );
+  return writeOutcome(response, createFrom);
+}
+
+/** Replace the linked Google Slides file's content with the deck (Google keeps the old revision). */
+export async function pushPptxToSlides(
+  connectionId: string,
+  fileId: string,
+  pptxBase64: string,
+): Promise<LinkedPush> {
+  const response = await postGoogleBackend(
+    "/api/google-workspace/linked/presentations/push",
+    { connection_id: connectionId, file_id: fileId, pptx_base64: pptxBase64 },
+    "Unable to update the Google Slides file.",
+  );
+  return pushFrom(await responseRecord(response));
 }

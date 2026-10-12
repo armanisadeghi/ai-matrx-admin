@@ -19,7 +19,7 @@
   width: 72vmax;
   height: 72vmax;
   border-radius: 9999px;
-  opacity: 0.55;
+  opacity: 0.9;
   will-change: transform;
 }
 
@@ -52,7 +52,7 @@
 }
 
 :global(.dark) .blob {
-  opacity: 0.7;
+  opacity: 0.75;
 }
 
 /* Fades the aurora into the page base toward the bottom, so content below the fold reads calmly. */
@@ -60,8 +60,8 @@
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(120% 70% at 50% 0%, transparent 0%, transparent 55%, hsl(var(--background) / 0.55) 100%),
-    linear-gradient(to bottom, transparent 55%, hsl(var(--background) / 0.85) 100%);
+    radial-gradient(60% 45% at 50% 38%, hsl(var(--background) / 0.35) 0%, transparent 100%),
+    linear-gradient(to bottom, transparent 70%, hsl(var(--background) / 0.6) 100%);
 }
 
 .grain {

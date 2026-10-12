@@ -25,6 +25,18 @@ export async function downloadDeckAsPptx(deck: Deck, name: string): Promise<void
   if (!res.success) throw new Error(res.error ?? res.message);
 }
 
+/** The deck as the same .pptx the download makes, base64 for the Google Slides upload. */
+export async function deckAsPptxBase64(deck: Deck, name: string): Promise<string> {
+  const { exportToPowerPoint } = await import("@/components/mardown-display/blocks/presentations/presentation-export");
+  const res = await exportToPowerPoint(asPresentationData(deck), { filename: safeName(name), returnBlob: true });
+  if (!res.success || !res.blob) throw new Error(res.error ?? res.message);
+  const bytes = new Uint8Array(await res.blob.arrayBuffer());
+  let binary = "";
+  const chunk = 0x8000;
+  for (let i = 0; i < bytes.length; i += chunk) binary += String.fromCharCode(...bytes.subarray(i, i + chunk));
+  return btoa(binary);
+}
+
 export async function downloadDeckAsHtml(deck: Deck, name: string): Promise<void> {
   const [{ generatePresentationHTML }, { downloadFile }] = await Promise.all([
     import("@/components/mardown-display/blocks/presentations/presentation-html-generator"),

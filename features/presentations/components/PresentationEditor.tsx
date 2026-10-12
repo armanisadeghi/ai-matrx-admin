@@ -48,6 +48,7 @@ import { FileTitleMarks } from "@/features/file-actions/FileTitleMarks";
 import { useFileRecordMenu } from "@/features/file-actions/useFileRecordMenu";
 import { useLiveFileName } from "@/features/file-actions/useLiveFileName";
 import { PRESENTATION_ADAPTER } from "@/features/file-actions/adapters";
+import { presentationGoogleAdapter } from "@/features/google-workspace/linked/EditorGoogleLinks";
 import { mediaClient } from "@/features/files/media-client/client";
 import { isServiceFailure } from "@/features/data-tables/types";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
@@ -263,6 +264,7 @@ export function PresentationEditor({ presentationId }: { presentationId: string 
     downloads: deckDownloads(() => Promise.resolve(deckRef.current), row?.name ?? "presentation"),
     onProjectMoved: (projectId) => setRow((r) => (r ? { ...r, project_id: projectId } : r)),
     menubar: menuBar.fileMenuProps(),
+    ...(row && userId !== null && row.user_id === userId ? { google: { adapter: presentationGoogleAdapter(() => deckRef.current, row.id, row.name), editable: canEdit } } : {}),
     ...(canEdit ? { onRename: applyRename } : {}),
     extra: renderMenuEntries(pageFileExtras),
   });

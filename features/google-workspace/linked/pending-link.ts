@@ -29,6 +29,9 @@ export type PendingOutcome =
 
 type ExistingLink = GoogleFileLink | null;
 
+const remoteKindOf = (kind: GoogleFileLink["kind"]) =>
+  kind === "google_sheet" ? "sheet" : kind === "google_slides" ? "slide" : "doc";
+
 type Receipt = { state?: string; output?: { file_id?: string; name?: string; open_in_google?: string | null } };
 
 export async function completePendingLink(
@@ -51,7 +54,7 @@ export async function completePendingLink(
     // A reviewed push into an already-linked file: once applied, the link's sync point moves up to
     // what Google now holds, so the next Update/Push does not read as "changed in both places".
     if (receipt?.state === "applied" && existing && existing.fileId === pending.fileId) {
-      const remote = await readRemoteVersion(existing.connectionId, existing.fileId, existing.kind === "google_sheet" ? "sheet" : "doc");
+      const remote = await readRemoteVersion(existing.connectionId, existing.fileId, remoteKindOf(existing.kind));
       const link: GoogleFileLink = {
         ...existing,
         webViewLink: remote.webViewLink ?? existing.webViewLink,
@@ -67,8 +70,7 @@ export async function completePendingLink(
       return { state: "linked", link };
     }
   } else if (output?.file_id) {
-    const sheet = pending.kind === "google_sheet";
-    const remote = await readRemoteVersion(pending.connectionId, output.file_id, sheet ? "sheet" : "doc");
+    const remote = await readRemoteVersion(pending.connectionId, output.file_id, remoteKindOf(pending.kind));
     const now = new Date().toISOString();
     const link: GoogleFileLink = {
       kind: pending.kind,

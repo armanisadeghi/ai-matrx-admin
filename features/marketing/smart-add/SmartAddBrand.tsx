@@ -91,7 +91,7 @@ const IDENTIFY_DEBOUNCE_MS = 700;
  *  centerpiece can gather (logo, name, accounts) before the structured page takes over. */
 const STAGE_DWELL_MS = 2_600;
 /** When the work is already done (or the person answered), a short beat, then the morph. */
-const STAGE_SETTLE_MS = 700;
+const STAGE_SETTLE_MS = 1_800;
 /** Confirmations within this window go out as one round. */
 const CONFIRM_BATCH_MS = 600;
 

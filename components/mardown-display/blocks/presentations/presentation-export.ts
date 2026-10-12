@@ -19,12 +19,16 @@ export interface ExportOptions {
     filename?: string;
     quality?: number;
     includeMetadata?: boolean;
+    /** Build the file and hand it back on the result instead of downloading it (PowerPoint only). */
+    returnBlob?: boolean;
 }
 
 export interface ExportResult {
     success: boolean;
     message: string;
     error?: string;
+    /** The built file, when `returnBlob` was asked for. */
+    blob?: Blob;
 }
 
 /**
@@ -178,7 +182,7 @@ export const exportToPowerPoint = async (
         const { buildPresentation } = await import('@ai-matrx/alchemy/operate/pptx');
         const { downloadFile } = await import('@ai-matrx/kit/download');
 
-        const { filename = 'presentation' } = options;
+        const { filename = 'presentation', returnBlob = false } = options;
         const { slides } = presentationData;
         const theme = palette(resolveDeckTheme(presentationData.theme));
 
@@ -290,6 +294,7 @@ export const exportToPowerPoint = async (
         
         }, { author: 'AI Matrx', title: slides[0]?.title || filename, subject: 'Presentation' });
 
+        if (returnBlob) return { success: true, message: `PowerPoint built: ${filename}.pptx`, blob };
         downloadFile(`${filename}.pptx`, blob, blob.type);
 
         return {

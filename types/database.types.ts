@@ -141088,6 +141088,75 @@ export type Database = {
           },
         ]
       }
+      brand_relation_kind: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          deleted_at: string | null
+          id: string
+          is_known: boolean
+          key: string
+          label: string
+          metadata: Json
+          organization_id: string
+          published_to_web: boolean
+          published_to_web_at: string | null
+          published_to_web_by: string | null
+          routes_to: string | null
+          shown_to: Database["platform"]["Enums"]["shown_to"] | null
+          sort: number
+          status: string
+          updated_at: string
+          updated_by: string | null
+          version: number
+          visibility: Database["platform"]["Enums"]["visibility"]
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          id?: string
+          is_known?: boolean
+          key: string
+          label: string
+          metadata?: Json
+          organization_id: string
+          published_to_web?: boolean
+          published_to_web_at?: string | null
+          published_to_web_by?: string | null
+          routes_to?: string | null
+          shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          sort?: number
+          status?: string
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+          visibility?: Database["platform"]["Enums"]["visibility"]
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          id?: string
+          is_known?: boolean
+          key?: string
+          label?: string
+          metadata?: Json
+          organization_id?: string
+          published_to_web?: boolean
+          published_to_web_at?: string | null
+          published_to_web_by?: string | null
+          routes_to?: string | null
+          shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          sort?: number
+          status?: string
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+          visibility?: Database["platform"]["Enums"]["visibility"]
+        }
+        Relationships: []
+      }
       business_fact: {
         Row: {
           brand_id: string
@@ -141868,6 +141937,7 @@ export type Database = {
           id: string
           metadata: Json
           organization_id: string
+          relation_key: string | null
           resolved_asset_id: string | null
           resolved_fact_id: string | null
           resolved_property_id: string | null
@@ -141897,6 +141967,7 @@ export type Database = {
           id?: string
           metadata?: Json
           organization_id: string
+          relation_key?: string | null
           resolved_asset_id?: string | null
           resolved_fact_id?: string | null
           resolved_property_id?: string | null
@@ -141926,6 +141997,7 @@ export type Database = {
           id?: string
           metadata?: Json
           organization_id?: string
+          relation_key?: string | null
           resolved_asset_id?: string | null
           resolved_fact_id?: string | null
           resolved_property_id?: string | null

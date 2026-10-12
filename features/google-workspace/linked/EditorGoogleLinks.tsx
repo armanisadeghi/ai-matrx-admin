@@ -20,6 +20,9 @@ import { getLatestDocumentSnapshot, saveDocumentSnapshot } from "@/features/docu
 import { univerDocToMarkdown } from "@/features/documents/univer-doc-to-markdown";
 import { markdownToUniverDoc } from "@/features/documents/markdown-to-univer-doc";
 import { showSavedSnapshot } from "@/lib/univer/openEditorContent";
+import { deckAsPptxBase64 } from "@/features/presentations/deck-export";
+import { getPresentation } from "@/features/presentations/presentation-service";
+import type { Deck } from "@/features/presentations/deck-model";
 import { sanitizeUniverDocSnapshot } from "@/features/documents/utils/sanitizeUniverDocSnapshot";
 
 import { GoogleLinkControl, googleLinkParts, useGoogleLink, type GoogleLinkAdapter } from "./GoogleLinkControl";
@@ -41,7 +44,7 @@ function registerLiveAdapter(adapter: GoogleLinkAdapter): () => void {
 }
 
 /** The open editor's live adapter for a record, or null until its editor is ready. */
-export function useLiveGoogleAdapter(kind: "workbook" | "document", id: string): GoogleLinkAdapter | null {
+export function useLiveGoogleAdapter(kind: "workbook" | "document" | "presentation", id: string): GoogleLinkAdapter | null {
   // useSyncExternalStore (not a render-time read of module state): the compiler would cache the latter.
   return useSyncExternalStore(
     (onChange) => {
@@ -194,16 +197,45 @@ export function useDocumentGoogleLink(
   return googleLinkParts(useGoogleLink(adapter, editable, enabled));
 }
 
+const SLIDES_READ_BACK = "Google Slides files cannot be read back into AI Matrx yet.";
+
+/** A deck goes to Google Slides as the .pptx the app exports; nothing comes back (no read-back). */
+export function presentationGoogleAdapter(
+  readDeck: () => Deck | Promise<Deck>,
+  presentationId: string,
+  presentationName?: string,
+): GoogleLinkAdapter {
+  const title = presentationName || "Untitled presentation";
+  return {
+    recordKind: "presentation",
+    recordId: presentationId,
+    title,
+    readLocal: readDeck,
+    applyRemote: async () => {
+      throw new Error(SLIDES_READ_BACK);
+    },
+    latestLocalSnapshotId: async () => null,
+    toGoogleFile: (content) => deckAsPptxBase64(content as Deck, title),
+  };
+}
+
 /**
  * A list row has no open editor: its content is the latest SAVED snapshot, and an update from
  * Google saves a new snapshot (opening the record shows it). The same adapter shape as the
  * editors, so the Google rows in a list menu are the ones in the editor.
  */
 export function savedRecordGoogleAdapter(
-  recordKind: "workbook" | "document",
+  recordKind: "workbook" | "document" | "presentation",
   recordId: string,
   title: string,
 ): GoogleLinkAdapter {
+  if (recordKind === "presentation") {
+    return presentationGoogleAdapter(async () => {
+      const res = await getPresentation(recordId);
+      if (isServiceFailure(res)) throw new Error(res.error);
+      return res.data.deck;
+    }, recordId, title);
+  }
   if (recordKind === "workbook") {
     return {
       recordKind,

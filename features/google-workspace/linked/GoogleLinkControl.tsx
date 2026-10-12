@@ -36,7 +36,7 @@ import {
 import { errorSentence, toast } from "@/lib/toast";
 import { approvalQueueHref, SENT_FOR_APPROVAL_MESSAGE } from "@/features/google-workspace/service";
 
-import { GoogleDocsMark, GoogleSheetsMark } from "./marks";
+import { GoogleDocsMark, GoogleSheetsMark, GoogleSlidesMark } from "./marks";
 import { GoogleG } from "@/components/icons/google-brand";
 import {
   readGoogleLink,
@@ -49,7 +49,9 @@ import { completePendingLink } from "./pending-link";
 import {
   createDocFromMarkdown,
   createSheetFromWorkbook,
+  createSlidesFromPptx,
   pushMarkdownToDoc,
+  pushPptxToSlides,
   pushWorkbookToSheet,
   readDocAsMarkdown,
   readSheetAsWorkbook,
@@ -72,7 +74,19 @@ export interface GoogleLinkAdapter {
   applyRemote: (content: unknown) => Promise<string | null>;
   /** The newest saved snapshot id (what "changed here since the last sync" compares). */
   latestLocalSnapshotId: () => Promise<string | null>;
+  /** Presentations only: the content as a base64 .pptx (Google Slides is created by uploading one). */
+  toGoogleFile?: (content: unknown) => Promise<string>;
 }
+
+/** Everything that differs between the three linkable kinds, in one place. */
+const KIND_CONFIG = {
+  workbook: { appName: "Google Sheets", linkKind: "google_sheet", createLabel: "Create Google Sheet", Mark: GoogleSheetsMark, remoteKind: "sheet" },
+  document: { appName: "Google Docs", linkKind: "google_doc", createLabel: "Create Google Doc", Mark: GoogleDocsMark, remoteKind: "doc" },
+  presentation: { appName: "Google Slides", linkKind: "google_slides", createLabel: "Create Google Slides", Mark: GoogleSlidesMark, remoteKind: "slide" },
+} as const;
+
+/** Google Slides cannot be read back into a deck, so it has no "Update from Google". */
+const READ_BACK_REFUSAL = "Google Slides files cannot be read back into AI Matrx yet.";
 
 type Conflict = {
   from: "update" | "push";
@@ -113,6 +127,7 @@ export async function contentFingerprint(content: unknown): Promise<string> {
       ? content
       : (() => {
           const wb = (content ?? {}) as Record<string, unknown>;
+          if (Array.isArray(wb.slides)) return stableJson({ slides: wb.slides, theme: wb.theme });
           return stableJson({ sheetOrder: wb.sheetOrder, sheets: wb.sheets, styles: wb.styles });
         })();
   const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(basis));
@@ -120,8 +135,10 @@ export async function contentFingerprint(content: unknown): Promise<string> {
 }
 
 export function useGoogleLink(adapter: GoogleLinkAdapter, editable: boolean, active = true) {
+  const config = KIND_CONFIG[adapter.recordKind];
   const isSheet = adapter.recordKind === "workbook";
-  const appName = isSheet ? "Google Sheets" : "Google Docs";
+  const isSlides = adapter.recordKind === "presentation";
+  const appName = config.appName;
   const { state, connect } = useGoogleWorkspaceConnection(active);
   const key = cacheKey(adapter.recordKind, adapter.recordId);
   const [loaded, setLoaded] = useState(linkCache.has(key));
@@ -225,25 +242,32 @@ export function useGoogleLink(adapter: GoogleLinkAdapter, editable: boolean, act
     }
   };
 
+  const slidesFile = async (content: unknown): Promise<string> => {
+    if (!adapter.toGoogleFile) throw new Error("This deck cannot be sent to Google Slides from here.");
+    return adapter.toGoogleFile(content);
+  };
+
   const create = () =>
     run("create", async () => {
       if (state.status !== "ready") return;
       const content = await adapter.readLocal();
       // Pictures ride as links Google can fetch; any left out are named in the toast.
-      const ready = isSheet ? null : await googleReadyMarkdown(String(content ?? ""));
-      const outcome = isSheet
-        ? await createSheetFromWorkbook(state.connection.connectionId, adapter.title, content)
-        : await createDocFromMarkdown(
-            state.connection.connectionId,
-            documentNameFrom(adapter.title, ready?.markdown ?? ""),
-            ready?.markdown ?? "",
-          );
+      const ready = isSheet || isSlides ? null : await googleReadyMarkdown(String(content ?? ""));
+      const outcome = isSlides
+        ? await createSlidesFromPptx(state.connection.connectionId, adapter.title, await slidesFile(content))
+        : isSheet
+          ? await createSheetFromWorkbook(state.connection.connectionId, adapter.title, content)
+          : await createDocFromMarkdown(
+              state.connection.connectionId,
+              documentNameFrom(adapter.title, ready?.markdown ?? ""),
+              ready?.markdown ?? "",
+            );
       if (outcome.proposed) {
         // Remember WHICH approval makes the file, so approving it also saves the link.
         const queued = await writePendingGoogleLink(adapter.recordKind, adapter.recordId, {
           intent: "create",
           assistId: outcome.assistId,
-          kind: isSheet ? "google_sheet" : "google_doc",
+          kind: config.linkKind,
           connectionId: state.connection.connectionId,
           name: adapter.title,
           queuedAt: new Date().toISOString(),
@@ -257,7 +281,7 @@ export function useGoogleLink(adapter: GoogleLinkAdapter, editable: boolean, act
       const { file, remote, notes } = outcome.result;
       const now = new Date().toISOString();
       await saveLink({
-        kind: isSheet ? "google_sheet" : "google_doc",
+        kind: config.linkKind,
         connectionId: state.connection.connectionId,
         fileId: file.fileId,
         name: file.name,
@@ -305,6 +329,7 @@ export function useGoogleLink(adapter: GoogleLinkAdapter, editable: boolean, act
   const update = () =>
     run("update", async () => {
       if (!link) return;
+      if (isSlides) throw new Error(READ_BACK_REFUSAL);
       const read = isSheet
         ? await readSheetAsWorkbook(link.connectionId, link.fileId, adapter.recordId).then((r) => ({ content: r.workbook as unknown, remote: r.remote }))
         : await readDocAsMarkdown(link.connectionId, link.fileId).then((r) => ({ content: r.markdown as unknown, remote: r.remote }));
@@ -325,10 +350,12 @@ export function useGoogleLink(adapter: GoogleLinkAdapter, editable: boolean, act
     run("push", async () => {
       if (!link) return;
       const content = await adapter.readLocal();
-      const ready = isSheet ? null : await googleReadyMarkdown(String(content ?? ""));
-      const outcome = isSheet
-        ? await pushWorkbookToSheet(link.connectionId, link.fileId, content, link.remoteVersion, force)
-        : { proposed: false as const, result: await pushMarkdownToDoc(link.connectionId, link.fileId, ready?.markdown ?? "", link.remoteVersion, force) };
+      const ready = isSheet || isSlides ? null : await googleReadyMarkdown(String(content ?? ""));
+      const outcome = isSlides
+        ? { proposed: false as const, result: await pushPptxToSlides(link.connectionId, link.fileId, await slidesFile(content)) }
+        : isSheet
+          ? await pushWorkbookToSheet(link.connectionId, link.fileId, content, link.remoteVersion, force)
+          : { proposed: false as const, result: await pushMarkdownToDoc(link.connectionId, link.fileId, ready?.markdown ?? "", link.remoteVersion, force) };
       if (outcome.proposed) {
         // Remember WHICH approval writes the cells, so approving it also brings the link forward.
         const queued = await writePendingGoogleLink(adapter.recordKind, adapter.recordId, {
@@ -421,8 +448,9 @@ export function useGoogleLink(adapter: GoogleLinkAdapter, editable: boolean, act
 
   return {
     isSheet,
+    isSlides,
     appName,
-    Mark: isSheet ? GoogleSheetsMark : GoogleDocsMark,
+    Mark: config.Mark,
     state,
     connect,
     link,
@@ -446,7 +474,7 @@ export type GoogleLink = ReturnType<typeof useGoogleLink>;
  * (editor and list rows), so a change here reaches every door.
  */
 export function GoogleLinkMenuItems({ g, withLabel = true }: { g: GoogleLink; withLabel?: boolean }): ReactNode {
-  const { Mark, link, appName, isSheet } = g;
+  const { Mark, link, appName, isSlides } = g;
   if (g.state.status === "loading" || link === undefined) {
     return (
       <DropdownMenuItem disabled>
@@ -467,7 +495,7 @@ export function GoogleLinkMenuItems({ g, withLabel = true }: { g: GoogleLink; wi
     return (
       <DropdownMenuItem disabled={!g.ready} onSelect={() => void g.create()}>
         <Mark className="size-4" />
-        {isSheet ? "Create Google Sheet" : "Create Google Doc"}
+        {KIND_CONFIG[g.adapter.recordKind].createLabel}
       </DropdownMenuItem>
     );
   }
@@ -482,7 +510,11 @@ export function GoogleLinkMenuItems({ g, withLabel = true }: { g: GoogleLink; wi
         <Mark className="size-4" />
         Open in {appName}
       </DropdownMenuItem>
-      <DropdownMenuItem disabled={!g.editable} onSelect={() => void g.update()}>
+      <DropdownMenuItem
+        disabled={!g.editable || isSlides}
+        title={isSlides ? READ_BACK_REFUSAL : undefined}
+        onSelect={() => void g.update()}
+      >
         <ArrowDownToLine className="size-4" />
         Update from Google
       </DropdownMenuItem>

@@ -848,7 +848,7 @@ function Centerpiece({
                 initial={{ opacity: 0, scale: 0.6, y: 8 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 transition={{ ...SPRING, delay: i * 0.06 }}
-                className="inline-flex h-10 items-center gap-2 rounded-full border border-glass-edge bg-card/70 py-1 pl-1 pr-3.5 text-sm font-medium shadow-sm backdrop-blur-md"
+                className="inline-flex h-11 items-center gap-2.5 rounded-2xl border border-glass-edge bg-card/70 px-1.5 text-sm font-medium shadow-sm backdrop-blur-md"
               >
                 <Shared id={s.key} className="flex size-8 shrink-0 items-center justify-center">
                   {photo?.profile_id ? (
@@ -863,7 +863,7 @@ function Centerpiece({
                   )}
                 </Shared>
                 <span className="max-w-40 truncate">@{s.handle ?? ""}</span>
-                {photo?.profile_id ? <PlatformMark platform={s.platform ?? ""} size={14} /> : null}
+                {photo?.profile_id ? <PlatformMark platform={s.platform ?? ""} size={16} className="mr-1" /> : <span className="w-1" />}
               </motion.span>
             );
           })}
