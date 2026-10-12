@@ -752,19 +752,24 @@ export default function SynthesisList({ defaultLayout }: { defaultLayout?: Layou
       groupKey="research-synthesis-reader"
       defaultLayout={defaultLayout}
       record={readerRecord}
-      toolbar={
-        <ResearchFilterBar
-          title="Synthesis"
-          count={`${filtered.length}/${synthList.length}`}
-          read={readOf({ isLoading: synthLoading, error: synthError })}
-          filters={filterDefs}
-          search={search}
-          onSearchChange={setSearch}
-          searchPlaceholder="Search content, keywords..."
-          trailing={copyControls}
-        />
+      // List-level actions sit over the reader; tap buttons space themselves (no gap).
+      toolbar={<div className="flex items-center justify-end">{copyControls}</div>}
+      navigator={
+        <>
+          {/* The filters narrow the list below them. */}
+          <ResearchFilterBar
+            className="mb-2"
+            title="Synthesis"
+            count={`${filtered.length}/${synthList.length}`}
+            read={readOf({ isLoading: synthLoading, error: synthError })}
+            filters={filterDefs}
+            search={search}
+            onSearchChange={setSearch}
+            searchPlaceholder="Search syntheses"
+          />
+          <SynthesisNavigator groups={groups} selectedId={selected?.synthesis.id ?? null} onSelect={selectSynthesis} />
+        </>
       }
-      navigator={<SynthesisNavigator groups={groups} selectedId={selected?.synthesis.id ?? null} onSelect={selectSynthesis} />}
       header={
         <>
           {topNotices}
