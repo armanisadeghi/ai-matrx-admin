@@ -582,6 +582,7 @@ function KindToggle({ person, onPerson }: { person: boolean; onPerson: (p: boole
 function SiteMark({ host, small }: { host: string | null; small?: boolean }) {
   const [settled, setSettled] = useState<string | null>(null);
   const [step, setStep] = useState(0);
+  const [loaded, setLoaded] = useState<string | null>(null);
   // Debounced, so a half-typed domain never requests icons.
   useEffect(() => {
     const t = setTimeout(() => {
@@ -593,26 +594,39 @@ function SiteMark({ host, small }: { host: string | null; small?: boolean }) {
   const sources = settled ? [`https://${settled}/favicon.ico`, `https://${settled}/apple-touch-icon.png`] : [];
   const src = sources[step] ?? null;
   const size = small ? "size-5" : "size-7";
+  const shown = src !== null && loaded === src;
   return (
-    <AnimatePresence mode="wait" initial={false}>
-      {src ? (
-        <motion.img
+    <span className="relative flex items-center justify-center">
+      {/* The icon loads hidden; the globe holds the slot until it is really there. */}
+      {src && !shown ? (
+        <img
           key={src}
           src={src}
           alt=""
-          initial={{ opacity: 0, scale: 0.6, rotate: -8 }}
-          animate={{ opacity: 1, scale: 1, rotate: 0 }}
-          exit={{ opacity: 0, scale: 0.6 }}
-          transition={SPRING}
+          className="pointer-events-none absolute size-px opacity-0"
+          onLoad={(e) => (e.currentTarget.naturalWidth > 1 ? setLoaded(src) : setStep((s) => s + 1))}
           onError={() => setStep((s) => s + 1)}
-          className={`${size} rounded-md object-contain`}
         />
-      ) : (
-        <motion.span key="globe" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-          <Globe className={small ? "size-5" : "size-6"} />
-        </motion.span>
-      )}
-    </AnimatePresence>
+      ) : null}
+      <AnimatePresence mode="wait" initial={false}>
+        {shown ? (
+          <motion.img
+            key={src}
+            src={src}
+            alt=""
+            initial={{ opacity: 0, scale: 0.6, rotate: -8 }}
+            animate={{ opacity: 1, scale: 1, rotate: 0 }}
+            exit={{ opacity: 0, scale: 0.6 }}
+            transition={SPRING}
+            className={`${size} object-contain`}
+          />
+        ) : (
+          <motion.span key="globe" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+            <Globe className={small ? "size-5" : "size-6"} />
+          </motion.span>
+        )}
+      </AnimatePresence>
+    </span>
   );
 }
 
