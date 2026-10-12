@@ -1,12 +1,32 @@
 /**
- * Pure helpers for the builder's Model view. The server returns the run path's
- * own bytes (`system_prompt`, `system_parts`, `turn_blocks`, `messages`); this
- * file only reads them — it never renders, fills or rewrites a prompt.
+ * Pure helpers for the builder's Model view. The server runs the whole real
+ * request path and returns the provider request it would send (captured at the
+ * transport, never sent). This file only cuts that body into sections, in the
+ * order the payload carries them — it never renders, fills, reorders or drops
+ * anything. Every top-level key lands in exactly one section.
  */
 
-export interface PreviewPart {
-  kind: string;
-  text: string;
+/** The provider request exactly as it would leave the server (secrets redacted). */
+export interface CapturedRequest {
+  provider: string;
+  model: string | null;
+  /** "https" | "grpc" | "local" (the mock) | "uncaptured" (a route whose wire cannot be stopped). */
+  transport: string;
+  method: string;
+  url: string;
+  headers: Record<string, string>;
+  /** The body as parsed JSON (key order kept), or null when it is not JSON. */
+  body: unknown;
+  /** The body bytes exactly as they would go on the wire. */
+  body_text: string;
+  is_streaming: boolean;
+}
+
+export interface PreviewNotice {
+  level: "warning" | "info";
+  code?: string;
+  user_message?: string | null;
+  system_message?: string | null;
 }
 
 /** One entry of the server's `prompt_blocks` report: which level and variant supplied a block. */
@@ -18,6 +38,14 @@ export interface PreviewBlock {
   source_kind?: string | null;
   bound_tool?: string | null;
   chars?: number | null;
+}
+
+export interface ModelViewPreview {
+  provider: string | null;
+  model: string | null;
+  request: CapturedRequest;
+  notices?: PreviewNotice[];
+  prompt_blocks?: PreviewBlock[];
 }
 
 const LEVEL_LABELS: Record<string, string> = {
@@ -32,110 +60,140 @@ export function blockLevelLabel(level: string): string {
   return LEVEL_LABELS[level.toLowerCase()] ?? level;
 }
 
-export interface ModelViewPreview {
-  model: string | null;
-  system_prompt: string | null;
-  system_parts?: PreviewPart[];
-  turn_blocks?: PreviewPart[];
-  messages: Array<Record<string, unknown>>;
-  tools: string[];
-  /** The blocks the server expanded, with the level and variant that supplied each. */
-  prompt_blocks?: PreviewBlock[];
+/** One piece of content as the payload carries it. */
+export type RequestPart =
+  | { kind: "text"; label: string; text: string; extras: Record<string, unknown> | null }
+  | { kind: "json"; label: string; value: unknown };
+
+export interface RequestMessage {
+  role: string;
+  parts: RequestPart[];
 }
 
-export interface TextSegment {
-  text: string;
-  inserted: boolean;
+export interface RequestTool {
+  name: string;
+  value: unknown;
 }
 
-/** Shorter values would light up every stray letter; they are not marked. */
-export const MIN_MARKED_VALUE_CHARS = 3;
-
-const PLATFORM_LABELS: Record<string, string> = {
-  date: "Date",
-  org_catalog: "Organizations",
-  active_context: "Active context",
-  available_context: "Available context",
-};
-
-export function platformLabel(kind: string): string {
-  return PLATFORM_LABELS[kind] ?? kind;
+export interface RequestSections {
+  /** The payload key the system text rides on (`system`, `instructions`, `systemInstruction`…). */
+  systemKey: string | null;
+  system: RequestPart[];
+  messagesKey: string | null;
+  messages: RequestMessage[];
+  tools: RequestTool[];
+  /** Every other top-level key, in payload order. */
+  params: Array<[string, unknown]>;
 }
 
-function escapeRegExp(value: string): string {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+const SYSTEM_KEYS = new Set(["system", "instructions", "systemInstruction", "system_instruction"]);
+const MESSAGE_KEYS = new Set(["messages", "input", "contents"]);
+const TOOL_KEYS = new Set(["tools"]);
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
-/** Cuts `text` into runs, marking the runs that are a variable's value. */
-export function splitByValues(
-  text: string,
-  values: readonly string[],
-): TextSegment[] {
-  const needles = Array.from(
-    new Set(values.filter((v) => v.length >= MIN_MARKED_VALUE_CHARS)),
-  ).sort((a, b) => b.length - a.length);
-  if (!text || needles.length === 0) return [{ text, inserted: false }];
-  const pattern = new RegExp(needles.map(escapeRegExp).join("|"), "g");
-  const segments: TextSegment[] = [];
-  let cursor = 0;
-  for (const match of text.matchAll(pattern)) {
-    const start = match.index ?? 0;
-    if (start > cursor) {
-      segments.push({ text: text.slice(cursor, start), inserted: false });
+/** A content block: its text (exactly) when it has one, otherwise the whole block as JSON. */
+export function toPart(block: unknown, fallbackLabel = "part"): RequestPart {
+  if (typeof block === "string") {
+    return { kind: "text", label: "text", text: block, extras: null };
+  }
+  if (isRecord(block) && typeof block.text === "string") {
+    const { text, type, ...rest } = block;
+    const extras = Object.keys(rest).length > 0 ? rest : null;
+    return { kind: "text", label: typeof type === "string" ? type : "text", text: text as string, extras };
+  }
+  const label = isRecord(block) && typeof block.type === "string" ? block.type : fallbackLabel;
+  return { kind: "json", label, value: block };
+}
+
+function partsOf(value: unknown): RequestPart[] {
+  if (value === null || value === undefined) return [];
+  if (typeof value === "string") return [toPart(value)];
+  if (Array.isArray(value)) return value.map((b) => toPart(b));
+  // Google's `{ role?, parts: [...] }` and xAI's `{ content: [...] }` wrappers.
+  if (isRecord(value)) {
+    const key = Array.isArray(value.parts) ? "parts" : Array.isArray(value.content) ? "content" : null;
+    if (key) {
+      const parts = (value[key] as unknown[]).map((b) => toPart(b));
+      const { [key]: _inner, ...rest } = value;
+      if (Object.keys(rest).length > 0) parts.push({ kind: "json", label: "fields", value: rest });
+      return parts;
     }
-    segments.push({ text: match[0], inserted: true });
-    cursor = start + match[0].length;
   }
-  if (cursor < text.length) {
-    segments.push({ text: text.slice(cursor), inserted: false });
-  }
-  return segments;
+  return [toPart(value)];
 }
 
-/** The text the model reads in one message, parts joined; other parts by type. */
-export function messageText(message: Record<string, unknown>): string {
-  const content = message.content;
-  if (typeof content === "string") return content;
-  if (!Array.isArray(content)) return "";
-  return content
-    .map((part) => {
-      if (!part || typeof part !== "object") return "";
-      const p = part as Record<string, unknown>;
-      if (typeof p.text === "string") return p.text;
-      return typeof p.type === "string" ? `[${p.type}]` : "";
-    })
-    .filter(Boolean)
-    .join("\n");
+function messageOf(item: unknown): RequestMessage {
+  if (!isRecord(item)) return { role: "", parts: [toPart(item)] };
+  const role = typeof item.role === "string" ? item.role : "";
+  // An item with no role (OpenAI Responses `function_call`, `function_call_output`…) is shown whole.
+  if (!role) {
+    return { role: typeof item.type === "string" ? item.type : "item", parts: [toPart(item, "item")] };
+  }
+  const content = "content" in item ? item.content : item.parts;
+  const parts = partsOf(content);
+  const { role: _r, content: _c, parts: _p, ...rest } = item;
+  if (Object.keys(rest).length > 0) parts.push({ kind: "json", label: "message fields", value: rest });
+  return { role, parts };
 }
 
-export function valueAsText(value: unknown): string {
-  if (value === null || value === undefined) return "";
+function toolName(tool: unknown): string {
+  if (!isRecord(tool)) return String(tool);
+  if (typeof tool.name === "string") return tool.name;
+  const fn = tool.function;
+  if (isRecord(fn) && typeof fn.name === "string") return fn.name;
+  if (Array.isArray(tool.functionDeclarations)) {
+    return tool.functionDeclarations
+      .map((d) => (isRecord(d) && typeof d.name === "string" ? d.name : "?"))
+      .join(", ");
+  }
+  return typeof tool.type === "string" ? tool.type : "tool";
+}
+
+/** Cut a captured body into its sections. Nothing is dropped: every key goes somewhere once. */
+export function sectionsOf(body: unknown): RequestSections {
+  const sections: RequestSections = {
+    systemKey: null,
+    system: [],
+    messagesKey: null,
+    messages: [],
+    tools: [],
+    params: [],
+  };
+  if (!isRecord(body)) {
+    sections.params.push(["body", body]);
+    return sections;
+  }
+  for (const [key, value] of Object.entries(body)) {
+    if (SYSTEM_KEYS.has(key) && sections.systemKey === null) {
+      sections.systemKey = key;
+      sections.system = partsOf(value);
+    } else if (MESSAGE_KEYS.has(key) && sections.messagesKey === null && Array.isArray(value)) {
+      sections.messagesKey = key;
+      sections.messages = value.map(messageOf);
+    } else if (TOOL_KEYS.has(key) && Array.isArray(value)) {
+      sections.tools = value.map((t) => ({ name: toolName(t), value: t }));
+    } else {
+      sections.params.push([key, value]);
+    }
+  }
+  return sections;
+}
+
+/** The exact payload as JSON, laid out for reading (same keys, same order, same values). */
+export function prettyBody(request: CapturedRequest): string {
+  if (request.body === null || request.body === undefined) return request.body_text;
+  return JSON.stringify(request.body, null, 2);
+}
+
+/** Copy all = the exact bytes the provider would receive. */
+export function copyAllText(request: CapturedRequest): string {
+  return request.body_text;
+}
+
+export function jsonText(value: unknown): string {
   if (typeof value === "string") return value;
-  return JSON.stringify(value);
-}
-
-/** Effective values: the run's values, then the author's edits on top. */
-export function effectiveVariables(
-  base: Record<string, unknown>,
-  edits: Record<string, string>,
-): Record<string, unknown> {
-  return { ...base, ...edits };
-}
-
-/** Declared variables that carry no value, in declaration order. */
-export function emptyVariables(
-  declared: readonly string[],
-  values: Record<string, unknown>,
-): string[] {
-  return declared.filter((name) => valueAsText(values[name]).trim() === "");
-}
-
-/** The exact text the model is sent, for Copy all: system string, then messages. */
-export function fullModelText(preview: ModelViewPreview): string {
-  const blocks: string[] = [];
-  if (preview.system_prompt) blocks.push(`SYSTEM\n${preview.system_prompt}`);
-  for (const message of preview.messages) {
-    blocks.push(`${String(message.role ?? "").toUpperCase()}\n${messageText(message)}`);
-  }
-  return blocks.join("\n\n");
+  return JSON.stringify(value, null, 2) ?? String(value);
 }

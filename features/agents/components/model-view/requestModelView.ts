@@ -1,40 +1,37 @@
 import { getUserMessage } from "@ai-matrx/agents/matrx";
 import { callApi } from "@/lib/api/call-api";
 import { assembleManualRequest } from "@ai-matrx/chat/agents/redux/execution-system/thunks/execute-manual-instance.thunk";
+import { refreshSurfaceScope } from "@ai-matrx/chat/agents/redux/execution-system/thunks/refresh-surface-scope.thunk";
+import { ensureContextRulesReady } from "@ai-matrx/chat/agents/redux/execution-system/context-rules/context-rules.thunks";
 import type { AppDispatch, RootState } from "@/lib/redux/store";
 import { declaredNames } from "@/features/prompt-blocks/tokens";
 import type { ModelViewPreview } from "./modelViewLogic";
 
-export interface ModelViewResult {
-  preview: ModelViewPreview;
-  /** Variable values the draft run would send, before the author's edits. */
-  baseVariables: Record<string, unknown>;
-  declared: string[];
-}
-
 export const NOT_READY_MESSAGE = "Choose a model first.";
 
 /**
- * The live-draft dry run: the SAME manual request a test run sends
- * (`assembleManualRequest` reads the unsaved definition), with the author's
- * variable edits on top, `dry_run` on and nothing stored. No model is called.
+ * The live-draft capture: the SAME manual request a test run sends — the
+ * unsaved definition, what is typed in the composer, the variable values and
+ * the context, prepared by the same two steps a run takes first — with
+ * `dry_run` on. The server runs every step of the real run and returns the
+ * provider request it would send, without sending it or storing anything.
  */
 export async function requestModelView(
   dispatch: AppDispatch,
-  state: RootState,
+  getState: () => RootState,
   conversationId: string,
-  edits: Record<string, string>,
   agentId?: string,
-): Promise<ModelViewResult> {
-  const payload = (await assembleManualRequest(
-    state as never,
-    conversationId,
-  )) as Record<string, unknown> | null;
+): Promise<ModelViewPreview> {
+  // A run refreshes the surface scope and loads the context rules before it
+  // assembles; without them the context the person set never reaches the request.
+  await dispatch(refreshSurfaceScope({ conversationId }) as never);
+  await dispatch(ensureContextRulesReady(conversationId) as never);
+  const state = getState();
+  const payload = (await assembleManualRequest(state as never, conversationId)) as Record<
+    string,
+    unknown
+  > | null;
   if (!payload) throw new Error(NOT_READY_MESSAGE);
-  const baseVariables = (payload.variables ?? {}) as Record<string, unknown>;
-  const declared = ((payload.variable_definitions ?? []) as Array<{ name?: string }>)
-    .map((d) => d.name)
-    .filter((n): n is string => typeof n === "string" && n.length > 0);
   // The draft's declared prompt blocks ride the manual request; the server expands and reports them.
   const promptBlocks = agentId
     ? declaredNames(
@@ -47,14 +44,10 @@ export async function requestModelView(
       method: "POST",
       body: {
         ...payload,
-        variables: { ...baseVariables, ...edits },
         ...(promptBlocks.length > 0 ? { prompt_blocks: promptBlocks } : {}),
+        // The payload's own `stream` and `store` stay: the wire carries them. The
+        // server makes a dry run ephemeral itself.
         dry_run: true,
-        stream: false,
-        store: false,
-        source_app: "matrx-frontend",
-        source_feature: "agent-builder",
-        initiation: "user",
       } as never,
       expectedErrorStatuses: [400, 422],
     }),
@@ -62,5 +55,5 @@ export async function requestModelView(
   if (result.error) {
     throw new Error(getUserMessage(result.error));
   }
-  return { preview: result.data as ModelViewPreview, baseVariables, declared };
+  return result.data as ModelViewPreview;
 }

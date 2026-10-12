@@ -18,6 +18,7 @@ import {
   unregisterSurface,
 } from "@ai-matrx/chat/agents/redux/surfaces/surfaces.slice";
 import { AgentConversationColumn } from "@ai-matrx/chat/agents/components/shared/AgentConversationColumn";
+import { SmartAgentInput } from "@ai-matrx/chat/agents/components/inputs/smart-input/SmartAgentInput";
 import { useComposerMode } from "@ai-matrx/chat/agents/components/inputs/smart-input/composer/useComposerMode";
 import { useCompactInputMaxHeight } from "@ai-matrx/chat/agents/components/inputs/smart-input/composer/useCompactInputMaxHeight";
 import { SegmentedControl } from "@ai-matrx/design-system/controls";
@@ -115,7 +116,9 @@ export function AgentBuilderRightPanel({
           data={RIGHT_VIEWS}
         />
       </div>
-      {/* Both stay mounted: switching never restarts the test conversation. */}
+      {/* Both stay mounted: switching never restarts the test conversation. The one
+          composer moves with the view — in the Model view it sits under the request,
+          and what is typed there (with its variables and context) is what the view shows. */}
       <div
         ref={measureRef}
         className={cn("flex min-h-0 flex-1 flex-col", view !== "test" && "hidden")}
@@ -125,6 +128,7 @@ export function AgentBuilderRightPanel({
             conversationId={conversationId}
             displayConversationId={displayConversationId ?? undefined}
             surfaceKey={surfaceKey}
+            hideInput={view !== "test"}
             aboveInput={
               <AgentSamplesLauncher
                 agentId={agentId}
@@ -142,8 +146,16 @@ export function AgentBuilderRightPanel({
         </div>
       </div>
       {view === "model" ? (
-        <div className="min-h-0 flex-1">
-          <ModelViewPanel agentId={agentId} conversationId={conversationId} />
+        <div className="flex min-h-0 flex-1 flex-col">
+          <div className="min-h-0 flex-1">
+            <ModelViewPanel agentId={agentId} conversationId={conversationId} />
+          </div>
+          <SmartAgentInput
+            conversationId={conversationId}
+            surfaceKey={surfaceKey}
+            disableSend
+            composer={{ size: "compact", mode: composerMode, maxInputHeightPx }}
+          />
         </div>
       ) : null}
     </div>

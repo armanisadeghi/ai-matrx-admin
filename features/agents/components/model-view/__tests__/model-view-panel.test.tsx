@@ -1,10 +1,11 @@
 /**
- * The builder's Model view shows what the server's dry run returned — the
- * prompt after substitution, the platform blocks APART from it — marks the
- * inserted values, names the empty variables, and re-asks when a value is edited.
+ * The builder's Model view lays out the provider request the server captured —
+ * in order, whitespace kept, nothing hidden — offers the raw payload, copies its
+ * exact bytes, and asks again when anything the request reads changes.
  */
 import React, { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
+import captured from "./fixtures/captured-requests.json";
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -12,48 +13,39 @@ const requestModelView = jest.fn();
 jest.mock("../requestModelView", () => ({
   requestModelView: (...args: unknown[]) => requestModelView(...args),
 }));
+let selected: unknown = { id: "agent-1" };
 jest.mock("@/lib/redux/hooks", () => ({
   useAppDispatch: () => jest.fn(),
   useAppStore: () => ({ getState: () => ({}) }),
-  useAppSelector: () => ({ id: "agent-1" }),
+  useAppSelector: (select: (s: unknown) => unknown) => {
+    try {
+      return select({
+        conversations: { byConversationId: {} },
+        instanceVariableValues: { byConversationId: { "c-1": selected } },
+        instanceUIState: { byConversationId: {} },
+        messages: { byConversationId: {} },
+      });
+    } catch {
+      return { id: "agent-1" };
+    }
+  },
 }));
 jest.mock("@ai-matrx/chat/agents/redux/agent-definition/selectors", () => ({
-  selectAgentById: jest.fn(),
+  selectAgentById: () => ({ id: "agent-1" }),
 }));
-jest.mock("@ai-matrx/chat/agents/agent-context/buildAgentBuilderContextData", () => ({
-  AGENT_BUILDER_CONTEXT_MENU_PROPS: { surfaceName: "agent-builder" },
-}));
+const copyText = jest.fn();
 jest.mock("@ai-matrx/kit/clipboard", () => ({
-  useClipboard: () => ({ copyText: jest.fn() }),
+  useClipboard: () => ({ copyText }),
 }));
 jest.mock("@/lib/toast", () => ({ toast: { error: jest.fn(), success: jest.fn() } }));
-jest.mock("@/components/official/ProTextarea", () => ({
-  ProTextarea: ({ value, onChange, "aria-label": label }: any) => (
-    <textarea aria-label={label} value={value} onChange={onChange} />
-  ),
-}));
-
 jest.mock("@/features/prompt-blocks/service", () => ({
   listVariants: async () => [{ id: "v1", label: "Latest models", condition: {}, content: "" }],
 }));
 
 import { ModelViewPanel } from "../ModelViewPanel";
 
-const answer = (who: string) => ({
-  preview: {
-    model: "model-x",
-    system_prompt: `<!--matrx:current_date-->Current date: 2026-10-10<!--matrx:/current_date-->\n\nYou help ${who}. Keep {{undeclared}}.`,
-    system_parts: [
-      { kind: "date", text: "<!--matrx:current_date-->Current date: 2026-10-10<!--matrx:/current_date-->" },
-      { kind: "prompt", text: `\n\nYou help ${who}. Keep {{undeclared}}.` },
-    ],
-    turn_blocks: [{ kind: "active_context", text: "<active_context>None</active_context>" }],
-    messages: [{ role: "user", content: [{ type: "text", text: `Hello ${who} about ` }] }],
-    tools: [],
-  },
-  baseVariables: { who, topic: "" },
-  declared: ["who", "topic"],
-});
+const anthropic = (captured as Record<string, any>).anthropic;
+const TYPED = "Where should I go in May?\n\n   Two lines,\ttabbed.";
 
 describe("ModelViewPanel", () => {
   let host: HTMLDivElement;
@@ -61,10 +53,15 @@ describe("ModelViewPanel", () => {
 
   beforeEach(() => {
     jest.useFakeTimers();
+    copyText.mockReset();
     requestModelView.mockReset();
-    requestModelView.mockImplementation(async (_d, _s, _c, edits: Record<string, string>) =>
-      answer(edits.who ?? "Ann Lee"),
-    );
+    requestModelView.mockResolvedValue({
+      provider: "anthropic",
+      model: "claude-haiku-5-5",
+      request: anthropic,
+      notices: [],
+      prompt_blocks: [{ name: "rules", level: "organization", block_id: "b1", variant_id: "v1" }],
+    });
     host = document.createElement("div");
     document.body.appendChild(host);
     root = createRoot(host);
@@ -83,76 +80,83 @@ describe("ModelViewPanel", () => {
       jest.advanceTimersByTime(600);
     });
   }
-  const section = (label: string) => host.querySelector(`[aria-label="${label}"]`) as HTMLElement;
+  const section = (label: string) => host.querySelector(`section[aria-label^="${label}"]`) as HTMLElement;
 
-  it("separates the prompt from the platform blocks and marks inserted values", async () => {
+  it("lays the request out in order: system, messages, tools, parameters", async () => {
     await mount();
-    const prompt = section("System prompt");
-    expect(prompt.textContent).toContain("Keep {{undeclared}}.");
-    expect(prompt.textContent).not.toContain("Current date");
-    expect(Array.from(prompt.querySelectorAll("mark")).map((m) => m.textContent)).toEqual(["Ann Lee"]);
-
-    const platform = section("Platform blocks");
-    expect(platform.textContent).toContain("Current date: 2026-10-10");
-    expect(platform.textContent).toContain("<active_context>");
+    const titles = Array.from(host.querySelectorAll("section")).map((s) => s.getAttribute("aria-label"));
+    expect(titles.slice(0, 4)).toEqual(["System (2)", "Messages (1)", "Tools", "Parameters"]);
+    // The date and the organisation catalogue are part of the system text, where the provider gets them.
+    const system = section("System").textContent ?? "";
+    expect(system.indexOf("Current date")).toBeLessThan(system.indexOf("You help Dana Whitfield"));
+    expect(system).toContain("<org_catalog");
   });
 
-  it("shows which level and variant supplied each prompt block, and the wrapped block in the prompt", async () => {
-    requestModelView.mockImplementation(async () => {
-      const base = answer("Ann Lee");
-      return {
-        ...base,
-        preview: {
-          ...base.preview,
-          system_prompt: "<rules>\nCite sources.\n</rules>",
-          system_parts: [{ kind: "prompt", text: "<rules>\nCite sources.\n</rules>" }],
-          prompt_blocks: [
-            { name: "rules", level: "organization", block_id: "b1", variant_id: "v1" },
-            { name: "tone", level: "system", block_id: "b2", variant_id: null },
-          ],
-        },
-      };
-    });
+  it("shows the typed message exactly, whitespace and tabs kept, in a pre-wrap block", async () => {
+    await mount();
+    const pres = Array.from(section("Messages").querySelectorAll("pre"));
+    const typed = pres.find((p) => (p.textContent ?? "").includes("Where should I go"));
+    expect(typed?.textContent).toContain(TYPED);
+    expect(typed?.className).toContain("whitespace-pre-wrap");
+    // The block's cache_control rides beside the text, never hidden.
+    expect(section("Messages").textContent).toContain("cache_control");
+  });
+
+  it("every parameter is listed, nothing dropped", async () => {
+    await mount();
+    const params = section("Parameters").textContent ?? "";
+    for (const key of ["max_tokens", "model", "stream"]) expect(params).toContain(key);
+  });
+
+  it("tools open to their full JSON", async () => {
+    await mount();
+    const tool = host.querySelector('[data-testid="model-view-tool"] button') as HTMLButtonElement;
+    expect(tool.textContent).toContain("scope_system");
+    await act(async () => tool.click());
+    expect(host.querySelector('[data-testid="model-view-tool"] pre')?.textContent).toContain('"input_schema"');
+  });
+
+  it("Raw JSON shows the whole payload; Copy all copies the exact bytes", async () => {
+    await mount();
+    const raw = Array.from(host.querySelectorAll("button")).find((b) => b.textContent === "Raw JSON")!;
+    await act(async () => raw.click());
+    const shown = host.querySelector('[data-testid="model-view-raw"]')?.textContent ?? "";
+    expect(JSON.parse(shown)).toEqual(anthropic.body);
+    const copyAll = Array.from(host.querySelectorAll("button")).find((b) => b.textContent === "Copy all")!;
+    await act(async () => copyAll.click());
+    expect(copyText).toHaveBeenCalledWith(anthropic.body_text, "Request copied");
+  });
+
+  it("names the prompt block's level and variant", async () => {
     await mount();
     await act(async () => {
       await Promise.resolve();
     });
-    expect(section("System prompt").textContent).toContain("<rules>");
-    const rules = host.querySelector('[data-testid="model-view-block-rules"]') as HTMLElement;
-    expect(rules.textContent).toContain("Organization");
-    expect(rules.textContent).toContain("Latest models");
-    const tone = host.querySelector('[data-testid="model-view-block-tone"]') as HTMLElement;
-    expect(tone.textContent).toContain("System");
-    expect(tone.textContent).toContain("Default text");
+    const row = host.querySelector('[data-testid="model-view-block-rules"]')!;
+    expect(row.textContent).toContain("Organization");
+    expect(row.textContent).toContain("Latest models");
   });
 
-  it("names the empty variables", async () => {
+  it("asks again when the inputs change", async () => {
     await mount();
-    const variables = section("Variables");
-    expect(variables.textContent).toContain("Empty");
-    expect(variables.textContent).toContain("topic");
-  });
-
-  it("asks again with the edited value and shows the new answer", async () => {
-    await mount();
-    const box = host.querySelector('textarea[aria-label="Value of who"]') as HTMLTextAreaElement;
+    expect(requestModelView).toHaveBeenCalledTimes(1);
+    selected = { userValues: { customer: "Lee" } };
     await act(async () => {
-      const set = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, "value")!.set!;
-      set.call(box, "Maria Soto");
-      box.dispatchEvent(new Event("input", { bubbles: true }));
+      root.render(<ModelViewPanel agentId="agent-1" conversationId="c-1" />);
     });
     await act(async () => {
       jest.advanceTimersByTime(600);
     });
-    expect(requestModelView).toHaveBeenLastCalledWith(expect.anything(), expect.anything(), "c-1", {
-      who: "Maria Soto",
-    }, "agent-1");
-    expect(section("System prompt").textContent).toContain("You help Maria Soto.");
+    expect(requestModelView).toHaveBeenCalledTimes(2);
   });
 
-  it("says why when the dry run is refused", async () => {
-    requestModelView.mockRejectedValue(new Error("Choose a model first."));
+  it("says when a route's wire cannot be captured", async () => {
+    requestModelView.mockResolvedValue({
+      provider: "typesafe",
+      model: "sys-one",
+      request: { ...anthropic, transport: "uncaptured" },
+    });
     await mount();
-    expect(host.querySelector('[role="alert"]')?.textContent).toContain("Choose a model first.");
+    expect(host.textContent).toContain("can't be captured");
   });
 });

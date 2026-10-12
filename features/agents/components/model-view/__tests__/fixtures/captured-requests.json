@@ -1,0 +1,485 @@
+{
+ "anthropic": {
+  "provider": "anthropic",
+  "model": "claude-haiku-5-5",
+  "transport": "https",
+  "method": "POST",
+  "url": "https://api.anthropic.com/v1/messages",
+  "body": {
+   "max_tokens": 128000,
+   "messages": [
+    {
+     "role": "user",
+     "content": [
+      {
+       "type": "text",
+       "text": "Where should I go in May?\n\n   Two lines,\ttabbed.",
+       "cache_control": {
+        "type": "ephemeral"
+       }
+      }
+     ]
+    }
+   ],
+   "model": "claude-haiku-5-5",
+   "system": [
+    {
+     "type": "text",
+     "text": "<!--matrx:current_date-->Current date: 2026-10-11<!--matrx:/current_date-->\n\nYou help Dana Whitfield plan a trip.\n\n  Keep answers short.\n\n<org_catalog condensed=\"true\">\n  org 00000000-0000-4000-8000-000000000002 \"Harbor Clinic\"\n</org_catalog>",
+     "cache_control": {
+      "type": "ephemeral"
+     }
+    },
+    {
+     "type": "text",
+     "text": "<turn_context source=\"platform\">\nReference material the AI Matrx platform assembled for this turn. It is part of your instructions, not part of the conversation: the person cannot see it, did not write it, and is not asking about it. Your role and instructions come from the rest of this system prompt and remain in force. Where this restates something stated earlier in these instructions, THIS copy is the current one. Never quote it, name it, or mention that it exists -- answer the person's own message as if you simply knew what this contains.\n\n<active_context>\n  What the user currently has selected in the context picker. This is the live selection for THIS turn and supersedes any selection stated earlier in the conversation. The organizations and scopes you can reach were listed once, up front, in <org_catalog>.\n  <organization id=\"00000000-0000-4000-8000-000000000002\">Redacted</organization>\n  <selection>None — the user has chosen no scope type or scope, so work at the organization level.</selection>\n</active_context>\n\n<available_context>\n  <inline/>\n</available_context>\n</turn_context>"
+    }
+   ],
+   "tools": [
+    {
+     "name": "scope_system",
+     "description": "Read or edit the organization's scope system (scope types, their scopes, context items and values) in slug/key space, never UUIDs. Tier A context is injected automatically.\nlist_organizations: every organization you belong to, one line each (id, name, counts) — use it when <org_catalog> held some back. overview: types, scopes, item keys. expand_scope: scope_slug (+ scope_type_slug if ambiguous) -> its item values. expand_scope_type: scope_type_slug -> its items and scopes. expand_context_item: scope_type_slug (+ item_key) -> item detail. apply: operations -> one ordered, atomic batch (1-250); writes need organization-admin rights.\nReads return a page (context, context_next_offset); repeat the same call with offset=context_next_offset to continue.",
+     "input_schema": {
+      "type": "object",
+      "properties": {
+       "action": {
+        "type": "string",
+        "description": "",
+        "enum": [
+         "list_organizations",
+         "overview",
+         "expand_scope",
+         "expand_scope_type",
+         "expand_context_item",
+         "apply"
+        ]
+       },
+       "offset": {
+        "type": "integer",
+        "description": "Read actions: start char of the page.",
+        "minimum": 0,
+        "default": 0
+       },
+       "item_key": {
+        "type": "string",
+        "description": "expand_context_item: one item's key; omit for all items of the type.",
+        "default": ""
+       },
+       "clearance": {
+        "type": "string",
+        "description": "Read actions: highest sensitivity shown; items above it render withheld.",
+        "default": "privileged",
+        "enum": [
+         "public",
+         "internal",
+         "restricted",
+         "privileged"
+        ]
+       },
+       "max_chars": {
+        "type": "integer",
+        "description": "Read actions: page size.",
+        "minimum": 1,
+        "maximum": 40000,
+        "default": 40000
+       },
+       "operations": {
+        "type": "array",
+        "description": "apply: [{op, ...}] where op is set_value (scope_key, item_key, value) | upsert_scope (scope_type_key, key, name, parent_key?) | upsert_context_item (scope_type_key, key, display_name, value_type, reference_source? e.g. {container_type: 'dataset_template', template_name}) | upsert_scope_type (key, label_singular, label_plural) | archive_scope, archive_scope_type (key) | archive_context_item (scope_type_key, key) | upsert_table_template (name, description?, fields? [{field_name, data_type, ...}]) | archive_table_template (name).",
+        "default": []
+       },
+       "scope_slug": {
+        "type": "string",
+        "description": "Required for expand_scope.",
+        "default": ""
+       },
+       "organization_id": {
+        "type": "string",
+        "description": "An organization you belong to; default is the request's organization.",
+        "default": ""
+       },
+       "scope_type_slug": {
+        "type": "string",
+        "description": "Required for expand_scope_type, expand_context_item; disambiguates expand_scope.",
+        "default": ""
+       },
+       "detail_variation": {
+        "type": "string",
+        "description": "expand_context_item: fields as child elements or as attributes.",
+        "default": "children",
+        "enum": [
+         "children",
+         "attributes"
+        ]
+       },
+       "overview_variation": {
+        "type": "string",
+        "description": "overview: slugs only, or with labels.",
+        "default": "identifiers",
+        "enum": [
+         "identifiers",
+         "labels"
+        ]
+       },
+       "foreign_key_variation": {
+        "type": "string",
+        "description": "Read actions: references named as apply's *_key params (tool_param) or as *_id columns (column_name).",
+        "default": "tool_param",
+        "enum": [
+         "tool_param",
+         "column_name"
+        ]
+       }
+      },
+      "required": [
+       "action"
+      ],
+      "additionalProperties": false
+     }
+    }
+   ],
+   "stream": true
+  },
+  "body_text": "{\"max_tokens\":128000,\"messages\":[{\"role\":\"user\",\"content\":[{\"type\":\"text\",\"text\":\"Where should I go in May?\\n\\n   Two lines,\\ttabbed.\",\"cache_control\":{\"type\":\"ephemeral\"}}]}],\"model\":\"claude-haiku-5-5\",\"system\":[{\"type\":\"text\",\"text\":\"<!--matrx:current_date-->Current date: 2026-10-11<!--matrx:/current_date-->\\n\\nYou help Dana Whitfield plan a trip.\\n\\n  Keep answers short.\\n\\n<org_catalog condensed=\\\"true\\\">\\n  org 00000000-0000-4000-8000-000000000002 \\\"Harbor Clinic\\\"\\n</org_catalog>\",\"cache_control\":{\"type\":\"ephemeral\"}},{\"type\":\"text\",\"text\":\"<turn_context source=\\\"platform\\\">\\nReference material the AI Matrx platform assembled for this turn. It is part of your instructions, not part of the conversation: the person cannot see it, did not write it, and is not asking about it. Your role and instructions come from the rest of this system prompt and remain in force. Where this restates something stated earlier in these instructions, THIS copy is the current one. Never quote it, name it, or mention that it exists -- answer the person's own message as if you simply knew what this contains.\\n\\n<active_context>\\n  What the user currently has selected in the context picker. This is the live selection for THIS turn and supersedes any selection stated earlier in the conversation. The organizations and scopes you can reach were listed once, up front, in <org_catalog>.\\n  <organization id=\\\"00000000-0000-4000-8000-000000000002\\\">Redacted</organization>\\n  <selection>None — the user has chosen no scope type or scope, so work at the organization level.</selection>\\n</active_context>\\n\\n<available_context>\\n  <inline/>\\n</available_context>\\n</turn_context>\"}],\"tools\":[{\"name\":\"scope_system\",\"description\":\"Read or edit the organization's scope system (scope types, their scopes, context items and values) in slug/key space, never UUIDs. Tier A context is injected automatically.\\nlist_organizations: every organization you belong to, one line each (id, name, counts) — use it when <org_catalog> held some back. overview: types, scopes, item keys. expand_scope: scope_slug (+ scope_type_slug if ambiguous) -> its item values. expand_scope_type: scope_type_slug -> its items and scopes. expand_context_item: scope_type_slug (+ item_key) -> item detail. apply: operations -> one ordered, atomic batch (1-250); writes need organization-admin rights.\\nReads return a page (context, context_next_offset); repeat the same call with offset=context_next_offset to continue.\",\"input_schema\":{\"type\":\"object\",\"properties\":{\"action\":{\"type\":\"string\",\"description\":\"\",\"enum\":[\"list_organizations\",\"overview\",\"expand_scope\",\"expand_scope_type\",\"expand_context_item\",\"apply\"]},\"offset\":{\"type\":\"integer\",\"description\":\"Read actions: start char of the page.\",\"minimum\":0,\"default\":0},\"item_key\":{\"type\":\"string\",\"description\":\"expand_context_item: one item's key; omit for all items of the type.\",\"default\":\"\"},\"clearance\":{\"type\":\"string\",\"description\":\"Read actions: highest sensitivity shown; items above it render withheld.\",\"default\":\"privileged\",\"enum\":[\"public\",\"internal\",\"restricted\",\"privileged\"]},\"max_chars\":{\"type\":\"integer\",\"description\":\"Read actions: page size.\",\"minimum\":1,\"maximum\":40000,\"default\":40000},\"operations\":{\"type\":\"array\",\"description\":\"apply: [{op, ...}] where op is set_value (scope_key, item_key, value) | upsert_scope (scope_type_key, key, name, parent_key?) | upsert_context_item (scope_type_key, key, display_name, value_type, reference_source? e.g. {container_type: 'dataset_template', template_name}) | upsert_scope_type (key, label_singular, label_plural) | archive_scope, archive_scope_type (key) | archive_context_item (scope_type_key, key) | upsert_table_template (name, description?, fields? [{field_name, data_type, ...}]) | archive_table_template (name).\",\"default\":[]},\"scope_slug\":{\"type\":\"string\",\"description\":\"Required for expand_scope.\",\"default\":\"\"},\"organization_id\":{\"type\":\"string\",\"description\":\"An organization you belong to; default is the request's organization.\",\"default\":\"\"},\"scope_type_slug\":{\"type\":\"string\",\"description\":\"Required for expand_scope_type, expand_context_item; disambiguates expand_scope.\",\"default\":\"\"},\"detail_variation\":{\"type\":\"string\",\"description\":\"expand_context_item: fields as child elements or as attributes.\",\"default\":\"children\",\"enum\":[\"children\",\"attributes\"]},\"overview_variation\":{\"type\":\"string\",\"description\":\"overview: slugs only, or with labels.\",\"default\":\"identifiers\",\"enum\":[\"identifiers\",\"labels\"]},\"foreign_key_variation\":{\"type\":\"string\",\"description\":\"Read actions: references named as apply's *_key params (tool_param) or as *_id columns (column_name).\",\"default\":\"tool_param\",\"enum\":[\"tool_param\",\"column_name\"]}},\"required\":[\"action\"],\"additionalProperties\":false}}],\"stream\":true}",
+  "is_streaming": true,
+  "headers": {}
+ },
+ "openai": {
+  "provider": "openai",
+  "model": "gpt-5-nano",
+  "transport": "https",
+  "method": "POST",
+  "url": "https://api.openai.com/v1/responses",
+  "body": {
+   "input": [
+    {
+     "role": "developer",
+     "content": [
+      {
+       "type": "input_text",
+       "text": "<!--matrx:current_date-->Current date: 2026-10-11<!--matrx:/current_date-->\n\nYou help Dana Whitfield plan a trip.\n\n  Keep answers short.\n\n<org_catalog condensed=\"true\">\n  org 00000000-0000-4000-8000-000000000002 \"Harbor Clinic\"\n</org_catalog>\n\n<turn_context source=\"platform\">\nReference material the AI Matrx platform assembled for this turn. It is part of your instructions, not part of the conversation: the person cannot see it, did not write it, and is not asking about it. Your role and instructions come from the rest of this system prompt and remain in force. Where this restates something stated earlier in these instructions, THIS copy is the current one. Never quote it, name it, or mention that it exists -- answer the person's own message as if you simply knew what this contains.\n\n<active_context>\n  What the user currently has selected in the context picker. This is the live selection for THIS turn and supersedes any selection stated earlier in the conversation. The organizations and scopes you can reach were listed once, up front, in <org_catalog>.\n  <organization id=\"00000000-0000-4000-8000-000000000002\">Redacted</organization>\n  <selection>None — the user has chosen no scope type or scope, so work at the organization level.</selection>\n</active_context>\n\n<available_context>\n  <inline/>\n</available_context>\n</turn_context>"
+      }
+     ]
+    },
+    {
+     "role": "user",
+     "content": [
+      {
+       "type": "input_text",
+       "text": "Where should I go in May?\n\n   Two lines,\ttabbed."
+      }
+     ]
+    }
+   ],
+   "model": "gpt-5-nano",
+   "stream": true,
+   "tools": [
+    {
+     "type": "function",
+     "name": "scope_system",
+     "description": "Read or edit the organization's scope system (scope types, their scopes, context items and values) in slug/key space, never UUIDs. Tier A context is injected automatically.\nlist_organizations: every organization you belong to, one line each (id, name, counts) — use it when <org_catalog> held some back. overview: types, scopes, item keys. expand_scope: scope_slug (+ scope_type_slug if ambiguous) -> its item values. expand_scope_type: scope_type_slug -> its items and scopes. expand_context_item: scope_type_slug (+ item_key) -> item detail. apply: operations -> one ordered, atomic batch (1-250); writes need organization-admin rights.\nReads return a page (context, context_next_offset); repeat the same call with offset=context_next_offset to continue.",
+     "parameters": {
+      "type": "object",
+      "properties": {
+       "action": {
+        "type": "string",
+        "description": "",
+        "enum": [
+         "list_organizations",
+         "overview",
+         "expand_scope",
+         "expand_scope_type",
+         "expand_context_item",
+         "apply"
+        ]
+       },
+       "offset": {
+        "type": "integer",
+        "description": "Read actions: start char of the page. Must be at least 0.",
+        "default": 0
+       },
+       "item_key": {
+        "type": "string",
+        "description": "expand_context_item: one item's key; omit for all items of the type.",
+        "default": ""
+       },
+       "clearance": {
+        "type": "string",
+        "description": "Read actions: highest sensitivity shown; items above it render withheld.",
+        "default": "privileged",
+        "enum": [
+         "public",
+         "internal",
+         "restricted",
+         "privileged"
+        ]
+       },
+       "max_chars": {
+        "type": "integer",
+        "description": "Read actions: page size. Must be at least 1, at most 40000.",
+        "default": 40000
+       },
+       "operations": {
+        "type": "array",
+        "description": "apply: [{op, ...}] where op is set_value (scope_key, item_key, value) | upsert_scope (scope_type_key, key, name, parent_key?) | upsert_context_item (scope_type_key, key, display_name, value_type, reference_source? e.g. {container_type: 'dataset_template', template_name}) | upsert_scope_type (key, label_singular, label_plural) | archive_scope, archive_scope_type (key) | archive_context_item (scope_type_key, key) | upsert_table_template (name, description?, fields? [{field_name, data_type, ...}]) | archive_table_template (name).",
+        "default": []
+       },
+       "scope_slug": {
+        "type": "string",
+        "description": "Required for expand_scope.",
+        "default": ""
+       },
+       "organization_id": {
+        "type": "string",
+        "description": "An organization you belong to; default is the request's organization.",
+        "default": ""
+       },
+       "scope_type_slug": {
+        "type": "string",
+        "description": "Required for expand_scope_type, expand_context_item; disambiguates expand_scope.",
+        "default": ""
+       },
+       "detail_variation": {
+        "type": "string",
+        "description": "expand_context_item: fields as child elements or as attributes.",
+        "default": "children",
+        "enum": [
+         "children",
+         "attributes"
+        ]
+       },
+       "overview_variation": {
+        "type": "string",
+        "description": "overview: slugs only, or with labels.",
+        "default": "identifiers",
+        "enum": [
+         "identifiers",
+         "labels"
+        ]
+       },
+       "foreign_key_variation": {
+        "type": "string",
+        "description": "Read actions: references named as apply's *_key params (tool_param) or as *_id columns (column_name).",
+        "default": "tool_param",
+        "enum": [
+         "tool_param",
+         "column_name"
+        ]
+       }
+      },
+      "required": [
+       "action"
+      ],
+      "additionalProperties": false
+     },
+     "strict": false
+    }
+   ],
+   "include": [
+    "reasoning.encrypted_content"
+   ],
+   "store": false,
+   "prompt_cache_key": "matrx_bae7dbba421fb62c8848f8104f5189f17347adca713e27c7d7eadd69d4"
+  },
+  "body_text": "{\"input\":[{\"role\":\"developer\",\"content\":[{\"type\":\"input_text\",\"text\":\"<!--matrx:current_date-->Current date: 2026-10-11<!--matrx:/current_date-->\\n\\nYou help Dana Whitfield plan a trip.\\n\\n  Keep answers short.\\n\\n<org_catalog condensed=\\\"true\\\">\\n  org 00000000-0000-4000-8000-000000000002 \\\"Harbor Clinic\\\"\\n</org_catalog>\\n\\n<turn_context source=\\\"platform\\\">\\nReference material the AI Matrx platform assembled for this turn. It is part of your instructions, not part of the conversation: the person cannot see it, did not write it, and is not asking about it. Your role and instructions come from the rest of this system prompt and remain in force. Where this restates something stated earlier in these instructions, THIS copy is the current one. Never quote it, name it, or mention that it exists -- answer the person's own message as if you simply knew what this contains.\\n\\n<active_context>\\n  What the user currently has selected in the context picker. This is the live selection for THIS turn and supersedes any selection stated earlier in the conversation. The organizations and scopes you can reach were listed once, up front, in <org_catalog>.\\n  <organization id=\\\"00000000-0000-4000-8000-000000000002\\\">Redacted</organization>\\n  <selection>None — the user has chosen no scope type or scope, so work at the organization level.</selection>\\n</active_context>\\n\\n<available_context>\\n  <inline/>\\n</available_context>\\n</turn_context>\"}]},{\"role\":\"user\",\"content\":[{\"type\":\"input_text\",\"text\":\"Where should I go in May?\\n\\n   Two lines,\\ttabbed.\"}]}],\"model\":\"gpt-5-nano\",\"stream\":true,\"tools\":[{\"type\":\"function\",\"name\":\"scope_system\",\"description\":\"Read or edit the organization's scope system (scope types, their scopes, context items and values) in slug/key space, never UUIDs. Tier A context is injected automatically.\\nlist_organizations: every organization you belong to, one line each (id, name, counts) — use it when <org_catalog> held some back. overview: types, scopes, item keys. expand_scope: scope_slug (+ scope_type_slug if ambiguous) -> its item values. expand_scope_type: scope_type_slug -> its items and scopes. expand_context_item: scope_type_slug (+ item_key) -> item detail. apply: operations -> one ordered, atomic batch (1-250); writes need organization-admin rights.\\nReads return a page (context, context_next_offset); repeat the same call with offset=context_next_offset to continue.\",\"parameters\":{\"type\":\"object\",\"properties\":{\"action\":{\"type\":\"string\",\"description\":\"\",\"enum\":[\"list_organizations\",\"overview\",\"expand_scope\",\"expand_scope_type\",\"expand_context_item\",\"apply\"]},\"offset\":{\"type\":\"integer\",\"description\":\"Read actions: start char of the page. Must be at least 0.\",\"default\":0},\"item_key\":{\"type\":\"string\",\"description\":\"expand_context_item: one item's key; omit for all items of the type.\",\"default\":\"\"},\"clearance\":{\"type\":\"string\",\"description\":\"Read actions: highest sensitivity shown; items above it render withheld.\",\"default\":\"privileged\",\"enum\":[\"public\",\"internal\",\"restricted\",\"privileged\"]},\"max_chars\":{\"type\":\"integer\",\"description\":\"Read actions: page size. Must be at least 1, at most 40000.\",\"default\":40000},\"operations\":{\"type\":\"array\",\"description\":\"apply: [{op, ...}] where op is set_value (scope_key, item_key, value) | upsert_scope (scope_type_key, key, name, parent_key?) | upsert_context_item (scope_type_key, key, display_name, value_type, reference_source? e.g. {container_type: 'dataset_template', template_name}) | upsert_scope_type (key, label_singular, label_plural) | archive_scope, archive_scope_type (key) | archive_context_item (scope_type_key, key) | upsert_table_template (name, description?, fields? [{field_name, data_type, ...}]) | archive_table_template (name).\",\"default\":[]},\"scope_slug\":{\"type\":\"string\",\"description\":\"Required for expand_scope.\",\"default\":\"\"},\"organization_id\":{\"type\":\"string\",\"description\":\"An organization you belong to; default is the request's organization.\",\"default\":\"\"},\"scope_type_slug\":{\"type\":\"string\",\"description\":\"Required for expand_scope_type, expand_context_item; disambiguates expand_scope.\",\"default\":\"\"},\"detail_variation\":{\"type\":\"string\",\"description\":\"expand_context_item: fields as child elements or as attributes.\",\"default\":\"children\",\"enum\":[\"children\",\"attributes\"]},\"overview_variation\":{\"type\":\"string\",\"description\":\"overview: slugs only, or with labels.\",\"default\":\"identifiers\",\"enum\":[\"identifiers\",\"labels\"]},\"foreign_key_variation\":{\"type\":\"string\",\"description\":\"Read actions: references named as apply's *_key params (tool_param) or as *_id columns (column_name).\",\"default\":\"tool_param\",\"enum\":[\"tool_param\",\"column_name\"]}},\"required\":[\"action\"],\"additionalProperties\":false},\"strict\":false}],\"include\":[\"reasoning.encrypted_content\"],\"store\":false,\"prompt_cache_key\":\"matrx_bae7dbba421fb62c8848f8104f5189f17347adca713e27c7d7eadd69d4\"}",
+  "is_streaming": true,
+  "headers": {}
+ },
+ "google": {
+  "provider": "google",
+  "model": "gemini-3.1-flash-lite",
+  "transport": "https",
+  "method": "POST",
+  "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:streamGenerateContent?alt=sse",
+  "body": {
+   "contents": [
+    {
+     "parts": [
+      {
+       "text": "Where should I go in May?\n\n   Two lines,\ttabbed."
+      }
+     ],
+     "role": "user"
+    }
+   ],
+   "systemInstruction": {
+    "parts": [
+     {
+      "text": "<!--matrx:current_date-->Current date: 2026-10-11<!--matrx:/current_date-->\n\nYou help Dana Whitfield plan a trip.\n\n  Keep answers short.\n\n<org_catalog condensed=\"true\">\n  org 00000000-0000-4000-8000-000000000002 \"Harbor Clinic\"\n</org_catalog>\n\n<turn_context source=\"platform\">\nReference material the AI Matrx platform assembled for this turn. It is part of your instructions, not part of the conversation: the person cannot see it, did not write it, and is not asking about it. Your role and instructions come from the rest of this system prompt and remain in force. Where this restates something stated earlier in these instructions, THIS copy is the current one. Never quote it, name it, or mention that it exists -- answer the person's own message as if you simply knew what this contains.\n\n<active_context>\n  What the user currently has selected in the context picker. This is the live selection for THIS turn and supersedes any selection stated earlier in the conversation. The organizations and scopes you can reach were listed once, up front, in <org_catalog>.\n  <organization id=\"00000000-0000-4000-8000-000000000002\">Redacted</organization>\n  <selection>None — the user has chosen no scope type or scope, so work at the organization level.</selection>\n</active_context>\n\n<available_context>\n  <inline/>\n</available_context>\n</turn_context>"
+     }
+    ],
+    "role": "user"
+   },
+   "safetySettings": [
+    {
+     "category": "HARM_CATEGORY_HARASSMENT",
+     "threshold": "OFF"
+    },
+    {
+     "category": "HARM_CATEGORY_HATE_SPEECH",
+     "threshold": "OFF"
+    },
+    {
+     "category": "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+     "threshold": "OFF"
+    },
+    {
+     "category": "HARM_CATEGORY_DANGEROUS_CONTENT",
+     "threshold": "OFF"
+    },
+    {
+     "category": "HARM_CATEGORY_CIVIC_INTEGRITY",
+     "threshold": "OFF"
+    },
+    {
+     "category": "HARM_CATEGORY_JAILBREAK",
+     "threshold": "OFF"
+    }
+   ],
+   "tools": [
+    {
+     "functionDeclarations": [
+      {
+       "description": "Read or edit the organization's scope system (scope types, their scopes, context items and values) in slug/key space, never UUIDs. Tier A context is injected automatically.\nlist_organizations: every organization you belong to, one line each (id, name, counts) — use it when <org_catalog> held some back. overview: types, scopes, item keys. expand_scope: scope_slug (+ scope_type_slug if ambiguous) -> its item values. expand_scope_type: scope_type_slug -> its items and scopes. expand_context_item: scope_type_slug (+ item_key) -> item detail. apply: operations -> one ordered, atomic batch (1-250); writes need organization-admin rights.\nReads return a page (context, context_next_offset); repeat the same call with offset=context_next_offset to continue.",
+       "name": "scope_system",
+       "parameters": {
+        "properties": {
+         "action": {
+          "enum": [
+           "list_organizations",
+           "overview",
+           "expand_scope",
+           "expand_scope_type",
+           "expand_context_item",
+           "apply"
+          ],
+          "type": "STRING"
+         },
+         "offset": {
+          "description": "Read actions: start char of the page.",
+          "type": "INTEGER"
+         },
+         "item_key": {
+          "description": "expand_context_item: one item's key; omit for all items of the type.",
+          "type": "STRING"
+         },
+         "clearance": {
+          "description": "Read actions: highest sensitivity shown; items above it render withheld.",
+          "enum": [
+           "public",
+           "internal",
+           "restricted",
+           "privileged"
+          ],
+          "type": "STRING"
+         },
+         "max_chars": {
+          "description": "Read actions: page size.",
+          "type": "INTEGER"
+         },
+         "operations": {
+          "description": "apply: [{op, ...}] where op is set_value (scope_key, item_key, value) | upsert_scope (scope_type_key, key, name, parent_key?) | upsert_context_item (scope_type_key, key, display_name, value_type, reference_source? e.g. {container_type: 'dataset_template', template_name}) | upsert_scope_type (key, label_singular, label_plural) | archive_scope, archive_scope_type (key) | archive_context_item (scope_type_key, key) | upsert_table_template (name, description?, fields? [{field_name, data_type, ...}]) | archive_table_template (name).",
+          "items": {
+           "type": "STRING"
+          },
+          "type": "ARRAY"
+         },
+         "scope_slug": {
+          "description": "Required for expand_scope.",
+          "type": "STRING"
+         },
+         "organization_id": {
+          "description": "An organization you belong to; default is the request's organization.",
+          "type": "STRING"
+         },
+         "scope_type_slug": {
+          "description": "Required for expand_scope_type, expand_context_item; disambiguates expand_scope.",
+          "type": "STRING"
+         },
+         "detail_variation": {
+          "description": "expand_context_item: fields as child elements or as attributes.",
+          "enum": [
+           "children",
+           "attributes"
+          ],
+          "type": "STRING"
+         },
+         "overview_variation": {
+          "description": "overview: slugs only, or with labels.",
+          "enum": [
+           "identifiers",
+           "labels"
+          ],
+          "type": "STRING"
+         },
+         "foreign_key_variation": {
+          "description": "Read actions: references named as apply's *_key params (tool_param) or as *_id columns (column_name).",
+          "enum": [
+           "tool_param",
+           "column_name"
+          ],
+          "type": "STRING"
+         }
+        },
+        "required": [
+         "action"
+        ],
+        "type": "OBJECT"
+       }
+      }
+     ]
+    }
+   ],
+   "generationConfig": {
+    "thinkingConfig": {
+     "include_thoughts": true
+    }
+   }
+  },
+  "body_text": "{\"contents\":[{\"parts\":[{\"text\":\"Where should I go in May?\\n\\n   Two lines,\\ttabbed.\"}],\"role\":\"user\"}],\"systemInstruction\":{\"parts\":[{\"text\":\"<!--matrx:current_date-->Current date: 2026-10-11<!--matrx:/current_date-->\\n\\nYou help Dana Whitfield plan a trip.\\n\\n  Keep answers short.\\n\\n<org_catalog condensed=\\\"true\\\">\\n  org 00000000-0000-4000-8000-000000000002 \\\"Harbor Clinic\\\"\\n</org_catalog>\\n\\n<turn_context source=\\\"platform\\\">\\nReference material the AI Matrx platform assembled for this turn. It is part of your instructions, not part of the conversation: the person cannot see it, did not write it, and is not asking about it. Your role and instructions come from the rest of this system prompt and remain in force. Where this restates something stated earlier in these instructions, THIS copy is the current one. Never quote it, name it, or mention that it exists -- answer the person's own message as if you simply knew what this contains.\\n\\n<active_context>\\n  What the user currently has selected in the context picker. This is the live selection for THIS turn and supersedes any selection stated earlier in the conversation. The organizations and scopes you can reach were listed once, up front, in <org_catalog>.\\n  <organization id=\\\"00000000-0000-4000-8000-000000000002\\\">Redacted</organization>\\n  <selection>None — the user has chosen no scope type or scope, so work at the organization level.</selection>\\n</active_context>\\n\\n<available_context>\\n  <inline/>\\n</available_context>\\n</turn_context>\"}],\"role\":\"user\"},\"safetySettings\":[{\"category\":\"HARM_CATEGORY_HARASSMENT\",\"threshold\":\"OFF\"},{\"category\":\"HARM_CATEGORY_HATE_SPEECH\",\"threshold\":\"OFF\"},{\"category\":\"HARM_CATEGORY_SEXUALLY_EXPLICIT\",\"threshold\":\"OFF\"},{\"category\":\"HARM_CATEGORY_DANGEROUS_CONTENT\",\"threshold\":\"OFF\"},{\"category\":\"HARM_CATEGORY_CIVIC_INTEGRITY\",\"threshold\":\"OFF\"},{\"category\":\"HARM_CATEGORY_JAILBREAK\",\"threshold\":\"OFF\"}],\"tools\":[{\"functionDeclarations\":[{\"description\":\"Read or edit the organization's scope system (scope types, their scopes, context items and values) in slug/key space, never UUIDs. Tier A context is injected automatically.\\nlist_organizations: every organization you belong to, one line each (id, name, counts) — use it when <org_catalog> held some back. overview: types, scopes, item keys. expand_scope: scope_slug (+ scope_type_slug if ambiguous) -> its item values. expand_scope_type: scope_type_slug -> its items and scopes. expand_context_item: scope_type_slug (+ item_key) -> item detail. apply: operations -> one ordered, atomic batch (1-250); writes need organization-admin rights.\\nReads return a page (context, context_next_offset); repeat the same call with offset=context_next_offset to continue.\",\"name\":\"scope_system\",\"parameters\":{\"properties\":{\"action\":{\"enum\":[\"list_organizations\",\"overview\",\"expand_scope\",\"expand_scope_type\",\"expand_context_item\",\"apply\"],\"type\":\"STRING\"},\"offset\":{\"description\":\"Read actions: start char of the page.\",\"type\":\"INTEGER\"},\"item_key\":{\"description\":\"expand_context_item: one item's key; omit for all items of the type.\",\"type\":\"STRING\"},\"clearance\":{\"description\":\"Read actions: highest sensitivity shown; items above it render withheld.\",\"enum\":[\"public\",\"internal\",\"restricted\",\"privileged\"],\"type\":\"STRING\"},\"max_chars\":{\"description\":\"Read actions: page size.\",\"type\":\"INTEGER\"},\"operations\":{\"description\":\"apply: [{op, ...}] where op is set_value (scope_key, item_key, value) | upsert_scope (scope_type_key, key, name, parent_key?) | upsert_context_item (scope_type_key, key, display_name, value_type, reference_source? e.g. {container_type: 'dataset_template', template_name}) | upsert_scope_type (key, label_singular, label_plural) | archive_scope, archive_scope_type (key) | archive_context_item (scope_type_key, key) | upsert_table_template (name, description?, fields? [{field_name, data_type, ...}]) | archive_table_template (name).\",\"items\":{\"type\":\"STRING\"},\"type\":\"ARRAY\"},\"scope_slug\":{\"description\":\"Required for expand_scope.\",\"type\":\"STRING\"},\"organization_id\":{\"description\":\"An organization you belong to; default is the request's organization.\",\"type\":\"STRING\"},\"scope_type_slug\":{\"description\":\"Required for expand_scope_type, expand_context_item; disambiguates expand_scope.\",\"type\":\"STRING\"},\"detail_variation\":{\"description\":\"expand_context_item: fields as child elements or as attributes.\",\"enum\":[\"children\",\"attributes\"],\"type\":\"STRING\"},\"overview_variation\":{\"description\":\"overview: slugs only, or with labels.\",\"enum\":[\"identifiers\",\"labels\"],\"type\":\"STRING\"},\"foreign_key_variation\":{\"description\":\"Read actions: references named as apply's *_key params (tool_param) or as *_id columns (column_name).\",\"enum\":[\"tool_param\",\"column_name\"],\"type\":\"STRING\"}},\"required\":[\"action\"],\"type\":\"OBJECT\"}}]}],\"generationConfig\":{\"thinkingConfig\":{\"include_thoughts\":true}}}",
+  "is_streaming": true,
+  "headers": {}
+ },
+ "xai": {
+  "provider": "xai",
+  "model": "grok-build-0.1",
+  "transport": "grpc",
+  "method": "RPC",
+  "url": "api.x.ai:443/xai_api.Chat/GetCompletionChunk",
+  "body": {
+   "messages": [
+    {
+     "content": [
+      {
+       "text": "<!--matrx:current_date-->Current date: 2026-10-11<!--matrx:/current_date-->\n\nYou help Dana Whitfield plan a trip.\n\n  Keep answers short.\n\n<org_catalog condensed=\"true\">\n  org 00000000-0000-4000-8000-000000000002 \"Harbor Clinic\"\n</org_catalog>\n\n<turn_context source=\"platform\">\nReference material the AI Matrx platform assembled for this turn. It is part of your instructions, not part of the conversation: the person cannot see it, did not write it, and is not asking about it. Your role and instructions come from the rest of this system prompt and remain in force. Where this restates something stated earlier in these instructions, THIS copy is the current one. Never quote it, name it, or mention that it exists -- answer the person's own message as if you simply knew what this contains.\n\n<active_context>\n  What the user currently has selected in the context picker. This is the live selection for THIS turn and supersedes any selection stated earlier in the conversation. The organizations and scopes you can reach were listed once, up front, in <org_catalog>.\n  <organization id=\"00000000-0000-4000-8000-000000000002\">Redacted</organization>\n  <selection>None — the user has chosen no scope type or scope, so work at the organization level.</selection>\n</active_context>\n\n<available_context>\n  <inline/>\n</available_context>\n</turn_context>"
+      }
+     ],
+     "role": "ROLE_SYSTEM"
+    },
+    {
+     "content": [
+      {
+       "text": "Where should I go in May?\n\n   Two lines,\ttabbed."
+      }
+     ],
+     "role": "ROLE_USER"
+    }
+   ],
+   "model": "grok-build-0.1",
+   "n": 1,
+   "tools": [
+    {
+     "function": {
+      "name": "scope_system",
+      "description": "Read or edit the organization's scope system (scope types, their scopes, context items and values) in slug/key space, never UUIDs. Tier A context is injected automatically.\nlist_organizations: every organization you belong to, one line each (id, name, counts) — use it when <org_catalog> held some back. overview: types, scopes, item keys. expand_scope: scope_slug (+ scope_type_slug if ambiguous) -> its item values. expand_scope_type: scope_type_slug -> its items and scopes. expand_context_item: scope_type_slug (+ item_key) -> item detail. apply: operations -> one ordered, atomic batch (1-250); writes need organization-admin rights.\nReads return a page (context, context_next_offset); repeat the same call with offset=context_next_offset to continue.",
+      "parameters": "{\"type\": \"object\", \"properties\": {\"action\": {\"type\": \"string\", \"description\": \"\", \"enum\": [\"list_organizations\", \"overview\", \"expand_scope\", \"expand_scope_type\", \"expand_context_item\", \"apply\"]}, \"offset\": {\"type\": \"integer\", \"description\": \"Read actions: start char of the page. Must be at least 0.\", \"default\": 0}, \"item_key\": {\"type\": \"string\", \"description\": \"expand_context_item: one item's key; omit for all items of the type.\", \"default\": \"\"}, \"clearance\": {\"type\": \"string\", \"description\": \"Read actions: highest sensitivity shown; items above it render withheld.\", \"default\": \"privileged\", \"enum\": [\"public\", \"internal\", \"restricted\", \"privileged\"]}, \"max_chars\": {\"type\": \"integer\", \"description\": \"Read actions: page size. Must be at least 1, at most 40000.\", \"default\": 40000}, \"operations\": {\"type\": \"array\", \"description\": \"apply: [{op, ...}] where op is set_value (scope_key, item_key, value) | upsert_scope (scope_type_key, key, name, parent_key?) | upsert_context_item (scope_type_key, key, display_name, value_type, reference_source? e.g. {container_type: 'dataset_template', template_name}) | upsert_scope_type (key, label_singular, label_plural) | archive_scope, archive_scope_type (key) | archive_context_item (scope_type_key, key) | upsert_table_template (name, description?, fields? [{field_name, data_type, ...}]) | archive_table_template (name).\", \"default\": []}, \"scope_slug\": {\"type\": \"string\", \"description\": \"Required for expand_scope.\", \"default\": \"\"}, \"organization_id\": {\"type\": \"string\", \"description\": \"An organization you belong to; default is the request's organization.\", \"default\": \"\"}, \"scope_type_slug\": {\"type\": \"string\", \"description\": \"Required for expand_scope_type, expand_context_item; disambiguates expand_scope.\", \"default\": \"\"}, \"detail_variation\": {\"type\": \"string\", \"description\": \"expand_context_item: fields as child elements or as attributes.\", \"default\": \"children\", \"enum\": [\"children\", \"attributes\"]}, \"overview_variation\": {\"type\": \"string\", \"description\": \"overview: slugs only, or with labels.\", \"default\": \"identifiers\", \"enum\": [\"identifiers\", \"labels\"]}, \"foreign_key_variation\": {\"type\": \"string\", \"description\": \"Read actions: references named as apply's *_key params (tool_param) or as *_id columns (column_name).\", \"default\": \"tool_param\", \"enum\": [\"tool_param\", \"column_name\"]}}, \"required\": [\"action\"], \"additionalProperties\": false}"
+     }
+    }
+   ],
+   "parallel_tool_calls": true
+  },
+  "body_text": "{\"messages\":[{\"content\":[{\"text\":\"<!--matrx:current_date-->Current date: 2026-10-11<!--matrx:/current_date-->\\n\\nYou help Dana Whitfield plan a trip.\\n\\n  Keep answers short.\\n\\n<org_catalog condensed=\\\"true\\\">\\n  org 00000000-0000-4000-8000-000000000002 \\\"Harbor Clinic\\\"\\n</org_catalog>\\n\\n<turn_context source=\\\"platform\\\">\\nReference material the AI Matrx platform assembled for this turn. It is part of your instructions, not part of the conversation: the person cannot see it, did not write it, and is not asking about it. Your role and instructions come from the rest of this system prompt and remain in force. Where this restates something stated earlier in these instructions, THIS copy is the current one. Never quote it, name it, or mention that it exists -- answer the person's own message as if you simply knew what this contains.\\n\\n<active_context>\\n  What the user currently has selected in the context picker. This is the live selection for THIS turn and supersedes any selection stated earlier in the conversation. The organizations and scopes you can reach were listed once, up front, in <org_catalog>.\\n  <organization id=\\\"00000000-0000-4000-8000-000000000002\\\">Redacted</organization>\\n  <selection>None — the user has chosen no scope type or scope, so work at the organization level.</selection>\\n</active_context>\\n\\n<available_context>\\n  <inline/>\\n</available_context>\\n</turn_context>\"}],\"role\":\"ROLE_SYSTEM\"},{\"content\":[{\"text\":\"Where should I go in May?\\n\\n   Two lines,\\ttabbed.\"}],\"role\":\"ROLE_USER\"}],\"model\":\"grok-build-0.1\",\"n\":1,\"tools\":[{\"function\":{\"name\":\"scope_system\",\"description\":\"Read or edit the organization's scope system (scope types, their scopes, context items and values) in slug/key space, never UUIDs. Tier A context is injected automatically.\\nlist_organizations: every organization you belong to, one line each (id, name, counts) — use it when <org_catalog> held some back. overview: types, scopes, item keys. expand_scope: scope_slug (+ scope_type_slug if ambiguous) -> its item values. expand_scope_type: scope_type_slug -> its items and scopes. expand_context_item: scope_type_slug (+ item_key) -> item detail. apply: operations -> one ordered, atomic batch (1-250); writes need organization-admin rights.\\nReads return a page (context, context_next_offset); repeat the same call with offset=context_next_offset to continue.\",\"parameters\":\"{\\\"type\\\": \\\"object\\\", \\\"properties\\\": {\\\"action\\\": {\\\"type\\\": \\\"string\\\", \\\"description\\\": \\\"\\\", \\\"enum\\\": [\\\"list_organizations\\\", \\\"overview\\\", \\\"expand_scope\\\", \\\"expand_scope_type\\\", \\\"expand_context_item\\\", \\\"apply\\\"]}, \\\"offset\\\": {\\\"type\\\": \\\"integer\\\", \\\"description\\\": \\\"Read actions: start char of the page. Must be at least 0.\\\", \\\"default\\\": 0}, \\\"item_key\\\": {\\\"type\\\": \\\"string\\\", \\\"description\\\": \\\"expand_context_item: one item's key; omit for all items of the type.\\\", \\\"default\\\": \\\"\\\"}, \\\"clearance\\\": {\\\"type\\\": \\\"string\\\", \\\"description\\\": \\\"Read actions: highest sensitivity shown; items above it render withheld.\\\", \\\"default\\\": \\\"privileged\\\", \\\"enum\\\": [\\\"public\\\", \\\"internal\\\", \\\"restricted\\\", \\\"privileged\\\"]}, \\\"max_chars\\\": {\\\"type\\\": \\\"integer\\\", \\\"description\\\": \\\"Read actions: page size. Must be at least 1, at most 40000.\\\", \\\"default\\\": 40000}, \\\"operations\\\": {\\\"type\\\": \\\"array\\\", \\\"description\\\": \\\"apply: [{op, ...}] where op is set_value (scope_key, item_key, value) | upsert_scope (scope_type_key, key, name, parent_key?) | upsert_context_item (scope_type_key, key, display_name, value_type, reference_source? e.g. {container_type: 'dataset_template', template_name}) | upsert_scope_type (key, label_singular, label_plural) | archive_scope, archive_scope_type (key) | archive_context_item (scope_type_key, key) | upsert_table_template (name, description?, fields? [{field_name, data_type, ...}]) | archive_table_template (name).\\\", \\\"default\\\": []}, \\\"scope_slug\\\": {\\\"type\\\": \\\"string\\\", \\\"description\\\": \\\"Required for expand_scope.\\\", \\\"default\\\": \\\"\\\"}, \\\"organization_id\\\": {\\\"type\\\": \\\"string\\\", \\\"description\\\": \\\"An organization you belong to; default is the request's organization.\\\", \\\"default\\\": \\\"\\\"}, \\\"scope_type_slug\\\": {\\\"type\\\": \\\"string\\\", \\\"description\\\": \\\"Required for expand_scope_type, expand_context_item; disambiguates expand_scope.\\\", \\\"default\\\": \\\"\\\"}, \\\"detail_variation\\\": {\\\"type\\\": \\\"string\\\", \\\"description\\\": \\\"expand_context_item: fields as child elements or as attributes.\\\", \\\"default\\\": \\\"children\\\", \\\"enum\\\": [\\\"children\\\", \\\"attributes\\\"]}, \\\"overview_variation\\\": {\\\"type\\\": \\\"string\\\", \\\"description\\\": \\\"overview: slugs only, or with labels.\\\", \\\"default\\\": \\\"identifiers\\\", \\\"enum\\\": [\\\"identifiers\\\", \\\"labels\\\"]}, \\\"foreign_key_variation\\\": {\\\"type\\\": \\\"string\\\", \\\"description\\\": \\\"Read actions: references named as apply's *_key params (tool_param) or as *_id columns (column_name).\\\", \\\"default\\\": \\\"tool_param\\\", \\\"enum\\\": [\\\"tool_param\\\", \\\"column_name\\\"]}}, \\\"required\\\": [\\\"action\\\"], \\\"additionalProperties\\\": false}\"}}],\"parallel_tool_calls\":true}",
+  "is_streaming": true,
+  "headers": {}
+ }
+}
