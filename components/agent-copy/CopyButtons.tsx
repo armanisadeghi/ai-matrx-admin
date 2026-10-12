@@ -6,7 +6,7 @@ import {
 } from "@ai-matrx/alchemy/react/workspace";
 import { sendRowsToSheetOutcome } from "@/components/agent-copy/useExportActions";
 
-import { copyRichContent } from "@ai-matrx/rich-content/copy/copy-commands";
+import { copyRichContent, type CopyFlavor } from "@ai-matrx/rich-content/copy/copy-commands";
 import { useAlchemyDisclosure } from "@/components/agent-copy/useAlchemyDisclosure";
 
 export type CopyButtonsProps = MatrxCopyMenuProps;
@@ -22,7 +22,7 @@ export function CopyButtons(props: CopyButtonsProps) {
     <MatrxCopyMenu
       {...props}
       {...(props.contentFlavor === "markdown" && !props.richCopy
-        ? { richCopy: (markdown: string, flavor: "default" | "markdown" | "text") => copyRichContent(markdown, flavor) }
+        ? { richCopy: (markdown: string, flavor: CopyFlavor) => copyRichContent(markdown, flavor) }
         : {})}
       {...(props.export?.sheetRows
         ? { sendToSheet: sendRowsToSheetOutcome }

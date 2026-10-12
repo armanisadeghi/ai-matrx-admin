@@ -6,6 +6,7 @@
  * later — must hand the clipboard the rendered text, never the payload.
  */
 jest.mock("@ai-matrx/rich-content/copy/copy-commands", () => ({
+  COPY_LABELS: jest.requireActual("@ai-matrx/rich-content/copy/copy-commands").COPY_LABELS,
   copyRichContent: jest.fn(async () => true),
   copyContent: jest.fn(async () => true),
 }));
@@ -52,7 +53,7 @@ describe("a structured answer copies its rendered text in every flavour", () => 
     boundSchema = SCHEMA;
   });
 
-  const COPY_ROWS = ["copy", "copy-markdown", "copy-plain-text"];
+  const COPY_ROWS = ["copy", "copy-markdown", "copy-plain-text", "copy-formatted"];
 
   it.each(COPY_ROWS)("%s copies the prose and the chips, never the JSON", async (id) => {
     const action = getAction(id);

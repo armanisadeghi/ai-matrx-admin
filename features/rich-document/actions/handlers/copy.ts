@@ -13,9 +13,8 @@ import { kindTextToMarkdown } from "@/features/content-ir/surfaces/kind-text-to-
 
 // THE one-click Copy (Arman, 2026-10-04): formatted for Docs / Gmail AND the
 // knob's plain flavor (`copy.default_flavor`, default markdown) for a plain
-// field — one clipboard item, both flavors. "Copy markdown" and "Copy text"
-// (transfer.ts) are the explicit choices, the top two rows of Copy as.
-// "Copy formatted" and "Copy as rich text" are gone: this IS that copy.
+// field. The three ways to copy — Copy as Markdown, Copy content, Copy formatted
+// (transfer.ts, COPY_LABELS) — are the explicit choices beside it.
 registerAction({
   id: "copy",
   label: "Copy",
@@ -40,7 +39,7 @@ registerAction({
   // be no-op nonsense on notes / prompts / artifacts.
   supportedSources: ["chat-message"],
   renderSlot: "overflow",
-  order: 3,
+  order: 4,
   // Only assistant turns carry reasoning traces.
   visible: (ctx) =>
     ctx.source.type === "chat-message" &&

@@ -7,8 +7,7 @@
  * for "attached" chips and inline links.
  */
 
-import { useClipboard } from "@ai-matrx/kit/clipboard";
-import { copyNotify } from "@/lib/clipboard/copy-notify";
+import { copyRichContent, defaultCopyTitle } from "@ai-matrx/rich-content/copy/copy-commands";
 import { kindTextToMarkdown } from "@/features/content-ir/surfaces/kind-text-to-markdown";
 import { useState } from "react";
 import Link from "next/link";
@@ -88,9 +87,6 @@ export function MessagePreviewContent({
   messageId,
   onOpen,
 }: MessagePreviewContentProps) {
-  const { copyText } = useClipboard({
-    notify: copyNotify,
-  });
   const message = useAppSelector(
     selectMessageById(conversationId, messageId),
   );
@@ -106,7 +102,7 @@ export function MessagePreviewContent({
 
   const handleCopy = async () => {
     if (!text) return;
-    if (!(await copyText(text, "Message text copied"))) return;
+    if (!(await copyRichContent(text, "default", { toast: "Message copied" }))) return;
     setCopied(true);
     setTimeout(() => setCopied(false), 1500);
   };
@@ -181,9 +177,10 @@ export function MessagePreviewContent({
           icon={copied ? <Check className="text-success" /> : <Copy />}
           variant="quiet"
           onClick={handleCopy}
+          title={defaultCopyTitle()}
           disabled={!text}
         >
-          {copied ? "Copied" : "Copy text"}
+          {copied ? "Copied" : "Copy"}
         </Button>
         <div className="ml-auto">
           {onOpen ? (

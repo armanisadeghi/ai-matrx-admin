@@ -15,7 +15,7 @@ import {
   FileCode,
   Code2,
 } from "lucide-react";
-import { copyContent } from "@ai-matrx/rich-content/copy/copy-commands";
+import { COPY_LABELS, copyContent, copyRichContent, type CopyKind } from "@ai-matrx/rich-content/copy/copy-commands";
 import { extractErrorMessage } from "@/utils/errors";
 import { getMarkdownStylesheet } from "@ai-matrx/print/markdown";
 import AdvancedMenu, { MenuItem } from "@/components/official/AdvancedMenu";
@@ -83,24 +83,9 @@ export function ContentManagerMenu({
   };
 
   // Copy handlers
-  const handleCopyPlain = async () => {
-    await copyContent(content, {
-      onSuccess: () => {},
-      onError: (error) => {
-        throw new Error(extractErrorMessage(error) || "Failed to copy text");
-      },
-    });
-  };
-
-  const handleCopyGoogleDocs = async () => {
-    await copyContent(content, {
-      isMarkdown: true,
-      formatForGoogleDocs: true,
-      onSuccess: () => {},
-      onError: (error) => {
-        throw new Error(extractErrorMessage(error) || "Failed to copy for Google Docs");
-      },
-    });
+  // THE three ways to copy (Arman, 2026-10-11), through the one rich-content copy.
+  const copyAs = (kind: CopyKind) => async () => {
+    if (!(await copyRichContent(content, kind, { toast: false }))) throw new Error("Failed to copy");
   };
 
   const handleCopyWithThinking = async () => {
@@ -195,26 +180,34 @@ ${cssContent}
     },
     // Copy Options
     {
+      key: "copy-markdown",
+      icon: Copy,
+      iconColor: "text-blue-500 dark:text-blue-400",
+      label: COPY_LABELS.markdown,
+      action: copyAs("markdown"),
+      category: "Copy",
+      successMessage: "Markdown copied",
+      errorMessage: "Failed to copy",
+    },
+    {
       key: "copy-plain",
       icon: Copy,
       iconColor: "text-blue-500 dark:text-blue-400",
-      label: "Copy text",
-      description: "Plain text to clipboard",
-      action: handleCopyPlain,
+      label: COPY_LABELS.text,
+      action: copyAs("text"),
       category: "Copy",
-      successMessage: "Plain text copied to clipboard",
-      errorMessage: "Failed to copy text",
+      successMessage: "Content copied",
+      errorMessage: "Failed to copy",
     },
     {
       key: "copy-docs",
       icon: FileText,
       iconColor: "text-green-500 dark:text-green-400",
-      label: "Copy for Docs",
-      description: "Formatted for Google Docs",
-      action: handleCopyGoogleDocs,
+      label: COPY_LABELS.formatted,
+      action: copyAs("formatted"),
       category: "Copy",
-      successMessage: "Formatted for Google Docs",
-      errorMessage: "Failed to copy for Google Docs",
+      successMessage: "Formatted copy",
+      errorMessage: "Failed to copy",
     },
     {
       key: "copy-thinking",

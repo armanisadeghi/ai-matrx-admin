@@ -153,8 +153,8 @@ export function MarkdownPreview({
         <button
           type="button"
           onClick={() => void onCopy()}
-          aria-label="Copy markdown to clipboard"
-          title="Copy markdown source to clipboard"
+          aria-label="Copy as Markdown"
+          title="Copy as Markdown"
           className={cn(
             "inline-flex items-center gap-1 rounded-md border bg-background px-2 py-0.5 text-[11px] font-medium hover:bg-accent",
             copied && "text-emerald-600 dark:text-emerald-400",
@@ -165,7 +165,7 @@ export function MarkdownPreview({
           ) : (
             <Copy className="h-3 w-3" />
           )}
-          {copied ? "Copied" : "Copy markdown"}
+          {copied ? "Copied" : "Copy as Markdown"}
         </button>
       </div>
       <div className="flex-1 overflow-auto px-6 py-5">

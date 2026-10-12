@@ -109,7 +109,7 @@ export function barShapeViolations(contentActions: string, copyButton: string, a
   if (!/data-content-copy/.test(copyButton) || /ChevronDown|data-copy-split-more/.test(copyButton) || /\(CopySplitButton,/.test(bar)) {
     bad.push("the Copy has a chevron (or is not the one-icon CopyMenuButton)");
   }
-  if (!/Copy raw/.test(copyButton) || !/Copy formatted/.test(copyButton) || !/Copy for AI/.test(copyButton)) bad.push("the Copy menu is not raw / formatted / for AI");
+  if (/Copy raw|Copy plain text/.test(copyButton) || !/COPY_LABELS\.markdown/.test(copyButton) || !/COPY_LABELS\.text/.test(copyButton) || !/COPY_LABELS\.formatted/.test(copyButton) || !/Copy for AI/.test(copyButton)) bad.push("the Copy menu is not the three ways (COPY_LABELS) + for AI");
   if (!/data-content-plain-toggle/.test(bar)) bad.push("Raw/Formatted is missing from the bar");
   if (/onTransform:/.test(actionBar) || !/menu:\s*false/.test(actionBar)) bad.push("the rich-document bar repeats what its ⋯ carries");
   return bad;
@@ -134,6 +134,7 @@ describe("content-actions census", () => {
       "Print is a bar icon",
       "Transform is a bar icon",
       "the Copy has a chevron (or is not the one-icon CopyMenuButton)",
+      "the Copy menu is not the three ways (COPY_LABELS) + for AI",
       "the rich-document bar repeats what its ⋯ carries",
     ]);
   });

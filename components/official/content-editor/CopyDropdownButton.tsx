@@ -3,8 +3,8 @@
 
 import React, { useState, useRef, useLayoutEffect } from "react";
 import { createPortal } from "react-dom";
-import { Copy, ChevronDown, FileCode2, FileText, Code, Brain } from "lucide-react";
-import { copyRichContent, copyContent, type CopyFlavor } from "@ai-matrx/rich-content/copy/copy-commands";
+import { Copy, ChevronDown, FileCode2, FileText, Code, Brain, Wand2 } from "lucide-react";
+import { COPY_LABELS, copyRichContent, copyContent, type CopyFlavor } from "@ai-matrx/rich-content/copy/copy-commands";
 
 import { Tile } from "@ai-matrx/design-system/controls";
 interface CopyDropdownButtonProps {
@@ -130,8 +130,9 @@ export function CopyDropdownButton({
               className="z-[9999] bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg shadow-lg"
             >
               <Tile variant="quiet" icon={<Copy />} title="Copy" onClick={() => copyAs("default")} />
-              <Tile variant="quiet" icon={<FileCode2 />} title="Copy markdown" onClick={() => copyAs("markdown")} />
-              <Tile variant="quiet" icon={<FileText />} title="Copy text" onClick={() => copyAs("text")} />
+              <Tile variant="quiet" icon={<FileCode2 />} title={COPY_LABELS.markdown} onClick={() => copyAs("markdown")} />
+              <Tile variant="quiet" icon={<FileText />} title={COPY_LABELS.text} onClick={() => copyAs("text")} />
+              <Tile variant="quiet" icon={<Wand2 />} title={COPY_LABELS.formatted} onClick={() => copyAs("formatted")} />
               {onShowHtmlPreview && (
                 <Tile variant="quiet" icon={<Code />} title="HTML" onClick={handleHtmlPreview} />
               )}

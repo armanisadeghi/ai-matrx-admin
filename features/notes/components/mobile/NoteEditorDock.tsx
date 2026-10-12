@@ -333,8 +333,8 @@ export function NoteEditorDock({
                 className="relative flex-1 flex items-center justify-center min-w-0"
               >
                 {item.key === "copy" ? (
-                  // THE Copy (Arman, 2026-10-08): one tap copies the raw note, then Copy raw ·
-                  // Copy formatted · Copy for AI — the dock's own tile, never a chevron.
+                  // THE Copy (Arman, 2026-10-08; names 2026-10-11): one tap copies the person's default,
+                  // then Copy as Markdown · Copy content · Copy formatted · Copy for AI — the dock's own tile.
                   <CopyMenuButton
                     content={() => content}
                     label="note"

@@ -623,8 +623,8 @@ export function TranscriptViewer() {
                  * The transcript RECORD pair. A transcript is the "massive"
                  * size class — thousands of segments is normal — so the AI
                  * control is a dropdown WITH a custom composer, not a single
-                 * button. It is THE content action set here (Copy markdown / plain
-                 * text, Export, Print, Transform); the bar below omits its own.
+                 * button. It is THE content action set here (the three copies,
+                 * Export, Print, Transform); the bar below omits its own.
                  */}
                 <RichCopySplit
                   size="icon"

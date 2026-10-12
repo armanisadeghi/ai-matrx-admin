@@ -91,15 +91,16 @@ describe("rich-document provider", () => {
   });
 });
 
-describe("one copy, two explicit flavors (2026-10-04)", () => {
-  it("offers Copy, Copy markdown and Copy text — never a byte-identical twin", () => {
+describe("one copy, three named ways (2026-10-11)", () => {
+  it("offers Copy, Copy as Markdown, Copy content and Copy formatted — never a byte-identical twin", () => {
     const listed = resolveActions(chatContext("assistant")).map((a) => a.id);
-    expect(listed).toEqual(expect.arrayContaining(["copy", "copy-markdown", "copy-plain-text"]));
-    expect(listed.filter((id) => /^(copy-google-docs|copy-word|copy-formatted|copy-rich-text)$/.test(id))).toEqual([]);
-    expect([getAction("copy")?.label, getAction("copy-markdown")?.label, getAction("copy-plain-text")?.label]).toEqual([
+    expect(listed).toEqual(expect.arrayContaining(["copy", "copy-markdown", "copy-plain-text", "copy-formatted"]));
+    expect(listed.filter((id) => /^(copy-google-docs|copy-word|copy-rich-text)$/.test(id))).toEqual([]);
+    expect([getAction("copy")?.label, getAction("copy-markdown")?.label, getAction("copy-plain-text")?.label, getAction("copy-formatted")?.label]).toEqual([
       "Copy",
-      "Copy markdown",
-      "Copy text",
+      "Copy as Markdown",
+      "Copy content",
+      "Copy formatted",
     ]);
   });
 });

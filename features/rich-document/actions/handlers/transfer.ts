@@ -15,10 +15,9 @@ import {
   FileText,
   FileType,
   Table2,
-  Type,
-} from "lucide-react";
+  Type, Wand2 } from "lucide-react";
 import { toast } from "@/lib/toast";
-import { copyRichContent, copyContent } from "@ai-matrx/rich-content/copy/copy-commands";
+import { COPY_LABELS, copyRichContent, copyContent } from "@ai-matrx/rich-content/copy/copy-commands";
 import { registerAction } from "@ai-matrx/rich-content/rich-document/actions/provider";
 import { contentFileName, deriveContentTitle, getErrorMessage, contentForDestination } from "../utils";
 import { hasTableShape } from "@ai-matrx/records-ui/table-shape";
@@ -49,10 +48,11 @@ function fileBase(ctx: RichDocumentActionContext): string {
 const hasTable = (ctx: RichDocumentActionContext) =>
   parseFirstMarkdownTable(ctx.content) !== null;
 
-// The two explicit choices beside the one-click Copy (copy.ts): the top rows of "Copy as".
+// THE three ways to copy beside the one-click Copy (copy.ts), named by COPY_LABELS (Arman, 2026-10-11).
+// With a selection, `ctx.content` IS the selection's markdown (the menu reads it from its source).
 registerAction({
   id: "copy-markdown",
-  label: "Copy markdown",
+  label: COPY_LABELS.markdown,
   icon: FileCode2,
   iconColor: "text-slate-500 dark:text-slate-400",
   category: "copy",
@@ -66,7 +66,7 @@ registerAction({
 
 registerAction({
   id: "copy-plain-text",
-  label: "Copy text",
+  label: COPY_LABELS.text,
   icon: Type,
   iconColor: "text-slate-500 dark:text-slate-400",
   category: "copy",
@@ -75,6 +75,20 @@ registerAction({
   order: 2,
   run: async (ctx) => {
     await copyRichContent(contentForDestination(ctx), "text");
+  },
+});
+
+registerAction({
+  id: "copy-formatted",
+  label: COPY_LABELS.formatted,
+  icon: Wand2,
+  iconColor: "text-slate-500 dark:text-slate-400",
+  category: "copy",
+  supportedSources: "*",
+  renderSlot: "overflow",
+  order: 3,
+  run: async (ctx) => {
+    await copyRichContent(contentForDestination(ctx), "formatted");
   },
 });
 
