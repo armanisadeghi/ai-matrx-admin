@@ -229,8 +229,16 @@ export function OutsiderEntry() {
     if (held) sign(held);
     else void open(found);
   });
+  // Deferred one microtask: opening reads the address bar and storage (external systems) and answers
+  // with state, so it must not set state inside the effect body. Cleanup makes a StrictMode re-run open once.
   useEffect(() => {
-    openOnce();
+    let live = true;
+    void Promise.resolve().then(() => {
+      if (live) openOnce();
+    });
+    return () => {
+      live = false;
+    };
   }, []);
 
   async function sendCode(token: string) {
