@@ -10,7 +10,7 @@
 import { useEffect, useState, useTransition } from "react";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
-import { BellRing, CheckCircle2, Circle, Copy, Download, Eye, FileText, LayoutTemplate, Lock, PenLine, RotateCw, ShieldCheck, XCircle } from "lucide-react";
+import { BellRing, CheckCircle2, Circle, Copy, Download, Eye, FileText, LayoutTemplate, Lock, PenLine, Pencil, RotateCw, ShieldCheck, XCircle } from "lucide-react";
 
 import { Badge, Button, Field, SegmentedControl, Switch } from "@ai-matrx/design-system/controls";
 import { downloadFile } from "@ai-matrx/kit/download";
@@ -40,6 +40,7 @@ import {
   type EnvelopeActAnswer,
   type EnvelopeState,
 } from "./service";
+import { CorrectDialog, type CorrectableRecipient } from "./CorrectDialog";
 import { LOCKED_RECIPIENT_REASON, LOCKED_RECIPIENT_STATUSES, SIGNER_STATUS_LABEL, signHref, statusLabel } from "./types";
 
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
@@ -130,6 +131,7 @@ export function EnvelopeDetail({ envelopeId }: { envelopeId: string }) {
   const [voidOpen, setVoidOpen] = useState(false);
   const [voidReason, setVoidReason] = useState("");
   const [resendFor, setResendFor] = useState<{ id: string; email: string; outsider: boolean } | null>(null);
+  const [correctOpen, setCorrectOpen] = useState(false);
   const [lockedFor, setLockedFor] = useState<{ name: string; status: string } | null>(null);
   const [downloadOpen, setDownloadOpen] = useState(false);
   const [templateOpen, setTemplateOpen] = useState(false);
@@ -227,8 +229,20 @@ export function EnvelopeDetail({ envelopeId }: { envelopeId: string }) {
     { label: "Download", icon: Download, onPress: () => setDownloadOpen(true) },
     { label: "Make a copy", icon: Copy, onPress: makeCopy },
     ...(composition ? [{ label: "Save as template", icon: LayoutTemplate, onPress: () => setTemplateOpen(true) }] : []),
+    ...(isOpen ? [{ label: "Correct", icon: Pencil, disabled: busy !== null, onPress: () => setCorrectOpen(true) }] : []),
     ...(isOpen ? [{ label: "Void", icon: XCircle, destructive: true, disabled: busy !== null, onPress: () => setVoidOpen(true) }] : []),
   ];
+
+  const correctable: CorrectableRecipient[] = state.signers.map((s) => ({
+    id: String(s.id),
+    full_name: text(s, "full_name") ?? "",
+    email: text(s, "email") ?? "",
+    position: Number(s.position ?? 1),
+    status: text(s, "status") ?? "pending",
+    external: text(s, "actor_type") !== "internal_user",
+    verification: text(s, "verification_factor") === "access_code" ? "access_code" : text(s, "verification_factor") === "none" ? "none" : "email_code",
+    role: text(s, "role") ?? "signer",
+  }));
 
   const copyFiles = state.documents.map((d) => ({ name: text(d, "name") ?? "Document", fileId: signedCopies[String(d.id)] ?? text(asRecord(d.metadata), "signed_copy_file_id") })).filter((c) => c.fileId);
 
@@ -484,6 +498,14 @@ export function EnvelopeDetail({ envelopeId }: { envelopeId: string }) {
         </DialogContent>
       </Dialog>
 
+      <CorrectDialog
+        open={correctOpen}
+        envelopeId={envelopeId}
+        sequential={text(e, "signing_order") !== "parallel"}
+        recipients={correctable}
+        onClose={() => setCorrectOpen(false)}
+        onChanged={() => setReload((n) => n + 1)}
+      />
       <Dialog open={resendFor !== null} onOpenChange={(open) => !open && busy !== "resend" && setResendFor(null)}>
         <DialogContent>
           <DialogHeader>

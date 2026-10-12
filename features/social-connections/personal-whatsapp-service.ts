@@ -4,6 +4,7 @@ import { discoverLocalEngine } from "@/lib/local-engine/discovery";
 import { requestRaw } from "@/lib/python-client";
 import type { components } from "./personal-whatsapp-api-types";
 
+export type PersonalOutboxEntry = components["schemas"]["OutboxEntry"];
 export type PersonalGrant = components["schemas"]["PublicGrantStatus"];
 export type PersonalAccount = components["schemas"]["PersonalAccountSummary"];
 export type PersonalChat = components["schemas"]["PersonalChatSummary"];
@@ -15,7 +16,8 @@ export type PersonalMessages = components["schemas"]["PersonalMessagePage"];
 const grant: z.ZodType<PersonalGrant> = z.object({
   id: z.string().uuid().nullable().optional(), generation: z.number().int().positive().nullable().optional(), revision: z.number().int().positive().nullable().optional(),
   status: z.enum(["not_connected", "pending_local", "pending_credential", "active", "needs_attention", "revoking", "retired"]),
-  account_ref: z.string().nullable().optional(), selected_chat_ids: z.array(z.string()).optional(), scopes: z.array(z.literal("read")).optional(),
+  account_ref: z.string().nullable().optional(), selected_chat_ids: z.array(z.string()).optional(), scopes: z.array(z.enum(["read", "write"])).optional(),
+  request_profile: z.enum(["read", "read_write"]).default("read"), max_duration_seconds: z.union([z.literal(86400), z.literal(2592000)]).default(86400),
   expires_at: z.string().datetime({ offset: true }).nullable().optional(), connection_id: z.string().uuid().nullable().optional(),
   bridge_provider: z.enum(["cloud", "local"]).nullable().optional(), resources_generation: z.number().int().positive().nullable().optional(),
   recovery_required: z.boolean(), cleanup_client_label: z.string().nullable().optional(),
@@ -37,9 +39,16 @@ const activation: z.ZodType<components["schemas"]["PersonalActivation"]> = z.obj
 const consent: z.ZodType<components["schemas"]["PersonalConsentStart"]> = z.object({
   authorization_url: z.string().url().refine((value) => {
     const url = new URL(value);
-    return url.origin === "http://127.0.0.1:23373" && url.pathname === "/oauth/authorize" && url.searchParams.get("scope") === "read" && url.searchParams.get("code_challenge_method") === "S256";
-  }), grant, required_duration: z.literal("one_day"),
+    return url.origin === "http://127.0.0.1:23373" && url.pathname === "/oauth/authorize" && ["read", "read write"].includes(url.searchParams.get("scope") ?? "") && url.searchParams.get("code_challenge_method") === "S256";
+  }), grant, required_duration: z.enum(["one_day", "thirty_days"]),
 });
+const outbox: z.ZodType<PersonalOutboxEntry> = z.object({
+  client_id: z.string().uuid(), state: z.enum(["pending", "dispatching", "accepted", "unknown", "failed", "cancelled"]),
+  pending_message_id: z.string().nullable().optional(), final_message_id: z.string().nullable().optional(),
+  network_status: z.enum(["SUCCESS", "PENDING", "FAIL_RETRIABLE", "FAIL_PERMANENT"]).nullable().optional(),
+  network_timestamp: z.string().nullable().optional(), delivered: z.boolean().nullable().optional(), seen: z.boolean().nullable().optional(),
+  error_code: z.string().nullable().optional(), created_at: z.string().datetime({ offset: true }), updated_at: z.string().datetime({ offset: true }), draft_text: z.string(),
+}).strict();
 const liveFrame: z.ZodType<PersonalLiveFrame> = z.object({
   type: z.enum(["ready", "heartbeat", "changed", "reconnect_required", "access_lost"]), chat_id: z.string(),
   seq: z.number().int().nonnegative().nullable().optional(), ids: z.array(z.string().min(1).max(1024)).max(100).default([]),
@@ -85,7 +94,18 @@ async function nativeRequest<T>(path: string, schema: z.ZodType<T>, body?: objec
 
 return {
   status: (signal?: AbortSignal) => nativeRequest("status", grant, undefined, signal),
-  start: () => nativeRequest("start", consent, {}),
+  ensureWriteSupport: async () => {
+    const engine = await discoverLocalEngine(developmentBaseUrl === undefined ? undefined : { developmentBaseUrl });
+    if (!engine?.capabilities.includes("personal_messaging_write_v1")) throw new Error("Update AI Matrx Local to enable WhatsApp sending.");
+  },
+  start: async (profile: "read" | "read_write" = "read") => {
+    const receipt = await nativeRequest("start", consent, { request_profile: profile, max_duration_seconds: 86400 } satisfies components["schemas"]["PersonalConsentRequest"]);
+    const url = new URL(receipt.authorization_url);
+    if (receipt.grant.request_profile !== profile || receipt.grant.max_duration_seconds !== 86400 || receipt.required_duration !== "one_day" || url.searchParams.get("scope") !== (profile === "read" ? "read" : "read write")) throw new Error("WhatsApp consent does not match the requested access.");
+    return receipt;
+  },
+  send: (chatId: string, clientId: string, text: string) => nativeRequest("send", outbox, { chat_id: chatId, client_id: clientId, text } satisfies components["schemas"]["PersonalSendRequest"]),
+  outbox: (chatId: string, signal?: AbortSignal) => nativeRequest(`outbox?${new URLSearchParams({ chat_id: chatId })}`, z.array(outbox), undefined, signal),
   accounts: () => nativeRequest("accounts", z.array(account)),
   selectAccount: (accountRef: string) => nativeRequest("select-account", activation, { account_ref: accountRef } satisfies components["schemas"]["AccountSelection"]),
   chats: (cursor?: string, signal?: AbortSignal) => nativeRequest(`chats${cursor ? `?${new URLSearchParams({ cursor })}` : ""}`, chats, undefined, signal),

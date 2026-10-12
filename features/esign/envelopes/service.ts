@@ -273,3 +273,69 @@ export async function finalizeEnvelope(dispatch: AppDispatch, envelopeId: string
     ),
   );
 }
+
+// ─── Correct in flight (Docusign "Correct") ─────────────────────────────────────────
+
+export type RecipientVerificationWord = "none" | "email_code" | "access_code";
+
+export interface RecipientCorrection {
+  full_name?: string;
+  email?: string;
+  verification?: RecipientVerificationWord;
+  access_code?: string;
+  position?: number;
+}
+
+export interface NewRecipient {
+  full_name: string;
+  email: string;
+  role?: "signer" | "cc_recipient" | "viewer" | "approver";
+  position: number;
+  verification: RecipientVerificationWord;
+  access_code?: string;
+}
+
+/** Change a recipient who has not acted. Only the words sent change; they get a fresh link. */
+export async function correctRecipient(dispatch: AppDispatch, envelopeId: string, signerId: string, changes: RecipientCorrection): Promise<EnvelopeActAnswer> {
+  return read<EnvelopeActAnswer>(
+    await dispatch(
+      callApi({
+        path: "/esign/envelopes/{envelope_id}/signers/{signer_id}/correct",
+        method: "POST",
+        pathParams: { envelope_id: envelopeId, signer_id: signerId },
+        ...scopeFor(envelopeId),
+        body: changes,
+        expectedErrorStatuses: [403, 409, 422],
+      }),
+    ),
+  );
+}
+
+export async function addRecipient(dispatch: AppDispatch, envelopeId: string, person: NewRecipient): Promise<EnvelopeActAnswer> {
+  return read<EnvelopeActAnswer>(
+    await dispatch(
+      callApi({
+        path: "/esign/envelopes/{envelope_id}/signers",
+        method: "POST",
+        pathParams: { envelope_id: envelopeId },
+        ...scopeFor(envelopeId),
+        body: person,
+        expectedErrorStatuses: [403, 409, 422],
+      }),
+    ),
+  );
+}
+
+export async function removeRecipient(dispatch: AppDispatch, envelopeId: string, signerId: string): Promise<EnvelopeActAnswer> {
+  return read<EnvelopeActAnswer>(
+    await dispatch(
+      callApi({
+        path: "/esign/envelopes/{envelope_id}/signers/{signer_id}",
+        method: "DELETE",
+        pathParams: { envelope_id: envelopeId, signer_id: signerId },
+        ...scopeFor(envelopeId),
+        expectedErrorStatuses: [403, 409, 422],
+      }),
+    ),
+  );
+}

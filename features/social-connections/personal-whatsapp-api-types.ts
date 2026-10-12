@@ -242,6 +242,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/personal-messaging/beeper/send": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Send */
+        post: operations["send_personal_messaging_beeper_send_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/personal-messaging/beeper/outbox": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Outbox */
+        get: operations["outbox_personal_messaging_beeper_outbox_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -263,8 +297,20 @@ export interface components {
             account_ref?: string | null;
             /** Selected Chat Ids */
             selected_chat_ids?: string[];
+            /**
+             * Request Profile
+             * @default read
+             * @enum {string}
+             */
+            request_profile: "read" | "read_write";
+            /**
+             * Max Duration Seconds
+             * @default 86400
+             * @enum {integer}
+             */
+            max_duration_seconds: 86400 | 2592000;
             /** Scopes */
-            scopes?: "read"[];
+            scopes?: ("read" | "write")[];
             /** Expires At */
             expires_at?: string | null;
             /** Connection Id */
@@ -307,6 +353,21 @@ export interface components {
              */
             cloud_retirement_pending: boolean;
         };
+        /** PersonalConsentRequest */
+        PersonalConsentRequest: {
+            /**
+             * Request Profile
+             * @default read
+             * @enum {string}
+             */
+            request_profile: "read" | "read_write";
+            /**
+             * Max Duration Seconds
+             * @default 86400
+             * @enum {integer}
+             */
+            max_duration_seconds: 86400 | 2592000;
+        };
         /** PersonalConsentStart */
         PersonalConsentStart: {
             /** Authorization Url */
@@ -314,9 +375,27 @@ export interface components {
             grant: components["schemas"]["PublicGrantStatus"];
             /**
              * Required Duration
-             * @constant
+             * @enum {string}
              */
-            required_duration: "one_day";
+            required_duration: "one_day" | "thirty_days";
+        };
+        /** HTTPValidationError */
+        HTTPValidationError: {
+            /** Detail */
+            detail?: components["schemas"]["ValidationError"][];
+        };
+        /** ValidationError */
+        ValidationError: {
+            /** Location */
+            loc: (string | number)[];
+            /** Message */
+            msg: string;
+            /** Error Type */
+            type: string;
+            /** Input */
+            input?: unknown;
+            /** Context */
+            ctx?: Record<string, never>;
         };
         /** PersonalAccountSummary */
         PersonalAccountSummary: {
@@ -342,24 +421,6 @@ export interface components {
             grant: components["schemas"]["PublicGrantStatus"];
             /** Removed Chat Ids */
             removed_chat_ids: string[];
-        };
-        /** HTTPValidationError */
-        HTTPValidationError: {
-            /** Detail */
-            detail?: components["schemas"]["ValidationError"][];
-        };
-        /** ValidationError */
-        ValidationError: {
-            /** Location */
-            loc: (string | number)[];
-            /** Message */
-            msg: string;
-            /** Error Type */
-            type: string;
-            /** Input */
-            input?: unknown;
-            /** Context */
-            ctx?: Record<string, never>;
         };
         /** PersonalChatPage */
         PersonalChatPage: {
@@ -584,6 +645,57 @@ export interface components {
             /** Approval Removed */
             approval_removed: boolean;
         };
+        /** PersonalSendRequest */
+        PersonalSendRequest: {
+            /** Chat Id */
+            chat_id: string;
+            /**
+             * Client Id
+             * Format: uuid
+             */
+            client_id: string;
+            /** Text */
+            text: string;
+        };
+        /** OutboxEntry */
+        OutboxEntry: {
+            /**
+             * Client Id
+             * Format: uuid
+             */
+            client_id: string;
+            /**
+             * State
+             * @enum {string}
+             */
+            state: "pending" | "dispatching" | "accepted" | "unknown" | "failed" | "cancelled";
+            /** Pending Message Id */
+            pending_message_id?: string | null;
+            /** Final Message Id */
+            final_message_id?: string | null;
+            /** Network Status */
+            network_status?: ("SUCCESS" | "PENDING" | "FAIL_RETRIABLE" | "FAIL_PERMANENT") | null;
+            /** Network Timestamp */
+            network_timestamp?: string | null;
+            /** Delivered */
+            delivered?: boolean | null;
+            /** Seen */
+            seen?: boolean | null;
+            /** Error Code */
+            error_code?: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+            /** Draft Text */
+            draft_text: string;
+        };
     };
     responses: never;
     parameters: never;
@@ -620,7 +732,11 @@ export interface operations {
             path?: never;
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PersonalConsentRequest"];
+            };
+        };
         responses: {
             /** @description Successful Response */
             200: {
@@ -629,6 +745,15 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PersonalConsentStart"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };
@@ -959,6 +1084,70 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PublicGrantStatus"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    send_personal_messaging_beeper_send_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PersonalSendRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OutboxEntry"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    outbox_personal_messaging_beeper_outbox_get: {
+        parameters: {
+            query: {
+                chat_id: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OutboxEntry"][];
                 };
             };
             /** @description Validation Error */

@@ -24,9 +24,11 @@ export function MessagesComposerInput({
   input,
   surfaceName,
   getApplicationScope,
+  attachmentsEnabled = true,
 }: {
   input: ComposerInputRenderProps;
   surfaceName: string;
+  attachmentsEnabled?: boolean;
   getApplicationScope?: () => SurfaceScopePayload;
 }) {
   const ref = useRef<HTMLTextAreaElement>(null);
@@ -129,7 +131,7 @@ export function MessagesComposerInput({
         </div>
       )}
       <div className="messages-composer-line">
-        {picker("attach")}
+        {attachmentsEnabled && picker("attach")}
         <ProTextarea
           ref={ref}
           value={input.value}

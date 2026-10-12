@@ -18,7 +18,7 @@ jest.mock("@ai-matrx/chat/messenger/MessengerShell", () => ({ MessengerShell: ({
   {source.listState?.hasMore && <button onClick={source.listState?.loadMore}>More chats</button>}
 </div> }));
 (globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
-const initial: PersonalGrant = { id: "d843d2f8-69ca-47cf-882d-e8e1a41d18e4", generation: 1, revision: 1, status: "active", account_ref: "whatsapp", selected_chat_ids: ["other"], scopes: ["read"], expires_at: "2099-01-01T00:00:00Z", connection_id: "ba9f334f-cb55-44b9-a9fc-1fca4fd568ba", bridge_provider: "cloud", resources_generation: 1, recovery_required: false, refresh_supported: false, renewal: "reauthorization", provider_revoke_pending: false, cloud_retirement_pending: false };
+const initial: PersonalGrant = { request_profile: "read", max_duration_seconds: 86400, id: "d843d2f8-69ca-47cf-882d-e8e1a41d18e4", generation: 1, revision: 1, status: "active", account_ref: "whatsapp", selected_chat_ids: ["other"], scopes: ["read"], expires_at: "2099-01-01T00:00:00Z", connection_id: "ba9f334f-cb55-44b9-a9fc-1fca4fd568ba", bridge_provider: "cloud", resources_generation: 1, recovery_required: false, refresh_supported: false, renewal: "reauthorization", provider_revoke_pending: false, cloud_retirement_pending: false };
 const selection: PersonalGrant = { ...initial, revision: 2, selected_chat_ids: ["sandbox", "other"] };
 let status = initial;
 let refuseMore = false;

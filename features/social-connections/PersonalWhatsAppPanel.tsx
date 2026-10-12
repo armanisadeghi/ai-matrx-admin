@@ -73,14 +73,15 @@ function PersonalWhatsAppContent({ messenger }: { messenger: boolean }) {
     });
   }
 
-  async function connect(reconnect = false) {
+  async function connect(reconnect = false, profile: "read" | "read_write" = grant?.request_profile ?? "read") {
     const version = ++sequence.current;
     // Prepare the popup in the click gesture; a blocked popup keeps a normal link.
     const popup = window.open("about:blank", "_blank");
     setBusy(true); setError(null); setAuthorizationUrl(null); setAccounts([]);
     try {
-      if (reconnect) await personalWhatsApp.disconnect();
-      const started = await personalWhatsApp.start();
+      if (profile === "read_write") await personalWhatsApp.ensureWriteSupport();
+      if (reconnect) { const retired = await personalWhatsApp.disconnect(); if (retired.status !== "retired" || retired.provider_revoke_pending || retired.cloud_retirement_pending) throw new Error("Finish WhatsApp cleanup before changing access."); }
+      const started = await personalWhatsApp.start(profile);
       if (sequence.current !== version) { popup?.close(); return; }
       setGrant(started.grant); setAuthorizationUrl(started.authorization_url);
       if (popup) { popup.opener = null; popup.location.assign(started.authorization_url); }
@@ -107,8 +108,8 @@ function PersonalWhatsAppContent({ messenger }: { messenger: boolean }) {
         <span className="text-sm font-medium">Personal WhatsApp</span>
         <InfoHint text="Connects WhatsApp through Beeper Desktop on this computer; keep Beeper and AI Matrx Local open." />
         <Badge variant="secondary">{label}</Badge>
-        <Badge variant="outline">Read-only</Badge>
-        <InfoHint text="Read-only consent lasts one day; renewing access opens Beeper consent again." />
+        <Badge variant="outline">{grant?.request_profile === "read_write" ? "Sending enabled" : "Read-only"}</Badge>
+        <InfoHint text="Consent lasts up to one day; renewing access opens Beeper consent again." />
       </div>
       <div className="flex flex-wrap gap-2">
         <Button variant="outline" disabled={busy} onClick={() => void check()}>Check connection</Button>
@@ -116,11 +117,12 @@ function PersonalWhatsAppContent({ messenger }: { messenger: boolean }) {
         {grant && grant.status !== "not_connected" && grant.status !== "retired" && !grant.recovery_required && <Button variant="outline" disabled={busy} onClick={() => void run(() => personalWhatsApp.disconnect())}>Disconnect</Button>}
         {grant?.status === "needs_attention" && !grant.recovery_required && <Button disabled={busy} onClick={() => void connect(true)}>Reconnect</Button>}
         {grant?.status === "needs_attention" && !grant.recovery_required && <Button variant="outline" disabled={busy} onClick={() => void run(async () => (await personalWhatsApp.reconcile()).grant)}>Reconcile</Button>}
+        {ready && grant.request_profile === "read" && <Button disabled={busy} onClick={() => void connect(true, "read_write")}>Enable sending</Button>}
         {ready && !messenger && <Button asChild><Link href="/messenger/whatsapp">Open chats</Link></Button>}
       </div>
     </div>
     {error && <div className="px-3"><ErrorNotice size="inline" message={error} /></div>}
-    {grant?.status === "pending_local" && authorizationUrl && <div className="px-3 text-sm"><a className="underline" href={authorizationUrl} target="_blank" rel="noreferrer">Open Beeper consent</a><InfoHint text="Approve read-only access for one day, then select Check connection." /></div>}
+    {grant?.status === "pending_local" && authorizationUrl && <div className="px-3 text-sm"><a className="underline" href={authorizationUrl} target="_blank" rel="noreferrer">Open Beeper consent</a><InfoHint text={grant.request_profile === "read_write" ? "Approve read and sensitive actions for one day, then select Check connection." : "Approve read-only access for one day, then select Check connection."} /></div>}
     {accounts.length > 0 && grant?.status === "pending_credential" && <div className="flex flex-wrap gap-2 px-3">{accounts.map((account) => <Button key={account.account_ref} variant="outline" disabled={busy || account.status !== "connected"} onClick={() => void run(async () => (await personalWhatsApp.selectAccount(account.account_ref)).grant)}>{account.name}</Button>)}</div>}
     {grant?.recovery_required && grant.cleanup_client_label && grant.revision && <div className="space-y-2 px-3 text-sm">
       <div className="flex items-center gap-2"><span>Interrupted consent</span><InfoHint text="In Beeper Settings → Developer, remove this app under Authorized Connections, then confirm its removal here." /></div>
