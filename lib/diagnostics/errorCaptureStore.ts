@@ -352,7 +352,7 @@ export interface CapturedError {
 
   /** `window.location.pathname` at capture time. */
   route: string;
-  /** `window.location.href` at capture time. */
+  /** The page's origin + path at capture time — never its query or hash. */
   url: string;
   /** Loaded document identity at the latest occurrence, never at flush time. */
   browserProvenance?: BrowserProvenance;
@@ -792,9 +792,28 @@ function nowMs(): number {
   }
 }
 
+/**
+ * Origin + path of a page URL — never its query or hash. A captured row is
+ * filed to the server and kept, and a query or hash can carry a credential
+ * (`?code=`, a magic link, a share token, a probe value — seen live
+ * 2026-10-12 as `…/chat/<id>?probe=…` in a durable row). This is the one door
+ * every capture's `url` passes, so every row inherits it.
+ */
+export function urlForCapture(href: string): string {
+  try {
+    const parsed = new URL(href);
+    return `${parsed.origin}${parsed.pathname}`;
+  } catch {
+    return href.split(/[?#]/, 1)[0] ?? "";
+  }
+}
+
 function currentRoute(): { route: string; url: string } {
   if (typeof window === "undefined") return { route: "", url: "" };
-  return { route: window.location.pathname, url: window.location.href };
+  return {
+    route: window.location.pathname,
+    url: urlForCapture(window.location.href),
+  };
 }
 
 /**

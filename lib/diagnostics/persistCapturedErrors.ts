@@ -24,6 +24,7 @@
 import {
   subscribe,
   getSnapshot,
+  urlForCapture,
   type CapturedError,
 } from "@/lib/diagnostics/errorCaptureStore";
 import { sourceFeatureForRoute } from "@/lib/diagnostics/errorSourceFeature";
@@ -231,7 +232,9 @@ async function flush(): Promise<void> {
         status: e.status,
         callSite: e.callSite,
         occurrences: e.count,
-        url: e.url,
+        // Rows restored from an earlier page may predate the capture door's
+        // query stripping; the filed copy never carries one either way.
+        url: urlForCapture(e.url),
         browserProvenance: e.browserProvenance,
         name: e.name,
         // DD-237. Without this a client read refused for carrying no identity
