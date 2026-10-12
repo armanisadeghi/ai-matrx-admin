@@ -68,7 +68,10 @@ function PersonalWhatsAppContent({ messenger }: { messenger: boolean }) {
   }
 
   async function check() {
-    await run(() => personalWhatsApp.status(), async (value, current) => {
+    await run(async () => {
+      const current = await personalWhatsApp.status();
+      return current.status === "active" ? personalWhatsApp.refresh() : current;
+    }, async (value, current) => {
       if (value.status !== "pending_credential") return;
       const choices = await personalWhatsApp.accounts();
       if (current()) setAccounts(choices);

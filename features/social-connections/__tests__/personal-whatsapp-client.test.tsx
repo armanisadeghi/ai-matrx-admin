@@ -39,7 +39,7 @@ describe("personal WhatsApp real panel/client/thread boundary", () => {
     jest.mocked(requestRaw).mockImplementation(async (path, _init, options) => {
       calls.push(path); expect(options?.baseUrlOverride).toBe("http://127.0.0.1:22259");
       let body: unknown;
-      if (path.endsWith("/status")) body = status;
+      if (path.endsWith("/status") || path.endsWith("/refresh")) body = status;
       else if (path.endsWith("/select-chat")) { status = selection; body = selection; }
       else if (path.includes("/chats")) {
         if (refuseMore && path.includes("cursor=")) return new Response(JSON.stringify({ detail: "The device owner changed. Sign in again." }), { status: 403 });
@@ -62,6 +62,16 @@ describe("personal WhatsApp real panel/client/thread boundary", () => {
       expect(calls.filter((path) => path.endsWith("/select-chat"))).toHaveLength(1);
       expect(calls.filter((path) => path.includes("/messages"))).toHaveLength(3);
       expect(jest.mocked(discoverLocalEngine).mock.calls.every(([options]) => options?.developmentBaseUrl === "http://127.0.0.1:22259")).toBe(true);
+    } finally { await act(async () => root.unmount()); host.remove(); }
+  });
+  it("checks actual native consent without claiming a refresh token renewal", async () => {
+    const host = document.createElement("div"); document.body.append(host); const root = createRoot(host);
+    try {
+      await act(async () => { root.render(<PersonalWhatsAppPanel messenger />); });
+      await click(host, "Check connection");
+      expect(calls.filter((path) => path.endsWith("/refresh"))).toHaveLength(1);
+      expect(calls.some((path) => path.endsWith("/start"))).toBe(false);
+      expect(host.textContent).toContain("Connected");
     } finally { await act(async () => root.unmount()); host.remove(); }
   });
   it("clears chat titles and connected state on an authoritative refusal", async () => {
