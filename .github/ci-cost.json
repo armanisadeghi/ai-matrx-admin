@@ -1,0 +1,104 @@
+{
+  "about": "CI cost manifest (ci-spend law, 2026-10-11). One entry per workflow, one leg per runner OS. scripts/check_workflow_runner_cost.py fails a workflow or OS leg without an entry, an entry without a benefit, triggers/crons/jobs that differ from the workflow file, $ that do not add up, a repo total over repo_share_usd, and (locally, with sibling repos beside it) a sum over the weekly ceiling.",
+  "repo": "matrx-frontend",
+  "weekly_ceiling_usd": 100.0,
+  "repo_share_usd": 15,
+  "prices_usd_per_minute": {
+    "linux": 0.006,
+    "windows": 0.01,
+    "macos": 0.062
+  },
+  "prices_source": "GitHub billing API pricePerUnit (Actions Linux / Windows / macOS 3-core), read 2026-10-11",
+  "total_usd_per_week": 126.47,
+  "workflows": {
+    "ci.yml": {
+      "triggers": [
+        "pull_request",
+        "push",
+        "workflow_dispatch"
+      ],
+      "crons": [],
+      "benefit": "Per-push/PR gates for ai-matrx: marker law, types, guards, suites.",
+      "owner_reason": "Catches regressions the release gates found only at release time.",
+      "basis": "push ~2500/week (most cancelled); billing-calibrated (ai-matrx $200 in Oct 1-11) to ~7.7 min avg",
+      "usd_per_week": 115.5,
+      "legs": {
+        "linux": {
+          "jobs": [
+            "client-hard-delete",
+            "dd154-ddl-guard",
+            "honest-states-parity",
+            "hr-guards",
+            "hr-punch",
+            "hr-punch-corpus",
+            "jest-health",
+            "kind-registry",
+            "kind-sandbox-boundary",
+            "mandate-references",
+            "marker-law",
+            "matrx-dist-integrity",
+            "migration-judgment",
+            "migration-slot-guard",
+            "organization-context",
+            "realtime-publication",
+            "secrets-preflight",
+            "settings-guards",
+            "soft-delete-cascade",
+            "soft-delete-unique",
+            "suites",
+            "type-check"
+          ],
+          "runs_per_week": 2500,
+          "minutes_per_run": 7.7,
+          "usd_per_week": 115.5
+        }
+      }
+    },
+    "repo-only-checks.yml": {
+      "triggers": [
+        "schedule",
+        "workflow_dispatch"
+      ],
+      "crons": [
+        "5 * * * *"
+      ],
+      "benefit": "Repo-only release-check rows on main's head feed the in-app checks view.",
+      "owner_reason": "Checks-run-in-the-app plan, decision 4.",
+      "basis": "hourly cron 168/week x 10.8 min (sampled)",
+      "usd_per_week": 10.89,
+      "legs": {
+        "linux": {
+          "jobs": [
+            "checks"
+          ],
+          "runs_per_week": 168,
+          "minutes_per_run": 10.8,
+          "usd_per_week": 10.89
+        }
+      }
+    },
+    "ui-drift-daily.yml": {
+      "triggers": [
+        "schedule",
+        "workflow_dispatch"
+      ],
+      "crons": [
+        "20 6 * * *"
+      ],
+      "benefit": "Daily UI drift check (central half of the UI unification plan).",
+      "owner_reason": "UI drift is seen daily.",
+      "basis": "cron daily x ~2 min",
+      "usd_per_week": 0.08,
+      "legs": {
+        "linux": {
+          "jobs": [
+            "ui-drift"
+          ],
+          "runs_per_week": 7,
+          "minutes_per_run": 2,
+          "usd_per_week": 0.08
+        }
+      }
+    }
+  }
+}
