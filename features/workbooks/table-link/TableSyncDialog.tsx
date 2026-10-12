@@ -85,15 +85,18 @@ function Section({
   title,
   children,
   tone,
+  open,
 }: {
   checked?: boolean;
   onChecked?: (v: boolean) => void;
   title: string;
   children?: ReactNode;
   tone?: "warn";
+  /** Shown unfolded at first (a short list says which row and cell without a click). */
+  open?: boolean;
 }) {
   return (
-    <details className="group rounded-md border border-border" data-table-sync-section="">
+    <details className="group rounded-md border border-border" data-table-sync-section="" open={open}>
       <summary className="flex items-center gap-2 px-2 py-1.5 text-sm">
         {onChecked ? (
           <Checkbox checked={checked} onCheckedChange={(v) => onChecked(v === true)} onClick={(e) => e.stopPropagation()} aria-label={title} />
@@ -259,7 +262,7 @@ export function TableSyncDialog({
     body = (
       <>
         {p.added.length > 0 && (
-          <Section title={`Add ${plural(p.added.length, "new row")}`} checked={choice.added} onChecked={(v) => setChoice({ ...choice, added: v })}>
+          <Section open={p.added.length <= 6} title={`Add ${plural(p.added.length, "new row")}`} checked={choice.added} onChecked={(v) => setChoice({ ...choice, added: v })}>
             {p.added.map((a) => (
               <Line key={a.row}>
                 Row {a.row} · {a.label}
@@ -269,7 +272,7 @@ export function TableSyncDialog({
           </Section>
         )}
         {p.changed.length > 0 && (
-          <Section title={`Change ${plural(p.changed.length, "row")}`} checked={choice.changed} onChecked={(v) => setChoice({ ...choice, changed: v })}>
+          <Section open={p.changed.length <= 6} title={`Change ${plural(p.changed.length, "row")}`} checked={choice.changed} onChecked={(v) => setChoice({ ...choice, changed: v })}>
             {p.changed.map((r) =>
               r.changes.map((c) => (
                 <Line key={`${r.id}-${c.field_name}`}>
@@ -306,7 +309,7 @@ export function TableSyncDialog({
           <Section title={`Use the sheet's value in ${plural(conflicts, "conflict")}`} checked={choice.conflicts} onChecked={(v) => setChoice({ ...choice, conflicts: v })} tone="warn" />
         )}
         {p.removed.length > 0 && (
-          <Section title={`Archive ${plural(p.removed.length, "row")} deleted in the sheet`} checked={choice.removed} onChecked={(v) => setChoice({ ...choice, removed: v })}>
+          <Section open={p.removed.length <= 6} title={`Archive ${plural(p.removed.length, "row")} deleted in the sheet`} checked={choice.removed} onChecked={(v) => setChoice({ ...choice, removed: v })}>
             {p.removed.map((r) => (
               <Line key={r.id}>{r.label}</Line>
             ))}
@@ -344,7 +347,7 @@ export function TableSyncDialog({
     body = (
       <>
         {p.updated.length > 0 && (
-          <Section title={`Update ${plural(p.updated.length, "row")}`}>
+          <Section open={p.updated.length <= 6} title={`Update ${plural(p.updated.length, "row")}`}>
             {p.updated.map((r) =>
               r.changes.map((c) => (
                 <Line key={`${r.id}-${c.field_name}`}>
@@ -356,7 +359,7 @@ export function TableSyncDialog({
           </Section>
         )}
         {p.appended.length > 0 && (
-          <Section title={`Add ${plural(p.appended.length, "record")} below the last row`}>
+          <Section open={p.appended.length <= 6} title={`Add ${plural(p.appended.length, "record")} below the last row`}>
             {p.appended.map((r) => (
               <Line key={r.id}>
                 Row {r.row} · {r.label}
@@ -365,7 +368,7 @@ export function TableSyncDialog({
           </Section>
         )}
         {p.cleared.length > 0 && (
-          <Section title={`Clear ${plural(p.cleared.length, "row")} no longer in the table`} tone="warn">
+          <Section open={p.cleared.length <= 6} title={`Clear ${plural(p.cleared.length, "row")} no longer in the table`} tone="warn">
             {p.cleared.map((r) => (
               <Line key={r.id}>
                 Row {r.row} · {r.label}

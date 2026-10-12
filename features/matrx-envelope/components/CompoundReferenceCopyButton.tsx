@@ -14,6 +14,8 @@ interface CompoundReferenceCopyButtonProps {
   className?: string;
   title?: string;
   disabled?: boolean;
+  /** Words shown beside the icon from md up, so a bookmark never reads as a Star. */
+  visibleLabel?: string;
 }
 
 /**
@@ -27,6 +29,7 @@ export function CompoundReferenceCopyButton({
   className,
   title,
   disabled = false,
+  visibleLabel,
 }: CompoundReferenceCopyButtonProps) {
   const [copied, setCopied] = useState(false);
 
@@ -66,7 +69,7 @@ export function CompoundReferenceCopyButton({
         "hover:bg-primary/10",
         copied && "text-primary",
         disabled && "opacity-40 pointer-events-none",
-        btnSize,
+        visibleLabel ? "h-6 gap-1 px-1.5 text-xs" : btnSize,
         className,
       )}
     >
@@ -75,6 +78,7 @@ export function CompoundReferenceCopyButton({
       ) : (
         <Bookmark className={iconSize} />
       )}
+      {visibleLabel ? <span className="hidden md:inline">{visibleLabel}</span> : null}
     </button>
   );
 }

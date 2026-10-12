@@ -970,7 +970,7 @@ export default function WorkbookEditor({
           {toolbarRightSlot}
           {/* Custom-table link (Lane B): linked chip or "Make table". */}
           {bootState === "ready" && (
-            <WorkbookTableLink apiRef={apiRef} workbookId={workbookId} editable={editable} />
+            <WorkbookTableLink apiRef={apiRef} workbookId={workbookId} workbookName={workbookName} editable={editable} />
           )}
           {/* Google Sheets link (Lane C): create / open / update / push. */}
           {bootState === "ready" && (

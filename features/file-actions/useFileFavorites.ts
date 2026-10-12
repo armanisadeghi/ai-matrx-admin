@@ -96,7 +96,9 @@ export function useFileFavorites(type: FileEntityType) {
       if (error) {
         emit(s, previous);
         toast.error(`Could not ${next ? "star" : "unstar"} this item`);
+        return;
       }
+      toast.success(next ? "Starred" : "Star removed");
     },
     [s, type],
   );

@@ -35,6 +35,13 @@ import { matchRowsToRecords } from "./sync-plan";
 import { readLinks, readPendingLinks, readTableForSheet, writeLink, writePendingLink, type PendingTableLink } from "./link-service";
 import { settleLink, TableSyncDialog, writeCells, type SyncDirection } from "./TableSyncDialog";
 
+/** The workbook's name; with its sheet's when the sheet was named on purpose ("Sheet1" adds nothing). */
+export function tableNameOffer(workbookName: string | undefined, sheetName: string): string {
+  const book = workbookName?.trim();
+  if (!book) return sheetName;
+  return /^(sheet|tab)\s*\d*$/i.test(sheetName.trim()) ? book : `${book} — ${sheetName}`;
+}
+
 function activeSheetId(api: FUniver | null): string | null {
   try {
     return api?.getActiveWorkbook()?.getActiveSheet()?.getSheetId() ?? null;
@@ -86,10 +93,13 @@ async function linkSheetToNewTable(
 export function WorkbookTableLink({
   apiRef,
   workbookId,
+  workbookName,
   editable,
 }: {
   apiRef: React.RefObject<FUniver | null>;
   workbookId: string;
+  /** Offered as the new table's name (a default "Sheet1" says nothing). */
+  workbookName?: string;
   editable: boolean;
 }) {
   const searchParams = useSearchParams();
@@ -228,7 +238,7 @@ export function WorkbookTableLink({
     const [headers, ...rows] = grid.rows.map((r) => keep.map((i) => r[i] ?? ""));
     openSaveToTable({
       grid: { headers, rows },
-      title: grid.sheetName,
+      title: tableNameOffer(workbookName, grid.sheetName),
       onSaved: async ({ tableId }) => {
         // The table exists: note it at once, before any editor work, so closing now cannot orphan it.
         const note: PendingTableLink = { sheet_id: sid, table_id: tableId, at: new Date().toISOString() };

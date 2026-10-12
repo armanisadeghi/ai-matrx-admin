@@ -3,7 +3,7 @@
  *
  * Lists snapshots newest-first. Each entry shows origin (autosave / manual /
  * imported / restored), created_at, and a Restore button that takes the
- * snapshot's JSON and writes a NEW snapshot row labeled "Restored from <id>".
+ * snapshot's JSON and writes a NEW snapshot row labeled "Restored from <version>" (its label, else when it was saved).
  * The open editor (and its collab peers) then shows it through the one
  * content-replacement door (`lib/univer/openEditorContent`).
  *
@@ -83,7 +83,7 @@ export function WorkbookHistoryViewer({ workbookId, editable = true }: Props) {
       const { data: full, error: fetchErr } = await supabase
         .schema("workbench")
         .from("udt_workbook_snapshots")
-        .select("snapshot, label")
+        .select("snapshot, label, created_at")
         .eq("id", snapshotId)
         .single();
 
@@ -110,7 +110,7 @@ export function WorkbookHistoryViewer({ workbookId, editable = true }: Props) {
         workbookId,
         snapshot: full.snapshot,
         origin: "restored",
-        label: `Restored from ${full.label ?? snapshotId.slice(0, 8)}`,
+        label: `Restored from ${full.label ?? (full.created_at ? new Date(full.created_at).toLocaleString() : "an earlier version")}`,
       });
       setRestoringId(null);
 

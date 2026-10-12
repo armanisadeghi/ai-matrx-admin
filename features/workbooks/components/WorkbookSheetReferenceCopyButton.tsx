@@ -45,6 +45,7 @@ export function WorkbookSheetReferenceCopyButton({
   return (
     <CompoundReferenceCopyButton
       size="sm"
+      visibleLabel="Sheet reference"
       title="Copy reference for active sheet"
       toastLabel={workbookName ? `${workbookName} (active sheet)` : "Active sheet"}
       buildFence={() => {

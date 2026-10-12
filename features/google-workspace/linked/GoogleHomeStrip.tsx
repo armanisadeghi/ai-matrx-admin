@@ -25,6 +25,17 @@ export interface LinkedItem {
   link: GoogleFileLink;
 }
 
+/** Chip words: two linked files never read the same ("Untitled workbook", "Untitled workbook (2)"). */
+export function chipLabels(items: readonly LinkedItem[]): Array<{ item: LinkedItem; label: string }> {
+  const seen = new Map<string, number>();
+  return items.map((item) => {
+    const base = item.name.trim() || item.link.name?.trim() || "Untitled";
+    const n = (seen.get(base) ?? 0) + 1;
+    seen.set(base, n);
+    return { item, label: n === 1 ? base : `${base} (${n})` };
+  });
+}
+
 export function GoogleHomeStrip({
   kind,
   linked,
@@ -119,9 +130,9 @@ export function GoogleHomeStrip({
       chips={
         recent.length > 0 ? (
           <>
-            {recent.map((item) => (
+            {chipLabels(recent).map(({ item, label }) => (
               <a key={item.id} href={item.link.webViewLink ?? "#"} target="_blank" rel="noopener noreferrer" title={`Open ${item.link.name} in ${app}`}>
-                <Badge>{item.name}</Badge>
+                <Badge>{label}</Badge>
               </a>
             ))}
           </>
