@@ -73,7 +73,15 @@ async function stream(path: string, body: unknown, opts: CallOptions): Promise<D
 }
 
 export function fetchData(
-  req: { sourceKey: string; input: DataFetchInput; maxRecords: number; tableId?: string | null; tableName?: string | null },
+  req: {
+    sourceKey: string;
+    input: DataFetchInput;
+    maxRecords: number;
+    tableId?: string | null;
+    tableName?: string | null;
+    /** Also get the fetched records back in the result (a card or autofill that shows them at once). */
+    includeRecords?: boolean;
+  },
   opts: CallOptions,
 ): Promise<DataFetchResult> {
   return stream(
@@ -82,6 +90,7 @@ export function fetchData(
       source_key: req.sourceKey,
       ...req.input,
       max_records: req.maxRecords,
+      ...(req.includeRecords ? { include_records: true } : {}),
       ...(req.tableId ? { table_id: req.tableId } : req.tableName ? { table_name: req.tableName } : {}),
     },
     opts,

@@ -64,6 +64,7 @@ import { MergeStatusCard } from "../dedup/MergeStatusCard";
 import { PartyIdentityCard } from "./PartyIdentityCard";
 import { ExpertStatusCard } from "./ExpertStatusCard";
 import { ContactPointsCard } from "./ContactPointsCard";
+import { CompanyIntelligenceCard } from "./CompanyIntelligenceCard";
 import { AddressesCard } from "./AddressesCard";
 import { EmploymentCard } from "./EmploymentCard";
 import { PartyEmployeeCard } from "@/features/hr/entry-points/PartyEmployeeCard";
@@ -613,6 +614,17 @@ export function PartyRecordPage({ partyId, initialHeading }: Props) {
                     onChanged={refresh}
                   />
                 </div>
+                {!isPerson && (
+                  <div className="max-lg:order-5">
+                    {/* Live data about the company; fetches only on a click,
+                        each priced in points first. */}
+                    <CompanyIntelligenceCard
+                      party={party}
+                      contactPoints={detail.contactPoints}
+                      onChanged={refresh}
+                    />
+                  </div>
+                )}
                 <div className="max-lg:order-8">
                   <AddressesCard
                     partyId={party.id}

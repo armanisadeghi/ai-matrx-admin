@@ -85,6 +85,7 @@ import {
   observedFromListings,
   type ProfileSuggestion,
 } from "@/features/marketing/local/profile-autofill";
+import { MapsAutofill } from "@/features/marketing/local/MapsAutofill";
 import { checkGoogleListing } from "@/features/marketing/local/data";
 import { EndowmentAnalysisCard } from "@/features/marketing/local/EndowmentAnalysisCard";
 import { endowmentLocationOfferValues } from "@/features/marketing/local/endowment-offer-values";
@@ -360,6 +361,8 @@ function LocationWorkspace({ location }: { location: BusinessLocation }) {
   const site = (sitesQuery.data ?? [])[0] ?? null;
   const evidenceQuery = useSiteRootStructuredData(site?.id ?? "");
 
+  // Fields found by "Fill from Google Maps" this visit (nothing saved until the profile is).
+  const [mapsObserved, setMapsObserved] = useState<Record<string, string> | null>(null);
   const suggestions = useMemo(() => {
     const parsed = evidenceQuery.data
       ? parseSnapshotStructuredData(evidenceQuery.data.structuredData)
@@ -373,11 +376,11 @@ function LocationWorkspace({ location }: { location: BusinessLocation }) {
         )?.observed ?? null)
       : null;
     return buildProfileSuggestions(location, {
-      googleObserved: observedFromListings(listingsQuery.data ?? []),
+      googleObserved: mapsObserved ?? observedFromListings(listingsQuery.data ?? []),
       siteObserved,
       facts: factsQuery.data ?? [],
     });
-  }, [location, listingsQuery.data, factsQuery.data, evidenceQuery.data]);
+  }, [location, listingsQuery.data, factsQuery.data, evidenceQuery.data, mapsObserved]);
 
   const matrix = useMemo(
     () =>
@@ -487,6 +490,7 @@ function LocationWorkspace({ location }: { location: BusinessLocation }) {
         location={location}
         gaps={gaps}
         suggestions={suggestions}
+        onMapsFound={setMapsObserved}
       />
       <OnSiteSchemaCard location={location} />
       <ListingsMatrix
@@ -566,10 +570,12 @@ function ProfileEditor({
   location,
   gaps,
   suggestions,
+  onMapsFound,
 }: {
   location: BusinessLocation;
   gaps: ReturnType<typeof findProfileGaps>;
   suggestions: ProfileSuggestion[];
+  onMapsFound: (observed: Record<string, string>) => void;
 }) {
   const updateLocation = useUpdateBusinessLocation();
   const [draft, setDraft] = useState<ProfileDraft>(() => draftFrom(location));
@@ -647,6 +653,7 @@ function ProfileEditor({
       }
     >
       <div className="p-3">
+        <MapsAutofill locationId={location.id} organizationId={location.organization_id} onFound={onMapsFound} />
         {applicable.length > 0 ? (
           <div className="mb-2 flex flex-wrap items-center gap-1.5 rounded-md border border-primary/30 bg-primary/5 p-2">
             <p className="mr-1 text-xs font-medium text-foreground">

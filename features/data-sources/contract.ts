@@ -54,6 +54,8 @@ export interface DataFetchResult {
   columns: string[];
   values_as_text: number;
   limit_applied: { setting: string; value: number } | null;
+  /** The fetched records themselves, only when the request asked for `includeRecords` (a card or autofill showing them at once). */
+  records?: Record<string, unknown>[];
 }
 
 export interface DataFetchProgress {
@@ -178,7 +180,11 @@ export function readEvent(evt: unknown): DataFetchEvent {
   }
   if (d.type === "data_fetch_result") {
     const result = parseResult(d.result);
-    return result ? { kind: "result", result } : null;
+    if (!result) return null;
+    if (Array.isArray(d.records)) {
+      result.records = d.records.filter((r): r is Record<string, unknown> => !!r && typeof r === "object" && !Array.isArray(r));
+    }
+    return { kind: "result", result };
   }
   return null;
 }

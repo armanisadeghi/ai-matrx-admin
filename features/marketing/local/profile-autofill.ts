@@ -1,5 +1,6 @@
 import type { BusinessFact, BusinessLocation, LocationListing } from "@/features/marketing/types";
 import { isJsonRecord } from "@/features/marketing/types";
+import { pickNumber, pickText, type DataRecord } from "@/features/data-sources/records";
 
 /**
  * WS1 — profile autofill (PLAN.md): a location's canonical profile populates
@@ -20,7 +21,9 @@ export type AutofillField =
   | "country_code"
   | "phone"
   | "email"
-  | "website_url";
+  | "website_url"
+  | "business_type"
+  | "description";
 
 export type AutofillSource = "google" | "site" | "facts";
 
@@ -45,6 +48,8 @@ const FIELDS: AutofillField[] = [
   "phone",
   "email",
   "website_url",
+  "business_type",
+  "description",
 ];
 
 function textAt(record: Record<string, unknown> | null | undefined, key: string): string | null {
@@ -114,4 +119,94 @@ export function buildProfileSuggestions(
     if (pick) suggestions.push({ field, value: pick[0], source: pick[1] });
   }
   return suggestions;
+}
+
+// ---------------------------------------------------------------------------
+// "Fill from Google Maps": one live place record -> the same observed shape the
+// google source already uses, so the existing suggestion chips take it from there.
+// ---------------------------------------------------------------------------
+
+const COUNTRY_CODES: Record<string, string> = {
+  "united states": "US",
+  usa: "US",
+  us: "US",
+  canada: "CA",
+  "united kingdom": "GB",
+  uk: "GB",
+  australia: "AU",
+};
+
+export interface ParsedAddress {
+  street_address?: string;
+  locality?: string;
+  region?: string;
+  postal_code?: string;
+  country_code?: string;
+}
+
+/** "123 Main St, Austin, TX 78701, United States" -> parts. Anything unrecognised stays in street_address. */
+export function parsePlaceAddress(address: string, countryHint?: string | null): ParsedAddress {
+  const parts = address.split(",").map((p) => p.trim()).filter(Boolean);
+  if (parts.length === 0) return {};
+  const out: ParsedAddress = {};
+  const last = parts[parts.length - 1].toLowerCase();
+  if (COUNTRY_CODES[last]) {
+    out.country_code = COUNTRY_CODES[last];
+    parts.pop();
+  } else if (countryHint && /^[A-Za-z]{2}$/.test(countryHint.trim())) {
+    out.country_code = countryHint.trim().toUpperCase();
+  }
+  const stateZip = parts.length > 1 ? /^([A-Za-z]{2})\s+(\d{5}(?:-\d{4})?)$/.exec(parts[parts.length - 1]) : null;
+  if (stateZip) {
+    out.region = stateZip[1].toUpperCase();
+    out.postal_code = stateZip[2];
+    parts.pop();
+    if (!out.country_code) out.country_code = "US";
+  }
+  if (parts.length >= 3) {
+    out.locality = parts[parts.length - 1];
+    out.street_address = parts.slice(0, -1).join(", ");
+  } else if (parts.length === 2) {
+    out.street_address = parts[0];
+    out.locality = parts[1];
+  } else {
+    out.street_address = parts[0];
+  }
+  return out;
+}
+
+/** The place record's fields, keyed by the profile fields the autofill fills (only non-empty ones). */
+export function observedFromPlaceRecord(record: DataRecord): Record<string, string> {
+  const out: Record<string, string> = {};
+  const address = pickText(record, "address", "formatted_address", "full_address");
+  if (address) Object.assign(out, parsePlaceAddress(address, pickText(record, "country", "country_code")));
+  const phone = pickText(record, "phone_number", "phone");
+  if (phone) out.phone = phone;
+  const website = pickText(record, "open_website", "website", "web_site");
+  if (website) out.website_url = website;
+  const category = pickText(record, "category");
+  if (category) out.business_type = category;
+  const description = pickText(record, "description");
+  if (description) out.description = description;
+  return out;
+}
+
+/** The place's rating line for the confirmation ("4.6 from 1,203 reviews"), or null. */
+export function placeRatingWords(record: DataRecord): string | null {
+  const rating = pickNumber(record, "rating");
+  const reviews = pickNumber(record, "reviews_count", "review_count");
+  if (rating == null) return null;
+  return reviews != null ? `${rating.toFixed(1)} from ${Math.round(reviews).toLocaleString("en-US")} reviews` : rating.toFixed(1);
+}
+
+/** A link or a bare place id as the address the Maps source reads; null when it is neither. */
+export function placeLookupUrl(input: string): string | null {
+  const text = input.trim();
+  if (/^ChIJ[\w-]{10,}$/.test(text)) return `https://www.google.com/maps/place/?q=place_id:${text}`;
+  try {
+    const u = new URL(/^https?:\/\//i.test(text) ? text : `https://${text}`);
+    return /(^|\.)google\.[a-z.]+$/.test(u.hostname.replace(/^www\./, "")) && u.pathname.startsWith("/maps/place") ? u.toString() : null;
+  } catch {
+    return null;
+  }
 }
