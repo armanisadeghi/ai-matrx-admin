@@ -1,23 +1,36 @@
 import { formatFileSize } from "@ai-matrx/kit/format";
 
 /**
- * The current Matrx Desktop release for macOS, read from the update feed the app itself uses.
- * The feed's `path` field names the signed, notarized zip in the same folder, so the download
- * link follows every release with no version written in this repo. Server-side only; the
- * fetch is revalidated, and a failed read is returned as `null` for the caller to say so.
+ * The current Matrx Desktop release for each OS, read from the update feed the app itself uses
+ * (matrx-desktop electron-builder.yml: one feed per OS). The feed names its file in the same
+ * folder, so a download link follows every release with no version written in this repo. An OS
+ * whose feed has no release yet (Windows and Linux until their first publish) reads as `null`, and
+ * the page says it is coming. Server-side only; the fetch is revalidated, and a failed read is
+ * `null` for the caller to say so.
  */
-export const MATRX_DESKTOP_MAC_FEED_URL =
-  "https://cdn.matrxserver.com/releases/matrx-desktop/mac/latest-mac.yml";
+export type MatrxDesktopOs = "mac" | "windows" | "linux";
+
+const FEED_BASE = "https://cdn.matrxserver.com/releases/matrx-desktop";
+
+/** Each OS's feed: electron-updater's own file names. */
+export const MATRX_DESKTOP_FEEDS: Readonly<Record<MatrxDesktopOs, string>> = {
+  mac: `${FEED_BASE}/mac/latest-mac.yml`,
+  windows: `${FEED_BASE}/win/latest.yml`,
+  linux: `${FEED_BASE}/linux/latest-linux.yml`,
+};
 
 /** The stable address that always redirects to the newest file (`app/(public)/desktop/download`). */
-export const MATRX_DESKTOP_MAC_DOWNLOAD_PATH = "/desktop/download";
+export function matrxDesktopDownloadPath(os: MatrxDesktopOs): string {
+  return os === "mac" ? "/desktop/download" : `/desktop/download?os=${os}`;
+}
 
-/** How long a read of the feed is reused before it is checked again. */
+/** How long a read of a feed is reused before it is checked again. */
 export const MATRX_DESKTOP_FEED_REVALIDATE_SECONDS = 600;
 
-export interface MatrxDesktopMacRelease {
+export interface MatrxDesktopRelease {
+  os: MatrxDesktopOs;
   version: string;
-  /** Absolute URL of the zip on the CDN. */
+  /** Absolute URL of the file on the CDN. */
   url: string;
   /** Bytes, when the feed lists it. */
   sizeBytes: number | null;
@@ -25,43 +38,58 @@ export interface MatrxDesktopMacRelease {
   releaseDate: string | null;
 }
 
+/** The file a person downloads on each OS: the Mac's signed zip, Windows' installer, Linux's .deb (else its AppImage). */
+const FILE: Readonly<Record<MatrxDesktopOs, RegExp>> = {
+  mac: /^[\w.+-]+\.zip$/,
+  windows: /^[\w.+-]+\.exe$/,
+  linux: /^[\w.+-]+\.(deb|AppImage)$/,
+};
+
 function topLevelValue(yml: string, key: string): string | null {
   const match = new RegExp(`^${key}:[ \\t]*(.+?)[ \\t]*$`, "m").exec(yml);
   if (!match) return null;
   return match[1].replace(/^['"]|['"]$/g, "");
 }
 
-/** Pure: turns the feed's text into a release, or null when it does not name a safe zip. */
-export function parseMatrxDesktopMacFeed(
-  yml: string,
-  feedUrl: string = MATRX_DESKTOP_MAC_FEED_URL,
-): MatrxDesktopMacRelease | null {
-  const path = topLevelValue(yml, "path");
+/** The feed's `files:` entries: each url with its size. */
+function fileEntries(yml: string): Array<{ url: string; size: number | null }> {
+  const out: Array<{ url: string; size: number | null }> = [];
+  const re = /-[ \t]+url:[ \t]*(\S+)[\s\S]*?(?=\n[ \t]*-[ \t]+url:|\n\S|$)/g;
+  for (const m of yml.matchAll(re)) {
+    const size = /size:[ \t]*(\d+)/.exec(m[0]);
+    out.push({ url: m[1].replace(/^['"]|['"]$/g, ""), size: size ? Number(size[1]) : null });
+  }
+  return out;
+}
+
+/** Pure: turns an OS's feed text into its release, or null when it names no safe file for that OS. */
+export function parseMatrxDesktopFeed(yml: string, os: MatrxDesktopOs, feedUrl: string = MATRX_DESKTOP_FEEDS[os]): MatrxDesktopRelease | null {
   const version = topLevelValue(yml, "version");
+  if (!version) return null;
+  const files = fileEntries(yml);
+  // Linux: the .deb when the feed carries one (Ubuntu and Debian install it with a double-click).
+  const deb = os === "linux" ? files.find((f) => /\.deb$/.test(f.url)) : undefined;
+  const path = deb?.url ?? topLevelValue(yml, "path");
   // A bare file name only: the feed can never point the button at another place.
-  if (!path || !version || !/^[\w.+-]+\.zip$/.test(path)) return null;
-
-  // `size:` is listed under the file entry that carries the same name.
-  const entry = new RegExp(
-    `url:[ \\t]*${path.replace(/[.+]/g, "\\$&")}[\\s\\S]*?size:[ \\t]*(\\d+)`,
-  ).exec(yml);
-
+  if (!path || !FILE[os].test(path)) return null;
+  const entry = files.find((f) => f.url === path);
   return {
+    os,
     version,
     url: new URL(path, feedUrl).toString(),
-    sizeBytes: entry ? Number(entry[1]) : null,
+    sizeBytes: entry?.size ?? null,
     releaseDate: topLevelValue(yml, "releaseDate"),
   };
 }
 
-/** Reads the live feed (revalidated). Null when the feed is unreachable or unreadable. */
-export async function getMatrxDesktopMacRelease(): Promise<MatrxDesktopMacRelease | null> {
+/** Reads one OS's live feed (revalidated). Null when it is unreachable, unreadable or has no release yet. */
+export async function getMatrxDesktopRelease(os: MatrxDesktopOs): Promise<MatrxDesktopRelease | null> {
   try {
-    const response = await fetch(MATRX_DESKTOP_MAC_FEED_URL, {
+    const response = await fetch(MATRX_DESKTOP_FEEDS[os], {
       next: { revalidate: MATRX_DESKTOP_FEED_REVALIDATE_SECONDS },
     });
     if (!response.ok) return null;
-    return parseMatrxDesktopMacFeed(await response.text());
+    return parseMatrxDesktopFeed(await response.text(), os);
   } catch {
     return null;
   }

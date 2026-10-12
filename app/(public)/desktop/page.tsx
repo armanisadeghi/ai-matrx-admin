@@ -19,9 +19,10 @@ import { Button } from "@ai-matrx/design-system/controls";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { siteConfig } from "@/config/extras/site";
 import {
-  MATRX_DESKTOP_MAC_DOWNLOAD_PATH,
   formatDownloadSize,
-  getMatrxDesktopMacRelease,
+  getMatrxDesktopRelease,
+  matrxDesktopDownloadPath,
+  type MatrxDesktopRelease,
 } from "@/features/matrx-local-download/desktop-release";
 import { MATRX_LOCAL_DOWNLOAD_PATH } from "@/features/matrx-local-download/release";
 import { createRouteMetadata } from "@/utils/route-metadata";
@@ -188,12 +189,19 @@ function formatDate(iso: string | null): string | null {
   }).format(date);
 }
 
+/** "Version 2026.1018.900 · 250 MB": what a download link says about its file. */
+function aboutFile(release: MatrxDesktopRelease): string {
+  const size = formatDownloadSize(release.sizeBytes);
+  return `version ${release.version}${size ? `, ${size}` : ""}`;
+}
+
 export default async function MatrxDesktopPage() {
-  const release = await getMatrxDesktopMacRelease();
+  // Each OS's own feed: Windows and Linux appear here the day their first release publishes.
+  const [release, windows, linux] = await Promise.all([getMatrxDesktopRelease("mac"), getMatrxDesktopRelease("windows"), getMatrxDesktopRelease("linux")]);
   const size = formatDownloadSize(release?.sizeBytes ?? null);
   const released = formatDate(release?.releaseDate ?? null);
   // The feed's file when it was readable; otherwise the stable address, which tries again on click.
-  const downloadHref = release?.url ?? MATRX_DESKTOP_MAC_DOWNLOAD_PATH;
+  const downloadHref = release?.url ?? matrxDesktopDownloadPath("mac");
 
   const jsonLd = [
     {
@@ -203,7 +211,7 @@ export default async function MatrxDesktopPage() {
       description: DESCRIPTION,
       url: `${siteConfig.url}/desktop`,
       applicationCategory: "UtilitiesApplication",
-      operatingSystem: "macOS",
+      operatingSystem: ["macOS", ...(windows ? ["Windows"] : []), ...(linux ? ["Linux"] : [])].join(", "),
       ...(release
         ? { softwareVersion: release.version, downloadUrl: release.url }
         : {}),
@@ -264,16 +272,38 @@ export default async function MatrxDesktopPage() {
                 ? `Version ${release.version}${size ? ` · ${size}` : ""}${released ? ` · released ${released}` : ""} · Apple silicon Macs`
                 : "Apple silicon Macs. The latest version couldn't be looked up just now, so the button will check again when you click it."}
             </p>
-            <p className="mt-1">
-              On Windows or Linux?{" "}
-              <Link
-                href={MATRX_LOCAL_DOWNLOAD_PATH}
-                className="font-medium text-foreground underline underline-offset-4"
-              >
-                There&rsquo;s an app for you on the download page
-              </Link>
-              , and Matrx Desktop is coming to both.
-            </p>
+            {windows || linux ? (
+              <p className="mt-1">
+                Also for{" "}
+                {windows ? (
+                  <a href={windows.url} rel="noopener noreferrer" className="font-medium text-foreground underline underline-offset-4">
+                    Windows ({aboutFile(windows)})
+                  </a>
+                ) : null}
+                {windows && linux ? " and " : null}
+                {linux ? (
+                  <a href={linux.url} rel="noopener noreferrer" className="font-medium text-foreground underline underline-offset-4">
+                    Linux ({aboutFile(linux)}, Ubuntu 22.04 or newer)
+                  </a>
+                ) : null}
+                .{windows ? " The Windows app isn't signed yet: Windows warns before it opens, and on a PC with Smart App Control turned on it can't open until it is." : null}{" "}
+                <Link href={MATRX_LOCAL_DOWNLOAD_PATH} className="font-medium text-foreground underline underline-offset-4">
+                  Matrx Local
+                </Link>{" "}
+                is still on the download page.
+              </p>
+            ) : (
+              <p className="mt-1">
+                On Windows or Linux?{" "}
+                <Link
+                  href={MATRX_LOCAL_DOWNLOAD_PATH}
+                  className="font-medium text-foreground underline underline-offset-4"
+                >
+                  There&rsquo;s an app for you on the download page
+                </Link>
+                , and Matrx Desktop is coming to both.
+              </p>
+            )}
           </>
         }
       />
