@@ -10,6 +10,8 @@
  * system bundle they happen to have access to.
  */
 
+import { readRecordReadingSets, readingSetCounts } from "@/features/rich-document/annotations/record-annotations-batch";
+import { CATALOG } from "../resources/catalog";
 import { supabase } from "@/utils/supabase/client";
 import { requireUserId } from "@/utils/auth/getUserId";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
@@ -82,7 +84,41 @@ export async function getResourceManifest(
     throw manifest.error;
   }
   const parsed = parseManifest(manifest.data, topicId, experts, entities);
-  return unreadResources.length > 0 ? { ...parsed, unreadResources } : parsed;
+  // Reading-set counts need the item ids, so they follow the manifest (one
+  // batched read per record type). A failed read is named, never shown as 0.
+  const annotationCounts = await loadAnnotationCounts(parsed);
+  if (annotationCounts === null) unreadResources.push("Comments");
+  const withCounts = annotationCounts ? { ...parsed, annotationCounts } : parsed;
+  return unreadResources.length > 0 ? { ...withCounts, unreadResources } : withCounts;
+}
+
+/** Open/resolved comment threads and the person's own notes, per annotatable item. Null = the read failed. */
+async function loadAnnotationCounts(
+  manifest: ResourceManifest,
+): Promise<Map<string, { open: number; resolved: number; notes: number }> | null> {
+  const idsByToken = new Map<string, string[]>();
+  for (const def of CATALOG) {
+    if (!def.annotationToken) continue;
+    const ids = idsByToken.get(def.annotationToken) ?? [];
+    ids.push(...(manifest.itemsByKind.get(def.key) ?? []).map((item) => item.id));
+    idsByToken.set(def.annotationToken, ids);
+  }
+  try {
+    const counts = new Map<string, { open: number; resolved: number; notes: number }>();
+    await Promise.all(
+      [...idsByToken].map(async ([token, ids]) => {
+        if (ids.length === 0) return;
+        for (const [id, set] of await readRecordReadingSets(token, ids)) {
+          const c = readingSetCounts(set);
+          if (c.open || c.resolved || c.notes) counts.set(id, c);
+        }
+      }),
+    );
+    return counts;
+  } catch (cause) {
+    console.error("[research] comment counts could not be read", cause);
+    return null;
+  }
 }
 
 /**

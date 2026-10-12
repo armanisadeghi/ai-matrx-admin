@@ -40,6 +40,10 @@ export interface KindSelection {
    * nothing there, and the real risk is one huge page eating the budget.
    */
   maxCharsPerItem?: number;
+  /** Open comment threads ride under each item (default on). */
+  comments?: boolean;
+  /** The person's own highlights and notes ride under each item (default off). */
+  notes?: boolean;
 }
 
 export type SelectionMap = Map<ResourceKey, KindSelection>;
@@ -54,15 +58,25 @@ const DEFAULT_SELECTION: KindSelection = {
   order: "importance",
 };
 
+/** Only what differs from the defaults is written (comments on, notes off). */
+function annotationsOf(sel: KindSelection): ResourceSelector["annotations"] {
+  const out: NonNullable<ResourceSelector["annotations"]> = {};
+  if (sel.comments === false) out.comments = false;
+  if (sel.notes === true) out.notes = true;
+  return Object.keys(out).length > 0 ? out : undefined;
+}
+
 function toSelector(
   kind: ResourceKey,
   sel: KindSelection,
 ): ResourceSelector {
+  const annotations = annotationsOf(sel);
   if (sel.mode === "explicit") {
     return {
       kind,
       mode: "explicit",
       ids: sel.ids,
+      ...(annotations ? { annotations } : {}),
       limit:
         sel.maxCharsPerItem && sel.maxCharsPerItem > 0
           ? { maxCharsPerItem: sel.maxCharsPerItem }
@@ -81,6 +95,7 @@ function toSelector(
     filter: Object.keys(filter).length > 0 ? filter : undefined,
     order: sel.order,
     limit,
+    ...(annotations ? { annotations } : {}),
   };
 }
 
@@ -165,6 +180,8 @@ export function bundleToSelection(bundle: ContextBundle): SelectionMap {
       order: selector.order ?? "importance",
       topN,
       maxCharsPerItem: selector.limit?.maxCharsPerItem,
+      comments: selector.annotations?.comments,
+      notes: selector.annotations?.notes,
     });
   }
   return map;

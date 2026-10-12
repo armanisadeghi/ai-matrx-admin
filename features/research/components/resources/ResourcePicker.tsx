@@ -20,7 +20,7 @@
 
 import { ReadFailure } from "@ai-matrx/design-system";
 import { useMemo, useState } from "react";
-import { ChevronRight, Info, AlertTriangle } from "lucide-react";
+import { ChevronRight, Info, AlertTriangle, MessageSquareText } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -122,6 +122,27 @@ interface ResourcePickerProps {
   compact?: boolean;
 }
 
+/** A kind's reading-set totals across its items (null = the kind carries none). */
+function kindAnnotationTotals(
+  manifest: ResourceManifest,
+  kind: ResourceKey,
+): { open: number; resolved: number; notes: number } | null {
+  if (!kindDef(kind)?.annotationToken || !manifest.annotationCounts) return null;
+  const total = { open: 0, resolved: 0, notes: 0 };
+  for (const item of manifest.itemsByKind.get(kind) ?? []) {
+    const c = manifest.annotationCounts.get(item.id);
+    if (!c) continue;
+    total.open += c.open;
+    total.resolved += c.resolved;
+    total.notes += c.notes;
+  }
+  return total;
+}
+
+function annotationTitle(c: { open: number; resolved: number; notes: number }): string {
+  return `${c.open} open comment${c.open === 1 ? "" : "s"}, ${c.resolved} resolved, ${c.notes} of your notes`;
+}
+
 export function ResourcePicker({
   manifest,
   selection,
@@ -211,6 +232,9 @@ export function ResourcePicker({
 
                 const empty = holdingItems === 0;
                 const chips = FILTER_CHIPS.filter((c) => c.applies(def.key));
+                const annotationTotals = kindAnnotationTotals(manifest, def.key);
+                const hasAnnotations = Boolean(annotationTotals && (annotationTotals.open || annotationTotals.resolved || annotationTotals.notes));
+                const deliversDirect = (deliveries?.[def.key] ?? "direct") === "direct";
                 const isExpanded = expanded.has(def.key);
                 const Icon = def.icon;
 
@@ -263,6 +287,12 @@ export function ResourcePicker({
                       </button>
 
                       <div className="flex items-center gap-2 shrink-0 type-meta tabular-nums">
+                        {annotationTotals && hasAnnotations && (
+                          <span className="inline-flex items-center gap-0.5 text-muted-foreground" title={annotationTitle(annotationTotals)}>
+                            <MessageSquareText className="h-3 w-3" aria-hidden />
+                            {annotationTotals.open + annotationTotals.notes}
+                          </span>
+                        )}
                         {empty ? (
                           <span className="text-muted-foreground">none yet</span>
                         ) : (
@@ -336,6 +366,31 @@ export function ResourcePicker({
                               agent may choose not to look.
                             </TooltipContent>
                           </Tooltip>
+                        )}
+                        {annotationTotals && deliversDirect && (
+                          <>
+                            {([
+                              { key: "comments", label: "Comments", count: annotationTotals.open, on: sel.comments !== false, hint: "Open comment threads ride under each item. Resolved ones never do." },
+                              { key: "notes", label: "My notes", count: annotationTotals.notes, on: sel.notes === true, hint: "Your own private highlights and notes ride under each item." },
+                            ] as const).map((toggle) => (
+                              <button
+                                key={toggle.key}
+                                type="button"
+                                aria-pressed={toggle.on}
+                                title={toggle.hint}
+                                onClick={() => onPatchKind(def.key, { [toggle.key]: !toggle.on })}
+                                className={cn(
+                                  "inline-flex h-5 items-center gap-1 rounded-full border px-2 text-[10px] tabular-nums transition-colors",
+                                  toggle.on
+                                    ? "border-primary/40 bg-primary/10 text-foreground"
+                                    : "border-border/60 text-muted-foreground hover:text-foreground",
+                                )}
+                              >
+                                <MessageSquareText className="h-2.5 w-2.5" aria-hidden />
+                                {toggle.label} {toggle.count}
+                              </button>
+                            ))}
+                          </>
                         )}
                         {sel.mode === "explicit" ? (
                           <Badge variant="secondary" className="h-4 px-1.5 text-[9px]">
@@ -438,6 +493,7 @@ export function ResourcePicker({
                     {isExpanded && !derived && (
                       <ItemList
                         items={manifest.itemsByKind.get(def.key) ?? []}
+                        annotationCounts={annotationTotals ? manifest.annotationCounts : undefined}
                         selection={sel}
                         onToggleItem={(id, on) => onToggleItem(def.key, id, on)}
                       />
@@ -461,10 +517,13 @@ const ITEM_PAGE = 50;
  */
 function ItemList({
   items,
+  annotationCounts,
   selection,
   onToggleItem,
 }: {
   items: ResourceItem[];
+  /** Per-item comment/note counts when the kind carries a reading set. */
+  annotationCounts?: ResourceManifest["annotationCounts"];
   selection: KindSelection | undefined;
   onToggleItem: (id: string, on: boolean) => void;
 }) {
@@ -518,6 +577,16 @@ function ItemList({
               excluded
             </Badge>
           )}
+          {(() => {
+            const c = annotationCounts?.get(item.id);
+            if (!c || !(c.open || c.resolved || c.notes)) return null;
+            return (
+              <span className="inline-flex items-center gap-0.5 type-meta tabular-nums text-muted-foreground" title={annotationTitle(c)}>
+                <MessageSquareText className="h-3 w-3" aria-hidden />
+                {c.open + c.notes}
+              </span>
+            );
+          })()}
           <span className="w-14 text-right type-meta tabular-nums text-muted-foreground">
             {formatTokens(itemTokens(item))}
           </span>

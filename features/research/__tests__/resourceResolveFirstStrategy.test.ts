@@ -46,6 +46,8 @@ jest.mock("@/utils/supabase/client", () => {
       error: null,
     }),
   );
+  // platform.record_annotations_many — these records carry no comments or notes.
+  builder.rpc = jest.fn(() => Promise.resolve({ data: [], error: null }));
   return {
     supabase: {
       schema: () => builder,

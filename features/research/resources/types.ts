@@ -201,6 +201,13 @@ export interface ResourceManifest {
    * derives the same block from the same rows.
    */
   entities: ManifestPageEntities[];
+  /**
+   * Reading-set counts per item id (open + resolved comment threads, the
+   * person's own notes), read beside the manifest for kinds with an
+   * `annotationToken`. Items with nothing are absent. Undefined = not read
+   * (then "Comments" is in `unreadResources`).
+   */
+  annotationCounts?: Map<string, { open: number; resolved: number; notes: number }>;
 }
 
 export interface ManifestPageEntities {
@@ -289,6 +296,23 @@ export interface ResourceSelector {
   ids?: string[];
   order?: SelectorOrder;
   limit?: SelectorLimit;
+  /**
+   * What each item's reading set adds under it (kinds with an
+   * `annotationToken` only). `comments` = open comment threads + replies
+   * (DEFAULT ON — absent means on); `notes` = the running person's own private
+   * highlights and notes (default off). Never trimmed by `maxCharsPerItem`.
+   */
+  annotations?: SelectorAnnotations;
+}
+
+export interface SelectorAnnotations {
+  comments?: boolean;
+  notes?: boolean;
+}
+
+/** The selector's reading-set switches with defaults applied. */
+export function annotationInclusion(selector: Pick<ResourceSelector, "annotations">): { comments: boolean; notes: boolean } {
+  return { comments: selector.annotations?.comments !== false, notes: selector.annotations?.notes === true };
 }
 
 /** Which resource kinds fill which agent variable. */
@@ -393,6 +417,8 @@ export interface KindResolution {
   trimmed: number;
   /** Per-reason counts for everything left out. Empty = nothing dropped. */
   dropped: Partial<Record<DropReason, number>>;
+  /** Comment threads and private notes appended under the included items. */
+  annotations?: { comments: number; notes: number };
 }
 
 /**

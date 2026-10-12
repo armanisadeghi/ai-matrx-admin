@@ -33,6 +33,12 @@ import {
 } from "./catalog";
 import { applySelector, charsOf, effectiveChars } from "./selector";
 import { BLOCK_SEPARATOR, type RenderContext } from "./render";
+import {
+  readRecordReadingSets,
+  renderReadingSetForAgent,
+  type RecordReadingSet,
+} from "@/features/rich-document/annotations/record-annotations-batch";
+import { annotationInclusion } from "./types";
 import type {
   ContextBundle,
   DropReason,
@@ -226,6 +232,49 @@ export interface ResolveOptions {
  * loaded it (the Context Builder) resolves without a second round trip, and so
  * this function stays pure with respect to the inventory it reports on.
  */
+/** The kind's reading-set switches, or null when it carries none (no token, or both off). */
+function inclusionFor(bundle: ContextBundle, kind: ResourceKey): { comments: boolean; notes: boolean } | null {
+  if (!kindDef(kind)?.annotationToken) return null;
+  const selector = bundle.selectors.find((s) => s.kind === kind);
+  if (!selector) return null;
+  const inclusion = annotationInclusion(selector);
+  return inclusion.comments || inclusion.notes ? inclusion : null;
+}
+
+/**
+ * Reading sets for every directly delivered item whose kind carries one, in one
+ * batched read per record type. A failed read never fails the run: the run goes
+ * on without them and the report SAYS so.
+ */
+async function fetchReadingSets(
+  bundle: ContextBundle,
+  planned: PlannedKind[],
+  notes: string[],
+): Promise<Map<string, RecordReadingSet>> {
+  const idsByToken = new Map<string, string[]>();
+  for (const entry of planned) {
+    const token = kindDef(entry.kind)?.annotationToken;
+    if (!token || entry.delivery !== "direct" || !inclusionFor(bundle, entry.kind)) continue;
+    const ids = idsByToken.get(token) ?? [];
+    ids.push(...entry.items.map((item) => item.id));
+    idsByToken.set(token, ids);
+  }
+  const out = new Map<string, RecordReadingSet>();
+  await Promise.all(
+    [...idsByToken].map(async ([token, ids]) => {
+      if (ids.length === 0) return;
+      try {
+        for (const [id, set] of await readRecordReadingSets(token, ids)) out.set(id, set);
+      } catch (cause) {
+        notes.push(
+          `Comments and notes could not be loaded for ${token.replace("research_", "")} items (${cause instanceof Error ? cause.message : "read failed"}) — the run went without them`,
+        );
+      }
+    }),
+  );
+  return out;
+}
+
 export async function resolveBundle(
   manifest: ResourceManifest,
   bundle: ContextBundle,
@@ -238,6 +287,7 @@ export async function resolveBundle(
 
   const perKind: KindResolution[] = [];
   const notes: string[] = [];
+  const readingSets = await fetchReadingSets(bundle, planned, notes);
   const emptyKinds: ResourceKey[] = [];
   /** variable → blocks, in bundle order. */
   const blocksByVariable = new Map<string, string[]>();
@@ -324,6 +374,7 @@ export async function resolveBundle(
     let included = 0;
     let chars = 0;
     let trimmed = 0;
+    const annotated = { comments: 0, notes: 0 };
 
     if (isDerived(def)) {
       const text = derived.get(entry.kind) ?? "";
@@ -366,9 +417,20 @@ export async function resolveBundle(
           text = `${full.slice(0, cap)}\n\n[trimmed to ${cap.toLocaleString()} of ${full.length.toLocaleString()} characters by the per-item limit]`;
           trimmed += 1;
         }
+        // The item's reading set rides UNDER it, after the per-item cap — a
+        // comment is the reader's instruction about this text and is never the
+        // part that gets trimmed away.
+        const inclusion = inclusionFor(bundle, entry.kind);
+        const set = def.annotationToken && inclusion ? readingSets.get(item.id) : undefined;
+        const extra = set && inclusion ? renderReadingSetForAgent(set, inclusion) : "";
+        if (extra) text = `${text}\n\n${extra}`;
         if (budgetChars !== null && assembledChars + text.length > budgetChars) {
           addDrop(entry.dropped, "over_budget", 1);
           continue;
+        }
+        if (extra && set && inclusion) {
+          if (inclusion.comments) annotated.comments += set.comments.filter((c) => !c.resolved).length;
+          if (inclusion.notes) annotated.notes += set.notes.length;
         }
         blocks.push(text);
         included += 1;
@@ -394,7 +456,13 @@ export async function resolveBundle(
       tokens: estimateTokens(chars, def.shape),
       trimmed,
       dropped: entry.dropped,
+      ...(annotated.comments || annotated.notes ? { annotations: annotated } : {}),
     });
+    if (annotated.comments || annotated.notes) {
+      notes.push(
+        `${def.label}: ${[annotated.comments ? `${annotated.comments} open comment thread(s)` : "", annotated.notes ? `${annotated.notes} private note(s)` : ""].filter(Boolean).join(" and ")} included under their items`,
+      );
+    }
     if (trimmed > 0) {
       notes.push(
         `${def.label}: ${trimmed} item(s) shortened by the ${entry.limit?.maxCharsPerItem?.toLocaleString()}-character per-item limit`,

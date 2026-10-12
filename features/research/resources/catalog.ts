@@ -112,6 +112,14 @@ export interface ResourceKindDef {
    * kinds have no row and therefore no token: they can only deliver direct.
    */
   resourceType?: string;
+  /**
+   * The record people read and annotate when an item of this kind is shown
+   * (an analysis, a synthesis, the document, a read page). Present = the item
+   * can carry its comment threads and the person's own highlights into the
+   * run, behind the selector's `annotations` switches. Absent = no reading set
+   * (a table, a derived block, search metadata).
+   */
+  annotationToken?: "research_synthesis" | "research_analysis" | "research_document" | "research_content";
   /** Derived kinds compute their text from the manifest; they have no rows. */
   derive?: (manifest: ResourceManifest, ctx: RenderContext) => string;
   /** DB kinds fetch bodies for exactly the selected ids. */
@@ -563,6 +571,7 @@ export const CATALOG: ResourceKindDef[] = [
     shape: "prose",
     defaultVariable: "scraped_pages",
     resourceType: "research_content",
+    annotationToken: "research_content",
     // Read through each page's Source (research's own copy only for a page
     // not yet a Source) — never rs_content.content for a landed page.
     fetchBodies: async (ids) => {
@@ -586,6 +595,7 @@ export const CATALOG: ResourceKindDef[] = [
     shape: "prose",
     defaultVariable: "page_analyses",
     resourceType: "research_analysis",
+    annotationToken: "research_analysis",
     fetchBodies: async (ids) => {
       const rows = await fetchRows<{
         id: string;
@@ -733,6 +743,7 @@ export const CATALOG: ResourceKindDef[] = [
     shape: "prose",
     defaultVariable: "keyword_syntheses",
     resourceType: "research_synthesis",
+    annotationToken: "research_synthesis",
     fetchBodies: async (ids) => {
       const rows = await fetchRows<{
         id: string;
@@ -770,6 +781,7 @@ export const CATALOG: ResourceKindDef[] = [
     shape: "prose",
     defaultVariable: "tag_consolidations",
     resourceType: "research_synthesis",
+    annotationToken: "research_synthesis",
     fetchBodies: async (ids) => {
       const rows = await fetchRows<{
         id: string;
@@ -800,6 +812,7 @@ export const CATALOG: ResourceKindDef[] = [
     shape: "prose",
     defaultVariable: "research_report",
     resourceType: "research_synthesis",
+    annotationToken: "research_synthesis",
     fetchBodies: async (ids) => {
       const rows = await fetchRows<{
         id: string;
@@ -830,6 +843,7 @@ export const CATALOG: ResourceKindDef[] = [
     shape: "prose",
     defaultVariable: "research_report",
     resourceType: "research_document",
+    annotationToken: "research_document",
     fetchBodies: async (ids) => {
       const rows = await fetchRows<{
         id: string;
