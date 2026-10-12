@@ -119,6 +119,7 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
   const [saveNotes, setSaveNotes] = useState<string[]>([]);
   // Tier 3: the real site crawl, started after Create, never on the identify path.
   const [crawl, setCrawl] = useState<"idle" | "running" | "done" | "failed">("idle");
+  const [crawlNote, setCrawlNote] = useState<string | null>(null);
 
   // ── rounds ──────────────────────────────────────────────────────────────
 
@@ -315,7 +316,10 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
         setCrawl("running");
         initializeSite(primarySiteId).then(
           () => setCrawl("done"),
-          () => setCrawl("failed"),
+          (error: unknown) => {
+            setCrawl("failed");
+            setCrawlNote(extractErrorMessage(error));
+          },
         );
       }
       problems.push(...(await saveFacts(organizationId, brand.id, basics)));
@@ -429,6 +433,7 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
           items={visible}
           decisions={decisions}
           working={working}
+          started={rounds.length > 0}
           locked={Boolean(created)}
           onDecide={decide}
         />
@@ -520,6 +525,9 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
             <div className="flex items-center gap-2 text-muted-foreground">
               <span className="w-32 shrink-0 truncate">Site crawl</span>
               <span className="w-16 shrink-0">{crawl === "running" ? "Working" : crawl === "done" ? "Done" : "Failed"}</span>
+              <span className="min-w-0 flex-1 truncate" title={crawlNote ?? undefined}>
+                {crawlNote ?? ""}
+              </span>
             </div>
           ) : null}
           {(setupView?.steps ?? []).map((step) => (

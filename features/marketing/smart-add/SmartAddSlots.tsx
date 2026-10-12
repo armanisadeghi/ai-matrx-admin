@@ -45,19 +45,22 @@ export function SmartAddSlots({
   items,
   decisions,
   working,
+  started,
   locked,
   onDecide,
 }: {
   items: EvidenceItem[];
   decisions: Record<string, Decision>;
   working: boolean;
+  /** False until the first identify round starts: empty slots stay quiet. */
+  started: boolean;
   locked: boolean;
   onDecide: (key: string, decision: Decision) => void;
 }) {
   const of = (...fields: EvidenceField[]) => items.filter((i) => fields.includes(i.field));
   const socials = of("social");
   const platforms = [...new Set(socials.map((s) => s.platform ?? "other"))];
-  const empty = working ? "Looking…" : "Nothing found";
+  const empty = working ? "Looking…" : started ? "Nothing found" : "—";
   const row = (item: EvidenceItem, choices: Choice[], children: React.ReactNode) => (
     <SlotRow key={item.key} item={item} decision={decisions[item.key] ?? null} choices={choices} locked={locked} onDecide={onDecide}>
       {children}

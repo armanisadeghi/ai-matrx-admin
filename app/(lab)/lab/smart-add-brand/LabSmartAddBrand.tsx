@@ -28,8 +28,9 @@ export function LabSmartAddBrand() {
     labServerListeners.forEach((fn) => fn());
   };
   useEffect(() => {
-    dispatch(setServiceOverride({ service: "aidream", environment: null }));
-    void dispatch(switchServer({ env: server }));
+    // Only the aidream service moves; the scraper (site crawl) and every other service stay live.
+    void dispatch(switchServer({ env: "production" }));
+    dispatch(setServiceOverride({ service: "aidream", environment: server }));
   }, [server, dispatch]);
   const baseUrl = BACKEND_URLS[server] ?? "";
   // "This computer" only works while the server runs on this machine: say so plainly.
