@@ -17,7 +17,7 @@
  */
 
 import { BlockStateHost } from "@/features/block-state/BlockStateContext";
-import { isMaterializedArtifactId } from "./artifactId";
+import { canvasItemIdForHost } from "@/features/block-state/hostEntity";
 import React, { Suspense, lazy } from "react";
 import MatrxMiniLoader from "@/components/loaders/MatrxMiniLoader";
 import ComparisonArtifact from "./renderers/ComparisonArtifact";
@@ -164,7 +164,7 @@ export function ArtifactRender({
       messageId={finalProps.messageId}
       conversationId={finalProps.conversationId}
       blockIndex={finalProps.blockIndex}
-      canvasItemId={isMaterializedArtifactId(finalProps.artifactId) ? finalProps.artifactId!.trim() : null}
+      canvasItemId={canvasItemIdForHost(finalProps)}
       content={finalProps.serverData ?? finalProps.data ?? finalProps.raw}
       streaming={!!finalProps.isStreamActive}
     >
