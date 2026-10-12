@@ -2,7 +2,8 @@
   "about": "CI cost manifest (ci-spend law, 2026-10-11). One entry per workflow, one leg per runner OS. scripts/check_workflow_runner_cost.py fails a workflow or OS leg without an entry, an entry without a benefit, triggers/crons/jobs that differ from the workflow file, $ that do not add up, a repo total over repo_share_usd, and (locally, with sibling repos beside it) a sum over the weekly ceiling.",
   "repo": "matrx-frontend",
   "weekly_ceiling_usd": 100.0,
-  "repo_share_usd": 15,
+  "visibility": "public",
+  "repo_share_usd": 0,
   "prices_usd_per_minute": {
     "linux": 0.006,
     "windows": 0.01,

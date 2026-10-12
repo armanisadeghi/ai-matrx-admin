@@ -31,6 +31,15 @@ every push. This fails when any workflow under .github/workflows/:
   (g) twin drift: a sibling repo's copy of this script that differs from this one (one guard,
       byte-identical twins in every repo; edit the aidream copy and copy it to every repo).
 
+Money model (2026-10-11): GitHub-hosted STANDARD runners are free in PUBLIC repos, so the manifest
+header carries `visibility` (public|private) and the guard prices BILLED $/week: 0 for a standard
+runner in a public repo, the full price in a private repo, and the full price for a LARGER runner
+(*-large/xlarge, N-core, custom labels) anywhere -- such a leg must say `"larger": true` and its own
+`price_usd_per_minute`. Gross $ stays in the manifest for information. repo_share_usd and the weekly
+ceiling bind the BILLED $. `visibility` is verified against reality (CI: the event payload's
+repository.private; locally: `gh repo view --json visibility`, cached 6h, stale cache as fallback);
+a mismatch fails, so a repo going private must re-price.
+
 Allowlist entries: {"<workflow file>::<job id>": "<why this job may run macOS/Windows per push>"}
 for (a), and {"<workflow file>::<job id>@schedule": "<why this schedule may be tighter>"} for (c).
 A job that calls a reusable workflow (`uses:`) cannot set timeout-minutes and is skipped for (b).
@@ -50,7 +59,9 @@ import argparse
 import json
 import os
 import re
+import subprocess
 import sys
+import time
 import tempfile
 from pathlib import Path
 
@@ -257,6 +268,24 @@ def _job_families(props: dict[str, tuple[str, list[str]]]) -> list[str]:
     return sorted(fams)
 
 
+STANDARD_RUNNER = re.compile(
+    r"^(ubuntu-(latest|slim|\d{2}\.\d{2})|windows-(latest|\d{4})|macos-(latest|\d{2}(-intel)?)|self-hosted|linux|macos|windows|x64|arm64)$")
+LARGER_RUNNER = re.compile(r"(x{0,2}large|\d+-?cores?|gpu|\bxl\b)", re.IGNORECASE)
+
+
+def _larger_families(props: dict[str, tuple[str, list[str]]], fams: list[str]) -> list[str]:
+    """OS legs of this job that run on a larger (always billed) runner: a size suffix or a non-standard label."""
+    runs_on_value, runs_on_nested = props.get("runs-on", ("", []))
+    text = "\n".join([runs_on_value, *runs_on_nested, *props.get("strategy", ("", []))[1]])
+    text = "\n".join("" if t.strip().startswith("#") else _strip_comment(t) for t in text.splitlines())
+    if re.search(r"\bgroup\s*:", text) or LARGER_RUNNER.search(text):
+        return list(fams)
+    scalar = _strip_comment(runs_on_value).strip().strip("'\"")
+    if scalar and "${{" not in scalar and not scalar.startswith("[") and not STANDARD_RUNNER.match(scalar):
+        return list(fams)
+    return []
+
+
 def workflow_shape(path: Path) -> dict:
     """What the manifest must mirror: triggers, crons, OS legs (with their jobs), dispatch inputs, run-name."""
     text = path.read_text(encoding="utf-8")
@@ -264,8 +293,12 @@ def workflow_shape(path: Path) -> dict:
     on_value, on_nested = top.get("on", top.get("true", ("", [])))
     triggers = sorted(_triggers(on_value, on_nested))
     legs: dict[str, list[str]] = {}
+    larger: set[str] = set()
     for job_id, (_, body) in _child_keys(top.get("jobs", ("", []))[1]).items():
-        for fam in _job_families(_child_keys(body)):
+        props = _child_keys(body)
+        fams = _job_families(props)
+        larger.update(_larger_families(props, fams))
+        for fam in fams:
             legs.setdefault(fam, []).append(job_id)
     dispatch_inputs = None
     if "workflow_dispatch" in triggers:
@@ -276,6 +309,7 @@ def workflow_shape(path: Path) -> dict:
         "triggers": triggers,
         "crons": sorted(_crons(on_nested) if not on_value else []),
         "legs": {k: sorted(v) for k, v in sorted(legs.items())},
+        "larger": sorted(larger),
         "dispatch_inputs": dispatch_inputs,
         "run_name": "\n".join([run_name_value, *run_name_nested]),
         "text": text,
@@ -295,6 +329,77 @@ def manifest_total(manifest: dict) -> float:
     return round(sum(float(w.get("usd_per_week", 0)) for w in manifest.get("workflows", {}).values()), 2)
 
 
+def leg_price(manifest: dict, os_name: str, leg: dict) -> float:
+    prices = {**PRICE_PER_MINUTE, **manifest.get("prices_usd_per_minute", {})}
+    if leg.get("larger"):
+        return float(leg.get("price_usd_per_minute", 0) or 0)
+    return float(prices[os_name])
+
+
+def leg_billed(manifest: dict, leg: dict) -> float:
+    """Billed $/week of one leg: free on a standard runner in a public repo, else the full gross."""
+    if manifest.get("visibility") == "public" and not leg.get("larger"):
+        return 0.0
+    return float(leg.get("usd_per_week", 0) or 0)
+
+
+def manifest_billed(manifest: dict) -> float:
+    return round(sum(leg_billed(manifest, leg) for w in manifest.get("workflows", {}).values() for leg in w.get("legs", {}).values()), 2)
+
+
+def _gh_name(root: Path) -> str:
+    try:
+        url = subprocess.run(["git", "-C", str(root), "remote", "get-url", "origin"], capture_output=True, text=True, timeout=10).stdout.strip()
+    except (OSError, subprocess.SubprocessError):
+        url = ""
+    m = re.search(r"github\.com[:/]([\w.\-]+/[\w.\-]+?)(?:\.git)?$", url)
+    return m.group(1) if m else ""
+
+
+VISIBILITY_CACHE = Path.home() / ".cache" / "matrx" / "ci-visibility.json"
+VISIBILITY_TTL_SECONDS = 6 * 3600
+
+
+def actual_visibility(root: Path) -> str | None:
+    """public|private from reality, or None when it cannot be known. CI: the event payload. Local: gh, cached."""
+    event = os.environ.get("GITHUB_EVENT_PATH")
+    if event and Path(event).exists():
+        try:
+            private = json.loads(Path(event).read_text(encoding="utf-8")).get("repository", {}).get("private")
+        except (OSError, json.JSONDecodeError):
+            private = None
+        if isinstance(private, bool):
+            return "private" if private else "public"
+    name = _gh_name(root)
+    if not name:
+        return None
+    try:
+        cache = json.loads(VISIBILITY_CACHE.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        cache = {}
+    hit = cache.get(name)
+    if hit and time.time() - float(hit.get("at", 0)) < VISIBILITY_TTL_SECONDS:
+        return hit["visibility"]
+    try:
+        out = subprocess.run(["gh", "repo", "view", name, "--json", "visibility"], capture_output=True, text=True, timeout=30)
+        vis = json.loads(out.stdout)["visibility"].lower() if out.returncode == 0 else None
+    except (OSError, subprocess.SubprocessError, ValueError, KeyError):
+        vis = None
+    if vis in ("public", "private"):
+        cache[name] = {"visibility": vis, "at": time.time()}
+        try:
+            VISIBILITY_CACHE.parent.mkdir(parents=True, exist_ok=True)
+            VISIBILITY_CACHE.write_text(json.dumps(cache), encoding="utf-8")
+        except OSError:
+            pass
+        return vis
+    return hit["visibility"] if hit else None
+
+
+# Swapped by the self-test so it never calls gh.
+VISIBILITY_PROBE = actual_visibility
+
+
 def check_manifest(root: Path, shapes: dict[str, dict]) -> list[str]:
     if not shapes:
         return []
@@ -304,6 +409,13 @@ def check_manifest(root: Path, shapes: dict[str, dict]) -> list[str]:
     problems: list[str] = []
     entries: dict = manifest.get("workflows", {})
     prices = {**PRICE_PER_MINUTE, **manifest.get("prices_usd_per_minute", {})}
+    vis = manifest.get("visibility")
+    if vis not in ("public", "private"):
+        problems.append(f"{MANIFEST}: the header needs visibility (public|private) -- public repos run standard runners free, private ones are billed")
+    else:
+        real = VISIBILITY_PROBE(root)
+        if real is not None and real != vis:
+            problems.append(f"{MANIFEST}: visibility says {vis!r} but the repository is {real!r} -- re-price: set visibility to {real!r} and re-check the billed $/week and repo_share_usd")
     for name in sorted(set(entries) - set(shapes)):
         problems.append(f"{MANIFEST}: stale entry {name!r} (no such workflow)")
     for name, shape in shapes.items():
@@ -327,16 +439,20 @@ def check_manifest(root: Path, shapes: dict[str, dict]) -> list[str]:
             if leg is None:
                 problems.append(f"{name}: runs {os_name} ({', '.join(jobs)}) with no {os_name} leg in {MANIFEST} — runner changed?")
                 continue
+            if bool(leg.get("larger")) != (os_name in shape.get("larger", [])):
+                problems.append(f"{name}: the {os_name} leg {'declares' if leg.get('larger') else 'does not declare'} a larger runner but the workflow {'does not use' if leg.get('larger') else 'uses'} one -- larger runners bill even in public repos, so the leg needs \"larger\": true and its price_usd_per_minute")
+            elif leg.get("larger") and not float(leg.get("price_usd_per_minute", 0) or 0) > 0:
+                problems.append(f"{name}: the {os_name} larger-runner leg needs price_usd_per_minute")
             if sorted(leg.get("jobs", [])) != jobs:
                 problems.append(f"{name}: the {os_name} leg's jobs are {jobs} in the workflow, {sorted(leg.get('jobs', []))} in {MANIFEST}")
             try:
-                want = round(float(leg["runs_per_week"]) * float(leg["minutes_per_run"]) * prices[os_name], 2)
+                want = round(float(leg["runs_per_week"]) * float(leg["minutes_per_run"]) * leg_price(manifest, os_name, leg), 2)
                 got = float(leg["usd_per_week"])
             except (KeyError, TypeError, ValueError):
                 problems.append(f"{name}: the {os_name} leg needs numeric runs_per_week, minutes_per_run, usd_per_week")
                 continue
             if abs(want - got) > 0.011:
-                problems.append(f"{name}: the {os_name} leg says ${got:.2f}/week but {leg['runs_per_week']} runs x {leg['minutes_per_run']} min x ${prices[os_name]}/min = ${want:.2f}")
+                problems.append(f"{name}: the {os_name} leg says ${got:.2f}/week but {leg['runs_per_week']} runs x {leg['minutes_per_run']} min x ${leg_price(manifest, os_name, leg):g}/min = ${want:.2f}")
             leg_sum += got
         if shape["crons"] and legs:
             fires = sum(cron_runs_per_week(c) for c in shape["crons"])
@@ -351,8 +467,8 @@ def check_manifest(root: Path, shapes: dict[str, dict]) -> list[str]:
     share = manifest.get("repo_share_usd")
     if not isinstance(share, (int, float)):
         problems.append(f"{MANIFEST}: the header needs repo_share_usd (this repo's part of the ${WEEKLY_CEILING_USD:g}/week ceiling)")
-    elif total > share + 1e-9:
-        problems.append(f"{MANIFEST}: this repo's CI costs ~${total:.2f}/week, over its ${share:g}/week share of the ${WEEKLY_CEILING_USD:g} ceiling — cut a schedule, a matrix or a re-run, never raise the share without moving it from another repo")
+    elif manifest_billed(manifest) > share + 1e-9:
+        problems.append(f"{MANIFEST}: this repo's CI costs ~${manifest_billed(manifest):.2f}/week billed (${total:.2f} gross), over its ${share:g}/week share of the ${WEEKLY_CEILING_USD:g} ceiling — cut a schedule, a matrix or a re-run, never raise the share without moving it from another repo")
     return problems
 
 
@@ -376,10 +492,10 @@ def check_ceiling(root: Path) -> list[str]:
         return []
     problems = [f"{name}/{MANIFEST}: unreadable ({m['_error']})" for name, m in siblings.items() if "_error" in m]
     every = {root.resolve().name: own, **{k: v for k, v in siblings.items() if "_error" not in v}}
-    total = sum(manifest_total(m) for m in every.values())
+    total = sum(manifest_billed(m) for m in every.values())
     shares = sum(float(m.get("repo_share_usd", 0) or 0) for m in every.values())
     if total > WEEKLY_CEILING_USD + 1e-9:
-        worst = ", ".join(f"{k} ${manifest_total(v):.2f}" for k, v in sorted(every.items(), key=lambda kv: -manifest_total(kv[1]))[:4])
+        worst = ", ".join(f"{k} ${manifest_billed(v):.2f}" for k, v in sorted(every.items(), key=lambda kv: -manifest_billed(kv[1]))[:4])
         problems.append(f"all repos: CI costs ~${total:.2f}/week across {len(every)} manifests, over the ${WEEKLY_CEILING_USD:g}/week ceiling ({worst})")
     if shares > WEEKLY_CEILING_USD + 1e-9:
         problems.append(f"all repos: the repo_share_usd values add up to ${shares:g}, over the ${WEEKLY_CEILING_USD:g}/week ceiling")
@@ -443,9 +559,9 @@ def cost_summary(root: Path) -> str:
     if own is None:
         return f"ci cost: no {MANIFEST} in {root}"
     rows = {root.resolve().name: own, **{k: v for k, v in sibling_manifests(root).items() if "_error" not in v}}
-    lines = [f"  {k:24} ${manifest_total(v):8.2f}/week  (share ${float(v.get('repo_share_usd', 0) or 0):g})" for k, v in sorted(rows.items())]
-    total = sum(manifest_total(v) for v in rows.values())
-    return "\n".join(["ci cost (from .github/ci-cost.json):", *lines, f"  {'TOTAL':24} ${total:8.2f}/week  (ceiling ${WEEKLY_CEILING_USD:g})"])
+    lines = [f"  {k:24} {str(v.get('visibility', '?')):8} billed ${manifest_billed(v):8.2f}/week  (share ${float(v.get('repo_share_usd', 0) or 0):g}; gross ${manifest_total(v):.2f})" for k, v in sorted(rows.items())]
+    total = sum(manifest_billed(v) for v in rows.values())
+    return "\n".join(["ci cost (from .github/ci-cost.json):", *lines, f"  {'TOTAL BILLED':24} ${total:8.2f}/week  (ceiling ${WEEKLY_CEILING_USD:g})"])
 
 
 BAD = """\
@@ -717,8 +833,11 @@ jobs:
 """
 
 
-def _leg(jobs: list[str], runs: float, minutes: float, os_name: str) -> dict:
-    return {"jobs": jobs, "runs_per_week": runs, "minutes_per_run": minutes, "usd_per_week": round(runs * minutes * PRICE_PER_MINUTE[os_name], 2)}
+def _leg(jobs: list[str], runs: float, minutes: float, os_name: str, price: float | None = None) -> dict:
+    leg = {"jobs": jobs, "runs_per_week": runs, "minutes_per_run": minutes, "usd_per_week": round(runs * minutes * (price or PRICE_PER_MINUTE[os_name]), 2)}
+    if price:
+        leg.update({"larger": True, "price_usd_per_minute": price})
+    return leg
 
 
 def _entry(triggers: list[str], crons: list[str], legs: dict) -> dict:
@@ -726,12 +845,90 @@ def _entry(triggers: list[str], crons: list[str], legs: dict) -> dict:
             "usd_per_week": round(sum(l["usd_per_week"] for l in legs.values()), 2)}
 
 
-def _manifest(entries: dict, share: float) -> dict:
-    return {"repo_share_usd": share, "workflows": entries, "total_usd_per_week": round(sum(e["usd_per_week"] for e in entries.values()), 2)}
+def _manifest(entries: dict, share: float, visibility: str = "private") -> dict:
+    return {"visibility": visibility, "repo_share_usd": share, "workflows": entries, "total_usd_per_week": round(sum(e["usd_per_week"] for e in entries.values()), 2)}
+
+
+LARGER_WF = """\
+name: big
+on:
+  workflow_dispatch:
+jobs:
+  shot:
+    runs-on: macos-15-xlarge
+    timeout-minutes: 20
+    steps:
+      - run: echo hi
+"""
+
+
+def money_self_test() -> int:
+    """Billed-money model: public standard runner is $0, public larger runner is billed, visibility must match reality."""
+    global VISIBILITY_PROBE
+    saved = VISIBILITY_PROBE
+    try:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp) / "app"
+            (root / ".github/workflows").mkdir(parents=True)
+            wf = root / ".github/workflows"
+            std = {"capture.yml": _entry(["workflow_dispatch"], [], {"macos": _leg(["shot"], 2, 10, "macos")})}
+            big = {"capture.yml": _entry(["workflow_dispatch"], [], {"macos": _leg(["shot"], 2, 10, "macos", price=0.16)})}
+
+            def run(wf_text: str, entries: dict, vis: str, real: str | None, share: float) -> tuple[list[str], float]:
+                global VISIBILITY_PROBE
+                (wf / "capture.yml").write_text(wf_text)
+                manifest = _manifest(entries, share, vis)
+                (root / MANIFEST).write_text(json.dumps(manifest))
+                VISIBILITY_PROBE = lambda _r: real
+                return check_root(root), manifest_billed(manifest)
+
+            problems, billed = run(MAC_CAPTURE, std, "public", "public", 0)
+            if problems or billed != 0:
+                print(f"SELF-TEST FAIL: a public repo's standard macOS runner must bill $0 and pass a $0 share: {problems} billed={billed}")
+                return 1
+            problems, billed = run(MAC_CAPTURE, std, "private", "private", 0)
+            if billed != 1.24 or not any("billed" in p and "over its $0/week share" in p for p in problems):
+                print(f"SELF-TEST FAIL: a private repo must bill the full price and trip a $0 share: {problems} billed={billed}")
+                return 1
+            problems, billed = run(LARGER_WF, big, "public", "public", 0)
+            if billed != 3.2 or not any("over its $0/week share" in p for p in problems):
+                print(f"SELF-TEST FAIL: a public repo's larger runner must bill and trip a $0 share: {problems} billed={billed}")
+                return 1
+            problems, _ = run(LARGER_WF, std, "public", "public", 5)
+            if not any("uses one" in p for p in problems):
+                print(f"SELF-TEST FAIL: a larger runner with no explicit entry slipped through: {problems}")
+                return 1
+            problems, _ = run(MAC_CAPTURE, std, "public", "private", 0)
+            if not any(p.startswith(f"{MANIFEST}: visibility says 'public' but the repository is 'private'") for p in problems):
+                print(f"SELF-TEST FAIL: a visibility mismatch (repo went private) was not caught: {problems}")
+                return 1
+            problems, _ = run(MAC_CAPTURE, std, "private", "public", 5)
+            if not any("visibility says 'private' but the repository is 'public'" in p for p in problems):
+                print(f"SELF-TEST FAIL: the opposite visibility mismatch was not caught: {problems}")
+                return 1
+            (root / MANIFEST).write_text(json.dumps({k: v for k, v in _manifest(std, 5).items() if k != "visibility"}))
+            if not any("needs visibility" in p for p in check_root(root)):
+                print("SELF-TEST FAIL: a manifest without visibility passed")
+                return 1
+            os.environ["GITHUB_EVENT_PATH"] = str(root / "event.json")
+            try:
+                for private, want in ((True, "private"), (False, "public")):
+                    (root / "event.json").write_text(json.dumps({"repository": {"private": private}}))
+                    if actual_visibility(root) != want:
+                        print(f"SELF-TEST FAIL: the event payload's repository.private={private} was not read as {want}")
+                        return 1
+            finally:
+                del os.environ["GITHUB_EVENT_PATH"]
+    finally:
+        VISIBILITY_PROBE = saved
+    print("money self-test ok: public standard runner bills $0; public larger runner and private repos bill in full; visibility mismatch and a missing header fail")
+    return 0
 
 
 def manifest_self_test() -> int:
     """(d)-(f): each planted manifest, dispatch and attribution defect fails; the clean tree passes."""
+    global VISIBILITY_PROBE
+    VISIBILITY_PROBE = lambda _r: "private"
     with tempfile.TemporaryDirectory() as tmp:
         code = Path(tmp)
         root, other = code / "app", code / "other"
@@ -834,7 +1031,7 @@ def main() -> int:
     parser.add_argument("--summary", action="store_true", help="print $/week per repo and in total, then check")
     args = parser.parse_args()
     if args.self_test:
-        return self_test() or schedule_self_test() or manifest_self_test()
+        return self_test() or schedule_self_test() or manifest_self_test() or money_self_test()
     problems = check_root(args.root) + check_twins(args.root)
     if args.summary or not problems:
         print(cost_summary(args.root))
