@@ -47,6 +47,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@ai-matrx/design-system/controls";
 import { Label } from "@/components/ui/label";
+import { InfoHint } from "@/components/official/InfoHint";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
@@ -193,11 +194,13 @@ function SeedStartingCodes({
           <h2 className="text-sm font-semibold text-foreground">
             {hasCodes ? "Starting codes" : "This employer has no earning codes"}
           </h2>
-          <p className="max-w-prose text-sm text-muted-foreground">
-            {hasCodes
-              ? "What the last run actually created. It is idempotent, so running it again creates nothing twice."
-              : "Every hour written anywhere in HR is written against an earning code, so until this employer has some, nobody here can have a timesheet. Setup creates them for new employers; this employer was switched on before it did."}
-          </p>
+          {/* The starting-codes run is idempotent; a second run creates nothing twice. */}
+          {hasCodes ? null : (
+            <p className="max-w-prose text-sm text-muted-foreground">
+              Nobody can have a timesheet until earning codes exist.{" "}
+              <InfoHint text="Setup creates them for new employers; this employer was switched on before it did." />
+            </p>
+          )}
         </div>
       </header>
       <div className="space-y-3 p-4">
@@ -212,9 +215,8 @@ function SeedStartingCodes({
             </li>
             {report.tipCodesSeededNotEnabled.length > 0 ? (
               <li className="text-muted-foreground">
-                {report.tipCodesSeededNotEnabled.join(", ")} — seeded, not enabled.
-                Tip credit is a jurisdiction minefield, so these stay switched off
-                until this employer turns them on deliberately.
+                {report.tipCodesSeededNotEnabled.join(", ")} — seeded, not enabled.{" "}
+                <InfoHint text="Tip codes stay off, and out of every picker, until this employer turns them on deliberately." />
               </li>
             ) : null}
           </ul>
@@ -367,12 +369,10 @@ function EarningCodesSection({
       <header className="flex items-start gap-3 border-b border-border p-4">
         <Coins className="mt-0.5 h-5 w-5 shrink-0 text-muted-foreground" />
         <div className="min-w-0 space-y-1">
-          <h2 className="text-sm font-semibold text-foreground">Earning codes</h2>
-          <p className="text-sm text-muted-foreground">
-            The three inclusion switches on each code answer three different legal
-            questions, and a code routinely answers them differently. Open a code to see
-            what each one means.
-          </p>
+          <h2 className="flex items-center gap-1.5 text-sm font-semibold text-foreground">
+            Earning codes
+            <InfoHint text="Each code has three inclusion switches that answer different legal questions; open a code to see each." />
+          </h2>
         </div>
       </header>
 
@@ -380,10 +380,8 @@ function EarningCodesSection({
         <div className="flex items-start gap-2 border-b border-border px-4 pb-4">
           <Sprout className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
           <p className="text-sm text-muted-foreground">
-            Codes marked <span className="font-medium">seeded, not enabled</span> were
-            created for you and are switched off. Tip codes in particular ship this way:
-            they exist so a tipped employer does not have to invent them, and they stay
-            off — and out of every picker — until this employer turns them on.
+            Codes marked <span className="font-medium">seeded, not enabled</span> stay off until turned on.{" "}
+            <InfoHint text="They were created for you and stay out of every picker until this employer turns them on." />
           </p>
         </div>
       ) : null}
@@ -405,7 +403,7 @@ function EarningCodesSection({
           emptyState={{
             title: "No earning codes yet",
             description:
-              "A timesheet has no vocabulary to write against until this employer has some. Setup creates the standard set for new employers — use the panel above to create them here, or add your own.",
+              "Create the starting codes above, or add your own.",
           }}
           detail={{
             title: (row) => `${row.code} — ${row.name}`,
@@ -491,12 +489,8 @@ function EarningCodeEditor({
       const confirmed = await confirm({
         title: `Switch off ${code.code}?`,
         description:
-          "It stops being offered on new timesheet lines. Everything already written " +
-          "against it keeps it, and every past export still resolves — which is why a " +
-          "code is switched off and never deleted." +
-          (code.is_seeded
-            ? " This is a seeded code, so switching off is the only option it has."
-            : ""),
+          "It leaves new timesheet lines; past entries and exports keep it." +
+          (code.is_seeded ? " Seeded codes can only be switched off." : ""),
         confirmLabel: "Switch it off",
       });
       if (!confirmed) return;
@@ -731,10 +725,10 @@ function DeductionCodesSection({
       <header className="flex items-start gap-3 border-b border-border p-4">
         <Coins className="mt-0.5 h-5 w-5 shrink-0 text-muted-foreground" />
         <div className="min-w-0 space-y-1">
-          <h2 className="text-sm font-semibold text-foreground">Deduction codes</h2>
-          <p className="text-sm text-muted-foreground">
-            The names deductions are known by, for export.
-          </p>
+          <h2 className="flex items-center gap-1.5 text-sm font-semibold text-foreground">
+            Deduction codes
+            <InfoHint text="The names deductions are known by, so an export can name them." />
+          </h2>
         </div>
       </header>
 
@@ -742,10 +736,8 @@ function DeductionCodesSection({
       <div className="flex items-start gap-2 border-b border-border px-4 pb-4">
         <Info className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
         <p className="text-sm text-muted-foreground">
-          <span className="font-medium">This is a registry, not a calculator.</span>{" "}
-          Nothing in this system computes a deduction: no amounts, no garnishment
-          maths, no benefit contributions. These codes exist so an export can name a
-          deduction the receiving payroll system already knows how to compute.
+          Names only: nothing here computes a deduction.{" "}
+          <InfoHint text="No amounts, garnishments or benefit contributions; your payroll system computes them from these names." />
         </p>
       </div>
 

@@ -27,6 +27,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@ai-matrx/design-system/controls";
 import { Label } from "@/components/ui/label";
+import { InfoHint } from "@/components/official/InfoHint";
 import {
   Select,
   SelectContent,
@@ -179,11 +180,10 @@ function CalendarsSection({
         <div className="flex min-w-0 items-start gap-3">
           <CalendarDays className="mt-0.5 h-5 w-5 shrink-0 text-muted-foreground" />
           <div className="min-w-0 space-y-1">
-            <h2 className="text-sm font-semibold text-foreground">Calendars</h2>
-            <p className="text-sm text-muted-foreground">
-              A pay group points at one calendar. Most employers need one; several sites
-              in several states usually need several.
-            </p>
+            <h2 className="flex items-center gap-1.5 text-sm font-semibold text-foreground">
+              Calendars
+              <InfoHint text="Each pay group points at one calendar; sites in several states usually need several calendars." />
+            </h2>
           </div>
         </div>
         <Button
@@ -372,15 +372,9 @@ function CalendarEditor({
           <Label htmlFor="cal-ot" className="text-sm font-medium">
             Holiday pay counts toward overtime
           </Label>
+          {/* Default off per 29 CFR §778.218: overtime is owed on hours worked; a contract may be more generous. */}
+          <InfoHint text="Off by default: holiday pay is for hours not worked; turn on only if a contract commits you to counting it." />
         </div>
-        <p className="text-sm text-muted-foreground">
-          Off by default, because that is what the law says: overtime is owed for hours
-          <span className="font-medium"> worked </span>
-          over forty in a workweek, and holiday pay is pay for hours not worked —
-          29 CFR §778.218. Turn it on only if a contract or a collective agreement
-          commits you to counting it, which is more generous than the floor and
-          therefore allowed.
-        </p>
       </div>
 
       {why ? (
@@ -527,13 +521,10 @@ function HolidaysSection({
     <section className="rounded-lg border border-border bg-card">
       <header className="flex flex-wrap items-start justify-between gap-3 border-b border-border p-4">
         <div className="min-w-0 space-y-1">
-          <h2 className="text-sm font-semibold text-foreground">
+          <h2 className="flex items-center gap-1.5 text-sm font-semibold text-foreground">
             Holidays on {calendar.name}
+            <InfoHint text="Each holiday keeps the date it falls on and the date it is observed when that is a weekend." />
           </h2>
-          <p className="text-sm text-muted-foreground">
-            Both dates are kept: the date the holiday actually falls on, and the date it
-            is observed when that lands on a weekend.
-          </p>
         </div>
         <div className="flex flex-wrap gap-2">
           <Button

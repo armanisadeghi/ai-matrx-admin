@@ -69,6 +69,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@ai-matrx/design-system/controls";
 import { Label } from "@/components/ui/label";
+import { InfoHint } from "@/components/official/InfoHint";
 import {
   Select,
   SelectContent,
@@ -378,13 +379,10 @@ export function HrActivationWizard({
     <div className={cn("w-full min-w-0 p-4 sm:p-6", className)}>
       <div className="mx-auto w-full max-w-2xl space-y-5">
         <header className="space-y-1">
-          <h1 className="text-base font-semibold text-foreground">
+          <h1 className="flex items-center gap-1.5 text-base font-semibold text-foreground">
             Set up HR for this employer
+            <InfoHint text="Employer of record, first location and HR owner; all of it can be changed afterwards." />
           </h1>
-          <p className="text-sm text-muted-foreground">
-            Three things: who the employer of record is, where the first people work,
-            and who runs HR. Everything here can be changed afterwards.
-          </p>
         </header>
 
         <StepRail current={step} />
@@ -393,7 +391,7 @@ export function HrActivationWizard({
           <StepShell
             icon={Building2}
             title="Employer of record"
-            blurb="The legal entity that employs people. It is the name on every W-2, letter and notice this system will ever produce."
+            hint="The legal entity that employs people; its name goes on every W-2, letter and notice."
           >
             <Field
               id="legal-name"
@@ -518,7 +516,7 @@ export function HrActivationWizard({
               tried was their first hire, which cannot be saved without one. The
               deadline is what was missing, not the permission.
             */
-            blurb="One location and one department is enough to start. A location you cannot add later — and you'll need at least one job title before your first hire, because every position carries one."
+            hint="One location and one department are enough to start; you need a job title before your first hire."
           >
             <Field
               id="location-name"
@@ -544,16 +542,15 @@ export function HrActivationWizard({
                   ))}
                 </SelectContent>
               </Select>
-              <p className="text-sm text-muted-foreground">
-                Every punch, shift and workweek at this location is stamped in this
-                zone. Getting it wrong moves people&apos;s hours across day boundaries.
-              </p>
             </div>
 
             {/* 🚨 THE ONE FIELD THAT CANNOT BE DEFERRED, WITH THE REASON AT THE CONTROL */}
             <div className="space-y-1.5">
-              <Label htmlFor="jurisdiction" className="text-sm font-medium">
-                Jurisdiction <span className="text-destructive">*</span>
+              <Label htmlFor="jurisdiction" className="flex items-center gap-1.5 text-sm font-medium">
+                <span>
+                  Jurisdiction <span className="text-destructive">*</span>
+                </span>
+                <InfoHint text="Overtime, break, minimum-wage and holiday rules are read from the location's jurisdiction." />
               </Label>
               {jurisdictionsError != null ? (
                 <ReadFailure
@@ -569,9 +566,7 @@ export function HrActivationWizard({
                   role="alert"
                   className="rounded-md border border-destructive/50 bg-destructive/5 p-3 text-sm text-foreground"
                 >
-                  No jurisdictions are loaded in this system, so no location can be
-                  created — nothing could be lawfully scheduled or stamped against it.
-                  This is a platform gap, not something you can fill in here. Send this
+                  No jurisdictions are loaded, so no location can be created. Send this
                   screen to whoever runs the platform.{" "}
                   <ErrorAlchemyMenu className="align-middle" operation="Create an HR location" />
                 </p>
@@ -592,23 +587,9 @@ export function HrActivationWizard({
                   </SelectContent>
                 </Select>
               )}
-              <p className="text-sm text-muted-foreground">
-                A location cannot be created without one, because nothing can be
-                scheduled or stamped without a jurisdiction — overtime, breaks, minimum
-                wage and holiday rules are all read from it.
-              </p>
             </div>
 
-            <fieldset className="space-y-3 rounded-md border border-border p-3">
-              <legend className="px-1 text-xs font-medium text-muted-foreground">
-                Location address
-              </legend>
-              <p className="text-sm text-muted-foreground">
-                Setup does not store the location address yet — add it on the structure
-                panel right after this, where the location also gets its code, geofence
-                and establishment link.
-              </p>
-            </fieldset>
+            {/* Setup does not store the location address; it is added on the structure panel after setup. */}
 
             <Field
               id="department-name"
@@ -625,7 +606,7 @@ export function HrActivationWizard({
           <StepShell
             icon={Users}
             title="The first HR owner"
-            blurb="One person gets full HR standing here. This is the single place where owning the organization confers HR authority — after this, every other role is assigned by the HR owner."
+            hint="Owning the organization grants HR authority only here; afterwards the HR owner assigns every other role."
           >
             <div className="space-y-2">
               <Label className="text-sm font-medium">Who runs HR here?</Label>
@@ -849,9 +830,6 @@ function ActivationDone({
           <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-foreground" />
           <div className="space-y-1">
             <h1 className="text-base font-semibold text-foreground">HR is set up</h1>
-            <p className="text-sm text-muted-foreground">
-              Here is exactly what was created. Everything below is a door.
-            </p>
           </div>
         </header>
 
@@ -931,9 +909,7 @@ function ActivationDone({
                     ? (seedRefusal.detail ??
                       "The starting codes step was refused for this employer.")
                     : seedRefusal.message}{" "}
-                Hours are written against an earning code, so timesheets have no
-                vocabulary until this employer has some — create them at the door
-                below.
+                Timesheets need earning codes; create them from the codes link below.
               </p>
             ) : seededAnything ? (
               <ul className="space-y-1 text-sm text-foreground">
@@ -958,10 +934,8 @@ function ActivationDone({
                 ) : null}
                 {seed.tipCodesSeededNotEnabled.length > 0 ? (
                   <li className="text-muted-foreground">
-                    {seed.tipCodesSeededNotEnabled.join(", ")} — seeded, not enabled.
-                    Tip credit is a jurisdiction minefield, so these exist for a
-                    tipped employer and stay switched off until that employer turns
-                    them on deliberately.
+                    {seed.tipCodesSeededNotEnabled.join(", ")} — seeded, not enabled.{" "}
+                    <InfoHint text="Tip codes stay off, and out of every picker, until this employer turns them on deliberately." />
                   </li>
                 ) : null}
               </ul>
@@ -1055,9 +1029,7 @@ function FirstHireDoor({ href, className }: { href: string; className?: string }
           This employer is set up — there is nobody in it yet
         </h2>
         <p className="text-sm text-muted-foreground">
-          The employer of record, the first location and the first department all
-          exist. Everything else in HR starts from a person, so the next step is to add
-          one.
+          Add the first person to get started.
         </p>
         <Button variant="primary" asChild>
           <Link href={href}>
@@ -1180,12 +1152,12 @@ function StepRail({ current }: { current: number }) {
 function StepShell({
   icon: Icon,
   title,
-  blurb,
+  hint,
   children,
 }: {
   icon: typeof Building2;
   title: string;
-  blurb: string;
+  hint?: string;
   children: React.ReactNode;
 }) {
   return (
@@ -1193,8 +1165,10 @@ function StepShell({
       <header className="flex items-start gap-3">
         <Icon className="mt-0.5 h-5 w-5 shrink-0 text-muted-foreground" />
         <div className="min-w-0 space-y-1">
-          <h2 className="text-sm font-semibold text-foreground">{title}</h2>
-          <p className="text-sm text-muted-foreground">{blurb}</p>
+          <h2 className="flex items-center gap-1.5 text-sm font-semibold text-foreground">
+            {title}
+            {hint ? <InfoHint text={hint} /> : null}
+          </h2>
         </div>
       </header>
       <div className="space-y-4">{children}</div>
