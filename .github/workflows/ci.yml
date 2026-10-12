@@ -89,6 +89,7 @@ jobs:
   secrets-preflight:
     name: which gates can be measured
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     outputs:
       supabase: ${{ steps.probe.outputs.supabase }}
       direct_postgres: ${{ steps.probe.outputs.direct_postgres }}
@@ -169,6 +170,7 @@ jobs:
   matrx-dist-integrity:
     name: an installed @ai-matrx package is the published one
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -217,6 +219,7 @@ jobs:
   marker-law:
     name: the __kind marker law
     runs-on: ubuntu-latest
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -585,6 +588,7 @@ jobs:
   kind-registry:
     name: generated kind types vs the live registry (UNMEASURED without the secret)
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     needs: secrets-preflight
     if: needs.secrets-preflight.outputs.supabase == 'true'
     env:
@@ -633,6 +637,7 @@ jobs:
   kind-sandbox-boundary:
     name: "[signal] the Shape sandbox boundary in a real browser (UNMEASURED without the secret)"
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     needs: secrets-preflight
     if: needs.secrets-preflight.outputs.supabase == 'true'
     env:
@@ -681,6 +686,7 @@ jobs:
   hr-punch:
     name: HR punch write path (UNMEASURED without the secret)
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     needs: secrets-preflight
     if: needs.secrets-preflight.outputs.supabase == 'true'
     env:
@@ -719,6 +725,7 @@ jobs:
   hr-punch-corpus:
     name: HR pre-apply function-contract corpus (SKIPPED without the direct-Postgres secret)
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     needs: secrets-preflight
     if: needs.secrets-preflight.outputs.direct_postgres == 'true'
     env:
@@ -758,6 +765,7 @@ jobs:
   hr-guards:
     name: HR nav, URL, envelope and mock-walk guards
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -831,6 +839,11 @@ jobs:
         # It prints an UNANALYZABLE list on every run naming each call site it
         # could not fully resolve and why. Those are NOT passes; read them.
         run: pnpm hr:rpc-conformance
+      # Cost guard (ci-spend, 2026-10-11): .github/ci-cost.json covers every workflow and OS leg, no
+      # macOS/Windows per push, every job time-limited, every dispatch names requested_by.
+      - name: Workflow cost guard (proves it can fail, then checks every workflow)
+        working-directory: ${{ github.workspace }}
+        run: python3 scripts/check_workflow_runner_cost.py --self-test && python3 scripts/check_workflow_runner_cost.py
 
   # ---------------------------------------------------------------------------
   # migration-slot-guard — liveness for the BEFORE INSERT ROW trigger on
@@ -862,6 +875,7 @@ jobs:
   migration-slot-guard:
     name: migration slot guard is live (UNMEASURED without the secret)
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     needs: secrets-preflight
     if: needs.secrets-preflight.outputs.supabase == 'true'
     env:
@@ -910,6 +924,7 @@ jobs:
   soft-delete-cascade:
     name: removing a thing still removes its parts (UNMEASURED without the secret)
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     needs: secrets-preflight
     if: needs.secrets-preflight.outputs.supabase == 'true'
     env:
@@ -958,6 +973,7 @@ jobs:
   soft-delete-unique:
     name: no new unique index counts removed rows (UNMEASURED without the secret)
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     needs: secrets-preflight
     if: needs.secrets-preflight.outputs.supabase == 'true'
     env:
@@ -997,6 +1013,7 @@ jobs:
   client-hard-delete:
     name: a client never destroys a soft-deletable row (UNMEASURED without the secret)
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     needs: secrets-preflight
     if: needs.secrets-preflight.outputs.supabase == 'true'
     env:
@@ -1046,6 +1063,7 @@ jobs:
   realtime-publication:
     name: subscribed tables are in supabase_realtime (UNMEASURED without the secret)
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     # Two credentials, both required: SUPABASE_* to read pg_publication_tables,
     # and AIDREAM_REPO_TOKEN to reach the other half of the census. This repo is
     # armanisadeghi/ai-matrx; aidream lives in AI-Matrix-Engine/aidream, a
@@ -1105,6 +1123,7 @@ jobs:
   honest-states-parity:
     name: the browser says the engine's honest-state sentences (UNMEASURED without the token)
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     needs: secrets-preflight
     if: needs.secrets-preflight.outputs.matrx_local_repo == 'true'
     env:
@@ -1158,6 +1177,7 @@ jobs:
   migration-judgment:
     name: both migration runners judge the same bytes the same way (UNMEASURED without the token)
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     needs: secrets-preflight
     if: needs.secrets-preflight.outputs.aidream_repo == 'true'
     env:
@@ -1222,6 +1242,7 @@ jobs:
   settings-guards:
     name: settings guards (env toggles; unregistered reads; hardcoded, orphans, ladder-ui as signals — UNMEASURED without the secret + aidream)
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     needs: secrets-preflight
     if: needs.secrets-preflight.outputs.supabase == 'true' && needs.secrets-preflight.outputs.aidream_repo == 'true'
     env:
@@ -1292,6 +1313,7 @@ jobs:
   type-check:
     name: type-check
     runs-on: ubuntu-latest
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -1329,6 +1351,7 @@ jobs:
   mandate-references:
     name: mandate references (non-blocking)
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     continue-on-error: true
     steps:
       - uses: actions/checkout@v4
@@ -1354,6 +1377,7 @@ jobs:
   organization-context:
     name: ORGANIZATION CONTEXT (blocking)
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -1372,6 +1396,7 @@ jobs:
   dd154-ddl-guard:
     name: DD154 explicit organization DDL guard (blocking)
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -1407,6 +1432,7 @@ jobs:
   suites:
     name: content-ir + workflow-runtime suites
     runs-on: ubuntu-latest
+    timeout-minutes: 60
     needs: secrets-preflight
     if: always()
     steps:
@@ -1495,6 +1521,7 @@ jobs:
   jest-health:
     name: jest health census (signal, never a gate)
     runs-on: ubuntu-latest
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
