@@ -266,6 +266,12 @@ function parseSelectors(raw: unknown): ResourceSelector[] {
       limit: isJsonObject(entry.limit)
         ? (entry.limit as ResourceSelector["limit"])
         : undefined,
+      annotations: isJsonObject(entry.annotations)
+        ? {
+            ...(typeof entry.annotations.comments === "boolean" ? { comments: entry.annotations.comments } : {}),
+            ...(typeof entry.annotations.notes === "boolean" ? { notes: entry.annotations.notes } : {}),
+          }
+        : undefined,
     });
   }
   return out;

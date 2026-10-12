@@ -88,6 +88,10 @@ export function humanError(action: string, e: unknown): SidecarError {
     sentence = `The text changed while you were working, so ${action} did not go through. Select the passage again and retry.`;
   } else if (/not a registered entity type|registered entity/i.test(text)) {
     sentence = `This kind of record can't take links or private notes in this version of the app yet, so ${action} did not go through. It will work after the next app update.`;
+  } else if (code === "PT409" || /changed since you opened it/i.test(text)) {
+    // A compare-and-swap refusal: someone saved first. Retrying the same write cannot work.
+    sentence = `Someone changed this text after you opened it, so ${action} did not go through. Its newest version is reloading — try again on that.`;
+    retryable = false;
   } else if (code === "PGRST202" || code === "42883") {
     sentence = `This part isn't switched on yet, so ${action} did not go through. Your text is kept here.`;
     retryable = false;

@@ -562,6 +562,11 @@ function ItemList({
               excluded
             </Badge>
           )}
+          {(item.flags.current === false || item.flags.latest === false) && (
+            <Badge variant="outline" className="h-4 px-1 text-[9px]">
+              older version
+            </Badge>
+          )}
           {(() => {
             const c = annotationCounts?.get(item.id);
             if (!c || !(c.open || c.resolved || c.notes)) return null;

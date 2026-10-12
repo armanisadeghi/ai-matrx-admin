@@ -72,7 +72,13 @@ export function ResearchRecordReader({
         ...(editable
           ? {
               save: async (nextBody: string) => {
-                await saveReaderEdit(record.type, record.id, nextBody, record.rowVersion!);
+                try {
+                  await saveReaderEdit(record.type, record.id, nextBody, record.rowVersion!);
+                } catch (cause) {
+                  // Someone saved first: show their text, then say so (the sidecar names it).
+                  if ((cause as { code?: unknown })?.code === "PT409") record.onEdited?.();
+                  throw cause;
+                }
                 record.onEdited?.();
               },
             }
