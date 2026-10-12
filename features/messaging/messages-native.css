@@ -193,7 +193,11 @@
 }
 .messages-native .messages-composer textarea {
   border-radius: 22px;
-  padding: 11px 132px 11px 13px;
+  /* Padding and min-height belong to ProTextarea's inline controls
+     (controls="inline", proTextareaControlPlacement.ts): it measures its own
+     buttons. A hand-typed 132px gutter + 36px height here stuck the 38px tap
+     buttons 6px out of the field (2026-10-12). Only the left inset is ours. */
+  padding-left: 13px;
   font-family: inherit;
   font-size: 13px;
   line-height: 20px;
@@ -401,22 +405,13 @@
   gap: 8px;
   min-width: 0;
 }
-.messages-native .messages-composer textarea {
-  padding-top: 7px;
-  padding-bottom: 7px;
-  min-height: 36px;
+/* The round + / emoji buttons centre on the field's one-line height (44px). */
+.messages-composer-line > .messages-round-button {
+  margin-bottom: calc((44px - 34px) / 2);
 }
-/* ON A TOUCH SCREEN THE CONTROLS GET THEIR OWN ROW (2026-10-03). The skin
-   above lays ProTextarea's mic / "…" / send over the text's right end and
-   reserves 132px for them — the size they are with a mouse. On a touch screen
-   they are 44px targets (~180px with the send button), wider than the reserve,
-   and on a 375px phone the field showed "age" of "Message" between the pill
-   and the attach button. Here the field keeps ProTextarea's own reserved
-   bottom row (its `pb-14`, proTextareaControlPlacement.ts): the text has the
-   whole line, the controls sit under it. */
 @media (pointer: coarse) {
-  .messages-native .messages-composer textarea {
-    padding: 11px 13px 56px;
+  .messages-composer-line > .messages-round-button {
+    margin-bottom: 0;
   }
 }
 .messages-draft-attachments {

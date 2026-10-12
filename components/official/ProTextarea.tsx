@@ -227,7 +227,12 @@ import {
   ProTextFieldStatsPanel,
 } from "./ProTextFieldStats";
 import { ProTextAgentActionPopoverBody } from "./ProTextAgentActionPopoverBody";
-import { proTextareaClusterPlacement } from "./proTextareaControlPlacement";
+import {
+  INLINE_CONTROLS_MIN_HEIGHT_PX,
+  inlineControlsFieldPadding,
+  proTextareaClusterPlacement,
+  type ProTextareaControls,
+} from "./proTextareaControlPlacement";
 import type { ProTextareaEditorSlot } from "./pro-textarea-editor";
 import {
   composerKeyIntent,
@@ -468,6 +473,16 @@ export interface ProTextareaProps extends React.TextareaHTMLAttributes<HTMLTextA
    * space (agent variables). Off by default.
    */
   expandable?: boolean;
+  /**
+   * Where the mic / "…" / submit cluster sits. `"row"` (default): a reserved
+   * row under the text. `"inline"`: the chat-composer shape — the cluster sits
+   * at the right end of the LAST line, the text keeps a measured right gutter,
+   * and the box is never shorter than one tap row (38px box + 3px half-gap each
+   * side = 44px), so on one line every control is dead-centre. The geometry is
+   * inline style: no host stylesheet can squash it (the messages skin shrank
+   * the box to 36px and the 38px buttons stuck out of it, 2026-10-12).
+   */
+  controls?: ProTextareaControls;
 }
 
 export const ProTextarea = React.forwardRef<
@@ -527,10 +542,27 @@ export const ProTextarea = React.forwardRef<
       markdownFormatting,
       uploadImage,
       expandable = false,
+      controls = "row",
       ...props
     },
     ref,
   ) => {
+    const inlineControls = controls === "inline" && !editor;
+    const effectiveMinHeight = inlineControls
+      ? Math.max(minHeight ?? 0, INLINE_CONTROLS_MIN_HEIGHT_PX)
+      : minHeight;
+    const clusterRef = useRef<HTMLDivElement>(null);
+    const [clusterWidth, setClusterWidth] = useState(0);
+    useLayoutEffect(() => {
+      if (!inlineControls) return;
+      const el = clusterRef.current;
+      if (!el) return;
+      const measure = () => setClusterWidth(el.offsetWidth);
+      measure();
+      const observer = new ResizeObserver(measure);
+      observer.observe(el);
+      return () => observer.disconnect();
+    }, [inlineControls]);
     const generatedId = useId();
     const inputId = idProp ?? (floatingLabel ? generatedId : undefined);
     const [isFocused, setIsFocused] = useState(false);
@@ -702,11 +734,11 @@ export const ProTextarea = React.forwardRef<
       // alone kept a 2px scroll, so the last line slid under the control row.
       let newHeight =
         textarea.scrollHeight + (textarea.offsetHeight - textarea.clientHeight);
-      if (minHeight) newHeight = Math.max(newHeight, minHeight);
+      if (effectiveMinHeight) newHeight = Math.max(newHeight, effectiveMinHeight);
       if (maxHeight) newHeight = Math.min(newHeight, maxHeight);
 
       textarea.style.height = `${newHeight}px`;
-    }, [value, autoGrow, minHeight, maxHeight]);
+    }, [value, autoGrow, effectiveMinHeight, maxHeight, clusterWidth]);
 
     /**
      * Write `newValue` into the field through React's own change path (the
@@ -1230,7 +1262,10 @@ export const ProTextarea = React.forwardRef<
       (enableVoice && isAudioAvailable && !disabled) || showMenu;
     const showTextStats = enableTextStats && showMenu;
     const showPinnedTextStatsBar = showTextStats && showTextStatsBar;
-    const fillHeight = wantsFillHeight(className, wrapperClassName);
+    // An auto-growing box sizes itself to its text, so it never fills its
+    // host's height — a `flex-1` there means WIDTH in a row (the messages
+    // composer never grew past one line, 2026-10-12).
+    const fillHeight = !autoGrow && wantsFillHeight(className, wrapperClassName);
 
     // Expand shows only when the text no longer fits the box.
     useEffect(() => {
@@ -1292,15 +1327,18 @@ export const ProTextarea = React.forwardRef<
       // (page-pass 2026-09-27, Feedback window). The reserve always wins.
       // A one-line hosted editor keeps its single line: the cluster takes a
       // right gutter beside it instead of a reserved row below.
-      (hasCoarseControls || onSubmit) &&
+      !inlineControls &&
+        (hasCoarseControls || onSubmit) &&
         (editor?.singleLine && !onSubmit
           ? "pr-24 pointer-coarse:pr-32"
           : "pb-11"),
     );
     const fieldStyle: React.CSSProperties = {
       ...style,
-      minHeight: minHeight !== undefined ? `${minHeight}px` : style?.minHeight,
+      minHeight:
+        effectiveMinHeight !== undefined ? `${effectiveMinHeight}px` : style?.minHeight,
       maxHeight: maxHeight !== undefined ? `${maxHeight}px` : style?.maxHeight,
+      ...(inlineControls ? inlineControlsFieldPadding(clusterWidth) : {}),
     };
 
     const field = (
@@ -1412,10 +1450,11 @@ export const ProTextarea = React.forwardRef<
             focus from the field, so a focus-revealed row cannot hide
             itself mid-click. */}
             <div
+              ref={clusterRef}
               onMouseDown={(e) => e.preventDefault()}
               className={cn(
                 "absolute z-10 flex items-center",
-                proTextareaClusterPlacement(!!onSubmit).className,
+                proTextareaClusterPlacement(!!onSubmit, inlineControls ? "inline" : "row").className,
                 editor?.singleLine && "top-1/2 bottom-auto -translate-y-1/2",
               )}
             >

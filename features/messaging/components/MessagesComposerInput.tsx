@@ -145,7 +145,8 @@ export function MessagesComposerInput({
           placeholder="Message"
           aria-label="Reply to conversation"
           autoGrow
-          minHeight={36}
+          controls="inline"
+          minHeight={44}
           rows={1}
           maxHeight={220}
           enableTextStats={false}

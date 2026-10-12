@@ -25,7 +25,48 @@ export interface ClusterPlacement {
 /** The tap box (`--matrx-tap-box`, 38px since 2026-10-01). */
 export const SUBMIT_BUTTON_WIDTH_PX = 38;
 
-export function proTextareaClusterPlacement(hasSubmit: boolean): ClusterPlacement {
+/** Where the cluster sits: a reserved row under the text, or inline at the end of the last line. */
+export type ProTextareaControls = "row" | "inline";
+
+/** The tap pill's half-gap (`--matrx-tap-gap` / 2): a container edge is a neighbour (tap-target rule 4). */
+export const TAP_HALF_GAP_PX = 3;
+
+/** One tap row plus the half-gap above and below it: the shortest an inline-controls box may be. */
+export const INLINE_CONTROLS_MIN_HEIGHT_PX = SUBMIT_BUTTON_WIDTH_PX + 2 * TAP_HALF_GAP_PX;
+
+/**
+ * The inline-controls text padding: centred on one tap row vertically (whatever
+ * the host's line height — `1lh`), and a right gutter the measured cluster
+ * width plus the half-gap, so text never runs under a control.
+ */
+export function inlineControlsFieldPadding(clusterWidthPx: number): {
+  paddingTop: string;
+  paddingBottom: string;
+  paddingRight: string;
+} {
+  const block = `calc((${INLINE_CONTROLS_MIN_HEIGHT_PX}px - 1lh) / 2 - 1px)`;
+  return {
+    paddingTop: block,
+    paddingBottom: block,
+    paddingRight: `${clusterWidthPx + 2 * TAP_HALF_GAP_PX}px`,
+  };
+}
+
+export function proTextareaClusterPlacement(
+  hasSubmit: boolean,
+  controls: ProTextareaControls = "row",
+): ClusterPlacement {
+  if (controls === "inline") {
+    // Inset by the half-gap: a 38px box in a 44px-min box is dead-centre on
+    // one line, and stays on the last line as the text grows.
+    return {
+      row: "bottom",
+      rightPx: hasSubmit ? SUBMIT_BUTTON_WIDTH_PX + TAP_HALF_GAP_PX : TAP_HALF_GAP_PX,
+      reserved: { fine: ["bottom"], coarse: ["bottom"] },
+      submit: hasSubmit ? { row: "bottom", widthPx: SUBMIT_BUTTON_WIDTH_PX } : null,
+      className: "bottom-[3px] right-[3px]",
+    };
+  }
   // One flex row inset 4px from the bottom-right corner: the hover part, then
   // the submit button. They are adjacent tap boxes in the SAME row, so the
   // cluster sits exactly one submit box (plus the inset) from the edge.
