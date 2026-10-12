@@ -2681,9 +2681,12 @@ export async function createDiscoveredCandidates(
     value: Json;
     context: Json;
     confidence: number | null;
+    /** A finding the person marked as RELATED (web.brand_relation_kind key): kept as reviewed, never as ours. */
+    relationKey?: string | null;
   }>,
 ): Promise<void> {
   if (!rows.length) return;
+  const reviewedAt = new Date().toISOString();
   const response = await (
     await authenticatedWebDb(supabase)
   )
@@ -2699,10 +2702,81 @@ export async function createDiscoveredCandidates(
         value: r.value,
         context: r.context,
         confidence: r.confidence,
-        status: "pending",
+        status: r.relationKey ? "confirmed" : "pending",
+        relation_key: r.relationKey ?? null,
+        ...(r.relationKey ? { reviewed_at: reviewedAt } : {}),
       })),
     );
   if (response.error) throw new Error(response.error.message);
+}
+
+/** One way a found account/site can relate to a brand (web.brand_relation_kind). */
+export interface BrandRelationKind {
+  id: string;
+  key: string;
+  label: string;
+  /** The canonical home this relationship lands in: owns / key_person (people on the brand), competitor. */
+  routesTo: "owns" | "key_person" | "competitor" | null;
+  isKnown: boolean;
+}
+
+function toRelationKind(row: {
+  id: string;
+  key: string;
+  label: string;
+  routes_to: string | null;
+  is_known: boolean;
+}): BrandRelationKind {
+  const routes = row.routes_to;
+  return {
+    id: row.id,
+    key: row.key,
+    label: row.label,
+    routesTo: routes === "owns" || routes === "key_person" || routes === "competitor" ? routes : null,
+    isKnown: row.is_known,
+  };
+}
+
+/** The shared relationship vocabulary plus the custom entries this person can see. Known first, in order. */
+export async function listBrandRelationKinds(): Promise<BrandRelationKind[]> {
+  const { data, error } = await (await authenticatedWebDb(supabase))
+    .from("brand_relation_kind")
+    .select("id, key, label, routes_to, is_known, sort")
+    .eq("status", "active")
+    .is("deleted_at", null)
+    .order("is_known", { ascending: false })
+    .order("sort", { ascending: true })
+    .order("label", { ascending: true })
+    .limit(200);
+  if (error) throw new Error(error.message);
+  return (data ?? []).map(toRelationKind);
+}
+
+/**
+ * Save a custom relationship ("Custom…") in the organization's own vocabulary so it can be picked
+ * again and, when common, promoted to a known option. Idempotent on (organization, key).
+ */
+export async function saveCustomRelationKind(organizationId: string, label: string): Promise<BrandRelationKind> {
+  const clean = label.trim().slice(0, 60);
+  const slug = clean.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/g, "") || "custom";
+  const key = `custom:${slug}`;
+  const db = await authenticatedWebDb(supabase);
+  const existing = await db
+    .from("brand_relation_kind")
+    .select("id, key, label, routes_to, is_known")
+    .eq("organization_id", organizationId)
+    .eq("key", key)
+    .is("deleted_at", null)
+    .maybeSingle();
+  if (existing.error) throw new Error(existing.error.message);
+  if (existing.data) return toRelationKind(existing.data);
+  const { data, error } = await db
+    .from("brand_relation_kind")
+    .insert({ organization_id: organizationId, key, label: clean, is_known: false, sort: 1000, visibility: "internal" })
+    .select("id, key, label, routes_to, is_known")
+    .single();
+  if (error) throw new Error(error.message);
+  return toRelationKind(data);
 }
 
 export async function confirmDiscoveredFact(

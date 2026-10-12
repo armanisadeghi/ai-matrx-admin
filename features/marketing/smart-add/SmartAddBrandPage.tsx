@@ -13,7 +13,7 @@ export function SmartAddBrandPage() {
     <>
       <EntityModeHeader backHref={marketingRoutes.brands()} entityLabel="Smart Add brand" actions={[]} />
       {/* The living stage sits behind the scroll owner; it dims once the structured page is up. */}
-      <div className="group relative h-full overflow-hidden bg-textured">
+      <div className="group relative h-full overflow-hidden bg-background">
         <StageBackdrop />
         <main className="relative h-full overflow-y-auto">
           <SmartAddBrand onCreated={() => router.refresh()} />

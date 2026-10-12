@@ -35,7 +35,7 @@ for (let i = 0; i < 160; i++) {
   });
   samples.push({ t: Date.now()-t0, url: page.url().slice(-12), ...s });
   maxLen = Math.max(maxLen, s.len);
-  if (i % 4 === 0) console.log(JSON.stringify(samples.at(-1)));
+  if (i % 12 === 0) console.log(JSON.stringify(samples.at(-1)));
   if (maxLen > 40 && i > 40 && samples.slice(-20).every(x => x.len === samples.at(-1).len)) break;
 }
 await page.screenshot({ path: `${OUT}/final.png` });
@@ -45,7 +45,7 @@ if (process.env.PROBE) console.log(JSON.stringify(await page.evaluate(() => {
   walk(hostRoot); if (!store) return "nostore";
   const s = store.getState(); const ar = Object.values(s.activeRequests?.byRequestId || {});
   const msgs = Object.values(s.messages?.byId || s.messages?.messages || {});
-  return { ar: ar.map(r => ({ id: r.requestId, status: r.status, order: r.renderBlockOrder, timeline: JSON.stringify(r.timeline).slice(0,900), blocks: Object.values(r.renderBlocks).map(b=>({id:b.blockId,type:b.type,len:(b.content||"").length})) })),
+  return { ar: ar.map(r => ({ id: r.requestId, status: r.status, error: JSON.stringify(r.error).slice(0,400), order: r.renderBlockOrder, timeline: r.timeline.map(t=>t.kind+(t.data?.type?':'+t.data.type:'')).join(' '), blocks: Object.values(r.renderBlocks).map(b=>({id:b.blockId,type:b.type,len:(b.content||"").length})) })),
     msgs: msgs.map(m => ({ id: m.id, role: m.role, req: m._streamRequestId, ss: m._streamSlotStart, se: m._streamSlotEnd, content: JSON.stringify(m.content).slice(0,300), status: m._status||m.status })) };
 }), null, 1));
 const last = samples.at(-1);
