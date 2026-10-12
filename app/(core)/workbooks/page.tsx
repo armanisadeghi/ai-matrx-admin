@@ -586,7 +586,13 @@ export default function WorkbooksLandingPage() {
               const link = googleLinkIn(wb.metadata);
               return link ? [{ id: wb.id, name: wb.workbook_name, link }] : [];
             })}
+            unlinked={workbooks
+              .filter((wb) => !googleLinkIn(wb.metadata) && wb.user_id === userId)
+              .sort((a, b) => (b.updated_at ?? "").localeCompare(a.updated_at ?? ""))
+              .map((wb) => ({ id: wb.id, name: wb.workbook_name, updatedAt: wb.updated_at }))}
+            hidden={scope === "trash"}
             onImported={(id) => router.push(`/workbooks/${id}`)}
+            onChanged={() => void reload()}
           />
           {!error && (workbooks.length > 0 || scope !== "all") ? (
             <>
