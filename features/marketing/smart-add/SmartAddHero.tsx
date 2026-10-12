@@ -113,7 +113,7 @@ export function SmartAddHero({
   const steps = views.flatMap((v) => v.steps).filter((s) => !s.skipped && s.phase !== "idle" && STEP_COPY[s.step]);
   return (
     <section
-      className="flex min-h-[calc(100dvh-var(--shell-header-h,3rem)-6rem)] w-full flex-col items-center justify-center px-2 py-10"
+      className="flex min-h-[calc(100dvh-var(--shell-header-h,3rem)-6rem)] w-full flex-col items-center justify-start px-2 pb-10 pt-[14vh]"
       data-testid="smart-add-hero"
     >
       <div className="flex w-full max-w-xl flex-col items-center gap-7">
@@ -179,8 +179,8 @@ export function SmartAddHero({
             ) : null}
           </div>
 
-          {/* Scan line + live steps: one reserved row, so nothing below moves. */}
-          <div className="flex min-h-16 flex-col items-center gap-2 pt-1" aria-live="polite">
+          {/* Scan line + live steps: room reserved for two rows of steps (a phone wraps them), so nothing moves. */}
+          <div className="flex min-h-24 flex-col items-center gap-2 pt-1" aria-live="polite">
             <div className="relative h-0.5 w-full overflow-hidden rounded-full bg-transparent">
               {working ? (
                 <span className="absolute inset-y-0 w-1/3 rounded-full bg-gradient-to-r from-transparent via-primary to-transparent motion-safe:animate-[smart-add-scan_1.4s_ease-in-out_infinite] motion-reduce:left-1/3" />

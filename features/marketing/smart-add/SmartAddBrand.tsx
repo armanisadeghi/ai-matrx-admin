@@ -463,7 +463,9 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
   const [structured, setStructured] = useState(false);
   const morphFrom = useRef<Record<string, DOMRect> | null>(null);
   const pageRef = useRef<HTMLDivElement>(null);
-  const hasFindings = items.size > 0;
+  // Something to show = a real finding or an answer the person gave (the quick questions);
+  // never the address they typed echoed back.
+  const hasFindings = [...items.values()].some((i) => i.source.where !== "the address itself");
   useEffect(() => {
     if (structured || !hasFindings) return;
     morphFrom.current = readMorphRects();
