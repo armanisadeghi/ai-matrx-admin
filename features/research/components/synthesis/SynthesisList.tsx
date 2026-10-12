@@ -4,7 +4,10 @@ import { readOf } from "@ai-matrx/design-system";
 import { useState, useMemo } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import type { Layout } from "react-resizable-panels";
-import { Button, EmptyState, PropertyRow } from "@ai-matrx/design-system/controls";
+import { Button, EmptyState } from "@ai-matrx/design-system/controls";
+import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
+import { ReaderDetails, detailDate } from "@/features/rich-document/reader/ReaderDetails";
+
 import { replaceAddressWithoutNavigating } from "@/lib/url-state/addressWithoutNavigating";
 import { documentTitleOf } from "@/features/rich-document/reader/ReaderLibrary";
 import { ResearchRecordReader, type ResearchReaderRecord } from "../reader/ResearchRecordReader";
@@ -117,17 +120,22 @@ function SynthesisCopy({ synthesis, label }: { synthesis: ResearchSynthesis; lab
   );
 }
 
-/** The synthesis's facts — kind, status, version, when, model, size — out of the reading surface. */
+/** The synthesis's facts — out of the reading surface; status only when something is wrong. */
 function SynthesisDetails({ synthesis }: { synthesis: ResearchSynthesis }) {
   return (
-    <div className="grid gap-1">
-      <PropertyRow label="Kind" value={<span className="capitalize">{synthesisKind(synthesis)}</span>} />
-      <PropertyRow label="Status" value={<span className="capitalize">{synthesis.status}</span>} />
-      {synthesis.capture_version != null && <PropertyRow label="Version" value={`v${synthesis.capture_version}`} />}
-      <PropertyRow label="Written" value={synthesis.created_at ? new Date(synthesis.created_at).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" }) : "Unknown"} />
-      {synthesis.model_id && <PropertyRow label="Model" value={<AiModelRef modelId={synthesis.model_id} showIcon={false} disableNavigation />} />}
-      <PropertyRow label="Length" value={`${(synthesis.result?.length ?? 0).toLocaleString()} characters`} />
-    </div>
+    <ReaderDetails
+      sections={[
+        {
+          rows: [
+            { label: "Kind", value: <span className="capitalize">{synthesisKind(synthesis)}</span> },
+            synthesis.status !== "success" && synthesis.status !== "complete" && { label: "Status", value: <span className="capitalize">{synthesis.status}</span> },
+            synthesis.capture_version != null && { label: "Version", value: `v${synthesis.capture_version}` },
+            { label: "Written", value: detailDate(synthesis.created_at) },
+            !!synthesis.model_id && { label: "Model", value: <AiModelRef modelId={synthesis.model_id} showIcon={false} disableNavigation /> },
+          ],
+        },
+      ]}
+    />
   );
 }
 
@@ -246,6 +254,18 @@ export default function SynthesisList({ defaultLayout }: { defaultLayout?: Layou
   const handleRunTopicSynthesis = async (
     iterationMode: "initial" | "update" | "rebuild" = "initial",
   ) => {
+    // A paid AI run states what it does before it starts.
+    const ok = await confirm({
+      title: iterationMode === "rebuild" ? "Rebuild the topic report?" : iterationMode === "update" ? "Update the topic report?" : "Run synthesis?",
+      description:
+        iterationMode === "rebuild"
+          ? "Rewrites the report from every included source — a paid AI run. The current report is kept as a version, and its open comments go to the writer."
+          : iterationMode === "update"
+            ? "Folds the newest keyword synthesis into the report — a paid AI run. The current report is kept as a version, and its open comments go to the writer."
+            : "Writes the syntheses this topic is still missing — a paid AI run.",
+      confirmLabel: iterationMode === "rebuild" ? "Rebuild" : iterationMode === "update" ? "Update" : "Run",
+    });
+    if (!ok) return;
     setStreamingText("");
     setStreamingLabel("");
     const res = await api.synthesize(topicId, {
@@ -465,6 +485,10 @@ export default function SynthesisList({ defaultLayout }: { defaultLayout?: Layou
       .map((g) => ({ label: g.title, items: g.items.map(({ synthesis, label }) => ({ id: synthesis.id, title: label, content: synthesis.result ?? "", flag: flagOf(synthesis) })) })),
     activeId: null as string | null,
     onSelect: (id: string) => selectSynthesis(id),
+    summary: [
+      topicSyntheses.length ? `${topicSyntheses.length} topic report${topicSyntheses.length === 1 ? "" : "s"}` : "",
+      keywordSyntheses.length ? `${keywordSyntheses.length} keyword synthes${keywordSyntheses.length === 1 ? "is" : "es"}` : "",
+    ].filter(Boolean).join(" · "),
   };
   const ordered = groups.flatMap((g) => g.items);
   const requested = searchParams.get("record");

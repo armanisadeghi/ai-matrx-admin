@@ -28,7 +28,7 @@ import { Drawer, DrawerBody, DrawerContent, DrawerHeader, DrawerTitle } from "@/
 import { AnnotatedContent, AnnotationSidecarProvider } from "@/features/rich-document/annotations/AnnotationSidecar";
 import { AnnotationPanel } from "@/features/rich-document/annotations/AnnotationPanel";
 import type { AnnotationSource } from "@/features/rich-document/annotations/types";
-import { DocumentOutline, scrollToOutlineHeading } from "@/features/rich-document/outline/DocumentOutline";
+import { scrollToOutlineHeading } from "@/features/rich-document/outline/DocumentOutline";
 import { ReaderLibrary, type ReaderLibraryGroup } from "./ReaderLibrary";
 import { ClientGroup } from "@/features/resizable-panels/ClientGroup";
 import { Handle } from "@/features/resizable-panels/Handle";
@@ -60,6 +60,8 @@ export interface AnnotatedReaderProps {
     groups: readonly ReaderLibraryGroup[];
     activeId: string | null;
     onSelect: (id: string) => void;
+    /** One quiet line about the whole set, under the panel header. */
+    summary?: string;
   };
   /** The record's facts (status, version, dates, model, cost) — a "Details" tab, never above the text. */
   details?: ReactNode;
@@ -75,8 +77,6 @@ export interface AnnotatedReaderProps {
   wrapBody?: (body: ReactNode) => ReactNode;
   /** Record-specific passage actions added to the one selection toolbar. */
   passageActions?: readonly Action[];
-  /** Which headings the outline lists (default "all": every section of an authored document). */
-  outlineSections?: "branches" | "all";
   /** Mounted inside the sidecar (agent bridges). */
   children?: ReactNode;
 }
@@ -105,7 +105,7 @@ export function AnnotatedReader(props: AnnotatedReaderProps) {
     : <ReaderLayout {...props} />;
 }
 
-function ReaderLayout({ groupKey, defaultLayout, source, panelLabel, panelActions, library, details, toolbar, header, placeholder, extraTabs = [], wrapBody, passageActions, outlineSections = "all" }: AnnotatedReaderProps) {
+function ReaderLayout({ groupKey, defaultLayout, source, panelLabel, panelActions, library, details, toolbar, header, placeholder, extraTabs = [], wrapBody, passageActions }: AnnotatedReaderProps) {
   const isMobile = useIsMobile();
   const readerRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
@@ -136,7 +136,7 @@ function ReaderLayout({ groupKey, defaultLayout, source, panelLabel, panelAction
   const body = source ? (
     <AnnotatedContent passageActions={passageActions}>
       <div ref={contentRef}>
-        <RichDocument imagePolicy="ai" content={source.body} source={{ type: "raw", title: source.title }} actionsVariant="icon-only" actionsPosition="top-right" actionsBehavior="hover-only" />
+        <RichDocument imagePolicy="ai" content={source.body} source={{ type: "raw", title: source.title }} actionsVariant="mini-bar" actionsPosition="below" />
       </div>
     </AnnotatedContent>
   ) : null;
@@ -148,9 +148,9 @@ function ReaderLayout({ groupKey, defaultLayout, source, panelLabel, panelAction
         {toolbar}
         {source && <Button icon={<Search aria-hidden />} variant="quiet" aria-label="Find in this document" title="Find in this document" onClick={openFind} />}
       </div>
-      {findOpen && source && <div className="absolute right-3 top-10 z-30 w-[min(96%,520px)]"><RenderedFindBar rootRef={readerRef} onClose={() => setFindOpen(false)} label="Find in this document" focusRequest={findFocus} /></div>}
+      {findOpen && source && <div className="flex shrink-0 justify-end px-3 pb-2"><div className="w-full max-w-[520px]"><RenderedFindBar rootRef={readerRef} onClose={() => setFindOpen(false)} label="Find in this document" focusRequest={findFocus} /></div></div>}
       <div className="scroll-page-end-space min-h-0 flex-1 overflow-y-auto">
-        <div ref={readerRef} className="mx-auto w-full max-w-4xl px-6 pb-6 pt-1">
+        <div ref={readerRef} className="mx-auto w-full max-w-3xl px-6 pb-6 pt-1">
           {header}
           {/* A body that does not open with its own title gets the record's (as the study guide does). */}
           {source && !/^\s*#\s/.test(source.body) && <h1 className="mb-4 mt-2 text-2xl font-semibold tracking-tight text-foreground">{source.title}</h1>}
@@ -168,9 +168,9 @@ function ReaderLayout({ groupKey, defaultLayout, source, panelLabel, panelAction
       </div>
       <div className="scroll-page-end-space min-h-0 min-w-0 flex-1 overflow-y-auto overflow-x-hidden px-2 pb-3">
         {library ? (
-          <ReaderLibrary groups={library.groups} activeId={library.activeId} onSelect={library.onSelect} onJump={jump} label={panelLabel} />
+          <ReaderLibrary groups={library.groups} activeId={library.activeId} onSelect={library.onSelect} onJump={jump} summary={library.summary} label={panelLabel} />
         ) : source ? (
-          <DocumentOutline key={`${source.id}:${source.contentVersion}`} content={source.body} titleLabel={source.title} onJump={jump} sections={outlineSections} />
+          <ReaderLibrary groups={[{ label: panelLabel, items: [{ id: source.id, title: source.title, content: source.body }] }]} activeId={source.id} onSelect={() => undefined} onJump={jump} label={panelLabel} />
         ) : null}
       </div>
     </aside>
@@ -181,7 +181,7 @@ function ReaderLayout({ groupKey, defaultLayout, source, panelLabel, panelAction
   const activeExtra = allTabs.find((t) => t.id === tab);
   const right = (
     <aside className="matrx-touch-targets flex h-full min-h-0 min-w-0 flex-col bg-muted/20">
-      <div className="flex h-10 shrink-0 items-end border-b border-border pl-3 pr-10">
+      <div className="flex h-10 shrink-0 items-end border-b border-border pl-3 pr-11">
         {tabs.length > 1
           ? <Tabs aria-label="Reader details" rule={false} value={activeExtra ? tab : NOTES_TAB} onValueChange={setTab} data={tabs} />
           : <p className="pb-2.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Notes & comments</p>}
@@ -211,11 +211,11 @@ function ReaderLayout({ groupKey, defaultLayout, source, panelLabel, panelAction
       <div className="relative h-full min-h-0 overflow-hidden">
         <PanelToggles />
         <ClientGroup id={groupKey} groupKey={groupKey} cookieName={`panels:${groupKey}`} defaultLayout={defaultLayout} orientation="horizontal" className="h-full w-full" resizeTargetMinimumSize={{ coarse: 20, fine: 10 }}>
-          <RegisteredPanel registerAs="navigator" groupKey={groupKey} id="navigator" collapsible collapsedSize="0%" defaultSize="280px" minSize="200px">{left}</RegisteredPanel>
+          <RegisteredPanel registerAs="navigator" groupKey={groupKey} id="navigator" collapsible collapsedSize="0%" defaultSize="280px" minSize="240px">{left}</RegisteredPanel>
           <Handle hideWhenCollapsed={["navigator"]} />
-          <Panel id="reader" minSize="35%"><CenterBody>{center}</CenterBody></Panel>
+          <Panel id="reader" minSize="420px"><CenterBody>{center}</CenterBody></Panel>
           <Handle hideWhenCollapsed={["inspector"]} />
-          <RegisteredPanel registerAs="inspector" groupKey={groupKey} id="inspector" collapsible collapsedSize="0%" defaultSize="360px" minSize="300px">{right}</RegisteredPanel>
+          <RegisteredPanel registerAs="inspector" groupKey={groupKey} id="inspector" collapsible collapsedSize="0%" defaultSize="370px" minSize="360px">{right}</RegisteredPanel>
         </ClientGroup>
       </div>
     </PanelControlProvider>

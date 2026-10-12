@@ -237,7 +237,9 @@ export function AnnotationPanel({
           <p className="px-1 py-8 text-center text-sm text-muted-foreground">
             {items.length === 0
               ? "Select text to highlight it, comment on it, suggest an edit or link something to it."
-              : "Nothing here with this filter."}
+              : filter === "all" && !showResolved
+                ? "Everything here is resolved."
+                : "Nothing here with this filter."}
           </p>
         ) : (
           <div className="grid min-w-0 grid-cols-1 gap-2">

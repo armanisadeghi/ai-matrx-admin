@@ -156,3 +156,11 @@ describe("authored documents list every section", () => {
     expect(documentOutlineItems(headings, "", { sections: "all" }).map((item) => item.text)).toEqual(["One", "Two"]);
   });
 });
+
+describe("a document's own table of contents", () => {
+  it("is never listed as a section", () => {
+    const headings = parseNoteOutline("# Report\n## Table of Contents\n## Executive Summary\n## Sources");
+    expect(documentOutlineItems(headings, "", { sections: "all" }).map((item) => item.text)).toEqual(["Executive Summary", "Sources"]);
+  });
+});
+

@@ -12,7 +12,10 @@ import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import type { Layout } from "react-resizable-panels";
 import { AlertCircle, ArrowUpRight, Brain, Loader2, RefreshCw, XCircle } from "lucide-react";
-import { Button, EmptyState, PropertyRow } from "@ai-matrx/design-system/controls";
+import { Button, EmptyState } from "@ai-matrx/design-system/controls";
+import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
+import { ReaderDetails, detailDate } from "@/features/rich-document/reader/ReaderDetails";
+import { readableTitle } from "@/features/rich-document/reader/ReaderLibrary";
 import { ReadFailure, Skeleton } from "@ai-matrx/design-system";
 import { AiModelRef } from "@ai-matrx/chat/agents/components/identity-refs/AiIdentityRef";
 import { Cost } from "@/components/cost/Cost";
@@ -47,26 +50,32 @@ function AnalysisDetails({
 }) {
   const usage = tokenUsageFromJson(analysis.token_usage);
   return (
-    <div className="grid gap-4">
-      <div className="grid gap-1">
-        <PropertyRow label="Source" value={source?.title ?? source?.hostname ?? "Unknown source"} />
-        {source?.url && <PropertyRow label="Address" value={<a href={source.url} target="_blank" rel="noopener noreferrer" className="break-all text-primary hover:underline">{source.hostname ?? source.url}</a>} />}
-        <PropertyRow label="Status" value={<span className="capitalize">{analysis.status}</span>} />
-        <PropertyRow label="Written" value={analysis.created_at ? new Date(analysis.created_at).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" }) : "Unknown"} />
-        {analysis.model_id && <PropertyRow label="Model" value={<AiModelRef modelId={analysis.model_id} showIcon={false} disableNavigation />} />}
-        {usage && <PropertyRow label="Tokens" value={`${usage.totalTokens.toLocaleString()}${usage.cachedInputTokens > 0 ? ` (${usage.cachedInputTokens.toLocaleString()} cached)` : ""}`} />}
-        {usage?.costUsd != null && usage.costUsd > 0 && <PropertyRow label="Cost" value={<Cost usd={usage.costUsd} short />} />}
-      </div>
-      <div className="grid gap-1">
-        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">All analyses</p>
-        <PropertyRow label="Analyses" value={totals.total} />
-        <PropertyRow label="With content" value={totals.withContent} />
-        {totals.empty > 0 && <PropertyRow label="Empty" value={totals.empty} />}
-        {totals.failed > 0 && <PropertyRow label="Failed" value={totals.failed} />}
-        <PropertyRow label="Cost" value={<Cost usd={totals.totalCost} short />} />
-        <PropertyRow label="Tokens" value={tokensShort(totals.totalTokens)} />
-      </div>
-    </div>
+    <ReaderDetails
+      sections={[
+        {
+          title: "This analysis",
+          rows: [
+            !!source?.url && { label: "Page", value: <a href={source.url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">{source.hostname ?? "Open"}</a> },
+            analysis.status !== "success" && { label: "Status", value: <span className="capitalize">{analysis.status}</span> },
+            { label: "Written", value: detailDate(analysis.created_at) },
+            !!analysis.model_id && { label: "Model", value: <AiModelRef modelId={analysis.model_id} showIcon={false} disableNavigation /> },
+            !!usage && { label: "Tokens", value: usage.totalTokens.toLocaleString() },
+            usage?.costUsd != null && usage.costUsd > 0 && { label: "Cost", value: <Cost usd={usage.costUsd} short /> },
+          ],
+        },
+        {
+          title: "All analyses",
+          rows: [
+            { label: "Analyses", value: totals.total },
+            { label: "With content", value: totals.withContent },
+            totals.empty > 0 && { label: "Empty", value: totals.empty },
+            totals.failed > 0 && { label: "Failed", value: totals.failed },
+            { label: "Cost", value: <Cost usd={totals.totalCost} short /> },
+            { label: "Tokens", value: tokensShort(totals.totalTokens) },
+          ],
+        },
+      ]}
+    />
   );
 }
 
@@ -160,7 +169,7 @@ export default function AnalysisList({ defaultLayout }: { defaultLayout?: Layout
 
   const titleOf = (a: ResearchAnalysis) => {
     const source = sourceMap.get(a.source_id);
-    return source?.title || source?.hostname || "Untitled source";
+    return readableTitle(source?.title || source?.hostname || "Untitled source");
   };
 
   const requested = searchParams.get("record");
@@ -179,9 +188,12 @@ export default function AnalysisList({ defaultLayout }: { defaultLayout?: Layout
     ].filter((g) => g.items.length > 0),
     activeId: selected?.id ?? null,
     onSelect: selectAnalysis,
+    summary: [`${totals.withContent} of ${totals.total} with content`, incompleteItems.length ? `${incompleteItems.length} need attention` : ""].filter(Boolean).join(" · "),
   };
 
   const handleAnalyzeAll = async () => {
+    // A paid AI run states what it does before it starts.
+    if (!(await confirm({ title: "Analyze sources?", description: "Reads every included source that has no analysis yet — a paid AI run, one call per source.", confirmLabel: "Analyze" }))) return;
     setStreamingLabel("Analyzing all sources...");
     // The controller must be the FETCH's own so the watchdog (and cancel)
     // actually closes the body — see `StartStreamOptions.abortController`.
@@ -211,11 +223,13 @@ export default function AnalysisList({ defaultLayout }: { defaultLayout?: Layout
   };
 
   const handleRetryAll = async () => {
+    if (!(await confirm({ title: `Retry ${totals.failed} failed analyses?`, description: "Runs each failed analysis again — a paid AI run, one call per source.", confirmLabel: "Retry" }))) return;
     await api.retryFailedAnalyses(topicId);
     refetchAnalyses();
   };
 
   const handleRetryOne = async (analysis: ResearchAnalysis) => {
+    if (!(await confirm({ title: "Retry this analysis?", description: "Reads this source again — a paid AI run.", confirmLabel: "Retry" }))) return;
     setRetrying(true);
     try {
       await api.retryAnalysis(topicId, analysis.id);

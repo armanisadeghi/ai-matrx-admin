@@ -16,16 +16,18 @@ interface VersionHistoryProps {
     topicId: string;
     currentVersion: number;
     onCompare: (oldDoc: ResearchDocument, newDoc: ResearchDocument) => void;
+    /** Inside the reader's Versions tab: the list itself, no dialog. */
+    embedded?: boolean;
 }
 
-export function VersionHistory({ open, onOpenChange, topicId, currentVersion, onCompare }: VersionHistoryProps) {
+export function VersionHistory({ open, onOpenChange, topicId, currentVersion, onCompare, embedded = false }: VersionHistoryProps) {
     const isMobile = useIsMobile();
     const { data: versions, error, isLoading, refresh } = useDocumentVersions(topicId);
 
     const versionList = versions ?? [];
 
     const content = (
-        <div className="space-y-2 p-4">
+        <div className={embedded ? "space-y-2" : "space-y-2 p-4"}>
             {error && versionList.length > 0 && (
                 <StaleDataNotice hasData what="this document's versions" onRetry={refresh} retrying={isLoading} detail={error} />
             )}
@@ -48,7 +50,7 @@ export function VersionHistory({ open, onOpenChange, topicId, currentVersion, on
                         </div>
                         <span className="type-secondary text-muted-foreground">
                             {doc.created_at
-                                ? new Date(doc.created_at).toLocaleString()
+                                ? new Date(doc.created_at).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" })
                                 : "Unknown date"}
                         </span>
                     </div>
@@ -64,6 +66,8 @@ export function VersionHistory({ open, onOpenChange, topicId, currentVersion, on
             ))}
         </div>
     );
+
+    if (embedded) return content;
 
     if (isMobile) {
         return (

@@ -11,14 +11,11 @@ import {
   FileText,
   AlertTriangle,
 } from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { ReadFailure } from "@ai-matrx/design-system";
-import { Button, PropertyRow } from "@ai-matrx/design-system/controls";
+import { Button } from "@ai-matrx/design-system/controls";
+import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
+import { ReaderDetails, detailDate } from "@/features/rich-document/reader/ReaderDetails";
+import { CopyButtons } from "@/components/agent-copy/CopyButtons";
 import { StaleDataNotice } from "@ai-matrx/design-system";
 import { useTopicContext, useStreamDebug } from "../../context/ResearchContext";
 import { useResearchApi } from "../../hooks/useResearchApi";
@@ -61,7 +58,6 @@ export default function DocumentViewer({ defaultLayout }: { defaultLayout?: Layo
   // Live streaming document text — accumulated chunk by chunk
   const [streamingDocText, setStreamingDocText] = useState("");
 
-  const [showHistory, setShowHistory] = useState(false);
   const [diffDocs, setDiffDocs] = useState<
     [ResearchDocument, ResearchDocument] | null
   >(null);
@@ -109,37 +105,15 @@ export default function DocumentViewer({ defaultLayout }: { defaultLayout?: Layo
   const documentStale =
     deriveReadiness(progress).document.readiness === "stale";
 
-  const handleExport = useCallback(
-    async (format: string) => {
-      if (!document) return;
-      try {
-        if (format === "json") {
-          const content = JSON.stringify(
-            {
-              title: document.title,
-              content: document.content,
-              version: document.capture_version,
-            },
-            null,
-            2,
-          );
-          const blob = new Blob([content], { type: "application/json" });
-          const a = window.document.createElement("a");
-          downloadFile(`research-${topicId}.${format}`, blob, blob.type);
-        } else {
-          // For other formats, download as text for now
-          const blob = new Blob([document.content ?? ""], {
-            type: "text/plain",
-          });
-          const a = window.document.createElement("a");
-          downloadFile(`research-${topicId}.txt`, blob, blob.type);
-        }
-      } catch {
-        // fallback — download as text
-      }
-    },
-    [document, topicId],
-  );
+  /** A paid, whole-document AI run states what it does first. */
+  const confirmRegenerate = async () => {
+    const ok = await confirm({
+      title: "Regenerate the document?",
+      description: "Reassembles the whole document from the topic report and analyses — one large paid AI run. This version is kept, and its open comments go to the writer.",
+      confirmLabel: "Regenerate",
+    });
+    if (ok) void handleRegenerate();
+  };
 
   // Show the streaming in-progress state while generating, OR while we hold
   // just-streamed text waiting for the saved row to land (no empty flash).
@@ -227,7 +201,7 @@ export default function DocumentViewer({ defaultLayout }: { defaultLayout?: Layo
             </p>
           )}
         </div>
-        <Button variant="primary" icon={stream.isStreaming ? <Loader2 className="animate-spin" aria-hidden /> : <RefreshCw aria-hidden />} onClick={handleRegenerate} disabled={stream.isStreaming}>
+        <Button variant="primary" icon={stream.isStreaming ? <Loader2 className="animate-spin" aria-hidden /> : <RefreshCw aria-hidden />} onClick={() => void confirmRegenerate()} disabled={stream.isStreaming}>
           Retry
         </Button>
       </div>
@@ -246,47 +220,51 @@ export default function DocumentViewer({ defaultLayout }: { defaultLayout?: Layo
 
   const docTokenUsage = tokenUsageFromJson(document.token_usage);
 
-  // Quiet actions over the document; its facts (version, date, tokens, cost) are in Details.
+  // Quiet actions over the document; its facts are in Details, its versions in Versions.
   const toolbar = (
     <>
       <Button
         variant="quiet"
         icon={stream.isStreaming ? <Loader2 className="animate-spin" aria-hidden /> : <RefreshCw aria-hidden />}
         aria-label="Regenerate document"
-        title="Regenerate — reassembles the whole document (one large paid AI run); this version is kept"
-        onClick={handleRegenerate}
+        title="Regenerate the document (a paid AI run)"
+        onClick={() => void confirmRegenerate()}
         disabled={stream.isStreaming}
       />
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="quiet" icon={<Download aria-hidden />} aria-label="Export document" title="Export" />
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          <DropdownMenuItem onClick={() => handleExport("json")}>Export as JSON</DropdownMenuItem>
-          <DropdownMenuItem disabled>Export as PDF (coming soon)</DropdownMenuItem>
-          <DropdownMenuItem disabled>Export as DOCX (coming soon)</DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-      <Button variant="quiet" icon={<History aria-hidden />} aria-label="Version history" title="Version history" onClick={() => setShowHistory(true)} />
+      <CopyButtons
+        size="icon"
+        label={document.title ?? "Research document"}
+        human={() => document.content ?? ""}
+        contentFlavor="markdown"
+        json={() => ({ title: document.title, content: document.content, version: document.capture_version })}
+      />
     </>
   );
 
   const details = (
-    <div className="grid gap-1">
-      <PropertyRow label="Title" value={document.title ?? "Research Document"} />
-      {document.capture_version != null && <PropertyRow label="Version" value={`v${document.capture_version}`} />}
-      <PropertyRow label="Assembled" value={document.created_at ? new Date(document.created_at).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" }) : "Unknown"} />
-      <PropertyRow label="Status" value={<span className="capitalize">{document.status}</span>} />
-      {docTokenUsage && (
-        <>
-          <PropertyRow label="Input" value={`${docTokenUsage.inputTokens.toLocaleString()} tokens`} />
-          {docTokenUsage.cachedInputTokens > 0 && <PropertyRow label="Cached" value={`${docTokenUsage.cachedInputTokens.toLocaleString()} tokens`} />}
-          <PropertyRow label="Output" value={`${docTokenUsage.outputTokens.toLocaleString()} tokens`} />
-          {docTokenUsage.models.length > 0 && <PropertyRow label="Model" value={docTokenUsage.models.map((m) => m.model).join(", ")} />}
-          {docTokenUsage.costUsd != null && <PropertyRow label="Cost" value={<Cost usd={docTokenUsage.costUsd} short />} />}
-        </>
-      )}
-    </div>
+    <ReaderDetails
+      sections={[
+        {
+          rows: [
+            document.capture_version != null && { label: "Version", value: `v${document.capture_version}` },
+            { label: "Assembled", value: detailDate(document.created_at) },
+            document.status !== "success" && { label: "Status", value: <span className="capitalize">{document.status}</span> },
+            docTokenUsage && docTokenUsage.models.length > 0 && { label: "Model", value: docTokenUsage.models.map((m) => m.model).join(", ") },
+          ],
+        },
+        {
+          title: "Cost",
+          rows: docTokenUsage
+            ? [
+                { label: "Input", value: `${docTokenUsage.inputTokens.toLocaleString()} tokens` },
+                docTokenUsage.cachedInputTokens > 0 && { label: "Cached", value: `${docTokenUsage.cachedInputTokens.toLocaleString()} tokens` },
+                { label: "Output", value: `${docTokenUsage.outputTokens.toLocaleString()} tokens` },
+                docTokenUsage.costUsd != null && { label: "Cost", value: <Cost usd={docTokenUsage.costUsd} short /> },
+              ]
+            : [],
+        },
+      ]}
+    />
   );
 
   const header = (
@@ -312,7 +290,7 @@ export default function DocumentViewer({ defaultLayout }: { defaultLayout?: Layo
             </span>{" "}
             · open comments go to the writer
           </p>
-          <Button variant="primary" icon={stream.isStreaming ? <Loader2 className="animate-spin" aria-hidden /> : <RefreshCw aria-hidden />} title="Reassemble the whole document (one large paid AI run); this version is kept" onClick={handleRegenerate} disabled={stream.isStreaming}>
+          <Button variant="primary" icon={stream.isStreaming ? <Loader2 className="animate-spin" aria-hidden /> : <RefreshCw aria-hidden />} onClick={() => void confirmRegenerate()} disabled={stream.isStreaming}>
               Regenerate
             </Button>
         </div>
@@ -359,19 +337,24 @@ export default function DocumentViewer({ defaultLayout }: { defaultLayout?: Layo
         toolbar={toolbar}
         header={header}
         details={details}
+        extraTabs={[
+          {
+            id: "versions",
+            label: "Versions",
+            content: (
+              <VersionHistory
+                embedded
+                open
+                onOpenChange={() => undefined}
+                topicId={topicId}
+                currentVersion={document.capture_version ?? 0}
+                onCompare={(old, current) => setDiffDocs([old, current])}
+              />
+            ),
+          },
+        ]}
       />
 
-      {/* Version History */}
-      <VersionHistory
-        open={showHistory}
-        onOpenChange={setShowHistory}
-        topicId={topicId}
-        currentVersion={document.capture_version ?? 0}
-        onCompare={(old, current) => {
-          setDiffDocs([old, current]);
-          setShowHistory(false);
-        }}
-      />
     </>
   );
 }

@@ -29,6 +29,8 @@ export function documentOutlineDisplayTitle(outline: readonly NoteOutlineItem[],
 /** Commit to the document's Markdown heading hierarchy. The first section
  * level sets the top tier; no other text or shallower headings are promoted.
  * A top-level row must own deeper headings to become an outline branch. */
+const TOC_HEADING = /^(table of contents|contents|toc)$/i;
+
 export interface DocumentOutlineOptions {
   /**
    * "branches" (study guides — notes extracted from PDFs carry junk one-line
@@ -41,7 +43,8 @@ export interface DocumentOutlineOptions {
 
 export function documentOutlineItems(outline: readonly NoteOutlineItem[], content = "", options: DocumentOutlineOptions = {}): NoteOutlineItem[] {
   const title = documentOutlineTitle(outline, content);
-  const sections = outline.filter((item) => item !== title);
+  // A document's own "Table of Contents" heading is the outline repeated, never a section.
+  const sections = outline.filter((item) => item !== title && !TOC_HEADING.test(item.text.trim()));
   if (!sections.length) return [];
   const rootLevel = sections[0].level;
   const eligible: NoteOutlineItem[] = [];
