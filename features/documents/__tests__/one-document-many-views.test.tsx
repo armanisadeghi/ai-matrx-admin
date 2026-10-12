@@ -104,6 +104,7 @@ jest.mock("@univerjs/preset-docs-drawing/locales/en-US", () => ({}));
 jest.mock("@univerjs/preset-docs-thread-comment", () => ({ UniverDocsThreadCommentPreset: () => ({}) }));
 jest.mock("@univerjs/preset-docs-thread-comment/locales/en-US", () => ({}));
 jest.mock("@univerjs/find-replace", () => ({ UniverFindReplacePlugin: class {} }));
+jest.mock("@/lib/univer/registerMissingUniverIcons", () => ({ registerMissingUniverIcons: () => undefined }));
 jest.mock("@univerjs/docs-find-replace", () => ({ UniverDocsFindReplacePlugin: class {} }));
 jest.mock("@univerjs/find-replace/locale/en-US", () => ({}));
 jest.mock("@/lib/univer/routeUniverNotificationsToApp", () => ({ routeUniverNotificationsToApp: () => ({ applied: true }) }));
