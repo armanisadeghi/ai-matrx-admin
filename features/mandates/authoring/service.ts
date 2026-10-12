@@ -14,7 +14,7 @@
 
 import type { AppDispatch } from "@/lib/redux/store";
 import { callApi } from "@/lib/api/call-api";
-import { parseCallApiError } from "@/lib/api/errors";
+import { parseCallApiError } from "@ai-matrx/api";
 import { createClient } from "@/utils/supabase/client";
 import { requireAuthenticatedSupabaseSession } from "@/utils/supabase/webDb";
 import { invalidateMandateCache } from "@ai-matrx/chat/mandates/service";

@@ -17,7 +17,7 @@
 import { useQuery } from "@tanstack/react-query";
 
 import { callApi } from "@/lib/api/call-api";
-import { describeBackendFailure, parseCallApiError } from "@/lib/api/errors";
+import { describeBackendFailure, parseCallApiError } from "@ai-matrx/api";
 import { useAppDispatch } from "@/lib/redux/hooks";
 
 export const planAiRunKeys = {

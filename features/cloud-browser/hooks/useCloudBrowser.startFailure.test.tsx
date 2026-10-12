@@ -13,7 +13,7 @@
 import * as React from "react";
 import { configureStore } from "@reduxjs/toolkit";
 import { renderHook, settle } from "@/test-utils/renderHook";
-import { BackendApiError } from "@/lib/api/errors";
+import { BackendApiError } from "@ai-matrx/api";
 import cloudBrowserReducer from "../redux/cloudBrowserSlice";
 
 const makeStore = () =>

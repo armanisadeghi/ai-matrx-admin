@@ -21,7 +21,7 @@
 import { useApiAuth } from "@/hooks/useApiAuth";
 import { selectResolvedBaseUrl } from "@/lib/redux/slices/apiConfigSlice";
 import { useAppSelector } from "@/lib/redux/hooks";
-import { ENDPOINTS } from "@/lib/api/endpoints";
+import { ENDPOINTS } from "@ai-matrx/api";
 import {
   buildMatrxRequestUrl,
   extractMatrxErrorMessage,

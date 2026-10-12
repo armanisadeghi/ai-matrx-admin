@@ -1,5 +1,5 @@
 import { apiPost } from "@/lib/api/typed-client";
-import { BackendApiError } from "@/lib/api/errors";
+import { BackendApiError } from "@ai-matrx/api";
 import { getFile } from "@/features/files/api/files";
 import { apiFileRecordToCloudFile } from "@/features/files/redux/converters";
 import { extname, joinPath, stemname } from "@/features/files/utils/path";

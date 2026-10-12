@@ -8,7 +8,7 @@
  */
 
 import { apiGet, apiPost } from "@/lib/api/typed-client";
-import { BackendApiError } from "@/lib/api/errors";
+import { BackendApiError } from "@ai-matrx/api";
 import type { AcceptInfo } from "./model";
 
 export type AcceptOutcome =

@@ -16,7 +16,7 @@
  * "nothing was changed" are the pre-exchange policy refusals, where it is true.
  */
 
-import { BackendApiError } from "@/lib/api/errors";
+import { BackendApiError } from "@ai-matrx/api";
 import {
   GOOGLE_GENERIC_FAILURE_SENTENCE,
   consentFailureAnswer,

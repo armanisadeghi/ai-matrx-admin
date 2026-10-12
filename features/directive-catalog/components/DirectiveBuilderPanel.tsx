@@ -110,7 +110,7 @@ import {
   nounOptionGroups,
 } from "@/features/directive-catalog/nounOptions";
 import { useCommonReferenceTypes } from "@/features/matrx-envelope/components/reference-picker/useCommonReferenceTypes";
-import { BackendApiError } from "@/lib/api/errors";
+import { BackendApiError } from "@ai-matrx/api";
 import { AGENT_ICON } from "@/components/icons/domain-icons";
 import { isUuidShape } from "@ai-matrx/kit/uuid";
 

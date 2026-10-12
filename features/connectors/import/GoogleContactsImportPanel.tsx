@@ -32,7 +32,7 @@ import { Input } from "@ai-matrx/design-system/controls";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "@/lib/toast";
-import { getUserMessage } from "@/lib/api/errors";
+import { getUserMessage } from "@ai-matrx/api";
 import { EntityRef } from "@/components/official/entity-ref/EntityRef";
 import {
   importGoogleContacts,

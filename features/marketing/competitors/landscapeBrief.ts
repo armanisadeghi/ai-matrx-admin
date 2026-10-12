@@ -15,7 +15,7 @@ import {
   describeBackendFailure,
   parseCallApiError,
   parseStreamError,
-} from "@/lib/api/errors";
+} from "@ai-matrx/api";
 import { isErrorEvent, type TypedStreamEvent } from "@/lib/api/types";
 import { isJsonObject } from "@/types/json";
 import type { AppDispatch } from "@/lib/redux/store";

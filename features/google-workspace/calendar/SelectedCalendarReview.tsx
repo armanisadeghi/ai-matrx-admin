@@ -18,7 +18,7 @@ import { googleConnectionLabel } from "@/features/marketing/google/presentation"
 import { useOpenGoogleConnectWindow } from "@/features/overlays/openers/googleConnectWindow";
 import { useOpenConnectorConsentDialog } from "@/features/overlays/openers/connectorConsentDialog";
 import { extractErrorMessage } from "@/utils/errors";
-import { BackendApiError } from "@/lib/api/errors";
+import { BackendApiError } from "@ai-matrx/api";
 import type { GoogleConnectionHealth } from "@/features/marketing/google/types";
 import {
   discoverSelectedCalendars,

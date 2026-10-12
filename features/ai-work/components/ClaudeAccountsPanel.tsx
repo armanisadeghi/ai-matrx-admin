@@ -25,7 +25,7 @@ import { useClipboard } from "@ai-matrx/kit/clipboard";
 import { ErrorNotice } from "@ai-matrx/design-system";
 import { Input } from "@ai-matrx/design-system/controls";
 import { toast } from "@/lib/toast";
-import { getUserMessage } from "@/lib/api/errors";
+import { getUserMessage } from "@ai-matrx/api";
 import { resolveBaseUrl } from "@/lib/python-client";
 import { createClient } from "@/utils/supabase/client";
 import { getClaimsUser } from "@ai-matrx/auth";

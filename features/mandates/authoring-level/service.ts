@@ -18,7 +18,7 @@
 import { ORGANIZATION_CONTEXT_REQUIRED_CODE } from "@ai-matrx/auth/organizations";
 import type { AppDispatch } from "@/lib/redux/store";
 import { callApi } from "@/lib/api/call-api";
-import { parseCallApiError } from "@/lib/api/errors";
+import { parseCallApiError } from "@ai-matrx/api";
 import { OrganizationContextError } from "@/lib/api/organization-context";
 import { createClient } from "@/utils/supabase/client";
 import { requireAuthenticatedSupabaseSession } from "@/utils/supabase/webDb";

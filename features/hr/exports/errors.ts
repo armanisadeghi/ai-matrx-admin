@@ -15,7 +15,7 @@
  * as one of the four would send a payroll administrator to fix the wrong thing.
  */
 
-import { BackendApiError, parseHttpErrorBody } from "@/lib/api/errors";
+import { BackendApiError, parseHttpErrorBody } from "@ai-matrx/api";
 import type { ExportPrecondition, HrErrorBody } from "./types";
 
 /** A failed export call, from either transport, in one shape. */

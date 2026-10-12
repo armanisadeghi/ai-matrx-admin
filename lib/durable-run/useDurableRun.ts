@@ -58,7 +58,7 @@ import { useFloatingLiveRun } from "@/features/overlays/openers/liveRunWindow";
 import type { LiveRunProgressItem } from "@ai-matrx/chat/agents/components/live-run/LiveRunProgress";
 import { callApi } from "@/lib/api/call-api";
 import type { ApiCallError } from "@/lib/api/call-api";
-import { isStreamTransportLost } from "@/lib/api/errors";
+import { isStreamTransportLost } from "@ai-matrx/api";
 import type { TypedStreamEvent } from "@/lib/api/types";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import type { AppDispatch } from "@/lib/redux/store";

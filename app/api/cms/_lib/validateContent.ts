@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { postJsonAsUser } from "@/lib/api/post-json-as-user";
-import { AIDREAM_PRODUCTION_URL, ENDPOINTS } from "@/lib/api/endpoints";
+import { ENDPOINTS } from "@ai-matrx/api";
+import { AIDREAM_PRODUCTION_URL } from "@/lib/api/endpoints";
 import { OrganizationContextError } from "@/lib/api/organization-context";
 
 const VALIDATION_TIMEOUT_MS = 5_000;

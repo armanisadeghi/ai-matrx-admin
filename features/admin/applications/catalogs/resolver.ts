@@ -9,7 +9,7 @@
 // Contract: common-docs/systems/apps/remote-catalogs/FEATURE.md
 
 import { postJsonAsUser } from "@/lib/api/post-json-as-user";
-import { BackendApiError } from "@/lib/api/errors";
+import { BackendApiError } from "@ai-matrx/api";
 import { probeUrl } from "@/features/admin/shared/UrlProbeField";
 import { formatFileSize } from "@ai-matrx/kit/format";
 import type {

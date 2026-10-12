@@ -47,7 +47,7 @@ jest.mock("@/lib/toast", () => ({
   },
 }));
 
-import { BackendApiError } from "@/lib/api/errors";
+import { BackendApiError } from "@ai-matrx/api";
 import { ContentViewer } from "../ContentViewer";
 import type { ResearchContent } from "../../../types";
 

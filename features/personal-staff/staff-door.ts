@@ -33,7 +33,7 @@
 import type { components } from "@ai-matrx/agents/generated/api-types";
 
 import { postJsonAsUser } from "@/lib/api/post-json-as-user";
-import { BackendApiError } from "@/lib/api/errors";
+import { BackendApiError } from "@ai-matrx/api";
 import { resolveBaseUrl } from "@/lib/python-client";
 import {
   PERSONAL_STAFF_MANDATE_KEY,

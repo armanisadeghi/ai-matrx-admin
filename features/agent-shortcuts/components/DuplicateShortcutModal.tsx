@@ -38,7 +38,7 @@ import {
 } from "../constants";
 import type { PlacementType } from "../constants";
 import { useAgentShortcutCrud } from "../hooks/useAgentShortcutCrud";
-import { getUserMessage } from "@/lib/api/errors";
+import { getUserMessage } from "@ai-matrx/api";
 import type {
   AgentShortcut,
   AgentShortcutCategory,

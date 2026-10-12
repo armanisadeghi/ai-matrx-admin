@@ -20,7 +20,10 @@ jest.mock("@/lib/api/call-api", () => ({ callApi: jest.fn() }));
 jest.mock("../social/server", () => ({ trackAccount: jest.fn(), socialErrorMessage: jest.fn() }));
 jest.mock("../social/post-count", () => ({ rememberedMaxPostsPlain: jest.fn() }));
 jest.mock("../social/stream", () => ({ SocialStreamError: class extends Error {} }));
-jest.mock("@/lib/api/errors", () => ({ BackendApiError: class extends Error {} }));
+jest.mock("@ai-matrx/api", () => ({
+  ...jest.requireActual("@ai-matrx/api"),
+  BackendApiError: class extends Error {},
+}));
 
 import { linkAccountToWebsiteCompetitor } from "./brand-competitors";
 

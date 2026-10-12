@@ -29,7 +29,7 @@ import {
   parseHttpError as parseHttpErrorBase,
   parseHttpErrorBody,
   BackendApiError,
-} from "@/lib/api/errors";
+} from "@ai-matrx/api";
 import {
   applyOrganizationContextHeader,
   requireOrganizationContext,

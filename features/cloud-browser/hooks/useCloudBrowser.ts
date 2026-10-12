@@ -9,7 +9,7 @@ import { useCallback, useEffect, useMemo } from "react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { useUser } from "@/lib/hooks/useUser";
 import * as service from "../service";
-import { BackendApiError } from "@/lib/api/errors";
+import { BackendApiError } from "@ai-matrx/api";
 import { useWrittenProgress } from "./useWrittenProgress";
 import type { CloudBrowserConsent, CloudBrowserLoadError } from "../types";
 import {

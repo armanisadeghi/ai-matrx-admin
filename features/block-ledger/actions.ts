@@ -22,7 +22,7 @@
 // was left alone and why. This file does not compose a second one that could
 // disagree with the rows the server just wrote.
 
-import { BackendApiError } from "@/lib/api/errors";
+import { BackendApiError } from "@ai-matrx/api";
 import { postJson } from "@/lib/python-client";
 import type { AcquisitionBlock } from "./types";
 

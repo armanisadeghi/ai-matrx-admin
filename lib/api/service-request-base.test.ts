@@ -8,7 +8,7 @@
 import { buildMatrxRequestUrl } from "@ai-matrx/api";
 import { serviceRequestBase } from "@/lib/api/service-routing";
 import { scraperServiceEndpoint } from "@/features/scraper/hooks/useScraperApi";
-import { ENDPOINTS } from "@/lib/api/endpoints";
+import { ENDPOINTS } from "@ai-matrx/api";
 
 const SCRAPER = "https://scraper.app.matrxserver.com";
 const AIDREAM = "https://server.app.matrxserver.com";

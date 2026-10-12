@@ -27,7 +27,7 @@ import {
 } from "@/features/mandates/contract-check";
 import { createClient } from "@/utils/supabase/client";
 import { callApi } from "@/lib/api/call-api";
-import { parseCallApiError } from "@/lib/api/errors";
+import { parseCallApiError } from "@ai-matrx/api";
 import { recordUnavailable } from "@/lib/records/recordUnavailable";
 import type { AppDispatch } from "@/lib/redux/store";
 import type { Database } from "@/types/database.types";

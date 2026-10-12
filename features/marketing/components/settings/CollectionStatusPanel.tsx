@@ -38,7 +38,7 @@ import { toast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { selectAdminFeature } from "@/lib/redux/selectors/userSelectors";
-import { describeBackendFailure } from "@/lib/api/errors";
+import { describeBackendFailure } from "@ai-matrx/api";
 import {
   BackendFailureDetails,
   formatCompactDate,

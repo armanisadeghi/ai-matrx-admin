@@ -5,7 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@ai-matrx/design-system/controls";
 import { getJson, postJson } from "@/lib/python-client";
-import { getUserMessage } from "@/lib/api/errors";
+import { getUserMessage } from "@ai-matrx/api";
 import type { components } from "@ai-matrx/agents/generated/api-types";
 import type { GoogleConnectionSummary } from "@/features/marketing/google/types";
 import { GOOGLE_SCOPE } from "@/lib/googleScopes";

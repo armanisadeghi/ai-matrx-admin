@@ -1,6 +1,6 @@
 import React, { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
-import { BackendApiError } from "@/lib/api/errors";
+import { BackendApiError } from "@ai-matrx/api";
 import { GoogleTasksWriteControls, type GoogleTasksWriteTransport } from "./GoogleTasksWriteControls";
 import {
   GOOGLE_TASK_CREATE_RECOVERY_KEY,

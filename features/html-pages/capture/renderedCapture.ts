@@ -17,7 +17,7 @@
  */
 
 import { postJsonAsUser } from "@/lib/api/post-json-as-user";
-import { BackendApiError } from "@/lib/api/errors";
+import { BackendApiError } from "@ai-matrx/api";
 import { AIDREAM_PRODUCTION_URL } from "@/lib/api/endpoints";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
 import { createClient } from "@/utils/supabase/client";

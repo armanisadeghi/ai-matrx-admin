@@ -18,7 +18,8 @@ import { adminLaneOrganizationId } from "@/lib/api/admin-lane";
 import { createAsyncThunk } from "@reduxjs/toolkit";
 
 import type { RootState } from "@/lib/redux/store";
-import { ENDPOINTS, BACKEND_URLS } from "@/lib/api/endpoints";
+import { ENDPOINTS } from "@ai-matrx/api";
+import { BACKEND_URLS } from "@/lib/api/endpoints";
 import { selectAccessToken } from "@/lib/redux/selectors/userSelectors";
 import { selectOrganizationId } from "@/lib/redux/slices/appContextSlice";
 import {

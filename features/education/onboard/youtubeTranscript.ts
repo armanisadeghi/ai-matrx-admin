@@ -14,7 +14,7 @@
 "use client";
 
 import { consumeStream } from "@/lib/api/stream-parser";
-import { ENDPOINTS } from "@/lib/api/endpoints";
+import { ENDPOINTS } from "@ai-matrx/api";
 import type { YouTubeTranscriptSourceData } from "@ai-matrx/agents/generated/stream-events";
 
 export interface YouTubeTranscriptResult {

@@ -7,7 +7,7 @@
  * Response is built by hand from the body the server sent live 2026-10-05.
  */
 
-import { parseHttpError } from "@/lib/api/errors";
+import { parseHttpError } from "@ai-matrx/api";
 import { extractErrorMessage } from "@/utils/errors";
 
 const SENTENCE =

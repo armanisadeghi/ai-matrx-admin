@@ -9,7 +9,7 @@
  * Auth is user-scoped — the conversation owner walks their own outputs; the
  * python-client attaches the Supabase session token itself.
  */
-import { BackendApiError } from "@/lib/api/errors";
+import { BackendApiError } from "@ai-matrx/api";
 import { apiGet, apiPost } from "@/lib/api/typed-client";
 import { adminDoorOpen } from "@/lib/api/adminDoor";
 import { getJson } from "@/lib/python-client";

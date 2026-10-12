@@ -23,7 +23,7 @@ import { trackAccount, socialErrorMessage } from "../social/server";
 import { rememberedMaxPostsPlain } from "../social/post-count";
 import { SocialStreamError } from "../social/stream";
 import type { SocialPlatform } from "../social/types";
-import { BackendApiError } from "@/lib/api/errors";
+import { BackendApiError } from "@ai-matrx/api";
 import { formatSocialHandle } from "../lib/social-handle";
 import { findSavedAccount, resolveTrackOutcome, type SavedAccountRow } from "./track-outcome";
 

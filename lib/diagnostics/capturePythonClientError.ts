@@ -8,7 +8,7 @@
  */
 
 import type { ApiCallError } from "@/lib/api/call-api";
-import { BackendApiError } from "@/lib/api/errors";
+import { BackendApiError } from "@ai-matrx/api";
 import { captureApiError } from "@/lib/diagnostics/captureApiError";
 
 interface PythonClientErrorContext {

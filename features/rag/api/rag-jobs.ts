@@ -14,7 +14,7 @@
 
 import { postJson } from "@/lib/python-client";
 import { apiGet, buildPath } from "@/lib/api/typed-client";
-import { BackendApiError } from "@/lib/api/errors";
+import { BackendApiError } from "@ai-matrx/api";
 import { withFileOrganization } from "@/features/files/api/fileOrganization";
 import type { components } from "@ai-matrx/agents/generated/api-types";
 import type { IngestResponse } from "./ingest";

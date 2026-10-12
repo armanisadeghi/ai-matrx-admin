@@ -12,7 +12,8 @@ import {
 } from "@/lib/redux/slices/apiConfigSlice";
 import { selectOrganizationId } from "@/lib/redux/slices/appContextSlice";
 import { createClient } from "@/utils/supabase/client";
-import { BACKEND_URLS, ENDPOINTS } from "@/lib/api/endpoints";
+import { ENDPOINTS } from "@ai-matrx/api";
+import { BACKEND_URLS } from "@/lib/api/endpoints";
 import { requestRaw } from "@/lib/python-client";
 import type { AppDispatch } from "@/lib/redux/store";
 import type { ContextScope } from "@/lib/api/types";

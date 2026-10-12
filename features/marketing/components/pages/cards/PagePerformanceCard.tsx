@@ -39,7 +39,7 @@ import {
 import {
   describeBackendFailure,
   type BackendFailureExplanation,
-} from "@/lib/api/errors";
+} from "@ai-matrx/api";
 import {
   syncPagespeed,
   type PagePerformanceSample,

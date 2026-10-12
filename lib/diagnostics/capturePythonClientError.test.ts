@@ -4,7 +4,7 @@ import {
   getSnapshot,
 } from "@/lib/diagnostics/errorCaptureStore";
 import { capturePythonClientError } from "@/lib/diagnostics/capturePythonClientError";
-import { BackendApiError } from "@/lib/api/errors";
+import { BackendApiError } from "@ai-matrx/api";
 
 describe("capturePythonClientError", () => {
   beforeEach(() => {

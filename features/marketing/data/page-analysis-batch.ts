@@ -17,7 +17,7 @@
 
 import { callApi, type ApiCallError } from "@/lib/api/call-api";
 import type { AppDispatch } from "@/lib/redux/store";
-import { BackendApiError } from "@/lib/api/errors";
+import { BackendApiError } from "@ai-matrx/api";
 import { createClient } from "@/utils/supabase/client";
 import type { components } from "@ai-matrx/agents/generated/api-types";
 

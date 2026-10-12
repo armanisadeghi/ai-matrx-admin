@@ -7,7 +7,7 @@ import {
   selectedCalendarProblem,
 } from "./SelectedCalendarReview";
 import type { SelectedEvent } from "./selectedCalendarService";
-import { BackendApiError } from "@/lib/api/errors";
+import { BackendApiError } from "@ai-matrx/api";
 
 const ORGANIZER = "organizer@example.com";
 

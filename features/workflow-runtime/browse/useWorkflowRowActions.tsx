@@ -33,7 +33,7 @@ import {
   setWorkflowFlag,
 } from "./service";
 import type { WorkflowBrowseRow } from "./types";
-import { getUserMessage } from "@/lib/api/errors";
+import { getUserMessage } from "@ai-matrx/api";
 import { presentOrganizationRefusal } from "@ai-matrx/chat/host/org";
 
 export interface WorkflowRowActionsHost {

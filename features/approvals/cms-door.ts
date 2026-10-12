@@ -34,7 +34,8 @@
  */
 
 import { postJsonAsUser } from "@/lib/api/post-json-as-user";
-import { AIDREAM_PRODUCTION_URL, ENDPOINTS } from "@/lib/api/endpoints";
+import { ENDPOINTS } from "@ai-matrx/api";
+import { AIDREAM_PRODUCTION_URL } from "@/lib/api/endpoints";
 import { createClient } from "@/utils/supabase/client";
 import type { ApprovalDecisionReply } from "./types";
 

@@ -1,6 +1,6 @@
 import { callApi, type ApiCallError } from "@/lib/api/call-api";
 import type { AppDispatch } from "@/lib/redux/store";
-import { parseStreamError, BackendApiError } from "@/lib/api/errors";
+import { parseStreamError, BackendApiError } from "@ai-matrx/api";
 import { getLatestCollectionFailure } from "@/features/marketing/data/collection-runs";
 import type { TypedStreamEvent } from "@/lib/api/types";
 import type { components } from "@ai-matrx/agents/generated/api-types";

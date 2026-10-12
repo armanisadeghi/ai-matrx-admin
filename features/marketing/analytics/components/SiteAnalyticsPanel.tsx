@@ -89,7 +89,7 @@ import { CaveatMark } from "@/features/marketing/analytics/components/CaveatMark
 import {
   describeBackendFailure,
   type BackendFailureExplanation,
-} from "@/lib/api/errors";
+} from "@ai-matrx/api";
 import type { MarketingSite } from "@/features/marketing/types";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { NO_RAW_ROW_WINDOW } from "@/features/marketing/social/row-open";

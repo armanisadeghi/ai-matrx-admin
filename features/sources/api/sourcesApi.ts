@@ -18,7 +18,7 @@
  */
 
 import { postJson } from "@/lib/python-client";
-import { BackendApiError } from "@/lib/api/errors";
+import { BackendApiError } from "@ai-matrx/api";
 import type { components } from "@ai-matrx/agents/generated/api-types";
 import { sourceStudioPath } from "@/features/source-studio/sourceStudioModel";
 

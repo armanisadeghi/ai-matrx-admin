@@ -21,7 +21,7 @@ import { lazy, Suspense } from "react";
 import type { DetailField, DetailLoadResult, DetailRecordType } from "@ai-matrx/detail";
 import { formatWhen } from "@ai-matrx/detail";
 
-import { BackendApiError } from "@/lib/api/errors";
+import { BackendApiError } from "@ai-matrx/api";
 import { mandateDisplayName } from "@/features/mandates/mandate-words";
 import { storedMandateKey } from "@ai-matrx/agents/mandates";
 

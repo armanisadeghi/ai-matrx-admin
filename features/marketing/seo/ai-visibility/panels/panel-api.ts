@@ -11,7 +11,7 @@
 // reach just-landed routes. When `pnpm sync-types` has them, drop the casts.
 
 import { callApi } from "@/lib/api/call-api";
-import { describeBackendFailure, parseCallApiError } from "@/lib/api/errors";
+import { describeBackendFailure, parseCallApiError } from "@ai-matrx/api";
 import type { AppDispatch } from "@/lib/redux/store";
 import type { paths } from "@ai-matrx/agents/generated/api-types";
 

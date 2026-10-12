@@ -23,7 +23,7 @@ import { useState } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { callApi, type ApiCallConfig, type ApiCallResult } from "@/lib/api/call-api";
 import { toast } from "@/lib/toast";
-import { parseCallApiError } from "@/lib/api/errors";
+import { parseCallApiError } from "@ai-matrx/api";
 import { runScope } from "../runOrganization";
 
 export interface StartRunArgs {

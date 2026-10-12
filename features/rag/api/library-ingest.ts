@@ -15,7 +15,7 @@
  */
 
 import { postNdjson } from "@/lib/python-client";
-import { BackendApiError } from "@/lib/api/errors";
+import { BackendApiError } from "@ai-matrx/api";
 
 export interface LibraryIngestRequest {
   file_id: string;

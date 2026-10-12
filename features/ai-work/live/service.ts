@@ -12,7 +12,7 @@
 import { supabase } from "@/utils/supabase/client";
 import { operationFailed } from "@/utils/errors";
 import { apiPost } from "@/lib/api/typed-client";
-import { getUserMessage } from "@/lib/api/errors";
+import { getUserMessage } from "@ai-matrx/api";
 import {
   createMessagingRepository,
   type ConversationCursor,

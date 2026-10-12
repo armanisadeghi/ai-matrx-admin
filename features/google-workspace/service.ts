@@ -1,5 +1,5 @@
 import { postGoogleBackend } from "@/features/marketing/google/service";
-import { BackendApiError } from "@/lib/api/errors";
+import { BackendApiError } from "@ai-matrx/api";
 import type {
   GoogleDocumentContent,
   GoogleSheetValues,

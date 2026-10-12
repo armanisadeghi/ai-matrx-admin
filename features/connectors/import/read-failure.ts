@@ -50,7 +50,7 @@
  * empty picker.
  */
 
-import { BackendApiError, getUserMessage } from "@/lib/api/errors";
+import { BackendApiError, getUserMessage } from "@ai-matrx/api";
 
 /** The four states of a read. A surface derives, never re-invents, these. */
 export type GoogleImportReadState = "pending" | "failed" | "empty" | "rows";

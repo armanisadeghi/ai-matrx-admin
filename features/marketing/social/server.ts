@@ -21,7 +21,7 @@ import {
   putJson,
   requestRaw,
 } from "@/lib/python-client";
-import { BackendApiError, parseHttpError } from "@/lib/api/errors";
+import { BackendApiError, parseHttpError } from "@ai-matrx/api";
 import { parseMatrxNdjsonResponse } from "@ai-matrx/api";
 
 import { SocialStreamError, consumeSocialEvents } from "./stream";

@@ -7,7 +7,7 @@ import type { SelectedCalendar } from "./selectedCalendarService";
 import type { CalendarCreateIntent, CalendarCreateRequest, CalendarCreateResult } from "./calendarCreateService";
 import type { CalendarEventSourceResult } from "./calendarEventSourceService";
 import { CALENDAR_CREATE_RECOVERY_KEY, type CalendarCreateRecoveryRecord, type StorageDoor } from "./calendarCreateRecovery";
-import { BackendApiError } from "@/lib/api/errors";
+import { BackendApiError } from "@ai-matrx/api";
 
 (globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 

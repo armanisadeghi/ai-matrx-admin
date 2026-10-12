@@ -13,7 +13,7 @@
 
 import type { paths } from "@ai-matrx/agents/generated/api-types";
 import { callApi } from "@/lib/api/call-api";
-import { parseCallApiError } from "@/lib/api/errors";
+import { parseCallApiError } from "@ai-matrx/api";
 import type { AppDispatch } from "@/lib/redux/store";
 import type { BuilderSpec } from "./builderSpec";
 

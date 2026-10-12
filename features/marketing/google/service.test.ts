@@ -7,7 +7,7 @@ import {
   isStaleGoogleConnectionSelection,
   type GoogleConnectionPurpose,
 } from "@/features/marketing/google/service";
-import { BackendApiError } from "@/lib/api/errors";
+import { BackendApiError } from "@ai-matrx/api";
 import {
   GOOGLE_CONNECTION_SCOPES,
   GOOGLE_CONNECTION_RESOURCE_TYPES,

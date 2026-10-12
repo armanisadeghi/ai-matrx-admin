@@ -37,7 +37,7 @@ import type {
 } from "@/features/marketing/google/types";
 import { useGoogleAuthorizationWindow } from "@/providers/google-provider/useGoogleAuthorizationWindow";
 import { extractErrorMessage } from "@/utils/errors";
-import { BackendApiError } from "@/lib/api/errors";
+import { BackendApiError } from "@ai-matrx/api";
 import type { ConsentRequest } from "./consent-plan";
 import type {
   ConnectorAccount,

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { postJsonAsUser } from "@/lib/api/post-json-as-user";
 import { AIDREAM_PRODUCTION_URL } from "@/lib/api/endpoints";
-import { BackendApiError } from "@/lib/api/errors";
+import { BackendApiError } from "@ai-matrx/api";
 import { OrganizationContextError } from "@/lib/api/organization-context";
 
 /**

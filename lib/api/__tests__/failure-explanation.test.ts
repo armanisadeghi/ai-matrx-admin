@@ -14,7 +14,7 @@ import {
   parsePersistedBackendError,
   parseStreamError,
   unwrapUpstreamError,
-} from "../errors";
+} from "@ai-matrx/api";
 
 const GSC_STREAM_ERROR = {
   error_type: "canonicalgscsync_error",

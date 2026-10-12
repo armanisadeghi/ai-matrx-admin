@@ -20,7 +20,7 @@
 
 import { useCallback, useEffect, useRef } from "react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import { BackendApiError } from "@/lib/api/errors";
+import { BackendApiError } from "@ai-matrx/api";
 import {
   SCREENSHOT_ACTIVITY_DEBOUNCE_MS,
   SCREENSHOT_AUTO_OFF_MS,

@@ -13,7 +13,7 @@ import { useClipboard } from "@ai-matrx/kit/clipboard";
 import { copyNotify } from "@/lib/clipboard/copy-notify";
 import React, { useState, useCallback, useRef } from "react";
 import { parseNdjsonStream } from "@/lib/api/stream-parser";
-import { ENDPOINTS } from "@/lib/api/endpoints";
+import { ENDPOINTS } from "@ai-matrx/api";
 import { requestRaw } from "@/lib/python-client";
 import { getUserMessage } from "@ai-matrx/api";
 import { ApiTestConfigPanel } from "@/components/api-test-config/ApiTestConfigPanel";

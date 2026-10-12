@@ -12,7 +12,7 @@ jest.mock("@/features/scopes/service/associationCandidates", () => ({
   searchCandidatesAcrossTokens: jest.fn(),
 }));
 
-import { BackendApiError } from "@/lib/api/errors";
+import { BackendApiError } from "@ai-matrx/api";
 import {
   KnowledgeSearchUnavailableError,
   searchKnowledgeServer,

@@ -25,7 +25,7 @@ import {
   selectAiApiVersion,
   selectResolvedServiceBaseUrl,
 } from "@/lib/redux/slices/apiConfigSlice";
-import { applyAiApiVersion } from "@/lib/api/ai-api-version";
+import { applyAiApiVersion } from "@ai-matrx/api";
 import { requestRaw } from "@/lib/python-client";
 import { serviceRequestBase, type ApiService } from "@/lib/api/service-routing";
 

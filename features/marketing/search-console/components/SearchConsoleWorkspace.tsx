@@ -19,7 +19,7 @@ import { useMemo, useState, useTransition } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "@/lib/toast";
-import { describeBackendFailure } from "@/lib/api/errors";
+import { describeBackendFailure } from "@ai-matrx/api";
 import { classifyGscAccessFailure } from "@/features/marketing/google/gsc-property";
 import Link from "next/link";
 import { Compass, History, Loader2, RefreshCw } from "lucide-react";

@@ -1,6 +1,6 @@
 import { createClient } from "@/utils/supabase/client";
 import { callApi } from "@/lib/api/call-api";
-import { parseStreamError } from "@/lib/api/errors";
+import { parseStreamError } from "@ai-matrx/api";
 import type { TypedStreamEvent } from "@/lib/api/types";
 import type { AppDispatch } from "@/lib/redux/store";
 import type {

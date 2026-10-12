@@ -21,11 +21,12 @@ let verdict: Record<string, unknown> = {};
 
 // The error model is @ai-matrx/api's (P9): the package's `instanceof`
 // checks see this stand-in only when it IS that class.
-jest.mock("@/lib/api/errors", () => {
+jest.mock("@ai-matrx/api", () => {
   const { BackendApiError: Real } = jest.requireActual("@ai-matrx/api") as {
     BackendApiError: new (init: { code: string; detail: string; userMessage: string; status: number }) => Error;
   };
   return {
+    ...jest.requireActual("@ai-matrx/api"),
     BackendApiError: class extends Real {
       constructor(init: { status: number }) {
         super({ code: "http_error", detail: "backend", userMessage: "backend", status: init.status });

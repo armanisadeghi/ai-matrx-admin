@@ -10,7 +10,7 @@
 
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import { ENDPOINTS } from "@/lib/api/endpoints";
+import { ENDPOINTS } from "@ai-matrx/api";
 import { CMS_PUBLISH_CHECK_PATH } from "./publishWritingCheck";
 
 const PACKAGE_SOURCE = join(__dirname, "..", "..", "..", "..", "..", "aidream", "apps", "shared", "matrx-agents", "matrx", "endpoints.ts");

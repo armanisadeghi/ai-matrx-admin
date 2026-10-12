@@ -70,7 +70,7 @@ import type { DirectiveShellState } from "@/features/directive-catalog/types";
 import { captureError } from "@/lib/diagnostics/errorCaptureStore";
 import { provideDirectiveHost } from "@/features/content-ir/host/directiveHostSlot";
 import { invalidateReferenceLabel } from "@/features/matrx-envelope/referenceResolvers";
-import { BackendApiError } from "@/lib/api/errors";
+import { BackendApiError } from "@ai-matrx/api";
 import { getStoreSingleton } from "@/lib/redux/store-singleton";
 import { selectResolvedBaseUrl } from "@/lib/redux/slices/apiConfigSlice";
 import { closeOverlay, openOverlay } from "@/lib/redux/slices/overlaySlice";

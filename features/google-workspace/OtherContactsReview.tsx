@@ -18,7 +18,7 @@ import { GoogleAccountSelect } from "@/features/google-workspace/GoogleAccountSe
 import { useGoogleConnectionInventory } from "@/features/marketing/google/hooks";
 import { useOpenConnectorConsentDialog } from "@/features/overlays/openers/connectorConsentDialog";
 import { GOOGLE_SCOPE } from "@/lib/googleScopes";
-import { getUserMessage } from "@/lib/api/errors";
+import { getUserMessage } from "@ai-matrx/api";
 import { toast } from "@/lib/toast";
 import {
   contactFieldChoice,

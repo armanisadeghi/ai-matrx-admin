@@ -1,7 +1,7 @@
 import { supabase } from "@/utils/supabase/client";
 import { requireAuthenticatedSupabaseSession } from "@/utils/supabase/webDb";
 import { callApi } from "@/lib/api/call-api";
-import { parseStreamError, type BackendApiError } from "@/lib/api/errors";
+import { parseStreamError, type BackendApiError } from "@ai-matrx/api";
 import { getLatestCollectionFailure } from "@/features/marketing/data/collection-runs";
 import type { TypedStreamEvent } from "@/lib/api/types";
 import type { AppDispatch } from "@/lib/redux/store";

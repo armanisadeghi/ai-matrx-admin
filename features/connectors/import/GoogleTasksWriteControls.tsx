@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Input } from "@ai-matrx/design-system/controls";
 import { Button } from "@/components/ui/button";
-import { BackendApiError, getUserMessage } from "@/lib/api/errors";
+import { BackendApiError, getUserMessage } from "@ai-matrx/api";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import type { TaskCandidatePending } from "./types";
 import {

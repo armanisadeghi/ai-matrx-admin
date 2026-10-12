@@ -6,7 +6,7 @@
  */
 
 import { apiGet } from "@/lib/api/typed-client";
-import { getUserMessage } from "@/lib/api/errors";
+import { getUserMessage } from "@ai-matrx/api";
 import {
   runClaudeCodeRedeem,
   runClaudeConnect,

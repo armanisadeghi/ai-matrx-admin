@@ -29,7 +29,7 @@ import {
   parseCallApiError,
   parsePersistedBackendError,
   parseStreamError,
-} from "@/lib/api/errors";
+} from "@ai-matrx/api";
 import { isErrorEvent, type TypedStreamEvent } from "@/lib/api/types";
 import type { components } from "@ai-matrx/agents/generated/api-types";
 

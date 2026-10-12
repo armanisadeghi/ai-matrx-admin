@@ -7,7 +7,7 @@
  * arrives.
  */
 
-import { ENDPOINTS } from "@/lib/api/endpoints";
+import { ENDPOINTS } from "@ai-matrx/api";
 import { postNdjson } from "@/lib/python-client";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
 import type { ImageDocumentDetectedData } from "@ai-matrx/agents/generated/stream-events";

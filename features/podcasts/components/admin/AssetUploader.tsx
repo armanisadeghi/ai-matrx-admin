@@ -16,7 +16,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { AlertCircle, CheckCircle2, Loader2, Trash2, Video } from 'lucide-react';
 import { useBackendApi } from '@/hooks/useBackendApi';
-import { ENDPOINTS } from '@/lib/api/endpoints';
+import { ENDPOINTS } from "@ai-matrx/api";
 import {
     ImageAssetUploader,
     type ImageUploaderResult,

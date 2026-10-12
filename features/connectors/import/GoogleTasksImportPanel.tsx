@@ -38,7 +38,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { EntityRef } from "@/components/official/entity-ref/EntityRef";
 import { toast } from "@/lib/toast";
-import { getUserMessage } from "@/lib/api/errors";
+import { getUserMessage } from "@ai-matrx/api";
 import { importGoogleTasks, listGoogleTasks } from "./service";
 import { GoogleImportReadFailureNotice } from "./GoogleImportReadFailureNotice";
 import {

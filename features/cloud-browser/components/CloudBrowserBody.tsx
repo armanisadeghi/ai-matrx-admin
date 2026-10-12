@@ -33,7 +33,7 @@ import {
   dismissHandoff,
   mintStreamTicket,
   StreamConnectError, browserActionBlockedReason } from "../service";
-import { BackendApiError } from "@/lib/api/errors";
+import { BackendApiError } from "@ai-matrx/api";
 import type {
   EgressUnavailable,
   ProgressEvent,

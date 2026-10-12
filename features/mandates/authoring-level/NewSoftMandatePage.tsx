@@ -56,7 +56,7 @@ import {
   writeLevelDraft,
 } from "./level-draft";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
-import { BackendApiError } from "@/lib/api/errors";
+import { BackendApiError } from "@ai-matrx/api";
 import { keyFromName, softMandateNamespace } from "./soft-key";
 import { storedMandateKey } from "@ai-matrx/agents/mandates";
 

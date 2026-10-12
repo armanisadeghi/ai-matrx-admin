@@ -5,7 +5,7 @@ import {
   describeBackendFailure,
   parseHttpError,
   parseStreamError,
-} from "@/lib/api/errors";
+} from "@ai-matrx/api";
 import { captureError } from "@/lib/diagnostics/errorCaptureStore";
 import { supabase } from "@/utils/supabase/client";
 import { applyOrganizationContextHeader } from "@/lib/api/organization-context";

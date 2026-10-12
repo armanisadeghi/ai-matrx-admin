@@ -2,7 +2,7 @@ import {
   DEFAULT_GOOGLE_SHEET_RANGE,
   isGoogleWorkspaceInputError,
 } from "@/features/google-workspace/service";
-import { BackendApiError } from "@/lib/api/errors";
+import { BackendApiError } from "@ai-matrx/api";
 
 describe("Google Workspace request boundaries", () => {
   it("defaults to the first sheet instead of assuming a tab name", () => {

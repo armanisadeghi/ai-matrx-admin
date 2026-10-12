@@ -43,7 +43,9 @@ export async function postJsonAsUser<T = unknown>({
   const transport = createMatrxTransport({
     baseUrl: base,
     credentials: toCredentialsPort({ kind: "user", accessToken }),
-    organizationId: organizationId ?? undefined,
+    // A getter binds the organization even when it is missing, so the call is
+    // refused before the wire instead of silently sent org-less.
+    organizationId: () => organizationId,
     aiApiVersion: "v1",
     source: "postJsonAsUser",
   });

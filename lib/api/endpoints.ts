@@ -1,12 +1,8 @@
 // lib/api/endpoints.ts
-// Single source of truth for all Python FastAPI backend endpoint paths.
-// Import ENDPOINTS from this file — never hardcode paths.
+// This app's backend origins (env-driven). Paths: `ENDPOINTS` from @ai-matrx/api.
 
-// Every endpoint path MOVED into `@ai-matrx/api` (chat-package
-// independence P9): one list for every client. Re-exported so import sites keep
-// their path; add a path in the package. The base URLs below are this app's
-// environment values and stay here.
-export { ENDPOINTS } from "@ai-matrx/api";
+// Endpoint paths live in `@ai-matrx/api` (`ENDPOINTS`): import them from there.
+// The base URLs below are this app's environment values and stay here.
 
 // NOTE: The AI runtime v1/v2 spine version now lives in
 // `lib/api/ai-api-version.ts` (the single `AI_API_VERSION_DEFAULT` flag +

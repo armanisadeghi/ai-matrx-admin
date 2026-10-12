@@ -16,7 +16,7 @@
  * plane move (e.g. to an edge worker) with zero client changes.
  */
 
-import { BackendApiError } from "@/lib/api/errors";
+import { BackendApiError } from "@ai-matrx/api";
 import {
   getBrokeredCredential,
   reportCredentialRejected,

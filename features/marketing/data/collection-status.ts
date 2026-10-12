@@ -20,7 +20,7 @@ import {
   describeBackendFailure,
   parsePersistedBackendError,
   type BackendFailureExplanation,
-} from "@/lib/api/errors";
+} from "@ai-matrx/api";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { supabase } from "@/utils/supabase/client";
 import { requireAuthenticatedSupabaseSession } from "@/utils/supabase/webDb";

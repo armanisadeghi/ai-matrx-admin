@@ -28,7 +28,7 @@
  */
 
 import { postJson } from "@/lib/python-client";
-import { BackendApiError } from "@/lib/api/errors";
+import { BackendApiError } from "@ai-matrx/api";
 import {
   selectOwnBrowserUrls,
   type LadderCandidate,

@@ -1,5 +1,5 @@
 import type { TypedStreamEvent } from "@/lib/api/types";
-import { BackendApiError } from "@/lib/api/errors";
+import { BackendApiError } from "@ai-matrx/api";
 import { readMatrxNdjsonStream } from "@ai-matrx/api/stream";
 
 export interface BatchExtractStreamTap {

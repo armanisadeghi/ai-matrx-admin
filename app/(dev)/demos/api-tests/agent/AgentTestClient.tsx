@@ -7,7 +7,7 @@ import { getUserMessage } from "@ai-matrx/api";
 import React, { useState, useCallback, useRef, useEffect } from "react";
 import { formatRelativeTime } from "@ai-matrx/kit/format";
 import { parseNdjsonStream } from "@/lib/api/stream-parser";
-import { ENDPOINTS } from "@/lib/api/endpoints";
+import { ENDPOINTS } from "@ai-matrx/api";
 import {
   Network,
   Loader2,

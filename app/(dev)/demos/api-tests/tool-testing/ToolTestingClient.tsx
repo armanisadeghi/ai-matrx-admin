@@ -29,7 +29,8 @@ import {
   switchServer,
 } from "@/lib/redux/slices/apiConfigSlice";
 import { requestRaw } from "@/lib/python-client";
-import { BACKEND_URLS, ENDPOINTS } from "@/lib/api/endpoints";
+import { ENDPOINTS } from "@ai-matrx/api";
+import { BACKEND_URLS } from "@/lib/api/endpoints";
 import type { AppDispatch } from "@/lib/redux/store";
 import { ToolListSidebar } from "./components/ToolListSidebar";
 import { ToolConfigPanel } from "./components/ToolConfigPanel";

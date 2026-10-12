@@ -8,7 +8,7 @@ import {
   captureStreamTransportError,
   wasStreamErrorCaptured,
 } from "@/lib/diagnostics/captureStreamError";
-import { BackendApiError } from "@/lib/api/errors";
+import { BackendApiError } from "@ai-matrx/api";
 
 describe("captureStreamTransportError", () => {
   beforeEach(() => {

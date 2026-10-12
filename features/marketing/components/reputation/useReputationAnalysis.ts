@@ -8,7 +8,7 @@ import {
   parseCallApiError,
   parsePersistedBackendError,
   parseStreamError,
-} from "@/lib/api/errors";
+} from "@ai-matrx/api";
 import { isErrorEvent, type TypedStreamEvent } from "@/lib/api/types";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { adoptForeignStream } from "@ai-matrx/chat/agents/redux/execution-system/thunks/adopt-foreign-stream";

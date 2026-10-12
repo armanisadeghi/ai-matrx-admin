@@ -27,7 +27,7 @@ import { RecordUnavailableNotice } from "@/features/marketing/components/shared/
 import { extractErrorMessage, humanizeBackendError } from "@/utils/errors";
 import type { Json } from "@/types/database.types";
 import { isJsonRecord } from "@/features/marketing/types";
-import type { BackendFailureExplanation } from "@/lib/api/errors";
+import type { BackendFailureExplanation } from "@ai-matrx/api";
 // THE package duration formatter (`@ai-matrx/kit/format`, census H1
 // 2026-09-07). `compact` is the elapsed-work voice: 250ms / 5.2s / 5m 30s /
 // 1h 02m. THE UNIT LAW puts the unit in the name.

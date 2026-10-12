@@ -23,7 +23,7 @@ import {
   PdfStreamProgress,
 } from "@/features/pdf/api/streamDrain";
 import { buildPdfSourceFromFileId } from "@/features/pdf/utils/source";
-import { ENDPOINTS } from "@/lib/api/endpoints";
+import { ENDPOINTS } from "@ai-matrx/api";
 import type {
   PdfReadingOrderCompleteData,
   PdfReadingOrderPageData,

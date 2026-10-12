@@ -23,7 +23,7 @@ import {
   GOOGLE_WORKSPACE_SETTINGS_HREF,
   resolveGoogleWorkspaceConnection,
 } from "@/features/google-workspace/connection";
-import { BackendApiError } from "@/lib/api/errors";
+import { BackendApiError } from "@ai-matrx/api";
 
 export type SendToGoogleResult =
   | { ok: true; name: string; fileId: string; openUrl: string | null }

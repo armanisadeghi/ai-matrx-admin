@@ -22,7 +22,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { createSoftMandate } from "@/features/mandates/authoring-level/service";
 import { keyFromName, softMandateNamespace } from "@/features/mandates/authoring-level/soft-key";
-import { BackendApiError } from "@/lib/api/errors";
+import { BackendApiError } from "@ai-matrx/api";
 import { updateOrgPosition, loadSeatJobs } from "@/features/agents/redux/orchestras/orgChartThunks";
 import type { OrgPosition } from "../positionsService";
 

@@ -36,7 +36,7 @@
  */
 
 import { postNdjson } from "@/lib/python-client";
-import { BackendApiError, describeBackendFailure } from "@/lib/api/errors";
+import { BackendApiError, describeBackendFailure } from "@ai-matrx/api";
 import type { TypedStreamEvent } from "@/lib/api/types";
 import { searchCandidatesAcrossTokens } from "@/features/scopes/service/associationCandidates";
 import type { EntityTypeToken } from "@ai-matrx/associations";

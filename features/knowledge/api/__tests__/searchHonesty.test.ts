@@ -15,7 +15,7 @@ jest.mock("@/features/scopes/service/associationCandidates", () => ({
   searchCandidatesAcrossTokens: (...a: unknown[]) => searchCandidatesAcrossTokens(...a),
 }));
 
-import { BackendApiError } from "@/lib/api/errors";
+import { BackendApiError } from "@ai-matrx/api";
 import {
   resetKnowledgeSearchEngine,
   searchKnowledge,

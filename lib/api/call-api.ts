@@ -78,7 +78,7 @@ import {
   selectResolvedBaseUrl,
   selectEndpointOverrideConfig,
 } from "@/lib/redux/slices/apiConfigSlice";
-import { resolveEndpointPath } from "@/lib/api/resolve-endpoint-path";
+import { resolveEndpointPath } from "@ai-matrx/api";
 import {
   selectOrganizationId,
   selectProjectId,

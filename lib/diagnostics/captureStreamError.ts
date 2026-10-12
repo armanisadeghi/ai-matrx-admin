@@ -31,7 +31,7 @@ import {
   isTypedDataEvent,
   type TypedStreamEvent,
 } from "@ai-matrx/agents/generated/stream-events";
-import type { BackendApiError } from "@/lib/api/errors";
+import type { BackendApiError } from "@ai-matrx/api";
 import { isJsonObject } from "@/types/json";
 
 /**

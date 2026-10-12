@@ -34,7 +34,8 @@ import "server-only";
 // let somebody in. Every result type below is declared IN FULL so a server
 // change shows up here as a type error rather than as a wrong screen.
 
-import { AIDREAM_PRODUCTION_URL, ENDPOINTS } from "@/lib/api/endpoints";
+import { ENDPOINTS } from "@ai-matrx/api";
+import { AIDREAM_PRODUCTION_URL } from "@/lib/api/endpoints";
 import type {
   ActionRequestCompleteResult,
   ActionRequestOpen,

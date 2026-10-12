@@ -79,7 +79,7 @@ jest.mock("../google-adapter", () => {
   };
 });
 
-import { BackendApiError } from "@/lib/api/errors";
+import { BackendApiError } from "@ai-matrx/api";
 import { ConnectorConsentBody } from "../ConnectorConsentDialog";
 import {
   ADMISSION_LANGUAGE,

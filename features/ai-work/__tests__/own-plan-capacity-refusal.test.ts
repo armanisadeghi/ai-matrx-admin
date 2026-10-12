@@ -1,4 +1,4 @@
-import { BackendApiError } from "@/lib/api/errors";
+import { BackendApiError } from "@ai-matrx/api";
 import { capacityRefusalOf } from "@/features/ai-work/lib/ownPlan";
 
 const detail = {

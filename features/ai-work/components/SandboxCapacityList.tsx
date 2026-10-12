@@ -11,7 +11,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/loaders/Spinner";
 import { toast } from "@/lib/toast";
-import { getUserMessage } from "@/lib/api/errors";
+import { getUserMessage } from "@ai-matrx/api";
 import { useSandboxLifecycleSubmission } from "@/lib/sandbox/useSandboxLifecycleSubmission";
 import type { SandboxCapacityRefusal, SandboxOccupant } from "@/features/ai-work/lib/ownPlan";
 

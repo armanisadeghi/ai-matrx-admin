@@ -16,7 +16,7 @@
  */
 
 import { apiGet, apiPost } from "@/lib/api/typed-client";
-import { BackendApiError, describeBackendFailure } from "@/lib/api/errors";
+import { BackendApiError, describeBackendFailure } from "@ai-matrx/api";
 import { OrganizationContextError } from "@/lib/api/organization-context";
 import type { components } from "@ai-matrx/agents/generated/api-types";
 import type {

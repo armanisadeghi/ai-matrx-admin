@@ -17,7 +17,7 @@
  *    "Request failed (409)" would replace that sentence with noise.
  */
 
-import { BackendApiError } from "@/lib/api/errors";
+import { BackendApiError } from "@ai-matrx/api";
 import { MANDATE_KEYS } from "@ai-matrx/agents/mandates";
 import {
   PERSONAL_STAFF_MANDATE_KEY,

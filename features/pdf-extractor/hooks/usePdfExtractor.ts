@@ -7,7 +7,7 @@ import { toast } from "@/lib/toast";
 import { useAppDispatch, useAppSelector, useAppStore } from "@/lib/redux/hooks";
 import { selectIsAdmin } from "@/lib/redux/selectors/userSelectors";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
-import { ENDPOINTS } from "@/lib/api/endpoints";
+import { ENDPOINTS } from "@ai-matrx/api";
 import { buildPdfSource } from "@/features/pdf/utils/source";
 import {
   createInactivityWatchdog,
@@ -15,7 +15,7 @@ import {
 } from "@/features/pdf/utils/inactivity";
 import { supabase } from "@/utils/supabase/client";
 import { docprocDb, PROCESSED_DOCUMENTS_COLUMNS } from "@/utils/supabase/docprocDb";
-import { parseHttpError } from "@/lib/api/errors";
+import { parseHttpError } from "@ai-matrx/api";
 import { getAccessTokenOrNull, requestRaw } from "@/lib/python-client";
 import { invalidateProcessedDocumentPages } from "./useProcessedDocumentPages";
 import { markAutoCleanHandled } from "./useAutoCleanOnOpen";

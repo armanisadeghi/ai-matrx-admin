@@ -36,11 +36,12 @@ import {
   createSelector,
   PayloadAction,
 } from "@reduxjs/toolkit";
-import { BACKEND_URLS, ENDPOINTS } from "@/lib/api/endpoints";
+import { ENDPOINTS } from "@ai-matrx/api";
+import { BACKEND_URLS } from "@/lib/api/endpoints";
 import { logApiTarget } from "@/lib/api/log-api-target";
+import { aiVersionPathOverrides } from "@ai-matrx/api";
 import {
   AI_API_VERSION_DEFAULT,
-  aiVersionPathOverrides,
   type AiApiVersion,
 } from "@/lib/api/ai-api-version";
 import {

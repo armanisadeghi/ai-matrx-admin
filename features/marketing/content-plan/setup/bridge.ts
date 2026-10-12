@@ -24,7 +24,7 @@
  * LOUDLY into `problems`, never silently counted or invented.
  */
 import { callApi, type ApiCallResult } from "@/lib/api/call-api";
-import { describeBackendFailure, parseStreamError } from "@/lib/api/errors";
+import { describeBackendFailure, parseStreamError } from "@ai-matrx/api";
 import { CmsSiteService } from "@/features/cms/services/cmsService";
 import { supabase } from "@/utils/supabase/client";
 import { authenticatedWebDb } from "@/utils/supabase/webDb";

@@ -49,7 +49,7 @@ import {
   selectProposedDirectives,
   type ProposedDirective,
 } from "@ai-matrx/chat/agents/redux/proposed-directives/proposedDirectivesSlice";
-import { BackendApiError } from "@/lib/api/errors";
+import { BackendApiError } from "@ai-matrx/api";
 import {
   useConversationReceipts,
 } from "@/features/matrx-envelope/conversationReceipts";

@@ -4,7 +4,7 @@
 // `RenderBlockPayload` shape used by the streaming Redux accumulator,
 // so byte-equality comparisons against the local parsers are valid.
 
-import { ENDPOINTS } from "@/lib/api/endpoints";
+import { ENDPOINTS } from "@ai-matrx/api";
 import { requestRaw } from "@/lib/python-client";
 import type { RenderBlockPayload } from "@ai-matrx/agents/generated/stream-events";
 

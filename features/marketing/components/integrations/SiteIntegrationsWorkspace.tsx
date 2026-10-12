@@ -88,7 +88,7 @@ import { SiteTrackingCard } from "@/features/marketing/components/settings/SiteT
 import {
   describeBackendFailure,
   type BackendFailureExplanation,
-} from "@/lib/api/errors";
+} from "@ai-matrx/api";
 import {
   dedupeGoogleConnectionsForPicker,
   diagnoseGoogleConnection,

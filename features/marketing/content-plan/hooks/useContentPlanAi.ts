@@ -31,7 +31,7 @@ import {
   describeBackendFailure,
   parseCallApiError,
   parseStreamError,
-} from "@/lib/api/errors";
+} from "@ai-matrx/api";
 import type { TypedStreamEvent } from "@/lib/api/types";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { toast, toastErrorAlreadyCaptured } from "@/lib/toast";

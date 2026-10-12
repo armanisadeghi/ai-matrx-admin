@@ -65,9 +65,9 @@ import type {
   PdfExtractStartedData,
   PdfPageExtractedData,
 } from "@ai-matrx/agents/generated/stream-events";
-import { ENDPOINTS } from "@/lib/api/endpoints";
+import { ENDPOINTS } from "@ai-matrx/api";
 import { requestRaw } from "@/lib/python-client";
-import { BackendApiError } from "@/lib/api/errors";
+import { BackendApiError } from "@ai-matrx/api";
 import { recordRunStatus } from "./cleanOutcome";
 
 // ─── Shared helpers ──────────────────────────────────────────────────────────

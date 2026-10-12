@@ -11,7 +11,7 @@
 import { useEffect, useState } from "react";
 import { Skeleton } from "@ai-matrx/design-system";
 import { fetchDocumentChunks } from "@/features/rag/api/document";
-import { describeBackendFailure } from "@/lib/api/errors";
+import { describeBackendFailure } from "@ai-matrx/api";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 
 export const PEEK_FIRST_SEGMENTS = 3;

@@ -3,7 +3,7 @@ import { requireAuthenticatedSupabaseSession } from "@/utils/supabase/webDb";
 import {
   parsePersistedBackendError,
   type BackendApiError,
-} from "@/lib/api/errors";
+} from "@ai-matrx/api";
 
 /**
  * ONE reader for the `seo.collection_run` ledger — the durable record of every

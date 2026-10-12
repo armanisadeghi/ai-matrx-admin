@@ -33,7 +33,7 @@ import { syncSiteAnalytics } from "@/features/marketing/analytics/data";
 import {
   describeBackendFailure,
   type BackendFailureExplanation,
-} from "@/lib/api/errors";
+} from "@ai-matrx/api";
 import {
   GOOGLE_ANALYTICS_CAMPAIGN_PAUSE_REASON,
   assertGoogleAnalyticsCampaignActive,

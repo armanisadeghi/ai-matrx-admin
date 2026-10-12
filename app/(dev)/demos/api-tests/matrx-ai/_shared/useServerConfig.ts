@@ -10,9 +10,9 @@ import {
   STORAGE_KEY_VERSION,
   DEFAULT_SERVER_URL,
 } from "./servers";
+import { applyAiApiVersion } from "@ai-matrx/api";
 import {
   AI_API_VERSION_DEFAULT,
-  applyAiApiVersion,
   type AiApiVersion,
 } from "@/lib/api/ai-api-version";
 

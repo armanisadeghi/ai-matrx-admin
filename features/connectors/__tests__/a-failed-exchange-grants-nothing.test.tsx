@@ -59,7 +59,7 @@ jest.mock("../google-adapter", () => {
     useGoogleConsentRunner: () => ({
       run: () =>
         Promise.reject(
-          new (jest.requireActual("@/lib/api/errors").BackendApiError)({
+          new (jest.requireActual("@ai-matrx/api").BackendApiError)({
             code: "google_resource_persist_failed",
             detail:
               "Google connection 7f3e2b41 authorized, but NONE of its 4 discovered resources could be persisted",

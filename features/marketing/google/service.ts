@@ -1,6 +1,6 @@
 import { createClient } from "@/utils/supabase/client";
 import { getClaimsUser } from "@ai-matrx/auth";
-import { BackendApiError, parseHttpError } from "@/lib/api/errors";
+import { BackendApiError, parseHttpError } from "@ai-matrx/api";
 import type { Database } from "@/types/database.types";
 import type {
   GoogleConnectionResource,

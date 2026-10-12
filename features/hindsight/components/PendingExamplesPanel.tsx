@@ -25,7 +25,7 @@ import { useAppSelector } from "@/lib/redux/hooks";
 import { toast } from "@/lib/toast";
 import { selectAdminFeature, selectIsAdmin } from "@/lib/redux/selectors/userSelectors";
 import { cn } from "@/lib/utils";
-import { describeBackendFailure } from "@/lib/api/errors";
+import { describeBackendFailure } from "@ai-matrx/api";
 
 import { getPendingExamples, triggerReplay } from "../api";
 import { exampleDoor, type DoorAudience } from "../subject-doors";

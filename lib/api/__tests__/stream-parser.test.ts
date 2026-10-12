@@ -5,7 +5,7 @@ jest.mock("@/lib/diagnostics/captureStreamError", () => ({
 
 import { TextDecoder as NodeTextDecoder } from "node:util";
 import { captureStreamTransportError } from "@/lib/diagnostics/captureStreamError";
-import { BackendApiError, isStreamTransportLost } from "../errors";
+import { BackendApiError, isStreamTransportLost } from "@ai-matrx/api";
 import { parseNdjsonStream } from "../stream-parser";
 
 describe("parseNdjsonStream cancellation", () => {

@@ -12,7 +12,7 @@ jest.mock("@/lib/python-client", () => ({
   requestRaw: (...args: unknown[]) => requestRaw(...args),
 }));
 
-import { BackendApiError } from "@/lib/api/errors";
+import { BackendApiError } from "@ai-matrx/api";
 import { streamPdfClean } from "../streamPdf";
 import { cleanDocument } from "../cleanDocument";
 

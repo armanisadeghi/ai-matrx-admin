@@ -17,7 +17,7 @@ import { Button } from "@ai-matrx/design-system";
 import { toast } from "@/lib/toast";
 import { supabase } from "@/utils/supabase/client";
 import { cn } from "@/lib/utils";
-import { BackendApiError } from "@/lib/api/errors";
+import { BackendApiError } from "@ai-matrx/api";
 import { ErrorNotice } from "@ai-matrx/design-system";
 import { useOpenDiffViewerWindow } from "@/features/overlays/openers/diffViewerWindow";
 import { useOpenReviewWalkWindow } from "@/features/overlays/openers/reviewWalkWindow";

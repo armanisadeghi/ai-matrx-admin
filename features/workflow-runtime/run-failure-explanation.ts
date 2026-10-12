@@ -43,7 +43,7 @@
 // try-box on the Rulebook / Studio / Encore pages, the run failure card, the
 // per-step readout body). A failure explained once is explained everywhere.
 
-import { describeBackendFailure } from "@/lib/api/errors";
+import { describeBackendFailure } from "@ai-matrx/api";
 import { retryIsPointless, serverRefusal } from "@/lib/progress/failureSentence";
 import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
 

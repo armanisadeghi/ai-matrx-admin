@@ -1,4 +1,4 @@
-import { BackendApiError } from "@/lib/api/errors";
+import { BackendApiError } from "@ai-matrx/api";
 import { renderHook, settle } from "@/test-utils/renderHook";
 
 const requestScreenshot = jest.fn();

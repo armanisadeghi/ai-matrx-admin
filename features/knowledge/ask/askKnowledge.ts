@@ -18,7 +18,7 @@
  */
 
 import { postNdjson } from "@/lib/python-client";
-import { describeBackendFailure } from "@/lib/api/errors";
+import { describeBackendFailure } from "@ai-matrx/api";
 import type { TypedStreamEvent } from "@/lib/api/types";
 import {
   KNOWLEDGE_SEARCH_PATH,

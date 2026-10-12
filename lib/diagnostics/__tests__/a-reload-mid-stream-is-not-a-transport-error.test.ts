@@ -19,7 +19,7 @@
  */
 import { captureError, clearCapturedErrors, getSnapshot } from "@/lib/diagnostics/errorCaptureStore";
 import { captureStreamTransportError } from "@/lib/diagnostics/captureStreamError";
-import { BackendApiError } from "@/lib/api/errors";
+import { BackendApiError } from "@ai-matrx/api";
 import { resetPageLeavingForTests } from "@ai-matrx/chat/agents/redux/execution-system/utils/page-leaving";
 
 function dropped(): BackendApiError {

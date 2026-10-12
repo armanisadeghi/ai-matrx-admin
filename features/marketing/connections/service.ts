@@ -3,7 +3,7 @@ import type { GoogleConnectionInventory } from "@/features/marketing/google/type
 import { createClient } from "@/utils/supabase/client";
 import { resolveServiceBaseUrl } from "@/lib/api/resolve-service-url";
 import { applyOrganizationContextHeader } from "@/lib/api/organization-context";
-import { parseHttpError, getUserMessage } from "@/lib/api/errors";
+import { parseHttpError, getUserMessage } from "@ai-matrx/api";
 import { buildMatrxRequestUrl, sendMatrxRequest } from "@ai-matrx/api";
 import { consumeStream } from "@/lib/api/stream-parser";
 import { updateSiteIntegrations } from "@/features/marketing/data/integrations-service";

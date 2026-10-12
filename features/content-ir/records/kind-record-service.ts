@@ -36,7 +36,7 @@ import {
 } from "@ai-matrx/records/core";
 import { personActor, recordsDataSource } from "@ai-matrx/records-ui";
 import { apiPost } from "@/lib/api/typed-client";
-import { getUserMessage } from "@/lib/api/errors";
+import { getUserMessage } from "@ai-matrx/api";
 import {
   storeKindRecord,
   PRODUCED_BY_LABEL as STORE_PRODUCED_BY_LABEL,
