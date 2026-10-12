@@ -206,6 +206,12 @@ describe("who an alarm is for (Arman 2026-10-11: the owner's card shows only wha
     expect(items.every((i) => i.audience === "owner_decision")).toBe(true);
   });
 
+  it("a CI spend off track card carries the recommended action under its human label, id unchanged", () => {
+    const [item] = spendAlarmItems([row({ id: "a-ci", kind: "ci_spend_off_track", audience: "owner_decision" })], deps());
+    const act = item.actions.find((x) => x.id === "pause_ci_workflows");
+    expect(act?.label).toBe("Pause the costly workflows");
+  });
+
   it("says what the agent tried when an alarm came back to the owner", () => {
     const [item] = spendAlarmItems([escalated], deps());
     expect(item.about).toContain("Agents could not fix this: needs a price decision");

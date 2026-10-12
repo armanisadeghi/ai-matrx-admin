@@ -200,6 +200,22 @@ function actionsOf(row: SpendAlarmAttentionRow, deps: SpendAlarmDeps): Attention
       },
     });
   }
+  if (row.kind === "ci_spend_off_track") {
+    // The card's recommended action (platform.attention_raw_items): the record page names the costly workflows.
+    out.push({
+      id: "pause_ci_workflows",
+      label: "Pause the costly workflows",
+      variant: "outline",
+      confirm: {
+        title: "Open the workflows that are costing the most?",
+        description: "Shows which workflows keep billing. Nothing is paused until you do it there.",
+        confirmLabel: "Open the workflows",
+      },
+      run: async () => {
+        if (typeof window !== "undefined") window.location.assign(spendAlarmHref(row.id));
+      },
+    });
+  }
   out.push({
     id: "resolve",
     label: "Resolve",
