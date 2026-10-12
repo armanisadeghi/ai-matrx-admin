@@ -1,7 +1,13 @@
+// features/rich-document/outline/outline.ts
+//
+// THE document outline: a markdown body's heading tree for any reader (study
+// guides, research syntheses and documents). Pure; rendered by DocumentOutline.
+
+
 import type { NoteOutlineItem } from "@/features/notes/utils/noteOutline";
 
 /** A document with one opening H1 uses that heading as its title. */
-export function studyGuideOutlineTitle(outline: readonly NoteOutlineItem[], content = ""): NoteOutlineItem | null {
+export function documentOutlineTitle(outline: readonly NoteOutlineItem[], content = ""): NoteOutlineItem | null {
   const h1Items = outline.filter((item) => item.level === 1);
   const first = h1Items[0];
   if (h1Items.length !== 1 || outline[0] !== first) return null;
@@ -11,10 +17,10 @@ export function studyGuideOutlineTitle(outline: readonly NoteOutlineItem[], cont
 
 /** Notes without a sole H1 still have a document title. Use it as a virtual
  * outline parent; -1 targets the reader's displayed title, not a Markdown H1. */
-export function studyGuideOutlineDisplayTitle(outline: readonly NoteOutlineItem[], label: string, content = ""): NoteOutlineItem {
-  return studyGuideOutlineTitle(outline, content) ?? {
+export function documentOutlineDisplayTitle(outline: readonly NoteOutlineItem[], label: string, content = ""): NoteOutlineItem {
+  return documentOutlineTitle(outline, content) ?? {
     level: 0,
-    text: label || "Untitled guide",
+    text: label || "Untitled",
     charOffset: -1,
     headingIndex: -1,
   };
@@ -23,8 +29,8 @@ export function studyGuideOutlineDisplayTitle(outline: readonly NoteOutlineItem[
 /** Commit to the document's Markdown heading hierarchy. The first section
  * level sets the top tier; no other text or shallower headings are promoted.
  * A top-level row must own deeper headings to become an outline branch. */
-export function studyGuideOutlineItems(outline: readonly NoteOutlineItem[], content = ""): NoteOutlineItem[] {
-  const title = studyGuideOutlineTitle(outline, content);
+export function documentOutlineItems(outline: readonly NoteOutlineItem[], content = ""): NoteOutlineItem[] {
+  const title = documentOutlineTitle(outline, content);
   const sections = outline.filter((item) => item !== title);
   if (!sections.length) return [];
   const rootLevel = sections[0].level;
@@ -40,7 +46,7 @@ export function studyGuideOutlineItems(outline: readonly NoteOutlineItem[], cont
       eligible.push(item);
     }
   }
-  const roots = studyGuideOutlineTree(eligible);
+  const roots = documentOutlineTree(eligible);
   const branchIds = new Set(roots.filter((node) => node.children.length > 0).map((node) => node.item.headingIndex));
   if (!branchIds.size) return [];
   const included = new Set<number>();
@@ -63,20 +69,20 @@ export function outlineIndentLevel(item: NoteOutlineItem, outline: readonly Note
   return Math.min(3, Math.max(1, item.level - rootLevel + 1));
 }
 
-export interface StudyGuideOutlineNode {
+export interface DocumentOutlineNode {
   item: NoteOutlineItem;
-  children: StudyGuideOutlineNode[];
+  children: DocumentOutlineNode[];
 }
 
 /** The document title is the parent of every root returned here. Markdown
  * heading levels determine deeper parentage; skipped levels attach to the
  * nearest preceding lower-level heading rather than producing an orphan. */
-export function studyGuideOutlineTree(outline: readonly NoteOutlineItem[]): StudyGuideOutlineNode[] {
-  const roots: StudyGuideOutlineNode[] = [];
-  const ancestors: StudyGuideOutlineNode[] = [];
+export function documentOutlineTree(outline: readonly NoteOutlineItem[]): DocumentOutlineNode[] {
+  const roots: DocumentOutlineNode[] = [];
+  const ancestors: DocumentOutlineNode[] = [];
   for (const item of outline) {
     while (ancestors.length && ancestors[ancestors.length - 1].item.level >= item.level) ancestors.pop();
-    const node: StudyGuideOutlineNode = { item, children: [] };
+    const node: DocumentOutlineNode = { item, children: [] };
     if (ancestors.length) ancestors[ancestors.length - 1].children.push(node);
     else roots.push(node);
     ancestors.push(node);

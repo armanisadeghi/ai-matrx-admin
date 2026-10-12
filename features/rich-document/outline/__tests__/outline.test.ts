@@ -1,9 +1,9 @@
-import { initialOutlineExpansion, outlineIndentLevel, studyGuideOutlineDisplayTitle, studyGuideOutlineItems, studyGuideOutlineTitle, studyGuideOutlineTree, toggleOutlineSection, visibleOutlineItems } from "../outline";
+import { initialOutlineExpansion, outlineIndentLevel, documentOutlineDisplayTitle, documentOutlineItems, documentOutlineTitle, documentOutlineTree, toggleOutlineSection, visibleOutlineItems } from "../outline";
 import type { NoteOutlineItem } from "@/features/notes/utils/noteOutline";
 import { parseNoteOutline } from "@/features/notes/utils/noteOutline";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
-import { OutlineHeader } from "./OutlineHeader";
+import { OutlineHeader } from "../OutlineHeader";
 
 const outline: NoteOutlineItem[] = [
   { level: 1, text: "Unit one", charOffset: 0, headingIndex: 0 },
@@ -34,14 +34,14 @@ describe("study guide outline", () => {
 
   it("treats a sole H1 as the title and opens only the first topic", () => {
     const headings = parseNoteOutline(source);
-    expect(studyGuideOutlineTitle(headings)).toMatchObject({
+    expect(documentOutlineTitle(headings)).toMatchObject({
       level: 1, headingIndex: 0, text: "AP Human Geography Unit 1: Thinking Geographically",
     });
-    const titleMarkup = renderToStaticMarkup(createElement(OutlineHeader, { title: studyGuideOutlineTitle(headings), active: false, onJump: () => undefined }));
+    const titleMarkup = renderToStaticMarkup(createElement(OutlineHeader, { title: documentOutlineTitle(headings), active: false, onJump: () => undefined }));
     expect(titleMarkup).toContain("<button");
     expect(titleMarkup).toContain("AP Human Geography Unit 1: Thinking Geographically");
     expect(titleMarkup).not.toContain("On this page");
-    const items = studyGuideOutlineItems(headings);
+    const items = documentOutlineItems(headings);
     expect(items.map((item) => item.text)).not.toContain("AP Human Geography Unit 1: Thinking Geographically");
     expect(items.map((item) => item.headingIndex)).toEqual([1, 2, 3, 4, 5, 6]);
     const initial = initialOutlineExpansion(items);
@@ -58,25 +58,25 @@ describe("study guide outline", () => {
 
   it("retains multiple H1 section roots", () => {
     const headings = parseNoteOutline("# First\n## Child\n# Second\n## Child");
-    expect(studyGuideOutlineTitle(headings)).toBeNull();
-    expect(renderToStaticMarkup(createElement(OutlineHeader, { title: studyGuideOutlineTitle(headings), active: false, onJump: () => undefined }))).toContain("On this page");
-    const items = studyGuideOutlineItems(headings);
+    expect(documentOutlineTitle(headings)).toBeNull();
+    expect(renderToStaticMarkup(createElement(OutlineHeader, { title: documentOutlineTitle(headings), active: false, onJump: () => undefined }))).toContain("On this page");
+    const items = documentOutlineItems(headings);
     expect(items.map((item) => item.level)).toEqual([1, 2, 1, 2]);
     expect(initialOutlineExpansion(items)).toEqual({ 0: true, 2: false });
   });
 
   it("does not manufacture a title when there is no H1", () => {
     const headings = parseNoteOutline("## First\n### Child\n## Second");
-    expect(studyGuideOutlineTitle(headings)).toBeNull();
-    expect(renderToStaticMarkup(createElement(OutlineHeader, { title: studyGuideOutlineTitle(headings), active: false, onJump: () => undefined }))).toContain("On this page");
-    expect(studyGuideOutlineItems(headings).map((item) => item.text)).toEqual(["First", "Child"]);
-    expect(initialOutlineExpansion(studyGuideOutlineItems(headings))).toEqual({ 0: true });
+    expect(documentOutlineTitle(headings)).toBeNull();
+    expect(renderToStaticMarkup(createElement(OutlineHeader, { title: documentOutlineTitle(headings), active: false, onJump: () => undefined }))).toContain("On this page");
+    expect(documentOutlineItems(headings).map((item) => item.text)).toEqual(["First", "Child"]);
+    expect(initialOutlineExpansion(documentOutlineItems(headings))).toEqual({ 0: true });
   });
 
   it("keeps a lone H1 visible when it is the entire document", () => {
     const headings = parseNoteOutline("# Only title");
-    expect(studyGuideOutlineTitle(headings)?.headingIndex).toBe(0);
-    expect(studyGuideOutlineItems(headings)).toEqual([]);
+    expect(documentOutlineTitle(headings)?.headingIndex).toBe(0);
+    expect(documentOutlineItems(headings)).toEqual([]);
   });
 
   it("keeps only branches from the selected H2 hierarchy without changing heading indices", () => {
@@ -92,15 +92,15 @@ describe("study guide outline", () => {
       "### Naturally Occurring Isotopes",
     ].join("\n");
     const headings = parseNoteOutline(material);
-    const items = studyGuideOutlineItems(headings);
-    expect(studyGuideOutlineDisplayTitle(headings, "Agent Test Note")).toMatchObject({ text: "Agent Test Note", headingIndex: -1 });
+    const items = documentOutlineItems(headings);
+    expect(documentOutlineDisplayTitle(headings, "Agent Test Note")).toMatchObject({ text: "Agent Test Note", headingIndex: -1 });
     expect(items.map((item) => [item.text, item.headingIndex, outlineIndentLevel(item, items)])).toEqual([
       ["J.J. Thomson and the Discovery of the Electron", 2, 1],
       ["Cathode Ray Experiments", 3, 2],
       ["Relative Atomic Mass", 6, 1],
       ["Naturally Occurring Isotopes", 7, 2],
     ]);
-    const tree = studyGuideOutlineTree(items);
+    const tree = documentOutlineTree(items);
     expect(tree.map((node) => [node.item.text, node.children.map((child) => child.item.text)])).toEqual([
       ["J.J. Thomson and the Discovery of the Electron", ["Cathode Ray Experiments"]],
       ["Relative Atomic Mass", ["Naturally Occurring Isotopes"]],
@@ -110,23 +110,23 @@ describe("study guide outline", () => {
   it("does not switch to text-shape clues after choosing Markdown headings", () => {
     const material = "## What happened... - and why\n## First section\n## Second section\n## Safety - • Lab checklist\nA real section body.\n## 2) Fill-in the charges for the ions. On the top line, thi... - Example 2.8 (2 of 3)\n## Ion Charges and Polyatomic Patterns";
     const headings = parseNoteOutline(material);
-    expect(studyGuideOutlineItems(headings)).toEqual([]);
+    expect(documentOutlineItems(headings)).toEqual([]);
   });
 
   it("does not attach a deeper heading after a shallower heading interrupts the chosen style", () => {
     const headings = parseNoteOutline("## First\n### Child\n# Different style\n### Stray\n## Second\n### Child two");
-    expect(studyGuideOutlineItems(headings).map((item) => item.text)).toEqual(["First", "Child", "Second", "Child two"]);
+    expect(documentOutlineItems(headings).map((item) => item.text)).toEqual(["First", "Child", "Second", "Child two"]);
   });
 
   it("keeps an H1 after prose as a section while accepting whitespace before a document title", () => {
     const body = "Intro paragraph\n\n# Later H1\n## Child";
     const headings = parseNoteOutline(body);
-    expect(studyGuideOutlineTitle(headings, body)).toBeNull();
-    expect(studyGuideOutlineItems(headings, body).map((item) => item.text)).toEqual(["Later H1", "Child"]);
+    expect(documentOutlineTitle(headings, body)).toBeNull();
+    expect(documentOutlineItems(headings, body).map((item) => item.text)).toEqual(["Later H1", "Child"]);
     const titled = "\n\n# Opening title\n## Section\n### Detail";
     const titledHeadings = parseNoteOutline(titled);
-    expect(studyGuideOutlineTitle(titledHeadings, titled)?.text).toBe("Opening title");
-    expect(studyGuideOutlineItems(titledHeadings, titled).map((item) => item.text)).toEqual(["Section", "Detail"]);
+    expect(documentOutlineTitle(titledHeadings, titled)?.text).toBe("Opening title");
+    expect(documentOutlineItems(titledHeadings, titled).map((item) => item.text)).toEqual(["Section", "Detail"]);
   });
 });
 

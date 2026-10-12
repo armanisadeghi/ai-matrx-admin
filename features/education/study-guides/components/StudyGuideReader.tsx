@@ -5,8 +5,7 @@ import { toast } from "@/lib/toast";
 import { RichContent } from "@ai-matrx/rich-content/levels/RichContent";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { initialOutlineExpansion, studyGuideOutlineDisplayTitle, studyGuideOutlineItems, studyGuideOutlineTree, toggleOutlineSection, type StudyGuideOutlineNode } from "../outline";
-import { OutlineHeader } from "./OutlineHeader";
+import { DocumentOutline, scrollToOutlineHeading } from "@/features/rich-document/outline/DocumentOutline";
 import { StudyGuideResources } from "./StudyGuideResources";
 import { RenderedFindBar } from "@ai-matrx/rich-content/rich-document/search/RenderedFindBar";
 import { useEffect, useRef, useState } from "react";
@@ -17,7 +16,6 @@ import {
   ChevronDown,
   CircleHelp,
   GraduationCap,
-  ChevronRight,
   LayoutPanelLeft,
   PanelRight,
   Loader2,
@@ -43,7 +41,7 @@ import { useOpenNoteInWindow } from "@/features/notes/actions/useOpenNoteInWindo
 import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import { noteIdentityContentSource } from "@/features/notes/richDocumentSource";
 import type { Note, NoteListItem } from "@/features/notes/types";
-import { parseNoteOutline, type NoteOutlineItem } from "@/features/notes/utils/noteOutline";
+import { parseNoteOutline } from "@/features/notes/utils/noteOutline";
 import { RichDocument } from "@ai-matrx/rich-content/rich-document/RichDocument";
 import { RichCopySplit } from "@ai-matrx/chat/agent-copy/RichCopySplit";
 import { richDocumentViewKey } from "@ai-matrx/rich-content/rich-document/runtime/useActionSurfaceProvider";
@@ -144,46 +142,12 @@ function GuideList({ guides, activeId, activeLabel, hasGuide, content, onJump, l
           </PopoverContent>
         </Popover>
         {/* The outline belongs to an OPEN guide. With none open it drew a phantom bold "Untitled guide" row that looked clickable and did nothing. */}
-        {hasGuide && <Outline key={content} content={content} titleLabel={activeLabel || activeGuide?.label || "Untitled guide"} onJump={onJump} />}
+        {hasGuide && <DocumentOutline key={content} content={content} titleLabel={activeLabel || activeGuide?.label || "Untitled guide"} onJump={onJump} label="Study guide outline" />}
       </div>
     </aside>
   );
 }
 
-
-function Outline({ content, titleLabel, onJump }: { content: string; titleLabel: string; onJump: (headingIndex: number) => void }) {
-  const headings = parseNoteOutline(content);
-  const title = studyGuideOutlineDisplayTitle(headings, titleLabel, content);
-  const outline = studyGuideOutlineItems(headings, content);
-  const tree = studyGuideOutlineTree(outline);
-  const [expanded, setExpanded] = useState(() => initialOutlineExpansion(outline));
-  const [activeHeading, setActiveHeading] = useState<number | null>(null);
-  if (!title && !outline.length) return null;
-  return (
-    <nav className="border-t border-border py-1" aria-label="Study guide outline">
-      <ul className="list-none p-0">
-        <li>
-          <OutlineHeader title={title} active={activeHeading === title.headingIndex} onJump={(headingIndex) => { setActiveHeading(headingIndex); onJump(headingIndex); }} />
-          <ul className="grid list-none gap-0.5 p-0">{tree.map((node) => <OutlineBranch key={`${node.item.headingIndex}:${node.item.charOffset}`} node={node} depth={1} outline={outline} expanded={expanded} setExpanded={setExpanded} activeHeading={activeHeading} setActiveHeading={setActiveHeading} onJump={onJump} />)}</ul>
-        </li>
-      </ul>
-    </nav>
-  );
-}
-
-function OutlineBranch({ node, depth, outline, expanded, setExpanded, activeHeading, setActiveHeading, onJump }: { node: StudyGuideOutlineNode; depth: number; outline: NoteOutlineItem[]; expanded: Readonly<Record<number, boolean>>; setExpanded: React.Dispatch<React.SetStateAction<Record<number, boolean>>>; activeHeading: number | null; setActiveHeading: React.Dispatch<React.SetStateAction<number | null>>; onJump: (index: number) => void }) {
-  const { item, children } = node;
-  const hasChildren = children.length > 0;
-  const isExpanded = expanded[item.headingIndex] !== false;
-  const toggle = () => setExpanded((current) => toggleOutlineSection(outline, current, item.headingIndex));
-  return <li>
-    <div className={cn("flex min-w-0 items-center border-l-2", activeHeading === item.headingIndex ? "border-primary bg-primary/10" : "border-transparent")} style={{ paddingLeft: "10px" }}>
-      {hasChildren ? <button type="button" aria-expanded={isExpanded} aria-label={`${isExpanded ? "Collapse" : "Expand"} ${item.text}`} onClick={toggle} className="grid h-5 w-5 shrink-0 place-items-center rounded hover:bg-accent">{isExpanded ? <ChevronDown className="h-3.5 w-3.5" aria-hidden /> : <ChevronRight className="h-3.5 w-3.5" aria-hidden />}</button> : <span className="w-5 shrink-0" />}
-      <button type="button" onClick={() => { setActiveHeading(item.headingIndex); if (hasChildren && !isExpanded) toggle(); onJump(item.headingIndex); }} title={item.text} className={cn("min-w-0 flex-1 overflow-hidden text-ellipsis whitespace-nowrap rounded px-1 py-1 text-left text-xs hover:bg-accent [mask-image:linear-gradient(to_right,black_calc(100%_-_12px),transparent)]", activeHeading === item.headingIndex ? "font-medium text-primary" : "text-muted-foreground hover:text-foreground")}>{item.text}</button>
-    </div>
-    {hasChildren && isExpanded && <ul className={cn("list-none p-0", depth < 3 && "ml-2.5")}>{children.map((child) => <OutlineBranch key={`${child.item.headingIndex}:${child.item.charOffset}`} node={child} depth={depth + 1} outline={outline} expanded={expanded} setExpanded={setExpanded} activeHeading={activeHeading} setActiveHeading={setActiveHeading} onJump={onJump} />)}</ul>}
-  </li>;
-}
 
 function Inspector({ guide, tab, onTabChange, terms, loading, error, onRetry }: { guide: Note | null; tab: InspectorTab; onTabChange: (tab: InspectorTab) => void; terms: StudyTerm[]; loading: boolean; error: string | null; onRetry: () => void; mobile?: boolean }) {
   const openCard = useOpenFlashcardItemWindow();
@@ -271,9 +235,7 @@ function ReaderContent({ guide, onEdit, onDelete, canDelete, jumpRequest, canEdi
   }, []);
   useEffect(() => {
     if (jumpRequest === null) return;
-    const headings = readerRef.current?.querySelector(".study-guide-reader-content")?.querySelectorAll("h1,h2,h3,h4,h5,h6");
-    const target = jumpRequest.index === -1 ? readerRef.current : headings?.item(jumpRequest.index);
-    target?.scrollIntoView({ behavior: "smooth", block: "start" });
+    scrollToOutlineHeading(readerRef.current?.querySelector(".study-guide-reader-content"), readerRef.current, jumpRequest.index);
   }, [jumpRequest]);
   return <main className="relative flex h-full min-h-0 flex-col bg-background">
     <div className="absolute right-3 top-2 z-20 flex gap-1">
