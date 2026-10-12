@@ -138,7 +138,7 @@ export function StartBand({
         <div
           className={cn(
             "-mx-3 flex gap-3 overflow-x-auto px-3 pb-1 pt-2 scrollbar-none sm:mx-0 sm:gap-4 sm:px-0",
-            "snap-x [&>*]:snap-start",
+            "snap-x scroll-px-3 sm:scroll-px-0 [&>*]:snap-start",
           )}
         >
           {blank}
