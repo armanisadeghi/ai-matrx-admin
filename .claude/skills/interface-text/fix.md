@@ -56,6 +56,12 @@ You were given one batch: files, findings, and the exact replacement for each. Y
 | A required prop's text deleted, leaving a type error and an empty element | Make the prop optional or remove it, and drop the empty element |
 | A tooltip as a native `title=` on text | Use `components/official/InfoHint` (hover, keyboard **and** touch); `KpiTile`'s `title` renders through it |
 | Using `<InfoHint` without its import (2026-10-11: a sweep shipped one; the panel threw on render) | Before committing: `grep -L 'official/InfoHint' $(grep -l '<InfoHint' <your files>)` must print nothing |
+| A "one sentence" tooltip that is two sentences joined (2026-10-12, 3 batches) | Count the full stops, not just the characters |
+| A page hint hung on a new heading that repeats the shell's title (two `h1`s) | Put it on the shell title: the HR shell renders `description` as an InfoHint |
+| Sibling field notes split: one moved to a tooltip, the other dropped | Sibling notes move together |
+| A remedy sentence left directly under an alert heading | Place it after the alert's content, or in the heading's InfoHint |
+| A tooltip prop named `hint` (the detector budgets it as visible secondary text) | Name tooltip props `info` or `tooltip` |
+| A confirm body split across spans, each in budget | The budget is the total of the spans |
 | Deleting prose and leaving the newcomer nothing | Before deleting, name what a first-time user loses; that goes into an `InfoHint` on the label (one sentence) or a `FieldHelp` popover (`@ai-matrx/design-system/controls`) for a complex concept. Delete only author-facing text outright (Arman, 2026-10-10: tooltips always) |
 
 ## Recipes

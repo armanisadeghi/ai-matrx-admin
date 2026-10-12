@@ -29,6 +29,9 @@ Common Discover mistakes to look for:
   operators). Delete only the explanation around it.
 - A rewrite that met a 60-char budget by dropping a needed fact ("can be set once", "saving the
   same key restores it") when the text is dialog/confirm copy with a 140-char consequence budget.
+- A replacement that is still a sentence directly under a heading (2026-10-12: five fixers had to
+  choose between the brief and the detector). It is a page-description: put it in the heading's
+  InfoHint instead, or keep it only as an empty state or the screen's single instruction.
 - Descriptions on documentation surfaces (the component gallery, the feature-docs viewer) — their
   text is the content; the detector exempts them.
 
