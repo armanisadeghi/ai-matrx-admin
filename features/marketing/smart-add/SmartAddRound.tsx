@@ -20,10 +20,10 @@ import {
 } from "@/features/workflow-runtime/redux/workflow-runs.selectors";
 import { evidenceFromPayload, type EvidenceItem } from "./evidence";
 
-/** Each Smart Add workflow has exactly two steps (identify: website + socials; setup: logo + history). */
-export type SmartAddStepPair = readonly [string, string];
+/** The steps a Smart Add workflow shows, in order (at most three; identify has two). */
+export type SmartAddStepPair = readonly [string, string] | readonly [string, string, string];
 export const IDENTIFY_STEPS: SmartAddStepPair = ["website", "socials"];
-export const SETUP_STEPS: SmartAddStepPair = ["logo", "history"];
+export const SETUP_STEPS: SmartAddStepPair = ["logo", "accounts", "history"];
 
 export interface StepView {
   step: string;
@@ -79,16 +79,17 @@ export function SmartAddRound({
   const emissions = useAppSelector(selectRunEmissions(runId));
   const website = useStep(runId, steps[0]);
   const socials = useStep(runId, steps[1]);
+  const third = useStep(runId, steps[2] ?? "");
 
   const live = emissions.flatMap((e) => evidenceFromPayload(e.payload));
-  const all = [...live, ...website.evidence, ...socials.evidence];
+  const all = [...live, ...website.evidence, ...socials.evidence, ...third.evidence];
   // Both callbacks are idempotent on unchanged content (the screen keeps its
   // state when nothing new arrived), so running on every render is safe.
   useEffect(() => {
     if (all.length) onEvidence?.(all);
   }, [all, onEvidence]);
 
-  const view: RoundView = { runId, status, steps: [website.view, socials.view] };
+  const view: RoundView = { runId, status, steps: steps[2] ? [website.view, socials.view, third.view] : [website.view, socials.view] };
   useEffect(() => {
     onView(view);
   }, [view, onView]);

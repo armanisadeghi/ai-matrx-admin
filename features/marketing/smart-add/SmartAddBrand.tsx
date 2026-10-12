@@ -17,7 +17,7 @@
  */
 
 import { useEffect, useEffectEvent, useRef, useState } from "react";
-import { Check, ExternalLink, Globe, Loader2, X } from "lucide-react";
+import { Check, ExternalLink, Globe, Loader2, RotateCcw, X } from "lucide-react";
 import { Button, Field, Select, type SelectOption } from "@ai-matrx/design-system/controls";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
@@ -320,7 +320,16 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
   // ── render ──────────────────────────────────────────────────────────────
 
   const showPicker = needsPlatformPick(parsed, null);
-  const setupDone = ["completed", "failed", "errored", "cancelled", "stopped", "refused"].includes(setupView?.status ?? "");
+  // Honest run state: finished, failed, interrupted (a restart — the platform resumes it), or working.
+  const setupStatus = setupView?.status ?? "";
+  const setupState: "working" | "done" | "failed" | "interrupted" =
+    setupStatus === "completed"
+      ? "done"
+      : ["failed", "errored", "refused", "stopped"].includes(setupStatus)
+        ? "failed"
+        : setupStatus === "cancelled"
+          ? "interrupted"
+          : "working";
 
   return (
     <div className="flex w-full max-w-3xl flex-col gap-3" data-testid="smart-add-brand">
@@ -460,8 +469,16 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
       {setupRunId ? (
         <div className="flex flex-col gap-1 rounded-lg border border-border bg-card px-3 py-2 text-xs" data-testid="smart-add-background">
           <div className="flex items-center gap-2">
-            {setupDone ? <Check className="size-3.5 text-primary" /> : <Loader2 className="size-3.5 animate-spin text-primary" />}
-            <span className="font-medium">{setupDone ? "Setup finished" : "Still working in the background"}</span>
+            {setupState === "done" ? (
+              <Check className="size-3.5 text-primary" />
+            ) : setupState === "failed" ? (
+              <X className="size-3.5 text-destructive" />
+            ) : setupState === "interrupted" ? (
+              <RotateCcw className="size-3.5 text-muted-foreground" />
+            ) : (
+              <Loader2 className="size-3.5 animate-spin text-primary" />
+            )}
+            <span className="font-medium">{SETUP_STATE_LABEL[setupState]}</span>
             <a
               href={runHref(setupRunId)}
               target="_blank"
@@ -473,7 +490,7 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
           </div>
           {(setupView?.steps ?? []).map((step) => (
             <div key={step.step} className="flex items-center gap-2 text-muted-foreground">
-              <span className="w-32 shrink-0 truncate">{step.step === "logo" ? "Logo" : "Post history"}</span>
+              <span className="w-32 shrink-0 truncate">{SETUP_STEP_LABEL[step.step] ?? step.step}</span>
               <span className="w-16 shrink-0">{step.skipped ? "Skipped" : STEP_PHASE_LABEL[step.phase] ?? step.phase}</span>
               <span className="min-w-0 flex-1 truncate">{step.notes[0] ?? step.progress ?? ""}</span>
               <span className="shrink-0 tabular-nums">{step.costUsd > 0 ? format(step.costUsd) : ""}</span>
@@ -683,3 +700,16 @@ async function saveFacts(
   }
   return problems;
 }
+
+const SETUP_STATE_LABEL = {
+  working: "Still working in the background",
+  done: "Setup finished",
+  failed: "Setup stopped — open Watch to retry",
+  interrupted: "Interrupted — resumes automatically",
+} as const;
+
+const SETUP_STEP_LABEL: Record<string, string> = {
+  logo: "Logo",
+  accounts: "Accounts",
+  history: "Post history",
+};
