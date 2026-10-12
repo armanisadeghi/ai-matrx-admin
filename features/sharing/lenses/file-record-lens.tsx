@@ -126,10 +126,7 @@ export function DocumentShareLens({ result, token }: ShareLensProps) {
         <>
           <RichContentStandardImpl source={markdown} variant="reading" imagePolicy="self" />
           {leftOut > 0 ? (
-            <Notice>
-              {leftOut === 1 ? "1 picture from another website is" : `${leftOut} pictures from other websites are`} not
-              shown on this page.
-            </Notice>
+            <Notice>{`${leftOut === 1 ? "1 picture from another website is" : `${leftOut} pictures from other websites are`} not shown on this page.`}</Notice>
           ) : null}
         </>
       ) : (
