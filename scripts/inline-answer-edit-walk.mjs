@@ -58,7 +58,7 @@ const ctx = await browser.newContext(
 const page = await ctx.newPage();
 const consoleErrors = [];
 page.on("console", (m) => { if (m.type() === "error") consoleErrors.push(m.text().slice(0, 300)); });
-page.on("pageerror", (e) => consoleErrors.push(`pageerror: ${String(e).slice(0, 300)}`));
+page.on("pageerror", (e) => consoleErrors.push(`pageerror: ${String(e.stack ?? e).slice(0, 1500)}`));
 try {
   await page.goto(url, { timeout: 180_000 });
   if (page.url().includes("__dev-walk")) {
@@ -86,6 +86,13 @@ try {
     };
   }, messageId);
   await page.screenshot({ path: `${out}/${tag}-1-reading.png` });
+  const blockDump = (root) => {
+    // The leaf blocks a reader sees, top to bottom: tag + first words + height.
+    const els = [...root.querySelectorAll("h1,h2,h3,h4,p,ul,ol,pre,table,blockquote,[data-island-type],[data-code-snippet]")]
+      .filter((el) => !el.parentElement.closest("h1,h2,h3,h4,p,ul,ol,pre,table,blockquote,[data-island-type],[data-code-snippet]"));
+    return els.map((el) => `${el.tagName.toLowerCase()}${el.dataset.islandType ? ":" + el.dataset.islandType : ""} ${Math.round(el.getBoundingClientRect().height)} ${(el.textContent || "").trim().slice(0, 24).replace(/\s+/g, " ")}`);
+  };
+  if (args.blocks) console.log("READ BLOCKS\n  " + (await page.evaluate(`(${blockDump.toString()})([...document.querySelectorAll('[data-message-id="${messageId}"] [data-message-content]')].pop())`)).join("\n  "));
 
   // Open from the doors a person uses (never a double-click): on a phone the answer bar's pencil;
   // on a desktop the right-click "Edit" (the caret lands where the person pressed).
@@ -102,6 +109,7 @@ try {
   await page.locator(`${editorSel} .ProseMirror`).waitFor({ timeout: 60_000 });
   await page.waitForTimeout(2000);
   await page.screenshot({ path: `${out}/${tag}-2-editing.png` });
+  if (args.blocks) console.log("EDIT BLOCKS\n  " + (await page.evaluate(`(${blockDump.toString()})(document.querySelector('${editorSel} .ProseMirror'))`)).join("\n  "));
 
   const editFacts = await page.evaluate(
     ({ id, sel }) => {
@@ -214,6 +222,7 @@ try {
 } finally {
   await browser.close();
 }
+for (const e of consoleErrors) if (e.startsWith("pageerror:")) failures.push(e.split("\n")[0]);
 if (consoleErrors.length) console.log(`console errors (${consoleErrors.length}):\n  ${consoleErrors.slice(0, 8).join("\n  ")}`);
 console.log(failures.length ? `FAILED ${failures.length}` : `ok ${tag}`);
 process.exit(failures.length ? 1 : 0);
