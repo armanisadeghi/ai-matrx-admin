@@ -34,6 +34,9 @@ import { EditorDocumentHeader } from "@/features/shell/components/header/templat
 import { useShellCanvasFullScreen } from "@/features/shell/components/ShellChromeMode";
 import { EditorMenuBar, type MenuBarState } from "@/components/editor-chrome/EditorMenuBar";
 import { EditorToolbar } from "@/components/editor-chrome/EditorToolbar";
+import { EditorRibbon } from "@/components/editor-chrome/EditorRibbon";
+import { OfficeLookSwitch } from "@/features/file-actions/skin/OfficeLookSwitch";
+import { DOC_RIBBON } from "@/features/documents/chrome/doc-ribbon";
 import { EditorSaveStatus } from "@/components/editor-chrome/EditorTitleField";
 import { boundActions, matchesShortcut, type EditorMenuEntry } from "@/components/editor-chrome/editor-menu-model";
 import { buildDocMenus, buildDocToolbar, type DocChromeHost, type DocsApiLike } from "@/features/documents/chrome/doc-commands";
@@ -703,6 +706,21 @@ export default function DocumentEditor({
           </>
         }
         toolbar={toolbar}
+        ribbon={
+          <EditorRibbon
+            tabs={DOC_RIBBON}
+            menus={menus}
+            toolbar={toolbarItems}
+            fileMenu={bootState === "ready" ? chrome.fileMenu : null}
+            extensions={extensionRows}
+            end={
+              <>
+                {chrome.toolbarTrailing}
+                <OfficeLookSwitch />
+              </>
+            }
+          />
+        }
       >
         {googleLink.dialog}
         <div className="matrx-univer-shell relative flex min-h-0 flex-1 flex-col" data-document-editor="">

@@ -26,6 +26,9 @@ import { useIsMobile } from "@ai-matrx/kit/media-query";
 import { EditorDocumentHeader } from "@/features/shell/components/header/templates/EditorDocumentHeader";
 import { EditorMenuBar, renderMenuEntries, useMenuBarState } from "@/components/editor-chrome/EditorMenuBar";
 import { EditorToolbar } from "@/components/editor-chrome/EditorToolbar";
+import { EditorRibbon } from "@/components/editor-chrome/EditorRibbon";
+import { OfficeLookSwitch } from "@/features/file-actions/skin/OfficeLookSwitch";
+import { DECK_RIBBON } from "@/features/presentations/deck-ribbon";
 import { EditorSaveStatus, EditorTitleField, type EditorSaveState } from "@/components/editor-chrome/EditorTitleField";
 import {
   boundActions,
@@ -436,6 +439,15 @@ export function PresentationEditor({ presentationId }: { presentationId: string 
           </>
         }
         toolbar={<EditorToolbar items={toolbarItems} menus={allMenus} />}
+        ribbon={
+          <EditorRibbon
+            tabs={DECK_RIBBON}
+            menus={menus}
+            toolbar={toolbarItems}
+            fileMenu={row ? fileMenu : null}
+            end={<OfficeLookSwitch />}
+          />
+        }
       >
         <div className={cn("flex min-h-0 flex-1", isPhone ? "flex-col" : "flex-row")} data-presentation-editor={presentationId}>
           {!isPhone && rail}

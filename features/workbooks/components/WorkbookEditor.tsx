@@ -27,6 +27,9 @@ import { EditorDocumentHeader } from "@/features/shell/components/header/templat
 import { useShellCanvasFullScreen } from "@/features/shell/components/ShellChromeMode";
 import { EditorMenuBar, useMenuBarState, renderMenuEntries } from "@/components/editor-chrome/EditorMenuBar";
 import { EditorToolbar } from "@/components/editor-chrome/EditorToolbar";
+import { EditorRibbon } from "@/components/editor-chrome/EditorRibbon";
+import { OfficeLookSwitch } from "@/features/file-actions/skin/OfficeLookSwitch";
+import { SHEET_RIBBON } from "@/features/workbooks/chrome/sheet-ribbon";
 import { EditorSaveStatus } from "@/components/editor-chrome/EditorTitleField";
 import { boundActions, matchesShortcut, type EditorMenuEntry } from "@/components/editor-chrome/editor-menu-model";
 import { buildSheetMenus, buildSheetToolbar, type SheetChromeHost, type SheetsApiLike } from "@/features/workbooks/chrome/sheet-commands";
@@ -1088,6 +1091,16 @@ export default function WorkbookEditor({
       }
       toolbar={
         <EditorToolbar items={toolbarItems} menus={menus} className={bootState === "ready" ? undefined : "invisible"} />
+      }
+      ribbon={
+        <EditorRibbon
+          tabs={SHEET_RIBBON}
+          menus={menus}
+          toolbar={toolbarItems}
+          fileMenu={bootState === "ready" ? fileMenu : null}
+          extensions={extensionRows}
+          end={<OfficeLookSwitch />}
+        />
       }
     >
       {googleLink.dialog}
