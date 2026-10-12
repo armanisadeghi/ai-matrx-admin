@@ -37,15 +37,17 @@ export async function renderAndStoreThumbnail(
   kind: TemplateKind,
   snapshot: unknown,
   lane: TemplateLane,
+  templateId: string,
 ): Promise<string> {
   const png = await svgToPngBlob(snapshotPreviewSvg(kind, snapshot));
-  const file = new File([png], `${kind}-template-thumbnail.png`, { type: "image/png" });
+  // One file per template: a shared name would land every thumbnail on the same path.
+  const file = new File([png], `template-${templateId}.png`, { type: "image/png" });
   const shared = lane === "featured" || lane === "community";
   const { fileId } = await mediaClient.upload(file, {
     fileName: file.name,
     mimeType: "image/png",
     ...(shared ? { publishedToWeb: true } : { shownTo: lane === "mine" ? "only_me" : "everyone" }),
-    metadata: { purpose: "file_template_thumbnail" },
+    metadata: { purpose: "file_template_thumbnail", template_id: templateId },
   });
   return fileId;
 }

@@ -47,7 +47,7 @@ export type TemplatePorts = {
   latestRecordSnapshot: (kind: TemplateKind, recordId: string) => Promise<unknown | null>;
   createRecord: (kind: TemplateKind, name: string, orgId: string, snapshot: unknown) => Promise<string>;
   /** Renders + stores the thumbnail; returns its file id. */
-  renderThumbnail: (kind: TemplateKind, snapshot: unknown, lane: TemplateLane) => Promise<string>;
+  renderThumbnail: (kind: TemplateKind, snapshot: unknown, lane: TemplateLane, templateId: string) => Promise<string>;
 };
 
 export class TemplateError extends Error {}
@@ -109,19 +109,10 @@ export function createTemplateService(ports: TemplatePorts) {
       source_record_id: recordId,
     });
     const summary = toSummary(row);
-    const fileId = await ports.renderThumbnail(kind, snapshot, summary.lane);
+    const fileId = await ports.renderThumbnail(kind, snapshot, summary.lane, row.id);
     await ports.setThumbnail(row.id, fileId);
     return { ...summary, thumbnailUrl: fileId };
   }
 
-  /** Renders and stores a missing thumbnail (featured backfill by a platform admin, or the owner). */
-  async function ensureThumbnail(template: TemplateSummary): Promise<string> {
-    if (template.thumbnailUrl) return template.thumbnailUrl;
-    const { snapshot } = await ports.getSnapshot(template.id);
-    const fileId = await ports.renderThumbnail(template.kind, snapshot, template.lane);
-    await ports.setThumbnail(template.id, fileId);
-    return fileId;
-  }
-
-  return { listTemplates, createFromTemplate, saveAsTemplate, ensureThumbnail };
+  return { listTemplates, createFromTemplate, saveAsTemplate };
 }

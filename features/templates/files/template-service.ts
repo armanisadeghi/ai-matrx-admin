@@ -115,7 +115,6 @@ const service = createTemplateService(ports);
 export const listTemplates = service.listTemplates;
 export const createFromTemplate = service.createFromTemplate;
 export const saveAsTemplate = service.saveAsTemplate;
-export const ensureTemplateThumbnail = service.ensureThumbnail;
 export { TemplateError };
 
 /** The template's stored content (for a live preview while its thumbnail is missing). */

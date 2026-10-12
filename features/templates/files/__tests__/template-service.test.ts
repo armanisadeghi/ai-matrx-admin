@@ -44,8 +44,8 @@ function fakePorts(over: Partial<TemplatePorts> = {}) {
       calls.createRecord.push({ kind, name, orgId, snapshot });
       return "rec-1";
     },
-    renderThumbnail: async (kind, _s, lane) => {
-      calls.renderThumbnail.push({ kind, lane });
+    renderThumbnail: async (kind, _s, lane, templateId) => {
+      calls.renderThumbnail.push({ kind, lane, templateId });
       return "file-1";
     },
     ...over,
@@ -111,7 +111,7 @@ describe("file templates — save as template", () => {
     const inserted = calls.insertRow[0] as InsertTemplate;
     expect(inserted).toMatchObject({ kind: "workbook", name: "Crew roster", visibility, organization_id: ORG, source_record_id: "wb-1" });
     expect(t.lane).toBe(back);
-    expect(calls.renderThumbnail[0]).toEqual({ kind: "workbook", lane: back });
+    expect(calls.renderThumbnail[0]).toEqual({ kind: "workbook", lane: back, templateId: "new" });
     expect(calls.setThumbnail[0]).toEqual(["new", "file-1"]);
     expect(t.thumbnailUrl).toBe("file-1");
   });

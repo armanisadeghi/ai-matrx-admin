@@ -3,23 +3,19 @@
 /**
  * One gallery tile, Google-style: the rendered first page / first sheet, the
  * name under it. Thumbnail = the stored PNG (durable file ref through the media
- * primitives). A template without one yet shows its live miniature from the
- * snapshot, and a platform admin viewing a featured one stores it for everyone.
+ * primitives). A template without one yet shows its live miniature, drawn
+ * from its snapshot by the same renderer that makes the stored thumbnail.
  */
 import { useEffect, useState, type ReactNode } from "react";
 import { InlineMediaRef } from "@ai-matrx/media/react";
 import { FileSpreadsheet, FileText } from "lucide-react";
 
 import { cn } from "@/lib/utils";
-import { useAppSelector } from "@/lib/redux/hooks";
-import { selectIsSuperAdminPerson } from "@/lib/redux/selectors/userSelectors";
 import type { TemplateSummary } from "../types";
 import { snapshotPreviewSvg } from "../thumbnail/snapshot-preview-svg";
-import { ensureTemplateThumbnail, getTemplateSnapshot } from "../template-service";
+import { getTemplateSnapshot } from "../template-service";
 
-const backfilling = new Set<string>();
-
-function useLivePreview(template: TemplateSummary, canBackfill: boolean): string | null {
+function useLivePreview(template: TemplateSummary): string | null {
   const [svg, setSvg] = useState<string | null>(null);
   const missing = !template.thumbnailUrl;
   useEffect(() => {
@@ -30,16 +26,10 @@ function useLivePreview(template: TemplateSummary, canBackfill: boolean): string
         if (!cancelled) setSvg(snapshotPreviewSvg(template.kind, snapshot));
       })
       .catch((err) => console.warn(`[templates] preview for ${template.id} failed`, err));
-    if (canBackfill && !backfilling.has(template.id)) {
-      backfilling.add(template.id);
-      void ensureTemplateThumbnail(template).catch((err) =>
-        console.warn(`[templates] thumbnail for ${template.id} was not stored`, err),
-      );
-    }
     return () => {
       cancelled = true;
     };
-  }, [missing, template, canBackfill]);
+  }, [missing, template]);
   return svg;
 }
 
@@ -58,8 +48,7 @@ export function TemplateThumb({
   /** Placement only (width). */
   className?: string;
 }): ReactNode {
-  const isAdmin = useAppSelector(selectIsSuperAdminPerson);
-  const liveSvg = useLivePreview(template, isAdmin && template.lane === "featured");
+  const liveSvg = useLivePreview(template);
   const KindIcon = template.kind === "workbook" ? FileSpreadsheet : FileText;
   return (
     <div className={cn("flex w-36 min-w-0 flex-col gap-1.5", className)}>
