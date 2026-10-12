@@ -12,7 +12,7 @@ import type { ResolvedShareToken } from "@/utils/permissions/shareLinks";
 import { univerSnapshotToRows } from "@/features/workbooks/univer-snapshot-rows";
 import { univerDocToMarkdown } from "@/features/documents/univer-doc-to-markdown";
 import { shareChildFileUrls } from "@/features/files/handler/utils/python-base";
-import { RichContentStaticStandard } from "@ai-matrx/rich-content/levels/RichContentStaticProse";
+import RichContentStandardImpl from "@ai-matrx/rich-content/levels/RichContentStandardImpl";
 import type { ShareLensProps } from "./registry";
 
 const MAX_ROWS_SHOWN = 500;
@@ -92,19 +92,29 @@ export function WorkbookShareLens({ result }: ShareLensProps) {
   );
 }
 
-/** A picture of ours reached through the link's own token (no sign-in); others pass through. */
+/**
+ * A picture of ours reached through the link's own token (no sign-in). Pictures from other
+ * websites are NOT drawn on a public page (a tracking pixel in someone's document); the lens
+ * counts them and says so.
+ */
 export function sharedImageUrl(token: string, source: string): string | null {
   const own = source.match(/^matrx-file:([0-9a-f-]+)(?:#\d+x\d+)?$/i);
-  if (own) return shareChildFileUrls(token, own[1]).inline;
-  return /^https?:\/\//i.test(source) ? source : null;
+  return own ? shareChildFileUrls(token, own[1]).inline : null;
 }
 
 export function DocumentShareLens({ result, token }: ShareLensProps) {
   const title = textOf(result.resource, "document_name") || "Document";
   const description = textOf(result.resource, "description");
   const content = childrenOf(result, "document_snapshot");
+  let leftOut = 0;
   const markdown = content?.snapshot
-    ? univerDocToMarkdown(content.snapshot, { imageUrl: (source) => sharedImageUrl(token, source) })
+    ? univerDocToMarkdown(content.snapshot, {
+        imageUrl: (source) => {
+          const url = sharedImageUrl(token, source);
+          if (!url) leftOut += 1;
+          return url;
+        },
+      })
     : "";
   return (
     <article className="mx-auto w-full max-w-3xl">
@@ -112,7 +122,16 @@ export function DocumentShareLens({ result, token }: ShareLensProps) {
       {content?.too_large ? (
         <Notice>This document is too large to show here. Open it in AI Matrx.</Notice>
       ) : markdown ? (
-        <RichContentStaticStandard source={markdown} variant="reading" />
+        // The owner published these pictures from their own files: they draw without a click.
+        <>
+          <RichContentStandardImpl source={markdown} variant="reading" imagePolicy="self" />
+          {leftOut > 0 ? (
+            <Notice>
+              {leftOut === 1 ? "1 picture from another website is" : `${leftOut} pictures from other websites are`} not
+              shown on this page.
+            </Notice>
+          ) : null}
+        </>
       ) : (
         <Notice>This document has no saved content yet.</Notice>
       )}

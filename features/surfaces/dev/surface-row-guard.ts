@@ -9,6 +9,8 @@
 import {
   getGlobalSurfaceRegistry,
 } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
+import { supabase } from "@/utils/supabase/client";
+import { getClaimsUser } from "@/utils/supabase/claimsUser";
 import { getSurfaceByName } from "@ai-matrx/chat/surfaces/services/surfaces.service";
 
 export const MISSING_SURFACE_ROW_MESSAGE = (name: string): string =>
@@ -29,20 +31,41 @@ export async function findMissingSurfaceRows(
   return missing;
 }
 
+/**
+ * The existence probe. A signed-out visitor (a public share page) cannot read
+ * `ui.ui_surface` — the lookup is a 401 that lands in the console and the dev
+ * "Issue" pill — so it is not asked at all; it is asked again after sign-in.
+ */
+export function makeSurfaceExists(
+  lookup: (name: string) => Promise<unknown | null>,
+  signedIn: () => Promise<boolean>,
+  seen: Set<string>,
+): (name: string) => Promise<boolean> {
+  return async (name) => {
+    try {
+      if (!(await signedIn())) {
+        seen.delete(name);
+        return true;
+      }
+      return (await lookup(name)) !== null;
+    } catch {
+      seen.delete(name); // an unreadable lookup is not "missing"; ask again later
+      return true;
+    }
+  };
+}
+
 export function installSurfaceRowGuard(
   report: (message: string) => void = (m) => console.error(m),
 ): () => void {
   if (process.env.NODE_ENV === "production") return () => {};
   const seen = new Set<string>();
   const registry = getGlobalSurfaceRegistry();
-  const exists = async (name: string): Promise<boolean> => {
-    try {
-      return (await getSurfaceByName(name)) !== null;
-    } catch {
-      seen.delete(name); // an unreadable lookup is not "missing"; ask again later
-      return true;
-    }
-  };
+  const exists = makeSurfaceExists(
+    getSurfaceByName,
+    async () => Boolean((await getClaimsUser(supabase)).data?.user?.id),
+    seen,
+  );
   const check = () => {
     void findMissingSurfaceRows(
       registry.depths().map((entry) => entry.surfaceName),

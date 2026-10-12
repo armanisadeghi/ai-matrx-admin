@@ -77,7 +77,7 @@ export function SharedResourceView({
         >
           <Link href={source.href} aria-label={source.label}>
             <span className="hidden sm:inline">{source.label}</span>
-            <ArrowUpRight className="h-4 w-4 sm:ml-1" />
+            <ArrowUpRight className="h-4 w-4 sm:ml-1 sm:-mr-1" />
           </Link>
         </Button>
       </PublicHeaderActionsPortal>
