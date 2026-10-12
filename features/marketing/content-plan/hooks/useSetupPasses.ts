@@ -35,7 +35,7 @@ import {
 } from "@ai-matrx/api";
 import type { TypedStreamEvent } from "@/lib/api/types";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import type { components, paths } from "@ai-matrx/agents/generated/api-types";
+import type { components, paths } from "@ai-matrx/api/types";
 import { extractErrorMessage } from "@/utils/errors";
 
 import type {

@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import type { components } from "@ai-matrx/agents/generated/api-types";
+import type { components } from "@ai-matrx/api/types";
 import { ErrorNotice } from "@ai-matrx/design-system";
 import { RegionSkeleton } from "@ai-matrx/design-system/controls";
 import { replaceAddressWithoutNavigating } from "@/lib/url-state/addressWithoutNavigating";

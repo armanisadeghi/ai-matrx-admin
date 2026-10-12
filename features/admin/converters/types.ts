@@ -3,7 +3,7 @@
  *
  * The converter catalog (aidream `GET /admin/converters`). Derived from the generated contract.
  */
-import type { components } from "@ai-matrx/agents/generated/api-types";
+import type { components } from "@ai-matrx/api/types";
 
 export type ConverterCatalog =
   components["schemas"]["ConverterCatalogResponse"];

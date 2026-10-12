@@ -10,7 +10,7 @@
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { UserCheck } from "lucide-react";
-import type { paths } from "@ai-matrx/agents/generated/api-types";
+import type { paths } from "@ai-matrx/api/types";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { callApi } from "@/lib/api/call-api";
 import { useWorkflowRunControls } from "../hooks/useWorkflowRunControls";

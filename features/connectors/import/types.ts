@@ -4,7 +4,7 @@
  * Contact-import stand-ins plus canonical generated Tasks aliases.
  *
  * 🚨 The Contact `*Pending` shapes remain stand-ins. Tasks listing/import and
- * reviewed write shapes come from `@ai-matrx/agents/generated/api-types`.
+ * reviewed write shapes come from `@ai-matrx/api/types`.
  *
  * REMEDY when the remaining Contact paths are generated: delete those local
  * Contact shapes and import the operation types through `lib/api/typed-client` exactly as
@@ -24,7 +24,7 @@
  * would render empty sentences against the live server.
  */
 
-import type { components } from "@ai-matrx/agents/generated/api-types";
+import type { components } from "@ai-matrx/api/types";
 
 /** One row of the declared Google field → Person field map. */
 export interface ContactFieldSpecPending {
@@ -72,7 +72,7 @@ export interface ContactSearchResultPending {
   provider_key: string;
   google_account: string | null;
   /** Exact connection that supplied these rows; absent in older test fixtures. */
-  connection_id?: import("@ai-matrx/agents/generated/api-types").components["schemas"]["ContactSearchResult"]["connection_id"];
+  connection_id?: import("@ai-matrx/api/types").components["schemas"]["ContactSearchResult"]["connection_id"];
   contacts: ContactCandidatePending[];
   count: number;
   total_read: number;

@@ -14,7 +14,7 @@
 // - lookup: `GET …/runs?subject=` — the caller's latest run for the subject,
 //   so any page (or another device) reattaches to it.
 
-import type { paths } from "@ai-matrx/agents/generated/api-types";
+import type { paths } from "@ai-matrx/api/types";
 import { callApi } from "@/lib/api/call-api";
 import type { AppDispatch } from "@/lib/redux/store";
 

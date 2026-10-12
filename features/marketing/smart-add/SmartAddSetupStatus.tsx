@@ -16,7 +16,7 @@ import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ExternalLink, Loader2, RotateCcw } from "lucide-react";
 import { Badge, Button } from "@ai-matrx/design-system/controls";
-import type { paths } from "@ai-matrx/agents/generated/api-types";
+import type { paths } from "@ai-matrx/api/types";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { callApi } from "@/lib/api/call-api";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
