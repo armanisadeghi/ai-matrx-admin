@@ -166,18 +166,16 @@ export type Situation = "new" | "conflicted" | "established" | null;
 export function situationOf(items: EvidenceItem[], settled: boolean): Situation {
   if (!settled || items.length === 0) return items.length === 0 && settled ? "new" : null;
   const names = new Set(items.filter((i) => i.field === "name").map((i) => i.value.toLowerCase()));
-  // Names from DIFFERENT places (the site vs a profile) that do not read the same: possibly two brands.
-  const norm = (v: string) => v.toLowerCase().replace(/[^a-z0-9]/g, "");
-  const nameBySource = new Map<string, Set<string>>();
-  for (const n of items.filter((i) => i.field === "name" && i.source.kind !== "typed")) {
-    const set = nameBySource.get(n.source.kind) ?? new Set<string>();
-    set.add(norm(n.value));
-    nameBySource.set(n.source.kind, set);
-  }
-  const site = nameBySource.get("website");
-  const profiles = nameBySource.get("social_profile");
+  // A profile that points to a DIFFERENT website than the site's own is most likely another brand
+  // with a look-alike name ("Ritual" the vitamin company vs Ritual Coffee).
+  const siteHosts = new Set(
+    items.filter((i) => i.field === "website" && i.source.kind !== "social_profile").map((i) => websiteHost(i.value)),
+  );
+  const profileHosts = items
+    .filter((i) => i.field === "website" && i.source.kind === "social_profile")
+    .map((i) => websiteHost(i.value));
   const sourcesDisagree =
-    !!site && !!profiles && ![...site].some((a) => [...profiles].some((b) => a.includes(b) || b.includes(a)));
+    siteHosts.size > 0 && profileHosts.some((h) => ![...siteHosts].some((s) => s === h || s.endsWith(`.${h}`) || h.endsWith(`.${s}`)));
   const perPlatform = new Map<string, number>();
   for (const s of items.filter((i) => i.field === "social")) perPlatform.set(s.platform ?? "", (perPlatform.get(s.platform ?? "") ?? 0) + 1);
   if (names.size >= 3 || sourcesDisagree || [...perPlatform.values()].some((n) => n >= 2)) return "conflicted";

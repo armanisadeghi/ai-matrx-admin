@@ -42,7 +42,7 @@ import { SmartAddSlots } from "./SmartAddSlots";
 import { useSessionKnob } from "@/lib/scoped-config/sessionKnob";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { useSocialSpend } from "@/features/marketing/social/cost";
-import { BrandCard, CompareSources, situationOf } from "./SmartAddExtras";
+import { BrandCard, CompareSources, CustomAdd, situationOf } from "./SmartAddExtras";
 import { ADOPTION_RELEASE_GRACE_MS } from "@/features/workflow-runtime/hooks/useWorkflowRun";
 import { detachWorkflowRunState } from "@/features/workflow-runtime/redux/adopt-workflow-run.thunk";
 import { marketingRoutes } from "@/features/marketing/lib/routes";
@@ -76,6 +76,7 @@ import {
 import { SETUP_STEPS, SmartAddRound, type RoundView } from "./SmartAddRound";
 import { captureProvision } from "@/features/provision-window/data";
 import { useOpenProvisionWindow } from "@/features/overlays/openers/provisionWindow";
+import { ProvisionCaptures } from "@/features/provision-window/ProvisionCaptures";
 
 /** The call point where the brand-intake analysis would run (server: brand_intake/provision.py). */
 const BRAND_INTAKE_POINT = "brand_intake.smart_add_create";
@@ -127,7 +128,7 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
   const [createError, setCreateError] = useState<string | null>(null);
   const [created, setCreated] = useState<MarketingBrand | null>(null);
   const [setupRunId, setSetupRunId] = useState<string | null>(null);
-  const [provisionId, setProvisionId] = useState<string | null>(null);
+  const [provisionTick, setProvisionTick] = useState(0);
   const [capturing, setCapturing] = useState(false);
   const openProvision = useOpenProvisionWindow();
   const [setupView, setSetupView] = useState<RoundView | null>(null);
@@ -408,7 +409,7 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
           setSaveNotes((n) => [...n, plainStartError(error)]);
         }
       }
-      await showProvision(brand, organizationId);
+      await showProvision(brand, organizationId, "created");
     } catch (error) {
       setCreateError(extractErrorMessage(error));
     } finally {
@@ -419,11 +420,15 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
   // PROVISION POINT — brand_intake.smart_add_create. This is where the brand-intake analysis
   // would run. No agent runs (Arman, 2026-10-12): the exact values available here are captured
   // and shown in the Provision window. Spec: smart-add-brand/PROVISION.md.
-  const showProvision = async (brand: MarketingBrand, organizationId: string) => {
+  const showProvision = async (
+    brand: MarketingBrand,
+    organizationId: string,
+    trigger: "created" | "manual",
+  ) => {
     setCapturing(true);
     try {
-      const snapshot = await captureProvision(dispatch, BRAND_INTAKE_POINT, brand.id, organizationId);
-      setProvisionId(snapshot.id);
+      const snapshot = await captureProvision(dispatch, BRAND_INTAKE_POINT, brand.id, organizationId, trigger);
+      setProvisionTick((t) => t + 1);
       openProvision(snapshot.id, `Brand analysis inputs: ${brand.name}`);
     } catch (error) {
       setSaveNotes((n) => [...n, extractErrorMessage(error)]);
@@ -520,9 +525,12 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
       <p className="text-xs text-muted-foreground">Everything found is kept with the brand — only “Not us” is left out.</p>
 
       {situation === "new" ? (
-        <div className="rounded-lg border border-dashed border-border px-4 py-3 text-sm" data-testid="smart-add-situation">
-          <span className="font-medium">Not much out there yet.</span>{" "}
-          <span className="text-muted-foreground">Add your name, what you do and where — Custom in each section.</span>
+        // Brand-new: little to find, so three quick questions fill the essentials in place.
+        <div className="flex flex-col gap-1 rounded-lg border border-dashed border-border py-3 text-sm" data-testid="smart-add-situation">
+          <span className="px-4 font-medium">Not much out there yet — three quick questions</span>
+          <CustomAdd field="name" label={person ? "Your name" : "Business name"} placeholder={person ? "Your name" : "Business name"} onAdd={addCustom} />
+          <CustomAdd field="description" label="What you do" placeholder="What you do, in a sentence" onAdd={addCustom} />
+          <CustomAdd field="address" label="Where you are" placeholder="City or street address" onAdd={addCustom} />
         </div>
       ) : situation === "conflicted" ? (
         <div className="flex flex-col gap-2 rounded-lg border border-amber-500/40 bg-amber-500/5 px-4 py-3 text-sm" data-testid="smart-add-situation">
@@ -667,16 +675,17 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
         <section className="flex items-center gap-2 rounded-xl border border-border px-4 py-2 text-xs" data-testid="smart-add-provision" aria-label="Brand analysis inputs">
           <span className="font-semibold">Brand analysis</span>
           <span className="text-muted-foreground">Not running · inputs only</span>
-          <div className="ml-auto flex gap-1">
-            {provisionId ? (
-              <Button variant="outline" onClick={() => openProvision(provisionId, `Brand analysis inputs: ${created.name}`)}>
-                Open inputs
-              </Button>
-            ) : null}
+          <div className="ml-auto flex flex-wrap items-center gap-1">
+            <ProvisionCaptures
+              pointKey={BRAND_INTAKE_POINT}
+              subjectId={created.id}
+              title={`Brand analysis inputs: ${created.name}`}
+              refreshKey={`${provisionTick}:${setupState}`}
+            />
             <Button
               variant="outline"
               disabled={capturing}
-              onClick={() => void ensureOrgId(null).then((org) => showProvision(created, org))}
+              onClick={() => void ensureOrgId(null).then((org) => showProvision(created, org, "manual"))}
             >
               {capturing ? <Loader2 className="size-3.5 animate-spin" /> : null}
               Capture again
@@ -782,6 +791,7 @@ const SETUP_STEP_LABEL: Record<string, string> = {
   logo: "Images",
   accounts: "Accounts",
   history: "Post history",
+  inputs: "Analysis inputs",
 };
 
 /** Every unanswered finding, kept in the brand's discovery inbox (web.discovered_item, pending). */
