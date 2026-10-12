@@ -32,6 +32,7 @@ import {
   createBusinessLocation,
   createProperty,
   createSite,
+  moveSiteBrand,
   updateBusinessLocation,
 } from "@/features/marketing/data/service";
 import { runHref } from "@/features/workflow-runtime/run-doors";
@@ -307,6 +308,8 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
             domain: parsedUrl.hostname.toLowerCase(),
             brandId: brand.id,
           });
+          // An address already saved as a site comes back as that site: link it to THIS brand.
+          if (site.brand_id !== brand.id) await moveSiteBrand(site.id, brand.id);
           primarySiteId ??= site.id;
         } catch (error) {
           problems.push(`${websiteHost(url)}: ${extractErrorMessage(error)}`);
@@ -426,7 +429,7 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
 
       {/* Results: reserved from the start (zero layout shift); findings stream in. */}
       <div
-        className="h-[34rem] overflow-y-auto rounded-lg border border-border bg-card"
+        className="rounded-xl border border-border bg-card"
         data-testid="smart-add-results"
       >
         <SmartAddSlots
@@ -450,7 +453,7 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
       ) : null}
 
       {/* Create: the confirmed basics, one row. */}
-      <div className="flex min-h-10 items-center gap-3 rounded-lg border border-border bg-card px-3 py-2">
+      <div className="sticky bottom-3 z-10 flex min-h-12 items-center gap-3 rounded-xl border border-border bg-card/95 px-4 py-2 shadow-lg backdrop-blur">
         <div className="flex min-w-0 flex-1 items-center gap-2 text-sm">
           {basics.logoUrl ? (
             <img src={basics.logoUrl} alt="" className="size-6 shrink-0 rounded object-contain" />
