@@ -940,6 +940,9 @@ if $STRICT; then
         # surface-write door bypass, private action registries. Shrink-only baseline; advisory here.
         "Raw clipboard/download/format-lib/door-bypass in app code (Alchemy doors)|pnpm check:alchemy-doors"
         "Alchemy doors guard self-test|pnpm check:alchemy-doors:self-test"
+        # NO VENDOR NAMES ON CUSTOMER SCREENS (Arman, 2026-10-11: "via ScrapeCreators" reached the site).
+        "Vendor name in customer-facing UI text|pnpm check:no-vendor-names"
+        "No-vendor-names guard self-test|pnpm check:no-vendor-names:self-test"
         # UNIVER ADD-ONS — every free add-on loads, survives a save, and a signed-in person can
         # actually type in a cell (the owner-role identity); reds on a planted break. Static, no database.
         "Univer add-ons load, save back, and a signed-in person can edit|pnpm check:univer-addons"
@@ -1676,6 +1679,9 @@ else
         # surface-write door bypass, private action registries. Shrink-only baseline; advisory here.
         "Raw clipboard/download/format-lib/door-bypass in app code (Alchemy doors)|pnpm check:alchemy-doors"
         "Alchemy doors guard self-test|pnpm check:alchemy-doors:self-test"
+        # NO VENDOR NAMES ON CUSTOMER SCREENS (Arman, 2026-10-11: "via ScrapeCreators" reached the site).
+        "Vendor name in customer-facing UI text|pnpm check:no-vendor-names"
+        "No-vendor-names guard self-test|pnpm check:no-vendor-names:self-test"
         # UNIVER ADD-ONS — every free add-on loads, survives a save, and a signed-in person can
         # actually type in a cell (the owner-role identity); reds on a planted break. Static, no database.
         "Univer add-ons load, save back, and a signed-in person can edit|pnpm check:univer-addons"
