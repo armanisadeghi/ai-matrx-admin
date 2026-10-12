@@ -17,6 +17,8 @@ const anonymousJwt = userFromClaims({
   sub: "guest-1",
   aud: "authenticated",
   role: "authenticated",
+  aal: "aal1",
+  session_id: "session-1",
   is_anonymous: true,
   iat: 1,
   exp: 2,
@@ -26,6 +28,8 @@ const permanentJwt = userFromClaims({
   sub: "member-1",
   aud: "authenticated",
   role: "authenticated",
+  aal: "aal1",
+  session_id: "session-1",
   is_anonymous: false,
   email: "m@example.test",
   iat: 1,
@@ -42,7 +46,7 @@ describe("accountFlagsFor", () => {
   });
   it("a JWT with no is_anonymous claim is a member (older tokens)", () => {
     const { is_anonymous: _omit, ...rest } = permanentJwt!;
-    expect(accountFlagsFor(rest)).toEqual({ isGuest: false, hasAccount: true });
+    expect(accountFlagsFor(rest as { is_anonymous?: boolean })).toEqual({ isGuest: false, hasAccount: true });
   });
   it("no session is neither", () => {
     expect(accountFlagsFor(null)).toEqual({ isGuest: false, hasAccount: false });

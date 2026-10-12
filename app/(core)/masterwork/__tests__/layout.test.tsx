@@ -90,6 +90,8 @@ describe("MasterworkLayout", () => {
         isAuthenticated: false,
         user: null,
         authUnavailable: false,
+        isGuest: false,
+        hasAccount: false,
       });
 
       const destination = `${pathname}${search}`;
@@ -138,6 +140,8 @@ describe("MasterworkLayout", () => {
       isAuthenticated: true,
       user: {} as Awaited<ReturnType<typeof getServerAuth>>["user"],
       authUnavailable: false,
+      isGuest: false,
+      hasAccount: true,
     });
     const rendered = await renderLayout(<div>private Masterwork reader</div>);
 

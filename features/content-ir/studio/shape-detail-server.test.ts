@@ -43,7 +43,7 @@ it("waits for the shared identity hold instead of issuing an anonymous query", a
 });
 
 it("uses the settled viewer for ownership without another auth request", async () => {
-  verdict.mockResolvedValue({ state: "signed_in", isAuthenticated: true,
+  verdict.mockResolvedValue({ state: "signed_in", isAuthenticated: true, isGuest: false, hasAccount: true,
     user: { id: "viewer" } as NonNullable<Awaited<ReturnType<typeof getSessionVerdict>>["user"]> });
   const chain = query({ data: row, error: null });
   await expect(getShapeDetail("source_manifest")).resolves.toMatchObject({
@@ -53,7 +53,7 @@ it("uses the settled viewer for ownership without another auth request", async (
 });
 
 it("keeps real database failures visible", async () => {
-  verdict.mockResolvedValue({ state: "signed_in", isAuthenticated: true,
+  verdict.mockResolvedValue({ state: "signed_in", isAuthenticated: true, isGuest: false, hasAccount: true,
     user: { id: "other" } as NonNullable<Awaited<ReturnType<typeof getSessionVerdict>>["user"]> });
   query({ data: null, error: { message: "database unavailable" } });
   await expect(getShapeDetail("source_manifest")).rejects.toThrow("database unavailable");

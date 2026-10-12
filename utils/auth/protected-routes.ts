@@ -67,6 +67,9 @@ export const ACCOUNT_ENTRY_PAGES: ReadonlySet<string> = new Set([
   "/check-email",
 ]);
 
+/** Any verified identity (claims user or account record); only `is_anonymous` is read. */
+export type SessionUserLike = { is_anonymous?: unknown } | Record<string, unknown>;
+
 /**
  * GUEST vs MEMBER at the proxy (guests-use-everything D2, 2026-10-11).
  *
@@ -77,7 +80,7 @@ export const ACCOUNT_ENTRY_PAGES: ReadonlySet<string> = new Set([
  * it is sent through the login primitive exactly like a visitor.
  */
 export function isMemberSession(
-  user: { is_anonymous?: unknown } | null | undefined,
+  user: SessionUserLike | null | undefined,
 ): boolean {
   return !!user && user.is_anonymous !== true;
 }
@@ -85,7 +88,7 @@ export function isMemberSession(
 /** True when this session is bounced OFF an account-entry page: members only. */
 export function bouncesOffAccountEntryPage(
   pathname: string,
-  user: { is_anonymous?: unknown } | null | undefined,
+  user: SessionUserLike | null | undefined,
 ): boolean {
   return ACCOUNT_ENTRY_PAGES.has(pathname) && isMemberSession(user);
 }
@@ -93,7 +96,7 @@ export function bouncesOffAccountEntryPage(
 /** True when the proxy must send this request through the login primitive. */
 export function sendsToLogin(
   pathname: string,
-  user: { is_anonymous?: unknown } | null | undefined,
+  user: SessionUserLike | null | undefined,
 ): boolean {
   return !isMemberSession(user) && routeRequiresAuthentication(pathname);
 }

@@ -1,5 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import { createServiceClient } from "@ai-matrx/auth/node";
+import type { Database } from "@/types/database.types";
 import { requireEnv } from "@/utils/supabase/env";
 import { installRestDeadline } from "@/utils/supabase/restDeadline";
 
@@ -26,7 +27,7 @@ export const getScriptSupabaseClient = () => {
 
 // Admin client for migrations (uses the secret key)
 export const getAdminSupabaseClient = () =>
-  createServiceClient({
+  createServiceClient<Database>({
     url: requireEnv("NEXT_PUBLIC_SUPABASE_URL", process.env.NEXT_PUBLIC_SUPABASE_URL),
     secretKey: requireEnv("SUPABASE_SECRET_KEY", process.env.SUPABASE_SECRET_KEY),
   });

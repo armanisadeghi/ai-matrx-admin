@@ -73,7 +73,7 @@ beforeEach(() => {
 
 describe("(core) layout — an authority we could not reach is not a logout", () => {
   it("HOLDS when authUnavailable, instead of rendering the page as a guest", async () => {
-    mockedGetServerAuth.mockResolvedValue({ user: null, isAuthenticated: false, authUnavailable: true });
+    mockedGetServerAuth.mockResolvedValue({ user: null, isAuthenticated: false, authUnavailable: true, isGuest: false, hasAccount: false });
     const text = await render(<span>the page</span>);
 
     expect(text).toContain("You have not been signed out");
@@ -83,7 +83,7 @@ describe("(core) layout — an authority we could not reach is not a logout", ()
   });
 
   it("does no data work on a held request", async () => {
-    mockedGetServerAuth.mockResolvedValue({ user: null, isAuthenticated: false, authUnavailable: true });
+    mockedGetServerAuth.mockResolvedValue({ user: null, isAuthenticated: false, authUnavailable: true, isGuest: false, hasAccount: false });
     await render(<span>the page</span>);
     // Nothing to look up for an identity we do not have, and an admin probe on
     // every stalled request is load the auth outage does not need.
@@ -91,7 +91,7 @@ describe("(core) layout — an authority we could not reach is not a logout", ()
   });
 
   it("still renders the page for a genuine GUEST — the flag is clear", async () => {
-    mockedGetServerAuth.mockResolvedValue({ user: null, isAuthenticated: false, authUnavailable: false });
+    mockedGetServerAuth.mockResolvedValue({ user: null, isAuthenticated: false, authUnavailable: false, isGuest: false, hasAccount: false });
     const text = await render(<span>the page</span>);
 
     expect(text).toContain("the page");
@@ -104,6 +104,8 @@ describe("(core) layout — an authority we could not reach is not a logout", ()
       user: { id: "u-1", app_metadata: {}, user_metadata: {} } as never,
       isAuthenticated: true,
       authUnavailable: false,
+      isGuest: false,
+      hasAccount: true,
     });
     const text = await render(<span>the page</span>);
 
