@@ -3,7 +3,7 @@
   "updated": "2026-10-07",
   "sha": "e389e62b291c8f8958b40ae46c3c3cb67335a4b2",
   "sites": 33659,
-  "count": 21,
+  "count": 22,
   "ids": [
     "arbitrary-text-size|features/esign/signer/parts/PaperField.tsx",
     "primitive-visual-class|components/editor-chrome/EditorRibbon.tsx",
@@ -18,6 +18,7 @@
     "raw-color|features/esign/signer/parts/Panels.tsx",
     "raw-color|features/esign/signer/parts/PaperField.tsx",
     "raw-color|features/file-actions/home/FileHome.tsx",
+    "raw-color|features/shell/components/header/templates/EditorDocumentHeader.tsx",
     "styled-raw-button|components/editor-chrome/EditorRibbon.tsx",
     "styled-raw-button|features/ai-work/live/components/LiveSidebar.tsx",
     "styled-raw-button|features/ai-work/live/components/RoomDetail.tsx",
@@ -10570,6 +10571,11 @@
     },
     "styled-raw-button|features/file-actions/home/StartBand.tsx": {
       "reason": "Start tile is a paper-shaped template face (Google/Office start band), pre-existing H-home finding",
+      "accepted_by": "Armani Sadeghi",
+      "date": "2026-10-12"
+    },
+    "raw-color|features/shell/components/header/templates/EditorDocumentHeader.tsx": {
+      "reason": "White glyph on the product's app-colour tile (both looks already used this on the Google tile palette)",
       "accepted_by": "Armani Sadeghi",
       "date": "2026-10-12"
     }
