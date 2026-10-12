@@ -179,13 +179,15 @@ function LiveDataColumnDialog({ tableId, organizationId, onClose }: { tableId: s
                 <legend className="text-xs font-medium text-muted-foreground">Keep these fields (one column each)</legend>
                 <div className="flex max-h-48 flex-col gap-1 overflow-auto">
                   {(source.output_fields ?? []).map((f) => (
-                    <label key={f} className="flex items-center gap-2 text-sm">
-                      <input
-                        type="checkbox"
-                        checked={kept.includes(f)}
-                        onChange={(e) => setKept(e.target.checked ? [...kept, f] : kept.filter((k) => k !== f))}
-                      />
-                      {fieldLabel(f)}
+                    <div key={f} className="flex items-center gap-2 text-sm">
+                      <label className="flex items-center gap-2">
+                        <input
+                          type="checkbox"
+                          checked={kept.includes(f)}
+                          onChange={(e) => setKept(e.target.checked ? [...kept, f] : kept.filter((k) => k !== f))}
+                        />
+                        {fieldLabel(f)}
+                      </label>
                       {isItems && kept.includes(f) && (
                         <Select
                           aria-label={`Keep for ${fieldLabel(f)}`}
@@ -194,7 +196,7 @@ function LiveDataColumnDialog({ tableId, organizationId, onClose }: { tableId: s
                           onValueChange={(v) => setKeeps({ ...keeps, [f]: v as LiveKeep })}
                         />
                       )}
-                    </label>
+                    </div>
                   ))}
                 </div>
                 {suggestions.length > 0 && (

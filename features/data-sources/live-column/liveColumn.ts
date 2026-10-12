@@ -79,7 +79,7 @@ const COMPANY_LEVEL = /(rating|score|stars)/;
  * For a many-record source and a kept field that reads like a company-level figure, the one-record
  * sources (company, place, product) that return a field of the same kind, featured first.
  */
-export function companyLevelSources<S extends { key: string; label: string; records_are?: string; output_fields?: string[]; input: { kind: string }; featured?: boolean }>(
+export function companyLevelSources<S extends { key: string; label: string; group?: string; records_are?: string; output_fields?: string[]; input: { kind: string }; featured?: boolean }>(
   outputField: string,
   sources: readonly S[],
   limit = 3,
@@ -96,7 +96,9 @@ export function companyLevelSources<S extends { key: string; label: string; reco
     });
     if (field) found.push({ source, field });
   }
-  found.sort((a, b) => Number(Boolean(b.source.featured)) - Number(Boolean(a.source.featured)));
+  // A company's or a place's own figure first (the thing the person means), then apps and the rest.
+  const rank = (x: { source: S }) => (/compan|place|local|business/i.test(x.source.group ?? "") ? 0 : 1);
+  found.sort((a, b) => rank(a) - rank(b) || Number(Boolean(b.source.featured)) - Number(Boolean(a.source.featured)));
   return found.slice(0, limit);
 }
 

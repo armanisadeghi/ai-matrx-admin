@@ -33,15 +33,16 @@ describe("a table column from live data", () => {
     expect(columnTypeFor("title", "newest")).toBe("text");
   });
   it("suggests the company-level sources that have the figure", () => {
-    const src = (key: string, label: string, records_are: string, output_fields: string[], featured = false) => ({ key, label, records_are, output_fields, featured, input: { kind: "url" } });
+    const src = (key: string, label: string, records_are: string, output_fields: string[], featured = false, group = "Companies & funding") => ({ key, label, group, records_are, output_fields, featured, input: { kind: "url" } });
     const sources = [
       src("trustpilot_reviews", "Trustpilot reviews", "items", ["review_rating"], true),
+      src("app_store_apps", "App Store", "entity", ["rating"], true, "Apps & software"),
       src("glassdoor_company", "Glassdoor company", "entity", ["name", "ratings_overall"], true),
       src("google_maps_place", "Google Maps place", "entity", ["rating", "name"], true),
       src("random_place", "Random", "entity", ["name"]),
     ];
     const got = companyLevelSources("review_rating", sources).map((x) => `${x.source.key}:${x.field}`);
-    expect(got).toEqual(["glassdoor_company:ratings_overall", "google_maps_place:rating"]);
+    expect(got).toEqual(["glassdoor_company:ratings_overall", "google_maps_place:rating", "app_store_apps:rating"]);
     expect(companyLevelSources("review_text", sources)).toEqual([]);
   });
 });
