@@ -566,7 +566,7 @@ export function buildSheetMenus(h: SheetChromeHost): EditorMenu[] {
           keywords: ["list", "chips"],
           run: withRange(h, (r) => {
             r.setDataValidation(h.api.newDataValidation().requireValueInList(["Option 1", "Option 2"], false, true).build());
-            return h.api.executeCommand("data-validation.operation.open-validation-panel");
+            return h.api.executeCommand("data-validation.operation.open-validation-panel", {});
           }),
         },
         { kind: "separator" },
@@ -605,7 +605,7 @@ export function buildSheetMenus(h: SheetChromeHost): EditorMenu[] {
         { kind: "submenu", id: "format.merge", label: "Merge cells", icon: TableCellsMerge, items: mergeEntries(h) },
         { kind: "separator" },
         { kind: "action", id: "format.convert-table", label: "Convert to table", run: run(h, "sheet.operation.open-table-selector") },
-        { kind: "action", id: "format.conditional", label: "Conditional formatting", run: run(h, "sheet.operation.open.conditional.formatting.panel") },
+        { kind: "action", id: "format.conditional", label: "Conditional formatting", run: run(h, "sheet.operation.open.conditional.formatting.panel", { value: 1 }) },
         {
           kind: "action",
           id: "format.alternating",
@@ -639,7 +639,7 @@ export function buildSheetMenus(h: SheetChromeHost): EditorMenu[] {
         },
         { kind: "separator" },
         { kind: "action", id: "data.filter", label: "Create a filter", icon: Filter, keywords: ["remove filter"], run: run(h, "sheet.command.smart-toggle-filter") },
-        { kind: "action", id: "data.validation", label: "Data validation", run: run(h, "data-validation.operation.open-validation-panel") },
+        { kind: "action", id: "data.validation", label: "Data validation", run: run(h, "data-validation.operation.open-validation-panel", {}) },
         { kind: "separator" },
         {
           kind: "submenu",

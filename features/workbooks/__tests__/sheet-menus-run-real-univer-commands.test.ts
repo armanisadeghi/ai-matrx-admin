@@ -134,6 +134,18 @@ describe("workbook menus and toolbar → Univer", () => {
     }
   });
 
+  // Univer's panel operations return false (nothing opens) without their params: the conditional
+  // formatting panel switches on `value`, the validation panel needs an object. Found live 2026-10-12.
+  it("panel rows send the params Univer's panel operations require", () => {
+    const { host, calls } = fakeHost();
+    const rows = flattenMenus(buildSheetMenus(host));
+    void rows.find((r) => r.id === "format.conditional")!.run();
+    void rows.find((r) => r.id === "data.validation")!.run();
+    const exec = calls.filter((c) => c.kind === "exec");
+    expect(exec.find((c) => c.args[0] === "sheet.operation.open.conditional.formatting.panel")?.args[1]).toEqual({ value: 1 });
+    expect(typeof exec.find((c) => c.args[0] === "data-validation.operation.open-validation-panel")?.args[1]).toBe("object");
+  });
+
   it("the named Google rows do what they say", () => {
     const { host, calls } = fakeHost();
     const rows = flattenMenus(buildSheetMenus(host));
