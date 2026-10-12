@@ -26,10 +26,12 @@ import {
 } from "@/features/google-workspace/linked/GoogleLinkControl";
 import { FileMenuItems, type FileMenuItemsProps } from "./FileMenuItems";
 import { MoveToProjectDialog } from "./MoveToProjectDialog";
+import { SaveAsTemplateDialog } from "@/features/templates/files/components/SaveAsTemplateDialog";
+import type { TemplateKind } from "@/features/templates/files/types";
 
 export type FileMenuProps = Omit<
   FileMenuItemsProps,
-  "onShare" | "onMoveRequest"
+  "onShare" | "onMoveRequest" | "onSaveAsTemplateRequest"
 > & {
   resourceType: ResourceType;
   id: string;
@@ -53,6 +55,8 @@ export type FileMenuProps = Omit<
   /** Open the menu from outside (a card's right-click — `FileCardContextArea`). */
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
+  /** A "Save as template" row (the editor File menu): the record's kind. */
+  templateKind?: TemplateKind;
 };
 
 /** Mounts the Google link state beside the dropdown, so its dialogs outlive the menu closing. */
@@ -108,11 +112,13 @@ export function FileMenu({
   google,
   open,
   onOpenChange,
+  templateKind,
   ...items
 }: FileMenuProps): ReactNode {
   const [menuOpened, setMenuOpened] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
   const [moveOpen, setMoveOpen] = useState(false);
+  const [templateOpen, setTemplateOpen] = useState(false);
   const { name, trashed } = items;
 
   return (
@@ -170,6 +176,7 @@ export function FileMenu({
                   }
                   {...(shareable ? { onShare: () => setShareOpen(true) } : {})}
                   {...(onMove ? { onMoveRequest: () => setMoveOpen(true) } : {})}
+                  {...(templateKind ? { onSaveAsTemplateRequest: () => setTemplateOpen(true) } : {})}
                 />
               </DropdownMenuContent>
             </DropdownMenu>
@@ -191,6 +198,14 @@ export function FileMenu({
           currentProjectId={projectId}
           onClose={() => setMoveOpen(false)}
           onMove={onMove}
+        />
+      )}
+      {templateOpen && templateKind && (
+        <SaveAsTemplateDialog
+          kind={templateKind}
+          recordId={id}
+          name={name}
+          onClose={() => setTemplateOpen(false)}
         />
       )}
     </span>

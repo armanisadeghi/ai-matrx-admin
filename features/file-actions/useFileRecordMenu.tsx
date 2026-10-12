@@ -48,6 +48,7 @@ export function useFileRecordMenu<Row extends { id: string; user_id: string }>(
       canManage={isOwner}
       starred={isStarred(row.id)}
       onToggleStar={() => void toggle(row.id)}
+      templateKind={adapter.noun}
       projectId={adapter.projectIdOf(row)}
       downloads={options.downloads ?? adapter.downloads(row.id, name)}
       onDownload={(d) => runDownload(adapter, d)}

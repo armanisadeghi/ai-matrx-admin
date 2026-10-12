@@ -12,6 +12,7 @@ import {
   Copy,
   ExternalLink,
   FolderInput,
+  LayoutTemplate,
   Pencil,
   Share2,
   Star,
@@ -41,6 +42,8 @@ export type FileMenuItemsProps = {
   onToggleStar?: () => void;
   onRename?: (name: string) => Promise<void> | void;
   onCopy?: () => Promise<void> | void;
+  /** Opens "Save as template" (owned by the parent menu so it outlives this list). */
+  onSaveAsTemplateRequest?: () => void;
   /** Opens the move dialog (owned by the parent menu so it outlives this list). */
   onMoveRequest?: () => void;
   downloads?: FileDownload[];
@@ -102,6 +105,12 @@ export function FileMenuItems(p: FileMenuItemsProps): ReactNode {
         <DropdownMenuItem onSelect={() => void p.onCopy?.()}>
           <Copy className="mr-2 size-4" />
           Make a copy
+        </DropdownMenuItem>
+      )}
+      {p.onSaveAsTemplateRequest && (
+        <DropdownMenuItem onSelect={p.onSaveAsTemplateRequest}>
+          <LayoutTemplate className="mr-2 size-4" />
+          Save as template
         </DropdownMenuItem>
       )}
       {p.canManage && p.onMoveRequest && (
