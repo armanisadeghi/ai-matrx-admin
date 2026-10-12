@@ -1,0 +1,93 @@
+"use client";
+
+/**
+ * One evidence round = one run of the `smart_add_brand_identify` system
+ * workflow. This adopts the run through the platform's Run Stream Adapter
+ * (`useWorkflowRun`) and reports, as they arrive:
+ *  - every evidence item (live `node_emitted` frames first, then each step's
+ *    final output, so a lost frame never loses a finding);
+ *  - each step's phase, progress line, notes and hard cost.
+ * Renders nothing; the Smart Add screen owns the layout.
+ */
+
+import { useEffect } from "react";
+import { useAppSelector } from "@/lib/redux/hooks";
+import { useWorkflowRun } from "@/features/workflow-runtime/hooks/useWorkflowRun";
+import {
+  selectNodeAggregate,
+  selectRunEmissions,
+  selectRunStatus,
+} from "@/features/workflow-runtime/redux/workflow-runs.selectors";
+import { evidenceFromPayload, type EvidenceItem } from "./evidence";
+
+export const SMART_ADD_STEPS = ["website", "socials"] as const;
+export type SmartAddStep = (typeof SMART_ADD_STEPS)[number];
+
+export interface StepView {
+  step: SmartAddStep;
+  phase: string;
+  progress: string | null;
+  notes: string[];
+  costUsd: number;
+  skipped: boolean;
+}
+
+export interface RoundView {
+  runId: string;
+  status: string | null;
+  steps: StepView[];
+}
+
+function numberOr(value: unknown, fallback: number): number {
+  return typeof value === "number" && Number.isFinite(value) ? value : fallback;
+}
+
+function useStep(runId: string, step: SmartAddStep): { view: StepView; evidence: EvidenceItem[] } {
+  const aggregate = useAppSelector(selectNodeAggregate(runId, step));
+  const invocation = aggregate.invocations[aggregate.invocations.length - 1] ?? null;
+  const output = invocation?.output ?? null;
+  const notes = Array.isArray(output?.notes) ? output.notes.filter((n): n is string => typeof n === "string") : [];
+  const errorNote = invocation?.error?.message ? [invocation.error.message] : [];
+  return {
+    view: {
+      step,
+      phase: aggregate.phase,
+      progress: invocation?.progress?.message ?? null,
+      notes: [...notes, ...errorNote],
+      costUsd: numberOr(output?.cost_usd, 0),
+      skipped: output?.skipped === true,
+    },
+    evidence: evidenceFromPayload(output),
+  };
+}
+
+export function SmartAddRound({
+  runId,
+  onEvidence,
+  onView,
+}: {
+  runId: string;
+  onEvidence: (items: EvidenceItem[]) => void;
+  onView: (view: RoundView) => void;
+}) {
+  useWorkflowRun(runId);
+  const status = useAppSelector(selectRunStatus(runId));
+  const emissions = useAppSelector(selectRunEmissions(runId));
+  const website = useStep(runId, "website");
+  const socials = useStep(runId, "socials");
+
+  const live = emissions.flatMap((e) => evidenceFromPayload(e.payload));
+  const all = [...live, ...website.evidence, ...socials.evidence];
+  // Both callbacks are idempotent on unchanged content (the screen keeps its
+  // state when nothing new arrived), so running on every render is safe.
+  useEffect(() => {
+    if (all.length) onEvidence(all);
+  }, [all, onEvidence]);
+
+  const view: RoundView = { runId, status, steps: [website.view, socials.view] };
+  useEffect(() => {
+    onView(view);
+  }, [view, onView]);
+
+  return null;
+}
