@@ -34,6 +34,8 @@ import {
   updateBusinessLocation,
 } from "@/features/marketing/data/service";
 import { runHref } from "@/features/workflow-runtime/run-doors";
+import { ADOPTION_RELEASE_GRACE_MS } from "@/features/workflow-runtime/hooks/useWorkflowRun";
+import { detachWorkflowRunState } from "@/features/workflow-runtime/redux/adopt-workflow-run.thunk";
 import { marketingRoutes } from "@/features/marketing/lib/routes";
 import { marketingSeg } from "@/features/marketing/lib/keys";
 import { normalizeWebsiteUrl } from "@/features/marketing/lib/website-url";
@@ -108,6 +110,9 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
   const [created, setCreated] = useState<MarketingBrand | null>(null);
   const [setupRunId, setSetupRunId] = useState<string | null>(null);
   const [setupView, setSetupView] = useState<RoundView | null>(null);
+  // A restart parks the run as cancelled and the platform's recovery sweep resumes it; the
+  // stream adapter treats cancelled as final, so the screen lets go and re-reads the run.
+  const [setupAttached, setSetupAttached] = useState(true);
   const [saveNotes, setSaveNotes] = useState<string[]>([]);
 
   // ── rounds ──────────────────────────────────────────────────────────────
@@ -205,6 +210,17 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
     const timer = setTimeout(runPending, CONFIRM_BATCH_MS);
     return () => clearTimeout(timer);
   }, [pendingKey, created]);
+
+  const setupInterrupted = setupView?.status === "cancelled";
+  useEffect(() => {
+    if (!setupRunId || !setupInterrupted) return;
+    setSetupAttached(false);
+    const timer = setTimeout(() => {
+      dispatch(detachWorkflowRunState(setupRunId));
+      setSetupAttached(true);
+    }, ADOPTION_RELEASE_GRACE_MS + 1_000);
+    return () => clearTimeout(timer);
+  }, [setupRunId, setupInterrupted, dispatch]);
 
   const decide = (key: string, decision: Decision) =>
     setDecisions((d) => {
@@ -499,7 +515,7 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
         </div>
       ) : null}
 
-      {setupRunId ? (
+      {setupRunId && setupAttached ? (
         <SmartAddRound
           key={setupRunId}
           runId={setupRunId}
