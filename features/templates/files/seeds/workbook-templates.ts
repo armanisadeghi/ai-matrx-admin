@@ -42,7 +42,7 @@ function todo(): SeedTemplate {
     title: "To-do list",
     subtitle: "Check things off as you go; priorities are color-coded.",
     columns: [
-      { header: "Done", width: 56, checkbox: true },
+      { header: "Done", width: 64, checkbox: true },
       { header: "Task", width: 280 },
       { header: "Due date", width: 120, fmt: "date", date: true },
       { header: "Priority", width: 100, list: ["High", "Medium", "Low"] },
@@ -399,7 +399,7 @@ function timeline(): SeedTemplate {
       { header: "Start", width: 92, fmt: "date", date: true },
       { header: "End", width: 92, fmt: "date", date: true },
       { header: "Status", width: 100, list: ["Not started", "In progress", "Done", "Blocked"] },
-      ...weeks.map(() => ({ header: "", width: 44, align: "center" as const })),
+      ...weeks.map(() => ({ header: "", width: 60, align: "center" as const })),
     ],
     rows,
     banded: false,
@@ -444,7 +444,7 @@ function eventPlanner(): SeedTemplate {
     title: "Event planner — Fall fundraiser gala",
     subtitle: "Saturday, November 7, 2026 · Lakeside Pavilion · 180 guests",
     columns: [
-      { header: "Done", width: 56, checkbox: true },
+      { header: "Done", width: 64, checkbox: true },
       { header: "Task", width: 250 },
       { header: "Area", width: 110, list: ["Venue", "Food", "Decor", "Guests", "Entertainment", "Logistics"] },
       { header: "Owner", width: 90 },

@@ -9,6 +9,7 @@ import { DOCUMENT_ADAPTER } from "@/features/file-actions/adapters";
 import { FileHome } from "@/features/file-actions/home/FileHome";
 import { DOCUMENT_HOME } from "@/features/file-actions/home/home-kinds";
 import { BlankTile, StartBand, StartTile } from "@/features/file-actions/home/StartBand";
+import { useHomeTemplates } from "@/features/templates/files/components/HomeTemplates";
 
 import { toast } from "@/components/ui/use-toast";
 import RouteHeader from "@/features/shell/components/header/RouteHeader";
@@ -53,6 +54,7 @@ const DOCUMENTS_HUB_LEGACY_VIEW: LegacyListViewImport = {
  * and the `matrx-user/documents` library surface.
  */
 export default function DocumentsLandingPage() {
+  const homeTemplates = useHomeTemplates("document");
   const router = useRouter();
   const organizationId = useAppSelector(selectOrganizationId);
   const userId = useAppSelector(selectUserId);
@@ -234,10 +236,7 @@ export default function DocumentsLandingPage() {
           <StartBand
             kind={DOCUMENT_HOME}
             blank={<BlankTile onCreate={() => void handleCreate()} creating={creating} />}
-            templates={null}
-            gallery={null}
-            galleryOpen={false}
-            onGalleryOpenChange={() => undefined}
+            {...homeTemplates}
             extraTiles={
               <StartTile
                 label="Upload a file"

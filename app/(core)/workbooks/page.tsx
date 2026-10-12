@@ -28,6 +28,7 @@ import { WORKBOOK_ADAPTER } from "@/features/file-actions/adapters";
 import { FileHome } from "@/features/file-actions/home/FileHome";
 import { WORKBOOK_HOME } from "@/features/file-actions/home/home-kinds";
 import { BlankTile, StartBand, StartTile } from "@/features/file-actions/home/StartBand";
+import { useHomeTemplates } from "@/features/templates/files/components/HomeTemplates";
 import { FromTableTile } from "@/features/workbooks/components/FromTableTile";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
 import { isServiceFailure, type Workbook } from "@/features/data-tables/types";
@@ -81,6 +82,7 @@ function unsupportedFileReason(file: File): string | null {
 }
 
 export default function WorkbooksLandingPage() {
+  const homeTemplates = useHomeTemplates("workbook");
   const router = useRouter();
   const dispatch = useAppDispatch();
   const organizationId = useAppSelector(selectOrganizationId);
@@ -478,10 +480,7 @@ export default function WorkbooksLandingPage() {
           <StartBand
             kind={WORKBOOK_HOME}
             blank={<BlankTile onCreate={() => void handleCreate()} creating={creating} />}
-            templates={null}
-            gallery={null}
-            galleryOpen={false}
-            onGalleryOpenChange={() => undefined}
+            {...homeTemplates}
             extraTiles={
               <>
                 <FromTableTile />
