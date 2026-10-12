@@ -33,6 +33,9 @@ jest.mock("@/features/unified-data/components/useKeptEntityBackLinks", () => ({
     return hook();
   },
 }));
+let superAdmin = false;
+jest.mock("@/lib/redux/hooks", () => ({ useAppSelector: () => superAdmin }));
+jest.mock("@/lib/redux/selectors/userSelectors", () => ({ selectIsSuperAdminPerson: () => superAdmin }));
 jest.mock("@/features/data-tables/records-ui-host/recordsUiHost", () => ({ useAppRecordsConfig: () => ({}) }));
 jest.mock("@/components/official/entity-ref/EntityRef", () => ({
   EntityRef: ({ name, href }: { name?: string | null; href?: string }) => <a href={href}>{name}</a>,
@@ -41,6 +44,7 @@ jest.mock("@/components/official/entity-ref/EntityRef", () => ({
 import { EntityBackLinks } from "../EntityBackLinks";
 
 const state = (over: Record<string, unknown> = {}) => ({
+  unlinkable: false,
   items: [],
   target: null,
   loading: false,
@@ -130,4 +134,21 @@ it("asks nothing until the row's organization is known", async () => {
   hook.mockReturnValue(state());
   await mount(null);
   expect(host.querySelector('[data-section="back-links"]')).toBeNull();
+});
+
+it("a kind the platform has not registered as linkable shows people nothing", async () => {
+  superAdmin = false;
+  hook.mockReturnValue(state({ unlinkable: true }));
+  await mount();
+  expect(host.querySelector('[data-section="back-links"]')).toBeNull();
+});
+
+it("a super admin sees a badge into the entity registry for an unlinkable kind", async () => {
+  superAdmin = true;
+  hook.mockReturnValue(state({ unlinkable: true }));
+  await mount();
+  const section = host.querySelector('[data-section="back-links"]');
+  expect(section?.getAttribute("data-state")).toBe("unlinkable");
+  expect(section?.querySelector("a")?.getAttribute("href")).toBe("/administration/database/relationships/entity-types");
+  superAdmin = false;
 });

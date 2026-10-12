@@ -85,6 +85,8 @@ const IDENTITY_ALLOWED = new Set([
   "features/shell/components/sidebar/admin-menu/AdminSidebarSection.tsx",
   "features/shell/components/sidebar/admin-menu/AdminMobileMenuItem.tsx",
   "components/matrx/PublicHeaderAuth.tsx",
+  // A badge into the entity registry where a kind is made linkable; it grants and reveals nothing.
+  "features/unified-data/components/EntityBackLinks.tsx",
   // Protects the person's session; grants nothing.
   "features/shell/auth/useSignOut.ts",
   // The cost unit (Arman, 2026-09-27): "Everyone should see credits/points

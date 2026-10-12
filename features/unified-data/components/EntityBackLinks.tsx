@@ -21,10 +21,11 @@
 // table and each opens its custom record page; more load through `next_cursor`. A missing door or a
 // refused read is said in the section, in the store's own words, with a Retry — never hidden.
 
+import Link from "next/link";
 import { Link2 } from "lucide-react";
 import { RecordsMount } from "@ai-matrx/records-ui";
 import type { EntityBackLinkItem } from "@ai-matrx/records";
-import { Button, EmptyState } from "@ai-matrx/design-system/controls";
+import { Badge, Button, EmptyState } from "@ai-matrx/design-system/controls";
 import { EntityRef } from "@/components/official/entity-ref/EntityRef";
 import { useAppRecordsConfig } from "@/features/data-tables/records-ui-host/recordsUiHost";
 import { useKeptEntityBackLinks } from "@/features/unified-data/components/useKeptEntityBackLinks";
@@ -32,6 +33,11 @@ import { recordPageHref } from "@/features/unified-data/table-page/recordPageHre
 
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { ErrorNotice } from "@ai-matrx/design-system";
+import { useAppSelector } from "@/lib/redux/hooks";
+import { selectIsSuperAdminPerson } from "@/lib/redux/selectors/userSelectors";
+
+/** The registry page where a kind is made linkable. */
+const ENTITY_REGISTRY_HREF = "/administration/database/relationships/entity-types";
 export interface EntityBackLinksProps {
   entityToken: string;
   recordId: string;
@@ -51,9 +57,12 @@ export function groupBackLinksByTable(items: EntityBackLinkItem[]) {
   return [...groups.values()];
 }
 
+/** Reached another way, so never a link target: a File and a Person are relations to their kernel Tables. */
+const LINKED_ANOTHER_WAY = new Set(["file", "user", "person", "user_profile", "record", "custom_record"]);
+
 export function EntityBackLinks(props: EntityBackLinksProps) {
   const config = useAppRecordsConfig(props.organizationId);
-  if (!props.organizationId) return null;
+  if (!props.organizationId || LINKED_ANOTHER_WAY.has(props.entityToken)) return null;
   return (
     <RecordsMount config={config}>
       <BackLinksSection {...props} organizationId={props.organizationId} />
@@ -63,6 +72,20 @@ export function EntityBackLinks(props: EntityBackLinksProps) {
 
 function BackLinksSection({ entityToken, recordId, organizationId, className }: EntityBackLinksProps & { organizationId: string }) {
   const links = useKeptEntityBackLinks(entityToken, recordId, { organizationId });
+  const isSuperAdmin = useAppSelector(selectIsSuperAdminPerson);
+
+  // A KIND THE PLATFORM HAS NOT REGISTERED AS LINKABLE: nothing can point here, so people see no section.
+  // The super admin who can fix the registry sees a badge into it (the way INTO the admin section).
+  if (links.unlinkable) {
+    if (!isSuperAdmin) return null;
+    return (
+      <section data-section="back-links" data-state="unlinkable" className={className}>
+        <Link href={ENTITY_REGISTRY_HREF} title="Register this kind so records can link to it">
+          <Badge tone="warning">Not linkable: {entityToken}</Badge>
+        </Link>
+      </section>
+    );
+  }
 
   // A RECORD OF AN ORGANIZATION THE READER IS NOT IN (lane DRILL-LIVE-FIX-2 #7): the wall's refusal
   // (42501 → "door") is a state, not a failure — a platform admin peeking another organization's

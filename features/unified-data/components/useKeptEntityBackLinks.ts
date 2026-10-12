@@ -27,7 +27,12 @@ class BackLinksRefused extends Error {
   }
 }
 
+/** The kept answer: the store's, or "this kind is not a thing a record may link to" (22023). */
+type KeptAnswer = EntityBackLinks | { unlinkable: true };
+
 export interface KeptEntityBackLinks {
+  /** True when the platform has not registered this kind as linkable (the admin fixes it in the registry). */
+  unlinkable: boolean;
   items: EntityBackLinkItem[];
   target: EntityBackLinks["target"] | null;
   loading: boolean;
@@ -55,17 +60,23 @@ export function useKeptEntityBackLinks(
     ...(cursor ? { cursor } : {}),
   });
 
-  const read = useStoreRead<EntityBackLinks>(
+  const read = useStoreRead<KeptAnswer>(
     asking ? entityBackLinksKey(asking.organizationId, asking.token, asking.recordId, limit) : null,
     async () => {
       const answered = await client.entityBackLinks(args());
-      if (!answered.ok) throw new BackLinksRefused(answered.error);
+      if (!answered.ok) {
+        // 22023: the kind is not registered as linkable. A state, not a failure; kept so a remount asks nothing.
+        if (answered.error.code === "invalid_argument") return { unlinkable: true };
+        throw new BackLinksRefused(answered.error);
+      }
       return answered.data;
     },
   );
 
   const [more, setMore] = useState<{ busy: boolean; error: RecordsError | null }>({ busy: false, error: null });
-  const kept = read.data;
+  const answer = read.data;
+  const unlinkable = Boolean(answer && "unlinkable" in answer);
+  const kept = answer && !("unlinkable" in answer) ? answer : null;
   const cursor = kept?.next_cursor ?? null;
 
   const loadMore = useCallback(async () => {
@@ -79,7 +90,9 @@ export function useKeptEntityBackLinks(
     const page = answered.data;
     read.setData((prev) =>
       prev
-        ? { ...prev, items: [...prev.items, ...page.items], next_cursor: page.next_cursor }
+        ? "unlinkable" in prev
+          ? prev
+          : { ...prev, items: [...prev.items, ...page.items], next_cursor: page.next_cursor }
         : page,
     );
     setMore({ busy: false, error: null });
@@ -91,6 +104,7 @@ export function useKeptEntityBackLinks(
     : null;
 
   return {
+    unlinkable,
     items: kept?.items ?? [],
     target: kept?.target ?? null,
     loading: read.isLoading,
