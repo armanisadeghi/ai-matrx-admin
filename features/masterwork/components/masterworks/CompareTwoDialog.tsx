@@ -38,7 +38,7 @@ import { Input } from "@ai-matrx/design-system/controls";
 import { Label } from "@/components/ui/label";
 import { ProTextarea } from "@/components/official/ProTextarea";
 import { MasterworkDictationOrigin } from "@/features/masterwork/MasterworkDictationOrigin";
-import type { paths } from "@ai-matrx/api/types";
+import type { paths } from "@ai-matrx/agents/generated/api-types";
 import { useMasterworkRun } from "../../durable-run/useMasterworkRun";
 import { createSittingStore, type SittingBase } from "../../sitting/sitting";
 import { useDialogSitting } from "../../sitting/useDialogSitting";

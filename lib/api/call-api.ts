@@ -23,7 +23,7 @@
  * TYPE SAFETY
  * ─────────────────────────────────────────────────────────────────────────────
  *
- * Request bodies are inferred directly from @ai-matrx/api/types.ts.
+ * Request bodies are inferred directly from @ai-matrx/agents/generated/api-types.ts.
  * If you pass the wrong body shape TypeScript will error at the call site,
  * not at runtime.
  *
@@ -137,7 +137,7 @@ export {
 
 // ─── Auto-generated types (source of truth for all request/response shapes) ──
 
-import type { paths, components } from "@ai-matrx/api/types";
+import type { paths, components } from "@ai-matrx/agents/generated/api-types";
 import type { TypedStreamEvent } from "@ai-matrx/agents/generated/stream-events";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
 
@@ -805,7 +805,7 @@ export async function fetchWithV2Fallback(
  *   6. Executes the request — JSON or NDJSON streaming
  *
  * TypeScript enforces the correct body shape for every path/method combination
- * using the auto-generated @ai-matrx/api/types.ts.
+ * using the auto-generated @ai-matrx/agents/generated/api-types.ts.
  *
  * Usage — from a component:
  * ```typescript

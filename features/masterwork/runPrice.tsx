@@ -25,7 +25,7 @@ import { InfoHint } from "@/components/official/InfoHint";
 import { callApi } from "@/lib/api/call-api";
 import { postgrestError } from "@/lib/failure/postgrestError";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import type { paths } from "@ai-matrx/api/types";
+import type { paths } from "@ai-matrx/agents/generated/api-types";
 import { supabase } from "@/utils/supabase/client";
 import { myRunsCreatedBy } from "./encore/service";
 

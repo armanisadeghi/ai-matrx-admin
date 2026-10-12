@@ -8,7 +8,7 @@ import { apiPost, buildPath } from "@/lib/api/typed-client";
 import type { Database, Json } from "@/types/database.types";
 import { createClient } from "@/utils/supabase/client";
 
-import type { components } from "@ai-matrx/api/types";
+import type { components } from "@ai-matrx/agents/generated/api-types";
 
 export type ConverterDefinitionRow =
   Database["content_ir"]["Tables"]["converter_definition"]["Row"];

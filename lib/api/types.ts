@@ -98,13 +98,9 @@ export {
 // RE-EXPORTS — Auto-generated from Python (OpenAPI request/response schemas)
 // ============================================================================
 
-export type {
-  components,
-  operations,
-  paths,
-} from "@ai-matrx/api/types";
+export type { components, paths } from "@ai-matrx/agents/generated/api-types";
 
-import type { components } from "@ai-matrx/api/types";
+import type { components } from "@ai-matrx/agents/generated/api-types";
 
 // Named aliases — every one of these resolves to a generated schema.
 // If a schema is renamed/removed in Python, TypeScript will error here immediately.

@@ -12,7 +12,7 @@
 
 import type { AppDispatch } from "@/lib/redux/store";
 import { callApi, type ApiCallConfig, type ApiCallError } from "@/lib/api/call-api";
-import type { paths } from "@ai-matrx/api/types";
+import type { paths } from "@ai-matrx/agents/generated/api-types";
 import { createClient } from "@/utils/supabase/client";
 import type { ComparisonEntryRow } from "../../types";
 
