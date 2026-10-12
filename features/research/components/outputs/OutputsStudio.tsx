@@ -77,6 +77,7 @@ import {
   type ReportOutputFacts,
   type ReportSource,
 } from "./report-output-offer-values";
+import { buildGeneratorVariables } from "./generator-variables";
 import type { AnyMandateKey } from "@ai-matrx/agents/mandates";
 
 /** Research content-engine generators run through AGENT MANDATES — the mandate is the
@@ -86,24 +87,6 @@ import type { AnyMandateKey } from "@ai-matrx/agents/mandates";
 const BLOG_MANDATE = MANDATE_KEYS.research_client__output_blog;
 const SLIDES_MANDATE = MANDATE_KEYS.research_client__output_slides;
 const SEO_MANDATE = MANDATE_KEYS.research_client__output_seo;
-
-/** Build the generator's declared variables. Structured content (the report)
- *  and the Voice & Lens note travel as named variables, never as user_input —
- *  there is no human turn on these generator buttons at all. THE USER-INPUT
- *  LAW: common-docs/systems/agent-variable-binding/FEATURE.md. */
-function buildGeneratorVariables(
-  reportMarkdown: string,
-  toneProfile: string,
-  facts: ReportOutputFacts = {},
-): Record<string, unknown> {
-  return {
-    report_markdown: reportMarkdown,
-    voice_lens: toneProfile.trim(),
-    // Mapped-only facts by the provision's declared names — payload-neutral
-    // on the mandate door unless a binding maps them.
-    ...facts,
-  };
-}
 
 const HOST_COUNTS = [1, 2, 3, 4] as const;
 const PODCAST_TYPES: { value: PodcastType; label: string }[] = [
