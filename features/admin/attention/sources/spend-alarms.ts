@@ -44,6 +44,7 @@ import {
   whose,
   type SpendAlarmAttentionRow,
 } from "@/features/admin/spend-alarms/spendAlarms";
+import type { CostlyWorkflow } from "@/features/admin/spend-alarms/ciPause";
 import { humanizeRelative } from "@/features/scheduling/utils/triggerHumanize";
 import { HELD_RUN_ALARM_KINDS, heldRunHref } from "@/features/admin/held-runs/heldRuns";
 import type { AttentionAction, AttentionItem } from "../types";
@@ -62,6 +63,11 @@ export interface SpendAlarmDeps {
   setTaskEnabled: (taskId: string, enabled: boolean) => Promise<void>;
   /** Starts one run now and opens the task's page to watch it. */
   runTaskNow: (taskId: string) => Promise<void>;
+  /** CI spend alarm: pause the workflows the server names (it refuses the release path), or resume them. */
+  pauseCiWorkflows?: (alarmId: string) => Promise<void>;
+  resumeCiWorkflows?: (alarmId: string) => Promise<void>;
+  /** The costly workflows the server reports per CI alarm id (with $/day); absent until read. */
+  ciCostly?: Readonly<Record<string, readonly CostlyWorkflow[]>>;
   now?: number;
   /** Prefix for absolute links in copied text (the page's origin); empty in tests. */
   origin?: string;
@@ -102,6 +108,60 @@ function namesOf(row: SpendAlarmAttentionRow): Map<string, string> {
   if (row.refs.user_id && row.person) names.set(row.refs.user_id, row.person);
   for (const [id, name] of Object.entries(row.names ?? {})) if (!names.has(id)) names.set(id, name);
   return names;
+}
+
+/** "ai-matrx Deploy (12.50/day)": repo owner dropped. */
+export function costlyLine(w: Pick<CostlyWorkflow, "repo" | "workflow" | "usd_per_day">): string {
+  return `${w.repo.split("/").pop()} ${w.workflow} (${usd(w.usd_per_day)}/day)`;
+}
+
+/**
+ * The CI spend card's button is real or absent. Pause: only the workflows the server says it may
+ * pause, named with their $/day in the confirm. Once paused: Resume, and the card says what is paused.
+ */
+function ciActions(row: SpendAlarmAttentionRow, deps: SpendAlarmDeps): AttentionAction[] {
+  const paused = row.ci_pause?.paused ?? [];
+  if (paused.length > 0) {
+    if (!deps.resumeCiWorkflows) return [];
+    const resume = deps.resumeCiWorkflows;
+    return [
+      {
+        id: "resume_ci_workflows",
+        label: "Resume the paused workflows",
+        variant: "outline",
+        confirm: {
+          title: "Turn the paused workflows back on?",
+          description: `${paused.map((p) => costlyLine({ repo: p.repo, workflow: p.workflow, usd_per_day: p.usd_per_day ?? 0 })).join("; ")} run on every push again and bill again.`,
+          confirmLabel: "Resume them",
+        },
+        run: () => resume(row.id),
+      },
+    ];
+  }
+  const pausable = (deps.ciCostly?.[row.id] ?? []).filter((w) => w.pausable);
+  if (!deps.pauseCiWorkflows || pausable.length === 0) return [];
+  const pause = deps.pauseCiWorkflows;
+  const total = pausable.reduce((sum, w) => sum + w.usd_per_day, 0);
+  return [
+    {
+      id: "pause_ci_workflows",
+      label: "Pause the costly workflows",
+      variant: "outline",
+      confirm: {
+        title: pausable.length === 1 ? "Pause this workflow on GitHub?" : `Pause these ${pausable.length} workflows on GitHub?`,
+        description: `${pausable.map(costlyLine).join("; ")}. About ${usd(total)} a day stops billing. They stop running until you resume them; deploys and package publishing are never paused.`,
+        confirmLabel: "Pause them",
+        variant: "destructive",
+      },
+      run: () => pause(row.id),
+    },
+  ];
+}
+
+function pausedLine(row: SpendAlarmAttentionRow): string | null {
+  const paused = row.ci_pause?.paused ?? [];
+  if (paused.length === 0) return null;
+  return `Paused on GitHub: ${paused.map((p) => costlyLine({ repo: p.repo, workflow: p.workflow, usd_per_day: p.usd_per_day ?? 0 })).join("; ")}.`;
 }
 
 function actionsOf(row: SpendAlarmAttentionRow, deps: SpendAlarmDeps): AttentionAction[] {
@@ -200,22 +260,7 @@ function actionsOf(row: SpendAlarmAttentionRow, deps: SpendAlarmDeps): Attention
       },
     });
   }
-  if (row.kind === "ci_spend_off_track") {
-    // The card's recommended action (platform.attention_raw_items): the record page names the costly workflows.
-    out.push({
-      id: "pause_ci_workflows",
-      label: "Pause the costly workflows",
-      variant: "outline",
-      confirm: {
-        title: "Open the workflows that are costing the most?",
-        description: "Shows which workflows keep billing. Nothing is paused until you do it there.",
-        confirmLabel: "Open the workflows",
-      },
-      run: async () => {
-        if (typeof window !== "undefined") window.location.assign(spendAlarmHref(row.id));
-      },
-    });
-  }
+  if (row.kind === "ci_spend_off_track") out.push(...ciActions(row, deps));
   out.push({
     id: "resolve",
     label: "Resolve",
@@ -280,7 +325,8 @@ export function spendAlarmItems(
     }
 
     const shipped = fixFor(row);
-    const fix = shipped ? `Fixed in code (${shipped.commit}): ${shipped.what}` : row.fix;
+    const baseFix = shipped ? `Fixed in code (${shipped.commit}): ${shipped.what}` : row.fix;
+    const fix = [pausedLine(row), baseFix].filter(Boolean).join(" ") || null;
     const cost = alarmCostLine(row.cost_usd, row.cost_avoided_usd, usd);
 
     const untilMs = row.snoozed_until ? Date.parse(row.snoozed_until) : NaN;

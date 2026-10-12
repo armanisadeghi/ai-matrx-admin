@@ -206,10 +206,46 @@ describe("who an alarm is for (Arman 2026-10-11: the owner's card shows only wha
     expect(items.every((i) => i.audience === "owner_decision")).toBe(true);
   });
 
-  it("a CI spend off track card carries the recommended action under its human label, id unchanged", () => {
-    const [item] = spendAlarmItems([row({ id: "a-ci", kind: "ci_spend_off_track", audience: "owner_decision" })], deps());
-    const act = item.actions.find((x) => x.id === "pause_ci_workflows");
-    expect(act?.label).toBe("Pause the costly workflows");
+  describe("the CI spend card's Pause button is real or absent", () => {
+    const ci = row({ id: "a-ci", kind: "ci_spend_off_track", audience: "owner_decision" });
+    const costly = {
+      "a-ci": [
+        { repo: "AI-Matrix-Engine/aidream", workflow: "CI", usd_per_day: 31.456, pausable: true, reason: null },
+        { repo: "AI-Matrix-Engine/aidream", workflow: "Deploy", usd_per_day: 20, pausable: false, reason: "release path" },
+      ],
+    };
+    const ciDeps = () => {
+      const d = deps({ ciCostly: costly });
+      d.pauseCiWorkflows = async (id) => void d.calls.push(["pauseCi", id]);
+      d.resumeCiWorkflows = async (id) => void d.calls.push(["resumeCi", id]);
+      return d;
+    };
+
+    it("is absent when the server has not named what it may pause (no dishonest control)", () => {
+      const [item] = spendAlarmItems([ci], deps());
+      expect(item.actions.find((x) => x.id === "pause_ci_workflows")).toBeUndefined();
+    });
+
+    it("confirm names the workflows and the dollars a day, leaves out the release path, and calls the server", async () => {
+      const d = ciDeps();
+      const [item] = spendAlarmItems([ci], d);
+      const act = item.actions.find((x) => x.id === "pause_ci_workflows");
+      expect(act?.label).toBe("Pause the costly workflows");
+      expect(act?.confirm?.description).toContain("aidream CI (\$31.46/day)");
+      expect(act?.confirm?.description).not.toContain("Deploy (");
+      await act?.run();
+      expect(d.calls).toEqual([["pauseCi", "a-ci"]]);
+    });
+
+    it("after a pause the card says what is paused and offers Resume instead", async () => {
+      const d = ciDeps();
+      const paused = row({ ...ci, ci_pause: { paused: [{ repo: "AI-Matrix-Engine/aidream", workflow: "CI", file: "ci.yml", usd_per_day: 31.46, paused_at: "2026-10-11T10:00:00Z" }] } });
+      const [item] = spendAlarmItems([paused], d);
+      expect(item.fix).toContain("Paused on GitHub: aidream CI (\$31.46/day)");
+      expect(item.actions.find((x) => x.id === "pause_ci_workflows")).toBeUndefined();
+      await item.actions.find((x) => x.id === "resume_ci_workflows")?.run();
+      expect(d.calls).toEqual([["resumeCi", "a-ci"]]);
+    });
   });
 
   it("says what the agent tried when an alarm came back to the owner", () => {

@@ -18,6 +18,12 @@ import {
   setSpendAlarmStatus,
   type SpendAlarmAttentionRow,
 } from "@/features/admin/spend-alarms/spendAlarms";
+import {
+  fetchCostlyWorkflows,
+  pauseCostlyWorkflows,
+  resumeCostlyWorkflows,
+  type CostlyWorkflow,
+} from "@/features/admin/spend-alarms/ciPause";
 import { decideSpendApproval } from "@/features/admin/spend-approvals/spendApprovals";
 import { patchSystemTask, runSystemTaskNow } from "@/features/scheduling/service/schedulerClient";
 import { adminScheduleHref } from "@/features/scheduling/constants/routes";
@@ -46,6 +52,16 @@ export function useSpendAlarmSource(enabled: boolean): AttentionSourceState {
     retry: false,
   });
 
+  // The costly workflows (with $/day, and which the server may pause) for each open CI alarm: what the
+  // Pause confirm names. A read that fails leaves the button absent, never a button that guesses.
+  const ciIds = (query.data ?? []).filter((r) => r.kind === "ci_spend_off_track" && !r.ci_pause).map((r) => r.id);
+  const costly = useQuery<Record<string, CostlyWorkflow[]>>({
+    queryKey: ["admin-attention", "ci-costly", ...ciIds],
+    queryFn: async () => Object.fromEntries(await Promise.all(ciIds.map(async (id) => [id, await fetchCostlyWorkflows(id)] as const))),
+    enabled: enabled && ciIds.length > 0,
+    retry: false,
+  });
+
   const refetch = () => {
     // The alarm list and record pages share the prefix: one mute refreshes every view of it.
     void queryClient.invalidateQueries({ queryKey: ["admin-attention"] });
@@ -65,6 +81,9 @@ export function useSpendAlarmSource(enabled: boolean): AttentionSourceState {
       window.open(`${adminScheduleHref(taskId)}?run=${encodeURIComponent(run_id)}`, "_blank", "noopener");
       refetch();
     },
+    pauseCiWorkflows: (alarmId) => after(pauseCostlyWorkflows(alarmId)),
+    resumeCiWorkflows: (alarmId) => after(resumeCostlyWorkflows(alarmId)),
+    ciCostly: costly.data,
     origin: typeof window === "undefined" ? "" : window.location.origin,
   });
 

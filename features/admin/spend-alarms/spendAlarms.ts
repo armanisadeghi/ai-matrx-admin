@@ -13,6 +13,7 @@
 import { supabase } from "@/utils/supabase/client";
 import { pgErrorToError } from "@ai-matrx/data";
 import { adminScheduleHref } from "@/features/scheduling/constants/routes";
+import { ciPauseOf, type CiPauseRecord } from "./ciPause";
 import { documentHref } from "@/features/scopes/registry/entityRegistry";
 
 export type AlarmLevel = "critical" | "warning" | "info";
@@ -208,6 +209,7 @@ function fromRowsDoor(raw: Record<string, unknown>): SpendAlarmAttentionRow {
     task_enabled: typeof raw.task_enabled === "boolean" ? raw.task_enabled : null,
     task_title: strOrNull(raw.task_title),
     approval_status: strOrNull(raw.approval_status),
+    ci_pause: ciPauseOf(meta),
     audience: audienceOf({ audience: raw.audience as AlarmAudience | null }),
     audience_note: strOrNull(raw.audience_note),
     work_item_id: strOrNull(raw.work_item_id),
@@ -379,6 +381,8 @@ export interface SpendAlarmAttentionRow extends SpendAlarmRecord {
   task_enabled: boolean | null;
   task_title: string | null;
   approval_status: string | null;
+  /** CI spend alarms: the workflows paused from the dock (server-recorded), null when none. */
+  ci_pause?: CiPauseRecord | null;
 }
 
 const strOrNull = (v: unknown): string | null => (typeof v === "string" && v ? v : null);
