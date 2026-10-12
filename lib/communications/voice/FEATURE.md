@@ -51,8 +51,16 @@ long-lived media and agent execution stay in aidream.
   the signed query; absent/invalid counts get a generic introduction. It returns only `<Say>`,
   without hangup or redial. Raw speech, model output, tools and inferred actions never enter it.
   Official contract: https://www.twilio.com/docs/voice/twiml/number#url.
+- Signed `transfer-ended` deliveries now append `voice.call.transfer_result.observed` through
+  `platform.log_activity`, correlated to the exact active parent call provider/account/SID.
+  The caller continuation is acknowledged only after a positive durable event id. Invalid Number-leg
+  evidence returns 400; unavailable persistence returns 503. No parent lifecycle field is updated.
+  These are at-least-once delivery observations: retries append evidence with the same child key,
+  never redial. They are not a deduplicated terminal result or inferred completed human task.
+  The ledger retains only provider identity, observed status, optional duration and bridge flag;
+  no human actor, callback signature, phone, transcript or provider error text.
 - Missing configuration or routing-read failure returns an unavailable message. Full conversational summary delivery,
-  a general agent tool, configuration UI, durable transfer receipts and handset acceptance remain
+  a general agent tool, configuration UI, deduplicated transfer-result receipts and handset acceptance remain
   outside this slice; local HTTP/loopback checks do not prove carrier dialing or audio.
 
 ## Recording safety boundary
