@@ -1,469 +1,114 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import { Brain, ExternalLink, Globe, Gauge, Coins, CheckCircle2, XCircle, RefreshCw, Loader2, Hammer, ChevronLeft, ArrowUpRight, AlertCircle, MinusCircle } from "lucide-react";
-import { AiModelRef } from "@ai-matrx/chat/agents/components/identity-refs/AiIdentityRef";
+// The topic's analyses in THE annotated reader: every analysis in one outline
+// (named by its source, most important first; empty or failed ones under
+// "Needs attention"), the open one unfolded into its sections, the full
+// reading set on its text. Run / retry act on the set (left header); Retry and
+// Open source act on the open one; its facts and the topic's totals are in
+// Details.
+
+import { useMemo, useState } from "react";
 import Link from "next/link";
-import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@ai-matrx/design-system";
-import { useIsMobile } from "@ai-matrx/kit/media-query";
-import { cn } from "@/lib/utils";
-import { ResearchRecordContent } from "../reader/ResearchRecordContent";
+import { usePathname, useSearchParams } from "next/navigation";
+import type { Layout } from "react-resizable-panels";
+import { AlertCircle, ArrowUpRight, Brain, Loader2, RefreshCw, XCircle } from "lucide-react";
+import { Button, EmptyState, PropertyRow } from "@ai-matrx/design-system/controls";
+import { ReadFailure, Skeleton } from "@ai-matrx/design-system";
+import { AiModelRef } from "@ai-matrx/chat/agents/components/identity-refs/AiIdentityRef";
 import { Cost } from "@/components/cost/Cost";
-import { useTopicContext } from "../../context/ResearchContext";
-import {
-  useAnalysesForTopic,
-  useResearchSources,
-  useSourceImportance,
-} from "../../hooks/useResearchState";
+import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { useFloatingLiveRun } from "@/features/overlays/openers/liveRunWindow";
+import { replaceAddressWithoutNavigating } from "@/lib/url-state/addressWithoutNavigating";
+import { useTopicContext, useStreamDebug } from "../../context/ResearchContext";
+import { useAnalysesForTopic, useResearchSources, useSourceImportance } from "../../hooks/useResearchState";
 import { useResearchApi } from "../../hooks/useResearchApi";
 import { useResearchStream } from "../../hooks/useResearchStream";
-import { useFloatingLiveRun } from "@/features/overlays/openers/liveRunWindow";
-import { useStreamDebug } from "../../context/ResearchContext";
-import { ResearchFilterBar, type FilterDef } from "../shared/ResearchFilterBar";
 import { StoppedEarlyNote } from "../shared/StoppedEarlyNote";
-import type { FilterOption } from "@/components/hierarchy-filter/HierarchyFilterPill";
-import {
-  type ResearchAnalysis,
-  type ResearchDataEvent,
-  type ResearchSource,
-  tokenUsageFromJson,
-} from "../../types";
-import type { SourceImportance } from "../../ranking";
-import { filterAndSortBySearch } from "@ai-matrx/kit/search-scoring";
-import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
-import { ReadFailure } from "@ai-matrx/design-system";
+import { ResearchRecordReader, type ResearchReaderRecord } from "../reader/ResearchRecordReader";
+import { type ResearchAnalysis, type ResearchDataEvent, type ResearchSource, tokenUsageFromJson } from "../../types";
 
 /** A string with real (non-whitespace) content. */
-const hasText = (s: string | null | undefined): s is string =>
-  !!s && s.trim().length > 0;
+const hasText = (s: string | null | undefined): s is string => !!s && s.trim().length > 0;
 
 /** Analysis that genuinely produced content (success + non-empty result). */
-const isDoneAnalysis = (a: ResearchAnalysis): boolean =>
-  a.status === "success" && hasText(a.result);
+const isDoneAnalysis = (a: ResearchAnalysis): boolean => a.status === "success" && hasText(a.result);
 
-function StatsBar({
-  total,
-  withContent,
-  empty,
-  failed,
-  totalCost,
-  totalTokens,
+const tokensShort = (n: number) => (n > 1_000_000 ? `${(n / 1_000_000).toFixed(1)}M` : n > 1000 ? `${(n / 1000).toFixed(1)}k` : `${n}`);
+
+/** The open analysis's facts, then the whole set's totals — never above the text. */
+function AnalysisDetails({
+  analysis,
+  source,
+  totals,
 }: {
-  total: number;
-  withContent: number;
-  empty: number;
-  failed: number;
-  totalCost: number;
-  totalTokens: number;
+  analysis: ResearchAnalysis;
+  source: ResearchSource | undefined;
+  totals: { total: number; withContent: number; empty: number; failed: number; totalCost: number; totalTokens: number };
 }) {
+  const usage = tokenUsageFromJson(analysis.token_usage);
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
-      <div className="flex items-center gap-2 rounded-lg border border-border/40 bg-card/40 px-2.5 py-2">
-        <div className="h-7 w-7 rounded-lg bg-primary/8 flex items-center justify-center shrink-0">
-          <Hammer className="h-3.5 w-3.5 text-primary" />
-        </div>
-        <div>
-          <p className="type-meta text-muted-foreground leading-none">
-            Analyses
-          </p>
-          <p className="type-body font-bold tabular-nums mt-0.5 leading-none">
-            {total}
-          </p>
-        </div>
+    <div className="grid gap-4">
+      <div className="grid gap-1">
+        <PropertyRow label="Source" value={source?.title ?? source?.hostname ?? "Unknown source"} />
+        {source?.url && <PropertyRow label="Address" value={<a href={source.url} target="_blank" rel="noopener noreferrer" className="break-all text-primary hover:underline">{source.hostname ?? source.url}</a>} />}
+        <PropertyRow label="Status" value={<span className="capitalize">{analysis.status}</span>} />
+        <PropertyRow label="Written" value={analysis.created_at ? new Date(analysis.created_at).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" }) : "Unknown"} />
+        {analysis.model_id && <PropertyRow label="Model" value={<AiModelRef modelId={analysis.model_id} showIcon={false} disableNavigation />} />}
+        {usage && <PropertyRow label="Tokens" value={`${usage.totalTokens.toLocaleString()}${usage.cachedInputTokens > 0 ? ` (${usage.cachedInputTokens.toLocaleString()} cached)` : ""}`} />}
+        {usage?.costUsd != null && usage.costUsd > 0 && <PropertyRow label="Cost" value={<Cost usd={usage.costUsd} short />} />}
       </div>
-      <div className="flex items-center gap-2 rounded-lg border border-border/40 bg-card/40 px-2.5 py-2">
-        <div className="h-7 w-7 rounded-lg bg-green-500/8 flex items-center justify-center shrink-0">
-          <CheckCircle2 className="h-3.5 w-3.5 text-green-500" />
-        </div>
-        <div>
-          <p className="type-meta text-muted-foreground leading-none">
-            With content
-          </p>
-          <p className="type-body font-bold tabular-nums text-green-600 dark:text-green-400 mt-0.5 leading-none">
-            {withContent}
-            {empty > 0 && (
-              <span className="text-amber-600/70 dark:text-amber-400/70 type-meta font-medium ml-1">
-                ({empty} empty)
-              </span>
-            )}
-            {failed > 0 && (
-              <span className="text-destructive/60 type-meta font-medium ml-1">
-                ({failed} failed)
-                <ErrorAlchemyMenu />
-              </span>
-            )}
-          </p>
-        </div>
-      </div>
-      <div className="flex items-center gap-2 rounded-lg border border-border/40 bg-card/40 px-2.5 py-2">
-        <div className="h-7 w-7 rounded-lg bg-amber-500/8 flex items-center justify-center shrink-0">
-          <Gauge className="h-3.5 w-3.5 text-amber-500" />
-        </div>
-        <div>
-          <p className="type-meta text-muted-foreground leading-none">Cost</p>
-          <p className="type-body font-bold tabular-nums text-amber-600 dark:text-amber-400 mt-0.5 leading-none">
-            <Cost usd={totalCost} short />
-          </p>
-        </div>
-      </div>
-      <div className="flex items-center gap-2 rounded-lg border border-border/40 bg-card/40 px-2.5 py-2">
-        <div className="h-7 w-7 rounded-lg bg-blue-500/8 flex items-center justify-center shrink-0">
-          <Coins className="h-3.5 w-3.5 text-blue-500" />
-        </div>
-        <div>
-          <p className="type-meta text-muted-foreground leading-none">
-            Tokens
-          </p>
-          <p className="type-body font-bold tabular-nums mt-0.5 leading-none">
-            {totalTokens > 1_000_000
-              ? `${(totalTokens / 1_000_000).toFixed(1)}M`
-              : totalTokens > 1000
-                ? `${(totalTokens / 1000).toFixed(1)}k`
-                : totalTokens}
-          </p>
-        </div>
+      <div className="grid gap-1">
+        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">All analyses</p>
+        <PropertyRow label="Analyses" value={totals.total} />
+        <PropertyRow label="With content" value={totals.withContent} />
+        {totals.empty > 0 && <PropertyRow label="Empty" value={totals.empty} />}
+        {totals.failed > 0 && <PropertyRow label="Failed" value={totals.failed} />}
+        <PropertyRow label="Cost" value={<Cost usd={totals.totalCost} short />} />
+        <PropertyRow label="Tokens" value={tokensShort(totals.totalTokens)} />
       </div>
     </div>
   );
 }
 
-interface ListItemProps {
-  analysis: ResearchAnalysis;
-  source: ResearchSource | undefined;
-  importance: SourceImportance | undefined;
-  isSelected: boolean;
-  onSelect: () => void;
-}
-
-function ListItem({
-  analysis,
-  source,
-  importance,
-  isSelected,
-  onSelect,
-}: ListItemProps) {
-  const isFailed = analysis.status === "failed";
-  const isEmpty = !isFailed && !isDoneAnalysis(analysis);
-  const usage = tokenUsageFromJson(analysis.token_usage);
-  const tokenCost = usage?.costUsd ?? null;
-  const formattedDate = analysis.created_at
-    ? new Date(analysis.created_at).toLocaleDateString(undefined, {
-        month: "short",
-        day: "numeric",
-      })
-    : "";
-
+/** An open analysis with no text: a failure (with its reason) or an honest empty result. */
+function AnalysisWithoutText({ analysis, title }: { analysis: ResearchAnalysis; title: string }) {
   return (
-    <div
-      role="button"
-      tabIndex={0}
-      onClick={onSelect}
-      onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault();
-          onSelect();
-        }
-      }}
-      className={cn(
-        "rounded-lg px-2.5 py-2 cursor-pointer transition-all border",
-        isSelected
-          ? "bg-primary/8 border-primary/20 shadow-sm"
-          : isFailed
-            ? "bg-destructive/[0.03] border-destructive/20 hover:bg-destructive/[0.06]"
-            : "bg-transparent border-transparent hover:bg-muted/40",
-      )}
-    >
-      <div className="flex items-center gap-1.5">
-        {isFailed ? (
-          <XCircle className="h-3 w-3 text-destructive shrink-0" />
-        ) : isEmpty ? (
-          <MinusCircle className="h-3 w-3 text-amber-500 shrink-0" />
-        ) : (
-          <CheckCircle2 className="h-3 w-3 text-green-500 shrink-0" />
-        )}
-        {importance?.bestRank != null && (
-          <span
-            className="type-meta font-mono tabular-nums text-primary/70 shrink-0"
-            title={`importance ${importance.score} · ranks for ${importance.keywordCount} keyword${importance.keywordCount === 1 ? "" : "s"}`}
-          >
-            #{importance.bestRank}
-          </span>
-        )}
-        <span
-          className={cn(
-            "type-meta font-medium truncate flex-1",
-            isFailed
-              ? "text-destructive/80"
-              : isSelected
-                ? "text-foreground"
-                : "text-foreground/80",
-          )}
-        >
-          {source?.title ?? source?.hostname ?? "Unknown Source"}
-        </span>
-      </div>
-      <div className="flex items-center gap-1.5 mt-0.5 pl-[18px]">
-        {source?.hostname && (
-          <span className="text-[9px] text-muted-foreground truncate">
-            {source.hostname}
-          </span>
-        )}
-        <span className="text-[9px] text-muted-foreground/30 tabular-nums">
-          {formattedDate}
-        </span>
-        {tokenCost != null && tokenCost > 0 && (
-          <Cost
-            usd={tokenCost}
-            short
-            className="text-[9px] text-amber-500/50 ml-auto shrink-0"
-          />
-        )}
-      </div>
-    </div>
-  );
-}
-
-interface DetailPanelProps {
-  analysis: ResearchAnalysis;
-  source: ResearchSource | undefined;
-  topicId: string;
-  onRetried: () => void;
-  onBack: () => void;
-  isMobile: boolean;
-}
-
-function DetailPanel({
-  analysis,
-  source,
-  topicId,
-  onRetried,
-  onBack,
-  isMobile,
-}: DetailPanelProps) {
-  const api = useResearchApi();
-  const [retrying, setRetrying] = useState(false);
-
-  const isFailed = analysis.status === "failed";
-  const createdAt = analysis.created_at ? new Date(analysis.created_at) : null;
-  const usage = tokenUsageFromJson(analysis.token_usage);
-  const tokenCost = usage?.costUsd ?? null;
-  const totalTokens = usage?.totalTokens ?? 0;
-  const cachedTokens = usage?.cachedInputTokens ?? 0;
-
-  const handleRetry = async () => {
-    setRetrying(true);
-    try {
-      await api.retryAnalysis(topicId, analysis.id);
-      onRetried();
-    } finally {
-      setRetrying(false);
-    }
-  };
-
-  return (
-    <div className="h-full flex flex-col overflow-hidden">
-      {/* Source context bar */}
-      <div className="flex-shrink-0 border-b border-border/40 bg-card/30">
-        <div className="flex items-center gap-2 px-4 py-2">
-          {isMobile && (
-            <button
-              onClick={onBack}
-              className="inline-flex items-center justify-center h-7 w-7 rounded-full hover:bg-muted/50 text-muted-foreground transition-colors shrink-0 -ml-1"
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </button>
-          )}
-          <div
-            className={cn(
-              "h-7 w-7 rounded-lg flex items-center justify-center shrink-0",
-              isFailed ? "bg-destructive/10" : "bg-primary/8",
-            )}
-          >
-            {isFailed ? (
-              <XCircle className="h-3.5 w-3.5 text-destructive" />
-            ) : (
-              <Brain className="h-3.5 w-3.5 text-primary" />
-            )}
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="type-secondary font-semibold truncate">
-              {source?.title ?? source?.hostname ?? "Unknown Source"}
-            </p>
-            <div className="flex items-center gap-2 mt-px">
-              {source?.hostname && (
-                <span className="type-meta text-muted-foreground">
-                  {source.hostname}
-                </span>
-              )}
-              {createdAt && (
-                <span className="type-meta text-muted-foreground tabular-nums">
-                  {createdAt.toLocaleDateString(undefined, {
-                    month: "short",
-                    day: "numeric",
-                    year: "numeric",
-                  })}
-                </span>
-              )}
-              {analysis.model_id && (
-                <AiModelRef
-                  modelId={analysis.model_id}
-                  showIcon={false}
-                  disableNavigation
-                  className="max-w-40 rounded bg-secondary px-1.5 text-[9px]"
-                />
-              )}
-            </div>
-          </div>
-          <div className="flex items-center gap-1.5 shrink-0">
-            {isFailed && (
-              <button
-                onClick={handleRetry}
-                disabled={retrying}
-                className="inline-flex items-center gap-1 h-7 px-2.5 rounded-full text-[11px] font-medium border border-destructive/30 text-destructive-ink hover:bg-destructive/10 transition-colors disabled:opacity-40"
-              >
-                {retrying ? (
-                  <Loader2 className="h-3 w-3 animate-spin" />
-                ) : (
-                  <RefreshCw className="h-3 w-3" />
-                )}
-                Retry
-              </button>
-            )}
-            {source && (
-              <Link
-                href={`/research/topics/${topicId}/sources/${source.id}`}
-                className="inline-flex items-center gap-1 h-7 px-2.5 rounded-full type-meta font-medium matrx-glass-card text-muted-foreground hover:text-foreground transition-colors"
-              >
-                Source
-                <ArrowUpRight className="h-3 w-3" />
-              </Link>
-            )}
-          </div>
+    <div>
+      <h1 className="mb-3 text-2xl font-semibold tracking-tight text-foreground">{title}</h1>
+      {analysis.status === "failed" ? (
+        <div className="flex items-start gap-2 rounded-lg border border-destructive/20 bg-destructive/10 px-2.5 py-2 type-secondary text-destructive-ink">
+          <XCircle className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden />
+          <span>{analysis.error || "The analysis failed."}</span>
+          <ErrorAlchemyMenu error={analysis.error ?? undefined} />
         </div>
-        {source?.url && (
-          <div className="flex items-center gap-1.5 px-4 pb-2">
-            <Globe className="h-3 w-3 text-muted-foreground/30 shrink-0" />
-            <a
-              href={source.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="type-meta text-muted-foreground hover:text-primary truncate transition-colors"
-            >
-              {source.url}
-            </a>
-            <ExternalLink className="h-2.5 w-2.5 text-muted-foreground/30 shrink-0" />
-          </div>
-        )}
-      </div>
-
-      {/* Main content — the analysis result */}
-      <div className="flex-1 overflow-y-auto">
-        {hasText(analysis.result) ? (
-          <article className="px-5 py-5 sm:px-8 sm:py-6 max-w-3xl">
-            {isFailed && (
-              <StoppedEarlyNote
-                reason={analysis.error || "Analysis stopped early."}
-              />
-            )}
-            <ResearchRecordContent token="research_analysis" id={analysis.id} title={`Analysis of ${source?.title ?? source?.hostname ?? "a source"}`} body={analysis.result} href={`/research/topics/${analysis.topic_id}/analysis`} />
-          </article>
-        ) : isFailed ? (
-          <div className="p-6 flex flex-col items-center justify-center min-h-[300px] gap-4 text-center">
-            <div className="h-14 w-14 rounded-2xl bg-destructive/10 flex items-center justify-center">
-              <XCircle className="h-7 w-7 text-destructive/60" />
-            </div>
-            <div className="space-y-1 max-w-md">
-              <p className="type-title text-destructive">
-                Analysis Failed
-                <ErrorAlchemyMenu />
-              </p>
-              {analysis.error && (
-                <p className="type-secondary text-muted-foreground leading-relaxed">
-                  {analysis.error}
-                  <ErrorAlchemyMenu error={analysis.error} />
-                </p>
-              )}
-            </div>
-          </div>
-        ) : (
-          // Terminal success but no text — be honest rather than blank.
-          <div className="px-6 py-10 flex flex-col items-center justify-center gap-2 text-center">
-            <AlertCircle className="h-6 w-6 text-amber-500/60" />
-            <p className="type-title text-foreground/70">
-              No analysis content
-            </p>
-            <p className="type-secondary text-muted-foreground max-w-sm leading-relaxed">
-              This source was processed but produced no summary — usually the
-              page had too little usable text. Re-read it or retry the analysis.
-            </p>
-          </div>
-        )}
-      </div>
-
-      {/* Token usage footer */}
-      {usage && (
-        <div className="flex-shrink-0 flex items-center gap-4 px-4 py-2 border-t border-border/30 bg-muted/5">
-          <span className="type-meta text-muted-foreground tabular-nums">
-            Input: {usage.inputTokens.toLocaleString()}
-          </span>
-          {cachedTokens > 0 && (
-            <span className="type-meta text-muted-foreground/60 tabular-nums">
-              Cached: {cachedTokens.toLocaleString()}
-            </span>
-          )}
-          <span className="type-meta text-muted-foreground tabular-nums">
-            Output: {usage.outputTokens.toLocaleString()}
-          </span>
-          {totalTokens > 0 && (
-            <span className="type-meta text-muted-foreground tabular-nums">
-              Total: {totalTokens.toLocaleString()}
-            </span>
-          )}
-          {usage.models.length > 0 && (
-            <span className="type-meta text-muted-foreground/40">
-              {usage.models.map((m) => m.model).join(", ")}
-            </span>
-          )}
-          {tokenCost != null && tokenCost > 0 && (
-            <Cost
-              usd={tokenCost}
-              short
-              className="type-meta font-medium text-amber-600 dark:text-amber-400 ml-auto"
-            />
-          )}
+      ) : (
+        <div className="flex items-start gap-2 rounded-lg border border-amber-500/20 bg-amber-500/10 px-2.5 py-2 type-secondary text-amber-700 dark:text-amber-400">
+          <AlertCircle className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden />
+          <span>This page produced no summary — usually too little usable text. Re-read it or retry.</span>
         </div>
       )}
     </div>
   );
 }
 
-export default function AnalysisList() {
+export default function AnalysisList({ defaultLayout }: { defaultLayout?: Layout }) {
   const { topicId } = useTopicContext();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const api = useResearchApi();
-  const isMobile = useIsMobile();
   const debug = useStreamDebug();
   const stream = useResearchStream();
 
-  const {
-    data: analyses,
-    isLoading,
-    error: analysesError,
-    refresh: refetchAnalyses,
-  } = useAnalysesForTopic(topicId);
+  const { data: analyses, isLoading, error: analysesError, refresh: refetchAnalyses } = useAnalysesForTopic(topicId);
   const { data: sources } = useResearchSources(topicId, { limit: 500 });
   const { data: importanceMap } = useSourceImportance(topicId);
 
-  const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string | null>(null);
-  const [modelFilter, setModelFilter] = useState<string | null>(null);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
-
   const [streamingLabel, setStreamingLabel] = useState("");
+  const [retrying, setRetrying] = useState(false);
 
   // The live analysis stream is ADOPTED (see `useResearchStream`) and rendered
   // by the canonical floating live-run window off this request id — never
-  // hand-painted into this list, which would also shift the page on every run.
+  // hand-painted into the page, which would also shift it on every run.
   useFloatingLiveRun({
     active: stream.isStreaming,
     instanceId: `research-analyze-all:${topicId}`,
@@ -474,75 +119,28 @@ export default function AnalysisList() {
   const analysisList = (analyses ?? []) as ResearchAnalysis[];
   const sourceMap = useMemo(() => {
     const map = new Map<string, ResearchSource>();
-    for (const s of (sources ?? []) as ResearchSource[]) {
-      map.set(s.id, s);
-    }
+    for (const s of (sources ?? []) as ResearchSource[]) map.set(s.id, s);
     return map;
   }, [sources]);
 
-  const models = useMemo(
-    () =>
-      [
-        ...new Set(
-          analysisList.map((a) => a.model_id).filter(Boolean) as string[],
-        ),
-      ].sort(),
-    [analysisList],
-  );
-
-  const filtered = useMemo(() => {
-    let items = analysisList;
-    if (statusFilter) items = items.filter((a) => a.status === statusFilter);
-    if (modelFilter) items = items.filter((a) => a.model_id === modelFilter);
-    if (search) {
-      items = filterAndSortBySearch(items, search, [
-        { get: (a) => sourceMap.get(a.source_id)?.title, weight: "title" },
-        {
-          get: (a) => sourceMap.get(a.source_id)?.hostname,
-          weight: "subtitle",
-        },
-        { get: (a) => sourceMap.get(a.source_id)?.url, weight: "subtitle" },
-        { get: (a) => sourceMap.get(a.source_id)?.description, weight: "body" },
-        { get: (a) => a.result, weight: "body" },
-        { get: (a) => a.error, weight: "body" },
-        { get: (a) => a.model_id, weight: "meta" },
-      ]);
-    }
-    return items;
-  }, [analysisList, statusFilter, modelFilter, search, sourceMap]);
-
-  // Best Google rank first (when not searching); split "done" (has content)
-  // from "incomplete" (empty results + failures) into a separate section.
-  // Order completed analyses by real source importance (multi-keyword rank) —
-  // NOT the ambiguous rs_source.rank. Most important first, then best rank.
+  // Most important source first (multi-keyword importance, then best rank) —
+  // NOT the ambiguous rs_source.rank. Empty and failed ones are listed apart.
   const impOf = (a: ResearchAnalysis) => importanceMap?.get(a.source_id);
-  const doneItems = search
-    ? filtered.filter(isDoneAnalysis)
-    : filtered.filter(isDoneAnalysis).sort((a, b) => {
-        const ia = impOf(a);
-        const ib = impOf(b);
-        const sb = ib?.score ?? 0;
-        const sa = ia?.score ?? 0;
-        if (sb !== sa) return sb - sa;
-        const ra = ia?.bestRank ?? Number.POSITIVE_INFINITY;
-        const rb = ib?.bestRank ?? Number.POSITIVE_INFINITY;
-        return ra - rb;
-      });
-  const incompleteItems = filtered.filter((a) => !isDoneAnalysis(a));
+  const doneItems = analysisList.filter(isDoneAnalysis).sort((a, b) => {
+    const ia = impOf(a);
+    const ib = impOf(b);
+    const sb = ib?.score ?? 0;
+    const sa = ia?.score ?? 0;
+    if (sb !== sa) return sb - sa;
+    return (ia?.bestRank ?? Number.POSITIVE_INFINITY) - (ib?.bestRank ?? Number.POSITIVE_INFINITY);
+  });
+  const incompleteItems = analysisList.filter((a) => !isDoneAnalysis(a));
 
-  const selectedAnalysis = filtered.find((a) => a.id === selectedId) ?? null;
-
-  const stats = useMemo(() => {
-    const withContent = analysisList.filter(isDoneAnalysis).length;
-    const empty = analysisList.filter(
-      (a) => a.status === "success" && !hasText(a.result),
-    ).length;
-    const failed = analysisList.filter((a) => a.status === "failed").length;
+  const totals = useMemo(() => {
     let totalCost = 0;
     let totalTokens = 0;
     for (const a of analysisList) {
-      // Successful calls only — same rule the cost ledger and the backend use,
-      // so the Costs page and this bar can never quote different numbers.
+      // Successful calls only — the same rule the cost ledger and the backend use.
       if (a.status !== "success") continue;
       const u = tokenUsageFromJson(a.token_usage);
       if (u) {
@@ -552,46 +150,36 @@ export default function AnalysisList() {
     }
     return {
       total: analysisList.length,
-      withContent,
-      empty,
-      failed,
+      withContent: analysisList.filter(isDoneAnalysis).length,
+      empty: analysisList.filter((a) => a.status === "success" && !hasText(a.result)).length,
+      failed: analysisList.filter((a) => a.status === "failed").length,
       totalCost,
       totalTokens,
     };
   }, [analysisList]);
 
-  const statusOptions: FilterOption[] = [
-    { id: "success", label: "Success" },
-    { id: "failed", label: "Failed" },
-  ];
-  const modelOptions: FilterOption[] = useMemo(
-    () => models.map((m) => ({ id: m, label: m })),
-    [models],
-  );
+  const titleOf = (a: ResearchAnalysis) => {
+    const source = sourceMap.get(a.source_id);
+    return source?.title || source?.hostname || "Untitled source";
+  };
 
-  const filterDefs: FilterDef[] = useMemo(() => {
-    const defs: FilterDef[] = [
-      {
-        key: "status",
-        label: "Status",
-        allLabel: "All",
-        options: statusOptions,
-        selectedId: statusFilter,
-        onSelect: setStatusFilter,
-      },
-    ];
-    if (models.length > 0) {
-      defs.push({
-        key: "model",
-        label: "Model",
-        allLabel: "All Models",
-        options: modelOptions,
-        selectedId: modelFilter,
-        onSelect: setModelFilter,
-      });
-    }
-    return defs;
-  }, [statusOptions, modelOptions, statusFilter, modelFilter, models.length]);
+  const requested = searchParams.get("record");
+  const ordered = [...doneItems, ...incompleteItems];
+  const selected = ordered.find((a) => a.id === requested) ?? doneItems[0] ?? ordered[0] ?? null;
+  const selectAnalysis = (id: string) => {
+    const next = new URLSearchParams(searchParams.toString());
+    next.set("record", id);
+    replaceAddressWithoutNavigating(`${pathname}?${next.toString()}`);
+  };
+
+  const library = {
+    groups: [
+      { label: "Analyses", items: doneItems.map((a) => ({ id: a.id, title: titleOf(a), content: a.result ?? "" })) },
+      { label: "Needs attention", items: incompleteItems.map((a) => ({ id: a.id, title: titleOf(a), content: a.result ?? "", flag: a.status === "failed" ? "Failed" : "Empty" })) },
+    ].filter((g) => g.items.length > 0),
+    activeId: selected?.id ?? null,
+    onSelect: selectAnalysis,
+  };
 
   const handleAnalyzeAll = async () => {
     setStreamingLabel("Analyzing all sources...");
@@ -599,29 +187,26 @@ export default function AnalysisList() {
     // actually closes the body — see `StartStreamOptions.abortController`.
     const controller = new AbortController();
     const res = await api.analyzeAll(topicId, undefined, controller.signal);
-    stream.startStream(res, {
-      onData: (payload: ResearchDataEvent) => {
-        if (payload.type === "analysis_start") {
-          setStreamingLabel(
-            `Analyzing source ${payload.total > 0 ? `(${payload.total} remaining)` : ""}...`,
-          );
-        }
-        if (
-          payload.type === "analysis_complete" ||
-          payload.type === "analysis_failed"
-        ) {
-          refetchAnalyses();
-        }
-        if (payload.type === "analyze_all_complete") {
+    stream.startStream(
+      res,
+      {
+        onData: (payload: ResearchDataEvent) => {
+          if (payload.type === "analysis_start") {
+            setStreamingLabel(`Analyzing source ${payload.total > 0 ? `(${payload.total} remaining)` : ""}...`);
+          }
+          if (payload.type === "analysis_complete" || payload.type === "analysis_failed") refetchAnalyses();
+          if (payload.type === "analyze_all_complete") {
+            setStreamingLabel("");
+            refetchAnalyses();
+          }
+        },
+        onEnd: () => {
           setStreamingLabel("");
           refetchAnalyses();
-        }
+        },
       },
-      onEnd: () => {
-        setStreamingLabel("");
-        refetchAnalyses();
-      },
-    }, { abortController: controller });
+      { abortController: controller },
+    );
     debug.pushEvents(stream.rawEvents, "analyze-all");
   };
 
@@ -630,198 +215,94 @@ export default function AnalysisList() {
     refetchAnalyses();
   };
 
-  const actionButtons = (
-    <div className="flex items-center gap-1 shrink-0">
-      <button
-        onClick={handleAnalyzeAll}
+  const handleRetryOne = async (analysis: ResearchAnalysis) => {
+    setRetrying(true);
+    try {
+      await api.retryAnalysis(topicId, analysis.id);
+      refetchAnalyses();
+    } finally {
+      setRetrying(false);
+    }
+  };
+
+  const panelActions = (
+    <>
+      <Button
+        variant="quiet"
+        icon={stream.isStreaming ? <Loader2 className="animate-spin" aria-hidden /> : <Brain aria-hidden />}
+        aria-label="Analyze sources"
+        title="Analyze every source still without an analysis (a paid AI run)"
+        onClick={() => void handleAnalyzeAll()}
         disabled={stream.isStreaming}
-        className="inline-flex items-center gap-1 h-6 px-2 rounded-full matrx-glass-card text-[10px] font-medium text-primary disabled:opacity-50 transition-colors"
-      >
-        {stream.isStreaming ? (
-          <Loader2 className="h-2.5 w-2.5 animate-spin" />
-        ) : (
-          <Brain className="h-2.5 w-2.5" />
-        )}
-        <span className="hidden sm:inline">Analyze</span>
-      </button>
-      {stats.failed > 0 && (
-        <button
-          onClick={handleRetryAll}
-          disabled={stream.isStreaming}
-          className="inline-flex items-center gap-1 h-6 px-2 rounded-full matrx-glass-card text-[10px] font-medium text-destructive disabled:opacity-50 transition-colors"
-        >
-          <RefreshCw className="h-2.5 w-2.5" />
-          <span>{stats.failed}</span>
-        </button>
-      )}
-    </div>
-  );
-
-  if (isMobile && selectedAnalysis) {
-    return (
-      <DetailPanel
-        analysis={selectedAnalysis}
-        source={sourceMap.get(selectedAnalysis.source_id)}
-        topicId={topicId}
-        onRetried={refetchAnalyses}
-        onBack={() => setSelectedId(null)}
-        isMobile
       />
-    );
-  }
-
-  const listPanel = (
-    <div
-      className={cn(
-        "flex flex-col overflow-hidden",
-        !isMobile && "w-72 xl:w-80 shrink-0 border-r border-border/40",
-        isMobile && "flex-1",
+      {totals.failed > 0 && (
+        <Button variant="quiet" icon={<RefreshCw aria-hidden />} aria-label={`Retry ${totals.failed} failed`} title={`Retry the ${totals.failed} failed analyses (a paid AI run)`} onClick={() => void handleRetryAll()} disabled={stream.isStreaming} />
       )}
-    >
-      <div className="flex-shrink-0 px-2 pt-2 pb-1.5">
-        <ResearchFilterBar
-          title="Analyses"
-          count={`${filtered.length}`}
-          read={{ status: analysesError ? "error" : "ready", error: analysesError }}
-          filters={filterDefs}
-          search={search}
-          onSearchChange={setSearch}
-          searchPlaceholder="Search analyses..."
-          trailing={actionButtons}
-        />
-      </div>
-
-      {/* Analysis list */}
-      <div className="flex-1 overflow-y-auto px-1.5 pb-20 md:pb-2">
-        {isLoading ? (
-          <div className="space-y-1.5 px-1">
-            {Array.from({ length: 8 }).map((_, i) => (
-              <Skeleton key={i} className="h-12 rounded-lg" />
-            ))}
-          </div>
-        ) : analysesError && analysisList.length === 0 ? (
-          <ReadFailure error={analysesError} what="this topic's analyses" onRetry={refetchAnalyses} />
-        ) : filtered.length === 0 ? (
-          <div className="flex flex-col items-center justify-center min-h-[240px] gap-3 text-center px-4">
-            <div className="h-12 w-12 rounded-2xl bg-primary/8 flex items-center justify-center">
-              <Brain className="h-6 w-6 text-primary/40" />
-            </div>
-            <div className="space-y-1">
-              <p className="type-secondary font-medium text-foreground/70">
-                {analysisList.length === 0 ? "No analyses yet" : "No matches"}
-              </p>
-              <p className="type-meta text-muted-foreground max-w-[240px]">
-                {analysisList.length === 0
-                  ? "Run AI analysis to extract insights and structured summaries from your sources."
-                  : "Try adjusting your search or filters."}
-              </p>
-            </div>
-            {analysisList.length === 0 && (
-              <button
-                onClick={handleAnalyzeAll}
-                disabled={stream.isStreaming}
-                className="inline-flex items-center gap-1.5 h-8 px-4 rounded-full text-xs font-medium bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-40 transition-all min-h-[44px]"
-              >
-                {stream.isStreaming ? (
-                  <Loader2 className="h-3 w-3 animate-spin" />
-                ) : (
-                  <Brain className="h-3 w-3" />
-                )}
-                Analyze All Sources
-              </button>
-            )}
-          </div>
-        ) : (
-          <>
-            {doneItems.length > 0 && (
-              <div className="space-y-px">
-                {doneItems.map((analysis) => (
-                  <ListItem
-                    key={analysis.id}
-                    analysis={analysis}
-                    source={sourceMap.get(analysis.source_id)}
-                    importance={importanceMap?.get(analysis.source_id)}
-                    isSelected={selectedId === analysis.id}
-                    onSelect={() => setSelectedId(analysis.id)}
-                  />
-                ))}
-              </div>
-            )}
-            {incompleteItems.length > 0 && (
-              <div className="mt-3 pt-2 border-t border-dashed border-amber-500/30">
-                <div className="flex items-center gap-1 px-2 pb-1 type-meta font-semibold uppercase tracking-wider text-amber-600/70 dark:text-amber-400/70">
-                  <AlertCircle className="h-3 w-3" />
-                  No content / failed ({incompleteItems.length})
-                </div>
-                <div className="space-y-px opacity-90">
-                  {incompleteItems.map((analysis) => (
-                    <ListItem
-                      key={analysis.id}
-                      analysis={analysis}
-                      source={sourceMap.get(analysis.source_id)}
-                      importance={importanceMap?.get(analysis.source_id)}
-                      isSelected={selectedId === analysis.id}
-                      onSelect={() => setSelectedId(analysis.id)}
-                    />
-                  ))}
-                </div>
-              </div>
-            )}
-          </>
-        )}
-      </div>
-    </div>
+    </>
   );
 
-  if (isMobile) {
-    return (
-      <div className="h-full flex flex-col overflow-hidden">
-        <div className="flex-shrink-0 px-3 pt-2.5 pb-1.5">
-          <StatsBar {...stats} />
-        </div>
-        {listPanel}
-      </div>
-    );
-  }
+  const selectedSource = selected ? sourceMap.get(selected.source_id) : undefined;
+  const toolbar = selected ? (
+    <>
+      {selected.status === "failed" && (
+        <Button variant="quiet" icon={retrying ? <Loader2 className="animate-spin" aria-hidden /> : <RefreshCw aria-hidden />} aria-label="Retry this analysis" title="Retry this analysis (a paid AI run)" onClick={() => void handleRetryOne(selected)} disabled={retrying} />
+      )}
+      {selectedSource && (
+        <Button asChild variant="quiet" icon={<ArrowUpRight aria-hidden />} aria-label="Open the source" title="Open the source">
+          <Link href={`/research/topics/${topicId}/sources/${selectedSource.id}`} />
+        </Button>
+      )}
+    </>
+  ) : undefined;
 
-  // Desktop: master-detail split
-  return (
-    <div className="h-full flex flex-col overflow-hidden">
-      <div className="flex-shrink-0 px-3 sm:px-4 pt-3 pb-2">
-        <StatsBar {...stats} />
-      </div>
-      <div className="flex-1 flex min-h-0">
-        {listPanel}
+  const readerRecord: ResearchReaderRecord | null =
+    selected && hasText(selected.result)
+      ? {
+          type: "research_analysis",
+          id: selected.id,
+          title: titleOf(selected),
+          version: 1,
+          kind: "analysis",
+          body: selected.result,
+          href: `/research/topics/${topicId}/analysis?record=${selected.id}`,
+        }
+      : null;
 
-        {/* Detail panel — desktop only */}
-        <div className="flex-1 min-w-0">
-          {selectedAnalysis ? (
-            <DetailPanel
-              analysis={selectedAnalysis}
-              source={sourceMap.get(selectedAnalysis.source_id)}
-              topicId={topicId}
-              onRetried={refetchAnalyses}
-              onBack={() => setSelectedId(null)}
-              isMobile={false}
-            />
-          ) : (
-            <div className="h-full flex flex-col items-center justify-center gap-3 text-center px-6">
-              <div className="h-16 w-16 rounded-2xl bg-primary/5 flex items-center justify-center">
-                <Brain className="h-8 w-8 text-primary/20" />
-              </div>
-              <div className="space-y-1">
-                <p className="type-title text-foreground/50">
-                  Select an analysis
-                </p>
-                <p className="type-secondary text-muted-foreground max-w-[280px] leading-relaxed">
-                  Choose an analysis from the list to read the full AI-generated
-                  insights for that source.
-                </p>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
+  const placeholder = isLoading ? (
+    <div className="space-y-3">
+      {Array.from({ length: 4 }).map((_, i) => (
+        <Skeleton key={i} className="h-14 rounded-xl" />
+      ))}
     </div>
+  ) : analysesError && analysisList.length === 0 ? (
+    <ReadFailure error={analysesError} what="this topic's analyses" onRetry={refetchAnalyses} />
+  ) : selected ? (
+    <AnalysisWithoutText analysis={selected} title={titleOf(selected)} />
+  ) : (
+    <EmptyState
+      icon={<Brain aria-hidden />}
+      title="No analyses yet"
+      line="Read your sources with AI to pull out their key points."
+      action={
+        <Button variant="primary" icon={stream.isStreaming ? <Loader2 className="animate-spin" aria-hidden /> : <Brain aria-hidden />} onClick={() => void handleAnalyzeAll()} disabled={stream.isStreaming}>
+          Analyze all sources
+        </Button>
+      }
+    />
+  );
+
+  return (
+    <ResearchRecordReader
+      groupKey="research-analysis-reader"
+      defaultLayout={defaultLayout}
+      record={readerRecord}
+      panelLabel="Analysis"
+      panelActions={<div className="flex items-center">{panelActions}</div>}
+      library={library}
+      toolbar={toolbar}
+      header={readerRecord && selected?.status === "failed" ? <StoppedEarlyNote reason={selected.error || "Analysis stopped early."} /> : undefined}
+      placeholder={placeholder}
+      details={selected ? <AnalysisDetails analysis={selected} source={selectedSource} totals={totals} /> : undefined}
+    />
   );
 }

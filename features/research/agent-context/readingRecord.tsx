@@ -22,7 +22,7 @@ import {
 } from "@/features/rich-document/annotations/agent-snapshot";
 
 export interface ResearchReadingRecord {
-  type: "research_synthesis" | "research_document";
+  type: "research_synthesis" | "research_document" | "research_analysis";
   id: string;
   title: string;
   version: number;

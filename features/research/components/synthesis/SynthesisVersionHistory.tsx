@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { ChevronDown, ChevronUp, History, Loader2 } from "lucide-react";
 
 import { ResearchRecordContent } from "../reader/ResearchRecordContent";
@@ -24,15 +24,18 @@ export function SynthesisVersionHistory({
   scope,
   keywordId,
   label,
+  embedded = false,
 }: {
   topicId: string;
   scope: string;
   keywordId?: string;
   /** What this scope is called, e.g. "topic report". Used in the toggle copy. */
   label: string;
+  /** Inside a reader's Versions tab: loads at once and lists the versions, no toggle row. */
+  embedded?: boolean;
 }) {
-  const [open, setOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [open, setOpen] = useState(embedded);
+  const [loading, setLoading] = useState(embedded);
   const [versions, setVersions] = useState<ResearchSynthesis[] | null>(null);
 
   const toggle = useCallback(async () => {
@@ -55,34 +58,12 @@ export function SynthesisVersionHistory({
     }
   }, [open, versions, topicId, scope, keywordId]);
 
-  return (
-    <div className="border-t border-border/40">
-      <button
-        type="button"
-        onClick={() => void toggle()}
-        aria-expanded={open}
-        className="flex w-full items-center gap-1.5 px-3 py-1.5 text-[10px] font-medium text-muted-foreground transition-colors hover:bg-muted/40 hover:text-foreground"
-      >
-        <History className="h-3 w-3 shrink-0" />
-        <span>
-          Previous versions of this {label}
-          {versions ? ` (${versions.length})` : ""}
-        </span>
-        <span className="flex-1" />
-        {loading ? (
-          <Loader2 className="h-3 w-3 animate-spin" />
-        ) : open ? (
-          <ChevronUp className="h-3 w-3" />
-        ) : (
-          <ChevronDown className="h-3 w-3" />
-        )}
-      </button>
-
-      {open && !loading && (
-        <div className="space-y-2 px-3 pb-3">
+  function renderVersions() {
+    return (
+      <>
           {versions && versions.length === 0 ? (
             <p className="type-meta text-muted-foreground">
-              No earlier versions — this is the first one written.
+              No earlier versions yet.
             </p>
           ) : (
             versions?.map((v) => (
@@ -124,6 +105,54 @@ export function SynthesisVersionHistory({
               </details>
             ))
           )}
+      </>
+    );
+  }
+
+  useEffect(() => {
+    if (!embedded) return;
+    let stale = false;
+    getSynthesisVersions(topicId, { scope, keyword_id: keywordId })
+      .then((next) => { if (!stale) setVersions(next); })
+      .catch((err: unknown) => { if (!stale) toast.error(err instanceof Error ? err.message : "Could not load previous versions"); })
+      .finally(() => { if (!stale) setLoading(false); });
+    return () => { stale = true; };
+  }, [embedded, topicId, scope, keywordId]);
+
+  if (embedded) {
+    return loading ? (
+      <div className="flex items-center gap-2 py-2 type-meta text-muted-foreground"><Loader2 className="h-3 w-3 animate-spin" aria-hidden />Loading versions</div>
+    ) : (
+      <div className="space-y-2">{renderVersions()}</div>
+    );
+  }
+
+  return (
+    <div className="border-t border-border/40">
+      <button
+        type="button"
+        onClick={() => void toggle()}
+        aria-expanded={open}
+        className="flex w-full items-center gap-1.5 px-3 py-1.5 text-[10px] font-medium text-muted-foreground transition-colors hover:bg-muted/40 hover:text-foreground"
+      >
+        <History className="h-3 w-3 shrink-0" />
+        <span>
+          Previous versions of this {label}
+          {versions ? ` (${versions.length})` : ""}
+        </span>
+        <span className="flex-1" />
+        {loading ? (
+          <Loader2 className="h-3 w-3 animate-spin" />
+        ) : open ? (
+          <ChevronUp className="h-3 w-3" />
+        ) : (
+          <ChevronDown className="h-3 w-3" />
+        )}
+      </button>
+
+      {open && !loading && (
+        <div className="space-y-2 px-3 pb-3">
+          {renderVersions()}
         </div>
       )}
     </div>

@@ -12,7 +12,7 @@ import type { ReactNode } from "react";
 import type { Layout } from "react-resizable-panels";
 import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import { buildApplicationScopeFromMenuContext } from "@ai-matrx/context-menu/engine";
-import { AnnotatedReader, type ReaderTab } from "@/features/rich-document/reader/AnnotatedReader";
+import { AnnotatedReader, type AnnotatedReaderProps, type ReaderTab } from "@/features/rich-document/reader/AnnotatedReader";
 import type { AnnotationSource } from "@/features/rich-document/annotations/types";
 import { readEditedRecordVersion, saveReaderEdit } from "../../service";
 import { useTopicContext } from "../../context/ResearchContext";
@@ -38,7 +38,10 @@ export function ResearchRecordReader({
   groupKey,
   defaultLayout,
   record,
-  navigator,
+  panelLabel,
+  panelActions,
+  library,
+  details,
   toolbar,
   header,
   placeholder,
@@ -48,7 +51,10 @@ export function ResearchRecordReader({
   defaultLayout?: Layout;
   /** The record to read; null shows `placeholder` (loading, empty, failed, streaming). */
   record: ResearchReaderRecord | null;
-  navigator?: ReactNode;
+  panelLabel: string;
+  panelActions?: ReactNode;
+  library?: AnnotatedReaderProps["library"];
+  details?: ReactNode;
   toolbar?: ReactNode;
   header?: ReactNode;
   placeholder?: ReactNode;
@@ -57,7 +63,7 @@ export function ResearchRecordReader({
   const { topic, progress } = useTopicContext();
   const recordRef = useResearchReadingRecordRef();
 
-  const editable = Boolean(record && record.rowVersion != null);
+  const editable = Boolean(record && record.rowVersion != null && record.type !== "research_analysis");
   const source: AnnotationSource | null = record
     ? {
         token: record.type,
@@ -67,13 +73,15 @@ export function ResearchRecordReader({
         contentVersion: Math.max(1, record.version),
         href: record.href,
         // Earlier text a reader edit kept, so anchors map through the change.
-        readVersionBody: (captureVersion) => readEditedRecordVersion(record.type, record.id, captureVersion),
+        ...(record.type !== "research_analysis"
+          ? { readVersionBody: (captureVersion: number) => readEditedRecordVersion(record.type as "research_synthesis" | "research_document", record.id, captureVersion) }
+          : {}),
         // An accepted suggestion saves INTO the record (old text kept as a version).
         ...(editable
           ? {
               save: async (nextBody: string) => {
                 try {
-                  await saveReaderEdit(record.type, record.id, nextBody, record.rowVersion!);
+                  await saveReaderEdit(record.type as "research_synthesis" | "research_document", record.id, nextBody, record.rowVersion!);
                 } catch (cause) {
                   // Someone saved first: show their text, then say so (the sidecar names it).
                   if ((cause as { code?: unknown })?.code === "PT409") record.onEdited?.();
@@ -106,7 +114,10 @@ export function ResearchRecordReader({
       groupKey={groupKey}
       defaultLayout={defaultLayout}
       source={source}
-      navigator={navigator}
+      panelLabel={panelLabel}
+      panelActions={panelActions}
+      library={library}
+      details={details}
       toolbar={toolbar}
       header={header}
       placeholder={placeholder}

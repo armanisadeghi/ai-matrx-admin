@@ -28,6 +28,7 @@ export function DocumentOutline({
   onJump,
   label = "Document outline",
   sections = "branches",
+  showTitle = true,
 }: {
   content: string;
   titleLabel: string;
@@ -35,6 +36,8 @@ export function DocumentOutline({
   label?: string;
   /** See `DocumentOutlineOptions.sections`. */
   sections?: "branches" | "all";
+  /** False when a host draws the document's title row itself (the reader library). */
+  showTitle?: boolean;
 }) {
   const headings = parseNoteOutline(content);
   const title = documentOutlineDisplayTitle(headings, titleLabel, content);
@@ -43,6 +46,8 @@ export function DocumentOutline({
   const [expanded, setExpanded] = useState(() => initialOutlineExpansion(outline));
   const [activeHeading, setActiveHeading] = useState<number | null>(null);
   if (!title && !outline.length) return null;
+  const branches = <ul className="grid list-none grid-cols-[minmax(0,1fr)] gap-0.5 p-0">{tree.map((node) => <OutlineBranch key={`${node.item.headingIndex}:${node.item.charOffset}`} node={node} depth={1} outline={outline} expanded={expanded} setExpanded={setExpanded} activeHeading={activeHeading} setActiveHeading={setActiveHeading} onJump={onJump} />)}</ul>;
+  if (!showTitle) return outline.length ? <nav aria-label={label}>{branches}</nav> : null;
   return (
     <nav className="border-t border-border py-1" aria-label={label}>
       <ul className="list-none p-0">

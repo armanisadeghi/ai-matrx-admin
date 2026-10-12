@@ -11,7 +11,6 @@ import {
   FileText,
   AlertTriangle,
 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,6 +18,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ReadFailure } from "@ai-matrx/design-system";
+import { Button, PropertyRow } from "@ai-matrx/design-system/controls";
 import { StaleDataNotice } from "@ai-matrx/design-system";
 import { useTopicContext, useStreamDebug } from "../../context/ResearchContext";
 import { useResearchApi } from "../../hooks/useResearchApi";
@@ -198,14 +198,9 @@ export default function DocumentViewer({ defaultLayout }: { defaultLayout?: Layo
               : "A document is assembled from your topic report. Run the pipeline far enough to produce one first."}
           </p>
         </div>
-        <button
-          onClick={handleRegenerate}
-          disabled={stream.isStreaming || !reportReady}
-          className="inline-flex items-center gap-1.5 h-8 px-4 rounded-full text-xs font-medium bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-40 transition-all min-h-[44px]"
-        >
-          <FileText className="h-3 w-3" />
-          Generate Document
-        </button>
+        <Button variant="primary" icon={<FileText aria-hidden />} onClick={handleRegenerate} disabled={stream.isStreaming || !reportReady}>
+          Generate document
+        </Button>
       </div>
     );
   }
@@ -232,18 +227,9 @@ export default function DocumentViewer({ defaultLayout }: { defaultLayout?: Layo
             </p>
           )}
         </div>
-        <button
-          onClick={handleRegenerate}
-          disabled={stream.isStreaming}
-          className="inline-flex items-center gap-1.5 h-8 px-4 rounded-full text-xs font-medium bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-40 transition-all min-h-[44px]"
-        >
-          {stream.isStreaming ? (
-            <Loader2 className="h-3 w-3 animate-spin" />
-          ) : (
-            <RefreshCw className="h-3 w-3" />
-          )}
+        <Button variant="primary" icon={stream.isStreaming ? <Loader2 className="animate-spin" aria-hidden /> : <RefreshCw aria-hidden />} onClick={handleRegenerate} disabled={stream.isStreaming}>
           Retry
-        </button>
+        </Button>
       </div>
     );
   }
@@ -260,61 +246,46 @@ export default function DocumentViewer({ defaultLayout }: { defaultLayout?: Layo
 
   const docTokenUsage = tokenUsageFromJson(document.token_usage);
 
+  // Quiet actions over the document; its facts (version, date, tokens, cost) are in Details.
   const toolbar = (
-    <div className="flex flex-wrap items-center gap-x-2 gap-y-1 rounded-[1.25rem] matrx-glass-thin-border px-3 py-1.5">
-      <span className="min-w-0 type-secondary font-medium text-foreground/80 truncate">
-        {document.title ?? "Document"}
-      </span>
-      {document.capture_version != null && (
-        <Badge variant="secondary" className="text-[9px] h-4 px-1.5">
-          v{document.capture_version}
-        </Badge>
+    <>
+      <Button
+        variant="quiet"
+        icon={stream.isStreaming ? <Loader2 className="animate-spin" aria-hidden /> : <RefreshCw aria-hidden />}
+        aria-label="Regenerate document"
+        title="Regenerate — reassembles the whole document (one large paid AI run); this version is kept"
+        onClick={handleRegenerate}
+        disabled={stream.isStreaming}
+      />
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="quiet" icon={<Download aria-hidden />} aria-label="Export document" title="Export" />
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <DropdownMenuItem onClick={() => handleExport("json")}>Export as JSON</DropdownMenuItem>
+          <DropdownMenuItem disabled>Export as PDF (coming soon)</DropdownMenuItem>
+          <DropdownMenuItem disabled>Export as DOCX (coming soon)</DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+      <Button variant="quiet" icon={<History aria-hidden />} aria-label="Version history" title="Version history" onClick={() => setShowHistory(true)} />
+    </>
+  );
+
+  const details = (
+    <div className="grid gap-1">
+      <PropertyRow label="Title" value={document.title ?? "Research Document"} />
+      {document.capture_version != null && <PropertyRow label="Version" value={`v${document.capture_version}`} />}
+      <PropertyRow label="Assembled" value={document.created_at ? new Date(document.created_at).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" }) : "Unknown"} />
+      <PropertyRow label="Status" value={<span className="capitalize">{document.status}</span>} />
+      {docTokenUsage && (
+        <>
+          <PropertyRow label="Input" value={`${docTokenUsage.inputTokens.toLocaleString()} tokens`} />
+          {docTokenUsage.cachedInputTokens > 0 && <PropertyRow label="Cached" value={`${docTokenUsage.cachedInputTokens.toLocaleString()} tokens`} />}
+          <PropertyRow label="Output" value={`${docTokenUsage.outputTokens.toLocaleString()} tokens`} />
+          {docTokenUsage.models.length > 0 && <PropertyRow label="Model" value={docTokenUsage.models.map((m) => m.model).join(", ")} />}
+          {docTokenUsage.costUsd != null && <PropertyRow label="Cost" value={<Cost usd={docTokenUsage.costUsd} short />} />}
+        </>
       )}
-      <span className="type-meta text-muted-foreground">
-        {document.created_at
-          ? new Date(document.created_at).toLocaleDateString()
-          : ""}
-      </span>
-      <div className="ml-auto flex flex-wrap items-center gap-1">
-        <button
-          onClick={handleRegenerate}
-          disabled={stream.isStreaming}
-          className="inline-flex items-center gap-1 h-6 px-2 rounded-full matrx-glass-card text-[11px] font-medium text-primary disabled:opacity-50 transition-colors"
-        >
-          {stream.isStreaming ? (
-            <Loader2 className="h-3 w-3 animate-spin" />
-          ) : (
-            <RefreshCw className="h-3 w-3" />
-          )}
-          <span className="hidden sm:inline">Regen</span>
-        </button>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <button className="inline-flex items-center gap-1 h-6 px-2 rounded-full matrx-glass-card text-[11px] font-medium text-muted-foreground hover:text-foreground transition-colors">
-              <Download className="h-3 w-3" />
-              <span className="hidden sm:inline">Export</span>
-            </button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent>
-            <DropdownMenuItem onClick={() => handleExport("json")}>
-              Export as JSON
-            </DropdownMenuItem>
-            <DropdownMenuItem disabled>
-              Export as PDF (coming soon)
-            </DropdownMenuItem>
-            <DropdownMenuItem disabled>
-              Export as DOCX (coming soon)
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-        <button
-          onClick={() => setShowHistory(true)}
-          className="inline-flex items-center gap-1 h-6 px-2 rounded-full matrx-glass-card text-[11px] font-medium text-muted-foreground hover:text-foreground transition-colors"
-        >
-          <History className="h-3 w-3" />
-          <span className="hidden sm:inline">History</span>
-        </button>
-      </div>
     </div>
   );
 
@@ -341,45 +312,9 @@ export default function DocumentViewer({ defaultLayout }: { defaultLayout?: Layo
             </span>{" "}
             · open comments go to the writer
           </p>
-          <button
-            onClick={handleRegenerate}
-            disabled={stream.isStreaming}
-            className="inline-flex shrink-0 items-center gap-1.5 h-7 px-3 rounded-full bg-primary text-primary-foreground text-[11px] font-medium hover:bg-primary/90 disabled:opacity-40 transition-all"
-          >
-            {stream.isStreaming ? (
-              <Loader2 className="h-3 w-3 animate-spin" />
-            ) : (
-              <RefreshCw className="h-3 w-3" />
-            )}
-            Regenerate
-          </button>
-        </div>
-      )}
-
-      {/* Token usage */}
-      {docTokenUsage && (
-        <div className="flex flex-wrap items-center gap-4 type-meta text-muted-foreground mb-4 pb-4 border-b border-border">
-          <span>
-            Input: {docTokenUsage.inputTokens.toLocaleString()} tokens
-          </span>
-          {docTokenUsage.cachedInputTokens > 0 && (
-            <span className="text-muted-foreground/60">
-              Cached: {docTokenUsage.cachedInputTokens.toLocaleString()}
-            </span>
-          )}
-          <span>
-            Output: {docTokenUsage.outputTokens.toLocaleString()} tokens
-          </span>
-          {docTokenUsage.models.length > 0 && (
-            <span className="text-muted-foreground/50">
-              {docTokenUsage.models.map((m) => m.model).join(", ")}
-            </span>
-          )}
-          {docTokenUsage.costUsd != null && (
-            <span className="inline-flex items-center gap-1">
-              Cost: <Cost usd={docTokenUsage.costUsd} short />
-            </span>
-          )}
+          <Button variant="primary" icon={stream.isStreaming ? <Loader2 className="animate-spin" aria-hidden /> : <RefreshCw aria-hidden />} title="Reassemble the whole document (one large paid AI run); this version is kept" onClick={handleRegenerate} disabled={stream.isStreaming}>
+              Regenerate
+            </Button>
         </div>
       )}
 
@@ -420,8 +355,10 @@ export default function DocumentViewer({ defaultLayout }: { defaultLayout?: Layo
               }
             : null
         }
+        panelLabel="Document"
         toolbar={toolbar}
         header={header}
+        details={details}
       />
 
       {/* Version History */}

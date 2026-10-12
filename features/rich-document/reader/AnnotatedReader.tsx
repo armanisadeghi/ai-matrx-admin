@@ -29,6 +29,7 @@ import { AnnotatedContent, AnnotationSidecarProvider } from "@/features/rich-doc
 import { AnnotationPanel } from "@/features/rich-document/annotations/AnnotationPanel";
 import type { AnnotationSource } from "@/features/rich-document/annotations/types";
 import { DocumentOutline, scrollToOutlineHeading } from "@/features/rich-document/outline/DocumentOutline";
+import { ReaderLibrary, type ReaderLibraryGroup } from "./ReaderLibrary";
 import { ClientGroup } from "@/features/resizable-panels/ClientGroup";
 import { Handle } from "@/features/resizable-panels/Handle";
 import { PanelControlProvider, usePanelControls } from "@/features/resizable-panels/PanelControlProvider";
@@ -47,8 +48,21 @@ export interface AnnotatedReaderProps {
   defaultLayout?: Layout;
   /** The open record, or null while nothing is open (then `placeholder` fills the middle). */
   source: AnnotationSource | null;
-  /** Above the outline in the left panel: the list of records to switch between. */
-  navigator?: ReactNode;
+  /** The left panel's name ("Synthesis", "Document"), beside its toggle. */
+  panelLabel: string;
+  /** Actions on the whole set (copy all, export, run), at the right of the left panel's header. */
+  panelActions?: ReactNode;
+  /**
+   * Several documents in ONE outline (ReaderLibrary): each a top-level entry,
+   * the open one unfolded into its sections. Absent = the open document's outline.
+   */
+  library?: {
+    groups: readonly ReaderLibraryGroup[];
+    activeId: string | null;
+    onSelect: (id: string) => void;
+  };
+  /** The record's facts (status, version, dates, model, cost) — a "Details" tab, never above the text. */
+  details?: ReactNode;
   /** A fixed row above the scrolling middle (filters, list-level actions). */
   toolbar?: ReactNode;
   /** The record's own rows above its body, scrolling with it (title, badges, notices). */
@@ -68,12 +82,13 @@ export interface AnnotatedReaderProps {
 }
 
 const NOTES_TAB = "notes";
+const DETAILS_TAB = "details";
 
 function PanelToggles() {
   const controls = usePanelControls();
   return <>
-    <Button icon={<LayoutPanelLeft aria-hidden />} variant="quiet" className="absolute left-1 top-1 z-20" aria-label="Toggle contents" aria-expanded={!controls.isCollapsed("navigator")} onClick={() => controls.toggle("navigator")} />
-    <Button icon={<PanelRight aria-hidden />} variant="quiet" className="absolute right-1 top-1 z-20" aria-label="Toggle notes and comments" aria-expanded={!controls.isCollapsed("inspector")} onClick={() => controls.toggle("inspector")} />
+    <Button icon={<LayoutPanelLeft aria-hidden />} variant="quiet" className="absolute left-1 top-1.5 z-20" aria-label="Toggle contents" aria-expanded={!controls.isCollapsed("navigator")} onClick={() => controls.toggle("navigator")} />
+    <Button icon={<PanelRight aria-hidden />} variant="quiet" className="absolute right-1 top-1.5 z-20" aria-label="Toggle notes and comments" aria-expanded={!controls.isCollapsed("inspector")} onClick={() => controls.toggle("inspector")} />
   </>;
 }
 
@@ -90,7 +105,7 @@ export function AnnotatedReader(props: AnnotatedReaderProps) {
     : <ReaderLayout {...props} />;
 }
 
-function ReaderLayout({ groupKey, defaultLayout, source, navigator, toolbar, header, placeholder, extraTabs = [], wrapBody, passageActions, outlineSections = "all" }: AnnotatedReaderProps) {
+function ReaderLayout({ groupKey, defaultLayout, source, panelLabel, panelActions, library, details, toolbar, header, placeholder, extraTabs = [], wrapBody, passageActions, outlineSections = "all" }: AnnotatedReaderProps) {
   const isMobile = useIsMobile();
   const readerRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
@@ -128,14 +143,17 @@ function ReaderLayout({ groupKey, defaultLayout, source, navigator, toolbar, hea
 
   const center = (
     <main className="relative flex h-full min-h-0 flex-col bg-background">
-      {(toolbar || source) && <div className="flex shrink-0 items-center gap-1 px-3 pt-1">
-        <div className="min-w-0 flex-1">{toolbar}</div>
+      {/* One quiet row of actions, right-aligned; the document starts below it. */}
+      <div className="flex h-10 shrink-0 items-center justify-end gap-0.5 px-2">
+        {toolbar}
         {source && <Button icon={<Search aria-hidden />} variant="quiet" aria-label="Find in this document" title="Find in this document" onClick={openFind} />}
-      </div>}
+      </div>
       {findOpen && source && <div className="absolute right-3 top-10 z-30 w-[min(96%,520px)]"><RenderedFindBar rootRef={readerRef} onClose={() => setFindOpen(false)} label="Find in this document" focusRequest={findFocus} /></div>}
       <div className="scroll-page-end-space min-h-0 flex-1 overflow-y-auto">
-        <div ref={readerRef} className="w-full px-3 py-3">
+        <div ref={readerRef} className="mx-auto w-full max-w-4xl px-6 pb-6 pt-1">
           {header}
+          {/* A body that does not open with its own title gets the record's (as the study guide does). */}
+          {source && !/^\s*#\s/.test(source.body) && <h1 className="mb-4 mt-2 text-2xl font-semibold tracking-tight text-foreground">{source.title}</h1>}
           {source ? (wrapBody ? wrapBody(body) : body) : placeholder}
         </div>
       </div>
@@ -144,20 +162,32 @@ function ReaderLayout({ groupKey, defaultLayout, source, navigator, toolbar, hea
 
   const left = (
     <aside className="matrx-touch-targets flex h-full min-h-0 flex-col bg-muted/20">
-      <div className="scroll-page-end-space min-h-0 min-w-0 flex-1 overflow-y-auto overflow-x-hidden p-1 pt-9">
-        {navigator}
-        {source && <DocumentOutline key={`${source.id}:${source.contentVersion}`} content={source.body} titleLabel={source.title} onJump={jump} sections={outlineSections} />}
+      <div className="flex h-10 shrink-0 items-center gap-1 pl-10 pr-1">
+        <p className="min-w-0 flex-1 truncate text-xs font-semibold uppercase tracking-wide text-muted-foreground">{panelLabel}</p>
+        {panelActions && <div className="flex shrink-0 items-center">{panelActions}</div>}
+      </div>
+      <div className="scroll-page-end-space min-h-0 min-w-0 flex-1 overflow-y-auto overflow-x-hidden px-2 pb-3">
+        {library ? (
+          <ReaderLibrary groups={library.groups} activeId={library.activeId} onSelect={library.onSelect} onJump={jump} label={panelLabel} />
+        ) : source ? (
+          <DocumentOutline key={`${source.id}:${source.contentVersion}`} content={source.body} titleLabel={source.title} onJump={jump} sections={outlineSections} />
+        ) : null}
       </div>
     </aside>
   );
 
-  const tabs = [{ value: NOTES_TAB, label: "Notes & comments" }, ...extraTabs.map((t) => ({ value: t.id, label: t.label }))];
-  const activeExtra = extraTabs.find((t) => t.id === tab);
+  const allTabs: ReaderTab[] = [...extraTabs, ...(details ? [{ id: DETAILS_TAB, label: "Details", content: details }] : [])];
+  const tabs = [{ value: NOTES_TAB, label: "Notes & comments" }, ...allTabs.map((t) => ({ value: t.id, label: t.label }))];
+  const activeExtra = allTabs.find((t) => t.id === tab);
   const right = (
-    <aside className="matrx-touch-targets flex h-full min-h-0 flex-col bg-muted/20">
-      {tabs.length > 1 && <div className="shrink-0 pr-8"><Tabs aria-label="Reader details" value={activeExtra ? tab : NOTES_TAB} onValueChange={setTab} data={tabs} /></div>}
-      {activeExtra ? <div className="min-h-0 flex-1 overflow-y-auto">{activeExtra.content}</div>
-        : source ? <AnnotationPanel className={cn("min-h-0 flex-1", tabs.length === 1 && "pt-8")} />
+    <aside className="matrx-touch-targets flex h-full min-h-0 min-w-0 flex-col bg-muted/20">
+      <div className="flex h-10 shrink-0 items-end border-b border-border pl-3 pr-10">
+        {tabs.length > 1
+          ? <Tabs aria-label="Reader details" rule={false} value={activeExtra ? tab : NOTES_TAB} onValueChange={setTab} data={tabs} />
+          : <p className="pb-2.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Notes & comments</p>}
+      </div>
+      {activeExtra ? <div className="min-h-0 flex-1 overflow-y-auto px-3 py-3">{activeExtra.content}</div>
+        : source ? <AnnotationPanel className="min-h-0 flex-1" />
         : <p className="px-3 py-8 text-sm text-muted-foreground">Open a document to see its notes and comments.</p>}
     </aside>
   );
@@ -181,11 +211,11 @@ function ReaderLayout({ groupKey, defaultLayout, source, navigator, toolbar, hea
       <div className="relative h-full min-h-0 overflow-hidden">
         <PanelToggles />
         <ClientGroup id={groupKey} groupKey={groupKey} cookieName={`panels:${groupKey}`} defaultLayout={defaultLayout} orientation="horizontal" className="h-full w-full" resizeTargetMinimumSize={{ coarse: 20, fine: 10 }}>
-          <RegisteredPanel registerAs="navigator" groupKey={groupKey} id="navigator" collapsible collapsedSize="0%" defaultSize="250px" minSize="190px">{left}</RegisteredPanel>
+          <RegisteredPanel registerAs="navigator" groupKey={groupKey} id="navigator" collapsible collapsedSize="0%" defaultSize="280px" minSize="200px">{left}</RegisteredPanel>
           <Handle hideWhenCollapsed={["navigator"]} />
           <Panel id="reader" minSize="35%"><CenterBody>{center}</CenterBody></Panel>
           <Handle hideWhenCollapsed={["inspector"]} />
-          <RegisteredPanel registerAs="inspector" groupKey={groupKey} id="inspector" collapsible collapsedSize="0%" defaultSize="300px" minSize="220px">{right}</RegisteredPanel>
+          <RegisteredPanel registerAs="inspector" groupKey={groupKey} id="inspector" collapsible collapsedSize="0%" defaultSize="360px" minSize="300px">{right}</RegisteredPanel>
         </ClientGroup>
       </div>
     </PanelControlProvider>

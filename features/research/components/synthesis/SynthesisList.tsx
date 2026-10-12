@@ -2,9 +2,11 @@
 
 import { readOf } from "@ai-matrx/design-system";
 import { useState, useMemo } from "react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import type { Layout } from "react-resizable-panels";
-import { Badge as StatusBadge } from "@ai-matrx/design-system/controls";
+import { Button, EmptyState, PropertyRow } from "@ai-matrx/design-system/controls";
+import { replaceAddressWithoutNavigating } from "@/lib/url-state/addressWithoutNavigating";
+import { documentTitleOf } from "@/features/rich-document/reader/ReaderLibrary";
 import { ResearchRecordReader, type ResearchReaderRecord } from "../reader/ResearchRecordReader";
 import {
   Layers,
@@ -21,14 +23,11 @@ import {
 } from "../../hooks/useResearchState";
 import { useResearchApi } from "../../hooks/useResearchApi";
 import { useResearchStream } from "../../hooks/useResearchStream";
-import { ResearchFilterBar, type FilterDef } from "../shared/ResearchFilterBar";
 import { StoppedEarlyNote } from "../shared/StoppedEarlyNote";
 import { SynthesisVersionHistory } from "./SynthesisVersionHistory";
 import { AiModelRef } from "@ai-matrx/chat/agents/components/identity-refs/AiIdentityRef";
 import { deriveReadiness } from "../../readiness";
-import type { FilterOption } from "@/components/hierarchy-filter/HierarchyFilterPill";
 import type { ResearchSynthesis, ResearchDataEvent } from "../../types";
-import { idMatchesQuery } from "@ai-matrx/kit/search-scoring";
 import { RichContent } from "@ai-matrx/rich-content/levels/RichContent";
 import { AnswerValueView } from "@/components/official/structured-value/AnswerValueView";
 import { buildApplicationScopeFromMenuContext } from "@ai-matrx/context-menu/engine";
@@ -46,7 +45,6 @@ import {
 // MenuContent lazy-loads on first open.
 import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import { CopyButtons } from "@/components/agent-copy/CopyButtons";
-import { ExportMenu } from "@/components/agent-copy/ExportMenu";
 import { csvExportItem, jsonExportItem } from "@/components/agent-copy/export";
 import type { AiOptionValues } from "@/components/agent-copy/AiCopyMenu";
 import {
@@ -89,65 +87,46 @@ function synthesisKind(s: ResearchSynthesis): string {
   return normalizeSynthesisScope(s.scope) === "topic" ? "topic report" : "keyword synthesis";
 }
 
-const STATUS_TONE: Record<string, "success" | "warning" | "destructive" | "neutral"> = {
-  complete: "success",
-  success: "success",
-  pending: "warning",
-  error: "destructive",
-  failed: "destructive",
-};
-
-/** The selected synthesis's own row: identity, status, version, model, its copy pair. */
-function SynthesisHeader({ synthesis, label }: { synthesis: ResearchSynthesis; label: string }) {
+/** This synthesis's copy pair (human + agent payload), in the reader's action row. */
+function SynthesisCopy({ synthesis, label }: { synthesis: ResearchSynthesis; label: string }) {
   const { progress } = useTopicContext();
   const kpis = researchKpis(progress, null);
   return (
-    <div className="mb-3 space-y-2">
-      <div className="flex items-center gap-2">
-        <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-center gap-1.5">
-            <h1 className="truncate text-lg font-semibold tracking-tight text-foreground">{label}</h1>
-            <StatusBadge tone={STATUS_TONE[synthesis.status] ?? "neutral"}>{synthesis.status}</StatusBadge>
-          </div>
-          <p className="type-meta mt-0.5 text-muted-foreground">
-            <span className="capitalize">{synthesisKind(synthesis)}</span>
-            {" · "}
-            {synthesis.created_at ? new Date(synthesis.created_at).toLocaleDateString() : "Unknown date"}
-            {synthesis.capture_version != null ? ` · v${synthesis.capture_version}` : null}
-            {synthesis.model_id ? (
-              <span className="ml-1 inline-flex align-middle">
-                ·
-                <AiModelRef modelId={synthesis.model_id} showIcon={false} disableNavigation className="ml-1" />
-              </span>
-            ) : null}
-          </p>
-        </div>
-        <CopyButtons
-          size="icon"
-          label={`Synthesis — ${label}`}
-          human={() => synthesisSummary(synthesis)}
-          agent={() => ({
-            kind: "research-synthesis",
-            location: researchLocation("Synthesis"),
-            description: `A single research synthesis (${synthesis.scope}) as rendered on the synthesis page.`,
-            // Full result, never a display clip — the payload must not lie to the agent.
-            data: { synthesis, page_kpis: kpis },
-            summary: synthesisSummary(synthesis),
-            attributes: {
-              ...researchKpiAttributes(kpis),
-              synthesis_id: synthesis.id,
-              scope: synthesis.scope,
-              status: synthesis.status,
-              version: synthesis.capture_version,
-              result_chars: synthesis.result?.length ?? 0,
-            },
-          })}
-          json={() => synthesis}
-        />
-      </div>
-      {synthesis.status === "failed" && hasText(synthesis.result) && (
-        <StoppedEarlyNote reason={synthesis.error || "Synthesis stopped early."} />
-      )}
+    <CopyButtons
+      size="icon"
+      label={`Synthesis — ${label}`}
+      human={() => synthesisSummary(synthesis)}
+      agent={() => ({
+        kind: "research-synthesis",
+        location: researchLocation("Synthesis"),
+        description: `A single research synthesis (${synthesis.scope}) as rendered on the synthesis page.`,
+        // Full result, never a display clip — the payload must not lie to the agent.
+        data: { synthesis, page_kpis: kpis },
+        summary: synthesisSummary(synthesis),
+        attributes: {
+          ...researchKpiAttributes(kpis),
+          synthesis_id: synthesis.id,
+          scope: synthesis.scope,
+          status: synthesis.status,
+          version: synthesis.capture_version,
+          result_chars: synthesis.result?.length ?? 0,
+        },
+      })}
+      json={() => synthesis}
+    />
+  );
+}
+
+/** The synthesis's facts — kind, status, version, when, model, size — out of the reading surface. */
+function SynthesisDetails({ synthesis }: { synthesis: ResearchSynthesis }) {
+  return (
+    <div className="grid gap-1">
+      <PropertyRow label="Kind" value={<span className="capitalize">{synthesisKind(synthesis)}</span>} />
+      <PropertyRow label="Status" value={<span className="capitalize">{synthesis.status}</span>} />
+      {synthesis.capture_version != null && <PropertyRow label="Version" value={`v${synthesis.capture_version}`} />}
+      <PropertyRow label="Written" value={synthesis.created_at ? new Date(synthesis.created_at).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" }) : "Unknown"} />
+      {synthesis.model_id && <PropertyRow label="Model" value={<AiModelRef modelId={synthesis.model_id} showIcon={false} disableNavigation />} />}
+      <PropertyRow label="Length" value={`${(synthesis.result?.length ?? 0).toLocaleString()} characters`} />
     </div>
   );
 }
@@ -213,56 +192,8 @@ function SynthesisWithoutText({ synthesis, label }: { synthesis: ResearchSynthes
   );
 }
 
-/** The left column's list of syntheses, grouped like the old page's sections. */
-function SynthesisNavigator({
-  groups,
-  selectedId,
-  onSelect,
-}: {
-  groups: { title: string; items: { synthesis: ResearchSynthesis; label: string }[] }[];
-  selectedId: string | null;
-  onSelect: (id: string) => void;
-}) {
-  return (
-    <nav aria-label="Syntheses" className="mb-2 grid min-w-0 grid-cols-[minmax(0,1fr)] gap-2">
-      {groups.filter((g) => g.items.length > 0).map((group) => (
-        <section key={group.title}>
-          <p className="flex items-center gap-1.5 px-1.5 py-1 type-meta font-semibold uppercase tracking-wide text-muted-foreground">
-            <Layers className="h-3 w-3" aria-hidden />
-            {group.title}
-            <span className="font-normal">{group.items.length}</span>
-          </p>
-          <ul className="grid list-none grid-cols-[minmax(0,1fr)] gap-0.5 p-0">
-            {group.items.map(({ synthesis, label }) => (
-              <li key={synthesis.id}>
-                <button
-                  type="button"
-                  onClick={() => onSelect(synthesis.id)}
-                  aria-current={synthesis.id === selectedId ? "true" : undefined}
-                  className={cn(
-                    "w-full rounded-md px-2 py-1.5 text-left text-sm transition-colors",
-                    synthesis.id === selectedId ? "bg-primary/10 text-primary-ink" : "hover:bg-accent",
-                  )}
-                >
-                  <span className="block truncate font-medium">{label}</span>
-                  <span className="block truncate type-meta text-muted-foreground">
-                    {synthesis.status}
-                    {synthesis.capture_version != null ? ` · v${synthesis.capture_version}` : ""}
-                    {synthesis.created_at ? ` · ${new Date(synthesis.created_at).toLocaleDateString()}` : ""}
-                  </span>
-                </button>
-              </li>
-            ))}
-          </ul>
-        </section>
-      ))}
-    </nav>
-  );
-}
-
 export default function SynthesisList({ defaultLayout }: { defaultLayout?: Layout }) {
   const { topicId, progress, refreshProgress } = useTopicContext();
-  const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   // Shared ledger — never re-derived locally (see `readiness.ts`).
@@ -282,10 +213,6 @@ export default function SynthesisList({ defaultLayout }: { defaultLayout?: Layou
   const [streamingText, setStreamingText] = useState("");
   const [streamingLabel, setStreamingLabel] = useState("");
 
-  const [search, setSearch] = useState("");
-  const [scopeFilter, setScopeFilter] = useState<string | null>(null);
-  const [statusFilter, setStatusFilter] = useState<string | null>(null);
-  const [keywordFilter, setKeywordFilter] = useState<string | null>(null);
 
   const synthList = (allSyntheses ?? []) as ResearchSynthesis[];
   const kwList = keywords ?? [];
@@ -296,31 +223,8 @@ export default function SynthesisList({ defaultLayout }: { defaultLayout?: Layou
     return kw ? kw.keyword : "Keyword";
   };
 
-  const filtered = useMemo(() => {
-    let items = synthList;
-    // PHASE-4 COMPAT: legacy rs_synthesis rows still carry scope="project"
-    // (meaning topic-wide) — match on the normalized vocabulary.
-    if (scopeFilter)
-      items = items.filter(
-        (s) => normalizeSynthesisScope(s.scope) === scopeFilter,
-      );
-    if (statusFilter) items = items.filter((s) => s.status === statusFilter);
-    if (keywordFilter)
-      items = items.filter((s) => s.keyword_id === keywordFilter);
-    if (search) {
-      const q = search.toLowerCase();
-      items = items.filter(
-        (s) =>
-          (s.result ?? "").toLowerCase().includes(q) ||
-          (s.error ?? "").toLowerCase().includes(q) ||
-          getKeywordLabel(s.keyword_id).toLowerCase().includes(q) ||
-          (s.model_id ?? "").toLowerCase().includes(q) ||
-          s.scope.toLowerCase().includes(q) ||
-          idMatchesQuery(s, q),
-      );
-    }
-    return items;
-  }, [synthList, scopeFilter, statusFilter, keywordFilter, search, kwList]);
+  // Every synthesis is in the reader's library; copy/export act on all of them.
+  const filtered = synthList;
 
   // Topic-wide syntheses: normalized so legacy scope="project" rows are
   // included (PHASE-4 COMPAT).
@@ -328,59 +232,6 @@ export default function SynthesisList({ defaultLayout }: { defaultLayout?: Layou
     (s) => normalizeSynthesisScope(s.scope) === "topic",
   );
   const keywordSyntheses = filtered.filter((s) => s.scope === "keyword");
-
-  const scopeOptions: FilterOption[] = [
-    { id: "topic", label: "Topic" },
-    { id: "keyword", label: "Keyword" },
-  ];
-  const statusOptions: FilterOption[] = [
-    { id: "success", label: "Success" },
-    { id: "failed", label: "Failed" },
-  ];
-  const kwOptions: FilterOption[] = useMemo(
-    () => kwList.map((kw) => ({ id: kw.id, label: kw.keyword })),
-    [kwList],
-  );
-
-  const filterDefs: FilterDef[] = useMemo(() => {
-    const defs: FilterDef[] = [
-      {
-        key: "scope",
-        label: "Scope",
-        allLabel: "All Scopes",
-        options: scopeOptions,
-        selectedId: scopeFilter,
-        onSelect: setScopeFilter,
-      },
-      {
-        key: "status",
-        label: "Status",
-        allLabel: "All",
-        options: statusOptions,
-        selectedId: statusFilter,
-        onSelect: setStatusFilter,
-      },
-    ];
-    if (kwList.length > 0) {
-      defs.push({
-        key: "keyword",
-        label: "Keyword",
-        allLabel: "All Keywords",
-        options: kwOptions,
-        selectedId: keywordFilter,
-        onSelect: setKeywordFilter,
-      });
-    }
-    return defs;
-  }, [
-    scopeOptions,
-    statusOptions,
-    kwOptions,
-    scopeFilter,
-    statusFilter,
-    keywordFilter,
-    kwList.length,
-  ]);
 
   /**
    * Write the topic report.
@@ -439,18 +290,14 @@ export default function SynthesisList({ defaultLayout }: { defaultLayout?: Layou
   };
 
   const runButton = (
-    <button
+    <Button
+      variant="quiet"
+      icon={stream.isStreaming ? <Loader2 className="animate-spin" aria-hidden /> : <RefreshCw aria-hidden />}
+      aria-label="Run synthesis"
+      title="Run synthesis — writes any syntheses still missing (a paid AI run)"
       onClick={() => void handleRunTopicSynthesis("initial")}
       disabled={stream.isStreaming}
-      className="inline-flex items-center gap-1 h-6 px-2.5 rounded-full matrx-glass-card text-[11px] font-medium text-primary disabled:opacity-50 transition-colors shrink-0"
-    >
-      {stream.isStreaming ? (
-        <Loader2 className="h-3 w-3 animate-spin" />
-      ) : (
-        <RefreshCw className="h-3 w-3" />
-      )}
-      <span className="hidden sm:inline">Run</span>
-    </button>
+    />
   );
 
   // ── Copy / export ───────────────────────────────────────────────────────
@@ -465,10 +312,6 @@ export default function SynthesisList({ defaultLayout }: { defaultLayout?: Layou
     total: synthList.length,
     topic_syntheses: topicSyntheses.length,
     keyword_syntheses: keywordSyntheses.length,
-    scope_filter: scopeFilter ?? "all",
-    status_filter: statusFilter ?? "all",
-    keyword_filter: keywordFilter ?? "all",
-    search: search || undefined,
   });
 
   /** The custom composer's row set — shared by `build` and `wrap` so the
@@ -486,19 +329,20 @@ export default function SynthesisList({ defaultLayout }: { defaultLayout?: Layou
       <CopyButtons
         size="icon"
         label="Syntheses"
+        // ONE menu: copy, transform and export (JSON + CSV of every synthesis, full text).
+        export={{
+          items: [
+            jsonExportItem(() => ({ page_kpis: listKpis, syntheses: filtered })),
+            csvExportItem(() => filtered.map((s) => synthesisBrief(s, 0)), "CSV (all)", SYNTHESIS_CSV_COLUMNS),
+          ],
+        }}
         human={() => synthesesListSummary(filtered)}
         agent={() => ({
           kind: "research-syntheses",
           location: researchLocation("Synthesis"),
           description:
-            "Every synthesis matching the current filters, with full result text.",
+            "Every synthesis on this topic, with full result text.",
           data: {
-            filters: {
-              scope: scopeFilter ?? "all",
-              status: statusFilter ?? "all",
-              keyword: keywordFilter ?? "all",
-              search: search || null,
-            },
             page_kpis: listKpis,
             topic_syntheses: topicSyntheses,
             keyword_syntheses: keywordSyntheses,
@@ -516,7 +360,7 @@ export default function SynthesisList({ defaultLayout }: { defaultLayout?: Layou
               kind: "research-syntheses",
               location: researchLocation("Synthesis"),
               description:
-                "Every synthesis matching the current filters, results clipped to 800 chars each.",
+                "Every synthesis on this topic, results clipped to 800 chars each.",
               data: {
                 page_kpis: listKpis,
                 syntheses: filtered.map((s) => synthesisBrief(s, 800)),
@@ -532,7 +376,7 @@ export default function SynthesisList({ defaultLayout }: { defaultLayout?: Layou
               kind: "research-syntheses",
               location: researchLocation("Synthesis"),
               description:
-                "Index of the syntheses matching the current filters — no result bodies.",
+                "Index of the syntheses on this topic — no result bodies.",
               data: {
                 page_kpis: listKpis,
                 syntheses: filtered.map((s) => {
@@ -604,30 +448,24 @@ export default function SynthesisList({ defaultLayout }: { defaultLayout?: Layou
           }),
         }}
       />
-      <ExportMenu
-        label="Syntheses"
-        items={[
-          // Export covers ALL rows in scope, with full result text.
-          jsonExportItem(() => ({
-            page_kpis: listKpis,
-            syntheses: filtered,
-          })),
-          csvExportItem(
-            () => filtered.map((s) => synthesisBrief(s, 0)),
-            "CSV (all matching)",
-            SYNTHESIS_CSV_COLUMNS,
-          ),
-        ]}
-      />
       {runButton}
     </>
   );
 
   // ── The reader: one synthesis open at a time (URL ?record=<id>) ──────────
+  const flagOf = (syn: ResearchSynthesis): string | undefined =>
+    syn.status === "failed" ? "Failed" : !hasText(syn.result) ? (isTerminalStatus(syn.status) ? "Empty" : "Running") : undefined;
   const groups = [
-    { title: "Topic Report", items: topicSyntheses.map((s) => ({ synthesis: s, label: "Topic Report" })) },
-    { title: "Keyword Syntheses", items: keywordSyntheses.map((s) => ({ synthesis: s, label: getKeywordLabel(s.keyword_id) })) },
+    { title: "Topic report", items: topicSyntheses.map((s) => ({ synthesis: s, label: documentTitleOf(s.result, "Topic report") })) },
+    { title: "Keyword syntheses", items: keywordSyntheses.map((s) => ({ synthesis: s, label: documentTitleOf(s.result, getKeywordLabel(s.keyword_id)) })) },
   ];
+  const library = {
+    groups: groups
+      .filter((g) => g.items.length > 0)
+      .map((g) => ({ label: g.title, items: g.items.map(({ synthesis, label }) => ({ id: synthesis.id, title: label, content: synthesis.result ?? "", flag: flagOf(synthesis) })) })),
+    activeId: null as string | null,
+    onSelect: (id: string) => selectSynthesis(id),
+  };
   const ordered = groups.flatMap((g) => g.items);
   const requested = searchParams.get("record");
   const selected =
@@ -635,10 +473,11 @@ export default function SynthesisList({ defaultLayout }: { defaultLayout?: Layou
     ordered.find((item) => item.synthesis.is_current && hasText(item.synthesis.result)) ??
     ordered[0] ??
     null;
+  library.activeId = selected?.synthesis.id ?? null;
   const selectSynthesis = (id: string) => {
     const next = new URLSearchParams(searchParams.toString());
     next.set("record", id);
-    router.replace(`${pathname}?${next.toString()}`, { scroll: false });
+    replaceAddressWithoutNavigating(`${pathname}?${next.toString()}`);
   };
   const readerRecord: ResearchReaderRecord | null =
     selected && hasText(selected.synthesis.result)
@@ -670,23 +509,12 @@ export default function SynthesisList({ defaultLayout }: { defaultLayout?: Layou
             · open comments go to the writer
           </p>
           <div className="flex shrink-0 items-center gap-1.5">
-            <button
-              type="button"
-              onClick={() => void handleRunTopicSynthesis("rebuild")}
-              disabled={stream.isStreaming}
-              className="inline-flex items-center gap-1 h-7 px-2.5 rounded-full matrx-glass-card text-[11px] font-medium text-foreground/80 hover:text-foreground disabled:opacity-40 transition-colors"
-            >
+            <Button variant="outline" title="Rewrite the report from every included source (a paid AI run); this one is kept as a version" onClick={() => void handleRunTopicSynthesis("rebuild")} disabled={stream.isStreaming}>
               Rebuild
-            </button>
-            <button
-              type="button"
-              onClick={() => void handleRunTopicSynthesis("update")}
-              disabled={stream.isStreaming}
-              className="inline-flex items-center gap-1.5 h-7 px-3 rounded-full bg-primary text-primary-foreground text-[11px] font-medium hover:bg-primary/90 disabled:opacity-40 transition-all"
-            >
-              {stream.isStreaming && <Loader2 className="h-3 w-3 animate-spin" />}
+            </Button>
+            <Button variant="primary" icon={stream.isStreaming ? <Loader2 className="animate-spin" aria-hidden /> : undefined} title="Fold the newest keyword synthesis into the report (a paid AI run); this one is kept as a version" onClick={() => void handleRunTopicSynthesis("update")} disabled={stream.isStreaming}>
               Update
-            </button>
+            </Button>
           </div>
         </div>
       )}
@@ -722,31 +550,20 @@ export default function SynthesisList({ defaultLayout }: { defaultLayout?: Layou
     <ReadFailure error={synthError} what="this topic's syntheses" onRetry={refetchSyntheses} />
   ) : selected ? (
     <>
-      <SynthesisHeader synthesis={selected.synthesis} label={selected.label} />
+      <h1 className="mb-3 text-2xl font-semibold tracking-tight text-foreground">{selected.label}</h1>
       <SynthesisWithoutText synthesis={selected.synthesis} label={selected.label} />
     </>
   ) : stream.isStreaming ? null : (
-    <div className="flex min-h-[280px] flex-col items-center justify-center gap-3 px-4 text-center">
-      <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/8">
-        <Layers className="h-6 w-6 text-primary/40" />
-      </div>
-      <div>
-        <p className="type-secondary font-medium text-foreground/70">{synthList.length === 0 ? "No syntheses yet" : "No matches"}</p>
-        <p className="type-meta mt-1 max-w-[240px] text-muted-foreground">
-          {synthList.length === 0 ? "Turn your sources and analyses into one report." : "Try other filters or search."}
-        </p>
-      </div>
-      {synthList.length === 0 && (
-        <button
-          onClick={() => void handleRunTopicSynthesis("initial")}
-          disabled={stream.isStreaming}
-          className="inline-flex min-h-[44px] items-center gap-1.5 h-8 px-4 rounded-full text-xs font-medium bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-40 transition-all"
-        >
-          {stream.isStreaming ? <Loader2 className="h-3 w-3 animate-spin" /> : <Layers className="h-3 w-3" />}
-          Run Synthesis
-        </button>
-      )}
-    </div>
+    <EmptyState
+      icon={<Layers aria-hidden />}
+      title="No syntheses yet"
+      line="Turn your sources and analyses into one report."
+      action={
+        <Button variant="primary" icon={stream.isStreaming ? <Loader2 className="animate-spin" aria-hidden /> : <Layers aria-hidden />} onClick={() => void handleRunTopicSynthesis("initial")} disabled={stream.isStreaming}>
+          Run synthesis
+        </Button>
+      }
+    />
   );
 
   return (
@@ -754,30 +571,20 @@ export default function SynthesisList({ defaultLayout }: { defaultLayout?: Layou
       groupKey="research-synthesis-reader"
       defaultLayout={defaultLayout}
       record={readerRecord}
-      // List-level actions sit over the reader; tap buttons space themselves (no gap).
-      toolbar={<div className="flex items-center justify-end">{copyControls}</div>}
-      navigator={
-        <>
-          {/* The filters narrow the list below them. */}
-          <ResearchFilterBar
-            className="mb-2"
-            title="Synthesis"
-            count={`${filtered.length}/${synthList.length}`}
-            read={readOf({ isLoading: synthLoading, error: synthError })}
-            filters={filterDefs}
-            search={search}
-            onSearchChange={setSearch}
-            searchPlaceholder="Search syntheses"
-          />
-          <SynthesisNavigator groups={groups} selectedId={selected?.synthesis.id ?? null} onSelect={selectSynthesis} />
-        </>
-      }
+      panelLabel="Synthesis"
+      // Actions on the whole set live with the set; tap buttons space themselves (no gap).
+      panelActions={<div className="flex items-center">{copyControls}</div>}
+      library={library}
+      toolbar={selected ? <SynthesisCopy synthesis={selected.synthesis} label={selected.label} /> : undefined}
       header={
         <>
           {topNotices}
-          {readerRecord && selected && <SynthesisHeader synthesis={selected.synthesis} label={selected.label} />}
+          {readerRecord && selected?.synthesis.status === "failed" && (
+            <StoppedEarlyNote reason={selected.synthesis.error || "Synthesis stopped early."} />
+          )}
         </>
       }
+      details={selected ? <SynthesisDetails synthesis={selected.synthesis} /> : undefined}
       placeholder={placeholder}
       extraTabs={
         selected
@@ -794,6 +601,7 @@ export default function SynthesisList({ defaultLayout }: { defaultLayout?: Layou
                     scope={selected.synthesis.scope}
                     keywordId={selected.synthesis.keyword_id ?? undefined}
                     label={selected.synthesis.keyword_id ? "keyword synthesis" : "topic report"}
+                    embedded
                   />
                 ),
               },
