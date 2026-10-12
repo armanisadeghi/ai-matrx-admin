@@ -126,6 +126,7 @@ import { useOpenDiffViewerWindow } from "@/features/overlays/openers/diffViewerW
 import { useOpenLiveIntegrationsWindow } from "@/features/overlays/openers/liveIntegrationsWindow";
 import { useOpenGmailComposeWindow } from "@/features/overlays/openers/gmailComposeWindow";
 import { useOpenLiveRunWindow } from "@/features/overlays/openers/liveRunWindow";
+import { useWatchAiRun } from "@/features/overlays/openers/aiWatchWindow";
 import { useOpenFullScreenMarkdownEditorBridge } from "@/features/overlays/openers/fullScreenEditor";
 import { openImageViewer } from "@/features/overlays/openers/imageViewer";
 import { useOpenShortcutEditorWindow } from "@/features/overlays/openers/shortcutEditorWindow";
@@ -401,6 +402,7 @@ function useAppWindowOpeners(): ChatWindowOpeners {
   return {
     openGmailComposeWindow: useOpenGmailComposeWindow(),
     openLiveRunWindow: useOpenLiveRunWindow(),
+    openAiWatchWindow: useWatchAiRun(),
     openFullScreenMarkdownEditor: useOpenFullScreenMarkdownEditorBridge(),
     openImageViewer: (opts) => openImageViewer(dispatch, opts),
     openShortcutEditorWindow: useOpenShortcutEditorWindow(),
