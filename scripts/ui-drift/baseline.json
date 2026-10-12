@@ -3,7 +3,7 @@
   "updated": "2026-10-07",
   "sha": "e389e62b291c8f8958b40ae46c3c3cb67335a4b2",
   "sites": 33659,
-  "count": 20,
+  "count": 21,
   "ids": [
     "arbitrary-text-size|features/esign/signer/parts/PaperField.tsx",
     "primitive-visual-class|components/editor-chrome/EditorRibbon.tsx",
@@ -24,6 +24,7 @@
     "styled-raw-button|features/connectors/IntegrationDirectory.tsx",
     "styled-raw-button|features/esign/signer/parts/DocumentStack.tsx",
     "styled-raw-button|features/esign/signer/parts/PaperField.tsx",
+    "styled-raw-button|features/file-actions/home/StartBand.tsx",
     "styled-raw-button|features/rich-document/outline/DocumentOutline.tsx"
   ],
   "counts": {
@@ -10564,6 +10565,11 @@
     },
     "raw-color|features/file-actions/home/FileHome.tsx": {
       "reason": "White glyph on the app-colour tile of the Microsoft 365 app rail, same as the editor product tile",
+      "accepted_by": "Armani Sadeghi",
+      "date": "2026-10-12"
+    },
+    "styled-raw-button|features/file-actions/home/StartBand.tsx": {
+      "reason": "Start tile is a paper-shaped template face (Google/Office start band), pre-existing H-home finding",
       "accepted_by": "Armani Sadeghi",
       "date": "2026-10-12"
     }
