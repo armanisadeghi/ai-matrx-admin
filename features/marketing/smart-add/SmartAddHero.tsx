@@ -51,7 +51,7 @@ const STEP_LABEL: Record<string, string> = {
 /** The platforms offered for a bare @handle, most common first. */
 const PICKABLE: SocialPlatform[] = ["instagram", "tiktok", "youtube", "x", "linkedin", "facebook", "threads", "pinterest"];
 
-const SPRING = { type: "spring", stiffness: 380, damping: 34, mass: 0.9 } as const;
+const SPRING = { type: "spring", stiffness: 420, damping: 38, mass: 0.8 } as const;
 
 function looksLikeDomain(text: string): boolean {
   return /^[^\s@]+\.[a-z]{2,}(\/.*)?$/i.test(text.trim().replace(/^https?:\/\//i, ""));
@@ -318,8 +318,8 @@ export function SmartAddHero({
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ delay: 0.15, duration: 0.3 }}
-              className="mt-4 flex h-9 w-full items-center justify-between px-1 text-sm"
+              transition={{ delay: 0.5, duration: 0.3 }}
+              className="mt-5 flex h-9 w-full items-center justify-between px-1 text-sm"
             >
               <QuietButton onClick={() => setMode(null)} icon={<ArrowLeft className="size-4" />}>
                 Back
@@ -787,11 +787,11 @@ function Centerpiece({
       initial={{ opacity: 0, y: 24 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.12, duration: 0.6, ease: [0.2, 0.8, 0.2, 1] }}
-      className={`mt-12 flex w-full flex-col items-center sm:mt-14 ${settled ? styles.settled : ""}`}
+      className={`flex w-full flex-col items-center ${settled ? `mt-8 ${styles.settled}` : "mt-12 sm:mt-14"}`}
       aria-live="polite"
     >
       {/* The mark, inside its orbit. */}
-      <div className="relative flex size-40 items-center justify-center sm:size-44">
+      <div className={`relative flex items-center justify-center transition-transform duration-500 ${settled ? "size-40 scale-75 sm:scale-90" : "size-40 sm:size-44"}`}>
         <span className={`${styles.halo} absolute -inset-10 rounded-full`} />
         <span className={`${styles.orbitSlow} absolute inset-0 rounded-full`}>
           <span className={`${styles.satellite} absolute -top-[3px] left-1/2 size-1.5 -translate-x-1/2 rounded-full`} />
@@ -832,7 +832,7 @@ function Centerpiece({
       </div>
 
       {/* The name types out as it arrives; reserved height so nothing below moves. */}
-      <div className="mt-8 flex h-11 w-full items-center justify-center px-2 sm:h-12">
+      <div className={`flex h-11 w-full items-center justify-center px-2 sm:h-12 ${settled ? "mt-2" : "mt-8"}`}>
         {nameItem ? (
           <Shared id={nameItem.key} className="max-w-full truncate text-[1.75rem] font-semibold tracking-[-0.03em] sm:text-4xl">
             <Typewriter text={nameItem.value} />
@@ -864,7 +864,7 @@ function Centerpiece({
       </div>
 
       {/* Accounts pop in with their real photos. */}
-      <div className="mt-5 flex min-h-11 w-full flex-wrap items-center justify-center gap-2">
+      <div className={`flex w-full flex-wrap items-center justify-center gap-2 ${settled ? "hidden" : "mt-5 min-h-11"}`}>
         <AnimatePresence>
           {socials.map((s, i) => {
             const photo = s.profile_id ? s : photoByPlatform.get(s.platform ?? "");
@@ -897,7 +897,7 @@ function Centerpiece({
       </div>
 
       {/* Quiet ticks for the real steps: a breathing dot while running, a check when done. */}
-      <div className="mt-6 flex h-6 flex-wrap items-center justify-center gap-x-5 gap-y-1 text-xs text-muted-foreground">
+      <div className={`flex h-6 flex-wrap items-center justify-center gap-x-5 gap-y-1 text-xs text-muted-foreground ${settled ? "mt-1" : "mt-6"}`}>
         {working && steps.length === 0 ? <span className={`${styles.tickDot} size-1.5 rounded-full`} /> : null}
         {steps.map((s) => {
           const done = s.phase === "settled";
