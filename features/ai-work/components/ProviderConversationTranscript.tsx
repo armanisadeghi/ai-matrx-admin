@@ -48,6 +48,7 @@ import {
 } from "../service/providerConversationClient";
 import type { ProviderConversationMessage } from "../lib/providerConversationMessage";
 import { buildProviderTimeline } from "../lib/providerTimeline";
+import { isTypedUserTurn } from "../lib/providerMessageText";
 import { ConversationAnalyzePanel } from "../analysis/ConversationAnalyzePanel";
 import { ConversationProvenancePanel } from "../conversations/components/ConversationProvenancePanel";
 import {
@@ -841,7 +842,11 @@ function ProviderTranscriptMessage({
   const authorship = transcriptAuthorship(message, provider);
 
   return (
-    <li className={cn("flex", isUser ? "justify-end" : "justify-start")}>
+    <li
+      className={cn("flex", isUser ? "justify-end" : "justify-start")}
+      // A turn a person typed is a "previous message I sent" jump target.
+      {...(isTypedUserTurn(message) ? { "data-transcript-anchor": "user" } : {})}
+    >
       <article
         className={cn(
           "w-full px-3 py-2.5",
