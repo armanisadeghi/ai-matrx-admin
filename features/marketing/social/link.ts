@@ -155,6 +155,13 @@ export function profileUrlFor(platform: SocialPlatform, handle: string, variant?
       return (classifyRedditHandle(variant === "r" ? `r/${h}` : h)?.url ?? `https://www.reddit.com/user/${h}`);
     case "snapchat":
       return `https://www.snapchat.com/add/${h}`;
+    case "twitch":
+      return `https://www.twitch.tv/${h}`;
+    case "mastodon": {
+      // user@instance → https://instance/@user (a bare name has no instance: mastodon.social is the default server)
+      const [user, host] = h.split("@");
+      return `https://${host || "mastodon.social"}/@${user}`;
+    }
   }
 }
 

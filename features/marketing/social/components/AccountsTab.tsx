@@ -51,6 +51,7 @@ import {
 import { useMarketingBrand } from "@/features/marketing/lib/brand-context";
 import { formatCompact, formatPercentile, outlierBadgeModel } from "../outlier";
 import {
+  refreshConnectedAccount,
   refreshProfile,
   socialErrorCode,
   socialErrorMessage,
@@ -234,6 +235,23 @@ export function AccountsTab() {
       toast.success(`${accountName(row)} added to ${brand.name}`);
     } catch (err) {
       toast.error(socialErrorMessage(err, "Couldn't add the account to this brand"));
+    } finally {
+      setBusyRow(null);
+    }
+  }
+
+  /** An own account read through its connection: profile, today's figures, posts, private per-post figures. */
+  async function syncConnection(row: AccountRow) {
+    if (!row.trackedAccountId) return;
+    setBusyRow(row.rowId);
+    try {
+      const done = await refreshConnectedAccount(row.trackedAccountId, { organizationId });
+      await invalidate();
+      const missing = Object.values(done.not_granted ?? {});
+      toast.success("Synced");
+      if (missing.length) toast.info(missing.join(" "));
+    } catch (err) {
+      toast.error(socialErrorMessage(err, "Couldn't sync the connection"));
     } finally {
       setBusyRow(null);
     }
@@ -760,6 +778,19 @@ export function AccountsTab() {
                   loading: busyRow === row.rowId,
                   disabled: busyRow !== null,
                   onClick: () => void addToBrand(row),
+                },
+              ]
+            : []),
+          ...(row.role === "own" && row.trackedAccountId && !row.unassigned && connections.of(row.platform)?.state === "connected"
+            ? [
+                {
+                  id: "sync-connection",
+                  icon: RefreshCw,
+                  label: "Sync connection",
+                  tooltip: "Read private stats and posts through your connection",
+                  loading: busyRow === row.rowId,
+                  disabled: busyRow !== null,
+                  onClick: () => void syncConnection(row),
                 },
               ]
             : []),

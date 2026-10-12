@@ -1,5 +1,6 @@
 "use client";
 
+import { attachConnectedAccount } from "@/features/marketing/social/server";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Button, Badge, RegionSkeleton } from "@ai-matrx/design-system/controls";
@@ -14,7 +15,6 @@ import { replaceAddressWithoutNavigating } from "@/lib/url-state/addressWithoutN
 import { toast } from "@/lib/toast";
 import { listSocialConnections } from "./connections";
 import {
-  attachXAccount,
   getXConfig,
   discoverXAccount,
   disconnectXAccount,
@@ -283,11 +283,15 @@ export function SocialConnectionsPanel({
             onClick={() =>
               void act(async (org) => {
                 if (brandId)
-                  await attachXAccount(
-                    discovery.connectionId,
-                    resource.resource_ref,
-                    brandId,
-                    org,
+                  await attachConnectedAccount(
+                    {
+                      provider: "x",
+                      connectionId: discovery.connectionId,
+                      resourceType: "x_account",
+                      resourceRef: resource.resource_ref,
+                      brandId,
+                    },
+                    { organizationId: org },
                   );
                 else
                   await selectXAccount(

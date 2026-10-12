@@ -472,3 +472,45 @@ export async function getCredits(opts: CallOptions): Promise<SocialCredits> {
   });
   return data;
 }
+
+/** What a connected-account attach or refresh observed (null figure = the provider did not send it). */
+export interface ConnectedAccountSync {
+  provider: string;
+  status: string;
+  tracked_account_id?: string;
+  followers?: number | null;
+  posts?: number;
+  /** Reads the grant does not cover yet, by what (shown, never hidden). */
+  not_granted?: Record<string, string>;
+}
+
+/** Put a connected account on a brand as role own and read it once (`POST /social/connected-accounts/attach`). */
+export async function attachConnectedAccount(
+  input: { provider: string; connectionId: string; resourceType: string; resourceRef: string; brandId: string },
+  opts: CallOptions,
+): Promise<ConnectedAccountSync> {
+  const { data } = await postJson<ConnectedAccountSync>(
+    `${BASE}/connected-accounts/attach`,
+    {
+      provider: input.provider,
+      connection_id: input.connectionId,
+      resource_type: input.resourceType,
+      resource_ref: input.resourceRef,
+      brand_id: input.brandId,
+    },
+    { organizationId: org(opts.organizationId), signal: opts.signal },
+  );
+  if (!data) throw new Error("The server did not confirm the account.");
+  return data;
+}
+
+/** Read a connected own account again through its connection (`POST /social/connected-accounts/refresh`). */
+export async function refreshConnectedAccount(trackedAccountId: string, opts: CallOptions): Promise<ConnectedAccountSync> {
+  const { data } = await postJson<ConnectedAccountSync>(
+    `${BASE}/connected-accounts/refresh`,
+    { tracked_account_id: trackedAccountId },
+    { organizationId: org(opts.organizationId), signal: opts.signal },
+  );
+  if (!data) throw new Error("The server did not confirm the refresh.");
+  return data;
+}

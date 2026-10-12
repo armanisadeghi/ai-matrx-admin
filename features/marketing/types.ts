@@ -594,6 +594,8 @@ export const PROPERTY_KINDS = [
   "threads",
   "reddit",
   "snapchat",
+  "mastodon",
+  "twitch",
   "other",
 ] as const;
 export type PropertyKind = (typeof PROPERTY_KINDS)[number];
@@ -615,6 +617,8 @@ export const PROPERTY_KIND_LABELS: Record<PropertyKind, string> = {
   threads: "Threads",
   reddit: "Reddit",
   snapchat: "Snapchat",
+  mastodon: "Mastodon",
+  twitch: "Twitch",
   other: "Other property",
 };
 

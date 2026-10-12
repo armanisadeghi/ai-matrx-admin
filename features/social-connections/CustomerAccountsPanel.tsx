@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { PinterestDataPanel } from "./PinterestDataPanel";
 import { pinterestRequest } from "./pinterest-service";
+import { attachConnectedAccount } from "@/features/marketing/social/server";
 import { AlertCircle, Link2, RefreshCw, Unplug } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -172,7 +173,7 @@ export function CustomerAccountsPanel({ organizationId, brandId, returnUrl = "/u
           {receipts[connection.id] && <div className="space-y-2 rounded-md border p-3" aria-label="Account result">
             <div className="font-medium">{receipts[connection.id].subject.display_name}</div>
             {receipts[connection.id].subject.email && <div>{receipts[connection.id].subject.email}</div>}
-            {receipts[connection.id].resources.map((resource) => <div className="flex items-center justify-between gap-2" key={`${resource.resource_type}:${resource.resource_ref}`}><span>{resource.display_name}</span><Button variant="outline" disabled={(brandId && ["facebook", "instagram", "threads"].includes(provider) ? resource.attachedBrandId === brandId : resource.selected) || action?.connectionId === connection.id} onClick={async () => {
+            {receipts[connection.id].resources.map((resource) => <div className="flex items-center justify-between gap-2" key={`${resource.resource_type}:${resource.resource_ref}`}><span>{resource.display_name}</span><Button variant="outline" disabled={(brandId ? resource.attachedBrandId === brandId : resource.selected) || action?.connectionId === connection.id} onClick={async () => {
             const actionToken = actionTokenRef.current + 1;
             const selectionOrganizationId = organizationId;
             const selectionContextToken = contextTokenRef.current;
@@ -180,10 +181,10 @@ export function CustomerAccountsPanel({ organizationId, brandId, returnUrl = "/u
             actionTokenRef.current = actionToken;
             if (!ownsSelection()) return;
             setAction({ connectionId: connection.id, token: actionToken });
-              try { if (provider === "pinterest") await pinterestRequest("attach", selectionOrganizationId, {connection_id: connection.id, resource_ref: resource.resource_ref}); else await selectCustomerSocialAccount(provider, selectionOrganizationId, connection.id, resource, brandId); if (!ownsSelection()) return; const receipt = await discoverCustomerSocialAccount(provider, selectionOrganizationId, connection.id); if (!ownsSelection()) return; setReceipts((current) => ({...current, [connection.id]: receipt})); }
+              try { if (brandId) { const done = await attachConnectedAccount({provider, connectionId: connection.id, resourceType: resource.resource_type, resourceRef: resource.resource_ref, brandId}, {organizationId: selectionOrganizationId}); toast.success("Account added"); const missing = Object.values(done.not_granted ?? {}); if (missing.length) toast.info(missing.join(" ")); } else if (provider === "pinterest") await pinterestRequest("attach", selectionOrganizationId, {connection_id: connection.id, resource_ref: resource.resource_ref}); else await selectCustomerSocialAccount(provider, selectionOrganizationId, connection.id, resource); if (!ownsSelection()) return; const receipt = await discoverCustomerSocialAccount(provider, selectionOrganizationId, connection.id); if (!ownsSelection()) return; setReceipts((current) => ({...current, [connection.id]: receipt})); }
               catch (error) { if (ownsSelection()) toast.error(error instanceof Error ? error.message : "Selection failed."); }
               finally { if (ownsSelection()) setAction(null); }
-            }}>{brandId && ["facebook", "instagram", "threads"].includes(provider) ? resource.attachedBrandId === brandId ? "Attached" : "Attach" : resource.selected ? "Selected" : "Select"}</Button></div>)}
+            }}>{brandId ? resource.attachedBrandId === brandId ? "On brand" : "Add to brand" : resource.selected ? "Selected" : "Select"}</Button></div>)}
           </div>}
           {provider === "pinterest" && <PinterestDataPanel organizationId={organizationId} connectionId={connection.id} selectionVersion={receipts[connection.id]} />}
         </div>)}

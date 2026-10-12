@@ -1,4 +1,4 @@
-import { AtSign, Ghost, Globe2, MessagesSquare } from "lucide-react";
+import { AtSign, Ghost, Globe2, MessagesSquare, Tv, Waypoints } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import {
   Facebook,
@@ -29,6 +29,8 @@ const KIND_ICONS: Record<PropertyKind, LucideIcon> = {
   threads: AtSign,
   reddit: MessagesSquare,
   snapchat: Ghost,
+  mastodon: Waypoints,
+  twitch: Tv,
   other: AtSign,
 };
 
@@ -51,6 +53,8 @@ const KIND_TILE_CLASSES: Record<PropertyKind, string> = {
   threads: "bg-black text-white dark:bg-white dark:text-black",
   reddit: "bg-[#FF4500] text-white",
   snapchat: "bg-[#FFFC00] text-black",
+  mastodon: "bg-[#6364FF] text-white",
+  twitch: "bg-[#9146FF] text-white",
   other: "bg-muted text-muted-foreground",
 };
 

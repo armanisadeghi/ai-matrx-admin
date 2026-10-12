@@ -32,6 +32,8 @@ export const SOCIAL_PLATFORMS = [
   "pinterest",
   "reddit",
   "snapchat",
+  "mastodon",
+  "twitch",
 ] as const;
 export type SocialPlatform = (typeof SOCIAL_PLATFORMS)[number];
 
@@ -64,6 +66,8 @@ export const SOCIAL_PLATFORM_LABELS: Record<SocialPlatform, string> = {
   pinterest: "Pinterest",
   reddit: "Reddit",
   snapchat: "Snapchat",
+  mastodon: "Mastodon",
+  twitch: "Twitch",
 };
 
 export function isSocialPlatform(value: string): value is SocialPlatform {
