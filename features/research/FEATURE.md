@@ -38,7 +38,15 @@ names the record so the same toolbar and dock work in place. Record tokens: `res
 2026-10-11). `agent-context/readingRecord.tsx` publishes the open record + its threads + the person's
 highlights into the topic surface (`open_record`, `record_comments`, `my_record_notes`); records read in place register themselves and their saved items ride as `page_record_comments`. Open
 (unresolved) comments also travel into Update / Rebuild / Regenerate on the server
-(aidream `research/reader_comments.py`).
+(aidream `research/reader_comments.py`). **Context / Outputs:** every selector of a kind with a catalog
+`annotationToken` carries `annotations {comments (default on), notes (default off)}`; the picker shows
+per-kind and per-item counts (manifest `annotationCounts`, read by `platform.record_annotations_many`)
+and the two switches (`components/resources/ReadingSetSwitches.tsx`, also on Outputs for the report);
+the resolver appends the reading set under each item after the per-item trim (server mirror in
+`research/context_bundles.py`). **Read pages** (Sources → content) carry the reading set on their
+verbatim text. **Accepting a suggestion** on a synthesis or the document saves through
+`research.save_reader_edit` (editor, CAS on row version, old text kept as a previous version, record
+updated in place so its comments stay attached).
 
 ## The rules
 
@@ -131,6 +139,8 @@ via `<Cost>`/`useCostDisplay` (`components/cost/`, points for everyone); never `
 `pnpm type-check` is the only type gate; the build ignores type errors.
 
 ## Change log
+
+- `2026-10-11` — Context and Outputs carry comments with visible counts and per-kind Comments / My notes switches; read pages (Sources) get highlights and comments; accepting a suggested edit saves into a synthesis or the document and keeps the old text as a version. Experts is deliberately left out: its extraction is deterministic code over page analyses, not an AI call.
 
 - `2026-10-11` — Research records get the study guide's reading set: Synthesis and Document open in the annotated reader (outline, highlight, private note, comment, suggest, link, find), the synthesis list moved into the reader's left column (filters kept), every inline research text is annotatable in place, agents read the open record and its comments, and open comments feed rewrites. Guard: `agent-context/__tests__/reading-record-scope.test.ts`.
 

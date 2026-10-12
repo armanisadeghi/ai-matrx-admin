@@ -118498,6 +118498,18 @@ export type Database = {
       }
     }
     Functions: {
+      save_reader_edit: {
+        Args: {
+          p_body: string
+          p_expected_version: number
+          p_id: string
+          p_token: string
+        }
+        Returns: {
+          capture_version: number
+          version: number
+        }[]
+      }
       youtube_quota_spend: {
         Args: { p_daily_cap?: number; p_units: number }
         Returns: {

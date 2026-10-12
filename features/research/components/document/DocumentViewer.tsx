@@ -412,6 +412,11 @@ export default function DocumentViewer({ defaultLayout }: { defaultLayout?: Layo
                 kind: "document",
                 body: displayContent,
                 href: `/research/topics/${topicId}/document`,
+                rowVersion: document.version ?? null,
+                onEdited: () => {
+                  refetchDoc();
+                  refresh();
+                },
               }
             : null
         }

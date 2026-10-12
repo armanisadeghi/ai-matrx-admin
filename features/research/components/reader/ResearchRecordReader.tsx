@@ -14,6 +14,7 @@ import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import { buildApplicationScopeFromMenuContext } from "@ai-matrx/context-menu/engine";
 import { AnnotatedReader, type ReaderTab } from "@/features/rich-document/reader/AnnotatedReader";
 import type { AnnotationSource } from "@/features/rich-document/annotations/types";
+import { readEditedRecordVersion, saveReaderEdit } from "../../service";
 import { useTopicContext } from "../../context/ResearchContext";
 import {
   buildResearchContextData,
@@ -25,7 +26,13 @@ import {
   type ResearchReadingRecord,
 } from "../../agent-context/readingRecord";
 
-export type ResearchReaderRecord = Omit<ResearchReadingRecord, "comments" | "notes"> & { href: string };
+export type ResearchReaderRecord = Omit<ResearchReadingRecord, "comments" | "notes"> & {
+  href: string;
+  /** The row's edit counter. Present = an accepted suggestion can be saved into the record. */
+  rowVersion?: number | null;
+  /** Called after an accepted suggestion saved (the host re-reads the record). */
+  onEdited?: () => void;
+};
 
 export function ResearchRecordReader({
   groupKey,
@@ -50,8 +57,27 @@ export function ResearchRecordReader({
   const { topic, progress } = useTopicContext();
   const recordRef = useResearchReadingRecordRef();
 
+  const editable = Boolean(record && record.rowVersion != null);
   const source: AnnotationSource | null = record
-    ? { token: record.type, id: record.id, title: record.title, body: record.body, contentVersion: Math.max(1, record.version), href: record.href }
+    ? {
+        token: record.type,
+        id: record.id,
+        title: record.title,
+        body: record.body,
+        contentVersion: Math.max(1, record.version),
+        href: record.href,
+        // Earlier text a reader edit kept, so anchors map through the change.
+        readVersionBody: (captureVersion) => readEditedRecordVersion(record.type, record.id, captureVersion),
+        // An accepted suggestion saves INTO the record (old text kept as a version).
+        ...(editable
+          ? {
+              save: async (nextBody: string) => {
+                await saveReaderEdit(record.type, record.id, nextBody, record.rowVersion!);
+                record.onEdited?.();
+              },
+            }
+          : {}),
+      }
     : null;
 
   const contextData = () =>

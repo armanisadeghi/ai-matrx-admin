@@ -650,6 +650,8 @@ export default function SynthesisList({ defaultLayout }: { defaultLayout?: Layou
           kind: synthesisKind(selected.synthesis),
           body: selected.synthesis.result,
           href: `/research/topics/${topicId}/synthesis?record=${selected.synthesis.id}`,
+          rowVersion: selected.synthesis.version ?? null,
+          onEdited: refetchSyntheses,
         }
       : null;
 

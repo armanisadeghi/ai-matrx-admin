@@ -1991,3 +1991,44 @@ export async function getTopicCostLedger(
     tagNames,
   };
 }
+
+// ============================================================================
+// Reader edits (an accepted suggestion on a synthesis or the document)
+// ============================================================================
+
+/**
+ * Save a person's edit to an AI-written record through `research.save_reader_edit`:
+ * editor on the record, compare-and-swap on its row version (PT409 when it moved),
+ * the old text kept as a previous version, the record updated IN PLACE so its
+ * comments, highlights and links stay attached.
+ */
+export async function saveReaderEdit(
+  token: "research_synthesis" | "research_document",
+  id: string,
+  body: string,
+  expectedVersion: number,
+): Promise<{ version: number; capture_version: number | null }> {
+  const { data, error } = await supabase
+    .schema("research")
+    .rpc("save_reader_edit", { p_token: token, p_id: id, p_body: body, p_expected_version: expectedVersion });
+  if (error) throw error;
+  const row = (data ?? [])[0];
+  if (!row) throw new Error("The edit was not saved — the record did not answer.");
+  return row;
+}
+
+/** The text a record had at an earlier capture version (kept by a reader edit), or null. */
+export async function readEditedRecordVersion(
+  token: "research_synthesis" | "research_document",
+  id: string,
+  captureVersion: number,
+): Promise<string | null> {
+  const query = token === "research_synthesis"
+    ? supabase.schema("research").from("rs_synthesis").select("result").contains("metadata", { edited_from: id }).eq("capture_version", captureVersion).limit(1).maybeSingle()
+    : supabase.schema("research").from("rs_document").select("content").contains("metadata", { edited_from: id }).eq("capture_version", captureVersion).limit(1).maybeSingle();
+  const { data, error } = await query;
+  if (error) throw error;
+  if (!data) return null;
+  return "result" in data ? data.result : data.content;
+}
+

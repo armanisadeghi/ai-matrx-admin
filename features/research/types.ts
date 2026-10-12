@@ -1028,6 +1028,8 @@ export interface ResearchAnalysis {
 
 export interface ResearchSynthesis {
   id: string;
+  /** Row edit counter (bumped on every update) — the compare-and-swap base for a reader edit. */
+  version?: number | null;
   topic_id: string;
   keyword_id: string | null;
   tag_id: string | null;
@@ -1091,6 +1093,8 @@ export interface TagConsolidation {
 
 export interface ResearchDocument {
   id: string;
+  /** Row edit counter (bumped on every update) — the compare-and-swap base for a reader edit. */
+  version?: number | null;
   topic_id: string;
   title: string | null;
   status: string;
