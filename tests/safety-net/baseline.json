@@ -1,0 +1,13 @@
+{
+  "recorded": "2026-10-12",
+  "target": "http://s3e5549ca.localhost:3001 (shared live preview, live DB, admin@admin.com)",
+  "note": "Baseline before the package consolidation. FAIL rows are real findings against the unchanged app, not harness noise (j1 and j5 failed identically on a second run).",
+  "results": [
+    { "id": "j1-auth-org", "result": "FAIL", "checks": 4, "seconds": 38, "firstFailure": "journey ran to the end: locator.waitFor: Timeout 30000ms exceeded (active org read as null, picker listed 0 orgs; header shows 'Organization: AI Matrx')" },
+    { "id": "j2-records", "result": "PASS", "checks": 7, "seconds": 114 },
+    { "id": "j3-files", "result": "FAIL", "checks": 9, "seconds": 363, "firstFailure": "renamed file is listed under its new name: POST /files/<id>/rename returned 403 permission_denied 'cross-organization move refused: file belongs to organization 5dc930e9..., folder 9719efe9... to organization 7cd12da2...'" },
+    { "id": "j4-chat", "result": "PASS", "checks": 9, "seconds": 58 },
+    { "id": "j5-notes-assoc", "result": "FAIL", "checks": 1, "seconds": 75, "firstFailure": "journey ran to the end: locator.waitFor: Timeout 60000ms exceeded" },
+    { "id": "j6-surfaces", "result": "PASS", "checks": 6, "seconds": 6, "skipped": "desktop package chat (nothing on 127.0.0.1:1420)" }
+  ]
+}

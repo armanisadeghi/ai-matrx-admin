@@ -47,15 +47,21 @@ export default {
       // Rename.
       await openFiles(page, s);
       const row = await findFile(page, name);
+      let renameError = "";
+      const onResp = async (r) => {
+        if (/\/files\/[0-9a-f-]{36}\/rename/.test(r.url()) && r.status() >= 400) renameError = `HTTP ${r.status()} ${(await r.text().catch(() => "")).slice(0, 160)}`;
+      };
+      page.on("response", onResp);
       await fileMenu(page, row, "Rename");
       await sleep(800);
       await page.keyboard.press("ControlOrMeta+a");
       await page.keyboard.type((faulted("j3-files") ? original : renamed).replace(/\.txt$/, "")); // the dialog shows ".txt" separately
       await page.keyboard.press("Enter");
       await sleep(3000);
+      page.off("response", onResp);
       await openFiles(page, s);
       const ren = await findFile(page, renamed);
-      check("renamed file is listed under its new name", !!ren, renamed);
+      check("renamed file is listed under its new name", !!ren, renameError || renamed);
       if (ren) name = renamed;
 
       // Delete (Move to Trash), then restore from Trash.
