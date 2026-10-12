@@ -43,6 +43,12 @@ import {
 const plural = (n: number, one: string, many = `${one}s`) =>
   `${n} ${n === 1 ? one : many}`;
 
+/** A domain header's counts: only the ones that are not zero. */
+const countsLabel = (features: number, jobs: number) =>
+  [features > 0 ? plural(features, "feature") : "", jobs > 0 ? plural(jobs, "job") : ""]
+    .filter(Boolean)
+    .join(", ");
+
 function jobsLine(feature: DirectoryFeature): string {
   if (feature.jobs.length === 0) return "No jobs you can see yet";
   const names = feature.jobs
@@ -212,7 +218,7 @@ function DomainSection({
       >
         <span>{domain.label}</span>
         <span className="type-secondary font-normal tabular-nums text-muted-foreground">
-          {items.every((item) => item.feature.lane) ? plural(jobs, "job") : `${plural(items.filter((item) => item.feature.feature !== domain.domain).length, "feature")}, ${plural(jobs, "job")}`}
+          {countsLabel(items.filter((item) => !item.feature.lane && item.feature.feature !== domain.domain).length, jobs)}
         </span>
       </h2>
       <ul className="grid grid-cols-1 gap-2.5 md:grid-cols-2 xl:grid-cols-3">

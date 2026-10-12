@@ -191,7 +191,7 @@ export function IntelligenceJobCard({
           <ChevronRight className={cn("h-4 w-4 transition-transform", expanded && "rotate-90")} />
         </button>
 
-        <div className="flex min-w-0 items-center gap-1">
+        <div className="flex min-w-0 flex-wrap items-center gap-x-1 gap-y-0.5">
           <h3 className="min-w-[7rem] shrink truncate type-title text-foreground" title={row.shortName}>
             {row.shortName}
           </h3>
@@ -209,7 +209,7 @@ export function IntelligenceJobCard({
               size="sm"
             />
           </span>
-          {row.health !== "OK" ? <span className="hidden shrink-0 sm:inline-flex"><MemberHealthBadge health={row.health} /></span> : null}
+          {row.health !== "OK" ? <span className="hidden min-w-0 max-w-full sm:inline-flex"><MemberHealthBadge health={row.health} /></span> : null}
         </div>
 
         <div className="col-start-2 flex min-w-0 items-center gap-2 type-body md:col-start-3">

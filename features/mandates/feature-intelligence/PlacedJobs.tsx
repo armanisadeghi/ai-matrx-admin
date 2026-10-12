@@ -16,6 +16,7 @@ import { cn } from "@/lib/utils";
 import { NewTabLink } from "@/components/official/entity-ref/NewTabLink";
 import { MandateStatusBadge } from "../status/MandateStatusBadge";
 import { featureIntelligenceHref } from "./hrefs";
+import { useSurfaceLabels } from "./useSurfaceLabels";
 import { entryKey, entryKeys, unsettledStatus, type NodeGroup, type PlacedEntry, type PlacementRow } from "./placement-model";
 import type { FeatureIntelligenceRow, IntelligenceContext } from "./types";
 import type { AnyMandateKey } from "@ai-matrx/agents/mandates";
@@ -136,8 +137,8 @@ function NodeGroupRow(props: PlacedJobsProps & { depth: number }) {
   );
 }
 
-function versionWhere(row: PlacementRow): string {
-  return row.surfaceName ?? "No screen";
+function versionWhere(row: PlacementRow, labels: ReadonlyMap<string, string>): string {
+  return row.surfaceName ? (labels.get(row.surfaceName) ?? row.surfaceName) : "No screen";
 }
 
 function RollupRow({
@@ -154,6 +155,7 @@ function RollupRow({
   open: boolean;
 }) {
   const [expanded, setExpanded] = useState(false);
+  const surfaceLabels = useSurfaceLabels();
   const open = expanded || forcedOpen;
   const anchorRow = entry.anchor ? rowByKey.get(entry.anchor.mandateKey) : undefined;
   const named = anchorRow ?? entry.versions.map((row) => rowByKey.get(row.mandateKey)).find(Boolean);
@@ -198,14 +200,15 @@ function RollupRow({
             {versions.map((version) => {
               const row = rowByKey.get(version.mandateKey);
               if (!row) return null;
-              const where = versionWhere(version);
+              const where = versionWhere(version, surfaceLabels);
+              const internal = version.surfaceName ?? "No screen";
               return (
                 <li
                   key={version.mandateId}
                   id={`intelligence-${version.mandateKey}`}
                   className="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 gap-y-0.5 px-3 py-1.5 md:grid-cols-[minmax(0,14rem)_minmax(0,1fr)_minmax(0,9rem)_auto_auto]"
                 >
-                  <span className="min-w-0 truncate type-body text-foreground" title={where}>
+                  <span className="min-w-0 truncate type-body text-foreground" title={internal}>
                     {where}
                   </span>
                   <span className="hidden min-w-0 truncate type-body text-muted-foreground md:block" title={row.holderName}>
