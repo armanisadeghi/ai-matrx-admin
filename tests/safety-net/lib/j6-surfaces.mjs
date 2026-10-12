@@ -63,18 +63,25 @@ export async function runExtensionSidePanel({ fault = false } = {}) {
     const page = await context.newPage();
     page.setDefaultTimeout(60000);
     await page.goto(`chrome-extension://${extId}/sidepanel.html?chat=package`);
-    await page.evaluate(async ([accessToken, refreshToken, expiresIn, user, org]) => {
+    // The extension keeps its session the way @ai-matrx/auth/matrx-oauth stores it: one JSON blob at
+    // `matrx.oauth.session`, the refresh token sealed with the extension's AES-GCM key as `${ct}.${iv}`.
+    const clientId = env.WXT_EXTENSION_OAUTH_CLIENT_ID;
+    if (!clientId) return { skip: "missing WXT_EXTENSION_OAUTH_CLIENT_ID (matrx-extend/.env.development)" };
+    await page.evaluate(async ([accessToken, refreshToken, expiresIn, user, org, clientId]) => {
       const enc = new TextEncoder();
       const base = await crypto.subtle.importKey("raw", enc.encode("matrx-extend.refresh-token.v1"), { name: "PBKDF2" }, false, ["deriveKey"]);
       const k = await crypto.subtle.deriveKey({ name: "PBKDF2", salt: enc.encode(chrome.runtime.id), iterations: 100000, hash: "SHA-256" }, base, { name: "AES-GCM", length: 256 }, false, ["encrypt"]);
       const iv = crypto.getRandomValues(new Uint8Array(12));
       const ct = new Uint8Array(await crypto.subtle.encrypt({ name: "AES-GCM", iv }, k, enc.encode(refreshToken)));
       const b64 = (b) => btoa(String.fromCharCode(...b));
+      const stored = {
+        v: 1, clientId, personId: user.id, email: user.email ?? null, accessToken,
+        refreshToken: `${b64(ct)}.${b64(iv)}`, expiresAtMs: Date.now() + expiresIn * 1000,
+      };
       await chrome.storage.local.set({
-        "matrx.auth.accessToken": accessToken, "matrx.auth.refreshTokenEnc": b64(ct), "matrx.auth.refreshTokenIv": b64(iv),
-        "matrx.auth.expiresAt": Date.now() + expiresIn * 1000, "matrx.user.profile": user, "matrx.org.active": org,
+        "matrx.oauth.session": JSON.stringify(stored), "matrx.user.profile": user, "matrx.org.active": org,
       });
-    }, [session.access_token, session.refresh_token, session.expires_in ?? 3600, session.user, { id: ORGANIZATION_ID, name: "Admin's Workspace" }]);
+    }, [session.access_token, session.refresh_token, session.expires_in ?? 3600, session.user, { id: ORGANIZATION_ID, name: "Admin's Workspace" }, clientId]);
     await page.reload();
     const root = page.locator("[data-package-chat]");
     await root.waitFor({ timeout: 60000 }).catch(() => undefined);
