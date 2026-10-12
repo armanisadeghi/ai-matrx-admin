@@ -301,6 +301,10 @@ jobs:
         # that runs. `pnpm check:parse --fix` repairs the injected-import
         # class; `pnpm check:parse:self-test` proves it can still fail.
         run: pnpm check:parse
+      - name: No vendor names on customer screens
+        # Arman 2026-10-11: "via ScrapeCreators" reached aimatrx.com. Data vendors are our business,
+        # never the customer's. Static scan of customer-facing UI text; self-test proves it can fail.
+        run: pnpm check:no-vendor-names && pnpm check:no-vendor-names:self-test
       - name: THE SHARED-CHECKOUT INSTALL GATE — it must run before pnpm links
         # 2026-09-12, three times: a `pnpm install` in the shared checkout
         # relinked @ai-matrx/design-system under the live :3001 preview, which
