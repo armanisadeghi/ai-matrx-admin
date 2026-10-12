@@ -45,6 +45,7 @@ import {
 } from "@/features/shell/components/header/RouteModeNav";
 import { Popover, PopoverContent, PopoverTrigger } from "@ai-matrx/design-system";
 import { useClippedContentGuard } from "@/lib/layout/useClippedContentGuard";
+import { InfoHint } from "@/components/official/InfoHint";
 import { cn } from "@/lib/utils";
 
 import { hrHref, hrSectionHref, hrSwitchEmployerHref } from "../routes";
@@ -194,12 +195,12 @@ export function HrShell({
                             index === crumbs.length - 1 ? (
                               // The page's title IS the breadcrumb leaf: one h1, never a
                               // second heading in the body.
-                              <h1
-                                className="truncate text-sm font-semibold text-foreground"
-                                title={description}
-                              >
-                                {crumb.label}
-                              </h1>
+                              <>
+                                <h1 className="truncate text-sm font-semibold text-foreground">
+                                  {crumb.label}
+                                </h1>
+                                {description ? <InfoHint text={description} /> : null}
+                              </>
                             ) : (
                               <span className="truncate text-foreground">{crumb.label}</span>
                             )

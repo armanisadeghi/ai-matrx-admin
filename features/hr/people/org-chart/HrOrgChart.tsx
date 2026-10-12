@@ -956,9 +956,6 @@ function NotEmployedOnDate({
         <h2 className="text-sm font-semibold text-foreground">
           Not employed on {asOf ? formatFullDate(asOf) : "that date"}
         </h2>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Not on the chart this date; see Job &amp; reporting.
-        </p>
         <div className="mt-3 flex flex-wrap gap-2">
           <Button variant="primary" asChild>
             <Link href={hrEmployeeHref(employeeId, "job", { org })}>

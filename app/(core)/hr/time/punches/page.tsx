@@ -25,7 +25,10 @@ export default async function PunchRegisterPage({
   const { employment, scope } = await searchParams;
 
   return (
-    <HrTimeShell title="Punch register">
+    <HrTimeShell
+      title="Punch register"
+      description="Raw clock records in each punch's own time zone, never calculated; voided punches stay visible, struck through."
+    >
       <Suspense fallback={<HrLoading variant="table" rows={8} />}>
         <PunchRegister
           employmentId={employment ?? null}

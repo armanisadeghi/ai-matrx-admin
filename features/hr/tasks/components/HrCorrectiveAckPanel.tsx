@@ -97,7 +97,7 @@ export function HrCorrectiveAckPanel({
         <FileSignature className="h-3.5 w-3.5 text-muted-foreground" />
         Your acknowledgment
         {/* THE SENTENCE THAT MAKES THE SIGNATURE HONEST. */}
-        <InfoHint text="Signing means you read this, not that you agree. Write your view below; no one here can change it." />
+        <InfoHint text="Signing means you read this, not that you agree; write your view below and no one here can change it." />
       </h2>
 
       <div className="space-y-1.5">
