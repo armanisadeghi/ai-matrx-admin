@@ -8,10 +8,10 @@
 
 import type { ChatRootState } from "@ai-matrx/chat/store/root-state";
 
-jest.mock("@ai-matrx/api/net", () => ({
-  resilientFetch: jest.fn(),
-  isNetError: () => false,
-}));
+// The wire is the global fetch: @ai-matrx/api bundles its own resilientFetch,
+// so the test fakes the network itself, never a module the client no longer
+// imports by name.
+const mockedFetch = jest.fn<Promise<Response>, [string, RequestInit | undefined]>();
 
 
 // The host's own transport (behind the server port) reads these.
@@ -20,22 +20,15 @@ jest.mock("@ai-matrx/chat/agents/redux/execution-system/thunks/resolve-base-url"
   resolveBackendForConversation: jest.fn(),
 }));
 
-// jest.setup.ts has already pulled the app graph in through the surface/context registrations, so
-// `@ai-matrx/api` is cached BOUND TO THE REAL `@ai-matrx/api/net`; the mocks above would
-// never reach it and the real resilientFetch ran (jsdom's AbortSignal handed to Node's fetch:
-// "Expected signal to be an instance of AbortSignal"). Reset, then load the subject fresh so it
-// binds the mock. A test-environment realm mismatch, not a product bug: a browser has one realm.
+// jest.setup.ts has already pulled the app graph in; reset, then load the subject fresh so it
+// binds the resolver mock above.
 jest.resetModules();
 /* eslint-disable @typescript-eslint/no-require-imports */
-const { resilientFetch } = require("@ai-matrx/api/net") as typeof import("@ai-matrx/api/net");
 const { configureServerForTest } = require("@ai-matrx/chat/testing/server-test-host") as typeof import("@ai-matrx/chat/testing/server-test-host");
 const { resolveBackendForConversation } = require("@ai-matrx/chat/agents/redux/execution-system/thunks/resolve-base-url") as typeof import("@ai-matrx/chat/agents/redux/execution-system/thunks/resolve-base-url");
 const { createMatrxTransportForConversation } = require("@ai-matrx/chat/agents/redux/execution-system/thunks/matrx-transport-for-conversation") as typeof import("@ai-matrx/chat/agents/redux/execution-system/thunks/matrx-transport-for-conversation");
 /* eslint-enable @typescript-eslint/no-require-imports */
 
-const mockedFetch = resilientFetch as jest.MockedFunction<
-  typeof resilientFetch
->;
 const mockedResolve = resolveBackendForConversation as jest.Mock;
 const getState = () =>
   ({ apiConfig: { activeServer: "production" } }) as unknown as ChatRootState;
@@ -48,17 +41,16 @@ beforeEach(() => {
   });
   mockedFetch.mockReset();
   mockedResolve.mockReset();
-  mockedFetch.mockResolvedValue({
-    response: {
-      ok: true,
-      status: 200,
-      json: async () => ({}),
-      clone() {
-        return this;
-      },
-    } as unknown as Response,
-    controller: new AbortController(),
-  });
+  mockedFetch.mockImplementation(async () => ({
+    ok: true,
+    status: 200,
+    headers: new Headers(),
+    json: async () => ({}),
+    clone() {
+      return this;
+    },
+  }) as unknown as Response);
+  globalThis.fetch = mockedFetch as unknown as typeof fetch;
 });
 
 describe("createMatrxTransportForConversation", () => {
