@@ -2293,6 +2293,37 @@ export async function listRecentLiveCrawlEvents(
   return assertData(response.data, response.error).reverse();
 }
 
+/**
+ * Every durable event of one session AFTER `afterSequence`, oldest first —
+ * the feed a crawler command keeps receiving once its socket dropped and it
+ * follows the run from its record (`crawler/follow-session.ts`). Unlike the
+ * catch-up feed above it keeps every command's own `*_progress` events; it
+ * drops only `page_parsed`, whose payload can be a whole document.
+ */
+export async function listCrawlEventsAfterSequence(
+  siteId: string,
+  sessionId: string,
+  afterSequence: number,
+  signal?: AbortSignal,
+): Promise<CrawlEvent[]> {
+  const response = await (
+    await authenticatedWebDb(supabase)
+  )
+    .from("crawl_event")
+    .select(
+      "id, organization_id, created_at, updated_at, created_by, updated_by, deleted_at, version, metadata, custom_fields, site_id, session_id, sequence, event_type, phase, level, message, page_id, crawl_url_id, payload, occurred_at",
+    )
+    .eq("site_id", siteId)
+    .eq("session_id", sessionId)
+    .gt("sequence", afterSequence)
+    .neq("event_type", "page_parsed")
+    .is("deleted_at", null)
+    .order("sequence", { ascending: true })
+    .limit(500)
+    .abortSignal(signal ?? new AbortController().signal);
+  return assertData(response.data, response.error);
+}
+
 export async function listCrawlEvents(
   siteId: string,
   crawlId: string,

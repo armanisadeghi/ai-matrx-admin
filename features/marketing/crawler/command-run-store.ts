@@ -247,6 +247,13 @@ export async function startSiteCommandRun(
             : current.warnings,
         });
       },
+      // The socket dropped; the command follows the run from its session
+      // row and keeps feeding events above. Say so — it is not a failure.
+      onTransportLost: () =>
+        patch(key, {
+          status: "running",
+          message: "Connection dropped — still following the run.",
+        }),
     });
     const settled = runs.get(key);
     patch(key, {

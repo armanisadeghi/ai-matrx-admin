@@ -48,6 +48,8 @@ import {
 } from "@/features/marketing/crawler/crawl-options";
 import { marketingKeys } from "@/features/marketing/data/hooks";
 import { extractErrorMessage } from "@/utils/errors";
+import { isStreamTransportLost } from "@ai-matrx/api";
+import { pageIsLeaving } from "@ai-matrx/chat/agents/redux/execution-system/utils/page-leaving";
 import { Textarea } from "@/components/ui/textarea";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 
@@ -255,7 +257,14 @@ export function NewCrawlWorkspace() {
             setLocalStatus(terminalStatus);
           }
         },
+        // The socket dropped but the crawl keeps running on the server;
+        // `startSiteCrawl` now follows it from its record. Not a failure.
+        onTransportLost: () => {
+          if (pageIsLeaving()) return;
+          toast.info("Connection dropped — still following the crawl");
+        },
       });
+      if (result.followedStatus === "partial") terminalStatus = "partial";
       setLocalSessionId(result.sessionId);
       setLocalStatus(terminalStatus);
       crawlActivity.refresh();
@@ -270,6 +279,17 @@ export function NewCrawlWorkspace() {
         toast.error("Crawl failed");
       }
     } catch (runError) {
+      if (isStreamTransportLost(runError)) {
+        // Only reachable when the run could not be followed (no site id on
+        // the response). The crawl is still running: hand the status to the
+        // site's durable crawl activity instead of declaring it failed.
+        setLocalStatus("idle");
+        crawlActivity.refresh();
+        if (!pageIsLeaving()) {
+          toast.info("Connection dropped — the crawl is still running");
+        }
+        return;
+      }
       const message = extractErrorMessage(runError);
       setError(message);
       setLocalStatus("failed");

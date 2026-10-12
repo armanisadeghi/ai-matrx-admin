@@ -3,6 +3,7 @@ import type { TypedStreamEvent } from "@/lib/api/types";
 import {
   BackendApiError,
   describeBackendFailure,
+  isStreamTransportLost,
   parseHttpError,
   parseStreamError,
 } from "@ai-matrx/api";
@@ -14,6 +15,7 @@ import { sendMatrxRequest } from "@ai-matrx/api";
 import { isJsonRecord, type CrawlEvent } from "@/features/marketing/types";
 import type { CrawlRenderMode } from "@/features/marketing/crawler/crawl-options";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
+import { followCrawlSession } from "@/features/marketing/crawler/follow-session";
 
 /**
  * Feed every scraper-boundary failure to the admin Error Inspector.
@@ -318,16 +320,34 @@ export interface CrawlStreamCallbacks {
     sessionId: string;
     siteId: string | null;
   }) => void;
+  /**
+   * `event` is the wire envelope, or null when the event was recovered from
+   * the session's durable record after the socket dropped (see
+   * `onTransportLost`); `crawlEvent` is the same crawl event either way.
+   */
   onEvent?: (
-    event: TypedStreamEvent,
+    event: TypedStreamEvent | null,
     crawlEvent: CrawlLiveEvent | null,
   ) => void;
+  /**
+   * The socket carrying the stream broke while the run kept going on the
+   * server. The command does NOT fail: it follows the run's durable session
+   * to its end and resolves (or rejects) with the run's real outcome. Use
+   * this to say "reconnecting", never "failed".
+   */
+  onTransportLost?: (lost: { sessionId: string; siteId: string }) => void;
 }
 
 export interface CrawlStreamResult {
   sessionId: string;
   siteId: string | null;
   lastSequence: number;
+  /**
+   * Set only when the stream dropped and the outcome was read from the
+   * session row instead (`onTransportLost`); null when the live stream
+   * delivered the ending itself.
+   */
+  followedStatus: "complete" | "partial" | "aborted" | null;
 }
 
 export const defaultCrawlOptions: CrawlStartOptions = {
@@ -537,45 +557,59 @@ async function streamCommand(
   let lastSequence = 0;
   let ended = false;
   const { events } = parseNdjsonStream(response, callbacks.signal);
-  for await (const event of events) {
-    const crawlEvent = crawlEventFromStream(event);
-    if (crawlEvent?.sequence) {
-      lastSequence = Math.max(lastSequence, crawlEvent.sequence);
+  try {
+    for await (const event of events) {
+      const crawlEvent = crawlEventFromStream(event);
+      if (crawlEvent?.sequence) {
+        lastSequence = Math.max(lastSequence, crawlEvent.sequence);
+      }
+      callbacks.onEvent?.(event, crawlEvent);
+      if (event.event === "error") {
+        // The server's `user_message` is a per-command TEMPLATE for every
+        // unclassified crash ("CanonicalGscSync failed unexpectedly…") while the
+        // actual cause — often a stringified upstream payload — rides in
+        // `message`. Preferring the template is what produced years of
+        // meaningless failures; the explanation primitive digs out the truth.
+        const explanation = describeBackendFailure(parseStreamError(event.data));
+        // Rebuilt so `error.message` itself is the specific cause — a naive
+        // `extractErrorMessage(error)` callsite can no longer show a template.
+        const failure = new BackendApiError({
+          code: explanation.code as BackendApiError["code"],
+          detail: explanation.cause,
+          userMessage: explanation.headline,
+          details: { chain: explanation.chain },
+          requestId: explanation.requestId,
+          status: explanation.status,
+        });
+        captureCrawlerError({
+          path,
+          message: explanation.cause,
+          userMessage: explanation.headline,
+          code: explanation.code,
+          requestId: explanation.requestId,
+          status: explanation.status ?? undefined,
+          details: explanation.chain.join("\n↳ "),
+          raw: event.data,
+        });
+        throw failure;
+      }
+      if (event.event === "end") ended = true;
     }
-    callbacks.onEvent?.(event, crawlEvent);
-    if (event.event === "error") {
-      // The server's `user_message` is a per-command TEMPLATE for every
-      // unclassified crash ("CanonicalGscSync failed unexpectedly…") while the
-      // actual cause — often a stringified upstream payload — rides in
-      // `message`. Preferring the template is what produced years of
-      // meaningless failures; the explanation primitive digs out the truth.
-      const explanation = describeBackendFailure(parseStreamError(event.data));
-      // Rebuilt so `error.message` itself is the specific cause — a naive
-      // `extractErrorMessage(error)` callsite can no longer show a template.
-      const failure = new BackendApiError({
-        code: explanation.code as BackendApiError["code"],
-        detail: explanation.cause,
-        userMessage: explanation.headline,
-        details: { chain: explanation.chain },
-        requestId: explanation.requestId,
-        status: explanation.status,
-      });
-      captureCrawlerError({
-        path,
-        message: explanation.cause,
-        userMessage: explanation.headline,
-        code: explanation.code,
-        requestId: explanation.requestId,
-        status: explanation.status ?? undefined,
-        details: explanation.chain.join("\n↳ "),
-        raw: event.data,
-      });
-      throw failure;
-    }
-    if (event.event === "end") ended = true;
+  } catch (error) {
+    // A dropped socket is not a failed run: the scraper runs every command
+    // detach_on_disconnect, so the work continues and its record keeps
+    // growing. Anything else (a parse bug, a caller abort) stays as it was.
+    if (!isStreamTransportLost(error) || !siteId) throw error;
+    return followAfterDrop({ path, sessionId, siteId, lastSequence, callbacks });
   }
 
   if (!ended && !callbacks.signal?.aborted) {
+    // The body closed cleanly but without the server's `end` frame: something
+    // between us and the server cut the response. The run is still the
+    // session row's to settle — follow it instead of calling it dead.
+    if (siteId) {
+      return followAfterDrop({ path, sessionId, siteId, lastSequence, callbacks });
+    }
     captureCrawlerError({
       path,
       message: "Stream ended before its completion event.",
@@ -583,7 +617,51 @@ async function streamCommand(
     });
     throw new Error("The crawler stream ended before its completion event.");
   }
-  return { sessionId, siteId, lastSequence };
+  return { sessionId, siteId, lastSequence, followedStatus: null };
+}
+
+/**
+ * The live stream is gone; the run is not. Follow the session's durable
+ * record (`follow-session.ts`) to its end, feeding recovered events through
+ * the same `onEvent`, and settle exactly as the stream would have: resolve on
+ * complete/partial, reject with the session's own error on failed.
+ */
+async function followAfterDrop(input: {
+  path: string;
+  sessionId: string;
+  siteId: string;
+  lastSequence: number;
+  callbacks: CrawlStreamCallbacks;
+}): Promise<CrawlStreamResult> {
+  const { path, sessionId, siteId, callbacks } = input;
+  callbacks.onTransportLost?.({ sessionId, siteId });
+  const outcome = await followCrawlSession({
+    siteId,
+    sessionId,
+    afterSequence: input.lastSequence,
+    signal: callbacks.signal,
+    onEvent: (row) => {
+      const crawlEvent = crawlLiveEventFromDurableRow(row);
+      if (crawlEvent) callbacks.onEvent?.(null, crawlEvent);
+    },
+  });
+  if (outcome.status === "failed") {
+    const message =
+      outcome.error || "The run failed on the server after the connection dropped.";
+    captureCrawlerError({
+      path,
+      message,
+      userMessage: message,
+      details: `session ${sessionId} (followed from its record after the stream dropped)`,
+    });
+    throw new Error(message);
+  }
+  return {
+    sessionId,
+    siteId,
+    lastSequence: outcome.lastSequence,
+    followedStatus: outcome.status,
+  };
 }
 
 /**
