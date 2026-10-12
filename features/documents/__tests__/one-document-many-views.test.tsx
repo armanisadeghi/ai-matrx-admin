@@ -100,6 +100,13 @@ jest.mock("@univerjs/preset-docs-hyper-link", () => ({ UniverDocsHyperLinkPreset
 jest.mock("@univerjs/preset-docs-hyper-link/locales/en-US", () => ({}));
 jest.mock("@univerjs/preset-docs-drawing", () => ({ UniverDocsDrawingPreset: () => ({}) }));
 jest.mock("@univerjs/preset-docs-drawing/locales/en-US", () => ({}));
+// The free docs add-ons (comments, find & replace) DocumentEditor registers.
+jest.mock("@univerjs/preset-docs-thread-comment", () => ({ UniverDocsThreadCommentPreset: () => ({}) }));
+jest.mock("@univerjs/preset-docs-thread-comment/locales/en-US", () => ({}));
+jest.mock("@univerjs/find-replace", () => ({ UniverFindReplacePlugin: class {} }));
+jest.mock("@univerjs/docs-find-replace", () => ({ UniverDocsFindReplacePlugin: class {} }));
+jest.mock("@univerjs/find-replace/locale/en-US", () => ({}));
+jest.mock("@/lib/univer/routeUniverNotificationsToApp", () => ({ routeUniverNotificationsToApp: () => ({ applied: true }) }));
 jest.mock("@/lib/univer/univerImageStore", () => ({ registerMatrxImageStore: () => undefined }));
 jest.mock("@/lib/univer/matrxImagePorts", () => ({ matrxImagePorts: {} }));
 jest.mock("@/features/google-workspace/linked/EditorGoogleLinks", () => ({ DocumentGoogleLink: () => null, WorkbookGoogleLink: () => null }));
