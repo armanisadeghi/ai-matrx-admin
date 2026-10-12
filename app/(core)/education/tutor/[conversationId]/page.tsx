@@ -10,6 +10,7 @@
 // the conversation is denied, deleted, missing, or the session is signed out.
 // Without this the client island rendered a blank new tutor chat (missing) or
 // an empty "Shared conversation — read-only" transcript (denied).
+import { getClaimsUser } from "@ai-matrx/auth";
 import type { Metadata } from "next";
 import { createClient } from "@/utils/supabase/server";
 import { AccessGate } from "@/features/access-gate/components/AccessGate";
@@ -56,9 +57,8 @@ export default async function TutorConversationPage({
     );
   }
 
-  const { data: claims } = await supabase.auth.getClaims();
-  const viewerId =
-    typeof claims?.claims.sub === "string" ? claims.claims.sub : null;
+  const { data: claimsUser } = await getClaimsUser(supabase);
+  const viewerId = claimsUser.user?.id ?? null;
   const ownedTutorConversation =
     data.source_feature === "education-tutor" && data.created_by === viewerId
       ? { id: data.id, title: data.title, status: data.status }

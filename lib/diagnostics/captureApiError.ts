@@ -10,6 +10,7 @@
  * and free of UI/store concerns beyond this one import.
  */
 
+import { ORGANIZATION_CONTEXT_REQUIRED_CODE } from "@ai-matrx/auth/organizations";
 import { captureError } from "@/lib/diagnostics/errorCaptureStore";
 import type { ApiCallError } from "@/lib/api/call-api";
 import { isJsonObject } from "@/types/json";
@@ -41,7 +42,7 @@ export function captureApiError(
     // backend incident creates an unactionable system_error row.
     if (
       error.type === "validation_error" &&
-      (error.code === "organization_context_required" ||
+      (error.code === ORGANIZATION_CONTEXT_REQUIRED_CODE ||
         error.name === "OrganizationContextError")
     ) {
       return;

@@ -23,7 +23,7 @@ import {
   associationsService,
 } from "@/features/scopes/service/associationsService";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
-import { resolveChildOrgId } from "@/lib/organizations/childOrganization";
+import { resolveChildOrganizationId as resolveChildOrgId } from "@ai-matrx/auth/organizations";
 import { recordUnavailable } from "@/lib/records/recordUnavailable";
 import { tryWriteOne, writeOneRow } from "@/utils/supabase/writeOne";
 import { failureLine, metadataKeyRefusal } from "@/lib/failure/transport";

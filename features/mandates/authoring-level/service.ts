@@ -15,6 +15,7 @@
 //                           owner/admin there, and refused for the system org.
 // Server refusals are shown verbatim — the server's words are the UI copy.
 
+import { ORGANIZATION_CONTEXT_REQUIRED_CODE } from "@ai-matrx/auth/organizations";
 import type { AppDispatch } from "@/lib/redux/store";
 import { callApi } from "@/lib/api/call-api";
 import { parseCallApiError } from "@/lib/api/errors";
@@ -89,7 +90,7 @@ export async function createSoftMandate(
       ...(home ? { scopeOverrides: { organization_id: home } } : {}),
     }),
   );
-  if (result.error?.code === "organization_context_required")
+  if (result.error?.code === ORGANIZATION_CONTEXT_REQUIRED_CODE)
     throw new OrganizationContextError("organization_context_required", result.error.message);
   // The BackendApiError itself (its message IS the server's user message), so a
   // caller can tell a 409 "key taken" from any other refusal.

@@ -23,6 +23,7 @@
  * module moves to it in one place, the service triple, the day it exists.
  */
 
+import { isOrganizationRequiredError } from "@ai-matrx/auth/organizations";
 import type { AppDispatch } from "@/lib/redux/store";
 import { callApi } from "@/lib/api/call-api";
 import type { ApiCallError } from "@/lib/api/call-api";
@@ -105,7 +106,7 @@ export { MediaApiError, MediaContractError } from "./contract";
 export function isOrganizationNotReady(error: unknown): boolean {
     return (
         error instanceof MediaApiError &&
-        (error.code === "organization_context_required" ||
+        (isOrganizationRequiredError(error) ||
             error.code === "organization_context_invalid")
     );
 }

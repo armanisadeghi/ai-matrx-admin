@@ -24,6 +24,7 @@
  * banner, never a repeated toast.
  */
 
+import { ORGANIZATION_REQUIRED_CODE } from "@ai-matrx/auth/organizations";
 import { retryActiveOrganization } from "@/lib/organizations/retryActiveOrganization";
 import { useEffect, useState } from "react";
 import { CircleAlert, HardDrive } from "lucide-react";
@@ -313,7 +314,7 @@ function StaffRefusalAction({
   failure: StaffDoorFailure;
   onRetry: () => void;
 }) {
-  if (failure.code === "organization_required") {
+  if (failure.code === ORGANIZATION_REQUIRED_CODE) {
     return <ChooseOrganizationAction onChosen={onRetry} />;
   }
   if (failure.code === "no_holder" || failure.code === "holder_is_not_an_agent") {

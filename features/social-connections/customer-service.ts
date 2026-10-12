@@ -1,4 +1,4 @@
-import { LINK_ORGANIZATION_QUERY_KEY } from "@/lib/organizations/linkOrganization";
+import { LINK_ORGANIZATION_QUERY_KEY } from "@ai-matrx/auth/organizations";
 import { buildMatrxRequestUrl, sendMatrxRequest } from "@ai-matrx/agents/matrx";
 import { applyOrganizationContextHeader } from "@/lib/api/organization-context";
 import { resolveServiceBaseUrl } from "@/lib/api/resolve-service-url";

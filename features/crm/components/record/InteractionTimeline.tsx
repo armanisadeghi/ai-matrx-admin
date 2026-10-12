@@ -46,7 +46,7 @@ import { useOrgMembers } from "../../deals/useOrgMembers";
 import { GmailSentRecordDetails } from "../../gmail/GmailSentRecordDetails";
 import { isGmailSentRecord } from "../../gmail/sent-record-facts";
 import { logInteraction, removeInteraction } from "../../service";
-import { resolveChildOrgId } from "@/lib/organizations/childOrganization";
+import { resolveChildOrganizationId as resolveChildOrgId } from "@ai-matrx/auth/organizations";
 import { parseInteraction } from "../../agent-context/crmRecordSurfaceWrite";
 import type {
   InteractionChannel,

@@ -38,7 +38,7 @@ import {
   LINK_ORGANIZATION_QUERY_KEY,
   decideLinkOrganization,
   readLinkOrganizationParam,
-} from "@/lib/organizations/linkOrganization";
+} from "@ai-matrx/auth/organizations";
 import {
   announceLinkOrganizationDecision,
   claimLinkOrganizationDecision,

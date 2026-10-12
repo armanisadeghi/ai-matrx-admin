@@ -1,47 +1,28 @@
 // lib/organizations/organizationRefusal.ts
 //
-// THE NOT-A-MEMBER REFUSAL (active-organization plan, 2026-10-07): the server
-// refused a request because the person is not a member of the organization it
-// carried — they were removed from the active organization while it was active.
-// The answer is to re-run the load ladder (a held organization that is no longer
-// theirs is replaced, and the switch is announced), never to pick one here.
+// The not-a-member refusal: recognition and the once-per-gap recheck are the
+// package's (`isNotAMemberRefusal`, `createNotAMemberRefusalNotice`); this file
+// binds the one notice instance the transports share. `recheck` is injected so
+// this leaf imports no Redux.
 
-const NOT_A_MEMBER_CODES = new Set(["organization_forbidden", "organization_not_member"]);
-const RECHECK_GAP_MS = 30_000;
-let lastRecheckAt = Number.NEGATIVE_INFINITY;
+import { isNotAMemberRefusal, createNotAMemberRefusalNotice } from "@ai-matrx/auth/organizations";
 
-/** True when an error body is the server's not-a-member refusal. */
-export function isNotAMemberRefusal(body: unknown): boolean {
-  if (!body || typeof body !== "object") return false;
-  const record = body as { code?: unknown; detail?: unknown };
-  if (typeof record.code === "string" && NOT_A_MEMBER_CODES.has(record.code)) return true;
-  const detail = record.detail as { code?: unknown } | null | undefined;
-  return (
-    !!detail &&
-    typeof detail === "object" &&
-    typeof detail.code === "string" &&
-    NOT_A_MEMBER_CODES.has(detail.code)
-  );
-}
+export { isNotAMemberRefusal };
 
-/**
- * Re-run the ladder after a not-a-member refusal — at most once per
- * `RECHECK_GAP_MS`, so a burst of refused requests reads memberships once.
- * `recheck` is injected so this leaf imports no Redux.
- */
+let recheckNow: (() => void) | null = null;
+const notice = createNotAMemberRefusalNotice(() => recheckNow?.());
+
+/** True when a recheck was started (at most one per gap). */
 export function noticeNotAMemberRefusal(
   body: unknown,
   recheck: () => void,
   now: number = Date.now(),
 ): boolean {
-  if (!isNotAMemberRefusal(body)) return false;
-  if (now - lastRecheckAt < RECHECK_GAP_MS) return false;
-  lastRecheckAt = now;
-  recheck();
-  return true;
+  recheckNow = recheck;
+  return notice.notice(body, now);
 }
 
 /** Tests only. */
 export function resetNotAMemberRefusalGap(): void {
-  lastRecheckAt = Number.NEGATIVE_INFINITY;
+  notice.reset();
 }

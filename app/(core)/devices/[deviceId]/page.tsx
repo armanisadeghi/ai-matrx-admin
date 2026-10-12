@@ -1,4 +1,5 @@
 // record-view: none — a connected computer's console; devices are not a registry Entity/Detail table
+import { getClaimsUser } from "@ai-matrx/auth";
 import { Suspense } from "react";
 import { createClient } from "@/utils/supabase/server";
 import { AccessGate } from "@/features/access-gate/components/AccessGate";
@@ -12,8 +13,8 @@ type Params = Promise<{ deviceId: string }>;
 export async function generateMetadata({ params }: { params: Params }) {
   const { deviceId } = await params;
   const supabase = await createClient();
-  const { data: claims } = await supabase.auth.getClaims();
-  const userId = typeof claims?.claims.sub === "string" ? claims.claims.sub : null;
+  const { data: claimsUser } = await getClaimsUser(supabase);
+  const userId = claimsUser.user?.id ?? null;
   const device = userId ? await fetchConsoleDevice(supabase, userId, deviceId).catch(() => null) : null;
   return createDynamicRouteMetadata("/devices", {
     title: device?.instance_name?.trim() || "Device",
@@ -30,8 +31,8 @@ export async function generateMetadata({ params }: { params: Params }) {
 export default async function DevicePage({ params }: { params: Params }) {
   const { deviceId } = await params;
   const supabase = await createClient();
-  const { data: claims } = await supabase.auth.getClaims();
-  const userId = typeof claims?.claims.sub === "string" ? claims.claims.sub : null;
+  const { data: claimsUser } = await getClaimsUser(supabase);
+  const userId = claimsUser.user?.id ?? null;
   let error: unknown = null;
   let device: DeviceRow | null = null;
   if (userId) {

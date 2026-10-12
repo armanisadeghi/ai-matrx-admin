@@ -3,6 +3,7 @@
 // Read only by the Applet host for a signed-out visitor; see guest-cookie.ts for why it is its own cookie.
 import { createBrowserClient } from "@supabase/ssr";
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { guestClientCookieOptions } from "@ai-matrx/auth/guest";
 
 import type { Database } from "@/types/database.types";
 import { wrapClientForCapture } from "@/lib/diagnostics/supabaseErrorCapture";
@@ -18,13 +19,7 @@ export function guestSupabase(): SupabaseClient<Database> {
       {
         // NOT the app's singleton: that one holds the main auth cookie.
         isSingleton: false,
-        cookieOptions: {
-          name: GUEST_AUTH_COOKIE,
-          path: "/",
-          sameSite: "lax",
-          secure: typeof window !== "undefined" && window.location.protocol === "https:",
-          maxAge: 60 * 60 * 24 * 400,
-        },
+        cookieOptions: guestClientCookieOptions(GUEST_AUTH_COOKIE),
       },
     ),
   );

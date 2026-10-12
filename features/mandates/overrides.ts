@@ -20,6 +20,7 @@
  * superset rule); the server check is the authority.
  */
 
+import { ORGANIZATION_CONTEXT_REQUIRED_CODE } from "@ai-matrx/auth/organizations";
 import {
   parseContractCheck,
   type ContractCheck,
@@ -423,7 +424,7 @@ const ORGANIZATION_CONTEXT_CODES = new Set([
 
 function organizationContextRefusal(error: { code?: string }): string | null {
   if (!error.code || !ORGANIZATION_CONTEXT_CODES.has(error.code)) return null;
-  return error.code === "organization_context_required"
+  return error.code === ORGANIZATION_CONTEXT_REQUIRED_CODE
     ? "No organization is selected, so there is no context to write this answer in. Nothing was written. Pick a workspace in the header and save again."
     : "This answer is for a different organization than the workspace you have selected, and the write could not be sent in that organization's context. Nothing was written. Switch your workspace to that organization in the header and save again.";
 }

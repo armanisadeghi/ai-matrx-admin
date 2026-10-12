@@ -45,7 +45,7 @@ describe("readGuestRecordCount", () => {
   it("is 0 and screams when the read fails", async () => {
     const err = jest.spyOn(console, "error").mockImplementation(() => undefined);
     getAll.mockReturnValue([{ name: "sb-matrx-guest", value: "x" }]);
-    getClaims.mockResolvedValue({ data: { claims: { is_anonymous: true } } });
+    getClaims.mockResolvedValue({ data: { claims: { sub: "g", is_anonymous: true } } });
     rpc.mockResolvedValue({ data: null, error: { message: "boom" } });
     await expect(readGuestRecordCount()).resolves.toBe(0);
     expect(err).toHaveBeenCalled();

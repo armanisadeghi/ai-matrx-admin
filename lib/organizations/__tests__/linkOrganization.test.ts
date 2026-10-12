@@ -41,7 +41,7 @@ import {
   LINK_ORGANIZATION_QUERY_KEY,
   readLinkOrganizationParam,
   decideLinkOrganization,
-} from "@/lib/organizations/linkOrganization";
+} from "@ai-matrx/auth/organizations";
 
 const FOOD_BANK = {
   id: "6f3b1c52-1d4a-4f7e-9c21-5b0a7d9e4411",

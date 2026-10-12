@@ -23,6 +23,7 @@
 // the reason non-browser callers are still served live in
 // `lib/api/credential-door.ts`, and the guard is `route.test.ts`.
 
+import { getClaimsUser } from "@ai-matrx/auth";
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
 import {
@@ -114,8 +115,8 @@ export async function GET(req: NextRequest) {
     // Validate the cookie's JWT signature locally before trusting it. These
     // verified claims are also where the caller's id comes from — never
     // `getSession().user`, which is whatever the cookie says.
-    const { data: claims } = await supabase.auth.getClaims();
-    if (!claims?.claims) {
+    const { data: claims } = await getClaimsUser(supabase);
+    if (!claims.user) {
       return NextResponse.json(
         { error: "not_authenticated" },
         { status: 401, headers },
@@ -137,7 +138,7 @@ export async function GET(req: NextRequest) {
         access_token: session.access_token,
         token_type: "bearer",
         expires_at: session.expires_at ?? null,
-        user_id: typeof claims.claims.sub === "string" ? claims.claims.sub : null,
+        user_id: claims.user.id,
       },
       { status: 200, headers },
     );

@@ -20,6 +20,7 @@
 // its own refresh and its own class of "the tile says 0 and the list says 5",
 // which is precisely the defect this project has hit four times already.
 
+import { getClaimsUser } from "@ai-matrx/auth";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -95,12 +96,10 @@ export function AcquisitionConsolePage() {
 
   useEffect(() => {
     let live = true;
-    supabase.auth
-      .getClaims()
+    getClaimsUser(supabase)
       .then((result) => {
         if (!live) return;
-        const sub = result.data?.claims?.sub;
-        setUserId(typeof sub === "string" ? sub : null);
+        setUserId(result.data.user?.id ?? null);
       })
       .catch(() => {
         if (live) setUserId(null);

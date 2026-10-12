@@ -378,7 +378,8 @@ export async function confirmVaultPasswordIdentity(
   if (signInError || !data.user || !data.session) {
     throw new VaultIdentityConfirmationError("credentials_rejected");
   }
-  const { data: claimData, error: claimsError } = await supabase.auth.getClaims(
+  const { data: claimData, error: claimsError } = await getClaimsUser(
+    supabase,
     data.session.access_token,
   );
   let actual: VaultVerifiedExportActor;
@@ -396,7 +397,7 @@ export async function confirmVaultPasswordIdentity(
   if (
     claimsError ||
     data.user.id !== expectedActor.userId ||
-    !hasFreshPasswordAmr(claimData?.claims)
+    !hasFreshPasswordAmr(claimData.user)
   ) {
     throw new VaultIdentityConfirmationError("identity_unverified");
   }

@@ -15,6 +15,7 @@
  * would be a word that means something different here from everywhere else.
  */
 
+import { isOrganizationRequiredError } from "@ai-matrx/auth/organizations";
 import type { AppDispatch } from "@/lib/redux/store";
 import type { EntityListService } from "@/lib/entity-list/config";
 import type {
@@ -138,7 +139,7 @@ function rethrow(error: unknown): never {
         // wearing copy that belongs to nobody on this screen. It gets copy of
         // its own, and it is always retryable.
         if (
-            error.code === "organization_context_required" ||
+            isOrganizationRequiredError(error) ||
             error.code === "organization_context_invalid"
         ) {
             throw Object.assign(

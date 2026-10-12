@@ -4,6 +4,7 @@
 // line, that their records come with them. Reads the guest's OWN session cookie (never the main one) and
 // asks `app.guest_save_status` as that guest, so the number is the same one the Applet's account line shows.
 // Never throws: no guest, an unreadable session, or zero records answers 0 and the page says nothing.
+import { getClaimsUser } from "@ai-matrx/auth";
 import "server-only";
 
 import { cookies } from "next/headers";
@@ -23,8 +24,8 @@ export async function readGuestRecordCount(): Promise<number> {
         cookies: { getAll: () => jar.getAll(), setAll: () => undefined },
       },
     );
-    const { data: claims } = await guest.auth.getClaims();
-    if ((claims?.claims as { is_anonymous?: boolean } | undefined)?.is_anonymous !== true) return 0;
+    const { data: claims } = await getClaimsUser(guest);
+    if ((claims.user as { is_anonymous?: boolean } | null)?.is_anonymous !== true) return 0;
     const { data, error } = await guest.schema("app").rpc("guest_save_status", {});
     if (error) {
       console.error("[guest-record-count] LOUD: the guest's record count could not be read:", error.message);

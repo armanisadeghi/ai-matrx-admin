@@ -26,7 +26,7 @@ import {
   LINK_ORGANIZATION_QUERY_KEY,
   readLinkOrganizationParam,
   type LinkOrganizationDecision,
-} from "@/lib/organizations/linkOrganization";
+} from "@ai-matrx/auth/organizations";
 
 /**
  * The knob `userPreferences.organization.switchWhenALinkAsks` — "switch

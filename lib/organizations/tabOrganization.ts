@@ -21,18 +21,14 @@
 // only while it is still a membership (the resolver checks).
 
 import type { Middleware } from "@reduxjs/toolkit";
+import { storageHeldOrganization } from "@ai-matrx/auth/organizations";
 import { REHYDRATE_ACTION_TYPE } from "@/lib/sync/engine/rehydrate";
 
 const KEY = "matrx:tabOrganization";
 
-interface Remembered {
-  userId: string;
-  organizationId: string;
-}
-
-function storage(): Storage | null {
+function held() {
   try {
-    return typeof window !== "undefined" ? window.sessionStorage : null;
+    return typeof window !== "undefined" ? storageHeldOrganization(window.sessionStorage, KEY) : null;
   } catch {
     return null; // storage disabled — the tab simply holds nothing
   }
@@ -40,22 +36,12 @@ function storage(): Storage | null {
 
 /** The organization this tab last held for this person, or null. */
 export function readTabOrganization(userId: string | null | undefined): string | null {
-  if (!userId) return null;
-  const raw = storage()?.getItem(KEY);
-  if (!raw) return null;
-  try {
-    const r = JSON.parse(raw) as Partial<Remembered>;
-    return r.userId === userId && typeof r.organizationId === "string" && r.organizationId
-      ? r.organizationId
-      : null;
-  } catch {
-    return null;
-  }
+  return userId ? (held()?.read(userId) ?? null) : null;
 }
 
 export function rememberTabOrganization(userId: string, organizationId: string): void {
   try {
-    storage()?.setItem(KEY, JSON.stringify({ userId, organizationId } satisfies Remembered));
+    void held()?.write(userId, organizationId);
   } catch (err) {
     console.warn("[tabOrganization] could not remember this tab's organization", err);
   }

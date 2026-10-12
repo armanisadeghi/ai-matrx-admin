@@ -21,7 +21,7 @@
 import { useEffect, useSyncExternalStore } from "react";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectHasAccount } from "@/lib/redux/selectors/userSelectors";
-import { readOrganizationFavourites, setOrganizationFavourite } from "@ai-matrx/data/organizations";
+import { readOrganizationFavourites, setOrganizationFavourite } from "@ai-matrx/auth/organizations";
 import { createClient } from "@/utils/supabase/client";
 import { toast } from "@/lib/toast";
 

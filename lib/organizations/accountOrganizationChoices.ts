@@ -18,7 +18,7 @@ import {
   writeLastActiveOrganization as writeLastActiveDoor,
   writeStartupOrganization as writeStartupDoor,
   type AccountOrganizationChoices,
-} from "@ai-matrx/data/organizations";
+} from "@ai-matrx/auth/organizations";
 import { supabase } from "@/utils/supabase/client";
 import { forgetAccountPreferencesRow, readAccountPreferencesRow } from "@/lib/account/accountPreferencesRow";
 

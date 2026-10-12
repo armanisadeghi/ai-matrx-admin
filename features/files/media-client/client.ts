@@ -29,6 +29,7 @@
  * session tracker and byte cache can never split across construction sites.
  */
 
+import { ORGANIZATION_REQUIRED_CODE } from "@ai-matrx/auth/organizations";
 import type { DurableSrc, MediaClient, MediaRef } from "@ai-matrx/media";
 import type { CredentialsPort, MatrxCredential } from "@ai-matrx/data";
 import {
@@ -207,7 +208,7 @@ async function saysOrganizationRequired(res: Response): Promise<boolean> {
       error?: string;
       detail?: { code?: string; error?: string };
     };
-    return [body?.code, body?.error, body?.detail?.code, body?.detail?.error].includes("organization_required");
+    return [body?.code, body?.error, body?.detail?.code, body?.detail?.error].includes(ORGANIZATION_REQUIRED_CODE);
   } catch {
     return false;
   }

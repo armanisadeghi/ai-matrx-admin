@@ -26,17 +26,14 @@
 // (`accountOrganizationChoices.ts`); nothing else may read them to decide where
 // anything acts.
 
-import { resolveActiveOrganizationLazily } from "@ai-matrx/data/organizations";
 import { isRecordsErr } from "@ai-matrx/records";
 import { getUserOrganizations } from "@/features/organizations/service";
 import { membershipsService } from "@/features/organizations/service/membershipsService";
 import { readAccountOrganizationChoices } from "@/lib/organizations/accountOrganizationChoices";
 import {
-  classifyLinkOrganizationValue,
-  decideLinkOrganization,
-  readLinkOrganizationParam,
+  resolveOrganizationWithLink,
   type LinkOrganizationDecision,
-} from "@/lib/organizations/linkOrganization";
+} from "@ai-matrx/auth/organizations";
 
 /** The org subset of appContext this resolver produces. */
 export interface ResolvedOrgContext {
@@ -102,84 +99,38 @@ export async function resolveActiveOrgContext(
   // to no organization" notice.
   if (!orgs || orgs.length === 0) return null;
 
-  // THE LADDER BELOW THE LINK, computed first. The link's decision needs to
-  // know where the person WOULD be working, because "we moved you" (announce
-  // it) and "you were already there" (say nothing) is exactly that comparison.
-  // The rungs themselves are the platform's ONE ladder (@ai-matrx/data/organizations,
-  // shared with Matrx 2): held → last active → start-up → first, each kept only while
-  // it is a current membership. The account is read only when no held organization
-  // answers; the oldest membership only when nothing else does.
-  const resolved = await resolveActiveOrganizationLazily({
+  // The ladder and the link are the package's ONE rule (held → last active →
+  // start-up → first, then the link's own organization only if it is a current
+  // membership; every other outcome leaves the ladder standing and is returned
+  // as `link` for the caller to SAY). The app injects only its reads.
+  const r = await resolveOrganizationWithLink({
     memberships: orgs,
     held: options.heldOrganizationId ?? null,
     readAccount: () => readAccountOrganizationChoices(userId),
     first: () => firstOrganization(orgs),
-  });
-  const laddered = resolved
-    ? { id: resolved.organization.id, name: resolved.organization.name }
-    : null;
-
-  // -1. THE LINK'S OWN ORGANIZATION. Decided in one pure place so every branch
-  //     — honoured, already-current, offered, refused — is the same one the
-  //     seat-level tests exercise. `decideLinkOrganization` checks it against
-  //     `orgs`, which is the LIVE membership list: a link can open an
-  //     organization, never grant one.
-  // A bare value is classified by the ONE rule (uuid, address, or malformed) —
-  // judged, never trusted.
-  const param =
-    typeof options.linkOrganizationId === "string"
-      ? options.linkOrganizationId.includes("=")
-        ? readLinkOrganizationParam(options.linkOrganizationId)
-        : classifyLinkOrganizationValue(options.linkOrganizationId)
-      : readLinkOrganizationParam(options.linkOrganizationId ?? null);
-
-  const linkInput = {
-    param,
-    memberships: orgs.map((o) => ({ id: o.id, name: o.name, slug: o.slug })),
-    currentOrganizationId: laddered?.id ?? null,
-    currentOrganizationName: laddered?.name ?? null,
+    link: options.linkOrganizationId ?? null,
     switchWhenALinkAsks: options.switchWhenALinkAsks,
     signedInAs: options.signedInAs,
-  };
-  let link = decideLinkOrganization(linkInput);
-  // A SHARE ADMITS, and a refusal toast over the table it opened is a lie
-  // (VERIFIER-15 H4). Asked only when the link already failed the membership
-  // check, so every ordinary boot is unchanged.
-  if (link.kind === "refused" && link.reason === "not-a-member" && param.kind === "named") {
-    const { admittedToOrganizationByAShare } = await import(
-      "@/lib/organizations/linkOrganizationAdmission"
-    );
-    if (await admittedToOrganizationByAShare(param.organizationId)) {
-      link = decideLinkOrganization({ ...linkInput, admittedByAShare: true });
-    }
-  }
-
-  if (link.kind === "honoured") {
+    // A SHARE ADMITS, and a refusal toast over the table it opened is a lie
+    // (VERIFIER-15 H4). Asked only after a not-a-member verdict.
+    admittedByAShare: async (organizationId) => {
+      const { admittedToOrganizationByAShare } = await import(
+        "@/lib/organizations/linkOrganizationAdmission"
+      );
+      return admittedToOrganizationByAShare(organizationId);
+    },
+  });
+  if (!r) {
     return {
-      organization_id: link.organizationId,
-      organization_name: link.organizationName,
-      link,
+      organization_id: null,
+      organization_name: null,
+      unreadableReason: "no organization could be chosen from your memberships",
     };
   }
-
-  // Every other link outcome changes NOTHING about the selection — refused,
-  // offered, and already-current all leave the ladder's own answer standing.
-  // That is rule 3 of the module header: the link substitutes nothing.
-  if (laddered) {
-    return {
-      organization_id: laddered.id,
-      organization_name: laddered.name,
-      ...(link.kind === "no-link" ? {} : { link }),
-    };
-  }
-
-  // Unreachable while the person has a membership (rung 4 always answers);
-  // kept total so a future rung change cannot invent an organization.
   return {
-    organization_id: null,
-    organization_name: null,
-    ...(link.kind === "no-link" ? {} : { link }),
-    unreadableReason: "no organization could be chosen from your memberships",
+    organization_id: r.organization.id,
+    organization_name: r.organization.name,
+    ...(r.link.kind === "no-link" ? {} : { link: r.link }),
   };
 }
 

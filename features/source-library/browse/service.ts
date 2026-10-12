@@ -20,6 +20,7 @@
  * requests section; the day it lands, this file is where it is honoured.
  */
 
+import { isOrganizationRequiredError } from "@ai-matrx/auth/organizations";
 import type { AppDispatch } from "@/lib/redux/store";
 import type { EntityListService } from "@/lib/entity-list/config";
 import type {
@@ -87,7 +88,7 @@ function rethrowForList(error: unknown): never {
         // wearing copy that belongs to nobody on this screen. It gets copy of
         // its own, and it is always retryable.
         if (
-            error.code === "organization_context_required" ||
+            isOrganizationRequiredError(error) ||
             error.code === "organization_context_invalid"
         ) {
             throw Object.assign(

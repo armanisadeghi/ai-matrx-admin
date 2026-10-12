@@ -20,7 +20,7 @@ jest.mock("@/lib/organizations/ensureOrgId", () => ({
 
 import { supabase } from "@/utils/supabase/client";
 import { associationsHelpers } from "@/features/scopes/service/associationsService";
-import { resolveChildOrgId } from "@/lib/organizations/childOrganization";
+import { resolveChildOrganizationId as resolveChildOrgId } from "@ai-matrx/auth/organizations";
 import { fcService } from "../fcService";
 
 const SET_ORG = "org-of-the-deck";

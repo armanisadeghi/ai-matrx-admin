@@ -9,6 +9,7 @@
  *
  * Works with browser, SSR, and admin Supabase clients.
  */
+import { getClaimsUser } from "@ai-matrx/auth";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/types/database.types";
 
@@ -43,8 +44,7 @@ export class WebAuthenticationRequiredError extends Error {
 export async function requireAuthenticatedSupabaseSession<
   C extends SupabaseClient<Database>,
 >(client: C) {
-  const claimsResult = await client.auth
-    .getClaims()
+  const claimsResult = await getClaimsUser(client)
     .catch((error: unknown) => {
       throw new WebAuthenticationRequiredError(
         "Your sign-in session could not be verified. Refresh and try again.",
@@ -52,7 +52,7 @@ export async function requireAuthenticatedSupabaseSession<
       );
     });
 
-  if (claimsResult.error || !claimsResult.data?.claims) {
+  if (claimsResult.error || !claimsResult.data.user) {
     throw new WebAuthenticationRequiredError(
       "Your sign-in session could not be verified. Refresh and try again.",
       claimsResult.error ?? undefined,
