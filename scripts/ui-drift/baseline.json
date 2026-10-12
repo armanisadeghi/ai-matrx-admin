@@ -3,7 +3,7 @@
   "updated": "2026-10-07",
   "sha": "e389e62b291c8f8958b40ae46c3c3cb67335a4b2",
   "sites": 33659,
-  "count": 15,
+  "count": 16,
   "ids": [
     "arbitrary-text-size|features/esign/signer/parts/PaperField.tsx",
     "primitive-visual-class|features/education/classes/components/ClassTestDialog.tsx",
@@ -16,6 +16,7 @@
     "raw-color|features/esign/signer/parts/Panels.tsx",
     "raw-color|features/esign/signer/parts/PaperField.tsx",
     "styled-raw-button|features/ai-work/live/components/LiveSidebar.tsx",
+    "styled-raw-button|features/ai-work/live/components/RoomDetail.tsx",
     "styled-raw-button|features/connectors/IntegrationDirectory.tsx",
     "styled-raw-button|features/esign/signer/parts/DocumentStack.tsx",
     "styled-raw-button|features/esign/signer/parts/PaperField.tsx",
@@ -10533,6 +10534,11 @@
       "date": "2026-10-12"
     },
     "styled-raw-button|features/ai-work/live/components/LiveSidebar.tsx": {
+      "reason": "Pre-existing Live list rows/chips (two-line presence rows with lag markers); moving them onto ItemRow is a separate pass, this change only adds the row menu",
+      "accepted_by": "Armani Sadeghi",
+      "date": "2026-10-12"
+    },
+    "styled-raw-button|features/ai-work/live/components/RoomDetail.tsx": {
       "reason": "Pre-existing Live list rows/chips (two-line presence rows with lag markers); moving them onto ItemRow is a separate pass, this change only adds the row menu",
       "accepted_by": "Armani Sadeghi",
       "date": "2026-10-12"
