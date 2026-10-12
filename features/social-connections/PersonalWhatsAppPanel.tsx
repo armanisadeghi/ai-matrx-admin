@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { InfoHint } from "@/components/official/InfoHint";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
-import { createPersonalWhatsAppClient, type PersonalAccount, type PersonalGrant } from "./personal-whatsapp-service";
+import { createPersonalWhatsAppClient, personalWhatsAppDevelopmentTarget, type PersonalAccount, type PersonalGrant } from "./personal-whatsapp-service";
 import { PersonalWhatsAppMessenger } from "@/features/messaging/messenger/PersonalWhatsAppMessenger";
 
 export function PersonalWhatsAppPanel({ messenger = false }: { messenger?: boolean }) {
@@ -20,12 +20,7 @@ export function PersonalWhatsAppPanel({ messenger = false }: { messenger?: boole
 function PersonalWhatsAppContent({ messenger }: { messenger: boolean }) {
   const personalWhatsApp = useMemo(() => {
     if (typeof window === "undefined") return createPersonalWhatsAppClient();
-    const location = window.location;
-    const values = new URLSearchParams(location.search).getAll("devLocalEngine");
-    const harness = messenger && process.env.NODE_ENV === "development"
-      && (location.hostname === "localhost" || location.hostname === "127.0.0.1")
-      && location.pathname === "/messenger/whatsapp";
-    return createPersonalWhatsAppClient(harness && values.length > 0 ? (values.length === 1 ? values[0] : "") : undefined);
+    return createPersonalWhatsAppClient(personalWhatsAppDevelopmentTarget(window.location, messenger));
   }, [messenger]);
   const [grant, setGrant] = useState<PersonalGrant | null>(null);
   const [accounts, setAccounts] = useState<PersonalAccount[]>([]);

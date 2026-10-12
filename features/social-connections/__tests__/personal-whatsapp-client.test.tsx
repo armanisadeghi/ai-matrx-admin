@@ -4,7 +4,7 @@ import { PersonalWhatsAppPanel } from "../PersonalWhatsAppPanel";
 import { discoverLocalEngine } from "@/lib/local-engine/discovery";
 import { requestRaw } from "@/lib/python-client";
 import type { MessengerSource } from "@ai-matrx/chat/messenger/contract";
-import type { PersonalGrant } from "../personal-whatsapp-service";
+import { personalWhatsAppDevelopmentTarget, type PersonalGrant } from "../personal-whatsapp-service";
 
 jest.mock("@/lib/local-engine/discovery", () => ({ discoverLocalEngine: jest.fn() }));
 jest.mock("@/lib/python-client", () => ({ requestRaw: jest.fn() }));
@@ -92,5 +92,27 @@ describe("personal WhatsApp real panel/client/thread boundary", () => {
       await act(async () => { root.render(<PersonalWhatsAppPanel messenger />); });
       expect(discoverLocalEngine).toHaveBeenCalledWith({ developmentBaseUrl: "" }); expect(requestRaw).not.toHaveBeenCalled();
     } finally { await act(async () => root.unmount()); host.remove(); }
+  });
+});
+
+
+describe("managed preview document intake", () => {
+  beforeEach(() => { jest.replaceProperty(process, "env", { ...process.env, NODE_ENV: "development" }); });
+  afterEach(() => { jest.restoreAllMocks(); });
+  const search = "?devLocalEngine=http%3A%2F%2F127.0.0.1%3A22259";
+  it.each(["localhost", "127.0.0.1", "meta-customer-connections.localhost"])("accepts the local document %s", (hostname) => {
+    expect(personalWhatsAppDevelopmentTarget({ hostname, pathname: "/messenger/whatsapp", search }, true)).toBe("http://127.0.0.1:22259");
+  });
+  it.each(["evil.localhost.com", "foo.bar.localhost", "127.0.0.1.evil.example", "aimatrx.com"])("ignores the remote or nested document %s", (hostname) => {
+    expect(personalWhatsAppDevelopmentTarget({ hostname, pathname: "/messenger/whatsapp", search }, true)).toBeUndefined();
+  });
+  it("ignores other routes, settings and production", () => {
+    expect(personalWhatsAppDevelopmentTarget({ hostname: "localhost", pathname: "/user-settings/integrations", search }, true)).toBeUndefined();
+    expect(personalWhatsAppDevelopmentTarget({ hostname: "localhost", pathname: "/messenger/whatsapp", search }, false)).toBeUndefined();
+    jest.replaceProperty(process, "env", { ...process.env, NODE_ENV: "production" });
+    expect(personalWhatsAppDevelopmentTarget({ hostname: "meta-customer-connections.localhost", pathname: "/messenger/whatsapp", search }, true)).toBeUndefined();
+  });
+  it("keeps duplicate values fail closed", () => {
+    expect(personalWhatsAppDevelopmentTarget({ hostname: "localhost", pathname: "/messenger/whatsapp", search: "?devLocalEngine=a&devLocalEngine=b" }, true)).toBe("");
   });
 });

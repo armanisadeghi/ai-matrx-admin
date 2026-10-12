@@ -39,6 +39,14 @@ const consent: z.ZodType<components["schemas"]["PersonalConsentStart"]> = z.obje
 });
 const failure = z.object({ message: z.string().max(250).optional(), detail: z.string().max(250).optional() });
 
+/** Managed previews use a one-label RFC 6761 localhost session host. */
+export function personalWhatsAppDevelopmentTarget(documentLocation: Pick<Location, "hostname" | "pathname" | "search">, messenger: boolean): string | undefined {
+  if (!messenger || process.env.NODE_ENV !== "development" || documentLocation.pathname !== "/messenger/whatsapp"
+    || !(documentLocation.hostname === "localhost" || documentLocation.hostname === "127.0.0.1" || /^[a-z0-9-]+\.localhost$/.test(documentLocation.hostname))) return undefined;
+  const values = new URLSearchParams(documentLocation.search).getAll("devLocalEngine");
+  return values.length === 0 ? undefined : values.length === 1 ? values[0] : "";
+}
+
 export function createPersonalWhatsAppClient(developmentBaseUrl?: string) {
 async function nativeRequest<T>(path: string, schema: z.ZodType<T>, body?: object, signal?: AbortSignal): Promise<T> {
   const engine = await discoverLocalEngine(developmentBaseUrl === undefined ? undefined : { developmentBaseUrl });
