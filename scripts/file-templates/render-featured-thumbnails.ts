@@ -6,6 +6,7 @@
  *
  *   tsx --tsconfig tsconfig.json scripts/file-templates/render-featured-thumbnails.ts [--all]
  *
+ * Presentation templates have no stored PNG: their tile draws the first slide live.
  * Featured templates are platform content; a person's own templates get their
  * thumbnail in the app at "Save as template".
  */
@@ -53,7 +54,7 @@ async function main() {
     if (!orgId) throw new Error("the uploading account has no organization");
     const rows = await db.query(
       `select id, kind, name, snapshot from workbench.file_template
-        where organization_id = $1 and deleted_at is null ${all ? "" : "and thumbnail_file_id is null"} order by kind, sort_order`,
+        where organization_id = $1 and deleted_at is null and kind <> 'presentation' ${all ? "" : "and thumbnail_file_id is null"} order by kind, sort_order`,
       [SYSTEM_ORGANIZATION_ID],
     );
     const page = await browser.newPage({ viewport: { width: THUMB_WIDTH, height: THUMB_HEIGHT }, deviceScaleFactor: 2 });

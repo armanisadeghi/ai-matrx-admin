@@ -15,11 +15,12 @@ import pg from "pg";
 import { loadDbEnvFrom } from "../lib/direct-db-env";
 import { workbookSeeds } from "@/features/templates/files/seeds/workbook-templates";
 import { documentSeeds } from "@/features/templates/files/seeds/document-templates";
+import { presentationSeeds } from "@/features/templates/files/seeds/presentation-templates";
 import { SYSTEM_ORGANIZATION_ID } from "@/features/templates/files/types";
 
 async function main() {
   const dry = process.argv.includes("--dry-run");
-  const seeds = [...workbookSeeds(), ...documentSeeds()];
+  const seeds = [...workbookSeeds(), ...documentSeeds(), ...presentationSeeds()];
   console.log(`[seed-templates] ${seeds.length} featured templates`);
   if (dry) return;
   const env = loadDbEnvFrom(resolve(process.cwd()));

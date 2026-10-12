@@ -7,7 +7,7 @@ import { buildWorkbook, colName, fx, serial, styled, type CellIn, type SheetSpec
 
 export type SeedTemplate = {
   seedKey: string;
-  kind: "workbook" | "document";
+  kind: "workbook" | "document" | "presentation";
   name: string;
   category: string;
   description: string;

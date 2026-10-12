@@ -4,6 +4,8 @@
  */
 import { workbookSeeds } from "../seeds/workbook-templates";
 import { documentSeeds } from "../seeds/document-templates";
+import { presentationSeeds } from "../seeds/presentation-templates";
+import { normalizeDeck } from "@/features/presentations/deck-model";
 import { snapshotPreviewSvg } from "../thumbnail/snapshot-preview-svg";
 import { TEMPLATE_CATEGORIES } from "../types";
 
@@ -59,5 +61,25 @@ describe("featured templates", () => {
       ),
     );
     expect(headed.map((d) => d.seedKey).sort()).toEqual(docs.map((d) => d.seedKey).filter((k) => k !== "doc-letter").sort());
+  });
+});
+
+describe("featured presentation templates", () => {
+  const decks = presentationSeeds();
+  it("eight decks, each its own theme, unique keys, known categories, no filler", () => {
+    expect(decks).toHaveLength(8);
+    expect(new Set(decks.map((d) => d.seedKey)).size).toBe(8);
+    expect(new Set(decks.map((d) => (d.snapshot.theme as { preset: string }).preset)).size).toBe(8);
+    for (const d of decks) {
+      expect(TEMPLATE_CATEGORIES as readonly string[]).toContain(d.category);
+      expect(JSON.stringify(d.snapshot)).not.toMatch(/lorem|ipsum|acme|\bfoo\b/i);
+    }
+  });
+  it.each(decks.map((d) => [d.name, d] as const))("%s is a stored presentation_deck kind the editor reads unchanged", (_n, d) => {
+    expect(d.snapshot.__kind).toBe("presentation_deck");
+    const slides = d.snapshot.slides as Array<Record<string, unknown>>;
+    expect(slides.length).toBeGreaterThanOrEqual(6);
+    expect(slides.every((x) => x.__kind === "presentation_slide")).toBe(true);
+    expect(normalizeDeck(d.snapshot).slides).toHaveLength(slides.length);
   });
 });
