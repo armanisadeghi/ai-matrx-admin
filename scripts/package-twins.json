@@ -459,6 +459,10 @@
         {
           "file": "features/templates/files/thumbnail/snapshot-preview-svg.ts",
           "reason": "NOT formatUsd: the template thumbnail renders a spreadsheet cell through the cell's OWN Excel number-format pattern (currency, percent, grouping and decimals all read from the pattern), the same engine role as design-system's field-format registry. formatUsd's fixed $ voice cannot honour a user-authored pattern. Checked 2026-10-12."
+        },
+        {
+          "file": "features/templates/files/seeds/workbook-templates.ts",
+          "reason": "NOT money: the featured-workbook seeds write Excel FORMULAS whose '$' is an absolute cell anchor ($C5, D$3), and sample cell values whose currency look comes from the cell's own number format. Nothing becomes a money string here. Checked 2026-10-12."
         }
       ],
       "shapeCensus": [
