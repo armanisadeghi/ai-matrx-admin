@@ -51,6 +51,7 @@ import { webLocation } from "@/features/marketing/lib/copy-payloads";
 import { useMarketingSite } from "@/features/marketing/components/site/MarketingSiteContext";
 import { marketingRoutes } from "@/features/marketing/lib/routes";
 import { Chip } from "@ai-matrx/design-system/controls";
+import { spendCategory } from "@/features/marketing/data/spend-categories";
 
 const INTERSECTIONS_EXPLAINER =
   "Websites that link to both you and this competitor. They already know your space, so they are the easiest places to ask for a link.";
@@ -345,7 +346,7 @@ function DimensionDetail({
         <Fact label="Shared link sources" value={extras.intersections} />
         <Fact label="Page response when checked" value={extras.statusCode} />
         <Fact label="Page title" value={extras.metaTitle} />
-        <Fact label="Where this came from" value={row.provider} />
+        <Fact label="Where this came from" value={spendCategory(row.provider)} />
         <Fact label="First seen" value={formatGscDate(row.first_seen_at)} />
         <Fact label="Last seen" value={formatGscDate(row.last_seen_at)} />
       </div>

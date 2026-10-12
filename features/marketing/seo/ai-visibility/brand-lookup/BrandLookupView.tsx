@@ -179,7 +179,7 @@ function SourceBadges<T>({
       }`;
   return (
     <div className="flex flex-wrap items-center gap-2 px-3 py-2">
-      <Badge tone={state.reused ? "neutral" : "info"} title="DataForSEO AI-mentions index">
+      <Badge tone={state.reused ? "neutral" : "info"} title="AI-mentions data">
         {source}
       </Badge>
       <Badge tone="neutral">{marketText(market)}</Badge>

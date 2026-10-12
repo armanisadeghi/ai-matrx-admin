@@ -60,7 +60,7 @@ const TOPIC_STATUSES: { value: TopicStatus; label: string }[] = [
 ];
 
 const SEARCH_PROVIDERS: { value: SearchProvider; label: string }[] = [
-  { value: "brave", label: "Brave Search" },
+  { value: "brave", label: "Web search" },
   { value: "google", label: "Google" },
 ];
 

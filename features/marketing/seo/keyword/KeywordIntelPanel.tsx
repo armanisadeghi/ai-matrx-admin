@@ -596,7 +596,7 @@ export function KeywordIntelPanel({
                             Search-informed enhancement is optional
                           </p>
                           <p className="text-[11px] text-muted-foreground">
-                            Collect Google and Brave result pages, then compare
+                            Collect Google and web-search result pages, then compare
                             observed behavior with this baseline.
                           </p>
                         </div>
@@ -1301,7 +1301,7 @@ function SearchVisibilityTab({
             Choose a website before checking search visibility
           </p>
           <p className="mt-1 max-w-md text-xs text-muted-foreground">
-            Google and Brave positions are website-specific. Opening this
+            Google and web-search positions are website-specific. Opening this
             dossier from a website keeps that target attached while you drill
             into other keywords.
           </p>

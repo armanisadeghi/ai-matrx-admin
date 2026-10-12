@@ -18,6 +18,7 @@
  */
 
 import type { ContextMenuEntityRef } from "@ai-matrx/context-menu/engine";
+import { spendCategory } from "@/features/marketing/data/spend-categories";
 
 export interface CollectionRunLike {
   id: string;
@@ -36,13 +37,13 @@ export function collectionRunEntityRef(
   return {
     type: "seo_collection_run",
     id: row.id,
-    title: `${row.operation} (${row.provider})`,
+    title: `${row.operation} (${spendCategory(row.provider)})`,
   };
 }
 
 export function collectionRunContent(row: CollectionRunLike): string {
   return [
-    `${row.operation} — ${row.provider} — ${row.target_ref}`,
+    `${row.operation} — ${spendCategory(row.provider)} — ${row.target_ref}`,
     `status=${row.status}`,
     row.started_at ? `started: ${row.started_at}` : null,
     row.completed_at ? `completed: ${row.completed_at}` : null,

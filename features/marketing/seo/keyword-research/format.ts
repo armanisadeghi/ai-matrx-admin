@@ -25,12 +25,13 @@ const PROVIDER_LABELS: Record<string, string> = {
 
 export function providerLabel(provider: string | null): string {
   if (!provider) return "Unknown source";
-  return PROVIDER_LABELS[provider] ?? provider;
+  return PROVIDER_LABELS[provider] ?? spendCategory(provider);
 }
 
 // THE count voice: @ai-matrx/kit/format owns grouped integers with an
 // em-dash for unknown. Collapsed 2026-09-12 (kit 0.12.x).
 import { formatCount } from "@ai-matrx/kit/format";
+import { spendCategory } from "@/features/marketing/data/spend-categories";
 export { formatCount };
 
 export function formatDecimal(

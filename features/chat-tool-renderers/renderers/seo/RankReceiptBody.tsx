@@ -18,6 +18,7 @@ import {
   formatCacheAge,
   type SeoCollectionReceipt,
 } from "@/features/marketing/seo/rank/types";
+import { spendCategory } from "@/features/marketing/data/spend-categories";
 
 export interface RankRunArgs {
   keyword?: string;
@@ -126,7 +127,7 @@ export function RankReceiptBody({
           )}
           {args.provider && (
             <span className="rounded-md border border-border px-1.5 py-0.5 text-[11px] font-medium text-muted-foreground">
-              {args.provider}
+              {spendCategory(args.provider)}
             </span>
           )}
         </div>

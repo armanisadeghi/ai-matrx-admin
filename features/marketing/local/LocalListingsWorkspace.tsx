@@ -97,6 +97,7 @@ import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import { CONTEXT_MENU_ENTITY_KEY } from "@ai-matrx/context-menu/engine";
 import type { ContextMenuExtraItem } from "@ai-matrx/context-menu/engine";
 import { NO_RAW_ROW_WINDOW } from "@/features/marketing/social/row-open";
+import { spendCategory } from "@/features/marketing/data/spend-categories";
 
 const TIER_BADGE_CLASS: Record<PublisherTier, string> = {
   critical: "bg-primary/15 text-primary-ink",
@@ -1327,7 +1328,7 @@ function ObservedVerdictLine({
   if (audit.score === null) {
     return (
       <p className="mt-0.5 text-[11px] text-muted-foreground">
-        Live data captured{checked ? ` ${checked}` : ""} ({listing.source}) — no
+        Live data captured{checked ? ` ${checked}` : ""} ({spendCategory(listing.source)}) — no
         comparable NAP fields yet.
       </p>
     );
@@ -1345,7 +1346,7 @@ function ObservedVerdictLine({
       </span>
       <span className="text-muted-foreground">
         {" "}
-        ({listing.source}
+        ({spendCategory(listing.source)}
         {checked ? `, ${checked}` : ""})
         {audit.mismatches.length > 0
           ? ` — ${audit.mismatches

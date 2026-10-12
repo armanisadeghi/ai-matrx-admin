@@ -497,7 +497,7 @@ export function validateSiteIntegrations(
   if (!isValidDataForSeoDetailLimit(draft.dataForSeo.detailLimit)) {
     issues.push({
       field: "dataForSeo.detailLimit",
-      message: `DataForSEO detail limit must be an integer from ${DATAFORSEO_DETAIL_LIMIT_MIN} to ${DATAFORSEO_DETAIL_LIMIT_MAX}.`,
+      message: `Backlink detail limit must be an integer from ${DATAFORSEO_DETAIL_LIMIT_MIN} to ${DATAFORSEO_DETAIL_LIMIT_MAX}.`,
     });
   }
   validateBuiltIn(

@@ -166,9 +166,9 @@ export const COLLECTION_PROVIDERS: CollectionProviderSpec[] = [
   },
   {
     key: "brave",
-    label: "Rank tracking — Brave",
+    label: "Rank tracking — Web search",
     icon: ListOrdered,
-    what: "Where this site ranks in Brave's own search index for the keywords being tracked.",
+    what: "Where this site ranks in an independent web-search index for the keywords being tracked.",
     rowUnit: "rank checks",
     cadence: "on_demand",
     runnable: false,

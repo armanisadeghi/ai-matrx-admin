@@ -129,7 +129,7 @@ const signals: SignalDef[] = [
     sources: [
       {
         kind: "api",
-        label: "DataForSEO backlink summary",
+        label: "Backlink data summary",
         priority: 1,
         trust: 1,
       },
@@ -211,7 +211,7 @@ const signals: SignalDef[] = [
       "0–100 likelihood the domain is manipulative or penalised. LOWER IS BETTER. Any substitute must be restated on 0–100 before it is fed here.",
     scale: { min: 0, max: 100, direction: "lower-better", unit: "0–100" },
     sources: [
-      { kind: "api", label: "DataForSEO spam score", priority: 1, trust: 1 },
+      { kind: "api", label: "Spam score data", priority: 1, trust: 1 },
     ],
     enabled: true,
   },

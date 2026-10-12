@@ -97,6 +97,7 @@ import type {
 } from "./types";
 import { ErrorNotice } from "@ai-matrx/design-system";
 import { NO_RAW_ROW_WINDOW } from "@/features/marketing/social/row-open";
+import { spendCategory } from "@/features/marketing/data/spend-categories";
 
 /** Wire value for one `track_keywords` entry (see the manifest's contract). */
 interface TrackKeywordsEntry {
@@ -905,7 +906,7 @@ export function RanksWorkspace() {
       accessorKey: "provider",
       header: "Provider",
       filter: "select",
-      cell: (item) => item.provider.replaceAll("_", " "),
+      cell: (item) => spendCategory(item.provider),
     },
     {
       id: "is_active",

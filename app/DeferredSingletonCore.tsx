@@ -23,6 +23,7 @@ import { PersistentDOMConnector } from "@/providers/persistance/PersistentDOMCon
 import OverlayController from "@/features/overlays/OverlayController";
 import AuthSessionWatcher from "@/components/layout/AuthSessionWatcher";
 import PersonTimeZoneCapture from "@/components/layout/PersonTimeZoneCapture";
+import VendorNameRuntimeGuard from "@/components/dev/VendorNameRuntimeGuard";
 import { LinkOrganizationWatcher } from "@/features/organizations/components/LinkOrganizationWatcher";
 import AnnouncementProvider from "@/components/layout/AnnouncementProvider";
 import AdminFeatureProvider from "@/features/admin/AdminFeatureProvider";
@@ -194,6 +195,7 @@ export default function DeferredSingletonCore() {
       <LinkOrganizationWatcher />
       <AuthSessionWatcher />
       <PersonTimeZoneCapture />
+      <VendorNameRuntimeGuard />
       <AnnouncementProvider />
       <AdminFeatureProvider />
       <ErrorInspectorBadge />

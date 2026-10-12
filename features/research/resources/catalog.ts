@@ -489,7 +489,7 @@ export const CATALOG: ResourceKindDef[] = [
     key: "search.raw",
     label: "Raw search payloads",
     description:
-      "The complete provider response per result (Brave et al.) — profiles, ratings, social links, deep metadata. Very large.",
+      "The complete provider response per result — profiles, ratings, social links, deep metadata. Very large.",
     icon: Braces,
     group: "search",
     granularity: "source",

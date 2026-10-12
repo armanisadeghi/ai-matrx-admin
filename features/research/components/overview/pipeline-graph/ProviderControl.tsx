@@ -21,7 +21,7 @@ const OPTIONS: {
 }[] = [
   {
     value: "brave",
-    label: "Brave",
+    label: "Web search",
     icon: Search,
     description:
       "Independent index with strong privacy guarantees. Default for research where editorial freshness matters.",

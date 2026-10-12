@@ -77,7 +77,7 @@ function hostnameOf(value: string | null | undefined): string | null {
 const ENGINE_LABELS: Record<string, string> = {
   chat_gpt: "ChatGPT",
   google: "Google",
-  brave: "Brave",
+  brave: "Web search",
   bing: "Bing",
 };
 function engineLabel(engine: string): string {

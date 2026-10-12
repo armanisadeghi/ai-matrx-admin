@@ -27,6 +27,8 @@
     "tsc6": "bash scripts/tsc-capped.sh tsc6",
     "check:spaces-snapshot-schema": "tsx --env-file=.env --env-file=.env.local scripts/check-spaces-snapshot-schema.ts",
     "check:spaces-snapshot-schema:self-test": "tsx scripts/check-spaces-snapshot-schema.ts --self-test",
+    "check:no-vendor-names": "node scripts/check-no-vendor-names-in-ui.mjs",
+    "check:no-vendor-names:self-test": "node scripts/check-no-vendor-names-in-ui.mjs --self-test",
     "check:parse": "node scripts/check-parse.mjs",
     "check:parse:changed": "node scripts/check-parse.mjs --changed",
     "check:parse:fix": "node scripts/check-parse.mjs --fix",

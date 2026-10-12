@@ -444,7 +444,7 @@ export function SourceLine<T>({
       }`;
   return (
     <div className="flex flex-wrap items-center gap-2">
-      <Badge tone={state.reused ? "neutral" : "info"} title={`${what}: estimate from DataForSEO Labs`}>
+      <Badge tone={state.reused ? "neutral" : "info"} title={`${what}: market-data estimate`}>
         {source}
       </Badge>
       {children}
@@ -545,7 +545,7 @@ function OverviewTiles({ data }: { data: DomainOverviewData }) {
         label="Traffic"
         value={data.organic_traffic_est != null ? formatCount(data.organic_traffic_est, { style: "compact" }) : null}
         hint={`Monthly estimate · ${asOf}`}
-        title="Estimated monthly organic visits, from DataForSEO Labs."
+        title="Estimated monthly organic visits, from market data."
       />
       <KpiTile
         label="Keywords"

@@ -63,7 +63,7 @@ function readCapture(metadata: unknown): BrandSearchCapture | null {
 }
 
 function engineLabel(engine: string): string {
-  return engine === "google" ? "Google" : engine === "brave" ? "Brave" : engine;
+  return engine === "google" ? "Google" : engine === "brave" ? "Web search" : engine;
 }
 
 function ownPosition(run: BrandSearchRun, ownDomain: string): string {
@@ -89,7 +89,7 @@ export function BrandSearchCard({
     kind: "web-site-brand-search",
     label: "Brand search",
     description:
-      "What Google and Brave showed for this site's own name at the last capture: the site's position per search and the facts read off the results.",
+      "What Google and web search showed for this site's own name at the last capture: the site's position per search and the facts read off the results.",
     surface: `Brand search — ${domain}`,
     data: capture
       ? {

@@ -48,11 +48,11 @@ export const TRACKING_MODES: TrackingModeOption[] = [
   },
   {
     id: "brave",
-    label: "Brave",
+    label: "Web search",
     provider: "brave",
     search_type: "organic",
     location: "none",
-    hint: "Brave's own index (country-level).",
+    hint: "Independent web-search index (country-level).",
   },
   {
     id: "ai_chat_gpt",
@@ -110,7 +110,7 @@ export function trackingModeLabelForItem(item: {
   search_type?: string | null;
   location_name?: string | null;
 }): string {
-  if (item.provider === "brave") return "Brave";
+  if (item.provider === "brave") return "Web search";
   if (item.search_type === "local_pack") return "Google — Map pack";
   if (item.search_type === "ai_answer") {
     const ai = TRACKING_MODES.find(

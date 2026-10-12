@@ -111,11 +111,11 @@ const STAGE_LABELS: Record<string, string> = {
   "seo.volume_refresh_started": "Planning keyword-volume refresh",
   "seo.volume_refresh_planned": "Checking stored market freshness",
   "seo.volume_run_claimed": "Provider run claimed",
-  "seo.volume_provider_request_started": "Requesting DataForSEO market data",
-  "seo.volume_provider_task_checkpoint": "DataForSEO task checkpoint persisted",
+  "seo.volume_provider_request_started": "Requesting market data",
+  "seo.volume_provider_task_checkpoint": "Market-data task checkpoint saved",
   "seo.volume_provider_task_checkpoints":
-    "DataForSEO task checkpoints persisted",
-  "seo.volume_provider_response": "DataForSEO response received",
+    "Market-data task checkpoints saved",
+  "seo.volume_provider_response": "Market data received",
   "seo.volume_raw_persisted": "Raw provider response persisted",
   "seo.volume_normalized": "Provider response normalized",
   "seo.volume_observations_persisted": "Keyword market observations persisted",
@@ -578,7 +578,7 @@ export function useKeywordResearch(
       setRunState({
         status: "running",
         primaryKeyword: phrase,
-        stage: "Checking site access and DataForSEO credentials",
+        stage: "Checking site access and data access",
       });
       await consumeResearchStream(phrase, {
         path: "/seo/keywords/research",

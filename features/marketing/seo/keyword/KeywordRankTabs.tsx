@@ -349,7 +349,7 @@ export function KeywordSerpTab({
       const approved = await confirm({
         title: `Refresh search-informed intent for “${phrase}”?`,
         description:
-          "This replaces the displayed enhancement using the latest stored Google and Brave snapshots. The original intrinsic classification stays unchanged, and prior versions remain in record history.",
+          "This replaces the displayed enhancement using the latest stored Google and web-search snapshots. The original intrinsic classification stays unchanged, and prior versions remain in record history.",
         confirmLabel: "Refresh enhanced analysis",
         variant: "destructive",
       });
@@ -386,7 +386,7 @@ export function KeywordSerpTab({
       <div className="flex min-h-32 flex-col items-center justify-center gap-2 text-center">
         <SearchX className="h-5 w-5 text-muted-foreground" />
         <p className="max-w-sm text-xs text-muted-foreground">
-          No stored result page yet. Add a Google or Brave search view in
+          No stored result page yet. Add a Google or web-search search view in
           Rankings, then use Check now to collect it.
         </p>
       </div>
@@ -463,8 +463,8 @@ export function KeywordSerpTab({
           </p>
           <p className="text-[10px] leading-4 text-muted-foreground">
             {evidencePair
-              ? "Compare the existing classification with the latest stored Google and Brave result pages. This does not run another search."
-              : "Collect matching Google and Brave result pages for the same device and language before this analysis becomes available."}
+              ? "Compare the existing classification with the latest stored Google and web-search result pages. This does not run another search."
+              : "Collect matching Google and web-search result pages for the same device and language before this analysis becomes available."}
           </p>
         </div>
         <Button
