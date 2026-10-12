@@ -26,6 +26,15 @@
  *   replayed and never come through the poller (durable rows only).
  * - The server's `end` frame is terminal: onEnd fires and both transports
  *   stop.
+ * - EVENT-SILENCE GUARD (2026-10-12): a ping proves the CONNECTION, never
+ *   DELIVERY. The server's live path is LISTEN/NOTIFY; when its listener is
+ *   down or a NOTIFY is lost, the stream keeps pinging (so the stall detector
+ *   never fires) while no event ever arrives, and the poller had already
+ *   stood down — the page hung on its last step over a finished run. So when
+ *   no event of any kind arrives for RUN_EVENT_SILENCE_MS while SSE owns the
+ *   wire, one catch-up poll reads the durable log from the cursor (any rows
+ *   it finds prove the stream dropped events: SSE is demoted and retried) and
+ *   `onSilence` fires so the owner re-reads the run row itself.
  */
 
 import { streamSse } from "@/features/workflow-runtime/transport/sse";
@@ -52,6 +61,13 @@ export interface RunEventSourceConfig {
   onMode?: (mode: RunTransportMode) => void;
   /** Server `end` frame received — the run is terminal; both transports stopped. */
   onEnd?: () => void;
+  /**
+   * No event of any kind arrived for RUN_EVENT_SILENCE_MS while the run was
+   * live. Fires after the catch-up poll; the owner re-reads the run state
+   * (a finished run must always render its result). Repeats every
+   * RUN_EVENT_SILENCE_MS of continued silence until stopped.
+   */
+  onSilence?: () => void;
 }
 
 const RECONNECT_LIMIT = 3;
@@ -63,12 +79,19 @@ const RECONNECT_DELAY_MS = 2_000;
 const STALL_TIMEOUT_MS = 20_000;
 const POLL_INTERVAL_MS = 2_000;
 const POLL_LIMIT = 200;
+/**
+ * How long a live run may go without ANY event (durable or token frame)
+ * before the durable log and the run row are re-read. Workflow steps emit
+ * durable events every few seconds; a genuinely quiet step costs one cheap
+ * catch-up read per window.
+ */
+export const RUN_EVENT_SILENCE_MS = 8_000;
 
 export function startRunEventSource(config: RunEventSourceConfig): {
   stop: () => void;
   getCursor: () => number | null;
 } {
-  const { runId, baseUrl, getHeaders, fetchJson, onEvent, onMode, onEnd } = config;
+  const { runId, baseUrl, getHeaders, fetchJson, onMode, onEnd, onSilence } = config;
 
   let stopped = false;
   /** THE one cursor — both transports advance it, neither may regress it. */
@@ -81,6 +104,14 @@ export function startRunEventSource(config: RunEventSourceConfig): {
   let stallTimer: ReturnType<typeof setTimeout> | null = null;
   let pollTimer: ReturnType<typeof setTimeout> | null = null;
   let pollInFlight = false;
+  let silenceTimer: ReturnType<typeof setTimeout> | null = null;
+  let resyncInFlight = false;
+
+  /** Every delivered event (either transport, durable or token) re-arms the silence guard. */
+  const onEvent: RunEventSourceConfig["onEvent"] = (event, seq) => {
+    armSilenceTimer();
+    config.onEvent(event, seq);
+  };
 
   const setMode = (next: RunTransportMode): void => {
     if (mode === next) return;
@@ -123,6 +154,8 @@ export function startRunEventSource(config: RunEventSourceConfig): {
     stopped = true;
     if (reconnectTimer !== null) clearTimeout(reconnectTimer);
     if (pollTimer !== null) clearTimeout(pollTimer);
+    if (silenceTimer !== null) clearTimeout(silenceTimer);
+    silenceTimer = null;
     clearStallTimer();
     if (typeof document !== "undefined") {
       document.removeEventListener("visibilitychange", onVisibility);
@@ -232,6 +265,37 @@ export function startRunEventSource(config: RunEventSourceConfig): {
     }, POLL_INTERVAL_MS);
   };
 
+  /** Read the durable log after the cursor and deliver what is new. Returns how many events were delivered. */
+  const fetchAndDeliver = async (): Promise<number> => {
+    const qs =
+      cursor !== null
+        ? `?after_seq=${cursor}&limit=${POLL_LIMIT}`
+        : `?limit=${POLL_LIMIT}`;
+    // PATH-relative: the injected fetchJson prepends the base URL itself
+    // (passing a full URL here double-prefixed every poll — Bugbot #147).
+    const rows = await fetchJson<RunEventRecord[]>(`/runs/${runId}/events${qs}`);
+    let delivered = 0;
+    if (stopped) return delivered;
+    for (const row of rows) {
+      if (stopped) break;
+      // Monotonic cursor guard — defend against duplicate delivery
+      // across transports and out-of-order responses.
+      if (row.seq !== null && cursor !== null && row.seq <= cursor) continue;
+      // The durable row keeps the discriminator on `event_type`; merge it in
+      // exactly as the replay path does, or every polled event fails the
+      // type guard and the fallback transport applies nothing.
+      const payload: unknown = { ...row.payload, event: row.event_type };
+      // Durable rows only ever hold the 19 workflow events; node_stream
+      // is never persisted, so no ephemeral branch exists here.
+      if (isWorkflowRunEvent(payload)) {
+        onEvent(payload, row.seq);
+        if (row.seq !== null) advanceCursor(row.seq);
+        delivered += 1;
+      }
+    }
+    return delivered;
+  };
+
   const pollOnce = async (): Promise<void> => {
     if (stopped) return;
     // SSE reclaimed the wire — stand down; a later demotion re-arms.
@@ -242,29 +306,7 @@ export function startRunEventSource(config: RunEventSourceConfig): {
     }
     pollInFlight = true;
     try {
-      const qs =
-        cursor !== null
-          ? `?after_seq=${cursor}&limit=${POLL_LIMIT}`
-          : `?limit=${POLL_LIMIT}`;
-      // PATH-relative: the injected fetchJson prepends the base URL itself
-      // (passing a full URL here double-prefixed every poll — Bugbot #147).
-      const rows = await fetchJson<RunEventRecord[]>(`/runs/${runId}/events${qs}`);
-      if (stopped) return;
-      for (const row of rows) {
-        // Monotonic cursor guard — defend against duplicate delivery
-        // across transports and out-of-order responses.
-        if (row.seq !== null && cursor !== null && row.seq <= cursor) continue;
-        // The durable row keeps the discriminator on `event_type`; merge it in
-        // exactly as the replay path does, or every polled event fails the
-        // type guard and the fallback transport applies nothing.
-        const payload: unknown = { ...row.payload, event: row.event_type };
-        // Durable rows only ever hold the 19 workflow events; node_stream
-        // is never persisted, so no ephemeral branch exists here.
-        if (isWorkflowRunEvent(payload)) {
-          onEvent(payload, row.seq);
-          if (row.seq !== null) advanceCursor(row.seq);
-        }
-      }
+      await fetchAndDeliver();
     } catch {
       // Transient poll failure — the next tick retries.
     } finally {
@@ -273,6 +315,49 @@ export function startRunEventSource(config: RunEventSourceConfig): {
     // armPoller re-checks stopped + mode itself — SSE may have claimed the
     // wire while this poll's fetch was in flight.
     armPoller();
+  };
+
+  // -------------------------------------------------------- Silence guard
+
+  /**
+   * Re-armed on every delivered event. While the POLLER owns the wire it is
+   * already reading the durable log every POLL_INTERVAL_MS, so only the owner
+   * callback runs; while SSE owns it, a catch-up read checks the stream did
+   * not drop events behind healthy pings.
+   */
+  function armSilenceTimer(): void {
+    if (stopped) return;
+    if (silenceTimer !== null) clearTimeout(silenceTimer);
+    silenceTimer = setTimeout(() => {
+      silenceTimer = null;
+      void onSilenceFired();
+    }, RUN_EVENT_SILENCE_MS);
+  }
+
+  const onSilenceFired = async (): Promise<void> => {
+    if (stopped) return;
+    if (mode === "sse" && !resyncInFlight) {
+      resyncInFlight = true;
+      try {
+        const missed = await fetchAndDeliver();
+        if (!stopped && missed > 0 && mode === "sse") {
+          // The stream was alive (pinging) but dropped durable events — it is
+          // not delivering. Abort it: the catch path demotes to the poller
+          // and retries SSE with the advanced cursor.
+          console.warn(
+            `[run-event-source] run ${runId}: SSE delivered nothing for ${RUN_EVENT_SILENCE_MS}ms while ${missed} durable event(s) landed — demoting to polling`,
+          );
+          controller?.abort();
+        }
+      } catch {
+        // A failed catch-up read is retried on the next silence window.
+      } finally {
+        resyncInFlight = false;
+      }
+    }
+    if (stopped) return;
+    onSilence?.();
+    armSilenceTimer();
   };
 
   // ----------------------------------------------------------- Visibility
@@ -293,6 +378,7 @@ export function startRunEventSource(config: RunEventSourceConfig): {
   // ------------------------------------------------------------- Start-up
 
   setMode("polling");
+  armSilenceTimer();
   if (typeof document !== "undefined") {
     document.addEventListener("visibilitychange", onVisibility);
   }

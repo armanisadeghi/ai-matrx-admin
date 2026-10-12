@@ -603,6 +603,31 @@ export function adoptWorkflowRun(
               dispatch(setTransportMode({ runId, mode: "idle" }));
               tree.laneManager.disposeRun(runId);
             },
+            // THE SILENCE GUARD (2026-10-12): no event for
+            // RUN_EVENT_SILENCE_MS while the run is live. The transport has
+            // already caught up the durable log from its cursor; re-read the
+            // run row too, so a run that finished renders its result even
+            // when no terminal event ever reaches this page.
+            onSilence: () => {
+              if (stopped) return;
+              void (async () => {
+                try {
+                  const fresh = await fetchJson<RunRow>(adminDoorPath(`/runs/${runId}`));
+                  if (stopped) return;
+                  dispatch(seedRunRow({ runId, row: fresh }));
+                  if (!TERMINAL_RUN_STATUSES.has(fresh.status)) return;
+                  // Terminal on the server, but no terminal event was
+                  // delivered: settle the page from the row and stand down.
+                  transportMode = "idle";
+                  dispatch(setTransportMode({ runId, mode: "idle" }));
+                  tree.laneManager.disposeRun(runId);
+                  tree.stops.get(runId)?.();
+                } catch {
+                  // Retried on the next silence window; the transport still
+                  // owns delivery meanwhile.
+                }
+              })();
+            },
           });
           stopTransport = source.stop;
 
