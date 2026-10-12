@@ -41,12 +41,12 @@ import { formatDurationMs } from "@ai-matrx/kit/format";
 import { displayLabel } from "@ai-matrx/kit/text-case";
 
 /** The presets a decision point may be authored as (`HumanInputPreset`). */
-export type InterruptPreset = "free_text" | "form" | "approval";
+export type InterruptPreset = "free_text" | "form" | "approval" | "decision";
 
 /** How the question asked to be shown (`EmitPresentation`). */
 export type InterruptPresentation = "panel" | "showcase";
 
-const PRESETS: ReadonlySet<string> = new Set(["free_text", "form", "approval"]);
+const PRESETS: ReadonlySet<string> = new Set(["free_text", "form", "approval", "decision"]);
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -85,6 +85,8 @@ export interface InterruptQuestionView {
   /** Whatever the node handed the UI to help the person answer. */
   context: Record<string, unknown> | null;
   escalation: InterruptEscalation | null;
+  /** The human gate's spec (preset `decision`); null for every other question. */
+  decision: DecisionSpecView | null;
 }
 
 /** Parse `RunInterruptedEvent.payload`. Tolerant: every field has a floor that
@@ -109,7 +111,117 @@ export function parseInterruptPayload(
       ? raw.context
       : null,
     escalation: parseEscalation(raw.escalation),
+    decision: parseDecisionSpec(raw.decision),
   };
+}
+
+// ---------------------------------------------------------------------------
+// THE HUMAN GATE (preset `decision`) — matrx_graph/decision_spec.py
+// ---------------------------------------------------------------------------
+
+export type DecisionChoice = "confirm" | "not_true" | "edit" | "pick_one" | "pick_many" | "custom";
+const CHOICES: ReadonlySet<string> = new Set(["confirm", "not_true", "edit", "pick_one", "pick_many", "custom"]);
+/** Verdicts that carry a value the person typed or picked. */
+export const VALUE_VERDICTS: ReadonlySet<DecisionChoice> = new Set(["edit", "pick_one", "pick_many", "custom"]);
+
+export interface DecisionItemView {
+  key: string;
+  label: string;
+  value: unknown;
+  source: string | null;
+  /** 0..1, or null when nobody measured it. */
+  confidence: number | null;
+  choices: DecisionChoice[];
+  options: { value: unknown; label: string }[];
+  required: boolean;
+}
+
+export interface DecisionSpecView {
+  items: DecisionItemView[];
+  minAnswers: number;
+  submitLabel: string;
+}
+
+/** One person's answer to one item — the wire shape the engine validates. */
+export interface DecisionAnswer {
+  verdict: DecisionChoice;
+  value?: unknown;
+}
+
+export function parseDecisionSpec(raw: unknown): DecisionSpecView | null {
+  if (!isRecord(raw) || !Array.isArray(raw.items)) return null;
+  const items: DecisionItemView[] = [];
+  for (const entry of raw.items) {
+    if (!isRecord(entry)) continue;
+    const key = str(entry.key).trim();
+    if (!key) continue;
+    const choices = (Array.isArray(entry.choices) ? entry.choices : ["confirm", "not_true", "edit"])
+      .filter((c): c is DecisionChoice => typeof c === "string" && CHOICES.has(c));
+    items.push({
+      key,
+      label: str(entry.label).trim() || key,
+      value: entry.value ?? null,
+      source: str(entry.source).trim() || null,
+      confidence: typeof entry.confidence === "number" ? entry.confidence : null,
+      choices: choices.length > 0 ? choices : ["confirm"],
+      options: (Array.isArray(entry.options) ? entry.options : [])
+        .filter(isRecord)
+        .map((o) => ({ value: o.value ?? null, label: str(o.label) || String(o.value ?? "") })),
+      required: entry.required === true,
+    });
+  }
+  if (items.length === 0) return null;
+  return {
+    items,
+    minAnswers: typeof raw.min_answers === "number" ? raw.min_answers : 0,
+    submitLabel: str(raw.submit_label).trim() || "Confirm",
+  };
+}
+
+/** True when the answer is complete enough for the engine to accept it. */
+export function decisionAnswerComplete(answer: DecisionAnswer | undefined): boolean {
+  if (!answer) return false;
+  if (!VALUE_VERDICTS.has(answer.verdict)) return true;
+  const v = answer.value;
+  if (Array.isArray(v)) return v.length > 0;
+  if (typeof v === "string") return v.trim().length > 0;
+  return v !== undefined && v !== null;
+}
+
+/** What still blocks the gate: unanswered required items and the minimum. Empty = ready. */
+export function decisionBlockers(
+  spec: DecisionSpecView,
+  answers: Record<string, DecisionAnswer>,
+): { missingRequired: string[]; needMore: number } {
+  const done = spec.items.filter((i) => decisionAnswerComplete(answers[i.key]));
+  return {
+    missingRequired: spec.items
+      .filter((i) => i.required && !decisionAnswerComplete(answers[i.key]))
+      .map((i) => i.label),
+    needMore: Math.max(0, spec.minAnswers - done.length),
+  };
+}
+
+/** The resume body — only complete answers travel; the engine re-validates all of it. */
+export function decisionResumeValue(
+  spec: DecisionSpecView,
+  answers: Record<string, DecisionAnswer>,
+): Record<string, unknown> {
+  const out: Record<string, DecisionAnswer> = {};
+  for (const item of spec.items) {
+    const a = answers[item.key];
+    if (!decisionAnswerComplete(a) || !a) continue;
+    out[item.key] = VALUE_VERDICTS.has(a.verdict) ? { verdict: a.verdict, value: a.value } : { verdict: a.verdict };
+  }
+  return { answer: { answers: out } };
+}
+
+/** A believed value as one line of text. */
+export function decisionValueText(value: unknown): string {
+  if (value === null || value === undefined || value === "") return "";
+  if (Array.isArray(value)) return value.map((v) => decisionValueText(v)).filter(Boolean).join(", ");
+  if (isRecord(value)) return str(value.name) || str(value.label) || JSON.stringify(value);
+  return String(value);
 }
 
 function parseEscalation(value: unknown): InterruptEscalation | null {

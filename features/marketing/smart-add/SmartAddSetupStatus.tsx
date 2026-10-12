@@ -23,6 +23,7 @@ import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
 import { extractErrorMessage } from "@/utils/errors";
 import { toast } from "@/lib/toast";
 import { runHref } from "@/features/workflow-runtime/run-doors";
+import { HumanGatePanel } from "@/features/workflow-runtime/interrupt/HumanGatePanel";
 import { lookupSystemRun, startSystemRun } from "@/features/education/kits/systemRuns";
 import { countSitePages, listBrandProperties, listBrandSites } from "@/features/marketing/data/service";
 import { initializeSite } from "@/features/marketing/crawler/direct-client";
@@ -30,6 +31,36 @@ import { useSessionKnob } from "@/lib/scoped-config/sessionKnob";
 
 const SETUP_KEY = "smart_add_brand_setup";
 const STOPPED = new Set(["failed", "errored", "cancelled", "stopped"]);
+
+function useSetupRun(brandId: string, organizationId: string) {
+  const dispatch = useAppDispatch();
+  return useQuery({
+    queryKey: ["marketing", "smart-add-setup", brandId],
+    queryFn: () => lookupSystemRun(dispatch, SETUP_KEY, `brand:${brandId}`, organizationId, "Setup status could not be read."),
+    refetchInterval: (q) => (q.state.data?.active ? 15_000 : false),
+    refetchIntervalInBackground: false,
+    staleTime: 10_000,
+  });
+}
+
+/**
+ * THE HUMAN GATE for a new brand: once setup has landed the images and the history, the run
+ * waits for "Confirm your brand profile basics". Nothing after it (the brand intake, research,
+ * any AI) can start until it is answered — the engine holds the run, this only shows the panel.
+ */
+export function SmartAddBasicsGate({ brandId, organizationId }: { brandId: string; organizationId: string }) {
+  const queryClient = useQueryClient();
+  const run = useSetupRun(brandId, organizationId);
+  if (run.data?.status !== "interrupted") return null;
+  return (
+    <div className="mt-3 max-w-2xl">
+      <HumanGatePanel
+        runId={run.data.runId}
+        onAnswered={() => void queryClient.invalidateQueries({ queryKey: ["marketing", "smart-add-setup", brandId] })}
+      />
+    </div>
+  );
+}
 
 export function SmartAddSetupStatus({ brandId, organizationId }: { brandId: string; organizationId: string }) {
   const dispatch = useAppDispatch();
@@ -48,13 +79,7 @@ export function SmartAddSetupStatus({ brandId, organizationId }: { brandId: stri
     },
     staleTime: 60_000,
   });
-  const run = useQuery({
-    queryKey: ["marketing", "smart-add-setup", brandId],
-    queryFn: () => lookupSystemRun(dispatch, SETUP_KEY, `brand:${brandId}`, organizationId, "Setup status could not be read."),
-    refetchInterval: (q) => (q.state.data?.active ? 15_000 : false),
-    refetchIntervalInBackground: false,
-    staleTime: 10_000,
-  });
+  const run = useSetupRun(brandId, organizationId);
   const r = run.data;
   const uncrawled = (sites.data ?? []).filter((x) => x.pages === 0);
   if (!r) return null;
@@ -129,8 +154,8 @@ export function SmartAddSetupStatus({ brandId, organizationId }: { brandId: stri
 
   return (
     <span className="inline-flex items-center gap-1" data-testid="smart-add-setup-status">
-      <Badge tone={stopped ? "warning" : "neutral"}>
-        {r.status === "completed" ? "Site not crawled" : stopped ? "Setup stopped" : (
+      <Badge tone={stopped ? "warning" : r.status === "interrupted" ? "primary" : "neutral"}>
+        {r.status === "completed" ? "Site not crawled" : stopped ? "Setup stopped" : r.status === "interrupted" ? "Waiting for you" : (
           <span className="inline-flex items-center gap-1">
             <Loader2 className="size-3 animate-spin" /> Setting up
           </span>

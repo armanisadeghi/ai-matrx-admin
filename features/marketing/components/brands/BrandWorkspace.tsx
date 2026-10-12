@@ -47,7 +47,7 @@ import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { GovernedActionDialog } from "@/features/access-gate/components/GovernedActionDialog";
 import { isGovernedActionDenial } from "@/features/access-gate/lib/governedActionError";
-import { SmartAddSetupStatus } from "@/features/marketing/smart-add/SmartAddSetupStatus";
+import { SmartAddBasicsGate, SmartAddSetupStatus } from "@/features/marketing/smart-add/SmartAddSetupStatus";
 import { BrandEditorDialog } from "@/features/marketing/components/brands/BrandEditorDialog";
 import {
   MARKETING_BRAND_SURFACE_NAME,
@@ -795,6 +795,7 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
                   {current.description}
                 </p>
               ) : null}
+              <SmartAddBasicsGate brandId={current.id} organizationId={current.organization_id} />
             </div>
             {heroCover ? (
               // The brand's own public og/hero image — the share-card face of

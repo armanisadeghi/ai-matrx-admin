@@ -57,6 +57,11 @@ export interface WaitingRunRow {
   deadline: string | null;
   /** Set when the question lives inside a fan-out or a subgraph call. */
   parentRunId: string | null;
+  /** The checkpoint a question resumes from (null for an awaiting_input park). */
+  checkpointId: string | null;
+  /** The human gate's whole spec when the question is a `decision` preset —
+   * `parseDecisionSpec` (interrupt-view) reads it. Null for every other ask. */
+  decision: Record<string, unknown> | null;
 }
 
 function text(value: unknown): string | null {
@@ -114,6 +119,11 @@ export function parseWaitingRun(raw: unknown): WaitingRunRow | null {
     askedAt: text(record.asked_at),
     deadline: text(record.deadline),
     parentRunId: text(record.parent_run_id),
+    checkpointId: text(snapshot.checkpoint_id),
+    decision:
+      typeof snapshot.decision === "object" && snapshot.decision !== null && !Array.isArray(snapshot.decision)
+        ? (snapshot.decision as Record<string, unknown>)
+        : null,
   };
 }
 

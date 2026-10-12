@@ -61,6 +61,7 @@ import {
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { heldWriteOfInterrupt } from "@/features/record-change-approvals/recordChangeApproval";
 import { HeldInterrupt } from "./HeldInterrupt";
+import { DecisionPanel } from "./DecisionPanel";
 
 /**
  * Where the host is drawing questions.
@@ -222,7 +223,9 @@ function InterruptBody({
         </dl>
       ) : null}
 
-      {approval ? (
+      {view.decision ? (
+        <DecisionPanel spec={view.decision} sending={sending} onSubmit={send} />
+      ) : approval ? (
         <ApprovalControl sending={sending} onDecide={send} />
       ) : (
         <AnswerControl view={view} sending={sending} onSend={send} />
