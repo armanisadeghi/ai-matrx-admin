@@ -19,8 +19,6 @@ import {
   selectRunStatus,
 } from "@/features/workflow-runtime/redux/workflow-runs.selectors";
 import { evidenceFromPayload, type EvidenceItem } from "./evidence";
-import { useBuilderFeed } from "@/hooks/useBuilderFeed";
-import { SMART_ADD_SURFACE } from "./builderFeed";
 
 /** The steps a Smart Add workflow shows, in order. */
 export type SmartAddStepPair = readonly string[];
@@ -28,7 +26,25 @@ export type SmartAddStepPair = readonly string[];
 export const IDENTIFY_STEPS: SmartAddStepPair = ["probe", "page", "avatars", "socials", "web", "deep", "local"];
 export const SETUP_STEPS: SmartAddStepPair = ["logo", "accounts", "history"];
 
+/** The page step's gate detection (aidream brand_identify_gate.GateReport), as far as the screen uses it. */
+export interface SiteGate {
+  type: "division_chooser" | "language_gate" | "age_gate" | "splash" | "consent_wall" | "password";
+  branches: { label: string; url: string }[];
+}
+
+function parseGate(raw: unknown): SiteGate | null {
+  if (typeof raw !== "object" || raw === null) return null;
+  const g = raw as Record<string, unknown>;
+  if (typeof g.type !== "string" || !Array.isArray(g.branches)) return null;
+  const branches = g.branches
+    .map((b) => (typeof b === "object" && b !== null ? (b as Record<string, unknown>) : {}))
+    .filter((b): b is { label: string; url: string } => typeof b.label === "string" && typeof b.url === "string")
+    .map((b) => ({ label: b.label, url: b.url }));
+  return { type: g.type as SiteGate["type"], branches };
+}
+
 export interface StepView {
+  gate?: SiteGate | null;
   step: string;
   phase: string;
   progress: string | null;
@@ -70,6 +86,7 @@ function StepWatch({
     costUsd: numberOr(output?.cost_usd, 0),
     // A step the run skipped (its facts were not there yet) reads as skipped, like one with nothing to do.
     skipped: output?.skipped === true || aggregate.phase === "skipped",
+    gate: parseGate(output?.gate),
   };
   const signature = JSON.stringify({ view, evidence: evidenceFromPayload(output) });
   useEffect(() => {

@@ -81,6 +81,7 @@ import {
 } from "./evidence";
 import { routeRelated, relatedCompetitors, type RelatedCandidate } from "./relations";
 import { SETUP_STEPS, SmartAddRound, type RoundView } from "./SmartAddRound";
+import { SmartAddGateLine } from "./SmartAddGateLine";
 import { SmartAddWebRow } from "./SmartAddWebRow";
 import { captureProvision } from "@/features/provision-window/data";
 import { useOpenProvisionWindow } from "@/features/overlays/openers/provisionWindow";
@@ -790,6 +791,7 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
         />
       </div>
 
+      <SmartAddGateLine views={roundViews.filter((v): v is RoundView => Boolean(v))} />
       <SmartAddWebRow items={visible} views={roundViews.filter((v): v is RoundView => Boolean(v))} />
 
       {notes.length ? (
