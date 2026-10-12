@@ -21,6 +21,7 @@ import { mapThrownError } from "@ai-matrx/records/core";
 import { supabase } from "@/utils/supabase/client";
 import { requireUserId } from "@/utils/auth/getUserId";
 import { runWithSessionRetry } from "@/lib/supabase/authRetry";
+import { readMembershipRows } from "@ai-matrx/auth/organizations";
 import { err, ok } from "@/features/scopes/service/rpcResult";
 import type { RecordsResult } from "@ai-matrx/records";
 import type { Json } from "@/types/database.types";
@@ -332,22 +333,13 @@ export const membershipsService = {
       RecordsResult<{ memberships: UserMembership[] }>
     > => {
       try {
-        // PAGED: PostgREST caps one answer at its max-rows (1000). A person in 1,043 organizations
-        // lost the last 43 — Holloway Creative never reached the picker and her own org page said
-        // "You don't have access" (feedback 6f443931). Read in stable id order until a short page.
-        const rows: MbrForUserRow[] = [];
-        for (let from = 0; ; from += FOR_USER_PAGE) {
-          const { data, error } = await runWithSessionRetry(() =>
-            supabase
-              .rpc("mbr_for_user", { p_container_type: containerType })
-              .order("id", { ascending: true })
-              .range(from, from + FOR_USER_PAGE - 1),
-          );
-          if (error) return { ok: false as const, error: mapThrownError(error, "membershipsService") };
-          const page = (Array.isArray(data) ? data : []) as MbrForUserRow[];
-          rows.push(...page);
-          if (page.length < FOR_USER_PAGE) break;
-        }
+        // PAGED by the package (`readMembershipRows`: PostgREST caps one answer at 1000 rows);
+        // the whole read rides the session retry, so a recovering 401 repeats it once.
+        const { data, error } = await runWithSessionRetry(() =>
+          readMembershipRows<MbrForUserRow>(supabase, containerType, FOR_USER_PAGE),
+        );
+        if (error) return { ok: false as const, error: mapThrownError(error, "membershipsService") };
+        const rows = data ?? [];
         const result = ok({ memberships: rows.map(toUserMembership) });
         // Only cache successes — a failed read must not poison retries.
         installSignOutHook();
