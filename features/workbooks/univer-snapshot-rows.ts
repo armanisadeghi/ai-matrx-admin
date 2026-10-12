@@ -18,6 +18,9 @@ interface CellShape {
 
 interface SheetShape {
   name?: string;
+  /** Univer marks a hidden column/row `hd: 1` (a table link's Record ID column is one). */
+  columnData?: Record<string, { hd?: number } | null | undefined>;
+  rowData?: Record<string, { hd?: number } | null | undefined>;
   cellData?: Record<string, Record<string, CellShape | null | undefined>>;
 }
 
@@ -62,8 +65,10 @@ function cellText(cell: CellShape | null | undefined, styles?: Styles): string {
 /**
  * Extract the first worksheet of a Univer workbook snapshot as a string grid.
  * Returns null when the value is not snapshot-shaped or has no sheets.
+ * `skipHidden` leaves out hidden columns and rows: every read-only view (a share page, an agent's
+ * read) passes it, so the table link's hidden Record ID column never reaches a reader.
  */
-export function univerSnapshotToRows(snapshot: unknown, options: { sheetId?: string } = {}): SnapshotRows | null {
+export function univerSnapshotToRows(snapshot: unknown, options: { sheetId?: string; skipHidden?: boolean } = {}): SnapshotRows | null {
   if (typeof snapshot !== "object" || snapshot === null) return null;
   const shape = snapshot as SnapshotShape;
   const sheets = shape.sheets ?? {};
@@ -94,11 +99,15 @@ export function univerSnapshotToRows(snapshot: unknown, options: { sheetId?: str
     return { sheetName: sheet?.name ?? "Sheet1", rows: [] };
   }
 
+  const hiddenCol = (c: number) => options.skipHidden === true && sheet?.columnData?.[String(c)]?.hd === 1;
+  const hiddenRow = (r: number) => options.skipHidden === true && sheet?.rowData?.[String(r)]?.hd === 1;
   const rows: string[][] = [];
   for (let r = 0; r <= maxRow; r += 1) {
+    if (hiddenRow(r)) continue;
     const row: string[] = [];
     const source = cellData[String(r)] ?? {};
     for (let c = 0; c <= maxCol; c += 1) {
+      if (hiddenCol(c)) continue;
       row.push(cellText(source[String(c)], styles));
     }
     rows.push(row);

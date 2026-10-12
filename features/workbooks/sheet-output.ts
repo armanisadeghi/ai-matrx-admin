@@ -18,7 +18,7 @@ export function downloadSheetAsCsv(
   snapshot: unknown,
   options: { sheetId?: string; filename: string },
 ): boolean {
-  const grid = univerSnapshotToRows(snapshot, options.sheetId ? { sheetId: options.sheetId } : {});
+  const grid = univerSnapshotToRows(snapshot, { skipHidden: true, ...(options.sheetId ? { sheetId: options.sheetId } : {}) });
   if (!grid || grid.rows.length === 0) return false;
   const name = `${options.filename.replace(/\.csv$/i, "")}.csv`;
   // BOM so Excel reads UTF-8.
@@ -36,7 +36,7 @@ export function printSheet(
   snapshot: unknown,
   options: { sheetId?: string; title: string },
 ): boolean {
-  const grid = univerSnapshotToRows(snapshot, options.sheetId ? { sheetId: options.sheetId } : {});
+  const grid = univerSnapshotToRows(snapshot, { skipHidden: true, ...(options.sheetId ? { sheetId: options.sheetId } : {}) });
   if (!grid || grid.rows.length === 0) return false;
   const body = grid.rows
     .map((r) => `<tr>${r.map((c) => `<td>${esc(c)}</td>`).join("")}</tr>`)
@@ -82,7 +82,7 @@ export async function downloadSheetAsPdf(
   snapshot: unknown,
   options: { sheetId?: string; title: string },
 ): Promise<boolean> {
-  const grid = univerSnapshotToRows(snapshot, options.sheetId ? { sheetId: options.sheetId } : {});
+  const grid = univerSnapshotToRows(snapshot, { skipHidden: true, ...(options.sheetId ? { sheetId: options.sheetId } : {}) });
   if (!grid || grid.rows.length === 0) return false;
   const { exportContent } = await import("@ai-matrx/rich-content/copy/content-export");
   await exportContent(

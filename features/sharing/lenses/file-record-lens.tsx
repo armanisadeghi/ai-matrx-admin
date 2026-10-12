@@ -50,7 +50,7 @@ export function WorkbookShareLens({ result }: ShareLensProps) {
   const order = (content?.snapshot as { sheetOrder?: string[] } | undefined)?.sheetOrder ?? [];
   const sheets = content?.snapshot
     ? order
-        .map((sheetId) => univerSnapshotToRows(content.snapshot, { sheetId }))
+        .map((sheetId) => univerSnapshotToRows(content.snapshot, { sheetId, skipHidden: true }))
         .filter((s): s is NonNullable<typeof s> => s !== null)
     : [];
   return (
