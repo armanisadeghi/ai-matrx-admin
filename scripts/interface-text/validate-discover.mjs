@@ -119,7 +119,8 @@ export function validateReview(units, review) {
 }
 
 if (process.argv[1] && process.argv[1].endsWith("validate-discover.mjs") && discoverPath?.endsWith(".json")) {
-  const units = JSON.parse(readFileSync(unitsPath, "utf8")).units;
+  const unitsData = JSON.parse(readFileSync(unitsPath, "utf8"));
+  const units = Array.isArray(unitsData) ? unitsData : unitsData.units; // check-owner-words keeps a bare array bare
   const problems = validateReview(units, JSON.parse(readFileSync(discoverPath, "utf8")));
   if (problems.length) { for (const p of problems) console.log(p); console.log(`\n${problems.length} problem(s) — Review is NOT done.`); process.exit(1); }
   console.log("valid — every replacement fits its slot.");
@@ -128,7 +129,8 @@ if (process.argv[1] && process.argv[1].endsWith("validate-discover.mjs") && disc
 
 if (process.argv[1] && process.argv[1].endsWith("validate-discover.mjs")) {
   if (!unitsPath || !discoverPath) { console.error("usage: validate-discover.mjs <units.json> <discover.jsonl> [--root=<repo>]"); process.exit(2); }
-  const units = JSON.parse(readFileSync(unitsPath, "utf8")).units;
+  const unitsData = JSON.parse(readFileSync(unitsPath, "utf8"));
+  const units = Array.isArray(unitsData) ? unitsData : unitsData.units; // check-owner-words keeps a bare array bare
   const lines = existsSync(discoverPath) ? readFileSync(discoverPath, "utf8").split("\n").filter((l) => l.trim()) : [];
   const cache = new Map();
   const readFile = (f) => { if (!cache.has(f)) { try { cache.set(f, readFileSync(resolve(ROOT, f), "utf8")); } catch { cache.set(f, null); } } return cache.get(f); };
