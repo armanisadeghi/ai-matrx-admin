@@ -19,7 +19,7 @@ const KEY = "test.workflow_holder" as MandateKey;
 
 let verdict: Record<string, unknown> = {};
 
-// The error model is @ai-matrx/agents/matrx's (P9): the package's `instanceof`
+// The error model is @ai-matrx/api's (P9): the package's `instanceof`
 // checks see this stand-in only when it IS that class.
 jest.mock("@/lib/api/errors", () => {
   const { BackendApiError: Real } = jest.requireActual("@ai-matrx/api") as {

@@ -27,9 +27,10 @@
 // here, `appContextSlice` re-exports it for ordinary Redux consumers, and the
 // gate reads it from here.
 //
-// It is not a twin of a slice selector: this IS the definition.
+// It is not a twin of a slice selector: this IS the store binding; the rule is `@ai-matrx/auth`'s.
 
 import { createSelector } from "@reduxjs/toolkit";
+import { shouldPromptForOrganization } from "@ai-matrx/auth/organizations";
 import { selectOrgBootstrapFailure } from "@/lib/organizations/orgBootstrapFailure";
 
 /**
@@ -77,6 +78,7 @@ const readOrganizationId = (state: unknown): string | null => {
 export const selectShouldPromptForOrganization: (state: unknown) => boolean =
   createSelector(
     [readOrgBootstrapResolved, readOrganizationId, selectOrgBootstrapFailure],
+    // The decision is the package's (`shouldPromptForOrganization`); this file only binds it to the store.
     (resolved, organizationId, failure) =>
-      resolved && organizationId == null && failure == null,
+      shouldPromptForOrganization({ resolved, organizationId, failure }),
   );

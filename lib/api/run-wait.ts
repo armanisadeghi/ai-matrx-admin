@@ -3,7 +3,7 @@
  * answering a run, per output kind, as an organization knob.
  *
  * The rule, the arithmetic and the honest timeout sentence MOVED into
- * `@ai-matrx/agents/matrx` (`run-wait`, chat-package independence P9). This app
+ * `@ai-matrx/api` (`run-wait`, chat-package independence P9). This app
  * supplies the one host fact: how a knob is read (`ensureEffectiveKnob`).
  */
 

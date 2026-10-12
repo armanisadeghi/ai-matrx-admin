@@ -5,7 +5,7 @@
  * person must see the server's sentence, never xAI's raw text.
  *
  * Seam: the real `useXaiVoiceSession` → the real `reportBrowserProviderFailure`
- * thunk → the real `reportProviderSessionFailure` (`@ai-matrx/agents/matrx`,
+ * thunk → the real `reportProviderSessionFailure` (`@ai-matrx/api`,
  * which bounds the body) → a faked transport `fetch`. Faked are only what the
  * hook CALLS at the edge: the xAI socket client, the mic/speaker modules, the
  * token mint, and the HTTP transport.

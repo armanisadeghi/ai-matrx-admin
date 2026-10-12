@@ -63,6 +63,8 @@ export interface Organization {
 export interface OrganizationWithRole extends Organization {
   role: OrgRole;
   memberCount?: number;
+  /** When her membership began (ISO) — the package ladder's "oldest membership" rung reads it. */
+  joinedAt?: string;
 }
 
 /**

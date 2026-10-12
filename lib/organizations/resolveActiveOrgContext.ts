@@ -18,7 +18,8 @@
 //   1. the LINK's own organization (`?org=`) — `lib/organizations/linkOrganization.ts`;
 //   2. the account's LAST ACTIVE organization (`last_active_organization_id`);
 //   3. the account's START-UP organization setting (`startup_organization_id`);
-//   4. their FIRST organization — the oldest active membership.
+//   4. their FIRST organization — the oldest active membership (each organization
+//      carries `joinedAt`; the package's ladder picks the oldest).
 // Zero memberships → null (the shell shows "create an organization"). A failed
 // read THROWS, and the caller shows the honest retry state — never a guess.
 //
@@ -26,9 +27,7 @@
 // (`accountOrganizationChoices.ts`); nothing else may read them to decide where
 // anything acts.
 
-import { isRecordsErr } from "@ai-matrx/records";
 import { getUserOrganizations } from "@/features/organizations/service";
-import { membershipsService } from "@/features/organizations/service/membershipsService";
 import { readAccountOrganizationChoices } from "@/lib/organizations/accountOrganizationChoices";
 import {
   resolveOrganizationWithLink,
@@ -107,7 +106,6 @@ export async function resolveActiveOrgContext(
     memberships: orgs,
     held: options.heldOrganizationId ?? null,
     readAccount: () => readAccountOrganizationChoices(userId),
-    first: () => firstOrganization(orgs),
     link: options.linkOrganizationId ?? null,
     switchWhenALinkAsks: options.switchWhenALinkAsks,
     signedInAs: options.signedInAs,
@@ -132,20 +130,4 @@ export async function resolveActiveOrgContext(
     organization_name: r.organization.name,
     ...(r.link.kind === "no-link" ? {} : { link: r.link }),
   };
-}
-
-/**
- * Rung 4: the oldest ACTIVE membership among the organizations the person can
- * open (archived organizations are already left out of `orgs`).
- */
-async function firstOrganization<T extends { id: string; name: string }>(
-  orgs: ReadonlyArray<T>,
-): Promise<T | null> {
-  const result = await membershipsService.forUser("organization");
-  if (isRecordsErr(result)) throw new Error(result.error.message);
-  const live = new Map(orgs.map((o) => [o.id, o]));
-  const oldest = result.data.memberships
-    .filter((m) => m.status === "active" && live.has(m.containerId))
-    .sort((x, y) => x.createdAt.localeCompare(y.createdAt))[0];
-  return oldest ? (live.get(oldest.containerId) ?? null) : (orgs[0] ?? null);
 }

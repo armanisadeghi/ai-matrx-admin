@@ -28,7 +28,7 @@
 
 import { getStoreSingleton as getStore } from "@/lib/redux/store-singleton";
 // The ONE error type for "no organization is selected" — the same class the
-// transport kernel throws (`@ai-matrx/agents/matrx`, re-exported by
+// transport kernel throws (`@ai-matrx/api`, re-exported by
 // `lib/api/organization-context`). Two different error shapes for one fact
 // meant every surface had to string-match one of them, so the screens showed a
 // raw transport sentence instead of an honest state; there is now one type and

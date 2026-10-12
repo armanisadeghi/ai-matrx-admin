@@ -3,7 +3,7 @@
 // Single source of truth for which version of the AI runtime THIS APP talks
 // to. The transform machinery itself (toV2Path, the covered-surface
 // allowlist, isV2Path, toV1FallbackUrl, applyAiApiVersion) MOVED into the
-// published package (`@ai-matrx/agents/matrx`, 0.6.0 — the C22 retrofit) and
+// published package (`@ai-matrx/api`, 0.6.0 — the C22 retrofit) and
 // is re-exported here so existing import sites keep their path. Change the
 // transform only in the package, with the server.
 //
@@ -41,6 +41,6 @@ export const AI_API_VERSION_DEFAULT: AiApiVersion = "v2";
 /**
  * The exact-match `pathOverrides` map to hand `resolveEndpointPath` — keyed on
  * the canonical templates, valued at their `/v2` siblings. Empty for v1. Moved
- * into `@ai-matrx/agents/matrx` (P9); re-exported here.
+ * into `@ai-matrx/api` (P9); re-exported here.
  */
 export { aiVersionPathOverrides } from "@ai-matrx/api";

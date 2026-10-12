@@ -74,7 +74,7 @@ jest.mock("@/components/official/entity-ref/TextWithDoors", () => ({
 }));
 
 // ── `../service` is the real module; only its edges are stubbed. ─────────────
-// The error model is @ai-matrx/agents/matrx's (P9): the package's `instanceof`
+// The error model is @ai-matrx/api's (P9): the package's `instanceof`
 // checks see this stand-in only when it IS that class.
 jest.mock("@/lib/api/errors", () => {
   const { BackendApiError: Real } = jest.requireActual("@ai-matrx/api") as {

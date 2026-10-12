@@ -8,7 +8,7 @@
  * standard Authorization + organization headers, so the backend's
  * AuthMiddleware authenticates the stream exactly like every other route.
  *
- * Framing is the shared Matrx SSE kernel (`@ai-matrx/agents/stream/sse`):
+ * Framing is the shared Matrx SSE kernel (`@ai-matrx/api/stream`):
  * all three separators (sse-starlette emits CRLF), multi-line `data:` joined
  * with "\n", partial frames buffered across chunks.
  *

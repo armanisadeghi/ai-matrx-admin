@@ -767,7 +767,7 @@ export async function* postNdjson<B = unknown>(
   } catch (err) {
     failClient(err, "POST", path, url, requestId, opts.signal);
   }
-  // THE shared NDJSON parser (`@ai-matrx/agents/matrx`): compact lines are
+  // THE shared NDJSON parser (`@ai-matrx/api`): compact lines are
   // expanded, torn lines skipped, a body that breaks mid-run is a classified
   // `StreamTransportError`, and an abort ends the iteration quietly.
   const parsed = parseMatrxNdjsonResponse(response, opts.signal);

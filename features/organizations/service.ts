@@ -433,6 +433,7 @@ export async function getUserOrganizations(
       ...org,
       role: roleByOrgId.get(org.id) ?? "member",
       memberCount: countByOrgId.get(org.id) ?? 0,
+      ...(shared.joinedAtByOrgId.get(org.id) ? { joinedAt: shared.joinedAtByOrgId.get(org.id) } : {}),
     };
   });
 

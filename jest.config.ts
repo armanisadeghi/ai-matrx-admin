@@ -167,7 +167,7 @@ const config: Config = {
       "<rootDir>/node_modules/next/dist/compiled/webpack/webpack-lib.js",
     // Our own published `@ai-matrx/*` packages ship an `exports` subpath
     // map. Jest's default resolver does NOT honour `exports`, so a shipped
-    // import like `@ai-matrx/agents/stream/ndjson` resolves to nothing and
+    // import like `@ai-matrx/api/stream` resolves to nothing and
     // the suite dies at import — 74 suites repo-wide the day the frontend
     // started consuming the published stream runtime. Map the subpaths to
     // dist directly (they are also listed in transformIgnorePatterns below,
@@ -181,10 +181,12 @@ const config: Config = {
     // subpath rule below — which would resolve `./mandates` to
     // dist/mandates.js and fail with "Could not locate module". Every new
     // directory subpath the package publishes belongs in this alternation:
-    //   ./matrx     the shared matrx client
     //   ./catalog   the ONE agent picker (+ ./catalog/react)
     //   ./mandates  the published mandate-key vocabulary (0.10.0)
-    "^@ai-matrx/agents/(matrx|catalog|mandates|content-transfer|skills)$":
+    // @ai-matrx/api's root ships `main` = CJS; the suites need the same ESM
+    // dist every other @ai-matrx entry maps to (one realm for AbortSignal/fetch).
+    "^@ai-matrx/api$": "<rootDir>/node_modules/@ai-matrx/api/dist/index.js",
+    "^@ai-matrx/agents/(catalog|mandates|content-transfer|skills)$":
       "<rootDir>/node_modules/@ai-matrx/agents/dist/$1/index.js",
     "^@ai-matrx/agents/catalog/react$":
       "<rootDir>/node_modules/@ai-matrx/agents/dist/catalog/react/index.js",

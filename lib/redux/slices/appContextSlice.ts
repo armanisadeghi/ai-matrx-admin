@@ -47,6 +47,11 @@
 
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import { definePolicy } from "@/lib/sync/policies/define";
+import {
+  organizationReadFailureReason,
+  organizationWasReplaced,
+  reconcileRehydratedOrganization,
+} from "@ai-matrx/auth/organizations";
 import { selectOrgBootstrapFailure } from "@/lib/organizations/orgBootstrapFailure";
 import { selectShouldPromptForOrganization } from "@/lib/organizations/shouldPromptForOrganization";
 import { markOrgBootstrapResolved } from "@/lib/organizations/orgBootstrapGate";
@@ -383,33 +388,8 @@ const appContextSlice = createSlice({
       //   • the LOAD LADDER's answer (`orgBootstrapResolved: true`) is the
       //     account's, and it WINS over the painted cache — unless this tab
       //     already holds an organization the person chose here.
-      const fromLadder = loaded.orgBootstrapResolved === true;
-      if (!fromLadder) {
-        if (state.organization_id == null && loaded.organization_id) {
-          state.organization_id = loaded.organization_id;
-          state.organization_name = loaded.organization_name ?? null;
-        }
-        return;
-      }
-      const heldHere = state.orgBootstrapResolved && state.organization_id != null;
-      state.orgBootstrapResolved = true;
-      // THE FOURTH STATE rides the same rehydrate: a ladder result always
-      // carries it (null on success), so a later success clears a failure.
-      if (loaded.orgBootstrapFailure !== undefined) {
-        state.orgBootstrapFailure =
-          loaded.organization_id != null ? null : loaded.orgBootstrapFailure;
-      }
-      if (loaded.organization_id === undefined) return; // a failed read changes nothing
-      if (heldHere && loaded.organization_id === state.organization_id) {
-        state.organization_name = loaded.organization_name ?? state.organization_name;
-        return;
-      }
-      // A tab that holds an organization keeps it; a removed membership is
-      // replaced by the fetch itself, through `setOrganization`, with an
-      // announcement — never silently here.
-      if (heldHere) return;
-      state.organization_id = loaded.organization_id;
-      state.organization_name = loaded.organization_name ?? null;
+      // The decision (paint vs the ladder's answer, hold-here) is the package's; this assigns it.
+      Object.assign(state, reconcileRehydratedOrganization(state, loaded));
     });
   },
 });
@@ -687,11 +667,7 @@ export const appContextPolicy = definePolicy<AppContextState>({
       } catch (error) {
         // The membership read threw — `getUserOrganizations` fails closed, and
         // this is the `TypeError: Failed to fetch` path from the seat.
-        return unreadable(
-          error instanceof Error
-            ? `the organization read failed: ${error.message}`
-            : "the organization read failed",
-        );
+        return unreadable(organizationReadFailureReason(error));
       }
       if (signal.aborted) {
         return unreadable("the organization read was cancelled before it ran");
@@ -722,10 +698,11 @@ export const appContextPolicy = definePolicy<AppContextState>({
       // THE HELD ORGANIZATION WAS TAKEN AWAY (removed, or archived): the
       // ladder chose again — switch, and say so.
       if (
-        heldOrganizationId &&
-        context.organization_id &&
-        context.organization_id !== heldOrganizationId &&
-        link?.kind !== "honoured"
+        organizationWasReplaced({
+          held: heldOrganizationId,
+          chosen: context.organization_id,
+          linkKind: link?.kind,
+        })
       ) {
         const { announceActiveOrganizationReplaced } = await import(
           "@/lib/organizations/announceActiveOrganizationReplaced"

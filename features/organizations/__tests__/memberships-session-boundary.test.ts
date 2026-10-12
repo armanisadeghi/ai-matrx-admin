@@ -21,7 +21,9 @@ jest.mock("@/utils/auth/getUserId", () => ({
   requireUserId: jest.fn(() => "user-1"),
 }));
 
-import { membershipsService } from "../service/membershipsService";
+// A fresh service per test: `forUser` keeps a short-lived success cache, so one test's good read
+// would otherwise answer the next test's call before it ever reaches the (mocked) session/RPC.
+let membershipsService: typeof import("../service/membershipsService").membershipsService;
 
 const MEMBERSHIP_ROW = {
   id: "membership-1",
@@ -38,6 +40,9 @@ describe("membership read session boundary", () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    jest.isolateModules(() => {
+      membershipsService = require("../service/membershipsService").membershipsService;
+    });
     consoleError = jest.spyOn(console, "error").mockImplementation(() => {});
   });
 
@@ -119,7 +124,8 @@ describe("membership read session boundary", () => {
 
     expect(result).toMatchObject({
       ok: false,
-      error: { code: "forbidden_org", message: "Permission denied" },
+      // The shared records mapper owns the code: SQLSTATE 42501 is a refused DOOR, and it carries the store's own sentence.
+      error: { code: "door", message: "permission denied for function mbr_for_user" },
     });
     expect(mockRpc).toHaveBeenCalledTimes(1);
     expect(mockGetSession).toHaveBeenCalledTimes(1);
@@ -132,7 +138,8 @@ describe("membership read session boundary", () => {
 
     expect(result).toMatchObject({
       ok: false,
-      error: { code: "unauthorized", message: "Your session expired" },
+      // The package's SessionUnavailableError carries PGRST301, which the shared records mapper classes as a refused DOOR.
+      error: { code: "door", message: "Your session expired" },
     });
     expect(mockRpc).not.toHaveBeenCalled();
     expect(consoleError).not.toHaveBeenCalled();

@@ -2,7 +2,7 @@
  * PDF Extractor — a clean stream that ended with no clean text.
  *
  * The run record, not a timer, says what really happened: follow the clean's
- * run to its terminal status (`followServerJob`, @ai-matrx/agents/matrx) and
+ * run to its terminal status (`followServerJob`, @ai-matrx/api) and
  * reload the saved document exactly once when it completed. A failed run
  * carries its own reason; any other end (cancelled, no run) is reported as such.
  * `follow` is injectable so the decision is unit-testable.

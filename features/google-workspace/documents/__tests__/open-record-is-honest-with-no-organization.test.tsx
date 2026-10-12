@@ -80,7 +80,7 @@ jest.mock("@/features/marketing/google/service", () => ({
 // The birth door resolves the ACTIVE organization from the store singleton —
 // never the resource's own — which is exactly the "none selected" case this
 // proves. `requireOrganizationContext` itself is left UNMOCKED: it is the real
-// `@ai-matrx/agents/matrx` kernel, so this is the real fail-closed refusal, not
+// `@ai-matrx/api` kernel, so this is the real fail-closed refusal, not
 // a stand-in for it.
 jest.mock("@/lib/redux/store-singleton", () => ({
   // The organization gate (lib/organization/organization-gate.ts) reads

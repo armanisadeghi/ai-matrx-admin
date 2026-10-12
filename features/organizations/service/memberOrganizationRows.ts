@@ -20,7 +20,7 @@ import type { Database } from "@/types/database.types";
 export type MemberOrganizationRow = Database["iam"]["Tables"]["organizations"]["Row"];
 
 export type MemberOrganizationRows =
-  | { ok: true; roleByOrgId: Map<string, string>; rows: MemberOrganizationRow[] }
+  | { ok: true; roleByOrgId: Map<string, string>; joinedAtByOrgId: Map<string, string>; rows: MemberOrganizationRow[] }
   | { ok: false; stage: "memberships"; error: { message: string; code?: string } }
   | { ok: false; stage: "organizations"; error: { message: string; code?: string; details?: string; hint?: string } };
 
@@ -33,9 +33,14 @@ async function readOnce(): Promise<MemberOrganizationRows> {
     return { ok: false, stage: "memberships", error: { message: memberships.error.message, code: memberships.error.code } };
   }
   const roleByOrgId = new Map<string, string>();
-  for (const m of memberships.data.memberships) roleByOrgId.set(m.containerId, m.role);
+  const joinedAtByOrgId = new Map<string, string>();
+  for (const m of memberships.data.memberships) {
+    roleByOrgId.set(m.containerId, m.role);
+    // Only an ACTIVE membership counts toward "oldest" (the ladder's last rung).
+    if (m.status === "active" && m.createdAt) joinedAtByOrgId.set(m.containerId, m.createdAt);
+  }
   const orgIds = [...roleByOrgId.keys()];
-  if (orgIds.length === 0) return { ok: true, roleByOrgId, rows: [] };
+  if (orgIds.length === 0) return { ok: true, roleByOrgId, joinedAtByOrgId, rows: [] };
   // ONE GET url carries ~100 ids, not a person's ~1000 memberships: read in chunks.
   const { data, error } = await readInChunks(orgIds, (chunk) =>
     supabase.schema("iam").from("organizations").select("*").in("id", chunk),
@@ -44,7 +49,7 @@ async function readOnce(): Promise<MemberOrganizationRows> {
     const e = error as { message?: string; code?: string; details?: string; hint?: string };
     return { ok: false, stage: "organizations", error: { message: e.message ?? "The organizations could not be read.", code: e.code, details: e.details, hint: e.hint } };
   }
-  return { ok: true, roleByOrgId, rows: (data ?? []) as MemberOrganizationRow[] };
+  return { ok: true, roleByOrgId, joinedAtByOrgId, rows: (data ?? []) as MemberOrganizationRow[] };
 }
 
 /** Her memberships and every organization row she is a member of — one read, shared. */
@@ -52,7 +57,7 @@ export function readMemberOrganizationRows(): Promise<MemberOrganizationRows> {
   const userId = requireUserId();
   const held = shared;
   if (held && held.userId === userId && (held.at === 0 || Date.now() - held.at < SHARED_MS)) return held.read;
-  const entry: { userId: string; at: number; read: Promise<MemberOrganizationRows> } = { userId, at: 0, read: Promise.resolve({ ok: true, roleByOrgId: new Map(), rows: [] }) };
+  const entry: { userId: string; at: number; read: Promise<MemberOrganizationRows> } = { userId, at: 0, read: Promise.resolve({ ok: true, roleByOrgId: new Map(), joinedAtByOrgId: new Map(), rows: [] }) };
   entry.read = readOnce().then(
     (answer) => {
       if (answer.ok) entry.at = Date.now();

@@ -119,7 +119,7 @@ import {
 
 // The request pipeline (URL, scoped body, execution, the one error classifier,
 // the honest status sentence, the log + capture policy) is THE shared core in
-// `@ai-matrx/agents/matrx` (`call`, chat-package independence P9b). This module
+// `@ai-matrx/api` (`call`, chat-package independence P9b). This module
 // supplies only this app's facts: Redux auth / base URL / endpoint overrides /
 // scope, the organization gate, the desktop target, the run-wait knob, and the
 // diagnostics sinks. Grow the pipeline in the package, never here.
@@ -1329,7 +1329,7 @@ export function callConversationContinue(
 // ─── Cancel: Abort a running request ─────────────────────────────────────────
 //
 // MOVED (2026-08-29, agents-package production adoption): the cancel flow now
-// rides `@ai-matrx/agents/matrx`'s `cancelAgentRun` over the host transport —
+// rides `@ai-matrx/api`'s `cancelAgentRun` over the host transport —
 // see `cancelAgentRunRequest` in `lib/api/matrx-transport.ts`. Same URL, same
 // auth/org headers, same `ApiCallResult` envelope for callers.
 

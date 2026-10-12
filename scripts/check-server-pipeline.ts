@@ -3,7 +3,7 @@
  * check:server-pipeline — ONE request pipeline to the Python server.
  *
  * P9c (2026-10-02). Every call to the AI Matrx Python server rides the core
- * pipeline in `@ai-matrx/agents/matrx` (`call.ts`: URL, body, execution,
+ * pipeline in `@ai-matrx/api` (`call.ts`: URL, body, execution,
  * NDJSON, the one error classifier) through this app's host doors —
  * `lib/python-client.ts`, `lib/api/call-api.ts`, `lib/api/matrx-transport.ts`,
  * `lib/api/stream-parser.ts`, and the chat package's bare-host default. The
@@ -244,7 +244,7 @@ function report(result: ScanResult, label: string): boolean {
       `${label} FAILED — ${result.newFindings.length} new place(s) build a Python-server URL and fetch it, or parse its NDJSON, outside the host doors.`,
     );
     console.error(
-      "Remedy: call the server through lib/python-client (getJson / postJson / postNdjson / requestRaw / postMultipart / downloadBlob), callApi, or the chat host's server port; parse streams with parseNdjsonStream / parseMatrxNdjsonResponse; read errors with getUserMessage / extractMatrxErrorCode (@ai-matrx/agents/matrx).",
+      "Remedy: call the server through lib/python-client (getJson / postJson / postNdjson / requestRaw / postMultipart / downloadBlob), callApi, or the chat host's server port; parse streams with parseNdjsonStream / parseMatrxNdjsonResponse; read errors with getUserMessage / extractMatrxErrorCode (@ai-matrx/api).",
     );
     for (const finding of result.newFindings) console.error(`  ${finding}`);
   }

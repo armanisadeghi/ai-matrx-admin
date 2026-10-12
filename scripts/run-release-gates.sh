@@ -984,7 +984,7 @@ if $STRICT; then
         # authorization primitive. Static, offline, no credentials.
         "Google authorization windows (a raw provider call bypassing the one-window gate)|pnpm check:google-auth-gate"
         # ONE REQUEST PIPELINE TO THE PYTHON SERVER (P9c, 2026-10-02). Every
-        # server call rides @ai-matrx/agents/matrx through the host doors
+        # server call rides @ai-matrx/api through the host doors
         # (lib/python-client, callApi, matrx-transport, stream-parser); a file
         # that resolves the server's base URL and fetches it, or splits its
         # NDJSON itself, is a copy that drifts. Allowlist only shrinks
@@ -1723,7 +1723,7 @@ else
         # authorization primitive. Static, offline, no credentials.
         "Google authorization windows (a raw provider call bypassing the one-window gate)|pnpm check:google-auth-gate"
         # ONE REQUEST PIPELINE TO THE PYTHON SERVER (P9c, 2026-10-02). Every
-        # server call rides @ai-matrx/agents/matrx through the host doors
+        # server call rides @ai-matrx/api through the host doors
         # (lib/python-client, callApi, matrx-transport, stream-parser); a file
         # that resolves the server's base URL and fetches it, or splits its
         # NDJSON itself, is a copy that drifts. Allowlist only shrinks

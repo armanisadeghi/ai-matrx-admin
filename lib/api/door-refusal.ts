@@ -59,7 +59,7 @@ const BLAMES_THE_READER = /check your input/i;
  * sent no readable body. This is the exact string that reached a person's
  * screen on the admin mandate page, twice on one page.
  */
-// THE detector lives in the shared core (`@ai-matrx/agents/matrx`, P9b) — the
+// THE detector lives in the shared core (`@ai-matrx/api`, P9b) — the
 // one every client's error classifier launders messages through.
 export { isBareTransportCode } from "@ai-matrx/api";
 

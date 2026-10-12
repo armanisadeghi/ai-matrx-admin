@@ -6,7 +6,7 @@ import { foldBackendStreamEvents } from "./fold-stream-events";
 /**
  * Parse newline-delimited JSON (as produced by the Python streaming endpoint)
  * into typed stream events — through the ONE wire kernel
- * (`@ai-matrx/agents/stream/ndjson`), the same framer + compact-envelope
+ * (`@ai-matrx/api/stream`), the same framer + compact-envelope
  * normalization the production parser boundary uses. This was the last
  * hand-rolled NDJSON parser in the repo (execution-runtime HANDOFF §2): its
  * raw per-line `JSON.parse` never normalized the compact `{"e":"c","t":…}`

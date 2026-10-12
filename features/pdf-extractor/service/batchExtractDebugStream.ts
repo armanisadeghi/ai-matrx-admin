@@ -9,7 +9,7 @@ export interface BatchExtractStreamTap {
 /**
  * Consume an NDJSON batch-extract response while tapping every raw wire line
  * for admin debug. Framing, compact-event expansion, and torn-line handling
- * are the shared kernel's (`@ai-matrx/agents/stream/ndjson`); the tap rides
+ * are the shared kernel's (`@ai-matrx/api/stream`); the tap rides
  * its observation hooks, which carry the exact wire line — valid envelopes,
  * malformed lines, and valid JSON with no recognised envelope alike.
  */

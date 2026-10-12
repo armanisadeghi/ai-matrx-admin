@@ -2,7 +2,7 @@
 // Single source of truth for all Python FastAPI backend endpoint paths.
 // Import ENDPOINTS from this file — never hardcode paths.
 
-// Every endpoint path MOVED into `@ai-matrx/agents/matrx` (chat-package
+// Every endpoint path MOVED into `@ai-matrx/api` (chat-package
 // independence P9): one list for every client. Re-exported so import sites keep
 // their path; add a path in the package. The base URLs below are this app's
 // environment values and stay here.

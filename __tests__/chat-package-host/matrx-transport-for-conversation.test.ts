@@ -21,7 +21,7 @@ jest.mock("@ai-matrx/chat/agents/redux/execution-system/thunks/resolve-base-url"
 }));
 
 // jest.setup.ts has already pulled the app graph in through the surface/context registrations, so
-// `@ai-matrx/agents/matrx` is cached BOUND TO THE REAL `@ai-matrx/data/net`; the mocks above would
+// `@ai-matrx/api` is cached BOUND TO THE REAL `@ai-matrx/api/net`; the mocks above would
 // never reach it and the real resilientFetch ran (jsdom's AbortSignal handed to Node's fetch:
 // "Expected signal to be an instance of AbortSignal"). Reset, then load the subject fresh so it
 // binds the mock. A test-environment realm mismatch, not a product bug: a browser has one realm.

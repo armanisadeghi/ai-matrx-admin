@@ -288,7 +288,7 @@ query GETs (unblocked by `apiGet`'s `query` support), and
   session-expired toast visible locally but non-durable; unrelated auth failures
   remain red and enter the repair queue.
 
-- 2026-08-29 — **`matrx-transport.ts`: the host `MatrxTransport` port for `@ai-matrx/agents/matrx`.**
+- 2026-08-29 — **`matrx-transport.ts`: the host `MatrxTransport` port for `@ai-matrx/api`.**
   One factory pipeline (`createMatrxTransportFromTarget`) reusing callApi's own machinery —
   `resolveAuth`, `resolveBaseUrl`, `fetchWithV2Fallback`, `normalizeError` are now exported from
   `call-api.ts` for it (extraction-in-place; zero duplicated auth/URL/error logic). Policy headers

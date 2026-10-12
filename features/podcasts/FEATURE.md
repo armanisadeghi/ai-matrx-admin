@@ -55,7 +55,7 @@ files, with a live-streaming studio, resumable runs, and public share pages.
    (Web Audio); ElevenLabs chunks are base64 MP3 bytes (MediaSource);
    `encoding`/`mime_type` selects the implementation on the first chunk. Resume
    rides `resumeOrRejoinThunk` (`lib/api/resume-or-rejoin.ts` →
-   `@ai-matrx/agents/matrx` `resumeOrRejoin`): a still-live run is rejoined at
+   `@ai-matrx/api` `resumeOrRejoin`): a still-live run is rejoined at
    the 409 body's `rejoin_path`, never re-run. `audio_stream_end` supplies the
    canonical URL and swaps to `PodcastAudioPlayer` — often minutes before
    `podcast_complete`. A seq gap, stream-id change, codec change, decoder error,

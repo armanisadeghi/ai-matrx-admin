@@ -140,13 +140,13 @@
     },
     {
       "name": "normalizeMatrxError",
-      "package": "@ai-matrx/agents/matrx",
+      "package": "@ai-matrx/api",
       "why": "Agent transport error classification moved into the package in agents 0.6.0 (the worst C22 violation in the fleet).",
       "allow": []
     },
     {
       "name": "followRuntimeOperationToEnd",
-      "package": "@ai-matrx/agents/matrx",
+      "package": "@ai-matrx/api",
       "why": "Reconnect stall/retry/cursor policy moved into the package in agents 0.6.0.",
       "allow": []
     },
@@ -1753,7 +1753,7 @@
     },
     {
       "name": "extractErrorMessage",
-      "package": "@ai-matrx/data/net",
+      "package": "@ai-matrx/api/net",
       "why": "THE caught-value-to-string extractor (PostgrestError, axios, and a FastAPI `detail` body \u2014 a string, or an object carrying `message`). Two host bodies were deleted 2026-09-11. utils/errors.ts held a near-byte copy of the package's, which meant the 2026-08-31 FastAPI `detail` fix had to be written TWICE, and it had already fallen behind on the package's nested-error lookup and its `fallback` parameter; it is now a one-line re-export door so this repo's ~100 `@/utils/errors` importers keep their path. features/agent-shortcuts/components/ShortcutForm.tsx held a STALE copy with no `detail` branch at all, so a server refusal that said exactly why was flattened into the caller's generic fallback on that form.",
       "allow": []
     },

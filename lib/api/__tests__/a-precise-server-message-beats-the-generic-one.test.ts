@@ -1,7 +1,7 @@
 /**
  * A 409/422/403 whose body says exactly what refused must reach the person as
  * that sentence, not as the envelope's generic "Something went wrong". The
- * Group Chat policy edit hit it. The fix lives in `@ai-matrx/agents/matrx`
+ * Group Chat policy edit hit it. The fix lives in `@ai-matrx/api`
  * (`extractMatrxErrorMessage`, >= 0.43.19); this pins that callApi's error path
  * still gets it, so a package regression is caught here.
  */

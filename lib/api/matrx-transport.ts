@@ -1,7 +1,7 @@
 /**
  * lib/api/matrx-transport.ts
  *
- * THE host wiring for `@ai-matrx/agents/matrx`'s production transport. Since
+ * THE host wiring for `@ai-matrx/api`'s production transport. Since
  * the 0.6.0 C22 retrofit the whole connection pipeline — resilient fetch with
  * the connect-15s / total-uncapped policy, the AI-version path transform and
  * v2 → v1 fallback, fresh-per-call credentials, the fail-closed
@@ -269,7 +269,7 @@ function readCallOrganizationId(
 
 /**
  * Stop a running request at its next iteration boundary —
- * `POST /ai/cancel/{request_id}` via `@ai-matrx/agents/matrx`'s
+ * `POST /ai/cancel/{request_id}` via `@ai-matrx/api`'s
  * `cancelAgentRun` over the global transport. `mode: "interrupt"` =
  * stop-and-fork (the INTERRUPT send mode): the server hides the tail produced
  * after the last clean boundary so the user's follow-up replies to the last

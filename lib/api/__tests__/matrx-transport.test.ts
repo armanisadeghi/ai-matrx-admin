@@ -1,7 +1,7 @@
 /**
  * matrx-transport.test.ts — the host `MatrxTransport` port implementation.
  *
- * Proves the port contract (`@ai-matrx/agents/matrx`): the host prepends its
+ * Proves the port contract (`@ai-matrx/api`): the host prepends its
  * resolved base URL, merges policy headers (auth, org) ON TOP of the wire
  * headers without dropping them, and wires the caller's signal into the
  * underlying fetch — plus callApi parity: AI-version path transform, capture
@@ -154,7 +154,7 @@ describe("createMatrxTransport (global, callApi parity)", () => {
       state.authReady = true;
     }, 1500);
 
-    // The package resolves its own copy of @ai-matrx/data/net, so the wire is read at fetch itself.
+    // The package resolves its own copy of @ai-matrx/api/net, so the wire is read at fetch itself.
     const wire = jest
       .spyOn(globalThis, "fetch")
       .mockResolvedValue(new Response("{}", { status: 200, headers: { "content-type": "application/json" } }));
@@ -235,7 +235,7 @@ describe("createMatrxTransport (global, callApi parity)", () => {
   const RUN_ORG = "33333333-3333-4333-8333-333333333333";
 
   // These two spy on the GLOBAL fetch: the package's internal resilientFetch
-  // is not reached by the @ai-matrx/data/net module mock above.
+  // is not reached by the @ai-matrx/api/net module mock above.
   function spyGlobalFetch(): jest.SpyInstance {
     return jest
       .spyOn(globalThis, "fetch")

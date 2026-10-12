@@ -1,6 +1,6 @@
 // lib/api/stream-parser.ts
 // Reusable NDJSON stream parser for the Python FastAPI backend.
-// The parser is the shared core in `@ai-matrx/agents/matrx`; this module wires
+// The parser is the shared core in `@ai-matrx/api`; this module wires
 // the app diagnostics and adds the typed callback consumer.
 
 import type {
@@ -52,7 +52,7 @@ import {
 
 /**
  * Parse an NDJSON streaming response into typed events — the shared core's
- * `parseMatrxNdjsonResponse` (`@ai-matrx/agents/matrx`, P9b), wired to this
+ * `parseMatrxNdjsonResponse` (`@ai-matrx/api`, P9b), wired to this
  * app's diagnostics: every event feeds the Error Inspector's stream capture,
  * and a broken body (a resumable `StreamTransportError`, never a failed run)
  * is captured once before it is thrown.

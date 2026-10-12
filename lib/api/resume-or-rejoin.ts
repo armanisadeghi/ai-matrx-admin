@@ -1,7 +1,7 @@
 /**
  * lib/api/resume-or-rejoin.ts
  *
- * The host wiring for `@ai-matrx/agents/matrx`'s `resumeOrRejoin` — the ONE
+ * The host wiring for `@ai-matrx/api`'s `resumeOrRejoin` — the ONE
  * client behavior for picking a run back up: resume it, or, when the server
  * says it is still live (409 `run_in_progress`, or chat's `resume_conflict`
  * naming a live run), follow the body's `rejoin_path` into the same handler.

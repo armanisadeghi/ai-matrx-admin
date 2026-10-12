@@ -26,6 +26,7 @@ import type { AppDispatch, RootState } from "@/lib/redux/store";
 import { markOrgBootstrapResolved } from "@/lib/organizations/orgBootstrapGate";
 import { writeLastActiveOrganization } from "@/lib/organizations/accountOrganizationChoices";
 import { announceActiveOrganizationReplaced } from "@/lib/organizations/announceActiveOrganizationReplaced";
+import { organizationReadFailureReason } from "@ai-matrx/auth/organizations";
 import { toast } from "@/lib/toast";
 import { heldOrganizationForTab } from "@/lib/organizations/tabOrganization";
 
@@ -87,11 +88,7 @@ export const bootstrapActiveOrganization =
       console.error("[activeOrgBootstrap] failed to hydrate active org", err);
       if (!getState().appContext.organization_id) {
         dispatch(
-          setOrgBootstrapFailure(
-            err instanceof Error && err.message
-              ? `the organization read failed: ${err.message}`
-              : "the organization read failed",
-          ),
+          setOrgBootstrapFailure(organizationReadFailureReason(err)),
         );
       }
     } finally {

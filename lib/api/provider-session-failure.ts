@@ -12,7 +12,7 @@
  *     can help. Sessions show `user_message` instead of the provider's raw
  *     text, and never auto-reconnect when `retryable` is false.
  *
- * Package truth: `reportProviderSessionFailure` in `@ai-matrx/agents/matrx`
+ * Package truth: `reportProviderSessionFailure` in `@ai-matrx/api`
  * (`POST /broker/provider-failures`, never throws, null = report failed →
  * the caller shows its existing fallback).
  */
