@@ -16,7 +16,7 @@ import { cn } from "@/lib/utils";
 import { NewTabLink } from "@/components/official/entity-ref/NewTabLink";
 import { MandateStatusBadge } from "../status/MandateStatusBadge";
 import { featureIntelligenceHref } from "./hrefs";
-import { entryKey, entryKeys, type NodeGroup, type PlacedEntry, type PlacementRow } from "./placement-model";
+import { entryKey, entryKeys, unsettledStatus, type NodeGroup, type PlacedEntry, type PlacementRow } from "./placement-model";
 import type { FeatureIntelligenceRow, IntelligenceContext } from "./types";
 import type { AnyMandateKey } from "@ai-matrx/agents/mandates";
 
@@ -115,7 +115,7 @@ function NodeGroupRow(props: PlacedJobsProps & { depth: number }) {
         >
           {group.name}
         </Link>
-        {group.status && group.status !== "active" ? (
+        {unsettledStatus(group.status) ? (
           <Badge variant="outline" className="shrink-0 font-normal capitalize text-muted-foreground">
             {group.status}
           </Badge>

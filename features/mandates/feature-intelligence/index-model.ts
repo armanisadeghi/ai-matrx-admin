@@ -21,6 +21,7 @@ import {
   LANE_ORDER,
   LANES,
   pathOf,
+  unsettledStatus,
   type NodeGroup,
   type PlacedEntry,
   type Tree,
@@ -196,7 +197,7 @@ export function buildDomains(
         places: placesOf(jobs),
         lane: false,
         fixture: false,
-        status: domainNode.status && domainNode.status !== "active" ? domainNode.status : null,
+        status: unsettledStatus(domainNode.status),
       });
     }
     const cards: DirectoryFeature[] = domainGroup.children.map((group) => {
@@ -210,7 +211,7 @@ export function buildDomains(
         places: placesOf(jobs),
         lane: false,
         fixture: false,
-        status: group.status && group.status !== "active" ? group.status : null,
+        status: unsettledStatus(group.status),
       };
     });
     features.push(...cards.sort(byName));

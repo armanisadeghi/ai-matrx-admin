@@ -48,6 +48,7 @@ import type {
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import type { AnyMandateKey } from "@ai-matrx/agents/mandates";
 import { SegmentedControl } from "@ai-matrx/design-system/controls";
+import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
 
 export interface FeatureIntelligenceProps {
   /** The page: a registry node slug (`research`, `seo-keywords`) or a lane id (`unplaced`). */
@@ -126,7 +127,7 @@ export function FeatureIntelligence({
     ? homeLabel(state.tree, feature)
     : isLane(feature)
       ? LANES[feature]
-      : feature;
+      : humanizeIdentifier(feature);
   const whoFor = orgLevel ? (activeOrgName ?? "your organization") : "you";
 
   // Bring the focused job into view once the rows are on screen.

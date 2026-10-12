@@ -139,6 +139,11 @@ export function commonAncestor(tree: Tree, slugs: readonly string[]): string | n
   }
 }
 
+/** The registry's own status, shown only when a node is not settled (proposed, legacy). */
+export function unsettledStatus(status: string | null): string | null {
+  return status && status !== "canonical" && status !== "active" ? status : null;
+}
+
 /** A page's name: a node's own name, or a lane's. */
 export function homeLabel(tree: Tree, home: string): string {
   if (isLane(home)) return LANES[home];
