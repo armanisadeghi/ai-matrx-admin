@@ -10,7 +10,7 @@
 
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { useState } from "react";
-import { ArrowUpFromLine, ExternalLink, Loader2 } from "lucide-react";
+import { ExternalLink, Loader2 } from "lucide-react";
 import { Button, Chip, PromoBanner } from "@ai-matrx/design-system/controls";
 
 import { errorSentence, toast } from "@/lib/toast";
@@ -59,7 +59,8 @@ function SendChip({ kind, item, onSent }: { kind: "workbook" | "document"; item:
       variant="add"
       label={item.name}
       title={`Send to ${g.appName}`}
-      icon={busy ? <Loader2 className="animate-spin" /> : <ArrowUpFromLine />}
+      // The add chip draws its own "+"; a spinner replaces it only while sending.
+      icon={busy ? <Loader2 className="animate-spin" /> : undefined}
       asChild
     >
       <button
