@@ -3,6 +3,7 @@
 // One entry per stored block type: the parity row it copies (PARITY.md § C), whether the editor renders
 // it today, what `text` means for it, which children it may hold, and a check of its `props`.
 
+import { isUuidShape } from "@ai-matrx/kit/uuid";
 import {
   DATABASE_CHART_OPS,
   DATABASE_CHART_TYPES,
@@ -37,7 +38,6 @@ export interface BlockSpec {
 const isObj = (v: unknown): v is Record<string, unknown> => typeof v === "object" && v !== null && !Array.isArray(v);
 const str = (v: unknown) => typeof v === "string";
 const nonEmpty = (v: unknown) => typeof v === "string" && v.length > 0;
-const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 const ok: PropsCheck = () => null;
 
@@ -294,7 +294,7 @@ const SPECS: BlockSpec[] = [
     text: "none",
     children: "none",
     props: (p) => {
-      if (typeof p?.appletId !== "string" || !UUID.test(p.appletId)) return "props.appletId must be an Applet id (uuid)";
+      if (typeof p?.appletId !== "string" || !isUuidShape(p.appletId)) return "props.appletId must be an Applet id (uuid)";
       if (p.height !== undefined && !(typeof p.height === "number" && Number.isInteger(p.height) && p.height > 0)) return "props.height must be a whole number of pixels";
       return null;
     },

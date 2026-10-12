@@ -7,6 +7,7 @@ import { useState } from "react";
 import { X } from "lucide-react";
 import { Button, Field, Select } from "@ai-matrx/design-system/controls";
 import { cn } from "@ai-matrx/design-system";
+import { formatRelativeTime } from "@ai-matrx/kit/format";
 import type { RecordHistoryEntry } from "@ai-matrx/records/react";
 import { BOARD_SECTIONS } from "@/features/board/items/types";
 import { START_WIDGET_CATALOG } from "./catalog";
@@ -204,12 +205,7 @@ export function HistoryPanel({
 }
 
 function relative(iso: string, now: number): string {
-  const m = Math.round((now - new Date(iso).getTime()) / 60_000);
-  if (m < 1) return "just now";
-  if (m < 60) return `${m}m ago`;
-  const h = Math.round(m / 60);
-  if (h < 48) return `${h}h ago`;
-  return new Date(iso).toLocaleDateString(undefined, { month: "short", day: "numeric" });
+  return formatRelativeTime(iso, { now, minUnit: "minute", absoluteAfter: 48 * 3_600_000, absolute: "monthDay" });
 }
 
 /** Which counts the strip shows: one switch per dashboard count, in the dashboard's order. */

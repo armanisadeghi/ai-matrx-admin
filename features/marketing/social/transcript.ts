@@ -4,6 +4,8 @@
  * Pure, so it is unit-tested without a render.
  */
 
+import { formatDurationSeconds } from "@ai-matrx/kit/format";
+
 export interface TranscriptParagraph {
   /** Seconds from the start, when the source carried timings; else null. */
   start: number | null;
@@ -87,11 +89,7 @@ export function parseTranscript(raw: string): TranscriptParagraph[] {
 
 /** `1:05`, `12:30`, `1:02:03`. */
 export function formatTimestamp(totalSeconds: number): string {
-  const s = Math.max(0, Math.floor(totalSeconds));
-  const h = Math.floor(s / 3600);
-  const m = Math.floor((s % 3600) / 60);
-  const sec = String(s % 60).padStart(2, "0");
-  return h > 0 ? `${h}:${String(m).padStart(2, "0")}:${sec}` : `${m}:${sec}`;
+  return formatDurationSeconds(totalSeconds, { style: "clock" });
 }
 
 const UNKNOWN_LANGUAGES = new Set(["", "und", "unk", "unknown", "zxx", "mis", "mul", "xx", "n/a", "none", "null"]);

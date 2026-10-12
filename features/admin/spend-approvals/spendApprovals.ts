@@ -19,6 +19,7 @@
  * The server gate (aidream services/billing/run_approvals.py) holds the next non-interactive run of
  * a waiting or rejected subject once the platform knob billing.run_approval/enforced is on.
  */
+import { formatRelativeTime } from "@ai-matrx/kit/format";
 import { useEffect, useState } from "react";
 import { supabase } from "@/utils/supabase/client";
 import { pgErrorToError } from "@ai-matrx/data";
@@ -58,13 +59,11 @@ export function daysUntil(iso: string | null, now: number = Date.now()): number 
   return Number.isFinite(t) ? Math.floor((t - now) / 86_400_000) : null;
 }
 
-/** "Expires in 3 days" / "Expires today" / "Expired". */
+/** "Expires in 3 days" / "Expires in 5 hours" / "Expired". */
 export function expiryLabel(iso: string | null, now: number = Date.now()): string {
-  const d = daysUntil(iso, now);
-  if (d == null) return "";
+  if (daysUntil(iso, now) == null) return "";
   if (iso && Date.parse(iso) <= now) return "Expired";
-  if (d === 0) return "Expires today";
-  return `Expires in ${d} ${d === 1 ? "day" : "days"}`;
+  return `Expires ${formatRelativeTime(iso, { style: "long", now })}`;
 }
 
 export const SUBJECT_KIND_LABEL: Record<ApprovalSubjectKind, string> = {

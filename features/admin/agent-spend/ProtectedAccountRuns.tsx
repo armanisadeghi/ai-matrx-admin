@@ -5,6 +5,7 @@
 // with either account). Reads platform.protected_account_runs(hours) — the same function the
 // aidream guard scripts/check_no_automated_work_on_protected_accounts.py reads.
 
+import { formatCount } from "@ai-matrx/kit/format";
 import { useEffect, useState } from "react";
 import { ShieldAlert } from "lucide-react";
 import { Badge, Button } from "@ai-matrx/design-system/controls";
@@ -67,7 +68,7 @@ export function ProtectedAccountRunsButton({ days }: { days: SpendWindowDays }) 
       filter: "number",
       align: "right",
       width: 80,
-      cell: (r) => <span className="tabular-nums text-xs">{r.runs.toLocaleString()}</span>,
+      cell: (r) => <span className="tabular-nums text-xs">{formatCount(r.runs)}</span>,
     },
     {
       id: "cost",
@@ -88,13 +89,13 @@ export function ProtectedAccountRunsButton({ days }: { days: SpendWindowDays }) 
     },
   ];
 
-  const label = error ? "Protected accounts: unreadable" : rows == null ? "Protected accounts" : `Protected accounts: ${runs.toLocaleString()} runs, ${format(cost)}`;
+  const label = error ? "Protected accounts: unreadable" : rows == null ? "Protected accounts" : `Protected accounts: ${formatCount(runs)} runs, ${format(cost)}`;
   return (
     <>
       <Button variant="outline" onClick={() => setOpen(true)} disabled={rows == null && !error} aria-label={label} title={error ?? label}>
         <ShieldAlert className="h-4 w-4" />
         <Badge tone={error ? "destructive" : runs > 0 ? "destructive" : "success"}>
-          {error ? "!" : rows == null ? "…" : runs.toLocaleString()}
+          {error ? "!" : rows == null ? "…" : formatCount(runs)}
         </Badge>
       </Button>
       <Dialog open={open} onOpenChange={setOpen}>

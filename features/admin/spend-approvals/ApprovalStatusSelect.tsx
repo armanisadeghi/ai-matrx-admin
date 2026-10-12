@@ -11,7 +11,7 @@ import { useState } from "react";
 import { Check, ChevronDown, Loader2 } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@ai-matrx/design-system";
 import { Button } from "@ai-matrx/design-system/controls";
-import { formatUsd } from "@ai-matrx/kit/format";
+import { formatSpendUsd } from "@/components/cost/formatAdminCost";
 import { ApprovalStatusText } from "./RunApprovalCell";
 import {
   APPROVAL_STATUS_LABEL,
@@ -68,7 +68,7 @@ export function ApprovalStatusSelect({
   onDecide: (decision: ApprovalDecision, next: ApprovalStatus, note: string, expiresAt: string | null) => Promise<void>;
 }) {
   // Every dollar figure here is to the cent (Arman 2026-10-10); points stay off this confirm.
-  const format = (usd: number) => formatUsd(usd, { digits: 2 });
+  const format = (usd: number) => formatSpendUsd(usd);
   const knobs = useApprovalColorKnobs();
   const [open, setOpen] = useState(false);
   const [next, setNext] = useState<ApprovalStatus | null>(null);

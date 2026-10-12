@@ -10,6 +10,8 @@
 // door, `alarmActions` decides which actions apply. Both are pure so the guard tests can
 // prove every kind opens something real.
 
+import { formatCount } from "@ai-matrx/kit/format";
+import { formatSpendUsd } from "@/components/cost/formatAdminCost";
 import { supabase } from "@/utils/supabase/client";
 import { pgErrorToError } from "@ai-matrx/data";
 import { adminScheduleHref } from "@/features/scheduling/constants/routes";
@@ -329,7 +331,7 @@ export function occurrenceSourceTitle(o: SpendAlarmOccurrence): string | null {
   if (!o.refs.source_id || !o.source) return null;
   if (o.collapsed) {
     const kind = o.source.kind === "source" ? "Source" : o.source.kind;
-    return o.collapsed === 1 ? `1 ${kind} that no longer exists (deleted)` : `${o.collapsed.toLocaleString()} ${kind}s that no longer exist (deleted)`;
+    return o.collapsed === 1 ? `1 ${kind} that no longer exists (deleted)` : `${formatCount(o.collapsed)} ${kind}s that no longer exist (deleted)`;
   }
   return alarmSourceTitle({ ...o.source, id: o.refs.source_id, source_kind: o.refs.source_kind ?? "source", times: o.repeat_count, last_at: o.occurred_at });
 }
@@ -696,7 +698,7 @@ export function alarmAgentData(record: SpendAlarmRecord, occurrences: SpendAlarm
       cost_usd: record.cost_usd ?? (record.refused ? 0 : null),
       cost_avoided_usd: record.cost_avoided_usd ?? (record.refused ? 0 : null),
       cost_avoided_measured: record.cost_avoided_usd != null,
-      cost: costLabel(record, (n) => `$${n.toFixed(2)}`),
+      cost: costLabel(record, (n) => formatSpendUsd(n)),
       watching: record.watching ?? false,
       muted: record.status === "snoozed" ? { until: record.snoozed_until, by: record.snoozed_by ?? null, note: record.snooze_note } : null,
       resolved: record.resolved_at ? { at: record.resolved_at, by: record.resolved_by, note: record.resolution_note } : null,

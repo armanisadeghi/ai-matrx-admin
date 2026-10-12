@@ -78,6 +78,8 @@ export const DOMAIN_MONEY: Record<string, string> = {
   "features/education/creators/components/CreatorDashboard.tsx": "a creator's earnings",
   "features/education/classes/components/ClassFormDialog.tsx": "a class's tuition",
   "features/print/order/lulu-api.ts": "a print order's price",
+  "features/marketing/seo/value-system/offerings/vocabulary.ts": "a business offering's own published list price",
+  "features/templates/files/thumbnail/snapshot-preview-svg.ts": "a spreadsheet cell rendered through its own currency number format in a template preview",
   "features/print/order/OrderFlow.tsx": "a print order's price",
   "components/mardown-display/blocks/print-kinds/print-kind-blocks.tsx": "a print quote's price",
   "components/mardown-display/blocks/commerce-kinds/commerce-kind-blocks.tsx": "a product's price",

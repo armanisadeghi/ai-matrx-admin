@@ -400,7 +400,7 @@ export function initUrlHydration() {
   // Provision window: ?panels=provision:<snapshot id> reopens one saved capture.
   registerPanelHydrator("provision", (dispatch, id) => {
     // Only a snapshot id deep-links; the window's own identity is not a snapshot.
-    if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)) {
+    if (isUuidShape(id)) {
       dispatch(openOverlay({ overlayId: "provisionWindow", data: { snapshotId: id } }));
     }
   });

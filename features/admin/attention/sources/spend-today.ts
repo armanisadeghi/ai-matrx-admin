@@ -9,6 +9,7 @@
  * "Dismiss for today" is a LOCAL mute until local midnight (any mute duration also works).
  */
 
+import { formatCount } from "@ai-matrx/kit/format";
 import type { SpendHeadlineSnapshot } from "@/features/admin/spend/types";
 import type { AttentionItem } from "../types";
 
@@ -37,7 +38,7 @@ export function spendTodayItems(snapshot: SpendHeadlineSnapshot | null, deps: Sp
   const now = deps.now ?? Date.now();
   const key = `${SPEND_TODAY_SOURCE_ID}:${snapshot.todayStart}`;
   const over = snapshot.today >= deps.scareThresholdUsd;
-  const runs = `${snapshot.todayRuns.toLocaleString("en-US")} ${snapshot.todayRuns === 1 ? "run" : "runs"}`;
+  const runs = `${formatCount(snapshot.todayRuns, { locale: "en-US" })} ${snapshot.todayRuns === 1 ? "run" : "runs"}`;
   const top = snapshot.topOrg ? `${snapshot.topOrg.name} (${deps.money(snapshot.topOrg.cost)})` : "nothing recorded yet";
   const sentence =
     `Yesterday ${deps.money(snapshot.yesterday)} · last 7 days ${deps.money(snapshot.last7d)} · this month ${deps.money(snapshot.monthToDate)}. ` +

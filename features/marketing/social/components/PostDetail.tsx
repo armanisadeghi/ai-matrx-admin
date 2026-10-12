@@ -18,6 +18,7 @@
  * AI is user-triggered only: transcript and breakdown run from a button.
  */
 
+import { formatCount } from "@ai-matrx/kit/format";
 import { ProviderChip } from "./ProviderFallbackNotice";
 import type { SocialProviderTrace } from "../types";
 import { CommentsLoader } from "./CommentsLoader";
@@ -180,7 +181,7 @@ function TranscriptBody({ text, language, wordCount }: { text: string; language:
   const paragraphs = useMemo(() => parseTranscript(text), [text]);
   const hasTimes = paragraphs.some((p) => p.start !== null);
   const words = wordCount && wordCount > 0 ? wordCount : wordCountOf(paragraphs);
-  const meta = [languageName(language), words > 0 ? `${words.toLocaleString()} words` : null]
+  const meta = [languageName(language), words > 0 ? `${formatCount(words)} words` : null]
     .filter(Boolean)
     .join(" · ");
   return (

@@ -15,7 +15,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
 import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
 import { Skeleton } from "@ai-matrx/design-system";
-import { formatPoints } from "@ai-matrx/kit/format";
+import { formatPoints, formatCount } from "@ai-matrx/kit/format";
 import { Button } from "@/components/ui/button";
 import { Input } from "@ai-matrx/design-system/controls";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -160,7 +160,7 @@ export function MyCostSoFar() {
   const columns = useMemo<MatrxColumnDef<MyCostGroupRow>[]>(() => [
     { id: "label", header: level === "day" ? "Day" : level === "organization" ? "Organization" : level === "activity" ? "What it was" : "Activity", accessorFn: (r) => r.label, width: 150 },
     { id: "calls", header: "Charges", accessorFn: (r) => r.calls, filter: "number", width: 70, align: "right", cell: (r) => (
-      <button type="button" className="tabular-nums underline-offset-2 hover:underline" aria-label={`Open the ${r.calls} charges for ${r.label}`} onClick={() => open(r)}>{r.calls.toLocaleString()}</button>
+      <button type="button" className="tabular-nums underline-offset-2 hover:underline" aria-label={`Open the ${r.calls} charges for ${r.label}`} onClick={() => open(r)}>{formatCount(r.calls)}</button>
     ) },
     { id: "cost", header: admin ? "Cost" : "Points used", accessorFn: (r) => r.costUsd ?? r.points, filter: "number", width: 150, align: "right", cell: (r) => <Money usd={r.costUsd} points={r.points} /> },
     { id: "charged", header: "Counted against plan", accessorFn: (r) => r.chargedPoints, filter: "number", width: 150, align: "right", mobileHidden: true, cell: (r) => formatPoints(r.chargedPoints) },
@@ -197,7 +197,7 @@ export function MyCostSoFar() {
               {summary[k] ? (
                 <>
                   <div className="text-base font-semibold sm:text-xl"><Money usd={t.usd} points={t.points} big /></div>
-                  <div className="type-secondary text-muted-foreground">{t.calls.toLocaleString()} charges</div>
+                  <div className="type-secondary text-muted-foreground">{formatCount(t.calls)} charges</div>
                 </>
               ) : <Skeleton className="mt-1 h-8 w-full" />}
             </button>
@@ -231,7 +231,7 @@ export function MyCostSoFar() {
         {TABS.map((g) => (
           <Button key={g.key} variant={tab === g.key ? "primary" : "outline"} onClick={() => { setTab(g.key); setDrill(NO_DRILL); }}>{g.label}</Button>
         ))}
-        <span className="type-secondary text-muted-foreground">{periodLabel}{org ? ` · ${org.label}` : ""}: <Money usd={total.usd} points={total.points} /> · {total.calls.toLocaleString()} charges</span>
+        <span className="type-secondary text-muted-foreground">{periodLabel}{org ? ` · ${org.label}` : ""}: <Money usd={total.usd} points={total.points} /> · {formatCount(total.calls)} charges</span>
       </div>
 
       {tab === "feature" && (drill.feature || drill.activity) ? (
@@ -249,7 +249,7 @@ export function MyCostSoFar() {
         <div className="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-md border border-dashed border-border p-2 sm:p-3" aria-label="Unattributed">
           <div>
             <div className="type-secondary text-muted-foreground">Unattributed · {periodLabel}</div>
-            <div className="font-semibold"><Money usd={sumRows(unattr).usd} points={sumRows(unattr).points} /> <span className="type-secondary font-normal text-muted-foreground">{sumRows(unattr).calls.toLocaleString()} charges</span></div>
+            <div className="font-semibold"><Money usd={sumRows(unattr).usd} points={sumRows(unattr).points} /> <span className="type-secondary font-normal text-muted-foreground">{formatCount(sumRows(unattr).calls)} charges</span></div>
           </div>
           <Button variant={unattributedOn ? "primary" : "outline"} onClick={() => setUnattributed((v) => !v)}>{unattributedOn ? "Back to my costs" : "See records"}</Button>
         </div>
@@ -269,7 +269,7 @@ export function MyCostSoFar() {
               mobileCardsBreakpoint="md"
               mobileCards={(r) => (
                 <div className="flex items-center justify-between gap-3 py-1">
-                  <div className="min-w-0"><div className="truncate font-medium">{r.label}</div><button type="button" className="type-secondary text-muted-foreground underline-offset-2 hover:underline" onClick={() => open(r)}>{r.calls.toLocaleString()} charges</button></div>
+                  <div className="min-w-0"><div className="truncate font-medium">{r.label}</div><button type="button" className="type-secondary text-muted-foreground underline-offset-2 hover:underline" onClick={() => open(r)}>{formatCount(r.calls)} charges</button></div>
                   <div className="shrink-0 text-right"><Money usd={r.costUsd} points={r.points} /></div>
                 </div>
               )}

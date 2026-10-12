@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRelativeTime } from "@ai-matrx/kit/format";
 import { useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, ExternalLink } from "lucide-react";
@@ -8,7 +9,7 @@ import { AGENT_ICON } from "@/components/icons/domain-icons";
 import { ErrorNotice } from "@ai-matrx/design-system";
 import { Button } from "@/components/ui/button";
 import { providerMeta } from "@/features/agent-connections/coding-sessions/catalog";
-import { compactAge, deliveryLag, needsClaudeAccount } from "../presence";
+import { deliveryLag, needsClaudeAccount } from "../presence";
 import type { LiveSession } from "../useLiveHub";
 import type { SessionMemberRow } from "../service";
 import { LagMarker, PresenceDot, lagText, presenceLabel, worstLag } from "./LiveBits";
@@ -39,7 +40,7 @@ export function SessionDetail({
   const lag = worstLag(members.map((m) => deliveryLag(m, nowMs)));
   const lagLine = lagText(lag);
   const seen = session.lastSeenAt
-    ? `seen ${compactAge(nowMs - Date.parse(session.lastSeenAt))} ago`
+    ? `seen ${formatRelativeTime(session.lastSeenAt, { now: nowMs })}`
     : "never seen";
 
   return (

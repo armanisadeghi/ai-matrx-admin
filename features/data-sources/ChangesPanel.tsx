@@ -10,7 +10,7 @@
 import { useEffect, useState } from "react";
 import { History } from "lucide-react";
 import { EmptyState, RegionSkeleton, Tabs } from "@ai-matrx/design-system/controls";
-import { formatPoints, formatRelativeTime } from "@ai-matrx/kit/format";
+import { formatPoints, formatRelativeTime, formatCount } from "@ai-matrx/kit/format";
 
 import { useCostDisplay } from "@/components/cost/useCostDisplay";
 
@@ -108,7 +108,7 @@ function RunChanges({ jobId, organizationId }: { jobId: string; organizationId: 
       />
       {!hasChanges(set.summary) && !set.summary.firstFetch && (
         <p className="px-2 text-xs text-muted-foreground" data-no-changes="">
-          Nothing changed: {set.summary.unchanged.toLocaleString()} rows came back the same.
+          Nothing changed: {formatCount(set.summary.unchanged)} rows came back the same.
         </p>
       )}
       <div className="min-h-0 flex-1 overflow-y-auto" data-changes-list={active}>

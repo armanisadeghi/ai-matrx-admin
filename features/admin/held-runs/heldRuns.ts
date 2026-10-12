@@ -11,6 +11,7 @@
  */
 
 import { pgErrorToError } from "@ai-matrx/data";
+import { formatSpendUsd } from "@/components/cost/formatAdminCost";
 import { supabase } from "@/utils/supabase/client";
 
 export const HELD_RUNS_PATH = "/administration/billing/held-runs";
@@ -163,7 +164,7 @@ export function replayLaunch(run: HeldRun, mode: ReplayVersionMode): ReplayLaunc
 export function replayCostLine(estimated: number | null): string {
   if (estimated == null) return "Cost not priced";
   if (estimated < 0.01) return "About <$0.01 per replay";
-  return `About $${estimated.toFixed(2)} per replay`;
+  return `About ${formatSpendUsd(estimated)} per replay`;
 }
 
 export function variableRows(variables: Record<string, unknown>): Array<{ name: string; value: string }> {

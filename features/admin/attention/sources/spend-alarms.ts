@@ -25,6 +25,8 @@
  * shaped like `billing.spend_alarms_for_attention`.
  */
 
+import { formatCount } from "@ai-matrx/kit/format";
+import { formatSpendUsd } from "@/components/cost/formatAdminCost";
 import {
   alarmActions,
   alarmAgentData,
@@ -75,10 +77,6 @@ export interface SpendAlarmDeps {
   fetchOccurrences?: (alarmId: string) => Promise<import("@/features/admin/spend-alarms/spendAlarms").SpendAlarmOccurrence[]>;
 }
 
-function usd(n: number): string {
-  return `$${n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-}
-
 function lastSeen(iso: string, now: number): string {
   const at = new Date(iso);
   if (!Number.isFinite(at.getTime())) return "";
@@ -94,7 +92,7 @@ function lastSeen(iso: string, now: number): string {
 
 function stateOf(row: SpendAlarmAttentionRow, now: number): string {
   const n = row.occurrence_count;
-  const times = `${n.toLocaleString("en-US")} ${n === 1 ? "time" : "times"}`;
+  const times = `${formatCount(n, { locale: "en-US" })} ${n === 1 ? "time" : "times"}`;
   const last = lastSeen(row.last_seen_at, now);
   const head = row.watching ? "Fixed, watching · " : "";
   return `${head}${last ? `${times} · last ${last}` : times}`;
@@ -112,7 +110,7 @@ function namesOf(row: SpendAlarmAttentionRow): Map<string, string> {
 
 /** "ai-matrx Deploy (12.50/day)": repo owner dropped. */
 export function costlyLine(w: Pick<CostlyWorkflow, "repo" | "workflow" | "usd_per_day">): string {
-  return `${w.repo.split("/").pop()} ${w.workflow} (${usd(w.usd_per_day)}/day)`;
+  return `${w.repo.split("/").pop()} ${w.workflow} (${formatSpendUsd(w.usd_per_day)}/day)`;
 }
 
 /**
@@ -149,7 +147,7 @@ function ciActions(row: SpendAlarmAttentionRow, deps: SpendAlarmDeps): Attention
       variant: "outline",
       confirm: {
         title: pausable.length === 1 ? "Pause this workflow on GitHub?" : `Pause these ${pausable.length} workflows on GitHub?`,
-        description: `${pausable.map(costlyLine).join("; ")}. About ${usd(total)} a day stops billing. They stop running until you resume them; deploys and package publishing are never paused.`,
+        description: `${pausable.map(costlyLine).join("; ")}. About ${formatSpendUsd(total)} a day stops billing. They stop running until you resume them; deploys and package publishing are never paused.`,
         confirmLabel: "Pause them",
         variant: "destructive",
       },
@@ -327,7 +325,7 @@ export function spendAlarmItems(
     const shipped = fixFor(row);
     const baseFix = shipped ? `Fixed in code (${shipped.commit}): ${shipped.what}` : row.fix;
     const fix = [pausedLine(row), baseFix].filter(Boolean).join(" ") || null;
-    const cost = alarmCostLine(row.cost_usd, row.cost_avoided_usd, usd);
+    const cost = alarmCostLine(row.cost_usd, row.cost_avoided_usd, (n) => formatSpendUsd(n));
 
     const untilMs = row.snoozed_until ? Date.parse(row.snoozed_until) : NaN;
     const current =

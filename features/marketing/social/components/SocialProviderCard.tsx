@@ -11,6 +11,7 @@
  * Every number is the server's; a failed call says so, never a zero.
  */
 
+import { formatCount } from "@ai-matrx/kit/format";
 import { useQuery } from "@tanstack/react-query";
 import { Database, Receipt } from "lucide-react";
 
@@ -52,7 +53,7 @@ export function formatSpend(
   formatCost: (usd: number) => string,
 ): string {
   if (!spend) return error ? "Spend unavailable" : "Not reported";
-  const one = (f: SocialSpendFigure) => `${formatCost(f.usd)} · ${f.calls.toLocaleString()} calls`;
+  const one = (f: SocialSpendFigure) => `${formatCost(f.usd)} · ${formatCount(f.calls)} calls`;
   return spend.platform
     ? `${one(spend.organization)} (organization) · ${one(spend.platform)} (platform)`
     : one(spend.organization);

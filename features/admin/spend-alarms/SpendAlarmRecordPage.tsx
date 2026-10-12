@@ -4,6 +4,7 @@
 // opens its exact record), whose it is, the cost, the rule, every occurrence, and actions that act
 // on the blocked thing through existing doors. Every alarm surface links here.
 
+import { formatCount } from "@ai-matrx/kit/format";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -462,7 +463,7 @@ export function SpendAlarmRecordPage({ id }: { id: string }) {
             </section>
 
             <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-              <KpiTile label="Times" value={record.occurrence_count.toLocaleString()} tone={record.level === "critical" ? "bad" : "neutral"} hint={record.reopened_count ? `Reopened ${record.reopened_count}x` : undefined} />
+              <KpiTile label="Times" value={formatCount(record.occurrence_count)} tone={record.level === "critical" ? "bad" : "neutral"} hint={record.reopened_count ? `Reopened ${record.reopened_count}x` : undefined} />
               <KpiTile label="First seen" value={when(record.first_seen_at)} />
               <KpiTile label="Last seen" value={when(record.last_seen_at)} />
               <KpiTile
@@ -504,7 +505,7 @@ export function SpendAlarmRecordPage({ id }: { id: string }) {
                 tableId="spend-alarm-occurrences"
                 read={readOf({ loading, error }, { what: "occurrences" })}
                 emptyState={{ title: "No occurrences recorded" }}
-                toolbar={{ title: `Occurrences · ${record.occurrence_count.toLocaleString()} ${record.occurrence_count === 1 ? "time" : "times"}`, search: true }}
+                toolbar={{ title: `Occurrences · ${formatCount(record.occurrence_count)} ${record.occurrence_count === 1 ? "time" : "times"}`, search: true }}
                 copy={{
                   label: "Occurrence",
                   listLabel: "Alarm occurrences",

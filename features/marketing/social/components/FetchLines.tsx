@@ -2,9 +2,9 @@
 
 /** Short in-place lines for an account fetch: what was loaded, which limit applied, how fresh. */
 
+import { formatCount, formatRelativeTime } from "@ai-matrx/kit/format";
 import Link from "next/link";
 
-import { relativeAge } from "../mappers";
 import { SOCIAL_LIMITS_HREF } from "../post-count";
 import type { SocialLimitApplied } from "../types";
 
@@ -20,7 +20,7 @@ export function LimitLine({ limit, organizationId }: { limit: SocialLimitApplied
   const bare = limit.setting.replace(/^social\./, "");
   return (
     <span className="text-xs text-muted-foreground" data-testid="limit-line">
-      {`${limit.value.toLocaleString("en-US")} of ${limit.requested.toLocaleString("en-US")} · capped by `}
+      {`${formatCount(limit.value, { locale: "en-US" })} of ${formatCount(limit.requested, { locale: "en-US" })} · capped by `}
       <Link href={SOCIAL_LIMITS_HREF(organizationId, bare)} className="underline">
         {SETTING_LABELS[bare] ?? bare}
       </Link>
@@ -43,7 +43,7 @@ export function stoppedText(reason: string | null | undefined): string | null {
 /** Toast text for a row refresh: the summary plus any limit and early stop. */
 export function fetchOutcomeText(summary: string, r: { limit_applied?: SocialLimitApplied | null; stopped_reason?: string | null }): string {
   const parts = [summary];
-  if (r.limit_applied) parts.push(`Capped at ${r.limit_applied.value.toLocaleString("en-US")} (${SETTING_LABELS[r.limit_applied.setting.replace(/^social\./, "")] ?? r.limit_applied.setting})`);
+  if (r.limit_applied) parts.push(`Capped at ${formatCount(r.limit_applied.value, { locale: "en-US" })} (${SETTING_LABELS[r.limit_applied.setting.replace(/^social\./, "")] ?? r.limit_applied.setting})`);
   const stopped = stoppedText(r.stopped_reason);
   if (stopped) parts.push(stopped);
   return parts.join(" · ");
@@ -52,6 +52,5 @@ export function fetchOutcomeText(summary: string, r: { limit_applied?: SocialLim
 /** "Fetched 3h ago" (the Refresh-now button is the caller's, so it can carry its own busy state). */
 export function fetchedText(fetchedAt: string | null | undefined, reused?: boolean): string | null {
   if (!fetchedAt) return null;
-  const age = relativeAge(fetchedAt);
-  return `${reused ? "Up to date · " : ""}Fetched ${age === "now" ? "just now" : `${age} ago`}`;
+  return `${reused ? "Up to date · " : ""}Fetched ${formatRelativeTime(fetchedAt, { minUnit: "minute" })}`;
 }

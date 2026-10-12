@@ -2,6 +2,7 @@
 
 /** Post detail: "Load comments" with a count choice and its estimate. */
 
+import { formatCount } from "@ai-matrx/kit/format";
 import { useState } from "react";
 
 import { Button, Select, type SelectOption } from "@ai-matrx/design-system/controls";
@@ -46,7 +47,7 @@ export function CommentsLoader({ url, organizationId }: { url: string; organizat
         {busy ? "Loading…" : "Load comments"}
       </Button>
       <span className="text-xs text-muted-foreground" aria-live="polite">
-        {error ? <span className="text-destructive">{error}</span> : result ? `${(result.comments_stored ?? 0).toLocaleString("en-US")} comments loaded` : (commentsText(Number(count)) ?? "")}
+        {error ? <span className="text-destructive">{error}</span> : result ? `${formatCount(result.comments_stored ?? 0, { locale: "en-US" })} comments loaded` : (commentsText(Number(count)) ?? "")}
       </span>
       {result ? <ProviderChip trace={result.trace} /> : null}
       <LimitLine limit={result?.comments_limit_applied} organizationId={organizationId} />

@@ -1,3 +1,4 @@
+import { formatCount } from "@ai-matrx/kit/format";
 import type { BusinessFact, BusinessLocation, LocationListing } from "@/features/marketing/types";
 import { isJsonRecord } from "@/features/marketing/types";
 import { pickNumber, pickText, type DataRecord } from "@/features/data-sources/records";
@@ -196,7 +197,7 @@ export function placeRatingWords(record: DataRecord): string | null {
   const rating = pickNumber(record, "rating");
   const reviews = pickNumber(record, "reviews_count", "review_count");
   if (rating == null) return null;
-  return reviews != null ? `${rating.toFixed(1)} from ${Math.round(reviews).toLocaleString("en-US")} reviews` : rating.toFixed(1);
+  return reviews != null ? `${rating.toFixed(1)} from ${formatCount(Math.round(reviews), { locale: "en-US" })} reviews` : rating.toFixed(1);
 }
 
 /** A link or a bare place id as the address the Maps source reads; null when it is neither. */

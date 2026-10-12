@@ -9,6 +9,7 @@
  *   builder (every door that builds through it) and the chat brief ("from chat").
  */
 
+import { formatSpendUsd } from "@/components/cost/formatAdminCost";
 import { createClient } from "@/utils/supabase/client";
 import { fetchKnobIndex } from "@/lib/scoped-config/service";
 import { operationFailed } from "@/utils/errors";
@@ -335,6 +336,5 @@ export async function loadTestUserIds(userIds: string[]): Promise<Set<string>> {
 /** Dollars to the cent; anything under a cent reads "<$0.01", zero reads "$0.00". */
 export function formatDollars(value: number | null | undefined): string {
   if (value == null) return "—";
-  if (value > 0 && value < 0.01) return "<$0.01";
-  return `$${value.toFixed(2)}`;
+  return formatSpendUsd(value);
 }

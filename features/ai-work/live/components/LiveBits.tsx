@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRelativeTime } from "@ai-matrx/kit/format";
 import { AlertTriangle, BellOff, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { compactAge, type DeliveryLag, type LivePresence } from "../presence";
@@ -56,7 +57,7 @@ export function PresenceDot({
 export function lagText(lag: DeliveryLag): string | null {
   switch (lag.state) {
     case "offered":
-      return `Offered ${compactAge(lag.sinceMs)} ago, not confirmed`;
+      return `Offered ${formatRelativeTime(Date.now() - lag.sinceMs)}, not confirmed`;
     case "failing":
       return [
         lag.failures ? `${lag.failures} failed lookup${lag.failures === 1 ? "" : "s"}` : null,

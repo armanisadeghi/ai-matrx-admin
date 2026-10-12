@@ -6,6 +6,7 @@
  * (rendered "—", never 0).
  */
 
+import { formatDurationSeconds, formatRelativeTime } from "@ai-matrx/kit/format";
 import { median, outlierMetric, profileBaseline } from "./outlier";
 import { canonicalPostUrl } from "./link";
 import { linkedInAddress } from "../lib/social-handle";
@@ -258,14 +259,12 @@ export function postedTitle(iso: string | null, now = Date.now()): string {
 export function lastPostLabel(lastPostAt: string | null, postsTracked: number, now = Date.now()): string {
   if (!lastPostAt || !Number.isFinite(Date.parse(lastPostAt))) return postsTracked > 0 ? "—" : "No posts";
   if (now - Date.parse(lastPostAt) >= 365 * 86_400_000) return postedLabel(lastPostAt, now);
-  const age = relativeAge(lastPostAt, now);
-  return age === "now" ? "just now" : `${age} ago`;
+  return formatRelativeTime(lastPostAt, { now, minUnit: "minute" });
 }
 
 export function formatDuration(seconds: number | null): string | null {
   if (seconds === null) return null;
-  const s = Math.round(seconds);
-  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
+  return formatDurationSeconds(Math.round(seconds), { style: "clock" });
 }
 
 // ---------------------------------------------------------------------------

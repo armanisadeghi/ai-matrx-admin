@@ -8,6 +8,7 @@
  * instead and opens that post.
  */
 
+import { formatCount } from "@ai-matrx/kit/format";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
@@ -127,9 +128,9 @@ export function TrackAccountDialog({
           opts,
         );
         await invalidate();
-        const loaded = result.posts_received != null ? ` · ${result.posts_received.toLocaleString("en-US")} posts` : "";
+        const loaded = result.posts_received != null ? ` · ${formatCount(result.posts_received, { locale: "en-US" })} posts` : "";
         const stopped = result.stopped_reason === "points_limit" ? " · stopped early: points limit" : "";
-        const cut = result.limit_applied ? ` · capped at ${result.limit_applied.value.toLocaleString("en-US")}` : "";
+        const cut = result.limit_applied ? ` · capped at ${formatCount(result.limit_applied.value, { locale: "en-US" })}` : "";
         toast.success(`${result.created ? "Account tracked" : "Already tracked"}${loaded}${cut}${stopped}`);
         onOpenChange(false);
       }

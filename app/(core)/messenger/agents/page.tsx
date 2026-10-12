@@ -2,14 +2,14 @@
 // row is static top UI, so the body clears the glass header with
 // --shell-header-h (core-route-headers, body type "static top").
 
+import { isUuidShape } from "@ai-matrx/kit/uuid";
 import RouteHeader from "@/features/shell/components/header/RouteHeader";
 import PageHeader from "@/features/shell/components/header/PageHeader";
 import { MESSENGER_AGENTS_LABEL } from "@/features/messaging/messenger/messenger-route";
 import { MessengerAgentsRoute } from "@/features/messaging/messenger/MessengerAgentsRoute";
 
-const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const uuidOrNull = (value: string | string[] | undefined) =>
-  typeof value === "string" && UUID.test(value) ? value.toLowerCase() : null;
+  typeof value === "string" && isUuidShape(value) ? value.toLowerCase() : null;
 
 export default async function MessengerAgentsPage({
   searchParams,

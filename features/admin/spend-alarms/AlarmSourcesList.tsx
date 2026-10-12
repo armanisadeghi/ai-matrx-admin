@@ -7,6 +7,7 @@
  * Reads `billing.spend_alarm_sources`; absent when the alarm names no Source.
  */
 
+import { formatCount } from "@ai-matrx/kit/format";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Button } from "@ai-matrx/design-system/controls";
@@ -54,11 +55,11 @@ export function AlarmSourcesList({ alarmId, heading = "Sources" }: { alarmId: st
 
   return (
     <section className="rounded-lg border border-border bg-card p-4" data-testid="alarm-sources">
-      <h2 className="mb-2 text-sm font-semibold">{`${heading} (${total.toLocaleString()})`}</h2>
+      <h2 className="mb-2 text-sm font-semibold">{`${heading} (${formatCount(total)})`}</h2>
       <div className="flex flex-col gap-3">
         {groups.map((g) => (
           <div key={g.kind}>
-            <h3 className="mb-1 text-xs font-medium text-muted-foreground">{`${sourceGroupLabel(g.kind)} (${g.total.toLocaleString()})`}</h3>
+            <h3 className="mb-1 text-xs font-medium text-muted-foreground">{`${sourceGroupLabel(g.kind)} (${formatCount(g.total)})`}</h3>
             <ul className="grid gap-x-4 gap-y-0.5 text-sm sm:grid-cols-2">
               {g.items.map((it) => {
                 const href = alarmSourceHref(it);
@@ -79,7 +80,7 @@ export function AlarmSourcesList({ alarmId, heading = "Sources" }: { alarmId: st
             </ul>
             {g.total > g.items.length ? (
               <Button variant="quiet" disabled={loadingKind === g.kind} onClick={() => void more(g)}>
-                {`+${(g.total - g.items.length).toLocaleString()} more`}
+                {`+${formatCount(g.total - g.items.length)} more`}
               </Button>
             ) : null}
           </div>

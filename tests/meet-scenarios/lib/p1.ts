@@ -4,6 +4,7 @@
  * names); drive only through the product's own doors.
  */
 import { expect, type Locator, type Page } from "@playwright/test";
+import { formatDurationMs } from "@ai-matrx/kit/format";
 import type { Actor } from "./actor";
 import { rpc, seeControl, setMeetingPolicy, type Meeting } from "./meeting";
 import { observe, summarize, type Observation } from "./observe";
@@ -34,8 +35,8 @@ export async function seeNotice(actor: Actor, code: string, words: RegExp, timeo
     }
     await page.waitForTimeout(500).catch(() => undefined);
   }
-  actor.note(`NEVER SAW notice ${code} (${words}) in ${timeoutMs / 1000}s: ${summarize(o)}`);
-  expect(false, `${actor.opts.label} should see the "${code}" notice (${words}) within ${timeoutMs / 1000}s; saw ${summarize(o)}`).toBe(true);
+  actor.note(`NEVER SAW notice ${code} (${words}) in ${formatDurationMs(timeoutMs, { style: "compact" })}: ${summarize(o)}`);
+  expect(false, `${actor.opts.label} should see the "${code}" notice (${words}) within ${formatDurationMs(timeoutMs, { style: "compact" })}; saw ${summarize(o)}`).toBe(true);
   return o;
 }
 
@@ -102,7 +103,7 @@ export async function scheduleMeeting(
   )) as { slug?: string } | { slug?: string }[];
   const row = Array.isArray(out) ? out[0] : out;
   if (!row?.slug) throw new Error(`meet_schedule_meeting answered no slug: ${JSON.stringify(out).slice(0, 200)}`);
-  host.note(`scheduled meeting ${row.slug} (profile ${opts.profile ?? "default"}, starts ${opts.startsInMs == null ? "now" : `in ${Math.round(opts.startsInMs / 60000)} min`})`);
+  host.note(`scheduled meeting ${row.slug} (profile ${opts.profile ?? "default"}, starts ${opts.startsInMs == null ? "now" : `in ${formatDurationMs(opts.startsInMs, { style: "coarse" })}`})`);
   return { slug: row.slug, path: skin().meetingPath(row.slug), host };
 }
 

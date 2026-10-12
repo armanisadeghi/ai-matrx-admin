@@ -8,6 +8,7 @@
 // `defaultHidden` and one click away in the column picker — nothing is
 // removed. Filter/sort values come from ./fields.ts, the one reader.
 
+import { formatCount } from "@ai-matrx/kit/format";
 import { InfoHint } from "@/components/official/InfoHint";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -216,14 +217,14 @@ function RunsCell({ row }: { row: MandateAdminRow }) {
     <span className="flex items-center justify-end gap-1">
       {row.inferredRuns > 0 ? (
         <EstimatedMark
-          detail={`Inferred: ${row.inferredRuns.toLocaleString("en-US")} of ${row.runs.toLocaleString("en-US")} runs · Mandate Holder agent runs without the mandate's name`}
+          detail={`Inferred: ${formatCount(row.inferredRuns, { locale: "en-US" })} of ${formatCount(row.runs, { locale: "en-US" })} runs · Mandate Holder agent runs without the mandate's name`}
         />
       ) : null}
       <Link
         href={runsTabHref(base)}
         className="type-secondary tabular-nums underline-offset-2 hover:underline"
       >
-        {row.runs.toLocaleString("en-US")}
+        {formatCount(row.runs, { locale: "en-US" })}
       </Link>
     </span>
   );

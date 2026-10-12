@@ -17,6 +17,7 @@ import {
   ROWS_PAGE,
   type SpendAlarmRecord,
 } from "./spendAlarms";
+import { formatSpendUsd } from "@/components/cost/formatAdminCost";
 import { spendAlarmItems, summarizeSpendAlarms } from "@/features/admin/attention/sources/spend-alarms";
 
 const pages: unknown[][] = [];
@@ -173,8 +174,8 @@ describe("a Source opens its own page or says it is gone", () => {
 describe("avoided cost comes from the held run's estimate", () => {
   it("a refusal with a held-run estimate reads '$X avoided (est.)' and Copy for AI says it was measured", () => {
     const r = rec({ cost_avoided_usd: 0.172128 });
-    expect(costLabel(r, (n) => `$${n.toFixed(2)}`)).toBe("$0.17 avoided (est.)");
-    expect(alarmCostLine(null, 0.172128, (n) => `$${n.toFixed(2)}`)).toBe("$0.17 avoided (est.)");
+    expect(costLabel(r, (n) => formatSpendUsd(n))).toBe("$0.17 avoided (est.)");
+    expect(alarmCostLine(null, 0.172128, (n) => formatSpendUsd(n))).toBe("$0.17 avoided (est.)");
     const occ = [{ id: "o", occurred_at: "2026-10-11T04:00:00Z", repeat_count: 1, run_id: null, execution_id: null, refs: {}, detail: null, cost_usd: null, cost_avoided_usd: 0.172128 }];
     const data = alarmAgentData(r, occ) as { alarm: { cost_avoided_usd: number; cost_avoided_measured: boolean }; occurrences: { cost_avoided_usd: number | null }[] };
     expect(data.alarm.cost_avoided_usd).toBeCloseTo(0.172128);
@@ -184,7 +185,7 @@ describe("avoided cost comes from the held run's estimate", () => {
 
   it("without an estimate it stays $0 refused and not measured", () => {
     const r = rec({ cost_avoided_usd: null });
-    expect(costLabel(r, (n) => `$${n.toFixed(2)}`)).toBe("$0.00 · refused");
+    expect(costLabel(r, (n) => formatSpendUsd(n))).toBe("$0.00 · refused");
     const data = alarmAgentData(r, []) as { alarm: { cost_avoided_measured: boolean } };
     expect(data.alarm.cost_avoided_measured).toBe(false);
   });

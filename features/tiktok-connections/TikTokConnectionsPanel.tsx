@@ -1,5 +1,6 @@
 "use client";
 
+import { formatCount } from "@ai-matrx/kit/format";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import type { components } from "@ai-matrx/api/types";
@@ -131,7 +132,7 @@ function TikTokConnectionContents() {
           ["Following", discovery.account.profile.following_count],
           ["Likes", discovery.account.profile.likes_count],
           ["Videos", discovery.account.profile.video_count],
-        ] as const).map(([label, value]) => <div key={label}><dt className="text-muted-foreground">{label}</dt><dd className="font-medium">{value == null ? "—" : value.toLocaleString()}</dd></div>)}
+        ] as const).map(([label, value]) => <div key={label}><dt className="text-muted-foreground">{label}</dt><dd className="font-medium">{formatCount(value)}</dd></div>)}
       </dl>
       <p className="text-sm text-muted-foreground">Updates automatically after you select Track account.</p>
       <div className="flex flex-wrap gap-2">
@@ -150,7 +151,7 @@ function TikTokConnectionContents() {
             ? <a className="text-sm font-medium underline" href={tikTokLink(video.share_url)} target="_blank" rel="noopener noreferrer">{video.title || video.video_description || "Untitled video"}</a>
             : <p className="text-sm font-medium">{video.title || video.video_description || "Untitled video"}</p>}
           <dl className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
-            {([["Views", video.view_count], ["Likes", video.like_count], ["Comments", video.comment_count], ["Shares", video.share_count]] as const).map(([label, value]) => <div key={label} className="flex gap-1"><dt>{label}</dt><dd>{value == null ? "—" : value.toLocaleString()}</dd></div>)}
+            {([["Views", video.view_count], ["Likes", video.like_count], ["Comments", video.comment_count], ["Shares", video.share_count]] as const).map(([label, value]) => <div key={label} className="flex gap-1"><dt>{label}</dt><dd>{formatCount(value)}</dd></div>)}
           </dl>
         </div>)}
         {videos.has_more && videos.cursor != null && <Button variant="outline" disabled={busy} onClick={() => void act(async () => {

@@ -92,10 +92,11 @@ describe("headlines carry no raw ids", () => {
   });
 });
 
+import { formatSpendUsd } from "@/components/cost/formatAdminCost";
 import { costLabel, fixFor, isMigrated, refHref } from "./spendAlarms";
 
 describe("what the record page leads with", () => {
-  const fmt = (n: number) => `$${n.toFixed(2)}`;
+  const fmt = (n: number) => formatSpendUsd(n);
   it("cost is never a bare dash", () => {
     expect(costLabel(rec(), fmt)).toBe("$0.00 · refused");
     expect(costLabel(rec({ cost_usd: 10.67 }), fmt)).toBe("$10.67 spent");

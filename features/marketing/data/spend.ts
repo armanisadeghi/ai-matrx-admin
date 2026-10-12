@@ -12,6 +12,7 @@ import { callApi } from "@/lib/api/call-api";
 import { useUserOrganizations } from "@/features/organizations/hooks";
 import { useQuery } from "@tanstack/react-query";
 import type { components } from "@ai-matrx/api/types";
+import { sumKnown } from "@ai-matrx/kit/format";
 import { isJsonObject } from "@/types/json";
 
 const SPEND_SUMMARY_PATH = "/seo/spend/summary";
@@ -225,9 +226,9 @@ function mergeProviderRows(
 }
 
 /** Sum of the figures that are known; null only when none is. */
-function sumKnown(values: Array<number | null>): number | null {
-  const known = values.filter((v): v is number => v !== null);
-  return known.length === 0 ? null : known.reduce((a, b) => a + b, 0);
+function knownTotalOrNull(values: Array<number | null>): number | null {
+  const sum = sumKnown(values);
+  return sum.known === 0 ? null : sum.total;
 }
 
 /**
@@ -277,8 +278,8 @@ export function mergeSeoSpendSummaries(
     recent_budget_rejections: summaries
       .flatMap((s) => s.recent_budget_rejections)
       .sort((a, b) => b.occurred_at.localeCompare(a.occurred_at)),
-    social_this_month_usd: sumKnown(summaries.map((s) => s.social_this_month_usd)),
-    social_this_month_calls: sumKnown(summaries.map((s) => s.social_this_month_calls)),
+    social_this_month_usd: knownTotalOrNull(summaries.map((s) => s.social_this_month_usd)),
+    social_this_month_calls: knownTotalOrNull(summaries.map((s) => s.social_this_month_calls)),
     unreadOrganizationIds,
     organizationCount: summaries.length,
   };

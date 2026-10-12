@@ -10,6 +10,7 @@
  * "Find their socials" reads the competitor's site for its social links.
  */
 
+import { formatCount } from "@ai-matrx/kit/format";
 import { useCallback, useMemo, useState } from "react";
 import Link from "next/link";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -381,7 +382,7 @@ export function BrandCompetitorDirectory() {
         id: "posts",
         header: "Posts",
         accessorFn: (row) => postsTracked(row),
-        cell: (row) => (row.accounts.length ? postsTracked(row).toLocaleString() : "—"),
+        cell: (row) => (row.accounts.length ? formatCount(postsTracked(row)) : "—"),
         width: 80,
       },
       {

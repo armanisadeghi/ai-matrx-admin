@@ -9,6 +9,7 @@
  * routes to review says so, with the approval link — never "done".
  */
 
+import { formatRelativeTime } from "@ai-matrx/kit/format";
 import { useEffect, useState, useSyncExternalStore, type ReactNode } from "react";
 import { ArrowDownToLine, ArrowUpFromLine, ExternalLink, Loader2, Unlink } from "lucide-react";
 
@@ -112,15 +113,6 @@ export async function contentFingerprint(content: unknown): Promise<string> {
         })();
   const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(basis));
   return Array.from(new Uint8Array(digest), (b) => b.toString(16).padStart(2, "0")).join("");
-}
-
-export function timeAgo(iso: string | null | undefined): string {
-  if (!iso) return "never";
-  const seconds = Math.max(0, (Date.now() - new Date(iso).getTime()) / 1000);
-  if (seconds < 60) return "just now";
-  if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
-  if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
-  return new Date(iso).toLocaleDateString();
 }
 
 export function useGoogleLink(adapter: GoogleLinkAdapter, editable: boolean, active = true) {
@@ -479,7 +471,7 @@ export function GoogleLinkMenuItems({ g, withLabel = true }: { g: GoogleLink; wi
     <>
       {withLabel && (
         <DropdownMenuLabel className="truncate text-xs font-normal text-muted-foreground" title={link.name}>
-          {link.name} · synced {timeAgo(link.lastSyncedAt)}
+          {link.name} · synced {formatRelativeTime(link.lastSyncedAt, { minUnit: "minute", fallback: "never" })}
         </DropdownMenuLabel>
       )}
       <DropdownMenuItem onSelect={() => g.openInGoogle(link.webViewLink)}>

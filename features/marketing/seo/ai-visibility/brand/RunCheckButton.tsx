@@ -1,5 +1,6 @@
 "use client";
 
+import { formatCount } from "@ai-matrx/kit/format";
 import { Loader2, Sparkles } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -35,7 +36,7 @@ export function RunCheckButton({
     if (points != null && shouldWarnAboutCost(points)) {
       const ok = await confirm({
         title: "Run this check?",
-        description: `It uses about ${points.toLocaleString()} points.`,
+        description: `It uses about ${formatCount(points)} points.`,
         confirmLabel: "Run check",
       });
       if (!ok) return;
