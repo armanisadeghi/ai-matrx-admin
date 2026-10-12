@@ -14,6 +14,7 @@
  * (now retired) — there is exactly one set of these listeners in the app.
  */
 
+import { installHardNavigationTrace } from "@/lib/diagnostics/hardNavigationTrace";
 import {
   captureError,
   type CaptureInput,
@@ -181,6 +182,7 @@ export function installGlobalErrorCapture(): void {
   installed = true;
   installAppApiFetchCapture();
   installMainThreadStallMonitor();
+  installHardNavigationTrace();
 
   // ── Uncaught runtime exceptions ──────────────────────────────────────────
   window.addEventListener("error", (event: ErrorEvent) => {

@@ -19,12 +19,14 @@
  */
 
 import {
+  CrawlRunStalledError,
   mergeCrawlLiveEvents,
   siteCommandProgressFromEvent,
   type CrawlLiveEvent,
   type CrawlStreamCallbacks,
   type CrawlStreamResult,
 } from "@/features/marketing/crawler/direct-client";
+import { CRAWL_FOLLOW_STALL_MS } from "@/features/marketing/crawler/follow-session";
 import {
   SITE_COMMAND_COPY,
   siteCommandKey,
@@ -62,6 +64,14 @@ export interface SiteCommandRunState {
 type Listener = () => void;
 
 const runs = new Map<string, SiteCommandRunState>();
+/**
+ * The stream (or record-follow) behind each run this tab started. A run
+ * deliberately OUTLIVES the component that launched it (THE FLOATING LAW —
+ * its window renders at the overlay root), so unmount never stops it; clearing
+ * the run or launching it again does. The follower's own stall rule
+ * (`follow-session.ts`) bounds a run nobody clears.
+ */
+const controllers = new Map<string, AbortController>();
 const listeners = new Map<string, Set<Listener>>();
 const globalListeners = new Set<Listener>();
 
@@ -96,6 +106,8 @@ export function subscribeSiteCommandRun(
 
 /** Drop a finished run so a re-run starts from a clean feed. */
 export function clearSiteCommandRun(key: string): void {
+  controllers.get(key)?.abort();
+  controllers.delete(key);
   if (!runs.delete(key)) return;
   emit(key);
 }
@@ -217,6 +229,9 @@ export async function startSiteCommandRun(
 ): Promise<CrawlStreamResult> {
   const target = input.target ?? null;
   const key = siteCommandKey(input.siteId, input.mode, target);
+  controllers.get(key)?.abort();
+  const controller = new AbortController();
+  controllers.set(key, controller);
   seed({
     key,
     siteId: input.siteId,
@@ -230,6 +245,7 @@ export async function startSiteCommandRun(
 
   try {
     const result = await input.run({
+      signal: controller.signal,
       onConnected: ({ sessionId }) =>
         patch(key, { sessionId, status: "running" }),
       onEvent: (_streamEvent, crawlEvent) => {
@@ -255,6 +271,10 @@ export async function startSiteCommandRun(
           message: "Connection dropped — still following the run.",
         }),
     });
+    if (controller.signal.aborted || result.followedStatus === "aborted") {
+      // Cleared or relaunched: the server run goes on; this buffer is done.
+      return result;
+    }
     const settled = runs.get(key);
     patch(key, {
       status: "complete",
@@ -267,11 +287,19 @@ export async function startSiteCommandRun(
     });
     return result;
   } catch (error) {
+    if (controller.signal.aborted) throw error;
     patch(key, {
       status: "failed",
       finishedAt: Date.now(),
-      error: error instanceof Error ? error.message : String(error),
+      error:
+        error instanceof CrawlRunStalledError
+          ? `No progress for ${Math.round(CRAWL_FOLLOW_STALL_MS / 60_000)} minutes — the run looks stuck.`
+          : error instanceof Error
+            ? error.message
+            : String(error),
     });
     throw error;
+  } finally {
+    if (controllers.get(key) === controller) controllers.delete(key);
   }
 }

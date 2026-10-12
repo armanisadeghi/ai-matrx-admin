@@ -44,6 +44,7 @@ import { parseNdjsonStream } from "@/lib/api/stream-parser";
 import type { TypedStreamEvent } from "@/lib/api/types";
 import { followCrawlSession } from "@/features/marketing/crawler/follow-session";
 import {
+  CrawlRunStalledError,
   defaultCrawlOptions,
   startSiteCrawl,
   type CrawlLiveEvent,
@@ -175,4 +176,47 @@ describe("startSiteCrawl when the stream's connection drops", () => {
     ).rejects.toMatchObject({ detail: "boom" });
     expect(mockedFollow).not.toHaveBeenCalled();
   });
+  it("ends a follow that stopped moving as stalled — never 'still following' forever", async () => {
+    mockedParse.mockReturnValue(streamThatDrops([progress(12)]));
+    mockedFollow.mockResolvedValue({ status: "stalled", lastSequence: 40, error: null });
+
+    const run = startSiteCrawl("site-1", defaultCrawlOptions, {});
+
+    await expect(run).rejects.toBeInstanceOf(CrawlRunStalledError);
+    await expect(run).rejects.toMatchObject({
+      sessionId: "session-1",
+      siteId: "site-1",
+      lastSequence: 40,
+    });
+  });
+
+  it("follows a body that closed cleanly without its end frame, under the same stall rule", async () => {
+    async function* closesEarly(): AsyncGenerator<TypedStreamEvent, void, undefined> {
+      yield progress(5);
+    }
+    mockedParse.mockReturnValue({ events: closesEarly(), requestId: null, conversationId: null });
+    mockedFollow.mockResolvedValue({ status: "stalled", lastSequence: 5, error: null });
+
+    await expect(startSiteCrawl("site-1", defaultCrawlOptions, {})).rejects.toBeInstanceOf(
+      CrawlRunStalledError,
+    );
+    expect(mockedFollow).toHaveBeenCalledWith(expect.objectContaining({ afterSequence: 5 }));
+  });
+
+  it("hands the caller's signal to the follower and reports an abort as aborted, never success", async () => {
+    const controller = new AbortController();
+    mockedParse.mockReturnValue(streamThatDrops([progress(2)]));
+    mockedFollow.mockImplementation(async (input) => {
+      expect(input.signal).toBe(controller.signal);
+      controller.abort();
+      return { status: "aborted", lastSequence: 2, error: null };
+    });
+
+    const result = await startSiteCrawl("site-1", defaultCrawlOptions, {
+      signal: controller.signal,
+    });
+
+    expect(result.followedStatus).toBe("aborted");
+  });
 });
+

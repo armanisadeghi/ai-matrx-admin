@@ -52,6 +52,7 @@
  */
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { noteHardNavigationReason } from "@/lib/diagnostics/hardNavigationTrace";
 import dynamic from "next/dynamic";
 import { supabase } from "@/utils/supabase/client";
 import { captureDrafts } from "@ai-matrx/kit/drafts";
@@ -276,7 +277,10 @@ export default function AuthSessionWatcher() {
       reason,
       visible ? "(visible — now)" : `(hidden — in ${Math.round(delay / 1000)}s)`,
     );
-    reloadTimerRef.current = setTimeout(() => window.location.reload(), delay);
+    reloadTimerRef.current = setTimeout(() => {
+      noteHardNavigationReason(`auth-session-watcher:${reason}`);
+      window.location.reload();
+    }, delay);
   }, []);
 
   /**

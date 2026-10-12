@@ -40,7 +40,8 @@ import {
   isRecordReservedEvent,
   isRecordUpdateEvent,
 } from "./types";
-import { parseMatrxNdjsonResponse } from "@ai-matrx/api";
+import { isStreamTransportLost, parseMatrxNdjsonResponse } from "@ai-matrx/api";
+import { trackLiveStream } from "@/lib/diagnostics/hardNavigationTrace";
 import {
   captureStreamEvent,
   captureStreamTransportError,
@@ -92,10 +93,46 @@ export function parseNdjsonStream(
     onTransportError: (error, ids) => captureStreamTransportError(error, ids),
   });
   return {
-    events: parsed.events as AsyncGenerator<TypedStreamEvent, void, undefined>,
+    events: traceLiveStream(
+      parsed.events as AsyncGenerator<TypedStreamEvent, void, undefined>,
+      response,
+      signal,
+    ),
     requestId: parsed.requestId,
     conversationId: parsed.conversationId,
   };
+}
+
+/**
+ * Keep the hard-navigation trace's register of live streams current: a full
+ * page load that cuts this stream is then filed with its cause on the next
+ * page (`lib/diagnostics/hardNavigationTrace.ts`). Pure pass-through.
+ */
+async function* traceLiveStream(
+  events: AsyncGenerator<TypedStreamEvent, void, undefined>,
+  response: Response,
+  signal?: AbortSignal,
+): AsyncGenerator<TypedStreamEvent, void, undefined> {
+  let label = "stream";
+  try {
+    label = new URL(response.url).pathname || label;
+  } catch {
+    /* a synthetic Response has no URL */
+  }
+  const live = trackLiveStream(label);
+  let reason: "ended" | "transport_lost" | "aborted" = "ended";
+  try {
+    for await (const event of events) {
+      live.touch();
+      yield event;
+    }
+    if (signal?.aborted) reason = "aborted";
+  } catch (error) {
+    reason = isStreamTransportLost(error) ? "transport_lost" : "aborted";
+    throw error;
+  } finally {
+    live.close(reason);
+  }
 }
 
 // ============================================================================

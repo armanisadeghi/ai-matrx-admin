@@ -24,6 +24,7 @@
 // boot script from ever reloading a live session.
 
 import { useEffect, useRef } from "react";
+import { noteHardNavigationReason } from "@/lib/diagnostics/hardNavigationTrace";
 import { toast } from "@/lib/toast";
 import {
   APP_BOOTED_FLAG,
@@ -80,7 +81,10 @@ export function NewVersionWatcher({ deploymentId }: NewVersionWatcherProps) {
           duration: Infinity,
           action: {
             label: "Refresh",
-            onClick: () => window.location.reload(),
+            onClick: () => {
+              noteHardNavigationReason(`new-version-refresh:${kind}`);
+              window.location.reload();
+            },
           },
           cancel: {
             label: "Not now",

@@ -109,6 +109,13 @@ export type CapturedErrorSource =
    * 2026-08-11: `end` → body close in 1 ms, zero captures).
    */
   | "agent-stream-transport"
+  /**
+   * A full page load (reload, typed URL, a link that left the app router, our
+   * own `location.reload()`, a Next.js hard-navigation fallback) cut one or
+   * more live streams. Filed by the NEXT page from the leaving page's record
+   * (`lib/diagnostics/hardNavigationTrace.ts`); `code` is the cause.
+   */
+  | "hard-navigation"
   /** Client-side stream death (heartbeat loss, total-timeout, fetch failure). */
   | "agent-stream-client-error"
   /**

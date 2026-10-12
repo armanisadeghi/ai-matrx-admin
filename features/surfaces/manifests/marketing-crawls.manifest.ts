@@ -127,7 +127,7 @@ const surfaceSpecific: SurfaceValue[] = [
     name: "crawl_run_status",
     label: "Live run status",
     description:
-      "Status of the New Crawl workspace's run right now: idle | connecting | running | canceling | complete | partial | failed. This is UI run state, not the durable session status. Empty on the sessions list page.",
+      "Status of the New Crawl workspace's run right now: idle | connecting | running | canceling | complete | partial | failed | stalled (still running on the server, but no progress for 10 minutes). This is UI run state, not the durable session status. Empty on the sessions list page.",
     valueType: "string",
     alwaysAvailable: false,
     typicalCharCount: 10,

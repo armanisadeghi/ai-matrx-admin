@@ -15,7 +15,10 @@ import { sendMatrxRequest } from "@ai-matrx/api";
 import { isJsonRecord, type CrawlEvent } from "@/features/marketing/types";
 import type { CrawlRenderMode } from "@/features/marketing/crawler/crawl-options";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
-import { followCrawlSession } from "@/features/marketing/crawler/follow-session";
+import {
+  CRAWL_FOLLOW_STALL_MS,
+  followCrawlSession,
+} from "@/features/marketing/crawler/follow-session";
 
 /**
  * Feed every scraper-boundary failure to the admin Error Inspector.
@@ -343,9 +346,10 @@ export interface CrawlStreamResult {
   siteId: string | null;
   lastSequence: number;
   /**
-   * Set only when the stream dropped and the outcome was read from the
-   * session row instead (`onTransportLost`); null when the live stream
-   * delivered the ending itself.
+   * `complete` / `partial`: the stream dropped and the outcome was read from
+   * the session row instead (`onTransportLost`). `aborted`: the caller's
+   * signal ended the run's stream or its follow — the run itself goes on,
+   * so this is never a success. null: the live stream delivered the ending.
    */
   followedStatus: "complete" | "partial" | "aborted" | null;
 }
@@ -617,7 +621,52 @@ async function streamCommand(
     });
     throw new Error("The crawler stream ended before its completion event.");
   }
-  return { sessionId, siteId, lastSequence, followedStatus: null };
+  return {
+    sessionId,
+    siteId,
+    lastSequence,
+    followedStatus: !ended && callbacks.signal?.aborted ? "aborted" : null,
+  };
+}
+
+/**
+ * The run's record stopped moving for `CRAWL_FOLLOW_STALL_MS` while it still
+ * reads `running`. Not a failure verdict — the server never said so — and not
+ * a success: the surface shows the run as stalled and offers cancel or keep
+ * watching (`followCrawlRun`).
+ */
+export class CrawlRunStalledError extends Error {
+  readonly sessionId: string;
+  readonly siteId: string;
+  readonly lastSequence: number;
+
+  constructor(input: { sessionId: string; siteId: string; lastSequence: number }) {
+    super("The run stopped making progress.");
+    this.name = "CrawlRunStalledError";
+    this.sessionId = input.sessionId;
+    this.siteId = input.siteId;
+    this.lastSequence = input.lastSequence;
+  }
+}
+
+/**
+ * Follow a run that is already going, from its record — the "keep watching"
+ * door after `CrawlRunStalledError`. Settles exactly like a followed stream.
+ */
+export function followCrawlRun(
+  siteId: string,
+  sessionId: string,
+  afterSequence: number,
+  callbacks: CrawlStreamCallbacks = {},
+): Promise<CrawlStreamResult> {
+  return followAfterDrop({
+    path: `sessions/${sessionId}/follow`,
+    sessionId,
+    siteId,
+    lastSequence: afterSequence,
+    callbacks,
+    announce: false,
+  });
 }
 
 /**
@@ -632,9 +681,11 @@ async function followAfterDrop(input: {
   siteId: string;
   lastSequence: number;
   callbacks: CrawlStreamCallbacks;
+  /** False when re-following on request: there is no fresh drop to announce. */
+  announce?: boolean;
 }): Promise<CrawlStreamResult> {
   const { path, sessionId, siteId, callbacks } = input;
-  callbacks.onTransportLost?.({ sessionId, siteId });
+  if (input.announce !== false) callbacks.onTransportLost?.({ sessionId, siteId });
   const outcome = await followCrawlSession({
     siteId,
     sessionId,
@@ -645,6 +696,19 @@ async function followAfterDrop(input: {
       if (crawlEvent) callbacks.onEvent?.(null, crawlEvent);
     },
   });
+  if (outcome.status === "stalled") {
+    captureCrawlerError({
+      path,
+      message: `Session ${sessionId} still reads running but nothing moved for ${Math.round(CRAWL_FOLLOW_STALL_MS / 60_000)} minutes.`,
+      userMessage: "The run stopped making progress.",
+      details: `last sequence ${outcome.lastSequence}`,
+    });
+    throw new CrawlRunStalledError({
+      sessionId,
+      siteId,
+      lastSequence: outcome.lastSequence,
+    });
+  }
   if (outcome.status === "failed") {
     const message =
       outcome.error || "The run failed on the server after the connection dropped.";

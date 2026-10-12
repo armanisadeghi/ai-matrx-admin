@@ -83,6 +83,7 @@ const SOURCE_LABELS: Record<CapturedErrorSource, string> = {
   "agent-stop-save-shorter": "Stopped answer saved shorter than shown",
   "agent-stream-data-error": "Server data error",
   "agent-stream-transport": "Stream transport error",
+  "hard-navigation": "Full page load ended a live stream",
   "agent-stream-client-error": "Stream connection failure",
   "agent-stream-terminal-guard":
     "Stream held open after terminal (closed locally)",

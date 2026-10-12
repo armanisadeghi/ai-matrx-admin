@@ -454,6 +454,8 @@ source, ... })` from the chokepoint. Store + UI are source-agnostic.
 
 ## Change Log
 
+- 2026-10-12 — New source `hard-navigation`: a full page load (reload, typed URL, a link that left the app router, our own `location.reload()`, a Next.js hard-navigation fallback) that cut one or more live NDJSON streams. Filed once by the next page from the leaving page's `sessionStorage` record (`lib/diagnostics/hardNavigationTrace.ts`); `code` is the cause (`declared:<reason>`, `script-reload`, `script-navigation`, `link`, `browser-reload`, `browser-navigation`, `back-forward`), details carry the leave timing, each stream's last-byte age and the navigating script's stack.
+
 - 2026-10-06 — Unresolved-import capture now comes from `compileStoredComponent` (`@ai-matrx/code-runtime`); `compileSlotComponent` deleted. Same `origin` contract.
 - 2026-10-02 — **Caller aborts are named.** `abortByCaller(controller, why)`
   (`lib/diagnostics/cancelledByCaller.ts`) aborts with an `AbortError` whose

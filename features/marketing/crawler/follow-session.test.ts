@@ -8,15 +8,21 @@ jest.mock("@/lib/diagnostics/errorCaptureStore", () => ({
 
 import { captureError } from "@/lib/diagnostics/errorCaptureStore";
 import {
+  CRAWL_FOLLOW_EVENT_PAGE_SIZE,
   CRAWL_FOLLOW_MAX_BACKOFF_MS,
   CRAWL_FOLLOW_POLL_MS,
+  CRAWL_FOLLOW_STALL_MS,
   followCrawlSession,
   type FollowCrawlSessionDeps,
   type FollowedSessionRow,
 } from "@/features/marketing/crawler/follow-session";
 import type { CrawlEvent } from "@/features/marketing/types";
 
-function row(sequence: number, eventType = "crawl_progress"): CrawlEvent {
+function row(
+  sequence: number,
+  eventType = "crawl_progress",
+  payload: Record<string, unknown> = {},
+): CrawlEvent {
   return {
     id: `event-${sequence}`,
     organization_id: "org-1",
@@ -37,7 +43,7 @@ function row(sequence: number, eventType = "crawl_progress"): CrawlEvent {
     message: null,
     page_id: null,
     crawl_url_id: null,
-    payload: { run_id: "session-1", sequence },
+    payload: { run_id: "session-1", sequence, ...payload },
     occurred_at: "2026-10-12T03:30:00.000Z",
   } as CrawlEvent;
 }
@@ -48,8 +54,10 @@ function scriptedDeps(script: {
   events: Array<CrawlEvent[] | Error>;
 }): FollowCrawlSessionDeps & { sleeps: number[] } {
   const sleeps: number[] = [];
+  let clock = 0;
   return {
     sleeps,
+    now: () => clock,
     readSession: jest.fn(async () => {
       const next = script.sessions.shift();
       if (!next) throw new Error("script exhausted");
@@ -63,6 +71,7 @@ function scriptedDeps(script: {
     }),
     sleep: jest.fn(async (ms: number) => {
       sleeps.push(ms);
+      clock += ms;
     }),
   };
 }
@@ -160,6 +169,92 @@ describe("followCrawlSession — a dropped crawler stream follows the run's reco
       CRAWL_FOLLOW_POLL_MS,
     ]);
     expect(captureError).toHaveBeenCalledTimes(1);
+  });
+
+  it("stops as stalled when only identical progress heartbeats arrive", async () => {
+    // Crawl 8beb27cd: `running` for 13+ hours, ~700 identical progress rows an
+    // hour. Before the stall rule this follow never ended.
+    const stuck = { queue_depth: 0, pages_in_flight: 0, pages_fetched: 6 };
+    let sequence = 100;
+    const deps = scriptedDeps({ sessions: [], events: [] });
+    deps.readSession = jest.fn(async () => ({ status: "running", error: null }));
+    deps.readEventsAfter = jest.fn(async () => {
+      sequence += 1;
+      return [row(sequence, "crawl_progress", { ...stuck, elapsed_ms: sequence * 5000 })];
+    });
+
+    const outcome = await followCrawlSession(
+      { siteId: "site-1", sessionId: "session-1", afterSequence: 100, onEvent: () => {} },
+      deps,
+    );
+
+    expect(outcome.status).toBe("stalled");
+    const waited = deps.sleeps.reduce((total, ms) => total + ms, 0);
+    expect(waited).toBeGreaterThanOrEqual(CRAWL_FOLLOW_STALL_MS - CRAWL_FOLLOW_POLL_MS);
+    expect(waited).toBeLessThanOrEqual(CRAWL_FOLLOW_STALL_MS);
+  });
+
+  it("keeps following while the counters move", async () => {
+    let sequence = 0;
+    let polls = 0;
+    const deps = scriptedDeps({ sessions: [], events: [] });
+    deps.readSession = jest.fn(async () => ({
+      status: polls > (CRAWL_FOLLOW_STALL_MS / CRAWL_FOLLOW_POLL_MS) * 2 ? "complete" : "running",
+      error: null,
+    }));
+    deps.readEventsAfter = jest.fn(async () => {
+      polls += 1;
+      sequence += 1;
+      return [row(sequence, "crawl_progress", { pages_fetched: sequence })];
+    });
+
+    const outcome = await followCrawlSession(
+      { siteId: "site-1", sessionId: "session-1", afterSequence: 0, onEvent: () => {} },
+      deps,
+    );
+
+    expect(outcome.status).toBe("complete");
+  });
+
+  it("stalls when no events arrive at all (a body that ended without its end frame)", async () => {
+    const deps = scriptedDeps({ sessions: [], events: [] });
+    deps.readSession = jest.fn(async () => ({ status: "running", error: null }));
+
+    await expect(
+      followCrawlSession(
+        { siteId: "site-1", sessionId: "session-1", afterSequence: 7, onEvent: () => {} },
+        deps,
+      ),
+    ).resolves.toEqual({ status: "stalled", lastSequence: 7, error: null });
+  });
+
+  it("drains a backlog larger than one page, so the completion event is never lost", async () => {
+    const page = (from: number, count: number) =>
+      Array.from({ length: count }, (_, index) => row(from + index, "page_fetched", { n: from + index }));
+    const firstPage = page(1, CRAWL_FOLLOW_EVENT_PAGE_SIZE);
+    const tail = [
+      ...page(CRAWL_FOLLOW_EVENT_PAGE_SIZE + 1, 3),
+      row(CRAWL_FOLLOW_EVENT_PAGE_SIZE + 4, "crawl_completed", { status: "completed" }),
+    ];
+    const deps = scriptedDeps({
+      sessions: [{ status: "complete", error: null }],
+      events: [firstPage, tail, [], []],
+    });
+    const seen: string[] = [];
+
+    const outcome = await followCrawlSession(
+      {
+        siteId: "site-1",
+        sessionId: "session-1",
+        afterSequence: 0,
+        onEvent: (event) => seen.push(event.event_type),
+      },
+      deps,
+    );
+
+    expect(outcome.lastSequence).toBe(CRAWL_FOLLOW_EVENT_PAGE_SIZE + 4);
+    expect(seen.at(-1)).toBe("crawl_completed");
+    expect(seen).toHaveLength(CRAWL_FOLLOW_EVENT_PAGE_SIZE + 4);
   });
 
   it("stops quietly when the caller aborts", async () => {

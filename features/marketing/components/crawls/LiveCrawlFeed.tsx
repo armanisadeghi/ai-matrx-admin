@@ -35,7 +35,8 @@ type LiveStatus =
   | "canceling"
   | "complete"
   | "partial"
-  | "failed";
+  | "failed"
+  | "stalled";
 
 /** A 3,000-page crawl must not degrade the tab: render only the newest rows. */
 const MAX_RENDERED_ROWS = 200;
@@ -114,6 +115,8 @@ export function LiveCrawlFeed({
             <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
           ) : status === "failed" ? (
             <AlertTriangle className="h-3.5 w-3.5 text-destructive" />
+          ) : status === "stalled" ? (
+            <AlertTriangle className="h-3.5 w-3.5 text-amber-600 dark:text-amber-500" />
           ) : (
             <Activity className="h-3.5 w-3.5 text-muted-foreground" />
           )}

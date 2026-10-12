@@ -18,6 +18,15 @@
  * session is terminal. A read that fails is retried with backoff and recorded
  * once; it never ends the follow on its own, because the run's truth is the
  * row, and the row outlives any network blip.
+ *
+ * IT ALWAYS ENDS. Three exits besides a terminal row: the caller's signal
+ * (unmount, cancel, re-run), and STALL — no movement for
+ * `CRAWL_FOLLOW_STALL_MS`. Movement is a new event whose content differs from
+ * the last one of its type once the always-changing fields (timestamp,
+ * sequence, elapsed time) are set aside. A server that only repeats the same
+ * progress counters is not moving: crawl 8beb27cd sat at `queue_depth 0,
+ * in_flight 0` for 13+ hours, writing ~700 identical progress rows an hour,
+ * and a follower without this rule would have polled it forever.
  */
 
 import { captureError } from "@/lib/diagnostics/errorCaptureStore";
@@ -31,6 +40,15 @@ import type { CrawlEvent } from "@/features/marketing/types";
 export const CRAWL_FOLLOW_POLL_MS = 4_000;
 /** Ceiling for the backoff while reads keep failing. */
 export const CRAWL_FOLLOW_MAX_BACKOFF_MS = 30_000;
+/**
+ * No movement for this long ends the follow as `stalled`. Ten minutes: a
+ * single page — even a rendered one with screenshots — reports counter
+ * movement well inside that, while the stuck runs we have seen sat
+ * motionless for hours.
+ */
+export const CRAWL_FOLLOW_STALL_MS = 10 * 60_000;
+/** One page of recovered events; a full page means read again. */
+export const CRAWL_FOLLOW_EVENT_PAGE_SIZE = 500;
 
 /** `web.crawl_session.status` values that end a run (DB check constraint). */
 const TERMINAL_STATUSES = ["complete", "partial", "failed"] as const;
@@ -38,6 +56,29 @@ type TerminalStatus = (typeof TERMINAL_STATUSES)[number];
 
 function isTerminal(status: string): status is TerminalStatus {
   return (TERMINAL_STATUSES as readonly string[]).includes(status);
+}
+
+/** Fields that change on every event and so never count as movement. */
+const VOLATILE_EVENT_FIELDS = new Set([
+  "ts",
+  "sequence",
+  "elapsed_ms",
+  "run_id",
+  "session_id",
+  "site_id",
+  "event_type",
+]);
+
+function movementSignature(row: CrawlEvent): string {
+  const payload =
+    row.payload && typeof row.payload === "object" && !Array.isArray(row.payload)
+      ? (row.payload as Record<string, unknown>)
+      : {};
+  const stable = Object.keys(payload)
+    .filter((key) => !VOLATILE_EVENT_FIELDS.has(key))
+    .sort()
+    .map((key) => [key, payload[key]]);
+  return JSON.stringify([row.message, stable]);
 }
 
 export interface FollowedSessionRow {
@@ -55,9 +96,11 @@ export interface FollowCrawlSessionDeps {
     siteId: string,
     sessionId: string,
     afterSequence: number,
+    limit: number,
     signal?: AbortSignal,
   ) => Promise<CrawlEvent[]>;
   sleep: (ms: number, signal?: AbortSignal) => Promise<void>;
+  now: () => number;
 }
 
 function abortableSleep(ms: number, signal?: AbortSignal): Promise<void> {
@@ -83,8 +126,12 @@ const defaultDeps: FollowCrawlSessionDeps = {
     const row = await getCrawl(siteId, sessionId, signal);
     return { status: row.status, error: row.error };
   },
-  readEventsAfter: listCrawlEventsAfterSequence,
+  // The query pages at 500 rows — `CRAWL_FOLLOW_EVENT_PAGE_SIZE` — so the
+  // drain loop's "full page means read again" holds.
+  readEventsAfter: (siteId, sessionId, afterSequence, _limit, signal) =>
+    listCrawlEventsAfterSequence(siteId, sessionId, afterSequence, signal),
   sleep: abortableSleep,
+  now: () => Date.now(),
 };
 
 export interface FollowCrawlSessionInput {
@@ -95,11 +142,16 @@ export interface FollowCrawlSessionInput {
   signal?: AbortSignal;
   /** Each recovered event row, oldest first, never one the caller already has. */
   onEvent: (row: CrawlEvent) => void;
+  /** Override for `CRAWL_FOLLOW_STALL_MS`. */
+  stallAfterMs?: number;
 }
 
 export interface FollowCrawlSessionOutcome {
-  /** The session's terminal status, or `aborted` when the caller cancelled. */
-  status: TerminalStatus | "aborted";
+  /**
+   * The session's terminal status; `aborted` when the caller's signal ended
+   * the follow; `stalled` when nothing moved for the stall window.
+   */
+  status: TerminalStatus | "aborted" | "stalled";
   lastSequence: number;
   /** The session's own error text when it ended `failed`. */
   error: string | null;
@@ -109,21 +161,37 @@ export async function followCrawlSession(
   input: FollowCrawlSessionInput,
   deps: FollowCrawlSessionDeps = defaultDeps,
 ): Promise<FollowCrawlSessionOutcome> {
+  const stallAfterMs = input.stallAfterMs ?? CRAWL_FOLLOW_STALL_MS;
   let lastSequence = input.afterSequence;
   let delay = CRAWL_FOLLOW_POLL_MS;
   let readFailureRecorded = false;
+  let lastMovementAt = deps.now();
+  const lastSignatureByType = new Map<string, string>();
 
+  /** Read until a short page: a backlog never loses its tail. */
   const drainEvents = async () => {
-    const rows = await deps.readEventsAfter(
-      input.siteId,
-      input.sessionId,
-      lastSequence,
-      input.signal,
-    );
-    for (const row of rows) {
-      if (row.sequence <= lastSequence) continue;
-      lastSequence = row.sequence;
-      input.onEvent(row);
+    for (;;) {
+      const rows = await deps.readEventsAfter(
+        input.siteId,
+        input.sessionId,
+        lastSequence,
+        CRAWL_FOLLOW_EVENT_PAGE_SIZE,
+        input.signal,
+      );
+      let advanced = false;
+      for (const row of rows) {
+        if (row.sequence <= lastSequence) continue;
+        lastSequence = row.sequence;
+        advanced = true;
+        const signature = movementSignature(row);
+        if (lastSignatureByType.get(row.event_type) !== signature) {
+          lastSignatureByType.set(row.event_type, signature);
+          lastMovementAt = deps.now();
+        }
+        input.onEvent(row);
+      }
+      if (rows.length < CRAWL_FOLLOW_EVENT_PAGE_SIZE || !advanced) return;
+      if (input.signal?.aborted) return;
     }
   };
 
@@ -163,6 +231,9 @@ export async function followCrawlSession(
         });
       }
       delay = Math.min(delay * 2, CRAWL_FOLLOW_MAX_BACKOFF_MS);
+    }
+    if (deps.now() - lastMovementAt >= stallAfterMs) {
+      return { status: "stalled", lastSequence, error: null };
     }
     await deps.sleep(delay, input.signal);
   }

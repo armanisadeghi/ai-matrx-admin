@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Ban, Play, RotateCcw } from "lucide-react";
+import { ArrowLeft, Ban, Eye, Play, RotateCcw } from "lucide-react";
 import { toast } from "@/lib/toast";
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import { Button } from "@/components/ui/button";
@@ -27,7 +27,11 @@ import { CrawlScheduleCard } from "@/features/marketing/components/crawls/CrawlS
 import {
   cancelCrawl,
   CrawlAlreadyRunningError,
+  CrawlRunStalledError,
+  followCrawlRun,
   mergeCrawlLiveEvents,
+  type CrawlStreamCallbacks,
+  type CrawlStreamResult,
   startSiteCrawl,
   type CrawlLiveEvent,
   type CrawlStartOptions,
@@ -50,6 +54,8 @@ import {
 import { marketingKeys } from "@/features/marketing/data/hooks";
 import { extractErrorMessage } from "@/utils/errors";
 import { isStreamTransportLost } from "@ai-matrx/api";
+import { CRAWL_FOLLOW_STALL_MS } from "@/features/marketing/crawler/follow-session";
+import { crawlRunVerdict } from "@/features/marketing/crawler/crawl-run-outcome";
 import { pageIsLeaving } from "@ai-matrx/chat/agents/redux/execution-system/utils/page-leaving";
 import { Textarea } from "@/components/ui/textarea";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
@@ -61,7 +67,8 @@ type RunStatus =
   | "canceling"
   | "complete"
   | "partial"
-  | "failed";
+  | "failed"
+  | "stalled";
 
 // Site crawl defaults round-trip ONLY through crawler/crawl-defaults.ts.
 
@@ -175,6 +182,18 @@ export function NewCrawlWorkspace() {
   const [streamEvents, setStreamEvents] = useState<CrawlLiveEvent[]>([]);
   const [cancelRequested, setCancelRequested] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // The run this visit is streaming or following. Aborted on unmount, on a
+  // cancel while following, and before a new start — so no follow outlives
+  // the page that asked for it.
+  const runControllerRef = useRef<AbortController | null>(null);
+  const followingRef = useRef(false);
+  const [stalled, setStalled] = useState<CrawlRunStalledError | null>(null);
+  useEffect(
+    () => () => {
+      runControllerRef.current?.abort();
+    },
+    [],
+  );
   const restoredSession = crawlActivity.activeCrawl;
   const sessionId = localSessionId ?? restoredSession?.id ?? null;
   const status: RunStatus =
@@ -230,14 +249,30 @@ export function NewCrawlWorkspace() {
       confirmLabel: rerun ? "Run it again" : "Start crawling",
     });
     if (!ok) return;
-    let terminalStatus: "complete" | "partial" | "failed" = "complete";
+    runControllerRef.current?.abort();
+    const controller = new AbortController();
+    runControllerRef.current = controller;
+    followingRef.current = false;
+    setStalled(null);
     setStreamEvents([]);
     setLocalSessionId(null);
     setCancelRequested(false);
     setError(null);
     setLocalStatus("connecting");
+    await runCrawl(controller, (callbacks) =>
+      startSiteCrawl(site.id, launchOptions, callbacks),
+    );
+  };
+
+  /** Stream (or follow) one run to its end and report it honestly. */
+  const runCrawl = async (
+    controller: AbortController,
+    run: (callbacks: CrawlStreamCallbacks) => Promise<CrawlStreamResult>,
+  ) => {
+    let fromEvents: "complete" | "partial" | "failed" | null = null;
     try {
-      const result = await startSiteCrawl(site.id, launchOptions, {
+      const result = await run({
+        signal: controller.signal,
         onConnected: ({ sessionId: connectedSessionId }) => {
           setLocalSessionId(connectedSessionId);
           setLocalStatus("running");
@@ -249,23 +284,28 @@ export function NewCrawlWorkspace() {
             mergeCrawlLiveEvents(current, [crawlEvent]),
           );
           if (crawlEvent.event_type === "crawl_completed") {
-            terminalStatus =
+            fromEvents =
               crawlEvent.status === "completed"
                 ? "complete"
                 : crawlEvent.status === "canceled"
                   ? "partial"
                   : "failed";
-            setLocalStatus(terminalStatus);
+            setLocalStatus(fromEvents);
           }
         },
         // The socket dropped but the crawl keeps running on the server;
         // `startSiteCrawl` now follows it from its record. Not a failure.
         onTransportLost: () => {
+          followingRef.current = true;
           if (pageIsLeaving()) return;
           toast.info("Connection dropped — still following the crawl");
         },
       });
-      if (result.followedStatus === "partial") terminalStatus = "partial";
+      // Unmounted, cancelled while following, or replaced by a new run: the
+      // crawl goes on server-side and this visit no longer speaks for it.
+      if (controller.signal.aborted) return;
+      const terminalStatus = crawlRunVerdict(fromEvents, result);
+      if (terminalStatus === "detached") return;
       setLocalSessionId(result.sessionId);
       setLocalStatus(terminalStatus);
       crawlActivity.refresh();
@@ -280,6 +320,18 @@ export function NewCrawlWorkspace() {
         toast.error("Crawl failed");
       }
     } catch (runError) {
+      if (controller.signal.aborted) return;
+      if (runError instanceof CrawlRunStalledError) {
+        // Still `running` on the server, but nothing moved for the stall
+        // window. Not "failed" (the server never said so) and not "still
+        // following" forever: show it stalled, offer cancel or keep watching.
+        setStalled(runError);
+        setLocalSessionId(runError.sessionId);
+        setLocalStatus("stalled");
+        crawlActivity.refresh();
+        toast.warning("The crawl stopped making progress");
+        return;
+      }
       if (runError instanceof CrawlAlreadyRunningError) {
         // The site's crawl lane is held by a live run: that is the crawl the person wants, not a failure.
         setLocalStatus("idle");
@@ -303,7 +355,24 @@ export function NewCrawlWorkspace() {
       setLocalStatus("failed");
       void queryClient.invalidateQueries({ queryKey: marketingKeys.root });
       toast.error("Crawl failed", { description: message });
+    } finally {
+      followingRef.current = false;
     }
+  };
+
+  /** "Keep watching" a stalled run: follow its record again from where it stopped. */
+  const keepWatching = async () => {
+    if (!stalled) return;
+    runControllerRef.current?.abort();
+    const controller = new AbortController();
+    runControllerRef.current = controller;
+    const { siteId, sessionId: stalledSessionId, lastSequence } = stalled;
+    setStalled(null);
+    setLocalStatus("running");
+    followingRef.current = true;
+    await runCrawl(controller, (callbacks) =>
+      followCrawlRun(siteId, stalledSessionId, lastSequence, callbacks),
+    );
   };
 
   const cancel = async () => {
@@ -316,6 +385,14 @@ export function NewCrawlWorkspace() {
     try {
       await cancelCrawl(sessionId);
       toast.info("Cancellation requested");
+      // A followed (or stalled) run is read from its record by polling; a
+      // cancel ends that here. The site's crawl activity shows the outcome.
+      if (followingRef.current || status === "stalled") {
+        runControllerRef.current?.abort();
+        setStalled(null);
+        setLocalStatus("idle");
+        setCancelRequested(true);
+      }
     } catch (cancelError) {
       if (localSessionId) {
         setLocalStatus("running");
@@ -626,7 +703,7 @@ export function NewCrawlWorkspace() {
                   ? "Run again"
                   : "Start crawl"}
               </Button>
-              {active && sessionId ? (
+              {(active || status === "stalled") && sessionId ? (
                 <Button
                   icon={<Ban />}
                   variant="danger"
@@ -636,6 +713,20 @@ export function NewCrawlWorkspace() {
                 </Button>
               ) : null}
             </div>
+            {status === "stalled" && stalled ? (
+              <div className="flex shrink-0 items-center gap-2 border-t border-border bg-amber-500/5 px-3 py-2 text-xs">
+                <span className="min-w-0 flex-1 truncate">
+                  No progress for {Math.round(CRAWL_FOLLOW_STALL_MS / 60_000)} minutes
+                </span>
+                <Button
+                  icon={<Eye />}
+                  variant="outline"
+                  onClick={() => void keepWatching()}
+                >
+                  Keep watching
+                </Button>
+              </div>
+            ) : null}
             {visibleError ? (
               <p className="shrink-0 border-t border-border bg-destructive/5 px-3 py-2 text-xs text-destructive-ink">
                 {visibleError}
