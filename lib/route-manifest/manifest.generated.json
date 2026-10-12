@@ -1,7 +1,7 @@
 {
   "version": 1,
   "app": "matrx-frontend",
-  "routeCount": 1410,
+  "routeCount": 1416,
   "routes": [
     {
       "pattern": "/",
@@ -1384,6 +1384,11 @@
       "source": "app/(admin)/administration/utilities/content-blocks/page.tsx"
     },
     {
+      "pattern": "/administration/utilities/converters",
+      "status": "live",
+      "source": "app/(admin)/administration/utilities/converters/page.tsx"
+    },
+    {
       "pattern": "/administration/utilities/kind-registry",
       "status": "live",
       "source": "app/(admin)/administration/utilities/kind-registry/page.tsx"
@@ -2457,6 +2462,21 @@
       "pattern": "/data/dashboards",
       "status": "live",
       "source": "app/(core)/data/dashboards/page.tsx"
+    },
+    {
+      "pattern": "/data/library",
+      "status": "live",
+      "source": "app/(core)/data/library/page.tsx"
+    },
+    {
+      "pattern": "/data/library/lab",
+      "status": "live",
+      "source": "app/(core)/data/library/lab/page.tsx"
+    },
+    {
+      "pattern": "/data/library/unlock",
+      "status": "live",
+      "source": "app/(core)/data/library/unlock/page.tsx"
     },
     {
       "pattern": "/data/pages",
@@ -4300,6 +4320,11 @@
       "source": "app/(core)/marketing/[brandId]/intelligence/page.tsx"
     },
     {
+      "pattern": "/marketing/[brandId]/intelligence/ai-visibility",
+      "status": "live",
+      "source": "app/(core)/marketing/[brandId]/intelligence/ai-visibility/page.tsx"
+    },
+    {
       "pattern": "/marketing/[brandId]/intelligence/competitors",
       "status": "live",
       "source": "app/(core)/marketing/[brandId]/intelligence/competitors/page.tsx"
@@ -5459,6 +5484,11 @@
       "pattern": "/messenger/agents",
       "status": "live",
       "source": "app/(core)/messenger/agents/page.tsx"
+    },
+    {
+      "pattern": "/messenger/whatsapp",
+      "status": "live",
+      "source": "app/(core)/messenger/whatsapp/page.tsx"
     },
     {
       "pattern": "/news",
