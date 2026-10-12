@@ -3,7 +3,7 @@
   "updated": "2026-10-07",
   "sha": "e389e62b291c8f8958b40ae46c3c3cb67335a4b2",
   "sites": 33659,
-  "count": 19,
+  "count": 20,
   "ids": [
     "arbitrary-text-size|features/esign/signer/parts/PaperField.tsx",
     "primitive-visual-class|components/editor-chrome/EditorRibbon.tsx",
@@ -17,6 +17,7 @@
     "raw-color|features/esign/signer/parts/DocumentStack.tsx",
     "raw-color|features/esign/signer/parts/Panels.tsx",
     "raw-color|features/esign/signer/parts/PaperField.tsx",
+    "raw-color|features/file-actions/home/FileHome.tsx",
     "styled-raw-button|components/editor-chrome/EditorRibbon.tsx",
     "styled-raw-button|features/ai-work/live/components/LiveSidebar.tsx",
     "styled-raw-button|features/ai-work/live/components/RoomDetail.tsx",
@@ -10558,6 +10559,11 @@
     },
     "styled-raw-button|components/editor-chrome/EditorRibbon.tsx": {
       "reason": "Office ribbon large/small buttons and value combos have ribbon geometry (icon over label, 24px rows), not the 28px control; each carries a ui-exception comment",
+      "accepted_by": "Armani Sadeghi",
+      "date": "2026-10-12"
+    },
+    "raw-color|features/file-actions/home/FileHome.tsx": {
+      "reason": "White glyph on the app-colour tile of the Microsoft 365 app rail, same as the editor product tile",
       "accepted_by": "Armani Sadeghi",
       "date": "2026-10-12"
     }
