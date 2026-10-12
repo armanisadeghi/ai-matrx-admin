@@ -824,6 +824,8 @@ The site/page/crawl foundation, direct live-crawl controls, dedicated technical-
 
 ## Change log
 
+- 2026-10-12 — **Command progress is on record.** aidream ea11268884: the scraper now persists every site command's progress event (sitemap/GSC/URL reconciliation/link resolution/link check/link score/analysis, initialize steps) to `web.crawl_event` before streaming it, so a dropped command's follower sees real movement instead of silence. `crawler/progress-counters-contract.test.ts` pins `PROGRESS_COUNTERS` to the stored payload shapes (the scraper's `test_command_progress_is_durable.py` pins the same paths from its side).
+
 - 2026-10-12 — **Stall is honest everywhere.** Round-2 review of 86e16ca3c59: site commands got a real `stalled` status (Keep watching / Cancel) instead of `failed`; movement is now positive (page events, transitions, rising work counters) so heartbeats or alternating payloads can't fake it; a 12 h follow cap; stall reasons (`unreachable` says the record could not be reached). The hard-navigation trace keeps origin + path only and files the person's own reload/link/back at the silent tier.
 
 - 2026-10-12 — **The drop-follow always ends.** Review of 95a03345329: a stuck session (8beb27cd, `running` 13+ h) would have been polled every 4 s forever with no signal from any caller. Added caller signals, the 10-minute stall rule with a stalled state (Cancel / Keep watching), paged draining, and an honest `aborted` verdict. A full page load that cuts a live stream is now filed with its cause by `lib/diagnostics/hardNavigationTrace.ts`.
