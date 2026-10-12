@@ -44,6 +44,7 @@ import { useCallback, useEffect, useState } from "react";
 import { MessageSquareWarning, Plus } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
+import { InfoHint } from "@/components/official/InfoHint";
 import { Button } from "@/components/ui/button";
 import { fetchHrMyIncidentReports } from "@/features/hr/service";
 import { useHrContext } from "@/features/hr/shared/useHrContext";
@@ -115,11 +116,8 @@ export function MyIncidentReports() {
             <h2 className="flex items-center gap-1.5 text-sm font-semibold text-foreground">
               <MessageSquareWarning className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
               Report something to HR
+              <InfoHint text="Injuries, near misses, safety problems, or how someone was treated, including by a manager." />
             </h2>
-            <p className="mt-0.5 text-xs text-muted-foreground">
-              An injury, a near miss, a safety problem, or a complaint about how
-              someone has been treated — including by a manager.
-            </p>
           </div>
           <Button
             icon={<Plus />}

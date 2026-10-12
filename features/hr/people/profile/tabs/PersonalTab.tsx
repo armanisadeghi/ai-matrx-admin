@@ -489,7 +489,8 @@ export function PersonalTab({
               comfortable sentence and a lie — and the person would find out by
               being greeted by name.
             */
-            description="You won't turn up in the staff directory, and your name is hidden on the org chart — your position still shows there, because removing it would tell everyone exactly who is missing. This stops people browsing for you; it is not a disguise. Anyone you already work with — your manager, a colleague following a link from their own work — can still open your profile and see your name and role."
+            description="Hides you in the directory and your name on the org chart."
+            help="Your position still shows on the chart, and people you work with can still open your profile and see your name."
             value={personal.directory_opt_out === true}
             saving={selfUpdate.saving}
             onSave={(field, next) => selfUpdate.save(field, next)}

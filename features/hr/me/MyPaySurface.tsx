@@ -205,8 +205,7 @@ export function MyPaySurface() {
             goes looking for a control that correctly does not exist.
           */}
           <p className="text-xs text-muted-foreground">
-            Your pay is held by HR — it can only be changed by them, so there is
-            nothing to edit here. Ask HR if something looks wrong.
+            Only HR can change your pay; ask HR if anything looks wrong.
           </p>
           {/* ONE CARD PER CONCURRENT COMPONENT. Never a combined figure. */}
           <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2">

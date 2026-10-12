@@ -32,12 +32,14 @@ import { useState } from "react";
 import { Loader2 } from "lucide-react";
 
 import { Switch } from "@/components/ui/switch";
+import { InfoHint } from "@/components/official/InfoHint";
 import { cn } from "@/lib/utils";
 
 export function SelfServiceToggle({
   field,
   label,
   description,
+  help,
   value,
   onSave,
   saving,
@@ -47,6 +49,8 @@ export function SelfServiceToggle({
   label: string;
   /** What turning it ON actually does, in the person's own terms. */
   description: string;
+  /** One-sentence tooltip beside the label for the part the description leaves out. */
+  help?: string;
   value: boolean;
   /**
    * Resolves `false` when the write did not land. This control does not need the
@@ -89,6 +93,7 @@ export function SelfServiceToggle({
           className="block text-sm font-medium text-foreground"
         >
           {label}
+          {help ? <InfoHint text={help} className="ml-1.5" /> : null}
         </label>
         <p className="text-xs text-muted-foreground">{description}</p>
       </div>

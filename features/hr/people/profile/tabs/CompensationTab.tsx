@@ -170,12 +170,7 @@ function FullVisibility({
         <p className="text-sm text-foreground">
           This person&apos;s pay components aren&apos;t readable from here yet.
         </p>
-        <p className="text-sm text-muted-foreground">
-          Reading pay is an audited, per-person action, and the door that does it
-          for one employee hasn&apos;t shipped. Showing an approximation here
-          would be worse than showing nothing — a rate that is not the rate is
-          the number somebody quotes in a dispute.
-        </p>
+        {/* Reading pay is an audited per-person action; that door is unbuilt, and an approximate rate is worse than none. */}
         <Button
           type="button"
           variant="outline"

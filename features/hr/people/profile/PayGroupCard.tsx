@@ -97,9 +97,7 @@ export function PayGroupCard({
       const go = await confirm({
         title: `Move to ${next?.name ?? "another pay group"}?`,
         description:
-          "Pay periods and workweeks already cut keep the group they were cut under. " +
-          "Hours already computed — and anything already exported — are not rewritten. " +
-          "Only periods cut from now on use the new group's calendar.",
+          "Periods and workweeks already cut keep their group, and computed or exported hours are not rewritten. New periods use the new calendar.",
         confirmLabel: "Move them",
       });
       if (!go) return;
@@ -225,10 +223,10 @@ export function PayGroupCard({
           {isChange ? (
             <p className="max-w-prose rounded-md border border-border bg-muted/40 p-2 text-xs text-foreground">
               {currentPayGroupId && chosenId
-                ? "This is not retroactive. Pay periods and workweeks already cut keep the group they were cut under — hours already computed, and anything already exported, are not rewritten. Only periods cut from here on use the new calendar."
+                ? "Not retroactive: periods already cut keep their old group."
                 : currentPayGroupId && !chosenId
-                  ? "Taking them out of a pay group stops future periods being cut for them. Periods already cut stay exactly as they are — nothing already computed or exported is removed."
-                  : "No periods have been cut for this person under a group yet. From here on they are cut from this group's calendar; nothing before today is created retroactively."}
+                  ? "Stops future periods; periods already cut stay as they are."
+                  : "Periods are cut from this group's calendar, never backwards."}
             </p>
           ) : null}
 

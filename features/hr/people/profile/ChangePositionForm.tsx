@@ -40,6 +40,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "@/lib/toast";
+import { InfoHint } from "@/components/official/InfoHint";
 
 import {
   EffectiveDatedForm,
@@ -396,11 +397,9 @@ export function ChangePositionForm({
                 to {nextLocation.jurisdiction_name ?? "a new jurisdiction"}.
               </span>
             </div>
-            <p className="text-xs text-foreground">
-              From the effective date forward, this person&apos;s overtime rules,
-              minimum sick-leave floor, break rules and final-pay deadline are the
-              new jurisdiction&apos;s. Anything already calculated keeps the
-              jurisdiction it was stamped with — nothing is recomputed backwards.
+            <p className="flex items-center gap-1.5 text-xs text-foreground">
+              From the effective date, the new jurisdiction&apos;s rules apply.
+              <InfoHint text="Covers overtime, sick-leave floor, breaks and final-pay deadline; anything already calculated is not recomputed." />
             </p>
           </div>
         ) : null}

@@ -805,7 +805,7 @@ export function HrDecisionPanel({
                 open={escalateOpen}
                 onOpenChange={setEscalateOpen}
                 title="Escalate this step?"
-                description="The engine re-resolves the approver EXCLUDING whoever holds it now, and tells both parties. If escalation itself reaches nobody, it says so rather than parking the step."
+                description="The step goes to a different approver and both people are told. If no one else can take it, you'll see that."
                 confirmLabel="Escalate"
                 reason={escalateReason}
                 onReasonChange={setEscalateReason}

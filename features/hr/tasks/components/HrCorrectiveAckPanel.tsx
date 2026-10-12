@@ -95,14 +95,9 @@ export function HrCorrectiveAckPanel({
       <h2 className="flex items-center gap-1.5 text-sm font-semibold text-foreground">
         <FileSignature className="h-3.5 w-3.5 text-muted-foreground" />
         Your acknowledgment
+        {/* THE SENTENCE THAT MAKES THE SIGNATURE HONEST. */}
+        <InfoHint text="Signing means you read this, not that you agree. Write your view below; no one here can change it." />
       </h2>
-
-      {/* THE SENTENCE THAT MAKES THE SIGNATURE HONEST. */}
-      <p className="max-w-prose text-sm text-foreground">
-        Signing says you have read this. It does not say you agree with it. If you
-        see it differently, write that below — your words are kept with the record,
-        and nobody who works here can change or remove them.
-      </p>
 
       <div className="space-y-1.5">
         <Label htmlFor="ca-statement">Your response, in your own words</Label>

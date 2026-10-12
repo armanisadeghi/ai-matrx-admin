@@ -29,6 +29,7 @@ import { Copy, KeyRound, Mail, ShieldCheck } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@ai-matrx/design-system/controls";
+import { InfoHint } from "@/components/official/InfoHint";
 import { toast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 
@@ -167,11 +168,12 @@ export function PlatformAccessSection({
 
   return (
     <section className={cn("space-y-3", className)}>
-      <h3 className="text-sm font-semibold text-foreground">Platform access</h3>
+      <h3 className="flex items-center gap-1.5 text-sm font-semibold text-foreground">
+        Platform access
+        <InfoHint text="Accepting is optional and changes nothing about their employment." />
+      </h3>
       <p className="text-xs text-muted-foreground">
-        This person does not sign in to AI Matrx. Inviting them lets them see
-        their own record, their pay stubs and their schedule — it does not change
-        anything about their employment, and they are not required to accept.
+        Invite them to see their own record, pay stubs and schedule.
       </p>
       <div className="flex flex-wrap items-center gap-2">
         <Input

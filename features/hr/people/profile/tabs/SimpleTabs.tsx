@@ -31,6 +31,7 @@ import { useState } from "react";
 import { FileWarning, Info, ShieldAlert, UserPlus } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { InfoHint } from "@/components/official/InfoHint";
 import { announceComingSoon } from "@/lib/coming-soon/announce";
 import { cn } from "@/lib/utils";
 import { NewCorrectiveActionDialog } from "@/features/hr/people/relations/components/NewCorrectiveActionDialog";
@@ -148,20 +149,20 @@ export function NotesTab({ profile }: { profile: HrEmployeeProfile }) {
         <div className="flex items-start gap-2">
           <ShieldAlert className="mt-0.5 h-4 w-4 shrink-0 text-warning" aria-hidden />
           <p className="text-sm text-foreground">
-            A note is not a corrective action. If you are recording something this
-            person should be told about, answer for, or improve on, it belongs in
-            a corrective action — where they get to read it, respond to it, and
-            have their own words kept beside yours.
+            A note is not a corrective action. Use one when they should be told, answer or improve.
           </p>
         </div>
-        <Button
-          type="button"
-          variant="outline"
-          disabled={!subjectEmploymentId}
-          onClick={() => setIssuing(true)}
-        >
-          Start a corrective action instead
-        </Button>
+        <div className="flex items-center gap-1.5">
+          <Button
+            type="button"
+            variant="outline"
+            disabled={!subjectEmploymentId}
+            onClick={() => setIssuing(true)}
+          >
+            Start a corrective action instead
+          </Button>
+          <InfoHint text="In a corrective action the person can read it, respond, and have their own words kept beside yours." />
+        </div>
       </div>
 
       {issuing && subjectEmploymentId ? (
@@ -201,13 +202,10 @@ export function RelationsTab({
   org: HrOrgRef;
 }) {
   return (
-    <TabShell title="Employee relations">
-      <p className="max-w-prose text-sm text-muted-foreground">
-        Corrective actions, complaints and incidents involving {" "}
-        {profile.header.display_name}. Some cases are hidden from some readers by
-        rule — including from people named in them — so a count here can
-        legitimately differ from a colleague&apos;s.
-      </p>
+    <TabShell
+      title="Employee relations"
+      help="Some cases are hidden from some readers by rule, including people named in them, so counts can differ."
+    >
       <Button asChild variant="outline">
         <Link href={hrRelationsHref(org)}>Open employee relations</Link>
       </Button>
@@ -346,16 +344,21 @@ export function HostedTab({
 
 function TabShell({
   title,
+  help,
   children,
   className,
 }: {
   title: string;
+  help?: string;
   children: React.ReactNode;
   className?: string;
 }) {
   return (
     <div className={cn("space-y-4 p-3 sm:p-4", className)}>
-      <h3 className="text-sm font-semibold text-foreground">{title}</h3>
+      <h3 className="flex items-center gap-1.5 text-sm font-semibold text-foreground">
+        {title}
+        {help ? <InfoHint text={help} /> : null}
+      </h3>
       {children}
     </div>
   );
