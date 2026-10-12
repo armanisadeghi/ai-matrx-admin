@@ -62,7 +62,7 @@ import {
 } from "@/lib/redux/slices/apiConfigSlice";
 import { selectOrganizationId } from "@/lib/redux/slices/appContextSlice";
 import { requestRaw, newRequestId } from "@/lib/python-client";
-import { getUserMessage } from "@ai-matrx/agents/matrx";
+import { getUserMessage } from "@ai-matrx/api";
 import { cn } from "@/lib/utils";
 import { Textarea } from "@/components/ui/textarea";
 

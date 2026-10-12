@@ -9,7 +9,7 @@ import {
   buildMatrxRequestUrl,
   extractMatrxErrorCode,
   sendMatrxRequest,
-} from "@ai-matrx/agents/matrx";
+} from "@ai-matrx/api";
 
 import type { VaultExpectedActor } from "./vault-service";
 

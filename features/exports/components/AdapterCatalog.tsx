@@ -22,7 +22,7 @@
 import { useEffect, useState } from "react";
 import { AlertCircle, Ban, Check } from "lucide-react";
 import { Skeleton } from "@ai-matrx/design-system";
-import { extractErrorMessage } from "@ai-matrx/data/net";
+import { extractErrorMessage } from "@ai-matrx/api/net";
 import { cn } from "@/lib/utils";
 import { fetchExportAdapters } from "../api";
 import type { ExportAdapter, ExportAdapterCatalog } from "../types";

@@ -22,7 +22,7 @@ import {
   requestRaw,
 } from "@/lib/python-client";
 import { BackendApiError, parseHttpError } from "@/lib/api/errors";
-import { parseMatrxNdjsonResponse } from "@ai-matrx/agents/matrx";
+import { parseMatrxNdjsonResponse } from "@ai-matrx/api";
 
 import { SocialStreamError, consumeSocialEvents } from "./stream";
 import { capturedMediaRefs, capturedThumbnailDoor, isCapturedPostId, readCapturedPost } from "./gated/capturedPosts";

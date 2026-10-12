@@ -3,7 +3,7 @@
 import { useClipboard } from "@ai-matrx/kit/clipboard";
 import { copyNotify } from "@/lib/clipboard/copy-notify";
 import { requestRaw } from "@/lib/python-client";
-import { getUserMessage } from "@ai-matrx/agents/matrx";
+import { getUserMessage } from "@ai-matrx/api";
 import React, { useState, useCallback, useRef, useEffect } from "react";
 import { formatRelativeTime } from "@ai-matrx/kit/format";
 import { parseNdjsonStream } from "@/lib/api/stream-parser";

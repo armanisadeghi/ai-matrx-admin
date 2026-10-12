@@ -25,7 +25,7 @@ const jobState: { status: string | null; error: unknown; reconnect: jest.Mock } 
   error: null,
   reconnect: jest.fn(),
 };
-jest.mock("@ai-matrx/agents/matrx", () => ({
+jest.mock("@ai-matrx/api", () => ({
   getRuntimeOperationsByLink: (...a: unknown[]) => getByLink(...a),
 }));
 jest.mock("@ai-matrx/agents/react", () => ({

@@ -1,14 +1,14 @@
 /** @jest-environment node */
 import { NextRequest } from "next/server";
 import { GET } from "./route";
-import { sendMatrxRequest } from "@ai-matrx/agents/matrx";
+import { sendMatrxRequest } from "@ai-matrx/api";
 
 const mockCookieStore = { get: jest.fn(), set: jest.fn() };
 jest.mock("next/headers", () => ({
   cookies: jest.fn(async () => mockCookieStore),
 }));
-jest.mock("@ai-matrx/agents/matrx", () => ({
-  ...jest.requireActual("@ai-matrx/agents/matrx"),
+jest.mock("@ai-matrx/api", () => ({
+  ...jest.requireActual("@ai-matrx/api"),
   sendMatrxRequest: jest.fn(),
 }));
 jest.mock("@/utils/supabase/server", () => ({

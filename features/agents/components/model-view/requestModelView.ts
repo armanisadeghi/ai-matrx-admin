@@ -1,4 +1,4 @@
-import { getUserMessage } from "@ai-matrx/agents/matrx";
+import { getUserMessage } from "@ai-matrx/api";
 import { callApi } from "@/lib/api/call-api";
 import { assembleManualRequest } from "@ai-matrx/chat/agents/redux/execution-system/thunks/execute-manual-instance.thunk";
 import { refreshSurfaceScope } from "@ai-matrx/chat/agents/redux/execution-system/thunks/refresh-surface-scope.thunk";

@@ -11,7 +11,7 @@ import { supabase } from "@/utils/supabase/client";
 import { docprocDb } from "@/utils/supabase/docprocDb";
 import { writeOne, writeOneRow } from "@/utils/supabase/writeOne";
 import { recordUnavailable } from "@/lib/records/recordUnavailable";
-import { OrganizationContextError } from "@ai-matrx/agents/matrx";
+import { OrganizationContextError } from "@ai-matrx/api";
 import type {
   PageExtractionJob,
   PageExtractionJobInsert,

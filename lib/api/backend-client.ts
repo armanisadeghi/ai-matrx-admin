@@ -5,7 +5,7 @@
 import type { AuthCredentials, ContextScope, TypedStreamEvent } from "./types";
 import { BackendApiError, parseHttpError } from "./errors";
 import { parseNdjsonStream, consumeStream } from "./stream-parser";
-import { buildMatrxRequestUrl, sendMatrxRequest } from "@ai-matrx/agents/matrx";
+import { buildMatrxRequestUrl, sendMatrxRequest } from "@ai-matrx/api";
 import type { StreamCallbacks } from "./stream-parser";
 import { BACKEND_URLS, ENDPOINTS } from "./endpoints";
 import {

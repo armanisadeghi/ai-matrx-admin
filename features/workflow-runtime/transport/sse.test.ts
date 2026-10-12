@@ -1,6 +1,6 @@
 const requestRaw = jest.fn();
 jest.mock("@/lib/python-client", () => ({ requestRaw: (...a: unknown[]) => requestRaw(...a) }));
-jest.mock("@ai-matrx/agents/stream/sse", () => ({ readMatrxSseStream: async function* () {} }));
+jest.mock("@ai-matrx/api/stream", () => ({ readMatrxSseStream: async function* () {} }));
 
 import { streamSse } from "./sse";
 

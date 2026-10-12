@@ -12,7 +12,7 @@ import type {
   ExtractionStreamEvent,
   RunExtractionRequest,
 } from "@/features/page-extraction/types";
-import { getUserMessage, streamErrorText } from "@ai-matrx/agents/matrx";
+import { getUserMessage, streamErrorText } from "@ai-matrx/api";
 
 const RUN_STREAM_PATH = "/page-extraction/runs/stream";
 

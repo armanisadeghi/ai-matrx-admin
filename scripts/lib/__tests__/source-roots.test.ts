@@ -28,7 +28,7 @@ describe("aliasTarget", () => {
   });
 
   it("leaves packages and relative specifiers alone", () => {
-    for (const spec of ["react", "@ai-matrx/agents/matrx", "@ai-matrx/chatty/x", "./x", "../y", "@hostile/x"]) {
+    for (const spec of ["react", "@ai-matrx/api", "@ai-matrx/chatty/x", "./x", "../y", "@hostile/x"]) {
       expect(aliasTarget(spec)).toBeNull();
       expect(isAliasSpecifier(spec)).toBe(false);
     }

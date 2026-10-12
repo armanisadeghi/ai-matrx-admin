@@ -16,7 +16,7 @@ import { organizationRequired } from "@ai-matrx/auth/organizations";
 import { getActiveOrgId } from "@/lib/organizations/activeOrg";
 // Cycle-free leaf (same constraint as activeOrg.ts) — never `@/lib/redux/store`.
 import { getStoreSingleton } from "@/lib/redux/store-singleton";
-import { OrganizationContextError } from "@ai-matrx/agents/matrx";
+import { OrganizationContextError } from "@ai-matrx/api";
 // The ONE "has the load ladder answered yet?" promise, settled by the ladder
 // (appContextPolicy.remote.fetch / activeOrgBootstrap) or the person's switch.
 import {

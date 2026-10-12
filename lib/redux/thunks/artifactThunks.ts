@@ -25,7 +25,7 @@ import {
 // The ONE typed "no organization is selected" refusal — the same class the
 // transport kernel throws, so `isOrganizationRequiredError` recognises this and
 // surfaces render the picker instead of a raw sentence.
-import { OrganizationContextError } from "@ai-matrx/agents/matrx";
+import { OrganizationContextError } from "@ai-matrx/api";
 import type {
   CxArtifactRecord,
   CxArtifactRow,

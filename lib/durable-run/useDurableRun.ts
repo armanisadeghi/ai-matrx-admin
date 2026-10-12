@@ -64,7 +64,7 @@ import { useAppDispatch } from "@/lib/redux/hooks";
 import type { AppDispatch } from "@/lib/redux/store";
 import { captureError } from "@/lib/diagnostics/errorCaptureStore";
 import type { paths } from "@ai-matrx/agents/generated/api-types";
-import { streamErrorText } from "@ai-matrx/agents/matrx";
+import { streamErrorText } from "@ai-matrx/api";
 
 /**
  * A pointer older than this is not worth rejoining: every durable run holds a

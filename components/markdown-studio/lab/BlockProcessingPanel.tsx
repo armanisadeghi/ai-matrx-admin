@@ -12,7 +12,7 @@ import { CheckCircle2, Copy, Loader2, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import MarkdownStream from "@ai-matrx/chat/ui/markdown-stream/MarkdownStream";
 import { requestRaw } from "@/lib/python-client";
-import { getUserMessage } from "@ai-matrx/agents/matrx";
+import { getUserMessage } from "@ai-matrx/api";
 import { ENDPOINTS } from "@/lib/api/endpoints";
 import { parseNdjsonStream } from "@/lib/api/stream-parser";
 import { copyContent } from "@ai-matrx/rich-content/copy/copy-commands";

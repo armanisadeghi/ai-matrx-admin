@@ -23,7 +23,7 @@ import { commitUrlParams, useUrlSearchParams } from "@ai-matrx/kit/url-state";
 import PageHeader from "@/features/shell/components/header/PageHeader";
 import { EntityListPage } from "@/lib/entity-list/components/EntityListPage";
 import type { EntityBulkActionResult } from "@/lib/entity-list/selection";
-import { extractErrorMessage } from "@ai-matrx/data/net";
+import { extractErrorMessage } from "@ai-matrx/api/net";
 import { createExportItemsListConfig } from "../browse/listConfig";
 import { deriveExportCounts, type ExportPageFacts } from "../counts";
 import { fetchExportLibrary, streamExportIndex } from "../api";

@@ -20,7 +20,7 @@ import {
   buildMatrxRequestUrl,
   readMatrxJsonResponse,
   sendMatrxRequest,
-} from "@ai-matrx/agents/matrx";
+} from "@ai-matrx/api";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
 
 function backendBase(): string {

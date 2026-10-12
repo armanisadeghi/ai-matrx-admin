@@ -7,7 +7,7 @@
  * supplies the one host fact: how a knob is read (`ensureEffectiveKnob`).
  */
 
-import { resolveRunWaitWith, type RunOutputKind, type RunWait } from "@ai-matrx/agents/matrx";
+import { resolveRunWaitWith, type RunOutputKind, type RunWait } from "@ai-matrx/api";
 
 import { ensureEffectiveKnob } from "@/lib/scoped-config/effectiveKnobs";
 
@@ -22,7 +22,7 @@ export {
   runWaitTimeoutMessage,
   type RunOutputKind,
   type RunWait,
-} from "@ai-matrx/agents/matrx";
+} from "@ai-matrx/api";
 
 /**
  * The first-response wait for `kind` under this organization's knob. Never

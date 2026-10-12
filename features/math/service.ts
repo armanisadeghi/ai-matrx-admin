@@ -1,7 +1,7 @@
 // features/math/service.ts
 import { createClient } from "@/utils/supabase/server";
 import { readAllRows } from "@ai-matrx/data/db";
-import { OrganizationContextError } from "@ai-matrx/agents/matrx";
+import { OrganizationContextError } from "@ai-matrx/api";
 import type { Database, Json } from "@/types/database.types";
 import {
   MathProblem,

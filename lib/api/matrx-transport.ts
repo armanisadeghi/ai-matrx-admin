@@ -39,7 +39,7 @@ import {
   type MatrxCancelResponse,
   type MatrxTransport,
   type MatrxTransportDiagnostics,
-} from "@ai-matrx/agents/matrx";
+} from "@ai-matrx/api";
 import {
   ensureOrganizationContextForCall,
   isReadMethod,

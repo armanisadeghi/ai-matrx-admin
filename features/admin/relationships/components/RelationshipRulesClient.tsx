@@ -47,7 +47,7 @@ import {
   stringUrlCodec,
   useUrlState,
 } from "@ai-matrx/kit/url-state";
-import { extractErrorMessage } from "@ai-matrx/data/net";
+import { extractErrorMessage } from "@ai-matrx/api/net";
 
 type RuleFilter = "all" | "conveying" | "known" | "inactive";
 

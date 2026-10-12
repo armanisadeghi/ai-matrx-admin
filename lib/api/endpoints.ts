@@ -6,7 +6,7 @@
 // independence P9): one list for every client. Re-exported so import sites keep
 // their path; add a path in the package. The base URLs below are this app's
 // environment values and stay here.
-export { ENDPOINTS } from "@ai-matrx/agents/matrx";
+export { ENDPOINTS } from "@ai-matrx/api";
 
 // NOTE: The AI runtime v1/v2 spine version now lives in
 // `lib/api/ai-api-version.ts` (the single `AI_API_VERSION_DEFAULT` flag +

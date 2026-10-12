@@ -16,7 +16,7 @@ import {
   buildMatrxRequestUrl,
   extractMatrxErrorMessage,
   sendMatrxRequest,
-} from "@ai-matrx/agents/matrx";
+} from "@ai-matrx/api";
 import { applyOrganizationContextHeader } from "@/lib/api/organization-context";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
 

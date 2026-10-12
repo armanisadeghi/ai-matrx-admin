@@ -49,7 +49,7 @@ import {
   stringUrlCodec,
   useUrlState,
 } from "@ai-matrx/kit/url-state";
-import { extractErrorMessage } from "@ai-matrx/data/net";
+import { extractErrorMessage } from "@ai-matrx/api/net";
 
 export type ReachabilityMode = "contents" | "containers";
 

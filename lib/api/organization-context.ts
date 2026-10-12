@@ -12,7 +12,7 @@
  * the platform tenant from the admin section.
  */
 
-import { applyOrganizationContextHeader as applyPackageOrganizationContextHeader } from "@ai-matrx/agents/matrx";
+import { applyOrganizationContextHeader as applyPackageOrganizationContextHeader } from "@ai-matrx/api";
 import { withAdminLaneHeader } from "@/lib/api/admin-lane";
 
 export {
@@ -20,7 +20,7 @@ export {
   OrganizationContextError,
   requireOrganizationContext,
   type OrganizationContextErrorCode,
-} from "@ai-matrx/agents/matrx";
+} from "@ai-matrx/api";
 
 export const applyOrganizationContextHeader: typeof applyPackageOrganizationContextHeader = (
   ...args: Parameters<typeof applyPackageOrganizationContextHeader>

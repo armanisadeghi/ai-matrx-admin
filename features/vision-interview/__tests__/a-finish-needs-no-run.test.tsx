@@ -134,7 +134,7 @@ jest.mock(
   "@ai-matrx/chat/agents/redux/execution-system/thunks/follow-workflow-run-stream",
   () => ({ followWorkflowRunStream: () => Promise.resolve() }),
 );
-jest.mock("@ai-matrx/data/net", () => ({ isTransportFailure: () => false }));
+jest.mock("@ai-matrx/api/net", () => ({ isTransportFailure: () => false }));
 jest.mock("@/lib/toast", () => ({
   toast: { error: () => undefined, info: () => undefined, success: () => undefined },
   toastErrorAlreadyCaptured: () => undefined,

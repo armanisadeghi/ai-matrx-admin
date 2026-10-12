@@ -8,7 +8,7 @@ jest.mock("@/lib/toast", () => ({
 
 import { act } from "react";
 import { createRoot } from "react-dom/client";
-import { OrganizationContextError } from "@ai-matrx/agents/matrx";
+import { OrganizationContextError } from "@ai-matrx/api";
 import { useDraftInitializationControl } from "./useDraftInitializationControl";
 
 (globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;

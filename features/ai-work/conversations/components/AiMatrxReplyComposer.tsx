@@ -39,7 +39,7 @@ import { readServerRefusal } from "@/features/access-gate/service/serverRefusal"
 import { useCodingReplyResponder } from "./useCodingReplyResponder";
 import { replyDoorView } from "@ai-matrx/chat/agents/coding-session-reply/reply-door";
 import { CodingReplyNotice } from "@ai-matrx/chat/agents/coding-session-reply/CodingReplyNotice";
-import { streamErrorText } from "@ai-matrx/agents/matrx";
+import { streamErrorText } from "@ai-matrx/api";
 // `source_feature` for every reply sent from this composer. Per the provenance
 // ruling the reply's source_app is `code-plugin`; this composer sends none —
 // request attribution for the continue is the server reply path's

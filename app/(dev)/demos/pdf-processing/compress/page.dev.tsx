@@ -7,7 +7,7 @@ import { ArrowLeft, Loader2, Play, AlertTriangle } from "lucide-react";
 import { Input } from "@ai-matrx/design-system";
 import { Button } from "@/components/ui/button";
 import { requestRaw } from "@/lib/python-client";
-import { getUserMessage } from "@ai-matrx/agents/matrx";
+import { getUserMessage } from "@ai-matrx/api";
 import { ENDPOINTS } from "@/lib/api/endpoints";
 import { PdfBinaryResult } from "@/features/pdf-demo/components/PdfBinaryResult";
 import { type BinaryResult } from "@/features/pdf-demo/hooks/usePdfDemoApi";

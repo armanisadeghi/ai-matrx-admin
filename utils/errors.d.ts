@@ -17,7 +17,7 @@
  * `pnpm check:access-errors` counts. When the failure is a single-record READ,
  * render `<AccessGate token id error/>` instead (features/access-gate/).
  */
-import { extractErrorMessage } from "@ai-matrx/data/net";
+import { extractErrorMessage } from "@ai-matrx/api/net";
 export { extractErrorMessage };
 export { humanizeBackendError, makeAssertData, operationFailed, stripTerminalCodes, } from "@ai-matrx/kit/errors";
 /**

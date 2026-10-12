@@ -47,7 +47,7 @@ const LEGACY_COMPLIANT_IMPORTS = [
   "@/lib/api/context-api", "@/lib/api/typed-client", "@/lib/api/hr-contract-client",
   "@/lib/api/proxy-backend-auth-headers", "@/lib/python-client", "@/hooks/useApiAuth",
   "@/features/files/media-client/client", "@/components/api-test-config/useApiTestConfig",
-  "@ai-matrx/agents/matrx",
+  "@ai-matrx/api",
 ];
 
 interface AllowlistEntry { file: string; reason: string }

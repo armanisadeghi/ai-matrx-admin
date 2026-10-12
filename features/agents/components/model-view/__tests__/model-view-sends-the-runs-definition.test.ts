@@ -14,7 +14,7 @@ jest.mock("@ai-matrx/chat/agents/redux/execution-system/thunks/refresh-surface-s
 jest.mock("@ai-matrx/chat/agents/redux/execution-system/context-rules/context-rules.thunks", () => ({
   ensureContextRulesReady: () => ({ type: "noop" }),
 }));
-jest.mock("@ai-matrx/agents/matrx", () => ({ getUserMessage: () => "error" }));
+jest.mock("@ai-matrx/api", () => ({ getUserMessage: () => "error" }));
 
 import { requestModelView, SERVER_BEHIND_MESSAGE } from "../requestModelView";
 

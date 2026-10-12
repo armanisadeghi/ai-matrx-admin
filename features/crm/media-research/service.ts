@@ -23,7 +23,7 @@ import type {
 import { apiPost, buildPath } from "@/lib/api/typed-client";
 import { callApi } from "@/lib/api/call-api";
 import type { AppDispatch } from "@/lib/redux/store";
-import { streamErrorText } from "@ai-matrx/agents/matrx";
+import { streamErrorText } from "@ai-matrx/api";
 
 export type MediaResearchRequest = components["schemas"]["MediaResearchRequest"];
 export type MediaResearchPreview = components["schemas"]["MediaResearchPreview"];

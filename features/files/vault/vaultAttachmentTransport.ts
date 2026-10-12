@@ -13,7 +13,7 @@ import {
   buildMatrxRequestUrl,
   parseHttpError,
   sendMatrxRequest,
-} from "@ai-matrx/agents/matrx";
+} from "@ai-matrx/api";
 import { downloadFile } from "@ai-matrx/kit/download";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
 

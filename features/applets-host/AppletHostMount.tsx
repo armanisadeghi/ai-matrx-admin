@@ -23,7 +23,7 @@ import { holdWrites, type HeldWrite } from "@ai-matrx/applets/preview";
 import { mountAppletAsync } from "@ai-matrx/applets/frame";
 import { createIntelligencePort } from "@ai-matrx/agents/intelligence";
 import { liveValues } from "@ai-matrx/alchemy/surface";
-import type { MatrxTransport } from "@ai-matrx/agents/matrx";
+import type { MatrxTransport } from "@ai-matrx/api";
 import type { GuestSaveStatus, JobRunView } from "@ai-matrx/applets";
 import { adoptForeignStream } from "@ai-matrx/chat/agents/redux/execution-system/thunks/adopt-foreign-stream";
 import { Button, RegionSkeleton } from "@ai-matrx/design-system/controls";

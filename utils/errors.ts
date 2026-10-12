@@ -18,7 +18,7 @@
  * render `<AccessGate token id error/>` instead (features/access-gate/).
  */
 
-import { extractErrorMessage } from "@ai-matrx/data/net";
+import { extractErrorMessage } from "@ai-matrx/api/net";
 import { makeAssertData } from "@ai-matrx/kit/errors";
 
 export { extractErrorMessage };

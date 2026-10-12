@@ -1,11 +1,11 @@
-import { buildMatrxRequestUrl } from "@ai-matrx/agents/matrx";
+import { buildMatrxRequestUrl } from "@ai-matrx/api";
 import { loadSocialConfigs } from "../customer-service";
 
 const mockSend = jest.fn();
 const mockBaseUrl = jest.fn((..._args: unknown[]) => "http://localhost:8000/");
 
-jest.mock("@ai-matrx/agents/matrx", () => ({
-  ...jest.requireActual("@ai-matrx/agents/matrx"),
+jest.mock("@ai-matrx/api", () => ({
+  ...jest.requireActual("@ai-matrx/api"),
   sendMatrxRequest: (...args: unknown[]) => mockSend(...args),
 }));
 jest.mock("@/lib/api/resolve-service-url", () => ({

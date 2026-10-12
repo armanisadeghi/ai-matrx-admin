@@ -14,7 +14,7 @@ import { callApi, type ApiCallConfig } from "@/lib/api/call-api";
 import type { AppDispatch } from "@/lib/redux/store";
 import { isJsonObject, type JsonObject, type JsonValue } from "@/types/json";
 import type { TypedStreamEvent } from "@ai-matrx/agents/generated/stream-events";
-import { streamErrorText } from "@ai-matrx/agents/matrx";
+import { streamErrorText } from "@ai-matrx/api";
 import { adoptForeignStream } from "@ai-matrx/chat/agents/redux/execution-system/thunks/adopt-foreign-stream";
 
 // ── Shapes (the contract, verbatim field names) ──────────────────────────────

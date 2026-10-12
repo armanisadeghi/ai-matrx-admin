@@ -17,7 +17,7 @@
  * chunk → embed → upsert → complete). Cancelable via AbortController.
  */
 import { postJson, postNdjson } from "@/lib/python-client";
-import { getUserMessage } from "@ai-matrx/agents/matrx";
+import { getUserMessage } from "@ai-matrx/api";
 
 export interface IngestResponse {
   source_kind: string;

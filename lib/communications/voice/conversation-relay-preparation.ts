@@ -5,7 +5,7 @@ import "server-only";
 import { AIDREAM_PRODUCTION_URL } from "@/lib/api/endpoints";
 import { isRfc4122Uuid } from "@ai-matrx/kit/uuid";
 import { createAdminClient } from "@/utils/supabase/adminClient";
-import { buildMatrxRequestUrl, sendMatrxRequest } from "@ai-matrx/agents/matrx";
+import { buildMatrxRequestUrl, sendMatrxRequest } from "@ai-matrx/api";
 
 export const CONVERSATION_RELAY_PUBLIC_URL =
   "wss://server.app.matrxserver.com/communications/voice/conversation-relay";

@@ -4,7 +4,7 @@ import "server-only";
 
 import { AIDREAM_PRODUCTION_URL } from "@/lib/api/endpoints";
 import type { components } from "@ai-matrx/agents/generated/api-types";
-import { buildMatrxRequestUrl, sendMatrxRequest } from "@ai-matrx/agents/matrx";
+import { buildMatrxRequestUrl, sendMatrxRequest } from "@ai-matrx/api";
 
 const READINESS_PATH = "/communications/voice/conversation-relay/readiness";
 

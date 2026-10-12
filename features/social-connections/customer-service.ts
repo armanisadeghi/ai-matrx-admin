@@ -1,5 +1,5 @@
 import { LINK_ORGANIZATION_QUERY_KEY } from "@ai-matrx/auth/organizations";
-import { buildMatrxRequestUrl, sendMatrxRequest } from "@ai-matrx/agents/matrx";
+import { buildMatrxRequestUrl, sendMatrxRequest } from "@ai-matrx/api";
 import { applyOrganizationContextHeader } from "@/lib/api/organization-context";
 import { resolveServiceBaseUrl } from "@/lib/api/resolve-service-url";
 import { createClient } from "@/utils/supabase/client";

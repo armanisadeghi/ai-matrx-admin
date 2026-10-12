@@ -26,7 +26,7 @@ import {
   requireOrganizationContext,
 } from "@/lib/api/organization-context";
 import { getJson } from "@/lib/python-client";
-import { BackendApiError, getUserMessage } from "@ai-matrx/agents/matrx";
+import { BackendApiError, getUserMessage } from "@ai-matrx/api";
 import { hydrateContextState } from "@ai-matrx/chat/agents/redux/execution-system/context-state/context-state.slice";
 
 export class SelectedBackendUnavailableError extends Error {}

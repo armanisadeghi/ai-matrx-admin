@@ -31,7 +31,7 @@ import {
   buildMatrxRequestUrl,
   parseMatrxNdjsonResponse,
   sendMatrxRequest,
-} from "@ai-matrx/agents/matrx";
+} from "@ai-matrx/api";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
 
 /**

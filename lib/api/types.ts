@@ -147,7 +147,7 @@ export type LLMParamsKey = keyof LLMParams;
 
 // The server error shape and its codes live with the error model in
 // `@ai-matrx/agents/matrx` (P9); re-exported here.
-export type { BackendApiErrorData, BackendErrorCode } from "@ai-matrx/agents/matrx";
+export type { BackendApiErrorData, BackendErrorCode } from "@ai-matrx/api";
 
 // ============================================================================
 // CONTEXT / SCOPE TYPES

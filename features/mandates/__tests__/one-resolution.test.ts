@@ -107,7 +107,7 @@ class FakeBackendApiError extends Error {
 // The error model is @ai-matrx/agents/matrx's (P9): the package's `instanceof`
 // checks see this stand-in only when it IS that class.
 jest.mock("@/lib/api/errors", () => {
-  const { BackendApiError: Real } = jest.requireActual("@ai-matrx/agents/matrx") as {
+  const { BackendApiError: Real } = jest.requireActual("@ai-matrx/api") as {
     BackendApiError: new (init: { code: string; detail: string; userMessage: string; status: number }) => Error;
   };
   return {

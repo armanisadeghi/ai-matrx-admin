@@ -17,7 +17,7 @@
  */
 
 import { useEffect, useState, type ReactNode } from "react";
-import { createWarmup, preconnectServer } from "@ai-matrx/agents/matrx";
+import { createWarmup, preconnectServer } from "@ai-matrx/api";
 import { WarmupProvider } from "@ai-matrx/agents/react";
 import { createMatrxTransport } from "@/lib/api/matrx-transport";
 import { resolveBaseUrl } from "@/lib/api/call-api";

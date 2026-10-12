@@ -33,7 +33,7 @@ import { getStoreSingleton as getStore } from "@/lib/redux/store-singleton";
 // meant every surface had to string-match one of them, so the screens showed a
 // raw transport sentence instead of an honest state; there is now one type and
 // one recogniser (`isOrganizationRequiredError`).
-import { OrganizationContextError } from "@ai-matrx/agents/matrx";
+import { OrganizationContextError } from "@ai-matrx/api";
 
 import { activeAdminOrganization } from "@/lib/organizations/adminOrganization";
 

@@ -19,7 +19,7 @@
  */
 
 import { getJson, postNdjson } from "@/lib/python-client";
-import { getUserMessage } from "@ai-matrx/agents/matrx";
+import { getUserMessage } from "@ai-matrx/api";
 
 export type StageName = "extract" | "clean" | "chunk" | "embed" | "run_all";
 

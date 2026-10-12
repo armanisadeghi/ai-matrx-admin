@@ -21,7 +21,7 @@ import {
   ADMIN_SYSTEM_AGENTS_BASE_PATH,
   isAdminSystemAgentsContext,
 } from "@ai-matrx/chat/agents/components/shared/agent-route-context";
-import { getUserMessage } from "@ai-matrx/agents/matrx";
+import { getUserMessage } from "@ai-matrx/api";
 
 interface UseAgentDuplicateFlowOptions {
   /** The route family the copy opens in. Default: the admin system-agents base on those routes, else "/agents". */

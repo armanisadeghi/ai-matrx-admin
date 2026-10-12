@@ -41,7 +41,7 @@ import type { AiPreparation } from "@ai-matrx/alchemy/operate";
 import {
   requireOrganizationContext,
   type MatrxTransport,
-} from "@ai-matrx/agents/matrx";
+} from "@ai-matrx/api";
 import { MANDATE_KEYS } from "@ai-matrx/agents/mandates";
 import { selectOrganizationId } from "@/lib/redux/slices/appContextSlice";
 import { alchemyOrganizationId } from "./alchemy-organization";

@@ -1,6 +1,6 @@
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
-import { buildMatrxRequestUrl, sendMatrxRequest } from "@ai-matrx/agents/matrx";
+import { buildMatrxRequestUrl, sendMatrxRequest } from "@ai-matrx/api";
 import { createClient } from "@/utils/supabase/server";
 import { getClaimsUser } from "@ai-matrx/auth";
 import { applyOrganizationContextHeader } from "@/lib/api/organization-context";

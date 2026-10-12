@@ -4,7 +4,7 @@
  */
 
 import { getJson, requestRaw } from "@/lib/python-client";
-import { parseMatrxNdjsonResponse } from "@ai-matrx/agents/matrx";
+import { parseMatrxNdjsonResponse } from "@ai-matrx/api";
 
 import { parseChangeSet, type ChangeSet } from "./changes";
 import {

@@ -10,7 +10,7 @@
 
 import type { RootState } from "@/lib/redux/store";
 
-jest.mock("@ai-matrx/data/net", () => ({
+jest.mock("@ai-matrx/api/net", () => ({
   resilientFetch: jest.fn(),
   isNetError: () => false,
 }));
@@ -50,7 +50,7 @@ jest.mock("@/lib/redux/selectors/userSelectors", () => ({
   selectUserId: () => "user-1",
 }));
 
-import { resilientFetch } from "@ai-matrx/data/net";
+import { resilientFetch } from "@ai-matrx/api/net";
 import { captureApiError } from "@/lib/diagnostics/captureApiError";
 import {
   cancelAgentRunRequest,

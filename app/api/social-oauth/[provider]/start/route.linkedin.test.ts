@@ -2,12 +2,12 @@
 import { NextRequest } from "next/server";
 import { GET } from "./route";
 import { socialAuthorizeUrl } from "@/features/social-connections/customer-service";
-import { sendMatrxRequest } from "@ai-matrx/agents/matrx";
+import { sendMatrxRequest } from "@ai-matrx/api";
 import { cookies } from "next/headers";
 
 jest.mock("next/headers", () => ({ cookies: jest.fn() }));
-jest.mock("@ai-matrx/agents/matrx", () => ({
-  ...jest.requireActual("@ai-matrx/agents/matrx"),
+jest.mock("@ai-matrx/api", () => ({
+  ...jest.requireActual("@ai-matrx/api"),
   sendMatrxRequest: jest.fn(),
 }));
 jest.mock("@/lib/api/organization-context", () => ({

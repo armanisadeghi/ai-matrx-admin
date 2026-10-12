@@ -10,7 +10,7 @@ import { captureError } from "@/lib/diagnostics/errorCaptureStore";
 import { supabase } from "@/utils/supabase/client";
 import { applyOrganizationContextHeader } from "@/lib/api/organization-context";
 import { resolveServiceBaseUrl } from "@/lib/api/resolve-service-url";
-import { sendMatrxRequest } from "@ai-matrx/agents/matrx";
+import { sendMatrxRequest } from "@ai-matrx/api";
 import { isJsonRecord, type CrawlEvent } from "@/features/marketing/types";
 import type { CrawlRenderMode } from "@/features/marketing/crawler/crawl-options";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";

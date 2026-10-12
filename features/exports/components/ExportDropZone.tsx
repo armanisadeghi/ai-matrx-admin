@@ -41,7 +41,7 @@ import {
   RESUMABLE_UPLOAD_THRESHOLD_BYTES,
   type ResumableUpload,
 } from "@/features/files/handler/resumableUploads";
-import { extractErrorMessage } from "@ai-matrx/data/net";
+import { extractErrorMessage } from "@ai-matrx/api/net";
 import { createExportLibrary } from "../api";
 
 import { rememberFreshExport } from "../freshExport";

@@ -92,7 +92,7 @@ import type {
   ShortcutFormData,
 } from "../types";
 import { ProTextarea } from "@/components/official/ProTextarea";
-import { extractErrorMessage } from "@ai-matrx/data/net";
+import { extractErrorMessage } from "@ai-matrx/api/net";
 import { ClampedNumberInput } from "@/components/official/ClampedNumberInput";
 import { useBuiltinAgents } from "@ai-matrx/chat/agents/identity/agent-catalog-lists";
 import { ensureAgentCatalog } from "@ai-matrx/chat/agents/identity/agent-identity";

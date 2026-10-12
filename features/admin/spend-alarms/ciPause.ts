@@ -5,7 +5,7 @@
  * (`billing.spend_alarm.metadata.ci_pause`, read back through `spend_alarm_rows`).
  */
 
-import { buildMatrxRequestUrl, sendMatrxRequest } from "@ai-matrx/agents/matrx";
+import { buildMatrxRequestUrl, sendMatrxRequest } from "@ai-matrx/api";
 import { resolveServiceBaseUrl } from "@/lib/api/resolve-service-url";
 import { serverMessageFromBody, WriteRefusedError } from "@/lib/errors/writeFailure";
 import { supabase } from "@/utils/supabase/client";

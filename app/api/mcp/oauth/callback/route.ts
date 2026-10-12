@@ -12,7 +12,7 @@ import {
 import { isValidOAuthState } from "@ai-matrx/chat/agents/services/mcp-oauth/state";
 import { AIDREAM_PRODUCTION_URL } from "@/lib/api/endpoints";
 import { getClaimsUser } from "@ai-matrx/auth";
-import { buildMatrxRequestUrl } from "@ai-matrx/agents/matrx";
+import { buildMatrxRequestUrl } from "@ai-matrx/api";
 
 interface OAuthSession {
   serverId: string;

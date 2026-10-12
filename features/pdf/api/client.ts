@@ -26,7 +26,7 @@ import {
   buildMatrxRequestUrl,
   extractMatrxErrorMessage,
   sendMatrxRequest,
-} from "@ai-matrx/agents/matrx";
+} from "@ai-matrx/api";
 
 type PdfEndpoint = typeof ENDPOINTS.pdf;
 export type PdfEndpointKey = {

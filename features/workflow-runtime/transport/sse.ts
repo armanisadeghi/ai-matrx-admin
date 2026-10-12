@@ -21,7 +21,7 @@
  * caller can fall back to polling.
  */
 
-import { readMatrxSseStream } from "@ai-matrx/agents/stream/sse";
+import { readMatrxSseStream } from "@ai-matrx/api/stream";
 import { requestRaw } from "@/lib/python-client";
 
 export interface SseOptions {

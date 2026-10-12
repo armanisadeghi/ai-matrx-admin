@@ -24,7 +24,7 @@ import type {
   IngestProgress,
   IngestRequestBody,
 } from "@/features/rag/api/ingest";
-import { getUserMessage } from "@ai-matrx/agents/matrx";
+import { getUserMessage } from "@ai-matrx/api";
 import { clearFileDocumentCache } from "@/features/files/api/document-lookup";
 import { cn } from "@/lib/utils";
 

@@ -17,7 +17,7 @@ import type {
 } from "./types";
 import { unwrapRows } from "./unwrap";
 import { AIDREAM_PRODUCTION_URL } from "@/lib/api/endpoints";
-import { buildMatrxRequestUrl, sendMatrxRequest } from "@ai-matrx/agents/matrx";
+import { buildMatrxRequestUrl, sendMatrxRequest } from "@ai-matrx/api";
 
 /** SQL runner using the admin client + execute_admin_query RPC. */
 export async function createAdminSqlRunner(): Promise<SqlRunner> {

@@ -35,7 +35,7 @@ import {
 import { Skeleton } from "@ai-matrx/design-system";
 import { Input } from "@ai-matrx/design-system/controls";
 import { cn } from "@/lib/utils";
-import { extractErrorMessage } from "@ai-matrx/data/net";
+import { extractErrorMessage } from "@ai-matrx/api/net";
 import { sendExportItemsToRulebook } from "../api";
 import { buildConfirmedSentence } from "../consent";
 import { listRulebookChoices, rulebookHref, type RulebookChoice } from "../rulebooks";

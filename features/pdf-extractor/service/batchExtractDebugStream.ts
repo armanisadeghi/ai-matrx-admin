@@ -1,6 +1,6 @@
 import type { TypedStreamEvent } from "@/lib/api/types";
 import { BackendApiError } from "@/lib/api/errors";
-import { readMatrxNdjsonStream } from "@ai-matrx/agents/stream/ndjson";
+import { readMatrxNdjsonStream } from "@ai-matrx/api/stream";
 
 export interface BatchExtractStreamTap {
   onRawLine: (line: string, index: number) => void;

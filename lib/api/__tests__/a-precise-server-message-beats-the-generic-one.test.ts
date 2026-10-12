@@ -5,7 +5,7 @@
  * (`extractMatrxErrorMessage`, >= 0.43.19); this pins that callApi's error path
  * still gets it, so a package regression is caught here.
  */
-import { extractMatrxErrorMessage } from "@ai-matrx/agents/matrx";
+import { extractMatrxErrorMessage } from "@ai-matrx/api";
 
 describe("the server's precise message beats a generic user_message", () => {
   it("prefers the body's message", () => {

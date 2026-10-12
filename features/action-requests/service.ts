@@ -45,7 +45,7 @@ import {
   buildMatrxRequestUrl,
   extractMatrxErrorCode,
   sendMatrxRequest,
-} from "@ai-matrx/agents/matrx";
+} from "@ai-matrx/api";
 
 // The render spec and result types live with the ask in the chat package
 // (`@ai-matrx/chat/action-requests/render-types`); these doors return them.

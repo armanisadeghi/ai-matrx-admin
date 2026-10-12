@@ -32,7 +32,7 @@ import type {
   RelationshipProblem,
   RelationshipSystemStatus,
 } from "../types";
-import { extractErrorMessage } from "@ai-matrx/data/net";
+import { extractErrorMessage } from "@ai-matrx/api/net";
 
 interface Props {
   status: RelationshipSystemStatus | null;

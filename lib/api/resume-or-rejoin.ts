@@ -18,7 +18,7 @@ import {
   resumeOrRejoin,
   type MatrxLiveRunRejoin,
   type ResumeOrRejoinOutcome,
-} from "@ai-matrx/agents/matrx";
+} from "@ai-matrx/api";
 import type { RootState } from "@/lib/redux/store";
 import type { TypedStreamEvent } from "@ai-matrx/agents/generated/stream-events";
 import { waitForAuthReady } from "@/lib/api/call-api";

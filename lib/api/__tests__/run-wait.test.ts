@@ -5,7 +5,7 @@
  */
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { resilientFetch } from "@ai-matrx/data/net";
+import { resilientFetch } from "@ai-matrx/api/net";
 
 jest.mock("@/lib/scoped-config/effectiveKnobs", () => ({
   ensureEffectiveKnob: jest.fn(),

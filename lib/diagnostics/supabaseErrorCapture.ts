@@ -36,7 +36,7 @@ import {
   cancelledByCaller as callerSignalCancelled,
   isCallerAbortFailure,
 } from "@/lib/diagnostics/cancelledByCaller";
-import { isTransportFailure } from "@ai-matrx/data/net";
+import { isTransportFailure } from "@ai-matrx/api/net";
 import {
   captureError,
   type CapturedOperation,

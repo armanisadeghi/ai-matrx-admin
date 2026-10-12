@@ -63,7 +63,7 @@ describe("makeAgentFromChat sends the examples", () => {
     jest.doMock("@/lib/api/adminDoor", () => ({ adminDoorOpen: () => false }));
     jest.doMock("@/features/masterwork/service", () => ({ createDraftRulebook: jest.fn() }));
     jest.doMock("@/utils/supabase/client", () => ({ supabase: {} }));
-    jest.doMock("@ai-matrx/agents/matrx", () => ({ streamErrorText: () => null }));
+    jest.doMock("@ai-matrx/api", () => ({ streamErrorText: () => null }));
     const { makeAgentFromChat } = await import("../../from-chat/service");
     const dispatch = (async (a: unknown) => ({ ...(a as object), error: null })) as never;
     await makeAgentFromChat(dispatch, "c".repeat(36), () => undefined, ["x", " ", "y"]);

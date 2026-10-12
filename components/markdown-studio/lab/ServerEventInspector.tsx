@@ -15,7 +15,7 @@ import React, { useState, useCallback, useRef } from "react";
 import { parseNdjsonStream } from "@/lib/api/stream-parser";
 import { ENDPOINTS } from "@/lib/api/endpoints";
 import { requestRaw } from "@/lib/python-client";
-import { getUserMessage } from "@ai-matrx/agents/matrx";
+import { getUserMessage } from "@ai-matrx/api";
 import { ApiTestConfigPanel } from "@/components/api-test-config/ApiTestConfigPanel";
 import { useApiTestConfig } from "@/components/api-test-config/useApiTestConfig";
 import { Button } from "@/components/ui/button";

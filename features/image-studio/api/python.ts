@@ -25,7 +25,7 @@ import type {
   ImageEditCompleteData,
   ImageGenerateCompleteData,
 } from "@ai-matrx/agents/generated/stream-events";
-import { streamErrorText } from "@ai-matrx/agents/matrx";
+import { streamErrorText } from "@ai-matrx/api";
 
 // ---------------------------------------------------------------------------
 // Output options — shared across every op

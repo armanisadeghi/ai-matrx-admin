@@ -12,7 +12,7 @@
 //     constant, not an env var, so the value is grep-able and a full revert
 //     is a one-line diff; the admin sidebar toggle overrides it per-browser).
 
-import type { MatrxAiApiVersion } from "@ai-matrx/agents/matrx";
+import type { MatrxAiApiVersion } from "@ai-matrx/api";
 
 export {
   applyAiApiVersion,
@@ -21,7 +21,7 @@ export {
   toV1FallbackUrl,
   toV2Path,
   V2_COVERED_AI_PATH_TEMPLATES,
-} from "@ai-matrx/agents/matrx";
+} from "@ai-matrx/api";
 
 export type AiApiVersion = MatrxAiApiVersion;
 
@@ -43,4 +43,4 @@ export const AI_API_VERSION_DEFAULT: AiApiVersion = "v2";
  * the canonical templates, valued at their `/v2` siblings. Empty for v1. Moved
  * into `@ai-matrx/agents/matrx` (P9); re-exported here.
  */
-export { aiVersionPathOverrides } from "@ai-matrx/agents/matrx";
+export { aiVersionPathOverrides } from "@ai-matrx/api";

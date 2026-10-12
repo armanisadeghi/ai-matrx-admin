@@ -7,13 +7,13 @@
  * carries its own reason; any other end (cancelled, no run) is reported as such.
  * `follow` is injectable so the decision is unit-testable.
  */
-import { followServerJob } from "@ai-matrx/agents/matrx";
+import { followServerJob } from "@ai-matrx/api";
 import type {
   MatrxTransport,
   ServerJobFinalStatus,
   ServerJobOutcome,
   ServerJobTarget,
-} from "@ai-matrx/agents/matrx";
+} from "@ai-matrx/api";
 import { CLEAN_FAILED_MESSAGE, describeRunError } from "./cleanOutcome";
 
 export type EndedCleanResolution<TDoc> =

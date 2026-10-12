@@ -5,7 +5,7 @@
  * scrape to `https://scraper…/scraper/quick-scrape` → 404 (found 2026-10-05
  * walking the Fact Check tab). The real builder is used here — no double.
  */
-import { buildMatrxRequestUrl } from "@ai-matrx/agents/matrx";
+import { buildMatrxRequestUrl } from "@ai-matrx/api";
 import { serviceRequestBase } from "@/lib/api/service-routing";
 import { scraperServiceEndpoint } from "@/features/scraper/hooks/useScraperApi";
 import { ENDPOINTS } from "@/lib/api/endpoints";

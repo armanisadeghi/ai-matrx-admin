@@ -108,7 +108,7 @@ import type {
   RenderBlockEvent,
 } from "@ai-matrx/agents/generated/stream-events";
 import { requestRaw } from "@/lib/python-client";
-import { getUserMessage } from "@ai-matrx/agents/matrx";
+import { getUserMessage } from "@ai-matrx/api";
 import { isJsonObject } from "@/types/json";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { ClampedNumberInput } from "@/components/official/ClampedNumberInput";

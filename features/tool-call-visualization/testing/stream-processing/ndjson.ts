@@ -1,5 +1,5 @@
 import type { TypedStreamEvent } from "@ai-matrx/agents/generated/stream-events";
-import { createMatrxNdjsonFramer } from "@ai-matrx/agents/stream/ndjson";
+import { createMatrxNdjsonFramer } from "@ai-matrx/api/stream";
 import type { BackendStreamFoldState } from "./fold-stream-events";
 import { foldBackendStreamEvents } from "./fold-stream-events";
 

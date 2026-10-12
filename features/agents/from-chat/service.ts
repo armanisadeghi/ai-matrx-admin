@@ -22,7 +22,7 @@ import type {
   AgentStudioFromChatResultData,
   TypedStreamEvent,
 } from "@ai-matrx/agents/generated/stream-events";
-import { streamErrorText } from "@ai-matrx/agents/matrx";
+import { streamErrorText } from "@ai-matrx/api";
 import { adoptForeignStream } from "@ai-matrx/chat/agents/redux/execution-system/thunks/adopt-foreign-stream";
 import { SIDE_CHAT_PARAM } from "@ai-matrx/chat/canvas/workspace/side-chat-address";
 

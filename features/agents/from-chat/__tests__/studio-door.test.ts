@@ -12,7 +12,7 @@ describe("makeAgentFromChat — studio door", () => {
     jest.doMock("@/lib/api/adminDoor", () => ({ adminDoorOpen: () => false }));
     jest.doMock("@/features/masterwork/service", () => ({ createDraftRulebook: jest.fn() }));
     jest.doMock("@/utils/supabase/client", () => ({ supabase: {} }));
-    jest.doMock("@ai-matrx/agents/matrx", () => ({ streamErrorText: () => null }));
+    jest.doMock("@ai-matrx/api", () => ({ streamErrorText: () => null }));
     const { makeAgentFromChat } = await import("../service");
     const dispatch = (async (a: unknown) => ({ ...(a as object), error: null })) as never;
 

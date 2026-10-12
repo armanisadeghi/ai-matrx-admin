@@ -8,7 +8,7 @@
 
 import type { ChatRootState } from "@ai-matrx/chat/store/root-state";
 
-jest.mock("@ai-matrx/data/net", () => ({
+jest.mock("@ai-matrx/api/net", () => ({
   resilientFetch: jest.fn(),
   isNetError: () => false,
 }));
@@ -27,7 +27,7 @@ jest.mock("@ai-matrx/chat/agents/redux/execution-system/thunks/resolve-base-url"
 // binds the mock. A test-environment realm mismatch, not a product bug: a browser has one realm.
 jest.resetModules();
 /* eslint-disable @typescript-eslint/no-require-imports */
-const { resilientFetch } = require("@ai-matrx/data/net") as typeof import("@ai-matrx/data/net");
+const { resilientFetch } = require("@ai-matrx/api/net") as typeof import("@ai-matrx/api/net");
 const { configureServerForTest } = require("@ai-matrx/chat/testing/server-test-host") as typeof import("@ai-matrx/chat/testing/server-test-host");
 const { resolveBackendForConversation } = require("@ai-matrx/chat/agents/redux/execution-system/thunks/resolve-base-url") as typeof import("@ai-matrx/chat/agents/redux/execution-system/thunks/resolve-base-url");
 const { createMatrxTransportForConversation } = require("@ai-matrx/chat/agents/redux/execution-system/thunks/matrx-transport-for-conversation") as typeof import("@ai-matrx/chat/agents/redux/execution-system/thunks/matrx-transport-for-conversation");

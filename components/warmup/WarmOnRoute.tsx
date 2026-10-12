@@ -1,7 +1,7 @@
 "use client";
 
 import { useWarmOnMount } from "@ai-matrx/agents/react";
-import type { WarmItem, WarmReason } from "@ai-matrx/agents/matrx";
+import type { WarmItem, WarmReason } from "@ai-matrx/api";
 
 /**
  * A page's warm-up as ONE line, usable from a server component:

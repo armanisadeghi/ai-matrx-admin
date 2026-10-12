@@ -23,7 +23,7 @@
  * rather than papered over.
  */
 
-import { isBareTransportCode } from "@ai-matrx/agents/matrx";
+import { isBareTransportCode } from "@ai-matrx/api";
 
 /** The error shape `callApi` hands back on a failed request. */
 export interface DoorApiError {
@@ -61,7 +61,7 @@ const BLAMES_THE_READER = /check your input/i;
  */
 // THE detector lives in the shared core (`@ai-matrx/agents/matrx`, P9b) — the
 // one every client's error classifier launders messages through.
-export { isBareTransportCode } from "@ai-matrx/agents/matrx";
+export { isBareTransportCode } from "@ai-matrx/api";
 
 function isRecord(v: unknown): v is Record<string, unknown> {
   return typeof v === "object" && v !== null && !Array.isArray(v);

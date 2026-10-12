@@ -27,7 +27,7 @@ import {
   type ProviderSessionFailure,
   type ProviderSessionFailureVerdict,
   type ProviderSessionUsage,
-} from "@ai-matrx/agents/matrx";
+} from "@ai-matrx/api";
 import { waitForAuthReady } from "@/lib/api/call-api";
 import { createMatrxTransport } from "@/lib/api/matrx-transport";
 import { getStoreSingleton } from "@/lib/redux/store-singleton";

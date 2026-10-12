@@ -47,7 +47,7 @@ import {
   buildMatrxRequestUrl,
   extractMatrxErrorCode,
   sendMatrxRequest,
-} from "@ai-matrx/agents/matrx";
+} from "@ai-matrx/api";
 // 🚨 THE GATE, NOT THE BARE KERNEL (SOURCE-KEY, 2026-09-24). This client used
 // to read `requireOrganizationContext` directly — fail-closed and SYNCHRONOUS,
 // so a signed-in person with no workspace selected got a bare toast

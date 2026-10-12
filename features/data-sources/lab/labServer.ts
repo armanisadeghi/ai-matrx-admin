@@ -9,7 +9,7 @@
  * (`store: false`).
  */
 
-import { parseMatrxNdjsonResponse } from "@ai-matrx/agents/matrx";
+import { parseMatrxNdjsonResponse } from "@ai-matrx/api";
 
 import { requestRaw } from "@/lib/python-client";
 

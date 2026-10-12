@@ -7,7 +7,7 @@ import {
   applyOrganizationContextHeader,
   requireOrganizationContext,
 } from "@/lib/api/organization-context";
-import { buildMatrxRequestUrl, sendMatrxRequest } from "@ai-matrx/agents/matrx";
+import { buildMatrxRequestUrl, sendMatrxRequest } from "@ai-matrx/api";
 
 export async function GET(request: NextRequest): Promise<NextResponse> {
   const destination = new URL("/code", requestBaseUrl(request));

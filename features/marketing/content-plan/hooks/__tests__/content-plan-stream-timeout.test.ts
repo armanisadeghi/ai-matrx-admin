@@ -1,5 +1,5 @@
 import { CONTENT_PLAN_STREAM_CONNECT_TIMEOUT_MS } from "../useContentPlanAi";
-import { resilientFetch } from "@ai-matrx/data/net";
+import { resilientFetch } from "@ai-matrx/api/net";
 
 const originalFetch = globalThis.fetch;
 

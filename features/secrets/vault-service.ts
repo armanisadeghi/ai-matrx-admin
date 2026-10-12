@@ -20,7 +20,7 @@ import {
   buildMatrxRequestUrl,
   extractMatrxErrorCode,
   sendMatrxRequest,
-} from "@ai-matrx/agents/matrx";
+} from "@ai-matrx/api";
 import {
   downloadVaultAttachment as downloadVaultAttachmentBytes,
   replaceVaultAttachment as replaceVaultAttachmentBytes,

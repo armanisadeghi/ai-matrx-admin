@@ -25,7 +25,7 @@
 // make a keyed recording behave differently from a clicked one.
 
 import { useCallback, useEffect, useId, useRef, useState } from "react";
-import { isTransportFailure } from "@ai-matrx/data/net";
+import { isTransportFailure } from "@ai-matrx/api/net";
 import { showVoiceInputErrorToast } from "@/features/audio/services/voiceInputErrorToast";
 import {
   useVoiceCapture,

@@ -10,7 +10,7 @@
  *
  * `stream` / `follow` are injectable so the decision is unit-testable.
  */
-import type { MatrxTransport } from "@ai-matrx/agents/matrx";
+import type { MatrxTransport } from "@ai-matrx/api";
 import {
   resolveEndedClean,
   type EndedCleanResolution,

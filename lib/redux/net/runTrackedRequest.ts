@@ -23,7 +23,7 @@ import {
 } from "./netRequestsSlice";
 import { recordOutcome } from "./netHealthSlice";
 import { payloadSafetyStore } from "@ai-matrx/kit/payload-safety";
-import { isNetError, toNetError } from "@ai-matrx/data/net";
+import { isNetError, toNetError } from "@ai-matrx/api/net";
 
 export interface TrackedRequestContext {
   id: string;

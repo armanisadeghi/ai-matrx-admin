@@ -940,6 +940,7 @@
   "dependencies": {
     "@ai-matrx/agents": "latest",
     "@ai-matrx/alchemy": "latest",
+    "@ai-matrx/api": "latest",
     "@ai-matrx/applets": "latest",
     "@ai-matrx/associations": "latest",
     "@ai-matrx/auth": "latest",

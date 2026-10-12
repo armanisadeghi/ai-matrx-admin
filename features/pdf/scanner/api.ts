@@ -19,7 +19,7 @@ import type {
   ScanPdfRequest,
   ScanPdfResult,
 } from "./types";
-import { streamErrorText } from "@ai-matrx/agents/matrx";
+import { streamErrorText } from "@ai-matrx/api";
 
 /**
  * Boundary detection for one uploaded photo. Pure read — nothing persisted.

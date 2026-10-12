@@ -25,7 +25,7 @@ jest.mock("@/lib/organizations/ensureOrgId", () => ({
   ensureOrgId: async () => {
     if (!mockLadder.org) {
       // eslint-disable-next-line @typescript-eslint/no-require-imports
-      const { OrganizationContextError } = require("@ai-matrx/agents/matrx");
+      const { OrganizationContextError } = require("@ai-matrx/api");
       throw new OrganizationContextError("organization_context_required", "no organization after the ladder");
     }
     return mockLadder.org;

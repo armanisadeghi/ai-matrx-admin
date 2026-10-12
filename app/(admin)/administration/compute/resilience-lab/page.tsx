@@ -39,13 +39,13 @@ import { toast } from "@/lib/toast";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { runTrackedRequest } from "@/lib/redux/net/runTrackedRequest";
 import { payloadSafetyStore } from "@ai-matrx/kit/payload-safety";
-import { resilientFetch } from "@ai-matrx/data/net";
-import { monitorStream } from "@ai-matrx/data/net";
+import { resilientFetch } from "@ai-matrx/api/net";
+import { monitorStream } from "@ai-matrx/api/net";
 import {
   ConnectTimeoutError,
   HeartbeatTimeoutError,
   TotalTimeoutError,
-} from "@ai-matrx/data/net";
+} from "@ai-matrx/api/net";
 import { useRequestRecovery } from "@/features/request-recovery/providers/RequestRecoveryProvider";
 import { selectActiveNetRequests } from "@/lib/redux/net/selectors";
 import { selectResolvedBaseUrl } from "@/lib/redux/slices/apiConfigSlice";

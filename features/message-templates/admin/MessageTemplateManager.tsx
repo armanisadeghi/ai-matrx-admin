@@ -77,7 +77,7 @@ import { RichContent } from "@ai-matrx/rich-content/levels/RichContent";
 import MarkdownStream from "@ai-matrx/chat/ui/markdown-stream/MarkdownStream";
 import MatrxMiniLoader from "@/components/loaders/MatrxMiniLoader";
 import { requestRaw } from "@/lib/python-client";
-import { getUserMessage } from "@ai-matrx/agents/matrx";
+import { getUserMessage } from "@ai-matrx/api";
 import { ENDPOINTS } from "@/lib/api/endpoints";
 import { parseNdjsonStream } from "@/lib/api/stream-parser";
 import { idMatchesQuery } from "@ai-matrx/kit/search-scoring";

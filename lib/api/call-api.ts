@@ -89,7 +89,7 @@ import { selectUserId } from "@/lib/redux/selectors/userSelectors";
 // BACKEND_URLS no longer needed here — URL resolution is owned by apiConfigSlice
 import { parseNdjsonStream } from "@/lib/api/stream-parser";
 import { logApiTarget } from "@/lib/api/log-api-target";
-import type { resilientFetch } from "@ai-matrx/data/net";
+import type { resilientFetch } from "@ai-matrx/api/net";
 import { cancelledByCaller } from "@/lib/diagnostics/cancelledByCaller";
 import { captureApiError } from "@/lib/diagnostics/captureApiError";
 import { adminLaneOrganizationId } from "@/lib/api/admin-lane";
@@ -107,7 +107,7 @@ import {
   type MatrxCallError,
   type MatrxCallResult,
   type MatrxProtocolDowngrade,
-} from "@ai-matrx/agents/matrx";
+} from "@ai-matrx/api";
 import { resolveRunWait, type RunOutputKind } from "@/lib/api/run-wait";
 import { getUserId } from "@/utils/auth/getUserId";
 import { applyDesktopTargetToRequestBody } from "@/lib/api/desktop-target-request";
@@ -123,7 +123,7 @@ import {
 // supplies only this app's facts: Redux auth / base URL / endpoint overrides /
 // scope, the organization gate, the desktop target, the run-wait knob, and the
 // diagnostics sinks. Grow the pipeline in the package, never here.
-export { bareStatusSentence } from "@ai-matrx/agents/matrx";
+export { bareStatusSentence } from "@ai-matrx/api";
 // Imported above for this module's own logging; re-exported from the local binding so the
 // name is declared once (Turbopack refuses an import and an `export … from` of the same name).
 export { buildSafeRequestLog, redactUrlForRequestLog };

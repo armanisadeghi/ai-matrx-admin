@@ -19,4 +19,4 @@ export {
   getUserMessage,
   type UpstreamErrorPayload,
   type BackendFailureExplanation,
-} from "@ai-matrx/agents/matrx";
+} from "@ai-matrx/api";

@@ -17,13 +17,13 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useServerJob } from "@ai-matrx/agents/react";
-import { getRuntimeOperationsByLink } from "@ai-matrx/agents/matrx";
+import { getRuntimeOperationsByLink } from "@ai-matrx/api";
 import type {
   MatrxRuntimeOperationView,
   ServerJobStatus,
   ServerJobTarget,
-} from "@ai-matrx/agents/matrx";
-import type { MatrxStreamEnvelope } from "@ai-matrx/agents/stream/ndjson";
+} from "@ai-matrx/api";
+import type { MatrxStreamEnvelope } from "@ai-matrx/api/stream";
 import { describeRunError } from "../service/cleanOutcome";
 import { createMatrxTransport } from "@/lib/api/matrx-transport";
 import { useAppStore } from "@/lib/redux/hooks";

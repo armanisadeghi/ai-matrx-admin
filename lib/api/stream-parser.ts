@@ -40,7 +40,7 @@ import {
   isRecordReservedEvent,
   isRecordUpdateEvent,
 } from "./types";
-import { parseMatrxNdjsonResponse } from "@ai-matrx/agents/matrx";
+import { parseMatrxNdjsonResponse } from "@ai-matrx/api";
 import {
   captureStreamEvent,
   captureStreamTransportError,

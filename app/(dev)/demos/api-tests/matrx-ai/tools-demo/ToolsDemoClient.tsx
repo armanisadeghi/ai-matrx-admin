@@ -12,7 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Checkbox } from "@/components/ui/checkbox";
 import { requestRaw } from "@/lib/python-client";
-import { BackendApiError, getUserMessage } from "@ai-matrx/agents/matrx";
+import { BackendApiError, getUserMessage } from "@ai-matrx/api";
 import { extractErrorMessage } from "@/utils/errors";
 import {
   Tooltip,

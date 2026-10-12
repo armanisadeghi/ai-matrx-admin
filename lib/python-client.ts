@@ -102,7 +102,7 @@ import {
   buildMatrxRequestUrl,
   parseMatrxNdjsonResponse,
   sendMatrxRequest as sendMatrxRequestRaw,
-} from "@ai-matrx/agents/matrx";
+} from "@ai-matrx/api";
 import { formatDurationMs } from "@ai-matrx/kit/format";
 import { noticeNotAMemberRefusal } from "@/lib/organizations/organizationRefusal";
 

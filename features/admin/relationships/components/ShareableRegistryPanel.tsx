@@ -43,7 +43,7 @@ import {
 } from "./SharePolicyColumnEditor";
 import type { SharePolicyRow, ShareableRegistryRow } from "../types";
 import { stringUrlCodec, useUrlState } from "@ai-matrx/kit/url-state";
-import { extractErrorMessage } from "@ai-matrx/data/net";
+import { extractErrorMessage } from "@ai-matrx/api/net";
 
 function label(token: string): string {
   return tryGetEntityInfo(token)?.label ?? token;

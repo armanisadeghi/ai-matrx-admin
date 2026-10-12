@@ -1,4 +1,4 @@
-import { isTransportFailure } from "@ai-matrx/data/net";
+import { isTransportFailure } from "@ai-matrx/api/net";
 
 export interface TranscriptionErrorPolicyInput {
   errorCode: string;

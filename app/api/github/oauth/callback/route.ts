@@ -6,7 +6,7 @@ import { AIDREAM_PRODUCTION_URL } from "@/lib/api/endpoints";
 import { applyOrganizationContextHeader } from "@/lib/api/organization-context";
 import { getClaimsUser } from "@ai-matrx/auth";
 import { operationFailed } from "@/utils/errors";
-import { buildMatrxRequestUrl, sendMatrxRequest } from "@ai-matrx/agents/matrx";
+import { buildMatrxRequestUrl, sendMatrxRequest } from "@ai-matrx/api";
 
 type GitHubCompletion = {
   status: string;

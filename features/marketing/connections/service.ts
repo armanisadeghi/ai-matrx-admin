@@ -4,7 +4,7 @@ import { createClient } from "@/utils/supabase/client";
 import { resolveServiceBaseUrl } from "@/lib/api/resolve-service-url";
 import { applyOrganizationContextHeader } from "@/lib/api/organization-context";
 import { parseHttpError, getUserMessage } from "@/lib/api/errors";
-import { buildMatrxRequestUrl, sendMatrxRequest } from "@ai-matrx/agents/matrx";
+import { buildMatrxRequestUrl, sendMatrxRequest } from "@ai-matrx/api";
 import { consumeStream } from "@/lib/api/stream-parser";
 import { updateSiteIntegrations } from "@/features/marketing/data/integrations-service";
 import { getSite } from "@/features/marketing/data/service";

@@ -24,7 +24,7 @@
  */
 
 import { getJson, postJson, postNdjson } from "@/lib/python-client";
-import { getUserMessage } from "@ai-matrx/agents/matrx";
+import { getUserMessage } from "@ai-matrx/api";
 
 // ---------------------------------------------------------------------------
 // Kinds

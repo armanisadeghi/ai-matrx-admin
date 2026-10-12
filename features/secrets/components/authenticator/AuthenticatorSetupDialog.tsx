@@ -15,7 +15,7 @@ import { QrCodeInput } from "@/components/qr/QrCodeInput";
 import { EntityRef } from "@/components/official/entity-ref/EntityRef";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { VaultRevealReauthDialog } from "../SecretValue";
-import { BackendApiError, MatrxApiError } from "@ai-matrx/agents/matrx";
+import { BackendApiError, MatrxApiError } from "@ai-matrx/api";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectOrganizationId } from "@/lib/redux/slices/appContextSlice";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
