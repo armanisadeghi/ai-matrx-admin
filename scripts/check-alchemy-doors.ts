@@ -89,8 +89,7 @@ const ALLOW: Record<Rule, string[]> = {
     "app/(public)/the-landscape/page.tsx",
     "features/messaging/demo/DemoAttachment.tsx",
   ],
-  // The one ExcelJS door: Univer workbooks need styles/validation/notes/pictures, which the Alchemy xlsx format (SheetJS community) cannot hold.
-  formatlibs: ["lib/xlsx-engine/exceljs-door.ts"],
+  formatlibs: [],
   doorbypass: [
     "../aidream/apps/shared/chat/src/surfaces/runtime/",
     // THE ONE WRITE DOOR bound for the app (ALC-17): it IS the door - it wraps applySurfaceWrite /

@@ -20,7 +20,7 @@ import { buildFile } from "@ai-matrx/alchemy/operate";
 import type { WorkbookCellJson, WorkbookJson } from "@ai-matrx/alchemy/operate/read";
 import type { ICellData, IWorkbookData, IWorksheetData } from "@univerjs/core";
 import { downloadFile } from "@ai-matrx/kit/download";
-import { loadExcelJs, type ExcelJSTypes } from "@/lib/xlsx-engine/exceljs-door";
+import { loadExcelJs, type ExcelJSTypes } from "@ai-matrx/print/xlsx-styled";
 import {
   H_ALIGN_OUT,
   RESOURCE,

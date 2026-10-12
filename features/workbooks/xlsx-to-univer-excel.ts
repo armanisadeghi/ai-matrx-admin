@@ -7,7 +7,7 @@
  */
 
 import type { IWorkbookData } from "@univerjs/core";
-import { loadExcelJs, type ExcelJSTypes } from "@/lib/xlsx-engine/exceljs-door";
+import { loadExcelJs, type ExcelJSTypes } from "@ai-matrx/print/xlsx-styled";
 import {
   H_ALIGN_IN,
   RESOURCE,
