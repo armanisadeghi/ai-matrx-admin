@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { cn } from "@/lib/utils";
-import { IconBrandGithub, IconBrandGoogle, IconBrandApple } from "@tabler/icons-react";
+import { GoogleG } from "@/components/icons/google-brand";
+import { IconBrandGithub, IconBrandApple } from "@tabler/icons-react";
 import MatrixLogo from "@/components/branding/MatrixLogo";
 
 
@@ -120,7 +121,7 @@ function AuthSignInForm() {
                                     }}
                                     className="bg-red-500 relative z-10 hover:bg-red-600 text-white text-sm md:text-sm transition font-medium duration-200 rounded-full px-4 py-1.5 flex items-center justify-center w-full dark:text-white dark:hover:bg-red-700"
                                 >
-                                    <IconBrandGoogle className="h-5 w-5 mr-2" />
+                                    <GoogleG className="h-5 w-5" />
                                     <span className="text-sm font-semibold leading-6">
                                         Google
                                     </span>
