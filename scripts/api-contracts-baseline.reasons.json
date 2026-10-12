@@ -4,5 +4,10 @@
     "reason": "findings.test.mjs proof — restored after",
     "accepted_by": "findings-test",
     "date": "2026-10-05"
+  },
+  "features/data-sources/lab/labServer.ts": {
+    "reason": "NDJSON stream from /ai/manual; typed-client is JSON-only (apiGet/apiPost) — same door as features/data-sources/server.ts",
+    "accepted_by": "Armani Sadeghi",
+    "date": "2026-10-12"
   }
 }

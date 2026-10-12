@@ -1,5 +1,6 @@
 [
   "app/(admin)/administration/compute/resilience-lab/page.tsx",
+  "features/data-sources/lab/labServer.ts",
   "features/file-analysis/api/file-analysis.ts",
   "features/files/api/assets.ts",
   "features/files/api/files.ts",
