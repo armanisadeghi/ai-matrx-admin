@@ -18,6 +18,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useTable } from "@ai-matrx/records/react";
 import { SyncedTableBar } from "@/features/unified-data/connect-database/SyncedTableBar";
 import { FetchedTableBar } from "@/features/data-sources/FetchedTableBar";
+import { LiveDataColumnButton } from "@/features/data-sources/live-column/LiveDataColumnButton";
 import { SyncIntoWorkspaceButton } from "@/features/unified-data/connect-database/SyncIntoWorkspaceButton";
 import { TableWorkbookLinkButton } from "@/features/workbooks/table-link/TableWorkbookLinkButton";
 import type { PageView, ViewAddressState } from "@ai-matrx/records-ui";
@@ -102,6 +103,8 @@ function TableRouteHeader({
           <SyncedTableBar key="synced" tableId={tableId} organizationId={organizationId} />
           {/* Fetched with "Get data": source, when, rows, Refresh / Get more with points. Absent otherwise. */}
           <FetchedTableBar key="fetched" tableId={tableId} organizationId={organizationId} inline />
+          {/* A column that fills itself from a data source, one metered fetch per row (points quoted first). */}
+          <LiveDataColumnButton key="live-column" tableId={tableId} organizationId={organizationId} />
           {/* Airtable "sync a view into another base" (lane SYNC-AIRTABLE). */}
           <SyncIntoWorkspaceButton key="sync-into" tableId={tableId} organizationId={organizationId} />
           {/* A linked workbook: open as one, or update/refresh the linked one. */}

@@ -32,6 +32,27 @@ async function refusalSentence(response: Response): Promise<string> {
   return `The column could not be filled (${response.status}).`;
 }
 
+/**
+ * Run (or, with `preview`, QUOTE) an AI column and hand back the server's whole answer. A column
+ * filled from live data answers a preview with its points quote and fetches nothing
+ * (`features/data-sources/live-column`).
+ */
+export async function runAiColumn(
+  post: Post,
+  args: { tableId: string; fieldId: string; rows: number; preview: boolean },
+): Promise<{ ok: true; run: unknown } | { ok: false; message: string }> {
+  try {
+    const response = await post(
+      `/v1/tables/${encodeURIComponent(args.tableId)}/ai-columns/${encodeURIComponent(args.fieldId)}/run`,
+      { rows: Math.max(1, Math.min(50, args.rows)), preview: args.preview },
+    );
+    if (!response.ok) return { ok: false, message: await refusalSentence(response) };
+    return { ok: true, run: await response.json() };
+  } catch (thrown) {
+    return { ok: false, message: thrown instanceof Error && thrown.message ? thrown.message : "The column could not be filled" };
+  }
+}
+
 /** Run the AI column once for `ask`, as the person. */
 export async function enrichByRunner(post: Post, ask: EnrichAsk): Promise<EnrichOutcome> {
   try {

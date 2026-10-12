@@ -40,6 +40,8 @@ export interface DataSource {
   example_url?: string | null;
   /** The server's address rule: regexes for the host and the path (the example address is the fallback). */
   url_pattern?: UrlPattern | null;
+  /** The record fields this source returns (a table column "From live data" keeps one of them). */
+  output_fields?: string[];
   verified: boolean;
   usd_per_record: number | null;
   /** The server's own points price for ONE record of this source (never assume a flat number). */
@@ -182,6 +184,7 @@ export function parseCatalog(raw: unknown): DataSourceCatalog {
       },
       example_url: str(s.example_url),
       url_pattern: urlPatternOf(s.url_pattern),
+      output_fields: Array.isArray(s.output_fields) ? s.output_fields.filter((f): f is string => typeof f === "string") : [],
       verified: s.verified === true,
       usd_per_record: price.usd,
       points_per_record: price.points,
