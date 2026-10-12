@@ -364,7 +364,7 @@ function LogoChoice({
           aria-pressed={kept}
           aria-label={`${kept ? "Keep" : "Skip"} this image (${whereOf(item)})`}
           onClick={kept ? onClear : onToggle}
-          className={`flex size-[5.25rem] items-center justify-center overflow-hidden border bg-white p-1.5 dark:bg-zinc-100 sm:size-24 ${
+          className={`flex size-[5.25rem] items-center justify-center overflow-hidden border bg-[repeating-conic-gradient(#d4d4d8_0%_25%,#f4f4f5_0%_50%)] bg-[length:14px_14px] p-1.5 sm:size-24 ${
             round ? "rounded-full" : "rounded-lg"
           } ${primary ? "border-primary ring-2 ring-primary" : kept ? "border-primary/60 ring-1 ring-primary/60" : "border-border"}`}
           data-testid="smart-add-logo"
