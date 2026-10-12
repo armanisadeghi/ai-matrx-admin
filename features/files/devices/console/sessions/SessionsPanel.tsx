@@ -288,7 +288,8 @@ function SessionRow({ row, now, selected, onOpen }: { row: RecentChatRow; now: n
           <span className="flex items-center gap-1.5 text-[13px] text-muted-foreground">
             <span className="min-w-0 truncate">{facts.where}</span>
             {facts.toneLabel ? <span className="shrink-0">· {facts.toneLabel}</span> : null}
-            {facts.from ? <span className="shrink-0 rounded-full border border-border px-1.5 text-[11px] leading-4">{facts.from}</span> : null}
+            {/* Who started it, as the Mac's row says it: words on the second line. */}
+            {facts.from ? <span className="shrink-0">· {facts.from}</span> : null}
           </span>
         </span>
       </Button>
