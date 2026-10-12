@@ -32,12 +32,17 @@ export async function requestModelView(
     unknown
   > | null;
   if (!payload) throw new Error(NOT_READY_MESSAGE);
-  // The draft's declared prompt blocks ride the manual request; the server expands and reports them.
-  const promptBlocks = agentId
-    ? declaredNames(
-        (state.agentDefinition.agents[agentId] as { promptBlocks?: unknown } | undefined)?.promptBlocks,
-      )
-    : [];
+  // The draft's declared prompt blocks ride the request. The shared assembler (the real
+  // Test run's) sends them itself; for an assembler that predates that, the same names
+  // are read from the draft here, so the Model view and the run send one definition.
+  const promptBlocks: string[] =
+    Array.isArray(payload.prompt_blocks) && payload.prompt_blocks.length > 0
+      ? (payload.prompt_blocks as string[])
+      : agentId
+        ? declaredNames(
+            (state.agentDefinition.agents[agentId] as { promptBlocks?: unknown } | undefined)?.promptBlocks,
+          )
+        : [];
   const result = await dispatch(
     callApi({
       path: "/ai/manual",
