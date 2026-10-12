@@ -1902,7 +1902,9 @@
 
 /* Zoom lives in the toolbar and View menu (Google), so the document editor's footer zoom is hidden;
    the footer keeps its word count. Univer's docs footer has no switch for the zoom alone. */
-[data-document-editor] section:has([role="slider"][aria-label="Zoom"]) {
+/* ONLY the innermost section holding the slider: the page-area section also contains it (the
+   footer lives inside), and hiding that one blanked the whole document page. */
+[data-document-editor] section:not(:has(section)):has([role="slider"][aria-label="Zoom"]) {
   display: none !important;
 }
 
