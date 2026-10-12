@@ -159,11 +159,14 @@ export async function fetchPanelAnswers(
   if (prompts.length === 0) return [];
   await requireAuthenticatedSupabaseSession(supabase);
   const since = new Date(Date.now() - days * 86_400_000).toISOString();
-  const { data, error } = await supabase
+  // A panel belongs to a site or (since the brand-level lift) only to a brand.
+  const base = supabase
     .schema("seo")
     .from("ai_visibility_response")
-    .select("id,query,engine,observed_at,target_mentioned,target_cited,answer_text")
-    .eq("site_id", row.site_id)
+    .select("id,query,engine,observed_at,target_mentioned,target_cited,answer_text");
+  const scoped = row.site_id ? base.eq("site_id", row.site_id) : row.brand_id ? base.eq("brand_id", row.brand_id) : null;
+  if (!scoped) return [];
+  const { data, error } = await scoped
     .in(
       "query",
       prompts.map((prompt) => prompt.text),
