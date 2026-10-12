@@ -1,4 +1,4 @@
-import { addressColumns, companyLevelSources, columnLabelFor, columnTypeFor, declareSpec, fieldLabel, parseRun, totalPoints } from "../liveColumn";
+import { existingColumn, isLiveColumnOf, addressColumns, companyLevelSources, columnLabelFor, columnTypeFor, declareSpec, fieldLabel, parseRun, totalPoints } from "../liveColumn";
 
 describe("a table column from live data", () => {
   it("declares a readable instruction, the one input column and the data source", () => {
@@ -44,5 +44,25 @@ describe("a table column from live data", () => {
     const got = companyLevelSources("review_rating", sources).map((x) => `${x.source.key}:${x.field}`);
     expect(got).toEqual(["glassdoor_company:ratings_overall", "google_maps_place:rating", "app_store_apps:rating"]);
     expect(companyLevelSources("review_text", sources)).toEqual([]);
+  });
+});
+
+describe("a column that already exists is refilled, never a dead end", () => {
+  it("finds the column that carries the label, ignoring case and spacing", () => {
+    const f = [{ id: "a", label: "Trustpilot - Review Rating" }, { id: "b", label: "Other" }];
+    expect(existingColumn(f, " trustpilot - review rating ")?.id).toBe("a");
+    expect(existingColumn(f, "Missing")).toBeNull();
+  });
+  it("refills only a live-data column that reads the same source field", () => {
+    const e = { data_source: { source_key: "trustpilot_reviews", output_field: "review_rating" } };
+    expect(isLiveColumnOf(e, "trustpilot_reviews", "review_rating")).toBe(true);
+    expect(isLiveColumnOf(e, "trustpilot_reviews", "other")).toBe(false);
+    expect(isLiveColumnOf({ instruction: "x" }, "trustpilot_reviews", "review_rating")).toBe(false);
+    expect(isLiveColumnOf(null, "a", "b")).toBe(false);
+  });
+  it("reads the records-per-row ceiling the server quotes", () => {
+    const run = parseRun({ quote: { rows: 1, max_records_per_row: 40 } });
+    expect(run.quote?.maxRecordsPerRow).toBe(40);
+    expect(parseRun({ quote: { rows: 1 } }).quote?.maxRecordsPerRow).toBe(0);
   });
 });

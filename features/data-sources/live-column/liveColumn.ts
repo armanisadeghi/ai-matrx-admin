@@ -67,6 +67,19 @@ export function columnLabelFor(sourceLabel: string, outputField: string, keep: L
   return `${sourceLabel} - ${word}${fieldLabel(outputField)}${sample}`;
 }
 
+const sameLabel = (a: string, b: string) => a.trim().toLowerCase() === b.trim().toLowerCase();
+
+/** The column of this table that already carries `label` (the store refuses two columns with one label). */
+export function existingColumn<F extends { label: string }>(fields: readonly F[], label: string): F | null {
+  return fields.find((f) => sameLabel(f.label, label)) ?? null;
+}
+
+/** Whether a stored enrichment is a live-data one that reads the same source field (so refilling it is the same ask). */
+export function isLiveColumnOf(enrichment: unknown, sourceKey: string, outputField: string): boolean {
+  const ds = (enrichment as { data_source?: { source_key?: unknown; output_field?: unknown } } | null)?.data_source;
+  return Boolean(ds) && ds?.source_key === sourceKey && ds?.output_field === outputField;
+}
+
 /** Whether a record field can be averaged: it reads like a number. */
 export function isNumericField(outputField: string): boolean {
   return NUMERIC.test(outputField.toLowerCase());
@@ -124,6 +137,8 @@ export interface LiveQuote {
   pointsPerRow: number;
   pointsTotal: number;
   maxRowsPerRun: number;
+  /** The organization's ceiling on records per row (0 when the server did not say). */
+  maxRecordsPerRow: number;
   recordsPerRowSetting: string;
   maxRowsSetting: string;
   recordsAre: "entity" | "items";
@@ -149,6 +164,7 @@ export function parseRun(raw: unknown): LiveRun {
           pointsPerRow: n(q.points_per_row),
           pointsTotal: n(q.points_total),
           maxRowsPerRun: n(q.max_rows_per_run),
+          maxRecordsPerRow: n(q.max_records_per_row),
           recordsPerRowSetting: String(q.records_per_row_setting ?? ""),
           maxRowsSetting: String(q.max_rows_setting ?? ""),
           recordsAre: q.records_are === "items" ? "items" : "entity",

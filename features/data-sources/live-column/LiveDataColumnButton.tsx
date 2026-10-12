@@ -28,7 +28,9 @@ import {
   columnTypeFor,
   companyLevelSources,
   declareSpec,
+  existingColumn,
   fieldLabel,
+  isLiveColumnOf,
   isNumericField,
   parseRun,
   totalPoints,
@@ -41,6 +43,8 @@ interface Made {
   fieldId: string;
   label: string;
   outputField: string;
+  /** The column already existed and is being refilled with its own saved live-data setup. */
+  refill?: boolean;
   quote: LiveQuote | null;
   says: string;
 }
@@ -82,12 +86,14 @@ function LiveDataColumnDialog({ tableId, organizationId, onClose }: { tableId: s
 
   const source = sources.find((s) => s.key === sourceKey) ?? null;
   const isItems = source?.records_are === "items";
-  const recordsPerRow = Math.max(1, Math.min(25, Number.parseInt(perRow, 10) || 1));
+  const recordsPerRow = Math.max(1, Number.parseInt(perRow, 10) || 1);
   const useSelected = selected.length > 0 && rowsFrom === "selected";
   const recordIds = useSelected ? [...selected] : undefined;
-  const rowCount = useSelected ? selected.length : Math.max(1, Math.min(500, Number.parseInt(rows, 10) || 1));
+  const rowCount = useSelected ? selected.length : Math.max(1, Number.parseInt(rows, 10) || 1);
   const keepOf = (f: string): LiveKeep => (isItems ? ((keeps[f] === "average" && !isNumericField(f) ? "first" : keeps[f]) ?? "first") : "first");
   const suggestions = isItems ? kept.flatMap((f) => companyLevelSources(f, sources).map((x) => ({ ...x, from: f }))).slice(0, 3) : [];
+  const alreadyHere = (f: string) => Boolean(source && existingColumn(fields.data ?? [], columnLabelFor(source.label, f, keepOf(f), recordsPerRow)));
+  const allKeptExist = kept.length > 0 && kept.every(alreadyHere);
   const labelOfInput = (key: string) => inputs.find((f) => f.key === key)?.label ?? key;
 
   const create = async () => {
@@ -98,26 +104,42 @@ function LiveDataColumnDialog({ tableId, organizationId, onClose }: { tableId: s
     for (const outputField of kept) {
       const keep = keepOf(outputField);
       const label = columnLabelFor(source.label, outputField, keep, recordsPerRow);
-      const declared = await client.fieldDeclare({ table_id: tableId, spec: { label, plain: columnTypeFor(outputField, keep) } });
-      if (!declared.ok) {
-        setMessage(`Could not add "${label}": ${declared.error.message}`);
-        break;
+      const existing = existingColumn(fields.data ?? [], label);
+      let fieldId: string;
+      let refill = false;
+      if (existing) {
+        // The column is already here: refill it with ITS saved setup (never a second column, never a dead end).
+        const listed = await client.enrichments({ table_id: tableId });
+        const mine = listed.ok ? listed.data.find((e) => e.field_id === existing.id) : null;
+        if (!mine || !isLiveColumnOf(mine.enrichment, source.key, outputField)) {
+          setMessage(`"${label}" already exists and is not filled from this live data, so it was left as it is. Rename it, or pick other fields.`);
+          break;
+        }
+        fieldId = existing.id;
+        refill = true;
+      } else {
+        const declared = await client.fieldDeclare({ table_id: tableId, spec: { label, plain: columnTypeFor(outputField, keep) } });
+        if (!declared.ok) {
+          setMessage(`Could not add "${label}": ${declared.error.message}`);
+          break;
+        }
+        const set = await client.enrichDeclare({
+          field_id: declared.data,
+          spec: declareSpec(
+            { sourceKey: source.key, inputField, outputField, ...(isItems ? { keep, recordsPerRow } : {}) },
+            source.label,
+            labelOfInput(inputField),
+          ),
+        });
+        if (!set.ok) {
+          setMessage(`"${label}" was added but could not be set up: ${set.error.message}`);
+          break;
+        }
+        fieldId = declared.data;
       }
-      const set = await client.enrichDeclare({
-        field_id: declared.data,
-        spec: declareSpec(
-          { sourceKey: source.key, inputField, outputField, ...(isItems ? { keep, recordsPerRow } : {}) },
-          source.label,
-          labelOfInput(inputField),
-        ),
-      });
-      if (!set.ok) {
-        setMessage(`"${label}" was added but could not be set up: ${set.error.message}`);
-        break;
-      }
-      const quoted = await runAiColumn((e, b) => backend.post(e, b), { tableId, fieldId: declared.data, rows: rowCount, preview: true, recordIds });
+      const quoted = await runAiColumn((e, b) => backend.post(e, b), { tableId, fieldId, rows: rowCount, preview: true, recordIds });
       const run = quoted.ok ? parseRun(quoted.run) : null;
-      out.push({ fieldId: declared.data, label, outputField, quote: run?.quote ?? null, says: quoted.ok ? (run?.says ?? "") : quoted.message });
+      out.push({ fieldId, label, refill, outputField, quote: run?.quote ?? null, says: quoted.ok ? (run?.says ?? "") : quoted.message });
     }
     setMade(out);
     setBusy(false);
@@ -188,6 +210,11 @@ function LiveDataColumnDialog({ tableId, organizationId, onClose }: { tableId: s
                         />
                         {fieldLabel(f)}
                       </label>
+                      {kept.includes(f) && alreadyHere(f) && (
+                        <span className="text-xs text-muted-foreground" data-live-column-exists="">
+                          Already a column: refill it
+                        </span>
+                      )}
                       {isItems && kept.includes(f) && (
                         <Select
                           aria-label={`Keep for ${fieldLabel(f)}`}
@@ -244,7 +271,7 @@ function LiveDataColumnDialog({ tableId, organizationId, onClose }: { tableId: s
               </label>
             )}
             <Button variant="primary" disabled={busy || !source || !inputField || kept.length === 0} onClick={() => void create()} data-live-column-add="">
-              {kept.length > 1 ? `Add ${kept.length} columns` : "Add column"}
+              {allKeptExist ? (kept.length > 1 ? "Refill those columns" : "Refill that column") : kept.length > 1 ? `Add ${kept.length} columns` : "Add column"}
             </Button>
           </div>
         ) : (
@@ -261,7 +288,11 @@ function LiveDataColumnDialog({ tableId, organizationId, onClose }: { tableId: s
               <p className="text-sm" data-live-column-quote="">
                 {quote.rows} {quote.rows === 1 ? "row" : "rows"} x {quote.recordsPerRow} {quote.recordsPerRow === 1 ? "record" : "records"} per row:{" "}
                 <strong>{formatPoints(total)}</strong> in all.{" "}
-                {settings && <Link className="underline" href={settings}>Records per row (max)</Link>}
+                {settings && (
+                  <Link className="underline" href={settings}>
+                    Records per row (max{quote.maxRecordsPerRow > 0 ? ` ${quote.maxRecordsPerRow}` : ""})
+                  </Link>
+                )}
                 {" · "}
                 {rowsSetting && <Link className="underline" href={rowsSetting}>Rows per fill (max {quote.maxRowsPerRun})</Link>}
               </p>
