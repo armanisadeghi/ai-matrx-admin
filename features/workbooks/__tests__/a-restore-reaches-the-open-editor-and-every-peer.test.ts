@@ -124,6 +124,19 @@ describe("the collab room carries a whole-content replacement", () => {
   });
 });
 
+describe("the in-cell editor's scratch document never travels", () => {
+  it("typing into a cell sends set-range-values, not doc.mutation.rich-text-editing", async () => {
+    const room = makeRoom();
+    const ana = await member(room, "uid-ana");
+    const ben = await member(room, "uid-ben");
+    ana.cmd.emit("doc.mutation.rich-text-editing");
+    ana.cmd.emit("sheet.mutation.set-range-values");
+    expect(ana.session.logLength()).toBe(1);
+    expect(ben.cmd.applied).toEqual(["sheet.mutation.set-range-values"]);
+    for (const m of [ana, ben]) m.session.stop();
+  });
+});
+
 describe("the one door", () => {
   it("reaches the record's open editor, and a released editor no longer", async () => {
     const shown: string[] = [];

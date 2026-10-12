@@ -351,6 +351,7 @@ export class WorkbookCollabSession {
 
   private handleLocalMutation(info: CollabMutationInfo): void {
     if (this.muted > 0) return;
+    if (isCellEditorScratch(info)) return;
     // Inbound-applied mutations re-fire this listener because Univer's
     // syncExecuteCommand legitimately processes them through the full
     // pipeline. Skip by sniffing the sentinel we stamped on apply.
@@ -419,6 +420,16 @@ export class WorkbookCollabSession {
 }
 
 // ─── helpers ────────────────────────────────────────────────────────────
+
+/**
+ * A workbook holds no Univer DOCUMENT units of its own: the `doc.mutation.*` stream a sheet emits is
+ * the in-cell editor's scratch document (typing into a cell). The finished text reaches the sheet as
+ * `sheet.mutation.set-range-values`, which does travel. Sending the scratch edits made a joiner replay
+ * them against an editor unit it does not have ("Trying to overwrite value at key").
+ */
+export function isCellEditorScratch(info: Pick<CollabMutationInfo, "id">): boolean {
+  return typeof info.id === "string" && info.id.startsWith("doc.mutation.");
+}
 
 const CURSOR_PALETTE = [
   "#3b82f6", // blue
