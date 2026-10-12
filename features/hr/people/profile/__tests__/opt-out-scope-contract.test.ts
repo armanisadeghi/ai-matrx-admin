@@ -79,11 +79,11 @@ describe("directory_opt_out — a browsing control, not a seal (§4.2, ruled 202
 
   it("the toggle's copy states the limit, so the promise matches the ruling", () => {
     // Not-findable by browsing…
-    expect(personalTab).toContain("You won't turn up in the staff directory");
-    expect(personalTab).toContain("your name is hidden on the org chart");
-    // …and explicitly NOT a seal. This sentence is the honest half; if somebody
+    expect(personalTab).toContain("Hides you in the directory");
+    expect(personalTab).toContain("your name on the org chart");
+    // …and explicitly NOT a seal. The tooltip is the honest half; if somebody
     // widens the promise, this is what should stop them.
-    expect(personalTab).toContain("it is not a disguise");
+    expect(personalTab).toContain("Your position still shows on the chart");
     expect(personalTab).toContain("can still open your profile and see your name");
   });
 });
