@@ -1,7 +1,7 @@
 {
   "version": 1,
   "app": "matrx-frontend",
-  "routeCount": 1419,
+  "routeCount": 1422,
   "routes": [
     {
       "pattern": "/",
@@ -5989,6 +5989,21 @@
       "pattern": "/portal/c/[slug]/r/[recordId]",
       "status": "live",
       "source": "app/(portal)/portal/c/[slug]/r/[recordId]/page.tsx"
+    },
+    {
+      "pattern": "/presentations",
+      "status": "live",
+      "source": "app/(core)/presentations/page.tsx"
+    },
+    {
+      "pattern": "/presentations/[id]",
+      "status": "live",
+      "source": "app/(core)/presentations/[id]/page.tsx"
+    },
+    {
+      "pattern": "/presentations/templates",
+      "status": "live",
+      "source": "app/(core)/presentations/templates/page.tsx"
     },
     {
       "pattern": "/pricing",

@@ -548,7 +548,10 @@ export function NoteEditorCore({
             }
             actionsSurfaceId={actionsSurfaceId}
             actionsClassName="mb-2"
-            enableContextMenu
+            // A host that answers right-clicks with the note's own menu (the Notes page: the
+            // published design — Copy › Text is the three ways to copy) mounts none here, so
+            // Read draws the same menu as Write and Plain (2026-10-12).
+            enableContextMenu={!hostContextMenu}
             isStreamActive={false}
             hideCopyButton={true}
             // No full-screen editor in Notes (a second editor with its own

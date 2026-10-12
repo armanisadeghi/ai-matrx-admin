@@ -16,7 +16,6 @@
 import React, { useRef, useState, useCallback, useEffect } from "react";
 import {
   Save,
-  Copy,
   X,
   Info,
   MoreHorizontal,
@@ -75,7 +74,6 @@ import { noteTabRecordMenuKey } from "./noteRecordMenu";
 import { HomePickerDialog } from "../homes/HomePicker";
 import { noteIdentityContentSource } from "../richDocumentSource";
 import { downloadFile } from "@ai-matrx/kit/download";
-import { copyRichContent } from "@ai-matrx/rich-content/copy/copy-commands";
 import { copyToClipboard } from "@/lib/clipboard/copy";
 
 interface NoteTabItemProps {
@@ -119,10 +117,6 @@ export function NoteTabItem({ noteId, instanceId, standalone = false, showTitle 
   const [tabMenuOpen, setTabMenuOpen] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
   const [moveDialogOpen, setMoveDialogOpen] = useState(false);
-  const [contentCopied, setContentCopied] = useState(false);
-  const copiedResetTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
-    null,
-  );
 
   // ── Handlers ───────────────────────────────────────────────────────
   // Tag the user as actively interacting with the tab strip. Callers wire
@@ -158,13 +152,6 @@ export function NoteTabItem({ noteId, instanceId, standalone = false, showTitle 
     },
     [bumpTabInteraction, dispatch, instanceId, noteId],
   );
-
-  useEffect(() => {
-    return () => {
-      if (copiedResetTimerRef.current)
-        clearTimeout(copiedResetTimerRef.current);
-    };
-  }, [noteId]);
 
   // The delete confirmation is NOT rendered here — `requestDelete` opens the
   // canonical package confirm (see useNoteDelete). `deleteConfirmOpen` is read
@@ -218,20 +205,6 @@ export function NoteTabItem({ noteId, instanceId, standalone = false, showTitle 
     }
     toast.success("Note saved");
   }, [dispatch, isDirty, noteId]);
-
-  const handleCopyContent = useCallback(() => {
-    // THE one copy (formatted + markdown); the Copy as rows offer markdown / text.
-    void copyRichContent(content, "default", { toast: "Note content copied" }).then((ok) => {
-        if (!ok) return;
-        setContentCopied(true);
-        if (copiedResetTimerRef.current)
-          clearTimeout(copiedResetTimerRef.current);
-        copiedResetTimerRef.current = setTimeout(
-          () => setContentCopied(false),
-          1200,
-        );
-    });
-  }, [content]);
 
   const handleDuplicate = useCallback(async () => {
     const result = await dispatch(copyNote({ noteId, instanceId }));
@@ -327,7 +300,7 @@ export function NoteTabItem({ noteId, instanceId, standalone = false, showTitle 
   // The tab's own rows: things about THIS TAB and the editor buffer. The
   // note's actions are the ONE shared set (noteActionSet.ts) — the same rows,
   // names and order in every view's right-click, the "…" and the phone sheet.
-  // The note's buffer rows (Save, Copy note text) — about the NOTE, so they
+  // The note's buffer row (Save) — about the NOTE, so it
   // sit with the note's rows, never in the Tab section.
   const bufferItems: TabMenuItem[] = [
     // Read has nothing to save (and the registry's own "Save" submenu is
@@ -343,12 +316,6 @@ export function NoteTabItem({ noteId, instanceId, standalone = false, showTitle 
             ...(!isDirty && !isSaving ? { disabledReason: "No changes to save" } : {}),
           },
         ]),
-    {
-      id: "copy-content",
-      icon: Copy,
-      label: "Copy note text",
-      fn: handleCopyContent,
-    },
   ];
   // TAB ACTIONS — Pin, Move, Close (Arman's ruling 2026-09-28: the tab's "…"
   // is the tab's rows plus one "Note ▸" holding the full note menu).
