@@ -2070,6 +2070,75 @@ body[style*="pointer-events: none"] {
   content: none;
 }
 
+/* THE SAME TWO RULES ONE LEVEL DOWN — a NESTED scroll owner (a <main> or
+   [data-matrx-page-scroll], e.g. the admin layout's <main>) whose route body is
+   a full-height box that owns its overflow (`h-full`, or a body sized to
+   the viewport itself — `h-[calc(100dvh-…)]`, `h-page`, `h-dvh` — as ~65
+   admin pages are) is a viewport too: a runway after
+   that box is pure slack, so the whole surface slid up under the header as
+   soon as the attention dock (4.5rem) or the assists pill appeared — the
+   system-agent run page's composer moved instead of the notice floating over
+   it (owner, 2026-10-11). The runway moves INTO that body when it scrolls a
+   natural-height page, exactly as `.shell-main > .h-full` does above — or
+   into the full-height scroller one level further in (an admin layout body
+   wrapping a page that is itself `h-full overflow-y-auto`). */
+.shell-main
+  :is(main, [data-matrx-page-scroll]):is(.overflow-y-auto, .overflow-auto):has(
+    > :is(.h-full, .h-page, .h-dvh, [class*="h-[calc(100dvh"]):is(
+        .overflow-hidden,
+        .overflow-clip,
+        .overflow-auto,
+        .overflow-y-auto,
+        .overflow-y-hidden,
+        .overflow-y-clip
+      )
+  )::after {
+  content: none;
+}
+.shell-main
+  :is(main, [data-matrx-page-scroll]):is(.overflow-y-auto, .overflow-auto)
+  > .h-full:is(.overflow-y-auto, .overflow-auto):not(
+    .scroll-page-end-space,
+    [data-floating-clearance="off"],
+    :has(> .h-full),
+    [data-matrx-viewport-surface]
+  ),
+.shell-main
+  :is(main, [data-matrx-page-scroll]):is(.overflow-y-auto, .overflow-auto)
+  > .h-full:is(.overflow-y-auto, .overflow-auto)
+  > .h-full:is(.overflow-y-auto, .overflow-auto):not(
+    .scroll-page-end-space,
+    [data-floating-clearance="off"],
+    :has(> .h-full),
+    [data-matrx-viewport-surface]
+  ) {
+  padding-block-end: 0;
+}
+.shell-main
+  :is(main, [data-matrx-page-scroll]):is(.overflow-y-auto, .overflow-auto)
+  > .h-full:is(.overflow-y-auto, .overflow-auto):not(
+    .scroll-page-end-space,
+    [data-floating-clearance="off"],
+    :has(> .h-full),
+    [data-matrx-viewport-surface]
+  )::after,
+.shell-main
+  :is(main, [data-matrx-page-scroll]):is(.overflow-y-auto, .overflow-auto)
+  > .h-full:is(.overflow-y-auto, .overflow-auto)
+  > .h-full:is(.overflow-y-auto, .overflow-auto):not(
+    .scroll-page-end-space,
+    [data-floating-clearance="off"],
+    :has(> .h-full),
+    [data-matrx-viewport-surface]
+  )::after {
+  content: "";
+  display: block;
+  flex: none;
+  grid-column: 1 / -1;
+  block-size: max(var(--matrx-floating-clearance), var(--shell-fixed-alert-clearance, 0px));
+  pointer-events: none;  visibility: hidden; /* not a layout-shift source — see the runway rule above */
+}
+
 /* A `display: contents` wrapper is not a box: its child IS the route body
    (the Masterwork layout's touch-target wrapper). Without seeing through it,
    .shell-main kept its own runway over a body that scrolls itself — a double
