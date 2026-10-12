@@ -22,6 +22,16 @@ export interface ProvisionValue {
   missing_reason: string | null;
 }
 
+/** What the step at this point must produce: a registered `__kind` (schema + example) or a plain example. */
+export interface ExpectedOutput {
+  kind: string | null;
+  kindId: string | null;
+  label: string;
+  note: string;
+  jsonSchema: Json | null;
+  example: Json | null;
+}
+
 export interface ProvisionSnapshot {
   id: string;
   pointKey: string;
@@ -32,6 +42,8 @@ export interface ProvisionSnapshot {
   values: ProvisionValue[];
   coverage: Record<string, Json>;
   totalChars: number;
+  trigger: string;
+  expectedOutput: ExpectedOutput;
   createdAt: string | null;
 }
 
@@ -55,6 +67,18 @@ function parseValue(raw: unknown): ProvisionValue {
   };
 }
 
+function parseExpected(raw: unknown): ExpectedOutput {
+  const r = record(raw);
+  return {
+    kind: typeof r.kind === "string" ? r.kind : null,
+    kindId: typeof r.kind_id === "string" ? r.kind_id : null,
+    label: String(r.label ?? ""),
+    note: String(r.note ?? ""),
+    jsonSchema: (r.json_schema ?? null) as Json | null,
+    example: (r.example ?? null) as Json | null,
+  };
+}
+
 function parseSnapshot(raw: unknown, subjectLabel?: string): ProvisionSnapshot {
   const r = record(raw);
   const coverage = record(r.coverage) as Record<string, Json>;
@@ -69,6 +93,8 @@ function parseSnapshot(raw: unknown, subjectLabel?: string): ProvisionSnapshot {
     values: values.map(parseValue),
     coverage,
     totalChars: typeof r.total_chars === "number" ? r.total_chars : 0,
+    trigger: typeof coverage.trigger === "string" ? coverage.trigger : "manual",
+    expectedOutput: parseExpected(r.expected_output),
     createdAt: typeof r.created_at === "string" ? r.created_at : null,
   };
 }
@@ -79,6 +105,7 @@ export async function captureProvision(
   pointKey: string,
   subjectId: string,
   organizationId: string,
+  trigger: "created" | "manual" = "manual",
 ): Promise<ProvisionSnapshot> {
   const result = await dispatch(
     callApi({
@@ -87,7 +114,7 @@ export async function captureProvision(
       method: "POST",
       pathParams: { point_key: pointKey } as never,
       scopeOverrides: { organization_id: organizationId },
-      body: { subject_id: subjectId } as never,
+      body: { subject_id: subjectId, trigger } as never,
     }),
   );
   if (result.error) throw new Error(result.error.message || "The provision could not be captured.");
@@ -95,7 +122,7 @@ export async function captureProvision(
 }
 
 const COLUMNS =
-  "id, point_key, point_label, code_location, subject_id, provision_values, coverage, total_chars, created_at";
+  "id, point_key, point_label, code_location, subject_id, provision_values, coverage, total_chars, expected_output, created_at";
 
 export async function loadProvisionSnapshot(id: string): Promise<ProvisionSnapshot> {
   const { data, error } = await supabase.schema("mandate").from("provision_snapshot").select(COLUMNS).eq("id", id).single();
@@ -103,22 +130,44 @@ export async function loadProvisionSnapshot(id: string): Promise<ProvisionSnapsh
   return parseSnapshot(data);
 }
 
+export interface ProvisionCapture {
+  id: string;
+  createdAt: string;
+  totalChars: number;
+  /** created · setup_finished · manual */
+  trigger: string;
+}
+
+export const TRIGGER_LABEL: Record<string, string> = {
+  created: "At Create",
+  setup_finished: "After setup",
+  manual: "Captured",
+};
+
 /** Every snapshot of one call point for one subject, newest first (id + time only). */
 export async function listProvisionSnapshots(
   pointKey: string,
   subjectId: string,
-): Promise<{ id: string; createdAt: string; totalChars: number }[]> {
+): Promise<ProvisionCapture[]> {
   const { data, error } = await supabase
     .schema("mandate")
     .from("provision_snapshot")
-    .select("id, created_at, total_chars")
+    .select("id, created_at, total_chars, coverage")
     .eq("point_key", pointKey)
     .eq("subject_id", subjectId)
     .is("deleted_at", null)
     .order("created_at", { ascending: false })
     .limit(50);
   if (error) throw new Error(error.message);
-  return (data ?? []).map((r) => ({ id: r.id, createdAt: r.created_at, totalChars: r.total_chars }));
+  return (data ?? []).map((r) => {
+    const trigger = record(r.coverage).trigger;
+    return {
+      id: r.id,
+      createdAt: r.created_at,
+      totalChars: r.total_chars,
+      trigger: typeof trigger === "string" ? trigger : "manual",
+    };
+  });
 }
 
 export function valueText(value: Json | null): string {

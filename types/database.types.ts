@@ -84473,6 +84473,7 @@ export type Database = {
           created_at: string
           created_by: string | null
           deleted_at: string | null
+          expected_output: Json
           id: string
           metadata: Json
           organization_id: string
@@ -84498,6 +84499,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           deleted_at?: string | null
+          expected_output?: Json
           id?: string
           metadata?: Json
           organization_id: string
@@ -84523,6 +84525,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           deleted_at?: string | null
+          expected_output?: Json
           id?: string
           metadata?: Json
           organization_id?: string

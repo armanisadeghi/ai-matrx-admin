@@ -11,11 +11,13 @@ import { Button, Select, type SelectOption } from "@ai-matrx/design-system/contr
 import { formatCount } from "@ai-matrx/kit/format";
 import { extractErrorMessage } from "@/utils/errors";
 import {
+  TRIGGER_LABEL,
   listProvisionSnapshots,
   loadProvisionSnapshot,
   snapshotJson,
   snapshotMarkdown,
   valueText,
+  type ExpectedOutput,
   type ProvisionSnapshot,
   type ProvisionValue,
 } from "./data";
@@ -86,6 +88,53 @@ function ValueRow({ v, copied, copy }: { v: ProvisionValue; copied: string | nul
   );
 }
 
+function ExpectedOutputSection({
+  expected,
+  copied,
+  copy,
+}: {
+  expected: ExpectedOutput;
+  copied: string | null;
+  copy: (k: string, t: string) => void;
+}) {
+  const [open, setOpen] = useState(true);
+  const example = expected.example === null ? "" : JSON.stringify(expected.example, null, 2);
+  const schema = expected.jsonSchema === null ? "" : JSON.stringify(expected.jsonSchema, null, 2);
+  return (
+    <section className="border-t-2 border-border py-2" data-testid="provision-expected-output" aria-label="Expected output">
+      <div className="flex items-center gap-2 text-xs">
+        <button type="button" className="flex items-center gap-1.5 font-semibold" onClick={() => setOpen((o) => !o)} aria-expanded={open}>
+          {open ? <ChevronDown className="size-3.5" /> : <ChevronRight className="size-3.5" />}
+          Expected output
+        </button>
+        {expected.kind ? <code className="text-[11px] text-muted-foreground">{expected.kind}</code> : null}
+        <div className="ml-auto flex gap-1">
+          {example ? (
+            <Button variant="outline" onClick={() => copy("__example", example)}>
+              {copied === "__example" ? <Check className="size-3.5" /> : <Copy className="size-3.5" />}
+              Example
+            </Button>
+          ) : null}
+          {schema ? (
+            <Button variant="outline" onClick={() => copy("__schema", schema)}>
+              {copied === "__schema" ? <Check className="size-3.5" /> : <Copy className="size-3.5" />}
+              Schema
+            </Button>
+          ) : null}
+        </div>
+      </div>
+      {expected.note ? <div className="pl-5 text-[11px] text-muted-foreground">{expected.note}</div> : null}
+      {open && example ? (
+        // The expected output IS a kind's source, shown on purpose (kind-leak sentinel exemption).
+        <pre data-kind-source="explicit" className="mt-1 ml-5 max-h-96 overflow-auto whitespace-pre-wrap break-words rounded bg-muted/50 p-2 text-[11px]">
+          {example}
+        </pre>
+      ) : null}
+      {!example ? <div className="pl-5 text-[11px] text-muted-foreground">No example yet</div> : null}
+    </section>
+  );
+}
+
 export function ProvisionWindowBody({ snapshotId }: { snapshotId: string }) {
   const [currentId, setCurrentId] = useState(snapshotId);
   const [snapshot, setSnapshot] = useState<ProvisionSnapshot | null>(null);
@@ -108,7 +157,7 @@ export function ProvisionWindowBody({ snapshotId }: { snapshotId: string }) {
               setHistory(
                 rows.map((r) => ({
                   value: r.id,
-                  label: `${new Date(r.createdAt).toLocaleString()} · ${formatCount(r.totalChars)} chars`,
+                  label: `${TRIGGER_LABEL[r.trigger] ?? r.trigger} · ${new Date(r.createdAt).toLocaleString()} · ${formatCount(r.totalChars)} chars`,
                 })),
               );
           });
@@ -129,6 +178,7 @@ export function ProvisionWindowBody({ snapshotId }: { snapshotId: string }) {
       <div className="flex flex-col gap-1 border-b border-border p-2 text-xs">
         <div className="flex items-center gap-2">
           <span className="font-medium">{snapshot.subjectLabel}</span>
+          <span className="rounded bg-muted px-1.5 py-0.5 text-[11px]">{TRIGGER_LABEL[snapshot.trigger] ?? snapshot.trigger}</span>
           <span className="text-muted-foreground">
             {present} of {snapshot.values.length} values · {formatCount(snapshot.totalChars)} chars
           </span>
@@ -156,6 +206,7 @@ export function ProvisionWindowBody({ snapshotId }: { snapshotId: string }) {
         {snapshot.values.map((v) => (
           <ValueRow key={v.name} v={v} copied={copied} copy={copy} />
         ))}
+        <ExpectedOutputSection expected={snapshot.expectedOutput} copied={copied} copy={copy} />
       </div>
     </div>
   );

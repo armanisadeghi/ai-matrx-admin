@@ -28,6 +28,7 @@ function ProvisionWindowInner({ onClose, snapshotId, title }: Omit<ProvisionWind
       position="center"
       onClose={onClose}
       overlayId="provisionWindow"
+      urlSyncId={snapshotId}
       onCollectData={collectData}
       bodyClassName="flex min-h-0 flex-1 flex-col overflow-hidden p-0"
     >
