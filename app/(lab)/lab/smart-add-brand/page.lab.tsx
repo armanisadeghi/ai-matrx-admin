@@ -3,7 +3,7 @@
 // database as the signed-in person, and the aidream server picked below
 // (live, or this computer at localhost:8000 — `python run.py` in aidream).
 // Nothing is created until "Create brand"; it lands in the active organization.
-import { Providers } from "@/app/Providers";
+import { LabSmartAddProviders } from "./LabSmartAddProviders";
 import { createClient } from "@/utils/supabase/server";
 import { getServerAuth } from "@/utils/supabase/getServerAuth";
 import { mapUserData } from "@/utils/userDataMapper";
@@ -28,8 +28,8 @@ export default async function LabSmartAddBrandPage() {
   ]);
   const userData = mapUserData(user, session?.access_token, admin.isAdmin, admin.level);
   return (
-    <Providers initialReduxState={{ user: userData }}>
+    <LabSmartAddProviders initialReduxState={{ user: userData }}>
       <LabSmartAddBrand />
-    </Providers>
+    </LabSmartAddProviders>
   );
 }
