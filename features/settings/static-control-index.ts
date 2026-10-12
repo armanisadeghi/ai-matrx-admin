@@ -77,16 +77,34 @@ export const staticSettingsControlIndex = [
     "controlId": "settings-control-theme-color-mode"
   },
   {
+    "tabId": "appearance",
+    "label": "Office look",
+    "description": "Google or Microsoft 365, for workbooks, documents and slides.",
+    "controlId": "settings-control-office-apps-office-look"
+  },
+  {
     "tabId": "appearance.theme",
     "label": "Color mode",
     "description": "Device setting, light, or dark; every open tab follows it.",
     "controlId": "settings-control-theme-color-mode"
   },
   {
+    "tabId": "appearance.theme",
+    "label": "Office look",
+    "description": "Google or Microsoft 365, for workbooks, documents and slides.",
+    "controlId": "settings-control-office-apps-office-look"
+  },
+  {
     "tabId": "appearance.density",
     "label": "Color mode",
     "description": "Device setting, light, or dark; every open tab follows it.",
     "controlId": "settings-control-theme-color-mode"
+  },
+  {
+    "tabId": "appearance.density",
+    "label": "Office look",
+    "description": "Google or Microsoft 365, for workbooks, documents and slides.",
+    "controlId": "settings-control-office-apps-office-look"
   },
   {
     "tabId": "appearance.windows",

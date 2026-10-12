@@ -61,6 +61,13 @@ export interface DisplayPreferences {
   timeZone?: string;
   /** Default on: the saved zone follows this device. Off = the person pinned `timeZone`. */
   timeZoneFollowsDevice?: boolean;
+  /**
+   * The Workbooks / Documents / Presentations look: "google" (Sheets / Docs / Slides, the default)
+   * or "microsoft" (Excel / Word / PowerPoint on the web — start page and ribbon). Set in Settings
+   * → Appearance and by the switch on each home; the last one used is this value. Absent = google.
+   * Read it through `useOfficeLook()` (features/file-actions/skin).
+   */
+  officeLook?: "google" | "microsoft";
   darkMode: boolean;
   theme: string;
   dashboardLayout: string;

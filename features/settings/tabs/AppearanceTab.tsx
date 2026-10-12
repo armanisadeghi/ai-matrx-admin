@@ -1,6 +1,6 @@
 "use client";
 
-import { Palette, Sun } from "lucide-react";
+import { LayoutTemplate, Palette, Sun } from "lucide-react";
 import { SettingsSelect } from "@/components/official/settings/primitives/SettingsSelect";
 import { SettingsSection } from "@/components/official/settings/layout/SettingsSection";
 import { SettingsSubHeader } from "@/components/official/settings/layout/SettingsSubHeader";
@@ -12,6 +12,12 @@ import { useUniversalSettings } from "../universal/UniversalSettingsContext";
 import { UniversalSettingsRows } from "../universal/UniversalSettingsPane";
 import { THEME_MODE_OPTIONS, type ThemeMode } from "../agent-writable-settings";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import {
+  OFFICE_LOOK_OPTIONS,
+  OFFICE_LOOK_SETTING_PATH,
+  resolveOfficeLook,
+  type OfficeLook,
+} from "@/features/file-actions/skin/office-look";
 
 export const TABLE_DENSITY_KNOB_KEY = "tables.density.mode";
 
@@ -61,6 +67,7 @@ function TableDensitySettings() {
 export default function AppearanceTab() {
   const activeTabId = useActiveSettingsTabId();
   const [mode, setMode] = useSetting<ThemeMode>("theme.mode");
+  const [officeLook, setOfficeLook] = useSetting<OfficeLook | undefined>(OFFICE_LOOK_SETTING_PATH);
 
   if (activeTabId === "appearance.density") return <TableDensitySettings />;
 
@@ -68,7 +75,7 @@ export default function AppearanceTab() {
     <>
       <SettingsSubHeader
         title="Appearance"
-        description="Theme."
+        description="Theme and Office look."
         icon={Palette}
       />
 
@@ -87,6 +94,17 @@ export default function AppearanceTab() {
         Your color mode is saved to your account and applied before the page
         loads on every device.
       </SettingsCallout>
+
+      <SettingsSection title="Office apps" icon={LayoutTemplate}>
+        <SettingsSelect<OfficeLook>
+          label="Office look"
+          description="Google or Microsoft 365, for workbooks, documents and slides."
+          value={resolveOfficeLook(officeLook)}
+          onValueChange={setOfficeLook}
+          options={[...OFFICE_LOOK_OPTIONS]}
+          last
+        />
+      </SettingsSection>
     </>
   );
 }
