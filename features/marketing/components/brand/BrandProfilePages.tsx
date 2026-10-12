@@ -196,6 +196,14 @@ function MessagingEditor({ brand, saved, report }: { brand: MarketingBrand; save
     (stored.content_pillars ?? []).map((p) => ({ name: p.name, description: p.description ?? "" })),
   );
   const [tags, setTags] = useState<BrandHashtag[]>(stored.hashtags ?? []);
+  const [aliases, setAliases] = useState((stored.brand_aliases ?? []).join("\n"));
+  const [usp, setUsp] = useState(stored.usp ?? "");
+  const [promise, setPromise] = useState(stored.brand_promise ?? "");
+  const [personality, setPersonality] = useState((stored.personality ?? []).join("\n"));
+  const [imagery, setImagery] = useState(stored.imagery_style ?? "");
+  const [iconography, setIconography] = useState(stored.iconography ?? "");
+  const [vocabUse, setVocabUse] = useState((stored.vocabulary?.use ?? []).join("\n"));
+  const [vocabAvoid, setVocabAvoid] = useState((stored.vocabulary?.avoid ?? []).join("\n"));
 
   const edited: BrandProfile = {
     ...stored,
@@ -213,6 +221,13 @@ function MessagingEditor({ brand, saved, report }: { brand: MarketingBrand; save
     ),
     content_pillars: content,
     hashtags: tags,
+    brand_aliases: lines(aliases),
+    usp: usp.trim() || undefined,
+    brand_promise: promise.trim() || undefined,
+    personality: lines(personality),
+    imagery_style: imagery.trim() || undefined,
+    iconography: iconography.trim() || undefined,
+    vocabulary: { use: lines(vocabUse), avoid: lines(vocabAvoid) },
   };
   const cleaned = parseBrandProfile(mergeBrandProfile(brand.profile, edited));
   const dirty = JSON.stringify(cleaned) !== JSON.stringify(stored);
@@ -238,6 +253,33 @@ function MessagingEditor({ brand, saved, report }: { brand: MarketingBrand; save
         </Field>
         <Field label={isPersonBrand(brand) ? "Story" : "Brand story"}>
           <Text label="Story" value={story} onChange={setStory} rows={4} />
+        </Field>
+      </Card>
+
+      <Card className="grid gap-3 p-4 sm:grid-cols-2">
+        <Field label="Also known as (one per line)" hint="Other names, spellings and abbreviations">
+          <Text label="Aliases" value={aliases} onChange={setAliases} rows={3} />
+        </Field>
+        <Field label="Personality (one per line)" hint="Traits, e.g. warm, expert, direct">
+          <Text label="Personality" value={personality} onChange={setPersonality} rows={3} />
+        </Field>
+        <Field label="Unique selling point" hint="What only this brand offers">
+          <Text label="Unique selling point" value={usp} onChange={setUsp} rows={2} />
+        </Field>
+        <Field label="Brand promise" hint="What every customer can count on">
+          <Text label="Brand promise" value={promise} onChange={setPromise} rows={2} />
+        </Field>
+        <Field label="Imagery style" hint="Photos and visuals the brand uses">
+          <Text label="Imagery style" value={imagery} onChange={setImagery} rows={2} />
+        </Field>
+        <Field label="Iconography" hint="Icon style">
+          <Text label="Iconography" value={iconography} onChange={setIconography} rows={2} />
+        </Field>
+        <Field label="Words we use (one per line)">
+          <Text label="Words we use" value={vocabUse} onChange={setVocabUse} rows={3} />
+        </Field>
+        <Field label="Words we avoid (one per line)">
+          <Text label="Words we avoid" value={vocabAvoid} onChange={setVocabAvoid} rows={3} />
         </Field>
       </Card>
 

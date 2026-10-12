@@ -36,7 +36,7 @@ import {
   useCreateBrand,
   useUpdateBrand,
 } from "@/features/marketing/data/hooks";
-import type { BrandProfile, MarketingBrand } from "@/features/marketing/types";
+import type { BrandCompetitor, BrandProfile, MarketingBrand } from "@/features/marketing/types";
 import {
   brandProfileToJson,
   mergeBrandProfile,
@@ -74,7 +74,6 @@ interface BrandDraft {
   profileVoiceTone: string;
   profilePositioning: string;
   profileValueProps: string;
-  profileOfferings: string;
   profileServiceArea: string;
   profileCompetitors: string;
   profileTargetKeywords: string;
@@ -102,6 +101,29 @@ function listToLines(value: string[] | undefined): string {
   return value?.join("\n") ?? "";
 }
 
+/** One competitor per line: `Name | domain | @handle, @handle` (domain and handles optional). */
+function competitorsToLines(value: BrandCompetitor[] | undefined): string {
+  return (value ?? [])
+    .map((c) => {
+      const handles = c.handles?.join(", ") ?? "";
+      if (handles) return `${c.name} | ${c.domain ?? ""} | ${handles}`;
+      return c.domain ? `${c.name} | ${c.domain}` : c.name;
+    })
+    .join("\n");
+}
+
+function linesToCompetitors(value: string): BrandCompetitor[] {
+  return linesToList(value).flatMap((line): BrandCompetitor[] => {
+    const [rawName = "", rawDomain = "", rawHandles = ""] = line.split("|").map((part) => part.trim());
+    if (!rawName) return [];
+    const out: BrandCompetitor = { name: rawName };
+    if (rawDomain) out.domain = rawDomain;
+    const handles = rawHandles.split(",").map((h) => h.trim()).filter(Boolean);
+    if (handles.length) out.handles = handles;
+    return [out];
+  });
+}
+
 function draftFrom(brand: MarketingBrand | null): BrandDraft {
   const profile = parseBrandProfile(brand?.profile);
   return {
@@ -120,9 +142,8 @@ function draftFrom(brand: MarketingBrand | null): BrandDraft {
     profileVoiceTone: profile.voice_tone ?? "",
     profilePositioning: profile.positioning ?? "",
     profileValueProps: listToLines(profile.value_props),
-    profileOfferings: listToLines(profile.offerings),
     profileServiceArea: profile.service_area ?? "",
-    profileCompetitors: listToLines(profile.competitors),
+    profileCompetitors: competitorsToLines(profile.competitors),
     profileTargetKeywords: listToLines(profile.target_keywords),
     profileContentGuidelines: profile.content_guidelines ?? "",
     profileNotes: profile.notes ?? "",
@@ -142,9 +163,8 @@ function profileFromDraft(draft: BrandDraft): BrandProfile {
     voice_tone: draft.profileVoiceTone.trim() || undefined,
     positioning: draft.profilePositioning.trim() || undefined,
     value_props: linesToList(draft.profileValueProps),
-    offerings: linesToList(draft.profileOfferings),
     service_area: draft.profileServiceArea.trim() || undefined,
-    competitors: linesToList(draft.profileCompetitors),
+    competitors: linesToCompetitors(draft.profileCompetitors),
     target_keywords: linesToList(draft.profileTargetKeywords),
     content_guidelines: draft.profileContentGuidelines.trim() || undefined,
     notes: draft.profileNotes.trim() || undefined,
@@ -639,21 +659,8 @@ function BrandEditorDialogBody({
                   />
                 </div>
                 <div className="space-y-1">
-                  <Label htmlFor="brand-profile-offerings" className="text-xs">
-                    Offerings (one per line)
-                  </Label>
-                  <ProTextarea
-                    id="brand-profile-offerings"
-                    value={draft.profileOfferings}
-                    onChange={(event) => set("profileOfferings")(event.target.value)}
-                    minHeight={64}
-                    maxHeight={140}
-                    placeholder={"Service one\nService two"}
-                  />
-                </div>
-                <div className="space-y-1">
                   <Label htmlFor="brand-profile-competitors" className="text-xs">
-                    Competitors (one per line)
+                    Competitors (one per line: name | domain | handles)
                   </Label>
                   <ProTextarea
                     id="brand-profile-competitors"
@@ -661,7 +668,7 @@ function BrandEditorDialogBody({
                     onChange={(event) => set("profileCompetitors")(event.target.value)}
                     minHeight={64}
                     maxHeight={140}
-                    placeholder={"Competitor A\nCompetitor B"}
+                    placeholder={"Competitor A | competitor-a.com | @competitora\nCompetitor B"}
                   />
                 </div>
                 <div className="space-y-1">

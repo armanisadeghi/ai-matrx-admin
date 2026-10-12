@@ -88,8 +88,8 @@ export function buildBrandContextXml(input: BrandContextInput): string {
   ];
   const profileLists: Array<[string, string[] | undefined]> = [
     ["value_props", profile.value_props],
-    ["offerings", profile.offerings],
-    ["competitors", profile.competitors],
+    // Competitors render by name, exactly as before they became `{name, domain, handles}`.
+    ["competitors", profile.competitors?.map((c) => c.name)],
     ["target_keywords", profile.target_keywords],
     ["values", profile.values],
     ["approved_claims", profile.approved_claims],

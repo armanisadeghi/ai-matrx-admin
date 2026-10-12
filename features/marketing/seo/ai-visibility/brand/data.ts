@@ -1,7 +1,8 @@
 import { supabase } from "@/utils/supabase/client";
 import { getJson, postJson } from "@/lib/python-client";
 import { updateBrand } from "@/features/marketing/data/service";
-import type { MarketingBrand } from "@/features/marketing/types";
+import { parseBrandProfile, type BrandCompetitor, type MarketingBrand } from "@/features/marketing/types";
+import type { Json } from "@/types/database.types";
 
 import type { BrandCheckEstimate, BrandCheckRow } from "./types";
 
@@ -64,22 +65,26 @@ export async function runBrandCheck(
   return data;
 }
 
-/** Who this brand is compared against: kept on the brand profile (`profile.ai_visibility.competitors`). */
+/**
+ * Who this brand is compared against: the brand's ONE competitor list (`profile.competitors`,
+ * `[{name, domain, handles}]`). A name already on the list keeps its domain and handles.
+ */
 export async function saveBrandAiCompetitors(input: {
   brandId: string;
   expectedVersion: number;
   profile: Record<string, unknown>;
   competitors: string[];
 }) {
-  const current = (input.profile.ai_visibility ?? {}) as Record<string, unknown>;
+  const stored = parseBrandProfile(input.profile as Json).competitors ?? [];
+  const byName = new Map(stored.map((c) => [c.name.toLowerCase(), c]));
+  const next: BrandCompetitor[] = input.competitors.map(
+    (name) => byName.get(name.trim().toLowerCase()) ?? { name: name.trim() },
+  );
   return updateBrand({
     brandId: input.brandId,
     expectedVersion: input.expectedVersion,
     patch: {
-      profile: {
-        ...input.profile,
-        ai_visibility: { ...current, competitors: input.competitors },
-      } as MarketingBrand["profile"],
+      profile: { ...input.profile, competitors: next } as unknown as MarketingBrand["profile"],
     },
   });
 }

@@ -27,8 +27,8 @@ const stored = {
 
 describe("brand fundamentals in the profile", () => {
   it("round-trips every new field unchanged", () => {
-    const { brand_aliases: _aliases, ...owned } = stored;
-    expect(brandProfileToJson(parseBrandProfile(stored))).toEqual(owned);
+    // brand_aliases is a typed profile key now (Foundations G7), so it round-trips too.
+    expect(brandProfileToJson(parseBrandProfile(stored))).toEqual(stored);
   });
 
   it("normalizes hashtags, drops blanks, defaults an unknown use to branded", () => {

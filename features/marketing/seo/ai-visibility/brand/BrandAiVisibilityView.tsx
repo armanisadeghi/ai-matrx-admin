@@ -11,6 +11,7 @@ import { Input } from "@ai-matrx/design-system/controls";
 import { Cost } from "@/components/cost/Cost";
 import { SectionCard } from "@/features/marketing/components/shared/MarketingUi";
 import { useBrand } from "@/features/marketing/data/hooks";
+import { parseBrandProfile } from "@/features/marketing/types";
 import { useAccess } from "@/utils/permissions/access";
 import { canEditAccess } from "@/utils/permissions/access-core";
 import { toast } from "@/lib/toast";
@@ -37,9 +38,7 @@ export function BrandAiVisibilityView({ brandId }: { brandId: string }) {
   if (!brand) return <div className="h-24 animate-pulse rounded-md bg-muted/50" />;
 
   const profile = (brand.profile ?? {}) as Record<string, unknown>;
-  const configured = (
-    ((profile.ai_visibility as { competitors?: unknown } | undefined)?.competitors as unknown[] | undefined) ?? []
-  ).filter((v): v is string => typeof v === "string");
+  const configured = (parseBrandProfile(brand.profile).competitors ?? []).map((c) => c.name);
 
   const save = async (next: string[]) => {
     setSaving(true);

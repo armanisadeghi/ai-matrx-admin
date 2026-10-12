@@ -42,7 +42,7 @@ describe("an editor save merges into the stored profile", () => {
   });
 
   it("removes an owned field the person cleared", () => {
-    const stored = { audience: "IT managers", brand_aliases: ["X"] };
-    expect(mergeBrandProfile(stored, {})).toEqual({ brand_aliases: ["X"] });
+    const stored = { audience: "IT managers", other_lane_key: ["X"] };
+    expect(mergeBrandProfile(stored, {})).toEqual({ other_lane_key: ["X"] });
   });
 });

@@ -18,9 +18,8 @@ const EXISTING: BrandProfile = {
   voice_tone: "Warm, plain-spoken",
   positioning: "The reliable local option",
   value_props: ["Same-day service"],
-  offerings: ["Drain cleaning", "Water heater install"],
   service_area: "Alameda County",
-  competitors: ["Acme Plumbing"],
+  competitors: [{ name: "Acme Plumbing", domain: "acmeplumbing.com" }],
   target_keywords: ["emergency plumber oakland"],
   content_guidelines: "Never promise arrival times.",
   notes: "Owner prefers 'technician', not 'guy'.",
@@ -67,9 +66,9 @@ describe("mergeBrandProfileWrite", () => {
 
   it("replaces a list field wholesale", () => {
     const merged = mergeBrandProfileWrite(EXISTING_JSON, {
-      offerings: ["Sewer inspection"],
+      target_keywords: ["sewer inspection oakland"],
     });
-    expect(merged.offerings).toEqual(["Sewer inspection"]);
+    expect(merged.target_keywords).toEqual(["sewer inspection oakland"]);
     expect(merged.competitors).toEqual(EXISTING.competitors);
   });
 
@@ -92,6 +91,16 @@ describe("mergeBrandProfileWrite", () => {
     expect(merged.value_props).toEqual(["Certified destruction"]);
   });
 
+  it("accepts competitor names and objects and keeps domain + handles", () => {
+    const merged = mergeBrandProfileWrite(EXISTING_JSON, {
+      competitors: ["Bay Rooter", { name: "Roto Pro", domain: "rotopro.com", handles: ["@rotopro"] }],
+    });
+    expect(merged.competitors).toEqual([
+      { name: "Bay Rooter" },
+      { name: "Roto Pro", domain: "rotopro.com", handles: ["@rotopro"] },
+    ]);
+  });
+
   it("throws on unknown keys instead of coercing", () => {
     expect(() => mergeBrandProfileWrite(EXISTING_JSON, { voice: "x" })).toThrow(
       /unknown field/,
@@ -100,8 +109,12 @@ describe("mergeBrandProfileWrite", () => {
 
   it("throws on wrong shapes and non-objects", () => {
     expect(() =>
-      mergeBrandProfileWrite(EXISTING_JSON, { offerings: "one" }),
+      mergeBrandProfileWrite(EXISTING_JSON, { target_keywords: "one" }),
     ).toThrow(/string array/);
+    // profile.offerings is retired (offerings live in web.brand_offering).
+    expect(() =>
+      mergeBrandProfileWrite(EXISTING_JSON, { offerings: ["x"] }),
+    ).toThrow(/unknown field/);
     expect(() =>
       mergeBrandProfileWrite(EXISTING_JSON, { audience: 42 }),
     ).toThrow(/must be a string/);

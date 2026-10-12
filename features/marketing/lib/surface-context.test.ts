@@ -180,7 +180,7 @@ const FULL_PROFILE: Json = {
   value_props: ["Certified destruction", "Same-week pickup"],
   offerings: ["ITAD", "Data destruction"],
   service_area: "Southern California",
-  competitors: ["ERI", "Sims Lifecycle"],
+  competitors: ["ERI", { name: "Sims Lifecycle", domain: "simslifecycle.com", handles: ["@sims"] }],
   target_keywords: ["e-waste recycling los angeles"],
   content_guidelines: "Cite certifications; never promise \"free\" pickup",
   notes: "Client prefers <quarterly> case studies",
@@ -259,7 +259,7 @@ describe("buildBrandContextXml", () => {
       }),
       facts: [
         makeFact(),
-        makeFact({ id: "fact-2", kind: "service_area", label: "Coverage", value: { text: "SoCal" } }),
+        makeFact({ id: "fact-2", kind: "tagline", label: "Coverage", value: { text: "SoCal" } }),
       ],
       assets: [makeAsset(), makeAsset({ id: "asset-2", kind: "favicon", title: null, is_primary: false })],
       properties: [makeProperty(), makeProperty({ id: "prop-2", kind: "youtube", url: null, handle: null })],
@@ -276,9 +276,12 @@ describe("buildBrandContextXml", () => {
       "<value_props><item>Certified destruction</item><item>Same-week pickup</item></value_props>",
     );
     expect(xml).toContain("<notes>Client prefers &lt;quarterly&gt; case studies</notes>");
+    // Competitors render by name whatever their stored shape; retired profile.offerings never renders.
+    expect(xml).toContain("<competitors><item>ERI</item><item>Sims Lifecycle</item></competitors>");
+    expect(xml).not.toContain("<offerings>");
     // Facts carry kind (+ label when present) and the extracted value text.
     expect(xml).toContain('<fact kind="phone">(555) 010-2000</fact>');
-    expect(xml).toContain('<fact kind="service_area" label="Coverage">SoCal</fact>');
+    expect(xml).toContain('<fact kind="tagline" label="Coverage">SoCal</fact>');
     // Assets: is_primary only when true, title only when present.
     expect(xml).toContain('<asset kind="logo" title="Primary logo" is_primary="true"/>');
     expect(xml).toContain('<asset kind="favicon"/>');
