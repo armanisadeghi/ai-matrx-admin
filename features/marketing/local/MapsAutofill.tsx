@@ -34,7 +34,7 @@ export function MapsAutofill({
   });
   const running = lookup.run.status === "running";
   const url = placeLookupUrl(text);
-  const price = lookup.quote ?? "price shown once loaded";
+  const price = lookup.quote ?? "…";
 
   const fill = () => {
     if (!url) return;

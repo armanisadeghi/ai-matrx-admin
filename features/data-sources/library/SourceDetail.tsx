@@ -204,7 +204,7 @@ function SourceRun({
                 Open table
               </Link>
             </Button>
-            <AddToBoard tableId={done.table_id} />
+            <AddToBoard tableId={done.table_id} tableName={done.table_name} />
           </div>
           <Button variant="quiet" onClick={() => clearRun(key)}>
             Get more

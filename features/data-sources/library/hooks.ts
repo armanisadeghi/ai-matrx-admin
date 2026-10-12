@@ -3,7 +3,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { formatPoints } from "@ai-matrx/kit/format";
 
-import { useCostDisplay } from "@/components/cost/useCostDisplay";
+import { formatAdminUsd } from "@/components/cost/formatAdminCost";
+import { useCostDisplay, useSeesDollars } from "@/components/cost/useCostDisplay";
 import { useOrganizationRequired } from "@/features/organizations/useOrganizationRequired";
 
 import { pointsFor, type LibrarySource } from "./catalog";
@@ -28,15 +29,21 @@ export function useLibrary(organizationId: string | null) {
 }
 
 /**
- * The price of `n` records of a source, as this viewer sees it: points for everyone (the source's
- * OWN price), dollars only for an admin who flipped the switch and only when the source has a USD
- * price. Null when the source is unpriced or the rate has not loaded.
+ * The price of `n` records of a source, as this viewer's SEAT sees it (the one cost rule, `useSeesDollars`):
+ * a member reads "150 points"; a seat that may see dollars reads "$0.01 · 150 points" (cents, the
+ * source's own points beside it). Null when the source is unpriced or the rate has not loaded.
+ * Every quote and result in data-sources (library, board tile, table bar, chat card, CRM, Maps) comes here.
  */
 export function usePriceText() {
-  const { unit, rate, format } = useCostDisplay();
+  const { rate } = useCostDisplay();
+  const seesDollars = useSeesDollars();
   return (source: Pick<LibrarySource, "pointsPerRecord" | "usd_per_record">, n: number, opts?: { short?: boolean }): string | null => {
-    if (unit === "usd" && source.usd_per_record != null) return format(source.usd_per_record * n, { short: opts?.short });
     const points = pointsFor(source, n, rate);
-    return points == null ? null : formatPoints(points, { short: opts?.short });
+    const pointsText = points == null ? null : formatPoints(points, { short: opts?.short });
+    if (seesDollars && source.usd_per_record != null) {
+      const usd = formatAdminUsd(source.usd_per_record * n);
+      return pointsText ? `${usd} · ${pointsText}` : usd;
+    }
+    return pointsText;
   };
 }

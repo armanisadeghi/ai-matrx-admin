@@ -141,7 +141,7 @@ function IntelRow({
     }
   };
 
-  const price = lookup.quote ?? "price shown once loaded";
+  const price = lookup.quote ?? "…";
   return (
     <li className="px-2.5 py-1.5" data-intel-source={source.key}>
       <div className="flex items-center gap-2">
@@ -153,7 +153,7 @@ function IntelRow({
             className="h-6 gap-1 px-2 text-[11px]"
             disabled={running || !lookup.source}
             onClick={get}
-            title={`Fetches live data for this page. ${price}.`}
+            title={price}
           >
             {stored ? <RefreshCw className="h-3 w-3" /> : null}
             {running ? "Getting…" : `${stored ? "Refresh" : "Get"} · ${price}`}
