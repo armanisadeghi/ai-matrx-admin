@@ -658,15 +658,15 @@ export default function WorkbooksLandingPage() {
           {!loading && view === "cards" && visibleWorkbooks.length > 0 && (
             // Columns follow the LIST's width, never the window's: beside the
             // canvas a 1440px window left three 180px cards ("Top …").
-            <div className="grid gap-3 grid-cols-[repeat(auto-fill,minmax(min(100%,16rem),1fr))]">
+            <div className="grid gap-3 grid-cols-[repeat(auto-fill,minmax(min(100%,18rem),1fr))]">
               {visibleWorkbooks.map((wb) => (
                 <FileCardContextArea
                   key={wb.id}
-                  className="grid min-w-0"
+                  className="grid min-w-0 [&>*]:min-w-0"
                   menu={(control) => menuFor(wb, scope === "trash", control)}
                 >
                 {(cardMenu) => (
-                <Card className="group/entity-ref">
+                <Card className="group/entity-ref min-w-0 overflow-hidden">
                   <CardContent className="p-4 space-y-2">
                     <div className="flex items-start justify-between gap-2">
                       {/* A real anchor, not a button that router.pushes: the
@@ -676,13 +676,13 @@ export default function WorkbooksLandingPage() {
                         href={`/workbooks/${wb.id}`}
                         className="flex min-w-0 flex-1 items-start gap-2 text-left"
                       >
-                        <FileSpreadsheet className="size-5 mt-0.5 text-muted-foreground" />
+                        <FileSpreadsheet className="size-5 mt-0.5 shrink-0 text-muted-foreground" />
                         <div className="min-w-0">
                           <div className="font-medium line-clamp-2 break-words" title={wb.workbook_name}>
                             {wb.workbook_name}
                           </div>
                           {wb.description && (
-                            <div className="text-xs text-muted-foreground truncate">
+                            <div className="line-clamp-2 break-words text-xs text-muted-foreground">
                               {wb.description}
                             </div>
                           )}
