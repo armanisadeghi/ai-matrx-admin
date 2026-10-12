@@ -111,46 +111,6 @@ export const ANONYMOUS_BY_DESIGN_DOORS: readonly AnonymousDoor[] = [
   },
   {
     schema: "public",
-    name: "esign_signer_adopt_signature",
-    purpose: "A signer with no account opens an e-sign envelope from an emailed link.",
-  },
-  {
-    schema: "public",
-    name: "esign_signer_consent",
-    purpose: "A signer with no account opens an e-sign envelope from an emailed link.",
-  },
-  {
-    schema: "public",
-    name: "esign_signer_decline",
-    purpose: "A signer with no account opens an e-sign envelope from an emailed link.",
-  },
-  {
-    schema: "public",
-    name: "esign_signer_delegate",
-    purpose: "A signer with no account opens an e-sign envelope from an emailed link.",
-  },
-  {
-    schema: "public",
-    name: "esign_signer_download_url",
-    purpose: "A signer with no account opens an e-sign envelope from an emailed link.",
-  },
-  {
-    schema: "public",
-    name: "esign_signer_load",
-    purpose: "A signer with no account opens an e-sign envelope from an emailed link.",
-  },
-  {
-    schema: "public",
-    name: "esign_signer_preview_ack",
-    purpose: "A signer with no account opens an e-sign envelope from an emailed link.",
-  },
-  {
-    schema: "public",
-    name: "esign_signer_sign",
-    purpose: "A signer with no account opens an e-sign envelope from an emailed link.",
-  },
-  {
-    schema: "public",
     name: "get_aga_public_data",
     purpose: "A signed-out visitor on an app/(public) route.",
   },
@@ -254,11 +214,6 @@ export const ANONYMOUS_BY_DESIGN_DOORS: readonly AnonymousDoor[] = [
   {
     schema: "public",
     name: "outsider_session_ping",
-    purpose: "An outsider invited into one piece of work through an actor-token link.",
-  },
-  {
-    schema: "public",
-    name: "outsider_verify",
     purpose: "An outsider invited into one piece of work through an actor-token link.",
   },
   {
