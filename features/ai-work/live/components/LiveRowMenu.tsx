@@ -9,6 +9,8 @@ import { useAppDispatch } from "@/lib/redux/hooks";
 import { copyToClipboard } from "@/lib/clipboard/copy";
 import { cn } from "@/lib/utils";
 
+const STATELESS_PLATFORM_ACTIONS = new Set(["Copy link", "Share…", "Add to project…"]);
+
 const liveHref = (q: string) => `/work/live?${q}`;
 const absolute = (href: string) =>
   typeof window === "undefined" ? href : new URL(href, window.location.origin).toString();
@@ -54,11 +56,13 @@ function sessionMenu(
           },
         ],
       },
-      // The registry's own "Open in new tab" would repeat ours.
+      // Only the platform actions that need no per-row state: Archive, the
+      // knowledge-graph toggle and favourites would show a state this list
+      // never read, and "Open in new tab" would repeat ours.
       ...platform.sections
         .map((section) => ({
           ...section,
-          items: section.items.filter((item) => item.label !== "Open in new tab"),
+          items: section.items.filter((item) => STATELESS_PLATFORM_ACTIONS.has(item.label)),
         }))
         .filter((section) => section.items.length > 0),
     ],
@@ -139,7 +143,7 @@ export function LiveRowMenu({
           )}
         >
           <ItemMenu config={config} align="end">
-            <MoreHorizontalTapButton variant="transparent" ariaLabel={`Options for ${title}`} tooltip="More" />
+            <MoreHorizontalTapButton variant="transparent" ariaLabel={`Options for ${title.length > 40 ? `${title.slice(0, 40)}…` : title}`} tooltip="More" />
           </ItemMenu>
         </span>
       </div>
