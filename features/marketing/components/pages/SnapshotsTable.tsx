@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { CameraOff, Columns2 } from "lucide-react";
+import { Camera, Columns2, Play } from "lucide-react";
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
 import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
 import { Button } from "@/components/ui/button";
@@ -327,10 +328,17 @@ export function SnapshotsTable({ pageId }: { pageId: string }) {
           )
         }
         emptyState={{
-          icon: <CameraOff className="h-8 w-8 text-muted-foreground" />,
-          title: "No snapshots",
-          description:
-            "The page identity is stable even when no crawl has captured content for it yet.",
+          icon: <Camera className="h-8 w-8 text-muted-foreground" />,
+          title: "No snapshots yet",
+          description: "A crawl captures this page's first snapshot.",
+          action: (
+            <Button asChild variant="primary">
+              <Link href={marketingRoutes.site(brandId, site.id, "/crawls/new")}>
+                <Play className="h-3.5 w-3.5" />
+                Start crawl
+              </Link>
+            </Button>
+          ),
         }}
       />
       </NonEditableContextMenu>

@@ -126,6 +126,7 @@ export async function saveSiteCrawlSchedule(
       .maybeSingle();
     return {
       status: "saved",
+      // maybe-single-assert-ok: an insert that returns no row failed; it is never "none yet"
       schedule: assertData(response.data, response.error),
     };
   }

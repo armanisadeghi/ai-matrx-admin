@@ -803,6 +803,8 @@
     "check:agent-traffic-marker:self-test": "node scripts/check-agent-traffic-marker.mjs --self-test",
     "check:cursor-law:self-test": "node scripts/check-cursor-law.mjs --self-test",
     "check:alchemy-doors": "tsx scripts/check-alchemy-doors.ts",
+    "check:maybe-single-assert": "tsx scripts/check-maybe-single-assert.ts",
+    "check:maybe-single-assert:self-test": "tsx scripts/check-maybe-single-assert.ts --self-test",
     "check:alchemy-doors:self-test": "tsx scripts/check-alchemy-doors.ts --self-test",
     "check:worker-cycles": "tsx scripts/check-worker-cycles.ts",
     "check:worker-cycles:self-test": "tsx scripts/check-worker-cycles.ts --self-test",
