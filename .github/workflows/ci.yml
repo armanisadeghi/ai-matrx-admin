@@ -1,4 +1,5 @@
 name: CI
+run-name: ${{ github.event_name == 'workflow_dispatch' && format('{0} (by {1})', github.workflow, inputs.requested_by || 'manual') || '' }}
 
 # Per-PR checks. Until this file existed, every gate in this repo lived inside
 # `scripts/run-release-gates.sh` — which runs at RELEASE time, by hand. A
@@ -17,6 +18,12 @@ on:
   pull_request:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      requested_by:
+        description: "Agent session or lane that asked for this run (ci-spend attribution)"
+        required: false
+        default: ""
+        type: string
 
 # ---------------------------------------------------------------------------
 # CONCURRENCY — why this is `false` and must stay `false`.

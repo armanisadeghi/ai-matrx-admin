@@ -1,4 +1,5 @@
 name: UI drift check — daily
+run-name: ${{ github.event_name == 'workflow_dispatch' && format('{0} (by {1})', github.workflow, inputs.requested_by || 'manual') || '' }}
 
 # The central half of the UI drift check (docs/ui-unification-plan.md §2.12): the `ui-drift` row of
 # scripts/checks/run.mjs runs once a day on the head of main, and the runner's --json is uploaded as
@@ -17,6 +18,12 @@ on:
   schedule:
     - cron: '20 6 * * *'
   workflow_dispatch:
+    inputs:
+      requested_by:
+        description: "Agent session or lane that asked for this run (ci-spend attribution)"
+        required: false
+        default: ""
+        type: string
 
 concurrency:
   group: ui-drift-daily

@@ -1,4 +1,5 @@
 name: Repo-only checks
+run-name: ${{ github.event_name == 'workflow_dispatch' && format('{0} (by {1})', github.workflow, inputs.requested_by || 'manual') || '' }}
 
 # The code-only leg of "checks run in the app" (common-docs/systems/architecture/observability/projects/checks-run-in-the-app/PLAN.md,
 # decision 4): the release-check rows DECLARED repo-only in scripts/checks/row-classes.json run here
@@ -19,6 +20,12 @@ on:
   schedule:
     - cron: '5 * * * *'
   workflow_dispatch:
+    inputs:
+      requested_by:
+        description: "Agent session or lane that asked for this run (ci-spend attribution)"
+        required: false
+        default: ""
+        type: string
 
 # Its own group, never cancelled: a push to main never touches this run (CI's group is separate),
 # and a second dispatch waits for the first instead of killing it.
