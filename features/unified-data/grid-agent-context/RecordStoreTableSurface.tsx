@@ -24,6 +24,7 @@ import { createDataTablesScope } from "@/features/surfaces/manifests/data-tables
 import { buildDataTablesScope } from "@/features/data-tables/agent-context/buildDataTablesScope";
 import { briefColumns } from "@/features/data-tables/agent-context/tableBrief";
 
+import { publishSelectedRows } from "@/features/data-sources/live-column/selectedRows";
 import { isWorkedOut, scopeInputFromGrid } from "./recordStoreTableScope";
 
 export const DATA_TABLES_SURFACE = "matrx-user/data-tables" as const;
@@ -42,6 +43,8 @@ export function useGridContextChannel(): GridContextChannel {
   const [told, setTold] = useState(false);
   const onGridContext = (snapshot: GridContextSnapshot) => {
     latest.current = snapshot;
+    // The ticked rows, for the table header's "From live data" dialog (outside the grid).
+    publishSelectedRows(snapshot.tableId, snapshot.selectedRows.map((r) => r.id));
     setTold(true);
   };
   return { onGridContext, latest, told };

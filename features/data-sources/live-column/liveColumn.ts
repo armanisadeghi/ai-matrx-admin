@@ -7,12 +7,25 @@
  * declared, which columns may feed it, and how a run's answer reads. Network and UI live beside it.
  */
 
+/** What a row keeps of the records its page brings in (a many-record source only; a one-record source is always `first`). */
+export type LiveKeep = "first" | "average" | "count" | "newest";
+
+export const KEEP_OPTIONS: ReadonlyArray<{ value: LiveKeep; label: string }> = [
+  { value: "first", label: "First" },
+  { value: "average", label: "Average" },
+  { value: "count", label: "Count" },
+  { value: "newest", label: "Newest" },
+];
+
 export interface LiveColumnSpec {
   sourceKey: string;
   /** The row column (field key) whose value is the page address. */
   inputField: string;
   /** The record field (source output) this column keeps. */
   outputField: string;
+  /** Many-record sources only: how the records become one cell, and how many records each row brings in. */
+  keep?: LiveKeep;
+  recordsPerRow?: number;
 }
 
 /** What `enrich_declare` takes: the instruction is a readable sentence; the server runs `data_source`. */
@@ -20,7 +33,12 @@ export function declareSpec(spec: LiveColumnSpec, sourceLabel: string, inputLabe
   return {
     instruction: `From live data: ${fieldLabel(spec.outputField)} of ${sourceLabel}, read from the ${inputLabel} column`,
     inputs: [spec.inputField],
-    data_source: { source_key: spec.sourceKey, input_field: spec.inputField, output_field: spec.outputField },
+    data_source: {
+      source_key: spec.sourceKey,
+      input_field: spec.inputField,
+      output_field: spec.outputField,
+      ...(spec.keep ? { keep: spec.keep, records_per_row: spec.recordsPerRow } : {}),
+    },
     enabled: true,
   };
 }
@@ -37,12 +55,49 @@ export function fieldLabel(key: string): string {
 const NUMERIC = /(^|_)(rating|count|total|num|number|employees|followers|price|rank|score|reviews|stars|amount|size|likes|views)(_|$)/;
 
 /** A new column's type: a number when the record field reads like one, else text. */
-export function columnTypeFor(outputField: string): "number" | "text" {
+export function columnTypeFor(outputField: string, keep: LiveKeep = "first"): "number" | "text" {
+  if (keep === "average" || keep === "count") return "number";
   return NUMERIC.test(outputField.toLowerCase()) ? "number" : "text";
 }
 
-export function columnLabelFor(sourceLabel: string, outputField: string): string {
-  return `${sourceLabel} - ${fieldLabel(outputField)}`;
+/** `Trustpilot reviews - Average Review Rating (last 10)`: what the column keeps, in its name. */
+export function columnLabelFor(sourceLabel: string, outputField: string, keep: LiveKeep = "first", records = 1): string {
+  const word = keep === "first" ? "" : `${KEEP_OPTIONS.find((k) => k.value === keep)?.label ?? ""} `;
+  const sample = keep === "first" || records <= 1 ? "" : ` (last ${records})`;
+  return `${sourceLabel} - ${word}${fieldLabel(outputField)}${sample}`;
+}
+
+/** Whether a record field can be averaged: it reads like a number. */
+export function isNumericField(outputField: string): boolean {
+  return NUMERIC.test(outputField.toLowerCase());
+}
+
+const COMPANY_LEVEL = /(rating|score|stars)/;
+
+/**
+ * "Rating" of a review is one person's stars; the COMPANY's rating lives on a company or place source.
+ * For a many-record source and a kept field that reads like a company-level figure, the one-record
+ * sources (company, place, product) that return a field of the same kind, featured first.
+ */
+export function companyLevelSources<S extends { key: string; label: string; records_are?: string; output_fields?: string[]; input: { kind: string }; featured?: boolean }>(
+  outputField: string,
+  sources: readonly S[],
+  limit = 3,
+): Array<{ source: S; field: string }> {
+  const hit = COMPANY_LEVEL.exec(outputField.toLowerCase());
+  if (!hit) return [];
+  const word = hit[1];
+  const found: Array<{ source: S; field: string }> = [];
+  for (const source of sources) {
+    if (source.records_are === "items" || source.input.kind !== "url") continue;
+    const field = (source.output_fields ?? []).find((f) => {
+      const l = f.toLowerCase();
+      return l === word || l === `${word}s` || l.startsWith(`${word}_overall`) || l.startsWith(`${word}s_overall`);
+    });
+    if (field) found.push({ source, field });
+  }
+  found.sort((a, b) => Number(Boolean(b.source.featured)) - Number(Boolean(a.source.featured)));
+  return found.slice(0, limit);
 }
 
 /** The row columns that can hold a page address: every column a person types a value into. */
@@ -69,6 +124,10 @@ export interface LiveQuote {
   maxRowsPerRun: number;
   recordsPerRowSetting: string;
   maxRowsSetting: string;
+  recordsAre: "entity" | "items";
+  keep: LiveKeep;
+  /** Rows that already hold records paid for by an earlier fill that did not finish writing (0 points now). */
+  rowsKept: number;
 }
 
 export function parseRun(raw: unknown): LiveRun {
@@ -90,6 +149,9 @@ export function parseRun(raw: unknown): LiveRun {
           maxRowsPerRun: n(q.max_rows_per_run),
           recordsPerRowSetting: String(q.records_per_row_setting ?? ""),
           maxRowsSetting: String(q.max_rows_setting ?? ""),
+          recordsAre: q.records_are === "items" ? "items" : "entity",
+          keep: (["first", "average", "count", "newest"] as const).find((k) => k === q.keep) ?? "first",
+          rowsKept: n(q.rows_kept),
         }
       : null,
   };

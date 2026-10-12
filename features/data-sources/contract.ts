@@ -46,6 +46,9 @@ export interface DataSource {
   usd_per_record: number | null;
   /** The server's own points price for ONE record of this source (never assume a flat number). */
   points_per_record?: number | null;
+  /** `entity`: one record per page (a company, a place); `items`: many (reviews, posts, jobs, listings). */
+  records_are?: "entity" | "items";
+  featured?: boolean;
 }
 
 export interface DataLimit {
@@ -188,6 +191,8 @@ export function parseCatalog(raw: unknown): DataSourceCatalog {
       verified: s.verified === true,
       usd_per_record: price.usd,
       points_per_record: price.points,
+      records_are: s.records_are === "items" ? "items" : "entity",
+      featured: s.featured === true,
     });
   }
   const limits = (o.limits && typeof o.limits === "object" ? o.limits : {}) as Record<string, unknown>;

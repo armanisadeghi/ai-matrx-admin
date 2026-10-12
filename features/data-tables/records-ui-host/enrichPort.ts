@@ -39,12 +39,16 @@ async function refusalSentence(response: Response): Promise<string> {
  */
 export async function runAiColumn(
   post: Post,
-  args: { tableId: string; fieldId: string; rows: number; preview: boolean },
+  args: { tableId: string; fieldId: string; rows: number; preview: boolean; recordIds?: readonly string[] },
 ): Promise<{ ok: true; run: unknown } | { ok: false; message: string }> {
   try {
     const response = await post(
       `/v1/tables/${encodeURIComponent(args.tableId)}/ai-columns/${encodeURIComponent(args.fieldId)}/run`,
-      { rows: Math.max(1, Math.min(50, args.rows)), preview: args.preview },
+      {
+        rows: Math.max(1, Math.min(50, args.rows)),
+        preview: args.preview,
+        ...(args.recordIds && args.recordIds.length > 0 ? { record_ids: [...args.recordIds] } : {}),
+      },
     );
     if (!response.ok) return { ok: false, message: await refusalSentence(response) };
     return { ok: true, run: await response.json() };
