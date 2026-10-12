@@ -6,7 +6,8 @@
  */
 
 import Link from "next/link";
-import { Select, type SelectOption } from "@ai-matrx/design-system/controls";
+import { Settings2 } from "lucide-react";
+import { Badge, Button, Select, type SelectOption } from "@ai-matrx/design-system/controls";
 
 import { useCostDisplay } from "@/components/cost/useCostDisplay";
 import { useQuery } from "@tanstack/react-query";
@@ -55,19 +56,21 @@ export function PostCountControl({
   const reason = countReason(count, choice, max);
   const effective = reason.limited && max != null ? max : count;
   const options: SelectOption<PostCountChoice>[] = choiceMenu(choice).map((c) => ({ value: c, label: choiceLabel(c) }));
+  const settingsHref = reason.limited ? SOCIAL_LIMITS_HREF(organizationId, "profile_posts_max") : POST_COUNT_PERSON_HREF;
   return (
     <span className="inline-flex items-center gap-2" data-testid="post-count-control">
       <Select aria-label="How many posts" value={choice ?? ""} options={options} onValueChange={setChoice} disabled={disabled || choice === null} />
-      <span className="min-w-16 text-xs text-muted-foreground" aria-live="polite">
-        {maxError ? "Limit not loaded" : effective != null ? `${effective.toLocaleString("en-US")} posts` : ""}
-        {estimate ? ` · ${estimate}` : ""}
-        {choice !== null && !maxError ? ` · ${reason.text} · ` : null}
-        {choice !== null && !maxError ? (
-          <Link href={reason.limited ? SOCIAL_LIMITS_HREF(organizationId, "profile_posts_max") : POST_COUNT_PERSON_HREF} className="underline">
-            Change
-          </Link>
-        ) : null}
+      {reason.limited && effective != null ? (
+        <Badge tone="neutral" title={reason.text}>{`Max ${effective.toLocaleString("en-US")}`}</Badge>
+      ) : null}
+      <span className="text-xs text-muted-foreground tabular-nums" aria-live="polite" title={maxError ? undefined : reason.text}>
+        {maxError ? "Limit not loaded" : estimate ?? ""}
       </span>
+      {choice !== null && !maxError ? (
+        <Button variant="quiet" icon={<Settings2 />} asChild aria-label="Post count settings" title="Post count settings">
+          <Link href={settingsHref} />
+        </Button>
+      ) : null}
     </span>
   );
 }

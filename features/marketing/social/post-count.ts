@@ -35,13 +35,14 @@ export function loadMoreRequest(): { maxPosts: number; continueFromLast: true; q
 }
 /** The person's own row for the default count (their settings, "Personal configuration"). */
 export const POST_COUNT_PERSON_HREF = "/user-settings/general/personal-config#social.profile_posts_default";
-/** Why the count is what it is, in one short phrase. Pure. */
+/** Why the count is what it is: a tooltip, never inline text. Pure. */
 export function countReason(count: number | null, choice: PostCountChoice | null, profilePostsMax: number | null | undefined): { text: string; limited: boolean } {
+  const max = profilePostsMax?.toLocaleString("en-US");
   if (count != null && profilePostsMax != null && count > profilePostsMax) {
-    return { text: `limited to ${profilePostsMax.toLocaleString("en-US")} by your organization's maximum`, limited: true };
+    return { text: `Capped at ${max} by your organization`, limited: true };
   }
-  if (choice === "all") return { text: "all, up to your organization's maximum", limited: false };
-  return { text: "your default", limited: false };
+  if (choice === "all") return { text: max ? `All posts (organization limit ${max})` : "All posts", limited: false };
+  return { text: "Your default", limited: false };
 }
 /** Where an org admin changes the limits; with a setting name it scrolls to that exact row (rows anchor at their full key). */
 export const SOCIAL_LIMITS_HREF = (organizationId: string, setting?: string) =>
