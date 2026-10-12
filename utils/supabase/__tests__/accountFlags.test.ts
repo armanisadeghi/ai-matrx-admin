@@ -10,7 +10,7 @@ jest.mock("next/headers", () => ({ headers: jest.fn() }));
 jest.mock("next/navigation", () => ({ redirect: jest.fn() }));
 jest.mock("./../getServerAuth", () => ({ getServerAuth: jest.fn() }));
 
-import { accountFlagsFor, userFromClaims } from "../claimsUser";
+import { accountFlagsFor, userFromClaims } from "@ai-matrx/auth";
 import { sessionVerdictFrom } from "../sessionVerdict";
 
 const anonymousJwt = userFromClaims({

@@ -20,7 +20,7 @@ import type { components } from "@ai-matrx/agents/generated/api-types";
 import { useState, useCallback, useRef, useEffect } from "react";
 import { useBackendApi } from "@/hooks/useBackendApi";
 import { ENDPOINTS } from "@/lib/api/endpoints";
-import { isOrganizationRequiredError } from "@/lib/organizations/organizationRequiredError";
+import { isOrganizationRequiredError } from "@ai-matrx/auth/organizations";
 import { consumeStream } from "@/lib/api/stream-parser";
 import type {
   PhasePayload,

@@ -135,9 +135,9 @@ jest.mock("@/components/errors/ErrorAlchemyMenu", () => ({ ErrorAlchemyMenu: () 
 jest.mock("@/components/ui/use-toast", () => ({ toast: jest.fn() }));
 jest.mock("@/styles/themes/useThemeMode", () => ({ useThemeMode: () => "light" }));
 jest.mock("@/utils/supabase/client", () => ({ supabase: {} }));
-jest.mock("@/utils/supabase/claimsUser", () => ({
+jest.mock("@ai-matrx/auth", () => ({ ...jest.requireActual("@ai-matrx/auth"), ...(() => ({
   getClaimsUser: async () => ({ data: { user: { id: "user-potter" } } }),
-}));
+}))() }));
 
 // ── the server: one stored snapshot; saves stay in flight until released ──
 const SERVER_TEXT = "Kiln log: cone 6 firing, 9 hours.";

@@ -24,9 +24,9 @@ function makeBuilder() {
 jest.mock("@/utils/supabase/client", () => ({
   supabase: { schema: () => ({ from: () => makeBuilder() }) },
 }));
-jest.mock("@/utils/supabase/claimsUser", () => ({
+jest.mock("@ai-matrx/auth", () => ({ ...jest.requireActual("@ai-matrx/auth"), ...(() => ({
   getClaimsUser: async () => ({ data: { user: { id: "me" } }, error: null }),
-}));
+}))() }));
 jest.mock("@/features/organizations/service", () => ({
   getUserOrganizations: async () => [],
   getOrganizationMembers: async () => [],

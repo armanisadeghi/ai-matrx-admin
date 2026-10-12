@@ -33,7 +33,7 @@ import {
   type FeedbackSummaryData,
   type TriageBatchData,
 } from "@/types/feedback-row-mapper";
-import { getClaimsUser } from "@/utils/supabase/resolveUser";
+import { getClaimsUser } from "@ai-matrx/auth";
 import { readAllRows } from "@ai-matrx/data/db";
 import { writeOneRow } from "@/utils/supabase/writeOne";
 

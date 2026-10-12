@@ -10,7 +10,7 @@
 
 import { useEffect, useState } from "react";
 import { extractErrorMessage } from "@/utils/errors";
-import { isOrganizationRequiredError } from "@/lib/organizations/organizationRequiredError";
+import { isOrganizationRequiredError } from "@ai-matrx/auth/organizations";
 import {
   fetchDocument,
   fetchDocumentChunks,

@@ -29,7 +29,7 @@ import { createSubtaskThunk } from "@/features/tasks/redux/thunks";
 import { EngagementPicker } from "@/features/scopes/components/active-context/engagement/EngagementPicker";
 import { EMPTY_ENGAGEMENT_SELECTION } from "@/features/scopes/components/active-context/quick-pick/engine";
 import { toast } from "@/lib/toast";
-import { isOrganizationRequiredError } from "@/lib/organizations/organizationRequiredError";
+import { isOrganizationRequiredError } from "@ai-matrx/auth/organizations";
 import type { TaskItemType } from "@/components/mardown-display/blocks/tasks/TaskChecklist";
 
 interface ImportTasksModalProps {

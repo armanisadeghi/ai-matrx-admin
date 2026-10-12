@@ -3,7 +3,7 @@
 import { useClipboard } from "@ai-matrx/kit/clipboard";
 import { copyNotify } from "@/lib/clipboard/copy-notify";
 import { useEffect, useState } from "react";
-import { isOrganizationRequiredError } from "@/lib/organizations/organizationRequiredError";
+import { isOrganizationRequiredError } from "@ai-matrx/auth/organizations";
 import { OrganizationRequiredNotice } from "@/features/organizations/components/OrganizationRequiredNotice";
 import { Copy, RefreshCw } from "lucide-react";
 

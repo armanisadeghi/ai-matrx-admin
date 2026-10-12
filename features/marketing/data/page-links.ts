@@ -26,7 +26,7 @@ import type {
   BacklinkSnapshotRow,
 } from "@/features/marketing/data/backlinks-types";
 import { supabase } from "@/utils/supabase/client";
-import { getClaimsUser } from "@/utils/supabase/claimsUser";
+import { getClaimsUser } from "@ai-matrx/auth";
 import {
   authenticatedWebDb,
   requireAuthenticatedSupabaseSession,

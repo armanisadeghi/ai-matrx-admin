@@ -20,7 +20,7 @@
 // never got the structure.
 
 import { supabase } from "@/utils/supabase/client";
-import { getClaimsUser } from "@/utils/supabase/claimsUser";
+import { getClaimsUser } from "@ai-matrx/auth";
 import { operationFailed } from "@/utils/errors";
 import { guardedUpdate } from "@ai-matrx/data/db";
 import { doorCas } from "@/lib/db/door-cas";

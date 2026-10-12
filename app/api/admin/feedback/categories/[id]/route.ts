@@ -16,7 +16,7 @@ import {
   FEEDBACK_CATEGORY_SELECT,
   platformCategoryToFeedbackRow,
 } from "../_lib/categoryRow";
-import { getClaimsUser } from "@/utils/supabase/resolveUser";
+import { getClaimsUser } from "@ai-matrx/auth";
 import { tryWriteOne, writeFailureStatus, writeOneRow } from "@/utils/supabase/writeOne";
 
 type RouteContext = { params: Promise<{ id: string }> };

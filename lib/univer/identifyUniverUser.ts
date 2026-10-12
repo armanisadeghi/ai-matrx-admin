@@ -1,6 +1,6 @@
 import { UserManagerService } from "@univerjs/core";
 import { supabase } from "@/utils/supabase/client";
-import { getClaimsUser } from "@/utils/supabase/claimsUser";
+import { getClaimsUser } from "@ai-matrx/auth";
 
 type InjectorLike = { get(id: unknown): unknown };
 

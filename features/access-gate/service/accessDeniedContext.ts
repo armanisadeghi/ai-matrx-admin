@@ -11,7 +11,7 @@
  */
 
 import { createClient } from "@/utils/supabase/client";
-import { getClaimsUser } from "@/utils/supabase/claimsUser";
+import { getClaimsUser } from "@ai-matrx/auth";
 import { deriveStatus, type AccessReadOutcome } from "./deriveStatus";
 import { isUuidShape } from "@ai-matrx/kit/uuid";
 import {

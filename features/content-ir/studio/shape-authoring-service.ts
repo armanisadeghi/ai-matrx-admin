@@ -15,7 +15,7 @@ import { guardedUpdate } from "@ai-matrx/data/db";
 import { tryWriteOne, writeOneRow } from "@/utils/supabase/writeOne";
 import { GENERIC_STRUCTURED_COMPONENT_KEY } from "@/features/content-ir/registry/schema-source-kind-components";
 
-import { getClaimsUser } from "@/utils/supabase/claimsUser";
+import { getClaimsUser } from "@ai-matrx/auth";
 import { publishedToWebPatch } from "@/lib/row-access";
 export type ShapeWriteClient = SupabaseClient<Database>;
 

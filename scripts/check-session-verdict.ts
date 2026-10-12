@@ -148,14 +148,14 @@ function selfTest(): void {
 }
 
 async function live(): Promise<Finding[]> {
-  const { PROJECT_SIGNING_KEYS } = await import("../utils/supabase/projectSigningKeys");
+  const { PROJECT_SIGNING_KEYS } = await import("@ai-matrx/auth");
   const res = await fetch("https://db.matrxserver.com/auth/v1/.well-known/jwks.json");
   const body = (await res.json()) as { keys?: { kid?: string }[] };
   const pinned = new Set(PROJECT_SIGNING_KEYS.map((k) => k.kid));
   return (body.keys ?? [])
     .filter((k) => k.kid && !pinned.has(k.kid))
     .map((k) => ({
-      where: "utils/supabase/projectSigningKeys.ts",
+      where: "@ai-matrx/auth (claims.ts PROJECT_SIGNING_KEYS)",
       what: `the live JWKS signs with kid ${k.kid}, which is not pinned`,
       remedy:
         "Add the new PUBLIC key from /auth/v1/.well-known/jwks.json to PROJECT_SIGNING_KEYS. " +

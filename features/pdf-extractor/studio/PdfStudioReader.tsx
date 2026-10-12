@@ -38,7 +38,7 @@ import {
 } from "@/features/sources/api/sourcesApi";
 import { toast } from "@/lib/toast";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
-import { isOrganizationRequiredError } from "@/lib/organizations/organizationRequiredError";
+import { isOrganizationRequiredError } from "@ai-matrx/auth/organizations";
 import { organizationRefusalMessage } from "@ai-matrx/chat/host/org";
 import React, {
   useEffect,

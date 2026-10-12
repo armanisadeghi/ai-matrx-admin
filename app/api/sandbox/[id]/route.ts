@@ -5,7 +5,7 @@ import {
   orchestratorJsonHeaders,
 } from "@/lib/sandbox/orchestrator-routing";
 import { decorateSandboxRow } from "@/lib/sandbox/decorate-sandbox-row";
-import { getClaimsUser } from "@/utils/supabase/resolveUser";
+import { getClaimsUser } from "@ai-matrx/auth";
 import { writeOneRow } from "@/utils/supabase/writeOne";
 
 function outcomeUnknown(operation: "stop" | "delete") {

@@ -29,7 +29,7 @@ import { writeOne } from "@/utils/supabase/writeOne";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
 import { withOrganizationRefusalShown } from "@ai-matrx/chat/host/org";
 
-import { getClaimsUser } from "@/utils/supabase/claimsUser";
+import { getClaimsUser } from "@ai-matrx/auth";
 export interface HandoffChannelPreferences {
   /** Opt-in. `users.user_email_preferences.browser_handoff_notifications`. */
   email: boolean;

@@ -30,7 +30,7 @@ import type { AppletRow } from "./types";
 import { appletActions } from "./slice";
 import { appletAudiencePatch, appletPublicationPatch } from "@/features/applets/lib/publication";
 
-import { getClaimsUser } from "@/utils/supabase/claimsUser";
+import { getClaimsUser } from "@ai-matrx/auth";
 import { tryWriteOne } from "@/utils/supabase/writeOne";
 interface ThunkApi {
   dispatch: AppDispatch;

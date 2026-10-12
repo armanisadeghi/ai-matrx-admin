@@ -19,7 +19,7 @@ import { createClient } from "@/utils/supabase/client";
 import { startClassCheckout } from "@/features/education/classes/service";
 import type { ClassAccessMode } from "../types";
 
-import { getClaimsUser } from "@/utils/supabase/claimsUser";
+import { getClaimsUser } from "@ai-matrx/auth";
 interface EnrollButtonProps {
   classId: string;
   title: string;

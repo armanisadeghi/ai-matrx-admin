@@ -12,7 +12,7 @@ jest.mock("@/utils/supabase/client", () => ({
     from: () => ({ insert: insertSpy }),
   },
 }));
-jest.mock("@/utils/supabase/claimsUser", () => ({ getClaimsUser: jest.fn() }));
+jest.mock("@ai-matrx/auth", () => ({ ...jest.requireActual("@ai-matrx/auth"), ...(() => ({ getClaimsUser: jest.fn() }))() }));
 jest.mock("@/features/scopes/service/associationsService", () => ({
   associationsService: { add: (...a: unknown[]) => addSpy(...a) },
 }));

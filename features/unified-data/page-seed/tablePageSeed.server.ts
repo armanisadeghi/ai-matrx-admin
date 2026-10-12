@@ -20,7 +20,7 @@ import { isUuidShape } from "@ai-matrx/kit/uuid";
 import { storeDoors, type RecordsSeed } from "@ai-matrx/records/core";
 import { askTablePageSeed, serverRowsOf } from "@ai-matrx/records-ui/first-page";
 import { createClient } from "@/utils/supabase/server";
-import { getClaimsUser } from "@/utils/supabase/claimsUser";
+import { getClaimsUser } from "@ai-matrx/auth";
 
 /** A door's answer as PostgREST gave it — plain JSON, so it streams to the browser as is. */
 export interface SeededDoorAnswer {

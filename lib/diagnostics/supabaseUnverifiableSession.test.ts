@@ -18,13 +18,8 @@ import {
   getSnapshot,
 } from "@/lib/diagnostics/errorCaptureStore";
 import { resetSessionBarrierForTests } from "@/utils/supabase/sessionBarrier";
-import {
-  UNVERIFIABLE_SESSION_NOTICE,
-  isUnverifiableTokenError,
-  isUnverifiableTokenRefusal,
-  resetUnverifiableSessionForTests,
-  unverifiableSessionLoginHref,
-} from "@/utils/supabase/unverifiableSession";
+import { UNVERIFIABLE_SESSION_NOTICE, resetUnverifiableSessionForTests, unverifiableSessionLoginHref } from "@/utils/supabase/unverifiableSession";
+import { isUnverifiableTokenError, isUnverifiableTokenRefusal } from "@ai-matrx/auth";
 
 const COOKIE = "sb-matrx-auth-v2";
 

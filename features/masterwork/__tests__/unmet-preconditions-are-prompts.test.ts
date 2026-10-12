@@ -161,7 +161,7 @@ describe("the census itself", () => {
       "surface/Create.tsx",
       [
         'import { toast } from "@/lib/toast";',
-        'import { isOrganizationRequiredError } from "@/lib/organizations/organizationRequiredError";',
+        'import { isOrganizationRequiredError } from "@ai-matrx/auth/organizations";',
         "export function Create({ title }: { title: string }) {",
         "  const other = () => {",
         '    toast.error("Pick a rulebook first.");',

@@ -13,12 +13,12 @@ import { createAdminClient } from "@/utils/supabase/adminClient";
 
 jest.mock("@/utils/supabase/server", () => ({ createClient: jest.fn() }));
 jest.mock("@/utils/supabase/adminClient", () => ({ createAdminClient: jest.fn() }));
-jest.mock("@/utils/supabase/resolveUser", () => ({
+jest.mock("@ai-matrx/auth", () => ({ ...jest.requireActual("@ai-matrx/auth"), ...(() => ({
   getClaimsUser: jest.fn(async () => ({ data: { user: { id: "member-7" } }, error: null })),
-}));
+}))() }));
 jest.mock("@/lib/organizations/ensureOrgId", () => {
   const { OrganizationRequiredServerError: Refusal } = jest.requireActual(
-    "@/lib/organizations/organizationRequiredServerError",
+    "@ai-matrx/auth/organizations",
   );
   return {
     ensureOrgIdServer: jest.fn(async (_client: unknown, orgId?: string) => {

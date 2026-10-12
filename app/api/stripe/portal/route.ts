@@ -8,7 +8,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
 import { createAdminClient } from "@/utils/supabase/adminClient";
 import { isStripeConfigured, requiredStripeMode } from "@/lib/stripe/server";
-import { getClaimsUser } from "@/utils/supabase/resolveUser";
+import { getClaimsUser } from "@ai-matrx/auth";
 import { openSubscriptionPortal } from "@/features/entitlements/stripe/portal";
 import { requestOrigin } from "@/utils/auth/request-origin";
 import {

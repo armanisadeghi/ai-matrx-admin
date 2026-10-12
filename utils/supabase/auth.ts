@@ -2,7 +2,7 @@
 // Client-side auth utilities using the browser Supabase client
 
 import { createClient } from "@/utils/supabase/client";
-import { getClaimsUser } from "@/utils/supabase/claimsUser";
+import { getClaimsUser } from "@ai-matrx/auth";
 import { pgErrorToError } from "@ai-matrx/data";
 
 export type Provider = "github" | "google" | "apple";

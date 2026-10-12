@@ -31,7 +31,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { toast } from "@/lib/toast";
 import { supabase } from "@/utils/supabase/client";
-import { getClaimsUser } from "@/utils/supabase/claimsUser";
+import { getClaimsUser } from "@ai-matrx/auth";
 import { acceptHrEmployeeInvite } from "@/features/hr/service";
 import { isHrDenied } from "@/features/hr/types";
 import { invitationSignUpHref } from "@/utils/auth/invitation-links";

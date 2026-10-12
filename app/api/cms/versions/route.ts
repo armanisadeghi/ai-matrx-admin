@@ -35,7 +35,7 @@ import type {
   ClientEntityVersion,
   ClientEntityVersionDetail,
 } from "@/features/cms/types";
-import { getClaimsUser } from "@/utils/supabase/resolveUser";
+import { getClaimsUser } from "@ai-matrx/auth";
 
 /**
  * Columns a version snapshot must never hand back, per entity.

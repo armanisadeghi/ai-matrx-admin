@@ -21,13 +21,13 @@ const rpc = jest.fn();
 jest.mock("@/utils/supabase/client", () => ({
   supabase: { rpc: (...args: unknown[]) => rpc(...args) },
 }));
-jest.mock("@/utils/supabase/claimsUser", () => ({
+jest.mock("@ai-matrx/auth", () => ({ ...jest.requireActual("@ai-matrx/auth"), ...(() => ({
   getClaimsUser: jest.fn(async () => ({
     data: {
       user: { id: "c1f0a8de-5b7e-4d2a-9a51-3e0f6c2b7d11", email: "front-desk@cedarridgevet.test", user_metadata: { full_name: "Dana Whitfield" } },
     },
   })),
-}));
+}))() }));
 let activeOrganizationId: string | null = null;
 jest.mock("@/lib/organizations/activeOrg", () => ({
   getActiveOrgId: () => activeOrganizationId,

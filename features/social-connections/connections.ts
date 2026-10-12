@@ -1,6 +1,6 @@
 import type { Tables } from "@/types/database.types";
 import { createClient } from "@/utils/supabase/client";
-import { getClaimsUser } from "@/utils/supabase/claimsUser";
+import { getClaimsUser } from "@ai-matrx/auth";
 import { operationFailed } from "@/utils/errors";
 
 export type SocialConnection = Pick<

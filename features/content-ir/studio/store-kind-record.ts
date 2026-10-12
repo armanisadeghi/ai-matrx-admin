@@ -55,7 +55,7 @@ import { captureError } from "@/lib/diagnostics/errorCaptureStore";
 import { saveKindInstance, type SaveKindInstanceResult } from "./instance-service";
 import { notifyKindRecordsChanged } from "@/features/content-ir/records/record-change-bus";
 
-import { getClaimsUser } from "@/utils/supabase/claimsUser";
+import { getClaimsUser } from "@ai-matrx/auth";
 /** The association contract the server writes when a chat turn emits a kind. */
 export const PRODUCED_BY_LABEL = "produced_by";
 export const MESSAGE_SOURCE_TYPE = "message";

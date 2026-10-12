@@ -21,7 +21,7 @@ import { noteEditBaseFromRecord } from "../utils/saveVerification";
 import { readAllRows } from "@ai-matrx/data/db";
 import { createAsyncThunk, unwrapResult, type ThunkAction, type ThunkDispatch, type UnknownAction } from "@reduxjs/toolkit";
 import { supabase } from "@/utils/supabase/client";
-import { getClaimsUser } from "@/utils/supabase/claimsUser";
+import { getClaimsUser } from "@ai-matrx/auth";
 import {
   isMissingSessionError,
   runWithSessionRetry,

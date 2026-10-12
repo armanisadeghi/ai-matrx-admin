@@ -44,7 +44,7 @@ import { youTubeWatchUrl } from "@ai-matrx/rich-content/utils/youtube";
 import {
   OrganizationRequiredNotice,
 } from "@/features/organizations/components/OrganizationRequiredNotice";
-import { isOrganizationRequiredError } from "@/lib/organizations/organizationRequiredError";
+import { isOrganizationRequiredError } from "@ai-matrx/auth/organizations";
 import { YouTubeVideoPreviewPanel } from "./YouTubeVideoPreview";
 import {
   formatYouTubeCount,

@@ -51,7 +51,7 @@ import {
   type ChannelSpec,
 } from "@ai-matrx/realtime";
 
-import { getClaimsUser } from "@/utils/supabase/claimsUser";
+import { getClaimsUser } from "@ai-matrx/auth";
 /**
  * Matrx Local's per-user bridge channel (its engine subscribes to this).
  * The topic string is the PEER's contract — see the file header.

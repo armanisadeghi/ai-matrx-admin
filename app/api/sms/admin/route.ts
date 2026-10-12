@@ -13,7 +13,7 @@ import { resolveSystemOrgId } from '@/lib/organizations/systemOrg';
 import { sendAndLogSms } from '@/lib/sms/send';
 import { sendAdminMessageSms } from '@/lib/sms/notificationService';
 import { updateAllWebhookUrls } from '@/lib/sms/numbers';
-import { getClaimsUser } from "@/utils/supabase/resolveUser";
+import { getClaimsUser } from "@ai-matrx/auth";
 
 export async function POST(request: NextRequest) {
   try {

@@ -3,7 +3,7 @@ import { listMicrosoftConnections } from "@/features/microsoft-integration/servi
 import { listStorageConnections } from "@/features/storage-connections/service";
 import type { StorageBrowseProvider } from "@/features/files/storage-sources/types";
 
-import { getClaimsUser } from "@/utils/supabase/claimsUser";
+import { getClaimsUser } from "@ai-matrx/auth";
 export interface StoragePickerAccount {
   id: string;
   provider: StorageBrowseProvider;

@@ -19,7 +19,7 @@ import { readAllRows } from "@ai-matrx/data/db";
 import { supabase } from "@/utils/supabase/client";
 import { tryWriteOne, writeOneRow } from "@/utils/supabase/writeOne";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
-import { isOrganizationRequiredError } from "@/lib/organizations/organizationRequiredError";
+import { isOrganizationRequiredError } from "@ai-matrx/auth/organizations";
 import { recordUnavailable } from "@/lib/records/recordUnavailable";
 import { runKeyPath, withRunKey } from "@/features/education/convert/runKey";
 import type {

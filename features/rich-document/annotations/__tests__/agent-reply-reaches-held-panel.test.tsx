@@ -41,7 +41,7 @@ jest.mock("@/features/scopes/host/associationsStore", () => ({
 }));
 jest.mock("@/features/scopes/registry/entityRegistry", () => ({ tryGetEntityInfo: () => null }));
 jest.mock("@/utils/auth/getUserId", () => ({ getUserId: () => "me" }));
-jest.mock("@/lib/organizations/organizationRequiredError", () => ({ isOrganizationRequiredError: () => false }));
+jest.mock("@ai-matrx/auth/organizations", () => ({ ...jest.requireActual("@ai-matrx/auth/organizations"), ...(() => ({ isOrganizationRequiredError: () => false }))() }));
 jest.mock("@ai-matrx/chat/host/org", () => ({
   ...jest.requireActual("@ai-matrx/chat/host/org"),
   ...(() => ({ organizationRefusalMessage: () => "" }))(),

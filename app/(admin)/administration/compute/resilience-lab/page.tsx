@@ -15,7 +15,7 @@
  */
 
 import React, { useState } from "react";
-import { isOrganizationRequiredError } from "@/lib/organizations/organizationRequiredError";
+import { isOrganizationRequiredError } from "@ai-matrx/auth/organizations";
 import { extractErrorMessage } from "@/utils/errors";
 import {
   AlertTriangle,

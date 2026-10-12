@@ -17,7 +17,7 @@ import {
   createResearchTopicsScope,
 } from "@/features/surfaces/manifests/research-topics.manifest";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
-import { isOrganizationRequiredError } from "@/lib/organizations/organizationRequiredError";
+import { isOrganizationRequiredError } from "@ai-matrx/auth/organizations";
 import { createTopic, updateTopic, updateTopicMeta } from "../service";
 import { archiveTopic, restoreTopic } from "./actions";
 import type { ResearchTopicListRow } from "./types";

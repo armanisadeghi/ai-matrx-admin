@@ -7,7 +7,7 @@
 // tier, one row per (episode_id, kind), upsert-on-regenerate.
 
 import { supabase } from "@/utils/supabase/client";
-import { getClaimsUser } from "@/utils/supabase/claimsUser";
+import { getClaimsUser } from "@ai-matrx/auth";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
 import type { PcArticle, PcArticleKind } from "./types";
 import { writeOneRow } from "@/utils/supabase/writeOne";

@@ -130,9 +130,9 @@ jest.mock("@/features/organizations/service", () => ({
   ],
 }));
 
-jest.mock("@/utils/supabase/claimsUser", () => ({
+jest.mock("@ai-matrx/auth", () => ({ ...jest.requireActual("@ai-matrx/auth"), ...(() => ({
   getClaimsUser: async () => ({ data: { user: { id: USER } }, error: null }),
-}));
+}))() }));
 
 jest.mock("@/utils/supabase/writeOne", () => ({
   tryWriteOne: async () => ({ error: null }),

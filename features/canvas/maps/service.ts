@@ -13,7 +13,7 @@
 import { supabase } from "@/utils/supabase/client";
 import { requireUserId } from "@/utils/auth/getUserId";
 import { operationFailed } from "@/utils/errors";
-import { isOrganizationRequiredError } from "@/lib/organizations/organizationRequiredError";
+import { isOrganizationRequiredError } from "@ai-matrx/auth/organizations";
 import { recordUnavailable } from "@/lib/records/recordUnavailable";
 import { buildSearchOr } from "@/utils/supabase-search";
 import {

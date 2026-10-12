@@ -22,7 +22,7 @@ import { createClient } from "@/utils/supabase/server";
 import { sandboxDisplayName } from "@/lib/sandbox/format";
 import { isJsonObject } from "@/types/json";
 import { filesDb } from "@/features/files/filesDb";
-import { getClaimsUser } from "@/utils/supabase/resolveUser";
+import { getClaimsUser } from "@ai-matrx/auth";
 import { isRestDeadlineError } from "@/utils/supabase/restDeadline";
 
 const DEVICE_FRESHNESS_WINDOW_MS = 10 * 60 * 1000;

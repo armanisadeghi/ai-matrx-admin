@@ -65,9 +65,9 @@ const fakeDb = {
 jest.mock("@/utils/supabase/server", () => ({
   createClient: jest.fn(async () => ({ auth: { getSession: async () => ({ data: { session: null } }) } })),
 }));
-jest.mock("@/utils/supabase/resolveUser", () => ({
+jest.mock("@ai-matrx/auth", () => ({ ...jest.requireActual("@ai-matrx/auth"), ...(() => ({
   getClaimsUser: async () => ({ data: { user: { id: "owner-1", email: "owner@example.test" } }, error: null }),
-}));
+}))() }));
 jest.mock("@supabase/supabase-js", () => ({ createClient: () => fakeDb }));
 jest.mock("@/app/api/cms/_lib/cmsDb", () => ({
   getCmsClient: () => fakeDb,

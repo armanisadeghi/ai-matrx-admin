@@ -14,7 +14,7 @@
 // only part that goes to the server.
 
 import { supabase } from "@/utils/supabase/client";
-import { getClaimsUser } from "@/utils/supabase/claimsUser";
+import { getClaimsUser } from "@ai-matrx/auth";
 import { guardedUpdate } from "@ai-matrx/data/db";
 import { doorCas } from "@/lib/db/door-cas";
 import { operationFailed } from "@/utils/errors";

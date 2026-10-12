@@ -14,7 +14,7 @@ import {
   FEEDBACK_CATEGORY_SELECT,
   platformCategoryToFeedbackRow,
 } from "./_lib/categoryRow";
-import { getClaimsUser } from "@/utils/supabase/resolveUser";
+import { getClaimsUser } from "@ai-matrx/auth";
 
 function authErrorResponse(error: unknown): NextResponse | null {
   const message = error instanceof Error ? error.message : "";

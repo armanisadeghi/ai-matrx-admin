@@ -28,7 +28,7 @@ import { toast } from "@/lib/toast";
 import { getUserMessage } from "@/lib/api/errors";
 import { resolveBaseUrl } from "@/lib/python-client";
 import { createClient } from "@/utils/supabase/client";
-import { getClaimsUser } from "@/utils/supabase/claimsUser";
+import { getClaimsUser } from "@ai-matrx/auth";
 import { operationFailed } from "@/utils/errors";
 import { isJsonObject } from "@/types/json";
 import {

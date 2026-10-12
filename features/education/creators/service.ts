@@ -21,7 +21,7 @@ import type { CreatorProfileMine, FeaturedItem, CreatorLink } from "./types";
 // answer and replays the call once. Cancelling leaves nothing written.
 import { fetchWithOrganization } from "@/lib/organizations/fetchWithOrganization";
 
-import { getClaimsUser } from "@/utils/supabase/claimsUser";
+import { getClaimsUser } from "@ai-matrx/auth";
 /**
  * The handle RPCs are the ONE place a DB message is written FOR the user:
  * `creator_normalize_handle` / `creator_claim_handle` raise authored sentences

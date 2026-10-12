@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase/server';
 import { getUserChatHistory } from '@ai-matrx/chat/public-chat/services/cx-chat';
-import { getClaimsUser } from "@/utils/supabase/resolveUser";
+import { getClaimsUser } from "@ai-matrx/auth";
 
 /**
  * GET /api/cx-chat/history

@@ -24,7 +24,7 @@ import type {
   WorkbookSnapshotOrigin,
 } from "@/features/data-tables/types";
 
-import { getClaimsUser } from "@/utils/supabase/claimsUser";
+import { getClaimsUser } from "@ai-matrx/auth";
 // ─── workbooks ────────────────────────────────────────────────────────────────
 
 const WORKBOOK_SOURCE_LABELS: Record<string, string> = {

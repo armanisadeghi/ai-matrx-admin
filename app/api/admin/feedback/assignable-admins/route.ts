@@ -13,7 +13,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
 import type { FeedbackAssignableAdmin } from "@/types/feedback.types";
-import { getClaimsUser } from "@/utils/supabase/resolveUser";
+import { getClaimsUser } from "@ai-matrx/auth";
 
 export async function GET() {
   try {

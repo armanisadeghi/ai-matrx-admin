@@ -1,7 +1,7 @@
 import { readAllRows } from "@ai-matrx/data/db";
 import { isJsonObject } from "@/types/json";
 import { createClient } from "@/utils/supabase/client";
-import { getClaimsUser } from "@/utils/supabase/claimsUser";
+import { getClaimsUser } from "@ai-matrx/auth";
 import { startOAuthPopup } from "@/utils/oauth-popup";
 import type {
   GitHubAccount,

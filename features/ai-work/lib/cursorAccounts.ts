@@ -11,7 +11,7 @@
 
 import { postJson, getJson } from "@/lib/python-client";
 import { createClient } from "@/utils/supabase/client";
-import { getClaimsUser } from "@/utils/supabase/claimsUser";
+import { getClaimsUser } from "@ai-matrx/auth";
 import { operationFailed } from "@/utils/errors";
 
 export const CURSOR_DASHBOARD_URL = "https://cursor.com/dashboard?tab=integrations";

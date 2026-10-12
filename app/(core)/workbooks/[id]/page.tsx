@@ -6,7 +6,7 @@ import { Loader2 } from "lucide-react";
 
 import { Input } from "@ai-matrx/design-system/controls";
 import { supabase } from "@/utils/supabase/client";
-import { getClaimsUser } from "@/utils/supabase/claimsUser";
+import { getClaimsUser } from "@ai-matrx/auth";
 import { ShareButton } from "@/features/sharing/components/ShareButton";
 import { ReferenceCopyButton } from "@/features/matrx-envelope/components/ReferenceCopyButton";
 import { AccessGate } from "@/features/access-gate/components/AccessGate";

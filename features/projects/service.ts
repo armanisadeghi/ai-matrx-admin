@@ -20,7 +20,7 @@ import { readAllRows } from "@ai-matrx/data/db";
 import { requireUserId } from "@/utils/auth/getUserId";
 import { readInChunks } from "@/features/scopes/service/inChunks";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
-import { isOrganizationRequiredError } from "@/lib/organizations/organizationRequiredError";
+import { isOrganizationRequiredError } from "@ai-matrx/auth/organizations";
 import { membershipsService } from "@/features/organizations/service/membershipsService";
 import {
   invitationsService,

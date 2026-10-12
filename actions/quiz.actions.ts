@@ -5,7 +5,7 @@ import type { QuizState } from "@/components/mardown-display/blocks/quiz/quiz-ty
 import type { Json } from "@/types/database.types";
 import type { QuizSession } from "@/types/quiz-session";
 import { mapQuizSessionRow } from "@/utils/quiz-session-mapper";
-import { getClaimsUser } from "@/utils/supabase/resolveUser";
+import { getClaimsUser } from "@ai-matrx/auth";
 import { tryWriteOne, writeOneRow } from "@/utils/supabase/writeOne";
 
 export type { QuizSession } from "@/types/quiz-session";

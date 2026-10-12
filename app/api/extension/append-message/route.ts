@@ -36,7 +36,7 @@ import {
   AppendMessageRequestSchema,
   type AppendMessageRequest,
 } from "@/lib/types/bridge-envelope";
-import { getClaimsUser } from "@/utils/supabase/resolveUser";
+import { getClaimsUser } from "@ai-matrx/auth";
 
 // Request validation lives in `@/lib/types/bridge-envelope` so the
 // extension SW, the demo page, and this route all share one shape.

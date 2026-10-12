@@ -20,9 +20,9 @@ jest.mock("@/utils/supabase/client", () => {
   const client = { schema: () => ({ from: query }) };
   return { createClient: () => client, supabase: client };
 });
-jest.mock("@/utils/supabase/claimsUser", () => ({
+jest.mock("@ai-matrx/auth", () => ({ ...jest.requireActual("@ai-matrx/auth"), ...(() => ({
   getClaimsUser: async () => ({ data: { user: { id: "member-1" } }, error: null }),
-}));
+}))() }));
 
 import { resolveCredentialHome } from "../vault-service";
 

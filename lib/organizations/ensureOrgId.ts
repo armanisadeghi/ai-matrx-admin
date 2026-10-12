@@ -12,7 +12,7 @@
 // `ensureOrgIdServer` REFUSES with the caller's memberships attached.
 
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { organizationRequired } from "@/lib/organizations/organizationRequiredServerError";
+import { organizationRequired } from "@ai-matrx/auth/organizations";
 import { getActiveOrgId } from "@/lib/organizations/activeOrg";
 // Cycle-free leaf (same constraint as activeOrg.ts) — never `@/lib/redux/store`.
 import { getStoreSingleton } from "@/lib/redux/store-singleton";

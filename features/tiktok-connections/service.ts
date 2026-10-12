@@ -1,6 +1,6 @@
 import { apiPost } from "@/lib/api/typed-client";
 import { createClient } from "@/utils/supabase/client";
-import { getClaimsUser } from "@/utils/supabase/claimsUser";
+import { getClaimsUser } from "@ai-matrx/auth";
 import { operationFailed } from "@/utils/errors";
 
 export async function listTikTokConnections(signal?: AbortSignal) {

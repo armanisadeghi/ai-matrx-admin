@@ -34,7 +34,7 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
 import { safeRelativePath } from "@/utils/auth/safe-redirect";
-import { accountFlagsFor, type ApiClaimsUser } from "./claimsUser";
+import { accountFlagsFor, type ApiClaimsUser } from "@ai-matrx/auth";
 import { getServerAuth } from "./getServerAuth";
 
 export type SessionState = "signed_in" | "signed_out" | "unverified";

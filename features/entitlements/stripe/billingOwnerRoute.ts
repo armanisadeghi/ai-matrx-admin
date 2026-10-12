@@ -16,11 +16,7 @@
 
 import { NextResponse } from "next/server";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import {
-  OrganizationRequiredServerError,
-  organizationRequiredResponse,
-  readCallerMemberships,
-} from "@/lib/organizations/organizationRequiredResponse";
+import { OrganizationRequiredServerError, organizationRequiredEnvelope, readCallerMemberships } from "@ai-matrx/auth/organizations";
 import { BillingOrganizationRequiredError } from "./billingOwner";
 
 export { BillingOrganizationRequiredError, isBillingOrganizationRequiredError } from "./billingOwner";
@@ -33,10 +29,6 @@ export async function billingOrganizationRequiredResponse(
   client: SupabaseClient,
   error: BillingOrganizationRequiredError,
 ): Promise<NextResponse> {
-  return organizationRequiredResponse(
-    new OrganizationRequiredServerError(
-      error.message,
-      await readCallerMemberships(client),
-    ),
-  );
+  const refusal = new OrganizationRequiredServerError(error.message, await readCallerMemberships(client));
+  return NextResponse.json(organizationRequiredEnvelope(refusal), { status: 400 });
 }

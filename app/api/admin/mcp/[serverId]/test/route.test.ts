@@ -6,7 +6,7 @@ const mockCreateAdminClient = jest.fn();
 const mockGetClaimsUser = jest.fn();
 jest.mock("@/utils/supabase/server", () => ({ createClient: mockCreateClient }));
 jest.mock("@/utils/supabase/adminClient", () => ({ createAdminClient: mockCreateAdminClient }));
-jest.mock("@/utils/supabase/resolveUser", () => ({ getClaimsUser: mockGetClaimsUser }));
+jest.mock("@ai-matrx/auth", () => ({ ...jest.requireActual("@ai-matrx/auth"), ...(() => ({ getClaimsUser: mockGetClaimsUser }))() }));
 import { POST } from "./route";
 
 const mockAdminRow = jest.fn();

@@ -21,7 +21,7 @@ import {
   type OutreachLane,
 } from "./types";
 
-import { getClaimsUser } from "@/utils/supabase/claimsUser";
+import { getClaimsUser } from "@ai-matrx/auth";
 /**
  * Ask the ONE authority whether this recipient may be sent to right now.
  *

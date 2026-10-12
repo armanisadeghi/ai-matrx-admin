@@ -4,12 +4,9 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { createClient } from "@/utils/supabase/server";
 import { createAdminClient } from "@/utils/supabase/adminClient";
 import { randomBytes } from 'crypto';
-import { getClaimsUser } from "@/utils/supabase/resolveUser";
+import { getClaimsUser } from "@ai-matrx/auth";
 import { ensureOrgIdServer } from "@/lib/organizations/ensureOrgId";
-import {
-  isOrganizationRequiredServerError,
-  organizationRequiredResponse,
-} from "@/lib/organizations/organizationRequiredResponse";
+import { isOrganizationRequiredServerError, organizationRequiredResponse } from "@ai-matrx/auth/organizations";
 
 /**
  * Generate Extension Auth Code

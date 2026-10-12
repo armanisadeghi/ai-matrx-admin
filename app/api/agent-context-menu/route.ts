@@ -1,7 +1,7 @@
 import { createClient } from "@/utils/supabase/server";
 import { NextRequest, NextResponse } from "next/server";
 import { contextMenuView, SHORTCUT_STORAGE_CUTOVER } from "@/lib/supabase/shortcutStorage";
-import { getClaimsUser } from "@/utils/supabase/resolveUser";
+import { getClaimsUser } from "@ai-matrx/auth";
 import { extractErrorMessage } from "@/utils/errors";
 
 /** Supabase's auth cookie (`sb-<ref>-auth-token`, possibly chunked `.0`, `.1`). */

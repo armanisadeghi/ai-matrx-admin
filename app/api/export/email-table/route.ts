@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 
 import { emailTableExport } from "@/lib/email/exportService";
 import { createClient } from "@/utils/supabase/server";
-import { getClaimsUser } from "@/utils/supabase/resolveUser";
+import { getClaimsUser } from "@ai-matrx/auth";
 
 const EMAIL_FORMATS = ["csv", "json", "markdown"] as const;
 type EmailFormat = (typeof EMAIL_FORMATS)[number];

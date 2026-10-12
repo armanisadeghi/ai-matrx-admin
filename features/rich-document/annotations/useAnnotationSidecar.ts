@@ -51,7 +51,7 @@ import type {
   ResolvedItem,
   SidecarCapabilities,
 } from "./types";
-import { isOrganizationRequiredError } from "@/lib/organizations/organizationRequiredError";
+import { isOrganizationRequiredError } from "@ai-matrx/auth/organizations";
 import { organizationRefusalMessage } from "@ai-matrx/chat/host/org";
 import { tryGetEntityInfo } from "@/features/scopes/registry/entityRegistry";
 import { createEchoLedger, isOwnEcho } from "./echo";

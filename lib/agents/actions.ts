@@ -2,7 +2,7 @@
 
 import { createClient } from "@/utils/supabase/server";
 import { hasAdminPower } from "@/utils/auth/adminLaneServer";
-import { getClaimsUser } from "@/utils/supabase/claimsUser";
+import { getClaimsUser } from "@ai-matrx/auth";
 import { redirect } from "next/navigation";
 import type { AgentDefinition } from "@ai-matrx/chat/agents/types/agent-definition.types";
 import type { Database } from "@/types/database.types";

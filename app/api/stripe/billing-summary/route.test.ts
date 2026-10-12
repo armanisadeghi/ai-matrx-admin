@@ -9,7 +9,6 @@ const mockListInvoices = jest.fn();
 const mockRetrieveInvoice = jest.fn();
 const mockFilters: unknown[][] = [];
 jest.mock("@/utils/supabase/server", () => ({ createClient: async () => ({ auth: { getClaims: mockClaims } }) }));
-jest.mock("@/utils/supabase/resolveUser", () => jest.requireActual("@/utils/supabase/claimsUser"));
 jest.mock("@/utils/supabase/adminClient", () => ({ createAdminClient: () => ({ schema: () => ({ from: () => {
   const query = {
     select: () => query,

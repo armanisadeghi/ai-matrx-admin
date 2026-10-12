@@ -29,7 +29,7 @@ import {
   type FileRagStatus,
 } from "@/features/rag/api/rag-jobs";
 import { subscribeToFileRagJob } from "@/features/rag/hooks/rag-job-realtime";
-import { isOrganizationRequiredError } from "@/lib/organizations/organizationRequiredError";
+import { isOrganizationRequiredError } from "@ai-matrx/auth/organizations";
 
 /** Match the `detail` shape `useFileIngest.ts` dispatches for this event. */
 const PROCESSED_EVENT = "cloud-files:document-processed";

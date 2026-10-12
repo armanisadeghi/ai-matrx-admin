@@ -1,7 +1,7 @@
 import { createClient } from "@/utils/supabase/server";
 import { NextResponse } from "next/server";
 import { shortcutTable, contextMenuView } from "@/lib/supabase/shortcutStorage";
-import { getClaimsUser } from "@/utils/supabase/resolveUser";
+import { getClaimsUser } from "@ai-matrx/auth";
 
 // Dev-only diagnostic for the agent-shortcuts stack.
 // Returns row counts + samples from every table the context menu depends on,

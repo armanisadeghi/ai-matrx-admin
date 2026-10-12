@@ -20,7 +20,7 @@ import { getAccessTokenOrNull, requestRaw } from "@/lib/python-client";
 import { invalidateProcessedDocumentPages } from "./useProcessedDocumentPages";
 import { markAutoCleanHandled } from "./useAutoCleanOnOpen";
 import { clearPdfRunRequest, savePdfRunRequest } from "../state/runRequests";
-import { isOrganizationRequiredError } from "@/lib/organizations/organizationRequiredError";
+import { isOrganizationRequiredError } from "@ai-matrx/auth/organizations";
 import { consumeBatchExtractNdjsonStream } from "../service/batchExtractDebugStream";
 import {
   appendBatchExtractDebugLine,

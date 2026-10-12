@@ -99,12 +99,8 @@ import {
   bypassesSessionWait,
   isAnonymousByDesign,
 } from "@/utils/supabase/anonymousByDesignDoors";
-import {
-  confirmUnverifiableSession,
-  endUnverifiableSession,
-  isUnverifiableTokenRefusal,
-  type UnverifiableSessionAuth,
-} from "@/utils/supabase/unverifiableSession";
+import { confirmUnverifiableSession, endUnverifiableSession, type UnverifiableSessionAuth } from "@/utils/supabase/unverifiableSession";
+import { isUnverifiableTokenRefusal } from "@ai-matrx/auth";
 
 /** How long a request may wait for the first auth report before going anyway. */
 export const SESSION_ATTACH_BUDGET_MS = 3_000;

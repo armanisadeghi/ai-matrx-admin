@@ -26,7 +26,7 @@ import appContextReducer, {
   setOrganization,
 } from "@/lib/redux/slices/appContextSlice";
 import { OrganizationContextError } from "@ai-matrx/agents/matrx";
-import { isOrganizationRequiredError } from "@/lib/organizations/organizationRequiredError";
+import { isOrganizationRequiredError } from "@ai-matrx/auth/organizations";
 import { buildRehydrateAction } from "@/lib/sync/engine/rehydrate";
 
 interface RpcResult {

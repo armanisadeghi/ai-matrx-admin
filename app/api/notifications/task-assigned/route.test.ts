@@ -1,6 +1,6 @@
 import { POST } from "./route";
 import { createClient } from "@/utils/supabase/server";
-import { getClaimsUser } from "@/utils/supabase/resolveUser";
+import { getClaimsUser } from "@ai-matrx/auth";
 import { sendDm } from "@/lib/services/system-dm";
 import { sendTaskAssignmentEmail } from "@/lib/email/notificationService";
 import { createAdminClient } from "@/utils/supabase/adminClient";
@@ -14,7 +14,7 @@ jest.mock("next/server", () => ({
   },
 }));
 jest.mock("@/utils/supabase/server", () => ({ createClient: jest.fn() }));
-jest.mock("@/utils/supabase/resolveUser", () => ({ getClaimsUser: jest.fn() }));
+jest.mock("@ai-matrx/auth", () => ({ ...jest.requireActual("@ai-matrx/auth"), ...(() => ({ getClaimsUser: jest.fn() }))() }));
 jest.mock("@/lib/services/system-dm", () => ({ sendDm: jest.fn() }));
 jest.mock("@/lib/email/notificationService", () => ({ sendTaskAssignmentEmail: jest.fn() }));
 jest.mock("@/utils/supabase/adminClient", () => ({ createAdminClient: jest.fn() }));

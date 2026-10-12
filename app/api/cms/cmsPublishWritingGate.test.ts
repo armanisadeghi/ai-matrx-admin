@@ -59,9 +59,9 @@ const mainDb = {
 };
 
 jest.mock("@/utils/supabase/server", () => ({ createClient: jest.fn(async () => mainDb) }));
-jest.mock("@/utils/supabase/resolveUser", () => ({
+jest.mock("@ai-matrx/auth", () => ({ ...jest.requireActual("@ai-matrx/auth"), ...(() => ({
   getClaimsUser: async () => ({ data: { user: { id: "owner-1", email: "owner@example.test" } }, error: null }),
-}));
+}))() }));
 jest.mock("@/app/api/cms/_lib/cmsDb", () => ({
   getCmsClient: () => cmsDb,
   verifyPageOwnership: async () => true,

@@ -16,7 +16,7 @@ let claims: { data: { user: { id: string } | null }; error: Error | null } = {
 };
 const rpc = jest.fn(async () => ({ data: { disclosure: "full" }, error: null }));
 jest.mock("@/utils/supabase/client", () => ({ createClient: () => ({ rpc }) }));
-jest.mock("@/utils/supabase/claimsUser", () => ({ getClaimsUser: async () => claims }));
+jest.mock("@ai-matrx/auth", () => ({ ...jest.requireActual("@ai-matrx/auth"), ...(() => ({ getClaimsUser: async () => claims }))() }));
 jest.mock("@/lib/organizations/fetchWithOrganization", () => ({ fetchWithOrganization: jest.fn() }));
 
 import { fetchAccessDeniedContext } from "./accessDeniedContext";

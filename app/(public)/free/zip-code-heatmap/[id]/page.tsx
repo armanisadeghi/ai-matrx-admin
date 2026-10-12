@@ -8,7 +8,7 @@ import { AccessGate } from '@/features/access-gate/components/AccessGate';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { supabase } from '@/utils/supabase/client';
-import { getClaimsUser } from '@/utils/supabase/claimsUser';
+import { getClaimsUser } from "@ai-matrx/auth";
 import { recordUnavailable } from '@/lib/records/recordUnavailable';
 import ZipCodeMap from "../components/ZipCodeMap";
 import ColorLegend from "../components/ColorLegend";

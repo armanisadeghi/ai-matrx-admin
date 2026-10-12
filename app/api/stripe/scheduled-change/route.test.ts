@@ -11,7 +11,7 @@ jest.mock("@/utils/supabase/server", () => ({
 jest.mock("@/utils/supabase/adminClient", () => ({
   createAdminClient,
 }));
-jest.mock("@/utils/supabase/resolveUser", () => ({ getClaimsUser: claims }));
+jest.mock("@ai-matrx/auth", () => ({ ...jest.requireActual("@ai-matrx/auth"), ...(() => ({ getClaimsUser: claims }))() }));
 jest.mock("@/features/account-lifecycle/accountClosure", () => ({
   readClosureJournal: jest.fn(),
 }));

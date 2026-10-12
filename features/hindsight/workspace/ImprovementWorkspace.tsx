@@ -36,7 +36,7 @@ import { MobilePanelShell } from "@/features/shell/components/header/templates/M
 import {
   OrganizationRequiredNotice,
 } from "@/features/organizations/components/OrganizationRequiredNotice";
-import { isOrganizationRequiredError } from "@/lib/organizations/organizationRequiredError";
+import { isOrganizationRequiredError } from "@ai-matrx/auth/organizations";
 
 import { getEnrollment, listEnrollments } from "../api";
 import type { Finding } from "../types";

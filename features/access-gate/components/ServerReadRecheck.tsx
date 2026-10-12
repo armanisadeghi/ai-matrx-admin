@@ -11,7 +11,7 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
-import { getClaimsUser } from "@/utils/supabase/claimsUser";
+import { getClaimsUser } from "@ai-matrx/auth";
 import { decideServerReadRecheck } from "@/features/access-gate/service/serverReadRecheck";
 
 type BrowserClient = ReturnType<typeof createClient>;

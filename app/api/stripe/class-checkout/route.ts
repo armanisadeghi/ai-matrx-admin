@@ -28,7 +28,7 @@ import {
   MIN_CLASS_PRICE_CENTS,
 } from "@/lib/stripe/connect";
 import { isJsonObject } from "@/types/json";
-import { getClaimsUser } from "@/utils/supabase/resolveUser";
+import { getClaimsUser } from "@ai-matrx/auth";
 import {
   billingOwnerRef,
   readRequestOrganizationId,

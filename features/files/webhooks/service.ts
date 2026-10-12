@@ -17,7 +17,7 @@ import type {
   WebhookDelivery,
 } from "./types";
 
-import { getClaimsUser } from "@/utils/supabase/claimsUser";
+import { getClaimsUser } from "@ai-matrx/auth";
 import { readListRpc } from "@/lib/entity-list/readListRpc";
 import type { LaneRow } from "@/lib/entity-list/laneRows";
 // 🚨 THE SIGNING SECRET IS MINTED WHERE IT IS VERIFIED — not here. (SECURITY-SWEEP, 2026-09-21.)

@@ -29,7 +29,7 @@ import { getDocument } from "@/features/documents/document-service";
 import { isServiceFailure, type DocumentRow } from "@/features/data-tables/types";
 import { cn } from "@/lib/utils";
 
-import { getClaimsUser } from "@/utils/supabase/claimsUser";
+import { getClaimsUser } from "@ai-matrx/auth";
 import { canActOn } from "@/features/access-gate/service/canActOn";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { printMarkdown } from "@ai-matrx/print/markdown";

@@ -4,7 +4,7 @@ import { createClient } from "@/utils/supabase/server";
 import { checkIsSuperAdmin } from "@/utils/supabase/userSessionData";
 import { SYSTEM_ORGANIZATION_ID } from "@/constants/platform-orgs";
 import { notifyFromSql, userIdForEmail } from "@/lib/notifications/notifyFromSql";
-import { getClaimsUser } from "@/utils/supabase/resolveUser";
+import { getClaimsUser } from "@ai-matrx/auth";
 import { tryWriteOne, writeFailureStatus } from "@/utils/supabase/writeOne";
 
 /**

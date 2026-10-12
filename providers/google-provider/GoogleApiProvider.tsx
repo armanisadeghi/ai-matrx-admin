@@ -10,7 +10,7 @@ import React, {
 } from "react";
 import { GOOGLE_IDENTITY_SCOPES } from "@/lib/googleScopes";
 import { createClient } from "@/utils/supabase/client";
-import { getClaimsUser } from "@/utils/supabase/claimsUser";
+import { getClaimsUser } from "@ai-matrx/auth";
 import type {
   GooglePickerNamespace,
   GooglePlatformApi,

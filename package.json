@@ -942,6 +942,7 @@
     "@ai-matrx/alchemy": "latest",
     "@ai-matrx/applets": "latest",
     "@ai-matrx/associations": "latest",
+    "@ai-matrx/auth": "latest",
     "@ai-matrx/browser-audio": "latest",
     "@ai-matrx/canvas": "latest",
     "@ai-matrx/capture": "latest",

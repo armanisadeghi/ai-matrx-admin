@@ -14,7 +14,7 @@ import { guardedUpdate } from "@ai-matrx/data/db";
 import { operationFailed } from "@/utils/errors";
 import { componentSourceGate } from "@ai-matrx/code-runtime/gate";
 
-import { getClaimsUser } from "@/utils/supabase/claimsUser";
+import { getClaimsUser } from "@ai-matrx/auth";
 export type KindComponentCodeClient = SupabaseClient<Database>;
 
 export interface KindComponentCodeRecord {

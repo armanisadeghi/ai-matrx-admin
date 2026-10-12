@@ -17,9 +17,9 @@ builder.maybeSingle = async () => ({ data: null, error: null });
 jest.mock("@/utils/supabase/server", () => ({
   createClient: async () => ({ schema: () => ({ from: () => builder }) }),
 }));
-jest.mock("@/utils/supabase/resolveUser", () => ({
+jest.mock("@ai-matrx/auth", () => ({ ...jest.requireActual("@ai-matrx/auth"), ...(() => ({
   getClaimsUser: async () => ({ data: { user: { id: "user-1" } }, error: null }),
-}));
+}))() }));
 jest.mock("@/utils/supabase/writeOne", () => ({ tryWriteOne: jest.fn(), writeOneRow: jest.fn() }));
 
 import { findExistingQuizByHash } from "../quiz.actions";

@@ -33,7 +33,7 @@ import {
   createClient,
   type JwtPayload,
 } from "@supabase/supabase-js";
-import { getClaimsUser } from "@/utils/supabase/resolveUser";
+import { getClaimsUser } from "@ai-matrx/auth";
 
 const USER_ID = "87a6e699-3622-4869-8843-d0867456c0dd";
 

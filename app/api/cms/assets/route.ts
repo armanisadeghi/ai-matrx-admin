@@ -26,7 +26,7 @@ import { resolveCmsCaller, type CmsCaller } from "../_lib/cmsAccess";
 import { logCmsActivity } from "../_lib/activityLog";
 import { requireSuperAdmin } from "@/utils/auth/adminUtils";
 import { readAllRows } from "@ai-matrx/data/db";
-import { getClaimsUser } from "@/utils/supabase/resolveUser";
+import { getClaimsUser } from "@ai-matrx/auth";
 import { tryWriteOne, writeOneRow } from "@/utils/supabase/writeOne";
 
 // Durable public hosts a library asset URL may live on. Anything else — an

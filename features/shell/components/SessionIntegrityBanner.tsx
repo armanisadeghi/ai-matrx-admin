@@ -39,10 +39,7 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/utils/supabase/client";
 import { useLoginHref } from "@/hooks/auth/useLoginHref";
 import { sessionIntegrityNotice } from "./sessionIntegrityNotice";
-import {
-  confirmUnverifiableSession,
-  endUnverifiableSession,
-} from "@/utils/supabase/unverifiableSession";
+import { confirmUnverifiableSession, endUnverifiableSession } from "@/utils/supabase/unverifiableSession";
 
 interface SessionIntegrityBannerProps {
   /**

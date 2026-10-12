@@ -15,7 +15,7 @@ import { createClient } from "@/utils/supabase/server";
 import { createAdminClient } from "@/utils/supabase/adminClient";
 import { projectsDb } from "@/utils/supabase/projectsDb";
 import { isRfc4122Uuid } from "@ai-matrx/kit/uuid";
-import { getClaimsUser } from "@/utils/supabase/resolveUser";
+import { getClaimsUser } from "@ai-matrx/auth";
 import {
   actorName,
   invitationOutcome,

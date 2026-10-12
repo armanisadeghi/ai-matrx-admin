@@ -33,7 +33,7 @@
  */
 
 import { supabase } from "@/utils/supabase/client";
-import { getClaimsUser } from "@/utils/supabase/claimsUser";
+import { getClaimsUser } from "@ai-matrx/auth";
 import { getActiveOrgId } from "@/lib/organizations/activeOrg";
 import type { Database, Json } from "@/types/database.types";
 import {

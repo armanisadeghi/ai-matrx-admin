@@ -7,7 +7,7 @@ import {
   pickWritableShortcutFields,
   rejectedFieldsMessage,
 } from "../writable-fields";
-import { getClaimsUser } from "@/utils/supabase/resolveUser";
+import { getClaimsUser } from "@ai-matrx/auth";
 import { extractErrorMessage } from "@/utils/errors";
 
 export async function GET(

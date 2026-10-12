@@ -34,7 +34,7 @@ import { selectUserId } from "@/lib/redux/selectors/userSelectors";
 import { selectOrganizationId } from "@/lib/redux/slices/appContextSlice";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
 import { getActiveOrgId } from "@/lib/organizations/activeOrg";
-import { isOrganizationRequiredError } from "@/lib/organizations/organizationRequiredError";
+import { isOrganizationRequiredError } from "@ai-matrx/auth/organizations";
 import { useBackendApi } from "@/hooks/useBackendApi";
 import { useScraperApi } from "@/features/scraper/hooks/useScraperApi";
 import { classifyScrapeFailure } from "@/features/scraper/failure/scrapeFailure";

@@ -12,7 +12,7 @@
 import { organizationRefusalMessage } from "@ai-matrx/chat/host/org";
 import { configureSpeech, type PlaybackRequest } from "@ai-matrx/media/speech";
 import { engineAcceptsVoice } from "@/features/audio/service/engines";
-import { isOrganizationRequiredError } from "@/lib/organizations/organizationRequiredError";
+import { isOrganizationRequiredError } from "@ai-matrx/auth/organizations";
 import { selectTextToSpeechPreferences } from "@/lib/redux/preferences/userPreferenceSelectors";
 import { getStoreSingleton } from "@/lib/redux/store-singleton";
 

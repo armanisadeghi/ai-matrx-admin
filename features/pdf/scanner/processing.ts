@@ -11,7 +11,7 @@
  */
 
 import { supabase } from "@/utils/supabase/client";
-import { getClaimsUser } from "@/utils/supabase/claimsUser";
+import { getClaimsUser } from "@ai-matrx/auth";
 import { docprocDb } from "@/utils/supabase/docprocDb";
 
 export interface ProcessingStatus {

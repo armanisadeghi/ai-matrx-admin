@@ -43,9 +43,9 @@ jest.mock("@/utils/supabase/client", () => ({
     }),
   }),
 }));
-jest.mock("@/utils/supabase/claimsUser", () => ({
+jest.mock("@ai-matrx/auth", () => ({ ...jest.requireActual("@ai-matrx/auth"), ...(() => ({
   getClaimsUser: async () => ({ data: { user: { id: "u1" } }, error: null }),
-}));
+}))() }));
 
 import { fetchVaultItems } from "../vault-service";
 

@@ -22,9 +22,9 @@ jest.mock("@/lib/toast", () => {
   return { toast: new Proxy(toast, { get: (target, key: string) => (target as Record<string, unknown>)[key] ?? fn() }) };
 });
 jest.mock("@/utils/supabase/client", () => (require("@/tests/helpers/emptySupabaseClient") as typeof import("@/tests/helpers/emptySupabaseClient")).emptySupabaseClientModule());
-jest.mock("@/utils/supabase/claimsUser", () => ({
+jest.mock("@ai-matrx/auth", () => ({ ...jest.requireActual("@ai-matrx/auth"), ...(() => ({
   getClaimsUser: async () => ({ data: { user: { id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa" } }, error: null }),
-}));
+}))() }));
 jest.mock("@/lib/diagnostics/errorCaptureStore", () => ({ captureError: jest.fn() }));
 const persistNoteUpdate = jest.fn();
 jest.mock("../service/notesService", () => ({

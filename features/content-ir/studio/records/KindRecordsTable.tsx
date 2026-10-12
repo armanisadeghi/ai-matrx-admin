@@ -89,7 +89,7 @@ import {
   useChildKindEdges,
 } from "./RelatedRecordsPanel";
 
-import { getClaimsUser } from "@/utils/supabase/claimsUser";
+import { getClaimsUser } from "@ai-matrx/auth";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 interface Props {
   kind: string;

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
 import { FirstTouchPayloadSchema } from "@/lib/product-analytics/user-acquisition";
 import { recordAcquisitionFirstTouch } from "@/lib/product-analytics/server/acquisition-persistence";
-import { getClaimsUser } from "@/utils/supabase/resolveUser";
+import { getClaimsUser } from "@ai-matrx/auth";
 import { agentTrafficOf } from "@/lib/agent-traffic/marker";
 
 function requestIp(request: NextRequest): string | null {

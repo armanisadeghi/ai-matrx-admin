@@ -15,9 +15,8 @@ jest.mock("@/lib/api/organization-context", () => ({
   applyOrganizationContextHeader: (headers: Record<string, string>, organization: string) => ({ ...headers, "x-organization-id": organization }),
 }));
 jest.mock("@/utils/supabase/server", () => ({ createClient: async () => ({ auth: { getSession: async () => ({ data: { session: { access_token: "test-matrx-session" } } }) } }) }));
-jest.mock("@/utils/supabase/resolveUser", () => ({ getClaimsUser: async () => ({ data: { user: { id: "test-customer" } } }) }));
+jest.mock("@ai-matrx/auth", () => ({ ...jest.requireActual("@ai-matrx/auth"), ...(() => ({ getClaimsUser: async () => ({ data: { user: { id: "test-customer" } } }) }))() }));
 jest.mock("@/utils/supabase/client", () => ({ createClient: jest.fn() }));
-jest.mock("@/utils/supabase/claimsUser", () => ({ getClaimsUser: jest.fn() }));
 jest.mock("@/lib/api/resolve-service-url", () => ({ resolveServiceBaseUrl: () => "https://server.app.matrxserver.com" }));
 
 const origin = "https://www.aimatrx.com";

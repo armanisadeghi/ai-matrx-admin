@@ -4,7 +4,7 @@ import { supabase } from "@/utils/supabase/client";
 import { operationFailed } from "@/utils/errors";
 import { favoritesService } from "@/features/scopes/service/favoritesService";
 
-import { getClaimsUser } from "@/utils/supabase/claimsUser";
+import { getClaimsUser } from "@ai-matrx/auth";
 export const CODING_SESSION_PAGE_SIZE = 100;
 
 const CODING_SESSION_SELECT = `

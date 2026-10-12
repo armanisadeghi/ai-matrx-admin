@@ -51,7 +51,7 @@ import {
   ResearchLineageValidationError,
   validateResearchLineageIds,
 } from "../_lib/researchLineage";
-import { getClaimsUser } from "@/utils/supabase/resolveUser";
+import { getClaimsUser } from "@ai-matrx/auth";
 import { writeOneRow } from "@/utils/supabase/writeOne";
 
 /**

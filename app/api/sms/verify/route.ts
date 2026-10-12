@@ -10,10 +10,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
 import { createAdminClient } from "@/utils/supabase/adminClient";
 import { ensureOrgIdServer } from "@/lib/organizations/ensureOrgId";
-import {
-  isOrganizationRequiredServerError,
-  organizationRequiredResponse,
-} from "@/lib/organizations/organizationRequiredResponse";
+import { isOrganizationRequiredServerError, organizationRequiredResponse } from "@ai-matrx/auth/organizations";
 import { sendVerification, checkVerification } from "@/lib/sms/verify";
 import { normalizePhoneNumber, isValidE164 } from "@/lib/sms/phoneUtils";
 import {
@@ -26,7 +23,7 @@ import {
   SMS_PRIVACY_PATH,
   SMS_TERMS_PATH,
 } from "@/features/sms/compliance";
-import { getClaimsUser } from "@/utils/supabase/resolveUser";
+import { getClaimsUser } from "@ai-matrx/auth";
 
 export async function POST(request: NextRequest) {
   try {

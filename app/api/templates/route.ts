@@ -5,7 +5,7 @@ import {
     orchestratorJsonHeaders,
 } from '@/lib/sandbox/orchestrator-routing'
 import type { SandboxTier } from '@/types/sandbox'
-import { getClaimsUser } from "@/utils/supabase/resolveUser";
+import { getClaimsUser } from "@ai-matrx/auth";
 
 /**
  * GET /api/templates?tier=ec2|hosted

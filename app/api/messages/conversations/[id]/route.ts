@@ -13,7 +13,7 @@ import { createClient } from "@/utils/supabase/server";
 import { z } from "zod";
 import type { TablesUpdate } from "@/types/database.types";
 import { isDurableMediaUrl } from "@/lib/media/durability";
-import { getClaimsUser } from "@/utils/supabase/resolveUser";
+import { getClaimsUser } from "@ai-matrx/auth";
 import { tryWriteOne, writeFailureStatus } from "@/utils/supabase/writeOne";
 
 function participantWriteErrorResponse(error: Error, conversationId: string) {

@@ -10,7 +10,7 @@ import {
   getGlobalSurfaceRegistry,
 } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
 import { supabase } from "@/utils/supabase/client";
-import { getClaimsUser } from "@/utils/supabase/claimsUser";
+import { getClaimsUser } from "@ai-matrx/auth";
 import { getSurfaceByName } from "@ai-matrx/chat/surfaces/services/surfaces.service";
 
 export const MISSING_SURFACE_ROW_MESSAGE = (name: string): string =>

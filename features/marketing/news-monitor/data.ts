@@ -22,7 +22,7 @@ import type {
   StoryDismissReason,
   TrackerStoryRow,
 } from "@/features/marketing/data/coverage-types";
-import { getClaimsUser } from "@/utils/supabase/claimsUser";
+import { getClaimsUser } from "@ai-matrx/auth";
 import { supabase } from "@/utils/supabase/client";
 import { requireAuthenticatedSupabaseSession } from "@/utils/supabase/webDb";
 

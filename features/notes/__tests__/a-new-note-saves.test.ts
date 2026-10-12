@@ -23,9 +23,9 @@ jest.mock("@/utils/supabase/client", () => {
   return { supabase: { schema: () => ({ from: () => chain }) } };
 });
 jest.mock("@/utils/auth/getUserId", () => ({ requireUserId: () => "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa" }));
-jest.mock("@/utils/supabase/claimsUser", () => ({
+jest.mock("@ai-matrx/auth", () => ({ ...jest.requireActual("@ai-matrx/auth"), ...(() => ({
   getClaimsUser: async () => ({ data: { user: { id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa" } }, error: null }),
-}));
+}))() }));
 
 jest.mock("../service/noteContextAssociations", () => ({
   hydrateNoteContextLinks: async (rows: unknown[]) => rows,

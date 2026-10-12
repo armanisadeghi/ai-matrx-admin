@@ -15,7 +15,7 @@ import { stripNullish } from "@/utils/supabase/payload";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
 import { SYSTEM_ORGANIZATION_ID } from "@/constants/platform-orgs";
 
-import { getClaimsUser } from "@/utils/supabase/claimsUser";
+import { getClaimsUser } from "@ai-matrx/auth";
 import { extractErrorMessage } from "@/utils/errors";
 type AgentInsert = Database["agent"]["Tables"]["definition"]["Insert"];
 

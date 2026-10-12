@@ -27,7 +27,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
 import { probeAndReconcileSandboxRow } from "@/lib/sandbox/reconcile";
-import { getClaimsUser } from "@/utils/supabase/resolveUser";
+import { getClaimsUser } from "@ai-matrx/auth";
 import { extractErrorMessage } from "@/utils/errors";
 
 export async function POST(

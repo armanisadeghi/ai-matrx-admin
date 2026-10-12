@@ -15,7 +15,7 @@
 import { supabase } from "@/utils/supabase/client";
 import { pgErrorToError } from "@ai-matrx/data";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
-import { isOrganizationRequiredError } from "@/lib/organizations/organizationRequiredError";
+import { isOrganizationRequiredError } from "@ai-matrx/auth/organizations";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Contract types — mirror the agent payload exactly

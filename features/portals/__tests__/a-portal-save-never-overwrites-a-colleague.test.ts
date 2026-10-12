@@ -50,7 +50,7 @@ jest.mock("@/utils/supabase/server", () => ({
   createClient: async () => ({ schema: () => ({ rpc: async (fn: string, args: Record<string, unknown>) => rpc(fn, args ?? {}) }) }),
 }));
 jest.mock("@/utils/supabase/adminClient", () => ({ createAdminClient: () => ({ schema: () => ({ rpc: async () => ({ data: null, error: null }) }) }) }));
-jest.mock("@/utils/supabase/claimsUser", () => ({ getClaimsUser: async () => ({ data: { user: { id: "u-maya" } } }) }));
+jest.mock("@ai-matrx/auth", () => ({ ...jest.requireActual("@ai-matrx/auth"), ...(() => ({ getClaimsUser: async () => ({ data: { user: { id: "u-maya" } } }) }))() }));
 
 /** The desk writes straight to the store. */
 function deskWrites(patch: Record<string, unknown>) {

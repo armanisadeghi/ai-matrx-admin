@@ -7,7 +7,7 @@ import { sendEmail } from "@/lib/email/client";
 import { emailTemplates } from "@/lib/email/client";
 import { getContactRatelimiter } from "@/lib/rate-limit/client";
 import { ipRateLimit } from "@/lib/rate-limit/helpers";
-import { getClaimsUser } from "@/utils/supabase/resolveUser";
+import { getClaimsUser } from "@ai-matrx/auth";
 
 /**
  * POST /api/contact

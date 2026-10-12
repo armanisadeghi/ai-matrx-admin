@@ -33,7 +33,7 @@ import { getAssetForFile } from "@/features/files/api/assets";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
 import { extractErrorMessage } from "@/utils/errors";
-import { isOrganizationRequiredError } from "@/lib/organizations/organizationRequiredError";
+import { isOrganizationRequiredError } from "@ai-matrx/auth/organizations";
 // eslint-disable-next-line no-restricted-imports
 import type { Asset, AssetVariant } from "@/features/files/types";
 

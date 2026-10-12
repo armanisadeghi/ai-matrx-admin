@@ -3,7 +3,7 @@ import { hasAdminPower } from "@/utils/auth/adminLaneServer";
 import { resolveSandboxLifecycleTarget } from "@/lib/sandbox/lifecycle-target";
 import { hasExactLifecycleReceipt, proxyLifecycleReceipt, validLifecycleRequest } from "@/lib/sandbox/lifecycle-route-proxy";
 import { createClient } from "@/utils/supabase/server";
-import { getClaimsUser } from "@/utils/supabase/resolveUser";
+import { getClaimsUser } from "@ai-matrx/auth";
 
 async function mayForceStop(): Promise<boolean> {
   try {

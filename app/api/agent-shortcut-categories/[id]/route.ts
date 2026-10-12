@@ -10,7 +10,7 @@ import {
   PLATFORM_CATEGORY_SELECT,
   type PlatformCategorySelectRow,
 } from "../_lib/categoryRow";
-import { getClaimsUser } from "@/utils/supabase/resolveUser";
+import { getClaimsUser } from "@ai-matrx/auth";
 import { extractErrorMessage } from "@/utils/errors";
 
 type CategoryUpdate = Database["platform"]["Tables"]["categories"]["Update"];

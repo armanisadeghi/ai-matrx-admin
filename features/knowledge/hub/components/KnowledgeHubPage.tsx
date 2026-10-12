@@ -71,7 +71,7 @@ import { useAppSelector } from "@/lib/redux/hooks";
 import { selectOrganizationId, selectOrganizationName } from "@/lib/redux/slices/appContextSlice";
 import { favoritesService } from "@/features/scopes/service/favoritesService";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
-import { isOrganizationRequiredError } from "@/lib/organizations/organizationRequiredError";
+import { isOrganizationRequiredError } from "@ai-matrx/auth/organizations";
 import {
   organizationRefusalMessage,
   presentOrganizationRefusal,

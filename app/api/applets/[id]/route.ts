@@ -1,7 +1,7 @@
 import { createClient } from "@/utils/supabase/server";
 import { hasAdminPower } from "@/utils/auth/adminLaneServer";
 import { NextRequest, NextResponse } from "next/server";
-import { getClaimsUser } from "@/utils/supabase/resolveUser";
+import { getClaimsUser } from "@ai-matrx/auth";
 import { tryWriteOne, writeFailureStatus, writeOneRow } from "@/utils/supabase/writeOne";
 
 export async function GET(

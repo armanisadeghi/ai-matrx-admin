@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { createClient } from '@/utils/supabase/client';
 import { Clock, RefreshCw, CheckCircle, AlertCircle, Info } from 'lucide-react';
 
-import { getClaimsUser } from "@/utils/supabase/claimsUser";
+import { getClaimsUser } from "@ai-matrx/auth";
 /**
  * TokenStatusDebug
  * 

@@ -23,7 +23,7 @@ import { configureStore } from "@reduxjs/toolkit";
 import appContextReducer, {
   setOrganization,
 } from "@/lib/redux/slices/appContextSlice";
-import { isOrganizationRequiredError } from "@/lib/organizations/organizationRequiredError";
+import { isOrganizationRequiredError } from "@ai-matrx/auth/organizations";
 
 const rpc = jest.fn<(fn: string) => Promise<{ data: string | null; error: unknown }>>();
 jest.mock("@/utils/supabase/client", () => ({

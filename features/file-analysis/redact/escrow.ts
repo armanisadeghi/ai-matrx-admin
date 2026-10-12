@@ -28,7 +28,7 @@ import { createClient } from "@/utils/supabase/client";
 import { pdfDb } from "@/utils/supabase/pdfDb";
 import { saveSession, type StoredSession } from "./session-keys";
 
-import { getClaimsUser } from "@/utils/supabase/claimsUser";
+import { getClaimsUser } from "@ai-matrx/auth";
 function base64ToBytes(b64: string): Uint8Array<ArrayBuffer> {
   const binary = atob(b64);
   // Explicit ArrayBuffer backing so the result satisfies WebCrypto's

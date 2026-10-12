@@ -2,7 +2,7 @@
 
 import { supabase } from "@/utils/supabase/client";
 import { writeOne, writeOneRow } from "@/utils/supabase/writeOne";
-import { getClaimsUser } from "@/utils/supabase/claimsUser";
+import { getClaimsUser } from "@ai-matrx/auth";
 import type { Json } from "@/types/database.types";
 import { asJsonObject, mergeJsonColumn } from "@ai-matrx/data/db";
 import { requireUserId } from "@/utils/auth/getUserId";

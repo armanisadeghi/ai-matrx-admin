@@ -25,7 +25,7 @@
 
 import { withAdminFeature } from "@/utils/auth/adminFeaturesOnUserPages";
 import { supabase } from "@/utils/supabase/client";
-import { getClaimsUser } from "@/utils/supabase/claimsUser";
+import { getClaimsUser } from "@ai-matrx/auth";
 import { requireAuthenticatedSupabaseSession } from "@/utils/supabase/webDb";
 import { extractErrorMessage, makeAssertData } from "@/utils/errors";
 import { writeOne, writeOneRow } from "@/utils/supabase/writeOne";

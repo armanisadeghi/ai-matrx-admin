@@ -9,7 +9,7 @@ import {
   type CanvasItemFilters,
 } from '@/features/canvas/services/canvasItemsService';
 import { toast } from "@/lib/toast";
-import { isOrganizationRequiredError } from "@/lib/organizations/organizationRequiredError";
+import { isOrganizationRequiredError } from "@ai-matrx/auth/organizations";
 
 /**
  * useCanvasItems - Hook for managing canvas items with database persistence

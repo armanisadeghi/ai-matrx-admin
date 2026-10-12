@@ -22,7 +22,7 @@ import {
   type CoppaGateRow,
 } from "./types";
 
-import { getClaimsUser } from "@/utils/supabase/claimsUser";
+import { getClaimsUser } from "@ai-matrx/auth";
 
 // `getGate()` mounts independently in two shell-level places on every
 // education page — the platform-wide `FirstSignInAgeGateMount` and the

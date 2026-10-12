@@ -117,7 +117,7 @@ import type {
 import type { CommandServiceLike } from "@/features/workbooks/collab/WorkbookCollabSession";
 import type { AwarenessState } from "@/lib/collab/types";
 
-import { getClaimsUser } from "@/utils/supabase/claimsUser";
+import { getClaimsUser } from "@ai-matrx/auth";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { WorkingCopyAlert } from "@/lib/working-copy/WorkingCopyAlert";
 

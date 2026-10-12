@@ -28,7 +28,7 @@ import { DraftInputsEditor } from "../authoring/DraftInputsEditor";
 import { OutputKindPicker } from "../authoring/OutputKindPicker";
 import { type DraftInput } from "../authoring/service";
 import { createSoftMandate } from "./service";
-import { isOrganizationRequiredError } from "@/lib/organizations/organizationRequiredError";
+import { isOrganizationRequiredError } from "@ai-matrx/auth/organizations";
 import { organizationRefusalMessage } from "@ai-matrx/chat/host/org";
 import {
   memberMandateListHref,

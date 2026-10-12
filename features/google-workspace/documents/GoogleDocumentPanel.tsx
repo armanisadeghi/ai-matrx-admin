@@ -18,7 +18,7 @@ import { Button } from "@ai-matrx/design-system";
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import { toast } from "@/lib/toast";
 import { extractErrorMessage } from "@/utils/errors";
-import { isOrganizationRequiredError } from "@/lib/organizations/organizationRequiredError";
+import { isOrganizationRequiredError } from "@ai-matrx/auth/organizations";
 import {
   organizationRefusalMessage,
   presentOrganizationRefusal,

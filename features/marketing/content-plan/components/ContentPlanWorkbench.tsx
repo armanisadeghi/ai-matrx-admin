@@ -72,7 +72,7 @@ import {
 import {
   OrganizationRequiredNotice,
 } from "@/features/organizations/components/OrganizationRequiredNotice";
-import { isOrganizationRequiredError } from "@/lib/organizations/organizationRequiredError";
+import { isOrganizationRequiredError } from "@ai-matrx/auth/organizations";
 import { liveMatchesById, usePlanReality } from "../hooks/usePlanReality";
 import { StrategyBriefWorkspace } from "@/features/marketing/strategy/components/StrategyBriefWorkspace";
 import { useMarketingBrandOptional } from "@/features/marketing/lib/brand-context";

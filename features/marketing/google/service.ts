@@ -1,5 +1,5 @@
 import { createClient } from "@/utils/supabase/client";
-import { getClaimsUser } from "@/utils/supabase/claimsUser";
+import { getClaimsUser } from "@ai-matrx/auth";
 import { BackendApiError, parseHttpError } from "@/lib/api/errors";
 import type { Database } from "@/types/database.types";
 import type {

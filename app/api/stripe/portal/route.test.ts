@@ -22,9 +22,9 @@ jest.mock("@/lib/stripe/server", () => ({
   isStripeConfigured: () => true,
   requiredStripeMode: () => "test",
 }));
-jest.mock("@/utils/supabase/resolveUser", () => ({
+jest.mock("@ai-matrx/auth", () => ({ ...jest.requireActual("@ai-matrx/auth"), ...(() => ({
   getClaimsUser: async () => ({ data: { user: { id: "billing-admin-test" } } }),
-}));
+}))() }));
 jest.mock("@/features/entitlements/stripe/portal", () => ({
   openSubscriptionPortal: mockOpenPortal,
 }));

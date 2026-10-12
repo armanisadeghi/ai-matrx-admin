@@ -10,9 +10,9 @@ jest.mock("@/utils/supabase/client", () => ({
   supabase: { auth: { getSession: (...args: unknown[]) => mockGetSession(...args) } },
   createClient: () => ({ auth: { getSession: mockGetSession } }),
 }));
-jest.mock("@/utils/supabase/claimsUser", () => ({
+jest.mock("@ai-matrx/auth", () => ({ ...jest.requireActual("@ai-matrx/auth"), ...(() => ({
   getClaimsUser: (...args: unknown[]) => mockGetClaimsUser(...args),
-}));
+}))() }));
 jest.mock("@/lib/redux/store-singleton", () => ({ getStore: () => null }));
 jest.mock("@/lib/services/fingerprint-service", () => ({
   getCachedFingerprint: () => null,

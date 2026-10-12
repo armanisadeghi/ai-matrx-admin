@@ -43,7 +43,7 @@ import type {
   CollectionItemFilter,
   SiteCollection,
 } from "@/features/cms/types";
-import { getClaimsUser } from "@/utils/supabase/resolveUser";
+import { getClaimsUser } from "@ai-matrx/auth";
 import { tryWriteOne, writeOneRow } from "@/utils/supabase/writeOne";
 
 const SLUG_RE = /^[a-z0-9][a-z0-9_-]{0,62}$/;

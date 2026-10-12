@@ -12,7 +12,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
 import type { TablesUpdate } from "@/types/database.types";
 import { z } from "zod";
-import { getClaimsUser } from "@/utils/supabase/resolveUser";
+import { getClaimsUser } from "@ai-matrx/auth";
 import { tryWriteOne, writeFailureStatus, writeOneRow } from "@/utils/supabase/writeOne";
 
 // ============================================

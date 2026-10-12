@@ -105,7 +105,7 @@ import { WorkbookSheetReferenceCopyButton } from "@/features/workbooks/component
 import { WorkbookTableLink } from "@/features/workbooks/table-link/WorkbookTableLink";
 import { swapContentGuarded, registerOpenEditorContent, type SavedEditorSnapshot } from "@/lib/univer/openEditorContent";
 
-import { getClaimsUser } from "@/utils/supabase/claimsUser";
+import { getClaimsUser } from "@ai-matrx/auth";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 type SaveStatus = "idle" | "dirty" | "saving" | "saved" | "error";
 

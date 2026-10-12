@@ -4,7 +4,7 @@ import { agentTrafficOf, agentTrafficSetCookie } from "@/lib/agent-traffic/marke
 import { readFileSync, readdirSync, rmSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { createClient } from "@/utils/supabase/server";
-import { getClaimsUser } from "@/utils/supabase/resolveUser";
+import { getClaimsUser } from "@ai-matrx/auth";
 import {
   describeFailure,
   formatAttempts,

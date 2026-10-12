@@ -13,7 +13,7 @@
 
 import { createAsyncThunk, unwrapResult, type ThunkAction, type ThunkDispatch, type UnknownAction } from "@reduxjs/toolkit";
 import { supabase } from "@/utils/supabase/client";
-import { getClaimsUser } from "@/utils/supabase/claimsUser";
+import { getClaimsUser } from "@ai-matrx/auth";
 import { SessionUnavailableError } from "@/lib/supabase/authRetry";
 import type { RootState } from "@/lib/redux/store";
 import { materializeNote as materializePersistedNote, persistNoteUpdate } from "../service/notesService";

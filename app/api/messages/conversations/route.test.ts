@@ -1,6 +1,6 @@
 import { POST } from "./route";
 import { createClient } from "@/utils/supabase/server";
-import { getClaimsUser } from "@/utils/supabase/resolveUser";
+import { getClaimsUser } from "@ai-matrx/auth";
 import type { NextRequest } from "next/server";
 
 jest.mock("next/server", () => ({
@@ -12,7 +12,7 @@ jest.mock("next/server", () => ({
   },
 }));
 jest.mock("@/utils/supabase/server", () => ({ createClient: jest.fn() }));
-jest.mock("@/utils/supabase/resolveUser", () => ({ getClaimsUser: jest.fn() }));
+jest.mock("@ai-matrx/auth", () => ({ ...jest.requireActual("@ai-matrx/auth"), ...(() => ({ getClaimsUser: jest.fn() }))() }));
 
 const adminId = "d1000000-0000-4000-8000-000000000001";
 const recipientId = "d2000000-0000-4000-8000-000000000002";

@@ -6,12 +6,9 @@ import {
   resolveOrchestratorByTier,
 } from "@/lib/sandbox/orchestrator-routing";
 import type { SandboxTier, UserPersistenceResponse } from "@/types/sandbox";
-import { getClaimsUser } from "@/utils/supabase/resolveUser";
+import { getClaimsUser } from "@ai-matrx/auth";
 import { ensureOrgIdServer } from "@/lib/organizations/ensureOrgId";
-import {
-  isOrganizationRequiredServerError,
-  organizationRequiredResponse,
-} from "@/lib/organizations/organizationRequiredResponse";
+import { isOrganizationRequiredServerError, organizationRequiredResponse } from "@ai-matrx/auth/organizations";
 
 /**
  * GET /api/sandbox/persistence

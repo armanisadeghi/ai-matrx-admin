@@ -39,7 +39,7 @@ import { useAppDispatch, useAppStore } from "@/lib/redux/hooks";
 import { asJsonObject } from "@ai-matrx/data/db";
 import { supabase } from "@/utils/supabase/client";
 
-import { getClaimsUser } from "@/utils/supabase/claimsUser";
+import { getClaimsUser } from "@ai-matrx/auth";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 type DraftStatus =
   "generating" | "verifying" | "ready" | "failed" | "published";

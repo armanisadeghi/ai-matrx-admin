@@ -19,7 +19,7 @@
 
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { supabase } from "@/utils/supabase/client";
-import { getClaimsUser } from "@/utils/supabase/claimsUser";
+import { getClaimsUser } from "@ai-matrx/auth";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
 import { isIosSafari, isStandalone } from "@/lib/pwa/install";
 

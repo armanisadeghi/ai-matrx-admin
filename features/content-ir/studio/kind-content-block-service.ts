@@ -23,7 +23,7 @@ import { tryWriteOne } from "@/utils/supabase/writeOne";
 import type { Database } from "@/types/database.types";
 import type { GeneratedContentBlock } from "@/features/content-ir/registry/kind-content-block-generator";
 
-import { getClaimsUser } from "@/utils/supabase/claimsUser";
+import { getClaimsUser } from "@ai-matrx/auth";
 export interface AdminUpsertContentBlockResult {
   id: string;
   blockId: string;

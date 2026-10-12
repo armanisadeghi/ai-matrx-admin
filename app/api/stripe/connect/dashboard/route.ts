@@ -9,7 +9,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
 import { getStripe, isStripeConfigured } from "@/lib/stripe/server";
 import { getConnectAccount } from "@/features/entitlements/stripe/connect";
-import { getClaimsUser } from "@/utils/supabase/resolveUser";
+import { getClaimsUser } from "@ai-matrx/auth";
 import {
   billingOwnerRef,
   readRequestOrganizationId,

@@ -49,7 +49,7 @@ import { callApi } from "@/lib/api/call-api";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { toast, recordToast } from "@/lib/toast";
 import { supabase } from "@/utils/supabase/client";
-import { getClaimsUser } from "@/utils/supabase/claimsUser";
+import { getClaimsUser } from "@ai-matrx/auth";
 
 import { blindAnonLabel, shuffleIds } from "@/features/agent-comparison/shared/blind";
 import { WorkflowRunBoard } from "@/features/workflow-runtime/components/WorkflowRunBoard";

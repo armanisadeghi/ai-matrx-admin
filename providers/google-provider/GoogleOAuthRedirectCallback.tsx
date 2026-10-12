@@ -6,7 +6,7 @@ import { connectGoogle } from "@/features/marketing/google/service";
 import type { GoogleConnectionResult } from "@/features/marketing/google/types";
 import { GOOGLE_CONNECTOR_PROVIDER } from "@/features/connectors/provider-config";
 import { Button } from "@/components/ui/button";
-import { isOrganizationRequiredError } from "@/lib/organizations/organizationRequiredError";
+import { isOrganizationRequiredError } from "@ai-matrx/auth/organizations";
 import { OrganizationRequiredNotice } from "@/features/organizations/components/OrganizationRequiredNotice";
 import {
   clearGoogleOAuthRedirectPending,

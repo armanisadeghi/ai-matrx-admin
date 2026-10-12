@@ -19,7 +19,7 @@ jest.mock("@/lib/redux/store-singleton", () => ({
 }));
 
 import { requireSelectedOrgId } from "@/lib/organizations/activeOrg";
-import { isOrganizationRequiredError } from "@/lib/organizations/organizationRequiredError";
+import { isOrganizationRequiredError } from "@ai-matrx/auth/organizations";
 import { requireOrganizationContext } from "@/lib/api/organization-context";
 import { selectShouldPromptForOrganization } from "@/lib/redux/slices/appContextSlice";
 

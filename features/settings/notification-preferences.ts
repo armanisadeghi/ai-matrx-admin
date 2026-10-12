@@ -31,7 +31,7 @@
 
 import type { Database } from "@/types/database.types";
 import { supabase } from "@/utils/supabase/client";
-import { getClaimsUser } from "@/utils/supabase/claimsUser";
+import { getClaimsUser } from "@ai-matrx/auth";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
 import { getUserOrganizations } from "@/features/organizations/service";
 import { pairedChannels } from "./notification-channel-pairing";

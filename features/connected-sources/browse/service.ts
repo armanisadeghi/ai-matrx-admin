@@ -26,7 +26,7 @@ import type {
   EntityScopeCounts,
 } from "@/lib/entity-list/types";
 import type { ListScopeKind } from "@/lib/list-scope/types";
-import { isOrganizationRequiredError } from "@/lib/organizations/organizationRequiredError";
+import { isOrganizationRequiredError } from "@ai-matrx/auth/organizations";
 import { ConnectedSourcesError, browseConnectedSources } from "../api";
 import type { ConnectedSourceRow } from "../types";
 

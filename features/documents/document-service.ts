@@ -28,7 +28,7 @@ import type {
   ServiceResult,
 } from "@/features/data-tables/types";
 
-import { getClaimsUser } from "@/utils/supabase/claimsUser";
+import { getClaimsUser } from "@ai-matrx/auth";
 // ─── documents ───────────────────────────────────────────────────────────────
 
 export type CreateDocumentArgs = {

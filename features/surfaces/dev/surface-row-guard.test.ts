@@ -1,5 +1,5 @@
 jest.mock("@/utils/supabase/client", () => ({ supabase: {} }));
-jest.mock("@/utils/supabase/claimsUser", () => ({ getClaimsUser: jest.fn() }));
+jest.mock("@ai-matrx/auth", () => ({ ...jest.requireActual("@ai-matrx/auth"), ...(() => ({ getClaimsUser: jest.fn() }))() }));
 jest.mock("@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext", () => ({ getGlobalSurfaceRegistry: jest.fn() }));
 jest.mock("@ai-matrx/chat/surfaces/services/surfaces.service", () => ({ getSurfaceByName: jest.fn() }));
 import { findMissingSurfaceRows, makeSurfaceExists } from "./surface-row-guard";

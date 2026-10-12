@@ -16,7 +16,7 @@
  */
 
 import { supabase } from "@/utils/supabase/client";
-import { getClaimsUser } from "@/utils/supabase/claimsUser";
+import { getClaimsUser } from "@ai-matrx/auth";
 import { requireAuthenticatedSupabaseSession } from "@/utils/supabase/webDb";
 import type {
   ClassRuleDraft,

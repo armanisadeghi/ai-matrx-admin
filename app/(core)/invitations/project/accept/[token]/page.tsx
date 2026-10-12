@@ -11,7 +11,7 @@ import { toast } from "@/lib/toast";
 import { acceptProjectInvitation, getProject } from '@/features/projects/service';
 import { invitationsService } from '@/features/organizations/service/invitationsService';
 import { supabase } from '@/utils/supabase/client';
-import { getClaimsUser } from '@/utils/supabase/claimsUser';
+import { getClaimsUser } from "@ai-matrx/auth";
 import type { ProjectInvitation, Project } from '@/features/projects/types';
 import type { ProjectRole } from '@/features/projects/types';
 import PageHeader from '@/features/shell/components/header/PageHeader';

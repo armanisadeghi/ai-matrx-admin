@@ -40,7 +40,7 @@ import type {
   WriterFilter,
 } from "./types";
 
-import { getClaimsUser } from "@/utils/supabase/claimsUser";
+import { getClaimsUser } from "@ai-matrx/auth";
 /** The share/association token this table's rows are addressed by. */
 export const KIND_INSTANCE_TOKEN = "content_ir_kind_instance";
 

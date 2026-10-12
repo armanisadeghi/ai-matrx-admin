@@ -15,7 +15,7 @@ import { createClient } from "@/utils/supabase/server";
 import { isStripeConfigured } from "@/lib/stripe/server";
 import { getStripe } from "@/lib/stripe/server";
 import { ensureConnectAccount } from "@/features/entitlements/stripe/connect";
-import { getClaimsUser } from "@/utils/supabase/resolveUser";
+import { getClaimsUser } from "@ai-matrx/auth";
 import { readRequestOrganizationId } from "@/features/entitlements/stripe/billingOwner";
 import {
   billingOrganizationRequiredResponse,

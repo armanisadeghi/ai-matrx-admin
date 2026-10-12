@@ -12,7 +12,7 @@ import { requireSuperAdmin } from "@/utils/auth/adminUtils";
 import { operationFailed } from "@/utils/errors";
 import type { DeckSuggestionRow } from "./types";
 
-import { getClaimsUser } from "@/utils/supabase/claimsUser";
+import { getClaimsUser } from "@ai-matrx/auth";
 // ─── Certified tier (super-admin) ─────────────────────────────────────────────
 export async function certifyDeckAction(
   resourceId: string,

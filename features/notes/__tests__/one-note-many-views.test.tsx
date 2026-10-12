@@ -55,9 +55,9 @@ jest.mock("@/components/dialogs/confirm/ConfirmDialogHost", () => ({ confirm: je
 jest.mock("@/lib/toast", () => ({ toast: new Proxy({}, { get: () => jest.fn() }) }));
 // The note's working-copy save is its database write: the stored row takes
 // what was sent, one version up.
-jest.mock("@/utils/supabase/claimsUser", () => ({
+jest.mock("@ai-matrx/auth", () => ({ ...jest.requireActual("@ai-matrx/auth"), ...(() => ({
   getClaimsUser: async () => ({ data: { user: { id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa" } }, error: null }),
-}));
+}))() }));
 jest.mock("../service/notesService", () => ({
   ...jest.requireActual("../service/notesService"),
   persistNoteUpdate: async (id: string, updates: Record<string, unknown>, options: { expectedVersion: number }) => ({

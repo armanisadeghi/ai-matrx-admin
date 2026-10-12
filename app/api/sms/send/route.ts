@@ -12,7 +12,7 @@ import { createAdminClient } from '@/utils/supabase/adminClient';
 import { sendAndLogSms } from '@/lib/sms/send';
 import { findOrCreateConversation } from '@/lib/sms/receive';
 import { normalizePhoneNumber, isValidE164 } from '@/lib/sms/phoneUtils';
-import { getClaimsUser } from "@/utils/supabase/resolveUser";
+import { getClaimsUser } from "@ai-matrx/auth";
 import { tryWriteOne } from "@/utils/supabase/writeOne";
 
 export async function POST(request: NextRequest) {

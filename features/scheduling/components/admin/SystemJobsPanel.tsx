@@ -95,7 +95,7 @@ import {
   definedOnly,
   useAdminSchedulingScopeSlice,
 } from "@/features/scheduling/lib/admin-scheduling-scope";
-import { isOrganizationRequiredError } from "@/lib/organizations/organizationRequiredError";
+import { isOrganizationRequiredError } from "@ai-matrx/auth/organizations";
 import {
   OrganizationContextNotice,
   OrganizationRequiredNotice,

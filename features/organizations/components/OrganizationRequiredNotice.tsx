@@ -46,7 +46,7 @@ import Link from "next/link";
 // It is re-exported here because this component and that predicate are always
 // used together and ~20 call sites already import the pair from this path —
 // one definition, two import paths, never two implementations.
-export { isOrganizationRequiredError } from "@/lib/organizations/organizationRequiredError";
+export { isOrganizationRequiredError } from "@ai-matrx/auth/organizations";
 
 export interface OrganizationRequiredNoticeProps {
   /** What could not be loaded, e.g. "System jobs". Used in the default headline. */

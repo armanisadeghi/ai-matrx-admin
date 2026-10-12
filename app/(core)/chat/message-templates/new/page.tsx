@@ -1,5 +1,5 @@
 import { createClient } from "@/utils/supabase/server";
-import { getClaimsUser } from "@/utils/supabase/claimsUser";
+import { getClaimsUser } from "@ai-matrx/auth";
 import { TemplateViewPage } from "@/features/message-templates/components/TemplateViewPage";
 import type { MessageTemplateDB, MessageTemplateEditorSource } from "@/features/message-templates/types/message-templates-db";
 

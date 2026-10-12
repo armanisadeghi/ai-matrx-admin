@@ -7,7 +7,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { resolveUser } from '@/utils/supabase/resolveUser';
+import { resolveUser } from "@/utils/supabase/resolveUser";
 import { logTranscriptionError } from '@/features/audio/services/audioErrorLogger';
 
 export async function POST(request: NextRequest) {

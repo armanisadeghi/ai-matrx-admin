@@ -20,7 +20,7 @@ import { toast } from "@/lib/toast";
 import { invitationsService } from "@/features/organizations/service/invitationsService";
 import type { Invitation } from "@/features/organizations/service/invitationsService";
 import { supabase } from "@/utils/supabase/client";
-import { getClaimsUser } from "@/utils/supabase/claimsUser";
+import { getClaimsUser } from "@ai-matrx/auth";
 
 import PageHeader from "@/features/shell/components/header/PageHeader";
 import { ChevronLeftTapButton } from "@ai-matrx/design-system/tap-target/buttons";

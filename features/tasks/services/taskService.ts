@@ -2,12 +2,12 @@
 import { isAssociationsRpcErr } from "@ai-matrx/associations";
 import { supabase } from "@/utils/supabase/client";
 import { pgErrorToError } from "@ai-matrx/data";
-import { getClaimsUser } from "@/utils/supabase/claimsUser";
+import { getClaimsUser } from "@ai-matrx/auth";
 import { projectsDb } from "@/utils/supabase/projectsDb";
 import { tryWriteOne } from "@/utils/supabase/writeOne";
 import { requireUserId } from "@/utils/auth/getUserId";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
-import { isOrganizationRequiredError } from "@/lib/organizations/organizationRequiredError";
+import { isOrganizationRequiredError } from "@ai-matrx/auth/organizations";
 import { toast } from "@/lib/toast";
 import { getSharedWithMe } from "@/utils/permissions/service";
 import type { PermissionLevel } from "@/utils/permissions/types";

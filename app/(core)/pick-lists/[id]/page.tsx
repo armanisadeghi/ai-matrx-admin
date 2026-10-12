@@ -5,7 +5,7 @@ import { ModuleSignInGate } from "@/features/auth/components/module-landing/Modu
 import { AccessGate } from "@/features/access-gate/components/AccessGate";
 import { createClient } from "@/utils/supabase/server";
 import { getServerAuth } from "@/utils/supabase/getServerAuth";
-import { getClaimsUser } from "@/utils/supabase/claimsUser";
+import { getClaimsUser } from "@ai-matrx/auth";
 import type { UserListWithItems } from "@/features/data-tables/pick-lists/types";
 import { readPickList } from "@/features/data-tables/pick-lists/doors";
 import { StoreListPage } from "./StoreListPage";

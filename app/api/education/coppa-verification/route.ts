@@ -16,7 +16,7 @@ import { createClient } from "@/utils/supabase/server";
 import { getStripe, isStripeConfigured } from "@/lib/stripe/server";
 import { ensureStripeCustomer } from "@/features/entitlements/stripe/sync";
 import { COPPA_VERIFICATION_PURPOSE } from "@/features/education/compliance/consent/verificationSync";
-import { getClaimsUser } from "@/utils/supabase/resolveUser";
+import { getClaimsUser } from "@ai-matrx/auth";
 import { readRequestOrganizationId } from "@/features/entitlements/stripe/billingOwner";
 import {
   billingOrganizationRequiredResponse,

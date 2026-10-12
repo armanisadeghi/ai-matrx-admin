@@ -7,7 +7,7 @@
  * spinner, no sentence and no Source (Sonnet walk 2026-09-27).
  */
 
-import { isOrganizationRequiredError } from "@/lib/organizations/organizationRequiredError";
+import { isOrganizationRequiredError } from "@ai-matrx/auth/organizations";
 import { organizationRefusalMessage } from "@ai-matrx/chat/host/org";
 import { sourceRefusalSentence } from "@/features/sources/api/sourcesApi";
 

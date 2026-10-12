@@ -27,7 +27,7 @@ import { apiGet, buildPath } from "@/lib/api/typed-client";
 import {
   OrganizationRequiredNotice,
 } from "@/features/organizations/components/OrganizationRequiredNotice";
-import { isOrganizationRequiredError } from "@/lib/organizations/organizationRequiredError";
+import { isOrganizationRequiredError } from "@ai-matrx/auth/organizations";
 import { RAG_VOCAB } from "@/features/rag/constants/vocabulary";
 import {
   fetchDerivativeChunks,

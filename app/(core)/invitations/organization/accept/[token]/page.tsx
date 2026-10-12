@@ -31,7 +31,7 @@ import type {
 } from "@/features/organizations/types";
 import { generateOrganizationAbbreviation } from "@/features/organizations/types";
 import { supabase } from "@/utils/supabase/client";
-import { getClaimsUser } from "@/utils/supabase/claimsUser";
+import { getClaimsUser } from "@ai-matrx/auth";
 import { invitationSignUpHref } from "@/utils/auth/invitation-links";
 import { InlineMediaRef } from "@ai-matrx/media/react";
 import { fileIdToMediaRef } from "@/features/files/redux/converters";

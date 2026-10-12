@@ -6,11 +6,11 @@ import {
   registerDynamicClient,
 } from "@ai-matrx/chat/agents/services/mcp-oauth/discovery";
 import { createClient } from "@/utils/supabase/server";
-import { getClaimsUser } from "@/utils/supabase/resolveUser";
+import { getClaimsUser } from "@ai-matrx/auth";
 import { cookies } from "next/headers";
 
 jest.mock("@/utils/supabase/server", () => ({ createClient: jest.fn() }));
-jest.mock("@/utils/supabase/resolveUser", () => ({ getClaimsUser: jest.fn() }));
+jest.mock("@ai-matrx/auth", () => ({ ...jest.requireActual("@ai-matrx/auth"), ...(() => ({ getClaimsUser: jest.fn() }))() }));
 jest.mock("next/headers", () => ({ cookies: jest.fn() }));
 jest.mock("@ai-matrx/chat/agents/services/mcp-oauth/pkce", () => ({
   generateCodeVerifier: () => "verifier",

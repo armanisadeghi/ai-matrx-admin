@@ -9,12 +9,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
 import { createAdminClient } from "@/utils/supabase/adminClient";
 import { ensureOrgIdServer } from "@/lib/organizations/ensureOrgId";
-import {
-  isOrganizationRequiredServerError,
-  organizationRequiredResponse,
-} from "@/lib/organizations/organizationRequiredResponse";
+import { isOrganizationRequiredServerError, organizationRequiredResponse } from "@ai-matrx/auth/organizations";
 import { normalizePhoneNumber } from "@/lib/sms/phoneUtils";
-import { getClaimsUser } from "@/utils/supabase/resolveUser";
+import { getClaimsUser } from "@ai-matrx/auth";
 
 /**
  * GET /api/sms/preferences

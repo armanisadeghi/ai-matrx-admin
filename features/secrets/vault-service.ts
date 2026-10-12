@@ -13,7 +13,7 @@
  * (`service.ts` / `organization-service.ts`).
  */
 import { createClient } from "@/utils/supabase/client";
-import { getClaimsUser } from "@/utils/supabase/claimsUser";
+import { getClaimsUser } from "@ai-matrx/auth";
 import { makeAssertData } from "@/utils/errors";
 import { applyOrganizationContextHeader } from "@/lib/api/organization-context";
 import {

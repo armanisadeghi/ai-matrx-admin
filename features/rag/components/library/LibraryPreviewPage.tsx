@@ -51,7 +51,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@ai-matrx/design-system";
 import { apiGet, buildPath } from "@/lib/api/typed-client";
 import { OrganizationRequiredNotice } from "@/features/organizations/components/OrganizationRequiredNotice";
-import { isOrganizationRequiredError } from "@/lib/organizations/organizationRequiredError";
+import { isOrganizationRequiredError } from "@ai-matrx/auth/organizations";
 import type { components } from "@ai-matrx/agents/generated/api-types";
 import { useOpenDiffViewerWindow } from "@/features/overlays/openers/diffViewerWindow";
 import { computeMatches } from "@/features/notes/utils/findMatches";

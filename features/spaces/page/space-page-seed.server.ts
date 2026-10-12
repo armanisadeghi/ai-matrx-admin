@@ -28,7 +28,7 @@ import { askChartSeed, askEntityBlockSeed, askTablePageSeed, askTileSeed, mergeS
 import { headers } from "next/headers";
 
 import { activeOrgCookie } from "@/lib/organizations/activeOrgCookie";
-import { getClaimsUser } from "@/utils/supabase/claimsUser";
+import { getClaimsUser } from "@ai-matrx/auth";
 import { createClient } from "@/utils/supabase/server";
 
 import type { SpaceBlock, SpaceDoc } from "../contract";

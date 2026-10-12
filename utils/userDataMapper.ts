@@ -1,6 +1,6 @@
 // File: utils/userDataMapper.ts
 import type { User as SupabaseUser } from "@supabase/supabase-js";
-import type { ApiClaimsUser } from "@/utils/supabase/claimsUser";
+import type { ApiClaimsUser } from "@ai-matrx/auth";
 import type { AdminLevel } from "@/utils/supabase/userSessionData";
 
 /**

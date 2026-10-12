@@ -2,7 +2,7 @@ import { applyOrganizationContextHeader } from "@/lib/api/organization-context";
 import { resolveServiceBaseUrl } from "@/lib/api/resolve-service-url";
 import { requireSelectedOrgId } from "@/lib/organizations/activeOrg";
 import { createClient } from "@/utils/supabase/client";
-import { getClaimsUser } from "@/utils/supabase/claimsUser";
+import { getClaimsUser } from "@ai-matrx/auth";
 
 import type { components } from "@ai-matrx/agents/generated/api-types";
 import {

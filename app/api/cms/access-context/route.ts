@@ -2,10 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient as createMainSupabaseClient } from "@/utils/supabase/server";
 import { createAdminClient } from "@/utils/supabase/adminClient";
 import { ensureOrgIdServer } from "@/lib/organizations/ensureOrgId";
-import {
-  isOrganizationRequiredServerError,
-  organizationRequiredResponse,
-} from "@/lib/organizations/organizationRequiredResponse";
+import { isOrganizationRequiredServerError, organizationRequiredResponse } from "@ai-matrx/auth/organizations";
 import { isUuidShape } from "@ai-matrx/kit/uuid";
 import {
   CMS_SITE_MEMBER_ADD_ACTION,
@@ -22,7 +19,7 @@ import {
   type CmsPageAccessRecord,
   type CmsSiteAccessRecord,
 } from "../_lib/cmsDb";
-import { getClaimsUser } from "@/utils/supabase/resolveUser";
+import { getClaimsUser } from "@ai-matrx/auth";
 
 type ResolvedTarget = {
   token: CmsAccessGateToken;

@@ -5,7 +5,7 @@ import { resolveSystemOrgId } from "@/lib/organizations/systemOrg";
 import { shortcutTable } from "@/lib/supabase/shortcutStorage";
 import { toGlobalOwnershipWire, toGlobalOwnershipWireList } from "@/lib/organizations/globalOwnership";
 import { pickWritableShortcutFields } from "./writable-fields";
-import { getClaimsUser } from "@/utils/supabase/resolveUser";
+import { getClaimsUser } from "@ai-matrx/auth";
 import { extractErrorMessage } from "@/utils/errors";
 
 /**

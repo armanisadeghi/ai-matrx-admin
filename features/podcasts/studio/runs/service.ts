@@ -9,7 +9,7 @@
 
 import { supabase } from "@/utils/supabase/client";
 import { writeOne } from "@/utils/supabase/writeOne";
-import { getClaimsUser } from "@/utils/supabase/claimsUser";
+import { getClaimsUser } from "@ai-matrx/auth";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
 import type { PcStudioRun } from "@/features/podcasts/types";
 import type { PodcastGenerateRequest } from "@/features/podcasts/generator/types";

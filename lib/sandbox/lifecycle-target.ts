@@ -2,7 +2,7 @@ import { createAdminClient } from "@/utils/supabase/adminClient";
 import { hasAdminPower } from "@/utils/auth/adminLaneServer";
 import { createClient } from "@/utils/supabase/server";
 import { resolvePersistedOrchestrator, type OrchestratorTarget } from "@/lib/sandbox/orchestrator-routing";
-import { getClaimsUser } from "@/utils/supabase/resolveUser";
+import { getClaimsUser } from "@ai-matrx/auth";
 
 export type SandboxLifecycleTarget = { rowId: string; sandboxId: string; orchestrator: OrchestratorTarget; deletedAt: string | null };
 export type SandboxLifecycleResolution = { ok: true; target: SandboxLifecycleTarget } | { ok: false; status: number; error: string };

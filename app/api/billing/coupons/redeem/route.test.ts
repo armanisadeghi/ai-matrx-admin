@@ -29,9 +29,9 @@ const subscriptionFilters: Array<[string, unknown[]]> = [];
 jest.mock("@/utils/supabase/server", () => ({
   createClient: jest.fn(async () => ({ schema: () => ({ rpc: (...a: unknown[]) => userRpc(...a) }) })),
 }));
-jest.mock("@/utils/supabase/resolveUser", () => ({
+jest.mock("@ai-matrx/auth", () => ({ ...jest.requireActual("@ai-matrx/auth"), ...(() => ({
   getClaimsUser: jest.fn(async () => ({ data: { user: signedIn } })),
-}));
+}))() }));
 jest.mock("@/utils/supabase/adminClient", () => ({
   createAdminClient: jest.fn(() => {
     const chain: Record<string, unknown> = {};

@@ -21,7 +21,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { requireEnv } from "@/utils/supabase/env";
-import { getClaimsUser } from "@/utils/supabase/resolveUser";
+import { getClaimsUser } from "@ai-matrx/auth";
 
 // API keys: ONLY sb_publishable_* / sb_secret_*. Legacy JWT keys are DEPRECATED
 // and BANNED — see https://supabase.com/docs/guides/getting-started/api-keys

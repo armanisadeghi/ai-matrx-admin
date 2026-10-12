@@ -77,9 +77,9 @@ const db = {
 jest.mock("@/utils/supabase/server", () => ({
   createClient: async () => ({ rpc: async () => ({ data: member, error: null }) }),
 }));
-jest.mock("@/utils/supabase/resolveUser", () => ({
+jest.mock("@ai-matrx/auth", () => ({ ...jest.requireActual("@ai-matrx/auth"), ...(() => ({
   getClaimsUser: async () => ({ data: { user: { id: caller, email: "a@b.c" } }, error: null }),
-}));
+}))() }));
 jest.mock("@/app/api/cms/_lib/cmsDb", () => ({ getCmsClient: () => db }));
 
 import { GET, POST } from "./route";

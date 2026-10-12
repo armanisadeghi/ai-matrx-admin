@@ -26,7 +26,7 @@ import { Input } from "@ai-matrx/design-system/controls";
 import { ProTextarea } from "@/components/official/ProTextarea";
 import { toast } from "@/lib/toast";
 import { useDurableDraft } from "@ai-matrx/kit/drafts";
-import { isOrganizationRequiredError } from "@/lib/organizations/organizationRequiredError";
+import { isOrganizationRequiredError } from "@ai-matrx/auth/organizations";
 import { createSession } from "../service";
 import { ROLE_ORDER, ROLES } from "../types";
 import { titleFromVision } from "../titleFromVision";

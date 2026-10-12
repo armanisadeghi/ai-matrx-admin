@@ -12,9 +12,9 @@ builder.then = (resolve: (v: unknown) => void) => resolve({ data: [], error: nul
 jest.mock("@/utils/supabase/client", () => ({
   supabase: { schema: () => ({ from: () => builder }) },
 }));
-jest.mock("@/utils/supabase/claimsUser", () => ({
+jest.mock("@ai-matrx/auth", () => ({ ...jest.requireActual("@ai-matrx/auth"), ...(() => ({
   getClaimsUser: async () => ({ data: { user: { id: "c4a1e2d7-5b3f-4e88-9a6c-0d2f7b81e395" } } }),
-}));
+}))() }));
 jest.mock("@/lib/organizations/ensureOrgId", () => ({ ensureOrgId: jest.fn() }));
 
 import { configureStore } from "@reduxjs/toolkit";

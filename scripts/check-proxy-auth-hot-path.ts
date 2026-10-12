@@ -545,7 +545,7 @@ function selfTest(): boolean {
       "an API route on getClaimsUser is clean",
       {
         "app/api/whoami/route.ts":
-          'import { getClaimsUser } from "@/utils/supabase/resolveUser";\n' +
+          'import { getClaimsUser } from "@ai-matrx/auth";\n' +
           "const { data: { user } } = await getClaimsUser(supabase);",
       },
       0,

@@ -31,13 +31,13 @@ jest.mock("@/utils/supabase/server", () => ({
     }),
   }),
 }));
-jest.mock("@/utils/supabase/claimsUser", () => ({
+jest.mock("@ai-matrx/auth", () => ({ ...jest.requireActual("@ai-matrx/auth"), ...(() => ({
   getClaimsUser: () => {
     mockStarted.push({ name: "claims", at: Date.now() });
     const answer = { data: { user: { id: "87a6e699-3622-4869-8843-d0867456c0dd" } } };
     return new Promise((resolve) => (mockClaimsDelayMs ? setTimeout(() => resolve(answer), mockClaimsDelayMs) : resolve(answer)));
   },
-}));
+}))() }));
 jest.mock("@ai-matrx/records-ui/first-page", () => ({
   serverRowsOf: (seed: { answers: Array<{ door: string; data: { on?: unknown; cap_ms?: unknown } }> }) => {
     const found = seed.answers.find((a) => a.door === "server_rows");

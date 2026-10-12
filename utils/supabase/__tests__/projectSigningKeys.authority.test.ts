@@ -18,11 +18,8 @@ import { AuthClient } from "@supabase/auth-js";
 import type { JWK } from "@supabase/supabase-js";
 
 const webcrypto = globalThis.crypto;
-import {
-  PROJECT_SIGNING_KEYS,
-  pinnedSigningKeysFor,
-} from "@/utils/supabase/projectSigningKeys";
-import { isUnverifiableTokenError } from "@/utils/supabase/unverifiableSession";
+import { PROJECT_SIGNING_KEYS, pinnedSigningKeysFor } from "@ai-matrx/auth";
+import { isUnverifiableTokenError } from "@ai-matrx/auth";
 
 const LIVE = "https://db.matrxserver.com";
 const CLONE = "https://ajrnyxwasqbmxdmzvfdy.supabase.co";

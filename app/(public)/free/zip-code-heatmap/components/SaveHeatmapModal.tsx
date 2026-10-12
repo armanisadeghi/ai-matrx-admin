@@ -18,7 +18,7 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { supabase } from '@/utils/supabase/client';
-import { getClaimsUser } from '@/utils/supabase/claimsUser';
+import { getClaimsUser } from "@ai-matrx/auth";
 import { useLoginHref } from '@/hooks/auth/useLoginHref';
 import { ensureOrgId } from '@/lib/organizations/ensureOrgId';
 import { Alert, AlertDescription } from '@/components/ui/alert';

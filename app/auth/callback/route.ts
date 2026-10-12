@@ -14,7 +14,7 @@ import {
   LEGACY_AUTH_COOKIE_NAME,
   supabaseNext,
 } from "@/utils/supabase/authCookie";
-import { getClaimsUser } from "@/utils/supabase/claimsUser";
+import { getClaimsUser } from "@ai-matrx/auth";
 import { extractErrorMessage } from "@/utils/errors";
 import { safeForwardedHost } from "@/utils/auth/safe-redirect";
 import {

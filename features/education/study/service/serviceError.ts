@@ -6,7 +6,7 @@
 // "Unknown error" (see project memory: Supabase message-less errors).
 
 import type { StudyResult } from "../types";
-import { isOrganizationRequiredError } from "@/lib/organizations/organizationRequiredError";
+import { isOrganizationRequiredError } from "@ai-matrx/auth/organizations";
 import { isNotAuthenticatedError } from "@/utils/auth/getUserId";
 
 /**

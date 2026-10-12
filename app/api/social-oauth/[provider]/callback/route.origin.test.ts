@@ -16,9 +16,9 @@ jest.mock("@/utils/supabase/server", () => ({
     auth: { getSession: async () => ({ data: { session: { access_token: "test-token" } } }) },
   })),
 }));
-jest.mock("@/utils/supabase/resolveUser", () => ({
+jest.mock("@ai-matrx/auth", () => ({ ...jest.requireActual("@ai-matrx/auth"), ...(() => ({
   getClaimsUser: jest.fn(async () => ({ data: { user: { id: "test-user" } } })),
-}));
+}))() }));
 jest.mock("@/lib/api/organization-context", () => ({
   applyOrganizationContextHeader: (headers: Record<string, string>, organizationId: string) => ({ ...headers, "X-Organization-Id": organizationId }),
 }));

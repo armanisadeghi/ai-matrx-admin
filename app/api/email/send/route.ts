@@ -6,7 +6,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { sendEmail, getDefaultFromAddress } from '@/lib/email/client';
 import { createClient } from '@/utils/supabase/server';
-import { getClaimsUser } from "@/utils/supabase/resolveUser";
+import { getClaimsUser } from "@ai-matrx/auth";
 
 export async function POST(request: NextRequest) {
   try {

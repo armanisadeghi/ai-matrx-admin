@@ -16,7 +16,7 @@ import {
 } from "@ai-matrx/chat/agents/services/mcp-oauth/pkce";
 import { validateSupabaseScopedMcpEndpointOverride } from "@ai-matrx/chat/agents/services/mcp-oauth/endpoint";
 import { supportsClientIdMetadataDocument } from "@ai-matrx/chat/agents/services/mcp-oauth/client-registration";
-import { getClaimsUser } from "@/utils/supabase/resolveUser";
+import { getClaimsUser } from "@ai-matrx/auth";
 import { extractErrorMessage } from "@/utils/errors";
 
 const CALLBACK_PATH = "/api/mcp/oauth/callback";

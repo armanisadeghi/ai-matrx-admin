@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useRef, useState } from "react";
-import { isOrganizationRequiredError } from "@/lib/organizations/organizationRequiredError";
+import { isOrganizationRequiredError } from "@ai-matrx/auth/organizations";
 import { toast, toastErrorAlreadyCaptured } from "@/lib/toast";
 import { noteCreateErrorMessage } from "../utils/writeErrors";
 

@@ -23,7 +23,7 @@ import {
 } from "@/lib/row-access/columns";
 import { guardedUpdate } from "@ai-matrx/data/db";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
-import { isOrganizationRequiredError } from "@/lib/organizations/organizationRequiredError";
+import { isOrganizationRequiredError } from "@ai-matrx/auth/organizations";
 import { recordUnavailable } from "@/lib/records/recordUnavailable";
 import type {
   AsResult,

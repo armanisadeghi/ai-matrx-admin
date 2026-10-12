@@ -15,7 +15,7 @@
 import { createClient } from "@/utils/supabase/client";
 import { awaitEffectiveOrganizationId } from "@/features/organizations/awaitWorkspace";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
-import { isOrganizationRequiredError } from "@/lib/organizations/organizationRequiredError";
+import { isOrganizationRequiredError } from "@ai-matrx/auth/organizations";
 import { isCapability, type Capability } from "./registry";
 import type {
   EntitlementCheckResult,

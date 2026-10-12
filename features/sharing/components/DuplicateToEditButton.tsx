@@ -6,7 +6,7 @@ import { Copy, Loader2, MessageSquare, ListChecks } from "lucide-react";
 import { Button } from "@ai-matrx/design-system";
 import { toast } from "@/lib/toast";
 import { createClient } from "@/utils/supabase/client";
-import { getClaimsUser } from "@/utils/supabase/claimsUser";
+import { getClaimsUser } from "@ai-matrx/auth";
 import { forkSharedResource } from "@/utils/permissions/shareLinks";
 
 /**

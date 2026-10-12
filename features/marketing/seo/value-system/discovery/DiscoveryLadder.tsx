@@ -49,7 +49,7 @@ import { useSeoCommandRun } from "@/features/marketing/seo/durable-run/useSeoCom
 import {
   OrganizationRequiredNotice,
 } from "@/features/organizations/components/OrganizationRequiredNotice";
-import { isOrganizationRequiredError } from "@/lib/organizations/organizationRequiredError";
+import { isOrganizationRequiredError } from "@ai-matrx/auth/organizations";
 import {
   DISCOVERY_STEP_ORDER,
   getDiscoveryStatus,

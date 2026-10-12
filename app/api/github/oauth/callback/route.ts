@@ -4,7 +4,7 @@ import { createClient } from "@/utils/supabase/server";
 import { GITHUB_OAUTH_COOKIE, parseGitHubOAuthSession, requestBaseUrl } from "../session";
 import { AIDREAM_PRODUCTION_URL } from "@/lib/api/endpoints";
 import { applyOrganizationContextHeader } from "@/lib/api/organization-context";
-import { getClaimsUser } from "@/utils/supabase/resolveUser";
+import { getClaimsUser } from "@ai-matrx/auth";
 import { operationFailed } from "@/utils/errors";
 import { buildMatrxRequestUrl, sendMatrxRequest } from "@ai-matrx/agents/matrx";
 

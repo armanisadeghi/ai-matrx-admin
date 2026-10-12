@@ -10,7 +10,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { extractErrorMessage } from "@/utils/errors";
-import { isOrganizationRequiredError } from "@/lib/organizations/organizationRequiredError";
+import { isOrganizationRequiredError } from "@ai-matrx/auth/organizations";
 import * as Api from "./service";
 import { createClient } from "@/utils/supabase/client";
 import { isUuidShape } from "@ai-matrx/kit/uuid";

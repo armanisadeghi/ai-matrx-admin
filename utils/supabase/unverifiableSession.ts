@@ -30,75 +30,26 @@ import {
   captureAuthDestination,
   loginHref,
 } from "@/utils/auth/auth-destination";
-import { pinnedSigningKeysFor } from "@/utils/supabase/projectSigningKeys";
+import { confirmUnverifiableSession as confirmFromPackage } from "@ai-matrx/auth";
 
 /** The sentence on the sign-in page. Error-state slot: ≤ 140 chars. */
 export const UNVERIFIABLE_SESSION_NOTICE =
   "Your session couldn't be verified here. Sign in again.";
 
-interface AuthErrorLike {
-  name?: string;
-  code?: string;
-  status?: number;
-  message?: string;
-}
-
-interface RefusalLike {
-  error?: { code?: string; message?: string } | null;
-  status?: number;
-}
-
-/**
- * Is this PostgREST result the database saying "I cannot verify this token"?
- * PGRST301 at 401 is a token that failed to decode or verify (wrong key,
- * bad signature). Expiry is PGRST303 on current PostgREST; older builds said
- * "JWT expired" under PGRST301, which refresh repairs — so it is excluded.
- */
-export function isUnverifiableTokenRefusal(result: RefusalLike): boolean {
-  if (result.status !== 401) return false;
-  if (result.error?.code !== "PGRST301") return false;
-  return !/expired/i.test(result.error?.message ?? "");
-}
-
-/**
- * Is this `getClaims()` error the authority's SETTLED verdict that the token
- * is not one of its own? `bad_jwt` is GoTrue's answer for a token signed by an
- * unknown key; `AuthInvalidJwtError` is auth-js's local signature failure.
- * Transport failures, a spent budget, a missing session and expiry are not.
- */
-export function isUnverifiableTokenError(error: AuthErrorLike | null | undefined): boolean {
-  if (!error) return false;
-  const name = String(error.name ?? "");
-  if (name === "AuthRetryableFetchError" || name === "TimeoutError" || name === "AbortError") {
-    return false;
-  }
-  if (name === "AuthSessionMissingError" || error.code === "session_not_found") return false;
-  const status = error.status;
-  if (status === 0 || status === 408 || status === 503 || status === 504) return false;
-  if (/expired/i.test(error.message ?? "")) return false;
-  return error.code === "bad_jwt" || name === "AuthInvalidJwtError";
-}
 
 export interface UnverifiableSessionAuth {
   getClaims(
     jwt?: string,
     options?: { jwks?: { keys: JWK[] } },
-  ): Promise<{ data: unknown; error: AuthErrorLike | null }>;
+  ): Promise<{ data: unknown; error: { name?: string; code?: string; status?: number; message?: string } | null }>;
   signOut(options: { scope: "local" }): Promise<unknown>;
 }
 
-/** Ask the authority once: is the stored session's token one it can verify? */
-export async function confirmUnverifiableSession(
+/** Ask the authority once: is the stored session's token one it can verify? (package detector) */
+export function confirmUnverifiableSession(
   auth: Pick<UnverifiableSessionAuth, "getClaims">,
 ): Promise<boolean> {
-  try {
-    const { error } = await auth.getClaims(undefined, {
-      jwks: { keys: pinnedSigningKeysFor(process.env.NEXT_PUBLIC_SUPABASE_URL) },
-    });
-    return isUnverifiableTokenError(error);
-  } catch {
-    return false;
-  }
+  return confirmFromPackage(auth, process.env.NEXT_PUBLIC_SUPABASE_URL);
 }
 
 /** Where the person is sent: sign-in, carrying the page they were on. */

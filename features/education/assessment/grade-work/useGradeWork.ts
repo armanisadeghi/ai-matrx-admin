@@ -18,7 +18,7 @@
 
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
 import { organizationRefusalMessage } from "@ai-matrx/chat/host/org";
-import { isOrganizationRequiredError } from "@/lib/organizations/organizationRequiredError";
+import { isOrganizationRequiredError } from "@ai-matrx/auth/organizations";
 import { useState } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { useFloatingRunWindow } from "@ai-matrx/chat/agents/hooks/useFloatingAgentRun";

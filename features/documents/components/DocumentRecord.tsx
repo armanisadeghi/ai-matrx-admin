@@ -32,7 +32,7 @@ import { cn } from "@/lib/utils";
 import { supabase } from "@/utils/supabase/client";
 import { useAppStore } from "@/lib/redux/hooks";
 import { documentWorkingCopy } from "@/features/documents/document-model/documentModels";
-import { getClaimsUser } from "@/utils/supabase/claimsUser";
+import { getClaimsUser } from "@ai-matrx/auth";
 import { ShareButton } from "@/features/sharing/components/ShareButton";
 import { univerDocToMarkdown } from "@/features/documents/univer-doc-to-markdown";
 import { RichCopySplit } from "@ai-matrx/chat/agent-copy/RichCopySplit";

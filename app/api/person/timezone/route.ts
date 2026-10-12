@@ -41,11 +41,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
 import { createAdminClient } from "@/utils/supabase/adminClient";
 import { ensureOrgIdServer } from "@/lib/organizations/ensureOrgId";
-import {
-  isOrganizationRequiredServerError,
-  organizationRequiredResponse,
-} from "@/lib/organizations/organizationRequiredResponse";
-import { getClaimsUser } from "@/utils/supabase/resolveUser";
+import { isOrganizationRequiredServerError, organizationRequiredResponse } from "@ai-matrx/auth/organizations";
+import { getClaimsUser } from "@ai-matrx/auth";
 
 /** One row of `communication.record_person_timezone`'s return table. */
 type RecordPersonTimezoneRow = {

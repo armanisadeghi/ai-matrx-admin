@@ -32,7 +32,7 @@ import type { EntityListService } from "@/lib/entity-list/config";
 import type { ArchivedFilter, EntityListQuery, EntityScopeCounts } from "@/lib/entity-list/types";
 import { createMemoryListService, type MemoryServiceOptions } from "@/lib/entity-list/memoryService";
 import { supabase } from "@/utils/supabase/client";
-import { getClaimsUser } from "@/utils/supabase/claimsUser";
+import { getClaimsUser } from "@ai-matrx/auth";
 import { tryWriteOne } from "@/utils/supabase/writeOne";
 import { pgErrorToError } from "@ai-matrx/data";
 import type { Database } from "@/types/database.types";

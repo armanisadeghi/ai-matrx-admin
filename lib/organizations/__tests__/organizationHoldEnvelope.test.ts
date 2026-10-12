@@ -27,11 +27,8 @@
 //   git show origin/main:lib/organizations/organizationRequiredServerError.ts
 // (the pre-unification commit) swapped in for this file.
 
-import {
-  OrganizationRequiredServerError,
-  organizationRequiredEnvelope,
-} from "@/lib/organizations/organizationRequiredServerError";
-import { isOrganizationRequiredEnvelope } from "@/lib/organizations/organizationRequiredError";
+import { OrganizationRequiredServerError, organizationRequiredEnvelope } from "@ai-matrx/auth/organizations";
+import { isOrganizationRequiredEnvelope } from "@ai-matrx/auth/organizations";
 import {
   AIDREAM_ORGANIZATION_HOLD_ENVELOPE,
   AIDREAM_ORGANIZATION_HOLD_MEMBER,

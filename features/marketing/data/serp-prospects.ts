@@ -23,7 +23,7 @@
 import type { MatrxDataTableQueryState } from "@ai-matrx/design-system/data-table/types";
 import { assertData } from "@/features/marketing/data/service";
 import { supabase } from "@/utils/supabase/client";
-import { getClaimsUser } from "@/utils/supabase/claimsUser";
+import { getClaimsUser } from "@ai-matrx/auth";
 import { requireAuthenticatedSupabaseSession } from "@/utils/supabase/webDb";
 import type { Json } from "@/types/database.types";
 
