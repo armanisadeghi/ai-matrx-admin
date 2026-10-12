@@ -49,7 +49,7 @@ importers:
         version: 0.14.44(@supabase/supabase-js@2.117.2(@opentelemetry/api@1.9.0))(@tailwindcss/typography@0.5.20(tailwindcss@4.3.3))(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(recharts@3.10.1(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react-is@19.3.0)(react@19.3.0)(redux@5.0.1))
       '@ai-matrx/auth':
         specifier: latest
-        version: 0.2.0(@supabase/supabase-js@2.117.2(@opentelemetry/api@1.9.0))(react@19.3.0)
+        version: 0.2.1(@supabase/supabase-js@2.117.2(@opentelemetry/api@1.9.0))(react@19.3.0)
       '@ai-matrx/browser-audio':
         specifier: latest
         version: 0.5.1(react@19.3.0)
@@ -1188,8 +1188,8 @@ packages:
       react-dom:
         optional: true
 
-  '@ai-matrx/auth@0.2.0':
-    resolution: {integrity: sha512-SEXnegRO4v86aX8JtSsI+nlmj6j3BSKrTmtf0/HRwN0REfTulVcEdyjqyECyVYAJKv0FJRQbpoP47I0N1OJvgw==}
+  '@ai-matrx/auth@0.2.1':
+    resolution: {integrity: sha512-bv/3grq9g8uMji0humDxCPOB1vloo+RqoYnuE3rG3bEaEvDuBNM3Uf6mERg3XKGKJoGtV4nYvwOQ/eh8rCZR/Q==}
     engines: {node: '>=20'}
     peerDependencies:
       '@supabase/supabase-js': '>=2.0.0'
@@ -13475,7 +13475,7 @@ snapshots:
 
   '@ai-matrx/api@0.1.7(@supabase/supabase-js@2.117.2(@opentelemetry/api@1.9.0))(react@19.3.0)':
     dependencies:
-      '@ai-matrx/auth': 0.2.0(@supabase/supabase-js@2.117.2(@opentelemetry/api@1.9.0))(react@19.3.0)
+      '@ai-matrx/auth': 0.2.1(@supabase/supabase-js@2.117.2(@opentelemetry/api@1.9.0))(react@19.3.0)
       '@ai-matrx/kit': 0.42.3(react@19.3.0)
     transitivePeerDependencies:
       - '@supabase/supabase-js'
@@ -13520,7 +13520,7 @@ snapshots:
       - react-native
       - recharts
 
-  '@ai-matrx/auth@0.2.0(@supabase/supabase-js@2.117.2(@opentelemetry/api@1.9.0))(react@19.3.0)':
+  '@ai-matrx/auth@0.2.1(@supabase/supabase-js@2.117.2(@opentelemetry/api@1.9.0))(react@19.3.0)':
     dependencies:
       '@ai-matrx/kit': 0.42.3(react@19.3.0)
       '@supabase/ssr': 0.12.7(@supabase/supabase-js@2.117.2(@opentelemetry/api@1.9.0))
@@ -13758,7 +13758,7 @@ snapshots:
 
   '@ai-matrx/data@0.29.22(@supabase/supabase-js@2.117.2(@opentelemetry/api@1.9.0))(react@19.3.0)':
     dependencies:
-      '@ai-matrx/auth': 0.2.0(@supabase/supabase-js@2.117.2(@opentelemetry/api@1.9.0))(react@19.3.0)
+      '@ai-matrx/auth': 0.2.1(@supabase/supabase-js@2.117.2(@opentelemetry/api@1.9.0))(react@19.3.0)
       '@ai-matrx/files': 0.1.6(@supabase/supabase-js@2.117.2(@opentelemetry/api@1.9.0))(react@19.3.0)
       '@ai-matrx/kit': 0.42.3(react@19.3.0)
       '@ai-matrx/realtime': 0.10.8(react@19.3.0)
