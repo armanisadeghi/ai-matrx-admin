@@ -196,8 +196,7 @@ export function PeriodStatePanel({
                   at <span className="font-medium">{period.hoursNow}</span>
                 </>
               ) : null}
-              . The approval on file is not for these numbers, so the period has to be approved again
-              before it can go to payroll.
+              . Approve it again before it can go to payroll.
             </span>
           </p>
         </div>

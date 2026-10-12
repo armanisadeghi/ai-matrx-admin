@@ -21,6 +21,7 @@
  * scroll of the page body.
  */
 
+import { InfoHint } from "@/components/official/InfoHint";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
@@ -234,10 +235,10 @@ function MyTimesheetBody({
 
       {timesheet.openExceptions.length > 0 ? (
         <section className="rounded-lg border border-border bg-card p-4">
-          <h2 className="text-sm font-semibold">Things flagged on this pay period</h2>
-          <p className="text-xs text-muted-foreground">
-            Your manager resolves these. You can add a comment from your HR tasks.
-          </p>
+          <h2 className="flex items-center gap-2 text-sm font-semibold">
+            Things flagged on this pay period
+            <InfoHint text="Your manager resolves these; you can add a comment from your HR tasks." />
+          </h2>
           {/* An employee reading "no meal break was provided" must be able to open the record
               of it — read-only for them, but reachable. */}
           <ExceptionSentenceList exceptions={timesheet.openExceptions} className="mt-2" />

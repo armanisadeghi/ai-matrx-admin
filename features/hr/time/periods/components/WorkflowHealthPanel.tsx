@@ -111,12 +111,10 @@ export function WorkflowHealthPanel({ workflow, hrefForEmployment }: WorkflowHea
   return (
     <section className="rounded-lg border border-border bg-card">
       <div className="border-b border-border p-4">
-        <h3 className="text-[13px] font-semibold text-foreground">Attestation progress</h3>
-        <p className="mt-1 max-w-2xl text-[12px] leading-relaxed text-muted-foreground">
-          Whether each timecard is waiting on a <em>person</em> or on a <em>flow that has died</em>.
-          The counts above this say how many are undecided; these say whether anybody was actually
-          asked.
-        </p>
+        <h3 className="flex items-center gap-2 text-[13px] font-semibold text-foreground">
+          Attestation progress
+          <InfoHint text="Shows whether each undecided timecard waits on a person or a stalled flow, and whether anyone was asked." />
+        </h3>
 
         {/* Five columns now: `unreachable` is its own count because it is its own answer. */}
         <dl className="mt-3 grid grid-cols-2 gap-x-6 gap-y-2 sm:grid-cols-5">

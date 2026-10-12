@@ -1,5 +1,6 @@
 "use client";
 
+import { InfoHint } from "@/components/official/InfoHint";
 import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
 /**
  * features/hr/time/timesheet/EmploymentPeriodDetail.tsx — ROUTE 29,
@@ -221,12 +222,12 @@ function DetailBody({
       {/* AFTER LOCK: the edit is ABSENT, and the correct lane is offered in its place. */}
       {locked ? (
         <section className="rounded-lg border border-border bg-muted/40 p-4">
-          <h2 className="text-sm font-semibold">This pay period is closed</h2>
+          <h2 className="flex items-center gap-2 text-sm font-semibold">
+            This pay period is closed
+            <InfoHint text="The closed period is never rewritten and a delivered export never regenerated, since that would double-pay." />
+          </h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            Punches cannot be corrected here any more. A correction now becomes an adjustment that
-            rides the next payroll run and stays tagged to this period — the closed period is never
-            rewritten, and a delivered export is never regenerated, because regenerating in place
-            double-pays.
+            Corrections now become adjustments on the next payroll run.
           </p>
           <Link
             href={hrTimePeriodHref(timesheet.payPeriod.id, orgRef)}
@@ -237,11 +238,10 @@ function DetailBody({
         </section>
       ) : (
         <section className="rounded-lg border border-border bg-card p-4">
-          <h2 className="text-sm font-semibold">Correcting a punch</h2>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Open the raw punch register to void and replace a punch. A punch is never edited, a
-            reason is always required, and the employee is always told what changed and why.
-          </p>
+          <h2 className="flex items-center gap-2 text-sm font-semibold">
+            Correcting a punch
+            <InfoHint text="Punches are never edited; void and replace one with a reason, and the employee is told what changed." />
+          </h2>
           <Link
             href={hrPunchesHref(orgRef, { employment: timesheet.employmentId })}
             className="mt-2 inline-flex items-center gap-1.5 text-sm font-medium underline underline-offset-4"

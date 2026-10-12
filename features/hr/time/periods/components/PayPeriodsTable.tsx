@@ -197,7 +197,7 @@ export function PayPeriodsTable({ rows, isLoading, hrefFor, read, query, sourceT
       emptyState={{
         title: "No pay periods yet",
         description:
-          "Pay periods are generated from a pay group's calendar. Once a pay group has a calendar, its periods appear here and move through the lifecycle as time is submitted, approved, exported and locked.",
+          "Periods appear once a pay group has a payroll calendar.",
       }}
     />
     </NonEditableContextMenu>

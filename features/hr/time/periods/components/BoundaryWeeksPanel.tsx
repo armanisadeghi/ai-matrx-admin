@@ -19,6 +19,7 @@
  * NO CLIENT COMPUTES ANYTHING: `boundaryWorkweekIds` is the server's list.
  */
 
+import { InfoHint } from "@/components/official/InfoHint";
 import { CalendarRange } from "lucide-react";
 
 import { announceComingSoon } from "@/lib/coming-soon/announce";
@@ -64,8 +65,7 @@ export function BoundaryWeeksPanel({
           Boundary weeks
         </h3>
         <p className="mt-1.5 text-[12px] leading-relaxed text-muted-foreground">
-          No hours have been computed for this period yet, so whether any workweek straddles its
-          edges is not yet known. This answer appears once the recompute engine has run.
+          Not known until this period&apos;s hours are computed.
         </p>
       </section>
     );

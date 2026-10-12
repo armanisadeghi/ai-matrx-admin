@@ -1,5 +1,6 @@
 "use client";
 
+import { InfoHint } from "@/components/official/InfoHint";
 import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
 /**
  * features/hr/time/shared/RuleSnapshot.tsx — the door behind every computed figure.
@@ -265,9 +266,10 @@ function RuleSnapshotBody({ request }: { request: RuleSnapshotRequest }) {
 
           {calc.autoCloseEstimate ? (
             <div className="rounded-md border border-amber-500/30 bg-amber-500/5 px-3 py-2 text-xs">
-              This figure comes from an <span className="font-medium">automatically closed punch</span>
-              , so the end time is an estimate rather than something the employee recorded.
-              Acknowledging an estimate confirms it; it never turns it into a measurement.
+              <span className="inline-flex items-center gap-1.5">
+                Estimated end time: this punch was closed automatically.
+                <InfoHint text="Acknowledging an estimate confirms it but never turns it into a recorded time." />
+              </span>
               {calc.autoCloseRuleId ? (
                 <button
                   type="button"

@@ -130,9 +130,7 @@ export function AttestationBar({
                 </>
               ) : (
                 <span className="mt-1.5 block text-muted-foreground">
-                  No statement was recorded for this attestation, so there are no words to show
-                  you here. Your confirmation itself is on the record; the wording it was made
-                  against was not stored with it.
+                  No wording was stored with this attestation. Your confirmation is still on record.
                 </span>
               )}
             </span>

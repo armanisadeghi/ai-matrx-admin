@@ -27,6 +27,7 @@
  * bulk-preview, not in this dialog.
  */
 
+import { InfoHint } from "@/components/official/InfoHint";
 import { useState } from "react";
 import { AlertTriangle, CheckCircle2, XCircle } from "lucide-react";
 
@@ -280,10 +281,10 @@ export function BulkApproveDialog({
               emptyState={{ title: "No timecards to approve" }}
             />
 
-            <p className="text-[11px] text-muted-foreground">
-              Figures are per timecard, exactly as the payroll engine calculated them. This page does
-              not add them up — a total worked out in a browser is a total that can disagree with
-              payroll.
+            {/* No total on purpose: a browser-side total can disagree with payroll. */}
+            <p className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+              Figures per timecard
+              <InfoHint text="Figures are per timecard as payroll calculated them; no total is added up here." />
             </p>
           </div>
         )}
@@ -386,7 +387,7 @@ function BulkOutcomes({
               >
                 <span className="font-medium">{nameFor(o.step_id)}</span>
                 {/* The reason, not a count. */}
-                <span className="mt-0.5 block">{o.detail ?? o.reason ?? "The server refused this one and did not say why."}</span>
+                <span className="mt-0.5 block">{o.detail ?? o.reason ?? "No reason was given for this refusal."}</span>
                 <ErrorAlchemyMenu error={o.detail ?? o.reason ?? undefined} operation="Approve this timesheet step" />
               </li>
             ))}

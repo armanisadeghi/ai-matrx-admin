@@ -14,6 +14,7 @@
  * stopped rendering voids.
  */
 
+import { InfoHint } from "@/components/official/InfoHint";
 import Link from "next/link";
 import type { HrFixtureCase } from "@/features/hr/mock/transport";
 
@@ -49,9 +50,9 @@ export function RawPunchesWindowBody({
     <div className="space-y-3 p-4">
       <HrTimeReadState loading={query.loading} error={query.error}>
         <>
-          <p className="text-xs text-muted-foreground">
-            Exactly what was recorded on the clock, in the time zone each punch was stamped in. No
-            hours are calculated on this panel — the figure you clicked is on the grid.
+          <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
+            Raw punches
+            <InfoHint text="Raw clock records in each punch's own time zone, never calculated; the figure you clicked is on the grid." />
           </p>
 
           {days.length === 0 ? (

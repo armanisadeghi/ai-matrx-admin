@@ -20,6 +20,7 @@
  * NO CLIENT COMPUTES ANYTHING: `hoursDelta` and `amountDelta` arrive computed.
  */
 
+import { InfoHint } from "@/components/official/InfoHint";
 import Link from "next/link";
 import { FileWarning, Plus } from "lucide-react";
 
@@ -44,14 +45,17 @@ export function PostLockAdjustments({ period, rows, isLoading }: PostLockAdjustm
     <section className="rounded-lg border border-border bg-card">
       <div className="flex flex-wrap items-start justify-between gap-3 border-b border-border p-4">
         <div>
-          <h3 className="text-[13px] font-semibold text-foreground">Corrections after lock</h3>
+          <h3 className="flex items-center gap-2 text-[13px] font-semibold text-foreground">
+            Corrections after lock
+            <InfoHint text="Adjustments stay tagged to this period; the locked period and its delivered export are never rewritten." />
+          </h3>
           <p className="mt-1 max-w-2xl text-[12px] leading-relaxed text-muted-foreground">
             {lockedYet
               ? // The server ships `locked_period_note` on every row and it says the same thing;
                 // this is the panel-level statement for when the list is empty and there is no row
                 // to carry it.
-                "This period is not editable. A correction is recorded as an adjustment that rides the next payroll export, tagged back to this period. The locked period itself is never rewritten and the delivered export is never regenerated."
-              : "This period is still editable, so a correction here is a punch edit on the person's timesheet — not an adjustment. The adjustment lane opens once the period is locked."}
+                "Locked: corrections become adjustments on the next export."
+              : "Still open: correct punches on the timesheet instead."}
           </p>
         </div>
         <Button
@@ -117,9 +121,8 @@ export function PostLockAdjustments({ period, rows, isLoading }: PostLockAdjustm
                 <p className="mt-2 flex items-start gap-2 rounded-md border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-[12px] leading-relaxed text-amber-800 dark:text-amber-300">
                   <FileWarning className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden />
                   <span>
-                    The hours above are correct and are payable. No amount is shown because a rule
-                    that contributes to it is still awaiting verification — we will not print a
-                    figure we cannot stand behind.
+                    These hours are payable. No amount yet: a contributing rule is awaiting
+                    verification.
                   </span>
                 </p>
               ) : row.amountDelta !== null ? (

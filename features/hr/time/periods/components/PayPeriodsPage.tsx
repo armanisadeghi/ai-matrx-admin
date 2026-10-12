@@ -83,11 +83,10 @@ export function PayPeriodsPage() {
         />
 
         <section className="mt-8">
-          <h2 className="text-sm font-semibold text-foreground">Export history</h2>
-          <p className="mt-1 max-w-3xl text-[12px] leading-relaxed text-muted-foreground">
-            Every payroll file this employer has produced, across all pay groups, with what payroll
-            did with it. Exports go one way — hours and earnings out, never a paycheque back.
-          </p>
+          <h2 className="flex items-center gap-2 text-sm font-semibold text-foreground">
+            Export history
+            <InfoHint text="Every payroll file produced across all pay groups; exports send hours and earnings out, nothing comes back." />
+          </h2>
           <div className="mt-3">
             {/* `null` is this component's org-wide mode: every export, not one period's. */}
             <ExportRunList payPeriodId={null} mockCase={mockCase} />

@@ -217,8 +217,7 @@ export function WeekSplitNote({ className }: { className?: string }) {
     >
       <Scissors className="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted-foreground" aria-hidden />
       <span>
-        A shift crosses the start of this workweek, so its hours appear in both week blocks, split at
-        the boundary. Overtime is still calculated on the whole week — never on either fragment.
+        This shift is split at the week boundary. Overtime still uses the whole week.
       </span>
     </p>
   );

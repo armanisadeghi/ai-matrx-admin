@@ -26,6 +26,7 @@
  * NO CLIENT COMPUTES ANYTHING: every count, date and frequency here is the server's.
  */
 
+import { InfoHint } from "@/components/official/InfoHint";
 import { useState } from "react";
 import { AlertTriangle, CalendarPlus, CheckCircle2, Loader2 } from "lucide-react";
 
@@ -128,12 +129,8 @@ export function GeneratePeriodsPanel({
       <h2 className="flex items-center gap-2 text-[13px] font-semibold text-foreground">
         <CalendarPlus className="h-4 w-4 text-muted-foreground" aria-hidden />
         Generate pay periods
+        <InfoHint text="Builds the pay group's calendar from its frequency up to your date; re-running only adds what is missing." />
       </h2>
-      <p className="mt-1 max-w-2xl text-[12px] leading-relaxed text-muted-foreground">
-        Builds a pay group&apos;s payroll calendar from its frequency and its first period start, up
-        to the date you choose. Running it again is safe — it creates only what is missing, and it
-        also fills in the employee rows for any period that was created without them.
-      </p>
 
       <div className="mt-3 flex flex-wrap items-end gap-3">
         <div className="min-w-[15rem]">
@@ -154,13 +151,11 @@ export function GeneratePeriodsPanel({
             />
           ) : structure.denied && payGroups.length === 0 ? (
             <p className="mt-1 text-[12px] leading-relaxed text-muted-foreground">
-              Your HR role cannot read this employer&apos;s pay groups, so there is nothing to
-              generate from here.
+              Your HR role can&apos;t read this employer&apos;s pay groups.
             </p>
           ) : payGroups.length === 0 ? (
             <p className="mt-1 text-[12px] leading-relaxed text-muted-foreground">
-              This employer has no active pay group yet. A payroll calendar is generated from a pay
-              group&apos;s frequency, so one has to exist before there is anything to generate.
+              Add an active pay group to generate a calendar.
             </p>
           ) : (
             <Select value={selected} onValueChange={setPayGroupId}>

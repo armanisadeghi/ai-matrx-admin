@@ -24,6 +24,7 @@
  * over hours and no timestamp subtraction anywhere below — see `scripts/check-hr-time-arithmetic.ts`.
  */
 
+import { InfoHint } from "@/components/official/InfoHint";
 import { useEffect, useState } from "react";
 import { ChevronDown, ChevronRight, Layers, SunMoon } from "lucide-react";
 
@@ -187,11 +188,9 @@ function WeekBlock({
         {/* See the derivation comment at the top of this component. */}
         {weekReachesOutsidePeriod ? (
           <p className="mt-2 rounded-md border border-border bg-card px-2.5 py-1.5 text-xs">
-            This workweek runs {formatLocalDate(ww.weekStartLocalDate, { weekday: true })} to{" "}
-            {formatLocalDate(weekLastDate, { weekday: true })}, past the edge of this pay period.
-            The week totals below cover the <span className="font-medium">whole workweek</span>;
-            the day rows cover only the days inside this period, so the two are different
-            quantities and need not add up to each other.
+            Runs {formatLocalDate(ww.weekStartLocalDate, { weekday: true })} to{" "}
+            {formatLocalDate(weekLastDate, { weekday: true })}, past this pay period.{" "}
+            <InfoHint text="Week totals cover the whole workweek but day rows only days in this period, so they need not add up." />
           </p>
         ) : null}
 
@@ -271,12 +270,8 @@ function RateBreakdown({ workweek }: { workweek: WorkweekRow }) {
     <section className="space-y-2">
       <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
         How the weighted average was reached
+        <InfoHint text="With several rates there is no single rate, so under the FLSA overtime uses the weighted average of all rates." className="ml-1.5 normal-case" />
       </h3>
-      <p className="text-xs text-muted-foreground">
-        This week was worked at more than one rate, so overtime is not paid at &ldquo;the&rdquo;
-        rate — there isn&rsquo;t one. Under the FLSA it is paid at the weighted average of every
-        rate worked.
-      </p>
       <div className="overflow-x-auto">
         <table className="w-full min-w-[26rem] text-xs">
           <thead>
