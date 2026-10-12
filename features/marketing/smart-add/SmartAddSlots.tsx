@@ -86,8 +86,8 @@ export function SmartAddSlots({
   /** A value the person typed into a slot ("Custom"). */
   onAdd: (item: EvidenceItem) => void;
 }) {
-  const custom = (field: EvidenceField | "contact", placeholder: string) => (
-    <CustomAdd field={field} placeholder={placeholder} onAdd={onAdd} disabled={locked} />
+  const custom = (field: EvidenceField | "contact", placeholder: string, label?: string) => (
+    <CustomAdd field={field} placeholder={placeholder} label={label} onAdd={onAdd} disabled={locked} />
   );
   const of = (...fields: EvidenceField[]) => items.filter((i) => fields.includes(i.field));
   const socials = of("social");
@@ -181,9 +181,9 @@ export function SmartAddSlots({
 
       <Slot title="About" empty={of("description", "category", "tagline").length ? null : empty} after={
         <div className="flex flex-wrap">
-          {custom("tagline", "Tagline")}
-          {custom("description", "What you do, in a sentence or two")}
-          {custom("category", "Category")}
+          {custom("tagline", "Tagline", "Tagline")}
+          {custom("description", "What you do, in a sentence or two", "Description")}
+          {custom("category", "Category", "Category")}
         </div>
       }>
         {of("tagline").map((i) => (

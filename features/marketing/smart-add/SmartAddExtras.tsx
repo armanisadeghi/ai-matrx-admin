@@ -32,11 +32,14 @@ const CONTACT_KINDS: SelectOption<"phone" | "email" | "address">[] = [
 export function CustomAdd({
   field,
   placeholder,
+  label = "Custom",
   onAdd,
   disabled,
 }: {
   field: EvidenceField | "contact";
   placeholder: string;
+  /** The button's words when one slot has several Custom entries ("Tagline"). */
+  label?: string;
   onAdd: (item: EvidenceItem) => void;
   disabled?: boolean;
 }) {
@@ -67,7 +70,7 @@ export function CustomAdd({
     return (
       <div className="px-4 pb-1">
         <Button variant="quiet" icon={<Plus />} disabled={disabled} onClick={() => setOpen(true)}>
-          Custom
+          {label}
         </Button>
       </div>
     );

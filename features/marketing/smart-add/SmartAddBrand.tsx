@@ -721,7 +721,7 @@ const SETUP_STATE_LABEL = {
 } as const;
 
 const SETUP_STEP_LABEL: Record<string, string> = {
-  logo: "Logo",
+  logo: "Images",
   accounts: "Accounts",
   history: "Post history",
 };
