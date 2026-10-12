@@ -1891,8 +1891,10 @@ export async function getSnapshotReceiptWatermark(
     .limit(1)
     .abortSignal(signal ?? new AbortController().signal)
     .maybeSingle();
-  const row = assertData(response.data, response.error);
-  return row?.created_at ?? null;
+  // A page with no snapshot yet is an empty list, not a failure: only a real error throws.
+  // (Becomes `makeAssertData(...).nullable` once @ai-matrx/kit 0.43 is on npm.)
+  if (response.error) assertData(null, response.error);
+  return response.data?.created_at ?? null;
 }
 
 export async function listSnapshotReceiptPage(input: {
