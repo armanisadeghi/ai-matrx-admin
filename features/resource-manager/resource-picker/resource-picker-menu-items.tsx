@@ -22,7 +22,8 @@ import {
   Plug,
   Upload,
 } from "lucide-react";
-import { Google, Youtube } from "@/components/icons/brand-icons";
+import { Youtube } from "@/components/icons/brand-icons";
+import { GoogleG as Google } from "@/components/icons/google-brand";
 
 import type { ResourcePickerViewId } from "@ai-matrx/chat/agents/resources/picker-view-id";
 export type { ResourcePickerViewId };

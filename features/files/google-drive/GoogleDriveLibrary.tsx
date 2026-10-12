@@ -5,6 +5,7 @@
  * restricted whole-Drive capability.
  */
 
+import { GoogleDriveLogo } from "@/components/icons/google-brand";
 import { FormEvent, useEffect, useRef, useState } from "react";
 import {
   ChevronLeft,
@@ -470,7 +471,8 @@ export function GoogleDriveLibraryContent({ environment }: { environment: Google
             <div className="flex items-center gap-2 text-sm font-medium text-primary">
               <ShieldCheck className="h-4 w-4" /> Internal test
             </div>
-            <h1 className="mt-1 text-2xl font-semibold tracking-tight">
+            <h1 className="mt-1 flex items-center gap-2 text-2xl font-semibold tracking-tight">
+              <GoogleDriveLogo className="size-7 shrink-0" />
               Google Drive
             </h1>
           </div>

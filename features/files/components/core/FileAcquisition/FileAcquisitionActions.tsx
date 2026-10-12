@@ -2,7 +2,7 @@
 
 import { useCallback, useMemo, useRef, useState } from "react";
 import { Cloud, FileUp, FolderOpen, FolderUp, Loader2 } from "lucide-react";
-import { GoogleDrive } from "@/components/icons/brand-icons";
+import { GoogleDriveLogo as GoogleDrive } from "@/components/icons/google-brand";
 import { Button } from "@ai-matrx/design-system";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { useGoogleConnectionInventory } from "@/features/marketing/google/hooks";
@@ -27,7 +27,7 @@ type FileAcquisitionActionKey =
 type FileAcquisitionAction = {
   key: FileAcquisitionActionKey;
   label: string;
-  icon: typeof FileUp;
+  icon: import("react").ComponentType<{ className?: string }>;
 };
 
 export interface FileAcquisitionActionsProps {
@@ -348,6 +348,7 @@ export function FileAcquisitionActions({
   }
 
   const actions = (
+    (
     [
       enableLocalFiles
         ? {
@@ -384,7 +385,8 @@ export function FileAcquisitionActions({
             icon: Cloud,
           }
         : null,
-    ] satisfies Array<FileAcquisitionAction | null>
+    ] as Array<FileAcquisitionAction | null>
+    )
   ).filter((action): action is FileAcquisitionAction => action !== null);
 
   if (presentation === "inline") {

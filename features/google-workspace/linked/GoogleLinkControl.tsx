@@ -34,6 +34,7 @@ import { errorSentence, toast } from "@/lib/toast";
 import { approvalQueueHref, SENT_FOR_APPROVAL_MESSAGE } from "@/features/google-workspace/service";
 
 import { GoogleDocsMark, GoogleSheetsMark } from "./marks";
+import { GoogleG } from "@/components/icons/google-brand";
 import {
   readGoogleLink,
   writeGoogleLink,
@@ -454,7 +455,7 @@ export function GoogleLinkMenuItems({ g, withLabel = true }: { g: GoogleLink; wi
   if (g.state.status !== "ready") {
     return (
       <DropdownMenuItem onSelect={() => g.connect(`to link this ${g.adapter.recordKind} with ${appName}`)}>
-        <Mark className="size-4" />
+        <GoogleG className="size-4" />
         Connect Google
       </DropdownMenuItem>
     );
@@ -475,7 +476,7 @@ export function GoogleLinkMenuItems({ g, withLabel = true }: { g: GoogleLink; wi
         </DropdownMenuLabel>
       )}
       <DropdownMenuItem onSelect={() => g.openInGoogle(link.webViewLink)}>
-        <ExternalLink className="size-4" />
+        <Mark className="size-4" />
         Open in {appName}
       </DropdownMenuItem>
       <DropdownMenuItem disabled={!g.editable} onSelect={() => void g.update()}>

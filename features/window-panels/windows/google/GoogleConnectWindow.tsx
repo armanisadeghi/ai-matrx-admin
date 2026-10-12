@@ -7,9 +7,9 @@
  * compose into the Workspace overview and settings surfaces.
  */
 
-import { ArrowLeft, FileText, LayoutDashboard } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { GoogleDrive } from "@/components/icons/brand-icons";
+import { GoogleDriveLogo, GoogleG } from "@/components/icons/google-brand";
 import {
   closeGoogleWorkspaceConnect,
   GoogleWorkspaceConnectBody,
@@ -75,11 +75,11 @@ export function GoogleConnectWindow({
       titleNode={
         <span className="flex items-center gap-1.5">
           {mode === "drive-import" ? (
-            <GoogleDrive className="h-3.5 w-3.5 text-primary" />
+            <GoogleDriveLogo className="h-3.5 w-3.5" />
           ) : isOverview ? (
-            <LayoutDashboard className="h-3.5 w-3.5 text-primary" />
+            <GoogleG className="h-3.5 w-3.5" />
           ) : (
-            <FileText className="h-3.5 w-3.5 text-primary" />
+            <GoogleG className="h-3.5 w-3.5" />
           )}
           {mode === "drive-import"
             ? "Import from Google Drive"

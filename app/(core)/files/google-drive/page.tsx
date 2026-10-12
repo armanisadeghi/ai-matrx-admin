@@ -1,3 +1,4 @@
+import { GoogleDriveLogo } from "@/components/icons/google-brand";
 import { redirect } from "next/navigation";
 import { GoogleDriveLibrary } from "@/features/files/google-drive/GoogleDriveLibrary";
 import RouteHeader from "@/features/shell/components/header/RouteHeader";
@@ -14,6 +15,7 @@ export default async function GoogleDriveFilesPage() {
         left={
           <>
             <ChevronLeftTapButton href="/files" ariaLabel="Back to Files" />
+            <GoogleDriveLogo className="ml-2 size-4 shrink-0" />
             <span className="ml-2 truncate text-sm font-medium text-foreground">
               Google Drive
             </span>

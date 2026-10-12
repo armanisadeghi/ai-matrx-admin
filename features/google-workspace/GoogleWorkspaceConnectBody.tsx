@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { CircleAlert, ExternalLink, Loader2, Mail, Plus } from "lucide-react";
 import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import { Button } from "@/components/ui/button";
-import { GoogleDrive } from "@/components/icons/brand-icons";
+import { GoogleDriveLogo } from "@/components/icons/google-brand";
 import { Input } from "@ai-matrx/design-system/controls";
 import { toast, recordToast } from "@/lib/toast";
 import { LazyGoogleAPIProvider } from "@/providers/google-provider/LazyGoogleAPIProvider";
@@ -613,7 +613,7 @@ function GoogleWorkspaceConnectBodyContent({
         ) : !connection ? (
           <div className="flex flex-col gap-3 rounded-md border border-border bg-muted/30 p-3">
             <div className="flex items-center gap-2 text-sm font-medium text-foreground">
-              <GoogleDrive className="h-4 w-4 shrink-0" />
+              <GoogleDriveLogo className="h-4 w-4 shrink-0" />
               {reason
                 ? `Connect Google ${reason}`
                 : mode === "drive-import"
