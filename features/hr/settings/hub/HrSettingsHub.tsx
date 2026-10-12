@@ -159,10 +159,6 @@ export function HrSettingsHub() {
                     ? "One setting HR reads is not defined anywhere"
                     : `${missing.length} settings HR reads are not defined anywhere`}
                 </h2>
-                <p className="text-sm text-muted-foreground">
-                  {/* Missing registry default is a config defect; a silent fallback would freeze the knob. */}
-                  Send these key names to whoever runs the platform.
-                </p>
               </div>
             </div>
             <ul className="space-y-1 pl-8">
@@ -172,6 +168,10 @@ export function HrSettingsHub() {
                 </li>
               ))}
             </ul>
+            {/* Missing registry default is a config defect; a silent fallback would freeze the knob. */}
+            <p className="pl-8 text-sm text-muted-foreground">
+              Send these key names to whoever runs the platform.
+            </p>
             <ErrorAlchemyMenu className="ml-auto" />
           </div>
         ) : null}

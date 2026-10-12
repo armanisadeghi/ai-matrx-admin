@@ -401,12 +401,15 @@ export function LeaveEnrollmentSurface({ policyId }: { policyId: string }) {
                 <h2 className="flex items-center gap-2 text-sm font-semibold text-foreground">
                   <UserPlus className="h-4 w-4 text-muted-foreground" />
                   Add people
+                  <InfoHint
+                    text={
+                      policy && policy.workerClassScope.length > 0
+                        ? `This policy covers ${policy.workerClassScope.join(", ")}; anyone else is skipped, with a reason.`
+                        : "Anyone can be added except contractors, who are never enrolled automatically."
+                    }
+                    label="Who can be added"
+                  />
                 </h2>
-                <p className="text-xs text-muted-foreground">
-                  {policy && policy.workerClassScope.length > 0
-                    ? `Covers ${policy.workerClassScope.join(", ")}; others are skipped, with a reason.`
-                    : "No worker-class limit; contractors are never auto-enrolled."}
-                </p>
               </div>
               <div className="flex items-end gap-2">
                 <div className="space-y-1.5">

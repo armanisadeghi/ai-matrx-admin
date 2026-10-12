@@ -391,7 +391,7 @@ export function HrActivationWizard({
           <StepShell
             icon={Building2}
             title="Employer of record"
-            hint="The legal entity that employs people; its name goes on every W-2, letter and notice."
+            info="The legal entity that employs people; its name goes on every W-2, letter and notice."
           >
             <Field
               id="legal-name"
@@ -516,19 +516,23 @@ export function HrActivationWizard({
               tried was their first hire, which cannot be saved without one. The
               deadline is what was missing, not the permission.
             */
-            hint="One location and one department are enough to start; you need a job title before your first hire."
+            info="One location and one department are enough to start; you need a job title before your first hire."
           >
             <Field
               id="location-name"
               label="Location name"
+              info="The address, code and geofence are added on the structure panel after setup."
               required
               value={draft.locationName}
               onChange={(v) => set("locationName", v)}
             />
 
             <div className="space-y-1.5">
-              <Label htmlFor="tz" className="text-sm font-medium">
-                Time zone <span className="text-destructive">*</span>
+              <Label htmlFor="tz" className="flex items-center gap-1.5 text-sm font-medium">
+                <span>
+                  Time zone <span className="text-destructive">*</span>
+                </span>
+                <InfoHint text="Every punch, shift and workweek here is stamped in this zone, so a wrong zone moves hours across days." />
               </Label>
               <Select value={draft.tz} onValueChange={(v) => set("tz", v)}>
                 <SelectTrigger id="tz">
@@ -606,7 +610,7 @@ export function HrActivationWizard({
           <StepShell
             icon={Users}
             title="The first HR owner"
-            hint="Owning the organization grants HR authority only here; afterwards the HR owner assigns every other role."
+            info="Owning the organization grants HR authority only here; afterwards the HR owner assigns every other role."
           >
             <div className="space-y-2">
               <Label className="text-sm font-medium">Who runs HR here?</Label>
@@ -1152,12 +1156,12 @@ function StepRail({ current }: { current: number }) {
 function StepShell({
   icon: Icon,
   title,
-  hint,
+  info,
   children,
 }: {
   icon: typeof Building2;
   title: string;
-  hint?: string;
+  info?: string;
   children: React.ReactNode;
 }) {
   return (
@@ -1167,7 +1171,7 @@ function StepShell({
         <div className="min-w-0 space-y-1">
           <h2 className="flex items-center gap-1.5 text-sm font-semibold text-foreground">
             {title}
-            {hint ? <InfoHint text={hint} /> : null}
+            {info ? <InfoHint text={info} /> : null}
           </h2>
         </div>
       </header>
@@ -1182,6 +1186,7 @@ function Field({
   value,
   onChange,
   hint,
+  info,
   required,
 }: {
   id: string;
@@ -1189,13 +1194,17 @@ function Field({
   value: string;
   onChange: (value: string) => void;
   hint?: string;
+  info?: string;
   required?: boolean;
 }) {
   return (
     <div className="space-y-1.5">
-      <Label htmlFor={id} className="text-sm font-medium">
-        {label}
-        {required ? <span className="text-destructive"> *</span> : null}
+      <Label htmlFor={id} className="flex items-center gap-1.5 text-sm font-medium">
+        <span>
+          {label}
+          {required ? <span className="text-destructive"> *</span> : null}
+        </span>
+        {info ? <InfoHint text={info} /> : null}
       </Label>
       <Input
         id={id}

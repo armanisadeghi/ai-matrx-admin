@@ -474,13 +474,11 @@ export function LeavePolicyEditorSurface({ policyId }: { policyId: string }) {
           <span className="space-y-2">
             <span className="block">
               {enrolled === null
-                ? "Everyone enrolled will earn time a different way from now on."
-                : `${enrolled} ${enrolled === 1 ? "person" : "people"} enrolled will earn time a different way.`}
+                ? "Everyone enrolled earns time the new way from now on."
+                : `${enrolled} enrolled ${enrolled === 1 ? "person earns" : "people earn"} time the new way from now on.`}
             </span>
-            <span className="block">
-              Past ledger entries are not changed; each accrual uses the policy version in force
-              on its date.
-            </span>
+            {/* The accrual runner uses the policy version in force at each accrual date. */}
+            <span className="block">Past ledger entries are never recalculated.</span>
           </span>
         ),
         confirmLabel: "Change it",
@@ -886,7 +884,7 @@ export function LeavePolicyEditorSurface({ policyId }: { policyId: string }) {
               <h2 className="flex items-center gap-1 text-sm font-semibold text-foreground">
                 The balance
                 <InfoHint
-                  text="Unlimited: no balance, caps, carryover or payout. Screens read Unlimited; requests still need approval and reach the timesheet."
+                  text="An unlimited policy keeps no balance to cap, carry over or pay out, but its requests still need approval and reach the timesheet."
                   label="About unlimited policies"
                 />
               </h2>
