@@ -4,11 +4,12 @@ import {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
   useTransition,
 } from "react";
 import { useRouter } from "next/navigation";
-import { FileText, Loader2, Plus, Search } from "lucide-react";
+import { FileText, Loader2, Plus, Search, Upload } from "lucide-react";
 
 import {
   FileScopeBar,
@@ -26,6 +27,11 @@ import { TapTargetButtonSolid } from "@ai-matrx/design-system/tap-target";
 import { DocumentListCard } from "@/features/documents/components/DocumentListCard";
 import { GoogleHomeStrip } from "@/features/google-workspace/linked/GoogleHomeStrip";
 import { googleLinkIn } from "@/features/google-workspace/linked/link-store";
+import {
+  DOCUMENT_UPLOAD_ACCEPT,
+  documentFileKind,
+  importDocumentFile,
+} from "@/features/documents/import-document-file";
 import { DocumentsHubTable } from "@/features/documents/components/DocumentsHubTable";
 import { DocumentsHubToolbar } from "@/features/documents/components/DocumentsHubToolbar";
 import {
@@ -78,6 +84,8 @@ export default function DocumentsLandingPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const uploadRef = useRef<HTMLInputElement>(null);
   const [query, setQuery] = useState("");
   const [scope, setScope] = useState<FileScope>("all");
   const [sortKey, setSortKey] = useState<DocumentSortKey>("updated");
@@ -143,6 +151,32 @@ export default function DocumentsLandingPage() {
     }
     router.push(`/documents/${res.data.id}`);
   }, [organizationId, router]);
+
+  const handleUpload = async (file: File | undefined) => {
+    if (!file) return;
+    if (!documentFileKind(file.name)) {
+      toast({
+        title: "Can't import that file",
+        description: "Use Word (.docx), Markdown, text or HTML.",
+        variant: "destructive",
+      });
+      return;
+    }
+    setUploading(true);
+    try {
+      const orgId = await ensureOrgId(organizationId);
+      const made = await importDocumentFile(file, orgId);
+      router.push(`/documents/${made.id}`);
+    } catch (err) {
+      toast({
+        title: "Import failed",
+        description: err instanceof Error ? err.message : String(err),
+        variant: "destructive",
+      });
+    } finally {
+      setUploading(false);
+    }
+  };
 
   const { userId, starredIds, menuFor, sectionsFor, dialogs } = useFileItemActions(
     DOCUMENT_ADAPTER,
@@ -217,6 +251,30 @@ export default function DocumentsLandingPage() {
           </span>
         }
         right={
+          <span className="flex items-center gap-1">
+          <input
+            ref={uploadRef}
+            type="file"
+            accept={DOCUMENT_UPLOAD_ACCEPT}
+            className="hidden"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              e.target.value = "";
+              void handleUpload(file);
+            }}
+          />
+          <TapTargetButtonSolid
+            icon={
+              uploading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Upload className="h-4 w-4" />
+              )
+            }
+            label="Upload a file"
+            onClick={() => uploadRef.current?.click()}
+            disabled={uploading}
+          />
           <TapTargetButtonSolid
             icon={
               creating ? (
@@ -229,6 +287,7 @@ export default function DocumentsLandingPage() {
             onClick={handleCreate}
             disabled={creating}
           />
+          </span>
         }
       />
       <div className="h-full overflow-y-auto scrollbar-none">
@@ -242,7 +301,13 @@ export default function DocumentsLandingPage() {
               const link = googleLinkIn(doc.metadata);
               return link ? [{ id: doc.id, name: doc.document_name, link }] : [];
             })}
+            unlinked={documents
+              .filter((doc) => !googleLinkIn(doc.metadata) && doc.user_id === userId)
+              .sort((a, b) => (b.updated_at ?? "").localeCompare(a.updated_at ?? ""))
+              .map((doc) => ({ id: doc.id, name: doc.document_name, updatedAt: doc.updated_at }))}
+            hidden={scope === "trash"}
             onImported={(id) => router.push(`/documents/${id}`)}
+            onChanged={() => void reload()}
           />
           {!error && showToolbar ? (
             <>

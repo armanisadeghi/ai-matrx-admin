@@ -11,6 +11,7 @@
 import type { ResolvedShareToken } from "@/utils/permissions/shareLinks";
 import { univerSnapshotToRows } from "@/features/workbooks/univer-snapshot-rows";
 import { univerDocToMarkdown } from "@/features/documents/univer-doc-to-markdown";
+import { shareChildFileUrls } from "@/features/files/handler/utils/python-base";
 import { RichContentStaticStandard } from "@ai-matrx/rich-content/levels/RichContentStaticProse";
 import type { ShareLensProps } from "./registry";
 
@@ -91,11 +92,20 @@ export function WorkbookShareLens({ result }: ShareLensProps) {
   );
 }
 
-export function DocumentShareLens({ result }: ShareLensProps) {
+/** A picture of ours reached through the link's own token (no sign-in); others pass through. */
+export function sharedImageUrl(token: string, source: string): string | null {
+  const own = source.match(/^matrx-file:([0-9a-f-]+)(?:#\d+x\d+)?$/i);
+  if (own) return shareChildFileUrls(token, own[1]).inline;
+  return /^https?:\/\//i.test(source) ? source : null;
+}
+
+export function DocumentShareLens({ result, token }: ShareLensProps) {
   const title = textOf(result.resource, "document_name") || "Document";
   const description = textOf(result.resource, "description");
   const content = childrenOf(result, "document_snapshot");
-  const markdown = content?.snapshot ? univerDocToMarkdown(content.snapshot) : "";
+  const markdown = content?.snapshot
+    ? univerDocToMarkdown(content.snapshot, { imageUrl: (source) => sharedImageUrl(token, source) })
+    : "";
   return (
     <article className="mx-auto w-full max-w-3xl">
       <Heading title={title} description={description} />

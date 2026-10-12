@@ -121,18 +121,74 @@ function emphasize(text: string, ts: TextRunLike["ts"], inHeading: boolean): str
   return `${leading}${core}${trailing}`;
 }
 
+// An inline picture: one CUSTOM_BLOCK token in the stream, its drawing in `snapshot.drawings`.
+const CUSTOM_BLOCK = "\b";
+
+interface DrawingLike {
+  source?: unknown;
+  title?: unknown;
+  description?: unknown;
+  docTransform?: { size?: { width?: unknown; height?: unknown } };
+}
+
+/**
+ * A picture's markdown source. Our own pictures are `matrx-file:<id>`; the
+ * drawn size rides as a `#WxH` fragment so a round trip keeps the shape.
+ */
+export function imageMarkdownSource(drawing: DrawingLike): string | null {
+  const source = typeof drawing.source === "string" ? drawing.source : "";
+  if (!source || source.startsWith("data:")) return null;
+  const w = Number(drawing.docTransform?.size?.width);
+  const h = Number(drawing.docTransform?.size?.height);
+  return Number.isFinite(w) && Number.isFinite(h) && w > 0 && h > 0 && !source.includes("#")
+    ? `${source}#${Math.round(w)}x${Math.round(h)}`
+    : source;
+}
+
+/** Every picture in a snapshot, as its markdown source (`matrx-file:<id>#WxH` or a URL). */
+export function documentImageSources(snapshot: unknown): string[] {
+  const drawings = ((snapshot as { drawings?: unknown } | null)?.drawings ?? {}) as Record<string, DrawingLike>;
+  const body = (snapshot as { body?: { customBlocks?: unknown } } | null)?.body;
+  return asArray<{ blockId?: unknown }>(body?.customBlocks)
+    .map((b) => (typeof b.blockId === "string" && drawings[b.blockId] ? imageMarkdownSource(drawings[b.blockId]) : null))
+    .filter((s): s is string => !!s);
+}
+
+export interface DocToMarkdownOptions {
+  /**
+   * Where a picture's markdown points. Return null to leave it out (the caller
+   * names what was left out). Default: the stored source.
+   */
+  imageUrl?: (source: string) => string | null;
+}
+
 /**
  * Read a Univer document snapshot back as markdown. Returns `""` for an empty
  * or unreadable snapshot so the caller can say "no source" honestly rather than
  * printing an envelope.
  */
-export function univerDocToMarkdown(snapshot: unknown): string {
+export function univerDocToMarkdown(snapshot: unknown, options: DocToMarkdownOptions = {}): string {
   if (!snapshot || typeof snapshot !== "object") return "";
   const body = (snapshot as { body?: unknown }).body;
   if (!body || typeof body !== "object") return "";
 
   const dataStream = (body as { dataStream?: unknown }).dataStream;
   if (typeof dataStream !== "string" || !dataStream) return "";
+
+  // Pictures: each CUSTOM_BLOCK token is read back as `![alt](source)`.
+  const drawings = ((snapshot as { drawings?: unknown }).drawings ?? {}) as Record<string, DrawingLike>;
+  const blocks = new Map<number, string>();
+  for (const b of asArray<{ startIndex?: unknown; blockId?: unknown }>((body as { customBlocks?: unknown }).customBlocks)) {
+    if (typeof b.startIndex !== "number" || typeof b.blockId !== "string") continue;
+    const drawing = drawings[b.blockId];
+    const source = drawing ? imageMarkdownSource(drawing) : null;
+    if (!source || !drawing) continue;
+    const url = options.imageUrl ? options.imageUrl(source) : source;
+    if (!url) continue;
+    const label = typeof drawing.title === "string" && drawing.title ? drawing.title
+      : typeof drawing.description === "string" && drawing.description ? drawing.description : "image";
+    blocks.set(b.startIndex, `![${label.replace(/[[\]]/g, "")}](${url})`);
+  }
 
   const runs = asArray<TextRunLike>((body as { textRuns?: unknown }).textRuns)
     .filter((r) => typeof r.st === "number" && typeof r.ed === "number")
@@ -151,6 +207,7 @@ export function univerDocToMarkdown(snapshot: unknown): string {
       const c = dataStream[k];
       if (c === LINK_START) out += "[";
       else if (c === LINK_END) out += `](${links.get(k) ?? ""})`;
+      else if (c === CUSTOM_BLOCK) out += blocks.get(k) ?? "";
       else out += c;
     }
     return out;

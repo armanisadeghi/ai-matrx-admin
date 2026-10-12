@@ -51,6 +51,9 @@ import {
   type GoogleRemoteVersion,
 } from "./linkedService";
 import { conflictCopy, decideUpdate } from "./sync-decision";
+import { googleImageNote, googleReadyMarkdown } from "./doc-images";
+import { documentNameFrom, isPlaceholderName } from "./importers";
+import { renameDocument } from "@/features/documents/document-service";
 import { useGoogleWorkspaceConnection } from "./useGoogleWorkspaceConnection";
 
 /** What a host editor lends the control. Content is a workbook snapshot or markdown. */
@@ -226,9 +229,15 @@ export function useGoogleLink(adapter: GoogleLinkAdapter, editable: boolean, act
     run("create", async () => {
       if (state.status !== "ready") return;
       const content = await adapter.readLocal();
+      // Pictures ride as links Google can fetch; any left out are named in the toast.
+      const ready = isSheet ? null : await googleReadyMarkdown(String(content ?? ""));
       const outcome = isSheet
         ? await createSheetFromWorkbook(state.connection.connectionId, adapter.title, content)
-        : await createDocFromMarkdown(state.connection.connectionId, adapter.title, String(content ?? ""));
+        : await createDocFromMarkdown(
+            state.connection.connectionId,
+            documentNameFrom(adapter.title, ready?.markdown ?? ""),
+            ready?.markdown ?? "",
+          );
       if (outcome.proposed) {
         // Remember WHICH approval makes the file, so approving it also saves the link.
         const queued = await writePendingGoogleLink(adapter.recordKind, adapter.recordId, {
@@ -262,7 +271,7 @@ export function useGoogleLink(adapter: GoogleLinkAdapter, editable: boolean, act
         lastDirection: "to_google",
       });
       toast.success(`Created in ${appName}`, {
-        description: notes.join(" ") || undefined,
+        description: [...(ready?.notes ?? []), ...notes].join(" ") || undefined,
         action: { label: "Open", onClick: () => openInGoogle(file.webViewLink) },
       });
     });
@@ -280,7 +289,12 @@ export function useGoogleLink(adapter: GoogleLinkAdapter, editable: boolean, act
       baselineOnOpen: false,
       lastDirection: "from_google",
     });
-    toast.success(`Updated from ${appName}`);
+    // A document still carrying a placeholder name takes the Google file's name.
+    if (!isSheet && isPlaceholderName(adapter.title) && remote.name && !isPlaceholderName(remote.name)) {
+      await renameDocument(adapter.recordId, remote.name);
+    }
+    const note = isSheet ? null : googleImageNote(String(content ?? ""));
+    toast.success(`Updated from ${appName}`, { description: note ?? undefined });
   };
 
   const localChangedSince = async (current: GoogleFileLink, content?: unknown): Promise<boolean> =>
@@ -311,9 +325,10 @@ export function useGoogleLink(adapter: GoogleLinkAdapter, editable: boolean, act
     run("push", async () => {
       if (!link) return;
       const content = await adapter.readLocal();
+      const ready = isSheet ? null : await googleReadyMarkdown(String(content ?? ""));
       const outcome = isSheet
         ? await pushWorkbookToSheet(link.connectionId, link.fileId, content, link.remoteVersion, force)
-        : { proposed: false as const, result: await pushMarkdownToDoc(link.connectionId, link.fileId, String(content ?? ""), link.remoteVersion, force) };
+        : { proposed: false as const, result: await pushMarkdownToDoc(link.connectionId, link.fileId, ready?.markdown ?? "", link.remoteVersion, force) };
       if (outcome.proposed) {
         // Remember WHICH approval writes the cells, so approving it also brings the link forward.
         const queued = await writePendingGoogleLink(adapter.recordKind, adapter.recordId, {
@@ -345,7 +360,9 @@ export function useGoogleLink(adapter: GoogleLinkAdapter, editable: boolean, act
         baselineOnOpen: false,
         lastDirection: "to_google",
       });
-      toast.success(`Pushed to ${appName}`, { description: notes.join(" ") || undefined });
+      toast.success(`Pushed to ${appName}`, {
+        description: [...(ready?.notes ?? []), ...notes].join(" ") || undefined,
+      });
     });
 
   const unlink = () =>

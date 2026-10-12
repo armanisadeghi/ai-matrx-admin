@@ -77,13 +77,15 @@ interface InlineStyle {
 
 interface Segment extends InlineStyle {
   text: string;
+  /** A picture (`![alt](src)`): `text` holds its alt. */
+  image?: string;
 }
 
 // Order matters: `**`/`__` before `*`/`_` so bold wins over italic; code and
 // links are matched atomically. Link target excludes whitespace to avoid
 // swallowing trailing prose.
 const INLINE_RE =
-  /(\*\*|__)([\s\S]+?)\1|(\*|_)([\s\S]+?)\3|~~([\s\S]+?)~~|\[([^\]]+)\]\(([^)\s]+)\)/g;
+  /!\[([^\]]*)\]\(([^)\s]+)\)|(\*\*|__)([\s\S]+?)\3|(\*|_)([\s\S]+?)\5|~~([\s\S]+?)~~|\[([^\]]+)\]\(([^)\s]+)\)/g;
 
 const CODE_TOKEN = /\uE400(\d+)\uE401/g;
 
@@ -122,15 +124,18 @@ function parseStyled(text: string, base: InlineStyle = {}): Segment[] {
   const re = new RegExp(INLINE_RE.source, "g");
   while ((m = re.exec(text)) !== null) {
     if (m.index > last) segs.push({ text: text.slice(last, m.index), ...base });
-    if (m[1] !== undefined) {
-      segs.push(...parseStyled(m[2], { ...base, bold: true }));
+    if (m[2] !== undefined) {
+      // Picture → its own segment (alt as text); the builder decides how it lands.
+      segs.push({ ...base, text: m[1] || "image", image: m[2] });
     } else if (m[3] !== undefined) {
-      segs.push(...parseStyled(m[4], { ...base, italic: true }));
+      segs.push(...parseStyled(m[4], { ...base, bold: true }));
     } else if (m[5] !== undefined) {
-      segs.push(...parseStyled(m[5], { ...base, strike: true }));
-    } else if (m[6] !== undefined) {
+      segs.push(...parseStyled(m[6], { ...base, italic: true }));
+    } else if (m[7] !== undefined) {
+      segs.push(...parseStyled(m[7], { ...base, strike: true }));
+    } else if (m[8] !== undefined) {
       // Link → its text carries the address as a hyperlink range.
-      segs.push(...parseStyled(m[6], { ...base, link: m[7] }));
+      segs.push(...parseStyled(m[8], { ...base, link: m[9] }));
     }
     last = re.lastIndex;
   }
@@ -183,6 +188,52 @@ class DocBuilder {
   private customRanges: ICustomRange[] = [];
   private tables: NonNullable<NonNullable<IDocumentData["body"]>["tables"]> = [];
   private tableSource: NonNullable<IDocumentData["tableSource"]> = {};
+  private customBlocks: { startIndex: number; blockId: string }[] = [];
+  private drawings: Record<string, Record<string, unknown>> = {};
+  /** Pictures that are not ours (e.g. Google's): kept as a visible link, counted. */
+  linkedImages = 0;
+
+  /**
+   * One picture. Ours (`matrx-file:<id>[#WxH]`) becomes a real inline drawing;
+   * any other address is a visible "alt" link to it, never dropped.
+   */
+  private addImage(seg: Segment, opts: ParagraphOpts): void {
+    const src = seg.image ?? "";
+    const own = src.match(/^(matrx-file:[0-9a-f-]+)(?:#(\d+)x(\d+))?$/i);
+    if (!own) {
+      this.linkedImages += 1;
+      this.addInline([{ text: seg.text || "image", link: src }], opts);
+      return;
+    }
+    const blockId = `img${Object.keys(this.drawings).length}${Math.random().toString(36).slice(2, 6)}`;
+    const width = Number(own[2]) || 320;
+    const height = Number(own[3]) || 240;
+    this.customBlocks.push({ startIndex: this.cursor, blockId });
+    this.parts.push(CUSTOM_BLOCK);
+    this.cursor += 1;
+    this.drawings[blockId] = {
+      drawingId: blockId,
+      drawingType: 0,
+      imageSourceType: "URL",
+      source: own[1],
+      title: seg.text === "image" ? "" : seg.text,
+      description: "",
+      layoutType: 0,
+      wrapText: 0,
+      behindDoc: 0,
+      distT: 0,
+      distB: 0,
+      distL: 0,
+      distR: 0,
+      transform: { left: 0, top: 0, width, height },
+      docTransform: {
+        size: { width, height },
+        angle: 0,
+        positionH: { relativeFrom: ObjectRelativeFromH.PAGE, posOffset: 0 },
+        positionV: { relativeFrom: ObjectRelativeFromV.PARAGRAPH, posOffset: 0 },
+      },
+    };
+  }
 
   /** Segment text + styles + hyperlink ranges, no paragraph terminator. */
   private addInline(segments: Segment[], opts: ParagraphOpts): void {
@@ -203,6 +254,11 @@ class DocBuilder {
     };
     for (const seg of segments) {
       if (!seg.text) continue;
+      if (seg.image !== undefined) {
+        closeLink();
+        this.addImage(seg, opts);
+        continue;
+      }
       if (seg.link !== openLink) {
         closeLink();
         if (seg.link !== undefined) {
@@ -352,8 +408,11 @@ class DocBuilder {
     ];
     this.cursor += 1;
 
+    const id = cryptoRandomId();
+    const drawingIds = Object.keys(this.drawings);
+    for (const d of drawingIds) Object.assign(this.drawings[d], { unitId: id, subUnitId: id });
     return {
-      id: cryptoRandomId(),
+      id,
       locale: LocaleType.EN_US,
       title,
       body: {
@@ -363,7 +422,11 @@ class DocBuilder {
         sectionBreaks,
         ...(this.customRanges.length ? { customRanges: this.customRanges } : {}),
         ...(this.tables.length ? { tables: this.tables } : {}),
+        ...(this.customBlocks.length ? { customBlocks: this.customBlocks } : {}),
       },
+      ...(drawingIds.length
+        ? { drawings: this.drawings as unknown as IDocumentData["drawings"], drawingsOrder: drawingIds }
+        : {}),
       ...(this.tables.length ? { tableSource: this.tableSource } : {}),
       documentStyle: defaultDocumentPageStyle(),
     };
@@ -380,6 +443,7 @@ const TABLE_ROW_END = "\x0E";
 const TABLE_END = "\x0F";
 const LINK_START = "\x1F";
 const LINK_END = "\x1E";
+const CUSTOM_BLOCK = "\b";
 
 // ─── block helpers ───────────────────────────────────────────────────────────
 
