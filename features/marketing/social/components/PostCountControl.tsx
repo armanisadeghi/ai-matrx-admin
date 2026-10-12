@@ -6,8 +6,7 @@
  */
 
 import Link from "next/link";
-import { Settings2 } from "lucide-react";
-import { Badge, Button, Select, type SelectOption } from "@ai-matrx/design-system/controls";
+import { Badge, Select, type SelectOption } from "@ai-matrx/design-system/controls";
 
 import { useCostDisplay } from "@/components/cost/useCostDisplay";
 import { useQuery } from "@tanstack/react-query";
@@ -60,16 +59,14 @@ export function PostCountControl({
   return (
     <span className="inline-flex items-center gap-2" data-testid="post-count-control">
       <Select aria-label="How many posts" value={choice ?? ""} options={options} onValueChange={setChoice} disabled={disabled || choice === null} />
-      {reason.limited && effective != null ? (
-        <Badge tone="neutral" title={reason.text}>{`Max ${effective.toLocaleString("en-US")}`}</Badge>
-      ) : null}
-      <span className="text-xs text-muted-foreground tabular-nums" aria-live="polite" title={maxError ? undefined : reason.text}>
+      <span className="text-xs text-muted-foreground tabular-nums" aria-live="polite">
         {maxError ? "Limit not loaded" : estimate ?? ""}
       </span>
-      {choice !== null && !maxError ? (
-        <Button variant="quiet" icon={<Settings2 />} asChild aria-label="Post count settings" title="Post count settings">
-          <Link href={settingsHref} />
-        </Button>
+      {/* Only when a limit actually applies: say so, and link to the setting that set it. */}
+      {reason.limited && effective != null ? (
+        <Link href={settingsHref} title={reason.text} className="inline-flex">
+          <Badge tone="warning">{`Org max ${effective.toLocaleString("en-US")}`}</Badge>
+        </Link>
       ) : null}
     </span>
   );
