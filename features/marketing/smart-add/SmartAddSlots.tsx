@@ -19,6 +19,7 @@ import { PlatformMark, platformLabel } from "@/features/marketing/social/compone
 import { SocialImage } from "@/features/marketing/social/components/SocialImage";
 import { websiteHost, type Decision, type EvidenceField, type EvidenceItem } from "./evidence";
 import { CustomAdd } from "./SmartAddExtras";
+import { Shared } from "./stage/Shared";
 
 interface Choice {
   decision: Decision;
@@ -109,7 +110,7 @@ export function SmartAddSlots({
       <Slot title={person ? "Name" : "Brand name"} empty={of("name").length ? null : empty} after={custom("name", person ? "Your name" : "Brand name")}>
         {of("name").map((i) => (
           <Row key={i.key} item={i} decision={decisions[i.key] ?? null} actions={choices(i, NAME_CHOICES)}>
-            <span className="truncate text-lg font-semibold leading-tight">{i.value}</span>
+            <Shared id={i.key} className="block truncate text-lg font-semibold leading-tight">{i.value}</Shared>
           </Row>
         ))}
       </Slot>
@@ -117,6 +118,7 @@ export function SmartAddSlots({
       <Slot title={person ? "Headshot & photos" : "Logo & images"} empty={of("logo").length ? null : empty} hint="Pick every image to keep; star the main one">
         <div className="flex flex-wrap gap-3 px-4 pb-3 pt-1">
           {of("logo").map((i) => (
+            <Shared key={i.key} id={i.key} as="div">
             <LogoChoice
               key={i.key}
               item={i}
@@ -127,6 +129,7 @@ export function SmartAddSlots({
               onClear={() => onDecide(i.key, decisions[i.key] ?? "yes")}
               onPrimary={() => onDecide(i.key, "preferred")}
             />
+            </Shared>
           ))}
         </div>
       </Slot>
@@ -150,7 +153,9 @@ export function SmartAddSlots({
               .map((i) => (
                 <Row key={i.key} item={i} decision={decisions[i.key] ?? null} actions={choices(i, OURS_CHOICES)} hideWhere>
                   <span className="flex min-w-0 items-center gap-3">
-                    <Avatar item={i.profile_id ? i : { ...i, ...photoOf(photoByPlatform.get(i.platform ?? ""), i) }} />
+                    <Shared id={i.key} className="shrink-0">
+                      <Avatar item={i.profile_id ? i : { ...i, ...photoOf(photoByPlatform.get(i.platform ?? ""), i) }} />
+                    </Shared>
                     <span className="flex min-w-0 flex-col">
                       <span className="truncate text-sm font-medium">
                         {i.label ?? nameByProfile.get(photoByPlatform.get(i.platform ?? "")?.source.url ?? "") ?? `@${i.handle ?? ""}`}

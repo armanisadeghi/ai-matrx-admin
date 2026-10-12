@@ -1,0 +1,317 @@
+/*
+ * Smart Add intake stage — the bespoke hero layer (flagship screen; the one-control rule is for app
+ * chrome, not this stage). Every color comes from the theme tokens; motion is transform/opacity only
+ * (GPU-cheap) and stops entirely under prefers-reduced-motion.
+ */
+
+/* ── Living backdrop ─────────────────────────────────────────────────────────── */
+
+.backdrop {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  transition: opacity 900ms var(--matrx-motion-ease-panel);
+}
+
+.blob {
+  position: absolute;
+  width: 72vmax;
+  height: 72vmax;
+  border-radius: 9999px;
+  opacity: 0.55;
+  will-change: transform;
+}
+
+.blobA {
+  top: -34vmax;
+  left: -18vmax;
+  background: radial-gradient(closest-side, hsl(var(--primary) / 0.55), hsl(var(--primary) / 0) 72%);
+  animation: driftA 34s ease-in-out infinite alternate;
+}
+
+.blobB {
+  top: -26vmax;
+  right: -30vmax;
+  background: radial-gradient(closest-side, hsl(var(--chart-2) / 0.5), hsl(var(--chart-2) / 0) 72%);
+  animation: driftB 41s ease-in-out infinite alternate;
+}
+
+.blobC {
+  bottom: -44vmax;
+  left: 8vmax;
+  background: radial-gradient(closest-side, hsl(var(--chart-5) / 0.42), hsl(var(--chart-5) / 0) 72%);
+  animation: driftC 38s ease-in-out infinite alternate;
+}
+
+.blobD {
+  bottom: -36vmax;
+  right: -14vmax;
+  background: radial-gradient(closest-side, hsl(var(--chart-4) / 0.4), hsl(var(--chart-4) / 0) 72%);
+  animation: driftD 46s ease-in-out infinite alternate;
+}
+
+:global(.dark) .blob {
+  opacity: 0.7;
+}
+
+/* Fades the aurora into the page base toward the bottom, so content below the fold reads calmly. */
+.veil {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(120% 70% at 50% 0%, transparent 0%, transparent 55%, hsl(var(--background) / 0.55) 100%),
+    linear-gradient(to bottom, transparent 55%, hsl(var(--background) / 0.85) 100%);
+}
+
+.grain {
+  position: absolute;
+  inset: -50%;
+  opacity: 0.09;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 1 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+}
+
+:global(.dark) .grain {
+  opacity: 0.12;
+  mix-blend-mode: soft-light;
+}
+
+@keyframes driftA {
+  0% { transform: translate3d(0, 0, 0) scale(1); }
+  100% { transform: translate3d(14vmax, 10vmax, 0) scale(1.18); }
+}
+@keyframes driftB {
+  0% { transform: translate3d(0, 0, 0) scale(1.1); }
+  100% { transform: translate3d(-16vmax, 14vmax, 0) scale(0.92); }
+}
+@keyframes driftC {
+  0% { transform: translate3d(0, 0, 0) scale(0.95); }
+  100% { transform: translate3d(18vmax, -12vmax, 0) scale(1.15); }
+}
+@keyframes driftD {
+  0% { transform: translate3d(0, 0, 0) scale(1.05); }
+  100% { transform: translate3d(-12vmax, -16vmax, 0) scale(0.9); }
+}
+
+/* ── Headline word ───────────────────────────────────────────────────────────── */
+
+.shimmer {
+  background-image: linear-gradient(
+    100deg,
+    hsl(var(--primary)) 0%,
+    hsl(var(--chart-2)) 30%,
+    hsl(var(--chart-5)) 60%,
+    hsl(var(--primary)) 100%
+  );
+  background-size: 300% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: shimmer 9s linear infinite;
+  /* Descenders keep their paint inside the clipped box. */
+  padding-bottom: 0.08em;
+}
+
+@keyframes shimmer {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 300% 50%; }
+}
+
+/* ── Choice cards ────────────────────────────────────────────────────────────── */
+
+.card {
+  position: relative;
+  background: hsl(var(--card) / 0.62);
+  backdrop-filter: blur(22px) saturate(1.5);
+  -webkit-backdrop-filter: blur(22px) saturate(1.5);
+  box-shadow:
+    0 1px 0 0 hsl(0 0% 100% / 0.35) inset,
+    0 10px 30px -18px hsl(var(--foreground) / 0.35);
+  transition:
+    transform 260ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    box-shadow 260ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    background-color 260ms ease;
+}
+
+:global(.dark) .card {
+  background: hsl(var(--card) / 0.5);
+  box-shadow:
+    0 1px 0 0 hsl(0 0% 100% / 0.06) inset,
+    0 14px 40px -20px hsl(0 0% 0% / 0.7);
+}
+
+.card:hover,
+.card:focus-visible {
+  transform: translateY(-4px);
+  background: hsl(var(--card) / 0.82);
+  box-shadow:
+    0 1px 0 0 hsl(0 0% 100% / 0.4) inset,
+    0 0 0 1px hsl(var(--primary) / 0.35),
+    0 22px 60px -22px hsl(var(--primary) / 0.55);
+  outline: none;
+}
+
+:global(.dark) .card:hover,
+:global(.dark) .card:focus-visible {
+  background: hsl(var(--card) / 0.7);
+}
+
+.card:active {
+  transform: translateY(-1px) scale(0.99);
+}
+
+.cardIcon {
+  background: linear-gradient(140deg, hsl(var(--primary) / 0.18), hsl(var(--chart-2) / 0.16));
+  box-shadow: 0 0 0 1px hsl(var(--primary) / 0.18) inset;
+}
+
+/* ── The one big input ───────────────────────────────────────────────────────── */
+
+.shell {
+  background: hsl(var(--card) / 0.7);
+  backdrop-filter: blur(26px) saturate(1.6);
+  -webkit-backdrop-filter: blur(26px) saturate(1.6);
+  box-shadow:
+    0 1px 0 0 hsl(0 0% 100% / 0.4) inset,
+    0 0 0 1px hsl(var(--border)),
+    0 24px 60px -30px hsl(var(--foreground) / 0.4);
+  transition: box-shadow 300ms ease;
+}
+
+:global(.dark) .shell {
+  background: hsl(var(--card) / 0.55);
+  box-shadow:
+    0 1px 0 0 hsl(0 0% 100% / 0.07) inset,
+    0 0 0 1px hsl(0 0% 100% / 0.08),
+    0 30px 70px -30px hsl(0 0% 0% / 0.8);
+}
+
+.shell:focus-within {
+  box-shadow:
+    0 1px 0 0 hsl(0 0% 100% / 0.4) inset,
+    0 0 0 1px hsl(var(--primary) / 0.65),
+    0 0 0 6px hsl(var(--primary) / 0.14),
+    0 26px 80px -24px hsl(var(--primary) / 0.6);
+}
+
+.bigInput {
+  background: transparent;
+  outline: none;
+  border: 0;
+  caret-color: hsl(var(--primary));
+}
+
+.bigInput::placeholder {
+  color: hsl(var(--muted-foreground) / 0.55);
+}
+
+.go {
+  background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary) / 0.82));
+  box-shadow: 0 8px 22px -8px hsl(var(--primary) / 0.8);
+  transition: transform 200ms ease, box-shadow 200ms ease, opacity 200ms ease;
+}
+
+.go:hover:not(:disabled) {
+  transform: translateX(2px);
+  box-shadow: 0 10px 28px -8px hsl(var(--primary));
+}
+
+.go:disabled {
+  opacity: 0.35;
+  box-shadow: none;
+}
+
+/* ── Identifying centerpiece ─────────────────────────────────────────────────── */
+
+.halo {
+  background: radial-gradient(closest-side, hsl(var(--primary) / 0.35), hsl(var(--primary) / 0) 70%);
+  animation: breathe 3.6s ease-in-out infinite;
+}
+
+.orbit {
+  background: conic-gradient(
+    from 0deg,
+    hsl(var(--primary) / 0) 0deg,
+    hsl(var(--primary)) 70deg,
+    hsl(var(--primary) / 0) 150deg,
+    hsl(var(--chart-2) / 0) 190deg,
+    hsl(var(--chart-2)) 260deg,
+    hsl(var(--chart-2) / 0) 330deg
+  );
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 2px), #000 calc(100% - 2px));
+  mask: radial-gradient(farthest-side, transparent calc(100% - 2px), #000 calc(100% - 2px));
+  animation: spin 5.5s linear infinite;
+}
+
+.orbitSlow {
+  border: 1px dashed hsl(var(--muted-foreground) / 0.28);
+  animation: spin 40s linear infinite reverse;
+}
+
+.satellite {
+  background: hsl(var(--primary));
+  box-shadow: 0 0 12px 2px hsl(var(--primary) / 0.7);
+}
+
+.settled .orbit,
+.settled .orbitSlow,
+.settled .halo {
+  animation-play-state: paused;
+}
+
+.settled .orbit {
+  opacity: 0.25;
+}
+
+.tickDot {
+  background: hsl(var(--primary));
+  animation: breatheDot 1.6s ease-in-out infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+@keyframes breathe {
+  0%, 100% { transform: scale(0.92); opacity: 0.7; }
+  50% { transform: scale(1.08); opacity: 1; }
+}
+@keyframes breatheDot {
+  0%, 100% { opacity: 0.35; transform: scale(0.8); }
+  50% { opacity: 1; transform: scale(1); }
+}
+
+.caret::after {
+  content: "";
+  display: inline-block;
+  width: 2px;
+  height: 0.9em;
+  margin-left: 2px;
+  vertical-align: -0.08em;
+  background: hsl(var(--primary));
+  animation: blink 1s steps(2, start) infinite;
+}
+
+@keyframes blink {
+  to { visibility: hidden; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .blob,
+  .shimmer,
+  .halo,
+  .orbit,
+  .orbitSlow,
+  .tickDot,
+  .caret::after {
+    animation: none;
+  }
+  .card,
+  .go {
+    transition: none;
+  }
+  .card:hover,
+  .card:focus-visible {
+    transform: none;
+  }
+}

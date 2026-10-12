@@ -39,7 +39,8 @@ import {
 import { runHref } from "@/features/workflow-runtime/run-doors";
 import { initializeSite } from "@/features/marketing/crawler/direct-client";
 import { SmartAddSlots } from "./SmartAddSlots";
-import { SMART_ADD_MORPH, SmartAddHero, playMorph, readMorphRects } from "./SmartAddHero";
+import { SmartAddHero } from "./SmartAddHero";
+import { Shared, riseIn } from "./stage/Shared";
 import { useSessionKnob } from "@/lib/scoped-config/sessionKnob";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { useSocialSpend } from "@/features/marketing/social/cost";
@@ -86,6 +87,11 @@ const WORKFLOW_KEY = "smart_add_brand_identify";
 const SETUP_KEY = "smart_add_brand_setup";
 /** Typing settles this long before a round starts; a newer value supersedes. */
 const IDENTIFY_DEBOUNCE_MS = 700;
+/** While a run is still working, the stage holds this long after the first real finding so the
+ *  centerpiece can gather (logo, name, accounts) before the structured page takes over. */
+const STAGE_DWELL_MS = 2_600;
+/** When the work is already done (or the person answered), a short beat, then the morph. */
+const STAGE_SETTLE_MS = 700;
 /** Confirmations within this window go out as one round. */
 const CONFIRM_BATCH_MS = 600;
 
@@ -253,14 +259,19 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
 
   const decide = (key: string, decision: Decision) => setDecisions((d) => applyDecision(d, items, key, decision));
 
-  /** "Custom": the person's own value lands in its slot, confirmed — the main one when the slot has none. */
-  const addCustom = (item: EvidenceItem) => {
-    const next = mergeEvidence(items, [item]);
+  /** "Custom": the person's own values land in their slots, confirmed — the main one when the slot has none. */
+  const addCustom = (added: EvidenceItem | EvidenceItem[]) => {
+    const list = Array.isArray(added) ? added : [added];
+    const next = mergeEvidence(items, list);
     setItems(next);
     setDecisions((d) => {
-      const single = ["name", "tagline", "description", "category", "website"].includes(item.field);
-      const hasPreferred = [...next.values()].some((i) => i.field === item.field && d[i.key] === "preferred");
-      return applyDecision(d, next, item.key, single && !hasPreferred ? "preferred" : "yes");
+      let out = d;
+      for (const item of list) {
+        const single = ["name", "tagline", "description", "category", "website"].includes(item.field);
+        const hasPreferred = [...next.values()].some((i) => i.field === item.field && out[i.key] === "preferred");
+        out = applyDecision(out, next, item.key, single && !hasPreferred ? "preferred" : "yes");
+      }
+      return out;
     });
   };
 
@@ -455,28 +466,22 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
 
   const showPicker = needsPlatformPick(parsed, null);
 
-  // The welcome stage until the first real finding; then ONE morph into the structured page:
-  // the Company/Person switch and the inputs glide from where they sat to their new home (FLIP on
-  // the Web Animations API, paced by the platform motion tokens). Scoped to these two elements on
-  // purpose: a document-wide view transition aborts whenever anything else on the page holds a
-  // duplicate transition name. prefers-reduced-motion swaps instantly.
+  // The intake stage until a real finding exists; it holds a beat while findings stream in (the
+  // logo, name and accounts gather in the centerpiece), then ONE morph into the structured page:
+  // every finding shown on the stage flies to its slot as a shared element (motion layoutId,
+  // stage/Shared.tsx) and the rest of the page rises in after. Reduced motion swaps instantly.
   const [structured, setStructured] = useState(false);
-  const morphFrom = useRef<Record<string, DOMRect> | null>(null);
   const pageRef = useRef<HTMLDivElement>(null);
   // Something to show = a real finding or an answer the person gave (the quick questions);
   // never the address they typed echoed back.
   const hasFindings = [...items.values()].some((i) => i.source.where !== "the address itself");
   useEffect(() => {
     if (structured || !hasFindings) return;
-    morphFrom.current = readMorphRects();
-    setStructured(true);
-  }, [hasFindings, structured]);
+    const timer = setTimeout(() => setStructured(true), working ? STAGE_DWELL_MS : STAGE_SETTLE_MS);
+    return () => clearTimeout(timer);
+  }, [hasFindings, structured, working]);
   useLayoutEffect(() => {
-    const from = morphFrom.current;
-    morphFrom.current = null;
-    if (!structured || !from) return;
-    if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return;
-    playMorph(from, pageRef.current);
+    if (structured) riseIn(pageRef.current);
   }, [structured]);
   const nothingFound = rounds.length > 0 && !working && !hasFindings;
   const listeners = (
@@ -500,16 +505,12 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
         <SmartAddHero
           person={person}
           onPerson={setPerson}
-          websiteText={websiteText}
           onWebsite={setWebsiteText}
-          socialText={socialText}
           onSocial={setSocialText}
-          showPicker={showPicker}
-          picked={picked}
-          pickOptions={PICK_OPTIONS}
           onPick={setPicked}
           working={working}
           views={roundViews.filter((v): v is RoundView => Boolean(v))}
+          items={visible}
           nothingFound={nothingFound}
           onAdd={addCustom}
         />
@@ -529,8 +530,9 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
           : "working";
 
   return (
-    <div ref={pageRef} className="flex w-full max-w-3xl flex-col gap-3" data-testid="smart-add-brand">
-      <div {...{ [SMART_ADD_MORPH]: "kind" }} className="self-start">
+    <div className="relative px-4 pb-8 pt-[calc(var(--shell-header-h)+1rem)]" data-smart-add-stage="structured">
+    <div ref={pageRef} className="mx-auto flex w-full max-w-3xl flex-col gap-3" data-testid="smart-add-brand">
+      <div className="self-start">
       <SegmentedControl
         aria-label="Brand kind"
         value={person ? "person" : "company"}
@@ -541,7 +543,7 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
         ]}
       />
       </div>
-      <div className="grid gap-3 sm:grid-cols-2" {...{ [SMART_ADD_MORPH]: "inputs" }}>
+      <Shared id="signals" as="div" className="grid gap-3 rounded-xl sm:grid-cols-2">
         <label className="flex flex-col gap-1">
           <span className="text-xs font-medium text-muted-foreground">Website</span>
           <Field
@@ -576,7 +578,7 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
             ) : null}
           </div>
         </label>
-      </div>
+      </Shared>
 
       {/* Working line: one fixed-height row, never shifts. */}
       <div className="flex h-6 items-center gap-2 text-xs text-muted-foreground" aria-live="polite">
@@ -602,7 +604,7 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
       <div className="motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-3 motion-safe:duration-500">
       <BrandCard basics={basics} person={person} location={basics.facts.find((f) => f.field === "address")?.value ?? null} />
       </div>
-      <p className="text-xs text-muted-foreground">Everything found is kept with the brand — only “Not us” is left out.</p>
+      <p className="text-xs text-muted-foreground">Everything found is kept — only “Not us” is left out.</p>
 
       {situation === "new" ? (
         // Brand-new: little to find, so three quick questions fill the essentials in place.
@@ -778,6 +780,7 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
       ) : null}
 
       {listeners}
+    </div>
     </div>
   );
 }
