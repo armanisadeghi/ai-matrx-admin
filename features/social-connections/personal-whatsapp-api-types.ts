@@ -123,6 +123,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/personal-messaging/beeper/events": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Events */
+        get: operations["events_personal_messaging_beeper_events_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/personal-messaging/beeper/message": {
         parameters: {
             query?: never;
@@ -531,6 +548,29 @@ export interface components {
             /** Available */
             available: boolean;
         };
+        /** PersonalLiveFrame */
+        PersonalLiveFrame: {
+            /**
+             * Type
+             * @enum {string}
+             */
+            type: "ready" | "heartbeat" | "changed" | "reconnect_required" | "access_lost";
+            /** Chat Id */
+            chat_id: string;
+            /** Seq */
+            seq?: number | null;
+            /** Ids */
+            ids?: string[];
+            /** Change */
+            change?: ("upsert" | "deleted" | "chat_deleted" | "reconcile") | null;
+            /**
+             * Reconcile
+             * @default false
+             */
+            reconcile: boolean;
+            /** Reason */
+            reason?: ("provider_unavailable" | "access_changed" | "actor_unverified") | null;
+        };
         /** PersonalMessageLookup */
         PersonalMessageLookup: {
             message: components["schemas"]["PersonalMessage"] | null;
@@ -729,6 +769,37 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PersonalMessagePage"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    events_personal_messaging_beeper_events_get: {
+        parameters: {
+            query: {
+                chat_id: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/x-ndjson": components["schemas"]["PersonalLiveFrame"];
                 };
             };
             /** @description Validation Error */

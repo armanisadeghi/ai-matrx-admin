@@ -10,7 +10,7 @@ jest.mock("@/lib/local-engine/discovery", () => ({ discoverLocalEngine: jest.fn(
 jest.mock("@/lib/python-client", () => ({ requestRaw: jest.fn() }));
 jest.mock("@/lib/redux/hooks", () => ({ useAppSelector: () => "admin-test-owner" }));
 jest.mock("@/lib/redux/selectors/userSelectors", () => ({ selectUserId: jest.fn() }));
-jest.mock("@/components/mardown-display/MarkdownRenderer", () => ({ __esModule: true, default: ({ content }: { content: string }) => <span>{content}</span> }));
+jest.mock("@ai-matrx/rich-content/markdown-core/MarkdownCore", () => ({ __esModule: true, default: ({ children }: { children: string }) => <span>{children}</span> }));
 // Only the shared visual shell is substituted; the panel, native client, and thread remain real.
 jest.mock("@ai-matrx/chat/messenger/MessengerShell", () => ({ MessengerShell: ({ source }: { source: MessengerSource }) => <div>
   {source.contacts.map((contact) => <button key={contact.id} onClick={() => source.onSelectContact(contact.id)}>{contact.name}</button>)}
@@ -22,6 +22,7 @@ const initial: PersonalGrant = { id: "d843d2f8-69ca-47cf-882d-e8e1a41d18e4", gen
 const selection: PersonalGrant = { ...initial, revision: 2, selected_chat_ids: ["sandbox", "other"] };
 let status = initial;
 let refuseMore = false;
+let moreStatus = 403;
 let calls: string[] = [];
 
 async function click(host: HTMLElement, name: string) {
@@ -32,7 +33,7 @@ async function click(host: HTMLElement, name: string) {
 
 describe("personal WhatsApp real panel/client/thread boundary", () => {
   beforeEach(() => {
-    jest.clearAllMocks(); status = initial; refuseMore = false; calls = [];
+    jest.clearAllMocks(); status = initial; refuseMore = false; moreStatus = 403; calls = [];
     jest.replaceProperty(process, "env", { ...process.env, NODE_ENV: "development" });
     window.history.replaceState(null, "", "/messenger/whatsapp?devLocalEngine=http%3A%2F%2F127.0.0.1%3A22259");
     jest.mocked(discoverLocalEngine).mockResolvedValue({ baseUrl: "http://127.0.0.1:22259", port: 22259, version: "test", capabilities: ["personal_messaging_v1"], discoveredAt: Date.now() });
@@ -42,7 +43,7 @@ describe("personal WhatsApp real panel/client/thread boundary", () => {
       if (path.endsWith("/status") || path.endsWith("/refresh")) body = status;
       else if (path.endsWith("/select-chat")) { status = selection; body = selection; }
       else if (path.includes("/chats")) {
-        if (refuseMore && path.includes("cursor=")) return new Response(JSON.stringify({ detail: "The device owner changed. Sign in again." }), { status: 403 });
+        if (refuseMore && path.includes("cursor=")) return new Response(JSON.stringify(moreStatus === 403 ? { detail: "The device owner changed. Sign in again." } : { error: "device_timeout", message: "Beeper is temporarily unavailable." }), { status: moreStatus });
         body = { items: [{ id: "sandbox", title: "Sandbox only", selected: status.selected_chat_ids?.includes("sandbox") }, { id: "other", title: "Other test chat", selected: true }], has_more: true, oldest_cursor: "older", newest_cursor: "newer" };
       } else if (path.includes("/messages")) body = { items: [], has_more: false, oldest_cursor: "older", newest_cursor: "newer", history_coverage: "available_in_beeper", refresh_supported: false, renewal: "reauthorization" };
       else throw new Error(`Unexpected route ${path}`);
@@ -82,6 +83,18 @@ describe("personal WhatsApp real panel/client/thread boundary", () => {
       await click(host, "More chats");
       expect(host.textContent).not.toContain("Sandbox only"); expect(host.textContent).not.toContain("Connected");
       expect(host.textContent).toContain("The device owner changed. Sign in again.");
+    } finally { await act(async () => root.unmount()); host.remove(); }
+  });
+  it("transient chat pagination preserves the active grant and existing contacts", async () => {
+    const host = document.createElement("div"); document.body.append(host); const root = createRoot(host);
+    try {
+      await act(async () => root.render(<PersonalWhatsAppPanel messenger />));
+      await click(host, "Sandbox only"); refuseMore = true; moreStatus = 503;
+      await click(host, "More chats");
+      expect(host.textContent).toContain("Sandbox only"); expect(host.textContent).toContain("Other test chat");
+      expect(host.textContent).not.toContain("Reconnect required");
+      refuseMore = false; await click(host, "More chats");
+      expect(calls.filter(path => path.includes("/chats?cursor="))).toHaveLength(2);
     } finally { await act(async () => root.unmount()); host.remove(); }
   });
   it("rejects duplicate DEV targets without quietly using default discovery", async () => {

@@ -8,6 +8,7 @@ export type PersonalGrant = components["schemas"]["PublicGrantStatus"];
 export type PersonalAccount = components["schemas"]["PersonalAccountSummary"];
 export type PersonalChat = components["schemas"]["PersonalChatSummary"];
 export type PersonalMessage = components["schemas"]["PersonalMessage"];
+export type PersonalLiveFrame = components["schemas"]["PersonalLiveFrame"];
 export type PersonalAttachment = components["schemas"]["PersonalAttachmentSummary"];
 export type PersonalMessages = components["schemas"]["PersonalMessagePage"];
 
@@ -39,7 +40,18 @@ const consent: z.ZodType<components["schemas"]["PersonalConsentStart"]> = z.obje
     return url.origin === "http://127.0.0.1:23373" && url.pathname === "/oauth/authorize" && url.searchParams.get("scope") === "read" && url.searchParams.get("code_challenge_method") === "S256";
   }), grant, required_duration: z.literal("one_day"),
 });
-const failure = z.object({ message: z.string().max(250).optional(), detail: z.string().max(250).optional() });
+const liveFrame: z.ZodType<PersonalLiveFrame> = z.object({
+  type: z.enum(["ready", "heartbeat", "changed", "reconnect_required", "access_lost"]), chat_id: z.string(),
+  seq: z.number().int().nonnegative().nullable().optional(), ids: z.array(z.string().min(1).max(1024)).max(100).default([]),
+  change: z.enum(["upsert", "deleted", "chat_deleted", "reconcile"]).nullable().optional(), reconcile: z.boolean().default(false),
+  reason: z.enum(["provider_unavailable", "access_changed", "actor_unverified"]).nullable().optional(),
+}).strict();
+const failure = z.object({ error: z.string().max(100).optional(), message: z.string().max(250).optional(), detail: z.string().max(250).optional() });
+
+export class PersonalWhatsAppFailure extends Error {
+  constructor(message: string, readonly status: number, readonly code?: string) { super(message); this.name = "PersonalWhatsAppFailure"; }
+  get accessLost() { return this.status === 401 || this.status === 403 || ["reauthorization_required", "permission_required", "account_disconnected", "chat_mismatch", "grant_mismatch", "native_not_found", "connection_changed", "connection_unavailable"].includes(this.code ?? ""); }
+}
 
 /** Managed previews use a one-label RFC 6761 localhost session host. */
 export function personalWhatsAppDevelopmentTarget(documentLocation: Pick<Location, "hostname" | "pathname" | "search">, messenger: boolean): string | undefined {
@@ -61,7 +73,8 @@ async function nativeResponse(path: string, body?: object, signal?: AbortSignal)
   if (!response.ok) {
     const value: unknown = await response.json();
     const parsed = failure.safeParse(value);
-    throw new Error(parsed.success && (parsed.data.message || parsed.data.detail) ? (parsed.data.message || parsed.data.detail) : "WhatsApp is unavailable. Check this computer's account and retry.");
+    const explanation = parsed.success ? parsed.data.message || parsed.data.detail : undefined;
+    throw new PersonalWhatsAppFailure(explanation ?? "WhatsApp is unavailable. Check this computer's account and retry.", response.status, parsed.success ? parsed.data.error : undefined);
   }
   return response;
 }
@@ -82,6 +95,32 @@ return {
   attachment: async (chatId: string, messageId: string, item: PersonalAttachment, signal: AbortSignal): Promise<Blob> => {
     const response = await nativeResponse(`attachment?${new URLSearchParams({ chat_id: chatId, message_id: messageId, attachment_index: String(item.index), revision: item.revision })}`, undefined, signal);
     return response.blob();
+  },
+  events: async (chatId: string, signal: AbortSignal, onFrame: (frame: PersonalLiveFrame) => void): Promise<void> => {
+    const response = await nativeResponse(`events?${new URLSearchParams({ chat_id: chatId })}`, undefined, signal);
+    if (!response.headers.get("content-type")?.startsWith("application/x-ndjson") || !response.body) throw new Error("Update AI Matrx Local to receive WhatsApp updates.");
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let pending = "";
+    try {
+      while (!signal.aborted) {
+        const chunk = await reader.read();
+        if (chunk.done) { if (pending.trim()) throw new Error("WhatsApp updates ended unexpectedly."); return; }
+        pending += decoder.decode(chunk.value, { stream: true });
+        let newline: number;
+        while ((newline = pending.indexOf("\n")) !== -1) {
+          const line = pending.slice(0, newline); pending = pending.slice(newline + 1);
+          if (line.length > 1_048_576) throw new Error("WhatsApp update exceeded its limit.");
+          if (!line.trim()) continue;
+          const frame = liveFrame.parse(JSON.parse(line));
+          if (frame.chat_id !== chatId) throw new Error("WhatsApp updates belong to another conversation.");
+          if (signal.aborted) return;
+          onFrame(frame);
+          if (frame.type === "reconnect_required" || frame.type === "access_lost" || frame.change === "chat_deleted") return;
+        }
+        if (pending.length > 1_048_576) throw new Error("WhatsApp update exceeded its limit.");
+      }
+    } finally { await reader.cancel().catch(() => undefined); reader.releaseLock(); }
   },
   refresh: () => nativeRequest("refresh", grant, {}),
   reconcile: () => nativeRequest("reconcile", activation, {}),
