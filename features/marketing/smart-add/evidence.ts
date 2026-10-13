@@ -12,6 +12,8 @@
  * Spec: common-docs/systems/marketing/websites-and-brands/projects/smart-add-brand/SPEC.md
  */
 
+import { handleKeyPart } from "../social/account-input";
+
 export type EvidenceField =
   | "name"
   | "tagline"
@@ -359,7 +361,7 @@ export function customItem(
         ? v.replace(/\D/g, "").slice(-10)
         : v.toLowerCase();
   return {
-    key: field === "social" && extra.platform && extra.handle ? `social:${extra.platform}:${extra.handle.toLowerCase()}` : `${field}:${keyValue}`,
+    key: field === "social" && extra.platform && extra.handle ? `social:${extra.platform}:${handleKeyPart(extra.handle)}` : `${field}:${keyValue}`,
     field,
     value: field === "website" && !/^https?:\/\//i.test(v) ? `https://${v}` : v,
     label: extra.label ?? (field === "website" ? websiteHost(v) : null),

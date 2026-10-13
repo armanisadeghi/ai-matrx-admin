@@ -366,10 +366,6 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
     .flatMap((v) => v?.steps ?? [])
     .filter((s) => s.phase === "running" && s.progress)
     .map((s) => s.progress as string);
-  const notes = [
-    ...rounds.filter((r) => r.error).map((r) => r.error as string),
-    ...roundViews.flatMap((v) => v?.steps.flatMap((s) => s.notes) ?? []),
-  ];
   const costUsd = roundViews.reduce((sum, v) => sum + (v?.steps.reduce((s, x) => s + x.costUsd, 0) ?? 0), 0);
   const visible = orderedEvidence(items.values());
   const basics = confirmedBasics(items, decisions, person);
@@ -799,17 +795,7 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
       </div>
 
       <SmartAddGateLine views={roundViews.filter((v): v is RoundView => Boolean(v))} />
-      <SmartAddWebRow items={visible} views={roundViews.filter((v): v is RoundView => Boolean(v))} />
-
-      {notes.length ? (
-        <ul className="flex flex-col gap-0.5 text-xs text-muted-foreground">
-          {notes.slice(0, 3).map((n) => (
-            <li key={n} className="truncate" title={n}>
-              {n}
-            </li>
-          ))}
-        </ul>
-      ) : null}
+      <SmartAddWebRow items={visible} />
 
       {/* Create: the confirmed basics, one row. */}
       <div className="sticky bottom-3 z-10 flex min-h-12 items-center gap-3 rounded-xl border border-border bg-card/95 px-4 py-2 shadow-lg backdrop-blur">

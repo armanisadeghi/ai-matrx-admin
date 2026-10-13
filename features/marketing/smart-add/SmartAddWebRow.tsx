@@ -15,14 +15,7 @@ import { Button } from "@ai-matrx/design-system/controls";
 import type { Certainty, EvidenceItem } from "./evidence";
 import { webRow } from "./evidence";
 import { outboundHref } from "./SmartAddExtras";
-import type { RoundView } from "./SmartAddRound";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
-
-const TIERS: { step: string; label: string; waits: string }[] = [
-  { step: "web", label: "Web", waits: "Needs a website" },
-  { step: "deep", label: "News · Videos · Images", waits: "After the name is confirmed" },
-  { step: "local", label: "Local", waits: "After a location is confirmed" },
-];
 
 export const CERTAINTY_LABEL: Record<Certainty, string> = { certain: "Certain", likely: "Likely", possible: "Possible" };
 
@@ -45,60 +38,38 @@ export function CertaintyChip({ certainty, reasons }: { certainty: Certainty; re
   );
 }
 
-function tierState(views: RoundView[], step: string): "running" | "done" | "waiting" {
-  const all = views.flatMap((v) => v.steps.filter((s) => s.step === step));
-  if (all.some((s) => s.phase === "running" || s.phase === "retrying")) return "running";
-  if (all.some((s) => !s.skipped && (s.phase === "completed" || s.phase === "failed"))) return "done";
-  return "waiting";
-}
-
-export function SmartAddWebRow({ items, views }: { items: EvidenceItem[]; views: RoundView[] }) {
+export function SmartAddWebRow({ items }: { items: EvidenceItem[] }) {
   const row = webRow(items);
-  const states = TIERS.map((t) => ({ ...t, state: tierState(views, t.step) }));
-  if (!row.length && states.every((t) => t.state === "waiting")) return null;
+  if (!row.length) return null;
   return (
     <section className="flex flex-col gap-2 rounded-lg border border-border/70 px-3 py-2" data-testid="smart-add-web-row">
-      <header className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
-        <span className="font-medium text-foreground/80">On the web</span>
-        {states.map((t) => (
-          <span key={t.step} className="flex items-center gap-1" data-testid="smart-add-web-tier" data-tier={t.step} data-state={t.state}>
-            <span
-              className={`size-1.5 rounded-full ${
-                t.state === "running" ? "animate-pulse bg-primary" : t.state === "done" ? "bg-primary/60" : "bg-muted-foreground/30"
-              }`}
-            />
-            <span title={t.state === "waiting" ? t.waits : undefined}>{t.label}</span>
-          </span>
-        ))}
-      </header>
-      {row.length ? (
-        <ul className="flex snap-x gap-2 overflow-x-auto pb-1 [scrollbar-width:thin]">
-          {row.map((i) => (
-            <li
-              key={i.key}
-              className="flex w-64 shrink-0 snap-start items-center gap-2 rounded-md border border-border bg-card px-2 py-1.5"
-              data-testid="smart-add-web-item"
-              data-field={i.field}
-            >
+      <header className="text-xs font-medium text-foreground/80">On the web</header>
+      <ul className="flex snap-x items-start gap-2 overflow-x-auto pb-1 [scrollbar-width:thin]">
+        {row.map((i) => (
+          <li
+            key={i.key}
+            className="flex w-72 shrink-0 snap-start flex-col gap-1 rounded-md border border-border bg-card px-2 py-1.5"
+            data-testid="smart-add-web-item"
+            data-field={i.field}
+          >
+            <div className="flex items-center gap-2">
               {i.image_url ? (
                 <img src={i.image_url} alt="" className="size-5 shrink-0 rounded object-contain" loading="lazy" />
               ) : null}
-              <span className="flex min-w-0 flex-1 flex-col">
-                <span className="flex items-center gap-1.5 text-xs font-medium">
-                  <span className="truncate">{i.field === "listing" ? i.label : (i.label ?? i.handle)}</span>
-                  {i.certainty ? <CertaintyChip certainty={i.certainty} reasons={i.certainty_reasons} /> : null}
-                </span>
-                <span className="truncate text-[11px] text-muted-foreground" title={i.url ?? i.value}>
-                  {i.url ?? i.value}
-                </span>
+              <span className="flex min-w-0 flex-1 items-center gap-1.5 text-xs font-medium">
+                <span className="truncate">{i.field === "listing" ? i.label : (i.label ?? i.handle)}</span>
+                {i.certainty ? <CertaintyChip certainty={i.certainty} reasons={i.certainty_reasons} /> : null}
               </span>
               <Button asChild variant="quiet" icon={<ExternalLink aria-hidden />} aria-label="Open" title="Open">
                 <OutboundLink href={outboundHref(i.url ?? i.value)} />
               </Button>
-            </li>
-          ))}
-        </ul>
-      ) : null}
+            </div>
+            <span className="break-all text-[11px] leading-snug text-muted-foreground" data-testid="smart-add-web-url">
+              {i.url ?? i.value}
+            </span>
+          </li>
+        ))}
+      </ul>
     </section>
   );
 }

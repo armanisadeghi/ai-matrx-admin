@@ -24,8 +24,19 @@ export function needsPlatformPick(parsed: ParsedAccount, contextPlatform?: Socia
 }
 
 /** One account = one key: lookups answered for another key are stale and dropped. */
+/** Lowercased handle with percent-escapes decoded, so `espa%c3%b1a` and `españa` are one account. */
+export function handleKeyPart(handle: string): string {
+  let h = handle;
+  try {
+    h = decodeURIComponent(handle);
+  } catch {
+    /* not a valid escape sequence: keep the text as typed */
+  }
+  return h.toLowerCase();
+}
+
 export function accountKey(account: Pick<OkAccount, "platform" | "handle">): string {
-  return `${account.platform}:${account.handle.toLowerCase()}`;
+  return `${account.platform}:${handleKeyPart(account.handle)}`;
 }
 
 export interface FoundAccount {
