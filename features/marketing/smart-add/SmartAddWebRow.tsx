@@ -2,8 +2,8 @@
 
 /**
  * Smart Add — the "On the web" step: the top web results from every engine, merged and deduped,
- * one row each (the site's own icon, title, the exact address, the snippet, Open, which engines and
- * at what rank), and ONE question per row: what is this to us? The answers are the shared
+ * one row each (the site's own icon, title, the exact address, the snippet, Open, each engine's rank —
+ * engine names stay off customer screens), and ONE question per row: what is this to us? The answers are the shared
  * vocabulary `web.brand_relation_kind` (the social rows answer from the same table). A rule-based
  * suggestion (webKinds.suggestKind, no AI) is offered as the highlighted option with its reason in a
  * tooltip; it is never set for the person. Answered rows group by their answer.

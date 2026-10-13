@@ -199,13 +199,18 @@ export function groupByKind(
     .map((g) => ({ stance: g.kind.stance, ...g }));
 }
 
-/** "Google #1 · Brave #3" — each engine's best rank. */
+/**
+ * "#1 · #3" — each engine's best rank, best first. Engine names are vendor names: never on a customer
+ * screen (VendorNameRuntimeGuard); they stay on the item for the Builder panel.
+ */
 export function engineRanks(item: EvidenceItem): string {
   const best = new Map<string, number>();
   for (const h of item.hits ?? []) {
     const e = h.engine || "web";
     best.set(e, Math.min(best.get(e) ?? 99, h.rank));
   }
-  const name = (e: string) => e.charAt(0).toUpperCase() + e.slice(1);
-  return [...best.entries()].map(([e, r]) => `${name(e)} #${r}`).join(" · ");
+  return [...best.values()]
+    .sort((a, b) => a - b)
+    .map((r) => `#${r}`)
+    .join(" · ");
 }

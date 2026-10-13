@@ -82,7 +82,7 @@ describe("On the web: rows", () => {
       ],
     });
     expect(webRow([a, b]).map((i) => i.label)).toEqual(["B", "A"]);
-    expect(engineRanks(b)).toBe("Google #2 · Brave #1");
+    expect(engineRanks(b)).toBe("#1 · #2");
     const groups = groupByKind([a, b], { [b.key]: { kind: "not_us", sentiment: null }, [a.key]: { kind: "ours", sentiment: null } }, KINDS);
     expect(groups.map((g) => g.kind.key)).toEqual(["ours", "not_us"]);
   });
