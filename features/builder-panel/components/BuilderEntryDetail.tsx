@@ -1,33 +1,21 @@
 "use client";
 
-/** The selected entry: what it is, where it came from, when — and the value, smart or raw. */
+/** The selected entry: what it is, where it came from, when — and the value exactly as published,
+ *  in the canonical JSON component. A derived entry names the raw source it came from. */
 
 import { useState } from "react";
 import { formatRelativeTime } from "@ai-matrx/kit/format";
-import { Badge, SegmentedControl } from "@ai-matrx/design-system/controls";
-import { CopyButtons } from "@/components/agent-copy/CopyButtons";
+import { Badge, Button } from "@ai-matrx/design-system/controls";
 import { BUILDER_GROUP_LABELS, type BuilderEntry } from "../types";
-import { BuilderValue } from "./BuilderValue";
-
-function toText(value: unknown): string {
-  if (typeof value === "string") return value;
-  try {
-    return JSON.stringify(value, null, 2) ?? "";
-  } catch {
-    return String(value);
-  }
-}
+import { BuilderJson } from "./BuilderJson";
 
 export function BuilderEntryDetail({
   entry,
-  surfaceKey,
-  raw,
-  onRaw,
+  onOpenSource,
 }: {
   entry: BuilderEntry;
-  surfaceKey: string;
-  raw: boolean;
-  onRaw: (raw: boolean) => void;
+  /** Open the step a derived value came from (its raw output and requests). */
+  onOpenSource: (nodeId: string) => void;
 }) {
   // Which value: the current one, or one of the earlier ones this key held.
   const [version, setVersion] = useState<number>(-1);
@@ -37,35 +25,17 @@ export function BuilderEntryDetail({
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      <div className="flex shrink-0 flex-wrap items-center gap-2 border-b border-border px-3 py-2">
+      <div className="flex shrink-0 flex-wrap items-center gap-x-2 gap-y-1 border-b border-border px-3 py-1.5">
         <h2 className="min-w-0 truncate text-sm font-semibold">{entry.label}</h2>
-        <Badge>{BUILDER_GROUP_LABELS[entry.group]}</Badge>
+        <Badge>{BUILDER_GROUP_LABELS[entry.group] ?? entry.group}</Badge>
         {entry.kind ? <Badge tone="info">{entry.kind}</Badge> : null}
         {certainty !== null ? <Badge tone={certainty >= 70 ? "success" : "warning"}>{certainty}% sure</Badge> : null}
-        <div className="ml-auto flex items-center gap-2">
-          <SegmentedControl
-            aria-label="View"
-            value={raw ? "raw" : "smart"}
-            onValueChange={(v) => onRaw(v === "raw")}
-            data={[
-              { value: "smart", label: "View" },
-              { value: "raw", label: "Raw" },
-            ]}
-          />
-          <CopyButtons
-            label={entry.label}
-            sourceId={`${surfaceKey}:${entry.key}`}
-            json={() => shown}
-            human={() => toText(shown)}
-          />
-        </div>
-      </div>
-      <div className="flex shrink-0 flex-wrap items-center gap-x-3 gap-y-0.5 px-3 py-1 text-[11px] text-muted-foreground">
-        <span title={new Date(shownAt).toLocaleString()}>{formatRelativeTime(shownAt)}</span>
-        {entry.source ? <span className="truncate">{entry.source}</span> : null}
-        <span className="truncate font-mono">{entry.key}</span>
+        <span className="text-[11px] text-muted-foreground" title={new Date(shownAt).toLocaleString()}>
+          {formatRelativeTime(shownAt)}
+        </span>
+        {entry.source ? <span className="truncate text-[11px] text-muted-foreground">{entry.source}</span> : null}
         {entry.history.length ? (
-          <span className="flex items-center gap-1">
+          <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
             <button
               type="button"
               data-clickable
@@ -88,9 +58,18 @@ export function BuilderEntryDetail({
             ))}
           </span>
         ) : null}
+        {entry.fromNodes?.length ? (
+          <span className="ml-auto flex items-center gap-1">
+            {entry.fromNodes.map((n) => (
+              <Button key={n} variant="quiet" onClick={() => onOpenSource(n)} title={`Open the raw output of step ${n}`}>
+                From {n}
+              </Button>
+            ))}
+          </span>
+        ) : null}
       </div>
-      <div className="min-h-0 flex-1 overflow-auto px-3 pb-3 pt-1">
-        <BuilderValue value={shown} kind={entry.kind} raw={raw} />
+      <div className="flex min-h-0 flex-1 flex-col p-2">
+        <BuilderJson data={shown} label={entry.key} location={`Data · ${entry.label}`} className="h-full" />
       </div>
     </div>
   );

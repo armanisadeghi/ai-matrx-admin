@@ -405,8 +405,7 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
     const state = {
       inputs: { website: websiteText, social: socialText, platform: picked, person },
       rounds,
-      views,
-      setup: setupRunId ? { runId: setupRunId, view: setupView } : null,
+      setup: setupRunId ? { runId: setupRunId } : null,
       items: [...items.values()],
       decisions,
       relations,

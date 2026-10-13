@@ -3,19 +3,16 @@
 /** Builder panel sidebar — every entry of the surface, grouped; new ones flash in. */
 
 import { cn } from "@/lib/utils";
-import { BUILDER_GROUPS, BUILDER_GROUP_LABELS, type BuilderEntry } from "../types";
+import { formatRelativeTime } from "@ai-matrx/kit/format";
+import { BUILDER_GROUPS, BUILDER_GROUP_LABELS, type BuilderEntry, type BuilderGroup } from "../types";
 import styles from "./builder.module.css";
 
 /** An entry published within this window still reads as new. */
 const FRESH_MS = 2_500;
 
-function preview(entry: BuilderEntry): string {
-  const d = entry.data;
-  if (d === null || d === undefined) return "empty";
-  if (typeof d === "string") return d;
-  if (typeof d === "number" || typeof d === "boolean") return String(d);
-  if (Array.isArray(d)) return `${d.length} item${d.length === 1 ? "" : "s"}`;
-  return `${Object.keys(d as object).length} fields`;
+/** Entries from a group this build no longer has (an older persisted feed) sit under Other. */
+function groupOf(entry: BuilderEntry): BuilderGroup {
+  return (BUILDER_GROUPS as readonly string[]).includes(entry.group) ? entry.group : "other";
 }
 
 export function BuilderSidebar({
@@ -35,7 +32,7 @@ export function BuilderSidebar({
   return (
     <div className="flex h-full min-h-0 flex-col py-1">
       {BUILDER_GROUPS.map((group) => {
-        const list = entries.filter((e) => e.group === group);
+        const list = entries.filter((e) => groupOf(e) === group);
         if (!list.length) return null;
         return (
           <section key={group} className="pb-1">
@@ -65,7 +62,9 @@ export function BuilderSidebar({
                       <span className="ml-auto shrink-0 text-[10px] tabular-nums text-muted-foreground">{certainty}%</span>
                     ) : null}
                   </span>
-                  <span className="w-full truncate text-[11px] text-muted-foreground">{preview(entry)}</span>
+                  <span className="w-full truncate text-[11px] text-muted-foreground">
+                    {[entry.at ? formatRelativeTime(entry.at) : null, entry.source].filter(Boolean).join(" · ")}
+                  </span>
                 </button>
               );
             })}

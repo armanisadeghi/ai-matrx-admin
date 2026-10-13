@@ -1789,6 +1789,8 @@ function OutputPanel({
         <button
           onClick={handleCopy}
           disabled={!outputText}
+          aria-label={copied ? "Copied" : "Copy output"}
+          title={copied ? "Copied" : "Copy output"}
           className="flex items-center gap-1 text-[10px] px-2 py-0.5 bg-muted hover:bg-accent rounded border border-border text-foreground disabled:opacity-40"
         >
           {copied ? (
@@ -1796,7 +1798,6 @@ function OutputPanel({
           ) : (
             <Copy size={10} />
           )}
-          {copied ? "Copied!" : "Copy"}
         </button>
       </div>
       <textarea

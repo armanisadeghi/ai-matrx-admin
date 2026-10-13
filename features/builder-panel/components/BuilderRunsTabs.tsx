@@ -1,10 +1,11 @@
 "use client";
 
 /**
- * AI calls tab — every AI run this page published (and every workflow run, whose AI steps the
- * Watch AI window collects), each opening in the Watch AI window (`useWatchAiRun`).
- * Provision tab — the provision snapshots this page captured, shown with the canonical
- * Provision body (`ProvisionWindowBody`), plus the door to the Provision window.
+ * AI calls tab — every AI run this page published (an `ai_run` ref), each opening in the Watch AI
+ * window (`useWatchAiRun`). A workflow run is not an AI call: Smart Add's identify and setup runs
+ * make none, so they are never counted here.
+ * Provision tab — every provision snapshot captured for this page's runs and records (read from
+ * `mandate.provision_snapshot`), shown with the canonical Provision body (`ProvisionWindowBody`).
  */
 
 import { useState } from "react";
@@ -18,16 +19,10 @@ import type { BuilderEntry, BuilderRef } from "../types";
 
 type AiRef = Extract<BuilderRef, { type: "ai_run" }>;
 
-export function BuilderAiTab({
-  aiRuns,
-  workflowRuns,
-}: {
-  aiRuns: { entry: BuilderEntry; ref: AiRef }[];
-  workflowRuns: { entry: BuilderEntry; runId: string; label: string }[];
-}) {
+export function BuilderAiTab({ aiRuns }: { aiRuns: { entry: BuilderEntry; ref: AiRef }[] }) {
   const watch = useWatchAiRun();
-  if (!aiRuns.length && !workflowRuns.length) {
-    return <p className="p-3 text-xs text-muted-foreground">No AI call on this page yet</p>;
+  if (!aiRuns.length) {
+    return <p className="p-3 text-xs text-muted-foreground">No AI call on this page</p>;
   }
   return (
     <div className="flex min-h-0 flex-1 flex-col overflow-auto p-3">
@@ -54,44 +49,45 @@ export function BuilderAiTab({
             </Button>
           </li>
         ))}
-        {workflowRuns.map(({ entry, runId, label }) => (
-          <li key={`wf:${runId}`} className="flex items-center gap-2 border-b border-border px-2 py-1.5 last:border-b-0">
-            <span className="truncate text-xs font-medium">{label}</span>
-            <span className="text-[11px] text-muted-foreground">AI steps · {formatRelativeTime(entry.at)}</span>
-            <Button
-              variant="quiet"
-              className="ml-auto"
-              icon={<Eye className="h-3.5 w-3.5" />}
-              onClick={() => watch({ workflowRunId: runId, label })}
-            >
-              Watch
-            </Button>
-          </li>
-        ))}
       </ul>
     </div>
   );
 }
 
-export function BuilderProvisionTab({ snapshots }: { snapshots: { entry: BuilderEntry; id: string }[] }) {
+export interface BuilderSnapshotRef {
+  id: string;
+  label: string;
+  at: number;
+}
+
+export function BuilderProvisionTab({
+  snapshots,
+  focusId,
+}: {
+  /** Every snapshot for this page's runs and records, from the database. */
+  snapshots: BuilderSnapshotRef[];
+  focusId: string | null;
+}) {
   const [picked, setPicked] = useState<string | null>(null);
   const openProvision = useOpenProvisionWindow();
-  const ordered = [...snapshots].sort((a, b) => b.entry.at - a.entry.at);
-  const current = ordered.find((s) => s.id === picked) ?? ordered[0] ?? null;
-  if (!current) return <p className="p-3 text-xs text-muted-foreground">No provision snapshot on this page yet</p>;
+  const ordered = [...snapshots].sort((a, b) => b.at - a.at);
+  const wanted = picked ?? focusId;
+  const current = ordered.find((s) => s.id === wanted) ?? ordered[0] ?? null;
+  if (!current) return <p className="p-3 text-xs text-muted-foreground">No provision snapshot for this page yet</p>;
   const options: SelectOption<string>[] = ordered.map((s) => ({
     value: s.id,
-    label: `${s.entry.label} · ${formatRelativeTime(s.entry.at)}`,
+    label: `${s.label} · ${new Date(s.at).toLocaleTimeString()}`,
   }));
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       <div className="flex shrink-0 items-center gap-2 border-b border-border px-3 py-2">
         <Select aria-label="Snapshot" value={current.id} onValueChange={setPicked} options={options} />
+        <span className="truncate font-mono text-[11px] text-muted-foreground">{current.id}</span>
         <Button
           variant="quiet"
           className="ml-auto"
           icon={<PanelTopOpen className="h-3.5 w-3.5" />}
-          onClick={() => openProvision(current.id, current.entry.label)}
+          onClick={() => openProvision(current.id, current.label)}
         >
           Open window
         </Button>

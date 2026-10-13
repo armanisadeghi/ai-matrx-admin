@@ -1,160 +1,155 @@
 "use client";
 
 /**
- * Workflow tab — every run this page published, as its node graph (in run order) with each
- * node's state and output, read live from the workflow runtime (`workflowRuns` slice; the
- * shown run is adopted through `useWorkflowRun`, refcounted, so it streams here too). Below:
- * the PROPOSED workflow shapes for this surface (`mandate.proposal`, shape_type workflow).
+ * Workflow tab — every run this page started, read from what the server stored
+ * (`workflow.run` + `workflow.node_outcome`): status, the definition the run actually used
+ * (Open workflow), the run page (Open run), the run's input and each step's input and output,
+ * untouched. Below: the PROPOSED workflow shapes for this surface (`mandate.proposal`).
  */
 
 import { useState } from "react";
-import { ChevronDown, ChevronRight, ExternalLink, Eye } from "lucide-react";
+import { ChevronDown, ChevronRight, ExternalLink } from "lucide-react";
 import { formatDurationMs } from "@ai-matrx/kit/format";
 import { useCostDisplay } from "@/components/cost/useCostDisplay";
 import { Badge, Button, RegionSkeleton, Select, type SelectOption } from "@ai-matrx/design-system/controls";
-import { useAppSelector } from "@/lib/redux/hooks";
-import { useWorkflowRun } from "@/features/workflow-runtime/hooks/useWorkflowRun";
-import {
-  selectNodeAggregate,
-  selectRunCostTotal,
-  selectRunInput,
-  selectRunNodeOrder,
-  selectRunStatus,
-} from "@/features/workflow-runtime/redux/workflow-runs.selectors";
 import { runHref } from "@/features/workflow-runtime/run-doors";
-import { useWatchAiRun } from "@/features/overlays/openers/aiWatchWindow";
-import type { BuilderEntry } from "../types";
-import type { MandateProposal } from "../data";
-import { BuilderValue } from "./BuilderValue";
-import { ProposalCard } from "./ProposalCard";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
+import type { MandateProposal, NodeOutcomeRow, RunTruth } from "../data";
+import { BuilderJson } from "./BuilderJson";
+import { ProposalCard } from "./ProposalCard";
 
 type Tone = "neutral" | "success" | "warning" | "destructive" | "info";
-const PHASE_TONE: Record<string, Tone> = {
-  settled: "success",
+const STATUS_TONE: Record<string, Tone> = {
   completed: "success",
   running: "info",
-  retrying: "warning",
+  pending: "info",
+  interrupted: "warning",
   failed: "destructive",
   errored: "destructive",
-  skipped: "neutral",
-  idle: "neutral",
+  cancelled: "neutral",
 };
 
-function NodeRow({ runId, nodeId }: { runId: string; nodeId: string }) {
-  const agg = useAppSelector(selectNodeAggregate(runId, nodeId));
-  const [open, setOpen] = useState(false);
+function record(value: unknown): Record<string, unknown> {
+  return value && typeof value === "object" && !Array.isArray(value) ? (value as Record<string, unknown>) : {};
+}
+
+function StepRow({ o, open, onToggle }: { o: NodeOutcomeRow; open: boolean; onToggle: () => void }) {
   const { format } = useCostDisplay();
-  const last = agg.invocations[agg.invocations.length - 1] ?? null;
-  const cost = typeof last?.output?.cost_usd === "number" ? last.output.cost_usd : null;
+  const out = record(o.output);
+  const cost = typeof out.cost_usd === "number" ? out.cost_usd : null;
+  const reqs = Array.isArray(out.requests) ? out.requests.length : 0;
   return (
     <li className="border-b border-border last:border-b-0">
       <button
         type="button"
         data-clickable
-        onClick={() => setOpen((o) => !o)}
+        onClick={onToggle}
         className="flex w-full min-w-0 items-center gap-2 px-2 py-1.5 text-left hover:bg-accent/50"
       >
         {open ? <ChevronDown className="h-3.5 w-3.5 shrink-0" /> : <ChevronRight className="h-3.5 w-3.5 shrink-0" />}
-        <span className="truncate text-xs font-medium">{nodeId}</span>
-        <Badge tone={PHASE_TONE[agg.phase] ?? "neutral"}>{agg.phase}</Badge>
-        {agg.expectedCount > 1 ? (
-          <span className="text-[11px] tabular-nums text-muted-foreground">
-            {agg.settledCount}/{agg.expectedCount}
-          </span>
-        ) : null}
+        <span className="truncate font-mono text-xs">{o.nodeId}</span>
+        {o.error ? <Badge tone="destructive">error</Badge> : out.skipped === true ? <Badge>skipped</Badge> : <Badge tone="success">done</Badge>}
+        {reqs ? <span className="text-[11px] tabular-nums text-muted-foreground">{reqs} req</span> : null}
         <span className="ml-auto flex shrink-0 items-center gap-2 text-[11px] tabular-nums text-muted-foreground">
-          {last?.durationMs != null ? <span>{formatDurationMs(last.durationMs)}</span> : null}
-          {cost != null ? <span>{format(cost)}</span> : null}
+          <span>{formatDurationMs(o.durationMs)}</span>
+          {cost ? <span>{format(cost)}</span> : null}
         </span>
       </button>
-      {last?.progress?.message ? <p className="px-8 pb-1 text-[11px] text-muted-foreground">{last.progress.message}</p> : null}
-      {last?.error?.message ? <p className="px-8 pb-1 text-[11px] text-destructive">{last.error.message}</p> : null}
       {open ? (
-        <div className="px-8 pb-2">
-          <BuilderValue value={last?.output ?? null} kind={last?.outputKind ?? null} raw={false} />
+        <div className="flex flex-col gap-2 px-2 pb-2">
+          <BuilderJson data={o.input} label="Input" location={`Workflow · step ${o.nodeId} · input`} className="h-56" />
+          <BuilderJson data={o.output} label="Output" location={`Workflow · step ${o.nodeId} · output`} className="h-80" />
+          {o.error ? <BuilderJson data={o.error} label="Error" location={`Workflow · step ${o.nodeId} · error`} className="h-40" /> : null}
         </div>
       ) : null}
     </li>
   );
 }
 
-function RunGraph({ runId, label }: { runId: string; label: string }) {
-  useWorkflowRun(runId);
-  const status = useAppSelector(selectRunStatus(runId));
-  const order = useAppSelector(selectRunNodeOrder(runId));
-  const input = useAppSelector(selectRunInput(runId));
-  const cost = useAppSelector(selectRunCostTotal(runId));
-  const watch = useWatchAiRun();
-  const { format } = useCostDisplay();
-  const [showInput, setShowInput] = useState(false);
-  return (
-    <section className="flex flex-col gap-2">
-      <div className="flex flex-wrap items-center gap-2">
-        <span className="truncate text-sm font-semibold">{label}</span>
-        <Badge tone={PHASE_TONE[status ?? "idle"] ?? "info"}>{status ?? "waiting"}</Badge>
-        {typeof cost === "number" && cost > 0 ? (
-          <span className="text-[11px] tabular-nums text-muted-foreground">{format(cost)}</span>
-        ) : null}
-        <div className="ml-auto flex items-center gap-1">
-          <Button variant="quiet" icon={<Eye className="h-3.5 w-3.5" />} onClick={() => watch({ workflowRunId: runId, label })}>
-            Watch AI
-          </Button>
-          <Button variant="quiet" asChild icon={<ExternalLink className="h-3.5 w-3.5" />}>
-            <OutboundLink href={runHref(runId)}>
-              Open run
-            </OutboundLink>
-          </Button>
-        </div>
-      </div>
-      <button
-        type="button"
-        data-clickable
-        onClick={() => setShowInput((s) => !s)}
-        className="flex items-center gap-1 self-start text-xs text-muted-foreground hover:text-foreground"
-      >
-        {showInput ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
-        Run inputs
-      </button>
-      {showInput ? <BuilderValue value={input} raw={false} /> : null}
-      {order.length ? (
-        <ol className="rounded-md border border-border">
-          {order.map((nodeId) => (
-            <NodeRow key={nodeId} runId={runId} nodeId={nodeId} />
-          ))}
-        </ol>
-      ) : (
-        <p className="text-xs text-muted-foreground">No steps reported yet</p>
-      )}
-    </section>
-  );
-}
-
 export function BuilderWorkflowTab({
   runs,
+  truth,
+  truthError,
+  focus,
   proposals,
   proposalsError,
 }: {
-  runs: { entry: BuilderEntry; runId: string; label: string }[];
+  runs: { runId: string; label: string; at: number }[];
+  truth: RunTruth | null;
+  truthError: string | null;
+  /** A run (and step) to show first — set by Activity. */
+  focus: { runId: string; nodeId: string | null } | null;
   proposals: MandateProposal[] | null;
   proposalsError: string | null;
 }) {
-  // Newest run first by default.
   const [picked, setPicked] = useState<string | null>(null);
-  const ordered = [...runs].sort((a, b) => b.entry.at - a.entry.at);
-  const current = ordered.find((r) => r.runId === picked) ?? ordered[0] ?? null;
+  const [openStep, setOpenStep] = useState<string | null>(focus?.nodeId ?? null);
+  const [showInput, setShowInput] = useState(false);
+  const ordered = [...runs].sort((a, b) => b.at - a.at);
+  const currentId = picked ?? focus?.runId ?? ordered[0]?.runId ?? null;
+  const current = ordered.find((r) => r.runId === currentId) ?? ordered[0] ?? null;
+  const run = truth?.runs.find((r) => r.id === current?.runId) ?? null;
+  const steps = (truth?.outcomes ?? []).filter((o) => o.runId === current?.runId);
   const options: SelectOption<string>[] = ordered.map((r) => ({ value: r.runId, label: r.label }));
   const shapes = (proposals ?? []).filter((p) => p.shapeType === "workflow");
 
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-auto p-3">
       {current ? (
-        <>
-          {ordered.length > 1 ? (
-            <Select aria-label="Run" value={current.runId} onValueChange={setPicked} options={options} />
+        <section className="flex flex-col gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            {ordered.length > 1 ? (
+              <Select aria-label="Run" value={current.runId} onValueChange={setPicked} options={options} />
+            ) : (
+              <span className="truncate text-sm font-semibold">{current.label}</span>
+            )}
+            {run ? <Badge tone={STATUS_TONE[run.status] ?? "info"}>{run.status}</Badge> : null}
+            <div className="ml-auto flex items-center gap-1">
+              {run ? (
+                <Button variant="quiet" asChild icon={<ExternalLink className="h-3.5 w-3.5" />}>
+                  <OutboundLink href={`/workflows/${run.definitionId}`}>Open workflow</OutboundLink>
+                </Button>
+              ) : null}
+              <Button variant="quiet" asChild icon={<ExternalLink className="h-3.5 w-3.5" />}>
+                <OutboundLink href={runHref(current.runId)}>Open run</OutboundLink>
+              </Button>
+            </div>
+          </div>
+          <div className="flex flex-wrap gap-x-3 font-mono text-[11px] text-muted-foreground">
+            <span>run {current.runId}</span>
+            {run ? <span>definition {run.definitionId}</span> : null}
+          </div>
+          {truthError ? <p className="text-xs text-destructive">{truthError}</p> : null}
+          {truth === null && !truthError ? <RegionSkeleton shape="rows" count={4} /> : null}
+          {run ? (
+            <>
+              <button
+                type="button"
+                data-clickable
+                onClick={() => setShowInput((s) => !s)}
+                className="flex items-center gap-1 self-start text-xs text-muted-foreground hover:text-foreground"
+              >
+                {showInput ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
+                Run input
+              </button>
+              {showInput ? <BuilderJson data={run.input} label="Run input" location="Workflow · run input" className="h-56" /> : null}
+            </>
           ) : null}
-          <RunGraph key={current.runId} runId={current.runId} label={current.label} />
-        </>
+          {steps.length ? (
+            <ol className="rounded-md border border-border">
+              {steps.map((o) => (
+                <StepRow
+                  key={o.id}
+                  o={o}
+                  open={openStep === o.id || openStep === o.nodeId}
+                  onToggle={() => setOpenStep((s) => (s === o.id || s === o.nodeId ? null : o.id))}
+                />
+              ))}
+            </ol>
+          ) : truth ? (
+            <p className="text-xs text-muted-foreground">No step finished yet</p>
+          ) : null}
+        </section>
       ) : (
         <p className="text-xs text-muted-foreground">No workflow run on this page yet</p>
       )}

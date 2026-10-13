@@ -4771,7 +4771,6 @@ export default function OverlayController() {
             initialSurfaceKey={typeof data?.surfaceKey === "string" ? data.surfaceKey : null}
             initialTab={typeof data?.tab === "string" ? data.tab : null}
             initialEntryKey={typeof data?.entryKey === "string" ? data.entryKey : null}
-            initialRaw={data?.raw === true}
           />
         );
       })()}

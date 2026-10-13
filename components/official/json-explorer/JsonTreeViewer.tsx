@@ -171,18 +171,21 @@ function JsonNode({
 export function JsonTreeViewer({
   data,
   showSource = false,
+  header = true,
 }: {
   data: unknown;
   showSource?: boolean;
+  /** False when the host already carries the copy controls (JsonInspector's Tree tab). */
+  header?: boolean;
 }) {
   return (
     <KindDataGate component="JsonTreeViewer" data={data} showSource={showSource}>
-      <JsonTreeViewerBody data={data} />
+      <JsonTreeViewerBody data={data} header={header} />
     </KindDataGate>
   );
 }
 
-function JsonTreeViewerBody({ data }: { data: unknown }) {
+function JsonTreeViewerBody({ data, header }: { data: unknown; header: boolean }) {
   const { copyText } = useClipboard({
     notify: copyNotify,
   });
@@ -196,6 +199,7 @@ function JsonTreeViewerBody({ data }: { data: unknown }) {
 
   return (
     <div className="h-full flex flex-col">
+      {header ? (
       <div className="flex items-center justify-between p-2 border-b border-border bg-muted shrink-0">
         <span className="type-secondary text-muted-foreground">JSON Explorer</span>
         <Button
@@ -206,10 +210,11 @@ function JsonTreeViewerBody({ data }: { data: unknown }) {
           )}
           variant="quiet"
           onClick={handleCopy}
-        >
-          <span className="ml-1.5 type-secondary">{copied ? "Copied!" : "Copy"}</span>
-        </Button>
+          aria-label={copied ? "Copied" : "Copy JSON"}
+          title={copied ? "Copied" : "Copy JSON"}
+        />
       </div>
+      ) : null}
       <div className="flex-1 overflow-auto p-3 font-mono type-secondary">
         <JsonNode data={data} defaultExpanded={true} />
       </div>
@@ -248,9 +253,9 @@ function RawJsonView({ data }: { data: unknown }) {
           )}
           variant="quiet"
           onClick={handleCopy}
-        >
-          <span className="ml-1.5 type-secondary">{copied ? "Copied!" : "Copy"}</span>
-        </Button>
+          aria-label={copied ? "Copied" : "Copy JSON"}
+          title={copied ? "Copied" : "Copy JSON"}
+        />
       </div>
       <pre className="flex-1 overflow-auto p-4 type-secondary text-foreground font-mono whitespace-pre-wrap">
         {jsonString}

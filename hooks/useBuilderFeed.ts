@@ -17,7 +17,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { builderPublish } from "@/lib/redux/preferences/adminDebugSlice";
 import { selectIsAdminDebugger } from "@/lib/redux/selectors/userSelectors";
@@ -48,6 +48,11 @@ export function useBuilderFeed(surfaceKey: string): BuilderFeedHandle {
   const dispatch = useAppDispatch();
   const isActive = useAppSelector(selectIsAdminDebugger) ?? false;
   const pathname = usePathname();
+  // An admin page's own requests are kept for the panel's Requests section from the first render
+  // (admin-only chunk; nobody else downloads it).
+  useEffect(() => {
+    if (isActive) void import("@/features/builder-panel/requestLog").then((m) => m.installRequestLog());
+  }, [isActive]);
   // key → last published JSON (+ meta), so a re-render that publishes the same value costs nothing.
   const last = useRef(new Map<string, string>());
 

@@ -44,7 +44,7 @@ export function BuilderMandatesTab({
     };
   }, [keySig]);
 
-  const shapes = (proposals ?? []).filter((p) => p.shapeType === "mandate");
+  const shapes = proposals ?? [];
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-auto p-3">
       <section className="flex flex-col gap-2">
@@ -84,7 +84,7 @@ export function BuilderMandatesTab({
         <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Proposed</h3>
         {proposalsError ? <p className="text-xs text-destructive">{proposalsError}</p> : null}
         {proposals === null && !proposalsError ? <RegionSkeleton shape="cards" count={1} /> : null}
-        {proposals && !shapes.length ? <p className="text-xs text-muted-foreground">No proposed mandate</p> : null}
+        {proposals && !shapes.length ? <p className="text-xs text-muted-foreground">No proposal</p> : null}
         {shapes.map((p) => (
           <ProposalCard key={p.id} proposal={p} />
         ))}

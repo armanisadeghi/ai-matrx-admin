@@ -30,6 +30,11 @@ export default function SidebarBuilderToggle() {
     setHydrated(true);
   }, []);
 
+  // Every page an admin opens keeps its own requests for the Builder panel's Requests section.
+  useEffect(() => {
+    if (isAdmin) void import("@/features/builder-panel/requestLog").then((m) => m.installRequestLog());
+  }, [isAdmin]);
+
   if (!hydrated || !isAdmin) return null;
 
   return (

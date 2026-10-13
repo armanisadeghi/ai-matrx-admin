@@ -5,16 +5,17 @@
  */
 
 /** The sidebar groups, in display order. */
-export const BUILDER_GROUPS = ["inputs", "findings", "workflow", "ai", "provision", "mandates", "other"] as const;
+export const BUILDER_GROUPS = ["inputs", "workflow", "ai", "provision", "mandates", "derived", "other"] as const;
 export type BuilderGroup = (typeof BUILDER_GROUPS)[number];
 
 export const BUILDER_GROUP_LABELS: Record<BuilderGroup, string> = {
   inputs: "Inputs",
-  findings: "Findings",
   workflow: "Workflow",
   ai: "AI calls",
   provision: "Provision",
   mandates: "Mandates",
+  /** Values this page COMPUTED (findings, certainty, merged candidates) — never raw data. */
+  derived: "Derived",
   other: "Other",
 };
 
@@ -27,7 +28,9 @@ export type BuilderRef =
   | { type: "workflow_run"; id: string; label?: string | null }
   | { type: "ai_run"; requestId?: string | null; userRequestId?: string | null; workflowRunId?: string | null; conversationId?: string | null }
   | { type: "provision_snapshot"; id: string }
-  | { type: "mandate"; mandateKey?: string | null; provisionKey?: string | null };
+  | { type: "mandate"; mandateKey?: string | null; provisionKey?: string | null }
+  /** A record this page saved: the Provision tab also reads snapshots captured for it. */
+  | { type: "record"; id: string; table?: string | null };
 
 /** What a page passes to `publish`. */
 export interface BuilderPublishInput {
@@ -43,6 +46,8 @@ export interface BuilderPublishInput {
   /** 0–1 when the value is a guess. */
   certainty?: number | null;
   ref?: BuilderRef | null;
+  /** A derived value: the workflow step ids whose raw output it came from. */
+  fromNodes?: string[] | null;
   /** Epoch ms; defaults to now. */
   at?: number;
 }

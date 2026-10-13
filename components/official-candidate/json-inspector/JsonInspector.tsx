@@ -538,7 +538,7 @@ function JsonInspectorBody({
         </TabsContent>
 
         <TabsContent value="tree" className={PANE_CLS}>
-          {seen.has("tree") ? <JsonTreeViewer data={data} showSource /> : <PaneFallback />}
+          {seen.has("tree") ? <JsonTreeViewer data={data} showSource header={false} /> : <PaneFallback />}
         </TabsContent>
 
         <TabsContent value="truncator" className={TRUNCATOR_PANE_CLS}>

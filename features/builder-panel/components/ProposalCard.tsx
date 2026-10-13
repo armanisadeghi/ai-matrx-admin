@@ -5,7 +5,7 @@
 import { Badge } from "@ai-matrx/design-system/controls";
 import { CopyButtons } from "@/components/agent-copy/CopyButtons";
 import type { MandateProposal } from "../data";
-import { BuilderValue } from "./BuilderValue";
+import { BuilderJson } from "./BuilderJson";
 
 interface Step {
   id: string;
@@ -28,7 +28,7 @@ export function ProposalCard({ proposal }: { proposal: MandateProposal }) {
   return (
     <article className="flex flex-col gap-2 rounded-md border border-dashed border-border p-3">
       <header className="flex flex-wrap items-center gap-2">
-        <Badge tone="warning">Proposed</Badge>
+        <Badge tone="warning">Proposed {proposal.shapeType}</Badge>
         <span className="text-sm font-semibold">{proposal.title}</span>
         {proposal.proposedKey ? <span className="font-mono text-[11px] text-muted-foreground">{proposal.proposedKey}</span> : null}
         <div className="ml-auto">
@@ -49,7 +49,7 @@ export function ProposalCard({ proposal }: { proposal: MandateProposal }) {
       {inputs.length ? (
         <div className="flex flex-col gap-1">
           <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Inputs</span>
-          <BuilderValue value={inputs} raw={false} />
+          <BuilderJson data={proposal.inputs} label="Inputs" location={`Proposal ${proposal.title} · inputs`} className="h-48" />
         </div>
       ) : null}
       {proposal.outputSketch ? (
@@ -57,8 +57,7 @@ export function ProposalCard({ proposal }: { proposal: MandateProposal }) {
           <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
             Output{proposal.outputKind ? ` · ${proposal.outputKind}` : ""}
           </span>
-          {/* A sketch of a not-yet-registered kind: shown raw, never routed to a kind component. */}
-          <BuilderValue value={proposal.outputSketch} raw />
+          <BuilderJson data={proposal.outputSketch} label="Output sketch" location={`Proposal ${proposal.title} · output sketch`} className="h-48" />
         </div>
       ) : null}
     </article>

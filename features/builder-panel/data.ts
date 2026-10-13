@@ -88,3 +88,116 @@ export async function fetchSurfaceMandates(mandateKeys: string[], provisionKeys:
     isEnabled: r.is_enabled,
   }));
 }
+
+// ── run truth: the rows the server stored for each run, untouched ─────────────────────────────
+
+export interface RunRow {
+  id: string;
+  definitionId: string;
+  status: string;
+  createdAt: string;
+  startedAt: string | null;
+  completedAt: string | null;
+  input: Json;
+}
+
+export interface NodeOutcomeRow {
+  id: string;
+  runId: string;
+  nodeId: string;
+  step: number;
+  attempt: number;
+  itemIndex: number;
+  completedAt: string;
+  durationMs: number;
+  input: Json | null;
+  output: Json;
+  error: Json | null;
+}
+
+export interface SnapshotRow {
+  id: string;
+  pointKey: string;
+  pointLabel: string;
+  runId: string | null;
+  subjectId: string | null;
+  createdAt: string;
+  totalChars: number;
+}
+
+export interface RunTruth {
+  runs: RunRow[];
+  outcomes: NodeOutcomeRow[];
+  snapshots: SnapshotRow[];
+}
+
+/** `workflow.run` + `workflow.node_outcome` for these runs, and every `mandate.provision_snapshot`
+ *  captured for them (by run id) or for the given subjects (a created record). */
+export async function fetchRunTruth(runIds: string[], subjectIds: string[]): Promise<RunTruth> {
+  if (!runIds.length && !subjectIds.length) return { runs: [], outcomes: [], snapshots: [] };
+  const snapshotOr = [
+    runIds.length ? `run_id.in.(${runIds.join(",")})` : null,
+    subjectIds.length ? `subject_id.in.(${subjectIds.join(",")})` : null,
+  ].filter(Boolean);
+  const [runs, outcomes, snapshots] = await Promise.all([
+    runIds.length
+      ? supabase
+          .schema("workflow")
+          .from("run")
+          .select("id, definition_id, status, created_at, started_at, completed_at, input")
+          .in("id", runIds)
+      : Promise.resolve({ data: [], error: null }),
+    runIds.length
+      ? supabase
+          .schema("workflow")
+          .from("node_outcome")
+          .select("id, run_id, node_id, step, attempt, item_index, completed_at, duration_ms, input, output, error")
+          .in("run_id", runIds)
+          .order("completed_at", { ascending: true })
+          .limit(1000)
+      : Promise.resolve({ data: [], error: null }),
+    supabase
+      .schema("mandate")
+      .from("provision_snapshot")
+      .select("id, point_key, point_label, run_id, subject_id, created_at, total_chars")
+      .or(snapshotOr.join(","))
+      .is("deleted_at", null)
+      .order("created_at", { ascending: true })
+      .limit(500),
+  ]);
+  const failed = runs.error ?? outcomes.error ?? snapshots.error;
+  if (failed) throw new Error(`Run records could not be read: ${failed.message}`);
+  return {
+    runs: (runs.data ?? []).map((r) => ({
+      id: r.id,
+      definitionId: r.definition_id,
+      status: r.status,
+      createdAt: r.created_at,
+      startedAt: r.started_at,
+      completedAt: r.completed_at,
+      input: r.input,
+    })),
+    outcomes: (outcomes.data ?? []).map((o) => ({
+      id: o.id,
+      runId: o.run_id,
+      nodeId: o.node_id,
+      step: o.step,
+      attempt: o.attempt,
+      itemIndex: o.item_index,
+      completedAt: o.completed_at,
+      durationMs: o.duration_ms,
+      input: o.input,
+      output: o.output,
+      error: o.error,
+    })),
+    snapshots: (snapshots.data ?? []).map((s) => ({
+      id: s.id,
+      pointKey: s.point_key,
+      pointLabel: s.point_label,
+      runId: s.run_id,
+      subjectId: s.subject_id,
+      createdAt: s.created_at,
+      totalChars: s.total_chars,
+    })),
+  };
+}
