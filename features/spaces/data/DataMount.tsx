@@ -10,7 +10,8 @@ import { RecordsMount } from "@ai-matrx/records-ui";
 import type { RecordsConfig } from "@ai-matrx/records";
 import { useRef, type ReactNode } from "react";
 
-import { recordsUiHostFor, useAppRecordsConfig, useRecordsDataSource, useRecordsUiPorts } from "@/features/data-tables/records-ui-host/recordsUiHost";
+import { recordsUiHostFor, useAppRecordsConfig, useRecordsUiPorts } from "@/features/data-tables/records-ui-host/recordsUiHost";
+import { useRecordsDataSource } from "@/features/data-tables/records-ui-host/recordsDataSource";
 import { primeObjectOrganization, readObjectOrganizationAnswer, useObjectOrganization } from "@/features/unified-data/objectOrganization";
 
 import { useSeededWhere } from "../page/space-seed-context";

@@ -12,7 +12,7 @@ import { PageScreen } from "@ai-matrx/records-ui";
 
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
-import { useRecordsDataSource } from "@/features/data-tables/records-ui-host/recordsUiHost";
+import { useRecordsDataSource } from "@/features/data-tables/records-ui-host/recordsDataSource";
 import { useObjectOrganization } from "@/features/unified-data/objectOrganization";
 import { MakeMount } from "@/features/make/MakeMount";
 

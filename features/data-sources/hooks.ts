@@ -8,7 +8,7 @@ import { parseHistory, type ChangeSet, type RefreshRun } from "./changes";
 import { isOpenJob, parseFetchedTables, parseSpec, type FetchedTable, type DataFetchSpec, type DataSource } from "./contract";
 import { usePriceText } from "./library/hooks";
 import { getDataSources, getJobChanges } from "./server";
-import { useRecordsDataSource } from "@/features/data-tables/records-ui-host/recordsUiHost";
+import { useRecordsDataSource } from "@/features/data-tables/records-ui-host/recordsDataSource";
 import { tableRowCounts } from "@/features/unified-data/hub/doors";
 
 export const dataSourcesKey = (organizationId: string | null) => ["data-sources", "catalog", organizationId] as const;

@@ -19,7 +19,7 @@ jest.mock("@/features/unified-data/home/dataHomeCorpus", () => ({ createDataHome
 jest.mock("@/features/unified-data/home/dataHomeService", () => ({ createDataHomeService: jest.fn() }));
 jest.mock("@/features/unified-data/home/dataHomeColumns", () => ({ dataHomeColumns: jest.fn(), ownerLabel: jest.fn() }));
 jest.mock("@/lib/entity-list/components/EntityListPage", () => ({ EntityListPage: () => null }));
-jest.mock("@/features/data-tables/records-ui-host/recordsUiHost", () => ({ useRecordsDataSource: jest.fn() }));
+jest.mock("@/features/data-tables/records-ui-host/recordsDataSource", () => ({ useRecordsDataSource: jest.fn() }));
 jest.mock("@ai-matrx/records-ui", () => ({ RecordsMount: () => null, personActor: jest.fn() }));
 jest.mock("@ai-matrx/records/react", () => ({ useRecordsClient: jest.fn() }));
 

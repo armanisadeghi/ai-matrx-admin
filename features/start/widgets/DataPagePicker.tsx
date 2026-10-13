@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRecordsClient } from "@ai-matrx/records/react";
 import { Select } from "@ai-matrx/design-system/controls";
-import { useRecordsDataSource } from "@/features/data-tables/records-ui-host/recordsUiHost";
+import { useRecordsDataSource } from "@/features/data-tables/records-ui-host/recordsDataSource";
 import { createDataHomeCorpus } from "@/features/unified-data/home/dataHomeCorpus";
 import type { DataHomeRow } from "@/features/unified-data/home/dataHomeRows";
 

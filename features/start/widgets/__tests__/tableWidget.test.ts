@@ -4,7 +4,7 @@ import { getStartWidgetSpec } from "../catalog";
 
 jest.mock("@/features/data-tables/service", () => ({ getTableMetadata: jest.fn(), getTablePage: jest.fn() }));
 jest.mock("@ai-matrx/records/react", () => ({ useRecordsClient: () => ({}) }));
-jest.mock("@/features/data-tables/records-ui-host/recordsUiHost", () => ({ useRecordsDataSource: () => ({}) }));
+jest.mock("@/features/data-tables/records-ui-host/recordsDataSource", () => ({ useRecordsDataSource: () => ({}) }));
 jest.mock("@/features/unified-data/home/dataHomeCorpus", () => ({ createDataHomeCorpus: () => ({ load: async () => [] }) }));
 
 describe("the Start table widget", () => {

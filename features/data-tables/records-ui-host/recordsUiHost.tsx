@@ -27,11 +27,11 @@ import { useCallback, useLayoutEffect, useMemo, type ReactNode } from "react";
 import { writeSyncedCell } from "@/features/unified-data/connect-database/service";
 import { extractErrorMessage } from "@/utils/errors";
 import { usePersonTimeZone } from "@/hooks/usePersonTimeZone";
+import { useRecordsDataSource, type RecordsDataSource } from "./recordsDataSource";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   personActor,
-  recordsDataSource,
   setPersonTimeZone,
   tableRightsAt,
   type AgentBuildAsk,
@@ -68,12 +68,11 @@ import { useAppSelector, useAppStore } from "@/lib/redux/hooks";
 import { currentPointsRate } from "@/components/cost/pointsRate";
 import { selectUserRequestResult } from "@ai-matrx/chat/agents/redux/execution-system/active-requests/active-requests.selectors";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
-import { createClient } from "@/utils/supabase/client";
 import { createRecordsRealtimePort } from "@ai-matrx/records/realtime";
 import type { DataBuildOrAskOffer } from "@ai-matrx/agents/generated/provision-offers";
 
 
-type DataSource = ReturnType<typeof recordsDataSource>;
+type DataSource = RecordsDataSource;
 
 /** The ports a host builds with React (see `useRecordsUiPorts`). */
 export interface RecordsUiPorts {
@@ -438,14 +437,6 @@ export function useRecordsUiPorts({
   return { members, onAskForOne, openRecords, runAgentAction, askTable, enrich, organizationId, linkRecord };
 }
 
-/**
- * One data seam for the whole app, carrying the person's session (the browser client is itself a
- * singleton). Shared so the ports a mount builds and its `config` always hold the SAME seam.
- */
-let sharedDataSource: DataSource | null = null;
-export function useRecordsDataSource(): DataSource {
-  return useMemo(() => (sharedDataSource ??= recordsDataSource(createClient())), []);
-}
 
 
 /**

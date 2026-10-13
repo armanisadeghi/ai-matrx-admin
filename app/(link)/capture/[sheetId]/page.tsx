@@ -39,7 +39,8 @@ import type { OrganizationState } from "@/features/organizations/useOrganization
 import { useObjectOrganization } from "@/features/unified-data/objectOrganization";
 import { uploadCaptureFile } from "@/features/capture/uploadCaptureFile";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
-import { useAppRecordsConfig, useRecordsDataSource } from "@/features/data-tables/records-ui-host/recordsUiHost";
+import { useAppRecordsConfig } from "@/features/data-tables/records-ui-host/recordsUiHost";
+import { useRecordsDataSource } from "@/features/data-tables/records-ui-host/recordsDataSource";
 
 export default function CrewCaptureRoute({
   params,

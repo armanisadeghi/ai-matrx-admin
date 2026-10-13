@@ -13,7 +13,7 @@ import { holdPrimaryContent } from "@/lib/boot/primaryContent";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
 
-import { useRecordsDataSource } from "@/features/data-tables/records-ui-host/recordsUiHost";
+import { useRecordsDataSource } from "@/features/data-tables/records-ui-host/recordsDataSource";
 import { UnifiedDataTablePage } from "@/features/unified-data/table-page/UnifiedDataTablePage";
 import { UnifiedRecordPage } from "@/features/unified-data/table-page/UnifiedRecordPage";
 import { askClientTableSeed } from "./clientTableSeed";

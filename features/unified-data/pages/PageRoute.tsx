@@ -21,7 +21,7 @@ import { useAppSelector } from "@/lib/redux/hooks";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
 import { OrganizationContextNotice } from "@/features/organizations/components/OrganizationRequiredNotice";
 import { AccessGate } from "@/features/access-gate/components/AccessGate";
-import { useRecordsDataSource } from "@/features/data-tables/records-ui-host/recordsUiHost";
+import { useRecordsDataSource } from "@/features/data-tables/records-ui-host/recordsDataSource";
 import { useObjectOrganization } from "@/features/unified-data/objectOrganization";
 import { MakeMount } from "@/features/make/MakeMount";
 import { useStartPage } from "@/features/start/useStartPage";
