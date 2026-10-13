@@ -20,8 +20,34 @@ import {
   Type,
   ZoomIn,
   Hash,
+  Accessibility,
+  AtSign,
+  BarChart3,
+  Bell,
+  Blocks,
+  BookA,
+  Bookmark,
+  Columns2,
+  FileCheck,
+  GitCompare,
+  Languages,
+  ListCollapse,
+  ListTree,
+  Mic,
+  Omega,
+  PanelTop,
+  PencilLine,
+  PenTool,
+  Quote,
+  Ruler,
+  Settings2,
+  Smile,
+  SpellCheck,
+  Square,
+  Superscript,
 } from "lucide-react";
 import type { GoogleOnlyRows, RibbonTabSpec } from "@/components/editor-chrome/ribbon-model";
+import { AUTOMATE_TAB, HELP_HEAD_CONTROLS } from "@/components/editor-chrome/ribbon-parity";
 
 /** Menu rows the Microsoft look deliberately does not place (id -> reason). Empty: every row is placed. */
 export const DOC_GOOGLE_ONLY: GoogleOnlyRows = {};
@@ -86,6 +112,7 @@ export const DOC_RIBBON: RibbonTabSpec[] = [
           { ref: "edit.find", label: "Find" },
           { ref: "edit.find-replace", label: "Replace" },
           { ref: "edit.select-all", label: "Select all" },
+          { ref: "edit.paste-plain", label: "Paste as text" },
           { ref: "format.clear", label: "Clear formatting" },
         ],
       },
@@ -95,6 +122,7 @@ export const DOC_RIBBON: RibbonTabSpec[] = [
     id: "insert",
     label: "Insert",
     groups: [
+      { id: "pages-blocks", label: "Pages", controls: [{ ref: "insert.building-blocks", size: "large", label: "Building blocks", icon: Blocks }, { ref: "insert.tabs", label: "Tabs", icon: PanelTop }] },
       { id: "tables", label: "Tables", controls: [{ ref: "insert.table", size: "large", icon: Table }] },
       {
         id: "illustrations",
@@ -102,6 +130,9 @@ export const DOC_RIBBON: RibbonTabSpec[] = [
         controls: [
           { ref: "insert.image", size: "large", label: "Picture", icon: Image },
           { ref: "tb.image", label: "Image" },
+          { ref: "insert.drawing", label: "Drawing", icon: PenTool },
+          { ref: "insert.chart", label: "Chart", icon: BarChart3 },
+          { ref: "insert.smart-chips", label: "Smart chips", icon: AtSign },
         ],
       },
       {
@@ -128,13 +159,56 @@ export const DOC_RIBBON: RibbonTabSpec[] = [
           { ref: "insert.horizontal-line", label: "Horizontal line", icon: Minus },
         ],
       },
+      {
+        id: "header-footer",
+        label: "Header & Footer",
+        controls: [
+          { ref: "insert.headers-footers", size: "large", label: "Header & Footer", icon: PanelTop },
+          { ref: "insert.page-numbers", label: "Page Number", icon: Hash },
+        ],
+      },
+      {
+        id: "references",
+        label: "References",
+        controls: [
+          { ref: "insert.toc", label: "Table of Contents", icon: ListTree },
+          { ref: "insert.footnote", label: "Footnote", icon: Superscript },
+          { ref: "insert.bookmark", label: "Bookmark", icon: Bookmark },
+        ],
+      },
+      {
+        id: "symbols",
+        label: "Symbols",
+        controls: [
+          { ref: "insert.symbols", label: "Symbol", icon: Omega },
+          { ref: "insert.emoji", label: "Emoji", icon: Smile },
+        ],
+      },
     ],
   },
   {
     id: "layout",
     label: "Layout",
     groups: [
-      { id: "page-setup", label: "Page Setup", controls: [{ ref: "format.page-setup", size: "large", label: "Page Setup", icon: FileCog }] },
+      { id: "page-setup", label: "Page Setup", controls: [{ ref: "format.page-setup", size: "large", label: "Page Setup", icon: FileCog }, { ref: "format.pageless", label: "Pageless", icon: FileCog }, { ref: "format.columns", label: "Columns", icon: Columns2 }] },
+      {
+        id: "paragraph",
+        label: "Paragraph",
+        controls: [
+          { ref: "format.line-spacing", label: "Spacing", icon: ListCollapse },
+          { ref: "format.borders", label: "Borders", icon: Square },
+          { ref: "format.headers-footers", label: "Header & Footer", icon: PanelTop },
+          { ref: "format.page-numbers", label: "Page Number", icon: Hash },
+        ],
+      },
+      {
+        id: "arrange",
+        label: "Arrange",
+        controls: [
+          { ref: "format.table", label: "Table properties", icon: Table },
+          { ref: "format.image", label: "Image options", icon: Image },
+        ],
+      },
       { id: "breaks", label: "Breaks", controls: [{ ref: "insert.break.section", label: "Section break" }, { ref: "insert.break.column", label: "Column break" }] },
       { id: "print", label: "Print", controls: [{ ref: "tb.print", size: "large", label: "Print" }] },
     ],
@@ -143,7 +217,49 @@ export const DOC_RIBBON: RibbonTabSpec[] = [
     id: "review",
     label: "Review",
     groups: [
-      { id: "proofing", label: "Proofing", controls: [{ ref: "tools.word-count", size: "large", label: "Word Count", icon: Hash }] },
+      {
+        id: "proofing",
+        label: "Proofing",
+        controls: [
+          { ref: "tools.spelling", size: "large", label: "Spelling & Grammar", icon: SpellCheck },
+          { ref: "tools.word-count", size: "large", label: "Word Count", icon: Hash },
+          { ref: "tools.dictionary", label: "Dictionary", icon: BookA },
+        ],
+      },
+      {
+        id: "language",
+        label: "Language",
+        controls: [
+          { ref: "tools.translate", size: "large", label: "Translate", icon: Languages },
+          { ref: "tools.voice-typing", label: "Dictate", icon: Mic },
+        ],
+      },
+      {
+        id: "tracking",
+        label: "Tracking",
+        controls: [
+          { ref: "view.mode", label: "Editing mode", icon: PencilLine },
+          { ref: "tools.review-suggestions", label: "Review changes", icon: FileCheck },
+          { ref: "tools.compare", label: "Compare", icon: GitCompare },
+        ],
+      },
+      {
+        id: "research",
+        label: "Research",
+        controls: [
+          { ref: "tools.citations", label: "Citations", icon: Quote },
+          { ref: "tools.linked-objects", label: "Linked objects", icon: Link },
+        ],
+      },
+      {
+        id: "settings",
+        label: "Settings",
+        controls: [
+          { ref: "tools.accessibility", label: "Accessibility", icon: Accessibility },
+          { ref: "tools.notifications", label: "Notifications", icon: Bell },
+          { ref: "tools.preferences", label: "Preferences", icon: Settings2 },
+        ],
+      },
       {
         id: "comments",
         label: "Comments",
@@ -167,12 +283,18 @@ export const DOC_RIBBON: RibbonTabSpec[] = [
           { ref: "tb.zoom", size: "icon" },
         ],
       },
+      {
+        id: "show",
+        label: "Show",
+        controls: [{ ref: "view.show", size: "large", label: "Show", icon: Ruler }],
+      },
       { id: "full-screen", label: "Full Screen", controls: [{ ref: "view.full-screen", size: "large", icon: Maximize2 }] },
     ],
   },
+  AUTOMATE_TAB,
   {
     id: "help",
     label: "Help",
-    groups: [{ id: "help", label: "Help", controls: [{ ref: "help.shortcuts", size: "large", icon: Keyboard }] }],
+    groups: [{ id: "help", label: "Help", controls: [...HELP_HEAD_CONTROLS, { ref: "help.shortcuts", size: "large", icon: Keyboard }] }],
   },
 ];

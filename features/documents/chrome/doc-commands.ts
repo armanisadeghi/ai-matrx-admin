@@ -10,6 +10,11 @@
 
 import {
   AlignCenter,
+  BarChart3,
+  Languages,
+  Mic,
+  Omega,
+  SpellCheck,
   AlignJustify,
   AlignLeft,
   AlignRight,
@@ -37,6 +42,7 @@ import {
   Undo2,
 } from "lucide-react";
 
+import { googleExtensionsMenu, googleHelpHead, soon } from "@/components/editor-chrome/google-parity";
 import type { EditorMenu, EditorMenuEntry } from "@/components/editor-chrome/editor-menu-model";
 import type { EditorToolbarItem } from "@/components/editor-chrome/EditorToolbar";
 
@@ -54,6 +60,8 @@ export interface DocChromeHost {
   wordCount: () => void;
   fullScreen: () => boolean;
   toggleFullScreen: () => void;
+  /** Help → Send feedback (the app's feedback window). */
+  sendFeedback?: () => void;
 }
 
 export const DOC_STYLES = [
@@ -176,6 +184,7 @@ export function buildDocMenus(h: DocChromeHost): EditorMenu[] {
         { kind: "action", id: "edit.cut", label: "Cut", icon: Scissors, shortcut: { key: "x", mod: true }, run: run(h, "univer.command.cut") },
         { kind: "action", id: "edit.copy", label: "Copy", icon: Copy, shortcut: { key: "c", mod: true }, run: run(h, "univer.command.copy") },
         { kind: "action", id: "edit.paste", label: "Paste", icon: Clipboard, shortcut: { key: "v", mod: true }, run: run(h, "univer.command.paste") },
+        soon("edit.paste-plain", "Paste without formatting", "editor.edit.paste-plain", { shortcut: { key: "v", mod: true, shift: true } }),
         { kind: "separator" },
         { kind: "action", id: "edit.select-all", label: "Select all", shortcut: { key: "a", mod: true }, run: run(h, "doc.command.select-all") },
         { kind: "separator" },
@@ -187,6 +196,20 @@ export function buildDocMenus(h: DocChromeHost): EditorMenu[] {
       id: "view",
       label: "View",
       items: [
+        soon("view.mode", "Mode", "documents.mode", { keywords: ["editing", "suggesting", "viewing"] }),
+        { kind: "separator" },
+        {
+          kind: "submenu",
+          id: "view.show",
+          label: "Show",
+          items: [
+            soon("view.show.print-layout", "Show print layout", "documents.show-layout"),
+            soon("view.show.ruler", "Show ruler", "documents.show-layout"),
+            soon("view.show.outline", "Show outline", "documents.show-layout", { shortcut: { key: "h", mod: true, alt: true } }),
+            soon("view.show.non-printing", "Show non-printing characters", "documents.show-layout"),
+          ],
+        },
+        { kind: "separator" },
         { kind: "submenu", id: "view.zoom", label: "Zoom", items: zoomEntries(h) },
         { kind: "action", id: "view.comments", label: "Comments", keywords: ["comment panel"], run: run(h, "docs.operation.toggle-comment-panel") },
         { kind: "action", id: "view.full-screen", label: "Full screen", checked: () => h.fullScreen(), run: () => h.toggleFullScreen() },
@@ -198,11 +221,17 @@ export function buildDocMenus(h: DocChromeHost): EditorMenu[] {
       items: [
         { kind: "action", id: "insert.image", label: "Image", icon: Image, keywords: ["picture", "photo"], run: run(h, "doc.command.insert-float-image") },
         { kind: "action", id: "insert.table", label: "Table", icon: Table, run: run(h, "doc.operation.create-table") },
-        { kind: "separator" },
+        soon("insert.building-blocks", "Building blocks", "documents.building-blocks"),
+        soon("insert.smart-chips", "Smart chips", "editor.insert.smart-chips"),
         { kind: "action", id: "insert.link", label: "Link", icon: Link, shortcut: { key: "k", mod: true }, run: run(h, "doc.operation.show-hyper-link-edit-popup") },
-        { kind: "action", id: "insert.comment", label: "Comment", icon: MessageSquarePlus, run: run(h, "docs.operation.start-add-comment") },
+        soon("insert.drawing", "Drawing", "editor.insert.drawing"),
+        soon("insert.chart", "Chart", "editor.insert.chart", { icon: BarChart3 }),
+        soon("insert.symbols", "Special characters", "editor.insert.special-characters", { icon: Omega }),
+        soon("insert.tabs", "Tabs", "documents.tabs"),
         { kind: "separator" },
         { kind: "action", id: "insert.horizontal-line", label: "Horizontal line", run: run(h, "doc.command.horizontal-line") },
+        soon("insert.emoji", "Emoji", "editor.insert.emoji"),
+        soon("insert.footnote", "Footnote", "documents.footnote", { shortcut: { key: "f", mod: true, alt: true } }),
         {
           kind: "submenu",
           id: "insert.break",
@@ -212,6 +241,12 @@ export function buildDocMenus(h: DocChromeHost): EditorMenu[] {
             { kind: "action", id: "insert.break.column", label: "Column break", run: run(h, "docs.operation.insert-column-break") },
           ],
         },
+        soon("insert.page-numbers", "Page numbers", "documents.page-numbers"),
+        soon("insert.headers-footers", "Headers and footers", "documents.headers-footers"),
+        soon("insert.bookmark", "Bookmark", "documents.bookmark"),
+        soon("insert.toc", "Table of contents", "documents.table-of-contents"),
+        { kind: "separator" },
+        { kind: "action", id: "insert.comment", label: "Comment", icon: MessageSquarePlus, run: run(h, "docs.operation.start-add-comment") },
       ],
     },
     {
@@ -234,10 +269,19 @@ export function buildDocMenus(h: DocChromeHost): EditorMenu[] {
         },
         { kind: "submenu", id: "format.styles", label: "Paragraph styles", items: styleEntries(h) },
         { kind: "submenu", id: "format.align", label: "Align", icon: AlignLeft, items: alignEntries(h) },
+        soon("format.line-spacing", "Line and paragraph spacing", "documents.line-spacing"),
+        soon("format.columns", "Columns", "documents.columns"),
         { kind: "submenu", id: "format.lists", label: "Bullets and numbering", icon: List, items: listEntries(h) },
         { kind: "submenu", id: "format.font-size", label: "Font size", items: sizeEntries(h) },
         { kind: "separator" },
+        soon("format.headers-footers", "Headers and footers", "documents.headers-footers"),
+        soon("format.page-numbers", "Page numbers", "documents.page-numbers"),
         { kind: "action", id: "format.page-setup", label: "Page setup", keywords: ["margins", "orientation", "paper size"], run: run(h, "docs.operation.open-page-setting") },
+        soon("format.pageless", "Switch to Pageless format", "documents.pageless"),
+        { kind: "separator" },
+        soon("format.table", "Table", "documents.table-properties"),
+        soon("format.image", "Image", "documents.image-options"),
+        soon("format.borders", "Borders and lines", "documents.borders-lines"),
         { kind: "separator" },
         { kind: "action", id: "format.clear", label: "Clear formatting", icon: RemoveFormatting, run: run(h, "ui.command.clear-formatting") },
       ],
@@ -246,14 +290,29 @@ export function buildDocMenus(h: DocChromeHost): EditorMenu[] {
       id: "tools",
       label: "Tools",
       items: [
+        soon("tools.spelling", "Spelling and grammar", "editor.tools.spelling", { icon: SpellCheck }),
         { kind: "action", id: "tools.word-count", label: "Word count", shortcut: { key: "c", mod: true, shift: true, bind: true }, run: () => h.wordCount() },
+        soon("tools.review-suggestions", "Review suggested edits", "documents.review-suggestions"),
+        soon("tools.compare", "Compare documents", "documents.compare"),
+        soon("tools.citations", "Citations", "documents.citations"),
+        soon("tools.linked-objects", "Linked objects", "editor.tools.linked-objects"),
+        soon("tools.dictionary", "Dictionary", "editor.tools.dictionary", { shortcut: { key: "y", mod: true, shift: true } }),
+        { kind: "separator" },
+        soon("tools.translate", "Translate document", "documents.translate", { icon: Languages }),
+        soon("tools.voice-typing", "Voice typing", "editor.tools.voice-typing", { icon: Mic, shortcut: { key: "s", mod: true, shift: true } }),
+        { kind: "separator" },
+        soon("tools.notifications", "Notification settings", "editor.tools.notifications"),
+        soon("tools.preferences", "Preferences", "editor.tools.preferences"),
+        soon("tools.accessibility", "Accessibility", "editor.tools.accessibility"),
+        { kind: "separator" },
         { kind: "action", id: "tools.comments", label: "Comments panel", run: run(h, "docs.operation.toggle-comment-panel") },
       ],
     },
+    googleExtensionsMenu("docs"),
     {
       id: "help",
       label: "Help",
-      items: [{ kind: "action", id: "help.shortcuts", label: "Keyboard shortcuts", shortcut: { key: "\\", mod: true }, run: run(h, "base-ui.operation.toggle-shortcut-panel") }],
+      items: [...googleHelpHead(h.sendFeedback ? { sendFeedback: h.sendFeedback } : {}), { kind: "action", id: "help.shortcuts", label: "Keyboard shortcuts", shortcut: { key: "\\", mod: true }, run: run(h, "base-ui.operation.toggle-shortcut-panel") }],
     },
   ];
 }

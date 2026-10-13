@@ -38,11 +38,12 @@ function sheetHost(): SheetChromeHost {
     fullScreen: () => false,
     toggleFullScreen: () => {},
     notify: () => {},
+    sendFeedback: () => {},
   } as SheetChromeHost;
 }
 
 function docHost(): DocChromeHost {
-  return new Proxy({ editable: true } as Record<string, unknown>, {
+  return new Proxy({ editable: true, sendFeedback: () => {} } as Record<string, unknown>, {
     get: (t, p) => (p in t ? t[p as string] : (anything() as unknown)),
   }) as unknown as DocChromeHost;
 }
@@ -72,6 +73,7 @@ function deckHost(): DeckChromeHost {
     removeImage: noop,
     hasImage: true,
     showShortcuts: noop,
+    sendFeedback: noop,
   } as DeckChromeHost;
 }
 

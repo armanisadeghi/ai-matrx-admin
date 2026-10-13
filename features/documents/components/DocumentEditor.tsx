@@ -33,6 +33,7 @@ import { DropdownMenuItem, DropdownMenuSeparator } from "@/components/ui/dropdow
 import { EditorDocumentHeader } from "@/features/shell/components/header/templates/EditorDocumentHeader";
 import { useShellCanvasFullScreen } from "@/features/shell/components/ShellChromeMode";
 import { EditorMenuBar, type MenuBarState } from "@/components/editor-chrome/EditorMenuBar";
+import { useOpenFeedbackWindow } from "@/features/overlays/openers/feedbackDialog";
 import { EditorToolbar } from "@/components/editor-chrome/EditorToolbar";
 import { EditorRibbon } from "@/components/editor-chrome/EditorRibbon";
 import { OfficeLookSwitch } from "@/features/file-actions/skin/OfficeLookSwitch";
@@ -585,6 +586,7 @@ export default function DocumentEditor({
     const words = text.split(/\s+/).filter(Boolean).length;
     toast({ title: `${formatCount(words)} words`, description: `${formatCount(text.replace(/\s/g, "").length)} characters` });
   };
+  const openFeedback = useOpenFeedbackWindow();
   const chromeHost: DocChromeHost | null =
     bootState === "ready" && apiRef.current
       ? {
@@ -596,6 +598,7 @@ export default function DocumentEditor({
           wordCount: showWordCount,
           fullScreen: () => fullScreen,
           toggleFullScreen: () => setFullScreen((v) => !v),
+          sendFeedback: () => openFeedback(),
         }
       : null;
   const menus = chromeHost ? buildDocMenus(chromeHost) : [];

@@ -93,6 +93,7 @@ const ROWS: Row[] = [
   ["documents.citations", "Citations", "documents", "Add sources and insert citations and a bibliography in your chosen style.", "Document Tools → Citations"],
   ["documents.translate", "Translate document", "documents", "Make a translated copy of this document in another language.", "Document Tools → Translate document"],
   // ── Presentation only ──
+  ["presentations.clipboard", "Cut, copy and paste", "presentations", "Cut, copy and paste slides and objects, within and between decks.", "Presentation Edit"],
   ["presentations.select-all", "Select all", "presentations", "Select every object on the slide.", "Presentation Edit → Select all"],
   ["presentations.find-replace", "Find and replace", "presentations", "Find text across every slide and replace it.", "Presentation Edit → Find and replace"],
   ["presentations.motion", "Motion", "presentations", "Add transitions between slides and animations to objects.", "Presentation View → Motion / Slide → Transition"],

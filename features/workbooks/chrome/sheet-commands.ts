@@ -14,6 +14,8 @@ import {
   AlignLeft,
   AlignRight,
   ArrowDownAZ,
+  BarChart3,
+  Palette,
   ArrowDownZA,
   Baseline,
   Bold,
@@ -49,6 +51,7 @@ import {
 
 import { promptForValues } from "@/components/dialogs/value-prompts/valuePromptsOpener";
 import type { EditorMenu, EditorMenuEntry } from "@/components/editor-chrome/editor-menu-model";
+import { googleExtensionsMenu, googleHelpHead, soon } from "@/components/editor-chrome/google-parity";
 import type { EditorToolbarItem } from "@/components/editor-chrome/EditorToolbar";
 
 // ─── the slice of Univer's facade this map uses (structural, so tests can fake it) ───
@@ -109,6 +112,8 @@ export interface SheetChromeHost {
   fullScreen: () => boolean;
   toggleFullScreen: () => void;
   notify: (message: string) => void;
+  /** Help → Send feedback (the app's feedback window). */
+  sendFeedback?: () => void;
 }
 
 // ─── Univer enums (values from @univerjs/core 1.0.4) ───
@@ -416,8 +421,17 @@ export function buildSheetMenus(h: SheetChromeHost): EditorMenu[] {
           ],
         },
         { kind: "separator" },
-        { kind: "action", id: "edit.find", label: "Find", icon: Search, shortcut: { key: "f", mod: true }, run: run(h, "ui.operation.open-find-dialog") },
-        { kind: "action", id: "edit.find-replace", label: "Find and replace", shortcut: { key: "h", mod: true }, run: run(h, "ui.operation.open-replace-dialog") },
+        {
+          kind: "submenu",
+          id: "edit.move",
+          label: "Move",
+          items: [
+            soon("edit.move.row-up", "Row up", "workbooks.move-rows-columns"),
+            soon("edit.move.row-down", "Row down", "workbooks.move-rows-columns"),
+            soon("edit.move.column-left", "Column left", "workbooks.move-rows-columns"),
+            soon("edit.move.column-right", "Column right", "workbooks.move-rows-columns"),
+          ],
+        },
         { kind: "separator" },
         {
           kind: "submenu",
@@ -432,6 +446,9 @@ export function buildSheetMenus(h: SheetChromeHost): EditorMenu[] {
             { kind: "action", id: "edit.delete.sheet", label: "Sheet", keywords: ["delete sheet"], run: run(h, "sheet.command.remove-sheet-confirm") },
           ],
         },
+        { kind: "separator" },
+        { kind: "action", id: "edit.find", label: "Find", icon: Search, shortcut: { key: "f", mod: true }, run: run(h, "ui.operation.open-find-dialog") },
+        { kind: "action", id: "edit.find-replace", label: "Find and replace", shortcut: { key: "h", mod: true }, run: run(h, "ui.operation.open-replace-dialog") },
       ],
     },
     {
@@ -459,6 +476,8 @@ export function buildSheetMenus(h: SheetChromeHost): EditorMenu[] {
               checked: () => h.formulaBarVisible(),
               run: () => h.toggleFormulaBar(),
             },
+            soon("view.show.formulas", "Formulas", "workbooks.show-formulas", { shortcut: { key: "`", mod: true } }),
+            soon("view.show.protected", "Protected ranges", "workbooks.show-protected-ranges"),
           ],
         },
         {
@@ -478,6 +497,8 @@ export function buildSheetMenus(h: SheetChromeHost): EditorMenu[] {
             { kind: "action", id: "view.freeze.cols-current", label: "Up to current column", run: run(h, "sheet.command.set-col-frozen") },
           ],
         },
+        soon("view.group", "Group", "workbooks.group", { keywords: ["group rows", "group columns"] }),
+        soon("view.hidden-sheets", "Hidden sheets", "workbooks.hidden-sheets"),
         { kind: "submenu", id: "view.zoom", label: "Zoom", items: zoomEntries(h) },
         {
           kind: "submenu",
@@ -538,6 +559,10 @@ export function buildSheetMenus(h: SheetChromeHost): EditorMenu[] {
         { kind: "action", id: "insert.sheet", label: "Sheet", keywords: ["new sheet", "tab"], run: run(h, "sheet.command.insert-sheet") },
         { kind: "separator" },
         { kind: "action", id: "insert.table", label: "Table", keywords: ["convert to table"], run: run(h, "sheet.operation.open-table-selector") },
+        soon("insert.timeline", "Timeline", "workbooks.timeline"),
+        { kind: "separator" },
+        soon("insert.chart", "Chart", "editor.insert.chart", { icon: BarChart3 }),
+        soon("insert.pivot", "Pivot table", "workbooks.pivot-table"),
         {
           kind: "submenu",
           id: "insert.image",
@@ -548,6 +573,7 @@ export function buildSheetMenus(h: SheetChromeHost): EditorMenu[] {
             { kind: "action", id: "insert.image.over-cells", label: "Insert image over cells", run: run(h, "sheet.command.insert-float-image") },
           ],
         },
+        soon("insert.drawing", "Drawing", "editor.insert.drawing"),
         { kind: "separator" },
         { kind: "submenu", id: "insert.function", label: "Function", icon: Sigma, items: functionEntries(h) },
         { kind: "separator" },
@@ -569,6 +595,8 @@ export function buildSheetMenus(h: SheetChromeHost): EditorMenu[] {
             return h.api.executeCommand("data-validation.operation.open-validation-panel", {});
           }),
         },
+        soon("insert.emoji", "Emoji", "editor.insert.emoji"),
+        soon("insert.smart-chips", "Smart chips", "editor.insert.smart-chips"),
         { kind: "separator" },
         { kind: "action", id: "insert.comment", label: "Comment", icon: MessageSquarePlus, shortcut: { key: "m", mod: true, alt: true }, run: run(h, "sheet.operation.show-comment-modal") },
         { kind: "action", id: "insert.note", label: "Note", run: run(h, "sheet.operation.add-note-popup") },
@@ -578,6 +606,8 @@ export function buildSheetMenus(h: SheetChromeHost): EditorMenu[] {
       id: "format",
       label: "Format",
       items: [
+        soon("format.theme", "Theme", "workbooks.theme", { icon: Palette }),
+        { kind: "separator" },
         { kind: "submenu", id: "format.number", label: "Number", icon: DollarSign, items: numberFormatEntries(h) },
         {
           kind: "submenu",
@@ -625,8 +655,16 @@ export function buildSheetMenus(h: SheetChromeHost): EditorMenu[] {
       id: "data",
       label: "Data",
       items: [
-        { kind: "action", id: "data.sort-sheet-asc", label: "Sort sheet A to Z", icon: ArrowDownAZ, run: run(h, "sheet.command.sort-range-asc-ext") },
-        { kind: "action", id: "data.sort-sheet-desc", label: "Sort sheet Z to A", icon: ArrowDownZA, run: run(h, "sheet.command.sort-range-desc-ext") },
+        {
+          kind: "submenu",
+          id: "data.sort-sheet",
+          label: "Sort sheet",
+          icon: ArrowDownAZ,
+          items: [
+            { kind: "action", id: "data.sort-sheet-asc", label: "Sort sheet A to Z", icon: ArrowDownAZ, run: run(h, "sheet.command.sort-range-asc-ext") },
+            { kind: "action", id: "data.sort-sheet-desc", label: "Sort sheet Z to A", icon: ArrowDownZA, run: run(h, "sheet.command.sort-range-desc-ext") },
+          ],
+        },
         {
           kind: "submenu",
           id: "data.sort-range",
@@ -639,8 +677,17 @@ export function buildSheetMenus(h: SheetChromeHost): EditorMenu[] {
         },
         { kind: "separator" },
         { kind: "action", id: "data.filter", label: "Create a filter", icon: Filter, keywords: ["remove filter"], run: run(h, "sheet.command.smart-toggle-filter") },
-        { kind: "action", id: "data.validation", label: "Data validation", run: run(h, "data-validation.operation.open-validation-panel", {}) },
+        soon("data.filter-views", "Create filter view", "workbooks.filter-views"),
+        soon("data.slicer", "Add a slicer", "workbooks.slicer"),
         { kind: "separator" },
+        { kind: "action", id: "data.protect", label: "Protect sheets and ranges", keywords: ["permission", "lock"], run: run(h, "sheet.command.add-range-protection-from-toolbar") },
+        soon("data.named-ranges", "Named ranges", "workbooks.named-ranges"),
+        soon("data.named-functions", "Named functions", "workbooks.named-functions"),
+        soon("data.randomize", "Randomize range", "workbooks.randomize-range", { keywords: ["shuffle"] }),
+        { kind: "separator" },
+        soon("data.column-stats", "Column stats", "workbooks.column-stats"),
+        { kind: "action", id: "data.validation", label: "Data validation", run: run(h, "data-validation.operation.open-validation-panel", {}) },
+
         {
           kind: "submenu",
           id: "data.split",
@@ -691,23 +738,36 @@ export function buildSheetMenus(h: SheetChromeHost): EditorMenu[] {
             },
           ],
         },
+        soon("data.extraction", "Data extraction", "workbooks.data-extraction"),
         { kind: "separator" },
-        { kind: "action", id: "data.protect", label: "Protect sheets and ranges", keywords: ["permission", "lock"], run: run(h, "sheet.command.add-range-protection-from-toolbar") },
+        soon("data.connectors", "Data connectors", "workbooks.data-connectors"),
       ],
     },
     {
       id: "tools",
       label: "Tools",
       items: [
+        soon("tools.form", "Create a new form", "workbooks.create-form"),
+        { kind: "separator" },
+        soon("tools.spelling", "Spelling", "editor.tools.spelling"),
+        soon("tools.suggestions", "Suggestion controls", "workbooks.suggestion-controls"),
+        { kind: "separator" },
+        soon("tools.notifications", "Notification settings", "editor.tools.notifications"),
+        soon("tools.accessibility", "Accessibility", "editor.tools.accessibility"),
+        { kind: "separator" },
+        soon("tools.activity", "Activity dashboard", "editor.tools.activity-dashboard"),
+        { kind: "separator" },
         { kind: "action", id: "tools.functions", label: "Function list", icon: Sigma, run: run(h, "formula-ui.operation.more-functions") },
         { kind: "action", id: "tools.protect", label: "Protect sheets and ranges", run: run(h, "sheet.command.add-range-protection-from-toolbar") },
         { kind: "action", id: "tools.comments", label: "Comments panel", run: run(h, "sheet.operation.toggle-comment-panel") },
       ],
     },
+    googleExtensionsMenu("sheets"),
     {
       id: "help",
       label: "Help",
       items: [
+        ...googleHelpHead(h.sendFeedback ? { sendFeedback: h.sendFeedback } : {}),
         { kind: "action", id: "help.shortcuts", label: "Keyboard shortcuts", shortcut: { key: "\\", mod: true }, run: run(h, "base-ui.operation.toggle-shortcut-panel") },
         { kind: "action", id: "help.functions", label: "Function list", run: run(h, "formula-ui.operation.more-functions") },
       ],

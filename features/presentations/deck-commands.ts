@@ -25,9 +25,39 @@ import {
   StickyNote,
   Trash2,
   Undo2,
+  AlignHorizontalJustifyCenter,
+  AlignLeft,
+  BarChart3,
+  Bold,
+  Clipboard,
+  Copy as CopyIcon,
+  EyeOff,
+  Group,
+  Hash,
+  Layers,
+  LayoutGrid,
+  Link as LinkIcon,
+  List,
+  MessageSquarePlus,
+  Mic,
+  Music,
+  Omega,
+  PaintBucket,
+  RemoveFormatting,
+  RotateCw,
+  Scissors,
+  Search,
+  Shapes,
+  Slash,
+  SpellCheck,
+  Table,
+  Type as TypeIcon,
+  Video,
+  Workflow,
 } from "lucide-react";
 
 import type { EditorMenu, EditorMenuEntry } from "@/components/editor-chrome/editor-menu-model";
+import { googleExtensionsMenu, googleHelpHead, soon } from "@/components/editor-chrome/google-parity";
 import type { EditorToolbarItem } from "@/components/editor-chrome/EditorToolbar";
 import { EDITOR_LAYOUTS, type DeckAction, type EditorLayout } from "./deck-model";
 
@@ -54,6 +84,8 @@ export interface DeckChromeHost {
   removeImage: () => void;
   hasImage: boolean;
   showShortcuts: () => void;
+  /** Help → Send feedback (the app's feedback window). */
+  sendFeedback?: () => void;
 }
 
 const sep: EditorMenuEntry = { kind: "separator" };
@@ -82,8 +114,17 @@ export function buildDeckMenus(h: DeckChromeHost): EditorMenu[] {
         { kind: "action", id: "edit.undo", label: "Undo", icon: Undo2, shortcut: { key: "z", mod: true, bind: true }, run: h.undo, disabled: () => !h.canEdit || !h.canUndo },
         { kind: "action", id: "edit.redo", label: "Redo", icon: Redo2, shortcut: { key: "z", mod: true, shift: true, bind: true }, keywords: ["again"], run: h.redo, disabled: () => !h.canEdit || !h.canRedo },
         sep,
-        { kind: "action", id: "edit.duplicate", label: "Duplicate slide", icon: Copy, shortcut: { key: "d", mod: true, bind: true }, run: () => h.dispatch({ type: "duplicateSlide", index: i }), disabled: noSlide },
+        soon("edit.cut", "Cut", "presentations.clipboard", { icon: Scissors, shortcut: { key: "x", mod: true } }),
+        soon("edit.copy", "Copy", "presentations.clipboard", { icon: CopyIcon, shortcut: { key: "c", mod: true } }),
+        soon("edit.paste", "Paste", "presentations.clipboard", { icon: Clipboard, shortcut: { key: "v", mod: true } }),
+        soon("edit.paste-plain", "Paste without formatting", "editor.edit.paste-plain", { shortcut: { key: "v", mod: true, shift: true } }),
+        sep,
+        soon("edit.select-all", "Select all", "presentations.select-all", { shortcut: { key: "a", mod: true } }),
         { kind: "action", id: "edit.delete", label: "Delete slide", icon: Trash2, keywords: ["remove"], run: () => h.dispatch({ type: "deleteSlide", index: i }), disabled: noSlide },
+        sep,
+        { kind: "action", id: "edit.duplicate", label: "Duplicate slide", icon: Copy, shortcut: { key: "d", mod: true, bind: true }, run: () => h.dispatch({ type: "duplicateSlide", index: i }), disabled: noSlide },
+        sep,
+        soon("edit.find-replace", "Find and replace", "presentations.find-replace", { icon: Search, shortcut: { key: "h", mod: true } }),
       ],
     },
     {
@@ -92,6 +133,9 @@ export function buildDeckMenus(h: DeckChromeHost): EditorMenu[] {
       items: [
         { kind: "action", id: "view.present", label: "Present", icon: MonitorPlay, shortcut: { key: "Enter", mod: true, bind: true }, keywords: ["slideshow", "full screen"], run: () => h.present(false) },
         { kind: "action", id: "view.present-start", label: "Present from beginning", icon: MonitorPlay, shortcut: { key: "Enter", mod: true, shift: true, bind: true }, keywords: ["slideshow"], run: () => h.present(true) },
+        soon("view.motion", "Motion", "presentations.motion", { keywords: ["transition", "animation"] }),
+        soon("view.theme-builder", "Theme builder", "presentations.master", { keywords: ["master"] }),
+        soon("view.grid", "Grid view", "presentations.grid-view", { icon: LayoutGrid, shortcut: { key: "1", mod: true, alt: true } }),
         sep,
         { kind: "action", id: "view.notes", label: "Show speaker notes", icon: StickyNote, keywords: ["notes"], run: h.toggleNotes, checked: () => h.notesShown },
       ],
@@ -113,7 +157,38 @@ export function buildDeckMenus(h: DeckChromeHost): EditorMenu[] {
               : []),
           ],
         },
+        soon("insert.text-box", "Text box", "presentations.insert-objects", { icon: TypeIcon }),
+        soon("insert.audio", "Audio", "presentations.insert-media", { icon: Music }),
+        soon("insert.video", "Video", "presentations.insert-media", { icon: Video }),
+        soon("insert.shape", "Shape", "presentations.insert-objects", { icon: Shapes }),
+        soon("insert.table", "Table", "presentations.insert-table", { icon: Table }),
+        soon("insert.chart", "Chart", "editor.insert.chart", { icon: BarChart3 }),
+        soon("insert.diagram", "Diagram", "presentations.insert-diagram", { icon: Workflow }),
+        soon("insert.word-art", "Word art", "presentations.insert-objects"),
+        soon("insert.line", "Line", "presentations.insert-objects", { icon: Slash }),
+        sep,
+        soon("insert.special-characters", "Special characters", "editor.insert.special-characters", { icon: Omega }),
+        soon("insert.animation", "Animation", "presentations.motion"),
+        sep,
+        soon("insert.link", "Link", "presentations.insert-link", { icon: LinkIcon, shortcut: { key: "k", mod: true } }),
+        soon("insert.comment", "Comment", "presentations.comment", { icon: MessageSquarePlus, shortcut: { key: "m", mod: true, alt: true } }),
+        sep,
         { kind: "submenu", id: "insert.slide", label: "New slide", icon: Plus, items: layoutItems(h, (layout) => h.dispatch({ type: "addSlide", after: i, layout }), "insert.slide", false) },
+        soon("insert.slide-numbers", "Slide numbers", "presentations.slide-numbers", { icon: Hash }),
+      ],
+    },
+    {
+      id: "format",
+      label: "Format",
+      items: [
+        soon("format.text", "Text", "presentations.format-text", { icon: Bold }),
+        soon("format.align", "Align and indent", "presentations.format-text", { icon: AlignLeft }),
+        soon("format.spacing", "Line and paragraph spacing", "presentations.format-text"),
+        soon("format.lists", "Bullets and numbering", "presentations.format-text", { icon: List }),
+        sep,
+        soon("format.options", "Format options", "presentations.format-options"),
+        sep,
+        soon("format.clear", "Clear formatting", "presentations.format-text", { icon: RemoveFormatting, shortcut: { key: "\\", mod: true } }),
       ],
     },
     {
@@ -123,6 +198,7 @@ export function buildDeckMenus(h: DeckChromeHost): EditorMenu[] {
         { kind: "action", id: "slide.new", label: "New slide", icon: Plus, shortcut: { key: "m", mod: true, bind: true }, run: () => h.dispatch({ type: "addSlide", after: i }), disabled: locked },
         { kind: "action", id: "slide.duplicate", label: "Duplicate slide", icon: Copy, run: () => h.dispatch({ type: "duplicateSlide", index: i }), disabled: noSlide },
         { kind: "action", id: "slide.delete", label: "Delete slide", icon: Trash2, run: () => h.dispatch({ type: "deleteSlide", index: i }), disabled: noSlide },
+        soon("slide.skip", "Skip slide", "presentations.skip-slide", { icon: EyeOff }),
         sep,
         {
           kind: "submenu",
@@ -136,7 +212,11 @@ export function buildDeckMenus(h: DeckChromeHost): EditorMenu[] {
           ],
         },
         sep,
+        soon("slide.background", "Change background", "presentations.background", { icon: PaintBucket }),
         { kind: "submenu", id: "slide.layout", label: "Apply layout", icon: LayoutTemplate, items: layoutItems(h, (layout) => h.dispatch({ type: "setLayout", index: i, layout }), "slide.layout", true) },
+        soon("slide.transition", "Transition", "presentations.motion"),
+        sep,
+        soon("slide.edit-theme", "Edit theme", "presentations.master"),
         {
           kind: "submenu",
           id: "slide.theme",
@@ -156,9 +236,41 @@ export function buildDeckMenus(h: DeckChromeHost): EditorMenu[] {
       ],
     },
     {
+      id: "arrange",
+      label: "Arrange",
+      items: [
+        soon("arrange.order", "Order", "presentations.arrange", { icon: Layers }),
+        soon("arrange.align", "Align", "presentations.arrange", { icon: AlignHorizontalJustifyCenter }),
+        soon("arrange.distribute", "Distribute", "presentations.arrange"),
+        soon("arrange.center", "Center on page", "presentations.arrange"),
+        soon("arrange.rotate", "Rotate", "presentations.arrange", { icon: RotateCw }),
+        sep,
+        soon("arrange.group", "Group", "presentations.arrange", { icon: Group, shortcut: { key: "g", mod: true, alt: true } }),
+        soon("arrange.ungroup", "Ungroup", "presentations.arrange", { shortcut: { key: "g", mod: true, alt: true, shift: true } }),
+      ],
+    },
+    {
+      id: "tools",
+      label: "Tools",
+      items: [
+        soon("tools.spelling", "Spelling", "editor.tools.spelling", { icon: SpellCheck }),
+        soon("tools.linked-objects", "Linked objects", "editor.tools.linked-objects"),
+        soon("tools.dictionary", "Dictionary", "editor.tools.dictionary"),
+        sep,
+        soon("tools.qa", "Q&A history", "presentations.qa-history"),
+        sep,
+        soon("tools.voice-typing", "Voice type speaker notes", "editor.tools.voice-typing", { icon: Mic }),
+        sep,
+        soon("tools.notifications", "Notification settings", "editor.tools.notifications"),
+        soon("tools.preferences", "Preferences", "editor.tools.preferences"),
+        soon("tools.accessibility", "Accessibility", "editor.tools.accessibility"),
+      ],
+    },
+    googleExtensionsMenu("slides"),
+    {
       id: "help",
       label: "Help",
-      items: [{ kind: "action", id: "help.shortcuts", label: "Keyboard shortcuts", icon: Keyboard, shortcut: { key: "/", mod: true, bind: true }, run: h.showShortcuts }],
+      items: [...googleHelpHead(h.sendFeedback ? { sendFeedback: h.sendFeedback } : {}), { kind: "action", id: "help.shortcuts", label: "Keyboard shortcuts", icon: Keyboard, shortcut: { key: "/", mod: true, bind: true }, run: h.showShortcuts }],
     },
   ];
 }

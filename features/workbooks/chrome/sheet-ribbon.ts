@@ -33,6 +33,35 @@ import {
   Trash2,
   ZoomIn,
   Keyboard,
+  Accessibility,
+  Activity,
+  AtSign,
+  BarChart3,
+  Bell,
+  CalendarRange,
+  CircleHelp,
+  ClipboardList,
+  Code2,
+  Database,
+  EyeOff,
+  FileText,
+  GraduationCap,
+  Group,
+  Lightbulb,
+  Megaphone,
+  MessageSquareWarning,
+  MoveVertical,
+  Palette,
+  PenTool,
+  Puzzle,
+  Repeat2,
+  ShieldCheck,
+  Shuffle,
+  SlidersHorizontal,
+  Smile,
+  SpellCheck,
+  TableProperties,
+  Tag,
 } from "lucide-react";
 import type { GoogleOnlyRows, RibbonTabSpec } from "@/components/editor-chrome/ribbon-model";
 
@@ -121,6 +150,7 @@ export const SHEET_RIBBON: RibbonTabSpec[] = [
           { ref: "insert.rows", label: "Insert rows", icon: Rows3 },
           { ref: "insert.columns", label: "Insert columns", icon: Columns3 },
           { ref: "edit.delete", label: "Delete", icon: Trash2 },
+          { ref: "edit.move", label: "Move", icon: MoveVertical },
           { ref: "view.rows", label: "Hide / unhide rows", icon: Rows3 },
           { ref: "view.columns", label: "Hide / unhide columns", icon: Columns3 },
         ],
@@ -142,17 +172,43 @@ export const SHEET_RIBBON: RibbonTabSpec[] = [
     id: "insert",
     label: "Insert",
     groups: [
-      { id: "tables", label: "Tables", controls: [{ ref: "insert.table", size: "large", icon: Table }] },
-      { id: "illustrations", label: "Illustrations", controls: [{ ref: "insert.image", size: "large", label: "Picture", icon: Image }] },
+      {
+        id: "tables",
+        label: "Tables",
+        controls: [
+          { ref: "insert.pivot", size: "large", label: "PivotTable", icon: TableProperties },
+          { ref: "insert.table", size: "large", icon: Table },
+        ],
+      },
+      {
+        id: "illustrations",
+        label: "Illustrations",
+        controls: [
+          { ref: "insert.image", size: "large", label: "Picture", icon: Image },
+          { ref: "insert.drawing", label: "Drawing", icon: PenTool },
+        ],
+      },
+      { id: "charts", label: "Charts", controls: [{ ref: "insert.chart", size: "large", label: "Chart", icon: BarChart3 }] },
+      {
+        id: "filters",
+        label: "Filters",
+        controls: [
+          { ref: "data.slicer", label: "Slicer", icon: SlidersHorizontal },
+          { ref: "insert.timeline", label: "Timeline", icon: CalendarRange },
+        ],
+      },
+      { id: "forms", label: "Forms", controls: [{ ref: "tools.form", size: "large", label: "Forms", icon: ClipboardList }] },
       {
         id: "controls",
         label: "Controls",
         controls: [
           { ref: "insert.checkbox", icon: CheckSquare },
           { ref: "insert.dropdown", icon: ListChecks },
+          { ref: "insert.smart-chips", label: "Smart chips", icon: AtSign },
         ],
       },
       { id: "links", label: "Links", controls: [{ ref: "insert.link", size: "large", icon: Link }] },
+      { id: "symbols", label: "Symbols", controls: [{ ref: "insert.emoji", label: "Emoji", icon: Smile }] },
       {
         id: "comments",
         label: "Comments",
@@ -175,6 +231,7 @@ export const SHEET_RIBBON: RibbonTabSpec[] = [
     id: "page-layout",
     label: "Page Layout",
     groups: [
+      { id: "themes", label: "Themes", controls: [{ ref: "format.theme", size: "large", label: "Themes", icon: Palette }] },
       { id: "print", label: "Print", controls: [{ ref: "tb.print", size: "large", label: "Print" }] },
       { id: "sheet-options", label: "Sheet Options", controls: [{ ref: "view.show", size: "large", label: "Gridlines", icon: TableCellsSplit }] },
     ],
@@ -192,6 +249,14 @@ export const SHEET_RIBBON: RibbonTabSpec[] = [
           { ref: "tools.functions", label: "Function list" },
         ],
       },
+      {
+        id: "names",
+        label: "Defined Names",
+        controls: [
+          { ref: "data.named-ranges", label: "Name Manager", icon: Tag },
+          { ref: "data.named-functions", label: "Named functions", icon: SquareFunction },
+        ],
+      },
     ],
   },
   {
@@ -206,6 +271,7 @@ export const SHEET_RIBBON: RibbonTabSpec[] = [
           { ref: "data.sort-sheet-desc", label: "Sort Z to A", icon: ArrowDownZA },
           { ref: "data.sort-range", label: "Sort range", icon: ListFilter },
           { ref: "data.filter", size: "large", label: "Filter", icon: Filter },
+          { ref: "data.filter-views", label: "Filter views", icon: ListFilter },
         ],
       },
       {
@@ -215,8 +281,13 @@ export const SHEET_RIBBON: RibbonTabSpec[] = [
           { ref: "data.split", label: "Text to Columns", icon: Columns3 },
           { ref: "data.cleanup", label: "Data cleanup", icon: Paintbrush },
           { ref: "data.validation", label: "Data Validation", icon: ListChecks },
+          { ref: "data.randomize", label: "Randomize range", icon: Shuffle },
+          { ref: "data.column-stats", label: "Column stats", icon: BarChart3 },
+          { ref: "data.extraction", label: "Data extraction", icon: Columns3 },
         ],
       },
+      { id: "outline", label: "Outline", controls: [{ ref: "view.group", size: "large", label: "Group", icon: Group }] },
+      { id: "connections", label: "Queries & Connections", controls: [{ ref: "data.connectors", size: "large", label: "Data connectors", icon: Database }] },
       { id: "protect", label: "Protect", controls: [{ ref: "data.protect", size: "large", label: "Protect", icon: Lock }] },
     ],
   },
@@ -224,6 +295,8 @@ export const SHEET_RIBBON: RibbonTabSpec[] = [
     id: "review",
     label: "Review",
     groups: [
+      { id: "proofing", label: "Proofing", controls: [{ ref: "tools.spelling", size: "large", label: "Spelling", icon: SpellCheck }] },
+      { id: "accessibility", label: "Accessibility", controls: [{ ref: "tools.accessibility", size: "large", label: "Accessibility", icon: Accessibility }] },
       {
         id: "comments",
         label: "Comments",
@@ -234,6 +307,15 @@ export const SHEET_RIBBON: RibbonTabSpec[] = [
         ],
       },
       { id: "protect", label: "Protect", controls: [{ ref: "tools.protect", size: "large", label: "Protect Sheet", icon: Lock }] },
+      {
+        id: "activity",
+        label: "Activity",
+        controls: [
+          { ref: "tools.activity", label: "Activity dashboard", icon: Activity },
+          { ref: "tools.notifications", label: "Notification settings", icon: Bell },
+          { ref: "tools.suggestions", label: "Suggestion controls", icon: Lightbulb },
+        ],
+      },
     ],
   },
   {
@@ -248,7 +330,10 @@ export const SHEET_RIBBON: RibbonTabSpec[] = [
       {
         id: "window",
         label: "Window",
-        controls: [{ ref: "view.freeze", size: "large", label: "Freeze Panes", icon: PanelTopClose }],
+        controls: [
+          { ref: "view.freeze", size: "large", label: "Freeze Panes", icon: PanelTopClose },
+          { ref: "view.hidden-sheets", label: "Unhide sheets", icon: EyeOff },
+        ],
       },
       {
         id: "zoom",
@@ -263,6 +348,15 @@ export const SHEET_RIBBON: RibbonTabSpec[] = [
         label: "Full Screen",
         controls: [{ ref: "view.full-screen", size: "large", icon: Maximize2 }],
       },
+      { id: "macros", label: "Macros", controls: [{ ref: "extensions.macros", size: "large", label: "Macros", icon: Repeat2 }] },
+    ],
+  },
+  {
+    id: "automate",
+    label: "Automate",
+    groups: [
+      { id: "add-ins", label: "Add-ins", controls: [{ ref: "extensions.add-ons", size: "large", label: "Add-ins", icon: Puzzle }] },
+      { id: "scripts", label: "Scripts", controls: [{ ref: "extensions.scripts", size: "large", label: "Scripts", icon: Code2 }] },
     ],
   },
   {
@@ -273,6 +367,12 @@ export const SHEET_RIBBON: RibbonTabSpec[] = [
         id: "help",
         label: "Help",
         controls: [
+          { ref: "help.search", size: "large", icon: CircleHelp },
+          { ref: "help.training", label: "Training", icon: GraduationCap },
+          { ref: "help.updates", label: "Updates", icon: Megaphone },
+          { ref: "help.feedback", label: "Feedback", icon: MessageSquareWarning },
+          { ref: "help.privacy", label: "Privacy Policy", icon: ShieldCheck },
+          { ref: "help.terms", label: "Terms of Service", icon: FileText },
           { ref: "help.shortcuts", size: "large", icon: Keyboard },
           { ref: "help.functions", label: "Function list" },
         ],

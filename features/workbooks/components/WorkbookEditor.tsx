@@ -29,6 +29,7 @@ import { useRouter } from "next/navigation";
 import { EditorDocumentHeader } from "@/features/shell/components/header/templates/EditorDocumentHeader";
 import { useShellCanvasFullScreen } from "@/features/shell/components/ShellChromeMode";
 import { EditorMenuBar, useMenuBarState } from "@/components/editor-chrome/EditorMenuBar";
+import { useOpenFeedbackWindow } from "@/features/overlays/openers/feedbackDialog";
 import { EditorToolbar } from "@/components/editor-chrome/EditorToolbar";
 import { EditorRibbon } from "@/components/editor-chrome/EditorRibbon";
 import { OfficeLookSwitch } from "@/features/file-actions/skin/OfficeLookSwitch";
@@ -1028,6 +1029,7 @@ export default function WorkbookEditor({
   });
 
   // ─── Google Sheets chrome: menus, toolbar, bound shortcuts ───
+  const openFeedback = useOpenFeedbackWindow();
   const chromeHost: SheetChromeHost | null =
     bootState === "ready" && apiRef.current
       ? {
@@ -1039,6 +1041,7 @@ export default function WorkbookEditor({
           fullScreen: () => fullScreen,
           toggleFullScreen: () => setFullScreen((v) => !v),
           notify: (message) => toast({ title: message }),
+          sendFeedback: () => openFeedback(),
         }
       : null;
   const menus = chromeHost ? buildSheetMenus(chromeHost) : [];
