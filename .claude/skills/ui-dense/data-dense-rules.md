@@ -82,16 +82,7 @@ Status is a token, never a palette class: `success` / `warning` / `destructive` 
 
 ### JSON tree / code value colors
 
-When rendering JSON trees, syntax highlighting needs direct colors. Always provide light AND dark variants:
-
-```tsx
-"text-emerald-700 dark:text-emerald-300"    // strings
-"text-amber-600 dark:text-amber-400"        // numbers
-"text-primary"                               // object keys
-"text-muted-foreground"                      // null, undefined, structural chars
-"text-emerald-600 dark:text-emerald-400"    // true
-"text-muted-foreground"                      // false
-```
+Never colour code by hand: JSON and code render through `JsonInspector` (`@/components/official-candidate/json-inspector/JsonInspector`) and the shared code blocks, which own their syntax colours in both themes.
 
 ---
 

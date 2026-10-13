@@ -43,6 +43,7 @@ import {
   Tile,
   type BadgeTone,
 } from "@ai-matrx/design-system/controls";
+import { Card } from "@ai-matrx/design-system";
 import { RecordPageHeader } from "@/features/shell/components/header/templates/RecordPageHeader";
 import { JsonInspector } from "@/components/official-candidate/json-inspector/JsonInspector";
 import {
@@ -145,13 +146,13 @@ const TYPE_STYLES: {
   },
   {
     cls: "type-label",
-    spec: "11 / 500 grey",
+    spec: "11 / 500 muted",
     use: "The name above a read-only value",
     sample: "Website domain",
   },
   {
     cls: "type-value",
-    spec: "14 / 400 black",
+    spec: "14 / 400 foreground",
     use: "The read-only value",
     sample: "fullspecstaff.com",
   },
@@ -269,22 +270,6 @@ function Section({
   );
 }
 
-function Card({
-  children,
-  className,
-}: {
-  children: ReactNode;
-  className?: string;
-}) {
-  return (
-    <div
-      className={`rounded-lg border border-border bg-card ${className ?? ""}`}
-    >
-      {children}
-    </div>
-  );
-}
-
 // ── 1. The twelve basics ─────────────────────────────────────────────────────────────────
 function Basics() {
   return (
@@ -334,13 +319,21 @@ function Pair({
         <span className="type-meta text-muted-foreground">{rule}</span>
       </div>
       <div className="grid gap-3 md:grid-cols-2">
-        <Card className="flex flex-col gap-3 p-4">
-          <Badge tone="success" className="self-start">Do</Badge>
-          <div>{good}</div>
+        <Card>
+          <div className="flex flex-col gap-3 p-4">
+            <Badge tone="success" className="self-start">
+              Do
+            </Badge>
+            <div>{good}</div>
+          </div>
         </Card>
-        <Card className="flex flex-col gap-3 p-4">
-          <Badge tone="destructive" className="self-start">Don&apos;t</Badge>
-          <div>{bad}</div>
+        <Card>
+          <div className="flex flex-col gap-3 p-4">
+            <Badge tone="destructive" className="self-start">
+              Don&apos;t
+            </Badge>
+            <div>{bad}</div>
+          </div>
         </Card>
       </div>
     </div>
@@ -435,7 +428,7 @@ function Examples() {
               <PropertyRow label="Name confirmed by the person" missing />
               <PropertyRow
                 label="What the social accounts said"
-                missing="Not found yet"
+                missing="Not checked"
               />
             </div>
           }
@@ -463,32 +456,34 @@ function Examples() {
 function TypeStyles() {
   return (
     <Section id="type" title="Text styles" meta="Six styles, no sizes">
-      <Card className="divide-y divide-border">
-        {TYPE_STYLES.map((t) => (
-          <div
-            key={t.cls}
-            className="grid items-baseline gap-x-6 gap-y-1 px-4 py-3 md:grid-cols-[9rem_6rem_minmax(0,1fr)]"
-          >
-            <code className="type-meta font-mono text-muted-foreground">
-              {t.cls}
-            </code>
-            <span className="type-meta text-muted-foreground tabular-nums">
-              {t.spec}
-            </span>
-            <div className="flex min-w-0 flex-col gap-0.5">
-              <span
-                className={
-                  t.cls === "type-label" || t.cls === "type-value"
-                    ? t.cls
-                    : `${t.cls} text-foreground`
-                }
-              >
-                {t.sample}
+      <Card>
+        <div className="divide-y divide-border">
+          {TYPE_STYLES.map((t) => (
+            <div
+              key={t.cls}
+              className="grid items-baseline gap-x-6 gap-y-1 px-4 py-3 md:grid-cols-[9rem_6rem_minmax(0,1fr)]"
+            >
+              <code className="type-meta font-mono text-muted-foreground">
+                {t.cls}
+              </code>
+              <span className="type-meta text-muted-foreground tabular-nums">
+                {t.spec}
               </span>
-              <span className="type-meta text-muted-foreground">{t.use}</span>
+              <div className="flex min-w-0 flex-col gap-0.5">
+                <span
+                  className={
+                    t.cls === "type-label" || t.cls === "type-value"
+                      ? t.cls
+                      : `${t.cls} text-foreground`
+                  }
+                >
+                  {t.sample}
+                </span>
+                <span className="type-meta text-muted-foreground">{t.use}</span>
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </Card>
     </Section>
   );
@@ -590,138 +585,146 @@ function Components() {
       title="Components"
       meta="@ai-matrx/design-system/controls"
     >
-      <Card className="divide-y divide-border">
-        <Row name="Button">
-          <ControlRow>
-            <Button variant="primary" icon={<Plus />}>
-              New brand
-            </Button>
-            <Button variant="outline" icon={<Download />}>
-              Export
-            </Button>
-            <Button variant="quiet">Cancel</Button>
-            <Button variant="danger">Delete</Button>
-            <Button
-              variant="quiet"
-              icon={<Bell />}
-              aria-label="Notifications"
-            />
-          </ControlRow>
-        </Row>
-        <Row name="Field · SearchField">
-          <ControlRow>
-            <Field placeholder="Brand name" width="md" />
-            <SearchField placeholder="Search brands" width="md" />
-          </ControlRow>
-        </Row>
-        <Row name="Select · Switch">
-          <ControlRow>
-            <Select
-              aria-label="Sort"
-              value={sort}
-              onValueChange={setSort}
-              options={[
-                { value: "recent", label: "Most recent" },
-                { value: "name", label: "Name" },
-                { value: "size", label: "Size" },
-              ]}
-            />
-            <Switch
-              checked={notify}
-              onCheckedChange={setNotify}
-              aria-label="Notify me"
-            />
-          </ControlRow>
-        </Row>
-        <Row name="SegmentedControl">
-          <SegmentedControl
-            aria-label="Who"
-            value={view}
-            onValueChange={setView}
-            data={[
-              { value: "all", label: "All", count: 42 },
-              { value: "mine", label: "Mine", count: 12 },
-              { value: "shared", label: "Shared" },
-            ]}
-          />
-        </Row>
-        <Row name="Tabs">
-          <Tabs
-            aria-label="Sections"
-            value={tab}
-            onValueChange={setTab}
-            data={[
-              { value: "overview", label: "Overview" },
-              { value: "sources", label: "Sources", count: 17 },
-              { value: "history", label: "History" },
-            ]}
-          />
-        </Row>
-        <Row name="Tile">
-          <div className="grid gap-2 sm:grid-cols-2">
-            <Tile
-              layout="row"
-              variant="outline"
-              icon={<Globe />}
-              title="Website"
-              line="fullspecstaff.com"
-              selected
-            />
-            <Tile
-              layout="row"
-              variant="outline"
-              icon={<Search />}
-              title="Web search"
-              line="58 results read"
-            />
-          </div>
-        </Row>
-        <Row name="DisclosureHeader">
-          <DisclosureHeader
-            open={open}
-            onClick={() => setOpen((o) => !o)}
-            title="Advanced"
-            meta="4 settings"
-          />
-        </Row>
-        <Row name="RowGroup · SettingRow">
-          <RowGroup title="Notifications">
-            <SettingRow
-              label="Email me when a run finishes"
-              line="Only runs you started"
-            >
+      <Card>
+        <div className="divide-y divide-border">
+          <Row name="Button">
+            <ControlRow>
+              <Button variant="primary" icon={<Plus />}>
+                New brand
+              </Button>
+              <Button variant="outline" icon={<Download />}>
+                Export
+              </Button>
+              <Button variant="quiet">Cancel</Button>
+              <Button variant="danger">Delete</Button>
+              <Button
+                variant="quiet"
+                icon={<Bell />}
+                aria-label="Notifications"
+              />
+            </ControlRow>
+          </Row>
+          <Row name="Field · SearchField">
+            <ControlRow>
+              <Field placeholder="Brand name" width="md" />
+              <SearchField placeholder="Search brands" width="md" />
+            </ControlRow>
+          </Row>
+          <Row name="Select · Switch">
+            <ControlRow>
+              <Select
+                aria-label="Sort"
+                value={sort}
+                onValueChange={setSort}
+                options={[
+                  { value: "recent", label: "Most recent" },
+                  { value: "name", label: "Name" },
+                  { value: "size", label: "Size" },
+                ]}
+              />
               <Switch
                 checked={notify}
                 onCheckedChange={setNotify}
-                aria-label="Email me when a run finishes"
+                aria-label="Notify me"
               />
-            </SettingRow>
-          </RowGroup>
-        </Row>
-        <Row name="IndicatorStrip">
-          <IndicatorStrip
-            items={[
-              {
-                id: "premium",
-                icon: Crown,
-                label: "Premium model",
-                on: true,
-                tone: "warning",
-              },
-              {
-                id: "fast",
-                icon: Zap,
-                label: "Fast",
-                on: true,
-                tone: "success",
-              },
-              { id: "private", icon: Lock, label: "Private", on: false },
-            ]}
-          />
-        </Row>
-        <Row name="DeleteButton">
-          <DeleteButton aria-label="Delete brand" />
-        </Row>
+            </ControlRow>
+          </Row>
+          <Row name="SegmentedControl">
+            <SegmentedControl
+              aria-label="Who"
+              value={view}
+              onValueChange={setView}
+              data={[
+                { value: "all", label: "All", count: 42 },
+                { value: "mine", label: "Mine", count: 12 },
+                { value: "shared", label: "Shared" },
+              ]}
+            />
+          </Row>
+          <Row name="Tabs">
+            <Tabs
+              aria-label="Sections"
+              value={tab}
+              onValueChange={setTab}
+              data={[
+                { value: "overview", label: "Overview" },
+                { value: "sources", label: "Sources", count: 17 },
+                { value: "history", label: "History" },
+              ]}
+            />
+          </Row>
+          <Row name="Tile">
+            <div className="grid gap-2 sm:grid-cols-2">
+              <Tile
+                layout="row"
+                variant="outline"
+                icon={<Globe />}
+                title="Website"
+                line="fullspecstaff.com"
+                selected
+              />
+              <Tile
+                layout="row"
+                variant="outline"
+                icon={<Search />}
+                title="Web search"
+                line="58 results read"
+              />
+            </div>
+          </Row>
+          <Row name="DisclosureHeader">
+            <DisclosureHeader
+              open={open}
+              onClick={() => setOpen((o) => !o)}
+              title="Advanced"
+              meta="2 settings"
+            />
+            {open ? (
+              <div className="pt-1">
+                <PropertyRow label="Retries" value="3" />
+                <PropertyRow label="Timeout" value="30 seconds" />
+              </div>
+            ) : null}
+          </Row>
+          <Row name="RowGroup · SettingRow">
+            <RowGroup title="Notifications">
+              <SettingRow
+                label="Email me when a run finishes"
+                line="Only runs you started"
+              >
+                <Switch
+                  checked={notify}
+                  onCheckedChange={setNotify}
+                  aria-label="Email me when a run finishes"
+                />
+              </SettingRow>
+            </RowGroup>
+          </Row>
+          <Row name="IndicatorStrip">
+            <IndicatorStrip
+              items={[
+                {
+                  id: "premium",
+                  icon: Crown,
+                  label: "Premium model",
+                  on: true,
+                  tone: "warning",
+                },
+                {
+                  id: "fast",
+                  icon: Zap,
+                  label: "Fast",
+                  on: true,
+                  tone: "success",
+                },
+                { id: "private", icon: Lock, label: "Private", on: false },
+              ]}
+            />
+          </Row>
+          <Row name="DeleteButton">
+            <DeleteButton aria-label="Delete brand" />
+          </Row>
+        </div>
       </Card>
     </Section>
   );
@@ -735,41 +738,43 @@ function ReadingData() {
       title="Reading data"
       meta="PropertyRow — label over value"
     >
-      <Card className="px-4 py-1">
-        <PropertyRow
-          label="Website domain"
-          value="fullspecstaff.com"
-          help="The website typed or confirmed"
-          meta="domain · 17 chars"
-          gutter
-        />
-        <PropertyRow
-          label="Name searched"
-          value="Full Spectrum Search Group"
-          help="Confirmed name, else the site's own title"
-          meta="brand_name"
-          gutter
-        />
-        <PropertyRow
-          label="Name confirmed by the person"
-          missing
-          meta="name_confirmed"
-          gutter
-        />
-        <PropertyRow
-          label="Web candidates"
-          data={WEB_CANDIDATES}
-          help="Profiles and listings, with certainty"
-          meta="web_candidates · 3 items"
-          expanded={<JsonInspector data={WEB_CANDIDATES} />}
-        />
-        <PropertyRow
-          label="Run id"
-          value="167f877f-2a41-4c1e-9d0b-5e8a3c2f1b90"
-          mono
-          meta="run_id"
-          gutter
-        />
+      <Card>
+        <div className="px-4 py-1">
+          <PropertyRow
+            label="Website domain"
+            value="fullspecstaff.com"
+            help="The website typed or confirmed"
+            meta="domain · 17 chars"
+            gutter
+          />
+          <PropertyRow
+            label="Name searched"
+            value="Full Spectrum Search Group"
+            help="Confirmed name, else the site's own title"
+            meta="brand_name"
+            gutter
+          />
+          <PropertyRow
+            label="Name confirmed by the person"
+            missing
+            meta="name_confirmed"
+            gutter
+          />
+          <PropertyRow
+            label="Web candidates"
+            data={WEB_CANDIDATES}
+            help="Profiles and listings, with certainty"
+            meta="web_candidates · 3 items"
+            expanded={<JsonInspector data={WEB_CANDIDATES} />}
+          />
+          <PropertyRow
+            label="Run id"
+            value="167f877f-2a41-4c1e-9d0b-5e8a3c2f1b90"
+            mono
+            meta="run_id"
+            gutter
+          />
+        </div>
       </Card>
     </Section>
   );
@@ -780,30 +785,42 @@ function States() {
   return (
     <Section id="states" title="States" meta="Never blank, never grey italics">
       <div className="grid gap-3 md:grid-cols-2">
-        <Card className="px-4 py-1">
-          <PropertyRow label="Name confirmed by the person" missing />
-          <PropertyRow label="Phone" missing="Not set" />
-          <PropertyRow label="Founded" missing="Unknown" />
+        <Card>
+          <div className="px-4 py-1">
+            <PropertyRow label="Name confirmed by the person" missing />
+            <PropertyRow label="Phone" missing="Not set" />
+            <PropertyRow label="Founded" missing="Unknown" />
+          </div>
         </Card>
-        <Card className="flex flex-col gap-2 p-4">
-          <span className="type-label">Loading</span>
-          <RegionSkeleton shape="rows" count={3} aria-label="Loading sources" />
+        <Card>
+          <div className="flex flex-col gap-2 p-4">
+            <span className="type-label">Loading</span>
+            <RegionSkeleton
+              shape="rows"
+              count={3}
+              aria-label="Loading sources"
+            />
+          </div>
         </Card>
-        <Card className="p-4">
-          <EmptyState
-            icon={<Inbox />}
-            title="No sources yet"
-            line="Add a website or a profile to start"
-            action={<Button icon={<Plus />}>Add source</Button>}
-          />
+        <Card>
+          <div className="p-4">
+            <EmptyState
+              icon={<Inbox />}
+              title="No sources yet"
+              line="Add a website or a profile to start"
+              action={<Button icon={<Plus />}>Add source</Button>}
+            />
+          </div>
         </Card>
-        <Card className="p-4">
-          <EmptyState
-            icon={<AlertTriangle />}
-            title="Couldn't load sources"
-            line="The server didn't answer in time"
-            action={<Button variant="outline">Try again</Button>}
-          />
+        <Card>
+          <div className="p-4">
+            <EmptyState
+              icon={<AlertTriangle />}
+              title="Couldn't load sources"
+              line="The server didn't answer in time"
+              action={<Button variant="outline">Try again</Button>}
+            />
+          </div>
         </Card>
       </div>
     </Section>
