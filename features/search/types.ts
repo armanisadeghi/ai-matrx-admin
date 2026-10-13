@@ -13,6 +13,22 @@
 /** Engines the search door accepts. The public `/search` page sends only Brave. */
 export type SearchProvider = "brave" | "google";
 
+/**
+ * What a person sees for each engine. Brave is a data vendor and vendors never
+ * reach a customer screen (VendorNameRuntimeGuard, check:no-vendor-names) — it
+ * powers Matrx Search, so that is its name here. Google is a search engine
+ * people choose by name, not a vendor relationship we expose.
+ */
+export const SEARCH_ENGINE_LABEL: Record<SearchProvider, string> = {
+  brave: "Matrx",
+  google: "Google",
+};
+
+/** A kind's `source` → its on-screen engine name; unknown sources pass through. */
+export function searchEngineLabel(source: string): string {
+  return (SEARCH_ENGINE_LABEL as Record<string, string>)[source.toLowerCase()] ?? source;
+}
+
 /** Result types (one provider call each). */
 export type SearchVertical = "web" | "news" | "images" | "videos" | "places";
 export type SearchSafeSearch = "off" | "moderate" | "strict";

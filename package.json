@@ -271,6 +271,8 @@
     "check:fill-secret:strict": "node scripts/fill-secret/check-fill-secret.mjs --strict",
     "check:fill-secret:self-test": "node scripts/fill-secret/check-fill-secret.mjs --self-test && node --test scripts/lib/fill-secret.test.mjs",
     "check:one-control": "node scripts/one-control/check-one-control.mjs",
+    "check:property-rows": "node scripts/property-rows/check-property-rows.mjs",
+    "check:property-rows:self-test": "node scripts/property-rows/check-property-rows.mjs --self-test",
     "check:page-top": "node scripts/page-top/check-page-top.mjs",
     "check:writing-boxes": "node scripts/writing-boxes/check-writing-boxes.mjs",
     "check:writing-boxes:strict": "node scripts/writing-boxes/check-writing-boxes.mjs --strict",

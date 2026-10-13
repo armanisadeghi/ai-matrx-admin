@@ -29,7 +29,7 @@ import type { DecisionResultView } from "./decision-result";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { ReadFailure } from "@ai-matrx/design-system";
 import { ALL_DECISIONS_REVIEW_HREF } from "@/features/agents/decision-review/service";
-import { SegmentedControl } from "@ai-matrx/design-system/controls";
+import { SegmentedControl, PropertyRow } from "@ai-matrx/design-system/controls";
 
 export function DecisionPlayground() {
   const dispatch = useAppDispatch();
@@ -375,20 +375,20 @@ function DecisionResultCard({
         ))}
       </div>
       <dl className="grid grid-cols-2 gap-x-3 gap-y-3 text-sm">
-        <Fact label="Input tokens" value={String(result.inputTokens)} />
-        <Fact label="Output tokens" value={String(result.outputTokens)} />
-        <Fact
+        <PropertyRow label="Input tokens" value={String(result.inputTokens)} />
+        <PropertyRow label="Output tokens" value={String(result.outputTokens)} />
+        <PropertyRow
           label="Cost"
           value={formatCostDisplay(result.costUsd, { unknown: "Unavailable" })}
         />
-        <Fact label="Route" value={result.route ?? "Unavailable"} />
-        <Fact label="Execution ID" value={result.executionId} />
-        <Fact label="Request ID" value={result.requestId ?? "Unavailable"} />
-        <Fact
+        <PropertyRow label="Route" value={result.route ?? "Unavailable"} />
+        <PropertyRow label="Execution ID" value={result.executionId} />
+        <PropertyRow label="Request ID" value={result.requestId ?? "Unavailable"} />
+        <PropertyRow
           label="Provider request"
           value={result.providerRequestId ?? "Unavailable"}
         />
-        <Fact label="Offering" value={result.offeringId ?? "Preferred"} />
+        <PropertyRow label="Offering" value={result.offeringId ?? "Preferred"} />
       </dl>
       <a
         className="inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline"
@@ -474,13 +474,3 @@ function AnswerCard({
   );
 }
 
-function Fact({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="min-w-0">
-      <dt className="text-xs text-muted-foreground">{label}</dt>
-      <dd className="truncate font-mono text-xs" title={value}>
-        {value}
-      </dd>
-    </div>
-  );
-}

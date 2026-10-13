@@ -306,13 +306,17 @@ Use visible dots with labels, not just text:
 
 ### Key-value rows
 
-Labels fixed width right-aligned, values left-aligned:
+Never hand-roll one — every label with its value is `PropertyRow` from `@ai-matrx/design-system/controls`
+(label grey medium 11px over value black regular 14px on one left edge, no box; help in a tooltip;
+missing → "Not provided" tag; `mono` only for code/raw data; `data` closes to a one-line summary;
+grey `meta` on the right). Guard: `pnpm check:property-rows`.
 
 ```tsx
-<div className="flex items-baseline gap-3 py-0.5">
-    <span className="text-xs font-mono text-muted-foreground shrink-0 w-40 text-right">{key}</span>
-    <span className="text-sm text-foreground min-w-0 break-all">{value}</span>
-</div>
+import { PropertyRow } from "@ai-matrx/design-system/controls";
+
+<PropertyRow label="Domain" value={brand.domain} help="Where the brand's site lives" />
+<PropertyRow label="Record id" value={row.id} mono meta={<code>record_id</code>} />
+<PropertyRow label="Profiles" data={brand.profiles} expanded={<JsonInspector data={brand.profiles} />} />
 ```
 
 ### Expandable cards

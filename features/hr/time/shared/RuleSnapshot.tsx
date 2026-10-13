@@ -1,5 +1,6 @@
 "use client";
 
+import { PropertyRow } from "@ai-matrx/design-system/controls";
 import { InfoHint } from "@/components/official/InfoHint";
 import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
 /**
@@ -250,9 +251,9 @@ function RuleSnapshotBody({ request }: { request: RuleSnapshotRequest }) {
       {calc ? (
         <>
           <Section title="Which engine produced it">
-            <Field label="Engine" value={calc.engineKey ?? "Not recorded"} />
-            <Field label="Engine version" value={calc.engineVersion ?? "Not recorded"} />
-            <Field
+            <PropertyRow label="Engine" value={calc.engineKey ?? "Not recorded"} />
+            <PropertyRow label="Engine version" value={calc.engineVersion ?? "Not recorded"} />
+            <PropertyRow
               label="Calculated at"
               value={
                 calc.computedAt
@@ -435,15 +436,6 @@ function Section({ title, children }: { title: string; children: ReactNode }) {
       </h3>
       {children}
     </section>
-  );
-}
-
-function Field({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex items-baseline justify-between gap-4 border-b border-border/60 py-1 last:border-0">
-      <span className="text-xs text-muted-foreground">{label}</span>
-      <span className="text-xs font-medium">{value}</span>
-    </div>
   );
 }
 

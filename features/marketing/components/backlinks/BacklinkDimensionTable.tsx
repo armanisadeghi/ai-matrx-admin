@@ -50,7 +50,7 @@ import { useMarketingTableState } from "@/features/marketing/data/query-state";
 import { webLocation } from "@/features/marketing/lib/copy-payloads";
 import { useMarketingSite } from "@/features/marketing/components/site/MarketingSiteContext";
 import { marketingRoutes } from "@/features/marketing/lib/routes";
-import { Chip } from "@ai-matrx/design-system/controls";
+import { Chip, PropertyRow } from "@ai-matrx/design-system/controls";
 import { spendCategory } from "@/features/marketing/data/spend-categories";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
@@ -230,19 +230,6 @@ function nameCell(
   );
 }
 
-function Fact({ label, value }: { label: string; value: ReactNode }) {
-  return (
-    <div className="min-w-0 rounded-md border border-border/60 bg-muted/20 p-2">
-      <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
-        {label}
-      </p>
-      <div className="mt-0.5 break-words text-xs text-foreground">
-        {value === null || value === undefined || value === "" ? "—" : value}
-      </div>
-    </div>
-  );
-}
-
 function histogramLine(
   histogram: Record<string, number> | null,
   max = 6,
@@ -310,18 +297,18 @@ function DimensionDetail({
         ) : null}
       </div>
       <div className="mt-3 grid grid-cols-2 gap-2 lg:grid-cols-3">
-        <Fact label={KIND_CONFIG[kind].nameHeader} value={label} />
-        <Fact label="Backlinks" value={formatCount(row.backlinks)} />
-        <Fact
+        <PropertyRow label={KIND_CONFIG[kind].nameHeader} value={label} />
+        <PropertyRow label="Backlinks" value={formatCount(row.backlinks)} />
+        <PropertyRow
           label="Referring domains"
           value={formatCount(row.referring_domains)}
         />
-        <Fact label="Referring pages" value={formatCount(extras.referringPages)} />
-        <Fact
+        <PropertyRow label="Referring pages" value={formatCount(extras.referringPages)} />
+        <PropertyRow
           label="Pages linking without credit"
           value={formatCount(extras.referringPagesNofollow)}
         />
-        <Fact
+        <PropertyRow
           label="Broken links"
           value={
             extras.brokenBacklinks && extras.brokenBacklinks > 0 && isDomain ? (
@@ -336,28 +323,28 @@ function DimensionDetail({
             )
           }
         />
-        <Fact label="Site authority" value={row.rank_score} />
-        <Fact label="Spam signals" value={row.spam_score} />
-        <Fact label="Shared link sources" value={extras.intersections} />
-        <Fact label="Page response when checked" value={extras.statusCode} />
-        <Fact label="Page title" value={extras.metaTitle} />
-        <Fact label="Where this came from" value={spendCategory(row.provider)} />
-        <Fact label="First seen" value={formatGscDate(row.first_seen_at)} />
-        <Fact label="Last seen" value={formatGscDate(row.last_seen_at)} />
+        <PropertyRow label="Site authority" value={row.rank_score} />
+        <PropertyRow label="Spam signals" value={row.spam_score} />
+        <PropertyRow label="Shared link sources" value={extras.intersections} />
+        <PropertyRow label="Page response when checked" value={extras.statusCode} />
+        <PropertyRow label="Page title" value={extras.metaTitle} />
+        <PropertyRow label="Where this came from" value={spendCategory(row.provider)} />
+        <PropertyRow label="First seen" value={formatGscDate(row.first_seen_at)} />
+        <PropertyRow label="Last seen" value={formatGscDate(row.last_seen_at)} />
       </div>
       <div className="mt-2 grid gap-2">
-        <Fact
+        <PropertyRow
           label="Kinds of site"
           value={histogramLine(extras.platformTypes)}
         />
-        <Fact label="Countries" value={histogramLine(extras.countries)} />
-        <Fact label="Domain endings" value={histogramLine(extras.tlds)} />
-        <Fact label="Kinds of link" value={histogramLine(extras.linkTypes)} />
-        <Fact
+        <PropertyRow label="Countries" value={histogramLine(extras.countries)} />
+        <PropertyRow label="Domain endings" value={histogramLine(extras.tlds)} />
+        <PropertyRow label="Kinds of link" value={histogramLine(extras.linkTypes)} />
+        <PropertyRow
           label="Extra link labels"
           value={histogramLine(extras.linkAttributes)}
         />
-        <Fact
+        <PropertyRow
           label="Where on the page"
           value={histogramLine(extras.semanticLocations)}
         />

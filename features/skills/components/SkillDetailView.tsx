@@ -15,6 +15,7 @@
  * back to the list to act on what they just read.
  */
 
+import { PropertyRow } from "@ai-matrx/design-system/controls";
 import * as React from "react";
 import {
   ArrowLeft,
@@ -130,20 +131,20 @@ export function SkillDetailView({
             {catalogProseText(skill.description) || "No description provided."}
           </p>
 
-          <dl className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-3 gap-y-1 text-[11px]">
-            <MetaRow label="Type" value={skill.skillType} />
-            {categoryLabel && <MetaRow label="Category" value={categoryLabel} />}
-            {skill.version && <MetaRow label="Version" value={skill.version} />}
+          <dl className="flex flex-col">
+            <PropertyRow label="Type" value={skill.skillType} />
+            {categoryLabel && <PropertyRow label="Category" value={categoryLabel} />}
+            {skill.version && <PropertyRow label="Version" value={skill.version} />}
             {skill.modelPreference && (
-              <MetaRow label="Model" value={skill.modelPreference} />
+              <PropertyRow label="Model" value={skill.modelPreference} />
             )}
             {skill.platformTargets.length > 0 && (
-              <MetaRow
+              <PropertyRow
                 label="Platforms"
                 value={skill.platformTargets.join(", ")}
               />
             )}
-            <MetaRow
+            <PropertyRow
               label="Auto-invoke"
               value={skill.disableAutoInvocation ? "Disabled" : "Enabled"}
             />
@@ -185,15 +186,6 @@ export function SkillDetailView({
         </div>
       </ScrollArea>
     </div>
-  );
-}
-
-function MetaRow({ label, value }: { label: string; value: string }) {
-  return (
-    <>
-      <dt className="text-muted-foreground/80">{label}</dt>
-      <dd className="min-w-0 truncate text-foreground">{value}</dd>
-    </>
   );
 }
 

@@ -38,6 +38,7 @@ import {
 } from "./search-kind-data";
 import { SearchChip, SectionHeading } from "./search-kind-shared";
 import { SearchKindNested } from "./SearchKindNested";
+import { searchEngineLabel } from "@/features/search/types";
 
 interface WebSearchResultsBlockProps {
   serverData?: unknown;
@@ -89,7 +90,7 @@ export default function WebSearchResultsBlock({
             </span>
             {source && (
               <span className="rounded-full border border-border px-2 py-0.5 text-[11px] uppercase tracking-wide text-muted-foreground">
-                {source}
+                {searchEngineLabel(source)}
               </span>
             )}
           </div>

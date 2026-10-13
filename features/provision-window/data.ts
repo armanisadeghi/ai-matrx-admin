@@ -191,32 +191,3 @@ export function snapshotMarkdown(s: ProvisionSnapshot): string {
   }
   return lines.join("\n");
 }
-
-const NAME_KEYS = ["label", "name", "title", "platform", "field", "url"] as const;
-
-/** A one-line human summary of a collected value: "17 items · BBB, Facebook, LinkedIn…". */
-export function valueSummary(value: Json | null): string {
-  if (value === null || value === undefined) return "";
-  if (typeof value !== "object") return String(value);
-  if (Array.isArray(value)) {
-    const names: string[] = [];
-    for (const item of value) {
-      if (item && typeof item === "object" && !Array.isArray(item)) {
-        const key = NAME_KEYS.find((k) => typeof (item as Record<string, unknown>)[k] === "string");
-        const name = key ? String((item as Record<string, unknown>)[key]).trim() : "";
-        if (name && !names.includes(name)) names.push(name);
-      } else if (typeof item === "string" && !names.includes(item)) names.push(item);
-      if (names.length >= 4) break;
-    }
-    const head = `${value.length} ${value.length === 1 ? "item" : "items"}`;
-    if (names.length === 0) return head;
-    return `${head} · ${names.slice(0, 3).join(", ")}${names.length > 3 ? "…" : ""}`;
-  }
-  const entries = Object.entries(value);
-  const filled = entries.filter(([, v]) => v !== null && v !== "" && !(Array.isArray(v) && v.length === 0));
-  if (filled.length === 0) return `${entries.map(([k]) => k).join(", ")} — all empty`;
-  return filled
-    .slice(0, 3)
-    .map(([k, v]) => `${k}: ${typeof v === "object" ? (Array.isArray(v) ? `${v.length} items` : "…") : String(v)}`)
-    .join(" · ");
-}

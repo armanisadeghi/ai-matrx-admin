@@ -24,6 +24,7 @@
 import { useRef, useState } from "react";
 import { useBackendApi } from "@/hooks/useBackendApi";
 import { runKindSearch } from "@/features/search/service";
+import { SEARCH_ENGINE_LABEL } from "@/features/search/types";
 import type {
   SearchOutcome,
   SearchPhase,
@@ -147,10 +148,6 @@ export interface UseScraperKeywordSearchFormReturn {
   resetAll: () => void;
 }
 
-export const ENGINE_LABEL: Record<SearchProvider, string> = {
-  brave: "Brave",
-  google: "Google",
-};
 
 function enginesFor(engine: KeywordSearchEngine): SearchProvider[] {
   return engine === "compare" ? ["brave", "google"] : [engine];
@@ -378,7 +375,7 @@ export function useScraperKeywordSearchForm(
     ? failed
         .map((run) =>
           runs.length > 1
-            ? `${ENGINE_LABEL[run.provider]}: ${run.error}`
+            ? `${SEARCH_ENGINE_LABEL[run.provider]}: ${run.error}`
             : (run.error ?? ""),
         )
         .join(" ")

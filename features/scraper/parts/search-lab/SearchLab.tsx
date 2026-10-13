@@ -41,7 +41,6 @@ import KindInstanceRender from "@/features/content-ir/studio/components/KindInst
 import { SearchResultsSkeleton } from "@/features/search/components/SearchResultsSkeleton";
 import { ScraperHookErrorDetails } from "@/features/scraper/parts/ScraperHookErrorDetails";
 import {
-  ENGINE_LABEL,
   kindToSearchItems,
   type KeywordEngineRun,
   type KeywordSearchEngine,
@@ -61,11 +60,14 @@ import type {
   SearchSafeSearch,
   SearchVertical,
 } from "@/features/search/types";
+import { SEARCH_ENGINE_LABEL } from "@/features/search/types";
 import { cn } from "@/lib/utils";
+import { useAppSelector } from "@/lib/redux/hooks";
+import { selectIsAdminDebugger } from "@/lib/redux/selectors/userSelectors";
 
 const ENGINE_OPTIONS = [
-  { value: "brave", label: "Brave" },
-  { value: "google", label: "Google" },
+  { value: "brave", label: SEARCH_ENGINE_LABEL.brave },
+  { value: "google", label: SEARCH_ENGINE_LABEL.google },
   { value: "compare", label: "Both" },
 ] as const satisfies readonly { value: KeywordSearchEngine; label: string }[];
 
@@ -132,7 +134,10 @@ const DEVICE_OPTIONS = [
 ] as const satisfies readonly { value: SearchDevice; label: string }[];
 
 /** A code the short list lacks (from a shared link) still shows as itself. */
-function withCurrent(list: { value: string; label: string }[], current: string) {
+function withCurrent(
+  list: { value: string; label: string }[],
+  current: string,
+) {
   return list.some((o) => o.value === current)
     ? list
     : [{ value: current, label: current.toUpperCase() }, ...list];
@@ -146,7 +151,11 @@ function clampCount(raw: string): number {
 
 type InspectorState = Record<SearchProvider, boolean>;
 
-export function SearchLabBody({ form }: { form: UseScraperKeywordSearchFormReturn }) {
+export function SearchLabBody({
+  form,
+}: {
+  form: UseScraperKeywordSearchFormReturn;
+}) {
   const {
     keywords,
     setKeywords,
@@ -169,7 +178,10 @@ export function SearchLabBody({ form }: { form: UseScraperKeywordSearchFormRetur
   } = form;
 
   const [optionsOpen, setOptionsOpen] = useState(false);
-  const [inspect, setInspect] = useState<InspectorState>({ brave: false, google: false });
+  const [inspect, setInspect] = useState<InspectorState>({
+    brave: false,
+    google: false,
+  });
   const [captureRaw, setCaptureRaw] = useState(false);
 
   // Raw provider payloads are only asked for while someone is looking.
@@ -230,7 +242,13 @@ export function SearchLabBody({ form }: { form: UseScraperKeywordSearchFormRetur
               Options
             </Button>
             {runs.length > 0 && !isLoading && (
-              <Button variant="quiet" icon={<X />} aria-label="Clear results" title="Clear results" onClick={handleClear} />
+              <Button
+                variant="quiet"
+                icon={<X />}
+                aria-label="Clear results"
+                title="Clear results"
+                onClick={handleClear}
+              />
             )}
             <Button
               variant="primary"
@@ -336,10 +354,16 @@ function SearchLabOptions({
   captureRaw: boolean;
   onCaptureRaw: (v: boolean) => void;
 }) {
-  const { options, setOption, engine, vertical, maxResults, setMaxResults } = form;
+  // Request, raw payload and translation are debug tooling: they show provider
+  // internals (vendor names, keys we drop), so they are an admin-debugging view.
+  const isAdminDebugger = useAppSelector(selectIsAdminDebugger);
+  const { options, setOption, engine, vertical, maxResults, setMaxResults } =
+    form;
   const aiAllowed = engine !== "google" && vertical === "web";
-  const set = <K extends keyof KeywordSearchOptions>(key: K) =>
-    (value: KeywordSearchOptions[K]) => setOption(key, value);
+  const set =
+    <K extends keyof KeywordSearchOptions>(key: K) =>
+    (value: KeywordSearchOptions[K]) =>
+      setOption(key, value);
 
   return (
     <div className="flex min-w-0 flex-wrap gap-x-5 gap-y-2 rounded-md border border-border bg-card p-2">
@@ -418,17 +442,23 @@ function SearchLabOptions({
           checked={options.aiAnswer && aiAllowed}
           disabled={!aiAllowed}
           onCheckedChange={(v) => setOption("aiAnswer", v)}
-          title={aiAllowed ? "Add an AI answer" : "Not offered for this engine or type"}
+          title={
+            aiAllowed
+              ? "Add an AI answer"
+              : "Not offered for this engine or type"
+          }
         />
       </OptionCell>
-      <OptionCell label="Capture raw">
-        <Switch
-          aria-label="Capture raw response"
-          checked={captureRaw}
-          onCheckedChange={onCaptureRaw}
-          title="Keep the provider's raw response for the inspector"
-        />
-      </OptionCell>
+      {isAdminDebugger && (
+        <OptionCell label="Capture raw">
+          <Switch
+            aria-label="Capture raw response"
+            checked={captureRaw}
+            onCheckedChange={onCaptureRaw}
+            title="Keep the provider's raw response for the inspector"
+          />
+        </OptionCell>
+      )}
       <OptionCell label="Defaults">
         <Button
           variant="quiet"
@@ -456,15 +486,21 @@ function EngineColumn({
   inspectorOpen: boolean;
   onToggleInspector: () => void;
 }) {
+  // Request, raw payload and translation are debug tooling: they show provider
+  // internals (vendor names, keys we drop), so they are an admin-debugging view.
+  const isAdminDebugger = useAppSelector(selectIsAdminDebugger);
   const { outcome } = run;
   const hits = outcome ? kindToSearchItems(query, outcome.result).length : 0;
   const ignored = outcome?.ignoredOptions ?? [];
 
   return (
-    <section className="min-w-0 space-y-2" aria-label={`${ENGINE_LABEL[run.provider]} results`}>
+    <section
+      className="min-w-0 space-y-2"
+      aria-label={`${SEARCH_ENGINE_LABEL[run.provider]} results`}
+    >
       <div className="flex min-h-8 items-center gap-2 border-b border-border/60 pb-1 text-xs">
         <span className="text-sm font-semibold text-foreground">
-          {ENGINE_LABEL[run.provider]}
+          {SEARCH_ENGINE_LABEL[run.provider]}
         </span>
         {run.phase === "searching" && (
           <span className="text-muted-foreground">Searching…</span>
@@ -472,20 +508,23 @@ function EngineColumn({
         {outcome && (
           <span className="tabular-nums text-muted-foreground">
             {hits} {hits === 1 ? "result" : "results"}
-            {outcome.elapsedMs !== null && ` · ${Math.round(outcome.elapsedMs)} ms`}
+            {outcome.elapsedMs !== null &&
+              ` · ${Math.round(outcome.elapsedMs)} ms`}
           </span>
         )}
-        <Button
-          variant="quiet"
-          icon={<Braces />}
-          pressed={inspectorOpen}
-          onClick={onToggleInspector}
-          className="ml-auto"
-          meta={ignored.length > 0 ? ignored.length : undefined}
-          title="Request, raw response, translation and ignored options"
-        >
-          Inspect
-        </Button>
+        {isAdminDebugger && (
+          <Button
+            variant="quiet"
+            icon={<Braces />}
+            pressed={inspectorOpen}
+            onClick={onToggleInspector}
+            className="ml-auto"
+            meta={ignored.length > 0 ? ignored.length : undefined}
+            title="Request, raw response, translation and ignored options"
+          >
+            Inspect
+          </Button>
+        )}
       </div>
 
       {ignored.length > 0 && (
@@ -498,7 +537,7 @@ function EngineColumn({
         </div>
       )}
 
-      {inspectorOpen && <EngineInspector run={run} />}
+      {isAdminDebugger && inspectorOpen && <EngineInspector run={run} />}
 
       {run.phase === "error" && (
         <ErrorNotice
@@ -508,11 +547,16 @@ function EngineColumn({
         />
       )}
 
-      {run.phase === "searching" && !outcome && <SearchResultsSkeleton query={query} />}
+      {run.phase === "searching" && !outcome && (
+        <SearchResultsSkeleton query={query} />
+      )}
 
       {outcome && (
         <>
-          <KindInstanceRender kind="web_search_results" value={outcome.result} />
+          <KindInstanceRender
+            kind="web_search_results"
+            value={outcome.result}
+          />
           {hits === 0 && run.phase === "done" && (
             <p className="py-6 text-center text-sm text-muted-foreground">
               No results for this result type.
@@ -531,43 +575,73 @@ function EngineInspector({ run }: { run: KeywordEngineRun }) {
   const translation = outcome?.translation;
 
   const empty = (line: string) => (
-    <p className="px-2 py-6 text-center text-xs text-muted-foreground">{line}</p>
+    <p className="px-2 py-6 text-center text-xs text-muted-foreground">
+      {line}
+    </p>
   );
 
   let body: React.ReactNode;
   if (!outcome) {
-    body = empty(run.phase === "searching" ? "Waiting for the response…" : "No response to inspect.");
+    body = empty(
+      run.phase === "searching"
+        ? "Waiting for the response…"
+        : "No response to inspect.",
+    );
   } else if (tab === "request") {
-    body = outcome.request
-      ? <JsonInspector showSource data={outcome.request} label="Request sent" className="h-72" />
-      : empty("The server did not report the request.");
+    body = outcome.request ? (
+      <JsonInspector
+        showSource
+        data={outcome.request}
+        label="Request sent"
+        className="h-72"
+      />
+    ) : (
+      empty("The server did not report the request.")
+    );
   } else if (tab === "raw") {
-    body = outcome.raw
-      ? <JsonInspector showSource data={outcome.raw} label="Raw response" className="h-96" />
-      : empty(run.includedRaw ? "The server returned no raw response." : "Not captured. Search again with the inspector open.");
+    body = outcome.raw ? (
+      <JsonInspector
+        showSource
+        data={outcome.raw}
+        label="Raw response"
+        className="h-96"
+      />
+    ) : (
+      empty(
+        run.includedRaw
+          ? "The server returned no raw response."
+          : "Not captured. Search again with the inspector open.",
+      )
+    );
   } else if (tab === "translation") {
-    body = translation
-      ? (
-          <div className="space-y-2 p-2">
-            <KeyList title="Unknown keys" sections={translation.unknownSections} />
-            <DropList drops={translation.dropped} />
-            <JsonInspector showSource data={translation.raw} label="Translation report" className="h-56" />
-          </div>
-        )
-      : empty("No translation report.");
+    body = translation ? (
+      <div className="space-y-2 p-2">
+        <KeyList title="Unknown keys" sections={translation.unknownSections} />
+        <DropList drops={translation.dropped} />
+        <JsonInspector
+          showSource
+          data={translation.raw}
+          label="Translation report"
+          className="h-56"
+        />
+      </div>
+    ) : (
+      empty("No translation report.")
+    );
   } else {
-    body = ignored.length > 0
-      ? (
-          <ul className="space-y-1 p-2 text-xs text-foreground">
-            {ignored.map((line, i) => (
-              <li key={i} className="flex gap-1.5">
-                <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-warning" />
-                {line}
-              </li>
-            ))}
-          </ul>
-        )
-      : empty("Every option was applied.");
+    body =
+      ignored.length > 0 ? (
+        <ul className="space-y-1 p-2 text-xs text-foreground">
+          {ignored.map((line, i) => (
+            <li key={i} className="flex gap-1.5">
+              <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-warning" />
+              {line}
+            </li>
+          ))}
+        </ul>
+      ) : (
+        empty("Every option was applied.")
+      );
   }
 
   return (
@@ -584,10 +658,15 @@ function EngineInspector({ run }: { run: KeywordEngineRun }) {
               value: "translation",
               label: "Translation",
               count: translation
-                ? translation.unknownSections.length + translation.dropped.length
+                ? translation.unknownSections.length +
+                  translation.dropped.length
                 : null,
             },
-            { value: "ignored", label: "Ignored", count: ignored.length || null },
+            {
+              value: "ignored",
+              label: "Ignored",
+              count: ignored.length || null,
+            },
           ]}
         />
       </div>
@@ -606,7 +685,8 @@ function KeyList({
   return (
     <div className="text-xs">
       <div className="mb-0.5 font-medium text-foreground">
-        {title} <span className="text-muted-foreground">({sections.length})</span>
+        {title}{" "}
+        <span className="text-muted-foreground">({sections.length})</span>
       </div>
       {sections.length === 0 ? (
         <div className="text-muted-foreground">None</div>
