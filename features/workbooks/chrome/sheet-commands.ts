@@ -740,7 +740,7 @@ export function buildSheetToolbar(h: SheetChromeHost): EditorToolbarItem[] {
     { kind: "menu", id: "tb.font", label: "Font", text: font, widthClass: "w-[7rem]", items: fontFamilyEntries(h), disabled: ro },
     { kind: "separator", id: "tb.s3" },
     { kind: "button", id: "tb.size-down", label: "Decrease font size", icon: Minus, shortcut: { key: ",", mod: true, shift: true }, run: run(h, "sheet.command.set-range-font-decrease"), disabled: ro },
-    { kind: "menu", id: "tb.size", label: "Font size", text: String(size), widthClass: "w-[2.75rem]", items: fontSizeEntries(h), disabled: ro },
+    { kind: "menu", id: "tb.size", label: "Font size", text: String(size), widthClass: "w-[3.5rem]", items: fontSizeEntries(h), disabled: ro },
     { kind: "button", id: "tb.size-up", label: "Increase font size", icon: Plus, shortcut: { key: ".", mod: true, shift: true }, run: run(h, "sheet.command.set-range-font-increase"), disabled: ro },
     { kind: "separator", id: "tb.s4" },
     { kind: "button", id: "tb.bold", label: "Bold", icon: Bold, shortcut: { key: "b", mod: true }, active: style?.bl === 1, run: run(h, "sheet.command.set-range-bold"), disabled: ro },

@@ -2,6 +2,7 @@
  * Every featured template is real: the content a person sees, rendered into
  * its thumbnail; the add-ons a sheet promises are actually in its snapshot.
  */
+import { filterHeaderWidth } from "../seeds/workbook-builder";
 import { workbookSeeds } from "../seeds/workbook-templates";
 import { documentSeeds } from "../seeds/document-templates";
 import { presentationSeeds } from "../seeds/presentation-templates";
@@ -14,7 +15,21 @@ const docs = documentSeeds();
 
 type Wb = { sheetOrder: string[]; sheets: Record<string, { cellData: Record<number, Record<number, { v?: unknown; f?: string }>> }>; resources: Array<{ name: string; data: string }> };
 
+type WbCols = { sheets: Record<string, { cellData: Record<number, Record<number, { v?: unknown }>>; columnData: Record<number, { w: number }> }>; sheetOrder: string[] };
+
 describe("featured templates", () => {
+  it.each(sheets.map((t) => [t.name, t] as const))("sheet %s: no filtered header is narrower than its words plus the filter button", (_n, t) => {
+    const wb = t.snapshot as unknown as WbCols & { resources: Array<{ name: string; data: string }> };
+    const id = wb.sheetOrder[0];
+    const sheet = wb.sheets[id];
+    const filter = JSON.parse(wb.resources.find((r) => r.name === "SHEET_FILTER_PLUGIN")!.data)[id];
+    if (!filter) return; // a sheet without a filter has no button to make room for
+    const headerRow = sheet.cellData[filter.ref.startRow];
+    Object.entries(headerRow).forEach(([col, c]) => {
+      if (typeof c.v === "string") expect(sheet.columnData[Number(col)].w).toBeGreaterThanOrEqual(filterHeaderWidth(c.v));
+    });
+  });
+
   it("12 sheets and 12 docs, unique keys, known categories, no filler", () => {
     expect(sheets).toHaveLength(12);
     expect(docs).toHaveLength(12);

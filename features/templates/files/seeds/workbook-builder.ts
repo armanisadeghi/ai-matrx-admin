@@ -29,6 +29,11 @@ export type Style = {
 export type Formula = { f: string; v: number | string };
 export type CellIn = string | number | null | undefined | Formula | { v: string | number; s: Style } | { f: string; v: number | string; s: Style };
 
+/** The narrowest a filtered header column can be: bold header text (~9px a character) + the filter button. */
+export function filterHeaderWidth(header: string): number {
+  return Math.ceil(header.length * 9 + 44);
+}
+
 export type Column = {
   header: string;
   width: number;
@@ -223,7 +228,11 @@ export function buildWorkbook(name: string, sheets: SheetSpec[]): Record<string,
       };
     }
     const columnData: Record<number, { w: number }> = {};
-    spec.columns.forEach((col, c) => (columnData[c] = { w: col.width }));
+    // A header carrying the filter button needs room for its words AND the button (Univer draws the
+    // button over the cell's right edge): never narrower than the header text + 44px.
+    spec.columns.forEach(
+      (col, c) => (columnData[c] = { w: spec.filter === false ? col.width : Math.max(col.width, filterHeaderWidth(col.header)) }),
+    );
     const rowData: Record<number, { h: number }> = {};
     if (spec.title) rowData[0] = { h: 40 };
     rowData[hr] = { h: 30 };

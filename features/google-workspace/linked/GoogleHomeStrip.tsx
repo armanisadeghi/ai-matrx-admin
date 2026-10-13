@@ -15,6 +15,7 @@ import { ExternalLink, Loader2 } from "lucide-react";
 import { Button, Chip, PromoBanner } from "@ai-matrx/design-system/controls";
 
 import { errorSentence, toast } from "@/lib/toast";
+import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import { approvalQueueHref, SENT_FOR_APPROVAL_MESSAGE } from "@/features/google-workspace/service";
 
 import { GoogleDocsMark, GoogleSheetsMark } from "./marks";
@@ -56,7 +57,7 @@ export interface UnlinkedItem {
 // words/actions (scrolling sideways when many) — the banner is two rows at every width, so the
 // placeholder and the real banner are the same height and the list below never jumps.
 const STRIP_CLASS =
-  "[&_.matrx-control-promo-text]:min-w-[17rem] [&_.matrx-control-promo-chips]:order-last [&_.matrx-control-promo-chips]:basis-full [&_.matrx-control-promo-chips]:flex-nowrap [&_.matrx-control-promo-chips]:overflow-x-auto [&_.matrx-control-promo-chips]:scrollbar-none";
+  "[&_.matrx-control-promo-text]:min-w-[17rem] [&_.matrx-control-promo-chips]:order-last [&_.matrx-control-promo-chips]:basis-full [&_.matrx-control-promo-chips]:flex-nowrap [&_.matrx-control-promo-chips]:overflow-x-auto [&_.matrx-control-promo-chips]:scrollbar-none [&_.matrx-control-promo-chips>*]:shrink-0";
 
 const LINKED_SHOWN = 3;
 const UNLINKED_SHOWN = 2;
@@ -65,22 +66,31 @@ function SendChip({ kind, item, onSent }: { kind: "workbook" | "document"; item:
   const g = useGoogleLink(savedRecordGoogleAdapter(kind, item.id, item.name), true);
   const busy = g.busy === "create";
   if (g.link) return null; // just sent: it shows among the linked
+  const Mark = g.Mark;
+  // Sending makes a NEW file in the person's Google Drive, so the click states that first.
+  const send = async () => {
+    const ok = await confirm({
+      title: `Send “${item.name}” to ${g.appName}?`,
+      description: `This creates a new file in your Google Drive and links it here.`,
+      confirmLabel: `Send to ${g.appName}`,
+    });
+    if (!ok) return;
+    await Promise.resolve(g.create());
+    onSent?.();
+  };
   return (
     <Chip
       variant="add"
-      label={item.name}
+      label={`Send “${item.name}” to ${g.appName}`}
       title={`Send to ${g.appName}`}
-      // The add chip draws its own "+"; a spinner replaces it only while sending.
-      icon={busy ? <Loader2 className="animate-spin" /> : undefined}
+      icon={busy ? <Loader2 className="animate-spin" /> : <Mark />}
       asChild
     >
       <button
         type="button"
         disabled={busy || !g.ready}
         aria-label={`Send ${item.name} to ${g.appName}`}
-        onClick={() => {
-          void Promise.resolve(g.create()).then(() => onSent?.());
-        }}
+        onClick={() => void send()}
       />
     </Chip>
   );
