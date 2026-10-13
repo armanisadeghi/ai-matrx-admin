@@ -215,7 +215,7 @@ export function StyleGuidePage() {
         record={{ name: "Style guide" }}
       />
       <div className="h-full min-h-0 overflow-y-auto" data-matrx-page-scroll>
-        <div className="mx-auto grid max-w-6xl gap-10 px-6 py-8 lg:grid-cols-[11rem_minmax(0,1fr)]">
+        <div className="mx-auto grid max-w-6xl gap-10 px-[var(--matrx-page-gutter)] pt-[var(--matrx-page-top)] lg:grid-cols-[11rem_minmax(0,1fr)]">
           <nav aria-label="Sections" className="hidden lg:block">
             <ol className="sticky top-8 flex flex-col gap-1">
               {SECTIONS.map((s) => (
@@ -230,7 +230,7 @@ export function StyleGuidePage() {
               ))}
             </ol>
           </nav>
-          <main className="flex min-w-0 flex-col gap-14">
+          <main className="flex min-w-0 flex-col gap-[var(--matrx-page-block-gap)]">
             <Basics />
             <Examples />
             <TypeStyles />
