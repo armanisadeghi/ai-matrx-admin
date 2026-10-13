@@ -71,6 +71,7 @@ import { canvasContentHasSource } from "@/features/canvas/core/canvasSource";
 import { isMaterializedArtifactId } from "@/features/canvas/artifact-types/artifactId";
 import { artifactPrinterFor } from "@/features/canvas/output/canvasOutputPorts";
 import { artifactOutputDef } from "@/features/canvas/artifact-types/artifact-output";
+import { loadArtifactPrinters } from "@/features/canvas/artifact-types/loadArtifactPrinters";
 import { iframeBlockUrl } from "@/features/canvas/output/framePrinters";
 import { artifactKey, contentOf, readArtifactItemData, type ArtifactItemData } from "./artifactItem";
 import { openArtifactPanel, toggleArtifactPanel, useArtifactPanel } from "./artifactPanels";
@@ -128,7 +129,10 @@ const NOT_RESTORABLE: ReadonlySet<CanvasContentType> = new Set([
   "sandbox",
 ]);
 
-const loadView = () => import("./ArtifactCanvasView");
+// The body and the print adapters arrive together: a canvas Print opens its window inside the
+// click, so its printer must already be registered when the tab can show a menu.
+const loadView = () =>
+  Promise.all([import("./ArtifactCanvasView"), loadArtifactPrinters().catch(() => undefined)]).then(([view]) => view);
 
 function ArtifactHeaderAction({ item, canvas }: CanvasKindProps) {
   const isAdmin = useAppSelector(selectIsAdminDebugger);

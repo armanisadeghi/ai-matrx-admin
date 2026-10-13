@@ -17,9 +17,12 @@ import { registerArtifactCanvasKinds } from "./artifactKinds";
 import { registerFeatureCanvasKinds } from "./featureCanvasKinds";
 import { registerToolCanvasKinds } from "./toolKinds";
 import { CANVAS_OUTPUT_PORTS } from "@/features/canvas/output/canvasOutputPorts";
+import { registerIdleTask } from "@ai-matrx/kit/idle-scheduler";
 // Every artifact type's print adapter joins the one block-printer registry (chat block, canvas tab
-// and message Print share it); the page capture port wires Full Print's frame pre-pass.
-import "@/features/canvas/artifact-types/artifact-printers";
+// and message Print share it) through ONE async edge — never a static import here: this provider
+// is in every route's first load, and the printers carry KaTeX (loadArtifactPrinters.ts).
+import { loadArtifactPrinters } from "@/features/canvas/artifact-types/loadArtifactPrinters";
+// The page capture port wires Full Print's frame pre-pass.
 import "@/features/canvas/output/capturePort";
 // The server capture engine (L3) behind the page capture port.
 import "@/features/html-pages/capture/serverPageCaptureEngine";
@@ -80,6 +83,15 @@ export function CanvasHostProvider({ children }: { children: ReactNode }) {
   const store = useStore<RootState>();
   const [binding] = useState(() => bindCanvasToReduxStore(store, (root) => root.canvasHost));
   const regionWidth = useShellRegionWidth();
+  // The print adapters load in the background once the page is idle (a message's Print looks
+  // them up after its own awaits); an artifact tab's body also waits for them before it renders.
+  useEffect(
+    () =>
+      registerIdleTask("canvas:artifact-printers", 4, () =>
+        loadArtifactPrinters().catch(() => undefined),
+      ),
+    [],
+  );
   return (
     <CanvasProvider store={binding} onError={onCanvasError} regionWidth={regionWidth} output={CANVAS_OUTPUT_PORTS}>
       {children}
