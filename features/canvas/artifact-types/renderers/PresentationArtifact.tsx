@@ -61,6 +61,7 @@ export default function PresentationArtifact({
       <Slideshow
         slides={slides}
         theme={theme}
+        deckTitle={typeof payload?.title === "string" ? payload.title : payload?.presentation?.title}
         taskId={artifactDedupKey(taskId, artifactId)}
         artifactId={artifactId}
         conversationId={conversationId}

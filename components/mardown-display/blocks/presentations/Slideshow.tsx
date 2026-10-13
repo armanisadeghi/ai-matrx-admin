@@ -52,6 +52,8 @@ const Slideshow = (
     conversationId?: string;
     messageId?: string;
     blockIndex?: number;
+    /** The deck's own title; the saved presentation keeps it (falls back to the first slide's title). */
+    deckTitle?: string;
     /** Seed the current slide from persisted state (optional). */
     initialState?: SlideshowState;
     /** Called whenever the user changes interaction state (optional). */
@@ -260,12 +262,12 @@ const Slideshow = (
               <SaveToPresentationsButton
                 deck={{
                   __kind: "presentation_deck",
-                  title: slides[0]?.title,
+                  title: presentationData.deckTitle || slides[0]?.title,
                   slides,
                   // The look the viewer picked here is the look they save.
                   theme: pickedPreset ? { ...(theme ?? {}), preset: pickedPreset } : theme,
                 }}
-                title={slides[0]?.title}
+                title={presentationData.deckTitle || slides[0]?.title}
               />
 
               <Suspense fallback={<div className="h-11 w-11 sm:h-7 sm:w-7" />}>

@@ -146,9 +146,10 @@ export interface FileHomeState<Row> {
   view: "cards" | "table";
 }
 
-/** A one-button group paints the solid group plate on its own (a white square in dark): a lone sort button is a plain tap target. */
+/** A group plate paints a solid square behind its buttons (white on the Google Look's grey): the view and sort buttons are plain tap targets; only the "Open a file" row keeps the group. */
 function SortGroup({ single, children }: { single: boolean; children: ReactNode }) {
-  return single ? <>{children}</> : <TapTargetButtonGroup surface="solid">{children}</TapTargetButtonGroup>;
+  // The wrapper has no gap: tap buttons space themselves (a parent's gap is the dev-mode "TAP BUTTON MISUSE" outline).
+  return single ? <div className="flex shrink-0 items-center">{children}</div> : <TapTargetButtonGroup surface="solid">{children}</TapTargetButtonGroup>;
 }
 
 export function FileHome<Row extends { id: string; user_id: string }>(props: FileHomeProps<Row>) {
@@ -271,16 +272,16 @@ export function FileHome<Row extends { id: string; user_id: string }>(props: Fil
                 />
               </>
             )}
-            <SortGroup single={(isPhone || office) && !props.onPickFile}>
+            <SortGroup single={!props.onPickFile}>
               {isPhone || office ? null : view === "cards" ? (
-                <ListTapButton variant="group" ariaLabel="List view" tooltip="List view" onClick={() => setPrefs({ view: "table" })} />
+                <ListTapButton variant={props.onPickFile ? "group" : "transparent"} ariaLabel="List view" tooltip="List view" onClick={() => setPrefs({ view: "table" })} />
               ) : (
-                <LayoutGridTapButton variant="group" ariaLabel="Grid view" tooltip="Grid view" onClick={() => setPrefs({ view: "cards" })} />
+                <LayoutGridTapButton variant={props.onPickFile ? "group" : "transparent"} ariaLabel="Grid view" tooltip="Grid view" onClick={() => setPrefs({ view: "cards" })} />
               )}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <ArrowDownUpTapButton
-                    variant={(isPhone || office) && !props.onPickFile ? undefined : "group"}
+                    variant={props.onPickFile ? "group" : "transparent"}
                     ariaLabel={`Sort: ${HOME_SORT_OPTIONS.find((o) => o.value === sort)?.label ?? ""}`}
                     tooltip="Sort options"
                   />

@@ -23,7 +23,8 @@ const MARKED_OPTIONS: readonly SegmentOption<OfficeLook>[] = OFFICE_LOOK_OPTIONS
   label: (
     <span className="flex items-center gap-1.5">
       {MARKS[o.value]}
-      {o.label}
+      {/* A phone has no room for both names beside the search box: the marks carry it (aria-label names each side). */}
+      <span className="hidden sm:inline">{o.label}</span>
     </span>
   ),
 }));
