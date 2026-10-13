@@ -56,6 +56,7 @@ export const ADMIN_LANE_PATH_PREFIXES = [
   "/api/admin",
   "/api/sms/admin",
   "/agents/admin",
+  "/applets/admin",
   "/camera/admin",
   "/cms/admin",
   "/commerce/intake/admin",

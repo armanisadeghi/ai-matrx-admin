@@ -15,7 +15,7 @@
 import { Fragment, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useAppDispatch, useAppSelector, useAppStore } from "@/lib/redux/hooks";
-import { selectIsSuperAdmin } from "@/lib/redux/slices/userSlice";
+import { selectIsSuperAdminDebugger } from "@/lib/redux/slices/userSlice";
 import { selectIsCreator } from "@/lib/redux/selectors/userSelectors";
 import { getStaticEntryByOverlayId } from "@/features/window-panels/registry/windowRegistryMetadata";
 import { MIGRATED_NAV_PANEL_TILE_IDS } from "@/features/shell/constants/nav-window-panels";
@@ -51,7 +51,10 @@ export default function ToolsGrid({
   const dispatch = useAppDispatch();
   const store = useAppStore();
   const router = useRouter();
-  const isAdmin = useAppSelector(selectIsSuperAdmin);
+  // The Admin and Dupes tabs are admin DEBUG tooling launched from the sidebar
+  // on every page — the same gate the tab host (SidebarWindowToggle) uses.
+  // The admin-power gate is false on user pages and emptied these tabs.
+  const isAdmin = useAppSelector(selectIsSuperAdminDebugger);
   const isCreator = useAppSelector(selectIsCreator);
 
   // Build the tile-click handler once. Each tile's own click closure binds
