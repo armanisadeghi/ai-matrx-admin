@@ -142,16 +142,16 @@ function Highlighted({ text, query }: { text: string; query: string }): ReactNod
 interface MenuSearchPaletteProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  initialQuery?: string;
+  query: string;
+  onQueryChange: (query: string) => void;
 }
 
-export default function MenuSearchPalette({ open, onOpenChange, initialQuery = "" }: MenuSearchPaletteProps) {
+export default function MenuSearchPalette({ open, onOpenChange, query, onQueryChange }: MenuSearchPaletteProps) {
   const router = useRouter();
   const navActions = useNavActions();
   const navPanelActions = useNavPanelActions();
   const isAuthenticated = useAppSelector(selectHasAccount);
   const isAdmin = useAppSelector(selectIsAdminPerson);
-  const [query, setQuery] = useState(initialQuery);
   const [selected, setSelected] = useState("");
   const [recentIds] = useState(readRecent);
   // ⌘/Ctrl held on Enter or click: open the destination in a new tab.
@@ -237,7 +237,7 @@ export default function MenuSearchPalette({ open, onOpenChange, initialQuery = "
           autoFocus
           value={query}
           onValueChange={(next) => {
-            setQuery(next);
+            onQueryChange(next);
             setSelected("");
           }}
           placeholder="Search the menu…"
