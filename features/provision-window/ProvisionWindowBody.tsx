@@ -19,6 +19,7 @@ import {
   snapshotJson,
   snapshotMarkdown,
   valueText,
+  valueSummary,
   type ExpectedOutput,
   type ProvisionSnapshot,
   type ProvisionValue,
@@ -40,28 +41,23 @@ function ValueRow({ v, copied, copy }: { v: ProvisionValue; copied: string | nul
   const [open, setOpen] = useState(false);
   const text = valueText(v.value);
   const help = v.present ? v.source : `${v.missing_reason ?? "Not available here"} · ${v.source}`;
+  const structured = v.present && v.value !== null && typeof v.value === "object";
   return (
-    <div className="border-b border-border/60 py-1.5" data-testid={`provision-value-${v.name}`}>
-      {/* Line 1: the label (help on its info icon), the code name faint on the right. */}
-      <div className="flex items-center gap-1.5 text-xs">
-        <button
-          type="button"
-          className="flex min-w-0 items-center gap-1.5 text-left disabled:cursor-default"
-          disabled={!v.present}
-          onClick={() => setOpen((o) => !o)}
-          aria-expanded={open}
-        >
-          {v.present ? (
-            open ? <ChevronDown className="size-3.5 shrink-0" /> : <ChevronRight className="size-3.5 shrink-0" />
-          ) : (
-            <span className="size-3.5 shrink-0" />
-          )}
-          <span className="truncate font-medium text-muted-foreground">{v.label}</span>
-        </button>
+    // Two columns: the expand arrow in its own 16px margin, then label and value on ONE left edge.
+    <div className="grid grid-cols-[1rem_minmax(0,1fr)] gap-x-1 border-b border-border/60 py-2" data-testid={`provision-value-${v.name}`}>
+      <div className="row-span-2 pt-px">
+        {v.present ? (
+          <button type="button" onClick={() => setOpen((o) => !o)} aria-expanded={open} aria-label={open ? `Collapse ${v.label}` : `Expand ${v.label}`} className="text-muted-foreground hover:text-foreground">
+            {open ? <ChevronDown className="size-3.5" /> : <ChevronRight className="size-3.5" />}
+          </button>
+        ) : null}
+      </div>
+      <div className="flex min-w-0 items-center gap-1.5 text-xs">
+        <span className="truncate font-medium text-foreground">{v.label}</span>
         <span title={help} aria-label={help} className="shrink-0 cursor-help text-muted-foreground/60 hover:text-muted-foreground">
           <Info className="size-3" />
         </span>
-        <code className="ml-auto truncate text-[10px] text-muted-foreground/60">{v.name}</code>
+        <code className="ml-auto truncate text-[10px] text-muted-foreground/70">{v.name}</code>
         {v.present ? (
           <>
             <span className="shrink-0 tabular-nums text-[11px] text-muted-foreground/70">
@@ -79,20 +75,19 @@ function ValueRow({ v, copied, copy }: { v: ProvisionValue; copied: string | nul
           </>
         ) : null}
       </div>
-      {/* Line 2: the value — the strongest thing on the row, styled as data. */}
-      {!v.present ? (
-        <div className="ml-5 mt-0.5 text-xs italic text-muted-foreground">Missing</div>
-      ) : open ? (
-        <JsonInspector data={v.value} />
-      ) : (
-        <button
-          type="button"
-          onClick={() => setOpen(true)}
-          className="ml-5 mt-0.5 block w-[calc(100%-1.25rem)] truncate rounded bg-muted/60 px-1.5 py-0.5 text-left font-mono text-xs text-foreground hover:bg-muted"
-        >
-          {text.slice(0, 300)}
-        </button>
-      )}
+      <div className="mt-0.5 min-w-0">
+        {!v.present ? (
+          <span className="inline-flex items-center rounded border border-border px-1.5 text-[10px] font-medium leading-4 text-muted-foreground">
+            Not provided
+          </span>
+        ) : open ? (
+          <JsonInspector data={v.value} />
+        ) : (
+          <button type="button" onClick={() => setOpen(true)} className="block max-w-full truncate text-left text-[13px] text-foreground">
+            {structured ? valueSummary(v.value) : text}
+          </button>
+        )}
+      </div>
     </div>
   );
 }
@@ -132,10 +127,10 @@ function ExpectedOutputSection({
           ) : null}
         </div>
       </div>
-      {expected.note ? <div className="pl-5 text-[11px] text-muted-foreground">{expected.note}</div> : null}
+      {expected.note ? <div className="mb-2 pl-5 text-[11px] text-muted-foreground">{expected.note}</div> : null}
       {open && example ? (
         // The expected output IS a kind's source, shown on purpose (kind-leak sentinel exemption).
-        <div data-kind-source="explicit">
+        <div data-kind-source="explicit" className="pl-5">
           <JsonInspector data={expected.example} />
         </div>
       ) : null}
