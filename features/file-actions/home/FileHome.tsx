@@ -145,6 +145,11 @@ export interface FileHomeState<Row> {
   view: "cards" | "table";
 }
 
+/** A one-button group paints the solid group plate on its own (a white square in dark): a lone sort button is a plain tap target. */
+function SortGroup({ single, children }: { single: boolean; children: ReactNode }) {
+  return single ? <>{children}</> : <TapTargetButtonGroup surface="solid">{children}</TapTargetButtonGroup>;
+}
+
 export function FileHome<Row extends { id: string; user_id: string }>(props: FileHomeProps<Row>) {
   const { kind, adapter, rows, toItem, loading, error, scope, onScopeChange, reload } = props;
   const router = useRouter();
@@ -265,7 +270,7 @@ export function FileHome<Row extends { id: string; user_id: string }>(props: Fil
                 />
               </>
             )}
-            <TapTargetButtonGroup surface="solid">
+            <SortGroup single={(isPhone || office) && !props.onPickFile}>
               {isPhone || office ? null : view === "cards" ? (
                 <ListTapButton variant="group" ariaLabel="List view" tooltip="List view" onClick={() => setPrefs({ view: "table" })} />
               ) : (
@@ -274,7 +279,7 @@ export function FileHome<Row extends { id: string; user_id: string }>(props: Fil
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <ArrowDownUpTapButton
-                    variant="group"
+                    variant={(isPhone || office) && !props.onPickFile ? undefined : "group"}
                     ariaLabel={`Sort: ${HOME_SORT_OPTIONS.find((o) => o.value === sort)?.label ?? ""}`}
                     tooltip="Sort options"
                   />
@@ -297,7 +302,7 @@ export function FileHome<Row extends { id: string; user_id: string }>(props: Fil
                   onClick={props.onPickFile}
                 />
               ) : null}
-            </TapTargetButtonGroup>
+            </SortGroup>
           </div>
           {dialogs}
 
