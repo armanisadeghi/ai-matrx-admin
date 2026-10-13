@@ -24,6 +24,8 @@ overrides:
 
 packageExtensionsChecksum: sha256-aTdjZRZyHyl0/0riXzUQV8jAsI+fW6DatNlhGVIOmFA=
 
+pnpmfileChecksum: sha256-LXsAGaTbQYPwIaH9Eri/UxhbnIk+A63YSu7mkxo/N5w=
+
 patchedDependencies:
   lossless-json@4.3.1:
     hash: ba30e301793a5b0d08ed4ca0cc34822eaaa724b41800c05f90003e60281af8de
