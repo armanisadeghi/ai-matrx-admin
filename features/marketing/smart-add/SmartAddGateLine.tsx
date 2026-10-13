@@ -2,7 +2,7 @@
 
 /**
  * Smart Add — one short line when the brand's homepage is only a door to its real site
- * ("Their site splits into 3 areas" + the area names). The detection, its signals and the
+ * ("This site splits into 3 areas" + the area names). The detection, its signals and the
  * per-branch findings are on the page step's output (aidream brand_identify_gate.py) and reach
  * the admin Builder panel through the round's steps; here the customer sees just the areas.
  */
@@ -10,8 +10,8 @@
 import type { RoundView, SiteGate } from "./SmartAddRound";
 
 const LINE: Partial<Record<SiteGate["type"], string>> = {
-  division_chooser: "Their site splits into",
-  language_gate: "Their site comes in",
+  division_chooser: "This site splits into",
+  language_gate: "This site comes in",
 };
 
 export function SmartAddGateLine({ views }: { views: RoundView[] }) {

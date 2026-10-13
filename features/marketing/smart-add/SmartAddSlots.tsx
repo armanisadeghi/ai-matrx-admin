@@ -317,7 +317,7 @@ function Row({
 }) {
   return (
     <div
-      className={`flex gap-3 px-4 animate-in fade-in duration-300 ${compact ? "py-1" : "py-2"} ${top ? "items-start" : "items-center"} ${
+      className={`flex gap-1.5 px-4 animate-in fade-in duration-300 ${compact ? "py-1" : "py-2"} ${top ? "items-start" : "items-center"} ${
         decision === "no" ? "opacity-40" : ""
       }`}
       data-testid="smart-add-item"

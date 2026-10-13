@@ -320,6 +320,7 @@ export function RelationPicker({
   onCustom,
   emptyLabel = "Related…",
   className = "min-w-36 flex-1",
+  disabled,
 }: {
   kinds: BrandRelationKind[];
   relation: Relation | null;
@@ -327,6 +328,7 @@ export function RelationPicker({
   onCustom: (label: string) => Promise<void>;
   emptyLabel?: string;
   className?: string;
+  disabled?: boolean;
 }) {
   const [custom, setCustom] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -397,6 +399,7 @@ export function RelationPicker({
       options={options}
       onValueChange={pick}
       className={className}
+      disabled={disabled}
     />
   );
 }
@@ -430,9 +433,7 @@ export function RelatedChoice({
       >
         Related
       </Button>
-      {on ? (
-        <RelationPicker kinds={kinds} relation={relation} onRelate={onRelate} onCustom={onCustom} emptyLabel="Type…" className="w-32" />
-      ) : null}
+      <RelationPicker kinds={kinds} relation={relation} onRelate={onRelate} onCustom={onCustom} emptyLabel="Type…" className="w-44" disabled={!on || locked} />
     </>
   );
 }
