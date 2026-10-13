@@ -18,7 +18,7 @@ import {
   toolRendererRegistry,
 } from "@ai-matrx/chat/tool-call-visualization/registry/registry";
 import type { ToolRenderer } from "@ai-matrx/chat/tool-call-visualization/types";
-import { answerRenderer } from "./RecordsAnswerView";
+import { answerRenderer } from "./answerRenderer";
 
 /** The tools whose answers `answerRenderer` reads (`readRecordsAnswer`). */
 export const ANSWER_READ_FOR = ["records", "table"] as const;

@@ -16,6 +16,10 @@
  *
  * A refusal is the tool's own sentence; the shell's approval card owns a held write; the shell's
  * shared diff owns a single-record change that carries a before → after receipt.
+ *
+ * Loaded lazily: `./answerRenderer` (light, registered at shell load) reads the answer and draws
+ * `RecordsAnswerBody` / `RefusalLine` through `features/chat-tool-renderers/toolRendererImpls`,
+ * the tool-renderer registry's ONE impl module. Never import this file from a registration.
  */
 
 import { useMemo } from "react";
@@ -36,10 +40,7 @@ import { useAppRecordsConfig } from "@/features/data-tables/records-ui-host/reco
 import { useOpenSaveToTable } from "@/features/overlays/openers/saveToTable";
 import { useTableKind } from "@/components/mardown-display/blocks/result-kinds/use-table-record";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
-import type { ToolRendererProps } from "@ai-matrx/chat/tool-call-visualization/types";
-import { resultAsObject } from "@ai-matrx/chat/tool-call-visualization/renderers/_shared";
 import {
-  readRecordsAnswer,
   tableHref,
   writeSentence,
   type AnswerRow,
@@ -224,22 +225,6 @@ export function RefusalLine({ message }: { message: string | null }) {
       <ErrorAlchemyMenu error={message} />
     </div>
   );
-}
-
-/**
- * The renderer factory: draws what it reads, and hands every other answer to `Fallback` (the
- * tool's existing renderer), so registering it never takes a view away.
- */
-export function answerRenderer(Fallback: React.ComponentType<ToolRendererProps>) {
-  function DataToolAnswer(props: ToolRendererProps) {
-    const { entry } = props;
-    if (entry.status === "error") return <RefusalLine message={entry.errorMessage} />;
-    const answer = readRecordsAnswer(resultAsObject(entry));
-    if (!answer) return <Fallback {...props} />;
-    return <RecordsAnswerBody answer={answer} />;
-  }
-  DataToolAnswer.displayName = `DataToolAnswer(${Fallback.displayName ?? Fallback.name ?? "Renderer"})`;
-  return DataToolAnswer;
 }
 
 /** The records provider for the table's organization, from the app's one config. */
