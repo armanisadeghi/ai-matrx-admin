@@ -11,7 +11,7 @@
  */
 
 import { useState } from "react";
-import { Check, Star, Tag, X } from "lucide-react";
+import { Check, ImageOff, Maximize2, Moon, Star, Sun, Tag, X } from "lucide-react";
 import { Button } from "@ai-matrx/design-system/controls";
 import { formatCount } from "@ai-matrx/kit/format";
 import { profileAvatarDoor } from "@/features/marketing/social/server";
@@ -20,6 +20,7 @@ import { SocialImage } from "@/features/marketing/social/components/SocialImage"
 import { websiteHost, type Decision, type EvidenceField, type EvidenceItem } from "./evidence";
 import { CustomAdd } from "./SmartAddExtras";
 import { Shared } from "./stage/Shared";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 
 interface Choice {
   decision: Decision;
@@ -46,23 +47,32 @@ const ABOUT_CHOICES: Choice[] = [
   { decision: "no", label: "Not us" },
 ];
 
-/** Plain words for where a finding was read. */
+/** Plain words for where a finding was read. Internal names never reach the screen. */
 const WHERE_LABEL: Record<string, string> = {
-  "og:site_name": "site name",
   "og:image": "share image",
-  "schema.org": "structured data",
-  "schema.org sameAs": "structured data",
-  "schema.org alternateName": "structured data",
-  "meta description": "page description",
   "homepage link": "link on the site",
   "homepage text": "text on the site",
   "header/nav image": "header image",
   "the address itself": "what you typed",
 };
+const KIND_LABEL: Record<string, string> = {
+  website: "website",
+  social_profile: "profile",
+  link_in_bio: "link in bio",
+  typed: "typed by you",
+  web_search: "web search",
+};
 
+/** Where a finding was read, in words a person uses; "" when there is nothing meaningful to say. */
 function whereOf(item: EvidenceItem): string {
-  const raw = item.source.where ?? item.source.kind;
-  return WHERE_LABEL[raw] ?? raw.replace(/_/g, " ");
+  const raw = (item.source.where ?? "").trim();
+  const low = raw.toLowerCase();
+  if (WHERE_LABEL[low]) return WHERE_LABEL[low];
+  if (!raw || low.startsWith("schema.org") || low.includes("structured") || low.includes("json-ld") || low.startsWith("og:") || low.startsWith("meta") || low === "page title" || low === "title")
+    return KIND_LABEL[item.source.kind] ?? "";
+  // Anything that still looks like an internal name (underscores, colons, dots, camelCase) is not shown.
+  if (/[_:.]|[a-z][A-Z]/.test(raw)) return KIND_LABEL[item.source.kind] ?? "";
+  return raw;
 }
 
 export function SmartAddSlots({
@@ -281,7 +291,7 @@ function Row({
     >
       <div className="flex min-w-0 flex-1 flex-col gap-0.5">
         {children}
-        {hideWhere ? null : (
+        {hideWhere || !whereOf(item) ? null : (
           <span className="truncate text-[11px] text-muted-foreground/80" title={item.source.url ?? undefined}>
             {whereOf(item)}
           </span>
@@ -349,6 +359,31 @@ function ReadMore({ text }: { text: string }) {
   );
 }
 
+type Backdrop = "auto" | "light" | "dark";
+const CHECKER = "bg-[repeating-conic-gradient(#d4d4d8_0%_25%,#f4f4f5_0%_50%)] bg-[length:14px_14px]";
+
+/** Mean brightness of the opaque pixels (0-1), or null when the browser will not let us read it. */
+function brightnessOf(img: HTMLImageElement): number | null {
+  try {
+    const c = document.createElement("canvas");
+    c.width = c.height = 24;
+    const g = c.getContext("2d");
+    if (!g) return null;
+    g.drawImage(img, 0, 0, 24, 24);
+    const d = g.getImageData(0, 0, 24, 24).data;
+    let sum = 0;
+    let n = 0;
+    for (let i = 0; i < d.length; i += 4) {
+      if (d[i + 3] < 40) continue;
+      sum += (0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2]) / 255;
+      n++;
+    }
+    return n ? sum / n : -1; // -1: fully transparent
+  } catch {
+    return null;
+  }
+}
+
 function LogoChoice({
   item,
   decision,
@@ -368,31 +403,56 @@ function LogoChoice({
 }) {
   const kept = decision === "yes" || decision === "preferred";
   const primary = decision === "preferred";
+  const [broken, setBroken] = useState(false);
+  const [ratio, setRatio] = useState(1);
+  const [backdrop, setBackdrop] = useState<Backdrop>("auto");
+  const [auto, setAuto] = useState<"light" | "dark" | "checker">("checker");
+  const [open, setOpen] = useState(false);
+  const src = item.image_url ?? item.value;
+  const shade = backdrop === "auto" ? auto : backdrop;
+  const bg = shade === "dark" ? "bg-zinc-800" : shade === "light" ? "bg-zinc-50" : CHECKER;
+  const wide = !round && ratio > 1.5;
+  const where = whereOf(item);
+  const cycle = () => setBackdrop((b) => (b === "auto" ? (auto === "dark" ? "light" : "dark") : b === "dark" ? "light" : "dark"));
+  const onLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
+    const img = e.currentTarget;
+    if (img.naturalWidth && img.naturalHeight) setRatio(img.naturalWidth / img.naturalHeight);
+    const b = brightnessOf(img);
+    if (b === null) return;
+    setAuto(b === -1 || b > 0.8 ? "dark" : b < 0.2 ? "light" : "checker");
+  };
+  const picture = (className: string) =>
+    broken ? (
+      <span className="flex flex-col items-center gap-0.5 text-[10px] text-muted-foreground">
+        <ImageOff className="size-5" />
+        Can't load
+      </span>
+    ) : item.profile_id ? (
+      <SocialImage
+        door={profileAvatarDoor(item.profile_id)}
+        url={item.image_url}
+        fallback={<PlatformMark platform={item.platform ?? ""} size={24} />}
+        className="size-full rounded-full object-cover"
+      />
+    ) : (
+      <img src={src} alt="" className={className} onLoad={onLoad} onError={() => setBroken(true)} />
+    );
   return (
-    <figure className="flex w-[5.25rem] flex-col items-center gap-1 animate-in fade-in duration-300 sm:w-24">
-      <span className="relative">
+    <figure className={`flex flex-col items-center gap-1 animate-in fade-in duration-300 ${wide ? "w-40 sm:w-48" : "w-[5.25rem] sm:w-24"}`}>
+      <span className="relative w-full">
         {/* ui-exception: an image tile you select; the 28px Button cannot hold a 96px image */}
         <button
           type="button"
           disabled={locked}
           aria-pressed={kept}
-          aria-label={`${kept ? "Keep" : "Skip"} this image (${whereOf(item)})`}
+          aria-label={`${kept ? "Keep" : "Skip"} this image${where ? ` (${where})` : ""}`}
           onClick={kept ? onClear : onToggle}
-          className={`flex size-[5.25rem] items-center justify-center overflow-hidden border bg-[repeating-conic-gradient(#d4d4d8_0%_25%,#f4f4f5_0%_50%)] bg-[length:14px_14px] p-1.5 sm:size-24 ${
+          className={`flex h-[5.25rem] w-full items-center justify-center overflow-hidden border p-1.5 sm:h-24 ${bg} ${
             round ? "rounded-full" : "rounded-lg"
           } ${primary ? "border-primary ring-2 ring-primary" : kept ? "border-primary/60 ring-1 ring-primary/60" : "border-border"}`}
           data-testid="smart-add-logo"
         >
-          {item.profile_id ? (
-            <SocialImage
-              door={profileAvatarDoor(item.profile_id)}
-              url={item.image_url}
-              fallback={<PlatformMark platform={item.platform ?? ""} size={24} />}
-              className="size-full rounded-full object-cover"
-            />
-          ) : (
-            <img src={item.image_url ?? item.value} alt="" className="max-h-full max-w-full object-contain" />
-          )}
+          {picture("max-h-full max-w-full object-contain")}
         </button>
         {kept ? (
           <span className="absolute -right-1.5 -top-1.5">
@@ -406,11 +466,49 @@ function LogoChoice({
             />
           </span>
         ) : null}
+        {broken ? null : (
+          <span className="absolute -bottom-1.5 -left-1.5 flex gap-0.5">
+            <Button variant="outline" aria-label="Enlarge this image" title="Enlarge" icon={<Maximize2 />} onClick={() => setOpen(true)} />
+            {item.profile_id ? null : (
+              <Button
+                variant="outline"
+                aria-label="Change the background behind this image"
+                title="Change background"
+                icon={shade === "dark" ? <Sun /> : <Moon />}
+                onClick={cycle}
+              />
+            )}
+          </span>
+        )}
       </span>
       <figcaption className="w-full truncate text-center text-[11px] text-muted-foreground">
-        {primary ? "Main · " : ""}
-        {whereOf(item)}
+        {primary ? "Main" : ""}
+        {primary && where ? " · " : ""}
+        {where}
       </figcaption>
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogTitle>{where ? `Image from ${where}` : "Image"}</DialogTitle>
+          <div className={`flex min-h-64 items-center justify-center overflow-hidden rounded-lg border p-4 ${bg}`}>
+            {broken ? (
+              <span className="text-sm text-muted-foreground">This image can't be loaded.</span>
+            ) : item.profile_id ? (
+              <SocialImage
+                door={profileAvatarDoor(item.profile_id)}
+                url={item.image_url}
+                fallback={<PlatformMark platform={item.platform ?? ""} size={48} />}
+                className="max-h-[60dvh] max-w-full object-contain"
+              />
+            ) : (
+              <img src={src} alt="" className="max-h-[60dvh] max-w-full object-contain" />
+            )}
+          </div>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => setBackdrop("light")}>Light background</Button>
+            <Button variant="outline" onClick={() => setBackdrop("dark")}>Dark background</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </figure>
   );
 }
