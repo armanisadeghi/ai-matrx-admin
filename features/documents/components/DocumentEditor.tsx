@@ -136,6 +136,7 @@ import type { AwarenessState } from "@/lib/collab/types";
 import { getClaimsUser } from "@ai-matrx/auth";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { WorkingCopyAlert } from "@/lib/working-copy/WorkingCopyAlert";
+import { formatCount } from "@ai-matrx/kit/format";
 
 type Props = {
   documentId: string;
@@ -582,7 +583,7 @@ export default function DocumentEditor({
     const snap = liveSnapshot() as { body?: { dataStream?: string } } | null;
     const text = bodyTextOf(snap?.body?.dataStream ?? "").text;
     const words = text.split(/\s+/).filter(Boolean).length;
-    toast({ title: `${words.toLocaleString()} words`, description: `${text.replace(/\s/g, "").length.toLocaleString()} characters` });
+    toast({ title: `${formatCount(words)} words`, description: `${formatCount(text.replace(/\s/g, "").length)} characters` });
   };
   const chromeHost: DocChromeHost | null =
     bootState === "ready" && apiRef.current

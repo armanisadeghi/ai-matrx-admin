@@ -32,6 +32,7 @@
 
 import { captureError } from "@/lib/diagnostics/errorCaptureStore";
 import { shortenChunkPaths } from "@/lib/diagnostics/sanitizeErrorContextForAi";
+import { formatDurationMs } from "@ai-matrx/kit/format";
 
 /**
  * Origin + path ONLY. A query or hash can carry a credential (`?code=`, a
@@ -260,7 +261,7 @@ function fileLeaveRecord(): void {
     `new page started: ${new Date(pageStart).toISOString()}`,
     ...record.streams.map(
       (stream) =>
-        `stream ${stream.label}: open ${Math.round((leftAt - stream.openedAt) / 1000)}s, last byte ${Math.round((leftAt - stream.lastByteAt) / 1000)}s before the leave${stream.closeReason ? `, ${stream.closeReason}` : ""}`,
+        `stream ${stream.label}: open ${formatDurationMs(leftAt - stream.openedAt, { style: "compact" })}, last byte ${formatDurationMs(leftAt - stream.lastByteAt, { style: "compact" })} before the leave${stream.closeReason ? `, ${stream.closeReason}` : ""}`,
     ),
     ...(record.navigation?.stack ? [`navigation stack:\n${record.navigation.stack}`] : []),
   ];

@@ -275,6 +275,10 @@
         {
           "file": "scripts/lib/check-target.ts",
           "why": "NOT A DISPLAY: the remaining hit is `ceilingFor()`, which returns the VALUE of a Postgres `set local statement_timeout` (\"30s\", \"540s\", \"1500ms\") interpolated into SQL; kit's compact voice (\"9m 00s\") is not a Postgres duration literal. Every person-facing string in this file (the [TARGET] banner ceiling, `cloneAge`) calls formatDurationMs as of 2026-09-30."
+        },
+        {
+          "file": "features/marketing/crawler/follow-session.test.ts",
+          "why": "PROVABLY NOT A DISPLAYED DURATION: the matched line builds an ISO-8601 timestamp fixture (`2026-10-12T21:MM:00Z`), zero-padding a minute-of-hour into a date string; no elapsed time becomes a unit string."
         }
       ],
       "shapeCensus": [
@@ -463,6 +467,10 @@
         {
           "file": "features/templates/files/seeds/workbook-templates.ts",
           "reason": "NOT money: the featured-workbook seeds write Excel FORMULAS whose '$' is an absolute cell anchor ($C5, D$3), and sample cell values whose currency look comes from the cell's own number format. Nothing becomes a money string here. Checked 2026-10-12."
+        },
+        {
+          "file": "features/file-actions/home/__tests__/recent.test.ts",
+          "reason": "PROVABLY NOT THE MONEY FORMATTER: the matched line is the test oracle for `sheetCellText`, which renders a spreadsheet cell through the cell's OWN number-format code (`$#,##0.00`); the expectation must mirror that spreadsheet format, not kit's formatUsd voice."
         }
       ],
       "shapeCensus": [

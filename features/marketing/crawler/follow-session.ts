@@ -42,6 +42,7 @@ import {
   listCrawlEventsAfterSequence,
 } from "@/features/marketing/data/service";
 import type { CrawlEvent } from "@/features/marketing/types";
+import { formatDurationMs } from "@ai-matrx/kit/format";
 
 /** First poll gap, and the gap while reads succeed. */
 export const CRAWL_FOLLOW_POLL_MS = 4_000;
@@ -175,9 +176,9 @@ export type CrawlStallReason = "no_progress" | "unreachable" | "time_cap";
 export function crawlStallMessage(reason: CrawlStallReason): string {
   if (reason === "unreachable") return "Can't reach the run's record right now";
   if (reason === "time_cap") {
-    return `Still running after ${Math.round(CRAWL_FOLLOW_MAX_MS / 3_600_000)} hours`;
+    return `Still running after ${formatDurationMs(CRAWL_FOLLOW_MAX_MS, { style: "long" })}`;
   }
-  return `No progress for ${Math.round(CRAWL_FOLLOW_STALL_MS / 60_000)} minutes`;
+  return `No progress for ${formatDurationMs(CRAWL_FOLLOW_STALL_MS, { style: "long" })}`;
 }
 
 export interface FollowedSessionRow {
