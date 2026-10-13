@@ -414,7 +414,7 @@ export function customItem(
 export function candidateCategory(field: EvidenceField): "media" | "fact" | "social" | "link" | "identity" {
   if (field === "logo") return "media";
   if (field === "social") return "social";
-  if (field === "website") return "link";
+  if (field === "website" || field === "listing" || field === "mention" || field === "web_page") return "link";
   if (field === "phone" || field === "email" || field === "address") return "fact";
   return "identity";
 }

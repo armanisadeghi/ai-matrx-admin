@@ -37,6 +37,7 @@ import {
   type EvidenceItem,
   type Relation,
 } from "./evidence";
+import { STANCE_LABEL } from "./webKinds";
 
 // ── Custom ──────────────────────────────────────────────────────────────────────
 
@@ -333,12 +334,14 @@ export function RelationPicker({
   const [custom, setCustom] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [problem, setProblem] = useState<string | null>(null);
-  const known = kinds.filter((k) => k.isKnown);
-  const saved = kinds.filter((k) => !k.isKnown);
+  // The same vocabulary as the "On the web" step; Ours / Not us are this row's own buttons.
+  const related = kinds.filter((k) => k.stance !== "ours" && k.stance !== "not_us");
+  const known = related.filter((k) => k.isKnown);
+  const saved = related.filter((k) => !k.isKnown);
   const options: SelectOption<string>[] = [
     { value: "", label: emptyLabel },
-    ...known.map((k) => ({ value: k.key, label: k.label })),
-    ...saved.map((k) => ({ value: k.key, label: k.label })),
+    ...known.map((k) => ({ value: k.key, label: k.label, meta: STANCE_LABEL[k.stance] })),
+    ...saved.map((k) => ({ value: k.key, label: k.label, meta: STANCE_LABEL[k.stance] })),
     ...(relation && !kinds.some((k) => k.key === relation.key) ? [{ value: relation.key, label: relation.label }] : []),
     { value: CUSTOM, label: "Custom…" },
   ];

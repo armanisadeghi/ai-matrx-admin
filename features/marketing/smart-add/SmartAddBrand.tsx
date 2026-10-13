@@ -80,7 +80,18 @@ import {
   type Candidate,
   type Relation,
 } from "./evidence";
-import { routeRelated, relatedCompetitors, type RelatedCandidate } from "./relations";
+import {
+  excludeNotUs,
+  routeRelated,
+  routeWebChoices,
+  relatedCompetitors,
+  suggestContext,
+  webCandidate,
+  webSiteRoot,
+  type RelatedCandidate,
+} from "./relations";
+import { useRelationKinds } from "./SmartAddExtras";
+import { suggestKind, type WebChoice } from "./webKinds";
 import { SETUP_STEPS, SmartAddRound, type RoundView } from "./SmartAddRound";
 import { SmartAddGateLine } from "./SmartAddGateLine";
 import { SmartAddBioLinks } from "./SmartAddBioLinks";
@@ -141,6 +152,8 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
   const [decisions, setDecisions] = useState<Record<string, Decision>>({});
   // Compare: candidates that are neither ours nor "not us" — how each relates (keyed by candidate id).
   const [relations, setRelations] = useState<Record<string, RelatedCandidate>>({});
+  // "On the web": what each web result is to the brand (web.brand_relation_kind key + sentiment).
+  const [webChoices, setWebChoices] = useState<Record<string, WebChoice>>({});
   const explored = useRef<Set<string>>(new Set());
   /** Images the screen could not load: hidden tiles, never saved as inbox candidates. */
   const brokenKeys = useRef<Set<string>>(new Set());
@@ -203,6 +216,7 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
     setItems(new Map());
     setDecisions({});
     setRelations({});
+    setWebChoices({});
     setComparing(false);
     explored.current = new Set();
     wokenSent.current = new Set();
@@ -403,6 +417,15 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
     ? trackedAccounts.map((a) => spend.postsText(a.platform ?? "", postsPerAccount)).filter(Boolean)
     : [];
   const situation = situationOf(visible, rounds.length > 0 && !working);
+  // One vocabulary for every found thing (web.brand_relation_kind) — the web step answers from it too.
+  const { kinds: relationKinds } = useRelationKinds(relate);
+  const webCtx = suggestContext(
+    [basics.websiteUrl, ...basics.otherWebsites, typedWebsite || null],
+    basics.accounts.map((a) => a.url ?? a.value),
+    basics.name ?? foundName?.value ?? null,
+  );
+  const webItems = visible.filter((i) => i.field === "listing" || i.field === "mention" || i.field === "web_page");
+  const webSuggestions = Object.fromEntries(webItems.map((i) => [i.key, suggestKind(i, relationKinds, webCtx)]));
   useEffect(() => {
     if (!builder.isActive) return;
     // The publisher is admin-only code: it loads on first use, never for anyone else.
@@ -413,6 +436,7 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
       items: [...items.values()],
       decisions,
       relations,
+      web: { choices: webChoices, suggestions: webSuggestions, context: webCtx },
       basics,
       created,
       provisionPoint: BRAND_INTAKE_POINT,
@@ -431,7 +455,25 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
       const organizationId = await ensureOrgId(null);
       // "Related" candidates the person answered (only ones still unanswered elsewhere count).
       const related = Object.values(relations).filter((r) => !decisions[r.candidate.anchor.key]);
-      const competitors = relatedCompetitors(related);
+      // Web results answered founder / key person route to people exactly like an account does.
+      const kindOf = (key: string) => relationKinds.find((k) => k.key === webChoices[key]?.kind);
+      for (const i of webItems) {
+        const k = kindOf(i.key);
+        if (k && (k.routesTo === "owns" || k.routesTo === "key_person")) {
+          related.push({ candidate: webCandidate(i), relation: { key: k.key, label: k.label, routesTo: k.routesTo } });
+        }
+      }
+      const competitors = [
+        ...relatedCompetitors(related),
+        ...webItems
+          .filter((i) => kindOf(i.key)?.routesTo === "competitor")
+          .map((i) => ({ name: i.label ?? websiteHost(i.url ?? i.value), domain: websiteHost(i.url ?? i.value) })),
+      ];
+      // A web result answered "Ours" that is a site of its own becomes one of the brand's websites.
+      const webSites = webItems
+        .filter((i) => kindOf(i.key)?.routesTo === "brand_property")
+        .map(webSiteRoot)
+        .filter((u): u is string => Boolean(u) && !webCtx.ourHosts.includes(websiteHost(u as string)));
       const brand = await createBrand({
         organizationId,
         name: basics.name,
@@ -480,7 +522,7 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
       // Every confirmed website (found or typed) becomes one of the brand's sites, and EVERY one gets
       // the normal default crawl in the background (tier 3) — none of it blocks.
       const siteIds: string[] = [];
-      for (const url of [basics.websiteUrl, ...basics.otherWebsites].filter((u): u is string => Boolean(u))) {
+      for (const url of [basics.websiteUrl, ...basics.otherWebsites, ...webSites].filter((u): u is string => Boolean(u))) {
         try {
           const parsedUrl = normalizeWebsiteUrl(url);
           const site = await createSite({
@@ -514,6 +556,12 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
       // Related items keep their relationship (and land in their home: people, competitors).
       const relatedSaved = await routeRelated(organizationId, brand.id, related, decisions);
       problems.push(...relatedSaved.problems);
+      // Every answered web result keeps its answer, sentiment and where it was found; "Not us" (here and
+      // in the compare rows) also lands on the brand's exclusion list.
+      const webSaved = await routeWebChoices(organizationId, brand.id, webItems, webChoices, relationKinds, webSuggestions);
+      problems.push(...webSaved.problems);
+      for (const k of webSaved.keys) relatedSaved.keys.add(k);
+      problems.push(...(await excludeNotUs(organizationId, brand.id, [...items.values()], decisions)));
       problems.push(
         ...(await saveCandidates(
           organizationId,
@@ -805,7 +853,15 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
       </div>
 
       <SmartAddGateLine views={roundViews.filter((v): v is RoundView => Boolean(v))} />
-      <SmartAddWebRow items={visible} />
+      <SmartAddWebRow
+        items={visible}
+        kinds={relationKinds}
+        choices={webChoices}
+        ctx={webCtx}
+        onChoose={(item, choice) =>
+          setWebChoices(({ [item.key]: _drop, ...rest }) => (choice ? { ...rest, [item.key]: choice } : rest))
+        }
+      />
       <SmartAddBioLinks items={visible} />
 
       {/* Create: the confirmed basics, one row. */}
@@ -1034,7 +1090,12 @@ async function saveCandidates(organizationId: string, brandId: string, items: Ev
         guessedKind: i.field === "social" ? (i.platform ?? "social") : i.field,
         url: i.url ?? (i.field === "logo" ? (i.image_url ?? i.value) : null),
         value: { text: i.value, label: i.label, handle: i.handle, followers: i.followers },
-        context: { where: i.source.where, found_on: i.source.url, step: i.source.node },
+        context: {
+          where: i.source.where,
+          found_on: i.source.url,
+          step: i.source.node,
+          ...(i.hits?.length ? { search: { engines: i.engines ?? [], hits: i.hits, snippet: i.snippet ?? null } } : {}),
+        },
         confidence: i.confidence,
       })),
     );

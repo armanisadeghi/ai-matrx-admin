@@ -10,6 +10,7 @@ import type { BuilderPublishInput } from "@/features/builder-panel/types";
 import type { MarketingBrand } from "@/features/marketing/types";
 import type { Decision, EvidenceItem, RoundSeeds, confirmedBasics } from "./evidence";
 import type { RelatedCandidate } from "./relations";
+import type { SuggestContext, WebChoice, WebSuggestion } from "./webKinds";
 
 
 export interface SmartAddFeedState {
@@ -19,6 +20,8 @@ export interface SmartAddFeedState {
   items: EvidenceItem[];
   decisions: Record<string, Decision>;
   relations: Record<string, RelatedCandidate>;
+  /** The "On the web" step: the person's answers, the rule suggestions shown, and the facts the rules read. */
+  web: { choices: Record<string, WebChoice>; suggestions: Record<string, WebSuggestion | null>; context: SuggestContext };
   basics: ReturnType<typeof confirmedBasics>;
   created: MarketingBrand | null;
   provisionPoint: string;
@@ -82,6 +85,14 @@ export function publishSmartAddFeed(
   }
   out.push({ key: "choices.decisions", label: "Answers", group: "inputs", data: s.decisions, source: "the person" });
   out.push({ key: "choices.relations", label: "Comparison choices", group: "inputs", data: s.relations, source: "the person" });
+  out.push({ key: "choices.web", label: "On the web answers", group: "inputs", data: s.web.choices, source: "the person" });
+  out.push({
+    key: "derived.web_suggestions",
+    label: "On the web suggestions (rules)",
+    group: "derived",
+    data: { suggestions: s.web.suggestions, read: s.web.context },
+    source: "webKinds.suggestKind",
+  });
   out.push({ key: "create.basics", label: "What Create saves", group: "derived", data: s.basics, source: "confirmed answers" });
   if (s.created) {
     out.push({
