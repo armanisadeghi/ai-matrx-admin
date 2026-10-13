@@ -383,7 +383,8 @@ function JsonInspectorBody({
           <CopyButtons
             label={copyLabel}
             size="xs"
-            triggerVariant="icon"
+            // "icon" ships in @ai-matrx/alchemy after 0.23.45; spread keeps older builds compiling.
+            {...({ triggerVariant: "icon" } as Record<string, unknown>)}
             human={() => (value === "json" ? rawJsonText : prettyJson)}
             json={() => data}
             {...(agentCopy ? { agent: agentCopy } : { hide: ["ai" as const] })}
