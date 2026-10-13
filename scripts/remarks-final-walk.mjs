@@ -95,19 +95,20 @@ const chips = (page) =>
 const counts = (page) => page.evaluate(([a, u]) => ({ an: document.querySelectorAll(a).length, us: document.querySelectorAll(u).length }), [AN, US]);
 const shot = (page, name) => page.screenshot({ path: `${OUT}/${name}.png` }).catch(() => {});
 
-async function settle(page, wantAnswers, label) {
+async function settle(page, wantAnswers, label, quick = false) {
   const start = Date.now();
   let last = "", stable = Date.now();
   while (Date.now() - start < 200000) {
     await page.waitForTimeout(1000);
     const s = await page.evaluate((an) => {
       const a = [...document.querySelectorAll(an)];
-      return { n: a.length, sig: a.map((e) => e.innerText.length).join(",") };
+      return { n: a.length, sig: a.map((e) => e.innerText.length).join(","), min: Math.min(...a.map((e) => e.innerText.trim().length)) };
     }, AN);
-    if (s.n < wantAnswers) { stable = Date.now(); continue; }
+    if (s.n < wantAnswers || (quick && s.min < 150)) { stable = Date.now(); continue; }
     if (s.sig !== last) { last = s.sig; stable = Date.now(); }
-    else if (Date.now() - stable > 8000) break;
+    else if (Date.now() - stable > (quick ? 2000 : 8000)) break;
   }
+  if (quick) return []; // a person's first click lands right after the stream ends: no extra waiting
   const lens = await page.evaluate((an) => [...document.querySelectorAll(an)].map((e) => e.innerText.trim().length), AN);
   await page.waitForTimeout(10000);
   const lens10 = await page.evaluate((an) => [...document.querySelectorAll(an)].map((e) => e.innerText.trim().length), AN);
@@ -383,7 +384,7 @@ await item(6, "New chat about this -> /chat/new?c=<id> chip -> reload -> send ->
 await item(3, "choice click -> \"I chose ...\" chip", async (t) => {
   S.kUrl = await startChat(page, "Help me pick between three launch channels for my bakery.");
   console.log("  chat K", S.kUrl);
-  await settle(page, 1, "K reply1 (choices)");
+  await settle(page, 1, "K reply1 (choices)", true); // FIRST interaction with a just-finished reply must save
   const optionLabel = () =>
     page.evaluate((an) => {
       const e = [...document.querySelectorAll(`${an} button[aria-label^='Edit ']`)].map((b) => b.getAttribute("aria-label").slice(5)).filter((x) => x !== "content");
