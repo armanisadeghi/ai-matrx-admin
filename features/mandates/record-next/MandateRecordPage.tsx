@@ -139,15 +139,19 @@ function MandateRecordPageInner({
         }),
       })}
     >
-      <div className="h-full overflow-y-auto pb-safe">
+      <div className="h-full overflow-y-auto" data-matrx-page-scroll>
         {/* Under /administration the content already starts below the
             header; a (core) member page sits under the glass shell header and
-            clears it, exactly as EntityListPage's clearsShellHeader does. */}
+            clears it, exactly as EntityListPage's clearsShellHeader does.
+            A flex column at least one screen tall (less the shell's runway, its
+            page end): a tab that reads a long body — the Runs split — grows
+            into the space left instead of a fixed height. No bottom padding:
+            the scroller's runway IS the page end (styles/shell.css). */}
         <div
           className={
             level === "system"
-              ? "w-full min-w-0 px-4 pb-10 pt-3 sm:px-6"
-              : "mx-auto w-full max-w-6xl px-4 pb-10 pt-[calc(var(--shell-header-h)+0.75rem)] sm:px-6"
+              ? "flex min-h-[calc(100%-var(--matrx-floating-clearance))] w-full min-w-0 flex-col px-4 pt-3 sm:px-6"
+              : "mx-auto flex min-h-[calc(100%-var(--matrx-floating-clearance))] w-full min-w-0 max-w-6xl flex-col px-4 pt-[calc(var(--shell-header-h)+0.75rem)] sm:px-6"
           }
         >
           <MandateRecordBody

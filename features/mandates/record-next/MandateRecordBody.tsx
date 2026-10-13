@@ -642,7 +642,7 @@ function OneMandateRecordBody({
           role="tabpanel"
           id="mandate-panel-runs"
           hidden={activeTab !== "runs"}
-          className={activeTab === "runs" ? "space-y-3" : "hidden"}
+          className={activeTab === "runs" ? "flex min-h-0 flex-1 flex-col" : "hidden"}
         >
           {activeTab === "runs" ? (
             <MandateRunsTab

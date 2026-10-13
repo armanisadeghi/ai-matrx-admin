@@ -123,7 +123,8 @@ export function RunAsItHappened({
 
           <RunSectionTitle>Output</RunSectionTitle>
           {run.output ? (
-            <div className="rounded-md border border-border px-3 py-2 text-sm">
+            // No frame: a kind's sections are cards of their own.
+            <div className="text-sm">
               {(() => {
                 const value = structuredAnswer(run.output);
                 if (!value) return <MarkdownStream content={run.output} imagePolicy="ai" allowFullScreenEditor={false} />;

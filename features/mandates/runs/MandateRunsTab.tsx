@@ -48,7 +48,7 @@ export function MandateRunsTab({ mandateKey, outputKind, view, audience }: Manda
   }
 
   return (
-    <div className="space-y-4">
+    <div className="flex min-h-0 flex-1 flex-col gap-4">
       <RunsTable
         scope={{ mandateKey }}
         view={view}
@@ -108,17 +108,21 @@ function SelectedRun({
   audience: "admin" | "product";
 }) {
   const stored = useStoredRun(conversationId, mandateKey);
+  // The split fills the page below the table (the page body is a flex column
+  // one screen tall) and each side scrolls on its own. No frame and no inset:
+  // what it shows — the output's sections, the placement tables — are cards
+  // already; a card around them is a second frame and lost reading width.
   return (
-    <div className="h-[calc(100dvh-14rem)] min-h-[32rem] rounded-lg border border-border bg-card">
-      <ResizablePanelGroup orientation="horizontal" className="h-full">
+    <div className="relative min-h-[28rem] flex-1">
+      <ResizablePanelGroup orientation="horizontal" className="absolute inset-0">
         <ResizablePanel id="mandate-run-left" defaultSize="50%" minSize="25%">
-          <div className="h-full overflow-y-auto p-3">
+          <div className="h-full overflow-y-auto pr-3">
             <RunAsItHappened stored={stored} audience={audience} mandateKey={mandateKey} outputKind={outputKind} />
           </div>
         </ResizablePanel>
         <ResizableHandle />
         <ResizablePanel id="mandate-run-right" defaultSize="50%" minSize="25%">
-          <div className="h-full overflow-y-auto p-3">
+          <div className="h-full overflow-y-auto pl-3">
             <RunTryPanel stored={stored} mandateKey={mandateKey} outputKind={outputKind} audience={audience} />
           </div>
         </ResizablePanel>
