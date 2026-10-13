@@ -26,6 +26,7 @@
 
 "use client";
 
+import { PropertyRow } from "@ai-matrx/design-system/controls";
 import Link from "next/link";
 import { HardDrive, AlertTriangle, RefreshCw, Gauge } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -233,7 +234,7 @@ function QuotaTooltipBody({
           number to show. It appears as soon as the usage ledger is built.
         </div>
       ) : null}
-      <Row
+      <PropertyRow
         label="Storage"
         value={
           !data.ledger_measured
@@ -243,7 +244,7 @@ function QuotaTooltipBody({
               : `${formatFileSize(data.bytes_used)} used`
         }
       />
-      <Row
+      <PropertyRow
         label="Files"
         value={
           data.max_files
@@ -251,7 +252,7 @@ function QuotaTooltipBody({
             : data.files_count.toLocaleString()
         }
       />
-      <Row
+      <PropertyRow
         label="Today's uploads"
         value={
           dailyMax
@@ -260,7 +261,7 @@ function QuotaTooltipBody({
         }
       />
       {data.max_file_size_bytes ? (
-        <Row
+        <PropertyRow
           label="Max file size"
           value={formatFileSize(data.max_file_size_bytes)}
         />
@@ -280,11 +281,3 @@ function QuotaTooltipBody({
   );
 }
 
-function Row({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex items-center justify-between gap-3">
-      <span className="text-muted-foreground">{label}</span>
-      <span className="tabular-nums">{value}</span>
-    </div>
-  );
-}

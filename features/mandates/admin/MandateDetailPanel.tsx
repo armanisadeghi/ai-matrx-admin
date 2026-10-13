@@ -1121,23 +1121,6 @@ function StatusBanner({
 
 // ── The facts — labeled values first, so nothing is ever guessed ─────────────
 
-function Fact({
-  label,
-  children,
-}: {
-  label: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <>
-      <div className="type-meta font-medium text-muted-foreground">
-        {label}
-      </div>
-      <div className="min-w-0 type-secondary">{children}</div>
-    </>
-  );
-}
-
 /**
  * The drawer opens with the FACTS, each labeled — agent, system-agent
  * boolean, version (amber when it trails latest), the contract's inputs and
@@ -1362,12 +1345,12 @@ function FactsPanel({
     );
   }
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-[minmax(0,10rem)_minmax(0,1fr)] items-center gap-x-4 gap-y-1.5 rounded-md border border-border bg-card px-3 py-2.5">
+    <div className="flex flex-col rounded-md border border-border bg-card px-3 py-1">
       {!diagnosticsOnly && (
         <>
           {showHolderAnswer ? (
             <>
-              <Fact label="Agent">
+              <PropertyRow label="Agent">
                 <div className="flex min-w-0 items-center gap-2">
                   {row.agentId ? (
                     <EntityRef
@@ -1397,8 +1380,8 @@ function FactsPanel({
                     </OutboundLink>
                   )}
                 </div>
-              </Fact>
-              <Fact label="System agent">
+              </PropertyRow>
+              <PropertyRow label="System agent">
                 {row.agentType == null ? (
                   <span className="text-muted-foreground">unknown</span>
                 ) : isSystem ? (
@@ -1408,8 +1391,8 @@ function FactsPanel({
                     No — personal agent
                   </span>
                 )}
-              </Fact>
-              <Fact label="Version">
+              </PropertyRow>
+              <PropertyRow label="Version">
                 {isFloatingMandate(row.mandate) ? (
                   <span>
                     latest
@@ -1439,21 +1422,21 @@ function FactsPanel({
                       : "latest"}
                   </span>
                 )}
-              </Fact>
+              </PropertyRow>
             </>
           ) : null}
           {wave1.provisionKey && (
-            <Fact label="Provision">
+            <PropertyRow label="Provision">
               {/* The provision is the entire input declaration; the binding's consumption map decides what the Mandate Holder consumes. */}
               <span className="inline-flex flex-wrap items-center gap-1.5">
                 <code className="rounded border border-border bg-muted/40 px-1 py-0.5 type-meta">
                   {wave1.provisionKey}
                 </code>
               </span>
-            </Fact>
+            </PropertyRow>
           )}
           {Object.keys(wave1.pins).length > 0 && (
-            <Fact label="Pins">
+            <PropertyRow label="Pins">
               <div className="flex flex-wrap gap-1">
                 {Object.entries(wave1.pins).map(([key, value]) => (
                   <Badge
@@ -1468,10 +1451,10 @@ function FactsPanel({
                   </Badge>
                 ))}
               </div>
-            </Fact>
+            </PropertyRow>
           )}
           {wave1.pinnedContext.length > 0 && (
-            <Fact label="Pinned context">
+            <PropertyRow label="Pinned context">
               <div className="flex flex-wrap gap-1">
                 {wave1.pinnedContext.map((name) => (
                   <code
@@ -1482,9 +1465,9 @@ function FactsPanel({
                   </code>
                 ))}
               </div>
-            </Fact>
+            </PropertyRow>
           )}
-          <Fact label="Inputs">
+          <PropertyRow label="Inputs">
             <MandateInputsCell
               row={row}
               maxChips={8}
@@ -1496,33 +1479,33 @@ function FactsPanel({
                 <ErrorAlchemyMenu operation="Read the provision offer" />
               </p>
             ) : null}
-          </Fact>
-          <Fact label="Output">
+          </PropertyRow>
+          <PropertyRow label="Output">
             <MandateOutputCell row={row} maxChips={8} />
-          </Fact>
+          </PropertyRow>
           {/* Context is the THIRD input channel, alongside declared input and user
           text — so it belongs in the facts panel beside Inputs and Output, not
           buried in a settings tab. A gate may only narrow. */}
-          <Fact label="Context policy">
+          <PropertyRow label="Context policy">
             <MandateContextGate row={row} onSaved={onSaved} />
-          </Fact>
+          </PropertyRow>
           {/* 🚨 ONE SENTENCE, ONE AUTHORITY (V2-2). This fact used to be rendered
           from `code_truth.passes_user_input` inside the code block below —
           a fact about the CALLING CODE, printed as a verdict about the
           mandate, and contradicting the user host on the same mandate in the
           same minute. The served input surface is the authority for both. */}
-          <Fact label="User text">
+          <PropertyRow label="User text">
             <MandateUserTextLine
               mandateKey={row.mandateKey}
               showIcon={false}
               className="type-secondary"
             />
-          </Fact>
+          </PropertyRow>
         </>
       )}
       {row.codeTruth ? (
         <>
-          <Fact label="Code passes">
+          <PropertyRow label="Code passes">
             {row.codeTruth.code_variables.length > 0 ? (
               <div className="flex flex-wrap gap-1">
                 {row.codeTruth.code_variables.map((name) => (
@@ -1537,8 +1520,8 @@ function FactsPanel({
             ) : (
               <span className="text-muted-foreground">no named variables</span>
             )}
-          </Fact>
-          <Fact label="Agent declares">
+          </PropertyRow>
+          <PropertyRow label="Agent declares">
             {(row.codeTruth.bound_agent?.declared_variables.length ?? 0) > 0 ? (
               <div className="flex flex-wrap gap-1">
                 {row.codeTruth.bound_agent?.declared_variables.map((name) => (
@@ -1553,14 +1536,14 @@ function FactsPanel({
             ) : (
               <span className="font-medium text-rose-600">no variables</span>
             )}
-          </Fact>
+          </PropertyRow>
           {/* A fact about the CALLING CODE, labelled as one. Whether the
               mandate itself accepts free text is the served surface's answer,
               rendered once, above. */}
-          <Fact label="Code passes user text">
+          <PropertyRow label="Code passes user text">
             {row.codeTruth.passes_user_input ? "Yes" : "No"}
-          </Fact>
-          <Fact label="Variable flow">
+          </PropertyRow>
+          <PropertyRow label="Variable flow">
             {verdictsLoading ? (
               <span className="inline-flex items-center gap-1 text-muted-foreground">
                 <Loader2 className="h-3 w-3 animate-spin" /> Checking the bound
@@ -1573,7 +1556,7 @@ function FactsPanel({
             ) : (
               <StatusToken status="unknown" label="Not yet evaluated" />
             )}
-          </Fact>
+          </PropertyRow>
         </>
       ) : null}
     </div>

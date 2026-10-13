@@ -10,6 +10,7 @@
 // law at the last step. Every entry the server wrote is rendered, in order, with its
 // own reason and note.
 
+import { PropertyRow } from "@ai-matrx/design-system/controls";
 import Link from "next/link";
 import { ExternalLink } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -45,17 +46,6 @@ function readTrail(value: unknown): TrailEntry[] {
   return value.filter((entry): entry is TrailEntry => typeof entry === "object" && entry !== null);
 }
 
-function Row({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <div className="grid grid-cols-[8.5rem_minmax(0,1fr)] gap-3 py-1.5 text-sm">
-      <dt className="text-xs uppercase tracking-wide text-muted-foreground">
-        {label}
-      </dt>
-      <dd className="min-w-0 break-words">{children}</dd>
-    </div>
-  );
-}
-
 export function BlockDetailsDialog({
   block,
   onClose,
@@ -85,7 +75,7 @@ export function BlockDetailsDialog({
             </DialogHeader>
 
             <dl className="divide-y divide-border/60">
-              <Row label="Address">
+              <PropertyRow label="Address">
                 {/^https?:\/\//.test(block.input_ref) ? (
                   <OutboundLink
                     className="inline-flex items-center gap-1 text-primary underline-offset-2 hover:underline"
@@ -97,11 +87,11 @@ export function BlockDetailsDialog({
                 ) : (
                   <span className="break-all">{block.input_ref}</span>
                 )}
-              </Row>
-              <Row label="Source">
+              </PropertyRow>
+              <PropertyRow label="Source">
                 {labelFor(SOURCE_TYPE_LABELS, block.source_type)}
-              </Row>
-              <Row label="Engine">
+              </PropertyRow>
+              <PropertyRow label="Engine">
                 {labelFor(ENGINE_LABELS, block.engine)}
                 {block.rung && (
                   <span className="text-muted-foreground">
@@ -109,8 +99,8 @@ export function BlockDetailsDialog({
                     — {labelFor(RUNG_LABELS, block.rung)}
                   </span>
                 )}
-              </Row>
-              <Row label="It said">
+              </PropertyRow>
+              <PropertyRow label="It said">
                 {/* Never the raw value: cold-walk-14 (2026-09-20) read a whole
                     SQL INSERT with its bound arguments here. Machine text drops
                     to the muted line below with the error class. */}
@@ -127,8 +117,8 @@ export function BlockDetailsDialog({
                     {block.error_class}
                   </code>
                 </div>
-              </Row>
-              <Row label="Unblocks by">
+              </PropertyRow>
+              <PropertyRow label="Unblocks by">
                 {block.unblock_note?.trim() || (
                   <span className="text-muted-foreground">
                     We don&apos;t have a lawful route for this one yet. That is
@@ -136,8 +126,8 @@ export function BlockDetailsDialog({
                     somebody down a dead end.
                   </span>
                 )}
-              </Row>
-              <Row label="Status">
+              </PropertyRow>
+              <PropertyRow label="Status">
                 <Badge variant="outline" className="py-0 text-[10px]">
                   {labelFor(STATUS_LABELS, block.status)}
                 </Badge>
@@ -147,8 +137,8 @@ export function BlockDetailsDialog({
                     {block.retry_count === 1 ? " time" : " times"}
                   </span>
                 )}
-              </Row>
-              <Row label="What we did">
+              </PropertyRow>
+              <PropertyRow label="What we did">
                 {block.retry_count === 0 && !block.handoff_id ? (
                   <span className="text-muted-foreground">
                     Nothing yet — nobody has run this one again or sent it to their
@@ -182,13 +172,13 @@ export function BlockDetailsDialog({
                     )}
                   </div>
                 )}
-              </Row>
-              <Row label="First seen">
+              </PropertyRow>
+              <PropertyRow label="First seen">
                 {new Date(block.first_seen_at).toLocaleString()}
-              </Row>
-              <Row label="Last seen">
+              </PropertyRow>
+              <PropertyRow label="Last seen">
                 {new Date(block.last_seen_at).toLocaleString()}
-              </Row>
+              </PropertyRow>
             </dl>
 
             <div className="mt-2">

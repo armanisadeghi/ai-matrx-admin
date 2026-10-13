@@ -7,6 +7,7 @@
  * while WindowPanel's secondary panel owns metadata and actions.
  */
 
+import { PropertyRow } from "@ai-matrx/design-system/controls";
 import { useClipboard } from "@ai-matrx/kit/clipboard";
 import { copyNotify } from "@/lib/clipboard/copy-notify";
 import { useRef, useState, type RefObject } from "react";
@@ -95,20 +96,6 @@ interface AssetInspectorActions {
   orderReplacement: () => void;
   importAndEdit: () => void;
   addToLibrary: (kind: BrandAssetKind) => void;
-}
-
-function MetaRow({ label, value }: { label: string; value: string | null }) {
-  if (!value) return null;
-  return (
-    <div className="flex items-baseline justify-between gap-3 border-b border-border/40 py-1 last:border-b-0">
-      <span className="shrink-0 text-[10px] uppercase tracking-wider text-muted-foreground">
-        {label}
-      </span>
-      <span className="min-w-0 break-all text-right text-[11px] text-foreground">
-        {value}
-      </span>
-    </div>
-  );
 }
 
 /** Nearest standard slot by aspect, when the asset has known dimensions. */
@@ -492,10 +479,10 @@ function AssetInspector({
         </div>
 
         <div className="rounded-lg border border-border/60 bg-muted/10 px-2.5 py-1">
-          <MetaRow label="Dimensions" value={asset.sizeLabel} />
-          <MetaRow label="Alt text" value={asset.alt} />
-          <MetaRow label="Loading" value={asset.loading} />
-          <MetaRow
+          <PropertyRow label="Dimensions" value={asset.sizeLabel} />
+          <PropertyRow label="Alt text" value={asset.alt} />
+          <PropertyRow label="Loading" value={asset.loading} />
+          <PropertyRow
             label="Occurrences"
             value={asset.occurrences.toLocaleString()}
           />

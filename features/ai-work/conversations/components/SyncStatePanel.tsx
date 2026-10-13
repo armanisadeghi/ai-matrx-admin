@@ -25,6 +25,7 @@
 // So the button says that and opens the desktop app's own page. A button that
 // looks live and does nothing is the "fake Resume" this product forbids.
 
+import { PropertyRow } from "@ai-matrx/design-system/controls";
 import { useEffect, useState } from "react";
 import {
   AlertTriangle,
@@ -177,49 +178,34 @@ function AccountCard({ account }: { account: SyncAccountState }) {
         <FreshnessPill freshness={account.freshness} />
       </div>
       <dl className="mt-2 grid gap-2 text-xs sm:grid-cols-2">
-        <Fact label="Sessions delivered">
+        <PropertyRow label="Sessions delivered">
           {account.sessionCount.toLocaleString()}
-        </Fact>
-        <Fact label="Last delivery">
+        </PropertyRow>
+        <PropertyRow label="Last delivery">
           {account.lastSeenAt
             ? formatSessionTimestamp(account.lastSeenAt)
             : "Never"}
-        </Fact>
-        <Fact label="Fidelity">
+        </PropertyRow>
+        <PropertyRow label="Fidelity">
           {account.fidelity
             .map((f) => `${humanizeIdentifier(f.value)} (${f.count})`)
             .join(", ") || "None recorded"}
-        </Fact>
-        <Fact label="Arrived by">
+        </PropertyRow>
+        <PropertyRow label="Arrived by">
           {account.origin
             .map((o) => `${humanizeIdentifier(o.value)} (${o.count})`)
             .join(", ") || "None recorded"}
-        </Fact>
-        <Fact label="Bindings not active">
+        </PropertyRow>
+        <PropertyRow label="Bindings not active">
           {account.inactiveCount > 0 ? account.inactiveCount : "None"}
-        </Fact>
-        <Fact label="Workspaces">
+        </PropertyRow>
+        <PropertyRow label="Workspaces">
           {account.workspaces.length > 0
             ? account.workspaces.join(", ")
             : "None reported"}
-        </Fact>
+        </PropertyRow>
       </dl>
     </article>
-  );
-}
-
-function Fact({
-  label,
-  children,
-}: {
-  label: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="min-w-0 rounded-md bg-muted/30 px-2.5 py-2">
-      <dt className="font-medium text-muted-foreground">{label}</dt>
-      <dd className="mt-0.5 break-words text-foreground">{children}</dd>
-    </div>
   );
 }
 

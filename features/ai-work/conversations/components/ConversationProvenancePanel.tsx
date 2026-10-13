@@ -33,6 +33,7 @@
 // one delivered most recently. The grouped fields below still describe ONE
 // binding, and which one is stated in the heading rather than implied.
 
+import { PropertyRow } from "@ai-matrx/design-system/controls";
 import { useEffect, useState } from "react";
 import {
   AlertTriangle,
@@ -146,23 +147,6 @@ function Group({
         {children}
       </dl>
     </section>
-  );
-}
-
-function Fact({
-  label,
-  hint,
-  children,
-}: {
-  label: string;
-  hint?: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="min-w-0 border-b border-border px-3 py-2.5" title={hint}>
-      <dt className="font-medium text-muted-foreground">{label}</dt>
-      <dd className="mt-0.5 break-words text-foreground">{children}</dd>
-    </div>
   );
 }
 
@@ -347,7 +331,7 @@ function BindingCard({
       ) : null}
 
       <dl className="mt-3 grid border-t border-border text-xs sm:grid-cols-2 sm:[&>*:nth-child(odd)]:border-r">
-        <Fact label="Provider session id">
+        <PropertyRow label="Provider session id">
           {unclaimed ? (
             <Absent>
               No provider session yet — waiting for{" "}
@@ -358,20 +342,20 @@ function BindingCard({
               {binding.provider_session_id}
             </span>
           )}
-        </Fact>
-        <Fact label="Provider account">
+        </PropertyRow>
+        <PropertyRow label="Provider account">
           {account.reported ? (
             account.display
           ) : (
             <Absent>{account.display}</Absent>
           )}
-        </Fact>
-        <Fact label="Workspace">{workspace ?? <Absent />}</Fact>
-        <Fact label="Arrived by">{humanizeIdentifier(binding.origin)}</Fact>
-        <Fact label="Binding state">{humanizeIdentifier(binding.status)}</Fact>
-        <Fact label="Last delivery">
+        </PropertyRow>
+        <PropertyRow label="Workspace">{workspace ?? <Absent />}</PropertyRow>
+        <PropertyRow label="Arrived by">{humanizeIdentifier(binding.origin)}</PropertyRow>
+        <PropertyRow label="Binding state">{humanizeIdentifier(binding.status)}</PropertyRow>
+        <PropertyRow label="Last delivery">
           <DeliveryValue binding={binding} />
-        </Fact>
+        </PropertyRow>
       </dl>
     </li>
   );
@@ -537,7 +521,7 @@ export function ConversationProvenancePanel({
               : undefined
         }
       >
-        <Fact label="Provider">
+        <PropertyRow label="Provider">
           {current ? (
             providerLabel(current.provider)
           ) : awaitingFirstDelivery ? (
@@ -547,10 +531,10 @@ export function ConversationProvenancePanel({
           ) : (
             <Absent>No provider — this is an AI Matrx conversation</Absent>
           )}
-        </Fact>
-        <Fact
+        </PropertyRow>
+        <PropertyRow
           label="Git branch"
-          hint="Reported by the provider when the session was on a branch."
+          help="Reported by the provider when the session was on a branch."
         >
           {current ? (
             (readMetaString(current, "git_branch") ?? (
@@ -559,12 +543,12 @@ export function ConversationProvenancePanel({
           ) : (
             <Absent>—</Absent>
           )}
-        </Fact>
-        <Fact label="Workspace identity">
+        </PropertyRow>
+        <PropertyRow label="Workspace identity">
           {current?.workspace_fingerprint ?? current?.provider_project_key ?? (
             <Absent />
           )}
-        </Fact>
+        </PropertyRow>
       </Group>
       ) : null}
 
@@ -595,7 +579,7 @@ export function ConversationProvenancePanel({
 
       {/* ── From AI Matrx ────────────────────────────────────────────────── */}
       <Group source="matrx">
-        <Fact label="Title we derived" hint={provenance.detail}>
+        <PropertyRow label="Title we derived" help={provenance.detail}>
           {state === "ready" ? (
             provenance.fromProvider ? (
               <Absent>
@@ -607,27 +591,27 @@ export function ConversationProvenancePanel({
           ) : (
             <Absent>Unknown until the provider bindings are read</Absent>
           )}
-        </Fact>
-        <Fact label="Title source">{provenance.chip}</Fact>
-        <Fact label="Conversation type">
+        </PropertyRow>
+        <PropertyRow label="Title source">{provenance.chip}</PropertyRow>
+        <PropertyRow label="Conversation type">
           {conversationTypeLabel(conversation.conversation_type)}
-        </Fact>
-        <Fact label="Origin">
+        </PropertyRow>
+        <PropertyRow label="Origin">
           {originClassLabel(conversation.origin_class)}
-        </Fact>
-        <Fact label="Recorded by">
+        </PropertyRow>
+        <PropertyRow label="Recorded by">
           {conversation.source_app ? (
             `${appLabel(conversation.source_app)}${conversation.source_feature ? ` · ${conversation.source_feature}` : ""}`
           ) : (
             <Absent />
           )}
-        </Fact>
-        <Fact label="Favorite">{conversation.is_favorite ? "Yes" : "No"}</Fact>
-        <Fact label="Messages stored">{conversation.message_count}</Fact>
-        <Fact label="Knowledge graph">
+        </PropertyRow>
+        <PropertyRow label="Favorite">{conversation.is_favorite ? "Yes" : "No"}</PropertyRow>
+        <PropertyRow label="Messages stored">{conversation.message_count}</PropertyRow>
+        <PropertyRow label="Knowledge graph">
           {conversation.exclude_from_kg ? "Excluded by you" : "Included"}
-        </Fact>
-        <Fact label="Task">
+        </PropertyRow>
+        <PropertyRow label="Task">
           {conversation.task_id ? (
             <EntityRef
               token="task"
@@ -637,13 +621,13 @@ export function ConversationProvenancePanel({
           ) : (
             <Absent>Not attached to a task</Absent>
           )}
-        </Fact>
-        <Fact label="First recorded">
+        </PropertyRow>
+        <PropertyRow label="First recorded">
           {formatSessionTimestamp(conversation.created_at)}
-        </Fact>
-        <Fact label="Last updated">
+        </PropertyRow>
+        <PropertyRow label="Last updated">
           {formatSessionTimestamp(conversation.updated_at)}
-        </Fact>
+        </PropertyRow>
       </Group>
 
       {/* ── From the sync layer ──────────────────────────────────────────── */}
@@ -657,43 +641,43 @@ export function ConversationProvenancePanel({
               </span>
             }
           >
-            <Fact
+            <PropertyRow
               label="Fidelity"
-              hint={fidelityVerdict(current.fidelity).detail}
+              help={fidelityVerdict(current.fidelity).detail}
             >
               {fidelityVerdict(current.fidelity).detail}
-            </Fact>
-            <Fact label="Binding state">{humanizeIdentifier(current.status)}</Fact>
-            <Fact label="Arrived by">{humanizeIdentifier(current.origin)}</Fact>
-            <Fact label="Last delivery">
+            </PropertyRow>
+            <PropertyRow label="Binding state">{humanizeIdentifier(current.status)}</PropertyRow>
+            <PropertyRow label="Arrived by">{humanizeIdentifier(current.origin)}</PropertyRow>
+            <PropertyRow label="Last delivery">
               <DeliveryValue binding={current} />
-            </Fact>
-            <Fact label="Session ended">
+            </PropertyRow>
+            <PropertyRow label="Session ended">
               {current.ended_at ? (
                 formatSessionTimestamp(current.ended_at)
               ) : (
                 <Absent>Not ended</Absent>
               )}
-            </Fact>
-            <Fact label="Managed runtime">
+            </PropertyRow>
+            <PropertyRow label="Managed runtime">
               {current.runtime_kind ? (
                 humanizeIdentifier(current.runtime_kind)
               ) : (
                 <Absent>None recorded</Absent>
               )}
-            </Fact>
-            <Fact label="Recorded capabilities">
+            </PropertyRow>
+            <PropertyRow label="Recorded capabilities">
               {recordedCapabilityLabels(current.capabilities).join(", ") || (
                 <Absent>None recorded</Absent>
               )}
-            </Fact>
-            <Fact label="Writer lease">
+            </PropertyRow>
+            <PropertyRow label="Writer lease">
               {current.writer_lease_expires_at ? (
                 `Expires ${formatSessionTimestamp(current.writer_lease_expires_at)}`
               ) : (
                 <Absent>No active lease</Absent>
               )}
-            </Fact>
+            </PropertyRow>
           </Group>
           {bindings.length > 1 && (
             <p className="text-xs text-muted-foreground">
@@ -710,13 +694,13 @@ export function ConversationProvenancePanel({
         </>
       ) : state === "ready" ? (
         <Group source="sync">
-          <Fact label="Delivery">
+          <PropertyRow label="Delivery">
             <Absent>
               {awaitingFirstDelivery
                 ? NO_DELIVERY_FROM_ANY_TOOL
                 : "No coding-session binding is attached. Nothing was synced from a provider — this conversation was created inside AI Matrx."}
             </Absent>
-          </Fact>
+          </PropertyRow>
         </Group>
       ) : null}
     </div>

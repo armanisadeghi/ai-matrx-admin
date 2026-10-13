@@ -12,7 +12,7 @@ import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { BellRing, CheckCircle2, Circle, Copy, Download, Eye, FileText, LayoutTemplate, Lock, PenLine, Pencil, RotateCw, ShieldCheck, XCircle } from "lucide-react";
 
-import { Badge, Button, Field, SegmentedControl, Switch } from "@ai-matrx/design-system/controls";
+import { Badge, Button, Field, SegmentedControl, Switch, PropertyRow } from "@ai-matrx/design-system/controls";
 import { downloadFile } from "@ai-matrx/kit/download";
 import { RecordPageHeader, type RecordPageAction } from "@/features/shell/components/header/templates/RecordPageHeader";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -266,12 +266,12 @@ export function EnvelopeDetail({ envelopeId }: { envelopeId: string }) {
               </p>
             )}
             <dl className="grid grid-cols-2 gap-x-6 gap-y-2 type-body sm:grid-cols-4">
-              <Fact label="Sent" value={when(text(e, "sent_at"))} />
-              <Fact label={left !== null && left <= 7 && left >= 0 ? "Expires soon" : "Expires"} value={left !== null && left >= 0 && left <= 7 ? `In ${left} ${left === 1 ? "day" : "days"}` : when(text(e, "expires_at"))} />
-              <Fact label="Completed" value={when(text(e, "completed_at"))} />
-              <Fact label="Order" value={text(e, "signing_order") === "parallel" ? "All at once" : "In order"} />
+              <PropertyRow label="Sent" value={when(text(e, "sent_at"))} />
+              <PropertyRow label={left !== null && left <= 7 && left >= 0 ? "Expires soon" : "Expires"} value={left !== null && left >= 0 && left <= 7 ? `In ${left} ${left === 1 ? "day" : "days"}` : when(text(e, "expires_at"))} />
+              <PropertyRow label="Completed" value={when(text(e, "completed_at"))} />
+              <PropertyRow label="Order" value={text(e, "signing_order") === "parallel" ? "All at once" : "In order"} />
             </dl>
-            {text(e, "email_subject") && <Fact label="Email subject" value={text(e, "email_subject") ?? ""} />}
+            {text(e, "email_subject") && <PropertyRow label="Email subject" value={text(e, "email_subject") ?? ""} />}
             {text(e, "message") && <p className="rounded-md border border-border bg-card p-3 type-body">{text(e, "message")}</p>}
             {text(e, "void_reason") && <p className="type-body text-muted-foreground">Voided: {text(e, "void_reason")}</p>}
 
@@ -616,15 +616,6 @@ function Section({ title, children }: { title: string; children: React.ReactNode
       <h2 className="type-title text-foreground">{title}</h2>
       {children}
     </section>
-  );
-}
-
-function Fact({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="min-w-0">
-      <dt className="type-secondary text-muted-foreground">{label}</dt>
-      <dd className="truncate">{value}</dd>
-    </div>
   );
 }
 

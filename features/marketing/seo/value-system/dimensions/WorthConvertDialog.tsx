@@ -44,7 +44,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Input } from "@ai-matrx/design-system/controls";
+import { Input, PropertyRow } from "@ai-matrx/design-system/controls";
 import { Skeleton } from "@ai-matrx/design-system";
 import { InlineQueryError } from "@/features/marketing/components/shared/MarketingUi";
 import { formatCount } from "@/features/marketing/search-console/types";
@@ -59,15 +59,6 @@ import {
   type SiteWorthRow,
 } from "./data";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
-
-function Line({ label, value }: { label: string; value: React.ReactNode }) {
-  return (
-    <div className="flex items-baseline justify-between gap-3 py-0.5">
-      <span className="text-[11px] text-muted-foreground">{label}</span>
-      <span className="text-[11px] font-semibold tabular-nums text-foreground">{value}</span>
-    </div>
-  );
-}
 
 function signed(n: number): string {
   return `${n > 0 ? "+" : n < 0 ? "−" : ""}${Math.abs(n)}`;
@@ -241,23 +232,23 @@ export function WorthConvertDialog({
                     </span>{" "}
                     points.
                   </p>
-                  <Line
+                  <PropertyRow
                     label={`Keywords carrying this in ${windowLabel}`}
                     value={formatCount(data?.stamped_keywords ?? 0)}
                   />
-                  <Line
+                  <PropertyRow
                     label="…that the multiplier actually acts on today"
                     value={formatCount(data?.contributing_keywords ?? 0)}
                   />
-                  <Line
+                  <PropertyRow
                     label="Their median T (points before multipliers)"
                     value={medianT === null ? "—" : medianT}
                   />
-                  <Line
+                  <PropertyRow
                     label={`Median T × (${factor} − 1)`}
                     value={equiv?.median === null || equiv?.median === undefined ? "—" : signed(equiv.median)}
                   />
-                  <Line
+                  <PropertyRow
                     label="Spread across those keywords"
                     value={
                       equiv?.p25 === null || equiv?.p25 === undefined
