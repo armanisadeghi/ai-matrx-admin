@@ -842,16 +842,21 @@ button.shell-nav-item {
 }
 
 .shell-root > #shell-sidebar-toggle:checked ~ * .shell-nav-search {
-  box-shadow: inset 0 0 0 1px var(--border);
+  box-shadow: inset 0 0 0 1px hsl(var(--border));
 }
 
 .shell-root > #shell-sidebar-toggle:checked ~ * .shell-nav-search:hover {
-  box-shadow: inset 0 0 0 1px var(--ring);
+  box-shadow: inset 0 0 0 1px hsl(var(--ring) / 0.6);
 }
 
 .shell-nav-search .shell-nav-search-placeholder {
-  color: var(--muted-foreground);
+  color: hsl(var(--muted-foreground));
   font-weight: 400;
+}
+
+/* The palette's dialog close button: centred on its 48px input row. */
+[role="dialog"]:has([data-menu-search-palette]) > button.absolute {
+  top: 0.75rem;
 }
 
 .shell-nav-search-kbd {

@@ -11,7 +11,7 @@
 // Rows run exactly what the sidebar row would: navigate, open in a new tab,
 // open a window panel, or run a create action.
 
-import { useRef, useState, useTransition, type ReactNode } from "react";
+import { useRef, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { CornerDownLeft } from "lucide-react";
 import { IconResolver } from "@ai-matrx/icons";
@@ -147,7 +147,6 @@ interface MenuSearchPaletteProps {
 
 export default function MenuSearchPalette({ open, onOpenChange, initialQuery = "" }: MenuSearchPaletteProps) {
   const router = useRouter();
-  const [, startTransition] = useTransition();
   const navActions = useNavActions();
   const navPanelActions = useNavPanelActions();
   const isAuthenticated = useAppSelector(selectHasAccount);
@@ -185,7 +184,7 @@ export default function MenuSearchPalette({ open, onOpenChange, initialQuery = "
       window.location.assign(crossOrigin);
       return;
     }
-    startTransition(() => router.push(entry.href));
+    router.push(entry.href);
   };
 
   const renderRow = (entry: MenuSearchEntry, groupKey: string) => (
@@ -232,6 +231,7 @@ export default function MenuSearchPalette({ open, onOpenChange, initialQuery = "
           if (event.key === "Enter") newTabIntent.current = event.metaKey || event.ctrlKey;
         }}
         className="bg-transparent"
+        data-menu-search-palette=""
       >
         <CommandInput
           autoFocus
@@ -244,7 +244,7 @@ export default function MenuSearchPalette({ open, onOpenChange, initialQuery = "
           aria-label="Search the menu"
           className="pr-8"
         />
-        <CommandList className="max-h-[min(60vh,28rem)]">
+        <CommandList className="h-[min(60vh,28rem)] max-h-none">
           {trimmed ? (
             <>
               <CommandEmpty>No menu item matches “{trimmed}”.</CommandEmpty>
