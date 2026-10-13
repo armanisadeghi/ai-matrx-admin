@@ -7,7 +7,7 @@
 // Verify:      pnpm check:kind-types   (CI-blocking freshness gate)
 // Twin guard:  pnpm check:kind-type-twins
 //
-// 611 active kinds. THESE ARE THE ONLY KIND PAYLOAD TYPES IN THE REPO.
+// 613 active kinds. THESE ARE THE ONLY KIND PAYLOAD TYPES IN THE REPO.
 // A hand-written interface mirroring a registered kind is a defect — derive
 // (Pick/Omit) from the type here instead, and never re-declare it.
 //
@@ -21,7 +21,7 @@
 // ─────────────────────────────────────────────────────────────────────────
 
 /** Structural fingerprint of the registry rows this artifact was generated from. */
-export const KIND_REGISTRY_FINGERPRINT = "981d263643a1";
+export const KIND_REGISTRY_FINGERPRINT = "ff3ee6063f30";
 
 // ─────────────────────────────────────────────────────────────────────────
 // Shared nested structures. Deduped by structure across the registry — an
@@ -1365,6 +1365,35 @@ export interface BiasRiskSignals {
   is_affiliate_or_sales_driven?: boolean;
   lacks_sources_for_major_claims?: boolean;
   contains_obvious_factual_errors?: boolean;
+}
+
+/**
+ * * From kind `brand_key_people`.
+ */
+export interface BrandKeyPerson {
+  name: string;
+  role: "owner" | "founder" | "partner" | "doctor" | "executive" | "staff" | "other";
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  /**
+   * One line: why this person and this certainty.
+   */
+  reason: string;
+  certainty: "confirmed" | "likely" | "possible";
+  /**
+   * The title exactly as the source writes it.
+   */
+  title_text?: string | null;
+  /**
+   * The person's own profiles (LinkedIn…).
+   */
+  profile_urls?: string[];
+  /**
+   * The pages that tie them to this brand.
+   */
+  evidence_urls?: string[];
 }
 
 /**
@@ -9880,6 +9909,21 @@ export interface BranchResult {
 }
 
 /**
+ * Kind `brand_early_facts` (registry v2).
+ */
+export interface BrandEarlyFacts {
+  facts: ({
+    field?: string;
+    value?: string;
+    __kind: "brand_early_fact";
+    certainty?: string;
+    confirmed?: boolean;
+    evidence_urls?: string[];
+  })[];
+  __kind: "brand_early_facts";
+}
+
+/**
  * Kind `brand_evidence` (registry v3).
  */
 export interface BrandEvidence {
@@ -9944,6 +9988,20 @@ export interface BrandEvidenceFindings {
     profile_id?: string | number | boolean | Record<string, unknown> | unknown[] | null;
     certainty_reasons?: unknown[];
   })[];
+}
+
+/**
+ * Who represents the business, each with role, evidence and certainty. A proposal: nobody is
+ * saved without a person accepting them.
+ *  *
+ *  * Kind `brand_key_people` (registry v4).
+ */
+export interface BrandKeyPeople {
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "brand_key_people";
+  people?: BrandKeyPerson[];
 }
 
 /**
@@ -27122,8 +27180,10 @@ export type GeneratedKindSlug =
   | "blog_post_outline"
   | "boolean"
   | "branch_result"
+  | "brand_early_facts"
   | "brand_evidence"
   | "brand_evidence_findings"
+  | "brand_key_people"
   | "broken_link_prospecting_preview"
   | "broken_link_prospecting_report"
   | "bulk_result"
@@ -27736,8 +27796,10 @@ export interface KindPayloadBySlug {
   "blog_post_outline": BlogPostOutline;
   "boolean": BooleanKind;
   "branch_result": BranchResult;
+  "brand_early_facts": BrandEarlyFacts;
   "brand_evidence": BrandEvidence;
   "brand_evidence_findings": BrandEvidenceFindings;
+  "brand_key_people": BrandKeyPeople;
   "broken_link_prospecting_preview": BrokenLinkProspectingPreview;
   "broken_link_prospecting_report": BrokenLinkProspectingReport;
   "bulk_result": BulkResult;
@@ -28354,8 +28416,10 @@ export const GENERATED_KIND_SLUGS: readonly GeneratedKindSlug[] = [
   "blog_post_outline",
   "boolean",
   "branch_result",
+  "brand_early_facts",
   "brand_evidence",
   "brand_evidence_findings",
+  "brand_key_people",
   "broken_link_prospecting_preview",
   "broken_link_prospecting_report",
   "bulk_result",
