@@ -5,6 +5,9 @@
  * an agent, mandate or automation whose single run cost more than the threshold ($1, the knob
  * billing.run_approval/threshold_usd) waits for approval after that first run. A run = one
  * request (every execution sharing a request id); an automation's run = one scheduler / workflow run.
+ * A run's cost is what that agent's own conversations spent: platform._agent_spend_facts splits a
+ * wrapper execution (research topic, schedule, document job…) by each meter's conversation agent
+ * (2026-10-13 — a research run's $1.82 had been charged in full to the YouTube analyzer's $0.61).
  *
  * Read + write path, all permission-checked RPCs in `billing`:
  *   - run_approval_list(p_org_id)          — the page rows (null = every org, super admin);
