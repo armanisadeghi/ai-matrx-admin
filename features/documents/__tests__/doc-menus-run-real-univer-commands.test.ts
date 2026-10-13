@@ -43,6 +43,8 @@ function univerCommandIds(): Set<string> {
   return ids;
 }
 
+const PAGE_LINKS = new Set(["help.privacy", "help.terms", "help.feedback"]);
+
 function allRunnables(host: DocChromeHost) {
   const toolbar = buildDocToolbar(host);
   return [
@@ -66,6 +68,9 @@ describe("document menus and toolbar → Univer", () => {
 
   it("no row is a no-op, and zoom names the document", () => {
     for (const a of allRunnables(fakeHost().host)) {
+      // A Google row we cannot run yet announces its registered promise (google-menu-parity test);
+      // Help's policy links open pages. Neither is an editor command.
+      if ((a as { soon?: string }).soon || PAGE_LINKS.has(a.id)) continue;
       const { host, calls } = fakeHost();
       void allRunnables(host).find((r) => r.id === a.id)!.run();
       expect({ id: a.id, reached: calls.length > 0 }).toEqual({ id: a.id, reached: true });

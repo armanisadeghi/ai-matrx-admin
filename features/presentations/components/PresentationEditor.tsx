@@ -26,6 +26,7 @@ import { TextInputDialog } from "@ai-matrx/design-system";
 import { useIsMobile } from "@ai-matrx/kit/media-query";
 import { EditorDocumentHeader } from "@/features/shell/components/header/templates/EditorDocumentHeader";
 import { EditorMenuBar, useMenuBarState } from "@/components/editor-chrome/EditorMenuBar";
+import { useOpenFeedbackWindow } from "@/features/overlays/openers/feedbackDialog";
 import { EditorToolbar } from "@/components/editor-chrome/EditorToolbar";
 import { EditorRibbon } from "@/components/editor-chrome/EditorRibbon";
 import { OfficeLookSwitch } from "@/features/file-actions/skin/OfficeLookSwitch";
@@ -91,6 +92,7 @@ export function PresentationEditor({ presentationId }: { presentationId: string 
   const isPhone = useIsMobile();
   const [row, setRow] = useState<PresentationRow | null>(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
+  const openFeedback = useOpenFeedbackWindow();
   const [loadError, setLoadError] = useState<string | null>(null);
   const [canEdit, setCanEdit] = useState(false);
   const [hist, dispatchHist] = useReducer(historyReducer, initialHistory(blankDeck()));
@@ -231,6 +233,7 @@ export function PresentationEditor({ presentationId }: { presentationId: string 
     removeImage: () => dispatch({ type: "setImage", index: current, image: null }),
     hasImage: Boolean(slide && (slide.image_url || slide.imageUrl || getPath(slide, "extra.image") || getPath(slide, "extra.imagePrompt"))),
     showShortcuts: () => setShortcutsOpen(true),
+    sendFeedback: () => openFeedback(),
   };
   const createNew = async () => {
     try {

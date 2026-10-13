@@ -103,6 +103,8 @@ function univerCommandIds(): Set<string> {
   return ids;
 }
 
+const PAGE_LINKS = new Set(["help.privacy", "help.terms", "help.feedback"]);
+
 function allRunnables(host: SheetChromeHost) {
   const menus = buildSheetMenus(host);
   const toolbar = buildSheetToolbar(host);
@@ -127,6 +129,9 @@ describe("workbook menus and toolbar → Univer", () => {
 
   it("no row is a no-op", async () => {
     for (const a of allRunnables(fakeHost().host)) {
+      // A Google row we cannot run yet announces its registered promise (google-menu-parity test);
+      // Help's policy links open pages. Neither is an editor command.
+      if ((a as { soon?: string }).soon || PAGE_LINKS.has(a.id)) continue;
       const { host, calls } = fakeHost([["  x  "], ["  x  "]], [[""], [""]]);
       const same = allRunnables(host).find((r) => r.id === a.id)!;
       await same.run();

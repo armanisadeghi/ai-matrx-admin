@@ -40,8 +40,8 @@ const find = (host: DeckChromeHost, id: string) => {
 };
 
 describe("presentation menu commands run the real deck actions", () => {
-  it("menu bar is Google Slides' (minus Arrange/Format), File is the shared menu", () => {
-    expect(buildDeckMenus(fakeHost().host).map((m) => m.label)).toEqual(["Edit", "View", "Insert", "Slide", "Help"]);
+  it("menu bar is Google Slides', File is the shared menu", () => {
+    expect(buildDeckMenus(fakeHost().host).map((m) => m.label)).toEqual(["Edit", "View", "Insert", "Format", "Slide", "Arrange", "Tools", "Extensions", "Help"]);
   });
   it.each([
     ["slide.new", { type: "addSlide", after: 1 }],
