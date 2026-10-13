@@ -3,7 +3,7 @@
   "updated": "2026-10-07",
   "sha": "e389e62b291c8f8958b40ae46c3c3cb67335a4b2",
   "sites": 35138,
-  "count": 22,
+  "count": 23,
   "ids": [
     "arbitrary-text-size|features/esign/signer/parts/PaperField.tsx",
     "primitive-visual-class|components/editor-chrome/EditorRibbon.tsx",
@@ -20,6 +20,7 @@
     "raw-color|features/file-actions/home/FileHome.tsx",
     "raw-color|features/shell/components/header/templates/EditorDocumentHeader.tsx",
     "styled-raw-button|components/editor-chrome/EditorRibbon.tsx",
+    "styled-raw-button|components/navigation/MetricNavigation.tsx",
     "styled-raw-button|features/ai-work/live/components/LiveSidebar.tsx",
     "styled-raw-button|features/ai-work/live/components/RoomDetail.tsx",
     "styled-raw-button|features/connectors/IntegrationDirectory.tsx",
@@ -11316,6 +11317,11 @@
       "reason": "White glyph on the product's app-colour tile (both looks already used this on the Google tile palette)",
       "accepted_by": "Armani Sadeghi",
       "date": "2026-10-12"
+    },
+    "styled-raw-button|components/navigation/MetricNavigation.tsx": {
+      "reason": "The More trigger is a tab of this nav primitive itself and must match its sibling link tabs exactly; no design-system control has the nav-tab geometry",
+      "accepted_by": "Armani Sadeghi",
+      "date": "2026-10-13"
     }
   }
 }
