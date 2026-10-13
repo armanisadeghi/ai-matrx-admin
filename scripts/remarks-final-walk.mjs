@@ -484,7 +484,8 @@ await item(5, "in-place edit appends words -> chip -> send -> user card shows co
   await pm.waitFor({ timeout: 60000 });
   await page.waitForTimeout(1500);
   await pm.locator("p").first().click();
-  await page.keyboard.press("End");
+  await page.waitForTimeout(800);
+  await page.keyboard.press("Meta+ArrowRight");
   await page.keyboard.type(" Celebrate with the team.");
   await page.waitForTimeout(400);
   await page.keyboard.press("Meta+s");
@@ -499,6 +500,14 @@ await item(5, "in-place edit appends words -> chip -> send -> user card shows co
   t.ev.cardText = card.text;
   t.ev.cardMarks = (card.html.match(/<(ins|del|mark)[^>]*>[^<]*/g) || []).slice(0, 8);
   await shot(page, "5-card");
+  // Expand the card: the diff's rows must be the removed line and the added line, no trailing empty "+" row.
+  await page.evaluate((us) => { const e = [...document.querySelectorAll(us)].at(-1); e.querySelector("button:has(svg.lucide-chevron-down), button[aria-expanded=false]")?.click(); }, US);
+  await page.waitForTimeout(800);
+  await shot(page, "5-card-expanded");
+  t.ev.diffRows = await page.evaluate((us) => { const d = [...document.querySelectorAll(us)].at(-1)?.querySelector("[data-remark-diff]"); return d ? { text: d.innerText, rows: d.querySelectorAll("div,tr").length } : null; }, US);
+  const emptyAdded = (t.ev.diffRows?.text ?? "").split("\n").map((l) => l.trim()).filter(Boolean);
+  t.ev.diffLines = emptyAdded;
+  t.ok(emptyAdded.at(-1) !== "+", 'the card ends with an empty "+" row: ' + JSON.stringify(emptyAdded.slice(-3)));
   const occurrences = original ? card.text.split(original.slice(0, 40)).length - 1 : 0;
   t.ev.originalOccurrencesInCard = occurrences;
   t.ok(/Celebrate with the team/.test(card.text), "card does not show the added words");
