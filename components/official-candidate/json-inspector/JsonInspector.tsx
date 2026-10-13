@@ -298,7 +298,7 @@ function JsonInspectorBody({
           className,
         )}
       >
-        <div className="flex items-center gap-1.5 px-1.5 py-0.5 border-b border-border flex-shrink-0">
+        <div className="flex items-center gap-1.5 px-1.5 py-1 border-b border-border flex-shrink-0">
           {onBack && (
             <button
               onClick={onBack}
@@ -343,7 +343,7 @@ function JsonInspectorBody({
       >
         <div
           className={cn(
-            "flex items-center gap-1.5 px-1.5 py-1 border-b border-border flex-shrink-0",
+            "flex items-center gap-1.5 px-1.5 py-0.5 border-b border-border flex-shrink-0",
             expanded && "pr-14",
           )}
         >
@@ -383,6 +383,7 @@ function JsonInspectorBody({
           <CopyButtons
             label={copyLabel}
             size="xs"
+            triggerVariant="icon"
             human={() => (value === "json" ? rawJsonText : prettyJson)}
             json={() => data}
             {...(agentCopy ? { agent: agentCopy } : { hide: ["ai" as const] })}
