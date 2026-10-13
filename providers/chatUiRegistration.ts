@@ -2,25 +2,78 @@
 // Import that module once instead of recreating its eight next/dynamic wrappers:
 // both profiles coexist on chat demos, so copies create duplicate chunk groups
 // and replace the registered component identities when the route loads.
+//
+// LAZY vs STATIC (2026-10-13, first-load campaign): component slots load through ONE
+// implementation module (chatUiRegistrationImpl.ts) via `lazySlot` below. STATIC on purpose:
+//   · ProTextarea, VoiceTextarea, ProInput — the composer and every writing box.
+//   · AppLink, ErrorBoundaryWithCapture, WorkspaceGate, OrganizationContextNotice, AccessGate —
+//     SSR / first paint of /chat/new and the (core) shell.
+//   · MatrxFloatingFrame — the shell chat dock's floating mode.
+//   · KindValueFrontDoor, StructuredValueView, TextWithDoors, CitationChip — kind-value doors
+//     drawn synchronously inside kind trees (static markup / SSR); modelled saving ~0.
+//   · JsonInspector — ResultJson draws it inside kind results rendered as static markup; kept
+//     static though lazy would save ~0.86 MB (ambiguous SSR use — the owner decides).
+//   · BlockHoverPreview, KindDataGate, MatrxDynamicPanelHost — wrappers: a loading state would
+//     hide their `children`.
+//   · AnswerTextPreview — its module is already static here through `answerPreviewText`.
+//   · CreatorRunPanel — CreatorRunPanelLazy is itself a front door; LibraryPreviewPage and
+//     NoteVersionHistoryPanel — already next/dynamic. Hooks and functions stay static.
 import "@/providers/chatUiRegistrationBase";
 import dynamic from "next/dynamic";
 import { registerChatUi } from "@ai-matrx/chat/host/ui-slots";
+import {
+  lazySlotsFrom,
+  SlotLoadingBlock,
+  SlotLoadingGlyph,
+  SlotLoadingInline,
+  SlotLoadingPanel,
+} from "@/providers/chatSlotLazy";
+// Kind-value doors: they render inside kind trees that are drawn synchronously (SSR / static
+// markup) and are reached statically elsewhere anyway — lazy here saves ~0 (modelled 0.01 MB).
+import { KindValueFrontDoor } from "@/components/official/structured-value/KindValueFrontDoor";
+import { StructuredValueView } from "@/components/official/structured-value/StructuredValueView";
+import { TextWithDoors } from "@/components/official/entity-ref/TextWithDoors";
+import CitationChip from "@/components/official/citation-chip/CitationChip";
+import { JsonInspector } from "@/components/official-candidate/json-inspector/JsonInspector";
 import { NotesAPI } from "@/features/notes/service/notesApi";
 
 const asSlot = <T,>(impl: T) => impl as unknown as never;
+
+// LAZY SLOTS — one implementation module, one `import()` (providers/chatSlotLazy.tsx explains
+// the law and the loading footprints). Registration stays synchronous; only the component loads
+// on first render.
+const lazySlot = lazySlotsFrom(() =>
+  import("@/providers/chatUiRegistrationImpl").then((m) => m.fullSlotImpls),
+);
+const HtmlPreviewFullScreenEditor = lazySlot("HtmlPreviewFullScreenEditor");
+const AgentEditAccessBadge = lazySlot("AgentEditAccessBadge", SlotLoadingInline);
+const DataRefPreviewContent = lazySlot("DataRefPreviewContent", SlotLoadingBlock);
+const NoteEditorCore = lazySlot("NoteEditorCore", SlotLoadingPanel);
+const ToolResultCanvasOpener = lazySlot("ToolResultCanvasOpener");
+const CloudBrowserHandoffCanvasOpener = lazySlot("CloudBrowserHandoffCanvasOpener");
+const SimpleTerminal = lazySlot("SimpleTerminal", SlotLoadingPanel);
+const EntityDoorControls = lazySlot("EntityDoorControls", SlotLoadingGlyph);
+const ServerNotes = lazySlot("ServerNotes");
+const ReferenceCopyButton = lazySlot("ReferenceCopyButton", SlotLoadingGlyph);
+const MandateNotesPanel = lazySlot("MandateNotesPanel", SlotLoadingBlock);
+const SurfaceBoundAgentsList = lazySlot("SurfaceBoundAgentsList", SlotLoadingBlock);
+const ProposedDirectivesZone = lazySlot("ProposedDirectivesZone");
+const EntityCommentPopover = lazySlot("EntityCommentPopover", SlotLoadingGlyph);
+const MatrxEnvelopeBlock = lazySlot("MatrxEnvelopeBlock", SlotLoadingBlock);
+const AgentOptionsMenu = lazySlot("AgentOptionsMenu", SlotLoadingGlyph);
+const AgentSaveStatus = lazySlot("AgentSaveStatus", SlotLoadingInline);
+const AgentSaveTapButton = lazySlot("AgentSaveTapButton", SlotLoadingGlyph);
+const AgentPeekDuplicateButton = lazySlot("AgentPeekDuplicateButton", SlotLoadingGlyph);
+const CustomDataBindingSummary = lazySlot("CustomDataBindingSummary", SlotLoadingInline);
+const CustomDataBindingPreview = lazySlot("CustomDataBindingPreview", SlotLoadingBlock);
+const Cost = lazySlot("Cost", SlotLoadingInline);
+const CanvasItemCard = lazySlot("CanvasItemCard", SlotLoadingBlock);
 
 import { canvasArtifactService } from "@/features/canvas/services/canvasArtifactService";
 import { SandboxFilesystemAdapter } from "@/features/code/adapters/SandboxFilesystemAdapter";
 import { HTMLPageService } from "@/features/html-pages/services/htmlPageService";
 import { sklActions } from "@/features/agent-connections/redux/skl/slice";
-import HtmlPreviewFullScreenEditor from "@/features/html-pages/components/HtmlPreviewFullScreenEditor";
-import { AgentEditAccessBadge } from "@/features/agents/components/context-policies-management/AgentEditAccessControl";
-import { DataRefPreviewContent } from "@/features/agents/components/previews/DataRefHoverPreview";
 import { BlockHoverPreview } from "@/features/agents/components/previews/BlockHoverPreview";
-import { NoteEditorCore } from "@/features/notes/components/NoteEditorCore";
-import { ToolResultCanvasOpener } from "@/features/canvas/tool-results/ToolResultCanvasOpener";
-import { CloudBrowserHandoffCanvasOpener } from "@/features/cloud-browser/components/CloudBrowserHandoffCanvasOpener";
-import { SimpleTerminal } from "@/features/code/terminal/SimpleTerminal";
 // The preview hook loads its markdown renderer (KaTeX, ~680 KB) when a preview first opens (lane AF).
 import { useHtmlPreviewStateOnDemand } from "@/features/html-pages/hooks/useHtmlPreviewStateOnDemand";
 import { fetchArtifactsForMessageThunk, updateArtifactThunk, registerArtifactThunk } from "@/lib/redux/thunks/artifactThunks";
@@ -143,29 +196,24 @@ registerChatUi({
   OrganizationContextNotice: Host_OrganizationContextNotice,
 });
 
-import { JsonInspector as Host_JsonInspector } from "@/components/official-candidate/json-inspector/JsonInspector";
 registerChatUi({
-  JsonInspector: Host_JsonInspector,
+  JsonInspector: JsonInspector,
 });
 
-import { TextWithDoors as Host_TextWithDoors } from "@/components/official/entity-ref/TextWithDoors";
 registerChatUi({
-  TextWithDoors: Host_TextWithDoors,
+  TextWithDoors: TextWithDoors,
 });
 
-import { EntityDoorControls as Host_EntityDoorControls } from "@/components/official/entity-ref/EntityDoorControls";
 registerChatUi({
-  EntityDoorControls: Host_EntityDoorControls,
+  EntityDoorControls: EntityDoorControls,
 });
 
-import { StructuredValueView as Host_StructuredValueView } from "@/components/official/structured-value/StructuredValueView";
 registerChatUi({
-  StructuredValueView: Host_StructuredValueView,
+  StructuredValueView: StructuredValueView,
 });
 
-import { KindValueFrontDoor as Host_KindValueFrontDoor } from "@/components/official/structured-value/KindValueFrontDoor";
 registerChatUi({
-  KindValueFrontDoor: Host_KindValueFrontDoor,
+  KindValueFrontDoor: KindValueFrontDoor,
 });
 
 import { KindDataGate as Host_KindDataGate } from "@/components/official/structured-value/KindDataGate";
@@ -173,9 +221,8 @@ registerChatUi({
   KindDataGate: Host_KindDataGate,
 });
 
-import { ServerNotes as Host_ServerNotes } from "@/components/official/ServerNotes";
 registerChatUi({
-  ServerNotes: Host_ServerNotes,
+  ServerNotes: ServerNotes,
 });
 
 import { MatrxFloatingFrame as Host_MatrxFloatingFrame } from "@/components/matrx/resizable/MatrxFloatingFrame";
@@ -193,29 +240,24 @@ registerChatUi({
   AccessGate: Host_AccessGate,
 });
 
-import { ReferenceCopyButton as Host_ReferenceCopyButton } from "@/features/matrx-envelope/components/ReferenceCopyButton";
 registerChatUi({
-  ReferenceCopyButton: Host_ReferenceCopyButton,
+  ReferenceCopyButton: ReferenceCopyButton,
 });
 
-import { MandateNotesPanel as Host_MandateNotesPanel } from "@/features/mandates/components/MandateNotesPanel";
 registerChatUi({
-  MandateNotesPanel: Host_MandateNotesPanel,
+  MandateNotesPanel: MandateNotesPanel,
 });
 
-import { SurfaceBoundAgentsList as Host_SurfaceBoundAgentsList } from "@/features/surfaces/components/bind/SurfaceBoundAgentsList";
 registerChatUi({
-  SurfaceBoundAgentsList: Host_SurfaceBoundAgentsList,
+  SurfaceBoundAgentsList: SurfaceBoundAgentsList,
 });
 
-import { ProposedDirectivesZone as Host_ProposedDirectivesZone } from "@/features/matrx-envelope/components/ProposedDirectivesZone";
 registerChatUi({
-  ProposedDirectivesZone: Host_ProposedDirectivesZone,
+  ProposedDirectivesZone: ProposedDirectivesZone,
 });
 
-import { EntityCommentPopover as Host_EntityCommentPopover } from "@/components/comments/EntityCommentPopover";
 registerChatUi({
-  EntityCommentPopover: Host_EntityCommentPopover,
+  EntityCommentPopover: EntityCommentPopover,
 });
 
 import { ProTextarea as Host_ProTextarea } from "@/components/official/ProTextarea";
@@ -233,14 +275,12 @@ registerChatUi({
   AppLink: Host_AppLink,
 });
 
-import Host_CitationChip from "@/components/official/citation-chip/CitationChip";
 registerChatUi({
-  CitationChip: Host_CitationChip,
+  CitationChip: CitationChip,
 });
 
-import Host_MatrxEnvelopeBlock from "@/features/matrx-envelope/MatrxEnvelopeBlock";
 registerChatUi({
-  MatrxEnvelopeBlock: Host_MatrxEnvelopeBlock,
+  MatrxEnvelopeBlock: MatrxEnvelopeBlock,
 });
 
 import { ErrorBoundaryWithCapture as Host_ErrorBoundaryWithCapture } from "@/lib/error-boundary/ErrorBoundaryWithCapture";
@@ -356,30 +396,24 @@ registerChatUi({
 });
 
 // Agent builder contributions drawn into chat (AGENT-CORE-PLAN B1).
-import { AgentOptionsMenu as Host_AgentOptionsMenu } from "@/features/agents/components/shared/AgentOptionsMenu";
-import { AgentSaveStatus as Host_AgentSaveStatus } from "@/features/agents/components/shared/AgentSaveStatus";
-import { AgentSaveTapButton as Host_AgentSaveTapButton } from "@/features/agents/components/shared/AgentSaveTapButton";
-import { AgentPeekDuplicateButton as Host_AgentPeekDuplicateButton } from "@/features/agents/components/shared/AgentPeekDuplicateButton";
 import { CreatorRunPanelLazy as Host_CreatorRunPanel } from "@/features/agents/components/run-controls/CreatorRunPanelLazy";
 registerChatUi({
-  AgentOptionsMenu: Host_AgentOptionsMenu,
-  AgentSaveStatus: Host_AgentSaveStatus,
-  AgentSaveTapButton: Host_AgentSaveTapButton,
-  AgentPeekDuplicateButton: Host_AgentPeekDuplicateButton,
+  AgentOptionsMenu: AgentOptionsMenu,
+  AgentSaveStatus: AgentSaveStatus,
+  AgentSaveTapButton: AgentSaveTapButton,
+  AgentPeekDuplicateButton: AgentPeekDuplicateButton,
   CreatorRunPanel: Host_CreatorRunPanel,
 });
 
 
 
 
-import { CustomDataBindingSummary as Host_CustomDataBindingSummary } from "@/features/agents/components/variables-management/custom-data/CustomDataBindingSummary";
 registerChatUi({
-  CustomDataBindingSummary: Host_CustomDataBindingSummary,
+  CustomDataBindingSummary: CustomDataBindingSummary,
 });
 
-import { CustomDataBindingPreview as Host_CustomDataBindingPreview } from "@/features/agents/components/variables-management/custom-data/CustomDataBindingPreview";
 registerChatUi({
-  CustomDataBindingPreview: Host_CustomDataBindingPreview,
+  CustomDataBindingPreview: CustomDataBindingPreview,
 });
 
 
@@ -415,9 +449,8 @@ registerChatUi({
   currentCostUnit: Host_currentCostUnit,
 });
 
-import { Cost as Host_Cost } from "@/components/cost/Cost";
 registerChatUi({
-  Cost: Host_Cost,
+  Cost: Cost,
 });
 
 import { currentPointsRate as Host_currentPointsRate } from "@/components/cost/pointsRate";
@@ -428,7 +461,6 @@ registerChatUi({
 });
 
 
-import { CanvasItemCard as Host_CanvasItemCard } from "@/features/canvas/components/CanvasItemCard";
 registerChatUi({
-  CanvasItemCard: Host_CanvasItemCard,
+  CanvasItemCard: CanvasItemCard,
 });

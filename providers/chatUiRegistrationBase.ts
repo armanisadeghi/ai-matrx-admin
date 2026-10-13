@@ -3,24 +3,40 @@
 // The registrations every build profile needs at shell startup. The larger
 // post-v0.4.2884 slot set remains in chatUiRegistration.ts and is selected only
 // for full profiles; demos imports it at its chat route boundary.
+//
+// LAZY vs STATIC (2026-10-13, first-load campaign): component slots load through ONE
+// implementation module (chatUiRegistrationBaseImpl.ts) via `lazySlot` below. STATIC on purpose:
+//   · DockedSidePanel — the (core) shell's chat dock draws it on first paint.
+//   · CopyButtons, AnswerValueView, EntityRef — drawn inside kind trees rendered synchronously
+//     (static markup / SSR) and reached statically elsewhere anyway (modelled saving ~0).
+//   · EditableContextMenu, MicrophoneIconButton, MicDeviceMenu — the composer on /chat/new.
+//   · ConnectorPromptHost — NewChatGreeting draws it above the composer on first paint.
+//   · NonEditableContextMenu, SearchGroup (+ its trigger) — wrappers: a loading state would hide
+//     their `children` (the SSR'd conversation, a toolbar's contents).
+//   · the eight existing next/dynamic slots (ShareModal, WindowPanel, …) — already off the first
+//     load behind their own edges; hooks and functions — a hook cannot load lazily.
+
 
 import dynamic from "next/dynamic";
 import { registerChatUi } from "@ai-matrx/chat/host/ui-slots";
+import {
+  lazySlotsFrom,
+  SlotLoadingBlock,
+  SlotLoadingControl,
+  SlotLoadingGlyph,
+  SlotLoadingGlyphSmall,
+  SlotLoadingInline,
+  SlotLoadingPanel,
+} from "@/providers/chatSlotLazy";
+// Kind-value doors: they render inside kind trees that are drawn synchronously (SSR / static
+// markup) and are reached statically elsewhere anyway — lazy here saves ~0 (modelled 0.01 MB).
 import { CopyButtons } from "@/components/agent-copy/CopyButtons";
-import { InfoHint } from "@/components/official/InfoHint";
 import { AnswerValueView } from "@/components/official/structured-value/AnswerValueView";
-import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { EntityRef } from "@/components/official/entity-ref/EntityRef";
-import AdvancedMenu from "@/components/official/AdvancedMenu";
-import { AuthGateDialog } from "@/components/dialogs/AuthGateDialog";
-import { EmailInputDialog } from "@/components/dialogs/EmailInputDialog";
 import { DockedSidePanel } from "@/components/official/side-panel/DockedSidePanel";
 import { EditableContextMenu } from "@ai-matrx/context-menu/react";
 import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
-import { TableChooser } from "@/features/unified-data/hub/TableChooser";
 import { useTablesEverywhere } from "@/features/unified-data/hub/useTablesEverywhere";
-import { FileResourceChip } from "@/features/files/components/preview/FileResourceChip";
-import { ConnectorMark } from "@/features/connectors/ConnectorMark";
 import { connectorDefinitionFromMcp } from "@/features/connectors/live-connectors";
 import { useClipboardPasteWithDataOffer } from "@/features/data-sources/usePasteDataOffer";
 import { useCenterControlFit } from "@/features/shell/components/header/useCenterControlFit";
@@ -32,7 +48,6 @@ import { registerKindValueMarkdown } from "@ai-matrx/content-ir/surfaces";
 import { useKnowledgeAttachSearch } from "@/features/resource-manager/resource-picker/useKnowledgeAttachSearch";
 import { useConversationAttachments } from "@/features/connectors/useConversationAttachments";
 import { useHeldWriteTableName } from "@/features/record-change-approvals/useHeldWriteTableName";
-import { WebpageSnapshotView } from "@/features/resource-manager/webpage/WebpageSnapshotView";
 import { getManifest as getSurfaceManifest } from "@ai-matrx/chat/surfaces/runtime/registry";
 import {
   usePageCapture,
@@ -43,21 +58,12 @@ import {
   attachConversationResource,
   detachConversationResource,
 } from "@/features/connectors/attachments.service";
-import { AttachedResourcesSection } from "@/features/connectors/AttachedResourcesSection";
 import { ConnectorPromptHost } from "@/features/connectors/ConnectorPromptHost";
 import { useConnectMcpServer } from "@/features/connectors/useConnectMcpServer";
 import { resolveSystemOrgId } from "@/lib/organizations/systemOrg";
 import { createClient as createAppClient } from "@/utils/supabase/client";
 import { projectsDb } from "@/utils/supabase/projectsDb";
 import { NotesAPI } from "@/features/notes/service/notesApi";
-import { MessageFilesStrip } from "@/features/code/views/history/MessageFilesStrip";
-import { RulebookNudge } from "@/features/masterwork/oracle/RulebookNudge";
-import { NegativeVerdictFollowUp } from "@/features/review-walk/components/NegativeVerdictFollowUp";
-import { SpeakerButton } from "@/features/tts/components/SpeakerButton";
-import { GmailReviewCard } from "@/features/google-workspace/agent/GmailReviewCard";
-import { ShareButton } from "@/features/sharing/components/ShareButton";
-import { ReviewAnswersLink } from "@/features/agents/decision-review/components/ReviewAnswersLink";
-import { RecordChangeApprovalCard } from "@/features/record-change-approvals/RecordChangeApprovalCard";
 import {
   traceWarRoomRenderPath,
   isWarRoomThreadAgentSurface,
@@ -66,7 +72,6 @@ import {
   useOpenCloudBrowserCanvas,
   cloudBrowserCanvasSourceId,
 } from "@/features/cloud-browser/hooks/useOpenCloudBrowserCanvas";
-import { SystemInstructionModal } from "@/features/agents/components/builder/message-builders/system-instructions/SystemInstructionModal";
 import { flattenResourcePickerItems } from "@/features/resource-manager/resource-picker/resource-picker-menu-items";
 import { useAttachResourcePicker } from "@/features/connectors/useAttachResourcePicker";
 import { usePopoutContainer } from "@/features/window-panels/popout/usePopoutContainer";
@@ -84,6 +89,38 @@ import { kindValueToMarkdown } from "@/features/canvas/export/exportArtifactMark
  * contract rather than the host component's implementation signature.
  */
 const asSlot = <T>(impl: T) => impl as unknown as never;
+
+// LAZY SLOTS — one implementation module, one `import()` (providers/chatSlotLazy.tsx explains
+// the law and the loading footprints). Registration stays synchronous; only the component loads
+// on first render.
+const lazySlot = lazySlotsFrom(() =>
+  import("@/providers/chatUiRegistrationBaseImpl").then((m) => m.baseSlotImpls),
+);
+const InfoHint = lazySlot("InfoHint", SlotLoadingGlyphSmall);
+const ErrorAlchemyMenu = lazySlot("ErrorAlchemyMenu", SlotLoadingGlyph);
+const AdvancedMenu = lazySlot("AdvancedMenu");
+const AuthGateDialog = lazySlot("AuthGateDialog");
+const EmailInputDialog = lazySlot("EmailInputDialog");
+const TableChooser = lazySlot("TableChooser", SlotLoadingControl);
+const FileResourceChip = lazySlot("FileResourceChip", SlotLoadingInline);
+const ConnectorMark = lazySlot("ConnectorMark", SlotLoadingGlyphSmall);
+const AttachedResourcesSection = lazySlot("AttachedResourcesSection", SlotLoadingBlock);
+const WebpageSnapshotView = lazySlot("WebpageSnapshotView", SlotLoadingPanel);
+const MessageFilesStrip = lazySlot("MessageFilesStrip");
+const RulebookNudge = lazySlot("RulebookNudge");
+const NegativeVerdictFollowUp = lazySlot("NegativeVerdictFollowUp");
+const SpeakerButton = lazySlot("SpeakerButton", SlotLoadingGlyph);
+const GmailReviewCard = lazySlot("GmailReviewCard", SlotLoadingBlock);
+const ShareButton = lazySlot("ShareButton", SlotLoadingGlyph);
+const ReviewAnswersLink = lazySlot("ReviewAnswersLink");
+const RecordChangeApprovalCard = lazySlot("RecordChangeApprovalCard", SlotLoadingBlock);
+const SystemInstructionModal = lazySlot("SystemInstructionModal");
+const FileRagBadge = lazySlot("FileRagBadge");
+const MediaAttachmentThumbnail = lazySlot("MediaAttachmentThumbnail", SlotLoadingGlyph);
+const UnifiedImageBlockRenderer = lazySlot("UnifiedImageBlockRenderer", SlotLoadingBlock);
+const TranscriptionLoader = lazySlot("TranscriptionLoader", SlotLoadingInline);
+const PdfNamedSurfaceSwitcher = lazySlot("PdfNamedSurfaceSwitcher", SlotLoadingControl);
+const ChangeDiff = lazySlot("ChangeDiff", SlotLoadingBlock);
 
 const ShareModal = dynamic(
   () =>
@@ -130,15 +167,9 @@ const ResourcePickerWindow = dynamic(
   { ssr: false },
 );
 
-import { FileRagBadge } from "@/features/files/components/core/FileBadges/FileRagBadge";
-import { MediaAttachmentThumbnail } from "@/features/files/components/inline/MediaAttachmentThumbnail";
-import { UnifiedImageBlockRenderer } from "@/features/files/blocks/image/UnifiedImageBlockRenderer";
 import { MicrophoneIconButton } from "@/features/audio/components/MicrophoneIconButton";
-import { TranscriptionLoader } from "@/features/audio/components/TranscriptionLoader";
 import { MicDeviceMenu } from "@/components/audio/MicDeviceMenu";
-import { PdfNamedSurfaceSwitcher } from "@/features/pdf/components/PdfNamedSurfaceSwitcher";
 import { resolvePdfSurfaceIds } from "@/features/pdf/hooks/usePdfSurfaceLinks";
-import { ChangeDiff } from "@/components/ui/change-diff";
 import {
   SearchGroup,
   SearchGroupTrigger,

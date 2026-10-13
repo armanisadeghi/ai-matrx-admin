@@ -32,10 +32,8 @@
 // question, answered by the Written-by column in the grid and the contact's own
 // stamp, not by this list.
 
-import {
-  AnchorRecordsList,
-  useAnchorRecords,
-} from "@/features/content-ir/records/AnchorRecordsList";
+import { AnchorRecordsList } from "@/features/content-ir/records/AnchorRecordsList";
+import { useAnchorRecords } from "@/features/content-ir/records/useAnchorRecords";
 import { SectionCard } from "./SectionCard";
 import { AGENT_ICON } from "@/components/icons/domain-icons";
 

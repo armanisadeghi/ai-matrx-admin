@@ -27,115 +27,15 @@
  * expected something knows whether to wait, to act, or to report a bug.
  */
 
-import { useCallback, useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { RotateCw } from "lucide-react";
 import { ArchivedDisclosure } from "@ai-matrx/design-system";
 import { ConfirmationBadge } from "@/features/content-ir/records/ConfirmationBadge";
-import {
-  fetchRecordsForAnchor,
-  subscribeToKindRecordChanges,
-  type KindRecord,
-  type RecordAnchor,
-} from "@/features/content-ir/records/kind-record-service";
+import type { KindRecord } from "@/features/content-ir/records/kind-record-service";
+import type { AnchorRecordsState } from "@/features/content-ir/records/useAnchorRecords";
 import { shapeInstancePermalink } from "@/features/content-ir/studio/constants";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
-
-export interface AnchorRecordsState {
-  status: "loading" | "ready" | "error";
-  /** Every record, archived included — the two lists below are derived. */
-  records: KindRecord[];
-  active: KindRecord[];
-  archived: KindRecord[];
-  message: string | null;
-  reload: () => void;
-}
-
-const EMPTY: KindRecord[] = [];
-
-/** One completed read, stamped with the request it answers. */
-interface Answer {
-  key: string;
-  ok: boolean;
-  records: KindRecord[];
-  message: string | null;
-}
-
-/**
- * Read an anchor's records, and keep them true while the reader is looking.
- *
- * `enabled` is THE ZERO-PREFETCH RULE made explicit: a popover that is never
- * opened costs no query. A section that is on the page passes `true`.
- */
-export function useAnchorRecords(
-  anchor: RecordAnchor | null,
-  enabled = true,
-): AnchorRecordsState {
-  const [answer, setAnswer] = useState<Answer | null>(null);
-  const [reloadKey, setReloadKey] = useState(0);
-  const reload = useCallback(() => setReloadKey((n) => n + 1), []);
-
-  const anchorType = anchor?.type ?? null;
-  const anchorId = anchor?.id ?? null;
-  // The request said ONCE. An answer is rendered only while it still answers
-  // the question being asked, so switching anchor (or asking again) reads as
-  // "loading" WITHOUT a reset write in the effect body — the cascading-render
-  // pattern React now refuses.
-  const requestKey =
-    enabled && anchorType && anchorId
-      ? `${anchorType}:${anchorId}:${reloadKey}`
-      : null;
-
-  useEffect(() => {
-    if (!requestKey || !anchorType || !anchorId) return;
-    let cancelled = false;
-    void (async () => {
-      const result = await fetchRecordsForAnchor({
-        type: anchorType,
-        id: anchorId,
-      });
-      if (cancelled) return;
-      setAnswer(
-        result.ok
-          ? { key: requestKey, ok: true, records: result.value, message: null }
-          : {
-              key: requestKey,
-              ok: false,
-              records: EMPTY,
-              message: result.message,
-            },
-      );
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [requestKey, anchorType, anchorId]);
-
-  // A record saved, confirmed or archived elsewhere must not leave this list
-  // showing something that is already false (THE RECORD CHANGE BUS).
-  useEffect(() => {
-    if (!enabled) return;
-    return subscribeToKindRecordChanges(() => setReloadKey((n) => n + 1));
-  }, [enabled]);
-
-  const current = answer && answer.key === requestKey ? answer : null;
-  const status: "loading" | "ready" | "error" = !current
-    ? "loading"
-    : current.ok
-      ? "ready"
-      : "error";
-  const records = current?.records ?? EMPTY;
-  const message = current?.message ?? null;
-
-  return {
-    status,
-    records,
-    active: records.filter((r) => r.archivedAt === null),
-    archived: records.filter((r) => r.archivedAt !== null),
-    message,
-    reload,
-  };
-}
 
 export interface AnchorRecordsListProps {
   state: AnchorRecordsState;
