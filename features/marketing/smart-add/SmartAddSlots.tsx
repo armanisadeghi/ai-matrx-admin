@@ -11,12 +11,13 @@
  */
 
 import { useState } from "react";
-import { Check, ImageOff, Maximize2, Moon, Star, Sun, Tag, X } from "lucide-react";
+import { Check, Maximize2, Moon, Star, Sun, Tag, X } from "lucide-react";
 import { Button } from "@ai-matrx/design-system/controls";
 import { formatCount } from "@ai-matrx/kit/format";
 import { profileAvatarDoor } from "@/features/marketing/social/server";
 import { PlatformMark, platformLabel } from "@/features/marketing/social/components/PlatformMark";
 import { SocialImage } from "@/features/marketing/social/components/SocialImage";
+import { proxiedExternalImageUrl } from "@/lib/media/external-image";
 import { websiteHost, type Decision, type EvidenceField, type EvidenceItem } from "./evidence";
 import { CustomAdd } from "./SmartAddExtras";
 import { Shared } from "./stage/Shared";
@@ -128,7 +129,7 @@ export function SmartAddSlots({
       <Slot title={person ? "Headshot & photos" : "Logo & images"} empty={of("logo").length ? null : empty} hint="Pick every image to keep; star the main one">
         <div className="flex flex-wrap gap-3 px-4 pb-3 pt-1">
           {of("logo").map((i) => (
-            <Shared key={i.key} id={i.key} as="div">
+            <Shared key={i.key} id={i.key} as="div" className="empty:hidden">
             <LogoChoice
               key={i.key}
               item={i}
@@ -408,7 +409,9 @@ function LogoChoice({
   const [backdrop, setBackdrop] = useState<Backdrop>("auto");
   const [auto, setAuto] = useState<"light" | "dark" | "checker">("checker");
   const [open, setOpen] = useState(false);
-  const src = item.image_url ?? item.value;
+  const raw = item.image_url ?? item.value;
+  // Through our image proxy: same origin, so the canvas may read the pixels (a white logo needs the dark tile).
+  const src = /^https?:\/\//i.test(raw) ? proxiedExternalImageUrl(raw) : raw;
   const shade = backdrop === "auto" ? auto : backdrop;
   const bg = shade === "dark" ? "bg-zinc-800" : shade === "light" ? "bg-zinc-50" : CHECKER;
   const wide = !round && ratio > 1.5;
@@ -422,12 +425,7 @@ function LogoChoice({
     setAuto(b === -1 || b > 0.8 ? "dark" : b < 0.2 ? "light" : "checker");
   };
   const picture = (className: string) =>
-    broken ? (
-      <span className="flex flex-col items-center gap-0.5 text-[10px] text-muted-foreground">
-        <ImageOff className="size-5" />
-        Can't load
-      </span>
-    ) : item.profile_id ? (
+    item.profile_id ? (
       <SocialImage
         door={profileAvatarDoor(item.profile_id)}
         url={item.image_url}
@@ -437,6 +435,8 @@ function LogoChoice({
     ) : (
       <img src={src} alt="" className={className} onLoad={onLoad} onError={() => setBroken(true)} />
     );
+  // A link the site never served is not offered at all (no dead tile to keep or skip).
+  if (broken) return null;
   return (
     <figure className={`flex flex-col items-center gap-1 animate-in fade-in duration-300 ${wide ? "w-40 sm:w-48" : "w-[5.25rem] sm:w-24"}`}>
       <span className="relative w-full">
@@ -466,7 +466,7 @@ function LogoChoice({
             />
           </span>
         ) : null}
-        {broken ? null : (
+        {(
           <span className="absolute -bottom-1.5 -left-1.5 flex gap-0.5">
             <Button variant="outline" aria-label="Enlarge this image" title="Enlarge" icon={<Maximize2 />} onClick={() => setOpen(true)} />
             {item.profile_id ? null : (
@@ -490,9 +490,7 @@ function LogoChoice({
         <DialogContent className="max-w-2xl">
           <DialogTitle>{where ? `Image from ${where}` : "Image"}</DialogTitle>
           <div className={`flex min-h-64 items-center justify-center overflow-hidden rounded-lg border p-4 ${bg}`}>
-            {broken ? (
-              <span className="text-sm text-muted-foreground">This image can't be loaded.</span>
-            ) : item.profile_id ? (
+            {item.profile_id ? (
               <SocialImage
                 door={profileAvatarDoor(item.profile_id)}
                 url={item.image_url}
@@ -500,7 +498,7 @@ function LogoChoice({
                 className="max-h-[60dvh] max-w-full object-contain"
               />
             ) : (
-              <img src={src} alt="" className="max-h-[60dvh] max-w-full object-contain" />
+              <img src={src} alt="" className="h-[50dvh] w-full object-contain" />
             )}
           </div>
           <div className="flex gap-2">
