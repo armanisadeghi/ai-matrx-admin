@@ -3,7 +3,7 @@
 // The tab's cuts are the built-in Saved views of AI model calls (`ai_calls`); `chat.cx_usage_analytics`
 // stays their parity oracle. It mounts that explorer HERE, inside the dashboard, instead of sending the
 // person to /administration/usage — a tab that leaves its own tab bar reads as broken. An address with
-// no open view opens "by model"; the old tab's window and person carry over: timeframe day / week /
+// bare address opens "by model"; the old tab's window and person carry over: timeframe day / week /
 // month / quarter → 24h / 7d / 30d / 90d (all → all time), a custom start/end → that range,
 // user_id → the person.
 
@@ -17,7 +17,8 @@ const TIMEFRAME: Record<string, string> = { day: "24h", week: "7d", month: "30d"
 
 export default async function CxUsagePage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const p = await searchParams;
-  if (typeof p.view !== "string") {
+  // Only a bare address (a tab click, an old link) is sent to "by model"; any question in the address is kept.
+  if (typeof p.view !== "string" && !Object.keys(p).some((k) => k === "w" || k.startsWith("f.") || k === "by")) {
     const one = (k: string) => (typeof p[k] === "string" ? (p[k] as string) : null);
     const params = new URLSearchParams({ view: "builtin:cx_by_model" });
     const start = one("start_date");

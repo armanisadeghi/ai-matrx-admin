@@ -705,32 +705,40 @@ async function fetchUserRequestDetailInner(id: string) {
   const supabase = await createClient();
 
   // cross-schema FK (chat→ai): fetch request rows without embed, resolve models separately.
-  const [urResult, requestsResult, toolCallsResult] = await Promise.all([
+  const [urResult, requestRows, toolCallRows] = await Promise.all([
     supabase.schema("chat").from("user_request").select("*").eq("id", id).single(),
-    supabase
-      .schema("chat").from("request")
-      .select("*")
-      .eq("user_request_id", id)
-      .is("deleted_at", null)
-      .order("iteration", { ascending: true }),
-    supabase
-      .schema("chat").from("tool_call")
-      .select("*")
-      .eq("user_request_id", id)
-      .is("deleted_at", null)
-      .order("iteration", { ascending: true })
-      .order("started_at", { ascending: true }),
+    readAllRows(
+      ({ from, to }) =>
+        supabase
+          .schema("chat").from("request")
+          .select("*")
+          .eq("user_request_id", id)
+          .is("deleted_at", null)
+          .order("iteration", { ascending: true })
+          .order("id", { ascending: true })
+          .range(from, to),
+      { label: "chat.request (user request)" },
+    ),
+    readAllRows(
+      ({ from, to }) =>
+        supabase
+          .schema("chat").from("tool_call")
+          .select("*")
+          .eq("user_request_id", id)
+          .is("deleted_at", null)
+          .order("iteration", { ascending: true })
+          .order("started_at", { ascending: true })
+          .order("id", { ascending: true })
+          .range(from, to),
+      { label: "chat.tool_call (user request)" },
+    ),
   ]);
+  const requestsResult = { data: requestRows };
+  const toolCallsResult = { data: toolCallRows };
 
   // .single() with no row is PGRST116 — that's "not found", not a failure.
   if (urResult.error && urResult.error.code !== "PGRST116") {
     throw new Error(`chat.user_request: ${urResult.error.message}`);
-  }
-  if (requestsResult.error) {
-    throw new Error(`chat.request: ${requestsResult.error.message}`);
-  }
-  if (toolCallsResult.error) {
-    throw new Error(`chat.tool_call: ${toolCallsResult.error.message}`);
   }
 
   const ur = urResult.data as any;
