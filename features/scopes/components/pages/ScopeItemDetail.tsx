@@ -1,6 +1,5 @@
 "use client";
 
-import { PropertyRow } from "@ai-matrx/design-system/controls";
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import {
@@ -245,20 +244,20 @@ export function ScopeItemDetail({
       <Card className="p-6">
         <h2 className="text-sm font-semibold text-foreground mb-3">Details</h2>
         <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3 text-sm">
-          <PropertyRow
+          <PropRow
             label="Type"
             value={VALUE_TYPE_CONFIG[item.kind]?.label ?? item.kind}
           />
-          <PropertyRow label="Category" value={item.category || "—"} />
-          <PropertyRow label="URL slug" value={item.key || "—"} mono />
-          <PropertyRow label="Key" value={item.key} mono />
-          <PropertyRow label="Sensitivity" value={SENSITIVITY_CONFIG[item.sensitivity]?.label ?? item.sensitivity} />
-          <PropertyRow
+          <PropRow label="Category" value={item.category || "—"} />
+          <PropRow label="URL slug" value={item.key || "—"} mono />
+          <PropRow label="Key" value={item.key} mono />
+          <PropRow label="Sensitivity" value={SENSITIVITY_CONFIG[item.sensitivity]?.label ?? item.sensitivity} />
+          <PropRow
             label="Fetch hint"
             value={CONTEXT_POLICY_CONFIG[item.context_policy]?.label ?? item.context_policy}
           />
-          <PropertyRow label="Sort order" value={String(item.sort)} />
-          <PropertyRow
+          <PropRow label="Sort order" value={String(item.sort)} />
+          <PropRow
             label="Tags"
             value={
               (item.tags ?? []).length ? (item.tags ?? []).join(", ") : "—"
@@ -319,3 +318,24 @@ function CenteredSpinner() {
   );
 }
 
+function PropRow({
+  label,
+  value,
+  mono,
+}: {
+  label: string;
+  value: string;
+  mono?: boolean;
+}) {
+  return (
+    <div className="flex items-baseline justify-between gap-3 border-b border-border/50 pb-2">
+      <dt className="text-muted-foreground shrink-0">{label}</dt>
+      <dd
+        className={`text-foreground text-right truncate ${mono ? "font-mono text-xs" : "capitalize"}`}
+        title={value}
+      >
+        {value}
+      </dd>
+    </div>
+  );
+}

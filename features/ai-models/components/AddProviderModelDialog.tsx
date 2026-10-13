@@ -10,7 +10,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Input, PropertyRow } from "@ai-matrx/design-system/controls";
+import { Input } from "@ai-matrx/design-system/controls";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -272,15 +272,15 @@ export default function AddProviderModelDialog({
                       Inherited from template
                     </p>
                     <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-xs">
-                      <PropertyRow mono
+                      <InheritedField
                         label="Premium"
                         value={String(template.is_premium ?? false)}
                       />
-                      <PropertyRow mono
+                      <InheritedField
                         label="maker"
                         value={template.maker ?? "—"}
                       />
-                      <PropertyRow mono
+                      <InheritedField
                         label="capabilities"
                         value={
                           template.capabilities
@@ -346,3 +346,15 @@ export default function AddProviderModelDialog({
   );
 }
 
+function InheritedField({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex items-baseline gap-2">
+      <span className="text-[10px] text-muted-foreground w-24 shrink-0">
+        {label}
+      </span>
+      <span className="text-xs font-mono truncate" title={value}>
+        {value}
+      </span>
+    </div>
+  );
+}

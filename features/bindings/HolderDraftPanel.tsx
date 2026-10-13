@@ -24,7 +24,6 @@
 // agent; an organization's rung an agent the organization owns; a person's
 // rung their own — the same rule the picker enforces on its list.
 
-import { PropertyRow } from "@ai-matrx/design-system/controls";
 import { AgentGenerator } from "@/features/agents/agent-creators/interactive-builder/AgentGenerator";
 import type { AgentOwner } from "@/features/agents/agent-creators/services/agentBuilderService";
 import type { MandateWorkspaceData } from "@/features/mandates/workspace/useMandateWorkspaceData";
@@ -121,15 +120,15 @@ export function HolderDraftPanel({
             // 40% column, and a label|value grid there squeezes the goal into
             // a ribbon three words wide.
             <dl className="space-y-2.5 rounded-lg border border-border bg-background p-3 text-[12px]">
-              <PropertyRow label="Job" value={data.mandate.label ?? data.mandate.mandate_key} />
-              <PropertyRow
+              <Fact label="Job" value={data.mandate.label ?? data.mandate.mandate_key} />
+              <Fact
                 label="Goal"
                 value={
                   data.mandate.goal?.trim() ||
                   "No goal has been written for this job yet."
                 }
               />
-              <PropertyRow
+              <Fact
                 label="Values it will be given"
                 value={
                   // Plain names, never the machine keys (UX punch list
@@ -139,7 +138,7 @@ export function HolderDraftPanel({
                     : "None — this job offers no values."
                 }
               />
-              <PropertyRow
+              <Fact
                 label="Answer it must produce"
                 value={
                   [
@@ -157,7 +156,7 @@ export function HolderDraftPanel({
                     .join(" ") || "No output contract declared."
                 }
               />
-              <PropertyRow label="Owner" value={ownerLine} />
+              <Fact label="Owner" value={ownerLine} />
             </dl>
           ),
           onCreated: (agentId) => {
@@ -172,3 +171,30 @@ export function HolderDraftPanel({
   );
 }
 
+/** One fact, label above value, so the value owns the column's full width. */
+function Fact({
+  label,
+  value,
+  mono = false,
+}: {
+  label: string;
+  value: string;
+  mono?: boolean;
+}) {
+  return (
+    <div>
+      <dt className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+        {label}
+      </dt>
+      <dd
+        className={
+          mono
+            ? "mt-0.5 font-mono text-[11.5px] leading-relaxed text-foreground"
+            : "mt-0.5 leading-relaxed text-foreground"
+        }
+      >
+        {value}
+      </dd>
+    </div>
+  );
+}

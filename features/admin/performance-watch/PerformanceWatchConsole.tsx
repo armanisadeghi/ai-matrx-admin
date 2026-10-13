@@ -13,7 +13,7 @@
 import { Suspense, useEffect, useMemo, useState, useTransition, type ReactNode } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { ChevronLeft, Gauge, Pause, Pin, PinOff, Play, RefreshCw, XCircle } from "lucide-react";
-import { Field, PropertyRow } from "@ai-matrx/design-system/controls";
+import { Field } from "@ai-matrx/design-system/controls";
 import { Popover, PopoverContent, PopoverTrigger } from "@ai-matrx/design-system";
 import { toast } from "@/lib/toast";
 import { Badge } from "@/components/ui/badge";
@@ -628,14 +628,14 @@ function WatchDrill({
       </div>
 
       <dl className="grid grid-cols-2 gap-x-4 gap-y-1 rounded-md border border-border bg-card/50 p-2 text-xs sm:grid-cols-4">
-        <PropertyRow label="Measures" value={measuresLine(w)} />
-        <PropertyRow label="Budget" value={`${ms(w.budget_ms)}${w.budget_stat ? ` ${w.budget_stat}` : ""}`} />
-        <PropertyRow label="Baseline" value={`${ms(w.perf_baseline_ms)}${w.perf_baseline_pinned ? " (pinned)" : ""}`} />
-        <PropertyRow label="Every" value={w.live_every_seconds ? formatDurationSeconds(w.live_every_seconds, { style: "coarse" }) : "—"} />
-        <PropertyRow label="Owner" value={w.owner ?? "—"} />
-        <PropertyRow label="Feature" value={w.source_feature ?? "—"} />
-        <PropertyRow label="Samples" value={history.status === "ready" ? formatCount(samples.length) : "…"} />
-        <PropertyRow label="Last alert" value={w.perf_last_alert_at ? formatRelativeTime(w.perf_last_alert_at) : "—"} />
+        <Fact label="Measures" value={measuresLine(w)} />
+        <Fact label="Budget" value={`${ms(w.budget_ms)}${w.budget_stat ? ` ${w.budget_stat}` : ""}`} />
+        <Fact label="Baseline" value={`${ms(w.perf_baseline_ms)}${w.perf_baseline_pinned ? " (pinned)" : ""}`} />
+        <Fact label="Every" value={w.live_every_seconds ? formatDurationSeconds(w.live_every_seconds, { style: "coarse" }) : "—"} />
+        <Fact label="Owner" value={w.owner ?? "—"} />
+        <Fact label="Feature" value={w.source_feature ?? "—"} />
+        <Fact label="Samples" value={history.status === "ready" ? formatCount(samples.length) : "…"} />
+        <Fact label="Last alert" value={w.perf_last_alert_at ? formatRelativeTime(w.perf_last_alert_at) : "—"} />
       </dl>
       {watchReason(w) ? (
         <p className="truncate text-xs text-muted-foreground" title={watchReason(w) ?? undefined}>
@@ -653,7 +653,7 @@ function WatchDrill({
                 </dd>
               </div>
             ) : (
-              <PropertyRow key={f.label} label={f.label} value={f.value} />
+              <Fact key={f.label} label={f.label} value={f.value} />
             ),
           )}
         </dl>
@@ -751,6 +751,17 @@ function WatchEditor({ watch, onEdit }: { watch: PerfWatch; onEdit: (edit: PerfW
           Resume
         </Button>
       )}
+    </div>
+  );
+}
+
+function Fact({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="min-w-0">
+      <dt className="text-[11px] text-muted-foreground">{label}</dt>
+      <dd className="truncate font-medium" title={value}>
+        {value}
+      </dd>
     </div>
   );
 }

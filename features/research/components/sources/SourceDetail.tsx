@@ -1,6 +1,5 @@
 "use client";
 
-import { PropertyRow } from "@ai-matrx/design-system/controls";
 import { useState, useCallback, useMemo, useTransition, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { AccessGate } from "@/features/access-gate/components/AccessGate";
@@ -635,13 +634,13 @@ function PageAnalysisDocument({
         <AnalysisBlock icon={<Calendar className="h-3 w-3" />} title="Dates">
           <div className="space-y-0 rounded-xl border border-border/60 bg-card/40 px-4 py-1">
             {dates.published_date && (
-              <PropertyRow label="Published" value={dates.published_date} />
+              <DateRow label="Published" value={dates.published_date} />
             )}
             {dates.updated_date && (
-              <PropertyRow label="Updated" value={dates.updated_date} />
+              <DateRow label="Updated" value={dates.updated_date} />
             )}
             {dates.content_timeframe && (
-              <PropertyRow
+              <DateRow
                 label="Content timeframe"
                 value={dates.content_timeframe}
               />
@@ -727,6 +726,16 @@ function HeadlineScore({
       >
         {fmtScore(value)}
       </span>
+    </div>
+  );
+}
+
+/** One date row in the Dates block (label left, value right). */
+function DateRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex items-center justify-between gap-3 border-b border-border/40 py-2 last:border-0">
+      <span className="type-meta text-muted-foreground">{label}</span>
+      <span className="type-title text-foreground">{value}</span>
     </div>
   );
 }

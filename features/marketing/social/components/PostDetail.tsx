@@ -33,7 +33,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Bookmark, ExternalLink, PanelRightClose, RefreshCw } from "lucide-react";
 
 import { ReadFailure } from "@ai-matrx/design-system";
-import { Button, RegionSkeleton, SegmentedControl, Tabs, PropertyRow } from "@ai-matrx/design-system/controls";
+import { Button, RegionSkeleton, SegmentedControl, Tabs } from "@ai-matrx/design-system/controls";
 import { useClipboard } from "@ai-matrx/kit/clipboard";
 import {
   DropdownMenu,
@@ -118,6 +118,15 @@ export type PostHost = "window" | "canvas" | "page";
 /** The points a button will use, named under it even when small. */
 function CostLine({ text }: { text: string | null }) {
   return text ? <p className="text-xs tabular-nums text-muted-foreground">{text}</p> : null;
+}
+
+function LabelRow({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="grid grid-cols-[5.5rem_minmax(0,1fr)] gap-2 border-b border-border py-1.5 text-xs">
+      <span className="text-muted-foreground">{label}</span>
+      <span className="min-w-0 break-words text-foreground">{children}</span>
+    </div>
+  );
 }
 
 function TranscriptTab({ postId, organizationId, canEdit }: { postId: string; organizationId: string; canEdit: boolean }) {
@@ -346,14 +355,14 @@ function BreakdownRows({ analysis }: { analysis: PostAnalysisRow }) {
   const audio = analysis.audio as { type?: string; notes?: string } | null;
   return (
     <div>
-      <PropertyRow label="Hook">{analysis.hook_text ?? "—"}</PropertyRow>
-      <PropertyRow label="Hook type">{analysis.hook_type ?? "—"}</PropertyRow>
-      <PropertyRow label="On-screen">{analysis.on_screen_text ?? "—"}</PropertyRow>
-      <PropertyRow label="Format">{analysis.format_tags.join(", ") || "—"}</PropertyRow>
-      <PropertyRow label="Style">{analysis.style_tags.join(", ") || "—"}</PropertyRow>
-      <PropertyRow label="Audio">{audio?.type ? `${audio.type}${audio.notes ? ` · ${audio.notes}` : ""}` : "—"}</PropertyRow>
-      <PropertyRow label="CTA">{analysis.cta ?? "—"}</PropertyRow>
-      <PropertyRow label="Summary">{analysis.summary ?? "—"}</PropertyRow>
+      <LabelRow label="Hook">{analysis.hook_text ?? "—"}</LabelRow>
+      <LabelRow label="Hook type">{analysis.hook_type ?? "—"}</LabelRow>
+      <LabelRow label="On-screen">{analysis.on_screen_text ?? "—"}</LabelRow>
+      <LabelRow label="Format">{analysis.format_tags.join(", ") || "—"}</LabelRow>
+      <LabelRow label="Style">{analysis.style_tags.join(", ") || "—"}</LabelRow>
+      <LabelRow label="Audio">{audio?.type ? `${audio.type}${audio.notes ? ` · ${audio.notes}` : ""}` : "—"}</LabelRow>
+      <LabelRow label="CTA">{analysis.cta ?? "—"}</LabelRow>
+      <LabelRow label="Summary">{analysis.summary ?? "—"}</LabelRow>
       <p className="pt-2 text-[11px] text-muted-foreground">{`Analyzed ${relativeAge(analysis.created_at)}`}</p>
     </div>
   );

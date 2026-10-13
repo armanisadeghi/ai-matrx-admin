@@ -1,6 +1,5 @@
 "use client";
 
-import { PropertyRow } from "@ai-matrx/design-system/controls";
 import { InfoHint } from "@/components/official/InfoHint";
 import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
 // features/hr/people/profile/tabs/JobTab.tsx — SPEC-EMPLOYEES §2.3.3, §6
@@ -316,27 +315,27 @@ function SpellRow({ spell }: { spell: Row }) {
       </div>
 
       <dl className="mt-2 grid grid-cols-1 gap-x-6 gap-y-2 sm:grid-cols-3">
-        <PropertyRow label="Hired" value={formatFullDate(hireDate)} />
+        <Fact label="Hired" value={formatFullDate(hireDate)} />
         {originalHire && originalHire !== hireDate ? (
-          <PropertyRow
+          <Fact
             label="Originally hired"
             value={formatFullDate(originalHire)}
-            help="Carried from the first spell."
+            hint="Carried from the first spell."
           />
         ) : null}
         {adjustedService ? (
-          <PropertyRow
+          <Fact
             label="Adjusted service date"
             value={formatFullDate(adjustedService)}
-            help="What benefits and accruals count from."
+            hint="What benefits and accruals count from."
           />
         ) : null}
-        {lastDay ? <PropertyRow label="Last day worked" value={formatFullDate(lastDay)} /> : null}
+        {lastDay ? <Fact label="Last day worked" value={formatFullDate(lastDay)} /> : null}
         {terminationDate ? (
-          <PropertyRow
+          <Fact
             label="Termination date"
             value={formatFullDate(terminationDate)}
-            help="Benefits and final pay key on different dates — this is not the last day worked."
+            hint="Benefits and final pay key on different dates — this is not the last day worked."
           />
         ) : null}
       </dl>
@@ -689,3 +688,25 @@ function Engagements({
   );
 }
 
+function Fact({
+  label,
+  value,
+  hint,
+}: {
+  label: string;
+  value: string;
+  hint?: string;
+}) {
+  if (!value) return null;
+  return (
+    <div className="min-w-0 space-y-0.5">
+      <dt className="text-xs font-medium text-muted-foreground">{label}</dt>
+      <dd className="text-sm font-medium text-foreground">{value}</dd>
+      {hint ? (
+        <dd className="text-[0.6875rem] leading-snug text-muted-foreground">
+          {hint}
+        </dd>
+      ) : null}
+    </div>
+  );
+}

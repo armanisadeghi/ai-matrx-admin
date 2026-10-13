@@ -12,13 +12,13 @@
  * for "copy a whole record for an AI agent", not for copying a single id.
  */
 
-import { PropertyRow } from "@ai-matrx/design-system/controls";
 import { useClipboard } from "@ai-matrx/kit/clipboard";
 import { copyNotify } from "@/lib/clipboard/copy-notify";
 import React from "react";
 import { format } from "date-fns";
-import { Check, Copy } from "lucide-react";
+import { Check, Copy, Fingerprint, CalendarDays } from "lucide-react";
 import { toast } from "@/lib/toast";
+import { cn } from "@/utils/cn";
 import type { Project } from "../types";
 
 function CopyValue({
@@ -56,6 +56,38 @@ function CopyValue({
   );
 }
 
+function DetailRow({
+  icon: Icon,
+  label,
+  value,
+  mono = true,
+}: {
+  icon: React.ComponentType<{ className?: string }>;
+  label: string;
+  value: string;
+  mono?: boolean;
+}) {
+  return (
+    <div className="flex items-start gap-3 px-3 py-2.5">
+      <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-muted text-muted-foreground">
+        <Icon className="h-3.5 w-3.5" />
+      </span>
+      <div className="min-w-0 flex-1">
+        <p className="text-xs font-medium text-muted-foreground">{label}</p>
+        <p
+          className={cn(
+            "mt-0.5 text-xs text-foreground/90 overflow-x-auto whitespace-nowrap",
+            mono && "font-mono",
+          )}
+        >
+          {value}
+        </p>
+      </div>
+      <CopyValue value={value} label={label} />
+    </div>
+  );
+}
+
 export function ProjectDetails({ project }: { project: Project }) {
   const created = project.createdAt
     ? format(new Date(project.createdAt), "MMMM d, yyyy 'at' h:mm a")
@@ -63,8 +95,13 @@ export function ProjectDetails({ project }: { project: Project }) {
 
   return (
     <div className="divide-y divide-border rounded-lg border border-border bg-card">
-      <PropertyRow className="px-3" label="Project ID" value={project.id} mono meta={<CopyValue value={project.id} label="Project ID" />} />
-      <PropertyRow className="px-3" label="Created" value={created} meta={<CopyValue value={created} label="Created" />} />
+      <DetailRow icon={Fingerprint} label="Project ID" value={project.id} />
+      <DetailRow
+        icon={CalendarDays}
+        label="Created"
+        value={created}
+        mono={false}
+      />
     </div>
   );
 }

@@ -27,7 +27,6 @@
 
 "use client";
 
-import { PropertyRow } from "@ai-matrx/design-system/controls";
 import { useCallback, useState } from "react";
 import {
   Building2,
@@ -137,7 +136,7 @@ export function FileShareTab({ fileId, className }: FileShareTabProps) {
       <div className="mx-auto w-full max-w-2xl space-y-5 pb-6">
         {/* ─── Status ──────────────────────────────────────────────── */}
         <Section title="Status">
-          <PropertyRow
+          <Row
             label="Owner"
             value={
               <span className="inline-flex items-center gap-1.5">
@@ -150,7 +149,7 @@ export function FileShareTab({ fileId, className }: FileShareTabProps) {
               </span>
             }
           />
-          <PropertyRow
+          <Row
             label="Active links"
             value={
               activeLinkCount === 0
@@ -231,7 +230,7 @@ export function FileShareTab({ fileId, className }: FileShareTabProps) {
 
         {/* ─── Organization ────────────────────────────────────────── */}
         <Section title="Organization">
-          <PropertyRow
+          <Row
             label="Lives in"
             value={
               organizationName ? (
@@ -288,6 +287,17 @@ function Section({
       </div>
       <div className="rounded-md border border-border bg-card">{children}</div>
     </section>
+  );
+}
+
+function Row({ label, value }: { label: string; value: React.ReactNode }) {
+  return (
+    <div className="grid grid-cols-[8rem_1fr] items-center gap-3 px-3 py-2 border-b border-border last:border-b-0">
+      <span className="text-xs text-muted-foreground">{label}</span>
+      <span className="text-xs text-foreground break-words min-w-0">
+        {value}
+      </span>
+    </div>
   );
 }
 

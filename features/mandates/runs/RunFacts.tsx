@@ -5,7 +5,7 @@
 
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
-import { StatusToken, PropertyRow } from "@ai-matrx/design-system/controls";
+import { StatusToken } from "@ai-matrx/design-system/controls";
 import { EntityRef } from "@/components/official/entity-ref/EntityRef";
 import { useCostDisplay } from "@/components/cost/useCostDisplay";
 import { conversationHref } from "@/features/hindsight/subject-doors";
@@ -20,6 +20,14 @@ import type { StoredRun } from "./service";
 import type { StreamedRunState } from "./useStreamedRun";
 
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+function Fact({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="flex min-w-0 items-baseline gap-1.5">
+      <span className="shrink-0 text-[12px] text-muted-foreground">{label}</span>
+      <span className="min-w-0 truncate text-[12px] text-foreground">{children}</span>
+    </div>
+  );
+}
 
 export function HolderRef({ run }: { run: StoredRun }) {
   const h = run.holder;
@@ -52,7 +60,7 @@ export function RunFacts({ run, audience }: { run: StoredRun; audience: "admin" 
   const { unit: costDisplay, rate: costRate } = useCostDisplay();
   return (
     <div className="grid grid-cols-2 gap-x-4 gap-y-1">
-      <PropertyRow label="Result">
+      <Fact label="Result">
         {run.success === null ? (
           <StatusToken status="unknown" label="Not recorded" />
         ) : run.success ? (
@@ -60,18 +68,18 @@ export function RunFacts({ run, audience }: { run: StoredRun; audience: "admin" 
         ) : (
           <StatusToken status="error" label="Failed" />
         )}
-      </PropertyRow>
-      <PropertyRow label="Mandate Holder">
+      </Fact>
+      <Fact label="Mandate Holder">
         <HolderRef run={run} />
-      </PropertyRow>
-      <PropertyRow label="Model">{run.modelName ?? modelName(run.modelId)}</PropertyRow>
-      <PropertyRow label="Ran by">
+      </Fact>
+      <Fact label="Model">{run.modelName ?? modelName(run.modelId)}</Fact>
+      <Fact label="Ran by">
         <RanBy userId={run.ranBy} />
-      </PropertyRow>
-      <PropertyRow label="When">{run.createdAt ? absoluteWhen(run.createdAt) : "—"}</PropertyRow>
-      <PropertyRow label="Cost">{costWords(run.cost, costRate, costDisplay)}</PropertyRow>
-      <PropertyRow label="Time">{durationWords(run.durationMs)}</PropertyRow>
-      <PropertyRow label="Conversation">
+      </Fact>
+      <Fact label="When">{run.createdAt ? absoluteWhen(run.createdAt) : "—"}</Fact>
+      <Fact label="Cost">{costWords(run.cost, costRate, costDisplay)}</Fact>
+      <Fact label="Time">{durationWords(run.durationMs)}</Fact>
+      <Fact label="Conversation">
         <Link
           href={conversationHref(run.conversationId, audience)}
           className="inline-flex items-center gap-0.5 text-primary hover:underline"
@@ -79,7 +87,7 @@ export function RunFacts({ run, audience }: { run: StoredRun; audience: "admin" 
           Open
           <ArrowUpRight className="h-3 w-3" />
         </Link>
-      </PropertyRow>
+      </Fact>
       {run.error ? <div className="col-span-2 text-[12px] text-destructive">{run.error}<ErrorAlchemyMenu error={run.error} /></div> : null}
     </div>
   );

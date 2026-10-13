@@ -1,6 +1,5 @@
 "use client";
 
-import { PropertyRow } from "@ai-matrx/design-system/controls";
 import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
 // features/exports/components/ExportItemDetailsDialog.tsx
 //
@@ -31,6 +30,17 @@ function partyText(party: ExportItemParty | null): string {
   return name || contact || "";
 }
 
+function Row({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="grid grid-cols-[7.5rem_minmax(0,1fr)] gap-3 py-1.5 text-sm">
+      <dt className="text-xs uppercase tracking-wide text-muted-foreground">
+        {label}
+      </dt>
+      <dd className="min-w-0 break-words">{children}</dd>
+    </div>
+  );
+}
+
 export function ExportItemDetailsDialog({
   item,
   onClose,
@@ -53,23 +63,23 @@ export function ExportItemDetailsDialog({
               </DialogDescription>
             </DialogHeader>
             <dl className="divide-y divide-border">
-              <PropertyRow label="Direction">{directionLabel(item.direction)}</PropertyRow>
-              <PropertyRow label="Type">
+              <Row label="Direction">{directionLabel(item.direction)}</Row>
+              <Row label="Type">
                 <span className="capitalize">{humanizeIdentifier(item.kind) || item.kind}</span>
-              </PropertyRow>
-              <PropertyRow label="From">{partyText(item.author) || "—"}</PropertyRow>
-              <PropertyRow label="To">
+              </Row>
+              <Row label="From">{partyText(item.author) || "—"}</Row>
+              <Row label="To">
                 {item.recipients.length === 0
                   ? "—"
                   : item.recipients.map(partyText).filter(Boolean).join(", ") || "—"}
-              </PropertyRow>
-              <PropertyRow label="When">
+              </Row>
+              <Row label="When">
                 {item.occurred_at
                   ? new Date(item.occurred_at).toLocaleString()
                   : "—"}
-              </PropertyRow>
-              <PropertyRow label="Thread">{item.container_label || "—"}</PropertyRow>
-              <PropertyRow label="Labels">
+              </Row>
+              <Row label="Thread">{item.container_label || "—"}</Row>
+              <Row label="Labels">
                 {item.labels.length === 0 ? (
                   "—"
                 ) : (
@@ -81,12 +91,12 @@ export function ExportItemDetailsDialog({
                     ))}
                   </span>
                 )}
-              </PropertyRow>
-              <PropertyRow label="Length">
+              </Row>
+              <Row label="Length">
                 {formatCount(item.char_count)} characters ·{" "}
                 {formatCount(item.word_count)} words
-              </PropertyRow>
-              <PropertyRow label="Attachments">
+              </Row>
+              <Row label="Attachments">
                 {item.attachment_count === 0 ? (
                   "None"
                 ) : (
@@ -102,14 +112,14 @@ export function ExportItemDetailsDialog({
                     )}
                   </span>
                 )}
-              </PropertyRow>
-              <PropertyRow label="Reply">{item.is_reply ? "Yes" : "No"}</PropertyRow>
+              </Row>
+              <Row label="Reply">{item.is_reply ? "Yes" : "No"}</Row>
               {item.external_id && (
-                <PropertyRow label="Original id">
+                <Row label="Original id">
                   <code className="break-all text-xs text-muted-foreground">
                     {item.external_id}
                   </code>
-                </PropertyRow>
+                </Row>
               )}
             </dl>
           </>

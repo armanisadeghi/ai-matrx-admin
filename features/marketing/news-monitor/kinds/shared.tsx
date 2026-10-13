@@ -8,7 +8,7 @@ import Link from "next/link";
 import { ExternalLink } from "lucide-react";
 
 import { cn } from "@/lib/utils";
-import { Chip, type ChipTone, PropertyRow } from "@ai-matrx/design-system/controls";
+import { Chip, type ChipTone } from "@ai-matrx/design-system/controls";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 export function KindCard({
@@ -117,5 +117,12 @@ export function domainOf(url: string): string {
   }
 }
 
-/** The news-monitor fact row IS the shared label/value row. */
-export const FactRow = PropertyRow;
+/** Label + value rows for small facts. */
+export function FactRow({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <div className="flex flex-wrap items-baseline gap-x-2 text-xs">
+      <span className="text-muted-foreground">{label}</span>
+      <span className="text-foreground">{children}</span>
+    </div>
+  );
+}

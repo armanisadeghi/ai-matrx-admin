@@ -1,6 +1,5 @@
 "use client";
 
-import { PropertyRow } from "@ai-matrx/design-system/controls";
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import {
@@ -520,8 +519,8 @@ function RecommendationCard({
         </div>
       </div>
       <div className="mt-4 grid gap-3 lg:grid-cols-3">
-        <PropertyRow label="Anchor text" value={`“${recommendation.anchor_text}”`} />
-        <PropertyRow
+        <Detail label="Anchor text" value={`“${recommendation.anchor_text}”`} />
+        <Detail
           label="Placement"
           value={
             recommendation.placement_quote
@@ -529,7 +528,7 @@ function RecommendationCard({
               : recommendation.placement_instruction
           }
         />
-        <PropertyRow
+        <Detail
           label="Expected benefit"
           value={recommendation.expected_benefit}
         />
@@ -553,6 +552,16 @@ function RecommendationCard({
   );
 }
 
+function Detail({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-lg bg-muted/40 p-3">
+      <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+        {label}
+      </p>
+      <p className="mt-1 text-xs leading-relaxed">{value}</p>
+    </div>
+  );
+}
 function pathOf(url: string) {
   try {
     return new URL(url).pathname || "/";

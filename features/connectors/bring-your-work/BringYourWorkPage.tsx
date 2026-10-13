@@ -24,7 +24,7 @@ import {
   Network,
   Table2,
 } from "lucide-react";
-import { Button, PropertyRow } from "@ai-matrx/design-system/controls";
+import { Button } from "@ai-matrx/design-system/controls";
 
 import { BrandGlyph } from "@/components/icons/brand-glyphs";
 import { copyContent } from "@ai-matrx/rich-content/copy/copy-commands";
@@ -191,7 +191,15 @@ const CONNECTOR_NAME = "AI Matrx";
 
 /** One box of the other app's form: what to type, with a copy. */
 function ConnectorField({ label, value }: { label: string; value: string }) {
-  return <PropertyRow label={label} value={value} mono meta={<CopyAction text={value} label="Copy" variant="outline" />} />;
+  return (
+    <div className="flex items-center gap-3 px-3 py-2">
+      <dt className="w-28 shrink-0 type-secondary text-muted-foreground">{label}</dt>
+      <dd className="m-0 min-w-0 flex-1 truncate font-mono type-secondary text-foreground" title={value}>
+        {value}
+      </dd>
+      <CopyAction text={value} label="Copy" variant="outline" />
+    </div>
+  );
 }
 
 function ConnectActions({ client, onDone }: { client: Client; onDone: () => void }) {

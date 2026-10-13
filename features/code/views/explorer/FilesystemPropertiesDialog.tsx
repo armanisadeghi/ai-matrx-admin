@@ -1,6 +1,5 @@
 "use client";
 
-import { PropertyRow } from "@ai-matrx/design-system/controls";
 import { useCallback, useEffect, useState } from "react";
 import { Info, Loader2 } from "lucide-react";
 import {
@@ -36,6 +35,25 @@ function kindLabel(kind: FilesystemProperties["kind"]): string {
   if (kind === "directory") return "Folder";
   if (kind === "symlink") return "Symlink";
   return "File";
+}
+
+function PropertyRow({
+  label,
+  value,
+  mono = false,
+}: {
+  label: string;
+  value: React.ReactNode;
+  mono?: boolean;
+}) {
+  return (
+    <div className="grid grid-cols-[7rem_minmax(0,1fr)] gap-2 text-sm">
+      <span className="text-muted-foreground">{label}</span>
+      <span className={mono ? "break-all font-mono text-[13px]" : "break-all"}>
+        {value}
+      </span>
+    </div>
+  );
 }
 
 export function FilesystemPropertiesDialog({

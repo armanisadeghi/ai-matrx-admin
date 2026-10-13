@@ -1,6 +1,5 @@
 "use client";
 
-import { PropertyRow } from "@ai-matrx/design-system/controls";
 import { useEffect, useState } from "react";
 import { Layers, Loader2, Pencil, Tag as TagIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -189,15 +188,15 @@ export function ContextItemHub({
 
         {/* Details */}
         <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2 text-sm mt-5 pt-4 border-t border-border">
-          <PropertyRow label="Key" value={item.key} mono />
-          <PropertyRow label="URL slug" value={item.key || "—"} mono />
-          <PropertyRow label="Category" value={item.category || "—"} />
-          <PropertyRow label="Sensitivity" value={SENSITIVITY_CONFIG[item.sensitivity]?.label ?? item.sensitivity} />
-          <PropertyRow
+          <PropRow label="Key" value={item.key} mono />
+          <PropRow label="URL slug" value={item.key || "—"} mono />
+          <PropRow label="Category" value={item.category || "—"} />
+          <PropRow label="Sensitivity" value={SENSITIVITY_CONFIG[item.sensitivity]?.label ?? item.sensitivity} />
+          <PropRow
             label="Fetch hint"
             value={CONTEXT_POLICY_CONFIG[item.context_policy]?.label ?? item.context_policy}
           />
-          <PropertyRow label="Sort order" value={String(item.sort)} />
+          <PropRow label="Sort order" value={String(item.sort)} />
         </dl>
       </Card>
 
@@ -287,3 +286,24 @@ function CenteredSpinner() {
   );
 }
 
+function PropRow({
+  label,
+  value,
+  mono,
+}: {
+  label: string;
+  value: string;
+  mono?: boolean;
+}) {
+  return (
+    <div className="flex items-baseline justify-between gap-3 border-b border-border/40 pb-1.5">
+      <dt className="text-muted-foreground shrink-0">{label}</dt>
+      <dd
+        className={`text-foreground text-right truncate ${mono ? "font-mono text-xs" : "capitalize"}`}
+        title={value}
+      >
+        {value}
+      </dd>
+    </div>
+  );
+}
