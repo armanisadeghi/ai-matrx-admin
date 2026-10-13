@@ -19,7 +19,7 @@
 import { useEffect, useState } from "react";
 import { Hourglass } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@ai-matrx/design-system";
-import { recordsDataSource } from "@ai-matrx/records-ui";
+import { recordsDataSource } from "@ai-matrx/records-ui/helpers";
 
 import { createClient } from "@/utils/supabase/client";
 import { getUserId } from "@/utils/auth/getUserId";

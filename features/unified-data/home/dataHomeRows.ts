@@ -13,7 +13,7 @@
 
 import type { RecordsClient } from "@ai-matrx/records/core";
 import type { RecordsDataSource } from "@ai-matrx/records";
-import { isKeptTable } from "@ai-matrx/records-ui";
+import { isKeptTable } from "@ai-matrx/records-ui/helpers";
 
 import {
   HUB_CAPABILITIES,

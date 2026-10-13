@@ -7,7 +7,7 @@
 // it is the Pick lists index (the screen /pick-lists is), each row opening the list's page.
 
 import { useState } from "react";
-import { recordsDataSource } from "@ai-matrx/records-ui";
+import { recordsDataSource } from "@ai-matrx/records-ui/helpers";
 
 import { UnifiedDataTablePage } from "@/features/unified-data/table-page/UnifiedDataTablePage";
 import { useAppSelector } from "@/lib/redux/hooks";

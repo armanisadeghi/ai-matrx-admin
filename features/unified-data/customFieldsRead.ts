@@ -8,7 +8,7 @@
 // Every value a page declares is always answered (surfaces COMPLETENESS LAW): the provider is the
 // one owner; the section keeps its UI and its write doors but contributes no value on such a surface.
 
-import { recordsDataSource } from "@ai-matrx/records-ui";
+import { recordsDataSource } from "@ai-matrx/records-ui/helpers";
 import { createClient } from "@/utils/supabase/client";
 import { entityRecordReadable } from "@/features/unified-data/hub/doors";
 import { useStoreRead } from "@/lib/redux/store-reads/useStoreRead";

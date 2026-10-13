@@ -8,7 +8,7 @@
  * This file never decides what is withheld; it only carries what the store decided.
  */
 import type { Field, HiddenFieldNotice } from "@ai-matrx/records";
-import { withheldNoticeOf } from "@ai-matrx/records-ui";
+import { withheldNoticeOf } from "@ai-matrx/records-ui/helpers";
 
 export interface WithheldCell {
   field: Field;

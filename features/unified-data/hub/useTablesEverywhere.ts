@@ -18,7 +18,7 @@
 // `inOrganization` and counts each organization with `countsByOrganization`.
 
 import { useCallback, useEffect, useState } from "react";
-import { recordsDataSource } from "@ai-matrx/records-ui";
+import { recordsDataSource } from "@ai-matrx/records-ui/helpers";
 
 import { createClient } from "@/utils/supabase/client";
 

@@ -31,7 +31,7 @@ import {
   Workflow,
   type LucideIcon,
 } from "lucide-react";
-import { recordsDataSource } from "@ai-matrx/records-ui";
+import { recordsDataSource } from "@ai-matrx/records-ui/helpers";
 import { RecordsProvider, useTable } from "@ai-matrx/records/react";
 import {
   RecordPicker,

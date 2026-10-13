@@ -22,7 +22,7 @@ import dotenv from "dotenv";
 import { readFileSync, writeFileSync } from "node:fs";
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { createRecordsClient, type RecordsClient } from "@ai-matrx/records/core";
-import { personActor, recordsDataSource } from "@ai-matrx/records-ui";
+import { personActor, recordsDataSource } from "@ai-matrx/records-ui/helpers";
 
 dotenv.config({ path: path.resolve(__dirname, "../../.env.local"), override: true });
 

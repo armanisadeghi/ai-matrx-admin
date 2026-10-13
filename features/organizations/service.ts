@@ -14,7 +14,7 @@ import { supabase } from "@/utils/supabase/client";
 import { pgErrorToError } from "@ai-matrx/data";
 import { plainFromDeleteRefusal } from "./service/organizationStoreContents";
 import type { OrganizationArchiveFilter } from "./service/organizationArchive";
-import { DEFAULT_ARCHIVE_FILTER } from "@ai-matrx/design-system";
+import { DEFAULT_ARCHIVE_FILTER } from "@ai-matrx/design-system/archive-filter";
 import { requireUserId } from "@/utils/auth/getUserId";
 import { membershipsService } from "@/features/organizations/service/membershipsService";
 import {

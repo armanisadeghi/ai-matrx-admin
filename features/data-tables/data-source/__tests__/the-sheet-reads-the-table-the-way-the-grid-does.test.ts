@@ -15,7 +15,7 @@
  *    wears. Each row now carries the store's notice for every withheld column, and the cell
  *    draws records-ui's one withheld helper.
  */
-import { resolveTableStyle } from "@ai-matrx/records-ui";
+import { resolveTableStyle } from "@ai-matrx/records-ui/helpers";
 
 const TABLE = "5b0f3c1e-2d7a-4c55-9e0b-6f1a2b3c4d01";
 const ORG = "884d1ce8-7b49-4fba-a2f3-0f7dd7c83d4f";

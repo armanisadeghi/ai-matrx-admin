@@ -93,7 +93,7 @@ const realm = globalThis as unknown as Record<string, unknown>;
 
 import { createClient as createSupabaseClient, type SupabaseClient } from "@supabase/supabase-js";
 import { createRecordsClient, type RecordsClient } from "@ai-matrx/records/core";
-import { personActor, recordsDataSource } from "@ai-matrx/records-ui";
+import { personActor, recordsDataSource } from "@ai-matrx/records-ui/helpers";
 import { setStoreSingleton } from "@/lib/redux/store-singleton";
 
 import captured from "@ai-matrx/chat/testing/captured/awaiting-approval";

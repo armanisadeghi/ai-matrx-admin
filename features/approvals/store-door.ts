@@ -24,7 +24,7 @@
 
 import { createRecordsClient, storeDoors, type WorkInboxItem } from "@ai-matrx/records/core";
 import { sharedInboxRead } from "./sharedInbox";
-import { personActor, recordsDataSource } from "@ai-matrx/records-ui";
+import { personActor, recordsDataSource } from "@ai-matrx/records-ui/helpers";
 
 import { createClient } from "@/utils/supabase/client";
 import { resolveObjectOrganization } from "@/features/unified-data/objectOrganization";

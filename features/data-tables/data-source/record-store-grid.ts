@@ -17,7 +17,7 @@
 
 import { mapPgError } from "@ai-matrx/records/core";
 import type { RecordsError } from "@ai-matrx/records";
-import { recordsDataSource } from "@ai-matrx/records-ui";
+import { recordsDataSource } from "@ai-matrx/records-ui/helpers";
 
 import { createClient } from "@/utils/supabase/client";
 

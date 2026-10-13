@@ -9,7 +9,7 @@
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 
-import { tablePickerEntries } from "@ai-matrx/records-ui";
+import { tablePickerEntries } from "@ai-matrx/records-ui/helpers";
 
 import { tablesToPick, pickerRow } from "../tablePicking";
 import type { DataHomeTableRow } from "../doors";

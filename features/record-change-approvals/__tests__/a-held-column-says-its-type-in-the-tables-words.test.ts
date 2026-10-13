@@ -9,7 +9,7 @@
  */
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const { fieldTypeSentence } = require(process.env.APPROVAL_READER_UNDER_TEST ?? "../recordChangeApproval") as typeof import("../recordChangeApproval");
-import { fieldTypeLabel } from "@ai-matrx/records-ui";
+import { fieldTypeLabel } from "@ai-matrx/records-ui/helpers";
 
 const held = (declaration: Record<string, unknown>) => ({
   change: "field" as const,

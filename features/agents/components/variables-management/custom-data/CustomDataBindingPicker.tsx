@@ -35,7 +35,7 @@ import {
   isEntityReferenceConfig,
   type Field,
 } from "@ai-matrx/records/react";
-import { fieldName, rowNameIn } from "@ai-matrx/records-ui";
+import { fieldName, rowNameIn } from "@ai-matrx/records-ui/helpers";
 import { Input, Textarea } from "@ai-matrx/design-system";
 import { Label } from "@/components/ui/label";
 import {

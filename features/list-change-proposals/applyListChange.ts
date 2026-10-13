@@ -44,7 +44,7 @@ import type { BulkOp } from "@/features/data-tables/types";
 import { describeBulkFailures, isBulkOpError } from "@/features/data-tables/types";
 import { scopesService } from "@/features/scopes/service/scopesService";
 import { createRecordsClient, type RecordsClient } from "@ai-matrx/records/core";
-import { personActor, recordsDataSource } from "@ai-matrx/records-ui";
+import { personActor, recordsDataSource } from "@ai-matrx/records-ui/helpers";
 import { createClient } from "@/utils/supabase/client";
 import { fcService } from "@/features/flashcards/data/fcService";
 import { getStoreSingleton } from "@/lib/redux/store-singleton";

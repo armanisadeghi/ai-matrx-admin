@@ -23,7 +23,7 @@ import path from "node:path";
 import dotenv from "dotenv";
 import { createClient } from "@supabase/supabase-js";
 import { createRecordsClient } from "@ai-matrx/records/core";
-import { personActor, recordsDataSource } from "@ai-matrx/records-ui";
+import { personActor, recordsDataSource } from "@ai-matrx/records-ui/helpers";
 
 dotenv.config({ path: path.resolve(__dirname, "../../.env.local"), override: true });
 

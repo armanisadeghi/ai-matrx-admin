@@ -18,7 +18,7 @@
 
 import { createContext, useContext, type ReactNode } from "react";
 import { RecordsProvider } from "@ai-matrx/records/react";
-import { recordsDataSource } from "@ai-matrx/records-ui";
+import { recordsDataSource } from "@ai-matrx/records-ui/helpers";
 import { createClient } from "@/utils/supabase/client";
 import { useAppRecordsConfig } from "@/features/data-tables/records-ui-host/recordsUiHost";
 import { useObjectOrganization } from "@/features/unified-data/objectOrganization";
