@@ -28,7 +28,9 @@ export type EvidenceField =
   | "address"
   // The web tier: a review/listing page about the brand, and a news/video/image result about it.
   | "listing"
-  | "mention";
+  | "mention"
+  // A link the brand shows on its link-in-bio page that is neither an account nor its website.
+  | "bio_link";
 
 /** How sure the web tier is that a candidate is the brand (fixed rules on the server, no AI). */
 export type Certainty = "certain" | "likely" | "possible";
@@ -116,10 +118,14 @@ export const FIELD_LABEL: Record<EvidenceField, string> = {
   address: "Address",
   listing: "On the web",
   mention: "On the web",
+  bio_link: "Also linked from their bio",
 };
 
 /** Fields that live only in the "On the web" row, never in the form's slots. */
 export const WEB_FIELDS: ReadonlySet<EvidenceField> = new Set(["listing", "mention"]);
+
+/** Fields shown in their own compact groups, never in the form's slots. */
+export const GROUP_FIELDS: ReadonlySet<EvidenceField> = new Set(["bio_link"]);
 
 function asString(value: unknown): string | null {
   return typeof value === "string" && value.trim() ? value : null;
@@ -132,7 +138,7 @@ export function parseEvidenceItem(raw: unknown): EvidenceItem | null {
   const key = asString(r.key);
   const field = asString(r.field) as EvidenceField | null;
   const value = asString(r.value);
-  if (!key || !field || !value || !(FIELD_ORDER.includes(field) || WEB_FIELDS.has(field))) return null;
+  if (!key || !field || !value || !(FIELD_ORDER.includes(field) || WEB_FIELDS.has(field) || GROUP_FIELDS.has(field))) return null;
   const src = (typeof r.source === "object" && r.source !== null ? r.source : {}) as Record<string, unknown>;
   return {
     key,
@@ -555,6 +561,17 @@ export interface ConfirmedFacts {
   name?: string;
   domain?: string;
   location?: string;
+}
+
+/** The links a link-in-bio page shows (exact addresses), grouped by the page they came from, in page order. */
+export function bioLinkGroups(items: Iterable<EvidenceItem>): { from: string; links: EvidenceItem[] }[] {
+  const groups = new Map<string, EvidenceItem[]>();
+  for (const i of items) {
+    if (i.field !== "bio_link") continue;
+    const from = i.source.where ?? "from their bio";
+    groups.set(from, [...(groups.get(from) ?? []), i]);
+  }
+  return [...groups.entries()].map(([from, links]) => ({ from, links }));
 }
 
 const CERTAINTY_RANK: Record<Certainty, number> = { certain: 0, likely: 1, possible: 2 };
