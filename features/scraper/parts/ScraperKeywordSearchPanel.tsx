@@ -123,11 +123,7 @@ export function ScraperKeywordSearchCompactControls({
       </div>
       <div className="flex gap-1">
         <Button
-          icon={isLoading ? (
-            <Loader2 className="animate-spin" />
-          ) : (
-            <Search />
-          )}
+          icon={isLoading ? <Loader2 className="animate-spin" /> : <Search />}
           variant="primary"
           type="button"
           className="flex-1"
@@ -138,7 +134,8 @@ export function ScraperKeywordSearchCompactControls({
         </Button>
         {flatResults.length > 0 && (
           <Button
-            icon={<X />} aria-label="Clear"
+            icon={<X />}
+            aria-label="Clear"
             type="button"
             variant="outline"
             onClick={handleClear}
@@ -146,6 +143,17 @@ export function ScraperKeywordSearchCompactControls({
           />
         )}
       </div>
+      {!isLoading &&
+        form.runs
+          .flatMap((run) => run.outcome?.ignoredOptions ?? [])
+          .map((note) => (
+            <p
+              key={note}
+              className="text-[9px] leading-snug text-muted-foreground"
+            >
+              {note}
+            </p>
+          ))}
       {statusMessage && isLoading && (
         <p className="text-[9px] text-muted-foreground truncate animate-pulse">
           {statusMessage}

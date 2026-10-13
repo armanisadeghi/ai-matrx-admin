@@ -177,6 +177,7 @@ export function SearchLabBody({
     errorDiagnostics,
   } = form;
 
+  const isAdminDebugger = useAppSelector(selectIsAdminDebugger);
   const [optionsOpen, setOptionsOpen] = useState(false);
   const [inspect, setInspect] = useState<InspectorState>({
     brave: false,
@@ -201,10 +202,24 @@ export function SearchLabBody({
 
   const onVertical = (next: SearchVertical) => {
     setVertical(next);
+    if (options.page !== 1) setOption("page", 1);
     // A Brave re-run costs nothing worth guarding; Google waits for Search.
-    if (lastRequest && engine === "brave" && keywords.trim() && !isLoading) {
-      void handleSearch({ vertical: next });
+    // Only when the inputs still match the last run — edits nobody submitted
+    // never ride along on a tab change.
+    if (
+      lastRequest &&
+      !isStale &&
+      engine === "brave" &&
+      keywords.trim() &&
+      !isLoading
+    ) {
+      void handleSearch({ vertical: next, options: { ...options, page: 1 } });
     }
+  };
+
+  const onQuery = (value: string) => {
+    setKeywords(value);
+    if (options.page !== 1) setOption("page", 1);
   };
 
   const compare = runs.length > 1;
@@ -221,7 +236,7 @@ export function SearchLabBody({
               enableCleanup={false}
               placeholder="Search the web…"
               value={keywords}
-              onChange={(e) => setKeywords(e.target.value)}
+              onChange={(e) => onQuery(e.target.value)}
               onKeyDown={handleKeyDown}
               wrapperClassName="flex-1 min-w-[220px]"
               className="h-8 text-sm"
@@ -238,6 +253,7 @@ export function SearchLabBody({
               pressed={optionsOpen}
               meta={changedOptionCount > 0 ? changedOptionCount : undefined}
               onClick={() => setOptionsOpen((v) => !v)}
+              aria-label="Options"
             >
               Options
             </Button>
@@ -255,6 +271,7 @@ export function SearchLabBody({
               icon={isLoading ? <Spinner /> : <Search />}
               onClick={() => void handleSearch()}
               disabled={!canSearch}
+              aria-label="Search"
             >
               {isLoading ? (statusMessage ?? "Searching…") : "Search"}
             </Button>
@@ -302,7 +319,11 @@ export function SearchLabBody({
           {runs.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20 text-center text-muted-foreground">
               <Search className="mb-3 h-10 w-10 opacity-40" />
-              <p className="text-sm">Pick an engine and search</p>
+              <p className="text-sm">
+                {keywords.trim()
+                  ? "Press Search to run it"
+                  : "Type a query and press Search"}
+              </p>
             </div>
           ) : (
             <div className={cn(compare && "grid gap-6 md:grid-cols-2")}>
@@ -317,7 +338,7 @@ export function SearchLabBody({
               ))}
             </div>
           )}
-          {errorDiagnostics && (
+          {errorDiagnostics && isAdminDebugger && (
             <div className="mt-3">
               <ScraperHookErrorDetails diagnostics={errorDiagnostics} />
             </div>

@@ -148,7 +148,6 @@ export interface UseScraperKeywordSearchFormReturn {
   resetAll: () => void;
 }
 
-
 function enginesFor(engine: KeywordSearchEngine): SearchProvider[] {
   return engine === "compare" ? ["brave", "google"] : [engine];
 }
@@ -181,7 +180,10 @@ export function kindToSearchItems(
     for (const item of list) if (isRecord(item)) out.push(read(item));
   };
   const source = str(result.source);
-  const base = (r: Record<string, unknown>, type: string): SearchResultItem => ({
+  const base = (
+    r: Record<string, unknown>,
+    type: string,
+  ): SearchResultItem => ({
     keyword: query,
     type,
     source: str(r.source) ?? source,
@@ -226,17 +228,22 @@ export function kindToSearchItems(
 }
 
 export function countChangedOptions(options: KeywordSearchOptions): number {
-  return (Object.keys(DEFAULT_KEYWORD_SEARCH_OPTIONS) as (keyof KeywordSearchOptions)[]).filter(
-    (key) => {
-      const value = options[key];
-      const def = DEFAULT_KEYWORD_SEARCH_OPTIONS[key];
-      if (key === "location") return String(value ?? "").trim() !== "";
-      return value !== def;
-    },
-  ).length;
+  return (
+    Object.keys(
+      DEFAULT_KEYWORD_SEARCH_OPTIONS,
+    ) as (keyof KeywordSearchOptions)[]
+  ).filter((key) => {
+    const value = options[key];
+    const def = DEFAULT_KEYWORD_SEARCH_OPTIONS[key];
+    if (key === "location") return String(value ?? "").trim() !== "";
+    return value !== def;
+  }).length;
 }
 
-function sameRequest(a: KeywordSearchRequest, b: KeywordSearchRequest): boolean {
+function sameRequest(
+  a: KeywordSearchRequest,
+  b: KeywordSearchRequest,
+): boolean {
   return JSON.stringify(a) === JSON.stringify(b);
 }
 
@@ -248,17 +255,24 @@ export function useScraperKeywordSearchForm(
   const [maxResults, setMaxResults] = useState(
     String(init.maxResults ?? RESULT_LIMIT_DEFAULT),
   );
-  const [engine, setEngine] = useState<KeywordSearchEngine>(init.engine ?? "brave");
-  const [vertical, setVertical] = useState<SearchVertical>(init.vertical ?? "web");
+  const [engine, setEngine] = useState<KeywordSearchEngine>(
+    init.engine ?? "brave",
+  );
+  const [vertical, setVertical] = useState<SearchVertical>(
+    init.vertical ?? "web",
+  );
   const [options, setOptions] = useState<KeywordSearchOptions>({
     ...DEFAULT_KEYWORD_SEARCH_OPTIONS,
     ...init.options,
   });
   const [includeRaw, setIncludeRaw] = useState(false);
   const [runs, setRuns] = useState<KeywordEngineRun[]>([]);
-  const [lastRequest, setLastRequest] = useState<KeywordSearchRequest | null>(null);
+  const [lastRequest, setLastRequest] = useState<KeywordSearchRequest | null>(
+    null,
+  );
   const [selectedHitIndex, setSelectedHitIndex] = useState<number | null>(null);
-  const [diagnostics, setDiagnostics] = useState<KeywordSearchDiagnostics | null>(null);
+  const [diagnostics, setDiagnostics] =
+    useState<KeywordSearchDiagnostics | null>(null);
   const controllers = useRef<AbortController[]>([]);
 
   const current: KeywordSearchRequest = {
@@ -310,14 +324,22 @@ export function useScraperKeywordSearchForm(
       })),
     );
 
-    const patchRun = (provider: SearchProvider, patch: Partial<KeywordEngineRun>) =>
+    const patchRun = (
+      provider: SearchProvider,
+      patch: Partial<KeywordEngineRun>,
+    ) =>
       setRuns((prev) =>
-        prev.map((run) => (run.provider === provider ? { ...run, ...patch } : run)),
+        prev.map((run) =>
+          run.provider === provider ? { ...run, ...patch } : run,
+        ),
       );
 
     const requestOptions: SearchRequestOptions = {
       ...request.options,
       vertical: request.vertical,
+      // The AI answer exists for web results only; never send a switch the
+      // UI shows as disabled.
+      aiAnswer: request.options.aiAnswer && request.vertical === "web",
       includeRaw,
     };
 
@@ -419,7 +441,8 @@ export function useScraperKeywordSearchForm(
     vertical,
     setVertical,
     options,
-    setOption: (key, value) => setOptions((prev) => ({ ...prev, [key]: value })),
+    setOption: (key, value) =>
+      setOptions((prev) => ({ ...prev, [key]: value })),
     resetOptions: () => setOptions(DEFAULT_KEYWORD_SEARCH_OPTIONS),
     changedOptionCount: countChangedOptions(options),
     includeRaw,

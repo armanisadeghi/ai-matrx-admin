@@ -27,6 +27,7 @@ import {
 } from "./primitive-blocks";
 import { AGENT_ICON } from "@/components/icons/domain-icons";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
+import { searchEngineLabel } from "@/features/search/types";
 
 interface SearchKindBlockProps {
   serverData?: unknown;
@@ -40,7 +41,6 @@ const ExtThumb: React.FC<{ src: string; className?: string }> = ({
   const [failed, setFailed] = useState(false);
   if (failed) return null;
   return (
-     
     <img
       src={src}
       alt=""
@@ -55,7 +55,10 @@ const ExtThumb: React.FC<{ src: string; className?: string }> = ({
 // local_place
 // ─────────────────────────────────────────────────────────────────────────────
 
-export function LocalPlaceBlock({ serverData, className }: SearchKindBlockProps) {
+export function LocalPlaceBlock({
+  serverData,
+  className,
+}: SearchKindBlockProps) {
   const { value } = readSearchKindValue<"local_place">(serverData);
   const name = text(value.name);
   if (!name) return null;
@@ -85,9 +88,13 @@ export function LocalPlaceBlock({ serverData, className }: SearchKindBlockProps)
               {name}
             </OutboundLink>
           ) : (
-            <span className="text-sm font-semibold text-foreground">{name}</span>
+            <span className="text-sm font-semibold text-foreground">
+              {name}
+            </span>
           )}
-          {price && <span className="text-xs text-muted-foreground">{price}</span>}
+          {price && (
+            <span className="text-xs text-muted-foreground">{price}</span>
+          )}
         </div>
 
         {isRecord(value.rating) && (
@@ -111,7 +118,9 @@ export function LocalPlaceBlock({ serverData, className }: SearchKindBlockProps)
         )}
 
         <div className="mt-2 flex flex-col gap-1">
-          {isRecord(value.address) && <PostalAddressBlock serverData={value.address} />}
+          {isRecord(value.address) && (
+            <PostalAddressBlock serverData={value.address} />
+          )}
           {phone && (
             <a
               href={`tel:${phone}`}
@@ -159,7 +168,10 @@ export function LocalPlaceBlock({ serverData, className }: SearchKindBlockProps)
 // entity_card — the knowledge-panel card (e.g. built from Wikipedia).
 // ─────────────────────────────────────────────────────────────────────────────
 
-export function EntityCardBlock({ serverData, className }: SearchKindBlockProps) {
+export function EntityCardBlock({
+  serverData,
+  className,
+}: SearchKindBlockProps) {
   const { value } = readSearchKindValue<"entity_card">(serverData);
   const name = text(value.name);
   if (!name) return null;
@@ -172,12 +184,16 @@ export function EntityCardBlock({ serverData, className }: SearchKindBlockProps)
   const description = text(value.long_description) ?? text(value.description);
 
   return (
-    <div className={cn("rounded-lg border border-border bg-card p-4", className)}>
+    <div
+      className={cn("rounded-lg border border-border bg-card p-4", className)}
+    >
       <div className="flex items-start gap-4">
         <div className="min-w-0 flex-1">
           <div className="text-base font-semibold text-foreground">{name}</div>
           {text(value.category) && (
-            <div className="text-xs text-muted-foreground">{text(value.category)}</div>
+            <div className="text-xs text-muted-foreground">
+              {text(value.category)}
+            </div>
           )}
           {isRecord(value.rating) && (
             <div className="mt-1">
@@ -268,7 +284,7 @@ export function EntityCardBlock({ serverData, className }: SearchKindBlockProps)
                 <SearchFavicon
                   iconUrl={text(profile.favicon)}
                   url={pUrl}
-                  className="h-3.5 w-3.5 rounded"
+                  className="h-3.5 w-3.5 rounded bg-muted/40"
                 />
                 {pName}
               </OutboundLink>
@@ -284,7 +300,10 @@ export function EntityCardBlock({ serverData, className }: SearchKindBlockProps)
 // ai_answer — the provider's synthesized answer with its references.
 // ─────────────────────────────────────────────────────────────────────────────
 
-export function AiAnswerKindBlock({ serverData, className }: SearchKindBlockProps) {
+export function AiAnswerKindBlock({
+  serverData,
+  className,
+}: SearchKindBlockProps) {
   const { value } = readSearchKindValue<"ai_answer">(serverData);
   const blocks = items(value.blocks);
   if (blocks.length === 0) return null;
@@ -300,7 +319,11 @@ export function AiAnswerKindBlock({ serverData, className }: SearchKindBlockProp
       <div className="mb-2 flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-muted-foreground">
         <AGENT_ICON className="h-3.5 w-3.5" />
         <span>AI answer</span>
-        {text(value.source) && <span className="opacity-70">· {text(value.source)}</span>}
+        {text(value.source) && (
+          <span className="opacity-70">
+            · {searchEngineLabel(text(value.source) ?? "")}
+          </span>
+        )}
       </div>
 
       <div className="space-y-2">
@@ -316,7 +339,10 @@ export function AiAnswerKindBlock({ serverData, className }: SearchKindBlockProp
           if (type === "list") {
             const items = strings(block.items);
             return items.length > 0 ? (
-              <ul key={i} className="list-disc space-y-1 pl-5 text-sm text-foreground/90">
+              <ul
+                key={i}
+                className="list-disc space-y-1 pl-5 text-sm text-foreground/90"
+              >
                 {items.map((item, j) => (
                   <li key={j}>{item}</li>
                 ))}
@@ -345,7 +371,10 @@ export function AiAnswerKindBlock({ serverData, className }: SearchKindBlockProp
                 className="inline-flex max-w-[220px] items-center gap-1.5 rounded-full border border-border bg-card px-2 py-0.5 text-xs text-muted-foreground hover:border-primary/40 hover:text-primary"
                 title={url}
               >
-                <SearchFavicon url={url} className="h-3.5 w-3.5 rounded" />
+                <SearchFavicon
+                  url={url}
+                  className="h-3.5 w-3.5 rounded bg-muted/40"
+                />
                 <span className="truncate">{label}</span>
                 <ExternalLink className="h-3 w-3 flex-shrink-0 opacity-60" />
               </OutboundLink>

@@ -59,7 +59,6 @@ export const SearchFavicon: React.FC<{
     );
   }
   return (
-     
     <img
       src={src}
       alt=""
@@ -153,8 +152,11 @@ export const SearchChip: React.FC<{
   className?: string;
 }> = ({ children, className }) => (
   <span
+    title={typeof children === "string" ? children : undefined}
     className={cn(
-      "inline-flex max-w-full items-center truncate rounded-full border border-border bg-muted/40 px-2 py-0.5 text-xs text-muted-foreground",
+      // A chip holds a SHORT label (pill guard budget 320px): long related
+      // questions truncate, the full text rides the title.
+      "inline-block max-w-[min(100%,18rem)] truncate rounded-full border border-border bg-muted/40 px-2 py-0.5 align-middle text-xs text-muted-foreground",
       className,
     )}
   >
