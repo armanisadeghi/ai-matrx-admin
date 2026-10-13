@@ -15,6 +15,13 @@ import { decorateErrorToast } from "../errorToastAlchemy";
   globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }
 ).IS_REACT_ACT_ENVIRONMENT = true;
 
+// The toast decorator loads the menu through ONE async edge (it sits in the root layout's
+// graph — see errorToastAlchemy.tsx). Warm that chunk once, outside the test's own timer,
+// the way the static import used to before the edge existed.
+beforeAll(async () => {
+  await import("../ErrorAlchemyMenu");
+}, 300_000);
+
 it("keeps the error copy menu open when focus leaves Sonner, then copies the rendered error", async () => {
   const host = document.createElement("div");
   document.body.appendChild(host);

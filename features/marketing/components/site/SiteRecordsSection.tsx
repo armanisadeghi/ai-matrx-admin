@@ -29,10 +29,8 @@
  */
 
 import { SectionCard } from "@/features/marketing/components/shared/MarketingUi";
-import {
-  AnchorRecordsList,
-  useAnchorRecords,
-} from "@/features/content-ir/records/AnchorRecordsList";
+import { AnchorRecordsList } from "@/features/content-ir/records/AnchorRecordsList";
+import { useAnchorRecords } from "@/features/content-ir/records/useAnchorRecords";
 
 export interface SiteRecordsSectionProps {
   siteId: string;

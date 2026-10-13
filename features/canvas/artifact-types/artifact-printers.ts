@@ -5,7 +5,8 @@
  * registry (keyed by artifact type AND `__kind`). Two callers, one adapter:
  * the block's / canvas tab's own Print, and a message's Print (each embedded
  * block printed through `toPrintHtml`). Imported for its side effect by the
- * canvas host and the print actions.
+ * print actions; the canvas host reaches it ONLY through loadArtifactPrinters.ts
+ * (one async edge — this graph carries KaTeX and must stay off first load).
  */
 
 import { registerBlockPrinter, type BlockPrinter } from "@ai-matrx/print/core";

@@ -10,10 +10,21 @@
 import { registerChatUi } from "@ai-matrx/chat/host/ui-slots";
 import "@ai-matrx/chat/host/app-data-slots";
 import { kindValidator } from "@/features/content-ir/registry/kind-schema-source";
-import { AnchorRecordsList, useAnchorRecords } from "@/features/content-ir/records/AnchorRecordsList";
+import { useAnchorRecords } from "@/features/content-ir/records/useAnchorRecords";
 import { fetchShapeByKind, fetchShapePage } from "@/features/content-ir/browse/service";
 import { useOpenCitationSource } from "@/components/mardown-display/chat-markdown/citations/useOpenCitationSource";
-import FullScreenMarkdownEditor from "@/components/mardown-display/chat-markdown/FullScreenMarkdownEditor";
+import { lazySlotsFrom, SlotLoadingLine } from "@/providers/chatSlotLazy";
+
+// LAZY SLOTS — one implementation module, one `import()` (providers/chatSlotLazy.tsx). The
+// records list draws inside the chat header's records popover; while it loads, a one-line
+// placeholder stands where its own one-line loading sentence will be. The full-screen editor
+// draws nothing until it opens. The kind validator, shape reads and citation hook stay static
+// (functions and hooks cannot load lazily).
+const lazySlot = lazySlotsFrom(() =>
+  import("@/providers/chatAppDataRegistrationImpl").then((m) => m.appDataSlotImpls),
+);
+const AnchorRecordsList = lazySlot("AnchorRecordsList", SlotLoadingLine);
+const FullScreenMarkdownEditor = lazySlot("FullScreenMarkdownEditor");
 
 export const chatAppDataSlots = {
   contentIrKindValidator: () => kindValidator,
