@@ -13,6 +13,8 @@
  *                            shadow, type, border, colour). Placement classes (margin, flex/grid
  *                            placement, position, width-full, truncate…) are allowed.
  *   arbitrary-text-size      `text-[11px]` / `text-[0.8rem]` — an off-scale type size.
+ *   faded-text-colour        `text-muted-foreground/60`, `text-foreground/[0.6]` — an opacity-mixed text
+ *                            grey (STYLE-GUIDE: two text colours only). bg-/border- opacity is out of scope.
  *   raw-color                a raw Tailwind palette colour (`bg-blue-500`, `text-white`) or a hex
  *                            (`bg-[#0af]`, a `#rrggbb` in a style prop) instead of a semantic token.
  *   spinner-outside-spinner  `animate-spin` outside a spinner/loader component.
@@ -99,7 +101,11 @@ export const RULES = {
   },
   "arbitrary-text-size": {
     title: "off-scale arbitrary text size",
-    fix: "Use the type scale (13px titles/controls, 12px secondary, 11px meta — text-sm / text-xs tokens), never text-[Npx].",
+    fix: "Use a type-* style (type-title 13/500, type-body 13, type-secondary 12, type-meta 11, type-label 11 grey over type-value 14 black for read-only data), never text-[Npx]. The style guide: common-docs/systems/platform/ui-shell/STYLE-GUIDE.md.",
+  },
+  "faded-text-colour": {
+    title: "opacity-mixed text grey",
+    fix: "There are two text colours: text-foreground for content, text-muted-foreground for everything around it. No third grey — if it must be fainter, it is the wrong element (meta goes type-meta text-muted-foreground; disabled uses disabled/aria-disabled).",
   },
   "raw-color": {
     title: "raw palette or hex colour",
@@ -224,6 +230,7 @@ const PALETTE = "slate|gray|zinc|neutral|stone|red|orange|amber|yellow|lime|gree
 const RAW_COLOR = new RegExp(`^(bg|text|border(-[trblxyse])?|ring|ring-offset|fill|stroke|from|to|via|outline|divide|decoration|placeholder|caret|accent|shadow)-((${PALETTE})-\\d{2,3}|black|white)(\\/\\[?[\\d.]+\\]?)?$`);
 const HEX_CLASS = /\[#[0-9a-fA-F]{3,8}\]/;
 const ARBITRARY_TEXT = /^text-\[\d+(\.\d+)?(px|rem|em)\]$/;
+const FADED_TEXT = /^text-(muted-foreground|foreground)\/(\d+(\.\d+)?|\[[^\]]+\])$/;
 const HEX_LITERAL = /#[0-9a-fA-F]{3}(?:[0-9a-fA-F]{3}(?:[0-9a-fA-F]{2})?)?\b/;
 
 function collectStrings(node, out) {
@@ -375,6 +382,8 @@ export function scanSource(file, text) {
     if (raw.length) add("raw-color", node, `${label} ${[...new Set(raw)].sort().join(" ")}`);
     const text = toks.filter((t) => ARBITRARY_TEXT.test(stripVariants(t).base));
     if (text.length) add("arbitrary-text-size", node, `${label} ${[...new Set(text)].sort().join(" ")}`);
+    const faded = toks.filter((t) => FADED_TEXT.test(stripVariants(t).base));
+    if (faded.length) add("faded-text-colour", node, `${label} ${[...new Set(faded)].sort().join(" ")}`);
     if (!spinnerFile && toks.some((t) => stripVariants(t).base === "animate-spin")) add("spinner-outside-spinner", node, label);
   }
 
@@ -709,6 +718,7 @@ export function Bad() {
       <span className="inline-flex rounded-full bg-warning/10 px-2.5 text-xs font-semibold text-warning">3 due</span>
       <TabsList className="h-full min-h-0 w-full rounded-lg bg-muted">x</TabsList>
       <div className="inline-flex items-center rounded-md bg-muted p-0.5"><button onClick={a}>One</button><button onClick={b}>Two</button></div>
+      <span className="hover:text-muted-foreground/60 text-foreground/[0.6]">faded</span>
     </Card>
   );
 }
@@ -765,6 +775,7 @@ const PLANTED_SITES = [
   "canonical-override :: <MatrxDataTable> tableClassName",
   "canonical-override :: <section> [&_[data-matrx-table-tabs]]:border-b-0",
   "hand-built-chip :: <span> bg-warning/10 px-2.5 rounded-full text-warning text-xs",
+  "faded-text-colour :: <span> hover:text-muted-foreground/60 text-foreground/[0.6]",
   "primitive-visual-class :: <TabsList> bg-muted rounded-lg",
   "hand-built-segmented :: SegmentedControl from the package root",
   "hand-built-segmented :: <div> bg-muted inline-flex p-0.5 rounded-md",
