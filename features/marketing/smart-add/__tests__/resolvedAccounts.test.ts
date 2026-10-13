@@ -1,4 +1,4 @@
-import { compareRows, evidenceFromPayload, mergeEvidence, type EvidenceItem } from "../evidence";
+import { collapseAliasedAccounts, compareRows, evidenceFromPayload, mergeEvidence, type EvidenceItem } from "../evidence";
 import fixture from "./fixtures/resolved_accounts.json";
 
 // Server emissions for fullspecstaff.com: the bare links the site names, then the looked-up accounts
@@ -33,5 +33,11 @@ describe("resolved accounts", () => {
     expect(c.name).toBe("MrBeast");
     expect(c.handle).toBe("MrBeast");
     expect(c.followers).toBe(520_000_000);
+  });
+
+  it("the Social accounts list shows one row per account (aliases folded in)", () => {
+    const merged = mergeEvidence(new Map<string, EvidenceItem>(), evidenceFromPayload({ brand_evidence: fixture.after }));
+    const accounts = collapseAliasedAccounts([...merged.values()].filter((i) => i.field === "social"));
+    expect(accounts.map((a) => a.key).sort()).toEqual(["social:linkedin:full-spectrum-search-group", "social:youtube:mrbeast"]);
   });
 });

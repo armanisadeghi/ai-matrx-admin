@@ -18,7 +18,7 @@ import { profileAvatarDoor } from "@/features/marketing/social/server";
 import { PlatformMark, platformLabel } from "@/features/marketing/social/components/PlatformMark";
 import { SocialImage } from "@/features/marketing/social/components/SocialImage";
 import { proxiedExternalImageUrl } from "@/lib/media/external-image";
-import { compareRows, websiteHost, type Candidate, type Decision, type EvidenceField, type EvidenceItem, type Relation } from "./evidence";
+import { collapseAliasedAccounts, compareRows, websiteHost, type Candidate, type Decision, type EvidenceField, type EvidenceItem, type Relation } from "./evidence";
 import { accountHandleLine, CustomAdd, OpenLink, RelatedChoice, useRelationKinds } from "./SmartAddExtras";
 import { brightnessOf, shadeForBrightness } from "./logo-shade";
 import { profileUrlFor } from "@/features/marketing/social/link";
@@ -112,7 +112,7 @@ export function SmartAddSlots({
     <CustomAdd field={field} placeholder={placeholder} label={label} onAdd={onAdd} disabled={locked} />
   );
   const of = (...fields: EvidenceField[]) => items.filter((i) => fields.includes(i.field));
-  const socials = of("social");
+  const socials = collapseAliasedAccounts(of("social"));
   const { kinds, onCustom } = useRelationKinds(onRelate);
   // The same candidates the compare view builds: an account's candidate id is its key.
   const candidateByKey = new Map<string, Candidate>();
