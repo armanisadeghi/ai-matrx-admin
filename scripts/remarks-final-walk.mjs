@@ -326,10 +326,22 @@ await item(6, "New chat about this -> /chat/new?c=<id> chip -> reload -> send ->
   if (!S.cUrl) throw new Error("chat C missing");
   await page.goto(S.cUrl);
   await page.waitForTimeout(12000);
+  const sourceChipsBefore = await chips(page);
+  t.ev.sourceChipsBefore = sourceChipsBefore;
   const passage = await selectText(page, 0);
   t.ev.passage = passage;
   await page.waitForTimeout(1200);
-  await page.getByRole("button", { name: "New chat about this", exact: true }).click({ timeout: 10000 });
+  // "New chat about this" lives in the selection toolbar's "..." overflow (opened with a real press).
+  const box = await page.evaluate(() => {
+    const c = [...document.querySelectorAll("button")].find((b) => b.getAttribute("aria-label") === "Comment");
+    const r = [...c.parentElement.querySelectorAll("button")].at(-1).getBoundingClientRect();
+    return { x: r.x + r.width / 2, y: r.y + r.height / 2 };
+  });
+  await page.mouse.move(box.x, box.y);
+  await page.mouse.down();
+  await page.mouse.up();
+  await page.waitForTimeout(600);
+  await page.getByRole("menuitem", { name: "New chat about this" }).click({ timeout: 10000 });
   await page.waitForURL(/\/chat\/new/, { timeout: 30000 });
   await page.waitForTimeout(6000);
   t.ev.urlNew = page.url();
@@ -364,7 +376,7 @@ await item(6, "New chat about this -> /chat/new?c=<id> chip -> reload -> send ->
   await page.goto(S.cUrl);
   await page.waitForTimeout(12000);
   t.ev.sourceChips = await chips(page);
-  t.ok(t.ev.sourceChips.length === 0, "source chat composer has a stray chip: " + JSON.stringify(t.ev.sourceChips));
+  t.ok(JSON.stringify(t.ev.sourceChips) === JSON.stringify(sourceChipsBefore), `source chat composer chips changed (stray chip): ${JSON.stringify(sourceChipsBefore)} -> ${JSON.stringify(t.ev.sourceChips)}`);
 });
 
 // ===== chat K: the choice chat (item 3) — its own chat so the numbering in chat C starts at c1 =====
@@ -426,8 +438,8 @@ await item(4, "checklist: tick two (real clicks) -> one chip naming them -> relo
   await page.waitForTimeout(3500);
   t.ev.chipsAfterTicks = await chips(page);
   await shot(page, "4-ticked");
-  const tickChips = t.ev.chipsAfterTicks.filter((c) => /ticked/i.test(c));
-  t.ok(tickChips.length === 1 && t.ev.chipsAfterTicks.length === 1, `expected ONE chip, got ${JSON.stringify(t.ev.chipsAfterTicks)}`);
+  // One chip for both ticks, naming them ("Checked 2: <first>…<second>"), never one chip per tick.
+  t.ok(t.ev.chipsAfterTicks.length === 1 && /(Checked|ticked)\s*2/i.test(t.ev.chipsAfterTicks[0]), `expected ONE chip naming the two ticks, got ${JSON.stringify(t.ev.chipsAfterTicks)}`);
   await page.waitForTimeout(10000);
   await reload(page, "D");
   const state = await page.evaluate((an) => [...document.querySelectorAll(`${an} :is([role=checkbox],input[type=checkbox])`)].map((e) => e.getAttribute("aria-checked") ?? String(e.checked)), AN);
