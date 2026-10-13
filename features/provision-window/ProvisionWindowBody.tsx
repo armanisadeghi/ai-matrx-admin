@@ -7,7 +7,7 @@
  */
 import { copyText } from "@ai-matrx/kit/clipboard";
 import { useEffect, useState } from "react";
-import { Check, ChevronDown, ChevronRight, Copy } from "lucide-react";
+import { Check, ChevronDown, ChevronRight, Copy, Info } from "lucide-react";
 import { Button, Select, type SelectOption } from "@ai-matrx/design-system/controls";
 import { formatCount } from "@ai-matrx/kit/format";
 import { extractErrorMessage } from "@/utils/errors";
@@ -39,12 +39,14 @@ function useCopy(): [string | null, (key: string, text: string) => void] {
 function ValueRow({ v, copied, copy }: { v: ProvisionValue; copied: string | null; copy: (k: string, t: string) => void }) {
   const [open, setOpen] = useState(false);
   const text = valueText(v.value);
+  const help = v.present ? v.source : `${v.missing_reason ?? "Not available here"} · ${v.source}`;
   return (
     <div className="border-b border-border/60 py-1.5" data-testid={`provision-value-${v.name}`}>
-      <div className="flex items-center gap-2 text-xs">
+      {/* Line 1: the label (help on its info icon), the code name faint on the right. */}
+      <div className="flex items-center gap-1.5 text-xs">
         <button
           type="button"
-          className="flex min-w-0 flex-1 items-center gap-1.5 text-left disabled:cursor-default"
+          className="flex min-w-0 items-center gap-1.5 text-left disabled:cursor-default"
           disabled={!v.present}
           onClick={() => setOpen((o) => !o)}
           aria-expanded={open}
@@ -54,37 +56,43 @@ function ValueRow({ v, copied, copy }: { v: ProvisionValue; copied: string | nul
           ) : (
             <span className="size-3.5 shrink-0" />
           )}
-          <span className={v.present ? "font-medium" : "font-medium text-muted-foreground"}>{v.label}</span>
-          <code className="truncate text-[11px] text-muted-foreground">{v.name}</code>
+          <span className="truncate font-medium text-muted-foreground">{v.label}</span>
         </button>
+        <span title={help} aria-label={help} className="shrink-0 cursor-help text-muted-foreground/60 hover:text-muted-foreground">
+          <Info className="size-3" />
+        </span>
+        <code className="ml-auto truncate text-[10px] text-muted-foreground/60">{v.name}</code>
         {v.present ? (
           <>
-            <span className="shrink-0 tabular-nums text-muted-foreground">
+            <span className="shrink-0 tabular-nums text-[11px] text-muted-foreground/70">
               {v.items !== null ? `${v.items} · ` : ""}
               {formatCount(v.chars)} chars
             </span>
             <button
               type="button"
-              className="shrink-0 rounded p-1 hover:bg-muted"
+              className="shrink-0 rounded p-0.5 text-muted-foreground hover:bg-muted hover:text-foreground"
               aria-label={`Copy ${v.label}`}
               onClick={() => copy(v.name, text)}
             >
               {copied === v.name ? <Check className="size-3.5" /> : <Copy className="size-3.5" />}
             </button>
           </>
-        ) : (
-          <span className="shrink-0 text-muted-foreground">Missing</span>
-        )}
+        ) : null}
       </div>
-      <div className="pl-5 text-[11px] text-muted-foreground">
-        {v.present ? v.source : `${v.missing_reason ?? "Not available here"} · ${v.source}`}
-      </div>
-      {v.present && !open ? (
-        <div className="truncate pl-5 text-[11px]">{text.slice(0, 200)}</div>
-      ) : null}
-      {open ? (
+      {/* Line 2: the value — the strongest thing on the row, styled as data. */}
+      {!v.present ? (
+        <div className="ml-5 mt-0.5 text-xs italic text-muted-foreground">Missing</div>
+      ) : open ? (
         <JsonInspector data={v.value} />
-      ) : null}
+      ) : (
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          className="ml-5 mt-0.5 block w-[calc(100%-1.25rem)] truncate rounded bg-muted/60 px-1.5 py-0.5 text-left font-mono text-xs text-foreground hover:bg-muted"
+        >
+          {text.slice(0, 300)}
+        </button>
+      )}
     </div>
   );
 }
