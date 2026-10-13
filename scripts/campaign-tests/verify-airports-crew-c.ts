@@ -2,7 +2,7 @@ import path from "node:path";
 import dotenv from "dotenv";
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { createRecordsClient } from "@ai-matrx/records/core";
-import { personActor, recordsDataSource } from "@ai-matrx/records-ui";
+import { personActor, recordsDataSource } from "@ai-matrx/records-ui/helpers";
 dotenv.config({ path: path.resolve(__dirname, "../../.env.local"), override: true });
 async function main() {
   const supabase = createSupabaseClient(process.env.NEXT_PUBLIC_SUPABASE_URL as string, process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY as string);

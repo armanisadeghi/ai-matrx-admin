@@ -38,7 +38,7 @@ import { AccessGate } from "@/features/access-gate/components/AccessGate";
 import { RichDocument } from "@ai-matrx/rich-content/rich-document/RichDocument";
 import { RecordPageHeader } from "@/features/shell/components/header/templates/RecordPageHeader";
 import { createClient } from "@/utils/supabase/client";
-import { recordsDataSource } from "@ai-matrx/records-ui";
+import { recordsDataSource } from "@ai-matrx/records-ui/helpers";
 
 /** What `custom.doc_render_read` answers — the frozen bytes, what they are of, and where they live. */
 interface RenderedDocument {

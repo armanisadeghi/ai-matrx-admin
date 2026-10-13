@@ -18,7 +18,7 @@
 
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { supabase } from "@/utils/supabase/client";
-import { recordsDataSource } from "@ai-matrx/records-ui";
+import { recordsDataSource } from "@ai-matrx/records-ui/helpers";
 import { dataHomeTables } from "@/features/unified-data/hub/doors";
 import { postgrestError } from "@/lib/failure/postgrestError";
 import { readPickListIndexOrThrow } from "@/features/data-tables/pick-lists/pick-list-index";

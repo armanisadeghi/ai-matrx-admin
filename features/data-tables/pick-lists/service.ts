@@ -5,7 +5,7 @@
  * organization and the person's own seat.
  */
 import { createRecordsClient, type RecordsClient } from "@ai-matrx/records/core";
-import { personActor, recordsDataSource } from "@ai-matrx/records-ui";
+import { personActor, recordsDataSource } from "@ai-matrx/records-ui/helpers";
 
 import { createClient, supabase } from "@/utils/supabase/client";
 import type {

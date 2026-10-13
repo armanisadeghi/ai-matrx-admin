@@ -11,7 +11,7 @@
 // saved, asked for by the create control.
 
 import { useState } from "react";
-import { recordsDataSource } from "@ai-matrx/records-ui";
+import { recordsDataSource } from "@ai-matrx/records-ui/helpers";
 
 import RouteHeader from "@/features/shell/components/header/RouteHeader";
 import { useAppSelector } from "@/lib/redux/hooks";

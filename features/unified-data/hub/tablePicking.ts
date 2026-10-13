@@ -9,7 +9,7 @@
 // The interim mirror of those functions that sat here until records-ui 0.93.142 is gone; this file
 // only maps the data home's row shape onto the package's `PickerTable`.
 
-import { tablePickerEntries, type PickerTable } from "@ai-matrx/records-ui";
+import { tablePickerEntries, type PickerTable } from "@ai-matrx/records-ui/helpers";
 
 import type { DataHomeTableRow } from "./doors";
 

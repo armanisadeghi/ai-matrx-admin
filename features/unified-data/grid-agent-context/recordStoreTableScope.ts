@@ -12,7 +12,7 @@
  * `RecordStoreTableSurface.tsx`.
  */
 import type { Field } from "@ai-matrx/records";
-import type { RecordsUiHost } from "@ai-matrx/records-ui";
+import type { RecordsUiHost } from "@ai-matrx/records-ui/helpers";
 
 import type {
   DataTableScopeField,

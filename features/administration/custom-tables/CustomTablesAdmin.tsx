@@ -23,7 +23,7 @@ import { MatrxDataTable, type MatrxColumnDef } from "@ai-matrx/design-system/dat
 import { stringUrlCodec, useUrlState } from "@ai-matrx/kit/url-state";
 import { createRecordsClient, type RecordsClient } from "@ai-matrx/records/core";
 import type { AdminTable } from "@ai-matrx/records";
-import { personActor, recordsDataSource } from "@ai-matrx/records-ui";
+import { personActor, recordsDataSource } from "@ai-matrx/records-ui/helpers";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Alert, AlertDescription } from "@/components/ui/alert";

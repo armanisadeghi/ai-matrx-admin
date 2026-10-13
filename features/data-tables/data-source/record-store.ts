@@ -40,7 +40,7 @@ import type {
   RecordsError,
   RowAction as StoreRowAction,
 } from "@ai-matrx/records";
-import { declareTable, personActor, recordsDataSource, resolveTableStyle, type NewFieldSpec } from "@ai-matrx/records-ui";
+import { declareTable, personActor, recordsDataSource, resolveTableStyle, type NewFieldSpec } from "@ai-matrx/records-ui/helpers";
 import { withheldCells, type WithheldCells } from "../withheld-cells";
 
 import { createClient } from "@/utils/supabase/client";

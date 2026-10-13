@@ -23,7 +23,7 @@
 
 import { useEffect, useState } from "react";
 
-import { recordsDataSource, whenWords } from "@ai-matrx/records-ui";
+import { recordsDataSource, whenWords } from "@ai-matrx/records-ui/helpers";
 import { createClient } from "@/utils/supabase/client";
 
 /** Where an approval row stands. `pending` is the only state still waiting. */

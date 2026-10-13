@@ -34,7 +34,7 @@ import {
   type LandingOutcomes,
   type RecordsClient,
 } from "@ai-matrx/records/core";
-import { personActor, recordsDataSource } from "@ai-matrx/records-ui";
+import { personActor, recordsDataSource } from "@ai-matrx/records-ui/helpers";
 import { apiPost } from "@/lib/api/typed-client";
 import { getUserMessage } from "@ai-matrx/api";
 import {

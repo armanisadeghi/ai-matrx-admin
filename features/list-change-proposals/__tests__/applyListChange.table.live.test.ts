@@ -34,7 +34,7 @@ dotenv.config({ path: path.resolve(__dirname, "../../../.env.local"), override: 
 
 import { createClient as createSupabaseClient, type SupabaseClient } from "@supabase/supabase-js";
 import { createRecordsClient } from "@ai-matrx/records/core";
-import { personActor, recordsDataSource } from "@ai-matrx/records-ui";
+import { personActor, recordsDataSource } from "@ai-matrx/records-ui/helpers";
 import { setStoreSingleton } from "@/lib/redux/store-singleton";
 import type { ListChangeTarget } from "@/features/content-ir/kinds/list-change-proposal";
 

@@ -10,7 +10,7 @@
 
 import { Database } from "lucide-react";
 import { useTable } from "@ai-matrx/records/react";
-import { tableName } from "@ai-matrx/records-ui";
+import { tableName } from "@ai-matrx/records-ui/helpers";
 import { cn } from "@/lib/utils";
 import type { CustomDataBinding } from "@ai-matrx/chat/agents/types/agent-definition.types";
 import { CustomDataRecordsScope } from "./CustomDataRecordsScope";

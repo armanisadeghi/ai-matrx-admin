@@ -7,7 +7,7 @@
 
 import { createRecordsClient } from "@ai-matrx/records/core";
 import { optionKey, optionLabel } from "@ai-matrx/records";
-import { personActor, recordsDataSource } from "@ai-matrx/records-ui";
+import { personActor, recordsDataSource } from "@ai-matrx/records-ui/helpers";
 import { createClient } from "@/utils/supabase/client";
 import {
   mergeFieldDefinitions,

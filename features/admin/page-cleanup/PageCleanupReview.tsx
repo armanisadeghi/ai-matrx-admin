@@ -27,7 +27,7 @@ import {
   type RecordsClient,
 } from "@ai-matrx/records/core";
 import { listAppRows, upsertAppRow } from "@ai-matrx/records/typed-table";
-import { personActor, recordsDataSource } from "@ai-matrx/records-ui";
+import { personActor, recordsDataSource } from "@ai-matrx/records-ui/helpers";
 
 import { InfoHint } from "@/components/official/InfoHint";
 import { copyContent } from "@ai-matrx/rich-content/copy/copy-commands";

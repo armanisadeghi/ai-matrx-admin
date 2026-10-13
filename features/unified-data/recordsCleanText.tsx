@@ -16,7 +16,7 @@ import { DEFAULT_ENABLED_VALUE_OPERATIONS } from "@/lib/content-cleanup/value-op
 import { IconInputCompact } from "@/components/official/icons/IconInputWithValidation.dynamic";
 import { RichContent } from "@ai-matrx/rich-content/levels/RichContent";
 import type { ReactNode } from "react";
-import type { RecordsUiHost } from "@ai-matrx/records-ui";
+import type { RecordsUiHost } from "@ai-matrx/records-ui/helpers";
 import { ProTextarea } from "@/components/official/ProTextarea";
 
 export function recordsCleanText(text: string): string {
