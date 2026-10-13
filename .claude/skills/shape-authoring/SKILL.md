@@ -129,7 +129,9 @@ grid, sortable list, chip list, skeleton, action button or image is a defect.
 
 - `KindHeaderBar` — the one compact header: `title` (required), `icon?`, `subtitle?`,
   `stats?: [{label, value, icon?}]`, `streaming?`, `copy?` (CopyButtons props, `label` required),
-  `actions?`, `size?: 'sm'|'md'`.
+  `actions?`, `size?: 'sm'|'md'`, `className?`. It has NO padding of its own: the host frame pads
+  it. Put it inside your own bordered card and you pad it to match your rows
+  (`className="px-3 py-2"` beside `px-3` rows), or the icon touches the card edge.
 - `KindPanelGrid` — auto-fit grid of equal-height panels: `minColumnWidth?` (default 280, never
   smaller for text), `maxColumns?`, `gap?: 'sm'|'md'|'lg'`.
 - `KindPanel` — `title` (required), `icon?`, `count?`, `badge?`, `streaming?`, `actions?` (≤2),
