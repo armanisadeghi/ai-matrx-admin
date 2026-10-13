@@ -1414,11 +1414,12 @@ function SlidesOutputCard({
           {/* ONE shape, ONE component: the saved deck replays through the
               canonical route (envelope → `applyIrKindRoute` → the presentation
               renderer), exactly what the live run showed. */}
-          <div className="relative bg-background p-2">
+          <div className="relative p-2">
             <KindInstanceRender
               kind="presentation_deck"
               value={deck}
               showRoutingNote={false}
+              variant="bare"
             />
           </div>
         </div>

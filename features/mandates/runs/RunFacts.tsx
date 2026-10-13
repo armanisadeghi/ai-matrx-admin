@@ -116,7 +116,7 @@ export function StreamedRunBlock({
           label={label}
           pending={state.running}
           failure={state.result && !state.result.ok ? state.result.error : null}
-          bodyClassName="max-h-[60dvh] overflow-y-auto px-3 py-2 text-sm"
+          bodyClassName="px-3 py-2 text-sm"
         />
       ) : state.result?.error ? (
         <p className="text-[12px] text-destructive">{state.result.error}<ErrorAlchemyMenu error={state.result.error} /></p>

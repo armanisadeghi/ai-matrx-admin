@@ -463,7 +463,8 @@ export function MandateTryPanel({
 function TryResult({ result }: { result: MandateTestResponse }) {
   const holder = readMandateRunHolder(result);
   return (
-    <div className="space-y-2 rounded-lg border border-border bg-card p-3" data-testid="mandate-try-result">
+    // No card: the answer renders as its kind, whose sections are cards already.
+    <div className="space-y-2" data-testid="mandate-try-result">
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1 type-secondary text-muted-foreground">
         <span className="font-medium text-foreground">Result</span>
         <span>{formatDurationMs(result.duration_ms)}</span>
