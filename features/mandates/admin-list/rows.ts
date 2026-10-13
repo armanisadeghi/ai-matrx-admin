@@ -29,7 +29,6 @@ import {
 } from "@/features/mandates/coverage";
 import { resolveMandateGoal } from "@/features/mandates/goal";
 import { mandateDisplayName } from "@/features/mandates/mandate-words";
-import { splitMandateKey } from "@ai-matrx/agents/mandates";
 import { holderOfMandate } from "@/lib/supabase/mandateStorage";
 import {
   bindingContractCheck,
@@ -45,6 +44,7 @@ import type {
   MandateServes,
 } from "./types";
 import type { AnyMandateKey } from "@ai-matrx/agents/mandates";
+import { featureLabelOf } from "@/features/mandates/feature-label";
 
 /** One place a mandate is served from, read from its own table. */
 export interface MandateServeLink {
@@ -70,56 +70,6 @@ export interface MandateAdminSources {
    * say "Checking" instead of a verdict. Absent = everything settled.
    */
   pending?: { codeTruth?: boolean; coverage?: boolean };
-}
-
-const ACRONYMS = new Set([
-  "ai",
-  "crm",
-  "seo",
-  "ner",
-  "pdf",
-  "sms",
-  "rag",
-  "kg",
-  "ir",
-  "cx",
-  "hr",
-  "api",
-  "ui",
-]);
-
-/** `content_plan` → "Content Plan", `seo` → "SEO". */
-export function prettySegment(segment: string): string {
-  return segment
-    .split(/[_\-\s]+/)
-    .filter(Boolean)
-    .map((word) =>
-      ACRONYMS.has(word.toLowerCase())
-        ? word.toUpperCase()
-        : word.charAt(0).toUpperCase() + word.slice(1),
-    )
-    .join(" ");
-}
-
-/**
- * The part of the app a mandate belongs to. The key's namespace is the feature;
- * when the code declaration lives one module deeper under that same feature
- * (`aidream.services.seo.ai_visibility`) the sub-area is added.
- */
-export function featureLabelOf(
-  mandateKey: AnyMandateKey,
-  sourceModule: string | null | undefined,
-): string {
-  const { feature } = splitMandateKey(mandateKey);
-  if (feature === "shortcut") return "Shortcuts";
-  if (feature === "app") return "Applets";
-  const top = prettySegment(feature);
-  if (!sourceModule) return top;
-  const parts = sourceModule.split(".");
-  const at = parts.indexOf(feature);
-  const sub = at >= 0 ? parts[at + 1] : undefined;
-  if (!sub || sub === "mandates" || sub === feature) return top;
-  return `${top} › ${prettySegment(sub)}`;
 }
 
 /**

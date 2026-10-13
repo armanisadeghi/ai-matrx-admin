@@ -17,7 +17,7 @@ import {
   mandateStatusOfRow,
   type MandateStatus,
 } from "@/features/mandates/status/mandate-status";
-import { featureLabelOf } from "@/features/mandates/admin-list/rows";
+import { featureLabelOf } from "@/features/mandates/feature-label";
 import {
   buildCoverageIndex,
   scopedCoverageOf,

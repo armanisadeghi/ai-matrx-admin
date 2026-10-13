@@ -36,6 +36,8 @@ import {
   workflowRunHref,
   type AutomationKind,
 } from "@/features/scheduling/service/automationCosts";
+import { featureLabelOf } from "@/features/mandates/feature-label";
+import { storedMandateKey } from "@ai-matrx/agents/mandates";
 
 export type ApprovalStatus = "waiting" | "approved" | "temporary" | "rejected";
 export type ApprovalSubjectKind = "agent" | "mandate" | AutomationKind;
@@ -110,7 +112,13 @@ export interface SpendApprovalRow {
   subject_name: string | null;
   agent_id: string | null;
   agent_type: string | null;
+  /** The agent's own name (agent.definition), read beside the list; null when it could not be read. */
+  agent_name: string | null;
   mandate_key: string | null;
+  /** The mandate this row belongs to: its own key, else the one its agent holds by default. */
+  feature_mandate_key: string | null;
+  /** "SEO", "News", "Shortcuts" — the mandate list's Feature (featureLabelOf); "" when none. */
+  feature: string;
   status: ApprovalStatus;
   threshold_usd: number;
   first_run_key: string | null;
@@ -182,6 +190,38 @@ const numOrNull = (v: unknown): number | null => (v === null || v === undefined 
 const asStatus = (v: string): ApprovalStatus => (v === "approved" || v === "rejected" || v === "temporary" ? v : "waiting");
 const asKind = (v: string): ApprovalSubjectKind => (v in SUBJECT_KIND_LABEL ? (v as ApprovalSubjectKind) : "agent");
 
+/** The mandate list's Feature for a key ("" when there is no key). */
+export function approvalFeatureOf(mandateKey: string | null): string {
+  return mandateKey ? featureLabelOf(storedMandateKey(mandateKey), null) : "";
+}
+
+/**
+ * Names the list cannot carry: each agent's name, and for a plain agent the mandate it holds by
+ * default (so it gets a Feature too). A failed read leaves the cells blank and says so in the console.
+ */
+async function readAgentFacts(agentIds: string[]): Promise<{ names: Map<string, string>; heldKey: Map<string, string> }> {
+  const names = new Map<string, string>();
+  const heldKey = new Map<string, string>();
+  if (!agentIds.length) return { names, heldKey };
+  const [agents, held] = await Promise.all([
+    supabase.schema("agent").from("definition").select("id, name").in("id", agentIds),
+    supabase
+      .schema("mandate")
+      .from("definition")
+      .select("mandate_key, default_holder_id")
+      .in("default_holder_id", agentIds)
+      .is("deleted_at", null)
+      .order("mandate_key"),
+  ]);
+  if (agents.error) console.error("[spend-approvals] agent names unavailable", agents.error);
+  if (held.error) console.error("[spend-approvals] held mandates unavailable", held.error);
+  for (const a of agents.data ?? []) if (a.name) names.set(a.id, a.name);
+  for (const m of held.data ?? []) {
+    if (m.default_holder_id && m.mandate_key && !heldKey.has(m.default_holder_id)) heldKey.set(m.default_holder_id, m.mandate_key);
+  }
+  return { names, heldKey };
+}
+
 export async function fetchSpendApprovals(orgId: string | null): Promise<SpendApprovalRow[]> {
   const [{ data, error }, { data: drivers, error: driversError }] = await Promise.all([
     supabase.schema("billing").rpc("run_approval_list", { p_org_id: orgId ?? undefined }),
@@ -190,10 +230,13 @@ export async function fetchSpendApprovals(orgId: string | null): Promise<SpendAp
   if (error) throw pgErrorToError(error);
   if (driversError) throw pgErrorToError(driversError);
   const byId = new Map((drivers ?? []).map((d) => [d.id, d]));
+  const agentIds = [...new Set((data ?? []).map((r) => r.agent_id).filter((x): x is string => Boolean(x)))];
+  const { names, heldKey } = await readAgentFacts(agentIds);
   return (data ?? []).map((r) => {
     const d = byId.get(r.id);
     const autoRuns = num(d?.automated_runs_30d);
     const autoCost = num(d?.automated_cost_30d);
+    const featureKey = r.mandate_key ?? (r.agent_id ? (heldKey.get(r.agent_id) ?? null) : null);
     return {
     id: r.id,
     automated_runs_30d: autoRuns,
@@ -205,7 +248,10 @@ export async function fetchSpendApprovals(orgId: string | null): Promise<SpendAp
     subject_name: r.subject_name,
     agent_id: r.agent_id,
     agent_type: r.agent_type,
+    agent_name: r.agent_id ? (names.get(r.agent_id) ?? null) : null,
     mandate_key: r.mandate_key,
+    feature_mandate_key: featureKey,
+    feature: approvalFeatureOf(featureKey),
     status: asStatus(r.status),
     threshold_usd: num(r.threshold_usd),
     first_run_key: r.first_run_key,
@@ -541,6 +587,11 @@ export function subjectHref(row: SpendApprovalRow, seat: ApprovalSeat, orgSlug?:
         ? orgAutomationCostDetailHref(orgSlug, row.subject_kind, row.subject_id)
         : automationCostDetailHref(row.subject_kind, row.subject_id);
   }
+}
+
+/** A mandate, by key, for this seat. */
+export function mandateKeyHref(key: string, seat: ApprovalSeat, orgSlug?: string): string {
+  return seat === "org" && orgSlug ? orgMandateHref(orgSlug, key) : mandateHref(key);
 }
 
 /** The real first run: its conversation, else its workflow run. */
