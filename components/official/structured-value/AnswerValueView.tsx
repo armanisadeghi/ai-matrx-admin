@@ -22,6 +22,7 @@ import { KIND_KEY } from "@ai-matrx/content-ir";
 import { InlineMediaRef } from "@ai-matrx/media/react";
 import { RichContent } from "@ai-matrx/rich-content/levels/RichContent";
 import KindInstanceRender from "@/features/content-ir/studio/components/KindInstanceRender";
+import { KindFixItBar } from "@/features/content-ir/react/fixit/KindFixItBar";
 import {
   StructuredValueView,
   type StructuredValueDensity,
@@ -79,11 +80,15 @@ export function AnswerValueView({
         showRoutingNote={false}
         variant="bare"
         unroutableFallback={
-          <StructuredValueView
-            value={value}
-            kind={routeKind}
-            density={density}
-          />
+          // A kind that fell back explains itself and offers the one-click repair (build its component).
+          <div className="min-w-0 space-y-2">
+            <KindFixItBar kind={routeKind} value={value} />
+            <StructuredValueView
+              value={value}
+              kind={routeKind}
+              density={density}
+            />
+          </div>
         }
       />
     ) : (
