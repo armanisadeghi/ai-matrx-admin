@@ -107,3 +107,21 @@ export function TemplateThumb({
     </div>
   );
 }
+
+/** A tile's footprint before its template is known: the same face and caption boxes as `TemplateThumb`. */
+export function TemplateThumbSkeleton({ kind, className }: { kind: TemplateSummary["kind"]; className?: string }): ReactNode {
+  return (
+    <div aria-hidden className={cn("flex w-36 min-w-0 flex-col gap-1.5", className)}>
+      <div
+        className={cn(
+          "w-full animate-pulse overflow-hidden rounded-md border border-border bg-muted",
+          kind === "presentation" ? "aspect-video" : "aspect-[320/414]",
+        )}
+      />
+      <div className="flex h-4 min-w-0 items-center gap-1.5 px-0.5">
+        <div className="size-3.5 shrink-0 animate-pulse rounded bg-muted" />
+        <div className="h-3 w-2/3 animate-pulse rounded bg-muted" />
+      </div>
+    </div>
+  );
+}

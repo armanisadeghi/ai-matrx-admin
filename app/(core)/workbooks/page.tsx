@@ -47,6 +47,7 @@ import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { AGENT_ICON } from "@/components/icons/domain-icons";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
 import { importWorkbookFile, unsupportedFileReason } from "@/features/workbooks/import-workbook-file";
+import { useGoogleWorkspaceConnection } from "@/features/google-workspace/linked/useGoogleWorkspaceConnection";
 import { GoogleHomeStrip } from "@/features/google-workspace/linked/GoogleHomeStrip";
 import { googleLinkIn } from "@/features/google-workspace/linked/link-store";
 import { GoogleSheetsMark } from "@/features/google-workspace/linked/marks";
@@ -62,6 +63,9 @@ export default function WorkbooksLandingPage() {
   const [error, setError] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
   const [scope, setScope] = useState<FileScope>("all");
+  // The Google row and the list land in ONE frame: the list waits for the connection answer too.
+  const google = useGoogleWorkspaceConnection();
+  const homeLoading = loading || (scope !== "trash" && google.state.status === "loading");
   const userId = useAppSelector(selectUserId);
   const [importing, setImporting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -343,7 +347,7 @@ export default function WorkbooksLandingPage() {
           updatedBy: wb.updated_by,
           sourceLabel: workbookSourceLabel(wb.source),
         })}
-        loading={loading}
+        loading={homeLoading}
         error={error}
         scope={scope}
         onScopeChange={setScope}
@@ -414,6 +418,8 @@ export default function WorkbooksLandingPage() {
         googleStrip={
           <GoogleHomeStrip
             kind="workbook"
+            google={google}
+            pending={loading}
             linked={workbooks.flatMap((wb) => {
               const link = googleLinkIn(wb.metadata);
               return link ? [{ id: wb.id, name: wb.workbook_name, link }] : [];

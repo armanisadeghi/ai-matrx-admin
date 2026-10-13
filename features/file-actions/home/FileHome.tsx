@@ -26,7 +26,7 @@ import { Check, FolderOpen, Home as HomeIcon, Plus, Star, Users } from "lucide-r
 import type { CSSProperties } from "react";
 import { Spinner } from "@/components/ui/loaders/Spinner";
 import { useIsMobile } from "@ai-matrx/kit/media-query";
-import { Button, EmptyState, RegionSkeleton, SearchField, Select, Tabs } from "@ai-matrx/design-system/controls";
+import { Button, EmptyState, SearchField, Select, Tabs } from "@ai-matrx/design-system/controls";
 import { TapTargetButtonForGroup, TapTargetButtonGroup } from "@ai-matrx/design-system/tap-target";
 import {
   ArrowDownUpTapButton,
@@ -52,6 +52,7 @@ import type { FileKindAdapter } from "../types";
 import type { HomeKind } from "./home-kinds";
 import { RecordThumb } from "./RecordThumb";
 import { FileHomeTable } from "./FileHomeTable";
+import { HomeCardsSkeleton, HomePhoneRowsSkeleton, HomeTableSkeleton } from "./HomeSkeleton";
 import {
   groupHomeItems,
   HOME_SORT_OPTIONS,
@@ -210,7 +211,7 @@ export function FileHome<Row extends { id: string; user_id: string }>(props: Fil
       {props.header}
       <div className="h-full overflow-y-auto scrollbar-none" data-file-home={kind.kind}>
         <div className="mx-auto w-full max-w-[72rem] px-3 pt-[calc(var(--shell-header-h)+0.75rem)] sm:px-6">
-          <RegionSkeleton shape="cards" count={6} aria-label={`Loading ${kind.pluralNoun}`} />
+          <HomeCardsSkeleton label={`Loading ${kind.pluralNoun}`} />
         </div>
       </div>
     </>
@@ -307,10 +308,12 @@ export function FileHome<Row extends { id: string; user_id: string }>(props: Fil
           {dialogs}
 
           {loading ? (
-            view === "cards" && !isPhone ? (
-              <div className="pt-2"><RegionSkeleton shape="cards" count={6} aria-label={`Loading ${kind.pluralNoun}`} /></div>
+            isPhone ? (
+              <HomePhoneRowsSkeleton label={`Loading ${kind.pluralNoun}`} />
+            ) : view === "cards" ? (
+              <HomeCardsSkeleton label={`Loading ${kind.pluralNoun}`} />
             ) : (
-              <div className="pt-2"><RegionSkeleton shape="rows" count={6} twoLine aria-label={`Loading ${kind.pluralNoun}`} /></div>
+              <HomeTableSkeleton label={`Loading ${kind.pluralNoun}`} />
             )
           ) : null}
 

@@ -19,12 +19,14 @@ import { approvalQueueHref, SENT_FOR_APPROVAL_MESSAGE } from "@/features/google-
 
 import { GoogleDocsMark, GoogleSheetsMark } from "./marks";
 import { createLinkedBlank, importGoogleDocAsDocument, importGoogleSheetAsWorkbook } from "./importers";
-import { useGoogleWorkspaceConnection } from "./useGoogleWorkspaceConnection";
+import type { useGoogleWorkspaceConnection } from "./useGoogleWorkspaceConnection";
 import { useGoogleLink } from "./GoogleLinkControl";
 import { savedRecordGoogleAdapter } from "./EditorGoogleLinks";
 import type { GoogleFileLink } from "./link-store";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 import { openOutbound } from "@ai-matrx/kit/outbound";
+
+type GoogleWorkspaceConnection = ReturnType<typeof useGoogleWorkspaceConnection>;
 
 export interface LinkedItem {
   id: string;
@@ -49,6 +51,12 @@ export interface UnlinkedItem {
   name: string;
   updatedAt?: string | null;
 }
+
+// The words keep a floor of their own, and the chips are always ONE row of their own under the
+// words/actions (scrolling sideways when many) — the banner is two rows at every width, so the
+// placeholder and the real banner are the same height and the list below never jumps.
+const STRIP_CLASS =
+  "[&_.matrx-control-promo-text]:min-w-[17rem] [&_.matrx-control-promo-chips]:order-last [&_.matrx-control-promo-chips]:basis-full [&_.matrx-control-promo-chips]:flex-nowrap [&_.matrx-control-promo-chips]:overflow-x-auto [&_.matrx-control-promo-chips]:scrollbar-none";
 
 const LINKED_SHOWN = 3;
 const UNLINKED_SHOWN = 2;
@@ -83,10 +91,16 @@ export function GoogleHomeStrip({
   linked,
   unlinked = [],
   hidden = false,
+  google,
+  pending = false,
   onImported,
   onChanged,
 }: {
   kind: "workbook" | "document";
+  /** The page's read of the Google connection (it also holds its list back until this is known). */
+  google: GoogleWorkspaceConnection;
+  /** The page's list is still loading: keep the placeholder so both land in one frame. */
+  pending?: boolean;
   linked: LinkedItem[];
   /** Recent records not yet in Google (newest first is best). */
   unlinked?: UnlinkedItem[];
@@ -96,7 +110,7 @@ export function GoogleHomeStrip({
   /** A record gained a Google link here (reload the list). */
   onChanged?: () => void;
 }) {
-  const { state, connect, refresh } = useGoogleWorkspaceConnection();
+  const { state, connect, refresh } = google;
   const [busy, setBusy] = useState<null | "import" | "new">(null);
   const isSheet = kind === "workbook";
   const Mark = isSheet ? GoogleSheetsMark : GoogleDocsMark;
@@ -105,8 +119,32 @@ export function GoogleHomeStrip({
 
   if (hidden) return null;
 
-  if (state.status === "loading") {
-    return <div className="h-14" aria-hidden="true" />;
+  if (pending || state.status === "loading") {
+    // The connected banner's own shape (disc, words, a chips row, New/Import) held while the
+    // connection is read, so the list under it never moves when the real banner lands.
+    return (
+      <PromoBanner
+        icon={<Mark />}
+        tone={tone}
+        className={STRIP_CLASS}
+        eyebrow={app}
+        title={app}
+        line={"\u00A0"}
+        chips={
+          <>
+            <span className="h-6 w-28 animate-pulse rounded-full bg-muted" aria-hidden="true" />
+            <span className="h-6 w-28 animate-pulse rounded-full bg-muted" aria-hidden="true" />
+          </>
+        }
+        action={
+          <span className="flex items-center gap-1">
+            <Button variant="outline" disabled>New</Button>
+            <Button variant="primary" disabled>Import</Button>
+          </span>
+        }
+        aria-label={app}
+      />
+    );
   }
 
   if (state.status === "error") {
@@ -195,9 +233,7 @@ export function GoogleHomeStrip({
     <PromoBanner
       icon={<Mark />}
       tone={tone}
-      // The words keep a floor of their own, so many chips wrap onto the next line instead of squeezing
-      // the title to "Google S…" (the package lets the chip block take everything the row has).
-      className="[&_.matrx-control-promo-text]:min-w-[17rem]"
+      className={STRIP_CLASS}
       eyebrow={state.connection.accountEmail ?? app}
       title={app}
       line={linked.length === 0 ? "Import, start new, or send a file" : `${linked.length} linked`}

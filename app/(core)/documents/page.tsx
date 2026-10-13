@@ -14,6 +14,7 @@ import { useHomeTemplates } from "@/features/templates/files/components/HomeTemp
 import { toast } from "@/components/ui/use-toast";
 import RouteHeader from "@/features/shell/components/header/RouteHeader";
 import { TapTargetButton } from "@ai-matrx/design-system/tap-target";
+import { useGoogleWorkspaceConnection } from "@/features/google-workspace/linked/useGoogleWorkspaceConnection";
 import { GoogleHomeStrip } from "@/features/google-workspace/linked/GoogleHomeStrip";
 import { googleLinkIn } from "@/features/google-workspace/linked/link-store";
 import { GoogleDocsMark } from "@/features/google-workspace/linked/marks";
@@ -66,6 +67,9 @@ export default function DocumentsLandingPage() {
   const [uploading, setUploading] = useState(false);
   const uploadRef = useRef<HTMLInputElement>(null);
   const [scope, setScope] = useState<FileScope>("all");
+  // The Google row and the list land in ONE frame: the list waits for the connection answer too.
+  const google = useGoogleWorkspaceConnection();
+  const homeLoading = loading || (scope !== "trash" && google.state.status === "loading");
 
   const reload = useCallback(async () => {
     setLoading(true);
@@ -192,7 +196,7 @@ export default function DocumentsLandingPage() {
           updatedBy: doc.updated_by,
           sourceLabel: documentSourceLabel(doc.source),
         })}
-        loading={loading}
+        loading={homeLoading}
         error={error}
         scope={scope}
         onScopeChange={setScope}
@@ -252,6 +256,8 @@ export default function DocumentsLandingPage() {
         googleStrip={
           <GoogleHomeStrip
             kind="document"
+            google={google}
+            pending={loading}
             linked={documents.flatMap((doc) => {
               const link = googleLinkIn(doc.metadata);
               return link ? [{ id: doc.id, name: doc.document_name, link }] : [];

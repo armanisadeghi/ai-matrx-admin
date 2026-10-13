@@ -10,7 +10,7 @@ import { useEffect, useState } from "react";
 import { listTemplates } from "../template-service";
 import type { TemplateKind, TemplateSummary } from "../types";
 import { TemplateGallery, useCreateFromTemplate } from "./TemplateGallery";
-import { TemplateThumb } from "./TemplateThumb";
+import { TemplateThumb, TemplateThumbSkeleton } from "./TemplateThumb";
 
 const BAND_TILES = 4;
 
@@ -45,8 +45,20 @@ export function useHomeTemplates(kind: TemplateKind) {
         ))
       : null;
 
+  // While the store answers, the tiles are held as same-size blanks so Upload/Import don't slide.
+  const holding =
+    rows === null
+      ? Array.from({ length: BAND_TILES }, (_, i) => (
+          <TemplateThumbSkeleton
+            key={i}
+            kind={kind}
+            className={kind === "presentation" ? "w-40 shrink-0 sm:w-48" : "w-28 shrink-0 sm:w-36"}
+          />
+        ))
+      : null;
+
   return {
-    templates: tiles ? <>{tiles}</> : null,
+    templates: tiles ? <>{tiles}</> : holding ? <>{holding}</> : null,
     gallery: <TemplateGallery kind={kind} />,
     galleryOpen: open,
     onGalleryOpenChange: setOpen,

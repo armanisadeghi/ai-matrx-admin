@@ -974,7 +974,7 @@ function Centerpiece({
             return (
               <motion.a
                 key={s.key}
-                href={referralHref(s.url ?? s.value)}
+                href={withReferral(/^https?:\/\//i.test(s.url ?? s.value) ? (s.url ?? s.value) : `https://${s.url ?? s.value}`)}
                 target="_blank"
                 rel="noopener"
                 title={platformLabel(s.platform ?? "")}
@@ -1047,17 +1047,6 @@ export function stageName(items: EvidenceItem[]): EvidenceItem | null {
  * TODO(outbound-referral): the comparison lane's outboundHref (SmartAddExtras) is the same rule and
  * lands separately; both move to the canonical primitive together.
  */
-function referralHref(url: string): string {
-  const absolute = /^https?:\/\//i.test(url) ? url : `https://${url}`;
-  try {
-    const out = new URL(withReferral(absolute));
-    out.searchParams.set("utm_medium", "referral");
-    return out.toString();
-  } catch {
-    return absolute;
-  }
-}
-
 /** A YouTube channel id ("UC…") is not something a person reads. */
 const CHANNEL_ID = /^UC[A-Za-z0-9_-]{20,}$/;
 

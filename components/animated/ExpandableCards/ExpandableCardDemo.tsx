@@ -2,6 +2,7 @@
 
 import React, { useEffect, useId, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
+import { withReferral } from "@ai-matrx/kit/outbound";
 import { useOutsideClick } from "@/hooks/use-outside-click";
 
 export function LatestAiModels() {
@@ -97,7 +98,7 @@ export function LatestAiModels() {
 
                                     <motion.a
                                         layoutId={`button-${active.title}-${id}`}
-                                        href={active.ctaLink}
+                                        href={withReferral(active.ctaLink)}
                                         target="_blank"
                                         className="px-4 py-3 text-sm rounded-full font-bold bg-green-500 text-white"
                                     >
