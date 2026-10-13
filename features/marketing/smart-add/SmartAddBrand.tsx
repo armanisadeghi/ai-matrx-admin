@@ -420,7 +420,8 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
   // One vocabulary for every found thing (web.brand_relation_kind) — the web step answers from it too.
   const { kinds: relationKinds } = useRelationKinds(relate);
   const webCtx = suggestContext(
-    [basics.websiteUrl, ...basics.otherWebsites, typedWebsite || null],
+    // The person's own website: confirmed, or typed / started from (the hero's first step).
+    [basics.websiteUrl, ...basics.otherWebsites, typedWebsite || null, ...rounds.map((r) => r.seeds.website || null)],
     basics.accounts.map((a) => a.url ?? a.value),
     basics.name ?? foundName?.value ?? null,
   );

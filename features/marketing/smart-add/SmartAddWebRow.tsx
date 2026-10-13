@@ -67,6 +67,8 @@ function WebResultRow({
   ];
   const pick = (key: string) => (key ? onChoose({ kind: key, sentiment: null }) : onChoose(null));
   const ranks = engineRanks(item);
+  // A review/listing page carries the site's name as its label and the page's own title as its handle.
+  const title = item.field === "listing" ? [item.handle, item.label].filter(Boolean).join(" · ") || url : (item.label ?? item.handle ?? url);
   return (
     <li
       className="flex items-start gap-2.5 py-2"
@@ -89,7 +91,7 @@ function WebResultRow({
       )}
       <div className="flex min-w-0 flex-1 flex-col gap-0.5">
         <div className="flex flex-wrap items-baseline gap-x-2">
-          <span className="min-w-0 text-sm font-medium break-words">{item.label ?? item.handle ?? url}</span>
+          <span className="min-w-0 text-sm font-medium break-words">{title}</span>
           {ranks ? (
             <span className="text-[11px] text-muted-foreground" data-testid="smart-add-web-ranks">
               {ranks}
@@ -162,7 +164,7 @@ export function SmartAddWebRow({
     <WebResultRow key={i.key} item={i} kinds={kinds} choice={choices[i.key]} ctx={ctx} onChoose={(c) => onChoose(i, c)} />
   );
   return (
-    <section className="flex flex-col gap-1 rounded-lg border border-border/70 px-3 py-2" data-testid="smart-add-web-row">
+    <section className="flex flex-col gap-1 rounded-lg border border-border/70 px-3 py-2" data-testid="smart-add-web-row" data-our-hosts={ctx.ourHosts.join(" ")}>
       <header className="flex items-baseline gap-2 text-xs font-medium text-foreground/80">
         On the web
         <span className="text-[11px] font-normal text-muted-foreground">{row.length}</span>

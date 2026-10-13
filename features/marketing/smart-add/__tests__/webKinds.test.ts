@@ -87,3 +87,40 @@ describe("On the web: rows", () => {
     expect(groups.map((g) => g.kind.key)).toEqual(["ours", "not_us"]);
   });
 });
+
+describe("On the web: mistaken identity vs a mention (live shapes, fullspecstaff.com 2026-10-13)", () => {
+  const FS: SuggestContext = { ourHosts: ["fullspecstaff.com"], ourAccounts: [], name: "Full Spectrum Search Group" };
+  it("a similar-named business's own page is possibly not us", () => {
+    const fb = web("https://www.facebook.com/spectrumsearchgroup", "Spectrum Search Group | Facebook");
+    expect(suggestKind(fb, KINDS, FS)?.kind).toBe("not_us");
+    expect(suggestKind(fb, KINDS, FS)?.reason).toContain("Similar name");
+  });
+  it("a news page that names us in its snippet is a mention, never not us", () => {
+    const news = web(
+      "https://directrecruiters.com/news/direct-recruiters-inc-expands-executive-search-offerings-with-the-strategic-integration-of-full-spectrum-search-group/",
+      "Direct Recruiters, Inc. Expands Executive Search Offerings ...",
+      { snippet: "Based in California, Full Spectrum Search Group has been a leading executive search firm" },
+    );
+    expect(suggestKind(news, KINDS, FS)?.kind).toBe("mention");
+  });
+  it("an unrelated staffing page gets no suggestion", () => {
+    expect(suggestKind(web("https://sharestaff.net/divisions/healthcare/", "Healthcare - Nationwide Staffing"), KINDS, FS)).toBeNull();
+  });
+});
+
+describe("On the web: live false positives stay fixed", () => {
+  const FS: SuggestContext = { ourHosts: ["fullspecstaff.com"], ourAccounts: [], name: "Full Spectrum Search Group" };
+  it("a long news title that names us is not a mistaken identity", () => {
+    const t = "Direct Recruiters, Inc. Expands Executive Search Offerings with the Strategic Integration of Full Spectrum Search Group";
+    expect(suggestKind(web("https://directrecruiters.com/news/x-full-spectrum-search-group/", t), KINDS, FS)?.kind).toBe("mention");
+  });
+  it("a job slug naming us is not a mistaken identity", () => {
+    const job = web("https://www.wayup.com/i-j-healthcare-recruiter-full-spectrum-search-group/", "Healthcare Recruiter - Long Term Care");
+    expect(suggestKind(job, KINDS, FS)?.kind).not.toBe("not_us");
+  });
+  it("one address found as a listing and as a news result is one row", () => {
+    const listing = parseEvidenceItem({ ...web("https://www.yelp.com/biz/fs", "x"), key: "listing:yelp.com/biz/fs", field: "listing" }) as EvidenceItem;
+    const mention = parseEvidenceItem({ ...web("https://yelp.com/biz/fs/", "x"), key: "mention:yelp.com/biz/fs", field: "mention" }) as EvidenceItem;
+    expect(webRow([mention, listing]).map((i) => i.key)).toEqual(["listing:yelp.com/biz/fs"]);
+  });
+});

@@ -214,6 +214,14 @@ export function mergeEvidence(current: Map<string, EvidenceItem>, incoming: Evid
   return next ?? current;
 }
 
+/** Account rows with the bare links the server resolved (`same_as`) folded into the account they are. */
+export function collapseAliasedAccounts<T extends Pick<EvidenceItem, "key" | "same_as">>(accounts: T[]): T[] {
+  const present = new Set(accounts.map((a) => a.key));
+  const aliases = new Set<string>();
+  for (const a of accounts) for (const k of a.same_as ?? []) if (k !== a.key && present.has(k)) aliases.add(k);
+  return aliases.size ? accounts.filter((a) => !aliases.has(a.key)) : accounts;
+}
+
 /** Items in display order: field order, then confidence, high first. */
 export function orderedEvidence(items: Iterable<EvidenceItem>): EvidenceItem[] {
   return [...items].sort((a, b) => {
@@ -627,8 +635,31 @@ export function bestRank(item: EvidenceItem): number {
  * best rank first, then found by more engines, then surer.
  */
 export function webRow(items: Iterable<EvidenceItem>): EvidenceItem[] {
-  return [...items]
-    .filter((i) => WEB_FIELDS.has(i.field))
+  // One row per address: a page found as a listing, a plain result and a news result is one thing.
+  const FIELD_PRIORITY: Partial<Record<EvidenceField, number>> = { listing: 0, web_page: 1, mention: 2 };
+  const byAddress = new Map<string, EvidenceItem>();
+  for (const i of items) {
+    if (!WEB_FIELDS.has(i.field)) continue;
+    const address = (i.url ?? i.value)
+      .toLowerCase()
+      .replace(/^[a-z]+:\/\//, "")
+      .replace(/^(www|m)\./, "")
+      .replace(/[?#].*$/, "")
+      .replace(/\/+$/, "");
+    const held = byAddress.get(address);
+    if (!held) {
+      byAddress.set(address, i);
+      continue;
+    }
+    const [keep, other] = (FIELD_PRIORITY[i.field] ?? 9) < (FIELD_PRIORITY[held.field] ?? 9) ? [i, held] : [held, i];
+    byAddress.set(address, {
+      ...keep,
+      snippet: keep.snippet ?? other.snippet,
+      engines: [...new Set([...(keep.engines ?? []), ...(other.engines ?? [])])],
+      hits: [...(keep.hits ?? []), ...(other.hits ?? [])].sort((a, b) => a.rank - b.rank),
+    });
+  }
+  return [...byAddress.values()]
     .sort(
       (a, b) =>
         bestRank(a) - bestRank(b) ||

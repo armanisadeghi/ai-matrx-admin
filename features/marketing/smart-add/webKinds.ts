@@ -73,6 +73,38 @@ function norm(text: string): string {
     .replace(/[^a-z0-9]/g, "");
 }
 
+/** Words that say nothing about WHICH business it is. */
+const GENERIC = new Set(["the", "and", "inc", "llc", "ltd", "co", "corp", "company", "group", "official", "www", "com"]);
+
+function tokens(text: string): string[] {
+  return text
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .split(/[^a-z0-9]+/)
+    .filter((t) => t.length >= 3 && !GENERIC.has(t));
+}
+
+/**
+ * Same or similar name: the whole name squeezed together appears, or at least two thirds (and two)
+ * of its telling words do ("Spectrum Search Group" vs "Full Spectrum Search Group").
+ */
+export function nameMatches(name: string, places: string[]): boolean {
+  const whole = norm(name);
+  const words = tokens(name);
+  return places.some((place) => {
+    if (!place) return false;
+    if (whole.length >= 3 && norm(place).includes(whole)) return true;
+    const squeezed = norm(place);
+    const found = words.filter((w) => squeezed.includes(w)).length;
+    return words.length >= 2 && found >= 2 && found >= Math.ceil((words.length * 2) / 3);
+  });
+}
+
+function sameOrSimilar(name: string, lead: string): string {
+  return norm(lead).includes(norm(name)) ? "Same" : "Similar";
+}
+
 /** The kind whose own rules (metadata.match) claim this address, in vocabulary order. */
 export function kindByRules(url: string, kinds: BrandRelationKind[]): { kind: BrandRelationKind; rule: string } | null {
   const address = webAddress(url);
@@ -100,8 +132,9 @@ export function kindByRules(url: string, kinds: BrandRelationKind[]): { kind: Br
  *  4. the server classed it a review/listing page → Review site / Listing we can claim;
  *     a news/video/image result → Mentions us;
  *  5. its title or snippet names our website → Mentions us;
- *  6. its title carries our name but it is another site that never names our website → Not us
- *     (a possible mistaken identity);
+ *  6. the page is ABOUT a same- or similar-named business (title lead, site name or first path
+ *     part) on another site that never names our website → Not us (a possible mistaken identity);
+ *  7. its title or snippet names us → Mentions us;
  *  otherwise no suggestion.
  */
 export function suggestKind(item: EvidenceItem, kinds: BrandRelationKind[], ctx: SuggestContext): WebSuggestion | null {
@@ -123,14 +156,25 @@ export function suggestKind(item: EvidenceItem, kinds: BrandRelationKind[], ctx:
   const said = `${item.label ?? ""} ${item.snippet ?? ""}`.toLowerCase();
   const namesUs = ctx.ourHosts.find((h) => said.includes(h));
   if (namesUs && has("mention")) return { kind: "mention", reason: `Names ${namesUs}` };
-  const name = ctx.name ? norm(ctx.name) : "";
-  if (name.length >= 3 && norm(item.label ?? "").includes(name) && has("not_us")) {
+  // Who this page is ABOUT: the head of its title (up to the first separator, no longer than the
+  // name), its site name, and — on a one-part address like a profile — that part.
+  const lead = ((item.label ?? "").split(/\s[|\-–—:·]\s/)[0] ?? "")
+    .split(/\s+/)
+    .slice(0, (ctx.name ?? "").split(/\s+/).length + 1)
+    .join(" ");
+  const parts = address.split("/");
+  // (a long slug is a page title, not a name: "i-j-healthcare-recruiter-full-spectrum-search-group").
+  const firstPart = parts.length === 2 && norm(parts[1]).length <= norm(ctx.name ?? "").length + 8 ? parts[1] : "";
+  if (ctx.name && nameMatches(ctx.name, [lead, host.split(".").slice(0, -1).join(" "), firstPart]) && has("not_us")) {
     return {
       kind: "not_us",
       reason: ctx.ourHosts.length
-        ? `Same name on ${host}, which never names ${ctx.ourHosts[0]}: possibly someone else`
-        : `Same name on ${host}: possibly someone else`,
+        ? `${sameOrSimilar(ctx.name, lead)} name on ${host}, which never names ${ctx.ourHosts[0]}: possibly someone else`
+        : `${sameOrSimilar(ctx.name, lead)} name on ${host}: possibly someone else`,
     };
+  }
+  if (ctx.name && norm(ctx.name).length >= 3 && norm(said).includes(norm(ctx.name)) && has("mention")) {
+    return { kind: "mention", reason: `Names ${ctx.name}` };
   }
   return null;
 }
