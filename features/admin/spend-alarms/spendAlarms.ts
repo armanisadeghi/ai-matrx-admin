@@ -17,6 +17,7 @@ import { pgErrorToError } from "@ai-matrx/data";
 import { adminScheduleHref } from "@/features/scheduling/constants/routes";
 import { ciPauseOf, type CiPauseRecord } from "./ciPause";
 import { documentHref } from "@/features/scopes/registry/entityRegistry";
+import { knobHref } from "@/features/admin/limits/knobHref";
 
 export type AlarmLevel = "critical" | "warning" | "info";
 export type AlarmStatus = "open" | "snoozed" | "resolved";
@@ -581,6 +582,8 @@ export function refHref(key: keyof AlarmRefs, value: string, refs: AlarmRefs = {
     }
     case "conversation_id":
       return `/chat/${value}`;
+    case "knob":
+      return knobHref(value);
     default:
       return null;
   }
@@ -625,6 +628,47 @@ export function refLinks(refs: AlarmRefs): RefLink[] {
     if (!value) continue;
     out.push({ key, label: REF_LABEL[key], value, href: refHref(key, value, refs) });
   }
+  return out;
+}
+
+// ── Controls: where the limit that rang this alarm is changed ───────────────
+
+/**
+ * Every alarm that rings at a threshold names the setting that sets it (Arman, 2026-10-13: "when we
+ * have pages like this or the notification for them, they always link to the place where I can
+ * control them"). The value is a knob key or feature prefix; `knobHref` opens the Limits & Knobs
+ * page filtered to it. A kind absent here rings on a rule, not a number (a protected account, an
+ * unpriced call's own `knob` ref), and shows no control.
+ */
+const KIND_CONTROL: Record<string, { label: string; knob: string }> = {
+  ci_spend_off_track: { label: "GitHub Actions caps", knob: "billing.ci_spend" },
+  ci_workflow_cost: { label: "GitHub Actions caps", knob: "billing.ci_spend" },
+  spend_spike_platform_hourly: { label: "Spend spike settings", knob: "billing.spend_alarm" },
+  spend_spike_platform_daily: { label: "Spend spike settings", knob: "billing.spend_alarm" },
+  spend_spike_account_daily: { label: "Spend spike settings", knob: "billing.spend_alarm" },
+  automated_run_expensive: { label: "Run cost alarm", knob: "billing.spend_alarm.run_" },
+  spend_approval_hold: { label: "Approval threshold", knob: "billing.run_approval" },
+  spend_approval_opened: { label: "Approval threshold", knob: "billing.run_approval" },
+  spend_approval_expiring: { label: "Approval settings", knob: "billing.run_approval" },
+  spend_approval_expired: { label: "Approval settings", knob: "billing.run_approval" },
+  "reconcile.llm_drift": { label: "Drift tolerance", knob: "billing.llm_reconciliation" },
+  "guardrail.check_failed": { label: "Automation guardrails", knob: "automation.guardrails" },
+  "guardrail.max_runtime": { label: "Max time per run", knob: "automation.guardrails.max_runtime" },
+  "guardrail.max_turns": { label: "Max turns per run", knob: "automation.guardrails.max_turns" },
+  "guardrail.kill_switch": { label: "Pause all automation", knob: "automation.kill_switch" },
+};
+
+export interface AlarmControl {
+  label: string;
+  href: string;
+}
+
+/** The settings that decide when this alarm rings: its kind's knobs, then a knob it names itself. */
+export function alarmControls(record: Pick<SpendAlarmRecord, "kind" | "refs">): AlarmControl[] {
+  const out: AlarmControl[] = [];
+  const byKind = KIND_CONTROL[record.kind] ?? (record.kind.startsWith("guardrail.") ? KIND_CONTROL["guardrail.check_failed"] : undefined);
+  if (byKind) out.push({ label: byKind.label, href: knobHref(byKind.knob) });
+  if (record.refs.knob) out.push({ label: REF_LABEL.knob, href: knobHref(record.refs.knob) });
   return out;
 }
 
@@ -690,6 +734,7 @@ export function alarmAgentData(record: SpendAlarmRecord, occurrences: SpendAlarm
       what_happened: alarmSentence(record),
       rule: record.rule,
       fix: record.fix,
+      change_the_limit: alarmControls(record).map((c) => ({ setting: c.label, link: `${origin}${c.href}` })),
       subject: { type: record.subject_type, id: record.subject_id, name: record.subject_name },
       count: record.occurrence_count,
       first_seen_at: record.first_seen_at,

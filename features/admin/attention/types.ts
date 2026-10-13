@@ -43,7 +43,8 @@ export interface AttentionDoor {
   label: string;
   /** The symptom on that page, in plain words — shown as the tooltip. */
   what?: string;
-  kind: "impact" | "evidence";
+  /** `control`: the setting that decides when this rings — every threshold item links its knob. */
+  kind: "impact" | "evidence" | "control";
 }
 
 export interface AttentionAction {

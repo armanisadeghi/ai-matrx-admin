@@ -1,4 +1,4 @@
-import { alarmActions, alarmAgentData, isRinging, refLinks, spendAlarmHref, type SpendAlarmRecord } from "./spendAlarms";
+import { alarmActions, alarmAgentData, alarmControls, isRinging, refLinks, spendAlarmHref, type SpendAlarmRecord } from "./spendAlarms";
 
 jest.mock("@/utils/supabase/client", () => ({ supabase: {} }));
 
@@ -127,5 +127,34 @@ describe("no ids, no type slugs", () => {
       "Document Untitled Space is owned by a protected account",
     );
     expect(readable(`run of agent ${id} refused`, new Map())).toBe("Run of agent refused");
+  });
+});
+
+describe("every threshold alarm links the setting that rings it", () => {
+  it("the GitHub Actions spend alarm opens its caps on the Limits & Knobs page", () => {
+    const r = rec({ kind: "ci_spend_off_track", refs: { scope: "github_actions", window: "7d" } });
+    expect(alarmControls(r)).toEqual([
+      { label: "GitHub Actions caps", href: "/administration/users/limits?knob=billing.ci_spend" },
+    ]);
+    expect(alarmAgentData(r).alarm.change_the_limit).toEqual([
+      { setting: "GitHub Actions caps", link: "/administration/users/limits?knob=billing.ci_spend" },
+    ]);
+  });
+
+  it("a knob the alarm names itself opens, and a new guardrail kind still finds the guardrails", () => {
+    const priced = rec({ kind: "external_call_unpriced", refs: { knob: "platform.external_api_prices.brave_search_usd" } });
+    expect(alarmControls(priced).map((c) => c.href)).toEqual([
+      "/administration/users/limits?knob=platform.external_api_prices.brave_search_usd",
+    ]);
+    expect(refLinks(priced.refs).find((l) => l.key === "knob")?.href).toBe(
+      "/administration/users/limits?knob=platform.external_api_prices.brave_search_usd",
+    );
+    expect(alarmControls(rec({ kind: "guardrail.something_new", refs: {} }))[0]?.href).toBe(
+      "/administration/users/limits?knob=automation.guardrails",
+    );
+  });
+
+  it("an alarm that rings on a rule, not a number, shows no control", () => {
+    expect(alarmControls(rec())).toEqual([]);
   });
 });
