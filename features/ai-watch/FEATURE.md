@@ -37,6 +37,10 @@ multi-instance; deep link `?panels=ai-watch:<u|c|w|r>-<id>`).
 **Truth rules (pure, tested)** — `watch-run-truth.ts`: captures filtered by request id (children
 nested), rejoin repeats merged, retried attempts superseded, live capture kept over the recorded
 snapshot (labelled; a shortfall is an error), mandate identity only from the run's own frame.
+A continuation turn's frame (`provision_applied: false` — server `build_turn_frame` for continue,
+fork-and-run and resume) renders through `continuationView` / `earlierFrames`: "This turn ·
+provision not re-applied" with who wrote the turn, its words or host line and its context, and a
+resume's earlier frames on the same request — never the door's provision as if it applied.
 
 **Records** — `ai-watch-records.ts`: `chat.user_request` (+ `metadata.mandate_watch`),
 `chat.request_snapshot`, `agent.definition_version` (instructions + output schema of the version
@@ -53,13 +57,18 @@ stream's own reservation), `ActiveRequest.mandateRun` (the server's `mandate_run
 - `__tests__/watch-run-truth.test.ts` — recorded `context_analysis` frames of two turns of one
   conversation.
 - `__tests__/split-provider-request.test.ts` — every provider request shape.
+- `__tests__/continuation-turn-frame.test.ts` — the recorded `applets.build` fix round's frame.
 - Package: `every-request-creation-binds-its-identity.test.ts`, `watch-ai-identity-is-per-request.test.ts`
-  (aidream `apps/shared/chat`); server: `aidream/services/mandates/tests/test_watch_frame.py`.
+  (aidream `apps/shared/chat`); server: `aidream/services/mandates/tests/test_watch_frame.py`,
+  `test_watch_frame_continuation.py`.
 
 ---
 
 ## Change Log
 
+- **2026-10-13** — Continuation turns (Change it, her replies, host fix rounds, resumes) carry
+  their own server frame; the window shows what that turn carried and says the provision was
+  not re-applied, instead of "attributed to <key>".
 - **2026-10-13** — Phase 1 of the admin watch window: per-request identity (server id, the
   `mandate_run` frame), the 5-second time-window match deleted, captures filtered by request id,
   recorded snapshot labelled and never a silent replacement, mandate/provision/goal/version

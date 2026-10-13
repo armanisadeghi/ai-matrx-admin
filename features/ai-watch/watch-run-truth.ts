@@ -212,3 +212,36 @@ export function mandateIdentity(
   }
   return { frame: null, from: null };
 }
+
+/** What a continuation turn's frame says it carried (the provision was not re-applied). */
+export interface ContinuationView {
+  author: string;
+  hostReason: string | null;
+  startedBy: string | null;
+  input: unknown;
+  context: Array<[string, unknown]>;
+}
+
+/**
+ * A frame from a turn on a conversation a mandate started (`provision_applied: false`):
+ * the server did not re-resolve the mandate or re-apply its provision, so the window shows
+ * what the turn itself carried — never the door's provision as if it applied here. Null for
+ * a door frame (its provision is the placement).
+ */
+export function continuationView(frame: MandateRunData | null): ContinuationView | null {
+  if (!frame || frame.provision_applied !== false) return null;
+  return {
+    author: frame.turn_author ?? "none",
+    hostReason: frame.host_turn_reason ?? null,
+    startedBy: frame.started_by_request_id ?? null,
+    input: frame.turn_input ?? null,
+    context: Object.entries(frame.turn_context ?? {}),
+  };
+}
+
+/** A resumed run's earlier frames on the same request (its door frame first). */
+export function earlierFrames(frame: MandateRunData | null): MandateRunData[] {
+  return ((frame?.earlier_frames ?? []) as unknown[]).filter(
+    (f): f is MandateRunData => typeof f === "object" && f !== null && typeof (f as MandateRunData).mandate_key === "string",
+  );
+}

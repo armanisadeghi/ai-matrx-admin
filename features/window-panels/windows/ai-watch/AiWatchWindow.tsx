@@ -69,6 +69,8 @@ import {
 } from "@/features/ai-watch/ai-watch-records";
 import {
   chooseRequestSource,
+  continuationView,
+  earlierFrames,
   mandateIdentity,
   runCaptures,
   type WatchCall,
@@ -467,6 +469,9 @@ function MandateSection({
   }
 
   const provisions = provisionRows(frame);
+  // A turn on a conversation a mandate started: the mandate is not re-resolved and its
+  // provision is not re-applied — the frame says so, and carries what the turn DID carry.
+  const continuation = continuationView(frame) !== null;
   const changed =
     frame.definition_version != null && currentDefinition != null && currentDefinition !== frame.definition_version;
   const system = systemInstructions(version?.messages);
@@ -485,7 +490,7 @@ function MandateSection({
             </button>
           </Metric>
           <Metric label="Door · rung">
-            {frame.door} · {frame.rung ?? "—"}
+            {frame.door} · {continuation ? "not re-resolved" : (frame.rung ?? "—")}
           </Metric>
           <Metric label="Agent">
             {frame.holder_id ? (
@@ -515,19 +520,20 @@ function MandateSection({
         </div>
       </Section>
 
-      <Section title={`Provision · routed at the door (${provisions.length})`}>
-        {provisions.length === 0 ? (
-          <div className="text-muted-foreground">No provision values on this run</div>
+      {continuation ? (
+        <ContinuationTurn frame={frame} />
+      ) : (
+        <ProvisionSection title={`Provision · routed at the door (${provisions.length})`} rows={provisions} />
+      )}
+
+      {earlierFrames(frame).map((prior, i) => {
+        const rows = provisionRows(prior);
+        return continuationView(prior) ? (
+          <ContinuationTurn key={i} frame={prior} title={`Earlier on this run · ${prior.door}`} />
         ) : (
-          provisions.map((p) => (
-            <Block
-              key={p.name}
-              label={`${p.name} · ${p.kind}${p.supplied ? "" : " · not supplied"} → ${p.landed}`}
-              value={p.inline ? p.value : `Not inlined (${p.ref ?? "no value"})`}
-            />
-          ))
-        )}
-      </Section>
+          <ProvisionSection key={i} title={`Earlier on this run · ${prior.door} · provision (${rows.length})`} rows={rows} />
+        );
+      })}
 
       <Section title={changed ? "Goal · definition changed since this run" : "Goal"}>
         <Block label={`Goal (definition v${frame.definition_version ?? "?"})`} value={frame.goal ?? "No goal set"} open />
@@ -545,6 +551,48 @@ function MandateSection({
         )}
       </Section>
     </>
+  );
+}
+
+function ProvisionSection({ title, rows }: { title: string; rows: ProvisionRow[] }) {
+  return (
+    <Section title={title}>
+      {rows.length === 0 ? (
+        <div className="text-muted-foreground">No provision values on this run</div>
+      ) : (
+        rows.map((p) => (
+          <Block
+            key={p.name}
+            label={`${p.name} · ${p.kind}${p.supplied ? "" : " · not supplied"} → ${p.landed}`}
+            value={p.inline ? p.value : `Not inlined (${p.ref ?? "no value"})`}
+          />
+        ))
+      )}
+    </Section>
+  );
+}
+
+/** What a continuation turn carried: its author, its words or host line, its context. */
+function ContinuationTurn({ frame, title }: { frame: MandateRunData; title?: string }) {
+  const view = continuationView(frame);
+  if (!view) return null;
+  const { context } = view;
+  return (
+    <Section title={title ?? "This turn · provision not re-applied"}>
+      <div className="grid grid-cols-2 gap-x-4 gap-y-0.5 rounded border border-border bg-muted/30 p-2 sm:grid-cols-3">
+        <Metric label="Written by">{view.author}</Metric>
+        <Metric label="Host reason">{view.hostReason ?? "—"}</Metric>
+        <Metric label="Started by run">
+          <span className="select-all font-mono">{view.startedBy ?? "—"}</span>
+        </Metric>
+      </div>
+      {view.input != null ? <Block label="Turn input" value={view.input} open /> : null}
+      {context.length === 0 ? (
+        <div className="text-muted-foreground">No context on this turn</div>
+      ) : (
+        context.map(([key, value]) => <Block key={key} label={`${key} · context`} value={value} />)
+      )}
+    </Section>
   );
 }
 
