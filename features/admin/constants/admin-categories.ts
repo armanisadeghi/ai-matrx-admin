@@ -1279,6 +1279,14 @@ export const adminCategoriesData: AdminCategory[] = [
     iconColor: "text-teal-600",
     features: [
       {
+        title: "Style Guide",
+        description:
+          "How every screen should look: the twelve basics, text styles, colour, spacing and the component for each job.",
+        iconName: "Palette",
+        link: "/administration/ui/style-guide",
+        isNew: true,
+      },
+      {
         title: "Official Components",
         description:
           "Browse and test all official UI components with live demos, code examples, and documentation.",

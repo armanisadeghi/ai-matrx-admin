@@ -533,6 +533,7 @@ export const adminNavigationRegistry: readonly AdminNavigationDomain[] = [
         name: "Component Lab",
         iconName: "Component",
         destinations: [
+          destination("/administration/ui/style-guide"),
           destination("/administration/ui/official-components", [
             "/administration/ui/official-components/[componentId]",
           ]),
