@@ -40,7 +40,7 @@ import { onMandateCacheInvalidated } from "@ai-matrx/chat/mandates/service";
 import { mandateDisplayName } from "@/features/mandates/mandate-words";
 import { useMandateDisplayName } from "@/features/mandates/useMandateDisplayName";
 import { mandateRoute } from "@/features/mandates/browse/types";
-import { featureLabelOf } from "@/features/mandates/admin-list/rows";
+import { featureLabelOf } from "@/features/mandates/feature-label";
 import { SYSTEM_ORGANIZATION_ID } from "@/constants/platform-orgs";
 import { cn } from "@/lib/utils";
 import { adminDoorOpen } from "@/lib/api/adminDoor";

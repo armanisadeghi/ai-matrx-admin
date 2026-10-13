@@ -12,7 +12,8 @@ import type { StandingImpact } from "@/features/mandates/admin/impact";
 import type { MandateCoverageResponse } from "@/features/mandates/coverage";
 import { buildFacts, sectionsFor, ALL_FACT_SECTIONS } from "../facts";
 import { countsFromAnswer, scopeArgs } from "../service";
-import { customizedByOf, declaredInOf, featureLabelOf } from "../rows";
+import { customizedByOf, declaredInOf } from "../rows";
+import { featureLabelOf } from "@/features/mandates/feature-label";
 import { storedMandateKey } from "@ai-matrx/agents/mandates";
 
 function query(partial: Partial<EntityListQuery> = {}): EntityListQuery {

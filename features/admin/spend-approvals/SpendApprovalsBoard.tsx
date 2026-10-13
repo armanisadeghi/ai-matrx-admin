@@ -42,6 +42,7 @@ import {
   fetchSpendApprovals,
   firstRunHref,
   subjectHref,
+  mandateKeyHref,
   useApprovalColorKnobs,
   type ApprovalColorKnobs,
   type ApprovalDecision,
@@ -437,16 +438,50 @@ export function SpendApprovalsBoard({
       width: 140,
       cell: (r) => <span className="whitespace-nowrap text-xs">{SUBJECT_KIND_LABEL[r.subject_kind]}</span>,
     },
+    // Feature → Key → Agent: the same identity the mandate list leads with (Mandate → Feature → Key → Holder).
+    {
+      id: "feature",
+      header: "Feature",
+      accessorFn: (r) => r.feature,
+      filter: "select",
+      width: 150,
+      cell: (r) =>
+        r.feature ? (
+          <span className="block truncate text-xs" title={r.feature}>{r.feature}</span>
+        ) : (
+          <span className="text-xs text-muted-foreground">—</span>
+        ),
+    },
+    {
+      id: "mandate_key",
+      header: "Key",
+      accessorFn: (r) => r.feature_mandate_key ?? "",
+      filter: "text",
+      width: 220,
+      cell: (r) =>
+        r.feature_mandate_key ? (
+          <Link
+            href={mandateKeyHref(r.feature_mandate_key, seat, orgSlug)}
+            className="block truncate font-mono text-xs text-muted-foreground hover:text-primary hover:underline"
+            title={r.mandate_key ? r.feature_mandate_key : `Held by this agent: ${r.feature_mandate_key}`}
+          >
+            {/* key-is-the-subject: the approvals board names the mandate a spend belongs to, as the mandate list's Key column does */}
+            {r.feature_mandate_key}
+          </Link>
+        ) : (
+          <span className="text-xs text-muted-foreground">—</span>
+        ),
+    },
     {
       id: "agent",
       header: "Agent",
-      accessorFn: (r) => r.agent_id ?? "",
-      filter: "text",
-      width: 160,
+      accessorFn: (r) => (r.subject_kind === "agent" ? "" : (r.agent_name ?? r.agent_id ?? "")),
+      filter: "select",
+      width: 200,
       cell: (r) =>
         r.subject_kind !== "agent" && r.agent_id ? (
           <div className="min-w-0 truncate text-xs">
-            <EntityRef token="agent" id={r.agent_id} name="Agent" />
+            <EntityRef token="agent" id={r.agent_id} name={r.agent_name} showIcon={false} />
           </div>
         ) : (
           <span className="text-xs text-muted-foreground">—</span>
@@ -646,7 +681,7 @@ export function SpendApprovalsBoard({
       id: "organization",
       header: "Organization",
       accessorFn: (r) => r.organization_name ?? "",
-      filter: "text",
+      filter: "select",
       width: 180,
       hidden: true,
       cell: (r) =>
@@ -771,7 +806,7 @@ export function SpendApprovalsBoard({
           toolbar={{
             title: "People's own chats are never held. Agent and automated runs are.",
             search: true,
-            searchPlaceholder: "Search agents, mandates, automations…",
+            searchPlaceholder: "Search names, features, keys, agents…",
             actions: (
               <div className="flex items-center gap-2">
                 <SegmentedControl<StatusFilter>
@@ -801,6 +836,9 @@ export function SpendApprovalsBoard({
             humanRow: (r) =>
               [
                 `${SUBJECT_KIND_LABEL[r.subject_kind]}: ${r.subject_name ?? r.subject_id}`,
+                r.feature ? `Feature: ${r.feature}` : "",
+                r.feature_mandate_key ? `Mandate key: ${r.feature_mandate_key}` : "",
+                r.subject_kind !== "agent" && r.agent_name ? `Agent: ${r.agent_name}` : "",
                 `Status: ${APPROVAL_STATUS_LABEL[r.status]}${r.status === "temporary" && r.expires_at ? ` (${expiryLabel(r.expires_at)})` : ""}`,
                 `First run: ${format(r.first_run_cost)} on ${when(r.first_run_at)}`,
                 `Since ${when(r.since_at)}: ${r.runs_since} runs, avg ${cents(r.avg_cost_since)}, max ${cents(r.max_cost_since)}`,

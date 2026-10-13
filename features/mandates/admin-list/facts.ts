@@ -24,7 +24,8 @@ import {
   type WorkflowImpactReport,
 } from "@/features/mandates/admin/workflow-impact";
 import type { EntityListQuery } from "@/lib/entity-list/types";
-import { declaredInOf, featureLabelOf } from "./rows";
+import { declaredInOf } from "./rows";
+import { featureLabelOf } from "@/features/mandates/feature-label";
 import { storedMandateKey, type AnyMandateKey } from "@ai-matrx/agents/mandates";
 
 export type FactSection =

@@ -45,7 +45,7 @@ import { useAppSelector } from "@/lib/redux/hooks";
 import { selectIsSuperAdmin, selectUserId } from "@/lib/redux/slices/userSlice";
 import { storedMandateKey } from "@ai-matrx/agents/mandates";
 import { mandateDisplayName } from "@/features/mandates/mandate-words";
-import { featureLabelOf } from "@/features/mandates/admin-list/rows";
+import { featureLabelOf } from "@/features/mandates/feature-label";
 import { MandateNotesPanel } from "@/features/mandates/components/MandateNotesPanel";
 import { MandateLineageLine } from "@/features/mandates/components/MandateLineageLine";
 import {
