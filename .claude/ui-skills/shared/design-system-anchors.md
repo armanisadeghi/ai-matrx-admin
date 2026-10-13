@@ -9,6 +9,7 @@ The concrete, real things to reuse instead of inventing. Paths are relative to r
 | Need | Use | Never |
 |---|---|---|
 | Color | semantic classes: `bg-background bg-card bg-muted bg-accent text-foreground text-muted-foreground text-primary border-border` + status `text-destructive/success/warning/info` | raw hex, `bg-zinc-800`, `text-gray-500` |
+| Text size | `type-title` `type-body` `type-secondary` `type-meta`, and `type-label` over `type-value` for read-only data (`@ai-matrx/design-system`) | `text-[11px]`, `text-xs`, `text-sm`, `text-muted-foreground/60` |
 | Depth / layering | `--elevation-1/2/3` (via `bg-elevation-1` etc.) | random `shadow-2xl` stacks |
 | Glass (see below) | `bg-glass` `hover:bg-glass-hover` `active:bg-glass-active` `border border-glass-edge` `backdrop-blur-glass` `backdrop-saturate-glass` `shadow-glass`/`shadow-glass-lg` | hand-rolled `bg-white/10 backdrop-blur-md` |
 | Page background | `bg-textured` | flat `bg-white`/`bg-black` |
@@ -20,7 +21,9 @@ The concrete, real things to reuse instead of inventing. Paths are relative to r
 | Scrollbars | `.scrollbar-thin` / `.scrollbar-hide` | default chunky bars |
 | Safe area (mobile fixed bottom) | `.pb-safe` `.mb-safe` | nothing |
 
-## Glass — *our* glass, not generic frosted
+## Glass — *our* glass, not generic frosted — and only where it floats
+
+Glass belongs only on chrome floating over moving content; on a page, card, dialog or table use a solid surface (tap-target placement rule 1). How everything else looks: the style guide, `../common-docs/systems/platform/ui-shell/STYLE-GUIDE.md`.
 
 Glass is a first-class part of this app. Use it; just use ours.
 

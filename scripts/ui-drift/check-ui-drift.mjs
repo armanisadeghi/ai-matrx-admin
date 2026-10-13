@@ -600,7 +600,7 @@ export function judge(groups, baseline, oldSitesFor) {
   return out;
 }
 
-const SKIP = (f) => /\.(test|spec|stories)\.tsx$/.test(f) || f.includes("__tests__") || f.startsWith("node_modules/") || /(^|\/)fixtures?\//.test(f);
+const SKIP = (f) => /\.(test|spec|stories)\.tsx$/.test(f) || f.includes("__tests__") || f.includes("__fixtures__") || f.startsWith("node_modules/") || /(^|\/)fixtures?\//.test(f);
 
 export function listFiles(root = REPO_ROOT, { untracked = false } = {}) {
   // A narrowed run also reads files not yet added (an agent's brand-new component is exactly

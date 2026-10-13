@@ -67,8 +67,7 @@ A list item can look compact (tight text, small icon) while the actual clickable
 | Purpose | Use | Never use |
 |---------|-----|-----------|
 | Page/panel background | `bg-background` | `bg-zinc-900`, `bg-gray-950`, `bg-[#1a1a1a]` |
-| Card/section background | `bg-card` or `bg-muted/50` | `bg-zinc-800`, `bg-gray-800` |
-| Subtle section tint | `bg-muted/30` | `bg-zinc-900/50` |
+| Card/section background | `bg-card` | `bg-zinc-800`, `bg-gray-800`, `bg-muted/50` |
 | Primary text | `text-foreground` | `text-zinc-200`, `text-gray-100`, `text-white` |
 | Secondary/label text | `text-muted-foreground` | `text-zinc-400`, `text-zinc-500`, `text-gray-400` |
 | Borders | `border-border` | `border-zinc-700`, `border-zinc-800`, `border-gray-700` |
@@ -77,17 +76,9 @@ A list item can look compact (tight text, small icon) while the actual clickable
 | Selected/active item | `bg-accent ring-1 ring-primary/40` or `bg-primary text-primary-foreground` | `bg-sky-500/10 border border-sky-500/30` |
 | Destructive/error | `text-destructive` | `text-red-400`, `text-red-500` |
 
-### Status colors (the only place direct color values are acceptable)
+### Status colors
 
-Status badges need semantic meaning that the theme system doesn't cover. Use `dark:` variants to respect both modes:
-
-```tsx
-"bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"  // success/complete
-"bg-blue-500/15 text-blue-600 dark:text-blue-400 border-blue-500/20"              // running/streaming
-"bg-destructive/15 text-destructive border-destructive/20"                          // error/failed
-"bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/20"          // pending/warning
-"bg-muted text-muted-foreground border-border"                                      // draft/default
-```
+Status is a token, never a palette class: `success` / `warning` / `destructive` / `info` (each with `-foreground` and `-ink`), shown as a `Badge` or a `Chip` tone. The style guide's Colour section is the rule (`../common-docs/systems/platform/ui-shell/STYLE-GUIDE.md`).
 
 ### JSON tree / code value colors
 
@@ -110,35 +101,9 @@ When rendering JSON trees, syntax highlighting needs direct colors. Always provi
 
 The #1 anti-pattern: **shrinking text to make things fit instead of using space efficiently.**
 
-### Size rules (aligned with Fluent 2 typography ramp)
+### Size rules — the type scale, never a size class
 
-| Content type | Size | Tailwind class | Fluent 2 equivalent |
-|-------------|------|----------------|---------------------|
-| Primary data values, content text | 14px | `text-sm` | Body 1 (14/20) |
-| Labels, metadata, secondary info | 12px | `text-xs` | Caption 1 (12/16) |
-| Section headers | 12px bold | `text-xs font-semibold uppercase tracking-wider` | Caption 1 bold |
-| Monospace IDs, code values | 14px | `text-sm font-mono` | Body 1 mono |
-| Badge labels | 11px | `text-[11px]` | Between Caption 2 and 1 |
-| Footer status bar | 12px | `text-xs` | Caption 1 |
-
-### Absolute minimums
-
-- **Body text:** Never below `text-xs` (12px)
-- **Badges:** Never below `text-[11px]`
-- **No content at `text-[10px]`** — if it doesn't fit, restructure the layout. The only 10px text allowed is non-content chrome: an uppercase `tracking-wider` section overline (the `compact-nav-menus` section header) and a keyboard-shortcut hint. Values, labels a person reads, badges and status text never go below the minimums above (this is the one ruling; `compact-nav-menus` defers to it)
-- **Numeric columns:** Use `tabular-nums` for alignment in tables and lists
-
-### Anti-patterns
-
-```tsx
-// ❌ NEVER — text too small to read
-className="text-[10px] text-zinc-600"
-className="text-[11px] text-zinc-500"
-
-// ✅ CORRECT — readable with proper contrast
-className="text-xs text-muted-foreground"
-className="text-sm text-foreground"
-```
+Text uses the six `type-*` styles from `@ai-matrx/design-system` — `type-title` (13/500), `type-body` (13), `type-secondary` (12), `type-meta` (11), and the reading pair `type-label` (11/500 grey) over `type-value` (14 black). Never `text-[10px]`, `text-[11px]`, `text-xs`, `text-sm` in new code; never a third grey (`/60`). Full table and the never-write list: the style guide (`../common-docs/systems/platform/ui-shell/STYLE-GUIDE.md`). Numeric columns use `tabular-nums`.
 
 ---
 
@@ -282,27 +247,9 @@ If the Dialog has `modal={true}` (default), pointer capture can interfere. The `
 
 ## 6. Component Patterns
 
-### Badges with borders
+### Badges and status
 
-Always include a border for definition — badges without borders look like smudges on light backgrounds:
-
-```tsx
-<span className={cn(
-    "inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium leading-none shrink-0 border",
-    statusClasses(status),
-)}>
-```
-
-### Boolean indicators
-
-Use visible dots with labels, not just text:
-
-```tsx
-<div className="flex items-center gap-2">
-    <span className={cn("h-2.5 w-2.5 rounded-full", value ? "bg-emerald-500" : "bg-muted-foreground/30")} />
-    <span className="text-xs text-foreground">{label}</span>
-</div>
-```
+A status, kind or flag is the `Badge` or `Chip` (a named tone) from `@ai-matrx/design-system/controls` — never a hand-built `rounded-full text-[11px]` pill (ESLint `matrx/no-hand-built-chip`). Yes/no flags in a table row are `IndicatorStrip`.
 
 ### Key-value rows
 
@@ -321,34 +268,15 @@ import { PropertyRow } from "@ai-matrx/design-system/controls";
 
 ### Expandable cards
 
-Border + hover + cursor for clickable items:
+Border + hover for clickable items (or a `Tile`):
 
 ```tsx
-<div className="border border-border rounded-md p-2.5 hover:bg-accent/50 transition-colors cursor-pointer">
+<div data-clickable className="border border-border rounded-md p-2.5 hover:bg-accent/50 transition-colors">  {/* cursor comes from data-clickable (cursor law) */}
 ```
 
-### Empty states
+### Empty states, loading, tabs
 
-Centered, visible, helpful:
-
-```tsx
-<div className="flex items-center justify-center py-12 text-sm text-muted-foreground">
-    {message}
-</div>
-```
-
-### Tab bars
-
-Full `text-sm` with proper active indicator:
-
-```tsx
-<button className={cn(
-    "flex items-center gap-1.5 px-3 py-2 text-sm whitespace-nowrap border-b-2 transition-colors shrink-0",
-    isActive
-        ? "border-primary text-foreground font-medium"
-        : "border-transparent text-muted-foreground hover:text-foreground hover:bg-accent/50",
-)}>
-```
+`EmptyState` for an empty region, `RegionSkeleton` for loading, `Tabs` (`underline` for sections, `capsule` for filters) — all from `@ai-matrx/design-system/controls`; never a hand-built centered message or tab button.
 
 ### JSON tree viewers
 
@@ -366,14 +294,14 @@ Follow the WAI-ARIA Tree View pattern for accessibility:
 ## 7. Checklist — Before Shipping a Data Panel
 
 1. **Theme compliance:** Zero hardcoded zinc/gray/slate colors? Both light and dark mode tested?
-2. **Font sizes:** Nothing below `text-xs` (12px) for body content? Primary data at `text-sm` (14px)?
+2. **Type:** Every text a `type-*` style (no `text-[Npx]`/`text-xs`/`text-sm`)? Read-only values a `PropertyRow`?
 3. **Contrast:** Text meets 4.5:1 against its background? Muted-foreground only for truly secondary info?
 4. **Space usage:** Content fills available space? No massive blank areas? Panels are resizable?
 5. **Progressive disclosure:** Max 2 levels visible at once? Detail revealed on demand?
 6. **Resizable panels:** Using `pct()` for all size props? `style={{ overflow: "hidden" }}` on panels?
 7. **Overlay safety:** `onPointerDown` stopPropagation if inside a Dialog/Sheet?
 8. **Scroll areas:** Each panel has its own `<ScrollArea>`, not nested scrolls?
-9. **Badges:** Have borders? Status colors use `dark:` variants?
+9. **Status:** A `Badge`/`Chip` tone or status token — zero palette classes, zero `dark:` colour pairs?
 10. **Empty states:** Every panel/tab has a meaningful empty state?
 11. **Icons:** Lucide React only, `h-3.5 w-3.5` to `h-4 w-4` range?
 12. **Grid alignment:** Spacing values on the 4px grid (Tailwind default spacing scale)?
@@ -385,7 +313,7 @@ Follow the WAI-ARIA Tree View pattern for accessibility:
 
 | Anti-Pattern | Fix | Source |
 |-------------|-----|--------|
-| `text-[10px]` everywhere | `text-xs` minimum for labels, `text-sm` for data | Stéphanie Walter, Fluent 2 |
+| `text-[10px]` everywhere | a `type-*` style; `type-label` over `type-value` for read-only data | The style guide |
 | `text-zinc-500`, `bg-zinc-900` | `text-muted-foreground`, `bg-background` | Theme system |
 | Low contrast on dense text | Verify 4.5:1 ratio for all normal text | WCAG 2.2 SC 1.4.3 |
 | 80% blank space | `flex-1` + `min-h-0` + `<ScrollArea>` | VSCode region model |
@@ -394,7 +322,7 @@ Follow the WAI-ARIA Tree View pattern for accessibility:
 | Fixed column widths (`w-[180px]`) | `ResizablePanel` with `pct()` + drag handles | Apple HIG Split Views |
 | `defaultSize={25}` (bare number) | `defaultSize={pct(25)}` | react-resizable-panels v4 |
 | Modal closes on panel click | `onPointerDown={(e) => e.stopPropagation()}` | Radix Dialog behavior |
-| Badges without borders | Add `border` class + border color | Light mode contrast |
+| Hand-built badge | `Badge` / `Chip` tone | One UI system |
 | Identical dim color for everything | `text-foreground` for data, `text-muted-foreground` only for labels | Visual hierarchy |
 | `font-mono` on entire component | Only on IDs, code values, JSON trees | Typography best practice |
 | Arbitrary spacing (7px, 13px) | Stick to 4px grid: 4, 8, 12, 16, 20, 24 | Fluent 2 Layout |
