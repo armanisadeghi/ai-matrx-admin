@@ -9,7 +9,7 @@
  * remembers more (the board tile keeps the address and the limit notes) passes it as `fetched`.
  */
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { DownloadCloud, History, RefreshCw } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
@@ -22,8 +22,9 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { getMoreCount, inputWords, type DataFetchInput, type DataFetchResult } from "./contract";
 import { useOpenDataChangesWindow } from "@/features/overlays/openers/dataChangesWindow";
 
-import { hasChanges, summaryParts } from "./changes";
-import { fetchSpecKey, limitSettingHref, refreshHistoryKey, useDataSources, useFetchEstimate, useFetchSpec } from "./hooks";
+import { barFacts } from "./barFacts";
+import { fetchSpecKey, limitSettingHref, liveRowCountKey, refreshHistoryKey, useDataSources, useFetchEstimate, useFetchSpec, useLiveRowCount } from "./hooks";
+import { isOpenJob } from "./contract";
 import { recordNoun } from "./inputWords";
 import { RefusalView } from "./RefusalView";
 import { clearRun, startRun, useRun } from "./runs";
@@ -116,7 +117,18 @@ function Bar({
   const run = useRun(runKey);
   const openChanges = useOpenDataChangesWindow();
   useMinuteTick();
-  const busy = run.status === "running";
+  const liveRows = useLiveRowCount(tableId, organizationId);
+  // A job that was open and has now ended (this tab's or another's): read the spec, the history and the real count again.
+  const wasOpen = useRef(false);
+  const open = isOpenJob(spec?.status);
+  useEffect(() => {
+    if (wasOpen.current && !open) {
+      void queryClient.invalidateQueries({ queryKey: refreshHistoryKey(tableId) });
+      void queryClient.invalidateQueries({ queryKey: liveRowCountKey(tableId) });
+      tableShapeChanged(tableId);
+    }
+    wasOpen.current = open;
+  }, [open, queryClient, tableId]);
   if (!sourceKey) return null;
 
   // Refresh = the stored spec as it is; Get more = the same spec with a larger count (the server
@@ -131,6 +143,7 @@ function Bar({
     onFinished?.(result);
     void queryClient.invalidateQueries({ queryKey: fetchSpecKey(tableId) });
     void queryClient.invalidateQueries({ queryKey: refreshHistoryKey(tableId) });
+    void queryClient.invalidateQueries({ queryKey: liveRowCountKey(tableId) });
     tableShapeChanged(tableId);
     clearRun(runKey);
   };
@@ -144,18 +157,16 @@ function Bar({
   const words = fetched?.input ? inputWords(fetched.input) : "";
   // The job's own times win (they are the truth after a reload); the tile's memory is the fallback.
   const when = spec?.finishedAt ?? spec?.createdAt ?? fetched?.fetchedAt ?? "";
-  const rows = fetched?.rows ?? (spec ? spec.rowsCreated + spec.rowsUpdated : 0);
+  const facts = barFacts({ liveRows, spec, rememberedRows: fetched?.rows ?? null, refreshCount, limit: limit?.value ?? null, runBusy: run.status === "running" });
+  const { rows, busy, allCount, showAll } = facts;
   const refreshCost = estimate(catalogSource, refreshCount);
   // Refresh re-fetches the stored count (the newest N); when the table holds more than that, "all" is its own honest choice.
   const noun = recordNoun(label);
-  const allCount = Math.min(rows, limit?.value ?? rows);
-  const showAll = rows > refreshCount && allCount > refreshCount;
   const allCost = showAll ? estimate(catalogSource, allCount) : null;
   const moreCost = estimate(catalogSource, moreCount);
   const textValues = fetched?.valuesAsText ?? 0;
   const trimmed = fetched?.limitApplied ?? null;
   const notices = fetched?.notices ?? [];
-  const changeParts = summaryParts(spec?.changes ?? null);
   const settingHref = trimmed ? limitSettingHref(organizationId, trimmed.setting) : limit ? limitSettingHref(organizationId, limit.setting) : null;
 
   if (run.status === "failed") {
@@ -175,7 +186,8 @@ function Bar({
           {words ? ` · ${words}` : ""}
         </span>
         <span className="shrink-0 text-xs text-muted-foreground">
-          · {busy ? (run.progress?.label ?? "Fetching") : ago(when)} · {formatCount(rows)} {rows === 1 ? "row" : "rows"}
+          · {busy ? (run.status === "running" ? (run.progress?.label ?? "Fetching") : "Fetching") : ago(when)} · {formatCount(rows)} {rows === 1 ? "row" : "rows"}
+          {facts.thisRefresh && !busy ? ` · ${facts.thisRefresh}` : ""}
         </span>
         <span className="flex-1" />
         <Tooltip>
@@ -226,14 +238,14 @@ function Bar({
             {atLimit ? `At your limit of ${formatCount(limit?.value ?? 0)}` : `Fetch up to ${formatCount(moreCount)} into this table (billed for all)`}
           </TooltipContent>
         </Tooltip>
-        {changeParts && !busy && (
+        {facts.changesJob && !busy && (
           <Button
             variant="quiet"
             icon={<History className="h-4 w-4" />}
-            meta={hasChanges(spec?.changes ?? null) ? changeParts.join(" · ") : "Nothing changed"}
-            onClick={() => openChanges({ tableId, organizationId, jobId: spec?.jobId ?? null, tableName: fetched?.sourceLabel ?? null })}
+            meta={facts.changesLabel ?? undefined}
+            onClick={() => openChanges({ tableId, organizationId, jobId: facts.changesJob?.jobId ?? null, tableName: fetched?.sourceLabel ?? null })}
             data-view-changes=""
-            data-fetch-changes={hasChanges(spec?.changes ?? null) ? "some" : "none"}
+            data-fetch-changes={facts.changesFlag ?? "none"}
           >
             View changes
           </Button>

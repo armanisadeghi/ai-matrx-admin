@@ -5,9 +5,11 @@ import { useQuery } from "@tanstack/react-query";
 import { createClient } from "@/utils/supabase/client";
 
 import { parseHistory, type ChangeSet, type RefreshRun } from "./changes";
-import { parseFetchedTables, parseSpec, type FetchedTable, type DataFetchSpec, type DataSource } from "./contract";
+import { isOpenJob, parseFetchedTables, parseSpec, type FetchedTable, type DataFetchSpec, type DataSource } from "./contract";
 import { usePriceText } from "./library/hooks";
 import { getDataSources, getJobChanges } from "./server";
+import { useRecordsDataSource } from "@/features/data-tables/records-ui-host/recordsUiHost";
+import { tableRowCounts } from "@/features/unified-data/hub/doors";
 
 export const dataSourcesKey = (organizationId: string | null) => ["data-sources", "catalog", organizationId] as const;
 
@@ -58,13 +60,40 @@ export function useFetchSpec(tableId: string) {
         .eq("table_id", tableId)
         .is("deleted_at", null)
         .order("created_at", { ascending: false })
-        .limit(1)
-        .maybeSingle();
+        .limit(8);
       if (error) throw error;
-      return parseSpec(data);
+      const specs = (Array.isArray(data) ? data : []).map(parseSpec).filter((x): x is DataFetchSpec => !!x);
+      const newest = specs[0];
+      if (!newest) return null;
+      const lastDone = specs.find((x) => x.status === "done") ?? null;
+      return { ...newest, lastDone };
     },
     staleTime: 60 * 1000,
+    // A job still working is followed to its end state (no reload): read again until it is done or refused.
+    refetchInterval: (query) => (isOpenJob(query.state.data?.status) ? 3000 : false),
   });
+}
+
+export const liveRowCountKey = (tableId: string) => ["data-sources", "live-row-count", tableId] as const;
+
+/**
+ * The table's REAL row count right now (`custom.table_row_counts`, the door the Data list's Records
+ * column uses) — independent of any fetch job. Null while unknown.
+ */
+export function useLiveRowCount(tableId: string, organizationId: string | null): number | null {
+  const dataSource = useRecordsDataSource();
+  const read = useQuery({
+    queryKey: liveRowCountKey(tableId),
+    enabled: !!organizationId,
+    staleTime: 15 * 1000,
+    queryFn: async (): Promise<number | null> => {
+      const answer = await tableRowCounts(dataSource, organizationId as string, [tableId]);
+      if (!answer.ok) return null;
+      const row = answer.data.find((r) => r.table_id === tableId);
+      return row ? Number(row.visible_rows) : null;
+    },
+  });
+  return read.data ?? null;
 }
 
 export const fetchedTablesKey = ["data-sources", "fetched-tables"] as const;

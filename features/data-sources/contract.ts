@@ -290,6 +290,14 @@ export interface DataFetchSpec {
   createdAt: string | null;
   /** What the newest fetch changed (counts), from its stored result. */
   changes: ChangeSummary | null;
+  /** The newest job that FINISHED (done), when the newest job is still running or was refused: "View changes" reads this one. */
+  lastDone?: DataFetchSpec | null;
+}
+
+/** A job still working (the server's open stages): the bar shows it as running until it ends. */
+export const OPEN_JOB_STATUSES = ["queued", "fetching", "waiting_for_provider", "storing"] as const;
+export function isOpenJob(status: string | null | undefined): boolean {
+  return !!status && (OPEN_JOB_STATUSES as readonly string[]).includes(status);
 }
 
 export function parseSpec(row: unknown): DataFetchSpec | null {
@@ -360,8 +368,11 @@ export async function consumeDataFetch(
     const read = readEvent(evt);
     if (!read) continue;
     if (read.kind === "progress") onProgress?.(read.progress);
-    else if (read.kind === "result") result = read.result;
-    else refusal = read.refusal;
+    else if (read.kind === "result") {
+      // The result IS the end: a stream that lingers open after it must not keep the bar on "Fetching".
+      result = read.result;
+      break;
+    } else refusal = read.refusal;
   }
   if (refusal) throw refusal;
   if (!result) throw new DataFetchRefusal("data_fetch_no_result", "The fetch ended without a table.");
