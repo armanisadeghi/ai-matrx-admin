@@ -30,6 +30,7 @@ import { formatSpendUsd } from "@/components/cost/formatAdminCost";
 import {
   alarmActions,
   alarmAgentData,
+  alarmControls,
   alarmCostLine,
   alarmHeadline,
   alarmSentence,
@@ -329,6 +330,9 @@ export function spendAlarmItems(
         label: names.get(link.value) ?? link.label,
         what: link.label,
       });
+    }
+    for (const control of alarmControls(row)) {
+      doors.push({ kind: "control", href: control.href, label: control.label });
     }
     if (row.latest_occurrence_at) {
       doors.push({

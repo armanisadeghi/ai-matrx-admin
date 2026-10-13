@@ -65,6 +65,7 @@ export function AttentionItemRow({
         : "text-warning";
   const impactDoors = item.doors.filter((d) => d.kind === "impact");
   const evidenceDoors = item.doors.filter((d) => d.kind === "evidence");
+  const controlDoors = item.doors.filter((d) => d.kind === "control");
 
   const run = async (id: string, fn: () => Promise<void>) => {
     setBusy(id);
@@ -156,6 +157,26 @@ export function AttentionItemRow({
               prefetch={false}
               title={door.what ? `${door.label} — ${door.what}` : door.label}
               className="inline-flex items-center gap-1 text-muted-foreground underline-offset-2 hover:text-primary hover:underline"
+            >
+              <ExternalLink className="h-3 w-3" aria-hidden />
+              {door.label}
+            </AppLink>
+          ))}
+        </p>
+      )}
+
+      {controlDoors.length > 0 && (
+        <p className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[11px]" data-testid="attention-controls">
+          <span className="text-muted-foreground">Change the limit:</span>
+          {controlDoors.map((door) => (
+            <AppLink
+              key={`${door.href}:${door.label}`}
+              href={door.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              prefetch={false}
+              title={door.what ?? door.label}
+              className="inline-flex items-center gap-1 text-foreground underline-offset-2 hover:text-primary hover:underline"
             >
               <ExternalLink className="h-3 w-3" aria-hidden />
               {door.label}

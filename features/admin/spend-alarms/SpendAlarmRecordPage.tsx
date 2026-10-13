@@ -48,6 +48,7 @@ import {
   SPEND_ALARMS_PATH,
   alarmActions,
   alarmAgentData,
+  alarmControls,
   alarmSentence,
   alarmTitle,
   alarmSourceHref,
@@ -441,6 +442,18 @@ export function SpendAlarmRecordPage({ id }: { id: string }) {
               <dl className="mt-3 grid grid-cols-[9rem_1fr] gap-x-3 gap-y-1 text-sm">
                 <dt className="text-muted-foreground">Rule</dt>
                 <dd>{record.rule ?? "—"}</dd>
+                {alarmControls(record).length > 0 ? (
+                  <>
+                    <dt className="text-muted-foreground">Change the limit</dt>
+                    <dd className="flex flex-wrap gap-x-3" data-testid="alarm-controls">
+                      {alarmControls(record).map((control) => (
+                        <Link key={control.href} href={control.href} className="text-primary hover:underline">
+                          {control.label}
+                        </Link>
+                      ))}
+                    </dd>
+                  </>
+                ) : null}
                 <dt className="text-muted-foreground">Whose</dt>
                 <dd>
                   {record.refs.user_id ? (
