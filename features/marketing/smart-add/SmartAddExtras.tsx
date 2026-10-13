@@ -318,11 +318,15 @@ export function RelationPicker({
   relation,
   onRelate,
   onCustom,
+  emptyLabel = "Related…",
+  className = "min-w-36 flex-1",
 }: {
   kinds: BrandRelationKind[];
   relation: Relation | null;
   onRelate: (relation: Relation | null) => void;
   onCustom: (label: string) => Promise<void>;
+  emptyLabel?: string;
+  className?: string;
 }) {
   const [custom, setCustom] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -330,7 +334,7 @@ export function RelationPicker({
   const known = kinds.filter((k) => k.isKnown);
   const saved = kinds.filter((k) => !k.isKnown);
   const options: SelectOption<string>[] = [
-    { value: "", label: "Related…" },
+    { value: "", label: emptyLabel },
     ...known.map((k) => ({ value: k.key, label: k.label })),
     ...saved.map((k) => ({ value: k.key, label: k.label })),
     ...(relation && !kinds.some((k) => k.key === relation.key) ? [{ value: relation.key, label: relation.label }] : []),
@@ -392,8 +396,44 @@ export function RelationPicker({
       value={relation?.key ?? ""}
       options={options}
       onValueChange={pick}
-      className="min-w-36 flex-1"
+      className={className}
     />
+  );
+}
+
+/** "Related" is a choice like Ours / Not us; once on, a small picker names the exact relationship. */
+export function RelatedChoice({
+  kinds,
+  relation,
+  locked,
+  onRelate,
+  onCustom,
+}: {
+  kinds: BrandRelationKind[];
+  relation: Relation | null;
+  locked?: boolean;
+  onRelate: (relation: Relation | null) => void;
+  onCustom: (label: string) => Promise<void>;
+}) {
+  const [open, setOpen] = useState(false);
+  const on = open || relation !== null;
+  return (
+    <>
+      <Button
+        variant={on ? "primary" : "quiet"}
+        aria-pressed={on}
+        disabled={locked}
+        onClick={() => {
+          if (on) onRelate(null);
+          setOpen(!on);
+        }}
+      >
+        Related
+      </Button>
+      {on ? (
+        <RelationPicker kinds={kinds} relation={relation} onRelate={onRelate} onCustom={onCustom} emptyLabel="Type…" className="w-32" />
+      ) : null}
+    </>
   );
 }
 

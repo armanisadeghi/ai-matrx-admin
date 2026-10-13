@@ -19,7 +19,7 @@ import { PlatformMark, platformLabel } from "@/features/marketing/social/compone
 import { SocialImage } from "@/features/marketing/social/components/SocialImage";
 import { proxiedExternalImageUrl } from "@/lib/media/external-image";
 import { compareRows, websiteHost, type Candidate, type Decision, type EvidenceField, type EvidenceItem, type Relation } from "./evidence";
-import { accountHandleLine, CustomAdd, OpenLink, RelationPicker, useRelationKinds } from "./SmartAddExtras";
+import { accountHandleLine, CustomAdd, OpenLink, RelatedChoice, useRelationKinds } from "./SmartAddExtras";
 import { brightnessOf, shadeForBrightness } from "./logo-shade";
 import { profileUrlFor } from "@/features/marketing/social/link";
 import { Shared } from "./stage/Shared";
@@ -190,7 +190,7 @@ export function SmartAddSlots({
                     <>
                       {choices(i, OURS_CHOICES)}
                       {candidateByKey.get(i.key) ? (
-                        <RelationPicker
+                        <RelatedChoice
                           kinds={kinds}
                           relation={relations[i.key] ?? null}
                           onRelate={(r) => onRelate(candidateByKey.get(i.key) as Candidate, r)}
