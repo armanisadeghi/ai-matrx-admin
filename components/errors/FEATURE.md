@@ -52,6 +52,7 @@ Arman: an error must be copyable for AI with everything needed to act on it. One
 
 ## Change Log
 
+- `2026-10-13` — claude (first-load lane A1): **`errorToastAlchemy.tsx` loads `ErrorAlchemyMenu` through one `clientLazy` edge.** The Toaster that registers the decorator renders in `app/layout.tsx` on every route (/login included), and the static import dragged the menu's ~4 MB graph (copy doors, the chat surface runtime, workspace gate, associations, agents catalog, block registry, records) into every first load. The toast's text renders at once; the menu fills its slot when the chunk lands. The edge stays at this one call site — never a front door on the menu itself (30+ importers, D115). Root eager set: 3,297 → 2,264 modules (18.0 → 6.3 MB source).
 - 2026-10-06 — ALC-16: transfer imports moved off the retired `@ai-matrx/alchemy/core` / `@ai-matrx/kit/content-transfer` onto `@ai-matrx/alchemy/operate` (same functions, same bytes).
 - 2026-10-06 — ALC-16: the copy/transform/export menu imports moved from `@ai-matrx/design-system/content-transfer` (removed in 0.69.0) to `@ai-matrx/alchemy/react/workspace` (0.13.0); same menu, same bytes.
 - 2026-10-02 — **The inline menu never adds space around its tap button.** Its wrapper carried
