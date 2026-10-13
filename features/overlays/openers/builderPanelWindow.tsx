@@ -12,7 +12,7 @@ export const BUILDER_PANEL_OVERLAY_ID = "builderPanelWindow" as const;
 
 export interface OpenBuilderPanelOptions {
   surfaceKey?: string | null;
-  tab?: "data" | "workflow" | "mandates" | "ai" | "provision";
+  tab?: "run" | "values" | "calls" | "activity" | "workflow" | "mandates" | "ai" | "provision";
   entryKey?: string | null;
 }
 
@@ -23,7 +23,7 @@ export function useOpenBuilderPanel() {
       dispatch(
         openOverlay({
           overlayId: BUILDER_PANEL_OVERLAY_ID,
-          data: { surfaceKey: opts.surfaceKey ?? null, tab: opts.tab ?? "data", entryKey: opts.entryKey ?? null },
+          data: { surfaceKey: opts.surfaceKey ?? null, tab: opts.tab ?? (opts.entryKey ? "values" : "run"), entryKey: opts.entryKey ?? null },
         }),
       );
       return { close: () => dispatch(closeOverlay({ overlayId: BUILDER_PANEL_OVERLAY_ID })) };

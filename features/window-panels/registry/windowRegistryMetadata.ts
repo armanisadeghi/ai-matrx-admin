@@ -1121,7 +1121,7 @@ const STATIC_REGISTRY: WindowStaticMetadata[] = [
     overlayId: "builderPanelWindow",
     kind: "window",
     label: "Builder",
-    defaultData: { surfaceKey: null, tab: "data", entryKey: null, raw: false },
+    defaultData: { surfaceKey: null, tab: "run", entryKey: null, raw: false },
     preservation: { dataKeys: ["surfaceKey", "tab", "entryKey", "raw"] },
     mobilePresentation: "fullscreen",
     instanceMode: "singleton",

@@ -125,16 +125,49 @@ export interface SnapshotRow {
   totalChars: number;
 }
 
+/** One node of the workflow definition a run used: its label, and what it waits for (`ready_when`). */
+export interface DefinitionNode {
+  id: string;
+  label: string;
+  icon: string | null;
+  readyWhen: string[];
+}
+
+export interface DefinitionRow {
+  id: string;
+  name: string;
+  nodes: DefinitionNode[];
+}
+
 export interface RunTruth {
   runs: RunRow[];
   outcomes: NodeOutcomeRow[];
   snapshots: SnapshotRow[];
+  /** The definitions the runs used (node labels and `ready_when`, in graph order). */
+  definitions: DefinitionRow[];
+}
+
+function definitionNodes(raw: Json): DefinitionNode[] {
+  if (!Array.isArray(raw)) return [];
+  const out: DefinitionNode[] = [];
+  for (const n of raw) {
+    if (!n || typeof n !== "object" || Array.isArray(n)) continue;
+    const node = n as Record<string, Json>;
+    const data = (node.data && typeof node.data === "object" && !Array.isArray(node.data) ? node.data : {}) as Record<string, Json>;
+    out.push({
+      id: String(node.id ?? ""),
+      label: typeof data.label === "string" && data.label ? data.label : String(node.id ?? ""),
+      icon: typeof data.icon === "string" ? data.icon : null,
+      readyWhen: Array.isArray(data.ready_when) ? data.ready_when.filter((r): r is string => typeof r === "string") : [],
+    });
+  }
+  return out;
 }
 
 /** `workflow.run` + `workflow.node_outcome` for these runs, and every `mandate.provision_snapshot`
  *  captured for them (by run id) or for the given subjects (a created record). */
 export async function fetchRunTruth(runIds: string[], subjectIds: string[]): Promise<RunTruth> {
-  if (!runIds.length && !subjectIds.length) return { runs: [], outcomes: [], snapshots: [] };
+  if (!runIds.length && !subjectIds.length) return { runs: [], outcomes: [], snapshots: [], definitions: [] };
   const snapshotOr = [
     runIds.length ? `run_id.in.(${runIds.join(",")})` : null,
     subjectIds.length ? `subject_id.in.(${subjectIds.join(",")})` : null,
@@ -167,7 +200,13 @@ export async function fetchRunTruth(runIds: string[], subjectIds: string[]): Pro
   ]);
   const failed = runs.error ?? outcomes.error ?? snapshots.error;
   if (failed) throw new Error(`Run records could not be read: ${failed.message}`);
+  const definitionIds = [...new Set((runs.data ?? []).map((r) => r.definition_id))];
+  const defs = definitionIds.length
+    ? await supabase.schema("workflow").from("definition").select("id, name, nodes").in("id", definitionIds)
+    : { data: [], error: null };
+  if (defs.error) throw new Error(`Workflow definitions could not be read: ${defs.error.message}`);
   return {
+    definitions: (defs.data ?? []).map((d) => ({ id: d.id, name: d.name, nodes: definitionNodes(d.nodes) })),
     runs: (runs.data ?? []).map((r) => ({
       id: r.id,
       definitionId: r.definition_id,

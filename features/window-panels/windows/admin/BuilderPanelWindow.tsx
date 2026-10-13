@@ -1,13 +1,15 @@
 "use client";
 
 /**
- * Builder panel — the ONE admin window that shows everything a page has and did:
- * Data (every published value, raw; computed values only under Derived) · Requests (every request
- * in the flow — the page's own and every external call the server's steps made — exact request and
- * exact response) · Activity (what was done, in order, with time and cost) · Workflow (the stored
- * runs and steps + proposed shapes) · Mandates (real + proposed) · AI calls · Provision (every
- * snapshot for this page's runs and records). Pages publish with `useBuilderFeed`
- * (hooks/useBuilderFeed.ts). FEATURE: features/builder-panel/FEATURE.md.
+ * Builder panel — the ONE admin window that shows everything a page has and did.
+ *
+ * Step first: the sidebar is the run as a numbered story (what the person typed, then every step
+ * of every run and every external call inside it, in order); a row opens Sent · Received · What we
+ * took from it on one screen (Run tab). Secondary tabs keep everything else: Values (every
+ * published value; computed ones under Derived) · Page calls (the page's own requests; server
+ * calls stay reachable under All / Server) · Activity · Workflow · Mandates · AI calls ·
+ * Provision. Pages publish with `useBuilderFeed` (hooks/useBuilderFeed.ts).
+ * FEATURE: features/builder-panel/FEATURE.md.
  */
 
 import { useEffect, useState } from "react";
@@ -25,6 +27,9 @@ import { useRequestLog } from "@/features/builder-panel/hooks/useRequestLog";
 import { useRunTruth } from "@/features/builder-panel/hooks/useRunTruth";
 import { activityRows, allRequestRows, pageRequestRows, serverRequestRows } from "@/features/builder-panel/requests";
 import { BuilderSidebar } from "@/features/builder-panel/components/BuilderSidebar";
+import { BuilderStorySidebar } from "@/features/builder-panel/components/BuilderStorySidebar";
+import { BuilderStoryDetail } from "@/features/builder-panel/components/BuilderStoryDetail";
+import { buildStory } from "@/features/builder-panel/story";
 import { BuilderEntryDetail } from "@/features/builder-panel/components/BuilderEntryDetail";
 import { BuilderWorkflowTab } from "@/features/builder-panel/components/BuilderWorkflowTab";
 import { BuilderMandatesTab } from "@/features/builder-panel/components/BuilderMandatesTab";
@@ -32,8 +37,16 @@ import { BuilderAiTab, BuilderProvisionTab } from "@/features/builder-panel/comp
 import { BuilderRequestsTab, type RequestFilter } from "@/features/builder-panel/components/BuilderRequestsTab";
 import { BuilderActivityTab } from "@/features/builder-panel/components/BuilderActivityTab";
 
-export type BuilderTab = "data" | "requests" | "activity" | "workflow" | "mandates" | "ai" | "provision";
-const TABS: BuilderTab[] = ["data", "requests", "activity", "workflow", "mandates", "ai", "provision"];
+export type BuilderTab = "run" | "values" | "calls" | "activity" | "workflow" | "mandates" | "ai" | "provision";
+const TABS: BuilderTab[] = ["run", "values", "calls", "activity", "workflow", "mandates", "ai", "provision"];
+/** Round 2 tab names a restored window may still carry. */
+const OLD_TABS: Record<string, BuilderTab> = { data: "values", requests: "calls" };
+
+function initialTabOf(t: string | null | undefined): BuilderTab {
+  if (!t) return "run";
+  if (TABS.includes(t as BuilderTab)) return t as BuilderTab;
+  return OLD_TABS[t] ?? "run";
+}
 
 interface BuilderPanelWindowProps {
   isOpen: boolean;
@@ -60,10 +73,11 @@ function BuilderPanelInner({
   const debugData = useAppSelector(selectDebugData);
   const requestLog = useRequestLog();
   const [surfacePick, setSurfacePick] = useState<string | null>(initialSurfaceKey ?? null);
-  const [tab, setTab] = useState<BuilderTab>(TABS.includes(initialTab as BuilderTab) ? (initialTab as BuilderTab) : "data");
+  const [tab, setTab] = useState<BuilderTab>(initialTabOf(initialTab));
+  const [storyId, setStoryId] = useState<string | null>(null);
   const [entryKey, setEntryKey] = useState<string | null>(initialEntryKey ?? null);
   const [requestId, setRequestId] = useState<string | null>(null);
-  const [requestFilter, setRequestFilter] = useState<RequestFilter>("all");
+  const [requestFilter, setRequestFilter] = useState<RequestFilter>("page");
   const [stepFocus, setStepFocus] = useState<{ runId: string; nodeId: string | null } | null>(null);
   const [snapshotFocus, setSnapshotFocus] = useState<string | null>(null);
 
@@ -143,12 +157,29 @@ function BuilderPanelInner({
   const pageRows = pageRequestRows(requestLog, feed?.route ?? pathname);
   const serverRows = serverRequestRows(truth?.outcomes ?? []);
   const requestRows = allRequestRows(pageRows, serverRows);
-  const activity = activityRows(requestRows, truth?.runs ?? [], truth?.outcomes ?? [], truth?.snapshots ?? [], {});
+  const nodeLabels: Record<string, string> = {};
+  for (const d of truth?.definitions ?? []) for (const n of d.nodes) nodeLabels[n.id] = n.label;
+  const activity = activityRows(requestRows, truth?.runs ?? [], truth?.outcomes ?? [], truth?.snapshots ?? [], nodeLabels);
+
+  const story = buildStory(entries, workflowRuns, truth, serverRows);
+  const storyRow = story.find((r) => r.id === storyId) ?? story.find((r) => r.kind !== "run" && r.kind !== "inputs" && r.status !== "skipped") ?? story[0] ?? null;
+  const storyRun = storyRow?.runId ? truth?.runs.find((r) => r.id === storyRow.runId) ?? null : null;
 
   const openRequest = (id: string) => {
+    // A server call opens its row in the story; a page call opens Page calls.
+    const row = story.find((r) => r.calls.some((c) => c.id === id) && (r.kind === "call" || r.calls.length === 1));
+    if (row) {
+      setStoryId(row.id);
+      setTab("run");
+      return;
+    }
     setRequestFilter("all");
     setRequestId(id);
-    setTab("requests");
+    setTab("calls");
+  };
+  const openEntry = (key: string) => {
+    setEntryKey(key);
+    setTab("values");
   };
   const openStep = (runId: string, nodeId: string | null) => {
     setStepFocus({ runId, nodeId });
@@ -164,6 +195,7 @@ function BuilderPanelInner({
     surfaceKey,
     tab,
     entryKey: selected?.key ?? null,
+    storyRow: storyRow?.id ?? null,
   });
 
   const surfaceOptions: SelectOption<string>[] = feeds.map((f) => ({
@@ -184,17 +216,16 @@ function BuilderPanelInner({
       overlayId="builderPanelWindow"
       onCollectData={collectData}
       sidebar={
-        <BuilderSidebar
-          entries={entries}
-          selectedKey={tab === "data" ? selected?.key ?? null : null}
-          onSelect={(key) => {
-            setEntryKey(key);
-            setTab("data");
+        <BuilderStorySidebar
+          rows={story}
+          selectedId={tab === "run" ? storyRow?.id ?? null : null}
+          onSelect={(id) => {
+            setStoryId(id);
+            setTab("run");
           }}
-          now={now}
         />
       }
-      sidebarDefaultSize={240}
+      sidebarDefaultSize={320}
       actionsRight={
         feed ? (
           <CopyButtons
@@ -214,8 +245,9 @@ function BuilderPanelInner({
             value={tab}
             onValueChange={(v) => setTab(v)}
             data={[
-              { value: "data", label: "Data", count: entries.length },
-              { value: "requests", label: "Requests", count: requestRows.length || null },
+              { value: "run", label: "Run", count: null },
+              { value: "values", label: "Values", count: entries.length },
+              { value: "calls", label: "Page calls", count: pageRows.length || null },
               { value: "activity", label: "Activity", count: activity.length || null },
               { value: "workflow", label: "Workflow", count: workflowRuns.length || null },
               { value: "mandates", label: "Mandates", count: mandateKeys.length + (proposals?.length ?? 0) || null },
@@ -240,14 +272,37 @@ function BuilderPanelInner({
           <span className="hidden max-w-[40%] shrink-0 truncate font-mono text-[11px] text-muted-foreground sm:inline">{surfaceKey}</span>
         ) : null}
       </div>
-      {tab === "data" ? (
-        selected ? (
-          <BuilderEntryDetail key={selected.key} entry={selected} onOpenSource={openSource} />
+      {tab === "run" ? (
+        storyRow ? (
+          <BuilderStoryDetail
+            key={storyRow.id}
+            row={storyRow}
+            entries={entries}
+            run={storyRun}
+            onOpenEntry={openEntry}
+            onOpenStep={openStep}
+            onOpenSnapshot={(id) => {
+              setSnapshotFocus(id);
+              setTab("provision");
+            }}
+          />
         ) : (
           <p className="p-3 text-xs text-muted-foreground">Nothing published on this page yet</p>
         )
       ) : null}
-      {tab === "requests" ? (
+      {tab === "values" ? (
+        <div className="flex min-h-0 flex-1 flex-col md:flex-row">
+          <div className="max-h-[40%] min-h-0 shrink-0 overflow-hidden border-b border-border md:max-h-none md:w-64 md:border-b-0 md:border-r">
+            <BuilderSidebar entries={entries} selectedKey={selected?.key ?? null} onSelect={setEntryKey} now={now} />
+          </div>
+          {selected ? (
+            <BuilderEntryDetail key={selected.key} entry={selected} onOpenSource={openSource} />
+          ) : (
+            <p className="p-3 text-xs text-muted-foreground">Nothing published on this page yet</p>
+          )}
+        </div>
+      ) : null}
+      {tab === "calls" ? (
         <BuilderRequestsTab
           rows={requestRows}
           selectedId={requestId}

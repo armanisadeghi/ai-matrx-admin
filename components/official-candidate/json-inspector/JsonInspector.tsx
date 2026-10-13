@@ -2,29 +2,25 @@
 
 // CANONICAL: This is the canonical application-wide JSON Display component.
 
-import { useClipboard } from "@ai-matrx/kit/clipboard";
-import { copyNotify } from "@/lib/clipboard/copy-notify";
 import React, { useEffect, useMemo, useState } from "react";
 import dynamic from "next/dynamic";
 import {
   Braces,
-  CheckCircle2,
   ChevronLeft,
   Compass,
-  Copy,
   FilePen,
   ListTree,
+  Maximize2,
+  Minimize2,
   Minus,
   Plus,
   Scissors,
 } from "lucide-react";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  buildAgentPayload,
-  type AgentPayloadInput,
-} from "@/components/agent-copy/buildAgentPayload";
-import { CopyForAiIcon } from "@/components/agent-copy/CopyForAiIcon";
+import type { AgentPayloadInput } from "@/components/agent-copy/buildAgentPayload";
+import { CopyButtons } from "@/components/agent-copy/CopyButtons";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import {
   cleanJson,
   formatJson,
@@ -85,10 +81,9 @@ export interface JsonInspectorProps {
   /** When true (default), the edit tab is read-only. Ignored without onUpdate. */
   editorReadOnly?: boolean;
   /**
-   * When provided, renders a "Copy for AI" button beside "Copy JSON" that
-   * copies the data wrapped in the standard agent envelope
-   * (buildAgentPayload — live URL/route/timestamp + JSON dump). Called at
-   * click time.
+   * The Copy-for-AI payload of the one Alchemy copy menu (the standard agent
+   * envelope — live URL/route/timestamp + JSON dump). Called at click time.
+   * Without it the menu still copies the JSON and text, and offers no AI copy.
    */
   agentCopy?: AgentPayloadInput | (() => AgentPayloadInput);
   /**
@@ -163,15 +158,37 @@ function resolveDefaultExpandDepth(
 }
 
 export function JsonInspector(props: JsonInspectorProps) {
+  // Expand: the same inspector, full size on top of everything, and back down again.
+  const [expanded, setExpanded] = useState(false);
   return (
     <KindDataGate
       component="JsonInspector"
       data={props.data}
       showSource={props.showSource || typeof props.onUpdate === "function"}
     >
-      <JsonInspectorBody {...props} />
+      <JsonInspectorBody {...props} onToggleExpand={() => setExpanded(true)} />
+      {expanded ? (
+        <Dialog open onOpenChange={setExpanded}>
+          <DialogContent className="flex h-[85dvh] w-[95vw] max-w-[95vw] flex-col gap-0 overflow-hidden p-0 sm:max-w-[95vw]">
+            <DialogTitle className="sr-only">
+              {typeof props.label === "string" && props.label ? props.label : "JSON"}
+            </DialogTitle>
+            <JsonInspectorBody
+              {...props}
+              className="h-full min-h-0 rounded-none"
+              expanded
+              onToggleExpand={() => setExpanded(false)}
+            />
+          </DialogContent>
+        </Dialog>
+      ) : null}
     </KindDataGate>
   );
+}
+
+interface JsonInspectorBodyProps extends JsonInspectorProps {
+  expanded?: boolean;
+  onToggleExpand: () => void;
 }
 
 function JsonInspectorBody({
@@ -186,10 +203,9 @@ function JsonInspectorBody({
   editOnly = false,
   agentCopy,
   className,
-}: JsonInspectorProps) {
-  const { copyText } = useClipboard({
-    notify: copyNotify,
-  });
+  expanded = false,
+  onToggleExpand,
+}: JsonInspectorBodyProps) {
   const editable = typeof onUpdate === "function";
   const showEditOnly = editOnly && editable;
 
@@ -211,8 +227,6 @@ function JsonInspectorBody({
   const [seen, setSeen] = useState<Set<JsonInspectorView>>(
     () => new Set<JsonInspectorView>([defaultView]),
   );
-  const [copied, setCopied] = useState(false);
-  const [agentCopied, setAgentCopied] = useState(false);
   const resolvedDefaultExpandDepth = useMemo(
     () => resolveDefaultExpandDepth(data, maxExpandDepth, defaultExpandDepth),
     [data, maxExpandDepth, defaultExpandDepth],
@@ -265,20 +279,8 @@ function JsonInspectorBody({
     });
   };
 
-  const handleCopy = async () => {
-    const text = value === "json" ? rawJsonText : prettyJson;
-    if (!(await copyText(text))) return;
-    setCopied(true);
-    setTimeout(() => setCopied(false), 1500);
-  };
-
-  const handleAgentCopy = async () => {
-    if (!agentCopy) return;
-    const input = typeof agentCopy === "function" ? agentCopy() : agentCopy;
-    if (!(await copyText(buildAgentPayload(input)))) return;
-    setAgentCopied(true);
-    setTimeout(() => setAgentCopied(false), 1500);
-  };
+  const copyLabel =
+    typeof label === "string" && label ? label : "JSON";
 
   if (showEditOnly) {
     return (
@@ -331,7 +333,12 @@ function JsonInspectorBody({
         onValueChange={handleValueChange}
         className="flex-1 flex flex-col min-h-0 overflow-hidden"
       >
-        <div className="flex items-center gap-1.5 px-1.5 py-1 border-b border-border flex-shrink-0">
+        <div
+          className={cn(
+            "flex items-center gap-1.5 px-1.5 py-1 border-b border-border flex-shrink-0",
+            expanded && "pr-14",
+          )}
+        >
           {onBack && (
             <button
               onClick={onBack}
@@ -387,36 +394,26 @@ function JsonInspectorBody({
             )}
           </TabsList>
           <div className="flex-1" />
+          <CopyButtons
+            label={copyLabel}
+            size="xs"
+            human={() => (value === "json" ? rawJsonText : prettyJson)}
+            json={() => data}
+            {...(agentCopy ? { agent: agentCopy } : { hide: ["ai" as const] })}
+          />
           <button
-            onClick={handleCopy}
+            type="button"
+            onClick={onToggleExpand}
             className={ICON_BUTTON_CLS}
-            title={copied ? "Copied" : "Copy JSON"}
-            aria-label="Copy JSON"
+            title={expanded ? "Back to normal size" : "Expand to full size"}
+            aria-label={expanded ? "Back to normal size" : "Expand to full size"}
           >
-            {copied ? (
-              <CheckCircle2 className={cn(ICON_CLS, "text-green-500")} />
+            {expanded ? (
+              <Minimize2 className={ICON_CLS} />
             ) : (
-              <Copy className={ICON_CLS} />
+              <Maximize2 className={ICON_CLS} />
             )}
           </button>
-          {agentCopy ? (
-            <button
-              onClick={() => void handleAgentCopy()}
-              className={ICON_BUTTON_CLS}
-              title={
-                agentCopied
-                  ? "Copied for AI"
-                  : "Copy with full context, formatted for an AI agent"
-              }
-              aria-label="Copy for AI"
-            >
-              {agentCopied ? (
-                <CheckCircle2 className={cn(ICON_CLS, "text-green-500")} />
-              ) : (
-                <CopyForAiIcon className={ICON_CLS} />
-              )}
-            </button>
-          ) : null}
         </div>
 
         <TabsContent value="json" className={JSON_PANE_CLS}>
