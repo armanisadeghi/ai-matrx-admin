@@ -11,6 +11,7 @@ import { Check, ChevronDown, ChevronRight, Copy } from "lucide-react";
 import { Button, Select, type SelectOption } from "@ai-matrx/design-system/controls";
 import { formatCount } from "@ai-matrx/kit/format";
 import { extractErrorMessage } from "@/utils/errors";
+import { JsonInspector } from "@/components/official-candidate/json-inspector/JsonInspector";
 import {
   TRIGGER_LABEL,
   listProvisionSnapshots,
@@ -82,9 +83,7 @@ function ValueRow({ v, copied, copy }: { v: ProvisionValue; copied: string | nul
         <div className="truncate pl-5 text-[11px]">{text.slice(0, 200)}</div>
       ) : null}
       {open ? (
-        <pre className="mt-1 ml-5 max-h-96 overflow-auto whitespace-pre-wrap break-words rounded bg-muted/50 p-2 text-[11px]">
-          {text}
-        </pre>
+        <JsonInspector data={v.value} />
       ) : null}
     </div>
   );
@@ -128,9 +127,9 @@ function ExpectedOutputSection({
       {expected.note ? <div className="pl-5 text-[11px] text-muted-foreground">{expected.note}</div> : null}
       {open && example ? (
         // The expected output IS a kind's source, shown on purpose (kind-leak sentinel exemption).
-        <pre data-kind-source="explicit" className="mt-1 ml-5 max-h-96 overflow-auto whitespace-pre-wrap break-words rounded bg-muted/50 p-2 text-[11px]">
-          {example}
-        </pre>
+        <div data-kind-source="explicit">
+          <JsonInspector data={expected.example} />
+        </div>
       ) : null}
       {!example ? <div className="pl-5 text-[11px] text-muted-foreground">No example yet</div> : null}
     </section>
