@@ -36,15 +36,12 @@ import {
 } from "@/features/matrx-envelope/catalog-nouns.generated";
 import type { ReferenceItem } from "@ai-matrx/agents/envelope";
 import { locateTable } from "@/features/data-tables/data-source/locate-table";
-// Static, not `await import()`: this module reaches ~714 entry contexts and the seam adds ~31
-// modules (`pnpm lab:graph`, 2026-09-23) — an async edge here would be a new chunk-group split in
-// every one of them for no deferral worth having (code-splitting rule 6 caveat, D115).
-import {
-  getTableMetadata,
-  readRelationWords,
-  readRowsById,
-  readTableDetails,
-} from "@/features/data-tables/service";
+// The table reads load ON DEMAND, the first time a resolver runs (`tableService()`): this module is
+// on every page's first load (chatContextSources → referenceCell → here), and the data-tables
+// service drags the record store and records-ui with it. Every read below is already async, so
+// one `import()` of one module costs a person nothing; it was static until 2026-10-13 (lane S8),
+// when the record store made the seam the size of the page.
+const tableService = () => import("@/features/data-tables/service");
 import { isUuidShape } from "@ai-matrx/kit/uuid";
 import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
 
@@ -64,7 +61,7 @@ async function located(tableId: string | undefined): Promise<boolean> {
 
 /** One record-store row's cells, keyed by the grid's column names. */
 async function storeRow(tableId: string, rowId: string): Promise<Record<string, unknown> | undefined> {
-  const rows = await readRowsById({ tableId, rowIds: [rowId] });
+  const rows = await (await tableService()).readRowsById({ tableId, rowIds: [rowId] });
   if (!rows.success) return undefined;
   return rows.data.find((r) => r.id === rowId)?.data;
 }
@@ -236,7 +233,7 @@ async function resolveCell(
   const ids = (Array.isArray(raw) ? raw : [raw])
     .filter((v): v is string => typeof v === "string" && isUuidShape(v.trim()))
     .map((v) => v.trim());
-  const words = await readRelationWords({ tableId, fieldName: column, rowIds: ids });
+  const words = await (await tableService()).readRelationWords({ tableId, fieldName: column, rowIds: ids });
   // An id nothing resolved keeps its identifier rather than vanishing: a prompt that silently
   // dropped a reference would be worse than one that says the reference did not resolve.
   return ids.map((id) => words.get(id) ?? `Record ${id.slice(0, 8)}`).join(", ");
@@ -255,7 +252,7 @@ function tableNameResolver(): ReferenceResolver {
       const tableId = idOf(ref);
       if (!tableId) return stringify(ref.label);
       if (!(await located(tableId))) return undefined;
-      const details = await readTableDetails(tableId);
+      const details = await (await tableService()).readTableDetails(tableId);
       return details.success ? (stringify(details.table?.name) ?? stringify(details.table?.description)) : undefined;
     },
   };
@@ -329,7 +326,7 @@ const RESOLVERS: Record<string, ReferenceResolver> = {
     resolveValue: async (_supabase, ref) => {
       if (!ref.table_id) return undefined;
       if (!(await located(ref.table_id))) return undefined;
-      const read = await getTableMetadata({ tableId: ref.table_id });
+      const read = await (await tableService()).getTableMetadata({ tableId: ref.table_id });
       if (!read.success) return undefined;
       const meta = read.data;
       const name =
@@ -363,7 +360,7 @@ const RESOLVERS: Record<string, ReferenceResolver> = {
     resolveValue: async (_supabase, ref) => {
       if (!ref.table_id || !ref.column_name) return undefined;
       if (!(await located(ref.table_id))) return stringify(ref.column_name);
-      const read = await getTableMetadata({ tableId: ref.table_id });
+      const read = await (await tableService()).getTableMetadata({ tableId: ref.table_id });
       const column = read.success
         ? (read.data.columns as Array<{ field_name?: string; display_name?: string }>).find(
             (c) => c.field_name === ref.column_name,
