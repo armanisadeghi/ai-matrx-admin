@@ -832,6 +832,35 @@ button.shell-nav-item {
   display: none;
 }
 
+/* "Search menu" row (SidebarMenuSearch) — the first row of the main nav.
+   Reads as a search field when expanded: a hairline ring (inset, so the row
+   keeps the exact height of its siblings — no shift on collapse), muted
+   placeholder text and the trailing shortcut. Collapsed, the ring drops and it
+   is a plain icon row like every other. */
+.shell-nav-search {
+  margin-bottom: 0.25rem;
+}
+
+.shell-root > #shell-sidebar-toggle:checked ~ * .shell-nav-search {
+  box-shadow: inset 0 0 0 1px var(--border);
+}
+
+.shell-root > #shell-sidebar-toggle:checked ~ * .shell-nav-search:hover {
+  box-shadow: inset 0 0 0 1px var(--ring);
+}
+
+.shell-nav-search .shell-nav-search-placeholder {
+  color: var(--muted-foreground);
+  font-weight: 400;
+}
+
+.shell-nav-search-kbd {
+  font-family: inherit;
+  font-size: 0.6875rem;
+  letter-spacing: 0.02em;
+  padding-right: 0.125rem;
+}
+
 /* Nav item badges — trailing count when expanded, icon-overlay when collapsed.
    Prevents ml-auto badges from widening the collapsed icon rail. */
 .shell-nav-badge-expanded {

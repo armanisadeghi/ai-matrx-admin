@@ -15,6 +15,7 @@ The app shell renders one canonical navigation tree across the desktop sidebar a
 - `Sidebar.tsx` — server-rendered sidebar frame, global navigation, and portal targets.
 - `RouteMenuSlot.tsx` — client island that matches a Large Route, loads its menu, and switches between route and global navigation.
 - `RouteHeaderSlot.tsx` — optional Large Route replacement for the sidebar brand area.
+- `SidebarMenuSearch.tsx` → `MenuSearchPalette.tsx` — the "Search menu" row above Favorites and its palette (index/ranker: `../../utils/menu-search.ts`).
 - `../../constants/route-menu-registry.ts` — ordered route-family registrations.
 - `../../constants/route-menu-style.ts` — canonical route-menu row class and icon metrics.
 - `../../../../styles/shell.css` — expansion, collapse, animation, mode-control, and collapsed-tooltip behavior.
@@ -42,6 +43,13 @@ The app shell renders one canonical navigation tree across the desktop sidebar a
 1. `AdminSidebarSection` hydrates the existing `selectIsAdmin` gate.
 2. Admins receive a neutral Admin Launchpad anchor before the Administration cascade and operational toggles. It is a launcher, so it never borrows the selected-route treatment.
 3. The anchor opens `/administration/launchpad` in a new tab so the current product workspace is never displaced.
+
+### Search the menu (desktop)
+
+1. The first main-nav row, `SidebarMenuSearch`, reads as a search field when expanded and is a Search icon when collapsed; ⌘/ (Ctrl+/) opens it from anywhere (⌘K is the knowledge bar). Typing while the row is focused opens it with that text.
+2. It opens one centered palette at either width — never a filtered copy of the tree in the rail. Rows are ranked destinations with their breadcrumb (`Data › Tables`); an empty query shows Recent (this browser) and the top-level groups.
+3. The index is the viewer's `nav-data.ts` tree + Settings, and for admins the Administration cascade (`adminMenuDomains`). Rows run what the sidebar row runs: navigate, new tab, window panel, or create action; ⌘↵ opens in a new tab.
+4. The palette is one `dynamic` edge loaded on first open; the row itself imports only `ShellIcon`.
 
 ### Navigate on mobile
 
@@ -85,6 +93,8 @@ The app shell renders one canonical navigation tree across the desktop sidebar a
 - `route-menu-style.ts` names the already-shared visual contract so consumers stop copying literals.
 
 ## Change log
+
+- `2026-10-13` — Claude: added the desktop "Search menu" row above Favorites and its ranked menu-search palette (main nav + Settings + admin cascade, breadcrumbs, recents, ⌘/).
 
 - `2026-10-04` — Claude: THE CORRECTED DOMAIN TREE (Arman's rulings, 2026-10-04). Strip: Board (home: dashboard, launchpad, Boards sub-area, War Room) · Projects (beside Board: the two daily-work surfaces) · Agents · Applets · Chat · Workflows · Intelligence (+Reports) · Masterwork · Knowledge (Library icon, +Acquisition) · Web (scraper, search, Connect a Computer) · Content (notes, documents, workbooks, maps, e-sign, text utilities) · Data (record store, Shapes studio, scopes) · Files (cloud drive + PDF) · Media (images, libraries, camera, scanner) · Audio (transcripts, voice playground/tester, voice settings) · Code · Publish (+Print, flattened) · Communications · CRM · Marketing · Human Resources · Integrations · Account · Industries (Commerce gains Product Capture; its landing is Capture Products, the guest-safe page) · Other. Workspace and the Media sub-areas are gone; mixed menus (leaves plus one sub-area) render on desktop and phone. New strip icons `Library`, `Cloud`, `AudioLines` in `shellIconMap.ts`. `nav-no-loss.test.ts` holds the new order, the five stuff-domain owners and unique strip icons; `is-nav-group-active.test.ts` lights each moved family (/files, /notes, /data, /war-room, /transcripts, /images, /board).
 - `2026-10-03` — Claude: sidebar review fixes. Industries lights the industry that owns the route (an `ownedRoutePrefixes` entry that is a sub-area's own namespace is never an alias; /commerce/* with no listed row falls to Commerce). `openInNewTab` on children (Launchpad) and `external` open a new tab in the flyout and the phone drawer. Guest view frozen in `nav-no-loss.test.ts` (old guest rows stay visible, old members-only rows stay hidden, a new guest-visible row must be in `GUEST_OK_SINCE_DOMAIN_TREE`); Account and ~45 new members-only rows are `guestHidden`. Phone search applies nav gates (`utils/search-nav.ts`) and typing leaves an area's route view for the full menu. A failed route-menu chunk is captured, falls back to the main menu and offers Retry. ArrowRight focuses into a hover-opened submenu. The default-open chat no longer folds a domain panel (`shellChatDomainPanelAction`); every /user-settings/* lights Account.

@@ -16,6 +16,7 @@
 import NavItem from "./NavItem";
 import NavFlyoutGroup from "./NavFlyoutGroup";
 import FavoritesNavGroup from "./FavoritesNavGroup";
+import SidebarMenuSearch from "./SidebarMenuSearch";
 import AdminSidebarSection from "./admin-menu/AdminSidebarSection";
 import RouteMenuSlot from "./RouteMenuSlot";
 import RouteHeaderSlot from "./RouteHeaderSlot";
@@ -73,6 +74,9 @@ export default function Sidebar({ pathname, isAuthenticated }: SidebarProps) {
 
         {/* Standard nav — always server-rendered */}
         <div className="shell-sidebar-main-nav">
+          {/* Search menu — opens the menu-search palette (⌘/); the palette
+              chunk loads on first open. */}
+          <SidebarMenuSearch />
           {/* Favorites — client island; reads pins from Redux (no fetch). Authed
               users only (favorites are per-user). */}
           {isAuthenticated && <FavoritesNavGroup />}
