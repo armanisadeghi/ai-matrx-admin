@@ -183,7 +183,7 @@ function MyForm() {
       <div className="space-y-6 p-4">
         {/* Section 1 */}
         <div className="space-y-4">
-          <h3 className="text-sm font-medium flex items-center gap-2">
+          <h3 className="type-title flex items-center gap-2">
             <div className="h-6 w-1 bg-primary rounded-full" />
             Basic Info
           </h3>
@@ -192,7 +192,7 @@ function MyForm() {
 
         {/* Section 2 */}
         <div className="space-y-4 pt-4 border-t border-border">
-          <h3 className="text-sm font-medium flex items-center gap-2">
+          <h3 className="type-title flex items-center gap-2">
             <div className="h-6 w-1 bg-primary rounded-full" />
             Advanced
           </h3>

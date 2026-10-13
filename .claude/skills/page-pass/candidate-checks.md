@@ -6,7 +6,7 @@ or a raw `rg` today.
 1. Hover-revealed controls with no `pointer-coarse:opacity-100` (core 4; ~205 `opacity-0 group-hover` sites).
 2. Emoji in rendered UI strings (core 5; only an `rg` recipe exists).
 3. Raw `dispatch(openOverlay(...))` ratchet — count only goes down (core 5; ~115 sites).
-4. Content text at `text-[10px]` outside an all-caps section label (core 5; ~5,650 uses to triage).
+4. Content text at `text-[10px]`/`text-[11px]` (or any raw `text-*` size, instead of `type-*`) outside an all-caps section label (core 5; ~5,650 uses to triage).
 5. Non-Pro `<textarea>` ratchet (core 6; the `check:textareas` named in `surface-check` was never built).
 6. Inline `fontSize` under 16px on an input or textarea (core 4).
 7. A hand-rolled `useIsMobile()` Drawer branch around a plain Dialog, now redundant (core 4).

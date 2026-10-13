@@ -94,14 +94,14 @@ export default function FsListRenderer({ entry }) {
   const out = asObj(entry && entry.result);          // result may be a JSON string
   const entries = Array.isArray(out.entries) ? out.entries : [];
   if (entry && entry.status !== "completed" && entries.length === 0)
-    return <div className="text-sm text-muted-foreground">Listing…</div>; // streaming state
-  if (!entries.length) return <div className="text-sm text-muted-foreground">Empty.</div>;
+    return <div className="type-body text-muted-foreground">Listing…</div>; // streaming state
+  if (!entries.length) return <div className="type-body text-muted-foreground">Empty.</div>;
   return (
     <div className="overflow-hidden rounded-md border border-border">
       {entries.map((e, i) => (
         <div key={(e && e.path) || i} className="flex items-center gap-2 px-2.5 py-1.5">
           {e.is_dir ? <Folder className="h-4 w-4 text-primary" /> : <FileText className="h-4 w-4 text-muted-foreground" />}
-          <span className="truncate text-sm text-foreground">{e.name}</span>
+          <span className="truncate type-body text-foreground">{e.name}</span>
         </div>
       ))}
     </div>

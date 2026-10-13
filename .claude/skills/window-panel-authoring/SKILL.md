@@ -233,7 +233,7 @@ Ephemeral windows never enter the workspace and never restore on reload. The "Sa
 ```tsx
 // Correct sidebar root
 <div className="flex flex-col min-h-0 h-full">
-  <div className="px-2 py-1 border-b text-xs font-medium shrink-0">Header</div>
+  <div className="px-2 py-1 border-b type-title shrink-0">Header</div>
   <div className="flex-1 min-h-0 p-1.5 space-y-1">
     {items.map(item => <Item key={item.id} />)}
   </div>

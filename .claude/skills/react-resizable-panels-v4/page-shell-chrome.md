@@ -35,7 +35,7 @@ function ChatSurface() {
 function FilesSidebar() {
   return (
     <div className="h-full overflow-auto bg-muted pt-[var(--shell-header-h)]">
-      <div className="px-3 py-1.5 text-[11px] uppercase …">Files</div>
+      <div className="px-3 py-1.5 type-meta uppercase …">Files</div>
       <ul>{items}</ul>
     </div>
   );

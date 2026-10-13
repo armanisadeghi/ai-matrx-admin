@@ -178,7 +178,7 @@ export default async function NotesPage() {
 function NotesEmptyState() {
     return (
         <div className="flex-1 flex items-center justify-center p-8">
-            <p className="text-sm text-muted-foreground">Select a note or create a new one.</p>
+            <p className="type-body text-muted-foreground">Select a note or create a new one.</p>
         </div>
     );
 }

@@ -20,7 +20,7 @@ export default function AgentsPage() {
     <>
       <PageHeader>
         <div className="flex items-center justify-between w-full min-w-0">
-          <h1 className="text-sm font-semibold truncate">Agents</h1>
+          <h1 className="type-title truncate">Agents</h1>
           <Suspense fallback={<div className="h-9 w-24 animate-pulse rounded-md bg-muted" />}>
             <CreateAgentButton />
           </Suspense>
@@ -68,9 +68,9 @@ async function AgentTable() {
       <table className="w-full">
         <thead className="h-10 sticky top-0 bg-card border-b">
           <tr>
-            <th className="px-4 text-left text-sm font-medium">Name</th>
-            <th className="px-4 text-left text-sm font-medium">Status</th>
-            <th className="px-4 text-left text-sm font-medium">Last Run</th>
+            <th className="px-4 text-left type-title">Name</th>
+            <th className="px-4 text-left type-title">Status</th>
+            <th className="px-4 text-left type-title">Last Run</th>
           </tr>
         </thead>
         <tbody>
@@ -138,14 +138,14 @@ export default function NewAgentPage() {
   return (
     <>
       <PageHeader>
-        <h1 className="text-sm font-semibold truncate">Create Agent</h1>
+        <h1 className="type-title truncate">Create Agent</h1>
       </PageHeader>
       <div className="h-full flex flex-col overflow-hidden p-6">
 
       <form className="max-w-lg space-y-6">
         {/* Static field — instant */}
         <div className="flex flex-col gap-1.5">
-          <label className="text-sm font-medium">Name</label>
+          <label className="type-label">Name</label>
           <input
             type="text"
             className="h-10 w-full rounded-md border px-3 text-base"
@@ -155,21 +155,21 @@ export default function NewAgentPage() {
 
         {/* Each dropdown streams independently */}
         <div className="flex flex-col gap-1.5">
-          <label className="text-sm font-medium">Model</label>
+          <label className="type-label">Model</label>
           <Suspense fallback={<SelectSkeleton />}>
             <ModelSelectServer />
           </Suspense>
         </div>
 
         <div className="flex flex-col gap-1.5">
-          <label className="text-sm font-medium">Category</label>
+          <label className="type-label">Category</label>
           <Suspense fallback={<SelectSkeleton />}>
             <CategorySelectServer />
           </Suspense>
         </div>
 
         <div className="flex flex-col gap-1.5">
-          <label className="text-sm font-medium">Tools</label>
+          <label className="type-label">Tools</label>
           <Suspense fallback={<MultiSelectSkeleton />}>
             <ToolsMultiSelectServer />
           </Suspense>
@@ -239,7 +239,7 @@ export default function DashboardPage() {
   return (
     <>
       <PageHeader>
-        <h1 className="text-sm font-semibold truncate">Dashboard</h1>
+        <h1 className="type-title truncate">Dashboard</h1>
       </PageHeader>
       <div className="h-full flex flex-col overflow-hidden">
       <div className="flex-1 overflow-auto p-4 space-y-6">
@@ -280,7 +280,7 @@ async function TotalAgentsMetric() {
   const count = await getCachedTotalAgents()
   return (
     <div className="h-28 rounded-lg border bg-card p-4 flex flex-col justify-between">
-      <p className="text-sm text-muted-foreground">Total Agents</p>
+      <p className="type-body text-muted-foreground">Total Agents</p>
       <p className="text-3xl font-bold">{count}</p>
     </div>
   )
@@ -296,8 +296,8 @@ async function RecentActivityFeed() {
         <li key={item.id} className="h-16 flex items-center gap-3 rounded-lg border bg-card px-4">
           <div className="h-8 w-8 rounded-full bg-muted" />
           <div>
-            <p className="text-sm font-medium">{item.title}</p>
-            <p className="text-xs text-muted-foreground">{item.timestamp}</p>
+            <p className="type-title">{item.title}</p>
+            <p className="type-secondary text-muted-foreground">{item.timestamp}</p>
           </div>
         </li>
       ))}
@@ -374,7 +374,7 @@ export function ConfigButton({ agentId }: { agentId: string }) {
     <>
       <button
         onClick={() => setOpen(true)}
-        className="h-9 px-3 rounded-md border text-sm"
+        className="h-9 px-3 rounded-md border type-body"
       >
         Configure
       </button>
@@ -416,7 +416,7 @@ async function AgentDetail({ agentId }: { agentId: string }) {
   return (
     <div className="h-auto min-h-20 rounded-lg border bg-card p-4">
       <h2 className="text-lg font-semibold">{agent.name}</h2>
-      <p className="text-sm text-muted-foreground">{agent.description}</p>
+      <p className="type-body text-muted-foreground">{agent.description}</p>
     </div>
   )
 }
@@ -435,7 +435,7 @@ The dropdown renders a fixed-dimension shell with a placeholder. Data fetches on
 export default function ModelField() {
   return (
     <div className="flex flex-col gap-1.5">
-      <label className="text-sm font-medium">Model</label>
+      <label className="type-label">Model</label>
       <div className="h-10 w-full">
         <ModelDropdownClient defaultLabel="Select a model..." />
       </div>
@@ -493,7 +493,7 @@ export function ModelDropdownClient({ defaultLabel }: { defaultLabel: string }) 
                 className="h-9 px-3 py-2 cursor-pointer hover:bg-accent"
                 onClick={() => { setSelected(m.name); setOpen(false) }}
               >
-                {m.name} <span className="text-xs text-muted-foreground">({m.provider})</span>
+                {m.name} <span className="type-secondary text-muted-foreground">({m.provider})</span>
               </li>
             ))
           )}

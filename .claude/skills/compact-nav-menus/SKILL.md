@@ -5,6 +5,8 @@ description: "Sizing tokens for compact sidebars, nav panels, and menu lists. Us
 
 # Compact Navigation & Menu Panels
 
+Look rules (type, colour, components) come from the style guide: ../common-docs/systems/platform/ui-shell/STYLE-GUIDE.md — this skill only adds menu structure.
+
 Canonical sizing and spacing rules for navigation sidebars, list panels, and compact menus across the project. Every value below is a hard default — deviate only with justification.
 
 ## Sizing Tokens
@@ -21,7 +23,7 @@ Canonical sizing and spacing rules for navigation sidebars, list panels, and com
 ### Nav Item — Top-Level (Flat or Parent)
 | Property | Value |
 |----------|-------|
-| Font | `text-xs` (12px) |
+| Font | `type-secondary` |
 | Padding | `px-3 py-1.5` |
 | Gap | `gap-2` |
 | Icon | `h-3.5 w-3.5` |
@@ -34,18 +36,18 @@ Canonical sizing and spacing rules for navigation sidebars, list panels, and com
 ### Nav Item — Child (Second Tier)
 | Property | Value |
 |----------|-------|
-| Font | `text-[11px]` |
+| Font | `type-meta` |
 | Padding | `pl-8 pr-3 py-1` |
 | Gap | `gap-1.5` |
 | Icon | `h-3 w-3` |
 | Active | `text-primary font-medium` (no background) |
-| Inactive icon | `text-muted-foreground/60` |
+| Inactive icon | `text-muted-foreground` |
 
 ### Section Headers (Grouped Lists)
 | Property | Value |
 |----------|-------|
-| Font | `text-[10px] font-medium uppercase tracking-wider` — the ONE sanctioned 10px use (uppercase overline chrome; see `ui-dense` data-dense-rules "Absolute minimums") |
-| Color | `text-muted-foreground/70` |
+| Font | `type-meta uppercase tracking-wider` — non-content overline chrome only; the scale has no 10px |
+| Color | `text-muted-foreground` |
 | Padding | `px-3 pt-3 pb-1` |
 | Separator | `border-t border-border/40` above the header, not `<Separator>` components. |
 
@@ -53,19 +55,18 @@ Canonical sizing and spacing rules for navigation sidebars, list panels, and com
 | Property | Value |
 |----------|-------|
 | Container | `px-3 py-1.5 flex items-center gap-1.5 flex-wrap` |
-| Chip (active) | `px-2 py-0.5 rounded text-xs bg-primary text-primary-foreground` |
-| Chip (inactive) | `px-2 py-0.5 rounded text-xs bg-muted/60 text-muted-foreground hover:bg-muted` |
-| Search input | `h-7 text-xs pl-8` with icon at `h-3.5 w-3.5` |
-| Select dropdown | `h-6 px-1.5 rounded text-xs bg-muted/60 border-0` |
+| Chip | `Chip` / `Badge` from `@ai-matrx/design-system` (never a hand-built pill); selected state via the component's tone |
+| Search input | `SearchField` from `@ai-matrx/design-system/controls` |
+| Select dropdown | `Select` from `@ai-matrx/design-system/controls` |
 
 ### Footer / Status Bar
 | Property | Value |
 |----------|-------|
 | Padding | `px-4 py-1.5` or `px-4 py-2` |
-| Font | `text-xs` (status text is content — never below 12px) |
+| Font | `type-secondary` (status text is content) |
 | Background | `bg-muted/20` |
 | Border | `border-t border-border/60` |
-| Buttons | `h-7 text-xs gap-1 px-2.5` |
+| Buttons | `Button` from `@ai-matrx/design-system/controls` |
 
 ## Anti-Patterns
 
@@ -74,7 +75,7 @@ These are the exact mistakes to fix when refactoring existing sidebars:
 | Bad | Fix |
 |-----|-----|
 | `w-52`, `w-64`, or wider | Reduce to `w-36`–`w-44` |
-| `text-sm` on nav items | Use `text-xs` |
+| `text-sm` / `text-xs` / `text-[11px]` classes on nav items | Use `type-secondary` (child rows `type-meta`) |
 | `py-2`, `py-3` on nav rows | Use `py-1.5` (top-level) or `py-1` (child) |
 | `gap-3` between icon and label | Use `gap-2` (top-level) or `gap-1.5` (child) |
 | `h-4 w-4` icons in nav | Use `h-3.5 w-3.5` (top-level) or `h-3 w-3` (child) |
@@ -85,7 +86,7 @@ These are the exact mistakes to fix when refactoring existing sidebars:
 | `<Separator>` component | Replace with a `border-t` on the section header |
 | `bg-card` sidebar background | Use `bg-muted/30` |
 | `border-border` (full opacity) | Use `border-border/60` |
-| `text-lg` sidebar title | Remove header entirely or use `text-xs uppercase` section label |
+| `text-lg` sidebar title | Remove header entirely or use a `type-meta uppercase` section label |
 
 ## Two-Tier Expandable Pattern
 
@@ -97,7 +98,7 @@ const isExpanded = isActive && !!item.children;
 {/* Parent */}
 <Link href={item.children ? `${item.href}?tab=${item.children[0].param}` : item.href}
   className={cn(
-    'flex items-center gap-2 px-3 py-1.5 transition-colors text-xs',
+    'flex items-center gap-2 px-3 py-1.5 transition-colors type-secondary',
     'hover:bg-muted/80',
     isActive ? 'bg-accent text-accent-foreground font-medium'
              : 'text-muted-foreground hover:text-foreground',
@@ -116,14 +117,14 @@ const isExpanded = isActive && !!item.children;
       <Link key={child.param}
         href={`${item.href}?tab=${child.param}`}
         className={cn(
-          'flex items-center gap-1.5 pl-8 pr-3 py-1 transition-colors text-[11px]',
+          'flex items-center gap-1.5 pl-8 pr-3 py-1 transition-colors type-meta',
           'hover:bg-muted/80',
           isChildActive ? 'text-primary font-medium'
                         : 'text-muted-foreground hover:text-foreground',
         )}
       >
         <span className={cn('shrink-0',
-          isChildActive ? 'text-primary' : 'text-muted-foreground/60',
+          isChildActive ? 'text-primary' : 'text-muted-foreground',
         )}>{child.icon}</span>
         <span className="truncate">{child.title}</span>
       </Link>
@@ -144,7 +145,7 @@ For sidebars with categorized groups (like a file manager):
         <div key={group.label}>
           {/* Section header — acts as separator */}
           <div className={cn(
-            'px-3 pt-3 pb-1 text-[10px] font-medium uppercase tracking-wider text-muted-foreground/70',
+            'px-3 pt-3 pb-1 type-meta uppercase tracking-wider text-muted-foreground',
             i > 0 && 'border-t border-border/40',
           )}>
             {group.label}
@@ -152,7 +153,7 @@ For sidebars with categorized groups (like a file manager):
           {group.items.map(item => (
             <Link key={item.href} href={item.href}
               className={cn(
-                'flex items-center gap-2 px-3 py-1.5 transition-colors text-xs',
+                'flex items-center gap-2 px-3 py-1.5 transition-colors type-secondary',
                 'hover:bg-muted/80',
                 isActive ? 'bg-accent text-accent-foreground font-medium'
                          : 'text-muted-foreground hover:text-foreground',
@@ -177,7 +178,7 @@ When converting an existing sidebar to this system:
 
 1. **Container**: `w-36`–`w-44`, `bg-muted/30`, `border-r border-border/60`
 2. **Remove wrapper padding**: No `p-3`/`p-4` on the scroll content wrapper
-3. **Items**: `text-xs`, `px-3 py-1.5`, `gap-2`, icons `h-3.5 w-3.5`
+3. **Items**: `type-secondary`, `px-3 py-1.5`, `gap-2`, icons `h-3.5 w-3.5`
 4. **Active state**: `bg-accent text-accent-foreground font-medium` (not `bg-primary`)
 5. **No rounded rows**: Remove `rounded-md` from item classes
 6. **Section separators**: Replace `<Separator>` and `space-y-6` with `border-t border-border/40` on headers

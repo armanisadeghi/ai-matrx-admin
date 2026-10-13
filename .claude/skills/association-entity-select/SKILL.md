@@ -68,4 +68,4 @@ Adapter contract details:
 
 ## Props worth knowing
 
-`renameActivation` ("click" | "doubleClick", default click) · `align` · `emptyLabel` · `showIcon` / `iconClassName` · `className` / `labelClassName`. Toolbar-dense by default (h-6, text-xs).
+`renameActivation` ("click" | "doubleClick", default click) · `align` · `emptyLabel` · `showIcon` / `iconClassName` · `className` / `labelClassName`. Toolbar-dense by default (h-6, `type-secondary`).

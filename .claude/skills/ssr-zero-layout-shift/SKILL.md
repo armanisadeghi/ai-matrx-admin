@@ -97,7 +97,7 @@ export default function Dashboard() {
   return (
     <>
       <PageHeader>
-        <h1 className="text-sm font-medium truncate">Dashboard</h1>
+        <h1 className="type-title truncate">Dashboard</h1>
       </PageHeader>
       <div className="h-full flex flex-col overflow-hidden">
         <div className="flex-1 grid grid-cols-3 gap-4 p-4">
@@ -190,7 +190,7 @@ Not all data needs to be fetched on page load. If data is only needed after user
 export default function AssignAgentField({ currentAgentName }: { currentAgentName: string }) {
   return (
     <div className="flex flex-col gap-1.5">
-      <label className="text-sm font-medium">Agent</label>
+      <label className="type-label">Agent</label>
       <div className="h-10 w-full">
         <AgentDropdown defaultLabel={currentAgentName} />
       </div>

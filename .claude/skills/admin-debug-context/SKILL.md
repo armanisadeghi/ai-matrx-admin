@@ -108,7 +108,7 @@ import { useAppSelector } from '@/lib/redux/hooks';
 export default function MyFeatureDebug() {
     // Read exclusively from Redux selectors — no local fetch, no useState for data
     const data = useAppSelector(selectSomething);
-    return <div className="p-4 text-xs font-mono">{JSON.stringify(data, null, 2)}</div>;
+    return <div className="p-4 type-secondary font-mono">{JSON.stringify(data, null, 2)}</div>;
 }
 ```
 

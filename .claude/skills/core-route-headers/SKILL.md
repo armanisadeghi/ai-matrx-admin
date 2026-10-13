@@ -46,7 +46,7 @@ someone fixes it.
    overflow-x-hidden` as the fallback there; full-height leaf editors and
    tables retain their own inner scroll, while natural-height leaves cannot be
    amputated by one missed class.
-3. **Title/description block in a dashboard page** — marketing copy inside app chrome. **Delete it**; the header center carries a `text-sm` title at most.
+3. **Title/description block in a dashboard page** — marketing copy inside app chrome. **Delete it**; the header center carries a `type-title` title at most.
 4. **Missing top clearance for floating/static content** — content that must NOT slide behind the glass (grid of cards with action buttons, sticky toolbars) needs `pt-[var(--shell-header-h)]` (never a hardcoded `pt-12`); freely-scrolling content gets **no** top padding so it floats behind the glass. This is the `/agents/all` mobile bug: card buttons float up into the header.
 5. **Desktop actions vanish on mobile** — `hidden lg:flex` with no mobile counterpart. The rule: desktop actions collapse into one or two **bottom sheets** on mobile (`HeaderActions` in `features/shell/components/header/variants/shared/` renders `BottomSheet` below `lg`; or `BottomSheet` from `@ai-matrx/design-system` directly). `../aidream/apps/shared/chat/src/agents/components/shared/AgentHeaderMobile.tsx` exists but is commented out in `AgentHeader.tsx` — that class of gap.
 6. **Double menus** — a page-level nav next to the sidebar. Large routes register ONE menu in `features/shell/constants/route-menu-registry.ts` (desktop `RouteMenuSlot` + `MobileRouteMenuSlot` come free).
@@ -71,7 +71,7 @@ Two drop-in templates in `features/shell/components/header/templates/` cover alm
 
 ## Compose with RouteHeader — the default
 
-`RouteHeader` (`features/shell/components/header/RouteHeader.tsx`) is the canonical three-part injection: `left` (back tap-target + identity), `center` (the ONE nav/selection control — usually `RouteModeNav`), `right` (tap-target actions). Prefer it over hand-rolled `<PageHeader>` rows and over `HeaderStructured` whenever the route has sub-views. **No title text in the center when a nav can live there** — "Content Manager"-style labels are filler; the nav IS the identity. A lone `text-sm font-medium` title on the left is fine for single-view routes.
+`RouteHeader` (`features/shell/components/header/RouteHeader.tsx`) is the canonical three-part injection: `left` (back tap-target + identity), `center` (the ONE nav/selection control — usually `RouteModeNav`), `right` (tap-target actions). Prefer it over hand-rolled `<PageHeader>` rows and over `HeaderStructured` whenever the route has sub-views. **No title text in the center when a nav can live there** — "Content Manager"-style labels are filler; the nav IS the identity. A lone `type-title` title on the left is fine for single-view routes.
 
 Sibling routes sharing one header (e.g. `/cms` + `/cms/html-pages`) get ONE shared header component in the feature (`features/cms/components/CmsHubHeader.tsx` is the reference) — never two diverging copies.
 
