@@ -27,6 +27,7 @@ import { selectAuthReady, selectIsAdminPerson } from "@/lib/redux/selectors/user
 import SidebarAdminIndicatorToggle from "../../controls/SidebarAdminIndicatorToggle";
 import SidebarApiVersionToggle from "../../controls/SidebarApiVersionToggle";
 import SidebarBuilderToggle from "../../controls/SidebarBuilderToggle";
+import SidebarWatchAiToggle from "../../controls/SidebarWatchAiToggle";
 import SidebarCreatorHubToggle from "../../controls/SidebarCreatorHubToggle";
 import SidebarEnvToggle from "../../controls/SidebarEnvToggle";
 import SidebarErrorInspectorToggle from "../../controls/SidebarErrorInspectorToggle";
@@ -95,6 +96,7 @@ export default function AdminSidebarSection() {
       </AppLink>
       <AdminMenu />
       <SidebarBuilderToggle />
+      <SidebarWatchAiToggle />
       <SidebarErrorInspectorToggle />
       <SidebarCreatorHubToggle />
       <SidebarAdminIndicatorToggle />

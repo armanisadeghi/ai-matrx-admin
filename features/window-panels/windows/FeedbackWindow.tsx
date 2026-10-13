@@ -399,7 +399,9 @@ function useFeedbackForm({
   const draftKey = subject
     ? subject.kind === "text_passage"
       ? `feedback:${subject.sourceToken}:${subject.sourceId}`
-      : `feedback:billing:${subject.billingScope}:${subject.subscriptionId}:${subject.invoiceId ?? "none"}`
+      : subject.kind === "ai_run"
+        ? `feedback:ai-run:${subject.userRequestId}`
+        : `feedback:billing:${subject.billingScope}:${subject.subscriptionId}:${subject.invoiceId ?? "none"}`
     : "feedback";
   const onClose = useCallback(() => {
     closeOverlayNow();
@@ -1374,6 +1376,18 @@ function FeedbackWindowBody({ form }: { form: FeedbackFormState }) {
             </blockquote>
             <p className="mt-1 text-xs text-muted-foreground">
               The passage and its position are sent with your report.
+            </p>
+          </div>
+        ) : null}
+
+        {form.subject?.kind === "ai_run" ? (
+          <div
+            className="rounded-lg border border-border bg-muted/30 px-3 py-2 text-xs"
+            data-feedback-subject=""
+          >
+            <p className="font-medium text-foreground">About this AI run</p>
+            <p className="mt-1 truncate font-mono text-muted-foreground">
+              {form.subject.mandateKey ?? "Not a mandate run"} · {form.subject.userRequestId}
             </p>
           </div>
         ) : null}

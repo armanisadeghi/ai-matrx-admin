@@ -11,9 +11,8 @@
  *
  * From a thunk / outside React: `dispatch(watchAiRunAction(requestId))`.
  *
- * Everyone sees what went in and what came out; system admins also see agent,
- * model, tokens, time to first token, total time and cost. The window reopens
- * after a refresh from the server's record. Contract:
+ * System admins with debug mode on only (`useCanWatchAi`); the window refuses
+ * anyone else. The window reopens after a refresh from the server's record. Contract:
  * common-docs/systems/architecture/execution-runtime/AI-WATCH.md
  */
 
@@ -29,6 +28,8 @@ export interface WatchAiRunOptions {
   userRequestId?: string | null;
   workflowRunId?: string | null;
   conversationId?: string | null;
+  /** List every AI run this tab holds (the sidebar Watch AI light). */
+  pageRuns?: boolean;
   label?: string | null;
   /** Stable id to reuse one window per subject. Defaults to the watched id. */
   instanceId?: string;
@@ -52,6 +53,7 @@ export function watchAiRunAction(target: string | WatchAiRunOptions) {
       userRequestId: opts.userRequestId ?? null,
       workflowRunId: opts.workflowRunId ?? null,
       conversationId: opts.conversationId ?? null,
+      pageRuns: opts.pageRuns ?? false,
       label: opts.label ?? null,
     },
   });

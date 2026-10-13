@@ -127,6 +127,7 @@ import { useOpenLiveIntegrationsWindow } from "@/features/overlays/openers/liveI
 import { useOpenGmailComposeWindow } from "@/features/overlays/openers/gmailComposeWindow";
 import { useOpenLiveRunWindow } from "@/features/overlays/openers/liveRunWindow";
 import { useWatchAiRun } from "@/features/overlays/openers/aiWatchWindow";
+import { useCanWatchAi } from "@/features/ai-watch/useCanWatchAi";
 import { useOpenFullScreenMarkdownEditorBridge } from "@/features/overlays/openers/fullScreenEditor";
 import { openImageViewer } from "@/features/overlays/openers/imageViewer";
 import { useOpenShortcutEditorWindow } from "@/features/overlays/openers/shortcutEditorWindow";
@@ -397,12 +398,15 @@ const appNotify: ChatNotifyPort = {
 };
 
 /** The app's opener for every host window the package opens (P18). */
-function useAppWindowOpeners(): ChatWindowOpeners {
+function useAppWindowOpeners(): Partial<ChatWindowOpeners> {
   const dispatch = useAppDispatch();
+  const watchAiRun = useWatchAiRun();
+  const canWatchAi = useCanWatchAi();
   return {
     openGmailComposeWindow: useOpenGmailComposeWindow(),
     openLiveRunWindow: useOpenLiveRunWindow(),
-    openAiWatchWindow: useWatchAiRun(),
+    // Watch AI exists only for system admins in debug mode; absent opener = no button.
+    openAiWatchWindow: canWatchAi ? watchAiRun : undefined,
     openFullScreenMarkdownEditor: useOpenFullScreenMarkdownEditorBridge(),
     openImageViewer: (opts) => openImageViewer(dispatch, opts),
     openShortcutEditorWindow: useOpenShortcutEditorWindow(),

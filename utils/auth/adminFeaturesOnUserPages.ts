@@ -173,6 +173,15 @@ export const ADMIN_FEATURES_ON_USER_PAGES = {
     doors: ["sandbox instance routes (ownership checked)"],
     ruling: "Arman, 2026-10-06: features \"explicitly actions in the normal ui that were for admins\" keep working; admin status must not widen what an admin SEES on a user page.",
   },
+  "ai.watch": {
+    level: "super_admin",
+    allows: "Watch any AI run on the page: the mandate, holder and version, provision values as filled, goal, output kind, the exact provider request and the live stream.",
+    where: "Sidebar → Watch AI (Eye, orange while a run is live) → the Watch AI window; Watch AI on run windows and Applet job output. Shown only with debug mode on.",
+    // Reads stay ordinary (rule 3): the run's own stream and its own chat.user_request /
+    // chat.request_snapshot rows under normal RLS. No request carries the lane.
+    doors: ["chat.user_request (read, ordinary RLS)", "chat.request_snapshot (read, ordinary RLS)"],
+    ruling: "Arman, 2026-10-13: \"it detects when the user is a system admin. And so I get a icon that lights up orange in my sidebar menu. And if I click on it, I see the window panel\" — \"Only system admins for now; debug mode is the switch.\"",
+  },
 } as const satisfies Record<string, AdminFeatureOnUserPage>;
 
 export type AdminFeatureOnUserPageId = keyof typeof ADMIN_FEATURES_ON_USER_PAGES;

@@ -9,6 +9,9 @@ import type { Json } from "@/types/database.types";
 
 /** The selected passage or billing record as the first lines a triager reads. */
 export function describeSubject(subject: FeedbackSubject): string {
+  if (subject.kind === "ai_run") {
+    return `AI run ${subject.userRequestId}\nMandate: ${subject.mandateKey ?? "none (not a mandate run)"}\nConversation: ${subject.conversationId ?? "none"}\nAgent: ${subject.holderId ?? "unknown"}${subject.holderVersionId ? ` (version ${subject.holderVersionId})` : ""}`;
+  }
   if (subject.kind === "billing_subscription") {
     const invoice = subject.invoiceId
       ? `\nInvoice: ${subject.invoiceId}${subject.invoiceStatus ? ` (${subject.invoiceStatus})` : ""}`
@@ -32,6 +35,16 @@ export function describeSubject(subject: FeedbackSubject): string {
 export function subjectMetadata(
   subject: FeedbackSubject,
 ): Record<string, Json> {
+  if (subject.kind === "ai_run") {
+    return {
+      kind: subject.kind,
+      user_request_id: subject.userRequestId,
+      mandate_key: subject.mandateKey,
+      conversation_id: subject.conversationId,
+      holder_id: subject.holderId,
+      holder_version_id: subject.holderVersionId,
+    };
+  }
   if (subject.kind === "billing_subscription") {
     return {
       kind: subject.kind,

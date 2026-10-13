@@ -51,8 +51,24 @@ export interface BillingSubscriptionFeedbackSubject {
   invoiceStatus?: string | null;
 }
 
+/**
+ * A report filed from Watch AI about ONE AI run ("Send to developers"): the
+ * run's own ids, never a copied payload — the triager opens the run itself.
+ */
+export interface AiRunFeedbackSubject {
+  kind: "ai_run";
+  /** The server run id (`chat.user_request.id`). */
+  userRequestId: string;
+  mandateKey: string | null;
+  conversationId: string | null;
+  holderId: string | null;
+  holderVersionId: string | null;
+}
+
 export type FeedbackSubject =
-  TextPassageFeedbackSubject | BillingSubscriptionFeedbackSubject;
+  | TextPassageFeedbackSubject
+  | BillingSubscriptionFeedbackSubject
+  | AiRunFeedbackSubject;
 
 export interface OpenFeedbackWindowOptions {
   title?: string;

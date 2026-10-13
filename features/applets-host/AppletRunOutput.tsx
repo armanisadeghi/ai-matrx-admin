@@ -38,6 +38,7 @@ import KindInstanceRender from "@/features/content-ir/studio/components/KindInst
 import { finishedWithoutAnswer, retryOf } from "@/features/applets-host/run-answer";
 
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { WatchAiRunButton } from "@/features/ai-watch/WatchAiRunButton";
 /** Failures only the Applet's owner can fix (the job was deleted, or is set up wrong). */
 const OWNER_FIXES = new Set(["job_unavailable", "job_misconfigured"]);
 
@@ -93,6 +94,8 @@ export function AppletRunOutput({
   if (adopted) {
     return (
       <>
+        {/* Admins in debug mode: the job run's exact inputs and stream (Watch AI). */}
+        <WatchAiRunButton requestId={requestId} label={label} />
         <LiveRunDisplay requestId={requestId} label={label} />
         {empty ? <NoAnswer run={run} /> : null}
       </>
@@ -101,12 +104,16 @@ export function AppletRunOutput({
   if (run.status === "resolving" || (run.status === "running" && !run.result)) return <LiveRunDisplay pending label={label} />;
   if (run.result) {
     return (
+      <>
+      {/* A run read back after a reload: its server id is the job's request id. */}
+      <WatchAiRunButton userRequestId={requestId} label={label} />
       <KindInstanceRender
         kind={run.result.__kind}
         value={run.result as KindInstanceRenderProps["value"]}
         showRoutingNote={false}
         variant="bare"
       />
+      </>
     );
   }
   if (empty) return <NoAnswer run={run} />;

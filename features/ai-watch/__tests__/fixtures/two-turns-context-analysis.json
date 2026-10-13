@@ -1,0 +1,33 @@
+{
+  "source": "runtime.operation_stream_batch context_analysis frames of chat.user_request c7ea0f18-aa82-4a69-b208-c86ba78d43ff and fa334861-27a9-4067-b88f-6e049e0c00a9 — two turns of ONE conversation (5573225e-ab8c-4e2a-8163-485091c34dd3), read with SELECT on 2026-10-13. Bodies trimmed to model + first input item (text cut at 160 chars); headers dropped.",
+  "captures": [
+    {
+      "provider": "openai",
+      "model": "gpt-5.4",
+      "iteration": 1,
+      "attempt": 1,
+      "is_streaming": true,
+      "request_id": "c7ea0f18-aa82-4a69-b208-c86ba78d43ff",
+      "conversation_id": "5573225e-ab8c-4e2a-8163-485091c34dd3",
+      "body": {
+        "model": "gpt-5.4",
+        "stream": true,
+        "input": [{ "role": "developer", "content": [{ "text": "<!--matrx:current_date-->Current date: 2026-10-13<!--matrx:/current_date-->\n\nYou are an expert content writing partner — a specialist collaborator whose p" }] }]
+      }
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-5.4",
+      "iteration": 1,
+      "attempt": 1,
+      "is_streaming": true,
+      "request_id": "fa334861-27a9-4067-b88f-6e049e0c00a9",
+      "conversation_id": "5573225e-ab8c-4e2a-8163-485091c34dd3",
+      "body": {
+        "model": "gpt-5.4",
+        "stream": true,
+        "input": [{ "role": "developer", "content": [{ "text": "<!--matrx:current_date-->Current date: 2026-10-13<!--matrx:/current_date-->\n\nYou are an expert content writing partner — a specialist collaborator whose p" }] }]
+      }
+    }
+  ]
+}

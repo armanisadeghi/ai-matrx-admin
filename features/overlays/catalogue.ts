@@ -120,8 +120,9 @@ export const OVERLAY_CATALOGUE = {
     instanceMode: "multi",
     isWindow: true,
   },
-  // "AI is never hidden" — the exact request and the streamed response of any
-  // AI run, with admin-only cost/time/model metrics (features/ai-watch).
+  // Watch AI — one AI run exactly as it ran: mandate, provision values, goal,
+  // the exact provider request and the live stream. System admins in debug mode
+  // only (features/ai-watch, Arman 2026-10-13).
   aiWatchWindow: {
     label: "Watch AI",
     instanceMode: "multi",

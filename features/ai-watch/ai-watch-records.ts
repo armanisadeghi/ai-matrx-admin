@@ -9,6 +9,8 @@
  * lives here — this module only reads those rows, under normal RLS.
  */
 
+import { readAllRows } from "@ai-matrx/data/db";
+import type { MandateRunData } from "@ai-matrx/agents/generated/stream-events";
 import { supabase } from "@/utils/supabase/client";
 
 export interface AiWatchSnapshot {
@@ -42,6 +44,8 @@ export interface AiWatchRecord {
   createdAt: string;
   completedAt: string | null;
   mandateKey: string | null;
+  /** THE run's mandate frame as stored on its own row (`metadata.mandate_watch`). */
+  mandateWatch: MandateRunData | null;
   models: string[];
   snapshots: AiWatchSnapshot[];
 }
@@ -104,6 +108,7 @@ function toRecord(row: Row, snapshots: AiWatchSnapshot[]): AiWatchRecord {
     createdAt: String(row.created_at ?? ""),
     completedAt: str(row.completed_at),
     mandateKey: str(metadata.mandate_key),
+    mandateWatch: (obj(metadata.mandate_watch) as MandateRunData | null) ?? null,
     models: Object.keys(usageByModel),
     snapshots,
   };
@@ -147,26 +152,35 @@ export async function fetchAiWatchRuns(scope: {
   workflowRunId?: string | null;
   conversationId?: string | null;
 }): Promise<AiWatchRunSummary[]> {
-  let query = supabase
-    .schema("chat")
-    .from("user_request")
-    .select("id, status, source_feature, created_at, metadata")
-    .is("deleted_at", null)
-    .order("created_at", { ascending: true })
-    .limit(200);
-  if (scope.workflowRunId) query = query.eq("workflow_run_id", scope.workflowRunId);
-  else if (scope.conversationId) query = query.eq("conversation_id", scope.conversationId);
-  else return [];
-  const { data, error } = await query;
-  if (error) throw new Error(error.message);
-  return ((data ?? []) as Row[]).map((row, index) => {
+  if (!scope.workflowRunId && !scope.conversationId) return [];
+  // The whole flow, never the first page: a long workflow has more steps than one read returns.
+  const rows = await readAllRows(
+    ({ from, to }) => {
+      let query = supabase
+        .schema("chat")
+        .from("user_request")
+        .select("id, status, source_feature, created_at, metadata")
+        .is("deleted_at", null);
+      query = scope.workflowRunId
+        ? query.eq("workflow_run_id", scope.workflowRunId)
+        : query.eq("conversation_id", scope.conversationId as string);
+      return query
+        .order("created_at", { ascending: true })
+        .order("id", { ascending: true })
+        .range(from, to);
+    },
+    { label: "chat.user_request (Watch AI runs)" },
+  );
+  return (rows as Row[]).map((row, index) => {
     const metadata = obj(row.metadata) ?? {};
     const holder = obj(metadata.mandate_holder);
+    const watch = obj(metadata.mandate_watch);
     return {
       userRequestId: String(row.id),
       label:
         str(holder?.name) ??
-        str(metadata.mandate_key) ??
+        // Only a turn that passed a mandate door is labelled with its mandate.
+        str(watch?.mandate_key) ??
         str(row.source_feature) ??
         `Run ${index + 1}`,
       status: str(row.status),
@@ -301,4 +315,46 @@ export function responseText(body: Record<string, unknown> | null): string {
     }
   }
   return parts.join("\n\n");
+}
+
+/** The agent VERSION a run used (by version id): its instructions and output schema. */
+export interface AiWatchAgentVersion {
+  id: string;
+  agentId: string | null;
+  versionNumber: number | null;
+  name: string | null;
+  messages: unknown;
+  outputSchema: unknown;
+}
+
+export async function fetchAgentVersion(versionId: string): Promise<AiWatchAgentVersion | null> {
+  const { data, error } = await supabase
+    .schema("agent")
+    .from("definition_version")
+    .select("id, agent_id, version_number, name, messages, output_schema")
+    .eq("id", versionId)
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  if (!data) return null;
+  const row = data as Row;
+  return {
+    id: String(row.id),
+    agentId: str(row.agent_id),
+    versionNumber: num(row.version_number),
+    name: str(row.name),
+    messages: row.messages ?? null,
+    outputSchema: row.output_schema ?? null,
+  };
+}
+
+/** The mandate definition's CURRENT version — compared against the version the run used. */
+export async function fetchMandateDefinitionVersion(mandateId: string): Promise<number | null> {
+  const { data, error } = await supabase
+    .schema("mandate")
+    .from("definition")
+    .select("version")
+    .eq("id", mandateId)
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  return data ? num((data as Row).version) : null;
 }
