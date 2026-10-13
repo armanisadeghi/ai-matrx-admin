@@ -17,7 +17,7 @@ import {
   Scissors,
 } from "lucide-react";
 
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
 import type { AgentPayloadInput } from "@/components/agent-copy/buildAgentPayload";
 import { CopyButtons } from "@/components/agent-copy/CopyButtons";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
@@ -115,6 +115,14 @@ const ICON_BUTTON_CLS = cn(
 
 
 const ICON_CLS = "h-3.5 w-3.5";
+
+const VIEW_BUTTONS = [
+  { value: "json", title: "Formatted JSON", Icon: Braces },
+  { value: "explorer", title: "Path Explorer", Icon: Compass },
+  { value: "tree", title: "Tree Viewer", Icon: ListTree },
+  { value: "truncator", title: "Truncator", Icon: Scissors },
+  { value: "edit", title: "Edit JSON", Icon: FilePen },
+] as const;
 
 const PANE_CLS =
   "flex-1 min-h-0 overflow-auto mt-0 border-none outline-none ring-0 bg-gray-50 dark:bg-zinc-900";
@@ -290,7 +298,7 @@ function JsonInspectorBody({
           className,
         )}
       >
-        <div className="flex items-center gap-1.5 px-1.5 py-1 border-b border-border flex-shrink-0">
+        <div className="flex items-center gap-1.5 px-1.5 py-0.5 border-b border-border flex-shrink-0">
           {onBack && (
             <button
               onClick={onBack}
@@ -354,45 +362,23 @@ function JsonInspectorBody({
               {label}
             </h2>
           )}
-          <TabsList className="shrink-0">
-            <TabsTrigger
-              value="json"
-              title="Formatted JSON"
-              aria-label="Formatted JSON"
-            >
-              <Braces className={ICON_CLS} />
-            </TabsTrigger>
-            <TabsTrigger
-              value="explorer"
-              title="Path Explorer"
-              aria-label="Path Explorer"
-            >
-              <Compass className={ICON_CLS} />
-            </TabsTrigger>
-            <TabsTrigger
-              value="tree"
-              title="Tree Viewer"
-              aria-label="Tree Viewer"
-            >
-              <ListTree className={ICON_CLS} />
-            </TabsTrigger>
-            <TabsTrigger
-              value="truncator"
-              title="Truncator"
-              aria-label="Truncator"
-            >
-              <Scissors className={ICON_CLS} />
-            </TabsTrigger>
-            {editable && (
-              <TabsTrigger
-                value="edit"
-                title="Edit JSON"
-                aria-label="Edit JSON"
+          {/* Plain 20px icon buttons, not tap-target tabs: a dense header, flush with the row below. */}
+          <div role="tablist" className="flex shrink-0 items-center gap-0.5">
+            {VIEW_BUTTONS.filter((b) => b.value !== "edit" || editable).map(({ value: v, title, Icon }) => (
+              <button
+                key={v}
+                type="button"
+                role="tab"
+                aria-selected={value === v}
+                title={title}
+                aria-label={title}
+                onClick={() => handleValueChange(v)}
+                className={cn(ICON_BUTTON_CLS, value === v && "bg-muted text-foreground")}
               >
-                <FilePen className={ICON_CLS} />
-              </TabsTrigger>
-            )}
-          </TabsList>
+                <Icon className={ICON_CLS} />
+              </button>
+            ))}
+          </div>
           <div className="flex-1" />
           <CopyButtons
             label={copyLabel}
