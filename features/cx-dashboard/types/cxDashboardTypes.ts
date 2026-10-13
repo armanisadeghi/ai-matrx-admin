@@ -221,6 +221,62 @@ export type CxFilters = {
   per_page?: number;
 };
 
+/** Another conversation that shares spend with this one: a sub-agent, or a sibling run by the same user request. */
+export type CxRelatedConversationCost = {
+  id: string;
+  title: string | null;
+  cost: number;
+  model_calls: number;
+  total_tokens: number;
+};
+
+/**
+ * Everything this ONE conversation spent, read from its own rows (chat.request + chat.tool_call
+ * where conversation_id = it). A user request can fan out across several conversations, so a
+ * request's total_cost is never this conversation's cost — `share` per request says which part is.
+ */
+export type CxConversationUsage = {
+  totals: {
+    cost: number;
+    model_cost: number;
+    tool_cost: number;
+    model_calls: number;
+    tool_calls: number;
+    input_tokens: number;
+    output_tokens: number;
+    cached_tokens: number;
+    total_tokens: number;
+    api_duration_ms: number;
+    tool_duration_ms: number;
+    failed_tool_calls: number;
+    max_tokens_hits: number;
+  };
+  by_model: {
+    model_name: string;
+    provider: string;
+    calls: number;
+    cost: number;
+    input_tokens: number;
+    output_tokens: number;
+    cached_tokens: number;
+    total_tokens: number;
+    avg_duration_ms: number;
+  }[];
+  by_tool: {
+    tool_name: string;
+    calls: number;
+    errors: number;
+    cost: number;
+    avg_duration_ms: number;
+  }[];
+  /** user_request_id → this conversation's part of that request's spend. */
+  share_by_request: Record<string, { cost: number; model_calls: number; total_tokens: number }>;
+  /** Conversations the same user requests also spent in (parallel agents with no parent link). */
+  siblings: CxRelatedConversationCost[];
+  /** Direct sub-agent conversations (parent_conversation_id = this). */
+  sub_agents: CxRelatedConversationCost[];
+};
+
 export type CxCostVerification = {
   user_request_total_cost: number;
   sum_of_request_costs: number;

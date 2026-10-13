@@ -97,6 +97,7 @@ export function SurfaceCandidatesDialog({
           name: c.name,
           client_name: c.client_name,
           // A surface registered here is a platform (code) surface; the platform owns it.
+          // org-fallback-deliberate: a code surface is platform-owned, so it is filed in the platform organization
           organization_id: SYSTEM_ORGANIZATION_ID,
           description: c.description,
           sort_order: c.sort_order,

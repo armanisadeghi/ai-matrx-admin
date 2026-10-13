@@ -25,10 +25,10 @@ import type {
   CxRequest,
   CxToolCall,
   CxCostVerification,
+  CxRelatedConversationCost,
 } from "@/features/cx-dashboard/types/cxDashboardTypes";
 import {
   ArrowLeft,
-  ExternalLink,
   Download,
   Zap,
   Wrench,
@@ -57,6 +57,7 @@ import { adminCostColumns } from "@/components/cost/adminCostColumns";
 
 type Detail = {
   user_request: CxUserRequest;
+  conversations: CxRelatedConversationCost[];
   requests: CxRequest[];
   tool_calls: CxToolCall[];
   cost_verification: CxCostVerification;
@@ -289,22 +290,34 @@ export function RequestDetailContent({ detail }: { detail: Detail }) {
           </Button>
         </div>
 
-        {/* Conversation link */}
-        <AppLink
-          href={`/administration/chat/cx-dashboard/conversations/${ur.conversation_id}`}
-          className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground p-2 rounded border border-border/50 bg-muted/20 transition-colors"
-           target="_blank"
-           rel="noopener noreferrer"
-         >
-          <span>Conversation:</span>
-          <span className="font-medium text-foreground">
-            {ur.conversation_title || "Untitled"}
-          </span>
-          <span className="font-mono">
-            {truncateId(ur.conversation_id, 12)}
-          </span>
-          <ExternalLink className="w-3 h-3 ml-auto" />
-        </AppLink>
+        {/* Every conversation this request ran in, with its part of the cost */}
+        <div className="rounded border border-border/50 bg-muted/20 p-2 text-xs">
+          <div className="mb-1 text-muted-foreground">
+            {detail.conversations.length === 1
+              ? "Conversation"
+              : `Ran in ${detail.conversations.length} conversations`}
+          </div>
+          {detail.conversations.length === 0 ? (
+            <span className="italic text-muted-foreground">No model calls recorded</span>
+          ) : (
+            <div className="space-y-0.5">
+              {detail.conversations.map((c) => (
+                <AppLink
+                  key={c.id}
+                  href={`/administration/chat/cx-dashboard/conversations/${c.id}`}
+                  className="flex items-center gap-3 rounded px-1 py-1 hover:bg-muted/50"
+                >
+                  <span className="min-w-0 flex-1 truncate font-medium text-foreground">
+                    {c.title || "Untitled"}
+                  </span>
+                  <span className="font-mono text-muted-foreground">{truncateId(c.id, 12)}</span>
+                  <span className="text-muted-foreground">{c.model_calls} calls</span>
+                  <span className="font-mono">{formatAdminCost(c.cost)}</span>
+                </AppLink>
+              ))}
+            </div>
+          )}
+        </div>
 
         {/* KPI summary */}
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-2">

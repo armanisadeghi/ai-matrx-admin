@@ -360,6 +360,7 @@ export function SurfacesContainer() {
           parse: (value) => parseCreateSurfacesValue(value, writeContext()),
           run: reloadAfter(async (plan: ReturnType<typeof parseCreateSurfacesValue>[number]) => {
             // A surface registered here is a platform (code) surface; the platform owns it.
+            // org-fallback-deliberate: a code surface is platform-owned, so it is filed in the platform organization
             const row = await createSurface({ ...plan, organization_id: SYSTEM_ORGANIZATION_ID });
             return { id: row.name, name: row.label ?? row.name };
           }),

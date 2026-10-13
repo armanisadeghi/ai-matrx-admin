@@ -139,6 +139,7 @@ export function NewSurfaceDialog({
         name: fullName,
         client_name: client,
         // A surface registered here is a platform (code) surface; the platform owns it.
+        // org-fallback-deliberate: a code surface is platform-owned, so it is filed in the platform organization
         organization_id: SYSTEM_ORGANIZATION_ID,
         description: description,
         sort_order: tierEntry.min + 50,

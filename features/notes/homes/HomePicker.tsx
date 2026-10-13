@@ -26,6 +26,7 @@ import { toast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 import { createScope } from "@/features/scopes/redux/thunks/scopeTreeMutations";
 import { selectNoteById } from "../redux/selectors";
+import { selectActiveOrganizationId } from "@/features/scopes/redux/selectors/active-context";
 import {
   homeLabels,
   homeMatchScore,
@@ -56,6 +57,7 @@ export function HomePickerList({
 }: HomePickerListProps) {
   const dispatch = useAppDispatch();
   const { homes, organizations, status } = useNoteHomes();
+  const activeOrganizationId = useAppSelector(selectActiveOrganizationId);
   const [query, setQuery] = useState("");
   const [creating, setCreating] = useState(false);
   const [newOrgId, setNewOrgId] = useState<string>(defaultOrganizationId ?? "");
@@ -79,7 +81,8 @@ export function HomePickerList({
     return homeMatchScore(search, home, labelFor(home));
   };
 
-  const orgId = newOrgId || organizations[0]?.id || "";
+  // A new home is a write: it goes where the note lives, else the active organization — never a guessed first membership.
+  const orgId = newOrgId || activeOrganizationId || "";
   const typeOptions = useMemo(() => {
     const org = organizations.find((o) => o.id === orgId);
     return (org?.scope_types ?? [])

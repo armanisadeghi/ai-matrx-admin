@@ -143,6 +143,7 @@ export async function PATCH(
       // thread (the event's pair_dm_with_email is off). A notice that cannot go never fails
       // the approval — the code is on screen for the admin to pass on.
       const notice = await notifyFromSql(adminSupabase, {
+        // org-fallback-deliberate: an access request belongs to the platform itself, never to a customer organization
         organizationId: SYSTEM_ORGANIZATION_ID,
         eventKey: "access_request.approved",
         recipientUserId: await userIdForEmail(adminSupabase, invitationRequest.email),
@@ -192,6 +193,7 @@ export async function PATCH(
 
       // Tell the requester through the notification spine (`access_request.rejected`).
       const notice = await notifyFromSql(adminSupabase, {
+        // org-fallback-deliberate: an access request belongs to the platform itself, never to a customer organization
         organizationId: SYSTEM_ORGANIZATION_ID,
         eventKey: "access_request.rejected",
         recipientUserId: await userIdForEmail(adminSupabase, invitationRequest.email),
