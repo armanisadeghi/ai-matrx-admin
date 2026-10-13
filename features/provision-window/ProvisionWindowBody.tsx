@@ -45,15 +45,15 @@ function ValueRow({ v, copied, copy }: { v: ProvisionValue; copied: string | nul
   return (
     // Two columns: the expand arrow in its own 16px margin, then label and value on ONE left edge.
     <div className="grid grid-cols-[1rem_minmax(0,1fr)] gap-x-1 border-b border-border/60 py-2" data-testid={`provision-value-${v.name}`}>
-      <div className="row-span-2 pt-px">
+      <div className="flex h-4 items-center">
         {v.present ? (
-          <button type="button" onClick={() => setOpen((o) => !o)} aria-expanded={open} aria-label={open ? `Collapse ${v.label}` : `Expand ${v.label}`} className="text-muted-foreground hover:text-foreground">
+          <button type="button" onClick={() => setOpen((o) => !o)} aria-expanded={open} aria-label={open ? `Collapse ${v.label}` : `Expand ${v.label}`} className="rounded-sm text-muted-foreground outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring">
             {open ? <ChevronDown className="size-3.5" /> : <ChevronRight className="size-3.5" />}
           </button>
         ) : null}
       </div>
-      <div className="flex min-w-0 items-center gap-1.5 text-xs">
-        <span className="truncate font-medium text-foreground">{v.label}</span>
+      <div className="flex h-4 min-w-0 items-center gap-1.5 text-[11px]">
+        <span className="truncate font-medium text-muted-foreground">{v.label}</span>
         <span title={help} aria-label={help} className="shrink-0 cursor-help text-muted-foreground/60 hover:text-muted-foreground">
           <Info className="size-3" />
         </span>
@@ -75,7 +75,7 @@ function ValueRow({ v, copied, copy }: { v: ProvisionValue; copied: string | nul
           </>
         ) : null}
       </div>
-      <div className="mt-0.5 min-w-0">
+      <div className={open ? "col-start-2 mt-1 min-w-0" : "col-start-2 mt-0.5 flex h-5 min-w-0 items-center"}>
         {!v.present ? (
           <span className="inline-flex items-center rounded border border-border px-1.5 text-[10px] font-medium leading-4 text-muted-foreground">
             Not provided
@@ -83,7 +83,7 @@ function ValueRow({ v, copied, copy }: { v: ProvisionValue; copied: string | nul
         ) : open ? (
           <JsonInspector data={v.value} />
         ) : (
-          <button type="button" onClick={() => setOpen(true)} className="block max-w-full truncate text-left text-[13px] text-foreground">
+          <button type="button" onClick={() => setOpen(true)} className="block max-w-full truncate rounded-sm text-left text-sm leading-5 text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring">
             {structured ? valueSummary(v.value) : text}
           </button>
         )}
