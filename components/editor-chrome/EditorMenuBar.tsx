@@ -8,7 +8,7 @@
  * mounted by the host through `renderFileMenu`.
  */
 
-import { forwardRef, useRef, useState, type ReactElement, type ReactNode } from "react";
+import { forwardRef, useEffect, useRef, useState, type ReactElement, type ReactNode } from "react";
 import { Check, MoreVertical } from "lucide-react";
 
 import {
@@ -29,18 +29,28 @@ import { useFitCount } from "./useFitCount";
 /**
  * Google returns the caret to the document after a menu or toolbar choice.
  * Radix would focus the trigger instead (and Univer would stop hearing keys), so
- * the element that had focus before a menu opened gets it back on close.
+ * the element that had focus before a menu opened gets it back on close — but only
+ * once NO menu is open. Moving from one menu to the next (File → Edit by pointer or
+ * arrow key) closes the first while the second opens; focusing the document then
+ * would read as a click outside the new menu and close it at once.
  */
 let focusBeforeMenu: HTMLElement | null = null;
 export function rememberEditorFocus() {
   const el = document.activeElement;
-  if (el instanceof HTMLElement && !el.closest("[data-editor-menubar],[data-editor-toolbar],[role=menu]")) focusBeforeMenu = el;
+  if (el instanceof HTMLElement && !el.closest("[data-editor-menubar],[data-editor-toolbar],[data-editor-ribbon],[role=menu]")) focusBeforeMenu = el;
+}
+/** True while any dropdown (or a menu bar trigger) is open. */
+export function anyEditorMenuOpen(): boolean {
+  return !!document.querySelector('[role=menu][data-state="open"],[data-editor-menubar-trigger][data-state="open"]');
 }
 export function restoreEditorFocus(e: Event) {
-  const el = focusBeforeMenu;
-  if (!el || !el.isConnected) return;
   e.preventDefault();
-  el.focus({ preventScroll: true });
+  // Radix fires this after the next menu (if any) has mounted; wait one frame to be sure.
+  requestAnimationFrame(() => {
+    const el = focusBeforeMenu;
+    if (!el || !el.isConnected || anyEditorMenuOpen()) return;
+    el.focus({ preventScroll: true });
+  });
 }
 
 /** The text trigger of one menu (also handed to the File menu host). */
@@ -114,6 +124,33 @@ export function useMenuBarState() {
   const hoverSwitch = (id: string) => () => {
     if (openId && openId !== id) setOpenId(id);
   };
+  // Google: ← / → in an open menu (not on a submenu row) moves to the neighbouring menu.
+  useEffect(() => {
+    if (!openId) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== "ArrowRight" && e.key !== "ArrowLeft") return;
+      const target = e.target instanceof HTMLElement ? e.target : null;
+      const menu = target?.closest('[role="menu"]');
+      if (!target || !menu) return;
+      // Only the top-level menu of a menu bar trigger travels; a submenu handles its own arrows.
+      const owner = document.getElementById(menu.getAttribute("aria-labelledby") ?? "");
+      if (!owner?.hasAttribute("data-editor-menubar-trigger")) return;
+      if (e.key === "ArrowRight" && target.getAttribute("aria-haspopup") === "menu") return;
+      const bar = owner.closest("[data-editor-menubar]");
+      if (!bar) return;
+      const order = [...bar.querySelectorAll<HTMLElement>("[data-editor-menubar-trigger][data-editor-menu]")]
+        .filter((t) => t.dataset.editorMenu !== "more" && !t.closest("[data-fit-item].hidden"))
+        .map((t) => t.dataset.editorMenu!);
+      const at = order.indexOf(openId);
+      if (at < 0 || order.length < 2) return;
+      e.preventDefault();
+      e.stopPropagation();
+      const step = e.key === "ArrowRight" ? 1 : -1;
+      setOpenId(order[(at + step + order.length) % order.length]!);
+    };
+    window.addEventListener("keydown", onKey, true);
+    return () => window.removeEventListener("keydown", onKey, true);
+  }, [openId]);
   /** Props for the File menu host: the "File" trigger and its open state. */
   const fileMenuProps = (): { trigger: ReactElement; open: boolean; onOpenChange: (open: boolean) => void } => ({
     trigger: (
