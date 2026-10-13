@@ -1,7 +1,7 @@
 {
   "version": 1,
   "app": "matrx-frontend",
-  "routeCount": 1422,
+  "routeCount": 1423,
   "routes": [
     {
       "pattern": "/",
@@ -1917,6 +1917,11 @@
       "pattern": "/applets/build/[id]",
       "status": "live",
       "source": "app/(core)/applets/build/[id]/page.tsx"
+    },
+    {
+      "pattern": "/applets/build/layout",
+      "status": "live",
+      "source": "app/(core)/applets/build/layout/page.tsx"
     },
     {
       "pattern": "/applets/manage/[id]",
