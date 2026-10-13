@@ -81,8 +81,12 @@ import { useComputeTargets } from "@/hooks/sandbox/use-compute-targets";
 import { useSandboxInstances } from "@/hooks/sandbox/use-sandbox";
 import { useVerifiedSandboxBinding } from "@/hooks/sandbox/use-verified-binding";
 import { openSandboxGate } from "@/components/dialogs/sandbox-gate/SandboxGateHost";
-import { CloneRepoDialog } from "@/features/code/views/sandboxes/CloneRepoDialog";
-import { SandboxDiagnosticsPanel } from "@/features/code/views/sandboxes/SandboxDiagnosticsPanel";
+import { lazySlotsFrom, SlotLoadingPanel } from "@/providers/chatSlotLazy";
+
+// Sandbox dialogs/panels load on first use through ONE edge — see chatContextSourcesImpl.ts.
+const lazyContextSlot = lazySlotsFrom(() => import("@/providers/chatContextSourcesImpl"));
+const CloneRepoDialog = lazyContextSlot("CloneRepoDialog");
+const SandboxDiagnosticsPanel = lazyContextSlot("SandboxDiagnosticsPanel", SlotLoadingPanel);
 
 /** The post-send scope union stays out of the send path's bundle until a send needs it. */
 const syncConversationScopes =
