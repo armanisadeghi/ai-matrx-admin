@@ -153,6 +153,23 @@ export const newsResultKindSchema: KindSchema = {
   },
 };
 
+export const imageResultKindSchema: KindSchema = {
+  kind: "image_result",
+  fields: {
+    source: { type: "string", required: true },
+    position: { type: "number", required: true },
+    title: { type: "string", required: true },
+    image_url: { type: "string", required: true, description: "The full-size image." },
+    thumbnail: { type: "string", nullable: true },
+    page_url: { type: "string", nullable: true, description: "The page hosting the image." },
+    site_name: { type: "string", nullable: true },
+    site_logo: { type: "string", nullable: true },
+    is_product: { type: "boolean", nullable: true },
+    width: { type: "number", nullable: true },
+    height: { type: "number", nullable: true },
+  },
+};
+
 export const videoResultKindSchema: KindSchema = {
   kind: "video_result",
   fields: {
@@ -273,10 +290,16 @@ export const webSearchResultsKindSchema: KindSchema = {
     more_available: { type: "boolean" },
     is_navigational: { type: "boolean", nullable: true },
     is_news_breaking: { type: "boolean", nullable: true },
+    vertical: {
+      type: "string",
+      nullable: true,
+      description: "Result type asked for: 'web' | 'news' | 'images' | 'videos' | 'places'.",
+    },
     inferred_location: { type: "object", kind: "postal_address", nullable: true },
     results: { type: "array", itemKinds: ["web_result"] },
     news: { type: "array", itemKinds: ["news_result"] },
     videos: { type: "array", itemKinds: ["video_result"] },
+    images: { type: "array", itemKinds: ["image_result"] },
     faqs: { type: "array", itemKinds: ["faq_item"] },
     discussions: { type: "array", itemKinds: ["discussion_result"] },
     places: { type: "array", itemKinds: ["local_place"] },
@@ -322,7 +345,8 @@ function text(value: unknown): string | null {
 
 function resultLine(item: Record<string, unknown>): string | null {
   const title = text(item.title) ?? text(item.name);
-  const url = text(item.url) ?? text(item.website_url);
+  const url =
+    text(item.url) ?? text(item.website_url) ?? text(item.page_url) ?? text(item.image_url);
   if (!title) return null;
   const head = url ? `[${title}](${url})` : `**${title}**`;
   const snippet = text(item.snippet) ?? text(item.description);
@@ -363,6 +387,7 @@ export function webSearchResultsMarkdownFromValue(
   parts.push(sectionList("Results", value.results));
   parts.push(sectionList("News", value.news));
   parts.push(sectionList("Videos", value.videos));
+  parts.push(sectionList("Images", value.images));
   parts.push(sectionList("Discussions", value.discussions));
   parts.push(sectionList("Places", value.places));
 
@@ -401,6 +426,7 @@ export function webSearchResultsMarkdownFromValue(
 const ITEM_SCHEMAS: KindSchema[] = [
   webResultKindSchema,
   newsResultKindSchema,
+  imageResultKindSchema,
   videoResultKindSchema,
   discussionResultKindSchema,
   localPlaceKindSchema,

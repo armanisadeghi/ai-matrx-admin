@@ -170,6 +170,15 @@ same query through the `attempt` nonce.
 
 ## Change log
 
+- `2026-10-13` — `runKindSearch` takes optional `options` (vertical, country,
+  language, safe_search, time_range, page, location, device, ai_answer,
+  include_raw; omitted = server default) and the outcome now carries `raw`,
+  `ignoredOptions`, `request`, `elapsedMs` and the full translation (unknown +
+  dropped). `SearchProvider` is `"brave" | "google"`; this page still sends
+  Brave web only. Second consumer: the Search Lab at `/scraper/search`, which
+  also retired the `/demos/search-kinds` proof page. New item kind
+  `image_result` renders in an Images band (`image-blocks.tsx`).
+
 - `2026-09-11` — Kept both compact search controls at the 44px mobile touch
   floor, named the icon-only submit button for assistive technology, and kept
   URL-driven draft synchronization within render instead of an effect.
@@ -178,7 +187,7 @@ same query through the `attempt` nonce.
   feature's canonical kind renderer. No second result-card or selected-result
   renderer remains in the scraper feature.
 - `2026-08-23` — Claude Opus 5: Built the feature. Promoted the Stage B demo
-  (`/demos/search-kinds`, left in place as the proof artifact) to the public
+  (`/demos/search-kinds`, retired 2026-10-13 into the Search Lab at `/scraper/search`) to the public
   `/search` surface: guest landing, `?q=` URL contract, shell-header box,
   shaped waiting state, honest empty/error states, `matrx-user/search`
   registered. Access model: signed-in users, Brave only, knob-driven per-user

@@ -37,6 +37,8 @@ import {
   RESULT_LIMIT_MIN,
   SCRAPE_MODES,
   SCRAPE_MODE_ENUM_TEXT,
+  SEARCH_LAB_ENGINE_VALUES,
+  SEARCH_LAB_VERTICAL_VALUES,
 } from "@/features/scraper/scrape-command";
 import { mergeBaselineValues, pickBaseline } from "@ai-matrx/chat/surfaces/manifests/_baseline.manifest";
 import { MATRX_WEB_APP_EXECUTOR } from "@ai-matrx/chat/surfaces/executor";
@@ -118,6 +120,28 @@ const surfaceSpecific: SurfaceValue[] = [
     alwaysAvailable: false,
     typicalCharCount: 3,
     sortOrder: 309,
+    group: "target",
+  },
+  {
+    name: "search_engine",
+    label: "Search engine",
+    description:
+      "The Search Lab engine: \"brave\", \"google\", or \"compare\" (both side by side). Only on the /scraper/search route.",
+    valueType: "string",
+    alwaysAvailable: false,
+    typicalCharCount: 7,
+    sortOrder: 310,
+    group: "target",
+  },
+  {
+    name: "search_vertical",
+    label: "Search result type",
+    description:
+      "The Search Lab result type: web, news, images, videos, or places. Only on the /scraper/search route.",
+    valueType: "string",
+    alwaysAvailable: false,
+    typicalCharCount: 6,
+    sortOrder: 311,
     group: "target",
   },
   {
@@ -444,6 +468,30 @@ const writeTargets: SurfaceWriteTarget[] = [
     sortOrder: 120,
   },
   {
+    name: "search_engine",
+    label: "Search engine",
+    description:
+      `Stages which engine the Search Lab (/scraper/search) uses: ${SEARCH_LAB_ENGINE_VALUES.map((v) => `"${v}"`).join(" | ")} — "compare" runs Brave and Google side by side. Anything else is refused. A Google search spends a shared monthly allowance, so this only stages the choice: the user still presses Search. Read back from search_engine. Refused while is_scraping is true.`,
+    valueType: "string",
+    updatesValue: "search_engine",
+    mode: "draft",
+    applyPolicy: "ask",
+    group: "target",
+    sortOrder: 125,
+  },
+  {
+    name: "search_vertical",
+    label: "Search result type",
+    description:
+      `Stages the Search Lab (/scraper/search) result type: ${SEARCH_LAB_VERTICAL_VALUES.map((v) => `"${v}"`).join(" | ")}. Anything else is refused. Staged only: the user still presses Search. Read back from search_vertical. Refused while is_scraping is true.`,
+    valueType: "string",
+    updatesValue: "search_vertical",
+    mode: "draft",
+    applyPolicy: "ask",
+    group: "target",
+    sortOrder: 126,
+  },
+  {
     name: "selected_result_page",
     label: "Selected scraped page",
     description:
@@ -487,7 +535,7 @@ You are on the Web scraper surface: the user scrapes live web pages (single URL,
 The primary payload is the SELECTED scraped page: scraped_url / scraped_title identify it, scraped_content_text (also the baseline content) and scraped_content_markdown carry its body, scraped_metadata and scraped_links carry its structure. results_overview lists every page scraped this session; search_hits lists web-search results not yet scraped.
 Everything here is OBSERVED evidence pulled from live pages — never invent content that isn't in the scraped body. Check scrape_success / scrape_failure_reason before treating the content as valid; an empty body means the page came back blank, not that the site has no content.
 target_url and search_keyword are the user's live inputs — what they intend to scrape next, distinct from what has already been scraped.
-You can STAGE the next run for the user but never start it: scrape_command sets the mode and its target, scrape_page_limit the deep-mode page budget, scrape_result_limit the web-search hit budget. Staging only fills the form — the user presses Scrape, because a run spends real time against someone else's server.
+You can STAGE the next run for the user but never start it: scrape_command sets the mode and its target, scrape_page_limit the deep-mode page budget, scrape_result_limit the web-search hit budget, and on /scraper/search search_engine (brave | google | compare) and search_vertical (web | news | images | videos | places). Staging only fills the form — the user presses Scrape, because a run spends real time against someone else's server.
 selected_result_page and selected_search_hit put something ALREADY fetched on screen; neither fetches anything. When you have judged which search hit is worth scraping, select it and let the user press the button.
 The scraped_* values are fetched evidence and are NOT writable — a page's body, title, links and metadata are what a real server returned, and this pane feeds Knowledge ingestion directly, so never try to "correct" them.
 </surface_intro>`,
@@ -532,6 +580,8 @@ export function createScraperScope(values: {
   search_keyword?: string;
   max_pages?: number;
   max_results?: number;
+  search_engine?: string;
+  search_vertical?: string;
   scraped_url?: string;
   scraped_title?: string;
   scraped_content_text?: string;

@@ -5,7 +5,8 @@
 // The engine is the Search Kinds pipeline: a real provider search on aidream,
 // translated into the provider-neutral `web_search_results` kind family, and
 // rendered ENTIRELY through the registered kind components. That rendering is
-// reused verbatim from the Stage B proof at /demos/search-kinds — this route
+// reused verbatim from the Stage B proof (since retired into the Search Lab
+// at /scraper/search) — this route
 // adds the search box, the URL contract, and the shell chrome around it.
 //
 // `?q=` is the state. The server reads it here so the first paint already

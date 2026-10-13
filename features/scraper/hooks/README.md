@@ -20,4 +20,8 @@ See `features/agents/migration/MIGRATE-recipe-to-agent-execution.md` for the mig
 
 ## `useScraperKeywordSearchForm`
 
-Form state for keyword search mode (`/scraper/search`).
+Keyword search for the Search Lab (`/scraper/search`) and the floating
+workspace's search mode. Runs on `runKindSearch` (`POST /search-kinds/search`);
+engine `brave | google | compare`, result type, options, per-engine `runs`
+(kind + request + raw + ignored options + elapsed ms). `flatResults` is derived
+from the kind. A search only runs on `handleSearch` — never on a keystroke.

@@ -380,7 +380,8 @@ Done: 0 extract+tests · 1 registry/session/parser upgrades · 2 accumulator sha
   (`scripts/shape/generate-kind-types.ts`) is the registry→TS generator**
   (SDK wishlist #2) — see the 2026-08-23 ONE-TYPE LAW entry: it now covers
   EVERY active kind in one artifact. Live
-  demo: `/demos/search-kinds` (real aidream `POST /api/search-kinds/search`).
+  surface: `/scraper/search` — the Search Lab (the `/demos/search-kinds` demo
+  was retired into it 2026-10-13).
 - 2026-08-20 — **The 7 `json_root_key` surfaces are LIVE, and ONE place decides
   them.** `content_ir.kind_surface` has always declared `quiz_title→quiz_set`,
   `presentation→presentation_deck`, `decision_tree`, `comparison→comparison_set`,

@@ -25,6 +25,7 @@ import {
   MessagesSquare,
   MapPin,
   ArrowRight,
+  Images,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -62,6 +63,11 @@ export default function WebSearchResultsBlock({
   const results = renderable(records(value.results), "title");
   const news = renderable(records(value.news), "title");
   const videos = renderable(records(value.videos), "title");
+  // An image hit may arrive untitled; its identity is the picture itself.
+  const images = records(value.images).filter(
+    (img) => text(img.image_url) !== null || text(img.thumbnail) !== null,
+  );
+  const imagesFirst = text(value.vertical) === "images";
   const faqs = renderable(records(value.faqs), "question");
   const discussions = renderable(records(value.discussions), "title");
   const places = renderable(records(value.places), "name");
@@ -70,7 +76,7 @@ export default function WebSearchResultsBlock({
   const related = strings(value.related_searches);
 
   return (
-    <div className={cn("my-2 space-y-4", className)}>
+    <div className={cn("@container my-2 space-y-4", className)}>
       {/* Collection header */}
       <div className="flex flex-wrap items-center gap-2">
         <span className="flex h-8 w-8 items-center justify-center rounded-full bg-muted text-muted-foreground">
@@ -100,6 +106,9 @@ export default function WebSearchResultsBlock({
         </div>
       </div>
 
+      {/* An image search leads with its grid. */}
+      {imagesFirst && images.length > 0 && <ImagesBand images={images} />}
+
       {/* AI answer leads, Perplexity-style. */}
       {aiAnswer && <SearchKindNested value={aiAnswer} />}
 
@@ -110,7 +119,7 @@ export default function WebSearchResultsBlock({
       {places.length > 0 && (
         <div>
           <SectionHeading icon={MapPin} label="Places" count={places.length} />
-          <div className="grid gap-2 sm:grid-cols-2">
+          <div className="grid gap-2 @xl:grid-cols-2">
             {places.map((place, i) => (
               <SearchKindNested key={i} value={place} />
             ))}
@@ -127,11 +136,13 @@ export default function WebSearchResultsBlock({
         </div>
       )}
 
+      {!imagesFirst && images.length > 0 && <ImagesBand images={images} />}
+
       {/* News band */}
       {news.length > 0 && (
         <div>
           <SectionHeading icon={Newspaper} label="News" count={news.length} />
-          <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-2 @lg:grid-cols-2 @3xl:grid-cols-3">
             {news.map((item, i) => (
               <SearchKindNested key={i} value={item} />
             ))}
@@ -143,7 +154,7 @@ export default function WebSearchResultsBlock({
       {videos.length > 0 && (
         <div>
           <SectionHeading icon={Film} label="Videos" count={videos.length} />
-          <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-2 @lg:grid-cols-2 @3xl:grid-cols-3">
             {videos.map((video, i) => (
               <SearchKindNested key={i} value={video} />
             ))}
@@ -188,6 +199,23 @@ export default function WebSearchResultsBlock({
           ))}
         </div>
       )}
+    </div>
+  );
+}
+
+/**
+ * Images band — fixed-aspect cards (the box is sized before the picture
+ * loads, so the grid never shifts), denser columns as the width grows.
+ */
+function ImagesBand({ images }: { images: Record<string, unknown>[] }) {
+  return (
+    <div>
+      <SectionHeading icon={Images} label="Images" count={images.length} />
+      <div className="grid grid-cols-2 gap-2 @lg:grid-cols-3 @3xl:grid-cols-4">
+        {images.map((image, i) => (
+          <SearchKindNested key={i} value={image} />
+        ))}
+      </div>
     </div>
   );
 }

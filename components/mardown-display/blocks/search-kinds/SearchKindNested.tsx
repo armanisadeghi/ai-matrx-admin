@@ -32,6 +32,7 @@ import {
   VideoResultBlock,
   WebResultBlock,
 } from "./item-blocks";
+import { ImageResultBlock } from "./image-blocks";
 import {
   AiAnswerKindBlock,
   EntityCardBlock,
@@ -54,6 +55,7 @@ const CANONICAL_COMPONENTS: Record<
 > = {
   web_result: WebResultBlock,
   news_result: NewsResultBlock,
+  image_result: ImageResultBlock,
   video_result: VideoResultBlock,
   faq_item: FaqItemBlock,
   discussion_result: DiscussionResultBlock,

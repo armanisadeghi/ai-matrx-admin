@@ -40,8 +40,16 @@ import {
   SCRAPE_MODE_BY_WORKSPACE_MODE,
   SCRAPE_MODE_ENUM_TEXT,
   toScrapeMode,
+  SEARCH_LAB_ENGINE_VALUES,
+  SEARCH_LAB_VERTICAL_VALUES,
+  type SearchLabEngineValue,
+  type SearchLabVerticalValue,
   type WorkspaceMode,
 } from "@/features/scraper/scrape-command";
+function oneOf<T extends string>(list: readonly T[], value: unknown): value is T {
+  return typeof value === "string" && (list as readonly string[]).includes(value);
+}
+
 // THE URL rule the workspace's own Scrape button uses — an agent must not be
 // able to stage a URL the user's own click would have rejected.
 import { normalizeUrl } from "@/features/scraper/utils/scraper-floating-helpers";
@@ -66,6 +74,10 @@ export interface ScraperWriteMount {
   setKeyword?: (keyword: string, mode: WorkspaceMode) => void;
   setMaxPages?: (value: number) => void;
   setMaxResults?: (value: number) => void;
+  /** Search Lab engine (only `/scraper/search` has it). */
+  setSearchEngine?: (engine: SearchLabEngineValue) => void;
+  /** Search Lab result type (only `/scraper/search` has it). */
+  setSearchVertical?: (vertical: SearchLabVerticalValue) => void;
   /** Open an already-scraped page (index into `results_overview`). */
   selectResultPage?: (index: number) => void;
   /** Number of scraped pages this session holds. */
@@ -209,6 +221,29 @@ export function buildScraperWriteHandlers(
           `scrape_result_limit expects an integer from ${RESULT_LIMIT_MIN} to ${RESULT_LIMIT_MAX}.`,
         );
       mount.setMaxResults!(value);
+    };
+  }
+
+  // ── Search Lab: engine + result type (staged; the user presses Search) ──
+  if (mount.setSearchEngine) {
+    handlers.search_engine = (value: unknown) => {
+      if (isScraping) inFlight("search_engine");
+      if (!oneOf(SEARCH_LAB_ENGINE_VALUES, value))
+        throw new Error(
+          `search_engine expects one of: ${SEARCH_LAB_ENGINE_VALUES.join(" | ")} ("compare" runs both).`,
+        );
+      mount.setSearchEngine!(value);
+    };
+  }
+
+  if (mount.setSearchVertical) {
+    handlers.search_vertical = (value: unknown) => {
+      if (isScraping) inFlight("search_vertical");
+      if (!oneOf(SEARCH_LAB_VERTICAL_VALUES, value))
+        throw new Error(
+          `search_vertical expects one of: ${SEARCH_LAB_VERTICAL_VALUES.join(" | ")}.`,
+        );
+      mount.setSearchVertical!(value);
     };
   }
 

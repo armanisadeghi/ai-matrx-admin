@@ -7,7 +7,7 @@
 // Verify:      pnpm check:kind-types   (CI-blocking freshness gate)
 // Twin guard:  pnpm check:kind-type-twins
 //
-// 608 active kinds. THESE ARE THE ONLY KIND PAYLOAD TYPES IN THE REPO.
+// 611 active kinds. THESE ARE THE ONLY KIND PAYLOAD TYPES IN THE REPO.
 // A hand-written interface mirroring a registered kind is a defect — derive
 // (Pick/Omit) from the type here instead, and never re-declare it.
 //
@@ -21,7 +21,7 @@
 // ─────────────────────────────────────────────────────────────────────────
 
 /** Structural fingerprint of the registry rows this artifact was generated from. */
-export const KIND_REGISTRY_FINGERPRINT = "4366b9ed113b";
+export const KIND_REGISTRY_FINGERPRINT = "981d263643a1";
 
 // ─────────────────────────────────────────────────────────────────────────
 // Shared nested structures. Deduped by structure across the registry — an
@@ -9880,6 +9880,73 @@ export interface BranchResult {
 }
 
 /**
+ * Kind `brand_evidence` (registry v3).
+ */
+export interface BrandEvidence {
+  title?: string;
+  __kind: "brand_evidence";
+  brand_evidence: ({
+    key?: string;
+    url?: string | null;
+    field: string;
+    label?: string | null;
+    value?: string | null;
+    __kind: "brand_evidence_item";
+    handle?: string | null;
+    source?: {
+    url?: string | null;
+    kind?: string | null;
+    node?: string | null;
+    where?: string | null;
+  } | null;
+    engines?: string[];
+    platform?: string | null;
+    verified?: boolean | null;
+    certainty?: string | null;
+    followers?: number | null;
+    image_url?: string | null;
+    confidence?: number | null;
+    profile_id?: string | null;
+    certainty_reasons?: string[];
+  })[];
+}
+
+/**
+ * Kind `brand_evidence_findings` (registry v2).
+ */
+export interface BrandEvidenceFindings {
+  __kind: "brand_evidence_findings";
+  brand_evidence: ({
+    key?: string;
+    url?: null | string;
+    field?: string;
+    label?: string | number | boolean | Record<string, unknown> | unknown[] | null;
+    value?: string;
+    __kind: "brand_evidence_item";
+    handle?: null | string;
+    source?: {
+    url?: string;
+    kind?: string;
+    node?: string;
+    where?: string;
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+  };
+    engines?: unknown[];
+    platform?: null | string;
+    verified?: string | number | boolean | Record<string, unknown> | unknown[] | null;
+    certainty?: string | number | boolean | Record<string, unknown> | unknown[] | null;
+    followers?: string | number | boolean | Record<string, unknown> | unknown[] | null;
+    image_url?: string | null;
+    confidence?: number;
+    profile_id?: string | number | boolean | Record<string, unknown> | unknown[] | null;
+    certainty_reasons?: unknown[];
+  })[];
+}
+
+/**
  * Output of ``seo.prospecting.broken_links.preview`` — mirrors ``BrokenLinkProspectingPreview``.
  *  *
  *  * Kind `broken_link_prospecting_preview` (registry v6).
@@ -13078,6 +13145,41 @@ export interface ImageQcVerdict {
   confidence: number;
   failure_modes?: string[];
   suggested_retry_prompt?: string | null;
+}
+
+/**
+ * One hit from an image search — provider-neutral (Brave images, Google
+ * Images). ADDITIVE 2026-10-13 (Search Lab): the family had no image item, so
+ * image verticals had nowhere to land but the provider-named
+ * `google_image_search_results` a workflow node still emits.
+ *  *
+ *  * Kind `image_result` (registry v2).
+ */
+export interface ImageResult {
+  title: string;
+  width?: number | null;
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "image_result";
+  height?: number | null;
+  source: string;
+  /**
+   * The page the image appears on.
+   */
+  page_url?: string | null;
+  position: number;
+  /**
+   * The ORIGINAL full-size image.
+   */
+  image_url: string;
+  site_logo?: string | null;
+  site_name?: string | null;
+  /**
+   * A provider-hosted preview.
+   */
+  thumbnail?: string | null;
+  is_product?: boolean | null;
 }
 
 /**
@@ -27020,6 +27122,8 @@ export type GeneratedKindSlug =
   | "blog_post_outline"
   | "boolean"
   | "branch_result"
+  | "brand_evidence"
+  | "brand_evidence_findings"
   | "broken_link_prospecting_preview"
   | "broken_link_prospecting_report"
   | "bulk_result"
@@ -27138,6 +27242,7 @@ export type GeneratedKindSlug =
   | "image_prompts_result"
   | "image_qc_result"
   | "image_qc_verdict"
+  | "image_result"
   | "ingest_source_request"
   | "ingested_sources"
   | "instagram_concept_remix"
@@ -27631,6 +27736,8 @@ export interface KindPayloadBySlug {
   "blog_post_outline": BlogPostOutline;
   "boolean": BooleanKind;
   "branch_result": BranchResult;
+  "brand_evidence": BrandEvidence;
+  "brand_evidence_findings": BrandEvidenceFindings;
   "broken_link_prospecting_preview": BrokenLinkProspectingPreview;
   "broken_link_prospecting_report": BrokenLinkProspectingReport;
   "bulk_result": BulkResult;
@@ -27749,6 +27856,7 @@ export interface KindPayloadBySlug {
   "image_prompts_result": ImagePromptsResult;
   "image_qc_result": ImageQcResult;
   "image_qc_verdict": ImageQcVerdict;
+  "image_result": ImageResult;
   "ingest_source_request": IngestSourceRequest;
   "ingested_sources": IngestedSources;
   "instagram_concept_remix": InstagramConceptRemix;
@@ -28246,6 +28354,8 @@ export const GENERATED_KIND_SLUGS: readonly GeneratedKindSlug[] = [
   "blog_post_outline",
   "boolean",
   "branch_result",
+  "brand_evidence",
+  "brand_evidence_findings",
   "broken_link_prospecting_preview",
   "broken_link_prospecting_report",
   "bulk_result",
@@ -28364,6 +28474,7 @@ export const GENERATED_KIND_SLUGS: readonly GeneratedKindSlug[] = [
   "image_prompts_result",
   "image_qc_result",
   "image_qc_verdict",
+  "image_result",
   "ingest_source_request",
   "ingested_sources",
   "instagram_concept_remix",

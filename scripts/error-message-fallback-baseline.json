@@ -75,7 +75,6 @@
   "app/(dev)/demos/scopes/context-lab/page.dev.tsx": 1,
   "app/(dev)/demos/scopes/context-lab/sharp/engine.ts": 2,
   "app/(dev)/demos/scraper/search-and-scrape/page.dev.tsx": 1,
-  "app/(dev)/demos/search-kinds/page.dev.tsx": 1,
   "app/(dev)/demos/table-kinds/page.dev.tsx": 2,
   "app/(dev)/demos/tests/dynamic-gateway-concept/components/TestInterface.tsx": 2,
   "app/(dev)/demos/tests/extension-bridge/AppendMessagePanel.tsx": 1,

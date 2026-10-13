@@ -17,129 +17,44 @@ import { cn } from "@/lib/utils";
 import { getDomain } from "@/features/scraper/utils/scraper-floating-helpers";
 import KindInstanceRender from "@/features/content-ir/studio/components/KindInstanceRender";
 import { SearchResultsSkeleton } from "@/features/search/components/SearchResultsSkeleton";
-import { scraperSearchItemsToKindValue } from "@/features/scraper/utils/search-kind-adapter";
+import { SearchLabBody } from "@/features/scraper/parts/search-lab/SearchLab";
 
+/** The full-page Search Lab (`/scraper/search`). */
 export function ScraperKeywordSearchPageBody({
   form,
 }: {
   form: UseScraperKeywordSearchFormReturn;
 }) {
-  const {
-    keywords,
-    setKeywords,
-    maxResults,
-    setMaxResults,
-    flatResults,
-    isLoading,
-    hasError,
-    error,
-    errorDiagnostics,
-    statusMessage,
-    handleSearch,
-    handleKeyDown,
-    handleClear,
-  } = form;
-
-  return (
-    <>
-      <div className="flex-shrink-0 px-3 py-2 border-b border-border/50">
-        <div className="max-w-5xl mx-auto flex gap-2 items-end flex-wrap">
-          <div className="flex-1 min-w-[200px]">
-            <Label
-              htmlFor="keywords"
-              className="text-xs text-muted-foreground mb-1 block"
-            >
-              Search keywords
-            </Label>
-            <ProInput
-              id="keywords"
-              enableCleanup={false}
-              placeholder="Enter keywords..."
-              value={keywords}
-              onChange={(e) => setKeywords(e.target.value)}
-              onKeyDown={handleKeyDown}
-              disabled={isLoading}
-              wrapperClassName="flex-1"
-              className="h-8 text-sm"
-            />
-          </div>
-          <div className="w-24">
-            <Label
-              htmlFor="maxResults"
-              className="text-xs text-muted-foreground mb-1 block"
-            >
-              Max results
-            </Label>
-            <Input
-              id="maxResults"
-              type="number"
-              min={RESULT_LIMIT_MIN}
-              max={RESULT_LIMIT_MAX}
-              value={maxResults}
-              onChange={(e) => setMaxResults(e.target.value)}
-              disabled={isLoading}
-            />
-          </div>
-          {flatResults.length > 0 && (
-            <Button
-              icon={<X />}
-              type="button"
-              onClick={handleClear}
-              variant="outline"
-            >
-              Clear
-            </Button>
-          )}
-          <Button
-            icon={isLoading ? (
-              <Loader2 className="animate-spin" />
-            ) : (
-              <Search />
-            )}
-            variant="primary"
-            type="button"
-            onClick={() => void handleSearch()}
-            disabled={!keywords.trim() || isLoading}
-          >
-            {isLoading ? (statusMessage ?? "Searching...") : "Search"}
-          </Button>
-        </div>
-        {hasError && (
-          <Alert variant="destructive" className="mt-2 max-w-5xl mx-auto py-2">
-            <AlertDescription className="text-xs">
-              {error}
-              <ScraperHookErrorDetails diagnostics={errorDiagnostics} />
-            </AlertDescription>
-          </Alert>
-        )}
-      </div>
-
-      <div className="flex-1 overflow-auto p-4">
-        <div className="max-w-5xl mx-auto">
-          <ScraperKeywordSearchResults form={form} />
-        </div>
-      </div>
-    </>
-  );
+  return <SearchLabBody form={form} />;
 }
 
+/**
+ * The floating workspace's results pane: every engine's kind, rendered by the
+ * canonical `web_search_results` component.
+ */
 export function ScraperKeywordSearchResults({
   form,
 }: {
   form: UseScraperKeywordSearchFormReturn;
 }) {
-  const { keywords, flatResults, isLoading, hasError } = form;
+  const { keywords, runs, isLoading, hasError } = form;
+  const outcomes = runs.flatMap((run) => (run.outcome ? [run.outcome] : []));
 
-  if (isLoading && flatResults.length === 0) {
+  if (isLoading && outcomes.length === 0) {
     return <SearchResultsSkeleton query={keywords.trim()} />;
   }
 
-  if (flatResults.length > 0) {
+  if (outcomes.length > 0) {
     return (
-      <KindInstanceRender
-        kind="web_search_results"
-        value={scraperSearchItemsToKindValue(keywords, flatResults)}
-      />
+      <div className="space-y-6">
+        {outcomes.map((outcome, i) => (
+          <KindInstanceRender
+            key={i}
+            kind="web_search_results"
+            value={outcome.result}
+          />
+        ))}
+      </div>
     );
   }
 

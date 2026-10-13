@@ -135,6 +135,10 @@ export interface BuildScraperContextDataArgs {
   maxPages?: number;
   /** Max hits configured for web-search mode (the "Max" input). */
   maxResults?: number;
+  /** Search Lab engine: "brave" | "google" | "compare" (both). */
+  searchEngine?: string;
+  /** Search Lab result type: web | news | images | videos | places. */
+  searchVertical?: string;
   /** Every scraped page in this session's sidebar list. */
   results?: ScraperResult[];
   /** Zero-based index of `selected` within `results`. */
@@ -171,6 +175,8 @@ export function buildScraperContextData(
     searchKeyword,
     maxPages,
     maxResults,
+    searchEngine,
+    searchVertical,
     results = [],
     selectedIndex,
     searchHits = [],
@@ -194,6 +200,8 @@ export function buildScraperContextData(
     search_keyword: searchKeyword?.trim() || undefined,
     max_pages: maxPages || undefined,
     max_results: maxResults || undefined,
+    search_engine: searchEngine || undefined,
+    search_vertical: searchVertical || undefined,
     search_hits: hitEntries.length > 0 ? hitEntries : undefined,
     selected_hit_index:
       hitEntries.length > 0 && typeof selectedHitIndex === "number"

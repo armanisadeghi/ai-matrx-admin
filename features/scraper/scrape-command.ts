@@ -164,3 +164,16 @@ export function isValidPageLimit(value: unknown): value is number {
     value <= PAGE_LIMIT_MAX
   );
 }
+
+// ── Search Lab (`/scraper/search`) engine + result type ──────────────────
+// One list for the UI, the URL contract and the agent write targets.
+export const SEARCH_LAB_ENGINE_VALUES = ["brave", "google", "compare"] as const;
+export type SearchLabEngineValue = (typeof SEARCH_LAB_ENGINE_VALUES)[number];
+export const SEARCH_LAB_VERTICAL_VALUES = [
+  "web",
+  "news",
+  "images",
+  "videos",
+  "places",
+] as const;
+export type SearchLabVerticalValue = (typeof SEARCH_LAB_VERTICAL_VALUES)[number];

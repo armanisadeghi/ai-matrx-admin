@@ -16,23 +16,78 @@ import { consumeStream } from "@/lib/api/stream-parser";
 import type {
   SearchOutcome,
   SearchProvider,
+  SearchRequestOptions,
+  SearchTranslationDrop,
   SearchTranslationReport,
+  SearchTranslationSection,
 } from "./types";
 
 function isRecord(v: unknown): v is Record<string, unknown> {
   return typeof v === "object" && v !== null && !Array.isArray(v);
 }
 
+/** `[{section, keys[]}]` → sections; anything else is skipped. */
+function readSections(v: unknown): SearchTranslationSection[] {
+  if (!Array.isArray(v)) return [];
+  return v.flatMap((u): SearchTranslationSection[] => {
+    if (isRecord(u) && typeof u.section === "string") {
+      return [
+        {
+          section: u.section,
+          keys: Array.isArray(u.keys) ? u.keys.map(String) : [],
+        },
+      ];
+    }
+    return [];
+  });
+}
+
+function readDropped(v: unknown): SearchTranslationDrop[] {
+  if (!Array.isArray(v)) return [];
+  return v.flatMap((d): SearchTranslationDrop[] =>
+    isRecord(d)
+      ? [
+          {
+            path: typeof d.path === "string" ? d.path : String(d.section ?? ""),
+            reason: typeof d.reason === "string" ? d.reason : "",
+            kindOf: typeof d.kind_of === "string" ? d.kind_of : null,
+            size: typeof d.size === "number" ? d.size : null,
+            preview:
+              typeof d.preview === "string"
+                ? d.preview
+                : d.preview == null
+                  ? null
+                  : JSON.stringify(d.preview),
+          },
+        ]
+      : [],
+  );
+}
+
 function readTranslation(v: unknown): SearchTranslationReport | null {
   if (!isRecord(v) || typeof v.provider !== "string") return null;
-  const unknownSections = Array.isArray(v.unknown)
-    ? v.unknown.flatMap((u) =>
-        isRecord(u) && typeof u.section === "string" && Array.isArray(u.keys)
-          ? [{ section: u.section, keys: u.keys.map(String) }]
-          : [],
-      )
-    : [];
-  return { provider: v.provider, unknownSections };
+  return {
+    provider: v.provider,
+    unknownSections: readSections(v.unknown),
+    dropped: readDropped(v.dropped),
+    raw: v,
+  };
+}
+
+/** camelCase options → the server's snake_case body. Unset fields are omitted. */
+function optionsBody(options: SearchRequestOptions): Record<string, unknown> {
+  const body: Record<string, unknown> = {};
+  if (options.vertical) body.vertical = options.vertical;
+  if (options.country) body.country = options.country;
+  if (options.language) body.language = options.language;
+  if (options.safeSearch) body.safe_search = options.safeSearch;
+  if (options.timeRange) body.time_range = options.timeRange;
+  if (typeof options.page === "number") body.page = options.page;
+  if (options.location?.trim()) body.location = options.location.trim();
+  if (options.device) body.device = options.device;
+  if (options.aiAnswer) body.ai_answer = true;
+  if (options.includeRaw) body.include_raw = true;
+  return body;
 }
 
 export interface RunSearchArgs {
@@ -45,6 +100,8 @@ export interface RunSearchArgs {
   query: string;
   provider: SearchProvider;
   count: number;
+  /** Optional knobs (Search Lab). Omitted = the server's defaults. */
+  options?: SearchRequestOptions;
   signal?: AbortSignal;
   /** Fired for every kind instance the server emits, in order. */
   onOutcome: (outcome: SearchOutcome) => void;
@@ -55,12 +112,13 @@ export async function runKindSearch({
   query,
   provider,
   count,
+  options,
   signal,
   onOutcome,
 }: RunSearchArgs): Promise<void> {
   const response = await post(
     "/search-kinds/search",
-    { provider, query, count },
+    { provider, query, count, ...(options ? optionsBody(options) : {}) },
     signal,
   );
 
@@ -78,6 +136,13 @@ export async function runKindSearch({
           onOutcome({
             result: data.result,
             translation: readTranslation(data.translation),
+            raw: isRecord(data.raw) ? data.raw : null,
+            ignoredOptions: Array.isArray(data.ignored_options)
+              ? data.ignored_options.map(String)
+              : [],
+            request: isRecord(data.request) ? data.request : null,
+            elapsedMs:
+              typeof data.elapsed_ms === "number" ? data.elapsed_ms : null,
           });
         }
       },

@@ -149,6 +149,7 @@ describe("compiled bootstrap (system-components)", () => {
         web_search_results: "web_search_results",
         web_result: "web_result",
         news_result: "news_result",
+        image_result: "image_result",
         video_result: "video_result",
         faq_item: "faq_item",
         discussion_result: "discussion_result",
