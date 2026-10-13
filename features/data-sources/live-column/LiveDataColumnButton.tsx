@@ -12,7 +12,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { Database } from "lucide-react";
 import { useFields, useRecordsClient } from "@ai-matrx/records/react";
-import { Button, Select } from "@ai-matrx/design-system/controls";
+import { Button, OptionCombobox, Select } from "@ai-matrx/design-system/controls";
 import { formatPoints } from "@ai-matrx/kit/format";
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -21,6 +21,7 @@ import { useBackendApi } from "@/hooks/useBackendApi";
 import { runAiColumn } from "@/features/data-tables/records-ui-host/enrichPort";
 
 import { limitSettingHref, useDataSources } from "../hooks";
+import { usePriceText } from "../library/hooks";
 import {
   KEEP_OPTIONS,
   addressColumns,
@@ -65,6 +66,7 @@ function LiveDataColumnDialog({ tableId, organizationId, onClose }: { tableId: s
   const client = useRecordsClient();
   const backend = useBackendApi();
   const catalog = useDataSources(organizationId);
+  const price = usePriceText();
   const fields = useFields(tableId);
   const sources = useMemo(
     () => (catalog.data?.sources ?? []).filter((s) => s.input.kind === "url" && (s.output_fields?.length ?? 0) > 0),
@@ -164,6 +166,23 @@ function LiveDataColumnDialog({ tableId, organizationId, onClose }: { tableId: s
 
   const total = made ? totalPoints(made.map((m) => m.quote)) : 0;
   const quote = made?.find((m) => m.quote)?.quote ?? null;
+  // The cost always shows before anything is paid: the server's own quote when it sent one, else the
+  // source's catalog price over the same rows. Dollar seats get "$ · points" from the one price helper.
+  const priceSource = source ? { pointsPerRecord: source.points_per_record ?? null, usd_per_record: source.usd_per_record } : null;
+  const columnsAsked = Math.max(1, made?.length ?? kept.length);
+  const recordsAll = (quote?.rows ?? rowCount) * (isItems ? (quote?.recordsPerRow ?? recordsPerRow) : 1) * columnsAsked;
+  const serverTotal = made?.some((m) => m.quote) ? total : null;
+  const costText = priceSource
+    ? price(serverTotal != null && recordsAll > 0 ? { pointsPerRecord: serverTotal / recordsAll, usd_per_record: priceSource.usd_per_record } : priceSource, recordsAll)
+    : serverTotal != null
+      ? formatPoints(serverTotal)
+      : null;
+  const estimateText = !made && priceSource && kept.length > 0 ? price(priceSource, rowCount * (isItems ? recordsPerRow : 1) * kept.length) : null;
+  const sourceGroups = useMemo(() => {
+    const byGroup = new Map<string, string[]>();
+    for (const s of sources) byGroup.set(s.group, [...(byGroup.get(s.group) ?? []), s.key]);
+    return [...byGroup.entries()].map(([heading, options]) => ({ heading, options }));
+  }, [sources]);
   const settings = quote ? limitSettingHref(organizationId, quote.recordsPerRowSetting) : null;
   const rowsSetting = quote ? limitSettingHref(organizationId, quote.maxRowsSetting) : null;
 
@@ -177,11 +196,14 @@ function LiveDataColumnDialog({ tableId, organizationId, onClose }: { tableId: s
           <div className="flex flex-col gap-3">
             <label className="flex flex-col gap-1">
               <span className="text-xs font-medium text-muted-foreground">Source</span>
-              <Select
-                aria-label="Source"
+              <OptionCombobox
+                ariaLabel="Source"
                 value={sourceKey}
-                options={[{ value: "", label: "Choose a source" }, ...sources.map((s) => ({ value: s.key, label: `${s.label} (${s.group})` }))]}
-                onValueChange={(v) => {
+                placeholder="Choose a source"
+                searchPlaceholder="Find a source"
+                groups={sourceGroups}
+                getLabel={(key) => sources.find((x) => x.key === key)?.label ?? key}
+                onChange={(v) => {
                   setSourceKey(v);
                   setKept([]);
                 }}
@@ -270,6 +292,11 @@ function LiveDataColumnDialog({ tableId, organizationId, onClose }: { tableId: s
                 <ProInput value={rows} onChange={(e) => setRows(e.target.value)} inputMode="numeric" />
               </label>
             )}
+            {estimateText && (
+              <p className="text-sm" data-live-column-estimate="">
+                Cost for {rowCount} {rowCount === 1 ? "row" : "rows"}: <strong>{estimateText}</strong>
+              </p>
+            )}
             <Button variant="primary" disabled={busy || !source || !inputField || kept.length === 0} onClick={() => void create()} data-live-column-add="">
               {allKeptExist ? (kept.length > 1 ? "Refill those columns" : "Refill that column") : kept.length > 1 ? `Add ${kept.length} columns` : "Add column"}
             </Button>
@@ -284,26 +311,32 @@ function LiveDataColumnDialog({ tableId, organizationId, onClose }: { tableId: s
                 </li>
               ))}
             </ul>
-            {quote && (
-              <p className="text-sm" data-live-column-quote="">
-                {quote.rows} {quote.rows === 1 ? "row" : "rows"} x {quote.recordsPerRow} {quote.recordsPerRow === 1 ? "record" : "records"} per row:{" "}
-                <strong>{formatPoints(total)}</strong> in all.{" "}
-                {settings && (
-                  <Link className="underline" href={settings}>
-                    Records per row (max{quote.maxRecordsPerRow > 0 ? ` ${quote.maxRecordsPerRow}` : ""})
-                  </Link>
-                )}
-                {" · "}
-                {rowsSetting && <Link className="underline" href={rowsSetting}>Rows per fill (max {quote.maxRowsPerRun})</Link>}
-              </p>
-            )}
+            <p className="text-sm" data-live-column-quote="">
+              {quote ? (
+                <>
+                  {quote.rows} {quote.rows === 1 ? "row" : "rows"} x {quote.recordsPerRow} {quote.recordsPerRow === 1 ? "record" : "records"} per row:{" "}
+                </>
+              ) : (
+                <>
+                  {rowCount} {rowCount === 1 ? "row" : "rows"}:{" "}
+                </>
+              )}
+              <strong>{costText ?? "No price yet"}</strong> in all.{" "}
+              {quote && settings && (
+                <Link className="underline" href={settings}>
+                  Records per row (max{quote.maxRecordsPerRow > 0 ? ` ${quote.maxRecordsPerRow}` : ""})
+                </Link>
+              )}
+              {quote && " · "}
+              {quote && rowsSetting && <Link className="underline" href={rowsSetting}>Rows per fill (max {quote.maxRowsPerRun})</Link>}
+            </p>
             {quote && quote.rowsKept > 0 && (
               <p className="text-sm" data-live-column-kept="">
                 {quote.rowsKept} {quote.rowsKept === 1 ? "row holds" : "rows hold"} records already paid for: filling them costs nothing.
               </p>
             )}
-            {!quote && made[0]?.says && <p className="text-sm">{made[0].says}</p>}
-            <Button variant="primary" disabled={busy || made.length === 0} onClick={() => void fill()} data-live-column-run="">
+            {made[0]?.says && !quote && <p className="text-sm">{made[0].says}</p>}
+            <Button variant="primary" disabled={busy || made.length === 0 || costText == null} onClick={() => void fill()} data-live-column-run="">
               {quote && quote.rowsKept > 0 && total === 0
                 ? "Retry without paying again"
                 : `Fill ${quote?.rows ?? rowCount} ${(quote?.rows ?? rowCount) === 1 ? "row" : "rows"}`}

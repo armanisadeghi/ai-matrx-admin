@@ -202,19 +202,58 @@ function haystack(s: LibrarySource): string {
 }
 
 /**
- * Sources matching every word of `query` (any order), best first: label hits, then featured, then
- * confirmed; catalog order breaks ties. "reviews" finds every review source.
+ * Plain-intent synonyms, one set per kind of data: a person who types any word of a set finds
+ * sources that talk about any other word of it. Multi-word entries match as a phrase.
+ */
+const SYNONYM_SETS: readonly (readonly string[])[] = [
+  ["review", "rating", "feedback", "testimonial", "opinion", "stars", "customer", "complaint"],
+  ["job", "hiring", "opening", "career", "vacancy", "recruit", "employment", "position"],
+  ["place", "local business", "near me", "nearby", "map", "maps", "restaurant", "store location", "shop", "address"],
+  ["product", "price", "pricing", "store", "ecommerce", "e-commerce", "marketplace", "item", "listing", "buy"],
+  ["company", "business", "funding", "employee", "startup", "organization", "firm", "investor", "revenue"],
+  ["home", "house", "real estate", "property", "listing", "apartment", "rental", "realtor"],
+];
+
+const STOP_WORDS = new Set(["a", "an", "the", "for", "of", "to", "in", "on", "at", "and", "or", "my", "me", "about", "from", "with", "i", "what", "who", "which", "where", "how", "want", "need", "get", "find", "show", "is", "are", "do", "some", "any", "all"]);
+
+const stem = (w: string) => (w.length > 3 && w.endsWith("ies") ? `${w.slice(0, -3)}y` : w.length > 3 && w.endsWith("s") && !w.endsWith("ss") ? w.slice(0, -1) : w);
+
+/** The words a query word may stand for: itself plus its synonym sets (all lower-case, stemmed). */
+function expansions(word: string): string[] {
+  const w = stem(word);
+  const out = new Set<string>([w]);
+  for (const set of SYNONYM_SETS) if (set.some((x) => stem(x) === w)) for (const x of set) out.add(x.includes(" ") ? x : stem(x));
+  return [...out];
+}
+
+/**
+ * Sources matching ANY word of `query` (plain words, stop words ignored, plurals folded, synonyms
+ * understood), best first: the more of the person's words a source answers the higher it ranks; a
+ * label hit beats a description hit; direct words beat synonyms; featured, then confirmed, then
+ * catalog order break ties. "customer reviews for a company" finds the review sources first.
  */
 export function searchSources(sources: readonly LibrarySource[], query: string): LibrarySource[] {
-  const words = query.toLowerCase().split(/\s+/).filter(Boolean);
-  if (words.length === 0) return [...sources];
+  const all = query.toLowerCase().split(/[^a-z0-9.+-]+/).filter(Boolean);
+  if (all.length === 0) return [...sources];
+  const words = all.filter((w) => !STOP_WORDS.has(w));
+  const used = words.length > 0 ? words : all;
   const scored: { s: LibrarySource; score: number; i: number }[] = [];
   sources.forEach((s, i) => {
     const hay = haystack(s);
-    if (!words.every((w) => hay.includes(w) || (w.endsWith("s") && hay.includes(w.slice(0, -1))))) return;
+    const hayStemmed = hay.split(/[^a-z0-9]+/).map(stem).join(" ");
     const label = s.label.toLowerCase();
-    const labelHits = words.filter((w) => label.includes(w) || (w.endsWith("s") && label.includes(w.slice(0, -1)))).length;
-    scored.push({ s, score: labelHits * 4 + (s.featured ? 2 : 0) + (s.confirmed ? 1 : 0), i });
+    let matched = 0;
+    let score = 0;
+    for (const w of used) {
+      const direct = hay.includes(w) || hayStemmed.includes(stem(w));
+      let best = 0;
+      if (direct) best = label.includes(w) || label.includes(stem(w)) ? 8 : 4;
+      else if (expansions(w).some((x) => (x.includes(" ") ? hay.includes(x) : hayStemmed.includes(x)))) best = expansions(w).some((x) => label.includes(x)) ? 3 : 2;
+      if (best > 0) matched += 1;
+      score += best;
+    }
+    if (matched === 0) return;
+    scored.push({ s, score: matched * 10 + score + (s.featured ? 2 : 0) + (s.confirmed ? 1 : 0), i });
   });
   return scored.sort((a, b) => b.score - a.score || a.i - b.i).map((x) => x.s);
 }

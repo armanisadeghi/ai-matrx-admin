@@ -18,6 +18,7 @@ import { RichContent } from "@ai-matrx/rich-content/levels/RichContent";
 import type { ReactNode } from "react";
 import type { RecordsUiHost } from "@ai-matrx/records-ui/helpers";
 import { ProTextarea } from "@/components/official/ProTextarea";
+import { JsonCellPreview, parseJsonCell } from "./JsonCellPreview";
 
 export function recordsCleanText(text: string): string {
   return cleanValue(text, DEFAULT_ENABLED_VALUE_OPERATIONS).after;
@@ -38,7 +39,18 @@ export function recordsIconPicker({ value, label, onChange }: { value: string; l
  */
 export function recordsRenderText(text: string, where: string): ReactNode {
   if (where !== "cell") return text;
-  return <RichContent level="inline" source={text} isStreaming={false} />;
+  // A JSON value is a compact preview that opens on click; it is never read as markdown.
+  const json = parseJsonCell(text);
+  if (json !== null) return <JsonCellPreview value={json} />;
+  return <RichContent level="inline" source={escapeMathDollars(text)} isStreaming={false} />;
+}
+
+/**
+ * A data cell is never maths: "$12 $34" in a review would pair the two dollar signs into a KaTeX
+ * span (italics, one character per line). Every "$" is escaped so it reads as a dollar sign.
+ */
+export function escapeMathDollars(text: string): string {
+  return text.replace(/(\\*)\$/g, (_m, slashes: string) => (slashes.length % 2 === 0 ? `${slashes}\\$` : `${slashes}$`));
 }
 
 /**

@@ -196,7 +196,7 @@ function IntelRow({
             </div>
           ))}
           {stored.fetched_at ? (
-            <div className="text-muted-foreground">{formatRelativeTime(stored.fetched_at, { style: "intl" })}</div>
+            <div className="text-muted-foreground" data-intel-updated="">Updated {formatRelativeTime(stored.fetched_at, { style: "intl" })}</div>
           ) : null}
         </dl>
       ) : null}

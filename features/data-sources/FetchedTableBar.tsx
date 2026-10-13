@@ -24,6 +24,7 @@ import { useOpenDataChangesWindow } from "@/features/overlays/openers/dataChange
 
 import { hasChanges, summaryParts } from "./changes";
 import { fetchSpecKey, limitSettingHref, refreshHistoryKey, useDataSources, useFetchEstimate, useFetchSpec } from "./hooks";
+import { recordNoun } from "./inputWords";
 import { RefusalView } from "./RefusalView";
 import { clearRun, startRun, useRun } from "./runs";
 import { refreshTable } from "./server";
@@ -145,6 +146,11 @@ function Bar({
   const when = spec?.finishedAt ?? spec?.createdAt ?? fetched?.fetchedAt ?? "";
   const rows = fetched?.rows ?? (spec ? spec.rowsCreated + spec.rowsUpdated : 0);
   const refreshCost = estimate(catalogSource, refreshCount);
+  // Refresh re-fetches the stored count (the newest N); when the table holds more than that, "all" is its own honest choice.
+  const noun = recordNoun(label);
+  const allCount = Math.min(rows, limit?.value ?? rows);
+  const showAll = rows > refreshCount && allCount > refreshCount;
+  const allCost = showAll ? estimate(catalogSource, allCount) : null;
   const moreCost = estimate(catalogSource, moreCount);
   const textValues = fetched?.valuesAsText ?? 0;
   const trimmed = fetched?.limitApplied ?? null;
@@ -182,11 +188,27 @@ function Bar({
               onClick={() => go(refreshCount)}
               data-fetch-refresh=""
             >
-              Refresh
+              {showAll ? `Check the newest ${formatCount(refreshCount)} ${noun}` : "Refresh"}
             </Button>
           </TooltipTrigger>
-          <TooltipContent>Fetch the same {formatCount(refreshCount)} again and update rows</TooltipContent>
+          <TooltipContent>
+            {showAll
+              ? `Looks at the newest ${formatCount(refreshCount)} ${noun} only; the other ${formatCount(rows - refreshCount)} rows stay as they are`
+              : `Fetch the same ${formatCount(refreshCount)} again and update rows`}
+          </TooltipContent>
         </Tooltip>
+        {showAll && (
+          <Button
+            variant="quiet"
+            icon={<RefreshCw className="h-4 w-4" />}
+            meta={allCost ?? undefined}
+            disabled={busy || !organizationId}
+            onClick={() => go(allCount)}
+            data-fetch-refresh-all=""
+          >
+            {`Check all ${formatCount(allCount)}`}
+          </Button>
+        )}
         <Tooltip>
           <TooltipTrigger asChild>
             <Button

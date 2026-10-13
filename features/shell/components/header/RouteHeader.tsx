@@ -199,6 +199,14 @@ function hasVisibleWords(root: HTMLElement | null): boolean {
 }
 
 /**
+ * A fetched table's source bar (Refresh · quote, Get more · quote, View changes) is one row in the
+ * page header. In any menu (the "…" popover, the phone sheet) it reads as a vertical list, one action
+ * per row, as wide as the menu and never wider (it once drew 1004 px wide and ran under the sidebar).
+ */
+const FETCHED_BAR_AS_MENU =
+  "[&_[data-fetched-source-bar]]:w-full [&_[data-fetched-source-bar]]:min-w-0 [&_[data-fetched-source-bar]>div:first-child]:flex-col [&_[data-fetched-source-bar]>div:first-child]:items-stretch [&_[data-fetched-source-bar]>div:first-child]:gap-0.5 [&_[data-fetched-source-bar]>div:first-child>span:empty]:hidden [&_[data-fetched-source-bar]>div:first-child>:first-child]:self-start [&_[data-fetched-source-bar]>div:first-child>button]:justify-start [&_[data-fetched-source-bar]>div:first-child>.truncate]:whitespace-normal [&_[data-fetched-source-bar]>div:first-child>.truncate]:break-words";
+
+/**
  * One action in the phone sheet's "This page" section: the control plus its
  * name. The declared name first (`overflowItemLabel`); a control that declares
  * none (a record's own "…" menu) is named by the accessible name it renders —
@@ -220,7 +228,7 @@ export function PhoneSheetAction({ action }: { action: ReturnType<typeof flatten
   }, [declared]);
   const label = declared ?? rendered;
   return (
-    <div ref={ref} data-route-header-overflow-item className="flex shrink-0 items-center gap-1.5 px-1" onClick={forwardRowTap}>
+    <div ref={ref} data-route-header-overflow-item className={`flex min-w-0 max-w-full shrink-0 items-center gap-1.5 px-1 [&:has([data-fetched-source-bar])]:w-full ${FETCHED_BAR_AS_MENU}`} onClick={forwardRowTap}>
       {action.node}
       {label ? <span data-phone-sheet-label className="whitespace-nowrap type-secondary text-muted-foreground">{label}</span> : null}
     </div>
@@ -572,11 +580,15 @@ export default function RouteHeader({
                 sizing="content"
                 align="end"
                 sideOffset={6}
-                className="p-1"
+                collisionPadding={8}
+                className="max-w-[calc(100vw-1rem)] p-1"
               >
+                {/* A fetched table's source bar (Refresh · quote, Get more · quote, View changes) is a
+                    row in the header; inside this menu it is a vertical list, one action per row,
+                    bounded by the viewport (it once drew 1004 px wide and ran under the sidebar). */}
                 <div
                   data-route-header-overflow-strip
-                  className="flex flex-wrap items-center justify-end"
+                  className={`flex max-w-full flex-wrap items-center justify-end [&>*:has([data-fetched-source-bar])]:min-w-0 [&>*:has([data-fetched-source-bar])]:basis-full ${FETCHED_BAR_AS_MENU}`}
                 >
                   {overflowActions.map((a) => (
                     <OverflowMenuItem key={a.key} action={a} />

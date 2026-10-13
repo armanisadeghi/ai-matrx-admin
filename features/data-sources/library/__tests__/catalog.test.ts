@@ -143,10 +143,22 @@ describe("search", () => {
     expect(hits.some((s) => s.key.startsWith("store_"))).toBe(false);
   });
   it("matches singular and plural, every word, any order", () => {
-    expect(searchSources(lib.sources, "review trustpilot").map((s) => s.key)).toEqual(["trustpilot_reviews"]);
-    expect(searchSources(lib.sources, "shop 12").map((s) => s.key)).toEqual(["store_12"]);
+    expect(searchSources(lib.sources, "review trustpilot")[0].key).toBe("trustpilot_reviews");
+    expect(searchSources(lib.sources, "shop 12")[0].key).toBe("store_12");
     expect(searchSources(lib.sources, "zzzz")).toEqual([]);
     expect(searchSources(lib.sources, "  ")).toHaveLength(lib.sources.length);
+  });
+  it("plain intent: 'customer reviews for a company' finds the review sources first", () => {
+    const today = parseLibrary(TODAY);
+    const hits = searchSources(today.sources, "customer reviews for a company").map((s) => s.key);
+    expect(hits.slice(0, 2).sort()).toEqual(["trustpilot_reviews", "yelp_reviews"]);
+  });
+  it("synonyms: feedback/ratings find reviews, hiring finds jobs, any word matches", () => {
+    const today = parseLibrary(TODAY);
+    expect(searchSources(today.sources, "what customers say")[0].key).toMatch(/_reviews$/);
+    expect(searchSources(today.sources, "ratings")[0].key).toMatch(/_reviews$/);
+    expect(searchSources(today.sources, "who is hiring")[0].key).toBe("indeed_jobs");
+    expect(searchSources(today.sources, "zzzz qqqq")).toEqual([]);
   });
 });
 

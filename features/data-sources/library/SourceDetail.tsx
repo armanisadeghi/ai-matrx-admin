@@ -13,6 +13,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { CheckCircle2, DownloadCloud, Table2 } from "lucide-react";
 import {
@@ -195,15 +196,7 @@ function SourceRun({
             </p>
           ))}
           <div className="flex flex-wrap justify-center gap-2 pt-1">
-            <Button
-              asChild
-              variant="primary"
-              icon={<Table2 className="h-4 w-4" />}
-            >
-              <Link href={`/data/${encodeURIComponent(done.table_id)}`}>
-                Open table
-              </Link>
-            </Button>
+            <OpenTableButton tableId={done.table_id} />
             <AddToBoard tableId={done.table_id} tableName={done.table_name} />
           </div>
           <Button variant="quiet" onClick={() => clearRun(key)}>
@@ -235,6 +228,26 @@ function SourceRun({
         )
       }
     />
+  );
+}
+
+/** "Open table": busy the moment it is clicked (the table page can take seconds), then the window closes on arrival. */
+function OpenTableButton({ tableId }: { tableId: string }) {
+  const router = useRouter();
+  const [opening, setOpening] = useState(false);
+  return (
+    <Button
+      variant="primary"
+      icon={<Table2 className="h-4 w-4" />}
+      disabled={opening}
+      onClick={() => {
+        setOpening(true);
+        router.push(`/data/${encodeURIComponent(tableId)}`);
+      }}
+      data-open-table=""
+    >
+      {opening ? "Opening table" : "Open table"}
+    </Button>
   );
 }
 

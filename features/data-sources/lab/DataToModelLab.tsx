@@ -51,7 +51,7 @@ const MAX_INPUTS = 5;
 const TOOL_TURNS = 4;
 
 const SHAPES = [
-  { value: "json", label: "JSON" },
+  { value: "json", label: "Structured data" },
   { value: "markdown", label: "Markdown" },
   { value: "digest", label: "Digest" },
 ] as const;
@@ -66,12 +66,12 @@ const ORDERS: { value: Ordering; label: string }[] = [
 
 const CUTS = [
   { value: "0", label: "Full text" },
-  { value: "200", label: "200 chars" },
-  { value: "400", label: "400 chars" },
-  { value: "800", label: "800 chars" },
+  { value: "200", label: "200 characters" },
+  { value: "400", label: "400 characters" },
+  { value: "800", label: "800 characters" },
 ];
 
-const charsText = (chars: number) => `${formatCount(chars)} chars`;
+const charsText = (chars: number) => `${formatCount(chars)} characters`;
 
 interface Loaded {
   records: LabRecord[];
@@ -340,7 +340,7 @@ function Provision({ organizationId, loaded, source }: { organizationId: string 
           <KpiTile label="Records" value={records.length} />
           <KpiTile label="Inputs" value={groups.length} hint={groups.map((g) => `${g.label} ${g.records.length}`).join(" · ")} />
           <KpiTile label="Fields" value={stats.length} />
-          <KpiTile label="Size" value={charsText(charsOf(records))} hint={`≈ ${formatTokens(estimateTokensForText(JSON.stringify(records), "structured"))} tokens as JSON`} />
+          <KpiTile label="Size (words)" value={charsText(charsOf(records))} hint={`≈ ${formatTokens(estimateTokensForText(JSON.stringify(records), "structured"))} words`} />
           <KpiTile label="Spent" value={loaded.from === "table" ? "Already paid" : spent} hint={loaded.result ? `${loaded.result.records_billed} records billed` : undefined} />
         </KpiGrid>
         <div className="overflow-x-auto rounded-lg border border-border bg-card">
@@ -394,33 +394,33 @@ function Provision({ organizationId, loaded, source }: { organizationId: string 
           <KpiGrid>
             <KpiTile label="Records sent" value={handed.recordsSent} />
             <KpiTile label="Message" value={`≈ ${formatTokens(handed.tokens)}`} hint={`${charsText(handed.chars)} · ${handed.parts.map((p) => `${p.label} ${formatTokens(p.tokens)}`).join(" · ")}`} />
-            <KpiTile label="Model cost" value={usdText(handedUsd)} hint="Est. with 800 tokens out" />
+            <KpiTile label="Model cost" value={usdText(handedUsd)} hint="Est. with an 800-word answer" />
             <KpiTile label="Data cost" value={spent ?? recordPrice(records.length)} hint="One fetch, before the model" />
           </KpiGrid>
-          <RawBlock title="First message" meta={`≈ ${formatTokens(handed.tokens)} tokens`} text={handed.text} defaultOpen />
+          <RawBlock title="First message" meta={`≈ ${formatTokens(handed.tokens)} words`} text={handed.text} defaultOpen />
         </div>
 
         <div className="flex min-w-0 flex-col gap-3 rounded-lg border border-border bg-card p-3" data-lab-mode="tools">
           <h2 className="text-sm font-semibold text-foreground">Model fetches</h2>
           <KpiGrid>
             <KpiTile label="Calls" value={calls.length} hint="One per input" />
-            <KpiTile label="Tool definition" value={toolCapture.isLoading ? null : toolDefText ? `≈ ${formatTokens(toolDefTokens)}` : "—"} loading={toolCapture.isLoading} hint="Sent on every model turn" />
-            <KpiTile label="Input, 2 turns" value={`≈ ${formatTokens(toolsInputTokens)}`} hint={`Results ≈ ${formatTokens(toolResultTokens)}`} />
-            <KpiTile label="Model cost" value={usdText(toolsUsd)} hint="Est. with 900 tokens out" />
+            <KpiTile label="What the AI is told it can do" value={toolCapture.isLoading ? null : toolDefText ? `≈ ${formatTokens(toolDefTokens)}` : "—"} loading={toolCapture.isLoading} hint="Sent with every turn" />
+            <KpiTile label="Read over 2 turns" value={`≈ ${formatTokens(toolsInputTokens)}`} hint={`Results ≈ ${formatTokens(toolResultTokens)}`} />
+            <KpiTile label="Model cost" value={usdText(toolsUsd)} hint="Est. with a 900-word answer" />
             <KpiTile label="Data cost" value={toolsDataPrice} hint="Billed per call, every run" />
           </KpiGrid>
           {toolCapture.error ? <p className="text-sm text-destructive">{(toolCapture.error as Error).message}</p> : null}
-          {toolDefText ? <RawBlock title="Tool definition (as sent)" meta={`${toolDefs.length} tool`} text={toolDefText} /> : null}
+          {toolDefText ? <RawBlock title="What the AI is told it can do (exact)" meta={`${toolDefs.length} ${toolDefs.length === 1 ? "ability" : "abilities"}`} text={toolDefText} /> : null}
           <div className="flex flex-col gap-2">
             {calls.map((c, i) => (
               <div key={i} className="rounded-md border border-border p-2" data-lab-call={i}>
                 <div className="flex flex-wrap items-center gap-2 text-xs">
-                  <Badge>site_data</Badge>
+                  <Badge>Gets live data</Badge>
                   <code className="min-w-0 flex-1 truncate font-mono">{JSON.stringify(c.args)}</code>
                 </div>
                 <div className="mt-1 flex flex-wrap gap-x-3 text-xs text-muted-foreground">
                   <span>{c.records} records</span>
-                  <span>≈ {formatTokens(c.resultTokens)} tokens back</span>
+                  <span>≈ {formatTokens(c.resultTokens)} words back</span>
                   <span>rendering {charsText(c.renderingChars)} + raw {charsText(c.rawChars)}</span>
                   {c.recordsDropped ? <span>{c.recordsDropped} raw records cut</span> : null}
                   <span>{recordPrice(c.records)}</span>
@@ -525,8 +525,8 @@ function RunCard({
       {run ? (
         <>
           <KpiGrid>
-            <KpiTile label="Tokens in" value={run.tokensIn} loading={running && run.tokensIn == null} />
-            <KpiTile label="Tokens out" value={run.tokensOut} loading={running && run.tokensOut == null} />
+            <KpiTile label="Words read" value={run.tokensIn} loading={running && run.tokensIn == null} />
+            <KpiTile label="Words written" value={run.tokensOut} loading={running && run.tokensOut == null} />
             <KpiTile label="Model cost" value={usdText(run.costUsd)} loading={running && run.costUsd == null} />
             <KpiTile label="Data cost" value={dataCost} hint={dataHint} />
             <KpiTile label="Latency" value={formatDurationMs(run.latencyMs, { style: "compact" })} />
@@ -560,9 +560,9 @@ function CaptureView({ capture }: { capture: CapturedRequest }) {
   return (
     <div className="flex min-w-0 flex-col gap-2">
       <KpiGrid>
-        <KpiTile label="System" value={`≈ ${formatTokens(estimateTokens(parts.systemChars, "prose"))}`} hint="Added by the platform" />
-        <KpiTile label="User" value={`≈ ${formatTokens(estimateTokens(parts.userChars, "structured"))}`} hint={charsText(parts.userChars)} />
-        <KpiTile label="Tools" value={parts.toolChars ? `≈ ${formatTokens(estimateTokens(parts.toolChars, "structured"))}` : "None"} hint={parts.toolChars ? charsText(parts.toolChars) : undefined} />
+        <KpiTile label="Platform" value={`≈ ${formatTokens(estimateTokens(parts.systemChars, "prose"))}`} hint="Added by the platform" />
+        <KpiTile label="Your data" value={`≈ ${formatTokens(estimateTokens(parts.userChars, "structured"))}`} hint={charsText(parts.userChars)} />
+        <KpiTile label="Abilities" value={parts.toolChars ? `≈ ${formatTokens(estimateTokens(parts.toolChars, "structured"))}` : "None"} hint={parts.toolChars ? charsText(parts.toolChars) : undefined} />
       </KpiGrid>
       <RawBlock title="Exact request" meta={capture.model ?? undefined} text={JSON.stringify(capture.request, null, 2)} />
     </div>
