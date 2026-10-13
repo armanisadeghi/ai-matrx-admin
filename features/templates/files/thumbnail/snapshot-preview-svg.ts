@@ -34,7 +34,7 @@ type Sheet = {
   showGridlines?: number;
   freeze?: { ySplit?: number; xSplit?: number };
 };
-type Workbook = {
+export type Workbook = {
   sheetOrder?: string[];
   sheets?: Record<string, Sheet>;
   styles?: Record<string, CellStyle | null>;
@@ -80,7 +80,7 @@ export function formatCellValue(v: unknown, pattern?: string | null): string {
 
 // ─── conditional formatting (the rules a preview can evaluate) ───────────────
 
-type CfRule = {
+export type CfRule = {
   rule?: {
     type?: string;
     subType?: string;
@@ -91,7 +91,7 @@ type CfRule = {
   ranges?: Array<{ startRow: number; endRow: number; startColumn: number; endColumn: number }>;
 };
 
-function parseResource<T>(wb: Workbook, name: string): T | null {
+export function parseResource<T>(wb: Workbook, name: string): T | null {
   const res = wb.resources?.find((r) => r.name === name);
   if (!res?.data) return null;
   try {
@@ -101,7 +101,7 @@ function parseResource<T>(wb: Workbook, name: string): T | null {
   }
 }
 
-function cfMatch(rule: NonNullable<CfRule["rule"]>, v: unknown): boolean {
+export function cfMatch(rule: NonNullable<CfRule["rule"]>, v: unknown): boolean {
   if (rule.type !== "highlightCell") return false;
   if (rule.subType === "number" && typeof v === "number") {
     const x = rule.value;

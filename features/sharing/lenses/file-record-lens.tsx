@@ -9,13 +9,12 @@
  */
 
 import type { ResolvedShareToken } from "@/utils/permissions/shareLinks";
-import { univerSnapshotToRows } from "@/features/workbooks/univer-snapshot-rows";
+import { snapshotToGridSheets } from "@/features/workbooks/snapshot-grid";
+import { SharedSheetView } from "./SharedSheetView";
 import { univerDocToMarkdown } from "@/features/documents/univer-doc-to-markdown";
 import { shareChildFileUrls } from "@/features/files/handler/utils/python-base";
 import RichContentStandardImpl from "@ai-matrx/rich-content/levels/RichContentStandardImpl";
 import type { ShareLensProps } from "./registry";
-
-const MAX_ROWS_SHOWN = 500;
 
 function textOf(resource: ResolvedShareToken["resource"], key: string): string {
   const v = resource?.[key];
@@ -48,12 +47,7 @@ export function WorkbookShareLens({ result }: ShareLensProps) {
   const title = textOf(result.resource, "workbook_name") || "Workbook";
   const description = textOf(result.resource, "description");
   const content = childrenOf(result, "workbook_snapshot");
-  const order = (content?.snapshot as { sheetOrder?: string[] } | undefined)?.sheetOrder ?? [];
-  const sheets = content?.snapshot
-    ? order
-        .map((sheetId) => univerSnapshotToRows(content.snapshot, { sheetId, skipHidden: true }))
-        .filter((s): s is NonNullable<typeof s> => s !== null)
-    : [];
+  const sheets = content?.snapshot ? snapshotToGridSheets(content.snapshot) : [];
   return (
     <article className="mx-auto w-full max-w-5xl">
       <Heading title={title} description={description} />
@@ -62,31 +56,7 @@ export function WorkbookShareLens({ result }: ShareLensProps) {
       ) : sheets.length === 0 ? (
         <Notice>This workbook has no saved content yet.</Notice>
       ) : (
-        sheets.map((sheet) => (
-          <section key={sheet.sheetName} className="mb-6">
-            <h2 className="mb-2 text-sm font-medium text-foreground">{sheet.sheetName}</h2>
-            <div className="max-h-[70vh] overflow-auto rounded-lg border border-border bg-card">
-              <table className="w-full border-collapse text-xs">
-                <tbody>
-                  {sheet.rows.slice(0, MAX_ROWS_SHOWN).map((row, r) => (
-                    <tr key={r} className={r === 0 ? "bg-muted/50 font-medium" : ""}>
-                      {row.map((cell, c) => (
-                        <td key={c} className="border border-border px-2 py-1 align-top">
-                          {cell}
-                        </td>
-                      ))}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            {sheet.rows.length > MAX_ROWS_SHOWN && (
-              <p className="mt-1 text-xs text-muted-foreground">
-                Showing the first {MAX_ROWS_SHOWN} of {sheet.rows.length} rows.
-              </p>
-            )}
-          </section>
-        ))
+        <SharedSheetView sheets={sheets} />
       )}
     </article>
   );
