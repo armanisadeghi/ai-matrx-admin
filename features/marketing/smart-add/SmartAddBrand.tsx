@@ -38,6 +38,7 @@ import {
 } from "@/features/marketing/data/service";
 import { runHref } from "@/features/workflow-runtime/run-doors";
 import { initializeSite } from "@/features/marketing/crawler/direct-client";
+import { roundFailed } from "./roundFailure";
 import { SmartAddSlots } from "./SmartAddSlots";
 import { SmartAddHero, stageLogo, stageName } from "./SmartAddHero";
 import { Shared, riseIn } from "./stage/Shared";
@@ -140,6 +141,8 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
   // Compare: candidates that are neither ours nor "not us" — how each relates (keyed by candidate id).
   const [relations, setRelations] = useState<Record<string, RelatedCandidate>>({});
   const explored = useRef<Set<string>>(new Set());
+  /** Images the screen could not load: hidden tiles, never saved as inbox candidates. */
+  const brokenKeys = useRef<Set<string>>(new Set());
   const typedKeys = useRef<{ website: string | null; social: string | null }>({ website: null, social: null });
   // Confirmed facts already sent to the workflow ("name:<v>", "location:<v>"): a new one wakes its steps.
   const wokenSent = useRef<Set<string>>(new Set());
@@ -365,7 +368,7 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
     rounds.some((r) => !r.error && (!r.runId || !views[r.runId])) ||
     roundViews.some((v) => !!v && !TERMINAL.includes(v.status ?? ""));
   const failedRound =
-    rounds.some((r) => Boolean(r.error)) || roundViews.some((v) => !!v && ["failed", "errored", "refused"].includes(v.status ?? ""));
+    rounds.some((r) => Boolean(r.error)) || roundViews.some((v) => roundFailed(v));
   const progressLines = roundViews
     .flatMap((v) => v?.steps ?? [])
     .filter((s) => s.phase === "running" && s.progress)
@@ -514,7 +517,7 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
         ...(await saveCandidates(
           organizationId,
           brand.id,
-          [...items.values()].filter((i) => !decisions[i.key] && !relatedSaved.keys.has(i.key)),
+          [...items.values()].filter((i) => !decisions[i.key] && !relatedSaved.keys.has(i.key) && !brokenKeys.current.has(i.key)),
         )),
       );
       problems.push(...(await saveFacts(organizationId, brand.id, basics)));
@@ -796,6 +799,7 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
           relations={Object.fromEntries(Object.entries(relations).map(([k, r]) => [k, r.relation]))}
           onRelate={relate}
           onAdd={addCustom}
+          onBroken={(key) => brokenKeys.current.add(key)}
         />
       </div>
 

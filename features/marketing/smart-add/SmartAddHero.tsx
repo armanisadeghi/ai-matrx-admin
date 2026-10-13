@@ -764,7 +764,7 @@ function PlatformPick({ picked, onPick }: { picked: SocialPlatform | null; onPic
       initial={{ opacity: 0, height: 0 }}
       animate={{ opacity: 1, height: "auto" }}
       exit={{ opacity: 0, height: 0 }}
-      className="flex items-center gap-1 overflow-x-auto border-t border-border/60 px-3 py-2 sm:px-4"
+      className="flex flex-wrap items-center gap-1 border-t border-border/60 px-3 py-2 sm:px-4"
       role="radiogroup"
       aria-label="Platform"
     >

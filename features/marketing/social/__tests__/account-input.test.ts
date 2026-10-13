@@ -113,3 +113,17 @@ describe("lookup state", () => {
     expect(savedAccount(resolveAccountInput({ text: "https://example.com/x" }), idle)).toBeNull();
   });
 });
+
+describe("accountKey: encoded and plain handles are one account", () => {
+  it("espa%c3%b1a and españa give one key", () => {
+    expect(accountKey({ platform: "linkedin", handle: "viva-espa%c3%b1a" })).toBe(
+      accountKey({ platform: "linkedin", handle: "viva-españa" }),
+    );
+    expect(accountKey({ platform: "linkedin", handle: "Viva-ESPA%C3%B1A" })).toBe("linkedin:viva-españa");
+  });
+  it("a LinkedIn admin sub-page names the company, never @admin", () => {
+    const p = resolveAccountInput({ text: "https://www.linkedin.com/company/17891469/admin" });
+    expect(p.status === "ok" && p.handle).toBe("17891469");
+    expect(p.status === "ok" && p.url).toBe("https://www.linkedin.com/company/17891469");
+  });
+});

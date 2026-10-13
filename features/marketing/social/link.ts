@@ -51,7 +51,7 @@ export function looksLikePostUrl(text: string): boolean {
     p.startsWith("/shorts/") ||
     host(url) === "youtu.be" ||
     /\/(status|statuses)\/\d+/.test(p) ||
-    /\/posts?\//.test(p) ||
+    /\/posts?\/[^/]/.test(p) ||
     /\/feed\/update\//.test(p)
   );
 }

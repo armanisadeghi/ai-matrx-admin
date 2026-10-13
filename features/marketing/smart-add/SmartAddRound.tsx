@@ -51,6 +51,8 @@ export interface StepView {
   notes: string[];
   costUsd: number;
   skipped: boolean;
+  /** The step itself errored (its own error state), whatever the run's overall status says. */
+  errored?: boolean;
 }
 
 export interface RoundView {
@@ -86,6 +88,7 @@ function StepWatch({
     costUsd: numberOr(output?.cost_usd, 0),
     // A step the run skipped (its facts were not there yet) reads as skipped, like one with nothing to do.
     skipped: output?.skipped === true || aggregate.phase === "skipped",
+    errored: aggregate.phase === "failed" || Boolean(invocation?.error),
     gate: parseGate(output?.gate),
   };
   const signature = JSON.stringify({ view, evidence: evidenceFromPayload(output) });
