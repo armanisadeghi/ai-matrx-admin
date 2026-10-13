@@ -86,6 +86,7 @@ import {
   EntityCardBlock as EntityCardBlockImpl,
   AiAnswerKindBlock as AiAnswerKindBlockImpl,
 } from "@/components/mardown-display/blocks/search-kinds/place-entity-blocks";
+import { ImageResultBlock as ImageResultBlockImpl } from "@/components/mardown-display/blocks/search-kinds/image-blocks";
 // Rank / SERP-landscape kind family (Rank Kinds Run) — one canonical
 // component per kind; every nested search result delegates back to the
 // search family's components above.
@@ -759,6 +760,13 @@ const DOMAIN_BLOCK_COMPONENTS = {
   ) => (
     <LazyBlockWrapper>
       <DiscussionResultBlockImpl {...props} />
+    </LazyBlockWrapper>
+  ),
+  ImageResultBlock: (
+    props: React.ComponentProps<typeof ImageResultBlockImpl>,
+  ) => (
+    <LazyBlockWrapper>
+      <ImageResultBlockImpl {...props} />
     </LazyBlockWrapper>
   ),
   LocalPlaceBlock: (

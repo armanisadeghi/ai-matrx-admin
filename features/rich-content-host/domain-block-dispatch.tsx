@@ -1502,6 +1502,7 @@ const SHAPE_BLOCK_DISPATCH = {
   faq_item: searchKindEntry(BlockComponents.FaqItemBlock),
   discussion_result: searchKindEntry(BlockComponents.DiscussionResultBlock),
   local_place: searchKindEntry(BlockComponents.LocalPlaceBlock),
+  image_result: searchKindEntry(BlockComponents.ImageResultBlock),
   entity_card: searchKindEntry(BlockComponents.EntityCardBlock),
   ai_answer: searchKindEntry(BlockComponents.AiAnswerKindBlock),
   rating: searchKindEntry(BlockComponents.RatingBlock),
