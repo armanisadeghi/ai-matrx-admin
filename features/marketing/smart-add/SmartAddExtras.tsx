@@ -235,6 +235,39 @@ export function OpenLink({ url, label = "Open" }: { url: string; label?: string 
   );
 }
 
+/**
+ * The line under an account's name. A YouTube channel id is not a handle (nobody types it), so it
+ * reads as the channel address it is; every other platform shows its exact "@handle".
+ */
+export function accountHandleLine(platform: string | null | undefined, handle: string | null | undefined): string | null {
+  const h = (handle ?? "").replace(/^@/, "");
+  if (!h) return null;
+  if (platform === "youtube" && /^UC[\w-]{22}$/.test(h)) return `youtube.com/channel/${h}`;
+  return `@${h}`;
+}
+
+/** The relationship vocabulary (data: web.brand_relation_kind) plus saving a person's own custom one. */
+export function useRelationKinds(onRelate: (c: Candidate, relation: Relation | null) => void) {
+  const [kinds, setKinds] = useState<BrandRelationKind[]>([]);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  useEffect(() => {
+    let live = true;
+    listBrandRelationKinds()
+      .then((k) => live && setKinds(k))
+      .catch((error) => live && setLoadError(extractErrorMessage(error)));
+    return () => {
+      live = false;
+    };
+  }, []);
+  const onCustom = async (c: Candidate, label: string) => {
+    const organizationId = await ensureOrgId(null);
+    const kind = await saveCustomRelationKind(organizationId, label);
+    setKinds((list) => (list.some((k) => k.key === kind.key) ? list : [...list, kind]));
+    onRelate(c, { key: kind.key, label: kind.label, routesTo: kind.routesTo });
+  };
+  return { kinds, loadError, onCustom };
+}
+
 const CUSTOM = "__custom";
 
 function CandidateAvatar({ c }: { c: Candidate }) {
@@ -265,7 +298,7 @@ function CandidateAvatar({ c }: { c: Candidate }) {
   );
 }
 
-function RelationPicker({
+export function RelationPicker({
   kinds,
   relation,
   onRelate,
@@ -370,7 +403,7 @@ function CandidateCard({
 }) {
   const ours = isOurs(decision);
   const rejected = decision === "no";
-  const handleLine = c.platform === "website" ? (c.url ? websiteHost(c.url) : null) : c.handle ? `@${c.handle}` : null;
+  const handleLine = c.platform === "website" ? (c.url ? websiteHost(c.url) : null) : accountHandleLine(c.platform, c.handle);
   const title = c.name ?? handleLine ?? c.anchor.value;
   const findings = c.items.length;
   return (
@@ -441,23 +474,7 @@ export function CompareSources({
   onRelate: (c: Candidate, relation: Relation | null) => void;
 }) {
   const rows = compareRows(items);
-  const [kinds, setKinds] = useState<BrandRelationKind[]>([]);
-  const [loadError, setLoadError] = useState<string | null>(null);
-  useEffect(() => {
-    let live = true;
-    listBrandRelationKinds()
-      .then((k) => live && setKinds(k))
-      .catch((error) => live && setLoadError(extractErrorMessage(error)));
-    return () => {
-      live = false;
-    };
-  }, []);
-  const onCustom = async (c: Candidate, label: string) => {
-    const organizationId = await ensureOrgId(null);
-    const kind = await saveCustomRelationKind(organizationId, label);
-    setKinds((list) => (list.some((k) => k.key === kind.key) ? list : [...list, kind]));
-    onRelate(c, { key: kind.key, label: kind.label, routesTo: kind.routesTo });
-  };
+  const { kinds, loadError, onCustom } = useRelationKinds(onRelate);
   return (
     <div className="flex flex-col divide-y divide-border rounded-xl border border-border bg-card" data-testid="smart-add-compare">
       {loadError ? (

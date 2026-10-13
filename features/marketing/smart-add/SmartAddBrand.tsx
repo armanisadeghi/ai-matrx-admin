@@ -787,7 +787,13 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
           started={rounds.length > 0}
           locked={Boolean(created)}
           person={person}
-          onDecide={decide}
+          onDecide={(key, d) => {
+            // Ours / Not us replaces "Related" for that account.
+            setRelations(({ [key]: _drop, ...rest }) => rest);
+            decide(key, d);
+          }}
+          relations={Object.fromEntries(Object.entries(relations).map(([k, r]) => [k, r.relation]))}
+          onRelate={relate}
           onAdd={addCustom}
         />
       </div>

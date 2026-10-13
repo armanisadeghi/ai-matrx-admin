@@ -7,7 +7,7 @@
  * screen from the start (no layout shift); findings fade in where they belong. Answers:
  *   name / about / category: Preferred / Alias|Use / Not us (one preferred per slot)
  *   logo: pick one (the rest become not us) · website + contact: Primary / Ours / Not us
- *   accounts: Ours / Not us.
+ *   accounts: Ours / Not us / Related (a named relationship, same picker as the compare view).
  */
 
 import { useState } from "react";
@@ -18,8 +18,9 @@ import { profileAvatarDoor } from "@/features/marketing/social/server";
 import { PlatformMark, platformLabel } from "@/features/marketing/social/components/PlatformMark";
 import { SocialImage } from "@/features/marketing/social/components/SocialImage";
 import { proxiedExternalImageUrl } from "@/lib/media/external-image";
-import { websiteHost, type Decision, type EvidenceField, type EvidenceItem } from "./evidence";
-import { CustomAdd } from "./SmartAddExtras";
+import { compareRows, websiteHost, type Candidate, type Decision, type EvidenceField, type EvidenceItem, type Relation } from "./evidence";
+import { accountHandleLine, CustomAdd, OpenLink, RelationPicker, useRelationKinds } from "./SmartAddExtras";
+import { profileUrlFor } from "@/features/marketing/social/link";
 import { Shared } from "./stage/Shared";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 
@@ -84,6 +85,8 @@ export function SmartAddSlots({
   locked,
   person,
   onDecide,
+  relations,
+  onRelate,
   onAdd,
 }: {
   items: EvidenceItem[];
@@ -95,6 +98,9 @@ export function SmartAddSlots({
   /** A personal brand: a headshot instead of a logo, and expertise. */
   person: boolean;
   onDecide: (key: string, decision: Decision) => void;
+  /** Accounts answered "Related": candidate id (the account's key) -> its relationship. */
+  relations: Record<string, Relation>;
+  onRelate: (c: Candidate, relation: Relation | null) => void;
   /** A value the person typed into a slot ("Custom"). */
   onAdd: (item: EvidenceItem) => void;
 }) {
@@ -103,6 +109,10 @@ export function SmartAddSlots({
   );
   const of = (...fields: EvidenceField[]) => items.filter((i) => fields.includes(i.field));
   const socials = of("social");
+  const { kinds, onCustom } = useRelationKinds(onRelate);
+  // The same candidates the compare view builds: an account's candidate id is its key.
+  const candidateByKey = new Map<string, Candidate>();
+  for (const row of compareRows(items)) for (const c of row.candidates) candidateByKey.set(c.id, c);
   // Every platform's looked-up photo (the same source as the image library): an account row whose
   // own item came from a page link still shows the real photo.
   const photoByPlatform = new Map<string, EvidenceItem>();
@@ -147,7 +157,12 @@ export function SmartAddSlots({
 
       <Slot title="Websites" empty={of("website").length ? null : empty} after={custom("website", "another-site.com")}>
         {of("website").map((i) => (
-          <Row key={i.key} item={i} decision={decisions[i.key] ?? null} actions={choices(i, PRIMARY_CHOICES)}>
+          <Row key={i.key} item={i} decision={decisions[i.key] ?? null} actions={
+            <>
+              {choices(i, PRIMARY_CHOICES)}
+              <OpenLink url={i.url ?? i.value} />
+            </>
+          }>
             <span className="truncate text-base font-medium">{i.label ?? websiteHost(i.value)}</span>
           </Row>
         ))}
@@ -162,20 +177,34 @@ export function SmartAddSlots({
             {socials
               .filter((s) => (s.platform ?? "other") === p)
               .map((i) => (
-                <Row key={i.key} item={i} decision={decisions[i.key] ?? null} actions={choices(i, OURS_CHOICES)} hideWhere>
+                <Row
+                  key={i.key}
+                  item={i}
+                  decision={decisions[i.key] ?? null}
+                  actions={
+                    <>
+                      {choices(i, OURS_CHOICES)}
+                      {candidateByKey.get(i.key) ? (
+                        <RelationPicker
+                          kinds={kinds}
+                          relation={relations[i.key] ?? null}
+                          onRelate={(r) => onRelate(candidateByKey.get(i.key) as Candidate, r)}
+                          onCustom={(label) => onCustom(candidateByKey.get(i.key) as Candidate, label)}
+                        />
+                      ) : null}
+                      {accountUrl(i, candidateByKey.get(i.key)) ? <OpenLink url={accountUrl(i, candidateByKey.get(i.key)) as string} /> : null}
+                    </>
+                  }
+                  hideWhere
+                >
                   <span className="flex min-w-0 items-center gap-3">
                     <Shared id={i.key} className="shrink-0">
                       <Avatar item={i.profile_id ? i : { ...i, ...photoOf(photoByPlatform.get(i.platform ?? ""), i) }} />
                     </Shared>
-                    <span className="flex min-w-0 flex-col">
-                      <span className="truncate text-sm font-medium">
-                        {i.label ?? nameByProfile.get(photoByPlatform.get(i.platform ?? "")?.source.url ?? "") ?? `@${i.handle ?? ""}`}
-                      </span>
-                      <span className="truncate text-xs text-muted-foreground">
-                        @{i.handle ?? ""}
-                        {i.followers != null ? ` · ${formatCount(i.followers)} followers` : ""}
-                      </span>
-                    </span>
+                    <AccountText
+                      item={i}
+                      name={i.label ?? nameByProfile.get(photoByPlatform.get(i.platform ?? "")?.source.url ?? "") ?? null}
+                    />
                   </span>
                 </Row>
               ))}
@@ -298,7 +327,7 @@ function Row({
           </span>
         )}
       </div>
-      <div className="flex shrink-0 gap-1">{actions}</div>
+      <div className="flex shrink-0 flex-wrap items-center justify-end gap-1">{actions}</div>
     </div>
   );
 }
@@ -511,7 +540,7 @@ function LogoChoice({
   );
 }
 
-/** The account's real profile photo (round, 40px) with the platform as a small corner badge. */
+/** The account's real profile photo (round, 40px); the platform logo sits beside the name. */
 function Avatar({ item }: { item: EvidenceItem }) {
   return (
     <span className="relative size-10 shrink-0">
@@ -527,11 +556,32 @@ function Avatar({ item }: { item: EvidenceItem }) {
           {(item.handle ?? "?").slice(0, 1).toUpperCase()}
         </span>
       )}
-      <span className="absolute -bottom-0.5 -right-0.5 flex size-4 items-center justify-center rounded-full bg-background ring-1 ring-border">
-        <PlatformMark platform={item.platform ?? ""} size={11} />
-      </span>
     </span>
   );
+}
+
+/** Logo + name on one line, the exact handle (and followers) under it; no name: the handle is the title, once. */
+function AccountText({ item, name }: { item: EvidenceItem; name: string | null }) {
+  const handle = accountHandleLine(item.platform, item.handle);
+  const followers = item.followers != null ? `${formatCount(item.followers)} followers` : null;
+  const sub = name ? [handle, followers].filter(Boolean).join(" · ") : (followers ?? "");
+  return (
+    <span className="flex min-w-0 flex-col">
+      <span className="flex min-w-0 items-center gap-1.5 text-sm font-medium">
+        <PlatformMark platform={item.platform ?? ""} size={16} />
+        <span className="truncate">{name ?? handle ?? ""}</span>
+      </span>
+      {sub ? <span className="truncate text-xs text-muted-foreground">{sub}</span> : null}
+    </span>
+  );
+}
+
+/** The exact address of an account: the candidate's own, else the platform's profile address for its handle. */
+function accountUrl(item: EvidenceItem, candidate: Candidate | undefined): string | null {
+  const own = candidate?.url ?? item.url ?? item.source.url ?? (/^https?:\/\//i.test(item.value) ? item.value : null);
+  if (own) return own;
+  const platform = item.platform as Parameters<typeof profileUrlFor>[0] | null;
+  return platform && item.handle ? profileUrlFor(platform, item.handle) : null;
 }
 
 /** The photo fields of a looked-up profile, only when it is plausibly this account (same platform). */
