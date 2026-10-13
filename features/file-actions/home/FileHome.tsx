@@ -461,7 +461,10 @@ function RecentCard<Row>({
   return (
     <div className="group/entity-ref relative flex min-w-0 flex-col overflow-hidden rounded-lg border border-border bg-card transition-colors hover:border-primary/60">
       <Link href={href} onClick={(e) => onOpen(item.id, e)} className="block" aria-label={item.name} tabIndex={-1}>
-        {thumb ?? (
+        {thumb ? (
+          // The card's picture box is fixed here (4:3), so a picture that mounts late never resizes the card.
+          <div className="aspect-[4/3] w-full overflow-hidden border-b border-border">{thumb}</div>
+        ) : (
           kind.kind === "presentation" ? null : (
             <RecordThumb kind={kind.kind} id={item.id} stamp={item.updatedAt} className="aspect-[4/3] w-full border-b border-border" />
           )

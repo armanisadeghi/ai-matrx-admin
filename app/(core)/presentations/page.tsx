@@ -94,7 +94,7 @@ export default function PresentationsHomePage() {
       onScopeChange={setScope}
       reload={reload}
       viewPrefsKey="presentations-hub"
-      thumbFor={(p) => <DeckFirstSlide deck={p.deck} className="aspect-[4/3] w-full border-b border-border p-[6%]" />}
+      thumbFor={(p) => <DeckFirstSlide deck={p.deck} className="size-full p-[6%]" />}
       header={<RouteHeader left={<span className="px-1.5 text-sm font-medium text-foreground">Presentations</span>} />}
       startBand={
         <StartBand
