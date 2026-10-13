@@ -332,7 +332,7 @@ function AiWatchRunView({ serverId, requestIds }: { serverId: string | null; req
       {loadError ? <ErrorNotice title="The run's record could not be read" message={loadError} /> : null}
       {(!latest || liveDone) && runError ? <ErrorNotice title="The run did not finish" message={runError} /> : null}
 
-      <MandateSection identity={identity} />
+      <MandateSection identity={identity} attributedKey={record?.mandateKey ?? null} />
       <AdminMetrics live={latest} record={record} calls={request.calls} />
 
       <Section title={request.source === "recorded" ? "Request · recorded copy (files as markers)" : "Request"}>
@@ -408,7 +408,14 @@ function AiWatchRunView({ serverId, requestIds }: { serverId: string | null; req
   );
 }
 
-function MandateSection({ identity }: { identity: ReturnType<typeof mandateIdentity> }) {
+function MandateSection({
+  identity,
+  attributedKey,
+}: {
+  identity: ReturnType<typeof mandateIdentity>;
+  /** The server's own attribution on this run's row (`metadata.mandate_key`), never a door. */
+  attributedKey: string | null;
+}) {
   const frame = identity.frame;
   const openMandate = useOpenMandateWindow();
   const [version, setVersion] = useState<AiWatchAgentVersion | null>(null);
@@ -450,7 +457,11 @@ function MandateSection({ identity }: { identity: ReturnType<typeof mandateIdent
   if (!frame) {
     return (
       <Section title="Mandate">
-        <div className="text-muted-foreground">Not a mandate run: this turn passed no mandate door</div>
+        <div className="text-muted-foreground">
+          {attributedKey
+            ? `No mandate door · attributed to ${attributedKey}`
+            : "Not a mandate run (no mandate door)"}
+        </div>
       </Section>
     );
   }
