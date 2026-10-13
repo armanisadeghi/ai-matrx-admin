@@ -23,7 +23,8 @@ import { useAppSelector } from "@/lib/redux/hooks";
 import { selectOrganizationId } from "@/lib/redux/slices/appContextSlice";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
 import { useEffectiveKnob } from "@/lib/scoped-config/effectiveKnobs.client";
-import { TableSavedViews } from "./TableSavedViews";
+import { clientLazy } from "@ai-matrx/kit/client-lazy";
+import type { TableSavedViewsProps } from "@ai-matrx/design-system/data-table/types";
 import { TableToolbarAction } from "./TableToolbarAction";
 import { createDefaultTableRowMenuDescriptor, registerTableRowContextResolver } from "@ai-matrx/context-menu/engine";
 import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
@@ -126,6 +127,18 @@ function tableEntityDoors(token: string, id: string, href?: string | null): Tabl
   const doors = resolveEntityDoors(token, id, href);
   return { ...(doors.href === null ? {} : { href: doors.href }), peekKind: doors.peekKind, canPeek: doors.canPeek };
 }
+/**
+ * 🚨 ONE ASYNC EDGE (2026-10-13, first-load campaign). This host is mounted by
+ * `app/Providers.tsx` on EVERY route; a static `TableSavedViews` import was the last
+ * gateway pulling the whole design-system data-table root (~1 MB) into every page's
+ * first load. Saved views only render inside a table's toolbar, and any page that draws
+ * a table has already loaded the data-table root itself — so the control arrives with
+ * the table and nothing renders in its slot for the moment before.
+ */
+const TableSavedViews = clientLazy<TableSavedViewsProps>(() =>
+  import("./TableSavedViews").then((m) => m.TableSavedViews),
+);
+
 const ports: TableHost = {
   ...readPorts,
   JsonViewer,

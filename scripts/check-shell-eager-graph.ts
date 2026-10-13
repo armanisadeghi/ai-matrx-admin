@@ -70,10 +70,6 @@ export type HeavyEntry = {
   advisory?: string;
 };
 
-/** The 2026-10-13 "every page drags ~18 MB" campaign: these leave first load only when EVERY gateway closes. */
-const GATEWAY_CAMPAIGN =
-  "advisory until the 2026-10-13 first-load campaign closes its last gateway (records-ui / recharts / data-table are reached by ~10 independent gateways from app/layout.tsx, app/Providers.tsx and the (core) AppShell)";
-
 export const HEAVY: ReadonlyArray<HeavyEntry> = [
   { match: /^@babel\/standalone\//, why: "Babel compiler (2.2 MB) — code blocks, stored components, Applets" },
   { match: /^@ai-matrx\/code-runtime\/dist\/(index|frame|transform)\.js$/, why: "code-runtime compiler entries (carry Babel)" },
@@ -88,9 +84,12 @@ export const HEAVY: ReadonlyArray<HeavyEntry> = [
   // BUNDLE-3: the first load carries only the generated surface INDEX; manifest bodies load lazily.
   { match: /^features\/surfaces\/manifests\/(registry|.*\.manifest)\.tsx?$/, why: "surface manifest bodies (~600 KB gzip) — the shell reads the generated index; bodies load per surface" },
   { match: /^@ai-matrx\/chat\/dist\/surfaces\/manifests\/(?!_baseline).*\.manifest\.js$/, why: "package surface manifest bodies — loaded with the app registry, never by the shell" },
-  { match: /^@ai-matrx\/records-ui\/dist\/index\.js$/, why: "records-ui root (the whole records grid/forms cluster) — import a pure subpath, or load it at the point of use", advisory: GATEWAY_CAMPAIGN },
-  { match: /^recharts\//, why: "recharts — charts load with the surface that draws them", advisory: GATEWAY_CAMPAIGN },
-  { match: /^@ai-matrx\/design-system\/dist\/data-table\/index\.js$/, why: "design-system data-table index (MatrxDataTable and every grid feature)", advisory: GATEWAY_CAMPAIGN },
+  // 2026-10-13 first-load campaign: these three were reached by ~10 independent gateways from
+  // app/layout.tsx, app/Providers.tsx and the (core) AppShell (~18 MB on every page). Every
+  // gateway is closed, so they BLOCK: a new static path back is a red check, not a slow page.
+  { match: /^@ai-matrx\/records-ui\/dist\/index\.js$/, why: "records-ui root (the whole records grid/forms cluster) — import a pure subpath, or load it at the point of use" },
+  { match: /^recharts\//, why: "recharts — charts load with the surface that draws them" },
+  { match: /^@ai-matrx\/design-system\/dist\/data-table\/index\.js$/, why: "design-system data-table index (MatrxDataTable and every grid feature)" },
 ];
 
 /** next.config.js turbopack.resolveAlias, for the production (non-demos) profile. Kept in sync
@@ -365,18 +364,17 @@ async function selfTest(): Promise<void> {
     writeFileSync(join(dir, "client-lazy.tsx"), `"use client";\nexport const load = () => import("./heavy");\nexport default function C(){ return null; }\n`);
     writeFileSync(join(dir, "red.tsx"), `import "./server-registry";\nexport default function L(){ return null; }\n`);
     writeFileSync(join(dir, "green.tsx"), `import C from "./client-lazy";\nexport default function L(){ return <C/>; }\n`);
-    // An ADVISORY entry is seen and reported, but does not block.
+    // A campaign-closed entry (recharts) planted behind a static import must BLOCK.
     writeFileSync(join(dir, "chart.tsx"), `"use client";\nimport { LineChart } from "recharts";\nexport default function Ch(){ return String(LineChart); }\n`);
-    writeFileSync(join(dir, "advisory.tsx"), `import Ch from "./chart";\nexport default function L(){ return <Ch/>; }\n`);
+    writeFileSync(join(dir, "charted.tsx"), `import Ch from "./chart";\nexport default function L(){ return <Ch/>; }\n`);
     const red = heavyHits(await eagerClientSet([rel(join(dir, "red.tsx"))]));
     const green = heavyHits(await eagerClientSet([rel(join(dir, "green.tsx"))]));
-    const advisory = heavyHits(await eagerClientSet([rel(join(dir, "advisory.tsx"))]));
+    const charted = heavyHits(await eagerClientSet([rel(join(dir, "charted.tsx"))]));
     const ok =
       blocking(red).some((h) => /babel/.test(h.file)) &&
       green.length === 0 &&
-      advisory.some((h) => /recharts/.test(h.file)) &&
-      blocking(advisory).length === 0;
-    console.log(`self-test: planted server import() → ${blocking(red).length} blocking hit(s) (want >0); client import() → ${green.length} (want 0); planted recharts → ${advisory.length} advisory / ${blocking(advisory).length} blocking (want >0 / 0)`);
+      blocking(charted).some((h) => /recharts/.test(h.file));
+    console.log(`self-test: planted server import() → ${blocking(red).length} blocking hit(s) (want >0); client import() → ${green.length} (want 0); planted recharts → ${blocking(charted).length} blocking (want >0)`);
     if (!ok) {
       console.error("self-test FAILED — the guard cannot see the class it exists for");
       process.exit(1);
