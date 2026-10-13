@@ -22,6 +22,12 @@ import { registerIdleTask } from "@ai-matrx/kit/idle-scheduler";
 // and message Print share it) through ONE async edge — never a static import here: this provider
 // is in every route's first load, and the printers carry KaTeX (loadArtifactPrinters.ts).
 import { loadArtifactPrinters } from "@/features/canvas/artifact-types/loadArtifactPrinters";
+import { registerBlockPrinterLoader } from "@ai-matrx/print/core";
+
+// A message's Print awaits every registered printer loader before it looks a printer up
+// (`whenBlockPrintersReady` in @ai-matrx/print), so a quiz or deck clicked before the idle
+// load below lands still prints as itself — never silently as its source.
+registerBlockPrinterLoader(() => loadArtifactPrinters());
 // The page capture port wires Full Print's frame pre-pass.
 import "@/features/canvas/output/capturePort";
 // The server capture engine (L3) behind the page capture port.
