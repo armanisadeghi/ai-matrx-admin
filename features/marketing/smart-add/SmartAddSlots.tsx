@@ -89,6 +89,7 @@ export function SmartAddSlots({
   relations,
   onRelate,
   onAdd,
+  onBroken,
 }: {
   items: EvidenceItem[];
   decisions: Record<string, Decision>;
@@ -104,6 +105,8 @@ export function SmartAddSlots({
   onRelate: (c: Candidate, relation: Relation | null) => void;
   /** A value the person typed into a slot ("Custom"). */
   onAdd: (item: EvidenceItem) => void;
+  /** An image the browser could not load: its tile is hidden, and it must not be saved as a candidate. */
+  onBroken?: (key: string) => void;
 }) {
   const custom = (field: EvidenceField | "contact", placeholder: string, label?: string) => (
     <CustomAdd field={field} placeholder={placeholder} label={label} onAdd={onAdd} disabled={locked} />
@@ -131,7 +134,7 @@ export function SmartAddSlots({
     <div className="flex flex-col divide-y divide-border" data-testid="smart-add-slots">
       <Slot title={person ? "Name" : "Brand name"} empty={of("name").length ? null : empty} after={custom("name", person ? "Your name" : "Brand name")}>
         {of("name").map((i) => (
-          <Row key={i.key} item={i} decision={decisions[i.key] ?? null} actions={choices(i, NAME_CHOICES)}>
+          <Row key={i.key} item={i} decision={decisions[i.key] ?? null} actions={<>{choices(i, NAME_CHOICES)}{sourceLink(i)}</>}>
             <Shared id={i.key} positionOnly className="inline-block max-w-full truncate align-top text-lg font-semibold leading-tight">{i.value}</Shared>
           </Row>
         ))}
@@ -150,6 +153,7 @@ export function SmartAddSlots({
               onToggle={() => onDecide(i.key, decisions[i.key] === "yes" || decisions[i.key] === "preferred" ? "yes" : "yes")}
               onClear={() => onDecide(i.key, decisions[i.key] ?? "yes")}
               onPrimary={() => onDecide(i.key, "preferred")}
+              onBroken={() => onBroken?.(i.key)}
             />
             </Shared>
           ))}
@@ -242,7 +246,7 @@ export function SmartAddSlots({
         </div>
       }>
         {of("tagline").map((i) => (
-          <Row key={i.key} item={i} decision={decisions[i.key] ?? null} actions={choices(i, ABOUT_CHOICES)} compact>
+          <Row key={i.key} item={i} decision={decisions[i.key] ?? null} actions={<>{choices(i, ABOUT_CHOICES)}{sourceLink(i)}</>} compact>
             <span className="flex min-w-0 items-baseline gap-2 text-sm">
               <span className="w-16 shrink-0 text-xs text-muted-foreground">Tagline</span>
               <span className="truncate italic">{i.value}</span>
@@ -250,7 +254,7 @@ export function SmartAddSlots({
           </Row>
         ))}
         {of("category").map((i) => (
-          <Row key={i.key} item={i} decision={decisions[i.key] ?? null} actions={choices(i, ABOUT_CHOICES)} compact>
+          <Row key={i.key} item={i} decision={decisions[i.key] ?? null} actions={<>{choices(i, ABOUT_CHOICES)}{sourceLink(i)}</>} compact>
             <span className="flex min-w-0 items-baseline gap-2 text-sm">
               <span className="w-16 shrink-0 text-xs text-muted-foreground">Category</span>
               <span className="truncate">{i.value}</span>
@@ -258,7 +262,7 @@ export function SmartAddSlots({
           </Row>
         ))}
         {of("description").map((i) => (
-          <Row key={i.key} item={i} decision={decisions[i.key] ?? null} actions={choices(i, ABOUT_CHOICES)} top>
+          <Row key={i.key} item={i} decision={decisions[i.key] ?? null} actions={<>{choices(i, ABOUT_CHOICES)}{sourceLink(i)}</>} top>
             <ReadMore text={i.value} />
           </Row>
         ))}
@@ -401,6 +405,7 @@ function LogoChoice({
   onToggle,
   onClear,
   onPrimary,
+  onBroken,
 }: {
   item: EvidenceItem;
   decision: Decision | null;
@@ -409,6 +414,7 @@ function LogoChoice({
   onToggle: () => void;
   onClear: () => void;
   onPrimary: () => void;
+  onBroken: () => void;
 }) {
   const kept = decision === "yes" || decision === "preferred";
   const primary = decision === "preferred";
@@ -441,7 +447,10 @@ function LogoChoice({
         className="size-full rounded-full object-cover"
       />
     ) : (
-      <img src={src} alt="" className={className} onLoad={onLoad} onError={() => setBroken(true)} />
+      <img src={src} alt="" className={className} onLoad={onLoad} onError={() => {
+        setBroken(true);
+        onBroken();
+      }} />
     );
   // A link the site never served is not offered at all (no dead tile to keep or skip).
   if (broken) return null;
@@ -553,6 +562,12 @@ function AccountText({ item, name }: { item: EvidenceItem; name: string | null }
       {sub ? <span className="truncate text-xs text-muted-foreground">{sub}</span> : null}
     </span>
   );
+}
+
+/** Open-in-new-tab for a finding, to the page it was read from; nothing when it has no address. */
+function sourceLink(item: EvidenceItem): React.ReactNode {
+  const url = item.source.url;
+  return url && /^https?:\/\//i.test(url) ? <OpenLink url={url} /> : null;
 }
 
 /** The exact address of an account: the candidate's own, else the platform's profile address for its handle. */
