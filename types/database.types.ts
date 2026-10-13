@@ -5178,10 +5178,12 @@ export type Database = {
         Args: { f: Database["custom"]["Views"]["field"]["Row"] }
         Returns: Json
       }
-      applet_has_content: {
-        Args: { p_entry: string; p_files: Json }
-        Returns: boolean
-      }
+      applet_has_content:
+        | { Args: { p_entry: string; p_files: Json }; Returns: boolean }
+        | {
+            Args: { p_entry: string; p_files: Json; p_layout: Json }
+            Returns: boolean
+          }
       applet_kind: {
         Args: { p_applet_id: string; p_kind: string; p_platform?: string }
         Returns: Json
@@ -140980,6 +140982,92 @@ export type Database = {
           },
         ]
       }
+      brand_exclusion: {
+        Row: {
+          brand_id: string
+          context: Json
+          created_at: string
+          created_by: string | null
+          custom_fields: Json
+          deleted_at: string | null
+          id: string
+          label: string | null
+          match_kind: string
+          match_value: string
+          metadata: Json
+          organization_id: string
+          published_to_web: boolean
+          published_to_web_at: string | null
+          published_to_web_by: string | null
+          relation_key: string
+          shown_to: Database["platform"]["Enums"]["shown_to"] | null
+          source: string
+          updated_at: string
+          updated_by: string | null
+          url: string | null
+          version: number
+          visibility: Database["platform"]["Enums"]["visibility"]
+        }
+        Insert: {
+          brand_id: string
+          context?: Json
+          created_at?: string
+          created_by?: string | null
+          custom_fields?: Json
+          deleted_at?: string | null
+          id?: string
+          label?: string | null
+          match_kind: string
+          match_value: string
+          metadata?: Json
+          organization_id: string
+          published_to_web?: boolean
+          published_to_web_at?: string | null
+          published_to_web_by?: string | null
+          relation_key?: string
+          shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          source?: string
+          updated_at?: string
+          updated_by?: string | null
+          url?: string | null
+          version?: number
+          visibility?: Database["platform"]["Enums"]["visibility"]
+        }
+        Update: {
+          brand_id?: string
+          context?: Json
+          created_at?: string
+          created_by?: string | null
+          custom_fields?: Json
+          deleted_at?: string | null
+          id?: string
+          label?: string | null
+          match_kind?: string
+          match_value?: string
+          metadata?: Json
+          organization_id?: string
+          published_to_web?: boolean
+          published_to_web_at?: string | null
+          published_to_web_by?: string | null
+          relation_key?: string
+          shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          source?: string
+          updated_at?: string
+          updated_by?: string | null
+          url?: string | null
+          version?: number
+          visibility?: Database["platform"]["Enums"]["visibility"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "brand_exclusion_brand_id_fkey"
+            columns: ["brand_id"]
+            isOneToOne: false
+            referencedRelation: "brand"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       brand_offering: {
         Row: {
           adopted_at: string | null
@@ -141180,6 +141268,8 @@ export type Database = {
           created_at: string
           created_by: string | null
           deleted_at: string | null
+          description: string | null
+          has_sentiment: boolean
           id: string
           is_known: boolean
           key: string
@@ -141192,6 +141282,7 @@ export type Database = {
           routes_to: string | null
           shown_to: Database["platform"]["Enums"]["shown_to"] | null
           sort: number
+          stance: string
           status: string
           updated_at: string
           updated_by: string | null
@@ -141202,6 +141293,8 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           deleted_at?: string | null
+          description?: string | null
+          has_sentiment?: boolean
           id?: string
           is_known?: boolean
           key: string
@@ -141214,6 +141307,7 @@ export type Database = {
           routes_to?: string | null
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
           sort?: number
+          stance?: string
           status?: string
           updated_at?: string
           updated_by?: string | null
@@ -141224,6 +141318,8 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           deleted_at?: string | null
+          description?: string | null
+          has_sentiment?: boolean
           id?: string
           is_known?: boolean
           key?: string
@@ -141236,6 +141332,7 @@ export type Database = {
           routes_to?: string | null
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
           sort?: number
+          stance?: string
           status?: string
           updated_at?: string
           updated_by?: string | null
@@ -142030,6 +142127,7 @@ export type Database = {
           resolved_property_id: string | null
           reviewed_at: string | null
           reviewed_by: string | null
+          sentiment: string | null
           site_id: string | null
           snapshot_id: string | null
           source: string
@@ -142060,6 +142158,7 @@ export type Database = {
           resolved_property_id?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
+          sentiment?: string | null
           site_id?: string | null
           snapshot_id?: string | null
           source: string
@@ -142090,6 +142189,7 @@ export type Database = {
           resolved_property_id?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
+          sentiment?: string | null
           site_id?: string | null
           snapshot_id?: string | null
           source?: string

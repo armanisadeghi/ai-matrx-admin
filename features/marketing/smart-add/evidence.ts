@@ -29,6 +29,8 @@ export type EvidenceField =
   // The web tier: a review/listing page about the brand, and a news/video/image result about it.
   | "listing"
   | "mention"
+  // Any other top web result: the person says what it is to the brand (web.brand_relation_kind).
+  | "web_page"
   // A link the brand shows on its link-in-bio page that is neither an account nor its website.
   | "bio_link";
 
@@ -55,6 +57,8 @@ export interface EvidenceItem {
   verified: boolean | null;
   /** The stored social profile (its avatar door), when the item came from a lookup. */
   profile_id: string | null;
+  /** Account rows: keys of the bare links this looked-up account IS (`/channel/UC…`, a numeric `/company/<id>`). */
+  same_as?: string[];
   source: EvidenceSource;
   confidence: number;
   /** Web-found items only: how sure, and why (aidream brand_identify_web.web_certainty). */
@@ -62,6 +66,18 @@ export interface EvidenceItem {
   certainty_reasons?: string[];
   /** Web-found items: the engines that found it (admin/Builder data — never shown to customers). */
   engines?: string[];
+  /** Web-found items: the result's description as served. */
+  snippet?: string | null;
+  /** Web-found items: every engine/query/rank that found it, best rank first. */
+  hits?: WebHit[];
+}
+
+/** One place a web result was found. */
+export interface WebHit {
+  engine: string;
+  rank: number;
+  query: string;
+  endpoint: string;
 }
 
 /**
@@ -118,17 +134,25 @@ export const FIELD_LABEL: Record<EvidenceField, string> = {
   address: "Address",
   listing: "On the web",
   mention: "On the web",
+  web_page: "On the web",
   bio_link: "Also linked from their bio",
 };
 
 /** Fields that live only in the "On the web" row, never in the form's slots. */
-export const WEB_FIELDS: ReadonlySet<EvidenceField> = new Set(["listing", "mention"]);
+export const WEB_FIELDS: ReadonlySet<EvidenceField> = new Set(["listing", "mention", "web_page"]);
 
 /** Fields shown in their own compact groups, never in the form's slots. */
 export const GROUP_FIELDS: ReadonlySet<EvidenceField> = new Set(["bio_link"]);
 
 function asString(value: unknown): string | null {
   return typeof value === "string" && value.trim() ? value : null;
+}
+
+function parseHit(raw: unknown): WebHit | null {
+  if (typeof raw !== "object" || raw === null) return null;
+  const h = raw as Record<string, unknown>;
+  if (typeof h.rank !== "number") return null;
+  return { engine: asString(h.engine) ?? "", rank: h.rank, query: asString(h.query) ?? "", endpoint: asString(h.endpoint) ?? "web" };
 }
 
 /** Read one evidence item from an untyped workflow payload; null when it is not one. */
@@ -152,6 +176,7 @@ export function parseEvidenceItem(raw: unknown): EvidenceItem | null {
     followers: typeof r.followers === "number" ? r.followers : null,
     verified: typeof r.verified === "boolean" ? r.verified : null,
     profile_id: asString(r.profile_id),
+    same_as: Array.isArray(r.same_as) ? r.same_as.filter((x): x is string => typeof x === "string") : [],
     source: {
       node: asString(src.node) ?? "",
       kind: (asString(src.kind) as EvidenceSource["kind"]) ?? "website",
@@ -164,6 +189,8 @@ export function parseEvidenceItem(raw: unknown): EvidenceItem | null {
       ? r.certainty_reasons.filter((x): x is string => typeof x === "string")
       : [],
     engines: Array.isArray(r.engines) ? r.engines.filter((x): x is string => typeof x === "string") : [],
+    snippet: asString(r.snippet),
+    hits: Array.isArray(r.hits) ? r.hits.map(parseHit).filter((h): h is WebHit => h !== null) : [],
   };
 }
 
@@ -398,7 +425,7 @@ export function candidateCategory(field: EvidenceField): "media" | "fact" | "soc
 export interface Relation {
   key: string;
   label: string;
-  routesTo: "owns" | "key_person" | "competitor" | null;
+  routesTo: "owns" | "key_person" | "competitor" | "brand_property" | "exclusion" | null;
 }
 
 /** One website or account that may or may not be the brand, with what its own page said. */
@@ -464,6 +491,15 @@ export function compareRows(items: EvidenceItem[]): PlatformRow[] {
     const existing = accounts.get(i.key);
     if (!existing || (existing.source.kind !== "social_profile" && i.source.kind === "social_profile")) accounts.set(i.key, i);
   }
+  // A bare link the server resolved to a looked-up account (`same_as`) is that account, not a second row.
+  const aliasKeys = new Map<string, string[]>();
+  for (const a of accounts.values()) {
+    for (const k of a.same_as ?? []) {
+      if (k === a.key || !accounts.has(k)) continue;
+      aliasKeys.set(a.key, [...(aliasKeys.get(a.key) ?? []), k]);
+    }
+  }
+  for (const merged of aliasKeys.values()) for (const k of merged) accounts.delete(k);
   for (const acct of accounts.values()) {
     // A looked-up profile's findings carry the profile address as their source; match it to the account.
     const addresses = new Set(
@@ -541,7 +577,12 @@ export function compareRows(items: EvidenceItem[]): PlatformRow[] {
   // A key in two candidates (a profile's link to the site) belongs to neither alone.
   const seen = new Map<string, number>();
   for (const c of candidates) for (const i of c.items) seen.set(i.key, (seen.get(i.key) ?? 0) + 1);
-  for (const c of candidates) c.ownKeys = c.items.filter((i) => i.key === c.anchor.key || seen.get(i.key) === 1).map((i) => i.key);
+  for (const c of candidates) {
+    c.ownKeys = [
+      ...c.items.filter((i) => i.key === c.anchor.key || seen.get(i.key) === 1).map((i) => i.key),
+      ...(aliasKeys.get(c.anchor.key) ?? []),
+    ];
+  }
 
   const rows = new Map<string, Candidate[]>();
   for (const c of candidates) rows.set(c.platform, [...(rows.get(c.platform) ?? []), c]);
@@ -576,13 +617,22 @@ export function bioLinkGroups(items: Iterable<EvidenceItem>): { from: string; li
 
 const CERTAINTY_RANK: Record<Certainty, number> = { certain: 0, likely: 1, possible: 2 };
 
-/** The review/listing pages and news/video/image results, surest first. */
+/** A web result's best (lowest) rank across every engine and query that found it. */
+export function bestRank(item: EvidenceItem): number {
+  return item.hits?.length ? Math.min(...item.hits.map((h) => h.rank)) : 99;
+}
+
+/**
+ * Every web result (pages, review/listing pages, news/video/image results), merged across engines:
+ * best rank first, then found by more engines, then surer.
+ */
 export function webRow(items: Iterable<EvidenceItem>): EvidenceItem[] {
   return [...items]
     .filter((i) => WEB_FIELDS.has(i.field))
     .sort(
       (a, b) =>
-        (a.field === "listing" ? 0 : 1) - (b.field === "listing" ? 0 : 1) ||
+        bestRank(a) - bestRank(b) ||
+        (b.engines?.length ?? 0) - (a.engines?.length ?? 0) ||
         CERTAINTY_RANK[a.certainty ?? "possible"] - CERTAINTY_RANK[b.certainty ?? "possible"] ||
         b.confidence - a.confidence,
     );

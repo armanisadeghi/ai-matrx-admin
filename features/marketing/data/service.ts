@@ -2681,8 +2681,10 @@ export async function createDiscoveredCandidates(
     value: Json;
     context: Json;
     confidence: number | null;
-    /** A finding the person marked as RELATED (web.brand_relation_kind key): kept as reviewed, never as ours. */
+    /** What the person said this finding is to the brand (web.brand_relation_kind key): kept as reviewed. */
     relationKey?: string | null;
+    /** For kinds with a sentiment (a mention): how it speaks about the brand. */
+    sentiment?: "positive" | "neutral" | "negative" | null;
   }>,
 ): Promise<void> {
   if (!rows.length) return;
@@ -2704,20 +2706,43 @@ export async function createDiscoveredCandidates(
         confidence: r.confidence,
         status: r.relationKey ? "confirmed" : "pending",
         relation_key: r.relationKey ?? null,
+        sentiment: r.sentiment ?? null,
         ...(r.relationKey ? { reviewed_at: reviewedAt } : {}),
       })),
     );
   if (response.error) throw new Error(response.error.message);
 }
 
-/** One way a found account/site can relate to a brand (web.brand_relation_kind). */
+/** What a found thing is to the brand, at the top level (web.brand_relation_kind.stance). */
+export type RelationStance = "ours" | "about_us" | "associated" | "competitor" | "not_us" | "irrelevant";
+
+export type RelationRoute = "owns" | "key_person" | "competitor" | "brand_property" | "exclusion";
+
+/** One answer to "what is this to us?" for any found site or account (web.brand_relation_kind). */
 export interface BrandRelationKind {
   id: string;
   key: string;
   label: string;
-  /** The canonical home this relationship lands in: owns / key_person (people on the brand), competitor. */
-  routesTo: "owns" | "key_person" | "competitor" | null;
+  /**
+   * The canonical home this answer lands in: owns / key_person (people on the brand), competitor
+   * (profile.competitors), brand_property (the brand's own sites), exclusion (web.brand_exclusion).
+   */
+  routesTo: RelationRoute | null;
   isKnown: boolean;
+  stance: RelationStance;
+  /** One-line meaning. */
+  description: string | null;
+  /** A finding of this kind carries positive / neutral / negative. */
+  hasSentiment: boolean;
+  /** Deterministic suggestion rules (metadata.match): host suffixes and host+path patterns. */
+  match: { hosts: string[]; paths: string[] };
+}
+
+const RELATION_ROUTES: readonly RelationRoute[] = ["owns", "key_person", "competitor", "brand_property", "exclusion"];
+const RELATION_STANCES: readonly RelationStance[] = ["ours", "about_us", "associated", "competitor", "not_us", "irrelevant"];
+
+function stringList(value: unknown): string[] {
+  return Array.isArray(value) ? value.filter((x): x is string => typeof x === "string") : [];
 }
 
 function toRelationKind(row: {
@@ -2726,22 +2751,62 @@ function toRelationKind(row: {
   label: string;
   routes_to: string | null;
   is_known: boolean;
+  stance?: string | null;
+  description?: string | null;
+  has_sentiment?: boolean | null;
+  metadata?: Json | null;
 }): BrandRelationKind {
-  const routes = row.routes_to;
+  const routes = row.routes_to as RelationRoute | null;
+  const meta = asRecord(row.metadata ?? null);
+  const match = asRecord((meta.match ?? null) as Json);
   return {
     id: row.id,
     key: row.key,
     label: row.label,
-    routesTo: routes === "owns" || routes === "key_person" || routes === "competitor" ? routes : null,
+    routesTo: routes && RELATION_ROUTES.includes(routes) ? routes : null,
     isKnown: row.is_known,
+    stance: RELATION_STANCES.includes(row.stance as RelationStance) ? (row.stance as RelationStance) : "associated",
+    description: row.description ?? null,
+    hasSentiment: Boolean(row.has_sentiment),
+    match: { hosts: stringList(match.hosts), paths: stringList(match.paths) },
   };
+}
+
+/** One "Not us" the person marked: the seed of the brand's NO LIST (web.brand_exclusion). */
+export async function createBrandExclusions(
+  rows: Array<{
+    organizationId: string;
+    brandId: string;
+    matchKind: "host" | "url" | "account" | "name";
+    matchValue: string;
+    url: string | null;
+    label: string | null;
+    context: Json;
+  }>,
+): Promise<void> {
+  const db = await authenticatedWebDb(supabase);
+  // One insert each: the same "Not us" twice is already recorded (unique per brand + match), never an error.
+  for (const r of rows) {
+    const { error } = await db.from("brand_exclusion").insert({
+      organization_id: r.organizationId,
+      brand_id: r.brandId,
+      match_kind: r.matchKind,
+      match_value: r.matchValue,
+      url: r.url,
+      label: r.label,
+      relation_key: "not_us",
+      source: "smart_add",
+      context: r.context,
+    });
+    if (error && error.code !== "23505") throw new Error(error.message);
+  }
 }
 
 /** The shared relationship vocabulary plus the custom entries this person can see. Known first, in order. */
 export async function listBrandRelationKinds(): Promise<BrandRelationKind[]> {
   const { data, error } = await (await authenticatedWebDb(supabase))
     .from("brand_relation_kind")
-    .select("id, key, label, routes_to, is_known, sort")
+    .select("id, key, label, routes_to, is_known, sort, stance, description, has_sentiment, metadata")
     .eq("status", "active")
     .is("deleted_at", null)
     .order("is_known", { ascending: false })
@@ -2763,7 +2828,7 @@ export async function saveCustomRelationKind(organizationId: string, label: stri
   const db = await authenticatedWebDb(supabase);
   const existing = await db
     .from("brand_relation_kind")
-    .select("id, key, label, routes_to, is_known")
+    .select("id, key, label, routes_to, is_known, stance, description, has_sentiment, metadata")
     .eq("organization_id", organizationId)
     .eq("key", key)
     .is("deleted_at", null)
@@ -2773,7 +2838,7 @@ export async function saveCustomRelationKind(organizationId: string, label: stri
   const { data, error } = await db
     .from("brand_relation_kind")
     .insert({ organization_id: organizationId, key, label: clean, is_known: false, sort: 1000, visibility: "internal" })
-    .select("id, key, label, routes_to, is_known")
+    .select("id, key, label, routes_to, is_known, stance, description, has_sentiment, metadata")
     .single();
   if (error) throw new Error(error.message);
   return toRelationKind(data);
