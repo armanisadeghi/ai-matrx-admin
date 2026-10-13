@@ -9,7 +9,7 @@
 
 import { useState } from "react";
 import { ChevronDown, ChevronRight, ExternalLink } from "lucide-react";
-import { formatDurationMs } from "@ai-matrx/kit/format";
+import { msText } from "../requests";
 import { useCostDisplay } from "@/components/cost/useCostDisplay";
 import { Badge, Button, RegionSkeleton, Select, type SelectOption } from "@ai-matrx/design-system/controls";
 import { runHref } from "@/features/workflow-runtime/run-doors";
@@ -51,7 +51,7 @@ function StepRow({ o, open, onToggle }: { o: NodeOutcomeRow; open: boolean; onTo
         {o.error ? <Badge tone="destructive">error</Badge> : out.skipped === true ? <Badge>skipped</Badge> : <Badge tone="success">done</Badge>}
         {reqs ? <span className="text-[11px] tabular-nums text-muted-foreground">{reqs} req</span> : null}
         <span className="ml-auto flex shrink-0 items-center gap-2 text-[11px] tabular-nums text-muted-foreground">
-          <span>{formatDurationMs(o.durationMs)}</span>
+          <span>{msText(o.durationMs)}</span>
           {cost ? <span>{format(cost)}</span> : null}
         </span>
       </button>

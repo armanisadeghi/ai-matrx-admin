@@ -48,16 +48,12 @@ export function ProposalCard({ proposal }: { proposal: MandateProposal }) {
       ) : null}
       {inputs.length ? (
         <div className="flex flex-col gap-1">
-          <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Inputs</span>
           <BuilderJson data={proposal.inputs} label="Inputs" location={`Proposal ${proposal.title} · inputs`} className="h-48" />
         </div>
       ) : null}
       {proposal.outputSketch ? (
         <div className="flex flex-col gap-1">
-          <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-            Output{proposal.outputKind ? ` · ${proposal.outputKind}` : ""}
-          </span>
-          <BuilderJson data={proposal.outputSketch} label="Output sketch" location={`Proposal ${proposal.title} · output sketch`} className="h-48" />
+          <BuilderJson data={proposal.outputSketch} label={proposal.outputKind ? `Output · ${proposal.outputKind}` : "Output"} location={`Proposal ${proposal.title} · output sketch`} className="h-48" />
         </div>
       ) : null}
     </article>

@@ -6,10 +6,10 @@
  * social lookups). Each row opens the exact request and the exact response, untouched.
  */
 
-import { formatDurationMs } from "@ai-matrx/kit/format";
+
 import { Badge, SegmentedControl } from "@ai-matrx/design-system/controls";
 import { cn } from "@/lib/utils";
-import type { RequestRow } from "../requests";
+import { msText, type RequestRow } from "../requests";
 import { BuilderJson } from "./BuilderJson";
 
 export type RequestFilter = "all" | "page" | "server";
@@ -21,7 +21,7 @@ function statusTone(row: RequestRow): "success" | "warning" | "destructive" | "n
 }
 
 function clock(at: number): string {
-  return new Date(at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+  return new Date(at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false });
 }
 
 export function BuilderRequestsTab({
@@ -77,8 +77,8 @@ export function BuilderRequestsTab({
                   <Badge tone={r.side === "server" ? "info" : "neutral"}>{r.side === "server" ? r.provider || "server" : "page"}</Badge>
                   <span className="min-w-0 flex-1 truncate text-xs">{r.title}</span>
                   <Badge tone={statusTone(r)}>{r.error ? "error" : (r.status ?? "…")}</Badge>
-                  <span className="w-12 shrink-0 text-right text-[10px] tabular-nums text-muted-foreground">
-                    {r.ms !== null ? formatDurationMs(r.ms) : ""}
+                  <span className="w-14 shrink-0 text-right text-[10px] tabular-nums text-muted-foreground">
+                    {r.ms !== null ? msText(r.ms) : ""}
                   </span>
                 </button>
               </li>

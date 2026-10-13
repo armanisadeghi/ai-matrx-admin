@@ -3,10 +3,10 @@
 /** Activity — what was done, in order: each request, each step, gates, provision captures; with
  *  time and cost, each opening its raw record. */
 
-import { formatDurationMs } from "@ai-matrx/kit/format";
+
 import { Badge } from "@ai-matrx/design-system/controls";
 import { useCostDisplay } from "@/components/cost/useCostDisplay";
-import type { ActivityRow } from "../requests";
+import { msText, type ActivityRow } from "../requests";
 
 const KIND_TONE: Record<string, "neutral" | "info" | "success" | "warning"> = {
   request: "info",
@@ -17,7 +17,7 @@ const KIND_TONE: Record<string, "neutral" | "info" | "success" | "warning"> = {
 };
 
 function clock(at: number): string {
-  return new Date(at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+  return new Date(at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false });
 }
 
 export function BuilderActivityTab({
@@ -62,8 +62,8 @@ export function BuilderActivityTab({
                 <Badge tone={KIND_TONE[r.kind] ?? "neutral"}>{r.kind}</Badge>
                 <span className="min-w-0 flex-1 truncate text-xs">{r.title}</span>
                 {r.status ? <span className="shrink-0 text-[10px] text-muted-foreground">{r.status}</span> : null}
-                <span className="w-12 shrink-0 text-right text-[10px] tabular-nums text-muted-foreground">
-                  {r.ms !== null ? formatDurationMs(r.ms) : ""}
+                <span className="w-14 shrink-0 text-right text-[10px] tabular-nums text-muted-foreground">
+                  {r.ms !== null ? msText(r.ms) : ""}
                 </span>
                 <span className="w-16 shrink-0 text-right text-[10px] tabular-nums text-muted-foreground">
                   {r.costUsd ? format(r.costUsd) : ""}

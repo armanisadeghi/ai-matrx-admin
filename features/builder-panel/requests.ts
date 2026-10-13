@@ -96,7 +96,21 @@ export function allRequestRows(pageRows: RequestRow[], serverRows: RequestRow[])
   return [...pageRows, ...serverRows].sort((a, b) => a.at - b.at);
 }
 
-// ── Activity ────────────────────────────────────────────────────────────────────────────────
+// ── Activity ─
+
+const FLOW_PATH = /\/workflows\/|\/provision-window\/|\/runs(\/|$|\?)/;
+const WRITE = new Set(["POST", "PATCH", "PUT", "DELETE"]);
+
+/** What the flow DID: every server-side call, the page's calls that start or follow work (runs,
+ *  provision captures) and its record writes. Session chatter (reads, RPC lookups, telemetry)
+ *  stays in Requests only. */
+export function isFlowRequest(r: RequestRow): boolean {
+  if (r.side === "server") return true;
+  const req = r.request as { method?: string; url?: string } | null;
+  const url = req?.url ?? "";
+  if (FLOW_PATH.test(url)) return true;
+  return WRITE.has(req?.method ?? "") && /\/rest\/v1\/(?!rpc\/)/.test(url);
+}
 
 export interface ActivityRow {
   id: string;
@@ -129,7 +143,7 @@ export function activityRows(
   nodeLabels: Record<string, string>,
 ): ActivityRow[] {
   const out: ActivityRow[] = [];
-  for (const r of requests) {
+  for (const r of requests.filter(isFlowRequest)) {
     const verb = r.side === "server" ? KIND_VERB[r.kind] : null;
     out.push({
       id: `a:${r.id}`,
@@ -227,4 +241,9 @@ function pathOf(url: string): string {
   } catch {
     return url;
   }
+}
+
+/** A request or step duration, exact below a second. */
+export function msText(ms: number): string {
+  return ms < 1000 ? `${ms} ms` : `${(ms / 1000).toFixed(ms < 10_000 ? 2 : 1)} s`;
 }
