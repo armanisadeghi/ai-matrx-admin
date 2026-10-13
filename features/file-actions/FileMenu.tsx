@@ -24,7 +24,10 @@ import {
   useGoogleLink,
   type GoogleLinkAdapter,
 } from "@/features/google-workspace/linked/GoogleLinkControl";
-import { FileMenuItems, type FileMenuItemsProps } from "./FileMenuItems";
+import { FileMenuItems, promptRename, type FileMenuItemsProps } from "./FileMenuItems";
+import { buildEditorFileMenu, type EditorFileSpec } from "./editor-file-menu";
+import { renderMenuEntries } from "@/components/editor-chrome/EditorMenuBar";
+import { useRouter } from "next/navigation";
 import { restoreEditorFocus } from "@/components/editor-chrome/EditorMenuBar";
 import { EditorMenuContent } from "@/components/editor-chrome/editor-menu-surface";
 import { MoveToProjectDialog } from "./MoveToProjectDialog";
@@ -59,6 +62,8 @@ export type FileMenuProps = Omit<
   onOpenChange?: (open: boolean) => void;
   /** A "Save as template" row (the editor File menu): the record's kind. */
   templateKind?: TemplateKind;
+  /** In an editor's menu bar: Google's File menu (order, groups, Coming Soon rows) for this kind. */
+  editorFile?: EditorFileSpec;
 };
 
 /** Mounts the Google link state beside the dropdown, so its dialogs outlive the menu closing. */
@@ -115,8 +120,10 @@ export function FileMenu({
   open,
   onOpenChange,
   templateKind,
+  editorFile,
   ...items
 }: FileMenuProps): ReactNode {
+  const router = useRouter();
   const [menuOpened, setMenuOpened] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
   const [moveOpen, setMoveOpen] = useState(false);
@@ -177,6 +184,27 @@ export function FileMenu({
                 align={isValidElement(trigger) ? "start" : "end"}
                 className={isValidElement(trigger) ? "max-h-[75vh] min-w-[15rem] overflow-y-auto" : "min-w-[11rem]"}
               >
+                {editorFile && isValidElement(trigger) && !trashed ? (
+                  <>
+                    {renderMenuEntries(
+                      buildEditorFileMenu(editorFile, {
+                        ...(shareable ? { share: () => setShareOpen(true) } : {}),
+                        ...(items.onCopy ? { copy: () => void items.onCopy?.() } : {}),
+                        ...(items.canManage && items.onRename
+                          ? { rename: () => void promptRename(name, items.onRename!) }
+                          : {}),
+                        ...(items.canManage && onMove ? { move: () => setMoveOpen(true) } : {}),
+                        ...(items.canManage && items.onTrash ? { trash: () => void items.onTrash?.() } : {}),
+                        ...(templateKind ? { saveAsTemplate: () => setTemplateOpen(true) } : {}),
+                        download: (d) => void items.onDownload?.(d),
+                        navigate: (href) => router.push(href),
+                      }),
+                      "file/",
+                    )}
+                    {items.extra}
+                    {googleRows}
+                  </>
+                ) : (
                 <FileMenuItems
                   {...items}
                   extra={
@@ -189,6 +217,7 @@ export function FileMenu({
                   {...(onMove ? { onMoveRequest: () => setMoveOpen(true) } : {})}
                   {...(templateKind ? { onSaveAsTemplateRequest: () => setTemplateOpen(true) } : {})}
                 />
+                )}
               </MenuContent>
             </DropdownMenu>
           )}

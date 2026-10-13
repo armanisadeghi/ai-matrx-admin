@@ -127,3 +127,11 @@
 [data-editor-ribbon] svg.lucide.size-4 {
   color: var(--editor-icon-ink);
 }
+
+/* A Google row we cannot run yet (Coming Soon): muted like Google's unavailable rows, still clickable. */
+.matrx-editor-menu [role="menuitem"][data-soon] {
+  color: var(--editor-muted-ink);
+}
+.matrx-editor-menu [role="menuitem"][data-soon] > svg:first-child {
+  opacity: 0.6;
+}

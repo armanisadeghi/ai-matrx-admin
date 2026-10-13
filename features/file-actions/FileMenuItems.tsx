@@ -56,17 +56,21 @@ export type FileMenuItemsProps = {
   extra?: ReactNode;
 };
 
+/** The one Rename prompt of a file-like record (list row menu and editor File menu). */
+export async function promptRename(name: string, onRename: (name: string) => Promise<void> | void): Promise<void> {
+  const answers = await promptForValues({
+    title: "Rename",
+    submitLabel: "Rename",
+    fields: [{ name: "name", prompt: "Name", defaultValue: name, required: true }],
+  });
+  const next = answers?.name?.trim();
+  if (next && next !== name) await onRename(next);
+}
+
 export function FileMenuItems(p: FileMenuItemsProps): ReactNode {
   const subClass = useEditorMenuClass();
   const rename = async () => {
-    if (!p.onRename) return;
-    const answers = await promptForValues({
-      title: "Rename",
-      submitLabel: "Rename",
-      fields: [{ name: "name", prompt: "Name", defaultValue: p.name, required: true }],
-    });
-    const next = answers?.name?.trim();
-    if (next && next !== p.name) await p.onRename(next);
+    if (p.onRename) await promptRename(p.name, p.onRename);
   };
 
   if (p.trashed) {

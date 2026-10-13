@@ -12,8 +12,11 @@
 // `announceComingSoon(id)`.
 
 import type { ComingSoonEntry } from "./types";
+import { EDITOR_MENU_COMING_SOON } from "./editor-menus";
 
 export const COMING_SOON: Record<string, ComingSoonEntry> = {
+  // Every Google Sheets / Docs / Slides menu row the editors cannot run yet (editor-menus.ts).
+  ...EDITOR_MENU_COMING_SOON,
   "agents.admin-masterwork-from-chat": {
     id: "agents.admin-masterwork-from-chat",
     label: "Masterwork from a person's chat",

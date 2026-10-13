@@ -98,6 +98,7 @@ export function renderMenuEntries(entries: EditorMenuEntry[], keyPrefix = ""): R
       <DropdownMenuItem
         key={e.id}
         data-editor-command={e.id}
+        {...(e.soon ? { "data-soon": "", title: "Coming soon" } : {})}
         disabled={e.disabled?.() ?? false}
         onSelect={() => void Promise.resolve(e.run()).catch(() => {})}
       >
@@ -194,8 +195,25 @@ export function EditorMenuBar({
 }) {
   const { openId, change, hoverSwitch } = state;
   const rowRef = useRef<HTMLElement | null>(null);
-  const entries: BarEntry[] = menus.map((m) => ({ id: m.id, label: m.label, kind: "menu", menu: m }));
-  if (extensions) {
+  // Google's Extensions rows come from the model; the host's own tools (Google link, table
+  // link…) follow them in the same menu.
+  const entries: BarEntry[] = menus.map((m) =>
+    m.id === "extensions" && extensions
+      ? {
+          id: m.id,
+          label: m.label,
+          kind: "extensions",
+          content: (
+            <>
+              {renderMenuEntries(m.items, "extensions/")}
+              <DropdownMenuSeparator />
+              {extensions}
+            </>
+          ),
+        }
+      : { id: m.id, label: m.label, kind: "menu", menu: m },
+  );
+  if (extensions && !menus.some((m) => m.id === "extensions")) {
     const help = entries.findIndex((e) => e.id === "help");
     entries.splice(help < 0 ? entries.length : help, 0, {
       id: "extensions",

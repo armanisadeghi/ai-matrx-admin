@@ -17,6 +17,7 @@ import { useFileFavorites } from "./useFileFavorites";
 import { leaveTrashedRecord } from "./leaveTrashedRecord";
 import { copyRecord, moveRecord, restoreRecord, runDownload, trashRecord } from "./ops";
 import type { FileDownload, FileKindAdapter } from "./types";
+import type { EditorFileSpec } from "./editor-file-menu";
 
 export function useFileRecordMenu<Row extends { id: string; user_id: string }>(
   adapter: FileKindAdapter<Row>,
@@ -34,6 +35,8 @@ export function useFileRecordMenu<Row extends { id: string; user_id: string }>(
     menubar?: { trigger: ReactElement; open: boolean; onOpenChange: (open: boolean) => void };
     /** A Rename row (the editor's one rename path). */
     onRename?: (name: string) => Promise<void>;
+    /** Google's File menu for this editor (with `menubar`). */
+    editorFile?: EditorFileSpec;
   },
 ): ReactNode {
   const router = useRouter();
@@ -78,6 +81,7 @@ export function useFileRecordMenu<Row extends { id: string; user_id: string }>(
       }}
       extra={options.extra}
       google={options.google}
+      {...(options.editorFile ? { editorFile: options.editorFile } : {})}
       {...(options.onRename ? { onRename: options.onRename } : {})}
       {...(options.menubar
         ? {

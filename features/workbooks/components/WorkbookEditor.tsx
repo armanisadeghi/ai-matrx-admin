@@ -28,7 +28,7 @@ import { DropdownMenuItem, DropdownMenuSeparator } from "@/components/ui/dropdow
 import { useRouter } from "next/navigation";
 import { EditorDocumentHeader } from "@/features/shell/components/header/templates/EditorDocumentHeader";
 import { useShellCanvasFullScreen } from "@/features/shell/components/ShellChromeMode";
-import { EditorMenuBar, useMenuBarState, renderMenuEntries } from "@/components/editor-chrome/EditorMenuBar";
+import { EditorMenuBar, useMenuBarState } from "@/components/editor-chrome/EditorMenuBar";
 import { EditorToolbar } from "@/components/editor-chrome/EditorToolbar";
 import { EditorRibbon } from "@/components/editor-chrome/EditorRibbon";
 import { OfficeLookSwitch } from "@/features/file-actions/skin/OfficeLookSwitch";
@@ -38,7 +38,7 @@ import { boundActions, matchesShortcut, type EditorMenuEntry } from "@/component
 import { buildSheetMenus, buildSheetToolbar, type SheetChromeHost, type SheetsApiLike } from "@/features/workbooks/chrome/sheet-commands";
 import { createWorkbook } from "@/features/workbooks/workbook-service";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
-import { downloadSheetAsCsv, downloadSheetAsPdf, printSheet } from "@/features/workbooks/sheet-output";
+import { downloadSheetAsCsv, downloadSheetAsHtml, downloadSheetAsPdf, downloadSheetAsTsv, printSheet } from "@/features/workbooks/sheet-output";
 import { useFileRecordMenu } from "@/features/file-actions/useFileRecordMenu";
 import { WORKBOOK_ADAPTER } from "@/features/file-actions/adapters";
 import type { Workbook } from "@/features/data-tables/types";
@@ -764,6 +764,20 @@ export default function WorkbookEditor({
       ),
     [withActiveSheet],
   );
+  const handleExportTsv = useCallback(
+    () =>
+      withActiveSheet((snapshot, sheetId, title) =>
+        downloadSheetAsTsv(snapshot, { ...(sheetId ? { sheetId } : {}), filename: title }),
+      ),
+    [withActiveSheet],
+  );
+  const handleExportHtml = useCallback(
+    () =>
+      withActiveSheet((snapshot, sheetId, title) =>
+        downloadSheetAsHtml(snapshot, { ...(sheetId ? { sheetId } : {}), filename: title }),
+      ),
+    [withActiveSheet],
+  );
   const handlePrint = useCallback(
     () =>
       withActiveSheet((snapshot, sheetId, title) =>
@@ -851,7 +865,20 @@ export default function WorkbookEditor({
       { label: "CSV (current sheet)", run: async () => handleExportCsv() },
       { label: "PDF (current sheet)", run: async () => handleExportPdf() },
     ],
-    extra: renderMenuEntries(fileExtras),
+    // Google Sheets' File menu: Download in Google's order (csv, tsv, html and pdf are the current sheet).
+    editorFile: {
+      product: "sheets",
+      rows: fileExtras,
+      templatesHref: "/workbooks/templates",
+      downloads: [
+        { label: "Microsoft Excel (.xlsx)", run: handleExportXlsx },
+        { label: "OpenDocument (.ods)", soon: "workbooks.download-ods" },
+        { label: "PDF (.pdf)", run: async () => handleExportPdf() },
+        { label: "Web Page (.html)", run: async () => handleExportHtml() },
+        { label: "Comma Separated Values (.csv)", run: async () => handleExportCsv() },
+        { label: "Tab Separated Values (.tsv)", run: async () => handleExportTsv() },
+      ],
+    },
     menubar: menuBar.fileMenuProps(),
     ...(chrome.onRename ? { onRename: chrome.onRename } : {}),
   });

@@ -36,6 +36,11 @@ export type EditorMenuAction = {
   checked?: () => boolean;
   /** Only for edit gates (a viewer); never "not built". */
   disabled?: () => boolean;
+  /**
+   * A Google menu row we cannot run yet: the registered Coming Soon id it announces
+   * (`lib/coming-soon/editor-menus.ts`). Drawn in muted ink; `run` announces the promise.
+   */
+  soon?: string;
 };
 
 export type EditorMenuSubmenu = {

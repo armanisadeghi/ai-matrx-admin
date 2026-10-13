@@ -27,6 +27,38 @@ export function downloadSheetAsCsv(
   return true;
 }
 
+/** Tab-separated values of the current sheet (Google's .tsv download). */
+export function downloadSheetAsTsv(
+  snapshot: unknown,
+  options: { sheetId?: string; filename: string },
+): boolean {
+  const grid = univerSnapshotToRows(snapshot, { skipHidden: true, ...(options.sheetId ? { sheetId: options.sheetId } : {}) });
+  if (!grid || grid.rows.length === 0) return false;
+  const cell = (v: string) => v.replace(/[\t\r\n]+/g, " ");
+  const text = grid.rows.map((r) => r.map(cell).join("\t")).join("\r\n");
+  const blob = new Blob(["\uFEFF", text], { type: "text/tab-separated-values;charset=utf-8" });
+  downloadFile(`${options.filename.replace(/\.tsv$/i, "")}.tsv`, blob, blob.type);
+  return true;
+}
+
+/** The current sheet as a standalone web page (Google's .html download). */
+export function downloadSheetAsHtml(
+  snapshot: unknown,
+  options: { sheetId?: string; filename: string },
+): boolean {
+  const grid = univerSnapshotToRows(snapshot, { skipHidden: true, ...(options.sheetId ? { sheetId: options.sheetId } : {}) });
+  if (!grid || grid.rows.length === 0) return false;
+  const body = grid.rows.map((r) => `<tr>${r.map((c) => `<td>${esc(c)}</td>`).join("")}</tr>`).join("\n");
+  const html = `<!doctype html><html><head><meta charset="utf-8"><title>${esc(options.filename)} — ${esc(grid.sheetName)}</title>
+<style>body{font:13px system-ui,sans-serif;margin:16px}table{border-collapse:collapse}td{border:1px solid #c0c0c0;padding:2px 6px;vertical-align:top}</style></head>
+<body><table>
+${body}
+</table></body></html>`;
+  const blob = new Blob([html], { type: "text/html;charset=utf-8" });
+  downloadFile(`${options.filename.replace(/\.html?$/i, "")}.html`, blob, blob.type);
+  return true;
+}
+
 function esc(s: string): string {
   return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }

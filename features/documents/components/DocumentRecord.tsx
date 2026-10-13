@@ -23,7 +23,7 @@ import dynamic from "next/dynamic";
 import { FilePlus2, FolderOpen, History, Info, Loader2, MessageSquare, Printer, Search } from "lucide-react";
 import { EditorDetailsDialog, formatDetailDate } from "@/components/editor-chrome/EditorDetailsDialog";
 import { useRouter } from "next/navigation";
-import { renderMenuEntries, useMenuBarState } from "@/components/editor-chrome/EditorMenuBar";
+import { useMenuBarState } from "@/components/editor-chrome/EditorMenuBar";
 import { EditorTitleField } from "@/components/editor-chrome/EditorTitleField";
 import type { EditorMenuEntry } from "@/components/editor-chrome/editor-menu-model";
 import { FileTitleMarks } from "@/features/file-actions/FileTitleMarks";
@@ -370,6 +370,13 @@ export function DocumentRecord({
     { kind: "action", id: "file.print", label: "Print", icon: Printer, shortcut: { key: "p", mod: true, bind: true }, run: printDocument },
     { kind: "action", id: "file.details", label: "Details", icon: Info, keywords: ["info", "created", "modified"], run: () => setDetailsOpen(true) },
   ];
+  const liveDocDownload = (label: string, format: "pdf" | "docx" | "markdown" | "text" | "html") => ({
+    label,
+    run: async () => {
+      const { exportContent } = await import("@ai-matrx/rich-content/copy/content-export");
+      await exportContent(documentMarkdown(), format, docRef.current?.document_name);
+    },
+  });
   const liveGoogle = useLiveGoogleAdapter("document", id);
   const fileMenu = useFileRecordMenu(DOCUMENT_ADAPTER, doc, {
     listHref: "/documents",
@@ -396,9 +403,25 @@ export function DocumentRecord({
       ? {
           menubar: menuBar.fileMenuProps(),
           ...(canEdit ? { onRename: (name: string) => applyRename(name) } : {}),
+          // Google Docs' File menu: Download in Google's order (all from the LIVE text).
+          editorFile: {
+            product: "docs" as const,
+            rows: pageFileExtras,
+            templatesHref: "/documents/templates",
+            downloads: [
+              liveDocDownload("Microsoft Word (.docx)", "docx"),
+              { label: "OpenDocument Format (.odt)", soon: "documents.download-odt" },
+              { label: "Rich Text Format (.rtf)", soon: "documents.download-rtf" },
+              liveDocDownload("PDF Document (.pdf)", "pdf"),
+              liveDocDownload("Plain Text (.txt)", "text"),
+              liveDocDownload("Web Page (.html)", "html"),
+              { label: "EPUB Publication (.epub)", soon: "documents.download-epub" },
+              liveDocDownload("Markdown (.md)", "markdown"),
+            ],
+          },
         }
       : {}),
-    extra: layout === "page" ? renderMenuEntries(pageFileExtras) : (
+    extra: layout === "page" ? null : (
       <>
       <DropdownMenuItem
         onSelect={() =>
