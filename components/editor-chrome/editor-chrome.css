@@ -1,0 +1,129 @@
+/*
+ * Editor chrome — Google's crisp menus and toolbar (Sheets / Docs / Slides, 2026).
+ * Measured from Google: menu rows 32px, 18px glyphs, 12px icon-to-label gap, 6px menu padding,
+ * a 1.5px stroke, icons in soft ink (#444746) with text in on-surface ink (#1f1f1f), shortcuts in
+ * muted gray. Toolbar glyphs 20px. Every size is a whole pixel; strokes do not scale with the
+ * glyph (vector-effect), so an 18px and a 20px icon draw the same 1.5px line.
+ * Plain (unlayered) CSS on purpose: it outranks the call sites' utility classes (size-4, mr-2).
+ */
+
+.matrx-editor-menu,
+[data-editor-menubar],
+[data-editor-toolbar] {
+  --editor-ink: #1f1f1f;
+  --editor-icon-ink: #444746;
+  --editor-muted-ink: #5f6368;
+  --editor-hover: rgb(31 31 31 / 0.08);
+  --editor-rule: #e1e3e1;
+}
+:is(.dark, [data-theme="dark"]) :is(.matrx-editor-menu, [data-editor-menubar], [data-editor-toolbar]),
+:is(.dark, [data-theme="dark"]).matrx-editor-menu {
+  --editor-ink: #e3e3e3;
+  --editor-icon-ink: #c4c7c5;
+  --editor-muted-ink: #9aa0a6;
+  --editor-hover: rgb(227 227 227 / 0.08);
+  --editor-rule: #444746;
+}
+
+/* ── The dropdown surface ── */
+.matrx-editor-menu {
+  padding: 6px 0;
+  border: 0;
+  border-radius: 4px;
+  box-shadow: 0 2px 6px 2px rgb(60 64 67 / 0.15), 0 1px 2px 0 rgb(60 64 67 / 0.3);
+  color: var(--editor-ink);
+}
+:is(.dark, [data-theme="dark"]) .matrx-editor-menu {
+  box-shadow: 0 2px 6px 2px rgb(0 0 0 / 0.35), 0 1px 2px 0 rgb(0 0 0 / 0.5);
+}
+.matrx-editor-menu > [role="menuitem"],
+.matrx-editor-menu > [role="menuitemcheckbox"],
+.matrx-editor-menu > [role="menuitemradio"],
+.matrx-editor-menu > * > [role="menuitem"] {
+  box-sizing: border-box;
+  height: 32px;
+  min-height: 32px;
+  padding: 0 16px 0 14px;
+  gap: 12px;
+  border-radius: 0;
+  font-size: 14px;
+  line-height: 20px;
+  letter-spacing: 0.0142em;
+  color: var(--editor-ink);
+}
+.matrx-editor-menu [role^="menuitem"]:is(:focus, [data-highlighted], [data-state="open"]) {
+  background: var(--editor-hover);
+  color: var(--editor-ink);
+}
+.matrx-editor-menu [role^="menuitem"][data-disabled] {
+  opacity: 0.38;
+}
+/* Leading glyph (or its empty placeholder): 18px, whole pixels, no extra margin — the gap is the row's. */
+.matrx-editor-menu [role^="menuitem"] > :is(svg, span.size-4):first-child {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  flex: 0 0 18px;
+  color: var(--editor-icon-ink);
+}
+/* Submenu caret on the right: smaller, muted. */
+.matrx-editor-menu [role="menuitem"][aria-haspopup] > svg:last-child:not(:first-child) {
+  width: 16px;
+  height: 16px;
+  margin-left: auto;
+  color: var(--editor-muted-ink);
+}
+/* Shortcut / trailing hint: Google's muted gray, plain spacing. */
+.matrx-editor-menu [role^="menuitem"] > span:last-child:not(:first-child) {
+  margin-left: auto;
+  padding-left: 24px;
+  font-size: 13px;
+  letter-spacing: normal;
+  opacity: 1;
+  color: var(--editor-muted-ink);
+}
+.matrx-editor-menu [role="separator"] {
+  height: 1px;
+  margin: 6px 0;
+  background: var(--editor-rule);
+}
+
+/* ── One stroke everywhere in the chrome ── */
+:is(.matrx-editor-menu, [data-editor-menubar], [data-editor-toolbar]) svg.lucide {
+  shape-rendering: geometricPrecision;
+}
+:is(.matrx-editor-menu, [data-editor-menubar], [data-editor-toolbar]) svg.lucide :is(path, line, polyline, polygon, rect, circle, ellipse) {
+  vector-effect: non-scaling-stroke;
+  stroke-width: 1.5px;
+}
+
+/* ── Menu bar labels (File · Edit · …) ── */
+[data-editor-menubar] [data-editor-menubar-trigger] {
+  height: 24px;
+  padding: 0 7px;
+  font-size: 14px;
+  line-height: 24px;
+  color: var(--editor-ink);
+  border-radius: 4px;
+}
+
+/* ── Google toolbar: 20px glyphs in soft ink ── */
+[data-editor-toolbar]:not([data-editor-ribbon]),
+[data-editor-toolbar]:not([data-editor-ribbon]) > span > button {
+  /* The design system's tap layer sizes glyphs from this variable (with !important). */
+  --matrx-tap-icon-size: 20px;
+  --matrx-glyph-size: 20px;
+  --matrx-control-glyph: 20px;
+}
+[data-editor-toolbar]:not([data-editor-ribbon]) > span > button svg.lucide:not(.size-3) {
+  width: 20px;
+  height: 20px;
+  color: var(--editor-icon-ink);
+}
+[data-editor-toolbar]:not([data-editor-ribbon]) > span > button[aria-pressed="true"] svg.lucide {
+  color: var(--editor-ink);
+}
+/* The ribbon keeps Office's sizes (whole pixels already); small glyphs take the soft ink. */
+[data-editor-ribbon] svg.lucide.size-4 {
+  color: var(--editor-icon-ink);
+}

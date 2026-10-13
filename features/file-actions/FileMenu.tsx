@@ -26,6 +26,7 @@ import {
 } from "@/features/google-workspace/linked/GoogleLinkControl";
 import { FileMenuItems, type FileMenuItemsProps } from "./FileMenuItems";
 import { restoreEditorFocus } from "@/components/editor-chrome/EditorMenuBar";
+import { EditorMenuContent } from "@/components/editor-chrome/editor-menu-surface";
 import { MoveToProjectDialog } from "./MoveToProjectDialog";
 import { SaveAsTemplateDialog } from "@/features/templates/files/components/SaveAsTemplateDialog";
 import type { TemplateKind } from "@/features/templates/files/types";
@@ -121,6 +122,8 @@ export function FileMenu({
   const [moveOpen, setMoveOpen] = useState(false);
   const [templateOpen, setTemplateOpen] = useState(false);
   const { name, trashed } = items;
+  // In an editor's menu bar the File menu wears the editor menus' look; in a list, the app's.
+  const MenuContent = isValidElement(trigger) ? EditorMenuContent : DropdownMenuContent;
 
   return (
     <span className="matrx-touch-targets flex shrink-0 items-center gap-0.5">
@@ -169,7 +172,7 @@ export function FileMenu({
                   />
                 )}
               </DropdownMenuTrigger>
-              <DropdownMenuContent
+              <MenuContent
                 {...(isValidElement(trigger) ? { onCloseAutoFocus: restoreEditorFocus } : {})}
                 align={isValidElement(trigger) ? "start" : "end"}
                 className={isValidElement(trigger) ? "max-h-[75vh] min-w-[15rem] overflow-y-auto" : "min-w-[11rem]"}
@@ -186,7 +189,7 @@ export function FileMenu({
                   {...(onMove ? { onMoveRequest: () => setMoveOpen(true) } : {})}
                   {...(templateKind ? { onSaveAsTemplateRequest: () => setTemplateOpen(true) } : {})}
                 />
-              </DropdownMenuContent>
+              </MenuContent>
             </DropdownMenu>
           )}
         </GoogleSlot>

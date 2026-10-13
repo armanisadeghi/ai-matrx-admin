@@ -30,6 +30,7 @@ import {
 import { promptForValues } from "@/components/dialogs/value-prompts/ValuePromptsDialogHost";
 import type { FileDownload } from "./types";
 import { openOutbound } from "@ai-matrx/kit/outbound";
+import { useEditorMenuClass } from "@/components/editor-chrome/editor-menu-surface";
 
 export type FileMenuItemsProps = {
   name: string;
@@ -56,6 +57,7 @@ export type FileMenuItemsProps = {
 };
 
 export function FileMenuItems(p: FileMenuItemsProps): ReactNode {
+  const subClass = useEditorMenuClass();
   const rename = async () => {
     if (!p.onRename) return;
     const answers = await promptForValues({
@@ -126,7 +128,7 @@ export function FileMenuItems(p: FileMenuItemsProps): ReactNode {
             <Download className="mr-2 size-4" />
             Download
           </DropdownMenuSubTrigger>
-          <DropdownMenuSubContent>
+          <DropdownMenuSubContent className={subClass}>
             {p.downloads.map((d) => (
               <DropdownMenuItem key={d.label} onSelect={() => void p.onDownload?.(d)}>
                 {d.label}

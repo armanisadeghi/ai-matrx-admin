@@ -14,15 +14,14 @@ import { ChevronDown, MoreVertical, Search } from "lucide-react";
 import { Button } from "@ai-matrx/design-system/controls";
 import {
   DropdownMenu,
-  DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuSub,
-  DropdownMenuSubContent,
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
+import { EditorMenuContent, EditorMenuSubContent } from "./editor-menu-surface";
 import {
   flattenMenus,
   formatShortcut,
@@ -208,9 +207,9 @@ function renderOverflowItems(items: EditorToolbarItem[]): ReactNode {
           {Icon ? <Icon className="mr-2 size-4" /> : <span className="mr-2 size-4" />}
           {it.label}
         </DropdownMenuSubTrigger>
-        <DropdownMenuSubContent className="max-h-[70vh] min-w-[12rem] overflow-y-auto">
+        <EditorMenuSubContent className="max-h-[70vh] min-w-[12rem] overflow-y-auto">
           {renderMenuEntries(it.items, `${it.id}/`)}
-        </DropdownMenuSubContent>
+        </EditorMenuSubContent>
       </DropdownMenuSub>
     );
   });
@@ -313,13 +312,13 @@ export function EditorToolbar({
                 />
               )}
             </DropdownMenuTrigger>
-            <DropdownMenuContent
+            <EditorMenuContent
               align="start"
               className="max-h-[70vh] min-w-[12rem] overflow-y-auto"
               onCloseAutoFocus={restoreEditorFocus}
             >
               {renderMenuEntries(it.items, `${it.id}/`)}
-            </DropdownMenuContent>
+            </EditorMenuContent>
           </DropdownMenu>,
         );
       })}
@@ -337,13 +336,13 @@ export function EditorToolbar({
               />
             </DropdownMenuTrigger>
           </span>
-          <DropdownMenuContent
+          <EditorMenuContent
             align="end"
             className="max-h-[70vh] min-w-[13rem] overflow-y-auto"
             onCloseAutoFocus={restoreEditorFocus}
           >
             {renderOverflowItems(overflow)}
-          </DropdownMenuContent>
+          </EditorMenuContent>
         </DropdownMenu>
       ) : null}
       {trailing ? <span className="ml-auto flex shrink-0 items-center pl-1">{trailing}</span> : null}

@@ -19,10 +19,10 @@ import { useIsMobile } from "@ai-matrx/kit/media-query";
 import { Popover, PopoverContent, PopoverTrigger } from "@ai-matrx/design-system";
 import {
   DropdownMenu,
-  DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
+import { EditorMenuContent } from "./editor-menu-surface";
 import { formatShortcut, type EditorMenu, type EditorMenuEntry } from "./editor-menu-model";
 import { rememberEditorFocus, renderMenuEntries, restoreEditorFocus } from "./EditorMenuBar";
 import { useFitCount } from "./useFitCount";
@@ -114,9 +114,9 @@ function Dropdown({ view, trigger }: { view: ControlView; trigger: ReactNode }) 
       <DropdownMenuTrigger asChild disabled={view.disabled}>
         {trigger}
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="start" className="max-h-[70vh] min-w-[13rem] overflow-y-auto" onCloseAutoFocus={restoreEditorFocus}>
+      <EditorMenuContent align="start" className="max-h-[70vh] min-w-[13rem] overflow-y-auto" onCloseAutoFocus={restoreEditorFocus}>
         {renderMenuEntries(view.items ?? [], `${view.key}/`)}
-      </DropdownMenuContent>
+      </EditorMenuContent>
     </DropdownMenu>
   );
 }
@@ -345,9 +345,9 @@ function RibbonPanel({
                   <span>Add-ins</span>
                 </button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="min-w-[14rem]" onCloseAutoFocus={restoreEditorFocus}>
+              <EditorMenuContent align="end" className="min-w-[14rem]" onCloseAutoFocus={restoreEditorFocus}>
                 {extensions}
-              </DropdownMenuContent>
+              </EditorMenuContent>
             </DropdownMenu>
           </div>
           {compact ? null : <div className="h-4 text-center text-xs leading-4 text-muted-foreground">Add-ins</div>}

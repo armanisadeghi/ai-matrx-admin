@@ -13,16 +13,15 @@ import { Check, MoreVertical } from "lucide-react";
 
 import {
   DropdownMenu,
-  DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuShortcut,
   DropdownMenuSub,
-  DropdownMenuSubContent,
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
+import { EditorMenuContent, EditorMenuSubContent } from "./editor-menu-surface";
 import { formatShortcut, type EditorMenu, type EditorMenuEntry } from "./editor-menu-model";
 import { useFitCount } from "./useFitCount";
 
@@ -87,9 +86,9 @@ export function renderMenuEntries(entries: EditorMenuEntry[], keyPrefix = ""): R
             {Icon ? <Icon className="mr-2 size-4" /> : <span className="mr-2 size-4" />}
             {e.label}
           </DropdownMenuSubTrigger>
-          <DropdownMenuSubContent className="max-h-[70vh] min-w-[13rem] overflow-y-auto">
+          <EditorMenuSubContent className="max-h-[70vh] min-w-[13rem] overflow-y-auto">
             {renderMenuEntries(e.items, `${e.id}/`)}
-          </DropdownMenuSubContent>
+          </EditorMenuSubContent>
         </DropdownMenuSub>
       );
     }
@@ -223,13 +222,13 @@ export function EditorMenuBar({
                 {m.label}
               </MenuBarTrigger>
             </DropdownMenuTrigger>
-            <DropdownMenuContent
+            <EditorMenuContent
               align="start"
               className="max-h-[75vh] min-w-[15rem] overflow-y-auto"
               onCloseAutoFocus={restoreEditorFocus}
             >
               {entryRows(m)}
-            </DropdownMenuContent>
+            </EditorMenuContent>
           </DropdownMenu>
         </span>
       ))}
@@ -242,16 +241,16 @@ export function EditorMenuBar({
               </MenuBarTrigger>
             </DropdownMenuTrigger>
           </span>
-          <DropdownMenuContent align="start" className="min-w-[10rem]" onCloseAutoFocus={restoreEditorFocus}>
+          <EditorMenuContent align="start" className="min-w-[10rem]" onCloseAutoFocus={restoreEditorFocus}>
             {overflow.map((m) => (
               <DropdownMenuSub key={m.id}>
                 <DropdownMenuSubTrigger data-editor-menu-more={m.id}>{m.label}</DropdownMenuSubTrigger>
-                <DropdownMenuSubContent className="max-h-[70vh] min-w-[13rem] overflow-y-auto">
+                <EditorMenuSubContent className="max-h-[70vh] min-w-[13rem] overflow-y-auto">
                   {entryRows(m)}
-                </DropdownMenuSubContent>
+                </EditorMenuSubContent>
               </DropdownMenuSub>
             ))}
-          </DropdownMenuContent>
+          </EditorMenuContent>
         </DropdownMenu>
       ) : null}
     </nav>
