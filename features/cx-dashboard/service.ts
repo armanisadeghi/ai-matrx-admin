@@ -21,9 +21,17 @@ import type {
   CxCostVerification,
   CxFetchResult,
   CxUsageAnalytics,
+  CxConversationUsage,
+  CxRelatedConversationCost,
 } from "./types/cxDashboardTypes";
 import { getTimeframeRange } from "./utils/filters";
 import { buildSearchOr } from "@/utils/supabase-search";
+import { readAllRows } from "@ai-matrx/data/db";
+import {
+  relatedCosts,
+  summarizeConversationUsage,
+  type SpendRow,
+} from "./utils/conversation-usage";
 
 function fetchError<T>(context: string, e: unknown): CxFetchResult<T> {
   const message = e instanceof Error ? e.message : String(e);
@@ -102,27 +110,32 @@ async function resolveAiModels(
   // `provider` (free-text) was dropped from ai.model_definition — the maker is the
   // provider_id FK → ai.provider.name. Resolve it in a second query (same pattern as
   // app/api/ai-models/route.ts). Don't swallow the error.
-  const { data, error } = await supabase
-    .schema("ai")
-    .from("model_definition")
-    .select("id, common_name, name, provider_id")
-    .in("id", ids);
-  if (error) {
-    throw new Error(`ai.model_definition: ${error.message}`);
-  }
-  const rows = data || [];
+  const rows = await readAllRows(
+    ({ from, to }) =>
+      supabase
+        .schema("ai")
+        .from("model_definition")
+        .select("id, common_name, name, provider_id")
+        .in("id", ids)
+        .order("id")
+        .range(from, to),
+    { label: "ai.model_definition" },
+  );
   const providerIds = [...new Set(rows.map((m) => m.provider_id).filter((v): v is string => !!v))];
   const providerNames = new Map<string, string | null>();
   if (providerIds.length > 0) {
-    const { data: provs, error: provErr } = await supabase
-      .schema("ai")
-      .from("provider")
-      .select("id, name")
-      .in("id", providerIds);
-    if (provErr) {
-      throw new Error(`ai.provider: ${provErr.message}`);
-    }
-    for (const p of provs || []) providerNames.set(p.id, p.name ?? null);
+    const provs = await readAllRows(
+      ({ from, to }) =>
+        supabase
+          .schema("ai")
+          .from("provider")
+          .select("id, name")
+          .in("id", providerIds)
+          .order("id")
+          .range(from, to),
+      { label: "ai.provider" },
+    );
+    for (const p of provs) providerNames.set(p.id, p.name ?? null);
   }
   const map = new Map<string, { common_name: string | null; provider: string | null; name: string | null }>();
   for (const m of rows) {
@@ -354,12 +367,20 @@ async function fetchConversationsInner(
 }
 
 // ─── Single Conversation Detail ─────────────────────────────────────────────
+// Everything the conversation page shows comes from THIS conversation's own rows. A user request can
+// fan out across several conversations (parallel agents carry no parent link), so its total_cost is
+// the whole request's, never this conversation's — the per-conversation cost is summed from
+// chat.request + chat.tool_call where conversation_id = this, and every list is read in full
+// (readAllRows: PostgREST silently caps a plain select at 1000 rows).
 
 export type CxConversationDetail = {
   conversation: (CxConversation & { model_name: string | null; provider: string | null }) | null;
   messages: CxMessage[];
   user_requests: CxUserRequest[];
   child_conversations: CxConversation[];
+  model_calls: CxRequest[];
+  tool_calls: CxToolCall[];
+  usage: CxConversationUsage;
 };
 
 export async function fetchConversationDetail(
@@ -372,13 +393,61 @@ export async function fetchConversationDetail(
   }
 }
 
+/** Keep `.in()` filters well under the URL limit. */
+function chunks<T>(items: T[], size = 150): T[][] {
+  const out: T[][] = [];
+  for (let i = 0; i < items.length; i += size) out.push(items.slice(i, i + size));
+  return out;
+}
+
+/** Model-call and tool-call spend of every row matching `column` in `ids`, other than `exceptConversation`. */
+async function readSpendRows(
+  supabase: ServerSupabase,
+  column: "conversation_id" | "user_request_id",
+  ids: string[],
+  exceptConversation: string,
+): Promise<SpendRow[]> {
+  const rows: SpendRow[] = [];
+  for (const part of chunks(ids)) {
+    const [calls, tools] = await Promise.all([
+      readAllRows(
+        ({ from, to }) =>
+          supabase
+            .schema("chat").from("request")
+            .select("id, conversation_id, cost, total_tokens")
+            .in(column, part)
+            .neq("conversation_id", exceptConversation)
+            .is("deleted_at", null)
+            .order("id")
+            .range(from, to),
+        { label: `chat.request (related by ${column})` },
+      ),
+      readAllRows(
+        ({ from, to }) =>
+          supabase
+            .schema("chat").from("tool_call")
+            .select("id, conversation_id, cost_usd, total_tokens")
+            .in(column, part)
+            .neq("conversation_id", exceptConversation)
+            .is("deleted_at", null)
+            .order("id")
+            .range(from, to),
+        { label: `chat.tool_call (related by ${column})` },
+      ),
+    ]);
+    for (const r of calls) rows.push({ conversation_id: r.conversation_id, cost: num(r.cost), total_tokens: num(r.total_tokens), model_call: true });
+    for (const t of tools) rows.push({ conversation_id: t.conversation_id, cost: num(t.cost_usd), total_tokens: num(t.total_tokens), model_call: false });
+  }
+  return rows;
+}
+
 async function fetchConversationDetailInner(
   id: string,
 ): Promise<CxConversationDetail> {
   const supabase = await createClient();
 
   // cross-schema FK (chat→ai): fetch conversations without embed, resolve models separately.
-  const [convResult, messagesResult, reqLinksResult, childConvsResult] =
+  const [convResult, childConvsResult, messages, modelCallRows, toolCallRows] =
     await Promise.all([
       supabase
         .schema("chat").from("conversation")
@@ -386,36 +455,54 @@ async function fetchConversationDetailInner(
         .eq("id", id)
         .single(),
       supabase
-        .schema("chat").from("message")
-        .select("*")
-        .eq("conversation_id", id)
-        .is("deleted_at", null)
-        .order("position", { ascending: true }),
-      // User requests for this conversation are resolved through the cx_request
-      // m2m: every cx_request for this conversation_id points back at a
-      // user_request_id.
-      supabase
-        .schema("chat").from("request")
-        .select("user_request_id")
-        .eq("conversation_id", id)
-        .is("deleted_at", null),
-      supabase
         .schema("chat").from("conversation")
         .select("*")
         .eq("parent_conversation_id", id)
         .is("deleted_at", null)
         .order("created_at", { ascending: true }),
+      readAllRows(
+        ({ from, to }) =>
+          supabase
+            .schema("chat").from("message")
+            .select("*")
+            .eq("conversation_id", id)
+            .is("deleted_at", null)
+            .order("position", { ascending: true })
+            .order("id", { ascending: true })
+            .range(from, to),
+        { label: "chat.message (conversation)" },
+      ),
+      // Every model call this conversation made — the source of its cost and tokens, and (through
+      // user_request_id) the link to the user requests that drove it.
+      readAllRows(
+        ({ from, to }) =>
+          supabase
+            .schema("chat").from("request")
+            .select("*")
+            .eq("conversation_id", id)
+            .is("deleted_at", null)
+            .order("created_at", { ascending: true })
+            .order("id", { ascending: true })
+            .range(from, to),
+        { label: "chat.request (conversation)" },
+      ),
+      readAllRows(
+        ({ from, to }) =>
+          supabase
+            .schema("chat").from("tool_call")
+            .select("*")
+            .eq("conversation_id", id)
+            .is("deleted_at", null)
+            .order("started_at", { ascending: true })
+            .order("id", { ascending: true })
+            .range(from, to),
+        { label: "chat.tool_call (conversation)" },
+      ),
     ]);
 
   // .single() with no row is PGRST116 — that's "not found", not a failure.
   if (convResult.error && convResult.error.code !== "PGRST116") {
     throw new Error(`chat.conversation: ${convResult.error.message}`);
-  }
-  if (messagesResult.error) {
-    throw new Error(`chat.message: ${messagesResult.error.message}`);
-  }
-  if (reqLinksResult.error) {
-    throw new Error(`chat.request links: ${reqLinksResult.error.message}`);
   }
   if (childConvsResult.error) {
     throw new Error(
@@ -424,37 +511,70 @@ async function fetchConversationDetailInner(
   }
 
   const conv = convResult.data as any;
-  const childConvs = childConvsResult.data || [];
+  const childConvs = (childConvsResult.data || []) as any[];
 
-  // Resolve AI model info for this conversation and children in one batch.
-  const modelIdsToFetch = [conv?.last_model_id, ...childConvs.map((c: any) => c.last_model_id)];
-  const detailModelMap = await resolveAiModels(supabase, modelIdsToFetch);
+  // Resolve AI model info for this conversation, its children and every model call in one batch.
+  const detailModelMap = await resolveAiModels(supabase, [
+    conv?.last_model_id,
+    ...childConvs.map((c) => c.last_model_id),
+    ...modelCallRows.map((r) => r.ai_model_id),
+  ]);
+
+  const modelCalls = modelCallRows.map((r) => {
+    const m = r.ai_model_id ? detailModelMap.get(r.ai_model_id) : null;
+    return { ...r, model_name: m?.common_name ?? null, provider: m?.provider ?? null };
+  }) as unknown as CxRequest[];
+  const toolCalls = toolCallRows as unknown as CxToolCall[];
 
   const userRequestIds = Array.from(
     new Set(
-      ((reqLinksResult.data || []) as { user_request_id: string | null }[])
-        .map((r) => r.user_request_id)
+      [...modelCalls.map((r) => r.user_request_id), ...toolCalls.map((t) => t.user_request_id)]
         .filter((v): v is string => !!v),
     ),
   );
+  const childIds = childConvs.map((c) => c.id as string);
 
-  let userRequests: CxUserRequest[] = [];
-  if (userRequestIds.length > 0) {
-    const urData = must(
-      await supabase
-        .schema("chat").from("user_request")
-        .select("*")
-        .in("id", userRequestIds)
-        .is("deleted_at", null)
-        .order("created_at", { ascending: true }),
-      "chat.user_request",
+  const [userRequestRows, siblingRows, subAgentRows] = await Promise.all([
+    Promise.all(
+      chunks(userRequestIds).map((part) =>
+        readAllRows(
+          ({ from, to }) =>
+            supabase
+              .schema("chat").from("user_request")
+              .select("*")
+              .in("id", part)
+              .is("deleted_at", null)
+              .order("created_at", { ascending: true })
+              .order("id", { ascending: true })
+              .range(from, to),
+          { label: "chat.user_request (conversation)" },
+        ),
+      ),
+    ).then((parts) => parts.flat()),
+    userRequestIds.length ? readSpendRows(supabase, "user_request_id", userRequestIds, id) : Promise.resolve([]),
+    childIds.length ? readSpendRows(supabase, "conversation_id", childIds, id) : Promise.resolve([]),
+  ]);
+
+  // Sub-agents are reported as sub-agents, never also as siblings.
+  const childSet = new Set(childIds);
+  const siblingSpend = siblingRows.filter((r) => !childSet.has(r.conversation_id));
+  const siblingIds = [...new Set(siblingSpend.map((r) => r.conversation_id))];
+  const titles = new Map<string, string | null>(childConvs.map((c) => [c.id, c.title ?? null]));
+  for (const part of chunks(siblingIds)) {
+    const rows = must(
+      await supabase.schema("chat").from("conversation").select("id, title").in("id", part),
+      "chat.conversation (sibling titles)",
     );
-    userRequests = (urData ?? []).map((row) => ({
+    for (const r of rows) titles.set(r.id, r.title ?? null);
+  }
+
+  const userRequests: CxUserRequest[] = userRequestRows
+    .map((row) => ({
       ...row,
       conversation_id: id,
       metadata: (row.metadata ?? {}) as Record<string, unknown>,
-    }));
-  }
+    }))
+    .sort((a, b) => a.created_at.localeCompare(b.created_at)) as CxUserRequest[];
 
   return {
     conversation: conv
@@ -464,13 +584,21 @@ async function fetchConversationDetailInner(
           provider: conv.last_model_id ? (detailModelMap.get(conv.last_model_id)?.provider ?? null) : null,
         }
       : null,
-    messages: (messagesResult.data || []) as CxMessage[],
+    messages: messages as CxMessage[],
     user_requests: userRequests,
     child_conversations: childConvs.map((c: any) => ({
       ...c,
       model_name: c.last_model_id ? (detailModelMap.get(c.last_model_id)?.common_name ?? null) : null,
       provider: c.last_model_id ? (detailModelMap.get(c.last_model_id)?.provider ?? null) : null,
     })) as CxConversation[],
+    model_calls: modelCalls,
+    tool_calls: toolCalls,
+    usage: summarizeConversationUsage(
+      modelCalls,
+      toolCalls,
+      relatedCosts(siblingSpend, titles),
+      relatedCosts(subAgentRows, titles),
+    ),
   };
 }
 
@@ -632,7 +760,36 @@ async function fetchUserRequestDetailInner(id: string) {
     has_discrepancy: Math.abs(urTotalCost - combinedTotal) > 0.001,
   };
 
+  // One request can run in several conversations (parallel agents); list every one with its part of the cost.
+  const convSpend = new Map<string, { cost: number; model_calls: number; total_tokens: number }>();
+  for (const r of (requestsResult.data || []) as any[]) {
+    if (!r.conversation_id) continue;
+    const e = convSpend.get(r.conversation_id) ?? { cost: 0, model_calls: 0, total_tokens: 0 };
+    e.cost += num(r.cost);
+    e.model_calls += 1;
+    e.total_tokens += num(r.total_tokens);
+    convSpend.set(r.conversation_id, e);
+  }
+  for (const t of (toolCallsResult.data || []) as any[]) {
+    if (!t.conversation_id) continue;
+    const e = convSpend.get(t.conversation_id) ?? { cost: 0, model_calls: 0, total_tokens: 0 };
+    e.cost += num(t.cost_usd);
+    convSpend.set(t.conversation_id, e);
+  }
+  const convTitles = new Map<string, string | null>();
+  if (convSpend.size > 0) {
+    const rows = must(
+      await supabase.schema("chat").from("conversation").select("id, title").in("id", [...convSpend.keys()]),
+      "chat.conversation (request's conversations)",
+    );
+    for (const c of rows) convTitles.set(c.id, c.title ?? null);
+  }
+  const conversations: CxRelatedConversationCost[] = [...convSpend.entries()]
+    .map(([cid, e]) => ({ id: cid, title: convTitles.get(cid) ?? null, ...e }))
+    .sort((a, b) => b.cost - a.cost);
+
   return {
+    conversations,
     user_request: ur
       ? {
           ...ur,

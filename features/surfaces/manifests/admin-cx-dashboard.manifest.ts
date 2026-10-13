@@ -193,10 +193,10 @@ const surfaceSpecific: SurfaceValue[] = [
     name: "current_conversation",
     label: "Active conversation",
     description:
-      "Summary of the conversation on the detail page: { id, title, status, model_name, provider, message_count, parent_conversation_id, config, variables, overrides, metadata, created_at, updated_at }. Absent on the list tab.",
+      "Summary of the conversation on the detail page: { id, title, status, model_name, provider, message_count, parent_conversation_id, config, variables, overrides, metadata, created_at, updated_at, usage_totals, usage_by_model, usage_by_tool, sub_agent_cost, sibling_conversations }. Its cost is summed from this conversation's own model and tool calls. Absent on the list tab.",
     valueType: "object",
     alwaysAvailable: false,
-    typicalCharCount: 1200,
+    typicalCharCount: 2000,
     sortOrder: 325,
     group: "conversations",
   },
@@ -216,7 +216,7 @@ const surfaceSpecific: SurfaceValue[] = [
     name: "current_conversation_user_requests",
     label: "Active conversation's requests",
     description:
-      "User requests belonging to the conversation shown on the detail page, with { id, status, iterations, total_tool_calls, total_cost, total_tokens }. Absent on the list tab; empty array if none exist yet.",
+      "User requests belonging to the conversation shown on the detail page, with { id, status, iterations, total_tool_calls, total_cost, total_tokens, this_conversation_cost }. total_cost is the whole request, which can span several conversations. Absent on the list tab; empty array if none exist yet.",
     valueType: "array",
     alwaysAvailable: false,
     typicalCharCount: 1500,
@@ -418,7 +418,7 @@ export const adminCxDashboardManifest: SurfaceManifest = {
   intro: `<surface_intro>
 This is an ADMIN surface: the CX (customer experience) dashboard at /administration/chat/cx-dashboard, a read-only super-admin console over the cx_* chat tables.
 
-It has five tabs plus two detail pages, all read via dashboard_section: "overview" (aggregate KPIs, cost/token trends, model and tool usage), "conversations" (paginated conversation list) and "conversation_detail" (one conversation's messages, sub-agent children, and requests), "requests" (paginated user-request list) and "request_detail" (one request's API iterations, tool calls, and cost verification), "usage" (cost/token analytics by day/provider/model), and "errors" (pending/stuck requests, max-tokens hits, tool-call errors).
+It has five tabs plus two detail pages, all read via dashboard_section: "overview" (aggregate KPIs, cost/token trends, model and tool usage), "conversations" (paginated conversation list) and "conversation_detail" (one conversation's messages, requests, usage and cost, and errors — current_conversation carries its usage_totals, usage_by_model, usage_by_tool, sub-agent cost and the sibling conversations its requests also ran in; a request's total_cost can span several conversations, this_conversation_cost is this one's part), "requests" (paginated user-request list) and "request_detail" (one request's API iterations, tool calls, and cost verification), "usage" (cost/token analytics by day/provider/model), and "errors" (pending/stuck requests, max-tokens hits, tool-call errors).
 
 Only the values matching the current dashboard_section are populated — everything else is absent, not stale. Treat every row and field here as live production data: summarize, diagnose, and explain it, but never republish it verbatim at scale. You never execute anything on this surface — it has no write path.
 </surface_intro>`,

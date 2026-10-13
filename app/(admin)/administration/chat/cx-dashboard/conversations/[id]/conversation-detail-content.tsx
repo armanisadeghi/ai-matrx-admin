@@ -2,7 +2,14 @@
 
 import AppLink from "@/components/navigation/AppLink";
 import { RichContent } from "@ai-matrx/rich-content/levels/RichContent";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useTransition } from "react";
+import { Tabs } from "@ai-matrx/design-system/controls";
+import { KpiTile } from "@/components/official/kpi/KpiTile";
+import {
+  ConversationErrorsView,
+  ConversationUsageView,
+} from "./conversation-usage-views";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { CxJsonViewer } from "@/features/cx-dashboard/components/CxJsonViewer";
@@ -18,19 +25,18 @@ import {
   computeDuration,
 } from "@/features/cx-dashboard/utils/format";
 import { originClassLabel } from "@ai-matrx/chat/agents/redux/conversation-history/source-registry";
-import {
-  exportToCSV,
-  exportToJSON,
-} from "@/features/cx-dashboard/utils/export";
+import { exportToJSON } from "@/features/cx-dashboard/utils/export";
 import type {
   CxConversation,
+  CxConversationUsage,
   CxMessage,
+  CxRequest,
+  CxToolCall,
   CxUserRequest,
 } from "@/features/cx-dashboard/types/cxDashboardTypes";
 import {
   ArrowLeft,
   GitBranch,
-  Clock,
   Send,
   ExternalLink,
   Download,
@@ -51,7 +57,16 @@ type Detail = {
   messages: CxMessage[];
   user_requests: CxUserRequest[];
   child_conversations: CxConversation[];
+  model_calls: CxRequest[];
+  tool_calls: CxToolCall[];
+  usage: CxConversationUsage;
 };
+
+// The conversation's own views. The dashboard-wide sections (Overview, Requests, Usage…) live one
+// level up; on this page every tab is about THIS conversation.
+const VIEWS = ["messages", "requests", "usage", "errors", "raw"] as const;
+type View = (typeof VIEWS)[number];
+const isView = (v: string | null): v is View => !!v && (VIEWS as readonly string[]).includes(v);
 
 export function ConversationDetailContent({ detail }: { detail: Detail }) {
   const router = useRouter();
@@ -63,7 +78,31 @@ export function ConversationDetailContent({ detail }: { detail: Detail }) {
     messages,
     user_requests,
     child_conversations,
+    model_calls,
+    tool_calls,
+    usage,
   } = detail;
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const [, startTransition] = useTransition();
+  const requested = searchParams.get("view");
+  const view: View = isView(requested) ? requested : "messages";
+  const viewHref = (v: View) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (v === "messages") params.delete("view");
+    else params.set("view", v);
+    const q = params.toString();
+    return q ? `${pathname}?${q}` : pathname;
+  };
+  const selectView = (v: View) =>
+    startTransition(() => router.replace(viewHref(v), { scroll: false }));
+
+  const t = usage.totals;
+  const subAgentCost = usage.sub_agents.reduce((sum, c) => sum + c.cost, 0);
+  const failedRequests = user_requests.filter(
+    (ur) => ur.status === "error" || !!ur.error || ur.finish_reason === "max_tokens",
+  ).length;
+  const errorCount = failedRequests + t.failed_tool_calls + t.max_tokens_hits;
 
   return (
     <SurfaceRuntimeProvider
@@ -86,6 +125,11 @@ export function ConversationDetailContent({ detail }: { detail: Detail }) {
             metadata: conv.metadata,
             created_at: conv.created_at,
             updated_at: conv.updated_at,
+            usage_totals: usage.totals,
+            usage_by_model: usage.by_model,
+            usage_by_tool: usage.by_tool,
+            sub_agent_cost: subAgentCost,
+            sibling_conversations: usage.siblings,
           },
           current_conversation_messages: messages,
           current_conversation_user_requests: user_requests.map((ur) => ({
@@ -153,7 +197,12 @@ export function ConversationDetailContent({ detail }: { detail: Detail }) {
           <Button
             icon={<Download />}
             variant="outline"
-            onClick={() => exportToJSON(messages, "conversation-messages")}
+            onClick={() =>
+              exportToJSON(
+                [{ conversation: conv, usage, user_requests, model_calls, tool_calls, messages }],
+                "conversation",
+              )
+            }
           >
             Export
           </Button>
@@ -177,137 +226,240 @@ export function ConversationDetailContent({ detail }: { detail: Detail }) {
         </AppLink>
       )}
 
-      {/* Child conversations */}
-      {child_conversations.length > 0 && (
-        <div className="border border-border rounded-md p-3 bg-card">
-          <h3 className="text-xs font-medium text-muted-foreground mb-2 flex items-center gap-1.5">
-            <GitBranch className="w-3.5 h-3.5" />
-            Child Conversations ({child_conversations.length})
-          </h3>
-          <div className="space-y-1">
-            {child_conversations.map((child) => (
-              <AppLink
-                key={child.id}
-                href={`/administration/chat/cx-dashboard/conversations/${child.id}`}
-                className="flex items-center gap-3 text-xs p-2 rounded hover:bg-muted/50 transition-colors group"
-              >
-                <span className="font-mono text-muted-foreground">
-                  {truncateId(child.id)}
-                </span>
-                <span className="flex-1 truncate">
-                  {child.title || "Untitled"}
-                </span>
-                {child.model_name && (
-                  <span className="text-muted-foreground">
-                    {child.model_name}
-                  </span>
-                )}
-                <span className="text-muted-foreground">
-                  {child.message_count} msgs
-                </span>
-                <ChevronRight className="w-3 h-3 text-muted-foreground opacity-0 group-hover:opacity-100" />
-              </AppLink>
-            ))}
-          </div>
-        </div>
-      )}
+      {/* This conversation's numbers — every one summed from its own rows */}
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
+        <KpiTile
+          label="Cost"
+          value={formatAdminCost(t.cost)}
+          hint={
+            usage.sub_agents.length > 0
+              ? `${formatAdminCost(t.cost + subAgentCost)} with sub-agents`
+              : `Tools ${formatAdminCost(t.tool_cost)}`
+          }
+          title="Model calls plus tool calls made in this conversation."
+          href={viewHref("usage")}
+        />
+        <KpiTile
+          label="Model calls"
+          value={t.model_calls.toLocaleString()}
+          hint={`${user_requests.length} user requests`}
+          href={viewHref("usage")}
+        />
+        <KpiTile
+          label="Tokens"
+          value={formatTokens(t.total_tokens)}
+          hint={`${formatTokens(t.input_tokens)} in · ${formatTokens(t.output_tokens)} out · ${formatTokens(t.cached_tokens)} cached`}
+          href={viewHref("usage")}
+        />
+        <KpiTile
+          label="Tool calls"
+          value={t.tool_calls.toLocaleString()}
+          hint={`${usage.by_tool.length} distinct tools`}
+          href={viewHref("usage")}
+        />
+        <KpiTile
+          label="Model time"
+          value={formatDuration(t.api_duration_ms)}
+          hint={`Tools ${formatDuration(t.tool_duration_ms)}`}
+        />
+        <KpiTile
+          label="Errors"
+          value={errorCount.toLocaleString()}
+          tone={errorCount > 0 ? "bad" : "neutral"}
+          hint={errorCount > 0 ? "Failed, cut off or tool errors" : "None"}
+          href={viewHref("errors")}
+        />
+      </div>
 
-      {/* User requests for this conversation */}
-      {user_requests.length > 0 && (
-        <div className="border border-border rounded-md p-3 bg-card">
-          <h3 className="text-xs font-medium text-muted-foreground mb-2 flex items-center gap-1.5">
-            <Send className="w-3.5 h-3.5" />
-            User Requests ({user_requests.length})
-          </h3>
-          <div className="space-y-1">
-            {user_requests.map((ur) => {
-              const dur = computeDuration(
-                ur.created_at,
-                ur.completed_at,
-                ur.total_duration_ms,
-              );
-              return (
+      <Tabs<View>
+        aria-label="Conversation views"
+        value={view}
+        onValueChange={selectView}
+        data={[
+          { value: "messages", label: "Messages", count: messages.length },
+          { value: "requests", label: "Requests", count: user_requests.length },
+          { value: "usage", label: "Usage & Cost" },
+          { value: "errors", label: "Errors", count: errorCount },
+          { value: "raw", label: "Raw data" },
+        ]}
+      />
+
+      {view === "messages" && (
+        <>
+        {/* Child conversations */}
+        {child_conversations.length > 0 && (
+          <div className="border border-border rounded-md p-3 bg-card">
+            <h3 className="text-xs font-medium text-muted-foreground mb-2 flex items-center gap-1.5">
+              <GitBranch className="w-3.5 h-3.5" />
+              Child Conversations ({child_conversations.length})
+            </h3>
+            <div className="space-y-1">
+              {child_conversations.map((child) => (
                 <AppLink
-                  key={ur.id}
-                  href={`/administration/chat/cx-dashboard/requests/${ur.id}`}
+                  key={child.id}
+                  href={`/administration/chat/cx-dashboard/conversations/${child.id}`}
                   className="flex items-center gap-3 text-xs p-2 rounded hover:bg-muted/50 transition-colors group"
                 >
                   <span className="font-mono text-muted-foreground">
-                    {truncateId(ur.id)}
+                    {truncateId(child.id)}
                   </span>
-                  <Badge
-                    variant={statusBadgeVariant(ur.status)}
-                    className="text-[10px]"
-                  >
-                    {ur.status}
-                  </Badge>
-                  {ur.origin_class && (
-                    <span
-                      className="inline-flex h-4 items-center rounded-full border border-border px-1.5 text-[10px] font-medium text-muted-foreground"
-                      title="Server-derived provenance (who initiated this request)"
-                    >
-                      {originClassLabel(ur.origin_class)}
+                  <span className="flex-1 truncate">
+                    {child.title || "Untitled"}
+                  </span>
+                  {child.model_name && (
+                    <span className="text-muted-foreground">
+                      {child.model_name}
                     </span>
                   )}
-                  <span>{ur.iterations} iter</span>
-                  <span>{ur.total_tool_calls} tools</span>
-                  <span className="font-mono">
-                    {formatAdminCost(ur.total_cost)}
-                  </span>
                   <span className="text-muted-foreground">
-                    {formatTokens(ur.total_tokens)} tok
-                  </span>
-                  <span className="text-muted-foreground ml-auto">
-                    {formatDuration(dur)}
+                    {child.message_count} msgs
                   </span>
                   <ChevronRight className="w-3 h-3 text-muted-foreground opacity-0 group-hover:opacity-100" />
                 </AppLink>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
-      {/* Messages */}
-      <div className="border border-border rounded-md bg-card">
-        <div className="flex items-center gap-2 px-3 py-2 border-b border-border">
-          <MessageSquare className="w-3.5 h-3.5 text-muted-foreground" />
-          <h3 className="text-xs font-medium text-muted-foreground">
-            Messages ({messages.length})
-          </h3>
-        </div>
-        {messages.length === 0 ? (
-          <CxEmptyState
-            title="No messages"
-            description="This conversation has no messages yet."
-          />
-        ) : (
-          <div className="divide-y divide-border/50">
-            {messages.map((msg) => (
-              <CxDashboardErrorBoundary
-                key={msg.id}
-                fallbackMessage={`Failed to render message ${msg.id}`}
-              >
-                <MessageRow message={msg} />
-              </CxDashboardErrorBoundary>
-            ))}
+              ))}
+            </div>
           </div>
         )}
-      </div>
 
-      {/* Debug JSON views */}
-      <CxJsonViewer data={conv} label="Conversation Raw Data" />
-      <CxJsonViewer
-        data={{
-          config: conv.config,
-          variables: conv.variables,
-          overrides: conv.overrides,
-          metadata: conv.metadata,
-        }}
-        label="Config / Variables / Metadata"
-      />
+        {/* Messages */}
+        <div className="border border-border rounded-md bg-card">
+          <div className="flex items-center gap-2 px-3 py-2 border-b border-border">
+            <MessageSquare className="w-3.5 h-3.5 text-muted-foreground" />
+            <h3 className="text-xs font-medium text-muted-foreground">
+              Messages ({messages.length})
+            </h3>
+          </div>
+          {messages.length === 0 ? (
+            <CxEmptyState
+              title="No messages"
+              description="This conversation has no messages yet."
+            />
+          ) : (
+            <div className="divide-y divide-border/50">
+              {messages.map((msg) => (
+                <CxDashboardErrorBoundary
+                  key={msg.id}
+                  fallbackMessage={`Failed to render message ${msg.id}`}
+                >
+                  <MessageRow message={msg} />
+                </CxDashboardErrorBoundary>
+              ))}
+            </div>
+          )}
+        </div>
+
+        </>
+      )}
+
+      {view === "requests" && (
+        <UserRequestList
+          userRequests={user_requests}
+          share={usage.share_by_request}
+        />
+      )}
+
+      {view === "usage" && (
+        <ConversationUsageView usage={usage} modelCalls={model_calls} />
+      )}
+
+      {view === "errors" && (
+        <ConversationErrorsView
+          userRequests={user_requests}
+          modelCalls={model_calls}
+          toolCalls={tool_calls}
+        />
+      )}
+
+      {view === "raw" && (
+        <>
+        {/* Debug JSON views */}
+        <CxJsonViewer data={conv} label="Conversation Raw Data" />
+        <CxJsonViewer
+          data={{
+            config: conv.config,
+            variables: conv.variables,
+            overrides: conv.overrides,
+            metadata: conv.metadata,
+          }}
+          label="Config / Variables / Metadata"
+        />
+          <CxJsonViewer data={model_calls} label={`Model calls (${model_calls.length})`} />
+          <CxJsonViewer data={tool_calls} label={`Tool calls (${tool_calls.length})`} />
+        </>
+      )}
     </div>
     </SurfaceRuntimeProvider>
+  );
+}
+
+function UserRequestList({
+  userRequests,
+  share,
+}: {
+  userRequests: CxUserRequest[];
+  share: CxConversationUsage["share_by_request"];
+}) {
+  const formatAdminCost = useAdminCost();
+  if (userRequests.length === 0) {
+    return (
+      <CxEmptyState
+        title="No requests"
+        description="Nothing has been sent in this conversation yet."
+      />
+    );
+  }
+  return (
+    <div className="border border-border rounded-md p-3 bg-card">
+      <h3 className="text-xs font-medium text-muted-foreground mb-2 flex items-center gap-1.5">
+        <Send className="w-3.5 h-3.5" />
+        User Requests ({userRequests.length})
+      </h3>
+      <div className="space-y-1">
+        {userRequests.map((ur) => {
+          const dur = computeDuration(ur.created_at, ur.completed_at, ur.total_duration_ms);
+          const mine = share[ur.id]?.cost ?? 0;
+          const whole = Number(ur.total_cost) || 0;
+          // A request that also ran in other conversations says so: its total is not this conversation's.
+          const shared = whole - mine > 0.000001;
+          return (
+            <AppLink
+              key={ur.id}
+              href={`/administration/chat/cx-dashboard/requests/${ur.id}`}
+              className="flex items-center gap-3 text-xs p-2 rounded hover:bg-muted/50 transition-colors group"
+            >
+              <span className="font-mono text-muted-foreground">{truncateId(ur.id)}</span>
+              <Badge variant={statusBadgeVariant(ur.status)} className="text-[10px]">
+                {ur.status}
+              </Badge>
+              {ur.origin_class && (
+                <span
+                  className="inline-flex h-4 items-center rounded-full border border-border px-1.5 text-[10px] font-medium text-muted-foreground"
+                  title="Server-derived provenance (who initiated this request)"
+                >
+                  {originClassLabel(ur.origin_class)}
+                </span>
+              )}
+              <span>{ur.iterations} iter</span>
+              <span>{ur.total_tool_calls} tools</span>
+              <span className="font-mono" title="This conversation's part of the request">
+                {formatAdminCost(mine)}
+              </span>
+              {shared && (
+                <span
+                  className="text-muted-foreground"
+                  title="The whole request, across every conversation it ran in"
+                >
+                  of {formatAdminCost(whole)}
+                </span>
+              )}
+              <span className="text-muted-foreground">{formatTokens(ur.total_tokens)} tok</span>
+              <span className="text-muted-foreground ml-auto">{formatDuration(dur)}</span>
+              <ChevronRight className="w-3 h-3 text-muted-foreground opacity-0 group-hover:opacity-100" />
+            </AppLink>
+          );
+        })}
+      </div>
+    </div>
   );
 }
 
