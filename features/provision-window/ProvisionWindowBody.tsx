@@ -5,10 +5,10 @@
  * full value (expand), size, source, missing reason, one-click copy (each value, all as JSON,
  * all as Markdown), and earlier captures of the same point for the same subject.
  */
-import { copyText } from "@ai-matrx/kit/clipboard";
 import { useEffect, useState } from "react";
-import { Check, ChevronDown, ChevronRight, Copy, Info } from "lucide-react";
-import { Button, Select, type SelectOption } from "@ai-matrx/design-system/controls";
+import { ChevronDown, ChevronRight, Info } from "lucide-react";
+import { CopyButtons } from "@/components/agent-copy/CopyButtons";
+import { Select, type SelectOption } from "@ai-matrx/design-system/controls";
 import { formatCount } from "@ai-matrx/kit/format";
 import { extractErrorMessage } from "@/utils/errors";
 import { JsonInspector } from "@/components/official-candidate/json-inspector/JsonInspector";
@@ -25,19 +25,7 @@ import {
   type ProvisionValue,
 } from "./data";
 
-function useCopy(): [string | null, (key: string, text: string) => void] {
-  const [copied, setCopied] = useState<string | null>(null);
-  const copy = (key: string, text: string) => {
-    void copyText(text).then((ok) => {
-      if (!ok) return;
-      setCopied(key);
-      setTimeout(() => setCopied((c) => (c === key ? null : c)), 1500);
-    });
-  };
-  return [copied, copy];
-}
-
-function ValueRow({ v, copied, copy }: { v: ProvisionValue; copied: string | null; copy: (k: string, t: string) => void }) {
+function ValueRow({ v }: { v: ProvisionValue }) {
   const [open, setOpen] = useState(false);
   const text = valueText(v.value);
   const help = v.present ? v.source : `${v.missing_reason ?? "Not available here"} · ${v.source}`;
@@ -64,14 +52,7 @@ function ValueRow({ v, copied, copy }: { v: ProvisionValue; copied: string | nul
               {v.items !== null ? `${v.items} · ` : ""}
               {formatCount(v.chars)} chars
             </span>
-            <button
-              type="button"
-              className="shrink-0 rounded p-0.5 text-muted-foreground hover:bg-muted hover:text-foreground"
-              aria-label={`Copy ${v.label}`}
-              onClick={() => copy(v.name, text)}
-            >
-              {copied === v.name ? <Check className="size-3.5" /> : <Copy className="size-3.5" />}
-            </button>
+            <CopyButtons label={v.label} size="xs" {...({ triggerVariant: "icon" } as Record<string, unknown>)} human={() => text} json={() => v.value} />
           </>
         ) : null}
       </div>
@@ -92,15 +73,7 @@ function ValueRow({ v, copied, copy }: { v: ProvisionValue; copied: string | nul
   );
 }
 
-function ExpectedOutputSection({
-  expected,
-  copied,
-  copy,
-}: {
-  expected: ExpectedOutput;
-  copied: string | null;
-  copy: (k: string, t: string) => void;
-}) {
+function ExpectedOutputSection({ expected }: { expected: ExpectedOutput }) {
   const [open, setOpen] = useState(true);
   const example = expected.example === null ? "" : JSON.stringify(expected.example, null, 2);
   const schema = expected.jsonSchema === null ? "" : JSON.stringify(expected.jsonSchema, null, 2);
@@ -112,20 +85,20 @@ function ExpectedOutputSection({
           Expected output
         </button>
         {expected.kind ? <code className="text-[11px] text-muted-foreground">{expected.kind}</code> : null}
-        <div className="ml-auto flex gap-1">
-          {example ? (
-            <Button variant="outline" onClick={() => copy("__example", example)}>
-              {copied === "__example" ? <Check className="size-3.5" /> : <Copy className="size-3.5" />}
-              Example
-            </Button>
-          ) : null}
-          {schema ? (
-            <Button variant="outline" onClick={() => copy("__schema", schema)}>
-              {copied === "__schema" ? <Check className="size-3.5" /> : <Copy className="size-3.5" />}
-              Schema
-            </Button>
-          ) : null}
-        </div>
+        {example ? (
+          <div className="ml-auto">
+            <CopyButtons
+              label="Expected output"
+              size="xs"
+              {...({ triggerVariant: "icon" } as Record<string, unknown>)}
+              contentFlavor="markdown"
+              human={() =>
+                ["## Example", "```json", example, "```", ...(schema ? ["", "## Schema", "```json", schema, "```"] : [])].join("\n")
+              }
+              json={() => expected.example}
+            />
+          </div>
+        ) : null}
       </div>
       {expected.note ? <div className="mb-2 pl-5 text-[11px] text-muted-foreground">{expected.note}</div> : null}
       {open && example ? (
@@ -144,7 +117,6 @@ export function ProvisionWindowBody({ snapshotId }: { snapshotId: string }) {
   const [snapshot, setSnapshot] = useState<ProvisionSnapshot | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [history, setHistory] = useState<SelectOption[]>([]);
-  const [copied, copy] = useCopy();
 
   useEffect(() => setCurrentId(snapshotId), [snapshotId]);
 
@@ -186,15 +158,15 @@ export function ProvisionWindowBody({ snapshotId }: { snapshotId: string }) {
           <span className="text-muted-foreground">
             {present} of {snapshot.values.length} values · {formatCount(snapshot.totalChars)} chars
           </span>
-          <div className="ml-auto flex gap-1">
-            <Button variant="outline" onClick={() => copy("__json", snapshotJson(snapshot))}>
-              {copied === "__json" ? <Check className="size-3.5" /> : <Copy className="size-3.5" />}
-              JSON
-            </Button>
-            <Button variant="outline" onClick={() => copy("__md", snapshotMarkdown(snapshot))}>
-              {copied === "__md" ? <Check className="size-3.5" /> : <Copy className="size-3.5" />}
-              Markdown
-            </Button>
+          <div className="ml-auto">
+            <CopyButtons
+              label="Provision"
+              size="xs"
+              {...({ triggerVariant: "icon" } as Record<string, unknown>)}
+              contentFlavor="markdown"
+              human={() => snapshotMarkdown(snapshot)}
+              json={() => JSON.parse(snapshotJson(snapshot)) as unknown}
+            />
           </div>
         </div>
         {snapshot.codeLocation ? (
@@ -208,9 +180,9 @@ export function ProvisionWindowBody({ snapshotId }: { snapshotId: string }) {
       </div>
       <div className="min-h-0 flex-1 overflow-auto px-2">
         {snapshot.values.map((v) => (
-          <ValueRow key={v.name} v={v} copied={copied} copy={copy} />
+          <ValueRow key={v.name} v={v} />
         ))}
-        <ExpectedOutputSection expected={snapshot.expectedOutput} copied={copied} copy={copy} />
+        <ExpectedOutputSection expected={snapshot.expectedOutput} />
       </div>
     </div>
   );
