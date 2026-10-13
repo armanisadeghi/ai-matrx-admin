@@ -190,12 +190,12 @@ const Slideshow = (
           {/* Header with Controls */}
           <div className="flex-shrink-0 px-3 py-2 border-b border-border flex flex-wrap items-center justify-between gap-2 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30">
             <div className="flex items-center gap-2 min-w-0">
-              <div className="flex flex-wrap items-center gap-0.5 sm:gap-1.5">
+              <div className="hidden min-w-0 items-center gap-1.5 overflow-x-auto scrollbar-none sm:flex">
                 {slides.map((_, index) => (
                   <button
                     key={index}
                     onClick={() => goToSlide(index)}
-                    className="flex h-11 min-w-11 items-center justify-center rounded-full sm:h-6 sm:min-w-0"
+                    className="flex h-6 shrink-0 items-center justify-center rounded-full"
                     aria-label={`Go to slide ${index + 1}`}
                   >
                     <span
@@ -212,7 +212,7 @@ const Slideshow = (
                   </button>
                 ))}
               </div>
-              <div className="text-xs font-medium text-muted-foreground tabular-nums">
+              <div className="whitespace-nowrap text-xs font-medium text-muted-foreground tabular-nums">
                 {currentSlide + 1} / {slides.length}
               </div>
             </div>

@@ -14,7 +14,12 @@ import { cn } from "@/lib/utils";
 import { GRID_MAX_ROWS, type GridCell, type GridSheet } from "@/features/workbooks/snapshot-grid";
 
 const HEAD_H = 24;
-const ROW_HEAD_W = 40;
+/** Row-number column: fits at least 4 digits on one line (11px tabular digits ~7px each + padding). */
+const ROW_HEAD_MIN_DIGITS = 4;
+function rowHeadWidth(rowCount: number): number {
+  const digits = Math.max(ROW_HEAD_MIN_DIGITS, String(Math.max(rowCount, 1)).length);
+  return digits * 8 + 14;
+}
 
 function columnLetter(index: number): string {
   let n = index;
@@ -47,6 +52,7 @@ function CellBody({ cell }: { cell: GridCell }) {
 
 function SheetGrid({ sheet }: { sheet: GridSheet }) {
   const left: number[] = [];
+  const ROW_HEAD_W = rowHeadWidth(sheet.rows.length ? sheet.rows[sheet.rows.length - 1].index + 1 : 1);
   let x = ROW_HEAD_W;
   for (const col of sheet.columns) {
     left.push(x);
@@ -62,7 +68,7 @@ function SheetGrid({ sheet }: { sheet: GridSheet }) {
   const headBase = "bg-muted text-center text-[11px] font-normal text-muted-foreground border-b border-r border-border";
 
   return (
-    <table className="border-separate border-spacing-0 text-[13px] text-foreground" style={{ width: x, tableLayout: "fixed" }}>
+    <table className="border-separate border-spacing-0 text-[13px] text-foreground" style={{ width: x, maxWidth: "none", display: "table", tableLayout: "fixed" }}>
       <colgroup>
         <col style={{ width: ROW_HEAD_W }} />
         {sheet.columns.map((c) => (
@@ -91,7 +97,7 @@ function SheetGrid({ sheet }: { sheet: GridSheet }) {
             <tr key={row.index} style={{ height: row.height }}>
               <th
                 scope="row"
-                className={cn(headBase, "sticky left-0", frozenRow ? "z-20" : "z-10")}
+                className={cn(headBase, "sticky left-0 whitespace-nowrap tabular-nums", frozenRow ? "z-20" : "z-10")}
                 style={frozenRow ? { top: top[r] } : undefined}
               >
                 {row.index + 1}
