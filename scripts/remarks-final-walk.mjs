@@ -394,11 +394,15 @@ await item(3, "choice click -> \"I chose ...\" chip", async (t) => {
   t.ok(label, "the reply offered no option buttons");
   if (!label) return;
   // 1) click while the reply is still the live one (no reload yet)
+  const storedReads = [];
+  page.on("response", async (rs) => {
+    if (/\/message\?select=content&id=eq\./.test(rs.url())) storedReads.push(await rs.text().catch(() => "?"));
+  });
   await page.getByRole("button", { name: label, exact: true }).click();
   await page.waitForTimeout(3500);
   const liveChips = await chips(page);
   const toast = await page.evaluate(() => [...document.querySelectorAll("[data-sonner-toast],[role=status],[role=alert]")].map((e) => e.innerText.slice(0, 200)).filter(Boolean));
-  t.ev.liveClick = { label, chips: liveChips, toast };
+  t.ev.liveClick = { label, chips: liveChips, toast, storedReads: storedReads.map((x) => x.slice(0, 700)) };
   await shot(page, "3-live-click");
   t.ok(liveChips.some((c) => /I chose/.test(c)), `LIVE click (no reload) staged no "I chose" chip; toast: ${JSON.stringify(toast)}`);
   // 2) after a reload
@@ -416,7 +420,17 @@ await item(3, "choice click -> \"I chose ...\" chip", async (t) => {
   // send it (chip only) so the chat is clean for the comment items
   const r = await sendReply(page, "");
   t.ev.sent = r;
-  await settle(page, 2, "K reply2 (after I chose)");
+  await settle(page, 2, "K reply2 (after I chose)", true);
+  // The SECOND reply's first click is just as much "a person's first interaction with a freshly finished reply".
+  const label2 = await optionLabel();
+  t.ev.secondReplyOption = label2;
+  if (label2) {
+    await page.getByRole("button", { name: label2, exact: true }).last().click();
+    await page.waitForTimeout(3500);
+    const c2 = await chips(page);
+    t.ev.secondReplyClick = { label: label2, chips: c2, toast: await page.evaluate(() => [...document.querySelectorAll("[data-sonner-toast]")].map((e) => e.innerText.slice(0, 200))) };
+    t.ok(c2.some((c) => /I chose/.test(c)), "SECOND reply: live click staged no chip: " + JSON.stringify(t.ev.secondReplyClick.toast));
+  }
   t.ev.userCard = await page.evaluate((us) => [...document.querySelectorAll(us)].at(-1)?.innerText.slice(0, 200), US);
   t.ev.chipsAfterSend = await chips(page);
 });
@@ -453,7 +467,10 @@ await item(4, "checklist: tick two (real clicks) -> one chip naming them -> relo
 });
 
 await item(5, "in-place edit appends words -> chip -> send -> user card shows compact word-level diff", async (t) => {
-  if (!S.dUrl) throw new Error("chat D missing");
+  if (!S.dUrl) {
+    S.dUrl = await startChat(page, "Give me a launch checklist I can tick off as I go.");
+    await settle(page, 1, "D reply1 (checklist, for the edit)");
+  }
   const idx = await page.evaluate((an) => document.querySelectorAll(an).length - 1, AN);
   const msgId = await page.evaluate(([an, i]) => [...document.querySelectorAll(an)][i].getAttribute("data-primary-message-id"), [AN, idx]);
   const group = page.locator(`[data-message-group][data-primary-message-id="${msgId}"]`);
