@@ -11,11 +11,12 @@
  * switching tabs or opening a dropdown never moves the canvas below.
  */
 
-import { useState, type ReactNode } from "react";
-import { ChevronDown, Puzzle } from "lucide-react";
+import { useRef, useState, type ReactNode } from "react";
+import { ChevronDown, ChevronsRight, Puzzle } from "lucide-react";
 
 import { Button, Tabs } from "@ai-matrx/design-system/controls";
 import { useIsMobile } from "@ai-matrx/kit/media-query";
+import { Popover, PopoverContent, PopoverTrigger } from "@ai-matrx/design-system";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -24,6 +25,7 @@ import {
 import { cn } from "@/lib/utils";
 import { formatShortcut, type EditorMenu, type EditorMenuEntry } from "./editor-menu-model";
 import { rememberEditorFocus, renderMenuEntries, restoreEditorFocus } from "./EditorMenuBar";
+import { useFitCount } from "./useFitCount";
 import { MenusSearch, type EditorToolbarItem } from "./EditorToolbar";
 import {
   resolveRibbon,
@@ -228,7 +230,7 @@ function RibbonGroup({ group, compact }: { group: ResolvedRibbonGroup; compact: 
       role="group"
       aria-label={group.label}
       data-ribbon-group={group.id}
-      className={cn("flex shrink-0 flex-col border-r border-border/70 px-1.5 last:border-r-0", compact && "border-r-0 px-0.5")}
+      className={cn("flex shrink-0 flex-col border-r border-border/70 px-1.5", compact && "border-r-0 px-0.5")}
     >
       <div className="flex min-h-0 flex-1 items-start gap-1">
         {cols.map((col, i) => {
@@ -264,6 +266,93 @@ function RibbonGroup({ group, compact }: { group: ResolvedRibbonGroup; compact: 
       {compact ? null : (
         <div className="h-4 truncate text-center text-xs leading-4 text-muted-foreground">{group.label}</div>
       )}
+    </div>
+  );
+}
+
+/**
+ * One tab's panel. Groups that do not fit the width fold, last first, into a "More" button that
+ * opens them in a popover — Office's collapsing groups — so nothing is clipped at any width. The
+ * fit is measured (`useFitCount`); a phone keeps its one sideways-scrolling row.
+ */
+function RibbonPanel({
+  tab,
+  compact,
+  extensions,
+}: {
+  tab: ReturnType<typeof resolveRibbon>[number];
+  compact: boolean;
+  extensions?: ReactNode;
+}) {
+  const rowRef = useRef<HTMLDivElement | null>(null);
+  const fit = useFitCount(rowRef, tab.groups.length);
+  const shown = compact ? tab.groups.length : fit;
+  const folded = tab.groups.slice(shown);
+  return (
+    <div
+      ref={rowRef}
+      role="tabpanel"
+      aria-label={tab.label}
+      data-ribbon-panel={tab.id}
+      className={cn(
+        "flex items-stretch overflow-x-auto px-2 [scrollbar-width:none]",
+        compact ? "h-11 items-center gap-0.5" : "h-24 py-1",
+      )}
+    >
+      {tab.groups.map((g, i) => (
+        <div key={g.id} data-fit-item={`${tab.id}:${g.id}`} className={cn("flex shrink-0", !compact && i >= shown && "hidden")}>
+          <RibbonGroup group={g} compact={compact} />
+        </div>
+      ))}
+      {!compact && folded.length > 0 ? (
+        <div data-fit-more="" className="flex w-8 shrink-0 items-start justify-center pt-1">
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="quiet" icon={<ChevronsRight />} aria-label="More groups" title="More groups" />
+            </PopoverTrigger>
+            <PopoverContent sizing="content" align="end" sideOffset={6} className="max-w-[calc(100vw-1rem)] p-1">
+              <div className="flex w-[min(56rem,calc(100vw-2rem))] flex-wrap items-stretch" data-ribbon-folded="">
+                {folded.map((g) => (
+                  <div key={g.id} className="h-24 py-1">
+                    <RibbonGroup group={g} compact={false} />
+                  </div>
+                ))}
+              </div>
+            </PopoverContent>
+          </Popover>
+        </div>
+      ) : null}
+      {extensions && tab.id === "home" ? (
+        <div role="group" aria-label="Add-ins" data-ribbon-group="add-ins" className="flex shrink-0 flex-col px-1.5">
+          <div className="flex min-h-0 flex-1 items-start">
+            <DropdownMenu modal={false}>
+              <DropdownMenuTrigger asChild>
+                {/* ui-exception: an Office ribbon's large button (icon over a label), not a 28px control. */}
+                <button
+                  type="button"
+                  aria-label="Add-ins"
+                  title="Add-ins"
+                  data-editor-command="extensions"
+                  onMouseDown={(e) => e.preventDefault()}
+                  className={cn(
+                    "flex shrink-0 items-center rounded text-foreground hover:bg-accent",
+                    compact
+                      ? "h-7 gap-1 px-1.5 text-xs"
+                      : "h-[4.5rem] w-[4.5rem] flex-col justify-start gap-1 px-1 pt-1.5 text-xs leading-tight",
+                  )}
+                >
+                  <Puzzle className={cn("text-[var(--office-accent,currentColor)]", compact ? "size-4" : "size-6")} />
+                  <span>Add-ins</span>
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="min-w-[14rem]" onCloseAutoFocus={restoreEditorFocus}>
+                {extensions}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+          {compact ? null : <div className="h-4 text-center text-xs leading-4 text-muted-foreground">Add-ins</div>}
+        </div>
+      ) : null}
     </div>
   );
 }
@@ -321,50 +410,7 @@ export function EditorRibbon({
         {end ? <span className="ml-1 hidden shrink-0 items-center md:flex">{end}</span> : null}
       </div>
       {active ? (
-        <div
-          role="tabpanel"
-          aria-label={active.label}
-          data-ribbon-panel={active.id}
-          className={cn(
-            "flex items-stretch overflow-x-auto px-2 [scrollbar-width:none]",
-            compact ? "h-11 items-center gap-0.5" : "h-24 py-1",
-          )}
-        >
-          {active.groups.map((g) => (
-            <RibbonGroup key={g.id} group={g} compact={compact} />
-          ))}
-          {extensions && active.id === "home" ? (
-            <div role="group" aria-label="Add-ins" data-ribbon-group="add-ins" className="flex shrink-0 flex-col px-1.5">
-              <div className="flex min-h-0 flex-1 items-start">
-                <DropdownMenu modal={false}>
-                  <DropdownMenuTrigger asChild>
-                    {/* ui-exception: an Office ribbon's large button (icon over a label), not a 28px control. */}
-                    <button
-                      type="button"
-                      aria-label="Add-ins"
-                      title="Add-ins"
-                      data-editor-command="extensions"
-                      onMouseDown={(e) => e.preventDefault()}
-                      className={cn(
-                        "flex shrink-0 items-center rounded text-foreground hover:bg-accent",
-                        compact
-                          ? "h-7 gap-1 px-1.5 text-xs"
-                          : "h-[4.5rem] w-[4.5rem] flex-col justify-start gap-1 px-1 pt-1.5 text-xs leading-tight",
-                      )}
-                    >
-                      <Puzzle className={cn("text-[var(--office-accent,currentColor)]", compact ? "size-4" : "size-6")} />
-                      <span>Add-ins</span>
-                    </button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="min-w-[14rem]" onCloseAutoFocus={restoreEditorFocus}>
-                    {extensions}
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-              {compact ? null : <div className="h-4 text-center text-xs leading-4 text-muted-foreground">Add-ins</div>}
-            </div>
-          ) : null}
-        </div>
+        <RibbonPanel key={active.id} tab={active} compact={compact} extensions={extensions} />
       ) : (
         <div className={compact ? "h-11" : "h-24"} />
       )}
