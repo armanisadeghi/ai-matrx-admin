@@ -16,15 +16,39 @@
  *
  * These are passed to `<MessagingProvider>` in `providers/MessagingHost.tsx`.
  * They WRAP the package's surfaces; nothing here re-renders a message.
+ *
+ * 🚨 THE WRAPPERS ARE STATIC, WHAT THEY DRAW INSIDE LOADS ON FIRST USE (2026-10-13, "every page
+ * drags ~18 MB"). The host binds these on every route, so the "Linked" section and the fence
+ * renderer (the kind registry behind `MatrxEnvelopeBlock`) live in `MessagingChromeImpl.tsx` and
+ * arrive through ONE `import()` — both lazy fields share it — the first time a message renders.
+ * The wrappers themselves stay static so a message's own bubble (`children`) never waits on it.
  */
 
+import { clientLazy } from "@ai-matrx/kit/client-lazy";
 import type {
   ConversationRowWrapperProps,
   MessageWrapperProps,
 } from "@ai-matrx/messaging/react";
-import MatrxEnvelopeBlock from "@/features/matrx-envelope/MatrxEnvelopeBlock";
-import { messageSenderName } from "@/features/messaging/lib/messaging-menu-actions";
-import { MessageLinks } from "./MessageLinks";
+
+const loadChrome = () => import("./MessagingChromeImpl");
+
+// Draws nothing until the message has a link, so it loads behind nothing.
+const MessagingMessageLinks = clientLazy(() => loadChrome().then((m) => m.MessagingMessageLinks));
+
+const MessagingFenceBody = clientLazy(() => loadChrome().then((m) => m.MessagingFenceBody), {
+  loading: MessagingFenceLoading,
+});
+
+/** A reference chip's footprint while the kind registry arrives. */
+function MessagingFenceLoading() {
+  return (
+    <span
+      aria-busy="true"
+      aria-label="Loading reference"
+      className="matrx-pulse inline-block h-7 w-40 rounded-md bg-primary/10 align-middle"
+    />
+  );
+}
 
 export function MessagingMessageChrome({
   message,
@@ -38,7 +62,7 @@ export function MessagingMessageChrome({
           saved message, so it cannot have links and must never be asked (the associations door
           refuses a non-UUID id and screamed on every send). */}
       {message.deliveryState === "sending" || message.deliveryState === "failed" ? null : (
-        <MessageLinks messageId={message.id} title={messageSenderName(message)} />
+        <MessagingMessageLinks message={message} />
       )}
     </div>
   );
@@ -69,5 +93,5 @@ export function MessagingConversationRowChrome({
  * is exactly what the package hands over.
  */
 export function MessagingFence({ body }: { body: string }) {
-  return <MatrxEnvelopeBlock content={body} />;
+  return <MessagingFenceBody body={body} />;
 }

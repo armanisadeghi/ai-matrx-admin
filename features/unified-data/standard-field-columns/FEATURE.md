@@ -59,6 +59,9 @@ with the source given no organizations.
 
 ## Change log
 
+- 2026-10-13 — the read moved to `loadStandardFields.ts`, reached through ONE `import()` in the hook's
+  effect: the table host binds this hook on every route, and the records clients were ~3.5 MB of every
+  first load. Guard `components/official/__tests__/custom-field-columns-load-when-a-table-mounts.test.tsx`.
 - 2026-10-03 — round 3: grouped-view ceiling knob `lists.group_rows_ceiling` (500, applied live);
   fields read in pages of 200 organizations; Choice "All" is no filter; failed field read said.
 

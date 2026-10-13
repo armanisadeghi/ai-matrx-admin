@@ -58,7 +58,8 @@ import {
   useSessionKnob,
 } from "@/lib/scoped-config/sessionKnob";
 import { HistoryActorName } from "./HistoryActorName";
-import { DetailCustomFieldsSection } from "./DetailCustomFieldsSection";
+import { clientLazy } from "@ai-matrx/kit/client-lazy";
+import { RegionSkeleton } from "@ai-matrx/design-system/controls";
 import { savePresentation } from "./savePresentation";
 import { EntityDoorControls } from "@/components/official/entity-ref/EntityDoorControls";
 import { EntityRef } from "@/components/official/entity-ref/EntityRef";
@@ -78,6 +79,23 @@ import { useCloseDetailWindow, useOpenDetailWindow } from "@/features/overlays/o
 import { encodeListQuery } from "@ai-matrx/detail";
 import { resolvedListContextMax } from "./listContextCap";
 import { stashPageSeed } from "./pageSeedHandoff";
+
+/**
+ * THE CUSTOM-FIELDS SECTION LOADS WHEN A RECORD OPENS (2026-10-13, "every page drags ~18 MB").
+ * This host is mounted on every route by app/Providers.tsx, and the section's implementation
+ * (EntityCustomFields → @ai-matrx/records-ui) is ~4.4 MB of the first load when bound statically.
+ * The provider stays mounted and the port stays synchronous; only the component behind
+ * `customFields.Section` loads, through ONE `import()` of its one module, the first time a Detail
+ * body renders it — a form-shaped skeleton holds its place meanwhile.
+ */
+const DetailCustomFieldsSection = clientLazy(
+  () => import("./DetailCustomFieldsSection").then((module) => module.DetailCustomFieldsSection),
+  { loading: DetailCustomFieldsLoading },
+);
+
+function DetailCustomFieldsLoading() {
+  return <RegionSkeleton shape="form" count={2} aria-label="Loading custom fields" />;
+}
 
 /**
  * `/detail/<type>/<id>` — the page presentation's route.
