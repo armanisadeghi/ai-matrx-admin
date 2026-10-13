@@ -441,7 +441,6 @@ const nextConfig = {
       // rich-content and chat still request thinking helpers from kit/text,
       // but kit@0.36.1 publishes them from content-ir/source instead.
       "@ai-matrx/kit/text": "./lib/compat/kit-text.ts",
-      "@ai-matrx/kit/outbound-react": "./lib/compat/kit-outbound-react.ts",
       "@ai-matrx/kit/json-extract": "@ai-matrx/content-ir/json-extract",
       // The demos AppShell is shared by every demo route. Keep the registrations
       // appended in v0.4.2884 out of that global graph, but retain the same
@@ -1063,10 +1062,6 @@ const nextConfig = {
     config.resolve.alias = {
       ...config.resolve.alias,
       "@ai-matrx/kit/text": path.join(__dirname, "lib/compat/kit-text.ts"),
-      "@ai-matrx/kit/outbound-react": path.join(
-        __dirname,
-        "lib/compat/kit-outbound-react.ts",
-      ),
       "@ai-matrx/kit/json-extract": "@ai-matrx/content-ir/json-extract",
       "@/providers/chatUiRegistrationProfile": path.join(
         __dirname,
