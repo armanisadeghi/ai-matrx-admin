@@ -7,6 +7,8 @@
  */
 
 import { useEffect, useState } from "react";
+import { proxiedExternalImageUrl } from "@/lib/media/external-image";
+import { brightnessOf, shadeForBrightness } from "./logo-shade";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { BadgeCheck, Check, ExternalLink, Globe, Plus, X } from "lucide-react";
 import { Button, Field, Select, type SelectOption } from "@ai-matrx/design-system/controls";
@@ -140,15 +142,28 @@ export function BrandCard({
 }) {
   const primary = basics.images.find((i) => i.primary) ?? null;
   const empty = !basics.name && !primary && !basics.websiteUrl;
+  const [shade, setShade] = useState<"light" | "dark" | "checker">("light");
+  const [dead, setDead] = useState<string | null>(null);
+  const primaryRaw = primary?.url ?? null;
+  const primarySrc = primaryRaw && /^https?:\/\//i.test(primaryRaw) ? proxiedExternalImageUrl(primaryRaw) : primaryRaw;
   return (
     <section
       className="flex min-h-28 items-center gap-4 rounded-xl border border-border bg-gradient-to-br from-card to-muted/40 p-4 shadow-sm"
       aria-label="Your brand"
       data-testid="smart-add-brand-card"
     >
-      <span className={`flex size-20 shrink-0 items-center justify-center overflow-hidden border border-border bg-white ${person ? "rounded-full" : "rounded-xl"}`}>
-        {primary ? (
-          <img src={primary.url} alt="" className={person ? "size-full object-cover" : "max-h-full max-w-full object-contain p-1.5"} />
+      <span className={`flex size-20 shrink-0 items-center justify-center overflow-hidden border border-border ${shade === "dark" ? "bg-zinc-800" : "bg-white"} ${person ? "rounded-full" : "rounded-xl"}`}>
+        {primary && dead !== primary.url ? (
+          <img
+            src={primarySrc ?? primary.url}
+            alt=""
+            onError={() => setDead(primary.url)}
+            onLoad={(ev) => {
+              const b = brightnessOf(ev.currentTarget);
+              setShade(b === null ? "light" : shadeForBrightness(b));
+            }}
+            className={person ? "size-full object-cover" : "max-h-full max-w-full object-contain p-1.5"}
+          />
         ) : (
           <Globe className="size-7 text-muted-foreground/40" />
         )}

@@ -69,6 +69,7 @@ export function SmartAddHero({
   views,
   items,
   nothingFound,
+  failed,
   onAdd,
 }: {
   person: boolean;
@@ -81,6 +82,8 @@ export function SmartAddHero({
   /** Every finding so far (ordered); the centerpiece shows only real ones. */
   items: EvidenceItem[];
   nothingFound: boolean;
+  /** A round broke (not "searched and found nothing"). */
+  failed: boolean;
   onAdd: (items: EvidenceItem[]) => void;
 }) {
   const [mode, setMode] = useState<Mode | null>(null);
@@ -98,17 +101,24 @@ export function SmartAddHero({
   const host = siteOk ? websiteHost(site.trim()) : null;
   const needsPick = social.trim() !== "" && needsPlatformPick(parsed, null);
 
-  const ready =
-    mode === "website" ? siteOk && (!second || !social.trim() || socialOk)
-    : mode === "social" ? socialOk && (!second || !site.trim() || siteOk)
-    : mode === "name" ? name.trim().length > 1
-    : false;
+  const socialOkFor = (pk: SocialPlatform | null) => {
+    const p = resolveAccountInput({ text: social, picked: pk });
+    return p.status === "ok" && (p.detected || Boolean(pk));
+  };
+  const readyFor = (pk: SocialPlatform | null) => {
+    const ok = socialOkFor(pk);
+    return mode === "website" ? siteOk && (!second || !social.trim() || ok)
+      : mode === "social" ? ok && (!second || !site.trim() || siteOk)
+      : mode === "name" ? name.trim().length > 1
+      : false;
+  };
+  const ready = readyFor(picked);
 
   const phase: "choose" | "enter" | "identifying" | "nothing" =
     submitted && nothingFound ? "nothing" : submitted ? "identifying" : mode ? "enter" : "choose";
 
-  const submit = () => {
-    if (!ready) return;
+  const submit = (pk: SocialPlatform | null = picked) => {
+    if (!readyFor(pk)) return;
     if (mode === "name") {
       const answers = [customItem("name", name)];
       if (city.trim()) answers.push(customItem("address", city));
@@ -117,9 +127,14 @@ export function SmartAddHero({
       return;
     }
     onWebsite(siteOk ? site.trim() : "");
-    onSocial(socialOk ? social.trim() : "");
-    onPick(picked);
+    onSocial(socialOkFor(pk) ? social.trim() : "");
+    onPick(pk);
     setSubmitted(true);
+  };
+  // Picking the platform is the last thing a bare handle needs: it starts the search.
+  const pickPlatform = (p: SocialPlatform) => {
+    setPicked(p);
+    submit(p);
   };
 
   const choose = (m: Mode) => {
@@ -228,7 +243,7 @@ export function SmartAddHero({
                         onKeyDown={onFieldKey}
                         placeholder={person ? "Your full name" : "Business name"}
                         label={person ? "Your name" : "Business name"}
-                        go={<GoButton disabled={!ready} onClick={submit} />}
+                        go={<GoButton disabled={!ready} onClick={() => submit()} />}
                       />
                       <SubRow
                         icon={<MapPin className="size-[1.1rem]" />}
@@ -251,7 +266,7 @@ export function SmartAddHero({
                           placeholder="yourbrand.com"
                           label="Website"
                           inputMode="url"
-                          go={<GoButton disabled={!ready} onClick={submit} />}
+                          go={<GoButton disabled={!ready} onClick={() => submit()} />}
                         />
                       ) : (
                         <BigRow
@@ -263,10 +278,10 @@ export function SmartAddHero({
                           placeholder="@handle or profile link"
                           label="Handle or link"
                           tag={socialOk && parsed.status === "ok" ? platformLabel(parsed.platform) : null}
-                          go={<GoButton disabled={!ready} onClick={submit} />}
+                          go={<GoButton disabled={!ready} onClick={() => submit()} />}
                         />
                       )}
-                      {mode === "social" && needsPick ? <PlatformPick picked={picked} onPick={setPicked} /> : null}
+                      {mode === "social" && needsPick ? <PlatformPick picked={picked} onPick={pickPlatform} /> : null}
                       <AnimatePresence initial={false}>
                         {second ? (
                           <motion.div
@@ -293,7 +308,7 @@ export function SmartAddHero({
                                     setSocial("");
                                   }}
                                 />
-                                {needsPick ? <PlatformPick picked={picked} onPick={setPicked} /> : null}
+                                {needsPick ? <PlatformPick picked={picked} onPick={pickPlatform} /> : null}
                               </>
                             ) : (
                               <SubRow
@@ -350,13 +365,14 @@ export function SmartAddHero({
               views={views}
               working={working || (phase === "identifying" && mode !== "name")}
               settled={phase === "nothing"}
+              failed={failed}
               host={host}
               platform={parsed.status === "ok" && socialOk ? parsed.platform : null}
               typedName={mode === "name" ? name.trim() : null}
             />
           ) : null}
 
-          {phase === "nothing" ? <NothingFound person={person} onAnswer={onAdd} onRetry={() => setSubmitted(false)} /> : null}
+          {phase === "nothing" ? <NothingFound failed={failed} person={person} onAnswer={onAdd} onRetry={() => setSubmitted(false)} /> : null}
         </motion.div>
       </section>
     </MotionConfig>
@@ -764,9 +780,9 @@ function PlatformPick({ picked, onPick }: { picked: SocialPlatform | null; onPic
             aria-label={platformLabel(p)}
             title={platformLabel(p)}
             onClick={() => onPick(p)}
-            className="relative flex size-10 shrink-0 items-center justify-center transition-transform hover:-translate-y-0.5"
+            className="relative flex size-12 shrink-0 items-center justify-center transition-transform hover:-translate-y-0.5"
           >
-            <PlatformMark platform={p} size={24} />
+            <PlatformMark platform={p} size={32} />
             {on ? (
               <motion.span layoutId="smart-add:platform-pick" transition={SPRING} className="absolute -bottom-0.5 left-1/2 size-1.5 -translate-x-1/2 rounded-full bg-primary" />
             ) : null}
@@ -844,6 +860,7 @@ function Centerpiece({
   views,
   working,
   settled,
+  failed,
   host,
   platform,
   typedName,
@@ -852,6 +869,7 @@ function Centerpiece({
   views: RoundView[];
   working: boolean;
   settled: boolean;
+  failed: boolean;
   host: string | null;
   platform: SocialPlatform | null;
   typedName: string | null;
@@ -929,7 +947,7 @@ function Centerpiece({
             {typedName}
           </Shared>
         ) : settled ? (
-          <span className="text-2xl font-semibold tracking-tight sm:text-3xl">Nothing online yet</span>
+          <span className="text-2xl font-semibold tracking-tight sm:text-3xl">{failed ? "The lookup didn't finish" : "Nothing online yet"}</span>
         ) : (
           <span className="h-3 w-44 rounded-full bg-foreground/[0.07] motion-safe:animate-pulse" />
         )}
@@ -1141,10 +1159,12 @@ function Typewriter({ text }: { text: string }) {
 // ── Nothing found ────────────────────────────────────────────────────────────
 
 function NothingFound({
+  failed,
   person,
   onAnswer,
   onRetry,
 }: {
+  failed: boolean;
   person: boolean;
   onAnswer: (items: EvidenceItem[]) => void;
   onRetry: () => void;
@@ -1175,7 +1195,9 @@ function NothingFound({
       className="mt-6 flex w-full flex-col items-center gap-4"
       data-testid="smart-add-situation"
     >
-      <p className="text-base text-muted-foreground">Three quick answers and you&apos;re set.</p>
+      <p className="text-base text-muted-foreground">
+        {failed ? "Try again, or give three quick answers." : "Three quick answers and you're set."}
+      </p>
       <div className={`${styles.shell} w-full overflow-hidden rounded-[1.25rem]`}>
         <SubRow
           icon={person ? <UserRound className="size-5" /> : <Building2 className="size-5" />}

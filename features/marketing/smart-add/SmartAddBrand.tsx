@@ -359,9 +359,13 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
   // ── derived ─────────────────────────────────────────────────────────────
 
   const roundViews = rounds.map((r) => (r.runId ? views[r.runId] : undefined));
+  const TERMINAL = ["completed", "failed", "errored", "cancelled", "stopped", "refused"];
+  // A round with a run id but no first update yet is still working (never "nothing found" for a beat).
   const working =
-    rounds.some((r) => !r.runId && !r.error) ||
-    roundViews.some((v) => !!v && !["completed", "failed", "errored", "cancelled", "stopped", "refused"].includes(v.status ?? ""));
+    rounds.some((r) => !r.error && (!r.runId || !views[r.runId])) ||
+    roundViews.some((v) => !!v && !TERMINAL.includes(v.status ?? ""));
+  const failedRound =
+    rounds.some((r) => Boolean(r.error)) || roundViews.some((v) => !!v && ["failed", "errored", "refused"].includes(v.status ?? ""));
   const progressLines = roundViews
     .flatMap((v) => v?.steps ?? [])
     .filter((s) => s.phase === "running" && s.progress)
@@ -644,6 +648,7 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
           views={roundViews.filter((v): v is RoundView => Boolean(v))}
           items={visible}
           nothingFound={nothingFound}
+          failed={failedRound}
           onAdd={addCustom}
         />
         {listeners}

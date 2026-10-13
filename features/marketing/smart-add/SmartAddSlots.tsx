@@ -20,6 +20,7 @@ import { SocialImage } from "@/features/marketing/social/components/SocialImage"
 import { proxiedExternalImageUrl } from "@/lib/media/external-image";
 import { compareRows, websiteHost, type Candidate, type Decision, type EvidenceField, type EvidenceItem, type Relation } from "./evidence";
 import { accountHandleLine, CustomAdd, OpenLink, RelationPicker, useRelationKinds } from "./SmartAddExtras";
+import { brightnessOf, shadeForBrightness } from "./logo-shade";
 import { profileUrlFor } from "@/features/marketing/social/link";
 import { Shared } from "./stage/Shared";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
@@ -392,28 +393,6 @@ function ReadMore({ text }: { text: string }) {
 type Backdrop = "auto" | "light" | "dark";
 const CHECKER = "bg-[repeating-conic-gradient(#d4d4d8_0%_25%,#f4f4f5_0%_50%)] bg-[length:14px_14px]";
 
-/** Mean brightness of the opaque pixels (0-1), or null when the browser will not let us read it. */
-function brightnessOf(img: HTMLImageElement): number | null {
-  try {
-    const c = document.createElement("canvas");
-    c.width = c.height = 24;
-    const g = c.getContext("2d");
-    if (!g) return null;
-    g.drawImage(img, 0, 0, 24, 24);
-    const d = g.getImageData(0, 0, 24, 24).data;
-    let sum = 0;
-    let n = 0;
-    for (let i = 0; i < d.length; i += 4) {
-      if (d[i + 3] < 40) continue;
-      sum += (0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2]) / 255;
-      n++;
-    }
-    return n ? sum / n : -1; // -1: fully transparent
-  } catch {
-    return null;
-  }
-}
-
 function LogoChoice({
   item,
   decision,
@@ -451,7 +430,7 @@ function LogoChoice({
     if (img.naturalWidth && img.naturalHeight) setRatio(img.naturalWidth / img.naturalHeight);
     const b = brightnessOf(img);
     if (b === null) return;
-    setAuto(b === -1 || b > 0.8 ? "dark" : b < 0.2 ? "light" : "checker");
+    setAuto(shadeForBrightness(b));
   };
   const picture = (className: string) =>
     item.profile_id ? (
