@@ -26,6 +26,7 @@ import {
 import { SlideView, type SlideData, type SlideTheme, type SlideVariant } from "./SlideView";
 import { deckFontFamily, PRESET_LIST, presetTheme, resolveDeckTheme } from "./presets";
 import { ScaledSlide } from "./ScaledSlide";
+import { slideSurfaceStyle } from "./slide-surface";
 import { useCanvasPresentation } from "@ai-matrx/canvas/react";
 import { slideThumbnailPlacement } from "@ai-matrx/rich-content/display/blocks/canvas-adaptive";
 import { Button } from "@ai-matrx/design-system/controls";
@@ -328,7 +329,7 @@ const Slideshow = (
                   <div
                     key={currentSlide}
                     className="h-full w-full animate-fadeIn"
-                    style={{ fontFamily: deckFontFamily(effectiveTheme.font) }}
+                    style={{ ...slideSurfaceStyle(effectiveTheme), fontFamily: deckFontFamily(effectiveTheme.font) }}
                   >
                     <SlideView slide={slide} theme={effectiveTheme} variant={variant} fullScreen={false} />
                   </div>
@@ -354,7 +355,7 @@ const Slideshow = (
               key={currentSlide}
               className={`w-full animate-fadeIn ${isFullScreen ? "max-w-6xl mx-auto" : "max-w-4xl mx-auto"}`}
             >
-              <div className="aspect-[16/9] w-full" style={{ fontFamily: deckFontFamily(effectiveTheme.font) }}>
+              <div className="aspect-[16/9] w-full" style={{ ...slideSurfaceStyle(effectiveTheme), fontFamily: deckFontFamily(effectiveTheme.font) }}>
                 <SlideView
                   slide={slide}
                   theme={effectiveTheme}
@@ -462,7 +463,7 @@ function SlideThumbnails({
           } ${index === current ? "border-primary" : "border-transparent hover:border-border"}`}
         >
           <ScaledSlide className="pointer-events-none aspect-video w-full">
-            <div className="h-full w-full" style={{ fontFamily: deckFontFamily(theme.font) }}>
+            <div className="h-full w-full" style={{ ...slideSurfaceStyle(theme), fontFamily: deckFontFamily(theme.font) }}>
               <SlideView slide={s} theme={theme} variant={variant} fullScreen={false} />
             </div>
           </ScaledSlide>

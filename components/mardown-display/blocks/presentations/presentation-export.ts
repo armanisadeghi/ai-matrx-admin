@@ -1,5 +1,6 @@
 import { PresentationData } from "./Slideshow";
 import { resolveDeckTheme } from "./presets";
+import { slideSurface } from "./slide-surface";
 import { palette } from "./SlideView";
 import type { JsonObject } from "@/types/json";
 import { markdownToPlainText } from "@/lib/markdown/plain-text";
@@ -22,6 +23,8 @@ export interface ExportOptions {
     includeMetadata?: boolean;
     /** Build the file and hand it back on the result instead of downloading it (PowerPoint only). */
     returnBlob?: boolean;
+    /** The page colour behind each captured slide (PDF); the deck's surface, default white. */
+    backgroundColor?: string;
 }
 
 export interface ExportResult {
@@ -42,7 +45,7 @@ export const exportToPDF = async (
     options: ExportOptions = {}
 ): Promise<ExportResult> => {
     try {
-        const { filename = presentationTitle, quality = 2 } = options;
+        const { filename = presentationTitle, quality = 2, backgroundColor = '#ffffff' } = options;
 
         // A slide is a picture of a surface, so it goes through the browser's own renderer
         // (gradient text and Tailwind 4 colours survive; html2canvas flattens them), then one PDF
@@ -50,7 +53,7 @@ export const exportToPDF = async (
         const { renderElement, pagesToPdf } = await import('@ai-matrx/alchemy/operate/capture');
         const pages = [];
         for (const el of slideElements) {
-            const image = await renderElement(el, { pixelRatio: quality, backgroundColor: '#ffffff', cacheBust: true });
+            const image = await renderElement(el, { pixelRatio: quality, backgroundColor, cacheBust: true });
             pages.push({ image, imageType: 'JPEG' as const, quality: 0.92, placement: 'fill' as const });
         }
         const pdf = await pagesToPdf(pages, { orientation: 'landscape', unit: 'mm', format: [297, 167.0625] });
@@ -184,7 +187,10 @@ export const exportToPowerPoint = async (
 
         const { filename = 'presentation', returnBlob = false } = options;
         const { slides } = presentationData;
-        const theme = palette(resolveDeckTheme(presentationData.theme));
+        const resolved = resolveDeckTheme(presentationData.theme);
+        const theme = palette(resolved);
+        const surface = slideSurface(resolved);
+        const hex = (c: string) => c.replace('#', '');
 
         const blob = await buildPresentation((pptx) => {
             // Process each slide
@@ -192,7 +198,7 @@ export const exportToPowerPoint = async (
                 const slide = pptx.addSlide();
             
                 // Add background color
-                slide.background = { color: 'FFFFFF' };
+                slide.background = { color: hex(surface.background) };
             
                 if (slideData.type === 'intro') {
                     // Intro slide layout
@@ -233,7 +239,7 @@ export const exportToPowerPoint = async (
                         h: '15%',
                         align: 'center',
                         fontSize: 24,
-                        color: '4B5563',
+                        color: hex(surface.mutedForeground),
                         valign: 'top'
                     });
                 } else {
@@ -260,7 +266,7 @@ export const exportToPowerPoint = async (
                         w: '90%',
                         h: '8%',
                         fontSize: 18,
-                        color: '6B7280',
+                        color: hex(surface.mutedForeground),
                         valign: 'top'
                     });
                 
@@ -271,7 +277,7 @@ export const exportToPowerPoint = async (
                             text: markdownToPlainText(bullet), // For simple bullets
                             options: {
                                 bullet: { code: '2022' }, // Bullet character
-                                color: '1F2937',
+                                color: hex(surface.foreground),
                                 fontSize: 18,
                                 paraSpaceBefore: 8,
                                 paraSpaceAfter: 8
@@ -285,7 +291,7 @@ export const exportToPowerPoint = async (
                         w: '90%',
                         h: '55%',
                         fontSize: 18,
-                        color: '1F2937',
+                        color: hex(surface.foreground),
                         bullet: true,
                         valign: 'top'
                     });

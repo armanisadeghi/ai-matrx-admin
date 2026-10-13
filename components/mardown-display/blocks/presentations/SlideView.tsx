@@ -28,6 +28,8 @@ export interface SlideTheme {
   backgroundColor?: string;
   textColor?: string;
   variant?: SlideVariant;
+  /** The page the slide is drawn on, whatever the app's own light/dark mode: "light" paper or "dark". */
+  surface?: "light" | "dark";
   /** Optional font hint: "serif" | "sans" | "display". */
   font?: string;
 }
@@ -308,7 +310,7 @@ function Frame({
   const style: React.CSSProperties = sectionGradient
     ? { background: `linear-gradient(135deg, ${c.primary}, ${c.secondary})` }
     : variant === "deluxe"
-      ? { background: `radial-gradient(120% 120% at 0% 0%, ${c.primary}0D, transparent 50%), radial-gradient(120% 120% at 100% 100%, ${c.accent}0D, transparent 50%)` }
+      ? { backgroundImage: `radial-gradient(120% 120% at 0% 0%, ${c.primary}0D, transparent 50%), radial-gradient(120% 120% at 100% 100%, ${c.accent}0D, transparent 50%)` }
       : {};
   return (
     <div

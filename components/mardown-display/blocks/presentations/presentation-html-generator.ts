@@ -6,6 +6,7 @@
 import { PresentationData } from './Slideshow';
 import { resolveDeckTheme } from './presets';
 import { palette } from './SlideView';
+import { slideSurface } from './slide-surface';
 
 /**
  * Generates a complete standalone HTML page with an interactive presentation
@@ -13,7 +14,12 @@ import { palette } from './SlideView';
 export function generatePresentationHTML(presentationData: PresentationData): string {
     const { slides } = presentationData;
     const resolvedTheme = resolveDeckTheme(presentationData.theme);
-    const theme = { ...palette(resolvedTheme), backgroundColor: resolvedTheme.backgroundColor || "#F8FAFC" };
+    const surface = slideSurface(resolvedTheme);
+    // The slide page is the deck's surface (same resolver as the editor canvas); only the backdrop around it differs.
+    const theme = {
+        ...palette(resolvedTheme),
+        backgroundColor: surface.mode === 'dark' ? '#05070F' : (resolvedTheme.backgroundColor || "#F8FAFC"),
+    };
     
     // Generate slide HTML
     const slidesHTML = slides.map((slide, index) => {
@@ -92,7 +98,8 @@ export function generatePresentationHTML(presentationData: PresentationData): st
 
         .slides-wrapper {
             position: relative;
-            background: white;
+            background: ${surface.background};
+            color: ${surface.foreground};
             border-radius: 1rem;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
             overflow: hidden;
@@ -147,7 +154,7 @@ export function generatePresentationHTML(presentationData: PresentationData): st
 
         .slide-subtitle {
             font-size: 1.75rem;
-            color: #6B7280;
+            color: ${surface.mutedForeground};
             line-height: 1.5;
         }
 
@@ -160,7 +167,7 @@ export function generatePresentationHTML(presentationData: PresentationData): st
 
         .slide-description {
             font-size: 1.5rem;
-            color: #6B7280;
+            color: ${surface.mutedForeground};
             margin-bottom: 2rem;
             line-height: 1.6;
         }
@@ -176,7 +183,7 @@ export function generatePresentationHTML(presentationData: PresentationData): st
             align-items: flex-start;
             gap: 1rem;
             padding: 1rem;
-            background: #F9FAFB;
+            background: ${surface.muted};
             border-radius: 0.5rem;
             transition: transform 0.2s, box-shadow 0.2s;
         }
@@ -196,7 +203,7 @@ export function generatePresentationHTML(presentationData: PresentationData): st
 
         .bullet-text {
             font-size: 1.25rem;
-            color: #1F2937;
+            color: ${surface.foreground};
             line-height: 1.6;
         }
 

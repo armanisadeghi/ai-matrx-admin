@@ -1,29 +1,25 @@
 "use client";
 
 /**
- * A slide is paper: it draws with the light palette in both app themes (Google Slides keeps the
- * canvas white in dark mode), so a deck looks the same in the editor, the rail, the home's cards,
- * Present, and every export. SlideView reads semantic tokens (`bg-card`, `text-foreground`, …);
- * this pins those tokens to their light values for everything inside.
+ * A slide draws on the page its DECK's theme asks for (light paper by default, a dark page for dark
+ * themes like Midnight) in both app modes — never on the app's own light/dark colours. SlideView reads
+ * semantic tokens (`bg-card`, `text-foreground`, …); the surface resolver pins those tokens for
+ * everything inside, and the exports read the same resolver, so the editor canvas, rail, Present, home
+ * cards, share view and every download agree.
  */
 
 import type { CSSProperties, ReactNode } from "react";
 import { SlideView, type SlideVariant } from "@/components/mardown-display/blocks/presentations/SlideView";
 import { ScaledSlide } from "@/components/mardown-display/blocks/presentations/ScaledSlide";
 import { deckFontFamily, resolveDeckTheme } from "@/components/mardown-display/blocks/presentations/presets";
+import { slideSurfaceStyle } from "@/components/mardown-display/blocks/presentations/slide-surface";
 import { cn } from "@/lib/utils";
 import type { Deck, DeckSlide } from "./deck-model";
 
-export const SLIDE_PAPER_STYLE = {
-  "--background": "240 5% 96%",
-  "--foreground": "240 4% 16%",
-  "--card": "0 0% 100%",
-  "--card-foreground": "240 4% 16%",
-  "--muted": "240 5% 92%",
-  "--muted-foreground": "240 5% 35%",
-  "--border": "240 6% 85%",
-  colorScheme: "light",
-} as CSSProperties;
+/** The CSS variables (and colour scheme) that pin a deck's surface for everything inside a slide. */
+export function slidePaperStyle(deck: Pick<Deck, "theme">): CSSProperties {
+  return slideSurfaceStyle(resolveDeckTheme(deck.theme ?? undefined));
+}
 
 export function deckLook(deck: Pick<Deck, "theme">) {
   const theme = resolveDeckTheme(deck.theme ?? undefined);
@@ -51,7 +47,7 @@ export function PaperSlide({
   const { theme, variant, fontFamily } = deckLook(deck);
   return (
     <ScaledSlide className={cn("bg-transparent", className)}>
-      <div className="relative h-full w-full" style={{ ...SLIDE_PAPER_STYLE, fontFamily }}>
+      <div className="relative h-full w-full" style={{ ...slidePaperStyle(deck), fontFamily }}>
         {slide ? (
           <SlideView slide={slide} theme={theme} variant={variant} fullScreen={fullScreen} />
         ) : (

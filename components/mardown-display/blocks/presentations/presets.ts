@@ -26,6 +26,9 @@ export interface SlidePreset {
   accentColor: string;
   textColor: string;
   font: DeckFont;
+  /** Dark presets draw on a dark page in every context (editor, rail, Present, exports). */
+  surface?: "light" | "dark";
+  backgroundColor?: string;
 }
 
 export const SLIDE_PRESETS: Record<string, SlidePreset> = {
@@ -87,13 +90,15 @@ export const SLIDE_PRESETS: Record<string, SlidePreset> = {
   midnight: {
     key: "midnight",
     name: "Midnight",
-    description: "Neon cyan–violet — vivid, modern, image-forward.",
+    description: "Neon cyan–violet on a dark page — vivid, modern, image-forward.",
     variant: "deluxe",
-    primaryColor: "#6366F1",
-    secondaryColor: "#8B5CF6",
+    primaryColor: "#818CF8",
+    secondaryColor: "#A78BFA",
     accentColor: "#22D3EE",
-    textColor: "#0B1020",
+    textColor: "#E5E7EB",
     font: "display",
+    surface: "dark",
+    backgroundColor: "#0B1020",
   },
   ocean: {
     key: "ocean",
@@ -163,6 +168,8 @@ function presetToTheme(p: SlidePreset): SlideTheme {
     accentColor: p.accentColor,
     textColor: p.textColor,
     font: p.font,
+    surface: p.surface,
+    backgroundColor: p.backgroundColor,
   };
 }
 
@@ -195,5 +202,6 @@ export function resolveDeckTheme(theme: (SlideTheme & { preset?: string }) | und
     backgroundColor: t.backgroundColor ?? base.backgroundColor,
     textColor: t.textColor ?? base.textColor,
     font: t.font ?? base.font,
+    surface: t.surface ?? base.surface,
   };
 }

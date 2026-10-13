@@ -9,6 +9,8 @@
 import type { FileDownload } from "@/features/file-actions/types";
 import type { PresentationData } from "@/components/mardown-display/blocks/presentations/Slideshow";
 import { SLIDE_STAGE } from "@/components/mardown-display/blocks/presentations/ScaledSlide";
+import { resolveDeckTheme } from "@/components/mardown-display/blocks/presentations/presets";
+import { slideSurface } from "@/components/mardown-display/blocks/presentations/slide-surface";
 import type { Deck } from "./deck-model";
 
 function asPresentationData(deck: Deck): PresentationData {
@@ -64,7 +66,7 @@ export async function downloadDeckAsPdf(deck: Deck, name: string): Promise<void>
     const elements: HTMLElement[] = [];
     for (const slide of deck.slides) {
       const el = document.createElement("div");
-      Object.assign(el.style, { width: `${SLIDE_STAGE.width}px`, height: `${SLIDE_STAGE.height}px`, background: "#ffffff" });
+      Object.assign(el.style, { width: `${SLIDE_STAGE.width}px`, height: `${SLIDE_STAGE.height}px`, background: slideSurface(resolveDeckTheme(deck.theme ?? undefined)).background });
       host.appendChild(el);
       const root = createRoot(el);
       roots.push(root);
@@ -81,7 +83,10 @@ export async function downloadDeckAsPdf(deck: Deck, name: string): Promise<void>
     }
     // ScaledSlide measures after mount, and images resolve async: give both a beat.
     await new Promise((r) => setTimeout(r, 600));
-    const res = await exportToPDF(elements, safeName(name), { quality: 2 });
+    const res = await exportToPDF(elements, safeName(name), {
+      quality: 2,
+      backgroundColor: slideSurface(resolveDeckTheme(deck.theme ?? undefined)).background,
+    });
     if (!res.success) throw new Error(res.error ?? res.message);
   } finally {
     for (const r of roots) r.unmount();
