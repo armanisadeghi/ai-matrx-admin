@@ -9,6 +9,11 @@
 //   - feature intelligence (the icon, declared places, intelligence-page links),
 //     which the package reads through `@ai-matrx/chat/surfaces/runtime/intelligence`.
 // Renders nothing.
+//
+// 🚨 This module is on every page's first load. The registrations below are synchronous and
+// carry STATIC descriptors only; every renderer / drawer-body COMPONENT they register loads
+// lazily from one impl module per registry (`features/chat-tool-renderers/toolRendererImpls`,
+// `features/chat-context-bodies/contextBodiesImpl`). Never import a component statically here.
 import { useEffect } from "react";
 import { useAppStore } from "@/lib/redux/hooks";
 import { registerBlockStateRemarkDurability } from "@/features/block-state/remarkDurability";

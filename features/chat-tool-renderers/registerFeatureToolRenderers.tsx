@@ -7,6 +7,11 @@
  * `registerToolRenderer` is the door. A bare host that registers none draws these tools with the
  * package's GenericRenderer and a "not set up here" badge (PACKAGE-INDEPENDENCE.md section 5.1).
  * Imported for its side effect by `providers/ChatSurfaceRegistrations.tsx`.
+ *
+ * 🚨 This file is on every page's first load (the shell mounts the registrations). It holds only
+ * descriptors and light result readers; every component is `lazyToolRenderer(...)` from the ONE
+ * impl module `./toolRendererImpls`. A static import of a renderer here puts the dataset table,
+ * the task editor and their graphs back on every page.
  */
 
 import React from "react";
@@ -17,33 +22,37 @@ import {
 import type { ToolRegistry } from "@ai-matrx/chat/tool-call-visualization/types";
 import type { ToolLifecycleEntry } from "@ai-matrx/chat/agents/types/request.types";
 import { resultAsObject, getArg } from "@ai-matrx/chat/tool-call-visualization/renderers/_shared";
-import { SeoInline } from "./renderers/seo/SeoInline";
-import { SeoOverlay } from "./renderers/seo/SeoOverlay";
 import { resolveSeoVariant, seoVariantSub } from "./renderers/seo/resolve";
-import { PickListInline } from "./renderers/pick-list/PickListInline";
-import { PickListOverlay } from "./renderers/pick-list/PickListOverlay";
-import { TaskInline } from "./renderers/task/TaskInline";
-import { TaskOverlay } from "./renderers/task/TaskOverlay";
-import { TaskListInline } from "./renderers/task/TaskListInline";
-import { DocumentInline } from "./renderers/document/DocumentInline";
-import { DocumentOverlay } from "./renderers/document/DocumentOverlay";
-import { DatasetInline } from "./renderers/dataset/DatasetInline";
-import { DatasetOverlay } from "./renderers/dataset/DatasetOverlay";
-import { KnowledgeSearchInline } from "./renderers/knowledge-search/KnowledgeSearchInline";
-import { KnowledgeSearchOverlay } from "./renderers/knowledge-search/KnowledgeSearchOverlay";
-import { DocumentSearchInline } from "./renderers/document-search/DocumentSearchInline";
-import { KnowledgeBrowseInline } from "./renderers/knowledge-browse/KnowledgeBrowseInline";
-import { DocumentContentInline } from "./renderers/document-content/DocumentContentInline";
+import { lazyToolRenderer } from "./lazyToolRenderer";
 import { resolveDocumentContentView } from "./renderers/document-content/documentContentView";
-import { NoteToolInline } from "./renderers/note/NoteToolInline";
-import { NoteToolOverlay } from "./renderers/note/NoteToolOverlay";
-import { TopicalMapInline } from "./renderers/topical-map/TopicalMapInline";
 import {
   TOPICAL_MAP_ACTION_LABELS,
   humanizeAction,
   topicalMapActionOf,
 } from "./renderers/topical-map/topicalMapResult";
 import { formatCount } from "@ai-matrx/kit/format";
+
+// The components load from ONE module the first time a tool result draws (`./toolRendererImpls`);
+// everything above them in each descriptor (labels, subtitles, header extras) stays static.
+const SeoInline = lazyToolRenderer("SeoInline");
+const SeoOverlay = lazyToolRenderer("SeoOverlay");
+const PickListInline = lazyToolRenderer("PickListInline");
+const PickListOverlay = lazyToolRenderer("PickListOverlay");
+const TaskInline = lazyToolRenderer("TaskInline");
+const TaskOverlay = lazyToolRenderer("TaskOverlay");
+const TaskListInline = lazyToolRenderer("TaskListInline");
+const DocumentInline = lazyToolRenderer("DocumentInline");
+const DocumentOverlay = lazyToolRenderer("DocumentOverlay");
+const DatasetInline = lazyToolRenderer("DatasetInline");
+const DatasetOverlay = lazyToolRenderer("DatasetOverlay");
+const KnowledgeSearchInline = lazyToolRenderer("KnowledgeSearchInline");
+const KnowledgeSearchOverlay = lazyToolRenderer("KnowledgeSearchOverlay");
+const DocumentSearchInline = lazyToolRenderer("DocumentSearchInline");
+const KnowledgeBrowseInline = lazyToolRenderer("KnowledgeBrowseInline");
+const DocumentContentInline = lazyToolRenderer("DocumentContentInline");
+const NoteToolInline = lazyToolRenderer("NoteToolInline");
+const NoteToolOverlay = lazyToolRenderer("NoteToolOverlay");
+const TopicalMapInline = lazyToolRenderer("TopicalMapInline");
 
 function seoHeaderExtras(entry: ToolLifecycleEntry): React.ReactNode {
   const variant = resolveSeoVariant(entry);
