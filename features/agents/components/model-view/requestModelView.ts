@@ -55,6 +55,9 @@ export async function requestModelView(
         // The payload's own `stream` and `store` stay: the wire carries them. The
         // server makes a dry run ephemeral itself.
         dry_run: true,
+        source_app: "matrx-frontend",
+        source_feature: "agent-builder",
+        initiation: "user",
       } as never,
       signal,
       expectedErrorStatuses: [400, 422],

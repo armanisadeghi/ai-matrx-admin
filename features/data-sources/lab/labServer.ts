@@ -67,7 +67,7 @@ export interface CapturedRequest {
 export async function dryRun(req: LabRequest, signal?: AbortSignal): Promise<CapturedRequest> {
   const response = await requestRaw(
     "/ai/manual",
-    { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body(req, true)) },
+    { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...body(req, true), source_app: "matrx-frontend", source_feature: "tool-testing", initiation: "user" }) },
     { organizationId: req.organizationId, signal, allowHttpError: true },
   );
   if (!response.ok) throw new Error(await errorText(response));
@@ -170,7 +170,7 @@ export async function runLab(req: LabRequest, onUpdate: (r: LabRunResult) => voi
   const out: LabRunResult = { answer: "", tokensIn: null, tokensOut: null, costUsd: null, latencyMs: 0, toolCalls: [], error: null, events: [] };
   const response = await requestRaw(
     "/ai/manual",
-    { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body(req, false)) },
+    { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...body(req, false), source_app: "matrx-frontend", source_feature: "tool-testing", initiation: "user" }) },
     { organizationId: req.organizationId, signal, allowHttpError: true },
   );
   if (!response.ok) {
