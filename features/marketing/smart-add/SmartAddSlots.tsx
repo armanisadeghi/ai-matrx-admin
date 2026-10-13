@@ -135,7 +135,7 @@ export function SmartAddSlots({
       <Slot title={person ? "Name" : "Brand name"} empty={of("name").length ? null : empty} after={custom("name", person ? "Your name" : "Brand name")}>
         {of("name").map((i) => (
           <Row key={i.key} item={i} decision={decisions[i.key] ?? null} actions={<>{choices(i, NAME_CHOICES)}{sourceLink(i)}</>}>
-            <Shared id={i.key} positionOnly className="inline-block max-w-full truncate align-top text-lg font-semibold leading-tight">{i.value}</Shared>
+            <span className="min-w-0 truncate" title={i.value}><Shared id={i.key} positionOnly className="inline-block max-w-full truncate align-top text-lg font-semibold leading-tight">{i.value}</Shared></span>
           </Row>
         ))}
       </Slot>
@@ -168,7 +168,7 @@ export function SmartAddSlots({
               <OpenLink url={i.url ?? i.value} />
             </>
           }>
-            <span className="truncate text-base font-medium">{i.label ?? websiteHost(i.value)}</span>
+            <span className="truncate text-base font-medium" title={i.label ?? i.value}>{i.label ?? websiteHost(i.value)}</span>
           </Row>
         ))}
       </Slot>
@@ -222,7 +222,7 @@ export function SmartAddSlots({
           <Row key={i.key} item={i} decision={decisions[i.key] ?? null} actions={choices(i, PRIMARY_CHOICES)} compact>
             <span className="flex min-w-0 items-baseline gap-2 text-sm">
               <span className="w-16 shrink-0 text-xs text-muted-foreground">{CONTACT_LABEL[i.field]}</span>
-              <span className="truncate">{i.value}</span>
+              <span className="truncate" title={i.value}>{i.value}</span>
             </span>
           </Row>
         ))}
@@ -232,7 +232,7 @@ export function SmartAddSlots({
         <Slot title="Expertise" empty={of("expertise").length ? null : started ? "Add what you are known for" : "—"} after={custom("expertise", "e.g. Spanish property law")}>
           {of("expertise").map((i) => (
             <Row key={i.key} item={i} decision={decisions[i.key] ?? null} actions={choices(i, OURS_CHOICES)} compact>
-              <span className="truncate text-sm">{i.value}</span>
+              <span className="truncate text-sm" title={i.value}>{i.value}</span>
             </Row>
           ))}
         </Slot>
@@ -249,7 +249,7 @@ export function SmartAddSlots({
           <Row key={i.key} item={i} decision={decisions[i.key] ?? null} actions={<>{choices(i, ABOUT_CHOICES)}{sourceLink(i)}</>} compact>
             <span className="flex min-w-0 items-baseline gap-2 text-sm">
               <span className="w-16 shrink-0 text-xs text-muted-foreground">Tagline</span>
-              <span className="truncate italic">{i.value}</span>
+              <span className="truncate italic" title={i.value}>{i.value}</span>
             </span>
           </Row>
         ))}
@@ -257,7 +257,7 @@ export function SmartAddSlots({
           <Row key={i.key} item={i} decision={decisions[i.key] ?? null} actions={<>{choices(i, ABOUT_CHOICES)}{sourceLink(i)}</>} compact>
             <span className="flex min-w-0 items-baseline gap-2 text-sm">
               <span className="w-16 shrink-0 text-xs text-muted-foreground">Category</span>
-              <span className="truncate">{i.value}</span>
+              <span className="truncate" title={i.value}>{i.value}</span>
             </span>
           </Row>
         ))}
@@ -557,9 +557,9 @@ function AccountText({ item, name }: { item: EvidenceItem; name: string | null }
     <span className="flex min-w-0 flex-col">
       <span className="flex min-w-0 items-center gap-1.5 text-sm font-medium">
         <PlatformMark platform={item.platform ?? ""} size={16} />
-        <span className="truncate">{name ?? handle ?? ""}</span>
+        <span className="truncate" title={name ?? handle ?? undefined}>{name ?? handle ?? ""}</span>
       </span>
-      {sub ? <span className="truncate text-xs text-muted-foreground">{sub}</span> : null}
+      {sub ? <span className="truncate text-xs text-muted-foreground" title={sub}>{sub}</span> : null}
     </span>
   );
 }
