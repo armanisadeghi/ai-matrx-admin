@@ -52,6 +52,14 @@ SMS-only validator was removed after all consumers moved atomically.
   admitted destination's configured transfer number and signed `/voice/transfer-ended` result
   callback; unanswered attempts explain the failure and hang up without redial. Never speak provider error or handoff payloads
   and never reconnect or start a second recording from this callback.
+- Transfer result callbacks append provider observations before projecting a current receipt across
+  the account + child leg. Exact replays consolidate in the reader; contradictory parent/result
+  evidence gets an unconfirmed ending without redial. `X-Matrx-Transfer-Receipt-State` is
+  `consistent` or `conflict` on accepted TwiML only. Read/query/capacity failures return 503.
+  Receipt reads require exact count, all rows (maximum 1000), the newly appended event, and a
+  matching historical canonical parent, including retired parents. Connection requires completed
+  plus bridged=true; receipt consistency never means human work completed. Raw ledger observations
+  remain at-least-once; this is a snapshot projection, not atomic terminal-receipt storage.
 - Runtime: short Node.js route handler on Vercel; no long-lived WebSocket.
 - Admission: the signed request must match the exactly-one active `ai_matrx_owner_beta`
   destination and its exactly-one verified-phone enrollment by provider account, called number,

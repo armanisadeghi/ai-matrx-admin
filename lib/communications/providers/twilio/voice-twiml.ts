@@ -226,6 +226,20 @@ export function buildVoiceTransferEndedTwiml(
   );
 }
 
+/** Contradictory evidence must not become a positive or negative connection claim. */
+export function buildVoiceTransferUnconfirmedTwiml(
+  callStatus: string | undefined,
+): string {
+  if (callStatus === "completed") {
+    const response = new twilio.twiml.VoiceResponse();
+    response.hangup();
+    return response.toString();
+  }
+  return disclosedResponse(
+    "We could not confirm the transfer result. Goodbye.",
+  );
+}
+
 export interface VoiceTransferBrief {
   agentRequests: number;
   interruptions: number;
