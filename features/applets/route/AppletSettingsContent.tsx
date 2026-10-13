@@ -46,6 +46,7 @@ import { AppletCategoryPicker } from "@/features/applets/components/inputs/Apple
 import { AppletTagsInput } from "@/features/applets/components/inputs/AppletTagsInput";
 import {
   AppletJobsEditor,
+  AppletLayoutEditor,
   AppletPagesEditor,
   AppletSourcesEditor,
 } from "./AppletRecordEditors";
@@ -421,6 +422,8 @@ export function AppletSettingsContent({ appId }: AppletSettingsContentProps) {
               aria-label="Settings sections"
               data={[
                 { value: "details", label: "Details" },
+                // A layout Applet (no code) shows its stock layout (CONTRACTS v2.12).
+                ...(hasStockLayout(app.layout_config) ? [{ value: "layout", label: "Layout" }] : []),
                 { value: "pages", label: "Pages" },
                 { value: "jobs", label: "AI jobs" },
                 { value: "sources", label: "Data" },
@@ -558,6 +561,12 @@ export function AppletSettingsContent({ appId }: AppletSettingsContentProps) {
                   Change it by talking
                 </Link>
               </Button>
+            </div>
+          )}
+
+          {activeTab === "layout" && (
+            <div>
+              <AppletLayoutEditor key={app.version} app={app} />
             </div>
           )}
 
@@ -823,4 +832,8 @@ function FieldRow({ label, busy, dirty, onSave, children }: FieldRowProps) {
       </div>
     </div>
   );
+}
+
+function hasStockLayout(value: unknown): boolean {
+  return typeof value === "object" && value !== null && !Array.isArray(value) && typeof (value as { kind?: unknown }).kind === "string";
 }

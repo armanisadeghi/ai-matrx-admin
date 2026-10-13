@@ -75,6 +75,8 @@ export interface AppletDefinition {
   mandates: Json;
   sources: Json;
   parent_applet_id: string | null;
+  /** (CONTRACTS v2.12) The stock layout this Applet IS when it has no code; `{}` = a code Applet. */
+  layout_config?: Json;
 }
 
 export type AppletRow = AppletDefinition;

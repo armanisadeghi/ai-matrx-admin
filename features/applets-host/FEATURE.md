@@ -130,6 +130,8 @@ The layout settles a pending claim on a signed-in load (`settlePendingGuestClaim
 
 ## Change Log
 
+- 2026-10-13 (lane L1): stock layouts. A record with no code and a `layout_config` mounts `@ai-matrx/applets` `StockLayout` through the same `mountAppletAsync` (no compile; same renderers: `AppletRunOutput`, `AppletWritingBox`). `builder/LayoutAppletStart.tsx` (`/applets/build/layout`): layout + job + options with a live in-memory preview (sample job, announced sample answer, no run spent); `builder/layout-applet.ts` writes the record; `build-references.ts` gains the `layout` reference, `buildSeedHref` / `readBuildSeed` (`AppletBuilder seed`). Guard: `builder/layout-start.test.ts`.
+
 - 2026-10-09 (lane F17): `archiveCalledDelete` no longer reads remove / removed / removes as a delete ("removed from your active schedule view" is true of an archive — it refused a correct Archive confirm twice and the pet-grooming build was never saved); it names delete / permanently / forever. The refusal now says which word to drop and gives a model confirm to copy. It stays a refusal (a false "Delete" over a restorable archive is a wrong promise, not style). Guard: `builder/applet-code-checks.test.ts` (real refused code).
 
 - 2026-10-09 (lane F16): a run parked on her does NOT close the floating run window — closing it (tried in v0.4.3084) let the build conversation's instance go and the question showed nowhere; the card still draws twice (open). The answer is accepted at once (aidream: every action-request door runs the resumed turn detached; inline it held the request 30-90 s and the edge cut it at 30 s), and the wait re-reads the conversation until the resumed turn's build lands (chat), so the build goes on to save. Guard: `builder/build-page-f16.test.ts`.

@@ -295,7 +295,7 @@ function mergeFiles(answer: BuilderFile[], current: BuilderFile[] | null): Recor
 
 const SLUG = /^[a-z0-9][a-z0-9-]{1,46}[a-z0-9]$/;
 
-function slugOf(raw: string): string {
+export function slugOf(raw: string): string {
   const s = raw
     .toLowerCase()
     .replace(/[^a-z0-9-]+/g, "-")
@@ -312,7 +312,7 @@ function slugOf(raw: string): string {
  * common name logged one). Row security can hide another organization's row; the write's unique-violation
  * retry still covers that.
  */
-async function takenSlugs(client: Client, base: string, selfId: string | null): Promise<Set<string>> {
+export async function takenSlugs(client: Client, base: string, selfId: string | null): Promise<Set<string>> {
   const { data, error } = await client.schema("app").from("definition").select("id, slug").like("slug", `${base}%`).limit(200);
   if (error || !data) return new Set();
   return new Set(data.filter((r) => r.id !== selfId).map((r) => r.slug));

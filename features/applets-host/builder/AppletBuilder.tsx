@@ -22,7 +22,7 @@ import { storedMandateKey } from "@ai-matrx/agents/mandates";
 import { useHeadlessAgentJson } from "@ai-matrx/chat/agents/hooks/useHeadlessAgentJson";
 import { useDeclaredSurfaceMandates } from "@ai-matrx/chat/surfaces/runtime/surface-mandates";
 import { Badge, Button, EmptyState, RegionSkeleton } from "@ai-matrx/design-system/controls";
-import { AppWindow, Copy, ExternalLink, Table2, Wrench } from "lucide-react";
+import { AppWindow, Copy, ExternalLink, LayoutTemplate, Table2, Wrench } from "lucide-react";
 import { Spinner } from "@/components/ui/spinner";
 import { copyText } from "@ai-matrx/kit/clipboard";
 import { formatDurationMs } from "@ai-matrx/kit/format";
@@ -68,7 +68,7 @@ import { typedAnswerBody } from "./typed-answer";
 import { createIntelligencePort } from "@ai-matrx/agents/intelligence";
 import { createMatrxTransport } from "@/lib/api/matrx-transport";
 import { BuildAttachments } from "./BuildAttachments";
-import { attachedJobKeys, attachmentsContext, referenceResources, withReference, withoutReference, type BuildReference } from "./build-references";
+import { attachedJobKeys, attachmentsContext, readBuildSeed, referenceResources, withReference, withoutReference, type BuildReference } from "./build-references";
 
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
@@ -121,9 +121,12 @@ export function AppletBuilder({
   appletId: initialId,
   routed = false,
   initialRecord = null,
+  seed = null,
 }: {
   appletId: string | null;
   routed?: boolean;
+  /** What a new build starts with (a job and a stock layout chosen on the layout page), before she types. */
+  seed?: string | null;
   /** The build's record as the server render read it, so a refresh mid-build opens on the build (B1). */
   initialRecord?: BuildRecord | null;
 }) {
@@ -225,7 +228,7 @@ export function AppletBuilder({
   });
 
   // What she attached (lane A1): on the build's record once it exists, held here until Build is pressed.
-  const [pendingRefs, setPendingRefs] = useState<BuildReference[]>([]);
+  const [pendingRefs, setPendingRefs] = useState<BuildReference[]>(() => readBuildSeed(seed));
   const references = session.record?.references ?? pendingRefs;
   const changeReferences = async (next: BuildReference[]) => {
     const id = session.record?.id ?? null;
@@ -594,6 +597,13 @@ export function AppletBuilder({
           onAdd={(r) => changeReferences(withReference(references, r))}
           onRemove={(id) => changeReferences(withoutReference(references, id))}
         />
+        {!appletId && !references.length ? (
+          // A simple chat or form over one agent needs no build: a stock layout, no code (amendment 2.12).
+          <Link href="/applets/build/layout" className="inline-flex items-center gap-1 self-start text-xs text-primary underline-offset-2 hover:underline" data-applet-layout-door="">
+            <LayoutTemplate className="h-3.5 w-3.5" />
+            Start from a layout instead
+          </Link>
+        ) : null}
         <div className="flex flex-wrap items-center gap-2">
           {hydrated ? (
             <Button

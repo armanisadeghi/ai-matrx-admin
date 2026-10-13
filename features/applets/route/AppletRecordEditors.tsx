@@ -26,8 +26,12 @@ import {
   RegionSkeleton,
   RowGroup,
   Select,
+  SegmentedControl,
   type SelectOption,
 } from "@ai-matrx/design-system/controls";
+import { STOCK_LAYOUTS, type AppletLayout, type AppletLayoutOptions } from "@ai-matrx/applets";
+import { layoutOf } from "@ai-matrx/applets/platform";
+import { layoutJson } from "@/features/applets-host/builder/layout-applet";
 import { readAppletCatalogue, type AppletCatalogue } from "@ai-matrx/applets/catalogue";
 import { supabase } from "@/utils/supabase/client";
 import { useAppDispatch, useAppStore } from "@/lib/redux/hooks";
@@ -463,6 +467,51 @@ export function AppletSourcesEditor({ app }: { app: AppletDefinition }) {
           }}
         />
       </div>
+    </div>
+  );
+}
+
+// ── layout (CONTRACTS v2.12) ─────────────────────────────────────────────────
+
+/**
+ * A layout Applet's stock layout: which of the six it is and its options. Saved as the whole `layout_config`
+ * column (the job stays the record's `main` alias). Shown only for an Applet that declares one.
+ */
+export function AppletLayoutEditor({ app }: { app: AppletDefinition }) {
+  const stored = layoutOf(app.layout_config ?? {});
+  const current: AppletLayout | null = stored && !("unknown" in stored) ? stored : null;
+  const [draft, setDraft] = useState<AppletLayout | null>(current);
+  const { busy, save } = useSaveRecordPart(app.id);
+  if (!current || !draft) return null;
+  const options = draft.options ?? {};
+  const setOption = (patch: AppletLayoutOptions) => {
+    const next: AppletLayoutOptions = { ...options, ...patch };
+    for (const k of Object.keys(next) as (keyof AppletLayoutOptions)[]) if (next[k] === undefined || next[k] === "") delete next[k];
+    setDraft({ ...draft, options: next });
+  };
+  return (
+    <div className="flex flex-col gap-4" data-applet-layout-editor="">
+      <RowGroup title="Layout">
+        <div className="flex flex-col gap-3 p-3">
+          <SegmentedControl
+            aria-label="Layout"
+            value={draft.kind}
+            onValueChange={(v: string) => setDraft({ ...draft, kind: v as AppletLayout["kind"] })}
+            data={STOCK_LAYOUTS.map((l) => ({ value: l.kind, label: l.label }))}
+          />
+          <ProInput value={options.title ?? ""} onChange={(e) => setOption({ title: e.target.value })} placeholder="The job's own name" aria-label="Title" />
+          <SegmentedControl
+            aria-label="Answer shows"
+            value={options.response ?? "stream"}
+            onValueChange={(v: string) => setOption({ response: v === "window" ? "window" : undefined })}
+            data={[
+              { value: "stream", label: "In place" },
+              { value: "window", label: "In a window" },
+            ]}
+          />
+        </div>
+      </RowGroup>
+      <SaveBar dirty={!same(draft, current)} busy={busy} onSave={() => void save({ layout_config: layoutJson(draft) })} onReset={() => setDraft(current)} />
     </div>
   );
 }

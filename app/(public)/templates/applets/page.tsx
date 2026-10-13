@@ -9,6 +9,7 @@ import { createRouteMetadata } from "@/utils/route-metadata";
 import { signUpHref } from "@/utils/auth/auth-destination";
 import { AppletSignUpLink } from "@/features/marketing/applets/AppletSignUpLink";
 import { AppletCardGrid } from "@/features/marketing/applets/AppletIntroPage";
+import { StockLayoutCards } from "@/features/marketing/applets/StockLayoutCards";
 import { readPublicApplets } from "@/features/marketing/applets/publicApplets.server";
 import { APPLET_TEMPLATES_PATH } from "@/features/marketing/applets/types";
 import { PUBLIC_GALLERY_PATH } from "@/features/make/gallery/publicGallery";
@@ -37,6 +38,7 @@ export default async function AppletTemplatesPage() {
           </div>
           <AppletSignUpLink href={signUpHref(APPLET_TEMPLATES_PATH)} />
         </header>
+        <StockLayoutCards />
         <AppletCardGrid cards={cards} />
       </div>
     </div>

@@ -12,17 +12,17 @@ import { AppletBuilder } from "@/features/applets-host/builder/AppletBuilder";
  */
 export const metadata: Metadata = { title: "Build | Applets" };
 
-export default async function BuildAppletPage({ searchParams }: { searchParams: Promise<{ applet?: string }> }) {
+export default async function BuildAppletPage({ searchParams }: { searchParams: Promise<{ applet?: string; seed?: string }> }) {
   const { isAuthenticated } = await getSessionVerdict();
-  const { applet } = await searchParams;
+  const { applet, seed } = await searchParams;
   // A signed-out person who followed a build link signs in and lands back here (audit9 G6), never on the landing.
-  if (!isAuthenticated) redirect(loginHref(applet ? `/applets/build/${encodeURIComponent(applet)}` : "/applets/build"));
+  if (!isAuthenticated) redirect(loginHref(applet ? `/applets/build/${encodeURIComponent(applet)}` : seed ? `/applets/build?seed=${encodeURIComponent(seed)}` : "/applets/build"));
   if (applet) redirect(`/applets/build/${encodeURIComponent(applet)}`);
   return (
     <>
       <RecordPageHeader backHref="/applets" parents={[{ label: "Applets", href: "/applets" }]} record={{ name: "Build an Applet" }} />
       <div className="flex h-full flex-col overflow-hidden bg-textured pt-[var(--shell-header-h)]">
-        <AppletBuilder appletId={null} routed />
+        <AppletBuilder appletId={null} routed seed={seed ?? null} />
       </div>
     </>
   );

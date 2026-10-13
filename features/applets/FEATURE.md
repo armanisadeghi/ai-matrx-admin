@@ -66,6 +66,12 @@ ladder, a guest takes the system-default columns the public RPC
 ## Creation paths
 
 1. **Template** — start from a standard scaffold and customize the canonical row.
+   **Stock layout (no code, CONTRACTS v2.12):** `/applets/build/layout` (also the "Start from a layout" cards on
+   `/templates/applets` and the builder's door) — pick one of six layouts (form, form to chat, chat, centered input,
+   chat with history, widget), the agent or workflow it runs (made a job, `jobForHolder`), title, where the answer
+   shows, accent; "Create Applet" writes `mandates` + `layout_config` and no files (`applets-host/builder/layout-applet.ts`),
+   the host mounts `@ai-matrx/applets` `StockLayout`. "Build with AI" opens the builder seeded with the job and the
+   layout (`?seed=`, a `layout` build reference — structured context, never her words).
 2. **AI-generated** — AutoCreate persists a recoverable internal draft during paid generation, then publishes it when finalization succeeds.
 3. **Custom** — author `component_code` within the framework's allowlisted Babel sandbox.
 
@@ -197,6 +203,7 @@ and admin/user route families are live. Remaining migration work is tracked in:
 
 ## Change log
 
+- `2026-10-13` — claude (lane L1): the predetermined chat and form layouts deleted on 2026-10-07 are back as stock layouts — six named components in `@ai-matrx/applets` 0.19.0, declared on the record in `layout_config` and mounted with no compile; `/applets/build/layout` + gallery cards create one with no AI; "Build with AI" seeds the builder. The seven hand-copied chat Applets were not migrated (they send her first field as the opening message and carry copied field lists; not equivalent).
 - 2026-10-09 (lane F13): `readAppletCards` / `readAppletBySlug` answer a signed-out visitor — when the owner column (`created_by`, not readable signed out) refuses the read (42501), the same read runs without it and row security returns the Applets on the web; a published Site shows their cards again. The Space block's "Open Applet" reads the slug at once instead of waiting for the live Applet (guard `embed/__tests__/a-signed-out-visitor-reads-a-published-applet-card.test.ts`).
 
 - 2026-10-09 (lane B1, "one roof" first piece): `embed/` grows the Space `applet` block's half — `AppletInPage` takes `height` + `pagePublished` (Publish notice), new `AppletCard` (the static card a published Site draws), and the reads `listPlaceableApplets` / `readAppletCards` / `readAppletBySlug`; comments that called a records-ui page "a Space" corrected.

@@ -338,6 +338,7 @@ export interface AppletRecordPatch {
   pages?: Json;
   mandates?: Json;
   sources?: Json;
+  layout_config?: Json;
 }
 type AppletRecordPart = keyof AppletRecordPatch;
 

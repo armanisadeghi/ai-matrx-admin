@@ -9,7 +9,7 @@
 // (`applet-job.ts`). Nothing about the attach path is re-implemented.
 
 import { useState, useSyncExternalStore } from "react";
-import { FileText, Paperclip, Plus, Workflow, X } from "lucide-react";
+import { FileText, LayoutTemplate, Paperclip, Plus, Workflow, X } from "lucide-react";
 import { Spinner } from "@/components/ui/spinner";
 import { Popover, PopoverContent, PopoverTrigger } from "@ai-matrx/design-system";
 import { Button } from "@ai-matrx/design-system/controls";
@@ -33,7 +33,7 @@ export const BUILD_ATTACH_VIEWS = ["files", "notes", "documents", "workbooks", "
 const noopSubscribe = () => () => {};
 const useHydrated = () => useSyncExternalStore(noopSubscribe, () => true, () => false);
 
-async function holderNaming(holder: "agent" | "workflow", id: string): Promise<{ name: string; description: string | null }> {
+export async function holderNaming(holder: "agent" | "workflow", id: string): Promise<{ name: string; description: string | null }> {
   const { data, error } = await createClient().schema(holder).from("definition").select("name, description").eq("id", id).maybeSingle();
   if (error) throw new Error(error.message);
   return { name: data?.name ?? (holder === "agent" ? "Agent" : "Workflow"), description: data?.description ?? null };
@@ -143,7 +143,9 @@ export function BuildAttachments({
           title={r.kind === "job" ? `${r.label} runs in this Applet` : r.label}
           data-applet-reference={r.kind}
         >
-          {r.kind === "job" ? (
+          {r.kind === "layout" ? (
+            <LayoutTemplate className="h-3.5 w-3.5 shrink-0" />
+          ) : r.kind === "job" ? (
             r.holder === "agent" ? <AGENT_ICON className="h-3.5 w-3.5 shrink-0" /> : <Workflow className="h-3.5 w-3.5 shrink-0" />
           ) : r.resource.type === "file" || r.resource.type === "document" ? (
             <FileText className="h-3.5 w-3.5 shrink-0" />

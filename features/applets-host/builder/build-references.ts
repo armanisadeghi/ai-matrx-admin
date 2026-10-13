@@ -12,6 +12,7 @@
 //              (`applet-job.ts`). The catalogue lists it first with its real inputs (`attachedJobs`), and the
 //              Applet runs it through the one job path (`useJob` → `POST /ai/mandates/<key>`).
 
+import type { AppletLayout } from "@ai-matrx/applets";
 import type { Resource } from "@ai-matrx/chat/agents/resources/types";
 import { resourceLabel } from "@ai-matrx/chat/agents/components/inputs/resources/attach-resource";
 
@@ -32,7 +33,18 @@ export interface JobReference {
   mandate_key: string;
 }
 
-export type BuildReference = ResourceReference | JobReference;
+/**
+ * A stock layout she chose to start from (CONTRACTS amendment 2.12): the build begins from that named layout
+ * over the attached job, with her options. It rides the build as structured context, never as her words.
+ */
+export interface LayoutReference {
+  id: "layout";
+  kind: "layout";
+  label: string;
+  layout: AppletLayout;
+}
+
+export type BuildReference = ResourceReference | JobReference | LayoutReference;
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -45,6 +57,7 @@ export function readBuildReferences(metadata: unknown): BuildReference[] {
   return list.filter((r): r is BuildReference => {
     if (!isRecord(r) || typeof r.id !== "string" || typeof r.label !== "string") return false;
     if (r.kind === "resource") return isRecord(r.resource) && typeof r.resource.type === "string";
+    if (r.kind === "layout") return isRecord(r.layout) && typeof r.layout.kind === "string" && typeof r.layout.job === "string";
     return r.kind === "job" && (r.holder === "agent" || r.holder === "workflow") && typeof r.holder_id === "string" && typeof r.mandate_key === "string";
   });
 }
@@ -100,7 +113,34 @@ export function attachmentsContext(list: readonly BuildReference[]): string | nu
     list.map((r) =>
       r.kind === "resource"
         ? { attached: r.label, what: r.resource.type, use: "reference material for this Applet (its content is attached to this request)" }
-        : { attached: r.label, what: r.holder, job: r.mandate_key, use: "a job this Applet runs (listed in the catalogue with attached: true)" },
+        : r.kind === "layout"
+          ? {
+              attached: r.label,
+              what: "stock layout",
+              layout: r.layout,
+              use: "start from this stock layout (the Stock layouts section of the reference): the entry file renders it over the attached job with these options; build only what she asks beyond it",
+            }
+          : { attached: r.label, what: r.holder, job: r.mandate_key, use: "a job this Applet runs (listed in the catalogue with attached: true)" },
     ),
   );
+}
+
+/** The chosen stock layout as a reference (one per build: a second choice replaces the first). */
+export function layoutReference(label: string, layout: AppletLayout): LayoutReference {
+  return { id: "layout", kind: "layout", label, layout };
+}
+
+/** The builder's address, seeded with what she chose (a job, a layout): `/applets/build?seed=…`. */
+export function buildSeedHref(references: readonly BuildReference[]): string {
+  return `/applets/build?seed=${encodeURIComponent(JSON.stringify(references))}`;
+}
+
+/** The references a `?seed=` carries; anything malformed is left out (the same reader the record uses). */
+export function readBuildSeed(seed: string | null | undefined): BuildReference[] {
+  if (!seed) return [];
+  try {
+    return readBuildReferences({ build: { references: JSON.parse(seed) as unknown } });
+  } catch {
+    return [];
+  }
 }
