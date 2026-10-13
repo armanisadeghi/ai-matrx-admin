@@ -189,8 +189,8 @@ function EstimatedMark({ detail }: { detail: string }) {
   );
 }
 
-/** The period's cost of the mandate's runs, in dollars or points. Points follow the platform rate. */
-function SpendCell({ row, unit }: { row: MandateAdminRow; unit: "usd" | "points" }) {
+/** The period's cost of the mandate's runs, drawn by `figure`: dollars, or points at the platform rate. */
+function SpendCell({ row, figure }: { row: MandateAdminRow; figure: (usd: number) => React.ReactNode }) {
   if (row.spendPending) return <Checking what="the cost" />;
   if (row.spendUsd === null) return <Muted>—</Muted>;
   return (
@@ -200,7 +200,7 @@ function SpendCell({ row, unit }: { row: MandateAdminRow; unit: "usd" | "points"
           detail={`Inferred: ${formatAdminUsd(row.inferredUsd)} of ${formatAdminUsd(row.spendUsd)} · Mandate Holder agent runs without the mandate's name`}
         />
       ) : null}
-      {unit === "usd" ? formatAdminUsd(row.spendUsd) : <AdminPoints usd={row.spendUsd} />}
+      {figure(row.spendUsd)}
     </span>
   );
 }
@@ -546,7 +546,7 @@ export const ADMIN_MANDATE_COLUMNS: Spec[] = [
       align: "right",
       defaultSortDirection: "desc",
       width: 120,
-      cell: (row) => <SpendCell row={row} unit="usd" />,
+      cell: (row) => <SpendCell row={row} figure={formatAdminUsd} />,
     },
   },
   {
@@ -560,7 +560,7 @@ export const ADMIN_MANDATE_COLUMNS: Spec[] = [
       align: "right",
       defaultSortDirection: "desc",
       width: 168,
-      cell: (row) => <SpendCell row={row} unit="points" />,
+      cell: (row) => <SpendCell row={row} figure={(usd) => <AdminPoints usd={usd} />} />,
     },
   },
   // RUNS over the header's period (./runs.ts) — the same definition of a run as
