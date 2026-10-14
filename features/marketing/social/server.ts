@@ -514,3 +514,34 @@ export async function refreshConnectedAccount(trackedAccountId: string, opts: Ca
   if (!data) throw new Error("The server did not confirm the refresh.");
   return data;
 }
+
+/** One connected own account: what a Refresh uses and whether daily Auto-update is on (`GET /social/connected-accounts/plans`). */
+export interface ConnectedAccountPlan {
+  tracked_account_id: string;
+  provider: string;
+  connected: boolean;
+  /** USD one Refresh is expected to cost (render as points); 0 = free, null = not priced. */
+  usd_per_refresh: number | null;
+  points_per_refresh: number | null;
+  auto_update: boolean;
+  cadence: "daily";
+  points_per_month: number | null;
+  last_read_at: string | null;
+}
+
+export async function getConnectedAccountPlans(opts: CallOptions): Promise<ConnectedAccountPlan[]> {
+  const { data } = await getJson<{ accounts: ConnectedAccountPlan[] }>(`${BASE}/connected-accounts/plans`, {
+    organizationId: org(opts.organizationId),
+    signal: opts.signal,
+  });
+  return data?.accounts ?? [];
+}
+
+/** Turn daily Auto-update on or off for ONE connected account (`PUT /social/connected-accounts/{id}/auto-update`). */
+export async function setConnectedAutoUpdate(trackedAccountId: string, enabled: boolean, opts: CallOptions): Promise<void> {
+  await putJson(
+    `${BASE}/connected-accounts/${trackedAccountId}/auto-update`,
+    { enabled },
+    { organizationId: org(opts.organizationId), signal: opts.signal },
+  );
+}

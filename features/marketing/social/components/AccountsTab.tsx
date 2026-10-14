@@ -21,7 +21,7 @@ import { countOf, withCostOn } from "../social-actions";
 import { xmlElement, xmlList } from "@ai-matrx/chat/surfaces/runtime/context-bundle";
 import { createSocialAccountsScope, SOCIAL_ACCOUNTS_SURFACE_NAME } from "@/features/surfaces/manifests/marketing-social-accounts.manifest";
 import { useMemo, useState, type ReactNode } from "react";
-import { Globe, Link2, Plus, RefreshCw, Trash2, UserPlus } from "lucide-react";
+import { CalendarClock, Globe, Link2, Plus, RefreshCw, Trash2, UserPlus } from "lucide-react";
 
 import {
   Badge,
@@ -39,6 +39,7 @@ import { GUIDED_CAPTURE_PLATFORMS } from "../gated/guidedJob";
 import { useAccountRows, useInvalidateSocial } from "../hooks";
 import { CONNECTION_STATE_LABELS, CONNECTION_STATE_TONES } from "../connection-state";
 import { useConnectionStates } from "../useConnectionStates";
+import { useConnectedPlans } from "../useConnectedPlans";
 import {
   accountLabels,
   accountName,
@@ -53,6 +54,7 @@ import { formatCompact, formatPercentile, outlierBadgeModel } from "../outlier";
 import {
   refreshConnectedAccount,
   refreshProfile,
+  setConnectedAutoUpdate,
   socialErrorCode,
   socialErrorMessage,
   trackAccount,
@@ -136,6 +138,7 @@ export function AccountsTab() {
   const [summaryRow, setSummaryRow] = useState<AccountRow | null>(null);
   const accounts = useAccountRows(organizationId, brandId);
   const connections = useConnectionStates(organizationId);
+  const plans = useConnectedPlans(organizationId, canEdit);
   const invalidate = useInvalidateSocial();
   const {
     busyRow,
@@ -240,7 +243,7 @@ export function AccountsTab() {
     }
   }
 
-  /** An own account read through its connection: profile, today's figures, posts, private per-post figures. */
+  /** Refresh on click: an own account read once through its connection (profile, today's figures, posts, private per-post figures). */
   async function syncConnection(row: AccountRow) {
     if (!row.trackedAccountId) return;
     setBusyRow(row.rowId);
@@ -248,10 +251,35 @@ export function AccountsTab() {
       const done = await refreshConnectedAccount(row.trackedAccountId, { organizationId });
       await invalidate();
       const missing = Object.values(done.not_granted ?? {});
-      toast.success("Synced");
+      toast.success("Refreshed");
       if (missing.length) toast.info(missing.join(" "));
     } catch (err) {
-      toast.error(socialErrorMessage(err, "Couldn't sync the connection"));
+      toast.error(socialErrorMessage(err, "Couldn't refresh the account"));
+    } finally {
+      setBusyRow(null);
+    }
+  }
+
+  /** Auto-update is the person's per-account choice: off by default, daily, its points named before it turns on. */
+  async function toggleAutoUpdate(row: AccountRow) {
+    if (!row.trackedAccountId) return;
+    const on = plans.byTracked.get(row.trackedAccountId)?.auto_update === true;
+    if (!on) {
+      const cost = plans.autoUpdateCost(row.trackedAccountId);
+      const ok = await confirm({
+        title: `Update ${accountName(row)} every day?`,
+        description: cost && cost !== "Free" ? `Uses ${cost}.` : cost ?? undefined,
+        confirmLabel: "Turn on",
+      });
+      if (!ok) return;
+    }
+    setBusyRow(row.rowId);
+    try {
+      await setConnectedAutoUpdate(row.trackedAccountId, !on, { organizationId });
+      await invalidate();
+      toast.success(on ? "Auto-update off" : "Auto-update on");
+    } catch (err) {
+      toast.error(socialErrorMessage(err, "Couldn't change Auto-update"));
     } finally {
       setBusyRow(null);
     }
@@ -786,11 +814,21 @@ export function AccountsTab() {
                 {
                   id: "sync-connection",
                   icon: RefreshCw,
-                  label: "Sync connection",
-                  tooltip: "Read private stats and posts through your connection",
+                  label: "Refresh stats",
+                  tooltip: ["Refresh private stats and posts", plans.refreshCost(row.trackedAccountId)].filter(Boolean).join(" · "),
                   loading: busyRow === row.rowId,
                   disabled: busyRow !== null,
                   onClick: () => void syncConnection(row),
+                },
+                {
+                  id: "auto-update",
+                  icon: CalendarClock,
+                  label: plans.byTracked.get(row.trackedAccountId ?? "")?.auto_update ? "Auto-update on" : "Auto-update",
+                  tooltip: plans.byTracked.get(row.trackedAccountId ?? "")?.auto_update
+                    ? "Daily · turn off"
+                    : ["Update every day", plans.autoUpdateCost(row.trackedAccountId)].filter(Boolean).join(" · "),
+                  disabled: busyRow !== null,
+                  onClick: () => void toggleAutoUpdate(row),
                 },
               ]
             : []),
