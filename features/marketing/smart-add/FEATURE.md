@@ -49,7 +49,7 @@ Rules:
 - An invalid value is dropped and never causes an error. That covers an unknown via, platform or view, a non-uuid run, text over 300 characters, and an enrich segment that is not one safe path segment.
 - Writes go through `@/lib/url-state/addressWithoutNavigating`, so they make no RSC fetch and cause no remount. A write keeps every key it does not own, such as `panels`.
 - 🚨 **Auto-start spends points.** A link that carries a prefill (`website`, `social`, or `name`) starts searching on open, as if Go was pressed. That is the purpose of the link. It happens once per address per tab (sessionStorage `smart-add:auto-started`). A reload, Back/Forward or a duplicate tab never starts a second run. A person link with no occupation or company stops at the one "job or company" ask.
-- **Resume:** an address with `run=` rebuilds those rounds from the server (`SmartAddRound` → `useWorkflowRun`) and starts nothing. The typed fields come back from the address. Decisions made on screen before a reload are not in the address. The findings come back unconfirmed, except what the person typed.
+- **Resume:** an address with `run=` rebuilds those rounds from the server (`SmartAddRound` → `useWorkflowRun`) and starts nothing. The typed fields come back from the address. Decisions made on screen before Create (Preferred / Ours / Not us / Related, web kinds, typed values) are saved as they are given in the person's synced preferences (`smartAdd.runs`, keyed by the first run id; `runMemory.ts`) and restored with the run. After Create they live in `web.discovered_item`.
 - Nothing personal goes in the address beyond what the person typed into these fields. The active organization is never in it.
 
 ---
