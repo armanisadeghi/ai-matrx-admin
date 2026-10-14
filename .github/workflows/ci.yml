@@ -1328,6 +1328,13 @@ jobs:
           cache: pnpm
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+      # This compiler has peaked near 13 GB on a 16 GB runner. The repo-only
+      # workflow already uses swap to keep the runner alive through memory spikes.
+      - name: Add 8 GB of swap for type-check
+        run: |
+          sudo fallocate -l 8G /matrx-swap && sudo chmod 600 /matrx-swap
+          sudo mkswap /matrx-swap >/dev/null && sudo swapon /matrx-swap
+          free -m
       - name: TypeScript type-check
         # tsc over this repo outgrew the default heap once already, and on
         # 2026-09-22 it outgrew 6144 too: every run on every branch died with
