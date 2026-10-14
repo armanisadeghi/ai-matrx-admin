@@ -76,6 +76,7 @@ const conversation = {
   initial_agent_version_id: null,
   is_ephemeral: false,
   is_favorite: false,
+  last_activity_at: "2026-10-01T16:41:30.000Z",
   keywords: null,
   last_context_breakdown: null,
   last_model_id: null,

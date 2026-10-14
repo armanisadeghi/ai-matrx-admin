@@ -29,7 +29,11 @@ section you need, not the whole file.
    `computer` needs the tab fronted (`tabs_select`).
 4. Sign in: `pnpm dev-login /<route>` and open the URL it prints (admin@admin.com, live DB).
 5. Warm the route with `curl` first; first compiles take 45–60 s, longer than a tool timeout.
-6. Smoke check: one click, confirm the screen changed. Two environment failures (hidden pane,
+6. AI test mode: when the brief tests screens or plumbing, not the AI, open the first URL with
+   `?ai_test_mode=stand_in` (saved answers, no spend). When the brief tests the AI itself, never.
+   Results badged "Baseline replay" / "Stand-in" are saved answers, never report them as AI output.
+   [ai-test-mode](/policies/ai-test-mode.md).
+7. Smoke check: one click, confirm the screen changed. Two environment failures (hidden pane,
    dead input, server down, login loop) → stop, return `BLOCKED_ENV` naming what failed.
 
 ## Testing

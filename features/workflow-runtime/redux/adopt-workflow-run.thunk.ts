@@ -50,7 +50,14 @@ import {
   startRunEventSource,
   type RunTransportMode,
 } from "../transport/run-event-source";
-import { RenderBlockFrameAssembler } from "../transport/render-block-frames";
+import {
+  JsonFrameAssembler,
+  RenderBlockFrameAssembler,
+} from "../transport/render-block-frames";
+import {
+  appendTimeline,
+  setRequestServerId,
+} from "@ai-matrx/chat/agents/redux/execution-system/active-requests/active-requests.slice";
 import { createWorkflowMediaRouter } from "../transport/live-media";
 import {
   applyNodeStreamMeta,
@@ -184,6 +191,15 @@ export function adoptWorkflowRun(
     // One frame assembler per run: server render_block snapshots are sliced
     // across ordered frames to fit the workflow wire's pg_notify cap, and
     // frame ids are unique per run.
+    const requestAssemblers = new Map<string, JsonFrameAssembler>();
+    const requestAssemblerFor = (runId: string): JsonFrameAssembler => {
+      let assembler = requestAssemblers.get(runId);
+      if (!assembler) {
+        assembler = new JsonFrameAssembler();
+        requestAssemblers.set(runId, assembler);
+      }
+      return assembler;
+    };
     const assemblers = new Map<string, RenderBlockFrameAssembler>();
     const assemblerFor = (runId: string): RenderBlockFrameAssembler => {
       let assembler = assemblers.get(runId);
@@ -229,6 +245,22 @@ export function adoptWorkflowRun(
       return keys.length === 1 ? keys[0] : invocationKeyOf(nodeId, null, 0);
     };
 
+    const bindLaneToServerRun = (runId: string, nodeId: string, delta: string): void => {
+      let parsed: { table?: unknown; record_id?: unknown; status?: unknown } | null = null;
+      try {
+        parsed = JSON.parse(delta) as { table?: unknown; record_id?: unknown; status?: unknown };
+      } catch {
+        return;
+      }
+      if (parsed?.table !== "user_request" || parsed.status !== "reserved") return;
+      if (typeof parsed.record_id !== "string" || !parsed.record_id) return;
+      const key = laneKeyForNodeStream(runId, nodeId);
+      if (key === null) return;
+      const lane = tree.laneManager.ensureLane(runId, key);
+      if (!lane) return;
+      dispatch(setRequestServerId({ requestId: lane.requestId, serverRequestId: parsed.record_id }));
+    };
+
     const routeNodeStream = (runId: string, event: NodeStreamEvent): void => {
       // Refetch signals (Phase 3 pump) can come from the RUN-LEVEL emitter
       // (node_id null), so they route BEFORE the node guard — dropping them
@@ -245,9 +277,40 @@ export function adoptWorkflowRun(
             ),
           }),
         );
+        // Watch AI: an AI step names its server run (`chat.user_request`) the
+        // moment it reserves it — the node's lane is bound to that run, so the
+        // watch window reads its record, request and response by that id.
+        if (event.kind === "record_update" && event.node_id) {
+          bindLaneToServerRun(runId, event.node_id, event.delta);
+        }
         return;
       }
       if (!event.node_id) return;
+
+      // Watch AI: the exact provider request the step sent, onto its lane's
+      // timeline exactly where a chat stream puts its `context_analysis`.
+      // (Widened compare: the installed event types predate this kind.)
+      if ((event.kind as string) === "context_analysis") {
+        const capture = requestAssemblerFor(runId).push(event);
+        if (!capture) return;
+        const key = laneKeyForNodeStream(runId, event.node_id);
+        if (key === null) return;
+        const lane = tree.laneManager.ensureLane(runId, key);
+        if (!lane) return;
+        dispatch(
+          appendTimeline({
+            requestId: lane.requestId,
+            entry: {
+              kind: "unknown",
+              seq: 0,
+              timestamp: Date.now(),
+              originalEvent: "context_analysis",
+              rawData: capture,
+            },
+          }),
+        );
+        return;
+      }
 
       if (event.kind === "media") {
         mediaRouterFor(runId).push(event);

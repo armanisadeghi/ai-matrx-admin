@@ -60,6 +60,7 @@ export function CustomAdd({
   label = "Custom",
   onAdd,
   disabled,
+  inline,
 }: {
   field: EvidenceField | "contact";
   placeholder: string;
@@ -67,6 +68,8 @@ export function CustomAdd({
   label?: string;
   onAdd: (item: EvidenceItem) => void;
   disabled?: boolean;
+  /** Sits beside its siblings in a parent row that supplies the slot padding. */
+  inline?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const [text, setText] = useState("");
@@ -93,7 +96,7 @@ export function CustomAdd({
 
   if (!open) {
     return (
-      <div className="px-4 pb-1">
+      <div className={inline ? undefined : "px-4 pb-1"}>
         <Button variant="quiet" icon={<Plus />} disabled={disabled} onClick={() => setOpen(true)}>
           {label}
         </Button>
@@ -101,7 +104,7 @@ export function CustomAdd({
     );
   }
   return (
-    <div className="flex flex-wrap items-center gap-2 px-4 pb-2">
+    <div className={`flex flex-wrap items-center gap-2 pb-2 ${inline ? "w-full" : "px-4"}`}>
       {field === "contact" ? (
         <Select aria-label="Contact kind" value={contactKind} options={CONTACT_KINDS} onValueChange={setContactKind} className="w-28" />
       ) : null}

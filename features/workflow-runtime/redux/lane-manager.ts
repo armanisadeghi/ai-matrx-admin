@@ -97,6 +97,18 @@ interface Lane {
   partialKindGate: PartialKindGate;
 }
 
+/**
+ * Every request row a lane ever minted (this tab). Watch AI reads it: a lane is
+ * an AI run only once the server names its run (`serverRequestId`, from the
+ * step's `record_reserved user_request`); a deterministic step's lane is not.
+ */
+const laneRequestIds = new Set<string>();
+
+/** True when this request row is a workflow node's lane (not a chat turn). */
+export function isWorkflowLaneRequest(requestId: string): boolean {
+  return laneRequestIds.has(requestId);
+}
+
 function laneKey(runId: string, invocationKey: string): string {
   return `${runId}\0${invocationKey}`;
 }
@@ -142,6 +154,7 @@ export class RunLaneManager {
     // from a sibling conversation's teardown, and the abort registry keys on
     // conversationId (see the adoption research in the plan).
     const conversationId = generateConversationId();
+    laneRequestIds.add(requestId);
     this.dispatch(createRequest({ requestId, conversationId }));
     this.dispatch(setRequestStatus({ requestId, status: "streaming" }));
     this.dispatch(markTextStreamStart({ requestId, timestamp: Date.now() }));

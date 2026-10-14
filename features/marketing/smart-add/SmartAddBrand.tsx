@@ -19,6 +19,7 @@
 import { useEffect, useEffectEvent, useLayoutEffect, useRef, useState } from "react";
 import { Check, ExternalLink, Globe, Loader2, RotateCcw, X } from "lucide-react";
 import { Button, Field, SegmentedControl, Select, type SelectOption } from "@ai-matrx/design-system/controls";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
 import { useCostDisplay } from "@/components/cost/useCostDisplay";
@@ -595,7 +596,30 @@ export function SmartAddBrand({
     return () => clearTimeout(timer);
   }, [setupRunId, setupInterrupted, dispatch]);
 
-  const decide = (key: string, decision: Decision) => setDecisions((d) => applyDecision(d, items, key, decision));
+  const applyAnswer = (key: string, decision: Decision) => setDecisions((d) => applyDecision(d, items, key, decision));
+  /** An answer that started follow-up searches or AI work: clearing or flipping it restarts that work, so it asks first. */
+  const [restartAsk, setRestartAsk] = useState<{ key: string; decision: Decision } | null>(null);
+  const decide = (key: string, decision: Decision) => {
+    const cur = decisions[key];
+    const keptClass = (d: Decision) => (d === "no" ? "no" : "yes");
+    if (cur && explored.current.has(key) && (cur === decision || keptClass(cur) !== keptClass(decision))) {
+      setRestartAsk({ key, decision });
+      return;
+    }
+    applyAnswer(key, decision);
+  };
+  /** The restart dialog's four choices; any change re-opens the key for exploring. */
+  const answerRestart = (choice: "yes" | "no" | "other" | "none") => {
+    const ask = restartAsk;
+    setRestartAsk(null);
+    if (!ask) return;
+    const cur = decisions[ask.key];
+    explored.current.delete(ask.key);
+    if (cur) applyAnswer(ask.key, cur); // clear first (the same answer again)
+    if (choice === "yes") applyAnswer(ask.key, "yes");
+    else if (choice === "no") applyAnswer(ask.key, "no");
+    else if (choice === "other") skip(ask.key, true);
+  };
 
   /** Person name mode: the anchor round ("Which of these is you?"), with the typed name and city already woken. */
   const findPerson = (name: string, city: string, more: PersonMore = { occupation: "", company: "", extra: "" }) => {
@@ -1549,6 +1573,23 @@ export function SmartAddBrand({
       ) : null}
 
       {listeners}
+      <ConfirmDialog
+        open={restartAsk !== null}
+        onOpenChange={(o) => !o && setRestartAsk(null)}
+        title="Restart what this started?"
+        description="Changing this answer restarts the searches it triggered."
+        confirmHeld
+        cancelLabel="Keep it"
+        onConfirm={() => undefined}
+        content={
+          <div className="flex flex-wrap gap-2">
+            <Button variant="outline" onClick={() => answerRestart("yes")}>Yes</Button>
+            <Button variant="outline" onClick={() => answerRestart("no")}>No</Button>
+            <Button variant="outline" onClick={() => answerRestart("other")}>Other</Button>
+            <Button variant="outline" onClick={() => answerRestart("none")}>No answer</Button>
+          </div>
+        }
+      />
     </div>
     </div>
   );

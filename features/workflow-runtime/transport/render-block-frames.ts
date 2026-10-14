@@ -94,3 +94,46 @@ function parseRenderBlock(body: string): RenderBlockPayload | null {
   if (typeof candidate.type !== "string") return null;
   return parsed as RenderBlockPayload;
 }
+
+/**
+ * The same framing for any JSON object frame set (`kind: "context_analysis"` —
+ * the exact provider request an AI step sent; Watch AI). Same rules as
+ * `RenderBlockFrameAssembler`: complete sets only, oldest abandoned first.
+ */
+export class JsonFrameAssembler {
+  private open = new Map<string, OpenSet>();
+
+  push(event: NodeStreamEvent): Record<string, unknown> | null {
+    const frameId = event.frame_id;
+    if (!frameId) return null;
+    const count = event.frame_count ?? 1;
+    const index = event.frame_index ?? 0;
+    if (!Number.isInteger(count) || count < 1 || !Number.isInteger(index)) return null;
+    let set = this.open.get(frameId);
+    if (!set) {
+      if (this.open.size >= MAX_OPEN_FRAME_SETS) {
+        const oldest = this.open.keys().next();
+        if (!oldest.done) this.open.delete(oldest.value);
+      }
+      set = { count, slices: new Map() };
+      this.open.set(frameId, set);
+    }
+    set.slices.set(index, event.delta);
+    if (set.slices.size < set.count) return null;
+    this.open.delete(frameId);
+    let body = "";
+    for (let i = 0; i < set.count; i++) {
+      const slice = set.slices.get(i);
+      if (slice === undefined) return null;
+      body += slice;
+    }
+    try {
+      const parsed: unknown = JSON.parse(body);
+      return typeof parsed === "object" && parsed !== null && !Array.isArray(parsed)
+        ? (parsed as Record<string, unknown>)
+        : null;
+    } catch {
+      return null;
+    }
+  }
+}

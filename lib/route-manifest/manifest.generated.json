@@ -1,7 +1,7 @@
 {
   "version": 1,
   "app": "matrx-frontend",
-  "routeCount": 1429,
+  "routeCount": 1430,
   "routes": [
     {
       "pattern": "/",
@@ -362,6 +362,11 @@
       "pattern": "/administration/ai/ai-tasks",
       "status": "live",
       "source": "app/(admin)/administration/ai/ai-tasks/page.tsx"
+    },
+    {
+      "pattern": "/administration/ai/ai-test-mode",
+      "status": "live",
+      "source": "app/(admin)/administration/ai/ai-test-mode/page.tsx"
     },
     {
       "pattern": "/administration/applets",

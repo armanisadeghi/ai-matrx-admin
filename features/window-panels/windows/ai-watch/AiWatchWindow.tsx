@@ -35,11 +35,9 @@ import { Eye, Send, Wrench } from "lucide-react";
 import { formatCost } from "@ai-matrx/kit/format";
 import { LiveRunDisplay } from "@ai-matrx/chat/agents/components/live-run/LiveRunDisplay";
 import { useRetainRequestForViewer } from "@ai-matrx/chat/agents/redux/execution-system/active-requests/useRetainRequestForViewer";
-import {
-  selectWatchableRuns,
-  type WatchableRun,
-} from "@ai-matrx/chat/agents/redux/execution-system/active-requests/active-requests.selectors";
-import type { ChatRootState } from "@ai-matrx/chat/store/root-state";
+import type { WatchableRun } from "@ai-matrx/chat/agents/redux/execution-system/active-requests/active-requests.selectors";
+import MarkdownStream from "@ai-matrx/chat/ui/markdown-stream/MarkdownStream";
+import { selectPageAiRuns, selectPageWorkflowRunIds } from "@/features/ai-watch/page-ai-runs";
 import {
   fmtMs,
   fmtTokens,
@@ -58,6 +56,7 @@ import { useCanWatchAi } from "@/features/ai-watch/useCanWatchAi";
 import { useOpenMandateWindow } from "@/features/overlays/openers/mandateWindow";
 import { useOpenFeedbackWindow } from "@/features/overlays/openers/feedbackDialog";
 import {
+  chatTurns,
   fetchAgentVersion,
   fetchAiWatchRecord,
   fetchAiWatchRuns,
@@ -129,13 +128,21 @@ export default function AiWatchWindow({
   const canWatch = useCanWatchAi();
   const [records, setRecords] = useState<AiWatchRunSummary[]>([]);
   const [listError, setListError] = useState<string | null>(null);
-  const listScope = workflowRunId || (!requestId && !userRequestId ? conversationId : null);
+  // The page's workflow runs: their AI steps are read from the record, so the list outlives
+  // the live rows (a finished run's lanes are released; its calls stay listed).
+  const pageWorkflowRunIds = useAppSelector(selectPageWorkflowRunIds);
+  const pageRunKey = pageRuns ? pageWorkflowRunIds.join(",") : "";
+  const listScope = workflowRunId || pageRunKey || (!requestId && !userRequestId ? conversationId : null);
 
   useEffect(() => {
     if (!canWatch || !listScope) return;
     let cancelled = false;
     const load = () =>
-      fetchAiWatchRuns({ workflowRunId, conversationId })
+      fetchAiWatchRuns({
+        workflowRunId,
+        workflowRunIds: pageRunKey ? pageRunKey.split(",") : null,
+        conversationId,
+      })
         .then((rows) => {
           if (cancelled) return;
           setRecords(rows);
@@ -152,10 +159,10 @@ export default function AiWatchWindow({
       cancelled = true;
       clearInterval(timer);
     };
-  }, [canWatch, listScope, workflowRunId, conversationId]);
+  }, [canWatch, listScope, workflowRunId, conversationId, pageRunKey]);
 
   // The tab's own runs, keyed by server run (never a conversation's "newest").
-  const registry = useAppSelector((s) => selectWatchableRuns(s as unknown as ChatRootState));
+  const registry = useAppSelector(selectPageAiRuns);
   const opened = useAppSelector((s) =>
     requestId ? (s as unknown as ActiveRoot).activeRequests.byRequestId[requestId] : undefined,
   );
@@ -178,6 +185,7 @@ export default function AiWatchWindow({
     }
   }
   rail.sort((a, b) => Number(b.live) - Number(a.live));
+  if (pageRuns && !rail.some((r) => r.live)) rail.reverse();
   const current = selectedKey ?? rail[0]?.key ?? null;
   const currentRun = registry.find((r) => r.key === current || r.requestIds.includes(current ?? ""));
   const serverId =
@@ -336,7 +344,13 @@ function AiWatchRunView({ serverId, requestIds }: { serverId: string | null; req
       {loadError ? <ErrorNotice title="The run's record could not be read" message={loadError} /> : null}
       {(!latest || liveDone) && runError ? <ErrorNotice title="The run did not finish" message={runError} /> : null}
 
-      <MandateSection identity={identity} attributedKey={record?.mandateKey ?? null} />
+      <ChatSection
+        calls={request.calls}
+        liveRequestId={latestId && latest && liveHasOutput ? latestId : null}
+        live={Boolean(latest && !liveDone)}
+      />
+
+      <MandateSection identity={identity} attributedKey={record?.mandateKey ?? null} record={record} />
       <AdminMetrics live={latest} record={record} calls={request.calls} />
 
       <Section title={request.source === "recorded" ? "Request · recorded copy (files as markers)" : "Request"}>
@@ -388,37 +402,84 @@ function AiWatchRunView({ serverId, requestIds }: { serverId: string | null; req
         </Section>
       ) : null}
 
-      <Section title="Response">
-        {latestId && latest && liveHasOutput ? (
-          // The ONE pipeline: text, tools and the output kind's own component, live.
-          <LiveRunDisplay requestId={latestId} variant="bare" bodyClassName="max-h-none" />
-        ) : runError && !record?.snapshots.length ? (
-          <div className="text-muted-foreground">No output</div>
-        ) : record ? (
-          request.calls
-            .filter((c) => !c.superseded)
-            .map((c) => (
-              <pre key={c.key} className="whitespace-pre-wrap break-words rounded bg-muted/40 p-2 font-mono text-[11px]">
-                {responseText(c.response) || JSON.stringify(c.response ?? {}, null, 2)}
-              </pre>
-            ))
-        ) : (
-          <div className="text-muted-foreground">Loading</div>
-        )}
-      </Section>
 
       {serverId ? <RunActions serverId={serverId} frame={identity.frame} record={record} /> : null}
     </div>
   );
 }
 
+/**
+ * The run as a chat (VISION Part 18 item 6): system, user message(s), and the assistant's answer
+ * — streaming live through the ONE pipeline (`LiveRunDisplay`), or the recorded answer through
+ * `MarkdownStream`. Never hand-rendered.
+ */
+function ChatSection({
+  calls,
+  liveRequestId,
+  live,
+}: {
+  calls: WatchCall[];
+  liveRequestId: string | null;
+  live: boolean;
+}) {
+  const answered = calls.filter((c) => !c.superseded);
+  const last = answered.at(-1) ?? null;
+  const turns = last?.body ? chatTurns(splitProviderRequest(last.body)) : [];
+  const recorded = answered.map((c) => responseText(c.response)).filter(Boolean).join("\n\n");
+  return (
+    <Section title="Chat">
+      <div className="flex flex-col gap-2">
+        {turns.length === 0 ? (
+          <div className="text-muted-foreground">{live ? "Waiting for the request" : "No request on record"}</div>
+        ) : (
+          turns.map((turn, i) => (
+            <div
+              key={i}
+              className={cn(
+                "rounded-md border border-border p-2",
+                turn.role === "user" ? "ml-8 bg-muted/40" : turn.role === "system" ? "bg-card" : "mr-8 bg-card",
+              )}
+            >
+              <div className="mb-1 font-medium capitalize text-muted-foreground">{turn.role}</div>
+              {turn.role === "system" ? (
+                <details>
+                  <summary className="cursor-pointer select-none text-foreground">
+                    {turn.text.slice(0, 120)}
+                    {turn.text.length > 120 ? "…" : ""}
+                  </summary>
+                  <pre className="mt-1 whitespace-pre-wrap break-words font-mono text-[11px] text-foreground">{turn.text}</pre>
+                </details>
+              ) : (
+                <pre className="whitespace-pre-wrap break-words font-mono text-[11px] text-foreground">{turn.text}</pre>
+              )}
+            </div>
+          ))
+        )}
+        <div className="mr-8 rounded-md border border-border bg-card p-2">
+          <div className="mb-1 font-medium text-muted-foreground">Assistant</div>
+          {liveRequestId ? (
+            <LiveRunDisplay requestId={liveRequestId} variant="bare" bodyClassName="max-h-none" />
+          ) : recorded ? (
+            <MarkdownStream content={recorded} isStreamActive={false} hideCopyButton />
+          ) : (
+            <div className="text-muted-foreground">{live ? "Waiting for the answer" : "No answer on record"}</div>
+          )}
+        </div>
+      </div>
+    </Section>
+  );
+}
+
 function MandateSection({
   identity,
   attributedKey,
+  record,
 }: {
   identity: ReturnType<typeof mandateIdentity>;
   /** The server's own attribution on this run's row (`metadata.mandate_key`), never a door. */
   attributedKey: string | null;
+  /** The run's own row: a workflow step's mandate, agent and version when no door frame exists. */
+  record: AiWatchRecord | null;
 }) {
   const frame = identity.frame;
   const openMandate = useOpenMandateWindow();
@@ -459,13 +520,41 @@ function MandateSection({
   }, [mandateId]);
 
   if (!frame) {
+    if (attributedKey) {
+      // A workflow step's mandate run: the step names the mandate, the row names the agent and
+      // version that ran (no door frame is built inside a workflow).
+      return (
+        <Section title="Mandate · workflow step">
+          <div className="grid grid-cols-2 gap-x-4 gap-y-0.5 rounded border border-border bg-muted/30 p-2 sm:grid-cols-4">
+            <Metric label="Mandate">
+              <button
+                type="button"
+                className="text-primary underline"
+                onClick={() => openMandate({ initialMandateKey: storedMandateKey(attributedKey) })}
+              >
+                {attributedKey}
+              </button>
+            </Metric>
+            <Metric label="Step">{record?.workflowNodeId ?? "—"}</Metric>
+            <Metric label="Agent">
+              {record?.agentId ? (
+                <Link className="text-primary underline" href={`/agents/${record.agentId}`}>
+                  {record.agentName ?? record.agentId.slice(0, 8)}
+                </Link>
+              ) : (
+                "—"
+              )}
+            </Metric>
+            <Metric label="Model id">
+              <span className="select-all font-mono">{record?.models.join(", ") || "—"}</span>
+            </Metric>
+          </div>
+        </Section>
+      );
+    }
     return (
       <Section title="Mandate">
-        <div className="text-muted-foreground">
-          {attributedKey
-            ? `No mandate door · attributed to ${attributedKey}`
-            : "Not a mandate run (no mandate door)"}
-        </div>
+        <div className="text-muted-foreground">Not a mandate run (no mandate door)</div>
       </Section>
     );
   }

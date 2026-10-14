@@ -38,6 +38,11 @@ No MCP? From `aidream/`: `uv run python scripts/test_model.py plumbing`, or `pro
 or `intelligence`. Both return the model id, name, price per 1M tokens in and out, and why. Use that
 model name as given.
 
+**Plumbing that does not need a fresh answer at all: don't call the model.** Run the test in AI test
+mode (`?ai_test_mode=stand_in` on the app URL, or header `X-Matrx-AI-Test-Mode: stand_in`): automated
+AI steps answer from saved baselines and cost nothing. Never for an `intelligence` test, and you still
+owe one `real` run before calling an AI-backed flow done. [ai-test-mode](/policies/ai-test-mode.md).
+
 ## 3. Never a restricted model
 
 Max-tier, Fable, Astra, Mythos, and anything at or above the cost rating the answer reports

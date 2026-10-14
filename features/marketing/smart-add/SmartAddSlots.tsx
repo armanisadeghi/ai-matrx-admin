@@ -110,8 +110,8 @@ export function SmartAddSlots({
   /** Move a name to the About tagline (`true`), or put it back (`false`). */
   onTagline: (item: EvidenceItem, on: boolean) => void;
 }) {
-  const custom = (field: EvidenceField | "contact", placeholder: string, label?: string) => (
-    <CustomAdd field={field} placeholder={placeholder} label={label} onAdd={onAdd} disabled={locked} />
+  const custom = (field: EvidenceField | "contact", placeholder: string, label?: string, inline?: boolean) => (
+    <CustomAdd field={field} placeholder={placeholder} label={label} onAdd={onAdd} disabled={locked} inline={inline} />
   );
   const of = (...fields: EvidenceField[]) => items.filter((i) => fields.includes(i.field));
   const allAccounts = collapseAliasedAccounts(of("social"));
@@ -438,10 +438,10 @@ export function SmartAddSlots({
       ) : null}
 
       <Slot title="About" ask={person ? "Is this you?" : "Is this right?"} empty={of("description", "category", "tagline").length ? null : empty} after={
-        <div className="flex flex-wrap">
-          {custom("tagline", "Tagline", "Tagline")}
-          {custom("description", "What you do, in a sentence or two", "Description")}
-          {custom("category", "Category", "Category")}
+        <div className="flex flex-wrap items-center px-4 pb-1">
+          {custom("tagline", "Tagline", "Tagline", true)}
+          {custom("description", "What you do, in a sentence or two", "Description", true)}
+          {custom("category", "Category", "Category", true)}
         </div>
       }>
         {of("tagline").map((i) => {

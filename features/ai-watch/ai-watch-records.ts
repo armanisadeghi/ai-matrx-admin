@@ -28,6 +28,12 @@ export interface AiWatchRecord {
   sourceApp: string | null;
   sourceFeature: string | null;
   agentId: string | null;
+  /** The agent version that ran (`chat.user_request.agent_version_id`). */
+  agentVersionId: string | null;
+  /** The agent's name as the server stored it (`metadata.agent_name`). */
+  agentName: string | null;
+  /** The workflow step that made this call (`metadata.workflow_node_id`). */
+  workflowNodeId: string | null;
   conversationId: string | null;
   workflowRunId: string | null;
   inputTokens: number | null;
@@ -58,7 +64,7 @@ export interface AiWatchRunSummary {
 }
 
 const USER_REQUEST_COLUMNS =
-  "id, status, source_app, source_feature, agent_id, conversation_id, workflow_run_id, total_input_tokens, total_output_tokens, total_cached_tokens, total_cost, total_duration_ms, api_duration_ms, iterations, total_tool_calls, finish_reason, error, created_at, completed_at, metadata";
+  "id, status, source_app, source_feature, agent_id, agent_version_id, conversation_id, workflow_run_id, total_input_tokens, total_output_tokens, total_cached_tokens, total_cost, total_duration_ms, api_duration_ms, iterations, total_tool_calls, finish_reason, error, created_at, completed_at, metadata";
 
 type Row = Record<string, unknown>;
 
@@ -92,6 +98,9 @@ function toRecord(row: Row, snapshots: AiWatchSnapshot[]): AiWatchRecord {
     sourceApp: str(row.source_app),
     sourceFeature: str(row.source_feature),
     agentId: str(row.agent_id) ?? str(obj(metadata.mandate_holder)?.agent_id),
+    agentVersionId: str(row.agent_version_id),
+    agentName: str(metadata.agent_name),
+    workflowNodeId: str(metadata.workflow_node_id),
     conversationId: str(row.conversation_id),
     workflowRunId: str(row.workflow_run_id),
     inputTokens: num(row.total_input_tokens),
@@ -147,12 +156,14 @@ export async function fetchAiWatchRecord(
   return toRecord(ur.data as Row, snapshots);
 }
 
-/** The recorded runs of one flow — a workflow run or a conversation. */
+/** The recorded runs of one flow — a workflow run, several (the page's runs), or a conversation. */
 export async function fetchAiWatchRuns(scope: {
   workflowRunId?: string | null;
+  workflowRunIds?: readonly string[] | null;
   conversationId?: string | null;
 }): Promise<AiWatchRunSummary[]> {
-  if (!scope.workflowRunId && !scope.conversationId) return [];
+  const runIds = scope.workflowRunId ? [scope.workflowRunId] : [...(scope.workflowRunIds ?? [])];
+  if (!runIds.length && !scope.conversationId) return [];
   // The whole flow, never the first page: a long workflow has more steps than one read returns.
   const rows = await readAllRows(
     ({ from, to }) => {
@@ -161,8 +172,8 @@ export async function fetchAiWatchRuns(scope: {
         .from("user_request")
         .select("id, status, source_feature, created_at, metadata")
         .is("deleted_at", null);
-      query = scope.workflowRunId
-        ? query.eq("workflow_run_id", scope.workflowRunId)
+      query = runIds.length
+        ? query.in("workflow_run_id", runIds)
         : query.eq("conversation_id", scope.conversationId as string);
       return query
         .order("created_at", { ascending: true })
@@ -181,6 +192,10 @@ export async function fetchAiWatchRuns(scope: {
         str(holder?.name) ??
         // Only a turn that passed a mandate door is labelled with its mandate.
         str(watch?.mandate_key) ??
+        // A workflow step's call: the server's own attribution and the step that made it.
+        str(metadata.mandate_key) ??
+        str(metadata.agent_name) ??
+        str(metadata.workflow_node_id) ??
         str(row.source_feature) ??
         `Run ${index + 1}`,
       status: str(row.status),
@@ -295,6 +310,49 @@ export function splitProviderRequest(body: Record<string, unknown> | null): Spli
   }
 
   return { shape: null, ...empty, raw: body };
+}
+
+/** One readable turn of a provider request, as a chat shows it. */
+export interface WatchChatTurn {
+  role: "system" | "user" | "assistant" | "tool";
+  text: string;
+}
+
+function partsText(content: unknown): string {
+  if (typeof content === "string") return content;
+  const list = Array.isArray(content) ? content : obj(content) ? [content] : [];
+  const out: string[] = [];
+  for (const p of list) {
+    if (typeof p === "string") out.push(p);
+    const part = obj(p);
+    if (!part) continue;
+    if (typeof part.text === "string") out.push(part.text);
+    else if (part.function_call || part.functionCall || part.type === "tool_use") out.push(`[tool call] ${JSON.stringify(part.function_call ?? part.functionCall ?? part.input ?? {})}`);
+    else if (part.function_response || part.functionResponse || part.type === "tool_result") out.push(`[tool result] ${JSON.stringify(part.function_response ?? part.functionResponse ?? part.content ?? {})}`);
+    else if (part.inline_data || part.file_data || part.type === "image" || part.type === "input_file") out.push("[file]");
+  }
+  return out.join("\n\n");
+}
+
+/** The request as a chat: system first, then every message in order (any provider family). */
+export function chatTurns(split: SplitProviderRequest): WatchChatTurn[] {
+  const turns: WatchChatTurn[] = [];
+  const system = Array.isArray(split.system)
+    ? split.system.map((m) => partsText(obj(m)?.content ?? obj(m)?.parts ?? m)).join("\n\n")
+    : partsText(obj(split.system)?.parts ?? split.system);
+  if (system.trim()) turns.push({ role: "system", text: system });
+  for (const m of split.messages) {
+    const msg = obj(m);
+    if (!msg) continue;
+    const role = String(msg.role ?? "user");
+    const text = partsText(msg.content ?? msg.parts);
+    if (!text.trim()) continue;
+    turns.push({
+      role: role === "model" || role === "assistant" ? "assistant" : role === "tool" || role === "function" ? "tool" : "user",
+      text,
+    });
+  }
+  return turns;
 }
 
 /** The response text of a recorded provider response, best effort across providers. */
