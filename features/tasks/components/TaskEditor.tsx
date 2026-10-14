@@ -26,6 +26,7 @@ import { useAppSelector } from "@/lib/redux/hooks";
 import { AccessGate } from "@/features/access-gate/components/AccessGate";
 import { selectSelectedTaskId } from "@/features/tasks/redux/taskUiSlice";
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@ai-matrx/design-system/controls";
 import { Button as SurfaceButton } from "@ai-matrx/design-system";
 import { ProInput } from "@/components/official/ProInput";
 import { cn } from "@/utils/cn";
@@ -97,15 +98,13 @@ export default function TaskEditor({
 
   if (!taskId) {
     return (
-      <div className="flex flex-col items-center justify-center h-full text-muted-foreground px-6">
-        <div className="w-16 h-16 rounded-2xl bg-muted/40 flex items-center justify-center mb-3">
-          <CheckSquare className="w-7 h-7 text-muted-foreground/60" />
-        </div>
+      <div className="flex h-full items-center justify-center px-6">
         {/* read-gate-exempt: a selection prompt — no task id is chosen yet, so nothing was read; not an empty list */}
-        <p className="text-sm font-medium text-foreground">No task selected</p>
-        <p className="text-xs mt-1 text-muted-foreground">
-          Select a task from the list to view and edit.
-        </p>
+        <EmptyState
+          icon={<CheckSquare />}
+          title="No task selected"
+          line="Select a task from the list to view and edit."
+        />
       </div>
     );
   }
@@ -188,24 +187,22 @@ function TaskEditorInner({
         {embedded ? (
           <div
             className={cn(
-              "flex h-7 shrink-0 items-center gap-1 border-b border-border/50 bg-card/40",
+              "flex h-7 shrink-0 items-center gap-1 border-b border-border bg-card",
               compact ? "px-0" : "px-2",
             )}
           >
-            <button
-              type="button"
+            <EmbeddedToolbarButton
               onClick={handleToggleComplete}
               disabled={isOperating}
-              className="grid size-6 shrink-0 place-items-center text-muted-foreground transition-colors hover:text-primary"
               title={completed ? "Mark incomplete" : "Mark complete"}
-              aria-label={completed ? "Mark incomplete" : "Mark complete"}
+              className="text-muted-foreground hover:text-primary"
             >
               {completed ? (
-                <CheckCircle2 className="size-3.5 text-green-500" />
+                <CheckCircle2 className="size-3.5 text-success" />
               ) : (
                 <CircleDashed className="size-3.5" />
               )}
-            </button>
+            </EmbeddedToolbarButton>
 
             <ProInput
               value={effective.title}
@@ -214,7 +211,7 @@ function TaskEditorInner({
               showCopyButton={false}
               aria-label="Task title"
               className={cn(
-                "h-6 min-w-0 flex-1 border-none bg-transparent text-sm font-medium text-foreground shadow-none outline-none placeholder:text-muted-foreground/50",
+                "h-6 min-w-0 flex-1 border-none bg-transparent type-title text-foreground shadow-none outline-none placeholder:text-muted-foreground",
                 completed && "text-muted-foreground line-through",
               )}
               wrapperClassName="min-w-0 flex-1"
@@ -250,19 +247,21 @@ function TaskEditorInner({
             />
           </div>
         ) : (
-          <div className="shrink-0 border-b border-border/50 bg-card/40 px-3 h-9 flex items-center gap-1.5">
-            <button
+          <div className="shrink-0 border-b border-border bg-card px-3 h-9 flex items-center gap-1.5">
+            <Button
+              icon={
+                completed ? (
+                  <CheckCircle2 className="text-success" />
+                ) : (
+                  <CircleDashed />
+                )
+              }
+              variant="quiet"
               onClick={handleToggleComplete}
               disabled={isOperating}
-              className="shrink-0 text-muted-foreground hover:text-primary transition-colors"
               title={completed ? "Mark incomplete" : "Mark complete"}
-            >
-              {completed ? (
-                <CheckCircle2 className="w-4 h-4 text-green-500" />
-              ) : (
-                <CircleDashed className="w-4 h-4" />
-              )}
-            </button>
+              aria-label={completed ? "Mark incomplete" : "Mark complete"}
+            />
 
             <ProInput
               value={effective.title}
@@ -271,7 +270,7 @@ function TaskEditorInner({
               showCopyButton={false}
               aria-label="Task title"
               className={cn(
-                "flex-1 min-w-0 h-7 bg-transparent border-none shadow-none outline-none text-sm font-medium text-foreground placeholder:text-muted-foreground/50",
+                "flex-1 min-w-0 h-7 bg-transparent border-none shadow-none outline-none type-title text-foreground placeholder:text-muted-foreground",
                 completed && "line-through text-muted-foreground",
               )}
               wrapperClassName="flex-1 min-w-0"
@@ -324,15 +323,15 @@ function TaskEditorInner({
                 <Button
                   variant="quiet"
                   asChild
-                  className="w-7"
                   title="Open in full page"
+                  aria-label="Open in full page"
                 >
                   <Link
                     href={`/tasks/${taskId}`}
                     target="_blank"
                     rel="noopener noreferrer"
                   >
-                    <ExternalLink className="w-3.5 h-3.5" />
+                    <ExternalLink className="size-4" />
                   </Link>
                 </Button>
               ) : null}
@@ -357,7 +356,7 @@ function TaskEditorInner({
         {embedded ? (
           <div
             className={cn(
-              "flex h-7 shrink-0 items-center gap-0.5 border-t border-border/60 bg-card/60",
+              "flex h-7 shrink-0 items-center gap-0.5 border-t border-border bg-card",
               compact ? "px-0" : "px-2",
             )}
           >
@@ -370,7 +369,7 @@ function TaskEditorInner({
               {completed ? (
                 <CircleDashed className="size-3.5" />
               ) : (
-                <CheckCircle2 className="size-3.5 text-green-500" />
+                <CheckCircle2 className="size-3.5 text-success" />
               )}
             </EmbeddedToolbarButton>
 
@@ -414,7 +413,7 @@ function TaskEditorInner({
             ) : null}
           </div>
         ) : (
-          <div className="shrink-0 border-t border-border/60 bg-card/60 backdrop-blur-sm px-3 py-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] flex items-center gap-1.5">
+          <div className="shrink-0 border-t border-border bg-card px-3 py-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] flex items-center gap-1.5">
             <Button
               variant={completed ? "outline" : "quiet"}
               onClick={handleToggleComplete}
@@ -422,12 +421,12 @@ function TaskEditorInner({
             >
               {completed ? (
                 <>
-                  <CircleDashed className="w-3.5 h-3.5" />
+                  <CircleDashed className="size-4" />
                   Mark incomplete
                 </>
               ) : (
                 <>
-                  <CheckCircle2 className="w-3.5 h-3.5 text-green-500" />
+                  <CheckCircle2 className="size-4 text-success" />
                   Mark complete
                 </>
               )}

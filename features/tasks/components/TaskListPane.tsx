@@ -2,8 +2,6 @@
 
 import { useId, useMemo, useState } from "react";
 import {
-  ChevronDown,
-  ChevronRight,
   Calendar,
   CircleDashed,
   CheckCircle2,
@@ -42,7 +40,12 @@ import {
   selectScopeSelectionsContext,
 } from "@/lib/redux/slices/appContextSlice";
 import { ScopeTagsDisplay } from "@/features/agent-context/components/ScopeTagsDisplay";
-import { Input } from "@ai-matrx/design-system/controls";
+import {
+  DisclosureHeader,
+  EmptyState,
+  RegionSkeleton,
+  SegmentedControl,
+} from "@ai-matrx/design-system/controls";
 import { ProInput } from "@/components/official/ProInput";
 import { cn } from "@/utils/cn";
 import type { TaskWithProject } from "@/features/tasks/types";
@@ -241,31 +244,32 @@ export default function TaskListPane() {
   return (
     <div className="flex flex-col h-full min-h-0 bg-background">
       {/* Quick-add — title moved to the shell header (PageHeader). */}
-      <div className="shrink-0 px-2 py-2 border-b border-border/40 bg-muted/20 flex flex-wrap items-center gap-2">
+      <div className="shrink-0 px-2 py-2 border-b border-border flex flex-wrap items-center gap-2">
         <span
-          className="text-[11px] text-muted-foreground tabular-nums shrink-0 pl-1"
+          className="type-meta text-muted-foreground tabular-nums shrink-0 pl-1"
           data-surface-value="task_count"
         >
           <UntrustedCount value={totalCount} trustworthy={tasksRead.status !== "error"} label="Tasks" />
         </span>
-        <div className="flex items-center rounded-md border border-border p-0.5 shrink-0">
-          <Button
-            icon={<List />}
-            type="button"
-            variant="quiet"
-            onClick={() => setView("rows")}
-            title="List view"
-            aria-label="List view"
-          />
-          <Button
-            icon={<LayoutGrid />}
-            type="button"
-            variant="quiet"
-            onClick={() => setView("table")}
-            title="Table view"
-            aria-label="Table view"
-          />
-        </div>
+        <SegmentedControl
+          value={isTableView ? "table" : "rows"}
+          onValueChange={setView}
+          aria-label="List style"
+          data={[
+            {
+              value: "rows",
+              label: <List className="size-4" />,
+              title: "List view",
+              ariaLabel: "List view",
+            },
+            {
+              value: "table",
+              label: <LayoutGrid className="size-4" />,
+              title: "Table view",
+              ariaLabel: "Table view",
+            },
+          ]}
+        />
         <div className="order-last flex basis-full gap-1 min-w-0">
           <ProInput
             ref={quickAddInputRef}
@@ -282,7 +286,6 @@ export default function TaskListPane() {
             submitDisabled={!newTaskTitle.trim() || isCreatingTask}
             isSubmitting={isCreatingTask}
             showCopyButton={false}
-            className="h-8 text-xs bg-card"
             wrapperClassName="flex-1 min-w-0"
             disabled={isCreatingTask}
           />
@@ -317,8 +320,8 @@ export default function TaskListPane() {
       </div>
 
       {groupByBanner && !isTableView && (
-        <div className="shrink-0 px-3 py-1.5 border-b border-border/50 bg-muted/40">
-          <span className="text-xs font-semibold uppercase tracking-wider text-foreground/90">
+        <div className="shrink-0 px-3 py-1.5 border-b border-border">
+          <span className="type-title text-foreground">
             {groupByBanner}
           </span>
         </div>
@@ -336,30 +339,27 @@ export default function TaskListPane() {
           {isTableView ? (
             <TasksTableView />
           ) : loading && totalCount === 0 ? (
-            <div className="space-y-1 p-2 animate-pulse">
-              {[...Array(4)].map((_, i) => (
-                <div key={i} className="h-12 bg-muted/50 rounded" />
-              ))}
+            <div className="p-2">
+              <RegionSkeleton shape="rows" count={4} twoLine />
             </div>
           ) : tasksRead.status === "error" && totalCount === 0 ? (
             <ReadFailure error={tasksRead.error ?? true} what="your tasks" onRetry={tasksRead.retry} />
           ) : totalCount === 0 ? (
-            <div className="flex flex-col items-center justify-center h-full text-muted-foreground/60 px-6 py-12">
-              <CircleDashed className="w-8 h-8 mb-2 opacity-40" />
-              <p className="text-xs font-medium">No tasks match</p>
-              <p className="text-[11px] mt-0.5 text-center">
-                Adjust filters or add a task above
-              </p>
-              {filterOrgId ? (
-                <Button
-                  variant="outline"
-                  className="mt-3"
-                  onClick={() => dispatch(setFilterOrgId(null))}
-                >
-                  View all organizations
-                </Button>
-              ) : null}
-            </div>
+            <EmptyState
+              icon={<CircleDashed />}
+              title="No tasks match"
+              line="Adjust filters or add a task above"
+              action={
+                filterOrgId ? (
+                  <Button
+                    variant="outline"
+                    onClick={() => dispatch(setFilterOrgId(null))}
+                  >
+                    View all organizations
+                  </Button>
+                ) : undefined
+              }
+            />
           ) : (
             <div className={cn(isGrouped && "p-2 space-y-2")}>
               {groups.map((group) => {
@@ -374,33 +374,29 @@ export default function TaskListPane() {
                     key={group.key}
                     className={cn(
                       isGrouped &&
-                        "rounded-lg border border-border bg-card shadow-[var(--elevation-1)] overflow-hidden",
+                        "rounded-lg border border-border bg-card overflow-hidden",
                     )}
                   >
-                    <button
-                      onClick={() => toggleGroup(group.key)}
+                    <div
                       className={cn(
-                        "group sticky top-0 z-10 flex items-center gap-1.5 w-full px-2.5 py-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground hover:text-foreground transition-colors",
-                        isGrouped
-                          ? "bg-muted/50 border-b border-border/60"
-                          : "bg-background/80 backdrop-blur-sm border-b border-border/30",
+                        "sticky top-0 z-10 border-b border-border",
+                        isGrouped ? "bg-card" : "bg-background",
                       )}
                     >
-                      {isCollapsed ? (
-                        <ChevronRight className="w-3.5 h-3.5 opacity-60 shrink-0" />
-                      ) : (
-                        <ChevronDown className="w-3.5 h-3.5 opacity-60 shrink-0" />
-                      )}
-                      <span className="flex-1 text-left truncate">
-                        {displayLabel}
-                      </span>
-                      <span className="text-[11px] font-normal opacity-60 tabular-nums shrink-0">
-                        {group.tasks.length}
-                      </span>
-                    </button>
+                      <DisclosureHeader
+                        open={!isCollapsed}
+                        onClick={() => toggleGroup(group.key)}
+                        title={displayLabel}
+                        end={
+                          <span className="type-meta tabular-nums text-muted-foreground">
+                            {group.tasks.length}
+                          </span>
+                        }
+                      />
+                    </div>
 
                     {!isCollapsed && (
-                      <div className="divide-y divide-border/30">
+                      <div className="divide-y divide-border">
                         {group.tasks.map((task) => (
                           <TaskRow
                             key={`${group.key}:${task.id}`}
@@ -455,7 +451,7 @@ function TaskRow({
       data-task-row-id={task.id}
       className={cn(
         "group flex items-start gap-1.5 px-3 py-2 cursor-pointer transition-colors relative",
-        isSelected ? "bg-primary/[0.08]" : "hover:bg-accent/40",
+        isSelected ? "bg-primary/[0.08]" : "hover:bg-accent",
       )}
     >
       {/* Active indicator bar */}
@@ -505,11 +501,11 @@ function TaskRow({
               name={task.title}
               showIcon={false}
               onOpen={onSelect}
-              className="min-w-0 text-[13px] leading-tight"
+              className="min-w-0 type-title"
               labelClassName={
                 task.completed
                   ? "line-through text-muted-foreground"
-                  : "text-foreground font-medium"
+                  : "text-foreground"
               }
             />
           </span>
@@ -525,13 +521,13 @@ function TaskRow({
             />
           )}
         </div>
-        <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[10px] text-muted-foreground/80 mt-0.5">
+        <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 type-meta text-muted-foreground mt-0.5">
           {task.projectName && task.projectId !== "__unassigned__" && (
             <EntityRef
               token="project"
               id={task.projectId}
               name={task.projectName}
-              className="max-w-[120px] text-[10px]"
+              className="max-w-[120px] type-meta"
             />
           )}
           {task.projectName && task.projectId === "__unassigned__" && (
@@ -544,7 +540,7 @@ function TaskRow({
             <span
               className={cn(
                 "flex items-center gap-0.5",
-                isPastDue ? "text-destructive font-medium" : "",
+                isPastDue ? "text-destructive" : "",
               )}
             >
               <Calendar className="w-2.5 h-2.5" />
@@ -569,7 +565,7 @@ function TaskRow({
         <ScopeTagsDisplay
           entityType="task"
           entityId={task.id}
-          className="mt-1 [&>*]:h-[18px] [&>*]:text-[9px] [&>*]:px-1.5 [&>*]:gap-0.5"
+          className="mt-1"
         />
       </div>
     </div>

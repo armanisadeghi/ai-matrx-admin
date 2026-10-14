@@ -69,7 +69,15 @@ import {
   selectAllScopesFlat,
   selectOrganizationsList,
 } from "@/features/scopes/redux/selectors/tree";
-import { Switch } from "@/components/ui/switch";
+import {
+  Button,
+  Chip,
+  DisclosureHeader,
+  SearchField,
+  SettingRow,
+  Switch,
+  Tile,
+} from "@ai-matrx/design-system/controls";
 import { cn } from "@/utils/cn";
 import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import { TASKS_CONTEXT_MENU_PROPS } from "@/features/tasks/agent-context/buildTasksContextData";
@@ -227,31 +235,28 @@ export default function TasksContextSidebar() {
         data-surface-value="project_list"
       >
         {/* Search — page title lives in the shell header (PageHeader) */}
-        <div className="shrink-0 px-2 pt-2 pb-1">
-          <div
-            className="flex items-center gap-1.5 px-2 py-1 bg-muted/50 rounded-md border border-border/30"
-            data-surface-value="search_query"
-          >
-            <Search className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => dispatch(setSearchQuery(e.target.value))}
-              placeholder="Search tasks..."
-              className="flex-1 min-w-0 bg-transparent text-xs outline-none placeholder:text-muted-foreground/50"
-              style={{ fontSize: "16px" }}
-            />
-            {searchQuery && (
-              <button
-                type="button"
-                onClick={() => dispatch(setSearchQuery(""))}
-                className="text-muted-foreground hover:text-foreground"
-                aria-label="Clear task search"
-              >
-                <X className="w-3 h-3" />
-              </button>
-            )}
-          </div>
+        <div
+          className="shrink-0 px-2 pt-2 pb-1"
+          data-surface-value="search_query"
+        >
+          <SearchField
+            value={searchQuery}
+            onChange={(e) => dispatch(setSearchQuery(e.target.value))}
+            placeholder="Search tasks..."
+            aria-label="Search tasks"
+            end={
+              searchQuery ? (
+                <button
+                  type="button"
+                  onClick={() => dispatch(setSearchQuery(""))}
+                  className="text-muted-foreground hover:text-foreground"
+                  aria-label="Clear task search"
+                >
+                  <X className="size-4" />
+                </button>
+              ) : undefined
+            }
+          />
         </div>
 
         {/* Scrollable body */}
@@ -264,79 +269,83 @@ export default function TasksContextSidebar() {
             summary={`${activeGroupLabel} · ${activeSortLabel} ${sortOrder === "desc" ? "↓" : "↑"}${showCompleted ? " · +done" : ""}`}
           >
             <div className="flex items-center gap-1 flex-wrap">
-              <span className="text-[10px] text-muted-foreground uppercase tracking-wide">
-                Group
-              </span>
+              <span className="type-label">Group</span>
               {GROUP_MODES.map((m) => {
                 const Icon = m.icon;
                 return (
-                  <button
+                  <Chip
                     key={m.mode}
-                    onClick={() => dispatch(setGroupBy(m.mode))}
-                    className={cn(
-                      "flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] transition-colors",
-                      groupBy === m.mode
-                        ? "text-primary font-medium"
-                        : "text-muted-foreground hover:text-foreground hover:bg-accent",
-                    )}
-                    title={`Group by ${m.label}`}
+                    asChild
+                    tone="primary"
+                    pressed={groupBy === m.mode}
+                    label={m.label}
+                    icon={<Icon />}
                   >
-                    <Icon className="w-3 h-3" />
-                    <span>{m.label}</span>
-                  </button>
+                    <button
+                      type="button"
+                      onClick={() => dispatch(setGroupBy(m.mode))}
+                      title={`Group by ${m.label}`}
+                    />
+                  </Chip>
                 );
               })}
             </div>
 
             <div className="mt-1.5 flex items-center gap-1 flex-wrap">
-              <span className="text-[10px] text-muted-foreground uppercase tracking-wide">
-                Sort
-              </span>
+              <span className="type-label">Sort</span>
               {TASK_SORT_OPTIONS.map((opt) => {
-                const isActive = sortBy === opt.field;
                 const Icon = opt.icon;
                 return (
-                  <button
+                  <Chip
                     key={opt.field}
-                    onClick={() =>
-                      dispatch(setSortBy(opt.field as TaskSortField))
-                    }
-                    className={cn(
-                      "flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] transition-colors",
-                      isActive
-                        ? "text-primary font-medium"
-                        : "text-muted-foreground hover:text-foreground hover:bg-accent",
-                    )}
+                    asChild
+                    tone="primary"
+                    pressed={sortBy === opt.field}
+                    label={opt.label}
+                    icon={<Icon />}
                   >
-                    <Icon className="w-3 h-3" />
-                    <span>{opt.label}</span>
-                  </button>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        dispatch(setSortBy(opt.field as TaskSortField))
+                      }
+                    />
+                  </Chip>
                 );
               })}
-              <button
-                onClick={() => dispatch(toggleSortOrder())}
-                className="flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
-                title={sortOrder === "desc" ? "Descending" : "Ascending"}
+              <Chip
+                asChild
+                pressed={false}
+                label={sortOrder === "desc" ? "↓" : "↑"}
+                icon={<ArrowUpDown />}
               >
-                <ArrowUpDown className="w-3 h-3" />
-                <span>{sortOrder === "desc" ? "↓" : "↑"}</span>
-              </button>
+                <button
+                  type="button"
+                  onClick={() => dispatch(toggleSortOrder())}
+                  title={sortOrder === "desc" ? "Descending" : "Ascending"}
+                />
+              </Chip>
             </div>
 
-            <div className="mt-1.5 flex items-center justify-between px-1.5 py-1 rounded bg-muted/30">
-              <span className="flex items-center gap-1.5 text-[11px] text-foreground">
-                {showCompleted ? (
-                  <Eye className="w-3 h-3 text-muted-foreground" />
-                ) : (
-                  <EyeOff className="w-3 h-3 text-muted-foreground" />
-                )}
-                Show completed
-              </span>
+            <SettingRow
+              label={
+                <span className="flex items-center gap-1.5">
+                  {showCompleted ? (
+                    <Eye className="size-4 text-muted-foreground" />
+                  ) : (
+                    <EyeOff className="size-4 text-muted-foreground" />
+                  )}
+                  Show completed
+                </span>
+              }
+              className="mt-1.5"
+            >
               <Switch
                 checked={showCompleted}
                 onCheckedChange={(v) => dispatch(setShowCompleted(!!v))}
+                aria-label="Show completed"
               />
-            </div>
+            </SettingRow>
           </CollapsibleSidebarSection>
 
           {/* Smart views — Inbox / Today / Upcoming / Overdue / Assigned / Created / Completed */}
@@ -350,32 +359,28 @@ export default function TasksContextSidebar() {
               {SMART_VIEWS.map((v) => {
                 const Icon = v.icon;
                 const count = smartViewCounts[v.key] ?? 0;
-                const isActive = smartView === v.key;
                 return (
-                  <button
-                    key={v.key}
-                    onClick={() => dispatch(setSmartView(v.key))}
-                    title={v.description}
-                    className={cn(
-                      "flex items-center gap-1.5 px-1.5 py-1 max-lg:min-h-11 rounded text-[11px] transition-colors",
-                      isActive
-                        ? "bg-accent text-primary font-medium"
-                        : "text-muted-foreground hover:text-foreground hover:bg-accent",
-                    )}
-                  >
-                    <Icon className="w-3 h-3 shrink-0" />
-                    <span className="flex-1 text-left truncate">{v.label}</span>
-                    <span
-                      className={cn(
-                        "text-[10px] tabular-nums",
-                        v.key === "overdue" && count > 0
-                          ? "text-red-500 font-medium"
-                          : "text-muted-foreground/70",
-                      )}
-                    >
-                      {count}
-                    </span>
-                  </button>
+                  <div key={v.key} title={v.description}>
+                    <Tile
+                      variant="quiet"
+                      icon={<Icon />}
+                      title={v.label}
+                      selected={smartView === v.key}
+                      onClick={() => dispatch(setSmartView(v.key))}
+                      end={
+                        <span
+                          className={cn(
+                            "type-meta tabular-nums",
+                            v.key === "overdue" && count > 0
+                              ? "text-destructive"
+                              : "text-muted-foreground",
+                          )}
+                        >
+                          {count}
+                        </span>
+                      }
+                    />
+                  </div>
                 );
               })}
             </div>
@@ -384,19 +389,18 @@ export default function TasksContextSidebar() {
           {/* Context: Organizations */}
           <CollapsibleSidebarSection
             icon={Building}
-            iconClassName="text-violet-500"
             title="Organization"
             summary={activeOrgName}
             headerAction={
               orgId ? (
-                <button
+                <Button
                   type="button"
+                  variant="quiet"
+                  icon={<X />}
                   onClick={() => handleSelectOrg(null)}
-                  className="shrink-0 p-0.5 opacity-50 hover:opacity-100"
                   title="Show all organizations"
-                >
-                  <X className="w-2.5 h-2.5" />
-                </button>
+                  aria-label="Show all organizations"
+                />
               ) : undefined
             }
           >
@@ -406,7 +410,6 @@ export default function TasksContextSidebar() {
                 active={!orgId}
                 count={(orgs ?? []).length}
                 onClick={() => handleSelectOrg(null)}
-                accentColor="text-violet-500"
               />
               {(orgs ?? []).map((o) => (
                 <ContextRow
@@ -416,7 +419,6 @@ export default function TasksContextSidebar() {
                   dimmed={
                     false /* orgs are never dimmed — picking one is always valid */
                   }
-                  accentColor="text-violet-500"
                   onClick={() => handleSelectOrg(orgId === o.id ? null : o.id)}
                 />
               ))}
@@ -444,19 +446,18 @@ export default function TasksContextSidebar() {
                 icon={Icon}
                 iconStyle={type.color ? { color: type.color } : undefined}
                 title={type.label_plural}
-                titleStyle={type.color ? { color: type.color } : undefined}
                 titleMuted={!typeBelongsToActiveOrg}
                 summary={selectedScopeName}
                 headerAction={
                   selectedOfType.length > 0 ? (
-                    <button
+                    <Button
                       type="button"
+                      variant="quiet"
+                      icon={<X />}
                       onClick={() => clearScopesOfType(opts.map((s) => s.id))}
-                      className="shrink-0 p-0.5 opacity-50 hover:opacity-100"
                       title={`Show all ${type.label_plural.toLowerCase()}`}
-                    >
-                      <X className="w-2.5 h-2.5" />
-                    </button>
+                      aria-label={`Show all ${type.label_plural.toLowerCase()}`}
+                    />
                   ) : undefined
                 }
               >
@@ -470,7 +471,6 @@ export default function TasksContextSidebar() {
                       typeBelongsToActiveOrg &&
                       clearScopesOfType(opts.map((s) => s.id))
                     }
-                    accentColor={type.color}
                   />
                   {opts.map((scope) => {
                     // A scope is dimmed if its org doesn't match the current
@@ -484,7 +484,6 @@ export default function TasksContextSidebar() {
                         label={scope.name}
                         active={isActive}
                         dimmed={dimmed}
-                        accentColor={type.color}
                         dotColor={type.color}
                         onClick={() => !dimmed && toggleScope(scope.id)}
                       />
@@ -498,7 +497,6 @@ export default function TasksContextSidebar() {
           {/* Projects — always show all, dim those that don't match */}
           <CollapsibleSidebarSection
             icon={FolderKanban}
-            iconClassName="text-amber-500"
             title="Projects"
             summary={activeProjectName}
           >
@@ -511,7 +509,6 @@ export default function TasksContextSidebar() {
                   dispatch(setShowAllProjects(true));
                   dispatch(setActiveProject(null));
                 }}
-                accentColor="text-amber-500"
               />
               {derivedProjects.map((p) => {
                 const isActive = activeProject === p.id && !showAllProjects;
@@ -523,12 +520,7 @@ export default function TasksContextSidebar() {
                     label={p.name}
                     active={isActive}
                     dimmed={dimmed}
-                    accentColor="text-amber-500"
-                    trailing={
-                      <span className="tabular-nums text-[10px] opacity-60">
-                        {p.tasks.length}
-                      </span>
-                    }
+                    count={p.tasks.length}
                     onClick={() => {
                       if (dimmed) return;
                       dispatch(setActiveProject(p.id));
@@ -549,10 +541,8 @@ export default function TasksContextSidebar() {
 
 function CollapsibleSidebarSection({
   icon: Icon,
-  iconClassName,
   iconStyle,
   title,
-  titleStyle,
   titleMuted,
   summary,
   headerAction,
@@ -560,10 +550,8 @@ function CollapsibleSidebarSection({
   children,
 }: {
   icon: LucideIcon;
-  iconClassName?: string;
   iconStyle?: React.CSSProperties;
   title: string;
-  titleStyle?: React.CSSProperties;
   titleMuted?: boolean;
   summary: React.ReactNode;
   headerAction?: React.ReactNode;
@@ -573,43 +561,24 @@ function CollapsibleSidebarSection({
   const [open, setOpen] = useState(defaultOpen);
 
   return (
-    <section className="px-2 py-1 border-t border-border/30 first:border-t-0">
-      <div className="flex items-center gap-0.5 min-h-[28px]">
-        <button
-          type="button"
-          onClick={() => setOpen((v) => !v)}
-          className="flex-1 flex items-center gap-1.5 px-1 py-0.5 min-w-0 text-left rounded hover:bg-accent/50 transition-colors"
-        >
-          <Icon
-            className={cn(
-              "w-3.5 h-3.5 shrink-0",
-              iconClassName,
-              titleMuted && "opacity-40",
-            )}
-            style={iconStyle}
+    <section className="px-2 py-1 border-t border-border first:border-t-0">
+      <div className="flex items-center gap-0.5">
+        <div className={cn("flex-1 min-w-0", titleMuted && "opacity-40")}>
+          <DisclosureHeader
+            open={open}
+            onClick={() => setOpen((v) => !v)}
+            chevron="end"
+            icon={<Icon style={iconStyle} />}
+            title={title}
+            end={
+              !open ? (
+                <span className="type-meta text-foreground truncate max-w-20">
+                  {summary}
+                </span>
+              ) : undefined
+            }
           />
-          <span
-            className={cn(
-              "text-xs font-semibold uppercase tracking-wide shrink-0",
-              !titleStyle && "text-muted-foreground",
-              titleMuted && "opacity-40",
-            )}
-            style={titleStyle}
-          >
-            {title}
-          </span>
-          {!open && (
-            <span className="flex-1 min-w-0 text-xs text-foreground truncate text-right">
-              {summary}
-            </span>
-          )}
-          <ChevronDown
-            className={cn(
-              "w-3.5 h-3.5 shrink-0 text-muted-foreground transition-transform",
-              open && "rotate-180",
-            )}
-          />
-        </button>
+        </div>
         {headerAction}
       </div>
       {open && <div className="pb-0.5">{children}</div>}
@@ -623,39 +592,21 @@ function AllRow({
   count,
   dimmed,
   onClick,
-  accentColor,
 }: {
   label: string;
   active: boolean;
   count?: number;
   dimmed?: boolean;
   onClick: () => void;
-  accentColor?: string;
 }) {
   return (
-    <button
+    <ContextRow
+      label={label}
+      active={active}
+      dimmed={dimmed}
       onClick={onClick}
-      disabled={dimmed}
-      className={cn(
-        "w-full flex items-center gap-1.5 px-2 py-0.5 rounded text-xs italic transition-colors",
-        active
-          ? "bg-primary/10 text-primary-ink font-medium"
-          : dimmed
-            ? "text-muted-foreground/40 cursor-not-allowed"
-            : "text-foreground/80 hover:bg-accent",
-      )}
-    >
-      <span
-        className={cn(
-          "w-1.5 h-1.5 rounded-full shrink-0 opacity-70",
-          active ? "bg-primary" : "bg-muted-foreground/50",
-        )}
-      />
-      <span className="truncate text-left flex-1">{label}</span>
-      {typeof count === "number" && (
-        <span className="tabular-nums text-[10px] opacity-60">{count}</span>
-      )}
-    </button>
+      count={count}
+    />
   );
 }
 
@@ -664,39 +615,39 @@ function ContextRow({
   active,
   dimmed,
   onClick,
-  trailing,
+  count,
   dotColor,
 }: {
   label: string;
   active: boolean;
   dimmed?: boolean;
-  accentColor?: string;
   onClick: () => void;
-  trailing?: React.ReactNode;
+  count?: number;
   dotColor?: string;
 }) {
   return (
-    <button
-      onClick={onClick}
+    <Tile
+      variant="quiet"
+      selected={active}
       disabled={dimmed}
-      className={cn(
-        "w-full flex items-center gap-1.5 px-2 py-0.5 rounded text-xs transition-colors",
-        active
-          ? "bg-primary/10 text-primary-ink font-medium"
-          : dimmed
-            ? "text-muted-foreground/40 cursor-not-allowed"
-            : "text-foreground/85 hover:bg-accent",
-      )}
-    >
-      <span
-        className="w-1.5 h-1.5 rounded-full shrink-0"
-        style={{
-          backgroundColor: dotColor ?? "currentColor",
-          opacity: dimmed ? 0.3 : active ? 1 : 0.5,
-        }}
-      />
-      <span className="truncate text-left flex-1">{label}</span>
-      {trailing}
-    </button>
+      onClick={onClick}
+      icon={
+        <span
+          className="size-1.5 rounded-full"
+          style={{
+            backgroundColor: dotColor ?? "currentColor",
+            opacity: dimmed ? 0.3 : active ? 1 : 0.5,
+          }}
+        />
+      }
+      title={label}
+      end={
+        typeof count === "number" ? (
+          <span className="type-meta tabular-nums text-muted-foreground">
+            {count}
+          </span>
+        ) : undefined
+      }
+    />
   );
 }
