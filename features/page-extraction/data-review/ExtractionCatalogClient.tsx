@@ -159,7 +159,7 @@ export function ExtractionCatalogClient() {
           {isPending && navigatingId === row.jobId ? <Loader2 className="h-4 w-4 shrink-0 animate-spin" aria-label="Opening dataset" /> : <Table2 className="h-4 w-4 shrink-0 text-muted-foreground" />}
           <span className="min-w-0 font-medium">{row.name}</span>
           {row.kind === "validation" ? (
-            <span className="rounded bg-secondary/15 px-1.5 py-0.5 text-[10px] font-medium text-secondary">
+            <span className="rounded bg-brand-secondary/15 px-1.5 py-0.5 text-[10px] font-medium text-brand-secondary">
               validation
             </span>
           ) : null}

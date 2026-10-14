@@ -131,7 +131,7 @@ function statSpec(args: {
     label: "Generating",
     dot: "bg-primary",
     accent: "text-primary",
-    bar: "bg-gradient-to-r from-primary to-secondary",
+    bar: "bg-gradient-to-r from-primary to-brand-secondary",
   };
 }
 

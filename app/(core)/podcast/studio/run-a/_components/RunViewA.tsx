@@ -157,7 +157,7 @@ export function RunViewA() {
               "h-full rounded-r-full transition-[width] duration-500 ease-out",
               done
                 ? "bg-emerald-500"
-                : "bg-gradient-to-r from-primary to-secondary",
+                : "bg-gradient-to-r from-primary to-brand-secondary",
             )}
             style={{ width: `${Math.min(100, Math.max(3, state.progress))}%` }}
           />

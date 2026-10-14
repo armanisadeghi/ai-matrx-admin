@@ -34,14 +34,14 @@ export function VoicePlaybackButton() {
       className={cn(
         "relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition-colors",
         state.active
-          ? "bg-secondary text-secondary-foreground active:scale-95"
+          ? "bg-brand-secondary text-brand-secondary-foreground active:scale-95"
           : "text-muted-foreground/50",
       )}
     >
       {state.playing && (
         <span
           aria-hidden
-          className="absolute inset-0 animate-ping rounded-full bg-secondary/40"
+          className="absolute inset-0 animate-ping rounded-full bg-brand-secondary/40"
         />
       )}
       {state.active ? (

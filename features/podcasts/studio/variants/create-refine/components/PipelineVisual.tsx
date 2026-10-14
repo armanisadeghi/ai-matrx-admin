@@ -177,7 +177,7 @@ export function PipelineVisual() {
 
           {/* Fan-out: the final script becomes every deliverable. */}
           <div className="mt-3 flex flex-col items-center gap-2 sm:flex-row sm:gap-3">
-            <span className="inline-flex items-center gap-1.5 rounded-lg bg-gradient-to-br from-primary/15 to-secondary/15 px-3 py-2 text-xs font-semibold text-foreground">
+            <span className="inline-flex items-center gap-1.5 rounded-lg bg-gradient-to-br from-primary/15 to-brand-secondary/15 px-3 py-2 text-xs font-semibold text-foreground">
               <FileText className="h-3.5 w-3.5 text-primary" />
               Final script
             </span>

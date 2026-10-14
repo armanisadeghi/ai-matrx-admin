@@ -62,7 +62,7 @@ const ROLE_LABEL: Record<SpendLedgerRole, string> = {
 const ROLE_CLASS: Record<SpendLedgerRole, string> = {
   primary: "bg-primary/15 text-primary-ink",
   overlap: "bg-muted text-muted-foreground",
-  additive: "bg-secondary text-secondary-foreground",
+  additive: "bg-brand-secondary text-brand-secondary-foreground",
   gap: "bg-destructive/15 text-destructive-ink",
   unmeasured: "bg-destructive/15 text-destructive-ink",
 };

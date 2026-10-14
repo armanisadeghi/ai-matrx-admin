@@ -115,10 +115,10 @@ const DEPTH_PALETTE = [
     bg: "bg-primary/5",
   },
   {
-    border: "border-l-secondary",
-    badge: "bg-secondary/15 text-secondary",
-    enter: "text-secondary",
-    bg: "bg-secondary/5",
+    border: "border-l-brand-secondary",
+    badge: "bg-brand-secondary/15 text-brand-secondary",
+    enter: "text-brand-secondary",
+    bg: "bg-brand-secondary/5",
   },
   {
     border: "border-l-accent-2",

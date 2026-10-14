@@ -126,7 +126,7 @@ function CoverArt({
         />
       ) : (
         /* Branded placeholder using our theme gradients */
-        <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-[hsl(var(--primary)/0.15)] to-[hsl(var(--secondary)/0.15)] border border-border">
+        <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-[hsl(var(--primary)/0.15)] to-[hsl(var(--brand-secondary)/0.15)] border border-border">
           <div
             className={`transition-all duration-700 ${isPlaying ? "scale-110 opacity-100" : "scale-90 opacity-60"}`}
           >

@@ -183,7 +183,7 @@ export function CreateRefineView() {
         <div className="flex items-end justify-between gap-3">
           <div>
             <h1 className="flex items-center gap-2.5 text-2xl font-bold tracking-tight text-foreground">
-              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-secondary text-primary-foreground shadow-sm">
+              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-brand-secondary text-primary-foreground shadow-sm">
                 <Podcast className="h-5 w-5" />
               </span>
               New episode

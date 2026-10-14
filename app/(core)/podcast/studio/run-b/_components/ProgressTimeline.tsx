@@ -95,7 +95,7 @@ export function ProgressTimeline({
               "h-full rounded-full transition-[width] duration-700 ease-out",
               state.status === "error"
                 ? "bg-destructive"
-                : "bg-gradient-to-r from-primary via-primary to-secondary",
+                : "bg-gradient-to-r from-primary via-primary to-brand-secondary",
             )}
             style={{ width: `${Math.min(100, Math.max(3, state.progress))}%` }}
           />

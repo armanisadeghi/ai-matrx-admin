@@ -57,7 +57,7 @@ export const Chip = (
     const gradientVariants = {
         default: "bg-gradient-to-r from-background via-muted to-background text-foreground",
         primary: "bg-gradient-to-r from-primary via-primary/80 to-primary text-primary-foreground",
-        secondary: "bg-gradient-to-r from-secondary via-secondary/80 to-secondary text-secondary-foreground",
+        secondary: "bg-gradient-to-r from-brand-secondary via-brand-secondary/80 to-brand-secondary text-brand-secondary-foreground",
         destructive: "bg-gradient-to-r from-destructive via-destructive/80 to-destructive text-destructive-foreground",
         success: "bg-gradient-to-r from-green-400 via-green-500 to-green-600 text-white",
         outline: "bg-gradient-to-r from-background via-muted to-background text-foreground border-2",
@@ -145,7 +145,7 @@ export const EnhancedChip = ({
     const variants = {
         default: "bg-background text-foreground border-b-4 border-border shadow-lg hover:shadow-xl shadow-background/50 dark:shadow-background/20",
         primary: "bg-primary text-primary-foreground border-b-4 border-primary-foreground/20 shadow-lg hover:shadow-xl shadow-primary/50",
-        secondary: "bg-secondary text-secondary-foreground border-b-4 border-secondary-foreground/20 shadow-lg hover:shadow-xl shadow-secondary/50",
+        secondary: "bg-brand-secondary text-brand-secondary-foreground border-b-4 border-brand-secondary-foreground/20 shadow-lg hover:shadow-xl shadow-brand-secondary/50",
         destructive: "bg-destructive text-destructive-foreground border-b-4 border-destructive-foreground/20 shadow-lg hover:shadow-xl shadow-destructive/50",
         success: "bg-green-500 dark:bg-green-600 text-white border-b-4 border-green-700 dark:border-green-800 shadow-lg hover:shadow-xl shadow-green-500/50",
         outline: "bg-background text-foreground border-2 border-border shadow-lg hover:shadow-xl",
@@ -163,7 +163,7 @@ export const EnhancedChip = ({
     const gradientVariants = {
         default: "bg-gradient-to-r from-background via-muted to-background text-foreground",
         primary: "bg-gradient-to-r from-primary via-primary/80 to-primary text-primary-foreground",
-        secondary: "bg-gradient-to-r from-secondary via-secondary/80 to-secondary text-secondary-foreground",
+        secondary: "bg-gradient-to-r from-brand-secondary via-brand-secondary/80 to-brand-secondary text-brand-secondary-foreground",
         destructive: "bg-gradient-to-r from-destructive via-destructive/80 to-destructive text-destructive-foreground",
         success: "bg-gradient-to-r from-green-400 via-green-500 to-green-600 text-white",
         outline: "bg-gradient-to-r from-background via-muted to-background text-foreground border-2",
@@ -184,7 +184,7 @@ export const EnhancedChip = ({
         const glowColors = {
             default: 'var(--foreground)',
             primary: 'var(--primary)',
-            secondary: 'var(--secondary)',
+            secondary: 'var(--brand-secondary)',
             destructive: 'var(--destructive)',
             success: 'rgb(34 197 94)',
             outline: 'var(--border)',

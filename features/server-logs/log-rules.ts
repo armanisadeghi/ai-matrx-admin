@@ -203,7 +203,7 @@ export function categoryToColor(cat: LogCategory, fallback: string): string {
     case "request":
       return "text-info";
     case "stream":
-      return "text-secondary";
+      return "text-brand-secondary";
     case "auth":
       return "text-success";
     case "compat":
@@ -215,7 +215,7 @@ export function categoryToColor(cat: LogCategory, fallback: string): string {
     case "error":
       return "text-destructive";
     case "ai-execution":
-      return "text-secondary";
+      return "text-brand-secondary";
     case "cx":
       return "text-primary";
     case "config":

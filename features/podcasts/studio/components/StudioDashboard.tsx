@@ -134,7 +134,7 @@ export function StudioDashboard() {
     >
       <div className="mx-auto max-w-6xl px-4 py-8 sm:py-12">
         {/* Hero */}
-        <div className="relative overflow-hidden rounded-3xl border border-border bg-gradient-to-br from-primary/10 via-card to-secondary/10 p-6 sm:p-10">
+        <div className="relative overflow-hidden rounded-3xl border border-border bg-gradient-to-br from-primary/10 via-card to-brand-secondary/10 p-6 sm:p-10">
           <div className="absolute -right-16 -top-16 h-48 w-48 rounded-full bg-primary/10 blur-3xl" />
           <div className="relative flex flex-col gap-5">
             <div className="max-w-3xl space-y-2">

@@ -81,7 +81,7 @@ function ThreadAudioSessionChrome({
       adapter={adapter}
       align="start"
       emptyLabel="Audio"
-      iconClassName="text-secondary"
+      iconClassName="text-brand-secondary"
       className={compact ? "min-w-0" : "min-w-0 flex-1"}
     />
   );

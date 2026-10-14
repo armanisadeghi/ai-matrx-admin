@@ -125,7 +125,7 @@ export function speakerSlot(speaker: string, speakers: string[]): number {
  *  hue walk that reads in both themes). */
 export const SPEAKER_SLOT_TEXT: string[] = [
   "text-primary",
-  "text-secondary",
+  "text-brand-secondary",
   "text-sky-500",
   "text-amber-500",
   "text-emerald-500",

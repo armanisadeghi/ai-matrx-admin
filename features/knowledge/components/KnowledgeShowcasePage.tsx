@@ -254,21 +254,21 @@ export function KnowledgeShowcasePage() {
       <section className="relative overflow-hidden">
         <div
           aria-hidden
-          className="absolute inset-0 bg-gradient-to-b from-secondary/5 via-transparent to-transparent"
+          className="absolute inset-0 bg-gradient-to-b from-brand-secondary/5 via-transparent to-transparent"
         />
         <div
           aria-hidden
-          className="absolute -top-20 -right-20 h-72 w-72 rounded-full bg-secondary/10 blur-3xl"
+          className="absolute -top-20 -right-20 h-72 w-72 rounded-full bg-brand-secondary/10 blur-3xl"
         />
         <div className="relative mx-auto max-w-5xl px-4 sm:px-6 pt-12 pb-8 text-center">
-          <div className="inline-flex items-center gap-2 rounded-full border border-secondary/20 bg-secondary/5 px-4 py-1.5 text-sm font-medium text-secondary mb-6">
+          <div className="inline-flex items-center gap-2 rounded-full border border-brand-secondary/20 bg-brand-secondary/5 px-4 py-1.5 text-sm font-medium text-brand-secondary mb-6">
             <Brain className="h-3.5 w-3.5" />
             The Matrx Knowledge System
           </div>
           <h1 className="text-balance text-[clamp(2rem,1.5rem+2.5vw,3.5rem)] font-bold tracking-tight text-foreground leading-[1.15]">
             <span className="block">
               Source{" "}
-              <span className="bg-gradient-to-r from-secondary to-primary bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-brand-secondary to-primary bg-clip-text text-transparent">
                 → knowledge → answer
               </span>
             </span>
@@ -310,10 +310,10 @@ export function KnowledgeShowcasePage() {
                 className={cn(
                   "group relative rounded-2xl border border-border bg-card p-6",
                   "transition-all duration-300",
-                  "hover:border-secondary/30 hover:shadow-lg hover:shadow-secondary/5",
+                  "hover:border-brand-secondary/30 hover:shadow-lg hover:shadow-brand-secondary/5",
                 )}
               >
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-secondary/10 text-secondary mb-4 group-hover:scale-110 transition-transform duration-300">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-secondary/10 text-brand-secondary mb-4 group-hover:scale-110 transition-transform duration-300">
                   <c.icon className="h-5 w-5" />
                 </div>
                 <h3 className="text-base font-semibold mb-2">{c.title}</h3>
@@ -323,7 +323,7 @@ export function KnowledgeShowcasePage() {
                 {c.href && (
                   <Link
                     href={c.href}
-                    className="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-secondary hover:underline"
+                    className="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-brand-secondary hover:underline"
                   >
                     {c.hrefLabel}
                     <ArrowRight className="h-3.5 w-3.5" />
@@ -375,7 +375,7 @@ export function KnowledgeShowcasePage() {
                   key={s.n}
                   className="flex items-start gap-3 rounded-lg border border-border bg-background/60 px-3 py-2.5"
                 >
-                  <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-secondary/10 text-secondary text-xs font-bold">
+                  <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-brand-secondary/10 text-brand-secondary text-xs font-bold">
                     {s.n}
                   </span>
                   <span className="text-sm text-muted-foreground leading-relaxed">

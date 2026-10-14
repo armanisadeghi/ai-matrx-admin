@@ -211,7 +211,7 @@ export function StageCanvas({
                           "font-semibold",
                           speakerSlot(turn.speaker, dialogue.speakers) === 0
                             ? "text-primary"
-                            : "text-secondary",
+                            : "text-brand-secondary",
                         )}
                       >
                         {turn.speaker}:

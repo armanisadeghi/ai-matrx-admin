@@ -668,7 +668,7 @@ function FilterPanel({
                   m,
                   m === MODULE_NONE
                     ? "bg-muted text-muted-foreground border-border"
-                    : "bg-secondary/15 text-secondary border-border",
+                    : "bg-brand-secondary/15 text-brand-secondary border-border",
                 ]),
               )}
               onToggle={(m) => {

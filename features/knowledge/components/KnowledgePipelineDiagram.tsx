@@ -169,21 +169,21 @@ const FABRIC_FORMS = [
 
 const toneRing: Record<Tone, string> = {
   flow: "border-primary/30",
-  hub: "border-secondary/50",
+  hub: "border-brand-secondary/50",
   gate: "border-warning/50",
   ask: "border-warning/60",
 };
 
 const toneBadge: Record<Tone, string> = {
   flow: "bg-primary/10 text-primary-ink border-primary/20",
-  hub: "bg-secondary/10 text-secondary border-secondary/20",
+  hub: "bg-brand-secondary/10 text-brand-secondary border-brand-secondary/20",
   gate: "bg-warning/10 text-warning-ink border-warning/20",
   ask: "bg-warning/10 text-warning-ink border-warning/20",
 };
 
 const toneIconTile: Record<Tone, string> = {
   flow: "bg-primary/10 text-primary-ink",
-  hub: "bg-secondary/10 text-secondary",
+  hub: "bg-brand-secondary/10 text-brand-secondary",
   gate: "bg-warning/10 text-warning-ink",
   ask: "bg-warning/10 text-warning-ink",
 };
@@ -234,7 +234,7 @@ export function KnowledgePipelineDiagram() {
                       isFocused &&
                         "ring-2 ring-primary/40 shadow-lg shadow-primary/5",
                       dimmed && "opacity-55",
-                      phase.tone === "hub" && "bg-secondary/[0.04]",
+                      phase.tone === "hub" && "bg-brand-secondary/[0.04]",
                       phase.tone === "ask" && "bg-warning/[0.04]",
                     )}
                   >
@@ -301,10 +301,10 @@ export function KnowledgePipelineDiagram() {
                             {HUB_FACETS.map((f) => (
                               <div
                                 key={f.title}
-                                className="rounded-xl border border-secondary/20 bg-card p-2.5"
+                                className="rounded-xl border border-brand-secondary/20 bg-card p-2.5"
                               >
                                 <div className="flex items-center gap-1.5">
-                                  <f.icon className="h-3.5 w-3.5 text-secondary" />
+                                  <f.icon className="h-3.5 w-3.5 text-brand-secondary" />
                                   <span className="text-xs font-semibold">
                                     {f.title}
                                   </span>
@@ -334,12 +334,12 @@ export function KnowledgePipelineDiagram() {
 
         {/* Agent Fabric rail */}
         <aside className="lg:w-56">
-          <div className="lg:sticky lg:top-4 rounded-2xl border border-secondary/40 bg-secondary/[0.05] p-4 sm:p-5 h-full">
+          <div className="lg:sticky lg:top-4 rounded-2xl border border-brand-secondary/40 bg-brand-secondary/[0.05] p-4 sm:p-5 h-full">
             <div className="flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-secondary/10 text-secondary">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-secondary/10 text-brand-secondary">
                 <Workflow className="h-4 w-4" />
               </div>
-              <h3 className="text-sm font-bold tracking-tight text-secondary">
+              <h3 className="text-sm font-bold tracking-tight text-brand-secondary">
                 Agent Fabric
               </h3>
             </div>
@@ -354,7 +354,7 @@ export function KnowledgePipelineDiagram() {
               {FABRIC_FORMS.map((f) => (
                 <span
                   key={f}
-                  className="inline-flex items-center rounded-md border border-secondary/20 bg-card px-2 py-0.5 text-[11px] text-secondary"
+                  className="inline-flex items-center rounded-md border border-brand-secondary/20 bg-card px-2 py-0.5 text-[11px] text-brand-secondary"
                 >
                   {f}
                 </span>

@@ -57,7 +57,7 @@ export const ACCENT_ICON_CLASS: Record<CredentialAccent, string> = {
   info: "text-info",
   success: "text-success",
   warning: "text-warning",
-  secondary: "text-secondary",
+  secondary: "text-brand-secondary",
   muted: "text-muted-foreground",
 };
 

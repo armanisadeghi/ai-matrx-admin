@@ -187,7 +187,7 @@ export const RESOURCE_PICKER_MENU_CATEGORIES: ResourcePickerMenuCategory[] = [
         id: "context_values",
         label: "Context values",
         icon: Layers,
-        iconClassName: "text-secondary dark:text-secondary",
+        iconClassName: "text-brand-secondary dark:text-brand-secondary",
         requiresCapability: null,
       },
       {

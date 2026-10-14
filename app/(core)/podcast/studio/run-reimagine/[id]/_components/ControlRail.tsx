@@ -118,7 +118,7 @@ export function ControlRail({ state, startedAt, streaming }: ControlRailProps) {
               "h-full rounded-full transition-[width] duration-500 ease-out",
               state.status === "error"
                 ? "bg-destructive"
-                : "bg-gradient-to-r from-primary via-primary to-secondary",
+                : "bg-gradient-to-r from-primary via-primary to-brand-secondary",
             )}
             style={{ width: `${Math.min(100, Math.max(2, progress))}%` }}
           />

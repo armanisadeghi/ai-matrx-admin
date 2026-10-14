@@ -222,7 +222,7 @@ export default function ColorTestPage() {
               <div className="text-xs text-muted-foreground">Should be blue</div>
             </div>
             <div className="p-2 bg-card border rounded-lg">
-              <div className="text-secondary text-sm font-mono mb-1">text-secondary</div>
+              <div className="text-brand-secondary text-sm font-mono mb-1">text-brand-secondary</div>
               <div className="text-xs text-muted-foreground">Should be purple</div>
             </div>
             <div className="p-2 bg-card border rounded-lg">
@@ -247,8 +247,8 @@ export default function ColorTestPage() {
               <div className="text-xs text-muted-foreground">foreground → primary</div>
             </div>
             <div className="p-2 bg-card border rounded-lg">
-              <div className="text-foreground hover:text-secondary text-sm font-mono cursor-pointer transition-colors">
-                hover:text-secondary
+              <div className="text-foreground hover:text-brand-secondary text-sm font-mono cursor-pointer transition-colors">
+                hover:text-brand-secondary
               </div>
               <div className="text-xs text-muted-foreground">foreground → secondary</div>
             </div>
@@ -379,13 +379,13 @@ export default function ColorTestPage() {
             <div 
               className="p-2 rounded-lg cursor-pointer transition-colors"
               style={{
-                backgroundColor: 'hsl(var(--secondary))',
-                color: 'hsl(var(--secondary-foreground))'
+                backgroundColor: 'hsl(var(--brand-secondary))',
+                color: 'hsl(var(--brand-secondary-foreground))'
               }}
-              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'hsl(var(--secondary-hover))'}
-              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'hsl(var(--secondary))'}
+              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'hsl(var(--brand-secondary-hover))'}
+              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'hsl(var(--brand-secondary))'}
             >
-              <div className="text-xs font-mono">--secondary-hover</div>
+              <div className="text-xs font-mono">--brand-secondary-hover</div>
               <div className="text-xs">Custom var test</div>
             </div>
             <div 
@@ -467,8 +467,8 @@ export default function ColorTestPage() {
             <div className="bg-card border rounded-lg p-3 text-xs font-mono space-y-1">
               <div><span className="text-primary">default:</span> hover:bg-primary/90</div>
               <div><span className="text-destructive">destructive:</span> hover:bg-destructive/90</div>
-              <div><span className="text-secondary">outline:</span> hover:bg-accent hover:text-accent-foreground</div>
-              <div><span className="text-secondary">secondary:</span> hover:bg-secondary/80</div>
+              <div><span className="text-brand-secondary">outline:</span> hover:bg-accent hover:text-accent-foreground</div>
+              <div><span className="text-brand-secondary">secondary:</span> hover:bg-brand-secondary/80</div>
               <div><span className="text-muted-foreground">ghost:</span> hover:bg-accent hover:text-accent-foreground</div>
               <div><span className="text-primary">link:</span> hover:underline</div>
             </div>

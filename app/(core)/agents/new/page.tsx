@@ -70,11 +70,11 @@ const CREATION_OPTIONS = [
   {
     href: "/agents/templates",
     icon: LayoutPanelTop,
-    iconClass: "text-secondary-foreground",
+    iconClass: "text-brand-secondary",
     title: "Start from a Template",
     description:
       "Begin with a pre-built agent from the templates library and change it",
-    gradient: "from-secondary/5 to-accent/10",
+    gradient: "from-brand-secondary/5 to-accent/10",
   },
 ] as const;
 

@@ -41,7 +41,7 @@ export const TASK_LABEL_OPTIONS = [
   {
     value: "improvement",
     label: "Improvement",
-    color: "bg-secondary/10 text-secondary",
+    color: "bg-brand-secondary/10 text-brand-secondary",
   },
   {
     value: "docs",

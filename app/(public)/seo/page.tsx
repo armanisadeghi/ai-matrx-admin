@@ -97,12 +97,12 @@ const accentStyles: Record<
     pill: "border border-primary/25 bg-primary/10 text-primary-ink",
   },
   secondary: {
-    dot: "bg-secondary",
-    iconWrap: "border border-border bg-secondary/10 text-secondary",
-    liveChip: "bg-secondary text-secondary-foreground",
-    heading: "text-secondary",
-    statsTile: "bg-secondary/15 text-secondary",
-    pill: "border border-secondary/25 bg-secondary/10 text-secondary",
+    dot: "bg-brand-secondary",
+    iconWrap: "border border-border bg-brand-secondary/10 text-brand-secondary",
+    liveChip: "bg-brand-secondary text-brand-secondary-foreground",
+    heading: "text-brand-secondary",
+    statsTile: "bg-brand-secondary/15 text-brand-secondary",
+    pill: "border border-brand-secondary/25 bg-brand-secondary/10 text-brand-secondary",
   },
   success: {
     dot: "bg-success",
@@ -259,7 +259,7 @@ export default function SeoLandingPage() {
           <h1 className="max-w-2xl text-4xl font-bold leading-[1.1] tracking-tight text-foreground xl:text-5xl">
             SEO Tools,
             <br />
-            <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-primary to-brand-secondary bg-clip-text text-transparent">
               powered by AI
             </span>
           </h1>

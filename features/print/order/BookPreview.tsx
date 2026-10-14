@@ -85,7 +85,7 @@ export function BookPreview({
   return (
     <div
       className={cn(
-        "aspect-[4/3] overflow-hidden rounded-2xl bg-gradient-to-br from-primary/10 via-secondary/10 to-secondary/20",
+        "aspect-[4/3] overflow-hidden rounded-2xl bg-gradient-to-br from-primary/10 via-brand-secondary/10 to-brand-secondary/20",
         className,
       )}
     >
@@ -100,10 +100,10 @@ export function BookPreview({
         <defs>
           <linearGradient id="preview-cover" x1="0" y1="0" x2="1" y2="1">
             <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.95" />
-            <stop offset="100%" stopColor="hsl(var(--secondary))" stopOpacity="0.92" />
+            <stop offset="100%" stopColor="hsl(var(--brand-secondary))" stopOpacity="0.92" />
           </linearGradient>
           <linearGradient id="preview-spine" x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0%" stopColor="hsl(var(--secondary))" stopOpacity="0.6" />
+            <stop offset="0%" stopColor="hsl(var(--brand-secondary))" stopOpacity="0.6" />
             <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0.85" />
           </linearGradient>
           <linearGradient id="preview-sheen" x1="0" y1="0" x2="0.8" y2="1">

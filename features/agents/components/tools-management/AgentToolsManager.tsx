@@ -347,7 +347,7 @@ function getCategoryColor(category?: string) {
 // Tab accent colors
 const TAB_COLORS: Record<string, { active: string; icon: string }> = {
   server: { active: "text-primary border-primary", icon: "text-primary" },
-  custom: { active: "text-secondary border-secondary", icon: "text-secondary" },
+  custom: { active: "text-brand-secondary border-brand-secondary", icon: "text-brand-secondary" },
   client: { active: "text-success border-success", icon: "text-success" },
   mcp: {
     active: "text-warning border-[hsl(var(--warning))]",

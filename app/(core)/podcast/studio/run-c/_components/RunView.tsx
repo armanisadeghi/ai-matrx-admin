@@ -30,7 +30,7 @@ export function RunView() {
         >
           <ArrowLeft className="h-4 w-4" />
         </Link>
-        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-secondary text-primary-foreground shadow-sm">
+        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-brand-secondary text-primary-foreground shadow-sm">
           <Podcast className="h-4 w-4" />
         </span>
         <div className="min-w-0 flex-1">

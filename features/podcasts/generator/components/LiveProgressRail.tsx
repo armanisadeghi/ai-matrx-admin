@@ -117,7 +117,7 @@ export function LiveProgressRail({ state, startedAt }: LiveProgressRailProps) {
         {!failed && (
           <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
             <div
-              className="h-full rounded-full bg-gradient-to-r from-primary via-primary to-secondary transition-[width] duration-500 ease-out"
+              className="h-full rounded-full bg-gradient-to-r from-primary via-primary to-brand-secondary transition-[width] duration-500 ease-out"
               style={{ width: `${Math.min(100, Math.max(2, progress))}%` }}
             />
           </div>

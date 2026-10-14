@@ -15,6 +15,8 @@
  *   arbitrary-text-size      `text-[11px]` / `text-[0.8rem]` — an off-scale type size.
  *   faded-text-colour        `text-muted-foreground/60`, `text-foreground/[0.6]` — an opacity-mixed text
  *                            grey (STYLE-GUIDE: two text colours only). bg-/border- opacity is out of scope.
+ *   secondary-as-accent      `from-/via-/to-/border-/ring-/text-secondary` (not `-foreground`) — secondary is
+ *                            the quiet grey surface (shadcn meaning); the brand purple is brand-secondary.
  *   raw-color                a raw Tailwind palette colour (`bg-blue-500`, `text-white`) or a hex
  *                            (`bg-[#0af]`, a `#rrggbb` in a style prop) instead of a semantic token.
  *   spinner-outside-spinner  `animate-spin` outside a spinner/loader component.
@@ -106,6 +108,10 @@ export const RULES = {
   "faded-text-colour": {
     title: "opacity-mixed text grey",
     fix: "There are two text colours: text-foreground for content, text-muted-foreground for everything around it. No third grey — if it must be fainter, it is the wrong element (meta goes type-meta text-muted-foreground; disabled uses disabled/aria-disabled).",
+  },
+  "secondary-as-accent": {
+    title: "secondary used as an accent colour",
+    fix: "secondary is the quiet grey surface (shadcn meaning). Our purple is brand-secondary: bg-/text-/from-/border-brand-secondary.",
   },
   "raw-color": {
     title: "raw palette or hex colour",
@@ -231,6 +237,7 @@ const RAW_COLOR = new RegExp(`^(bg|text|border(-[trblxyse])?|ring|ring-offset|fi
 const HEX_CLASS = /\[#[0-9a-fA-F]{3,8}\]/;
 const ARBITRARY_TEXT = /^text-\[\d+(\.\d+)?(px|rem|em)\]$/;
 const FADED_TEXT = /^text-(muted-foreground|foreground)\/(\d+(\.\d+)?|\[[^\]]+\])$/;
+const SECONDARY_ACCENT = /^(from|via|to|border(-[trblxyse])?|ring|text)-secondary(\/(\d+(\.\d+)?|\[[^\]]+\]))?$/;
 const HEX_LITERAL = /#[0-9a-fA-F]{3}(?:[0-9a-fA-F]{3}(?:[0-9a-fA-F]{2})?)?\b/;
 
 function collectStrings(node, out) {
@@ -384,6 +391,8 @@ export function scanSource(file, text) {
     if (text.length) add("arbitrary-text-size", node, `${label} ${[...new Set(text)].sort().join(" ")}`);
     const faded = toks.filter((t) => FADED_TEXT.test(stripVariants(t).base));
     if (faded.length) add("faded-text-colour", node, `${label} ${[...new Set(faded)].sort().join(" ")}`);
+    const accent = toks.filter((t) => SECONDARY_ACCENT.test(stripVariants(t).base));
+    if (accent.length) add("secondary-as-accent", node, `${label} ${[...new Set(accent)].sort().join(" ")}`);
     if (!spinnerFile && toks.some((t) => stripVariants(t).base === "animate-spin")) add("spinner-outside-spinner", node, label);
   }
 
@@ -719,6 +728,7 @@ export function Bad() {
       <TabsList className="h-full min-h-0 w-full rounded-lg bg-muted">x</TabsList>
       <div className="inline-flex items-center rounded-md bg-muted p-0.5"><button onClick={a}>One</button><button onClick={b}>Two</button></div>
       <span className="hover:text-muted-foreground/60 text-foreground/[0.6]">faded</span>
+      <i className="from-primary to-secondary/20 hover:text-secondary" />
     </Card>
   );
 }
@@ -736,6 +746,7 @@ export function Good() {
       <Button className="ml-auto w-full">Save</Button>
       <span className="text-xs text-muted-foreground">meta</span>
       <span className="bg-primary text-primary-foreground">tag</span>
+      <i className="bg-secondary text-secondary-foreground from-brand-secondary text-brand-secondary border-brand-secondary/30" />
       <button>raw</button>
       <div role="region">x</div>
       <CopyTapButton variant="transparent" ariaLabel="Copy" />
@@ -776,6 +787,7 @@ const PLANTED_SITES = [
   "canonical-override :: <section> [&_[data-matrx-table-tabs]]:border-b-0",
   "hand-built-chip :: <span> bg-warning/10 px-2.5 rounded-full text-warning text-xs",
   "faded-text-colour :: <span> hover:text-muted-foreground/60 text-foreground/[0.6]",
+  "secondary-as-accent :: <i> hover:text-secondary to-secondary/20",
   "primitive-visual-class :: <TabsList> bg-muted rounded-lg",
   "hand-built-segmented :: SegmentedControl from the package root",
   "hand-built-segmented :: <div> bg-muted inline-flex p-0.5 rounded-md",

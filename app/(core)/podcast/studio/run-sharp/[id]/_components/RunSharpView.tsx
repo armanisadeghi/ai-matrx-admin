@@ -121,7 +121,7 @@ function heroSpec(args: {
     sub: "Writing the script, recording the hosts, designing the visuals.",
     accent: "text-primary",
     chip: "bg-primary/10 border-primary/30",
-    ring: "bg-gradient-to-b from-primary to-secondary",
+    ring: "bg-gradient-to-b from-primary to-brand-secondary",
   };
 }
 

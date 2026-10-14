@@ -41,7 +41,7 @@ export function FinishedEpisode({
             {cover ? (
               <Image src={cover} alt={state.title} fill sizes="176px" className="object-cover" unoptimized />
             ) : (
-              <div className="h-full w-full bg-gradient-to-br from-primary/20 to-secondary/20" />
+              <div className="h-full w-full bg-gradient-to-br from-primary/20 to-brand-secondary/20" />
             )}
           </div>
 

@@ -474,7 +474,7 @@ export function ExtractionDatasetClient({ jobId }: { jobId: string }) {
               <span className="min-w-0 flex-1 whitespace-normal break-words [overflow-wrap:anywhere]">
                 <ExtractionCellDisplay value={value} onView={openViewer} />
                 {index === 0 && mergedCount > 0 ? (
-                  <span className="ml-1.5 rounded bg-secondary/15 px-1 py-0.5 text-[10px] font-medium text-secondary">
+                  <span className="ml-1.5 rounded bg-brand-secondary/15 px-1 py-0.5 text-[10px] font-medium text-brand-secondary">
                     +{mergedCount} merged
                   </span>
                 ) : null}
@@ -952,7 +952,7 @@ export function ExtractionDatasetClient({ jobId }: { jobId: string }) {
               commitRename={() => void commitRename()}
             />
             {job?.kind === "validation" && (
-              <span className="rounded bg-secondary/15 px-1.5 py-0.5 text-[10px] font-medium text-secondary">
+              <span className="rounded bg-brand-secondary/15 px-1.5 py-0.5 text-[10px] font-medium text-brand-secondary">
                 validation
               </span>
             )}

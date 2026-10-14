@@ -63,7 +63,7 @@ const CHOICES: Choice[] = [
     label: "Save to transcripts",
     description: "Save audio, transcript & cleaned copy",
     icon: Save,
-    tile: "bg-secondary/15 text-secondary",
+    tile: "bg-brand-secondary/15 text-brand-secondary",
   },
   {
     key: "both",

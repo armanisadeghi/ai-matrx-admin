@@ -396,7 +396,7 @@ export function ExperimentalAgentScreen({
               "flex items-center justify-center rounded-full transition-transform active:scale-95",
               compact ? "h-9 w-9" : "h-16 w-16",
               autoVoice
-                ? "bg-secondary text-secondary-foreground"
+                ? "bg-brand-secondary text-brand-secondary-foreground"
                 : "bg-muted text-muted-foreground/60",
             )}
           >

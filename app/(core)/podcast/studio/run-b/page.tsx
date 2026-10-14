@@ -35,7 +35,7 @@ export default function RunPageB() {
           >
             <ArrowLeft className="h-4 w-4" />
           </Link>
-          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-secondary text-primary-foreground shadow-sm">
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-brand-secondary text-primary-foreground shadow-sm">
             <Podcast className="h-5 w-5" />
           </span>
           <div className="min-w-0 flex-1">

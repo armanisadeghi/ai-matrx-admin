@@ -58,7 +58,7 @@ export function BuildConsole({
           <div
             className={cn(
               "h-full rounded-full transition-[width] duration-500 ease-out",
-              errored ? "bg-destructive" : "bg-gradient-to-r from-primary via-primary to-secondary",
+              errored ? "bg-destructive" : "bg-gradient-to-r from-primary via-primary to-brand-secondary",
             )}
             style={{ width: `${Math.min(100, Math.max(3, progress))}%` }}
           />

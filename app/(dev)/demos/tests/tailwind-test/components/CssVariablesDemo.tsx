@@ -136,7 +136,7 @@ const TailwindDemo = () => {
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                     <div className="p-4 bg-card border border-border rounded">Default Border</div>
                     <div className="p-4 bg-card border-2 border-primary rounded">Primary Border</div>
-                    <div className="p-4 bg-card border-2 border-secondary rounded">Secondary Border</div>
+                    <div className="p-4 bg-card border-2 border-brand-secondary rounded">Secondary Border</div>
                     <div className="p-4 bg-card border-2 border-accent rounded">Accent Border</div>
                     <div className="p-4 bg-card border-2 border-muted rounded">Muted Border</div>
                     <div className="p-4 bg-card border-2 border-input rounded">Input Border</div>

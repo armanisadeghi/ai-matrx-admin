@@ -142,7 +142,7 @@ export function AgentActionModal({
             onClick={(e) => handleAction(e, "run", onRun)}
             disabled={isAnyActionActive}
             gradientFrom="from-primary/10 group-hover:from-primary/20"
-            gradientTo="to-secondary/10 group-hover:to-secondary/20"
+            gradientTo="to-brand-secondary/10 group-hover:to-brand-secondary/20"
             iconBgColor="bg-primary"
             iconTextColor="text-primary-foreground"
           />
@@ -152,10 +152,10 @@ export function AgentActionModal({
             title="Edit Agent"
             onClick={(e) => handleAction(e, "edit", onEdit)}
             disabled={isAnyActionActive}
-            gradientFrom="from-secondary/10 group-hover:from-secondary/20"
+            gradientFrom="from-brand-secondary/10 group-hover:from-brand-secondary/20"
             gradientTo="to-accent/10 group-hover:to-accent/20"
-            iconBgColor="bg-secondary"
-            iconTextColor="text-secondary-foreground"
+            iconBgColor="bg-brand-secondary"
+            iconTextColor="text-brand-secondary-foreground"
           />
 
           {showCreateApp && onCreateApp && (
@@ -167,7 +167,7 @@ export function AgentActionModal({
               gradientFrom="from-green-500/10 group-hover:from-green-500/20"
               gradientTo="to-green-500/10 group-hover:to-green-500/20"
               iconBgColor="bg-green-500"
-              iconTextColor="text-secondary-foreground"
+              iconTextColor="text-brand-secondary-foreground"
             />
           )}
         </div>

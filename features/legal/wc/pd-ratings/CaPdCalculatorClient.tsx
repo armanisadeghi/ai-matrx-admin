@@ -393,7 +393,7 @@ function ResumeSavedCasesPanel({
   totalCount: number;
 }) {
   return (
-    <section className="rounded-2xl border border-border bg-gradient-to-br from-primary/[0.04] via-card to-secondary/[0.04] p-4 sm:p-5 shadow-sm">
+    <section className="rounded-2xl border border-border bg-gradient-to-br from-primary/[0.04] via-card to-brand-secondary/[0.04] p-4 sm:p-5 shadow-sm">
       <header className="flex items-center justify-between gap-3 mb-3">
         <div className="flex items-center gap-2.5 min-w-0">
           <div className="rounded-md bg-primary/10 p-1.5 ring-1 ring-primary/15 shrink-0">

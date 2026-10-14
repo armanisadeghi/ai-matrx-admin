@@ -235,7 +235,7 @@ function MomentCard({ moment }: { moment: TeaserMoment }) {
                   "font-semibold",
                   speakerSlot(turn.speaker, moment.speakers) === 0
                     ? "text-primary"
-                    : "text-secondary",
+                    : "text-brand-secondary",
                 )}
               >
                 {turn.speaker}:

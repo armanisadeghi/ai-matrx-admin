@@ -73,6 +73,8 @@
   /* Custom color shades (extending Tailwind's default palette) */
 
   /* Theme colors - Using CSS variable references so they work with light/dark mode */
+  --color-brand-secondary: hsl(var(--brand-secondary));
+  --color-brand-secondary-foreground: hsl(var(--brand-secondary-foreground));
 
   /* Sidebar colors */
 
@@ -805,9 +807,13 @@
     --primary: 210 80% 45%;
     --primary-foreground: 0 0% 100%;
 
-    /* Secondary - Purple accent */
-    --secondary: 275 70% 58%;
-    --secondary-foreground: 0 0% 100%;
+    /* Secondary - the quiet NEUTRAL grey surface (stock shadcn meaning) */
+    --secondary: 240 4.8% 95.9%;
+    --secondary-foreground: 240 5.9% 10%;
+
+    /* Brand secondary - the purple accent. Never `secondary` (that means grey). */
+    --brand-secondary: 275 70% 58%;
+    --brand-secondary-foreground: 0 0% 100%;
 
     /* Muted - Zinc-200 for subtle backgrounds */
     --muted: 240 5% 92%;
@@ -845,12 +851,12 @@
 
     /* Adjusted hover state colors for more contrast */
     --primary-hover: 240 5.9% 15%;
-    --secondary-hover: 275 70% 50%; /* Slightly darker for hover state */
+    --brand-secondary-hover: 275 70% 50%; /* Slightly darker for hover state */
     --accent-hover: 240 5% 90%; /* Slightly lighter than accent for hover */
 
     /* Adjusted active state colors */
     --primary-active: 240 5.9% 20%;
-    --secondary-active: 275 70% 45%; /* Darker than hover for active state */
+    --brand-secondary-active: 275 70% 45%; /* Darker than hover for active state */
     --accent-active: 240 5% 88%; /* Darker than hover for active state */
 
     /* Elevation colors for zinc theme */
@@ -964,9 +970,13 @@
     --primary: 221 83% 53%;
     --primary-foreground: 0 0% 100%;
 
-    /* Secondary - Purple with sufficient contrast for small white text */
-    --secondary: 275 70% 58%;
-    --secondary-foreground: 0 0% 100%;
+    /* Secondary - the quiet NEUTRAL grey surface (stock shadcn meaning) */
+    --secondary: 240 3.7% 15.9%;
+    --secondary-foreground: 0 0% 98%;
+
+    /* Brand secondary - purple with sufficient contrast for small white text */
+    --brand-secondary: 275 70% 58%;
+    --brand-secondary-foreground: 0 0% 100%;
 
     /* Muted - Zinc-750 for subtle backgrounds */
     --muted: 240 4% 24%;
@@ -1004,12 +1014,12 @@
 
     /* Hover state colors */
     --primary-hover: 0 0% 85%;
-    --secondary-hover: 275 70% 55%; /* Slightly darker for hover state */
+    --brand-secondary-hover: 275 70% 55%; /* Slightly darker for hover state */
     --accent-hover: 240 4% 28%; /* Slightly lighter than accent for hover in dark mode */
 
     /* Active state colors */
     --primary-active: 0 0% 75%;
-    --secondary-active: 275 70% 50%; /* Darker than hover for active state */
+    --brand-secondary-active: 275 70% 50%; /* Darker than hover for active state */
     --accent-active: 240 4% 32%; /* Lighter than hover for active state in dark mode */
 
     /* Elevation colors for zinc theme */

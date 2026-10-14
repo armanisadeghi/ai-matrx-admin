@@ -838,7 +838,7 @@ export function AgentsGrid() {
           />
         ) : activeTab === "mine" ? (
           filteredOwnedAgents.length === 0 ? (
-            <div className="border border-primary/20 rounded-xl p-8 bg-gradient-to-br from-primary/5 to-secondary/5">
+            <div className="border border-primary/20 rounded-xl p-8 bg-gradient-to-br from-primary/5 to-brand-secondary/5">
               <div className="flex flex-col items-center text-center space-y-4">
                 <div className="p-4 bg-primary/10 rounded-full">
                   <Webhook className="h-8 w-8 text-primary" />
@@ -895,7 +895,7 @@ export function AgentsGrid() {
           )
         ) : filteredOwnedAgents.length === 0 &&
           filteredSharedAgents.length === 0 ? (
-          <div className="border border-primary/20 rounded-xl p-8 bg-gradient-to-br from-primary/5 to-secondary/5">
+          <div className="border border-primary/20 rounded-xl p-8 bg-gradient-to-br from-primary/5 to-brand-secondary/5">
             <div className="flex flex-col items-center text-center space-y-4">
               <div className="p-4 bg-primary/10 rounded-full">
                 <Webhook className="h-8 w-8 text-primary" />

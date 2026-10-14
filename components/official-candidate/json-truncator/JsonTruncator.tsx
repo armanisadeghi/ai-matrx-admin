@@ -520,13 +520,13 @@ function TruncateRow({
     entry.type === "string"
       ? "bg-primary/15 text-primary-ink"
       : entry.type === "array"
-        ? "bg-secondary/15 text-secondary"
+        ? "bg-brand-secondary/15 text-brand-secondary"
         : "bg-muted text-muted-foreground";
 
   const rowBg = stubbed
     ? "bg-destructive/8"
     : sliced
-      ? "bg-secondary/8"
+      ? "bg-brand-secondary/8"
       : active
         ? "bg-accent/40"
         : checked
@@ -595,7 +595,7 @@ function TruncateRow({
           </span>
         )}
         {sliced && !stubbed && (
-          <span className="text-secondary flex-shrink-0 flex items-center gap-1 text-[10px] group-hover:hidden">
+          <span className="text-brand-secondary flex-shrink-0 flex items-center gap-1 text-[10px] group-hover:hidden">
             <List size={10} /> sliced
           </span>
         )}
@@ -640,7 +640,7 @@ function TruncateRow({
                   e.stopPropagation();
                   onRemoveSlice(entry.pathStr);
                 }}
-                className="p-0.5 rounded text-secondary hover:text-muted-foreground hover:bg-muted transition-colors"
+                className="p-0.5 rounded text-brand-secondary hover:text-muted-foreground hover:bg-muted transition-colors"
               >
                 <Trash2 size={11} />
               </button>
@@ -651,7 +651,7 @@ function TruncateRow({
                   e.stopPropagation();
                   onApplySlice(entry.pathStr, { keepN: localKeepN });
                 }}
-                className="p-0.5 rounded text-muted-foreground hover:text-secondary hover:bg-secondary/10 transition-colors"
+                className="p-0.5 rounded text-muted-foreground hover:text-brand-secondary hover:bg-brand-secondary/10 transition-colors"
               >
                 <List size={11} />
               </button>
@@ -775,7 +775,7 @@ function TruncateRow({
             </span>
           </div>
           <div className="space-y-1.5">
-            <div className="text-[10px] text-secondary uppercase tracking-wider font-medium flex items-center gap-1">
+            <div className="text-[10px] text-brand-secondary uppercase tracking-wider font-medium flex items-center gap-1">
               <List size={9} /> Keep first N items
             </div>
             <div className="flex items-end gap-3 flex-wrap">
@@ -795,7 +795,7 @@ function TruncateRow({
               {localKeepN < entry.size && (
                 <div className="text-[10px] text-muted-foreground self-end pb-1">
                   → removes{" "}
-                  <span className="text-secondary font-mono">
+                  <span className="text-brand-secondary font-mono">
                     {entry.size - localKeepN}
                   </span>{" "}
                   items
@@ -806,7 +806,7 @@ function TruncateRow({
                   onClick={() =>
                     onApplySlice(entry.pathStr, { keepN: localKeepN })
                   }
-                  className="px-2 py-1 bg-secondary/80 hover:bg-secondary text-secondary-foreground rounded text-xs flex items-center gap-1"
+                  className="px-2 py-1 bg-brand-secondary/80 hover:bg-brand-secondary text-brand-secondary-foreground rounded text-xs flex items-center gap-1"
                 >
                   <List size={10} /> Apply slice
                 </button>
@@ -1109,12 +1109,12 @@ function AutoArrayBar({
 }) {
   return (
     <div
-      className={`flex items-center gap-2 px-2 py-0.5 border-b border-border flex-shrink-0 transition-colors ${enabled ? "bg-secondary/8 border-secondary/30" : "bg-card"}`}
+      className={`flex items-center gap-2 px-2 py-0.5 border-b border-border flex-shrink-0 transition-colors ${enabled ? "bg-brand-secondary/8 border-brand-secondary/30" : "bg-card"}`}
     >
       <button
         onClick={onToggle}
         title={enabled ? "Disable auto-slice" : "Enable auto-slice arrays"}
-        className={`flex items-center gap-1.5 text-[11px] font-medium transition-colors px-2 py-0.5 rounded ${enabled ? "bg-secondary text-secondary-foreground" : "bg-muted text-muted-foreground hover:text-foreground"}`}
+        className={`flex items-center gap-1.5 text-[11px] font-medium transition-colors px-2 py-0.5 rounded ${enabled ? "bg-brand-secondary text-brand-secondary-foreground" : "bg-muted text-muted-foreground hover:text-foreground"}`}
       >
         <List size={11} /> Arrays
       </button>
@@ -1129,7 +1129,7 @@ function AutoArrayBar({
       />
       <span className="text-[10px] text-muted-foreground">items</span>
       {enabled && matchCount > 0 && (
-        <span className="text-[10px] text-secondary">{matchCount} sliced</span>
+        <span className="text-[10px] text-brand-secondary">{matchCount} sliced</span>
       )}
     </div>
   );
@@ -1267,7 +1267,7 @@ function InlineControlsBar({
         title={
           autoArrayEnabled ? "Disable auto-slice" : "Enable auto-slice arrays"
         }
-        className={`flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded shrink-0 transition-colors ${autoArrayEnabled ? "bg-secondary text-secondary-foreground" : "bg-muted text-muted-foreground hover:text-foreground"}`}
+        className={`flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded shrink-0 transition-colors ${autoArrayEnabled ? "bg-brand-secondary text-brand-secondary-foreground" : "bg-muted text-muted-foreground hover:text-foreground"}`}
       >
         <List size={10} /> Arrays
       </button>
@@ -1281,7 +1281,7 @@ function InlineControlsBar({
       />
       <span className={lbl}>items</span>
       {autoArrayEnabled && autoArrayMatchCount > 0 && (
-        <span className="text-[10px] text-secondary shrink-0">
+        <span className="text-[10px] text-brand-secondary shrink-0">
           {autoArrayMatchCount}×
         </span>
       )}
@@ -1708,14 +1708,14 @@ function FieldsPanel({
               </span>
             )}
             {autoArrayEnabled && autoArrayMatchCount > 0 && (
-              <span className="text-secondary flex items-center gap-0.5">
+              <span className="text-brand-secondary flex items-center gap-0.5">
                 <List size={9} />
                 {autoArrayMatchCount} auto-arr
               </span>
             )}
             {truncations.size > 0 && <span>{truncations.size} manual</span>}
             {arraySlices.size > 0 && (
-              <span className="text-secondary">{arraySlices.size} sliced</span>
+              <span className="text-brand-secondary">{arraySlices.size} sliced</span>
             )}
             {stubs.size > 0 && <span>{stubs.size} stubbed</span>}
           </span>

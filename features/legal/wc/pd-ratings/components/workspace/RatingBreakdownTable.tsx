@@ -455,8 +455,8 @@ export function RatingBreakdownTable({
     >
       <header className="flex items-center justify-between gap-3 mb-4">
         <div className="flex items-center gap-2.5 min-w-0">
-          <div className="rounded-md bg-secondary/10 p-1.5 ring-1 ring-secondary/20 shrink-0">
-            <Calculator className="h-4 w-4 text-secondary" />
+          <div className="rounded-md bg-brand-secondary/10 p-1.5 ring-1 ring-brand-secondary/20 shrink-0">
+            <Calculator className="h-4 w-4 text-brand-secondary" />
           </div>
           <div className="min-w-0">
             <h2 className="text-base font-semibold text-foreground tracking-tight flex items-center gap-2">

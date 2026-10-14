@@ -213,7 +213,7 @@ const accuracyChartConfig = {
 } satisfies ChartConfig;
 
 const timeChartConfig = {
-  minutes: { label: "Minutes studied", color: "hsl(var(--secondary))" },
+  minutes: { label: "Minutes studied", color: "hsl(var(--brand-secondary))" },
 } satisfies ChartConfig;
 
 export function StudyTrends({

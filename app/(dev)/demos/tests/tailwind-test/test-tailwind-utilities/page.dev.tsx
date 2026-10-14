@@ -67,9 +67,9 @@ export default function TestTailwindUtilitiesPage() {
             <p className="text-sm text-gray-600 dark:text-gray-400">Should be blue (--primary)</p>
             <p className="text-xs mt-2 opacity-70">Hover: border, bg, text</p>
           </div>
-          <div className="p-4 border-4 border-secondary bg-white dark:bg-zinc-900 hover:border-secondary/80 hover:bg-secondary/10 dark:hover:bg-secondary/20 hover:text-secondary dark:hover:text-secondary transition-all cursor-pointer">
-            <p className="font-medium">border-secondary</p>
-            <p className="text-sm text-gray-600 dark:text-gray-400">Should be purple (--secondary)</p>
+          <div className="p-4 border-4 border-brand-secondary bg-white dark:bg-zinc-900 hover:border-brand-secondary/80 hover:bg-brand-secondary/10 dark:hover:bg-brand-secondary/20 hover:text-brand-secondary dark:hover:text-brand-secondary transition-all cursor-pointer">
+            <p className="font-medium">border-brand-secondary</p>
+            <p className="text-sm text-gray-600 dark:text-gray-400">Should be purple (--brand-secondary)</p>
             <p className="text-xs mt-2 opacity-70">Hover: border, bg, text</p>
           </div>
           <div className="p-4 border-4 border-accent bg-white dark:bg-zinc-900 hover:border-accent/80 hover:bg-accent/10 dark:hover:bg-accent/20 hover:text-accent dark:hover:text-accent transition-all cursor-pointer">
@@ -92,8 +92,8 @@ export default function TestTailwindUtilitiesPage() {
             <p className="font-medium">from-card to-muted</p>
             <p className="text-sm text-gray-600 dark:text-gray-400">Theme gradient</p>
           </div>
-          <div className="p-8 bg-gradient-to-r from-primary to-secondary text-white rounded-lg">
-            <p className="font-medium">from-primary to-secondary</p>
+          <div className="p-8 bg-gradient-to-r from-primary to-brand-secondary text-white rounded-lg">
+            <p className="font-medium">from-primary to-brand-secondary</p>
             <p className="text-sm">Primary to Secondary</p>
           </div>
         </div>

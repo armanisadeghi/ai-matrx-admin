@@ -253,7 +253,7 @@ export function AgentBundlesPanel({ agentId }: { agentId: string }) {
       {/* Header */}
       <div className="px-3 py-2.5 border-b border-border shrink-0">
         <div className="flex items-center gap-2 mb-1">
-          <Package className="w-3.5 h-3.5 text-secondary" />
+          <Package className="w-3.5 h-3.5 text-brand-secondary" />
           <span className="type-secondary font-semibold text-foreground">
             Tool Bundles
           </span>
@@ -371,7 +371,7 @@ function BundleCard({
       : kind === "suggestion"
         ? "border-emerald-400/70 dark:border-emerald-600/60 bg-emerald-50/40 dark:bg-emerald-950/15"
         : active
-          ? "bg-secondary/10 border-secondary/30"
+          ? "bg-brand-secondary/10 border-brand-secondary/30"
           : "border-border hover:border-muted-foreground/30";
 
   return (
@@ -400,7 +400,7 @@ function BundleCard({
         <span
           className={`inline-flex items-center justify-center w-5 h-5 rounded shrink-0 mt-0.5 border ${
             active
-              ? "bg-secondary/15 text-secondary border-secondary/30"
+              ? "bg-brand-secondary/15 text-brand-secondary border-brand-secondary/30"
               : "bg-muted text-muted-foreground border-border"
           }`}
         >
@@ -415,7 +415,7 @@ function BundleCard({
           <div className="flex items-center gap-2 mb-0.5 flex-wrap">
             <span
               className={`text-xs font-semibold leading-tight ${
-                active ? "text-secondary" : "text-foreground"
+                active ? "text-brand-secondary" : "text-foreground"
               }`}
             >
               {bundle.name}
@@ -450,7 +450,7 @@ function BundleCard({
           )}
           <p className="mt-1 flex items-center gap-1 type-meta text-muted-foreground/80">
             {active ? (
-              <Check className="w-3 h-3 text-secondary" />
+              <Check className="w-3 h-3 text-brand-secondary" />
             ) : (
               <Zap className="w-3 h-3" />
             )}

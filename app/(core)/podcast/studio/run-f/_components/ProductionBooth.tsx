@@ -73,7 +73,7 @@ export function ProductionBooth() {
               <div className="relative h-2 flex-1 overflow-hidden rounded-full bg-muted">
                 <div
                   className={cn(
-                    "absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-primary to-secondary transition-all duration-700 ease-out",
+                    "absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-primary to-brand-secondary transition-all duration-700 ease-out",
                   )}
                   style={{ width: `${state.progress}%` }}
                 />

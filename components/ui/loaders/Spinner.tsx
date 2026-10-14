@@ -24,7 +24,7 @@ const spinnerVariants = cva(
                 destructive: "text-destructive",
                 success: "text-success",
                 outline: "text-primary",
-                secondary: "text-secondary",
+                secondary: "text-brand-secondary",
                 ghost: "text-primary",
                 link: "text-primary",
                 primary: "text-primary"

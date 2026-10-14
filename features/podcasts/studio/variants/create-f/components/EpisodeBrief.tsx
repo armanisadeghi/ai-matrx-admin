@@ -65,7 +65,7 @@ export function EpisodeBrief({
     <div className="lg:sticky lg:top-4 lg:self-start">
       <div className="overflow-hidden rounded-2xl border border-glass-edge bg-glass backdrop-blur-glass backdrop-saturate-glass shadow-glass">
         {/* Cover preview */}
-        <div className="relative flex aspect-video items-end overflow-hidden bg-gradient-to-br from-primary/20 via-secondary/10 to-accent/30 p-4">
+        <div className="relative flex aspect-video items-end overflow-hidden bg-gradient-to-br from-primary/20 via-brand-secondary/10 to-accent/30 p-4">
           <div
             aria-hidden
             className="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-primary/20 blur-3xl"

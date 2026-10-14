@@ -56,8 +56,8 @@ export function CalculatorShell({
       <section
         className={cn(
           "relative overflow-hidden rounded-2xl border border-border",
-          "bg-gradient-to-br from-primary/[0.04] via-card to-secondary/[0.04]",
-          "dark:from-primary/[0.08] dark:via-card dark:to-secondary/[0.08]",
+          "bg-gradient-to-br from-primary/[0.04] via-card to-brand-secondary/[0.04]",
+          "dark:from-primary/[0.08] dark:via-card dark:to-brand-secondary/[0.08]",
           "p-6 sm:p-7",
           "shadow-sm",
         )}
@@ -67,7 +67,7 @@ export function CalculatorShell({
           aria-hidden
         />
         <div
-          className="pointer-events-none absolute -bottom-24 -left-24 h-48 w-48 rounded-full bg-secondary/10 blur-3xl"
+          className="pointer-events-none absolute -bottom-24 -left-24 h-48 w-48 rounded-full bg-brand-secondary/10 blur-3xl"
           aria-hidden
         />
         <div className="relative">{result}</div>

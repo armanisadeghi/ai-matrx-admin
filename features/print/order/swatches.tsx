@@ -71,10 +71,10 @@ function Paints({ id }: { id: string }) {
     <defs>
       <linearGradient id={`${id}-cover`} x1="0" y1="0" x2="1" y2="1">
         <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.95" />
-        <stop offset="100%" stopColor="hsl(var(--secondary))" stopOpacity="0.9" />
+        <stop offset="100%" stopColor="hsl(var(--brand-secondary))" stopOpacity="0.9" />
       </linearGradient>
       <linearGradient id={`${id}-spine`} x1="0" y1="0" x2="1" y2="0">
-        <stop offset="0%" stopColor="hsl(var(--secondary))" stopOpacity="0.75" />
+        <stop offset="0%" stopColor="hsl(var(--brand-secondary))" stopOpacity="0.75" />
         <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0.95" />
       </linearGradient>
       <linearGradient id={`${id}-pages`} x1="0" y1="0" x2="0" y2="1">
@@ -238,7 +238,7 @@ function BindingSwatch({ value }: { value: string }) {
             width="2.5"
             height={height - 2}
             rx="1.2"
-            fill="hsl(var(--secondary))"
+            fill="hsl(var(--brand-secondary))"
             opacity="0.9"
           />
           {[0.3, 0.66].map((t) => (
