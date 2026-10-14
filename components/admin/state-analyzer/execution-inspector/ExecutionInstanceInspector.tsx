@@ -137,36 +137,37 @@ function IdWithTooltip({ id, label }: { id: string; label?: string }) {
   const [copied, setCopied] = useState(false);
   return (
     <TooltipProvider delayDuration={200}>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <span className="inline-flex items-center gap-1">
+      <span className="inline-flex items-center gap-1">
+        <Tooltip>
+          <TooltipTrigger asChild>
             <code className="text-[10px] text-primary font-mono cursor-default">
               {id}
             </code>
-            <button
-              className="inline-flex items-center justify-center h-5 w-5 rounded hover:bg-accent text-muted-foreground hover:text-foreground transition-colors shrink-0"
-              onClick={async (e) => {
-                e.stopPropagation();
-                if (!(await copyText(id))) return;
-                setCopied(true);
-                setTimeout(() => setCopied(false), 1500);
-              }}
-            >
-              {copied ? (
-                <Check className="h-3 w-3 text-emerald-500" />
-              ) : (
-                <Copy className="h-3 w-3" />
-              )}
-            </button>
-          </span>
-        </TooltipTrigger>
-        <TooltipContent side="top" className="max-w-sm">
-          <p className="font-mono text-xs break-all">
-            {label ? `${label}: ` : ""}
-            {id}
-          </p>
-        </TooltipContent>
-      </Tooltip>
+          </TooltipTrigger>
+          <TooltipContent side="top" className="max-w-sm">
+            <p className="font-mono text-xs break-all">
+              {label ? `${label}: ` : ""}
+              {id}
+            </p>
+          </TooltipContent>
+        </Tooltip>
+        <button
+          aria-label={`Copy ${label ?? "id"}`}
+          className="inline-flex items-center justify-center h-5 w-5 rounded hover:bg-accent text-muted-foreground hover:text-foreground transition-colors shrink-0"
+          onClick={async (e) => {
+            e.stopPropagation();
+            if (!(await copyText(id))) return;
+            setCopied(true);
+            setTimeout(() => setCopied(false), 1500);
+          }}
+        >
+          {copied ? (
+            <Check className="h-3 w-3 text-emerald-500" />
+          ) : (
+            <Copy className="h-3 w-3" />
+          )}
+        </button>
+      </span>
     </TooltipProvider>
   );
 }

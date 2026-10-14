@@ -809,6 +809,8 @@
     "check:agent-traffic-marker": "node scripts/check-agent-traffic-marker.mjs",
     "check:agent-traffic-marker:self-test": "node scripts/check-agent-traffic-marker.mjs --self-test",
     "check:cursor-law:self-test": "node scripts/check-cursor-law.mjs --self-test",
+    "check:hover-trigger-scope": "node scripts/check-hover-trigger-scope.mjs",
+    "check:hover-trigger-scope:self-test": "node scripts/check-hover-trigger-scope.mjs --self-test",
     "check:alchemy-doors": "tsx scripts/check-alchemy-doors.ts",
     "check:notice-new-tab": "tsx scripts/check-notice-new-tab.ts",
     "check:notice-new-tab:self-test": "tsx scripts/check-notice-new-tab.ts --self-test",

@@ -167,32 +167,30 @@ export function FileResourceChip({
   // HoverCardTrigger needs a real DOM child so Radix can attach its ref and
   // hover/focus handlers. Keep that wrapper for both removable and read-only
   // chips; EntityRef intentionally does not act as a generic slot primitive.
-  const chip = (
-    <span className="inline-flex items-stretch">
-      {openControl}
-      {onRemove ? (
-        <button
-          type="button"
-          aria-label={`Remove ${fileName}`}
-          onClick={onRemove}
-          className={cn(
-            "inline-flex shrink-0 items-center justify-center rounded-r-md border border-l-0 border-border bg-card",
-            "text-muted-foreground/70 transition-colors hover:bg-accent hover:text-foreground",
-            "h-7 w-6",
-          )}
-        >
-          <X className={size === "xs" ? "h-2.5 w-2.5" : "h-3 w-3"} />
-        </button>
-      ) : null}
-    </span>
-  );
+  // The peek opens from the chip itself, never from the remove ×, so aiming
+  // at × never drops a card over the page (2026-10-14).
+  const chip = <span className="inline-flex">{openControl}</span>;
+  const removeButton = onRemove ? (
+    <button
+      type="button"
+      aria-label={`Remove ${fileName}`}
+      onClick={onRemove}
+      className={cn(
+        "inline-flex shrink-0 items-center justify-center rounded-r-md border border-l-0 border-border bg-card",
+        "text-muted-foreground/70 transition-colors hover:bg-accent hover:text-foreground",
+        "h-7 w-6",
+      )}
+    >
+      <X className={size === "xs" ? "h-2.5 w-2.5" : "h-3 w-3"} />
+    </button>
+  ) : null;
 
   return (
     <FileRightClickMenu fileId={fileId}>
       {/* FileRightClickMenu must receive a real DOM trigger. Passing the
           Radix HoverCard root here drops the context-menu handler because
           that root renders no element of its own. */}
-      <span className="inline-flex">
+      <span className="inline-flex items-stretch">
         <HoverCard>
           <HoverCardTrigger asChild>{chip}</HoverCardTrigger>
           <HoverCardContent
@@ -222,6 +220,7 @@ export function FileResourceChip({
             />
           </HoverCardContent>
         </HoverCard>
+        {removeButton}
       </span>
     </FileRightClickMenu>
   );
