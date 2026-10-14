@@ -14,6 +14,7 @@ import { ErrorNotice } from "@ai-matrx/design-system";
 import {
   CUSTOMER_SOCIAL_PROVIDERS,
   type CustomerSocialConnection,
+  missingReadScopes,
   type CustomerSocialProvider,
   type SocialProviderConfig,
   type SocialIdentity,
@@ -167,6 +168,7 @@ export function CustomerAccountsPanel({ organizationId, brandId, returnUrl = "/u
             <Button variant="outline" disabled={unavailable || action?.connectionId === connection.id} onClick={() => void run(connection, "read")}>Check</Button>
             <Button variant="outline" disabled={unavailable || action?.connectionId === connection.id} onClick={() => void run(connection, "discover")}>Discover</Button>
             <Button variant="outline" disabled={unavailable || action?.connectionId === connection.id} onClick={() => void run(connection, "refresh")}>{provider === "facebook" ? "Check access" : "Renew access"}</Button>
+            {!unavailable && missingReadScopes(connection, config).length > 0 && <Button variant="outline" disabled={action?.connectionId === connection.id} onClick={() => connect(provider as ConnectableProvider, undefined, connection.id)}>Grant insights access</Button>}
             <Button variant="outline" disabled={action?.connectionId === connection.id} onClick={() => void run(connection, "disconnect")} icon={<Unplug className="h-3.5 w-3.5" />}>Disconnect</Button>
           </div></div>
           {(connection.lastVerifiedAt || connection.tokenExpiresAt) && <div className="text-xs text-muted-foreground">{connection.lastVerifiedAt && <span>Last checked {new Date(connection.lastVerifiedAt).toLocaleString()}</span>}{connection.lastVerifiedAt && connection.tokenExpiresAt && " · "}{connection.tokenExpiresAt && <span>Access expires {new Date(connection.tokenExpiresAt).toLocaleString()}</span>}</div>}

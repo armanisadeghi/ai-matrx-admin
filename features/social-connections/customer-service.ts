@@ -40,6 +40,27 @@ export interface CustomerSocialConnection {
   lastVerifiedAt?: string | null;
   tokenExpiresAt?: string | null;
   lastError?: string | null;
+  /** Scopes the provider's own receipt confirmed (metadata.granted_scopes). */
+  grantedScopes?: string[];
+}
+
+/** Read-only Meta permissions for posts, insights and comments (never required to connect). */
+export const META_READ_SCOPES: Partial<Record<CustomerSocialProvider, readonly string[]>> = {
+  facebook: ["pages_read_user_content", "read_insights"],
+  instagram: ["instagram_business_manage_insights", "instagram_business_manage_comments"],
+  threads: ["threads_manage_insights", "threads_read_replies"],
+};
+
+/** Read scopes a reconnect would add: consent asks for them (config.scopes) and the grant lacks them. */
+export function missingReadScopes(connection: CustomerSocialConnection, config: SocialProviderConfig | undefined): string[] {
+  const reads = META_READ_SCOPES[connection.provider] ?? [];
+  const granted = new Set(connection.grantedScopes ?? []);
+  return reads.filter((scope) => config?.scopes.includes(scope) && !granted.has(scope));
+}
+
+function grantedFromMetadata(value: unknown): string[] {
+  if (!value || typeof value !== "object" || !("granted_scopes" in value) || !Array.isArray(value.granted_scopes)) return [];
+  return value.granted_scopes.filter((scope): scope is string => typeof scope === "string");
 }
 
 export interface SocialIdentity {
@@ -229,6 +250,7 @@ export async function loadCustomerSocialConnections(): Promise<
             lastVerifiedAt: row.last_verified_at,
             tokenExpiresAt: expiryFromMetadata(row.metadata),
             lastError: row.last_error,
+            grantedScopes: grantedFromMetadata(row.metadata),
           },
         ]
       : [],

@@ -6,6 +6,7 @@ import { toast } from "@/lib/toast";
 
 jest.mock("../customer-service", () => ({
   CUSTOMER_SOCIAL_PROVIDERS: ["facebook"],
+  missingReadScopes: jest.requireActual("../customer-service").missingReadScopes,
   loadSocialConfigs: jest.fn(),
   loadCustomerSocialConnections: jest.fn(),
   disconnectCustomerSocialAccount: jest.fn(),
