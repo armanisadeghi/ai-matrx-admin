@@ -6,6 +6,7 @@
  *   /marketing/brands/smart-add/company         → a business (the default)
  *   /marketing/brands/smart-add/person          → a person
  *   /marketing/brands/smart-add/enrich/<brand>  → enrich one existing brand
+ *   /marketing/brands/smart-add/validate/<brand> → the validation page, opened from the brand's saved findings
  *
  * Query (lowercase names; anything invalid is dropped, never an error):
  *   via=website|social|name   the open way in (implied by a prefill when absent)
@@ -17,6 +18,7 @@
  *
  * Pure: no React, no window.
  */
+import { isUuidShape } from "@ai-matrx/kit/uuid";
 import { isSocialPlatform, type SocialPlatform } from "@/features/marketing/social/types";
 
 export const SMART_ADD_BASE = "/marketing/brands/smart-add";
@@ -57,7 +59,6 @@ export const SMART_ADD_PARAMS = ["via", ...TEXT_KEYS, "platform", "run", "view"]
 
 const MAX_TEXT = 300;
 const MAX_RUNS = 20;
-const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 /** A brand id or readable key: one path segment, nothing that could escape it. */
 const BRAND_SEGMENT = /^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$/;
 
@@ -102,7 +103,7 @@ export function parseSmartAddUrl(pathname: string, search: URLSearchParams | str
   const viaParam = viaRaw && VIAS.includes(viaRaw) ? viaRaw : null;
   const via = viaParam ?? impliedVia(prefill, path.mode);
   const runs = [...new Set(readAll(q, "run").flatMap((r) => r.split(",")).map((r) => r.trim().toLowerCase()))]
-    .filter((r) => UUID.test(r))
+    .filter((r) => isUuidShape(r))
     .slice(0, MAX_RUNS);
   const view = first("view")?.toLowerCase() === "compare" ? "compare" : null;
   return { ...path, via, viaParam, prefill, runs, view };
@@ -160,7 +161,7 @@ export function patchSmartAddSearch(base: URLSearchParams | string, patch: Smart
   for (const key of SMART_ADD_PARAMS) {
     const v = next[key];
     if (Array.isArray(v)) {
-      for (const r of v.filter((x) => UUID.test(x)).slice(0, MAX_RUNS)) out.append(key, r);
+      for (const r of v.filter((x) => isUuidShape(x)).slice(0, MAX_RUNS)) out.append(key, r);
       continue;
     }
     if (key === "via" && v && !VIAS.includes(v as SmartAddVia)) continue;
@@ -201,4 +202,16 @@ export function smartAddHref(link: SmartAddLink = {}): string {
 export function smartAddEnrichHref(brandId: string, carry: Pick<SmartAddPrefill, "website" | "social" | "platform"> = {}): string {
   const q = patchSmartAddSearch(new URLSearchParams(), { website: carry.website, social: carry.social, platform: carry.platform });
   return withQuery(`${SMART_ADD_BASE}/enrich/${encodeURIComponent(brandId)}`, q);
+}
+
+/** The validation page for one brand, opened from its saved findings (validate/SmartAddValidatePage). */
+export function smartAddValidateHref(brandId: string): string {
+  return `${SMART_ADD_BASE}/validate/${encodeURIComponent(brandId)}`;
+}
+
+/** `/validate/<brand>` (with or without the base) → the brand id; anything else is null. */
+export function parseValidatePath(pathname: string): string | null {
+  const rest = pathname.startsWith(SMART_ADD_BASE) ? pathname.slice(SMART_ADD_BASE.length) : pathname;
+  const parts = rest.split("/").filter(Boolean);
+  return parts[0]?.toLowerCase() === "validate" && parts[1] && BRAND_SEGMENT.test(parts[1]) ? parts[1] : null;
 }

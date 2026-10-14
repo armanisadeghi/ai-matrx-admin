@@ -4,6 +4,7 @@ import { useState } from "react";
 import type { BrandRelationKind } from "@/features/marketing/data/service";
 import { ValidateStage, type AnsweredEntry } from "@/features/marketing/smart-add/validate/ValidateStage";
 import { buildQueue, type Answer, type FocusItem } from "@/features/marketing/smart-add/validate/queue";
+import { answeredKeysOf, foldQueue } from "@/features/marketing/smart-add/validate/fold";
 import { fixtureEvidence, fixtureFacts } from "@/features/marketing/smart-add/validate/fixtures";
 
 const KINDS: BrandRelationKind[] = [
@@ -36,16 +37,17 @@ const CTX = { ourHosts: ["fullspecstaff.com"], ourAccounts: [], name: "Full Spec
 export function LabValidateStory() {
   const [answered, setAnswered] = useState<AnsweredEntry[]>([]);
   const [later, setLater] = useState<string[]>([]);
-  const queue = buildQueue({
+  const raw = buildQueue({
     items: ITEMS,
     facts: FACTS,
     decisions: {},
     webChoices: {},
-    answered: new Set(answered.map((a) => a.item.key)),
+    answered: new Set(answered.flatMap((a) => answeredKeysOf(a.item))),
     later,
     kinds: KINDS,
     ctx: CTX,
   });
+  const queue = foldQueue({ queue: raw, known: { names: [CTX.name], hosts: CTX.ourHosts, urls: [], values: [] }, later });
   const onAnswer = (item: FocusItem, answer: Answer, opts: { relationKey?: string | null; value?: string } = {}) => {
     if (answer === "later") return setLater((l) => [...l.filter((k) => k !== item.key), item.key]);
     const id = crypto.randomUUID();
@@ -62,6 +64,8 @@ export function LabValidateStory() {
       laterCount={later.length}
       kinds={KINDS}
       working
+      brandHref="/marketing/brands"
+      websiteHost="https://fullspecstaff.com"
       onAnswer={onAnswer}
       onUndo={(e) => setAnswered((a) => a.filter((x) => x.id !== e.id))}
     />

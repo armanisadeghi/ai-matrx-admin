@@ -44,7 +44,7 @@ export function coreSettled(
 
 // ── Answers ──────────────────────────────────────────────────────────────────────────
 
-export type FocusKind = "account" | "website" | "name" | "fact" | "web";
+export type FocusKind = "account" | "website" | "name" | "fact" | "web" | "logo";
 
 export type Answer =
   | "preferred"
@@ -235,9 +235,13 @@ export interface FocusItem {
   fact: BrandFact | null;
   /** Other keys that are this same account (one profile found under two addresses): answered together. */
   twins: string[];
+  /** fold.ts: the copies of this same real thing folded into this card (shown in its grounding hover). */
+  folded?: FocusItem[];
+  /** fold.ts: a set card (services, categories, locations…): every value, answered at once, each switchable. */
+  members?: FocusItem[];
 }
 
-const KIND_ORDER: Record<FocusKind, number> = { account: 0, website: 0, name: 1, fact: 2, web: 3 };
+const KIND_ORDER: Record<FocusKind, number> = { account: 0, website: 0, name: 1, logo: 1, fact: 2, web: 3 };
 const CERTAINTY_ORDER: Record<string, number> = { certain: 0, confirmed: 0, likely: 1, possible: 2 };
 
 const FACT_FIELDS: ReadonlySet<EvidenceField> = new Set(["phone", "email", "address", "description", "category", "tagline"]);
@@ -252,12 +256,14 @@ const FIELD_LABEL: Partial<Record<EvidenceField, string>> = {
   tagline: "Tagline",
   name: "Name",
   website: "Website",
+  logo: "Logo",
 };
 
 function kindOf(field: EvidenceField): FocusKind | null {
   if (field === "social") return "account";
   if (field === "website") return "website";
   if (field === "name") return "name";
+  if (field === "logo") return "logo";
   if (FACT_FIELDS.has(field)) return "fact";
   if (WEB_FIELDS.has(field)) return "web";
   return null;

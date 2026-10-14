@@ -130,6 +130,7 @@ async function recordDiscovered(
     suggested: item.suggestion ? (item.suggestion as unknown as Json) : null,
     ...(item.fact && value !== item.fact.value ? { edited_from: item.fact.value } : {}),
   };
+  // Every saved row this card answers: the finding and each copy folded into it (fold.ts) — settled together.
   const existing = await w
     .from("discovered_item")
     .select("id, status, relation_key, reviewed_at, context, resolved_property_id, resolved_fact_id")
@@ -137,22 +138,19 @@ async function recordDiscovered(
     .eq("source", "smart_add")
     .in("context->>evidence_key", [item.key, ...item.twins])
     .is("deleted_at", null)
-    .limit(1)
-    .maybeSingle();
+    .limit(200);
   if (existing.error) throw new Error(existing.error.message);
   const relation_key = relationKeyFor(answer, relationKey);
-  if (existing.data) {
-    const before = existing.data;
-    const context = { ...(isJsonRecord(before.context) ? before.context : {}), answer: answerCtx } as Json;
-    const { error } = await w
-      .from("discovered_item")
-      .update({ status, relation_key, reviewed_at: at, context, ...resolved })
-      .eq("id", before.id);
-    if (error) throw new Error(error.message);
-    return {
-      id: before.id,
-      undo: async () => {
-        const { error: e } = await (await db())
+  const rows = existing.data ?? [];
+  if (rows.length) {
+    // The lead row carries the homes written (resolved_*); its copies point at it.
+    const leadKey = (r: (typeof rows)[number]) => (isJsonRecord(r.context) ? r.context.evidence_key : null);
+    const lead = rows.find((r) => leadKey(r) === item.key) ?? rows[0];
+    const done: typeof rows = [];
+    const restore = async () => {
+      const d = await db();
+      for (const before of done) {
+        const { error: e } = await d
           .from("discovered_item")
           .update({
             status: before.status,
@@ -163,9 +161,28 @@ async function recordDiscovered(
             resolved_fact_id: before.resolved_fact_id,
           })
           .eq("id", before.id);
+        // access-errors: ok — an undo write on the person's own answer; the tray shows "Not saved"
         if (e) throw new Error(e.message);
-      },
+      }
     };
+    for (const before of [lead, ...rows.filter((r) => r !== lead)]) {
+      const isLead = before === lead;
+      const context = {
+        ...(isJsonRecord(before.context) ? before.context : {}),
+        answer: isLead ? answerCtx : { ...answerCtx, folded_into: lead.id },
+      } as Json;
+      const { error } = await w
+        .from("discovered_item")
+        .update({ status, relation_key, reviewed_at: at, context, ...(isLead ? resolved : {}) })
+        .eq("id", before.id);
+      if (error) {
+        await restore().catch(() => undefined);
+        // access-errors: ok — a write failure on the person's own answer, shown as "Not saved" in the tray
+        throw new Error(error.message);
+      }
+      done.push(before);
+    }
+    return { id: lead.id, undo: restore };
   }
   const ev = item.evidence;
   const inserted = await w
