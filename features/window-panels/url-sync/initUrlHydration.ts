@@ -39,6 +39,7 @@ import {
 } from "@/features/review-walk/address";
 import { openReviewWalk } from "@/features/review-walk/openReviewWalk";
 import { isUuidShape } from "@ai-matrx/kit/uuid";
+import { isHelperMethod } from "@/features/marketing/smart-add/helpers/types";
 
 /**
  * URL sync uses the instance slot for both singleton window identities and
@@ -403,6 +404,12 @@ export function initUrlHydration() {
     if (isUuidShape(id)) {
       dispatch(openOverlay({ overlayId: "provisionWindow", data: { snapshotId: id } }));
     }
+  });
+
+  // Smart Add helper: ?panels=smart_add_helper:<method> (instance id = the method, e.g. linkedin).
+  registerPanelHydrator("smart_add_helper", (dispatch, id) => {
+    if (!isHelperMethod(id)) return "refused";
+    dispatch(openOverlay({ overlayId: "smartAddHelperWindow", instanceId: id, data: { method: id } }));
   });
 
   registerPanelHydrator("feedback", (dispatch) => {

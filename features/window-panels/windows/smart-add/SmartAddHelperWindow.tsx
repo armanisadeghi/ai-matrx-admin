@@ -34,6 +34,7 @@ export default function SmartAddHelperWindow({ method, instanceId, onClose }: Sm
       onClose={onClose}
       overlayId="smartAddHelperWindow"
       overlayInstanceId={instanceId}
+      urlSyncId={method}
       onCollectData={() => ({ method })}
       bodyClassName="flex min-h-0 flex-1 flex-col overflow-y-auto p-0"
     >

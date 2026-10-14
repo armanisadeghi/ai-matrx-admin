@@ -1365,6 +1365,8 @@ const STATIC_REGISTRY: WindowStaticMetadata[] = [
     defaultData: { method: null },
     mobilePresentation: "fullscreen",
     preservation: { dataKeys: ["method"] },
+    // ?panels=smart_add_helper:linkedin (smart-add/smartAddUrl.ts documents the Smart Add address).
+    urlSync: { key: "smart_add_helper" },
   },
 
   // ── People involved (access setup) ───────────────────────────────────────
