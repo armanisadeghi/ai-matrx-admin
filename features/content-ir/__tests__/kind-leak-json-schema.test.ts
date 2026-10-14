@@ -32,6 +32,15 @@ describe("kind leak scan vs JSON Schema documents", () => {
     const withExample = SCHEMA.replace(/\}$/, ', "examples": [{"__kind": "brand_basics_fact", "label": "x"}] }');
     expect(screenTextHoldsKind(withExample)).toBe(true);
   });
+  it("an unterminated required list never hides a leak after it", () => {
+    const cut = '{"properties": {"a": {"type": "string"}}, "required": ["__kind", "a" {"__kind": "brand_basics_fact", "label": "x"}';
+    expect(screenTextHoldsKind(cut)).toBe(true);
+    expect(screenTextShowsJsonKind(cut)).toBe(true);
+  });
+  it("an object-valued __kind in a payload beside a properties key still fires", () => {
+    const payload = '{"properties": {"a": 1}, "__kind": {"slug": "brand_basics_fact"}}';
+    expect(screenTextHoldsKind(payload)).toBe(true);
+  });
   it("leaves non-schema text untouched", () => {
     const t = '{"__kind": {"x":1}}';
     expect(withoutJsonSchemaKindDeclarations(t)).toBe(t);

@@ -38,12 +38,22 @@ import {
  * `examples`. Tolerates truncation (the sentinel reads capped excerpts).
  */
 const SCHEMA_DOCUMENT = /^\s*\{[\s\S]*"(?:\$schema|\$defs|definitions|properties)"\s*:/;
-const DECLARED_KIND_PROPERTY = /(["'])__kind\1\s*:\s*\{/g;
-const REQUIRED_LIST = /("required"\s*:\s*\[)[^\]]*(\]|$)/g;
+// A DECLARATION is `"__kind": {` whose first key is a JSON Schema keyword — a
+// payload's object-valued `"__kind": {"slug": …}` is NOT one and still fires.
+const DECLARED_KIND_PROPERTY =
+  /(["'])__kind\1(\s*:\s*\{)(?=\s*["'](?:const|type|enum|\$ref|description|title|pattern|format|default|examples|oneOf|anyOf|allOf)["']\s*:)/g;
+// A `required` list holds only quoted names: no `:`, `{`, `[` or `]` inside. A
+// list cut by truncation may run to the end of the text, but it can never
+// swallow a payload after it (2026-10-14: an unterminated `"required":[` used
+// to hide every leak that followed it). Only the `__kind` names are renamed.
+const REQUIRED_LIST = /("required"\s*:\s*\[)([^\][{}:]*)(\]|$)/g;
+const KIND_NAME = /(["'])__kind\1/g;
 
 export function withoutJsonSchemaKindDeclarations(text: string): string {
   if (!text.includes("__kind") || !SCHEMA_DOCUMENT.test(text)) return text;
-  return text.replace(REQUIRED_LIST, "$1$2").replace(DECLARED_KIND_PROPERTY, '"declared_kind": {');
+  return text
+    .replace(REQUIRED_LIST, (_m, open: string, items: string, close: string) => `${open}${items.replace(KIND_NAME, '"declared_kind"')}${close}`)
+    .replace(DECLARED_KIND_PROPERTY, '"declared_kind"$2');
 }
 
 export function screenTextHoldsKind(rawText: string): boolean {
