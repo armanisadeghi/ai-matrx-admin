@@ -377,7 +377,7 @@ const businessLetter = () =>
 
 October 12, 2026
 
-Ms. Dana Whitfield
+Ms. Marisol Vega
 
 Harbor Coffee Roasters
 
@@ -387,7 +387,7 @@ Astoria, OR 97103
 
 **Re: Delivery schedule for the holiday season**
 
-Dear Ms. Whitfield,
+Dear Ms. Vega,
 
 Thank you for renewing your distribution agreement with Northgate Logistics. To keep your four cafés stocked through the holidays, we are adding a second weekly delivery from November 16 through January 8.
 

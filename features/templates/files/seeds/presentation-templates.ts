@@ -36,7 +36,7 @@ const pitch = () =>
     { layout: "stat", title: "Traction", extra: { stats: [{ value: "34", label: "towns live" }, { value: "212", label: "probes deployed" }, { value: "$41k", label: "monthly recurring revenue" }] } },
     { layout: "two-column", title: "How we win", extra: { columns: [{ title: "Today's options", bullets: ["Monthly lab samples", "$180k sensor networks", "Manual reporting to the state"] }, { title: "Tidewater", bullets: ["Continuous readings", "$900 per probe", "State reports filed automatically"] }] } },
     { layout: "bullets", title: "Business model", bullets: ["Hardware at cost; $79 per probe per month for monitoring", "Gross margin 71% on monitoring", "Average town: 6 probes, $5,700 a year"] },
-    { layout: "quote", quote: "We caught a chlorine drop at 2 a.m. that our monthly test would have missed for three weeks.", author: "Dana Whitfield, Utilities Director, Cedar Falls" },
+    { layout: "quote", quote: "We caught a chlorine drop at 2 a.m. that our monthly test would have missed for three weeks.", author: "Ellis Navarro, Utilities Director, Cedar Falls" },
     { layout: "bullets", title: "Team", bullets: ["Priya Raman, CEO — 8 years at the EPA's Office of Water", "Marcus Ode, CTO — built sensor firmware at Particle", "Lena Ruiz, Sales — sold SCADA systems to 120 utilities"] },
     { layout: "section", title: "The ask", description: "$3.5M seed to reach 300 towns in 18 months" },
     { layout: "closing", title: "Thank you", subtitle: "priya@tidewaterlabs.com" },

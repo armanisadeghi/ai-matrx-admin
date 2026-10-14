@@ -296,7 +296,7 @@ function invoice(): SeedTemplate {
       [0, 3, styled("INVOICE", { fs: 22, bl: true, ht: "right", cl: "#1a73e8" })],
       [4, 0, styled("Bill to", { bl: true })],
       [5, 0, "Harbor Coffee Roasters"],
-      [6, 0, "Attn: Dana Whitfield"],
+      [6, 0, "Attn: Nia Okafor"],
       [7, 0, "92 Wharf Road, Astoria, OR 97103"],
       [4, 2, styled("Invoice #", { bl: true, ht: "right" })],
       [4, 3, styled("JP-2026-041", { ht: "right" })],
