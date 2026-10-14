@@ -76,6 +76,13 @@ import {
 } from "@/features/marketing/lib/copy-payloads";
 import { humanizeItemKey } from "@/features/marketing/lib/finding-remedy-render";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
+import { DisclosureHeader, RegionSkeleton } from "@ai-matrx/design-system/controls";
+import type { Json } from "@/types/database.types";
+import { usePageProvenance } from "@/features/marketing/data/page-provenance";
+import {
+  explainMissingPage,
+  MISSING_PAGE_ITEM_KEYS,
+} from "@/features/marketing/lib/missing-page-story";
 
 /** Immutable result evidence → the shape the surface declares. */
 function projectResult(
@@ -194,6 +201,8 @@ function ResultDoor({
 export function FindingDetail({ findingId }: { findingId: string }) {
   const router = useRouter();
   const [isNavigating, startNavigation] = useTransition();
+  // Record + history are proof, not the message: closed until asked for.
+  const [recordOpen, setRecordOpen] = useState(false);
   const { site, brandId } = useMarketingSite();
   const { getBaseValues } = useMarketingSiteSurfaceBase();
   const queryClient = useQueryClient();
@@ -204,6 +213,13 @@ export function FindingDetail({ findingId }: { findingId: string }) {
     site.id,
     findingId,
     table.queryState,
+  );
+  const isMissingPage = MISSING_PAGE_ITEM_KEYS.has(
+    detail.data?.finding.item_key ?? "",
+  );
+  const provenance = usePageProvenance(
+    detail.data?.finding.page_id ?? null,
+    isMissingPage,
   );
   const resolveFindingActor = useRecordActors(site.organization_id, [
     // A component: created_by is the parent owner (db-rules §6d-1), so only the saver is named.
@@ -332,15 +348,31 @@ export function FindingDetail({ findingId }: { findingId: string }) {
   // the floor this screen always has, including for a check whose catalogue
   // row (label/description) does not exist yet.
   const reasoning = latest ? resultReasoning(latest.metadata) : null;
+  // A broken address is explained from who still asks for it — the catalogue's
+  // generic "restore, redirect, or remove" would send a person to BUILD a page
+  // nobody needs. Derived from `web.page_provenance`, never guessed.
+  const latestEvidence =
+    latest?.metadata && typeof latest.metadata === "object" && !Array.isArray(latest.metadata)
+      ? (latest.metadata as { evidence?: { http_status?: unknown } }).evidence
+      : undefined;
+  const story =
+    isMissingPage && provenance.data
+      ? explainMissingPage(
+          provenance.data,
+          typeof latestEvidence?.http_status === "number"
+            ? latestEvidence.http_status
+            : null,
+        )
+      : null;
   const remedyContext = {
     itemKey: finding.item_key,
     itemLabel: data.item?.label ?? null,
     itemDescription: data.item?.description ?? null,
-    remedy: data.item?.remedy ?? null,
+    remedy: story ? (story.remedy as unknown as Json) : (data.item?.remedy ?? null),
     category: finding.category,
     subcategory: finding.subcategory,
     severity: finding.severity,
-    reasoning,
+    reasoning: story?.headline ?? reasoning,
     pageUrl: data.page?.url ?? null,
     pagePath: data.page?.path ?? null,
     siteDomain: site.domain,
@@ -448,7 +480,7 @@ export function FindingDetail({ findingId }: { findingId: string }) {
       finding={finding}
       onWritten={afterFindingWrite}
     />
-    <main className="flex h-full min-h-0 flex-col gap-3 overflow-hidden bg-textured p-3 sm:p-4">
+    <main className="flex h-full min-h-0 flex-col gap-3 overflow-y-auto bg-textured p-3 sm:p-4">
       <section className="shrink-0 overflow-hidden rounded-lg border border-border bg-card">
         <div className="flex min-w-0 flex-col gap-2 p-3 sm:flex-row sm:items-start sm:justify-between">
           <div className="min-w-0">
@@ -474,14 +506,6 @@ export function FindingDetail({ findingId }: { findingId: string }) {
             <h1 className="mt-2 truncate text-sm font-semibold text-foreground">
               {itemLabel}
             </h1>
-            <p className="truncate font-mono text-[11px] text-muted-foreground">
-              {finding.item_key} · {finding.category} / {finding.subcategory}
-            </p>
-            {data.item?.description ? (
-              <p className="mt-1 line-clamp-2 max-w-4xl text-xs text-muted-foreground">
-                {data.item.description}
-              </p>
-            ) : null}
           </div>
           <div className="flex shrink-0 items-center gap-1.5">
             <CopyButtons size="icon" {...findingCopy} json={() => data} />
@@ -562,6 +586,82 @@ export function FindingDetail({ findingId }: { findingId: string }) {
             ) : null}
           </div>
         </div>
+      </section>
+
+      {/* The write-back half of the loop: a real proposed page edit the user
+          approves, landing as desired metadata + a CMS DRAFT. Renders nothing
+          for a finding it cannot actually land (G-FINDING-FIX). */}
+      <FindingFixCard
+        findingId={finding.id}
+        itemKey={finding.item_key}
+        site={site}
+        pageId={data.page?.id ?? null}
+        pageWorkspaceHref={
+          data.page
+            ? marketingRoutes.sitePage(brandId, site.id, data.page.id)
+            : null
+        }
+      />
+
+      {/* The fix, above the evidence. A person who is not an SEO reads this
+          card and knows what to do; the result history below is the proof. */}
+      {isMissingPage && provenance.isLoading ? (
+        <section className="shrink-0 rounded-lg border border-border bg-card p-3">
+          <RegionSkeleton shape="form" count={4} aria-label="Loading who links here" />
+        </section>
+      ) : null}
+      {isMissingPage && provenance.isError ? (
+        <QueryError
+          error={provenance.error}
+          onRetry={() => void provenance.refetch()}
+        />
+      ) : null}
+      {isMissingPage && provenance.isLoading ? null : (
+      <FindingRemedyCard
+        facts={story?.facts}
+        doors={
+          story?.replacement ? (
+            <Button asChild variant="outline">
+              <OutboundLink href={story.replacement.url}>
+                <ExternalLink className="h-3.5 w-3.5" />
+                Open {story.replacement.path}
+              </OutboundLink>
+            </Button>
+          ) : null
+        }
+        context={remedyContext}
+        surfaceName="matrx-user/marketing-findings"
+        pageWorkspaceHref={
+          // A page that never existed has no workspace worth opening.
+          data.page && !story
+            ? marketingRoutes.sitePage(brandId, site.id, data.page.id)
+            : null
+        }
+        suppressed={finding.suppressed}
+        onSuppress={async (reason) => {
+          await suppressFinding(site.id, finding.id, reason);
+          await afterFindingWrite();
+        }}
+        onUnsuppress={async () => {
+          await unsuppressFinding(site.id, finding.id);
+          await afterFindingWrite();
+        }}
+        className="shrink-0 overflow-hidden rounded-lg border border-border bg-card"
+      />
+      )}
+
+      <section className="shrink-0 overflow-hidden rounded-lg border border-border bg-card">
+        <DisclosureHeader
+          open={recordOpen}
+          onClick={() => setRecordOpen((v) => !v)}
+          title="Record and history"
+          meta={`${(results.data?.total ?? 0).toLocaleString()} checks`}
+        />
+        {recordOpen ? (
+          <>
+            <p className="border-t border-border px-3 py-2 font-mono text-[11px] text-muted-foreground">
+              {finding.item_key} · {finding.category} / {finding.subcategory}
+            </p>
         <dl className="grid grid-cols-2 border-t border-border divide-x divide-y divide-border sm:grid-cols-4 xl:grid-cols-8">
           <LifecycleDatum
             label="Subject"
@@ -648,46 +748,7 @@ export function FindingDetail({ findingId }: { findingId: string }) {
           resolveActor={resolveFindingActor}
           className="border-t border-border px-3 py-2"
         />
-      </section>
-
-      {/* The write-back half of the loop: a real proposed page edit the user
-          approves, landing as desired metadata + a CMS DRAFT. Renders nothing
-          for a finding it cannot actually land (G-FINDING-FIX). */}
-      <FindingFixCard
-        findingId={finding.id}
-        itemKey={finding.item_key}
-        site={site}
-        pageId={data.page?.id ?? null}
-        pageWorkspaceHref={
-          data.page
-            ? marketingRoutes.sitePage(brandId, site.id, data.page.id)
-            : null
-        }
-      />
-
-      {/* The fix, above the evidence. A person who is not an SEO reads this
-          card and knows what to do; the result history below is the proof. */}
-      <FindingRemedyCard
-        context={remedyContext}
-        surfaceName="matrx-user/marketing-findings"
-        pageWorkspaceHref={
-          data.page
-            ? marketingRoutes.sitePage(brandId, site.id, data.page.id)
-            : null
-        }
-        suppressed={finding.suppressed}
-        onSuppress={async (reason) => {
-          await suppressFinding(site.id, finding.id, reason);
-          await afterFindingWrite();
-        }}
-        onUnsuppress={async () => {
-          await unsuppressFinding(site.id, finding.id);
-          await afterFindingWrite();
-        }}
-        className="shrink-0 overflow-hidden rounded-lg border border-border bg-card"
-      />
-
-      <div className="min-h-0 flex-1">
+        <div className="h-[28rem] min-h-0 border-t border-border">
         {results.isError ? (
           <QueryError
             error={results.error}
@@ -793,12 +854,14 @@ export function FindingDetail({ findingId }: { findingId: string }) {
             emptyState={{
               icon: <FileSearch className="h-8 w-8 text-muted-foreground" />,
               title: "No result evidence",
-              description:
-                "This finding can retain lifecycle state even when its referenced result history is unavailable to the current view.",
+              description: "No check results are visible to you here.",
             }}
           />
         )}
       </div>
+          </>
+        ) : null}
+      </section>
     </main>
     </SurfaceRuntimeProvider>
   );

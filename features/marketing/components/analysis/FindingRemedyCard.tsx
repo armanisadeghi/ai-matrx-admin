@@ -19,7 +19,8 @@
  * returns null, so a check the server added yesterday renders completely.
  */
 
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
+import { PropertyRow } from "@ai-matrx/design-system/controls";
 import {
   Check,
   Copy,
@@ -55,6 +56,10 @@ export interface FindingRemedyCardProps {
   suppressed?: boolean;
   onSuppress?: (reason: string) => Promise<void>;
   onUnsuppress?: () => Promise<void>;
+  /** Measured facts that explain WHY this was flagged, shown above the fix. */
+  facts?: readonly { label: string; value: string }[];
+  /** Extra doors beside the page doors (e.g. the replacement page). */
+  doors?: ReactNode;
   className?: string;
 }
 
@@ -89,6 +94,8 @@ export function FindingRemedyCard({
   suppressed = false,
   onSuppress,
   onUnsuppress,
+  facts,
+  doors,
   className,
 }: FindingRemedyCardProps) {
   const resolved = resolveFindingRemedy(context);
@@ -155,6 +162,14 @@ export function FindingRemedyCard({
           {resolved.explanation}
         </p>
 
+        {facts && facts.length > 0 ? (
+          <div className="grid gap-x-6 gap-y-2 sm:grid-cols-2 xl:grid-cols-3">
+            {facts.map((fact) => (
+              <PropertyRow key={fact.label} label={fact.label} value={fact.value} />
+            ))}
+          </div>
+        ) : null}
+
         {resolved.remedy.kind === "ai" ? (
           <div className="flex flex-wrap items-center gap-2">
             <AssistChip
@@ -199,6 +214,7 @@ export function FindingRemedyCard({
 
         {/* Doors — the page this finding is about, never a dead end. */}
         <div className="flex flex-wrap items-center gap-1.5">
+          {doors}
           {pageWorkspaceHref ? (
             <Button asChild variant="outline">
               <OutboundLink href={pageWorkspaceHref}>
@@ -243,8 +259,8 @@ export function FindingRemedyCard({
           open={suppressOpen}
           onOpenChange={setSuppressOpen}
           title="This is intentional"
-          description="We'll stop flagging it and keep it out of the priority queue. Say why, so the next person reading this register knows it was a decision and not an oversight."
-          placeholder="e.g. This page is deliberately hidden from search — it's a thank-you page."
+          description="We'll stop flagging it. Say why, so others know it was a decision, not an oversight."
+          placeholder="e.g. A thank-you page, hidden on purpose."
           multiline
           rows={3}
           confirmLabel="Suppress this finding"

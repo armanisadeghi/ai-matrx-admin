@@ -145437,6 +145437,7 @@ export type Database = {
           sort: number
         }[]
       }
+      page_provenance: { Args: { p_page_id: string }; Returns: Json }
       property_identity: {
         Args: { p_handle: string; p_kind: string; p_url: string }
         Returns: string
