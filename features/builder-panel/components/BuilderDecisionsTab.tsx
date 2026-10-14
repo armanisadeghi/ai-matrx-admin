@@ -10,14 +10,30 @@
 import { useState } from "react";
 import { ArrowRight, Check, CircleDot, X } from "lucide-react";
 import { Badge, Button, Select, type SelectOption } from "@ai-matrx/design-system/controls";
+import { MatrxDataTable, type MatrxColumnDef } from "@ai-matrx/design-system/data-table";
 import { cn } from "@/lib/utils";
 import { useCostDisplay } from "@/components/cost/useCostDisplay";
-import { costByPath, thresholdText, valueText, type RoundDecision } from "../decisions";
+import { costByPath, thresholdText, valueText, type RoundDecision, type PathSignal } from "../decisions";
 import { BuilderJson } from "./BuilderJson";
 
 function pathName(key: string): string {
   return key.replace(/_/g, " ");
 }
+
+const SIGNAL_COLUMNS: MatrxColumnDef<PathSignal>[] = [
+  { id: "label", header: "Signal", accessorKey: "label", filter: "text",
+    cell: (signal) => <span title={signal.source}>{signal.label}</span> },
+  { id: "value", header: "Value", accessorFn: (signal) => valueText(signal.value), filter: "text",
+    cell: (signal) => <span className="font-mono tabular-nums" title={valueText(signal.value)}>{valueText(signal.value)}</span> },
+  { id: "threshold", header: "Threshold", accessorFn: thresholdText, filter: "text" },
+  { id: "fired", header: "Fired", accessorFn: (signal) => signal.op ? (signal.fired ? "yes" : "no") : "", filter: "select",
+    cell: (signal) => signal.op ? (signal.fired
+      ? <CircleDot className="h-3.5 w-3.5 text-primary" aria-label="fired" />
+      : <span className="text-muted-foreground">no</span>) : null },
+  { id: "source", header: "Source", accessorKey: "source", filter: "text", hidden: true },
+];
+
+type PathCost = ReturnType<typeof costByPath>[number];
 
 export function BuilderDecisionsTab({
   rounds,
@@ -79,36 +95,20 @@ export function BuilderDecisionsTab({
             {d.signals.length ? (
               <section>
                 <h3 className="mb-1 font-medium">Signals</h3>
-                <table className="w-full border-collapse">
-                  <thead>
-                    <tr className="border-b border-border text-left text-[11px] text-muted-foreground">
-                      <th className="py-1 pr-2 font-medium">Signal</th>
-                      <th className="py-1 pr-2 font-medium">Value</th>
-                      <th className="py-1 pr-2 font-medium">Threshold</th>
-                      <th className="py-1 font-medium">Fired</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {d.signals.map((s) => (
-                      <tr key={s.key} className="border-b border-border/60 align-top" title={s.source}>
-                        <td className="py-1 pr-2">{s.label}</td>
-                        <td className="max-w-[18rem] truncate py-1 pr-2 font-mono tabular-nums" title={valueText(s.value)}>
-                          {valueText(s.value)}
-                        </td>
-                        <td className="py-1 pr-2 font-mono text-muted-foreground">{thresholdText(s)}</td>
-                        <td className="py-1">
-                          {s.op ? (
-                            s.fired ? (
-                              <CircleDot className="h-3.5 w-3.5 text-primary" aria-label="fired" />
-                            ) : (
-                              <span className="text-muted-foreground">no</span>
-                            )
-                          ) : null}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                <MatrxDataTable<PathSignal>
+                  tableId="builder/decision-signals"
+                  data={d.signals}
+                  columns={SIGNAL_COLUMNS}
+                  getRowId={(signal) => signal.key}
+                  pageSize={0}
+                  density="condensed"
+                  toolbar={{ search: true, searchPlaceholder: "Search signals" }}
+                  copy={{
+                    label: "Signal", listLabel: "Signals", location: "Builder · Decisions",
+                    rowKind: "decision-signal", listKind: "decision-signals",
+                    humanRow: (signal) => `${signal.label}: ${valueText(signal.value)}\nThreshold: ${thresholdText(signal)}\nFired: ${signal.op ? (signal.fired ? "yes" : "no") : ""}\nSource: ${signal.source}`,
+                  }}
+                />
               </section>
             ) : null}
 
@@ -154,19 +154,25 @@ export function BuilderDecisionsTab({
 
         <section>
           <h3 className="mb-1 font-medium">Cost by path</h3>
-          <table className="w-full border-collapse">
-            <tbody>
-              {totals.map((t) => (
-                <tr key={t.path} className="border-b border-border/60">
-                  <td className="py-1 pr-2">{t.label}</td>
-                  <td className="py-1 pr-2 text-muted-foreground">
-                    {t.rounds} round{t.rounds === 1 ? "" : "s"}
-                  </td>
-                  <td className="py-1 text-right tabular-nums">{format(t.costUsd)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <MatrxDataTable<PathCost>
+            tableId="builder/decision-costs"
+            data={totals}
+            columns={[
+              { id: "label", header: "Path", accessorKey: "label", filter: "text" },
+              { id: "rounds", header: "Rounds", accessorKey: "rounds", filter: "number" },
+              { id: "costUsd", header: "Cost", accessorKey: "costUsd", filter: "number",
+                copyValue: (row) => format(row.costUsd), cell: (row) => format(row.costUsd) },
+            ]}
+            getRowId={(row) => row.path}
+            pageSize={0}
+            density="condensed"
+            toolbar={{ search: true, searchPlaceholder: "Search paths" }}
+            copy={{
+              label: "Path cost", listLabel: "Cost by path", location: "Builder · Decisions",
+              rowKind: "decision-path-cost", listKind: "decision-path-costs",
+              humanRow: (row) => `${row.label}\nRounds: ${row.rounds}\nCost: ${format(row.costUsd)}`,
+            }}
+          />
         </section>
 
         {d ? (
