@@ -3,7 +3,7 @@
 import { publishedToWebLabel } from "@/lib/row-access";
 import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { UntrustedCount } from "@ai-matrx/design-system";
-import { SegmentedControl } from "@ai-matrx/design-system/controls";
+import { Badge, SegmentedControl } from "@ai-matrx/design-system/controls";
 import { readOf } from "@ai-matrx/design-system";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
@@ -23,7 +23,6 @@ import { aiModelService } from "../service";
 import type { AiModel, AiProvider } from "../types";
 import { applyFiltersForCount } from "@/features/ai-models/utils/filterUtils";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { AlertTriangle, BookOpen, Maximize2, Minimize2 } from "lucide-react";
 import ProviderReferenceModal from "./ProviderReferenceModal";
 import TopTierAccessButton from "./TopTierAccessButton";
@@ -346,8 +345,8 @@ export default function AiModelsContainer() {
       <div className="flex flex-col h-full min-h-0">
         {/* With no rows the table says the failure itself; this banner is for a failed refresh over rows. */}
         {loadError && models.length > 0 && (
-          <div role="alert" className="flex shrink-0 items-center gap-2 border-b border-destructive/30 bg-destructive/5 px-2 py-1 text-sm">
-            <span className="min-w-0 flex-1">{loadError}{models.length > 0 ? " Previously loaded models remain visible." : ""}</span>
+          <div role="alert" className="flex shrink-0 items-center gap-2 border-b border-destructive/30 bg-destructive/5 px-2 py-1">
+            <span className="type-body min-w-0 flex-1">{loadError}{models.length > 0 ? " Previously loaded models remain visible." : ""}</span>
             <Button type="button" variant="outline" disabled={isLoading} onClick={() => void loadData()}>Retry</Button>
             <ErrorAlchemyMenu className="ml-auto" />
           </div>
@@ -389,16 +388,13 @@ export default function AiModelsContainer() {
               Provider Ref
             </Button>
             <Button
-              icon={<AlertTriangle className="text-amber-500" />}
+              icon={<AlertTriangle className="text-warning-ink" />}
               variant={auditOpen ? "outline" : "quiet"}
               onClick={() => setAuditOpen((v) => !v)}
               title="View and fix deprecated model references"
             >
               Deprecated Audit
-              <Badge
-                variant="outline"
-                className="h-4 px-1 text-[10px] bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300 border-amber-300"
-              >
+              <Badge tone="warning">
                 <UntrustedCount
                   read={readOf({ loading: isLoading, error: loadError, hasData: models.length > 0 })}
                   label="Deprecated references"

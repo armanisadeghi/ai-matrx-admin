@@ -13,21 +13,21 @@ import {
   CopyTapButton,
   TrashTapButton,
 } from "@ai-matrx/design-system/tap-target/buttons";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@ai-matrx/design-system/controls";
+import {
+  Badge,
+  Chip,
+  EmptyState,
+  Input,
+  Select,
+  type BadgeTone,
+  type ChipTone,
+} from "@ai-matrx/design-system/controls";
 import { Skeleton } from "@ai-matrx/design-system";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@ai-matrx/design-system";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
 } from "@ai-matrx/design-system";
 import { AI_MODEL_DRILL } from "./aiModelDrill";
 import GenericTablePagination from "@ai-matrx/design-system/data-table/pagination";
@@ -87,41 +87,30 @@ import {
 import { formatCount } from "@ai-matrx/kit/format";
 import { ReadFailure } from "@ai-matrx/design-system";
 
-// ─── Provider Colors ──────────────────────────────────────────────────────────
+// ─── Provider tones ───────────────────────────────────────────────────────────
 
-const PROVIDER_COLORS: Record<string, string> = {
-  anthropic:
-    "bg-orange-50 dark:bg-orange-900/20 text-orange-700 dark:text-orange-300 border-orange-200 dark:border-orange-800",
-  openai:
-    "bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 border-green-200 dark:border-green-800",
-  google:
-    "bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800",
-  meta: "bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800",
-  mistral:
-    "bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800",
-  mixtral:
-    "bg-violet-50 dark:bg-violet-900/20 text-violet-700 dark:text-violet-300 border-violet-200 dark:border-violet-800",
-  xai: "bg-zinc-50 dark:bg-zinc-900/20 text-zinc-700 dark:text-zinc-300 border-zinc-200 dark:border-zinc-800",
-  groq: "bg-teal-50 dark:bg-teal-900/20 text-teal-700 dark:text-teal-300 border-teal-200 dark:border-teal-800",
-  "ai matrx":
-    "bg-rose-50 dark:bg-rose-900/20 text-rose-700 dark:text-rose-300 border-rose-200 dark:border-rose-800",
-  "black forest":
-    "bg-slate-50 dark:bg-slate-900/20 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-800",
-  deepseek:
-    "bg-cyan-50 dark:bg-cyan-900/20 text-cyan-700 dark:text-cyan-300 border-cyan-200 dark:border-cyan-800",
-  microsoft:
-    "bg-sky-50 dark:bg-sky-900/20 text-sky-700 dark:text-sky-300 border-sky-200 dark:border-sky-800",
-  qwen: "bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-300 border-yellow-200 dark:border-yellow-800",
-  together:
-    "bg-lime-50 dark:bg-lime-900/20 text-lime-700 dark:text-lime-300 border-lime-200 dark:border-lime-800",
-  wan: "bg-neutral-50 dark:bg-neutral-900/20 text-neutral-700 dark:text-neutral-300 border-neutral-200 dark:border-neutral-800",
-  cerebras_chat:
-    "bg-fuchsia-50 dark:bg-fuchsia-900/20 text-fuchsia-700 dark:text-fuchsia-300 border-fuchsia-200 dark:border-fuchsia-800",
+/** The ONE mapping from a model maker to its Chip tone. */
+const PROVIDER_TONES: Record<string, ChipTone> = {
+  anthropic: "orange",
+  openai: "emerald",
+  google: "blue",
+  meta: "indigo",
+  mistral: "violet",
+  mixtral: "violet",
+  xai: "slate",
+  groq: "teal",
+  "ai matrx": "rose",
+  "black forest": "slate",
+  deepseek: "cyan",
+  microsoft: "sky",
+  qwen: "amber",
+  together: "lime",
+  wan: "slate",
+  cerebras_chat: "fuchsia",
 };
 
-function providerColor(name: string | null): string {
-  const key = (name ?? "").toLowerCase();
-  return PROVIDER_COLORS[key] ?? "bg-muted text-muted-foreground border-border";
+function providerTone(name: string | null): ChipTone {
+  return PROVIDER_TONES[(name ?? "").toLowerCase()] ?? "neutral";
 }
 
 // ─── Cell Helpers ─────────────────────────────────────────────────────────────
@@ -133,31 +122,21 @@ function formatNumber(n: number | null): string {
 function BoolBadge({
   value,
   trueLabel,
-  trueClass,
+  tone,
 }: {
   value: boolean | null;
   trueLabel: string;
-  trueClass: string;
+  tone: BadgeTone;
 }) {
-  if (!value) return <span className="text-muted-foreground text-xs">—</span>;
-  return (
-    <Badge variant="outline" className={`text-xs ${trueClass}`}>
-      {trueLabel}
-    </Badge>
-  );
+  if (!value) return <span className="type-meta text-muted-foreground">—</span>;
+  return <Badge tone={tone}>{trueLabel}</Badge>;
 }
 
 function ModalityBadges({ values }: { values: ContentType[] }) {
   return (
     <div className="flex items-center gap-1 whitespace-nowrap">
       {values.map((value) => (
-        <Badge
-          key={value}
-          variant="outline"
-          className="h-5 px-1.5 text-[10px] capitalize"
-        >
-          {value}
-        </Badge>
+        <Badge key={value}>{value.charAt(0).toUpperCase() + value.slice(1)}</Badge>
       ))}
     </div>
   );
@@ -217,7 +196,7 @@ const COLUMNS: ColDef[] = [
     sortable: true,
     render: (item) => (
       <span
-        className="text-xs font-medium truncate block max-w-[170px]"
+        className="type-title truncate block max-w-[170px]"
         title={item.common_name ?? item.name}
       >
         {item.common_name || item.name}
@@ -231,7 +210,7 @@ const COLUMNS: ColDef[] = [
     sortable: true,
     render: (item) => (
       <span
-        className="text-xs font-mono text-muted-foreground truncate block max-w-[190px]"
+        className="type-meta font-mono text-muted-foreground truncate block max-w-[190px]"
         title={item.name}
       >
         {item.name}
@@ -269,12 +248,7 @@ const COLUMNS: ColDef[] = [
     sortable: true,
     filterType: "provider",
     render: (item) => (
-      <Badge
-        variant="outline"
-        className={`text-xs ${providerColor(item.maker)}`}
-      >
-        {item.maker ?? "—"}
-      </Badge>
+      <Chip tone={providerTone(item.maker)} label={item.maker ?? "—"} />
     ),
   },
   {
@@ -336,7 +310,7 @@ const COLUMNS: ColDef[] = [
     filterType: "context_window",
     className: "text-right",
     render: (item) => (
-      <span className="text-xs tabular-nums">
+      <span className="type-meta tabular-nums">
         {formatNumber(item.context_window)}
       </span>
     ),
@@ -349,7 +323,7 @@ const COLUMNS: ColDef[] = [
     filterType: "max_tokens",
     className: "text-right",
     render: (item) => (
-      <span className="text-xs tabular-nums">
+      <span className="type-meta tabular-nums">
         {formatNumber(item.max_tokens)}
       </span>
     ),
@@ -366,7 +340,7 @@ const COLUMNS: ColDef[] = [
       <BoolBadge
         value={item.is_deprecated}
         trueLabel="Deprecated"
-        trueClass="bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300"
+        tone="destructive"
       />
     ),
   },
@@ -380,7 +354,7 @@ const COLUMNS: ColDef[] = [
       <BoolBadge
         value={item.is_primary}
         trueLabel="Primary"
-        trueClass="bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300"
+        tone="success"
       />
     ),
   },
@@ -394,7 +368,7 @@ const COLUMNS: ColDef[] = [
       <BoolBadge
         value={item.is_premium}
         trueLabel="Premium"
-        trueClass="bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300"
+        tone="warning"
       />
     ),
   },
@@ -610,25 +584,15 @@ function SelectFilterContent({
 }) {
   return (
     <div className="flex flex-col gap-2 w-[160px]">
-      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+      <p className="type-label">
         Filter: {label}
       </p>
       <Select
+        aria-label={`Filter: ${label}`}
         value={value ?? "__all__"}
+        options={[{ value: "__all__", label: "All" }, ...options]}
         onValueChange={(v) => (v === "__all__" ? onClear() : onChange(v))}
-      >
-        <SelectTrigger className="h-7 text-xs">
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="__all__">All</SelectItem>
-          {options.map((o) => (
-            <SelectItem key={o.value} value={o.value}>
-              {o.label}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+      />
       {value !== undefined && (
         <Button
           variant="quiet"
@@ -658,24 +622,21 @@ function BoolFilterContent({
 }) {
   return (
     <div className="flex flex-col gap-2 w-[150px]">
-      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+      <p className="type-label">
         Filter: {label}
       </p>
       <Select
+        aria-label={`Filter: ${label}`}
         value={value === true ? "true" : value === false ? "false" : "__all__"}
+        options={[
+          { value: "__all__", label: "All" },
+          { value: "true", label: trueLabel },
+          { value: "false", label: falseLabel },
+        ]}
         onValueChange={(v) =>
           v === "__all__" ? onClear() : onChange(v === "true")
         }
-      >
-        <SelectTrigger className="h-7 text-xs">
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="__all__">All</SelectItem>
-          <SelectItem value="true">{trueLabel}</SelectItem>
-          <SelectItem value="false">{falseLabel}</SelectItem>
-        </SelectContent>
-      </Select>
+      />
       {value !== undefined && (
         <Button
           variant="quiet"
@@ -732,21 +693,20 @@ function RangeFilterContent({
   return (
     <div className="flex flex-col gap-2 w-[190px]">
       <div className="flex items-center justify-between">
-        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+        <p className="type-label">
           Filter: {label}
         </p>
         {hasFilter && (
-          <button
-            type="button"
-            className="text-xs text-muted-foreground hover:text-foreground"
+          <Button
+            variant="quiet"
             onClick={() => {
               setMin("");
               setMax("");
               onUpdateFilters({ [minKey]: undefined, [maxKey]: undefined });
             }}
           >
-            clear
-          </button>
+            Clear
+          </Button>
         )}
       </div>
       <div className="flex items-center gap-1.5">
@@ -760,7 +720,7 @@ function RangeFilterContent({
           placeholder="min"
           className="w-[80px]"
         />
-        <span className="text-xs text-muted-foreground">–</span>
+        <span className="type-meta text-muted-foreground">–</span>
         <Input mono
           value={max}
           onChange={(e) => setMax(e.target.value)}
@@ -905,10 +865,9 @@ function ColumnHeaderFilter({
           type="button"
           onClick={(e) => e.stopPropagation()}
           title={`Filter by ${filterType.replace(/_/g, " ")}`}
+          aria-label={`Filter by ${filterType.replace(/_/g, " ")}`}
           className={`rounded p-0.5 transition-colors ${
-            active
-              ? "text-primary hover:text-primary/80"
-              : "text-muted-foreground/40 hover:text-muted-foreground"
+            active ? "text-primary" : "text-muted-foreground"
           }`}
         >
           <ListFilter
@@ -1057,7 +1016,7 @@ function CurrentAiModelTable({
         onRefresh={onRefresh}
       />
 
-      <div className="flex shrink-0 items-center gap-1.5 border-b bg-muted/30 px-2 py-1 text-xs text-muted-foreground xl:hidden">
+      <div className="type-secondary flex shrink-0 items-center gap-1.5 border-b px-2 py-1 text-muted-foreground xl:hidden">
         <MoveHorizontal className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
         <span>
           Swipe horizontally for model details; name and actions stay visible.
@@ -1068,7 +1027,7 @@ function CurrentAiModelTable({
       <div className="relative min-h-0 flex-1 overflow-auto">
         <table
           className={cn(
-            "table overflow-visible caption-bottom text-xs border-collapse",
+            "table type-secondary overflow-visible caption-bottom border-collapse",
             MOBILE_TABLE_FROZEN_SECOND,
           )}
         >
@@ -1077,15 +1036,16 @@ function CurrentAiModelTable({
               {COLUMNS.map((col) => (
                 <th
                   key={col.key}
-                  className={`${col.width} ${col.className ?? ""} px-2 py-1.5 text-xs font-semibold text-left align-middle text-muted-foreground whitespace-nowrap ${
+                  className={`${col.width} ${col.className ?? ""} px-2 py-1.5 type-label text-left align-middle whitespace-nowrap ${
                     col.key === "common_name"
                       ? "max-xl:sticky max-xl:left-0 max-xl:z-30 max-xl:bg-card max-xl:shadow-[2px_0_0_hsl(var(--border))]"
                       : ""
                   } ${
                     col.sortable
-                      ? "cursor-pointer select-none hover:text-primary"
+                      ? "select-none"
                       : ""
                   }`}
+                  data-clickable={col.sortable || undefined}
                   onClick={() => col.sortable && handleSortClick(col.key)}
                 >
                   <span className="flex items-center gap-0.5">
@@ -1104,7 +1064,7 @@ function CurrentAiModelTable({
                   </span>
                 </th>
               ))}
-              <th className="w-[210px] min-w-[210px] px-2 py-1.5 text-xs font-semibold text-right align-middle text-muted-foreground pr-3 max-xl:sticky max-xl:right-0 max-xl:z-30 max-xl:bg-card max-xl:shadow-[-2px_0_0_hsl(var(--border))]">
+              <th className="w-[210px] min-w-[210px] px-2 py-1.5 type-label text-right align-middle pr-3 max-xl:sticky max-xl:right-0 max-xl:z-30 max-xl:bg-card max-xl:shadow-[-2px_0_0_hsl(var(--border))]">
                 Actions
               </th>
             </tr>
@@ -1140,25 +1100,25 @@ function CurrentAiModelTable({
                   colSpan={COLUMNS.length + 1}
                   className="h-32 text-center p-2"
                 >
-                  <div className="flex flex-col items-center gap-2 text-muted-foreground">
-                    <Cpu className="h-10 w-10 opacity-30" />
-                    <p className="text-sm">No AI models found</p>
-                    {(q || Object.keys(filters).length > 0) && (
-                      <Button
-                        variant="quiet"
-                        onClick={handleClearAll}
-                      >
-                        Clear filters
-                      </Button>
-                    )}
-                  </div>
+                  <EmptyState
+                    icon={<Cpu />}
+                    title="No AI models found"
+                    action={
+                      q || Object.keys(filters).length > 0 ? (
+                        <Button variant="quiet" onClick={handleClearAll}>
+                          Clear filters
+                        </Button>
+                      ) : undefined
+                    }
+                  />
                 </td>
               </tr>
             ) : (
               paginatedModels.map((item, idx) => (
                 <tr
                   key={item.id}
-                  className={`group h-9 border-b border-border cursor-pointer transition-colors ${
+                  data-clickable
+                  className={`group h-9 border-b border-border transition-colors ${
                     selectedId === item.id
                       ? "bg-primary/10 hover:bg-primary/15"
                       : idx % 2 === 0
