@@ -39,10 +39,41 @@ const TOAST_ID = "kg-new-suggestion";
 // ends, and the toast shows as soon as they arrive — never a startup read for a toast 9 s away.
 const SHOW_DELAY_MS = 9000;
 
+// The three reads (two suggestion tables + the ack set) run at most once per 30 minutes per
+// browser. The stamp is localStorage; where storage is unavailable, once per tab (module memory).
+const CHECK_INTERVAL_MS = 30 * 60_000;
+const CHECK_STAMP_PREFIX = "kg-suggestion-notifier:last-check:";
+const tabChecked = new Set<string>();
+
+/** True (and stamps the time) when this browser has not checked in the last 30 minutes. */
+function claimCheckSlot(userId: string): boolean {
+  const now = Date.now();
+  try {
+    const last = Number(window.localStorage.getItem(CHECK_STAMP_PREFIX + userId));
+    if (Number.isFinite(last) && last > 0 && now - last >= 0 && now - last < CHECK_INTERVAL_MS) {
+      return false;
+    }
+    window.localStorage.setItem(CHECK_STAMP_PREFIX + userId, String(now));
+    return true;
+  } catch {
+    if (tabChecked.has(userId)) return false;
+    tabChecked.add(userId);
+    return true;
+  }
+}
+
 export default function KgNewSuggestionNotifier() {
   const user = useAppSelector(selectUser);
   const userId = user?.id ?? null;
-  const due = useLateIdleReady(SHOW_DELAY_MS);
+  const lateReady = useLateIdleReady(SHOW_DELAY_MS);
+  // `due` = the late tier opened AND this browser has not looked in the last 30 minutes.
+  const [due, setDue] = useState(false);
+  const claimedRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (!lateReady || !userId || claimedRef.current === userId) return;
+    claimedRef.current = userId;
+    if (claimCheckSlot(userId)) setDue(true);
+  }, [lateReady, userId]);
   const { items } = useKgSuggestions({ global: true, status: "pending" }, { autoFetch: due });
   const openInbox = useOpenKgSuggestions();
 

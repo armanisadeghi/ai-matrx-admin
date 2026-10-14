@@ -48,7 +48,12 @@ export { PENDING_APPROVALS_QUERY_KEY, invalidateApprovals };
 /** The badge's counting code — one async edge, first awaited after the idle flush. */
 const loadPendingCount = () => import("./pendingCount");
 
-export function usePendingApprovalCount(): {
+export function usePendingApprovalCount(options: {
+  /** Also read the record store's share (`custom.work_inbox`). Default true; the bell badge opts out. */
+  includeStore?: boolean;
+  /** Overrides the idle gate (the bell passes the late tier). */
+  ready?: boolean;
+} = {}): {
   count: number;
   unknown: boolean;
   /**
@@ -61,7 +66,9 @@ export function usePendingApprovalCount(): {
   const userId = useAppSelector(selectUserId);
   const organizationId = useAppSelector(selectActiveOrganizationId);
   // The shell's header badge mounts on every page: both counts wait for the idle flush.
-  const idleReady = useIdleReady();
+  const shellIdle = useIdleReady();
+  const idleReady = options.ready ?? shellIdle;
+  const includeStore = options.includeStore ?? true;
   // The badge stands for the `/approvals` mount, so it counts that mount's kinds.
   const scope: ApprovalScope = {
     key: userId ?? "",
@@ -84,12 +91,14 @@ export function usePendingApprovalCount(): {
   const store = useQuery({
     queryKey: [...PENDING_APPROVALS_QUERY_KEY, "store", userId],
     queryFn: async () => (await loadPendingCount()).countStoreApprovals(userId ?? ""),
-    enabled: Boolean(userId) && idleReady,
+    enabled: Boolean(userId) && idleReady && includeStore,
     staleTime: 60_000,
     retry: 1,
   });
   const unknown =
-    query.isError || query.data === undefined || store.isError || store.data === undefined;
+    query.isError ||
+    query.data === undefined ||
+    (includeStore && (store.isError || store.data === undefined));
   return {
     count: (query.data ?? 0) + (store.data ?? 0),
     unknown,

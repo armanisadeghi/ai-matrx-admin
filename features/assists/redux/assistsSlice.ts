@@ -33,9 +33,17 @@ const initialState: AssistsState = {
 
 export const fetchMyAssists = createAsyncThunk<
   Assist[],
-  { userId: string },
+  { userId: string; /** Re-read even though the slice is loaded (focus refresh, after a write). */ force?: boolean },
   { state: RootState }
->("assists/fetchMine", async ({ userId }) => listMyPendingAssists(userId));
+>("assists/fetchMine", async ({ userId }) => listMyPendingAssists(userId), {
+  // One read at a time, and none once loaded unless the caller forces it — the strip and the dock
+  // both hydrate the slice, so without this each mount of either re-read `list_my_presentable_assists`.
+  condition: ({ force }, { getState }) => {
+    const { loading, loaded } = getState().assists;
+    if (loading) return false;
+    return force === true || !loaded;
+  },
+});
 
 const assistsSlice = createSlice({
   name: "assists",

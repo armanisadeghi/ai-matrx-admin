@@ -15,6 +15,7 @@
  * one ledger, one slice; deciding in either place clears both.
  */
 
+import { useLateIdleReady } from "@/lib/boot/lateIdle";
 import { useEffect } from "react";
 import Link from "next/link";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
@@ -48,7 +49,9 @@ export function AssistStrip({
   const dispatch = useAppDispatch();
   const userId = useAppSelector(selectUserId);
   const authReady = useAppSelector(selectAuthReady);
-  const accessToken = useAppSelector(selectAccessToken);
+  // Only WHETHER there is a token matters: a token refresh must not re-run the hydrate effect.
+  const accessToken = useAppSelector((state: RootState) => Boolean(selectAccessToken(state)));
+  const lateReady = useLateIdleReady();
   const loaded = useAppSelector(selectAssistsLoaded);
   const surfaceAssists = useAppSelector((state: RootState) =>
     selectAssistsForSurface(state, surfaceName),
@@ -56,10 +59,10 @@ export function AssistStrip({
 
   // Hydrate the shared slice even if the (deferred) global dock hasn't yet.
   useEffect(() => {
-    if (authReady && userId && accessToken && !loaded) {
+    if (authReady && userId && accessToken && lateReady && !loaded) {
       void dispatch(fetchMyAssists({ userId }));
     }
-  }, [dispatch, authReady, userId, accessToken, loaded]);
+  }, [dispatch, authReady, userId, accessToken, lateReady, loaded]);
 
   const assists = filter ? surfaceAssists.filter(filter) : surfaceAssists;
   if (assists.length === 0) return null;

@@ -29,6 +29,7 @@ jest.mock("@/features/approvals/usePendingApprovalCount", () => ({
 }));
 // The badge reads wait for the shared idle flush; this test is past it.
 jest.mock("@ai-matrx/kit/idle-scheduler", () => ({ useIdleReady: () => true }));
+jest.mock("@/lib/boot/lateIdle", () => ({ useLateIdleReady: () => true }));
 jest.mock("@/lib/redux/hooks", () => ({ useAppSelector: () => "user-1", useAppDispatch: () => () => undefined }));
 jest.mock("@/utils/supabase/client", () => ({
   createClient: () => ({

@@ -78,7 +78,7 @@ export function GuidelinesDraftButton({
       await run.launch({ site_id: siteId, step: "guidelines_draft" }, siteId);
       // The proposal is a fresh assist row; the slice is loaded once per
       // session, so without this the queue below stays empty until a reload.
-      if (userId) await dispatch(fetchMyAssists({ userId }));
+      if (userId) await dispatch(fetchMyAssists({ userId, force: true }));
       toast.success("A draft is waiting for you below", {
         description:
           "Nothing has been saved. Read it, fix what is wrong, then approve it — or edit it first.",

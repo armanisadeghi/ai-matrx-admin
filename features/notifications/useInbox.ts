@@ -30,7 +30,7 @@ import {
   useQueryClient,
   type InfiniteData,
 } from "@tanstack/react-query";
-import { useIdleReady } from "@ai-matrx/kit/idle-scheduler";
+import { useLateIdleReady } from "@/lib/boot/lateIdle";
 import { toast } from "@/lib/toast";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
@@ -58,6 +58,8 @@ import type {
 
 /** How often the badge re-reads while the tab is open (ms). */
 export const INBOX_POLL_INTERVAL_MS = 60_000;
+/** How often the always-mounted bell BADGE re-reads (ms). Background tabs never poll (react-query default). */
+export const INBOX_BADGE_POLL_INTERVAL_MS = 5 * 60_000;
 /** Notices per page read. */
 export const INBOX_PAGE_SIZE = 50;
 
@@ -77,7 +79,7 @@ export function useWorkWaiting(enabled: boolean) {
     queryKey: workKey(userId),
     queryFn: fetchMyWorkWaiting,
     enabled: userId !== null && enabled,
-    refetchInterval: INBOX_POLL_INTERVAL_MS,
+    refetchInterval: INBOX_BADGE_POLL_INTERVAL_MS,
     refetchOnWindowFocus: true,
     staleTime: 15_000,
     retry: 1,
@@ -108,8 +110,10 @@ export interface InboxCounts {
 export function useInboxCounts(): InboxCounts {
   const userId = useAppSelector(selectUserId);
   const queryClient = useQueryClient();
-  const approvals = usePendingApprovalCount();
-  const idleReady = useIdleReady();
+  // The badge only needs the person-scoped share (`count - storeCount`); the record store's share
+  // is counted by `custom.inbox_counts` (useWorkWaiting) — so skip the `custom.work_inbox` read.
+  const idleReady = useLateIdleReady();
+  const approvals = usePendingApprovalCount({ includeStore: false, ready: idleReady });
   const memory = useInboxMemory();
 
   const workWaiting = useWorkWaiting(idleReady);
@@ -117,7 +121,7 @@ export function useInboxCounts(): InboxCounts {
     queryKey: summaryKey(userId),
     queryFn: fetchInboxSummary,
     enabled: userId !== null && idleReady,
-    refetchInterval: INBOX_POLL_INTERVAL_MS,
+    refetchInterval: INBOX_BADGE_POLL_INTERVAL_MS,
     refetchOnWindowFocus: true,
     staleTime: 15_000,
   });

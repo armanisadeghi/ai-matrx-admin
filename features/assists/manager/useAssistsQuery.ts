@@ -247,7 +247,7 @@ export function useAssistsQuery(
     async (sourceKey: string, until?: string) => {
       if (!userId) return 0;
       const count = await unsuppressAssistSource(userId, sourceKey, until);
-      await dispatch(fetchMyAssists({ userId }));
+      await dispatch(fetchMyAssists({ userId, force: true }));
       refresh();
       return count;
     },

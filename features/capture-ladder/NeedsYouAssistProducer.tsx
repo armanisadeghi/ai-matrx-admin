@@ -29,7 +29,14 @@ import {
 } from "@/lib/redux/slices/appContextSlice";
 import { useNeedsYou } from "@/features/capture-ladder/useNeedsYou";
 import { useLateIdleReady } from "@/lib/boot/lateIdle";
-import { produceNeedsYouAssist } from "@/features/capture-ladder/needsYouAssist";
+import {
+  NEEDS_YOU_SOURCE_KEY,
+  produceNeedsYouAssist,
+} from "@/features/capture-ladder/needsYouAssist";
+import {
+  selectAssistsLoaded,
+  selectPendingAssists,
+} from "@/features/assists/redux/assistsSlice";
 
 export function NeedsYouAssistProducer(): null {
   const dispatch = useAppDispatch();
@@ -44,6 +51,12 @@ export function NeedsYouAssistProducer(): null {
   // Without this the poll floor would re-emit the same row every minute,
   // bumping `occurrences` forever and making "you have had this for three
   // weeks" unreadable.
+  const pendingAssists = useAppSelector(selectPendingAssists);
+  const assistsLoaded = useAppSelector(selectAssistsLoaded);
+  // Whether this producer has a row to retire: it emitted one this session, or the person's
+  // pending assists (already loaded by the dock/strip) hold one. An empty queue with nothing to
+  // retire writes nothing — `act_on_my_assists` is a WRITE and must not run on every page load.
+  const hasRowToRetire = pendingAssists.some((a) => a.sourceKey === NEEDS_YOU_SOURCE_KEY);
   const running = useRef(false);
   const lastSignature = useRef<string | null>(null);
 
@@ -61,6 +74,14 @@ export function NeedsYouAssistProducer(): null {
       .join(",")}`;
     if (signature === lastSignature.current) return;
     if (running.current) return;
+    if (handoffs.length === 0 && lastSignature.current === null) {
+      // First sweep, empty queue: only retire a row that exists. Not knowing yet = wait.
+      if (!assistsLoaded) return;
+      if (!hasRowToRetire) {
+        lastSignature.current = signature;
+        return;
+      }
+    }
 
     running.current = true;
     void produceNeedsYouAssist({
@@ -85,7 +106,7 @@ export function NeedsYouAssistProducer(): null {
       .finally(() => {
         running.current = false;
       });
-  }, [state.kind, handoffs, userId, organizationId, organizationName, dispatch]);
+  }, [state.kind, handoffs, userId, organizationId, organizationName, dispatch, assistsLoaded, hasRowToRetire]);
 
   return null;
 }

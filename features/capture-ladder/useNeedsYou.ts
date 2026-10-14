@@ -19,11 +19,10 @@
  *     it, because the events that matter here MOVE a row in or out of the queue
  *     — a claim, a needs-drive, a capture — and a patched list would need every
  *     one of those transitions re-implemented on the client.
- *   • A POLL FLOOR (60s, visible tabs only). Realtime is the fast path; this is
- *     the one that cannot lie. A socket still drops, a laptop still sleeps, and
- *     a dropped socket that reconnects has no replay — so the floor stays even
- *     now that the table is published, and `onBackfill` re-reads on every
- *     reconnect, tab wake, network restore and queue overflow.
+ *   • `onBackfill` — a socket still drops and a laptop still sleeps, and a
+ *     dropped socket that reconnects has no replay, so every reconnect, tab
+ *     wake, network restore and queue overflow re-reads. There is NO timer poll
+ *     (removed 2026-10-13: it read the table from every tab on every page).
  *
  *     THIS WAS NOT ALWAYS TRUE, and the history is the reason `liveness` exists
  *     at all. Until aidream migration 0873 (2026-09-17) `media.capture_handoff`
@@ -63,8 +62,6 @@ const needsYouChannel = defineChannelNamespace({
 /** A burst of row events deserves ONE re-read. */
 const REFETCH_DEBOUNCE_MS = 300;
 
-/** The poll floor. Realtime is the fast path; this is the one that cannot lie. */
-const POLL_INTERVAL_MS = 60_000;
 
 /**
  * How fresh this list actually is, in terms a screen can say out loud.
@@ -113,9 +110,9 @@ export function livenessSentenceFor(liveness: NeedsYouLiveness): string | null {
     case "live":
       return null;
     case "polling":
-      return "This list checks for new pages every minute rather than the instant they arrive. Press refresh if you are waiting on one.";
+      return "This list does not update the instant a page arrives. Press refresh if you are waiting on one.";
     case "degraded":
-      return "The live connection is down, so this list is only as new as its last check a minute ago. Press refresh to check right now.";
+      return "The live connection is down, so this list is only as new as its last check. Press refresh to check right now.";
   }
 }
 
@@ -179,16 +176,11 @@ export function useNeedsYou({ enabled = true }: { enabled?: boolean } = {}): Use
     void load();
   }, [load, userId, enabled]);
 
-  // ── The poll floor ────────────────────────────────────────────────────────
-  useEffect(() => {
-    if (!enabled) return;
-    const tick = () => {
-      if (typeof document !== "undefined" && document.hidden) return;
-      void loadRef.current();
-    };
-    const id = setInterval(tick, POLL_INTERVAL_MS);
-    return () => clearInterval(id);
-  }, [enabled]);
+  // ── No poll floor ─────────────────────────────────────────────────────────
+  // (2026-10-13) The 60s floor read this table from every open tab on every page. Realtime is the
+  // path, and `onBackfill` below re-reads on every reconnect, tab wake, network restore and queue
+  // overflow — the cases a floor existed to cover. When the socket is down `liveness` says
+  // "degraded" and the screen offers Refresh.
 
   // ── Postgres Changes ──────────────────────────────────────────────────────
   const { status: channelStatus } = useChannel(

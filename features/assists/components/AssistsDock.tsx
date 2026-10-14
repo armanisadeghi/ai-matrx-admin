@@ -128,7 +128,7 @@ export default function AssistsDock() {
     const onFocus = () => {
       if (Date.now() - lastReadAt.current < ASSISTS_FOCUS_REFETCH_MS) return;
       lastReadAt.current = Date.now();
-      void dispatch(fetchMyAssists({ userId }));
+      void dispatch(fetchMyAssists({ userId, force: true }));
     };
     window.addEventListener("focus", onFocus);
     return () => window.removeEventListener("focus", onFocus);
