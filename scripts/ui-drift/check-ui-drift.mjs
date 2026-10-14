@@ -13,8 +13,12 @@
  *                            shadow, type, border, colour). Placement classes (margin, flex/grid
  *                            placement, position, width-full, truncate…) are allowed.
  *   arbitrary-text-size      `text-[11px]` / `text-[0.8rem]` — an off-scale type size.
- *   faded-text-colour        `text-muted-foreground/60`, `text-foreground/[0.6]` — an opacity-mixed text
- *                            grey (STYLE-GUIDE: two text colours only). bg-/border- opacity is out of scope.
+ *   faded-text-colour        `text-muted-foreground/60`, `text-foreground/[0.6]`, `text-card-foreground/70` — an
+ *                            opacity-mixed text grey (STYLE-GUIDE: three text states only). bg-/border- opacity is out of scope.
+ *   faded-opacity            `opacity-50`, `disabled:opacity-50`, `opacity-[0.6]` — a fractional opacity class
+ *                            (0/100 show-hide is allowed): opacity on a box fades its text into an in-between
+ *                            grey; disabled is `text-disabled-foreground` (the 2026-10-14 gray-disease ruling).
+ *                            Same predicate as @ai-matrx/design-system scripts/text-colour-law.mjs.
  *   secondary-as-accent      `from-/via-/to-/border-/ring-/text-secondary` (not `-foreground`) — secondary is
  *                            the quiet grey surface (shadcn meaning); the brand purple is brand-secondary.
  *   raw-color                a raw Tailwind palette colour (`bg-blue-500`, `text-white`) or a hex
@@ -107,7 +111,11 @@ export const RULES = {
   },
   "faded-text-colour": {
     title: "opacity-mixed text grey",
-    fix: "There are two text colours: text-foreground for content, text-muted-foreground for everything around it. No third grey — if it must be fainter, it is the wrong element (meta goes type-meta text-muted-foreground; disabled uses disabled/aria-disabled).",
+    fix: "Text has three colours: text-foreground (content, actions), text-muted-foreground (labels, meta, menu group labels, placeholders), text-disabled-foreground (a disabled control). No other grey — if it must be fainter, it is the wrong element. STYLE-GUIDE \"Colour\".",
+  },
+  "faded-opacity": {
+    title: "opacity fading text into an in-between grey",
+    fix: "Never fade with opacity-NN (0/100 show-hide is fine). Disabled → the control's disabled prop (it paints text-disabled-foreground); secondary text → text-muted-foreground. STYLE-GUIDE \"Colour\".",
   },
   "secondary-as-accent": {
     title: "secondary used as an accent colour",
@@ -236,7 +244,8 @@ const PALETTE = "slate|gray|zinc|neutral|stone|red|orange|amber|yellow|lime|gree
 const RAW_COLOR = new RegExp(`^(bg|text|border(-[trblxyse])?|ring|ring-offset|fill|stroke|from|to|via|outline|divide|decoration|placeholder|caret|accent|shadow)-((${PALETTE})-\\d{2,3}|black|white)(\\/\\[?[\\d.]+\\]?)?$`);
 const HEX_CLASS = /\[#[0-9a-fA-F]{3,8}\]/;
 const ARBITRARY_TEXT = /^text-\[\d+(\.\d+)?(px|rem|em)\]$/;
-const FADED_TEXT = /^text-(muted-foreground|foreground)\/(\d+(\.\d+)?|\[[^\]]+\])$/;
+const FADED_TEXT = /^text-(muted-foreground|foreground|card-foreground|popover-foreground|accent-foreground|secondary-foreground|disabled-foreground)\/(\d+(\.\d+)?|\[[^\]]+\])$/;
+const FADED_OPACITY = /^opacity-(?!0$|100$)(\d{1,2}|\[[^\]]+\])$/;
 const SECONDARY_ACCENT = /^(from|via|to|border(-[trblxyse])?|ring|text)-secondary(\/(\d+(\.\d+)?|\[[^\]]+\]))?$/;
 const HEX_LITERAL = /#[0-9a-fA-F]{3}(?:[0-9a-fA-F]{3}(?:[0-9a-fA-F]{2})?)?\b/;
 
@@ -391,6 +400,8 @@ export function scanSource(file, text) {
     if (text.length) add("arbitrary-text-size", node, `${label} ${[...new Set(text)].sort().join(" ")}`);
     const faded = toks.filter((t) => FADED_TEXT.test(stripVariants(t).base));
     if (faded.length) add("faded-text-colour", node, `${label} ${[...new Set(faded)].sort().join(" ")}`);
+    const fadedBox = toks.filter((t) => FADED_OPACITY.test(stripVariants(t).base));
+    if (fadedBox.length) add("faded-opacity", node, `${label} ${[...new Set(fadedBox)].sort().join(" ")}`);
     const accent = toks.filter((t) => SECONDARY_ACCENT.test(stripVariants(t).base));
     if (accent.length) add("secondary-as-accent", node, `${label} ${[...new Set(accent)].sort().join(" ")}`);
     if (!spinnerFile && toks.some((t) => stripVariants(t).base === "animate-spin")) add("spinner-outside-spinner", node, label);
@@ -728,6 +739,7 @@ export function Bad() {
       <TabsList className="h-full min-h-0 w-full rounded-lg bg-muted">x</TabsList>
       <div className="inline-flex items-center rounded-md bg-muted p-0.5"><button onClick={a}>One</button><button onClick={b}>Two</button></div>
       <span className="hover:text-muted-foreground/60 text-foreground/[0.6]">faded</span>
+      <em className="disabled:opacity-50 opacity-[0.7]">faded box</em>
       <i className="from-primary to-secondary/20 hover:text-secondary" />
     </Card>
   );
@@ -762,6 +774,7 @@ export function Good() {
       <span className="flex size-8 items-center justify-center rounded-md bg-primary/10 text-primary" />
       <SegmentedControl aria-label="Mode" value={m} onValueChange={setM} data={[{ value: "a", label: "A" }, { value: "b", label: "B" }]} />
       <div className="flex items-center rounded-md bg-muted p-1"><span>progress</span></div>
+      <em className="opacity-0 group-hover:opacity-100 text-disabled-foreground">shown on hover</em>
     </Card>
   );
 }
@@ -787,14 +800,67 @@ const PLANTED_SITES = [
   "canonical-override :: <section> [&_[data-matrx-table-tabs]]:border-b-0",
   "hand-built-chip :: <span> bg-warning/10 px-2.5 rounded-full text-warning text-xs",
   "faded-text-colour :: <span> hover:text-muted-foreground/60 text-foreground/[0.6]",
+  "faded-opacity :: <em> disabled:opacity-50 opacity-[0.7]",
   "secondary-as-accent :: <i> hover:text-secondary to-secondary/20",
   "primitive-visual-class :: <TabsList> bg-muted rounded-lg",
   "hand-built-segmented :: SegmentedControl from the package root",
   "hand-built-segmented :: <div> bg-muted inline-flex p-0.5 rounded-md",
 ];
 
+// ── The text-state contract on the HOST's tokens ──────────────────────────────────────────────
+// app/globals.css re-declares the colour tokens, and the host layer WINS over the package's
+// defaults, so the package's own contrast test (token-contrast.test.ts) never sees what the app
+// paints. The same thresholds run here (2026-10-14 gray-disease ruling; STYLE-GUIDE "Colour"):
+// muted >= 4.5:1 and disabled >= 3.0:1 on background/card/popover/muted; foreground:muted >= 1.85;
+// muted:disabled >= 1.45 — in light AND dark.
+function hslLum([h, s, l]) {
+  const sat = s / 100, lig = l / 100, a = sat * Math.min(lig, 1 - lig);
+  const f = (n) => {
+    const k = (n + h / 30) % 12;
+    const c = lig - a * Math.max(-1, Math.min(k - 3, 9 - k, 1));
+    return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+  };
+  return 0.2126 * f(0) + 0.7152 * f(8) + 0.0722 * f(4);
+}
+const ratio = (a, b) => { const x = hslLum(a), y = hslLum(b); return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05); };
+function tokenBlock(css, selector) {
+  const m = selector.exec(css);
+  if (!m) return null;
+  let depth = 0, i = m.index + m[0].length;
+  const start = i;
+  for (; i < css.length; i++) { if (css[i] === "{") depth++; if (css[i] === "}") { if (depth === 0) break; depth--; } }
+  const out = new Map();
+  for (const t of css.slice(start, i).matchAll(/--([a-z0-9-]+):\s*([0-9.]+)\s+([0-9.]+)%\s+([0-9.]+)%\s*;/g)) if (!out.has(t[1])) out.set(t[1], [+t[2], +t[3], +t[4]]);
+  return out;
+}
+export function textStateProblems(css) {
+  const problems = [];
+  const light = tokenBlock(css, /^\s*:root\s*\{/m);
+  const darkOnly = tokenBlock(css, /^\s*\.dark\s*\{/m);
+  if (!light || !darkOnly) return ["text-states: :root or .dark token block not found"];
+  for (const [theme, t] of [["light", light], ["dark", new Map([...light, ...darkOnly])]]) {
+    const get = (k) => t.get(k) ?? null;
+    const fg = get("foreground"), muted = get("muted-foreground"), dis = get("disabled-foreground");
+    if (!fg || !muted) { problems.push(`text-states ${theme}: --foreground/--muted-foreground missing`); continue; }
+    for (const surface of ["background", "card", "popover", "muted"]) {
+      const bg = get(surface);
+      if (!bg) continue;
+      if (ratio(muted, bg) < 4.5) problems.push(`text-states ${theme}: muted-foreground on ${surface} ${ratio(muted, bg).toFixed(2)}:1 < 4.5`);
+      if (dis && ratio(dis, bg) < 3) problems.push(`text-states ${theme}: disabled-foreground on ${surface} ${ratio(dis, bg).toFixed(2)}:1 < 3.0`);
+    }
+    if (ratio(fg, muted) < 1.85) problems.push(`text-states ${theme}: foreground:muted ${ratio(fg, muted).toFixed(2)}:1 < 1.85 (labels look like content)`);
+    if (dis && ratio(muted, dis) < 1.45) problems.push(`text-states ${theme}: muted:disabled ${ratio(muted, dis).toFixed(2)}:1 < 1.45 (disabled looks enabled)`);
+  }
+  return problems;
+}
+
 export function selfTest() {
   const problems = [];
+  // The host's real tokens obey the text-state contract, and a planted gray-disease palette fails it.
+  const hostCss = readFileSync(join(REPO_ROOT, "app/globals.css"), "utf8");
+  for (const p of textStateProblems(hostCss)) problems.push(`app/globals.css breaks the text-state contract: ${p}`);
+  const sick = ":root { --foreground: 240 4% 16%; --muted-foreground: 240 5% 35%; --card: 0 0% 100%; }\n.dark { --foreground: 240 5% 90%; --muted-foreground: 240 5% 80%; --card: 240 5% 20%; }";
+  if (!textStateProblems(sick).some((p) => p.includes("dark: foreground:muted"))) problems.push("text-states did not catch dark muted 1.30:1 from foreground (the 2026-10-14 palette)");
   const got = scanSource("features/x/Bad.tsx", PLANTED).map((s) => `${s.rule} :: ${s.what}`);
   for (const want of PLANTED_SITES) if (!got.includes(want)) problems.push(`planted site not caught: ${want}`);
   for (const extra of got) if (!PLANTED_SITES.includes(extra)) problems.push(`reported a site that was not planted: ${extra}`);

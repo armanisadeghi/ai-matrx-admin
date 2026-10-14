@@ -17,6 +17,14 @@ A fast, clean, **inviting** UI. Sharp, minimal, confident. The user's first reac
 - `.claude/ui-skills/shared/design-system-anchors.md` — exact tokens / glass / components to reuse.
 - [project-conventions.md](project-conventions.md) (in this skill; absorbed the former `modern-web-design-expert` skill) — the "how to write conformant CSS" layer: migration priorities (fluid `clamp()` type, `@container` queries, `@starting-style` entrance animations, shadcn wrappers), textures/scrollbars, layout components, and key-file map. Applies to every ui-* posture, not just this one.
 
+## Colour: three text states, never a fourth grey
+
+Text is `text-foreground` (content, every action), `text-muted-foreground` (labels, meta, menu group
+labels, placeholders) or `text-disabled-foreground` (a disabled control, via its `disabled` prop).
+Never `/60`, `opacity-*` on text, `text-gray-*`, or a restyled menu label: "gray on gray on gray"
+is the defect Arman banned on 2026-10-14. Check both themes; `pnpm findings` fails a new one. Body:
+the style guide (`../common-docs/systems/platform/ui-shell/STYLE-GUIDE.md`, Colour).
+
 ## Interview first — 2 questions, in plain conversation, skippable
 
 > **Only when a person asked you, live, to redesign this page.** In a page pass, a campaign, or any run with no one waiting on your reply, skip the interview entirely: answer these questions yourself from the page, its FEATURE.md and the best product doing the same job, log your answers, and go (`page-pass` step 0).
