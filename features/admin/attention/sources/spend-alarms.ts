@@ -369,7 +369,7 @@ export function spendAlarmItems(
     const shipped = fixFor(row);
     const baseFix = shipped ? `Fixed in code (${shipped.commit}): ${shipped.what}` : row.fix;
     const fix = [pausedLine(row), baseFix].filter(Boolean).join(" ") || null;
-    const cost = alarmCostLine(row.cost_usd, row.cost_avoided_usd, (n) => formatSpendUsd(n));
+    const cost = alarmCostLine(row.cost_usd, row.cost_avoided_usd, (n) => formatSpendUsd(n), row);
 
     const untilMs = row.snoozed_until ? Date.parse(row.snoozed_until) : NaN;
     const current =

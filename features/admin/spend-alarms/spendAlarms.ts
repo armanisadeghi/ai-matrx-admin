@@ -96,6 +96,10 @@ export interface SpendAlarmRecord {
   last_seen_at: string;
   cost_usd: number | null;
   cost_avoided_usd: number | null;
+  /** "snapshot": cost_usd is the latest reading of a rolling window (never a sum); else new money added up. */
+  cost_mode?: "snapshot" | "incremental";
+  /** What a snapshot reading covers, e.g. "last 7 days at list price ($0.00 billed)". */
+  cost_label?: string | null;
   status: AlarmStatus;
   snoozed_until: string | null;
   /** Why it was muted (the attention dock's Mute note); null when not snoozed or no note. */
@@ -177,6 +181,8 @@ function toRecord(row: Record<string, unknown>): SpendAlarmRecord {
   return {
     ...(row as unknown as SpendAlarmRecord),
     refused: meta.refused === true,
+    cost_mode: meta.cost_mode === "snapshot" ? "snapshot" : "incremental",
+    cost_label: typeof meta.cost_label === "string" && meta.cost_label ? meta.cost_label : null,
     person: typeof meta.person === "string" && meta.person ? meta.person : null,
     code_fix: fix && typeof fix.what === "string" ? fix : null,
     refs: asRefs(row.refs),
@@ -799,9 +805,19 @@ export function hasRawId(text: string): boolean {
   return new RegExp(UUID_RE.source, "i").test(text);
 }
 
+/** A snapshot record's cost is its latest reading with the window it covers, never "spent". */
+function snapshotCostLine(cost: number, fmt: (n: number) => string, r?: Pick<SpendAlarmRecord, "cost_mode" | "cost_label">): string | null {
+  return r?.cost_mode === "snapshot" ? `${fmt(cost)} ${r.cost_label || "latest reading"}` : null;
+}
+
 /** What it cost, or would have cost, in one short phrase; null when nothing was measured. */
-export function alarmCostLine(cost: number | null | undefined, avoided: number | null | undefined, fmt: (n: number) => string): string | null {
-  if (cost != null) return `${fmt(cost)} spent`;
+export function alarmCostLine(
+  cost: number | null | undefined,
+  avoided: number | null | undefined,
+  fmt: (n: number) => string,
+  snapshot?: Pick<SpendAlarmRecord, "cost_mode" | "cost_label">,
+): string | null {
+  if (cost != null) return snapshotCostLine(cost, fmt, snapshot) ?? `${fmt(cost)} spent`;
   if (avoided != null) return `${fmt(avoided)} avoided (est.)`;
   return null;
 }
@@ -826,10 +842,10 @@ export function fixFor(r: Pick<SpendAlarmRecord, "code_fix" | "refs">): CodeFix 
 
 /** "$x spent", "$0 — refused before spending", or "Not measured". */
 export function costLabel(
-  r: Pick<SpendAlarmRecord, "cost_usd" | "cost_avoided_usd" | "refused">,
+  r: Pick<SpendAlarmRecord, "cost_usd" | "cost_avoided_usd" | "refused"> & Partial<Pick<SpendAlarmRecord, "cost_mode" | "cost_label">>,
   fmt: (n: number) => string,
 ): string {
-  if (r.cost_usd != null) return `${fmt(r.cost_usd)} spent`;
+  if (r.cost_usd != null) return snapshotCostLine(r.cost_usd, fmt, r) ?? `${fmt(r.cost_usd)} spent`;
   // The estimate the held run captured at the refusal (billing.held_run.estimated_cost_usd).
   if (r.cost_avoided_usd != null) return `${fmt(r.cost_avoided_usd)} avoided (est.)`;
   if (r.refused) return `${fmt(0)} · refused`;

@@ -93,7 +93,7 @@ describe("headlines carry no raw ids", () => {
 });
 
 import { formatSpendUsd } from "@/components/cost/formatAdminCost";
-import { costLabel, fixFor, isMigrated, refHref } from "./spendAlarms";
+import { alarmCostLine, costLabel, fixFor, isMigrated, refHref } from "./spendAlarms";
 
 describe("what the record page leads with", () => {
   const fmt = (n: number) => formatSpendUsd(n);
@@ -101,6 +101,12 @@ describe("what the record page leads with", () => {
     expect(costLabel(rec(), fmt)).toBe("$0.00 · refused");
     expect(costLabel(rec({ cost_usd: 10.67 }), fmt)).toBe("$10.67 spent");
     expect(costLabel(rec({ refused: false }), fmt)).toBe("Not measured");
+  });
+  it("a rolling-window snapshot shows its latest reading and window, never spent", () => {
+    const snap = { cost_usd: 66.21, cost_mode: "snapshot" as const, cost_label: "last 7 days at list price ($0.00 billed)" };
+    expect(costLabel(rec(snap), fmt)).toBe("$66.21 last 7 days at list price ($0.00 billed)");
+    expect(alarmCostLine(66.21, null, fmt, snap)).toBe("$66.21 last 7 days at list price ($0.00 billed)");
+    expect(alarmCostLine(66.21, null, fmt, { cost_mode: "incremental" })).toBe("$66.21 spent");
   });
   it("a handler-scoped fix covers only that handler", () => {
     expect(fixFor(rec({ refs: { handler: "auto_ingest" } }))?.commit).toBe("aidream 8ab384301f");
