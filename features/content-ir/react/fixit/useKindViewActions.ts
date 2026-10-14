@@ -44,8 +44,14 @@ import {
   type LayerTarget,
 } from "./layer-fixit";
 
-/** The viewer's own layered winner for this kind, if any (resolver `layer`). */
-export function readLayerFacts(kind: string): FixItLayerFacts | null {
+/**
+ * The viewer's own layered winner for this kind, if any (resolver `layer`).
+ * `registryVersion` is unused in the body on purpose: it is the React Compiler's
+ * memo key, so a hook caller re-reads when the resolver's tiers change (an
+ * overlay load landing after first paint) instead of keeping the first answer.
+ */
+export function readLayerFacts(kind: string, registryVersion?: number): FixItLayerFacts | null {
+  void registryVersion;
   const resolution = resolveComponent(kind, "web", "output");
   if (!resolution?.layer) return null;
   const shared = resolveSharedComponent(kind, "web", "output");
@@ -73,7 +79,7 @@ export function useKindViewActions(input: {
   const openRun = useOpenAgentRunWindow();
   const [busy, setBusy] = useState(false);
   // Repaint when the resolver's tiers change (an overlay load, a switch-off).
-  useSyncExternalStore(
+  const registryVersion = useSyncExternalStore(
     subscribeKindComponents,
     () => componentRegistry.getVersion(),
     () => 0,
@@ -84,7 +90,7 @@ export function useKindViewActions(input: {
     isSuperAdminPerson,
     isOrgAdmin: orgGate.isAdmin && orgGate.orgId === activeOrgId,
   };
-  const layer = userId ? readLayerFacts(input.kind) : null;
+  const layer = userId ? readLayerFacts(input.kind, registryVersion) : null;
 
   const launchDeps: LayerLaunchDeps = {
     ensureOrgId,
