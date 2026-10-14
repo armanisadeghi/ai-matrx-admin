@@ -159,8 +159,9 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
   const [webChoices, setWebChoices] = useState<Record<string, WebChoice>>({});
   // The facts agent's findings (kind brand_basics), answered on the validation page.
   const [facts, setFacts] = useState<BrandFact[]>([]);
-  // The we-think agent's suggestions per finding key: they only glow an option, never answer.
-  const [suggestions, setSuggestions] = useState<Record<string, WeThinkSuggestion>>({});
+  // The we-think agent's suggestions per round (run id) then finding key: they only glow an option, never answer.
+  // Kept per round so two rounds judging one finding never overwrite each other back and forth.
+  const [suggestionsByRun, setSuggestionsByRun] = useState<Record<string, Record<string, WeThinkSuggestion>>>({});
   // After Create, once the core is settled (validate/queue VALIDATION_THRESHOLD): the focus queue.
   const [validateOrg, setValidateOrg] = useState<string | null>(null);
   const validating = Boolean(validateOrg);
@@ -235,7 +236,7 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
     setRelations({});
     setWebChoices({});
     setFacts([]);
-    setSuggestions({});
+    setSuggestionsByRun({});
     setComparing(false);
     explored.current = new Set();
     wokenSent.current = new Set();
@@ -413,6 +414,8 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
     .filter((s) => s.phase === "running" && s.progress)
     .map((s) => s.progress as string);
   const costUsd = roundViews.reduce((sum, v) => sum + (v?.steps.reduce((s, x) => s + x.costUsd, 0) ?? 0), 0);
+  // A later round's judgment of a finding wins over an earlier one (it saw more).
+  const suggestions: Record<string, WeThinkSuggestion> = Object.assign({}, ...rounds.map((r) => (r.runId ? suggestionsByRun[r.runId] : undefined) ?? {}));
   const visible = withSuggestions(orderedEvidence(items.values()), suggestions);
   const basics = confirmedBasics(items, decisions, person);
   // The landing card shows the best found name and logo until the person confirms their own, so
@@ -716,7 +719,7 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
             onEvidence={onEvidence}
             onFacts={(f) => setFacts((cur) => mergeFacts(cur, f))}
             onSuggestions={(next) =>
-              setSuggestions((cur) => (Object.entries(next).every(([k, v]) => JSON.stringify(cur[k]) === JSON.stringify(v)) ? cur : { ...cur, ...next }))
+              setSuggestionsByRun((cur) => (JSON.stringify(cur[r.runId as string]) === JSON.stringify(next) ? cur : { ...cur, [r.runId as string]: next }))
             }
             onView={onView}
           />
