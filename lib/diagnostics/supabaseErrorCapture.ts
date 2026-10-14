@@ -57,6 +57,10 @@ import {
   browserAdminLaneOpen,
   installAdminLane,
 } from "@/utils/supabase/adminLane";
+import {
+  installBrowserReadDeadline,
+  isBrowserReadDeadlineError,
+} from "@/utils/supabase/browserReadDeadline";
 
 /** Context threaded through a single query-builder chain. */
 interface ChainContext {
@@ -334,7 +338,13 @@ function captureResult(
     // Normalize expected browser control/transport failures so narrow tier
     // rules can keep them visible locally without filing a server repair job.
     // Real PostgREST/Postgres responses carry a code/status and stay loud.
-    name: isAbortResultError(e)
+    // The browser read deadline's TimeoutError is checked FIRST: it carries
+    // postgrest-js's no-retry code, so its hint also reads "Request was
+    // aborted" — but a stalled connection is a transport failure, never
+    // cancelled control flow (utils/supabase/browserReadDeadline.ts).
+    name: isBrowserReadDeadlineError(e)
+      ? "TimeoutError"
+      : isAbortResultError(e)
       ? "AbortError"
       : isTransportFailure(e)
         ? "TypeError"
@@ -642,6 +652,13 @@ export function wrapClientForCapture<T>(client: T): T {
   // send time from the current path — /administration/** rides the lane,
   // every user page does not. Rule and reasons: utils/supabase/adminLane.ts.
   installAdminLane(target, browserAdminLaneOpen);
+
+  // THE BROWSER READ DEADLINE binds here as well: a PostgREST read whose
+  // response headers have not arrived within 12s is a stalled connection and
+  // fails as a named TimeoutError, once, instead of riding postgrest-js's
+  // 4-attempt retry for ~90s. Bodies, writes, RPCs (POST), auth, storage and
+  // realtime are untouched. Rule and reasons: utils/supabase/browserReadDeadline.ts.
+  installBrowserReadDeadline(target);
 
   return new Proxy(target, {
     get(target, prop, receiver) {

@@ -450,11 +450,11 @@ export const DOWNGRADE_RULES: DowngradeRule[] = [
     tier: "yellow",
     persist: false,
     reason:
-      "The browser lost network connectivity before Supabase returned an HTTP response. Keep the failed operation visible locally for retry UX, but a client wifi/sleep/deploy handoff is not a server defect for the repair queue.",
+      "The browser lost network connectivity before Supabase returned an HTTP response — a bare TypeError, or a TimeoutError from the browser read deadline (no response headers within 12s on a stalled connection). Keep the failed operation visible locally for retry UX, but a client wifi/sleep/deploy handoff is not a server defect for the repair queue.",
     addedAt: "2026-08-18",
     match: {
       source: "supabase-postgrest",
-      name: "TypeError",
+      name: ["TypeError", "TimeoutError"],
       status: 0,
     },
   },

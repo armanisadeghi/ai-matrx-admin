@@ -118,6 +118,16 @@ import type {
 } from "@/features/meet/components/manage/MeetingFormDialog";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
 import { openOutbound } from "@ai-matrx/kit/outbound";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  RowSelectionBar,
+  useRowSelection,
+  type RowSelection,
+} from "@/components/official/RowSelectionBar";
+import {
+  buildMeetingBulkActions,
+  meetingIdOf,
+} from "@/features/meet/components/manage/meetingBulkActions";
 
 /** One Upcoming row: an AI Matrx occurrence, or an event from the person's other calendar. */
 type AgendaRow =
@@ -377,6 +387,37 @@ export function MeetingsHome() {
     return false;
   });
 
+  // Selection is over the AI Matrx meetings on screen (an Upcoming series
+  // is one meeting however many days it shows); calendar events are not ours.
+  const selectable: MeetingRecord[] =
+    tab === "upcoming"
+      ? [
+          ...liveInstants,
+          ...upcoming.flatMap((item) => {
+            const m = meetingsById.get(item.meetingId);
+            return m ? [m] : [];
+          }),
+        ].filter((m, i, all) => all.findIndex((o) => o.id === m.id) === i)
+      : listed;
+  const selection = useRowSelection(selectable, meetingIdOf);
+  const bulkActions = buildMeetingBulkActions({
+    actions,
+    roles: directory.roles,
+  }).filter((a) =>
+    tab === "archived" ? a.id !== "move-to-trash" : a.id !== "restore",
+  );
+  const bar = (
+    <RowSelectionBar
+      selection={selection}
+      idOf={meetingIdOf}
+      actions={bulkActions}
+      noun="meeting"
+      plural="meetings"
+      onRefresh={directory.reload}
+      disabled={selectable.length === 0}
+    />
+  );
+
   return (
     <>
       {header}
@@ -527,6 +568,8 @@ export function MeetingsHome() {
               run={run}
               onCreate={() => void withOrganization("create")}
               searching={query.trim() !== "" || scope !== "mine"}
+              bar={bar}
+              selection={selection}
             />
           ) : query.trim() !== "" && listed.length === 0 ? (
             <p className="mt-6 text-center text-sm text-muted-foreground">
@@ -540,6 +583,8 @@ export function MeetingsHome() {
               roles={directory.roles}
               onOpen={(m) => startTransition(() => router.push(meetingHref(m)))}
               run={run}
+              bar={bar}
+              selection={selection}
             />
           )}
           {tab !== "recordings" ? <MeetingContentSearch query={query} /> : null}
@@ -589,6 +634,8 @@ function UpcomingList({
   run,
   onCreate,
   searching,
+  bar,
+  selection,
 }: {
   days: ReturnType<typeof groupByDay<AgendaRow>>;
   onOpenEvent: (event: ExternalEvent) => void;
@@ -604,6 +651,8 @@ function UpcomingList({
   run: Run;
   onCreate: () => void;
   searching: boolean;
+  bar: React.ReactNode;
+  selection: RowSelection<MeetingRecord>;
 }) {
   if (days.length === 0 && liveInstants.length === 0) {
     return (
@@ -631,8 +680,14 @@ function UpcomingList({
       </div>
     );
   }
+  const pick = (meeting: MeetingRecord): RowSelect => ({
+    checked: selection.has(meetingIdOf(meeting)),
+    onChange: () => selection.toggle(meetingIdOf(meeting)),
+    label: meeting.title,
+  });
   return (
     <div className="mt-2 space-y-5">
+      {bar}
       {liveInstants.length > 0 ? (
         <section aria-label="Happening now">
           <h2 className="px-1 pb-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
@@ -642,6 +697,7 @@ function UpcomingList({
             {liveInstants.map((meeting) => (
               <li key={meeting.id}>
                 <Row
+                  select={pick(meeting)}
                   onOpen={() => onOpenMeeting(meeting)}
                   time={
                     <span className="text-sm font-medium text-emerald-600 dark:text-emerald-400">
@@ -739,6 +795,7 @@ function UpcomingList({
               return (
                 <li key={`${item.meetingId}:${item.originalStart}`}>
                   <Row
+                    select={meeting ? pick(meeting) : null}
                     onOpen={() => onOpen(item)}
                     muted={cancelledOne}
                     time={
@@ -795,6 +852,8 @@ function MeetingList({
   roles,
   onOpen,
   run,
+  bar,
+  selection,
 }: {
   tab: Tab;
   meetings: readonly MeetingRecord[];
@@ -802,6 +861,8 @@ function MeetingList({
   roles: ReadonlyMap<string, "host" | "cohost" | "invitee">;
   onOpen: (meeting: MeetingRecord) => void;
   run: Run;
+  bar: React.ReactNode;
+  selection: RowSelection<MeetingRecord>;
 }) {
   if (meetings.length === 0) {
     const words: Record<Tab, string> = {
@@ -819,7 +880,9 @@ function MeetingList({
     );
   }
   return (
-    <ul className="mt-2 divide-y divide-border overflow-hidden rounded-lg border border-border bg-card">
+    <div className="mt-2 space-y-2">
+    {bar}
+    <ul className="divide-y divide-border overflow-hidden rounded-lg border border-border bg-card">
       {meetings.map((meeting) => {
         const when = meeting.startedAt ?? meeting.scheduledFor;
         const role = roles.get(meeting.id);
@@ -840,6 +903,11 @@ function MeetingList({
         return (
           <li key={meeting.id}>
             <Row
+              select={{
+                checked: selection.has(meetingIdOf(meeting)),
+                onChange: () => selection.toggle(meetingIdOf(meeting)),
+                label: meeting.title,
+              }}
               onOpen={() => onOpen(meeting)}
               muted={tab !== "past"}
               time={
@@ -890,6 +958,7 @@ function MeetingList({
         );
       })}
     </ul>
+    </div>
   );
 }
 
@@ -924,6 +993,7 @@ function ExternalEventRow({
   };
   return (
     <Row
+      select={null}
       onOpen={onOpen}
       live={live}
       time={
@@ -994,7 +1064,11 @@ function ExternalEventRow({
   );
 }
 
+/** A row's tick box; null = the row is not a meeting of ours (shown disabled, never hidden). */
+type RowSelect = { checked: boolean; onChange: () => void; label: string };
+
 function Row({
+  select,
   onOpen,
   time,
   title,
@@ -1004,6 +1078,7 @@ function Row({
   muted,
   live,
 }: {
+  select: RowSelect | null;
   onOpen: () => void;
   time: React.ReactNode;
   title: string;
@@ -1023,6 +1098,17 @@ function Row({
       }}
       className="group flex cursor-pointer items-center gap-3 px-3 py-2.5 hover:bg-accent/50 focus-visible:bg-accent/50 focus-visible:outline-none"
     >
+      <div className="shrink-0" onClick={(e) => e.stopPropagation()}>
+        <Checkbox
+          checked={select?.checked ?? false}
+          disabled={select === null}
+          onCheckedChange={() => select?.onChange()}
+          aria-label={
+            select ? `Select ${select.label}` : `${title} cannot be selected`
+          }
+          title={select ? undefined : "Not one of your AI Matrx meetings"}
+        />
+      </div>
       <div className="w-28 shrink-0 sm:w-40">
         {live ? (
           <span className="mb-0.5 flex items-center gap-1 text-xs font-medium text-emerald-600 dark:text-emerald-400">

@@ -25,6 +25,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Switch } from "@/components/ui/switch";
+import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "@/lib/toast";
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import { cn } from "@/lib/utils";
@@ -52,9 +53,17 @@ interface Props {
   kpis: ScheduleKpis;
   /** Its trigger watches a table archived on the side it listens to (lane PROOF-DEFECTS, D6). */
   watchesArchived?: boolean;
+  selected?: boolean;
+  onSelectedChange?: () => void;
 }
 
-export function ScheduleRow({ task, kpis, watchesArchived = false }: Props) {
+export function ScheduleRow({
+  task,
+  kpis,
+  watchesArchived = false,
+  selected = false,
+  onSelectedChange,
+}: Props) {
   const dispatch = useAppDispatch();
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -113,10 +122,15 @@ export function ScheduleRow({ task, kpis, watchesArchived = false }: Props) {
     <div
       data-schedule-id={task.id}
       className={cn(
-        "group grid grid-cols-[1fr_auto] gap-3 items-center",
+        "group grid grid-cols-[auto_1fr_auto] gap-3 items-center",
         "border border-border rounded-lg p-3 bg-card hover:bg-accent/30 transition-colors",
       )}
     >
+      <Checkbox
+        checked={selected}
+        onCheckedChange={() => onSelectedChange?.()}
+        aria-label={`Select ${task.title}`}
+      />
       <Link
         href={`/schedules/${task.id}`}
         className="min-w-0 flex flex-col gap-1.5"

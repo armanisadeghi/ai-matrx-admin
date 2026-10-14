@@ -21,6 +21,15 @@ import { scheduleSummary } from "../../lib/copy";
 import { ScheduleRow } from "./ScheduleRow";
 import { useArchivedWatchTriggersState } from "../../hooks/useArchivedWatchTriggers";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { useAppDispatch } from "@/lib/redux/hooks";
+import {
+  RowSelectionBar,
+  useRowSelection,
+} from "@/components/official/RowSelectionBar";
+import {
+  buildScheduleBulkActions,
+  scheduleIdOf,
+} from "../../lib/scheduleBulkActions";
 
 /**
  * Surface emitter for `matrx-user/schedules` on the list route. The scope is
@@ -67,7 +76,9 @@ export function ScheduleList() {
 }
 
 function ScheduleListBody() {
+  const dispatch = useAppDispatch();
   const { tasks, status, error, refetch } = useScheduledTasks();
+  const selection = useRowSelection(tasks, scheduleIdOf);
   // Re-checked whenever the roster changes, so creating or pausing a schedule
   // updates the duplicate banner without a manual refresh.
   const {
@@ -184,10 +195,20 @@ function ScheduleListBody() {
             : `${watchingArchived.size} automations watch an archived table and can never run; re-key each to its table's copy or disable it.`}
         </p>
       )}
+      <RowSelectionBar
+        selection={selection}
+        idOf={scheduleIdOf}
+        actions={buildScheduleBulkActions(dispatch)}
+        noun="schedule"
+        plural="schedules"
+        onRefresh={() => void refetch()}
+      />
       {tasks.map((task) => (
         <ScheduleRow
           key={task.id}
           task={task}
+          selected={selection.has(task.id)}
+          onSelectedChange={() => selection.toggle(task.id)}
           kpis={kpis}
           watchesArchived={task.triggers.some((t) => watchingArchived.has(t.id))}
         />

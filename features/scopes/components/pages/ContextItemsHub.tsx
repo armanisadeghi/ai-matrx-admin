@@ -82,6 +82,11 @@ import {
   selectScopeTypesLoadedForOrg,
 } from "@/features/scopes/redux/selectors/admin";
 import { ensureScopeTree } from "@/features/scopes/redux/thunks/ensureScopeTree";
+import {
+  ContextItemCheckbox,
+  ContextItemSelectionProvider,
+  ContextItemsSectionCheckbox,
+} from "./ContextItemsBulk";
 
 interface ContextItemsHubProps {
   orgId: string;
@@ -101,10 +106,16 @@ interface ContextItemsHubProps {
  * how this view always shows you which dimension you're looking at.
  */
 export function ContextItemsHub(props: ContextItemsHubProps) {
-  return props.typeParam ? (
-    <ContextItemsTypeView {...props} typeParam={props.typeParam} />
-  ) : (
-    <ContextItemsOrgView {...props} />
+  return (
+    <div className="space-y-6">
+      <ContextItemSelectionProvider>
+        {props.typeParam ? (
+          <ContextItemsTypeView {...props} typeParam={props.typeParam} />
+        ) : (
+          <ContextItemsOrgView {...props} />
+        )}
+      </ContextItemSelectionProvider>
+    </div>
   );
 }
 
@@ -275,6 +286,7 @@ export function AllContextItemsHub() {
     >
     <ContextItemsWriteTargets />
     <div className="space-y-6">
+      <ContextItemSelectionProvider>
       <p className="text-sm text-muted-foreground">
         Every field across all your organizations, grouped by org and scope
         type.
@@ -308,6 +320,7 @@ export function AllContextItemsHub() {
           />
         ))
       )}
+      </ContextItemSelectionProvider>
     </div>
     </SurfaceRuntimeProvider>
   );
@@ -683,7 +696,11 @@ function ScopeTypeItemsSection({
 
   return (
     <div className="space-y-2">
-      <div className="flex items-center justify-between gap-2">
+      <div className="flex items-center gap-2">
+        <ContextItemsSectionCheckbox
+          label={type.label_plural}
+          items={items.map((item) => ({ id: item.id, label: item.label, canManage }))}
+        />
         <Link
           href={contextItemsHref(orgSlugOrId, type)}
           className="group inline-flex items-center gap-2 text-base font-semibold text-foreground hover:text-primary"
@@ -826,6 +843,9 @@ function ContextItemListRow({
           : "hover:bg-accent/30"
       }`}
     >
+      <ContextItemCheckbox
+        item={{ id: item.id, label: item.label, canManage }}
+      />
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 flex-wrap">
           <Link
