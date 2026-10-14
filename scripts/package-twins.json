@@ -1689,6 +1689,10 @@
       ],
       "shapeAllow": [
         {
+          "file": "components/mardown-display/blocks/search-kinds/primitive-blocks.tsx",
+          "why": "NOT A RELATIVE AGE: the matched line is a business-hours label, \"Opens Mon\" or \"Opens tomorrow\" from a weekly opening-hours table (nextOpening over the listed days). No timestamp or distance from now enters it; \"tomorrow\" is the next listed open day, not a computed age."
+        },
+        {
           "file": "features/start/widgets/bodies/AgendaWidget.tsx",
           "why": "PROVABLY NOT A RELATIVE AGE: the matched line formats a meeting's own start as a clock time (toLocaleTimeString, \"9:30 AM\") followed by \"N today\" for the day's occurrence count; there is no age or distance from now anywhere in it."
         },

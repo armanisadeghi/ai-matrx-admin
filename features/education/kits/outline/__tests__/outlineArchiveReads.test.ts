@@ -1,4 +1,4 @@
-const readAllRows = jest.fn();
+const mockReadAllRows = jest.fn();
 const operations: Array<[string, ...unknown[]]> = [];
 
 function chain() {
@@ -13,7 +13,7 @@ function chain() {
   return q;
 }
 
-jest.mock("@ai-matrx/data/db", () => ({ readAllRows }));
+jest.mock("@ai-matrx/data/db", () => ({ readAllRows: mockReadAllRows }));
 jest.mock("@/utils/supabase/client", () => ({
   supabase: { schema: () => ({ from: () => chain() }) },
 }));
@@ -22,7 +22,7 @@ import { readArchivedKitOutlineRows, readKitOutlineRows } from "../outlineServic
 
 beforeEach(() => {
   operations.length = 0;
-  readAllRows.mockImplementation(async (page: (range: { from: number; to: number }) => Promise<unknown>) => {
+  mockReadAllRows.mockImplementation(async (page: (range: { from: number; to: number }) => Promise<unknown>) => {
     await page({ from: 0, to: 999 });
     return [];
   });

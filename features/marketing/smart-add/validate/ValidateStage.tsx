@@ -15,6 +15,7 @@ import { Check, ChevronUp, ExternalLink, Info, Loader2, RotateCcw, X } from "luc
 import { PANEL_MOTION_CLASS } from "@ai-matrx/design-system";
 import { Badge, Button, Field, Select, type SelectOption } from "@ai-matrx/design-system/controls";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
+import { formatCount } from "@ai-matrx/kit/format";
 import { useMediaQuery } from "@ai-matrx/kit/media-query";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 import type { BrandRelationKind } from "@/features/marketing/data/service";
@@ -108,7 +109,7 @@ function Grounding({ item }: { item: FocusItem }) {
   const lines: [string, ReactNode][] = [];
   if (item.source) lines.push(["Found", item.source]);
   if (item.certainty) lines.push(["Certainty", item.certainty]);
-  if (item.followers !== null && item.followers !== undefined) lines.push(["Followers", item.followers.toLocaleString()]);
+  if (item.followers !== null && item.followers !== undefined) lines.push(["Followers", formatCount(item.followers)]);
   if (item.detail) lines.push([item.kind === "fact" ? "Why" : "Snippet", item.detail]);
   if (!lines.length && !item.evidenceUrls.length) return null;
   return (

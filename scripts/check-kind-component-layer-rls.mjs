@@ -29,6 +29,7 @@
 // Database-side plants are applied by hand around a run (see the slice-1 note in PLAN.md).
 import { randomBytes } from "node:crypto";
 import { createClient } from "@supabase/supabase-js";
+import { formatDurationMs } from "@ai-matrx/kit/format";
 import {
   testTarget,
   createOrgAdminFixture,
@@ -260,7 +261,7 @@ async function body({ fx, bUser, member }) {
 let failedHard = false;
 const made = { fx: null, bUser: null, member: null, membershipId: null };
 const t0 = Date.now();
-const stamp = (what) => console.log(`[${((Date.now() - t0) / 1000).toFixed(0)}s] ${what}`);
+const stamp = (what) => console.log(`[${formatDurationMs(Date.now() - t0, { style: "compact" })}] ${what}`);
 try {
   // Personas in parallel: each one is a separate sweeper-backed door and takes a while.
   const [fx, bUser, member] = await Promise.all([

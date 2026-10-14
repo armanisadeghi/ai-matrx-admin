@@ -18,6 +18,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { AlertTriangle, CheckCircle2, ExternalLink, Loader2, RefreshCw } from "lucide-react";
 import { Badge, Button } from "@ai-matrx/design-system/controls";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
+import { formatCount, formatRelativeTime } from "@ai-matrx/kit/format";
 import { supabase } from "@/utils/supabase/client";
 import { authenticatedWebDb } from "@/utils/supabase/webDb";
 import { useAppDispatch } from "@/lib/redux/hooks";
@@ -58,15 +59,10 @@ interface AccountJob {
   lastPostAt: string | null;
 }
 
+const WHEN_ABSOLUTE_AFTER_MS = 48 * 60 * 60 * 1000;
+
 function when(iso: string | null): string {
-  if (!iso) return "";
-  const d = new Date(iso);
-  const mins = Math.round((Date.now() - d.getTime()) / 60_000);
-  if (mins < 1) return "just now";
-  if (mins < 60) return `${mins}m ago`;
-  const hours = Math.round(mins / 60);
-  if (hours < 48) return `${hours}h ago`;
-  return d.toLocaleDateString();
+  return formatRelativeTime(iso, { style: "short", minUnit: "minute", absoluteAfter: WHEN_ABSOLUTE_AFTER_MS, absolute: "date", fallback: "" });
 }
 
 async function loadSites(brandId: string): Promise<SiteJob[]> {
@@ -279,7 +275,7 @@ export function BrandBackgroundWork({ brand, canEdit }: { brand: MarketingBrand;
                     {site.name}
                   </Link>
                   <span className="shrink-0 text-xs tabular-nums text-muted-foreground">
-                    {site.pages.toLocaleString()} pages
+                    {formatCount(site.pages)} pages
                     {site.crawl?.finishedAt ? ` · ${when(site.crawl.finishedAt)}` : ""}
                   </span>
                   {failed && !active ? (

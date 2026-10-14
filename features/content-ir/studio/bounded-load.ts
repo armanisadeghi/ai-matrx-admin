@@ -20,6 +20,7 @@
  */
 
 import { useCallback, useEffect, useRef } from "react";
+import { formatDurationMs } from "@ai-matrx/kit/format";
 
 export const SHAPE_LOAD_DEADLINE_MS = 20_000;
 
@@ -31,7 +32,7 @@ export const SHAPE_LOAD_DEADLINE_MS = 20_000;
 export const RECONNECT_RETRY_DELAYS_MS: readonly number[] = [5_000, 15_000, 30_000, 60_000];
 
 export function loadTimeoutError(what: string, ms: number): Error {
-  const error = new Error(`No answer for ${what} after ${Math.round(ms / 1000)}s`);
+  const error = new Error(`No answer for ${what} after ${formatDurationMs(ms, { style: "compact" })}`);
   error.name = "TimeoutError";
   return error;
 }
