@@ -5,7 +5,9 @@
  * kind's schema read and the component list to settle; a hung read used to
  * leave "Checking this shape…" on screen forever. The wait now ends at
  * {@link SHAPE_LOAD_DEADLINE_MS} in a named timeout — one honest line with
- * Try again, never "no schema" — and retries itself on reconnect signals.
+ * Try again, never "no schema". While timed out it keeps re-asking on
+ * reconnect signals and a bounded backoff WITHOUT flipping back to
+ * "Checking…"; only a settled answer (or a press of Try again) clears it.
  */
 
 import { useEffect, useState } from "react";
@@ -26,34 +28,43 @@ export function whenKindCheckSettles(kind: string): Promise<unknown> {
   ]);
 }
 
+function askAgain(kind: string): void {
+  kindRegistry.retrySchema(kind);
+  void componentRegistry.refresh(0);
+}
+
 export function useBoundedKindCheck(
   kind: string,
   settled: boolean,
   deadlineMs: number = SHAPE_LOAD_DEADLINE_MS,
 ): { timedOut: boolean; retry: () => void } {
   const [attempt, setAttempt] = useState(0);
-  const [timedOutAttempt, setTimedOutAttempt] = useState<string | null>(null);
-  const attemptKey = `${kind}#${attempt}`;
+  // The kind whose check timed out; cleared by a settle or a manual retry.
+  const [timedOutKind, setTimedOutKind] = useState<string | null>(null);
 
   useEffect(() => {
     if (settled) return;
     let live = true;
     withLoadDeadline(whenKindCheckSettles(kind), `the "${kind}" shape check`, deadlineMs).catch(
       (error: unknown) => {
-        if (live && isLoadTimeoutError(error)) setTimedOutAttempt(attemptKey);
+        if (live && isLoadTimeoutError(error)) setTimedOutKind(kind);
       },
     );
     return () => {
       live = false;
     };
-  }, [kind, settled, deadlineMs, attemptKey]);
+  }, [kind, settled, deadlineMs, attempt]);
 
-  const timedOut = !settled && timedOutAttempt === attemptKey;
+  const timedOut = !settled && timedOutKind === kind;
+  // Automatic re-asks keep the honest line on screen; the wait re-arms.
+  useReconnectRetry(timedOut, () => {
+    askAgain(kind);
+    setAttempt((n) => n + 1);
+  });
   const retry = () => {
-    kindRegistry.retrySchema(kind);
-    void componentRegistry.refresh(0);
+    askAgain(kind);
+    setTimedOutKind(null);
     setAttempt((n) => n + 1);
   };
-  useReconnectRetry(timedOut, retry);
   return { timedOut, retry };
 }
