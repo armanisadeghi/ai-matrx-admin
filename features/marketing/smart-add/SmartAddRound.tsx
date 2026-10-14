@@ -89,9 +89,10 @@ export function parsePersonSignals(raw: unknown): PersonSignals | null {
 /**
  * The "we think" step (mandate brand_intake.we_think): its `brand_we_think` suggestions, per finding key. Its guard
  * step (aidream brand.identify.we_think_guard: fixed facts correct the agent's pre-marks) comes after it, so its
- * answer wins wherever it arrived.
+ * answer wins wherever it arrived. `identity_marks` (aidream brand.identify.identity_marks) carries the is-this-us
+ * decisions on the accounts the guard left as ask later, in the same `brand_we_think` shape, so it comes after the guard.
  */
-const WE_THINK_STEPS: SmartAddStepPair = ["we_think", "we_think_guard", "classify"];
+const WE_THINK_STEPS: SmartAddStepPair = ["we_think", "we_think_guard", "identity_marks", "classify"];
 
 /** The page step's gate detection (aidream brand_identify_gate.GateReport), as far as the screen uses it. */
 export interface SiteGate {
