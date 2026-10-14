@@ -609,3 +609,6 @@ export function CompareSources({
     </div>
   );
 }
+
+// Keep the relationship picker available to the committed Smart Add slots.
+export { RelationPicker as RelatedChoice };
