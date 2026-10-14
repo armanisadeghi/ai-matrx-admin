@@ -174,9 +174,13 @@ export function aidreamDir(env = process.env) {
  * persona.test.mjs parses these args with the sweeper's own argparse parser.
  * @param {string} userId
  */
-export function teardownArgs(userId) {
-  if (!/^[0-9a-f-]{36}$/i.test(String(userId))) throw new PersonaFactoryRefusal(`teardown needs a user id, got "${userId}".`);
-  return ["--apply", "--user-id", userId, "--live-reason", "teardown of a persona this process created"];
+export function teardownArgs(userIdOrIds) {
+  const ids = Array.isArray(userIdOrIds) ? userIdOrIds : [userIdOrIds];
+  if (!ids.length) throw new PersonaFactoryRefusal("teardown needs at least one user id.");
+  for (const userId of ids) {
+    if (!/^[0-9a-f-]{36}$/i.test(String(userId))) throw new PersonaFactoryRefusal(`teardown needs a user id, got "${userId}".`);
+  }
+  return ["--apply", ...ids.flatMap((id) => ["--user-id", id]), "--live-reason", "teardown of a persona this process created"];
 }
 
 /**
@@ -193,6 +197,24 @@ export async function deleteFixtureUser(_target, userId) {
     throw new PersonaFactoryRefusal(
       `teardown of ${userId} failed: ${String(error.stderr || error.message).slice(0, 400)}. ` +
         "The account is tagged and expires on its own; the sweeper (aidream/scripts/sweep_expired_fixtures.py) removes it.",
+    );
+  }
+}
+
+/**
+ * Remove several fixture accounts in ONE sweeper pass (one process, one connection) — much faster than
+ * one `deleteFixtureUser` per account. Same door, same tag refusal.
+ * @param {FixtureTarget} _target
+ * @param {string[]} userIds
+ */
+export async function deleteFixtureUsers(_target, userIds) {
+  const args = ["run", "python", "scripts/sweep_expired_fixtures.py", ...teardownArgs(userIds)];
+  try {
+    await run("uv", args, { cwd: aidreamDir(), maxBuffer: 10_000_000, timeout: 600_000 });
+  } catch (error) {
+    throw new PersonaFactoryRefusal(
+      `teardown of ${userIds.join(", ")} failed: ${String(error.stderr || error.message).slice(0, 400)}. ` +
+        "The accounts are tagged and expire on their own; the sweeper (aidream/scripts/sweep_expired_fixtures.py) removes them.",
     );
   }
 }

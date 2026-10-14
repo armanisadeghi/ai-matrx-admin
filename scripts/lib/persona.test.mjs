@@ -111,3 +111,13 @@ test("teardown removes exactly one persona with args the sweeper accepts", () =>
   assert.equal(sweeperAccepts(["--target", "live", ...args]).ok, false);
   assert.throws(() => teardownArgs("--target"), PersonaFactoryRefusal);
 });
+
+test("teardown removes several personas in one sweeper pass with args the sweeper accepts", () => {
+  const ids = ["b870aae4-0000-4000-8000-000000000001", "b870aae4-0000-4000-8000-000000000002"];
+  const args = teardownArgs(ids);
+  assert.deepEqual(args.slice(0, 5), ["--apply", "--user-id", ids[0], "--user-id", ids[1]]);
+  const verdict = sweeperAccepts(args);
+  assert.ok(verdict.ok, `the sweeper refused the factory's batch teardown args: ${verdict.stderr}`);
+  assert.throws(() => teardownArgs([]), PersonaFactoryRefusal);
+  assert.throws(() => teardownArgs([ids[0], "--target"]), PersonaFactoryRefusal);
+});

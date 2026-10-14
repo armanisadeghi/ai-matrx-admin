@@ -28032,6 +28032,7 @@ export type Database = {
         Args: { p_kind_definition_id: string }
         Returns: Json
       }
+      kind_component_layer_guard_status: { Args: never; Returns: Json }
       kind_example_candidates: {
         Args: { p_kind_definition_id: string; p_limit?: number }
         Returns: {
