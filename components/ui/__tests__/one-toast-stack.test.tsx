@@ -71,7 +71,10 @@ describe("the legacy toast object API renders on the ONE sonner stack", () => {
     const onClick = jest.fn();
     const handle = useToast().toast({ title: "Deleted", action: { label: "Undo", onClick } });
     const plain = calls.find((c) => c.kind === "plain");
-    expect(plain?.args[1]).toMatchObject({ action: { label: "Undo", onClick } });
+    expect(plain?.args[1]).toMatchObject({ action: { label: "Undo" } });
+    // The press is wrapped as a notice action (lib/notice-open) and still reaches the caller's handler.
+    (plain?.args[1] as { action: { onClick: (e: unknown) => void } }).action.onClick({});
+    expect(onClick).toHaveBeenCalledTimes(1);
     expect(() => handle.dismiss()).not.toThrow();
   });
 

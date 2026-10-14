@@ -67,6 +67,7 @@ import type { ReactElement } from "react";
 import { toast as sonnerToast } from "sonner";
 import { captureError } from "@/lib/diagnostics/errorCaptureStore";
 import { createMatrxToast } from "@ai-matrx/kit/toast";
+import { runAsNoticeAction } from "@/lib/notice-open/noticeActivation";
 
 const captured = createMatrxToast({
   toast: sonnerToast,
@@ -464,6 +465,15 @@ function track(
 
   // "Sonner, don't you time this" — not "forever".
   const passthrough: RecordToastOptions = { ...options, duration: Infinity };
+  // 🚨 A TOAST'S ACTION NEVER MOVES THE PAGE: its press runs as a notice action, so a
+  // router move inside it opens a new tab (lib/notice-open/NoticeRouterGuard.tsx).
+  for (const slot of ["action", "cancel"] as const) {
+    const button = options?.[slot] as { onClick?: (event: unknown) => void } | undefined;
+    if (button && typeof button === "object" && typeof button.onClick === "function") {
+      const onClick = button.onClick;
+      passthrough[slot] = { ...button, onClick: (event: unknown) => runAsNoticeAction(() => onClick(event)) };
+    }
+  }
   // 🚨 A TOAST THAT STAYS UNTIL DISMISSED NEVER PARKS OVER AN ACTION ROW
   // (cold walk 22, friction). The duplicate-name notice stays until she closes
   // it, and at the Toaster's bottom-right it sat for as long as it stayed over

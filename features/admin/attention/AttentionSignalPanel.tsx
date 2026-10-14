@@ -101,9 +101,7 @@ export function AttentionSignalPanel() {
               </li>
             ))}
           </ul>
-          <AppLink
-                  target="_blank"
-                  rel="noopener" href="/administration/billing/alarms" className="mt-1 inline-block text-[11px] text-muted-foreground hover:text-primary hover:underline">
+          <AppLink target="_blank" rel="noopener" href="/administration/billing/alarms" className="mt-1 inline-block text-[11px] text-muted-foreground hover:text-primary hover:underline">
             Spend alarms
           </AppLink>
         </div>

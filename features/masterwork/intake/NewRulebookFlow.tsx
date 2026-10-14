@@ -90,6 +90,7 @@ import { duplicateStartNotice } from "./duplicateStartNotice";
 import { pushAddressWithoutNavigating } from "@/lib/url-state/addressWithoutNavigating";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { LIBRARIES_PATH } from "@/features/knowledge/modulePaths";
+import { openFromNotice } from "@/lib/notice-open/openFromNotice";
 
 const WIZARD_ID = "masterwork-new";
 
@@ -720,7 +721,7 @@ export function NewRulebookFlow() {
                 onClick: () => {
                   const renameParams = new URLSearchParams(params);
                   renameParams.set("rename", "1");
-                  router.push(
+                  openFromNotice(
                     `/masterwork/${rulebook.id}?${renameParams.toString()}`,
                   );
                 },

@@ -17,13 +17,25 @@ import { join, relative } from "node:path";
 
 const ROOT = join(__dirname, "..");
 const SCAN_ROOTS = ["app", "features", "components", "lib", "hooks", "utils", "providers"];
-const NOTICE_DIRS = ["features/assists/", "features/admin/attention/", "features/notifications/"];
+const NOTICE_DIRS = [
+  "features/assists/",
+  "features/admin/attention/",
+  "features/notifications/",
+  "features/entitlements/usage-gate/UsageGateBridge.tsx",
+  "lib/reversible/",
+  "components/layout/SystemAnnouncementBanner.tsx",
+  "components/layout/AnnouncementExperience.tsx",
+  "components/layout/AnnouncementProviderImpl.tsx",
+  "components/admin/CredentialExpiryNotifier.tsx",
+  "features/kg-suggestions/components/KgNewSuggestionNotifier.tsx",
+];
 /** Files inside a notice dir that are a full page, not a notification. Each with its reason. */
 const NOT_A_NOTICE: Record<string, string> = {
   "features/notifications/components/InboxPage.tsx": "the /notifications page rewrites its own query string",
 };
 
-const SAME_TAB_CALL = /\brouter\.(push|replace)\s*\(|\blocation\.(assign|replace)\s*\(|\blocation\.href\s*=[^=]|\bwindow\.location\s*=[^=]/;
+const SAME_TAB_CALL =
+  /\b\w*[Rr]outer\??\.(push|replace)\s*\(|\blocation\.(assign|replace)\s*\(|\blocation\.href\s*\+?=[^=]|\bwindow\.location\s*=[^=]|\bwindow\.open\([^)]*["']_self["']|\bhistory\.(pushState|replaceState)\s*\(/;
 
 export interface Finding {
   file: string;
@@ -80,7 +92,7 @@ export function scanNoticeFile(file: string, src: string): Finding[] {
     }
     const opening = src.slice(m.index, end < 0 ? src.length : Math.max(i, end));
     if (!/\bhref\s*=/.test(opening)) continue;
-    if (/\btarget\s*=/.test(opening)) continue;
+    if (/\btarget\s*=\s*(["']_blank["']|\{)/.test(opening)) continue;
     out.push({ file, line: lineOf(src, m.index), what: `<${m[1]}> opens in this tab — add target="_blank" rel="noopener"` });
   }
   return out;
@@ -89,7 +101,7 @@ export function scanNoticeFile(file: string, src: string): Finding[] {
 /** Rule 2: a toast action/cancel that navigates the same tab, anywhere. */
 export function scanToastActions(file: string, src: string): Finding[] {
   const out: Finding[] = [];
-  const call = /\btoast(?:\.[A-Za-z]+)?\s*\(/g;
+  const call = /\b(?:toast|recordToast)(?:\.[A-Za-z]+)?\s*\(/g;
   let m: RegExpExecArray | null;
   while ((m = call.exec(src))) {
     const open = m.index + m[0].length - 1;
@@ -146,6 +158,11 @@ function selfTest(): number {
     ["same-tab AppLink with arrow attr", scanNoticeFile, '<AppLink href={h} onClick={() => setOpen(false)}>Go</AppLink>'],
     ["toast action router.push", scanToastActions, "toast.success('Saved', { action: { label: 'Open', onClick: () => router.push(`/b/${id}`) } });"],
     ["toast cancel location.assign", scanToastActions, "toast('x', { cancel: { label: 'Go', onClick: () => location.assign('/y') } })"],
+    ["optional-chained router", scanNoticeFile, "onOpen: () => router?.push('/x'),"],
+    ["renamed router", scanNoticeFile, "appRouter.replace(href);"],
+    ["window.open into this tab", scanNoticeFile, "window.open(href, '_self');"],
+    ["Link with target _self", scanNoticeFile, '<Link href="/x" target="_self">Go</Link>'],
+    ["recordToast action", scanToastActions, "recordToast.success(ref, 'Saved', { action: { label: 'Open', onClick: () => router.push('/a') } });"],
   ];
   const good: Array<[string, (f: string, s: string) => Finding[], string]> = [
     ["new-tab Link", scanNoticeFile, '<Link href="/assists" target="_blank" rel="noopener">Open</Link>'],

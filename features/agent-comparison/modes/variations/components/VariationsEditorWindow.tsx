@@ -18,7 +18,6 @@
  */
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { Pause, Pencil, Plus, Save, Trash2 } from "lucide-react";
 import { recordToast, toast } from "@/lib/toast";
 import { WindowPanel } from "@/features/window-panels/WindowPanel";
@@ -35,6 +34,7 @@ import {
   removeColumnFromVariationsBattle,
 } from "../redux/thunks";
 import type { VariationColumn } from "../types";
+import { openFromNotice } from "@/lib/notice-open/openFromNotice";
 
 interface Props {
   id: string;
@@ -52,7 +52,6 @@ export function VariationsEditorWindow({
   onClose,
 }: Props) {
   const dispatch = useAppDispatch();
-  const router = useRouter();
 
   const active =
     columns.find((c) => c.columnId === activeColumnId) ?? columns[0] ?? null;
@@ -89,7 +88,7 @@ export function VariationsEditorWindow({
           action: {
             label: "Open in builder",
             // agent-link-ok: a variation is saved as a new user agent for this user
-            onClick: () => router.push(`/agents/${newId}/build`),
+            onClick: () => openFromNotice(`/agents/${newId}/build`),
           },
         },
       );

@@ -20,6 +20,7 @@ import { useAppSelector } from "@/lib/redux/hooks";
 import { selectOrganizationId } from "@/lib/redux/slices/appContextSlice";
 
 import { boardChoices } from "./boardChoices";
+import { openFromNotice } from "@/lib/notice-open/openFromNotice";
 
 const NEW_BOARD = "__new_board__";
 export function AddToBoard({ tableId, tableName }: { tableId: string; tableName?: string | null }) {
@@ -46,7 +47,7 @@ export function AddToBoard({ tableId, tableName }: { tableId: string; tableName?
       const title = tableName?.trim() || undefined;
       const { id } = await beginBoardCreate({ organizationId, title });
       prefetch(id);
-      toast.success(`New board "${title ?? "Untitled board"}" is ready`, { action: { label: "Open board", onClick: () => open(id) } });
+      toast.success(`New board "${title ?? "Untitled board"}" is ready`, { action: { label: "Open board", onClick: () => openFromNotice(addToBoardHref(id, "data-table", tableId)) } });
       open(id);
     } catch (error) {
       toast.error(isBoardError(error) ? error.message : "The board could not be created.");
@@ -58,7 +59,7 @@ export function AddToBoard({ tableId, tableName }: { tableId: string; tableName?
     else if (id) {
       setBusy(true);
       prefetch(id);
-      toast.success(`Adding to "${titles.get(id) ?? "your board"}"`, { action: { label: "Open board", onClick: () => open(id) } });
+      toast.success(`Adding to "${titles.get(id) ?? "your board"}"`, { action: { label: "Open board", onClick: () => openFromNotice(addToBoardHref(id, "data-table", tableId)) } });
       open(id);
     }
   };

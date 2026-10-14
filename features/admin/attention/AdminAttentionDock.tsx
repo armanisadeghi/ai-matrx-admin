@@ -532,8 +532,8 @@ export default function AdminAttentionDock() {
                 </h3>
                 {source.review && (
                   <AppLink
-                  target="_blank"
-                  rel="noopener"
+                    target="_blank"
+                    rel="noopener"
                     href={source.review.href}
                     className="text-[11px] text-muted-foreground underline-offset-2 hover:text-primary hover:underline"
                   >
@@ -582,8 +582,8 @@ export default function AdminAttentionDock() {
           ))}
           {notice && notice.preparedByAgents > 0 && (
             <AppLink
-                  target="_blank"
-                  rel="noopener"
+              target="_blank"
+              rel="noopener"
               href={ATTENTION_REVIEW_HREF}
               className="mt-2 block text-[11px] text-muted-foreground underline-offset-2 hover:text-primary hover:underline"
               data-testid="attention-prepared-by-agents"

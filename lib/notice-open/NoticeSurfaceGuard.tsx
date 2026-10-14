@@ -14,8 +14,12 @@
 
 import { useEffect } from "react";
 import { NOTICE_SURFACE_SELECTOR, openFromNotice } from "./openFromNotice";
+import { markNoticeClick } from "./noticeActivation";
 
 export function interceptNoticeLinkClick(event: MouseEvent): boolean {
+  // Any press inside a notice surface (a button too) runs as a notice action:
+  // a router move in its handler opens a new tab (NoticeRouterGuard).
+  if (event.target instanceof Element && event.target.closest(NOTICE_SURFACE_SELECTOR)) markNoticeClick();
   if (event.defaultPrevented || event.button !== 0) return false;
   // A modified click is already the browser's own new-tab/new-window gesture.
   if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return false;

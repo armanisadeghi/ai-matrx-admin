@@ -27,9 +27,9 @@ export const NOTICE_SURFACE = { [NOTICE_SURFACE_ATTR]: "" } as const;
 /** Every element whose same-tab links the guard turns into new tabs. */
 export const NOTICE_SURFACE_SELECTOR = `[${NOTICE_SURFACE_ATTR}], [data-sonner-toaster]`;
 
+/** A web URL, or a path with no scheme at all (relative paths resolve against this page). */
 function isWebOrInternal(href: string): boolean {
-  if (href.startsWith("/") && !href.startsWith("//") && !href.startsWith("/\\")) return true;
-  return /^https?:\/\//i.test(href);
+  return /^https?:\/\//i.test(href) || !/^[a-z][a-z0-9+.-]*:/i.test(href);
 }
 
 /**
@@ -39,7 +39,8 @@ function isWebOrInternal(href: string): boolean {
  */
 export function noticeTabHref(href: string): string {
   if (typeof window === "undefined" || !isWebOrInternal(href)) return href;
-  const target = resolveRouteOrigin(href, {
+  const absolute = new URL(href, window.location.href);
+  const target = resolveRouteOrigin(absolute.origin === window.location.origin ? `${absolute.pathname}${absolute.search}${absolute.hash}` : absolute.toString(), {
     profile: process.env.NEXT_PUBLIC_MATRX_PROFILE || "full",
     currentOrigin: window.location.origin,
     mainOrigin: siteConfig.url,

@@ -12,7 +12,6 @@
 // Rules: common-docs/systems/platform/entitlements-knobs/USAGE-GATE.md.
 
 import { useEffect, useRef } from "react";
-import { useRouter } from "next/navigation";
 import { useAppDispatch, useAppSelector, useAppStore } from "@/lib/redux/hooks";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
 import { registerDirectiveHandler } from "@/lib/client-directives/directiveRegistry";
@@ -36,6 +35,7 @@ import {
   freePeriodNoticeFor,
 } from "../coupons/freePeriodNotice";
 import { catalogPlanName } from "../coupons/planName";
+import { openFromNotice } from "@/lib/notice-open/openFromNotice";
 
 const FREE_PERIOD_NOTICE_STORAGE = "matrx:free-period-notice";
 
@@ -92,7 +92,6 @@ function periodLabel(period: string | undefined): string {
 export function UsageGateBridge() {
   const dispatch = useAppDispatch();
   const store = useAppStore();
-  const router = useRouter();
   const userId = useAppSelector(selectUserId);
   const level = useAppSelector(selectUsageGateLevel);
   const bindingPeriod = useAppSelector(selectUsageGateBindingPeriod);
@@ -196,7 +195,7 @@ export function UsageGateBridge() {
           label: "Choose a plan",
           onClick: () => {
             writeShownDay(due.dayKey);
-            router.push("/pricing");
+            openFromNotice("/pricing");
           },
         },
       });
@@ -204,7 +203,7 @@ export function UsageGateBridge() {
     return () => {
       live = false;
     };
-  }, [userId, freePeriod, router]);
+  }, [userId, freePeriod]);
 
   if (!refusal) return null;
   return (
@@ -220,7 +219,7 @@ export function UsageGateBridge() {
       {...(planName ? { currentPlan: planName } : {})}
       onSelect={() => {
         dispatch(setUsageRefusal(null));
-        router.push("/pricing");
+        openFromNotice("/pricing");
       }}
     />
   );

@@ -29,6 +29,7 @@ import "@ai-matrx/messaging/styles.css";
 import "@ai-matrx/meet/styles.css";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import NoticeSurfaceGuard from "@/lib/notice-open/NoticeSurfaceGuard";
+import NoticeRouterGuard from "@/lib/notice-open/NoticeRouterGuard";
 import { cn } from "@/lib/utils";
 import { cookies, headers } from "next/headers";
 import { ViewportHintProvider } from "@ai-matrx/kit/media-query";
@@ -143,7 +144,8 @@ export default async function RootLayout({ children }: RootLayoutProps) {
             the server resolved nobody while this tab still holds a session. */}
           <SessionIntegrityGate />
           {process.env.NODE_ENV === "development" ? <DevWalkMonitor /> : null}
-          {children}
+          {/* While a notification acts, router moves to another page open a new tab. */}
+          <NoticeRouterGuard>{children}</NoticeRouterGuard>
           <AgentTrafficForwarder />
           <UserAcquisitionCapture />
           <PerfVitalsReporter />
