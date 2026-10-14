@@ -21,7 +21,7 @@
 // ─────────────────────────────────────────────────────────────────────────
 
 /** Structural fingerprint of the registry rows this artifact was generated from. */
-export const KIND_REGISTRY_FINGERPRINT = "ff3ee6063f30";
+export const KIND_REGISTRY_FINGERPRINT = "b5b7916dfdd0";
 
 // ─────────────────────────────────────────────────────────────────────────
 // Shared nested structures. Deduped by structure across the registry — an
@@ -2128,7 +2128,7 @@ export interface DatabaseView {
 }
 
 /**
- * * Shared by 3 kinds (local_place, opening_hours, serp_placement).
+ * * Shared by 4 kinds (entity_card, local_place, opening_hours, serp_placement).
  */
 export interface DayHours {
   /**
@@ -11699,12 +11699,16 @@ export interface EnrichmentVerification {
 }
 
 /**
- * Kind `entity_card` (registry v17).
+ * Kind `entity_card` (registry v19).
  */
 export interface EntityCard {
   name: string;
   facts?: Fact[];
   image?: string | null;
+  /**
+   * ADDITIVE 2026-10-13. When the entity is a business or place: its address, phone, rating, hours and map point, as the one local_place shape.
+   */
+  place?: LocalPlace | null;
   /**
    * The registered kind this payload is an instance of.
    */
@@ -26036,7 +26040,7 @@ export interface WebRedirectLoopV1 {
 }
 
 /**
- * Kind `web_result` (registry v20).
+ * Kind `web_result` (registry v21).
  */
 export interface WebResult {
   url: string;
@@ -26079,6 +26083,10 @@ export interface WebResult {
   sitelinks?: SiteLink[];
   thumbnail?: string | null;
   /**
+   * ADDITIVE 2026-10-13. Short facts the engine shows beside the site name, e.g. '5.2K+ followers'.
+   */
+  annotations?: string[];
+  /**
    * ISO-8601 date(time); may be approximate.
    */
   published_at?: string | null;
@@ -26086,6 +26094,10 @@ export interface WebResult {
    * The 'site › path' display form; derived from url when absent.
    */
   displayed_url: string;
+  /**
+   * ADDITIVE 2026-10-13. A deep link to the snippet's passage on the page (Google's 'Read more').
+   */
+  read_more_url?: string | null;
   extra_snippets?: string[];
   family_friendly?: boolean | null;
   /**
