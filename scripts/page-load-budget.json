@@ -1,0 +1,41 @@
+{
+  "_doc": "THE LOAD LAW budget for scripts/check-page-load.mjs (pnpm check:page-load). neverOnLoad: relations fetched only by the thing that shows them, when it opens \u2014 never during a page load on any route. routes.<route>.repeats: SHRINK-ONLY allowance for distinct reads of one relation (e.g. an IN list split into chunks), keyed 'op schema.relation'. Never raise a number to get green: find why it repeats.",
+  "neverOnLoad": [
+    "get_user_file_tree",
+    "get_dm_conversations_with_details",
+    "get_dm_pending_soft_expiries",
+    "work_inbox",
+    "entitlement_snapshot",
+    "ui_surface_agent_role",
+    "ui_surface_agent_pref",
+    "ui_surface_config"
+  ],
+  "routes": {
+    "/dashboard": {
+      "repeats": {}
+    },
+    "/notes": {
+      "repeats": {
+        "rpc platform.knob_snapshot_delta": 2,
+        "select iam.organizations": 2,
+        "rpc public.mbr_count": 2,
+        "select projects.projects": 2,
+        "rpc public.assoc_for_sources": 3,
+        "select platform.assists": 3,
+        "rpc platform.my_assist_admission_decision": 2,
+        "select workbench.notes": 2
+      }
+    },
+    "/shapes/brand_intake_facts": {
+      "repeats": {}
+    }
+  },
+  "_allowances": {
+    "rpc platform.knob_snapshot_delta": "the notes list's landing-tab knob is read before the organization resolves (holding it would delay the list); the shell's readers use the org address",
+    "select iam.organizations / rpc public.mbr_count / select projects.projects": "one read split into IN-list chunks of 100 organizations",
+    "rpc public.assoc_for_sources": "three different reads: the list's notes, the visible notes' scope tags, the project tags",
+    "select platform.assists": "three different selects (undecided keys, silenced keys, approvals count)",
+    "rpc platform.my_assist_admission_decision": "two producers (notes.unorganized, capture_ladder.needs_your_browser)",
+    "select workbench.notes": "the list select and the ids-only select behind the scope tags"
+  }
+}

@@ -177,5 +177,8 @@ it("a cache-painted organization is not asked about before the load ladder answe
   expect(isOnlyPainted("0a54df90", painted)).toBe(true);
   expect(isOnlyPainted("0a54df90", { appContext: { organization_id: "0a54df90", orgBootstrapResolved: true } })).toBe(false);
   expect(isOnlyPainted("other-page-org", painted)).toBe(false);
-  expect(isOnlyPainted(null, painted)).toBe(false);
+  // No organization yet is held too: a reader of the active organization would otherwise read the
+  // org-less address now and the real one a moment later (two knob_snapshot_delta per load).
+  expect(isOnlyPainted(null, painted)).toBe(true);
+  expect(isOnlyPainted(null, { appContext: { organization_id: null, orgBootstrapResolved: true } })).toBe(false);
 });

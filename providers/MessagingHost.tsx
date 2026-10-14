@@ -149,6 +149,8 @@ export function MessagingHost({ children }: MessagingHostProps) {
   // for the moment before the answer lands; `<MessagingKindKnob>` applies it.
   const inboxKnobs = useScopedKnobs({
     organizationId,
+    // One read, at the organization the ladder answered — not one org-less read and then another.
+    enabled: organizationResolved,
     featurePrefix: MESSAGING_INBOX_KNOB_FEATURE,
     ...(settingsScopeUserId ? { userId: settingsScopeUserId } : {}),
   });

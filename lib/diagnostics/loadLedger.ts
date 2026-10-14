@@ -35,6 +35,8 @@ export interface LoadCall {
   schema: string;
   relation: string;
   operation: string;
+  /** An rpc's arguments as JSON (≤300 chars), or null. */
+  args: string | null;
   /** Unformatted until read — `callerFrames(call)`. */
   caller: Error;
 }
@@ -124,6 +126,7 @@ export function recordLoadCall(input: {
   schema?: string;
   relation?: string;
   operation?: string;
+  args?: unknown;
   caller: Error;
 }): void {
   try {
@@ -140,6 +143,7 @@ export function recordLoadCall(input: {
       schema: input.schema ?? "public",
       relation: input.relation ?? "?",
       operation: input.operation ?? "select",
+      args: argsText(input.args),
       caller: input.caller,
     });
     if (calls.length > MAX_CALLS) calls = calls.slice(-MAX_CALLS);
@@ -147,6 +151,16 @@ export function recordLoadCall(input: {
     notify();
   } catch {
     /* a diagnostic must never break a request */
+  }
+}
+
+function argsText(args: unknown): string | null {
+  if (args === undefined || args === null) return null;
+  try {
+    const text = JSON.stringify(args);
+    return text.length > 300 ? `${text.slice(0, 300)}…` : text;
+  } catch {
+    return "[unserializable]";
   }
 }
 
@@ -163,7 +177,8 @@ export function getLoads(): LoadInfo[] {
   return loads;
 }
 
-const FRAMEWORK = /node_modules\/(react|react-dom|next|scheduler|@supabase)|\/_next\/static\/chunks\/(framework|main|webpack)|loadLedger|supabaseErrorCapture|<anonymous>/;
+const FRAMEWORK =
+  /node_modules\/(react|react-dom|next|scheduler|@supabase)|react-dom|react_stack_bottom_frame|runWithFiberInDEV|commitHookEffect|\/_next\/static\/chunks\/(framework|main|webpack)|loadLedger|supabaseErrorCapture|originError|<anonymous>/;
 
 /** `at fn (https://host/_next/static/chunks/a/b/file.js:1:2)` → `fn · file.js:1`. */
 function shortFrame(line: string): string {

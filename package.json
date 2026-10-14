@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "check:session-handover": "node scripts/check-session-handover.mjs",
+    "check:page-load": "node scripts/check-page-load.mjs",
     "check:session-handover:self-test": "node scripts/check-session-handover.mjs --self-test",
     "dev": "bash scripts/agent-dev-server.sh start",
     "build": "pnpm check:private-diagnostics && ts-node scripts/generate-manifest.ts && pnpm generate:surface-index && pnpm build:sw && pnpm build:kind-sandbox && pnpm build:pdfjs-worker && pnpm build:next",

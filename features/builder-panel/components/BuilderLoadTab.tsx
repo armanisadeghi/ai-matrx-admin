@@ -126,8 +126,11 @@ export function BuilderLoadTab() {
                   <span className="font-mono tabular-nums">{call.at} ms</span>
                   <Badge tone={PHASE_TONE[call.phase]}>{PHASE_LABEL[call.phase]}</Badge>
                 </div>
+                {call.args ? (
+                  <code className="break-all font-mono text-[10px] leading-4 text-muted-foreground">{call.args}</code>
+                ) : null}
                 <pre className="overflow-x-auto whitespace-pre font-mono text-[10px] leading-4 text-foreground">
-                  {callerFrames(call).slice(0, 8).join("\n")}
+                  {callerFrames(call).slice(0, 14).join("\n")}
                 </pre>
               </div>
             ))}
