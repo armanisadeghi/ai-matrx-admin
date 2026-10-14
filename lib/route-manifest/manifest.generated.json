@@ -1,7 +1,7 @@
 {
   "version": 1,
   "app": "matrx-frontend",
-  "routeCount": 1423,
+  "routeCount": 1424,
   "routes": [
     {
       "pattern": "/",
@@ -1232,6 +1232,11 @@
       "pattern": "/administration/ui/persistence-test",
       "status": "live",
       "source": "app/(admin)/administration/ui/persistence-test/page.tsx"
+    },
+    {
+      "pattern": "/administration/ui/style-guide",
+      "status": "live",
+      "source": "app/(admin)/administration/ui/style-guide/page.tsx"
     },
     {
       "pattern": "/administration/ui/surfaces",
