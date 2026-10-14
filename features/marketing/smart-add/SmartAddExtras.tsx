@@ -483,11 +483,9 @@ function CandidateCard({
         {c.url ? <OpenLink url={c.url} /> : null}
       </div>
       <DecisionControl
-        options={[
-          { value: "yes", label: "Ours", suggested: suggested === "yes" },
-          { value: "no", label: "Not us", rejects: true, suggested: suggested === "no" },
-        ]}
-        value={ours ? "yes" : rejected ? "no" : null}
+        labels={{ yes: "Ours", no: "Not us" }}
+        value={ours ? "yes" : rejected ? "no" : relation || skipped ? "other" : null}
+        suggested={suggested}
         onChange={(a) => onClaim(c, a)}
         wayOut={relationWayOut(kinds)}
         wayOutValue={relation ? `rel:${relation.key}` : null}

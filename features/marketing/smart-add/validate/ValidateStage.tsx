@@ -181,6 +181,7 @@ function FocusCard({
   // Yes / No / Other on every card: Yes is "this is it" (a name: the main name), No is "not us" / "wrong".
   const yes: Answer = item.kind === "fact" ? "correct" : item.kind === "name" ? "preferred" : "ours";
   const no: Answer = item.kind === "fact" ? "wrong" : "not_us";
+  const glowOther = ["related", "alias", "later", "ignore"].includes(item.suggestion?.choice ?? "");
   const glow = (a: Answer) => item.suggestion?.choice === a;
   const fact = item.kind === "fact";
   const web = item.kind === "web";
@@ -240,10 +241,8 @@ function FocusCard({
         <DecisionControl
           aria-label="Answer"
           value={null}
-          options={[
-            { value: "yes", label: "Yes", meta: ANSWER_KEY[yes].toUpperCase(), suggested: glow(yes) },
-            { value: "no", label: "No", meta: ANSWER_KEY[no].toUpperCase(), rejects: true, suggested: glow(no) },
-          ]}
+          shortcuts={{ yes: ANSWER_KEY[yes].toUpperCase(), no: ANSWER_KEY[no].toUpperCase() }}
+          suggested={glow(yes) ? "yes" : glow(no) ? "no" : glowOther ? "other" : null}
           onChange={(a) => {
             const answer = a === "yes" ? yes : no;
             if (editing && answer === "correct") onAnswer("correct", { value: draft });

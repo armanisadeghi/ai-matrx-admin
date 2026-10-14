@@ -16,7 +16,7 @@
 
 import { useState } from "react";
 import { Maximize2, Moon, Star, Sun, X } from "lucide-react";
-import { Badge, Button, DecisionControl, Field, type WayOutItem } from "@ai-matrx/design-system/controls";
+import { Badge, Button, DecisionControl, Field, type DecisionAnswer, type WayOutItem } from "@ai-matrx/design-system/controls";
 import { FirstUseHint } from "@ai-matrx/design-system";
 import { formatCount } from "@ai-matrx/kit/format";
 import { profileAvatarDoor } from "@/features/marketing/social/server";
@@ -185,11 +185,11 @@ export function SmartAddSlots({
       />
     ) : null;
   /** The row's answer in the three words: a kept value (preferred, alias, yes) is Yes. */
-  const answerOf = (i: EvidenceItem): "yes" | "no" | null => {
+  const answerOf = (i: EvidenceItem): DecisionAnswer | null => {
     const d = decisions[i.key];
     if (d === "no") return "no";
     if (d) return "yes";
-    return null;
+    return relations[i.key] || asTagline.has(i.key) || skipped.has(i.key) ? "other" : null;
   };
   const isYes = (d: Decision | undefined) => d === "preferred" || d === "yes" || d === "alias";
   const preferredOf = (field: EvidenceField) => items.find((x) => x.field === field && decisions[x.key] === "preferred");
@@ -223,10 +223,6 @@ export function SmartAddSlots({
     ) : null;
   const choices = (item: EvidenceItem, mode: RowMode, wayOut?: WayOutItem[]) => (
     <DecisionControl
-      options={[
-        { value: "yes", label: "Yes" },
-        { value: "no", label: "No", rejects: true },
-      ]}
       value={answerOf(item)}
       onChange={(a) => {
         setSkipped((s) => drop(s, item.key));
