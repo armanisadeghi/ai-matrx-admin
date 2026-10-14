@@ -4,7 +4,7 @@
  * Once the core is settled (VALIDATION_THRESHOLD) and the brand exists, Smart Add shifts to a focus
  * queue: every finding the person has not answered comes into focus one at a time, in a fixed order
  * (socials and websites first, then names, then facts, then web results), and each answer is saved
- * at once. "Ask me later" moves an item to the end; the "we think" suggestion only highlights an
+ * at once. "Skip for now" (later) moves an item to the end; the "we think" suggestion only highlights an
  * option — it is never chosen for the person.
  *
  * Spec: common-docs/systems/marketing/websites-and-brands/projects/smart-add-brand/SPEC.md § Validation page
@@ -63,7 +63,7 @@ export const ANSWER_LABEL: Record<Answer, string> = {
   alias: "Alias",
   not_us: "Not us",
   related: "Related",
-  later: "Ask me later",
+  later: "Skip for now",
   ignore: "Ignore",
   correct: "Correct",
   wrong: "Wrong",
@@ -82,7 +82,7 @@ export const ANSWER_KEY: Record<Answer, string> = {
   wrong: "w",
 };
 
-/** Every option a kind offers, in button order. Ask me later and Ignore are always there. */
+/** Every option a kind offers, in button order. Skip for now and Ignore are always there (the "Other" menu). */
 export function optionsFor(kind: FocusKind): Answer[] {
   if (kind === "name") return ["preferred", "alias", "not_us", "related", "later", "ignore"];
   if (kind === "fact") return ["correct", "wrong", "later", "ignore"];

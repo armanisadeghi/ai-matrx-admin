@@ -50,7 +50,7 @@ describe("one identity per box, and a real name for an unnamed one", () => {
         tier: "hosted",
         config: { template: "bare" },
       }),
-    ).toBe("bare · hosted · 5515aa");
+    ).toBe("Bare hosted 5515aa");
   });
 
   it("drops what it does not know, and never drops the identifying part", () => {
@@ -60,13 +60,13 @@ describe("one identity per box, and a real name for an unnamed one", () => {
         id: "5515aabb-ccdd-eeff-0011-223344556677",
         tier: "hosted",
       }),
-    ).toBe("hosted · 5515aa");
+    ).toBe("Hosted 5515aa");
     expect(
       sandboxDisplayName({
         name: null,
         id: "5515aabb-ccdd-eeff-0011-223344556677",
       }),
-    ).toBe("Sandbox · 5515aa");
+    ).toBe("Sandbox 5515aa");
   });
 
   it("shows the SAME short id before and after the row has loaded", () => {
@@ -92,12 +92,16 @@ describe("one identity per box, and a real name for an unnamed one", () => {
   it("still names a row read without its uuid", () => {
     expect(
       sandboxDisplayName({ name: null, sandbox_id: "sbx-123456789abc" }),
-    ).toBe("Sandbox · 789abc");
+    ).toBe("Sandbox 789abc");
+  });
+
+  it("writes a derived name as a name: capitalised, EC2 in capitals, no dot runs", () => {
+    expect(sandboxDisplayName({ id: "95e5e5aa-0000", tier: "ec2", template: "slim" })).toBe("Slim EC2 95e5e5");
   });
 
   it("keeps the identity out of the truncating half of a chip", () => {
-    const { head, tail } = splitIdentifyingName("bare · hosted · 5515aa");
-    expect(head).toBe("bare · hosted · ");
+    const { head, tail } = splitIdentifyingName("Bare hosted 5515aa");
+    expect(head).toBe("Bare hosted ");
     expect(tail).toBe("5515aa");
     // A user-chosen name has no identifying tail to protect.
     expect(splitIdentifyingName("My dev box")).toEqual({

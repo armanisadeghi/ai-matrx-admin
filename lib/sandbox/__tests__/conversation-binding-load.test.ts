@@ -234,7 +234,7 @@ describe("the control always names the box this chat is on", () => {
     // `sandboxDisplayName`, so the short id here is the same short id the
     // canvas pane and the `+` menu show for the same row (it used to be a
     // second, differently-sliced identity for the same box).
-    expect(view?.name).toBe("Sandbox · 9e51f9");
+    expect(view?.name).toBe("Sandbox 9e51f9");
   });
 
   it("an unbound conversation shows no bound box at all", () => {

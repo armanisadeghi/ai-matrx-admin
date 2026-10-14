@@ -139,12 +139,15 @@ const KIND_LABEL = { business: "Business", person: "Person", both: "Person with 
 /** The primary choices, laid out like an official profile card — builds as the person confirms. */
 export function BrandCard({
   basics,
+  screenshot = null,
   person,
   kind,
   onKind,
   location,
 }: {
   basics: BrandBasics;
+  /** The homepage on a computer (lasting address); its slot is reserved for a business, so it swaps in. */
+  screenshot?: string | null;
   person: boolean;
   kind: "person" | "business" | "both";
   onKind: (kind: "person" | "business" | "both") => void;
@@ -215,7 +218,33 @@ export function BrandCard({
           <span className="truncate text-xs text-muted-foreground">{basics.expertise.join(" · ")}</span>
         ) : null}
       </div>
+      {person ? null : <HomepageShot url={screenshot} />}
     </section>
+  );
+}
+
+/** The homepage picture's slot: always the same size (no layout shift), empty until the picture loads. */
+function HomepageShot({ url }: { url: string | null }) {
+  const [loaded, setLoaded] = useState<string | null>(null);
+  const [dead, setDead] = useState<string | null>(null);
+  const show = url && dead !== url;
+  return (
+    <span
+      className="hidden h-[5.625rem] w-36 shrink-0 overflow-hidden rounded-lg border border-border bg-muted/40 sm:block"
+      data-testid="smart-add-homepage-shot"
+      data-state={show && loaded === url ? "ready" : "empty"}
+    >
+      {show ? (
+        <img
+          src={url}
+          alt="Homepage"
+          loading="lazy"
+          onLoad={() => setLoaded(url)}
+          onError={() => setDead(url)}
+          className={`size-full object-cover object-top transition-opacity duration-500 ${loaded === url ? "opacity-100" : "opacity-0"}`}
+        />
+      ) : null}
+    </span>
   );
 }
 
@@ -430,40 +459,6 @@ export function RelationPicker({
       className={className}
       disabled={disabled}
     />
-  );
-}
-
-/** "Related" is a choice like Ours / Not us; once on, a small picker names the exact relationship. */
-export function RelatedChoice({
-  kinds,
-  relation,
-  locked,
-  onRelate,
-  onCustom,
-}: {
-  kinds: BrandRelationKind[];
-  relation: Relation | null;
-  locked?: boolean;
-  onRelate: (relation: Relation | null) => void;
-  onCustom: (label: string) => Promise<void>;
-}) {
-  const [open, setOpen] = useState(false);
-  const on = open || relation !== null;
-  return (
-    <>
-      <Button
-        variant={on ? "primary" : "quiet"}
-        aria-pressed={on}
-        disabled={locked}
-        onClick={() => {
-          if (on) onRelate(null);
-          setOpen(!on);
-        }}
-      >
-        Related
-      </Button>
-      <RelationPicker kinds={kinds} relation={relation} onRelate={onRelate} onCustom={onCustom} emptyLabel="Type…" className="w-44" disabled={!on || locked} />
-    </>
   );
 }
 

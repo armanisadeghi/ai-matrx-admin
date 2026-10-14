@@ -98,6 +98,34 @@ function parseGate(raw: unknown): SiteGate | null {
   return { type: g.type as SiteGate["type"], branches };
 }
 
+/** The homepage pictured on a real browser (aidream brand.identify.screenshots): lasting CDN addresses. */
+export interface BrandShot {
+  file_id: string;
+  url: string;
+  width: number;
+  height: number;
+}
+export interface BrandScreenshots {
+  desktop: BrandShot | null;
+  mobile: BrandShot | null;
+}
+const SCREENSHOTS_STEP = "screenshots";
+
+function parseShot(raw: unknown): BrandShot | null {
+  const r = typeof raw === "object" && raw !== null ? (raw as Record<string, unknown>) : null;
+  if (!r || typeof r.url !== "string" || typeof r.file_id !== "string") return null;
+  return { file_id: r.file_id, url: r.url, width: Number(r.width) || 0, height: Number(r.height) || 0 };
+}
+
+/** `{desktop, mobile}` from the step's output or its `brand_screenshots` frame; null until one picture exists. */
+export function parseScreenshots(raw: unknown): BrandScreenshots | null {
+  const r = typeof raw === "object" && raw !== null ? (raw as Record<string, unknown>) : null;
+  if (!r) return null;
+  const desktop = parseShot(r.desktop);
+  const mobile = parseShot(r.mobile);
+  return desktop || mobile ? { desktop, mobile } : null;
+}
+
 export interface StepView {
   gate?: SiteGate | null;
   step: string;
@@ -174,6 +202,7 @@ export function SmartAddRound({
   onSuggestions,
   onSignals,
   onPath,
+  onScreenshots,
   onView,
 }: {
   runId: string;
@@ -187,6 +216,8 @@ export function SmartAddRound({
   onSignals?: (signals: PersonSignals) => void;
   /** The round's path (aidream brand.identify.path_decision): {subject, path, runs_as}, for path_history. */
   onPath?: (decision: RoundPath) => void;
+  /** The homepage pictured (aidream brand.identify.screenshots), desktop and mobile, once its frame lands. */
+  onScreenshots?: (shots: BrandScreenshots) => void;
   onView: (view: RoundView) => void;
 }) {
   useWorkflowRun(runId);
@@ -223,6 +254,16 @@ export function SmartAddRound({
   useEffect(() => {
     if (pathKey) onPath?.(JSON.parse(pathKey) as RoundPath);
   }, [pathKey, onPath]);
+  const shotsAggregate = useAppSelector(selectNodeAggregate(runId, SCREENSHOTS_STEP));
+  const shotsOut = shotsAggregate.invocations[shotsAggregate.invocations.length - 1]?.output ?? null;
+  const shots =
+    parseScreenshots(shotsOut) ??
+    emissions.map((e) => parseScreenshots((e.payload as Record<string, unknown> | null)?.brand_screenshots)).find(Boolean) ??
+    null;
+  const shotsKey = shots ? JSON.stringify(shots) : "";
+  useEffect(() => {
+    if (shotsKey) onScreenshots?.(JSON.parse(shotsKey) as BrandScreenshots);
+  }, [shotsKey, onScreenshots]);
   const signalsKey = signals ? JSON.stringify(signals) : "";
   useEffect(() => {
     if (signalsKey) onSignals?.(JSON.parse(signalsKey) as PersonSignals);

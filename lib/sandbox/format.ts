@@ -30,9 +30,12 @@ export function formatSandboxTimestamp(value: string | null): string {
  *     suffix is identical whether the row has loaded or not.
  *
  *  2. `Unnamed` is not a name. An unnamed box now gets a DERIVED one that
- *     says what it actually is: `bare · hosted · 5515` — template, tier,
- *     short id. Whatever is unknown is left out; the short id is never left
- *     out, because it is the part that identifies.
+ *     says what it actually is: `Bare hosted 5515aa` — template, tier, short
+ *     id, written as a name (Arman, 2026-10-14: capitalised, no `·` runs).
+ *     Whatever is unknown is left out; the short id is never left out here,
+ *     because it is the part that identifies. A LIST that shows many boxes at
+ *     once may number repeats instead and put the id on hover (the composer's
+ *     Environment menu does).
  *
  * Never re-derive a box label anywhere else. Call this.
  */
@@ -76,19 +79,22 @@ export function sandboxShortId(parts: SandboxNameParts): string {
   return "unknown";
 }
 
+/** How a tier reads inside a name. */
+const TIER_IN_NAME: Record<string, string> = { hosted: "hosted", ec2: "EC2" };
+
 /**
- * The name an unnamed box earns from what it IS: `template · tier · shortid`.
- * Unknown parts drop out; the short id never does.
+ * The name an unnamed box earns from what it IS: `Bare hosted 5515aa` —
+ * template, tier, short id. Unknown parts drop out; the short id never does.
  */
 export function sandboxDerivedName(parts: SandboxNameParts): string {
   const template = (parts.template ?? configString(parts.config, "template"))?.trim() || null;
-  const tier = (parts.tier ?? configString(parts.config, "tier"))?.trim() || null;
-  const segments = [template, tier].filter(Boolean) as string[];
-  segments.push(sandboxShortId(parts));
+  const tierRaw = (parts.tier ?? configString(parts.config, "tier"))?.trim() || null;
+  const tier = tierRaw ? (TIER_IN_NAME[tierRaw.toLowerCase()] ?? tierRaw) : null;
   // With neither template nor tier known (a pointer with only a row id), say
   // what the thing is rather than emitting a bare hex fragment.
-  if (segments.length === 1) return `Sandbox · ${segments[0]}`;
-  return segments.join(" · ");
+  const words = [template, tier].filter(Boolean) as string[];
+  const head = words.length > 0 ? words.join(" ") : "Sandbox";
+  return `${head.charAt(0).toUpperCase()}${head.slice(1)} ${sandboxShortId(parts)}`;
 }
 
 /** The editable label if the user set one; otherwise the derived name. */
@@ -96,25 +102,27 @@ export function sandboxDisplayName(parts: SandboxNameParts): string {
   return parts.name?.trim() || sandboxDerivedName(parts);
 }
 
+/** A derived name's identifying tail: the six-character short id at its end. */
+const SHORT_ID_TAIL = /^(.*\s)([0-9a-f]{6})$/;
+
 /**
  * Split a label into the part that may be clipped and the part that must not.
  *
  * A derived name ends in the short id, and CSS `truncate` clips the END — so a
- * chip with `max-w` turned `bare · hosted · 5515` into `bare · hoste…`, hiding
- * the only characters that say WHICH box. Render `head` in the truncating span
- * and `tail` in a `shrink-0` one and the identity always survives.
+ * chip with `max-w` turned `Bare hosted 5515aa` into `Bare hoste…`, hiding the
+ * only characters that say WHICH box. Render `head` in the truncating span and
+ * `tail` in a `shrink-0` one and the identity always survives.
  *
- * A label with no ` · ` separator (a user-chosen name) is all head: there is no
- * identifying tail to protect, and clipping a long human name is fine.
+ * A label that does not end in a short id (a user-chosen name) is all head:
+ * there is no identifying tail to protect, and clipping a long name is fine.
  */
 export function splitIdentifyingName(label: string): {
   head: string;
   tail: string;
 } {
-  const separator = " · ";
-  const at = label.lastIndexOf(separator);
-  if (at < 0) return { head: label, tail: "" };
-  return { head: label.slice(0, at + separator.length), tail: label.slice(at + separator.length) };
+  const match = SHORT_ID_TAIL.exec(label);
+  if (!match) return { head: label, tail: "" };
+  return { head: match[1], tail: match[2] };
 }
 
 /**
