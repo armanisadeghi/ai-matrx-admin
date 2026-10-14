@@ -330,10 +330,8 @@ if $STRICT; then
         "Archived-items law (every list has an archive control)|pnpm check:archived-items-law"
         "Univer document page is legible in both themes|pnpm check:univer-doc-theme"
         "One agent-list read (package-owned)|pnpm check:agent-list-reads"
-        # Chat package independence: host ties from packages/chat only shrink (shrink-only budget,
-        # common-docs projects/chat-package-move/PACKAGE-INDEPENDENCE.md). Offline, ~5 s.
-        "Chat package boundary (no new @host ties)|pnpm check:chat-package-boundary"
-        "Chat package boundary — self-test|pnpm check:chat-package-boundary:self-test"
+        # Aidream's chat check:package owns the package host-boundary gate and self-test;
+        # this checkout verifies its own imports use published chat subpaths.
         "Chat public subpaths (app imports only the package's public surface)|pnpm check:chat-public-subpaths"
         "Chat public subpaths — self-test|pnpm check:chat-public-subpaths:self-test"
         "A run never fetches the agent definition (run tier)|pnpm check:agent-run-tier"
@@ -1256,10 +1254,8 @@ else
         "Archived-items law (every list has an archive control)|pnpm check:archived-items-law"
         "Univer document page is legible in both themes|pnpm check:univer-doc-theme"
         "One agent-list read (package-owned)|pnpm check:agent-list-reads"
-        # Chat package independence: host ties from packages/chat only shrink (shrink-only budget,
-        # common-docs projects/chat-package-move/PACKAGE-INDEPENDENCE.md). Offline, ~5 s.
-        "Chat package boundary (no new @host ties)|pnpm check:chat-package-boundary"
-        "Chat package boundary — self-test|pnpm check:chat-package-boundary:self-test"
+        # Aidream's chat check:package owns the package host-boundary gate and self-test;
+        # this checkout verifies its own imports use published chat subpaths.
         "Chat public subpaths (app imports only the package's public surface)|pnpm check:chat-public-subpaths"
         "Chat public subpaths — self-test|pnpm check:chat-public-subpaths:self-test"
         "A run never fetches the agent definition (run tier)|pnpm check:agent-run-tier"

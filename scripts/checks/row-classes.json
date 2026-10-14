@@ -6,7 +6,7 @@
   },
   "counts": {
     "repo-only": 183,
-    "live-db": 71
+    "live-db": 69
   },
   "rows": {
     "every-ai-matrx-package-is-declared-and-installed-at-npm-late": {
@@ -807,20 +807,6 @@
       "label": "One agent-list read (package-owned)",
       "class": "repo-only",
       "cmd": "pnpm check:agent-list-reads",
-      "reason": "no database access in 2 file(s) reached",
-      "evidence": []
-    },
-    "chat-package-boundary-no-new-host-ties": {
-      "label": "Chat package boundary (no new @host ties)",
-      "class": "repo-only",
-      "cmd": "pnpm check:chat-package-boundary",
-      "reason": "no database access in 2 file(s) reached",
-      "evidence": []
-    },
-    "chat-package-boundary-self-test": {
-      "label": "Chat package boundary — self-test",
-      "class": "repo-only",
-      "cmd": "pnpm check:chat-package-boundary:self-test",
       "reason": "no database access in 2 file(s) reached",
       "evidence": []
     },
@@ -2329,29 +2315,17 @@
     },
     "raw-outbound-link-outside-the-referral-door-ai-matrx-kit-out": {
       "label": "Raw outbound link outside the referral door (@ai-matrx/kit/outbound)",
-      "class": "live-db",
+      "class": "repo-only",
       "cmd": "pnpm check:outbound-referral",
-      "reason": "UNCERTAIN — the resolver could not follow everything; classified live-db (safe side)",
-      "evidence": [],
-      "uncertain": [
-        {
-          "file": "(command)",
-          "signal": "unknown binary \"matrx-check-outbound-referral\" — not followed"
-        }
-      ]
+      "reason": "no database access in 1 file(s) reached",
+      "evidence": []
     },
     "outbound-referral-guard-self-test": {
       "label": "Outbound-referral guard self-test",
-      "class": "live-db",
+      "class": "repo-only",
       "cmd": "pnpm check:outbound-referral:self-test",
-      "reason": "UNCERTAIN — the resolver could not follow everything; classified live-db (safe side)",
-      "evidence": [],
-      "uncertain": [
-        {
-          "file": "(command)",
-          "signal": "unknown binary \"matrx-check-outbound-referral\" — not followed"
-        }
-      ]
+      "reason": "no database access in 1 file(s) reached",
+      "evidence": []
     },
     "univer-add-ons-load-save-back-and-a-signed-in-person-can-edi": {
       "label": "Univer add-ons load, save back, and a signed-in person can edit",

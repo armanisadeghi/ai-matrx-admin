@@ -7,7 +7,7 @@
 // Verify:      pnpm check:kind-types   (CI-blocking freshness gate)
 // Twin guard:  pnpm check:kind-type-twins
 //
-// 1505 active kinds. THESE ARE THE ONLY KIND PAYLOAD TYPES IN THE REPO.
+// 1506 active kinds. THESE ARE THE ONLY KIND PAYLOAD TYPES IN THE REPO.
 // A hand-written interface mirroring a registered kind is a defect — derive
 // (Pick/Omit) from the type here instead, and never re-declare it.
 //
@@ -21,7 +21,7 @@
 // ─────────────────────────────────────────────────────────────────────────
 
 /** Structural fingerprint of the registry rows this artifact was generated from. */
-export const KIND_REGISTRY_FINGERPRINT = "a4917bac3965";
+export const KIND_REGISTRY_FINGERPRINT = "e4d0e7879288";
 
 // ─────────────────────────────────────────────────────────────────────────
 // Shared nested structures. Deduped by structure across the registry — an
@@ -1469,6 +1469,35 @@ export interface BrandFinding {
   followers?: number | null;
   confidence?: number | null;
   certainty_reasons?: string[];
+}
+
+/**
+ * * From kind `brand_intake_key_people`.
+ */
+export interface BrandKeyPerson_BrandIntakeKeyPeople {
+  name: string;
+  role: "owner" | "founder" | "partner" | "doctor" | "executive" | "staff" | "other";
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  /**
+   * One line: why this person and this certainty.
+   */
+  reason: string;
+  certainty: "confirmed" | "likely" | "possible";
+  /**
+   * The title exactly as the source writes it.
+   */
+  title_text?: string | null;
+  /**
+   * The person's own profiles (LinkedIn…).
+   */
+  profile_urls?: string[];
+  /**
+   * The pages that tie them to this brand.
+   */
+  evidence_urls?: string[];
 }
 
 /**
@@ -9983,7 +10012,7 @@ export interface AgentFactoryBuildRequestOffer {
 }
 
 /**
- * Kind `agent_factory.contract_step.offer` (registry v5).
+ * Kind `agent_factory.contract_step.offer` (registry v7).
  */
 export interface AgentFactoryContractStepOffer {
   /**
@@ -10144,7 +10173,7 @@ export interface AgentFactoryContractStepOffer {
 }
 
 /**
- * Kind `agent_factory.goal_step.offer` (registry v4).
+ * Kind `agent_factory.goal_step.offer` (registry v6).
  */
 export interface AgentFactoryGoalStepOffer {
   /**
@@ -10346,7 +10375,7 @@ export interface AgentFactoryGoalStepOffer {
 }
 
 /**
- * Kind `agent_factory.instructions_step.offer` (registry v5).
+ * Kind `agent_factory.instructions_step.offer` (registry v7).
  */
 export interface AgentFactoryInstructionsStepOffer {
   /**
@@ -10565,7 +10594,7 @@ export interface AgentFactoryInstructionsStepOffer {
 }
 
 /**
- * Kind `agent_factory.proof_step.offer` (registry v4).
+ * Kind `agent_factory.proof_step.offer` (registry v6).
  */
 export interface AgentFactoryProofStepOffer {
   /**
@@ -10810,7 +10839,7 @@ export interface AgentFactorySystemPlanOffer {
 }
 
 /**
- * Kind `agent_factory.tool_step.offer` (registry v5).
+ * Kind `agent_factory.tool_step.offer` (registry v7).
  */
 export interface AgentFactoryToolStepOffer {
   /**
@@ -14109,7 +14138,7 @@ export interface BrandIdentifyWebResults {
 }
 
 /**
- * Kind `brand_intake.early_facts.offer` (registry v4).
+ * Kind `brand_intake.early_facts.offer` (registry v6).
  */
 export interface BrandIntakeEarlyFactsOffer {
   /**
@@ -14199,7 +14228,7 @@ export interface BrandIntakeEarlyFactsOffer {
 }
 
 /**
- * Kind `brand_intake.identity_match.offer` (registry v4).
+ * Kind `brand_intake.identity_match.offer` (registry v6).
  */
 export interface BrandIntakeIdentityMatchOffer {
   /**
@@ -14287,7 +14316,7 @@ export interface BrandIntakeIdentityMatchOffer {
 }
 
 /**
- * Kind `brand_intake.key_people_finder.offer` (registry v4).
+ * Kind `brand_intake.key_people_finder.offer` (registry v6).
  */
 export interface BrandIntakeKeyPeopleFinderOffer {
   /**
@@ -14371,6 +14400,23 @@ export interface BrandIntakeFacts {
 }
 
 /**
+ * Who represents the business, each with role, evidence and certainty. A proposal: nobody is
+ * saved without a person accepting them.
+ *
+ * The output kind of mandate ``brand_intake.key_people_finder``. Its own slug on purpose: the slug
+ * ``brand_key_people`` is Arman's hand-made kind (his organization, his schema), never this model.
+ *  *
+ *  * Kind `brand_intake_key_people` (registry v1).
+ */
+export interface BrandIntakeKeyPeople {
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "brand_intake_key_people";
+  people?: BrandKeyPerson_BrandIntakeKeyPeople[];
+}
+
+/**
  * The brand-intake agent's answer: search keywords plus a draft Brand Profile (Foundations 1-16),
  * every item with its sources, confidence and basis. A proposal: nothing is stored until confirmed.
  *  *
@@ -14405,17 +14451,36 @@ export interface BrandIntakeProfile {
 }
 
 /**
- * Who represents the business, each with role, evidence and certainty. A proposal: nobody is
- * saved without a person accepting them.
- *  *
- *  * Kind `brand_key_people` (registry v4).
+ * Kind `brand_key_people` (registry v5).
  */
 export interface BrandKeyPeople {
+  __kind: "brand_key_people";
   /**
-   * The registered kind this payload is an instance of.
+   * Key people identified for the brand.
    */
-  __kind?: "brand_key_people";
-  people?: BrandKeyPerson[];
+  people: ({
+    /**
+     * Person's full name.
+     */
+    name: string;
+    /**
+     * Role or title at the brand, e.g. Founder.
+     */
+    role?: string;
+    __kind: "brand_key_person";
+    /**
+     * How certain the identification is, e.g. likely.
+     */
+    certainty?: string;
+    /**
+     * Whether the person has been confirmed.
+     */
+    confirmed?: boolean;
+    /**
+     * Source URLs supporting the identification.
+     */
+    evidence_urls?: string[];
+  })[];
 }
 
 /**
@@ -16533,7 +16598,7 @@ export interface CommerceIntakeBenchGradingOffer {
 }
 
 /**
- * Kind `commerce_intake.disposal_challenge.offer` (registry v13).
+ * Kind `commerce_intake.disposal_challenge.offer` (registry v15).
  */
 export interface CommerceIntakeDisposalChallengeOffer {
   /**
@@ -16615,7 +16680,7 @@ export interface CommerceIntakeDisposalChallengeOffer {
 }
 
 /**
- * Kind `commerce_intake.enrichment_bundle.offer` (registry v13).
+ * Kind `commerce_intake.enrichment_bundle.offer` (registry v15).
  */
 export interface CommerceIntakeEnrichmentBundleOffer {
   /**
@@ -16714,7 +16779,7 @@ export interface CommerceIntakeEnrichmentBundleOffer {
 }
 
 /**
- * Kind `commerce_intake.extraction_dossier.offer` (registry v10).
+ * Kind `commerce_intake.extraction_dossier.offer` (registry v12).
  */
 export interface CommerceIntakeExtractionDossierOffer {
   /**
@@ -16799,7 +16864,7 @@ export interface CommerceIntakeInstantCaptureOffer {
 }
 
 /**
- * Kind `commerce_intake.valuation_dossier.offer` (registry v10).
+ * Kind `commerce_intake.valuation_dossier.offer` (registry v12).
  */
 export interface CommerceIntakeValuationDossierOffer {
   /**
@@ -17905,7 +17970,7 @@ export interface ContentPlanPageBriefOffer {
 }
 
 /**
- * Kind `content_plan.page_build.offer` (registry v15).
+ * Kind `content_plan.page_build.offer` (registry v17).
  */
 export interface ContentPlanPageBuildOffer {
   /**
@@ -18071,7 +18136,7 @@ export interface ContentPlanPageFamilyOffer {
 }
 
 /**
- * Kind `content_plan.page_review.offer` (registry v19).
+ * Kind `content_plan.page_review.offer` (registry v21).
  */
 export interface ContentPlanPageReviewOffer {
   /**
@@ -22855,7 +22920,7 @@ export interface FlashcardsExpandCardOffer {
 }
 
 /**
- * Kind `flashcards.fix_giveaway_cards.offer` (registry v5).
+ * Kind `flashcards.fix_giveaway_cards.offer` (registry v7).
  */
 export interface FlashcardsFixGiveawayCardsOffer {
   /**
@@ -28750,7 +28815,7 @@ export interface MasterworkBadExampleGenerationOffer {
 }
 
 /**
- * Kind `masterwork.case_disclosure.offer` (registry v15).
+ * Kind `masterwork.case_disclosure.offer` (registry v17).
  */
 export interface MasterworkCaseDisclosureOffer {
   /**
@@ -29008,7 +29073,7 @@ export interface MasterworkCorpusSynthesisOffer {
 }
 
 /**
- * Kind `masterwork.counterparty_turn.offer` (registry v15).
+ * Kind `masterwork.counterparty_turn.offer` (registry v17).
  */
 export interface MasterworkCounterpartyTurnOffer {
   /**
@@ -32304,7 +32369,7 @@ export interface NerUserScopeTree {
 }
 
 /**
- * Kind `news.angles.offer` (registry v7).
+ * Kind `news.angles.offer` (registry v9).
  */
 export interface NewsAnglesOffer {
   /**
@@ -32348,7 +32413,7 @@ export interface NewsAnglesOffer {
 }
 
 /**
- * Kind `news.coarse_relevance.offer` (registry v4).
+ * Kind `news.coarse_relevance.offer` (registry v6).
  */
 export interface NewsCoarseRelevanceOffer {
   /**
@@ -32388,7 +32453,7 @@ export interface NewsCoarseRelevanceOffer {
 }
 
 /**
- * Kind `news.monitor_setup_proposer.offer` (registry v4).
+ * Kind `news.monitor_setup_proposer.offer` (registry v6).
  */
 export interface NewsMonitorSetupProposerOffer {
   /**
@@ -32436,7 +32501,7 @@ export interface NewsMonitorSetupProposerOffer {
 }
 
 /**
- * Kind `news.report.offer` (registry v5).
+ * Kind `news.report.offer` (registry v7).
  */
 export interface NewsReportOffer {
   /**
@@ -32504,7 +32569,7 @@ export interface NewsReportOffer {
 }
 
 /**
- * Kind `news.story_origin.offer` (registry v4).
+ * Kind `news.story_origin.offer` (registry v6).
  */
 export interface NewsStoryOriginOffer {
   /**
@@ -32544,7 +32609,7 @@ export interface NewsStoryOriginOffer {
 }
 
 /**
- * Kind `news.triage.offer` (registry v4).
+ * Kind `news.triage.offer` (registry v6).
  */
 export interface NewsTriageOffer {
   /**
@@ -42655,7 +42720,7 @@ export interface SeoCompetitorOpportunityAutopsyOffer {
 }
 
 /**
- * Kind `seo.competitor_page_autopsy.offer` (registry v19).
+ * Kind `seo.competitor_page_autopsy.offer` (registry v21).
  */
 export interface SeoCompetitorPageAutopsyOffer {
   /**
@@ -42757,7 +42822,7 @@ export interface SeoCoverageAnalysisOffer {
 }
 
 /**
- * Kind `seo.finding_fix.offer` (registry v21).
+ * Kind `seo.finding_fix.offer` (registry v23).
  */
 export interface SeoFindingFixOffer {
   /**
@@ -43482,7 +43547,7 @@ export interface SeoPageMapperOffer {
 }
 
 /**
- * Kind `seo.press_calendar_planner.offer` (registry v4).
+ * Kind `seo.press_calendar_planner.offer` (registry v6).
  */
 export interface SeoPressCalendarPlannerOffer {
   /**
@@ -43628,7 +43693,7 @@ export interface SeoPressMomentResearcherOffer {
 }
 
 /**
- * Kind `seo.press_newsworthiness_check.offer` (registry v4).
+ * Kind `seo.press_newsworthiness_check.offer` (registry v6).
  */
 export interface SeoPressNewsworthinessCheckOffer {
   /**
@@ -43964,7 +44029,7 @@ export interface SeoReputationIntelligenceOffer {
 }
 
 /**
- * Kind `seo.ruling_session_proposal.offer` (registry v5).
+ * Kind `seo.ruling_session_proposal.offer` (registry v7).
  */
 export interface SeoRulingSessionProposalOffer {
   /**
@@ -44018,7 +44083,7 @@ export interface SeoRulingSessionProposalOffer {
 }
 
 /**
- * Kind `seo.ruling_session_teach.offer` (registry v5).
+ * Kind `seo.ruling_session_teach.offer` (registry v7).
  */
 export interface SeoRulingSessionTeachOffer {
   /**
@@ -44165,7 +44230,7 @@ export interface SeoSiteEvidenceOffer {
 }
 
 /**
- * Kind `seo.site_intake.offer` (registry v26).
+ * Kind `seo.site_intake.offer` (registry v28).
  */
 export interface SeoSiteIntakeOffer {
   /**
@@ -55899,6 +55964,7 @@ export type GeneratedKindSlug =
   | "brand_intake.identity_match.offer"
   | "brand_intake.key_people_finder.offer"
   | "brand_intake_facts"
+  | "brand_intake_key_people"
   | "brand_intake_profile"
   | "brand_key_people"
   | "brand_key_person"
@@ -57407,6 +57473,7 @@ export interface KindPayloadBySlug {
   "brand_intake.identity_match.offer": BrandIntakeIdentityMatchOffer;
   "brand_intake.key_people_finder.offer": BrandIntakeKeyPeopleFinderOffer;
   "brand_intake_facts": BrandIntakeFacts;
+  "brand_intake_key_people": BrandIntakeKeyPeople;
   "brand_intake_profile": BrandIntakeProfile;
   "brand_key_people": BrandKeyPeople;
   "brand_key_person": BrandKeyPerson;
@@ -58919,6 +58986,7 @@ export const GENERATED_KIND_SLUGS: readonly GeneratedKindSlug[] = [
   "brand_intake.identity_match.offer",
   "brand_intake.key_people_finder.offer",
   "brand_intake_facts",
+  "brand_intake_key_people",
   "brand_intake_profile",
   "brand_key_people",
   "brand_key_person",
