@@ -803,7 +803,7 @@ export function ApprovalQueue({
                                   <KindBadge className="shrink-0">
                                     {item.badge ?? section.kind.label}
                                   </KindBadge>
-                                  <span className="break-words type-body text-foreground">
+                                  <span className="break-words type-heading text-foreground">
                                     {item.headline}
                                   </span>
                                 </div>
@@ -847,7 +847,7 @@ export function ApprovalQueue({
                                     "the change was made by that first approval"
                                     (round-2 verification § A-iii). */}
                                 {item.lastAttempt?.state === "failed" ? (
-                                  <p className="break-words type-meta text-destructive">
+                                  <p className="break-words type-meta font-medium text-destructive">
                                     {item.lastAttempt.sentence}
                                     <ErrorAlchemyMenu />
                                   </p>
@@ -861,7 +861,7 @@ export function ApprovalQueue({
                                     second block in the person's document. */}
                                 {item.lastAttempt?.state ===
                                 "applied_unconfirmed" ? (
-                                  <p className="break-words type-meta text-warning">
+                                  <p className="break-words type-meta font-medium text-warning">
                                     {item.lastAttempt.sentence}
                                   </p>
                                 ) : null}
@@ -871,7 +871,7 @@ export function ApprovalQueue({
                                     "Nothing is waiting on you" over it and only
                                     the console disagreed (§ A-N6). */}
                                 {item.unreadable ? (
-                                  <p className="break-words type-meta text-warning">
+                                  <p className="break-words type-meta font-medium text-warning">
                                     {item.unreadable.sentence}
                                   </p>
                                 ) : null}
@@ -883,7 +883,7 @@ export function ApprovalQueue({
                                     Approve on every kind. It now names the state
                                     and offers nothing — honest, never dead. */}
                                 {item.unknownState ? (
-                                  <p className="break-words type-meta text-warning">
+                                  <p className="break-words type-meta font-medium text-warning">
                                     {item.unknownState.sentence}
                                   </p>
                                 ) : null}
@@ -893,7 +893,7 @@ export function ApprovalQueue({
                                     could not say so until after the click
                                     (§ A-N7). */}
                                 {item.expired ? (
-                                  <p className="break-words type-meta text-warning">
+                                  <p className="break-words type-meta font-medium text-warning">
                                     {item.expired.sentence}
                                   </p>
                                 ) : null}

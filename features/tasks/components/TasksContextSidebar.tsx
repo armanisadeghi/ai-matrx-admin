@@ -71,7 +71,8 @@ import {
 } from "@/features/scopes/redux/selectors/tree";
 import {
   Button,
-  Chip,
+  type ChipTone,
+  Select,
   DisclosureHeader,
   SearchField,
   SettingRow,
@@ -268,63 +269,42 @@ export default function TasksContextSidebar() {
             defaultOpen
             summary={`${activeGroupLabel} · ${activeSortLabel} ${sortOrder === "desc" ? "↓" : "↑"}${showCompleted ? " · +done" : ""}`}
           >
-            <div className="flex items-center gap-1 flex-wrap">
-              <span className="type-label">Group</span>
-              {GROUP_MODES.map((m) => {
-                const Icon = m.icon;
-                return (
-                  <Chip
-                    key={m.mode}
-                    asChild
-                    tone="primary"
-                    pressed={groupBy === m.mode}
-                    label={m.label}
-                    icon={<Icon />}
-                  >
-                    <button
-                      type="button"
-                      onClick={() => dispatch(setGroupBy(m.mode))}
-                      title={`Group by ${m.label}`}
-                    />
-                  </Chip>
-                );
-              })}
+            <div className="flex items-center gap-2">
+              <span className="type-label w-10 shrink-0">Group</span>
+              <Select
+                className="flex-1 min-w-0"
+                aria-label="Group tasks by"
+                value={groupBy}
+                options={GROUP_MODES.map((m) => ({
+                  value: m.mode,
+                  label: m.label,
+                }))}
+                onValueChange={(v) => dispatch(setGroupBy(v))}
+              />
             </div>
 
-            <div className="mt-1.5 flex items-center gap-1 flex-wrap">
-              <span className="type-label">Sort</span>
-              {TASK_SORT_OPTIONS.map((opt) => {
-                const Icon = opt.icon;
-                return (
-                  <Chip
-                    key={opt.field}
-                    asChild
-                    tone="primary"
-                    pressed={sortBy === opt.field}
-                    label={opt.label}
-                    icon={<Icon />}
-                  >
-                    <button
-                      type="button"
-                      onClick={() =>
-                        dispatch(setSortBy(opt.field as TaskSortField))
-                      }
-                    />
-                  </Chip>
-                );
-              })}
-              <Chip
-                asChild
-                pressed={false}
-                label={sortOrder === "desc" ? "↓" : "↑"}
+            <div className="mt-1 flex items-center gap-2">
+              <span className="type-label w-10 shrink-0">Sort</span>
+              <Select
+                className="flex-1 min-w-0"
+                aria-label="Sort tasks by"
+                value={sortBy}
+                options={TASK_SORT_OPTIONS.map((o) => ({
+                  value: o.field,
+                  label: o.label,
+                }))}
+                onValueChange={(v) => dispatch(setSortBy(v as TaskSortField))}
+              />
+              <Button
+                type="button"
+                variant="quiet"
                 icon={<ArrowUpDown />}
+                onClick={() => dispatch(toggleSortOrder())}
+                title={sortOrder === "desc" ? "Descending" : "Ascending"}
+                aria-label={sortOrder === "desc" ? "Descending" : "Ascending"}
               >
-                <button
-                  type="button"
-                  onClick={() => dispatch(toggleSortOrder())}
-                  title={sortOrder === "desc" ? "Descending" : "Ascending"}
-                />
-              </Chip>
+                {sortOrder === "desc" ? "↓" : "↑"}
+              </Button>
             </div>
 
             <SettingRow
@@ -355,7 +335,7 @@ export default function TasksContextSidebar() {
             defaultOpen
             summary={SMART_VIEW_BY_KEY[smartView]?.label ?? "All tasks"}
           >
-            <div className="flex flex-col gap-0.5">
+            <div className="flex flex-col">
               {SMART_VIEWS.map((v) => {
                 const Icon = v.icon;
                 const count = smartViewCounts[v.key] ?? 0;
@@ -363,6 +343,7 @@ export default function TasksContextSidebar() {
                   <div key={v.key} title={v.description}>
                     <Tile
                       variant="quiet"
+                      dense
                       icon={<Icon />}
                       title={v.label}
                       selected={smartView === v.key}
@@ -389,6 +370,7 @@ export default function TasksContextSidebar() {
           {/* Context: Organizations */}
           <CollapsibleSidebarSection
             icon={Building}
+            glyphTone="violet"
             title="Organization"
             summary={activeOrgName}
             headerAction={
@@ -497,6 +479,7 @@ export default function TasksContextSidebar() {
           {/* Projects — always show all, dim those that don't match */}
           <CollapsibleSidebarSection
             icon={FolderKanban}
+            glyphTone="amber"
             title="Projects"
             summary={activeProjectName}
           >
@@ -542,6 +525,7 @@ export default function TasksContextSidebar() {
 function CollapsibleSidebarSection({
   icon: Icon,
   iconStyle,
+  glyphTone,
   title,
   titleMuted,
   summary,
@@ -551,6 +535,7 @@ function CollapsibleSidebarSection({
 }: {
   icon: LucideIcon;
   iconStyle?: React.CSSProperties;
+  glyphTone?: ChipTone;
   title: string;
   titleMuted?: boolean;
   summary: React.ReactNode;
@@ -569,10 +554,11 @@ function CollapsibleSidebarSection({
             onClick={() => setOpen((v) => !v)}
             chevron="end"
             icon={<Icon style={iconStyle} />}
+            glyphTone={glyphTone}
             title={title}
             end={
               !open ? (
-                <span className="type-meta text-foreground truncate max-w-20">
+                <span className="type-meta text-foreground truncate max-w-14 min-w-0">
                   {summary}
                 </span>
               ) : undefined
@@ -628,6 +614,7 @@ function ContextRow({
   return (
     <Tile
       variant="quiet"
+      dense
       selected={active}
       disabled={dimmed}
       onClick={onClick}
