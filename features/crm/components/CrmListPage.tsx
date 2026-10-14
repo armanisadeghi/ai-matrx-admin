@@ -50,6 +50,8 @@ import type {
 import { ItemMenu } from "@ai-matrx/design-system/item";
 import type { ItemMenuConfig } from "@ai-matrx/chat/ui/item-types";
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
+import { useTableBulkSelection } from "@/lib/entity-list/useTableBulkSelection";
+import type { EntityBulkAction } from "@/lib/entity-list/selection";
 import { EntityScopeTabs } from "@/lib/entity-list/components/EntityScopeTabs";
 import { EntityOrgFilter } from "@/lib/entity-list/components/EntityOrgFilter";
 import { useAppSelector } from "@/lib/redux/hooks";
@@ -655,13 +657,118 @@ export function CrmListPage({
 
   const inTrash = list.query.view === "trash";
 
-  // Checked rows → the bulk bar: enroll, flag/unflag do-not-contact, delete.
-  const [selectedIds, setSelectedIds] = useState<string[]>([]);
-  const [addToOutreachListOpen, setAddToOutreachListOpen] = useState(false);
-  const [bulkBusy, setBulkBusy] = useState(false);
-  const selectedLoadedRows = list.rows.filter((row) =>
-    selectedIds.includes(row.id),
-  );
+  // Checked rows → the shared bulk bar (lib/entity-list): enroll, flag /
+  // unflag do-not-contact, delete — plus the built-in Add tag. The trash view
+  // swaps in its own verb: restore.
+  const [outreachTarget, setOutreachTarget] = useState<{
+    ids: string[];
+    rows: PartyListRow[];
+  } | null>(null);
+  const noun = (n: number) => `${n.toLocaleString()} record${n === 1 ? "" : "s"}`;
+  const partyBulkActions: EntityBulkAction<PartyListRow>[] = [
+    {
+      id: "add-to-outreach-list",
+      label: "Add to outreach list",
+      icon: Megaphone,
+      // Opens the enrollment dialog; resolving with nothing keeps the selection
+      // until the dialog reports done.
+      run: (selection) => {
+        setOutreachTarget({ ids: selection.ids, rows: selection.rows });
+      },
+    },
+    {
+      id: "flag-do-not-contact",
+      label: "Do not contact",
+      icon: BellOff,
+      variant: "outline",
+      confirm: (selection) => ({
+        title: `Flag ${noun(selection.count)} do-not-contact?`,
+        description:
+          "They stop being offered to campaigns and the dialer. Their phone numbers and emails are NOT scrubbed — a value is suppressed where the request was made. This is reversible with Allow contact.",
+        confirmLabel: "Flag do-not-contact",
+      }),
+      run: async (selection) => {
+        await setPartiesDoNotContact({ ids: selection.ids, doNotContact: true });
+        return {
+          message: `Flagged do-not-contact · ${noun(selection.ids.length)}`,
+          refresh: true,
+        };
+      },
+    },
+    {
+      id: "allow-contact",
+      label: "Allow contact",
+      icon: BellRing,
+      variant: "outline",
+      confirm: (selection) => ({
+        title: `Allow contact for ${noun(selection.count)}?`,
+        description:
+          "Clears the do-not-contact flag so campaigns and the dialer can reach them again. Individual phone numbers or emails suppressed on the value itself stay blocked — open the record to lift those.",
+        confirmLabel: "Allow contact",
+      }),
+      run: async (selection) => {
+        await setPartiesDoNotContact({ ids: selection.ids, doNotContact: false });
+        return {
+          message: `Contact allowed · ${noun(selection.ids.length)}`,
+          refresh: true,
+        };
+      },
+    },
+    {
+      // Replaces the built-in trash: the screen's own bulk delete.
+      id: "move-to-trash",
+      label: "Move to Trash",
+      icon: Trash2,
+      variant: "destructive",
+      confirm: (selection) => ({
+        title: `Delete ${noun(selection.count)}?`,
+        description:
+          "They move to trash and can be restored. Contact history is kept.",
+        confirmLabel: "Move to Trash",
+        variant: "destructive",
+      }),
+      run: async (selection) => {
+        await deleteParties(selection.ids);
+        return {
+          message: `Moved to Trash · ${noun(selection.ids.length)}`,
+          removedIds: selection.ids,
+          refresh: true,
+        };
+      },
+    },
+  ];
+  // The trash's own verb (D226): a trash filled with one click must empty with
+  // one click. Delete means archive: there is no erase control.
+  const restorePartiesAction: EntityBulkAction<PartyListRow> = {
+    id: "restore",
+    label: "Restore",
+    icon: RotateCcw,
+    run: async (selection) => {
+      await restoreParties(selection.ids);
+      return {
+        message: `Restored · ${noun(selection.ids.length)}`,
+        removedIds: selection.ids,
+        refresh: true,
+      };
+    },
+  };
+  const bulk = useTableBulkSelection<PartyListRow>({
+    token: "party",
+    noun: "record",
+    rows: list.rows,
+    getRowId: (r) => r.id,
+    getRowName: (r) => r.display_name,
+    actions: inTrash ? [restorePartiesAction] : partyBulkActions,
+    // Trash view: Restore only. Live view: own delete replaces Move to Trash,
+    // Add tag stays; the list shows no favorites, so no Favorite verbs.
+    standardBulkActions: inTrash ? false : { trash: false },
+    favoritesShown: false,
+    onRefresh: () => list.refresh(),
+    onRemoveRows: (ids) => {
+      for (const id of ids) list.removeRow(id);
+      list.refresh();
+    },
+  });
 
   // Smart views: the saved query the list is currently running, if any. The
   // bar owns the records; this page owns which one is applied.
@@ -675,121 +782,10 @@ export function CrmListPage({
   const applySavedView = (definition: SavedViewDefinition) => {
     list.setQuery(queryFromDefinition(definition));
     setPrefs({ sort: definition.sort, direction: definition.direction });
-    setSelectedIds([]);
+    bulk.clear();
   };
   // A saved view is a WRITE: it goes to the active organization, never the list's filter.
   const savedViewOrgId = activeOrgId;
-
-  /** One bulk write + one refresh, with the selection cleared on success. */
-  const runBulk = async (
-    label: string,
-    action: (ids: string[]) => Promise<void>,
-  ) => {
-    const ids = [...selectedIds];
-    if (ids.length === 0) return;
-    setBulkBusy(true);
-    try {
-      await action(ids);
-      setSelectedIds([]);
-      list.refresh();
-      toast.success(
-        `${label} · ${ids.length.toLocaleString()} record${ids.length === 1 ? "" : "s"}`,
-      );
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : `${label} failed`);
-    } finally {
-      setBulkBusy(false);
-    }
-  };
-
-  const bulkActions = () => (
-    <div className="flex flex-wrap items-center gap-1.5">
-      <Button
-        icon={<Megaphone />}
-        variant="primary"
-        disabled={bulkBusy}
-        onClick={() => setAddToOutreachListOpen(true)}
-      >
-        Add to outreach list
-      </Button>
-      <Button
-        icon={<BellOff />}
-        variant="outline"
-        disabled={bulkBusy}
-        onClick={async () => {
-          const ok = await confirm({
-            title: `Flag ${selectedIds.length} record${selectedIds.length === 1 ? "" : "s"} do-not-contact?`,
-            description:
-              "They stop being offered to campaigns and the dialer. Their phone numbers and emails are NOT scrubbed — a value is suppressed where the request was made. This is reversible with Allow contact.",
-            confirmLabel: "Flag do-not-contact",
-          });
-          if (!ok) return;
-          await runBulk("Flagged do-not-contact", (ids) =>
-            setPartiesDoNotContact({ ids, doNotContact: true }),
-          );
-        }}
-      >
-        Do not contact
-      </Button>
-      <Button
-        icon={<BellRing />}
-        variant="outline"
-        disabled={bulkBusy}
-        onClick={async () => {
-          const ok = await confirm({
-            title: `Allow contact for ${selectedIds.length} record${selectedIds.length === 1 ? "" : "s"}?`,
-            description:
-              "Clears the do-not-contact flag so campaigns and the dialer can reach them again. Individual phone numbers or emails suppressed on the value itself stay blocked — open the record to lift those.",
-            confirmLabel: "Allow contact",
-          });
-          if (!ok) return;
-          await runBulk("Contact allowed", (ids) =>
-            setPartiesDoNotContact({ ids, doNotContact: false }),
-          );
-        }}
-      >
-        Allow contact
-      </Button>
-      <Button
-        icon={<Trash2 />}
-        variant="outline"
-        disabled={bulkBusy}
-        onClick={async () => {
-          const ok = await confirm({
-            title: `Delete ${selectedIds.length} record${selectedIds.length === 1 ? "" : "s"}?`,
-            description:
-              "They move to trash and can be restored. Contact history is kept.",
-            confirmLabel: "Move to Trash",
-            variant: "destructive" as const,
-          });
-          if (!ok) return;
-          await runBulk("Moved to Trash", (ids) => deleteParties(ids));
-        }}
-      >
-        Move to Trash
-      </Button>
-    </div>
-  );
-
-  // The trash's own bulk bar (D226): a trash filled with one click must empty
-  // with one click — restore the whole selection. Delete means archive: there
-  // is no erase control.
-  const trashBulkActions = () => (
-    <div className="flex flex-wrap items-center gap-1.5">
-      <Button
-        icon={<RotateCcw />}
-        variant="primary"
-        disabled={bulkBusy}
-        onClick={() =>
-          runBulk("Restored", async (ids) => {
-            await restoreParties(ids);
-          })
-        }
-      >
-        Restore
-      </Button>
-    </div>
-  );
 
   const menuFor = (row: PartyListRow): (() => ItemMenuConfig) => {
     if (inTrash) {
@@ -930,8 +926,10 @@ export function CrmListPage({
               label: "Add to an outreach list",
               icon: Megaphone,
               onSelect: () => {
-                setSelectedIds([target.id]);
-                setAddToOutreachListOpen(true);
+                setOutreachTarget({
+                  ids: [target.id],
+                  rows: list.rows.filter((row) => row.id === target.id),
+                });
               },
             },
           ],
@@ -1311,13 +1309,7 @@ export function CrmListPage({
                 detail={{ enabled: false }}
                 window={{ enabled: false }}
                 onRowOpen={openRow}
-                selection={{
-                  selectedIds,
-                  onSelectedIdsChange: setSelectedIds,
-                  noun: "record",
-                  // The trash gets its own verb (D226): restore in bulk.
-                  actions: inTrash ? trashBulkActions : bulkActions,
-                }}
+                selection={bulk.selection}
 
                 copy={{
                   label: "CRM record",
@@ -1368,11 +1360,16 @@ export function CrmListPage({
         </div>
 
         <AddToOutreachListDialog
-          open={addToOutreachListOpen}
-          onOpenChange={setAddToOutreachListOpen}
-          selectedRows={selectedLoadedRows}
-          selectedIds={selectedIds}
-          onDone={() => setSelectedIds([])}
+          open={outreachTarget !== null}
+          onOpenChange={(open) => {
+            if (!open) setOutreachTarget(null);
+          }}
+          selectedRows={outreachTarget?.rows ?? []}
+          selectedIds={outreachTarget?.ids ?? []}
+          onDone={() => {
+            setOutreachTarget(null);
+            bulk.clear();
+          }}
           // Provenance for the enrollment stamp (D222): the query the list is
           // running and the applied smart view, if any.
           enrollmentQuery={list.query}

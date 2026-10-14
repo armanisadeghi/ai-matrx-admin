@@ -90,6 +90,12 @@ interface KindExampleManagerProps {
   kindDefinitionId: string;
   emittedJsonSchema: Json | null;
   examples: ExamplesState;
+  /**
+   * The caller shows this read's loading and failure itself (the Preview page
+   * renders the examples card right below) — the manager stays quiet so one
+   * outage is one failure, not two.
+   */
+  loadStateShownElsewhere?: boolean;
   onExamplesChanged: () => void;
   authMode: ShapeAuthMode;
 }
@@ -98,6 +104,7 @@ export default function KindExampleManager({
   kindDefinitionId,
   emittedJsonSchema,
   examples,
+  loadStateShownElsewhere = false,
   onExamplesChanged,
   authMode,
 }: KindExampleManagerProps) {
@@ -261,12 +268,12 @@ export default function KindExampleManager({
         />
       )}
 
-      {examples.status === "loading" && (
+      {!loadStateShownElsewhere && examples.status === "loading" && (
         <div className="flex items-center gap-2 py-4 text-xs text-muted-foreground">
           <Loader2 className="h-3.5 w-3.5 animate-spin" /> Loading examples
         </div>
       )}
-      {examples.status === "error" && (
+      {!loadStateShownElsewhere && examples.status === "error" && (
         <div className="flex items-start gap-2 rounded-md border border-red-500/30 bg-red-500/5 px-3 py-2 text-xs text-red-700 dark:text-red-300">
           <CircleAlert className="mt-0.5 h-3.5 w-3.5 shrink-0" />
           {examples.message}

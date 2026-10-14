@@ -35,9 +35,10 @@ import {
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
 import { ItemContextMenu, ItemMenu } from "@ai-matrx/design-system/item";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { MoreHorizontal } from "lucide-react";
 import { announceComingSoon } from "@/lib/coming-soon/announce";
+import { useTableBulkSelection } from "@/lib/entity-list/useTableBulkSelection";
+import type { EntityBulkAction } from "@/lib/entity-list/selection";
 import { useListViewPrefs } from "@/lib/list-views/useListViewPrefs";
 import { cn } from "@/lib/utils";
 
@@ -227,7 +228,6 @@ export function HrDirectory() {
     direction: "asc",
   });
 
-  const [selectedIds, setSelectedIds] = useState<string[]>([]);
   // The offboarding dialog is hosted HERE — the common ancestor of the table and card menus
   // and the only `buildMenu` caller — mirroring how the create dialogs are hosted by their
   // page (RelationsCaseList / VerificationsSurface). "Start offboarding" hands the subject up.
@@ -244,6 +244,23 @@ export function HrDirectory() {
 
   const page = directory.page;
   const rows: HrScopedDirectoryRow[] = page?.rows ?? [];
+  // The shared bulk bar (lib/entity-list). EXPORT IS AUDITED (SPEC-EMPLOYEES
+  // §2.2) and there is no `hr_directory_export` door, so these three verbs
+  // announce their registered promise instead of shipping an unaudited
+  // download. No built-ins: an employee leaves through offboarding, never
+  // Trash; the directory shows no favorites; tags on people are not offered.
+  // Absent entirely without the capability (law 4 above).
+  const bulk = useTableBulkSelection<HrScopedDirectoryRow>({
+    token: "hr_employee",
+    noun: "person",
+    rows,
+    getRowId: (row) => row.employee_id,
+    getRowName: (row) => row.display_name,
+    actions: canBulk ? HR_BULK_ACTIONS : [],
+    standardBulkActions: false,
+    favoritesShown: false,
+    onRefresh: () => undefined,
+  });
   const total = page?.total ?? 0;
   // Every flag defaults to FALSE while the door has not answered. A column that
   // appears before we know whether this viewer may have it is the wrong default in
@@ -412,18 +429,7 @@ export function HrDirectory() {
                 search: true,
                 searchPlaceholder: "Search people by name, number or email",
               }}
-              selection={
-                canBulk
-                  ? {
-                      selectedIds,
-                      onSelectedIdsChange: setSelectedIds,
-                      noun: "person",
-                      actions: (selected, ids) => (
-                        <BulkActions count={ids.length || selected.length} />
-                      ),
-                    }
-                  : undefined
-              }
+              selection={bulk.selection}
               copy={{
                 // Directory tier ONLY. Nothing Confidential is on this table, so
                 // nothing Confidential can be copied off it.
@@ -604,44 +610,34 @@ function FirstHireDoor({
   );
 }
 
-/**
- * Bulk actions. EXPORT IS AUDITED (SPEC-EMPLOYEES §2.2) and there is no
- * `hr_directory_export` door, so an unaudited download is deliberately not
- * shipped — the promise is registered instead. Copy / Copy for AI on the table
- * still carry the directory-tier columns already on screen.
- */
-function BulkActions({ count }: { count: number }) {
-  return (
-    <div className="flex flex-wrap items-center gap-2">
-      <Badge variant="secondary" className="shrink-0">
-        {count} selected
-      </Badge>
-      <Button
-        icon={<GraduationCap aria-hidden />}
-        type="button"
-        variant="outline"
-        onClick={() => void announceComingSoon("hr.people.assign-training")}
-      >
-        Assign training
-      </Button>
-      <Button
-        type="button"
-        variant="outline"
-        onClick={() => void announceComingSoon("hr.people.send-acknowledgment")}
-      >
-        Send acknowledgment
-      </Button>
-      <Button
-        icon={<Download aria-hidden />}
-        type="button"
-        variant="outline"
-        onClick={() => void announceComingSoon("hr.people.directory-export")}
-      >
-        Export
-      </Button>
-    </div>
-  );
-}
+const HR_BULK_ACTIONS: EntityBulkAction<HrScopedDirectoryRow>[] = [
+  {
+    id: "assign-training",
+    label: "Assign training",
+    icon: GraduationCap,
+    variant: "outline",
+    run: () => {
+      void announceComingSoon("hr.people.assign-training");
+    },
+  },
+  {
+    id: "send-acknowledgment",
+    label: "Send acknowledgment",
+    variant: "outline",
+    run: () => {
+      void announceComingSoon("hr.people.send-acknowledgment");
+    },
+  },
+  {
+    id: "directory-export",
+    label: "Export",
+    icon: Download,
+    variant: "outline",
+    run: () => {
+      void announceComingSoon("hr.people.directory-export");
+    },
+  },
+];
 
 /**
  * The card grid pages over the SAME full result set as the table — same query,

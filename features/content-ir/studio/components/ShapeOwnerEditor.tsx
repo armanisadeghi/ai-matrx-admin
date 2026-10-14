@@ -253,6 +253,7 @@ export default function ShapeOwnerEditor({
             kindDefinitionId={kindDefinitionId}
             emittedJsonSchema={emittedJsonSchema}
             examples={examples}
+            loadStateShownElsewhere
             onExamplesChanged={onExamplesChanged}
             authMode="owner"
           />

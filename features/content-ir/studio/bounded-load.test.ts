@@ -1,11 +1,20 @@
 import {
   RECONNECT_RETRY_DELAYS_MS,
   SHAPE_LOAD_DEADLINE_MS,
+  isConnectionFailure,
   isLoadTimeoutError,
   startReconnectRetry,
   withLoadDeadline,
   type ReconnectRetryEnv,
 } from "./bounded-load";
+
+describe("isConnectionFailure", () => {
+  it("names a down line, not a refusal", () => {
+    expect(isConnectionFailure(new TypeError("Failed to fetch"))).toBe(true);
+    expect(isConnectionFailure(Object.assign(new Error("x"), { name: "TimeoutError" }))).toBe(true);
+    expect(isConnectionFailure(new Error("permission denied for table x"))).toBe(false);
+  });
+});
 
 describe("withLoadDeadline", () => {
   beforeEach(() => jest.useFakeTimers());
@@ -21,6 +30,8 @@ describe("withLoadDeadline", () => {
     const error = await outcome;
     expect(isLoadTimeoutError(error)).toBe(true);
     expect((error as Error).message).toContain("the saved examples");
+    // One short line, no guessed cause.
+    expect((error as Error).message).not.toMatch(/\.\s/);
   });
 
   it("passes a real answer and a real failure straight through", async () => {
@@ -68,20 +79,21 @@ describe("startReconnectRetry", () => {
     expect(retry).toHaveBeenCalledTimes(1);
   });
 
-  it("keeps retrying on a bounded backoff that never goes past its last step", () => {
-    const { env, liveTimer } = fakeEnv();
+  it("retries on a FINITE backoff, then only real signals retry — a long outage cannot grow errors forever", () => {
+    const { env, online, liveTimer } = fakeEnv();
     const retry = jest.fn();
     startReconnectRetry(retry, env);
     const seen: number[] = [];
-    for (let i = 0; i < 7; i += 1) {
+    for (let i = 0; i < RECONNECT_RETRY_DELAYS_MS.length; i += 1) {
       const t = liveTimer()!;
       seen.push(t.ms);
       t.fn();
     }
-    expect(retry).toHaveBeenCalledTimes(7);
-    const last = RECONNECT_RETRY_DELAYS_MS[RECONNECT_RETRY_DELAYS_MS.length - 1];
-    expect(seen.slice(0, 4)).toEqual([...RECONNECT_RETRY_DELAYS_MS]);
-    expect(Math.max(...seen)).toBe(last);
+    expect(seen).toEqual([...RECONNECT_RETRY_DELAYS_MS]);
+    expect(retry).toHaveBeenCalledTimes(RECONNECT_RETRY_DELAYS_MS.length);
+    expect(liveTimer()).toBeUndefined();
+    online.forEach((l) => l());
+    expect(retry).toHaveBeenCalledTimes(RECONNECT_RETRY_DELAYS_MS.length + 1);
   });
 
   it("stops completely once the load has landed", () => {

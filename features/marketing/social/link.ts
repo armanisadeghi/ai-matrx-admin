@@ -120,8 +120,14 @@ export function classifySocialLink(text: string): SocialLink | null {
   if (platform === "linkedin" && !["in", "company", "school"].includes(first)) return null;
   if (platform === "youtube" && !(first.startsWith("@") || ["c", "channel", "user"].includes(first))) return null;
   if (platform === "tiktok" && !first.startsWith("@")) return null;
+  // Facebook's own index pages are never an account (twin of matrx_social `_FACEBOOK_SECTIONS`).
+  if (platform === "facebook" && FACEBOOK_SECTIONS.has(first)) return null;
   return { kind: "profile", platform, url: url.href, handle };
 }
+
+/** Facebook address shapes whose first segment is a section, not the account: directory stubs
+ *  (`/pages/<name>/<id>`), people search (`/public/<name>`), Q&A spam (`/fb-answers/…`). */
+const FACEBOOK_SECTIONS = new Set(["pages", "people", "groups", "profile.php", "p", "watch", "events", "public", "fb-answers"]);
 
 // ---------------------------------------------------------------------------
 // The ONE account-input parser: any way a person writes a social account -> platform + handle + URL.

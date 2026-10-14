@@ -19,19 +19,28 @@
  *    a failure is an honest state that heals itself, never a dead end.
  */
 
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 
 export const SHAPE_LOAD_DEADLINE_MS = 20_000;
 
-/** Backoff while a load stays failed; the last entry repeats (bounded, never a storm). */
+/**
+ * Timer retries while a load stays failed. FINITE on purpose: after the last
+ * one only a real signal (`online`, tab visible, a click) retries, so a long
+ * outage cannot grow the error count forever.
+ */
 export const RECONNECT_RETRY_DELAYS_MS: readonly number[] = [5_000, 15_000, 30_000, 60_000];
 
 export function loadTimeoutError(what: string, ms: number): Error {
-  const error = new Error(
-    `Loading ${what} took longer than ${Math.round(ms / 1000)} seconds. The connection may be down.`,
-  );
+  const error = new Error(`No answer for ${what} after ${Math.round(ms / 1000)}s`);
   error.name = "TimeoutError";
   return error;
+}
+
+/** A failure that means "the line is down", not "the database refused" (timeout or a failed fetch). */
+export function isConnectionFailure(error: unknown): boolean {
+  if (isLoadTimeoutError(error)) return true;
+  const text = error instanceof Error ? `${error.name} ${error.message}` : String(error);
+  return /failed to fetch|networkerror|load failed|network request failed/i.test(text);
 }
 
 export function isLoadTimeoutError(error: unknown): boolean {
@@ -41,7 +50,7 @@ export function isLoadTimeoutError(error: unknown): boolean {
 /**
  * Settle with `work`, or reject with a named `TimeoutError` after `ms`.
  * The underlying request is not cancelled (not every loader takes a signal);
- * a late answer is simply ignored by the caller's own superseded-load guard.
+ * a late answer is ignored by the caller's {@link useLoadSequence} guard.
  */
 export function withLoadDeadline<T>(
   work: Promise<T>,
@@ -110,9 +119,8 @@ export function startReconnectRetry(
     schedule();
   };
   const schedule = () => {
-    if (stopped) return;
-    const delay = delays[Math.min(attempt, delays.length - 1)] ?? 60_000;
-    handle = env.setTimer(fire, delay);
+    if (stopped || attempt >= delays.length) return;
+    handle = env.setTimer(fire, delays[attempt]!);
   };
 
   const offOnline = env.onOnline(fire);
@@ -140,4 +148,42 @@ export function useReconnectRetry(failed: boolean, retry: () => void): void {
     if (!failed) return;
     return startReconnectRetry(() => retryRef.current());
   }, [failed]);
+}
+
+/**
+ * Latest-call-wins guard. `const isCurrent = begin()` at the start of a load;
+ * after every await, `if (!isCurrent()) return` — an older call's late success
+ * or late timeout can never overwrite a newer retry's result. Unmount makes
+ * every outstanding call stale.
+ */
+export function useLoadSequence(): () => () => boolean {
+  const seq = useRef(0);
+  useEffect(() => {
+    const ref = seq;
+    return () => {
+      ref.current += 1;
+    };
+  }, []);
+  return useCallback(() => {
+    const mine = ++seq.current;
+    return () => mine === seq.current;
+  }, []);
+}
+
+/**
+ * True the first time it is called per outage and false for every retry after
+ * it; `reset()` when the load lands. Retries of one outage file ONE error.
+ */
+export function useOncePerOutage(): { first: () => boolean; reset: () => void } {
+  const reported = useRef(false);
+  return {
+    first: () => {
+      if (reported.current) return false;
+      reported.current = true;
+      return true;
+    },
+    reset: () => {
+      reported.current = false;
+    },
+  };
 }

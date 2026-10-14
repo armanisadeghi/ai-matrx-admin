@@ -4,43 +4,25 @@
  * NoteSidebarBulkBar — compact bulk-action bar shown in the notes sidebar
  * while selection mode is active. It renders the moment selection mode is
  * entered (docked at the TOP, just below the toolbar) so the UI doesn't shift
- * when the first note is checked; actions are disabled until ≥1 note is
- * selected. Mirrors features/files/components/surfaces/desktop/BulkActionsBar
- * in shape (bounded-concurrency fan-out + a single confirm for delete) but
- * sized to fit a narrow sidebar column.
+ * when the first note is checked; actions are disabled until >=1 note is
+ * selected.
+ *
+ * The sidebar keeps its own selection state; the ACTIONS are the platform's
+ * shared `EntityBulkActions` (lib/entity-list) fed by `buildNoteBulkActions`,
+ * so confirms, pending state, named refusals and toasts are the shared ones.
+ * This file owns only the select-all / count / exit chrome and the home picker.
  */
 
 import { useState } from "react";
-import {
-  CheckSquare,
-  Database,
-  Download,
-  House,
-  Loader2,
-  Share2,
-  Square,
-  Trash2,
-  X,
-} from "lucide-react";
-import { toast } from "@/lib/toast";
+import { CheckSquare, Square, X } from "lucide-react";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { cn } from "@/lib/utils";
 import { SimpleTooltip } from "@/components/matrx/Tooltip";
-import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
-import { removeInstanceTab } from "../redux/slice";
-import { deleteNote, restoreNote, ensureNoteBodiesLoaded } from "../redux/thunks";
-import { ingestSource } from "@/features/rag/api/ingest";
-import { isNoteContentEmpty } from "../utils/noteUtils";
-import { runWithConcurrency } from "@ai-matrx/kit/concurrency";
-import {
-  downloadNoteAsMarkdown,
-  downloadNotesAsMarkdownZip,
-} from "../utils/exportNotesMarkdown";
-import { openNoteShareModal } from "./note-actions/noteMenuRegistry";
+import { EntityBulkActions } from "@/lib/entity-list/components/EntityBulkBar";
+import type { EntityBulkSelection } from "@/lib/entity-list/selection";
 import type { NoteRecord } from "../redux/notes.types";
 import { HomePickerDialog } from "../homes/HomePicker";
-
-const MAX_PARALLEL = 4;
+import { buildNoteBulkActions } from "./noteBulkActions";
 
 interface NoteSidebarBulkBarProps {
   instanceId: string;
@@ -66,240 +48,95 @@ export function NoteSidebarBulkBar({
   selectableCount,
 }: NoteSidebarBulkBarProps) {
   const dispatch = useAppDispatch();
-  const [busyKind, setBusyKind] = useState<
-    "knowledge" | "delete" | null
-  >(null);
   const [moveOpen, setMoveOpen] = useState(false);
 
   const count = selectedNotes.length;
   const hasAny = count > 0;
-  const singleNote = count === 1 ? selectedNotes[0] : null;
 
-  const handleKnowledge = async () => {
-    if (!hasAny || busyKind) return;
-    setBusyKind("knowledge");
-    try {
-      const { succeeded, failed } = await runWithConcurrency(
-        selectedNotes,
-        MAX_PARALLEL,
-        async (note) => {
-          await ingestSource("note", note.id, {
-            organizationId: note.organization_id,
-          });
-        },
-      );
-      if (failed > 0) {
-        toast.error(`Indexed ${succeeded}, ${failed} failed`);
-      } else {
-        toast.success(
-          `Added ${succeeded} note${succeeded === 1 ? "" : "s"} to knowledge base`,
-        );
-      }
-    } finally {
-      setBusyKind(null);
-    }
-  };
+  const actions = buildNoteBulkActions({
+    dispatch,
+    instanceId,
+    openTabIds,
+    onClear,
+    openMove: () => setMoveOpen(true),
+  });
 
-  const handleExport = async () => {
-    if (!hasAny) return;
-    // List rows carry only a preview (audit N-24): read the bodies first.
-    const full = await dispatch(
-      ensureNoteBodiesLoaded(selectedNotes.map((n) => n.id)),
-    ).unwrap();
-    if (full.length === 1) {
-      downloadNoteAsMarkdown(full[0]);
-      return;
-    }
-    await downloadNotesAsMarkdownZip(full, "notes-export.zip");
-  };
+  const build = (): EntityBulkSelection<NoteRecord> => ({
+    mode: "ids",
+    ids: selectedNotes.map((n) => n.id),
+    rows: selectedNotes,
+    count,
+    filter: {
+      scope: { kind: "all" },
+      orgId: null,
+      search: "",
+      deep: false,
+      archived: "active",
+      filters: {},
+    },
+  });
 
-  const handleShare = () => {
-    if (!singleNote) return;
-    void openNoteShareModal(dispatch, singleNote.id, singleNote.label);
-  };
-
-  const handleDelete = async () => {
-    if (!hasAny || busyKind) return;
-
-    // "Empty" is judged on the BODY; list rows carry only a preview (audit
-    // N-24), so read the bodies before deciding to skip the confirmation.
-    let withBodies: NoteRecord[];
-    try {
-      withBodies = await dispatch(
-        ensureNoteBodiesLoaded(selectedNotes.map((n) => n.id)),
-      ).unwrap();
-    } catch {
-      toast.error("Could not load these notes to check them before deleting. Try again.");
-      return;
-    }
-    const allEmpty = withBodies.every((n) => isNoteContentEmpty(n.content));
-    if (!allEmpty) {
-      const ok = await confirm({
-        title: `Move ${count} note${count === 1 ? "" : "s"} to Trash?`,
-        description: `Selected note${count === 1 ? "" : "s"} will be moved to trash. You can restore ${count === 1 ? "it" : "them"} later.`,
-        confirmLabel: "Move to Trash",
-        variant: "destructive",
-      });
-      if (!ok) return;
-    }
-
-    setBusyKind("delete");
-    try {
-      for (const note of selectedNotes) {
-        if (openTabIds?.includes(note.id)) {
-          dispatch(removeInstanceTab({ instanceId, noteId: note.id }));
-        }
-      }
-      const deletedIds = selectedNotes.map((n) => n.id);
-      const { succeeded, failed } = await runWithConcurrency(
-        selectedNotes,
-        MAX_PARALLEL,
-        async (note) => {
-          await dispatch(deleteNote(note.id)).unwrap();
-        },
-      );
-
-      if (failed > 0) {
-        toast.error(`Deleted ${succeeded}, ${failed} failed`);
-      } else {
-        toast.success(
-          `Deleted ${succeeded} note${succeeded === 1 ? "" : "s"}`,
-          {
-            action: {
-              label: "Undo",
-              onClick: () => {
-                for (const id of deletedIds) dispatch(restoreNote(id));
-                toast.success("Notes restored");
-              },
-            },
-          },
-        );
-      }
-      onClear();
-    } finally {
-      setBusyKind(null);
-    }
-  };
-
-  // Disabled while a bulk op runs, or when nothing is selected yet.
-  const noneSelected = !hasAny;
-  const actionsDisabled = busyKind !== null || noneSelected;
   const btn =
     "flex items-center justify-center w-6 h-6 rounded text-muted-foreground hover:bg-accent hover:text-foreground disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-muted-foreground disabled:cursor-not-allowed [&_svg]:w-3.5 [&_svg]:h-3.5";
 
   return (
     <>
       <div
-        className="shrink-0 flex items-center gap-0.5 px-2 py-1.5 border-b border-border/30 bg-accent/40"
+        className="shrink-0 flex flex-col gap-1 px-2 py-1.5 border-b border-border/30 bg-accent/40"
         role="toolbar"
         aria-label="Bulk note actions"
       >
-        {/* Select-all toggle */}
-        <SimpleTooltip
-          text={
-            allVisibleSelected
-              ? "Clear selection"
-              : `Select all ${selectableCount} visible`
-          }
+        <div className="flex items-center gap-0.5">
+          <SimpleTooltip
+            text={
+              allVisibleSelected
+                ? "Clear selection"
+                : `Select all ${selectableCount} visible`
+            }
+          >
+            <button
+              type="button"
+              onClick={onToggleSelectAll}
+              disabled={selectableCount === 0}
+              className={cn(btn, "text-foreground/70")}
+              aria-pressed={allVisibleSelected}
+            >
+              {allVisibleSelected ? <CheckSquare /> : <Square />}
+            </button>
+          </SimpleTooltip>
+
+          <span className="min-w-[4.5rem] px-1 text-[0.6875rem] font-medium tabular-nums text-foreground">
+            {hasAny ? `${count} selected` : "Select notes"}
+          </span>
+
+          <div className="flex-1" />
+          <SimpleTooltip text="Exit selection mode">
+            <button
+              type="button"
+              onClick={onClear}
+              className={cn(btn, "text-foreground/70")}
+            >
+              <X />
+            </button>
+          </SimpleTooltip>
+        </div>
+
+        {/* Disabled as a group until a note is checked. */}
+        <fieldset
+          disabled={!hasAny}
+          className="m-0 flex min-w-0 flex-wrap items-center gap-1 border-0 p-0 disabled:opacity-50"
         >
-          <button
-            type="button"
-            onClick={onToggleSelectAll}
-            disabled={busyKind !== null || selectableCount === 0}
-            className={cn(btn, "text-foreground/70")}
-            aria-pressed={allVisibleSelected}
-          >
-            {allVisibleSelected ? <CheckSquare /> : <Square />}
-          </button>
-        </SimpleTooltip>
-
-        <span className="min-w-[4.5rem] px-1 text-[0.6875rem] font-medium tabular-nums text-foreground">
-          {hasAny ? `${count} selected` : "Select notes"}
-        </span>
-        <span className="h-4 w-px bg-border" />
-
-        {/* Move to… — one home picker; a selection spanning organizations
-            moves each note through moveNoteToHome (organization follows). */}
-        <SimpleTooltip text="Move to…">
-          <button type="button" disabled={actionsDisabled} className={btn} onClick={() => setMoveOpen(true)}>
-            <House />
-          </button>
-        </SimpleTooltip>
-
-        <SimpleTooltip text="Add to knowledge base">
-          <button
-            type="button"
-            onClick={() => void handleKnowledge()}
-            disabled={actionsDisabled}
-            className={btn}
-          >
-            {busyKind === "knowledge" ? (
-              <Loader2 className="animate-spin" />
-            ) : (
-              <Database />
-            )}
-          </button>
-        </SimpleTooltip>
-
-        <SimpleTooltip text="Export as Markdown">
-          <button
-            type="button"
-            onClick={() => void handleExport()}
-            disabled={actionsDisabled}
-            className={btn}
-          >
-            <Download />
-          </button>
-        </SimpleTooltip>
-
-        <SimpleTooltip
-          text={
-            noneSelected
-              ? "Select a note to share"
-              : singleNote
-                ? "Share"
-                : "Select exactly one note to share"
-          }
-        >
-          <button
-            type="button"
-            onClick={handleShare}
-            disabled={busyKind !== null || !singleNote}
-            className={btn}
-          >
-            <Share2 />
-          </button>
-        </SimpleTooltip>
-
-        <SimpleTooltip text="Delete (move to trash)">
-          <button
-            type="button"
-            onClick={() => void handleDelete()}
-            disabled={actionsDisabled}
-            className={cn(
-              btn,
-              "text-destructive-ink hover:bg-destructive/10 hover:text-destructive-ink disabled:hover:bg-transparent",
-            )}
-          >
-            {busyKind === "delete" ? (
-              <Loader2 className="animate-spin" />
-            ) : (
-              <Trash2 />
-            )}
-          </button>
-        </SimpleTooltip>
-
-        <div className="flex-1" />
-        <SimpleTooltip text="Exit selection mode">
-          <button
-            type="button"
-            onClick={onClear}
-            className={cn(btn, "text-foreground/70")}
-          >
-            <X />
-          </button>
-        </SimpleTooltip>
+          <EntityBulkActions
+            actions={actions}
+            selection={{ build, clear: onClear, count }}
+            noun="note"
+            onRemoveRows={() => {}}
+            onRefresh={() => {}}
+          />
+        </fieldset>
       </div>
+      {/* Move to… — one home picker; a selection spanning organizations
+          moves each note through moveNoteToHome (organization follows). */}
       <HomePickerDialog
         open={moveOpen}
         onOpenChange={setMoveOpen}
