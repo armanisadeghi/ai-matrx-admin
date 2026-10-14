@@ -12,7 +12,8 @@
  *   Alias (name)            → web.brand.profile.brand_aliases
  *   Related: competitor     → web.brand.profile.competitors
  *   Not us                  → web.brand_exclusion
- *   Correct / edited (fact) → web.business_fact (resolved_fact_id)
+ *   Correct / edited (fact) → web.business_fact (resolved_fact_id; source `discovered`, provenance in
+ *                             metadata), or its web.brand profile key (aliases, service area, competitors)
  *   Ask me later            → nothing (stays pending)
  */
 
@@ -69,13 +70,33 @@ function relationKeyFor(answer: Answer, relationKey: string | null): string | nu
   return null;
 }
 
+/** The facts agent's fields (brand_basics) that are a web.business_fact kind under another name. */
+const FACT_FIELD_KIND: Record<string, string> = {
+  toll_free_phone: "phone",
+  sms_number: "phone",
+  street_address: "address",
+  business_hours: "hours",
+  legal_entity_name: "legal_name",
+  brand_legal_name: "legal_name",
+  short_description: "description",
+  registration_number: "registration",
+};
+
 /** web.business_fact kind for a fact field (the table's own list), else `other` with its label. */
 function factKind(field: string): string {
   const f = field.toLowerCase();
   if (isBusinessFactKind(f)) return f;
-  if (f === "legal_name" || f === "brand_legal_name") return "legal_name";
-  return "other";
+  return FACT_FIELD_KIND[f] ?? "other";
 }
+
+/** Fact fields whose canonical home is a web.brand profile key (BrandProfile), not web.business_fact. */
+const PROFILE_HOME: Record<string, "brand_aliases" | "service_area" | "competitors"> = {
+  also_known_as: "brand_aliases",
+  dba_name: "brand_aliases",
+  former_name: "brand_aliases",
+  service_area: "service_area",
+  competitor: "competitors",
+};
 
 async function db() {
   return authenticatedWebDb(supabase);
@@ -430,15 +451,47 @@ export async function persistAnswer(
     if (ex.id) homes.push(`web.brand_exclusion:${ex.id}`);
     undos.push(ex.undo);
   }
-  if (answer === "correct" && item.kind === "fact") {
+  const profileHome = answer === "correct" && item.fact ? PROFILE_HOME[item.fact.field] : undefined;
+  if (profileHome) {
+    // A brand profile key is the fact's one home (aliases, service area, competitors).
+    const undo = await patchProfile(ctx, (p) => {
+      const profile = parseBrandProfile(p as Json);
+      if (profileHome === "service_area") return profile.service_area ? p : { ...p, service_area: value };
+      if (profileHome === "brand_aliases") {
+        const aliases = profile.brand_aliases ?? [];
+        return aliases.includes(value) ? p : { ...p, brand_aliases: [...aliases, value] };
+      }
+      const list = Array.isArray(p.competitors) ? p.competitors : [];
+      return { ...p, competitors: [...list, { name: value }] as Json };
+    });
+    homes.push(`web.brand.profile.${profileHome}:${ctx.getBrand().id}`);
+    undos.push(undo);
+  } else if (answer === "correct" && item.kind === "fact") {
     const field = item.fact?.field ?? ev?.field ?? "other";
     const kind = factKind(field);
     const fact = await createBusinessFact({
       organizationId: ctx.organizationId,
       brandId: ctx.getBrand().id,
       kind: kind as Parameters<typeof createBusinessFact>[0]["kind"],
-      label: kind === "other" ? item.label : null,
+      label: kind === "other" || item.fact ? item.label : null,
       value,
+      // The facts agent's finding keeps its provenance on the fact itself (the brand pages show it).
+      ...(item.fact
+        ? {
+            source: "discovered" as const,
+            metadata: {
+              found_by: "brand_intake.early_facts",
+              field: item.fact.field,
+              field_label: item.fact.field_label,
+              found_value: item.fact.value,
+              certainty: item.fact.certainty,
+              reason: item.fact.reason,
+              evidence_urls: item.fact.evidence_urls,
+            },
+          }
+        : ev
+          ? { source: "discovered" as const, metadata: { found_by: ev.source.node, where: ev.source.where, url: ev.source.url } }
+          : {}),
     });
     resolved.resolved_fact_id = fact.id;
     homes.push(`web.business_fact:${fact.id}`);

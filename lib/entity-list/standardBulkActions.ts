@@ -19,9 +19,12 @@
 // live inside that feature's own `run` (skip + report), so the next action a
 // surface adds is not silently blocked on rows the first one could not handle.
 
-import { Trash2 } from "lucide-react";
+import { Star, StarOff, Tag, Trash2 } from "lucide-react";
 import { toast } from "@/lib/toast";
+import { supabase } from "@/utils/supabase/client";
 import { archiveRecord } from "@/features/trash/service";
+import { fileUnderTag } from "@/features/knowledge/hub/tags/tagApi";
+import { promptForValues } from "@/components/dialogs/value-prompts/ValuePromptsDialogHost";
 import {
   bulkCountLabel,
   type EntityBulkAction,
@@ -141,4 +144,121 @@ export function trashBulkAction<TRow>(args: {
         args.rowIdOf,
       ),
   };
+}
+
+/** Favourite or unfavourite every selected row for the signed-in person (`ues_set`). */
+export function favoriteBulkAction<TRow>(args: {
+  token: string;
+  noun: string;
+  rowIdOf: (row: TRow) => string;
+  labelOf?: (row: TRow) => string;
+  favorite: boolean;
+}): EntityBulkAction<TRow> {
+  return {
+    id: args.favorite ? "favorite" : "unfavorite",
+    label: args.favorite ? "Favorite" : "Unfavorite",
+    icon: args.favorite ? Star : StarOff,
+    run: (selection) =>
+      runPerRow(
+        selection,
+        async (id) => {
+          const { error } = await supabase.rpc("ues_set", {
+            p_entity_type: args.token,
+            p_entity_id: id,
+            p_is_favorite: args.favorite,
+          });
+          if (error) throw new Error(error.message);
+        },
+        {
+          done: args.favorite ? "Added to favorites" : "Removed from favorites",
+          noun: args.noun,
+          labelOf: args.labelOf,
+        },
+        args.rowIdOf,
+      ),
+  };
+}
+
+/** Ask for one tag name, then file every selected row under it (`platform.file_under_tag`). */
+export function tagBulkAction<TRow>(args: {
+  token: string;
+  noun: string;
+  rowIdOf: (row: TRow) => string;
+  labelOf?: (row: TRow) => string;
+}): EntityBulkAction<TRow> {
+  return {
+    id: "add-tag",
+    label: "Add tag",
+    icon: Tag,
+    run: async (selection) => {
+      const answers = await promptForValues({
+        title: `Tag ${bulkCountLabel(selection.count, args.noun)}`,
+        description: "A new name creates the tag.",
+        submitLabel: "Add tag",
+        fields: [{ name: "tag", prompt: "Tag name" }],
+      });
+      const name = answers?.tag?.trim();
+      // Cancelled or empty: resolve with nothing, so the shell keeps the selection.
+      if (!name) return;
+      return runPerRow(
+        selection,
+        async (id) => {
+          await fileUnderTag(args.token, id, name);
+        },
+        { done: `Tagged "${name}"`, noun: args.noun, labelOf: args.labelOf },
+        args.rowIdOf,
+      );
+    },
+  };
+}
+
+/** Which built-in verbs a surface keeps. Every one is on unless set to false. */
+export interface StandardBulkActionsConfig {
+  trash?: boolean;
+  favorite?: boolean;
+  tag?: boolean;
+}
+
+/**
+ * THE BUILT-IN BULK SET. Every list that names its record type
+ * (`registryToken`) gets these without writing any code; a surface turns one
+ * off with `standardBulkActions: { trash: false }`, or all with `false`.
+ * The surface's own actions come first, and an own action with the same id
+ * replaces the built-in one.
+ */
+export function standardBulkActionsFor<TRow>(args: {
+  token: string | undefined;
+  noun: string;
+  rowIdOf: (row: TRow) => string;
+  labelOf?: (row: TRow) => string;
+  config: StandardBulkActionsConfig | false | undefined;
+}): EntityBulkAction<TRow>[] {
+  if (!args.token || args.config === false) return [];
+  const on = (key: keyof StandardBulkActionsConfig) =>
+    !args.config || args.config[key] !== false;
+  const base = {
+    token: args.token,
+    noun: args.noun,
+    rowIdOf: args.rowIdOf,
+    labelOf: args.labelOf,
+  };
+  return [
+    ...(on("favorite")
+      ? [
+          favoriteBulkAction<TRow>({ ...base, favorite: true }),
+          favoriteBulkAction<TRow>({ ...base, favorite: false }),
+        ]
+      : []),
+    ...(on("tag") ? [tagBulkAction<TRow>(base)] : []),
+    ...(on("trash") ? [trashBulkAction<TRow>(base)] : []),
+  ];
+}
+
+/** The surface's own actions, then the built-ins it did not replace by id. */
+export function mergeBulkActions<TRow>(
+  own: EntityBulkAction<TRow>[],
+  standard: EntityBulkAction<TRow>[],
+): EntityBulkAction<TRow>[] {
+  const ownIds = new Set(own.map((action) => action.id));
+  return [...own, ...standard.filter((action) => !ownIds.has(action.id))];
 }

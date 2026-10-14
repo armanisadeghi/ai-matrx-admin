@@ -3,7 +3,7 @@
 import { Building2, Power, PowerOff } from "lucide-react";
 import type { EntityListConfig } from "@/lib/entity-list/config";
 import { bulkCountLabel, type EntityBulkAction } from "@/lib/entity-list/selection";
-import { runPerRow, trashBulkAction } from "@/lib/entity-list/standardBulkActions";
+import { runPerRow } from "@/lib/entity-list/standardBulkActions";
 import { supabase } from "@/utils/supabase/client";
 import { setShapeActivation } from "@/features/content-ir/studio/shape-authoring-service";
 import {
@@ -165,12 +165,6 @@ const SHAPE_BULK_ACTIONS: EntityBulkAction<ShapeBrowseRow>[] = [
         shapeId,
       ),
   },
-  trashBulkAction<ShapeBrowseRow>({
-    token: "content_ir_kind",
-    noun: SHAPE_NOUN,
-    rowIdOf: shapeId,
-    labelOf: shapeLabel,
-  }),
 ];
 
 /** Super admins (`shape.promote-to-system`) also get Promote; one DB call for the whole selection. */

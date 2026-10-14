@@ -138,7 +138,7 @@ function parseFact(raw: unknown): BrandFact | null {
     certainty: str(f.certainty) ?? "possible",
     reason: str(f.reason) ?? "",
     evidence_urls: Array.isArray(f.evidence_urls) ? f.evidence_urls.filter((u): u is string => typeof u === "string") : [],
-    known_field: str(f.known_field),
+    known_field: typeof f.known_field === "boolean" ? String(f.known_field) : str(f.known_field),
     suggestion: parseSuggestion(f.suggestion),
   };
 }
@@ -155,14 +155,16 @@ export function factsFromPayload(payload: unknown, depth = 0): BrandFact[] {
     const one = parseFact(o);
     return one ? [one] : [];
   }
-  if (o.__kind === "brand_basics" && Array.isArray(o.items)) {
-    return o.items.map(parseFact).filter((f): f is BrandFact => Boolean(f));
+  // The kind's list is `facts` (Arman's agent and the registered kind); `items` is read too.
+  const list = (b: Record<string, unknown>): unknown[] | null =>
+    Array.isArray(b.facts) ? b.facts : Array.isArray(b.items) ? b.items : null;
+  if (o.__kind === "brand_basics") {
+    return (list(o) ?? []).map(parseFact).filter((f): f is BrandFact => Boolean(f));
   }
-  return Object.entries(o).flatMap(([k, v]) =>
-      k === "brand_basics" && typeof v === "object" && v !== null && Array.isArray((v as Record<string, unknown>).items)
-        ? ((v as Record<string, unknown>).items as unknown[]).map(parseFact).filter((f): f is BrandFact => Boolean(f))
-        : factsFromPayload(v, depth + 1),
-    );
+  return Object.entries(o).flatMap(([k, v]) => {
+    const block = k === "brand_basics" && typeof v === "object" && v !== null ? list(v as Record<string, unknown>) : null;
+    return block ? block.map(parseFact).filter((f): f is BrandFact => Boolean(f)) : factsFromPayload(v, depth + 1);
+  });
 }
 
 export function mergeFacts(current: BrandFact[], incoming: BrandFact[]): BrandFact[] {
@@ -323,10 +325,48 @@ export function focusFromFact(f: BrandFact): FocusItem {
   };
 }
 
+/**
+ * The facts agent's fields in the order a person settles them: identity and contact, then what the
+ * business is and does, then its people, then listings and metrics. Every other field is the later
+ * pile (after the web results).
+ */
+const FACT_GROUPS: readonly (readonly string[])[] = [
+  [
+    "official_name", "legal_entity_name", "dba_name", "former_name", "also_known_as", "website", "additional_website",
+    "street_address", "city", "county", "state", "province", "region", "postal_code", "country",
+    "headquarters_location", "additional_location", "phone", "toll_free_phone", "sms_number", "fax", "email",
+    "contact_form_url", "live_chat", "booking_url", "careers_page", "online_store_url", "linkedin_company_page",
+    "social_facebook", "social_instagram", "social_x", "social_tiktok", "social_youtube", "social_pinterest",
+    "social_threads", "social_snapchat", "social_reddit", "social_discord", "social_github", "social_bluesky",
+    "social_whatsapp", "social_telegram", "unresolved_profile",
+  ],
+  [
+    "business_type", "industry", "business_category", "entity_type", "primary_products_services", "specialty",
+    "target_market", "short_description", "tagline", "service_area", "sic_code", "naics_code",
+  ],
+  ["founder", "ceo", "president", "owner", "partner", "key_executive", "employee", "staff_contact"],
+  [
+    "google_business_profile", "yelp_page", "bbb_profile", "trustpilot_page", "glassdoor_page", "crunchbase_page",
+    "wikipedia_page", "apple_app_store_app", "google_play_app", "amazon_storefront", "other_listing",
+    "review_rating", "verified_account", "social_follower_count", "stated_metric", "employee_count_range",
+    "annual_revenue", "year_founded",
+  ],
+];
+const FACT_GROUP = new Map(FACT_GROUPS.flatMap((fields, group) => fields.map((f) => [f, group] as const)));
+/** The later pile: a fact field outside the four groups. */
+export const LATER_FACT_GROUP = FACT_GROUPS.length;
+
+export function factGroup(field: string): number {
+  return FACT_GROUP.get(field) ?? LATER_FACT_GROUP;
+}
+
 function rank(i: FocusItem): number[] {
   const certainty = CERTAINTY_ORDER[i.certainty ?? ""] ?? 1;
   const confidence = i.evidence ? 1 - i.evidence.confidence : 0.5;
-  return [KIND_ORDER[i.kind], certainty, confidence];
+  const group = i.fact ? factGroup(i.fact.field) : 0;
+  // A later-pile fact comes after the web results.
+  const kind = i.fact && group === LATER_FACT_GROUP ? KIND_ORDER.web + 1 : KIND_ORDER[i.kind];
+  return [kind, group, certainty, confidence];
 }
 
 function compare(a: FocusItem, b: FocusItem): number {

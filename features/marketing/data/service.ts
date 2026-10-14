@@ -4171,7 +4171,8 @@ export async function createBusinessFact(
       kind: input.kind,
       label: input.label,
       value: factValuePayload(input.value),
-      source: "manual",
+      source: input.source ?? "manual",
+      ...(input.metadata !== undefined ? { metadata: input.metadata } : {}),
       confirmed_at: new Date().toISOString(),
     })
     .select(BUSINESS_FACT_COLUMNS)

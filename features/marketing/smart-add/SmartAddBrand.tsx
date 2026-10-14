@@ -185,7 +185,8 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
 
   // ── rounds ──────────────────────────────────────────────────────────────
 
-  const startRound = async (seeds: RoundSeeds, woken: ConfirmedFacts = {}) => {
+  /** `firstData`: a round started from what the person typed — it wakes the facts agent at first data. */
+  const startRound = async (seeds: RoundSeeds, woken: ConfirmedFacts = {}, firstData = false) => {
     if (!seeds.website && seeds.socials.length === 0 && !woken.name && !woken.location) return;
     for (const k of seedKeys(seeds, accountSeedKey)) explored.current.add(k);
     const id = crypto.randomUUID();
@@ -204,7 +205,14 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
           sourceFeature: "marketing",
           // `confirmed` = every fact the person confirmed; `woken` = the ones new this round, which wake
           // the confirmed-tier steps (news/videos/images, local) — the run skips the rest.
-          inputs: { website: seeds.website, socials: seeds.socials, confirmed: confirmedFacts, woken, exclude_keys: exclude },
+          inputs: {
+            website: seeds.website,
+            socials: seeds.socials,
+            confirmed: confirmedFacts,
+            woken,
+            exclude_keys: exclude,
+            ...(firstData ? { first_data: true } : {}),
+          },
         },
         "Identification could not start.",
       );
@@ -248,7 +256,7 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
       socials: typedSocial && typedSocialKey && !base.has(typedSocialKey) ? [typedSocial] : [],
     };
     typedKeys.current = { website: typedWebsiteKey ?? prev.website, social: typedSocialKey ?? prev.social };
-    void startRound(seeds);
+    void startRound(seeds, {}, true);
   });
 
   useEffect(() => {

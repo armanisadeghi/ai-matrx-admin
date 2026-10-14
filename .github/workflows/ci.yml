@@ -643,7 +643,9 @@ jobs:
     name: "[signal] the Shape sandbox boundary in a real browser (UNMEASURED without the secret)"
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    needs: secrets-preflight
+    # The browser proof reads live content rows. Run it after the blocking list-count
+    # probe so two CI jobs do not compete for the same PostgREST statement budget.
+    needs: [secrets-preflight, migration-slot-guard]
     if: needs.secrets-preflight.outputs.supabase == 'true'
     env:
       NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}

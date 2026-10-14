@@ -12,6 +12,10 @@
 //     persisted per user and synced across devices.
 //   QUERY (scope, search, filters, page) → useEntityList, always starts clean.
 
+import {
+  mergeBulkActions,
+  standardBulkActionsFor,
+} from "../standardBulkActions";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { clearNoRoomMarks, columnsWithoutRoom, NO_ROOM_CSS, noRoomScript } from "../columnPriority";
 import { usePhoneWidth } from "../usePhoneWidth";
@@ -793,7 +797,18 @@ export function EntityListPage<TRow>({
   // Entirely absent unless the surface declared `bulkActions`. See
   // ../selection.ts for the vocabulary and ../useEntityListSelection.ts for why
   // the state is local rather than a slice.
-  const bulkActions = config.bulkActions ?? [];
+  // The surface's own verbs, plus the built-in set every list with a record
+  // type gets (Favorite, Unfavorite, Add tag, Move to Trash) unless it opts out.
+  const bulkActions = mergeBulkActions(
+    config.bulkActions ?? [],
+    standardBulkActionsFor<TRow>({
+      token: config.registryToken,
+      noun: singular,
+      rowIdOf: config.getRowId,
+      labelOf: config.getRowName,
+      config: config.standardBulkActions,
+    }),
+  );
   const bulkEnabled = bulkActions.length > 0;
   const bulkNoun = config.bulkSelection?.noun ?? singular;
   const selection = useEntityListSelection<TRow>({

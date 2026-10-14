@@ -38,7 +38,9 @@ const UNITS_RPC = "__list_counts_conformance_units";
 const FAMILY_UNITS_RPC = "__list_counts_conformance_family_units";
 const PROBE_RPC = "__list_counts_conformance_probe";
 const TIMEOUT_MS = 12_000;
+const TIMEOUT_RETRY_DELAY_MS = 1_000;
 const STRICT = process.argv.includes("--strict");
+const SELF_TEST = process.argv.includes("--self-test");
 
 /**
  * The checks the deployed function is contracted to return. An absent key is a
@@ -127,6 +129,98 @@ function describeUnit(unit: Record<string, unknown>, index: number): string {
   const family = typeof unit.family === "string" ? `/${unit.family}` : "";
   const search = typeof unit.search === "string" ? "/search" : "";
   return `unit ${index + 1} (${kind}${family}${search})`;
+}
+
+type FetchProbe = (input: string | URL | globalThis.Request, init?: RequestInit) => Promise<Response>;
+
+async function isPostgrestStatementTimeout(response: Response): Promise<boolean> {
+  if (response.status !== 500) return false;
+  try {
+    const payload: unknown = await response.clone().json();
+    return typeof payload === "object" && payload !== null
+      && (payload as Record<string, unknown>).code === "57014";
+  } catch {
+    return false;
+  }
+}
+
+async function fetchFullProbe(
+  endpoint: string,
+  init: RequestInit,
+  label: string,
+  fetchProbe: FetchProbe = fetch,
+  wait: (ms: number) => Promise<void> = (ms) => new Promise((resolveWait) => setTimeout(resolveWait, ms)),
+): Promise<Response> {
+  const attempt = () => fetchProbe(endpoint, { ...init, signal: AbortSignal.timeout(TIMEOUT_MS) });
+  const first = await attempt();
+  if (!(await isPostgrestStatementTimeout(first))) return first;
+
+  console.warn(
+    `${TAG.warn}${label} hit SQLSTATE 57014; retrying the same full probe once after ${TIMEOUT_RETRY_DELAY_MS} ms`,
+  );
+  await wait(TIMEOUT_RETRY_DELAY_MS);
+  return attempt();
+}
+
+async function runSelfTest(): Promise<number> {
+  const timeout = () => new Response(
+    JSON.stringify({ code: "57014", message: "canceling statement due to statement timeout" }),
+    { status: 500, headers: { "Content-Type": "application/json" } },
+  );
+  const ok = () => new Response(JSON.stringify([{ check_key: "x", ok: true, detail: {} }]), {
+    status: 200,
+    headers: { "Content-Type": "application/json" },
+  });
+  const init: RequestInit = { method: "POST", body: JSON.stringify({ p_unit: { kind: "family_lane" } }) };
+
+  const successBodies: (BodyInit | null | undefined)[] = [];
+  const successResponses = [timeout(), ok()];
+  const success = await fetchFullProbe(
+    "https://self.test/probe",
+    init,
+    "self-test unit",
+    async (_input, request) => {
+      successBodies.push(request?.body);
+      return successResponses.shift() ?? ok();
+    },
+    async () => undefined,
+  );
+  if (!success.ok || successBodies.length !== 2 || successBodies[0] !== successBodies[1]) {
+    throw new Error("57014 retry self-test did not repeat the identical full probe exactly once");
+  }
+
+  let failedCalls = 0;
+  const failed = await fetchFullProbe(
+    "https://self.test/probe",
+    init,
+    "self-test unit",
+    async () => {
+      failedCalls += 1;
+      return timeout();
+    },
+    async () => undefined,
+  );
+  if (failedCalls !== 2 || !(await isPostgrestStatementTimeout(failed))) {
+    throw new Error("second 57014 did not remain a strict failure after exactly one retry");
+  }
+
+  let semanticCalls = 0;
+  const semantic = await fetchFullProbe(
+    "https://self.test/probe",
+    init,
+    "self-test unit",
+    async () => {
+      semanticCalls += 1;
+      return new Response(JSON.stringify({ code: "22023", message: "malformed unit" }), { status: 400 });
+    },
+    async () => undefined,
+  );
+  if (semanticCalls !== 1 || semantic.status !== 400) {
+    throw new Error("a semantic failure was retried or accepted");
+  }
+
+  console.log(`${TAG.ok}list-count timeout retry self-test passed`);
+  return 0;
 }
 
 function mergeDetails(
@@ -239,16 +333,16 @@ async function fetchConformance(): Promise<
 
     const partialRows: ConformanceRow[] = [];
     for (const [index, { unit }] of probeUnits.entries()) {
-      const res = await fetch(`${base}/${PROBE_RPC}`, {
+      const label = describeUnit(unit, index);
+      const res = await fetchFullProbe(`${base}/${PROBE_RPC}`, {
         method: "POST",
         headers,
         body: JSON.stringify({ p_unit: unit }),
-        signal: AbortSignal.timeout(TIMEOUT_MS),
-      });
+      }, label);
       if (!res.ok) {
         return {
           rows: null,
-          failure: `rpc/${PROBE_RPC} ${describeUnit(unit, index)} returned ${res.status}: ${(await res.text()).slice(0, 300)}`,
+          failure: `rpc/${PROBE_RPC} ${label} returned ${res.status}: ${(await res.text()).slice(0, 300)}`,
         };
       }
       const parsed: unknown = JSON.parse(await res.text());
@@ -357,7 +451,9 @@ async function main(): Promise<number> {
   return STRICT ? 1 : 0;
 }
 
-main().then(
+const entrypoint = SELF_TEST ? runSelfTest : main;
+
+entrypoint().then(
   (code) => exitAfterDrain(code),
   (err) => {
     console.error(`${TAG.fail}check-list-counts crashed:`, err);

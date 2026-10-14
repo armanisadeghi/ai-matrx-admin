@@ -24,6 +24,7 @@ import type {
   MatrxDataTableMobileCardControls,
 } from "@ai-matrx/design-system/data-table/types";
 import type { EntityColumnSpec } from "./columns";
+import type { StandardBulkActionsConfig } from "./standardBulkActions";
 import type { EntityListFailure } from "./failure";
 import type {
   EntityBulkAction,
@@ -442,6 +443,13 @@ export interface EntityListConfig<TRow> {
    * DOES. See ../selection.ts for the vocabulary and the three-way meaning.
    */
   bulkActions?: EntityBulkAction<TRow>[];
+
+  /**
+   * The built-in bulk verbs (Favorite, Unfavorite, Add tag, Move to Trash —
+   * ../standardBulkActions.ts). ON for every surface that sets
+   * `registryToken`; turn one off with `{ trash: false }`, all with `false`.
+   */
+  standardBulkActions?: StandardBulkActionsConfig | false;
 
   /**
    * Modifiers for `bulkActions`: the noun the count uses, which rows may be
