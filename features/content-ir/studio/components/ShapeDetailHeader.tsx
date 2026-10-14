@@ -29,6 +29,7 @@
 
 import {
   Boxes,
+  Building2,
   ClipboardCopy,
   Eye,
   FileJson,
@@ -40,6 +41,7 @@ import {
   ShieldCheck,
   Table2,
 } from "lucide-react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { revealAndFlash } from "@ai-matrx/kit/dom";
 import { EntityModeHeader } from "@/features/shell/components/header/templates/EntityModeHeader";
@@ -66,6 +68,11 @@ import {
 import { useKindAgentLaunch } from "@/features/content-ir/studio/useKindAgentLaunch";
 import { SHAPE_EDITOR_ANCHOR_ID } from "@/features/content-ir/studio/components/ShapeOwnerEditor";
 import { AGENT_ICON } from "@/components/icons/domain-icons";
+import {
+  fetchShapeHome,
+  isSystemShape,
+} from "@/features/content-ir/studio/promote-to-system";
+import { usePromoteShapeToSystem } from "@/features/content-ir/studio/usePromoteShapeToSystem";
 
 interface ShapeDetailHeaderProps {
   kind: string;
@@ -88,6 +95,43 @@ export default function ShapeDetailHeader({
   );
 
   const detailHref = shapeDetailHref(kind);
+
+  // PROMOTE TO SYSTEM (super admin, registered admin feature). The header
+  // reads the shape's home itself so every tab offers it without each route
+  // threading the organization through.
+  const { canPromote, promoting, promote } = usePromoteShapeToSystem();
+  const [home, setHome] = useState<{ id: string; organizationId: string } | null>(null);
+  useEffect(() => {
+    if (!canPromote) return;
+    let live = true;
+    fetchShapeHome(kind)
+      .then((row) => {
+        if (live) setHome(row);
+      })
+      .catch(() => {
+        if (live) setHome(null);
+      });
+    return () => {
+      live = false;
+    };
+  }, [canPromote, kind]);
+
+  const promoteAction =
+    canPromote && home && !isSystemShape(home.organizationId)
+      ? {
+          label: "Promote to system",
+          icon: Building2,
+          showLabel: true,
+          disabled: promoting,
+          onPress: () => {
+            void promote({ id: home.id, label }).then((result) => {
+              if (!result) return;
+              setHome(null);
+              router.refresh();
+            });
+          },
+        }
+      : null;
 
   // The owner editor lives on the Preview route only. On Preview, scroll to
   // it imperatively (idempotent — works on every click); from any other tab,
@@ -162,18 +206,19 @@ export default function ShapeDetailHeader({
         { name: "Inputs", href: shapeInputsHref(kind), icon: FormInput },
         { name: "Gate", href: shapeGateHref(kind), icon: ShieldCheck },
       ]}
-      actions={
-        isOwnedByViewer
+      actions={[
+        ...(promoteAction ? [promoteAction] : []),
+        ...(isOwnedByViewer
           ? [
               {
                 label: "Edit Shape",
                 icon: Pencil,
                 onPress: openOwnerEditor,
               },
-              agentAction,
             ]
-          : [agentAction]
-      }
+          : []),
+        agentAction,
+      ]}
     />
   );
 }

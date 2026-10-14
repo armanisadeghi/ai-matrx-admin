@@ -1,6 +1,13 @@
 "use client";
 
+import { Building2 } from "lucide-react";
 import type { EntityListConfig } from "@/lib/entity-list/config";
+import { bulkCountLabel } from "@/lib/entity-list/selection";
+import {
+  promoteShapesToSystem,
+  promotionSummary,
+} from "@/features/content-ir/studio/promote-to-system";
+import { PROMOTE_CONSEQUENCE } from "@/features/content-ir/studio/usePromoteShapeToSystem";
 import { formatRelativeTime } from "@ai-matrx/kit/format";
 import { shapeDetailHref } from "@/features/content-ir/studio/constants";
 import { SHAPE_COLUMNS } from "./columns";
@@ -113,4 +120,33 @@ export const shapeListConfig: EntityListConfig<ShapeBrowseRow> = {
     description:
       "Nothing matches this scope yet. Create a shape, or switch to the public library.",
   },
+};
+
+/**
+ * The same list with the super-admin batch action: tick shapes, promote them
+ * all into Matrx System in one database call. Offered only to a person who
+ * holds the `shape.promote-to-system` admin feature (ShapeBrowsePage picks);
+ * system shapes carry no checkbox.
+ */
+export const shapeListConfigWithPromote: EntityListConfig<ShapeBrowseRow> = {
+  ...shapeListConfig,
+  bulkSelection: {
+    isRowSelectable: (row) => row.origin !== "system",
+  },
+  bulkActions: [
+    {
+      id: "promote-to-system",
+      label: "Promote to system",
+      icon: Building2,
+      confirm: (selection) => ({
+        title: `Promote ${bulkCountLabel(selection.count, "shape")} to Matrx System?`,
+        description: PROMOTE_CONSEQUENCE,
+        confirmLabel: "Promote to system",
+      }),
+      run: async (selection) => {
+        const result = await promoteShapesToSystem(selection.ids);
+        return { message: promotionSummary(result), refresh: true };
+      },
+    },
+  ],
 };

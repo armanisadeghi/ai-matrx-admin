@@ -27985,6 +27985,10 @@ export type Database = {
           parent_id: string
         }[]
       }
+      promote_kinds_to_system: {
+        Args: { p_kind_definition_ids: string[] }
+        Returns: Json
+      }
       resolve_kind_version: {
         Args: { p_kind: string; p_organization_id: string; p_version?: number }
         Returns: {

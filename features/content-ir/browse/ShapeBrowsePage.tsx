@@ -5,7 +5,10 @@ import Link from "next/link";
 import { Plus } from "lucide-react";
 import { Button as ControlButton } from "@ai-matrx/design-system/controls";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import { selectUserId } from "@/lib/redux/selectors/userSelectors";
+import {
+  selectAdminFeature,
+  selectUserId,
+} from "@/lib/redux/selectors/userSelectors";
 import { EntityListPage } from "@/lib/entity-list/components/EntityListPage";
 import type { EntityListController } from "@/lib/entity-list/config";
 import { produceMissingComponentAssists } from "@/features/content-ir/studio/shape-assists-producer";
@@ -14,7 +17,7 @@ import {
   SHAPES_NEW_HREF,
   SHAPES_SURFACE_NAME,
 } from "@/features/content-ir/studio/constants";
-import { shapeListConfig } from "./listConfig";
+import { shapeListConfig, shapeListConfigWithPromote } from "./listConfig";
 import type { ShapeBrowseRow } from "./types";
 
 function ShapeAssistProducer({
@@ -40,6 +43,9 @@ function ShapeAssistProducer({
  * for making a shape from ANYWHERE ELSE, where the whole point is not leaving.
  */
 export function ShapeBrowsePage() {
+  const canPromote = useAppSelector((s) =>
+    selectAdminFeature(s, "shape.promote-to-system"),
+  );
   const newShapeButton = (
     <ControlButton variant="primary" asChild icon={<Plus className="h-4 w-4" />} collapse="container">
       <Link href={SHAPES_NEW_HREF} aria-label="New shape">
@@ -50,7 +56,7 @@ export function ShapeBrowsePage() {
 
   return (
     <EntityListPage
-      config={shapeListConfig}
+      config={canPromote ? shapeListConfigWithPromote : shapeListConfig}
       notice={(list) => <ShapeAssistProducer list={list} />}
       headerActions={newShapeButton}
       emptyAction={newShapeButton}

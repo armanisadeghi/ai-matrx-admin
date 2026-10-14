@@ -4,6 +4,7 @@ import { useClipboard } from "@ai-matrx/kit/clipboard";
 import { copyNotify } from "@/lib/clipboard/copy-notify";
 import { useRouter } from "next/navigation";
 import {
+  Building2,
   ClipboardCopy,
   Eye,
   FileJson,
@@ -22,6 +23,7 @@ import {
   shapeTestHref,
 } from "@/features/content-ir/studio/constants";
 import type { ShapeBrowseRow } from "./types";
+import { usePromoteShapeToSystem } from "@/features/content-ir/studio/usePromoteShapeToSystem";
 
 export function useShapeRowActions(
   list: EntityListController<ShapeBrowseRow>,
@@ -30,6 +32,7 @@ export function useShapeRowActions(
     notify: copyNotify,
   });
   const router = useRouter();
+  const { canPromote, promote } = usePromoteShapeToSystem();
 
   const menuFor = (row: ShapeBrowseRow) => (): ItemMenuConfig => {
     const href = shapeDetailHref(row.kind);
@@ -91,11 +94,28 @@ export function useShapeRowActions(
             },
           ],
         },
+        ...(canPromote && row.origin !== "system"
+          ? [
+              {
+                id: "system",
+                items: [
+                  {
+                    id: "promote-to-system",
+                    label: "Promote to system",
+                    icon: Building2,
+                    onSelect: async () => {
+                      const result = await promote({ id: row.id, label: row.label });
+                      if (result) list.refresh();
+                    },
+                  },
+                ],
+              },
+            ]
+          : []),
       ],
     };
   };
 
-  void list;
   return {
     actions: {
       menuFor,

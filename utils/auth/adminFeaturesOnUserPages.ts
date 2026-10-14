@@ -182,6 +182,13 @@ export const ADMIN_FEATURES_ON_USER_PAGES = {
     doors: ["chat.user_request (read, ordinary RLS)", "chat.request_snapshot (read, ordinary RLS)"],
     ruling: "Arman, 2026-10-13: \"it detects when the user is a system admin. And so I get a icon that lights up orange in my sidebar menu. And if I click on it, I see the window panel\" — \"Only system admins for now; debug mode is the switch.\"",
   },
+  "shape.promote-to-system": {
+    level: "super_admin",
+    allows: "Promote shapes into Matrx System — one shape from its page, or many at once from the Shapes table — with everything that belongs to them.",
+    where: "/shapes/[kind] header → Promote to system; /shapes/all row menu and bulk bar",
+    doors: ["content_ir.promote_kinds_to_system"],
+    ruling: "Arman, 2026-10-13: \"I'm a system admin which means that we need to add a feature here where I can quickly and easily promote things of mine to the system so they're no longer just mine.\"",
+  },
 } as const satisfies Record<string, AdminFeatureOnUserPage>;
 
 export type AdminFeatureOnUserPageId = keyof typeof ADMIN_FEATURES_ON_USER_PAGES;
