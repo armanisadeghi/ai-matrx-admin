@@ -895,7 +895,7 @@ export function SmartAddBrand({
   // picture, and the homepage capture (for a site the person has not turned down).
   const findingPictures =
     roundViews.some((v) => v?.imaging) || rounds.some((r) => !r.error && (!r.runId || !views[r.runId]));
-  const capturing = roundViews.some((v) => v?.shooting);
+  const shotCapturing = roundViews.some((v) => v?.shooting);
   const shotHost = screenshots?.pageUrl ? websiteHost(screenshots.pageUrl) : null;
   const shotSite = !visible.some((i) => i.field === "website" && decisions[i.key] === "no" && (!shotHost || websiteHost(i.value) === shotHost));
   const foundName = stageName(withoutStaffFacts(items.values(), person));
@@ -1550,7 +1550,7 @@ export function SmartAddBrand({
         pictures={cardPictures}
         findingPictures={findingPictures}
         screenshot={person || !shotSite ? null : (screenshots?.desktop?.url ?? null)}
-        capturing={!person && capturing && shotSite}
+        capturing={!person && shotCapturing && shotSite}
         person={person}
         kind={kindLabel.kind}
         onKind={answerKind}
