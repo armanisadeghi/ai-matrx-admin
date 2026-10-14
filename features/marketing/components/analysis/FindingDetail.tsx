@@ -82,7 +82,35 @@ import { usePageProvenance } from "@/features/marketing/data/page-provenance";
 import {
   explainMissingPage,
   MISSING_PAGE_ITEM_KEYS,
+  type StoryFact,
 } from "@/features/marketing/lib/missing-page-story";
+import { explainSharedCause } from "@/features/marketing/lib/shared-cause-story";
+
+/** Why a closed finding closed, from the reconciler's own record. */
+function closureFacts(metadata: unknown): StoryFact[] {
+  if (!metadata || typeof metadata !== "object") return [];
+  const m = metadata as Record<string, unknown>;
+  const pick = (key: string) =>
+    m[key] && typeof m[key] === "object" ? (m[key] as Record<string, unknown>) : null;
+  const unverified = pick("unverified");
+  if (unverified) {
+    return [
+      {
+        label: "Closed — can't confirm now",
+        value:
+          typeof unverified.reason === "string" ? unverified.reason : "The last check could not judge it",
+      },
+    ];
+  }
+  if (pick("rolled_up")) {
+    return [{ label: "Closed — shared cause", value: "Now one site-wide finding for this check" }];
+  }
+  const retracted = pick("retracted");
+  if (retracted && typeof retracted.reason === "string") {
+    return [{ label: "Withdrawn", value: retracted.reason }];
+  }
+  return [];
+}
 
 /** Immutable result evidence → the shape the surface declares. */
 function projectResult(
@@ -364,11 +392,43 @@ export function FindingDetail({ findingId }: { findingId: string }) {
             : null,
         )
       : null;
+  const shared = story
+    ? null
+    : explainSharedCause(
+        latest?.metadata && typeof latest.metadata === "object" && !Array.isArray(latest.metadata)
+          ? (latest.metadata as { evidence?: unknown }).evidence
+          : undefined,
+        itemLabel,
+      );
+  const closure = closureFacts(finding.metadata);
+  // The evidence is as old as our last look at the page. Past a month, say so:
+  // the live page may already be different (2026-10-14 census).
+  const seenAt = data.page?.last_seen ? new Date(data.page.last_seen) : null;
+  const seenDays =
+    seenAt && !Number.isNaN(seenAt.getTime())
+      ? Math.floor((Date.now() - seenAt.getTime()) / 86_400_000)
+      : null;
+  const ageFacts: StoryFact[] =
+    seenAt && seenDays !== null && !story
+      ? [
+          {
+            label: "Page last checked",
+            value:
+              seenDays > 30
+                ? `${formatCompactDate(data.page?.last_seen ?? null)} — ${seenDays} days ago, may have changed`
+                : formatCompactDate(data.page?.last_seen ?? null),
+          },
+        ]
+      : [];
   const remedyContext = {
     itemKey: finding.item_key,
     itemLabel: data.item?.label ?? null,
     itemDescription: data.item?.description ?? null,
-    remedy: story ? (story.remedy as unknown as Json) : (data.item?.remedy ?? null),
+    remedy: story
+      ? (story.remedy as unknown as Json)
+      : shared
+        ? (shared.remedy as unknown as Json)
+        : (data.item?.remedy ?? null),
     category: finding.category,
     subcategory: finding.subcategory,
     severity: finding.severity,
@@ -618,14 +678,17 @@ export function FindingDetail({ findingId }: { findingId: string }) {
       ) : null}
       {isMissingPage && provenance.isLoading ? null : (
       <FindingRemedyCard
-        facts={
-          story?.facts ??
-          // Loaded, and nothing came back: the page record is gone or out of
-          // reach. Say so — never fall back silently to the generic remedy.
-          (isMissingPage && provenance.isSuccess && provenance.data === null
-            ? [{ label: "Who links here", value: "Unknown — this page record is gone" }]
-            : undefined)
-        }
+        facts={[
+          ...closure,
+          ...ageFacts,
+          ...(story?.facts ??
+            shared?.facts ??
+            // Loaded, and nothing came back: the page record is gone or out of
+            // reach. Say so — never fall back silently to the generic remedy.
+            (isMissingPage && provenance.isSuccess && provenance.data === null
+              ? [{ label: "Who links here", value: "Unknown — this page record is gone" }]
+              : [])),
+        ]}
         doors={
           story?.replacement ? (
             <Button asChild variant="outline">

@@ -12,6 +12,8 @@ export interface AnalysisPageReference {
   id: string;
   path: string | null;
   url: string;
+  /** When our crawler last saw the page — the age of a finding's evidence. */
+  last_seen?: string | null;
 }
 
 export type AnalysisItemReference = Pick<

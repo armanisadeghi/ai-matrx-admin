@@ -56,7 +56,7 @@ async function loadPageReferences(
     await authenticatedWebDb(supabase)
   )
     .from("page")
-    .select("id, path, url")
+    .select("id, path, url, last_seen")
     .eq("site_id", siteId)
     .is("deleted_at", null)
     .in("id", ids)
