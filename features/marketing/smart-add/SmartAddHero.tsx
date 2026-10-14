@@ -357,12 +357,16 @@ export function SmartAddHero({
               </QuietButton>
               {mode === "name" ? (
                 <KindToggle person={person} onPerson={onPerson} />
-              ) : second ? (
-                <span />
               ) : (
-                <QuietButton onClick={() => setSecond(true)} icon={<Plus className="size-4" />}>
-                  {mode === "website" ? "Add a social" : "Add a website"}
-                </QuietButton>
+                <div className="flex items-center gap-2">
+                  {/* A creator entered by handle is marked a person here (PEOPLE-AND-CREATORS §10). */}
+                  {mode === "social" ? <KindToggle person={person} onPerson={onPerson} /> : null}
+                  {second ? null : (
+                    <QuietButton onClick={() => setSecond(true)} icon={<Plus className="size-4" />}>
+                      {mode === "website" ? "Add a social" : "Add a website"}
+                    </QuietButton>
+                  )}
+                </div>
               )}
             </motion.div>
           ) : null}

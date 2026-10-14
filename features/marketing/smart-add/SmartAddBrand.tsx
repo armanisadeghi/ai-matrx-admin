@@ -518,7 +518,11 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
     .flatMap((v) => v?.steps ?? [])
     .filter((s) => s.phase === "running" && s.progress)
     .map((s) => s.progress as string);
-  const costUsd = roundViews.reduce((sum, v) => sum + (v?.steps.reduce((s, x) => s + x.costUsd, 0) ?? 0), 0);
+  // Every paid step of every round (anchor searches and profile lookups included) and the setup run: never
+  // "Free so far" after a paid lookup (PEOPLE-AND-CREATORS §10).
+  const costUsd =
+    roundViews.reduce((sum, v) => sum + (v?.spendUsd ?? v?.steps.reduce((s, x) => s + x.costUsd, 0) ?? 0), 0) +
+    (setupView?.spendUsd ?? 0);
   // A later round's judgment of a finding wins over an earlier one (it saw more).
   const suggestions: Record<string, WeThinkSuggestion> = Object.assign({}, ...rounds.map((r) => (r.runId ? suggestionsByRun[r.runId] : undefined) ?? {}));
   const visible = withSuggestions(orderedEvidence(items.values()), suggestions);

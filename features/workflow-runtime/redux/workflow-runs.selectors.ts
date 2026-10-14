@@ -167,6 +167,25 @@ export const selectRunCostTotal = (runId: string) =>
     (byRunId): number => byRunId[runId]?.costTotalUsd ?? 0,
   );
 
+/**
+ * Everything a run has spent so far, in USD: the AI usage total (`node_cost` events) plus every other
+ * step's own `cost_usd` (paid searches, profile lookups, scrapes — steps that carry no AI usage block).
+ * A step that reports both is counted once (its usage block). Never "free" while any step was paid.
+ */
+export const selectRunSpendUsd = (runId: string) =>
+  createSelector([selectByRunId], (byRunId): number => {
+    const run = byRunId[runId];
+    if (!run) return 0;
+    let paid = 0;
+    for (const node of Object.values(run.nodes)) {
+      const out = node.output;
+      if (!out || (typeof out.usage === "object" && out.usage !== null)) continue;
+      const cost = out.cost_usd;
+      if (typeof cost === "number" && Number.isFinite(cost) && cost > 0) paid += cost;
+    }
+    return (run.costTotalUsd ?? 0) + paid;
+  });
+
 export const selectRunEmissions = (runId: string) =>
   createSelector(
     [selectByRunId],

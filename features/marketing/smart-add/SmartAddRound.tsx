@@ -16,6 +16,7 @@ import { useWorkflowRun } from "@/features/workflow-runtime/hooks/useWorkflowRun
 import {
   selectNodeAggregate,
   selectRunEmissions,
+  selectRunSpendUsd,
   selectRunStatus,
 } from "@/features/workflow-runtime/redux/workflow-runs.selectors";
 import { evidenceFromPayload, type EvidenceItem } from "./evidence";
@@ -101,6 +102,8 @@ export interface RoundView {
   runId: string;
   status: string | null;
   steps: StepView[];
+  /** Everything this run spent so far (every paid step: anchors, lookups, searches, agents), USD. */
+  spendUsd: number;
 }
 
 function numberOr(value: unknown, fallback: number): number {
@@ -210,7 +213,8 @@ export function SmartAddRound({
   }, [suggestions, onSuggestions]);
 
   const idle = (step: string): StepView => ({ step, phase: "idle", progress: null, notes: [], costUsd: 0, skipped: false });
-  const view: RoundView = { runId, status, steps: steps.map((s) => stepState[s]?.view ?? idle(s)) };
+  const spendUsd = useAppSelector(selectRunSpendUsd(runId));
+  const view: RoundView = { runId, status, steps: steps.map((s) => stepState[s]?.view ?? idle(s)), spendUsd };
   useEffect(() => {
     onView(view);
   }, [view, onView]);
