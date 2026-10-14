@@ -9,6 +9,10 @@
  */
 
 import { useEffect, useState } from "react";
+import {
+  useReconnectRetry,
+  withLoadDeadline,
+} from "@/features/content-ir/studio/bounded-load";
 import { supabase } from "@/utils/supabase/client";
 import type { KindExampleListItem } from "@/features/content-ir/admin/kind-detail-types";
 
@@ -71,9 +75,15 @@ export function useKindExamples(
   const setExamples = (value: ExamplesState) =>
     setLoaded({ id: kindDefinitionId, value });
 
+  // Self-healing retry: a load that died (stalled line, timeout) asks again
+  // on `online` / tab-visible / bounded backoff instead of staying dead.
+  const [selfRetry, setSelfRetry] = useState(0);
+
   useEffect(() => {
     let cancelled = false;
-    fetchKindExamples(kindDefinitionId)
+    // Bounded: a stalled line ends in a named TimeoutError, never a spinner
+    // that outlives the connection.
+    withLoadDeadline(fetchKindExamples(kindDefinitionId), "the saved examples")
       .then((rows) => {
         if (!cancelled) setExamples({ status: "ready", rows });
       })
@@ -87,7 +97,11 @@ export function useKindExamples(
     return () => {
       cancelled = true;
     };
-  }, [kindDefinitionId, refreshKey]);
+  }, [kindDefinitionId, refreshKey, selfRetry]);
+
+  const failed =
+    loaded?.id === kindDefinitionId && loaded.value.status === "error";
+  useReconnectRetry(failed, () => setSelfRetry((n) => n + 1));
 
   return loaded && loaded.id === kindDefinitionId
     ? loaded.value

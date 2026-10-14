@@ -31,6 +31,10 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { CircleAlert, Loader2, Power, PowerOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
+import {
+  useReconnectRetry,
+  withLoadDeadline,
+} from "@/features/content-ir/studio/bounded-load";
 import { captureError } from "@/lib/diagnostics/errorCaptureStore";
 import { toast } from "@/lib/toast";
 import { supabase } from "@/utils/supabase/client";
@@ -96,7 +100,10 @@ export default function ShapeActivationControl({
   const refreshVerdict = useCallback(async () => {
     setLoadingVerdict(true);
     try {
-      const next = await evaluateShapeActivation(supabase, kindDefinitionId);
+      const next = await withLoadDeadline(
+        evaluateShapeActivation(supabase, kindDefinitionId),
+        "this shape's activation check",
+      );
       setVerdict(next);
       onVerdictRef.current?.(next);
       setError(null);
@@ -119,6 +126,10 @@ export default function ShapeActivationControl({
     }, 0);
     return () => window.clearTimeout(timeoutId);
   }, [refreshVerdict]);
+
+  // The verdict never landed (stalled line): ask again when the connection is
+  // back instead of leaving the failure standing.
+  useReconnectRetry(verdict === null && error !== null, () => void refreshVerdict());
 
   async function flip(next: boolean): Promise<void> {
     if (!next) {

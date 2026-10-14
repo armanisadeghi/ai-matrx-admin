@@ -51,6 +51,11 @@ import type { Json } from "@/types/database.types";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { AGENT_ICON } from "@/components/icons/domain-icons";
 import { asClause } from "@ai-matrx/kit/text";
+import { ReadFailure } from "@ai-matrx/design-system";
+import {
+  useReconnectRetry,
+  withLoadDeadline,
+} from "@/features/content-ir/studio/bounded-load";
 
 interface ShapeRenderStatusStripProps {
   kind: string;
@@ -81,6 +86,10 @@ export default function ShapeRenderStatusStrip({
     useKindAgentLaunch(SHAPES_SURFACE_NAME, SHAPE_COMPONENT_ROLE);
 
   const [componentsWarm, setComponentsWarm] = useState(false);
+  // The bounded wait for the component list ran out (stalled line). Honest
+  // failure state with retry — never an endless "Checking…" spinner.
+  const [warmError, setWarmError] = useState<unknown>(null);
+  const [warmAttempt, setWarmAttempt] = useState(0);
   const [candidates, setCandidates] = useState<ShapeComponentCandidate[] | null>(null);
   const [candidatesError, setCandidatesError] = useState<string | null>(null);
   // Only meaningful for a bundled resolution — the dangling-key check is
@@ -94,18 +103,40 @@ export default function ShapeRenderStatusStrip({
 
   useEffect(() => {
     let cancelled = false;
-    void componentRegistry
-      .ensureWarm()
-      .catch(() => undefined)
-      .then(() => {
-        if (!cancelled) setComponentsWarm(true);
-      });
-    return subscribeKindComponents(() => setComponentsWarm((v) => v));
-  }, []);
+    void withLoadDeadline(
+      componentRegistry.ensureWarm(),
+      "what renders this shape",
+    ).then(
+      () => {
+        if (cancelled) return;
+        setWarmError(null);
+        setComponentsWarm(true);
+      },
+      (error: unknown) => {
+        if (cancelled) return;
+        setWarmError(error);
+        captureError({
+          source: "content-ir",
+          message: `Could not confirm what renders "${kind}": ${
+            error instanceof Error ? error.message : String(error)
+          }`,
+          relation: kind,
+        });
+      },
+    );
+    const unsubscribe = subscribeKindComponents(() => setComponentsWarm((v) => v));
+    return () => {
+      cancelled = true;
+      unsubscribe();
+    };
+  }, [kind, warmAttempt]);
 
   const refreshCandidates = useCallback(() => {
     let cancelled = false;
-    void listShapeComponentCandidates(supabase, kindDefinitionId)
+    void withLoadDeadline(
+      listShapeComponentCandidates(supabase, kindDefinitionId),
+      "this shape's components",
+    )
       .then((rows) => {
         if (!cancelled) {
           setCandidates(rows);
@@ -127,6 +158,14 @@ export default function ShapeRenderStatusStrip({
   }, [kind, kindDefinitionId]);
 
   useEffect(() => refreshCandidates(), [refreshCandidates]);
+
+  // A load that died heals itself when the connection returns.
+  const loadFailed =
+    warmError != null || (candidatesError != null && candidates === null);
+  useReconnectRetry(loadFailed, () => {
+    setWarmAttempt((n) => n + 1);
+    refreshCandidates();
+  });
 
   const resolution = componentsWarm ? resolveComponent(kind, "web", "output") : null;
 
@@ -155,6 +194,20 @@ export default function ShapeRenderStatusStrip({
       cancelled = true;
     };
   }, [resolution?.componentKey, resolution?.source]);
+
+  if (loadFailed) {
+    return (
+      <ReadFailure
+        error={warmError ?? candidatesError}
+        what="what renders this shape"
+        onRetry={() => {
+          setWarmAttempt((n) => n + 1);
+          refreshCandidates();
+        }}
+        className="mb-4"
+      />
+    );
+  }
 
   if (!componentsWarm) {
     return (

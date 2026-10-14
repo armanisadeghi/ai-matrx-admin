@@ -31,6 +31,10 @@ import {
   type KindIncidentRecord,
 } from "@/features/content-ir/admin/incident-service";
 import { ReadFailure } from "@ai-matrx/design-system";
+import {
+  useReconnectRetry,
+  withLoadDeadline,
+} from "@/features/content-ir/studio/bounded-load";
 
 export interface ShapeOpenSightingsProps {
   kind: string;
@@ -48,7 +52,10 @@ export default function ShapeOpenSightings({
 
   const load = useCallback(async () => {
     try {
-      const all = await listKindIncidents(supabase, "open");
+      const all = await withLoadDeadline(
+        listKindIncidents(supabase, "open"),
+        "this shape's open sightings",
+      );
       setRows(all.filter((r) => r.kind === kind));
       setLoadError(null);
     } catch (error) {
@@ -68,6 +75,9 @@ export default function ShapeOpenSightings({
   useEffect(() => {
     void load();
   }, [load]);
+
+  // A failed load heals itself when the connection returns.
+  useReconnectRetry(loadError != null, () => void load());
 
   if (loadError != null) {
     return (
