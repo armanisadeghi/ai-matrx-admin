@@ -333,7 +333,7 @@ window.__CASES__.forEach(function (item, index) {
   var frame = document.createElement("iframe");
   frame.setAttribute("sandbox", "allow-scripts");
   frame.src = "/kind-sandbox";
-  frame.title = item.componentKey + " — component";
+  frame.setAttribute("aria-label", item.componentKey + " — component");
   frame.style.height = "200px";
   frame.style.width = readerViewportWidth() + "px";
   frameWrap.appendChild(frame);

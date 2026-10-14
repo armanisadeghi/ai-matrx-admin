@@ -673,7 +673,12 @@ export const KindSandboxFrame: React.FC<KindSandboxFrameProps> = ({
                     // tabbed into, and the frame stays in the page's tab order
                     // exactly where it sits (an iframe is focusable by default —
                     // nothing here removes it from the sequence).
-                    title={title}
+                    // `aria-label`, NEVER `title`: Chromium shows an iframe's
+                    // `title` as a native tooltip anchored to the frame's
+                    // bounds, and this frame is as wide as the reader's
+                    // window, so the tooltip landed far right of the
+                    // component on every hover (2026-10-14).
+                    aria-label={title}
                     data-matrx-kind-sandbox={kind}
                     // Whether the frame has spoken — a test reads this instead
                     // of guessing from the placeholder height.
