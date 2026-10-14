@@ -6,6 +6,7 @@ import {
   isFailedEntry,
   parseEntryOutcome,
   quietMs,
+  replayUnreadable,
   stagePhase,
   websiteProblem,
   type EntryOutcome,
@@ -112,5 +113,34 @@ describe("up-front checks — never a paid run on what cannot exist", () => {
     expect(quietMs(undefined)).toBe(40_000);
     expect(quietMs("90")).toBe(90_000);
     expect(quietMs(1)).toBe(40_000);
+  });
+});
+
+describe("no data is never 'doesn't exist' (admin opening someone else's run, cde25370)", () => {
+  const typedIg = { website: "", social: "@titanium.success", platform: "instagram" };
+  const idle = (name: string) => ({ step: name, phase: "idle", progress: null, notes: [], costUsd: 0, skipped: false });
+  const emptyReplay = { status: "completed", steps: ["probe", "page", "avatars", "socials", "web", "deep", "local"].map(idle) };
+
+  it("an empty replay concludes nothing about the input", () => {
+    expect(inferEntryOutcome(emptyReplay, typedIg, false)).toBeNull();
+    expect(inferEntryOutcome(emptyReplay, { website: "ritualcoffee.com", social: "", platform: null }, false)).toBeNull();
+  });
+  it("an empty replay reads as couldn't load", () => {
+    expect(replayUnreadable(emptyReplay, false)).toBe(true);
+    expect(stagePhase({ ...base, working: false, unreadable: replayUnreadable(emptyReplay, false) })).toBe("unloaded");
+  });
+  it("an unreadable run (attach refused) reads as couldn't load, even before a status", () => {
+    const refused = { status: null, steps: [], readFailure: "You can't read this run" };
+    expect(replayUnreadable(refused, false)).toBe(true);
+    expect(inferEntryOutcome(refused, typedIg, false)).toBeNull();
+  });
+  it("a partial replay with an unrelated note is not not-found", () => {
+    const partial = { status: "completed", steps: [step("socials", ["2 accounts found"]), idle("web")] };
+    expect(inferEntryOutcome(partial, typedIg, false)).toBeNull();
+    expect(replayUnreadable(partial, false)).toBe(false);
+  });
+  it("a real finished run that found something is neither", () => {
+    expect(replayUnreadable(emptyReplay, true)).toBe(false);
+    expect(replayUnreadable({ status: "running", steps: [] }, false)).toBe(false);
   });
 });

@@ -21,9 +21,10 @@ const VIDEO_ERROR_LABEL: Record<
 
 function sameSelection(
   loadedFor: YouTubeAnalyticsSelection | null,
-  currentSelection: YouTubeAnalyticsSelection,
+  currentSelection: YouTubeAnalyticsSelection | null,
 ): boolean {
   return (
+    currentSelection !== null &&
     loadedFor?.connectionId === currentSelection.connectionId &&
     loadedFor.channelId === currentSelection.channelId
   );
@@ -55,11 +56,12 @@ export function YouTubeAnalyticsResult({
 }: {
   report: YouTubeAnalyticsPreview | null;
   loadedFor: YouTubeAnalyticsSelection | null;
-  currentSelection: YouTubeAnalyticsSelection;
+  currentSelection: YouTubeAnalyticsSelection | null;
 }) {
   if (
     !report ||
     !sameSelection(loadedFor, currentSelection) ||
+    !currentSelection ||
     report.channel_id !== currentSelection.channelId
   ) {
     return null;

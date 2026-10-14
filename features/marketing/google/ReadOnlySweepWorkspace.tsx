@@ -573,10 +573,14 @@ function ReadOnlySweepWorkspaceInner({ reviewMode }: { reviewMode: boolean }) {
             <YouTubeAnalyticsResult
               report={youtube.data ?? null}
               loadedFor={youtubeLoadedFor}
-              currentSelection={{
-                connectionId: youtubeConnection?.id ?? "",
-                channelId: youtubeChannelId,
-              }}
+              currentSelection={
+                youtubeConnection
+                  ? {
+                      connectionId: youtubeConnection.id,
+                      channelId: youtubeChannelId,
+                    }
+                  : null
+              }
             />
           </CapabilityCard>
 

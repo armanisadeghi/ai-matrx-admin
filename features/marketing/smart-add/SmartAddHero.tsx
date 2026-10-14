@@ -93,6 +93,7 @@ export function SmartAddHero({
   autoStart = false,
   resumed = false,
   outcome = null,
+  unreadable = false,
   slow = false,
   onRestart,
   onStarted,
@@ -127,6 +128,8 @@ export function SmartAddHero({
   resumed?: boolean;
   /** What was typed does not exist (or cannot be read): the stage ends on this answer, never on findings. */
   outcome?: EntryOutcome | null;
+  /** The run could not be read back: "Couldn't load this run" with a retry (never an answer about the input). */
+  unreadable?: boolean;
   /** No new step for the quiet-time knob while a round runs. */
   slow?: boolean;
   /** Stop and reset the session ("over" also clears the address); false = the person kept going. */
@@ -188,7 +191,7 @@ export function SmartAddHero({
   const ready = readyFor(picked);
 
   const phase: "choose" | "enter" | "identifying" | "nothing" | "outcome" =
-    submitted && outcome ? "outcome" : submitted && nothingFound ? "nothing" : submitted ? "identifying" : mode ? "enter" : "choose";
+    submitted && (outcome || unreadable) ? "outcome" : submitted && nothingFound ? "nothing" : submitted ? "identifying" : mode ? "enter" : "choose";
 
   /** Back to the field (what was typed kept): the search stops; asks first when findings or answers would go. */
   const edit = async () => {
@@ -306,7 +309,10 @@ export function SmartAddHero({
   };
 
   const compact = phase === "identifying" || phase === "nothing" || phase === "outcome";
-  const answer = phase === "outcome" && outcome ? entryCopy(outcome) : null;
+  const answer =
+    phase !== "outcome" ? null
+    : outcome ? { ...entryCopy(outcome), reload: false }
+    : { title: "Couldn't load this run", line: "Its results didn't come back.", retry: false, reload: true };
 
   return (
     <MotionConfig reducedMotion="user">
@@ -575,6 +581,7 @@ export function SmartAddHero({
               onAnother={() => void another()}
               onName={mode === "name" ? undefined : () => void byName()}
               onRetry={answer.retry ? () => void retry() : undefined}
+              onReload={answer.reload ? () => window.location.reload() : undefined}
             />
           ) : null}
           {phase === "nothing" ? <NothingFound failed={failed} person={person} onAnswer={onAdd} onRetry={() => void edit()} /> : null}
@@ -1386,12 +1393,15 @@ function EntryAnswer({
   onAnother,
   onName,
   onRetry,
+  onReload,
 }: {
   line: string;
   onEdit: () => void;
   onAnother: () => void;
   onName?: () => void;
   onRetry?: () => void;
+  /** Read the run again (the page reloads from its address). */
+  onReload?: () => void;
 }) {
   return (
     <motion.div
@@ -1404,7 +1414,13 @@ function EntryAnswer({
     >
       <p className="text-center text-base text-muted-foreground">{line}</p>
       <div className="flex flex-wrap items-center justify-center gap-2">
-        <Button variant="primary" onClick={onEdit}>
+        {onReload ? (
+          <Button variant="primary" onClick={onReload}>
+            <RotateCcw className="size-4" />
+            Retry
+          </Button>
+        ) : null}
+        <Button variant={onReload ? "outline" : "primary"} onClick={onEdit}>
           <PenLine className="size-4" />
           Edit
         </Button>

@@ -22,11 +22,13 @@ import { Button, Field, SegmentedControl, Select, type SelectOption } from "@ai-
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import { useWorkflowRunControls } from "@/features/workflow-runtime/hooks/useWorkflowRunControls";
-import { inferEntryOutcome, isFailedEntry, quietMs } from "./entryOutcome";
+import { inferEntryOutcome, isFailedEntry, quietMs, replayUnreadable } from "./entryOutcome";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
 import { useCostDisplay } from "@/components/cost/useCostDisplay";
 import { extractErrorMessage } from "@/utils/errors";
+import { planKeptFacts, saveKeptFacts } from "./keptFacts";
+import { factSlotKey } from "./firstData";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { formatCount } from "@ai-matrx/kit/format";
 import { startSystemRun } from "@/features/education/kits/systemRuns";
@@ -35,8 +37,6 @@ import {
   createBusinessFact,
   createBusinessLocation,
   createProperty,
-  createSite,
-  moveSiteBrand,
   createDiscoveredCandidates,
   updateBusinessLocation,
 } from "@/features/marketing/data/service";
@@ -1026,12 +1026,32 @@ export function SmartAddBrand({
         .filter((i) => kindOf(i.key)?.routesTo === "brand_property")
         .map(webSiteRoot)
         .filter((u): u is string => Boolean(u) && !webCtx.ourHosts.includes(websiteHost(u as string)));
+      // Every fact the facts agent found that the person did not say No to is kept (keptFacts.ts); the basics
+      // Create had no confirmed value for are filled from it, and the gate later asks only about those.
+      const factPlan = planKeptFacts(facts, (f) => {
+        const k = factSlotKey(f);
+        return k ? decisions[k] : undefined;
+      }, { description: basics.description, industry: basics.category, tagline: basics.tagline, brandName: basics.name });
       const brand = await createBrand({
         organizationId,
         name: basics.name,
         kind: person ? "person" : "company",
-        industry: basics.category,
-        description: basics.description,
+        industry: basics.category ?? factPlan.industry,
+        description: basics.description ?? factPlan.description,
+        // What the person settled here, so the setup gate never asks again; and where each filled basic came from.
+        metadata: {
+          smart_add: {
+            confirmed: {
+              name: true,
+              ...(basics.description ? { what_you_do: true } : {}),
+              ...(basics.aliases.length ? { aliases: true } : {}),
+              ...(basics.category ? { industry: true } : {}),
+            },
+            basics_sources: factPlan.basicsSources,
+            facts_kept: factPlan.rows.length,
+            facts_runs: [...new Set(facts.map((f) => f.run_id).filter((id): id is string => Boolean(id)))],
+          },
+        },
         websiteUrl: basics.websiteUrl,
         // The confirmed logo is saved by the setup run as a durable file, never an expiring link.
         logoUrl: null,
@@ -1041,15 +1061,15 @@ export function SmartAddBrand({
         status: "active",
         // Aliases live where every brand reader looks for them (web.brand.profile.brand_aliases).
         // Aliases and expertise live where every brand reader looks for them (web.brand.profile).
-        ...(basics.aliases.length || basics.expertise.length || competitors.length
-          ? {
-              profile: {
-                ...(basics.aliases.length ? { brand_aliases: basics.aliases } : {}),
-                ...(basics.expertise.length ? { expertise_areas: basics.expertise } : {}),
-                ...(competitors.length ? { competitors } : {}),
-              },
-            }
-          : {}),
+        // The person's answers win; the kept facts fill what they left open.
+        profile: {
+          ...factPlan.profile,
+          ...(basics.aliases.length || factPlan.profile.brand_aliases
+            ? { brand_aliases: [...new Set([...basics.aliases, ...(factPlan.profile.brand_aliases ?? [])])] }
+            : {}),
+          ...(basics.expertise.length ? { expertise_areas: basics.expertise } : {}),
+          ...(competitors.length ? { competitors } : {}),
+        },
       });
       const problems: string[] = [];
       const accounts: { handle_or_url: string; platform: string; property_id: string }[] = [];
@@ -1112,6 +1132,12 @@ export function SmartAddBrand({
         )),
       );
       problems.push(...(await saveFacts(organizationId, brand.id, basics)));
+      // Create's own contact facts above are never written twice.
+      const written = new Set([
+        ...basics.facts.map((f) => `${f.field}|${f.value.trim().toLowerCase()}`),
+        ...(basics.tagline ? [`tagline|${basics.tagline.trim().toLowerCase()}`] : []),
+      ]);
+      problems.push(...(await saveKeptFacts(organizationId, brand.id, factPlan, written)).problems);
       setSaveNotes(problems);
       setCreated(brand);
       // The core is settled: shift to the focus queue for everything else.
@@ -1238,14 +1264,16 @@ export function SmartAddBrand({
       inferEntryOutcome(entryView, { website: websiteText.trim(), social: socialText.trim(), platform: picked }, foundReal))
     : null;
   const entryFailed = !enrich && isFailedEntry(entryOutcome);
+  // The run could not be read back (refused, or an empty replay): "Couldn't load this run", never "doesn't exist".
+  const runUnreadable = !entryFailed && rounds.some((r) => replayUnreadable(r.runId ? views[r.runId] : undefined, foundReal));
   // Quiet too long while a round runs: the stage says so (never an endless spinner).
   const [quiet, setQuiet] = useState(false);
   useEffect(() => {
     setQuiet(false);
-    if (!working || entryFailed) return;
+    if (!working || entryFailed || runUnreadable) return;
     const timer = setTimeout(() => setQuiet(true), Math.max(stallMs - (Date.now() - lastEventAt), 0));
     return () => clearTimeout(timer);
-  }, [working, entryFailed, lastEventAt, stallMs]);
+  }, [working, entryFailed, runUnreadable, lastEventAt, stallMs]);
   // A late not-found answer takes the findings page back down.
   useEffect(() => {
     if (entryFailed) setStructured(false);
@@ -1343,7 +1371,7 @@ export function SmartAddBrand({
             key={r.runId}
             runId={r.runId}
             onEvidence={onEvidence}
-            onFacts={(f) => setFacts((cur) => mergeFacts(cur, f))}
+            onFacts={(f) => setFacts((cur) => mergeFacts(cur, f.map((x) => (x.run_id ? x : { ...x, run_id: r.runId }))))}
             onSuggestions={(next) =>
               setSuggestionsByRun((cur) => (JSON.stringify(cur[r.runId as string]) === JSON.stringify(next) ? cur : { ...cur, [r.runId as string]: next }))
             }
@@ -1390,6 +1418,7 @@ export function SmartAddBrand({
           autoStart={Boolean(url?.autoStart) && !fresh}
           resumed={Boolean(resume) && !fresh}
           outcome={entryFailed ? entryOutcome : null}
+          unreadable={runUnreadable}
           slow={quiet && working}
           onRestart={restart}
           onStarted={url?.markSearch}

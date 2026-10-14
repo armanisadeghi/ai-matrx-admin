@@ -1,0 +1,33 @@
+{
+  "__note": "Facts step output (brand_basics) of a stored Smart Add round for ritualcoffee.com: run b69bd88e-7b6b-4778-86d1-f8ec5b378dcb, 2026-10-14, trimmed to the facts that exercise every route (reasons shortened).",
+  "run_id": "b69bd88e-7b6b-4778-86d1-f8ec5b378dcb",
+  "output": {
+    "__kind": "agent_result",
+    "content": [
+      {
+        "__kind": "brand_basics",
+        "brand_name": "Ritual Coffee Roasters",
+        "facts": [
+          {"__kind": "brand_basics_fact", "field": "official_name", "field_label": "Official Name", "value": "Ritual Coffee Roasters", "certainty": "confirmed", "known_field": true, "reason": "Official website FAQ and social profiles.", "evidence_urls": ["https://ritualcoffee.com/shop/faqs/"]},
+          {"__kind": "brand_basics_fact", "field": "business_category", "field_label": "Business Category", "value": "Coffee shop", "certainty": "likely", "known_field": true, "reason": "Listed as category on Facebook profile.", "evidence_urls": ["https://www.facebook.com/ritualroasters"]},
+          {"__kind": "brand_basics_fact", "field": "primary_products_services", "field_label": "Primary Products & Services", "value": "Coffee", "certainty": "confirmed", "known_field": true, "reason": "Featured products on official website.", "evidence_urls": ["https://ritualcoffee.com/"]},
+          {"__kind": "brand_basics_fact", "field": "primary_products_services", "field_label": "Primary Products & Services", "value": "Coffee Subscriptions", "certainty": "confirmed", "known_field": true, "reason": "Offered on official website.", "evidence_urls": ["https://ritualcoffee.com/"]},
+          {"__kind": "brand_basics_fact", "field": "primary_products_services", "field_label": "Primary Products & Services", "value": "Merchandise", "certainty": "confirmed", "known_field": true, "reason": "Apparel, tumblers, and mugs.", "evidence_urls": ["https://ritualcoffee.com/"]},
+          {"__kind": "brand_basics_fact", "field": "specialty", "field_label": "Specialty", "value": "Specialty coffee roasting", "certainty": "likely", "known_field": true, "reason": "Roaster profile on Unpacking Coffee.", "evidence_urls": ["https://unpacking.coffee/roasters/180-ritual-coffee-roasters"]},
+          {"__kind": "brand_basics_fact", "field": "brand_statement", "field_label": "Brand Statement", "value": "We're out to forever change the way people know coffee.", "certainty": "confirmed", "known_field": true, "reason": "Instagram biography.", "evidence_urls": ["https://www.instagram.com/ritualcoffee/"]},
+          {"__kind": "brand_basics_fact", "field": "brand_statement", "field_label": "Brand Statement", "value": "SF Coffee Roastery with cafes in the Mission, Bayview, Haight, and Hayes Valley neighborhoods of San Francisco- and the Oxbow Public Market in Napa.", "certainty": "likely", "known_field": true, "reason": "Facebook page intro.", "evidence_urls": ["https://www.facebook.com/ritualroasters"]},
+          {"__kind": "brand_basics_fact", "field": "street_address", "field_label": "Street Address", "value": "1026 Valencia St", "certainty": "likely", "known_field": true, "reason": "Facebook and Apple Maps.", "evidence_urls": ["https://www.facebook.com/ritualroasters"]},
+          {"__kind": "brand_basics_fact", "field": "phone", "field_label": "Phone", "value": "(415) 641-1011", "certainty": "likely", "known_field": true, "reason": "Facebook and Apple Maps.", "evidence_urls": ["https://www.facebook.com/ritualroasters"]},
+          {"__kind": "brand_basics_fact", "field": "phone", "field_label": "Phone", "value": "(415) 865-0989", "certainty": "likely", "known_field": true, "reason": "Yelp, Octavia St location.", "evidence_urls": ["https://www.yelp.com/biz/ritual-coffee-roasters-san-francisco-5"]},
+          {"__kind": "brand_basics_fact", "field": "email", "field_label": "Email", "value": "info@ritualroasters.com", "certainty": "likely", "known_field": true, "reason": "Facebook profile.", "evidence_urls": ["https://www.facebook.com/ritualroasters"]},
+          {"__kind": "brand_basics_fact", "field": "careers_page", "field_label": "Careers Page", "value": "https://ritualcoffee.com/hiring/", "certainty": "confirmed", "known_field": true, "reason": "Instagram bio link list.", "evidence_urls": ["https://www.instagram.com/ritualcoffee/"]},
+          {"__kind": "brand_basics_fact", "field": "founder", "field_label": "Founder", "value": "Eileen Hassi", "certainty": "likely", "known_field": true, "reason": "Unpacking Coffee and Instagram.", "evidence_urls": ["https://unpacking.coffee/roasters/180-ritual-coffee-roasters"]},
+          {"__kind": "brand_basics_fact", "field": "year_founded", "field_label": "Year Founded", "value": "2005", "certainty": "confirmed", "known_field": true, "reason": "Official FAQ page.", "evidence_urls": ["https://ritualcoffee.com/shop/faqs/"]},
+          {"__kind": "brand_basics_fact", "field": "business_hours", "field_label": "Business Hours", "value": "Mon - Sun: 4:00 am - 10:00 pm", "certainty": "likely", "known_field": true, "reason": "Yelp, SFO location.", "evidence_urls": ["https://www.yelp.com/biz/ritual-coffee-roasters-san-francisco-11"]},
+          {"__kind": "brand_basics_fact", "field": "competitor", "field_label": "Competitor", "value": "Sightglass Coffee", "certainty": "possible", "known_field": true, "reason": "Added for the test: a possible competitor stays out of the profile.", "evidence_urls": []},
+          {"__kind": "brand_basics_fact", "field": "target_market", "field_label": "Target Market", "value": "Specialty coffee drinkers", "certainty": "likely", "known_field": true, "reason": "Added for the test: the audience route.", "evidence_urls": []}
+        ]
+      }
+    ]
+  }
+}

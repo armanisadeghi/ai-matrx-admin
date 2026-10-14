@@ -70,7 +70,7 @@ importers:
         version: 0.4.87(@supabase/supabase-js@2.117.2(@opentelemetry/api@1.9.0))(@tailwindcss/typography@0.5.20(tailwindcss@4.3.3))(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(@typescript/typescript6@6.0.2)(react-dom@19.3.0(react@19.3.0))(react-is@19.3.1)(react@19.3.0)(redux@5.0.1)
       '@ai-matrx/coding-sessions':
         specifier: latest
-        version: 0.3.183(b542ac59622513575bb36a2b26da29b6)
+        version: 0.3.184(b542ac59622513575bb36a2b26da29b6)
       '@ai-matrx/content-ir':
         specifier: latest
         version: 0.24.20(@typescript/typescript6@6.0.2)(react@19.3.0)
@@ -1184,6 +1184,10 @@ packages:
     resolution: {integrity: sha512-sJ092vhv3ClrMInq5zemCIcW2jS/RkNYbeiJznFMPnnbOmQuswinSMrqNoby7oVL2RZr4BPi0PDq8Q5Qsia9xA==}
     engines: {node: '>=20'}
 
+  '@ai-matrx/api@0.1.22':
+    resolution: {integrity: sha512-WXaBFxiF9YZyfbpPtxD+y2Tcwxv3utYBWL/9vxrVYEutE+SmaTaey6vMbz2NN0ZppZa2TII3QygU62Z0/t4N7A==}
+    engines: {node: '>=20'}
+
   '@ai-matrx/applets@0.19.0':
     resolution: {integrity: sha512-g2U2d07aBCGq8tgFwIQ7aVmvMCB+kPwxfmbSRCRp1QHSAKu09toWmxGsF0JKKWhF00o9oCYZQ04NxjPH9njEAA==}
     engines: {node: '>=20'}
@@ -1272,8 +1276,8 @@ packages:
       react: '>=18.0.0'
       react-dom: '>=18.0.0'
 
-  '@ai-matrx/coding-sessions@0.3.183':
-    resolution: {integrity: sha512-N+uHVTE1piyE935FjFKaKwUBTvIxduqyh4l8/qpK6hLdNWYM8ylUeCXAcN2Ew5z3Vv5USY9Oy9vdn+NU/nnVLA==}
+  '@ai-matrx/coding-sessions@0.3.184':
+    resolution: {integrity: sha512-gNwQexOatQ4YDNhDgrE9RfZCbfMXUVzbUjVjwAqw1mHN4OlH8NennEZHnjhfzBQnSgijuxq6C1ulFMMzIirlsA==}
     engines: {node: '>=22.18'}
     hasBin: true
     peerDependencies:
@@ -13544,6 +13548,15 @@ snapshots:
       - react
       - typescript
 
+  '@ai-matrx/api@0.1.22(@supabase/supabase-js@2.117.2(@opentelemetry/api@1.9.0))(@typescript/typescript6@6.0.2)(react@19.3.0)':
+    dependencies:
+      '@ai-matrx/auth': 0.3.5(@supabase/supabase-js@2.117.2(@opentelemetry/api@1.9.0))(@typescript/typescript6@6.0.2)(react@19.3.0)
+      '@ai-matrx/kit': 0.45.0(@typescript/typescript6@6.0.2)(react@19.3.0)
+    transitivePeerDependencies:
+      - '@supabase/supabase-js'
+      - react
+      - typescript
+
   '@ai-matrx/applets@0.19.0(@supabase/supabase-js@2.117.2(@opentelemetry/api@1.9.0))(@tailwindcss/typography@0.5.20(tailwindcss@4.3.3))(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(@typescript/typescript6@6.0.2)(react-dom@19.3.0(react@19.3.0))(react-is@19.3.1)(react@19.3.0)(recharts@3.10.1(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react-is@19.3.1)(react@19.3.0)(redux@5.0.1))(redux@5.0.1)':
     dependencies:
       '@ai-matrx/agents': 0.59.89(@supabase/supabase-js@2.117.2(@opentelemetry/api@1.9.0))(@tailwindcss/typography@0.5.20(tailwindcss@4.3.3))(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(@typescript/typescript6@6.0.2)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(recharts@3.10.1(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react-is@19.3.1)(react@19.3.0)(redux@5.0.1))
@@ -13722,10 +13735,10 @@ snapshots:
       - supports-color
       - typescript
 
-  '@ai-matrx/coding-sessions@0.3.183(b542ac59622513575bb36a2b26da29b6)':
+  '@ai-matrx/coding-sessions@0.3.184(b542ac59622513575bb36a2b26da29b6)':
     dependencies:
       '@ai-matrx/agents': 0.59.89(@supabase/supabase-js@2.117.2(@opentelemetry/api@1.9.0))(@tailwindcss/typography@0.5.20(tailwindcss@4.3.3))(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(@typescript/typescript6@6.0.2)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(recharts@3.10.1(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react-is@19.3.1)(react@19.3.0)(redux@5.0.1))
-      '@ai-matrx/api': 0.1.21(@supabase/supabase-js@2.117.2(@opentelemetry/api@1.9.0))(@typescript/typescript6@6.0.2)(react@19.3.0)
+      '@ai-matrx/api': 0.1.22(@supabase/supabase-js@2.117.2(@opentelemetry/api@1.9.0))(@typescript/typescript6@6.0.2)(react@19.3.0)
       '@ai-matrx/chat': 0.8.89(e8638f6893e38e7d6376349db4e64a43)
       '@ai-matrx/data': 0.29.30(@supabase/supabase-js@2.117.2(@opentelemetry/api@1.9.0))(@typescript/typescript6@6.0.2)(react@19.3.0)
       '@ai-matrx/design-system': 0.86.131(@tailwindcss/typography@0.5.20(tailwindcss@4.3.3))(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(@typescript/typescript6@6.0.2)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(recharts@3.10.1(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react-is@19.3.1)(react@19.3.0)(redux@5.0.1))
@@ -13942,7 +13955,7 @@ snapshots:
 
   '@ai-matrx/files@0.1.6(@supabase/supabase-js@2.117.2(@opentelemetry/api@1.9.0))(@typescript/typescript6@6.0.2)(react@19.3.0)':
     dependencies:
-      '@ai-matrx/api': 0.1.21(@supabase/supabase-js@2.117.2(@opentelemetry/api@1.9.0))(@typescript/typescript6@6.0.2)(react@19.3.0)
+      '@ai-matrx/api': 0.1.22(@supabase/supabase-js@2.117.2(@opentelemetry/api@1.9.0))(@typescript/typescript6@6.0.2)(react@19.3.0)
       '@ai-matrx/kit': 0.45.0(@typescript/typescript6@6.0.2)(react@19.3.0)
       tus-js-client: 4.3.1
     optionalDependencies:

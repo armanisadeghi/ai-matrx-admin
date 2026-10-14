@@ -44,6 +44,8 @@ import {
 import { candidateCategory, websiteHost } from "../evidence";
 import { webAddress } from "../webKinds";
 import { webSiteRoot } from "../relations";
+import { claimSite } from "../siteOwnership";
+import { liveSiteClaimDeps } from "../siteOwnershipLive";
 import type { Answer, FocusItem } from "./queue";
 
 export interface PersistContext {
@@ -255,27 +257,85 @@ function startIngest(
   ).catch((error) => console.error("[smart-add] background ingest not started", error));
 }
 
-async function addSite(ctx: PersistContext, url: string): Promise<{ id: string; undo: () => Promise<void> }> {
+async function addSite(ctx: PersistContext, url: string): Promise<{ id: string | null; note?: string; undo: () => Promise<void> }> {
   const brand = ctx.getBrand();
   const parsed = normalizeWebsiteUrl(url);
-  const site = await createSite({
+  const claim = await claimSite(liveSiteClaimDeps, {
     organizationId: ctx.organizationId,
-    name: parsed.hostname,
-    rootUrl: parsed.toString(),
-    domain: parsed.hostname.toLowerCase(),
     brandId: brand.id,
+    rootUrl: parsed.toString(),
+    host: parsed.hostname.toLowerCase(),
   });
-  const previousBrand = site.brand_id;
-  if (previousBrand !== brand.id) await moveSiteBrand(site.id, brand.id);
+  // A site another brand tracks stays with it (never reassigned here); this brand got its own website row.
+  if (claim.kind === "tracked-elsewhere") return { id: null, note: claim.note, undo: async () => {} };
+  const site = claim.site;
   // The crawl every confirmed site gets (as on Create), on the server; never blocks the answer.
   startIngest(ctx, site.id, { sites: [site.id] });
-  return {
-    id: site.id,
-    undo: async () => {
-      if (previousBrand && previousBrand !== brand.id) await moveSiteBrand(site.id, previousBrand);
-      else await deleteSite(site.id);
-    },
-  };
+  return { id: site.id, undo: async () => deleteSite(site.id) };
+}
+
+/**
+ * The web.business_fact Create kept for this finding (keptFacts.ts; its discovered_item's resolved_fact_id), settled in
+ * place: Correct confirms it (and takes an edit), Wrong soft-deletes it. Returns false when Create kept none.
+ */
+async function settleKeptFact(
+  ctx: PersistContext,
+  item: FocusItem,
+  answer: "correct" | "wrong",
+  value: string,
+  resolved: { resolved_property_id?: string; resolved_fact_id?: string },
+  homes: string[],
+  undos: (() => Promise<void>)[],
+): Promise<boolean> {
+  const w = await db();
+  const link = await w
+    .from("discovered_item")
+    .select("resolved_fact_id")
+    .eq("brand_id", ctx.getBrand().id)
+    .eq("source", "smart_add")
+    .in("context->>evidence_key", [item.key, ...item.twins])
+    .not("resolved_fact_id", "is", null)
+    .is("deleted_at", null)
+    .limit(1)
+    .maybeSingle();
+  if (link.error) throw new Error(link.error.message);
+  const factId = link.data?.resolved_fact_id;
+  if (!factId) return false;
+  const current = await w
+    .from("business_fact")
+    .select("id, value, confirmed_at, metadata, version, deleted_at")
+    .eq("id", factId)
+    .is("deleted_at", null)
+    .maybeSingle();
+  if (current.error) throw new Error(current.error.message);
+  if (!current.data) return false;
+  const before = current.data;
+  const at = new Date().toISOString();
+  const meta = isJsonRecord(before.metadata) ? before.metadata : {};
+  const patch =
+    answer === "correct"
+      ? {
+          confirmed_at: at,
+          metadata: { ...meta, decision: "confirmed", ...(item.fact && value !== item.fact.value ? { edited_from: item.fact.value } : {}) } as Json,
+          ...(item.fact && value !== item.fact.value ? { value: (/^https?:\/\//i.test(value) ? { url: value } : { text: value }) as Json } : {}),
+        }
+      : { deleted_at: at, metadata: { ...meta, decision: "wrong" } as Json };
+  const { error } = await w
+    .from("business_fact")
+    .update({ ...patch, version: before.version + 1 })
+    .eq("id", factId)
+    .eq("version", before.version);
+  if (error) throw new Error(error.message);
+  if (answer === "correct") resolved.resolved_fact_id = factId;
+  homes.push(`web.business_fact:${factId}`);
+  undos.push(async () => {
+    const { error: e } = await (await db())
+      .from("business_fact")
+      .update({ value: before.value, confirmed_at: before.confirmed_at, metadata: before.metadata, deleted_at: null, version: before.version + 2 })
+      .eq("id", factId);
+    if (e) throw new Error(e.message);
+  });
+  return true;
 }
 
 async function addExclusion(ctx: PersistContext, item: FocusItem): Promise<{ id: string | null; undo: () => Promise<void> }> {
@@ -426,7 +486,7 @@ export async function persistAnswer(
     if (root) {
       const site = await addSite(ctx, root);
       siteId = site.id;
-      homes.push(`web.site:${site.id}`);
+      if (site.id) homes.push(`web.site:${site.id}`);
       undos.push(site.undo);
     }
   }
@@ -491,6 +551,8 @@ export async function persistAnswer(
     });
     homes.push(`web.brand.profile.${profileHome}:${ctx.getBrand().id}`);
     undos.push(undo);
+  } else if ((answer === "correct" || answer === "wrong") && item.kind === "fact" && (await settleKeptFact(ctx, item, answer, value, resolved, homes, undos))) {
+    // The fact Create kept (keptFacts.ts) is settled in place: confirmed, or soft-deleted — never a second row.
   } else if (answer === "correct" && item.kind === "fact") {
     const field = item.fact?.field ?? ev?.field ?? "other";
     const kind = factKind(field);

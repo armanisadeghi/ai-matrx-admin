@@ -125,6 +125,8 @@ export interface BrandFact {
   suggestion?: Suggestion | null;
   /** A what's-new conflict: the value already on file that `value` contradicts. The card asks which is right. */
   conflict_with?: string | null;
+  /** The round (workflow run) whose facts step found it: provenance for Create's writes (keptFacts.ts). */
+  run_id?: string | null;
 }
 
 function str(v: unknown): string | null {

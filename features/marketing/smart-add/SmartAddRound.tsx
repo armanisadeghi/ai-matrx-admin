@@ -17,6 +17,7 @@ import { readAiTestReplay, type AiTestReplay } from "@/features/ai-test-mode/rep
 import {
   selectNodeAggregate,
   selectRunEmissions,
+  selectRunReadFailure,
   selectRunSpendUsd,
   selectRunStatus,
 } from "@/features/workflow-runtime/redux/workflow-runs.selectors";
@@ -25,6 +26,7 @@ import { factsFromPayload, type BrandFact } from "./validate/queue";
 import { brandNameFromPayload, factEvidence, webFirstData } from "./firstData";
 import { suggestionsFromPayload, type WeThinkSuggestion } from "./weThink";
 import { parseEntityKind, type EntityKind } from "./entityKind";
+import { parseKeyPeople, type KeyPerson } from "./keyPeople";
 import { parseEntryOutcome, type EntryOutcome } from "./entryOutcome";
 
 /** The steps a Smart Add workflow shows, in order. */
@@ -42,6 +44,8 @@ export const PARKED_WEB_NOTE = "Parked domain — web results set aside";
 const SIGNALS_STEP = "person_signals";
 /** The person-or-business decision step (mandate brand_intake.entity_kind_decision): runs only when the rules are unsure. */
 const ENTITY_KIND_STEP = "entity_kind";
+/** The key-people step (mandate brand_intake.key_people_finder): a business round's people, off the critical path. */
+const KEY_PEOPLE_STEP = "key_people";
 /** The first-data capture point: its `entry_outcome` says whether what was typed exists (aidream entry_outcome.py). */
 const ENTRY_STEP = "first_point";
 /** The path decision step (aidream brand.identify.path_decision; PATHS.md). */
@@ -168,6 +172,8 @@ export interface RoundView {
   replays?: AiTestReplay[];
   /** Did what was typed exist? The first-data point's answer (aidream entry_outcome); null until it lands. */
   entry?: EntryOutcome | null;
+  /** Why the run could not be READ (the attach refused), never the run's own failure. */
+  readFailure?: string | null;
   /** The homepage picture is being taken right now (its own step runs in a live run), never "the round is busy". */
   shooting: boolean;
   /** A step that can bring a logo or photo (lookups, page reads, facts) is running right now in a live run. */
@@ -231,6 +237,7 @@ export function SmartAddRound({
   onSuggestions,
   onSignals,
   onEntityKind,
+  onKeyPeople,
   onPath,
   onScreenshots,
   onView,
@@ -246,6 +253,8 @@ export function SmartAddRound({
   onSignals?: (signals: PersonSignals) => void;
   /** The entity-kind decision's answer, once that step reports it (header label default). */
   onEntityKind?: (kind: EntityKind) => void;
+  /** The key-people step's people, once that step reports them (the Key people section). */
+  onKeyPeople?: (people: KeyPerson[]) => void;
   /** The round's path (aidream brand.identify.path_decision): {subject, path, runs_as}, for path_history. */
   onPath?: (decision: RoundPath) => void;
   /** The homepage pictured (aidream brand.identify.screenshots), desktop and mobile, once its frame lands. */
@@ -295,6 +304,13 @@ export function SmartAddRound({
   useEffect(() => {
     if (entityKind) onEntityKind?.(entityKind);
   }, [entityKind, onEntityKind]);
+  const peopleAggregate = useAppSelector(selectNodeAggregate(runId, KEY_PEOPLE_STEP));
+  const keyPeople = parseKeyPeople(peopleAggregate.invocations[peopleAggregate.invocations.length - 1]?.output ?? null);
+  const keyPeopleSig = keyPeople ? JSON.stringify(keyPeople) : "";
+  // Keyed on the answer's content: a re-render with the same people never re-reports them.
+  useEffect(() => {
+    if (keyPeopleSig) onKeyPeople?.(JSON.parse(keyPeopleSig) as KeyPerson[]);
+  }, [keyPeopleSig, onKeyPeople]);
   const pathAggregate = useAppSelector(selectNodeAggregate(runId, PATH_STEP));
   const pathOut = pathAggregate.invocations[pathAggregate.invocations.length - 1]?.output ?? null;
   const pathRec = (pathOut?.path_decision ??
@@ -344,6 +360,7 @@ export function SmartAddRound({
   // The round's entry answer: the first-data point carries it (a not-found entry skips the point and every agent).
   const entryAggregate = useAppSelector(selectNodeAggregate(runId, ENTRY_STEP));
   const entry = parseEntryOutcome(entryAggregate.invocations[entryAggregate.invocations.length - 1]?.output?.entry_outcome);
+  const readFailure = useAppSelector(selectRunReadFailure(runId));
   // In flight = the step's own phase says running AND the run has not ended (an ended run never settles a step it
   // dropped). The screen's placeholders wait on these, never on the run as a whole.
   const runLive = status !== null && !RUN_ENDED.includes(status);
@@ -358,6 +375,7 @@ export function SmartAddRound({
     imaging,
     ...(replays.length ? { replays } : {}),
     ...(entry ? { entry } : {}),
+    ...(readFailure ? { readFailure } : {}),
   };
   useEffect(() => {
     onView(view);

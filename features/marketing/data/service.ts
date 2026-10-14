@@ -3470,6 +3470,7 @@ export async function createBrand(
           ? publishedToWebPatch(true, null)
           : {}),
         ...(input.profile !== undefined ? { profile: input.profile } : {}),
+        ...(input.metadata !== undefined ? { metadata: input.metadata } : {}),
         // A person brand (creator/coach) names who the person is; a company omits all three.
         ...(input.kind ? { kind: input.kind } : {}),
         ...(input.personPartyId ? { person_party_id: input.personPartyId } : {}),

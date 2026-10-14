@@ -454,6 +454,8 @@ export interface CreateBrandInput {
   publishedToWeb?: boolean;
   /** Serialized `BrandProfile` (via `brandProfileToJson`); omit for `{}`. */
   profile?: Json;
+  /** web.brand.metadata (e.g. Smart Add's `smart_add` block: what the person settled at Create). */
+  metadata?: Json;
 }
 
 export interface UpdateBrandInput {

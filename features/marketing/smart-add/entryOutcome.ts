@@ -83,7 +83,9 @@ const SITE_NOTE: [RegExp, EntryStatus][] = [
 
 /**
  * The answer read off a FINISHED round's step notes (a server that does not send `entry_outcome` yet), only when the
- * round found nothing at all. Null when the round is still running or found something.
+ * round found nothing at all AND a step said so in words. "Doesn't exist" needs a POSITIVE signal: an empty, partial
+ * or unreadable replay (admin opening someone's run, lost events) is never not-found — `replayUnreadable` covers it.
+ * Null when the round is still running, found something, or no note names the failure.
  */
 export function inferEntryOutcome(
   view: Pick<RoundView, "status" | "steps"> | null | undefined,
@@ -95,12 +97,27 @@ export function inferEntryOutcome(
   const notes = (step: string) => view.steps.filter((s) => s.step === step).flatMap((s) => s.notes);
   if (typed.social) {
     const note = notes("socials").join(" ");
-    const hit = SOCIAL_NOTE.find(([re]) => re.test(note));
-    return { status: hit?.[1] ?? (note ? "provider_failed" : "not_found"), subject: "account", input: typed.social, platform: typed.platform };
+    const hit = /could not be looked up/i.test(note) ? SOCIAL_NOTE.find(([re]) => re.test(note)) : undefined;
+    return hit ? { status: hit[1], subject: "account", input: typed.social, platform: typed.platform } : null;
   }
   const note = [...notes("probe"), ...notes("page"), ...notes("web")].join(" ");
   const hit = SITE_NOTE.find(([re]) => re.test(note));
-  return { status: hit?.[1] ?? "no_such_site", subject: "website", input: typed.website, platform: null };
+  return hit ? { status: hit[1], subject: "website", input: typed.website, platform: null } : null;
+}
+
+/**
+ * The run could not be read back: the attach read was refused, or a FINISHED run came back with no step data at all
+ * (every step idle, no notes) and nothing found. Shown as "Couldn't load this run" with a retry — never as an answer
+ * about what was typed.
+ */
+export function replayUnreadable(
+  view: Pick<RoundView, "status" | "steps" | "readFailure"> | null | undefined,
+  foundSomething: boolean,
+): boolean {
+  if (!view || foundSomething) return false;
+  if (view.readFailure) return true;
+  if (!["completed", "failed", "errored", "cancelled", "stopped", "refused"].includes(view.status ?? "")) return false;
+  return view.steps.every((s) => s.phase === "idle" && !s.notes.length);
 }
 
 /** How the typed entry reads in a sentence: "@name" for an account, the bare host for a site. */
@@ -197,12 +214,14 @@ export function websiteProblem(text: string): string | null {
 
 // ── the stage's state machine ────────────────────────────────────────────────
 
-export type StagePhase = "enter" | "identifying" | "slow" | "outcome" | "failed" | "nothing" | "done";
+export type StagePhase = "enter" | "identifying" | "slow" | "outcome" | "unloaded" | "failed" | "nothing" | "done";
 
 export interface StageInputs {
   submitted: boolean;
   /** The typed entry's answer (server or inferred). */
   outcome: EntryOutcome | null;
+  /** The run could not be read back (`replayUnreadable`). */
+  unreadable?: boolean;
   /** A round still running. */
   working: boolean;
   /** A round broke (a start error, a failed run, an errored step). */
@@ -222,6 +241,7 @@ export interface StageInputs {
 export function stagePhase(s: StageInputs): StagePhase {
   if (!s.submitted) return "enter";
   if (isFailedEntry(s.outcome)) return "outcome";
+  if (s.unreadable) return "unloaded";
   if (s.working) return s.quietMs >= s.stallMs ? "slow" : "identifying";
   if (s.found) return "done";
   if (s.failed) return "failed";

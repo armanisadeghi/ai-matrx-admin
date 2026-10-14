@@ -143,6 +143,12 @@ export function brandNameFromPayload(payload: unknown, depth = 0): string | null
 /** The facts agent's fields that land in a slot (validate/queue keeps every fact for the validation page). */
 const FACT_SLOT: Record<string, EvidenceField> = { name: "name", phone: "phone", email: "email", category: "category" };
 
+/** The slot finding's key a fact fed (name / phone / email / category), so the person's answer there is the fact's. */
+export function factSlotKey(f: BrandFact): string | null {
+  const field = FACT_SLOT[f.known_field ?? ""] ?? FACT_SLOT[f.field];
+  return field ? evidenceKey(field, f.value) : null;
+}
+
 /** The facts agent's findings as slot rows, merged under the server's keys (added or refined, never reset). */
 export function factEvidence(facts: BrandFact[], brandName: string | null): EvidenceItem[] {
   const src = (url: string | null): EvidenceSource => ({ node: "facts", kind: "web_search", url, where: "research" });
