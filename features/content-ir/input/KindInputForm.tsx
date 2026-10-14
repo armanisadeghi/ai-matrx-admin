@@ -301,11 +301,8 @@ export default function KindInputForm({
     const assembled = assembleKindInstance(kind, pairs, values, {
       emptyStringFields,
     });
-    const { [KIND_KEY]: _kind, ...fields } = assembled.instance as Record<
-      string,
-      unknown
-    >;
-    return JSON.stringify(fields, null, 2);
+    // `__kind` is part of the data — shown and kept, never stripped.
+    return JSON.stringify(assembled.instance, null, 2);
   }
 
   function toggleJsonView(): void {

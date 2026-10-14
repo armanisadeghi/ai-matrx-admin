@@ -157,15 +157,16 @@ function artifactCardVerdict(
     return null;
   }
   if (body === null || typeof body !== "object" || Array.isArray(body)) return null;
-  const { [KIND_KEY]: bodyKind, ...fields } = body as Record<string, unknown>;
-  if (bodyKind !== kind) return null;
+  // The front door receives the whole value, `__kind` included.
+  const value = body as Record<string, unknown>;
+  if (value[KIND_KEY] !== kind) return null;
   const routed = routeBlock({
     blockId: `${source.blockId}:card`,
     blockIndex: source.blockIndex,
     type: "code",
     status: "complete",
     content: source.content,
-    metadata: { [IR_ENVELOPE_KEY]: envelopeFromCompleteValue({ ...fields }, kind) },
+    metadata: { [IR_ENVELOPE_KEY]: envelopeFromCompleteValue({ ...value }, kind) },
   });
   const reached = reachedRealComponent(routed);
   return {
