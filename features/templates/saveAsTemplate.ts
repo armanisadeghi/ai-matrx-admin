@@ -156,6 +156,8 @@ export async function readSetupAgents(client: SupabaseClient, ids: string[]): Pr
 
 /** The organization's live agents that read any of these tables (the template carries them all). */
 export async function agentsReading(client: SupabaseClient, organizationId: string, tableIds: string[]): Promise<SetupAgent[]> {
+  // archived-items-law-exempt: template assembly expands only live agents that
+  // can run the setup; this is an internal relationship reader, not a list.
   const { data, error } = await client
     .schema("agent")
     .from("definition")

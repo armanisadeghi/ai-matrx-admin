@@ -31,6 +31,7 @@ import {
   kitOutlineInputs,
   lookupKitOutlineRun,
   outlineSectionsFromRows,
+  readArchivedKitOutlineRows,
   readKitOutlineRows,
   readOutlineBuildSources,
   startKitOutline,
@@ -40,6 +41,8 @@ import type { OutlineSection } from "./types";
 export interface KitOutlineState {
   /** null while the first read is in flight. */
   sections: OutlineSection[] | null;
+  /** Archived sections stay out of generation and coverage, but are revealed in one click. */
+  archivedSections: OutlineSection[] | null;
   readError: string | null;
   /** The outline is older than the kit's Sources (a Rebuild would change it). */
   stale: boolean;
@@ -72,6 +75,7 @@ export function useKitOutline(kit: StudyKit | null): KitOutlineState {
   const dispatch = useAppDispatch();
   const kitId = kit?.sourceType === KIT_TOKEN ? kit.sourceId : null;
   const [sections, setSections] = useState<OutlineSection[] | null>(null);
+  const [archivedSections, setArchivedSections] = useState<OutlineSection[] | null>(null);
   const [readError, setReadError] = useState<string | null>(null);
   const [stale, setStale] = useState(false);
   const [coverage, setCoverage] = useState<KitCoverage | null>(null);
@@ -112,10 +116,13 @@ export function useKitOutline(kit: StudyKit | null): KitOutlineState {
   const readAll = useEffectEvent(async (isLive: () => boolean) => {
     if (!kit) return;
     try {
-      const rows = kitId ? await readKitOutlineRows(kitId) : [];
+      const [rows, archivedRows] = kitId
+        ? await Promise.all([readKitOutlineRows(kitId), readArchivedKitOutlineRows(kitId)])
+        : [[], []];
       if (!isLive()) return;
       const read = outlineSectionsFromRows(rows);
       setSections(read);
+      setArchivedSections(outlineSectionsFromRows(archivedRows));
       setReadError(null);
       if (kitId) {
         try {
@@ -195,6 +202,7 @@ export function useKitOutline(kit: StudyKit | null): KitOutlineState {
   const failedRun = over && status !== "completed" ? runErrorWords(runFailure) ?? "The outline could not be built." : null;
   return {
     sections,
+    archivedSections,
     readError,
     stale,
     coverage,

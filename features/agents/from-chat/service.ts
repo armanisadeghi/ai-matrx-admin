@@ -268,12 +268,15 @@ export async function makeAgentFromChat(
  * `agent.definition.metadata.agent_studio_from_chat`). Reads only agents the viewer may see.
  */
 export async function latestAgentFromChat(conversationId: string): Promise<FromChatResult | null> {
+  // archived-items-law-exempt: one-result reload recovery for this chat's
+  // build, not an agent browser; archived agents are intentionally excluded.
   const { data, error } = await supabase
     .schema("agent")
     .from("definition")
     .select("metadata, created_at")
     .eq("metadata->agent_studio_from_chat->>conversation_id", conversationId)
     .is("deleted_at", null)
+    .eq("is_archived", false)
     .order("created_at", { ascending: false })
     .limit(1);
   if (error) throw new Error(error.message);

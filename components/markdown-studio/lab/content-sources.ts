@@ -316,12 +316,16 @@ export const STUDIO_SOURCES: Record<StudioSourceKind, StudioSourceDef> = {
     // THE VIEW LAW: my own recent documents (never annotations — a sidecar type).
     list: async (search) => {
       const userId = requireUserId();
+      // archived-items-law-exempt: this recent-document candidate picker only
+      // opens active working documents; an archived document remains reachable
+      // through its record route, not as a new Studio source candidate.
       const { data, error } = await supabase
         .schema("content")
         .from("document")
         .select("id, title, updated_at, document_type_id")
         .eq("created_by", userId)
         .is("deleted_at", null)
+        .is("archived_at", null)
         .order("updated_at", { ascending: false })
         .limit(STUDIO_SOURCE_RECENT_LIMIT * 2);
       if (error) throw operationFailed("list your recent documents", error);

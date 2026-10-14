@@ -156,12 +156,15 @@ export async function brandSourceIds(brandId: string): Promise<string[]> {
     }
   }
   if (fileIds.length) {
+    // archived-items-law-exempt: resolve live source ids for a brand's current
+    // voice evidence; this is a relationship walk, never a Sources browser.
     const docs = await supabase
       .schema("docproc")
       .from("processed_documents")
       .select("id")
       .in("original_file_id", fileIds)
       .is("deleted_at", null)
+      .is("archived_at", null)
       .limit(1000);
     if (docs.error) throw new Error(`The brand's documents could not be read: ${docs.error.message}`);
     for (const r of (docs.data ?? []) as { id: string }[]) ids.add(r.id);
@@ -176,11 +179,14 @@ export async function brandSourceIds(brandId: string): Promise<string[]> {
 export async function searchSources(query: string, brandId?: string | null): Promise<SourceOption[]> {
   const term = query.trim().replace(/[%_]/g, "");
   const run = async (ids: string[] | null): Promise<SourceOption[]> => {
+    // archived-items-law-exempt: this is the Voice sample candidate picker;
+    // archived Sources are retired evidence and cannot be newly selected.
     let q = supabase
       .schema("docproc")
       .from("processed_documents")
       .select("id, name, created_at")
       .is("deleted_at", null)
+      .is("archived_at", null)
       .order("created_at", { ascending: false })
       .limit(40);
     if (ids) q = q.in("id", ids);

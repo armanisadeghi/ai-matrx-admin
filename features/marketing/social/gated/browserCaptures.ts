@@ -117,11 +117,15 @@ export async function fetchBrowserCaptures(
     for (const row of (data ?? []) as { source_id: string }[]) ids.add(row.source_id);
   }
   if (ids.size === 0) return [];
+  // archived-items-law-exempt: target-linked capture events are not a Sources
+  // browser; an archived source must stop contributing current social evidence.
   const { data, error } = await client
     .schema("docproc")
     .from("processed_documents")
     .select("id, updated_at, social:structured_json->social")
     .in("id", [...ids])
+    .is("deleted_at", null)
+    .is("archived_at", null)
     .order("updated_at", { ascending: false });
   if (error) throw new Error(`Could not read your browser captures: ${error.message}`);
   return ((data ?? []) as { id: string; updated_at: string; social: unknown }[])

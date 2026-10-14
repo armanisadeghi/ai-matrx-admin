@@ -132,10 +132,13 @@ export async function readRecordCitedFacts(
   recordId: string,
   excerpt: string | null,
 ): Promise<{ facts: CitedChunkFacts | null; error: string | null }> {
+  // archived-items-law-exempt: citation lineage resolves the record's stored
+  // source, including archived ones, so an existing citation never goes blank.
   const { data: docs, error: docError } = await docprocDb(supabase)
     .from("processed_documents")
     .select("id")
     .eq("source_id", recordId)
+    .is("deleted_at", null)
     .order("created_at", { ascending: false })
     .limit(1);
   if (docError) return { facts: null, error: docError.message };

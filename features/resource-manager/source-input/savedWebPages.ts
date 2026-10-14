@@ -42,6 +42,8 @@ export function savedSourcesLane(scope: KindScope): { kind: "all" | "mine"; orga
 }
 
 function groupQuery(group: SavedSourceGroup, scope: KindScope, userId: string, search: string, head: boolean) {
+  // archived-items-law-exempt: Use existing is a candidate picker; it admits
+  // only live Sources, while archived Sources remain available in Sources.
   const q = supabase
     .schema("docproc")
     .from("processed_documents")

@@ -313,7 +313,7 @@ export function slugOf(raw: string): string {
  * retry still covers that.
  */
 export async function takenSlugs(client: Client, base: string, selfId: string | null): Promise<Set<string>> {
-  const { data, error } = await client.schema("app").from("definition").select("id, slug").like("slug", `${base}%`).limit(200);
+  const { data, error } = await client.schema("app").from("definition").select("id, slug").like("slug", `${base}%`).is("deleted_at", null).limit(200);
   if (error || !data) return new Set();
   return new Set(data.filter((r) => r.id !== selfId).map((r) => r.slug));
 }

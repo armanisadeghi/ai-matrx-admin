@@ -360,8 +360,6 @@ const FACT_GROUPS: readonly (readonly string[])[] = [
 const FACT_GROUP = new Map(FACT_GROUPS.flatMap((fields, group) => fields.map((f) => [f, group] as const)));
 /** A field's place inside its group (Official Name before Country before Booking URL); unknown fields last. */
 const FACT_POSITION = new Map(FACT_GROUPS.flatMap((fields) => fields.map((f, i) => [f, i] as const)));
-/** A field's place inside its group (Official Name before Country before Booking URL); unknown fields last. */
-const FACT_POSITION = new Map(FACT_GROUPS.flatMap((fields) => fields.map((f, i) => [f, i] as const)));
 /** The later pile: a fact field outside the four groups. */
 export const LATER_FACT_GROUP = FACT_GROUPS.length;
 
@@ -373,8 +371,6 @@ function rank(i: FocusItem): number[] {
   const certainty = CERTAINTY_ORDER[i.certainty ?? ""] ?? 1;
   const confidence = i.evidence ? 1 - i.evidence.confidence : 0.5;
   const group = i.fact ? factGroup(i.fact.field) : 0;
-  // MKT-063: inside a group the fields keep the ruling's order, never the alphabet of their keys.
-  const position = i.fact ? (FACT_POSITION.get(i.fact.field) ?? Number.MAX_SAFE_INTEGER) : 0;
   // MKT-063: inside a group the fields keep the ruling's order, never the alphabet of their keys.
   const position = i.fact ? (FACT_POSITION.get(i.fact.field) ?? Number.MAX_SAFE_INTEGER) : 0;
   // A later-pile fact comes after the web results.

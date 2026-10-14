@@ -207,6 +207,8 @@ async function readAgentFacts(agentIds: string[]): Promise<{ names: Map<string, 
   const heldKey = new Map<string, string>();
   if (!agentIds.length) return { names, heldKey };
   const [agents, held] = await Promise.all([
+    // archived-items-law-exempt: approval rows already name these exact agent
+    // ids; this is a fact hydration for those rows, never an agent catalogue.
     supabase.schema("agent").from("definition").select("id, name").in("id", agentIds),
     supabase
       .schema("mandate")

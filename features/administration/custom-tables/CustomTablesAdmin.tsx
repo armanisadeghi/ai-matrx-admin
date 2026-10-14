@@ -115,6 +115,8 @@ export function CustomTablesAdmin() {
   useEffect(() => {
     let live = true;
     void (async () => {
+      // archived-items-law-exempt: this only supplies live system-org lanes
+      // that can administer tables; archived organizations cannot be targets.
       const { data, error } = await (createClient() as unknown as SupabaseClient)
         .schema("iam")
         .from("organizations")

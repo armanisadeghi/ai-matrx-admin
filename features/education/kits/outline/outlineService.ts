@@ -202,21 +202,33 @@ export function isOutlineStale(
 
 const SECTION_COLUMNS = "id,position,title,summary,body,claims,metadata";
 
-/** The kit's live outline rows (archived sections excluded), any order. */
-export async function readKitOutlineRows(kitId: string): Promise<OutlineRow[]> {
+/** The kit's outline rows for one archive state, in reading order. */
+export async function readKitOutlineRows(
+  kitId: string,
+  archiveFilter: "active" | "archived" = "active",
+): Promise<OutlineRow[]> {
   return readAllRows<OutlineRow>(
-    ({ from, to }) =>
-      supabase
+    ({ from, to }) => {
+      let query = supabase
         .schema("education")
         .from("study_structured_section")
         .select(SECTION_COLUMNS, { count: "exact" })
-        .eq("kit_scope_id", kitId)
-        .is("archived_at", null)
+        .eq("kit_scope_id", kitId);
+      query = archiveFilter === "archived"
+        ? query.not("archived_at", "is", null)
+        : query.is("archived_at", null);
+      return query
         .order("position", { ascending: true })
         .order("id", { ascending: true })
-        .range(from, to),
+        .range(from, to);
+    },
     { label: "education.study_structured_section kit outline" },
   );
+}
+
+/** Archived outline sections are read separately for the card's one-click disclosure. */
+export async function readArchivedKitOutlineRows(kitId: string): Promise<OutlineRow[]> {
+  return readKitOutlineRows(kitId, "archived");
 }
 
 /** The kit's outline in reading order (empty = no outline built yet). */

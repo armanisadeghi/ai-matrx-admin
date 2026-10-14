@@ -48,6 +48,8 @@ export default function TopicIntelligencePage() {
     if (!chosenKey) return;
     let cancelled = false;
     const ids = chosenKey.split(",");
+    // archived-items-law-exempt: topic configuration names these exact agents;
+    // this lookup reports their unavailable state, not an agent list surface.
     void supabase.schema("agent").from("definition")
       .select("id,name,is_active,is_archived,deleted_at")
       .in("id", ids)

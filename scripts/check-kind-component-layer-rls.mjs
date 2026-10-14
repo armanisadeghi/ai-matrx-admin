@@ -154,17 +154,15 @@ try {
 
       const cUpd = await layer(C).update({ notes: "coworker edit" }).eq("id", mineId).select("id");
       check("1. coworker C cannot update A's user row", !!cUpd.error || (cUpd.data ?? []).length === 0, cUpd.error?.message);
-      const cDel = await layer(C).delete().eq("id", mineId).select("id");
-      check("1. coworker C cannot delete A's user row", !!cDel.error || (cDel.data ?? []).length === 0, cDel.error?.message);
 
       // ---- 2 + 4: refused writes ----------------------------------------------------------
       const forB = await insert(A, row({ kind: `${KIND}_b`, organization_id: X, audience_user_id: bUser.id }));
       check("2. A cannot write a user row whose audience is B", !!forB.error && !forB.data, forB.error?.code);
       const spoof = await insert(A, row({ kind: `${KIND}_spoof`, organization_id: X, audience_user_id: aId, created_by: cId }));
-      check("4. a payload created_by is ignored: the row's author is A", spoof.data?.created_by === expectedAuthor, spoof.error?.message ?? `created_by=${spoof.data?.created_by}`);
-      const mOrg = await insert(M, row({ organization_id: X, audience_organization_id: X }));
+      check("4. a payload created_by is ignored: the row's author is A", spoof.data?.created_by === aId, spoof.error?.message ?? `created_by=${spoof.data?.created_by}`);
+      const mOrg = await insert(M, row({ kind: `${KIND}_m`, organization_id: X, audience_organization_id: X }));
       check("2. plain member M cannot write an org row for X", !!mOrg.error && !mOrg.data, mOrg.error?.code);
-      const bOrg = await insert(B, row({ organization_id: X, audience_organization_id: X }));
+      const bOrg = await insert(B, row({ kind: `${KIND}_bx`, organization_id: X, audience_organization_id: X }));
       check("2. B (not in X) cannot write an org row for X", !!bOrg.error && !bOrg.data, bOrg.error?.code);
 
       // ---- 3: the org row -----------------------------------------------------------------
@@ -188,6 +186,9 @@ try {
       check("2. the audience of an org row cannot change", !!move.error || (move.data ?? []).length === 0, move.error?.code);
       const moveUser = await layer(A).update({ audience_user_id: cId }).eq("id", mineId).select("id");
       check("2. the audience of a user row cannot change", !!moveUser.error || (moveUser.data ?? []).length === 0, moveUser.error?.code);
+      // Last: under a planted break this delete succeeds and would starve the checks above of their row.
+      const cDel = await layer(C).delete().eq("id", mineId).select("id");
+      check("1. coworker C cannot delete A's user row", !!cDel.error || (cDel.data ?? []).length === 0, cDel.error?.message);
       } finally {
         // Rows first: created_by references the personas, so their teardown needs these gone.
         await removeMadeRows();

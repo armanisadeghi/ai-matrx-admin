@@ -78,6 +78,8 @@ export async function writeAgent(
 export async function nextFreeAgentName(organizationId: string, base: string, selfId: string): Promise<string> {
   const rows = await readAllRows<{ id: string; name: string }>(
     ({ from, to }) =>
+      // archived-items-law-exempt: name-collision calculation is an internal
+      // write preflight; archived agents intentionally free their names.
       supabase
         .schema("agent")
         .from("definition")

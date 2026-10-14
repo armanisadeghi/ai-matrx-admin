@@ -14,6 +14,7 @@
 
 import { useState } from "react";
 import { Eye, ListTree, Plus, RefreshCw } from "lucide-react";
+import { ArchivedDisclosure } from "@ai-matrx/design-system";
 import { Button, Chip, DisclosureHeader, RegionSkeleton } from "@ai-matrx/design-system/controls";
 import { toast } from "@/lib/toast";
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
@@ -34,7 +35,7 @@ import type { KitCoverage } from "../outline/coverage";
 
 // ─── Outline ─────────────────────────────────────────────────────────────────
 
-function SectionRow({ section }: { section: OutlineSection }) {
+function SectionRow({ section, archived = false }: { section: OutlineSection; archived?: boolean }) {
   const [open, setOpen] = useState(false);
   return (
     <li className="py-1.5">
@@ -42,7 +43,7 @@ function SectionRow({ section }: { section: OutlineSection }) {
         open={open}
         onClick={() => setOpen((o) => !o)}
         title={section.title}
-        meta={section.facts.length > 0 ? `${section.facts.length} facts` : undefined}
+        meta={archived ? "Archived" : section.facts.length > 0 ? `${section.facts.length} facts` : undefined}
         line={section.summary && !open ? section.summary : undefined}
       />
       {open ? (
@@ -75,7 +76,9 @@ export function KitOutlineCard({
 }) {
   const openRunWindow = useOpenWorkflowRunWindow();
   const { sections, activeRunId } = outline;
+  const [showArchived, setShowArchived] = useState(false);
   const has = (sections?.length ?? 0) > 0;
+  const archivedSections = outline.archivedSections ?? [];
   const stalled = outline.stalled && !outline.starting;
   const building = (activeRunId !== null && !stalled) || outline.starting;
 
@@ -157,6 +160,19 @@ export function KitOutlineCard({
       ) : !building ? (
         <p className="mt-2 type-secondary text-muted-foreground">No outline yet.</p>
       ) : null}
+      <ArchivedDisclosure
+        count={archivedSections.length}
+        open={showArchived}
+        onOpenChange={setShowArchived}
+        label="Archived sections"
+        className="mt-3"
+      >
+        <ol className="divide-y divide-border">
+          {archivedSections.map((section) => (
+            <SectionRow key={section.id} section={section} archived />
+          ))}
+        </ol>
+      </ArchivedDisclosure>
     </section>
   );
 }
