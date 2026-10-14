@@ -27215,6 +27215,87 @@ export type Database = {
           },
         ]
       }
+      kind_component_layer: {
+        Row: {
+          audience_organization_id: string | null
+          audience_user_id: string | null
+          component_key: string
+          component_source: string | null
+          config: Json
+          created_at: string
+          created_by: string | null
+          deleted_at: string | null
+          id: string
+          is_active: boolean
+          kind: string
+          metadata: Json
+          notes: string | null
+          organization_id: string
+          pinned_kind_version: number | null
+          platform: string
+          props_transform: string | null
+          role: string
+          semver: string
+          sort_order: number
+          source: string
+          updated_at: string
+          updated_by: string | null
+          version: number
+        }
+        Insert: {
+          audience_organization_id?: string | null
+          audience_user_id?: string | null
+          component_key: string
+          component_source?: string | null
+          config?: Json
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          id?: string
+          is_active?: boolean
+          kind: string
+          metadata?: Json
+          notes?: string | null
+          organization_id: string
+          pinned_kind_version?: number | null
+          platform: string
+          props_transform?: string | null
+          role: string
+          semver?: string
+          sort_order?: number
+          source?: string
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+        }
+        Update: {
+          audience_organization_id?: string | null
+          audience_user_id?: string | null
+          component_key?: string
+          component_source?: string | null
+          config?: Json
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          id?: string
+          is_active?: boolean
+          kind?: string
+          metadata?: Json
+          notes?: string | null
+          organization_id?: string
+          pinned_kind_version?: number | null
+          platform?: string
+          props_transform?: string | null
+          role?: string
+          semver?: string
+          sort_order?: number
+          source?: string
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+        }
+        Relationships: []
+      }
       kind_definition: {
         Row: {
           authoring_owner: string
@@ -27877,6 +27958,10 @@ export type Database = {
       }
     }
     Functions: {
+      _kind_emission_message_ids: {
+        Args: { p_kind: string; p_limit?: number }
+        Returns: string[]
+      }
       _try_jsonb: { Args: { p_text: string }; Returns: Json }
       admin_upsert_kind_content_block: {
         Args: {
@@ -97993,6 +98078,27 @@ export type Database = {
       }
     }
     Functions: {
+      __list_counts_conformance_family_units: {
+        Args: { p_unit: Json }
+        Returns: {
+          unit: Json
+        }[]
+      }
+      __list_counts_conformance_probe: {
+        Args: { p_unit: Json }
+        Returns: {
+          check_key: string
+          detail: Json
+          ok: boolean
+          severity: string
+        }[]
+      }
+      __list_counts_conformance_units: {
+        Args: never
+        Returns: {
+          unit: Json
+        }[]
+      }
       _access_seal_mark: {
         Args: { p_rel: unknown; p_which: string }
         Returns: undefined

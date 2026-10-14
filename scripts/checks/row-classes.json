@@ -191,15 +191,12 @@
       "label": "No new direct database call outside @ai-matrx/data (shrink-only baseline)",
       "class": "live-db",
       "cmd": "pnpm check:db-doors",
-      "reason": "reaches code that can open the live database",
-      "evidence": [
+      "reason": "UNCERTAIN — the resolver could not follow everything; classified live-db (safe side)",
+      "evidence": [],
+      "uncertain": [
         {
           "file": "../aidream/apps/shared/scripts/check-db-doors.mjs",
-          "signal": "admin Supabase client (createAdminClient)"
-        },
-        {
-          "file": "../aidream/apps/shared/scripts/check-db-doors.mjs",
-          "signal": "PostgREST endpoint"
+          "signal": "cross-repo command — classified live-db without following private source"
         }
       ]
     },
@@ -207,15 +204,12 @@
       "label": "…and that guard can still fail",
       "class": "live-db",
       "cmd": "pnpm check:db-doors:self-test",
-      "reason": "reaches code that can open the live database",
-      "evidence": [
+      "reason": "UNCERTAIN — the resolver could not follow everything; classified live-db (safe side)",
+      "evidence": [],
+      "uncertain": [
         {
           "file": "../aidream/apps/shared/scripts/check-db-doors.mjs",
-          "signal": "admin Supabase client (createAdminClient)"
-        },
-        {
-          "file": "../aidream/apps/shared/scripts/check-db-doors.mjs",
-          "signal": "PostgREST endpoint"
+          "signal": "cross-repo command — classified live-db without following private source"
         }
       ]
     },
@@ -373,14 +367,6 @@
         {
           "file": "scripts/check-admin-client-governed-writes.mjs",
           "signal": "admin Supabase client (createAdminClient)"
-        },
-        {
-          "file": "utils/supabase/adminClient.ts",
-          "signal": "admin Supabase client (createAdminClient)"
-        },
-        {
-          "file": "utils/supabase/adminClient.ts",
-          "signal": "service-role / secret key"
         }
       ]
     },
@@ -709,14 +695,14 @@
       "label": "Static import cycle through the content-ir host",
       "class": "repo-only",
       "cmd": "pnpm check:host-cycles",
-      "reason": "no database access in 4 file(s) reached",
+      "reason": "no database access in 3 file(s) reached",
       "evidence": []
     },
     "host-cycle-guard-self-test": {
       "label": "Host-cycle guard self-test",
       "class": "repo-only",
       "cmd": "pnpm check:host-cycles:self-test",
-      "reason": "no database access in 4 file(s) reached",
+      "reason": "no database access in 3 file(s) reached",
       "evidence": []
     },
     "heavy-module-in-the-shell-s-eager-client-set": {
@@ -884,7 +870,7 @@
       "label": "UI drift",
       "class": "repo-only",
       "cmd": "pnpm check:ui-drift:strict",
-      "reason": "no database access in 7 file(s) reached",
+      "reason": "no database access in 4 file(s) reached",
       "evidence": []
     },
     "bare-secret-fill": {
@@ -905,14 +891,14 @@
       "label": "One control",
       "class": "repo-only",
       "cmd": "pnpm check:one-control:strict",
-      "reason": "no database access in 10 file(s) reached",
+      "reason": "no database access in 7 file(s) reached",
       "evidence": []
     },
     "one-control-self-test": {
       "label": "One control — self-test",
       "class": "repo-only",
       "cmd": "pnpm check:one-control:self-test",
-      "reason": "no database access in 11 file(s) reached",
+      "reason": "no database access in 8 file(s) reached",
       "evidence": []
     },
     "page-top": {
@@ -947,7 +933,7 @@
       "label": "UI drift — self-test",
       "class": "repo-only",
       "cmd": "pnpm check:ui-drift:self-test",
-      "reason": "no database access in 7 file(s) reached",
+      "reason": "no database access in 4 file(s) reached",
       "evidence": []
     },
     "no-blocking-dialogs-ai-stays-reachable": {
@@ -1170,14 +1156,14 @@
       "label": "Release row classes match what each row's code reaches",
       "class": "repo-only",
       "cmd": "pnpm check:release-row-classes",
-      "reason": "no database access in 4 file(s) reached",
+      "reason": "no database access in 2 file(s) reached",
       "evidence": []
     },
     "and-that-guard-can-still-fail-pnpm-check-release-r": {
       "label": "…and that guard can still fail",
       "class": "repo-only",
       "cmd": "pnpm check:release-row-classes:self-test",
-      "reason": "no database access in 4 file(s) reached",
+      "reason": "no database access in 2 file(s) reached",
       "evidence": []
     },
     "door-rows-a-door-returns-only-what-its-caller-may-read-dd-19": {
@@ -1495,7 +1481,7 @@
       "label": "Auth doors blind to a split cookie jar",
       "class": "repo-only",
       "cmd": "pnpm check:split-jar-doors:strict",
-      "reason": "no database access in 3 file(s) reached",
+      "reason": "no database access in 2 file(s) reached",
       "evidence": []
     },
     "the-proxy-or-an-app-api-route-makes-an-auth-server-round-tri": {
@@ -1558,7 +1544,7 @@
       "label": "Surface manifest drift",
       "class": "repo-only",
       "cmd": "pnpm exec tsx scripts/check-surface-drift.ts",
-      "reason": "no database access in 35 file(s) reached",
+      "reason": "no database access in 34 file(s) reached",
       "evidence": []
     },
     "surface-mirror-matches-the-code-values-roles-write-targets-t": {

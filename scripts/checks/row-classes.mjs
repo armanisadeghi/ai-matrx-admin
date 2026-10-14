@@ -79,13 +79,33 @@ function isFile(p) {
 
 function resolveModule(spec, fromFile) {
   let base;
+  let chatExport = false;
   const aliased = aliasTarget(spec);
-  if (aliased !== null) base = join(REPO_ROOT, aliased);
-  else if (spec.startsWith(".")) base = resolve(dirname(fromFile), spec);
+  // Scan the exact installed chat package in both a standalone CI checkout
+  // and a developer's multi-repo checkout. The sibling aidream source may
+  // exist only in the latter and can differ from the locked package version.
+  if (aliased !== null) {
+    if (aliased.startsWith("../aidream/apps/shared/chat/src/")) {
+      chatExport = true;
+      const chatRoot = join(REPO_ROOT, "node_modules/@ai-matrx/chat");
+      const subpath = spec.slice("@ai-matrx/chat/".length);
+      let target;
+      try {
+        const exports = JSON.parse(readFileSync(join(chatRoot, "package.json"), "utf8")).exports;
+        const entry = exports?.[`./${subpath}`];
+        target = typeof entry === "string" ? entry : entry?.import;
+      } catch { /* Missing install is classified uncertain below. */ }
+      base = target?.startsWith("./dist/")
+        ? resolve(chatRoot, target)
+        : join(chatRoot, "__missing_export__", subpath);
+    } else base = join(REPO_ROOT, aliased);
+  } else if (spec.startsWith(".")) base = resolve(dirname(fromFile), spec);
   else return null; // a package: not followed (package code is not a row's own database access)
   const stripped = base.replace(/\.(?:js|mjs|cjs)$/, "");
   const candidates = [base, ...CODE_EXT.map((e) => stripped + e), ...CODE_EXT.map((e) => join(base, `index${e}`))];
-  return candidates.find(isFile) ?? null;
+  // A missing locked export must reach walkFile, which classifies it uncertain
+  // and therefore live-db; silently dropping the import would make it green.
+  return candidates.find(isFile) ?? (chatExport ? base : null);
 }
 
 function stripComments(text, file) {
@@ -185,6 +205,13 @@ function walkJest(args, state) {
 }
 
 function walkFile(abs, state) {
+  const r = rel(abs);
+  if (r.startsWith("../aidream/")) {
+    // Direct commands into the sibling repo are conservatively live-db in
+    // every checkout, including CI where that private sibling is absent.
+    note(state.uncertain, r, "cross-repo command — classified live-db without following private source");
+    return;
+  }
   if (state.files.has(abs)) return;
   if (state.files.size >= MAX_FILES_PER_ROW) {
     note(state.uncertain, rel(abs), `stopped after ${MAX_FILES_PER_ROW} files`);
@@ -194,7 +221,6 @@ function walkFile(abs, state) {
     note(state.uncertain, rel(abs), "file named by the command does not exist");
     return;
   }
-  const r = rel(abs);
   if (DISPATCH_LIBRARIES.has(r)) return;
   if (r.startsWith("..") && !r.startsWith("../aidream/")) {
     note(state.uncertain, r, "outside this repo — not followed");
@@ -280,7 +306,9 @@ function scanText(abs, state, { follow }) {
     // Real import statements only (anchored at a line start — a fixture inside a string is not one).
     const imp = /^\s*(?:(?:import|export)\b|\})[^\n]*?\bfrom\s+["']([^"']+)["']|^\s*import\s+["']([^"']+)["']|\bimport\s*\(\s*["']([^"']+)["']\s*\)|\brequire\s*\(\s*["']([^"']+)["']\s*\)/gm;
     let m;
-    while ((m = imp.exec(text))) {
+    // Use comment/prose-stripped code so import statements embedded in a
+    // self-test's template-string fixture are not mistaken for executed imports.
+    while ((m = imp.exec(code))) {
       const target = resolveModule(m[1] ?? m[2] ?? m[3] ?? m[4], abs);
       if (target) next.add(target);
     }
@@ -311,7 +339,7 @@ function scanText(abs, state, { follow }) {
     // app code is imported by gates for pure helpers, and walking the whole app would make every
     // row "live" through a React component nobody runs.
     const nr = rel(n);
-    const inScripts = nr.startsWith("scripts/") || nr.startsWith("../aidream/");
+    const inScripts = nr.startsWith("scripts/") || nr.startsWith("node_modules/@ai-matrx/chat/");
     if (inScripts) walkFile(n, state);
     else if (!state.files.has(n) && isFile(n)) scanText(n, state, { follow: false });
   }
@@ -422,6 +450,15 @@ async function selfTest() {
     expect(classifyCommand(`tsx ${join(tmpdirOutside(), "x.ts")}`).class === LIVE, "a file outside the repo (or missing) is not followed and lands live-db");
     const missing = classifyCommand(`tsx ${dir}/does-not-exist.ts`);
     expect(missing.class === LIVE && missing.uncertain?.length > 0, "an unresolvable command is live-db and marked uncertain");
+    const surfaceFiles = classifyCommand("pnpm check:surface-drift", { withFiles: true }).files;
+    expect(
+      surfaceFiles.includes("node_modules/@ai-matrx/chat/dist/surfaces/declare/surface-declare.js") &&
+        surfaceFiles.includes("node_modules/@ai-matrx/chat/dist/surfaces/utils/surface-url-pattern.js"),
+      "a locked chat export and its transitive import are both scanned",
+    );
+    writeFileSync(join(dir, "missing-chat-export.ts"), 'import "@ai-matrx/chat/no-such-subpath";\n');
+    const missingChatExport = classifyCommand(`tsx ${dir}/missing-chat-export.ts`);
+    expect(missingChatExport.class === LIVE && missingChatExport.uncertain?.length > 0, "a missing chat export fails closed as live-db");
     expect(classifyCommand("pnpm check:parse").class === REPO, "pnpm check:parse resolves through package.json to repo-only");
   } finally {
     rmSync(dir, { recursive: true, force: true });

@@ -20,6 +20,8 @@
 // Client-side plants (prove an assertion can fail without touching the database):
 //   PLANT=unscoped_read     the coworker's layer read drops its audience predicate
 //   PLANT=wrong_author      assertion 4 expects the coworker as author
+//   PLANT=anon_key          the anonymous reader holds a key that can read (the DB refuses a real anon grant)
+// Several at once: PLANT=unscoped_read,wrong_author,anon_key
 // Database-side plants are applied by hand around a run (see the slice-1 note in PLAN.md).
 import { createClient } from "@supabase/supabase-js";
 import {
@@ -33,13 +35,16 @@ import {
 
 const SUITE = "content-ir/shape-layers";
 const TABLE = "kind_component_layer";
-const PLANT = process.env.PLANT ?? "";
+const PLANTS = new Set((process.env.PLANT ?? "").split(",").filter(Boolean));
+const PLANT = [...PLANTS].join(",");
 const target = testTarget();
 const publishableKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 if (!publishableKey) throw new Error("NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY is not set.");
 
 const service = createClient(target.url, target.secretKey, { auth: { persistSession: false } });
-const anon = createClient(target.url, publishableKey, { auth: { persistSession: false } });
+// The database refuses an anon key on an Organization-class table (anon_key_needs_a_class_lane), so the
+// anon plant is client-side: the "anonymous" reader is handed a key that can read.
+const anon = createClient(target.url, PLANTS.has("anon_key") ? target.secretKey : publishableKey, { auth: { persistSession: false } });
 
 /** A signed-in client for a fixture persona (the factory mints the session and refuses untagged accounts). */
 async function signedIn(user) {
@@ -80,7 +85,7 @@ async function readById(client, id) {
 /** The scoped layer read every renderer must use (PLAN v2 "Reads declare their own scope"). */
 async function scopedRead(client, uid, orgIds) {
   let q = layer(client).select("id").eq("kind", KIND).is("deleted_at", null);
-  if (PLANT !== "unscoped_read") {
+  if (!PLANTS.has("unscoped_read")) {
     const orgs = orgIds.length ? `,audience_organization_id.in.(${orgIds.join(",")})` : "";
     q = q.or(`audience_user_id.eq.${uid}${orgs}`);
   }
@@ -93,6 +98,15 @@ async function myOrgIds(client) {
   const { data, error } = await client.schema("iam").from("organization_member").select("organization_id");
   if (error) throw new Error(`could not list my organizations: ${error.message}`);
   return [...new Set((data ?? []).map((r) => r.organization_id))];
+}
+
+async function removeMadeRows() {
+  if (!madeIds.size) return;
+  const ids = [...madeIds];
+  const { error } = await service.schema("content_ir").from(TABLE).delete().in("id", ids);
+  if (error) throw new Error(`cleanup FAILED for ${ids.join(",")}: ${error.message}`);
+  console.log(`cleanup: removed ${ids.length} row(s)`);
+  madeIds.clear();
 }
 
 let failedHard = false;
@@ -112,6 +126,7 @@ try {
       if (msErr) throw new Error(`could not seat the plain member: ${msErr.message}`);
       memberMembershipId = ms.id;
 
+      try {
       const A = await signedIn(fx.owner);
       const C = await signedIn(fx.admin);
       const M = await signedIn(member);
@@ -125,7 +140,7 @@ try {
       const mine = await insert(A, row({ organization_id: X, audience_user_id: aId }));
       check("1. A writes a user-layer row for themself", !!mine.data && !mine.error, mine.error?.message);
       const mineId = mine.data?.id;
-      const expectedAuthor = PLANT === "wrong_author" ? cId : aId;
+      const expectedAuthor = PLANTS.has("wrong_author") ? cId : aId;
       check("4. created_by on A's user row is A", mine.data?.created_by === expectedAuthor, `created_by=${mine.data?.created_by}`);
 
       const bRead = await readById(B, mineId);
@@ -156,7 +171,7 @@ try {
       const orgRow = await insert(C, row({ organization_id: X, audience_organization_id: X }));
       check("2. admin C writes an org row for X", !!orgRow.data && !orgRow.error, orgRow.error?.message);
       const orgId = orgRow.data?.id;
-      check("4. created_by on the org row is C", orgRow.data?.created_by === (PLANT === "wrong_author" ? aId : cId));
+      check("4. created_by on the org row is C", orgRow.data?.created_by === (PLANTS.has("wrong_author") ? aId : cId));
       const mRead = await readById(M, orgId);
       check("3. member M reads X's org row", mRead.rows.length === 1, `${mRead.rows.length} row(s)`);
       const mScoped = await scopedRead(M, member.id, await myOrgIds(M));
@@ -173,16 +188,17 @@ try {
       check("2. the audience of an org row cannot change", !!move.error || (move.data ?? []).length === 0, move.error?.code);
       const moveUser = await layer(A).update({ audience_user_id: cId }).eq("id", mineId).select("id");
       check("2. the audience of a user row cannot change", !!moveUser.error || (moveUser.data ?? []).length === 0, moveUser.error?.code);
+      } finally {
+        // Rows first: created_by references the personas, so their teardown needs these gone.
+        await removeMadeRows();
+      }
     });
   });
 } catch (error) {
   failedHard = true;
   console.error(`ERROR  ${error.message}`);
 } finally {
-  if (madeIds.size) {
-    const { error } = await service.schema("content_ir").from(TABLE).delete().in("id", [...madeIds]);
-    console.log(error ? `cleanup FAILED for ${[...madeIds].join(",")}: ${error.message}` : `cleanup: removed ${madeIds.size} row(s)`);
-  }
+  await removeMadeRows().catch((e) => { failedHard = true; console.error(e.message); });
   const { count } = await service.schema("content_ir").from(TABLE).select("id", { count: "exact", head: true }).like("kind", "zz_layer_probe_%");
   console.log(`probe rows left: ${count ?? "?"}`);
   if (memberMembershipId) await service.schema("iam").from("memberships").delete().eq("id", memberMembershipId);
