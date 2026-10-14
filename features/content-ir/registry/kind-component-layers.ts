@@ -1,111 +1,64 @@
 /**
- * SHAPE LAYERS — the viewer's overlay loader (slice 2).
+ * SHAPE LAYERS — the matrx-frontend adapter for the viewer's overlay (slice 2).
  *
- * `content_ir.kind_component_layer` holds "My view" (audience_user_id) and
- * "My organization's view" (audience_organization_id) components for a kind
- * slug. This module reads THE VIEWER's rows and hands them to the shared
- * resolver's overlay tier (`ComponentResolver.setOverlay`), which ranks
- * mine → my organization's (newest) → shared → compiled → generic.
+ * The lifecycle (signed out → no read; user / lane change clears then re-reads;
+ * late reads discarded; bounded outage with one error per outage; coalesced
+ * forced syncs) and THE AUDIENCE PREDICATE live in ONE place —
+ * `@ai-matrx/content-ir-react` (`KindComponentOverlayLoader`,
+ * `readViewerLayerRows`). This file injects only what is this app's:
  *
- * 🚨 THE READ DECLARES ITS OWN SCOPE. RLS is the ceiling, never the view: the
- * table carries the mandatory `platform_admin_read` arm, so on an admin-lane
- * page an unscoped select would return EVERY person's layered rows and the
- * resolver would render a stranger's view to an admin. The predicate is
- * explicit — `audience_user_id = me OR audience_organization_id IN my orgs` —
- * and the resolver re-checks every row against the viewer as well.
+ *  - the viewer id (one lazy `onAuthStateChange`),
+ *  - the viewer's organizations — the scope tree the app already holds
+ *    (`scopesTree.organizationIds`, the person's OWN organizations, never the
+ *    admin lane's) once it is ready, else one `mbr_for_user` read,
+ *  - ONE filtered, read-to-completion chunk of `kind_component_layer`
+ *    (`readAllRows`),
+ *  - a membership watch: when the app's organization list changes, the overlay
+ *    re-reads so a view from an organization the person left stops rendering.
  *
- * Lifecycle: no read before the registry is demanded (THE ZERO-PREFETCH LAW);
- * signed out → no read at all and no overlay; every auth change (sign-in,
- * sign-out, user switch) and admin-lane change clears the overlay before the
- * next viewer's rows load; a `kindComponents` invalidation reloads it.
- *
- * Zero static import edge into Supabase — the registry cluster is a hot chunk
- * (see component-registry.ts); every client reach is an `await import`.
+ * Zero static import edge into Supabase or the Redux store graph — the registry
+ * cluster is a hot chunk (see component-registry.ts); every client reach is an
+ * `await import` (the store singleton is a leaf module).
  */
 
-import type {
-  ComponentOverlayInput,
-  KindComponentLayerRow,
+import {
+  createOverlayViewerWatch,
+  LAYER_COLUMNS,
+  readViewerLayerRows as readViewerLayerRowsVia,
+  type KindComponentLayerRow,
+  type LayerDbRow,
 } from "@ai-matrx/content-ir-react";
-import { isJsonObject } from "@/types/json";
 import { readAllRows } from "@ai-matrx/data/db";
+import { getStoreSingleton } from "@/lib/redux/store-singleton";
 
-/** The resolver surface this loader drives. */
-export interface OverlayTarget {
-  setOverlay(input: ComponentOverlayInput): void;
-  clearOverlay(): void;
+/** The scope-tree slice, structurally — the one place this adapter reads it. */
+interface ScopeTreeShape {
+  scopesTree?: { treeStatus?: string; organizationIds?: string[] };
 }
 
-/** ~100 uuids per GET url — a person's memberships can run to hundreds. */
-const ORGANIZATION_CHUNK = 100;
-
-const LAYER_COLUMNS =
-  "id, kind, platform, role, component_key, source, is_active, config, component_source, props_transform, pinned_kind_version, updated_at, created_by, audience_user_id, audience_organization_id";
-
-interface LayerDbRow {
-  id: string;
-  kind: string;
-  platform: string;
-  role: string;
-  component_key: string;
-  source: string;
-  is_active: boolean;
-  config: unknown;
-  component_source: string | null;
-  props_transform: string | null;
-  pinned_kind_version: number | null;
-  updated_at: string;
-  created_by: string | null;
-  audience_user_id: string | null;
-  audience_organization_id: string | null;
-}
-
-/**
- * THE AUDIENCE PREDICATE — the PostgREST `or` filter for one chunk of the
- * viewer's organizations. Pure, so the guard test can pin it: it always names
- * the viewer, and only ever the viewer's own organizations.
- */
-export function layerAudienceFilter(
-  userId: string,
-  organizationIds: readonly string[],
-): string {
-  const mine = `audience_user_id.eq.${userId}`;
-  if (organizationIds.length === 0) return mine;
-  return `${mine},audience_organization_id.in.(${organizationIds.join(",")})`;
-}
-
-function chunks<T>(items: readonly T[], size: number): T[][] {
-  if (items.length === 0) return [[]];
-  const out: T[][] = [];
-  for (let i = 0; i < items.length; i += size) out.push(items.slice(i, i + size));
-  return out;
-}
-
-function toLayerRow(row: LayerDbRow): KindComponentLayerRow | null {
-  if (row.role !== "output" && row.role !== "input" && row.role !== "loading") {
+/** Sorted ids of the person's own organizations when the app has them loaded; else null. */
+function appMembershipIds(): string[] | null {
+  const state = getStoreSingleton()?.getState() as ScopeTreeShape | undefined;
+  const tree = state?.scopesTree;
+  if (!tree || tree.treeStatus !== "ready" || !Array.isArray(tree.organizationIds)) {
     return null;
   }
-  return {
-    id: row.id,
-    kind: row.kind,
-    platform: row.platform,
-    role: row.role,
-    componentKey: row.component_key,
-    source: row.source,
-    config: isJsonObject(row.config) ? row.config : {},
-    isActive: row.is_active,
-    componentSource: row.component_source,
-    propsTransform: row.props_transform,
-    pinnedKindVersion: row.pinned_kind_version,
-    updatedAt: row.updated_at,
-    createdBy: row.created_by,
-    audienceUserId: row.audience_user_id,
-    audienceOrganizationId: row.audience_organization_id,
-  };
+  return [...tree.organizationIds].sort();
 }
 
-/** The organizations the viewer belongs to — `mbr_for_user` is auth.uid()-scoped. */
+/** The organization set the last read used — the membership watch's baseline. */
+let baselineOrganizationKey: string | null = null;
+
+/**
+ * The organizations the viewer belongs to: the app's own loaded list when
+ * ready (no second membership read), else `mbr_for_user` (auth.uid()-scoped).
+ */
 export async function readViewerOrganizationIds(): Promise<string[]> {
+  const known = appMembershipIds();
+  if (known) {
+    baselineOrganizationKey = known.join(",");
+    return known;
+  }
   const [{ supabase }, { readMembershipRows }] = await Promise.all([
     import("@/utils/supabase/client"),
     import("@ai-matrx/auth/organizations"),
@@ -124,166 +77,77 @@ export async function readViewerOrganizationIds(): Promise<string[]> {
     if (row.status && row.status !== "active") continue;
     ids.add(row.container_id);
   }
-  return [...ids];
+  const out = [...ids];
+  baselineOrganizationKey = [...out].sort().join(",");
+  return out;
 }
 
 /**
- * ONE scoped read of the viewer's layered rows (chunked only by url length):
- * `deleted_at is null AND (audience_user_id = me OR audience_organization_id
- * IN my orgs)`, read to completion.
+ * ONE filtered chunk of `kind_component_layer`, read to completion. The
+ * `orFilter` is the package's audience predicate — this app is also an
+ * admin-lane page, so the explicit predicate (never RLS alone) scopes it.
  */
-export async function readViewerLayerRows(
+export async function readViewerLayerChunk(orFilter: string): Promise<LayerDbRow[]> {
+  const { supabase } = await import("@/utils/supabase/client");
+  return (await readAllRows(
+    ({ from, to }) =>
+      supabase
+        .schema("content_ir")
+        .from("kind_component_layer")
+        .select(LAYER_COLUMNS, { count: "exact" })
+        .is("deleted_at", null)
+        .or(orFilter)
+        .order("id", { ascending: true })
+        .range(from, to),
+    { label: "content_ir.kind_component_layer (viewer overlay)" },
+  )) as LayerDbRow[];
+}
+
+export function readViewerLayerRows(
   userId: string,
   organizationIds: readonly string[],
 ): Promise<KindComponentLayerRow[]> {
-  const { supabase } = await import("@/utils/supabase/client");
-  const byId = new Map<string, KindComponentLayerRow>();
-  for (const chunk of chunks(organizationIds, ORGANIZATION_CHUNK)) {
-    const filter = layerAudienceFilter(userId, chunk);
-    const rows = (await readAllRows(
-      ({ from, to }) =>
-        supabase
-          .schema("content_ir")
-          .from("kind_component_layer")
-          .select(LAYER_COLUMNS, { count: "exact" })
-          .is("deleted_at", null)
-          .or(filter)
-          .order("id", { ascending: true })
-          .range(from, to),
-      { label: "content_ir.kind_component_layer (viewer overlay)" },
-    )) as LayerDbRow[];
-    for (const raw of rows) {
-      const row = toLayerRow(raw);
-      if (row) byId.set(row.id, row);
-    }
-  }
-  return [...byId.values()];
+  return readViewerLayerRowsVia(userId, organizationIds, readViewerLayerChunk);
 }
 
-/**
- * THE VIEWER WATCH — the signed-in user id, kept current by the ONE auth
- * subscription this module opens (lazily, on first registry demand). Signed
- * out (or not yet told) = null, which the loader treats as "no overlay, no
- * read". `onAuthStateChange` fires INITIAL_SESSION on subscribe, so the first
- * answer arrives without a network call.
- */
-let watchedUserId: string | null = null;
-let watchInstalled = false;
+const viewerWatch = createOverlayViewerWatch(async (report) => {
+  const { supabase } = await import("@/utils/supabase/client");
+  // `onAuthStateChange` fires INITIAL_SESSION on subscribe, so the first
+  // answer arrives without a network call.
+  supabase.auth.onAuthStateChange((_event, session) => {
+    report(session?.user?.id ?? null);
+  });
+});
 
+/** The signed-in user id; null = signed out or not yet told (no overlay, no read). */
 export function overlayViewerId(): string | null {
-  return watchedUserId;
+  return viewerWatch.current();
 }
 
 export function watchOverlayViewer(onChange: () => void): void {
-  if (watchInstalled || typeof window === "undefined") return;
-  watchInstalled = true;
-  void import("@/utils/supabase/client")
-    .then(({ supabase }) => {
-      supabase.auth.onAuthStateChange((_event, session) => {
-        const next = session?.user?.id ?? null;
-        if (next === watchedUserId) return;
-        watchedUserId = next;
-        // Never call back into supabase inside the auth callback (supabase-js
-        // holds its auth lock there) — defer to the next tick.
-        setTimeout(onChange, 0);
-      });
-    })
-    .catch(() => {
-      watchInstalled = false;
-    });
+  viewerWatch.start(onChange);
 }
 
-/** Test seam — forget the watched viewer and allow a fresh subscription. */
-export function resetOverlayViewerWatchForTests(userId: string | null = null): void {
-  watchedUserId = userId;
-  watchInstalled = userId !== null;
-}
-
-/** Who is looking, and through which lane — the overlay's identity. */
-export interface OverlayViewer {
-  userId: string | null;
-  laneOpen: boolean;
-}
-
-export interface OverlayLoaderPorts {
-  /** The current viewer (synchronous snapshot). */
-  viewer: () => OverlayViewer;
-  readOrganizationIds: () => Promise<string[]>;
-  readRows: (userId: string, organizationIds: readonly string[]) => Promise<KindComponentLayerRow[]>;
-  reportError: (message: string, error: unknown) => void;
-}
+let membershipWatchInstalled = false;
 
 /**
- * The lifecycle, host-free so it is testable: `sync()` is cheap when the
- * viewer is unchanged; any change of user OR lane clears the overlay first and
- * then loads the new viewer's rows; a load that finishes after the viewer
- * changed again is DISCARDED (never installed for the wrong person).
+ * Re-read when the app's organization list changes after the overlay read
+ * (joined / left an organization). `onChange` is a FORCED sync.
  */
-export class KindComponentOverlayLoader {
-  private loadedKey: string | null = null;
-  private inFlightKey: string | null = null;
-  private generation = 0;
+export function watchViewerMembership(onChange: () => void): void {
+  if (membershipWatchInstalled) return;
+  const store = getStoreSingleton();
+  if (!store) return; // retried on the next demand
+  membershipWatchInstalled = true;
+  store.subscribe(() => {
+    const known = appMembershipIds();
+    if (known === null || baselineOrganizationKey === null) return;
+    if (known.join(",") !== baselineOrganizationKey) onChange();
+  });
+}
 
-  constructor(
-    private readonly target: OverlayTarget,
-    private readonly ports: OverlayLoaderPorts,
-  ) {}
-
-  private static keyOf(viewer: OverlayViewer): string | null {
-    return viewer.userId ? `${viewer.userId}|${viewer.laneOpen ? "lane" : "user"}` : null;
-  }
-
-  /** Re-read when the viewer or lane changed (or `force`); no-op otherwise. */
-  sync(force = false): Promise<void> {
-    const viewer = this.ports.viewer();
-    const key = KindComponentOverlayLoader.keyOf(viewer);
-    if (!force && (key === this.loadedKey || key === this.inFlightKey) && key !== null) {
-      return Promise.resolve();
-    }
-    if (key === null) {
-      // Signed out: no overlay and no read at all.
-      this.generation += 1;
-      this.loadedKey = null;
-      this.inFlightKey = null;
-      this.target.clearOverlay();
-      return Promise.resolve();
-    }
-    if (key !== this.loadedKey) {
-      this.loadedKey = null;
-      this.target.clearOverlay();
-    }
-    const generation = ++this.generation;
-    this.inFlightKey = key;
-    const userId = viewer.userId as string;
-    return (async () => {
-      try {
-        const organizationIds = await this.ports.readOrganizationIds();
-        const rows = await this.ports.readRows(userId, organizationIds);
-        if (generation !== this.generation) return; // the viewer moved on
-        const now = KindComponentOverlayLoader.keyOf(this.ports.viewer());
-        if (now !== key) return;
-        this.target.setOverlay({ viewerId: userId, organizationIds, rows });
-        this.loadedKey = key;
-      } catch (error) {
-        // Loud, never fatal: the shared tiers keep answering, which is what the
-        // viewer saw before layers existed.
-        this.ports.reportError(
-          `[content-ir] the viewer's own / organization shape views could not be read — shared views render instead: ${
-            error instanceof Error ? error.message : String(error)
-          }`,
-          error,
-        );
-      } finally {
-        if (generation === this.generation) this.inFlightKey = null;
-      }
-    })();
-  }
-
-  /** Test seam / sign-out hard reset. */
-  reset(): void {
-    this.generation += 1;
-    this.loadedKey = null;
-    this.inFlightKey = null;
-    this.target.clearOverlay();
-  }
+/** Test seam — forget the watched viewer / membership baseline. */
+export function resetOverlayAdapterForTests(): void {
+  baselineOrganizationKey = null;
+  membershipWatchInstalled = false;
 }
