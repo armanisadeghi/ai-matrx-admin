@@ -312,6 +312,10 @@ An agent made for a mandate is not done until the mandate runs it. Two REQUIRED 
    Mandate Holder needs is fed" and aidream `scripts/check_mandate_default_maps.py --only <key>`
    prints `ok`. An empty map still delivers by name at run time, but nobody can see or review
    it — 2026-10-06, `spaces.writing_assist` shipped that way and read "0 of 7 fed".
+   When a variable needs several offered values (one `evidence` from profiles and search
+   results), the binding joins them (a list of sources; `heading`, `max_chars`, `max_items`,
+   `compact`). Never ask the provision to build your variable: a provision that mirrors its
+   agent is a wrapper ([Provision first](/policies/agents-never-author-agents.md#the-provision-is-the-state-the-binding-shapes-the-agent-arman-2026-10-14)).
 2. **Two runs through the mandate door**, never only `agent_run` on the agent. Mint the
    token with aidream `scripts/shared/matrx_session.py` `admin_access_token()` (reads
    `AI_ADMIN_USERNAME`/`AI_ADMIN_PASSWORD` from aidream `.env`; never print either). Body

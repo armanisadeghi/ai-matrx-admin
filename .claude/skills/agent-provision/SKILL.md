@@ -232,11 +232,13 @@ what is convenient; what exists. Go find it. This is the step people skip.
 **Step 2 — necessity, per mandate.** Which of those does THIS job need? Cut decoration from the
 mandate's consumption — but keep it in the provision if another job could want it.
 
-**Step 3 — condensation.** Whatever a job consumes has to fit and be *readable by a model*,
-which is not the same as complete. Design the smallest representation that preserves the
-decision-relevant signal (for a site: route + short label + role, not page content). Ask:
-*could a smart human make this call from this text alone?* If no, condense differently — do not
-just add more.
+**Step 3 — condensation, as an ADDED form.** Whatever a job consumes has to fit and be *readable
+by a model*, which is not the same as complete. Design the smallest representation that preserves
+the decision-relevant signal (for a site: route + short label + role, not page content), and offer it
+as its own value BESIDE the raw one — never instead of it. Ask: *could a smart human make this call
+from this text alone?* If no, condense differently — do not just add more. Joining several values into
+one input, labeling and capping happen on the binding, never in the provision
+([Provision first](/policies/agents-never-author-agents.md#the-provision-is-the-state-the-binding-shapes-the-agent-arman-2026-10-14)).
 
 **Step 3b — use the structure the data ALREADY has.** Before inventing a condensation or
 clustering scheme, ask whether the collection already carries structure that bounds the problem:

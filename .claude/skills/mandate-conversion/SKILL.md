@@ -118,8 +118,9 @@ deliberately**, with the zero-consumer evidence from step 2.
 
 A half-converted contract is worse than an unconverted one. In the same change:
 the **mandate** (`output_kind`, `required_output_keys`, `accepts_user_input`), the
-**provision** (offered values reconciled to what the call site really sends — see
-[agent-provision](/skills/agent-provision/SKILL.md)), the **agent** (its prompt must state
+**provision** (offered values reconciled to everything the call site really holds, never shrunk
+to the agent's variables — see [agent-provision](/skills/agent-provision/SKILL.md) and
+[Provision first](/policies/agents-never-author-agents.md#the-provision-is-the-state-the-binding-shapes-the-agent-arman-2026-10-14)), the **agent** (its prompt must state
 the exact output shape it is now bound to; a prompt that describes a different shape than
 the schema is the drift this campaign keeps finding), the **binding** (the default consumption
 map keyed to the agent's variables, `when_absent` on each optional value —
