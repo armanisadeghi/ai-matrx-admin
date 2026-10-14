@@ -9,6 +9,19 @@ import { loader } from "@monaco-editor/react";
 import { registerJsonMonacoThemes } from "./syntax-themes";
 import { getAllTypeDefinitions } from "./type-definitions";
 
+/**
+ * The in-browser TypeScript service only knows the hand-written stub libraries
+ * in ./type-definitions, not the real packages the code is compiled against
+ * (`motion/react`, every lucide icon, …). Judging imports against that stub
+ * marked code that compiles and renders as full of red errors (SHAPES-BUGS
+ * 2.12). Module/member resolution and implicit-any hints are therefore not the
+ * editor's to report; syntax and the remaining semantic checks still are.
+ *   2305 no exported member · 2307 cannot find module · 2724 did you mean
+ *   2792 cannot find module (moduleResolution) · 7016 no declaration file ·
+ *   7044 implicit-any parameter hint
+ */
+export const UNRESOLVABLE_IN_BROWSER_CODES = [2305, 2307, 2724, 2792, 7016, 7044];
+
 // Track if configuration has been initiated
 let configurationPromise: Promise<void> | null = null;
 
@@ -77,12 +90,14 @@ export function configureMonaco(): Promise<void> {
       noSemanticValidation: false,
       noSyntaxValidation: false,
       noSuggestionDiagnostics: false,
+      diagnosticCodesToIgnore: UNRESOLVABLE_IN_BROWSER_CODES,
     });
 
     monaco.languages.typescript.typescriptDefaults.setDiagnosticsOptions({
       noSemanticValidation: false,
       noSyntaxValidation: false,
       noSuggestionDiagnostics: false,
+      diagnosticCodesToIgnore: UNRESOLVABLE_IN_BROWSER_CODES,
     });
 
     // Enable eager model sync for better performance
