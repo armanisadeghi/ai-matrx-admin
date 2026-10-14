@@ -1,6 +1,6 @@
 {
   "name": "app-matrx",
-  "version": "0.4.3220",
+  "version": "0.4.3221",
   "private": true,
   "scripts": {
     "check:session-handover": "node scripts/check-session-handover.mjs",
@@ -592,6 +592,7 @@
     "check:back-link-kinds": "tsx scripts/check-back-link-kinds.ts",
     "check:back-link-kinds:strict": "tsx scripts/check-back-link-kinds.ts --strict",
     "check:soft-delete-cascade": "tsx scripts/check-soft-delete-cascade.ts",
+    "check:brand-archive-cascade": "tsx scripts/check-brand-archive-cascade.ts",
     "check:annotation-trash": "tsx scripts/check-annotation-trash.ts",
     "check:annotation-trash:strict": "tsx scripts/check-annotation-trash.ts --strict",
     "check:annotation-trash:self-test": "tsx scripts/check-annotation-trash.ts --self-test",
