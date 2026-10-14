@@ -126,6 +126,7 @@ export function AnalysisPanel({
           render={(row, update) => (
             <div className="grid grid-cols-[7.5rem_1fr_6rem] gap-2">
               <SelectField
+                ariaLabel="Identifier kind"
                 value={row.kind}
                 options={ID_KINDS}
                 onChange={(v) => update({ ...row, kind: v as never })}
@@ -136,6 +137,7 @@ export function AnalysisPanel({
                 onCommit={(v) => update({ ...row, value: v })}
               />
               <SelectField
+                ariaLabel="Confidence"
                 value={row.confidence}
                 options={CONFIDENCES}
                 onChange={(v) => update({ ...row, confidence: v as never })}

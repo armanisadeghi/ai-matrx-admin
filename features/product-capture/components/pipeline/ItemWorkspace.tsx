@@ -148,13 +148,14 @@ export function ItemWorkspace({
               </Button>
             )}
             <SelectField
+              ariaLabel="Move to stage"
               value={item.stage}
               options={PIPELINE_STAGES.map((s) => ({
                 value: s,
                 label: `Move to ${STAGE_LABELS[s]}`,
               }))}
               onChange={(v) => void move(v as PipelineStage)}
-              className="h-8 w-44"
+              className="w-44"
             />
           </div>
         }

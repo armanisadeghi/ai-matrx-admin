@@ -8,10 +8,9 @@
  */
 
 import React from "react";
-import { CheckCircle2, FileOutput } from "lucide-react";
+import { CheckCircle2, FileOutput, TriangleAlert } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 
 import {
   GRADING_CRITERIA,
@@ -101,6 +100,12 @@ export function GradingPanel({
           >
             <span className="truncate text-sm">{c.label}</span>
             <SelectField
+              ariaLabel={`${c.label} grade`}
+              icon={
+                c.grade === "na" ? (
+                  <TriangleAlert className="text-warning" />
+                ) : undefined
+              }
               value={c.grade}
               options={GRADE_OPTIONS}
               onChange={(v) =>
@@ -110,7 +115,6 @@ export function GradingPanel({
                   ),
                 })
               }
-              className={cn(c.grade === "na" && "border-warning text-warning")}
             />
             <CommitField
               value={c.note ?? ""}

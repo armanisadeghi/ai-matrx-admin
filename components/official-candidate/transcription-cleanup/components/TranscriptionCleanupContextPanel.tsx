@@ -24,7 +24,7 @@ import { selectOrganizationId } from "@/lib/redux/slices/appContextSlice";
 import type { Note } from "@/features/notes/types";
 import ActionFeedbackButton from "@/components/official/ActionFeedbackButton";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
-import { Select } from "@ai-matrx/design-system/controls";
+import { Button, Select } from "@ai-matrx/design-system/controls";
 export const CONTEXT_TAG = "Transcription Contexts";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -345,6 +345,7 @@ export function TranscriptionCleanupContextPanel({
           {/* ── Footer: notes picker ────────────────────────────────────── */}
           <div className="px-2 pb-1.5">
             {openDropdownId === block.id ? (
+              <div className="flex items-center gap-1">
               <Select
                 value=""
                 onValueChange={(v) => {
@@ -353,7 +354,7 @@ export function TranscriptionCleanupContextPanel({
                   }
                 }}
                 aria-label="Choose a note"
-                className="w-full"
+                className="min-w-0 flex-1"
                 options={[
                   {
                     value: "",
@@ -377,6 +378,13 @@ export function TranscriptionCleanupContextPanel({
                   },
                 ]}
               />
+              <Button
+                variant="quiet"
+                icon={<X />}
+                aria-label="Close note picker"
+                onClick={() => setOpenDropdownId(null)}
+              />
+              </div>
             ) : (
               <button
                 type="button"

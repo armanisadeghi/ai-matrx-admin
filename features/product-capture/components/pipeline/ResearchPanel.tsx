@@ -8,10 +8,9 @@
  */
 
 import React from "react";
-import { CircleHelp, ExternalLink } from "lucide-react";
+import { CircleHelp, ExternalLink, TriangleAlert } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 
 import type {
   PriceFactor,
@@ -55,6 +54,7 @@ export function ResearchPanel({
         <div className="flex items-center justify-between">
           <p className="text-xs font-medium text-muted-foreground">Identity</p>
           <SelectField
+            ariaLabel="Identity"
             value={identity.confirmed ? "confirmed" : "candidates"}
             options={[
               { value: "confirmed", label: "Confirmed" },
@@ -65,7 +65,7 @@ export function ResearchPanel({
                 identity: { ...identity, confirmed: v === "confirmed" },
               })
             }
-            className="h-8 w-40"
+            className="w-40"
           />
         </div>
         {identity.confirmed ? (
@@ -190,15 +190,19 @@ export function ResearchPanel({
               />
               <SelectField
                 value={String(row.weight)}
+                ariaLabel="Weight"
+                icon={
+                  row.weight >= 4 ? (
+                    <TriangleAlert className="text-warning" />
+                  ) : undefined
+                }
                 options={WEIGHTS}
                 onChange={(v) =>
                   update({ ...row, weight: Number(v) as PriceFactor["weight"] })
                 }
-                className={cn(
-                  row.weight >= 4 && "border-warning text-warning",
-                )}
               />
               <SelectField
+                ariaLabel="Factor kind"
                 value={row.kind}
                 options={[
                   { value: "generic", label: "Generic" },
@@ -283,6 +287,7 @@ export function ResearchPanel({
                   onCommit={(v) => update({ ...row, name: v })}
                 />
                 <SelectField
+                  ariaLabel="Relevance"
                   value={row.relevance}
                   options={[
                     { value: "primary", label: "Primary" },
@@ -346,6 +351,7 @@ export function ResearchPanel({
                   onCommit={(v) => update({ ...row, question: v })}
                 />
                 <SelectField
+                  ariaLabel="Priority"
                   value={row.blocking ? "blocking" : "nice"}
                   options={[
                     { value: "blocking", label: "Blocking" },

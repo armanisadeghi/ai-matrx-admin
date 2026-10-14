@@ -32,7 +32,7 @@ import {
   Volume2,
   VolumeX,
 } from "lucide-react";
-import { Select } from "@ai-matrx/design-system/controls";
+import { Button, Select } from "@ai-matrx/design-system/controls";
 import { cn } from "@/lib/utils";
 import { Slider } from "@/components/ui/slider";
 import { useMediaLoadRecovery } from "@ai-matrx/media/core";
@@ -447,22 +447,14 @@ function AudioPreviewSession({
           />
         </label>
 
-        <button
-          type="button"
+        <Button
+          variant="quiet"
+          icon={<Repeat />}
+          pressed={loop}
           onClick={() => setLoop((l) => !l)}
-          aria-pressed={loop}
-          aria-label="Loop"
-          title={loop ? "Loop on" : "Loop off"}
-          className={cn(
-            "flex items-center gap-1 rounded-md px-2 py-0.5",
-            loop
-              ? "bg-primary/10 text-primary-ink"
-              : "hover:bg-accent hover:text-foreground",
-          )}
         >
-          <Repeat className="h-3.5 w-3.5" />
           Loop
-        </button>
+        </Button>
       </div>
 
       {displayError ? (

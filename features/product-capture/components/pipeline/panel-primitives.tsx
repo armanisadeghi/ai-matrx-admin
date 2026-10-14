@@ -147,12 +147,17 @@ export function CommitTextArea({
 
 export function SelectField({
   label,
+  ariaLabel,
+  icon,
   value,
   options,
   onChange,
   className,
 }: {
   label?: string;
+  /** Required when there is no visible `label`. */
+  ariaLabel?: string;
+  icon?: React.ReactNode;
   value: string;
   options: Array<{ value: string; label: string }>;
   onChange: (value: string) => void;
@@ -160,7 +165,8 @@ export function SelectField({
 }) {
   const select = (
     <Select
-      aria-label={label ?? "Choose an option"}
+      aria-label={label ?? ariaLabel ?? ""}
+      icon={icon}
       className={cn("w-full", className)}
       value={value}
       onValueChange={onChange}
