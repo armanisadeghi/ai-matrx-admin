@@ -27,6 +27,7 @@ import { Shared } from "./stage/Shared";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 
 interface Choice {
+import { SourcesBadge, useLogoGroups, type LogoGroup } from "./logoGroups";
   decision: Decision;
   label: string;
 }
@@ -98,6 +99,20 @@ export function SmartAddSlots({
   /** False until the first identify round starts: empty slots stay quiet. */
   started: boolean;
   locked: boolean;
+  // Near-identical images (one mark from the site and every profile) show as ONE tile; an answer reaches every source.
+  const logoGroups = useLogoGroups(of("logo"));
+  const isKept = (k: string) => decisions[k] === "yes" || decisions[k] === "preferred";
+  const keepGroup = (g: LogoGroup) => {
+    for (const m of g.members) if (!isKept(m.key)) onDecide(m.key, "yes");
+  };
+  const clearGroup = (g: LogoGroup) => {
+    for (const m of g.members) if (decisions[m.key]) onDecide(m.key, decisions[m.key]); // the same answer clears it
+  };
+  const starGroup = (g: LogoGroup) => {
+    if (decisions[g.lead.key] === "preferred") return onDecide(g.lead.key, "preferred"); // un-star
+    onDecide(g.lead.key, "preferred");
+    for (const m of g.members.slice(1)) if (!isKept(m.key)) onDecide(m.key, "yes");
+  };
   /** A personal brand: a headshot instead of a logo, and expertise. */
   person: boolean;
   onDecide: (key: string, decision: Decision) => void;
@@ -153,18 +168,19 @@ export function SmartAddSlots({
 
       <Slot title={person ? "Headshot & photos" : "Logo & images"} empty={of("logo").length ? null : empty} hint="Pick every image to keep; star the main one">
         <div className="flex flex-wrap gap-3 px-4 pb-3 pt-1">
-          {of("logo").map((i) => (
-            <Shared key={i.key} id={i.key} as="div" className="empty:hidden">
+          {logoGroups.map((g) => (
+            <Shared key={g.id} id={g.lead.key} as="div" className="empty:hidden">
             <LogoChoice
-              key={i.key}
-              item={i}
-              decision={decisions[i.key] ?? null}
+              key={g.lead.key}
+              item={g.lead}
+              decision={decisions[g.lead.key] ?? null}
               locked={locked}
               round={person}
-              onToggle={() => onDecide(i.key, decisions[i.key] === "yes" || decisions[i.key] === "preferred" ? "yes" : "yes")}
-              onClear={() => onDecide(i.key, decisions[i.key] ?? "yes")}
-              onPrimary={() => onDecide(i.key, "preferred")}
-              onBroken={() => onBroken?.(i.key)}
+              onToggle={() => keepGroup(g)}
+              onClear={() => clearGroup(g)}
+              onPrimary={() => starGroup(g)}
+              onBroken={() => onBroken?.(g.lead.key)}
+              badge={<SourcesBadge group={g} labelOf={(m) => (m.platform ? platformLabel(m.platform) : whereOf(m))} />}
             />
             </Shared>
           ))}
@@ -401,6 +417,7 @@ function ReadMore({ text }: { text: string }) {
           {open ? "Show less" : "Show more"}
         </Button>
       ) : null}
+  badge,
     </span>
   );
 }
@@ -410,6 +427,8 @@ const CHECKER = "bg-[repeating-conic-gradient(#d4d4d8_0%_25%,#f4f4f5_0%_50%)] bg
 
 function LogoChoice({
   item,
+  /** A grouped tile's "3 sources" badge (placed over the tile's corner: no layout shift). */
+  badge?: React.ReactNode;
   decision,
   locked,
   round,
@@ -466,6 +485,7 @@ function LogoChoice({
   // A link the site never served is not offered at all (no dead tile to keep or skip).
   if (broken) return null;
   return (
+        {badge}
     <figure className={`flex flex-col items-center gap-1 animate-in fade-in duration-300 ${wide ? "w-40 sm:w-48" : "w-[5.25rem] sm:w-24"}`}>
       <span className="relative w-full">
         {/* ui-exception: an image tile you select; the 28px Button cannot hold a 96px image */}
