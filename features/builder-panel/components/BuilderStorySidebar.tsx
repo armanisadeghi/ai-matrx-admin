@@ -172,7 +172,7 @@ export function BuilderStorySidebar({
                 </span>
                 {row.reason ? (
                   <span className="truncate text-[11px] italic text-muted-foreground">
-                    {row.reason}
+                    <BuilderHighlight text={row.reason} query={query} />
                   </span>
                 ) : row.detail ? (
                   <span

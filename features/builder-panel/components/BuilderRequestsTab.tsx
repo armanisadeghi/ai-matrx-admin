@@ -88,36 +88,50 @@ export function BuilderRequestsTab({
   const searchRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLOListElement>(null);
   const sided = rows.filter((r) => filter === "all" || r.side === filter);
-  const found = findRequests(sided, find, stepLabels);
-  const selected = found.find((f) => f.row.id === selectedId)?.row ?? found[0]?.row ?? null;
-  const active = isFindActive(find);
 
   const sources = tally(sided, sourceOf);
   const kinds = tally(sided, (r) => r.kind);
   const steps = tally(sided, (r) => r.nodeId);
   const set = (patch: Partial<RequestFind>) => onFind({ ...find, ...patch });
+  // A narrowing whose choice is no longer offered (only one value left) must not keep filtering.
+  const live: RequestFind = {
+    ...find,
+    source: sources.some((t) => t.value === find.source) && sources.length > 1 ? find.source : "",
+    kind: kinds.some((t) => t.value === find.kind) && kinds.length > 1 ? find.kind : "",
+    step: steps.some((t) => t.value === find.step) && steps.length > 1 ? find.step : "",
+  };
+  const found = findRequests(sided, live, stepLabels);
+  const selected = found.find((f) => f.row.id === selectedId)?.row ?? found[0]?.row ?? null;
+  const active = isFindActive(live);
 
   const move = (by: number) => {
     if (!found.length) return;
     const at = found.findIndex((f) => f.row.id === selected?.id);
     const next = found[Math.min(found.length - 1, Math.max(0, at + by))].row;
     onSelect(next.id);
-    listRef.current?.querySelector<HTMLElement>(`[data-row-id="${CSS.escape(next.id)}"]`)?.scrollIntoView({ block: "nearest" });
+    const el = listRef.current?.querySelector<HTMLElement>(`[data-row-id="${CSS.escape(next.id)}"]`);
+    el?.scrollIntoView({ block: "nearest" });
+    if (listRef.current?.contains(document.activeElement)) el?.focus();
   };
 
+  // Only the search box and the list's own rows steer the list; menus, the segmented control and
+  // the JSON viewers keep their arrow keys (React events bubble out of portals too).
   const onKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
-    const typing = e.target instanceof HTMLElement && e.target.closest("input, textarea, [contenteditable='true'], .cm-editor");
-    if (e.key === "/" && !typing) {
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    const target = e.target instanceof HTMLElement ? e.target : null;
+    const inSearch = target === searchRef.current;
+    const inList = Boolean(target && listRef.current?.contains(target));
+    if (e.key === "/" && inList) {
       e.preventDefault();
       searchRef.current?.focus();
       searchRef.current?.select();
       return;
     }
-    if (typing && e.target !== searchRef.current) return;
+    if (!inSearch && !inList) return;
     if (e.key === "ArrowDown" || e.key === "ArrowUp") {
       e.preventDefault();
       move(e.key === "ArrowDown" ? 1 : -1);
-    } else if (e.key === "Escape" && e.target === searchRef.current && find.query) {
+    } else if (e.key === "Escape" && inSearch && find.query) {
       e.preventDefault();
       set({ query: "" });
     }
@@ -148,7 +162,7 @@ export function BuilderRequestsTab({
           <Select
             aria-label="Source"
             className="w-32 shrink-0"
-            value={find.source || ANY}
+            value={live.source || ANY}
             onValueChange={(v) => set({ source: v === ANY ? "" : v })}
             options={options("All sources", sources)}
           />
@@ -164,7 +178,7 @@ export function BuilderRequestsTab({
           <Select
             aria-label="Step"
             className="w-40 shrink-0"
-            value={find.step || ANY}
+            value={live.step || ANY}
             onValueChange={(v) => set({ step: v === ANY ? "" : v })}
             options={options("All steps", steps, (id) => stepLabels[id] ?? id)}
           />
@@ -173,7 +187,7 @@ export function BuilderRequestsTab({
           <Select
             aria-label="Kind"
             className="w-32 shrink-0"
-            value={find.kind || ANY}
+            value={live.kind || ANY}
             onValueChange={(v) => set({ kind: v === ANY ? "" : v })}
             options={options("All kinds", kinds, (k) => k.replace(/_/g, " "))}
           />

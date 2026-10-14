@@ -84,7 +84,8 @@ export const SLOW_MS = 2_000;
 export function requestStatusOf(row: RequestRow): Exclude<RequestStatusFilter, "any" | "slow"> {
   if (row.error) return "failed";
   if (typeof row.status === "number") return row.status < 400 ? "ok" : "failed";
-  if (row.status === null) return "pending";
+  // A server call whose provider gave no status still finished when it carries a duration.
+  if (row.status === null) return row.ms === null ? "pending" : "ok";
   return /^(ok|done|success|2\d\d|3\d\d)$/i.test(String(row.status)) ? "ok" : "failed";
 }
 
@@ -165,7 +166,8 @@ interface StoryLike {
   status: string | null;
 }
 
-/** Story rows that match, kept in place: a matching call keeps its step, a run keeps its header. */
+/** Story rows that match, kept in place: a matching call keeps its step, a matching step keeps
+ *  its calls, a run keeps its header, and a run whose own title matches keeps everything. */
 export function findStory<T extends StoryLike>(rows: readonly T[], query: string): T[] {
   const q = parseQuery(query);
   if (isEmptyQuery(q)) return [...rows];
@@ -176,10 +178,20 @@ export function findStory<T extends StoryLike>(rows: readonly T[], query: string
     else sections[sections.length - 1].rows.push(r);
   }
   const out: T[] = [];
+  const stepOf = (r: T) => (r.number?.includes(".") ? r.number.split(".")[0] : null);
   for (const { header, rows: list } of sections) {
+    if (header && matchesText(q, [header.title, header.detail ?? ""])) {
+      out.push(header, ...list);
+      continue;
+    }
     const hits = new Set(list.filter((r) => matchesText(q, [r.number ?? "", r.title, r.detail ?? "", r.reason ?? "", r.status ?? ""])));
-    const parents = new Set([...hits].filter((r) => r.number?.includes(".")).map((r) => (r.number as string).split(".")[0]));
-    const kept = list.filter((r) => hits.has(r) || (r.number !== null && parents.has(r.number)));
+    const parents = new Set([...hits].map(stepOf).filter((n): n is string => n !== null));
+    const steps = new Set([...hits].filter((r) => r.number !== null && !r.number.includes(".")).map((r) => r.number as string));
+    const kept = list.filter((r) => {
+      if (hits.has(r)) return true;
+      const parent = stepOf(r);
+      return parent !== null ? steps.has(parent) : r.number !== null && parents.has(r.number);
+    });
     if (kept.length) out.push(...(header ? [header] : []), ...kept);
   }
   return out;

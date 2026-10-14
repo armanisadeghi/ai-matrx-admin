@@ -3,7 +3,8 @@
  * it matched, the narrowing filters, sort, and story/value search that keeps structure.
  */
 import { EMPTY_REQUEST_FIND, findActivity, findEntries, findRequests, findStory, highlightParts, parseQuery, requestMatch } from "../find";
-import type { ActivityRow, RequestRow } from "../requests";
+import { pageRequestRows, type ActivityRow, type RequestRow } from "../requests";
+import type { LoggedRequest } from "../requestLog";
 
 function row(over: Partial<RequestRow>): RequestRow {
   return {
@@ -63,6 +64,8 @@ describe("findRequests", () => {
   it("narrows by status", () => {
     expect(ids({ status: "failed" })).toEqual(["c"]);
     expect(ids({ status: "pending" })).toEqual(["d"]);
+    // A finished server call with no provider status is not pending.
+    expect(findRequests([row({ id: "e", status: null, ms: 900 })], { ...EMPTY_REQUEST_FIND, status: "ok" }).map((x) => x.row.id)).toEqual(["e"]);
     expect(ids({ status: "slow" })).toEqual(["b"]);
     expect(ids({ status: "ok" })).toEqual(["a", "b"]);
   });
@@ -106,6 +109,10 @@ describe("findStory", () => {
   it("keeps a matching call's step and its run header", () => {
     expect(findStory(story, "fullspecstaff").map((r) => r.title)).toEqual(["Identify round 1", "Search the web", "Google"]);
   });
+  it("keeps a whole run when its own title matches, and a matching step keeps its calls", () => {
+    expect(findStory(story, "round 2").map((r) => r.title)).toEqual(["Identify round 2", "Search the web", "Bing"]);
+    expect(findStory(story, "fetch the accounts").map((r) => r.title)).toEqual(["Identify round 1", "Fetch the accounts", "Instagram lookup"]);
+  });
   it("drops runs with no match", () => {
     expect(findStory(story, "instagram").map((r) => r.title)).toEqual(["Identify round 1", "Fetch the accounts", "Instagram lookup"]);
     expect(findStory(story, "bing").map((r) => r.title)).toEqual(["Identify round 2", "Search the web", "Bing"]);
@@ -119,5 +126,14 @@ describe("highlightParts", () => {
       { text: " web: ", hit: false },
       { text: "Google", hit: true },
     ]);
+  });
+});
+
+describe("pageRequestRows", () => {
+  it("returns the same row object for the same log entry, so body text is stringified once", () => {
+    const entry = { seq: 1, route: "/x", method: "GET", url: "https://a.test/p", startedAt: 1, endedAt: 2, status: 200 } as unknown as LoggedRequest;
+    const first = pageRequestRows([entry], "/x")[0];
+    expect(pageRequestRows([entry], "/x")[0]).toBe(first);
+    expect(pageRequestRows([{ ...entry, status: 500 } as LoggedRequest], "/x")[0]).not.toBe(first);
   });
 });

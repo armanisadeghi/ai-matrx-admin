@@ -37,30 +37,40 @@ function record(value: Json | unknown): Record<string, unknown> {
   return value && typeof value === "object" && !Array.isArray(value) ? (value as Record<string, unknown>) : {};
 }
 
-export function pageRequestRows(log: LoggedRequest[], route: string | null): RequestRow[] {
-  return log
-    .filter((r) => !route || r.route === route)
-    .map((r) => ({
-      id: `page:${r.seq}`,
-      side: "page" as const,
-      at: r.startedAt,
-      ms: r.endedAt ? r.endedAt - r.startedAt : null,
-      kind: "http",
-      provider: hostOf(r.url),
-      title: `${r.method} ${pathOf(r.url)}`,
+// Log entries are immutable (a patch makes a new entry), so a row built once per entry keeps the
+// same request/response objects across renders — the search's body-text cache depends on that.
+const pageRowCache = new WeakMap<LoggedRequest, RequestRow>();
+
+function pageRow(r: LoggedRequest): RequestRow {
+  const cached = pageRowCache.get(r);
+  if (cached) return cached;
+  const row: RequestRow = {
+    id: `page:${r.seq}`,
+    side: "page",
+    at: r.startedAt,
+    ms: r.endedAt ? r.endedAt - r.startedAt : null,
+    kind: "http",
+    provider: hostOf(r.url),
+    title: `${r.method} ${pathOf(r.url)}`,
+    status: r.status,
+    error: r.error,
+    runId: null,
+    nodeId: null,
+    request: { method: r.method, url: r.url, headers: r.requestHeaders, body: r.requestBody },
+    response: {
       status: r.status,
-      error: r.error,
-      runId: null,
-      nodeId: null,
-      request: { method: r.method, url: r.url, headers: r.requestHeaders, body: r.requestBody },
-      response: {
-        status: r.status,
-        statusText: r.statusText,
-        headers: r.responseHeaders,
-        body: r.responseBody,
-        ...(r.streaming ? { streaming: true } : {}),
-      },
-    }));
+      statusText: r.statusText,
+      headers: r.responseHeaders,
+      body: r.responseBody,
+      ...(r.streaming ? { streaming: true } : {}),
+    },
+  };
+  pageRowCache.set(r, row);
+  return row;
+}
+
+export function pageRequestRows(log: LoggedRequest[], route: string | null): RequestRow[] {
+  return log.filter((r) => !route || r.route === route).map(pageRow);
 }
 
 export function serverRequestRows(outcomes: NodeOutcomeRow[]): RequestRow[] {
