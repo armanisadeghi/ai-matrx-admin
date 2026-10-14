@@ -252,8 +252,28 @@ async function addExclusion(ctx: PersistContext, item: FocusItem): Promise<{ id:
     })
     .select("id")
     .maybeSingle();
-  // Already on the list (unique per brand + match): nothing new to undo.
-  if (error && error.code === "23505") return { id: null, undo: async () => undefined };
+  if (error && error.code === "23505") {
+    // Already on the list (unique per brand + match). An earlier Undo soft-deleted it: bring it back.
+    const revived = await w
+      .from("brand_exclusion")
+      .update({ deleted_at: null })
+      .eq("brand_id", brand.id)
+      .eq("match_kind", match.kind)
+      .eq("match_value", match.value)
+      .not("deleted_at", "is", null)
+      .select("id")
+      .maybeSingle();
+    if (revived.error) throw new Error(revived.error.message);
+    const again = revived.data?.id ?? null;
+    return {
+      id: again,
+      undo: async () => {
+        if (!again) return;
+        const { error: e } = await (await db()).from("brand_exclusion").update({ deleted_at: new Date().toISOString() }).eq("id", again);
+        if (e) throw new Error(e.message);
+      },
+    };
+  }
   if (error) throw new Error(error.message);
   const id = data?.id ?? null;
   return {
