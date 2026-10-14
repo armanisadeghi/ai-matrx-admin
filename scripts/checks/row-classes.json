@@ -5,8 +5,8 @@
     "repo-only": "reads the repository and nothing else"
   },
   "counts": {
-    "repo-only": 179,
-    "live-db": 68
+    "repo-only": 183,
+    "live-db": 71
   },
   "rows": {
     "every-ai-matrx-package-is-declared-and-installed-at-npm-late": {
@@ -381,10 +381,6 @@
         {
           "file": "utils/supabase/adminClient.ts",
           "signal": "service-role / secret key"
-        },
-        {
-          "file": "utils/supabase/adminClient.ts",
-          "signal": "supabase-js client"
         }
       ]
     },
@@ -649,6 +645,30 @@
       "cmd": "pnpm exec tsx scripts/check-doc-claims.ts --strict",
       "reason": "no database access in 2 file(s) reached",
       "evidence": []
+    },
+    "linked-records-kinds-are-linkable": {
+      "label": "Linked-records kinds are linkable",
+      "class": "live-db",
+      "cmd": "pnpm exec tsx scripts/check-back-link-kinds.ts --strict",
+      "reason": "reaches code that can open the live database",
+      "evidence": [
+        {
+          "file": "scripts/check-back-link-kinds.ts",
+          "signal": "direct-db loader (loadDbEnv)"
+        },
+        {
+          "file": "scripts/lib/direct-db-env.ts",
+          "signal": "live database host"
+        },
+        {
+          "file": "scripts/lib/direct-db-env.ts",
+          "signal": "nightly dev clone connection"
+        },
+        {
+          "file": "scripts/lib/direct-db-env.ts",
+          "signal": "SUPABASE_MATRIX_* direct Postgres credentials"
+        }
+      ]
     },
     "route-metadata-and-favicons": {
       "label": "Route metadata and favicons",
@@ -1552,7 +1572,7 @@
       "label": "Surface manifest drift",
       "class": "repo-only",
       "cmd": "pnpm exec tsx scripts/check-surface-drift.ts",
-      "reason": "no database access in 34 file(s) reached",
+      "reason": "no database access in 35 file(s) reached",
       "evidence": []
     },
     "surface-mirror-matches-the-code-values-roles-write-targets-t": {
@@ -2010,7 +2030,7 @@
       "label": "Content IR / kinds test suite",
       "class": "repo-only",
       "cmd": "pnpm test:content-ir",
-      "reason": "no database access in 229 file(s) reached",
+      "reason": "no database access in 236 file(s) reached",
       "evidence": []
     },
     "whole-jest-suite-every-suite-not-ci-s-four-scopes": {
@@ -2209,6 +2229,20 @@
       "reason": "no database access in 2 file(s) reached",
       "evidence": []
     },
+    "strict-assertdata-over-a-maybesingle-read-absent-row-shown-a": {
+      "label": "Strict assertData over a .maybeSingle() read (absent row shown as an error)",
+      "class": "repo-only",
+      "cmd": "pnpm check:maybe-single-assert",
+      "reason": "no database access in 1 file(s) reached",
+      "evidence": []
+    },
+    "maybe-single-assert-guard-self-test": {
+      "label": "Maybe-single assert guard self-test",
+      "class": "repo-only",
+      "cmd": "pnpm check:maybe-single-assert:self-test",
+      "reason": "no database access in 1 file(s) reached",
+      "evidence": []
+    },
     "panel-slide-off-the-panel-motion-literal-duration-or-curve": {
       "label": "Panel slide off THE panel motion (literal duration or curve)",
       "class": "repo-only",
@@ -2278,6 +2312,46 @@
       "cmd": "pnpm check:alchemy-doors:self-test",
       "reason": "no database access in 2 file(s) reached",
       "evidence": []
+    },
+    "vendor-name-in-customer-facing-ui-text": {
+      "label": "Vendor name in customer-facing UI text",
+      "class": "repo-only",
+      "cmd": "pnpm check:no-vendor-names",
+      "reason": "no database access in 1 file(s) reached",
+      "evidence": []
+    },
+    "no-vendor-names-guard-self-test": {
+      "label": "No-vendor-names guard self-test",
+      "class": "repo-only",
+      "cmd": "pnpm check:no-vendor-names:self-test",
+      "reason": "no database access in 1 file(s) reached",
+      "evidence": []
+    },
+    "raw-outbound-link-outside-the-referral-door-ai-matrx-kit-out": {
+      "label": "Raw outbound link outside the referral door (@ai-matrx/kit/outbound)",
+      "class": "live-db",
+      "cmd": "pnpm check:outbound-referral",
+      "reason": "UNCERTAIN — the resolver could not follow everything; classified live-db (safe side)",
+      "evidence": [],
+      "uncertain": [
+        {
+          "file": "(command)",
+          "signal": "unknown binary \"matrx-check-outbound-referral\" — not followed"
+        }
+      ]
+    },
+    "outbound-referral-guard-self-test": {
+      "label": "Outbound-referral guard self-test",
+      "class": "live-db",
+      "cmd": "pnpm check:outbound-referral:self-test",
+      "reason": "UNCERTAIN — the resolver could not follow everything; classified live-db (safe side)",
+      "evidence": [],
+      "uncertain": [
+        {
+          "file": "(command)",
+          "signal": "unknown binary \"matrx-check-outbound-referral\" — not followed"
+        }
+      ]
     },
     "univer-add-ons-load-save-back-and-a-signed-in-person-can-edi": {
       "label": "Univer add-ons load, save back, and a signed-in person can edit",
