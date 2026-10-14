@@ -53,7 +53,9 @@ type KnobIndexRequest = {
  * (`invalidateEffectiveKnob`), so a changed setting is always read fresh; `fresh: true` skips the
  * share (an explicit refresh). A failed read is never shared.
  */
-const KNOB_INDEX_SHARE_MS = 60_000;
+// Long enough to cover one page load's askers; short enough that a write made in ANOTHER tab (which
+// cannot bump this tab's write generation) is never hidden for more than a moment.
+const KNOB_INDEX_SHARE_MS = 10_000;
 const sharedKnobIndexReads = new Map<string, { at: number; read: Promise<ScopedKnob[]> }>();
 
 /** Tests only. */
