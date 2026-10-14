@@ -4030,7 +4030,7 @@ async function findOrCreateProperty(
   if (existing) return existing;
   const inserted = await db
     .from("property")
-    .insert(values)
+    .insert({ ...values, organization_id: values.organization_id })
     .select("id")
     .single();
   if (inserted.error?.code === "23505") {

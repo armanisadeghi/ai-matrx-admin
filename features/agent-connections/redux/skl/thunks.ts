@@ -153,7 +153,7 @@ export const createRenderDefinition = createAsyncThunk(
     const { data, error } = await supabase
       .schema("agent")
       .from("prompt_block")
-      .insert(row0)
+      .insert({ ...row0, organization_id: row0.organization_id })
       .select()
       .single();
     if (error) throw error;

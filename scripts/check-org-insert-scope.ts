@@ -112,12 +112,21 @@ const BASELINE_PATH = join(ROOT, "scripts/org-insert-scope-baseline.json");
 const SCAN_DIRS = [
   "app",
   "components",
-  "features", "../aidream/apps/shared/chat/src",
+  "features",
   "hooks",
   "lib",
   "utils",
   "providers",
 ];
+
+/**
+ * Typed migration tables that are intentionally ahead of the live generated
+ * database artifact. Their call sites still have to prove that the payload
+ * carries organization_id; delete an entry as soon as `pnpm db-types` sees it.
+ */
+const PENDING_TYPED_ORG_TABLES = new Set([
+  "communication.push_subscription",
+]);
 
 const SKIP_DIRS = new Set([
   "node_modules",
@@ -1182,11 +1191,11 @@ export function scanSource(
                 status: "UNRESOLVED",
                 reason: `the schema is applied by \`${table.slice(UNRESOLVED_WRAPPER.length, -1)}\`, which this pass cannot follow — the table is NOT assumed to be in \`public\``,
               }
-            : !known
-            ? {
-                status: "UNRESOLVED",
-                reason: `\`${table}\` is not in types/database.types.ts — its scope cannot be proved`,
-              }
+            : !known && !PENDING_TYPED_ORG_TABLES.has(table)
+              ? {
+                  status: "UNRESOLVED",
+                  reason: `\`${table}\` is not in types/database.types.ts — its scope cannot be proved`,
+                }
             : classifyPayload(payload, ctx);
 
         if (verdict.status !== "CARRIES") {

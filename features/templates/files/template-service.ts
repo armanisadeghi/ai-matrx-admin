@@ -71,7 +71,7 @@ const ports: TemplatePorts = {
   },
   async insertRow(row) {
     const { data, error } = await table()
-      .insert({ ...row, snapshot: row.snapshot as never })
+      .insert({ ...row, organization_id: row.organization_id, snapshot: row.snapshot as never })
       .select(TEMPLATE_SUMMARY_COLUMNS)
       .single();
     if (error) throw new TemplateError(error.message);

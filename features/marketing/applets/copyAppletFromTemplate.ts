@@ -7,6 +7,7 @@
 
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { TemplateDoorAnswer } from "@ai-matrx/records/templates";
+import type { Database } from "@/types/database.types";
 
 import { installResolver } from "@/features/make/gallery/installAgent";
 
@@ -25,7 +26,7 @@ function suffix(): string {
 }
 
 export async function copyAppletFromTemplate(
-  supabase: SupabaseClient,
+  supabase: SupabaseClient<Database>,
   args: { templateAppletId: string; organizationId: string; answer: TemplateDoorAnswer },
 ): Promise<CopiedApplet> {
   const { templateAppletId, organizationId, answer } = args;
@@ -66,7 +67,8 @@ export async function copyAppletFromTemplate(
   const userId = auth.user?.id;
   if (!userId) throw new Error("Sign in to use this template.");
 
-  const { data: made, error: insertError } = await db
+  const { data: made, error: insertError } = await supabase
+    .schema("app")
     .from("definition")
     .insert({
       organization_id: organizationId,

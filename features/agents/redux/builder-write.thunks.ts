@@ -333,11 +333,10 @@ export const createAgent = createAsyncThunk<
     .from("definition")
     // `created_via` is typed required by the generated Insert but is never sent: the
     // database stamps it on insert (`_created_via_from`), so it is omitted from the payload.
-    .insert(
-      agentDefinitionToInsert(
-        draft,
-      ) as Database["agent"]["Tables"]["definition"]["Insert"],
-    )
+    .insert({
+      ...(agentDefinitionToInsert(draft) as Database["agent"]["Tables"]["definition"]["Insert"]),
+      organization_id: draft.organizationId!,
+    })
     .select()
     .single();
 

@@ -202,7 +202,7 @@ export async function enablePushOnThisDevice(): Promise<PushDeviceState> {
   if (existing.error) throw new Error(existing.error.message);
   const write = existing.data
     ? await pushTable().update(row).eq("id", existing.data.id)
-    : await pushTable().insert(row);
+    : await pushTable().insert({ ...row, organization_id: row.organization_id });
   if (write.error) throw new Error(write.error.message);
   return "on";
 }

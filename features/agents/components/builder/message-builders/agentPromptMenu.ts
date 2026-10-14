@@ -124,14 +124,15 @@ export const AGENT_PROMPT_SECTION = {
  * the conditional sections, Add content block, role switch, full screen, clear, delete, Agent ›.
  */
 export function agentPromptMenuSections(a: AgentPromptMenuArgs): ContextMenuExtraSection[] {
+  const insertPrompt = a.insert;
   const variables: ContextMenuExtraItem[] = [
-    ...a.variableNames.map((name) => item(`variable:${name}`, name, () => a.insert(variableInsert(name)))),
+    ...a.variableNames.map((name) => item(`variable:${name}`, name, () => insertPrompt(variableInsert(name)))),
     ...(a.variableNames.length ? [{ kind: "separator" as const, id: "variable-sep" }] : []),
     item("new-variable", "New variable…", a.onNewVariable, { icon: Plus }),
   ];
   const contextItems: ContextMenuExtraItem[] = [
     ...a.contextItems.map((c) =>
-      item(`context:${c.key}`, c.label || c.key, () => a.insert(contextReferenceInsert(c.key))),
+      item(`context:${c.key}`, c.label || c.key, () => insertPrompt(contextReferenceInsert(c.key))),
     ),
     ...(a.contextItems.length ? [{ kind: "separator" as const, id: "context-sep" }] : []),
     item("add-context-item", "Add context item…", a.onAddContextItem, { icon: Plus }),
@@ -152,9 +153,9 @@ export function agentPromptMenuSections(a: AgentPromptMenuArgs): ContextMenuExtr
             id: "section-tag",
             label: "Section tag",
             icon: LayoutTemplate,
-            children: PROMPT_SECTION_TAGS.map((tag) => item(`tag:${tag}`, `<${tag}>`, () => a.insert(sectionInsert(tag)))),
+            children: PROMPT_SECTION_TAGS.map((tag) => item(`tag:${tag}`, `<${tag}>`, () => insertPrompt(sectionInsert(tag)))),
           },
-          item("example", "Example block", () => a.insert(exampleInsert()), { icon: ClipboardList }),
+          item("example", "Example block", () => insertPrompt(exampleInsert()), { icon: ClipboardList }),
           { kind: "submenu", id: "context-item", label: "Context item", icon: Boxes, children: contextItems },
         ],
       },
