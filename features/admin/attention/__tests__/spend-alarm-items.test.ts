@@ -214,6 +214,18 @@ describe("who an alarm is for (Arman 2026-10-11: the owner's card shows only wha
     expect(act?.confirm?.description).toContain("No deploys or package releases run until billing is fixed");
   });
 
+  it("the Google search allowance cards carry the upgrade action with their consequence", () => {
+    const out = row({ id: "a-g0", kind: "search_allowance_exhausted", level: "critical", audience: "owner_decision" });
+    const low = row({ id: "a-g1", kind: "search_allowance_low", level: "warning", audience: "owner_decision" });
+    const [outItem, lowItem] = spendAlarmItems([out, low], deps());
+    const outAct = outItem.actions.find((x) => x.id === "upgrade_search_plan");
+    expect(outAct?.label).toBe("Upgrade Google search");
+    expect(outAct?.confirm?.description).toContain("stays off for everyone");
+    expect(lowItem.actions.find((x) => x.id === "upgrade_search_plan")?.confirm?.description).toContain(
+      "stops for everyone when the last searches are used",
+    );
+  });
+
   describe("the CI spend card's Pause button is real or absent", () => {
     const ci = row({ id: "a-ci", kind: "ci_spend_off_track", audience: "owner_decision" });
     const costly = {

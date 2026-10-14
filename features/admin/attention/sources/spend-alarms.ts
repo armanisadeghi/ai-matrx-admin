@@ -111,6 +111,8 @@ function namesOf(row: SpendAlarmAttentionRow): Map<string, string> {
 }
 
 export const GITHUB_BILLING_URL = "https://github.com/enterprises/ai-matrx/settings/billing";
+/** Where the Google search plan is upgraded (admin-only: the dock never reaches a customer). */
+export const GOOGLE_SEARCH_PLAN_URL = "https://serpapi.com/change-plan";
 
 /** "ai-matrx Deploy (12.50/day)": repo owner dropped. */
 export function costlyLine(w: Pick<CostlyWorkflow, "repo" | "workflow" | "usd_per_day">): string {
@@ -276,6 +278,25 @@ function actionsOf(row: SpendAlarmAttentionRow, deps: SpendAlarmDeps): Attention
       },
       run: async () => {
         if (typeof window !== "undefined") openOutbound(GITHUB_BILLING_URL, "_blank", "noopener");
+      },
+    });
+  }
+  if (row.kind === "search_allowance_exhausted" || row.kind === "search_allowance_low") {
+    // Only the owner can buy more searches: the one button opens the plan page.
+    out.push({
+      id: "upgrade_search_plan",
+      label: "Upgrade Google search",
+      variant: "outline",
+      confirm: {
+        title: "Open the Google search plan?",
+        description:
+          row.kind === "search_allowance_exhausted"
+            ? "Google search stays off for everyone until the plan renews or is upgraded. Opens the plan page in a new tab."
+            : "Google search stops for everyone when the last searches are used. Opens the plan page in a new tab.",
+        confirmLabel: "Open the plan",
+      },
+      run: async () => {
+        if (typeof window !== "undefined") openOutbound(GOOGLE_SEARCH_PLAN_URL, "_blank", "noopener");
       },
     });
   }

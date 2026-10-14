@@ -878,6 +878,8 @@ export const KIND_LABEL: Record<string, string> = {
   spend_approval_expired: "Approval expired",
   "reconcile.llm_drift": "Provider bill mismatch",
   ci_billing_block: "GitHub billing is blocking CI",
+  search_allowance_exhausted: "Google search is out of searches",
+  search_allowance_low: "Google search is running low",
   spend_spike_platform_hourly: "Spend spike",
   spend_spike_platform_daily: "Spend spike",
   spend_spike_account_daily: "Spend spike",
