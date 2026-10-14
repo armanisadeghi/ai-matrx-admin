@@ -75,6 +75,15 @@ export default function AdminSidebarSection() {
     return () => observer.disconnect();
   }, [authReady, isAdmin, hydrated]);
 
+  // Marks the sidebar while the admin block is mounted, so an open domain panel gives
+  // the footer the panel's full width with labels (styles/shell.css § THE DOMAIN PANEL).
+  useEffect(() => {
+    const sidebar = sectionRef.current?.closest<HTMLElement>(".shell-sidebar");
+    if (!sidebar) return undefined;
+    sidebar.setAttribute("data-admin-footer", "");
+    return () => sidebar.removeAttribute("data-admin-footer");
+  }, [isAdmin, hydrated]);
+
   if (!hydrated || !isAdmin) return null;
 
   return (

@@ -1257,6 +1257,56 @@ button.shell-nav-flyout-item {
   .shell-root[data-domain-panel] .shell-sidebar-footer {
     width: var(--shell-sidebar-w);
   }
+
+  /* An admin's footer has nothing beneath it in the panel column, so with the
+     panel open it takes the full width and shows its labels, like the account
+     rail below it. The admin block marks the sidebar (AdminSidebarSection). */
+  .shell-root[data-domain-panel] > #shell-sidebar-toggle:checked ~ .shell-sidebar[data-admin-footer] .shell-sidebar-route-nav,
+  .shell-root[data-domain-panel] > #shell-sidebar-toggle:checked ~ * .shell-sidebar[data-admin-footer] .shell-sidebar-route-nav {
+    grid-row: 1 / 3;
+  }
+
+  .shell-root[data-domain-panel] > #shell-sidebar-toggle:checked ~ .shell-sidebar[data-admin-footer] .shell-sidebar-footer,
+  .shell-root[data-domain-panel] > #shell-sidebar-toggle:checked ~ * .shell-sidebar[data-admin-footer] .shell-sidebar-footer {
+    grid-column: 1 / -1;
+    width: auto;
+  }
+
+  .shell-root[data-domain-panel] > #shell-sidebar-toggle:checked ~ .shell-sidebar[data-admin-footer] .shell-sidebar-footer .shell-nav-item,
+  .shell-root[data-domain-panel] > #shell-sidebar-toggle:checked ~ * .shell-sidebar[data-admin-footer] .shell-sidebar-footer .shell-nav-item {
+    gap: 0.75rem;
+  }
+
+  .shell-root[data-domain-panel] > #shell-sidebar-toggle:checked ~ .shell-sidebar[data-admin-footer] .shell-sidebar-footer :is(.shell-nav-label, .shell-nav-external),
+  .shell-root[data-domain-panel] > #shell-sidebar-toggle:checked ~ * .shell-sidebar[data-admin-footer] .shell-sidebar-footer :is(.shell-nav-label, .shell-nav-external) {
+    width: auto;
+    pointer-events: auto;
+  }
+
+  .shell-root[data-domain-panel] > #shell-sidebar-toggle:checked ~ .shell-sidebar[data-admin-footer] .shell-sidebar-footer .shell-nav-label,
+  .shell-root[data-domain-panel] > #shell-sidebar-toggle:checked ~ * .shell-sidebar[data-admin-footer] .shell-sidebar-footer .shell-nav-label {
+    opacity: 1;
+  }
+
+  .shell-root[data-domain-panel] > #shell-sidebar-toggle:checked ~ .shell-sidebar[data-admin-footer] .shell-sidebar-footer .shell-nav-external,
+  .shell-root[data-domain-panel] > #shell-sidebar-toggle:checked ~ * .shell-sidebar[data-admin-footer] .shell-sidebar-footer .shell-nav-external {
+    opacity: 0.6;
+  }
+
+  .shell-root[data-domain-panel] > #shell-sidebar-toggle:checked ~ .shell-sidebar[data-admin-footer] .shell-sidebar-footer :is(.shell-nav-badge-expanded, .shell-nav-flyout-caret),
+  .shell-root[data-domain-panel] > #shell-sidebar-toggle:checked ~ * .shell-sidebar[data-admin-footer] .shell-sidebar-footer :is(.shell-nav-badge-expanded, .shell-nav-flyout-caret) {
+    display: block;
+  }
+
+  .shell-root[data-domain-panel] > #shell-sidebar-toggle:checked ~ .shell-sidebar[data-admin-footer] .shell-sidebar-footer :is(.shell-nav-group-disclosure, .shell-env-details),
+  .shell-root[data-domain-panel] > #shell-sidebar-toggle:checked ~ * .shell-sidebar[data-admin-footer] .shell-sidebar-footer :is(.shell-nav-group-disclosure, .shell-env-details) {
+    display: inline-flex;
+  }
+
+  .shell-root[data-domain-panel] > #shell-sidebar-toggle:checked ~ .shell-sidebar[data-admin-footer] .shell-sidebar-footer .shell-nav-badge-collapsed,
+  .shell-root[data-domain-panel] > #shell-sidebar-toggle:checked ~ * .shell-sidebar[data-admin-footer] .shell-sidebar-footer .shell-nav-badge-collapsed {
+    display: none;
+  }
 }
 
 .shell-domain-panel-title {
