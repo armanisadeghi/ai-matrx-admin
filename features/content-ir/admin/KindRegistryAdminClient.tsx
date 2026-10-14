@@ -296,7 +296,8 @@ export default function KindRegistryAdminClient() {
     return {
       total: entries.length,
       system: entries.filter((e) => e.source === "system").length,
-      db: entries.filter((e) => e.source === "content_ir").length,
+      db: entries.filter((e) => e.source === "content_ir" && e.dbRowId !== null).length,
+      unsaved: entries.filter((e) => e.source === "content_ir" && e.dbRowId === null).length,
       both: entries.filter((e) => e.source === "both").length,
     };
   }, [catalog]);
@@ -337,6 +338,14 @@ export default function KindRegistryAdminClient() {
           >
             {stats.both} built-in and saved
           </span>
+          {stats.unsaved > 0 && (
+            <span
+              className="rounded bg-amber-100 px-1.5 py-0.5 text-[11px] font-medium text-amber-800 dark:bg-amber-900/40 dark:text-amber-200"
+              title="Known to this session but with no saved record in the database"
+            >
+              {stats.unsaved} not saved
+            </span>
+          )}
         </div>
         <div className="relative ml-auto w-64">
           <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
