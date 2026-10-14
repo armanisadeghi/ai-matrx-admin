@@ -6,7 +6,7 @@
   },
   "counts": {
     "repo-only": 183,
-    "live-db": 69
+    "live-db": 70
   },
   "rows": {
     "every-ai-matrx-package-is-declared-and-installed-at-npm-late": {
@@ -781,6 +781,18 @@
       "cmd": "pnpm check:archived-items-law",
       "reason": "no database access in 2 file(s) reached",
       "evidence": []
+    },
+    "brand-archive-restore-round-trips-live": {
+      "label": "Brand archive + restore round-trips (live)",
+      "class": "live-db",
+      "cmd": "pnpm check:brand-archive-cascade",
+      "reason": "reaches code that can open the live database",
+      "evidence": [
+        {
+          "file": "scripts/check-brand-archive-cascade.ts",
+          "signal": "service-role / secret key"
+        }
+      ]
     },
     "univer-document-page-is-legible-in-both-themes": {
       "label": "Univer document page is legible in both themes",
