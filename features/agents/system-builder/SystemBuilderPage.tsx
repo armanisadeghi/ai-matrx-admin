@@ -1,5 +1,7 @@
 "use client";
 
+import { ProTextarea } from "@/components/official/ProTextarea";
+
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -237,7 +239,7 @@ export default function SystemBuilderPage() {
             <div className="space-y-6">
               <div className="space-y-3 pt-2">
                 <h1 className="type-title text-foreground">What job should this system do, every time?</h1>
-                <Textarea
+                <ProTextarea
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder="Every week I teach a new chapter of AP Biology. Given the chapter, write a quiz that checks real understanding…"

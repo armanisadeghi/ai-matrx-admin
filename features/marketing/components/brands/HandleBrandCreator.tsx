@@ -1,5 +1,7 @@
 "use client";
 
+import { ProInput } from "@/components/official/ProInput";
+
 /**
  * Add brand from a social handle — the person path (a creator who IS the
  * brand) and the company path started from a handle instead of a website.
@@ -343,7 +345,7 @@ export function HandleBrandCreator({
             <Label htmlFor="handle-brand-name" className="text-xs">
               Name
             </Label>
-            <Field
+            <ProInput
               className="w-full"
               id="handle-brand-name"
               value={name}
@@ -356,6 +358,7 @@ export function HandleBrandCreator({
             <Label htmlFor="handle-brand-website" className="text-xs">
               Website (optional)
             </Label>
+            {/* ui-exception: a website is a raw URL value */}
             <Field
               className="w-full"
               id="handle-brand-website"
@@ -429,7 +432,7 @@ export function HandleBrandCreator({
           <Label htmlFor="handle-brand-name-confirm" className="text-xs">
             Name
           </Label>
-          <Field
+          <ProInput
             className="w-full"
             id="handle-brand-name-confirm"
             value={name}
@@ -492,6 +495,7 @@ export function HandleBrandCreator({
           <Label htmlFor="handle-brand-website-confirm" className="text-xs">
             Website (optional)
           </Label>
+          {/* ui-exception: website confirmation is a raw URL value */}
           <Field
             className="w-full"
             id="handle-brand-website-confirm"

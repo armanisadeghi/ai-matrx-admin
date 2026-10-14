@@ -15,6 +15,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ProTextarea } from "@/components/official/ProTextarea";
+import { ProInput } from "@/components/official/ProInput";
 import type { Scope as Scope, ScopeTypeWithScopes as ScopeType } from "@ai-matrx/records/scopes";
 import {
   selectScopesByType,
@@ -133,7 +134,7 @@ export function ScopeForm({
 
         <div className="space-y-1.5">
           <Label className="text-xs">Name</Label>
-          <Input
+          <ProInput
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="e.g. Engineering, West Coast, Q1 2025..."

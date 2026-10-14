@@ -338,6 +338,7 @@ export function ClaudeAccountsPanel() {
               <p className="text-xs text-muted-foreground">{pending.status.detail}</p>
             )}
             <div className="flex items-center gap-2">
+              {/* ui-exception: Claude's authorization code is a raw provider value */}
               <Input
                 value={code}
                 onChange={(e) => setCode(e.target.value)}

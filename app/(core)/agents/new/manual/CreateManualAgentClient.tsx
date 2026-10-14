@@ -1,5 +1,7 @@
 "use client";
 
+import { ProTextarea } from "@/components/official/ProTextarea";
+
 // The client half of `/agents/new/manual`.
 //
 // 🚨 THE ROW IS CREATED ON THE FIRST SAVE, NEVER ON MOUNT. This page used to
@@ -124,7 +126,7 @@ export function CreateManualAgentClient() {
           >
             Instructions
           </label>
-          <textarea
+          <ProTextarea
             id="new-agent-instructions"
             value={instructions}
             onChange={(e) => setInstructions(e.target.value)}

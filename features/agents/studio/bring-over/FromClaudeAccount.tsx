@@ -1,5 +1,7 @@
 "use client";
 
+import { ProTextarea } from "@/components/official/ProTextarea";
+
 /**
  * Mode "Bring it over from my Claude account". The person uploads the export claude.ai emails them
  * (Settings, Privacy, Export data) or pastes a chat; we list its conversations (and projects, when the
@@ -98,7 +100,7 @@ export function FromClaudeAccount() {
               <label className="text-sm font-medium" htmlFor="pasted-chat">
                 Or paste a chat
               </label>
-              <Textarea
+              <ProTextarea
                 id="pasted-chat"
                 rows={6}
                 value={text}
@@ -164,7 +166,7 @@ export function FromClaudeAccount() {
             <label className="text-sm font-medium" htmlFor="context">
               Project instructions, skills or custom instructions (optional)
             </label>
-            <Textarea
+            <ProTextarea
               id="context"
               rows={5}
               value={context}

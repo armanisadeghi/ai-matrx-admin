@@ -160,8 +160,8 @@ export function CustomerAccountsPanel({ organizationId, brandId, returnUrl = "/u
         {provider === "pinterest" && <Badge variant="outline">Approved testers · Trial access</Badge>}
         {provider === "linkedin" && <Badge variant="outline">Profile insights unavailable</Badge>}
         {(config?.accessMode === "internal_test" || (["facebook", "instagram", "threads"].includes(provider) && config?.accessMode !== "approved")) && <Badge variant="outline">Approved testers only</Badge>}
-        {!unavailable && provider === "mastodon" && <Input aria-label="Mastodon server" placeholder="https://mastodon.social" value={issuer} onChange={(event) => setMastodonIssuer(event.target.value)} />}
-        {!unavailable && provider === "bluesky" && <Input aria-label="Bluesky handle" placeholder="your-name.bsky.social" value={blueskyHandle} onChange={(event) => setBlueskyHandle(event.target.value)} />}
+        {!unavailable && provider === "mastodon" && <>{/* ui-exception: Mastodon server is a raw issuer URL */}<Input aria-label="Mastodon server" placeholder="https://mastodon.social" value={issuer} onChange={(event) => setMastodonIssuer(event.target.value)} /></>}
+        {!unavailable && provider === "bluesky" && <>{/* ui-exception: Bluesky handle is a raw provider identifier */}<Input aria-label="Bluesky handle" placeholder="your-name.bsky.social" value={blueskyHandle} onChange={(event) => setBlueskyHandle(event.target.value)} /></>}
         {connected.map((connection) => <div className="space-y-2 text-sm" key={connection.id}>
           <div className="flex flex-wrap items-center justify-between gap-2"><span>{connection.accountName ?? connection.providerSubject ?? "Connected account"}</span><div className="flex flex-wrap gap-1">
             <Button variant="outline" disabled={unavailable || action?.connectionId === connection.id} onClick={() => void run(connection, "read")}>Check</Button>

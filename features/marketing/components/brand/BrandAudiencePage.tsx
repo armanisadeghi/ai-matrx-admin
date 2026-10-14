@@ -17,6 +17,7 @@ import {
 import { Input } from "@ai-matrx/design-system/controls";
 import { Label } from "@/components/ui/label";
 import { ProTextarea } from "@/components/official/ProTextarea";
+import { ProInput } from "@/components/official/ProInput";
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import { LoadingSurface, QueryError } from "@/features/marketing/components/shared/MarketingUi";
 import {
@@ -237,7 +238,7 @@ function PersonaDialog({
         <div className="grid gap-3">
           <div className="grid gap-1.5">
             <Label className="text-xs">Name</Label>
-            <Input autoFocus aria-label="Name" value={name} onChange={(e) => setName(e.target.value)} placeholder={audience.namePlaceholder} />
+            <ProInput autoFocus aria-label="Name" value={name} onChange={(e) => setName(e.target.value)} placeholder={audience.namePlaceholder} />
           </div>
           <div className="grid gap-1.5">
             <Label className="text-xs">Summary</Label>
@@ -247,7 +248,7 @@ function PersonaDialog({
             {personaFieldsFor(kind).map((field) => (
               <div key={field.key} className="grid gap-1.5">
                 <Label className="text-xs">{field.label}</Label>
-                <Input
+                <ProInput
                   aria-label={field.label}
                   value={demographics[field.key] ?? ""}
                   placeholder={field.placeholder}

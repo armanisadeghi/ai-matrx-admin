@@ -62,6 +62,7 @@ export function MapsAutofill({
   return (
     <div className="mb-2 rounded-md border border-border p-2" data-testid="maps-autofill">
       <div className="flex flex-wrap items-center gap-1.5">
+        {/* ui-exception: Google Maps links and place IDs are raw lookup values */}
         <Input
           value={text}
           onChange={(e) => setText(e.target.value)}

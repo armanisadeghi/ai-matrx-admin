@@ -1,5 +1,7 @@
 "use client";
 
+import { ProInput } from "@/components/official/ProInput";
+
 // features/education/classes/components/ClassTestDialog.tsx
 //
 // New test / edit test: a name, the units it covers (one or many) and an
@@ -93,7 +95,7 @@ export function ClassTestDialog({
         <div className="space-y-4 py-1">
           <div className="space-y-1.5">
             <Label htmlFor="class-test-name">Name</Label>
-            <Input
+            <ProInput
               id="class-test-name"
               value={name}
               onChange={(e) => setName(e.target.value)}

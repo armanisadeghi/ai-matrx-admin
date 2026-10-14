@@ -1,5 +1,7 @@
 "use client";
 
+import { ProTextarea } from "@/components/official/ProTextarea";
+
 import { ErrorNotice } from "@ai-matrx/design-system";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -106,7 +108,7 @@ export function AddManagerDialog({
             ))
           )}
         </div>
-        <Textarea
+        <ProTextarea
           value={goal}
           onChange={(e) => setGoal(e.target.value)}
           placeholder="Goal, e.g. ask each session whether it is blocked and tell me"

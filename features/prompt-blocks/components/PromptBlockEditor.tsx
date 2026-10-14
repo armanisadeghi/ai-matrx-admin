@@ -188,6 +188,7 @@ export function PromptBlockEditor({ blockId }: { blockId: string | "new" }) {
           <div className="grid gap-3 sm:grid-cols-2">
             <label className="flex flex-col gap-1 text-xs text-muted-foreground">
               Name
+              {/* ui-exception: prompt-block name is a stable raw identifier */}
               <Field
                 aria-label="Name"
                 data-testid="prompt-block-name"

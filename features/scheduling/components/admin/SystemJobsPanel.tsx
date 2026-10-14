@@ -1280,6 +1280,7 @@ function SystemJobEditDialog({
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="system-job-tz">Timezone (IANA, optional)</Label>
+                {/* ui-exception: timezone is an IANA identifier */}
                 <Input
                   id="system-job-tz"
                   value={tz}

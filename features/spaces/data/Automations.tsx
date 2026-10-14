@@ -1,5 +1,7 @@
 "use client";
 
+import { ProInput } from "@/components/official/ProInput";
+
 /**
  * AUTOMATIONS-AIRTABLE (records 0.99.0): also "record updated" (a set of properties), "matches conditions" / "enters
  * a view" (fires when a row comes to match), "button pressed"; Send email and Slack steps with {Property} tokens; a
@@ -216,7 +218,7 @@ function ValueEditor({ fields, d, put, noCopy }: { fields: Field[]; d: { value: 
           {label}
         </Pill>
       ))}
-      {d.value === "text" ? <Input aria-label="Value" placeholder="Value" value={d.text} onChange={(e) => put({ text: e.target.value })} /> : null}
+      {d.value === "text" ? <>{/* ui-exception: action value is machine-significant record data */}<Input aria-label="Value" placeholder="Value" value={d.text} onChange={(e) => put({ text: e.target.value })} /></> : null}
       {d.value === "from" ? <FieldPills fields={fields} value={d.from} onPick={(from) => put({ from })} /> : null}
     </>
   );
@@ -279,7 +281,7 @@ function TestRun({ automation, tableId, fields, onRan }: { automation: Automatio
         <Button variant="outline" disabled={busy} onClick={() => void run(null)}>Run once now</Button>
       ) : (
         <>
-          <Input aria-label="Find a page" placeholder="Test on a page…" value={search} onChange={(e) => setSearch(e.target.value)} />
+          <ProInput enableVoice={false} enableCleanup={false} aria-label="Find a page" placeholder="Test on a page…" value={search} onChange={(e) => setSearch(e.target.value)} />
           <div className="flex flex-wrap gap-1">
             {(rows ?? []).map((r) => (
               <Button key={r.id} variant="quiet" disabled={busy} onClick={() => void run(r.id)}>
@@ -490,7 +492,7 @@ export function AutomationsPanel({ tableId, organizationId, fields }: { tableId:
     <div className="spaces-db-automations flex flex-col gap-2" data-testid="spaces-automations" data-state="on">
       {editing ? (
         <div className="flex flex-col gap-2" data-testid="spaces-automation-editor">
-          <Input aria-label="Automation name" placeholder="Automation name" value={name} onChange={(e) => setName(e.target.value)} />
+          <ProInput aria-label="Automation name" placeholder="Automation name" value={name} onChange={(e) => setName(e.target.value)} />
           <span className="type-secondary text-muted-foreground">When</span>
           <div className="flex flex-wrap gap-1">
             <Pill on={on === "row_added"} onClick={() => pickTrigger("row_added")}>Page added</Pill>
@@ -558,7 +560,7 @@ export function AutomationsPanel({ tableId, organizationId, fields }: { tableId:
           {on === "property_edited" ? (
             <div className="flex flex-wrap items-center gap-1">
               <FieldPills fields={fields} value={trigField} onPick={setTrigField} />
-              <Input aria-label="Edited to" placeholder="to any value" value={trigTo} onChange={(e) => setTrigTo(e.target.value)} />
+              <>{/* ui-exception: trigger value is machine-significant record data */}<Input aria-label="Edited to" placeholder="to any value" value={trigTo} onChange={(e) => setTrigTo(e.target.value)} /></>
             </div>
           ) : null}
           {timed ? null : (
@@ -567,7 +569,7 @@ export function AutomationsPanel({ tableId, organizationId, fields }: { tableId:
               <div className="flex flex-wrap items-center gap-1">
                 {on === "record_matches" && viewId === null ? null : <Pill on={condField === null} onClick={() => setCondField(null)}>Always</Pill>}
                 <FieldPills fields={fields} value={condField ?? ""} onPick={setCondField} />
-                {condField ? <Input aria-label="Condition value" placeholder="is" value={condIs} onChange={(e) => setCondIs(e.target.value)} /> : null}
+                {condField ? <>{/* ui-exception: comparator value is machine-significant record data */}<Input aria-label="Condition value" placeholder="is" value={condIs} onChange={(e) => setCondIs(e.target.value)} /></> : null}
               </div>
             </>
           )}

@@ -1,5 +1,7 @@
 "use client";
 
+import { ProInput } from "@/components/official/ProInput";
+
 /**
  * The brand-level competitor list — works with or without a website.
  *
@@ -752,11 +754,12 @@ function AddCompetitorDialog({
         <div className="space-y-3">
           <div className="space-y-1">
             <Label htmlFor="comp-name">Name</Label>
-            <Input id="comp-name" value={name} onChange={(e) => setName(e.target.value)} placeholder={rivals.namePlaceholder} />
+            <ProInput id="comp-name" value={name} onChange={(e) => setName(e.target.value)} placeholder={rivals.namePlaceholder} />
           </div>
           <div className="space-y-1">
             <Label htmlFor="comp-domain">Website</Label>
             <div className="flex gap-2">
+              {/* ui-exception: competitor website is a raw domain value */}
               <Input id="comp-domain" value={domain} onChange={(e) => setDomain(e.target.value)} placeholder="example.com" />
               <Button
                 variant="outline"

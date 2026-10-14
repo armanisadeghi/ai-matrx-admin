@@ -1,5 +1,7 @@
 "use client";
 
+import { ProInput } from "@/components/official/ProInput";
+
 /**
  * The swipe file's three small dialogs: name a collection (create / rename),
  * pick the collection to save things into (new or existing), and save a pasted
@@ -83,7 +85,7 @@ export function CollectionNameDialog({
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
         </DialogHeader>
-        <Field
+        <ProInput
           aria-label="Collection name"
           placeholder="Collection name"
           value={name}
@@ -225,7 +227,7 @@ export function SaveToCollectionDialog({
         <div className="flex flex-col gap-2">
           <Select aria-label="Collection" value={choice} options={options} onValueChange={setChoice} disabled={loading} />
           {creating ? (
-            <Field aria-label="New collection name" placeholder={suggestedName} value={newName} onChange={(e) => setNewName(e.target.value)} />
+            <ProInput aria-label="New collection name" placeholder={suggestedName} value={newName} onChange={(e) => setNewName(e.target.value)} />
           ) : null}
           <NoteTagsFields note={note} tagText={tagText} onNoteChange={setNote} onTagTextChange={setTagText} />
           <p className="min-h-4 text-xs text-destructive" aria-live="polite">
@@ -322,10 +324,11 @@ export function SaveLinkDialog({
           <DialogTitle>Save link</DialogTitle>
         </DialogHeader>
         <div className="flex flex-col gap-2">
+          {/* ui-exception: a post link is a raw external URL */}
           <Field aria-label="Post link" placeholder="Paste a post or video link" value={url} onChange={(e) => setUrl(e.target.value)} autoFocus />
           <Select aria-label="Collection" value={choice} options={options} onValueChange={setChoice} disabled={loading} />
           {creating ? (
-            <Field aria-label="New collection name" placeholder={suggestedName} value={newName} onChange={(e) => setNewName(e.target.value)} />
+            <ProInput aria-label="New collection name" placeholder={suggestedName} value={newName} onChange={(e) => setNewName(e.target.value)} />
           ) : null}
           <NoteTagsFields note={note} tagText={tagText} onNoteChange={setNote} onTagTextChange={setTagText} disabled={busy} />
           {failure && !busy ? (

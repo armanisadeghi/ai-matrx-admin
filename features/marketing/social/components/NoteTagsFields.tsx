@@ -1,5 +1,8 @@
 "use client";
 
+import { ProInput } from "@/components/official/ProInput";
+import { ProTextarea } from "@/components/official/ProTextarea";
+
 /**
  * The swipe file's note + tags editor: "why saved" and comma-separated tags.
  * ONE component for the item sheet and both save dialogs, so a saved item's
@@ -25,7 +28,7 @@ export function NoteTagsFields({
 }) {
   return (
     <>
-      <Textarea
+      <ProTextarea
         aria-label="Why saved"
         placeholder="Why saved"
         rows={3}
@@ -34,7 +37,7 @@ export function NoteTagsFields({
         disabled={disabled}
         autoFocus={autoFocusNote}
       />
-      <Field
+      <ProInput
         aria-label="Tags"
         placeholder="Tags, separated by commas"
         value={tagText}

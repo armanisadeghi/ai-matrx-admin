@@ -1,5 +1,7 @@
 "use client";
 
+import { ProInput } from "@/components/official/ProInput";
+
 import { useState } from "react";
 import { Loader2 } from "lucide-react";
 import { toast } from "@/lib/toast";
@@ -182,7 +184,7 @@ function BusinessFactEditorDialogBody({
               <Label htmlFor="fact-label" className="text-xs">
                 Label
               </Label>
-              <Input
+              <ProInput
                 id="fact-label"
                 value={label}
                 onChange={(event) => setLabel(event.target.value)}
@@ -197,7 +199,7 @@ function BusinessFactEditorDialogBody({
                 <Label htmlFor="fact-street" className="text-xs">
                   Street
                 </Label>
-                <Input
+                <ProInput
                   id="fact-street"
                   value={address.street}
                   onChange={(event) =>
@@ -210,7 +212,7 @@ function BusinessFactEditorDialogBody({
                 <Label htmlFor="fact-city" className="text-xs">
                   City
                 </Label>
-                <Input
+                <ProInput
                   id="fact-city"
                   value={address.city}
                   onChange={(event) =>
@@ -223,7 +225,7 @@ function BusinessFactEditorDialogBody({
                 <Label htmlFor="fact-region" className="text-xs">
                   State or region
                 </Label>
-                <Input
+                <ProInput
                   id="fact-region"
                   value={address.region}
                   onChange={(event) =>
@@ -236,6 +238,7 @@ function BusinessFactEditorDialogBody({
                 <Label htmlFor="fact-postal" className="text-xs">
                   Postal code
                 </Label>
+                {/* ui-exception: postal code is a raw address code */}
                 <Input
                   id="fact-postal"
                   value={address.postalCode}
@@ -249,7 +252,7 @@ function BusinessFactEditorDialogBody({
                 <Label htmlFor="fact-country" className="text-xs">
                   Country
                 </Label>
-                <Input
+                <ProInput
                   id="fact-country"
                   value={address.country}
                   onChange={(event) =>

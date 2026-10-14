@@ -1,5 +1,7 @@
 "use client";
 
+import { ProInput } from "@/components/official/ProInput";
+
 /**
  * Ads (UI-SPEC §6): search the ad libraries through the server, save an ad to
  * the swipe file, and track an advertiser (Spyder-style) — a
@@ -333,12 +335,14 @@ function AdsSearch({ onTracked }: { onTracked: () => void }) {
       >
         <Select aria-label="Library" value={library} options={LIBRARY_OPTIONS} onValueChange={setLibrary} />
         <SegmentedControl aria-label="Search by" value={kind} data={KIND_DATA} onValueChange={(v) => setKind(v as "query" | "advertiser")} />
-        <Field
+        <ProInput
+          enableVoice={false}
+          enableCleanup={false}
           aria-label="Search ads"
           placeholder={kind === "query" ? "Keyword or phrase" : "Advertiser or company"}
           value={text}
           onChange={(e) => setText(e.target.value)}
-          className="min-w-48 flex-1"
+          wrapperClassName="min-w-48 flex-1"
         />
         {canEdit ? (
           <Button variant="primary" icon={<Search />} type="submit" disabled={!canSearch} title={costText("ads_search") ?? undefined} aria-busy={busy}>

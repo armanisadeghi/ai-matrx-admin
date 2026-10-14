@@ -1,5 +1,7 @@
 "use client";
 
+import { ProInput } from "@/components/official/ProInput";
+
 import { ErrorNotice } from "@ai-matrx/design-system";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -63,7 +65,7 @@ export function NewRoomDialog({
         <DialogHeader>
           <DialogTitle>New room</DialogTitle>
         </DialogHeader>
-        <Input
+        <ProInput
           autoFocus
           value={name}
           onChange={(e) => setName(e.target.value)}

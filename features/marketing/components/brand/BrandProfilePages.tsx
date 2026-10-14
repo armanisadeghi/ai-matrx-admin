@@ -18,6 +18,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useUnsavedChangesGuard } from "@/lib/navigation/useUnsavedChangesGuard";
 import { isPersonBrand } from "@/features/marketing/lib/brand-kind";
 import { ProTextarea } from "@/components/official/ProTextarea";
+import { ProInput } from "@/components/official/ProInput";
 import { useBrand, useUpdateBrand } from "@/features/marketing/data/hooks";
 import { LoadingSurface } from "@/features/marketing/components/shared/MarketingUi";
 import {
@@ -306,7 +307,7 @@ function MessagingEditor({ brand, saved, report }: { brand: MarketingBrand; save
         {pillars.map((pillar, index) => (
           <div key={index} className="grid gap-2 rounded-lg border border-border p-3">
             <div className="flex items-center gap-2">
-              <Input
+              <ProInput
                 aria-label="Pillar title"
                 value={pillar.title}
                 placeholder="Certified, documented destruction"
@@ -336,13 +337,13 @@ function MessagingEditor({ brand, saved, report }: { brand: MarketingBrand; save
         </div>
         {content.map((pillar, index) => (
           <div key={index} className="grid gap-2 sm:grid-cols-[1fr_2fr_auto]">
-            <Input
+            <ProInput
               aria-label="Content pillar name"
               value={pillar.name}
               placeholder="Compliance explained"
               onChange={(event) => setContent(content.map((p, i) => (i === index ? { ...p, name: event.target.value } : p)))}
             />
-            <Input
+            <ProInput
               aria-label="Content pillar description"
               value={pillar.description ?? ""}
               placeholder="What this theme covers"
@@ -362,6 +363,7 @@ function MessagingEditor({ brand, saved, report }: { brand: MarketingBrand; save
         </div>
         {tags.map((entry, index) => (
           <div key={index} className="grid grid-cols-[1fr_9rem_auto] gap-2">
+            {/* ui-exception: a hashtag is a raw social identifier */}
             <Input
               aria-label="Hashtag"
               value={displayHashtag(entry.tag)}

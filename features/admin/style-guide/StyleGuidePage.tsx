@@ -1,5 +1,7 @@
 "use client";
 
+import { ProInput } from "@/components/official/ProInput";
+
 // THE living style guide: every rule of common-docs/systems/platform/ui-shell/STYLE-GUIDE.md
 // rendered with the real components. If this page and the written guide disagree, fix the
 // wrong one in the same change. The "Don't" samples are deliberately wrong and live in
@@ -618,9 +620,9 @@ function Components() {
               />
             </ControlRow>
           </Row>
-          <Row name="Field · SearchField">
+          <Row name="ProInput · SearchField">
             <ControlRow>
-              <Field placeholder="Brand name" width="md" />
+              <ProInput placeholder="Brand name" className="w-64" />
               <SearchField placeholder="Search brands" width="md" />
             </ControlRow>
           </Row>

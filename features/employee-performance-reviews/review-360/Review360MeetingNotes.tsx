@@ -1,5 +1,7 @@
 "use client";
 
+import { ProTextarea } from "@/components/official/ProTextarea";
+
 // THE REVIEW MEETING'S CONFIDENTIAL NOTES BOX (HR-360 wave 3), under the side-by-side in the Meet
 // panel and on the in-person page. The HR manager writes and shares; the employee and the manager
 // see the notes only once HR shares them. Every open is logged (iam.open_confidential_audited).
@@ -131,7 +133,7 @@ export function Review360MeetingNotes({
   return (
     <section className={BOX} data-review-360-notes="write">
       {head(state.view?.shared ? <Badge>Shared</Badge> : <Badge>HR only</Badge>)}
-      <Textarea
+      <ProTextarea
         aria-label="Meeting notes"
         value={draft}
         onChange={(e) => setDraft(e.target.value)}

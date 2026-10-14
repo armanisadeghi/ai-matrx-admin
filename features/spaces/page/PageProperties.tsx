@@ -1,5 +1,7 @@
 "use client";
 
+import { ProInput } from "@/components/official/ProInput";
+
 // features/spaces/page/PageProperties.tsx — N13: Notion's page properties on a normal page.
 //
 // Under the title, one row per property: its type icon and name on the left, the value on the right
@@ -110,7 +112,7 @@ function PropertyName({ p, editable, onRename, onDelete }: { p: PageProperty; ed
       </PopoverTrigger>
       <PopoverContent surface="solid" align="start" width="sm" padding="sm">
         <div className="flex flex-col gap-2">
-          <Field
+          <ProInput
             aria-label="Property name"
             value={name}
             onChange={(e) => setName(e.target.value)}

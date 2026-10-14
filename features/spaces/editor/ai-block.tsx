@@ -106,6 +106,7 @@ function AiBlockView({ p, ctx }: { p: Record<string, unknown>; ctx: Ctx }) {
         editing ? (
           <div className="spaces-ai-block-ask">
             <AGENT_ICON size={16} className="spaces-ai-block-icon" />
+            {/* ui-exception: inline AI composer owns focus, geometry, and its adjacent submit control */}
             <textarea
               ref={input}
               className="spaces-ai-block-input"

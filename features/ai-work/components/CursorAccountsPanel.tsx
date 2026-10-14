@@ -1,5 +1,7 @@
 "use client";
 
+import { ProInput } from "@/components/official/ProInput";
+
 /**
  * Cursor accounts — the person's connected Cursor API keys, any number.
  *
@@ -146,7 +148,8 @@ export function CursorAccountsPanel() {
               autoComplete="off"
               aria-label="Cursor API key"
             />
-            <Input
+            <ProInput
+              enableVoice={false}
               value={label}
               onChange={(e) => setLabel(e.target.value)}
               placeholder="Name (optional)"

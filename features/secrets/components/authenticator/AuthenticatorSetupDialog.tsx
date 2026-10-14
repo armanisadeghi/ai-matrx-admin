@@ -1,5 +1,7 @@
 "use client";
 
+import { ProInput } from "@/components/official/ProInput";
+
 import { useEffect, useRef, useState } from "react";
 import { Check, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -260,7 +262,7 @@ function SetupContent({
               </summary>
               <div className="mt-3 space-y-2">
                 <Label htmlFor="authenticator-name">Name</Label>
-                <Input
+                <ProInput
                   id="authenticator-name"
                   value={displayName}
                   onChange={(event) => setDisplayName(event.target.value)}

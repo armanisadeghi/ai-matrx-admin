@@ -1,5 +1,7 @@
 "use client";
 
+import { ProTextarea } from "@/components/official/ProTextarea";
+
 /**
  * Mode "Build it with Claude Code". Without a draft: the copyable prompt for Claude Code. With
  * `?draft=<id>` (the link the plugin skill returns): what Claude Code sent, then Build, through the
@@ -49,7 +51,7 @@ function PromptToCopy() {
         <label className="text-sm font-medium" htmlFor="job">
           What should the agent do? (optional)
         </label>
-        <Textarea id="job" rows={2} value={job} onChange={(e) => setJob(e.target.value)} />
+        <ProTextarea id="job" rows={2} value={job} onChange={(e) => setJob(e.target.value)} />
       </div>
       <pre
         className="whitespace-pre-wrap rounded-md border bg-card p-3 text-sm"

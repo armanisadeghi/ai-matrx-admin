@@ -1,5 +1,7 @@
 "use client";
 
+import { ProInput } from "@/components/official/ProInput";
+
 /** The one price editor: amount, currency, unit and note. Used by Add and Edit offering. */
 
 import { Input } from "@ai-matrx/design-system/controls";
@@ -42,6 +44,7 @@ export function OfferingPriceFields({
           onChange={(event) => set({ priceAmount: event.target.value })}
           placeholder="199"
         />
+        {/* ui-exception: currency is a three-letter ISO code */}
         <Input
           aria-label="Currency"
           value={value.priceCurrency}
@@ -62,7 +65,7 @@ export function OfferingPriceFields({
           ))}
         </select>
       </div>
-      <Input
+      <ProInput
         aria-label="Price note"
         value={value.priceNote}
         onChange={(event) => set({ priceNote: event.target.value })}

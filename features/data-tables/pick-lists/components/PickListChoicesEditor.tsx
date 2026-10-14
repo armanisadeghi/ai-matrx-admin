@@ -1,5 +1,7 @@
 "use client";
 
+import { ProInput } from "@/components/official/ProInput";
+
 // features/data-tables/pick-lists/components/PickListChoicesEditor.tsx — THE CHOICES OF A PICK LIST, one row
 // each (lane PICK-LISTS, 2026-10-10). Add, rename and archive write straight to the list's own Records
 // through the pick-list service; an archived choice is soft and records that hold it keep it. A choice's
@@ -89,7 +91,7 @@ export function PickListChoicesEditor({ listId }: { listId: string }) {
       {choices.length === 0 ? <EmptyState icon={<ListChecks className="h-5 w-5" />} title="No choices yet" /> : null}
       {choices.map((choice) => (
         <div key={choice.id} className="flex items-center gap-2" data-testid="choice-row">
-          <Field
+          <ProInput
             aria-label="Choice"
             value={drafts[choice.id] ?? choice.label}
             disabled={busy}
@@ -105,7 +107,7 @@ export function PickListChoicesEditor({ listId }: { listId: string }) {
         </div>
       ))}
       <div className="flex items-center gap-2">
-        <Field
+        <ProInput
           aria-label="New choice"
           placeholder="Add a choice"
           value={adding}

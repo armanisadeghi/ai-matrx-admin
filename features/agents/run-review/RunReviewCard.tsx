@@ -1,5 +1,7 @@
 "use client";
 
+import { ProTextarea } from "@/components/official/ProTextarea";
+
 /**
  * RunReviewCard — the end-of-run card under an agent's last completed answer.
  *
@@ -573,7 +575,7 @@ function RunReviewCardInner({
 
       {commentOpen && (
         <div className="px-3 pb-3">
-          <textarea
+          <ProTextarea
             value={comment}
             onChange={(e) => setComment(e.target.value)}
             onBlur={() => void persist({ rating, overall, rank, scores, comment })}

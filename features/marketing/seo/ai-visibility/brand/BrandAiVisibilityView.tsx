@@ -1,5 +1,7 @@
 "use client";
 
+import { ProInput } from "@/components/official/ProInput";
+
 /** The full brand-level view: latest score and leaderboard, who is asked about, competitors, history. */
 
 import { useState } from "react";
@@ -152,7 +154,7 @@ export function BrandAiVisibilityView({ brandId }: { brandId: string }) {
         </div>
         {canEdit ? (
           <div className="mt-3 flex gap-2">
-            <Input
+          <ProInput
               value={draft}
               onChange={(e) => setDraft(e.target.value)}
               onKeyDown={(e) => {

@@ -175,6 +175,7 @@ function IntelRow({
       ) : null}
       {!url ? (
         <div className="mt-1 flex items-center gap-1.5">
+          {/* ui-exception: the pasted address is a raw external URL */}
           <Input
             value={pasted}
             onChange={(e) => setPasted(e.target.value)}

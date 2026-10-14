@@ -1,5 +1,7 @@
 "use client";
 
+import { ProInput } from "@/components/official/ProInput";
+
 // features/unified-data/custom-fields/CustomFieldsSettingsPage.tsx — LANE ALL-MY-DATA
 //
 // A STANDARD TABLE'S CUSTOM FIELDS, in their native form: the fields one organization added to the
@@ -96,7 +98,7 @@ export function CustomFieldsSettingsPage({ token, organizationId }: { token: str
           </ul>
           <div className="flex flex-wrap items-end gap-2">
             <div className="min-w-[200px] flex-1">
-              <Input
+              <ProInput
                 placeholder="Field name"
                 aria-label="Field name"
                 value={label}

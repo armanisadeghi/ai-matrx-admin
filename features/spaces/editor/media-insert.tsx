@@ -196,6 +196,7 @@ function MediaPicker({ req }: { req: PickerRequest }) {
         </div>
       ) : (
         <div className="flex flex-col items-center gap-2 p-3">
+          {/* ui-exception: media link is a raw external URL */}
           <Field
             placeholder={provider?.placeholder ?? words.placeholder}
             value={link}
