@@ -36,7 +36,7 @@ Smart Add Brand: a person types a website, a social link or a name, Smart Add fi
 |---|---|---|
 | `/smart-add/company`, `/smart-add/person` | the kind | switching kind is `router.push` (Back flips it back) |
 | `/smart-add/enrich/<brandId>` | enrich that brand | a link |
-| `?via=website\|social\|name` | the open way-in card (implied by a prefill when absent) | pushed without navigating (Back closes the card) |
+| `?via=website\|social\|name` | the open way-in card (when absent: implied by a prefill; `/person` opens the name fields) | pushed without navigating (Back closes the card) |
 | `?website=ritualcoffee.com` | company prefill | typing replaces it, debounced 400 ms |
 | `?social=@handle` or a profile URL (encoded) `&platform=instagram` | social prefill (`platform` only beside `social`) | replace |
 | `?name=…&occupation=…&company=…&city=…` | person prefill (`name` + `city` also name a business) | replace |
