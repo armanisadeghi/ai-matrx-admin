@@ -73,6 +73,9 @@ const STATE_LABEL: Record<WindowState, string> = {
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
+
+/** Every tab shares this height (Dupes, the tallest, needs ~700px). */
+const POPOVER_HEIGHT_PX = 720;
 export default function SidebarWindowToggle() {
   const dispatch = useAppDispatch();
   const hidden = useAppSelector(selectWindowsHidden);
@@ -222,6 +225,7 @@ export default function SidebarWindowToggle() {
             </span>
           )}
         </span>
+        <ChevronRight size={14} strokeWidth={1.75} className="shell-nav-flyout-caret" aria-hidden="true" />
       </button>
 
       {/* Floating rescue — left-stack layouts cover the sidebar Windows icon.
@@ -266,12 +270,13 @@ export default function SidebarWindowToggle() {
             style={{
               left: pos.x,
               bottom: pos.bottom,
-              maxHeight: pos.maxHeight,
-              minHeight: Math.min(380, pos.maxHeight),
+              // One height for every tab, so switching tabs never resizes the popover:
+              // a little taller than Dupes (the tallest tab), capped to the room above.
+              height: Math.min(POPOVER_HEIGHT_PX, pos.maxHeight),
             }}
           >
             {/* ── Tabs Header ──────────────────────────────────────────────── */}
-            <div className="flex items-center px-2 py-1 mb-1 border-b border-border/50 gap-1 overflow-x-auto">
+            <div className="flex shrink-0 items-center px-2 py-1 mb-1 border-b border-border/50 gap-1 overflow-x-auto">
               <button
                 type="button"
                 className={cn(
@@ -357,7 +362,7 @@ export default function SidebarWindowToggle() {
 
             {/* ── Tab Content: Visibility ──────────────────────────────────── */}
             {activeTab === "shown" && (
-              <div className="flex-1 flex flex-col">
+              <div className="flex-1 min-h-0 flex flex-col overflow-y-auto">
                 <MenuItem
                   icon={
                     hidden ? (
@@ -466,7 +471,7 @@ export default function SidebarWindowToggle() {
 
             {/* ── Tab Content: Layout ──────────────────────────────────────── */}
             {activeTab === "layout" && (
-              <div className="flex-1 flex flex-col">
+              <div className="flex-1 min-h-0 flex flex-col overflow-y-auto">
                 <MenuSection label="Progression" />
                 <div className="flex justify-center items-center gap-1.5 px-2 py-1.5 bg-accent/30 rounded-md mx-2 mb-2">
                   <button

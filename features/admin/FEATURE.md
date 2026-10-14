@@ -59,7 +59,7 @@ product feature that does not already have one.
 - `features/shell/constants/route-menu-registry.ts` — maps every `/administration` pathname to the Administration menu; more-specific route menus remain first.
 - `features/shell/components/sidebar/RouteMenuSlot.tsx` — shared desktop injection and Main Menu switcher.
 - `features/shell/components/mobile-sheet/MobileRouteMenuSlot.tsx` — shared mobile injection and Main Menu switcher.
-- `features/shell/components/sidebar/admin-menu/AdminMenu.tsx` — Administration entry menu shown while the main menu is active.
+- `features/shell/components/sidebar/admin-menu/AdminSidebarSection.tsx` — the sidebar footer's admin block; Admin Launchpad is its one door into administration.
 - `features/shell/components/sidebar/admin-menu/AdminMobileMenu.tsx` — equivalent main-menu entry on mobile.
 - `features/shell/components/sidebar/admin-menu/AdminSidebarSection.tsx` — prominent admin-only Launchpad door in the normal desktop sidebar footer.
 

@@ -41,7 +41,7 @@ The app shell renders one canonical navigation tree across the desktop sidebar a
 ### Launch administration work
 
 1. `AdminSidebarSection` hydrates the existing `selectIsAdmin` gate.
-2. Admins receive a neutral Admin Launchpad anchor before the Administration cascade and operational toggles. It is a launcher, so it never borrows the selected-route treatment.
+2. Admins receive a neutral Admin Launchpad anchor (shield icon) — the one door into administration — followed by operational toggles. It is a launcher, so it never borrows the selected-route treatment.
 3. The anchor opens `/administration/launchpad` in a new tab so the current product workspace is never displaced.
 
 ### Search the menu (desktop)
@@ -68,7 +68,7 @@ The app shell renders one canonical navigation tree across the desktop sidebar a
 - **Keep the mode control distinct from navigation rows.** Its bordered glass pill communicates a reversible mode change, not a destination.
 - **Never depend on animation events for the view flip.** Hidden pages may not emit them.
 - **Do not force every route menu into one row component.** Consumers use different elements, state, groupings, and specialized rows; share the visual contract unless behavior also becomes identical.
-- **Keep Admin Launchpad directly reachable.** It is a real new-tab anchor in the admin-only footer, not another level inside the Administration cascade.
+- **Keep Admin Launchpad directly reachable.** It is a real new-tab anchor in the admin-only footer and the only admin door there.
 - **Selected means the current route.** Global groups, flyout children, mobile drill-ins, Large Route menus, and alternate module sidebars use the same blue selected treatment and choose the single most-specific route owner (`findOwningNavItem`). A group may claim a route from its own href, its first path segment, or a declared `ownedRoutePrefixes` alias — never from a flyout child that points into another module. When two groups still claim the same path (a placeholder borrowing another module's href), only the most-specific owner lights up. New-tab launchers such as Admin Launchpad stay neutral. A module with a legacy/alternate namespace declares it once through `ownedRoutePrefixes`; consumers must not duplicate pathname heuristics.
 - **Phone navigation is a solid bottom drawer.** Tablet widths use the same drawer primitive as a bounded left edge panel, while phones retain the fixed-height bottom drawer. Do not restore glass, inline primary-group accordions, or an adaptive-height panel.
 - **Keep one mobile scroll area.** `BottomSheetBody` owns scrolling; drill-in screens and search results flow inside it.
@@ -94,6 +94,7 @@ The app shell renders one canonical navigation tree across the desktop sidebar a
 
 ## Change log
 
+- `2026-10-14` — Claude: admin footer cleanup. Administration cascade and the AI v1/v2 toggle removed; Admin Launchpad takes the shield icon. The bug is a one-press Debug mode switch (success colour + On/Off tag); the admin indicator moved into the Production menu. Every row that opens a menu or popover (Production, Windows, Settings, organization, account) carries a right chevron. With a domain panel open, an admin's footer spans the full width with labels. The Windows popover keeps one height (720px, capped to the room) across tabs.
 - `2026-10-13` — Claude: added the desktop "Search menu" row above Favorites and its ranked menu-search palette (main nav + Settings + admin cascade, breadcrumbs, recents, ⌘/).
 
 - `2026-10-04` — Claude: THE CORRECTED DOMAIN TREE (Arman's rulings, 2026-10-04). Strip: Board (home: dashboard, launchpad, Boards sub-area, War Room) · Projects (beside Board: the two daily-work surfaces) · Agents · Applets · Chat · Workflows · Intelligence (+Reports) · Masterwork · Knowledge (Library icon, +Acquisition) · Web (scraper, search, Connect a Computer) · Content (notes, documents, workbooks, maps, e-sign, text utilities) · Data (record store, Shapes studio, scopes) · Files (cloud drive + PDF) · Media (images, libraries, camera, scanner) · Audio (transcripts, voice playground/tester, voice settings) · Code · Publish (+Print, flattened) · Communications · CRM · Marketing · Human Resources · Integrations · Account · Industries (Commerce gains Product Capture; its landing is Capture Products, the guest-safe page) · Other. Workspace and the Media sub-areas are gone; mixed menus (leaves plus one sub-area) render on desktop and phone. New strip icons `Library`, `Cloud`, `AudioLines` in `shellIconMap.ts`. `nav-no-loss.test.ts` holds the new order, the five stuff-domain owners and unique strip icons; `is-nav-group-active.test.ts` lights each moved family (/files, /notes, /data, /war-room, /transcripts, /images, /board).

@@ -23,6 +23,7 @@
 // (rendered by the shell root), so every item's `<label htmlFor>` close keeps
 // working. Geometry lives in styles/shell.css § 15b.
 
+import { ChevronRight } from "lucide-react";
 import UserMenuPanel from "../header/header-right-menu/UserMenuPanel";
 import GuestUserMenuTrigger from "../header/header-right-menu/GuestUserMenuTrigger";
 import { RailUserAvatar } from "./RailUserAvatar";
@@ -69,6 +70,7 @@ export default function ShellUserBlock({
               />
             </span>
             <span className="shell-nav-label">{displayName}</span>
+            <ChevronRight size={14} strokeWidth={1.75} className="shell-nav-flyout-caret" aria-hidden="true" />
           </label>
         ) : (
           <GuestUserMenuTrigger />

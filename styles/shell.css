@@ -759,6 +759,12 @@ button.shell-nav-item {
   color: rgb(244, 114, 182); /* pink-400 */
 }
 
+/* A switch that is ON (the footer's Debug mode): the success colour, hover included. */
+.shell-nav-icon.shell-nav-icon-on,
+.shell-nav-item:hover .shell-nav-icon.shell-nav-icon-on {
+  color: hsl(var(--success));
+}
+
 .shell-nav-label {
   opacity: 0;
   transform: translateX(-4px);
@@ -3387,7 +3393,7 @@ html[data-board-embed] .shell-main {
   color: var(--shell-pill-text);
 }
 
-.shell-root[data-pathname^="/administration/launchpad"] .shell-account-rail .shell-nav-label {
+.shell-root[data-pathname^="/administration/launchpad"] .shell-account-rail :is(.shell-nav-label, .shell-nav-flyout-caret) {
   opacity: 0;
   pointer-events: none;
 }

@@ -8,41 +8,28 @@
 // Renders ONLY for admins (any tier) via `selectIsAdmin`. Wrapped in top + bottom
 // borders so it reads as a distinct section; new admin chrome can be dropped in
 // here. Contains:
-//   - Admin Launchpad (prominent new-tab door that preserves the current work)
-//   - Administration (the lazy 3-layer cascade; catalog never loads for non-admins)
+//   - Admin Launchpad (the one door into administration; opens a new tab so the current work stays)
 //   - Builder (window panel: everything the current page published; lights up when it has entries)
+//   - Watch AI (self-gates to debug mode)
+//   - Error Inspector
 //   - Creator Hub toggle (window panel; self-gates to creators)
-//   - Debug indicator toggle (self-gates to super-admin)
-//   - Localhost / Production server toggle (self-gates to admin)
-//   - AI runtime v1 / v2 API-version toggle (self-gates to admin)
+//   - Debug mode switch (self-gates to super-admin)
+//   - Localhost / Production server toggle + its menu (incl. the admin indicator; self-gates to admin)
 
 import { useEffect, useRef } from "react";
-import dynamic from "next/dynamic";
 import { rememberAdminFooterHeight } from "./admin-footer-reserve";
 import AppLink from "@/components/navigation/AppLink";
 import { ADMIN_LAUNCHPAD_PATH } from "@/features/admin/constants/admin-categories";
 import { useIsMounted } from "@/hooks/use-is-mounted";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectAuthReady, selectIsAdminPerson } from "@/lib/redux/selectors/userSelectors";
-import SidebarAdminIndicatorToggle from "../../controls/SidebarAdminIndicatorToggle";
-import SidebarApiVersionToggle from "../../controls/SidebarApiVersionToggle";
 import SidebarBuilderToggle from "../../controls/SidebarBuilderToggle";
 import SidebarWatchAiToggle from "../../controls/SidebarWatchAiToggle";
 import SidebarCreatorHubToggle from "../../controls/SidebarCreatorHubToggle";
+import SidebarDebugModeToggle from "../../controls/SidebarDebugModeToggle";
 import SidebarEnvToggle from "../../controls/SidebarEnvToggle";
 import SidebarErrorInspectorToggle from "../../controls/SidebarErrorInspectorToggle";
 import ShellIcon from "../../ShellIcon";
-
-const AdminMenu = dynamic(() => import("./AdminMenu"), {
-  ssr: false,
-  // Reserves the row's height so the admin block does not grow when the chunk arrives.
-  loading: () => (
-    <div className="shell-nav-item" aria-hidden style={{ visibility: "hidden" }}>
-      <span className="shell-nav-icon" />
-      <span className="shell-nav-label">Administration</span>
-    </div>
-  ),
-});
 
 export default function AdminSidebarSection() {
   // ADMIN IDENTITY: this section is the way INTO the admin section, so it
@@ -96,21 +83,19 @@ export default function AdminSidebarSection() {
         className="shell-nav-item shell-tactile-subtle"
       >
         <span className="shell-nav-icon">
-          <ShellIcon name="LayoutGrid" size={18} strokeWidth={1.75} />
+          <ShellIcon name="ShieldCheck" size={18} strokeWidth={1.75} />
         </span>
         <span className="shell-nav-label">Admin Launchpad</span>
         <span className="shell-nav-external">
           <ShellIcon name="ArrowUpRight" size={14} strokeWidth={1.75} />
         </span>
       </AppLink>
-      <AdminMenu />
       <SidebarBuilderToggle />
       <SidebarWatchAiToggle />
       <SidebarErrorInspectorToggle />
       <SidebarCreatorHubToggle />
-      <SidebarAdminIndicatorToggle />
+      <SidebarDebugModeToggle />
       <SidebarEnvToggle />
-      <SidebarApiVersionToggle />
     </div>
   );
 }

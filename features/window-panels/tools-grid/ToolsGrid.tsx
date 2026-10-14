@@ -114,7 +114,7 @@ export default function ToolsGrid({
   }
 
   return (
-    <div className="flex-1 flex flex-col overflow-y-auto mt-1">
+    <div className="flex-1 min-h-0 flex flex-col overflow-y-auto mt-1">
       {visibleCategories.map((cat, idx) => {
         const tiles = tilesByCategory.get(cat.id) ?? [];
         if (tiles.length === 0) return null;

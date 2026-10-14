@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { ChevronDown, Server } from "lucide-react";
+import { ChevronRight, Server } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import {
   clearServiceOverrides,
@@ -19,8 +19,11 @@ import {
   type ServiceEnvironment,
 } from "@/lib/api/service-routing";
 import { selectIsAdminPerson } from "@/lib/redux/selectors/userSelectors";
+import { selectIsSuperAdminDebugger } from "@/lib/redux/slices/userSlice";
+import { selectIsOverlayOpen, toggleOverlay } from "@/lib/redux/slices/overlaySlice";
 import {
   DropdownMenu,
+  DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuLabel,
   DropdownMenuRadioGroup,
@@ -45,6 +48,9 @@ export default function SidebarEnvToggle() {
   const activeHealth = useAppSelector(selectActiveServerHealth);
   const serviceTargets = useAppSelector(selectApiServiceTargets);
   const healthStatusRef = useRef(activeHealth.status);
+  // The admin indicator (floating server/health pill) is opened from this menu.
+  const canShowIndicator = useAppSelector(selectIsSuperAdminDebugger) ?? false;
+  const isIndicatorOpen = useAppSelector((state) => selectIsOverlayOpen(state, "adminIndicator"));
 
   useEffect(() => {
     healthStatusRef.current = activeHealth.status;
@@ -147,10 +153,21 @@ export default function SidebarEnvToggle() {
             aria-label="Configure API services individually"
             title="Configure API services individually"
           >
-            <ChevronDown size={14} />
+            <ChevronRight size={14} />
           </button>
         </DropdownMenuTrigger>
         <DropdownMenuContent side="right" align="end" className="w-72">
+          {canShowIndicator ? (
+            <>
+              <DropdownMenuCheckboxItem
+                checked={isIndicatorOpen}
+                onCheckedChange={() => dispatch(toggleOverlay({ overlayId: "adminIndicator" }))}
+              >
+                Show admin indicator
+              </DropdownMenuCheckboxItem>
+              <DropdownMenuSeparator />
+            </>
+          ) : null}
           <DropdownMenuLabel className="text-xs text-muted-foreground">
             All API services
           </DropdownMenuLabel>

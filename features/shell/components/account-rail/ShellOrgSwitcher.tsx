@@ -35,7 +35,7 @@
 
 import { useState } from "react";
 import { usePathname } from "next/navigation";
-import { ArrowRightLeft, Building2 } from "lucide-react";
+import { ArrowRightLeft, Building2, ChevronRight } from "lucide-react";
 import { SelectChevron } from "@ai-matrx/design-system";
 import { cn } from "@/lib/utils";
 import { useAppDispatch } from "@/lib/redux/hooks";
@@ -218,6 +218,7 @@ export function ShellOrgSwitcher({ variant = "rail" }: { variant?: Variant }) {
       >
         <span className="shell-nav-icon">{mark}</span>
         <span className={cn("shell-nav-label", asking && "text-primary")}>{labelNode}</span>
+        <ChevronRight size={14} strokeWidth={1.75} className="shell-nav-flyout-caret" aria-hidden="true" />
       </button>
     ) : (
       <button

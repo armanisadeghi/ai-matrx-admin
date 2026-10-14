@@ -135,6 +135,7 @@ export function ShellSettingsMenu({ variant = "rail" }: { variant?: "rail" | "dr
           <Settings size={18} strokeWidth={1.75} aria-hidden="true" />
         </span>
         <span className="shell-nav-label">Settings</span>
+        <ChevronRight size={14} strokeWidth={1.75} className="shell-nav-flyout-caret" aria-hidden="true" />
       </button>
     ) : (
       <button
