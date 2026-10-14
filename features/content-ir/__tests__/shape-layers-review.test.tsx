@@ -8,7 +8,7 @@ import path from "node:path";
 import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 
-import { adminShapePath, planKindFixIt, type FixItViewer } from "../react/fixit/fixit-plan";
+import { adminShapePath, planKindFixIt, planKindViewActions, type FixItViewer } from "../react/fixit/fixit-plan";
 import { FixItViewActions, KindFixItBarView } from "../react/fixit/KindFixItBar";
 import { readOwnInactiveLayerId } from "../react/fixit/layer-fixit";
 import { initialBuilderNotes } from "../admin/kind-builder-notes";
@@ -214,7 +214,7 @@ describe("round 2, defect 2: Turn on stays beside an org view", () => {
   it("the layer marker and the Turn on row render together", () => {
     const markup = renderToStaticMarkup(
       <FixItViewActions
-        plan={planKindFixIt(null, PLAIN, orgLayer, SLUG)}
+        plan={planKindViewActions(PLAIN, orgLayer, SLUG)}
         busy={false}
         onMakeMine={noop}
         onMakeOrg={noop}
@@ -269,19 +269,7 @@ describe("round 2, defect 4: the fix-it bar and the strip get Turn on from one p
 });
 
 describe("round 2, defect 5: the instance rides a nonce, never the URL", () => {
-  const store = new Map<string, string>();
-  beforeAll(() => {
-    (globalThis as unknown as { window: unknown }).window = {
-      localStorage: {
-        getItem: (k: string) => store.get(k) ?? null,
-        setItem: (k: string, v: string) => void store.set(k, v),
-        removeItem: (k: string) => void store.delete(k),
-      },
-    };
-  });
-  afterAll(() => {
-    delete (globalThis as unknown as { window?: unknown }).window;
-  });
+  beforeEach(() => window.localStorage.clear());
 
   it("parks, reads once, and the URL carries only the nonce", () => {
     const nonce = stashBuilderInstance({ __kind: "x", secret: "payload" }, 1_000);

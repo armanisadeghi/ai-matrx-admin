@@ -1,0 +1,10 @@
+--- first paint: card=[MYVIEW_PROBE]
+  My view | Edit | Remove | For my organization | Your view rendered. The shared view is the generic viewer.
+--- after Remove: card=[ORGVIEW_PROBE]
+  Your view is off | Undo | My organization's view | Edit | Remove | Make my view | Your organization's view rendered. The shared view is the generic viewer. | Your view is off | Undo
+--- after reload: card=[ORGVIEW_PROBE]
+  Your view is off | Turn on | My organization's view | Edit | Remove | Make my view | Your organization's view rendered. The shared view is the generic viewer.
+--- after Turn on: card=[MYVIEW_PROBE]
+  My view | Edit | Remove | For my organization | Your view rendered. The shared view is the generic viewer.
+cleanup: ok
+rows left: 0
