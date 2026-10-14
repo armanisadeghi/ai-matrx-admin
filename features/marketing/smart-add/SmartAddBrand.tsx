@@ -94,6 +94,7 @@ import {
   type RelatedCandidate,
 } from "./relations";
 import { useRelationKinds } from "./SmartAddExtras";
+import { useEntityKindLabel } from "./entityKind";
 import { suggestKind, type WebChoice } from "./webKinds";
 import {
   SETUP_STEPS,
@@ -273,6 +274,8 @@ export function SmartAddBrand({
   const [screenshots, setScreenshots] = useState<BrandScreenshots | null>(null);
   // "Person with a business" (a creator or solo professional): a person on the person path.
   const [kindBoth, setKindBoth] = useState(false);
+  // The header label's default: the entity-kind step's answer, unless the person changed the label themselves.
+  const kindLabel = useEntityKindLabel(kindBoth ? "both" : person ? "person" : "business");
 
   const [creating, setCreating] = useState(false);
   const [createError, setCreateError] = useState<string | null>(null);
@@ -413,6 +416,7 @@ export function SmartAddBrand({
     setNamesakes(new Set());
     setPersonSignals(null);
     setKindBoth(false);
+    kindLabel.reset();
     resetHelperAnswers();
   };
 
@@ -666,6 +670,7 @@ export function SmartAddBrand({
 
   /** The header label's change menu: the tab is the answer; this only corrects it. */
   const answerKind = (answer: "person" | "business" | "both") => {
+    kindLabel.choose();
     setKindBoth(answer === "both");
     setPerson(answer === "person" || answer === "both");
   };
@@ -1139,6 +1144,7 @@ export function SmartAddBrand({
               setSuggestionsByRun((cur) => (JSON.stringify(cur[r.runId as string]) === JSON.stringify(next) ? cur : { ...cur, [r.runId as string]: next }))
             }
             onSignals={setPersonSignals}
+            onEntityKind={kindLabel.suggest}
             onPath={(p) => onPath(r.runId as string, p)}
             onScreenshots={setScreenshots}
             onView={onView}
@@ -1339,7 +1345,7 @@ export function SmartAddBrand({
 
       {/* The brand as it stands: the primary choices, building as the person confirms. */}
       <div className="motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-3 motion-safe:duration-500">
-      <BrandCard basics={cardBasics} screenshot={person ? null : (screenshots?.desktop?.url ?? null)} person={person} kind={kindBoth ? "both" : person ? "person" : "business"} onKind={answerKind} location={basics.facts.find((f) => f.field === "address")?.value ?? null} />
+      <BrandCard basics={cardBasics} screenshot={person ? null : (screenshots?.desktop?.url ?? null)} person={person} kind={kindLabel.kind} onKind={answerKind} location={basics.facts.find((f) => f.field === "address")?.value ?? null} />
       </div>
 
       {situation === "new" ? (

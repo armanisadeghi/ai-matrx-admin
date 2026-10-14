@@ -23,6 +23,7 @@ import { evidenceFromPayload, type EvidenceItem } from "./evidence";
 import { factsFromPayload, type BrandFact } from "./validate/queue";
 import { brandNameFromPayload, factEvidence, webFirstData } from "./firstData";
 import { suggestionsFromPayload, type WeThinkSuggestion } from "./weThink";
+import { parseEntityKind, type EntityKind } from "./entityKind";
 
 /** The steps a Smart Add workflow shows, in order. */
 export type SmartAddStepPair = readonly string[];
@@ -37,6 +38,8 @@ const ANCHOR_STEPS: SmartAddStepPair = ["person_anchor_search", "person_anchor_e
 export const PARKED_WEB_NOTE = "Parked domain — web results set aside";
 /** The person / business verdict step (aidream brand.identify.person_signals). */
 const SIGNALS_STEP = "person_signals";
+/** The person-or-business decision step (mandate brand_intake.entity_kind_decision): runs only when the rules are unsure. */
+const ENTITY_KIND_STEP = "entity_kind";
 /** The path decision step (aidream brand.identify.path_decision; PATHS.md). */
 const PATH_STEP = "path_decision";
 
@@ -206,6 +209,7 @@ export function SmartAddRound({
   onFacts,
   onSuggestions,
   onSignals,
+  onEntityKind,
   onPath,
   onScreenshots,
   onView,
@@ -219,6 +223,8 @@ export function SmartAddRound({
   onSuggestions?: (suggestions: Record<string, WeThinkSuggestion>) => void;
   /** The person / business verdict, once the person_signals step reports it. */
   onSignals?: (signals: PersonSignals) => void;
+  /** The entity-kind decision's answer, once that step reports it (header label default). */
+  onEntityKind?: (kind: EntityKind) => void;
   /** The round's path (aidream brand.identify.path_decision): {subject, path, runs_as}, for path_history. */
   onPath?: (decision: RoundPath) => void;
   /** The homepage pictured (aidream brand.identify.screenshots), desktop and mobile, once its frame lands. */
@@ -262,6 +268,12 @@ export function SmartAddRound({
     parsePersonSignals(signalsOut?.person_signals) ??
     emissions.map((e) => parsePersonSignals((e.payload as Record<string, unknown> | null)?.person_signals)).find(Boolean) ??
     null;
+  const entityAggregate = useAppSelector(selectNodeAggregate(runId, ENTITY_KIND_STEP));
+  const entityOut = entityAggregate.invocations[entityAggregate.invocations.length - 1]?.output ?? null;
+  const entityKind = parseEntityKind(entityOut);
+  useEffect(() => {
+    if (entityKind) onEntityKind?.(entityKind);
+  }, [entityKind, onEntityKind]);
   const pathAggregate = useAppSelector(selectNodeAggregate(runId, PATH_STEP));
   const pathOut = pathAggregate.invocations[pathAggregate.invocations.length - 1]?.output ?? null;
   const pathRec = (pathOut?.path_decision ??
