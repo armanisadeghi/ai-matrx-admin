@@ -28,6 +28,7 @@
 import "./kind-registry";
 import {
   ComponentResolver,
+  KindComponentOverlayLoader,
   type ComponentResolution,
   type ComponentRole,
   type KindComponentRow,
@@ -47,11 +48,11 @@ import {
 import { installKindRegistryDebug } from "@ai-matrx/rich-content/kinds/registry/registry-debug";
 import { hasSession, whenSessionReady } from "./session-ready";
 import {
-  KindComponentOverlayLoader,
   overlayViewerId,
   readViewerLayerRows,
   readViewerOrganizationIds,
   watchOverlayViewer,
+  watchViewerMembership,
 } from "./kind-component-layers";
 import { browserAdminLaneOpen } from "@/utils/supabase/adminLane";
 import {
@@ -191,6 +192,9 @@ export class ComponentRegistry extends ComponentResolver {
   syncOverlay(force = false): Promise<void> {
     watchOverlayViewer(() => {
       void this.overlayLoader.sync();
+    });
+    watchViewerMembership(() => {
+      void this.overlayLoader.sync(true);
     });
     return this.overlayLoader.sync(force);
   }
