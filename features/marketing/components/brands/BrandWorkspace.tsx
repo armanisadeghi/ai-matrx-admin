@@ -250,6 +250,17 @@ function firstAssetUrl(
   return null;
 }
 
+/**
+ * The homepage as a visitor sees it on a computer (Smart Add files it as an `image` titled
+ * "Homepage on a computer"): more than a logo, so it fronts the header.
+ */
+function homepageShotUrl(assets: BrandAsset[]): string | null {
+  const match = assets
+    .filter((asset) => asset.kind === "image" && /^homepage on a computer$/i.test((asset.title ?? "").trim()))
+    .sort((a, b) => a.sort_order - b.sort_order)[0];
+  return match ? assetPreviewUrl(match) : null;
+}
+
 const FACT_KIND_ICONS: Record<BusinessFactKind, LucideIcon> = {
   phone: Phone,
   fax: Printer,
@@ -506,6 +517,7 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
     favicon_url: current.favicon_url || firstAssetUrl(assetRows, ["favicon"]),
   };
   const heroCover =
+    homepageShotUrl(assetRows) ||
     secureImageUrl(current.og_image_url) ||
     firstAssetUrl(assetRows, ["og_image", "hero_image", "twitter_image"]);
   const sortedAssets = [...assetRows].sort(
@@ -794,17 +806,20 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
               ) : null}
             </div>
             {heroCover ? (
-              // The brand's own public og/hero image — the share-card face of
-              // the brand, straight from discovery.
-              <img
-                src={heroCover}
-                alt=""
-                loading="lazy"
-                className="hidden h-20 w-auto max-w-40 shrink-0 rounded-md border border-border object-cover sm:block"
-                onError={(event) => {
-                  event.currentTarget.style.display = "none";
-                }}
-              />
+              // The homepage picture (else the brand's own og/hero image). The box is a fixed 16:10
+              // size so the header never shifts when the image arrives; the image loads lazily.
+              <div className="relative hidden h-20 w-32 shrink-0 overflow-hidden rounded-md border border-border bg-muted sm:block">
+                <img
+                  src={heroCover}
+                  alt=""
+                  loading="lazy"
+                  decoding="async"
+                  className="absolute inset-0 h-full w-full object-cover object-top"
+                  onError={(event) => {
+                    event.currentTarget.parentElement?.style.setProperty("display", "none");
+                  }}
+                />
+              </div>
             ) : null}
             <div className="flex shrink-0 items-center gap-1.5">
               <CopyButtons size="icon" {...brandCopy} />
