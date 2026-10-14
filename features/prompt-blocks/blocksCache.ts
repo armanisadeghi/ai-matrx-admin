@@ -27,9 +27,23 @@ export function winningRowId(
   runOrgId: string | null,
 ): string | null {
   const same = rows.filter((r) => r.name === name);
-  const personal = same.find((r) => r.visibility === "personal" && r.created_by === meId);
+  const personal = runOrgId
+    ? same.find(
+        (r) =>
+          r.visibility === "personal" &&
+          r.created_by === meId &&
+          r.organization_id === runOrgId,
+      )
+    : undefined;
   if (personal) return personal.id;
-  const org = same.find((r) => r.organization_id !== systemOrgId && r.visibility !== "personal" && (!runOrgId || r.organization_id === runOrgId));
+  const org = runOrgId
+    ? same.find(
+        (r) =>
+          r.organization_id !== systemOrgId &&
+          r.visibility !== "personal" &&
+          r.organization_id === runOrgId,
+      )
+    : undefined;
   if (org) return org.id;
   return same.find((r) => r.organization_id === systemOrgId)?.id ?? null;
 }

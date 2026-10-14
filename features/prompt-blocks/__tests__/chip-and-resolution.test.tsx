@@ -71,6 +71,10 @@ describe("which block wins (the ladder the picker and panel show)", () => {
   });
   it("another organization's block never wins for this run", () => {
     expect(winningRowId([rows[1], rows[0]], "rules", "u9", SYSTEM_ORG_ID, "o2")).toBe("sys");
+    expect(winningRowId(rows, "rules", "u1", SYSTEM_ORG_ID, "o2")).toBe("sys");
+  });
+  it("without an authoritative run organization, only the system block can win", () => {
+    expect(winningRowId(rows, "rules", "u1", SYSTEM_ORG_ID, null)).toBe("sys");
   });
   it("Model view names the level", () => {
     expect(blockLevelLabel("personal")).toBe("Mine");
