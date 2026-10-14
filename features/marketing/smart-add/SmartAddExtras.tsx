@@ -6,13 +6,13 @@
  * conflicted / established) and the side-by-side compare used when look-alikes are found.
  */
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { proxiedExternalImageUrl } from "@/lib/media/external-image";
 import { brightnessOf, shadeForBrightness } from "./logo-shade";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
-import { BadgeCheck, Check, ExternalLink, Globe, Plus, X } from "lucide-react";
-import { Button, Field, Select, type SelectOption } from "@ai-matrx/design-system/controls";
+import { BadgeCheck, Check, ChevronLeft, ChevronRight, ExternalLink, Globe, Plus, X } from "lucide-react";
+import { Button, DecisionControl, Field, Select, type SelectOption, type WayOutItem } from "@ai-matrx/design-system/controls";
 import { addUtmSource } from "@/utils/url-utm";
 import { extractErrorMessage } from "@/utils/errors";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
@@ -38,9 +38,8 @@ import {
   type EvidenceItem,
   type Relation,
 } from "./evidence";
-import { STANCE_LABEL } from "./webKinds";
+import { STANCE_LABEL, STANCE_ORDER } from "./webKinds";
 import { parseSuggestion } from "./validate/queue";
-import { Glow, WeThinkHint } from "./WeThinkHint";
 
 // ── Custom ──────────────────────────────────────────────────────────────────────
 
@@ -369,193 +368,154 @@ function CandidateAvatar({ c }: { c: Candidate }) {
   );
 }
 
-export function RelationPicker({
-  kinds,
-  relation,
-  onRelate,
-  onCustom,
-  emptyLabel = "Related…",
-  className = "min-w-36 flex-1",
-  disabled,
-}: {
-  kinds: BrandRelationKind[];
-  relation: Relation | null;
-  onRelate: (relation: Relation | null) => void;
-  onCustom: (label: string) => Promise<void>;
-  emptyLabel?: string;
-  className?: string;
-  disabled?: boolean;
-}) {
-  const [custom, setCustom] = useState<string | null>(null);
+/** A relationship the vocabulary lacks, named in place (saved for the whole organization). */
+export function CustomRelation({ onSave, onCancel }: { onSave: (label: string) => Promise<void>; onCancel: () => void }) {
+  const [label, setLabel] = useState("");
   const [saving, setSaving] = useState(false);
   const [problem, setProblem] = useState<string | null>(null);
-  // The same vocabulary as the "On the web" step; Ours / Not us are this row's own buttons.
-  const related = kinds.filter((k) => k.stance !== "ours" && k.stance !== "not_us");
-  const known = related.filter((k) => k.isKnown);
-  const saved = related.filter((k) => !k.isKnown);
-  const options: SelectOption<string>[] = [
-    { value: "", label: emptyLabel },
-    ...known.map((k) => ({ value: k.key, label: k.label, meta: STANCE_LABEL[k.stance] })),
-    ...saved.map((k) => ({ value: k.key, label: k.label, meta: STANCE_LABEL[k.stance] })),
-    ...(relation && !kinds.some((k) => k.key === relation.key) ? [{ value: relation.key, label: relation.label }] : []),
-    { value: CUSTOM, label: "Custom…" },
-  ];
-  const pick = (value: string) => {
-    if (value === CUSTOM) return setCustom("");
-    if (!value) return onRelate(null);
-    const k = kinds.find((x) => x.key === value);
-    if (k) onRelate({ key: k.key, label: k.label, routesTo: k.routesTo });
-  };
   const save = async () => {
-    const label = (custom ?? "").trim();
-    if (!label) return;
+    if (!label.trim()) return;
     setSaving(true);
     setProblem(null);
     try {
-      await onCustom(label);
-      setCustom(null);
+      await onSave(label.trim());
     } catch (error) {
       setProblem(extractErrorMessage(error));
     } finally {
       setSaving(false);
     }
   };
-  if (custom !== null) {
-    return (
-      <div className="flex w-full flex-wrap items-center gap-1.5">
-        <Field
-          aria-label="Relationship"
-          // ui-exception: a short relationship name
-          placeholder="How it's related"
-          value={custom}
-          autoFocus
-          maxLength={60}
-          onChange={(e) => setCustom(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") void save();
-            if (e.key === "Escape") setCustom(null);
-          }}
-          className="min-w-0 flex-1"
-        />
-        <Button variant="primary" onClick={() => void save()} disabled={!custom.trim() || saving}>
-          Save
-        </Button>
-        <Button variant="quiet" aria-label="Cancel" icon={<X />} onClick={() => setCustom(null)} />
-        {problem ? (
-          <span className="flex w-full items-center gap-1 text-xs text-destructive">
-            {problem}
-            <ErrorAlchemyMenu error={problem} />
-          </span>
-        ) : null}
-      </div>
-    );
-  }
   return (
-    <Select
-      aria-label="Relationship"
-      value={relation?.key ?? ""}
-      options={options}
-      onValueChange={pick}
-      className={className}
-      disabled={disabled}
-    />
+    <span className="flex flex-wrap items-center gap-1 pt-1">
+      <Field
+        aria-label="Relationship"
+        // ui-exception: a short relationship name
+        placeholder="How it's related"
+        value={label}
+        autoFocus
+        maxLength={60}
+        onChange={(e) => setLabel(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") void save();
+          if (e.key === "Escape") onCancel();
+        }}
+        className="min-w-0 max-w-56 flex-1"
+      />
+      <Button variant="primary" onClick={() => void save()} disabled={!label.trim() || saving}>
+        Save
+      </Button>
+      <Button variant="quiet" aria-label="Cancel" icon={<X />} onClick={onCancel} />
+      {problem ? (
+        <span className="flex w-full items-center gap-1 text-xs text-destructive">
+          {problem}
+          <ErrorAlchemyMenu error={problem} />
+        </span>
+      ) : null}
+    </span>
   );
 }
 
+/** Related · <stance> groups of every relationship but Ours / Not us (the row's own Yes / No), then Custom…. */
+export function relationWayOut(kinds: BrandRelationKind[], exclude: string[] = []): WayOutItem[] {
+  const list = [...kinds]
+    .filter((k) => k.stance !== "ours" && k.key !== "not_us" && !exclude.includes(k.key))
+    .sort((a, b) => STANCE_ORDER.indexOf(a.stance) - STANCE_ORDER.indexOf(b.stance) || Number(b.isKnown) - Number(a.isKnown));
+  return [
+    ...list.map((k, n) => ({
+      value: `rel:${k.key}`,
+      label: k.label,
+      group: n === 0 || list[n - 1].stance !== k.stance ? `Related · ${STANCE_LABEL[k.stance]}` : undefined,
+    })),
+    { value: CUSTOM, label: "Custom…" },
+  ];
+}
+export const CUSTOM_RELATION = CUSTOM;
+
+/** One candidate, compact: who it is, and Yes / No / Other (Other's picker names the relationship). */
 function CandidateCard({
   c,
   decision,
   relation,
   kinds,
-  wide,
+  skipped,
   onClaim,
   onRelate,
   onCustom,
+  onSkip,
 }: {
   c: Candidate;
   decision: Decision | undefined;
   relation: Relation | null;
   kinds: BrandRelationKind[];
-  wide: boolean;
+  skipped: boolean;
   onClaim: (c: Candidate, decision: "yes" | "no") => void;
   onRelate: (c: Candidate, relation: Relation | null) => void;
   onCustom: (c: Candidate, label: string) => Promise<void>;
+  onSkip: () => void;
 }) {
+  const [custom, setCustom] = useState(false);
   const ours = isOurs(decision);
   const rejected = decision === "no";
-  // "We think" glows one option until the person answers; it never answers for them.
+  // "We think" glows one answer until the person answers; it never answers for them.
   const weThink = decision || relation ? null : parseSuggestion(c.anchor.suggestion);
-  const weThinkEvidence = (c.anchor.suggestion as { evidence?: unknown } | undefined)?.evidence;
-  const glow = (choices: string[]) => Boolean(weThink && choices.includes(weThink.choice));
   const handleLine = c.platform === "website" ? (c.url ? websiteHost(c.url) : null) : accountHandleLine(c.platform, c.handle);
   const title = c.name ?? handleLine ?? c.anchor.value;
-  const findings = c.items.length;
+  const sub = [handleLine !== title ? handleLine : null, c.followers != null ? `${formatCount(c.followers)} followers` : null].filter(Boolean).join(" · ");
+  const suggested = !weThink ? null : ["ours", "preferred", "alias"].includes(weThink.choice) ? "yes" : weThink.choice === "not_us" ? "no" : "other";
   return (
     <article
-      className={`flex shrink-0 snap-start flex-col gap-2.5 rounded-lg border bg-card p-3 transition-colors ${
-        wide ? "w-full sm:w-[24rem]" : "w-[min(22rem,84vw)]"
-      } ${ours ? "border-primary ring-1 ring-primary/30" : relation ? "border-foreground/30" : "border-border"} ${rejected ? "opacity-50" : ""}`}
+      className={`flex min-w-0 flex-col gap-2 rounded-lg border bg-card p-2.5 ${
+        ours ? "border-primary ring-1 ring-primary/30" : relation ? "border-foreground/30" : "border-border"
+      } ${rejected ? "opacity-60" : ""}`}
       data-testid="smart-add-candidate"
       data-candidate={c.id}
     >
-      <div className="flex items-start gap-3">
+      <div className="flex min-w-0 items-center gap-2.5">
         <CandidateAvatar c={c} />
-        <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-          <span className="flex items-center gap-1 text-sm leading-snug font-semibold break-words">
-            {title}
+        <div className="flex min-w-0 flex-1 flex-col">
+          <span className="flex min-w-0 items-center gap-1 text-sm font-semibold">
+            <span className="truncate" title={title}>{title}</span>
             {c.verified ? <BadgeCheck className="size-3.5 shrink-0 text-primary" aria-label="Verified" /> : null}
           </span>
-          {handleLine && handleLine !== title ? <span className="text-xs break-all text-foreground/80">{handleLine}</span> : null}
-          {c.followers != null ? (
-            <span className="text-xs text-muted-foreground tabular-nums">{formatCount(c.followers)} followers</span>
-          ) : null}
+          {sub ? <span className="truncate text-xs text-muted-foreground" title={sub}>{sub}</span> : null}
+          {c.bio ? <span className="truncate text-xs text-muted-foreground/80" title={c.bio}>{c.bio}</span> : null}
         </div>
         {c.url ? <OpenLink url={c.url} /> : null}
       </div>
-      {c.bio ? (
-        <p className="line-clamp-2 text-xs text-muted-foreground" title={c.bio}>
-          {c.bio}
-        </p>
-      ) : null}
-      {c.url ? <span className="text-[11px] break-all text-muted-foreground/80">{c.url}</span> : null}
-      <div className="mt-auto flex items-center gap-2 text-[11px] text-muted-foreground">
-        <span>{findings === 1 ? "1 finding" : `${findings} findings`}</span>
-      </div>
-      {weThink ? (
-        <WeThinkHint
-          suggestion={weThink}
-          kinds={kinds}
-          evidence={Array.isArray(weThinkEvidence) ? weThinkEvidence.filter((e): e is string => typeof e === "string") : undefined}
+      <DecisionControl
+        options={[
+          { value: "yes", label: "Ours", suggested: suggested === "yes" },
+          { value: "no", label: "Not us", rejects: true, suggested: suggested === "no" },
+        ]}
+        value={ours ? "yes" : rejected ? "no" : null}
+        onChange={(a) => onClaim(c, a)}
+        wayOut={relationWayOut(kinds)}
+        wayOutValue={relation ? `rel:${relation.key}` : null}
+        onWayOut={(v) => {
+          if (v === CUSTOM) return setCustom(true);
+          const k = kinds.find((x) => `rel:${x.key}` === v);
+          if (k) onRelate(c, { key: k.key, label: k.label, routesTo: k.routesTo });
+        }}
+        onSkip={onSkip}
+        skipped={skipped}
+      />
+      {custom ? (
+        <CustomRelation
+          onCancel={() => setCustom(false)}
+          onSave={async (label) => {
+            await onCustom(c, label);
+            setCustom(false);
+          }}
         />
       ) : null}
-      <div className="flex flex-wrap items-center gap-1.5">
-        <Glow on={glow(["ours", "preferred", "alias"])}>
-          <Button variant={ours ? "primary" : "outline"} icon={<Check />} onClick={() => onClaim(c, "yes")} aria-pressed={ours}>
-            This is us
-          </Button>
-        </Glow>
-        <Glow on={glow(["not_us"])}>
-          <Button variant={rejected ? "danger" : "quiet"} icon={<X />} onClick={() => onClaim(c, "no")} aria-pressed={rejected}>
-            Not us
-          </Button>
-        </Glow>
-        <Glow on={glow(["related"])}>
-          <RelationPicker
-            kinds={kinds}
-            relation={relation}
-            onRelate={(r) => onRelate(c, r)}
-            onCustom={(label) => onCustom(c, label)}
-          />
-        </Glow>
-      </div>
     </article>
   );
 }
 
 /**
- * The side-by-side check for a conflicted brand: one row per platform, that platform's candidates
- * next to each other (a row scrolls sideways, and swipes on a phone). Each one is ours, not us, or
- * related in a named way (the relationship vocabulary is data: web.brand_relation_kind).
+ * The compare: ONE comparison at a time — only slots where 2+ candidates compete (a single finding is
+ * never here). Each candidate is Yes / No / Other; once every one has an answer it moves on. "2 of 5",
+ * Back and Close are always on screen.
  */
 export function CompareSources({
   items,
@@ -563,49 +523,89 @@ export function CompareSources({
   relations,
   onClaim,
   onRelate,
+  onClose,
 }: {
   items: EvidenceItem[];
   decisions: Record<string, Decision>;
   relations: Record<string, Relation>;
   onClaim: (c: Candidate, decision: "yes" | "no") => void;
   onRelate: (c: Candidate, relation: Relation | null) => void;
+  onClose?: () => void;
 }) {
-  const rows = compareRows(items);
+  const rows = compareRows(items).filter((r) => r.candidates.length >= 2);
   const { kinds, loadError, onCustom } = useRelationKinds(onRelate);
+  const [step, setStep] = useState(0);
+  const [skipped, setSkipped] = useState<ReadonlySet<string>>(new Set());
+  const at = Math.min(step, Math.max(rows.length - 1, 0));
+  const row = rows[at];
+  const answered = (c: Candidate) => Boolean(decisions[c.anchor.key] || relations[c.id] || skipped.has(c.id));
+  const done = row ? row.candidates.every(answered) : false;
+  // Picked every candidate in this comparison: on to the next one.
+  const advance = useRef<string | null>(null);
+  useEffect(() => {
+    if (!row || !done || advance.current === row.platform || at >= rows.length - 1) return;
+    advance.current = row.platform;
+    const t = setTimeout(() => setStep(at + 1), 350);
+    return () => clearTimeout(t);
+  }, [done, row, at, rows.length]);
   return (
-    <div className="flex flex-col divide-y divide-border rounded-xl border border-border bg-card" data-testid="smart-add-compare">
+    <div className="flex flex-col rounded-xl border border-border bg-card" data-testid="smart-add-compare">
+      <header className="flex items-center gap-2 border-b border-border px-3 py-2">
+        {row ? (
+          <>
+            <PlatformMark platform={row.platform} size={18} />
+            <span className="text-sm font-medium">{row.platform === "website" ? "Website" : platformLabel(row.platform)}</span>
+            <span className="text-xs text-muted-foreground">Which is yours?</span>
+          </>
+        ) : (
+          <span className="text-sm font-medium">Nothing to compare</span>
+        )}
+        <span className="ml-auto text-xs tabular-nums text-muted-foreground" data-testid="smart-add-compare-progress">
+          {rows.length ? `${at + 1} of ${rows.length}` : ""}
+        </span>
+        <Button variant="quiet" aria-label="Back" icon={<ChevronLeft />} disabled={at === 0} onClick={() => setStep(at - 1)} />
+        <Button variant="quiet" aria-label="Next" icon={<ChevronRight />} disabled={at >= rows.length - 1} onClick={() => setStep(at + 1)} />
+        {onClose ? <Button variant="quiet" aria-label="Close" icon={<X />} onClick={onClose} /> : null}
+      </header>
       {loadError ? (
-        <span className="flex items-center gap-1 px-4 py-2 text-xs text-destructive">
+        <span className="flex items-center gap-1 px-3 py-2 text-xs text-destructive">
           {loadError}
           <ErrorAlchemyMenu error={loadError} />
         </span>
       ) : null}
-      {rows.map((row) => (
-        <section key={row.platform} className="flex flex-col gap-2 py-3" data-testid="smart-add-compare-row" data-platform={row.platform}>
-          <header className="flex items-center gap-2 px-4">
-            <PlatformMark platform={row.platform} size={18} />
-            <span className="text-sm font-medium">{row.platform === "website" ? "Website" : platformLabel(row.platform)}</span>
-            {row.candidates.length > 1 ? (
-              <span className="text-xs text-muted-foreground tabular-nums">{row.candidates.length}</span>
-            ) : null}
-          </header>
-          <div className="flex snap-x snap-mandatory scroll-px-4 gap-3 overflow-x-auto overscroll-x-contain px-4 pb-1 [scrollbar-width:thin]">
-            {row.candidates.map((c) => (
-              <CandidateCard
-                key={c.id}
-                c={c}
-                decision={decisions[c.anchor.key]}
-                relation={relations[c.id] ?? null}
-                kinds={kinds}
-                wide={row.candidates.length === 1}
-                onClaim={onClaim}
-                onRelate={onRelate}
-                onCustom={onCustom}
-              />
-            ))}
-          </div>
+      {row ? (
+        <section className="grid gap-2 p-3 sm:grid-cols-2" data-testid="smart-add-compare-row" data-platform={row.platform}>
+          {row.candidates.map((c) => (
+            <CandidateCard
+              key={c.id}
+              c={c}
+              decision={decisions[c.anchor.key]}
+              relation={relations[c.id] ?? null}
+              kinds={kinds}
+              skipped={skipped.has(c.id)}
+              onClaim={(x, d) => {
+                setSkipped((s) => new Set([...s].filter((k) => k !== x.id)));
+                onClaim(x, d);
+              }}
+              onRelate={(x, relation) => {
+                setSkipped((s) => new Set([...s].filter((id) => id !== x.id)));
+                onRelate(x, relation);
+              }}
+              onCustom={async (x, label) => {
+                await onCustom(x, label);
+                setSkipped((s) => new Set([...s].filter((id) => id !== x.id)));
+              }}
+              onSkip={() => {
+                if (decisions[c.anchor.key]) onClaim(c, decisions[c.anchor.key] === "no" ? "no" : "yes");
+                if (relations[c.id]) onRelate(c, null);
+                setSkipped((s) => new Set(s).add(c.id));
+              }}
+            />
+          ))}
         </section>
-      ))}
+      ) : (
+        <p className="px-3 py-3 text-sm text-muted-foreground">Every finding has one candidate.</p>
+      )}
     </div>
   );
 }
