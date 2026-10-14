@@ -48,6 +48,7 @@ import {
 } from "@ai-matrx/design-system";
 import { Button } from "@/components/ui/button";
 import { ItemMenu } from "@ai-matrx/design-system/item";
+import { InfoHint } from "@/components/official/InfoHint";
 import type { ItemMenuConfig } from "@ai-matrx/chat/ui/item-types";
 import { TextInputDialog } from "@ai-matrx/design-system";
 import { EntityScopeTabs } from "@/lib/entity-list/components/EntityScopeTabs";
@@ -555,6 +556,10 @@ export default function KindRecordsTable({
           size="sm"
           aria-label="Archived records"
         />
+        <InfoHint
+          text="Unconfirmed means nobody has confirmed the record yet; confirm it, or edit a value, which confirms it."
+          label="About Unconfirmed"
+        />
       </div>
 
       <MatrxDataTable<KindRecordRow>
@@ -784,7 +789,7 @@ export default function KindRecordsTable({
                     icon: <CircleDashed className="h-5 w-5" />,
                     title: `No ${label} records here`,
                     description:
-                      "Nothing matches this scope and these filters. Records land here when an agent produces one, or when you save one from the shape's Test tab.",
+                      "Nothing matches this scope and these filters.",
                   }
         }
       />

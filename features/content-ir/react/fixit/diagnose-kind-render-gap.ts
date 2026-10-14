@@ -86,6 +86,18 @@ export function hasRealSchema(schema: unknown): boolean {
   );
 }
 
+/**
+ * Does this kind have the schema it is supposed to have? A deliberately
+ * schemaless "any value" kind (`metadata.generic`, e.g. `json`) is not missing
+ * one — offering to "add a schema" to it is a false gap.
+ */
+export function kindHasSchema(
+  schema: unknown,
+  metadata: Record<string, unknown> | null | undefined,
+): boolean {
+  return hasRealSchema(schema) || metadata?.generic === true;
+}
+
 export interface KindRenderGapDiagnosis {
   state: KindRenderGapState;
   /** EVERY gap that holds (ladder order) — the bar lists them all. */
@@ -142,8 +154,8 @@ async function compute(kind: string): Promise<KindRenderGapDiagnosis | null> {
     .from("kind_definition")
     .select(
       session
-        ? "id, label, is_active, created_by, organization_id, emitted_json_schema"
-        : "id, label, is_active, emitted_json_schema",
+        ? "id, label, is_active, created_by, organization_id, emitted_json_schema, metadata"
+        : "id, label, is_active, emitted_json_schema, metadata",
     )
     .eq("kind", kind)
     .is("deleted_at", null)
@@ -154,6 +166,7 @@ async function compute(kind: string): Promise<KindRenderGapDiagnosis | null> {
       created_by?: string | null;
       organization_id?: string | null;
       emitted_json_schema: unknown;
+      metadata?: Record<string, unknown> | null;
     }>();
   if (defError) throw defError;
 
@@ -231,7 +244,7 @@ async function compute(kind: string): Promise<KindRenderGapDiagnosis | null> {
     gaps: listKindRenderGaps({
       registered: true,
       signedIn: Boolean(session),
-      hasSchema: hasRealSchema(def.emitted_json_schema),
+      hasSchema: kindHasSchema(def.emitted_json_schema, def.metadata),
       hasSharedView: real.length > 0,
       sharedViewOff: real.length > 0 && activeReal.length === 0,
       sharedViewEmpty: Boolean(emptyDb),

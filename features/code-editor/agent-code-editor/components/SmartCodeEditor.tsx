@@ -146,6 +146,12 @@ export interface SmartCodeEditorProps {
    * the editor's live draft in its own scope.
    */
   surfaceOwnership?: "self" | "host";
+  /**
+   * `roster` (default): History lists every conversation the roster's agents
+   * have had. `this-editor`: only conversations opened from THIS editor — for
+   * an editor tied to one piece of code, where another code's chats are noise.
+   */
+  historyScope?: "roster" | "this-editor";
   className?: string;
 }
 
@@ -171,6 +177,7 @@ export function SmartCodeEditor({
   agentSkills,
   title,
   surfaceOwnership = "self",
+  historyScope = "roster",
   className,
 }: SmartCodeEditorProps) {
   void title; // intentionally unused — window shell renders the title.
@@ -196,6 +203,15 @@ export function SmartCodeEditor({
     }
     return out;
   }, [mandateKeys, mandateSet]);
+  /** The roster job's name per resolved agent id — a label when the agent's own name isn't loaded. */
+  const agentNameById = useMemo(() => {
+    const out: Record<string, string> = {};
+    for (const a of agents) {
+      const id = mandateSet[a.mandateKey]?.mandate?.agentId;
+      if (typeof id === "string") out[id] = a.name;
+    }
+    return out;
+  }, [agents, mandateSet]);
   /** Resolved agent ids for the roster — drives history merge only. */
   const rosterAgentIds = useMemo(
     () =>
@@ -214,6 +230,9 @@ export function SmartCodeEditor({
   const [activeConversationId, setActiveConversationId] = useState<
     string | null
   >(null);
+  const [openedConversationIds, setOpenedConversationIds] = useState<
+    ReadonlySet<string>
+  >(() => new Set());
   const [activeAgentId, setActiveAgentId] = useState<string | null>(null);
   const [activeMandateKey, setActiveMandateKey] = useState<string | null>(null);
 
@@ -419,6 +438,7 @@ export function SmartCodeEditor({
             result.conversationId
           ]?.agentId ?? null;
         setActiveConversationId(result.conversationId);
+        setOpenedConversationIds((prev) => new Set(prev).add(result.conversationId));
         setActiveAgentId(launchedAgentId);
         setActiveMandateKey(mandateKey);
       } catch (err) {
@@ -461,6 +481,7 @@ export function SmartCodeEditor({
   const handleSelectConversation = useCallback(
     async (conversationId: string, agentId: string) => {
       setActiveConversationId(conversationId);
+      setOpenedConversationIds((prev) => new Set(prev).add(conversationId));
       setActiveAgentId(agentId);
       setActiveMandateKey(null);
 
@@ -757,6 +778,10 @@ export function SmartCodeEditor({
       activeConversationId={activeConversationId}
       onSelectConversation={handleSelectConversation}
       onCreateDraft={handleCreateDraft}
+      agentNameById={agentNameById}
+      onlyConversationIds={
+        historyScope === "this-editor" ? openedConversationIds : undefined
+      }
     />
   );
 

@@ -239,9 +239,7 @@ export default function KindInputsTab({
           <span className="font-medium text-foreground">
             {variables.length} inputs an agent can take
           </span>
-          . What you type is checked against the shape as you go, the same way
-          the shape is checked before it can be turned on. Nothing here is
-          saved.
+          . Nothing you type here is saved.
         </p>
       </div>
 
@@ -473,17 +471,15 @@ export default function KindInputsTab({
               {emittedJsonSchema === null && (
                 <p className="flex items-start gap-1.5 text-[11px] text-amber-800 dark:text-amber-200">
                   <Info className="mt-0.5 h-3 w-3 shrink-0" />
-                  This kind has no emitted_json_schema — the structural leg
-                  cannot pass until it is materialized.
+                  This shape has no full schema yet, so answers can't be checked.
                 </p>
               )}
 
               {hasCoercionErrors && (
                 <p className="flex items-start gap-1.5 text-[11px] text-red-700 dark:text-red-300">
                   <CircleAlert className="mt-0.5 h-3 w-3 shrink-0" />
-                  {Object.keys(assembled.coercionErrors).length} field(s) could
-                  not be coerced into kind space and were omitted from the
-                  instance — see the form.
+                  {Object.keys(assembled.coercionErrors).length} field(s) left
+                  out because their values didn't fit. See the form.
                   <ErrorAlchemyMenu />
                 </p>
               )}

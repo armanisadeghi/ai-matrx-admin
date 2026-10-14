@@ -36,6 +36,8 @@ import { RENDER_PATHS, type RenderPathId, type RenderPathSpec } from "./paths";
 import { readKindSchemaState, runRenderPath } from "./run-path";
 import { useBoundedKindCheck } from "./use-bounded-kind-check";
 import { Button } from "@ai-matrx/design-system/controls";
+import { useAppSelector } from "@/lib/redux/hooks";
+import { selectIsAdminDebugger } from "@/lib/redux/selectors/userSelectors";
 import {
   describeRenderVerdict,
   readSharedResolution,
@@ -70,7 +72,10 @@ function VerdictStrip({
   fallbackReason,
   notes,
   headline,
+  debug,
 }: {
+  /** Admin debugging only: the route's block type, state and fallback code. */
+  debug: boolean;
   headline: string;
   reached: boolean;
   resolvedAs: string;
@@ -95,6 +100,7 @@ function VerdictStrip({
         <span className="font-medium text-foreground">
           {headline}
         </span>
+        {debug && (
         <span className="ml-auto flex flex-wrap items-center gap-1.5 text-muted-foreground">
           <code className="rounded bg-muted px-1 py-0.5 font-mono">
             {resolvedAs}
@@ -110,6 +116,7 @@ function VerdictStrip({
             </code>
           )}
         </span>
+        )}
       </div>
       {notes.length > 0 && (
         <ul className="mt-1.5 space-y-0.5 pl-6 text-muted-foreground">
@@ -124,14 +131,17 @@ function VerdictStrip({
   );
 }
 
-function PathNote({ spec }: { spec: RenderPathSpec }) {
+function PathNote({ spec, debug }: { spec: RenderPathSpec; debug: boolean }) {
   return (
     <div className="space-y-1 rounded-md border border-border bg-card px-3 py-2 text-xs">
       <p className="text-foreground">{spec.where}</p>
-      <p className="flex gap-1.5 text-muted-foreground">
-        <Info className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-        <span>{spec.exercises}</span>
-      </p>
+      {/* How the check works is the maintainers' business: admin debugging only. */}
+      {debug && (
+        <p className="flex gap-1.5 text-muted-foreground">
+          <Info className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+          <span>{spec.exercises}</span>
+        </p>
+      )}
     </div>
   );
 }
@@ -142,6 +152,7 @@ export default function KindRenderPaths({
   initialPath = "chat_bare",
 }: KindRenderPathsProps) {
   const [pathId, setPathId] = useState<RenderPathId>(initialPath);
+  const debug = useAppSelector(selectIsAdminDebugger);
   // THE PREVIEW ASKS FOR WHAT IT JUDGES (defect 2026-10-14). The schema is
   // fetched lazily per kind, and this screen used to read it synchronously on
   // first paint and subscribe only to the COMPONENT registry — so a shape with
@@ -205,7 +216,7 @@ export default function KindRenderPaths({
         ))}
       </div>
 
-      <PathNote spec={spec} />
+      <PathNote spec={spec} debug={debug} />
 
       {schemaState === "absent" && (
         <div className="flex gap-1.5 rounded-md border border-amber-500/40 bg-amber-500/5 px-3 py-2 text-xs text-amber-700 dark:text-amber-300">
@@ -246,6 +257,7 @@ export default function KindRenderPaths({
 
       {run && settled && (
         <VerdictStrip
+          debug={debug}
           headline={describeRenderVerdict({
             reached: run.verdict.reachedRealComponent,
             sharedHasComponent: sharedComponent,
@@ -284,14 +296,16 @@ export default function KindRenderPaths({
           <KindInstanceRender kind={kind} value={value} />
         ) : pathId === "loading" ? (
           <div className="space-y-2">
-            <p className="text-[11px] text-muted-foreground">
-              slug <code className="font-mono">{loading.slug ?? "generic"}</code>{" "}
-              ({loading.origin}
-              {loading.invalidDeclared
-                ? ` — the row declares "${loading.invalidDeclared}", which is not a library slug`
-                : ""}
-              )
-            </p>
+            {debug && (
+              <p className="text-[11px] text-muted-foreground">
+                slug <code className="font-mono">{loading.slug ?? "generic"}</code>{" "}
+                ({loading.origin}
+                {loading.invalidDeclared
+                  ? ` — the row declares "${loading.invalidDeclared}", which is not a library slug`
+                  : ""}
+                )
+              </p>
+            )}
             <LoadingComponent />
           </div>
         ) : pathId === "input" ? (

@@ -157,6 +157,25 @@ export function getMonacoFileExtension(lang: string): string | undefined {
 }
 
 /**
+ * The path Monaco is given for a model. The TypeScript service decides
+ * "TypeScript file or JavaScript file" from the model's FILE EXTENSION, not the
+ * language id: an extensionless path (`__single_file__`) with language
+ * `typescript` was parsed as JavaScript, so every `Record<string, string>` and
+ * type annotation showed red errors on code that compiles (SHAPES-BUGS 2.12).
+ * `.tsx` / `.jsx` are the supersets, so plain TS and JSX both parse.
+ */
+export function monacoModelPath(path: string, lang: string): string {
+    const ext = getMonacoFileExtension(lang);
+    if (ext) return `${path.replace(/\.[^.]+$/, "")}${ext}`;
+    if (!/\.[^./\\]+$/.test(path)) {
+        const normalized = typeof lang === 'string' ? lang.trim().toLowerCase() : '';
+        if (normalized === 'typescript' || normalized === 'ts') return `${path}.tsx`;
+        if (normalized === 'javascript' || normalized === 'js') return `${path}.jsx`;
+    }
+    return path;
+}
+
+/**
  * Get comprehensive file extension for any language
  * Used for file downloads and general file identification
  * @param lang - The language identifier

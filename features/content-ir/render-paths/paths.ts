@@ -57,7 +57,7 @@ export const RENDER_PATHS: readonly RenderPathSpec[] = [
   {
     id: "chat_fence",
     label: "Chat — fenced",
-    where: "An agent answers in chat with a ```json block inside prose.",
+    where: "An agent answers in chat with the shape's data set in a code block inside its prose.",
     exercises:
       "Real: the wire text is chunked and fed through StreamBlockAccumulator — the same class every chat surface runs — then rendered through SafeBlockRenderer and applyIrKindRoute. Nothing is simulated.",
     streams: true,
@@ -66,7 +66,7 @@ export const RENDER_PATHS: readonly RenderPathSpec[] = [
     id: "chat_fence_one_line",
     label: "Chat — fenced, one line",
     where:
-      "An agent answers in chat with a ```json block whose JSON is all on one line. This is the shape that broke on 2026-09-30.",
+      "An agent answers in chat with the shape's data on a single line inside a code block.",
     exercises:
       "Real: same accumulator and renderer as the fenced path, over a fence whose body never completes a line until the fence closes.",
     streams: true,
@@ -75,7 +75,7 @@ export const RENDER_PATHS: readonly RenderPathSpec[] = [
     id: "chat_xml_tag",
     label: "Chat — inside an XML tag",
     where:
-      "An agent wraps its answer in a generic tag like <output>…</output> with the JSON on one line. An XML tag is structure, not quoted source (round 3, X1).",
+      "An agent wraps its answer in a plain tag such as <output>, with the shape's data on one line.",
     exercises:
       "Real: same accumulator and renderer as the fenced path, over the kind's one-line JSON inside an <output> tag — the kind must leave the XML card the moment its __kind is visible.",
     streams: true,
@@ -84,7 +84,7 @@ export const RENDER_PATHS: readonly RenderPathSpec[] = [
     id: "chat_bare",
     label: "Chat — structured output",
     where:
-      "An agent bound to this kind's schema returns one minified JSON line with no prose. This is the shape that broke on 2026-08-29.",
+      "An agent set up to answer in this shape returns just its data, with no prose around it.",
     exercises:
       "Real: same accumulator and renderer as the fenced path, over the bare single-line wire a provider's structured-output mode produces.",
     streams: true,
@@ -93,7 +93,7 @@ export const RENDER_PATHS: readonly RenderPathSpec[] = [
     id: "chat_artifact",
     label: "Chat — inside an artifact",
     where:
-      "The artifact system wraps the answer in an <artifact> tag with a Canvas to open in.",
+      "The answer arrives as an artifact, with a Canvas to open it in.",
     exercises:
       "Real: the accumulator's attr-XML body path. The block keeps the artifact renderer by design — what is checked here is that the envelope still attaches, which is what every selector reads.",
     streams: true,
@@ -102,7 +102,7 @@ export const RENDER_PATHS: readonly RenderPathSpec[] = [
     id: "chat_artifact_materialized",
     label: "Chat — saved artifact",
     where:
-      "The same answer after it is saved to the Canvas: prose, then <artifact type=\"<its canvas type>\" id=\"<uuid>\" version=\"1\">, rendered by id.",
+      "The same answer after it is saved to the Canvas, shown from the saved copy.",
     exercises:
       "Real: the accumulator over the materialized wire (real wrapArtifactText) and the by-id artifact renderer. The id here is made up, so the saved row is not found and the inline body is shown — the matrix tests also mock the row as loading and loaded.",
     streams: true,
@@ -111,7 +111,7 @@ export const RENDER_PATHS: readonly RenderPathSpec[] = [
     id: "server_partial",
     label: "Server-closed partial",
     where:
-      "Run pages and workflows, where Python closes partial JSON and ships an __ir_partial event instead of the browser parsing it.",
+      "Run pages and workflows, where the server finishes a half-arrived answer and sends it ready to draw.",
     exercises:
       "Real rendering: the event goes through the production resolveProvisionalKindRender and applyIrKindRoute. SYNTHESIZED input: the partial event is built here in the browser, not received from the server — so this checks the render half, not the server's detector.",
     streams: false,

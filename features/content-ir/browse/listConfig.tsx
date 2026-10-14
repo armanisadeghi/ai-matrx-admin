@@ -141,7 +141,13 @@ const SHAPE_BULK_ACTIONS: EntityBulkAction<ShapeBrowseRow>[] = [
         async (id) => {
           await setShapeActivation(supabase, id, true);
         },
-        { done: "Activated", noun: SHAPE_NOUN, labelOf: shapeLabel },
+        {
+          done: "Activated",
+          noun: SHAPE_NOUN,
+          labelOf: shapeLabel,
+          // Said out loud, never a silent no-op on rows already in that state.
+          skipReason: (row) => (row.is_active ? "already active" : null),
+        },
         shapeId,
       ),
   },
@@ -161,7 +167,12 @@ const SHAPE_BULK_ACTIONS: EntityBulkAction<ShapeBrowseRow>[] = [
         async (id) => {
           await setShapeActivation(supabase, id, false);
         },
-        { done: "Deactivated", noun: SHAPE_NOUN, labelOf: shapeLabel },
+        {
+          done: "Deactivated",
+          noun: SHAPE_NOUN,
+          labelOf: shapeLabel,
+          skipReason: (row) => (row.is_active ? null : "already inactive"),
+        },
         shapeId,
       ),
   },
@@ -178,7 +189,20 @@ const PROMOTE_BULK_ACTION: EntityBulkAction<ShapeBrowseRow> = {
     confirmLabel: "Promote to system",
   }),
   run: async (selection) => {
-    const result = await promoteShapesToSystem(selection.ids);
+    // Rows already in Matrx System have nothing to promote: say so instead of
+    // sending them (the old bar offered this on a selection of only those).
+    const systemIds = new Set(
+      selection.rows.filter((row) => row.origin === "system").map(shapeId),
+    );
+    const ids = selection.ids.filter((id) => !systemIds.has(id));
+    if (ids.length === 0) {
+      throw new Error(
+        selection.count === 1
+          ? "This shape is already a system shape."
+          : "These shapes are already system shapes.",
+      );
+    }
+    const result = await promoteShapesToSystem(ids);
     return { message: promotionSummary(result), refresh: true };
   },
 };

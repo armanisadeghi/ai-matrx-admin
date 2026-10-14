@@ -21,6 +21,9 @@ import KindExampleManager from "@/features/content-ir/studio/components/KindExam
 import { useKindExamples } from "@/features/content-ir/studio/kind-examples";
 import { shapeDetailHref } from "@/features/content-ir/studio/constants";
 import type { Json } from "@/types/database.types";
+import { useAppSelector } from "@/lib/redux/hooks";
+import { selectIsSuperAdminPerson } from "@/lib/redux/selectors/userSelectors";
+import { adminShapePath } from "@/features/content-ir/react/fixit/fixit-plan";
 
 interface ShapeExamplesTabProps {
   kind: string;
@@ -37,6 +40,9 @@ export default function ShapeExamplesTab({
 }: ShapeExamplesTabProps) {
   const [revision, setRevision] = useState(0);
   const examples = useKindExamples(kindDefinitionId, revision);
+  // ADMIN IDENTITY, the way INTO the admin section only: a super admin who is
+  // not the owner is pointed at the admin page where they can change examples.
+  const isSuperAdmin = useAppSelector(selectIsSuperAdminPerson);
 
   if (!isOwnedByViewer) {
     return (
@@ -56,6 +62,14 @@ export default function ShapeExamplesTab({
           <Eye className="h-3.5 w-3.5" />
           Open Preview
         </Link>
+        {isSuperAdmin && (
+          <Link
+            href={`${adminShapePath(kind, true)}?tab=examples`}
+            className="ml-2 mt-3 inline-flex items-center gap-1.5 rounded-md border border-border px-3 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-accent"
+          >
+            Change examples as an administrator
+          </Link>
+        )}
       </div>
     );
   }

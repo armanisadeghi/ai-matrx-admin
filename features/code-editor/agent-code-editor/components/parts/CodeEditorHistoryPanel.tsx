@@ -48,6 +48,10 @@ interface CodeEditorHistoryPanelProps {
   onPickerMandateKeyChange: (mandateKey: MandateKey) => void;
   activeConversationId: string | null;
   onSelectConversation: (conversationId: string, agentId: string) => void;
+  /** When set, only these conversations are listed (see the panel body). */
+  onlyConversationIds?: ReadonlySet<string>;
+  /** The roster job's name per agent id — used when the agent's own name is not loaded. */
+  agentNameById?: Readonly<Record<string, string>>;
   onCreateDraft: (mandateKey: MandateKey) => void;
 }
 
@@ -61,10 +65,18 @@ export function CodeEditorHistoryPanel({
   activeConversationId,
   onSelectConversation,
   onCreateDraft,
+  onlyConversationIds,
+  agentNameById,
 }: CodeEditorHistoryPanelProps) {
   const dispatch = useAppDispatch();
-  const { rows, status, errorMessages } =
-    useMergedAgentConversations(rosterAgentIds);
+  const merged = useMergedAgentConversations(rosterAgentIds);
+  const { status, errorMessages } = merged;
+  // An editor tied to ONE piece of code (a shape's component) lists only the
+  // conversations opened from it, never every conversation the roster's agent
+  // has ever had on unrelated code.
+  const rows = onlyConversationIds
+    ? merged.rows.filter((row) => onlyConversationIds.has(row.conversationId))
+    : merged.rows;
   const pickerError = mandateErrors[pickerMandateKey];
   const createDisabled =
     mandatesLoading || !pickerMandateKey || pickerError !== undefined;
@@ -168,6 +180,7 @@ export function CodeEditorHistoryPanel({
               key={row.conversationId}
               row={row}
               isActive={isActive}
+              agentLabel={row.agentName || agentNameById?.[row.agentId] || ""}
               onSelect={() =>
                 onSelectConversation(row.conversationId, row.agentId)
               }
@@ -183,10 +196,12 @@ export function CodeEditorHistoryPanel({
 function ConversationItemRow({
   row,
   isActive,
+  agentLabel,
   onSelect,
 }: {
   row: MergedConversationRow;
   isActive: boolean;
+  agentLabel: string;
   onSelect: () => void;
 }) {
   const date = row.sortKey
@@ -199,7 +214,7 @@ function ConversationItemRow({
   const secondary = [
     `${row.messageCount} msg${row.messageCount === 1 ? "" : "s"}`,
     date,
-    row.agentName,
+    agentLabel,
   ]
     .filter(Boolean)
     .join(" · ");

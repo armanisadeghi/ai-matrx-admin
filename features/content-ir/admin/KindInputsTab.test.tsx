@@ -29,6 +29,11 @@ jest.mock("@ai-matrx/design-system/data-table", () => ({
   },
 }));
 
+// The engineering panels (type-drift table) show only under admin debugging.
+jest.mock("@/lib/redux/hooks", () => ({
+  useAppSelector: () => true,
+}));
+
 jest.mock("@ai-matrx/chat/agents/components/inputs/input-components/VariableInputComponent", () => ({
   VariableInputComponent: () => null,
 }));

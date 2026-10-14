@@ -339,8 +339,10 @@ export default function ShapeRenderStatusStrip({
       </div>
 
       {/* Controls get their own row: the status above stays one line, and the
-          row keeps its height while the viewer's overlay loads (no shift). */}
-      <div className="mt-1.5 flex min-h-7 min-w-0 flex-nowrap items-center overflow-hidden">
+          row keeps its height while the viewer's overlay loads (no shift). With
+          nothing to offer the row is empty and takes no room (it used to leave
+          ~40px of blank under "Why:"). */}
+      <div className="mt-1.5 flex min-h-7 min-w-0 flex-nowrap items-center overflow-hidden empty:hidden">
         {/* Anyone signed in: their own view (or the marker for the one they have);
             the owner's shared-view builder folds into the same "…" menu. */}
         <KindViewActionsRow

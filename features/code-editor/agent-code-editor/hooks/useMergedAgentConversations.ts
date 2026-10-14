@@ -91,10 +91,12 @@ function buildMergedSelector(agentIds: readonly string[]) {
         if (entry?.error) errors.push(entry.error);
 
         const agentDef = agentDefs?.[agentId];
+        // Never an id fragment: a name that is not loaded yet is EMPTY, and the
+        // panel says nothing (or the roster job's own name) instead of "Agent 87efa8".
         const agentName =
           agentDef?.name?.trim() && agentDef.name.length > 0
             ? agentDef.name
-            : `Agent ${agentId.slice(0, 6)}`;
+            : "";
 
         // 1. Fetched items for this agent
         const fetchedIds = new Set<string>();
@@ -135,7 +137,7 @@ function buildMergedSelector(agentIds: readonly string[]) {
             conversationId: cid,
             agentId,
             agentName,
-            title: `Draft ${agentName} (${draftIndex})`,
+            title: agentName ? `Draft ${agentName} (${draftIndex})` : `Draft (${draftIndex})`,
             messageCount: 0,
             sortKey: inst.createdAt,
             isDraft: true,

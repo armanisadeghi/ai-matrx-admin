@@ -25,7 +25,7 @@ import { useMeasure } from "@ai-matrx/kit/hooks";
 import type { CodeFile } from "@/features/code-editor/multi-file-core/types";
 import {
   mapLanguageForMonaco,
-  getMonacoFileExtension,
+  monacoModelPath,
 } from "@/features/code-editor/config/languages";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import {
@@ -228,14 +228,10 @@ export function useCodeEditorWindowState({
   }, [isEditing]);
 
   // ── Monaco path + language helpers ────────────────────────────────────────
-  const getEditorPath = useCallback((file: CodeFile): string => {
-    const ext = getMonacoFileExtension(file.language);
-    if (ext) {
-      const base = file.path.replace(/\.[^.]+$/, "");
-      return `${base}${ext}`;
-    }
-    return file.path;
-  }, []);
+  const getEditorPath = useCallback(
+    (file: CodeFile): string => monacoModelPath(file.path, file.language),
+    [],
+  );
 
   // ── Dirty / saving state for UI indicator (persisted mode) ────────────────
   const currentRecord: CodeFileRecord | undefined =
