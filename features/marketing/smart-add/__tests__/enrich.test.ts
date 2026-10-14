@@ -28,7 +28,7 @@ function snapshot(): BrandSnapshot {
     facts: [{ id: "f1", kind: "phone", label: null, value: { text: "(415) 555-0100" } }] as unknown as BrandSnapshot["facts"],
     people: [{ id: "r1", label: "Eileen Hassi", url: null, relationKey: "founder" }],
     offerings: [],
-    exclusions: [{ id: "x1", matchKind: "account", matchValue: "account:tiktok:fakeritual", url: null, label: null, source: null }],
+    exclusions: [{ id: "x1", matchKind: "account", matchValue: "account:tiktok:fakeritual", url: null, label: null, source: null, retraction: null }],
     textKeys: {},
   };
 }
