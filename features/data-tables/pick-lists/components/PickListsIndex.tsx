@@ -88,6 +88,8 @@ function pickListBulkActions(recordsConfig: AppRecordsConfig): EntityBulkAction<
               tableId: id,
               notify: RECORDS_NOTIFY,
               fallbackName: list?.listName ?? id,
+              // The bulk bar raises the one toast for the whole run.
+              announce: false,
               onOptimisticHide: () => {},
               onRollback: () => {},
               onRestored: () => {},

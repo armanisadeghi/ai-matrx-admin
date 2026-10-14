@@ -37,6 +37,14 @@ export function buildScheduleBulkActions(dispatch: AppDispatch): EntityBulkActio
     id: enabled ? "resume" : "pause",
     label: enabled ? "Resume" : "Pause",
     icon: enabled ? Play : Pause,
+    // Resuming starts runs that spend; pausing is a free, reversible stop.
+    confirm: enabled
+      ? (selection) => ({
+          title: `Resume ${bulkCountLabel(selection.count, NOUN)}?`,
+          description: "They run again on their schedules; each run is billed.",
+          confirmLabel: "Resume",
+        })
+      : undefined,
     run: (selection) =>
       runPerRow(
         selection,

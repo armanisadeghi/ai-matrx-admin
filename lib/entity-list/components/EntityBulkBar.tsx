@@ -139,7 +139,7 @@ export function EntityBulkActions<TRow>({
             size="sm"
             variant={action.variant ?? "outline"}
             className="h-11 gap-1.5 px-2 text-xs lg:h-7"
-            disabled={pending !== null || unavailable !== null}
+            disabled={pending !== null || unavailable !== null || selection.count === 0}
             title={unavailable ?? (compact ? action.label : undefined)}
             aria-label={`${action.label} — ${bulkCountLabel(selection.count, noun)}`}
             data-entity-bulk-action={action.id}

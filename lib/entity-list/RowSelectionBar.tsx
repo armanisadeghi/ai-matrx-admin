@@ -130,7 +130,11 @@ export function RowSelectionBar<TRow>({
       role="toolbar"
       aria-label={`Bulk ${noun} actions`}
       data-row-selection-bar
-      className="flex min-h-11 flex-wrap items-center gap-2 rounded-md border border-border bg-card px-3 py-1 lg:min-h-9"
+      className={
+        compact
+          ? "flex min-h-11 flex-nowrap items-center gap-1 rounded-md border border-border bg-card px-2 py-0.5 lg:min-h-9"
+          : "flex min-h-11 flex-wrap items-center gap-2 rounded-md border border-border bg-card px-3 py-1 lg:min-h-9"
+      }
     >
       <Checkbox
         checked={
@@ -146,12 +150,22 @@ export function RowSelectionBar<TRow>({
         }
         onCheckedChange={() => selection.toggleAll()}
       />
-      <span className="min-w-[5.5rem] text-xs font-medium tabular-nums">
+      <span
+        className={
+          compact
+            ? "shrink-0 text-xs font-medium tabular-nums"
+            : "min-w-[5.5rem] text-xs font-medium tabular-nums"
+        }
+      >
         {count > 0 ? `${count} selected` : `Select ${plural}`}
       </span>
       <fieldset
         disabled={count === 0}
-        className="m-0 flex min-w-0 flex-wrap items-center gap-1 border-0 p-0 disabled:opacity-50"
+        className={
+          compact
+            ? "m-0 flex min-w-0 flex-1 flex-nowrap items-center gap-0.5 overflow-x-auto border-0 p-0 disabled:opacity-50"
+            : "m-0 flex min-w-0 flex-wrap items-center gap-1 border-0 p-0 disabled:opacity-50"
+        }
       >
         <EntityBulkActions
           actions={actions}
@@ -162,7 +176,7 @@ export function RowSelectionBar<TRow>({
           onRefresh={onRefresh}
         />
       </fieldset>
-      <div className="flex-1" />
+      {compact ? null : <div className="flex-1" />}
       {/* Always rendered so its room is reserved; hidden while nothing is ticked. */}
       <Button
         type="button"

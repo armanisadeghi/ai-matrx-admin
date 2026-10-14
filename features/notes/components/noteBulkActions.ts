@@ -123,6 +123,7 @@ export function buildNoteBulkActions(args: {
       run: async (selection) => {
         const answers = await promptForValues({
           title: `Tag ${bulkCountLabel(selection.count, NOUN)}`,
+          description: "A new name creates the tag.",
           submitLabel: "Add tag",
           fields: [{ name: "tag", prompt: "Tag name" }],
         });

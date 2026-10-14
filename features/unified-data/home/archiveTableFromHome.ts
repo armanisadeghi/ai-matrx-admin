@@ -52,6 +52,7 @@ export async function archiveTableFromHome({
   onRestored,
   onProgress,
   fallbackName,
+  announce = true,
 }: {
   client: RecordsClient;
   tableId: string;
@@ -62,6 +63,8 @@ export async function archiveTableFromHome({
   /** After every pass that did not finish: how far the run is. */
   onProgress?: (progress: ArchiveLeft & { name: string }) => void;
   fallbackName: string;
+  /** False when a caller (a bulk bar) reports the outcome itself — no second toast. */
+  announce?: boolean;
 }): Promise<ArchiveFromHome> {
   const look = await client.tableArchive({ table_id: tableId, chunk: 0, includeTable: true });
   if (!look.ok) return { outcome: "refused", sentence: refusalForAPerson(look.error).sentence, error: look.error };
@@ -103,7 +106,7 @@ export async function archiveTableFromHome({
       last = { archived: pass.data.archived_total, remaining: pass.data.remaining, total: pass.data.total };
       if (pass.data.done) {
         if (!pass.data.table_archived) return stop(pass.data.message || "The table could not be archived.");
-        announceTableArchived({ notify, client, tableId, name, onRestored });
+        if (announce) announceTableArchived({ notify, client, tableId, name, onRestored });
         return { outcome: "archived", name };
       }
       onProgress?.({ ...last, name });
