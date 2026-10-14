@@ -33,6 +33,7 @@ import { useState } from "react";
 import { History, RotateCcw, AppWindow } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { Select } from "@ai-matrx/design-system/controls";
 
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { useOpenTopicalMapWindow } from "@/features/overlays/openers/topicalMapWindow";
@@ -247,20 +248,17 @@ function HistoryFilterBar({
       </div>
       <label className="inline-flex items-center gap-1.5">
         <span className="text-muted-foreground">Who</span>
-        <select
-          className="h-7 rounded-md border border-border bg-background px-1.5 text-xs"
+        <Select
+          aria-label="Who"
           value={filters.changedBy ?? ""}
-          onChange={(event) =>
-            onChange({ ...filters, changedBy: event.target.value || null })
+          onValueChange={(next) =>
+            onChange({ ...filters, changedBy: next || null })
           }
-        >
-          <option value="">Anyone</option>
-          {actors.map((id) => (
-            <option key={id} value={id}>
-              {id.slice(0, 8)}
-            </option>
-          ))}
-        </select>
+          options={[
+            { value: "", label: "Anyone" },
+            ...actors.map((id) => ({ value: id, label: id.slice(0, 8) })),
+          ]}
+        />
       </label>
       <label className="inline-flex items-center gap-1.5">
         <span className="text-muted-foreground">Since</span>

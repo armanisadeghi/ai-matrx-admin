@@ -13,6 +13,7 @@ import {
     normalizeBarcodeValue,
     type BarcodeSymbology,
 } from "@ai-matrx/print/barcode";
+import { Select } from "@ai-matrx/design-system/controls";
 import { Field, SectionShell, StatusChip, controlClass, svgToImgSrc } from "@/features/print/components/shared";
 import { ProInput } from "@/components/official/ProInput";
 import { EditableContextMenu } from "@ai-matrx/context-menu/react";
@@ -147,21 +148,16 @@ export function BarcodeSection() {
                         <div className="grid gap-3 sm:grid-cols-2">
                         <div data-surface-value="symbology">
                             <Field label={LABELS.symbology} hint={active.hint}>
-                                <select
-                                    className={controlClass}
+                                <Select<BarcodeSymbology>
+                                    aria-label={LABELS.symbology}
+                                    className="w-full"
                                     value={symbology}
-                                    onChange={(e) => {
-                                        const next = e.target.value as BarcodeSymbology;
+                                    onValueChange={(next) => {
                                         setSymbology(next);
                                         setValue(SYMBOLOGIES.find((s) => s.id === next)?.sample ?? "");
                                     }}
-                                >
-                                    {SYMBOLOGIES.map((s) => (
-                                        <option key={s.id} value={s.id}>
-                                            {s.label}
-                                        </option>
-                                    ))}
-                                </select>
+                                    options={SYMBOLOGIES.map((s) => ({ value: s.id, label: s.label }))}
+                                />
                             </Field>
                         </div>
                         <EditableContextMenu

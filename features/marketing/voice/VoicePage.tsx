@@ -21,7 +21,7 @@ import { Check, Loader2, Search, ShieldAlert, Wand2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Input } from "@ai-matrx/design-system/controls";
+import { Input, Select } from "@ai-matrx/design-system/controls";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
 import { sourceHref } from "@/features/sources/api/sourcesApi";
@@ -104,9 +104,6 @@ function errorText(error: unknown): string {
 function toggle(list: string[], item: string): string[] {
   return list.includes(item) ? list.filter((x) => x !== item) : [...list, item];
 }
-
-const selectClass =
-  "h-8 rounded-md border border-border bg-background px-2 text-sm text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring";
 
 export function VoicePage({
   scope,
@@ -459,24 +456,18 @@ export function VoicePage({
                       {source.name}
                     </Link>
                     {chosen ? (
-                      <select
+                      <Select<VoiceSampleKind>
                         aria-label={`Kind of ${source.name}`}
-                        className={selectClass}
                         value={chosen.kind}
-                        onChange={(e) =>
+                        onValueChange={(kind) =>
                           setPicked((list) =>
                             list.map((p) =>
-                              p.source.id === source.id ? { ...p, kind: e.target.value as VoiceSampleKind } : p,
+                              p.source.id === source.id ? { ...p, kind } : p,
                             ),
                           )
                         }
-                      >
-                        {SAMPLE_KINDS.map((k) => (
-                          <option key={k} value={k}>
-                            {k}
-                          </option>
-                        ))}
-                      </select>
+                        options={SAMPLE_KINDS.map((k) => ({ value: k, label: k }))}
+                      />
                     ) : null}
                   </li>
                 );
@@ -697,13 +688,12 @@ function ConfirmCard({
       </div>
       <label className="flex items-center gap-2 text-sm">
         <span className="font-medium text-foreground">Em dashes</span>
-        <select aria-label="Em dashes" className={selectClass} value={emDash} onChange={(e) => setEmDash(e.target.value as typeof emDash)}>
-          {EM_DASH.map((v) => (
-            <option key={v} value={v}>
-              {v}
-            </option>
-          ))}
-        </select>
+        <Select<(typeof EM_DASH)[number]>
+          aria-label="Em dashes"
+          value={emDash}
+          onValueChange={setEmDash}
+          options={EM_DASH.map((v) => ({ value: v, label: v }))}
+        />
         {emDash !== "never" && fp.mechanics?.em_dash_usage === "never" ? (
           <span className="text-xs text-amber-700 dark:text-amber-400">
             The samples never use one; allowing them is the most common way a draft reads as AI.
@@ -740,13 +730,12 @@ function ConfirmCard({
       />
       <label className="flex items-center gap-2 text-sm">
         <span className="font-medium text-foreground">Register</span>
-        <select aria-label="Register" className={selectClass} value={register} onChange={(e) => setRegister(e.target.value as typeof register)}>
-          {REGISTERS.map((v) => (
-            <option key={v} value={v}>
-              {v}
-            </option>
-          ))}
-        </select>
+        <Select<(typeof REGISTERS)[number]>
+          aria-label="Register"
+          value={register}
+          onValueChange={setRegister}
+          options={REGISTERS.map((v) => ({ value: v, label: v }))}
+        />
       </label>
       <div className="flex items-center gap-3">
         <Button icon={saving ? <Loader2 className="animate-spin" aria-hidden /> : <Check aria-hidden />} variant="primary" onClick={save} disabled={saving}>
@@ -789,13 +778,12 @@ function TryDraft({ fingerprintId, org }: { fingerprintId: string; org: () => Pr
       </div>
       <ProTextarea value={draft} onChange={(e) => setDraft(e.target.value)} rows={6} placeholder="Paste a draft" aria-label="Draft" />
       <div className="flex flex-wrap items-center gap-3">
-        <select aria-label="Where it will appear" className={selectClass} value={surface} onChange={(e) => setSurface(e.target.value as VoiceSurface)}>
-          {SURFACES.map((s) => (
-            <option key={s} value={s}>
-              {s}
-            </option>
-          ))}
-        </select>
+        <Select<VoiceSurface>
+          aria-label="Where it will appear"
+          value={surface}
+          onValueChange={setSurface}
+          options={SURFACES.map((s) => ({ value: s, label: s }))}
+        />
         <Button icon={running ? <Loader2 className="animate-spin" aria-hidden /> : <Wand2 aria-hidden />} variant="primary" onClick={run} disabled={running || !draft.trim()}>
           Fix voice
         </Button>

@@ -26,6 +26,7 @@ import { cn } from "@/lib/utils";
 import { useMapTopicSearch } from "../hooks";
 import type { MapTopicRejectionPolicy } from "../types";
 import { ErrorNotice } from "@ai-matrx/design-system";
+import { Select } from "@ai-matrx/design-system/controls";
 
 export type RejectPolicyBase = "error" | "reject" | "parent" | "merge_into";
 
@@ -111,21 +112,18 @@ export function RejectPolicyPicker({
     <div className={cn("flex flex-col gap-1.5 text-xs", className)}>
       <label className="flex items-center gap-2">
         <span className="text-muted-foreground">If attachments remain</span>
-        <select
+        <Select<RejectPolicyBase>
           aria-label="What happens to a rejected topic's attachments"
-          className="h-7 rounded-md border border-border bg-background px-1.5 text-xs text-foreground"
           value={base}
-          onChange={(event) => {
-            const next = event.target.value as RejectPolicyBase;
-            onChange(next === "merge_into" ? "merge_into:" : next);
-          }}
-        >
-          {REJECT_POLICY_OPTIONS.map((option) => (
-            <option key={option.value} value={option.value} title={option.detail}>
-              {option.label}
-            </option>
-          ))}
-        </select>
+          onValueChange={(next) =>
+            onChange(next === "merge_into" ? "merge_into:" : next)
+          }
+          options={REJECT_POLICY_OPTIONS.map((option) => ({
+            value: option.value,
+            label: option.label,
+            meta: option.detail,
+          }))}
+        />
       </label>
       <p className="text-muted-foreground">
         {REJECT_POLICY_OPTIONS.find((o) => o.value === base)?.detail}

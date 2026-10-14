@@ -4,7 +4,7 @@ import { ProInput } from "@/components/official/ProInput";
 
 /** The one price editor: amount, currency, unit and note. Used by Add and Edit offering. */
 
-import { Input } from "@ai-matrx/design-system/controls";
+import { Input, Select } from "@ai-matrx/design-system/controls";
 import { Label } from "@/components/ui/label";
 import { PRICE_UNITS, priceProblems } from "./vocabulary";
 
@@ -52,18 +52,15 @@ export function OfferingPriceFields({
           placeholder="USD"
           maxLength={3}
         />
-        <select
+        <Select
           aria-label="Price unit"
           value={value.priceUnit}
-          onChange={(event) => set({ priceUnit: event.target.value })}
-          className="h-9 rounded-md border border-border bg-card px-2 text-sm text-foreground"
-        >
-          {PRICE_UNITS.map((unit) => (
-            <option key={unit.value} value={unit.value}>
-              {unit.label}
-            </option>
-          ))}
-        </select>
+          onValueChange={(next) => set({ priceUnit: next })}
+          options={PRICE_UNITS.map((unit) => ({
+            value: unit.value,
+            label: unit.label,
+          }))}
+        />
       </div>
       <ProInput
         aria-label="Price note"

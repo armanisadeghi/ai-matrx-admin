@@ -18,6 +18,7 @@ import {
     type QrEcLevel,
 } from "@ai-matrx/print/qr";
 import { Button } from "@/components/ui/button";
+import { Select } from "@ai-matrx/design-system/controls";
 import { Field, SectionShell, StatusChip, byteLength, controlClass, svgToImgSrc } from "@/features/print/components/shared";
 import { SAMPLE_CODE, SAMPLE_GTIN, SAMPLE_ORIGIN } from "./sample-data";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
@@ -122,18 +123,16 @@ export function QrSection() {
                     </Field>
                     <div className="grid gap-3 sm:grid-cols-2">
                         <Field label="Error correction" hint={EC_DESCRIPTION[ecLevel]}>
-                            <select
-                                className={controlClass}
+                            <Select<QrEcLevel>
+                                aria-label="Error correction"
+                                className="w-full"
                                 value={ecLevel}
-                                onChange={(e) => setEcLevel(e.target.value as QrEcLevel)}
-                            >
-                                {EC_LEVELS.map((level) => (
-                                    <option key={level} value={level}>
-                                        {level}
-                                        {level === DEFAULT_QR_EC_LEVEL ? " (default)" : ""}
-                                    </option>
-                                ))}
-                            </select>
+                                onValueChange={setEcLevel}
+                                options={EC_LEVELS.map((level) => ({
+                                    value: level,
+                                    label: `${level}${level === DEFAULT_QR_EC_LEVEL ? " (default)" : ""}`,
+                                }))}
+                            />
                         </Field>
                         <Field label="Symbol">
                             <p className="flex h-8 items-center text-xs text-muted-foreground">

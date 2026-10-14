@@ -23,6 +23,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "@/lib/toast";
+import { Select } from "@ai-matrx/design-system/controls";
 import { Field, SectionShell, StatusChip, announcePrintOutcome, controlClass } from "@/features/print/components/shared";
 import { SAMPLE_CERTIFICATE, SAMPLE_WORKBOOK_SECTIONS } from "./sample-data";
 
@@ -161,17 +162,13 @@ export function CertificateSection() {
                     </div>
 
                     <Field label="Variant" hint={certificatePrinter.variants.find((v) => v.id === variant)?.description}>
-                        <select
-                            className={controlClass}
+                        <Select<CertificateVariant>
+                            aria-label="Variant"
+                            className="w-full"
                             value={variant}
-                            onChange={(e) => setVariant(e.target.value as CertificateVariant)}
-                        >
-                            {certificatePrinter.variants.map((v) => (
-                                <option key={v.id} value={v.id}>
-                                    {v.label}
-                                </option>
-                            ))}
-                        </select>
+                            onValueChange={setVariant}
+                            options={certificatePrinter.variants.map((v) => ({ value: v.id as CertificateVariant, label: v.label }))}
+                        />
                     </Field>
 
                     <StatusChip tone="info">

@@ -18,6 +18,7 @@ import { BUBBLE_SHEET_GEOMETRY, practiceTestPrinter, type PracticeTestVariant } 
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "@/lib/toast";
+import { Select } from "@ai-matrx/design-system/controls";
 import { Field, SectionShell, StatusChip, announcePrintOutcome, controlClass } from "@/features/print/components/shared";
 import { SAMPLE_PRACTICE_TEST } from "./sample-data";
 
@@ -173,22 +174,21 @@ export function ExamSection() {
                                         const value = String(settings[setting.id] ?? setting.defaultValue);
                                         return (
                                             <Field key={setting.id} label={setting.label} hint={setting.description}>
-                                                <select
-                                                    className={controlClass}
+                                                <Select
+                                                    aria-label={setting.label}
+                                                    className="w-full"
                                                     value={value}
-                                                    onChange={(e) =>
+                                                    onValueChange={(next) =>
                                                         setSettings((prev) => ({
                                                             ...prev,
-                                                            [setting.id]: e.target.value,
+                                                            [setting.id]: next,
                                                         }))
                                                     }
-                                                >
-                                                    {setting.options.map((option) => (
-                                                        <option key={option.value} value={option.value}>
-                                                            {option.label}
-                                                        </option>
-                                                    ))}
-                                                </select>
+                                                    options={setting.options.map((option) => ({
+                                                        value: option.value,
+                                                        label: option.label,
+                                                    }))}
+                                                />
                                             </Field>
                                         );
                                     }

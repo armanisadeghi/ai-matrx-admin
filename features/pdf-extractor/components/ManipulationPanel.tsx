@@ -41,7 +41,7 @@ import {
   Zap
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@ai-matrx/design-system/controls";
+import { Input, Select } from "@ai-matrx/design-system/controls";
 import { usePdfClient as usePdfDemoApi } from "@/features/pdf/api/client";
 import { useDownloadBlob } from "@/features/pdf/hooks/useDownloadBlob";
 import { saveDerivative as saveDerivativeCanonical } from "@/features/pdf/services/saveDerivative";
@@ -620,19 +620,21 @@ export function ManipulationPanel({
         onSave={() => saveOp(compress, "compress", { level: compressLevel })}
       >
         <Row label="Level">
-          <select
-            value={compressLevel}
-            onChange={(e) =>
-              setCompressLevel(Number(e.target.value) as 1 | 2 | 3 | 4 | 5)
+          <Select
+            aria-label="Compression level"
+            className="w-full"
+            value={String(compressLevel)}
+            onValueChange={(next) =>
+              setCompressLevel(Number(next) as 1 | 2 | 3 | 4 | 5)
             }
-            className="w-full rounded border border-border bg-background px-2 py-0.5 text-[11px]"
-          >
-            <option value={1}>1 — Lossless (largest)</option>
-            <option value={2}>2 — Light</option>
-            <option value={3}>3 — Balanced (recommended)</option>
-            <option value={4}>4 — Aggressive</option>
-            <option value={5}>5 — Max (smallest)</option>
-          </select>
+            options={[
+              { value: "1", label: "1 — Lossless (largest)" },
+              { value: "2", label: "2 — Light" },
+              { value: "3", label: "3 — Balanced (recommended)" },
+              { value: "4", label: "4 — Aggressive" },
+              { value: "5", label: "5 — Max (smallest)" },
+            ]}
+          />
         </Row>
       </OpCard>
 
@@ -668,17 +670,19 @@ export function ManipulationPanel({
         }
       >
         <Row label="Rotation">
-          <select
-            value={rotation}
-            onChange={(e) =>
-              setRotation(Number(e.target.value) as 90 | 180 | 270)
+          <Select
+            aria-label="Rotation"
+            className="w-full"
+            value={String(rotation)}
+            onValueChange={(next) =>
+              setRotation(Number(next) as 90 | 180 | 270)
             }
-            className="w-full rounded border border-border bg-background px-2 py-0.5 text-[11px]"
-          >
-            <option value={90}>90°</option>
-            <option value={180}>180°</option>
-            <option value={270}>270°</option>
-          </select>
+            options={[
+              { value: "90", label: "90°" },
+              { value: "180", label: "180°" },
+              { value: "270", label: "270°" },
+            ]}
+          />
         </Row>
         <Row label="Pages">
           <Input
@@ -1037,30 +1041,29 @@ export function ManipulationPanel({
               </p>
             ) : null}
             {redactCatalog && redactCatalog.patterns.length > 0 && (
-              <select
+              <Select
+                aria-label="Redaction pattern"
+                className="w-full"
                 value={
                   redactCatalog.patterns.some((e) => e.id === redactPattern)
                     ? redactPattern
                     : "__custom__"
                 }
-                onChange={(e) => {
+                onValueChange={(next) => {
                   // Selecting "Custom regex…" clears the field so the select
                   // stays on Custom and the user types their pattern —
                   // previously this was a no-op that snapped back to the
                   // prior preset while users believed Custom was active.
-                  setRedactPattern(
-                    e.target.value === "__custom__" ? "" : e.target.value,
-                  );
+                  setRedactPattern(next === "__custom__" ? "" : next);
                 }}
-                className="w-full rounded border border-border bg-background px-2 py-0.5 text-[11px]"
-              >
-                {redactCatalog.patterns.map((e) => (
-                  <option key={e.id} value={e.id}>
-                    {e.id} — {e.description}
-                  </option>
-                ))}
-                <option value="__custom__">Custom regex…</option>
-              </select>
+                options={[
+                  ...redactCatalog.patterns.map((e) => ({
+                    value: e.id,
+                    label: `${e.id} — ${e.description}`,
+                  })),
+                  { value: "__custom__", label: "Custom regex…" },
+                ]}
+              />
             )}
             <Input
               value={redactPattern}

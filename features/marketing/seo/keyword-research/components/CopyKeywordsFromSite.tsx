@@ -20,6 +20,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { ArrowRight, Copy, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@ai-matrx/design-system";
+import { Select } from "@ai-matrx/design-system/controls";
 import { toast } from "@/lib/toast";
 import { useSiteOptions } from "@/features/marketing/data/hooks";
 import { copySiteKeywords } from "../data/queries";
@@ -98,22 +99,21 @@ export function CopyKeywordsFromSite({ siteId }: { siteId: string }) {
         </p>
       ) : (
         <div className="mt-2 flex flex-wrap items-center gap-2">
-          <select
-            className="h-8 rounded-md border border-border bg-card px-2 text-xs text-foreground"
+          <Select
             value={sourceId ?? ""}
             aria-label="Site to copy keywords from"
-            onChange={(event) => {
-              setSourceId(event.target.value || null);
+            onValueChange={(next) => {
+              setSourceId(next || null);
               setPreview(null);
             }}
-          >
-            <option value="">Choose a site…</option>
-            {options.map((option) => (
-              <option key={option.id} value={option.id}>
-                {option.name ?? option.domain}
-              </option>
-            ))}
-          </select>
+            options={[
+              { value: "", label: "Choose a site…" },
+              ...options.map((option) => ({
+                value: option.id,
+                label: option.name ?? option.domain,
+              })),
+            ]}
+          />
           <Button
             icon={run.isPending ? (
               <Loader2 className="animate-spin" aria-hidden />

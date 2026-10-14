@@ -14,6 +14,7 @@ import {
   SparklesIcon,
   useMessagingHost,
 } from "@ai-matrx/messaging/react";
+import { Select } from "@ai-matrx/design-system/controls";
 import { Search, SquarePen, ChevronLeft } from "lucide-react";
 import { useOpenMessagesWindow } from "@/features/overlays/openers/messagesWindow";
 import RouteHeader from "@/features/shell/components/header/RouteHeader";
@@ -105,41 +106,42 @@ export default function MessagesShowcase() {
             <div className="showcase-settings">
               <label>
                 Appearance
-                <select
+                <Select
                   aria-label="Preview appearance"
                   value={theme}
-                  onChange={(event) =>
-                    dispatch(
-                      setMode(event.target.value === "dark" ? "dark" : "light"),
-                    )
+                  onValueChange={(next) =>
+                    dispatch(setMode(next === "dark" ? "dark" : "light"))
                   }
-                >
-                  <option value="light">Light</option>
-                  <option value="dark">Dark</option>
-                </select>
+                  options={[
+                    { value: "light", label: "Light" },
+                    { value: "dark", label: "Dark" },
+                  ]}
+                />
               </label>
               <label>
                 Contact header
-                <select
+                <Select
                   aria-label="Contact header"
                   value={header}
-                  onChange={(event) => setHeader(event.target.value)}
-                >
-                  <option value="compact">A · Compact</option>
-                  <option value="centered">B · Centered</option>
-                </select>
+                  onValueChange={setHeader}
+                  options={[
+                    { value: "compact", label: "A · Compact" },
+                    { value: "centered", label: "B · Centered" },
+                  ]}
+                />
               </label>
               <label>
                 Message direction
-                <select
+                <Select
                   aria-label="Message direction"
                   value={direction}
-                  onChange={(event) => setDirection(event.target.value)}
-                >
-                  <option value="both">Incoming and outgoing</option>
-                  <option value="incoming">Incoming</option>
-                  <option value="outgoing">Outgoing</option>
-                </select>
+                  onValueChange={setDirection}
+                  options={[
+                    { value: "both", label: "Incoming and outgoing" },
+                    { value: "incoming", label: "Incoming" },
+                    { value: "outgoing", label: "Outgoing" },
+                  ]}
+                />
               </label>
               <Link href="/messages">Open real conversations</Link>
               <button

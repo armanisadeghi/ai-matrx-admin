@@ -20,7 +20,7 @@
 
 import { ArrowDown, ArrowUp, Download, Plus, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@ai-matrx/design-system/controls";
+import { Input, Select } from "@ai-matrx/design-system/controls";
 import {
   buildTemplateSchema,
   buildTextSchema,
@@ -202,46 +202,35 @@ export function SchemaEditor({
                   placeholder="Label"
                   className="flex-1"
                 />
-                <select
+                <Select<ColumnSource>
+                  aria-label="Where this column's value comes from"
                   value={col.source}
-                  onChange={(e) =>
-                    update(idx, { source: e.target.value as ColumnSource })
-                  }
-                  className="h-6 text-[10px] rounded-md border border-input bg-background px-1"
-                  title="Where this column's value comes from"
-                >
-                  {SOURCES.map((s) => (
-                    <option key={s} value={s}>
-                      {s}
-                    </option>
-                  ))}
-                </select>
-                <button
-                  type="button"
-                  className="h-6 w-5 text-muted-foreground hover:text-foreground disabled:opacity-30"
+                  onValueChange={(source) => update(idx, { source })}
+                  options={SOURCES.map((s) => ({ value: s, label: s }))}
+                />
+                <Button
+                  icon={<ArrowUp />}
+                  variant="quiet"
+                  aria-label="Move up"
+                  title="Move up"
                   onClick={() => move(idx, -1)}
                   disabled={idx === 0}
-                  title="Move up"
-                >
-                  <ArrowUp className="w-3 h-3 mx-auto" />
-                </button>
-                <button
-                  type="button"
-                  className="h-6 w-5 text-muted-foreground hover:text-foreground disabled:opacity-30"
+                />
+                <Button
+                  icon={<ArrowDown />}
+                  variant="quiet"
+                  aria-label="Move down"
+                  title="Move down"
                   onClick={() => move(idx, 1)}
                   disabled={idx === columns.length - 1}
-                  title="Move down"
-                >
-                  <ArrowDown className="w-3 h-3 mx-auto" />
-                </button>
-                <button
-                  type="button"
-                  className="h-6 w-5 text-muted-foreground hover:text-destructive"
-                  onClick={() => remove(idx)}
+                />
+                <Button
+                  icon={<X />}
+                  variant="quiet"
+                  aria-label="Remove column"
                   title="Remove column"
-                >
-                  <X className="w-3 h-3 mx-auto" />
-                </button>
+                  onClick={() => remove(idx)}
+                />
               </div>
               <div className="flex items-center gap-1">
                 <Input mono
@@ -255,19 +244,12 @@ export function SchemaEditor({
                   className="flex-1"
                   title="Stable column key (also the payload key)"
                 />
-                <select
+                <Select<ColumnType>
+                  aria-label="Column type"
                   value={col.type}
-                  onChange={(e) =>
-                    update(idx, { type: e.target.value as ColumnType })
-                  }
-                  className="h-6 text-[10px] rounded-md border border-input bg-background px-1"
-                >
-                  {TYPES.map((t) => (
-                    <option key={t} value={t}>
-                      {t}
-                    </option>
-                  ))}
-                </select>
+                  onValueChange={(type) => update(idx, { type })}
+                  options={TYPES.map((t) => ({ value: t, label: t }))}
+                />
                 {col.source === "agent" && (
                   <Input mono
                     value={col.agentField ?? ""}

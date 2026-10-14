@@ -16,6 +16,7 @@ import {
     type StyledQrEcLevel,
 } from "@ai-matrx/print/qr-styled";
 import { Button } from "@/components/ui/button";
+import { Select } from "@ai-matrx/design-system/controls";
 import { Field, SectionShell, StatusChip, controlClass, svgToImgSrc } from "@/features/print/components/shared";
 import { SAMPLE_CODE, SAMPLE_ORIGIN } from "./sample-data";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
@@ -99,30 +100,22 @@ export function StyledQrSection() {
                     </Field>
                     <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                         <Field label="Dot style">
-                            <select
-                                className={controlClass}
+                            <Select<StyledQrDotStyle>
+                                aria-label="Dot style"
+                                className="w-full"
                                 value={dotStyle}
-                                onChange={(e) => setDotStyle(e.target.value as StyledQrDotStyle)}
-                            >
-                                {DOT_STYLES.map((style) => (
-                                    <option key={style} value={style}>
-                                        {style}
-                                    </option>
-                                ))}
-                            </select>
+                                onValueChange={setDotStyle}
+                                options={DOT_STYLES.map((style) => ({ value: style, label: style }))}
+                            />
                         </Field>
                         <Field label="Corner style">
-                            <select
-                                className={controlClass}
+                            <Select<StyledQrCornerStyle>
+                                aria-label="Corner style"
+                                className="w-full"
                                 value={cornerStyle}
-                                onChange={(e) => setCornerStyle(e.target.value as StyledQrCornerStyle)}
-                            >
-                                {CORNER_STYLES.map((style) => (
-                                    <option key={style} value={style}>
-                                        {style}
-                                    </option>
-                                ))}
-                            </select>
+                                onValueChange={setCornerStyle}
+                                options={CORNER_STYLES.map((style) => ({ value: style, label: style }))}
+                            />
                         </Field>
                         <Field label="Module colour">
                             <input
@@ -143,18 +136,16 @@ export function StyledQrSection() {
                     </div>
                     <div className="grid gap-3 sm:grid-cols-2">
                         <Field label="Error correction">
-                            <select
-                                className={controlClass}
+                            <Select<StyledQrEcLevel>
+                                aria-label="Error correction"
+                                className="w-full"
                                 value={ecLevel}
-                                onChange={(e) => setEcLevel(e.target.value as StyledQrEcLevel)}
-                            >
-                                {EC_LEVELS.map((level) => (
-                                    <option key={level} value={level}>
-                                        {level}
-                                        {level === DEFAULT_STYLED_QR_EC_LEVEL ? " (default)" : ""}
-                                    </option>
-                                ))}
-                            </select>
+                                onValueChange={setEcLevel}
+                                options={EC_LEVELS.map((level) => ({
+                                    value: level,
+                                    label: `${level}${level === DEFAULT_STYLED_QR_EC_LEVEL ? " (default)" : ""}`,
+                                }))}
+                            />
                         </Field>
                         <Field label="Centre logo" hint={logoName ?? "PNG or SVG, read as a data URL in the browser"}>
                             <div className="flex items-center gap-2">

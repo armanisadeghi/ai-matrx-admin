@@ -24,7 +24,7 @@ import {
 } from "lucide-react";
 import { EntityRef } from "@/components/official/entity-ref/EntityRef";
 import { Button } from "@/components/ui/button";
-import { Badge, Chip, Input } from "@ai-matrx/design-system/controls";
+import { Badge, Chip, Input, Select } from "@ai-matrx/design-system/controls";
 import { Skeleton } from "@ai-matrx/design-system";
 import { toast } from "@/lib/toast";
 import { fetchMandateAssignments } from "@ai-matrx/chat/mandates/service";
@@ -269,13 +269,11 @@ export function AutonomyModesEditor({
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2">
-                  <select
-                    className="h-7 rounded-md border border-border bg-background px-2 text-xs text-foreground"
+                  <Select<AutonomyMode>
                     aria-label={`Autonomy for ${capability.label}`}
                     disabled={readOnly || save.isPending}
                     value={currentMode}
-                    onChange={(event) => {
-                      const mode = event.target.value as AutonomyMode;
+                    onValueChange={(mode) => {
                       save.mutate({
                         scope,
                         id,
@@ -289,17 +287,12 @@ export function AutonomyModesEditor({
                             : undefined,
                       });
                     }}
-                  >
-                    {MODES.map((mode) => (
-                      <option
-                        key={mode.value}
-                        value={mode.value}
-                        title={mode.hint}
-                      >
-                        {mode.label}
-                      </option>
-                    ))}
-                  </select>
+                    options={MODES.map((mode) => ({
+                      value: mode.value,
+                      label: mode.label,
+                      meta: mode.hint,
+                    }))}
+                  />
 
                   {currentMode === "review_timeout" ? (
                     <label className="flex items-center gap-1 text-xs text-muted-foreground">

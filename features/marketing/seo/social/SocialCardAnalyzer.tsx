@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Loader2, Search, Share2 } from "lucide-react";
 import { toast } from "@/lib/toast";
 import { BasicInput } from "@ai-matrx/design-system";
+import { Select } from "@ai-matrx/design-system/controls";
 import { BasicTextarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -306,22 +307,19 @@ export function SocialCardAnalyzer({
                 <Label htmlFor="social-card-type" className={fieldLabelClass}>
                   twitter:card
                 </Label>
-                <select
-                  id="social-card-type"
+                <Select
+                  aria-label="twitter:card"
+                  className="w-full"
                   value={cardType}
-                  onChange={(e) => setCardType(e.target.value)}
-                  className={cn(
-                    inputClass,
-                    "w-full rounded-md border px-3 text-foreground",
-                  )}
-                >
-                  <option value="">Not set</option>
-                  {KNOWN_TWITTER_CARDS.map((card) => (
-                    <option key={card} value={card}>
-                      {card}
-                    </option>
-                  ))}
-                </select>
+                  onValueChange={setCardType}
+                  options={[
+                    { value: "", label: "Not set" },
+                    ...KNOWN_TWITTER_CARDS.map((card) => ({
+                      value: card,
+                      label: card,
+                    })),
+                  ]}
+                />
               </div>
             </CardContent>
           </Card>

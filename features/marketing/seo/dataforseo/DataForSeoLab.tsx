@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { UntrustedCount } from "@ai-matrx/design-system";
+import { Select } from "@ai-matrx/design-system/controls";
 import {
   CheckCircle2,
   Database,
@@ -370,33 +371,31 @@ export function DataForSeoLab() {
         <section className="grid gap-3 rounded-lg border border-border bg-card p-3 md:grid-cols-2 xl:grid-cols-4">
           <label className="text-xs text-muted-foreground xl:col-span-2">
             Operation
-            <select
+            <Select
+              aria-label="Operation"
+              className="mt-1 w-full"
               value={operationName}
-              onChange={(event) => selectOperation(event.target.value)}
-              className="mt-1 min-h-11 w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground lg:min-h-9"
-            >
-              {operations.map((item) => (
-                <option key={item.name} value={item.name}>
-                  {item.family} · {item.name}
-                </option>
-              ))}
-            </select>
+              onValueChange={selectOperation}
+              options={operations.map((item) => ({
+                value: item.name,
+                label: `${item.family} · ${item.name}`,
+              }))}
+            />
           </label>
           <label className="text-xs text-muted-foreground">
             Workflow
-            <select
+            <Select
+              aria-label="Workflow"
+              className="mt-1 w-full"
               value={workflow}
-              onChange={(event) =>
-                selectWorkflow(event.target.value as "live" | "standard")
+              onValueChange={(next) =>
+                selectWorkflow(next as "live" | "standard")
               }
-              className="mt-1 min-h-11 w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground lg:min-h-9"
-            >
-              {(operation?.workflows ?? []).map((item) => (
-                <option key={item} value={item}>
-                  {item}
-                </option>
-              ))}
-            </select>
+              options={(operation?.workflows ?? []).map((item) => ({
+                value: item,
+                label: item,
+              }))}
+            />
           </label>
           <label className="text-xs text-muted-foreground">
             Cache identity target
@@ -408,17 +407,13 @@ export function DataForSeoLab() {
           </label>
           <label className="text-xs text-muted-foreground xl:col-span-4">
             Exact endpoint
-            <select
+            <Select
+              aria-label="Exact endpoint"
+              className="mt-1 w-full"
               value={endpoint}
-              onChange={(event) => selectEndpoint(event.target.value)}
-              className="mt-1 min-h-11 w-full rounded-md border border-border bg-background px-3 py-2 font-mono text-xs text-foreground lg:min-h-9"
-            >
-              {endpoints.map((item) => (
-                <option key={item} value={item}>
-                  {item}
-                </option>
-              ))}
-            </select>
+              onValueChange={selectEndpoint}
+              options={endpoints.map((item) => ({ value: item, label: item }))}
+            />
           </label>
           <div className="grid gap-2 rounded-md border border-border bg-muted/30 p-3 text-xs xl:col-span-4 md:grid-cols-3">
             <div>

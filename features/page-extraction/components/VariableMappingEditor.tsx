@@ -50,7 +50,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { Input } from "@ai-matrx/design-system/controls";
+import { Input, Select as ControlSelect } from "@ai-matrx/design-system/controls";
 import { getManifest } from "@/features/surfaces/manifests/registry";
 import { EXTRACTOR_CHUNKER_SURFACE_NAME } from "@/features/page-extraction/constants";
 import type { SurfaceValue } from "@ai-matrx/chat/surfaces/types";
@@ -894,17 +894,18 @@ function ExtraInputRow({
           data-identifier
           placeholder="variable_name"
         />
-        <select
+        <ControlSelect
           value={isLiteral ? "literal" : "template"}
-          onChange={(e) =>
-            onSetKind(e.target.value === "literal" ? "literal" : "template")
+          onValueChange={(next) =>
+            onSetKind(next === "literal" ? "literal" : "template")
           }
-          className="h-6 text-[10px] w-16 shrink-0 rounded-md border border-input bg-background px-1"
+          className="shrink-0"
           aria-label="Input kind"
-        >
-          <option value="template">Template</option>
-          <option value="literal">Value</option>
-        </select>
+          options={[
+            { value: "template", label: "Template" },
+            { value: "literal", label: "Value" },
+          ]}
+        />
         <Button
           icon={<X />} aria-label="Remove this input"
           variant="quiet"
@@ -922,40 +923,39 @@ function ExtraInputRow({
         />
       ) : (
         <div className="flex flex-col gap-1">
-          <select
+          <ControlSelect
+            aria-label="Source template"
+            className="w-full"
             value={row.source_job_id ?? ""}
-            onChange={(e) =>
+            onValueChange={(next) =>
               onPatch({
-                source_job_id: e.target.value,
+                source_job_id: next,
                 source_run_id: null,
               })
             }
-            className="h-6 text-[11px] w-full rounded-md border border-input bg-background px-2"
-          >
-            <option value="">Template…</option>
-            {candidateJobs.map((j) => (
-              <option key={j.id} value={j.id}>
-                {j.name}
-              </option>
-            ))}
-          </select>
+            options={[
+              { value: "", label: "Template…" },
+              ...candidateJobs.map((j) => ({ value: j.id, label: j.name })),
+            ]}
+          />
           {sourceJobId ? (
-            <select
+            <ControlSelect
+              aria-label="Source run"
+              className="w-full"
               value={row.source_run_id ?? ""}
-              onChange={(e) =>
+              onValueChange={(next) =>
                 onPatch({
-                  source_run_id: e.target.value || null,
+                  source_run_id: next || null,
                 })
               }
-              className="h-6 text-[11px] w-full rounded-md border border-input bg-background px-2"
-            >
-              <option value="">All runs (default)</option>
-              {runs.map((run, i) => (
-                <option key={run.id} value={run.id}>
-                  {runLabel(run, i)}
-                </option>
-              ))}
-            </select>
+              options={[
+                { value: "", label: "All runs (default)" },
+                ...runs.map((run, i) => ({
+                  value: run.id,
+                  label: runLabel(run, i),
+                })),
+              ]}
+            />
           ) : null}
         </div>
       )}

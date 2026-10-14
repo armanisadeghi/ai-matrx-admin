@@ -20,6 +20,7 @@ import {
 import { LabelSheetPreview } from "@ai-matrx/print/react";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/lib/toast";
+import { Select } from "@ai-matrx/design-system/controls";
 import { Field, SectionShell, StatusChip, announcePrintOutcome, byteLength, controlClass } from "@/features/print/components/shared";
 import { SAMPLE_FORMAT_ROWS } from "./sample-data";
 import { ClampedNumberInput } from "@/components/official/ClampedNumberInput";
@@ -142,40 +143,34 @@ export function LabelsSection() {
                 <div className="flex min-w-0 flex-col gap-3">
                     <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                         <Field label="Label stock" className="sm:col-span-2">
-                            <select
-                                className={controlClass}
+                            <Select
+                                aria-label="Label stock"
+                                className="w-full"
                                 value={templateId}
-                                onChange={(e) => setTemplateId(e.target.value)}
-                            >
-                                {LABEL_TEMPLATES.map((t) => (
-                                    <option key={t.id} value={t.id}>
-                                        {t.stockCode} — {t.name}
-                                        {t.kind === "roll" ? " (roll)" : ""}
-                                    </option>
-                                ))}
-                            </select>
+                                onValueChange={setTemplateId}
+                                options={LABEL_TEMPLATES.map((t) => ({
+                                    value: t.id,
+                                    label: `${t.stockCode} — ${t.name}${t.kind === "roll" ? " (roll)" : ""}`,
+                                }))}
+                            />
                         </Field>
                         <Field label="Label format">
-                            <select className={controlClass} value={formatId} onChange={(e) => setFormatId(e.target.value)}>
-                                {LABEL_FORMAT_PRESETS.map((f) => (
-                                    <option key={f.id} value={f.id}>
-                                        {f.name}
-                                    </option>
-                                ))}
-                            </select>
+                            <Select
+                                aria-label="Label format"
+                                className="w-full"
+                                value={formatId}
+                                onValueChange={setFormatId}
+                                options={LABEL_FORMAT_PRESETS.map((f) => ({ value: f.id, label: f.name }))}
+                            />
                         </Field>
                         <Field label="Error correction">
-                            <select
-                                className={controlClass}
+                            <Select<QrEcLevel>
+                                aria-label="Error correction"
+                                className="w-full"
                                 value={ecLevel}
-                                onChange={(e) => setEcLevel(e.target.value as QrEcLevel)}
-                            >
-                                {EC_LEVELS.map((level) => (
-                                    <option key={level} value={level}>
-                                        {level}
-                                    </option>
-                                ))}
-                            </select>
+                                onValueChange={setEcLevel}
+                                options={EC_LEVELS.map((level) => ({ value: level, label: level }))}
+                            />
                         </Field>
                         <Field label="Start at label" hint="Reuse a partially-used sheet">
                             <ClampedNumberInput
@@ -187,14 +182,16 @@ export function LabelsSection() {
                             />
                         </Field>
                         <Field label="Preview mode">
-                            <select
-                                className={controlClass}
+                            <Select
+                                aria-label="Preview mode"
+                                className="w-full"
                                 value={calibration ? "calibration" : "labels"}
-                                onChange={(e) => setCalibration(e.target.value === "calibration")}
-                            >
-                                <option value="labels">Labels</option>
-                                <option value="calibration">Calibration outline</option>
-                            </select>
+                                onValueChange={(next) => setCalibration(next === "calibration")}
+                                options={[
+                                    { value: "labels", label: "Labels" },
+                                    { value: "calibration", label: "Calibration outline" },
+                                ]}
+                            />
                         </Field>
                     </div>
 

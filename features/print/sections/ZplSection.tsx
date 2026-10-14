@@ -18,6 +18,7 @@ import { DEFAULT_ZPL_DPI, assertZplScannable, labelsToZpl, type ZplDpi } from "@
 import { Button } from "@/components/ui/button";
 import { useClipboard } from "@ai-matrx/kit/clipboard";
 import { copyNotify } from "@/lib/clipboard/copy-notify";
+import { Select } from "@ai-matrx/design-system/controls";
 import { Field, SectionShell, StatusChip, byteLength, controlClass } from "@/features/print/components/shared";
 import { SAMPLE_ZPL_LABELS } from "./sample-data";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
@@ -87,33 +88,28 @@ export function ZplSection() {
                                 : undefined
                         }
                     >
-                        <select
-                            className={controlClass}
+                        <Select
+                            aria-label="Label stock"
+                            className="w-full"
                             value={templateId}
-                            onChange={(e) => setTemplateId(e.target.value)}
-                        >
-                            {ROLL_TEMPLATES.map((t) => (
-                                <option key={t.id} value={t.id}>
-                                    {t.name}
-                                </option>
-                            ))}
-                        </select>
+                            onValueChange={setTemplateId}
+                            options={ROLL_TEMPLATES.map((t) => ({ value: t.id, label: t.name }))}
+                        />
                     </Field>
                     <Field
                         label="Printhead resolution"
                         hint={dpi === 203 ? "8 dots/mm — the ZD/GK/GX and Brother QL class" : "12 dots/mm — ZD621/ZT heads"}
                     >
-                        <select
-                            className={controlClass}
-                            value={dpi}
-                            onChange={(e) => setDpi(Number(e.target.value) as ZplDpi)}
-                        >
-                            {DPI_OPTIONS.map((option) => (
-                                <option key={option} value={option}>
-                                    {option} dpi{option === DEFAULT_ZPL_DPI ? " (default)" : ""}
-                                </option>
-                            ))}
-                        </select>
+                        <Select
+                            aria-label="Printhead resolution"
+                            className="w-full"
+                            value={String(dpi)}
+                            onValueChange={(next) => setDpi(Number(next) as ZplDpi)}
+                            options={DPI_OPTIONS.map((option) => ({
+                                value: String(option),
+                                label: `${option} dpi${option === DEFAULT_ZPL_DPI ? " (default)" : ""}`,
+                            }))}
+                        />
                     </Field>
                     <Field label="QR value" hint={`${byteLength(qrValue)} bytes`}>
                         <input className={controlClass} value={qrValue} onChange={(e) => setQrValue(e.target.value)} />

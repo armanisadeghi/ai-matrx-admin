@@ -40,7 +40,7 @@ import {
   useExtractionJobs,
 } from "@/features/page-extraction/hooks/useExtractionJobs";
 import { Button } from "@/components/ui/button";
-import { Input } from "@ai-matrx/design-system/controls";
+import { Input, Select } from "@ai-matrx/design-system/controls";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { useToastManager } from "@/hooks/useToastManager";
 import {
@@ -1400,18 +1400,16 @@ function ValidatesTemplatePicker({
     (j) => j.id !== currentJobId && (j.kind ?? "extraction") === "extraction",
   );
   return (
-    <select
+    <Select
+      aria-label="Extraction template"
+      className="w-full"
       value={value ?? ""}
-      onChange={(e) => onChange(e.target.value || null)}
-      className="h-7 text-[11px] w-full rounded-md border border-input bg-background px-2"
-    >
-      <option value="">Select extraction template…</option>
-      {candidates.map((j) => (
-        <option key={j.id} value={j.id}>
-          {j.name}
-        </option>
-      ))}
-    </select>
+      onValueChange={(next) => onChange(next || null)}
+      options={[
+        { value: "", label: "Select extraction template…" },
+        ...candidates.map((j) => ({ value: j.id, label: j.name })),
+      ]}
+    />
   );
 }
 

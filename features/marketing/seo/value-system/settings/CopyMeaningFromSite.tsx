@@ -18,6 +18,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowRight, Copy, Loader2, TriangleAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@ai-matrx/design-system";
+import { Select } from "@ai-matrx/design-system/controls";
 import { cn } from "@/styles/themes/utils";
 import { toast } from "@/lib/toast";
 import { InlineQueryError } from "@/features/marketing/components/shared/MarketingUi";
@@ -111,24 +112,21 @@ export function CopyMeaningFromSite({ siteId }: { siteId: string }) {
         </p>
       ) : (
         <div className="mt-2 flex flex-wrap items-center gap-2">
-          <select
-            className="h-8 rounded-md border border-border bg-card px-2 text-xs text-foreground"
+          <Select
             value={sourceId ?? ""}
             aria-label="Site to copy from"
-            onChange={(event) => {
-              setSourceId(event.target.value || null);
+            onValueChange={(next) => {
+              setSourceId(next || null);
               setPreview(null);
             }}
-          >
-            <option value="">Choose a site…</option>
-            {options.map((option) => (
-              <option key={option.site_id} value={option.site_id}>
-                {option.label}
-                {option.same_brand ? " (same brand)" : ""} — {option.meaning_rows}{" "}
-                {option.meaning_rows === 1 ? "item" : "items"}
-              </option>
-            ))}
-          </select>
+            options={[
+              { value: "", label: "Choose a site…" },
+              ...options.map((option) => ({
+                value: option.site_id,
+                label: `${option.label}${option.same_brand ? " (same brand)" : ""} — ${option.meaning_rows} ${option.meaning_rows === 1 ? "item" : "items"}`,
+              })),
+            ]}
+          />
           <Button
             icon={run.isPending ? (
               <Loader2 className="animate-spin" aria-hidden />

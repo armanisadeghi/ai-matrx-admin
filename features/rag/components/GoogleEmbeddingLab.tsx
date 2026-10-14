@@ -6,6 +6,7 @@ import { copyNotify } from "@/lib/clipboard/copy-notify";
 import { useState } from "react";
 import { Binary, Check, Clipboard, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Select } from "@ai-matrx/design-system/controls";
 import { RagHubHeader } from "@/features/rag/components/shell/RagHubHeader";
 import {
   createGoogleEmbeddings,
@@ -100,50 +101,44 @@ export function GoogleEmbeddingLab() {
             {/* canonical-model-picker-exempt: Google embedding request enum, not an ai.model_definition id */}
             <label className="space-y-1 text-xs font-medium">
               Model
-              <select
+              <Select<GoogleEmbeddingRequest["model"]>
+                aria-label="Model"
+                className="w-full"
                 value={model}
-                onChange={(event) =>
-                  setModel(
-                    event.target.value as GoogleEmbeddingRequest["model"],
-                  )
-                }
-                className="h-9 w-full rounded-md border border-input bg-background px-2 text-sm"
-              >
-                <option value="gemini-embedding-2">Gemini Embedding 2</option>
-                <option value="gemini-embedding-001">
-                  Gemini Embedding 001
-                </option>
-              </select>
+                onValueChange={setModel}
+                options={[
+                  { value: "gemini-embedding-2", label: "Gemini Embedding 2" },
+                  { value: "gemini-embedding-001", label: "Gemini Embedding 001" },
+                ]}
+              />
             </label>
             <label className="space-y-1 text-xs font-medium">
               Dimensions
-              <select
-                value={dimensions}
-                onChange={(event) => setDimensions(Number(event.target.value))}
-                className="h-9 w-full rounded-md border border-input bg-background px-2 text-sm"
-              >
-                <option value={768}>768</option>
-                <option value={1536}>1536 (knowledge index)</option>
-                <option value={3072}>3072</option>
-              </select>
+              <Select
+                aria-label="Dimensions"
+                className="w-full"
+                value={String(dimensions)}
+                onValueChange={(next) => setDimensions(Number(next))}
+                options={[
+                  { value: "768", label: "768" },
+                  { value: "1536", label: "1536 (knowledge index)" },
+                  { value: "3072", label: "3072" },
+                ]}
+              />
             </label>
             <label className="space-y-1 text-xs font-medium">
               Task
-              <select
+              <Select<NonNullable<GoogleEmbeddingRequest["task_type"]>>
+                aria-label="Task"
+                className="w-full"
                 value={taskType}
-                onChange={(event) =>
-                  setTaskType(
-                    event.target.value as NonNullable<
-                      GoogleEmbeddingRequest["task_type"]
-                    >,
-                  )
-                }
-                className="h-9 w-full rounded-md border border-input bg-background px-2 text-sm"
-              >
-                <option value="RETRIEVAL_DOCUMENT">Retrieval document</option>
-                <option value="RETRIEVAL_QUERY">Retrieval query</option>
-                <option value="SEMANTIC_SIMILARITY">Semantic similarity</option>
-              </select>
+                onValueChange={setTaskType}
+                options={[
+                  { value: "RETRIEVAL_DOCUMENT", label: "Retrieval document" },
+                  { value: "RETRIEVAL_QUERY", label: "Retrieval query" },
+                  { value: "SEMANTIC_SIMILARITY", label: "Semantic similarity" },
+                ]}
+              />
             </label>
 
             <label className="space-y-1 text-xs font-medium sm:col-span-3">

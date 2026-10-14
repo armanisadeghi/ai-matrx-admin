@@ -19,7 +19,7 @@ import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Loader2, Plus, Save, Trash2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@ai-matrx/design-system/controls";
+import { Input, Select } from "@ai-matrx/design-system/controls";
 import { toast } from "@/lib/toast";
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import { extractErrorMessage } from "@/utils/errors";
@@ -249,19 +249,15 @@ export function DefaultRulesEditor() {
               <span className="text-xs font-medium text-foreground">
                 Match type
               </span>
-              <select
+              <Select
+                aria-label="Match type"
                 value={draft.matchKind}
-                onChange={(e) =>
-                  setDraft({ ...draft, matchKind: e.target.value })
-                }
-                className="h-8 rounded-md border border-border bg-background px-2 text-xs text-foreground"
-              >
-                {MATCH_KINDS.map((kind) => (
-                  <option key={kind.value} value={kind.value}>
-                    {kind.label} — {kind.hint}
-                  </option>
-                ))}
-              </select>
+                onValueChange={(next) => setDraft({ ...draft, matchKind: next })}
+                options={MATCH_KINDS.map((kind) => ({
+                  value: kind.value,
+                  label: `${kind.label} — ${kind.hint}`,
+                }))}
+              />
             </label>
           </div>
 
@@ -286,63 +282,58 @@ export function DefaultRulesEditor() {
               <span className="text-xs font-medium text-foreground">
                 What it means
               </span>
-              <select
+              <Select
+                aria-label="What it means"
                 value={draft.dimensionSlug}
-                onChange={(e) =>
-                  setDraft({
-                    ...draft,
-                    dimensionSlug: e.target.value,
-                    valueSlug: "",
-                  })
+                onValueChange={(next) =>
+                  setDraft({ ...draft, dimensionSlug: next, valueSlug: "" })
                 }
-                className="h-8 rounded-md border border-border bg-background px-2 text-xs text-foreground"
-              >
-                <option value="">Choose a dimension…</option>
-                {dimensions.map((dimension) => (
-                  <option key={dimension.slug} value={dimension.slug}>
-                    {dimension.label}
-                  </option>
-                ))}
-              </select>
+                options={[
+                  { value: "", label: "Choose a dimension…" },
+                  ...dimensions.map((dimension) => ({
+                    value: dimension.slug,
+                    label: dimension.label,
+                  })),
+                ]}
+              />
             </label>
             <label className="flex flex-col gap-1">
               <span className="text-xs font-medium text-foreground">
                 The answer it stamps
               </span>
-              <select
+              <Select
+                aria-label="The answer it stamps"
                 value={draft.valueSlug}
                 disabled={!activeDimension}
-                onChange={(e) =>
-                  setDraft({ ...draft, valueSlug: e.target.value })
-                }
-                className="h-8 rounded-md border border-border bg-background px-2 text-xs text-foreground disabled:opacity-50"
-              >
-                <option value="">
-                  {activeDimension ? "Choose an answer…" : "Pick a dimension first"}
-                </option>
-                {(activeDimension?.values ?? []).map((value) => (
-                  <option key={value.key} value={value.key}>
-                    {value.label}
-                  </option>
-                ))}
-              </select>
+                onValueChange={(next) => setDraft({ ...draft, valueSlug: next })}
+                options={[
+                  {
+                    value: "",
+                    label: activeDimension
+                      ? "Choose an answer…"
+                      : "Pick a dimension first",
+                  },
+                  ...(activeDimension?.values ?? []).map((value) => ({
+                    value: value.key,
+                    label: value.label,
+                  })),
+                ]}
+              />
             </label>
           </div>
 
           <div className="grid gap-2 sm:grid-cols-2">
             <label className="flex flex-col gap-1">
               <span className="text-xs font-medium text-foreground">Effect</span>
-              <select
+              <Select
+                aria-label="Effect"
                 value={draft.effect}
-                onChange={(e) => setDraft({ ...draft, effect: e.target.value })}
-                className="h-8 rounded-md border border-border bg-background px-2 text-xs text-foreground"
-              >
-                {EFFECTS.map((effect) => (
-                  <option key={effect.value} value={effect.value}>
-                    {effect.label} — {effect.hint}
-                  </option>
-                ))}
-              </select>
+                onValueChange={(next) => setDraft({ ...draft, effect: next })}
+                options={EFFECTS.map((effect) => ({
+                  value: effect.value,
+                  label: `${effect.label} — ${effect.hint}`,
+                }))}
+              />
             </label>
             {draft.effect === "never" ? null : (
               <label className="flex flex-col gap-1">

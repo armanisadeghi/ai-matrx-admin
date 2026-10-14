@@ -35,7 +35,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ArchivedDisclosure } from "@ai-matrx/design-system";
-import { Input } from "@ai-matrx/design-system/controls";
+import { Input, Select } from "@ai-matrx/design-system/controls";
 import { useIsMobile } from "@ai-matrx/kit/media-query";
 import { ItemMenu, ItemContextMenu } from "@ai-matrx/design-system/item";
 import { FileContextMenu } from "@/features/files/components/core/FileContextMenu/FileContextMenu";
@@ -205,35 +205,29 @@ export function PdfStudioSidebar({
 
             {/* Filter + sort row */}
             <div className="flex items-center gap-1">
-              <div className="relative flex-1">
-                <Filter className="absolute left-1.5 top-1/2 -translate-y-1/2 w-3 h-3 text-muted-foreground" />
-                <select
-                  value={filterKind ?? ""}
-                  onChange={(e) => setFilterKind(e.target.value || null)}
-                  className="w-full h-7 pl-6 pr-2 text-[11px] rounded-md border border-border bg-background text-foreground"
-                >
-                  <option value="">All kinds</option>
-                  {kinds.map((k) => (
-                    <option key={k} value={k}>
-                      {k}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="relative flex-1">
-                <ArrowUpDown className="absolute left-1.5 top-1/2 -translate-y-1/2 w-3 h-3 text-muted-foreground" />
-                <select
-                  value={sortBy}
-                  onChange={(e) =>
-                    setSortBy(e.target.value as "recent" | "name" | "size")
-                  }
-                  className="w-full h-7 pl-6 pr-2 text-[11px] rounded-md border border-border bg-background text-foreground"
-                >
-                  <option value="recent">Recent</option>
-                  <option value="name">Name</option>
-                  <option value="size">Pages</option>
-                </select>
-              </div>
+              <Select
+                aria-label="Filter by kind"
+                className="flex-1"
+                icon={<Filter />}
+                value={filterKind ?? ""}
+                onValueChange={(next) => setFilterKind(next || null)}
+                options={[
+                  { value: "", label: "All kinds" },
+                  ...kinds.map((k) => ({ value: k, label: k })),
+                ]}
+              />
+              <Select<"recent" | "name" | "size">
+                aria-label="Sort by"
+                className="flex-1"
+                icon={<ArrowUpDown />}
+                value={sortBy}
+                onValueChange={setSortBy}
+                options={[
+                  { value: "recent", label: "Recent" },
+                  { value: "name", label: "Name" },
+                  { value: "size", label: "Pages" },
+                ]}
+              />
             </div>
           </div>
 

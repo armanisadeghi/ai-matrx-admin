@@ -11,6 +11,7 @@ import React, { useState } from "react";
 import { Plus, Trash2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { Select } from "@ai-matrx/design-system/controls";
 import { cn } from "@/lib/utils";
 import { ProTextarea } from "@/components/official/ProTextarea";
 
@@ -158,20 +159,13 @@ export function SelectField({
   className?: string;
 }) {
   const select = (
-    <select
+    <Select
+      aria-label={label ?? "Choose an option"}
+      className={cn("w-full", className)}
       value={value}
-      onChange={(e) => onChange(e.target.value)}
-      className={cn(
-        "h-9 w-full rounded-md border border-input bg-background px-2 text-base focus:outline-none focus:ring-2 focus:ring-ring",
-        className,
-      )}
-    >
-      {options.map((o) => (
-        <option key={o.value} value={o.value}>
-          {o.label}
-        </option>
-      ))}
-    </select>
+      onValueChange={onChange}
+      options={options}
+    />
   );
   if (!label) return select;
   return (

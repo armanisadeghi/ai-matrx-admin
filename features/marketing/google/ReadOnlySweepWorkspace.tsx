@@ -15,6 +15,7 @@ import {
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Select } from "@ai-matrx/design-system/controls";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import ImportTasksModal from "@/features/tasks/components/ImportTasksModal";
@@ -545,23 +546,23 @@ function ReadOnlySweepWorkspaceInner({ reviewMode }: { reviewMode: boolean }) {
             loadDisabled={!youtubeChannelId}
             extraControl={
               youtubeConnection ? (
-                <select
+                <Select
                   aria-label="Owned YouTube channel"
-                  className="h-11 w-full rounded-md border border-input bg-background px-3 text-base sm:text-sm"
+                  className="w-full"
                   value={youtubeChannelId}
-                  onChange={(event) => {
-                    setYoutubeChannelId(event.target.value);
+                  onValueChange={(next) => {
+                    setYoutubeChannelId(next);
                     setYoutubeLoadedFor(null);
                     youtube.reset();
                   }}
-                >
-                  <option value="">Choose an owned channel</option>
-                  {youtubeChannels.map((channel) => (
-                    <option key={channel.id} value={channel.resource_ref}>
-                      {channel.display_name}
-                    </option>
-                  ))}
-                </select>
+                  options={[
+                    { value: "", label: "Choose an owned channel" },
+                    ...youtubeChannels.map((channel) => ({
+                      value: channel.resource_ref,
+                      label: channel.display_name,
+                    })),
+                  ]}
+                />
               ) : null
             }
           >
@@ -705,18 +706,16 @@ function CapabilityCard({
         </label>
         {connections.length ? (
           <>
-            <select
+            <Select
               aria-label={`${title} Google account`}
-              className="h-11 w-full rounded-md border border-input bg-background px-3 text-base sm:text-sm"
+              className="w-full"
               value={selectedId}
-              onChange={(event) => onSelect(event.target.value)}
-            >
-              {connections.map((connection) => (
-                <option key={connection.id} value={connection.id}>
-                  {accountLabel(connection)}
-                </option>
-              ))}
-            </select>
+              onValueChange={onSelect}
+              options={connections.map((connection) => ({
+                value: connection.id,
+                label: accountLabel(connection),
+              }))}
+            />
             {extraControl}
             <Button
               icon={loading ? <Loader2 className="animate-spin" /> : null}
