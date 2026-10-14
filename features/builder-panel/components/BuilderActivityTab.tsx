@@ -6,7 +6,8 @@
 
 import { Badge, SearchField, Select, type SelectOption } from "@ai-matrx/design-system/controls";
 import { useCostDisplay } from "@/components/cost/useCostDisplay";
-import { msText, type ActivityRow } from "../requests";
+import { formatDurationMs } from "@ai-matrx/kit/format";
+import { type ActivityRow } from "../requests";
 import { findActivity, tally } from "../find";
 import { BuilderHighlight } from "./BuilderHighlight";
 
@@ -98,7 +99,7 @@ export function BuilderActivityTab({
                 </span>
                 {r.status ? <span className="shrink-0 text-[10px] text-muted-foreground">{r.status}</span> : null}
                 <span className="w-14 shrink-0 text-right text-[10px] tabular-nums text-muted-foreground">
-                  {r.ms !== null ? msText(r.ms) : ""}
+                  {r.ms !== null ? formatDurationMs(r.ms, { style: "compact", precision: "fine" }) : ""}
                 </span>
                 <span className="w-16 shrink-0 text-right text-[10px] tabular-nums text-muted-foreground">
                   {r.costUsd ? format(r.costUsd) : ""}

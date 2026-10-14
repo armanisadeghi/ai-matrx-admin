@@ -252,8 +252,3 @@ function pathOf(url: string): string {
     return url;
   }
 }
-
-/** A request or step duration, exact below a second. */
-export function msText(ms: number): string {
-  return ms < 1000 ? `${ms} ms` : `${(ms / 1000).toFixed(ms < 10_000 ? 2 : 1)} s`;
-}

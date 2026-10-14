@@ -24,7 +24,7 @@ import { useState } from "react";
 import { SearchField } from "@ai-matrx/design-system/controls";
 import { cn } from "@/lib/utils";
 import { useCostDisplay } from "@/components/cost/useCostDisplay";
-import { msText } from "../requests";
+import { formatDurationMs } from "@ai-matrx/kit/format";
 import type { StoryRow } from "../story";
 import { findStory } from "../find";
 import { BuilderHighlight } from "./BuilderHighlight";
@@ -113,7 +113,7 @@ export function BuilderStorySidebar({
                 </span>
                 <span className="shrink-0 text-[10px] tabular-nums text-muted-foreground">
                   {[
-                    row.ms !== null ? msText(row.ms) : null,
+                    row.ms !== null ? formatDurationMs(row.ms, { style: "compact", precision: "fine" }) : null,
                     row.costUsd ? format(row.costUsd) : null,
                   ]
                     .filter(Boolean)
@@ -163,7 +163,7 @@ export function BuilderStorySidebar({
                   </span>
                   <span className="ml-auto shrink-0 text-[10px] tabular-nums text-muted-foreground">
                     {[
-                      row.ms !== null && !idle ? msText(row.ms) : null,
+                      row.ms !== null && !idle ? formatDurationMs(row.ms, { style: "compact", precision: "fine" }) : null,
                       row.costUsd ? format(row.costUsd) : null,
                     ]
                       .filter(Boolean)

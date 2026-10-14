@@ -19,6 +19,7 @@
  */
 
 import { useState } from "react";
+import { formatDurationMs } from "@ai-matrx/kit/format";
 import {
   Braces,
   Info,
@@ -671,7 +672,7 @@ function EngineColumn({
               : outcome
                 ? `${hits} ${hits === 1 ? "result" : "results"}${
                     outcome.elapsedMs !== null
-                      ? ` · ${(outcome.elapsedMs / 1000).toFixed(2)} s`
+                      ? ` · ${formatDurationMs(outcome.elapsedMs, { style: "compact", precision: "fine" })}`
                       : ""
                   }`
                 : null}

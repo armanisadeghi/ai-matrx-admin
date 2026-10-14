@@ -12,7 +12,7 @@ import { Badge, Button } from "@ai-matrx/design-system/controls";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 import { runHref } from "@/features/workflow-runtime/run-doors";
 import { useCostDisplay } from "@/components/cost/useCostDisplay";
-import { msText } from "../requests";
+import { formatDurationMs } from "@ai-matrx/kit/format";
 import { derivedFor, findInResponse, type StoryRow } from "../story";
 import type { BuilderEntry } from "../types";
 import type { RunRow } from "../data";
@@ -71,7 +71,7 @@ export function BuilderStoryDetail({
             {row.status}
           </Badge>
         ) : null}
-        {row.ms !== null ? <span className="text-[11px] tabular-nums text-muted-foreground">{msText(row.ms)}</span> : null}
+        {row.ms !== null ? <span className="text-[11px] tabular-nums text-muted-foreground">{formatDurationMs(row.ms, { style: "compact", precision: "fine" })}</span> : null}
         {row.costUsd ? <span className="text-[11px] tabular-nums text-muted-foreground">{format(row.costUsd)}</span> : null}
         <span className="ml-auto flex items-center gap-1">
           {row.runId && row.kind !== "run" ? (

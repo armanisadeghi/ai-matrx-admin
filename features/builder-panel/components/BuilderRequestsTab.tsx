@@ -13,7 +13,8 @@
 import { useRef, type KeyboardEvent } from "react";
 import { Badge, Button, SearchField, SegmentedControl, Select, type SelectOption } from "@ai-matrx/design-system/controls";
 import { cn } from "@/lib/utils";
-import { msText, type RequestRow } from "../requests";
+import { formatDurationMs } from "@ai-matrx/kit/format";
+import { type RequestRow } from "../requests";
 import {
   EMPTY_REQUEST_FIND,
   filterSourceOf,
@@ -242,7 +243,7 @@ export function BuilderRequestsTab({
                   ) : null}
                   <Badge tone={statusTone(r)}>{r.error ? "error" : (r.status ?? "…")}</Badge>
                   <span className="w-14 shrink-0 text-right text-[10px] tabular-nums text-muted-foreground">
-                    {r.ms !== null ? msText(r.ms) : ""}
+                    {r.ms !== null ? formatDurationMs(r.ms, { style: "compact", precision: "fine" }) : ""}
                   </span>
                 </button>
               </li>
