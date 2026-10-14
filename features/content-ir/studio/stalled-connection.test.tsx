@@ -56,8 +56,14 @@ jest.mock("@/features/content-ir/registry/component-registry", () => ({
   componentRegistry: {
     ensureWarm: () => ensureWarm(),
     refresh: (...a: unknown[]) => refresh(...a),
+    getVersion: () => 0,
   },
   resolveComponent: () => ({
+    componentKey: "generic_structured",
+    source: "bundled",
+    isActive: true,
+  }),
+  resolveSharedComponent: () => ({
     componentKey: "generic_structured",
     source: "bundled",
     isActive: true,

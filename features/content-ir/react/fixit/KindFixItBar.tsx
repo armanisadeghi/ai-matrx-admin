@@ -238,6 +238,9 @@ export interface FixItViewHandlers {
   onEditLayer: (rowId: string) => void;
   onRemoveLayer: (rowId: string) => void;
   onUseShared: (rowId: string) => void;
+  /** A view this person just switched off — the marker keeps Undo reachable. */
+  switchedOff?: { message: string } | null;
+  onUndoSwitchOff?: () => void;
 }
 
 /**
@@ -245,7 +248,26 @@ export interface FixItViewHandlers {
  * view / For my organization / Change for everyone. Rendered by the fix-it bar
  * AND the shape page's render-status strip, from the same plan.
  */
-export function FixItViewActions({
+export function FixItViewActions(
+  props: FixItViewHandlers & { plan: FixItViewPlan },
+): React.ReactElement | null {
+  const { switchedOff = null, onUndoSwitchOff, busy } = props;
+  const body = <ViewActionsPlan {...props} />;
+  if (!switchedOff || !onUndoSwitchOff) return body;
+  return (
+    <div className="flex flex-wrap items-center gap-2">
+      <div data-fixit-mode="switched-off" className="flex flex-wrap items-center gap-2">
+        <span className="type-meta text-muted-foreground">{switchedOff.message}</span>
+        <Button variant="quiet" disabled={busy} onClick={onUndoSwitchOff}>
+          Undo
+        </Button>
+      </div>
+      {body}
+    </div>
+  );
+}
+
+function ViewActionsPlan({
   plan,
   busy,
   onMakeMine,

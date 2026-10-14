@@ -32,6 +32,13 @@ import { resolveKindLoadingComponent } from "@ai-matrx/rich-content/kinds/react/
 import { kindRegistry } from "@/features/content-ir/registry/kind-registry";
 import { RENDER_PATHS, type RenderPathId, type RenderPathSpec } from "./paths";
 import { runRenderPath } from "./run-path";
+import {
+  describeRenderVerdict,
+  readSharedResolution,
+  readViewerLayerScope,
+  sharedHasComponent,
+  useRegistryVersion,
+} from "@/features/content-ir/studio/shared-view-truth";
 
 const noop = () => {};
 
@@ -56,7 +63,9 @@ function VerdictStrip({
   kindState,
   fallbackReason,
   notes,
+  headline,
 }: {
+  headline: string;
   reached: boolean;
   resolvedAs: string;
   kindState: string | null;
@@ -78,9 +87,7 @@ function VerdictStrip({
           <CircleX className="h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
         )}
         <span className="font-medium text-foreground">
-          {reached
-            ? "This shape's own component rendered."
-            : "The reader gets the generic key/value view here."}
+          {headline}
         </span>
         <span className="ml-auto flex flex-wrap items-center gap-1.5 text-muted-foreground">
           <code className="rounded bg-muted px-1 py-0.5 font-mono">
@@ -129,6 +136,7 @@ export default function KindRenderPaths({
   initialPath = "chat_bare",
 }: KindRenderPathsProps) {
   const [pathId, setPathId] = useState<RenderPathId>(initialPath);
+  const registryVersion = useRegistryVersion();
   const spec = useMemo(
     () => RENDER_PATHS.find((p) => p.id === pathId) ?? RENDER_PATHS[0]!,
     [pathId],
@@ -138,8 +146,14 @@ export default function KindRenderPaths({
   // are consulted inside, so a component authored moments ago is reflected.
   const run = useMemo(
     () => runRenderPath(pathId, kind, value),
-    [pathId, kind, value],
+    // The registry version re-runs the path when a view lands after first paint.
+    [pathId, kind, value, registryVersion],
   );
+
+  // The headline names the SHARED truth: a viewer's own layered view rendering
+  // is not "this shape's own component".
+  const sharedComponent = sharedHasComponent(readSharedResolution(kind, registryVersion));
+  const layerScope = readViewerLayerScope(kind, registryVersion);
 
   const loading = resolveLoadingSlugForKind(kind);
   const LoadingComponent = resolveKindLoadingComponent(loading.slug);
@@ -180,6 +194,11 @@ export default function KindRenderPaths({
 
       {run && (
         <VerdictStrip
+          headline={describeRenderVerdict({
+            reached: run.verdict.reachedRealComponent,
+            sharedHasComponent: sharedComponent,
+            layerScope,
+          })}
           reached={run.verdict.reachedRealComponent}
           resolvedAs={run.verdict.resolvedAs}
           kindState={run.verdict.kindState}

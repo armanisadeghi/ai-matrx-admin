@@ -46,6 +46,7 @@ function KindViewActionsRowInner({
     offer: buildKindAuthoringOffer({ kindSlug: kind, kindLabel: label, authoringPart: "component" }),
   });
   const plan = planKindViewActions(actions.viewer, actions.layer, { slug: kind, registered });
-  if (plan.mode === "actions" && !offerNewView) return null;
+  // A view just switched off keeps its Undo marker even when nothing else shows.
+  if (plan.mode === "actions" && !offerNewView && !actions.switchedOff) return null;
   return <FixItViewActions plan={plan} {...actions} />;
 }

@@ -38,6 +38,7 @@ import {
 } from "./fixit-handlers";
 import {
   readLayerAudience,
+  readLayerFallthrough,
   switchOffLayer,
   switchOnLayer,
   type LayerSwitchOffReason,
@@ -64,6 +65,9 @@ export function readLayerFacts(kind: string, registryVersion?: number): FixItLay
   };
 }
 
+/** The switch-off toast's life — long enough to find and press Undo. */
+const UNDO_TOAST_MS = 60_000;
+
 export function useKindViewActions(input: {
   kind: string;
   value: unknown;
@@ -78,6 +82,13 @@ export function useKindViewActions(input: {
   const orgGate = useOrgAdminGate(userId && activeOrgId ? activeOrgId : undefined);
   const openRun = useOpenAgentRunWindow();
   const [busy, setBusy] = useState(false);
+  // The last view this person switched off, kept HERE: a switched-off row
+  // leaves the overlay, so nothing else remembers its id — and a toast can be
+  // gone before it is read. The marker keeps Undo reachable until it is used.
+  const [switchedOff, setSwitchedOff] = useState<{
+    message: string;
+    undo: () => void;
+  } | null>(null);
   // Repaint when the resolver's tiers change (an overlay load, a switch-off).
   const registryVersion = useSyncExternalStore(
     subscribeKindComponents,
@@ -129,6 +140,7 @@ export function useKindViewActions(input: {
       runLayerSwitchOff(
         {
           readLayerAudience,
+          readFallthrough: readLayerFallthrough,
           confirm: (options) => confirm(options),
           switchOff: switchOffLayer,
           switchOn: (kind, id) =>
@@ -137,8 +149,19 @@ export function useKindViewActions(input: {
                 description: error instanceof Error ? error.message : String(error),
               });
             }),
-          announce: (message, undo) =>
-            toast.success(message, { action: { label: "Undo", onClick: undo } }),
+          announce: (message, undo) => {
+            setSwitchedOff({ message, undo });
+            toast.success(message, {
+              duration: UNDO_TOAST_MS,
+              action: {
+                label: "Undo",
+                onClick: () => {
+                  setSwitchedOff(null);
+                  undo();
+                },
+              },
+            });
+          },
         },
         { kind: input.kind, rowId, reason },
       ),
@@ -155,5 +178,12 @@ export function useKindViewActions(input: {
     onEditLayer: (rowId: string) => launch("edit", rowId),
     onRemoveLayer: (rowId: string) => switchOff(rowId, "remove"),
     onUseShared: (rowId: string) => switchOff(rowId, "use_shared"),
+    // Only while no view of mine is winning (undoing re-lands it; a new view clears it).
+    switchedOff: layer ? null : switchedOff ? { message: switchedOff.message } : null,
+    onUndoSwitchOff: () => {
+      const last = switchedOff;
+      setSwitchedOff(null);
+      last?.undo();
+    },
   };
 }

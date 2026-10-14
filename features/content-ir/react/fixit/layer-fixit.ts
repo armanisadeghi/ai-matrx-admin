@@ -21,7 +21,9 @@ import { WriteDidNotLandError, tryWriteOne } from "@/utils/supabase/writeOne";
 import {
   componentRegistry,
   refreshKindComponents,
+  resolveSharedComponent,
 } from "../../registry/component-registry";
+import { GENERIC_STRUCTURED_COMPONENT_KEY } from "../../registry/schema-source-kind-components";
 import { invalidateKindRenderGap } from "./diagnose-kind-render-gap";
 
 export type LayerTarget = "mine" | "organization";
@@ -137,24 +139,91 @@ export async function readLayerAudience(rowId: string): Promise<LayerAudience> {
 
 export type LayerSwitchOffReason = "remove" | "use_shared";
 
+/** What the audience falls through to when the view is switched off. */
+export type LayerFallthrough = "organization" | "shared" | "builtin" | "generic";
+
+const FALLTHROUGH_WORDS: Record<LayerFallthrough, string> = {
+  organization: "your organization's view",
+  shared: "the shared view",
+  builtin: "the built-in view",
+  generic: "the generic viewer",
+};
+
+/**
+ * Pure: where a switched-off view falls to. `orgViewBeneath` is only ever true
+ * for a personal view (an active organization view sits below it); `shared` is
+ * the SHARED tier's answer — a database row, a compiled component, or nothing
+ * (generic viewer).
+ */
+export function decideLayerFallthrough(input: {
+  audience: LayerAudience;
+  orgViewBeneath: boolean;
+  shared: { resolvedBy: "compiled" | "db"; componentKey: string } | null;
+}): LayerFallthrough {
+  if (input.audience.target === "mine" && input.orgViewBeneath) return "organization";
+  const shared = input.shared;
+  if (!shared || shared.componentKey === GENERIC_STRUCTURED_COMPONENT_KEY) return "generic";
+  return shared.resolvedBy === "db" ? "shared" : "builtin";
+}
+
+/**
+ * Measured at click time: is an active organization view beneath this one
+ * (RLS shows only the organizations I belong to), and what is the shared answer.
+ */
+export async function readLayerFallthrough(
+  kind: string,
+  rowId: string,
+  audience: LayerAudience,
+): Promise<LayerFallthrough> {
+  let orgViewBeneath = false;
+  if (audience.target === "mine") {
+    const supabase = createClient();
+    const { data, error } = await supabase
+      .schema("content_ir")
+      .from("kind_component_layer")
+      .select("id")
+      .eq("kind", kind)
+      .eq("platform", "web")
+      .eq("role", "output")
+      .eq("is_active", true)
+      .is("deleted_at", null)
+      .not("audience_organization_id", "is", null)
+      .neq("id", rowId)
+      .limit(1);
+    if (error) throw operationFailed("check what you would see instead", error);
+    orgViewBeneath = (data?.length ?? 0) > 0;
+  }
+  const shared = resolveSharedComponent(kind, "web", "output");
+  return decideLayerFallthrough({
+    audience,
+    orgViewBeneath,
+    shared: shared ? { resolvedBy: shared.resolvedBy, componentKey: shared.componentKey } : null,
+  });
+}
+
 /**
  * THE CONSEQUENCE, said first (destructive-click law): exactly what switching
- * this view off does and to whom — me alone, or everyone in the organization.
+ * this view off does, to whom — me alone, or everyone in the organization —
+ * and what they will see instead (the MEASURED fall-through, never assumed).
  */
 export function describeLayerSwitchOff(input: {
   audience: LayerAudience;
   reason: LayerSwitchOffReason;
+  fallthrough: LayerFallthrough;
 }): { title: string; description: string; confirmLabel: string; done: string } {
   const org = input.audience.organizationName ?? "your organization";
   const mine = input.audience.target === "mine";
   const whose = mine ? "your view" : `${org}'s view`;
-  const who = mine ? "You" : `Everyone in ${org}`;
+  const instead = FALLTHROUGH_WORDS[input.fallthrough];
+  const consequence = mine
+    ? `Only you are affected, and you will see ${instead}.`
+    : `Everyone in ${org} will see ${instead}.`;
   return {
     title: input.reason === "use_shared" ? "Use the newer shared view?" : `Switch off ${whose}?`,
     description:
       input.reason === "use_shared"
-        ? `This switches off ${whose}. ${who} will see the shared view. You can undo.`
-        : `${who} will see the shared view instead. You can undo.`,
+        ? `This switches off ${whose}. ${consequence} You can undo.`
+        : `${consequence} You can undo.`,
     confirmLabel: input.reason === "use_shared" ? "Use shared view" : "Switch off",
     done: mine ? "Your view is off" : `${org}'s view is off`,
   };

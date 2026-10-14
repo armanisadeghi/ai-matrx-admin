@@ -29,11 +29,11 @@ import { Button } from "@/components/ui/button";
 import { toast } from "@/lib/toast";
 import { captureError } from "@/lib/diagnostics/errorCaptureStore";
 import { supabase } from "@/utils/supabase/client";
+import { componentRegistry } from "@/features/content-ir/registry/component-registry";
 import {
-  componentRegistry,
-  resolveComponent,
-  subscribeKindComponents,
-} from "@/features/content-ir/registry/component-registry";
+  readSharedResolution,
+  useRegistryVersion,
+} from "@/features/content-ir/studio/shared-view-truth";
 import { GENERIC_STRUCTURED_COMPONENT_KEY } from "@/features/content-ir/registry/schema-source-kind-components";
 import {
   listShapeComponentCandidates,
@@ -92,6 +92,9 @@ export default function ShapeRenderStatusStrip({
     useKindAgentLaunch(SHAPES_SURFACE_NAME, SHAPE_COMPONENT_ROLE);
 
   const [componentsWarm, setComponentsWarm] = useState(false);
+  // Repaints the strip when the registry's tiers change (a list or overlay
+  // landing after first paint) — the version is also the read's memo key.
+  const registryVersion = useRegistryVersion();
   // The bounded wait for the component list ran out (stalled line). Honest
   // failure state with retry — never an endless "Checking…" spinner.
   const [warmError, setWarmError] = useState<unknown>(null);
@@ -146,10 +149,6 @@ export default function ShapeRenderStatusStrip({
         }
       },
     );
-    const unsubscribe = subscribeKindComponents(() => setComponentsWarm((v) => v));
-    return () => {
-      unsubscribe();
-    };
     // eslint-disable-next-line react-hooks/exhaustive-deps -- helpers are ref-stable
   }, [kind, warmAttempt]);
 
@@ -191,7 +190,9 @@ export default function ShapeRenderStatusStrip({
     refreshCandidates();
   });
 
-  const resolution = componentsWarm ? resolveComponent(kind, "web", "output") : null;
+  // THE SHARED ANSWER — what everyone gets. The viewer's own "My view" winner
+  // is described by the marker beside it, never by this status.
+  const resolution = componentsWarm ? readSharedResolution(kind, registryVersion) : null;
 
   useEffect(() => {
     if (!resolution || resolution.source !== "bundled") return;

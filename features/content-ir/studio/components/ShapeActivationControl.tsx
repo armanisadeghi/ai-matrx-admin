@@ -54,6 +54,10 @@ import { composeComponentAuthoringIntent } from "@/features/content-ir/studio/co
 import { useKindAgentLaunch } from "@/features/content-ir/studio/useKindAgentLaunch";
 import { AGENT_ICON } from "@/components/icons/domain-icons";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import {
+  describeLiveRender,
+  useSharedViewState,
+} from "@/features/content-ir/studio/shared-view-truth";
 
 interface ShapeActivationControlProps {
   kind: string;
@@ -88,6 +92,8 @@ export default function ShapeActivationControl({
   // window on this page with the live shape scope attached.
   const { launch: launchArtisan, launching: artisanLaunching } =
     useKindAgentLaunch(SHAPES_SURFACE_NAME, SHAPE_COMPONENT_ROLE);
+  // The MEASURED shared answer — "live" never claims a component by itself.
+  const sharedView = useSharedViewState(kind);
   const [verdict, setVerdict] = useState<ShapeActivationVerdict | null>(null);
   const [loadingVerdict, setLoadingVerdict] = useState(true);
   const [busy, setBusy] = useState(false);
@@ -208,7 +214,7 @@ export default function ShapeActivationControl({
             </p>
             <p className="text-xs text-muted-foreground">
               {isActive
-                ? "Renders through its component and can be bound to an agent's output."
+                ? describeLiveRender(sharedView)
                 : verdict?.renderOk
                   ? "Already renders through its registered component — activation is what makes it bindable to an agent's output."
                   : "Renders through the generic JSON viewer and cannot be bound to an agent."}

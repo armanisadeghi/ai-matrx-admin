@@ -364,7 +364,12 @@ import {
   runLayerSwitchOff,
   type LayerSwitchOffDeps,
 } from "../react/fixit/fixit-handlers";
-import type { LayerAudience } from "../react/fixit/layer-fixit";
+import {
+  decideLayerFallthrough,
+  describeLayerSwitchOff,
+  type LayerAudience,
+  type LayerFallthrough,
+} from "../react/fixit/layer-fixit";
 
 const MINE_AUDIENCE: LayerAudience = { target: "mine", organizationId: null, organizationName: null };
 const ORG_AUDIENCE: LayerAudience = {
@@ -373,12 +378,17 @@ const ORG_AUDIENCE: LayerAudience = {
   organizationName: "Cedar Ridge Dental",
 };
 
-function switchOffDeps(audience: LayerAudience, answer: boolean) {
+function switchOffDeps(
+  audience: LayerAudience,
+  answer: boolean,
+  fallthrough: LayerFallthrough = "shared",
+) {
   const calls: string[] = [];
   let undo: (() => void) | null = null;
   const asked: Array<{ title: string; description: string; confirmLabel: string }> = [];
   const deps: LayerSwitchOffDeps = {
     readLayerAudience: async () => audience,
+    readFallthrough: async () => fallthrough,
     confirm: async (options) => {
       asked.push(options);
       return answer;
@@ -426,7 +436,8 @@ describe("Remove / Use it name their consequence, switch off softly, and undo", 
     });
     await click(container, "Remove");
     expect(asked[0]).toMatchObject({ title: "Switch off your view?", confirmLabel: "Switch off" });
-    expect(asked[0].description).toContain("You will see the shared view");
+    expect(asked[0].description).toContain("Only you are affected");
+    expect(asked[0].description).toContain("you will see the shared view");
     expect(calls).toEqual(["off:row-m", "announce:Your view is off"]);
     undo();
     expect(calls).toContain("on:row-m");
@@ -463,6 +474,91 @@ describe("Remove / Use it name their consequence, switch off softly, and undo", 
     expect(asked[0].title).toBe("Use the newer shared view?");
     expect(asked[0].description).toContain("switches off your view");
     expect(calls).toEqual([]);
+    act(() => root.unmount());
+  });
+});
+
+describe("the Remove dialog names the MEASURED fall-through and who is affected", () => {
+  const SHARED_DB = { resolvedBy: "db", componentKey: "brand_intake_facts_card" } as const;
+  const GENERIC = { resolvedBy: "compiled", componentKey: "generic_structured" } as const;
+
+  it("fall-through: an org view beneath a personal view wins, then a shared row, then built-in, else generic", () => {
+    const base = { audience: MINE_AUDIENCE, orgViewBeneath: false };
+    expect(decideLayerFallthrough({ ...base, orgViewBeneath: true, shared: SHARED_DB })).toBe("organization");
+    expect(decideLayerFallthrough({ ...base, shared: SHARED_DB })).toBe("shared");
+    expect(decideLayerFallthrough({ ...base, shared: { resolvedBy: "compiled", componentKey: "recipe_card" } })).toBe("builtin");
+    expect(decideLayerFallthrough({ ...base, shared: GENERIC })).toBe("generic");
+    expect(decideLayerFallthrough({ ...base, shared: null })).toBe("generic");
+    // An organization view never falls to another organization view.
+    expect(
+      decideLayerFallthrough({ audience: ORG_AUDIENCE, orgViewBeneath: true, shared: GENERIC }),
+    ).toBe("generic");
+  });
+
+  it("never promises a shared view that does not exist", () => {
+    const words = describeLayerSwitchOff({ audience: MINE_AUDIENCE, reason: "remove", fallthrough: "generic" });
+    expect(words.description).toContain("Only you are affected");
+    expect(words.description).toContain("the generic viewer");
+    expect(words.description).not.toContain("shared view");
+  });
+
+  it("a personal view over an organization view says so", () => {
+    const words = describeLayerSwitchOff({ audience: MINE_AUDIENCE, reason: "remove", fallthrough: "organization" });
+    expect(words.description).toContain("your organization's view");
+  });
+
+  it("an organization view names everyone in it, never 'only you'", () => {
+    const words = describeLayerSwitchOff({ audience: ORG_AUDIENCE, reason: "remove", fallthrough: "generic" });
+    expect(words.description).toContain("Everyone in Cedar Ridge Dental");
+    expect(words.description).not.toContain("Only you");
+  });
+});
+
+describe("Undo stays reachable after the toast is gone", () => {
+  it("a switched-off marker carries Undo, and pressing it calls through once", async () => {
+    const container = document.createElement("div");
+    const root = createRoot(container);
+    const undone: string[] = [];
+    const plan = planKindViewActions(PLAIN, null, { slug: "k", registered: true });
+    await act(async () => {
+      root.render(
+        <FixItViewActions
+          plan={plan}
+          busy={false}
+          onMakeMine={noop}
+          onMakeOrg={noop}
+          onEditLayer={noop}
+          onRemoveLayer={noop}
+          onUseShared={noop}
+          switchedOff={{ message: "Your view is off" }}
+          onUndoSwitchOff={() => undone.push("undo")}
+        />,
+      );
+    });
+    expect(container.textContent).toContain("Your view is off");
+    await click(container, "Undo");
+    expect(undone).toEqual(["undo"]);
+    act(() => root.unmount());
+  });
+
+  it("with nothing switched off there is no Undo", async () => {
+    const container = document.createElement("div");
+    const root = createRoot(container);
+    const plan = planKindViewActions(PLAIN, null, { slug: "k", registered: true });
+    await act(async () => {
+      root.render(
+        <FixItViewActions
+          plan={plan}
+          busy={false}
+          onMakeMine={noop}
+          onMakeOrg={noop}
+          onEditLayer={noop}
+          onRemoveLayer={noop}
+          onUseShared={noop}
+        />,
+      );
+    });
+    expect(container.textContent).not.toContain("Undo");
     act(() => root.unmount());
   });
 });

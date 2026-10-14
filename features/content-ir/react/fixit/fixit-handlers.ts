@@ -12,6 +12,7 @@ import {
   composeLayerSeed,
   describeLayerSwitchOff,
   type LayerAudience,
+  type LayerFallthrough,
   type LayerSwitchOffReason,
   type LayerTarget,
 } from "./layer-fixit";
@@ -66,6 +67,12 @@ export async function launchLayerBuilder(
 
 export interface LayerSwitchOffDeps {
   readLayerAudience: (rowId: string) => Promise<LayerAudience>;
+  /** What the audience sees instead once the view is off (measured at click time). */
+  readFallthrough: (
+    kind: string,
+    rowId: string,
+    audience: LayerAudience,
+  ) => Promise<LayerFallthrough>;
   confirm: (options: {
     title: string;
     description: string;
@@ -86,7 +93,8 @@ export async function runLayerSwitchOff(
   input: { kind: string; rowId: string; reason: LayerSwitchOffReason },
 ): Promise<"cancelled" | "off"> {
   const audience = await deps.readLayerAudience(input.rowId);
-  const words = describeLayerSwitchOff({ audience, reason: input.reason });
+  const fallthrough = await deps.readFallthrough(input.kind, input.rowId, audience);
+  const words = describeLayerSwitchOff({ audience, reason: input.reason, fallthrough });
   const yes = await deps.confirm({
     title: words.title,
     description: words.description,
