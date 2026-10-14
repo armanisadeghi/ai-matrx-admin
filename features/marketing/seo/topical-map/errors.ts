@@ -24,6 +24,7 @@
 // it reaches the Error Inspector and — at red tier — `public.system_error`.
 
 import { captureError } from "@/lib/diagnostics/errorCaptureStore";
+import { cancelledByCaller, isCallerAbortFailure } from "@/lib/diagnostics/cancelledByCaller";
 
 /**
  * SQLSTATEs the map functions raise on purpose, each with a sentence meant for
@@ -125,11 +126,14 @@ export class TopicalMapError extends Error {
 export async function withTopicalMapErrors<T>(
   relation: string,
   run: () => Promise<T>,
+  /** The caller's own signal (a query's): its cancellation is control flow, never an incident. */
+  signal?: AbortSignal,
 ): Promise<T> {
   try {
     return await run();
   } catch (cause) {
     const wrapped = new TopicalMapError(relation, cause);
+    if (cancelledByCaller(signal) || isCallerAbortFailure(cause)) throw wrapped;
     try {
       captureError({
         source: "topical-map-rpc",

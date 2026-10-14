@@ -206,7 +206,7 @@ export function useTopicalMaps(scope: TopicalMapListScope, enabled = true) {
   return useQuery({
     queryKey: topicalMapKeys.maps(scope),
     queryFn: ({ signal }) =>
-      withTopicalMapErrors("seo.topical_map (list)", () => listTopicalMaps(scope, signal)),
+      withTopicalMapErrors("seo.topical_map (list)", () => listTopicalMaps(scope, signal), signal),
     enabled,
     placeholderData: keepPreviousData,
   });
@@ -225,7 +225,7 @@ export function useMapTopicRows(mapId: string, enabled = true) {
   return useQuery({
     queryKey: topicalMapKeys.topicRows(mapId),
     queryFn: ({ signal }) =>
-      withTopicalMapErrors("seo.map_topic (list)", () => listMapTopics(mapId, signal)),
+      withTopicalMapErrors("seo.map_topic (list)", () => listMapTopics(mapId, signal), signal),
     enabled: enabled && Boolean(mapId),
   });
 }
@@ -242,7 +242,7 @@ export function useMapFacets(scope: MapFacetListScope, enabled = true) {
   return useQuery({
     queryKey: topicalMapKeys.facets(scope),
     queryFn: ({ signal }) =>
-      withTopicalMapErrors("seo.map_facet (list)", () => listMapFacets(scope, signal)),
+      withTopicalMapErrors("seo.map_facet (list)", () => listMapFacets(scope, signal), signal),
     enabled: enabled && Boolean(scope.organizationId),
   });
 }
@@ -265,7 +265,7 @@ export function useMapFacetValues(
     queryFn: ({ signal }) =>
       withTopicalMapErrors("seo.map_facet_value (list)", () =>
         listMapFacetValues(facetId, scope, signal),
-      ),
+      signal),
     enabled: enabled && Boolean(facetId && scope.organizationId),
   });
 }
