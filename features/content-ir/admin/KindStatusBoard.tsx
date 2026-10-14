@@ -38,6 +38,14 @@ import { cn } from "@/lib/utils";
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
 import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
 
+/** A finding message minus its trailing "run pnpm …" instruction — admins read findings here, agents run the commands. */
+function plainFinding(message: string): string {
+  return message
+    .replace(/\s*[—-]\s*run pnpm [^()]*(\([^)]*\))?\s*$/i, "")
+    .replace(/\s*\(run pnpm [^)]*\)\.?\s*$/i, "")
+    .trim();
+}
+
 export const COLUMN_HEADING: Record<AssetColumn, string> = {
   definition: "Definition",
   example: "Example",
@@ -129,7 +137,7 @@ export default function KindStatusBoard({
       header: "Active",
       accessorFn: (row) => (row.isActive ? "on" : "off"),
       align: "center",
-      width: 76,
+      width: 110,
       cell: (row) => (
         <span
           className={cn(
@@ -140,12 +148,12 @@ export default function KindStatusBoard({
           )}
           title={
             row.activeDrift
-              ? "is_active flipped vs the committed snapshot"
+              ? "Active state changed since the saved snapshot"
               : undefined
           }
         >
           {row.isActive ? "on" : "off"}
-          {row.activeDrift ? " *" : ""}
+          {row.activeDrift ? " (changed)" : ""}
         </span>
       ),
     },
@@ -255,15 +263,15 @@ export default function KindStatusBoard({
         </span>
         <span
           className={`rounded px-1.5 py-0.5 text-[11px] font-medium ${
-            board.redFindings.length > 0
+            board.redKindCount > 0
               ? "bg-red-500/10 text-red-700 dark:text-red-300"
               : "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
           }`}
         >
-          {board.redFindings.length} red
+          {board.redKindCount} kinds red
         </span>
         <span className="rounded bg-amber-500/10 px-1.5 py-0.5 text-[11px] font-medium text-amber-700 dark:text-amber-300">
-          {board.yellowFindingCount} yellow
+          {board.yellowKindCount} kinds yellow
         </span>
         {drifted && (
           <span className="rounded bg-amber-500/10 px-1.5 py-0.5 text-[11px] font-medium text-amber-700 dark:text-amber-300">
@@ -277,7 +285,7 @@ export default function KindStatusBoard({
       </div>
 
       {/* Degradation warnings (loud, never silent) */}
-      {board.warnings.map((warning) => (
+      {[...new Set(board.warnings)].map((warning) => (
         <div
           key={warning}
           className="flex items-center gap-2 border-t border-amber-500/30 bg-amber-500/5 px-4 py-1.5 text-xs text-amber-800 dark:text-amber-200"
@@ -299,28 +307,22 @@ export default function KindStatusBoard({
               )
             </span>
           )}
-          <span>
-            — run{" "}
-            <code className="rounded bg-muted px-1 font-mono">
-              pnpm check:shapes:refresh
-            </code>{" "}
-            and commit.
-          </span>
+          <span>— the saved snapshot is out of date and needs a refresh.</span>
         </div>
       )}
 
       {/* Red findings — red rows, never buried */}
       {board.redFindings.length > 0 && (
         <div className="border-t border-red-500/30">
-          {board.redFindings.map((f) => (
+          {board.redFindings.map((f, index) => (
             <div
-              key={`${f.code}-${f.kind ?? ""}-${f.message}`}
+              key={`${index}-${f.code}-${f.kind ?? ""}`}
               className="flex items-start gap-2 bg-red-500/5 px-4 py-1.5 text-xs text-red-700 dark:text-red-300"
             >
               <CircleAlert className="mt-0.5 h-3.5 w-3.5 shrink-0" />
               <span>
                 <span className="font-mono font-semibold">[{f.code}]</span>{" "}
-                {f.message}
+                {plainFinding(f.message)}
               </span>
             </div>
           ))}

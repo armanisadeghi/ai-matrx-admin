@@ -64,6 +64,7 @@ interface SchemaNode {
   enum?: unknown[];
   const?: unknown;
   description?: string;
+  $ref?: string;
 }
 
 function asNode(value: unknown): SchemaNode | null {
@@ -84,13 +85,23 @@ function asObjectSchema(node: SchemaNode | null): SchemaNode | null {
   return node && (primaryType(node) === "object" || node.properties) ? node : null;
 }
 
+/** `#/$defs/brand_basics_fact` -> `brand_basics_fact` — the kind a field holds. */
+function refName(ref: string): string {
+  return ref.split("/").pop() || "any";
+}
+
 /** Short type label for a field line, e.g. `string`, `string[]`, `object[]`. */
 function typeLabel(node: SchemaNode): string {
+  if (typeof node.$ref === "string") return refName(node.$ref);
   if (Array.isArray(node.enum) && node.enum.length > 0) return "enum";
   const type = primaryType(node);
   if (type === "array") {
     const items = asNode(node.items);
-    const inner = items ? primaryType(items) ?? "any" : "any";
+    const inner = items
+      ? typeof items.$ref === "string"
+        ? refName(items.$ref)
+        : primaryType(items) ?? "any"
+      : "any";
     return `${inner}[]`;
   }
   return type ?? "any";

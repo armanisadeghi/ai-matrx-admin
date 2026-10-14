@@ -123,7 +123,7 @@ function ListSection({
   actions,
 }: {
   title: string;
-  count: number;
+  count: number | null;
   children?: React.ReactNode;
   actions?: React.ReactNode;
 }) {
@@ -131,10 +131,12 @@ function ListSection({
     <section className="rounded-md border border-border bg-card">
       <div className="flex flex-wrap items-start gap-2 border-b border-border px-3 py-2 sm:items-center">
         <span className="text-sm font-semibold text-foreground">
-          {title}{" "}
-          <span className="text-xs font-normal text-muted-foreground">
-            ({count})
-          </span>
+          {title}
+          {count === null ? null : (
+            <span className="ml-1 text-xs font-normal text-muted-foreground">
+              ({count})
+            </span>
+          )}
         </span>
         {actions && (
           <div className="flex w-full flex-wrap items-center gap-2 sm:ml-auto sm:w-auto">
@@ -151,6 +153,8 @@ interface KindAssetsTabProps {
   detail: KindDetailData;
   /** Canonical (or newest) example data, for the content-block generator. */
   canonicalExampleData?: Json;
+  /** How many examples the kind has; null while they are still loading. */
+  exampleCount: number | null;
   /** Jump to the Examples edit tab. */
   onOpenExamples: () => void;
 }
@@ -164,16 +168,10 @@ function BooleanCell({ value }: { value: boolean }) {
   return <span>{value ? "Yes" : "No"}</span>;
 }
 
-/** Per-source, per-row honesty — never "hardcoded". */
-function componentSourceExplainer(source: string): string {
-  return source === "db"
-    ? "Custom component, stored in the database — editable live, no release needed."
-    : "Built-in component, compiled into the app build — changing it requires a release.";
-}
-
 export default function KindAssetsTab({
   detail,
   canonicalExampleData,
+  exampleCount,
   onOpenExamples,
 }: KindAssetsTabProps) {
   const router = useRouter();
@@ -376,8 +374,7 @@ export default function KindAssetsTab({
       {/* Doctor row cells */}
       <section className="rounded-md border border-border bg-card">
         <div className="border-b border-border px-3 py-2 text-sm font-semibold text-foreground">
-          Shape-doctor row (live, recomputed — stored validation_status is never
-          trusted)
+          Health checks
         </div>
         <div className="divide-y divide-border/60">
           {ASSET_COLUMNS.map((col) => {
@@ -403,7 +400,7 @@ export default function KindAssetsTab({
       {/* Examples — edit lives on its own tab; this is the quick jump. */}
       <ListSection
         title="Examples"
-        count={detail.doctorRow.assets.example.status === "ok" ? 1 : 0}
+        count={exampleCount}
         actions={
           <button
             type="button"
@@ -447,8 +444,7 @@ export default function KindAssetsTab({
       >
         {detail.skills.length === 0 ? (
           <p className="px-3 py-2.5 text-xs text-muted-foreground">
-            No render_block skill teaches this kind (R9: one per kind per
-            syntax).
+            No skill teaches this kind yet.
           </p>
         ) : (
           <ul className="space-y-1 p-2">
@@ -559,7 +555,7 @@ export default function KindAssetsTab({
           detail={{ enabled: false }}
           density="condensed"
           toolbar={{
-            title: "kind_component rows",
+            title: "Components",
             searchPlaceholder: "Search component rows…",
             actions: (
               <KindAgentButton
@@ -582,16 +578,13 @@ export default function KindAssetsTab({
           }}
           // read-gate-exempt: rows are the detail prop the server page read; this client performs no read of them, only default-switch writes
           emptyState={{
-            title: "No kind_component rows",
+            title: "No components",
             description:
-              "Compiled render paths show in the doctor cell above.",
+              "Built-in render paths show in the health checks above.",
           }}
         />
         <p className="px-3 py-2 text-[11px] text-muted-foreground">
-          &quot;Renders now?&quot; is the live resolver&apos;s own answer
-          (source=&apos;db&apos; overrides source=&apos;bundled&apos;; among
-          rows of the same source, the default row wins). Per-source meaning:{" "}
-          {componentSourceExplainer("db")} {componentSourceExplainer("bundled")}
+          Winner is the component the app draws with. A custom component beats a built-in one.
         </p>
       </section>
 
@@ -605,7 +598,7 @@ export default function KindAssetsTab({
           detail={{ enabled: false }}
           density="condensed"
           toolbar={{
-            title: "kind_surface rows (detection)",
+            title: "Detection surfaces",
             searchPlaceholder: "Search detection surface rows…",
             actions: (
               <KindAgentButton
@@ -627,9 +620,9 @@ export default function KindAssetsTab({
             noun: "detection surface",
           }}
           emptyState={{
-            title: "No detection surface registered",
+            title: "No detection surface",
             description:
-              "Legitimate until Stage 5: a __kind JSON payload needs none.",
+              "A kind sent as JSON does not need one.",
           }}
         />
       </section>

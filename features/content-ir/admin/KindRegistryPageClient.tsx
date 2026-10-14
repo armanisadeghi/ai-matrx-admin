@@ -139,7 +139,7 @@ export default function KindRegistryPageClient({
             <span className="pb-2 text-xs text-muted-foreground">
               {board.totals.kinds} kinds ·{" "}
               {board.rows.filter((r) => r.isActive).length} active ·{" "}
-              {board.redFindings.length} red · {board.yellowFindingCount} yellow
+              {board.redKindCount} red · {board.yellowKindCount} yellow
               {board.driftedRowCount > 0
                 ? ` · ${board.driftedRowCount} drifted`
                 : ""}

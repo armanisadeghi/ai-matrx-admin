@@ -316,23 +316,26 @@ export default function KindRegistryAdminClient() {
           Schema explorer &amp; export
         </h2>
         <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-          <Badge variant="secondary">
-            {loadError ? `${stats.total} compiled kinds` : `${stats.total} kinds`}
+          <Badge
+            variant="secondary"
+            title="Saved kinds plus the built-in kinds that have no saved record, so this can be higher than the catalog total"
+          >
+            {loadError ? `${stats.total} built-in kinds` : `${stats.total} kinds`}
           </Badge>
           <span
             className={`rounded px-1.5 py-0.5 text-[11px] font-medium ${SOURCE_STYLES.system}`}
           >
-            {stats.system} system
+            {stats.system} built-in only
           </span>
           <span
             className={`rounded px-1.5 py-0.5 text-[11px] font-medium ${SOURCE_STYLES.content_ir}`}
           >
-            {stats.db} content_ir
+            {stats.db} saved only
           </span>
           <span
             className={`rounded px-1.5 py-0.5 text-[11px] font-medium ${SOURCE_STYLES.both}`}
           >
-            {stats.both} both
+            {stats.both} built-in and saved
           </span>
         </div>
         <div className="relative ml-auto w-64">

@@ -51,6 +51,7 @@ import type {
   KindStatusBoardModel,
 } from "@/features/content-ir/admin/kind-detail-types";
 import { FINDING_CATALOG } from "@/features/content-ir/admin/shape-finding-catalog";
+import { scopeDoctorInputsToKind } from "@/features/content-ir/registry/shape-doctor-kind-scope";
 import { KIND_LOADING_SLUGS } from "@ai-matrx/rich-content/kinds/react/loading/kind-loading-slugs";
 /**
  * The DERIVED loading slug — the same module BlockRenderer selects loaders
@@ -146,15 +147,17 @@ function gatherCodeInputs(): CodeInputs {
     });
     hostSurfaceTokens = hostExtraction.tokens;
     failures.push(...hostExtraction.failures);
-    for (const f of failures) {
+    // Both extractors report the same missing literal — say each one once.
+    const missing = [...new Set(failures.map((f) => `${f.literal} in ${f.file}`))];
+    for (const m of missing) {
       warnings.push(
         // access-errors: ok — admin shape-doctor census warning about source-code literals, developer-facing
-        `Frozen detector literal ${f.literal} not found in ${f.file} — the detector census is blind for it (run pnpm check:shapes for the CLI red).`,
+        `The stream detector list ${m} could not be read, so the check for unregistered detector tags is not running.`,
       );
     }
   } else {
     warnings.push(
-      "Detector sources unreadable in this runtime — detector-token findings omitted; run pnpm check:shapes locally for the full census.",
+      "The stream detector sources could not be read here, so the check for unregistered detector tags is not running.",
     );
   }
 
@@ -171,7 +174,7 @@ function gatherCodeInputs(): CodeInputs {
   if (!systemKindsText || !artifactText) {
     excluded.add("component");
     warnings.push(
-      "system-kinds.ts / artifact-type-registry.ts unreadable in this runtime — compiled render paths under-report, so the Component column is excluded from the drift diff.",
+      "The built-in component lists could not be read here, so the Component column may under-report.",
     );
   }
 
@@ -192,7 +195,7 @@ function gatherCodeInputs(): CodeInputs {
   } catch {
     excluded.add("loading");
     warnings.push(
-      "features/content-ir/kinds/ unreadable in this runtime — compiled loadingComponent declarations under-report, so the Loading column is excluded from the drift diff.",
+      "The built-in loading components could not be read here, so the Loading column may under-report.",
     );
   }
 
@@ -214,12 +217,12 @@ function gatherCodeInputs(): CodeInputs {
     } else {
       warnings.push(
         // access-errors: ok — admin shape-doctor census warning about source-code literals, developer-facing
-        `Dispatch table literal(s) ${extraction.failures.map((f) => `${f.literal} (${f.file})`).join(", ")} not found — the dangling-component_key check is blind (run pnpm check:shapes for the CLI red).`,
+        `Dispatch table literal(s) ${extraction.failures.map((f) => `${f.literal} (${f.file})`).join(", ")} not found, so the check for components pointing at nothing is not running.`,
       );
     }
   } else {
     warnings.push(
-      `${dispatchSources.filter((s) => s.text === null).map((s) => s.file).join(", ")} unreadable in this runtime — the dangling-component_key check is omitted; run pnpm check:shapes locally.`,
+      `${dispatchSources.filter((s) => s.text === null).map((s) => s.file).join(", ")} could not be read here, so the check for components pointing at nothing is not running.`,
     );
   }
   if (!dispatchKeys) excluded.add("component");
@@ -350,7 +353,39 @@ interface GatherBlockRow {
   template: string;
 }
 
+interface GatherRows {
+  kindRows: GatherKindRow[];
+  exampleRows: GatherExampleRow[];
+  componentRows: GatherComponentRow[];
+  surfaceRows: GatherSurfaceRow[];
+  edgeRows: GatherEdgeRow[];
+  skillRows: GatherSkillRow[];
+  blockRows: GatherBlockRow[];
+}
+
+/**
+ * THE WHOLE-CATALOG GATHER is ~10 MB over every kind (measured 2026-10-14:
+ * kinds 5.5 MB, examples 2.3 MB, skills 1.9 MB, blocks 0.5 MB as JSON). Only the
+ * catalog surfaces (status board, findings) need it, and concurrent loads share
+ * one read for {@link CATALOG_GATHER_TTL_MS}. A single-kind page never calls it
+ * (see {@link fetchKindGather}).
+ */
+const CATALOG_GATHER_TTL_MS = 30_000;
+let catalogGather: { at: number; promise: Promise<DbGather> } | null = null;
+
 async function fetchDbGather(): Promise<DbGather> {
+  const now = Date.now();
+  if (catalogGather && now - catalogGather.at < CATALOG_GATHER_TTL_MS) return catalogGather.promise;
+  const promise = fetchDbGatherUncached();
+  catalogGather = { at: now, promise };
+  // A failed read is never served from the cache.
+  promise.catch(() => {
+    if (catalogGather?.promise === promise) catalogGather = null;
+  });
+  return promise;
+}
+
+async function fetchDbGatherUncached(): Promise<DbGather> {
   const supabase = await createClient();
 
   // Privilege-complete gather via the super-admin-gated SECURITY DEFINER RPC
@@ -388,6 +423,18 @@ async function fetchDbGather(): Promise<DbGather> {
       gather<GatherBlockRow>("content_blocks", "agent.prompt_block"),
     ]);
 
+  return mapGatherRows({ kindRows, exampleRows, componentRows, surfaceRows, edgeRows, skillRows, blockRows });
+}
+
+function mapGatherRows({
+  kindRows,
+  exampleRows,
+  componentRows,
+  surfaceRows,
+  edgeRows,
+  skillRows,
+  blockRows,
+}: GatherRows): DbGather {
   return {
     kinds: kindRows.map((r) => ({
       id: r.id,
@@ -477,7 +524,10 @@ export interface LiveDoctorRun {
 }
 
 export async function runLiveShapeDoctor(): Promise<LiveDoctorRun> {
-  const db = await fetchDbGather();
+  return runDoctorOver(await fetchDbGather());
+}
+
+function runDoctorOver(db: DbGather): LiveDoctorRun {
   const code = gatherCodeInputs();
 
   const report = runShapeDoctor({
@@ -587,6 +637,13 @@ function tallyFindings(
   return counts;
 }
 
+/** `kind_definition.metadata.family` — the DB is the truth; the committed manifest only fills gaps. */
+function familyOf(metadata: unknown): string | null {
+  if (!metadata || typeof metadata !== "object") return null;
+  const family = (metadata as { family?: unknown }).family;
+  return typeof family === "string" && family.length > 0 ? family : null;
+}
+
 export async function buildKindStatusBoard(): Promise<KindStatusBoardModel> {
   const { report, db, excludedFromDrift, warnings } = await runLiveShapeDoctor();
 
@@ -633,6 +690,11 @@ export async function buildKindStatusBoard(): Promise<KindStatusBoardModel> {
     redCodesByKind.set(f.kind, list);
   }
 
+  const yellowKinds = new Set<string>();
+  for (const f of report.findings) {
+    if (f.severity === "yellow" && f.kind) yellowKinds.add(f.kind);
+  }
+
   const rows: KindBoardRow[] = report.rows.map((row) => {
     const snapshot = snapshotRows.get(row.kind);
     snapshotRows.delete(row.kind);
@@ -660,7 +722,7 @@ export async function buildKindStatusBoard(): Promise<KindStatusBoardModel> {
       redCodes: redCodesByKind.get(row.kind) ?? [],
       version: dbKind?.version ?? null,
       visibility: dbKind?.visibility ?? null,
-      family: familyByKind.get(row.kind) ?? null,
+      family: familyOf(dbKind?.metadata) ?? familyByKind.get(row.kind) ?? null,
       componentCount: dbKind ? (componentCounts.get(dbKind.id) ?? 0) : 0,
       surfaceCount: dbKind ? (surfaceCounts.get(dbKind.id) ?? 0) : 0,
       exampleCount: dbKind ? (exampleCounts.get(dbKind.id) ?? 0) : 0,
@@ -705,6 +767,8 @@ export async function buildKindStatusBoard(): Promise<KindStatusBoardModel> {
     rows,
     redFindings,
     yellowFindingCount: report.findings.filter((f) => f.severity === "yellow").length,
+    redKindCount: rows.filter((r) => r.redCodes.length > 0).length,
+    yellowKindCount: rows.filter((r) => yellowKinds.has(r.kind)).length,
     totals: report.totals,
     driftedRowCount,
     snapshotStamp: committedSnapshot.generated_for,
@@ -718,48 +782,142 @@ export async function buildKindStatusBoard(): Promise<KindStatusBoardModel> {
 // ─── Per-kind detail (the [kind] page's server payload) ─────────────────────
 // Shape lives in kind-detail-types.ts (shared with the client tabs).
 
-function escapeRegExp(s: string): string {
-  return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+/**
+ * ONE KIND'S GATHER (SHAPES-BUGS 2.1). The per-kind page read the whole catalog
+ * (seven `shape_doctor_gather` RPCs over every kind, ~10 MB) on every load and
+ * 500'd whenever one timed out — 8 of 14 audited loads. It now reads the kind,
+ * the kinds that embed it, its own examples / components / surfaces / edges,
+ * and only the skills and prompt blocks whose text names it (a cheap SUPERSET,
+ * cut to the doctor's exact inputs by `scopeDoctorInputsToKind`). Direct reads
+ * with the viewer's JWT: every one of these tables carries
+ * `platform_admin_read`, so a super admin sees every organization's rows —
+ * the same completeness the RPC gives. Each read is bounded.
+ */
+const KIND_GATHER_DEADLINE_MS = 8_000;
+
+async function bounded<T>(what: string, work: PromiseLike<{ data: T | null; error: { message: string } | null }>): Promise<T> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const deadline = new Promise<never>((_, reject) => {
+    timer = setTimeout(
+      () => reject(new Error(`no answer reading ${what} after ${KIND_GATHER_DEADLINE_MS / 1000}s`)),
+      KIND_GATHER_DEADLINE_MS,
+    );
+  });
+  try {
+    const { data, error } = await Promise.race([Promise.resolve(work), deadline]);
+    if (error) throw new Error(`reading ${what} failed: ${error.message}`);
+    return (data ?? []) as T;
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
-export async function gatherKindDetail(
-  kindSlug: string,
-): Promise<KindDetailData | null> {
-  const { report, db, warnings } = await runLiveShapeDoctor();
+const KIND_COLUMNS =
+  "id, kind, label, is_active, emitted_json_schema, sample_data, updated_at, data, version, visibility, metadata";
+
+async function fetchKindGather(slug: string): Promise<DbGather | null> {
+  const supabase = await createClient();
+  const ir = supabase.schema("content_ir");
+  const kindRows = await bounded<GatherKindRow[]>(
+    "content_ir.kind_definition",
+    ir.from("kind_definition").select(KIND_COLUMNS).eq("kind", slug).is("deleted_at", null).limit(1),
+  );
+  const target = kindRows[0];
+  if (!target) return null;
+
+  // Slugs are [a-z0-9_]; PostgREST `*` is the wildcard and `_` matches `-`
+  // too, so `kind_<slug>` also finds `kind-<slug>` skill ids (R9).
+  const [exampleRows, componentRows, surfaceRows, edgeRows, skillRows, blockRows] = await Promise.all([
+    bounded<GatherExampleRow[]>(
+      "content_ir.kind_example",
+      ir.from("kind_example").select("id, kind_definition_id, is_canonical, data, updated_at").eq("kind_definition_id", target.id).is("deleted_at", null),
+    ),
+    bounded<GatherComponentRow[]>(
+      "content_ir.kind_component",
+      ir.from("kind_component").select("id, kind_definition_id, platform, role, component_key, source, is_active, is_default").eq("kind_definition_id", target.id).is("deleted_at", null),
+    ),
+    bounded<GatherSurfaceRow[]>(
+      "content_ir.kind_surface",
+      ir.from("kind_surface").select("id, kind_definition_id, surface_type, token, parser_strategy, streaming, is_active").eq("kind_definition_id", target.id).is("deleted_at", null),
+    ),
+    bounded<GatherEdgeRow[]>(
+      "content_ir.kind_edge",
+      ir.from("kind_edge").select("parent_definition_id, child_definition_id, field_name").eq("child_definition_id", target.id).is("deleted_at", null),
+    ),
+    bounded<GatherSkillRow[]>(
+      "skill.definition",
+      supabase.schema("skill").from("definition").select("skill_id, label, body").eq("skill_type", "render_block").is("deleted_at", null).or(`body.ilike.*${slug}*,skill_id.ilike.kind_${slug}*`),
+    ),
+    bounded<Array<{ id: string; label: string; content: string }>>(
+      "agent.prompt_block",
+      supabase.schema("agent").from("prompt_block").select("id, label, content").is("deleted_at", null).ilike("content", `*${slug}*`),
+    ),
+  ]);
+
+  const parentIds = [...new Set(edgeRows.map((e) => e.parent_definition_id))].filter((id) => id !== target.id);
+  const parentRows =
+    parentIds.length === 0
+      ? []
+      : await bounded<GatherKindRow[]>(
+          "content_ir.kind_definition (embedding kinds)",
+          ir.from("kind_definition").select(KIND_COLUMNS).in("id", parentIds).is("deleted_at", null),
+        );
+
+  return mapGatherRows({
+    kindRows: [target, ...parentRows],
+    exampleRows,
+    componentRows,
+    surfaceRows,
+    edgeRows,
+    skillRows,
+    blockRows: blockRows.map((b) => ({ id: b.id, label: b.label, template: b.content })),
+  });
+}
+
+/** What the per-kind page gets: the detail, a missing kind, or an honest "could not read". */
+export type KindDetailResult =
+  | { status: "ok"; detail: KindDetailData }
+  | { status: "missing" }
+  | { status: "unavailable"; message: string };
+
+export async function gatherKindDetail(kindSlug: string): Promise<KindDetailResult> {
+  let gathered: DbGather | null;
+  try {
+    gathered = await fetchKindGather(kindSlug);
+  } catch (error) {
+    return { status: "unavailable", message: error instanceof Error ? error.message : String(error) };
+  }
+  if (!gathered) return { status: "missing" };
+  const scoped = scopeDoctorInputsToKind(gathered, kindSlug);
+  if (!scoped) return { status: "missing" };
+  const db: DbGather = { ...gathered, ...scoped };
+  const { report, warnings } = runDoctorOver(db);
 
   const kind = db.kinds.find((k) => k.kind === kindSlug);
   const doctorRow = report.rows.find((r) => r.kind === kindSlug);
-  if (!kind || !doctorRow) return null;
+  if (!kind || !doctorRow) return { status: "missing" };
 
-  const knownKinds = new Set(db.kinds.map((k) => k.kind));
-  const skills = attributeSkillsToKinds(db.renderBlockSkills, knownKinds).filter(
-    (t) => t.kind === kindSlug,
-  );
-
-  const blockPattern = new RegExp(`"__kind"\\s*:\\s*"${escapeRegExp(kindSlug)}"`);
-  const contentBlocks = db.contentBlocks
-    .filter((b) => blockPattern.test(b.template))
-    .map((b) => ({ id: b.id, label: b.label }));
+  const skills = attributeSkillsToKinds(db.renderBlockSkills, new Set([kindSlug]));
+  const contentBlocks = db.contentBlocks.map((b) => ({ id: b.id, label: b.label }));
 
   return {
-    id: kind.id,
-    kind: kind.kind,
-    label: kind.label,
-    isActive: kind.isActive,
-    version: kind.version,
-    visibility: kind.visibility,
-    updatedAt: kind.updatedAt,
-    fieldData: kind.data,
-    emittedJsonSchema: kind.emittedJsonSchema,
-    doctorRow,
-    skills,
-    contentBlocks,
-    components: db.components
-      .filter((c) => c.kindDefinitionId === kind.id)
-      .map(({ kindDefinitionId: _ignored, ...rest }) => rest),
-    surfaces: db.surfaces
-      .filter((s) => s.kindDefinitionId === kind.id)
-      .map(({ kindDefinitionId: _ignored, ...rest }) => rest),
-    warnings,
+    status: "ok",
+    detail: {
+      id: kind.id,
+      kind: kind.kind,
+      label: kind.label,
+      isActive: kind.isActive,
+      version: kind.version,
+      visibility: kind.visibility,
+      updatedAt: kind.updatedAt,
+      fieldData: kind.data,
+      emittedJsonSchema: kind.emittedJsonSchema,
+      doctorRow,
+      skills,
+      contentBlocks,
+      components: db.components.map(({ kindDefinitionId: _ignored, ...rest }) => rest),
+      surfaces: db.surfaces.map(({ kindDefinitionId: _ignored, ...rest }) => rest),
+      warnings,
+    },
   };
 }

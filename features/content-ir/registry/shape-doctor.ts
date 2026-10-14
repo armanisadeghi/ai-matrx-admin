@@ -971,7 +971,18 @@ export function runShapeDoctor(input: ShapeDoctorInput): ShapeDoctorReport {
       (c) => c.platform === "web" && c.role === "output" && !danglingIds.has(c.id),
     );
     let component: AssetCell;
-    if (webComponents.length > 0) {
+    // ONE COMPONENT LAW: a kind draws with exactly one active output component.
+    // Two active ones is a defect — "ok" here would announce a clean kind whose
+    // renderer is decided by tie-break order.
+    const activeOutputs = webComponents.filter((c) => c.isActive);
+    if (activeOutputs.length > 1) {
+      component = {
+        status: "warn",
+        detail: `DEFECT: ${activeOutputs.length} active output components (${activeOutputs
+          .map((c) => `${c.componentKey}, ${c.source}`)
+          .join("; ")}) — a kind has one; deactivate all but one`,
+      };
+    } else if (webComponents.length > 0) {
       component = {
         status: "ok",
         detail: webComponents.map((c) => `${c.componentKey} (${c.role})`).join(", "),
@@ -1070,6 +1081,18 @@ export function runShapeDoctor(input: ShapeDoctorInput): ShapeDoctorReport {
       loading = {
         status: "missing",
         detail: "no loading_component (no renderer yet either)",
+      };
+    }
+    // ONE LOADER LAW (same as components): two active loading rows is a defect.
+    const activeLoaders = componentRows.filter(
+      (c) => c.isActive && c.platform === "web" && c.role === "loading",
+    );
+    if (activeLoaders.length > 1) {
+      loading = {
+        status: "warn",
+        detail: `DEFECT: ${activeLoaders.length} active loading components (${activeLoaders
+          .map((c) => c.componentKey)
+          .join(", ")}) — a kind has one; deactivate all but one`,
       };
     }
 
@@ -1263,6 +1286,9 @@ export function runShapeDoctor(input: ShapeDoctorInput): ShapeDoctorReport {
       reds.push({
         severity: "red",
         code: "vocab-unclassified",
+        // A kind slug names a kind row — attach it so the Red filter and the
+        // header count see the same kinds the finding is about.
+        ...(what === "kind_definition slug" ? { kind: name } : {}),
         message: `${what} "${name}" is not classified in the content-vocab crosswalk — run pnpm check:shapes:crosswalk:refresh (and add a rule if it fails)`,
       });
     }

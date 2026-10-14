@@ -401,6 +401,7 @@ export default function KindDetailClient({
             <KindAssetsTab
               detail={detail}
               canonicalExampleData={canonicalExampleData}
+              exampleCount={readyExamples ? readyExamples.length : null}
               onOpenExamples={() => selectTab("examples")}
             />
           )}

@@ -69,6 +69,10 @@ export interface KindStatusBoardModel {
   rows: KindBoardRow[];
   redFindings: ShapeFinding[];
   yellowFindingCount: number;
+  /** Kinds carrying at least one red finding — what the Red filter lists. */
+  redKindCount: number;
+  /** Kinds carrying at least one yellow finding. */
+  yellowKindCount: number;
   totals: ShapeDoctorReport["totals"];
   driftedRowCount: number;
   snapshotStamp: string;

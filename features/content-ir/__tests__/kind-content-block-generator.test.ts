@@ -141,4 +141,23 @@ describe("generateKindContentBlock", () => {
       "kind-keyword-relationship-research-full",
     );
   });
+
+  it("names the kind a $ref field holds instead of calling it any[]", () => {
+    const block = generateKindContentBlock({
+      kind: "brand_basics",
+      label: "Brand Basics",
+      emittedJsonSchema: {
+        type: "object",
+        required: ["facts"],
+        properties: {
+          facts: { type: "array", items: { $ref: "#/$defs/brand_basics_fact" } },
+          primary: { $ref: "#/$defs/brand_basics_fact" },
+        },
+      } as Json,
+      tier: "detailed",
+    });
+    const text = JSON.stringify(block);
+    expect(text).toContain("brand_basics_fact[]");
+    expect(text).not.toContain("any[]");
+  });
 });

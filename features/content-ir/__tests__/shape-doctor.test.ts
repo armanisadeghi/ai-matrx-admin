@@ -562,6 +562,37 @@ describe("shape doctor — n/a classification", () => {
     }
   });
 
+  it("two active output components or two active loading components is a DEFECT, never ok (one-component law)", () => {
+    const row = (id: string, role: string, key: string, source = "db"): DoctorKindComponent => ({
+      id: `c-${key}`,
+      kindDefinitionId: id,
+      platform: "web",
+      role,
+      componentKey: key,
+      source,
+      isActive: true,
+    });
+    const run = (components: DoctorKindComponent[]) =>
+      runShapeDoctor(
+        baseInput({
+          kinds: [makeKind({ id: "kX", kind: "two_comp", isActive: true })],
+          components,
+        }),
+      ).rows.find((r) => r.kind === "two_comp");
+    const one = run([row("kX", "output", "a")]);
+    expect(one?.assets.component.status).toBe("ok");
+    const two = run([row("kX", "output", "a"), row("kX", "output", "b", "bundled")]);
+    expect(two?.assets.component.status).toBe("warn");
+    expect(two?.assets.component.detail).toContain("DEFECT");
+    const loaders = run([
+      row("kX", "output", "a"),
+      row("kX", "loading", "l1"),
+      row("kX", "loading", "l2"),
+    ]);
+    expect(loaders?.assets.loading.status).toBe("warn");
+    expect(loaders?.assets.loading.detail).toContain("DEFECT");
+  });
+
   it("loading column: known slug ok (db + compiled), unknown slug RED, undeclared renderable kind yellow", () => {
     const renderable = (id: string, kind: string): DoctorKindComponent => ({
       id: `c-${id}`,

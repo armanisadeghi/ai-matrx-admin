@@ -103,6 +103,8 @@ describe("Kind Registry runtime scope", () => {
       totals: { kinds: 1 },
       redFindings: [],
       yellowFindingCount: 2,
+      redKindCount: 0,
+      yellowKindCount: 2,
       driftedRowCount: 0,
     } as unknown as KindStatusBoardModel;
 

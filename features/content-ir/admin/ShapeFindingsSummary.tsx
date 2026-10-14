@@ -48,7 +48,7 @@ import { cn } from "@/lib/utils";
 const LANE_LABEL: Record<FindingResolutionLane, string> = {
   "resolve-here": "Resolve here",
   "kind-surface": "Fix on the kind",
-  "cli-refresh": "Bookkeeping — CLI refresh",
+  "cli-refresh": "Generated file out of date",
   "code-change": "Needs a code change",
 };
 
@@ -192,7 +192,7 @@ export default function ShapeFindingsSummary({
         <span className="text-xs text-muted-foreground">
           every class the Shape Doctor can raise — {real} class
           {real === 1 ? "" : "es"} with real defects outstanding, {bookkeeping}{" "}
-          waiting only on a snapshot refresh
+          only out-of-date generated files
         </span>
       </div>
       <div className="grid grid-cols-[repeat(auto-fill,minmax(13rem,1fr))] gap-2">

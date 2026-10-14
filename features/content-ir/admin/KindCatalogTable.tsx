@@ -279,7 +279,7 @@ export default function KindCatalogTable({ rows }: { rows: KindBoardRow[] }) {
         header: "Active",
         filter: "boolean",
         align: "center",
-        width: 70,
+        width: 100,
         cell: (row) => (
           <span
             className={`text-[11px] font-medium ${
@@ -289,12 +289,12 @@ export default function KindCatalogTable({ rows }: { rows: KindBoardRow[] }) {
             }`}
             title={
               row.activeDrift
-                ? "is_active flipped vs the committed snapshot"
+                ? "Active state changed since the saved snapshot"
                 : undefined
             }
           >
             {row.isActive ? "on" : "off"}
-            {row.activeDrift ? " *" : ""}
+            {row.activeDrift ? " (changed)" : ""}
           </span>
         ),
       },
@@ -369,7 +369,7 @@ export default function KindCatalogTable({ rows }: { rows: KindBoardRow[] }) {
         filter: "text",
         sortable: false,
         cell: (row) => (
-          <div className="flex flex-wrap gap-1">
+          <div className="flex flex-nowrap gap-1 whitespace-nowrap">
             {row.redCodes.map((code) => (
               <span
                 key={code}

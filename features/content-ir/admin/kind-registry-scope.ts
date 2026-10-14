@@ -69,8 +69,8 @@ export function buildAdminKindCatalogScope(args: {
       ? {
           ...board.totals,
           active: board.rows.filter((row) => row.isActive).length,
-          red: board.redFindings.length,
-          yellow: board.yellowFindingCount,
+          red: board.redKindCount,
+          yellow: board.yellowKindCount,
           drifted: board.driftedRowCount,
         }
       : undefined,
