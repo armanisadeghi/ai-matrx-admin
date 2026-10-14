@@ -14,6 +14,14 @@
  *   no_legacy_refusal          the old "delete its sites first" refusal came back;
  *   owned_unique_keys_partial  a unique key on brand/site/property/tracked account/captured post counts archived
  *                              rows, so re-creating the same name/site/handle collides.
+ *   archive_restore_roundtrip  (live pull of `web.__brand_archive_roundtrip()`) real brands archived then restored
+ *                              inside rolled-back subtransactions: a child guard refused the archive because its
+ *                              parent was already archived, or the restore left parts behind.
+ *
+ * PROVEN FAILING (2026-10-14, production, round trip): with `web.validate_brand_offering_scope` put back to its
+ * pre-fix body inside a rolled-back transaction, archive_restore_roundtrip failed on two brands with
+ * "brand_offering_scope_mismatch: organization must match the live brand" (the exact error a person hit in
+ * Marketing › Brands); with the fix, 4/4 brands archived and restored exactly.
  *
  * PROVEN FAILING (2026-10-14, production): before the edges were declared all five checks failed (22 unruled
  * edges, no cascade trigger, no extras trigger, legacy guard present, brand_slug_key not partial); after, all green.
@@ -34,6 +42,7 @@ const EXPECTED = [
   "extras_trigger_on_brand",
   "no_legacy_refusal",
   "owned_unique_keys_partial",
+  "archive_restore_roundtrip",
 ];
 
 function loadSupabaseEnv(): { url: string; key: string } | null {
@@ -60,24 +69,34 @@ async function main(): Promise<number> {
     console.error("LIVE PULL FAILED — UNMEASURED: no Supabase URL/secret key in env or .env* files");
     return STRICT ? 1 : 0;
   }
-  const res = await fetch(`${env.url.replace(/\/$/, "")}/rest/v1/rpc/__brand_archive_conformance`, {
-    method: "POST",
-    headers: {
-      apikey: env.key,
-      Authorization: `Bearer ${env.key}`,
-      "Content-Type": "application/json",
-      "Content-Profile": "web",
-      "Accept-Profile": "web",
-    },
-    body: "{}",
-    signal: AbortSignal.timeout(15_000),
-  }).catch((error: unknown) => error as Error);
-  if (res instanceof Error || !res.ok) {
-    const why = res instanceof Error ? res.message : `${res.status} ${(await res.text()).slice(0, 300)}`;
-    console.error(`LIVE PULL FAILED — UNMEASURED: ${why}`);
+  type Row = { check_name: string; ok: boolean; detail: string };
+  const pull = async (fn: string, timeoutMs: number): Promise<Row[] | string> => {
+    const res = await fetch(`${env.url.replace(/\/$/, "")}/rest/v1/rpc/${fn}`, {
+      method: "POST",
+      headers: {
+        apikey: env.key,
+        Authorization: `Bearer ${env.key}`,
+        "Content-Type": "application/json",
+        "Content-Profile": "web",
+        "Accept-Profile": "web",
+      },
+      body: "{}",
+      signal: AbortSignal.timeout(timeoutMs),
+    }).catch((error: unknown) => error as Error);
+    if (res instanceof Error) return `${fn}: ${res.message}`;
+    if (!res.ok) return `${fn}: ${res.status} ${(await res.text()).slice(0, 300)}`;
+    return (await res.json()) as Row[];
+  };
+  const pulls = await Promise.all([
+    pull("__brand_archive_conformance", 15_000),
+    pull("__brand_archive_roundtrip", 60_000),
+  ]);
+  const failed = pulls.filter((p): p is string => typeof p === "string");
+  if (failed.length) {
+    console.error(`LIVE PULL FAILED — UNMEASURED: ${failed.join("; ")}`);
     return STRICT ? 1 : 0;
   }
-  const rows = (await res.json()) as Array<{ check_name: string; ok: boolean; detail: string }>;
+  const rows = pulls.flat() as Row[];
   let findings = 0;
   for (const name of EXPECTED) {
     const row = rows.find((r) => r.check_name === name);
