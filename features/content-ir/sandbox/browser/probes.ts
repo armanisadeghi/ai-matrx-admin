@@ -99,6 +99,15 @@ export const PROBE_SOURCE = String.raw`async (remote) => {
   a.textContent = "probe";
   document.body.appendChild(a);
   a.click();
+  // The frame's link interceptor (runtime/link-interceptor.ts) swallows an
+  // anchor click and hands the URL to the host, so the click above never
+  // reaches the browser's CSP. Navigate directly too: THAT is the CSP's
+  // script-src answering, with no app code between the URL and the browser.
+  try {
+    window.location.href = "javascript:window.__MATRX_PROBE_PWNED__=1";
+  } catch (e) {
+    /* a thrown navigation is also a refusal; the flag below decides */
+  }
 
   await Promise.all(settled);
   await new Promise((r) => setTimeout(r, 400));

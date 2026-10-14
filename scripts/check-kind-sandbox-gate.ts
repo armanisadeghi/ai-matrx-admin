@@ -77,6 +77,21 @@ function normalizePolicy(policy: string, origin: string): string {
 // The gate serves `app/kind-sandbox/route.ts` directly. That is only the whole
 // truth while nothing else in the request path rewrites the response, so this
 // asserts the two places that could: the proxy and the Next header config.
+/**
+ * True when every `/kind-sandbox` branch in proxy source returns
+ * `NextResponse.next({ request })` untouched, and the proxy never touches the
+ * path any other way. A proxy that mentions the path elsewhere is not a pass-through.
+ */
+function isPassThroughOnly(source: string): boolean {
+    const mentions = source.match(/kind-sandbox/g)?.length ?? 0;
+    const branches = [
+        ...source.matchAll(
+            /if\s*\(\s*request\.nextUrl\.pathname\s*===\s*["']\/kind-sandbox["']\s*\)\s*\{\s*return\s+NextResponse\.next\(\{\s*request\s*\}\);?\s*\}/g,
+        ),
+    ];
+    return branches.length > 0 && branches.length === mentions;
+}
+
 function checkPolicySource(): void {
     const proxy = path.join(ROOT, "proxy.ts");
     const headers = path.join(ROOT, "utils/next-config/headers.js");
@@ -87,12 +102,20 @@ function checkPolicySource(): void {
             .split("\n")
             .filter((line) => !line.trim().startsWith("//") && !line.trim().startsWith("*"))
             .join("\n");
-        return /Content-Security-Policy/i.test(live) || /kind-sandbox/.test(live);
+        if (/Content-Security-Policy/i.test(live)) return true;
+        if (!/kind-sandbox/.test(live)) return false;
+        // proxy.ts legitimately names /kind-sandbox to let the opaque frame load
+        // in place (commit 1341ba16da4, "keep sandbox frames on their embedding
+        // origin"). That is only safe while the branch is a pure pass-through:
+        // `NextResponse.next({ request })` and nothing that could set or rewrite
+        // a header. Anything more in that branch is a rewriter.
+        if (file === proxy) return !isPassThroughOnly(live);
+        return true;
     });
     if (rewriters.length > 0) {
         fail(
             `POLICY SOURCE — ${rewriters.map((f) => path.relative(ROOT, f)).join(", ")} now mentions ` +
-                `a Content-Security-Policy or /kind-sandbox. This gate serves the route handler ` +
+                `a Content-Security-Policy, or shapes /kind-sandbox beyond a plain NextResponse.next pass-through. This gate serves the route handler ` +
                 `alone, so its policy may no longer be the one the app serves.`,
             "read that file, and if it really does shape the sandbox response, teach gate-server.ts " +
                 "to run it too — never leave the gate measuring a policy the app no longer sends.",
@@ -218,11 +241,21 @@ function selfTest(): never {
         console.log("✅ RED 2 — the same policy at two different origins compares equal.");
     }
 
+    const passThrough = `if (request.nextUrl.pathname === "/kind-sandbox") {\n return NextResponse.next({ request });\n }`;
+    const rewriting = `if (request.nextUrl.pathname === "/kind-sandbox") {\n const r = NextResponse.next({ request }); r.headers.set("Content-Security-Policy", "x"); return r;\n }`;
+    if (!isPassThroughOnly(passThrough)) {
+        reds.push("the plain /kind-sandbox pass-through was judged a rewriter — every run would fail");
+    } else if (isPassThroughOnly(rewriting) || isPassThroughOnly(passThrough + `\nconst x = "/kind-sandbox";`)) {
+        reds.push("a /kind-sandbox branch that rewrites the response was judged a pass-through");
+    } else {
+        console.log("✅ RED 3 — a proxy branch that rewrites /kind-sandbox is told from a pass-through.");
+    }
+
     if (reds.length > 0) {
         for (const red of reds) console.log(`❌ ${red}`);
         exitAfterDrain(1);
     }
-    console.log("\nThe gate's own comparison logic can still fail. 2/2 planted REDs caught.");
+    console.log("\nThe gate's own comparison logic can still fail. 3/3 planted REDs caught.");
     exitAfterDrain(0);
 }
 
