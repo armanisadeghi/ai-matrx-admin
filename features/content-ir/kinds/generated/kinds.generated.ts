@@ -7,7 +7,7 @@
 // Verify:      pnpm check:kind-types   (CI-blocking freshness gate)
 // Twin guard:  pnpm check:kind-type-twins
 //
-// 1506 active kinds. THESE ARE THE ONLY KIND PAYLOAD TYPES IN THE REPO.
+// 1507 active kinds. THESE ARE THE ONLY KIND PAYLOAD TYPES IN THE REPO.
 // A hand-written interface mirroring a registered kind is a defect — derive
 // (Pick/Omit) from the type here instead, and never re-declare it.
 //
@@ -21,7 +21,7 @@
 // ─────────────────────────────────────────────────────────────────────────
 
 /** Structural fingerprint of the registry rows this artifact was generated from. */
-export const KIND_REGISTRY_FINGERPRINT = "1c78143cd48c";
+export const KIND_REGISTRY_FINGERPRINT = "d525a42c399a";
 
 // ─────────────────────────────────────────────────────────────────────────
 // Shared nested structures. Deduped by structure across the registry — an
@@ -1498,6 +1498,42 @@ export interface BrandKeyPerson_BrandIntakeKeyPeople {
    * The pages that tie them to this brand.
    */
   evidence_urls?: string[];
+}
+
+/**
+ * What we think one candidate (an account, a website, a name or a logo) is to the brand.
+ *  *
+ *  * From kind `brand_we_think`.
+ */
+export interface BrandWeThinkSuggestion {
+  /**
+   * The candidate's key exactly as given (its identity in the list).
+   */
+  key: string;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  /**
+   * ours = the brand's own account / site / logo; preferred = the brand's main name (names only); alias = another name the brand goes by (names only); not_us = a different party; related = a named relation (relation_key); ask_later = the facts cannot decide.
+   */
+  choice: "preferred" | "ours" | "alias" | "not_us" | "related" | "ask_later";
+  /**
+   * One line: the known fact that decides it (grounding; shown on hover only).
+   */
+  reason: string;
+  /**
+   * The known facts and candidate details the reason rests on, quoted short (grounding; hover only).
+   */
+  evidence?: string[];
+  /**
+   * How likely the choice is right, 0-1.
+   */
+  probability: number;
+  /**
+   * Only when choice is related: one key of web.brand_relation_kind (founder, key_person, parent_company, sister_company, subsidiary, location, sub_brand, former_account, unofficial, partner, competitor…).
+   */
+  relation_key?: string | null;
 }
 
 /**
@@ -14493,6 +14529,21 @@ export interface BrandKeyPerson {
   certainty?: string;
   confirmed?: boolean;
   evidence_urls?: string[];
+}
+
+/**
+ * The "we think" agent's answer (mandate ``brand_intake.we_think``): per candidate, what it most likely is
+ * to the brand, with a probability and hover-only grounding. Shown as a glow on that option; it is never
+ * chosen for the person.
+ *  *
+ *  * Kind `brand_we_think` (registry v1).
+ */
+export interface BrandWeThink {
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "brand_we_think";
+  suggestions?: BrandWeThinkSuggestion[];
 }
 
 /**
@@ -55968,6 +56019,7 @@ export type GeneratedKindSlug =
   | "brand_intake_profile"
   | "brand_key_people"
   | "brand_key_person"
+  | "brand_we_think"
   | "broken_link_prospecting_preview"
   | "broken_link_prospecting_report"
   | "browser_provision_result"
@@ -57477,6 +57529,7 @@ export interface KindPayloadBySlug {
   "brand_intake_profile": BrandIntakeProfile;
   "brand_key_people": BrandKeyPeople;
   "brand_key_person": BrandKeyPerson;
+  "brand_we_think": BrandWeThink;
   "broken_link_prospecting_preview": BrokenLinkProspectingPreview;
   "broken_link_prospecting_report": BrokenLinkProspectingReport;
   "browser_provision_result": BrowserProvisionResult;
@@ -58990,6 +59043,7 @@ export const GENERATED_KIND_SLUGS: readonly GeneratedKindSlug[] = [
   "brand_intake_profile",
   "brand_key_people",
   "brand_key_person",
+  "brand_we_think",
   "broken_link_prospecting_preview",
   "broken_link_prospecting_report",
   "browser_provision_result",
