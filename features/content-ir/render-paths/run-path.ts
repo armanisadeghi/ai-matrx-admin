@@ -66,10 +66,14 @@ function envelopeOf(block: RenderBlockPayload): CanonicalBlockIR | null {
  * `generic_structured` is the floor, not the component; `db_kind_component` is
  * a user-authored component; anything else is the kind's registered key.
  */
-function reachedRealComponent(block: RoutedBlock): boolean {
+export function reachedRealComponent(block: RoutedBlock): boolean {
   if (block.type === GENERIC_STRUCTURED_COMPONENT_KEY) return false;
   if (block.type === DB_KIND_COMPONENT_KEY) return true;
-  return Boolean(readIrRouteMarker(block.metadata)) || block.serverData !== undefined;
+  // A route marker that is not the generic fallback = the resolver bound a
+  // component. `serverData` alone proves nothing: an unregistered kind keeps
+  // its payload on a plain `code` block (the raw-JSON card).
+  const marker = readIrRouteMarker(block.metadata);
+  return marker !== null && marker.by !== "generic" && !marker.unverified;
 }
 
 /**
@@ -118,12 +122,16 @@ function verdictFor(
     };
   }
   const marker = readIrRouteMarker(principal.metadata);
+  const reached = reachedRealComponent(principal);
   return {
     resolvedAs: principal.type,
-    reachedRealComponent: reachedRealComponent(principal),
+    reachedRealComponent: reached,
     kindState: envelopeOf(source)?.root.kindState ?? null,
     fallbackReason: marker?.reason ?? null,
-    notes,
+    notes:
+      reached || principal.type === GENERIC_STRUCTURED_COMPONENT_KEY
+        ? notes
+        : [...notes, `No component drew this: the route returned a plain "${principal.type}" block.`],
   };
 }
 

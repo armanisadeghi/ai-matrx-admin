@@ -10,7 +10,8 @@
  */
 
 import { componentRegistry } from "@/features/content-ir/registry/component-registry";
-import { runRenderPath } from "../run-path";
+import { runRenderPath, reachedRealComponent } from "../run-path";
+import { IR_ROUTE_KEY } from "@ai-matrx/rich-content/kinds/react/kind-route";
 import { RENDER_PATHS } from "../paths";
 
 // 🚨 A PARTIAL MOCK OF A REAL MODULE IS A SUITE THAT DIES ON THE NEXT EXPORT
@@ -84,6 +85,30 @@ describe("render paths report what the route actually did", () => {
     expect(run.verdict.reachedRealComponent).toBe(false);
     expect(run.verdict.resolvedAs).toBe("generic_structured");
     expect(run.verdict.fallbackReason).toBe("unregistered");
+  });
+
+  it("reached = a bound component, never merely a payload on a plain block", () => {
+    // Live 2026-10-14 (brand_intake_facts): the route left a `code` block carrying
+    // serverData and the verdict said a real component rendered.
+    const data = { status: "x" };
+    expect(reachedRealComponent({ type: "code", serverData: data })).toBe(false);
+    expect(reachedRealComponent({ type: "code", serverData: data, metadata: { __ir: {} } })).toBe(false);
+    expect(reachedRealComponent({ type: "generic_structured", serverData: data })).toBe(false);
+    expect(reachedRealComponent({ type: "db_kind_component", serverData: data })).toBe(true);
+    const bound = (by: string, extra = {}) => ({
+      type: "some_component",
+      serverData: data,
+      metadata: { [IR_ROUTE_KEY]: { by, key: "some_component", ...extra } },
+    });
+    expect(reachedRealComponent(bound("compiled"))).toBe(true);
+    expect(reachedRealComponent(bound("generic", { unverified: true, reason: "unregistered" }))).toBe(false);
+  });
+
+  it("an unregistered kind never reports a component on any chat path", () => {
+    for (const id of ["chat_fence", "chat_fence_one_line", "chat_xml_tag", "chat_bare"] as const) {
+      const run = runRenderPath(id, "path_unregistered_code_kind", VALUE)!;
+      expect(run.verdict.reachedRealComponent).toBe(false);
+    }
   });
 
   it("the reload path routes a stored value the way a rehydrated message does", () => {

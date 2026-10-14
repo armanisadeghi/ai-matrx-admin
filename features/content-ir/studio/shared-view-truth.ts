@@ -113,3 +113,22 @@ export function describeRenderVerdict(input: {
   // shape's own can have drawn it, whatever marker the route carried.
   return "The reader gets the generic key/value view here.";
 }
+
+/**
+ * The Deactivate dialog's consequence, said first. Deactivating changes BINDING
+ * only: the component row's own `is_active` — not the definition's — decides how
+ * the shape renders, so it keeps rendering through whatever the SHARED view
+ * measured as. Never "falls back to the generic viewer" unless that is the
+ * measured answer already.
+ */
+export function describeDeactivateConsequence(state: SharedViewState): string {
+  const rest = "Agents can no longer be bound to emit it. Saved instances are untouched.";
+  switch (state) {
+    case "component":
+      return `It keeps rendering through its component. ${rest}`;
+    case "generic":
+      return `It keeps rendering through the generic viewer. ${rest}`;
+    default:
+      return rest;
+  }
+}

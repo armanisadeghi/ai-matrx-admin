@@ -65,7 +65,7 @@ jest.mock("@/features/content-ir/registry/schema-source-kind-components", () => 
 
 import ShapeActivationControl from "./components/ShapeActivationControl";
 import ShapeRenderStatusStrip from "./components/ShapeRenderStatusStrip";
-import { describeRenderVerdict, describeLiveRender } from "./shared-view-truth";
+import { describeRenderVerdict, describeLiveRender, describeDeactivateConsequence } from "./shared-view-truth";
 
 const GENERIC: Res = { componentKey: "generic_structured", source: "bundled", isActive: true };
 const ORG_VIEW: Res = { componentKey: "brand_intake_facts_org_view", source: "db", isActive: true };
@@ -175,6 +175,18 @@ describe("the sentences", () => {
     expect(describeRenderVerdict({ reached: false, sharedHasComponent: true, layerScope: null })).toContain(
       "generic key/value",
     );
+  });
+
+  it("Deactivate dialog: names the measured fall-through, never an unmeasured generic fall-back", () => {
+    expect(describeDeactivateConsequence("component")).toContain("keeps rendering through its component");
+    expect(describeDeactivateConsequence("generic")).toContain("keeps rendering through the generic viewer");
+    for (const s of ["checking", "unknown"] as const) {
+      expect(describeDeactivateConsequence(s)).not.toMatch(/component|generic|fall/);
+    }
+    for (const s of ["component", "generic", "checking", "unknown"] as const) {
+      expect(describeDeactivateConsequence(s)).not.toContain("stop rendering");
+      expect(describeDeactivateConsequence(s)).toContain("no longer be bound");
+    }
   });
 
   it("Live line: an unmeasured shared view makes no render claim", () => {

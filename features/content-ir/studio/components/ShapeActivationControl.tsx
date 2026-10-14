@@ -55,6 +55,7 @@ import { useKindAgentLaunch } from "@/features/content-ir/studio/useKindAgentLau
 import { AGENT_ICON } from "@/components/icons/domain-icons";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import {
+  describeDeactivateConsequence,
   describeLiveRender,
   useSharedViewState,
 } from "@/features/content-ir/studio/shared-view-truth";
@@ -158,8 +159,7 @@ export default function ShapeActivationControl({
     if (!next) {
       const ok = await confirm({
         title: `Deactivate "${kind}"?`,
-        description:
-          "It will stop rendering through its component and fall back to the generic JSON viewer, and agents can no longer be bound to emit it. Existing saved instances are untouched.",
+        description: describeDeactivateConsequence(sharedView),
         confirmLabel: "Deactivate",
         variant: "destructive",
       });
