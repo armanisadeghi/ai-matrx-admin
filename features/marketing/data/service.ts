@@ -70,7 +70,7 @@ import type {
   UpsertLocationListingInput,
 } from "@/features/marketing/types";
 import { isJsonRecord, isPropertyKind } from "@/features/marketing/types";
-import { extractErrorMessage, operationFailed } from "@/utils/errors";
+import { extractErrorMessage, makeAssertData, operationFailed } from "@/utils/errors";
 import { writeOne, writeOneRow } from "@/utils/supabase/writeOne";
 import type { Database, Json } from "@/types/database.types";
 import { parseSnapshotHeadTags } from "@/features/marketing/lib/head-tags";
@@ -1878,6 +1878,8 @@ export function snapshotSourceIdentity(state: MatrxDataTableQueryState) {
   };
 }
 
+const assertSnapshotReceiptData = makeAssertData("read this page's snapshots");
+
 export async function getSnapshotReceiptWatermark(
   siteId: string,
   pageId: string,
@@ -1893,9 +1895,7 @@ export async function getSnapshotReceiptWatermark(
     .abortSignal(signal ?? new AbortController().signal)
     .maybeSingle();
   // A page with no snapshot yet is an empty list, not a failure: only a real error throws.
-  // (Becomes `makeAssertData(...).nullable` once @ai-matrx/kit 0.43 is on npm.)
-  if (response.error) assertData(null, response.error);
-  return response.data?.created_at ?? null;
+  return assertSnapshotReceiptData.nullable(response.data, response.error)?.created_at ?? null;
 }
 
 export async function listSnapshotReceiptPage(input: {

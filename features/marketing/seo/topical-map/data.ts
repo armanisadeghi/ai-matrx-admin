@@ -68,16 +68,6 @@ async function seoDb() {
 
 const assertData = makeAssertData("read topical-map data");
 
-/**
- * For reads where null is a real answer ("this site uses no map"): a PostgREST
- * error still throws, but a null result is returned, not turned into a failure.
- * `assertData` throws on null by design, which made every map-less site show
- * a red "couldn't read topical-map data" error.
- */
-function assertNullableData<T>(data: T | null, error: unknown): T | null {
-  if (error) assertData(null, error);
-  return data ?? null;
-}
 
 type TopicalMapEntityToken =
   | "seo_topical_map"
@@ -339,7 +329,7 @@ export async function setSiteMap(siteId: string, mapId: string): Promise<MapMuta
  */
 export async function siteMapId(siteId: string): Promise<string | null> {
   const response = await (await seoDb()).rpc("site_map_id", { p_site_id: siteId });
-  return assertNullableData<string>(response.data, response.error);
+  return assertData.nullable<string>(response.data, response.error);
 }
 
 /**
@@ -373,7 +363,7 @@ export async function createMapFacetValues(brandId: string, facetKey: string, va
  */
 export async function mapFacetValueRef(valueId: string): Promise<EntityRef | null> {
   const response = await (await seoDb()).rpc("map_facet_value_ref", { p_value_id: valueId });
-  return assertNullableData(response.data as unknown as EntityRef | null, response.error);
+  return assertData.nullable(response.data as unknown as EntityRef | null, response.error);
 }
 
 /**
