@@ -40,7 +40,8 @@ export function EntityBulkActions<TRow>({
   onRefresh,
 }: {
   actions: EntityBulkAction<TRow>[];
-  selection: EntityListSelection<TRow>;
+  /** Only what running an action needs — so a plain table can host the same buttons. */
+  selection: Pick<EntityListSelection<TRow>, "build" | "clear" | "count">;
   noun: string;
   onRemoveRows: (ids: string[]) => void;
   onRefresh: () => void;

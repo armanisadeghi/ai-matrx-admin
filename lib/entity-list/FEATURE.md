@@ -597,6 +597,11 @@ how that savior page gets built.
   Why: a Claude Code session id pasted into /work/conversations found nothing — the
   row sat one bucket over, behind a chip count nobody reads while staring at an empty
   table. First consumer: `features/ai-work/conversations/listConfig.tsx`.
+- `2026-10-14` — **`useTableBulkSelection` — the same bulk bar for a plain `MatrxDataTable`.**
+  Screens that render the table directly pass `selection={bulk.selection}` and get the
+  identical buttons (`EntityBulkActions`, now typed to need only build/clear/count),
+  confirms, toasts and built-in verbs from one `token`. Ticked ids only; "select all
+  matching" stays a list-shell capability.
 - `2026-10-14` — **The built-in bulk set is ON for every list with a `registryToken`.**
   Favorite, Unfavorite, Add tag (`platform.file_under_tag`) and Move to Trash
   (`archiveRecord`) are merged in by the shell (`standardBulkActionsFor` +
