@@ -27,8 +27,17 @@ import { useIsMobile } from "@ai-matrx/kit/media-query";
 import { ModelViewPanel } from "../model-view/ModelViewPanel";
 import { AgentSamplesLauncher } from "../samples/AgentSamplesLauncher";
 import type { ConversationInvocation } from "@ai-matrx/chat/agents/types/conversation-invocation.types";
+import { RunReviewCard } from "@/features/agents/run-review/RunReviewCard";
 
 type RightView = "test" | "model";
+
+/** Sent with "Copy for AI" on a test run's card — never shown on screen. */
+const BUILDER_RUN_COPY = {
+  kind: "agent-builder-run-review",
+  location: "AI Matrx — Agent Builder, one test run of the agent being built",
+  description:
+    "One test run's numbers (tokens, cost, timing) and the builder's scores for its answer.",
+};
 
 const RIGHT_VIEWS = [
   { value: "test", label: "Test" },
@@ -129,6 +138,14 @@ export function AgentBuilderRightPanel({
             displayConversationId={displayConversationId ?? undefined}
             surfaceKey={surfaceKey}
             hideInput={view !== "test"}
+            afterMessages={
+              <RunReviewCard
+                conversationId={conversationId}
+                surface="agent-builder"
+                copy={BUILDER_RUN_COPY}
+                extension={{ metadata: { agent_id: agentId } }}
+              />
+            }
             aboveInput={
               <AgentSamplesLauncher
                 agentId={agentId}

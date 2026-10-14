@@ -145,7 +145,7 @@ than a mode-aware mega-slice.
 | `components/SharedRunSettingsWindow.tsx` | Shared advanced settings broadcast |
 | `components/ComparisonSetLoaderDialog.tsx` | Save/load comparison sets (generic) |
 | `service/comparisonSetsService.ts` | `cmp_comparison_sets` + `cmp_comparison_entries` CRUD |
-| `service/responseFeedbackService.ts` | `cmp_response_feedback` CRUD |
+| `features/agents/run-review/responseFeedbackService.ts` | `cmp_response_feedback` CRUD (shared with the Agent Builder's run card) |
 | Inside `redux/battleSlice.ts`: `feedbackRanks`, `feedbackByConversation`, `activeSetId`, `activeSetName` cache fields |
 | Inside `redux/thunks.ts`: `submitAllBattleColumns`, `broadcastContextEntry`, `broadcastRunSettings`, `applyMasterFieldsToColumns`, `saveBattleAs`, `loadBattleSet`, persistence | All take a column list — agnostic to how columns were configured |
 
@@ -243,7 +243,7 @@ Reuses imported directly from the agent-comparison core:
 - `components/SharedRunsWindow` + `components/RunsComparisonTable`
 - `components/ComparisonSetLoaderDialog` (with `mode="settings"`; rows link
   to battle URLs, which load through `loadSettingsBattleSet`)
-- `service/comparisonSetsService` + `service/responseFeedbackService`
+- `service/comparisonSetsService` + `features/agents/run-review/responseFeedbackService`
 
 Per-column overrides are persisted in the shared `instanceModelOverrides`
 slice keyed by `conversationId` — same source of truth the executor reads,

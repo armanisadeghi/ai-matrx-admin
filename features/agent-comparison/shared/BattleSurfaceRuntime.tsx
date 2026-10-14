@@ -19,7 +19,7 @@ import { createAgentBattleScope } from "@/features/surfaces/manifests/agent-batt
 import type { SurfaceScopePayload } from "@ai-matrx/chat/surfaces/types";
 import type { RootState } from "@/lib/redux/store";
 import { battleMarkdown, buildBattleSnapshot } from "./battleSnapshot";
-import { RESPONSE_FEEDBACK_METRICS } from "./feedbackMetrics";
+import { RESPONSE_FEEDBACK_METRICS } from "@/features/agents/run-review/feedbackMetrics";
 import { isBattleOwnConversation } from "./activeBattleColumns";
 
 export const AGENT_BATTLE_SURFACE_NAME = "matrx-user/agent-battle";

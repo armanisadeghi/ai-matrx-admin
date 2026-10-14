@@ -35,7 +35,7 @@ import {
 } from "@ai-matrx/chat/agents/components/run-controls/panels/shared";
 import type { ActiveRequest } from "@ai-matrx/chat/agents/types/request.types";
 import { selectResolvedVariables } from "@ai-matrx/chat/agents/redux/execution-system/instance-variable-values/instance-variable-values.selectors";
-import { RESPONSE_FEEDBACK_METRICS } from "./feedbackMetrics";
+import { RESPONSE_FEEDBACK_METRICS } from "@/features/agents/run-review/feedbackMetrics";
 import { columnRequestToSave } from "../modes/request-mod/columnRequest";
 import { blindAnonLabel } from "./blind";
 import { battleUrl, type BattleModeId } from "./battleRoutes";

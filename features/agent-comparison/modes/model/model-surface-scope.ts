@@ -5,7 +5,7 @@ import { selectModelColumnTitle } from "./columnTitle";
 import { useAppStore } from "@/lib/redux/hooks";
 import { createAgentComparisonModelScope } from "@/features/surfaces/manifests/agent-comparison-model.manifest";
 import { blindAnonLabel } from "@/features/agent-comparison/shared/blind";
-import { RESPONSE_FEEDBACK_METRICS } from "@/features/agent-comparison/shared/feedbackMetrics";
+import { RESPONSE_FEEDBACK_METRICS } from "@/features/agents/run-review/feedbackMetrics";
 import {
   extractFlatText,
   selectConversationMessages,
