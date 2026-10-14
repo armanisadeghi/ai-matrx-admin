@@ -123,10 +123,9 @@ export function paidAiPostPaths(): readonly string[] {
 
 /**
  * Does this callApi call start paid AI work? `path` is the schema template
- * (`config.path`); a `/v2` prefix is the same endpoint.
+ * (`config.path`).
  */
 export function isPaidAiCall(method: string, path: string): boolean {
   if (method.toUpperCase() !== "POST") return false;
-  const base = path.startsWith("/v2/") ? path.slice(3) : path;
-  return PAID_AI_POST_PATHS.has(base);
+  return PAID_AI_POST_PATHS.has(path);
 }

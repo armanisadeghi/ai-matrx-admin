@@ -129,7 +129,7 @@ interface ApiConfigState {
   /**
    * Exact-match endpoint path overrides — canonical path (the ENDPOINTS /
    * schema template, e.g. "/ai/manual") → full replacement path
-   * (e.g. "/v2/ai/manual"). Wins over `apiVersion`. This is the surgical
+   * (e.g. "/test/ai/manual"). Wins over `apiVersion`. This is the surgical
    * "send THIS call somewhere else for a test" escape hatch — change both the
    * version and the core route without editing code.
    */
@@ -562,7 +562,7 @@ const apiConfigSlice = createSlice({
 
     /**
      * Override a single canonical endpoint path with a full replacement path
-     * (e.g. "/ai/manual" → "/v2/ai/manual"). Pass an empty/whitespace
+     * (e.g. "/ai/manual" → "/test/ai/manual"). Pass an empty/whitespace
      * replacement to remove the override. Persisted across reloads.
      */
     setPathOverride: (

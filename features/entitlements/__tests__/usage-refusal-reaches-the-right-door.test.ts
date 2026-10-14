@@ -362,10 +362,7 @@ test("a mid-stream info event (pre-spend) does not cancel the after-call refresh
 
 test("every paid-AI path in the census is a real POST endpoint of the server", () => {
   const types = readFileSync(
-    require.resolve("@ai-matrx/api/types").replace(
-      /api-types\.c?js$/,
-      "api-types.d.ts",
-    ),
+    require.resolve("@ai-matrx/api/types").replace(/\.c?js$/, ".d.ts"),
     "utf8",
   );
   const missing = paidAiPostPaths().filter((p) => {
@@ -378,9 +375,8 @@ test("every paid-AI path in the census is a real POST endpoint of the server", (
   expect(paidAiPostPaths().length).toBeGreaterThan(20);
 });
 
-test("the census gates POSTs only, and a /v2 prefix is the same endpoint", () => {
+test("the census gates POSTs only", () => {
   expect(isPaidAiCall("POST", "/ai/mandates/{mandate_key}")).toBe(true);
-  expect(isPaidAiCall("POST", "/v2/ai/mandates/{mandate_key}")).toBe(true);
   expect(isPaidAiCall("GET", "/mandates/{mandate_key}/tests")).toBe(false);
   expect(isPaidAiCall("POST", "/ai/conversations/{conversation_id}/resume")).toBe(false);
   expect(isPaidAiCall("POST", "/images/generate")).toBe(true);
