@@ -7,7 +7,7 @@ import React from "react";
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 
-const retrySchema = jest.fn();
+const retrySchema = jest.fn((_kind: string) => {});
 const refresh = jest.fn(async (_ms: number) => {});
 
 jest.mock("@/features/content-ir/registry/kind-registry", () => ({
