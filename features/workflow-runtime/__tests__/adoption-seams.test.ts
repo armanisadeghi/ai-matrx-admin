@@ -73,7 +73,12 @@ describe("the shipped run form is SERVED, and has no second branch", () => {
     // The fallback did not disappear — it moved one layer down, onto the
     // response's own older `sections` schema, so the degraded form still comes
     // from the server rather than from the client re-reading the graph.
-    const parser = read(SERVED_INPUT);
+    const seam = read(SERVED_INPUT);
+    expect(seam).toContain("@ai-matrx/chat/mandates/invoke/served-input");
+    const parser = readFileSync(
+      require.resolve("@ai-matrx/chat/mandates/invoke/served-input"),
+      "utf8",
+    );
     expect(parser).toContain("servedInputsFromSections");
     expect(parser).toContain("derivedFromSections");
 

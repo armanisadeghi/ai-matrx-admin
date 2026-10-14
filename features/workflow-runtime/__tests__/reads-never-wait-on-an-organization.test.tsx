@@ -25,10 +25,10 @@ const { makeAppContextState } = jest.requireActual<
 let appContext = makeAppContextState();
 const paths: string[] = [];
 
-const dispatch = (action: { request?: { path?: string } }) => {
-  if (action?.request?.path) paths.push(action.request.path);
-  return Promise.resolve({ data: {}, error: null });
-};
+let dispatch: (action: { request?: { path?: string } }) => Promise<{
+  data: Record<string, never>;
+  error: null;
+}>;
 
 jest.mock("@/lib/redux/hooks", () => ({
   useAppSelector: (selector: (state: unknown) => unknown) =>
@@ -103,6 +103,13 @@ const READERS = {
 
 beforeEach(() => {
   paths.length = 0;
+  // Each case mounts a fresh store boundary. useResultSchema intentionally
+  // retains successful reads per dispatch, so sharing one function object
+  // across cases would turn the second case into a cache test.
+  dispatch = (action) => {
+    if (action?.request?.path) paths.push(action.request.path);
+    return Promise.resolve({ data: {}, error: null });
+  };
 });
 
 describe("reading one thing never waits on the selected organization", () => {

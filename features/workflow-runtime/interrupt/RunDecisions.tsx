@@ -92,7 +92,7 @@ function DecisionRow({
       ) : null}
       {answer ? (
         <div className="mt-0.5 break-words text-[11px] text-foreground/80">
-          <RichContent source={answer} level="standard" />
+          <RichContent source={answer} level="inline" />
         </div>
       ) : null}
     </li>
