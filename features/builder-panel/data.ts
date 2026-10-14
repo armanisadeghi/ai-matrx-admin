@@ -55,7 +55,7 @@ export async function fetchProposals(surfaceKey: string): Promise<MandateProposa
 
 export interface RealMandate {
   id: string;
-  mandateKey: string;
+  mandateKey: AnyMandateKey;
   label: string;
   goal: string | null;
   outputKind: string | null;
@@ -64,7 +64,7 @@ export interface RealMandate {
 }
 
 /** Mandates named by key, or consuming one of the given provision points. */
-export async function fetchSurfaceMandates(mandateKeys: string[], provisionKeys: string[]): Promise<RealMandate[]> {
+export async function fetchSurfaceMandates(mandateKeys: AnyMandateKey[], provisionKeys: string[]): Promise<RealMandate[]> {
   if (!mandateKeys.length && !provisionKeys.length) return [];
   const ors = [
     mandateKeys.length ? `mandate_key.in.(${mandateKeys.map((k) => `"${k}"`).join(",")})` : null,
@@ -80,7 +80,7 @@ export async function fetchSurfaceMandates(mandateKeys: string[], provisionKeys:
   if (error) throw new Error(`Mandates could not be read: ${error.message}`);
   return (data ?? []).map((r) => ({
     id: r.id,
-    mandateKey: r.mandate_key,
+    mandateKey: storedMandateKey(r.mandate_key),
     label: r.label,
     goal: r.goal,
     outputKind: r.output_kind,
@@ -240,3 +240,4 @@ export async function fetchRunTruth(runIds: string[], subjectIds: string[]): Pro
     })),
   };
 }
+import { storedMandateKey, type AnyMandateKey } from "@ai-matrx/agents/mandates";

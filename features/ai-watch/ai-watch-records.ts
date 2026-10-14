@@ -43,7 +43,7 @@ export interface AiWatchRecord {
   error: string | null;
   createdAt: string;
   completedAt: string | null;
-  mandateKey: string | null;
+  mandateKey: AnyMandateKey | null;
   /** THE run's mandate frame as stored on its own row (`metadata.mandate_watch`). */
   mandateWatch: MandateRunData | null;
   models: string[];
@@ -107,7 +107,7 @@ function toRecord(row: Row, snapshots: AiWatchSnapshot[]): AiWatchRecord {
     error: errorMessage(row.error),
     createdAt: String(row.created_at ?? ""),
     completedAt: str(row.completed_at),
-    mandateKey: str(metadata.mandate_key),
+    mandateKey: str(metadata.mandate_key) ? storedMandateKey(str(metadata.mandate_key)!) : null,
     mandateWatch: (obj(metadata.mandate_watch) as MandateRunData | null) ?? null,
     models: Object.keys(usageByModel),
     snapshots,
@@ -358,3 +358,4 @@ export async function fetchMandateDefinitionVersion(mandateId: string): Promise<
   if (error) throw new Error(error.message);
   return data ? num((data as Row).version) : null;
 }
+import { storedMandateKey, type AnyMandateKey } from "@ai-matrx/agents/mandates";

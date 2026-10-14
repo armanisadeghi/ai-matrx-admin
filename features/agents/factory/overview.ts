@@ -15,6 +15,7 @@ import { fetchKnobIndex } from "@/lib/scoped-config/service";
 import { operationFailed } from "@/utils/errors";
 import type { FactoryBuildRow } from "./types";
 import { KEPT_OUTCOMES } from "./types";
+import { MANDATE_KEYS, storedMandateKey, type AnyMandateKey } from "@ai-matrx/agents/mandates";
 
 export type DoorKey =
   | "agent_author"
@@ -46,9 +47,9 @@ export interface DoorInfo {
 }
 
 /** The Generate page's old builder is the generator shortcut; its runs carry this mandate key. */
-export const GENERATOR_SHORTCUT_MANDATE = "shortcut.agent_generator";
+export const GENERATOR_SHORTCUT_MANDATE = storedMandateKey("shortcut.agent_generator");
 /** The Mandate page's "+ Agent" old builder: the drafting job. */
-export const HOLDER_DRAFT_MANDATE = "mandates.holder_draft";
+export const HOLDER_DRAFT_MANDATE = MANDATE_KEYS.mandates__holder_draft;
 
 export const DOORS: readonly DoorInfo[] = [
   {
@@ -68,7 +69,7 @@ export const DOORS: readonly DoorInfo[] = [
     key: "from_chat",
     place: "Chat menu: Make an agent from this chat",
     href: "/chat",
-    oldBuilderMandate: "agent_studio.chat_brief",
+    oldBuilderMandate: MANDATE_KEYS.agent_studio__chat_brief,
   },
   {
     key: "mandate_holder_draft",
@@ -132,7 +133,7 @@ export const DOORS: readonly DoorInfo[] = [
   },
 ];
 
-export const STRUCTURE_BUILDER_MANDATE = "agent_factory.structure_builder";
+export const STRUCTURE_BUILDER_MANDATE = MANDATE_KEYS.agent_factory__structure_builder;
 
 /**
  * Rows that are not a door code: System Builder plans several agents and builds each one through
@@ -236,7 +237,7 @@ function bump(c: RunCounts, createdAt: string, week: number): void {
  * FACTORY_DOOR_STAMP_SINCE).
  */
 export async function loadOldBuilderRuns(
-  mandateKeys: string[],
+  mandateKeys: AnyMandateKey[],
 ): Promise<OldRunCounts> {
   const supabase = createClient();
   const since = new Date(Date.now() - 30 * 86_400_000).toISOString();

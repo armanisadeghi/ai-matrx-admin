@@ -151,7 +151,7 @@ export interface FactoryBuildRow {
   createdAt: string;
   startedAt: string | null;
   endedAt: string | null;
-  mandateKey: string | null;
+  mandateKey: AnyMandateKey | null;
   name: string | null;
   currentStep: string | null;
   outcome: string | null;
@@ -219,3 +219,4 @@ export const STEP_ORDER: FactoryStepName[] = [
 export function spineIsOver(status: SpineStatus): boolean {
   return status === "completed" || status === "failed" || status === "cancelled";
 }
+import type { AnyMandateKey } from "@ai-matrx/agents/mandates";

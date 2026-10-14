@@ -28,7 +28,7 @@ export type BuilderRef =
   | { type: "workflow_run"; id: string; label?: string | null }
   | { type: "ai_run"; requestId?: string | null; userRequestId?: string | null; workflowRunId?: string | null; conversationId?: string | null }
   | { type: "provision_snapshot"; id: string }
-  | { type: "mandate"; mandateKey?: string | null; provisionKey?: string | null }
+  | { type: "mandate"; mandateKey?: AnyMandateKey | null; provisionKey?: string | null }
   /** A record this page saved: the Provision tab also reads snapshots captured for it. */
   | { type: "record"; id: string; table?: string | null };
 
@@ -77,3 +77,4 @@ export interface BuilderFeed {
 export const BUILDER_HISTORY_MAX = 5;
 /** A surface keeps at most this many keys; the oldest fall off. */
 export const BUILDER_ENTRY_MAX = 400;
+import type { AnyMandateKey } from "@ai-matrx/agents/mandates";

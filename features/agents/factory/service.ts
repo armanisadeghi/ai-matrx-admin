@@ -13,7 +13,7 @@ import { mandateDisplayName } from "@/features/mandates/mandate-words";
 import { createClient } from "@/utils/supabase/client";
 import { operationFailed } from "@/utils/errors";
 import { postJson } from "@/lib/python-client";
-import { storedMandateKey } from "@ai-matrx/agents/mandates";
+import { storedMandateKey, type AnyMandateKey } from "@ai-matrx/agents/mandates";
 import type { FactoryBuildDetail, FactoryBuildRow, FactoryBuildState } from "./types";
 
 export const AGENT_FACTORY_BUILD_TYPE = "agent_factory_build";
@@ -184,7 +184,7 @@ export async function listFactoryMandates(): Promise<FactoryMandateOption[]> {
 }
 
 export interface StartFactoryBuildInput {
-  mandateKey: string;
+  mandateKey: AnyMandateKey;
   /** Caller lock: the model the built agent must use. */
   modelId?: string | null;
 }
@@ -211,7 +211,7 @@ export async function startFactoryBuild(input: StartFactoryBuildInput): Promise<
 export interface StartAgentBuildInput {
   /** The spec as the server's `AgentSpec` (name, purpose, variables, sample_inputs …). */
   spec: Record<string, unknown>;
-  mandateKey?: string | null;
+  mandateKey?: AnyMandateKey | null;
   /** R34 "Build unproven": save with fewer than 3 examples, judged on its first 3 runs. */
   unproven?: boolean;
   idempotencyKey?: string;

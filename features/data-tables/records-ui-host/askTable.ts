@@ -15,11 +15,11 @@
 import { dayKeyInZone } from "@/lib/time/personTimeZone";
 import { launchRefusal } from "@/features/unified-data/row-agent-action/rowAgentAction";
 import { usdToPoints } from "@ai-matrx/kit/format";
-import { storedMandateKey } from "@ai-matrx/agents/mandates";
+import { MANDATE_KEYS } from "@ai-matrx/agents/mandates";
 import type { TableAskAgentAnswer, TableAskOutcome, TableAskRequest } from "@ai-matrx/records-ui";
 import type { useAgentLauncher } from "@ai-matrx/chat/agents/hooks/useAgentLauncher";
 
-export const TABLE_ASK_MANDATE_KEY = storedMandateKey("table.ask");
+export const TABLE_ASK_MANDATE_KEY = MANDATE_KEYS.table__ask;
 export const TABLE_ASK_MAX_WORDS = "120";
 
 type LaunchMandate = ReturnType<typeof useAgentLauncher>["launchMandate"];

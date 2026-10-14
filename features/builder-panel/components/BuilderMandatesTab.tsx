@@ -21,7 +21,7 @@ export function BuilderMandatesTab({
   proposalsError,
 }: {
   surfaceKey: string;
-  mandateKeys: string[];
+  mandateKeys: AnyMandateKey[];
   provisionKeys: string[];
   proposals: MandateProposal[] | null;
   proposalsError: string | null;
@@ -92,3 +92,4 @@ export function BuilderMandatesTab({
     </div>
   );
 }
+import type { AnyMandateKey } from "@ai-matrx/agents/mandates";
