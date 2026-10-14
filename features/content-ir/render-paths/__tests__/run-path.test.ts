@@ -10,6 +10,7 @@
  */
 
 import { componentRegistry } from "@/features/content-ir/registry/component-registry";
+import { kindRegistry } from "@/features/content-ir/registry/kind-registry";
 import { runRenderPath, reachedRealComponent } from "../run-path";
 import { IR_ROUTE_KEY } from "@ai-matrx/rich-content/kinds/react/kind-route";
 import { RENDER_PATHS } from "../paths";
@@ -131,6 +132,27 @@ describe("render paths report what the route actually did", () => {
       expect(run.verdict.reachedRealComponent).toBe(false);
       expect(run.verdict.resolvedAs).toBe("generic_structured");
     }
+  });
+
+  it("a plain-value shape (root form, e.g. json) says WHY chat shows the generic view (SHAPES-BUGS 3.2)", () => {
+    // Live 2026-10-14 (`json`, schema {} = any value): the example passed its
+    // schema, reload drew value_result, and the chat verdict said only
+    // "broken-instance". The truth: a plain-value shape can never travel as a
+    // tagged object in chat, so the screen must say that, not imply a bad example.
+    kindRegistry.upsertDefinition({
+      kind: "path_root_json_kind",
+      schema: { kind: "path_root_json_kind", fields: {}, root: { type: "json" } },
+      schemaSource: "content_ir",
+      tier: "cold",
+    });
+    seedComponent("path_root_json_kind");
+    const run = runRenderPath("chat_fence", "path_root_json_kind", VALUE)!;
+    expect(run.verdict.reachedRealComponent).toBe(false);
+    expect(run.verdict.notes.join(" ")).toMatch(/single plain value/);
+    // The reload path draws the component — and carries no such note.
+    const reload = runRenderPath("reload", "path_root_json_kind", VALUE)!;
+    expect(reload.verdict.reachedRealComponent).toBe(true);
+    expect(reload.verdict.notes.join(" ")).not.toMatch(/single plain value/);
   });
 
   it("the reload path routes a stored value the way a rehydrated message does", () => {

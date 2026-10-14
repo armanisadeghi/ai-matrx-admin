@@ -201,15 +201,16 @@ export default function ShapeRenderStatusStrip({
     if (!resolution || resolution.source !== "bundled") return;
     if (resolution.componentKey === GENERIC_STRUCTURED_COMPONENT_KEY) return;
     let cancelled = false;
-    // Lazy — never a top-level import. block-dispatch.tsx pulls the whole
-    // lazy React component tree behind it.
-    void import(
-      "@ai-matrx/rich-content/display/chat-markdown/block-registry/block-dispatch"
-    )
-      .then(({ resolveBlockDispatch }) => {
+    // Lazy — never a top-level import: the check loads the render tree and
+    // this app's own block registrations before it answers.
+    void import("@/features/content-ir/studio/bundled-component-key-resolves")
+      .then(({ bundledComponentKeyResolves }) =>
+        bundledComponentKeyResolves(resolution.componentKey),
+      )
+      .then((resolves) => {
         if (!cancelled) {
           setDispatchComponentKey(resolution.componentKey);
-          setDispatchResolves(resolveBlockDispatch(resolution.componentKey) !== null);
+          setDispatchResolves(resolves);
         }
       })
       .catch(() => {

@@ -197,6 +197,15 @@ function verdictFor(
   }
   const marker = readIrRouteMarker(principal.metadata);
   const reached = reachedRealComponent(principal);
+  const why: string[] = [];
+  // A plain-value shape (root form: any value, a number, a list) can never
+  // travel as a tagged object, so a chat answer that tags it is refused by
+  // design — say so, rather than leave "broken-instance" to imply a bad example.
+  if (!reached && marker?.reason === "broken-instance" && kindRegistry.getSchema(kind)?.root) {
+    why.push(
+      "This shape holds a single plain value, so an answer that tags it as an object can't be recognized in chat. It draws as itself when reopened from a record.",
+    );
+  }
   return {
     resolvedAs: principal.type,
     reachedRealComponent: reached,
@@ -204,8 +213,8 @@ function verdictFor(
     fallbackReason: marker?.reason ?? null,
     notes:
       reached || principal.type === GENERIC_STRUCTURED_COMPONENT_KEY
-        ? notes
-        : [...notes, `No component drew this: the route returned a plain "${principal.type}" block.`],
+        ? [...notes, ...why]
+        : [...notes, ...why, `No component drew this: the route returned a plain "${principal.type}" block.`],
   };
 }
 
