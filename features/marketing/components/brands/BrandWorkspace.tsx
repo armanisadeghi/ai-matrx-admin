@@ -46,8 +46,8 @@ import { BrandTopicalMapCard } from "@/features/marketing/seo/topical-map/compon
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
-import { GovernedActionDialog } from "@/features/access-gate/components/GovernedActionDialog";
-import { isGovernedActionDenial } from "@/features/access-gate/lib/governedActionError";
+import { useQueryClient } from "@tanstack/react-query";
+import { RetractionDialog } from "@/features/marketing/components/brands/RetractionDialog";
 import { SmartAddBasicsGate, SmartAddSetupStatus } from "@/features/marketing/smart-add/SmartAddSetupStatus";
 import { BrandEditorDialog } from "@/features/marketing/components/brands/BrandEditorDialog";
 import {
@@ -74,8 +74,6 @@ import {
   useCreateSite,
   useDeleteBrandAsset,
   useDeleteBusinessFact,
-  useDeleteProperty,
-  useDeleteSite,
   usePendingDiscoveredCount,
 } from "@/features/marketing/data/hooks";
 import {
@@ -418,8 +416,8 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
   // editor level or above. RLS stays the boundary.
   const brandAccess = useAccess("web_brand", brandId);
   const canEdit = canEditAccess(brandAccess.level);
-  const deleteSiteMutation = useDeleteSite();
-  const deletePropertyMutation = useDeleteProperty();
+  // Removing an account or website undoes the decision that brought it in (UNDO.md): preview, then retract.
+  const queryClient = useQueryClient();
   const deleteAssetMutation = useDeleteBrandAsset();
   const deleteFactMutation = useDeleteBusinessFact();
   const openForEdit = useIsEditTarget("description");
@@ -428,8 +426,6 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const [editingSite, setEditingSite] = useState<MarketingSite | null>(null);
   const [deletingSite, setDeletingSite] = useState<MarketingSite | null>(null);
-  const [deniedSiteDelete, setDeniedSiteDelete] =
-    useState<MarketingSite | null>(null);
   const [propertyEditor, setPropertyEditor] = useState<{
     open: boolean;
     property: BrandProperty | null;
@@ -1281,42 +1277,14 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
         onOpenChange={(open) => !open && setEditingSite(null)}
         site={editingSite}
       />
-      <ConfirmDialog
-        open={Boolean(deletingSite)}
-        onOpenChange={(open) => !open && setDeletingSite(null)}
-        title={deletingSite ? `Delete ${deletingSite.name}?` : "Delete site?"}
-        description="The site moves to trash and disappears from every list. This does not delete the brand."
-        variant="destructive"
-        confirmLabel="Delete site"
-        busy={deleteSiteMutation.isPending}
-        onConfirm={async () => {
-          if (!deletingSite) return;
-          try {
-            await deleteSiteMutation.mutateAsync(deletingSite.id);
-            toast.success(`Deleted ${deletingSite.name}`);
-            setDeletingSite(null);
-          } catch (error) {
-            if (isGovernedActionDenial(error)) {
-              setDeniedSiteDelete(deletingSite);
-              setDeletingSite(null);
-              return;
-            }
-            toast.error("Could not delete site", {
-              description: extractErrorMessage(error),
-            });
-          }
+      <RetractionDialog
+        target={deletingSite ? { rootType: "site", rootId: deletingSite.id, name: deletingSite.name } : null}
+        onCancel={() => setDeletingSite(null)}
+        onDone={() => {
+          setDeletingSite(null);
+          void queryClient.invalidateQueries();
         }}
       />
-      {deniedSiteDelete ? (
-        <GovernedActionDialog
-          open
-          onOpenChange={(next) => !next && setDeniedSiteDelete(null)}
-          resourceType="web_site"
-          resourceId={deniedSiteDelete.id}
-          itemName={deniedSiteDelete.name}
-          href={marketingRoutes.site(current.id, deniedSiteDelete.id)}
-        />
-      ) : null}
       <PropertyEditorDialog
         open={propertyEditor.open}
         onOpenChange={(open) =>
@@ -1326,25 +1294,20 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
         organizationId={current.organization_id}
         property={propertyEditor.property}
       />
-      <ConfirmDialog
-        open={Boolean(deletingProperty)}
-        onOpenChange={(open) => !open && setDeletingProperty(null)}
-        title="Delete property?"
-        description="The property moves to trash and disappears from this brand."
-        variant="destructive"
-        confirmLabel="Delete property"
-        busy={deletePropertyMutation.isPending}
-        onConfirm={async () => {
-          if (!deletingProperty) return;
-          try {
-            await deletePropertyMutation.mutateAsync(deletingProperty.id);
-            toast.success("Property deleted");
-            setDeletingProperty(null);
-          } catch (error) {
-            toast.error("Could not delete property", {
-              description: extractErrorMessage(error),
-            });
-          }
+      <RetractionDialog
+        target={
+          deletingProperty
+            ? {
+                rootType: "property",
+                rootId: deletingProperty.id,
+                name: deletingProperty.display_name ?? deletingProperty.handle ?? deletingProperty.url ?? "this account",
+              }
+            : null
+        }
+        onCancel={() => setDeletingProperty(null)}
+        onDone={() => {
+          setDeletingProperty(null);
+          void queryClient.invalidateQueries();
         }}
       />
       <BrandAssetEditorDialog

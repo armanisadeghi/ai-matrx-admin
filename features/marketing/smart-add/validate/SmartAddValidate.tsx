@@ -22,6 +22,7 @@ import type { SuggestContext, WebChoice } from "../webKinds";
 import { buildQueue, decisionFor, type Answer, type BrandFact, type FocusItem } from "./queue";
 import { persistAnswer, type Persisted } from "./persist";
 import { ValidateStage, type AnsweredEntry, type AnswerOptions } from "./ValidateStage";
+import { RetractionDialog } from "@/features/marketing/components/brands/RetractionDialog";
 
 interface Saved extends AnsweredEntry {
   persisted: Persisted | null;
@@ -65,6 +66,8 @@ export function SmartAddValidate({
   const [later, setLater] = useState<string[]>([]);
   // Undo pressed while the save was still in flight: take it back as soon as it lands.
   const undoWhenSaved = useRef<Set<string>>(new Set());
+  // An "Ours" that pulled data in (tracking, posts, a crawl) is undone through the retraction: preview first.
+  const [retracting, setRetracting] = useState<Saved | null>(null);
 
   const answeredKeys = new Set(answered.map((a) => a.item.key));
   const queue = buildQueue({ items, facts, decisions, webChoices, answered: answeredKeys, later, broken, kinds, ctx });
@@ -116,8 +119,18 @@ export function SmartAddValidate({
       });
   };
 
+  const forget = (entry: AnsweredEntry, label: string) => {
+    setAnswered((list) => list.filter((a) => a.id !== entry.id));
+    if (decisionFor(entry.answer) && entry.item.evidence) for (const k of [entry.item.key, ...entry.item.twins]) onDecide(k, null);
+    publish({ key: `validate.answer.${entry.item.key}`, label: `${label}: ${entry.value}`, group: "inputs", data: { item: entry.item, undone: entry.answer }, source: "smart_add.validate" });
+  };
+
   const onUndo = (entry: AnsweredEntry) => {
     const saved = answered.find((a) => a.id === entry.id);
+    if (saved?.persisted?.retraction) {
+      setRetracting(saved);
+      return;
+    }
     setAnswered((list) => list.filter((a) => a.id !== entry.id));
     if (decisionFor(entry.answer) && entry.item.evidence) for (const k of [entry.item.key, ...entry.item.twins]) onDecide(k, null);
     publish({ key: `validate.answer.${entry.item.key}`, label: `Undone: ${entry.value}`, group: "inputs", data: { item: entry.item, undone: entry.answer }, source: "smart_add.validate" });
@@ -131,23 +144,34 @@ export function SmartAddValidate({
   };
 
   return (
-    <ValidateStage
-      brandName={brand.name}
-      brandLogo={brand.logo_url}
-      queue={queue}
-      answered={answered}
-      laterCount={later.filter((k) => queue.some((q) => q.key === k)).length}
-      kinds={kinds}
-      working={working}
-      onAnswer={onAnswer}
-      onUndo={onUndo}
-      footer={
-        <Button asChild variant="outline" icon={<ExternalLink aria-hidden />}>
-          <OutboundLink href={marketingRoutes.brand(marketingSeg(brand))} target="_blank" rel="noreferrer">
-            Open brand
-          </OutboundLink>
-        </Button>
-      }
-    />
+    <>
+      <ValidateStage
+        brandName={brand.name}
+        brandLogo={brand.logo_url}
+        queue={queue}
+        answered={answered}
+        laterCount={later.filter((k) => queue.some((q) => q.key === k)).length}
+        kinds={kinds}
+        working={working}
+        onAnswer={onAnswer}
+        onUndo={onUndo}
+        footer={
+          <Button asChild variant="outline" icon={<ExternalLink aria-hidden />}>
+            <OutboundLink href={marketingRoutes.brand(marketingSeg(brand))} target="_blank" rel="noreferrer">
+              Open brand
+            </OutboundLink>
+          </Button>
+        }
+      />
+      <RetractionDialog
+        target={retracting?.persisted?.retraction ? { ...retracting.persisted.retraction, name: retracting.value } : null}
+        onCancel={() => setRetracting(null)}
+        onDone={(summary) => {
+          if (retracting) forget(retracting, "Retracted");
+          publish({ key: `validate.retraction.${summary.decision_id ?? "none"}`, label: `Retracted: ${summary.label ?? ""}`, group: "inputs", data: summary, source: "smart_add.validate" });
+          setRetracting(null);
+        }}
+      />
+    </>
   );
 }

@@ -32,6 +32,7 @@ import {
   type BrandRelationKind,
 } from "@/features/marketing/data/service";
 import { startSystemRun } from "@/features/education/kits/systemRuns";
+import { associationsService } from "@/features/scopes/service/associationsService";
 import { getStoreSingleton } from "@/lib/redux/store-singleton";
 import { normalizeWebsiteUrl } from "@/features/marketing/lib/website-url";
 import {
@@ -58,6 +59,11 @@ export interface Persisted {
   /** The canonical homes written, as `table:id` — published to the Builder panel. */
   homes: string[];
   undo: () => Promise<void>;
+  /**
+   * Set when the answer pulled data in (an account's tracking + posts, a website's crawl): undo goes through
+   * the retraction (preview, then take back everything it brought in — UNDO.md), never the plain undo.
+   */
+  retraction?: { rootType: "decision"; rootId: string };
 }
 
 const CONFIRMED: ReadonlySet<Answer> = new Set(["preferred", "ours", "alias", "related", "correct"]);
@@ -363,6 +369,23 @@ async function addExclusion(ctx: PersistContext, item: FocusItem): Promise<{ id:
   };
 }
 
+/**
+ * Provenance edge: `web_discovered_item (the decision) --caused--> <row>`. `web.decision_retraction` reads it
+ * to take the row back on undo. A failed edge fails the answer loudly (its undo would leave the row behind).
+ */
+async function recordCause(ctx: PersistContext, decisionId: string, targetType: "web_site" | "party", targetId: string) {
+  const linked = await associationsService.add({
+    sourceType: "web_discovered_item",
+    sourceId: decisionId,
+    targetType,
+    targetId,
+    orgId: ctx.organizationId,
+    role: "caused",
+    label: "caused",
+  });
+  if (!linked.ok) throw new Error(`Could not record where this came from: ${linked.error.message}`);
+}
+
 /** Save one answer in its homes. `relationKey` for Related; `value` for an edited fact. */
 export async function persistAnswer(
   ctx: PersistContext,
@@ -375,6 +398,7 @@ export async function persistAnswer(
   const resolved: { resolved_property_id?: string; resolved_fact_id?: string } = {};
   const value = opts.value?.trim() || item.value;
   const ev = item.evidence;
+  let siteId: string | null = null;
 
   if (answer === "later") return { discoveredId: null, homes, undo: async () => undefined };
 
@@ -401,6 +425,7 @@ export async function persistAnswer(
     const root = item.kind === "website" ? (ev.url ?? ev.value) : webSiteRoot(ev);
     if (root) {
       const site = await addSite(ctx, root);
+      siteId = site.id;
       homes.push(`web.site:${site.id}`);
       undos.push(site.undo);
     }
@@ -502,8 +527,11 @@ export async function persistAnswer(
     const discovered = await recordDiscovered(ctx, item, answer, opts.relationKey ?? null, value, resolved);
     homes.unshift(`web.discovered_item:${discovered.id}`);
     undos.unshift(discovered.undo);
+    // Provenance: the site exists because of this decision (the account's is resolved_property_id).
+    if (siteId) await recordCause(ctx, discovered.id, "web_site", siteId);
     return {
       discoveredId: discovered.id,
+      ...(resolved.resolved_property_id || siteId ? { retraction: { rootType: "decision" as const, rootId: discovered.id } } : {}),
       homes,
       undo: async () => {
         // Reverse order: the homes first, then the finding back to its earlier state.

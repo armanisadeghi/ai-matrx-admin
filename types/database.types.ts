@@ -145075,6 +145075,15 @@ export type Database = {
         Returns: undefined
       }
       brand_archive: { Args: { p_brand_id: string }; Returns: Json }
+      decision_retraction: {
+        Args: {
+          p_apply?: boolean
+          p_exclude?: boolean
+          p_root_id: string
+          p_root_type: string
+        }
+        Returns: Json
+      }
       brand_archive_associated: {
         Args: { p_brand_id: string; p_items: Json }
         Returns: number
