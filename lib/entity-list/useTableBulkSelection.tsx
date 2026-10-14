@@ -36,7 +36,7 @@ export interface UseTableBulkSelectionArgs<TRow> {
   /** The screen's own verbs; an id equal to a built-in replaces it. */
   actions?: EntityBulkAction<TRow>[];
   standardBulkActions?: StandardBulkActionsConfig<TRow> | false;
-  /** Does this screen show favorites (stars)? Default true. */
+  /** Does this screen show favorites (stars)? Default false — Favorite verbs only where they show. */
   favoritesShown?: boolean;
   /** Re-read the screen's data after an action changed it. */
   onRefresh: () => void;
@@ -49,7 +49,12 @@ export function useTableBulkSelection<TRow>(args: UseTableBulkSelectionArgs<TRow
   selectedIds: string[];
   clear: () => void;
 } {
-  const [ids, setIds] = useState<string[]>([]);
+  const [tickedIds, setIds] = useState<string[]>([]);
+  // A selection here is what the person can SEE: ticks on rows that a filter,
+  // search, page or view change took off screen drop out, so a bar never acts
+  // on (or counts) rows nobody has in front of them.
+  const loadedIds = new Set(args.rows.map((row) => args.getRowId(row)));
+  const ids = tickedIds.filter((id) => loadedIds.has(id));
   const actions = mergeBulkActions(
     args.actions ?? [],
     standardBulkActionsFor<TRow>({
@@ -58,7 +63,9 @@ export function useTableBulkSelection<TRow>(args: UseTableBulkSelectionArgs<TRow
       rowIdOf: args.getRowId,
       labelOf: args.getRowName,
       config: args.standardBulkActions,
-      favoritesShown: args.favoritesShown,
+      // Off unless the screen says it shows favorites: "added" with nothing
+      // visibly changing is a lie.
+      favoritesShown: args.favoritesShown ?? false,
     }),
   );
 

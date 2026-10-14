@@ -1,5 +1,6 @@
 "use client";
 
+import { getStore } from "@/lib/redux/store-singleton";
 import { useTasksRead } from "@/features/tasks/hooks/useTasksRead";
 import React from "react";
 import { CheckCircle2, CircleDashed, Flag, Folder, RotateCcw, Trash2 } from "lucide-react";
@@ -144,7 +145,9 @@ export default function TasksTableView() {
         runPerRow(
           selection,
           async (id, row) => {
-            if (row?.completed) throw new Error("already complete");
+            // A toggle: never run it blind on a row this screen no longer holds.
+            if (!row) throw new Error("not on screen any more");
+            if (row.completed) throw new Error("already complete");
             await dispatch(toggleTaskCompleteThunk({ taskId: id })).unwrap();
           },
           { done: "Marked complete", noun: "task", labelOf: taskName },
@@ -159,7 +162,8 @@ export default function TasksTableView() {
         runPerRow(
           selection,
           async (id, row) => {
-            if (row && !row.completed) throw new Error("already open");
+            if (!row) throw new Error("not on screen any more");
+            if (!row.completed) throw new Error("already open");
             await dispatch(toggleTaskCompleteThunk({ taskId: id })).unwrap();
           },
           { done: "Reopened", noun: "task", labelOf: taskName },
@@ -188,6 +192,11 @@ export default function TasksTableView() {
         runPerRow(
           selection,
           async (id, row) => {
+            // A subtask whose parent was trashed earlier in this run already left
+            // with it; deleting it again is a silent no-op that must not count.
+            if (!getStore()?.getState().tasks.entities[id]) {
+              throw new Error("already moved to Trash with its parent");
+            }
             await dispatch(
               deleteTaskThunk({
                 taskId: id,
