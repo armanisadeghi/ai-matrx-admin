@@ -523,6 +523,8 @@ export interface ConnectedAccountPlan {
   /** USD one Refresh is expected to cost (render as points); 0 = free, null = not priced. */
   usd_per_refresh: number | null;
   points_per_refresh: number | null;
+  /** The server's own points for one run (same number as `points_per_refresh`) and for a month of daily runs, rounded as the ledger rounds. */
+  points_per_run: number | null;
   auto_update: boolean;
   cadence: "daily";
   points_per_month: number | null;

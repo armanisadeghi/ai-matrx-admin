@@ -39,7 +39,7 @@ import { GUIDED_CAPTURE_PLATFORMS } from "../gated/guidedJob";
 import { useAccountRows, useInvalidateSocial } from "../hooks";
 import { CONNECTION_STATE_LABELS, CONNECTION_STATE_TONES } from "../connection-state";
 import { useConnectionStates } from "../useConnectionStates";
-import { useConnectedPlans } from "../useConnectedPlans";
+import { COST_NOT_KNOWN, useConnectedPlans } from "../useConnectedPlans";
 import {
   accountLabels,
   accountName,
@@ -266,10 +266,12 @@ export function AccountsTab() {
     const on = plans.byTracked.get(row.trackedAccountId)?.auto_update === true;
     if (!on) {
       const cost = plans.autoUpdateCost(row.trackedAccountId);
+      // Unknown cost announces itself and cannot be confirmed: `ready` never settles, so the dialog offers Cancel only.
       const ok = await confirm({
         title: `Update ${accountName(row)} every day?`,
-        description: cost && cost !== "Free" ? `Uses ${cost}.` : cost ?? undefined,
+        description: cost === null ? COST_NOT_KNOWN : cost === "Free" ? "Free." : `Uses ${cost}.`,
         confirmLabel: "Turn on",
+        ...(cost === null ? { ready: new Promise<never>(() => {}), cancelLabel: "Close" } : {}),
       });
       if (!ok) return;
     }
@@ -815,7 +817,7 @@ export function AccountsTab() {
                   id: "sync-connection",
                   icon: RefreshCw,
                   label: "Refresh stats",
-                  tooltip: ["Refresh private stats and posts", plans.refreshCost(row.trackedAccountId)].filter(Boolean).join(" · "),
+                  tooltip: ["Refresh private stats and posts", plans.refreshCost(row.trackedAccountId) ?? COST_NOT_KNOWN].join(" · "),
                   loading: busyRow === row.rowId,
                   disabled: busyRow !== null,
                   onClick: () => void syncConnection(row),
@@ -826,7 +828,7 @@ export function AccountsTab() {
                   label: plans.byTracked.get(row.trackedAccountId ?? "")?.auto_update ? "Auto-update on" : "Auto-update",
                   tooltip: plans.byTracked.get(row.trackedAccountId ?? "")?.auto_update
                     ? "Daily · turn off"
-                    : ["Update every day", plans.autoUpdateCost(row.trackedAccountId)].filter(Boolean).join(" · "),
+                    : ["Update every day", plans.autoUpdateCost(row.trackedAccountId) ?? COST_NOT_KNOWN].join(" · "),
                   disabled: busyRow !== null,
                   onClick: () => void toggleAutoUpdate(row),
                 },

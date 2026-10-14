@@ -8,14 +8,17 @@
  */
 
 import { useQuery } from "@tanstack/react-query";
-import { useCostDisplay } from "@/components/cost/useCostDisplay";
 import { getConnectedAccountPlans, type ConnectedAccountPlan } from "./server";
 import { socialKeys } from "./hooks";
 
-export const RUNS_PER_MONTH = 30;
+/** Said wherever a cost cannot be named yet (plans loading, or a provider the server cannot price). */
+export const COST_NOT_KNOWN = "Cost not known yet";
+
+function pointsText(points: number): string {
+  return `${points.toLocaleString()} ${points === 1 ? "point" : "points"}`;
+}
 
 export function useConnectedPlans(organizationId: string | null | undefined, enabled: boolean) {
-  const { format } = useCostDisplay();
   const plans = useQuery({
     queryKey: [...socialKeys.all, "connected-plans", organizationId] as const,
     queryFn: ({ signal }) => getConnectedAccountPlans({ organizationId: organizationId ?? "", signal }),
@@ -24,19 +27,20 @@ export function useConnectedPlans(organizationId: string | null | undefined, ena
   });
   const byTracked = new Map<string, ConnectedAccountPlan>((plans.data ?? []).map((p) => [p.tracked_account_id, p]));
 
-  /** "Free" for an official read, the points for a paid one, null while unknown. */
+  /** "Free" for a truly free read, the server's points for a paid one, `null` while the cost is unknown (never "Free"). */
   function refreshCost(trackedAccountId: string | null | undefined): string | null {
     const plan = trackedAccountId ? byTracked.get(trackedAccountId) : undefined;
-    if (!plan || plan.usd_per_refresh == null) return null;
-    return plan.usd_per_refresh === 0 ? "Free" : format(plan.usd_per_refresh);
+    if (!plan || plan.usd_per_refresh == null || plan.points_per_refresh == null) return null;
+    return plan.usd_per_refresh === 0 ? "Free" : pointsText(plan.points_per_refresh);
   }
 
-  /** The Auto-update setting's cost words: per run and an estimated month. */
+  /** The Auto-update setting's cost words, all from the server: points per run and per month. `null` = unknown. */
   function autoUpdateCost(trackedAccountId: string | null | undefined): string | null {
     const plan = trackedAccountId ? byTracked.get(trackedAccountId) : undefined;
-    if (!plan || plan.usd_per_refresh == null) return null;
+    if (!plan || plan.usd_per_refresh == null || plan.points_per_refresh == null) return null;
     if (plan.usd_per_refresh === 0) return "Free";
-    return `${format(plan.usd_per_refresh)} a run · about ${format(plan.usd_per_refresh * RUNS_PER_MONTH)} a month`;
+    if (plan.points_per_month == null) return null;
+    return `${pointsText(plan.points_per_refresh)} a run · about ${pointsText(plan.points_per_month)} a month`;
   }
 
   return { byTracked, refreshCost, autoUpdateCost };
