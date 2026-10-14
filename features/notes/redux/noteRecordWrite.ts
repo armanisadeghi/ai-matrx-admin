@@ -27,6 +27,7 @@ import { noteEditBaseFromRecord } from "../utils/saveVerification";
 import type { Note, UpdateNoteInput } from "../types";
 import { NOTE_SAVE_FAILED_DRAFT_REASON, captureNoteDraftFor } from "../utils/notesDrafts";
 import type { NoteRecord, NoteUndoableField } from "./notes.types";
+import { canonicalNoteSnapshotValue } from "../noteSnapshotEquality";
 import {
   upsertNoteFromServer,
   recordNoteWriteAttempt,
@@ -352,6 +353,18 @@ function hasQueuedDirtyNote(getState: () => unknown, noteId: string): boolean {
   return dirtyFields instanceof Set && dirtyFields.size > 0;
 }
 
+/** The dirty fields and their values, canonical; null when nothing is dirty or it cannot be read. */
+function dirtySignature(record: NoteRecord | undefined): string | null {
+  if (!record?._dirty || record._dirtyFields.size === 0) return null;
+  try {
+    const values: Record<string, unknown> = {};
+    for (const field of Array.from(record._dirtyFields).sort()) values[field] = record[field] ?? null;
+    return canonicalNoteSnapshotValue(values);
+  } catch {
+    return null;
+  }
+}
+
 function createQueuedSaveResult(): SaveQueueEntry {
   let resolver: ((action: SaveResultAction) => void) | undefined;
   const promise = new Promise<SaveResultAction>((resolve) => {
@@ -391,8 +404,18 @@ function beginSaveQueue(
         // moment; later reducers produce new objects and never change it.
         const current = (getState() as RootState).notes.notes[noteId] as NoteRecord | undefined;
         entry.attempt = { operationId: crypto.randomUUID(), record: current };
+        const wrote = dirtySignature(current);
         finalAction = await dispatch(saveNotePayload({ noteId, expectedQueueUserId: entry.expectedUserId, operationId: entry.attempt.operationId }));
         if (saveNotePayload.rejected.match(finalAction)) break;
+        // Another turn only for an edit made DURING this write. A write that
+        // landed yet left the very values it wrote still dirty would loop
+        // forever (a new DB write per turn, and the caller's save never
+        // settles) — stop and say so.
+        const after = (getState() as RootState).notes.notes[noteId] as NoteRecord | undefined;
+        if (wrote !== null && dirtySignature(after) === wrote) {
+          console.error(`[Notes] saving ${noteId} left the written fields marked unsaved; not writing them again`);
+          break;
+        }
       } while (hasQueuedDirtyNote(getState, noteId));
     } catch (error) {
       const rejection = saveNotePayload.rejected(error instanceof Error ? error : new Error("Notes save queue failed."), "notes-save-queue", { noteId, expectedQueueUserId: entry.expectedUserId, operationId: entry.attempt?.operationId ?? "uncaptured" });

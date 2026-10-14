@@ -5,6 +5,7 @@
 import { noteEditBaseFromRecord, noteEditedFieldsEqual } from "../utils/saveVerification";
 import { createSlice, current, isDraft, type PayloadAction } from "@reduxjs/toolkit";
 import type { Note } from "../types";
+import { equalNoteSnapshotValue } from "../noteSnapshotEquality";
 import {
   type NoteRecord,
   type NoteUndoEntry,
@@ -223,6 +224,24 @@ function markRecordClean(record: NoteRecord): void {
 }
 
 /**
+ * The live value still IS what was written. Compared by value, never by
+ * reference: inside a reducer `record.tags` (any array/object field) reads as
+ * an immer draft proxy, which is never `===` the snapshot array — so a saved
+ * tags/shown_to edit stayed dirty forever, the note's write queue re-wrote it
+ * in an endless loop, and `saveNote` never settled (the bulk "Add tag" bar
+ * spun until reload, 2026-10-14).
+ */
+function sameSavedValue(live: unknown, saved: unknown): boolean {
+  if (live === saved) return true;
+  const plain = isDraft(live) ? current(live) : live;
+  try {
+    return equalNoteSnapshotValue(plain ?? null, saved ?? null);
+  } catch {
+    return false;
+  }
+}
+
+/**
  * Clear dirty only for fields whose current value still matches what we wrote.
  * Edits that landed mid-save stay dirty so the next autosave persists them.
  */
@@ -232,7 +251,7 @@ function markSavedSnapshotClean(
 ): void {
   for (const field of Object.keys(savedSnapshot) as NoteUndoableField[]) {
     if (!record._dirtyFields.has(field)) continue;
-    if (record[field] === savedSnapshot[field]) {
+    if (sameSavedValue(record[field], savedSnapshot[field])) {
       record._dirtyFields.delete(field);
     }
   }
