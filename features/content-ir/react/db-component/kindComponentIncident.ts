@@ -187,7 +187,11 @@ export function setGenericFloorSettleMsForTests(ms: number): void {
  * is "no component is bound", so it is filed only if, once the resolver has
  * settled, it still answers with no component (or an inactive one).
  */
-async function genericFloorStillTrue(kind: string): Promise<boolean> {
+async function genericFloorStillTrue(
+  kind: string,
+  platform: string,
+  role: string,
+): Promise<"true" | "false" | "unmeasured"> {
   const [{ componentRegistry }, { GENERIC_STRUCTURED_COMPONENT_KEY }] =
     await Promise.all([
       import("../../registry/component-registry"),
@@ -197,17 +201,39 @@ async function genericFloorStillTrue(kind: string): Promise<boolean> {
     await componentRegistry.ensureWarm();
   } catch {
     /* an unreadable list is not evidence of a missing component */
-    return false;
+    return "unmeasured";
   }
-  componentRegistry.requestComponent(kind, "web", "output");
+  const componentRole = role as Parameters<typeof componentRegistry.resolve>[2];
+  componentRegistry.requestComponent(kind, platform, componentRole);
   await new Promise((resolve) => setTimeout(resolve, genericFloorSettleMs));
-  if (isKindRenderHarnessMounted()) return false;
-  const resolution = componentRegistry.resolve(kind, "web", "output");
+  if (isKindRenderHarnessMounted()) return "false";
+  const resolution = componentRegistry.resolve(kind, platform, componentRole);
   const bound =
     resolution !== null &&
     resolution.isActive !== false &&
     resolution.componentKey !== GENERIC_STRUCTURED_COMPONENT_KEY;
-  return !bound;
+  return bound ? "false" : "true";
+}
+
+/**
+ * ONE ATTEMPT PER OUTAGE. When the component list cannot be read, a sighting
+ * cannot be measured — and re-trying on every generic render would storm the
+ * failing read. The key stays held until the registry next changes (the list
+ * landed), then every held key is released so a real sighting can file.
+ */
+const outageKeys = new Set<string>();
+let outageWatch: (() => void) | null = null;
+async function holdUntilRegistryChanges(key: string): Promise<void> {
+  outageKeys.add(key);
+  if (outageWatch) return;
+  const { subscribeKindComponents } = await import("../../registry/component-registry");
+  if (outageWatch) return;
+  outageWatch = subscribeKindComponents(() => {
+    for (const held of outageKeys) reported.delete(held);
+    outageKeys.clear();
+    outageWatch?.();
+    outageWatch = null;
+  });
 }
 
 /**
@@ -244,7 +270,16 @@ export function reportKindComponentIncident(
       // Checked here, after the render's effects committed — a harness parent
       // mounts its effects AFTER the child block that raised the sighting.
       await Promise.resolve();
-      if (isKindRenderHarnessMounted() || !(await genericFloorStillTrue(input.kind))) {
+      if (isKindRenderHarnessMounted()) {
+        reported.delete(key);
+        return;
+      }
+      const verdict = await genericFloorStillTrue(input.kind, platform, role);
+      if (verdict === "unmeasured") {
+        await holdUntilRegistryChanges(key);
+        return;
+      }
+      if (verdict === "false") {
         // Not a reader's settled generic render: forget the dedupe key so a
         // REAL sighting later in this session can still file.
         reported.delete(key);
@@ -294,4 +329,7 @@ export function reportKindComponentIncident(
 /** Test seam — drops the per-session dedupe. */
 export function resetKindComponentIncidentDedupe(): void {
   reported.clear();
+  outageKeys.clear();
+  outageWatch?.();
+  outageWatch = null;
 }

@@ -24,11 +24,26 @@ jest.mock("@/utils/supabase/client", () => ({
 type FakeResolution = { componentKey: string; isActive: boolean } | null;
 let resolverAnswer: FakeResolution = null;
 
+let warmFails = false;
+const ensureWarmCalls = jest.fn();
+const resolveCalls: Array<[string, string, string]> = [];
+const registryListeners = new Set<() => void>();
+
 jest.mock("../../registry/component-registry", () => ({
   componentRegistry: {
-    ensureWarm: async () => {},
+    ensureWarm: async () => {
+      ensureWarmCalls();
+      if (warmFails) throw new Error("Failed to fetch");
+    },
     requestComponent: () => {},
-    resolve: () => resolverAnswer,
+    resolve: (kind: string, platform: string, role: string) => {
+      resolveCalls.push([kind, platform, role]);
+      return resolverAnswer;
+    },
+  },
+  subscribeKindComponents: (listener: () => void) => {
+    registryListeners.add(listener);
+    return () => registryListeners.delete(listener);
   },
 }));
 
@@ -68,6 +83,9 @@ beforeEach(() => {
   setKindComponentIncidentsEnabledForTests(true);
   setGenericFloorSettleMsForTests(0);
   resolverAnswer = null;
+  warmFails = false;
+  ensureWarmCalls.mockClear();
+  resolveCalls.length = 0;
 });
 
 afterAll(() => setKindComponentIncidentsEnabledForTests(false));
@@ -110,4 +128,33 @@ it("a harness that mounts after the block (parent effects run last) still suppre
   await flush();
   leave();
   expect(filedKinds()).toEqual([]);
+});
+
+it("re-measures with the incident's own platform and role", async () => {
+  reportKindComponentIncident({
+    kind: "input_kind",
+    errorType: "generic_floor_render",
+    message: "generic",
+    platform: "mobile",
+    role: "input",
+  });
+  await flush();
+  expect(resolveCalls).toEqual([["input_kind", "mobile", "input"]]);
+});
+
+it("an unreadable component list is ONE attempt per outage, released when the registry changes", async () => {
+  warmFails = true;
+  fileGenericFloor("outage_kind");
+  await flush();
+  fileGenericFloor("outage_kind");
+  fileGenericFloor("outage_kind");
+  await flush();
+  expect(ensureWarmCalls).toHaveBeenCalledTimes(1);
+  expect(filedKinds()).toEqual([]);
+  // The list lands: the held sighting is released and a real one files.
+  warmFails = false;
+  for (const listener of [...registryListeners]) listener();
+  fileGenericFloor("outage_kind");
+  await flush();
+  expect(filedKinds()).toEqual(["outage_kind"]);
 });
