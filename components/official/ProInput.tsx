@@ -107,7 +107,7 @@ import {
 import { toast } from "@/lib/toast";
 import { supabase } from "@/utils/supabase/client";
 import { CLEANUP_SURFACE_NAME } from "@/features/transcription-cleanup/hooks/useAiPostProcess";
-import { useSurfaceAgentRoles } from "@ai-matrx/chat/surfaces/hooks/useSurfaceConfig";
+import { useCleanupSurfaceAgentId } from "./useCleanupSurfaceAgentId";
 import type { SessionContextItem } from "@/features/transcript-studio/types";
 import { useProTextareaAgentAction } from "./useProTextareaAgentAction";
 import { ProTextAgentActionPopoverBody } from "./ProTextAgentActionPopoverBody";
@@ -319,9 +319,10 @@ export const ProInput = React.forwardRef<HTMLInputElement, ProInputProps>(
     }, [inputRef]);
     const openAudioDevices = useOpenAudioDevices();
     const cleanupAction = useProTextareaAgentAction();
-    const cleanupSurfaceRoles = useSurfaceAgentRoles(CLEANUP_SURFACE_NAME);
-    const cleanupSurfaceAgentId =
-      cleanupSurfaceRoles.roles.clean?.effectiveAgentId ?? null;
+    const cleanupSurfaceAgentId = useCleanupSurfaceAgentId(
+      CLEANUP_SURFACE_NAME,
+      menuOpen,
+    );
 
     useEffect(() => {
       if (menuMode !== "cleanup" || !selectedCleanupAgent) return undefined;

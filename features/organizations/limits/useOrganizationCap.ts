@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
+import { selectOrganizationId } from "@/lib/redux/slices/appContextSlice";
+import { useLateIdleReady } from "@/lib/boot/lateIdle";
 import { useEffectiveKnob } from "@/lib/scoped-config/effectiveKnobs.client";
 import { useUserOrganizations } from "../hooks";
 import {
@@ -24,12 +26,23 @@ export interface OrganizationCapState extends OrganizationCapVerdict {
  * are only asked once the count reaches the knob default — below it nothing
  * a plan says can change the answer. `enabled: false` asks nothing and never
  * refuses (a creation surface that is not creating an organization).
+ * `deferToIdle` holds the knob read until the late-idle tier.
  */
-export function useOrganizationCap(enabled = true): OrganizationCapState {
+export function useOrganizationCap(
+  enabled = true,
+  options?: { deferToIdle?: boolean },
+): OrganizationCapState {
   const userId = useAppSelector(selectUserId);
   const { organizations, loading } = useUserOrganizations("active");
-  // Platform-locked knob: no organization or person rung applies.
-  const knobValue = useEffectiveKnob(null, userId, ORGANIZATION_CAP_KNOB);
+  const orgId = useAppSelector(selectOrganizationId);
+  // Same address as every other knob read (active org). Background readers
+  // (the reminder) pass `deferToIdle` so the read waits until the page is idle;
+  // a creation surface that needs the answer now reads at once.
+  const lateIdle = useLateIdleReady();
+  const lateReady = !options?.deferToIdle || lateIdle;
+  const knobValue = useEffectiveKnob(orgId, userId, ORGANIZATION_CAP_KNOB, undefined, {
+    enabled: lateReady,
+  });
   const count = organizations.length;
   const base = resolveOrganizationCap(knobValue, []);
   const needsPlans = enabled && !loading && base !== null && count >= base;

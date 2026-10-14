@@ -146,11 +146,13 @@ export function SelectionToolbarRoot(): React.ReactElement | null {
   const openFeedback = useOpenFeedbackWindow();
   const router = useRouter();
   const orgId = useAppSelector(selectOrganizationId);
-  const highlightKnob = useEffectiveKnob(orgId, userId, HIGHLIGHT_WHILE_EDITING_KNOB);
+  const [open, setOpen] = React.useState<OpenState | null>(null);
+  // Only matters once a selection exists: nothing is asked on page load.
+  const highlightKnob = useEffectiveKnob(orgId, userId, HIGHLIGHT_WHILE_EDITING_KNOB, undefined, {
+    enabled: open !== null,
+  });
   const highlightWhileEditing =
     typeof highlightKnob === "boolean" ? highlightKnob : HIGHLIGHT_WHILE_EDITING_DEFAULT;
-
-  const [open, setOpen] = React.useState<OpenState | null>(null);
   const [panel, setPanel] = React.useState<string | null>(null);
   const [panelPayload, setPanelPayload] = React.useState<unknown>(null);
   // Latest state for the document listeners (written after commit, read in events only).

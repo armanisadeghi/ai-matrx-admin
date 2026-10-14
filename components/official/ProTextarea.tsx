@@ -191,7 +191,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { toast } from "@/lib/toast";
 import { CLEANUP_SURFACE_NAME } from "@/features/transcription-cleanup/hooks/useAiPostProcess";
-import { useSurfaceAgentRoles } from "@ai-matrx/chat/surfaces/hooks/useSurfaceConfig";
+import { useCleanupSurfaceAgentId } from "./useCleanupSurfaceAgentId";
 import { useProTextareaAgentAction } from "./useProTextareaAgentAction";
 import { ProTextareaBoundAgentsMenuItems } from "./ProTextareaBoundAgentsMenuItems";
 import { useSurfaceBoundAgents } from "@ai-matrx/chat/surfaces/hooks/useSurfaceBoundAgents";
@@ -618,9 +618,11 @@ export const ProTextarea = React.forwardRef<
       isEditable: true,
       includeDefaults: boundAgentsEnabled,
     });
-    const cleanupSurfaceRoles = useSurfaceAgentRoles(CLEANUP_SURFACE_NAME);
-    const cleanupSurfaceAgentId =
-      cleanupSurfaceRoles.roles.clean?.effectiveAgentId ?? null;
+    const [menuOpen, setMenuOpen] = useState(false);
+    const cleanupSurfaceAgentId = useCleanupSurfaceAgentId(
+      CLEANUP_SURFACE_NAME,
+      menuOpen,
+    );
     const agentActionContext = useRef<ProTextareaAgentActionContext>({
       cleanupAgentId,
       cleanupSurfaceAgentId,
@@ -656,7 +658,6 @@ export const ProTextarea = React.forwardRef<
       helpMandateKey,
     ]);
 
-    const [menuOpen, setMenuOpen] = useState(false);
     const [menuMode, setMenuMode] = useState<ProTextareaMenuMode>("menu");
     const [showTextStatsBar, setShowTextStatsBar] = useState(
       defaultShowTextStatsBar,

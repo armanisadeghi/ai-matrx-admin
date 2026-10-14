@@ -17,7 +17,7 @@ const REMINDED_KEY = "matrx:organization-cap-reminded";
 export function OrganizationCapReminder() {
   const router = useRouter();
   const userId = useAppSelector(selectUserId);
-  const { ready, overCap, count, cap } = useOrganizationCap();
+  const { ready, overCap, count, cap } = useOrganizationCap(true, { deferToIdle: true });
 
   useEffect(() => {
     if (!ready || !overCap || cap === null || !userId) return;
