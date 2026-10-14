@@ -32,6 +32,7 @@ import type { KindExampleListItem } from "@/features/content-ir/admin/kind-detai
 import { isKindDisposition } from "@/features/content-ir/registry/kind-dispositions";
 import {
   buildExistingShapeVariables,
+  buildShapeReadiness,
   type ShapeReadiness,
 } from "@/features/content-ir/studio/convert-to-shape";
 import {
@@ -120,25 +121,40 @@ export function composeKindEditSeed(
 export async function loadKindEditSeed(
   input: KindAgentIntentInput & { extraKindContext?: Record<string, unknown> },
 ): Promise<KindAgentSeed> {
+  // Each read stands alone: a failed example read keeps the registration,
+  // and a failed registration read keeps the page's own facts.
+  const failures: string[] = [];
+  const note = (what: string, error: unknown) => {
+    console.error(`[kind-edit-seed] ${what} for "${input.kind}":`, error);
+    failures.push(error instanceof Error ? error.message : String(error));
+  };
+
+  let readiness: ShapeReadiness;
   try {
-    const readiness = await loadShapeReadiness(input.kind);
-    const examples = readiness.definition
-      ? await fetchKindExamples(
-          readiness.definition.id,
-          KIND_EDIT_SEED_EXAMPLE_LIMIT,
-        )
-      : [];
-    return composeKindEditSeed({ ...input, readiness, examples });
+    readiness = await loadShapeReadiness(input.kind);
   } catch (error) {
-    console.error(
-      `[kind-edit-seed] could not read Shape "${input.kind}" for the agent:`,
-      error,
-    );
-    toast.message("Agent starting with less context", {
-      description: `Could not read this Shape's saved details: ${error instanceof Error ? error.message : String(error)}`,
-    });
-    return composeKindAgentIntent(input);
+    note("could not read the Shape registration", error);
+    readiness = buildShapeReadiness({ rootKind: input.kind });
   }
+
+  let examples: KindExampleListItem[] = [];
+  if (readiness.definition) {
+    try {
+      examples = await fetchKindExamples(
+        readiness.definition.id,
+        KIND_EDIT_SEED_EXAMPLE_LIMIT,
+      );
+    } catch (error) {
+      note("could not read saved examples", error);
+    }
+  }
+
+  if (failures.length > 0) {
+    toast.message("Agent starting with less context", {
+      description: failures.join(" · "),
+    });
+  }
+  return composeKindEditSeed({ ...input, readiness, examples });
 }
 
 /**
