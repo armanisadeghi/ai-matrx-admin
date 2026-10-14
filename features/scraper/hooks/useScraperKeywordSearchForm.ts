@@ -23,6 +23,7 @@
 
 import { useRef, useState } from "react";
 import { useBackendApi } from "@/hooks/useBackendApi";
+import { useGeolocation } from "@/hooks/brokers/useGeolocation";
 import { runKindSearch } from "@/features/search/service";
 import { SEARCH_ENGINE_LABEL } from "@/features/search/types";
 import type {
@@ -48,10 +49,14 @@ export const KEYWORD_SEARCH_ENGINES: readonly KeywordSearchEngine[] =
 export const KEYWORD_SEARCH_VERTICALS: readonly SearchVertical[] =
   SEARCH_LAB_VERTICAL_VALUES;
 
-/** The knobs beside the query (everything but vertical, count and raw capture). */
+/**
+ * The knobs beside the query (everything but vertical, count and raw
+ * capture). `nearMe` is the "Use my location" switch: the coordinates
+ * themselves are asked of the browser on each explicit search, never stored.
+ */
 export type KeywordSearchOptions = Required<
-  Omit<SearchRequestOptions, "vertical" | "includeRaw">
->;
+  Omit<SearchRequestOptions, "vertical" | "includeRaw" | "latitude" | "longitude">
+> & { nearMe: boolean };
 
 export const DEFAULT_KEYWORD_SEARCH_OPTIONS: KeywordSearchOptions = {
   country: "us",
@@ -63,6 +68,9 @@ export const DEFAULT_KEYWORD_SEARCH_OPTIONS: KeywordSearchOptions = {
   location: "",
   device: "desktop",
   aiAnswer: false,
+  // Never on by default: the browser asks permission only when a person
+  // switches it on.
+  nearMe: false,
 };
 
 /** One engine's run. */
@@ -103,6 +111,11 @@ export interface UseScraperKeywordSearchFormInit {
   options?: Partial<KeywordSearchOptions>;
   /** Called with the exact request each time a search starts (URL sync). */
   onSearch?: (request: KeywordSearchRequest) => void;
+  /**
+   * Always ask for the provider's raw payload (admin debuggers). Read at
+   * search time, so it holds from the very first search.
+   */
+  alwaysIncludeRaw?: boolean;
 }
 
 export interface UseScraperKeywordSearchFormReturn {
@@ -125,6 +138,15 @@ export interface UseScraperKeywordSearchFormReturn {
   /** Ask for the provider's raw payload on the next search (inspector). */
   includeRaw: boolean;
   setIncludeRaw: (v: boolean) => void;
+  /**
+   * Switch "Use my location" on or off. Switching on asks the browser right
+   * away; a refusal turns it back off and sets `locationNote`.
+   */
+  setNearMe: (on: boolean) => Promise<void>;
+  /** True while the browser is being asked for the position. */
+  isLocating: boolean;
+  /** A short line when the position could not be read (blocked, no GPS). */
+  locationNote: string | null;
   /** One run per engine searched, in engine order. */
   runs: KeywordEngineRun[];
   /** The request the current `runs` answer (null before the first search). */
@@ -274,6 +296,36 @@ export function useScraperKeywordSearchForm(
   const [diagnostics, setDiagnostics] =
     useState<KeywordSearchDiagnostics | null>(null);
   const controllers = useRef<AbortController[]>([]);
+  const requestGeolocation = useGeolocation();
+  const [isLocating, setIsLocating] = useState(false);
+  const [locationNote, setLocationNote] = useState<string | null>(null);
+
+  const LOCATION_BLOCKED = "Location is off in this browser — searched without it.";
+
+  /** Ask the browser for the position; null when it refuses or cannot. */
+  const locate = async () => {
+    setIsLocating(true);
+    try {
+      // A browser that never answers must not hold the search forever.
+      return await Promise.race([
+        requestGeolocation(),
+        new Promise<null>((resolve) => setTimeout(() => resolve(null), 15000)),
+      ]);
+    } finally {
+      setIsLocating(false);
+    }
+  };
+
+  const setNearMe = async (on: boolean) => {
+    setLocationNote(null);
+    setOptions((prev) => ({ ...prev, nearMe: on }));
+    if (!on) return;
+    const coords = await locate();
+    if (!coords) {
+      setOptions((prev) => ({ ...prev, nearMe: false }));
+      setLocationNote("Location is blocked in this browser.");
+    }
+  };
 
   const current: KeywordSearchRequest = {
     query: keywords.trim(),
@@ -307,6 +359,21 @@ export function useScraperKeywordSearchForm(
     if (overrides?.count !== undefined) setMaxResults(String(overrides.count));
     if (overrides?.options) setOptions(overrides.options);
 
+    // "Use my location": the position is asked for on every explicit search
+    // (it is never stored or carried in a link). A refusal turns the switch
+    // off and the search runs without it — it never blocks the search.
+    let coords: { latitude: number; longitude: number } | null = null;
+    if (request.options.nearMe) {
+      coords = await locate();
+      if (!coords) {
+        request.options = { ...request.options, nearMe: false };
+        setOptions((prev) => ({ ...prev, nearMe: false }));
+        setLocationNote(LOCATION_BLOCKED);
+      } else {
+        setLocationNote(null);
+      }
+    }
+
     abortAll();
     setSelectedHitIndex(null);
     setDiagnostics(null);
@@ -314,13 +381,14 @@ export function useScraperKeywordSearchForm(
     init.onSearch?.(request);
 
     const providers = enginesFor(request.engine);
+    const wantRaw = includeRaw || Boolean(init.alwaysIncludeRaw);
     setRuns(
       providers.map((provider) => ({
         provider,
         phase: "searching",
         outcome: null,
         error: null,
-        includedRaw: includeRaw,
+        includedRaw: wantRaw,
       })),
     );
 
@@ -334,13 +402,16 @@ export function useScraperKeywordSearchForm(
         ),
       );
 
+    const { nearMe: _nearMe, ...knobs } = request.options;
     const requestOptions: SearchRequestOptions = {
-      ...request.options,
+      ...knobs,
       vertical: request.vertical,
       // The AI answer exists for web results only; never send a switch the
       // UI shows as disabled.
       aiAnswer: request.options.aiAnswer && request.vertical === "web",
-      includeRaw,
+      includeRaw: wantRaw,
+      latitude: coords?.latitude ?? null,
+      longitude: coords?.longitude ?? null,
     };
 
     const failures: { provider: SearchProvider; message: string }[] = [];
@@ -443,10 +514,16 @@ export function useScraperKeywordSearchForm(
     options,
     setOption: (key, value) =>
       setOptions((prev) => ({ ...prev, [key]: value })),
-    resetOptions: () => setOptions(DEFAULT_KEYWORD_SEARCH_OPTIONS),
+    resetOptions: () => {
+      setLocationNote(null);
+      setOptions(DEFAULT_KEYWORD_SEARCH_OPTIONS);
+    },
     changedOptionCount: countChangedOptions(options),
     includeRaw,
     setIncludeRaw,
+    setNearMe,
+    isLocating,
+    locationNote,
     runs,
     lastRequest,
     isStale: lastRequest !== null && !sameRequest(lastRequest, current),

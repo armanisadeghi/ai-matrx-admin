@@ -32,6 +32,7 @@ import {
   num,
   readSearchKindValue,
   items,
+  strings,
   text,
 } from "./search-kind-data";
 import {
@@ -70,54 +71,191 @@ const Thumb: React.FC<{ src: string; className?: string; alt?: string }> = ({
 // web_result
 // ─────────────────────────────────────────────────────────────────────────────
 
+/**
+ * Fields the server added for Google parity (2026-10-13) that the live
+ * registry row does not declare yet — read untyped until the aidream re-seed
+ * lands and `pnpm shape:types` regenerates `WebResult` with them.
+ *   read_more_url — Google's "Read more" deep link to the passage on the page
+ *   annotations   — short facts under the site name ("5.2K+ followers")
+ */
+function pendingWebResultFields(value: object): {
+  readMoreUrl: string | null;
+  annotations: string[];
+} {
+  const raw = value as Record<string, unknown>;
+  return {
+    readMoreUrl: text(raw.read_more_url),
+    annotations: strings(raw.annotations),
+  };
+}
+
+/** Snippets longer than this open shortened (decided from the text: no measuring, no shift). */
+const SNIPPET_SHORT_CHARS = 190;
+
+/** Cut at a word boundary under `max` characters. */
+function shorten(value: string, max: number): string {
+  if (value.length <= max) return value;
+  const cut = value.slice(0, max);
+  const space = cut.lastIndexOf(" ");
+  return `${(space > max * 0.6 ? cut.slice(0, space) : cut).replace(/[\s,;:.\-–—]+$/, "")}…`;
+}
+
+/** "Aug 10, 2026 — " already written into the snippet by the provider. */
+function stripLeadingDate(snippet: string, date: string | null): string {
+  if (!date) return snippet;
+  const escaped = date.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return snippet.replace(new RegExp(`^${escaped}\\s*[—–·-]\\s*`), "");
+}
+
+/** The words the engine matched, bold — Google's snippet emphasis. */
+function Highlighted({ value, terms }: { value: string; terms: string[] }) {
+  const words = terms
+    .map((t) => t.trim())
+    .filter((t) => t.length > 1)
+    .sort((a, b) => b.length - a.length)
+    .map((t) => t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
+  if (words.length === 0) return <>{value}</>;
+  const re = new RegExp(`(${words.join("|")})`, "gi");
+  const parts = value.split(re);
+  return (
+    <>
+      {parts.map((part, i) =>
+        i % 2 === 1 ? (
+          <strong key={i} className="font-semibold text-foreground">
+            {part}
+          </strong>
+        ) : (
+          part
+        ),
+      )}
+    </>
+  );
+}
+
 export function WebResultBlock({ serverData, className }: SearchKindBlockProps) {
   const { value } = readSearchKindValue<"web_result">(serverData);
+  const [expanded, setExpanded] = useState(false);
   const title = text(value.title);
   const url = text(value.url);
   if (!title) return null;
 
   const siteName = text(value.site_name);
-  const snippet = text(value.snippet);
   const date = dateLine(value, formatDate);
+  const rawSnippet = text(value.snippet);
+  const snippet = rawSnippet ? stripLeadingDate(rawSnippet, date) : null;
+  const extraSnippets = strings(value.extra_snippets).filter(
+    (extra) => extra !== rawSnippet,
+  );
+  const terms = strings(value.highlighted_terms);
+  const { readMoreUrl, annotations } = pendingWebResultFields(value);
   const rating = value.rating ?? null;
   const sitelinks = items(value.sitelinks);
   const thumbnail = text(value.thumbnail);
 
+  // Read more: the engine's own deep link wins (it jumps to the passage);
+  // otherwise a long snippet or extra passages expand in place.
+  const long = snippet !== null && snippet.length > SNIPPET_SHORT_CHARS;
+  const canExpand = !readMoreUrl && (long || extraSnippets.length > 0);
+  const shownSnippet =
+    snippet && long && !expanded ? shorten(snippet, SNIPPET_SHORT_CHARS) : snippet;
+
   return (
     <div className={cn("group/result", className)}>
-      <div className="flex items-start gap-3">
+      <div className="flex items-start gap-4">
         <div className="min-w-0 flex-1">
-          {/* Favicon + site identity over the breadcrumb, Google's layout. */}
-          <div className="flex items-center gap-2.5">
-            <SearchFavicon
-              iconUrl={text(value.favicon)}
-              url={url}
-              className="h-[18px] w-[18px] flex-shrink-0"
-            />
+          {/* Site identity: the favicon is as tall as the two lines beside it
+              (two 16px lines, a 32px circle), on a neutral ring that never
+              recolours it. */}
+          <div className="flex items-center gap-3">
+            <span className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full border border-border bg-card">
+              <SearchFavicon
+                iconUrl={text(value.favicon)}
+                url={url}
+                className="h-5 w-5 rounded-sm"
+              />
+            </span>
             <div className="min-w-0 flex-1">
-              <div className="truncate text-sm leading-tight text-foreground">
-                {siteName ?? ""}
+              <div className="flex min-w-0 items-baseline gap-1.5 text-sm leading-4 text-foreground">
+                <span className="truncate">{siteName ?? ""}</span>
+                {annotations.length > 0 && (
+                  <span className="shrink-0 truncate text-xs text-muted-foreground">
+                    · {annotations.slice(0, 2).join(" · ")}
+                  </span>
+                )}
               </div>
-              <BreadcrumbLine url={url} displayedUrl={text(value.displayed_url)} />
+              <BreadcrumbLine
+                url={url}
+                displayedUrl={text(value.displayed_url)}
+                className="leading-4"
+              />
             </div>
           </div>
 
           <OutboundLink
             href={url ?? undefined}
             onClick={(e) => e.stopPropagation()}
-            className="group/link mt-1 flex items-start gap-1.5"
+            className="group/link mt-1.5 flex items-start gap-1.5"
           >
-            <span className="text-base leading-snug text-primary underline-offset-2 group-hover/link:underline @lg:text-lg">
+            <span className="text-lg leading-snug text-primary underline-offset-2 group-hover/link:underline @lg:text-xl @lg:leading-[1.3]">
               {title}
             </span>
             <ExternalLink className="mt-1.5 h-3.5 w-3.5 flex-shrink-0 text-muted-foreground opacity-0 transition-opacity group-hover/result:opacity-100" />
           </OutboundLink>
 
-          {snippet && (
-            <p className="mt-1 line-clamp-2 text-sm leading-relaxed text-muted-foreground">
-              {date && <span className="text-muted-foreground/80">{date} — </span>}
-              {snippet}
+          {shownSnippet && (
+            <p className="mt-1 text-sm leading-[1.58] text-muted-foreground">
+              {date && <span>{date} — </span>}
+              <Highlighted value={shownSnippet} terms={terms} />
+              {readMoreUrl && (
+                <>
+                  {" "}
+                  <OutboundLink
+                    href={readMoreUrl}
+                    onClick={(e) => e.stopPropagation()}
+                    className="whitespace-nowrap text-foreground underline underline-offset-2 hover:text-primary"
+                  >
+                    Read more
+                  </OutboundLink>
+                </>
+              )}
+              {canExpand && !expanded && (
+                <>
+                  {" "}
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setExpanded(true);
+                    }}
+                    className="whitespace-nowrap text-foreground underline underline-offset-2 hover:text-primary"
+                  >
+                    Read more
+                  </button>
+                </>
+              )}
             </p>
+          )}
+
+          {expanded && extraSnippets.length > 0 && (
+            <div className="mt-1.5 space-y-1.5">
+              {extraSnippets.map((extra, i) => (
+                <p key={i} className="text-sm leading-[1.58] text-muted-foreground">
+                  <Highlighted value={extra} terms={terms} />
+                </p>
+              ))}
+            </div>
+          )}
+          {expanded && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setExpanded(false);
+              }}
+              className="mt-0.5 text-sm text-foreground underline underline-offset-2 hover:text-primary"
+            >
+              Show less
+            </button>
           )}
 
           {((!snippet && date) || rating || text(value.author)) && (
@@ -145,7 +283,7 @@ export function WebResultBlock({ serverData, className }: SearchKindBlockProps) 
                     key={i}
                     href={linkUrl}
                     onClick={(e) => e.stopPropagation()}
-                    className="text-xs text-primary underline-offset-2 hover:underline"
+                    className="text-sm text-primary underline-offset-2 hover:underline"
                   >
                     {linkTitle}
                   </OutboundLink>
@@ -158,7 +296,7 @@ export function WebResultBlock({ serverData, className }: SearchKindBlockProps) 
         {thumbnail && (
           <Thumb
             src={thumbnail}
-            className="mt-1 h-14 w-20 flex-shrink-0 rounded-lg bg-muted object-cover @lg:h-[72px] @lg:w-[104px]"
+            className="mt-1 h-[72px] w-[72px] flex-shrink-0 rounded-lg bg-muted object-cover @lg:h-[92px] @lg:w-[92px]"
           />
         )}
       </div>

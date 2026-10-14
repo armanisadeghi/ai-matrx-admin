@@ -130,6 +130,15 @@ export const webResultKindSchema: KindSchema = {
     language: { type: "string", nullable: true },
     family_friendly: { type: "boolean", nullable: true },
     is_live: { type: "boolean", nullable: true },
+    read_more_url: {
+      type: "string",
+      nullable: true,
+      description: "Deep link that jumps to the snippet's passage on the page (Google 'Read more').",
+    },
+    annotations: {
+      type: "string[]",
+      description: "Short facts shown under the site name, e.g. '5.2K+ followers'.",
+    },
   },
 };
 
@@ -253,6 +262,12 @@ export const entityCardKindSchema: KindSchema = {
     profiles: { type: "json[]" },
     rating: { type: "object", kind: "rating", nullable: true },
     coordinates: { type: "object", kind: "geo_coordinates", nullable: true },
+    place: {
+      type: "object",
+      kind: "local_place",
+      nullable: true,
+      description: "The business behind the card: address, phone, rating, hours, website.",
+    },
   },
 };
 

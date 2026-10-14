@@ -52,6 +52,12 @@ export interface SearchRequestOptions {
   aiAnswer?: boolean;
   /** Ask the server to echo the provider's raw payload. */
   includeRaw?: boolean;
+  /**
+   * The searcher's position ("Use my location"). Sent only as a pair; the
+   * server reports what it used as a search note ("Searched near …").
+   */
+  latitude?: number | null;
+  longitude?: number | null;
 }
 
 /** Provider keys the translation adapter did not claim, or dropped, per section. */
@@ -84,7 +90,10 @@ export interface SearchOutcome {
   translation: SearchTranslationReport | null;
   /** The provider's raw payload — only when `includeRaw` was asked for. */
   raw: Record<string, unknown> | null;
-  /** Options this engine/result type could not honour, as plain sentences. */
+  /**
+   * Search notes from the server, as plain sentences: options this engine or
+   * result type could not honour, and what it used ("Searched near …").
+   */
   ignoredOptions: string[];
   /** The provider wire params actually sent (secrets redacted by the server). */
   request: Record<string, unknown> | null;

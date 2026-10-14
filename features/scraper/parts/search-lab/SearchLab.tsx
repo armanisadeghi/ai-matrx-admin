@@ -3,11 +3,14 @@
 /**
  * The Search Lab — `/scraper/search` as a search testing workbench.
  *
- * One search row (query · engine Brave | Google | Both · Options · Search),
- * result-type tabs, a collapsible options grid, and one result column per
- * engine. Each column carries an engine line (hits, elapsed ms, options the
- * engine could not honour) and an Inspector with the wire request, the raw
- * provider payload, the translation report and the ignored options.
+ * Google's shape, borrowed where it helps: before a search, a 48px pill at
+ * the calm centre with the result-type tabs and the engine switch under it;
+ * after one, the pill at the top, left-aligned with the results, the engine
+ * switch and Options beside it and the result types under it. One result
+ * column per engine, each with an engine line (hits, elapsed time, the
+ * server's search notes) and, for admin debuggers, an Inspector with the wire
+ * request, the raw provider payload (always captured for them), the
+ * translation report and the notes.
  *
  * Results render through the canonical `web_search_results` kind component;
  * nothing here draws a result. A Google search spends a shared monthly
@@ -17,14 +20,18 @@
 
 import { useState } from "react";
 import {
-  AlertTriangle,
   Braces,
+  Info,
+  MapPinOff,
   RotateCcw,
   Search,
   SearchX,
   SlidersHorizontal,
-  X,
 } from "lucide-react";
+import {
+  LoadingTapButton,
+  SearchTapButton,
+} from "@ai-matrx/design-system/tap-target/buttons";
 import {
   Button,
   ClampedNumberInput,
@@ -34,7 +41,6 @@ import {
   Tabs,
 } from "@ai-matrx/design-system/controls";
 import { ProInput } from "@/components/official/ProInput";
-import { Spinner } from "@/components/ui/spinner";
 import { ErrorNotice } from "@ai-matrx/design-system";
 import { JsonInspector } from "@/components/official-candidate/json-inspector/JsonInspector";
 import KindInstanceRender from "@/features/content-ir/studio/components/KindInstanceRender";
@@ -151,8 +157,67 @@ function clampCount(raw: string): number {
 
 type InspectorState = Record<SearchProvider, boolean>;
 
-/** One measure for the search row, the options and the results — they line up. */
+/** One measure for the header and the results — they line up. */
 const LAB_WIDTH = "max-w-6xl";
+/** Google's search box measure. */
+const PILL_WIDTH = "max-w-[692px]";
+
+/**
+ * The search box — Google's shape: a 48px pill, the magnifier leading (it
+ * also runs the search; a spinner while one runs), the clear (×) inside.
+ */
+function SearchPill({
+  form,
+  onQuery,
+  onClear,
+  autoFocus,
+}: {
+  form: UseScraperKeywordSearchFormReturn;
+  onQuery: (value: string) => void;
+  onClear: () => void;
+  autoFocus?: boolean;
+}) {
+  const { keywords, isLoading, isLocating, handleSearch, handleKeyDown } = form;
+  const busy = isLoading || isLocating;
+  const canSearch = keywords.trim() !== "" && !busy;
+  return (
+    <div className="flex h-12 w-full min-w-0 items-center rounded-full border border-border bg-card pl-1.5 pr-2 shadow-sm transition-shadow hover:shadow-md focus-within:shadow-md">
+      {busy ? (
+        <LoadingTapButton
+          variant="transparent"
+          ariaLabel="Searching"
+          tooltip={false}
+          className="text-primary"
+        />
+      ) : (
+        <SearchTapButton
+          variant="transparent"
+          ariaLabel="Search"
+          tooltip="Search"
+          disabled={!canSearch}
+          onClick={() => void handleSearch()}
+          className="text-muted-foreground"
+        />
+      )}
+      <ProInput
+        id="search-lab-query"
+        aria-label="Search query"
+        enableCleanup={false}
+        placeholder="Search the web"
+        value={keywords}
+        onChange={(e) => onQuery(e.target.value)}
+        onKeyDown={handleKeyDown}
+        clearable
+        onClear={onClear}
+        autoFocus={autoFocus}
+        autoComplete="off"
+        enterKeyHint="search"
+        wrapperClassName="min-w-0 flex-1"
+        className="h-11 border-0 bg-transparent px-1.5 shadow-none placeholder:text-base focus-visible:ring-0"
+      />
+    </div>
+  );
+}
 
 export function SearchLabBody({
   form,
@@ -178,6 +243,7 @@ export function SearchLabBody({
     handleKeyDown,
     handleClear,
     errorDiagnostics,
+    locationNote,
   } = form;
 
   const isAdminDebugger = useAppSelector(selectIsAdminDebugger);
@@ -186,22 +252,12 @@ export function SearchLabBody({
     brave: false,
     google: false,
   });
-  const [captureRaw, setCaptureRaw] = useState(false);
+  // A link that carries a query opens on the results layout (it is about to
+  // run, or waits for Search) — never the start screen for one frame.
+  const [pinnedTop, setPinnedTop] = useState(() => keywords.trim() !== "");
 
-  // Raw provider payloads are only asked for while someone is looking.
-  const applyRaw = (nextInspect: InspectorState, nextCapture: boolean) =>
-    form.setIncludeRaw(nextCapture || nextInspect.brave || nextInspect.google);
-
-  const toggleInspector = (provider: SearchProvider) => {
-    const next = { ...inspect, [provider]: !inspect[provider] };
-    setInspect(next);
-    applyRaw(next, captureRaw);
-  };
-
-  const onCaptureRaw = (value: boolean) => {
-    setCaptureRaw(value);
-    applyRaw(inspect, value);
-  };
+  const toggleInspector = (provider: SearchProvider) =>
+    setInspect((prev) => ({ ...prev, [provider]: !prev[provider] }));
 
   const onVertical = (next: SearchVertical) => {
     setVertical(next);
@@ -225,83 +281,92 @@ export function SearchLabBody({
     if (options.page !== 1) setOption("page", 1);
   };
 
+  // × clears the query and the results: back to the start screen.
+  const onClear = () => {
+    setKeywords("");
+    handleClear();
+    setPinnedTop(false);
+  };
+
   const compare = runs.length > 1;
-  const canSearch = keywords.trim() !== "" && !isLoading;
+  const home = runs.length === 0 && !pinnedTop;
 
-  return (
-    <>
-      <div className="flex-shrink-0 border-b border-border/60 px-3 pb-2 pt-2.5 sm:px-4">
-        <div className={cn("mx-auto space-y-2", LAB_WIDTH)}>
-          {/* Phone: query + Search on one row, engine + Options under it.
-              Wider: one row, Search last. Nothing appears or vanishes here,
-              so the row never shifts. */}
-          <div className="flex flex-wrap items-center gap-2">
-            <ProInput
-              id="search-lab-query"
-              aria-label="Search query"
-              enableCleanup={false}
-              placeholder="Search the web…"
-              value={keywords}
-              onChange={(e) => onQuery(e.target.value)}
-              onKeyDown={handleKeyDown}
-              wrapperClassName="order-1 min-w-0 flex-1 sm:min-w-[240px]"
-              className="h-9 text-sm"
-            />
-            <div className="order-3 flex w-full items-center gap-1 sm:order-2 sm:w-auto">
-              <SegmentedControl
-                aria-label="Search engine"
-                value={engine}
-                onValueChange={setEngine}
-                data={ENGINE_OPTIONS}
-              />
-              <Button
-                variant="quiet"
-                icon={<SlidersHorizontal />}
-                pressed={optionsOpen}
-                // A corner dot, not an inline count: it sits on the button, so
-                // changing an option never shifts the engine switch beside it.
-                badge={changedOptionCount > 0}
-                title={
-                  changedOptionCount > 0
-                    ? `Options · ${changedOptionCount} changed`
-                    : "Options"
-                }
-                onClick={() => setOptionsOpen((v) => !v)}
-                aria-label={
-                  changedOptionCount > 0
-                    ? `Options, ${changedOptionCount} changed`
-                    : "Options"
-                }
-                aria-expanded={optionsOpen}
-              >
-                Options
-              </Button>
-              <Button
-                variant="quiet"
-                icon={<X />}
-                aria-label="Clear results"
-                title="Clear results"
-                onClick={handleClear}
-                disabled={runs.length === 0 || isLoading}
-                className={cn(
-                  "ml-auto sm:ml-0",
-                  (runs.length === 0 || isLoading) && "invisible",
-                )}
-              />
-            </div>
-            <Button
-              variant="primary"
-              icon={isLoading ? <Spinner /> : <Search />}
-              onClick={() => void handleSearch()}
-              disabled={!canSearch}
-              aria-label="Search"
-              className="order-2 sm:order-3"
-            >
-              Search
-            </Button>
-          </div>
+  const engineControls = (
+    <div className="flex items-center gap-1">
+      <SegmentedControl
+        aria-label="Search engine"
+        value={engine}
+        onValueChange={setEngine}
+        data={ENGINE_OPTIONS}
+      />
+      <Button
+        variant="quiet"
+        icon={<SlidersHorizontal />}
+        pressed={optionsOpen}
+        // A corner dot, not an inline count: it sits on the button, so
+        // changing an option never shifts the engine switch beside it.
+        badge={changedOptionCount > 0}
+        title={
+          changedOptionCount > 0
+            ? `Options · ${changedOptionCount} changed`
+            : "Options"
+        }
+        onClick={() => setOptionsOpen((v) => !v)}
+        aria-label={
+          changedOptionCount > 0
+            ? `Options, ${changedOptionCount} changed`
+            : "Options"
+        }
+        aria-expanded={optionsOpen}
+      >
+        Options
+      </Button>
+    </div>
+  );
 
-          <div className="flex min-h-8 flex-wrap items-center gap-x-3 gap-y-2">
+  const placesLocation = vertical === "places" && (
+    <ProInput
+      aria-label="Location"
+      enableCleanup={false}
+      placeholder="Location, e.g. Austin, Texas"
+      value={options.location ?? ""}
+      onChange={(e) => setOption("location", e.target.value)}
+      onKeyDown={handleKeyDown}
+      wrapperClassName="w-full sm:w-64"
+      className="h-8 text-sm"
+    />
+  );
+
+  const optionsPanel = optionsOpen && (
+    <SearchLabOptions form={form} />
+  );
+
+  const locationLine = locationNote && (
+    <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
+      <MapPinOff className="h-3.5 w-3.5 shrink-0" />
+      {locationNote}
+    </p>
+  );
+
+  if (home) {
+    // The start screen — Google's calm centre: the box, and the quiet
+    // controls under it. The box sits at a fixed height (not centred), so
+    // opening Options grows the page downward and never moves the box.
+    return (
+      <div className="flex-1 overflow-auto px-4">
+        <div
+          className={cn(
+            "mx-auto w-full space-y-4 pb-16 pt-[18vh] sm:pt-[24vh]",
+            PILL_WIDTH,
+          )}
+        >
+          <SearchPill
+            form={form}
+            onQuery={onQuery}
+            onClear={onClear}
+            autoFocus
+          />
+          <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
             <Tabs
               aria-label="Result type"
               variant="capsule"
@@ -309,32 +374,51 @@ export function SearchLabBody({
               onValueChange={onVertical}
               data={VERTICAL_OPTIONS}
             />
-            {vertical === "places" && (
-              <ProInput
-                aria-label="Location"
-                enableCleanup={false}
-                placeholder="Location, e.g. Austin, Texas"
-                value={options.location ?? ""}
-                onChange={(e) => setOption("location", e.target.value)}
-                onKeyDown={handleKeyDown}
-                wrapperClassName="w-full sm:w-64"
-                className="h-8 text-sm"
-              />
-            )}
-            {isStale && runs.length > 0 && !isLoading && (
-              <span className="text-xs text-muted-foreground">
-                Inputs changed — press Search
-              </span>
-            )}
+            {engineControls}
+          </div>
+          {placesLocation && (
+            <div className="flex justify-center">{placesLocation}</div>
+          )}
+          {locationLine && <div className="flex justify-center">{locationLine}</div>}
+          {optionsPanel}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <>
+      <div className="flex-shrink-0 border-b border-border/60 px-3 pt-3 sm:px-4">
+        <div className={cn("mx-auto space-y-1", LAB_WIDTH)}>
+          {/* Google's results page: the box at the top, left-aligned with the
+              results column; the engine switch and Options beside it (under
+              it on a phone). Nothing appears or vanishes here, so the row
+              never shifts. */}
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+            <div className={cn("w-full min-w-0 sm:flex-1", PILL_WIDTH)}>
+              <SearchPill form={form} onQuery={onQuery} onClear={onClear} />
+            </div>
+            {engineControls}
           </div>
 
-          {optionsOpen && (
-            <SearchLabOptions
-              form={form}
-              captureRaw={captureRaw}
-              onCaptureRaw={onCaptureRaw}
+          <div className="flex min-h-10 flex-wrap items-center gap-x-3 gap-y-1">
+            <Tabs
+              aria-label="Result type"
+              value={vertical}
+              rule={false}
+              onValueChange={onVertical}
+              data={VERTICAL_OPTIONS}
             />
-          )}
+            {placesLocation}
+            {isStale && runs.length > 0 && !isLoading && (
+              <span className="text-xs text-muted-foreground">
+                Inputs changed — press Enter
+              </span>
+            )}
+            {locationLine}
+          </div>
+
+          {optionsPanel && <div className="pb-3">{optionsPanel}</div>}
         </div>
       </div>
 
@@ -404,16 +488,9 @@ function OptionCell({
 
 function SearchLabOptions({
   form,
-  captureRaw,
-  onCaptureRaw,
 }: {
   form: UseScraperKeywordSearchFormReturn;
-  captureRaw: boolean;
-  onCaptureRaw: (v: boolean) => void;
 }) {
-  // Request, raw payload and translation are debug tooling: they show provider
-  // internals (vendor names, keys we drop), so they are an admin-debugging view.
-  const isAdminDebugger = useAppSelector(selectIsAdminDebugger);
   const { options, setOption, engine, vertical, maxResults, setMaxResults } =
     form;
   const aiAllowed = engine !== "google" && vertical === "web";
@@ -511,16 +588,15 @@ function SearchLabOptions({
           }
         />
       </OptionCell>
-      {isAdminDebugger && (
-        <OptionCell label="Capture raw">
-          <Switch
-            aria-label="Capture raw response"
-            checked={captureRaw}
-            onCheckedChange={onCaptureRaw}
-            title="Keep the provider's raw response for the inspector"
-          />
-        </OptionCell>
-      )}
+      <OptionCell label="Use my location">
+        <Switch
+          aria-label="Use my location"
+          checked={options.nearMe}
+          disabled={form.isLocating}
+          onCheckedChange={(v) => void form.setNearMe(v)}
+          title="Search near where you are"
+        />
+      </OptionCell>
       <OptionCell label="Defaults">
         <Button
           variant="quiet"
@@ -597,7 +673,7 @@ function EngineColumn({
             onClick={onToggleInspector}
             className="ml-auto"
             meta={ignored.length > 0 ? ignored.length : undefined}
-            title="Request, raw response, translation and ignored options"
+            title="Request, raw response, translation and search notes"
           >
             Inspect
           </Button>
@@ -605,10 +681,12 @@ function EngineColumn({
       </div>
 
       {ignored.length > 0 && (
-        <div className="flex items-start gap-1.5 rounded-md bg-warning/10 px-2.5 py-1.5 text-xs text-muted-foreground">
-          <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-warning" />
+        // The server's own sentences: what it could not apply AND what it
+        // used ("Searched near Laguna Hills, California.") — neutral notes.
+        <div className="flex items-start gap-1.5 rounded-md bg-muted px-2.5 py-1.5 text-xs text-muted-foreground">
+          <Info className="mt-0.5 h-3.5 w-3.5 shrink-0" />
           <span>
-            <span className="font-medium text-foreground">Not applied: </span>
+            <span className="font-medium text-foreground">Search notes: </span>
             {ignored.join(" · ")}
           </span>
         </div>
@@ -702,7 +780,7 @@ function EngineInspector({ run }: { run: KeywordEngineRun }) {
       empty(
         run.includedRaw
           ? "The server returned no raw response."
-          : "Not captured. Search again with the inspector open.",
+          : "Not captured for this search. Search again to capture it.",
       )
     );
   } else if (tab === "translation") {
@@ -726,13 +804,13 @@ function EngineInspector({ run }: { run: KeywordEngineRun }) {
         <ul className="space-y-1 p-2 text-xs text-foreground">
           {ignored.map((line, i) => (
             <li key={i} className="flex gap-1.5">
-              <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-warning" />
+              <Info className="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted-foreground" />
               {line}
             </li>
           ))}
         </ul>
       ) : (
-        empty("Every option was applied.")
+        empty("No notes for this search.")
       );
   }
 
@@ -756,7 +834,7 @@ function EngineInspector({ run }: { run: KeywordEngineRun }) {
             },
             {
               value: "ignored",
-              label: "Ignored",
+              label: "Notes",
               count: ignored.length || null,
             },
           ]}

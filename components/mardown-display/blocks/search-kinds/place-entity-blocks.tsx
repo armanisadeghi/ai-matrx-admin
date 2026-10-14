@@ -19,13 +19,13 @@ import {
   strings,
   text,
 } from "./search-kind-data";
-import { SearchChip, SearchFavicon } from "./search-kind-shared";
+import { RatingStars, SearchChip, SearchFavicon } from "./search-kind-shared";
 import {
-  GeoCoordinatesBlock,
   OpeningHoursBlock,
   PostalAddressBlock,
   RatingBlock,
 } from "./primitive-blocks";
+import { PropertyRow } from "@ai-matrx/design-system/controls";
 import { AGENT_ICON } from "@/components/icons/domain-icons";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 import { searchEngineLabel } from "@/features/search/types";
@@ -134,7 +134,7 @@ export function LocalPlaceBlock({
         )}
 
         {isRecord(value.hours) ? (
-          <OpeningHoursBlock serverData={value.hours} />
+          <OpeningHoursBlock serverData={value.hours} timeZone={text(value.timezone)} />
         ) : (
           hoursText && (
             <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
@@ -216,8 +216,61 @@ function factLine(value: unknown): string | null {
   return clean;
 }
 
+/** "phone_number" / "FOUNDED" / "place type" → "Phone number" / "Founded" / "Place type". */
+function sentenceCase(label: string): string {
+  const words = label.replace(/[_]+/g, " ").replace(/\s+/g, " ").trim();
+  if (!words) return words;
+  // Keep acronyms ("CEO", "NASDAQ") as written; lower-case shouted words.
+  const lowered = words === words.toUpperCase() && words.length > 4 ? words.toLowerCase() : words;
+  return lowered.charAt(0).toUpperCase() + lowered.slice(1);
+}
+
+/** Labels and values that are machine identity, never shown to a person. */
+const CODE_LABEL_RE = /(^|\s|_)(id|cid|kgmid|place id|coordinates?|latitude|longitude|lat|lng|lon)$/i;
+function isCodeFact(label: string, value: string): boolean {
+  if (CODE_LABEL_RE.test(label.trim())) return true;
+  // A long unbroken token with digits ("ChIJN1t_tDeuEmsR…", "0x80dce…") is an id.
+  return !/\s/.test(value) && value.length >= 16 && /\d/.test(value) && !/^https?:/i.test(value);
+}
+
+/** Same destination, ignoring scheme, "www." and a trailing slash. */
+function sameUrl(a: string | null, b: string | null): boolean {
+  if (!a || !b) return false;
+  const norm = (u: string) =>
+    u.trim().toLowerCase().replace(/^https?:\/\//, "").replace(/^www\./, "").replace(/\/+$/, "");
+  return norm(a) === norm(b);
+}
+
+/** One knowledge-panel action: Website / Directions / Call (Google's row). */
+function PanelAction({
+  href,
+  icon: Icon,
+  label,
+  external = true,
+}: {
+  href: string;
+  icon: React.ComponentType<{ className?: string }>;
+  label: string;
+  external?: boolean;
+}) {
+  const cls =
+    "inline-flex h-8 items-center gap-1.5 rounded-full border border-border px-3 text-sm text-primary transition-colors hover:bg-muted";
+  return external ? (
+    <OutboundLink href={href} onClick={(e) => e.stopPropagation()} className={cls}>
+      <Icon className="h-4 w-4" />
+      {label}
+    </OutboundLink>
+  ) : (
+    <a href={href} onClick={(e) => e.stopPropagation()} className={cls}>
+      <Icon className="h-4 w-4" />
+      {label}
+    </a>
+  );
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
-// entity_card — the knowledge-panel card (e.g. built from Wikipedia).
+// entity_card — the knowledge panel: who/what it is, how to reach it, the
+// facts. Business details arrive as a nested `local_place` (`place`).
 // ─────────────────────────────────────────────────────────────────────────────
 
 export function EntityCardBlock({
@@ -228,124 +281,196 @@ export function EntityCardBlock({
   const name = text(value.name);
   if (!name) return null;
 
-  const image = text(value.image);
-  const website = text(value.website_url);
+  // `place` is new on the server (2026-10-13) and not yet in the registry
+  // row: read untyped until the re-seed + `pnpm shape:types` lands.
+  const rawPlace = (value as Record<string, unknown>).place;
+  const place = isRecord(rawPlace) ? rawPlace : null;
+  const placeAddress = place && isRecord(place.address) ? text(place.address.display) : null;
+  const phone = place ? text(place.phone) : null;
+  const placeRating = place && isRecord(place.rating) ? place.rating : null;
+  const ratingRecord = placeRating ?? (isRecord(value.rating) ? value.rating : null);
+  const ratingValue = ratingRecord ? num(ratingRecord.value) : null;
+  const ratingCount = ratingRecord ? num(ratingRecord.count) : null;
+  const hours = place && isRecord(place.hours) ? place.hours : null;
+  const hoursText = place ? text(place.hours_text) : null;
+  const timeZone = place ? text(place.timezone) : null;
+  const coordsRecord =
+    place && isRecord(place.coordinates)
+      ? place.coordinates
+      : isRecord(value.coordinates)
+        ? value.coordinates
+        : null;
+  const lat = coordsRecord ? num(coordsRecord.latitude) : null;
+  const lon = coordsRecord ? num(coordsRecord.longitude) : null;
+
+  const image = text(value.image) ?? (place ? text(place.thumbnail) : null);
+  const website = text(value.website_url) ?? (place ? text(place.website_url) : null);
   const sourceUrl = text(value.source_url);
-  const facts = items(value.facts);
-  const profiles = items(value.profiles);
   const description = text(value.long_description) ?? text(value.description);
-  const category = text(value.category);
+  const price = place ? text(place.price_text) : null;
+  const placeCategory = place ? (strings(place.categories)[0] ?? null) : null;
+  const rawCategory = text(value.category);
+  // A bare type word ("place", "organization") says less than the business's
+  // own category ("Employment agency").
+  const category =
+    placeCategory && (!rawCategory || /^(place|organization|business|thing)$/i.test(rawCategory))
+      ? placeCategory
+      : rawCategory;
+  const categoryLine = [category ? sentenceCase(category) : null, price]
+    .filter(Boolean)
+    .join(" · ");
+
+  const directionsTarget =
+    placeAddress ?? (lat !== null && lon !== null ? `${lat},${lon}` : null);
+  const directionsUrl = directionsTarget
+    ? `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(directionsTarget)}`
+    : null;
+
+  const facts = items(value.facts).flatMap((fact) => {
+    const label = factLine(fact.label);
+    const factText = factLine(fact.text);
+    if (!label || !factText || isCodeFact(label, factText)) return [];
+    return [{ label: sentenceCase(label), text: factText, link: strings(fact.links)[0] ?? null }];
+  });
+  const profiles = items(value.profiles).flatMap((profile) => {
+    const pName = text(profile.name);
+    const pUrl = text(profile.url);
+    // A profile that IS the website is already the Website button.
+    if (!pName || !pUrl || sameUrl(pUrl, website)) return [];
+    return [{ name: pName, url: pUrl, favicon: text(profile.favicon) }];
+  });
+
+  const hasDetails = Boolean(placeAddress || phone || hours || hoursText);
+  const hasActions = Boolean(website || directionsUrl || phone);
 
   return (
-    <div
-      className={cn("rounded-xl border border-border bg-card p-4", className)}
-    >
+    <div className={cn("rounded-xl border border-border bg-card p-4", className)}>
       <div className="flex items-start gap-3">
         <div className="min-w-0 flex-1">
-          <div className="text-lg font-semibold leading-tight text-foreground">{name}</div>
-          {category && (
-            <div className="mt-0.5 text-sm text-muted-foreground">
-              {/* Providers send a type word ("place"): shown as a label. */}
-              {category.charAt(0).toUpperCase() + category.slice(1)}
-            </div>
+          <div className="text-xl font-semibold leading-tight text-foreground">{name}</div>
+          {categoryLine && (
+            <div className="mt-1 text-sm text-muted-foreground">{categoryLine}</div>
           )}
-          {isRecord(value.rating) && (
-            <div className="mt-1">
-              <RatingBlock serverData={value.rating} />
+          {ratingValue !== null && (
+            <div className="mt-1.5 flex flex-wrap items-center gap-x-1.5 text-sm">
+              <RatingStars
+                value={ratingValue}
+                bestPossible={ratingRecord ? num(ratingRecord.best_possible) : null}
+                className="text-sm"
+              />
+              {ratingCount !== null && ratingCount > 0 && (
+                <span className="text-muted-foreground">
+                  {Intl.NumberFormat().format(ratingCount)}{" "}
+                  {ratingCount === 1 ? "review" : "reviews"}
+                </span>
+              )}
             </div>
           )}
         </div>
         {image && (
           <ExtThumb
             src={image}
-            className="h-20 w-20 flex-shrink-0 rounded-lg bg-muted object-cover"
+            className="h-[72px] w-[72px] flex-shrink-0 rounded-lg bg-muted object-cover"
           />
         )}
       </div>
 
-      {description && (
-        <p className="mt-2.5 line-clamp-6 text-sm leading-relaxed text-muted-foreground">
-          {description}
-        </p>
-      )}
-      {/* Outside the clamp: a long description must never swallow its door. */}
-      {description && sourceUrl && (
-        <OutboundLink
-          href={sourceUrl}
-          onClick={(e) => e.stopPropagation()}
-          className="mt-1 inline-block text-sm text-primary underline-offset-2 hover:underline"
-        >
-          Source
-        </OutboundLink>
-      )}
-
-      {facts.length > 0 && (
-        <dl className="mt-3 grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 border-t border-border pt-3 text-sm">
-          {facts.slice(0, 8).map((fact, i) => {
-            const label = factLine(fact.label);
-            const factText = factLine(fact.text);
-            if (!label || !factText) return null;
-            const links = strings(fact.links);
-            return (
-              <React.Fragment key={i}>
-                <dt className="font-medium text-foreground">{label}</dt>
-                <dd className="line-clamp-3 min-w-0 text-muted-foreground" title={factText}>
-                  {links.length > 0 ? (
-                    <OutboundLink
-                      href={links[0]}
-                      onClick={(e) => e.stopPropagation()}
-                      className="text-primary underline-offset-2 hover:underline"
-                    >
-                      {factText}
-                    </OutboundLink>
-                  ) : (
-                    factText
-                  )}
-                </dd>
-              </React.Fragment>
-            );
-          })}
-        </dl>
-      )}
-
-      {isRecord(value.coordinates) && (
-        <div className="mt-2">
-          <GeoCoordinatesBlock serverData={value.coordinates} />
+      {hasActions && (
+        <div className="mt-3 flex flex-wrap gap-2">
+          {website && <PanelAction href={website} icon={Globe} label="Website" />}
+          {directionsUrl && (
+            <PanelAction href={directionsUrl} icon={Navigation} label="Directions" />
+          )}
+          {phone && (
+            <PanelAction
+              href={`tel:${phone.replace(/[^\d+]/g, "")}`}
+              icon={Phone}
+              label="Call"
+              external={false}
+            />
+          )}
         </div>
       )}
 
-      {(profiles.length > 0 || website) && (
-        <div className="mt-3 flex flex-wrap items-center gap-1.5">
-          {website && (
-            <OutboundLink
-              href={website}
-              onClick={(e) => e.stopPropagation()}
-              className="inline-flex items-center gap-1.5 rounded-md border border-border px-2 py-1 text-xs text-foreground transition-colors hover:border-primary/40 hover:text-primary"
-            >
-              <Globe className="h-3.5 w-3.5" />
-              Website
-            </OutboundLink>
+      {description && (
+        <p className="mt-3 line-clamp-6 text-sm leading-relaxed text-muted-foreground">
+          {description}
+          {sourceUrl && (
+            <>
+              {" "}
+              <OutboundLink
+                href={sourceUrl}
+                onClick={(e) => e.stopPropagation()}
+                className="text-foreground underline underline-offset-2 hover:text-primary"
+              >
+                Source
+              </OutboundLink>
+            </>
           )}
-          {profiles.slice(0, 8).map((profile, i) => {
-            const pName = text(profile.name);
-            const pUrl = text(profile.url);
-            if (!pName || !pUrl) return null;
-            return (
+        </p>
+      )}
+
+      {(hasDetails || facts.length > 0) && (
+        <div className="mt-3 space-y-2 border-t border-border pt-3">
+          {placeAddress && <PropertyRow layout="inline" label="Address" value={placeAddress} />}
+          {phone && (
+            <PropertyRow layout="inline" label="Phone">
+              <a
+                href={`tel:${phone.replace(/[^\d+]/g, "")}`}
+                onClick={(e) => e.stopPropagation()}
+                className="tabular-nums text-primary underline-offset-2 hover:underline"
+              >
+                {formatPhoneNumber(phone)}
+              </a>
+            </PropertyRow>
+          )}
+          {(hours || hoursText) && (
+            <PropertyRow layout="inline" label="Hours">
+              {hours ? (
+                <OpeningHoursBlock serverData={hours} timeZone={timeZone} bare />
+              ) : (
+                hoursText
+              )}
+            </PropertyRow>
+          )}
+          {facts.slice(0, 8).map((fact, i) => (
+            <PropertyRow key={i} layout="inline" label={fact.label}>
+              {fact.link ? (
+                <OutboundLink
+                  href={fact.link}
+                  onClick={(e) => e.stopPropagation()}
+                  className="text-primary underline-offset-2 hover:underline"
+                >
+                  {fact.text}
+                </OutboundLink>
+              ) : (
+                <span className="line-clamp-3">{fact.text}</span>
+              )}
+            </PropertyRow>
+          ))}
+        </div>
+      )}
+
+      {profiles.length > 0 && (
+        <div className="mt-3 border-t border-border pt-3">
+          <div className="mb-2 text-sm font-medium text-foreground">Profiles</div>
+          <div className="flex flex-wrap gap-1.5">
+            {profiles.slice(0, 8).map((profile, i) => (
               <OutboundLink
                 key={i}
-                href={pUrl}
+                href={profile.url}
                 onClick={(e) => e.stopPropagation()}
-                className="inline-flex items-center gap-1.5 rounded-md border border-border px-2 py-1 text-xs text-foreground transition-colors hover:border-primary/40 hover:text-primary"
+                className="inline-flex h-8 items-center gap-1.5 rounded-full border border-border px-3 text-sm text-foreground transition-colors hover:bg-muted"
               >
                 <SearchFavicon
-                  iconUrl={text(profile.favicon)}
-                  url={pUrl}
-                  className="h-3.5 w-3.5 flex-shrink-0"
+                  iconUrl={profile.favicon}
+                  url={profile.url}
+                  className="h-4 w-4 flex-shrink-0"
                 />
-                {pName}
+                {profile.name}
               </OutboundLink>
-            );
-          })}
+            ))}
+          </div>
         </div>
       )}
     </div>

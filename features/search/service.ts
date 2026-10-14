@@ -75,7 +75,7 @@ function readTranslation(v: unknown): SearchTranslationReport | null {
 }
 
 /** camelCase options → the server's snake_case body. Unset fields are omitted. */
-function optionsBody(options: SearchRequestOptions): Record<string, unknown> {
+export function optionsBody(options: SearchRequestOptions): Record<string, unknown> {
   const body: Record<string, unknown> = {};
   if (options.vertical) body.vertical = options.vertical;
   if (options.country) body.country = options.country;
@@ -87,6 +87,16 @@ function optionsBody(options: SearchRequestOptions): Record<string, unknown> {
   if (options.device) body.device = options.device;
   if (options.aiAnswer) body.ai_answer = true;
   if (options.includeRaw) body.include_raw = true;
+  // Coordinates travel only as a pair — half a position is no position.
+  if (
+    typeof options.latitude === "number" &&
+    typeof options.longitude === "number" &&
+    Number.isFinite(options.latitude) &&
+    Number.isFinite(options.longitude)
+  ) {
+    body.latitude = options.latitude;
+    body.longitude = options.longitude;
+  }
   return body;
 }
 

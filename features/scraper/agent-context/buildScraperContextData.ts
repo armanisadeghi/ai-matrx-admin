@@ -139,6 +139,8 @@ export interface BuildScraperContextDataArgs {
   searchEngine?: string;
   /** Search Lab result type: web | news | images | videos | places. */
   searchVertical?: string;
+  /** Search Lab "Use my location" switch (only `/scraper/search`). */
+  useMyLocation?: boolean;
   /** Every scraped page in this session's sidebar list. */
   results?: ScraperResult[];
   /** Zero-based index of `selected` within `results`. */
@@ -177,6 +179,7 @@ export function buildScraperContextData(
     maxResults,
     searchEngine,
     searchVertical,
+    useMyLocation,
     results = [],
     selectedIndex,
     searchHits = [],
@@ -202,6 +205,8 @@ export function buildScraperContextData(
     max_results: maxResults || undefined,
     search_engine: searchEngine || undefined,
     search_vertical: searchVertical || undefined,
+    use_my_location:
+      typeof useMyLocation === "boolean" ? useMyLocation : undefined,
     search_hits: hitEntries.length > 0 ? hitEntries : undefined,
     selected_hit_index:
       hitEntries.length > 0 && typeof selectedHitIndex === "number"

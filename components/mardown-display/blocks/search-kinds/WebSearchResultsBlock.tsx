@@ -230,7 +230,8 @@ export default function WebSearchResultsBlock({
       )}
 
       {railEntity ? (
-        <div className="grid gap-6 @4xl/serp:grid-cols-[minmax(0,1fr)_20rem] @4xl/serp:gap-10">
+        // Google's measures: a ~42rem results column, a ~22rem panel beside it.
+        <div className="grid gap-6 @4xl/serp:grid-cols-[minmax(0,42rem)_minmax(18rem,22rem)] @4xl/serp:gap-10">
           <div className="min-w-0">{main}</div>
           <aside className="hidden min-w-0 self-start @4xl/serp:block">
             <SearchKindNested value={railEntity} />

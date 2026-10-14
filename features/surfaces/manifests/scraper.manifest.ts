@@ -145,6 +145,17 @@ const surfaceSpecific: SurfaceValue[] = [
     group: "target",
   },
   {
+    name: "use_my_location",
+    label: "Use my location",
+    description:
+      "True when the Search Lab's \"Use my location\" switch is on: each search sends the user's position so results are local to them. Off by default. Only on the /scraper/search route.",
+    valueType: "boolean",
+    alwaysAvailable: false,
+    typicalCharCount: 5,
+    sortOrder: 312,
+    group: "target",
+  },
+  {
     name: "scraped_url",
     label: "Scraped URL",
     description:
@@ -490,6 +501,18 @@ const writeTargets: SurfaceWriteTarget[] = [
     applyPolicy: "ask",
     group: "target",
     sortOrder: 126,
+  },
+  {
+    name: "use_my_location",
+    label: "Use my location",
+    description:
+      "Turns the Search Lab (/scraper/search) \"Use my location\" switch on or off. Value: true or false; anything else is refused. Turning it on makes the browser ask the user for permission — if they refuse, the switch turns itself back off. Staged only: the user still presses Search. Read back from use_my_location. Refused while is_scraping is true.",
+    valueType: "boolean",
+    updatesValue: "use_my_location",
+    mode: "draft",
+    applyPolicy: "ask",
+    group: "target",
+    sortOrder: 127,
   },
   {
     name: "selected_result_page",

@@ -7,6 +7,7 @@ import {
 
 jest.mock("@/hooks/useBackendApi", () => ({ useBackendApi: () => ({}) }));
 jest.mock("@/features/search/service", () => ({ runKindSearch: jest.fn() }));
+jest.mock("@/hooks/brokers/useGeolocation", () => ({ useGeolocation: () => async () => null }));
 
 describe("search lab URL", () => {
   it("omits every default, so a plain search is just ?q=", () => {
@@ -19,14 +20,20 @@ describe("search lab URL", () => {
 
   it("round-trips every non-default option", () => {
     const qs =
-      "q=pizza&engine=compare&type=places&n=20&country=gb&lang=fr&safe=strict&time=week&page=2&loc=Austin%2C+Texas&device=mobile&ai=1";
+      "q=pizza&engine=compare&type=places&n=20&country=gb&lang=fr&safe=strict&time=week&page=2&loc=Austin%2C+Texas&device=mobile&ai=1&near=me";
     const state = parseSearchLabParams(new URLSearchParams(qs));
     expect(state.engine).toBe("compare");
     expect(state.vertical).toBe("places");
     expect(state.count).toBe(20);
     expect(state.options.location).toBe("Austin, Texas");
-    expect(countChangedOptions(state.options)).toBe(8);
+    expect(state.options.nearMe).toBe(true);
+    expect(countChangedOptions(state.options)).toBe(9);
     expect(parseSearchLabParams(new URLSearchParams(buildSearchLabQuery(state)))).toEqual(state);
+  });
+
+  it("never turns location on from anything but near=me", () => {
+    expect(parseSearchLabParams(new URLSearchParams("q=x&near=1")).options.nearMe).toBe(false);
+    expect(parseSearchLabParams(new URLSearchParams("q=x&near=40.1,-73.2")).options.nearMe).toBe(false);
   });
 
   it("drops values outside the contract instead of sending them", () => {

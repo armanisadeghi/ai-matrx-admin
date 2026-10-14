@@ -10,6 +10,8 @@
  *   safe     off|moderate|strict (default off)      time    day|week|month|year
  *   page     1..10                    loc     free-text location
  *   device   desktop|mobile           ai      1 = Brave AI answer
+ *   near     me = "Use my location" (the switch only — coordinates are
+ *            asked of the browser on each explicit search, never linked)
  */
 
 import type {
@@ -75,6 +77,7 @@ export function parseSearchLabParams(params: URLSearchParams): SearchLabUrlState
       location: params.get("loc")?.trim() ?? "",
       device: pick(DEVICE, params.get("device")) ?? d.device,
       aiAnswer: params.get("ai") === "1",
+      nearMe: params.get("near") === "me",
     },
   };
 }
@@ -95,5 +98,6 @@ export function buildSearchLabQuery(state: SearchLabUrlState): string {
   if (o.location?.trim()) p.set("loc", o.location.trim());
   if (o.device !== d.device) p.set("device", o.device);
   if (o.aiAnswer) p.set("ai", "1");
+  if (o.nearMe) p.set("near", "me");
   return p.toString();
 }

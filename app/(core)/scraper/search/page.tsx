@@ -7,6 +7,8 @@ import { useScraperKeywordSearchForm } from "@/features/scraper/hooks/useScraper
 import { ScraperKeywordSearchPageBody } from "@/features/scraper/parts/ScraperKeywordSearchPanel";
 import { ScraperSurfaceMount } from "@/features/scraper/agent-context/ScraperSurfaceMount";
 import { RESULT_LIMIT_DEFAULT } from "@/features/scraper/scrape-command";
+import { useAppSelector } from "@/lib/redux/hooks";
+import { selectIsAdminDebugger } from "@/lib/redux/selectors/userSelectors";
 import {
   buildSearchLabQuery,
   parseSearchLabParams,
@@ -21,7 +23,12 @@ export default function ScraperSearchPage() {
     parseSearchLabParams(new URLSearchParams(searchParams.toString())),
   );
 
+  // Admin debuggers always get the provider's raw payload, so the Inspector's
+  // Request and Raw response are both there for every search.
+  const isAdminDebugger = useAppSelector(selectIsAdminDebugger);
+
   const form = useScraperKeywordSearchForm({
+    alwaysIncludeRaw: isAdminDebugger,
     keywords: initial.query,
     maxResults: initial.count,
     engine: initial.engine,
@@ -58,6 +65,7 @@ export default function ScraperSearchPage() {
         maxResults: parseInt(form.maxResults, 10) || RESULT_LIMIT_DEFAULT,
         searchEngine: form.engine,
         searchVertical: form.vertical,
+        useMyLocation: form.options.nearMe,
         searchHits: form.flatResults,
         selectedHitIndex: form.selectedHitIndex,
         isScraping: form.isLoading,
@@ -67,6 +75,7 @@ export default function ScraperSearchPage() {
         setMaxResults: (value) => form.setMaxResults(String(value)),
         setSearchEngine: form.setEngine,
         setSearchVertical: form.setVertical,
+        setUseMyLocation: (on) => void form.setNearMe(on),
         selectSearchHit: (index) => form.setSelectedHitIndex(index),
         hitCount: form.flatResults.length,
         notHereHint:

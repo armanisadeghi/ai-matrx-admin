@@ -78,6 +78,8 @@ export interface ScraperWriteMount {
   setSearchEngine?: (engine: SearchLabEngineValue) => void;
   /** Search Lab result type (only `/scraper/search` has it). */
   setSearchVertical?: (vertical: SearchLabVerticalValue) => void;
+  /** Search Lab "Use my location" switch (only `/scraper/search` has it). */
+  setUseMyLocation?: (on: boolean) => void;
   /** Open an already-scraped page (index into `results_overview`). */
   selectResultPage?: (index: number) => void;
   /** Number of scraped pages this session holds. */
@@ -244,6 +246,15 @@ export function buildScraperWriteHandlers(
           `search_vertical expects one of: ${SEARCH_LAB_VERTICAL_VALUES.join(" | ")}.`,
         );
       mount.setSearchVertical!(value);
+    };
+  }
+
+  if (mount.setUseMyLocation) {
+    handlers.use_my_location = (value: unknown) => {
+      if (isScraping) inFlight("use_my_location");
+      if (typeof value !== "boolean")
+        throw new Error("use_my_location expects true or false.");
+      mount.setUseMyLocation!(value);
     };
   }
 
