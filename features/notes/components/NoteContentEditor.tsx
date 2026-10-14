@@ -78,6 +78,7 @@ const NoteOutlinePanel = dynamic(
   { ssr: false },
 );
 
+import { useNotesSpelling } from "@/features/notes/spelling/useNotesSpelling";
 import { useNotesEditorExtraSections } from "@/features/notes/agent-context/notesEditorExtraSections";
 
 // Universal v3 context menu — the SAME menu everywhere. The wrapper is the
@@ -580,6 +581,14 @@ export function NoteContentEditor({
     onDelete: handleDelete,
   });
 
+  // Spelling suggestions join the top of this menu when the pointer is on a
+  // misspelled word; otherwise the menu is exactly `notesExtras`.
+  const resolveSpellingSections = useNotesSpelling({
+    rootRef: editorRootRef,
+    textareaRef,
+    notesExtras,
+  });
+
   // A deep link adds its tab before the request resolves, and a note opened
   // from the list waits for its body (see `bodyLoaded`). Treating either gap
   // as a missing record made a slow/temporarily unavailable DB look like a
@@ -663,6 +672,7 @@ export function NoteContentEditor({
         <EditableContextMenu
           {...NOTES_EDITOR_CONTEXT_MENU_PROPS}
           extraSections={notesExtras}
+          resolveExtraSectionsOnOpen={resolveSpellingSections}
           menuDesign="global"
           menuFeatureTitle="Note"
           getTextarea={() => (richMode ? null : textareaRef.current)}
