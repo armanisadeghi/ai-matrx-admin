@@ -54,6 +54,33 @@ export function relatedCompetitors(related: RelatedCandidate[]): BrandCompetitor
 }
 
 /**
+ * A person (founder / key person) goes to their home: the CRM party (an existing match is linked,
+ * else one is created) plus the party → brand association with the relationship as its role. The
+ * one path Create and the brand page's "Add person" share.
+ */
+export async function linkPersonToBrand(
+  organizationId: string,
+  brandId: string,
+  name: string,
+  relation: { routesTo: string; label: string },
+  c: { url?: string | null; platform?: string | null; bio?: string | null },
+  source = "smart_add",
+): Promise<{ partyId: string; home: string }> {
+  const party = await resolveParty(personPartyInput(organizationId, name, relation.label, c));
+  const linked = await associationsService.add({
+    sourceType: "party",
+    sourceId: party.partyId,
+    targetType: "web_brand",
+    targetId: brandId,
+    orgId: organizationId,
+    role: relation.routesTo,
+    metadata: { title: relation.label, source, url: c.url ?? null },
+  });
+  if (!linked.ok) throw new Error(linked.error.message);
+  return { partyId: party.partyId, home: `platform.associations:${relation.routesTo}` };
+}
+
+/**
  * After the brand exists: people go to their home (party + association), then every related
  * finding is saved with its relationship. Returns the keys saved (so they are not saved again as
  * unreviewed) and any problem, by name.
@@ -70,20 +97,11 @@ export async function routeRelated(
   for (const { candidate: c, relation } of related) {
     const name = displayName(c);
     let resolved: Record<string, string> = {};
-    if (relation.routesTo === "owns" || relation.routesTo === "key_person") {
+    const route = relation.routesTo;
+    if (route === "owns" || route === "key_person") {
       try {
-        const party = await resolveParty(personPartyInput(organizationId, name, relation.label, c));
-        const linked = await associationsService.add({
-          sourceType: "party",
-          sourceId: party.partyId,
-          targetType: "web_brand",
-          targetId: brandId,
-          orgId: organizationId,
-          role: relation.routesTo,
-          metadata: { title: relation.label, source: "smart_add", url: c.url },
-        });
-        if (!linked.ok) throw new Error(linked.error.message);
-        resolved = { party_id: party.partyId, home: `platform.associations:${relation.routesTo}` };
+        const person = await linkPersonToBrand(organizationId, brandId, name, { routesTo: route, label: relation.label }, c);
+        resolved = { party_id: person.partyId, home: person.home };
       } catch (error) {
         problems.push(`${name}: ${extractErrorMessage(error)}`);
       }

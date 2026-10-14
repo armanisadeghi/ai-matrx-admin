@@ -5,8 +5,9 @@
  *   the finding itself      → web.discovered_item: the pending row Create kept for it
  *                             (context.evidence_key) is answered in place, else a new row; status
  *                             confirmed / dismissed, relation_key, context.answer {answer, by, at, suggested}
- *   Ours (account)          → web.property (resolved_property_id)
- *   Ours (website, web root)→ web.site (+ the normal crawl)
+ *   Ours (account)          → web.property (resolved_property_id) + its post history, fetched on the
+ *                             server (smart_add_brand_ingest; the person's posts default, metered)
+ *   Ours (website, web root)→ web.site + its crawl on the server (smart_add_brand_ingest)
  *   Preferred (name)        → web.brand.name
  *   Alias (name)            → web.brand.profile.brand_aliases
  *   Related: competitor     → web.brand.profile.competitors
@@ -29,7 +30,8 @@ import {
   updateBrand,
   type BrandRelationKind,
 } from "@/features/marketing/data/service";
-import { initializeSite } from "@/features/marketing/crawler/direct-client";
+import { startSystemRun } from "@/features/education/kits/systemRuns";
+import { getStoreSingleton } from "@/lib/redux/store-singleton";
 import { normalizeWebsiteUrl } from "@/features/marketing/lib/website-url";
 import {
   isBusinessFactKind,
@@ -198,6 +200,34 @@ async function patchProfile(ctx: PersistContext, edit: (profile: Record<string, 
   };
 }
 
+/**
+ * The background work Create gives, for a thing confirmed after Create: the server tracks the account
+ * and fetches its posts, or crawls the site (smart_add_brand_ingest). One run per confirmed thing
+ * (subject ingest:<id>); never blocks the answer. A failure to start is logged, never silent.
+ */
+function startIngest(
+  ctx: PersistContext,
+  subjectId: string,
+  inputs: { accounts?: { handle_or_url: string; platform: string; property_id: string }[]; sites?: string[] },
+): void {
+  const store = getStoreSingleton();
+  if (!store) {
+    console.error("[smart-add] background ingest not started: no app store");
+    return;
+  }
+  void startSystemRun(
+    store.dispatch,
+    "smart_add_brand_ingest",
+    {
+      subject: `ingest:${subjectId}`,
+      organizationId: ctx.organizationId,
+      sourceFeature: "marketing",
+      inputs: { brand_id: ctx.getBrand().id, accounts: inputs.accounts ?? [], sites: inputs.sites ?? [] },
+    },
+    "The background fetch could not start.",
+  ).catch((error) => console.error("[smart-add] background ingest not started", error));
+}
+
 async function addSite(ctx: PersistContext, url: string): Promise<{ id: string; undo: () => Promise<void> }> {
   const brand = ctx.getBrand();
   const parsed = normalizeWebsiteUrl(url);
@@ -210,8 +240,8 @@ async function addSite(ctx: PersistContext, url: string): Promise<{ id: string; 
   });
   const previousBrand = site.brand_id;
   if (previousBrand !== brand.id) await moveSiteBrand(site.id, brand.id);
-  // The normal crawl every confirmed site gets (as on Create); never blocks the answer.
-  void initializeSite(site.id).catch(() => undefined);
+  // The crawl every confirmed site gets (as on Create), on the server; never blocks the answer.
+  startIngest(ctx, site.id, { sites: [site.id] });
   return {
     id: site.id,
     undo: async () => {
@@ -339,6 +369,11 @@ export async function persistAnswer(
     });
     resolved.resolved_property_id = row.id;
     homes.push(`web.property:${row.id}`);
+    if (ev.platform && ev.platform !== "website") {
+      startIngest(ctx, row.id, {
+        accounts: [{ handle_or_url: ev.url ?? ev.value, platform: ev.platform, property_id: row.id }],
+      });
+    }
     undos.push(() => deleteProperty(row.id));
   }
   if (answer === "ours" && (item.kind === "website" || item.kind === "web") && ev) {

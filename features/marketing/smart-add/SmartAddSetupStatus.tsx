@@ -26,7 +26,6 @@ import { runHref } from "@/features/workflow-runtime/run-doors";
 import { HumanGatePanel } from "@/features/workflow-runtime/interrupt/HumanGatePanel";
 import { lookupSystemRun, startSystemRun } from "@/features/education/kits/systemRuns";
 import { countSitePages, listBrandProperties, listBrandSites } from "@/features/marketing/data/service";
-import { initializeSite } from "@/features/marketing/crawler/direct-client";
 import { useSessionKnob } from "@/lib/scoped-config/sessionKnob";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
@@ -95,8 +94,9 @@ export function SmartAddSetupStatus({ brandId, organizationId }: { brandId: stri
       const accounts = properties
         .filter((p) => p.kind !== "website" && (p.url || p.handle))
         .map((p) => ({ handle_or_url: p.url ?? p.handle ?? "", platform: p.kind, property_id: p.id }));
-      for (const site of uncrawled) void initializeSite(site.id).catch(() => undefined);
-      if (accounts.length) {
+      // The setup run crawls every site of the brand on the server; a site already crawling or
+      // crawled is skipped there (brand.setup.crawl_sites).
+      if (accounts.length || uncrawled.length) {
         await startSystemRun(
           dispatch,
           SETUP_KEY,
@@ -105,7 +105,7 @@ export function SmartAddSetupStatus({ brandId, organizationId }: { brandId: stri
             organizationId,
             sourceFeature: "marketing",
             // Images already saved are not saved again; accounts re-link (no duplicates) then fetch history.
-            inputs: { brand_id: brandId, images: [], accounts, max_posts: maxPosts },
+            inputs: { brand_id: brandId, images: [], accounts, sites: [], max_posts: maxPosts },
           },
           "The setup could not start again.",
         );

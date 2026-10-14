@@ -138,6 +138,8 @@ export async function addBrandRelation(input: {
   text: string;
   relationKey: string;
   sentiment?: "positive" | "neutral" | "negative" | null;
+  /** A person's CRM home (party + association) when the relationship routes to people. */
+  person?: { partyId: string; home: string } | null;
 }): Promise<void> {
   const text = input.text.trim();
   const url = looksLikeUrl(text) ? absoluteUrl(text) : null;
@@ -153,7 +155,11 @@ export async function addBrandRelation(input: {
     guessed_kind: guessedKind(input.relationKey, url),
     url,
     value: { text, label: url ? host ?? text : text } as Json,
-    context: { where: "Added on the brand page", answer: { by: "person", from: "brand_page", at: now } } as Json,
+    context: {
+      where: "Added on the brand page",
+      answer: { by: "person", from: "brand_page", at: now },
+      ...(input.person ? { relationship: { key: input.relationKey, party_id: input.person.partyId, home: input.person.home } } : {}),
+    } as Json,
     confidence: 1,
     status: "confirmed",
     relation_key: input.relationKey,

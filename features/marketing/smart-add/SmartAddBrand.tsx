@@ -37,7 +37,6 @@ import {
   updateBusinessLocation,
 } from "@/features/marketing/data/service";
 import { runHref } from "@/features/workflow-runtime/run-doors";
-import { initializeSite } from "@/features/marketing/crawler/direct-client";
 import { roundFailed } from "./roundFailure";
 import { SmartAddSlots } from "./SmartAddSlots";
 import { SmartAddHero, stageLogo, stageName } from "./SmartAddHero";
@@ -181,9 +180,6 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
   // stream adapter treats cancelled as final, so the screen lets go and re-reads the run.
   const [setupAttached, setSetupAttached] = useState(true);
   const [saveNotes, setSaveNotes] = useState<string[]>([]);
-  // Tier 3: the real site crawl, started after Create, never on the identify path.
-  const [crawl, setCrawl] = useState<"idle" | "running" | "done" | "failed">("idle");
-  const [crawlNote, setCrawlNote] = useState<string | null>(null);
   // Admin Builder panel: everything this screen has (no-op for everyone else).
   const builder = useBuilderFeed(SMART_ADD_SURFACE);
 
@@ -556,18 +552,8 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
           problems.push(`${websiteHost(url)}: ${extractErrorMessage(error)}`);
         }
       }
-      if (siteIds.length) {
-        setCrawl("running");
-        Promise.allSettled(siteIds.map((id) => initializeSite(id))).then((results) => {
-          const failedCrawls = results.filter((r): r is PromiseRejectedResult => r.status === "rejected");
-          setCrawl(failedCrawls.length === results.length ? "failed" : "done");
-          setCrawlNote(
-            failedCrawls.length
-              ? `${failedCrawls.length} of ${results.length} failed: ${extractErrorMessage(failedCrawls[0].reason)}`
-              : `${results.length} site${results.length === 1 ? "" : "s"}`,
-          );
-        });
-      }
+      // Every site is crawled by the setup run on the server (brand.setup.crawl_sites): it survives a
+      // closed tab and shows on the run page with each crawl session.
       // Nothing is lost: every finding the person did not answer is kept as a candidate in the
       // brand's discovery inbox (web.discovered_item); only "Not us" is left out.
       // Related items keep their relationship (and land in their home: people, competitors).
@@ -593,7 +579,10 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
       const settled = coreSettled(basics);
       if (settled) setValidateOrg(organizationId);
       onCreated?.(brand);
-      if (basics.images.length || accounts.length) {
+      // Nothing explicitly kept: the logo the card shows (the stage's best found one) is saved as the
+      // primary, so a brand never lands on a placeholder while candidates exist.
+      const images = basics.images.length ? basics.images : cardBasics.images;
+      if (images.length || accounts.length || siteIds.length) {
         try {
           const { runId } = await startSystemRun(
             dispatch,
@@ -604,8 +593,9 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
               sourceFeature: "marketing",
               inputs: {
                 brand_id: brand.id,
-                images: basics.images,
+                images,
                 accounts,
+                sites: siteIds,
                 max_posts: postsPerAccount,
                 // Where each basic came from and how sure the extractor was — the setup's
                 // "Confirm your brand profile basics" gate shows both beside each item.
@@ -978,7 +968,7 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
         </ul>
       ) : null}
 
-      {setupRunId || crawl !== "idle" ? (
+      {setupRunId ? (
         <div className="flex flex-col gap-1 rounded-lg border border-border bg-card px-3 py-2 text-xs" data-testid="smart-add-background">
           <div className="flex items-center gap-2">
             {setupState === "done" ? (
@@ -1002,15 +992,6 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
             </a>
             ) : null}
           </div>
-          {crawl !== "idle" ? (
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <span className="w-32 shrink-0 truncate">Site crawl</span>
-              <span className="w-16 shrink-0">{crawl === "running" ? "Working" : crawl === "done" ? "Done" : "Failed"}</span>
-              <span className="min-w-0 flex-1 truncate" title={crawlNote ?? undefined}>
-                {crawlNote ?? ""}
-              </span>
-            </div>
-          ) : null}
           {(setupView?.steps ?? []).map((step) => (
             <div key={step.step} className="flex items-center gap-2 text-muted-foreground">
               <span className="w-32 shrink-0 truncate">{SETUP_STEP_LABEL[step.step] ?? step.step}</span>
@@ -1133,6 +1114,7 @@ const SETUP_STEP_LABEL: Record<string, string> = {
   logo: "Images",
   accounts: "Accounts",
   history: "Post history",
+  crawl: "Site crawl",
   inputs: "Analysis inputs",
 };
 

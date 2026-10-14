@@ -35,6 +35,7 @@ import {
   type BrandRelationRow,
 } from "@/features/marketing/data/brand-relations";
 import { isJsonRecord, type MarketingBrand } from "@/features/marketing/types";
+import { linkPersonToBrand } from "@/features/marketing/smart-add/relations";
 
 type GroupKey = "names" | "people" | "related" | "competitors" | "about" | "not_us";
 
@@ -249,12 +250,27 @@ export function BrandRelationsCard({ brand, canEdit }: { brand: MarketingBrand; 
         await addBrandExclusion({ organizationId: brand.organization_id, brandId: brand.id, text: value });
         await refresh();
       } else {
+        // A person (founder / key person) is linked or created in the CRM and associated to the brand
+        // — the same path Create uses — and the relationship row records that party.
+        const personRoute = chosenKind?.routesTo;
+        const url = /^https?:\/\//i.test(value) ? value : null;
+        const person = chosenKind && (personRoute === "owns" || personRoute === "key_person")
+          ? await linkPersonToBrand(
+              brand.organization_id,
+              brand.id,
+              url ? (host(url) ?? value) : value,
+              { routesTo: personRoute, label: chosenKind.label },
+              { url },
+              "brand_page",
+            )
+          : null;
         await addBrandRelation({
           organizationId: brand.organization_id,
           brandId: brand.id,
           text: value,
           relationKey: choice,
           sentiment: chosenKind?.hasSentiment ? sentiment : null,
+          person,
         });
         await refresh();
       }
