@@ -46,7 +46,7 @@ export function candidateDescription(candidate: KindExampleCandidate): string {
 
 function fieldCount(data: unknown): number {
   return data && typeof data === "object" && !Array.isArray(data)
-    ? Object.keys(data).filter((k) => k !== "__kind").length
+    ? Object.keys(data).length
     : 0;
 }
 
