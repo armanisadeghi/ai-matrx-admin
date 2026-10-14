@@ -106,6 +106,6 @@ export async function runLayerSwitchOff(
   await deps.switchOff(input.kind, input.rowId);
   deps.announce(words.done, () => {
     void deps.switchOn(input.kind, input.rowId);
-  }, null);
+  }, audience.target === "mine" ? input.rowId : null);
   return "off";
 }
