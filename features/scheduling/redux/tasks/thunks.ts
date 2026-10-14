@@ -260,9 +260,22 @@ export const setSystemTaskEnabled =
     }
   };
 
+/** Schedules whose run request is in flight: the row, the detail page and the bulk verb all queue through here. */
+const runsBeingQueued = new Set<string>();
+
 export const runTaskNowThunk =
   (id: string): AppThunk<string> =>
   async (_dispatch, getState) => {
-    const { run_id } = await scheduler.runNow(id, taskOrganizationId(getState, id));
-    return run_id;
+    // One request at a time per schedule, whichever surface pressed it: the second press is
+    // refused by name (bulk skips and names it) instead of queuing a duplicate run.
+    if (runsBeingQueued.has(id)) {
+      throw new Error("a run is already being queued for this schedule");
+    }
+    runsBeingQueued.add(id);
+    try {
+      const { run_id } = await scheduler.runNow(id, taskOrganizationId(getState, id));
+      return run_id;
+    } finally {
+      runsBeingQueued.delete(id);
+    }
   };
