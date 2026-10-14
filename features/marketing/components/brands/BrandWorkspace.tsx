@@ -95,6 +95,8 @@ import {
 import { useAccess } from "@/utils/permissions/access";
 import { canEditAccess } from "@/utils/permissions/access-core";
 import { BrandSocialProfilesCard } from "@/features/marketing/components/brands/BrandSocialProfilesCard";
+import { BrandRelationsCard } from "@/features/marketing/components/brands/BrandRelationsCard";
+import { BrandBackgroundWork } from "@/features/marketing/components/brands/BrandBackgroundWork";
 import { PersonBrandAvatar, PersonFollowerTotal } from "@/features/marketing/components/brands/PersonBrandAvatar";
 import { BRAND_KIND_COPY, brandKindCopy, isPersonBrand } from "@/features/marketing/lib/brand-kind";
 import { marketingRoutes } from "@/features/marketing/lib/routes";
@@ -850,6 +852,9 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
             <SmartAddBasicsGate brandId={current.id} />
           </section>
 
+          {/* Every fetch the platform does for this brand: setup, crawls, posts. */}
+          <BrandBackgroundWork brand={current} canEdit={canEdit} />
+
           {/* The brand is the anchor entity, but it carried no search data at
               all — every number lived one or two routes down on an individual
               site. This is the brand-level answer to "is our money traffic up
@@ -1106,6 +1111,9 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
               )}
             </SectionCard>
           </div>
+
+          {/* Names, people, related companies, competitors, listings, mentions, "Not us". */}
+          <BrandRelationsCard brand={current} canEdit={canEdit} />
 
           <SectionCard
             title="Brand assets"
