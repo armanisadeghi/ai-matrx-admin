@@ -459,13 +459,13 @@ export function McpServersAdminPage() {
                         selected={isSel}
                         onClick={() => selectServer(s.slug)}
                         title={humanizeIdentifier(s.slug)}
-                        line={s.name}
-                        end={
-                          <span className="flex items-center gap-1">
-                            <FreshnessBadge fresh={fresh} compact />
+                        line={
+                          <span className="flex min-w-0 items-center gap-1.5">
+                            <span className="truncate">{s.name}</span>
                             <StatusBadge>{s.status}</StatusBadge>
                           </span>
                         }
+                        end={<FreshnessBadge fresh={fresh} compact />}
                       />
                     </li>
                   );

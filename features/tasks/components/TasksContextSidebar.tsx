@@ -564,7 +564,7 @@ function CollapsibleSidebarSection({
             title={title}
             end={
               !open ? (
-                <span className="type-meta text-foreground truncate max-w-20 min-w-0">
+                <span className="type-meta text-foreground truncate max-w-15 min-w-0">
                   {summary}
                 </span>
               ) : undefined
