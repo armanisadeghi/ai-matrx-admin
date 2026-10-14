@@ -7,6 +7,7 @@ import { registerUtilityFunctions } from '@/utils/ts-function-registry/register-
 import { FunctionDependencies, getAllRegisteredFunctions } from '@/utils/ts-function-registry/function-registry';
 import FunctionButton from '@/components/ts-function-registry/FunctionButton';
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { Select } from '@ai-matrx/design-system/controls';
 
 export default function FunctionButtonDemo() {
   const [isInitialized, setIsInitialized] = useState(false);
@@ -127,17 +128,16 @@ export default function FunctionButtonDemo() {
             <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
               Select Function to Test
             </label>
-            <select
+            <Select
               value={selectedFunction}
-              onChange={e => setSelectedFunction(e.target.value)}
-              className="w-full px-3 py-2 rounded-md border border-border dark:bg-gray-800"
-            >
-              {availableFunctions.map(fn => (
-                <option key={fn.name} value={fn.name}>
-                  {fn.displayName} ({fn.name})
-                </option>
-              ))}
-            </select>
+              onValueChange={setSelectedFunction}
+              aria-label="Select Function to Test"
+              className="w-full"
+              options={availableFunctions.map((fn) => ({
+                value: fn.name,
+                label: `${fn.displayName} (${fn.name})`,
+              }))}
+            />
           </div>
           
           <div className="bg-textured p-4 rounded-lg shadow-md">

@@ -1,6 +1,7 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
+import { Select } from "@ai-matrx/design-system/controls";
 import { Colord } from "colord";
 import { Card } from "@/components/ui/card";
 import { CardContent } from "@/components/ui/card";
@@ -9,6 +10,31 @@ import { CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import TextDivider from "@/components/matrx/TextDivider";
+
+function DemoColorSelect({
+  label,
+  style,
+}: {
+  label: string;
+  style?: React.CSSProperties;
+}) {
+  const [value, setValue] = useState("default");
+  return (
+    <Select
+      value={value}
+      onValueChange={setValue}
+      aria-label={label}
+      className="w-full"
+      style={style}
+      options={[
+        { value: "default", label },
+        { value: "option2", label: "Option 2" },
+        { value: "option3", label: "Option 3" },
+      ]}
+    />
+  );
+}
+
 
 interface ColorVisualizerProps {
   color: Colord;
@@ -199,79 +225,37 @@ export default function ColorVisualizer({ color }: ColorVisualizerProps) {
         <TextDivider text="Select Colors" />
 
         <div className="h-12 flex-1 grid grid-cols-3 gap-2">
-          <select
-            className="p-2 rounded-md bg-background border w-full"
-            defaultValue="text-color-system-bg"
+          <DemoColorSelect
+            label="Text Color, System Background"
             style={{ color: currentColor }}
-          >
-            <option value="text-color-system-bg">
-              Text Color, System Background
-            </option>
-            <option value="option2">Option 2</option>
-            <option value="option3">Option 3</option>
-          </select>
+          />
 
-          <select
-            className="p-2 rounded-md border w-full"
-            defaultValue="text-color-dark-bg"
+          <DemoColorSelect
+            label="Text Color, Dark Background"
             style={{ backgroundColor: blackColor, color: currentColor }}
-          >
-            <option value="text-color-dark-bg">
-              Text Color, Dark Background
-            </option>
-            <option value="option2">Option 2</option>
-            <option value="option3">Option 3</option>
-          </select>
+          />
 
-          <select
-            className="p-2 rounded-md border w-full"
-            defaultValue="text-color-light-bg"
+          <DemoColorSelect
+            label="Text Color, Light Background"
             style={{ backgroundColor: whiteColor, color: currentColor }}
-          >
-            <option value="text-color-light-bg">
-              Text Color, Light Background
-            </option>
-            <option value="option2">Option 2</option>
-            <option value="option3">Option 3</option>
-          </select>
+          />
         </div>
 
         <div className="h-12 flex-1 grid grid-cols-3 gap-2 mt-2">
-          <select
-            className="p-2 rounded-md border w-full"
-            defaultValue="component-color-system-text"
+          <DemoColorSelect
+            label="Component Color, System Text"
             style={{ backgroundColor: currentColor }}
-          >
-            <option value="component-color-system-text">
-              Component Color, System Text
-            </option>
-            <option value="option2">Option 2</option>
-            <option value="option3">Option 3</option>
-          </select>
+          />
 
-          <select
-            className="p-2 rounded-md border w-full"
-            defaultValue="component-color-dark-text"
+          <DemoColorSelect
+            label="Component Color, Dark Text"
             style={{ backgroundColor: currentColor, color: blackColor }}
-          >
-            <option value="component-color-dark-text">
-              Component Color, Dark Text
-            </option>
-            <option value="option2">Option 2</option>
-            <option value="option3">Option 3</option>
-          </select>
+          />
 
-          <select
-            className="p-2 rounded-md border w-full"
-            defaultValue="component-color-light-text"
+          <DemoColorSelect
+            label="Component Color, Light Text"
             style={{ backgroundColor: currentColor, color: whiteColor }}
-          >
-            <option value="component-color-light-text">
-              Component Color, Light Text
-            </option>
-            <option value="option2">Option 2</option>
-            <option value="option3">Option 3</option>
-          </select>
+          />
         </div>
 
         <TextDivider text="Checkbox Colors" />

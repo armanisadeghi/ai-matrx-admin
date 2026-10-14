@@ -6,6 +6,7 @@ import { brokerSelectors } from "@/lib/redux/brokerSlice/selectors";
 import { SLACK_BROKER_IDS } from './BrokerSlackClient';
 import { MessageSquare, Shield, CheckCircle2, XCircle, Loader2, ChevronRight } from 'lucide-react';
 import { FaSlack } from "react-icons/fa";
+import { Select } from "@ai-matrx/design-system/controls";
 import { replaceAddressWithoutNavigating } from "@/lib/url-state/addressWithoutNavigating";
 
 // Define scopes required for our Slack app
@@ -150,17 +151,18 @@ export function SlackAuthentication() {
             {/* Connect Button */}
             <div className="flex items-center gap-2">
               {savedTokens.length > 0 && (
-                <select
-                  className="text-sm border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300"
-                  onChange={(e) => e.target.value && handleSwitchToken(e.target.value)}
-                >
-                  <option value="">Previous connections</option>
-                  {savedTokens.map((savedToken, index) => (
-                    <option key={index} value={savedToken}>
-                      {savedToken.substring(0, 10)}...
-                    </option>
-                  ))}
-                </select>
+                <Select
+                  value=""
+                  onValueChange={(v) => v && handleSwitchToken(v)}
+                  aria-label="Previous connections"
+                  options={[
+                    { value: "", label: "Previous connections" },
+                    ...savedTokens.map((savedToken) => ({
+                      value: savedToken,
+                      label: `${savedToken.substring(0, 10)}...`,
+                    })),
+                  ]}
+                />
               )}
               
               {authUrl ? (
@@ -227,17 +229,15 @@ export function SlackAuthentication() {
               </code>
             </div>
             {savedTokens.length > 1 && (
-              <select
-                className="text-sm border border-green-200 dark:border-green-800 rounded-lg px-3 py-2 bg-white dark:bg-green-900/30 text-green-700 dark:text-green-300"
-                onChange={(e) => e.target.value && handleSwitchToken(e.target.value)}
+              <Select
                 value={token}
-              >
-                {savedTokens.map((savedToken, index) => (
-                  <option key={index} value={savedToken}>
-                    {savedToken.substring(0, 10)}...
-                  </option>
-                ))}
-              </select>
+                onValueChange={(v) => v && handleSwitchToken(v)}
+                aria-label="Saved workspace"
+                options={savedTokens.map((savedToken) => ({
+                  value: savedToken,
+                  label: `${savedToken.substring(0, 10)}...`,
+                }))}
+              />
             )}
           </div>
           
@@ -273,18 +273,19 @@ export function SlackAuthentication() {
             </div>
             {savedTokens.length > 1 && (
               <div className="mt-2">
-                <select
-                  className="w-full text-sm border border-green-200 dark:border-green-800 rounded-lg px-3 py-2 bg-white dark:bg-green-900/30 text-green-700 dark:text-green-300"
-                  onChange={(e) => e.target.value && handleSwitchToken(e.target.value)}
+                <Select
                   value={token}
-                >
-                  <option>Switch workspace</option>
-                  {savedTokens.map((savedToken, index) => (
-                    <option key={index} value={savedToken}>
-                      {savedToken.substring(0, 10)}...
-                    </option>
-                  ))}
-                </select>
+                  onValueChange={(v) => v && handleSwitchToken(v)}
+                  aria-label="Switch workspace"
+                  className="w-full"
+                  options={[
+                    { value: "", label: "Switch workspace" },
+                    ...savedTokens.map((savedToken) => ({
+                      value: savedToken,
+                      label: `${savedToken.substring(0, 10)}...`,
+                    })),
+                  ]}
+                />
               </div>
             )}
           </div>

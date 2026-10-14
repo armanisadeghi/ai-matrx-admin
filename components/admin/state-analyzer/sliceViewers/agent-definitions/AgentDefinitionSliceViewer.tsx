@@ -12,7 +12,7 @@ import {
   AiToolRef,
 } from "@ai-matrx/chat/agents/components/identity-refs/AiIdentityRef";
 import { EntityRef } from "@/components/official/entity-ref/EntityRef";
-
+import { Select } from "@ai-matrx/design-system/controls";
 function CompactPre({ children }: { children: string }) {
   return (
     <pre className="m-0 max-h-56 overflow-auto whitespace-pre-wrap break-all border-l border-border pl-1 text-[11px] leading-snug text-foreground">
@@ -134,28 +134,23 @@ export default function AgentDefinitionSliceViewer({
         <span className="shrink-0 text-[11px] text-muted-foreground">
           record
         </span>
-        <select
-          className="h-6 min-w-0 flex-1 border border-border bg-background px-1 text-[11px] text-foreground"
+        <Select
           value={resolvedId ?? ""}
-          onChange={(e) => {
-            const v = e.target.value;
-            setSelectedId(v === "" ? null : v);
-          }}
-        >
-          {ids.length === 0 ? (
-            <option value="">(no agents)</option>
-          ) : (
-            ids.map((id) => {
-              const r = agents[id];
-              const label = `${id}${r?.name ? ` | ${r.name}` : ""}${r?.isVersion ? " [ver]" : ""}`;
-              return (
-                <option key={id} value={id}>
-                  {label}
-                </option>
-              );
-            })
-          )}
-        </select>
+          onValueChange={(v) => setSelectedId(v === "" ? null : v)}
+          aria-label="Agent"
+          className="min-w-0 flex-1"
+          options={
+            ids.length === 0
+              ? [{ value: "", label: "(no agents)" }]
+              : ids.map((id) => {
+                  const r = agents[id];
+                  return {
+                    value: id,
+                    label: `${id}${r?.name ? ` | ${r.name}` : ""}${r?.isVersion ? " [ver]" : ""}`,
+                  };
+                })
+          }
+        />
       </div>
 
       {!record ? (
@@ -256,17 +251,16 @@ export default function AgentDefinitionSliceViewer({
                     <span className="shrink-0 text-[11px] text-muted-foreground">
                       index
                     </span>
-                    <select
-                      className="h-6 flex-1 border border-border bg-background px-1 text-[11px]"
+                    <Select
                       value={String(safeMsgIdx)}
-                      onChange={(e) => setMsgIdx(Number(e.target.value))}
-                    >
-                      {messages.map((m, i) => (
-                        <option key={i} value={String(i)}>
-                          [{i}] {m.role}
-                        </option>
-                      ))}
-                    </select>
+                      onValueChange={(v) => setMsgIdx(Number(v))}
+                      aria-label="Message"
+                      className="flex-1"
+                      options={messages.map((m, i) => ({
+                        value: String(i),
+                        label: `[${i}] ${m.role}`,
+                      }))}
+                    />
                     <span className="shrink-0 text-[11px] text-muted-foreground">
                       {/* read-gate-exempt: state-analyzer prints the raw redux snapshot field-for-field; the slice's status and error are printed beside it */}
                       n={messages.length}

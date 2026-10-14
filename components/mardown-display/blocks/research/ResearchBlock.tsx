@@ -4,7 +4,7 @@
 // this renderer never re-declares them (`check:kind-type-twins`).
 import { useBlockMakeReal } from "@/features/rich-content-host/block-make-real";
 import { NotebookPen } from "lucide-react";
-import { Button, Badge, Chip } from "@ai-matrx/design-system/controls";
+import { Button, Badge, Chip, Select } from "@ai-matrx/design-system/controls";
 import type {
   ResearchFinding,
   ResearchSection,
@@ -427,21 +427,17 @@ const ResearchBlock: React.FC<ResearchBlockProps> = ({
                     <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">Research Findings</h2>
                     <div className="flex items-center gap-2">
                       <Filter className="h-4 w-4 text-gray-500 dark:text-gray-400" />
-                      <select
+                      <Select<'all' | 'HIGH' | 'MEDIUM' | 'LOW'>
                         value={selectedFilter}
-                        onChange={(e) => {
-                          const next = e.target.value;
-                          if (next === 'all' || next === 'HIGH' || next === 'MEDIUM' || next === 'LOW') {
-                            setSelectedFilter(next);
-                          }
-                        }}
-                        className="text-sm px-3 py-1.5 rounded-lg bg-textured border-border text-gray-700 dark:text-gray-300"
-                      >
-                        <option value="all">All Confidence Levels</option>
-                        <option value="HIGH">High Confidence</option>
-                        <option value="MEDIUM">Medium Confidence</option>
-                        <option value="LOW">Low Confidence</option>
-                      </select>
+                        onValueChange={setSelectedFilter}
+                        aria-label="Confidence level"
+                        options={[
+                          { value: "all", label: "All Confidence Levels" },
+                          { value: "HIGH", label: "High Confidence" },
+                          { value: "MEDIUM", label: "Medium Confidence" },
+                          { value: "LOW", label: "Low Confidence" },
+                        ]}
+                      />
                     </div>
                   </div>
 

@@ -2,7 +2,7 @@
 
 // THE SHAPES COME FROM THE REGISTRY (`pnpm shape:types`) — this file never
 // re-declares a registered kind's fields (`check:kind-type-twins`).
-import { Button, Badge, Tile } from "@ai-matrx/design-system/controls";
+import { Button, Badge, Tile, Select } from "@ai-matrx/design-system/controls";
 import type {
   ProgressCategory,
   ProgressItem,
@@ -507,16 +507,18 @@ const ProgressTrackerBlock: React.FC<ProgressTrackerBlockProps> = ({
                 {/* Controls */}
                 <div className="flex flex-col items-stretch justify-between gap-4 sm:flex-row sm:items-center">
                   <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap">
-                    <select
+                    <Select
                       value={selectedPriority}
-                      onChange={(e) => setSelectedPriority(e.target.value)}
-                      className="min-h-11 w-full rounded-lg border-border bg-textured px-3 py-2 text-base text-gray-900 dark:text-gray-100 sm:min-h-0 sm:w-auto sm:text-sm"
-                    >
-                      <option value="all">All Priority</option>
-                      <option value="high">High Priority</option>
-                      <option value="medium">Medium Priority</option>
-                      <option value="low">Low Priority</option>
-                    </select>
+                      onValueChange={setSelectedPriority}
+                      aria-label="Priority"
+                      className="w-full sm:w-auto"
+                      options={[
+                        { value: "all", label: "All Priority" },
+                        { value: "high", label: "High Priority" },
+                        { value: "medium", label: "Medium Priority" },
+                        { value: "low", label: "Low Priority" },
+                      ]}
+                    />
 
                     <Button
                       variant="quiet"

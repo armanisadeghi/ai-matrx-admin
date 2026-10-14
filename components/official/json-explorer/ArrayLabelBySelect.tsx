@@ -3,7 +3,7 @@ import React from "react";
 import type { JsonValue } from "@/types/json";
 import type { PathArray } from "./types";
 import { getArrayLabelKeys, getDataAtPath } from "./json-utils";
-
+import { Select } from "@ai-matrx/design-system/controls";
 /** The data each nav row lists (the value its options index into). */
 export const getRowData = (
   originalData: JsonValue | null | undefined,
@@ -50,20 +50,18 @@ const ArrayLabelBySelect: React.FC<ArrayLabelBySelectProps> = ({
   return (
     <label className="ml-auto flex items-center gap-1 flex-shrink-0 text-xs text-muted-foreground">
       List by
-      <select
+      <Select
         value={value}
-        onChange={(e) =>
-          onArrayLabelKeyChange(target.rowIndex, e.target.value || undefined)
+        onValueChange={(v) =>
+          onArrayLabelKeyChange(target.rowIndex, v || undefined)
         }
-        className="text-xs px-2 py-1 rounded border max-w-[10rem] bg-textured border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 hover:border-gray-400 dark:hover:border-gray-500 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-400"
-      >
-        <option value="">Index</option>
-        {target.keys.map((key) => (
-          <option key={key} value={key}>
-            {key}
-          </option>
-        ))}
-      </select>
+        aria-label="List by"
+        className="max-w-[10rem]"
+        options={[
+          { value: "", label: "Index" },
+          ...target.keys.map((key) => ({ value: key, label: key })),
+        ]}
+      />
     </label>
   );
 };

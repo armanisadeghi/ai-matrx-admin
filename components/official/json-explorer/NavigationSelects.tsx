@@ -3,7 +3,7 @@ import React from "react";
 import { NavigationRowsProps } from "./types";
 import { getArrayItemLabel, getKeysAtPath } from "./json-utils";
 import ArrayLabelBySelect, { getRowData } from "./ArrayLabelBySelect";
-
+import { Select } from "@ai-matrx/design-system/controls";
 const NavigationSelects: React.FC<NavigationRowsProps> = ({
   originalData,
   currentPath,
@@ -32,43 +32,31 @@ const NavigationSelects: React.FC<NavigationRowsProps> = ({
     const isHidden = isPathHidden && isPathHidden(selectedPath);
 
     selectsToRender.push(
-      <select
+      <div
         key={`select-${rowIndex}`}
-        value={selectedKey}
         data-json-key={selectedKey}
-        onChange={(e) => onKeySelect(rowIndex, e.target.value)}
-        className={`
-          text-xs px-2 py-1 rounded border min-w-0 flex-shrink ${labelKey ? "max-w-[20rem]" : ""}
-          bg-textured 
-          border-gray-300 dark:border-gray-600
-          text-gray-900 dark:text-gray-100
-          hover:border-gray-400 dark:hover:border-gray-500
-          focus:border-blue-500 dark:focus:border-blue-400
-          focus:outline-none focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-400
-          ${isHidden ? "bg-yellow-50 dark:bg-yellow-900/30 border-yellow-300 dark:border-yellow-600" : ""}
-        `}
         title={isHidden ? "This path is hidden" : ""}
+        className={`min-w-0 flex-shrink ${labelKey ? "max-w-[20rem]" : ""}`}
       >
-        {keysForThisRow.map((key) => {
-          // Check if this option would create a hidden path
-          const optionPath = currentPath
-            .slice(0, idx)
-            .concat([[rowIndex, key]]);
-          const optionIsHidden = isPathHidden && isPathHidden(optionPath);
-
-          return (
-            <option
-              key={key}
-              value={key}
-              className={
-                optionIsHidden ? "bg-yellow-100 dark:bg-yellow-900" : ""
-              }
-            >
-              {getArrayItemLabel(rowData, key, labelKey)}
-            </option>
-          );
-        })}
-      </select>,
+        <Select
+          value={selectedKey}
+          onValueChange={(v) => onKeySelect(rowIndex, v)}
+          aria-label="Key"
+          className="w-full"
+          options={keysForThisRow.map((key) => {
+            // Check if this option would create a hidden path
+            const optionPath = currentPath
+              .slice(0, idx)
+              .concat([[rowIndex, key]]);
+            const optionIsHidden = isPathHidden && isPathHidden(optionPath);
+            return {
+              value: key,
+              label: getArrayItemLabel(rowData, key, labelKey),
+              meta: optionIsHidden ? "hidden" : undefined,
+            };
+          })}
+        />
+      </div>,
     );
   });
 

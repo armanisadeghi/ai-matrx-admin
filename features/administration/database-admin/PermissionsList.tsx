@@ -3,7 +3,7 @@ import {
   MatrxDataTable,
   type MatrxColumnDef,
 } from "@ai-matrx/design-system/data-table";
-import { Input } from "@ai-matrx/design-system/controls";
+import { Input, Select } from "@ai-matrx/design-system/controls";
 import { Search } from "lucide-react";
 import type { DatabasePermission } from "./types";
 import { stringUrlCodec, useUrlState } from "@ai-matrx/kit/url-state";
@@ -162,22 +162,18 @@ const PermissionsList = ({
                 },
               },
               render: () => (
-                <select
-                  aria-label="Permission object type"
+                <Select
                   value={selectedType}
-                  onChange={(event) => {
-                    setSelectedType(event.target.value);
-                    setTypeUrl(event.target.value);
+                  onValueChange={(v) => {
+                    setSelectedType(v);
+                    setTypeUrl(v);
                   }}
-                  className="h-8 rounded-md border border-input bg-background px-2 text-sm"
-                >
-                  <option value="all">All object types</option>
-                  {types.map((type) => (
-                    <option key={type} value={type}>
-                      {type}
-                    </option>
-                  ))}
-                </select>
+                  aria-label="Permission object type"
+                  options={[
+                    { value: "all", label: "All object types" },
+                    ...types.map((type) => ({ value: type, label: type })),
+                  ]}
+                />
               ),
             },
           ],

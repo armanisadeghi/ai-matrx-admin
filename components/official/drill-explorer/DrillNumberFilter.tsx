@@ -20,7 +20,7 @@ import { Button } from "@/components/ui/button";
 import { usePointsRate } from "@/components/cost/pointsRate.client";
 
 import type { DrillHaving } from "./types";
-
+import { Select } from "@ai-matrx/design-system/controls";
 /** The four ops the door reads (records 0.58.121+ types them; the door file drillflip_… admits "<=" / "<"). */
 type Op = ">=" | ">" | "<=" | "<";
 const OPS: Array<{ op: Op; label: string }> = [
@@ -99,20 +99,19 @@ export function DrillNumberFilter({
             setTyped("");
           }}
         >
-          <select aria-label="Number" value={pick} onChange={(e) => setMeasure(e.target.value)} className="h-7 min-w-0 flex-1 rounded border border-border bg-background px-1 text-xs">
-            {choices.map((m) => (
-              <option key={m.key} value={m.key}>
-                {m.label}
-              </option>
-            ))}
-          </select>
-          <select aria-label="Compare" value={op} onChange={(e) => setOp(e.target.value as Op)} className="h-7 rounded border border-border bg-background px-1 text-xs">
-            {OPS.map((o) => (
-              <option key={o.op} value={o.op}>
-                {o.label}
-              </option>
-            ))}
-          </select>
+          <Select
+            value={pick}
+            onValueChange={setMeasure}
+            aria-label="Number"
+            className="min-w-0 flex-1"
+            options={choices.map((m) => ({ value: m.key, label: m.label }))}
+          />
+          <Select<Op>
+            value={op}
+            onValueChange={setOp}
+            aria-label="Compare"
+            options={OPS.map((o) => ({ value: o.op, label: o.label }))}
+          />
           <input
             aria-label="Value"
             inputMode="decimal"

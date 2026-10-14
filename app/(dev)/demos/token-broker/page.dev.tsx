@@ -10,6 +10,7 @@
  */
 
 import React, { useState } from "react";
+import { Select } from "@ai-matrx/design-system/controls";
 import {
   Coins,
   KeyRound,
@@ -220,17 +221,12 @@ export default function TokenBrokerDemoPage() {
           </label>
           <label className="flex flex-col gap-1 text-xs text-muted-foreground">
             Tier policy (required, no default in the API)
-            <select
-              className={inputCls}
+            <Select<TierPolicy>
               value={tierPolicy}
-              onChange={(e) => setTierPolicy(e.target.value as TierPolicy)}
-            >
-              {TIER_POLICIES.map((t) => (
-                <option key={t} value={t}>
-                  {t}
-                </option>
-              ))}
-            </select>
+              onValueChange={setTierPolicy}
+              aria-label="Tier policy"
+              options={TIER_POLICIES.map((t) => ({ value: t, label: t }))}
+            />
           </label>
           <label className="flex flex-col gap-1 text-xs text-muted-foreground">
             Model (optional)

@@ -4,7 +4,7 @@
 // this renderer never re-declares them (`check:kind-type-twins`).
 import { useClipboard } from "@ai-matrx/kit/clipboard";
 import { copyNotify } from "@/lib/clipboard/copy-notify";
-import { Button, Chip, Tile } from "@ai-matrx/design-system/controls";
+import { Button, Chip, Tile, Select } from "@ai-matrx/design-system/controls";
 import type {
   TroubleshootingStep,
   TroubleshootingSolution,
@@ -432,17 +432,19 @@ const TroubleshootingBlock: React.FC<TroubleshootingBlockProps> = ({
                       />
                     </div>
 
-                    <select
+                    <Select
                       value={selectedSeverity}
-                      onChange={(e) => setSelectedSeverity(e.target.value)}
-                      className="min-h-11 w-full rounded-lg border-border bg-textured px-3 py-2 text-base text-gray-900 dark:text-gray-100 sm:min-h-0 sm:w-auto sm:text-sm"
-                    >
-                      <option value="all">All Severities</option>
-                      <option value="critical">Critical</option>
-                      <option value="high">High</option>
-                      <option value="medium">Medium</option>
-                      <option value="low">Low</option>
-                    </select>
+                      onValueChange={setSelectedSeverity}
+                      aria-label="Severity"
+                      className="w-full sm:w-auto"
+                      options={[
+                        { value: "all", label: "All Severities" },
+                        { value: "critical", label: "Critical" },
+                        { value: "high", label: "High" },
+                        { value: "medium", label: "Medium" },
+                        { value: "low", label: "Low" },
+                      ]}
+                    />
                   </div>
 
                   <div className="flex items-center gap-2">

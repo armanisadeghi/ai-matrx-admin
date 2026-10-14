@@ -24,7 +24,7 @@ import { selectOrganizationId } from "@/lib/redux/slices/appContextSlice";
 import type { Note } from "@/features/notes/types";
 import ActionFeedbackButton from "@/components/official/ActionFeedbackButton";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
-
+import { Select } from "@ai-matrx/design-system/controls";
 export const CONTEXT_TAG = "Transcription Contexts";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -345,37 +345,38 @@ export function TranscriptionCleanupContextPanel({
           {/* ── Footer: notes picker ────────────────────────────────────── */}
           <div className="px-2 pb-1.5">
             {openDropdownId === block.id ? (
-              <select
-                autoFocus
-                defaultValue=""
-                onChange={(e) => {
-                  if (e.target.value) {
-                    void handleSelectNote(block.id, e.target.value);
+              <Select
+                value=""
+                onValueChange={(v) => {
+                  if (v) {
+                    void handleSelectNote(block.id, v);
                   }
                 }}
-                onBlur={() => setOpenDropdownId(null)}
-                className="w-full rounded border border-border/50 bg-background text-[11px] px-1.5 py-1 focus:outline-none focus:ring-1 focus:ring-ring"
-              >
-                <option value="" disabled>
-                  {loadingNotes
-                    ? "Loading notes…"
-                    : notesError && contextNotes === null
-                      ? "Couldn't load your notes — close and reopen to retry"
-                      : contextNotes?.length === 0
-                      ? "No notes in Transcription Contexts yet"
-                      : "Choose a note…"}
-                </option>
-                {contextNotes?.map((n) => (
-                  <option key={n.id} value={n.id}>
-                    {n.label}
-                  </option>
-                ))}
-                <option value="__new__">
-                  {block.text.trim()
-                    ? "＋ Save current text as new note"
-                    : "＋ Create new note in Transcription Contexts"}
-                </option>
-              </select>
+                aria-label="Choose a note"
+                className="w-full"
+                options={[
+                  {
+                    value: "",
+                    label: loadingNotes
+                      ? "Loading notes…"
+                      : notesError && contextNotes === null
+                        ? "Couldn't load your notes — close and reopen to retry"
+                        : contextNotes?.length === 0
+                          ? "No notes in Transcription Contexts yet"
+                          : "Choose a note…",
+                  },
+                  ...(contextNotes ?? []).map((n) => ({
+                    value: n.id,
+                    label: n.label,
+                  })),
+                  {
+                    value: "__new__",
+                    label: block.text.trim()
+                      ? "＋ Save current text as new note"
+                      : "＋ Create new note in Transcription Contexts",
+                  },
+                ]}
+              />
             ) : (
               <button
                 type="button"

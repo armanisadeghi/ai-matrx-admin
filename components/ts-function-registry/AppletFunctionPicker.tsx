@@ -13,7 +13,7 @@ import {
 import { registerDatabaseFunctions } from "@/utils/ts-function-registry/register-functions";
 import { registerUtilityFunctions } from "@/utils/ts-function-registry/register-utility-functions";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
-
+import { Select } from "@ai-matrx/design-system/controls";
 interface AppletFunctionPickerProps {
   dependencies?: FunctionDependencies;
 }
@@ -218,17 +218,16 @@ export default function AppletFunctionPicker({
         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
           Function Category
         </label>
-        <select
+        <Select
           value={selectedCategory}
-          onChange={(e) => setSelectedCategory(e.target.value)}
-          className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-800 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-        >
-          {categories.map((category) => (
-            <option key={category} value={category}>
-              {category}
-            </option>
-          ))}
-        </select>
+          onValueChange={setSelectedCategory}
+          aria-label="Category"
+          className="mt-1 w-full"
+          options={categories.map((category) => ({
+            value: category,
+            label: category,
+          }))}
+        />
       </div>
 
       {/* Function Selection */}
@@ -236,18 +235,19 @@ export default function AppletFunctionPicker({
         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
           Function
         </label>
-        <select
+        <Select
           value={selectedFunction?.metadata.name || ""}
-          onChange={(e) => handleFunctionChange(e.target.value)}
-          className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-800 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-        >
-          <option value="">Select a function</option>
-          {functions.map((fn) => (
-            <option key={fn.metadata.name} value={fn.metadata.name}>
-              {fn.metadata.displayName}
-            </option>
-          ))}
-        </select>
+          onValueChange={handleFunctionChange}
+          aria-label="Function"
+          className="mt-1 w-full"
+          options={[
+            { value: "", label: "Select a function" },
+            ...functions.map((fn) => ({
+              value: fn.metadata.name,
+              label: fn.metadata.displayName,
+            })),
+          ]}
+        />
 
         {selectedFunction && (
           <div className="mt-2 text-sm text-gray-600 dark:text-gray-400">

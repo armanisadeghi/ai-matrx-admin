@@ -37,7 +37,7 @@ import { replaceAddressOrNavigate } from "@/lib/url-state/addressWithoutNavigati
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { readOf } from "@ai-matrx/design-system";
 import { LIBRARIES_PATH } from "@/features/knowledge/modulePaths";
-
+import { Select } from "@ai-matrx/design-system/controls";
 const EMPTY_ORGS: { id: string; name: string }[] = [];
 
 const EMPTY: ConsoleData = {
@@ -175,34 +175,31 @@ export function AcquisitionConsolePage() {
         </div>
         <HeaderActionsSlot className="ml-auto flex shrink-0 items-center gap-3 text-xs">
           {memberOrgs.length > 1 && (
-            <select
-              aria-label="Organization"
+            <Select
               value={organizationId ?? "all"}
-              onChange={(event) => setOrganization(event.target.value)}
-              className="max-w-[12rem] truncate rounded-md border border-border bg-background px-2 py-1 text-xs"
-            >
-              <option value="all">All organizations</option>
-              {memberOrgs.map((org) => (
-                <option key={org.id} value={org.id}>
-                  {org.name}
-                </option>
-              ))}
-            </select>
+              onValueChange={setOrganization}
+              aria-label="Organization"
+              className="max-w-[12rem]"
+              options={[
+                { value: "all", label: "All organizations" },
+                ...memberOrgs.map((org) => ({ value: org.id, label: org.name })),
+              ]}
+            />
           )}
           {data.rulebooks.length > 0 && (
-            <select
-              aria-label="Narrow to one Rulebook"
+            <Select
               value={rulebookId ?? "all"}
-              onChange={(event) => setRulebook(event.target.value)}
-              className="max-w-[12rem] truncate rounded-md border border-border bg-background px-2 py-1 text-xs"
-            >
-              <option value="all">Every Rulebook</option>
-              {data.rulebooks.map((entry) => (
-                <option key={entry.id} value={entry.id}>
-                  {entry.name}
-                </option>
-              ))}
-            </select>
+              onValueChange={setRulebook}
+              aria-label="Narrow to one Rulebook"
+              className="max-w-[12rem]"
+              options={[
+                { value: "all", label: "Every Rulebook" },
+                ...data.rulebooks.map((entry) => ({
+                  value: entry.id,
+                  label: entry.name,
+                })),
+              ]}
+            />
           )}
           <Button
             variant="quiet"

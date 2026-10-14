@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { ViewId, getViewComponent, getViewSelectOptions } from './view-registry';
-
+import { Select } from "@ai-matrx/design-system/controls";
 interface ViewWrapperProps {
   initialView: ViewId;
   showOptions?: boolean;
@@ -30,17 +30,15 @@ export default function ViewWrapper({
     <div className={`${className}`}>
       {showOptions && (
         <div className="mb-4">
-          <select
+          <Select
             value={selectedViewId}
-            onChange={(e) => setSelectedViewId(e.target.value as ViewId)}
-            className="p-2 border border-border rounded bg-textured text-gray-800 dark:text-gray-200"
-          >
-            {viewOptions.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
+            onValueChange={(v) => setSelectedViewId(v as ViewId)}
+            aria-label="View"
+            options={viewOptions.map((option) => ({
+              value: option.value,
+              label: option.label,
+            }))}
+          />
         </div>
       )}
       

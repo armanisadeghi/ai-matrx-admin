@@ -38,7 +38,7 @@ import { getArtifactDef } from "@/features/canvas/artifact-types/artifact-type-r
 import { IconButton } from "@ai-matrx/design-system";
 import { matchesSearch as matchesSearchScoring } from "@ai-matrx/kit/search-scoring";
 
-import { DisclosureHeader } from "@ai-matrx/design-system/controls";
+import { DisclosureHeader, Select } from "@ai-matrx/design-system/controls";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 interface ResourceCollectionBlockProps {
   collection: ResourceCollectionData;
@@ -413,32 +413,33 @@ const ResourceCollectionBlock: React.FC<ResourceCollectionBlockProps> = ({
                     />
                   </div>
                   <div className="flex gap-1.5">
-                    <select
+                    <Select
                       value={selectedType}
-                      onChange={(e) => setSelectedType(e.target.value)}
-                      className="flex-1 sm:flex-none px-2 py-1.5 rounded-md border border-border bg-background text-foreground text-xs min-w-0"
-                    >
-                      <option value="all">All types</option>
-                      {allTypes.map((type) => (
-                        <option key={type} value={type}>
-                          {type.charAt(0).toUpperCase() + type.slice(1)}
-                        </option>
-                      ))}
-                    </select>
+                      onValueChange={setSelectedType}
+                      aria-label="Type"
+                      className="flex-1 sm:flex-none"
+                      options={[
+                        { value: "all", label: "All types" },
+                        ...allTypes.map((type) => ({
+                          value: type,
+                          label: type.charAt(0).toUpperCase() + type.slice(1),
+                        })),
+                      ]}
+                    />
                     {allDifficulties.length > 0 && (
-                      <select
+                      <Select
                         value={selectedDifficulty}
-                        onChange={(e) => setSelectedDifficulty(e.target.value)}
-                        className="flex-1 sm:flex-none px-2 py-1.5 rounded-md border border-border bg-background text-foreground text-xs min-w-0"
-                      >
-                        <option value="all">All levels</option>
-                        {allDifficulties.map((difficulty) => (
-                          <option key={difficulty} value={difficulty}>
-                            {difficulty.charAt(0).toUpperCase() +
-                              difficulty.slice(1)}
-                          </option>
-                        ))}
-                      </select>
+                        onValueChange={setSelectedDifficulty}
+                        aria-label="Level"
+                        className="flex-1 sm:flex-none"
+                        options={[
+                          { value: "all", label: "All levels" },
+                          ...allDifficulties.map((difficulty) => ({
+                            value: difficulty,
+                            label: difficulty.charAt(0).toUpperCase() + difficulty.slice(1),
+                          })),
+                        ]}
+                      />
                     )}
                   </div>
                 </div>

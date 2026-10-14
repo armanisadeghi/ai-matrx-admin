@@ -49,7 +49,7 @@ import {
 import { EnhancedJsonViewer } from "@/components/ui/JsonComponents";
 import { EnhancedEditableJsonViewer } from "@/components/ui/JsonComponents/JsonEditor";
 import { downloadFile } from "@ai-matrx/kit/download";
-
+import { Select } from "@ai-matrx/design-system/controls";
 // -------------------------------------------------------------------------
 // Inlined from the deleted `hooks/common/useLocalStorageManager.ts`.
 // Only consumer was this admin debugger, so the shared hook was deleted
@@ -1218,20 +1218,18 @@ const CookieManager = ({ storage }: { storage: UseLocalStorageManager }) => {
               </label>
               <div className="grid gap-2">
                 <Label>SameSite</Label>
-                <select
-                  value={newCookie.sameSite}
-                  onChange={(e) =>
-                    setNewCookie({
-                      ...newCookie,
-                      sameSite: e.target.value as "Strict" | "Lax" | "None",
-                    })
+                <Select<"Strict" | "Lax" | "None">
+                  value={newCookie.sameSite ?? "Lax"}
+                  onValueChange={(sameSite) =>
+                    setNewCookie({ ...newCookie, sameSite })
                   }
-                  className="form-select"
-                >
-                  <option value="Lax">Lax</option>
-                  <option value="Strict">Strict</option>
-                  <option value="None">None</option>
-                </select>
+                  aria-label="SameSite"
+                  options={[
+                    { value: "Lax", label: "Lax" },
+                    { value: "Strict", label: "Strict" },
+                    { value: "None", label: "None" },
+                  ]}
+                />
               </div>
             </div>
             <Button variant="primary" onClick={handleAddCookie}>Add Cookie</Button>

@@ -53,7 +53,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@ai-matrx/design-system/controls";
+import { Input, Select } from "@ai-matrx/design-system/controls";
 import { RichContent } from "@ai-matrx/rich-content/levels/RichContent";
 import ThinkingTrace from "@ai-matrx/rich-content/display/blocks/thinking-reasoning/ThinkingTrace";
 import { ToolCallVisualization } from "@ai-matrx/chat/tool-call-visualization/components/ToolCallVisualization";
@@ -1495,19 +1495,15 @@ export default function ToolInActionPage() {
             >
               Scenario
             </label>
-            <select
-              id="tool-pick"
+            <Select
               value={syntheticName}
-              onChange={(e) => setSyntheticName(e.target.value)}
-              className="rounded-md border border-border bg-card px-2 py-1 text-sm text-foreground"
-            >
-              {syntheticList.map((s) => (
-                <option key={s.name} value={s.name}>
-                  {s.label}
-                  {registeredNames.has(s.name) ? " · custom UI" : ""}
-                </option>
-              ))}
-            </select>
+              onValueChange={setSyntheticName}
+              aria-label="Scenario"
+              options={syntheticList.map((s) => ({
+                value: s.name,
+                label: `${s.label}${registeredNames.has(s.name) ? " · custom UI" : ""}`,
+              }))}
+            />
           </div>
         )}
 

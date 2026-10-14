@@ -7,6 +7,7 @@ import { SLACK_BROKER_IDS } from './BrokerSlackClient';
 import { SlackChannel } from "@/app/(dev)/demos/tests/slack/slackClientUtils";
 import { Hash, RefreshCw, Loader2 } from 'lucide-react';
 import { useState } from 'react';
+import { Select } from "@ai-matrx/design-system/controls";
 import { ReadFailure } from "@ai-matrx/design-system";
 import { StaleDataNotice } from "@ai-matrx/design-system";
 
@@ -35,10 +36,10 @@ export function ChannelSelector() {
   }
   
   // Handle channel selection
-  const handleChannelSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
+  const handleChannelSelect = (value: string) => {
     dispatch(brokerActions.setText({
       brokerId: SLACK_BROKER_IDS.selectedChannel.mappedItemId,
-      value: e.target.value
+      value
     }));
   };
   
@@ -105,19 +106,19 @@ export function ChannelSelector() {
         </div>
         
         <div className="flex-1 flex gap-2">
-          <select
-            id="channel-select"
+          <Select
             value={selectedChannel || ''}
-            onChange={handleChannelSelect}
-            className="flex-1 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 rounded-md p-2 focus:ring-2 focus:ring-slate-400 dark:focus:ring-slate-500"
-          >
-            <option value="">Select a channel</option>
-            {channels.map(channel => (
-              <option key={channel.id} value={channel.id}>
-                #{channel.name}
-              </option>
-            ))}
-          </select>
+            onValueChange={handleChannelSelect}
+            aria-label="Select Channel"
+            className="flex-1"
+            options={[
+              { value: "", label: "Select a channel" },
+              ...channels.map((channel) => ({
+                value: channel.id,
+                label: `#${channel.name}`,
+              })),
+            ]}
+          />
           
           <button
             onClick={handleRefreshChannels}

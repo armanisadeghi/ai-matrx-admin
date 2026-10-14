@@ -13,7 +13,7 @@ import { registerDatabaseFunctions } from "@/utils/ts-function-registry/register
 import { FunctionDependencies } from "@/utils/ts-function-registry/function-registry";
 import { supabase } from "@/utils/supabase/client";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
-
+import { OptionCombobox } from "@ai-matrx/design-system/controls";
 type AvailableFunction = ReturnType<typeof getAvailableFunctions>[number];
 
 export default function AppletBuilder() {
@@ -203,24 +203,22 @@ export default function AppletBuilder() {
           Add Function Step:
         </label>
         <div className="flex">
-          <select
-            className="flex-1 p-2 rounded-md border border-border bg-textured text-gray-800 dark:text-gray-200 mr-2"
-            onChange={(e) => e.target.value && addStep(e.target.value)}
+          <OptionCombobox
             value=""
-          >
-            <option value="">Select a function...</option>
-            {functionCategories.map((category) => (
-              <optgroup key={category} label={category}>
-                {availableFunctions
-                  .filter((fn) => fn.category === category)
-                  .map((fn) => (
-                    <option key={fn.name} value={fn.name}>
-                      {fn.displayName}
-                    </option>
-                  ))}
-              </optgroup>
-            ))}
-          </select>
+            onChange={(v) => v && addStep(v)}
+            placeholder="Select a function..."
+            ariaLabel="Add Function Step"
+            className="flex-1 mr-2"
+            groups={functionCategories.map((category) => ({
+              heading: category,
+              options: availableFunctions
+                .filter((fn) => fn.category === category)
+                .map((fn) => fn.name),
+            }))}
+            getLabel={(name) =>
+              availableFunctions.find((fn) => fn.name === name)?.displayName ?? name
+            }
+          />
         </div>
       </div>
 

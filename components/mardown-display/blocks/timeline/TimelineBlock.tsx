@@ -27,7 +27,7 @@ import { IconButton } from "@ai-matrx/design-system";
 import type { MenuItem } from "@/components/official/AdvancedMenu";
 import { useCanvasPresentation } from "@ai-matrx/canvas/react";
 import { timelineAxis } from "@ai-matrx/rich-content/display/blocks/canvas-adaptive";
-import { Button, DisclosureHeader } from "@ai-matrx/design-system/controls";
+import { Button, DisclosureHeader, Select } from "@ai-matrx/design-system/controls";
 import { downloadFile } from "@ai-matrx/kit/download";
 import { toast } from "@/lib/toast";
 import { icsFileName } from "@/lib/calendar/eventLinks";
@@ -269,18 +269,16 @@ const TimelineBlock: React.FC<TimelineBlockProps> = ({
 
       <div className="flex items-center gap-1.5 flex-shrink-0">
         {categories.length > 1 && (
-          <select
+          <Select
             value={selectedCategory}
-            onChange={(e) => setSelectedCategory(e.target.value)}
-            className="min-h-11 min-w-0 max-w-[10rem] flex-1 rounded-md border border-border bg-background px-2 py-1.5 text-base text-foreground sm:min-h-0 sm:flex-none sm:text-xs"
+            onValueChange={setSelectedCategory}
             aria-label="Filter by category"
-          >
-            {categories.map((cat) => (
-              <option key={cat} value={cat}>
-                {cat === "all" ? "All categories" : cat}
-              </option>
-            ))}
-          </select>
+            className="min-w-0 max-w-[10rem] flex-1 sm:flex-none"
+            options={categories.map((cat) => ({
+              value: cat,
+              label: cat === "all" ? "All categories" : cat,
+            }))}
+          />
         )}
 
         {completedCount > 0 && (

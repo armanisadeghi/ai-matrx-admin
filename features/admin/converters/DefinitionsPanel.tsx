@@ -20,7 +20,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { ProInput } from "@/components/official/ProInput";
-import { Input } from "@ai-matrx/design-system/controls";
+import { Input, Select } from "@ai-matrx/design-system/controls";
 import { selectActiveOrganizationId } from "@/features/scopes/redux/selectors/active-context";
 import type { Json } from "@/types/database.types";
 import { ErrorNotice, type ReadOutcome } from "@ai-matrx/design-system";
@@ -199,17 +199,12 @@ function DefinitionEditor({
             {field(
               "Status",
               // ui-exception: three fixed status values
-              <select
-                className="h-9 rounded-md border bg-background px-2 text-sm"
+              <Select
                 value={draft.status}
-                onChange={(e) => setDraft({ ...draft, status: e.target.value })}
-              >
-                {STATUSES.map((s) => (
-                  <option key={s} value={s}>
-                    {s}
-                  </option>
-                ))}
-              </select>,
+                onValueChange={(v) => setDraft({ ...draft, status: v })}
+                aria-label="Status"
+                options={STATUSES.map((s) => ({ value: s, label: s }))}
+              />,
             )}
             {field(
               "Item selector",

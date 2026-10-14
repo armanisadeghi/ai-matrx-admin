@@ -2,6 +2,7 @@ import {useState, useEffect} from 'react';
 import {SlackChannel, SlackClient, SlackMessage} from '../slackClientUtils';
 import { ProTextarea } from "@/components/official/ProTextarea";
 import { X } from 'lucide-react';
+import { Select } from '@ai-matrx/design-system/controls';
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 
 const SlackManager: React.FC = () => {
@@ -78,10 +79,6 @@ const SlackManager: React.FC = () => {
     if (token === tokenToRemove) {
       setToken(newTokens.length > 0 ? newTokens[0] : '');
     }
-  };
-
-  const handleChannelChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setSelectedChannel(e.target.value);
   };
 
   const handleMessageChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -203,19 +200,20 @@ const SlackManager: React.FC = () => {
         <div className="mb-6">
           <label className="block mb-2 font-medium">Channel:</label>
           <div className="flex gap-2">
-            <select
+            <Select
                 value={selectedChannel}
-                onChange={handleChannelChange}
-                className="w-full p-2 border rounded bg-transparent"
+                onValueChange={setSelectedChannel}
                 disabled={loading || channels.length === 0}
-            >
-              <option value="">Select a channel</option>
-              {channels.map(channel => (
-                  <option key={channel.id} value={channel.id} className="bg-gray-700">
-                    #{channel.name}
-                  </option>
-              ))}
-            </select>
+                aria-label="Channel"
+                className="w-full"
+                options={[
+                  { value: "", label: "Select a channel" },
+                  ...channels.map((channel) => ({
+                    value: channel.id,
+                    label: `#${channel.name}`,
+                  })),
+                ]}
+            />
 
             <button
                 onClick={fetchChannels}

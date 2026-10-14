@@ -11,6 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input, } from '@ai-matrx/design-system';
+import { Select } from '@ai-matrx/design-system/controls';
 import { Label } from '@/components/ui/label';
 import { Printer, FileDown, Crosshair, Trash2 } from 'lucide-react';
 import { parseDelimited } from '@ai-matrx/alchemy/operate/read';
@@ -103,18 +104,15 @@ const QRLabelsPage = () => {
         </CardHeader>
         <CardContent className="flex flex-wrap items-center gap-2">
           <Label htmlFor="template" className="text-sm">Label stock</Label>
-          <select
-            id="template"
+          <Select
             value={templateId}
-            onChange={(e) => { setTemplateId(e.target.value); setPageIndex(0); }}
-            className="h-9 rounded-md border border-input bg-background px-2 text-sm"
-          >
-            {LABEL_TEMPLATES.map((t) => (
-              <option key={t.id} value={t.id}>
-                {t.stockCode} — {t.name}
-              </option>
-            ))}
-          </select>
+            onValueChange={(v) => { setTemplateId(v); setPageIndex(0); }}
+            aria-label="Label stock"
+            options={LABEL_TEMPLATES.map((t) => ({
+              value: t.id,
+              label: `${t.stockCode} — ${t.name}`,
+            }))}
+          />
           <Button icon={<Crosshair />} variant="outline" onClick={() => printCalibrationSheet(template)}>
             Calibration page
           </Button>

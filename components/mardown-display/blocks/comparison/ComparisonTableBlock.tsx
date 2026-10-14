@@ -3,7 +3,7 @@
 import { useBlockMakeReal } from "@/features/rich-content-host/block-make-real";
 import { NotebookPen } from "lucide-react";
 import { comparisonToMarkdown } from "@/features/rich-content-host/block-note-markdown";
-import { Button, Badge, Chip, ChipSet } from "@ai-matrx/design-system/controls";
+import { Button, Badge, Chip, ChipSet, Select } from "@ai-matrx/design-system/controls";
 import type { KIND_KEY } from "@ai-matrx/content-ir";
 // THE SHAPES COME FROM THE REGISTRY (`pnpm shape:types`) — this file never
 // re-declares a registered kind's fields (`check:kind-type-twins`).
@@ -757,30 +757,28 @@ const ComparisonTableBlock: React.FC<ComparisonTableBlockProps> = ({
                   <label className="flex items-center gap-1.5 text-xs text-muted-foreground">
                     <ArrowUpDown className="h-3 w-3 flex-shrink-0" />
                     <span className="flex-shrink-0">Sort</span>
-                    <select
+                    <Select
                       value={sortBy ? `${sortBy}|${sortDirection ?? "asc"}` : ""}
-                      onChange={(e) => {
-                        const [col, dir] = e.target.value.split("|");
+                      onValueChange={(v) => {
+                        const [col, dir] = v.split("|");
                         if (!col) applySort(null, null);
                         else applySort(col, dir === "desc" ? "desc" : "asc");
                       }}
-                      className="min-w-0 flex-1 rounded-md border border-border bg-background px-1.5 py-1 text-xs text-foreground"
-                    >
-                      <option value="">Original order</option>
-                      <option value="name|asc">Item A–Z</option>
-                      <option value="name|desc">Item Z–A</option>
-                      <option value="score|desc">Score, high first</option>
-                      {comparison.criteria
-                        .filter((c) => !hiddenColumns.has(c.name))
-                        .flatMap((c) => [
-                          <option key={`${c.name}-asc`} value={`${c.name}|asc`}>
-                            {c.name}, ascending
-                          </option>,
-                          <option key={`${c.name}-desc`} value={`${c.name}|desc`}>
-                            {c.name}, descending
-                          </option>,
-                        ])}
-                    </select>
+                      aria-label="Sort"
+                      className="min-w-0 flex-1"
+                      options={[
+                        { value: "", label: "Original order" },
+                        { value: "name|asc", label: "Item A–Z" },
+                        { value: "name|desc", label: "Item Z–A" },
+                        { value: "score|desc", label: "Score, high first" },
+                        ...comparison.criteria
+                          .filter((c) => !hiddenColumns.has(c.name))
+                          .flatMap((c) => [
+                            { value: `${c.name}|asc`, label: `${c.name}, ascending` },
+                            { value: `${c.name}|desc`, label: `${c.name}, descending` },
+                          ]),
+                      ]}
+                    />
                   </label>
                   {filteredIndices.map((itemIndex) => {
                     const item = comparison.items[itemIndex];
