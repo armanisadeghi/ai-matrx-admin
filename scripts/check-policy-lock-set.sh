@@ -19,7 +19,9 @@
 # non-zero and says why. It carries no force switch and no skip.
 # ─────────────────────────────────────────────────────────────────────────────
 set -u
-source /Users/armanisadeghi/code/matrx-frontend/scripts/night/lib-night.sh
+SCRIPT_DIR="$(cd -- "$(dirname -- "$0")" && pwd)"
+REPO_ROOT="$(cd -- "$SCRIPT_DIR/.." && pwd)"
+source "$SCRIPT_DIR/night/lib-night.sh"
 
 night_resolve_psql || exit $?
 
@@ -33,5 +35,5 @@ fi
 night_assert_target clone "$DSN" || exit $?
 
 export PGOPTIONS='-c statement_timeout=60000 -c lock_timeout=10000'
-cd /Users/armanisadeghi/code/matrx-frontend
+cd "$REPO_ROOT"
 "$PSQL" "$DSN" -X -v ON_ERROR_STOP=1 -f scripts/campaign-tests/policylock_green.sql

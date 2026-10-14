@@ -24,16 +24,18 @@
 # exits non-zero and says which. There is no force switch and no skip.
 # ─────────────────────────────────────────────────────────────────────────────
 set -u
-source /Users/armanisadeghi/code/matrx-frontend/scripts/night/lib-night.sh
+SCRIPT_DIR="$(cd -- "$(dirname -- "$0")" && pwd)"
+REPO_ROOT="$(cd -- "$SCRIPT_DIR/.." && pwd)"
+source "$SCRIPT_DIR/night/lib-night.sh"
 
 night_resolve_psql || exit $?
 
 # THE LIVE DATABASE IS NAMED IN ITS OWN FIVE VARIABLES, where a reader can see it —
 # `night_target_dsn` deliberately has no production entry for exactly this reason.
 ENVFILE=""
-for f in /Users/armanisadeghi/code/matrx-frontend/.env.local \
-         /Users/armanisadeghi/code/matrx-frontend/.env \
-         /Users/armanisadeghi/code/aidream/.env; do
+for f in "$REPO_ROOT/.env.local" \
+         "$REPO_ROOT/.env" \
+         "$REPO_ROOT/../aidream/.env"; do
   if [ -r "$f" ] && grep -q '^SUPABASE_MATRIX_PASSWORD=' "$f"; then ENVFILE="$f"; break; fi
 done
 if [ -z "$ENVFILE" ]; then
@@ -51,7 +53,7 @@ export PGHOST="$SUPABASE_MATRIX_HOST" PGPORT="$SUPABASE_MATRIX_PORT" \
 
 night_assert_target_readonly production || exit $?
 
-cd /Users/armanisadeghi/code/matrx-frontend
+cd "$REPO_ROOT"
 # THE GATE DATABASE LIMITS (scripts/lib/gate-db.ts, 2026-09-25). This used to export
 # PGOPTIONS='-c statement_timeout=300000 ...', which Supavisor drops on the floor — measured on the
 # clone, a startup option never reaches the server — so the census ran under the role default and

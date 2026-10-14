@@ -27,15 +27,17 @@
 # proves this suite's own predicates would name them.
 # ─────────────────────────────────────────────────────────────────────────────────────────────
 set -u
-source /Users/armanisadeghi/code/matrx-frontend/scripts/night/lib-night.sh
+SCRIPT_DIR="$(cd -- "$(dirname -- "$0")" && pwd)"
+REPO_ROOT="$(cd -- "$SCRIPT_DIR/.." && pwd)"
+source "$SCRIPT_DIR/night/lib-night.sh"
 
 night_resolve_psql || exit $?
 
 # THE LIVE DATABASE IS NAMED IN ITS OWN FIVE VARIABLES, where a reader can see it.
 ENVFILE=""
-for f in /Users/armanisadeghi/code/matrx-frontend/.env.local \
-         /Users/armanisadeghi/code/matrx-frontend/.env \
-         /Users/armanisadeghi/code/aidream/.env; do
+for f in "$REPO_ROOT/.env.local" \
+         "$REPO_ROOT/.env" \
+         "$REPO_ROOT/../aidream/.env"; do
   if [ -r "$f" ] && grep -q '^SUPABASE_MATRIX_PASSWORD=' "$f"; then ENVFILE="$f"; break; fi
 done
 if [ -z "$ENVFILE" ]; then
@@ -52,5 +54,5 @@ export PGHOST="$SUPABASE_MATRIX_HOST" PGPORT="5432" \
 night_assert_target production || exit $?
 
 export PGOPTIONS='-c statement_timeout=600000 -c lock_timeout=10000'
-cd /Users/armanisadeghi/code/matrx-frontend
+cd "$REPO_ROOT"
 "$PSQL" -X -v ON_ERROR_STOP=1 -f scripts/campaign-tests/storeon_green.sql
