@@ -45,12 +45,11 @@ import {
   selectUserId,
 } from "@/lib/redux/selectors/userSelectors";
 import { canUseGoogleOAuthInternalTest } from "@/features/marketing/google/internal-test-reviewer";
-import {
-  YouTubeAnalyticsResult,
-  type YouTubeAnalyticsSelection,
-} from "@/features/marketing/google/YouTubeAnalyticsResult";
+import { YouTubeAnalyticsResult } from "@/features/marketing/google/YouTubeAnalyticsResult";
 import {
   canReadYouTubeAnalytics,
+  loadYouTubeAnalyticsReport,
+  type YouTubeAnalyticsSelection,
   youtubeAnalyticsWindow,
 } from "@/features/marketing/google/youtube-analytics-request";
 import { selectOrganizationId } from "@/lib/redux/slices/appContextSlice";
@@ -277,20 +276,15 @@ function ReadOnlySweepWorkspaceInner({ reviewMode }: { reviewMode: boolean }) {
   const loadYouTube = async () => {
     const connection = selectedConnection("youtube");
     if (!connection || !youtubeChannelId) return;
-    const reportSelection = {
-      connectionId: connection.id,
-      channelId: youtubeChannelId,
-    };
-    const window = youtubeAnalyticsWindow();
     try {
-      await youtube.mutateAsync({
+      await loadYouTubeAnalyticsReport({
         connectionId: connection.id,
-        organizationId: await operationOrganizationId(connection),
+        organizationId: operationOrganizationId(connection),
         channelId: youtubeChannelId,
-        startDate: window.startDate,
-        endDate: window.endDate,
+        mutate: youtube.mutateAsync,
+        reset: youtube.reset,
+        setLoadedFor: setYoutubeLoadedFor,
       });
-      setYoutubeLoadedFor(reportSelection);
     } catch (error) {
       setYoutubeLoadedFor(null);
       showReadError("YouTube Analytics", error);
@@ -311,6 +305,7 @@ function ReadOnlySweepWorkspaceInner({ reviewMode }: { reviewMode: boolean }) {
   };
 
   const youtubeConnection = selectedConnection("youtube");
+  const youtubeWindow = youtubeAnalyticsWindow();
   const youtubeChannels = resources.filter(
     (resource) =>
       resource.resource_type === "youtube_channel" &&
@@ -578,6 +573,8 @@ function ReadOnlySweepWorkspaceInner({ reviewMode }: { reviewMode: boolean }) {
                   ? {
                       connectionId: youtubeConnection.id,
                       channelId: youtubeChannelId,
+                      startDate: youtubeWindow.startDate,
+                      endDate: youtubeWindow.endDate,
                     }
                   : null
               }

@@ -1,13 +1,10 @@
 "use client";
 
 import { Badge } from "@/components/ui/badge";
+import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { KpiGrid, KpiTile } from "@/components/official/kpi/KpiTile";
 import type { YouTubeAnalyticsPreview } from "@/features/marketing/google/types";
-
-export interface YouTubeAnalyticsSelection {
-  connectionId: string;
-  channelId: string;
-}
+import type { YouTubeAnalyticsSelection } from "@/features/marketing/google/youtube-analytics-request";
 
 const VIDEO_ERROR_LABEL: Record<
   NonNullable<YouTubeAnalyticsPreview["video_report_error"]>,
@@ -26,7 +23,9 @@ function sameSelection(
   return (
     currentSelection !== null &&
     loadedFor?.connectionId === currentSelection.connectionId &&
-    loadedFor.channelId === currentSelection.channelId
+    loadedFor.channelId === currentSelection.channelId &&
+    loadedFor.startDate === currentSelection.startDate &&
+    loadedFor.endDate === currentSelection.endDate
   );
 }
 
@@ -62,7 +61,9 @@ export function YouTubeAnalyticsResult({
     !report ||
     !sameSelection(loadedFor, currentSelection) ||
     !currentSelection ||
-    report.channel_id !== currentSelection.channelId
+    report.channel_id !== currentSelection.channelId ||
+    report.start_date !== currentSelection.startDate ||
+    report.end_date !== currentSelection.endDate
   ) {
     return null;
   }
@@ -213,6 +214,9 @@ export function YouTubeAnalyticsResult({
             {report.video_report_error ? (
               <Badge variant="outline">
                 {VIDEO_ERROR_LABEL[report.video_report_error]}
+                <ErrorAlchemyMenu
+                  error={VIDEO_ERROR_LABEL[report.video_report_error]}
+                />
               </Badge>
             ) : null}
             <Badge variant="outline">{report.videos.length} returned</Badge>

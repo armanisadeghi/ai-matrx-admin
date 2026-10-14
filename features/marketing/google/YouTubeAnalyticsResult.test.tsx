@@ -5,6 +5,7 @@ import type { YouTubeAnalyticsPreview } from "@/features/marketing/google/types"
 import { YouTubeAnalyticsResult } from "@/features/marketing/google/YouTubeAnalyticsResult";
 import {
   canReadYouTubeAnalytics,
+  loadYouTubeAnalyticsReport,
   youtubeAnalyticsWindow,
 } from "@/features/marketing/google/youtube-analytics-request";
 import { GOOGLE_SCOPE } from "@/lib/googleScopes";
@@ -62,6 +63,8 @@ const REPORT = {
 const SELECTION = {
   connectionId: "google-green-home-studio",
   channelId: REPORT.channel_id,
+  startDate: REPORT.start_date,
+  endDate: REPORT.end_date,
 };
 
 let container: HTMLElement;
@@ -142,7 +145,31 @@ describe("YouTube Analytics report", () => {
     const text = await renderResult(REPORT, SELECTION, {
       connectionId: "google-passive-house-studio",
       channelId: "UCpassivehouse1234567890",
+      startDate: REPORT.start_date,
+      endDate: REPORT.end_date,
     });
+
+    expect(text).toBe("");
+  });
+
+  it("refuses a report loaded for a prior 28-day window", async () => {
+    const text = await renderResult(REPORT, SELECTION, {
+      ...SELECTION,
+      startDate: "2026-09-18",
+      endDate: "2026-10-15",
+    });
+
+    expect(text).toBe("");
+  });
+
+  it("refuses a response whose dates do not match the requested window", async () => {
+    const staleReport = {
+      ...REPORT,
+      start_date: "2026-09-16",
+      end_date: "2026-10-13",
+    } satisfies YouTubeAnalyticsPreview;
+
+    const text = await renderResult(staleReport);
 
     expect(text).toBe("");
   });
@@ -164,6 +191,7 @@ describe("YouTube Analytics report", () => {
     expect(text).toContain("0/28 days returned");
     expect(text).toContain("Data through —");
     expect(text).toContain("Invalid provider response");
+    expect(container.querySelector("[data-error-alchemy-menu]")).not.toBeNull();
     expect(text).toContain("Video results are unavailable for this report.");
     expect(text).not.toContain("1,840");
     expect(container.textContent?.match(/—/g)?.length).toBeGreaterThanOrEqual(
@@ -173,6 +201,49 @@ describe("YouTube Analytics report", () => {
 });
 
 describe("the report request window", () => {
+  it("clears a prior report before a later-window request resolves", async () => {
+    let resolveReport: ((value: YouTubeAnalyticsPreview) => void) | undefined;
+    const mutate = jest.fn(
+      () =>
+        new Promise<YouTubeAnalyticsPreview>((resolve) => {
+          resolveReport = resolve;
+        }),
+    );
+    const reset = jest.fn();
+    const setLoadedFor = jest.fn();
+
+    const pending = loadYouTubeAnalyticsReport({
+      connectionId: SELECTION.connectionId,
+      organizationId: "organization-1",
+      channelId: SELECTION.channelId,
+      mutate,
+      reset,
+      setLoadedFor,
+      today: new Date("2026-10-15T00:01:00Z"),
+    });
+
+    expect(setLoadedFor).toHaveBeenCalledTimes(1);
+    expect(setLoadedFor).toHaveBeenLastCalledWith(null);
+    expect(reset).toHaveBeenCalledTimes(1);
+    await Promise.resolve();
+    expect(mutate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        startDate: "2026-09-18",
+        endDate: "2026-10-15",
+      }),
+    );
+
+    resolveReport?.(REPORT);
+    await pending;
+
+    expect(setLoadedFor).toHaveBeenLastCalledWith({
+      connectionId: SELECTION.connectionId,
+      channelId: SELECTION.channelId,
+      startDate: "2026-09-18",
+      endDate: "2026-10-15",
+    });
+  });
+
   it.each([
     ["2026-10-14T23:45:00Z", "2026-09-17", "2026-10-14"],
     ["2028-03-01T00:15:00Z", "2028-02-03", "2028-03-01"],
