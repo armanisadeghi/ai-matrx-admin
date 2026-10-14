@@ -209,6 +209,7 @@ function startInstance(
     // right question; what is left is to lay the component out at the width it
     // is actually allotted rather than across the whole viewport.
     let widthApplied = false;
+    let widthGraceTimer: number | null = null;
     const applyAllottedWidth = (width: unknown): boolean => {
         if (typeof width !== "number" || !Number.isFinite(width) || width <= 0) {
             return false;
@@ -236,7 +237,7 @@ function startInstance(
         // 0.4 s, each then correctly sized). So wait for it, and say nothing
         // for a frame that is not on screen (zero-width: nothing is laid out
         // wrong where nobody can see it).
-        window.setTimeout(() => {
+        widthGraceTimer = window.setTimeout(() => {
             if (widthApplied || window.innerWidth === 0) return;
             send({
                 type: "matrx:sandbox:error",
@@ -544,6 +545,7 @@ function startInstance(
                 break;
             }
             case "matrx:sandbox:dispose":
+                if (widthGraceTimer !== null) window.clearTimeout(widthGraceTimer);
                 observer?.disconnect();
                 bodyObserver?.disconnect();
                 port.onmessage = null;
