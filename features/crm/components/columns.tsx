@@ -16,6 +16,7 @@ import {
   ShieldCheck,
   User,
 } from "lucide-react";
+import { Badge, Chip } from "@ai-matrx/design-system/controls";
 import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
 import { formatRelativeTime } from "@/utils/datetime";
 import { resolveEntityDoors } from "@/components/official/entity-ref/doors";
@@ -55,27 +56,28 @@ const DATE_BUCKET_OPTIONS = DATE_BUCKETS.map((b) => ({
 function writtenByBadge(row: PartyListRow) {
   const tier = row.created_by_tier;
   if (tier !== "agent") {
-    return <span className="text-xs text-muted-foreground">—</span>;
+    return <span className="type-body text-muted-foreground">—</span>;
   }
   const system = row.created_by_system;
   const edited = row.updated_by_tier === "user";
   const who = system ? `Added by ${system}` : "Added by an agent";
   return (
-    <span
-      className="inline-flex items-center gap-1 whitespace-nowrap rounded-full border border-primary/30 bg-primary/10 px-2 py-0.5 text-[11px] font-medium leading-none text-primary-ink"
+    <Chip
+      tone="primary"
+      icon={
+        edited ? (
+          <PenLine aria-hidden />
+        ) : (
+          <AGENT_ICON aria-hidden />
+        )
+      }
+      label={edited ? "Agent, edited" : "An agent"}
       title={
         edited
           ? `${who}, and a person has edited it since.`
           : `${who}. Nobody has edited it since.`
       }
-    >
-      {edited ? (
-        <PenLine className="h-3 w-3" aria-hidden />
-      ) : (
-        <AGENT_ICON className="h-3 w-3" aria-hidden />
-      )}
-      {edited ? "Agent, edited" : "An agent"}
-    </span>
+    />
   );
 }
 
@@ -83,17 +85,11 @@ function kindBadge(row: PartyListRow) {
   const isPerson = row.party_kind === "person";
   const Icon = isPerson ? User : Building2;
   return (
-    <span
-      className={cn(
-        "inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-medium leading-none",
-        isPerson
-          ? "border-sky-500/20 bg-sky-500/15 text-sky-600 dark:text-sky-400"
-          : "border-violet-500/20 bg-violet-500/15 text-violet-600 dark:text-violet-400",
-      )}
-    >
-      <Icon className="h-3 w-3" />
-      {isPerson ? "Person" : "Company"}
-    </span>
+    <Chip
+      tone={isPerson ? "sky" : "violet"}
+      icon={<Icon aria-hidden />}
+      label={isPerson ? "Person" : "Company"}
+    />
   );
 }
 
@@ -105,19 +101,17 @@ function isExpertStatus(value: string | null): value is ExpertStatus {
 export function expertBadge(status: ExpertStatus) {
   const Icon = status === "registered" ? BadgeCheck : ShieldCheck;
   return (
-    <span
-      className={cn(
-        "inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-medium leading-none",
+    <Chip
+      tone={
         status === "vetted"
-          ? "border-emerald-500/20 bg-emerald-500/15 text-emerald-600 dark:text-emerald-400"
+          ? "success"
           : status === "approved"
-            ? "border-primary/20 bg-primary/15 text-primary-ink"
-            : "border-border bg-muted text-muted-foreground",
-      )}
-    >
-      <Icon className="h-3 w-3" />
-      {EXPERT_STATUS_LABEL[status]}
-    </span>
+            ? "primary"
+            : "neutral"
+      }
+      icon={<Icon aria-hidden />}
+      label={EXPERT_STATUS_LABEL[status]}
+    />
   );
 }
 
@@ -138,24 +132,23 @@ export const PARTY_COLUMNS: MatrxColumnDef<PartyListRow>[] = [
     href: (row) => resolveEntityDoors("party", row.id).href ?? "",
     cell: (row) => (
       <div className="flex min-w-0 items-center gap-2">
-        <span className="truncate text-sm font-medium text-foreground">
+        <span className="type-title truncate text-foreground">
           {row.display_name}
         </span>
         {row.do_not_contact && (
-          <span
+          <Badge
+            tone="destructive"
             title={row.do_not_contact_reason ?? "Do not contact"}
-            className="inline-flex shrink-0 items-center gap-1 rounded-full border border-destructive/20 bg-destructive/15 px-1.5 py-0.5 text-[11px] font-medium leading-none text-destructive-ink"
           >
-            <PhoneOff className="h-3 w-3" />
+            <PhoneOff className="h-3 w-3" aria-hidden />
             DNC
-          </span>
+          </Badge>
         )}
-        <span
-          aria-hidden="true"
-          className="ml-1 inline-flex shrink-0 items-center gap-0.5 rounded-md bg-primary/10 px-1.5 py-1 text-[11px] font-semibold text-primary-ink sm:hidden"
-        >
-          Open
-          <ChevronRight className="h-3 w-3" />
+        <span aria-hidden="true" className="ml-1 shrink-0 sm:hidden">
+          <Badge tone="primary">
+            Open
+            <ChevronRight className="h-3 w-3" aria-hidden />
+          </Badge>
         </span>
       </div>
     ),
@@ -180,7 +173,7 @@ export const PARTY_COLUMNS: MatrxColumnDef<PartyListRow>[] = [
     sortable: true,
     filter: "text",
     cell: (row) => (
-      <span className="truncate text-xs text-muted-foreground">
+      <span className="type-body truncate text-muted-foreground">
         {row.job_title ?? "—"}
       </span>
     ),
@@ -195,12 +188,12 @@ export const PARTY_COLUMNS: MatrxColumnDef<PartyListRow>[] = [
     filter: false,
     cell: (row) =>
       row.employer ? (
-        <span className="inline-flex min-w-0 items-center gap-1.5 text-xs text-foreground">
+        <span className="type-body inline-flex min-w-0 items-center gap-1.5 text-foreground">
           <Building2 className="h-3 w-3 shrink-0 text-muted-foreground" />
           <span className="truncate">{row.employer.display_name}</span>
         </span>
       ) : (
-        <span className="text-xs text-muted-foreground">—</span>
+        <span className="type-body text-muted-foreground">—</span>
       ),
   },
   {
@@ -211,12 +204,12 @@ export const PARTY_COLUMNS: MatrxColumnDef<PartyListRow>[] = [
     filter: "text",
     cell: (row) =>
       row.primary_domain ? (
-        <span className="inline-flex min-w-0 items-center gap-1.5 font-mono text-xs text-muted-foreground">
+        <span className="type-body inline-flex min-w-0 items-center gap-1.5 text-muted-foreground">
           <Globe className="h-3 w-3 shrink-0" />
           <span className="truncate">{row.primary_domain}</span>
         </span>
       ) : (
-        <span className="text-xs text-muted-foreground">—</span>
+        <span className="type-body text-muted-foreground">—</span>
       ),
   },
   {
@@ -227,11 +220,11 @@ export const PARTY_COLUMNS: MatrxColumnDef<PartyListRow>[] = [
     filter: "text",
     cell: (row) =>
       row.date_of_birth ? (
-        <span className="whitespace-nowrap text-xs tabular-nums text-muted-foreground">
+        <span className="type-meta whitespace-nowrap tabular-nums text-muted-foreground">
           {row.date_of_birth}
         </span>
       ) : (
-        <span className="text-xs text-muted-foreground">—</span>
+        <span className="type-body text-muted-foreground">—</span>
       ),
   },
   {
@@ -242,9 +235,11 @@ export const PARTY_COLUMNS: MatrxColumnDef<PartyListRow>[] = [
     filter: "text",
     cell: (row) =>
       row.tax_id ? (
-        <span className="font-mono text-xs text-muted-foreground">{row.tax_id}</span>
+        <span className="type-meta font-mono text-muted-foreground">
+          {row.tax_id}
+        </span>
       ) : (
-        <span className="text-xs text-muted-foreground">—</span>
+        <span className="type-body text-muted-foreground">—</span>
       ),
   },
   {
@@ -289,7 +284,7 @@ export const PARTY_COLUMNS: MatrxColumnDef<PartyListRow>[] = [
       isExpertStatus(row.expert_status) ? (
         expertBadge(row.expert_status)
       ) : (
-        <span className="text-xs text-muted-foreground">—</span>
+        <span className="type-body text-muted-foreground">—</span>
       ),
   },
   {
@@ -318,11 +313,9 @@ export const PARTY_COLUMNS: MatrxColumnDef<PartyListRow>[] = [
     width: 120,
     cell: (row) =>
       row.record_class === "discovered" ? (
-        <span className="rounded bg-muted px-1.5 py-0.5 text-[11px] text-muted-foreground">
-          Found
-        </span>
+        <Chip label="Found" />
       ) : (
-        <span className="text-xs text-muted-foreground">—</span>
+        <span className="type-body text-muted-foreground">—</span>
       ),
   },
   {
@@ -364,7 +357,7 @@ export const PARTY_COLUMNS: MatrxColumnDef<PartyListRow>[] = [
     filterOptions: DATE_BUCKET_OPTIONS,
     width: 110,
     cell: (row) => (
-      <span className="whitespace-nowrap text-xs tabular-nums text-muted-foreground">
+      <span className="type-meta whitespace-nowrap tabular-nums text-muted-foreground">
         {formatRelativeTime(row.updated_at)}
       </span>
     ),
@@ -379,7 +372,7 @@ export const PARTY_COLUMNS: MatrxColumnDef<PartyListRow>[] = [
     filterOptions: DATE_BUCKET_OPTIONS,
     width: 110,
     cell: (row) => (
-      <span className="whitespace-nowrap text-xs tabular-nums text-muted-foreground">
+      <span className="type-meta whitespace-nowrap tabular-nums text-muted-foreground">
         {formatRelativeTime(row.created_at)}
       </span>
     ),

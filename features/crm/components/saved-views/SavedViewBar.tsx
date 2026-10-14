@@ -23,7 +23,7 @@ import {
 import { dismissRecordToasts, recordToast, toast } from "@/lib/toast";
 import { Button } from "@/components/ui/button";
 import { ReadFailure } from "@ai-matrx/design-system";
-import { Input } from "@ai-matrx/design-system/controls";
+import { Badge, Input } from "@ai-matrx/design-system/controls";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -353,7 +353,7 @@ export function SavedViewBar<TDef>({
         className,
       )}
     >
-      <span className="hidden lg:inline-flex items-center gap-1 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+      <span className="hidden lg:inline-flex items-center gap-1 type-label uppercase tracking-wide">
         <Bookmark className="h-3.5 w-3.5" />
         Views
       </span>
@@ -370,9 +370,9 @@ export function SavedViewBar<TDef>({
             <SelectTrigger className="min-w-0 flex-1" aria-label="Saved view">
               <SelectValue placeholder="Choose a view" />
               {dirty && active && (
-                <span className="shrink-0 text-xs text-amber-700 dark:text-amber-400">
+                <Badge tone="warning" className="shrink-0">
                   Modified
-                </span>
+                </Badge>
               )}
             </SelectTrigger>
             <SelectContent>
@@ -403,7 +403,7 @@ export function SavedViewBar<TDef>({
         </div>
       )}
       {loading && views.length === 0 ? (
-        <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+        <span className="type-secondary inline-flex items-center gap-1 text-muted-foreground">
           <Loader2 className="h-3 w-3 animate-spin" />
           Loading views…
         </span>
@@ -418,7 +418,7 @@ export function SavedViewBar<TDef>({
           }}
         />
       ) : views.length === 0 ? (
-        <span className="text-xs text-muted-foreground">No saved views</span>
+        <span className="type-secondary text-muted-foreground">No saved views</span>
       ) : (
         SECTIONS.flatMap(({ id: sectionId, label }) => {
           const inSection = views.filter((v) => v.section === sectionId);
@@ -430,7 +430,7 @@ export function SavedViewBar<TDef>({
               <span
                 key={`section-${sectionId}`}
                 data-saved-view-section={sectionId}
-                className="hidden lg:inline ml-1 text-[11px] text-muted-foreground first:ml-0"
+                className="hidden lg:inline type-meta ml-1 text-muted-foreground first:ml-0"
               >
                 {label}
               </span>
@@ -441,7 +441,7 @@ export function SavedViewBar<TDef>({
                 <span
                   key={view.id}
                   className={cn(
-                    "hidden lg:inline-flex items-center rounded-md border text-xs transition-colors",
+                    "type-title hidden lg:inline-flex items-center rounded-md border transition-colors",
                     isActive
                       ? "border-primary/40 bg-accent text-foreground"
                       : "border-border text-muted-foreground hover:bg-accent/50",
@@ -451,7 +451,7 @@ export function SavedViewBar<TDef>({
                     type="button"
                     onClick={() => apply(view)}
                     title={describe(view.definition)}
-                    className="inline-flex h-11 items-center gap-1 px-2 font-medium lg:h-7"
+                    className="inline-flex h-11 items-center gap-1 px-2 lg:h-7"
                   >
                     {isActive && <Check className="h-3.5 w-3.5 text-primary" />}
                     {view.visibility === "internal" && (
@@ -476,22 +476,14 @@ export function SavedViewBar<TDef>({
       )}
 
       {dirty && active && (
-        <span className="hidden lg:inline-flex items-center gap-1.5 rounded-md border border-amber-500/30 bg-amber-500/10 px-2 py-1 text-[11px] text-amber-700 dark:text-amber-400">
-          Modified
-          <button
-            type="button"
-            className="font-semibold underline underline-offset-2"
-            onClick={() => void updateDefinition(active)}
-          >
+        <span className="hidden items-center gap-1 lg:inline-flex">
+          <Badge tone="warning">Modified</Badge>
+          <Button variant="quiet" onClick={() => void updateDefinition(active)}>
             Update view
-          </button>
-          <button
-            type="button"
-            className="underline underline-offset-2"
-            onClick={() => apply(active)}
-          >
+          </Button>
+          <Button variant="quiet" onClick={() => apply(active)}>
             Reset
-          </button>
+          </Button>
         </span>
       )}
 
@@ -587,11 +579,11 @@ function SaveViewDialog({
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Save this view</DialogTitle>
-          <DialogDescription className="text-xs">{summary}</DialogDescription>
+          <DialogDescription className="type-secondary">{summary}</DialogDescription>
         </DialogHeader>
         <div className="space-y-3">
           <div className="space-y-1">
-            <Label htmlFor="saved-view-name" className="text-xs">
+            <Label htmlFor="saved-view-name" className="type-label">
               Name
             </Label>
             <Input
@@ -610,7 +602,7 @@ function SaveViewDialog({
               checked={shared}
               onCheckedChange={(v) => setShared(v === true)}
             />
-            <span className="text-xs text-foreground">
+            <span className="type-body text-foreground">
               Share with my organization
               <span className="ml-1 text-muted-foreground">
                 (everyone in it can open and edit this view)

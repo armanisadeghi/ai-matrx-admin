@@ -40,6 +40,7 @@ import {
   RotateCcw,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@ai-matrx/design-system/controls";
 import { useOpenGoogleContactsImport } from "@/features/overlays/openers/googleImportWindows";
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
 import type {
@@ -1143,13 +1144,13 @@ export function CrmListPage({
                   <Merge className="h-3.5 w-3.5" />
                   <span className="max-sm:sr-only">Duplicates</span>
                   {(dupCountFailed || (dupCount !== null && dupCount > 0)) && (
-                    <span className="ml-0.5 rounded-full bg-primary/15 px-1.5 py-0.5 text-[10px] font-semibold leading-none text-primary-ink">
+                    <Badge tone="primary" className="ml-0.5">
                       <UntrustedCount
                         trustworthy={!dupCountFailed}
                         label="Pending duplicates"
                         value={dupCount ?? 0}
                       />
-                    </span>
+                    </Badge>
                   )}
                 </Link>
               </Button>
@@ -1198,18 +1199,18 @@ export function CrmListPage({
             />
           )}
           {customColumns.error && (
-            <div className="mt-2 text-xs text-destructive" title={customColumns.error}>
+            <div className="type-secondary mt-2 text-destructive" title={customColumns.error}>
               Custom fields could not be loaded
             <ErrorAlchemyMenu error={customColumns.error} /></div>
           )}
           {grouped && list.ceiling !== null && (
-            <div className="mt-2 text-xs text-muted-foreground">
+            <div className="type-secondary mt-2 text-muted-foreground">
               {/* read-gate-exempt: shown only when the list answered with a ceiling */}
               Grouped over the first {list.ceiling.toLocaleString()} of {list.total.toLocaleString()} records
             </div>
           )}
           {list.error && (
-            <div className="mt-2 rounded-md border border-destructive/20 bg-destructive/10 px-3 py-1.5 text-xs text-destructive-ink">
+            <div className="mt-2 rounded-md border border-destructive/20 bg-destructive/10 px-3 py-1.5 type-secondary text-destructive-ink">
               {list.error}
               <ErrorAlchemyMenu error={list.error} />
             </div>
@@ -1242,14 +1243,12 @@ export function CrmListPage({
                 data={grouped && !list.isWhole ? [] : list.rows}
                 columns={[...(tableColumns), { id: "custom-actions", header: "Actions", sortable: false, filter: false, customActions: (row) => (
                   <ItemMenu config={menuFor(row)} align="end">
-                    <button
-                      type="button"
+                    <Button
+                      variant="quiet"
+                      icon={<MoreVertical />}
                       aria-label={`Actions for ${row.display_name}`}
-                      className="inline-flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground"
                       onClick={(e) => e.stopPropagation()}
-                    >
-                      <MoreVertical className="h-4 w-4" />
-                    </button>
+                    />
                   </ItemMenu>
                 ) }]}
                 getRowId={(row) => row.id}
