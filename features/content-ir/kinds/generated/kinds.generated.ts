@@ -7,7 +7,7 @@
 // Verify:      pnpm check:kind-types   (CI-blocking freshness gate)
 // Twin guard:  pnpm check:kind-type-twins
 //
-// 1519 active kinds. THESE ARE THE ONLY KIND PAYLOAD TYPES IN THE REPO.
+// 1521 active kinds. THESE ARE THE ONLY KIND PAYLOAD TYPES IN THE REPO.
 // A hand-written interface mirroring a registered kind is a defect — derive
 // (Pick/Omit) from the type here instead, and never re-declare it.
 //
@@ -21,7 +21,7 @@
 // ─────────────────────────────────────────────────────────────────────────
 
 /** Structural fingerprint of the registry rows this artifact was generated from. */
-export const KIND_REGISTRY_FINGERPRINT = "a9c055a87330";
+export const KIND_REGISTRY_FINGERPRINT = "4276aaec9a61";
 
 // ─────────────────────────────────────────────────────────────────────────
 // Shared nested structures. Deduped by structure across the registry — an
@@ -864,6 +864,20 @@ export interface AiVisibilitySummaryResult {
   citation_eligibility_actions?: string[];
   influential_unverified_claims?: InfluentialUnverifiedClaimResult[];
   cross_provider_recommendations?: unknown[][];
+}
+
+/**
+ * * From kind `anchor_candidate_list`.
+ */
+export interface AnchorCandidate {
+  key: string;
+  url?: string | null;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  handle?: string | null;
+  platform?: string | null;
 }
 
 /**
@@ -13370,6 +13384,20 @@ export interface AnalyticsInsight {
    * Severity band driving the color treatment.
    */
   severity: "good" | "watch" | "urgent";
+}
+
+/**
+ * The accounts and pages the name searches found that could be this person, in rank order, each with the
+ * rules' score and reasons and, when it was looked up, its privacy-safe profile basics.
+ *  *
+ *  * Kind `anchor_candidate_list` (registry v2).
+ */
+export interface AnchorCandidateList {
+  items?: AnchorCandidate[];
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "anchor_candidate_list";
 }
 
 /**
@@ -36681,6 +36709,19 @@ export interface PerimeterEntry {
 }
 
 /**
+ * The deterministic read of whether a Smart Add subject is a person or a business, with the signals behind it.
+ *  *
+ *  * Kind `person_or_business_signals` (registry v2).
+ */
+export interface PersonOrBusinessSignals {
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "person_or_business_signals";
+  verdict?: string | null;
+}
+
+/**
  * Kind `personal_staff.escalation.offer` (registry v12).
  */
 export interface PersonalStaffEscalationOffer {
@@ -57788,6 +57829,7 @@ export type GeneratedKindSlug =
   | "ambient.page_guidance.offer"
   | "analogy"
   | "analytics_insight"
+  | "anchor_candidate_list"
   | "answer_grade"
   | "applet_build_result"
   | "applets.build_request.offer"
@@ -58486,6 +58528,7 @@ export type GeneratedKindSlug =
   | "pdf_table_extraction"
   | "pdf_text_extraction"
   | "perimeter_entry"
+  | "person_or_business_signals"
   | "personal_staff.escalation.offer"
   | "personal_staff.front_line.offer"
   | "personalization_target_result"
@@ -59310,6 +59353,7 @@ export interface KindPayloadBySlug {
   "ambient.page_guidance.offer": AmbientPageGuidanceOffer;
   "analogy": Analogy;
   "analytics_insight": AnalyticsInsight;
+  "anchor_candidate_list": AnchorCandidateList;
   "answer_grade": AnswerGrade;
   "applet_build_result": AppletBuildResult;
   "applets.build_request.offer": AppletsBuildRequestOffer;
@@ -60008,6 +60052,7 @@ export interface KindPayloadBySlug {
   "pdf_table_extraction": PdfTableExtraction;
   "pdf_text_extraction": PdfTextExtraction;
   "perimeter_entry": PerimeterEntry;
+  "person_or_business_signals": PersonOrBusinessSignals;
   "personal_staff.escalation.offer": PersonalStaffEscalationOffer;
   "personal_staff.front_line.offer": PersonalStaffFrontLineOffer;
   "personalization_target_result": PersonalizationTargetResult;
@@ -60836,6 +60881,7 @@ export const GENERATED_KIND_SLUGS: readonly GeneratedKindSlug[] = [
   "ambient.page_guidance.offer",
   "analogy",
   "analytics_insight",
+  "anchor_candidate_list",
   "answer_grade",
   "applet_build_result",
   "applets.build_request.offer",
@@ -61534,6 +61580,7 @@ export const GENERATED_KIND_SLUGS: readonly GeneratedKindSlug[] = [
   "pdf_table_extraction",
   "pdf_text_extraction",
   "perimeter_entry",
+  "person_or_business_signals",
   "personal_staff.escalation.offer",
   "personal_staff.front_line.offer",
   "personalization_target_result",
