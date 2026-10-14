@@ -32,6 +32,8 @@ import { CircleAlert, Loader2, Power, PowerOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import {
+  useLoadSequence,
+  useOncePerOutage,
   useReconnectRetry,
   withLoadDeadline,
 } from "@/features/content-ir/studio/bounded-load";
@@ -97,27 +99,42 @@ export default function ShapeActivationControl({
     onVerdictRef.current = onVerdict;
   });
 
+  // The verdict READ failed (as opposed to a flip failing) — only this drives
+  // the self-healing retry, and a late result of an older call never wins.
+  const [verdictFailed, setVerdictFailed] = useState(false);
+  const beginLoad = useLoadSequence();
+  const outage = useOncePerOutage();
+
   const refreshVerdict = useCallback(async () => {
+    const isCurrent = beginLoad();
     setLoadingVerdict(true);
     try {
       const next = await withLoadDeadline(
         evaluateShapeActivation(supabase, kindDefinitionId),
         "this shape's activation check",
       );
+      if (!isCurrent()) return;
       setVerdict(next);
       onVerdictRef.current?.(next);
       setError(null);
+      setVerdictFailed(false);
+      outage.reset();
     } catch (err) {
+      if (!isCurrent()) return;
       const message = err instanceof Error ? err.message : String(err);
       setError(message);
+      setVerdictFailed(true);
       onVerdictRef.current?.(null);
-      captureError({
-        source: "content-ir",
-        message: `Shape activation verdict failed for "${kind}": ${message}`,
-      });
+      if (outage.first()) {
+        captureError({
+          source: "content-ir",
+          message: `Shape activation verdict failed for "${kind}": ${message}`,
+        });
+      }
     } finally {
-      setLoadingVerdict(false);
+      if (isCurrent()) setLoadingVerdict(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- both helpers are ref-stable
   }, [kind, kindDefinitionId]);
 
   useEffect(() => {
@@ -129,7 +146,7 @@ export default function ShapeActivationControl({
 
   // The verdict never landed (stalled line): ask again when the connection is
   // back instead of leaving the failure standing.
-  useReconnectRetry(verdict === null && error !== null, () => void refreshVerdict());
+  useReconnectRetry(verdictFailed, () => void refreshVerdict());
 
   async function flip(next: boolean): Promise<void> {
     if (!next) {
@@ -294,6 +311,16 @@ export default function ShapeActivationControl({
           <CircleAlert className="mt-0.5 h-3 w-3 shrink-0" />
           <span>{error}</span>
           <ErrorAlchemyMenu error={error} />
+          {verdictFailed ? (
+            <Button
+              type="button"
+              variant="quiet"
+              disabled={loadingVerdict}
+              onClick={() => void refreshVerdict()}
+            >
+              Try again
+            </Button>
+          ) : null}
         </p>
       ) : null}
     </section>

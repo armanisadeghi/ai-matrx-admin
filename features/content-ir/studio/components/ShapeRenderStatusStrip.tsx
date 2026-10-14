@@ -53,6 +53,8 @@ import { AGENT_ICON } from "@/components/icons/domain-icons";
 import { asClause } from "@ai-matrx/kit/text";
 import { ReadFailure } from "@ai-matrx/design-system";
 import {
+  useLoadSequence,
+  useOncePerOutage,
   useReconnectRetry,
   withLoadDeadline,
 } from "@/features/content-ir/studio/bounded-load";
@@ -101,63 +103,81 @@ export default function ShapeRenderStatusStrip({
   );
   const [switchingId, setSwitchingId] = useState<string | null>(null);
 
+  const beginWarm = useLoadSequence();
+  const beginCandidates = useLoadSequence();
+  const warmOutage = useOncePerOutage();
+  const candidatesOutage = useOncePerOutage();
+
   useEffect(() => {
-    let cancelled = false;
-    void withLoadDeadline(
-      componentRegistry.ensureWarm(),
-      "what renders this shape",
-    ).then(
+    const isCurrent = beginWarm();
+    // The first attempt joins the registry's one-shot warm. A RETRY must not
+    // only re-await that same promise: if its socket is the one that stalled it
+    // may never settle (live, 2026-10-14), so a retry also asks for a fresh
+    // list (`refresh(0)`, deduped by the registry) and takes whichever lands.
+    const attempt =
+      warmAttempt === 0
+        ? componentRegistry.ensureWarm()
+        : Promise.race([
+            componentRegistry.ensureWarm(),
+            componentRegistry.refresh(0),
+          ]);
+    void withLoadDeadline(attempt, "what renders this shape").then(
       () => {
-        if (cancelled) return;
+        if (!isCurrent()) return;
         setWarmError(null);
         setComponentsWarm(true);
+        warmOutage.reset();
       },
       (error: unknown) => {
-        if (cancelled) return;
+        if (!isCurrent()) return;
         setWarmError(error);
-        captureError({
-          source: "content-ir",
-          message: `Could not confirm what renders "${kind}": ${
-            error instanceof Error ? error.message : String(error)
-          }`,
-          relation: kind,
-        });
+        if (warmOutage.first()) {
+          captureError({
+            source: "content-ir",
+            message: `Could not confirm what renders "${kind}": ${
+              error instanceof Error ? error.message : String(error)
+            }`,
+            relation: kind,
+          });
+        }
       },
     );
     const unsubscribe = subscribeKindComponents(() => setComponentsWarm((v) => v));
     return () => {
-      cancelled = true;
       unsubscribe();
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- helpers are ref-stable
   }, [kind, warmAttempt]);
 
   const refreshCandidates = useCallback(() => {
-    let cancelled = false;
+    const isCurrent = beginCandidates();
     void withLoadDeadline(
       listShapeComponentCandidates(supabase, kindDefinitionId),
       "this shape's components",
     )
       .then((rows) => {
-        if (!cancelled) {
-          setCandidates(rows);
-          setCandidatesError(null);
-        }
+        if (!isCurrent()) return;
+        setCandidates(rows);
+        setCandidatesError(null);
+        candidatesOutage.reset();
       })
       .catch((err) => {
-        if (cancelled) return;
+        if (!isCurrent()) return;
         const message = err instanceof Error ? err.message : String(err);
         setCandidatesError(message);
-        captureError({
-          source: "content-ir",
-          message: `Failed to list component candidates for "${kind}": ${message}`,
-        });
+        if (candidatesOutage.first()) {
+          captureError({
+            source: "content-ir",
+            message: `Failed to list component candidates for "${kind}": ${message}`,
+          });
+        }
       });
-    return () => {
-      cancelled = true;
-    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- helpers are ref-stable
   }, [kind, kindDefinitionId]);
 
-  useEffect(() => refreshCandidates(), [refreshCandidates]);
+  useEffect(() => {
+    refreshCandidates();
+  }, [refreshCandidates]);
 
   // A load that died heals itself when the connection returns.
   const loadFailed =

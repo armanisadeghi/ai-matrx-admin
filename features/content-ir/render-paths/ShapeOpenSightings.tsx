@@ -32,6 +32,8 @@ import {
 } from "@/features/content-ir/admin/incident-service";
 import { ReadFailure } from "@ai-matrx/design-system";
 import {
+  useLoadSequence,
+  useOncePerOutage,
   useReconnectRetry,
   withLoadDeadline,
 } from "@/features/content-ir/studio/bounded-load";
@@ -50,26 +52,37 @@ export default function ShapeOpenSightings({
   const [resolving, setResolving] = useState<string | null>(null);
   const [loadError, setLoadError] = useState<unknown>(null);
 
+  const beginLoad = useLoadSequence();
+  const outage = useOncePerOutage();
+
   const load = useCallback(async () => {
+    const isCurrent = beginLoad();
     try {
       const all = await withLoadDeadline(
         listKindIncidents(supabase, "open"),
         "this shape's open sightings",
       );
+      if (!isCurrent()) return;
       setRows(all.filter((r) => r.kind === kind));
       setLoadError(null);
+      outage.reset();
     } catch (error) {
+      if (!isCurrent()) return;
       // A failure to LOAD sightings must not look like "no sightings".
-      captureError({
-        source: "content-ir",
-        message: `Could not load open sightings for "${kind}": ${
-          error instanceof Error ? error.message : String(error)
-        }`,
-        relation: kind,
-      });
+      // One error per outage — the retries that follow file nothing more.
+      if (outage.first()) {
+        captureError({
+          source: "content-ir",
+          message: `Could not load open sightings for "${kind}": ${
+            error instanceof Error ? error.message : String(error)
+          }`,
+          relation: kind,
+        });
+      }
       setLoadError(error);
       setRows([]);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- both helpers are ref-stable
   }, [kind]);
 
   useEffect(() => {
