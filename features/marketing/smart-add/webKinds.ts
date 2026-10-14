@@ -122,7 +122,11 @@ function sameOrSimilar(name: string, lead: string): string {
   return norm(lead).includes(norm(name)) ? "Same" : "Similar";
 }
 
-/** The kind whose own rules (metadata.match) claim this address, in vocabulary order. */
+/**
+ * The kind whose rules (metadata.match, with its known-domain categories expanded) claim this address.
+ * A path rule of any kind beats a whole-host rule of any kind (indeed.com/cmp/x/reviews is a review page
+ * even though indeed.com is a job board); within each pass, vocabulary order.
+ */
 export function kindByRules(url: string, kinds: BrandRelationKind[]): { kind: BrandRelationKind; rule: string } | null {
   const address = webAddress(url);
   const host = address.split("/")[0] ?? "";
@@ -134,6 +138,8 @@ export function kindByRules(url: string, kinds: BrandRelationKind[]): { kind: Br
         // A malformed rule in the data never breaks the screen; it just never matches.
       }
     }
+  }
+  for (const kind of kinds) {
     const h = kind.match.hosts.find((x) => (x.includes("/") ? address.startsWith(x) : hostIs(host, x)));
     if (h) return { kind, rule: h };
   }

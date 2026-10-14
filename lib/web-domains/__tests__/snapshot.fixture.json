@@ -1,0 +1,2928 @@
+[
+{
+"category": "press_release",
+"confidence": 1.0,
+"host": "24-7pressrelease.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "people_search",
+"confidence": 1.0,
+"host": "411.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "news",
+"confidence": 1.0,
+"host": "abcnews.go.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "directory",
+"confidence": 1.0,
+"host": "about.me",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "academic_journal",
+"confidence": 1.0,
+"host": "academic.oup.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "press_release",
+"confidence": 1.0,
+"host": "accesswire.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "academic_journal",
+"confidence": 1.0,
+"host": "acs.org",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "people_search",
+"confidence": 1.0,
+"host": "addresses.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "people_search",
+"confidence": 1.0,
+"host": "advancedbackgroundchecks.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "directory",
+"confidence": 1.0,
+"host": "alignable.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "link_in_bio",
+"confidence": 1.0,
+"host": "allmylinks.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "marketplace",
+"confidence": 1.0,
+"host": "amazon.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "store_page",
+"confidence": 1.0,
+"host": "amazon.com",
+"path_pattern": "^amazon\\.[a-z.]+/.*/dp/",
+"provenance": "seeded"
+},
+{
+"category": "store_page",
+"confidence": 1.0,
+"host": "amazon.com",
+"path_pattern": "^amazon\\.[a-z.]+/(stores|shops)/",
+"provenance": "seeded"
+},
+{
+"category": "directory",
+"confidence": 1.0,
+"host": "angel.co",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "review_site",
+"confidence": 1.0,
+"host": "angi.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "people_search",
+"confidence": 1.0,
+"host": "anywho.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "aggregator",
+"confidence": 1.0,
+"host": "aol.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "news",
+"confidence": 1.0,
+"host": "apnews.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "data_broker",
+"confidence": 1.0,
+"host": "apollo.io",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "platform",
+"confidence": 1.0,
+"host": "apple.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "aggregator",
+"confidence": 1.0,
+"host": "apple.news",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "store_page",
+"confidence": 1.0,
+"host": "apps.apple.com",
+"path_pattern": "^apps\\.apple\\.com/",
+"provenance": "seeded"
+},
+{
+"category": "people_search",
+"confidence": 1.0,
+"host": "arrestfacts.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "academic_journal",
+"confidence": 1.0,
+"host": "arxiv.org",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "job_board",
+"confidence": 1.0,
+"host": "ashbyhq.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "professional_registry",
+"confidence": 1.0,
+"host": "avvo.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "review_site",
+"confidence": 1.0,
+"host": "avvo.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "news",
+"confidence": 1.0,
+"host": "axios.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "job_board",
+"confidence": 1.0,
+"host": "bamboohr.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "news",
+"confidence": 1.0,
+"host": "barrons.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "review_site",
+"confidence": 1.0,
+"host": "bbb.org",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "location_page",
+"confidence": 1.0,
+"host": "bbb.org",
+"path_pattern": "^bbb\\.org/us/",
+"provenance": "seeded"
+},
+{
+"category": "news",
+"confidence": 1.0,
+"host": "bbc.co.uk",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "news",
+"confidence": 1.0,
+"host": "bbc.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "link_in_bio",
+"confidence": 1.0,
+"host": "beacons.ai",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "link_in_bio",
+"confidence": 1.0,
+"host": "beacons.page",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "people_search",
+"confidence": 1.0,
+"host": "beenverified.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "directory",
+"confidence": 1.0,
+"host": "bing.com",
+"path_pattern": "^bing\\.com/maps",
+"provenance": "seeded"
+},
+{
+"category": "link_in_bio",
+"confidence": 1.0,
+"host": "bio.link",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "academic_journal",
+"confidence": 1.0,
+"host": "biorxiv.org",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "review_site",
+"confidence": 1.0,
+"host": "birdeye.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "link_in_bio",
+"confidence": 1.0,
+"host": "bit.ly",
+"path_pattern": "^bit\\.ly/m/",
+"provenance": "seeded"
+},
+{
+"category": "data_broker",
+"confidence": 1.0,
+"host": "bizapedia.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "directory",
+"confidence": 1.0,
+"host": "bizapedia.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "news",
+"confidence": 1.0,
+"host": "bizjournals.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "data_broker",
+"confidence": 1.0,
+"host": "bizprofile.net",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "aggregator",
+"confidence": 1.0,
+"host": "biztoc.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "blog_platform",
+"confidence": 1.0,
+"host": "blogspot.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "news",
+"confidence": 1.0,
+"host": "bloomberg.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "directory",
+"confidence": 1.0,
+"host": "bloomberg.com",
+"path_pattern": "^bloomberg\\.com/profile/",
+"provenance": "seeded"
+},
+{
+"category": "academic_journal",
+"confidence": 1.0,
+"host": "bmj.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "job_board",
+"confidence": 1.0,
+"host": "boards.greenhouse.io",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "reference",
+"confidence": 1.0,
+"host": "britannica.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "professional_registry",
+"confidence": 1.0,
+"host": "brokercheck.finra.org",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "directory",
+"confidence": 1.0,
+"host": "brownbook.net",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "social",
+"confidence": 1.0,
+"host": "bsky.app",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "directory",
+"confidence": 1.0,
+"host": "business.google.com",
+"path_pattern": "^business\\.google\\.com/",
+"provenance": "seeded"
+},
+{
+"category": "news",
+"confidence": 1.0,
+"host": "businessinsider.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "press_release",
+"confidence": 1.0,
+"host": "businesswire.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "directory",
+"confidence": 1.0,
+"host": "buzzfile.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "government",
+"confidence": 1.0,
+"host": "calbar.ca.gov",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "professional_registry",
+"confidence": 1.0,
+"host": "calbar.ca.gov",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "academic_journal",
+"confidence": 1.0,
+"host": "cambridge.org",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "link_in_bio",
+"confidence": 1.0,
+"host": "campsite.bio",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "review_site",
+"confidence": 1.0,
+"host": "capterra.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "job_board",
+"confidence": 1.0,
+"host": "careerbuilder.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "link_in_bio",
+"confidence": 1.0,
+"host": "carrd.co",
+"path_pattern": "^[a-z0-9-]+\\.carrd\\.co",
+"provenance": "seeded"
+},
+{
+"category": "directory",
+"confidence": 1.0,
+"host": "cbinsights.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "news",
+"confidence": 1.0,
+"host": "cbsnews.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "academic_journal",
+"confidence": 1.0,
+"host": "cell.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "professional_registry",
+"confidence": 1.0,
+"host": "certificationmatters.org",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "directory",
+"confidence": 1.0,
+"host": "chamberofcommerce.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "people_search",
+"confidence": 1.0,
+"host": "checkpeople.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "news",
+"confidence": 1.0,
+"host": "chicagotribune.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "store_page",
+"confidence": 1.0,
+"host": "chrome.google.com",
+"path_pattern": "^chrome\\.google\\.com/webstore",
+"provenance": "seeded"
+},
+{
+"category": "store_page",
+"confidence": 1.0,
+"host": "chromewebstore.google.com",
+"path_pattern": "^chromewebstore\\.google\\.com/",
+"provenance": "seeded"
+},
+{
+"category": "review_site",
+"confidence": 1.0,
+"host": "citysearch.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "people_search",
+"confidence": 1.0,
+"host": "classmates.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "data_broker",
+"confidence": 1.0,
+"host": "clearbit.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "people_search",
+"confidence": 1.0,
+"host": "clustrmaps.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "review_site",
+"confidence": 1.0,
+"host": "clutch.co",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "news",
+"confidence": 1.0,
+"host": "cnbc.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "news",
+"confidence": 1.0,
+"host": "cnn.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "review_site",
+"confidence": 1.0,
+"host": "complaintsboard.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "review_site",
+"confidence": 1.0,
+"host": "consumeraffairs.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "data_broker",
+"confidence": 1.0,
+"host": "contactout.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "directory",
+"confidence": 1.0,
+"host": "craft.co",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "directory",
+"confidence": 1.0,
+"host": "crunchbase.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "people_search",
+"confidence": 1.0,
+"host": "cyberbackgroundchecks.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "directory",
+"confidence": 1.0,
+"host": "cylex-usa.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "directory",
+"confidence": 1.0,
+"host": "cylex.us.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "news",
+"confidence": 1.0,
+"host": "dailycoffeenews.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "video",
+"confidence": 1.0,
+"host": "dailymotion.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "data_broker",
+"confidence": 1.0,
+"host": "datanyze.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "government",
+"confidence": 1.0,
+"host": "dca.ca.gov",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "professional_registry",
+"confidence": 1.0,
+"host": "dca.ca.gov",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "link_in_bio",
+"confidence": 1.0,
+"host": "direct.me",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "academic_journal",
+"confidence": 1.0,
+"host": "dl.acm.org",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "data_broker",
+"confidence": 1.0,
+"host": "dnb.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "directory",
+"confidence": 1.0,
+"host": "dnb.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "review_site",
+"confidence": 1.0,
+"host": "doctor.webmd.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "academic_journal",
+"confidence": 1.0,
+"host": "doi.org",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "food_delivery",
+"confidence": 1.0,
+"host": "doordash.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "professional_registry",
+"confidence": 1.0,
+"host": "doximity.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "government",
+"confidence": 1.0,
+"host": "dre.ca.gov",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "professional_registry",
+"confidence": 1.0,
+"host": "dre.ca.gov",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "news",
+"confidence": 1.0,
+"host": "eater.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "marketplace",
+"confidence": 1.0,
+"host": "ebay.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "store_page",
+"confidence": 1.0,
+"host": "ebay.com",
+"path_pattern": "^ebay\\.[a-z.]+/str/",
+"provenance": "seeded"
+},
+{
+"category": "news",
+"confidence": 1.0,
+"host": "economist.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "press_release",
+"confidence": 1.0,
+"host": "einpresswire.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "academic_journal",
+"confidence": 1.0,
+"host": "elsevier.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "academic_journal",
+"confidence": 1.0,
+"host": "emerald.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "news",
+"confidence": 1.0,
+"host": "entrepreneur.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "press_release",
+"confidence": 1.0,
+"host": "ereleases.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "marketplace",
+"confidence": 1.0,
+"host": "etsy.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "store_page",
+"confidence": 1.0,
+"host": "etsy.com",
+"path_pattern": "^etsy\\.com/shop/",
+"provenance": "seeded"
+},
+{
+"category": "academic_journal",
+"confidence": 1.0,
+"host": "europepmc.org",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "directory",
+"confidence": 1.0,
+"host": "f6s.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "social",
+"confidence": 1.0,
+"host": "facebook.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "people_search",
+"confidence": 1.0,
+"host": "familytreenow.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "people_search",
+"confidence": 1.0,
+"host": "fastbackgroundcheck.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "news",
+"confidence": 1.0,
+"host": "fastcompany.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "people_search",
+"confidence": 1.0,
+"host": "fastpeoplesearch.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "news",
+"confidence": 1.0,
+"host": "finance.yahoo.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "professional_registry",
+"confidence": 1.0,
+"host": "finra.org",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "image_board",
+"confidence": 1.0,
+"host": "flickr.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "aggregator",
+"confidence": 1.0,
+"host": "flipboard.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "link_in_bio",
+"confidence": 1.0,
+"host": "flow.page",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "news",
+"confidence": 1.0,
+"host": "forbes.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "news",
+"confidence": 1.0,
+"host": "fortune.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "directory",
+"confidence": 1.0,
+"host": "foursquare.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "location_page",
+"confidence": 1.0,
+"host": "foursquare.com",
+"path_pattern": "^foursquare\\.com/v/",
+"provenance": "seeded"
+},
+{
+"category": "news",
+"confidence": 1.0,
+"host": "foxbusiness.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "press_release",
+"confidence": 1.0,
+"host": "free-press-release.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "academic_journal",
+"confidence": 1.0,
+"host": "frontiersin.org",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "professional_registry",
+"confidence": 1.0,
+"host": "fsmb.org",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "news",
+"confidence": 1.0,
+"host": "ft.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "directory",
+"confidence": 1.0,
+"host": "g.page",
+"path_pattern": "^g\\.page/",
+"provenance": "seeded"
+},
+{
+"category": "review_site",
+"confidence": 1.0,
+"host": "g2.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "review_site",
+"confidence": 1.0,
+"host": "getapp.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "blog_platform",
+"confidence": 1.0,
+"host": "ghost.io",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "review_site",
+"confidence": 1.0,
+"host": "glassdoor.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "job_board",
+"confidence": 1.0,
+"host": "glassdoor.com",
+"path_pattern": "^glassdoor\\.[a-z.]+/(job-listing|jobs)/",
+"provenance": "seeded"
+},
+{
+"category": "press_release",
+"confidence": 1.0,
+"host": "globenewswire.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "data_broker",
+"confidence": 1.0,
+"host": "golden.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "people_search",
+"confidence": 1.0,
+"host": "golden.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "platform",
+"confidence": 1.0,
+"host": "google.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "directory",
+"confidence": 1.0,
+"host": "google.com",
+"path_pattern": "^google\\.[a-z.]+/maps",
+"provenance": "seeded"
+},
+{
+"category": "job_board",
+"confidence": 1.0,
+"host": "greenhouse.io",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "aggregator",
+"confidence": 1.0,
+"host": "ground.news",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "food_delivery",
+"confidence": 1.0,
+"host": "grubhub.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "aggregator",
+"confidence": 1.0,
+"host": "headtopics.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "review_site",
+"confidence": 1.0,
+"host": "healthgrades.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "review_site",
+"confidence": 1.0,
+"host": "homeadvisor.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "people_search",
+"confidence": 1.0,
+"host": "homes.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "real_estate",
+"confidence": 1.0,
+"host": "homes.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "link_in_bio",
+"confidence": 1.0,
+"host": "hoo.be",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "link_in_bio",
+"confidence": 1.0,
+"host": "hopp.bio",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "link_in_bio",
+"confidence": 1.0,
+"host": "hopp.co",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "directory",
+"confidence": 1.0,
+"host": "hotfrog.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "review_site",
+"confidence": 1.0,
+"host": "houzz.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "news",
+"confidence": 1.0,
+"host": "huffpost.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "data_broker",
+"confidence": 1.0,
+"host": "hunter.io",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "press_release",
+"confidence": 1.0,
+"host": "i-newswire.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "people_search",
+"confidence": 1.0,
+"host": "idcrawl.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "academic_journal",
+"confidence": 1.0,
+"host": "ieeexplore.ieee.org",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "entertainment_database",
+"confidence": 1.0,
+"host": "imdb.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "reference",
+"confidence": 1.0,
+"host": "imdb.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "image_board",
+"confidence": 1.0,
+"host": "imgur.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "news",
+"confidence": 1.0,
+"host": "inc.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "job_board",
+"confidence": 1.0,
+"host": "indeed.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "job_board",
+"confidence": 1.0,
+"host": "indeed.com",
+"path_pattern": "^indeed\\.com/(viewjob|jobs|q-|cmp/[^/]+/jobs)",
+"provenance": "seeded"
+},
+{
+"category": "directory",
+"confidence": 1.0,
+"host": "indeed.com",
+"path_pattern": "^indeed\\.com/cmp/[^/]+/?$",
+"provenance": "seeded"
+},
+{
+"category": "review_site",
+"confidence": 1.0,
+"host": "indeed.com",
+"path_pattern": "^indeed\\.com/cmp/[^/]+/reviews",
+"provenance": "seeded"
+},
+{
+"category": "aggregator",
+"confidence": 1.0,
+"host": "inkl.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "social",
+"confidence": 1.0,
+"host": "instagram.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "people_search",
+"confidence": 1.0,
+"host": "instantcheckmate.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "people_search",
+"confidence": 1.0,
+"host": "intelius.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "academic_journal",
+"confidence": 1.0,
+"host": "iopscience.iop.org",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "press_release",
+"confidence": 1.0,
+"host": "issuewire.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "document_host",
+"confidence": 1.0,
+"host": "issuu.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "academic_journal",
+"confidence": 1.0,
+"host": "jamanetwork.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "job_board",
+"confidence": 1.0,
+"host": "jobs.lever.co",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "job_board",
+"confidence": 1.0,
+"host": "jobvite.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "academic_journal",
+"confidence": 1.0,
+"host": "journals.plos.org",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "professional_registry",
+"confidence": 1.0,
+"host": "justia.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "link_in_bio",
+"confidence": 1.0,
+"host": "komi.io",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "link_in_bio",
+"confidence": 1.0,
+"host": "later.com",
+"path_pattern": "^later\\.com/link-in-bio/",
+"provenance": "seeded"
+},
+{
+"category": "news",
+"confidence": 1.0,
+"host": "latimes.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "professional_registry",
+"confidence": 1.0,
+"host": "lawyers.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "data_broker",
+"confidence": 1.0,
+"host": "leadiq.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "academic_journal",
+"confidence": 1.0,
+"host": "link.springer.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "social",
+"confidence": 1.0,
+"host": "linkedin.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "directory",
+"confidence": 1.0,
+"host": "linkedin.com",
+"path_pattern": "^linkedin\\.com/company/",
+"provenance": "seeded"
+},
+{
+"category": "job_board",
+"confidence": 1.0,
+"host": "linkedin.com",
+"path_pattern": "^linkedin\\.com/jobs/",
+"provenance": "seeded"
+},
+{
+"category": "link_in_bio",
+"confidence": 1.0,
+"host": "linkfly.to",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "link_in_bio",
+"confidence": 1.0,
+"host": "linkin.bio",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "link_in_bio",
+"confidence": 1.0,
+"host": "linkpop.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "link_in_bio",
+"confidence": 1.0,
+"host": "linktr.ee",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "link_in_bio",
+"confidence": 1.0,
+"host": "lnk.bio",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "directory",
+"confidence": 1.0,
+"host": "local.yahoo.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "people_search",
+"confidence": 1.0,
+"host": "locatefamily.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "data_broker",
+"confidence": 1.0,
+"host": "lusha.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "directory",
+"confidence": 1.0,
+"host": "manta.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "directory",
+"confidence": 1.0,
+"host": "mapquest.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "location_page",
+"confidence": 1.0,
+"host": "mapquest.com",
+"path_pattern": "^mapquest\\.com/",
+"provenance": "seeded"
+},
+{
+"category": "directory",
+"confidence": 1.0,
+"host": "maps.google.com",
+"path_pattern": "^maps\\.google\\.",
+"provenance": "seeded"
+},
+{
+"category": "aggregator",
+"confidence": 1.0,
+"host": "marketscreener.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "news",
+"confidence": 1.0,
+"host": "marketwatch.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "press_release",
+"confidence": 1.0,
+"host": "marketwired.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "professional_registry",
+"confidence": 1.0,
+"host": "martindale.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "social",
+"confidence": 1.0,
+"host": "mastodon.social",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "government",
+"confidence": 1.0,
+"host": "mbc.ca.gov",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "professional_registry",
+"confidence": 1.0,
+"host": "mbc.ca.gov",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "academic_journal",
+"confidence": 1.0,
+"host": "mdpi.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "blog_platform",
+"confidence": 1.0,
+"host": "medium.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "academic_journal",
+"confidence": 1.0,
+"host": "medrxiv.org",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "directory",
+"confidence": 1.0,
+"host": "merchantcircle.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "link_in_bio",
+"confidence": 1.0,
+"host": "milkshake.app",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "job_board",
+"confidence": 1.0,
+"host": "monster.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "link_in_bio",
+"confidence": 1.0,
+"host": "msha.ke",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "aggregator",
+"confidence": 1.0,
+"host": "msn.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "people_search",
+"confidence": 1.0,
+"host": "myheritage.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "people_search",
+"confidence": 1.0,
+"host": "mylife.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "store_page",
+"confidence": 1.0,
+"host": "myshopify.com",
+"path_pattern": "^[a-z0-9-]+\\.myshopify\\.com",
+"provenance": "seeded"
+},
+{
+"category": "academic_journal",
+"confidence": 1.0,
+"host": "nature.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "news",
+"confidence": 1.0,
+"host": "nbcnews.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "academic_journal",
+"confidence": 1.0,
+"host": "ncbi.nlm.nih.gov",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "academic_journal",
+"confidence": 1.0,
+"host": "nejm.org",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "aggregator",
+"confidence": 1.0,
+"host": "news.google.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "news",
+"confidence": 1.0,
+"host": "news.yahoo.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "forum",
+"confidence": 1.0,
+"host": "news.ycombinator.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "aggregator",
+"confidence": 1.0,
+"host": "newsbreak.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "press_release",
+"confidence": 1.0,
+"host": "newsdirect.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "press_release",
+"confidence": 1.0,
+"host": "newsfilecorp.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "aggregator",
+"confidence": 1.0,
+"host": "newsnow.co.uk",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "news",
+"confidence": 1.0,
+"host": "newsweek.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "press_release",
+"confidence": 1.0,
+"host": "newswire.ca",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "press_release",
+"confidence": 1.0,
+"host": "newswire.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "press_release",
+"confidence": 1.0,
+"host": "newswiretoday.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "news",
+"confidence": 1.0,
+"host": "newyorker.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "directory",
+"confidence": 1.0,
+"host": "nextdoor.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "social",
+"confidence": 1.0,
+"host": "nextdoor.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "professional_registry",
+"confidence": 1.0,
+"host": "nmlsconsumeraccess.org",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "professional_registry",
+"confidence": 1.0,
+"host": "npidb.org",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "professional_registry",
+"confidence": 1.0,
+"host": "npino.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "government",
+"confidence": 1.0,
+"host": "npiregistry.cms.hhs.gov",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "professional_registry",
+"confidence": 1.0,
+"host": "npiregistry.cms.hhs.gov",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "news",
+"confidence": 1.0,
+"host": "npr.org",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "people_search",
+"confidence": 1.0,
+"host": "nuwber.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "news",
+"confidence": 1.0,
+"host": "nymag.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "news",
+"confidence": 1.0,
+"host": "nytimes.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "news",
+"confidence": 1.0,
+"host": "ocregister.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "people_search",
+"confidence": 1.0,
+"host": "officialusa.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "review_site",
+"confidence": 1.0,
+"host": "onebite.app",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "academic_journal",
+"confidence": 1.0,
+"host": "onlinelibrary.wiley.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "directory",
+"confidence": 1.0,
+"host": "opencorporates.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "press_release",
+"confidence": 1.0,
+"host": "openpr.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "press_release",
+"confidence": 1.0,
+"host": "openpr.de",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "review_site",
+"confidence": 1.0,
+"host": "opentable.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "location_page",
+"confidence": 1.0,
+"host": "opentable.com",
+"path_pattern": "^opentable\\.com/r/",
+"provenance": "seeded"
+},
+{
+"category": "directory",
+"confidence": 1.0,
+"host": "owler.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "academic_journal",
+"confidence": 1.0,
+"host": "papers.ssrn.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "news",
+"confidence": 1.0,
+"host": "patch.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "people_search",
+"confidence": 1.0,
+"host": "peekyou.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "people_search",
+"confidence": 1.0,
+"host": "peoplefinders.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "people_search",
+"confidence": 1.0,
+"host": "peoplelooker.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "people_search",
+"confidence": 1.0,
+"host": "peoplesearchnow.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "people_search",
+"confidence": 1.0,
+"host": "persopo.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "image_board",
+"confidence": 1.0,
+"host": "pinterest.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "social",
+"confidence": 1.0,
+"host": "pinterest.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "people_search",
+"confidence": 1.0,
+"host": "pipl.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "review_site",
+"confidence": 1.0,
+"host": "pissedconsumer.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "directory",
+"confidence": 1.0,
+"host": "pitchbook.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "store_page",
+"confidence": 1.0,
+"host": "play.google.com",
+"path_pattern": "^play\\.google\\.com/store/apps",
+"provenance": "seeded"
+},
+{
+"category": "academic_journal",
+"confidence": 1.0,
+"host": "plos.org",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "academic_journal",
+"confidence": 1.0,
+"host": "pnas.org",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "news",
+"confidence": 1.0,
+"host": "politico.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "directory",
+"confidence": 1.0,
+"host": "porch.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "press_release",
+"confidence": 1.0,
+"host": "pr.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "press_release",
+"confidence": 1.0,
+"host": "pressat.co.uk",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "aggregator",
+"confidence": 1.0,
+"host": "pressreader.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "press_release",
+"confidence": 1.0,
+"host": "pressrelease.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "press_release",
+"confidence": 1.0,
+"host": "pressreleasepoint.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "press_release",
+"confidence": 1.0,
+"host": "prfire.co.uk",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "people_search",
+"confidence": 1.0,
+"host": "privateeye.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "press_release",
+"confidence": 1.0,
+"host": "prlog.org",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "press_release",
+"confidence": 1.0,
+"host": "prnewswire.co.uk",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "press_release",
+"confidence": 1.0,
+"host": "prnewswire.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "press_release",
+"confidence": 1.0,
+"host": "prnob.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "directory",
+"confidence": 1.0,
+"host": "producthunt.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "review_site",
+"confidence": 1.0,
+"host": "productreview.com.au",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "press_release",
+"confidence": 1.0,
+"host": "prurgent.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "press_release",
+"confidence": 1.0,
+"host": "prweb.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "press_release",
+"confidence": 1.0,
+"host": "przoom.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "people_search",
+"confidence": 1.0,
+"host": "publicdatausa.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "people_search",
+"confidence": 1.0,
+"host": "publicrecordsnow.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "academic_journal",
+"confidence": 1.0,
+"host": "pubmed.ncbi.nlm.nih.gov",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "forum",
+"confidence": 1.0,
+"host": "quora.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "people_search",
+"confidence": 1.0,
+"host": "radaris.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "review_site",
+"confidence": 1.0,
+"host": "ratemds.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "real_estate",
+"confidence": 1.0,
+"host": "realtor.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "forum",
+"confidence": 1.0,
+"host": "reddit.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "real_estate",
+"confidence": 1.0,
+"host": "redfin.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "press_release",
+"confidence": 1.0,
+"host": "releasewire.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "academic_journal",
+"confidence": 1.0,
+"host": "researchsquare.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "news",
+"confidence": 1.0,
+"host": "reuters.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "review_site",
+"confidence": 1.0,
+"host": "reviews.io",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "review_site",
+"confidence": 1.0,
+"host": "ripoffreport.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "data_broker",
+"confidence": 1.0,
+"host": "rocketreach.co",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "video",
+"confidence": 1.0,
+"host": "rumble.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "academic_journal",
+"confidence": 1.0,
+"host": "sagepub.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "academic_journal",
+"confidence": 1.0,
+"host": "science.org",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "academic_journal",
+"confidence": 1.0,
+"host": "sciencedirect.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "document_host",
+"confidence": 1.0,
+"host": "scribd.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "data_broker",
+"confidence": 1.0,
+"host": "seamless.ai",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "people_search",
+"confidence": 1.0,
+"host": "searchpeoplefree.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "news",
+"confidence": 1.0,
+"host": "semafor.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "press_release",
+"confidence": 1.0,
+"host": "send2press.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "news",
+"confidence": 1.0,
+"host": "sfchronicle.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "news",
+"confidence": 1.0,
+"host": "sfgate.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "link_in_bio",
+"confidence": 1.0,
+"host": "shor.by",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "link_in_bio",
+"confidence": 1.0,
+"host": "shorby.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "directory",
+"confidence": 1.0,
+"host": "showmelocal.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "data_broker",
+"confidence": 1.0,
+"host": "signalhire.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "job_board",
+"confidence": 1.0,
+"host": "simplyhired.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "review_site",
+"confidence": 1.0,
+"host": "sitejabber.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "document_host",
+"confidence": 1.0,
+"host": "slideshare.net",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "aggregator",
+"confidence": 1.0,
+"host": "smartnews.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "job_board",
+"confidence": 1.0,
+"host": "smartrecruiters.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "social",
+"confidence": 1.0,
+"host": "snapchat.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "link_in_bio",
+"confidence": 1.0,
+"host": "snipfeed.co",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "people_search",
+"confidence": 1.0,
+"host": "socialcatfish.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "link_in_bio",
+"confidence": 1.0,
+"host": "solo.to",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "people_search",
+"confidence": 1.0,
+"host": "spokeo.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "academic_journal",
+"confidence": 1.0,
+"host": "springer.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "news",
+"confidence": 1.0,
+"host": "sprudge.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "people_search",
+"confidence": 1.0,
+"host": "spytox.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "academic_journal",
+"confidence": 1.0,
+"host": "ssrn.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "forum",
+"confidence": 1.0,
+"host": "stackexchange.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "forum",
+"confidence": 1.0,
+"host": "stackoverflow.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "link_in_bio",
+"confidence": 1.0,
+"host": "stan.store",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "press_release",
+"confidence": 1.0,
+"host": "stocktitan.net",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "blog_platform",
+"confidence": 1.0,
+"host": "substack.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "directory",
+"confidence": 1.0,
+"host": "superpages.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "academic_journal",
+"confidence": 1.0,
+"host": "tandfonline.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "link_in_bio",
+"confidence": 1.0,
+"host": "tap.bio",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "link_in_bio",
+"confidence": 1.0,
+"host": "taplink.at",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "link_in_bio",
+"confidence": 1.0,
+"host": "taplink.cc",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "news",
+"confidence": 1.0,
+"host": "techcrunch.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "people_search",
+"confidence": 1.0,
+"host": "thatsthem.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "news",
+"confidence": 1.0,
+"host": "theatlantic.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "news",
+"confidence": 1.0,
+"host": "theguardian.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "news",
+"confidence": 1.0,
+"host": "thehill.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "review_site",
+"confidence": 1.0,
+"host": "theinfatuation.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "news",
+"confidence": 1.0,
+"host": "theinformation.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "academic_journal",
+"confidence": 1.0,
+"host": "thelancet.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "news",
+"confidence": 1.0,
+"host": "theverge.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "social",
+"confidence": 1.0,
+"host": "threads.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "social",
+"confidence": 1.0,
+"host": "threads.net",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "review_site",
+"confidence": 1.0,
+"host": "thumbtack.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "social",
+"confidence": 1.0,
+"host": "tiktok.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "news",
+"confidence": 1.0,
+"host": "time.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "aggregator",
+"confidence": 1.0,
+"host": "tradingview.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "review_site",
+"confidence": 1.0,
+"host": "tripadvisor.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "location_page",
+"confidence": 1.0,
+"host": "tripadvisor.com",
+"path_pattern": "^tripadvisor\\.com/restaurant_review",
+"provenance": "seeded"
+},
+{
+"category": "people_search",
+"confidence": 1.0,
+"host": "truepeoplesearch.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "real_estate",
+"confidence": 1.0,
+"host": "trulia.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "review_site",
+"confidence": 1.0,
+"host": "trustpilot.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "review_site",
+"confidence": 1.0,
+"host": "trustradius.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "people_search",
+"confidence": 1.0,
+"host": "truthfinder.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "blog_platform",
+"confidence": 1.0,
+"host": "tumblr.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "social",
+"confidence": 1.0,
+"host": "tumblr.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "social",
+"confidence": 1.0,
+"host": "twitch.tv",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "social",
+"confidence": 1.0,
+"host": "twitter.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "food_delivery",
+"confidence": 1.0,
+"host": "ubereats.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "people_search",
+"confidence": 1.0,
+"host": "unicourt.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "news",
+"confidence": 1.0,
+"host": "usatoday.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "people_search",
+"confidence": 1.0,
+"host": "usnews.com",
+"path_pattern": "^usnews\\.com/people",
+"provenance": "seeded"
+},
+{
+"category": "people_search",
+"confidence": 1.0,
+"host": "usphonebook.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "people_search",
+"confidence": 1.0,
+"host": "ussearch.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "news",
+"confidence": 1.0,
+"host": "venturebeat.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "people_search",
+"confidence": 1.0,
+"host": "veripages.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "video",
+"confidence": 1.0,
+"host": "vimeo.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "review_site",
+"confidence": 1.0,
+"host": "vitals.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "people_search",
+"confidence": 1.0,
+"host": "voterrecords.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "news",
+"confidence": 1.0,
+"host": "vox.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "marketplace",
+"confidence": 1.0,
+"host": "walmart.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "store_page",
+"confidence": 1.0,
+"host": "walmart.com",
+"path_pattern": "^walmart\\.com/seller/",
+"provenance": "seeded"
+},
+{
+"category": "news",
+"confidence": 1.0,
+"host": "washingtonpost.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "job_board",
+"confidence": 1.0,
+"host": "wayup.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "directory",
+"confidence": 1.0,
+"host": "wellfound.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "job_board",
+"confidence": 1.0,
+"host": "wellfound.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "people_search",
+"confidence": 1.0,
+"host": "whitepages.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "reference",
+"confidence": 1.0,
+"host": "wikidata.org",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "reference",
+"confidence": 1.0,
+"host": "wikipedia.org",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "news",
+"confidence": 1.0,
+"host": "wired.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "data_broker",
+"confidence": 1.0,
+"host": "wiza.co",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "blog_platform",
+"confidence": 1.0,
+"host": "wordpress.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "job_board",
+"confidence": 1.0,
+"host": "workable.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "news",
+"confidence": 1.0,
+"host": "wsj.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "social",
+"confidence": 1.0,
+"host": "x.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "aggregator",
+"confidence": 1.0,
+"host": "yahoo.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "review_site",
+"confidence": 1.0,
+"host": "yellowbot.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "directory",
+"confidence": 1.0,
+"host": "yellowpages.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "location_page",
+"confidence": 1.0,
+"host": "yellowpages.com",
+"path_pattern": "^yellowpages\\.com/",
+"provenance": "seeded"
+},
+{
+"category": "review_site",
+"confidence": 1.0,
+"host": "yelp.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "location_page",
+"confidence": 1.0,
+"host": "yelp.com",
+"path_pattern": "^yelp\\.com/biz/",
+"provenance": "seeded"
+},
+{
+"category": "video",
+"confidence": 1.0,
+"host": "youtu.be",
+"path_pattern": "^youtu\\.be/",
+"provenance": "seeded"
+},
+{
+"category": "social",
+"confidence": 1.0,
+"host": "youtube.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "video",
+"confidence": 1.0,
+"host": "youtube.com",
+"path_pattern": "^youtube\\.com/watch",
+"provenance": "seeded"
+},
+{
+"category": "people_search",
+"confidence": 1.0,
+"host": "zabasearch.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "real_estate",
+"confidence": 1.0,
+"host": "zillow.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "job_board",
+"confidence": 1.0,
+"host": "ziprecruiter.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "review_site",
+"confidence": 1.0,
+"host": "zocdoc.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "data_broker",
+"confidence": 1.0,
+"host": "zoominfo.com",
+"path_pattern": "",
+"provenance": "seeded"
+}
+]

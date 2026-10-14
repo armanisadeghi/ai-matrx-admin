@@ -29,7 +29,7 @@ const KINDS: BrandRelationKind[] = [
   stance: stance as BrandRelationKind["stance"],
   description: null,
   hasSentiment: key === "mention",
-  match: { hosts: [], paths: [] },
+  match: { hosts: [], paths: [], categories: [] },
 }));
 
 const ITEMS = fixtureEvidence();

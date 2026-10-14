@@ -93,6 +93,8 @@ import {
 } from "@/features/marketing/lib/page-url";
 import { recordUnavailable } from "@/lib/records/recordUnavailable";
 import { supabase } from "@/utils/supabase/client";
+import { withKnownDomainRules } from "@/lib/web-domains/registry";
+import { fetchKnownDomainRules } from "@/lib/web-domains/service";
 import { authenticatedWebDb } from "@/utils/supabase/webDb";
 import { classifySocialLink, propertyIdentity } from "@/features/marketing/social/link";
 import { readBrandSocialCounts } from "@/features/marketing/social/service";
@@ -2735,8 +2737,12 @@ export interface BrandRelationKind {
   description: string | null;
   /** A finding of this kind carries positive / neutral / negative. */
   hasSentiment: boolean;
-  /** Deterministic suggestion rules (metadata.match): host suffixes and host+path patterns. */
-  match: { hosts: string[]; paths: string[] };
+  /**
+   * Deterministic suggestion rules. `categories` (metadata.match.categories) names known-domain categories
+   * (web.domain_category, lib/web-domains); `listBrandRelationKinds` expands them into `hosts` and `paths`,
+   * beside any host/path rules the kind carries itself.
+   */
+  match: { hosts: string[]; paths: string[]; categories: string[] };
 }
 
 const RELATION_ROUTES: readonly RelationRoute[] = ["owns", "key_person", "competitor", "brand_property", "exclusion"];
@@ -2769,7 +2775,7 @@ function toRelationKind(row: {
     stance: RELATION_STANCES.includes(row.stance as RelationStance) ? (row.stance as RelationStance) : "associated",
     description: row.description ?? null,
     hasSentiment: Boolean(row.has_sentiment),
-    match: { hosts: stringList(match.hosts), paths: stringList(match.paths) },
+    match: { hosts: stringList(match.hosts), paths: stringList(match.paths), categories: stringList(match.categories) },
   };
 }
 
@@ -2817,8 +2823,11 @@ export async function listBrandRelationKinds(): Promise<BrandRelationKind[]> {
     .order("label", { ascending: true })
     .limit(200);
   if (error) throw new Error(error.message);
-  return (data ?? []).map(toRelationKind);
+  const kinds = (data ?? []).map(toRelationKind);
+  if (!kinds.some((k) => k.match.categories.length)) return kinds;
+  return withKnownDomainRules(kinds, await fetchKnownDomainRules());
 }
+
 
 /**
  * Save a custom relationship ("Custom…") in the organization's own vocabulary so it can be picked

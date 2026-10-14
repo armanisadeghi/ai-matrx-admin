@@ -108,6 +108,7 @@ import {
 import { useRelationKinds } from "./SmartAddExtras";
 import { useEntityKindLabel } from "./entityKind";
 import { suggestKind, type WebChoice } from "./webKinds";
+import { recordWebAnswers } from "./learnDomains";
 import {
   SETUP_STEPS,
   SmartAddRound,
@@ -1122,6 +1123,7 @@ export function SmartAddBrand({
       // in the compare rows) also lands on the brand's exclusion list.
       const webSaved = await routeWebChoices(organizationId, brand.id, webItems, webChoices, relationKinds, webSuggestions);
       problems.push(...webSaved.problems);
+      recordWebAnswers(organizationId, webItems, webChoices, relationKinds);
       for (const k of webSaved.keys) relatedSaved.keys.add(k);
       problems.push(...(await excludeNotUs(organizationId, brand.id, [...items.values()], decisions, namesakes)));
       problems.push(

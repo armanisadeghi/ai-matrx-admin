@@ -11,7 +11,7 @@ const kind = (key: string, stance: BrandRelationKind["stance"], match: Partial<B
   stance,
   description: null,
   hasSentiment: key === "mention",
-  match: { hosts: match.hosts ?? [], paths: match.paths ?? [] },
+  match: { hosts: match.hosts ?? [], paths: match.paths ?? [], categories: [] },
 });
 
 // The live vocabulary's rule shapes (web.brand_relation_kind.metadata.match), trimmed.

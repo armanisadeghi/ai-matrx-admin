@@ -12798,7 +12798,6 @@ export type Database = {
       }
       conversation: {
         Row: {
-          last_activity_at: string
           app_instance_id: string | null
           cache_state: Json
           config: Json
@@ -12818,6 +12817,7 @@ export type Database = {
           is_ephemeral: boolean
           is_favorite: boolean
           keywords: string[] | null
+          last_activity_at: string
           last_context_breakdown: Json | null
           last_model_id: string | null
           last_request_id: string | null
@@ -12842,7 +12842,6 @@ export type Database = {
           visibility: Database["platform"]["Enums"]["visibility"]
         }
         Insert: {
-          last_activity_at?: string
           app_instance_id?: string | null
           cache_state?: Json
           config?: Json
@@ -12862,6 +12861,7 @@ export type Database = {
           is_ephemeral?: boolean
           is_favorite?: boolean
           keywords?: string[] | null
+          last_activity_at?: string
           last_context_breakdown?: Json | null
           last_model_id?: string | null
           last_request_id?: string | null
@@ -12886,7 +12886,6 @@ export type Database = {
           visibility?: Database["platform"]["Enums"]["visibility"]
         }
         Update: {
-          last_activity_at?: string
           app_instance_id?: string | null
           cache_state?: Json
           config?: Json
@@ -12906,6 +12905,7 @@ export type Database = {
           is_ephemeral?: boolean
           is_favorite?: boolean
           keywords?: string[] | null
+          last_activity_at?: string
           last_context_breakdown?: Json | null
           last_model_id?: string | null
           last_request_id?: string | null
@@ -142600,6 +142600,138 @@ export type Database = {
           },
         ]
       }
+      domain_category: {
+        Row: {
+          category_id: string
+          confidence: number
+          created_at: string
+          created_by: string | null
+          decided_at: string | null
+          decided_by: string | null
+          deleted_at: string | null
+          evidence_count: number
+          host: string
+          id: string
+          metadata: Json
+          note: string | null
+          organization_id: string
+          path_pattern: string
+          provenance: string
+          published_to_web: boolean
+          published_to_web_at: string | null
+          published_to_web_by: string | null
+          shown_to: Database["platform"]["Enums"]["shown_to"] | null
+          status: string
+          updated_at: string
+          updated_by: string | null
+          version: number
+          visibility: Database["platform"]["Enums"]["visibility"]
+        }
+        Insert: {
+          category_id: string
+          confidence?: number
+          created_at?: string
+          created_by?: string | null
+          decided_at?: string | null
+          decided_by?: string | null
+          deleted_at?: string | null
+          evidence_count?: number
+          host: string
+          id?: string
+          metadata?: Json
+          note?: string | null
+          organization_id: string
+          path_pattern?: string
+          provenance: string
+          published_to_web?: boolean
+          published_to_web_at?: string | null
+          published_to_web_by?: string | null
+          shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          status?: string
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+          visibility?: Database["platform"]["Enums"]["visibility"]
+        }
+        Update: {
+          category_id?: string
+          confidence?: number
+          created_at?: string
+          created_by?: string | null
+          decided_at?: string | null
+          decided_by?: string | null
+          deleted_at?: string | null
+          evidence_count?: number
+          host?: string
+          id?: string
+          metadata?: Json
+          note?: string | null
+          organization_id?: string
+          path_pattern?: string
+          provenance?: string
+          published_to_web?: boolean
+          published_to_web_at?: string | null
+          published_to_web_by?: string | null
+          shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          status?: string
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+          visibility?: Database["platform"]["Enums"]["visibility"]
+        }
+        Relationships: []
+      }
+      domain_category_observation: {
+        Row: {
+          category: string
+          created_at: string
+          created_by: string | null
+          host: string
+          id: string
+          metadata: Json
+          organization_id: string
+          outcome: string | null
+          source: string
+          source_ref: string | null
+          updated_at: string
+          updated_by: string | null
+          url: string | null
+          version: number
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          created_by?: string | null
+          host: string
+          id?: string
+          metadata?: Json
+          organization_id: string
+          outcome?: string | null
+          source: string
+          source_ref?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          url?: string | null
+          version?: number
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          host?: string
+          id?: string
+          metadata?: Json
+          organization_id?: string
+          outcome?: string | null
+          source?: string
+          source_ref?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          url?: string | null
+          version?: number
+        }
+        Relationships: []
+      }
       endpoint_family_sweep_state: {
         Row: {
           created_at: string
@@ -145173,11 +145305,17 @@ export type Database = {
           ok: boolean
         }[]
       }
+      _domain_knob: { Args: { p_key: string }; Returns: Json }
+      _learn_domain: {
+        Args: { p_category: string; p_host: string }
+        Returns: Json
+      }
       _retraction_downgrade: { Args: { p: string }; Returns: string }
       _retraction_hits: {
         Args: { p_hosts: string[]; p_keys: string[]; p_urls: string[] }
         Returns: number
       }
+      _retraction_image_key: { Args: { p: string }; Returns: string }
       _retraction_url: { Args: { p: string }; Returns: string }
       adopt_offering_template: {
         Args: {
@@ -145351,6 +145489,10 @@ export type Database = {
         Returns: number[]
       }
       cron_min_step: { Args: { p_vals: number[] }; Returns: number }
+      decide_domain_proposal: {
+        Args: { p_approve: boolean; p_id: string; p_note?: string }
+        Returns: Json
+      }
       decision_retraction: {
         Args: {
           p_apply?: boolean
@@ -145361,6 +145503,34 @@ export type Database = {
         Returns: Json
       }
       decision_retraction_restore: { Args: { p_summary: Json }; Returns: Json }
+      domain_address: { Args: { p_url: string }; Returns: string }
+      domain_categories_snapshot: {
+        Args: never
+        Returns: {
+          category: string
+          confidence: number
+          host: string
+          path_pattern: string
+          provenance: string
+        }[]
+      }
+      domain_host: { Args: { p_url: string }; Returns: string }
+      domain_proposals_for_attention: {
+        Args: never
+        Returns: {
+          category: string
+          category_label: string
+          confidence: number
+          created_at: string
+          evidence_count: number
+          host: string
+          id: string
+          note: string
+          organizations: number
+          provenance: string
+          sources: string[]
+        }[]
+      }
       is_machine_resource_url: { Args: { page_url: string }; Returns: boolean }
       is_resource_content_type: {
         Args: { content_type_last: string }
@@ -145444,6 +145614,16 @@ export type Database = {
       property_identity: {
         Args: { p_handle: string; p_kind: string; p_url: string }
         Returns: string
+      }
+      record_domain_observation: {
+        Args: {
+          p_category: string
+          p_organization_id: string
+          p_source: string
+          p_source_ref?: string
+          p_url: string
+        }
+        Returns: Json
       }
       remove_site_offering: {
         Args: {
