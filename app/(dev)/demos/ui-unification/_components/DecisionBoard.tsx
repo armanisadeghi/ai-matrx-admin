@@ -231,7 +231,6 @@ function DecisionSection({
 
 export function DecisionBoard() {
   const userId = useAppSelector(selectUserId);
-  // org-filter: server-call the picks table lives in the one organization the person works in
   const active = useOrganizationRequired();
   if (!userId || active.organizationState !== "ready" || !active.organizationId) {
     return (
@@ -263,6 +262,7 @@ function ConnectedBoard({ organizationId, userId }: { organizationId: string; us
   const load = useCallback(async () => {
     const { data, error } = await table()
       .select("id, decision_id, winner, note")
+      .eq("organization_id", organizationId)
       .is("deleted_at", null);
     if (error) setLoadError(error.message);
     else {

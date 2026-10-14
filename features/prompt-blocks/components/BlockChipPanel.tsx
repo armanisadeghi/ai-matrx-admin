@@ -9,7 +9,6 @@ import { Popover, PopoverAnchor, PopoverContent } from "@ai-matrx/design-system"
 import { Badge, Button } from "@ai-matrx/design-system/controls";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
-import { selectActiveOrganizationId } from "@/features/scopes/redux/selectors/active-context";
 import { toast } from "@/lib/toast";
 import { createBlock, listBlocksNamed, listVariants } from "../service";
 import { invalidateBlocks, winningRowId } from "../blocksCache";
@@ -29,6 +28,7 @@ interface Props {
   declared: boolean;
   modelName?: string | null;
   creatorId?: string | null;
+  organizationId: string | null;
   onDeclare: (name: string) => Promise<void>;
   onClose: () => void;
   onChanged: () => void;
@@ -44,10 +44,10 @@ interface Shown {
   text: string;
 }
 
-export function BlockChipPanel({ target, declared, modelName, creatorId, onDeclare, onClose, onChanged }: Props) {
+export function BlockChipPanel({ target, declared, modelName, creatorId, organizationId, onDeclare, onClose, onChanged }: Props) {
   const dispatch = useAppDispatch();
   const meId = useAppSelector(selectUserId);
-  const orgId = useAppSelector(selectActiveOrganizationId); // org-filter: write-target prompt block edits persist in the selected organization
+  const orgId = organizationId;
   const [shown, setShown] = useState<Shown | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);

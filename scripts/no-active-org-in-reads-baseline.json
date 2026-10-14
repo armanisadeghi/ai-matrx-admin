@@ -351,16 +351,6 @@
       "owner": "scopes (V5-B inventory)",
       "note": "active org only resolves the page-size and show_system_files knobs; the list is scoped by the caller's explicit KindScope, not narrowed by the active org"
     },
-    "features/education/tutor/components/EducationTutorClient.tsx::EducationTutorClientInner::fetchAgentExecutionMinimal(agentId)#1": {
-      "class": "unclassified",
-      "owner": "education",
-      "note": "Newly visible 2026-10-07 (lane I): SCAN_DIRS named ../aidream/apps/shared/chat/src but this repo's git never lists a ../ path, so the chat package was never scanned; a chat-package hook that reads the active organization is now seen as a carrier here. Census owed: fix the read or annotate the write/server-call site."
-    },
-    "features/education/tutor/components/EducationTutorClient.tsx::EducationTutorClientInner::loadConversation({ conversationId: conversationIdProp, surfaceKey, signal: ctrl.signal, })#1": {
-      "class": "unclassified",
-      "owner": "education",
-      "note": "Newly visible 2026-10-07 (lane I): SCAN_DIRS named ../aidream/apps/shared/chat/src but this repo's git never lists a ../ path, so the chat package was never scanned; a chat-package hook that reads the active organization is now seen as a carrier here. Census owed: fix the read or annotate the write/server-call site."
-    },
     "../aidream/apps/shared/chat/src/agents/components/inputs/smart-input/composer/ComposerPlusMenu.tsx::ComposerPlusMenu::useKnowledgeAttachSearch({ conversationId, onResourceSelected: (resource: Resource) => attachResource(resource), onResourceDeselected: detachResource, attachmentCapabilities, })#1": {
       "class": "unclassified",
       "owner": "chat",
@@ -370,6 +360,11 @@
       "class": "unclassified",
       "owner": "chat",
       "note": "Newly visible 2026-10-07 (lane I): SCAN_DIRS named ../aidream/apps/shared/chat/src but this repo's git never lists a ../ path, so the chat package was never scanned; the read is in the chat package itself. Census owed: fix the read or annotate the write/server-call site."
+    },
+    "app/(dev)/demos/ui-unification/_components/DecisionBoard.tsx::load::table() .select(\"id, decision_id, winner, note\") .eq(\"organization_id\", organizationId)#1": {
+      "class": "silent-filter",
+      "owner": "dev-demos",
+      "note": "decision_pick has no record-derived scope on this standalone demo; explicit org predicate prevents cross-org merge/update until the page gains EntityOrgFilter"
     }
   }
 }

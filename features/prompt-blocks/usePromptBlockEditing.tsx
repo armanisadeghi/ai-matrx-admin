@@ -11,6 +11,8 @@ import { Button } from "@ai-matrx/design-system/controls";
 import type { ContextMenuExtraSection } from "@ai-matrx/context-menu/engine";
 import type { RichEditorController } from "@ai-matrx/rich-editor/editor/RichEditor";
 import { toast } from "@/lib/toast";
+import { useAppSelector } from "@/lib/redux/hooks";
+import { selectAgentById } from "@ai-matrx/chat/agents/redux/agent-definition/selectors";
 import { useAgentBlocks } from "./agentBlocksStore";
 import { PromptBlockPicker, type PickerAnchor } from "./components/PromptBlockPicker";
 import { BlockChipPanel, type ChipTarget } from "./components/BlockChipPanel";
@@ -35,6 +37,7 @@ interface Args {
 
 export function usePromptBlockEditing({ agentId, text, onChange, textareaRef, writeRef, viewMode, modelName, creatorId }: Args) {
   const blocks = useAgentBlocks(agentId);
+  const organizationId = useAppSelector((state) => selectAgentById(state, agentId)?.organizationId ?? null);
   const [picker, setPicker] = useState<{ anchor: PickerAnchor; trigger: TypedTrigger | null } | null>(null);
   const [chip, setChip] = useState<ChipTarget | null>(null);
   const caretRef = useRef<{ start: number; end: number } | null>(null);
@@ -180,6 +183,7 @@ export function usePromptBlockEditing({ agentId, text, onChange, textareaRef, wr
         declared={chip ? declared.has(chip.name) : false}
         modelName={modelName}
         creatorId={creatorId}
+        organizationId={organizationId}
         onDeclare={blocks.declare}
         onClose={() => setChip(null)}
         onChanged={() => void blocks.refresh()}

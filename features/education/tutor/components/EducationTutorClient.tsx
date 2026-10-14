@@ -341,6 +341,7 @@ function EducationTutorClientInner({
       setIsInitializing(true);
       try {
         if (!executionPayload.isReady) {
+          // org-filter: server-call fetches the explicit agent id, independent of the active organization
           await dispatch(fetchAgentExecutionMinimal(agentId)).unwrap();
         }
       } catch (err) {
@@ -551,6 +552,7 @@ function EducationTutorClientInner({
         }
         if (ctrl.signal.aborted) return;
         await dispatch(
+          // org-filter: server-call loads the explicit conversation id, independent of the active organization
           loadConversation({
             conversationId: conversationIdProp,
             surfaceKey,
