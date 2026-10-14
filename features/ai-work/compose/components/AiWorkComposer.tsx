@@ -46,7 +46,7 @@ import {
   Play,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@ai-matrx/design-system/controls";
+import { Input, Select } from "@ai-matrx/design-system/controls";
 import { recordToast, toast } from "@/lib/toast";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { selectOrganizationId } from "@/lib/redux/slices/appContextSlice";
@@ -641,18 +641,15 @@ function ComposerBody({
             >
               Folder on your Mac
             </label>
-            <select
-              id="ai-work-local-folder"
+            <Select
+              aria-label="Folder on your Mac"
               value={localFolder}
-              onChange={(event) => setLocalFolder(event.target.value)}
-              className="h-8 rounded-md border border-border bg-background px-2 text-sm"
-            >
-              {localCapability.approvedFolders.map((folder) => (
-                <option key={folder} value={folder}>
-                  {folder}
-                </option>
-              ))}
-            </select>
+              onValueChange={setLocalFolder}
+              options={localCapability.approvedFolders.map((folder) => ({
+                value: folder,
+                label: folder,
+              }))}
+            />
             <p className="text-xs text-muted-foreground">
               Only folders you approved in Matrx Local are offered. The session
               runs with your own Claude Code login

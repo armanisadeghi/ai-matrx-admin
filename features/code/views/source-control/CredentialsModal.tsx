@@ -1,5 +1,6 @@
 "use client";
 
+import { Select } from "@ai-matrx/design-system/controls";
 import React, { useState } from "react";
 import { extractErrorMessage } from "@/utils/errors";
 import {
@@ -148,14 +149,16 @@ export const CredentialsModal: React.FC<CredentialsModalProps> = ({
               </label>
               <label className="block text-[11px] text-neutral-600 dark:text-neutral-400">
                 Scope
-                <select
+                <Select
+                  aria-label="Scope"
+                  className="mt-1 w-full"
                   value={scope}
-                  onChange={(e) => setScope(e.target.value as "read" | "write")}
-                  className="mt-1 h-7 w-full rounded-sm border border-neutral-300 bg-white px-2 text-[12px] dark:border-neutral-700 dark:bg-neutral-900"
-                >
-                  <option value="read">read (clone/pull)</option>
-                  <option value="write">write (clone/pull/push)</option>
-                </select>
+                  onValueChange={(v) => setScope(v as "read" | "write")}
+                  options={[
+                    { value: "read", label: "read (clone/pull)" },
+                    { value: "write", label: "write (clone/pull/push)" },
+                  ]}
+                />
               </label>
             </div>
           ) : (

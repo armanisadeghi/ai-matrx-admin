@@ -17,7 +17,7 @@ import {
   Info,
 } from "lucide-react";
 import { Skeleton } from "@ai-matrx/design-system";
-import { Chip, Input, SegmentedControl } from "@ai-matrx/design-system/controls";
+import { Chip, Input, SegmentedControl, Select } from "@ai-matrx/design-system/controls";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { MCP_CATEGORY_META } from "@ai-matrx/chat/agents/types/mcp.types";
@@ -247,36 +247,33 @@ export function IntegrationDirectory({
               className="hidden h-4 w-4 text-muted-foreground @[38rem]/integrations:block"
               aria-hidden
             />
-            <select
+            <Select
               aria-label="Integration category"
               value={filters.category}
-              onChange={(event) =>
-                change({ category: event.target.value, browse: "all" })
-              }
-              className="h-9 max-w-full rounded-md border border-input bg-background px-2 text-sm"
-            >
-              <option value="all">All categories</option>
-              {categories.map(([key, meta]) => (
-                <option key={key} value={key}>
-                  {meta.label}
-                </option>
-              ))}
-            </select>
-            <select
+              onValueChange={(v) => change({ category: v, browse: "all" })}
+              className="max-w-full"
+              options={[
+                { value: "all", label: "All categories" },
+                ...categories.map(([key, meta]) => ({
+                  value: key,
+                  label: meta.label,
+                })),
+              ]}
+            />
+            <Select
               aria-label="Integration status"
               value={filters.status}
-              onChange={(event) =>
-                change({
-                  status: event.target.value as DirectoryFilters["status"],
-                })
+              onValueChange={(v) =>
+                change({ status: v as DirectoryFilters["status"] })
               }
-              className="h-9 max-w-full rounded-md border border-input bg-background px-2 text-sm"
-            >
-              <option value="all">Any status</option>
-              <option value="connected">Connected</option>
-              <option value="available">Available</option>
-              <option value="coming_soon">Coming soon</option>
-            </select>
+              className="max-w-full"
+              options={[
+                { value: "all", label: "Any status" },
+                { value: "connected", label: "Connected" },
+                { value: "available", label: "Available" },
+                { value: "coming_soon", label: "Coming soon" },
+              ]}
+            />
           </div>
         )}
       </div>

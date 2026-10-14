@@ -23,7 +23,7 @@ import {
 import { toast } from "@/lib/toast";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Input } from "@ai-matrx/design-system/controls";
+import { Input, Select } from "@ai-matrx/design-system/controls";
 import { cn } from "@/lib/utils";
 import { fcService } from "@/features/flashcards/data/fcService";
 import type { FcSetRow } from "@/features/flashcards/data/types";
@@ -193,18 +193,16 @@ export function AudioStudyNew() {
           </SegBtn>
         </div>
         {sourceKind === "deck" ? (
-          <select
+          <Select
+            aria-label="Deck"
+            className="w-full"
             value={deckId}
-            onChange={(e) => setDeckId(e.target.value)}
-            className="h-10 w-full rounded-md border border-border bg-background px-3 text-sm text-foreground"
-          >
-            <option value="">Select a deck…</option>
-            {decks.map((d) => (
-              <option key={d.id} value={d.id}>
-                {d.name}
-              </option>
-            ))}
-          </select>
+            onValueChange={setDeckId}
+            options={[
+              { value: "", label: "Select a deck…" },
+              ...decks.map((d) => ({ value: d.id, label: d.name })),
+            ]}
+          />
         ) : (
           <ProTextarea
             value={topic}

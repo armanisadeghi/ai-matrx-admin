@@ -14,6 +14,7 @@
  * column inputs before submitting.
  */
 
+import { Select } from "@ai-matrx/design-system/controls";
 import { selectAgentById } from "@ai-matrx/chat/agents/redux/agent-definition/selectors";
 import { useState } from "react";
 import { Plus, Trash2, Send, Pencil, Check } from "lucide-react";
@@ -304,28 +305,29 @@ function ColumnMappingPicker({
   return (
     <div className="flex items-center gap-1.5 min-w-0 text-[11px]">
       {agentLabel}
-      <select
+      <Select
         value={currentTarget ?? ""}
-        onChange={(e) =>
+        onValueChange={(v) =>
           dispatch(
             setMasterFieldMapping({
               fieldId: field.fieldId,
               columnId: column.columnId,
-              target: e.target.value === "" ? undefined : e.target.value,
+              target: v === "" ? undefined : v,
             }),
           )
         }
         disabled={!column.agentId}
-        className="flex-1 min-w-0 bg-background border border-border rounded px-1.5 py-0.5 text-foreground focus:outline-none focus:border-primary disabled:opacity-50"
-      >
-        <option value={MASTER_INPUT_TARGET}>User message</option>
-        {definitions.map((v) => (
-          <option key={v.name} value={v.name}>
-            {variableRunLabel(v)}
-          </option>
-        ))}
-        <option value="">— skip</option>
-      </select>
+        aria-label="Map to variable"
+        className="flex-1 min-w-0"
+        options={[
+          { value: MASTER_INPUT_TARGET, label: "User message" },
+          ...definitions.map((v) => ({
+            value: v.name,
+            label: variableRunLabel(v),
+          })),
+          { value: "", label: "— skip" },
+        ]}
+      />
     </div>
   );
 }

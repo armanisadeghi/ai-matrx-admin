@@ -13,6 +13,7 @@
  * memory low even for very long logs.
  */
 
+import { Button, Select } from "@ai-matrx/design-system/controls";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { ChevronDown, Pause, Play, RefreshCw } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -131,62 +132,46 @@ export const SandboxLogsView: React.FC<SandboxLogsViewProps> = ({
       <div className="flex h-7 shrink-0 items-center gap-2 border-b border-neutral-200 px-2 text-[11px] dark:border-neutral-800">
         <label className="flex items-center gap-1">
           <span className="text-neutral-500 dark:text-neutral-400">Source</span>
-          <select
+          <Select
+            aria-label="Source"
             value={source}
-            onChange={(e) => setSource(e.target.value as SourceValue)}
-            className="h-5 rounded border border-neutral-300 bg-transparent px-1 text-[11px] dark:border-neutral-700"
-          >
-            {SOURCES.map((s) => (
-              <option key={s.value} value={s.value}>
-                {s.label}
-              </option>
-            ))}
-          </select>
+            onValueChange={(v) => setSource(v as SourceValue)}
+            options={SOURCES}
+          />
         </label>
         <label className="flex items-center gap-1">
           <span className="text-neutral-500 dark:text-neutral-400">Tail</span>
-          <select
-            value={tail}
-            onChange={(e) => setTail(Number(e.target.value))}
-            className="h-5 rounded border border-neutral-300 bg-transparent px-1 text-[11px] dark:border-neutral-700"
-          >
-            {TAIL_OPTIONS.map((n) => (
-              <option key={n} value={n}>
-                {n}
-              </option>
-            ))}
-          </select>
+          <Select
+            aria-label="Tail"
+            value={String(tail)}
+            onValueChange={(v) => setTail(Number(v))}
+            options={TAIL_OPTIONS.map((n) => ({
+              value: String(n),
+              label: String(n),
+            }))}
+          />
         </label>
 
         <div className="ml-auto flex items-center gap-1">
-          <button
-            type="button"
+          <Button
+            variant="quiet"
             onClick={() => void fetchOnce()}
             disabled={loading}
-            title="Refresh now"
-            className="flex h-5 w-5 items-center justify-center rounded-sm text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-100"
-          >
-            <RefreshCw
-              size={12}
-              className={loading ? "animate-spin" : undefined}
-            />
-          </button>
-          <button
-            type="button"
+            aria-label="Refresh now"
+            icon={<RefreshCw className={loading ? "animate-spin" : undefined} />}
+          />
+          <Button
+            variant="quiet"
             onClick={() => setPaused((p) => !p)}
-            title={paused ? "Resume polling" : "Pause polling"}
-            className="flex h-5 w-5 items-center justify-center rounded-sm text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-100"
-          >
-            {paused ? <Play size={12} /> : <Pause size={12} />}
-          </button>
-          <button
-            type="button"
+            aria-label={paused ? "Resume polling" : "Pause polling"}
+            icon={paused ? <Play /> : <Pause />}
+          />
+          <Button
+            variant="quiet"
             onClick={jumpToBottom}
-            title="Jump to bottom"
-            className="flex h-5 w-5 items-center justify-center rounded-sm text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-100"
-          >
-            <ChevronDown size={12} />
-          </button>
+            aria-label="Jump to bottom"
+            icon={<ChevronDown />}
+          />
         </div>
       </div>
 

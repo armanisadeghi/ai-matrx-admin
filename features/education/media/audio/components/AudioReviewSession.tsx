@@ -70,7 +70,7 @@ import type {
   FcSetRow,
 } from "@/features/flashcards/data/types";
 import { ReadFailure } from "@ai-matrx/design-system";
-import { Chip } from "@ai-matrx/design-system/controls";
+import { Chip, Select } from "@ai-matrx/design-system/controls";
 
 const ANSWER_SECONDS = 12;
 const AUDIO_REVIEW_METHOD = "audio_review";
@@ -380,18 +380,16 @@ export function AudioReviewSession({
             </h1><InfoHint text="Questions are read aloud; you answer by voice and are graded on meaning." label="About Audio review" /></div>
           </div>
         </div>
-        <select
+        <Select
+          aria-label="Deck"
+          className="w-full"
           value={deckId}
-          onChange={(e) => setDeckId(e.target.value)}
-          className="h-10 w-full rounded-md border border-border bg-background px-3 text-sm text-foreground"
-        >
-          <option value="">Select a deck…</option>
-          {decks.map((d) => (
-            <option key={d.id} value={d.id}>
-              {d.name}
-            </option>
-          ))}
-        </select>
+          onValueChange={setDeckId}
+          options={[
+            { value: "", label: "Select a deck…" },
+            ...decks.map((d) => ({ value: d.id, label: d.name })),
+          ]}
+        />
         {decksError != null && (
           <ReadFailure
             error={decksError}

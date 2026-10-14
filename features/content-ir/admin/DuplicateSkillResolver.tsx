@@ -25,6 +25,7 @@
  * the recommendation is never auto-applied.
  */
 
+import { Select } from "@ai-matrx/design-system/controls";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import AppLink from "@/components/navigation/AppLink";
@@ -369,31 +370,25 @@ function CaseCard({ item }: { item: DuplicateSkillCase }) {
       {showDiff && item.candidates.length >= 2 && (
         <div className="border-t border-border p-4">
           <div className="mb-2 flex flex-wrap items-center gap-2 text-xs">
-            <select
+            <Select
               value={left}
-              onChange={(e) => setLeft(e.target.value)}
-              className="rounded border border-border bg-background px-2 py-1 font-mono text-xs"
+              onValueChange={setLeft}
               aria-label="Left skill"
-            >
-              {item.candidates.map((c) => (
-                <option key={c.skillId} value={c.skillId}>
-                  {c.skillId}
-                </option>
-              ))}
-            </select>
+              options={item.candidates.map((c) => ({
+                value: c.skillId,
+                label: c.skillId,
+              }))}
+            />
             <span className="text-muted-foreground">vs</span>
-            <select
+            <Select
               value={right}
-              onChange={(e) => setRight(e.target.value)}
-              className="rounded border border-border bg-background px-2 py-1 font-mono text-xs"
+              onValueChange={setRight}
               aria-label="Right skill"
-            >
-              {item.candidates.map((c) => (
-                <option key={c.skillId} value={c.skillId}>
-                  {c.skillId}
-                </option>
-              ))}
-            </select>
+              options={item.candidates.map((c) => ({
+                value: c.skillId,
+                label: c.skillId,
+              }))}
+            />
           </div>
           <div className="h-96">
             <CodeDiff

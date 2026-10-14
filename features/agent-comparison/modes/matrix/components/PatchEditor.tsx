@@ -32,7 +32,7 @@ import { ModelListDropdown } from "@ai-matrx/agents/models/react";
 import { cn } from "@/lib/utils";
 import { ToolNamesInput } from "./ToolNamesInput";
 import type { MatrixPatch, MatrixSettings } from "../types";
-import { Button } from "@ai-matrx/design-system/controls";
+import { Button, Select } from "@ai-matrx/design-system/controls";
 import { useAgentName } from "@ai-matrx/chat/agents/identity/agent-identity";
 
 type FieldKey =
@@ -214,17 +214,15 @@ export function PatchEditor({
               />
             )}
             {f.key === "reasoning_effort" && (
-              <select
+              <Select
                 value={String(patch.settings?.reasoning_effort ?? "medium")}
-                onChange={(e) => setSettings("reasoning_effort", e.target.value)}
-                className="h-8 px-2 rounded-md border border-border bg-background text-xs"
-              >
-                {REASONING_EFFORT_OPTIONS.map((o) => (
-                  <option key={o} value={o}>
-                    {o}
-                  </option>
-                ))}
-              </select>
+                onValueChange={(v) => setSettings("reasoning_effort", v)}
+                aria-label="Reasoning effort"
+                options={REASONING_EFFORT_OPTIONS.map((o) => ({
+                  value: o,
+                  label: o,
+                }))}
+              />
             )}
             {f.key === "user_input" && (
               <textarea

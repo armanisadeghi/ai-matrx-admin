@@ -19,6 +19,7 @@
  * Mobile renders a Drawer, desktop a Dialog (house rule).
  */
 
+import { Select } from "@ai-matrx/design-system/controls";
 import React, { useEffect, useMemo, useState } from "react";
 import { ProTextarea } from "@/components/official/ProTextarea";
 import {
@@ -299,19 +300,19 @@ export function CollectionItemEditorDialog({
       );
     } else if (field.type === "select") {
       control = (
-        <select
-          id={`item-field-${field.key}`}
+        <Select
+          aria-label={field.label || field.key}
           value={value}
-          onChange={(e) => set(field.key, e.target.value)}
-          className="h-9 w-full rounded-md border border-input bg-background px-2 text-sm"
-        >
-          <option value="">— none —</option>
-          {(field.options ?? []).map((option) => (
-            <option key={option} value={option}>
-              {option}
-            </option>
-          ))}
-        </select>
+          onValueChange={(v) => set(field.key, v)}
+          className="w-full"
+          options={[
+            { value: "", label: "— none —" },
+            ...(field.options ?? []).map((option) => ({
+              value: option,
+              label: option,
+            })),
+          ]}
+        />
       );
     } else if (field.type === "richtext") {
       control = (

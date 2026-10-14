@@ -46,7 +46,7 @@ import { JsonInspector } from "@/components/official-candidate/json-inspector/Js
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { formatFileSize } from "@ai-matrx/kit/format";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Input } from "@ai-matrx/design-system/controls";
+import { Input, Select } from "@ai-matrx/design-system/controls";
 import { toast } from "@/lib/toast";
 import {
   CheckCircle2,
@@ -1007,19 +1007,16 @@ export const SandboxDiagnosticsPanel = forwardRef<
               className="mt-2 md:h-[30rem] md:flex md:flex-col"
             >
               <div className="flex items-center gap-2 mb-2 flex-wrap shrink-0">
-                <select
+                <Select
+                  aria-label="Environment view"
                   value={envView}
-                  onChange={(e) => setEnvView(e.target.value as typeof envView)}
-                  className="text-xs border border-border rounded-md px-2 py-1 bg-background"
-                >
-                  <option value="aidream_proc_env">
-                    aidream process env (truth)
-                  </option>
-                  <option value="runtime_env">shell env (runtime)</option>
-                  <option value="container_config_env">
-                    docker Config.Env (creation)
-                  </option>
-                </select>
+                  onValueChange={(v) => setEnvView(v as typeof envView)}
+                  options={[
+                    { value: "aidream_proc_env", label: "aidream process env (truth)" },
+                    { value: "runtime_env", label: "shell env (runtime)" },
+                    { value: "container_config_env", label: "docker Config.Env (creation)" },
+                  ]}
+                />
                 <Input mono
                   value={envFilter}
                   onChange={(e) => setEnvFilter(e.target.value)}
@@ -1168,28 +1165,21 @@ export const SandboxDiagnosticsPanel = forwardRef<
               className="mt-2 md:h-[30rem] md:flex md:flex-col"
             >
               <div className="mb-2 flex flex-wrap items-center gap-2 shrink-0">
-                <select
+                <Select
+                  aria-label="Log source"
                   value={logSource}
-                  onChange={(e) => setLogSource(e.target.value as LogSource)}
-                  className="text-xs border border-border rounded-md px-2 py-1 bg-background"
-                >
-                  {LOG_SOURCES.map((s) => (
-                    <option key={s} value={s}>
-                      {s}
-                    </option>
-                  ))}
-                </select>
-                <select
-                  value={logTail}
-                  onChange={(e) => setLogTail(Number(e.target.value))}
-                  className="text-xs border border-border rounded-md px-2 py-1 bg-background"
-                >
-                  {[100, 200, 500, 1000, 2000].map((n) => (
-                    <option key={n} value={n}>
-                      tail {n}
-                    </option>
-                  ))}
-                </select>
+                  onValueChange={(v) => setLogSource(v as LogSource)}
+                  options={LOG_SOURCES.map((s) => ({ value: s, label: s }))}
+                />
+                <Select
+                  aria-label="Log tail"
+                  value={String(logTail)}
+                  onValueChange={(v) => setLogTail(Number(v))}
+                  options={[100, 200, 500, 1000, 2000].map((n) => ({
+                    value: String(n),
+                    label: `tail ${n}`,
+                  }))}
+                />
                 <Button
                   icon={<RefreshCw
                     className={`h-3 w-3 mr-1 ${logsLoading ? "animate-spin" : ""}`}

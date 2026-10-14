@@ -20,6 +20,7 @@
  * chunk.
  */
 
+import { Button, Select } from "@ai-matrx/design-system/controls";
 import { useEffect, useState } from "react";
 import { Check, CircleAlert, Info, Play, X } from "lucide-react";
 import {
@@ -225,28 +226,21 @@ export default function KindGateTab({
         <label className="text-xs text-muted-foreground" htmlFor="gate-sample-source">
           Sample
         </label>
-        <select
-          id="gate-sample-source"
+        <Select
+          aria-label="Sample"
           value={selectedId}
-          onChange={(e) => setSourceId(e.target.value)}
-          className="h-8 rounded-md border border-border bg-card px-2 text-sm text-foreground"
-        >
-          {rows.map((r) => (
-            <option key={r.id} value={r.id}>
-              {r.isCanonical ? "canonical" : r.source} ·{" "}
-              {r.label ?? r.id.slice(0, 8)} · {r.validationStatus}
-            </option>
-          ))}
-          <option value={PASTED}>Pasted JSON</option>
-        </select>
-        <button
-          type="button"
-          onClick={runNow}
-          className="flex h-8 items-center gap-1.5 rounded-md bg-primary px-3 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90"
-        >
-          <Play className="h-3.5 w-3.5" />
+          onValueChange={setSourceId}
+          options={[
+            ...rows.map((r) => ({
+              value: r.id,
+              label: `${r.isCanonical ? "canonical" : r.source} · ${r.label ?? r.id.slice(0, 8)} · ${r.validationStatus}`,
+            })),
+            { value: PASTED, label: "Pasted JSON" },
+          ]}
+        />
+        <Button variant="primary" icon={<Play />} onClick={runNow}>
           Run gate now
-        </button>
+        </Button>
         <span className="text-[11px] text-muted-foreground">
           Read-only — this page never writes is_active.
         </span>

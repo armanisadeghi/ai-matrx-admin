@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@ai-matrx/design-system/controls";
+import { Input, Select } from "@ai-matrx/design-system/controls";
 import { Label } from "@/components/ui/label";
 import { EducationToolHeader } from "@/features/education/components/EducationToolHeader";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
@@ -133,5 +133,5 @@ export function MindMapEditor({ media, isOwner = false }: { media?: StudyMediaRo
 
 function stringValue(value: unknown): string { return typeof value === "string" ? value : ""; }
 function Field({ label, value, onChange }: { label: string; value: string; onChange: (value: string) => void }) { return <Label className="space-y-1"><span>{label}</span><Input value={value} onChange={(event) => onChange(event.target.value)} /></Label>; }
-function NodeChoice({ label, value, nodes, onChange }: { label: string; value: string; nodes: JsonRecord[]; onChange: (value: string) => void }) { return <Label className="space-y-1"><span>{label}</span><select className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm" value={value} onChange={(event) => onChange(event.target.value)}>{nodes.map((node) => <option key={String(node.id)} value={stringValue(node.id)}>{stringValue(node.label) || stringValue(node.id)}</option>)}</select></Label>; }
+function NodeChoice({ label, value, nodes, onChange }: { label: string; value: string; nodes: JsonRecord[]; onChange: (value: string) => void }) { return <Label className="space-y-1"><span>{label}</span><Select aria-label={label} className="w-full" value={value} onValueChange={onChange} options={nodes.map((node) => ({ value: stringValue(node.id), label: stringValue(node.label) || stringValue(node.id) }))} /></Label>; }
 type JsonRecord = Record<string, unknown>;

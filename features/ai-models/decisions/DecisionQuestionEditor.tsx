@@ -1,7 +1,7 @@
 "use client";
 
 import { GripVertical, Plus, Trash2 } from "lucide-react";
-import { Input, SegmentedControl } from "@ai-matrx/design-system/controls";
+import { Input, SegmentedControl, Select } from "@ai-matrx/design-system/controls";
 import { Button } from "@/components/ui/button";
 import { ProTextarea } from "@/components/official/ProTextarea";
 import { isDecisionQuestionType, type DecisionQuestion } from "./decision-form";
@@ -30,22 +30,21 @@ export function DecisionQuestionEditor({ questions, onChange }: Props) {
               placeholder="Question name"
               className="flex-1"
             />
-            <select
+            <Select
               value={question.type}
-              onChange={(event) => {
-                const type = event.target.value;
+              onValueChange={(type) => {
                 if (!isDecisionQuestionType(type)) return;
                 if (type === "choice") update(index, { ...question, type, criteria: [{ key: "yes", description: "" }, { key: "no", description: "" }] });
                 if (type === "score") update(index, { ...question, type, criteria: ["low", "high"] });
                 if (type === "noul") update(index, { ...question, type, criteria: { true: "", false: "" } });
               }}
               aria-label={`${question.name || "Question"} type`}
-              className="h-8 rounded-md border border-input bg-background px-2 text-sm"
-            >
-              <option value="choice">Choice</option>
-              <option value="score">Score</option>
-              <option value="noul">Noul</option>
-            </select>
+              options={[
+                { value: "choice", label: "Choice" },
+                { value: "score", label: "Score" },
+                { value: "noul", label: "Noul" },
+              ]}
+            />
             <Button icon={<Trash2 />} variant="quiet" type="button" onClick={() => remove(index)} disabled={questions.length === 1} aria-label={`Remove ${question.name || "question"}`} />
           </div>
           <ProTextarea

@@ -37,7 +37,7 @@ import {
 import { selectActiveModels } from "@ai-matrx/agents/models";
 import { getModelRecords, useModelRecords } from "@ai-matrx/chat/agents/identity/model-catalog";
 import { Slider } from "@/components/ui/slider";
-import { Input } from "@ai-matrx/design-system/controls";
+import { Input, Select } from "@ai-matrx/design-system/controls";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { REASONING_EFFORT_OPTIONS } from "@ai-matrx/agents/generated/llm-enums";
@@ -321,18 +321,16 @@ function EnumRow({
           </span>
         )}
       </div>
-      <select
+      <Select
         value={value ?? ""}
-        onChange={(e) => onChange(e.target.value || null)}
-        className="w-full bg-background border border-border rounded px-2 py-1 text-xs text-foreground focus:outline-none focus:border-primary"
-      >
-        <option value="">— Agent default —</option>
-        {options.map((o) => (
-          <option key={o} value={o}>
-            {o}
-          </option>
-        ))}
-      </select>
+        onValueChange={(v) => onChange(v || null)}
+        aria-label={label}
+        className="w-full"
+        options={[
+          { value: "", label: "— Agent default —" },
+          ...options.map((o) => ({ value: o, label: o })),
+        ]}
+      />
     </div>
   );
 }

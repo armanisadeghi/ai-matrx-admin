@@ -7,6 +7,7 @@
  * independently rechecks ownership and is still enforced by canonical RLS.
  */
 
+import { Select } from "@ai-matrx/design-system/controls";
 import { useRouter } from "next/navigation";
 import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
 import { useMemo, useState } from "react";
@@ -294,23 +295,16 @@ export default function ShapeOwnerEditor({
               <Label htmlFor="shape-published-to-web">
                 {PUBLISHED_TO_WEB_LABEL}
               </Label>
-              <select
-                id="shape-published-to-web"
+              <Select
+                aria-label={PUBLISHED_TO_WEB_LABEL}
+                className="w-full"
                 value={publishedToWeb ? "on" : "off"}
-                onChange={(event) =>
-                  setPublishedToWeb(event.target.value === "on")
-                }
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 text-sm text-foreground"
-              >
-                {SHAPE_WEB_CHOICES.map((option) => (
-                  <option
-                    key={option.label}
-                    value={option.value ? "on" : "off"}
-                  >
-                    {option.label}
-                  </option>
-                ))}
-              </select>
+                onValueChange={(v) => setPublishedToWeb(v === "on")}
+                options={SHAPE_WEB_CHOICES.map((option) => ({
+                  value: option.value ? "on" : "off",
+                  label: option.label,
+                }))}
+              />
               <p className="text-[11px] text-muted-foreground">
                 {
                   SHAPE_WEB_CHOICES.find(
@@ -321,19 +315,16 @@ export default function ShapeOwnerEditor({
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="shape-title-key">Instance title field</Label>
-              <select
-                id="shape-title-key"
+              <Select
+                aria-label="Instance title field"
+                className="w-full"
                 value={titleKey}
-                onChange={(event) => setTitleKey(event.target.value)}
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 text-sm text-foreground"
-              >
-                <option value="">Automatic</option>
-                {titleKeyOptions.map((key) => (
-                  <option key={key} value={key}>
-                    {key}
-                  </option>
-                ))}
-              </select>
+                onValueChange={setTitleKey}
+                options={[
+                  { value: "", label: "Automatic" },
+                  ...titleKeyOptions.map((key) => ({ value: key, label: key })),
+                ]}
+              />
               <p className="text-[11px] text-muted-foreground">
                 Used to name saved instances when the user does not provide a
                 title.
@@ -341,21 +332,21 @@ export default function ShapeOwnerEditor({
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="shape-loading-component">Streaming loader</Label>
-              <select
-                id="shape-loading-component"
+              <Select
+                aria-label="Streaming loader"
+                className="w-full"
                 value={loadingComponent}
-                onChange={(event) => setLoadingComponent(event.target.value)}
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 text-sm text-foreground"
-              >
-                <option value="">Generic</option>
-                {loadingOptions
-                  .filter((slug) => slug !== "generic")
-                  .map((slug) => (
-                    <option key={slug} value={slug}>
-                      {humanizeIdentifier(slug)}
-                    </option>
-                  ))}
-              </select>
+                onValueChange={setLoadingComponent}
+                options={[
+                  { value: "", label: "Generic" },
+                  ...loadingOptions
+                    .filter((slug) => slug !== "generic")
+                    .map((slug) => ({
+                      value: slug,
+                      label: humanizeIdentifier(slug),
+                    })),
+                ]}
+              />
               <p className="text-[11px] text-muted-foreground">
                 Skeleton shown while this Shape streams or its component loads.
               </p>

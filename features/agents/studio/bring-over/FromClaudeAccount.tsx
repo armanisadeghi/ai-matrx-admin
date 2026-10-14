@@ -1,5 +1,6 @@
 "use client";
 
+import { Select } from "@ai-matrx/design-system/controls";
 import { ProTextarea } from "@/components/official/ProTextarea";
 
 /**
@@ -146,19 +147,19 @@ export function FromClaudeAccount() {
               <label className="text-sm font-medium" htmlFor="project">
                 Did this chat happen inside a project?
               </label>
-              <select
-                id="project"
-                className="w-full rounded-md border bg-background p-2 text-sm"
+              <Select
+                aria-label="Did this chat happen inside a project?"
+                className="w-full"
                 value={projectKey}
-                onChange={(e) => setProjectKey(e.target.value)}
-              >
-                <option value="">No project</option>
-                {preview.projects.map((p) => (
-                  <option key={p.key} value={p.key}>
-                    {p.name} ({p.files.length} files)
-                  </option>
-                ))}
-              </select>
+                onValueChange={setProjectKey}
+                options={[
+                  { value: "", label: "No project" },
+                  ...preview.projects.map((p) => ({
+                    value: p.key,
+                    label: `${p.name} (${p.files.length} files)`,
+                  })),
+                ]}
+              />
             </div>
           ) : null}
 

@@ -3,7 +3,7 @@
 import { cloneVoiceFromFile } from "@/lib/cartesia/cartesiaUtils";
 import { Button } from "@/components/ui/button";
 import { FileUpload } from "@/components/ui/file-upload/file-upload";
-import { Input } from "@ai-matrx/design-system/controls";
+import { Input, Select } from "@ai-matrx/design-system/controls";
 import { useAiAudio } from "@/features/audio/voice/AiVoicePage";
 import { Language } from "@/lib/cartesia/cartesia.types";
 import { useState } from "react";
@@ -86,17 +86,13 @@ const VoiceActions = () => {
                 <div className="mt-4 space-y-4">
                     <div>
                         <h4 className="font-medium mb-2">Language</h4>
-                        <select
+                        <Select
+                            aria-label="Language"
+                            className="w-full"
                             value={language}
-                            onChange={(e) => setLanguage(e.target.value as Language)}
-                            className="w-full p-2 border rounded-md"
-                        >
-                            {languageOptions.map((option) => (
-                                <option key={option.value} value={option.value}>
-                                    {option.label}
-                                </option>
-                            ))}
-                        </select>
+                            onValueChange={(v) => setLanguage(v as Language)}
+                            options={languageOptions}
+                        />
                     </div>
 
                 </div>

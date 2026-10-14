@@ -8,6 +8,7 @@
 // useListViewPrefs("crm-deals"). Smart views ride the same `platform.saved_view`
 // table as the party list, discriminated by `surface_key='crm/deals'`.
 
+import { Select } from "@ai-matrx/design-system/controls";
 import { ReadFailure } from "@ai-matrx/design-system";
 import { StaleDataNotice } from "@ai-matrx/design-system";
 import { useEffect, useMemo, useState } from "react";
@@ -593,28 +594,22 @@ export function DealsPage() {
           </div>
           {/* Pipeline narrowing — the board always works one pipeline. */}
           {pipelines.length > 1 && (
-            <select
+            <Select
               aria-label="Pipeline"
-              className="h-7 rounded-md border border-border bg-background px-2 text-xs"
               value={
                 mode === "board"
                   ? (boardPipelineId ?? "")
                   : (list.query.pipelineId ?? "all")
               }
-              onChange={(e) => {
-                const v = e.target.value;
+              onValueChange={(v) => {
                 list.setQuery({ pipelineId: v === "all" ? null : v });
               }}
-            >
-              {(mode === "board"
-                ? pipelineFacetOptions.filter((o) => o.value !== "all")
-                : pipelineFacetOptions
-              ).map((o) => (
-                <option key={o.value} value={o.value}>
-                  {o.label}
-                </option>
-              ))}
-            </select>
+              options={
+                mode === "board"
+                  ? pipelineFacetOptions.filter((o) => o.value !== "all")
+                  : pipelineFacetOptions
+              }
+            />
           )}
         </div>
         <div className="flex items-center gap-1.5">

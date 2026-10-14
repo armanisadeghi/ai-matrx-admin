@@ -8,6 +8,7 @@
  * compile, and saves with optimistic concurrency.
  */
 
+import { Select } from "@ai-matrx/design-system/controls";
 import { useEffect, useState } from "react";
 import { AlertTriangle, Code2, Loader2, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -228,17 +229,16 @@ export default function KindComponentCodeTab({
         <div className="flex shrink-0 flex-wrap items-end gap-3 border-b border-border p-3">
           <label className="min-w-0 flex-1 text-xs font-medium text-muted-foreground">
             Component
-            <select
+            <Select
+              aria-label="Component"
               value={selectedComponent.id}
-              onChange={(event) => selectComponent(event.target.value)}
-              className="mt-1 min-h-10 w-full rounded-md border border-border bg-background px-3 text-base text-foreground sm:text-sm"
-            >
-              {rows.map((row) => (
-                <option key={row.id} value={row.id}>
-                  {componentOptionLabel(row)}
-                </option>
-              ))}
-            </select>
+              onValueChange={selectComponent}
+              className="mt-1 w-full"
+              options={rows.map((row) => ({
+                value: row.id,
+                label: componentOptionLabel(row),
+              }))}
+            />
           </label>
           <div className="flex items-center gap-2">
             <span className="text-xs text-muted-foreground">

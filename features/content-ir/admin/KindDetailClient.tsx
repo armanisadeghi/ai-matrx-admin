@@ -17,6 +17,7 @@
  * imported statically and simply not rendered until its tab is active.
  */
 
+import { Select } from "@ai-matrx/design-system/controls";
 import { useMemo, useState } from "react";
 import { commitUrlParams } from "@ai-matrx/kit/url-state";
 import AppLink from "@/components/navigation/AppLink";
@@ -261,18 +262,13 @@ export default function KindDetailClient({
           >
             Kind detail section
           </label>
-          <select
-            id="kind-detail-section"
+          <Select
+            aria-label="Kind detail section"
             value={tab}
-            onChange={(event) => selectTab(event.target.value as TabId)}
-            className="min-h-11 w-full rounded-md border border-border bg-background px-3 text-base text-foreground shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          >
-            {TABS.map((id) => (
-              <option key={id} value={id}>
-                {TAB_LABELS[id]}
-              </option>
-            ))}
-          </select>
+            onValueChange={(v) => selectTab(v as TabId)}
+            className="w-full"
+            options={TABS.map((id) => ({ value: id, label: TAB_LABELS[id] }))}
+          />
         </div>
         <nav
           aria-label="Kind detail sections"

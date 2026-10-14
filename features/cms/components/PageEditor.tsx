@@ -51,7 +51,7 @@ import { EditableContextMenu } from "@ai-matrx/context-menu/react";
 import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import { buildApplicationScopeFromMenuContext } from "@ai-matrx/context-menu/engine";
 import { Button } from "@/components/ui/button";
-import { Input, SegmentedControl } from "@ai-matrx/design-system/controls";
+import { Input, SegmentedControl, Select } from "@ai-matrx/design-system/controls";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { ProTextarea } from "@/components/official/ProTextarea";
@@ -1166,17 +1166,19 @@ export default function PageEditor({
                         <label className="text-sm font-medium text-foreground block mb-1.5">
                           Page Type
                         </label>
-                        <select
+                        <Select
+                          aria-label="Page Type"
+                          className="w-full"
                           value={pageType}
-                          onChange={(e) => setPageType(e.target.value)}
-                          className="w-full h-9 rounded-md border border-input bg-background px-3 text-sm"
-                        >
-                          <option value="standard">Standard</option>
-                          <option value="home">Home</option>
-                          <option value="service">Service</option>
-                          <option value="blog">Blog</option>
-                          <option value="listing">Listing</option>
-                        </select>
+                          onValueChange={setPageType}
+                          options={[
+                            { value: "standard", label: "Standard" },
+                            { value: "home", label: "Home" },
+                            { value: "service", label: "Service" },
+                            { value: "blog", label: "Blog" },
+                            { value: "listing", label: "Listing" },
+                          ]}
+                        />
                       </div>
                       <div>
                         <label className="text-sm font-medium text-foreground block mb-1.5">

@@ -8,6 +8,7 @@
 // are visually distinct, and moving to Lost asks for the reason (a lost deal
 // with no reason teaches nothing).
 
+import { Select } from "@ai-matrx/design-system/controls";
 import { useState } from "react";
 import { Check } from "lucide-react";
 import { recordToast, toast } from "@/lib/toast";
@@ -110,19 +111,15 @@ export function DealStageFlow({ deal, pipeline, onChanged }: Props) {
       {deal.status === "lost" && (
         <div className="flex items-center gap-2 text-xs">
           <span className="text-muted-foreground">Lost because:</span>
-          <select
+          <Select
             aria-label="Lost reason"
-            className="h-7 rounded-md border border-border bg-background px-1.5 text-xs"
             value={deal.lost_reason_id ?? ""}
-            onChange={(e) => void setLostReason(e.target.value)}
-          >
-            <option value="">Pick a reason…</option>
-            {lostReasons.map((r) => (
-              <option key={r.id} value={r.id}>
-                {r.name}
-              </option>
-            ))}
-          </select>
+            onValueChange={(v) => void setLostReason(v)}
+            options={[
+              { value: "", label: "Pick a reason…" },
+              ...lostReasons.map((r) => ({ value: r.id, label: r.name })),
+            ]}
+          />
         </div>
       )}
     </div>

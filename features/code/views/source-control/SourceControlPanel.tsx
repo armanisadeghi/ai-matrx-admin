@@ -24,7 +24,7 @@ import {
 import { cn } from "@/lib/utils";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Button } from "@/components/ui/button";
-import { Input } from "@ai-matrx/design-system/controls";
+import { Input, Select } from "@ai-matrx/design-system/controls";
 import { ProTextarea } from "@/components/official/ProTextarea";
 import { knobInts } from "@/lib/knobs/featureKnobs";
 import { toast } from "@/lib/toast";
@@ -604,28 +604,24 @@ function RepositoryPanel({
           >
             Repository in this sandbox
           </label>
-          <select
-            id="code-git-repository"
+          <Select
             aria-label="Repository"
-            className="h-9 w-full min-w-0 rounded border bg-background px-2 text-xs"
+            className="w-full min-w-0"
             value={repoRoot || ""}
             disabled={disabled}
-            onChange={(e) => {
-              if (e.target.value) void chooseRepository(e.target.value);
+            onValueChange={(v) => {
+              if (v) void chooseRepository(v);
             }}
-          >
-            <option value="">Choose a repository…</option>
-            {[
-              ...new Set([
-                ...(repoRoot ? [repoRoot] : []),
-                ...repositories.map((item) => item.rootPath),
-              ]),
-            ].map((root) => (
-              <option key={root} value={root}>
-                {root}
-              </option>
-            ))}
-          </select>
+            options={[
+              { value: "", label: "Choose a repository…" },
+              ...[
+                ...new Set([
+                  ...(repoRoot ? [repoRoot] : []),
+                  ...repositories.map((item) => item.rootPath),
+                ]),
+              ].map((root) => ({ value: root, label: root })),
+            ]}
+          />
           <div className="flex flex-wrap gap-1.5">
             <Button
               icon={<FolderOpen />}

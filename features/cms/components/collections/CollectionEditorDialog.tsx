@@ -30,7 +30,7 @@ import type {
   SiteCollection,
 } from "@/features/cms/types";
 import { Button } from "@/components/ui/button";
-import { Input } from "@ai-matrx/design-system/controls";
+import { Input, Select } from "@ai-matrx/design-system/controls";
 import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -432,21 +432,14 @@ export function CollectionEditorDialog({
                         placeholder="Label"
                         className="w-32 flex-1 min-w-24"
                       />
-                      <select
+                      <Select
+                        aria-label="Field type"
                         value={field.type}
-                        onChange={(e) =>
-                          updateField(i, {
-                            type: e.target.value as CollectionFieldType,
-                          })
+                        onValueChange={(v) =>
+                          updateField(i, { type: v as CollectionFieldType })
                         }
-                        className="h-8 rounded-md border border-input bg-background px-2 text-xs"
-                      >
-                        {FIELD_TYPES.map((t) => (
-                          <option key={t.value} value={t.value}>
-                            {t.label}
-                          </option>
-                        ))}
-                      </select>
+                        options={FIELD_TYPES}
+                      />
                       <label className="flex items-center gap-1.5 text-xs text-muted-foreground">
                         <Checkbox
                           checked={field.required ?? false}
@@ -676,30 +669,33 @@ export function CollectionEditorDialog({
               {/* Stacks on narrow screens: this dialog is `overflow-x-clip`, so
                   anything wider than it is silently CUT, not scrollable. */}
               <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                <select
+                <Select
+                  aria-label="Default order field"
                   value={form.orderField}
-                  onChange={(e) => set("orderField", e.target.value)}
-                  className="h-9 w-full sm:flex-1 min-w-0 rounded-md border border-input bg-background px-2 text-sm"
-                >
-                  <option value="">Newest first (default)</option>
-                  <option value="created_at">Date added</option>
-                  {form.fields
-                    .filter((f) => f.key.trim())
-                    .map((f) => (
-                      <option key={f.key} value={f.key}>
-                        {f.label?.trim() || f.key}
-                      </option>
-                    ))}
-                </select>
-                <select
+                  onValueChange={(v) => set("orderField", v)}
+                  className="w-full sm:flex-1 min-w-0"
+                  options={[
+                    { value: "", label: "Newest first (default)" },
+                    { value: "created_at", label: "Date added" },
+                    ...form.fields
+                      .filter((f) => f.key.trim())
+                      .map((f) => ({
+                        value: f.key,
+                        label: f.label?.trim() || f.key,
+                      })),
+                  ]}
+                />
+                <Select
+                  aria-label="Order direction"
                   value={form.orderAscending ? "asc" : "desc"}
-                  onChange={(e) => set("orderAscending", e.target.value === "asc")}
+                  onValueChange={(v) => set("orderAscending", v === "asc")}
                   disabled={!form.orderField}
-                  className="h-9 w-full sm:w-auto rounded-md border border-input bg-background px-2 text-sm disabled:opacity-50"
-                >
-                  <option value="asc">Ascending</option>
-                  <option value="desc">Descending</option>
-                </select>
+                  className="w-full sm:w-auto"
+                  options={[
+                    { value: "asc", label: "Ascending" },
+                    { value: "desc", label: "Descending" },
+                  ]}
+                />
               </div>
               <p className="text-xs text-muted-foreground mt-1">
                 How this collection&apos;s items are ordered <strong>everywhere</strong> —
