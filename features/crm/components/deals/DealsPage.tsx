@@ -13,6 +13,8 @@ import { StaleDataNotice } from "@ai-matrx/design-system";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
+  ArrowRight,
+  CheckCircle2,
   Columns3,
   Handshake,
   List,
@@ -20,6 +22,7 @@ import {
   Plus,
   Trash2,
   Undo2,
+  XCircle,
 } from "lucide-react";
 import { dismissRecordToasts, recordToast, toast } from "@/lib/toast";
 import { Button } from "@/components/ui/button";
@@ -38,6 +41,10 @@ import { selectOrganizationId } from "@/lib/redux/slices/appContextSlice";
 import { useListViewPrefs } from "@/lib/list-views/useListViewPrefs";
 import { LIST_VIEW_PAGE_SIZES } from "@/lib/list-views/defaults";
 import { cn } from "@/lib/utils";
+import { useTableBulkSelection } from "@/lib/entity-list/useTableBulkSelection";
+import { runPerRow } from "@/lib/entity-list/standardBulkActions";
+import type { EntityBulkAction } from "@/lib/entity-list/selection";
+import { promptForValues } from "@/components/dialogs/value-prompts/ValuePromptsDialogHost";
 import { SavedViewBar } from "../saved-views/SavedViewBar";
 import { useDealList } from "../../deals/useDealList";
 import { usePipelines } from "../../deals/usePipelines";
@@ -435,6 +442,108 @@ export function DealsPage() {
       };
     };
 
+  /**
+   * BATCH VERBS on the list (the platform's shared bulk bar). Every verb goes
+   * through the same service call as the row menu: a stage move writes
+   * `moveDealToStage` (the DB derives status/closed_at from the stage), and
+   * Favorite / Add tag / Move to Trash come built in on the `crm_deal` token
+   * (its delete is the plain `deleted_at` write). Each deal resolves its stage
+   * inside its OWN pipeline; a deal with no such stage is skipped and named.
+   */
+  const stagesOfDeal = (row: DealListRow | undefined) => {
+    if (!row) throw new Error("Not on screen — reselect it");
+    const pipeline = pipelines.find((p) =>
+      p.stages.some((st) => st.id === row.stage_id),
+    );
+    if (!pipeline) throw new Error("Its pipeline is not loaded");
+    return pipeline.stages;
+  };
+  const afterStageChange = () => {
+    list.refresh();
+    refreshBoard();
+  };
+  const outcomeAction = (
+    outcome: "won" | "lost",
+  ): EntityBulkAction<DealListRow> => ({
+    id: `mark-${outcome}`,
+    label: outcome === "won" ? "Mark won" : "Mark lost",
+    icon: outcome === "won" ? CheckCircle2 : XCircle,
+    confirm: (selection) => ({
+      title: `Mark ${selection.count} ${selection.count === 1 ? "deal" : "deals"} ${outcome}?`,
+      description: `Each moves to its pipeline's ${outcome} stage and closes.`,
+      confirmLabel: outcome === "won" ? "Mark won" : "Mark lost",
+    }),
+    run: (selection) =>
+      runPerRow(
+        selection,
+        async (id, row) => {
+          const stage = stagesOfDeal(row).find((st) => st.outcome === outcome);
+          if (!stage) throw new Error(`Its pipeline has no ${outcome} stage`);
+          if (stage.id === row?.stage_id) throw new Error(`Already ${outcome}`);
+          await moveDealToStage({ dealId: id, stageId: stage.id });
+        },
+        { done: `Marked ${outcome}`, noun: "deal", labelOf: (r) => r.name },
+        (r) => r.id,
+      ),
+  });
+  const moveToStageAction: EntityBulkAction<DealListRow> = {
+    id: "move-to-stage",
+    label: "Move to stage",
+    icon: ArrowRight,
+    run: async (selection) => {
+      const answers = await promptForValues({
+        title: `Move ${selection.count} ${selection.count === 1 ? "deal" : "deals"} to a stage`,
+        description: "Type a stage name; each deal uses its own pipeline.",
+        submitLabel: "Move",
+        fields: [{ name: "stage", prompt: "Stage name", required: true }],
+      });
+      const wanted = answers?.stage?.trim().toLowerCase();
+      if (!wanted) return;
+      return runPerRow(
+        selection,
+        async (id, row) => {
+          const stage = stagesOfDeal(row).find(
+            (st) => st.name.trim().toLowerCase() === wanted,
+          );
+          if (!stage) throw new Error(`No stage called "${answers?.stage?.trim()}"`);
+          if (stage.id === row?.stage_id) throw new Error("Already there");
+          await moveDealToStage({ dealId: id, stageId: stage.id });
+        },
+        { done: `Moved to ${answers?.stage?.trim()}`, noun: "deal", labelOf: (r) => r.name },
+        (r) => r.id,
+      );
+    },
+  };
+  const restoreAction: EntityBulkAction<DealListRow> = {
+    id: "restore",
+    label: "Restore",
+    icon: Undo2,
+    run: (selection) =>
+      runPerRow(
+        selection,
+        (id) => restoreDeal(id),
+        { done: "Restored", noun: "deal", labelOf: (r) => r.name, removesRows: true },
+        (r) => r.id,
+      ),
+  };
+  const bulk = useTableBulkSelection<DealListRow>({
+    token: "crm_deal",
+    noun: "deal",
+    rows: list.rows,
+    getRowId: (r) => r.id,
+    getRowName: (r) => r.name,
+    // In Trash the only verb that applies is Restore.
+    actions: inTrash
+      ? [restoreAction]
+      : [moveToStageAction, outcomeAction("won"), outcomeAction("lost")],
+    standardBulkActions: inTrash ? false : undefined,
+    onRefresh: afterStageChange,
+    onRemoveRows: (ids) => {
+      for (const id of ids) list.removeRow(id);
+      refreshBoard();
+    },
+  });
+
   const rowMenu = useCrmRowMenu<DealListRow>({
     rows: () => list.rows,
     toTarget: (row) => dealMenuTarget(row, stageById.get(row.stage_id)?.name),
@@ -660,6 +769,7 @@ export function DealsPage() {
                   </ItemMenu>
                 ) }]}
                 getRowId={(row) => row.id}
+                selection={bulk.selection}
                 isLoading={list.isLoading || (grouped && !list.isWhole)}
                 isFetching={list.isFetching}
                 zebra

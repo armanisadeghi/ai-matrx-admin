@@ -48,6 +48,7 @@ import {
   AlertCircle,
   RefreshCw,
   MoreHorizontal,
+  Trash2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@ai-matrx/design-system/controls";
@@ -68,6 +69,9 @@ import { ARTIFACTS_SURFACE_NAME } from "@/features/surfaces/manifests/artifacts.
 import { buildArtifactListScope } from "@/features/artifacts/lib/artifacts-scope";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
+import { useTableBulkSelection } from "@/lib/entity-list/useTableBulkSelection";
+import { runPerRow } from "@/lib/entity-list/standardBulkActions";
+import { bulkCountLabel, type EntityBulkAction } from "@/lib/entity-list/selection";
 
 const ARTIFACT_ICONS: Record<ArtifactType, React.FC<{ className?: string }>> = {
   html_page: Globe,
@@ -290,6 +294,52 @@ export function CmsArtifactList() {
     setNavigatingId(artifact.id);
     startTransition(() => router.push(`/cms/html-pages/${artifact.externalId}`));
   };
+
+  /**
+   * BATCH VERBS (the platform's shared bulk bar). Favorite / Add tag come
+   * built in on the `artifact` token. "Move to Trash" is this screen's own:
+   * the row's archive also sets status → archived through /api/artifacts and
+   * drops the row from the Redux store, so the built-in plain `deleted_at`
+   * write would leave both stale. Same call, once per selected row.
+   */
+  const trashAction: EntityBulkAction<CxArtifactRecord> = {
+    id: "move-to-trash",
+    label: "Move to Trash",
+    icon: Trash2,
+    variant: "destructive",
+    confirm: (selection) => ({
+      title: `Move ${bulkCountLabel(selection.count, "artifact")} to Trash?`,
+      description:
+        "They can be restored from Trash. Any you can't delete are skipped and named.",
+      confirmLabel: "Move to Trash",
+      variant: "destructive",
+    }),
+    run: (selection) =>
+      runPerRow(
+        selection,
+        async (id) => {
+          await dispatch(archiveArtifactThunk(id)).unwrap();
+        },
+        {
+          done: "Moved to Trash",
+          noun: "artifact",
+          labelOf: (a) => a.title?.trim() || "Untitled",
+        },
+        (a) => a.id,
+      ),
+  };
+  const bulk = useTableBulkSelection<CxArtifactRecord>({
+    token: "artifact",
+    noun: "artifact",
+    rows: filtered,
+    getRowId: (a) => a.id,
+    getRowName: (a) => a.title?.trim() || "Untitled",
+    actions: [trashAction],
+    standardBulkActions: { trash: false },
+    // The thunk already removed each row from the store.
+    onRefresh: () => {},
+    onRemoveRows: () => {},
+  });
 
   /**
    * Live scope for `matrx-user/artifacts` on the list route — the listing
@@ -521,6 +571,7 @@ export function CmsArtifactList() {
             );
           } }]}
           getRowId={(artifact) => artifact.id}
+          selection={bulk.selection}
           isLoading={isLoading}
           density="condensed"
           pageSize={0}
