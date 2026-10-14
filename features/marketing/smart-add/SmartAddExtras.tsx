@@ -10,6 +10,7 @@ import { useEffect, useState } from "react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { proxiedExternalImageUrl } from "@/lib/media/external-image";
 import { brightnessOf, shadeForBrightness } from "./logo-shade";
+import { useBoundedWait } from "@/hooks/useBoundedWait";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { ExternalLink, Globe, Plus, X } from "lucide-react";
 import { Button, Field, Select, type SelectOption, type WayOutItem } from "@ai-matrx/design-system/controls";
@@ -132,32 +133,50 @@ export function CustomAdd({
 
 const KIND_LABEL = { business: "Business", person: "Person", both: "Person with a business" } as const;
 
+/** How long a placeholder may claim work is coming: past this, the slot shows its honest empty state. */
+const LOGO_WAIT_MS = 180_000;
+/** The homepage picture: the server's browser gives up at 20s per device, plus filing; past this it is not coming. */
+const SHOT_WAIT_MS = 90_000;
+
 /** The primary choices, laid out like an official profile card — builds as the person confirms. */
 export function BrandCard({
   basics,
-  waiting = false,
+  pictures,
+  findingPictures = false,
   screenshot = null,
+  capturing = false,
   person,
   kind,
   onKind,
   location,
 }: {
   basics: BrandBasics;
-  /** A round is still working: an empty picture box shimmers ("working on it"), never an icon. */
-  waiting?: boolean;
-  /** The homepage on a computer (lasting address); its slot is reserved for a business, so it swaps in. */
+  /** Every picture that can stand for the brand, best first (the confirmed main one, then the site's own logos, then
+   *  profile photos). The card shows the best one that really loads and keeps it until a better one has loaded. */
+  pictures: string[];
+  /** A step that can still bring a logo or photo is running right now (never "the round is busy"). */
+  findingPictures?: boolean;
+  /** The homepage on a computer (lasting address). */
   screenshot?: string | null;
+  /** The homepage picture is being taken right now, for a site the person has not turned down. */
+  capturing?: boolean;
   person: boolean;
   kind: "person" | "business" | "both";
   onKind: (kind: "person" | "business" | "both") => void;
   location: string | null;
 }) {
-  const primary = basics.images.find((i) => i.primary) ?? null;
-  const empty = !basics.name && !primary && !basics.websiteUrl;
-  const [shade, setShade] = useState<"light" | "dark" | "checker">("light");
-  const [dead, setDead] = useState<string | null>(null);
-  const primaryRaw = primary?.url ?? null;
-  const primarySrc = primaryRaw && /^https?:\/\//i.test(primaryRaw) ? proxiedExternalImageUrl(primaryRaw) : primaryRaw;
+  const empty = !basics.name && pictures.length === 0 && !basics.websiteUrl;
+  const [dead, setDead] = useState<ReadonlySet<string>>(new Set());
+  // The picture on screen: only ever one that has loaded. A newer, better candidate loads out of sight and
+  // replaces it only once it has drawn; one that fails never takes the good one away (Arman, 2026-10-14).
+  const [shown, setShown] = useState<{ url: string; shade: "light" | "dark" } | null>(null);
+  const live = pictures.filter((u) => !dead.has(u));
+  const target = live[0] ?? null;
+  // A picture the person has since turned down (no longer a candidate) leaves the card.
+  const onScreen = shown && pictures.includes(shown.url) ? shown : null;
+  const loading = target !== null && target !== onScreen?.url;
+  const waiting = useBoundedWait(!onScreen && (loading || findingPictures), LOGO_WAIT_MS);
+  const srcOf = (u: string) => (/^https?:\/\//i.test(u) ? proxiedExternalImageUrl(u) : u);
   return (
     <section
       className="flex min-h-28 items-center gap-4 rounded-xl border border-border bg-gradient-to-br from-card to-muted/40 p-4 shadow-sm"
@@ -165,26 +184,31 @@ export function BrandCard({
       data-testid="smart-add-brand-card"
     >
       <span
-        className={`relative flex size-20 shrink-0 items-center justify-center overflow-hidden border border-border ${shade === "dark" ? "bg-zinc-800" : "bg-white"} ${person ? "rounded-full" : "rounded-xl"}`}
+        className={`relative flex size-20 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-border ${onScreen?.shade === "dark" ? "bg-zinc-800" : "bg-white"}`}
         data-testid="smart-add-card-picture"
-        data-state={primary && dead !== primary.url ? "ready" : waiting ? "waiting" : "empty"}
+        data-state={onScreen ? "ready" : waiting ? "waiting" : "empty"}
       >
-        {primary && dead !== primary.url ? (
-          <img
-            src={primarySrc ?? primary.url}
-            alt=""
-            onError={() => setDead(primary.url)}
-            onLoad={(ev) => {
-              const b = brightnessOf(ev.currentTarget);
-              setShade(b === null ? "light" : shadeForBrightness(b));
-            }}
-            className={person ? "size-full object-cover" : "max-h-full max-w-full object-contain p-1.5"}
-          />
+        {onScreen ? (
+          <img src={srcOf(onScreen.url)} alt="" className="max-h-full max-w-full object-contain p-1.5" />
         ) : waiting ? (
           <Skeleton motion="shimmer" aria-hidden="true" className="absolute inset-0 rounded-none bg-muted" />
         ) : (
           <Globe className="size-7 text-muted-foreground" />
         )}
+        {loading && target ? (
+          <img
+            key={target}
+            src={srcOf(target)}
+            alt=""
+            aria-hidden
+            className="pointer-events-none absolute size-px opacity-0"
+            onLoad={(ev) => {
+              const b = brightnessOf(ev.currentTarget);
+              setShown({ url: target, shade: b === null ? "light" : shadeForBrightness(b) });
+            }}
+            onError={() => setDead((d) => new Set(d).add(target))}
+          />
+        ) : null}
       </span>
       <div className="flex min-w-0 flex-1 flex-col gap-1">
         <span className="flex min-w-0 items-baseline gap-2">
@@ -223,31 +247,34 @@ export function BrandCard({
           <span className="truncate text-xs text-muted-foreground">{basics.expertise.join(" · ")}</span>
         ) : null}
       </div>
-      {person ? null : <HomepageShot url={screenshot} waiting={waiting} />}
+      {person ? null : <HomepageShot url={screenshot} capturing={capturing} />}
     </section>
   );
 }
 
-/** The homepage picture's slot: always the same size (no layout shift), empty until the picture loads. */
-function HomepageShot({ url, waiting }: { url: string | null; waiting: boolean }) {
+/**
+ * The homepage picture's slot. It exists only while a picture is really being taken or once one exists: never a
+ * shimmer for a capture nobody started (Arman, 2026-10-14). A capture past its limit, or a picture that fails to
+ * load, leaves no box at all.
+ */
+function HomepageShot({ url, capturing }: { url: string | null; capturing: boolean }) {
   const [loaded, setLoaded] = useState<string | null>(null);
   const [dead, setDead] = useState<string | null>(null);
-  const show = url && dead !== url;
+  const show = url !== null && dead !== url;
+  const shooting = useBoundedWait(capturing && !show, SHOT_WAIT_MS);
+  if (!show && !shooting) return null;
   return (
     <span
       className="relative hidden h-[5.625rem] w-36 shrink-0 overflow-hidden rounded-lg border border-border bg-muted sm:block"
       data-testid="smart-add-homepage-shot"
-      data-state={show && loaded === url ? "ready" : (waiting && !dead) || (show && loaded !== url) ? "waiting" : "empty"}
+      data-state={show && loaded === url ? "ready" : "waiting"}
     >
-      {/* Still coming (the round is working, or the picture is loading): a soft shimmer, never a spinner. */}
-      {(show && loaded !== url) || (!show && waiting) ? (
-        <Skeleton motion="shimmer" aria-hidden="true" className="absolute inset-0 rounded-none bg-muted" />
-      ) : null}
+      {/* Being taken, or drawing: a soft shimmer, never a spinner. */}
+      {!show || loaded !== url ? <Skeleton motion="shimmer" aria-hidden="true" className="absolute inset-0 rounded-none bg-muted" /> : null}
       {show ? (
         <img
           src={url}
           alt="Homepage"
-          loading="lazy"
           onLoad={() => setLoaded(url)}
           onError={() => setDead(url)}
           className={`size-full object-cover object-top transition-opacity duration-500 ${loaded === url ? "opacity-100" : "opacity-0"}`}

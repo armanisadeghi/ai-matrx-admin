@@ -6,7 +6,8 @@
  * - mode (company ↔ person) is a ROUTE change: `router.push`, so Back returns to the other mode;
  * - the way in (`via`) is pushed without navigating (Back closes the card);
  * - the compare view is PUSHED without navigating (a link opens it, Back closes it; its own close goes back);
- * - typed fields and run ids are REPLACED without navigating (no history spam, no RSC fetch).
+ * - typed fields and run ids are REPLACED without navigating (no history spam, no RSC fetch);
+ * - starting a search PUSHES one entry (`markSearch`): Back returns to the entry, what was typed kept, the search stopped.
  *
  * Auto-start: a link that carries a prefill starts searching on open (it spends points, like Go) —
  * once per address per tab. A reload, Back/Forward or a duplicate tab never starts a second run;
@@ -41,6 +42,8 @@ export interface SmartAddAddressBinding {
   setView: (view: SmartAddView | null) => void;
   /** Replace this module's keys in the address (`undefined` keeps, `null` removes). */
   write: (patch: SmartAddPatch) => void;
+  /** A search starts: one history entry, so Back returns to the entry with what was typed. */
+  markSearch: () => void;
 }
 
 const AUTO_KEY = "smart-add:auto-started";
@@ -119,5 +122,6 @@ export function useSmartAddAddress(): SmartAddAddressBinding {
     },
     setView,
     write,
+    markSearch: () => pushAddressWithoutNavigating(currentPathWithSearch(window.location.search.replace(/^\?/, ""))),
   };
 }

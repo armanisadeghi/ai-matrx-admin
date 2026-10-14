@@ -20,6 +20,9 @@ import { useEffect, useEffectEvent, useLayoutEffect, useRef, useState } from "re
 import { Check, ExternalLink, Globe, Loader2, RotateCcw, X } from "lucide-react";
 import { Button, Field, SegmentedControl, Select, type SelectOption } from "@ai-matrx/design-system/controls";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
+import { useWorkflowRunControls } from "@/features/workflow-runtime/hooks/useWorkflowRunControls";
+import { inferEntryOutcome, isFailedEntry, quietMs } from "./entryOutcome";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
 import { useCostDisplay } from "@/components/cost/useCostDisplay";
@@ -42,7 +45,7 @@ import { roundFailed } from "./roundFailure";
 import { SmartAddSlots } from "./SmartAddSlots";
 import { typedItems, useRunMemory, type WebMark } from "./runMemory";
 import { withoutStaffFacts } from "./staff";
-import { SmartAddHero, stageLogo, stageName, type PersonMore } from "./SmartAddHero";
+import { SmartAddHero, stageLogo, stageLogos, stageName, type PersonMore } from "./SmartAddHero";
 import { Shared, riseIn } from "./stage/Shared";
 import { useSessionKnob } from "@/lib/scoped-config/sessionKnob";
 import { useAppSelector } from "@/lib/redux/hooks";
@@ -199,6 +202,9 @@ export function SmartAddBrand({
 }) {
   const dispatch = useAppDispatch();
   const { format } = useCostDisplay();
+  const runControls = useWorkflowRunControls();
+  // The quiet-time knob: this long with no new step while a round runs, the stage says it is still working.
+  const stallMs = quietMs(useSessionKnob("marketing.smart_add_quiet_seconds"));
 
   // An address carrying `run=` resumes those rounds from the server (a reload, a shared link, Back).
   const [resume] = useState(() => (url && url.address.runs.length ? { address: url.address, typed: resumeTyped(url.address) } : null));
@@ -403,6 +409,7 @@ export function SmartAddBrand({
   const resetAll = () => {
     setRounds([]);
     setViews({});
+    viewSig.current = {};
     setItems(new Map());
     setDecisions({});
     setRelations({});
@@ -459,7 +466,11 @@ export function SmartAddBrand({
   // Every started round's run id rides the address (replace: starting a run is not a page).
   const runIds = rounds.map((r) => r.runId).filter((id): id is string => Boolean(id));
   const runKey = runIds.join(",");
-  useEffect(() => writeAddress({ runs: runKey ? runKey.split(",") : [] }), [runKey]);
+  const wroteRuns = useRef(false);
+  useEffect(() => {
+    if (runKey) wroteRuns.current = true;
+    writeAddress({ runs: runKey ? runKey.split(",") : [] });
+  }, [runKey]);
 
   // Every answer given before Create is saved as it is given and comes back with `?run=` (runMemory.ts).
   useRunMemory(
@@ -503,12 +514,14 @@ export function SmartAddBrand({
     void startRound(seeds, {}, true);
   });
 
+  // A restart bumps the tick, so the same input submitted again starts a fresh round.
+  const [typedTick, setTypedTick] = useState(0);
   useEffect(() => {
     if (created) return;
     if (!typedWebsiteKey && !typedSocialKey) return;
     const timer = setTimeout(runTyped, IDENTIFY_DEBOUNCE_MS);
     return () => clearTimeout(timer);
-  }, [typedWebsiteKey, typedSocialKey, created]);
+  }, [typedWebsiteKey, typedSocialKey, created, typedTick]);
 
   // What the person typed is their own word: its findings are confirmed on arrival.
   const onEvidence = (incoming: EvidenceItem[]) => {
@@ -528,8 +541,16 @@ export function SmartAddBrand({
       });
   };
 
-  const onView = (view: RoundView) =>
-    setViews((v) => (JSON.stringify(v[view.runId]) === JSON.stringify(view) ? v : { ...v, [view.runId]: view }));
+  // When the last new step event landed (any round): the quiet clock behind "Still working…".
+  const [lastEventAt, setLastEventAt] = useState(() => Date.now());
+  const viewSig = useRef<Record<string, string>>({});
+  const onView = (view: RoundView) => {
+    const sig = JSON.stringify(view);
+    if (viewSig.current[view.runId] === sig) return;
+    viewSig.current[view.runId] = sig;
+    setLastEventAt(Date.now());
+    setViews((v) => ({ ...v, [view.runId]: view }));
+  };
 
   // Confirmed websites/accounts not explored yet → the next round.
   // Any other way of changing a restored answer (not only the answer buttons) hands it back to the person.
@@ -858,6 +879,25 @@ export function SmartAddBrand({
   // The landing card shows the best found name and logo until the person confirms their own, so
   // what the stage found has a real place to land (it is never created from these: Create reads basics).
   const foundLogo = stageLogo(withoutStaffFacts(items.values(), person));
+  // The card's picture falls back through every logo it may show: the confirmed main one, then the site's own
+  // logos, then profile photos — never one the person turned down or one the page already found broken.
+  const cardPictures = [
+    ...new Set(
+      [
+        basics.images.find((i) => i.primary)?.url,
+        ...stageLogos(withoutStaffFacts(items.values(), person))
+          .filter((i) => decisions[i.key] !== "no" && !brokenKeys.current.has(i.key))
+          .map((i) => i.image_url),
+      ].filter((u): u is string => Boolean(u)),
+    ),
+  ];
+  // Placeholders wait on the ONE job that fills them, never on "the round is busy": a step that can bring a
+  // picture, and the homepage capture (for a site the person has not turned down).
+  const findingPictures =
+    roundViews.some((v) => v?.imaging) || rounds.some((r) => !r.error && (!r.runId || !views[r.runId]));
+  const capturing = roundViews.some((v) => v?.shooting);
+  const shotHost = screenshots?.pageUrl ? websiteHost(screenshots.pageUrl) : null;
+  const shotSite = !visible.some((i) => i.field === "website" && decisions[i.key] === "no" && (!shotHost || websiteHost(i.value) === shotHost));
   const foundName = stageName(withoutStaffFacts(items.values(), person));
   const cardBasics =
     basics.name && basics.images.length
@@ -1168,15 +1208,101 @@ export function SmartAddBrand({
   const showable =
     Boolean(foundLogo || foundName) ||
     [...items.values()].some((i) => i.field === "social" && i.source.kind !== "typed" && i.source.where !== "the address itself");
+  // ── the entry's honest answer (entryOutcome.ts) ────────────────────────────
+  // The first typed round decides whether what was typed exists. A failed entry never morphs into a findings page
+  // and never offers Create: the stage says what happened and offers Edit / Try another / Search by name.
+  const entryView = rounds[0]?.runId ? views[rounds[0].runId] : undefined;
+  const entryTyped = rounds[0] ? Boolean(rounds[0].seeds.website || rounds[0].seeds.socials.length) : false;
+  const entryOutcome = entryTyped
+    ? (entryView?.entry ??
+      inferEntryOutcome(entryView, { website: websiteText.trim(), social: socialText.trim(), platform: picked }, hasFindings))
+    : null;
+  const entryFailed = !enrich && isFailedEntry(entryOutcome);
+  // Quiet too long while a round runs: the stage says so (never an endless spinner).
+  const [quiet, setQuiet] = useState(false);
   useEffect(() => {
-    if (structured || !hasFindings) return;
+    setQuiet(false);
+    if (!working || entryFailed) return;
+    const timer = setTimeout(() => setQuiet(true), Math.max(stallMs - (Date.now() - lastEventAt), 0));
+    return () => clearTimeout(timer);
+  }, [working, entryFailed, lastEventAt, stallMs]);
+  // A late not-found answer takes the findings page back down.
+  useEffect(() => {
+    if (entryFailed) setStructured(false);
+  }, [entryFailed]);
+
+  useEffect(() => {
+    if (structured || !hasFindings || entryFailed) return;
     if (rounds.length && working && !showable) return;
     firstFindingAt.current ??= Date.now();
     const held = Date.now() - firstFindingAt.current;
     const wait = rounds.length ? Math.max(STAGE_HOLD_MS - held, 0) : STAGE_ANSWER_MS;
     const timer = setTimeout(() => setStructured(true), wait);
     return () => clearTimeout(timer);
-  }, [hasFindings, structured, rounds.length, working, showable]);
+  }, [hasFindings, structured, rounds.length, working, showable, entryFailed]);
+
+  // ── back, edit, start over ─────────────────────────────────────────────────
+  // Every running round is stopped (no more spend), the session resets, and the address forgets the runs.
+  const stopRuns = () => {
+    for (const r of rounds) {
+      const status = r.runId ? views[r.runId]?.status : null;
+      if (r.runId && !["completed", "failed", "errored", "cancelled", "stopped", "refused"].includes(status ?? "")) {
+        void runControls.cancel(r.runId);
+      }
+    }
+  };
+  const [heroKey, setHeroKey] = useState(0);
+  const [fresh, setFresh] = useState(false);
+  /**
+   * Restart: "edit" and "retry" keep what was typed; "over" clears it and the address too. Asks first (the
+   * canonical confirm) only when there is something to lose: findings or answers. False = the person kept going.
+   */
+  const restart = async (how: "edit" | "retry" | "over"): Promise<boolean> => {
+    const answers = Object.keys(decisions).length;
+    if (!entryFailed && (hasFindings || answers) && how !== "retry") {
+      const spent = costUsd > 0 ? ` and ${format(costUsd)} of lookups` : "";
+      const ok = await confirm({
+        title: how === "over" ? "Start over?" : "Edit and search again?",
+        description: `${answers ? `${answers} answers` : "What we found"}${spent} will be cleared.`,
+        confirmLabel: how === "over" ? "Start over" : "Edit",
+        variant: "destructive",
+      });
+      if (!ok) return false;
+    }
+    stopRuns();
+    resetAll();
+    setStructured(false);
+    firstFindingAt.current = null;
+    setWebsiteText("");
+    setSocialText("");
+    setTypedTick((t) => t + 1);
+    wroteRuns.current = false;
+    if (how === "over") {
+      setPicked(null);
+      url?.write({ website: null, social: null, platform: null, name: null, city: null, occupation: null, company: null, runs: [] });
+      url?.setVia(null);
+      setFresh(true);
+      setHeroKey((k) => k + 1);
+    }
+    return true;
+  };
+  // Browser Back from a search returns to the entry (the search pushed one history entry): the address lost its
+  // runs while this page still holds them, so the search is stopped and the fields come back to edit.
+  const addressRuns = url?.address.runs.length ?? 0;
+  const backToEntry = useEffectEvent(() => {
+    if (!wroteRuns.current || addressRuns > 0 || !rounds.length || created) return;
+    stopRuns();
+    resetAll();
+    setStructured(false);
+    firstFindingAt.current = null;
+    setWebsiteText("");
+    setSocialText("");
+    setTypedTick((t) => t + 1);
+    wroteRuns.current = false;
+    setFresh(true);
+    setHeroKey((k) => k + 1);
+  });
+  useEffect(() => backToEntry(), [addressRuns]);
   useLayoutEffect(() => {
     if (structured) riseIn(pageRef.current);
   }, [structured]);
@@ -1231,16 +1357,21 @@ export function SmartAddBrand({
     return (
       <>
         <SmartAddHero
+          key={heroKey}
           person={person}
           onPerson={setPerson}
           onFindPerson={findPerson}
-          initial={url ? (resume?.address.prefill ?? url.address.prefill) : undefined}
+          initial={url ? (fresh ? url.address.prefill : (resume?.address.prefill ?? url.address.prefill)) : undefined}
           via={url ? url.address.viaParam : undefined}
           initialVia={url?.address.via ?? null}
           onVia={url?.setVia}
           onDraft={url?.write}
-          autoStart={Boolean(url?.autoStart)}
-          resumed={Boolean(resume)}
+          autoStart={Boolean(url?.autoStart) && !fresh}
+          resumed={Boolean(resume) && !fresh}
+          outcome={entryFailed ? entryOutcome : null}
+          slow={quiet && working}
+          onRestart={restart}
+          onStarted={url?.markSearch}
           onWebsite={setWebsiteText}
           onSocial={setSocialText}
           onPick={setPicked}
@@ -1348,7 +1479,7 @@ export function SmartAddBrand({
       </Shared>
 
       {/* Working line: one fixed-height row, never shifts. */}
-      <div className="flex h-6 items-center gap-2 text-xs text-muted-foreground" aria-live="polite">
+      <div className="flex h-7 items-center gap-2 text-xs text-muted-foreground" aria-live="polite">
         {working ? (
           <>
             <span className="relative flex size-2">
@@ -1365,6 +1496,12 @@ export function SmartAddBrand({
         <span className="ml-auto shrink-0 tabular-nums">
           {rounds.length ? (costUsd > 0 ? format(costUsd) : "Free so far") : null}
         </span>
+        {rounds.length && !created && url ? (
+          <Button variant="quiet" className="shrink-0" onClick={() => void restart("over")} data-testid="smart-add-start-over">
+            <RotateCcw className="size-3.5" />
+            Start over
+          </Button>
+        ) : null}
       </div>
 
       {findYou && personTyped.current ? (
@@ -1403,7 +1540,17 @@ export function SmartAddBrand({
 
       {/* The brand as it stands: the primary choices, building as the person confirms. */}
       <div className="motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-3 motion-safe:duration-500">
-      <BrandCard waiting={working} basics={cardBasics} screenshot={person ? null : (screenshots?.desktop?.url ?? null)} person={person} kind={kindLabel.kind} onKind={answerKind} location={basics.facts.find((f) => f.field === "address")?.value ?? null} />
+      <BrandCard
+        basics={cardBasics}
+        pictures={cardPictures}
+        findingPictures={findingPictures}
+        screenshot={person || !shotSite ? null : (screenshots?.desktop?.url ?? null)}
+        capturing={!person && capturing && shotSite}
+        person={person}
+        kind={kindLabel.kind}
+        onKind={answerKind}
+        location={basics.facts.find((f) => f.field === "address")?.value ?? null}
+      />
       </div>
 
       {situation === "new" ? (

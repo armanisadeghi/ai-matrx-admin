@@ -15,6 +15,7 @@
 
 import { useEffect, useEffectEvent, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
 import { AnimatePresence, MotionConfig, motion } from "motion/react";
+import { Button } from "@ai-matrx/design-system/controls";
 import {
   ArrowLeft,
   ArrowRight,
@@ -26,6 +27,8 @@ import {
   MapPin,
   PenLine,
   Plus,
+  RotateCcw,
+  Search,
   UserRound,
   X,
 } from "lucide-react";
@@ -39,6 +42,7 @@ import type { RoundView } from "./SmartAddRound";
 import { AiTestReplayBadge } from "@/features/ai-test-mode/AiTestReplayBadge";
 import { SMART_ADD_ADDRESS_DEBOUNCE_MS, type SmartAddPatch, type SmartAddPrefill, type SmartAddVia } from "./smartAddUrl";
 import { Shared } from "./stage/Shared";
+import { entryCopy, handleProblem, websiteProblem, type EntryOutcome } from "./entryOutcome";
 import { proxiedExternalImageUrl } from "@/lib/media/external-image";
 import styles from "./stage/stage.module.css";
 import { withReferral } from "@ai-matrx/kit/outbound";
@@ -88,6 +92,10 @@ export function SmartAddHero({
   onDraft,
   autoStart = false,
   resumed = false,
+  outcome = null,
+  slow = false,
+  onRestart,
+  onStarted,
 }: {
   person: boolean;
   onPerson: (person: boolean) => void;
@@ -117,6 +125,14 @@ export function SmartAddHero({
   autoStart?: boolean;
   /** A resumed session: the search is already running or done. */
   resumed?: boolean;
+  /** What was typed does not exist (or cannot be read): the stage ends on this answer, never on findings. */
+  outcome?: EntryOutcome | null;
+  /** No new step for the quiet-time knob while a round runs. */
+  slow?: boolean;
+  /** Stop and reset the session ("over" also clears the address); false = the person kept going. */
+  onRestart?: (how: "edit" | "retry" | "over") => Promise<boolean>;
+  /** A search starts (one history entry: Back returns here). */
+  onStarted?: () => void;
 }) {
   const [mode, setModeState] = useState<Mode | null>(initialVia);
   const setMode = (m: Mode | null) => {
@@ -145,15 +161,23 @@ export function SmartAddHero({
   const [submitted, setSubmitted] = useState(resumed);
 
   const parsed = resolveAccountInput({ text: social, picked });
-  const socialOk = parsed.status === "ok" && (parsed.detected || Boolean(picked));
-  const siteOk = looksLikeDomain(site);
+  // Up-front checks: an address or handle that cannot exist never starts a paid run; the reason shows inline.
+  const siteProblem = websiteProblem(site);
+  const handleIssue = parsed.status === "ok" ? handleProblem(parsed.platform, parsed.handle) : null;
+  const socialOk = parsed.status === "ok" && (parsed.detected || Boolean(picked)) && !handleIssue;
+  const siteOk = looksLikeDomain(site) && !siteProblem;
   const host = siteOk ? websiteHost(site.trim()) : null;
   const needsPick = social.trim() !== "" && needsPlatformPick(parsed, null);
 
   const socialOkFor = (pk: SocialPlatform | null) => {
     const p = resolveAccountInput({ text: social, picked: pk });
-    return p.status === "ok" && (p.detected || Boolean(pk));
+    return p.status === "ok" && (p.detected || Boolean(pk)) && !handleProblem(p.platform, p.handle);
   };
+  // The one inline problem the entry row shows (only for what the open card holds).
+  const typedProblem =
+    mode === "website" ? (site.trim() ? siteProblem : null) ?? (second && social.trim() ? handleIssue : null)
+    : mode === "social" ? (social.trim() ? handleIssue : null) ?? (second && site.trim() ? siteProblem : null)
+    : null;
   const readyFor = (pk: SocialPlatform | null) => {
     const ok = socialOkFor(pk);
     return mode === "website" ? siteOk && (!second || !social.trim() || ok)
@@ -163,8 +187,30 @@ export function SmartAddHero({
   };
   const ready = readyFor(picked);
 
-  const phase: "choose" | "enter" | "identifying" | "nothing" =
-    submitted && nothingFound ? "nothing" : submitted ? "identifying" : mode ? "enter" : "choose";
+  const phase: "choose" | "enter" | "identifying" | "nothing" | "outcome" =
+    submitted && outcome ? "outcome" : submitted && nothingFound ? "nothing" : submitted ? "identifying" : mode ? "enter" : "choose";
+
+  /** Back to the field (what was typed kept): the search stops; asks first when findings or answers would go. */
+  const edit = async () => {
+    if ((await onRestart?.("edit")) === false) return;
+    setSubmitted(false);
+  };
+  /** The same way in, an empty field. */
+  const another = async () => {
+    if ((await onRestart?.("edit")) === false) return;
+    if (mode === "website") setSite("");
+    else setSocial("");
+    setPicked(null);
+    setSecond(false);
+    setSubmitted(false);
+  };
+  /** The name way in instead (a handle that does not exist is often a business that does). */
+  const byName = async () => {
+    if ((await onRestart?.("edit")) === false) return;
+    setSecond(false);
+    setSubmitted(false);
+    setMode("name");
+  };
 
   const submit = (pk: SocialPlatform | null = picked) => {
     if (!readyFor(pk)) return;
@@ -187,7 +233,13 @@ export function SmartAddHero({
     onWebsite(siteOk ? site.trim() : "");
     onSocial(socialOkFor(pk) ? social.trim() : "");
     onPick(pk);
+    onStarted?.();
     setSubmitted(true);
+  };
+  /** Try the same input again (a lookup service hiccup, a slow site). */
+  const retry = async () => {
+    if ((await onRestart?.("retry")) === false) return;
+    submit();
   };
   // Picking the platform is the last thing a bare handle needs: it starts the search.
   const pickPlatform = (p: SocialPlatform) => {
@@ -253,7 +305,8 @@ export function SmartAddHero({
     }
   };
 
-  const compact = phase === "identifying" || phase === "nothing";
+  const compact = phase === "identifying" || phase === "nothing" || phase === "outcome";
+  const answer = phase === "outcome" && outcome ? entryCopy(outcome) : null;
 
   return (
     <MotionConfig reducedMotion="user">
@@ -316,7 +369,7 @@ export function SmartAddHero({
                       platform={parsed.status === "ok" && socialOk ? parsed.platform : null}
                       name={name.trim()}
                       person={person}
-                      onEdit={() => setSubmitted(false)}
+                      onEdit={() => void edit()}
                     />
                   ) : mode === "name" ? (
                     <>
@@ -477,6 +530,11 @@ export function SmartAddHero({
               <QuietButton onClick={() => setMode(null)} icon={<ArrowLeft className="size-4" />}>
                 Back
               </QuietButton>
+              {typedProblem ? (
+                <span role="alert" data-testid="smart-add-entry-problem" className="min-w-0 flex-1 truncate px-3 text-destructive-ink">
+                  {typedProblem}
+                </span>
+              ) : null}
               {mode === "name" ? (
                 <KindToggle person={person} onPerson={onPerson} />
               ) : (
@@ -497,16 +555,29 @@ export function SmartAddHero({
             <Centerpiece
               items={items}
               views={views}
-              working={working || (phase === "identifying" && mode !== "name")}
-              settled={phase === "nothing"}
+              working={phase === "outcome" ? false : working || (phase === "identifying" && mode !== "name")}
+              settled={phase === "nothing" || phase === "outcome"}
               failed={failed}
+              answerTitle={answer?.title ?? null}
               host={host}
               platform={parsed.status === "ok" && socialOk ? parsed.platform : null}
               typedName={mode === "name" ? name.trim() : null}
             />
           ) : null}
 
-          {phase === "nothing" ? <NothingFound failed={failed} person={person} onAnswer={onAdd} onRetry={() => setSubmitted(false)} /> : null}
+          {phase === "identifying" && slow ? (
+            <StillWorking onStop={() => void edit()} onStartOver={() => void onRestart?.("over")} />
+          ) : null}
+          {answer ? (
+            <EntryAnswer
+              line={answer.line}
+              onEdit={() => void edit()}
+              onAnother={() => void another()}
+              onName={mode === "name" ? undefined : () => void byName()}
+              onRetry={answer.retry ? () => void retry() : undefined}
+            />
+          ) : null}
+          {phase === "nothing" ? <NothingFound failed={failed} person={person} onAnswer={onAdd} onRetry={() => void edit()} /> : null}
         </motion.div>
       </section>
     </MotionConfig>
@@ -998,12 +1069,15 @@ function Centerpiece({
   host,
   platform,
   typedName,
+  answerTitle = null,
 }: {
   items: EvidenceItem[];
   views: RoundView[];
   working: boolean;
   settled: boolean;
   failed: boolean;
+  /** The entry's answer ("No account found"): wins over any name, so nothing is ever made from what was typed. */
+  answerTitle?: string | null;
   host: string | null;
   platform: SocialPlatform | null;
   typedName: string | null;
@@ -1074,7 +1148,11 @@ function Centerpiece({
 
       {/* The name types out as it arrives; reserved height so nothing below moves. */}
       <div className={`flex h-11 w-full items-center justify-center px-2 sm:h-12 ${settled ? "mt-2" : "mt-8"}`}>
-        {nameItem ? (
+        {answerTitle ? (
+          <span className="text-2xl font-semibold tracking-tight sm:text-3xl" data-testid="smart-add-entry-answer">
+            {answerTitle}
+          </span>
+        ) : nameItem ? (
           <Shared id={nameItem.key} positionOnly className="max-w-full truncate text-[1.75rem] font-semibold tracking-[-0.03em] sm:text-4xl">
             <Typewriter text={nameItem.value} />
           </Shared>
@@ -1186,10 +1264,15 @@ function realFindings(items: EvidenceItem[]): EvidenceItem[] {
   return items.filter((i) => i.source.where !== "the address itself" && i.source.kind !== "typed");
 }
 
-/** The logo the stage shows (and the landing card uses): the site's own first, else a profile photo. */
+/** The logo the stage shows: the site's own first, else a profile photo. */
 export function stageLogo(items: EvidenceItem[]): EvidenceItem | null {
+  return stageLogos(items)[0] ?? null;
+}
+
+/** Every logo the landing card may fall back through, the site's own first, then profile photos. */
+export function stageLogos(items: EvidenceItem[]): EvidenceItem[] {
   const logos = realFindings(items).filter((i) => i.field === "logo" && (i.image_url || i.profile_id));
-  return logos.find((i) => i.source.kind === "website") ?? logos[0] ?? null;
+  return [...logos.filter((i) => i.source.kind === "website"), ...logos.filter((i) => i.source.kind !== "website")];
 }
 
 /** The name the stage shows (and the landing card uses): the site's own first. */
@@ -1292,6 +1375,72 @@ function Typewriter({ text }: { text: string }) {
     return () => clearInterval(id);
   }, [text]);
   return <span className={shown < text.length ? styles.caret : undefined}>{text.slice(0, shown) || " "}</span>;
+}
+
+// ── The entry's answer ───────────────────────────────────────────────────────
+
+/** What was typed does not exist (or cannot be read): one line, then the next moves. Never a findings page. */
+function EntryAnswer({
+  line,
+  onEdit,
+  onAnother,
+  onName,
+  onRetry,
+}: {
+  line: string;
+  onEdit: () => void;
+  onAnother: () => void;
+  onName?: () => void;
+  onRetry?: () => void;
+}) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.2, duration: 0.55, ease: [0.2, 0.8, 0.2, 1] }}
+      className="mt-4 flex w-full flex-col items-center gap-5"
+      data-testid="smart-add-entry-outcome"
+      role="status"
+    >
+      <p className="text-center text-base text-muted-foreground">{line}</p>
+      <div className="flex flex-wrap items-center justify-center gap-2">
+        <Button variant="primary" onClick={onEdit}>
+          <PenLine className="size-4" />
+          Edit
+        </Button>
+        {onRetry ? (
+          <Button variant="outline" onClick={onRetry}>
+            <RotateCcw className="size-4" />
+            Try again
+          </Button>
+        ) : null}
+        <Button variant="outline" onClick={onAnother}>
+          Try another
+        </Button>
+        {onName ? (
+          <Button variant="quiet" onClick={onName}>
+            <Search className="size-4" />
+            Search by name
+          </Button>
+        ) : null}
+      </div>
+    </motion.div>
+  );
+}
+
+/** Quiet past the knob while a round runs: say so, and offer the way out. */
+function StillWorking({ onStop, onStartOver }: { onStop: () => void; onStartOver: () => void }) {
+  return (
+    <div className="mt-6 flex items-center gap-2 text-sm" role="status" data-testid="smart-add-still-working">
+      <span className="text-foreground">Still working…</span>
+      <Button variant="quiet" onClick={onStop}>
+        Stop
+      </Button>
+      <Button variant="quiet" onClick={onStartOver}>
+        Start over
+      </Button>
+    </div>
+  );
 }
 
 // ── Nothing found ────────────────────────────────────────────────────────────

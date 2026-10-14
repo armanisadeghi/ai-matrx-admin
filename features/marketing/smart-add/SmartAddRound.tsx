@@ -25,6 +25,7 @@ import { factsFromPayload, type BrandFact } from "./validate/queue";
 import { brandNameFromPayload, factEvidence, webFirstData } from "./firstData";
 import { suggestionsFromPayload, type WeThinkSuggestion } from "./weThink";
 import { parseEntityKind, type EntityKind } from "./entityKind";
+import { parseEntryOutcome, type EntryOutcome } from "./entryOutcome";
 
 /** The steps a Smart Add workflow shows, in order. */
 export type SmartAddStepPair = readonly string[];
@@ -41,6 +42,8 @@ export const PARKED_WEB_NOTE = "Parked domain — web results set aside";
 const SIGNALS_STEP = "person_signals";
 /** The person-or-business decision step (mandate brand_intake.entity_kind_decision): runs only when the rules are unsure. */
 const ENTITY_KIND_STEP = "entity_kind";
+/** The first-data capture point: its `entry_outcome` says whether what was typed exists (aidream entry_outcome.py). */
+const ENTRY_STEP = "first_point";
 /** The path decision step (aidream brand.identify.path_decision; PATHS.md). */
 const PATH_STEP = "path_decision";
 
@@ -117,8 +120,13 @@ export interface BrandShot {
 export interface BrandScreenshots {
   desktop: BrandShot | null;
   mobile: BrandShot | null;
+  /** The page that was pictured (where the browser landed), so a site the person turned down drops its picture. */
+  pageUrl: string | null;
 }
 const SCREENSHOTS_STEP = "screenshots";
+/** A run in one of these has ended; nothing in it is still working, whatever a step last said. */
+export const RUN_ENDED = ["completed", "failed", "errored", "cancelled", "stopped", "refused"];
+const IN_FLIGHT = ["running", "retrying"];
 
 function parseShot(raw: unknown): BrandShot | null {
   const r = typeof raw === "object" && raw !== null ? (raw as Record<string, unknown>) : null;
@@ -132,7 +140,7 @@ export function parseScreenshots(raw: unknown): BrandScreenshots | null {
   if (!r) return null;
   const desktop = parseShot(r.desktop);
   const mobile = parseShot(r.mobile);
-  return desktop || mobile ? { desktop, mobile } : null;
+  return desktop || mobile ? { desktop, mobile, pageUrl: typeof r.page_url === "string" ? r.page_url : null } : null;
 }
 
 export interface StepView {
@@ -157,6 +165,12 @@ export interface RoundView {
   spendUsd: number;
   /** Every watched step (agents included) the server answered from a saved result (AI test mode). */
   replays?: AiTestReplay[];
+  /** Did what was typed exist? The first-data point's answer (aidream entry_outcome); null until it lands. */
+  entry?: EntryOutcome | null;
+  /** The homepage picture is being taken right now (its own step runs in a live run), never "the round is busy". */
+  shooting: boolean;
+  /** A step that can bring a logo or photo (lookups, page reads, facts) is running right now in a live run. */
+  imaging: boolean;
 }
 
 function numberOr(value: unknown, fallback: number): number {
@@ -326,7 +340,24 @@ export function SmartAddRound({
     return s === "web" && parkedLate && !v.skipped ? { ...v, notes: [...v.notes, PARKED_WEB_NOTE] } : v;
   };
   const replays = Object.values(stepState).flatMap((st) => (st.view.replay ? [st.view.replay] : []));
-  const view: RoundView = { runId, status, steps: steps.map(stepView), spendUsd, ...(replays.length ? { replays } : {}) };
+  // The round's entry answer: the first-data point carries it (a not-found entry skips the point and every agent).
+  const entryAggregate = useAppSelector(selectNodeAggregate(runId, ENTRY_STEP));
+  const entry = parseEntryOutcome(entryAggregate.invocations[entryAggregate.invocations.length - 1]?.output?.entry_outcome);
+  // In flight = the step's own phase says running AND the run has not ended (an ended run never settles a step it
+  // dropped). The screen's placeholders wait on these, never on the run as a whole.
+  const runLive = status !== null && !RUN_ENDED.includes(status);
+  const shooting = runLive && IN_FLIGHT.includes(shotsAggregate.phase);
+  const imaging = runLive && [...steps, ...ANCHOR_STEPS, ...FACT_STEPS].some((s) => IN_FLIGHT.includes(stepState[s]?.view.phase ?? "idle"));
+  const view: RoundView = {
+    runId,
+    status,
+    steps: steps.map(stepView),
+    spendUsd,
+    shooting,
+    imaging,
+    ...(replays.length ? { replays } : {}),
+    ...(entry ? { entry } : {}),
+  };
   useEffect(() => {
     onView(view);
   }, [view, onView]);

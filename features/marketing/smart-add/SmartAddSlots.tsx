@@ -337,7 +337,6 @@ export function SmartAddSlots({
               item={g.lead}
               decision={decisions[g.lead.key] ?? null}
               locked={locked}
-              round={person}
               onToggle={() => keepGroup(g)}
               onClear={() => clearGroup(g)}
               onPrimary={() => starGroup(g)}
@@ -656,7 +655,6 @@ function LogoChoice({
   item,
   decision,
   locked,
-  round,
   onToggle,
   onClear,
   onPrimary,
@@ -669,7 +667,6 @@ function LogoChoice({
   item: EvidenceItem;
   decision: Decision | null;
   locked: boolean;
-  round: boolean;
   onToggle: () => void;
   onClear: () => void;
   onPrimary: () => void;
@@ -693,7 +690,7 @@ function LogoChoice({
   const src = /^https?:\/\//i.test(raw) ? proxiedExternalImageUrl(raw) : raw;
   const shade = backdrop === "auto" ? auto : backdrop;
   const bg = shade === "dark" ? "bg-zinc-800" : shade === "light" ? "bg-zinc-50" : CHECKER;
-  const wide = !round && ratio > 1.5;
+  const wide = ratio > 1.5;
   const where = whereOf(item);
   const cycle = () => setBackdrop((b) => (b === "auto" ? (auto === "dark" ? "light" : "dark") : b === "dark" ? "light" : "dark"));
   const onLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
@@ -709,7 +706,7 @@ function LogoChoice({
         door={profileAvatarDoor(item.profile_id)}
         url={item.image_url}
         fallback={<PlatformMark platform={item.platform ?? ""} size={24} />}
-        className="size-full rounded-full object-cover"
+        className="max-h-full max-w-full object-contain"
       />
     ) : (
       <img src={src} alt="" className={className} onLoad={onLoad} onError={() => {
@@ -729,9 +726,7 @@ function LogoChoice({
           aria-pressed={kept}
           aria-label={`${kept ? "Keep" : "Skip"} this image${where ? ` (${where})` : ""}`}
           onClick={kept ? onClear : onToggle}
-          className={`flex h-[5.25rem] w-full items-center justify-center overflow-hidden border p-1.5 sm:h-24 ${bg} ${
-            round ? "rounded-full" : "rounded-lg"
-          } ${primary ? "border-primary ring-2 ring-primary" : kept ? "border-primary/60 ring-1 ring-primary/60" : "border-border"}`}
+          className={`flex h-[5.25rem] w-full items-center justify-center overflow-hidden rounded-lg border p-1.5 sm:h-24 ${bg} ${primary ? "border-primary ring-2 ring-primary" : kept ? "border-primary/60 ring-1 ring-primary/60" : "border-border"}`}
           data-testid="smart-add-logo"
         >
           {picture("max-h-full max-w-full object-contain")}
