@@ -11,7 +11,7 @@
  * is its own tile, exactly as before.
  */
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Chip, Button, PropertyRow } from "@ai-matrx/design-system/controls";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
@@ -108,7 +108,7 @@ export function useLogoGroups(logos: EvidenceItem[], separated: ReadonlySet<stri
         id: g?.group_id ?? item.key,
         lead,
         members: [lead, ...members.filter((m) => m.key !== lead.key)],
-        sizes: sizesOf(stay),
+        sizes: sizesOf(keys),
         apart,
       });
     }
@@ -194,6 +194,26 @@ export function LogoEnlarge({
 }) {
   const [viewKey, setViewKey] = useState<string | null>(null);
   const everything = [...group.members, ...group.apart];
+  // The server could not read some images: the size the browser sees in each thumbnail stands in for it.
+  const listRef = useRef<HTMLUListElement>(null);
+  const [measured, setMeasured] = useState<Record<string, { width: number; height: number }>>({});
+  useEffect(() => {
+    if (!open) return;
+    let tries = 0;
+    const read = () => {
+      const found: Record<string, { width: number; height: number }> = {};
+      let missing = 0;
+      listRef.current?.querySelectorAll<HTMLElement>("[data-source-key]").forEach((el) => {
+        const img = el.querySelector("img");
+        if (img?.naturalWidth) found[el.dataset.sourceKey as string] = { width: img.naturalWidth, height: img.naturalHeight };
+        else missing++;
+      });
+      setMeasured((cur) => ({ ...cur, ...found }));
+      if (missing && ++tries < 12) timer = setTimeout(read, 500);
+    };
+    let timer = setTimeout(read, 300);
+    return () => clearTimeout(timer);
+  }, [open, everything.length]);
   const shown = everything.find((m) => m.key === viewKey) ?? group.lead;
   const nameOf = (m: EvidenceItem) => {
     const label = labelOf(m) || "image";
@@ -201,13 +221,11 @@ export function LogoEnlarge({
   };
   const hasSidebar = everything.length > 1;
   const fingerprint = (m: EvidenceItem) => group.sizes[m.key];
-  const dims = (m: EvidenceItem) => {
-    const fp = fingerprint(m);
-    return fp?.width && fp?.height ? `${fp.width} × ${fp.height} px` : null;
-  };
   const sourceRow = (m: EvidenceItem) => {
     const fp = fingerprint(m);
     const apart = controls.separated.has(m.key);
+    const px = fp?.width && fp?.height ? fp : measured[m.key];
+    const dims = px?.width && px?.height ? `${px.width} × ${px.height} px` : null;
     return (
       <li key={m.key} className="flex flex-col gap-1.5 border-b border-border pb-2 last:border-b-0" data-testid="smart-add-logo-source">
         <div className="flex items-center gap-2">
@@ -217,15 +235,16 @@ export function LogoEnlarge({
             onClick={() => setViewKey(m.key)}
             aria-pressed={shown.key === m.key}
             aria-label={`Show the ${nameOf(m)}`}
-            className={`flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-md border bg-muted p-1 ${shown.key === m.key ? "border-primary ring-2 ring-primary" : "border-border"}`}
+            data-source-key={m.key}
+            className={`relative flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-md border bg-muted p-1 ${shown.key === m.key ? "border-primary ring-2 ring-primary" : "border-border"}`}
           >
-            <SourcePicture item={m} className="max-h-full max-w-full object-contain" />
+            <SourcePicture item={m} className="size-full object-contain" />
           </button>
           <div className="min-w-0 flex-1">
             <PropertyRow
               label={nameOf(m)}
-              value={[dims(m), fp?.format ? fp.format.toUpperCase() : null].filter(Boolean).join(" · ") || null}
-              missing="Size unknown"
+              value={[dims, fp?.format ? fp.format.toUpperCase() : null].filter(Boolean).join(" · ") || null}
+              missing={dims ? undefined : "Size unknown"}
               meta={m.key === group.lead.key && group.members.length > 1 ? <Chip label="Shown on the tile" tone="primary" /> : null}
             />
           </div>
@@ -245,7 +264,10 @@ export function LogoEnlarge({
         <div className="flex flex-col gap-4 md:flex-row">
           <div className="flex min-w-0 flex-1 flex-col gap-3">
             <div className={`flex min-h-64 items-center justify-center overflow-hidden rounded-lg border p-4 ${previewClass}`}>
-              <SourcePicture item={shown} size={48} className="h-[50dvh] w-full object-contain" />
+              {/* relative: a profile photo fills its nearest positioned box */}
+              <span className="relative block h-[50dvh] w-full">
+                <SourcePicture item={shown} size={48} className="size-full object-contain" />
+              </span>
             </div>
             <div className="flex gap-2">
               <Button variant="outline" onClick={() => onBackdrop("light")}>Light background</Button>
@@ -255,7 +277,7 @@ export function LogoEnlarge({
           {hasSidebar ? (
             <aside className="flex w-full shrink-0 flex-col gap-2 md:w-72" data-testid="smart-add-logo-sources-sidebar">
               <div className="type-label">Sources</div>
-              <ul className="flex max-h-[55dvh] flex-col gap-2 overflow-y-auto">{everything.map(sourceRow)}</ul>
+              <ul ref={listRef} className="flex max-h-[55dvh] flex-col gap-2 overflow-y-auto">{everything.map(sourceRow)}</ul>
               {group.members.length > 1 ? (
                 <Button variant="outline" onClick={() => controls.onSeparate(group.members.map((m) => m.key), true)}>
                   Separate all
