@@ -18,6 +18,7 @@ import { useState } from "react";
 import {
   CircleAlert,
   Crown,
+  History,
   Loader2,
   Pencil,
   Plus,
@@ -44,6 +45,11 @@ import {
 } from "@/features/content-ir/studio/shape-authoring-service";
 import { ProTextarea } from "@/components/official/ProTextarea";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import KindExampleCandidates, {
+  candidateDescription,
+  candidateLabel,
+} from "@/features/content-ir/studio/components/KindExampleCandidates";
+import { candidateSourceRef } from "@/features/content-ir/studio/kind-example-candidates";
 
 // CodeMirror is heavy and only belongs in the bundle after someone opens the
 // editor. The canonical JsonInspector owns JSON parsing/lint.
@@ -67,6 +73,8 @@ interface ExampleDraft {
   label: string;
   description: string;
   data: unknown;
+  /** Set when the draft was opened from a real agent run. */
+  sourceRef?: Json;
 }
 
 function exampleDraft(row?: KindExampleListItem): ExampleDraft {
@@ -97,6 +105,13 @@ export default function KindExampleManager({
   const [exampleSaving, setExampleSaving] = useState(false);
   const [exampleError, setExampleError] = useState<string | null>(null);
   const [pendingExampleId, setPendingExampleId] = useState<string | null>(null);
+  const [showRuns, setShowRuns] = useState(false);
+  const [runsRevision, setRunsRevision] = useState(0);
+
+  function examplesChanged(): void {
+    setRunsRevision((r) => r + 1);
+    onExamplesChanged();
+  }
 
   async function saveExample(): Promise<void> {
     if (!draft) return;
@@ -130,6 +145,9 @@ export default function KindExampleManager({
               data: draft.data,
               label: draft.label,
               description: draft.description,
+              ...(draft.sourceRef
+                ? { source: "captured" as const, sourceRef: draft.sourceRef }
+                : {}),
             },
             authMode,
           );
@@ -140,7 +158,7 @@ export default function KindExampleManager({
       }
       toast.success(draft.id ? "Example updated" : "Example created");
       setDraft(null);
-      onExamplesChanged();
+      examplesChanged();
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       setExampleError(message);
@@ -160,7 +178,7 @@ export default function KindExampleManager({
         authMode,
       );
       toast.success(`“${row.label ?? "Untitled example"}” is now canonical`);
-      onExamplesChanged();
+      examplesChanged();
     } catch (error) {
       toast.error("Failed to change the canonical example", {
         description: error instanceof Error ? error.message : String(error),
@@ -189,7 +207,7 @@ export default function KindExampleManager({
       );
       toast.success("Example deleted");
       if (draft?.id === row.id) setDraft(null);
-      onExamplesChanged();
+      examplesChanged();
     } catch (error) {
       toast.error("Failed to delete the example", {
         description: error instanceof Error ? error.message : String(error),
@@ -209,9 +227,39 @@ export default function KindExampleManager({
             Add as many alternates as you like.
           </p>
         </div>
-        <Button icon={<Plus />} variant="primary" type="button" onClick={() => setDraft(exampleDraft())}> Add example
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            icon={<History />}
+            variant="outline"
+            type="button"
+            aria-pressed={showRuns}
+            onClick={() => setShowRuns((v) => !v)}
+          >
+            From agent runs
+          </Button>
+          <Button icon={<Plus />} variant="primary" type="button" onClick={() => setDraft(exampleDraft())}> Add example
+          </Button>
+        </div>
       </div>
+
+      {showRuns && (
+        <KindExampleCandidates
+          kindDefinitionId={kindDefinitionId}
+          authMode={authMode}
+          examplesRevision={runsRevision}
+          onSaved={examplesChanged}
+          onOpenInEditor={(candidate) => {
+            setExampleError(null);
+            setDraft({
+              id: null,
+              label: candidateLabel(candidate),
+              description: candidateDescription(candidate),
+              data: candidate.data,
+              sourceRef: candidateSourceRef(candidate),
+            });
+          }}
+        />
+      )}
 
       {examples.status === "loading" && (
         <div className="flex items-center gap-2 py-4 text-xs text-muted-foreground">
@@ -250,6 +298,7 @@ export default function KindExampleManager({
                   )}
                   <span className="text-[11px] text-muted-foreground">
                     v{row.kindVersion} · {row.validationStatus}
+                    {row.source === "captured" ? " · from a run" : ""}
                   </span>
                 </div>
                 {row.description && (
@@ -353,8 +402,7 @@ export default function KindExampleManager({
               />
             </div>
             <p className="text-[11px] text-muted-foreground">
-              JSON syntax is linted inline. The production Shape validator runs
-              before save.
+              Checked against the shape's schema before save.
             </p>
           </div>
           {exampleError && (

@@ -272,6 +272,10 @@ export interface CreateOwnedShapeExampleArgs {
   data: unknown;
   label?: string | null;
   description?: string | null;
+  /** "captured" when the sample came from a real agent run. */
+  source?: "authored" | "captured";
+  /** Where a captured sample came from (message, conversation, agent). */
+  sourceRef?: Json | null;
 }
 
 /** Insert an authored example; the first live example becomes canonical. */
@@ -311,7 +315,8 @@ export async function createOwnedShapeExample(
       label: trimmedOrNull(args.label),
       description: trimmedOrNull(args.description),
       is_canonical: (count ?? 0) === 0,
-      source: "authored",
+      source: args.source ?? "authored",
+      source_ref: args.sourceRef ?? null,
     })
     .select(EXAMPLE_RETURN_COLUMNS)
     .single();

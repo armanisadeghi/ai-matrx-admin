@@ -14990,6 +14990,7 @@ export type Database = {
         Args: { c: Database["chat"]["Tables"]["conversation"]["Row"] }
         Returns: string
       }
+      message_kind_slugs: { Args: { p_content: Json }; Returns: string[] }
       message_search_text: { Args: { p_content: Json }; Returns: string }
       message_search_tsv: { Args: { p_content: Json }; Returns: unknown }
       move_coding_conversations_to_organization: {
@@ -27876,6 +27877,7 @@ export type Database = {
       }
     }
     Functions: {
+      _try_jsonb: { Args: { p_text: string }; Returns: Json }
       admin_upsert_kind_content_block: {
         Args: {
           p_block_id: string
@@ -27944,6 +27946,19 @@ export type Database = {
       evaluate_kind_activation: {
         Args: { p_kind_definition_id: string }
         Returns: Json
+      }
+      kind_example_candidates: {
+        Args: { p_kind_definition_id: string; p_limit?: number }
+        Returns: {
+          agent_id: string
+          already_example: boolean
+          conversation_id: string
+          conversation_title: string
+          data: Json
+          emitted_at: string
+          message_id: string
+          validation: string
+        }[]
       }
       kind_exercise_evidence: {
         Args: never
