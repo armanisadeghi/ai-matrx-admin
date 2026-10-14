@@ -80,7 +80,7 @@ const fieldRows = await pgc.query(
   `select id, data->>'key' k from custom.record where organization_id = $1 and table_id = custom.field_kernel_id() and deleted_at is null and (data->>'entity_definition_id')::uuid = $2`,
   [ORG, tableId],
 );
-const fid = Object.fromEntries(fieldRows.rows.map((r) => [r.k, r.id])) as Record<string, string>;
+const fid = Object.fromEntries(fieldRows.rows.map((r: { k: string; id: string }) => [r.k, r.id])) as Record<string, string>;
 // A choice answer is the option's KEY (what the public runner sends), so Rules and points name keys.
 const eq = (key: string, value: string) => ({ op: "eq", args: [{ field: fid[key] }, { const: value }] });
 
@@ -195,8 +195,10 @@ const subs = await pgc.query(
   `select s.state, s.record_id is not null rec, s.metadata, s.payload->>'company_name' company from custom.anon_submission s where s.form_id = $1 and s.payload->>'company_name' like $2 order by s.created_at`,
   [formId, `%${stamp}`],
 );
-check("both answers became records in the table", subs.rows.length === 2 && subs.rows.every((r) => r.rec), { rows: subs.rows.map((r) => ({ company: r.company, state: r.state, record: r.rec })) });
-check("the hidden utm_source, the ending and the score are on each submission", subs.rows.map((r) => `${r.metadata?.hidden?.utm_source}/${r.metadata?.ending}`).join() === "instagram/starter,google/discovery-call", { metadata: subs.rows.map((r) => r.metadata) });
+type SubmissionProof = { rec: boolean; company: string; state: string; metadata?: { hidden?: { utm_source?: string }; ending?: string } };
+const submissions = subs.rows as SubmissionProof[];
+check("both answers became records in the table", submissions.length === 2 && submissions.every((row) => row.rec), { rows: submissions.map((row) => ({ company: row.company, state: row.state, record: row.rec })) });
+check("the hidden utm_source, the ending and the score are on each submission", submissions.map((row) => `${row.metadata?.hidden?.utm_source}/${row.metadata?.ending}`).join() === "instagram/starter,google/discovery-call", { metadata: submissions.map((row) => row.metadata) });
 
 // ── 3. A SPACES-MADE FORM STILL RENDERS AND SUBMITS ───────────────────────────────────────
 {

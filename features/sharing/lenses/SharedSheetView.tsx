@@ -66,81 +66,79 @@ function SheetGrid({ sheet }: { sheet: GridSheet }) {
   }
   const line = sheet.gridlines ? "border-b border-r border-border" : "";
   const headBase = "bg-muted text-center text-[11px] font-normal text-muted-foreground border-b border-r border-border";
+  const columns = [`${ROW_HEAD_W}px`, ...sheet.columns.map((column) => `${column.width}px`)].join(" ");
+  const rows = [`${HEAD_H}px`, ...sheet.rows.map((row) => `${row.height}px`)].join(" ");
 
   return (
-    <table className="border-separate border-spacing-0 text-[13px] text-foreground" style={{ width: x, maxWidth: "none", display: "table", tableLayout: "fixed" }}>
-      <colgroup>
-        <col style={{ width: ROW_HEAD_W }} />
-        {sheet.columns.map((c) => (
-          <col key={c.index} style={{ width: c.width }} />
-        ))}
-      </colgroup>
-      <thead>
-        <tr style={{ height: HEAD_H }}>
-          <th scope="col" className={cn(headBase, "sticky left-0 top-0 z-30")} aria-label="Corner" />
-          {sheet.columns.map((c, i) => (
-            <th
-              key={c.index}
-              scope="col"
-              className={cn(headBase, "sticky top-0", i < sheet.frozenColumns ? "z-20" : "z-10")}
-              style={i < sheet.frozenColumns ? { left: left[i] } : undefined}
-            >
-              {columnLetter(c.index)}
-            </th>
-          ))}
-        </tr>
-      </thead>
-      <tbody>
-        {sheet.rows.map((row, r) => {
-          const frozenRow = r < sheet.frozenRows;
-          return (
-            <tr key={row.index} style={{ height: row.height }}>
-              <th
-                scope="row"
-                className={cn(headBase, "sticky left-0 whitespace-nowrap tabular-nums", frozenRow ? "z-20" : "z-10")}
-                style={frozenRow ? { top: top[r] } : undefined}
+    <div
+      role="grid"
+      aria-label={`${sheet.name} spreadsheet`}
+      aria-rowcount={sheet.rows.length}
+      aria-colcount={sheet.columns.length}
+      className="grid text-[13px] text-foreground"
+      style={{ width: x, maxWidth: "none", gridTemplateColumns: columns, gridTemplateRows: rows }}
+    >
+      <div role="presentation" className={cn(headBase, "sticky left-0 top-0 z-30")} aria-label="Corner" style={{ gridColumn: 1, gridRow: 1 }} />
+      {sheet.columns.map((column, i) => (
+        <div
+          key={column.index}
+          role="columnheader"
+          className={cn(headBase, "sticky top-0", i < sheet.frozenColumns ? "z-20" : "z-10")}
+          style={{ gridColumn: i + 2, gridRow: 1, ...(i < sheet.frozenColumns ? { left: left[i] } : {}) }}
+        >
+          {columnLetter(column.index)}
+        </div>
+      ))}
+      {sheet.rows.map((row, r) => {
+        const frozenRow = r < sheet.frozenRows;
+        return [
+          <div
+            key={`row-${row.index}`}
+            role="rowheader"
+            className={cn(headBase, "sticky left-0 whitespace-nowrap tabular-nums", frozenRow ? "z-20" : "z-10")}
+            style={{ gridColumn: 1, gridRow: r + 2, ...(frozenRow ? { top: top[r] } : {}) }}
+          >
+            {row.index + 1}
+          </div>,
+          ...row.cells.map((cell, i) => {
+            if (cell.covered) return null;
+            const frozenCol = i < sheet.frozenColumns;
+            const sticky = frozenRow || frozenCol;
+            const style: CSSProperties = {
+              gridColumn: `${i + 2} / span ${cell.colSpan}`,
+              gridRow: `${r + 2} / span ${cell.rowSpan}`,
+              textAlign: cell.align,
+              fontSize: cell.fontPx,
+              background: cell.bg,
+              color: cell.color,
+              left: frozenCol ? left[i] : undefined,
+              top: frozenRow ? top[r] : undefined,
+            };
+            return (
+              <div
+                key={`cell-${row.index}-${sheet.columns[i].index}`}
+                role="gridcell"
+                aria-colindex={i + 1}
+                aria-rowindex={r + 1}
+                className={cn(
+                  line,
+                  "flex items-center px-1.5",
+                  cell.wrap ? "whitespace-normal break-words" : "overflow-hidden text-ellipsis whitespace-nowrap",
+                  cell.bold && "font-semibold",
+                  cell.italic && "italic",
+                  sticky && "sticky",
+                  sticky && !cell.bg && "bg-card",
+                  frozenRow && frozenCol ? "z-[15]" : sticky ? "z-[5]" : undefined,
+                )}
+                style={style}
               >
-                {row.index + 1}
-              </th>
-              {row.cells.map((cell, i) => {
-                if (cell.covered) return null;
-                const frozenCol = i < sheet.frozenColumns;
-                const style: CSSProperties = {
-                  height: row.height,
-                  textAlign: cell.align,
-                  fontSize: cell.fontPx,
-                  background: cell.bg,
-                  color: cell.color,
-                  left: frozenCol ? left[i] : undefined,
-                  top: frozenRow ? top[r] : undefined,
-                };
-                const sticky = frozenRow || frozenCol;
-                return (
-                  <td
-                    key={sheet.columns[i].index}
-                    rowSpan={cell.rowSpan > 1 ? cell.rowSpan : undefined}
-                    colSpan={cell.colSpan > 1 ? cell.colSpan : undefined}
-                    className={cn(
-                      line,
-                      "px-1.5 align-middle",
-                      cell.wrap ? "whitespace-normal break-words" : "overflow-hidden text-ellipsis whitespace-nowrap",
-                      cell.bold && "font-semibold",
-                      cell.italic && "italic",
-                      sticky && "sticky",
-                      sticky && !cell.bg && "bg-card",
-                      frozenRow && frozenCol ? "z-[15]" : sticky ? "z-[5]" : undefined,
-                    )}
-                    style={style}
-                  >
-                    <CellBody cell={cell} />
-                  </td>
-                );
-              })}
-            </tr>
-          );
-        })}
-      </tbody>
-    </table>
+                <CellBody cell={cell} />
+              </div>
+            );
+          }),
+        ];
+      })}
+    </div>
   );
 }
 

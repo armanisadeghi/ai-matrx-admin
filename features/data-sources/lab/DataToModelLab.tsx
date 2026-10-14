@@ -13,6 +13,7 @@ import { ModelListDropdown, useModelCatalog } from "@ai-matrx/agents/models/reac
 import { Play, Plus, X } from "lucide-react";
 import { Badge, Button, DisclosureHeader, EmptyState, Field, SegmentedControl, Select } from "@ai-matrx/design-system/controls";
 import { ReadFailure } from "@ai-matrx/design-system";
+import { MatrxDataTable, type MatrxColumnDef, type MatrxDataTableCopyConfig } from "@ai-matrx/design-system/data-table";
 import { estimateTokens, estimateTokensForText, formatTokens } from "@ai-matrx/kit/tokens";
 import { formatCount, formatDurationMs, formatPoints } from "@ai-matrx/kit/format";
 import MarkdownStream from "@ai-matrx/chat/ui/markdown-stream/MarkdownStream";
@@ -330,6 +331,28 @@ function Provision({ organizationId, loaded, source }: { organizationId: string 
   const toolsDataPrice = recordPrice(calls.reduce((n, c) => n + c.records, 0));
   const toggleField = (f: string) =>
     setKnobs((k) => ({ ...k, fields: k.fields.includes(f) ? k.fields.filter((x) => x !== f) : stats.map((s) => s.name).filter((n) => n === f || k.fields.includes(n)) }));
+  type FieldRow = (typeof stats)[number] & { example: string };
+  const fieldRows: FieldRow[] = stats.map((stat) => {
+    const example = records.find((record) => record[stat.name] != null && record[stat.name] !== "")?.[stat.name];
+    return { ...stat, example: example == null ? "" : typeof example === "string" ? example : JSON.stringify(example) };
+  });
+  const fieldColumns: MatrxColumnDef<FieldRow>[] = [
+    { id: "field", header: "Field", accessorFn: (row) => row.name, filter: "text", width: 180, cell: (row) => <span className="font-mono">{row.name}</span> },
+    { id: "type", header: "Type", accessorFn: (row) => row.kind, filter: "select", width: 110 },
+    { id: "filled", header: "Filled", accessorFn: (row) => row.filled, filter: "number", width: 100, cell: (row) => `${row.filled}/${records.length}` },
+    { id: "size", header: "Size", accessorFn: (row) => row.chars, filter: "number", width: 110, cell: (row) => charsText(row.chars) },
+    { id: "example", header: "Example", accessorFn: (row) => row.example, filter: "text", width: 360 },
+  ];
+  const fieldCopy: MatrxDataTableCopyConfig<FieldRow> = {
+    label: "field",
+    listLabel: "fields in these records",
+    location: "Data to model lab, records",
+    rowKind: "data-source-field",
+    listKind: "data-source-field-list",
+    rowDescription: "One field with its inferred type, coverage, size and an example value.",
+    listDescription: "The fields present in the records loaded into this model comparison.",
+    humanRow: (row) => [`Field: ${row.name}`, `Type: ${row.kind}`, `Filled: ${row.filled}/${records.length}`, `Size: ${charsText(row.chars)}`, `Example: ${row.example}`].join("\n"),
+  };
 
   return (
     <>
@@ -345,33 +368,19 @@ function Provision({ organizationId, loaded, source }: { organizationId: string 
           <KpiTile label="Size (words)" value={charsText(charsOf(records))} hint={`≈ ${formatTokens(estimateTokensForText(JSON.stringify(records), "structured"))} words`} />
           <KpiTile label="Spent" value={loaded.from === "table" ? "Already paid" : spent} hint={loaded.result ? `${loaded.result.records_billed} records billed` : undefined} />
         </KpiGrid>
-        <div className="overflow-x-auto rounded-lg border border-border bg-card">
-          <table className="w-full text-xs">
-            <thead className="text-muted-foreground">
-              <tr className="border-b border-border text-left">
-                <th className="px-2 py-1.5 font-medium">Field</th>
-                <th className="px-2 py-1.5 font-medium">Type</th>
-                <th className="px-2 py-1.5 text-right font-medium">Filled</th>
-                <th className="px-2 py-1.5 text-right font-medium">Size</th>
-                <th className="px-2 py-1.5 font-medium">Example</th>
-              </tr>
-            </thead>
-            <tbody>
-              {stats.map((s) => {
-                const ex = records.find((r) => r[s.name] != null && r[s.name] !== "")?.[s.name];
-                return (
-                  <tr key={s.name} className="border-b border-border/50 last:border-0" data-lab-field={s.name}>
-                    <td className="px-2 py-1 font-mono">{s.name}</td>
-                    <td className="px-2 py-1 text-muted-foreground">{s.kind}</td>
-                    <td className="px-2 py-1 text-right tabular-nums">{s.filled}/{records.length}</td>
-                    <td className="px-2 py-1 text-right tabular-nums">{charsText(s.chars)}</td>
-                    <td className="max-w-[28rem] truncate px-2 py-1 text-muted-foreground">{ex == null ? "" : typeof ex === "string" ? ex : JSON.stringify(ex)}</td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+        <MatrxDataTable<FieldRow>
+          tableId="data-sources/lab/record-fields"
+          data={fieldRows}
+          columns={fieldColumns}
+          getRowId={(row) => row.name}
+          pageSize={0}
+          density="condensed"
+          viewTabs={false}
+          toolbar={{ title: "Record fields", searchPlaceholder: "Search fields" }}
+          detail={{ enabled: false }}
+          copy={fieldCopy}
+          emptyState={{ title: "No fields in these records" }}
+        />
         <RawBlock title="Raw records" meta={charsText(charsOf(records))} text={JSON.stringify(records, null, 2)} />
       </section>
 
@@ -574,31 +583,45 @@ function CaptureView({ capture }: { capture: CapturedRequest }) {
 function Decision({ fields, records, sent, handed, tools }: { fields: string[]; records: LabRecord[]; sent: string[]; handed: string; tools: string }) {
   const h = fieldsUsed(handed, records, fields);
   const t = fieldsUsed(tools, records, fields);
+  interface UsageRow { field: string; handedOver: string; handedUsage: string; toolUsage: string }
+  const rows: UsageRow[] = fields.map((field, index) => ({
+    field,
+    handedOver: sent.includes(field) ? "Sent" : "Left out",
+    handedUsage: handed && sent.includes(field) && h[index].sent ? `${h[index].hits}/${h[index].sent}` : "—",
+    toolUsage: tools && t[index].sent ? `${t[index].hits}/${t[index].sent}` : "—",
+  }));
+  const columns: MatrxColumnDef<UsageRow>[] = [
+    { id: "field", header: "Field", accessorFn: (row) => row.field, filter: "text", width: 180, cell: (row) => <span className="font-mono">{row.field}</span> },
+    { id: "handed-over", header: "Handed over", accessorFn: (row) => row.handedOver, filter: "select", width: 130 },
+    { id: "used-handed", header: "Used · handed", accessorFn: (row) => row.handedUsage, filter: "text", width: 130 },
+    { id: "used-tools", header: "Used · tools", accessorFn: (row) => row.toolUsage, filter: "text", width: 130 },
+  ];
+  const copy: MatrxDataTableCopyConfig<UsageRow> = {
+    label: "field usage",
+    listLabel: "field usage comparison",
+    location: "Data to model lab, decision",
+    rowKind: "data-source-field-usage",
+    listKind: "data-source-field-usage-list",
+    rowDescription: "One field and whether each model access path used it.",
+    listDescription: "The fields used by the handed-over and tool-fetch model runs.",
+    humanRow: (row) => [`Field: ${row.field}`, `Handed over: ${row.handedOver}`, `Used by handed run: ${row.handedUsage}`, `Used by tools run: ${row.toolUsage}`].join("\n"),
+  };
   return (
     <section className="flex flex-col gap-3" data-lab-step="decision">
       <h2 className="text-sm font-semibold text-foreground">Fields the answers used</h2>
-      <div className="overflow-x-auto rounded-lg border border-border bg-card">
-        <table className="w-full text-xs">
-          <thead className="text-muted-foreground">
-            <tr className="border-b border-border text-left">
-              <th className="px-2 py-1.5 font-medium">Field</th>
-              <th className="px-2 py-1.5 font-medium">Handed over</th>
-              <th className="px-2 py-1.5 text-right font-medium">Used · handed</th>
-              <th className="px-2 py-1.5 text-right font-medium">Used · tools</th>
-            </tr>
-          </thead>
-          <tbody>
-            {fields.map((f, i) => (
-              <tr key={f} className="border-b border-border/50 last:border-0" data-lab-used={f}>
-                <td className="px-2 py-1 font-mono">{f}</td>
-                <td className="px-2 py-1 text-muted-foreground">{sent.includes(f) ? "Sent" : "Left out"}</td>
-                <td className="px-2 py-1 text-right tabular-nums">{handed && sent.includes(f) && h[i].sent ? `${h[i].hits}/${h[i].sent}` : "—"}</td>
-                <td className="px-2 py-1 text-right tabular-nums">{tools && t[i].sent ? `${t[i].hits}/${t[i].sent}` : "—"}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      <MatrxDataTable<UsageRow>
+        tableId="data-sources/lab/field-usage"
+        data={rows}
+        columns={columns}
+        getRowId={(row) => row.field}
+        pageSize={0}
+        density="condensed"
+        viewTabs={false}
+        toolbar={{ title: "Field usage", searchPlaceholder: "Search fields" }}
+        detail={{ enabled: false }}
+        copy={copy}
+        emptyState={{ title: "No fields to compare" }}
+      />
     </section>
   );
 }

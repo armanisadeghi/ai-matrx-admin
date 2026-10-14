@@ -158,44 +158,44 @@ function SheetGrid({ preview }: { preview: SheetPreview }) {
   const unit = 100 / VIRTUAL_WIDTH; // cqw per virtual px
   return (
     <div className="h-full w-full overflow-hidden bg-white text-zinc-900">
-      <table className="border-collapse" style={{ tableLayout: "fixed", width: `${used * unit}cqw`, fontSize: `${11 * unit}cqw` }}>
-        <colgroup>
-          {cols.map(({ c, w }) => (
-            <col key={c} style={{ width: `${w * unit}cqw` }} />
-          ))}
-        </colgroup>
-        <tbody>
-          {Array.from({ length: ROWS }, (_, r) => {
-            const row = preview.cells?.[String(r)];
-            return (
-              <tr key={r} style={{ height: `${ROW_PX * unit}cqw` }}>
-                {cols.map(({ c }) => {
-                  const cell = row?.[String(c)];
-                  const text = sheetCellText(cell);
-                  const numeric = typeof cell?.v === "number";
-                  const align = cell?.ht === 2 ? "center" : cell?.ht === 3 || (numeric && cell?.ht !== 1) ? "right" : "left";
-                  return (
-                    <td
-                      key={c}
-                      className="overflow-hidden whitespace-nowrap border border-zinc-200"
-                      style={{
-                        padding: `0 ${3 * unit}cqw`,
-                        textAlign: align,
-                        fontWeight: cell?.b ? 600 : undefined,
-                        // A cell's own colours are the sheet's content, shown as the author set them.
-                        ...(cell?.bg ? { backgroundColor: cell.bg } : {}),
-                        ...(cell?.cl ? { color: cell.cl } : {}),
-                      }}
-                    >
-                      {text}
-                    </td>
-                  );
-                })}
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
+      <div
+        role="img"
+        aria-label="Workbook first-sheet preview"
+        style={{ width: `${used * unit}cqw`, fontSize: `${11 * unit}cqw` }}
+      >
+        {Array.from({ length: ROWS }, (_, r) => {
+          const row = preview.cells?.[String(r)];
+          return (
+            <div
+              key={r}
+              className="grid"
+              style={{ height: `${ROW_PX * unit}cqw`, gridTemplateColumns: cols.map(({ w }) => `${w * unit}cqw`).join(" ") }}
+            >
+              {cols.map(({ c }) => {
+                const cell = row?.[String(c)];
+                const text = sheetCellText(cell);
+                const numeric = typeof cell?.v === "number";
+                const align = cell?.ht === 2 ? "center" : cell?.ht === 3 || (numeric && cell?.ht !== 1) ? "right" : "left";
+                return (
+                  <div
+                    key={c}
+                    className="overflow-hidden whitespace-nowrap border border-zinc-200"
+                    style={{
+                      padding: `0 ${3 * unit}cqw`,
+                      textAlign: align,
+                      fontWeight: cell?.b ? 600 : undefined,
+                      ...(cell?.bg ? { backgroundColor: cell.bg } : {}),
+                      ...(cell?.cl ? { color: cell.cl } : {}),
+                    }}
+                  >
+                    {text}
+                  </div>
+                );
+              })}
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
