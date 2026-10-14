@@ -232,7 +232,7 @@ export default function KindInputsTab({
           by <code className="font-mono">kindFieldsToVariableDefinitions</code>,
           rendered below with the production{" "}
           <code className="font-mono">VariableInputComponent</code>. Values are
-          assembled into a <code className="font-mono">__kind</code> instance and
+          assembled into a <code data-kind-source="explicit" className="font-mono">__kind</code> instance and
           validated by <code className="font-mono">validateStructuralLeg</code> —
           the same ajv leg the activation gate runs. Read-only: nothing here is
           persisted.

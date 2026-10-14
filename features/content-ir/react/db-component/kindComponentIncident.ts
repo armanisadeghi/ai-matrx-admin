@@ -150,6 +150,67 @@ export function setKindComponentIncidentsEnabledForTests(on: boolean): void {
 }
 
 /**
+ * RENDER HARNESSES ARE NOT READERS (defect 2026-10-14). The kind-registry
+ * Preview and the Shape Studio render every path on purpose — streaming
+ * frames, partial payloads, a component landing after first paint. A generic
+ * floor seen there is the harness doing its job, not a reader being let down,
+ * and filing it put a false "a reader got the generic view" sighting on the
+ * very page that showed the component rendering fine. A harness enters on
+ * mount and leaves on unmount; while any is mounted, `generic_floor_render`
+ * is not filed from this page.
+ */
+let harnessDepth = 0;
+export function enterKindRenderHarness(): () => void {
+  harnessDepth += 1;
+  let left = false;
+  return () => {
+    if (left) return;
+    left = true;
+    harnessDepth = Math.max(0, harnessDepth - 1);
+  };
+}
+export function isKindRenderHarnessMounted(): boolean {
+  return harnessDepth > 0;
+}
+
+/** How long a generic-floor sighting waits for the resolver to settle. */
+let genericFloorSettleMs = 2500;
+/** Test seam — shortens the settle wait. */
+export function setGenericFloorSettleMsForTests(ms: number): void {
+  genericFloorSettleMs = ms;
+}
+
+/**
+ * A GENERIC-FLOOR SIGHTING IS RE-MEASURED BEFORE IT IS FILED. The render that
+ * raised it may have happened during warm-up — before the component list
+ * landed, while a cold fetch or a post-edit refresh was in flight. The claim
+ * is "no component is bound", so it is filed only if, once the resolver has
+ * settled, it still answers with no component (or an inactive one).
+ */
+async function genericFloorStillTrue(kind: string): Promise<boolean> {
+  const [{ componentRegistry }, { GENERIC_STRUCTURED_COMPONENT_KEY }] =
+    await Promise.all([
+      import("../../registry/component-registry"),
+      import("@ai-matrx/rich-content/kinds/react/kind-route"),
+    ]);
+  try {
+    await componentRegistry.ensureWarm();
+  } catch {
+    /* an unreadable list is not evidence of a missing component */
+    return false;
+  }
+  componentRegistry.requestComponent(kind, "web", "output");
+  await new Promise((resolve) => setTimeout(resolve, genericFloorSettleMs));
+  if (isKindRenderHarnessMounted()) return false;
+  const resolution = componentRegistry.resolve(kind, "web", "output");
+  const bound =
+    resolution !== null &&
+    resolution.isActive !== false &&
+    resolution.componentKey !== GENERIC_STRUCTURED_COMPONENT_KEY;
+  return !bound;
+}
+
+/**
  * File (or re-observe) one kind-component render incident. Fire-and-forget.
  *
  * 🚨 THE SCREAM MUST NOT DEPEND ON THE SESSION THAT FAILED (DD-215b). The
@@ -179,6 +240,17 @@ export function reportKindComponentIncident(
   reported.add(key);
 
   void (async () => {
+    if (input.errorType === "generic_floor_render") {
+      // Checked here, after the render's effects committed — a harness parent
+      // mounts its effects AFTER the child block that raised the sighting.
+      await Promise.resolve();
+      if (isKindRenderHarnessMounted() || !(await genericFloorStillTrue(input.kind))) {
+        // Not a reader's settled generic render: forget the dedupe key so a
+        // REAL sighting later in this session can still file.
+        reported.delete(key);
+        return;
+      }
+    }
     // Hold the incident until a session exists. `whenSessionReady` runs the
     // callback immediately when auth has already confirmed one, so the common
     // case costs nothing.

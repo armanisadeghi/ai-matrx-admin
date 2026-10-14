@@ -22,16 +22,18 @@
  * question that let every broken kind report healthy.
  */
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { CircleCheck, CircleX, Info, TriangleAlert } from "lucide-react";
 import { SafeBlockRenderer } from "@ai-matrx/rich-content/display/chat-markdown/internal-handlers/SafeBlockRenderer";
 import KindInstanceRender from "@/features/content-ir/studio/components/KindInstanceRender";
 import KindInputForm from "@/features/content-ir/input/KindInputForm";
 import { resolveLoadingSlugForKind } from "@ai-matrx/rich-content/kinds/react/loading/resolve-loading-slug";
 import { resolveKindLoadingComponent } from "@ai-matrx/rich-content/kinds/react/loading/kind-loading-registry";
-import { kindRegistry } from "@/features/content-ir/registry/kind-registry";
+import { useContentIrKindVersion } from "@ai-matrx/rich-content/kinds/react/use-registry-repaint";
+import { useEnsureKindRenderable } from "@ai-matrx/rich-content/kinds/react/ensure-kind-renderable";
+import { enterKindRenderHarness } from "@/features/content-ir/react/db-component/kindComponentIncident";
 import { RENDER_PATHS, type RenderPathId, type RenderPathSpec } from "./paths";
-import { runRenderPath } from "./run-path";
+import { readKindSchemaState, runRenderPath } from "./run-path";
 import {
   describeRenderVerdict,
   readSharedResolution,
@@ -39,6 +41,7 @@ import {
   readViewerViewKey,
   sharedHasComponent,
   useRegistryVersion,
+  useSharedViewState,
 } from "@/features/content-ir/studio/shared-view-truth";
 
 const noop = () => {};
@@ -137,7 +140,17 @@ export default function KindRenderPaths({
   initialPath = "chat_bare",
 }: KindRenderPathsProps) {
   const [pathId, setPathId] = useState<RenderPathId>(initialPath);
-  const registryVersion = useRegistryVersion();
+  // THE PREVIEW ASKS FOR WHAT IT JUDGES (defect 2026-10-14). The schema is
+  // fetched lazily per kind, and this screen used to read it synchronously on
+  // first paint and subscribe only to the COMPONENT registry — so a shape with
+  // a good schema read "no loaded schema" and every streaming path reported
+  // `unverified` until a tab switch remounted it. It now demands the schema +
+  // component itself and repaints on THIS kind's arrivals in either registry.
+  useEnsureKindRenderable(kind);
+  // A harness, not a reader: generic frames here never file a sighting.
+  useEffect(() => enterKindRenderHarness(), []);
+  const kindVersion = useContentIrKindVersion(kind);
+  const registryVersion = useRegistryVersion() + kindVersion;
   const spec = useMemo(
     () => RENDER_PATHS.find((p) => p.id === pathId) ?? RENDER_PATHS[0]!,
     [pathId],
@@ -162,7 +175,12 @@ export default function KindRenderPaths({
 
   const loading = resolveLoadingSlugForKind(kind);
   const LoadingComponent = resolveKindLoadingComponent(loading.slug);
-  const hasSchema = kindRegistry.getSchema(kind) !== undefined;
+  // Measured, never assumed: "pending" until the read settles.
+  const schemaState = readKindSchemaState(kind, registryVersion);
+  // The component list must have landed too, or the verdict would name the
+  // generic floor for a kind whose component is still on its way.
+  const componentsChecked = useSharedViewState(kind) !== "checking";
+  const settled = schemaState !== "pending" && componentsChecked;
 
   return (
     <div className="space-y-3">
@@ -186,7 +204,7 @@ export default function KindRenderPaths({
 
       <PathNote spec={spec} />
 
-      {!hasSchema && (
+      {schemaState === "absent" && (
         <div className="flex gap-1.5 rounded-md border border-amber-500/40 bg-amber-500/5 px-3 py-2 text-xs text-amber-700 dark:text-amber-300">
           <TriangleAlert className="mt-0.5 h-3.5 w-3.5 shrink-0" />
           <span>
@@ -197,7 +215,23 @@ export default function KindRenderPaths({
         </div>
       )}
 
-      {run && (
+      {schemaState === "failed" && (
+        <div className="flex gap-1.5 rounded-md border border-amber-500/40 bg-amber-500/5 px-3 py-2 text-xs text-amber-700 dark:text-amber-300">
+          <TriangleAlert className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+          <span>
+            This shape&apos;s schema could not be read, so the verdict below is
+            not checked against it.
+          </span>
+        </div>
+      )}
+
+      {run && !settled && (
+        <div className="rounded-md border border-border px-3 py-2 text-xs text-muted-foreground">
+          Checking this shape…
+        </div>
+      )}
+
+      {run && settled && (
         <VerdictStrip
           headline={describeRenderVerdict({
             reached: run.verdict.reachedRealComponent,

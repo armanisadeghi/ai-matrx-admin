@@ -101,6 +101,15 @@ class KindRegistry {
   private readonly inFlight = new Set<string>();
   /** kind → when the miss was recorded. Expires (MISS_TTL_MS) + cleared on refresh. */
   private readonly misses = new Map<string, number>();
+  /**
+   * Kinds whose schema read SETTLED with no schema ("absent") or could not be
+   * read ("failed"). Absence from this map and from `defs` means the answer is
+   * still pending — see {@link schemaState}. A screen that says "this shape has
+   * no schema" may say so only on "absent" (defect 2026-10-14: the kind-registry
+   * Preview read `getSchema` before the cold fetch landed and called a shape
+   * with a good schema schemaless).
+   */
+  private readonly settledWithout = new Map<string, "absent" | "failed">();
   private warmPromise: Promise<void> | null = null;
   private lastWarmAt = 0;
   /** True once any fetch was demanded this session (THE ZERO-PREFETCH LAW). */
@@ -165,6 +174,18 @@ class KindRegistry {
 
   getSchema(kind: string): KindSchema | undefined {
     return this.defs.get(kind)?.schema ?? undefined;
+  }
+
+  /**
+   * MEASURED schema state — never assumed. "loaded" when a schema is held;
+   * "absent" only after a read answered with none; "failed" when the read
+   * errored; otherwise "pending" (not asked yet, or in flight). Callers that
+   * need an answer call `requestSchema` and subscribe with `subscribeKind`:
+   * every settle bumps the kind's version.
+   */
+  schemaState(kind: string): "loaded" | "pending" | "absent" | "failed" {
+    if (this.getSchema(kind) !== undefined) return "loaded";
+    return this.settledWithout.get(kind) ?? "pending";
   }
 
   /** The kind's `emitted_json_schema`, when the source carried one. */
@@ -326,6 +347,7 @@ class KindRegistry {
     for (const one of expandKindAliases([def])) {
       const existing = this.defs.get(one.kind);
       this.defs.set(one.kind, { ...existing, ...one });
+      if (one.schema) this.settledWithout.delete(one.kind);
       this.bumpKind(one.kind);
     }
     this.bumpVersion();
@@ -532,7 +554,7 @@ class KindRegistry {
           stack: error instanceof Error ? error.stack : undefined,
           raw: error,
         });
-        this.notifyArrival(kind, null);
+        this.notifyArrival(kind, null, "failed");
       } finally {
         this.inFlight.delete(kind);
       }
@@ -608,7 +630,7 @@ class KindRegistry {
           callSite: "KindRegistry.requestTableKind",
           raw: error,
         });
-        this.notifyArrival(kind, null);
+        this.notifyArrival(kind, null, "failed");
       } finally {
         this.inFlight.delete(kind);
       }
@@ -622,7 +644,19 @@ class KindRegistry {
     };
   }
 
-  private notifyArrival(kind: string, schema: KindSchema | null): void {
+  private notifyArrival(
+    kind: string,
+    schema: KindSchema | null,
+    outcome: "answered" | "failed" = "answered",
+  ): void {
+    // A settle WITHOUT a schema is still a settle: record it and repaint the
+    // kind, so a mounted screen moves off "pending" instead of reading stale.
+    if (schema === null && this.getSchema(kind) === undefined) {
+      this.settledWithout.set(kind, outcome === "failed" ? "failed" : "absent");
+      this.bumpKind(kind);
+    } else if (schema !== null) {
+      this.settledWithout.delete(kind);
+    }
     for (const listener of this.arrivalListeners) {
       listener(kind, schema);
     }

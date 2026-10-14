@@ -344,8 +344,16 @@ export function runRenderPath(
   return null;
 }
 
-/** Is this kind's schema loaded? Shown beside a verdict, because an
- * `unverified` result means the shape has no contract, not a bad payload. */
-export function hasSchema(kind: string): boolean {
-  return kindRegistry.getSchema(kind) !== undefined;
+/**
+ * The kind's MEASURED schema state (see `KindRegistry.schemaState`). A screen
+ * may claim "no schema" only on `absent`; `pending` is said as pending.
+ * `registryVersion` is the React Compiler's memo key — pass the kind's
+ * repaint version so a schema landing after first paint is re-read.
+ */
+export function readKindSchemaState(
+  kind: string,
+  registryVersion?: number,
+): "loaded" | "pending" | "absent" | "failed" {
+  void registryVersion;
+  return kindRegistry.schemaState(kind);
 }

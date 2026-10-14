@@ -165,7 +165,7 @@ function CandidateCard({
         <EvidenceRow label="Demonstrations">
           {candidate.mentions} occurrence
           {candidate.mentions === 1 ? "" : "s"} of{" "}
-          <code className="font-mono">&quot;__kind&quot;: &quot;{kind}&quot;</code> in the
+          <code data-kind-source="explicit" className="font-mono">&quot;__kind&quot;: &quot;{kind}&quot;</code> in the
           body
         </EvidenceRow>
       </div>

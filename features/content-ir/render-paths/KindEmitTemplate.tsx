@@ -54,7 +54,7 @@ export default function KindEmitTemplate({
         </span>
         <span className="text-[11px] text-muted-foreground">
           what an agent puts on the wire — leads with{" "}
-          <code className="rounded bg-muted px-1 py-0.5">&quot;__kind&quot;</code>
+          <code data-kind-source="explicit" className="rounded bg-muted px-1 py-0.5">&quot;__kind&quot;</code>
         </span>
         <div className="ml-auto flex items-center gap-1.5">
           <button

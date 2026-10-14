@@ -162,7 +162,7 @@ export default function KindBuilderClient({
       <p className="text-center text-[11px] text-muted-foreground">
         When the agent reports the kind ACTIVE, open the Kind Registry to see its
         row go green, or drop a{" "}
-        <code className="font-mono">{'{ "__kind": "…" }'}</code> payload in any
+        <code data-kind-source="explicit" className="font-mono">{'{ "__kind": "…" }'}</code> payload in any
         chat to see it render.
       </p>
     </div>
