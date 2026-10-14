@@ -37,6 +37,7 @@ import {
   isCallerAbortFailure,
 } from "@/lib/diagnostics/cancelledByCaller";
 import { isTransportFailure } from "@ai-matrx/api/net";
+import { recordLoadCall } from "@/lib/diagnostics/loadLedger";
 import {
   captureError,
   type CapturedOperation,
@@ -59,6 +60,8 @@ import {
 
 /** Context threaded through a single query-builder chain. */
 interface ChainContext {
+  /** Where the query was BUILT — the real caller (the load ledger shows it; formatted only on read). */
+  origin?: Error;
   operation?: CapturedOperation;
   schema?: string;
   relation?: string;
@@ -412,6 +415,13 @@ function wrapBuilder<T extends object>(builder: T, ctx: ChainContext): T {
           // Captured cheaply at execution time; `.stack` is only formatted
           // (the expensive part) if we actually capture an error below.
           const caller = new Error("supabase-call-site");
+          // THE LOAD LEDGER: what this page asked for, and when (Builder › Page load).
+          recordLoadCall({
+            schema: ctx.schema,
+            relation: ctx.relation,
+            operation: ctx.operation,
+            caller: ctx.origin ?? caller,
+          });
           // THE SESSION BARRIER (DD-237), second seam. One retry per chain: a
           // refusal that means "this request carried no identity" asks for the
           // session back and replays the request once. A 42501 is raised before
@@ -566,7 +576,7 @@ function wrapScope<T extends object>(scope: T, schema: string): T {
         return (relation: string, ...rest: unknown[]) =>
           wrapBuilder(
             Reflect.apply(value, target, [relation, ...rest]) as object,
-            { schema, relation },
+            { schema, relation, origin: new Error("supabase-origin") },
           );
       }
       if (prop === "rpc" && typeof value === "function") {
@@ -575,6 +585,7 @@ function wrapScope<T extends object>(scope: T, schema: string): T {
             operation: "rpc",
             schema,
             relation: fn,
+            origin: new Error("supabase-origin"),
           });
       }
       // `.schema(a).schema(b)` (a service re-scoping a scoped client) must stay
@@ -624,7 +635,7 @@ export function wrapClientForCapture<T>(client: T): T {
         return (relation: string, ...rest: unknown[]) =>
           wrapBuilder(
             Reflect.apply(value, target, [relation, ...rest]) as object,
-            { relation },
+            { relation, origin: new Error("supabase-origin") },
           );
       }
       if (prop === "rpc" && typeof value === "function") {
@@ -632,6 +643,7 @@ export function wrapClientForCapture<T>(client: T): T {
           wrapBuilder(Reflect.apply(value, target, [fn, ...rest]) as object, {
             operation: "rpc",
             relation: fn,
+            origin: new Error("supabase-origin"),
           });
       }
       if (prop === "schema" && typeof value === "function") {
