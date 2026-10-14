@@ -160,9 +160,7 @@ function Grounding({ item }: { item: FocusItem }) {
   return (
     <HoverCard openDelay={120}>
       <HoverCardTrigger asChild>
-        <button type="button" aria-label="Where this came from" className="text-muted-foreground" data-testid="validate-grounding">
-          <Info className="size-4" />
-        </button>
+        <Button variant="quiet" icon={<Info aria-hidden />} aria-label="Where this came from" data-testid="validate-grounding" />
       </HoverCardTrigger>
       <HoverCardContent>
         <dl className="flex flex-col gap-2">
@@ -375,8 +373,11 @@ function FocusCard({
   const suggestedRelation =
     item.suggestion?.choice === "related" && item.suggestion.relation_key ? kinds.find((k) => k.key === item.suggestion?.relation_key) : undefined;
   const section = SECTION_LABEL[sectionOf(item)];
-  const eyebrow = set || section.toLowerCase().startsWith(item.label.toLowerCase()) ? (set ? item.label : section) : `${section} · ${item.label}`;
+  // The section leads on wide screens; a phone shows only what the card is.
+  const sectionLead = !set && !section.toLowerCase().startsWith(item.label.toLowerCase());
   const canEdit = item.kind === "fact" && !set;
+  // Key hints only where there is a keyboard: a phone shows clean buttons.
+  const keys = useMediaQuery("(pointer: fine)");
   return (
     <div
       className="flex h-full flex-col gap-6 rounded-3xl border border-border bg-card p-6 shadow-[0_1px_2px_rgb(0_0_0/0.04),0_18px_48px_-20px_rgb(0_0_0/0.28)] sm:p-8"
@@ -387,7 +388,8 @@ function FocusCard({
       <div className="flex items-center gap-2">
         {item.kind === "account" && item.platform ? <PlatformMark platform={item.platform} size={16} /> : null}
         <span className="truncate text-sm font-medium text-muted-foreground" data-testid="validate-label">
-          {eyebrow}
+          {sectionLead ? <span className="max-sm:hidden">{section} · </span> : null}
+          {set || sectionLead ? item.label : section}
         </span>
         <span className="ml-auto flex items-center gap-1">
           {canEdit ? (
@@ -425,7 +427,7 @@ function FocusCard({
         <DecisionControl
           aria-label="Answer"
           value={null}
-          shortcuts={KEY}
+          shortcuts={keys ? KEY : undefined}
           suggested={glow(yes) ? "yes" : glow(no) ? "no" : glowOther ? "other" : null}
           onChange={(a) => {
             const answer = a === "yes" ? yes : no;
@@ -754,7 +756,7 @@ export function ValidateStage({
               >
                 Answered
               </Button>
-              <Badge>{answered.length}</Badge>
+              {answered.length ? <Badge>{answered.length}</Badge> : null}
               {answered[0] ? (
                 <ul className="ml-auto min-w-0 flex-1">
                   <TrayRow entry={answered[0]} onUndo={() => onUndo(answered[0])} />
