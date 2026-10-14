@@ -345,6 +345,8 @@ export function SmartAddBrand({
             confirmed: confirmedFacts,
             woken,
             exclude_keys: exclude,
+            // The tab the person started on; the round's provision offers it (entry_kind).
+            entry_kind: person ? "person" : "company",
             // What is already ours / not us: the we-think step judges new candidates against it.
             // `known.results`: web results answered or already classified, so the classifier takes the next batch.
             known: enrich
