@@ -15,8 +15,9 @@
  */
 
 import { useState } from "react";
-import { Maximize2, Moon, Star, Sun, X } from "lucide-react";
-import { Badge, Button, DecisionControl, Field, type DecisionAnswer, type WayOutItem } from "@ai-matrx/design-system/controls";
+import { Info, Maximize2, Moon, Star, Sun, X } from "lucide-react";
+import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
+import { Button, DecisionControl, Field, type DecisionAnswer, type WayOutItem } from "@ai-matrx/design-system/controls";
 import { FirstUseHint } from "@ai-matrx/design-system";
 import { formatCount } from "@ai-matrx/kit/format";
 import { profileAvatarDoor } from "@/features/marketing/social/server";
@@ -218,7 +219,8 @@ export function SmartAddSlots({
       : skipped.has(i.key)
         ? "Skipped for now"
         : null;
-    return text ? <Badge data-testid="smart-add-way-out">{text}</Badge> : null;
+    // The picker already shows the relationship or the skip; the info card only repeats it for a name's kind.
+    return text ? <span data-testid="smart-add-way-out">{text}</span> : null;
   };
   const below = (i: EvidenceItem): React.ReactNode =>
     customFor === i.key ? (
@@ -451,7 +453,7 @@ export function SmartAddSlots({
             item={i}
             decision={decisions[i.key] ?? null}
            
-            note={moved ? <Badge data-testid="smart-add-moved-from-name">Moved from name</Badge> : noteOf(i)}
+            note={moved ? <span data-testid="smart-add-moved-from-name">Moved from name</span> : noteOf(i)}
             actions={
               <>
                 {choices(i, "primary")}
@@ -549,22 +551,43 @@ function Row({
       data-field={item.field}
       data-decision={decision ?? "open"}
     >
-      <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-        {children}
-        {note || (!hideWhere && whereOf(item)) ? (
-          <span className="flex min-w-0 items-center gap-1.5">
-            {note}
-            {hideWhere || !whereOf(item) ? null : (
-              <span className="truncate text-[11px] text-muted-foreground" title={item.source.url ?? undefined}>
-                {whereOf(item)}
-              </span>
-            )}
-          </span>
-        ) : null}
+      <div className="flex min-w-0 flex-1 flex-col">
+        {/* One line per row (Arman 2026-10-14: no secondary lines). Where it was found lives in the info card. */}
+        <span className="flex min-w-0 items-center gap-1">
+          {children}
+          <RowInfo item={item} note={note} hideWhere={hideWhere} />
+        </span>
         {below}
       </div>
       <div className="flex shrink-0 items-center justify-end gap-1 max-sm:w-full">{actions}</div>
     </div>
+  );
+}
+
+/** The row's provenance (where it was read, the page, a way-out note), in a hover card behind a quiet info mark. */
+function RowInfo({ item, note, hideWhere }: { item: EvidenceItem; note?: React.ReactNode; hideWhere?: boolean }) {
+  const where = hideWhere ? "" : whereOf(item);
+  const url = item.source.url && /^https?:\/\//i.test(item.source.url) ? item.source.url : null;
+  if (!where && !note && !url) return null;
+  return (
+    <HoverCard openDelay={150}>
+      <HoverCardTrigger asChild>
+        {/* ui-exception: a 16px provenance mark beside a value; the 28px Button would make every row taller */}
+        <button
+          type="button"
+          aria-label="Where this was found"
+          className="inline-flex size-5 shrink-0 items-center justify-center rounded-full text-muted-foreground hover:text-foreground focus-visible:outline-2"
+          data-testid="smart-add-row-info"
+        >
+          <Info className="size-3.5" />
+        </button>
+      </HoverCardTrigger>
+      <HoverCardContent align="start" className="flex w-64 flex-col gap-1.5 text-xs">
+        {where ? <span className="text-foreground">Found in {where}</span> : null}
+        {note ? <span>{note}</span> : null}
+        {url ? <span className="truncate text-muted-foreground" title={url}>{url.replace(/^https?:\/\/(www\.)?/i, "")}</span> : null}
+      </HoverCardContent>
+    </HoverCard>
   );
 }
 
@@ -577,13 +600,13 @@ const NAME_RELATION_LABEL: Record<string, string> = {
   key_person: "Person's name",
 };
 
-/** Full text that wraps; past about four lines it folds behind "Show more". */
+/** Full text that wraps; past two lines it folds behind "Show more" (rows stay tight). */
 function ReadMore({ text }: { text: string }) {
   const [open, setOpen] = useState(false);
-  const long = text.length > 280;
+  const long = text.length > 140;
   return (
     <span className="flex flex-col items-start gap-0.5">
-      <span className={`whitespace-pre-line text-sm leading-relaxed ${long && !open ? "line-clamp-4" : ""}`}>{text}</span>
+      <span className={`whitespace-pre-line text-sm leading-relaxed ${long && !open ? "line-clamp-2" : ""}`}>{text}</span>
       {long ? (
         <Button variant="quiet" onClick={() => setOpen((o) => !o)}>
           {open ? "Show less" : "Show more"}
