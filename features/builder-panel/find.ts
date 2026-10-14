@@ -52,8 +52,14 @@ function textOf(value: unknown): string {
 /** Where a request matched: its row (title, source, url, status…) or only inside a body. */
 export type MatchPlace = "row" | "request" | "response";
 
+/** The row's badge: the provider for a server call, "page" for the page's own. */
 export function sourceOf(row: RequestRow): string {
   return row.side === "server" ? row.provider || "server" : "page";
+}
+
+/** What the Source filter narrows by: the provider, or for a page call the host it went to. */
+export function filterSourceOf(row: RequestRow): string {
+  return row.side === "server" ? sourceOf(row) : `page · ${row.provider || "same origin"}`;
 }
 
 function urlOf(row: RequestRow): string {
@@ -64,7 +70,7 @@ function urlOf(row: RequestRow): string {
 /** Null when the row does not match; otherwise the first place every word was found. */
 export function requestMatch(row: RequestRow, q: ParsedQuery, stepLabel?: string): MatchPlace | null {
   if (isEmptyQuery(q)) return "row";
-  const rowText = [row.title, sourceOf(row), row.kind, urlOf(row), String(row.status ?? ""), row.error ?? "", stepLabel ?? row.nodeId ?? ""];
+  const rowText = [row.title, filterSourceOf(row), row.kind, urlOf(row), String(row.status ?? ""), row.error ?? "", stepLabel ?? row.nodeId ?? ""];
   const request = textOf(row.request);
   const response = textOf(row.response);
   // Exclusions look everywhere: "-google" must drop a row whose body says google.
@@ -116,7 +122,7 @@ export function findRequests(rows: readonly RequestRow[], f: RequestFind, stepLa
   const q = parseQuery(f.query);
   const out: FoundRequest[] = [];
   for (const row of rows) {
-    if (f.source && sourceOf(row) !== f.source) continue;
+    if (f.source && filterSourceOf(row) !== f.source) continue;
     if (f.kind && row.kind !== f.kind) continue;
     if (f.step && row.nodeId !== f.step) continue;
     if (f.status === "slow" ? (row.ms ?? 0) < SLOW_MS : f.status !== "any" && requestStatusOf(row) !== f.status) continue;

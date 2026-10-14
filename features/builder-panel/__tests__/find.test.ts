@@ -59,7 +59,7 @@ describe("findRequests", () => {
   it("returns everything in time order with no filter", () => expect(ids({})).toEqual(["a", "b", "c", "d"]));
   it("narrows by source (the badge's value)", () => {
     expect(ids({ source: "brave" })).toEqual(["b"]);
-    expect(ids({ source: "page" })).toEqual(["c"]);
+    expect(ids({ source: "page · db.matrxserver.com" })).toEqual(["c"]);
   });
   it("narrows by status", () => {
     expect(ids({ status: "failed" })).toEqual(["c"]);

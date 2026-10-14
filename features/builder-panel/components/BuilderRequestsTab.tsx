@@ -16,6 +16,7 @@ import { cn } from "@/lib/utils";
 import { msText, type RequestRow } from "../requests";
 import {
   EMPTY_REQUEST_FIND,
+  filterSourceOf,
   findRequests,
   isFindActive,
   sourceOf,
@@ -89,7 +90,7 @@ export function BuilderRequestsTab({
   const listRef = useRef<HTMLOListElement>(null);
   const sided = rows.filter((r) => filter === "all" || r.side === filter);
 
-  const sources = tally(sided, sourceOf);
+  const sources = tally(sided, filterSourceOf);
   const kinds = tally(sided, (r) => r.kind);
   const steps = tally(sided, (r) => r.nodeId);
   const set = (patch: Partial<RequestFind>) => onFind({ ...find, ...patch });
@@ -214,7 +215,7 @@ export function BuilderRequestsTab({
           <ol
             ref={listRef}
             aria-label="Calls"
-            className="max-h-[40%] min-h-0 shrink-0 overflow-auto border-b border-border md:max-h-none md:w-[42%] md:border-b-0 md:border-r"
+            className="@container max-h-[40%] min-h-0 shrink-0 overflow-auto border-b border-border md:max-h-none md:w-[42%] md:border-b-0 md:border-r"
           >
             {found.map(({ row: r, place }) => (
               <li key={r.id}>
@@ -229,12 +230,16 @@ export function BuilderRequestsTab({
                     selected?.id === r.id && "bg-accent",
                   )}
                 >
-                  <span className="w-14 shrink-0 font-mono text-[10px] tabular-nums text-muted-foreground">{clock(r.at)}</span>
+                  <span className="hidden w-14 shrink-0 font-mono text-[10px] tabular-nums text-muted-foreground @[24rem]:inline">{clock(r.at)}</span>
                   <Badge tone={r.side === "server" ? "info" : "neutral"}>{sourceOf(r)}</Badge>
                   <span className="min-w-0 flex-1 truncate text-xs">
                     <BuilderHighlight text={r.title} query={find.query} />
                   </span>
-                  {place !== "row" ? <span className="shrink-0 text-[10px] text-muted-foreground">{PLACE_LABEL[place]}</span> : null}
+                  {place !== "row" ? (
+                    <span className="hidden shrink-0 text-[10px] text-muted-foreground @[18rem]:inline" title={`Matched ${PLACE_LABEL[place]}`}>
+                      {PLACE_LABEL[place]}
+                    </span>
+                  ) : null}
                   <Badge tone={statusTone(r)}>{r.error ? "error" : (r.status ?? "…")}</Badge>
                   <span className="w-14 shrink-0 text-right text-[10px] tabular-nums text-muted-foreground">
                     {r.ms !== null ? msText(r.ms) : ""}
