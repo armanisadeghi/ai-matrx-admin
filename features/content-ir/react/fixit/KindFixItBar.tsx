@@ -27,6 +27,7 @@ import React, { useContext, useEffect, useState } from "react";
 import { CircleAlert, ExternalLink, Power, Wrench } from "lucide-react";
 import { ReactReduxContext } from "react-redux";
 import { Button } from "@ai-matrx/design-system/controls";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 import { useAppSelector } from "@/lib/redux/hooks";
 import {
@@ -411,9 +412,9 @@ export function KindFixItBarView({
           ) : null}
           {everyone ? (
             <Button variant="quiet" iconEnd={<ExternalLink />} asChild>
-              <a href={everyone} target="_blank" rel="noopener noreferrer" data-fixit-everyone="">
+              <OutboundLink href={everyone} target="_blank" rel="noopener noreferrer" data-fixit-everyone="">
                 Change for everyone
-              </a>
+              </OutboundLink>
             </Button>
           ) : null}
         </div>
