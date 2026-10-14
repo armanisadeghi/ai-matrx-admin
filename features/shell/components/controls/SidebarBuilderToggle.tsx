@@ -4,6 +4,7 @@
  * SidebarBuilderToggle — "Builder" in the sidebar's admin section. Opens the Builder panel
  * (features/builder-panel) for the current page, and lights up with a dot + count when this
  * page has published entries. Admins only (selectIsAdminDebugger), like the Error Inspector.
+ * It records only while debug mode is on (useBuilderRecording); with debug off the count stays 0.
  */
 
 import { useEffect, useState } from "react";
@@ -14,6 +15,7 @@ import { useAppSelector } from "@/lib/redux/hooks";
 import { selectIsAdminDebugger } from "@/lib/redux/selectors/userSelectors";
 import { selectIsOverlayOpen } from "@/lib/redux/slices/overlaySlice";
 import { selectBuilderFeedList, feedsForRoute } from "@/features/builder-panel/selectors";
+import { useBuilderRecording } from "@/features/builder-panel/hooks/useBuilderRecording";
 import { BUILDER_PANEL_OVERLAY_ID, useToggleBuilderPanel } from "@/features/overlays/openers/builderPanelWindow";
 
 export default function SidebarBuilderToggle() {
@@ -30,10 +32,8 @@ export default function SidebarBuilderToggle() {
     setHydrated(true);
   }, []);
 
-  // Every page an admin opens keeps its own requests for the Builder panel's Requests section.
-  useEffect(() => {
-    if (isAdmin) void import("@/features/builder-panel/requestLog").then((m) => m.installRequestLog());
-  }, [isAdmin]);
+  // Every page keeps its own requests for the Builder panel while debug mode is on.
+  useBuilderRecording();
 
   if (!hydrated || !isAdmin) return null;
 

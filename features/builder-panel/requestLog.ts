@@ -5,8 +5,9 @@
  * page makes — server API calls, Supabase reads and writes, streams — is kept here with the
  * route it was made from: method, URL, request headers and body, status, response headers and
  * the response body (a stream's text grows as its events arrive). Only secrets are redacted
- * (authorization, api keys, cookies). Nothing is reshaped. Installed by the sidebar Builder item
- * and by `useBuilderFeed` for admins; never loaded for anyone else. FEATURE: ./FEATURE.md.
+ * (authorization, api keys, cookies). Nothing is reshaped. Records ONLY while an admin has debug
+ * mode on (`setRequestRecording`, driven by `useBuilderRecording`); turning debug off stops it and
+ * drops everything kept. Never loaded for anyone else. FEATURE: ./FEATURE.md.
  */
 
 export interface LoggedRequest {
@@ -35,6 +36,7 @@ const SECRET = /(authorization|api[-_]?key|apikey|cookie|token|secret|password|x
 const SKIP = /\/_next\/|__nextjs|webpack-hmr|\/favicon|\.(png|jpe?g|gif|webp|svg|ico|woff2?|css|js|map)(\?|$)/i;
 
 let installed = false;
+let recording = false;
 let seq = 0;
 let entries: LoggedRequest[] = [];
 const listeners = new Set<() => void>();
@@ -149,14 +151,29 @@ async function readResponse(id: number, response: Response) {
   }
 }
 
-/** Wrap `window.fetch` once. Admin-only callers. */
-export function installRequestLog(): void {
+/**
+ * Start or stop recording. On: wraps `window.fetch` once (it stays wrapped, passing straight
+ * through while off). Off: stops recording and drops every kept request.
+ */
+export function setRequestRecording(on: boolean): void {
+  if (on) {
+    installRequestLog();
+    recording = true;
+    return;
+  }
+  if (!recording && entries.length === 0) return;
+  recording = false;
+  entries = [];
+  notify();
+}
+
+function installRequestLog(): void {
   if (installed || typeof window === "undefined") return;
   installed = true;
   const original = window.fetch.bind(window);
   window.fetch = async (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
     const url = typeof input === "string" ? input : input instanceof URL ? input.toString() : input.url;
-    if (SKIP.test(url)) return original(input, init);
+    if (!recording || SKIP.test(url)) return original(input, init);
     const req = typeof input === "object" && !(input instanceof URL) ? input : null;
     const id = ++seq;
     const entry: LoggedRequest = {

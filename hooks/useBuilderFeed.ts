@@ -11,16 +11,17 @@
 //     feed.publish({ key: "input.website", label: "Website", group: "inputs", data: websiteText, source: "typed" });
 //   }, [feed, websiteText]);
 //
-// Non-admins: `publish` is a no-op — no clone, no dispatch, no render. The panel itself is a
+// Records only while an admin has debug mode on (`useBuilderRecording`); otherwise `publish` is a
+// no-op — no clone, no dispatch, no render. The panel itself is a
 // lazy overlay chunk that only an admin can open, so nothing of it downloads for anyone else.
 
 "use client";
 
 import { usePathname } from "next/navigation";
 import { useEffect, useRef } from "react";
-import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
+import { useAppDispatch } from "@/lib/redux/hooks";
 import { builderPublish } from "@/lib/redux/preferences/adminDebugSlice";
-import { selectIsAdminDebugger } from "@/lib/redux/selectors/userSelectors";
+import { useBuilderRecording } from "@/features/builder-panel/hooks/useBuilderRecording";
 import type { BuilderPublishInput } from "@/features/builder-panel/types";
 
 /** A plain-JSON copy: the store never holds (or freezes) the page's own objects. */
@@ -40,21 +41,20 @@ export interface BuilderFeedHandle {
    * removed (a finding that is gone leaves the panel too).
    */
   publish: (input: BuilderPublishInput | BuilderPublishInput[], options?: { prune?: string[] }) => void;
-  /** True for an admin — gate any expensive value building on it. */
+  /** True while an admin has debug mode on — gate any expensive value building on it. */
   isActive: boolean;
 }
 
 export function useBuilderFeed(surfaceKey: string): BuilderFeedHandle {
   const dispatch = useAppDispatch();
-  const isActive = useAppSelector(selectIsAdminDebugger) ?? false;
+  const isActive = useBuilderRecording();
   const pathname = usePathname();
-  // An admin page's own requests are kept for the panel's Requests section from the first render
-  // (admin-only chunk; nobody else downloads it).
-  useEffect(() => {
-    if (isActive) void import("@/features/builder-panel/requestLog").then((m) => m.installRequestLog());
-  }, [isActive]);
   // key → last published JSON (+ meta), so a re-render that publishes the same value costs nothing.
   const last = useRef(new Map<string, string>());
+  // Debug off drops the feeds, so forget what was sent: turning it back on republishes everything.
+  useEffect(() => {
+    if (!isActive) last.current.clear();
+  }, [isActive]);
 
   const lastKeep = useRef("");
 

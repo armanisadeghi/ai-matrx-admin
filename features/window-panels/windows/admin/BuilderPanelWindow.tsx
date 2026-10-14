@@ -23,7 +23,10 @@ import { CopyButtons } from "@/components/agent-copy/CopyButtons";
 import { feedEntries, feedSnapshot, feedsForRoute, refsOf, selectBuilderFeedList } from "@/features/builder-panel/selectors";
 import { fetchProposals, type MandateProposal } from "@/features/builder-panel/data";
 import type { BuilderEntry } from "@/features/builder-panel/types";
-import { installRequestLog } from "@/features/builder-panel/requestLog";
+import { useBuilderRecording } from "@/features/builder-panel/hooks/useBuilderRecording";
+import { useAppDispatch } from "@/lib/redux/hooks";
+import { setDebugMode } from "@/lib/redux/preferences/adminDebugSlice";
+import { Button } from "@ai-matrx/design-system/controls";
 import { useRequestLog } from "@/features/builder-panel/hooks/useRequestLog";
 import { useRunTruth } from "@/features/builder-panel/hooks/useRunTruth";
 import { activityRows, allRequestRows, pageRequestRows, serverRequestRows } from "@/features/builder-panel/requests";
@@ -72,7 +75,8 @@ function BuilderPanelInner({
   initialTab,
   initialEntryKey,
 }: Omit<BuilderPanelWindowProps, "isOpen">) {
-  useEffect(() => installRequestLog(), []);
+  const recording = useBuilderRecording();
+  const dispatch = useAppDispatch();
   const pathname = usePathname();
   const feeds = useAppSelector(selectBuilderFeedList);
   const debugData = useAppSelector(selectDebugData);
@@ -248,6 +252,14 @@ function BuilderPanelInner({
       }
       bodyClassName="flex min-h-0 flex-1 flex-col overflow-hidden p-0"
     >
+      {recording ? null : (
+        <div className="flex shrink-0 items-center gap-2 border-b border-border px-3 py-1.5 type-secondary text-muted-foreground">
+          <span className="flex-1">Debug mode is off, so nothing is being recorded.</span>
+          <Button variant="outline" onClick={() => dispatch(setDebugMode(true))}>
+            Turn on
+          </Button>
+        </div>
+      )}
       <div className="flex shrink-0 items-center gap-2 border-b border-border px-3">
         <div className="min-w-0 flex-1 overflow-x-auto">
           <Tabs

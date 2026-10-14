@@ -82,11 +82,14 @@ const adminDebugSlice = createSlice({
   reducers: {
     // ── Debug mode ──────────────────────────────────────────────────────
 
+    // Builder records only while debug mode is on: turning it off drops every feed.
     toggleDebugMode: (state) => {
       state.isDebugMode = !state.isDebugMode;
+      if (!state.isDebugMode) state.builderFeeds = {};
     },
     setDebugMode: (state, action: PayloadAction<boolean>) => {
       state.isDebugMode = action.payload;
+      if (!state.isDebugMode) state.builderFeeds = {};
     },
 
     // ── Route context (written by AdminDebugContextCollector only) ───────

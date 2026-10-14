@@ -12,7 +12,8 @@ The admin window that shows everything a page has and can do. Product truth:
 | `features/builder-panel/types.ts` | Entry, group, ref shapes; history and size limits |
 | `features/builder-panel/selectors.ts` | Feed list, route match, refs per tab, whole-feed snapshot |
 | `features/builder-panel/data.ts` | `mandate.proposal` + `mandate.definition` reads; `fetchRunTruth` (`workflow.run`, `workflow.node_outcome`, `mandate.provision_snapshot` by run id / record id, and the `workflow.definition` nodes the runs used — labels, icons, `ready_when`) |
-| `features/builder-panel/requestLog.ts` | Admin-only `window.fetch` log: every page request with route, method, URL, headers, body, status, raw response / stream text (secrets redacted). Installed by the sidebar Builder item and `useBuilderFeed` |
+| `features/builder-panel/requestLog.ts` | Admin-only `window.fetch` log: every page request with route, method, URL, headers, body, status, raw response / stream text (secrets redacted). Records only while debug mode is on (`setRequestRecording`); off drops everything kept |
+| `features/builder-panel/hooks/useBuilderRecording.ts` | THE recording switch: an admin with debug mode on. Drives the request log; `useBuilderFeed` publishes only while it is true; the debug-mode reducer drops every feed when debug turns off |
 | `lib/diagnostics/loadLedger.ts` + `components/BuilderLoadTab.tsx` | **Page load** tab: every Supabase call of each page load (the one proxy in `supabaseErrorCapture.ts` records it), grouped by relation, with when it left (Before paint · Settling · Settled), repeats flagged, and the code that built the query (stack taken at `.from()`/`.rpc()`, formatted only when opened). THE LOAD LAW: only what the page shows leaves before it settles; nothing repeats |
 | `features/builder-panel/requests.ts` | One ordered request list (page + server `output.requests`), the Activity timeline, `isFlowRequest` |
 | `features/builder-panel/story.ts` | The run as a numbered story (`buildStory`): inputs as row 0, each run's steps in finish order, calls inside (searches grouped per engine with the exact queries), idle steps greyed with the definition's `ready_when`; `derivedFor` + `findInResponse` (the path in the raw response a derived value came from) |
@@ -82,6 +83,7 @@ explicit `organization_id`; nothing in code holds a proposal.
 
 ## Change log
 
+- `2026-10-14` — Claude: Builder records only while debug mode is on (Arman). Requests and page values stop and are dropped when debug turns off; the panel says so with a Turn on button. Guard: `__tests__/recording.test.ts`.
 - 2026-10-13 — round 3 (Arman: "more intuitive, don't lose any data"): the sidebar is the run as a
   numbered story; a row shows Sent · Received · What we took from it; Data → Values (group icons),
   Requests → Page calls; `JsonInspector` copy is the one Alchemy menu and panes expand to full size.
