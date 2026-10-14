@@ -952,6 +952,10 @@ jobs:
       # cascade being unmeasurable, not a missing-secret artefact.
       - name: Soft-deleting a parent still removes everything declared part of it
         run: pnpm check:soft-delete-cascade:strict
+      # Same job, same install: archive then restore real brands inside rolled-back
+      # subtransactions (2026-10-14 — a child guard refused every brand archive).
+      - name: Archiving a brand and restoring it round-trips exactly
+        run: pnpm check:brand-archive-cascade --strict
 
   # ---------------------------------------------------------------------------
   # soft-delete-unique — a unique index that counts rows the user cannot see

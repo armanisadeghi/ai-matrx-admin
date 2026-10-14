@@ -328,6 +328,7 @@ if $STRICT; then
         "One version of each canonical piece|pnpm check:one-version"
         "One-version guard proves it can fail|pnpm check:one-version:self-test"
         "Archived-items law (every list has an archive control)|pnpm check:archived-items-law"
+        "Brand archive + restore round-trips (live)|pnpm check:brand-archive-cascade"
         "Univer document page is legible in both themes|pnpm check:univer-doc-theme"
         "One agent-list read (package-owned)|pnpm check:agent-list-reads"
         # Aidream's chat check:package owns the package host-boundary gate and self-test;
@@ -1252,6 +1253,7 @@ else
         "One version of each canonical piece|pnpm check:one-version"
         "One-version guard proves it can fail|pnpm check:one-version:self-test"
         "Archived-items law (every list has an archive control)|pnpm check:archived-items-law"
+        "Brand archive + restore round-trips (live)|pnpm check:brand-archive-cascade"
         "Univer document page is legible in both themes|pnpm check:univer-doc-theme"
         "One agent-list read (package-owned)|pnpm check:agent-list-reads"
         # Aidream's chat check:package owns the package host-boundary gate and self-test;
