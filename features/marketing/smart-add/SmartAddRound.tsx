@@ -21,6 +21,7 @@ import {
 } from "@/features/workflow-runtime/redux/workflow-runs.selectors";
 import { evidenceFromPayload, type EvidenceItem } from "./evidence";
 import { factsFromPayload, type BrandFact } from "./validate/queue";
+import { brandNameFromPayload, factEvidence, webFirstData } from "./firstData";
 import { suggestionsFromPayload, type WeThinkSuggestion } from "./weThink";
 
 /** The steps a Smart Add workflow shows, in order. */
@@ -235,7 +236,22 @@ export function SmartAddRound({
   const parkedLate = stepState.page?.view.gate?.type === "parked_domain";
   const keep = (e: EvidenceItem) => !(parkedLate && e.source?.node === "web");
   const live = emissions.flatMap((e) => evidenceFromPayload(e.payload));
-  const all = [...live, ...[...steps, ...ANCHOR_STEPS].flatMap((s) => stepState[s]?.evidence ?? [])].filter(keep);
+  // First data (firstData.ts): the web step's own-site listing fills the name, logo and description rows the
+  // moment it lands; the facts agent's findings merge into the same rows later (added or refined, never reset).
+  const webAggregate = useAppSelector(selectNodeAggregate(runId, "web"));
+  const webOut = webAggregate.invocations[webAggregate.invocations.length - 1]?.output ?? null;
+  const factsAggregate = useAppSelector(selectNodeAggregate(runId, "facts"));
+  const factsOut = factsAggregate.invocations[factsAggregate.invocations.length - 1]?.output ?? null;
+  const facts = [
+    ...emissions.flatMap((e) => factsFromPayload(e.payload)),
+    ...[...steps, ...FACT_STEPS].flatMap((s) => stepState[s]?.facts ?? []),
+  ];
+  const all = [
+    ...live,
+    ...webFirstData(webOut),
+    ...[...steps, ...ANCHOR_STEPS].flatMap((s) => stepState[s]?.evidence ?? []),
+    ...factEvidence(facts, brandNameFromPayload(factsOut)),
+  ].filter(keep);
   const signalsAggregate = useAppSelector(selectNodeAggregate(runId, SIGNALS_STEP));
   const signalsOut = signalsAggregate.invocations[signalsAggregate.invocations.length - 1]?.output ?? null;
   const signals =
@@ -273,10 +289,6 @@ export function SmartAddRound({
   useEffect(() => {
     if (all.length) onEvidence?.(all);
   }, [all, onEvidence]);
-  const facts = [
-    ...emissions.flatMap((e) => factsFromPayload(e.payload)),
-    ...[...steps, ...FACT_STEPS].flatMap((s) => stepState[s]?.facts ?? []),
-  ];
   useEffect(() => {
     if (facts.length) onFacts?.(facts);
   }, [facts, onFacts]);
