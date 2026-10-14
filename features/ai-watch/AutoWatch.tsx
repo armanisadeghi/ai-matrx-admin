@@ -37,8 +37,6 @@ const selectLiveRootRunKey = createSelector(
       .join(","),
 );
 
-const PAGE_WATCH = { pageRuns: true, instanceId: "ai-watch:page" } as const;
-
 export default function AutoWatch() {
   const canWatch = useCanWatchAi();
   const dispatch = useAppDispatch();
@@ -55,7 +53,7 @@ export default function AutoWatch() {
       openedRuns.current.add(runId);
       dispatch(openWorkflowRunWindowAction({ runId }));
     }
-    dispatch(watchAiRunAction(PAGE_WATCH));
+    dispatch(watchAiRunAction());
   }, [canWatch, liveRootRuns, dispatch]);
 
   const openedCalls = useRef(new Set<string>());
@@ -64,7 +62,7 @@ export default function AutoWatch() {
     const fresh = automatedKeys.split(",").filter((k) => !openedCalls.current.has(k));
     if (!fresh.length) return;
     for (const k of fresh) openedCalls.current.add(k);
-    dispatch(watchAiRunAction(PAGE_WATCH));
+    dispatch(watchAiRunAction());
   }, [canWatch, automatedKeys, dispatch]);
 
   return null;

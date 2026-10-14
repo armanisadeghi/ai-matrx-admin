@@ -149,11 +149,7 @@ function RailNodeRow({
   const laneRequestId = invocations.find((i) => i.laneRequestId)?.laneRequestId ?? null;
   const watchable = ai && canWatch && nodeStarted;
   const open = () =>
-    watch(
-      laneRequestId
-        ? { requestId: laneRequestId, instanceId: `ai-watch:${runId}:${nodeId}`, label: label ?? nodeId }
-        : { workflowRunId: runId, nodeId, instanceId: `ai-watch:${runId}:${nodeId}`, label: label ?? nodeId },
-    );
+    watch({ requestId: laneRequestId, workflowRunId: runId, nodeId, label: label ?? nodeId });
 
   const head = (
     <>

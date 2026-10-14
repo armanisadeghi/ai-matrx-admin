@@ -708,6 +708,7 @@ const STATIC_REGISTRY: WindowStaticMetadata[] = [
       userRequestId: null,
       workflowRunId: null,
       conversationId: null,
+      nodeId: null,
       label: null,
     },
     preservation: {
@@ -717,6 +718,7 @@ const STATIC_REGISTRY: WindowStaticMetadata[] = [
         "userRequestId",
         "workflowRunId",
         "conversationId",
+        "nodeId",
         "label",
       ],
     },

@@ -207,11 +207,15 @@ export function initUrlHydration() {
     );
   });
 
-  // Watch AI — ?panels=ai-watch:c-<conversationId> | u-<userRequestId> | w-<workflowRunId> | r-<requestId>
+  // Watch AI — ?panels=ai-watch:page (the page's ONE window). An older address naming one call
+  // (c-/u-/w-/r-<id>) opens that same window with the call selected — never a second window.
   registerPanelHydrator("ai-watch", (dispatch, id) => {
     const [kind, ...rest] = id.split("-");
     const value = rest.join("-");
-    if (!value) return;
+    if (!value || !["c", "u", "w", "r"].includes(kind)) {
+      dispatch(watchAiRunAction());
+      return;
+    }
     const key =
       kind === "c" ? "conversationId" : kind === "u" ? "userRequestId" : kind === "w" ? "workflowRunId" : "requestId";
     dispatch(watchAiRunAction({ [key]: value }));

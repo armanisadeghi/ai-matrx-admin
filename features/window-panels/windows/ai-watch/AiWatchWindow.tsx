@@ -35,7 +35,6 @@ import { Eye, Send, Wrench } from "lucide-react";
 import { formatCost } from "@ai-matrx/kit/format";
 import { LiveRunDisplay } from "@ai-matrx/chat/agents/components/live-run/LiveRunDisplay";
 import { useRetainRequestForViewer } from "@ai-matrx/chat/agents/redux/execution-system/active-requests/useRetainRequestForViewer";
-import type { WatchableRun } from "@ai-matrx/chat/agents/redux/execution-system/active-requests/active-requests.selectors";
 import MarkdownStream from "@ai-matrx/chat/ui/markdown-stream/MarkdownStream";
 import { selectPageAiRuns, selectPageWorkflowRunIds } from "@/features/ai-watch/page-ai-runs";
 import {
@@ -50,7 +49,10 @@ import { storedMandateKey } from "@ai-matrx/agents/mandates";
 import { cn, ErrorNotice } from "@ai-matrx/design-system";
 import { Button } from "@ai-matrx/design-system/controls";
 import { WindowPanel } from "@/features/window-panels/WindowPanel";
-import { useAppSelector } from "@/lib/redux/hooks";
+import { usePathname } from "next/navigation";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
+import { AI_WATCH_PAGE_INSTANCE, watchAiRunAction } from "@/features/overlays/openers/aiWatchWindow";
+import { autoSelection, buildRail, focusKey, UNRECORDED_GROUP } from "@/features/ai-watch/watch-rail";
 import { currentPointsRate } from "@/components/cost/pointsRate";
 import { useCanWatchAi } from "@/features/ai-watch/useCanWatchAi";
 import { useOpenMandateWindow } from "@/features/overlays/openers/mandateWindow";
@@ -87,34 +89,32 @@ export interface AiWatchWindowProps {
   workflowRunId?: string | null;
   /** List every AI turn of a conversation. */
   conversationId?: string | null;
-  /** List every AI run this tab holds (the sidebar light). */
-  /** Open on this workflow step's call (from the Workflow run rail). */
+  /** Select this workflow step's call (from the Workflow run rail). */
   nodeId?: string | null;
-  pageRuns?: boolean;
   label?: string | null;
+  /** When the last door pressed set the selection (`watchAiRunAction`). */
+  focusAt?: number | null;
 }
 
 type ActiveRoot = { activeRequests: { byRequestId: Record<string, ActiveRequest> } };
 
-/** One entry of the left rail: a run by its server id (or client id until bound). */
-interface RailRun {
-  key: string;
-  serverId: string | null;
-  label: string;
-  status: string | null;
-  live: boolean;
+/** The page's run ids Watch AI remembers across a reload (this tab, this page). */
+const HISTORY_KEY_PREFIX = "matrx:ai-watch:runs:";
+const HISTORY_MAX = 10;
+
+function readHistory(key: string): string[] {
+  try {
+    const raw = typeof window === "undefined" ? null : window.sessionStorage.getItem(key);
+    const parsed: unknown = raw ? JSON.parse(raw) : [];
+    return Array.isArray(parsed) ? parsed.filter((v): v is string => typeof v === "string") : [];
+  } catch {
+    return [];
+  }
 }
 
-function railFromRegistry(runs: WatchableRun[], conversationId: string | null): RailRun[] {
-  return runs
-    .filter((r) => !conversationId || r.conversationId === conversationId)
-    .map((r) => ({
-      key: r.key,
-      serverId: r.serverRequestId,
-      label: r.mandateRun?.mandate_key ?? "AI run",
-      status: r.live ? "live" : null,
-      live: r.live,
-    }));
+function runTime(iso: string): string {
+  const d = new Date(iso);
+  return Number.isNaN(d.getTime()) ? "" : d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
 }
 
 export default function AiWatchWindow({
@@ -124,77 +124,96 @@ export default function AiWatchWindow({
   userRequestId = null,
   workflowRunId = null,
   conversationId = null,
-  pageRuns = false,
   nodeId = null,
-  label = null,
+  focusAt = null,
 }: AiWatchWindowProps) {
   const canWatch = useCanWatchAi();
+  const dispatch = useAppDispatch();
+
+  // ONE window per page: a window restored under an older per-call id folds into it.
+  const legacy = windowInstanceId !== AI_WATCH_PAGE_INSTANCE;
+  useEffect(() => {
+    if (!legacy) return;
+    dispatch(watchAiRunAction({ requestId, userRequestId, workflowRunId, conversationId, nodeId }));
+    onClose();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- once, on mount
+  }, [legacy]);
+
+  // The page's workflow runs, remembered for this page so a reload keeps the history.
+  const pathname = usePathname() ?? "";
+  const historyKey = `${HISTORY_KEY_PREFIX}${pathname}`;
+  const pageWorkflowRunIds = useAppSelector(selectPageWorkflowRunIds);
+  const [history, setHistory] = useState<string[]>(() => readHistory(historyKey));
+  const pageRunKey = pageWorkflowRunIds.join(",");
+  useEffect(() => {
+    const incoming = [...pageWorkflowRunIds, ...(workflowRunId ? [workflowRunId] : [])];
+    setHistory((prev) => {
+      const fresh = incoming.filter((id) => !prev.includes(id));
+      if (!fresh.length) return prev;
+      const next = [...prev, ...fresh].slice(-HISTORY_MAX);
+      try {
+        window.sessionStorage.setItem(historyKey, JSON.stringify(next));
+      } catch {
+        // Storage full or blocked: the list still holds this tab's runs.
+      }
+      return next;
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- keyed by the joined id list
+  }, [pageRunKey, workflowRunId, historyKey]);
+
+  const registry = useAppSelector(selectPageAiRuns);
+  const anyLive = registry.some((r) => r.live);
   const [records, setRecords] = useState<AiWatchRunSummary[]>([]);
   const [listError, setListError] = useState<string | null>(null);
-  // The page's workflow runs: their AI steps are read from the record, so the list outlives
-  // the live rows (a finished run's lanes are released; its calls stay listed).
-  const pageWorkflowRunIds = useAppSelector(selectPageWorkflowRunIds);
-  const pageRunKey = pageRuns ? pageWorkflowRunIds.join(",") : "";
-  const listScope = workflowRunId || pageRunKey || (!requestId && !userRequestId ? conversationId : null);
+  const historyScope = history.join(",");
+  const listConversation = !historyScope ? conversationId : null;
 
   useEffect(() => {
-    if (!canWatch || !listScope) return;
+    if (!canWatch || legacy || (!historyScope && !listConversation)) return;
     let cancelled = false;
     const load = () =>
-      fetchAiWatchRuns({
-        workflowRunId,
-        workflowRunIds: pageRunKey ? pageRunKey.split(",") : null,
-        conversationId,
-      })
+      fetchAiWatchRuns({ workflowRunIds: historyScope ? historyScope.split(",") : null, conversationId: listConversation })
         .then((rows) => {
           if (cancelled) return;
           setRecords(rows);
           setListError(null);
         })
         .catch((err: unknown) => {
-          // Never swallowed: the rail says it could not read the runs.
+          // Never swallowed: the list says it could not read the runs.
           if (!cancelled) setListError(err instanceof Error ? err.message : String(err));
         });
     void load();
-    // A flow keeps adding AI steps while it runs.
-    const timer = setInterval(load, 5000);
+    // A round keeps adding AI calls while it runs: re-read fast while one is live.
+    const timer = setInterval(load, anyLive ? 1500 : 5000);
     return () => {
       cancelled = true;
       clearInterval(timer);
     };
-  }, [canWatch, listScope, workflowRunId, conversationId, pageRunKey]);
+  }, [canWatch, legacy, historyScope, listConversation, anyLive]);
 
-  // The tab's own runs, keyed by server run (never a conversation's "newest").
-  const registry = useAppSelector(selectPageAiRuns);
-  const opened = useAppSelector((s) =>
-    requestId ? (s as unknown as ActiveRoot).activeRequests.byRequestId[requestId] : undefined,
-  );
+  const groups = buildRail(registry, records);
 
-  // The run this window opened on: by its server id, or by its client request until bound.
-  const openedKey = userRequestId ?? opened?.serverRequestId ?? requestId ?? null;
-  const [selectedKey, setSelectedKey] = useState<string | null>(openedKey);
-  useEffect(() => {
-    // The opened request learns its server id from its own stream: follow it.
-    if (opened?.serverRequestId && selectedKey === requestId) setSelectedKey(opened.serverRequestId);
-  }, [opened?.serverRequestId, requestId, selectedKey]);
-
-  const rail: RailRun[] = [];
-  if (pageRuns || (conversationId && !requestId && !userRequestId)) {
-    rail.push(...railFromRegistry(registry, pageRuns ? null : conversationId));
+  // Selection: a door's target, else the person's pick, else the newest live call. A new run
+  // on the page clears the pick, so the window always moves to the round being watched.
+  const [picked, setPicked] = useState<string | null>(null);
+  const [appliedFocus, setAppliedFocus] = useState<number | null>(null);
+  const newestRun = pageWorkflowRunIds.length ? history.at(-1) ?? null : null;
+  const [pickRun, setPickRun] = useState<string | null>(newestRun);
+  if (newestRun !== pickRun) {
+    setPickRun(newestRun);
+    setPicked(null);
   }
-  for (const r of records) {
-    if (!rail.some((x) => x.serverId === r.userRequestId)) {
-      rail.push({ key: r.userRequestId, serverId: r.userRequestId, label: r.label, status: r.status, live: false });
-    }
+  const doorTarget = focusKey(groups, registry, { requestId, userRequestId, nodeId, workflowRunId });
+  if (focusAt !== appliedFocus && (doorTarget || !(requestId || userRequestId || nodeId))) {
+    setAppliedFocus(focusAt);
+    if (doorTarget) setPicked(doorTarget);
   }
-  // Opened from a Workflow run step: that step's newest call, until the person picks another.
-  const stepCall = nodeId ? records.filter((r) => r.nodeId === nodeId).at(-1)?.userRequestId ?? null : null;
-  rail.sort((a, b) => Number(b.live) - Number(a.live));
-  if (pageRuns && !rail.some((r) => r.live)) rail.reverse();
-  const current = selectedKey ?? stepCall ?? rail[0]?.key ?? null;
+  const current = picked ?? autoSelection(groups, newestRun);
   const currentRun = registry.find((r) => r.key === current || r.requestIds.includes(current ?? ""));
-  const serverId =
-    currentRun?.serverRequestId ?? rail.find((r) => r.key === current)?.serverId ?? (current && current === userRequestId ? current : null);
+  const currentCall = groups.flatMap((g) => g.calls).find((c) => c.key === current);
+  const serverId = currentRun?.serverRequestId ?? currentCall?.serverId ?? null;
+
+  if (legacy) return null;
 
   if (!canWatch) {
     return (
@@ -214,71 +233,85 @@ export default function AiWatchWindow({
     );
   }
 
+  const callCount = groups.reduce((n, g) => n + g.calls.length, 0);
+
   return (
     <WindowPanel
       id={`ai-watch-window-${windowInstanceId}`}
-      title={label ? `Watch AI — ${label}` : "Watch AI"}
+      title="Watch AI"
       overlayId="aiWatchWindow"
       overlayInstanceId={windowInstanceId}
-      // The address keeps the watched run after a refresh: ?panels=ai-watch:<c|u|w|r>-<id>
-      urlSyncId={
-        workflowRunId
-          ? `w-${workflowRunId}`
-          : serverId
-            ? `u-${serverId}`
-            : conversationId
-              ? `c-${conversationId}`
-              : requestId
-                ? `r-${requestId}`
-                : undefined
-      }
-      minWidth={420}
+      // ONE address entry for the page's one window: ?panels=ai-watch:page
+      urlSyncId="page"
+      minWidth={520}
       minHeight={320}
-      width={960}
+      width={1040}
       height="80dvh"
       onClose={onClose}
       onCollectData={() => ({
         windowInstanceId,
-        requestId,
+        requestId: null,
         userRequestId: serverId,
-        workflowRunId,
+        workflowRunId: null,
         conversationId,
-        label,
+        nodeId: null,
+        label: null,
       })}
       bodyClassName="flex min-h-0 flex-1 overflow-hidden p-0"
     >
-      {rail.length > 1 || listError ? (
-        <div className="flex w-52 shrink-0 flex-col overflow-y-auto border-r border-border text-xs">
-          {listError ? (
-            <div className="p-2">
-              <ErrorNotice title="The runs could not be read" message={listError} />
-            </div>
-          ) : null}
-          {rail.map((run) => (
-            <button
-              key={run.key}
-              type="button"
-              onClick={() => setSelectedKey(run.key)}
-              className={cn(
-                "flex items-center justify-between gap-2 border-b border-border px-2 py-1.5 text-left hover:bg-muted",
-                run.key === current && "bg-muted font-medium",
-              )}
-            >
-              <span className="flex min-w-0 items-center gap-1">
-                {run.live ? <Eye className="h-3 w-3 shrink-0 text-orange-500" /> : null}
-                <span className="truncate">{run.label}</span>
+      <div className="flex w-60 shrink-0 flex-col overflow-y-auto border-r border-border text-xs" data-testid="ai-watch-rail">
+        {listError ? (
+          <div className="p-2">
+            <ErrorNotice title="The runs could not be read" message={listError} />
+          </div>
+        ) : null}
+        {callCount === 0 && !listError ? <div className="p-2 text-muted-foreground">No AI calls on this page yet</div> : null}
+        {newestRun && !groups.some((g) => g.workflowRunId === newestRun || g.id === UNRECORDED_GROUP) ? (
+          <div className="border-b border-border px-2 py-1.5 text-muted-foreground">This run · no AI call yet</div>
+        ) : null}
+        {groups.map((group) => (
+          <div key={group.id} className="border-b border-border">
+            <div className="flex items-center justify-between gap-2 bg-muted/50 px-2 py-1 text-muted-foreground">
+              <span className="truncate">
+                {group.id === UNRECORDED_GROUP
+                  ? "Live"
+                  : group.workflowRunId
+                    ? group.workflowRunId === (newestRun ?? groups.find((g) => g.workflowRunId)?.workflowRunId)
+                      ? "This run"
+                      : "Earlier run"
+                    : "Chat"}
               </span>
-              <span className="shrink-0 text-muted-foreground">{run.status ?? ""}</span>
-            </button>
-          ))}
-        </div>
-      ) : null}
+              <span className="shrink-0">{group.startedAt ? runTime(group.startedAt) : ""}</span>
+            </div>
+            {group.calls.map((call) => (
+              <button
+                key={call.key}
+                type="button"
+                onClick={() => setPicked(call.key)}
+                data-testid="ai-watch-rail-call"
+                className={cn(
+                  "flex w-full items-center justify-between gap-2 border-t border-border px-2 py-1.5 text-left hover:bg-muted",
+                  call.key === current && "bg-muted font-medium",
+                )}
+              >
+                <span className="flex min-w-0 items-center gap-1">
+                  {call.live ? <Eye className="h-3 w-3 shrink-0 text-orange-500" /> : null}
+                  <span className="truncate" title={call.label}>{call.label}</span>
+                </span>
+                <span className="shrink-0 text-muted-foreground">{call.status ?? ""}</span>
+              </button>
+            ))}
+          </div>
+        ))}
+      </div>
       <div className="min-h-0 min-w-0 flex-1 overflow-y-auto">
-        {workflowRunId ? <RunTestReplaysStrip runId={workflowRunId} /> : null}
+        {currentCall && groups.find((g) => g.calls.includes(currentCall))?.workflowRunId ? (
+          <RunTestReplaysStrip runId={groups.find((g) => g.calls.includes(currentCall))?.workflowRunId as string} />
+        ) : null}
         <AiWatchRunView
           key={serverId ?? current ?? "none"}
           serverId={serverId}
-          requestIds={currentRun?.requestIds ?? (requestId && current === requestId ? [requestId] : [])}
+          requestIds={currentRun?.requestIds ?? []}
         />
       </div>
     </WindowPanel>

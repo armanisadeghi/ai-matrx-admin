@@ -6198,7 +6198,7 @@ export default function OverlayController() {
             userRequestId={text(data?.userRequestId)}
             workflowRunId={text(data?.workflowRunId)}
             conversationId={text(data?.conversationId)}
-            pageRuns={data?.pageRuns === true}
+            focusAt={typeof data?.focusAt === "number" ? data.focusAt : null}
             nodeId={text(data?.nodeId)}
             label={text(data?.label)}
           />

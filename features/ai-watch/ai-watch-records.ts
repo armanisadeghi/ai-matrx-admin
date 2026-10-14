@@ -63,6 +63,8 @@ export interface AiWatchRunSummary {
   createdAt: string;
   /** The workflow step that made this call (`metadata.workflow_node_id`), when one did. */
   nodeId: string | null;
+  /** The workflow run this call belongs to (`chat.user_request.workflow_run_id`). */
+  workflowRunId: string | null;
 }
 
 const USER_REQUEST_COLUMNS =
@@ -172,7 +174,7 @@ export async function fetchAiWatchRuns(scope: {
       let query = supabase
         .schema("chat")
         .from("user_request")
-        .select("id, status, source_feature, created_at, metadata")
+        .select("id, status, source_feature, workflow_run_id, created_at, metadata")
         .is("deleted_at", null);
       query = runIds.length
         ? query.in("workflow_run_id", runIds)
@@ -203,6 +205,7 @@ export async function fetchAiWatchRuns(scope: {
       status: str(row.status),
       createdAt: String(row.created_at ?? ""),
       nodeId: str(metadata.workflow_node_id),
+      workflowRunId: str(row.workflow_run_id),
     };
   });
 }

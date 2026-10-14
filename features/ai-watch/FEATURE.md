@@ -20,11 +20,16 @@ the live stream — and acts on it (Improve this agent, Send to developers).
 ## Entry points
 
 **Window** — `features/window-panels/windows/ai-watch/AiWatchWindow.tsx` (overlay `aiWatchWindow`,
-multi-instance; deep link `?panels=ai-watch:<u|c|w|r>-<id>`).
+ONE instance per page, `ai-watch:page`; deep link `?panels=ai-watch:page` — an older
+`ai-watch:<u|c|w|r>-<id>` opens the same window with that call selected). Left list:
+`watch-rail.ts` (every AI call of the page's runs, grouped by run; newest live call auto-selected;
+a new run clears a pick and never shows an older run's call). The page's run ids survive a reload in
+`sessionStorage` (`matrx:ai-watch:runs:<pathname>`).
 
 **Openers**
 - `useWatchAiRun()` / `watchAiRunAction()` — `features/overlays/openers/aiWatchWindow.tsx`
-  (`requestId` · `userRequestId` · `workflowRunId` · `conversationId` · `pageRuns`).
+  (`requestId` · `userRequestId` · `workflowRunId` + `nodeId` · `conversationId`) — every door only
+  moves the ONE window's selection.
 - Chat package: the host opener `openAiWatchWindow` is registered in `providers/ChatHostAdapter.tsx`
   ONLY when `useCanWatchAi()` — so `LiveRunWindow`'s button is absent for everyone else.
 - `WatchAiRunButton` — the inline door (Applet job output, `features/applets-host/AppletRunOutput.tsx`).
@@ -72,6 +77,12 @@ stream's own reservation), `ActiveRequest.mandateRun` (the server's `mandate_run
 ---
 
 ## Change Log
+
+- **2026-10-14 (c)** — ONE window: three Watch AI windows piled up on a new round (two per-call
+  windows restored from the address, the front one an old classifier call). Every door now opens
+  `ai-watch:page`; a restored per-call window folds into it; `panels=` carries one entry. Live
+  prompt: the server's debug emitter dropped `send_context_analysis` (aidream 3ac8f3abdd), so no
+  workflow step's request ever streamed.
 
 - **2026-10-14 (b)** — Root causes of "no AI runs, no progress": (1) debug mode was in-memory only;
   (2) auto-open lived in the sidebar button and the admin provider rendered nothing on user pages;

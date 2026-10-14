@@ -36,14 +36,8 @@ export default function SidebarWatchAiToggle() {
 
   if (!hydrated || !canWatch) return null;
 
-  const open = () =>
-    watch({
-      // One live run: open it. Several (or none): the page's runs window lists them.
-      requestId: count === 1 ? live[0].requestIds.at(-1) ?? null : null,
-      pageRuns: count !== 1,
-      instanceId: count === 1 ? `ai-watch:${live[0].key}` : "ai-watch:page",
-      label: count === 1 ? (live[0].mandateRun?.mandate_key ?? null) : null,
-    });
+  // The page's one Watch AI window; with one live run, that run is selected.
+  const open = () => watch({ requestId: count === 1 ? live[0].requestIds.at(-1) ?? null : null });
 
   return (
     <button

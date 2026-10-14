@@ -23,41 +23,42 @@ import { openOverlay } from "@/lib/redux/slices/overlaySlice";
 
 const OVERLAY_ID = "aiWatchWindow" as const;
 
+/**
+ * THE ONE WINDOW (2026-10-14): every Watch AI door opens the page's single window — a list of every
+ * AI call of this page's runs on the left, the chosen call on the right. A door's target only moves
+ * the selection; it never stacks a second window (three Watch AI windows piled up on one round).
+ */
+export const AI_WATCH_PAGE_INSTANCE = "ai-watch:page" as const;
+
 export interface WatchAiRunOptions {
   requestId?: string | null;
   userRequestId?: string | null;
   workflowRunId?: string | null;
   conversationId?: string | null;
-  /** With `workflowRunId`: open on this step's call (a Workflow run rail row's AI step). */
+  /** With `workflowRunId`: select this step's call (a Workflow run rail row's AI step). */
   nodeId?: string | null;
-  /** List every AI run this tab holds (the sidebar Watch AI light). */
-  pageRuns?: boolean;
   label?: string | null;
-  /** Stable id to reuse one window per subject. Defaults to the watched id. */
-  instanceId?: string;
 }
 
 function normalize(target: string | WatchAiRunOptions): WatchAiRunOptions {
   return typeof target === "string" ? { requestId: target } : target;
 }
 
-export function watchAiRunAction(target: string | WatchAiRunOptions) {
+export function watchAiRunAction(target: string | WatchAiRunOptions = {}) {
   const opts = normalize(target);
-  const subject =
-    opts.requestId ?? opts.userRequestId ?? opts.workflowRunId ?? opts.conversationId ?? "run";
-  const instanceId = opts.instanceId ?? `ai-watch:${subject}`;
   return openOverlay({
     overlayId: OVERLAY_ID,
-    instanceId,
+    instanceId: AI_WATCH_PAGE_INSTANCE,
     data: {
-      windowInstanceId: instanceId,
+      windowInstanceId: AI_WATCH_PAGE_INSTANCE,
       requestId: opts.requestId ?? null,
       userRequestId: opts.userRequestId ?? null,
       workflowRunId: opts.workflowRunId ?? null,
       conversationId: opts.conversationId ?? null,
-      pageRuns: opts.pageRuns ?? false,
       nodeId: opts.nodeId ?? null,
       label: opts.label ?? null,
+      // A new door press re-applies its target even when it names the same call again.
+      focusAt: Date.now(),
     },
   });
 }
@@ -66,7 +67,7 @@ export function watchAiRunAction(target: string | WatchAiRunOptions) {
 export function useWatchAiRun() {
   const dispatch = useAppDispatch();
   return useCallback(
-    (target: string | WatchAiRunOptions) => {
+    (target: string | WatchAiRunOptions = {}) => {
       dispatch(watchAiRunAction(target));
     },
     [dispatch],
