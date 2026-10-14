@@ -106,9 +106,23 @@ interface ContextItemsHubProps {
  * how this view always shows you which dimension you're looking at.
  */
 export function ContextItemsHub(props: ContextItemsHubProps) {
+  const orgTypes = useAppSelector((s) => selectScopeTypesByOrg(s, props.orgId));
+  const typeId = useAppSelector((s) =>
+    props.typeParam
+      ? selectScopeTypeBySlugOrId(s, props.orgId, props.typeParam)?.id
+      : undefined,
+  );
+  // Only the items on screen can be ticked; a new organization or type clears the ticks.
+  const shownTypes = (props.typeParam
+    ? orgTypes.filter((t) => t.id === typeId)
+    : orgTypes
+  ).map((t) => ({ id: t.id, canManage: props.canManage }));
   return (
     <div className="space-y-6">
-      <ContextItemSelectionProvider>
+      <ContextItemSelectionProvider
+        types={shownTypes}
+        resetKey={`${props.orgId}|${props.typeParam ?? ""}`}
+      >
         {props.typeParam ? (
           <ContextItemsTypeView {...props} typeParam={props.typeParam} />
         ) : (
@@ -278,6 +292,13 @@ export function AllContextItemsHub() {
     });
   };
 
+  const shownTypes = realOrgs.flatMap((org) =>
+    org.scope_types.map((t) => ({
+      id: t.id,
+      canManage: canManageSettings(org.role as OrgRole),
+    })),
+  );
+
   return (
     <SurfaceRuntimeProvider
       surfaceName={CONTEXT_ITEMS_SURFACE_NAME}
@@ -286,7 +307,7 @@ export function AllContextItemsHub() {
     >
     <ContextItemsWriteTargets />
     <div className="space-y-6">
-      <ContextItemSelectionProvider>
+      <ContextItemSelectionProvider types={shownTypes} resetKey="all">
       <p className="text-sm text-muted-foreground">
         Every field across all your organizations, grouped by org and scope
         type.
