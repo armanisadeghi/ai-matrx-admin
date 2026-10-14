@@ -252,7 +252,7 @@ function FocusCard({
             ...(suggestedRelation ? [{ value: `rel:${suggestedRelation.key}`, label: suggestedRelation.label, meta: "We think" }] : []),
             ...(options.includes("alias") ? [{ value: "alias", label: "Another name we use", meta: ANSWER_KEY.alias.toUpperCase() }] : []),
             { value: "ignore", label: ANSWER_LABEL.ignore, meta: ANSWER_KEY.ignore.toUpperCase() },
-            ...(options.includes("related") ? relationItems(kinds) : []),
+            ...(options.includes("related") ? relationItems(kinds.filter((k) => k.key !== suggestedRelation?.key)) : []),
           ]}
           onWayOut={(v) => {
             if (v === "ignore" || v === "alias") onAnswer(v);

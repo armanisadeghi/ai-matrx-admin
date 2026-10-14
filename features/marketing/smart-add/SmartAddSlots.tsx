@@ -180,6 +180,8 @@ export function SmartAddSlots({
         onCancel={() => setCustomFor(null)}
         onSave={async (label) => {
           await onCustom(candidateOf(i), label);
+          setSkipped((s) => drop(s, i.key));
+          setAsTagline((s) => drop(s, i.key));
           setCustomFor(null);
         }}
       />
