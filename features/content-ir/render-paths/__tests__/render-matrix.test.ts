@@ -424,9 +424,16 @@ describe("THE RENDER MATRIX — a valid payload always reaches its component", (
         // once (the wrapped-payload class) and every one of them spun.
         const kind = register(archetype);
         const run = runRenderPath("chat_artifact", kind, archetype.value)!;
-        expect(run.verdict.resolvedAs).toBe("artifact");
+        expect(run.blocks.some((b) => b.type === "artifact")).toBe(true);
         expect(run.verdict.kindState).not.toBeNull();
         expect(run.records.some((r) => r.envelope?.kind === kind)).toBe(true);
+        // The verdict names what the artifact CARD draws (the kind front
+        // door), never the route's "artifact" type (SHAPES-BUGS 2.3).
+        for (const id of ["chat_artifact", "chat_artifact_materialized"] as const) {
+          const verdict = runRenderPath(id, kind, archetype.value)!.verdict;
+          expect(verdict.resolvedAs).not.toBe("artifact");
+          expect(verdict.reachedRealComponent).toBe(true);
+        }
       });
     });
   }

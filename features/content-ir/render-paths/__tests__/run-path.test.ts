@@ -111,6 +111,28 @@ describe("render paths report what the route actually did", () => {
     }
   });
 
+  it("artifact paths judge what the artifact card actually draws (SHAPES-BUGS 2.3)", () => {
+    // Live 2026-10-14 (brand_basics): both artifact paths said "generic
+    // key/value view · no component drew this" while the shape's own
+    // component rendered right under the verdict. The artifact card draws a
+    // kind body through the kind front door — the same route a reloaded
+    // record takes — so its verdict is that route's answer, not "artifact".
+    seedComponent("path_artifact_kind");
+    for (const id of ["chat_artifact", "chat_artifact_materialized"] as const) {
+      const run = runRenderPath(id, "path_artifact_kind", VALUE)!;
+      expect(run.blocks.some((b) => b.type === "artifact")).toBe(true);
+      expect(run.verdict.reachedRealComponent).toBe(true);
+      expect(run.verdict.resolvedAs).toBe("db_kind_component");
+      expect(run.verdict.notes.join(" ")).not.toMatch(/No component drew this/);
+    }
+    // And with no component, the same card honestly reports the generic floor.
+    for (const id of ["chat_artifact", "chat_artifact_materialized"] as const) {
+      const run = runRenderPath(id, "path_artifact_bare_kind", VALUE)!;
+      expect(run.verdict.reachedRealComponent).toBe(false);
+      expect(run.verdict.resolvedAs).toBe("generic_structured");
+    }
+  });
+
   it("the reload path routes a stored value the way a rehydrated message does", () => {
     seedComponent("path_reload_kind");
     const run = runRenderPath("reload", "path_reload_kind", VALUE)!;

@@ -33,7 +33,6 @@ import { KIND_KEY } from "@ai-matrx/content-ir";
 import {
   decideKindInputPath,
   GENERIC_INPUT_COMPONENT_KEY,
-  inputSchemaForKind,
 } from "../input/kind-input-resolution";
 import {
   assembleKindInstance,
@@ -225,45 +224,6 @@ describe("decideKindInputPath — the routing law", () => {
     expect(withoutBinding.mode).toBe("bridged-form");
     // No fields + an emitted schema → the whole-value JSON editor, not a dead end.
     expect(decideKindInputPath("k", null, null, true).mode).toBe("instance-json");
-  });
-
-  it("inputSchemaForKind: stored fields win; an object-root emitted schema supplies fields when none are stored", () => {
-    expect(inputSchemaForKind("k", fieldSchema, null)).toBe(fieldSchema);
-    const emitted = {
-      type: "object",
-      required: ["official_name"],
-      properties: {
-        __kind: { const: "k" },
-        official_name: { type: "string", description: "Legal name" },
-        employees: { type: ["integer", "null"] },
-        tier: { enum: ["a", "b"] },
-        tags: { type: "array", items: { type: "string" } },
-        evidence: { type: "array", items: { type: "object" } },
-        address: { type: "object", properties: {} },
-      },
-    };
-    const derived = inputSchemaForKind("k", null, emitted);
-    expect(derived).not.toBeNull();
-    expect(Object.keys(derived!.fields)).toEqual([
-      "official_name",
-      "employees",
-      "tier",
-      "tags",
-      "evidence",
-      "address",
-    ]);
-    expect(derived!.fields.official_name).toMatchObject({ type: "string", required: true });
-    expect(derived!.fields.employees).toMatchObject({ type: "number", nullable: true, required: false });
-    expect(derived!.fields.tier).toMatchObject({ type: "enum", values: ["a", "b"] });
-    expect(derived!.fields.tags.type).toBe("string[]");
-    expect(derived!.fields.evidence.type).toBe("json[]");
-    expect(derived!.fields.address.type).toBe("json");
-    // The derived schema routes to the field form even with no input row.
-    expect(decideKindInputPath("k", null, derived, true).mode).toBe("bridged-form");
-    // Scalar / array roots honestly have no fields.
-    expect(inputSchemaForKind("k", null, { type: "string" })).toBeNull();
-    expect(inputSchemaForKind("k", null, { type: "array", items: {} })).toBeNull();
-    expect(inputSchemaForKind("k", null, null)).toBeNull();
   });
 
   it("generic + stored fields → bridged-form; no field list → instance-json", () => {

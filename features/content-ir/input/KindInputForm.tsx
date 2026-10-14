@@ -22,11 +22,10 @@
  *               written, never stripped)
  *   emit      → `onSubmit(instance)` — only after the structural leg passes
  *
- * The field list is `inputSchemaForKind`: the stored fields, else the
- * top-level properties of an object-root `emitted_json_schema` (python-owned
- * kinds store no `data` but their schema names every field). Only a kind with
- * no field from either source (scalar/array roots) falls back to ONE
- * whole-value JSON textarea — the "instance-json" mode. Every field form also
+ * Any kind with a field list (stored, or derived from `emitted_json_schema`)
+ * renders those fields — with or without an input-component row. Only a kind
+ * with no field at all (scalar/array roots) falls back to ONE whole-value
+ * JSON textarea — the "instance-json" mode. Every field form also
  * offers that JSON view as an opt-in advanced toggle, never the default.
  *
  * Refusals are LOUD: an unknown kind, a missing/inactive input binding, or an
@@ -49,11 +48,7 @@ import {
 import { validateStructuralLeg } from "@ai-matrx/content-ir";
 import { getKindInputContractBySlug } from "../registry/schema-source-kind-tables";
 import type { Json } from "@/types/database.types";
-import {
-  decideKindInputPath,
-  inputSchemaForKind,
-  type KindInputPath,
-} from "./kind-input-resolution";
+import { decideKindInputPath, type KindInputPath } from "./kind-input-resolution";
 import {
   assembleKindInstance,
   attributeStructuralErrors,
@@ -156,11 +151,9 @@ export default function KindInputForm({
           setState({ status: "refused", reason });
           return;
         }
-        const schema = inputSchemaForKind(
-          kind,
-          contract.schema,
-          contract.emittedJsonSchema,
-        );
+        // The stored field list, or the one derived from emitted_json_schema
+        // (getKindSchemaBySlugFromTables) — python-owned kinds included.
+        const schema = contract.schema;
         const path = decideKindInputPath(
           kind,
           resolveComponent(kind, "web", "input"),

@@ -11,6 +11,7 @@
 
 import {
   IR_ENVELOPE_KEY,
+  KIND_KEY,
   isCanonicalBlockIR,
   type CanonicalBlockIR,
 } from "@ai-matrx/content-ir";
@@ -33,7 +34,10 @@ import {
 } from "@/features/content-ir/studio/stream-simulator";
 import type { RenderPathId, RenderPathVerdict } from "./paths";
 import { wrapArtifactText } from "@/features/canvas/materialization/artifactWire";
-import { resolveArtifactDefByKind } from "@/features/canvas/artifact-types/artifact-type-registry";
+import {
+  resolveArtifactDef,
+  resolveArtifactDefByKind,
+} from "@/features/canvas/artifact-types/artifact-type-registry";
 import { drawsKindAsRawJson } from "./draws-raw-kind-json";
 
 /** What a path run hands the UI: blocks to render + the honest verdict. */
@@ -105,12 +109,82 @@ function principalBlock(
   );
 }
 
+/** The canvas types whose card draws a `{"__kind": …}` body through the kind front door. */
+const KIND_DOOR_CANVAS_TYPES: ReadonlySet<string> = new Set(["html", "kind_value"]);
+
+function readString(record: unknown, key: string): string | undefined {
+  if (record === null || typeof record !== "object") return undefined;
+  const value = (record as Record<string, unknown>)[key];
+  return typeof value === "string" && value.length > 0 ? value : undefined;
+}
+
+/**
+ * What an `artifact` block's card ACTUALLY draws for this kind.
+ *
+ * The route keeps an artifact block as "artifact" by design (it has an id, a
+ * version and a Canvas to open in), so the route's type says nothing about
+ * what the reader sees. The card resolves a canvas type from the tag's `type`
+ * (ArtifactBlock → `resolveArtifactDef`): `html` with a `{"__kind": …}` body
+ * (HtmlArtifact → KindValueFrontDoor) and `kind_value` both hand the value to
+ * the kind front door — `KindInstanceRender`, which routes a complete envelope
+ * exactly as the reload path does. That route's answer is the verdict. Any
+ * other canvas type is a dedicated artifact renderer, which is that shape's
+ * own view. Null = not an artifact block (or no kind body), judge normally.
+ */
+function artifactCardVerdict(
+  source: RenderBlockPayload,
+  kind: string,
+  notes: string[],
+): RenderPathVerdict | null {
+  if (source.type !== "artifact") return null;
+  const artifactType =
+    readString(source.data, "artifactType") ?? readString(source.metadata, "artifactType");
+  const canvasType = resolveArtifactDef("artifact", artifactType)?.canvasType ?? null;
+  const kindState = envelopeOf(source)?.root.kindState ?? null;
+  if (canvasType !== null && !KIND_DOOR_CANVAS_TYPES.has(canvasType)) {
+    return {
+      resolvedAs: canvasType,
+      reachedRealComponent: true,
+      kindState,
+      fallbackReason: null,
+      notes: [...notes, `Drawn by the ${canvasType} artifact view.`],
+    };
+  }
+  let body: unknown;
+  try {
+    body = JSON.parse(source.content ?? "");
+  } catch {
+    return null;
+  }
+  if (body === null || typeof body !== "object" || Array.isArray(body)) return null;
+  const { [KIND_KEY]: bodyKind, ...fields } = body as Record<string, unknown>;
+  if (bodyKind !== kind) return null;
+  const routed = routeBlock({
+    blockId: `${source.blockId}:card`,
+    blockIndex: source.blockIndex,
+    type: "code",
+    status: "complete",
+    content: source.content,
+    metadata: { [IR_ENVELOPE_KEY]: envelopeFromCompleteValue({ ...fields }, kind) },
+  });
+  const reached = reachedRealComponent(routed);
+  return {
+    resolvedAs: routed.type,
+    reachedRealComponent: reached,
+    kindState,
+    fallbackReason: readIrRouteMarker(routed.metadata)?.reason ?? null,
+    notes,
+  };
+}
+
 function verdictFor(
   blocks: RenderBlockPayload[],
   kind: string,
   notes: string[],
 ): RenderPathVerdict {
   const source = principalBlock(blocks, kind);
+  const card = source ? artifactCardVerdict(source, kind, notes) : null;
+  if (card) return card;
   const principal = source ? routeBlock(source) : null;
   if (!principal || !source) {
     return {
