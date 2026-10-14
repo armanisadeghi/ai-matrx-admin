@@ -98,7 +98,7 @@ function avatarColour(seed: string): string {
 function AccountChip({ email, name }: { email: string; name: string | null }) {
   const initial = (name?.trim() || email).charAt(0).toUpperCase();
   return (
-    <Link href="/settings/google-workspace" className={styles.account} title={name ? `${name} · ${email}` : email}>
+    <Link href="/user-settings/integrations/google-workspace" className={styles.account} title={name ? `${name} · ${email}` : email}>
       <span className={styles.avatar} style={{ background: avatarColour(email) }} aria-hidden>
         {initial}
       </span>
