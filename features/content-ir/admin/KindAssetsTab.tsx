@@ -499,7 +499,7 @@ export default function KindAssetsTab({
           {detail.contentBlocks.length === 0 ? (
             <p className="px-1 py-1 text-xs text-muted-foreground">
               No content block references{" "}
-              <code className="font-mono">
+              <code data-kind-source="explicit" className="font-mono">
                 &quot;__kind&quot;: &quot;{detail.kind}&quot;
               </code>
               . Generate one below.
