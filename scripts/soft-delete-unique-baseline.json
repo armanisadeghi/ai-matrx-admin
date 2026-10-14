@@ -513,6 +513,76 @@
       "index": "users.integration_connections:integration_connections_live_native_device_account",
       "reason": "The owner, app instance, and provider subject identify one native Beeper device account. This source forbids deleted_at; reconnecting under a new consent generation updates the same never-archived row so provider identity and custody history never split across duplicates.",
       "ruled": "Primary Astra lifetime-identity ruling, 2026-10-14 — aidream 20261011223008_beeper_personal_device_connections.sql inspected"
+    },
+    {
+      "index": "billing.coupon:coupon_code_key",
+      "reason": "code is the externally issued redemption identity of one coupon. An archived coupon may remain in payment and redemption history, so its public code cannot be rebound to a different coupon record.",
+      "ruled": "Ship-all source-backed lifetime-identity ruling, 2026-10-14 — live billing.coupon constraint and generated Coupon model inspected"
+    },
+    {
+      "index": "billing.coupon:coupon_link_token_hash_key",
+      "reason": "link_token_hash is an issued coupon-link credential. The credential remains spent after archive and must never resolve to or authorize a different coupon record.",
+      "ruled": "Ship-all source-backed lifetime-identity ruling, 2026-10-14 — live billing.coupon constraint and generated Coupon model inspected"
+    },
+    {
+      "index": "context.templates:ctx_templates_key_key",
+      "reason": "key is the programmatic identity of a platform context template. Callers address templates by this stable key, so archive must not let an incompatible second template assume the same identity.",
+      "ruled": "Ship-all source-backed lifetime-identity ruling, 2026-10-14 — aidream context template model and startup schema contract inspected"
+    },
+    {
+      "index": "deprecated.flexible_data:flexible_data_category_id_slug_key",
+      "reason": "This retired table preserves legacy category and slug identities for historical rows. There is no supported create-after-archive path in current source, so archive must not mint a second legacy identity under the same category and slug.",
+      "ruled": "Ship-all source-backed lifetime-identity ruling, 2026-10-14 — deprecated schema placement, generated FlexibleData model, and current writer inventory inspected"
+    },
+    {
+      "index": "deprecated.udt_dataset_templates:udt_dataset_templates_org_name_active_uidx",
+      "reason": "This retired table preserves one active legacy dataset-template identity per organization and normalized name. Current source has no supported recreate path; the existing is_active predicate is the lifecycle boundary and must not be broadened by deleted_at.",
+      "ruled": "Ship-all source-backed lifetime-identity ruling, 2026-10-14 — aidream 0190_scope_system_agent_tool.sql and deprecated-schema writer inventory inspected"
+    },
+    {
+      "index": "education.math_course_structure:math_course_structure_course_name_topic_name_module_name_le_key",
+      "reason": "The course, topic, module, and lesson path is the stable identity of one reference-curriculum node. Archiving a node must not permit a second node to assume the same curriculum path while retained references can still identify the first.",
+      "ruled": "Ship-all source-backed lifetime-identity ruling, 2026-10-14 — generated MathCourseStructure reference model and access-ladder migration inspected"
+    },
+    {
+      "index": "iam.account_closure:account_closure_user_open_key",
+      "reason": "user_id identifies at most one open account-closure state. Reopening explicitly sets reopened_at on that row; soft deletion cannot release the open-state identity and allow two concurrent closure records for one account.",
+      "ruled": "Ship-all source-backed lifetime-identity ruling, 2026-10-14 — guest retention closure and reopen migrations inspected"
+    },
+    {
+      "index": "iam.org_member_controls:org_member_controls_organization_id_user_id_key",
+      "reason": "An organization and user own one durable member-control row. Control changes update that one-to-one state identity, so archive must not split the same membership's controls and audit history across duplicate rows.",
+      "ruled": "Ship-all source-backed lifetime-identity ruling, 2026-10-14 — iam OrgMemberControls model, manager get-or-create path, and governance migration inspected"
+    },
+    {
+      "index": "mandate.readiness_verdict:readiness_verdict_key_uq",
+      "reason": "The organization, mandate, and scope identify one current readiness verdict. The paid-call gate upserts and flips that same board-visible verdict as inputs change, so archive cannot fork readiness state into a second row.",
+      "ruled": "Ship-all source-backed lifetime-identity ruling, 2026-10-14 — aidream services/mandates/readiness.py and record_readiness_verdict contract inspected"
+    },
+    {
+      "index": "ops.ops_issue_class:ops_issue_class_key_key",
+      "reason": "key is the programmatic registry identity of one operational issue class. Producers use get-or-create by key before attaching issue events, so archive cannot redirect the same event class to a replacement row.",
+      "ruled": "Ship-all source-backed lifetime-identity ruling, 2026-10-14 — aidream db/managers/ops/ops_issue_class.py and recorder call sites inspected"
+    },
+    {
+      "index": "rag.kg_entities:kg_entities_ner_canonical_idx",
+      "reason": "The organization, entity kind, and normalized name are the NER canonical identity for supported kinds. Consolidation rewrites mentions and edges to one survivor, so archive cannot introduce a competing canonical entity for the same identity.",
+      "ruled": "Ship-all source-backed lifetime-identity ruling, 2026-10-14 — matrx-rag kg_004_kg_widening.sql and post_ner_consolidator.py inspected"
+    },
+    {
+      "index": "rag.kg_entities:kg_entities_organization_id_kind_canonical_id_key",
+      "reason": "The organization, entity kind, and canonical_id identify one canonical knowledge-graph entity. canonical_id is a durable reference target for mentions and edges, so archive must not rebind it to a different entity row.",
+      "ruled": "Ship-all source-backed lifetime-identity ruling, 2026-10-14 — generated KgEntities model and canonical consolidation paths inspected"
+    },
+    {
+      "index": "scraper.scrape_domain:scrape_domain_url_uniq",
+      "reason": "url is the canonical identity of one crawl domain. Domain policy seeding and crawl lookup use exact URL conflict resolution, so archive must not create a second domain identity with separate crawl state for the same URL.",
+      "ruled": "Ship-all source-backed lifetime-identity ruling, 2026-10-14 — aidream 0037_research_domain_policy.sql and matrx-scraper domain lookup paths inspected"
+    },
+    {
+      "index": "scraper.scrape_domain_settings:scrape_domain_settings_domain_id_key",
+      "reason": "domain_id is a one-to-one extension of a scrape-domain identity. Settings changes belong on that single durable row, so archive cannot fork one domain's crawler configuration across duplicate settings records.",
+      "ruled": "Ship-all source-backed lifetime-identity ruling, 2026-10-14 — matrx-scraper domain configuration schema and server lookup paths inspected"
     }
   ]
 }
