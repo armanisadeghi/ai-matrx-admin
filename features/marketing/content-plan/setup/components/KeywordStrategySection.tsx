@@ -33,7 +33,7 @@ import {
 import { SetupSection } from "./SetupSection";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { AGENT_ICON } from "@/components/icons/domain-icons";
-import { Badge } from "@ai-matrx/design-system/controls";
+import { Badge, Select } from "@ai-matrx/design-system/controls";
 
 // Presentation of the strategist's own words; any other recorded word shows as
 // itself (the allowed list is the knob seo.site.page_roles, never this map).
@@ -121,22 +121,17 @@ export function KeywordStrategySection({
       title="Keyword strategy"
       action={
         <div className="flex items-center gap-1">
-          <select
+          <Select<KeywordEffortTier>
             aria-label="SEO planning effort"
-            className="h-6 rounded-md border border-input bg-background px-1.5 text-xs"
             value={tier}
             disabled={anyBusy}
-            onChange={(event) => {
-              const next = EFFORT_TIERS.find(
-                (candidate) => candidate === event.target.value,
-              );
-              if (next) setTier(next);
-            }}
-          >
-            <option value="cheap">Cheap</option>
-            <option value="thorough">Thorough</option>
-            <option value="advanced">Advanced</option>
-          </select>
+            onValueChange={setTier}
+            options={[
+              { value: "cheap", label: "Cheap" },
+              { value: "thorough", label: "Thorough" },
+              { value: "advanced", label: "Advanced" },
+            ]}
+          />
           {strategy && !busy ? (
             <Button
               type="button"

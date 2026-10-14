@@ -10,6 +10,7 @@
 
 import { useMemo, useState } from "react";
 import { Filter } from "lucide-react";
+import { Select } from "@ai-matrx/design-system/controls";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useLabelCatalog } from "@/features/file-analysis/hooks/useLabelCatalog";
@@ -86,23 +87,20 @@ export function PiiCandidatesContent({ results, onJumpToPage, initialTier = "med
         })}
         <div className="ml-auto flex items-center gap-1">
           <Filter className="h-3 w-3 text-muted-foreground" />
-          <select
+          <Select
             value={patternFilter ?? ""}
-            onChange={(e) => setPatternFilter(e.target.value || null)}
-            className="h-7 rounded border border-border bg-background px-1.5 text-[10px]"
-          >
-            <option value="">All patterns ({spans.length})</option>
-            {Object.entries(patternCounts)
-              .sort(([, a], [, b]) => b - a)
-              .map(([pid, n]) => {
-                const meta = byId.get(pid);
-                return (
-                  <option key={pid} value={pid}>
-                    {meta?.display_name ?? pid} ({n})
-                  </option>
-                );
-              })}
-          </select>
+            onValueChange={(v) => setPatternFilter(v || null)}
+            aria-label="Filter by pattern"
+            options={[
+              { value: "", label: `All patterns (${spans.length})` },
+              ...Object.entries(patternCounts)
+                .sort(([, a], [, b]) => b - a)
+                .map(([pid, n]) => ({
+                  value: pid,
+                  label: `${byId.get(pid)?.display_name ?? pid} (${n})`,
+                })),
+            ]}
+          />
         </div>
       </div>
 

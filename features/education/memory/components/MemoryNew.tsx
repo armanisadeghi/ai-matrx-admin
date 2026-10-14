@@ -14,7 +14,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowLeft, Brain, Loader2 } from "lucide-react";
 import { toast } from "@/lib/toast";
 import { Button } from "@/components/ui/button";
-import { Input } from "@ai-matrx/design-system/controls";
+import { Input, Select } from "@ai-matrx/design-system/controls";
 import { cn } from "@/lib/utils";
 import { fcService } from "@/features/flashcards/data/fcService";
 import type { FcSetRow } from "@/features/flashcards/data/types";
@@ -339,19 +339,18 @@ export function MemoryNew() {
           </SegBtn>
         </div>
         {sourceKind === "deck" ? (
-          <select
-            value={deckId}
-            onChange={(e) => setDeckId(e.target.value)}
-            data-surface-value="request_deck_id"
-            className="h-10 w-full rounded-md border border-border bg-background px-3 text-sm text-foreground"
-          >
-            <option value="">Select a deck…</option>
-            {decks.map((d) => (
-              <option key={d.id} value={d.id}>
-                {d.name}
-              </option>
-            ))}
-          </select>
+          <div data-surface-value="request_deck_id">
+            <Select
+              value={deckId}
+              onValueChange={setDeckId}
+              aria-label="Deck"
+              className="w-full"
+              options={[
+                { value: "", label: "Select a deck…" },
+                ...decks.map((d) => ({ value: d.id, label: d.name })),
+              ]}
+            />
+          </div>
         ) : (
           <ProTextarea
             value={topic}

@@ -11,6 +11,7 @@ import { useEffect, useState } from "react";
 import { ArrowLeft, Loader2, Mic } from "lucide-react";
 import { toast } from "@/lib/toast";
 import { Button } from "@/components/ui/button";
+import { Select } from "@ai-matrx/design-system/controls";
 import { ProInput } from "@/components/official/ProInput";
 import { ProTextarea } from "@/components/official/ProTextarea";
 import { useEntitlementGuard } from "@/features/entitlements/components/useEntitlementGuard";
@@ -218,18 +219,16 @@ export function PracticeSetup({
             <span className="text-xs font-medium text-muted-foreground">
               Ground in one of your decks (optional)
             </span>
-            <select
+            <Select
               value={deckId}
-              onChange={(e) => setDeckId(e.target.value)}
-              className="h-10 w-full rounded-md border border-border bg-background px-3 text-sm text-foreground"
-            >
-              <option value="">No deck — use the subject above</option>
-              {decks.map((d) => (
-                <option key={d.id} value={d.id}>
-                  {d.name}
-                </option>
-              ))}
-            </select>
+              onValueChange={setDeckId}
+              aria-label="Ground in one of your decks"
+              className="w-full"
+              options={[
+                { value: "", label: "No deck — use the subject above" },
+                ...decks.map((d) => ({ value: d.id, label: d.name })),
+              ]}
+            />
           </label>
         )}
 
@@ -249,33 +248,28 @@ export function PracticeSetup({
             <span className="text-xs font-medium text-muted-foreground">
               Level
             </span>
-            <select
+            <Select
               value={difficulty}
-              onChange={(e) => setDifficulty(e.target.value)}
-              className="h-10 w-full rounded-md border border-border bg-background px-3 text-sm text-foreground"
-            >
-              {DIFFICULTY_OPTIONS.map((d) => (
-                <option key={d} value={d}>
-                  {d}
-                </option>
-              ))}
-            </select>
+              onValueChange={setDifficulty}
+              aria-label="Level"
+              className="w-full"
+              options={DIFFICULTY_OPTIONS.map((d) => ({ value: d, label: d }))}
+            />
           </label>
           <label className="block space-y-1.5">
             <span className="text-xs font-medium text-muted-foreground">
               Questions
             </span>
-            <select
-              value={count}
-              onChange={(e) => setCount(Number(e.target.value))}
-              className="h-10 w-full rounded-md border border-border bg-background px-3 text-sm text-foreground"
-            >
-              {PROMPT_COUNT_OPTIONS.map((n) => (
-                <option key={n} value={n}>
-                  {n}
-                </option>
-              ))}
-            </select>
+            <Select
+              value={String(count)}
+              onValueChange={(v) => setCount(Number(v))}
+              aria-label="Questions"
+              className="w-full"
+              options={PROMPT_COUNT_OPTIONS.map((n) => ({
+                value: String(n),
+                label: String(n),
+              }))}
+            />
           </label>
         </div>
       </div>

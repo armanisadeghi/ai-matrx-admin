@@ -10,7 +10,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Input } from "@ai-matrx/design-system/controls";
+import { Input, Select } from "@ai-matrx/design-system/controls";
 import { Label } from "@/components/ui/label";
 import { MarketingComingSoon } from "@/features/marketing/components/MarketingComingSoon";
 import { assertGoogleAdsCampaignActive } from "@/features/marketing/google/ads-campaign";
@@ -230,29 +230,30 @@ export function GoogleAdsWorkspace() {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-2">
-            <Label htmlFor="google-ads-connection">
+            <Label>
               Ads-authorized Google identity
             </Label>
-            <select
-              id="google-ads-connection"
-              className="h-11 w-full rounded-md border border-input bg-background px-3 text-base sm:text-sm"
+            <Select
+              aria-label="Ads-authorized Google identity"
+              className="w-full"
               value={connectionId}
-              onChange={(event) => {
-                setConnectionId(event.target.value);
+              onValueChange={(value) => {
+                setConnectionId(value);
                 setCustomerSelection("");
                 customers.reset();
                 report.reset();
               }}
-            >
-              <option value="">Choose an Ads-authorized identity</option>
-              {adsConnections.map((connection) => (
-                <option key={connection.id} value={connection.id}>
-                  {connection.account_email ||
+              options={[
+                { value: "", label: "Choose an Ads-authorized identity" },
+                ...adsConnections.map((connection) => ({
+                  value: connection.id,
+                  label:
+                    connection.account_email ||
                     connection.account_name ||
-                    connection.id}
-                </option>
-              ))}
-            </select>
+                    connection.id,
+                })),
+              ]}
+            />
           </div>
 
           {!hasAdsScope ? (
@@ -311,28 +312,23 @@ export function GoogleAdsWorkspace() {
           </CardHeader>
           <CardContent className="grid gap-4 md:grid-cols-[minmax(0,1fr)_180px_180px_auto] md:items-end">
             <div className="grid gap-2">
-              <Label htmlFor="google-ads-customer">Ads customer</Label>
-              <select
-                id="google-ads-customer"
-                className="h-11 w-full rounded-md border border-input bg-background px-3 text-base sm:text-sm"
+              <Label>Ads customer</Label>
+              <Select
+                aria-label="Ads customer"
+                className="w-full"
                 value={customerSelection}
-                onChange={(event) => {
-                  setCustomerSelection(event.target.value);
+                onValueChange={(value) => {
+                  setCustomerSelection(value);
                   report.reset();
                 }}
-              >
-                <option value="">Choose one account</option>
-                {adsCustomers.map((customer) => (
-                  <option
-                    key={customerKey(customer)}
-                    value={customerKey(customer)}
-                  >
-                    {customer.descriptive_name} ·{" "}
-                    {formatCustomerId(customer.customer_id)}
-                    {customer.manager ? " · Manager" : ""}
-                  </option>
-                ))}
-              </select>
+                options={[
+                  { value: "", label: "Choose one account" },
+                  ...adsCustomers.map((customer) => ({
+                    value: customerKey(customer),
+                    label: `${customer.descriptive_name} · ${formatCustomerId(customer.customer_id)}${customer.manager ? " · Manager" : ""}`,
+                  })),
+                ]}
+              />
             </div>
             <div className="grid gap-2">
               <Label htmlFor="google-ads-start">Start</Label>

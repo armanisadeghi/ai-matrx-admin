@@ -23,6 +23,7 @@ import {
     ImageIcon,
     Layers,
 } from "lucide-react";
+import { Select } from "@ai-matrx/design-system/controls";
 import { cn } from "@/lib/utils";
 import { WindowPanel } from "@/features/window-panels/WindowPanel";
 import { CropPreview } from "./CropPreview";
@@ -249,18 +250,19 @@ function CropPreviewSelectors({
                 >
                     <ChevronLeft className="h-3 w-3" />
                 </IconArrowButton>
-                <select
+                <Select
                     value={activeFile?.id ?? ""}
-                    onChange={(e) => onActiveFileChange(e.target.value)}
-                    className="bg-transparent font-mono text-xs max-w-[140px] truncate focus:outline-none"
-                >
-                    {files.map((f) => (
-                        <option key={f.id} value={f.id}>
-                            {f.filenameBase}
-                        </option>
-                    ))}
-                    {files.length === 0 && <option value="">No files</option>}
-                </select>
+                    onValueChange={onActiveFileChange}
+                    aria-label="File"
+                    options={
+                        files.length === 0
+                            ? [{ value: "", label: "No files" }]
+                            : files.map((f) => ({
+                                  value: f.id,
+                                  label: f.filenameBase,
+                              }))
+                    }
+                />
                 <IconArrowButton
                     onClick={() => cycleFile(1)}
                     disabled={files.length <= 1}
@@ -278,23 +280,24 @@ function CropPreviewSelectors({
                 >
                     <ChevronLeft className="h-3 w-3" />
                 </IconArrowButton>
-                <select
+                <Select
                     value={activePreset?.id ?? ""}
-                    onChange={(e) => onActivePresetChange(e.target.value)}
-                    className="bg-transparent text-xs max-w-[180px] truncate focus:outline-none"
-                >
-                    {previewablePresetIds.map((id) => {
-                        const p = getPresetById(id);
-                        return (
-                            <option key={id} value={id}>
-                                {p ? `${p.name} — ${p.width}×${p.height}` : id}
-                            </option>
-                        );
-                    })}
-                    {previewablePresetIds.length === 0 && (
-                        <option value="">No presets available</option>
-                    )}
-                </select>
+                    onValueChange={onActivePresetChange}
+                    aria-label="Preset"
+                    options={
+                        previewablePresetIds.length === 0
+                            ? [{ value: "", label: "No presets available" }]
+                            : previewablePresetIds.map((id) => {
+                                  const p = getPresetById(id);
+                                  return {
+                                      value: id,
+                                      label: p
+                                          ? `${p.name} — ${p.width}×${p.height}`
+                                          : id,
+                                  };
+                              })
+                    }
+                />
                 <IconArrowButton
                     onClick={() => cyclePreset(1)}
                     disabled={previewablePresetIds.length <= 1}

@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { ExternalLink } from "lucide-react";
-import { Input } from "@ai-matrx/design-system/controls";
+import { Input, Select } from "@ai-matrx/design-system/controls";
 import { Button } from "@/components/ui/button";
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import { BackendApiError, getUserMessage } from "@ai-matrx/api";
@@ -585,12 +585,12 @@ export function CalendarCreateReview({
           <Input aria-label="Guests" placeholder="Guest emails, separated by commas" value={attendees} onChange={(event) => setAttendees(event.target.value)} />
           <label className="grid gap-1 text-xs font-medium text-muted-foreground">
             Guest notifications
-            <select className="min-h-11 rounded-md border border-input bg-background px-3 text-sm text-foreground" value={sendUpdates} onChange={(event) => setSendUpdates(event.target.value as typeof sendUpdates)}>
-              <option value="">Choose notification behavior</option>
-              <option value="all">Notify all guests</option>
-              <option value="externalOnly">Notify external guests</option>
-              <option value="none">Send no updates</option>
-            </select>
+            <Select<typeof sendUpdates> aria-label="Guest notifications" value={sendUpdates} onValueChange={setSendUpdates} options={[
+              { value: "", label: "Choose notification behavior" },
+              { value: "all", label: "Notify all guests" },
+              { value: "externalOnly", label: "Notify external guests" },
+              { value: "none", label: "Send no updates" },
+            ]} />
           </label>
           <Button variant="primary" type="button" onClick={() => void review()} disabled={busy !== null}>{busy === "preview" ? "Reviewing…" : "Review event"}</Button>
         </div>

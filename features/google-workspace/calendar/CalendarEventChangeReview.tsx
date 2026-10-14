@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { ExternalLink } from "lucide-react";
-import { Input } from "@ai-matrx/design-system/controls";
+import { Input, Select } from "@ai-matrx/design-system/controls";
 
 import { Button } from "@/components/ui/button";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
@@ -561,11 +561,11 @@ export function CalendarEventChangeReview(props: CalendarEventChangeReviewProps)
       {problem ? <p role="alert" className="type-secondary text-destructive">{problem} <ErrorAlchemyMenu error={problem} /></p> : null}
       {collection.attempts.length ? (
         <div className="grid gap-1">
-          <label htmlFor="calendar-change-attempt" className="text-xs font-medium text-muted-foreground">Saved actions</label>
-          <select id="calendar-change-attempt" className="min-h-11 rounded-md border border-input bg-background px-3 text-sm" value={activeAttemptId ?? ""} onChange={(event) => setActiveAttemptId(event.target.value || null)}>
-            <option value="">Prepare another action</option>
-            {collection.attempts.map((attempt) => <option key={attempt.attempt_id} value={attempt.attempt_id}>{attemptLabel(attempt)}</option>)}
-          </select>
+          <span className="text-xs font-medium text-muted-foreground">Saved actions</span>
+          <Select aria-label="Saved actions" value={activeAttemptId ?? ""} onValueChange={(value) => setActiveAttemptId(value || null)} options={[
+            { value: "", label: "Prepare another action" },
+            ...collection.attempts.map((attempt) => ({ value: attempt.attempt_id, label: attemptLabel(attempt) })),
+          ]} />
         </div>
       ) : null}
       {activeAttempt ? (
@@ -600,16 +600,18 @@ export function CalendarEventChangeReview(props: CalendarEventChangeReviewProps)
       ) : (
         <div className="space-y-3">
           {visibleEvents.length ? <label className="grid gap-1 text-xs font-medium text-muted-foreground">Listed event
-            <select className="min-h-11 rounded-md border border-input bg-background px-3 text-sm" value={visibleEvents.some((event) => event.id === selectedEventId) ? selectedEventId : ""} onChange={(event) => resetDraft(event.target.value, occurrence)}>
-              <option value="">Enter an event ID</option>
-              {visibleEvents.map((event) => <option key={event.id} value={event.id}>{event.title}</option>)}
-            </select>
+            <Select aria-label="Listed event" value={visibleEvents.some((event) => event.id === selectedEventId) ? selectedEventId : ""} onValueChange={(value) => resetDraft(value, occurrence)} options={[
+              { value: "", label: "Enter an event ID" },
+              ...visibleEvents.map((event) => ({ value: event.id, label: event.title })),
+            ]} />
           </label> : null}
           <Input aria-label="Google event ID" placeholder="Exact Google event ID" value={selectedEventId} onChange={(event) => resetDraft(event.target.value, occurrence)} />
           <label className="grid gap-1 text-xs font-medium text-muted-foreground">Change target
-            <select className="min-h-11 rounded-md border border-input bg-background px-3 text-sm" value={occurrence} onChange={(event) => resetDraft(selectedEventId, event.target.value as typeof occurrence)}>
-              <option value="single">Single event</option><option value="instance">This instance</option><option value="series">Entire series</option>
-            </select>
+            <Select<typeof occurrence> aria-label="Change target" value={occurrence} onValueChange={(value) => resetDraft(selectedEventId, value)} options={[
+              { value: "single", label: "Single event" },
+              { value: "instance", label: "This instance" },
+              { value: "series", label: "Entire series" },
+            ]} />
           </label>
           <Button type="button" variant="outline" onClick={() => void readSource()} disabled={!selectedEventId.trim() || busy !== null}>{busy === "source" ? "Reading…" : "Read event source"}</Button>
           {source ? <div className="space-y-1 rounded-md border border-border bg-muted/20 p-2 type-secondary" data-calendar-change-source>
@@ -620,18 +622,31 @@ export function CalendarEventChangeReview(props: CalendarEventChangeReviewProps)
           </div> : null}
           {source && !sourceReady(source, props, selectedEventId, occurrence) ? <>
             <label className="grid gap-1 text-xs font-medium text-muted-foreground">Action
-              <select className="min-h-11 rounded-md border border-input bg-background px-3 text-sm" value={actionKind} onChange={(event) => { setActionKind(event.target.value as ActionKind); setProblem(null); }}>
-                <option value="reschedule">Move event</option><option value="cancel">Cancel organizer event</option><option value="rsvp">Update my RSVP</option>
-              </select>
+              <Select<ActionKind> aria-label="Action" value={actionKind} onValueChange={(value) => { setActionKind(value); setProblem(null); }} options={[
+                { value: "reschedule", label: "Move event" },
+                { value: "cancel", label: "Cancel organizer event" },
+                { value: "rsvp", label: "Update my RSVP" },
+              ]} />
             </label>
             {sourceActionProblem ? <p className="type-secondary text-muted-foreground">{sourceActionProblem} <ErrorAlchemyMenu error={sourceActionProblem} /></p> : null}
             {actionKind === "reschedule" ? <div className="grid gap-2 sm:grid-cols-2"><Input aria-label="New start" placeholder="2026-10-08T09:00:00-07:00" value={startsAt} onChange={(event) => setStartsAt(event.target.value)} /><Input aria-label="New end" placeholder="2026-10-08T10:00:00-07:00" value={endsAt} onChange={(event) => setEndsAt(event.target.value)} /></div> : null}
             {actionKind === "rsvp" ? <label className="grid gap-1 text-xs font-medium text-muted-foreground">My response
               {/* read-gate-exempt: form control wording; nothing is read */}
-              <select className="min-h-11 rounded-md border border-input bg-background px-3 text-sm" value={responseStatus} onChange={(event) => setResponseStatus(event.target.value as typeof responseStatus)}><option value="">Choose a response</option><option value="accepted">Accept</option><option value="declined">Decline</option><option value="tentative">Tentative</option><option value="needsAction">No response</option></select>
+              <Select<typeof responseStatus> aria-label="My response" value={responseStatus} onValueChange={setResponseStatus} options={[
+                { value: "", label: "Choose a response" },
+                { value: "accepted", label: "Accept" },
+                { value: "declined", label: "Decline" },
+                { value: "tentative", label: "Tentative" },
+                { value: "needsAction", label: "No response" },
+              ]} />
             </label> : null}
             <label className="grid gap-1 text-xs font-medium text-muted-foreground">Guest notifications
-              <select className="min-h-11 rounded-md border border-input bg-background px-3 text-sm" value={sendUpdates} onChange={(event) => setSendUpdates(event.target.value as typeof sendUpdates)}><option value="">Choose notification behavior</option><option value="all">Notify all guests</option><option value="externalOnly">Notify external guests</option><option value="none">Send no updates</option></select>
+              <Select<typeof sendUpdates> aria-label="Guest notifications" value={sendUpdates} onValueChange={setSendUpdates} options={[
+                { value: "", label: "Choose notification behavior" },
+                { value: "all", label: "Notify all guests" },
+                { value: "externalOnly", label: "Notify external guests" },
+                { value: "none", label: "Send no updates" },
+              ]} />
             </label>
             <Button variant="primary" type="button" onClick={() => void review()} disabled={Boolean(sourceActionProblem) || busy !== null}>{busy === "preview" ? "Reviewing…" : actionKind === "reschedule" ? "Review move" : actionKind === "cancel" ? "Review cancellation" : "Review RSVP"}</Button>
           </> : null}

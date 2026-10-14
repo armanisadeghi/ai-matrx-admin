@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { Select } from "@ai-matrx/design-system/controls";
 import { Button } from "@/components/ui/button";
 import { ErrorNotice } from "@ai-matrx/design-system";
 import { extractErrorMessage } from "@/utils/errors";
@@ -113,12 +114,13 @@ export function ChatMessagesReview({ connection, actorId, organizationId }: Prop
                 placeholder="2026-10-02T00:00:00Z" onChange={(event) => { clear(); setEnd(event.target.value); }} />
             </label>
             <label className="min-w-0 text-xs">Order
-              <select className="mt-1 w-full min-w-0 rounded border bg-background p-2 text-sm" value={order}
-                onChange={(event) => { clear(); setOrder(event.target.value); }}>
-                <option value="">Choose order</option>
-                <option value="createTime ASC">Oldest first</option>
-                <option value="createTime DESC">Newest first</option>
-              </select>
+              <Select aria-label="Order" className="mt-1 w-full min-w-0" value={order}
+                onValueChange={(value) => { clear(); setOrder(value); }}
+                options={[
+                  { value: "", label: "Choose order" },
+                  { value: "createTime ASC", label: "Oldest first" },
+                  { value: "createTime DESC", label: "Newest first" },
+                ]} />
             </label>
           </div>
           <div className="mt-3 flex flex-wrap gap-2">

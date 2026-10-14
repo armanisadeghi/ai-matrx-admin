@@ -13,6 +13,7 @@ import { useClipboard } from "@ai-matrx/kit/clipboard";
 import { copyNotify } from "@/lib/clipboard/copy-notify";
 import { useMemo, useState } from "react";
 import { AlertTriangle, ChevronLeft, ChevronRight, Copy, FileText } from "lucide-react";
+import { Select } from "@ai-matrx/design-system/controls";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { FileAnalysisResultRow } from "@/features/file-analysis/api/file-analysis";
@@ -96,17 +97,15 @@ export function TextContent({ results, onJumpToPage, initialPage = 1 }: Props) {
             onClick={() => setActive((n) => Math.max(1, n - 1))}
             aria-label="Previous page"
           />
-          <select
-            value={active}
-            onChange={(e) => setActive(Number.parseInt(e.target.value, 10))}
-            className="h-7 rounded border border-border bg-background px-1.5 text-xs tabular-nums"
-          >
-            {merged.map((p) => (
-              <option key={p.page_number} value={p.page_number}>
-                Page {p.page_number}
-              </option>
-            ))}
-          </select>
+          <Select
+            value={String(active)}
+            onValueChange={(v) => setActive(Number.parseInt(v, 10))}
+            aria-label="Page"
+            options={merged.map((p) => ({
+              value: String(p.page_number),
+              label: `Page ${p.page_number}`,
+            }))}
+          />
           <span className="text-xs text-muted-foreground">
             of {merged.length}
           </span>

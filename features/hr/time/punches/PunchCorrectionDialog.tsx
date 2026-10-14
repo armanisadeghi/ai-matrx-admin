@@ -29,7 +29,7 @@ import { useEffect, useState } from "react";
 import { BellRing, ShieldAlert } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { Input } from "@ai-matrx/design-system/controls";
+import { Input, Select } from "@ai-matrx/design-system/controls";
 import {
   Dialog,
   DialogContent,
@@ -238,7 +238,7 @@ export function PunchCorrectionDialog({
 
             {mode === "correct" ? (
               <div className="space-y-1.5">
-                <label htmlFor="punch-reason-category" className="block text-sm font-medium">
+                <label className="block text-sm font-medium">
                   What kind of correction is this? This is required.
                 </label>
                 {reasonsError ? (
@@ -247,19 +247,16 @@ export function PunchCorrectionDialog({
                     <ErrorAlchemyMenu />
                   </p>
                 ) : (
-                  <select
-                    id="punch-reason-category"
-                    className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm"
+                  <Select
+                    aria-label="Reason category"
+                    className="w-full"
                     value={categoryId}
-                    onChange={(event) => setCategoryId(event.target.value)}
-                  >
-                    <option value="">Choose one…</option>
-                    {reasons.map((r) => (
-                      <option key={r.id} value={r.id}>
-                        {r.name}
-                      </option>
-                    ))}
-                  </select>
+                    onValueChange={setCategoryId}
+                    options={[
+                      { value: "", label: "Choose one…" },
+                      ...reasons.map((r) => ({ value: r.id, label: r.name })),
+                    ]}
+                  />
                 )}
                 {/*
                   "Other" is a real choice, not a loophole: the free text below is mandatory either

@@ -24,6 +24,7 @@ import {
 } from "@/features/marketing/components/backlinks/referring-domain-actions";
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
 import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
+import { Select } from "@ai-matrx/design-system/controls";
 import { Button } from "@/components/ui/button";
 import {
   humanizeAssessmentValue,
@@ -232,17 +233,16 @@ function DomainDetail({
         <p className="text-xs font-semibold text-foreground">
           What do you think of this site?
         </p>
-        <select
+        <Select
           value={verdict}
-          onChange={(event) => setVerdict(event.target.value)}
-          className="mt-2 h-8 w-full rounded-md border border-input bg-background px-2 text-xs"
-        >
-          {VERDICTS.map((value) => (
-            <option key={value} value={value}>
-              {humanizeAssessmentValue(value)}
-            </option>
-          ))}
-        </select>
+          onValueChange={setVerdict}
+          aria-label="Verdict"
+          className="mt-2 w-full"
+          options={VERDICTS.map((value) => ({
+            value,
+            label: humanizeAssessmentValue(value),
+          }))}
+        />
         <ProTextarea
           value={note}
           onChange={(event) => setNote(event.target.value)}

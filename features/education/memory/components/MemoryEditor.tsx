@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Plus, Trash2 } from "lucide-react";
 import { toast } from "@/lib/toast";
 import { Button } from "@/components/ui/button";
-import { Input } from "@ai-matrx/design-system/controls";
+import { Input, Select } from "@ai-matrx/design-system/controls";
 import { ProTextarea } from "@/components/official/ProTextarea";
 import { Label } from "@/components/ui/label";
 import { EducationToolHeader } from "@/features/education/components/EducationToolHeader";
@@ -153,7 +153,7 @@ export function MemoryEditor({ media, isOwner = false }: { media?: StudyMediaRow
         {aid.mnemonics.map((row, i) => <div key={i} className="space-y-3 rounded-xl border border-border bg-card p-4">
           <div className="flex items-center justify-between"><span className="text-sm font-medium">Mnemonic {i + 1}</span><Button icon={<Trash2 />} type="button" variant="quiet" aria-label={`Remove mnemonic ${i + 1}`} onClick={() => update({ mnemonics: aid.mnemonics.filter((_, n) => n !== i) })} /></div>
           <Field label="Material to remember" value={row.target} onChange={(value) => update({ mnemonics: aid.mnemonics.map((item, n) => n === i ? { ...item, target: value } : item) })} />
-          <div className="space-y-1"><Label htmlFor={`technique-${i}`}>Technique</Label><select id={`technique-${i}`} className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm" value={row.technique} onChange={(event) => update({ mnemonics: aid.mnemonics.map((item, n) => n === i ? { ...item, technique: event.target.value as typeof item.technique } : item) })}>{MNEMONIC_TECHNIQUES.map((technique) => <option key={technique} value={technique}>{technique}</option>)}</select></div>
+          <div className="space-y-1"><Label>Technique</Label><Select<typeof row.technique> aria-label="Technique" className="w-full" value={row.technique} onValueChange={(technique) => update({ mnemonics: aid.mnemonics.map((item, n) => n === i ? { ...item, technique } : item) })} options={MNEMONIC_TECHNIQUES.map((technique) => ({ value: technique, label: technique }))} /></div>
           <Field label="Memory device" value={row.device} onChange={(value) => update({ mnemonics: aid.mnemonics.map((item, n) => n === i ? { ...item, device: value } : item) })} />
           <Field label="Explanation" value={row.explanation ?? ""} onChange={(value) => update({ mnemonics: aid.mnemonics.map((item, n) => n === i ? { ...item, explanation: value } : item) })} />
         </div>)}

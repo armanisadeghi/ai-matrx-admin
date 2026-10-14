@@ -10,6 +10,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { Select } from "@ai-matrx/design-system/controls";
 import { Globe, Loader2, Trash2, UserPlus } from "lucide-react";
 import { extractErrorMessage } from "@/utils/errors";
 import {
@@ -228,30 +229,32 @@ export function PermissionsDialogBody({
           </div>
           <label className="flex flex-col gap-1 text-xs">
             <span className="text-muted-foreground">Type</span>
-            <select
+            <Select<GranteeType>
               value={granteeType}
-              onChange={(e) => {
-                setGranteeType(e.target.value as GranteeType);
+              onValueChange={(v) => {
+                setGranteeType(v);
                 setGranteeId("");
                 setPersonQuery("");
               }}
-              className="rounded-md border bg-background px-2 py-1 text-sm"
-            >
-              <option value="user">User</option>
-              <option value="group">Group</option>
-            </select>
+              aria-label="Type"
+              options={[
+                { value: "user", label: "User" },
+                { value: "group", label: "Group" },
+              ]}
+            />
           </label>
           <label className="flex flex-col gap-1 text-xs">
             <span className="text-muted-foreground">Level</span>
-            <select
+            <Select<PermissionLevel>
               value={level}
-              onChange={(e) => setLevel(e.target.value as PermissionLevel)}
-              className="rounded-md border bg-background px-2 py-1 text-sm"
-            >
-              <option value="read">Read</option>
-              <option value="write">Write</option>
-              <option value="admin">Admin</option>
-            </select>
+              onValueChange={setLevel}
+              aria-label="Level"
+              options={[
+                { value: "read", label: "Read" },
+                { value: "write", label: "Write" },
+                { value: "admin", label: "Admin" },
+              ]}
+            />
           </label>
           <label className="flex flex-col gap-1 text-xs sm:col-span-2">
             <span className="text-muted-foreground">Expires (optional)</span>

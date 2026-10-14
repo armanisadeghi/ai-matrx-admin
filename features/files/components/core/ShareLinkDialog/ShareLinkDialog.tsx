@@ -14,6 +14,7 @@
 
 import { useClipboard } from "@ai-matrx/kit/clipboard";
 import { copyNotify } from "@/lib/clipboard/copy-notify";
+import { Select } from "@ai-matrx/design-system/controls";
 import { useCallback, useState } from "react";
 import { Check, Copy, ExternalLink, Link, Loader2, Trash2 } from "lucide-react";
 import { extractErrorMessage } from "@/utils/errors";
@@ -199,16 +200,15 @@ export function ShareLinkDialogBody({
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
           <label className="flex flex-col gap-1 text-xs">
             <span className="text-muted-foreground">Permission</span>
-            <select
+            <Select<"viewer" | "editor">
               value={permissionLevel}
-              onChange={(e) =>
-                setPermissionLevel(e.target.value as "viewer" | "editor")
-              }
-              className="rounded-md border bg-background px-2 py-1 text-sm"
-            >
-              <option value="viewer">Read only</option>
-              <option value="editor">Read + write</option>
-            </select>
+              onValueChange={setPermissionLevel}
+              aria-label="Permission"
+              options={[
+                { value: "viewer", label: "Read only" },
+                { value: "editor", label: "Read + write" },
+              ]}
+            />
           </label>
           <label className="flex flex-col gap-1 text-xs">
             <span className="text-muted-foreground">

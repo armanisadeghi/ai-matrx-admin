@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Input } from "@ai-matrx/design-system/controls";
+import { Input, Select } from "@ai-matrx/design-system/controls";
 import { Label } from "@/components/ui/label";
 import { ProTextarea } from "@/components/official/ProTextarea";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
@@ -35,10 +35,8 @@ export function MemoryItemEditor({ aid, kind, index, onChange, onSave, onCancel,
   return <div className="min-w-0 flex-1 space-y-3 matrx-touch-targets" aria-label={`Edit ${kind} ${index + 1}`}>
     {mnemonic && <>
       <TextField label="Material to remember" value={mnemonic.target} onChange={(target) => updateMnemonic({ target })} />
-      <div className="space-y-1"><Label htmlFor={`inline-technique-${index}`}>Technique</Label>
-        <select id={`inline-technique-${index}`} className="h-10 w-full rounded-md border border-input bg-background px-3 text-base md:text-sm" value={mnemonic.technique} onChange={(event) => updateMnemonic({ technique: event.target.value as typeof mnemonic.technique })}>
-          {MNEMONIC_TECHNIQUES.map((technique) => <option key={technique} value={technique}>{technique}</option>)}
-        </select>
+      <div className="space-y-1"><Label>Technique</Label>
+        <Select<typeof mnemonic.technique> aria-label="Technique" className="w-full" value={mnemonic.technique} onValueChange={(technique) => updateMnemonic({ technique })} options={MNEMONIC_TECHNIQUES.map((technique) => ({ value: technique, label: technique }))} />
       </div>
       <TextField label="Memory device" value={mnemonic.device} onChange={(device) => updateMnemonic({ device })} />
       <TextField label="Explanation" value={mnemonic.explanation ?? ""} onChange={(explanation) => updateMnemonic({ explanation })} multiline />

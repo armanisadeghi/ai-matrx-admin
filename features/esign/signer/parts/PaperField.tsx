@@ -11,6 +11,7 @@
 
 import { ArrowRight, Check, PenLine } from "lucide-react";
 
+import { Select } from "@ai-matrx/design-system/controls";
 import { cn } from "@/lib/utils";
 
 import type { FieldValue } from "../../contract/fieldModel";
@@ -218,19 +219,24 @@ function InlineInput({ field, value, dateFormat, compact, onChange, onBlur, onAc
   }
   if (field.kind === "dropdown") {
     return (
-      // ui-exception: a value typed onto the paper page — the native picker sits inside the field's own box
-      <select
-        {...common}
-        value={typeof value === "string" ? value : ""}
-        onChange={(e) => onChange(field.id, e.target.value === "" ? null : e.target.value)}
+      <div
+        id={domId}
+        tabIndex={-1}
+        className="h-full w-full outline-none"
+        onFocus={() => onActivate(field)}
+        onBlur={onBlur}
       >
-        <option value="">{chipText(field)}</option>
-        {(field.options ?? []).map((o) => (
-          <option key={o} value={o}>
-            {o}
-          </option>
-        ))}
-      </select>
+        <Select
+          value={typeof value === "string" ? value : ""}
+          onValueChange={(v) => onChange(field.id, v === "" ? null : v)}
+          aria-label={field.label}
+          className="w-full"
+          options={[
+            { value: "", label: chipText(field) },
+            ...(field.options ?? []).map((o) => ({ value: o, label: o })),
+          ]}
+        />
+      </div>
     );
   }
   if (field.kind === "text" && field.multiline) {

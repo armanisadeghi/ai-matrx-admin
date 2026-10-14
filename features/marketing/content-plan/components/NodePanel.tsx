@@ -22,7 +22,7 @@ import { CopyButtons } from "@/components/agent-copy/CopyButtons";
 import { webLocation } from "@/features/marketing/lib/copy-payloads";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Input } from "@ai-matrx/design-system/controls";
+import { Input, Select as ControlSelect } from "@ai-matrx/design-system/controls";
 import { Label } from "@/components/ui/label";
 import { useMarketingBrandOptional } from "@/features/marketing/lib/brand-context";
 import { PlanNodeTopicField } from "@/features/marketing/seo/topical-map/linkins/PlanNodeTopicField";
@@ -1330,19 +1330,15 @@ export function NodePanel({
                   a cheap site — and a routine page may stay one call inside an
                   expensive one. Empty = follow the site's setting. */}
                 <div className="mb-2 flex flex-wrap items-center gap-2">
-                  <label
-                    className="text-[11px] text-muted-foreground"
-                    htmlFor={`effort-${node.id}`}
-                  >
+                  <label className="text-[11px] text-muted-foreground">
                     Effort for this page
                   </label>
-                  <select
-                    id={`effort-${node.id}`}
-                    className="h-7 rounded-md border border-input bg-background px-1.5 text-xs"
+                  <ControlSelect
+                    aria-label="Effort for this page"
                     value={nodeEffortTier ?? ""}
                     disabled={update.isPending}
-                    onChange={(event) => {
-                      const next = coerceEffortTier(event.target.value);
+                    onValueChange={(value) => {
+                      const next = coerceEffortTier(value);
                       update.mutate({
                         id: node.id,
                         patch: {
@@ -1350,16 +1346,14 @@ export function NodePanel({
                         },
                       });
                     }}
-                  >
-                    <option value="">Follow the site setting</option>
-                    {EFFORT_TIERS.map((tier) => (
-                      <option key={tier} value={tier}>
-                        {EFFORT_TIER_LABEL[tier]} ·{" "}
-                        {EFFORT_TIER_STEPS[tier].length} call
-                        {EFFORT_TIER_STEPS[tier].length === 1 ? "" : "s"}
-                      </option>
-                    ))}
-                  </select>
+                    options={[
+                      { value: "", label: "Follow the site setting" },
+                      ...EFFORT_TIERS.map((tier) => ({
+                        value: tier,
+                        label: `${EFFORT_TIER_LABEL[tier]} · ${EFFORT_TIER_STEPS[tier].length} call${EFFORT_TIER_STEPS[tier].length === 1 ? "" : "s"}`,
+                      })),
+                    ]}
+                  />
                   <span className="text-[11px] text-muted-foreground">
                     {nodeEffortTier
                       ? EFFORT_TIER_BLURB[nodeEffortTier]

@@ -45,7 +45,7 @@ import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { AGENT_ICON } from "@/components/icons/domain-icons";
 import { StaleDataNotice } from "@ai-matrx/design-system";
 import { extractErrorMessage } from "@/utils/errors";
-import { Chip } from "@ai-matrx/design-system/controls";
+import { Chip, Select } from "@ai-matrx/design-system/controls";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 function fact(label: string, value: ReactNode) {
@@ -971,15 +971,17 @@ export function BacklinkEnrichmentDetail({
                   action. Your judgment stays separate from provider,
                   deterministic, and AI evidence.
                 </p>
-                <select
+                <Select
                   value={verdict}
-                  onChange={(event) => setVerdict(event.target.value)}
-                  className="mt-2 h-8 w-full rounded-md border border-input bg-background px-2 text-xs"
-                >
-                  <option value="confirmed">Confirm assessment</option>
-                  <option value="needs_change">Needs correction</option>
-                  <option value="dismissed">Dismiss action</option>
-                </select>
+                  onValueChange={setVerdict}
+                  aria-label="Verdict"
+                  className="mt-2 w-full"
+                  options={[
+                    { value: "confirmed", label: "Confirm assessment" },
+                    { value: "needs_change", label: "Needs correction" },
+                    { value: "dismissed", label: "Dismiss action" },
+                  ]}
+                />
                 <ProTextarea
                   value={note}
                   onChange={(event) => setNote(event.target.value)}

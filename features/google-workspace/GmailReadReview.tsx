@@ -2,6 +2,7 @@
 
 import { GmailLogo } from "@/components/icons/google-brand";
 import { useEffect, useRef, useState, type FormEvent } from "react";
+import { Select } from "@ai-matrx/design-system/controls";
 import { Button } from "@/components/ui/button";
 import { useOpenConnectorConsentDialog } from "@/features/overlays/openers/connectorConsentDialog";
 import {
@@ -438,17 +439,22 @@ export function GmailReadReview() {
             >
               <label
                 className="text-sm font-medium"
-                htmlFor="gmail-read-account"
               >
                 Google account
               </label>
-              <select
-                id="gmail-read-account"
-                className="h-10 rounded-md border bg-background px-2 text-sm"
+              <Select
+                aria-label="Google account"
                 value={connectionId}
                 disabled={busy}
-                onChange={(event) => {
-                  setSelectedConnectionId(event.target.value);
+                options={accounts.map((account) => ({
+                  value: account.id,
+                  label:
+                    account.account_email ??
+                    account.account_name ??
+                    "Google account",
+                }))}
+                onValueChange={(value) => {
+                  setSelectedConnectionId(value);
                   setResult(null);
                   setMessage(null);
                   setMutationStatus("");
@@ -459,15 +465,7 @@ export function GmailReadReview() {
                   setKnownLabelIds(null);
                   setUndo(null);
                 }}
-              >
-                {accounts.map((account) => (
-                  <option key={account.id} value={account.id}>
-                    {account.account_email ??
-                      account.account_name ??
-                      "Google account"}
-                  </option>
-                ))}
-              </select>
+              />
               {!canModify && gmailChanges?.eligible ? (
                 <Button
                   type="button"
@@ -646,25 +644,24 @@ export function GmailReadReview() {
                 ) : (
                   <>
                     <label
-                      htmlFor="gmail-label-picker"
                       className="block text-sm font-medium"
                     >
                       Gmail label
                     </label>
-                    <select
-                      id="gmail-label-picker"
-                      className="mt-1 h-10 w-full rounded-md border bg-background px-2 text-sm"
+                    <Select
+                      aria-label="Gmail label"
+                      className="mt-1 w-full"
                       value={activeLabelId}
-                      onChange={(event) => setLabelId(event.target.value)}
+                      onValueChange={setLabelId}
                       disabled={busy}
-                    >
-                      <option value="">Choose a label</option>
-                      {activeLabels.map((label) => (
-                        <option key={label.id} value={label.id}>
-                          {label.name}
-                        </option>
-                      ))}
-                    </select>
+                      options={[
+                        { value: "", label: "Choose a label" },
+                        ...activeLabels.map((label) => ({
+                          value: label.id,
+                          label: label.name,
+                        })),
+                      ]}
+                    />
                     {activeNextLabelOffset !== null ? (
                       <Button
                         type="button"

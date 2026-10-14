@@ -10,6 +10,7 @@ import {
   FileSearch,
 } from "lucide-react";
 import { DuplicateClustersPanel } from "@/features/marketing/components/crawls/DuplicateClustersPanel";
+import { Select } from "@ai-matrx/design-system/controls";
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
 import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
 import { CrawlSubnav } from "@/features/marketing/components/crawls/CrawlSubnav";
@@ -1230,26 +1231,24 @@ export function CrawlReportWorkspace({
             ) : null}
             <label className="flex shrink-0 items-center gap-2 text-[11px] text-muted-foreground">
               Report
-              <select
+              <Select
                 value={reportKey}
-                onChange={(event) =>
+                aria-label="Report"
+                onValueChange={(value) =>
                   router.push(
                     marketingRoutes.crawlReport(
                       site.brand_id,
                       site.id,
                       crawlId,
-                      event.target.value,
+                      value,
                     ),
                   )
                 }
-                className="h-8 rounded-md border border-border bg-background px-2 text-xs text-foreground"
-              >
-                {CRAWL_REPORTS.map((candidate) => (
-                  <option key={candidate.key} value={candidate.key}>
-                    {candidate.label}
-                  </option>
-                ))}
-              </select>
+                options={CRAWL_REPORTS.map((candidate) => ({
+                  value: candidate.key,
+                  label: candidate.label,
+                }))}
+              />
             </label>
           </div>
         </section>

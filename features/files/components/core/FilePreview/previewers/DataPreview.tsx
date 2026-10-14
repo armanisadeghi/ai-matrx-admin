@@ -27,7 +27,6 @@ import { extractErrorMessage } from "@/utils/errors";
 import {
   AlertCircle,
   ArrowUpDown,
-  ChevronDown,
   Copy,
   Database,
   FileJson,
@@ -36,6 +35,7 @@ import {
   Search,
 } from "lucide-react";
 import { parseDelimited, readWorkbook } from "@ai-matrx/alchemy/operate/read";
+import { Select } from "@ai-matrx/design-system/controls";
 import { cn } from "@/lib/utils";
 import { extname } from "@/features/files/utils/path";
 import { useFileBlob } from "@/features/files/hooks/useFileBlob";
@@ -383,20 +383,12 @@ export function DataPreview({ fileId, fileName, className }: DataPreviewProps) {
           {sheetNames.length > 1 ? (
             <label className="flex items-center gap-1.5 text-xs">
               <span className="text-muted-foreground">Sheet:</span>
-              <div className="relative">
-                <select
-                  value={activeSheet}
-                  onChange={(e) => void onSwitchSheet(e.target.value)}
-                  className="appearance-none rounded-md border border-border bg-background px-2 py-1 pr-7 text-xs focus:outline-none focus:ring-2 focus:ring-primary/30"
-                >
-                  {sheetNames.map((s) => (
-                    <option key={s} value={s}>
-                      {s}
-                    </option>
-                  ))}
-                </select>
-                <ChevronDown className="pointer-events-none absolute right-1.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
-              </div>
+              <Select
+                value={activeSheet}
+                onValueChange={(v) => void onSwitchSheet(v)}
+                aria-label="Sheet"
+                options={sheetNames.map((s) => ({ value: s, label: s }))}
+              />
             </label>
           ) : null}
 

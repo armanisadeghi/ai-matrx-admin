@@ -19,7 +19,7 @@ import {
 } from "@/features/marketing/lib/duplicate-clusters";
 import { marketingRoutes } from "@/features/marketing/lib/routes";
 import { parseSnapshotFingerprint } from "@/features/marketing/lib/snapshot-content";
-import { Chip } from "@ai-matrx/design-system/controls";
+import { Chip, Select } from "@ai-matrx/design-system/controls";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 /**
@@ -91,17 +91,15 @@ export function DuplicateClustersPanel({ crawlId }: { crawlId: string }) {
       <div className="flex shrink-0 flex-wrap items-center gap-3 rounded-lg border border-border bg-card px-3 py-2">
         <label className="flex items-center gap-2 text-[11px] text-muted-foreground">
           Near-duplicate threshold
-          <select
-            value={similarity}
-            onChange={(event) => setSimilarity(Number(event.target.value))}
-            className="h-7 rounded-md border border-border bg-background px-2 text-xs text-foreground"
-          >
-            {DUPLICATE_SIMILARITY_OPTIONS.map((option) => (
-              <option key={option} value={option}>
-                {option}%
-              </option>
-            ))}
-          </select>
+          <Select
+            value={String(similarity)}
+            onValueChange={(value) => setSimilarity(Number(value))}
+            aria-label="Near-duplicate threshold"
+            options={DUPLICATE_SIMILARITY_OPTIONS.map((option) => ({
+              value: String(option),
+              label: `${option}%`,
+            }))}
+          />
         </label>
         <span className="text-[11px] text-muted-foreground">
           {report.exact.length.toLocaleString()} exact ·{" "}

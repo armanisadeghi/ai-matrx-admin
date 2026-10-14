@@ -51,6 +51,7 @@ import {
 } from "lucide-react";
 
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
+import { Select as ControlSelect } from "@ai-matrx/design-system/controls";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -1106,27 +1107,18 @@ export function SetupBridgeSection({
                 >
                   Preview one page
                 </Button>
-                <select
-                  aria-label="Content build effort"
-                  className="h-7 min-h-[44px] rounded-md border border-input bg-background px-1.5 text-xs sm:min-h-0"
-                  value={effortTier}
-                  disabled={!linked || busy !== null || savingTier}
-                  title={EFFORT_TIER_BLURB[effortTier]}
-                  onChange={(event) => {
-                    const next = EFFORT_TIERS.find(
-                      (candidate) => candidate === event.target.value,
-                    );
-                    if (next) void handleEffortTierChange(next);
-                  }}
-                >
-                  {EFFORT_TIERS.map((tier) => (
-                    <option key={tier} value={tier}>
-                      {EFFORT_TIER_LABEL[tier]} ·{" "}
-                      {EFFORT_TIER_STEPS[tier].length} call
-                      {EFFORT_TIER_STEPS[tier].length === 1 ? "" : "s"}/page
-                    </option>
-                  ))}
-                </select>
+                <span title={EFFORT_TIER_BLURB[effortTier]}>
+                  <ControlSelect<EffortTier>
+                    aria-label="Content build effort"
+                    value={effortTier}
+                    disabled={!linked || busy !== null || savingTier}
+                    onValueChange={(next) => void handleEffortTierChange(next)}
+                    options={EFFORT_TIERS.map((tier) => ({
+                      value: tier,
+                      label: `${EFFORT_TIER_LABEL[tier]} · ${EFFORT_TIER_STEPS[tier].length} call${EFFORT_TIER_STEPS[tier].length === 1 ? "" : "s"}/page`,
+                    }))}
+                  />
+                </span>
                 <Button
                   icon={busy === "fillStart" ? (
                     <Loader2 className="animate-spin" />

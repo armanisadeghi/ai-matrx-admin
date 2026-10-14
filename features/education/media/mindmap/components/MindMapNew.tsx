@@ -15,7 +15,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowLeft, Loader2, Network } from "lucide-react";
 import { toast } from "@/lib/toast";
 import { Button } from "@/components/ui/button";
-import { Input } from "@ai-matrx/design-system/controls";
+import { Input, Select } from "@ai-matrx/design-system/controls";
 import { cn } from "@/lib/utils";
 import { fcService } from "@/features/flashcards/data/fcService";
 import type { FcSetRow } from "@/features/flashcards/data/types";
@@ -333,18 +333,16 @@ export function MindMapNew() {
           ))}
         </div>
         {sourceKind === "deck" ? (
-          <select
+          <Select
             value={deckId}
-            onChange={(e) => setDeckId(e.target.value)}
-            className="h-10 w-full rounded-md border border-border bg-background px-3 text-sm text-foreground"
-          >
-            <option value="">Select a deck…</option>
-            {decks.map((d) => (
-              <option key={d.id} value={d.id}>
-                {d.name}
-              </option>
-            ))}
-          </select>
+            onValueChange={setDeckId}
+            aria-label="Deck"
+            className="w-full"
+            options={[
+              { value: "", label: "Select a deck…" },
+              ...decks.map((d) => ({ value: d.id, label: d.name })),
+            ]}
+          />
         ) : (
           <ProTextarea
             value={topic}

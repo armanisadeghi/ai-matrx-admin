@@ -32,6 +32,7 @@ import {
   Volume2,
   VolumeX,
 } from "lucide-react";
+import { Select } from "@ai-matrx/design-system/controls";
 import { cn } from "@/lib/utils";
 import { Slider } from "@/components/ui/slider";
 import { useMediaLoadRecovery } from "@ai-matrx/media/core";
@@ -435,17 +436,15 @@ function AudioPreviewSession({
 
         <label className="flex items-center gap-1.5">
           <span className="text-[10px] uppercase tracking-wide">Speed</span>
-          <select
-            value={playbackRate}
-            onChange={(e) => setPlaybackRate(Number(e.target.value))}
-            className="rounded-md border border-border bg-background px-1.5 py-0.5 text-xs"
-          >
-            {PLAYBACK_RATES.map((r) => (
-              <option key={r} value={r}>
-                {r}×
-              </option>
-            ))}
-          </select>
+          <Select
+            value={String(playbackRate)}
+            onValueChange={(v) => setPlaybackRate(Number(v))}
+            aria-label="Playback speed"
+            options={PLAYBACK_RATES.map((r) => ({
+              value: String(r),
+              label: `${r}×`,
+            }))}
+          />
         </label>
 
         <button
