@@ -174,6 +174,7 @@ export const defaultUserPreferences: UserPreferences = {
     showCostInUsd: false,
     completedTutorials: [],
     learnedHints: [],
+    debugMode: false,
   },
   messaging: {
     notificationSoundEnabled: true,

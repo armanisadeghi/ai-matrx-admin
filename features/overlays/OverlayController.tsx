@@ -6199,6 +6199,7 @@ export default function OverlayController() {
             workflowRunId={text(data?.workflowRunId)}
             conversationId={text(data?.conversationId)}
             pageRuns={data?.pageRuns === true}
+            nodeId={text(data?.nodeId)}
             label={text(data?.label)}
           />
         );

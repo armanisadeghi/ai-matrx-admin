@@ -412,6 +412,9 @@ export interface SystemPreferences {
   completedTutorials: string[];
   /** First-use hint ids this person has learned (FirstUseHint, providers/FirstUseHintHost). */
   learnedHints: string[];
+  /** System admins only: the admin debug switch, kept until they turn it off — across reloads,
+   *  tabs and devices (features/admin/useDebugModePersistence.ts). Default false. */
+  debugMode: boolean;
 }
 
 export interface MessagingPreferences {
@@ -1387,6 +1390,7 @@ export const initializeUserPreferencesState = (
       showCostInUsd: false,
       completedTutorials: [],
       learnedHints: [],
+      debugMode: false,
     },
     messaging: {
       notificationSoundEnabled: true,

@@ -17,7 +17,11 @@
  */
 
 import { useEffect, useState } from "react";
-import { CheckCircle2, CircleDashed, Loader2 } from "lucide-react";
+import { CheckCircle2, CircleDashed, Eye, Loader2 } from "lucide-react";
+
+import { useCanWatchAi } from "@/features/ai-watch/useCanWatchAi";
+import { useWatchAiRun } from "@/features/overlays/openers/aiWatchWindow";
+import type { NodeInvocationState } from "../redux/workflow-runs.slice";
 
 import { useAppSelector } from "@/lib/redux/hooks";
 
@@ -92,6 +96,35 @@ function SyntheticSubSteps({
   );
 }
 
+/** A step that makes an AI call (`ai.mandate.start`, `ai.agent.start`, `ai.agent.produce`, …). */
+export function isAiStep(specType: string | null): boolean {
+  return Boolean(specType && specType.startsWith("ai."));
+}
+
+function formatMs(ms: number): string {
+  if (ms < 1000) return `${Math.max(0, Math.round(ms))}ms`;
+  const s = ms / 1000;
+  if (s < 60) return `${s < 10 ? s.toFixed(1) : Math.round(s)}s`;
+  return `${Math.floor(s / 60)}m ${Math.round(s % 60)}s`;
+}
+
+/** How long the step took (settled), or has been working (running, ticking). */
+function StepTiming({ invocations, running }: { invocations: NodeInvocationState[]; running: boolean }) {
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    if (!running) return undefined;
+    const id = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(id);
+  }, [running]);
+  const starts = invocations.map((i) => (i.startedAt ? Date.parse(i.startedAt) : NaN)).filter(Number.isFinite);
+  const durations = invocations.map((i) => i.durationMs).filter((d): d is number => typeof d === "number");
+  let ms: number | null = null;
+  if (running && starts.length) ms = now - Math.min(...starts);
+  else if (durations.length) ms = Math.max(...durations);
+  if (ms === null) return null;
+  return <span className="tabular-nums">{formatMs(ms)} · </span>;
+}
+
 function RailNodeRow({
   runId,
   nodeId,
@@ -109,21 +142,49 @@ function RailNodeRow({
   const fanOut = expectedCount > 1 || invocations.length > 1;
   const nodeRunning = phase === "running";
   const nodeStarted = phase !== "idle" && phase !== "waiting";
+  // AI steps are marked, and (for people who may watch AI) open Watch AI on this step's call.
+  const ai = isAiStep(specType);
+  const canWatch = useCanWatchAi();
+  const watch = useWatchAiRun();
+  const laneRequestId = invocations.find((i) => i.laneRequestId)?.laneRequestId ?? null;
+  const watchable = ai && canWatch && nodeStarted;
+  const open = () =>
+    watch(
+      laneRequestId
+        ? { requestId: laneRequestId, instanceId: `ai-watch:${runId}:${nodeId}`, label: label ?? nodeId }
+        : { workflowRunId: runId, nodeId, instanceId: `ai-watch:${runId}:${nodeId}`, label: label ?? nodeId },
+    );
+
+  const head = (
+    <>
+      <PhaseIcon phase={phase} />
+      <span className="truncate text-xs font-medium">{label ?? specType ?? nodeId}</span>
+      {ai ? (
+        <span className="shrink-0 rounded bg-primary/10 px-1 text-[10px] font-semibold text-primary">AI</span>
+      ) : null}
+      {watchable ? <Eye className="h-3 w-3 shrink-0 text-muted-foreground" /> : null}
+      <span className="ml-auto shrink-0 text-[11px] text-muted-foreground">
+        {fanOut ? `${settledCount}/${Math.max(expectedCount, invocations.length)} · ` : ""}
+        <StepTiming invocations={invocations} running={nodeRunning} />
+        {PHASE_LABEL[phase] ?? phase}
+      </span>
+    </>
+  );
 
   return (
-    <div className="space-y-0.5">
-      <div className="flex items-center gap-1.5">
-        <PhaseIcon phase={phase} />
-        <span className="truncate text-xs font-medium">
-          {label ?? specType ?? nodeId}
-        </span>
-        <span className="ml-auto shrink-0 text-[11px] text-muted-foreground">
-          {fanOut
-            ? `${settledCount}/${Math.max(expectedCount, invocations.length)} · `
-            : ""}
-          {PHASE_LABEL[phase] ?? phase}
-        </span>
-      </div>
+    <div className="space-y-0.5" data-step={nodeId} data-phase={phase} data-ai={ai ? "true" : undefined}>
+      {watchable ? (
+        <button
+          type="button"
+          onClick={open}
+          title="Watch this AI call"
+          className="flex w-full items-center gap-1.5 rounded text-left hover:bg-muted"
+        >
+          {head}
+        </button>
+      ) : (
+        <div className="flex items-center gap-1.5">{head}</div>
+      )}
       {syntheticLabels && syntheticLabels.length > 0 ? (
         <SyntheticSubSteps
           labels={syntheticLabels}

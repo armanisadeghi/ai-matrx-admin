@@ -61,6 +61,8 @@ export interface AiWatchRunSummary {
   label: string;
   status: string | null;
   createdAt: string;
+  /** The workflow step that made this call (`metadata.workflow_node_id`), when one did. */
+  nodeId: string | null;
 }
 
 const USER_REQUEST_COLUMNS =
@@ -200,6 +202,7 @@ export async function fetchAiWatchRuns(scope: {
         `Run ${index + 1}`,
       status: str(row.status),
       createdAt: String(row.created_at ?? ""),
+      nodeId: str(metadata.workflow_node_id),
     };
   });
 }

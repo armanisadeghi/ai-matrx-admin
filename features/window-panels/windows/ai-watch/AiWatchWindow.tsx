@@ -88,6 +88,8 @@ export interface AiWatchWindowProps {
   /** List every AI turn of a conversation. */
   conversationId?: string | null;
   /** List every AI run this tab holds (the sidebar light). */
+  /** Open on this workflow step's call (from the Workflow run rail). */
+  nodeId?: string | null;
   pageRuns?: boolean;
   label?: string | null;
 }
@@ -123,6 +125,7 @@ export default function AiWatchWindow({
   workflowRunId = null,
   conversationId = null,
   pageRuns = false,
+  nodeId = null,
   label = null,
 }: AiWatchWindowProps) {
   const canWatch = useCanWatchAi();
@@ -184,9 +187,11 @@ export default function AiWatchWindow({
       rail.push({ key: r.userRequestId, serverId: r.userRequestId, label: r.label, status: r.status, live: false });
     }
   }
+  // Opened from a Workflow run step: that step's newest call, until the person picks another.
+  const stepCall = nodeId ? records.filter((r) => r.nodeId === nodeId).at(-1)?.userRequestId ?? null : null;
   rail.sort((a, b) => Number(b.live) - Number(a.live));
   if (pageRuns && !rail.some((r) => r.live)) rail.reverse();
-  const current = selectedKey ?? rail[0]?.key ?? null;
+  const current = selectedKey ?? stepCall ?? rail[0]?.key ?? null;
   const currentRun = registry.find((r) => r.key === current || r.requestIds.includes(current ?? ""));
   const serverId =
     currentRun?.serverRequestId ?? rail.find((r) => r.key === current)?.serverId ?? (current && current === userRequestId ? current : null);

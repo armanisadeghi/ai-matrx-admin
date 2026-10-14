@@ -11,14 +11,12 @@
  * otherwise. Click opens Watch AI on the live run; with several, the window lists them.
  * Orange is deliberately not the Error Inspector's amber dot.
  *
- * AUTO-WATCH (VISION Part 18 item 5): with debug mode on, every automated AI call this page
- * starts — a workflow step's mandate run (bound to its server run) — opens the page's Watch AI
- * window by itself, once per run; the window follows the newest live run.
+ * AUTO-WATCH lives in `features/ai-watch/AutoWatch.tsx` (always mounted for admins), never here.
  */
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { Eye } from "lucide-react";
-import { isAutomatedRun, selectLivePageAiRuns } from "@/features/ai-watch/page-ai-runs";
+import { selectLivePageAiRuns } from "@/features/ai-watch/page-ai-runs";
 import { cn } from "@/lib/utils";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { useCanWatchAi } from "@/features/ai-watch/useCanWatchAi";
@@ -35,17 +33,6 @@ export default function SidebarWatchAiToggle() {
   useEffect(() => {
     setHydrated(true);
   }, []);
-
-  // Auto-watch: a new automated AI run opens (or refreshes) the page's window, once per run.
-  const autoOpened = useRef(new Set<string>());
-  const automatedKeys = live.filter(isAutomatedRun).map((r) => r.key).join(",");
-  useEffect(() => {
-    if (!canWatch || !automatedKeys) return;
-    const fresh = automatedKeys.split(",").filter((k) => !autoOpened.current.has(k));
-    if (!fresh.length) return;
-    for (const k of fresh) autoOpened.current.add(k);
-    watch({ pageRuns: true, instanceId: "ai-watch:page" });
-  }, [canWatch, automatedKeys, watch]);
 
   if (!hydrated || !canWatch) return null;
 

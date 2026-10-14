@@ -28,6 +28,8 @@ export interface WatchAiRunOptions {
   userRequestId?: string | null;
   workflowRunId?: string | null;
   conversationId?: string | null;
+  /** With `workflowRunId`: open on this step's call (a Workflow run rail row's AI step). */
+  nodeId?: string | null;
   /** List every AI run this tab holds (the sidebar Watch AI light). */
   pageRuns?: boolean;
   label?: string | null;
@@ -54,6 +56,7 @@ export function watchAiRunAction(target: string | WatchAiRunOptions) {
       workflowRunId: opts.workflowRunId ?? null,
       conversationId: opts.conversationId ?? null,
       pageRuns: opts.pageRuns ?? false,
+      nodeId: opts.nodeId ?? null,
       label: opts.label ?? null,
     },
   });
