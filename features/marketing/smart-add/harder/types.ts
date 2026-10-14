@@ -79,3 +79,103 @@ export interface FindLogEntry {
   url?: string | null;
   points?: number | null;
 }
+
+/* ── the person hard / close-to-impossible paths (aidream services/brand_intake/person_hard.py) ── */
+
+export type FindYouPath = "person_hard" | "person_near_impossible";
+export type SweepTier = "strong" | "mid" | "low" | "junk";
+
+export interface SweepHit {
+  engine: string;
+  query: string;
+  page: number;
+  rank: number;
+}
+
+/** One sweep result: the provider's raw row (unchanged) and how it was judged. */
+export interface SweepRow {
+  key: string;
+  url: string;
+  platform: string;
+  handle: string | null;
+  title: string | null;
+  snippet: string | null;
+  raw: Record<string, unknown>;
+  hits: SweepHit[];
+  tier: SweepTier;
+  tier_reason: string;
+  named: boolean;
+  score: number;
+  reasons: string[];
+  anchor_kind: AnchorKind;
+  firm: boolean;
+  clues: Clue[];
+}
+
+export interface SweepCall {
+  engine: string;
+  query: string;
+  page: number;
+  results: number;
+  ms: number;
+  points: number | null;
+  /** Admins only. */
+  usd: number | null;
+  error: string | null;
+  why: string;
+}
+
+export interface SweepFilter {
+  key: string;
+  label: string;
+  removed: number;
+  urls: string[];
+}
+
+export interface TierCount {
+  key: SweepTier;
+  label: string;
+  count: number;
+  hidden_by_default: boolean;
+}
+
+export interface FindYouResult extends HarderResult {
+  sweep_path: FindYouPath;
+  rules: Record<string, unknown>;
+  rows: SweepRow[];
+  tiers: TierCount[];
+  filters: SweepFilter[];
+  calls: SweepCall[];
+  google_next_page: number | null;
+  platforms_first: boolean;
+}
+
+export interface FindYouRequest extends HarderRequest {
+  path: FindYouPath;
+  known_urls: string[];
+  google_page: number;
+}
+
+/** The answer on one sweep row (one click). */
+export type SweepAnswer = "me" | "maybe" | "not_me";
+
+/** A focused platform session on the stuck screen: opened, then done (with or without a find). */
+export interface FocusState {
+  status: "open" | "done";
+  found: boolean;
+}
+
+/** `person.find_you` — the run input the mandate provisions read (raw provider rows kept). */
+export interface FindYouProvision {
+  path: string;
+  clues: Clue[];
+  buckets: {
+    tiers: { key: SweepTier; label: string; rows: SweepRow[] }[];
+    directory: HarderCandidate[];
+    socials: Record<string, HarderCandidate[]>;
+    web: HarderCandidate[];
+    filters: SweepFilter[];
+  };
+  history: { query: string; answer: string; firm_anchor: boolean; bucket: string | null; url?: string | null }[];
+  focus: Record<string, FocusState>;
+}

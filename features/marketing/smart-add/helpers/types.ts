@@ -4,7 +4,7 @@
  * Research behind each method: common-docs …/smart-add-brand/PEOPLE-SEARCH-RESEARCH.md.
  */
 
-export const HELPER_METHODS = ["linkedin", "google", "threads", "tiktok", "youtube", "grok"] as const;
+export const HELPER_METHODS = ["linkedin", "google", "threads", "tiktok", "youtube", "grok", "facebook", "instagram"] as const;
 export type HelperMethod = (typeof HELPER_METHODS)[number];
 
 export const HELPER_LABELS: Record<HelperMethod, string> = {
@@ -14,7 +14,12 @@ export const HELPER_LABELS: Record<HelperMethod, string> = {
   tiktok: "TikTok users",
   youtube: "YouTube channels",
   grok: "Grok on X",
+  facebook: "Facebook",
+  instagram: "Instagram",
 };
+
+/** Methods answered by SerpAPI Google pages: a deeper page is ONE search, fetched on click only. */
+export const PAGED_METHODS: readonly HelperMethod[] = ["google", "facebook", "instagram"];
 
 export function isHelperMethod(v: unknown): v is HelperMethod {
   return typeof v === "string" && (HELPER_METHODS as readonly string[]).includes(v);

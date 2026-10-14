@@ -15,17 +15,65 @@
  */
 
 import { useEffect, useEffectEvent, useRef, useState } from "react";
-import { Check, ChevronDown, X } from "lucide-react";
+import { Check, ChevronDown, SearchX, X } from "lucide-react";
 import { Button } from "@ai-matrx/design-system/controls";
 import { formatCount } from "@ai-matrx/kit/format";
 import { PlatformMark, platformLabel } from "@/features/marketing/social/components/PlatformMark";
 import { OpenLink } from "../SmartAddExtras";
 import { pollLinkedinJob } from "../helpers/service";
+import { onHelperAnswer } from "../helpers/store";
 import type { HelperCandidate } from "../helpers/types";
-import { runHarderRound } from "./service";
-import type { Clue, FindLogEntry, HarderAnswer, HarderCandidate, HarderResult } from "./types";
+import type { SweepFeed } from "@/features/builder-panel/components/BuilderDecisionsTab";
+import { FocusList, SweepReview, focusKeyOf, sweepCandidate } from "./FindAnything";
+import { runFindYou, runHarderRound } from "./service";
+import type {
+  Clue,
+  FindLogEntry,
+  FindYouPath,
+  FindYouProvision,
+  FindYouResult,
+  FocusState,
+  HarderAnswer,
+  HarderCandidate,
+  HarderResult,
+  SweepAnswer,
+  SweepRow,
+  TierCount,
+} from "./types";
 
 const POLL_MS = 6_000;
+const HARD_PATHS: readonly string[] = ["person_hard", "person_near_impossible"];
+
+interface Sweep {
+  path: FindYouPath;
+  rows: SweepRow[];
+  tiers: TierCount[];
+  filters: FindYouResult["filters"];
+  calls: FindYouResult["calls"];
+  googleNext: number | null;
+  platformsFirst: boolean;
+  points: number | null;
+  ms: number;
+}
+
+function withSweep(cur: Sweep | null, r: FindYouResult): Sweep {
+  const byKey = new Map((cur?.rows ?? []).map((x) => [x.key, x]));
+  for (const row of r.rows) if (!byKey.has(row.key)) byKey.set(row.key, row);
+  const rows = [...byKey.values()];
+  const order = ["strong", "mid", "low", "junk"];
+  rows.sort((a, b) => order.indexOf(a.tier) - order.indexOf(b.tier) || b.score - a.score);
+  return {
+    path: r.sweep_path,
+    rows,
+    tiers: r.tiers.map((t) => ({ ...t, count: rows.filter((x) => x.tier === t.key).length })),
+    filters: [...(cur?.filters ?? []), ...r.filters],
+    calls: [...(cur?.calls ?? []), ...r.calls],
+    googleNext: r.google_next_page,
+    platformsFirst: r.platforms_first,
+    points: cur?.points == null && cur ? null : r.points == null ? null : (cur?.points ?? 0) + r.points,
+    ms: (cur?.ms ?? 0) + r.ms,
+  };
+}
 
 export interface FindYouInput {
   name: string;
@@ -91,11 +139,26 @@ function absorb(b: Buckets, r: HarderResult): Buckets {
 
 export function PersonHarderStage({
   input,
+  path = "person_harder",
+  knownUrls = [],
   grounded,
   onConfirm,
   onLog,
+  onEscalate,
+  onProvision,
+  onSweep,
 }: {
   input: FindYouInput;
+  /** The person's path: person_harder, or person_hard / person_near_impossible (adds the find-anything sweep). */
+  path?: string;
+  /** Pages already confirmed or answered on the screen: the sweep removes them and their look-alikes. */
+  knownUrls?: string[];
+  /** Harder path only: "Dig deeper" moves the person to the hard path. */
+  onEscalate?: () => void;
+  /** `person.find_you` for the next round's workflow inputs (the mandate provisions read it). */
+  onProvision?: (p: FindYouProvision) => void;
+  /** The sweep's calls, rows and filters for the Builder panel (admins). */
+  onSweep?: (feed: SweepFeed | null, focus: Record<string, FocusState>) => void;
   /** One FIRM anchor is confirmed: find-you mode ends. */
   grounded: boolean;
   /** A "yes" on a result (the screen lands it: an account, the person's site, or a page anchor). */
@@ -111,6 +174,49 @@ export function PersonHarderStage({
   const [jobStatus, setJobStatus] = useState<string | null>(null);
   const done = useRef<string[]>([]);
   const started = useRef(false);
+  const hard = HARD_PATHS.includes(path);
+  const [sweep, setSweep] = useState<Sweep | null>(null);
+  const [sweepAnswers, setSweepAnswers] = useState<Record<string, SweepAnswer>>({});
+  const [focus, setFocus] = useState<Record<string, FocusState>>({});
+  const [gaveUp, setGaveUp] = useState(false);
+  const [history, setHistory] = useState<FindYouProvision["history"]>([]);
+  const sweepStarted = useRef(false);
+
+  /** The hard paths' sweep (Brave + Google, tiered) with the harder round inside; `googlePage` = one deeper page. */
+  const sweepRound = async (opts: { first: boolean; googlePage?: number }) => {
+    if (!HARD_PATHS.includes(path)) return;
+    sweepStarted.current = true;
+    setBusy((n) => n + 1);
+    setError(null);
+    try {
+      const r = await runFindYou({
+        name: input.name,
+        city: input.city || null,
+        occupation: input.occupation || null,
+        company: input.company || null,
+        extra: input.extra || null,
+        clues,
+        done_queries: done.current,
+        page: 1,
+        deepen: null,
+        first: opts.first,
+        path: path as FindYouPath,
+        known_urls: knownUrls,
+        google_page: opts.googlePage ?? 0,
+      });
+      done.current = [...done.current, ...r.queries.map((q) => q.query), ...r.calls.filter((c) => c.page === 1 && c.engine === "google").map((c) => c.query)];
+      setBuckets((b) => absorb(b, r));
+      setSweep((cur) => withSweep(cur, r));
+      if (r.error) setError(r.error);
+      for (const d of r.decisions) onLog({ at: Date.now(), kind: "round", text: d, points: null });
+      onLog({ at: Date.now(), kind: "round", text: `Sweep cost: ${r.points ?? "?"} points in ${r.ms} ms`, points: r.points });
+      if (r.directory?.job?.snapshot_id) void poll(r.directory.job.snapshot_id);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "The search failed");
+    } finally {
+      setBusy((n) => n - 1);
+    }
+  };
 
   const round = async (opts: { first: boolean; clues?: Clue[]; page?: number; deepen?: string | null }) => {
     setBusy((n) => n + 1);
@@ -168,12 +274,78 @@ export function PersonHarderStage({
     setJobStatus("LinkedIn search still running");
   };
 
-  const start = useEffectEvent(() => void round({ first: true }));
+  const start = useEffectEvent(() => void (HARD_PATHS.includes(path) ? sweepRound({ first: true }) : round({ first: true })));
   useEffect(() => {
     if (started.current) return;
     started.current = true;
     start();
   }, []);
+  // Escalated mid-session (harder → hard): the sweep runs once, without repeating the searches already done.
+  const escalated = useEffectEvent(() => void sweepRound({ first: false }));
+  useEffect(() => {
+    if (hard && started.current && !sweepStarted.current) escalated();
+  }, [hard]);
+  // A find in a focused window (any helper): that platform's session is done, with a find.
+  const helperFound = useEffectEvent((c: HelperCandidate) => {
+    const key = focusKeyOf(c.platform);
+    setFocus((cur) => ({ ...cur, [key]: { status: "done", found: true } }));
+    setHistory((h) => [...h, { query: `focused session: ${key}`, answer: "me", firm_anchor: true, bucket: `focus:${key}`, url: c.url }]);
+    onLog({ at: Date.now(), kind: "anchor", text: `Found in the ${key} window: ${c.url}`, bucket: `focus:${key}`, url: c.url });
+  });
+  useEffect(() => onHelperAnswer((c, a) => (a === "me" ? helperFound(c) : undefined)), []);
+  // person.find_you (the next round's workflow input) and the Builder feed, kept current every render.
+  useEffect(() => {
+    onProvision?.({
+      path,
+      clues,
+      buckets: {
+        tiers: (sweep?.tiers ?? []).map((t) => ({ key: t.key, label: t.label, rows: (sweep?.rows ?? []).filter((r) => r.tier === t.key) })),
+        directory: buckets.directory?.candidates ?? [],
+        socials: buckets.socials,
+        web: buckets.web,
+        filters: sweep?.filters ?? [],
+      },
+      history,
+      focus,
+    });
+    onSweep?.(
+      sweep
+        ? {
+            path: sweep.path,
+            calls: sweep.calls,
+            filters: sweep.filters,
+            points: sweep.points,
+            ms: sweep.ms,
+            rows: sweep.rows.map((r) => ({
+              url: r.url,
+              title: r.title,
+              tier: r.tier,
+              tier_reason: r.tier_reason,
+              score: r.score,
+              engines: [...new Set(r.hits.map((h) => h.engine))].join(" + "),
+              best_rank: Math.min(...r.hits.map((h) => h.rank)),
+              answer: sweepAnswers[r.key] ?? null,
+              raw: r.raw,
+            })),
+          }
+        : null,
+      focus,
+    );
+  });
+
+  const answerSweep = (row: SweepRow, a: SweepAnswer | null) => {
+    setSweepAnswers((cur) => {
+      const next = { ...cur };
+      if (a) next[row.key] = a;
+      else delete next[row.key];
+      return next;
+    });
+    if (!a) return;
+    const tierLabel = sweep?.tiers.find((t) => t.key === row.tier)?.label ?? row.tier;
+    setHistory((h) => [...h, { query: row.hits[0]?.query ?? "", answer: a, firm_anchor: a === "me" && row.firm, bucket: `sweep:${row.tier}`, url: row.url }]);
+    if (a === "me") answer(sweepCandidate(row), "me", `Sweep · ${tierLabel}`);
+    else onLog({ at: Date.now(), kind: "answer", text: `Sweep · ${tierLabel}: ${a} · ${row.title ?? row.url}`, bucket: `sweep:${row.tier}`, url: row.url });
+  };
 
   const answer = (c: HarderCandidate, a: HarderAnswer, bucketLabel: string) => {
     setAnswers((cur) => ({ ...cur, [c.key]: a }));
@@ -214,6 +386,18 @@ export function PersonHarderStage({
     );
   }
 
+  const meFound = Object.values(sweepAnswers).includes("me") || Object.values(answers).includes("me");
+  const allSweepAnswered = Boolean(sweep?.rows.length) && sweep!.rows.every((r) => sweepAnswers[r.key]);
+  const stuck = hard && Boolean(sweep) && busy === 0 && !meFound && (gaveUp || allSweepAnswered || !sweep!.rows.length);
+  const openFocus = (key: string) => {
+    setFocus((cur) => ({ ...cur, [key]: { status: "open", found: cur[key]?.found ?? false } }));
+    onLog({ at: Date.now(), kind: "round", text: `Focused session opened: ${key}`, bucket: `focus:${key}` });
+  };
+  const doneFocus = (key: string) => {
+    setFocus((cur) => ({ ...cur, [key]: { status: "done", found: cur[key]?.found ?? false } }));
+    setHistory((h) => [...h, { query: `focused session: ${key}`, answer: "nothing", firm_anchor: false, bucket: `focus:${key}` }]);
+    onLog({ at: Date.now(), kind: "answer", text: `Focused session done: ${key} (nothing found)`, bucket: `focus:${key}` });
+  };
   const dir = buckets.directory;
   const webShown = buckets.web.filter((c) => answers[c.key] !== "skip").slice(0, 10 * (pages.web ?? 1));
   const searching = busy > 0;
@@ -222,8 +406,16 @@ export function PersonHarderStage({
     <section data-testid="smart-add-find-you" aria-label="Find you" className="flex w-full flex-col gap-4">
       <header className="flex items-baseline justify-between gap-2">
         <h2 className="text-base font-semibold text-foreground">Let&apos;s find you</h2>
-        <span className="text-xs text-muted-foreground">
-          {searching ? "Searching…" : clues.length ? `${clues.length} clues` : null}
+        <span className="text-xs text-muted-foreground" data-testid="smart-add-find-status">
+          {searching
+            ? hard && !sweep
+              ? "Searching Brave and Google, up to 150 results…"
+              : "Searching…"
+            : stuck
+              ? "Nothing matched yet"
+              : clues.length
+                ? `${clues.length} clues`
+                : null}
         </span>
       </header>
       {error ? <p className="text-xs text-destructive">{error}</p> : null}
@@ -238,6 +430,36 @@ export function PersonHarderStage({
           onPick={(c) => answer(c, "me", "Pick one")}
           onNone={() => pickNone(dir.candidates, "Pick one")}
         />
+      ) : null}
+
+      {hard && sweep && (sweep.platformsFirst || stuck) ? (
+        <FocusList focus={focus} stuck={stuck} onOpen={openFocus} onDone={doneFocus} />
+      ) : null}
+
+      {hard && sweep ? (
+        <div className="flex flex-col gap-2">
+          <div className="flex items-baseline justify-between gap-2">
+            <h3 className="text-sm font-semibold text-foreground">Anything here about you?</h3>
+            <span className="text-xs text-muted-foreground" data-testid="smart-add-sweep-count">
+              {sweep.rows.length} results · {sweep.tiers.find((t) => t.key === "strong")?.count ?? 0} best
+            </span>
+          </div>
+          {sweep.rows.length ? (
+            <SweepReview name={input.name} rows={sweep.rows} tiers={sweep.tiers} answers={sweepAnswers} onAnswer={answerSweep} />
+          ) : null}
+          <div className="flex flex-wrap gap-1.5">
+            {sweep.googleNext ? (
+              <Button variant="quiet" icon={<ChevronDown aria-hidden />} disabled={searching} onClick={() => void sweepRound({ first: false, googlePage: sweep.googleNext ?? undefined })}>
+                {`More from Google · page ${sweep.googleNext}`}
+              </Button>
+            ) : null}
+            {!stuck ? (
+              <Button variant="quiet" icon={<SearchX aria-hidden />} onClick={() => setGaveUp(true)} data-testid="smart-add-not-here">
+                None of these are me
+              </Button>
+            ) : null}
+          </div>
+        </div>
       ) : null}
 
       {webShown.length ? (
@@ -278,8 +500,16 @@ export function PersonHarderStage({
           {buckets.aggregatorClues.length ? ` · clue: ${buckets.aggregatorClues[0].snippet ?? ""}` : ""}
         </p>
       ) : null}
-      {!searching && !dir && !webShown.length && !Object.keys(buckets.socials).length ? (
+      {!searching && !dir && !webShown.length && !Object.keys(buckets.socials).length && !sweep?.rows.length ? (
         <p className="text-sm text-muted-foreground">Nothing found yet</p>
+      ) : null}
+      {hard && sweep && !sweep.platformsFirst && !stuck ? (
+        <FocusList focus={focus} stuck={false} onOpen={openFocus} onDone={doneFocus} />
+      ) : null}
+      {!hard && onEscalate && !searching ? (
+        <Button variant="quiet" icon={<SearchX aria-hidden />} className="self-start" onClick={onEscalate} data-testid="smart-add-dig-deeper">
+          Still not you? Dig deeper
+        </Button>
       ) : null}
     </section>
   );

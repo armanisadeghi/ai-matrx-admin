@@ -27,7 +27,7 @@ import {
   useHelperSession,
   type HelperSession,
 } from "./store";
-import type { HelperCandidate, HelperInput, HelperMethod, HelperMethodInfo, HelperResult } from "./types";
+import { PAGED_METHODS, type HelperCandidate, type HelperInput, type HelperMethod, type HelperMethodInfo, type HelperResult } from "./types";
 
 let methodInfo: Promise<HelperMethodInfo[]> | null = null;
 function useMethodInfo(method: HelperMethod): HelperMethodInfo | null {
@@ -243,8 +243,8 @@ export function HelperPanel({ method }: { method: HelperMethod }) {
       {session.status === "cancelled" ? <p className="text-xs text-muted-foreground">Cancelled.</p> : null}
       {isAdmin ? <AdminBlock info={info} session={session} /> : null}
       {r ? <Results method={method} result={r} /> : null}
-      {method === "google" && r?.more && !busy ? (
-        <Button variant="outline" className="self-start" onClick={() => void moreGoogle()} data-testid="smart-add-helper-google-more">
+      {PAGED_METHODS.includes(method) && r?.more && !busy ? (
+        <Button variant="outline" className="self-start" onClick={() => void moreGoogle(method)} data-testid={`smart-add-helper-${method}-more`}>
           {`More results · page ${r.page + 1}`}
         </Button>
       ) : null}

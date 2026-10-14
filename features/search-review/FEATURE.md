@@ -36,6 +36,10 @@ by?}>`, `onAnswer(key, answer | null)` — the persistence adapter (may be async
 the row). The host re-publishes every render, so the window always shows the host's answers; when
 the host unmounts the window says the results closed with their page.
 
+**Tiers (optional):** `session.tiers` (best first) + `result.tier` show results one tier at a time, with a
+"Show next · <tier> (N)" row at the end of the list; `result.adminNote` (why it sits there) shows on the rank
+hover for admin debuggers only.
+
 `SearchReviewBody` can also be rendered inline by a host that does not want a window.
 
 ## Callers
@@ -43,6 +47,7 @@ the host unmounts the window says the results closed with their page.
 | Caller | Adapter |
 |---|---|
 | Smart Add "On the web" (`features/marketing/smart-add/SmartAddWebRow.tsx`) | `web.brand_relation_kind` vocabulary; rules suggestion (`webKinds.suggestKind`); answers go to the same `webChoices` state, persisted at Create by `relations.routeWebChoices` |
+| Smart Add person hard / close to impossible (`features/marketing/smart-add/harder/FindAnything.tsx` `SweepReview`) | inline, tiered (strong → mid → low → junk); This is me / Maybe / Not me; answers feed the find-you clue loop and `person.find_you` |
 | Lab story `/lab/search-review` | the same entry on one recorded fullspecstaff.com round |
 
 The AI "we think" source is the declared mandate `brand_intake.web_result_classifier` (aidream
@@ -51,4 +56,5 @@ The AI "we think" source is the declared mandate `brand_intake.web_result_classi
 
 ## Change log
 
+- 2026-10-14 — tiers ("Show next") and the admin-only per-result note; first tiered caller: Smart Add's hard paths.
 - 2026-10-14 — created; Smart Add's inline web rows replaced by one "Review N web results" entry.

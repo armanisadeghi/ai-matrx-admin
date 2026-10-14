@@ -18,15 +18,17 @@ import { useOpenSmartAddHelper } from "@/features/overlays/openers/smartAddHelpe
 import { PlatformMark } from "@/features/marketing/social/components/PlatformMark";
 import { HELPER_LABELS, type HelperMethod } from "./types";
 
-const PERSON: HelperMethod[] = ["linkedin", "google", "threads", "tiktok", "youtube"];
+const PERSON: HelperMethod[] = ["linkedin", "google", "facebook", "instagram", "threads", "tiktok", "youtube"];
 const COMPANY: HelperMethod[] = ["google", "threads", "tiktok", "youtube"];
-const MARK: Record<HelperMethod, string> = {
+export const MARK: Record<HelperMethod, string> = {
   linkedin: "linkedin",
   google: "website",
   threads: "threads",
   tiktok: "tiktok",
   youtube: "youtube",
   grok: "x",
+  facebook: "facebook",
+  instagram: "instagram",
 };
 
 export function HelpersMenu({ person }: { person: boolean }) {

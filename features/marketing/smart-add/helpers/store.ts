@@ -174,16 +174,16 @@ async function poll(snapshot: string) {
   }
 }
 
-/** Google: one more page of the name (SerpAPI `start` paging), merged into what is shown. One search. */
-export async function moreGoogle() {
-  const s = sessions.google;
+/** Google / Facebook / Instagram: one more page (SerpAPI `start` paging), merged into what is shown. One search. */
+export async function moreGoogle(method: HelperMethod = "google") {
+  const s = sessions[method];
   if (!s?.result?.more || s.status === "running") return;
   const page = s.result.page + 1;
   const prev = s.result;
-  set("google", { status: "running", error: null });
+  set(method, { status: "running", error: null });
   const t0 = Date.now();
   try {
-    const next = await runHelper("google", s.input, false, page);
+    const next = await runHelper(method, s.input, false, page);
     const byKey = new Map<string, HelperCandidate>(prev.candidates.map((c) => [c.key, c]));
     for (const c of next.candidates) if (!byKey.has(c.key)) byKey.set(c.key, c);
     const groups: Record<string, HelperCandidate[]> = {};
@@ -192,7 +192,7 @@ export async function moreGoogle() {
       const have = new Set((groups[k] ?? []).map((c) => c.key));
       groups[k] = [...(groups[k] ?? []), ...list.filter((c) => !have.has(c.key))];
     }
-    set("google", {
+    set(method, {
       status: "done",
       elapsedMs: (s.elapsedMs ?? 0) + (Date.now() - t0),
       error: next.error,
@@ -209,7 +209,7 @@ export async function moreGoogle() {
       },
     });
   } catch (error) {
-    set("google", { status: "done", error: extractErrorMessage(error) });
+    set(method, { status: "done", error: extractErrorMessage(error) });
   }
 }
 

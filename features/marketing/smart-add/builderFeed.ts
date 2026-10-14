@@ -6,6 +6,8 @@
  * Derived and names its source step. Steps, requests and snapshots are read from the server by the
  * panel itself. A no-op for non-admins (the hook gates it).
  */
+import type { SweepFeed } from "@/features/builder-panel/components/BuilderDecisionsTab";
+import type { FocusState } from "./harder/types";
 import type { BuilderPublishInput } from "@/features/builder-panel/types";
 import type { MarketingBrand } from "@/features/marketing/types";
 import type { Decision, EvidenceItem, RoundSeeds, confirmedBasics } from "./evidence";
@@ -39,10 +41,15 @@ export interface SmartAddFeedState {
   enrich?: EnrichFeed | null;
   findYou?: {
     path: unknown;
+    /** The path the find-you screen runs (the decided one, or a deeper one after "Dig deeper"). */
+    findPath?: string;
     history: unknown[];
     log: FindLogEntry[];
     pageAnchors: string[];
     anchors: string[];
+    /** Hard / close-to-impossible: every sweep call, row tier and filter (aidream person_hard.py). */
+    sweep?: SweepFeed | null;
+    focus?: Record<string, FocusState> | null;
   } | null;
 }
 

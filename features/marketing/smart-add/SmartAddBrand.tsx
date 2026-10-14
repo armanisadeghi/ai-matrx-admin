@@ -95,6 +95,8 @@ import { useRelationKinds } from "./SmartAddExtras";
 import { suggestKind, type WebChoice } from "./webKinds";
 import { SETUP_STEPS, SmartAddRound, type PersonSignals, type RoundPath, type RoundView } from "./SmartAddRound";
 import { PersonHarderStage } from "./harder/PersonHarderStage";
+import type { FindYouProvision, FocusState } from "./harder/types";
+import type { SweepFeed } from "@/features/builder-panel/components/BuilderDecisionsTab";
 import type { FindLogEntry, HarderCandidate } from "./harder/types";
 import { AnchorCards, type AnchorAnswer } from "./AnchorCards";
 import { HelpersMenu } from "./helpers/HelpersMenu";
@@ -202,6 +204,11 @@ export function SmartAddBrand({ onCreated, enrich = null }: { onCreated?: (brand
   // Person harder (PATHS.md person_harder): the find-you log (Builder › Decisions) and the confirmed page
   // anchors (an employer bio page or a licence record: firm, but not the person's own website).
   const [findLog, setFindLog] = useState<FindLogEntry[]>([]);
+  // Hard / close-to-impossible paths: "Dig deeper" escalates on the screen; person.find_you rides the next round's
+  // inputs (the mandate provisions read it); the sweep feed goes to the Builder panel.
+  const [escalatedPath, setEscalatedPath] = useState<string | null>(null);
+  const findYouProvision = useRef<FindYouProvision | null>(null);
+  const sweepFeed = useRef<{ sweep: SweepFeed | null; focus: Record<string, FocusState> }>({ sweep: null, focus: {} });
   const [pageAnchors, setPageAnchors] = useState<string[]>([]);
   const anchorRunId = useRef<string | null>(null);
   const groundedSent = useRef(false);
@@ -257,6 +264,7 @@ export function SmartAddBrand({ onCreated, enrich = null }: { onCreated?: (brand
           ...(personMore.current.company ? { company: personMore.current.company } : {}),
           ...(personMore.current.extra ? { other: personMore.current.extra } : {}),
           anchors: personAnchors,
+          ...(findYouProvision.current && !find ? { find_you: findYouProvision.current } : {}),
           ...(find ? { find: true } : {}),
           ...(groundedRound ? { grounded: true, ...(anchorRunId.current ? { anchor_run_id: anchorRunId.current } : {}) } : {}),
         }
@@ -334,6 +342,9 @@ export function SmartAddBrand({ onCreated, enrich = null }: { onCreated?: (brand
     typedKeys.current = { website: null, social: null };
     personTyped.current = null;
     personMore.current = { occupation: "", company: "", extra: "" };
+    setEscalatedPath(null);
+    findYouProvision.current = null;
+    sweepFeed.current = { sweep: null, focus: {} };
     setPathByRun({});
     setFindLog([]);
     setPageAnchors([]);
@@ -434,8 +445,13 @@ export function SmartAddBrand({ onCreated, enrich = null }: { onCreated?: (brand
     .filter((p): p is RoundPath => Boolean(p))
     .map((p) => ({ subject: p.subject, path: p.path }));
   const personPath = [...rounds].reverse().map((r) => (r.runId ? pathByRun[r.runId] : undefined)).find((p) => p?.subject === "person") ?? null;
-  // Find-you mode: the person's path runs the harder rules (person_harder, or hard / near impossible running as it).
-  const findYou = person && Boolean(personTyped.current) && personPath?.runs_as === "person_harder";
+  // Find-you mode: the person's path runs the harder rules, or one of the harder paths built on them (hard, close to
+  // impossible). "Dig deeper" escalates on the screen; a path only moves down the ladder.
+  const FIND_PATHS = ["person_harder", "person_hard", "person_near_impossible"];
+  const decidedRank = FIND_PATHS.indexOf(personPath?.runs_as ?? "");
+  const findPath = escalatedPath && FIND_PATHS.indexOf(escalatedPath) > decidedRank ? escalatedPath : (personPath?.runs_as ?? "");
+  const findYou = person && Boolean(personTyped.current) && FIND_PATHS.includes(findPath);
+  if (escalatedPath && pathHistory[pathHistory.length - 1]?.path !== escalatedPath) pathHistory.push({ subject: "person", path: escalatedPath });
   // What the helper windows prefill from (name, city, and the person's typed job / company).
   const helperCity = personTyped.current?.city || (factBasics.facts.find((f) => f.field === "address")?.value ?? "");
   const helperName = (person ? personTyped.current?.name : null) ?? factBasics.name ?? "";
@@ -710,7 +726,7 @@ export function SmartAddBrand({ onCreated, enrich = null }: { onCreated?: (brand
           }
         : null,
       findYou: findYou || findLog.length
-        ? { path: personPath, history: pathHistory, log: findLog, pageAnchors, anchors: personAnchors }
+        ? { path: personPath, findPath, history: pathHistory, log: findLog, pageAnchors, anchors: personAnchors, sweep: sweepFeed.current.sweep, focus: sweepFeed.current.focus }
         : null,
     };
     void import("./builderFeed").then((m) => m.publishSmartAddFeed(builder.publish, state));
@@ -1133,9 +1149,21 @@ export function SmartAddBrand({ onCreated, enrich = null }: { onCreated?: (brand
         <PersonHarderStage
           key={`${personTyped.current.name}|${personTyped.current.city}`}
           input={{ ...personTyped.current, ...personMore.current }}
+          path={findPath}
+          knownUrls={[...personAnchors, ...pageAnchors]}
           grounded={personAnchors.length > 0}
           onConfirm={confirmFound}
           onLog={logFind}
+          onEscalate={() => {
+            setEscalatedPath("person_hard");
+            logFind({ at: Date.now(), kind: "escalation", text: "Dig deeper: person_harder → person_hard (asked on the screen)" });
+          }}
+          onProvision={(p) => {
+            findYouProvision.current = p;
+          }}
+          onSweep={(sweep, focus) => {
+            sweepFeed.current = { sweep, focus };
+          }}
         />
       ) : null}
 

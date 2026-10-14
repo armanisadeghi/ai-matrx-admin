@@ -11,7 +11,7 @@
  */
 
 import { useState } from "react";
-import { Clock, EyeOff, Lightbulb, RotateCcw, Search } from "lucide-react";
+import { ChevronDown, Clock, EyeOff, Lightbulb, RotateCcw, Search } from "lucide-react";
 import {
   Button,
   EmptyState,
@@ -118,6 +118,7 @@ function FoundPopover({ result, showEngines }: { result: ReviewResult; showEngin
         </span>
       </HoverCardTrigger>
       <HoverCardContent className="w-72 space-y-1 text-xs" align="end">
+        {showEngines && result.adminNote ? <p className="text-muted-foreground" data-testid="search-review-admin-note">{result.adminNote}</p> : null}
         {result.hits.map((h, i) => (
           <p key={i} className="flex gap-2">
             <span className="tabular-nums text-muted-foreground">#{h.rank}</span>
@@ -137,7 +138,9 @@ function ResultCard({
   suggestion,
   showEngines,
   onAnswer,
+  tierLabel = null,
 }: {
+  tierLabel?: string | null;
   result: ReviewResult;
   choices: ReviewChoice[];
   answer: ReviewAnswer | undefined;
@@ -177,7 +180,13 @@ function ResultCard({
       data-key={result.key}
       data-answer={answer ? (answer.status === "answered" ? answer.kind : answer.status) : ""}
       data-suggested={suggestion?.kind ?? ""}
+      data-tier={result.tier ?? ""}
     >
+      {tierLabel ? (
+        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground" data-testid="search-review-tier">
+          {tierLabel}
+        </p>
+      ) : null}
       <div className="flex items-start gap-2">
         <div className="min-w-0 flex-1">
           <SearchKindNested value={toWebResultValue(result)} />
@@ -245,13 +254,24 @@ function copyText(session: SearchReviewSession): string {
 export function SearchReviewBody({ session }: { session: SearchReviewSession }) {
   const isAdminDebugger = useAppSelector(selectIsAdminDebugger);
   const [view, setView] = useState<View>("open");
+  // Tiers open one at a time, best first ("Show next"); without tiers every result shows.
+  const [opened, setOpened] = useState(1);
   const { results, answers, choices } = session;
+  const tiers = session.tiers?.filter((t) => results.some((r) => r.tier === t.key)) ?? [];
+  const tierIndex = (r: ReviewResult) => Math.max(0, tiers.findIndex((t) => t.key === r.tier));
+  const nextTier = tiers.length > opened ? tiers[opened] : null;
+  const nextCount = nextTier ? results.filter((r) => r.tier === nextTier.key).length : 0;
   const count = (v: View) => results.filter((r) => inView(answers[r.key], v)).length;
   const done = count("answered");
   // "Ask me later" sends a result to the back of the line.
   const shown = results
-    .filter((r) => inView(answers[r.key], view))
-    .sort((a, b) => Number(answers[a.key]?.status === "later") - Number(answers[b.key]?.status === "later") || bestRank(a) - bestRank(b));
+    .filter((r) => inView(answers[r.key], view) && (!tiers.length || tierIndex(r) < opened))
+    .sort(
+      (a, b) =>
+        Number(answers[a.key]?.status === "later") - Number(answers[b.key]?.status === "later") ||
+        (tiers.length ? tierIndex(a) - tierIndex(b) : 0) ||
+        (tiers.length ? 0 : bestRank(a) - bestRank(b)),
+    );
   const onAnswer = async (key: string, answer: ReviewAnswer | null) => {
     await session.onAnswer(key, answer);
   };
@@ -289,7 +309,7 @@ export function SearchReviewBody({ session }: { session: SearchReviewSession }) 
       </div>
       {shown.length ? (
         <ul className="@container min-h-0 flex-1 overflow-y-auto">
-          {shown.map((r) => (
+          {shown.map((r, i) => (
             <ResultCard
               key={r.key}
               result={r}
@@ -298,15 +318,31 @@ export function SearchReviewBody({ session }: { session: SearchReviewSession }) 
               suggestion={session.suggestions?.[r.key]}
               showEngines={isAdminDebugger}
               onAnswer={(a) => onAnswer(r.key, a)}
+              tierLabel={tiers.length > 1 && (i === 0 || shown[i - 1].tier !== r.tier) ? (tiers.find((t) => t.key === r.tier)?.label ?? null) : null}
             />
           ))}
+          {nextTier ? (
+            <li className="px-4 py-3">
+              <Button variant="outline" icon={<ChevronDown aria-hidden />} onClick={() => setOpened((n) => n + 1)} data-testid="search-review-next-tier">
+                {`Show next · ${nextTier.label} (${nextCount})`}
+              </Button>
+            </li>
+          ) : null}
         </ul>
       ) : (
         <div className="flex flex-1 items-center justify-center p-6">
           <EmptyState
             icon={<Search aria-hidden />}
             title={view === "open" ? "All answered" : "Nothing here"}
-            action={view !== "all" ? <Button variant="quiet" onClick={() => setView("all")}>Show all</Button> : undefined}
+            action={
+              nextTier ? (
+                <Button variant="outline" onClick={() => setOpened((n) => n + 1)} data-testid="search-review-next-tier">
+                  {`Show next · ${nextTier.label} (${nextCount})`}
+                </Button>
+              ) : view !== "all" ? (
+                <Button variant="quiet" onClick={() => setView("all")}>Show all</Button>
+              ) : undefined
+            }
           />
         </div>
       )}

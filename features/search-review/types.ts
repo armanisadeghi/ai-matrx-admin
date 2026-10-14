@@ -23,6 +23,16 @@ export interface ReviewResult {
   result: Record<string, unknown>;
   /** Every engine/query/rank that found it, best first. */
   hits: ReviewHit[];
+  /** The quality tier it sits in (a key of `session.tiers`). */
+  tier?: string | null;
+  /** Why it sits there — admin debuggers only, on the rank hover. */
+  adminNote?: string | null;
+}
+
+/** A quality tier: shown best first, one tier at a time ("Show next"). */
+export interface ReviewTier {
+  key: string;
+  label: string;
 }
 
 /** Who/what the results are judged against. */
@@ -74,6 +84,8 @@ export interface SearchReviewSession {
   choices: ReviewChoice[];
   answers: Record<string, ReviewAnswer>;
   suggestions?: Record<string, ReviewSuggestion | null | undefined>;
+  /** Tiers, best first. When set, results show tier by tier: the next tier opens on "Show next". */
+  tiers?: ReviewTier[] | null;
   /** The persistence adapter. `null` clears the answer. May be async; a rejection is shown on the row. */
   onAnswer: (key: string, answer: ReviewAnswer | null) => void | Promise<void>;
 }

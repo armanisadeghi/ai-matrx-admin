@@ -45,11 +45,110 @@ interface FindRow {
   points?: number | null;
 }
 
+/** The hard / close-to-impossible sweep (aidream person_hard.py): every call, every row's tier, every filter. */
+interface SweepCallRow {
+  engine: string;
+  query: string;
+  page: number;
+  results: number;
+  ms: number;
+  points: number | null;
+  usd: number | null;
+  error: string | null;
+}
+interface SweepRowFeed {
+  url: string;
+  title: string | null;
+  tier: string;
+  tier_reason: string;
+  score: number;
+  engines: string;
+  best_rank: number;
+  answer: string | null;
+  raw: Record<string, unknown>;
+}
+export interface SweepFeed {
+  path: string;
+  calls: SweepCallRow[];
+  rows: SweepRowFeed[];
+  filters: { key: string; label: string; removed: number; urls: string[] }[];
+  points: number | null;
+  ms: number;
+}
+
 export interface FindYouFeed {
   log: FindRow[];
   anchorBucket: string | null;
   anchorUrl: string | null;
   history: unknown[];
+  sweep?: SweepFeed | null;
+  focus?: Record<string, { status: string; found: boolean }> | null;
+}
+
+const SWEEP_CALL_COLUMNS: MatrxColumnDef<SweepCallRow & { id: string }>[] = [
+  { id: "engine", header: "Engine", accessorKey: "engine", filter: "select" },
+  { id: "query", header: "Query", accessorKey: "query", filter: "text" },
+  { id: "page", header: "Page", accessorKey: "page" },
+  { id: "results", header: "Rows", accessorKey: "results" },
+  { id: "ms", header: "Time", accessorFn: (r) => `${(r.ms / 1000).toFixed(1)} s` },
+  { id: "points", header: "Points", accessorFn: (r) => r.points ?? "?" },
+  { id: "usd", header: "$", accessorFn: (r) => (r.usd == null ? "" : `$${r.usd.toFixed(4)}`) },
+  { id: "error", header: "Error", accessorFn: (r) => r.error ?? "", filter: "text" },
+];
+
+const SWEEP_ROW_COLUMNS: MatrxColumnDef<SweepRowFeed & { id: string }>[] = [
+  { id: "tier", header: "Tier", accessorKey: "tier", filter: "select" },
+  { id: "title", header: "Result", accessorFn: (r) => r.title ?? r.url, filter: "text",
+    cell: (r) => <span title={r.url}>{r.title ?? r.url}</span> },
+  { id: "reason", header: "Why this tier", accessorKey: "tier_reason", filter: "text" },
+  { id: "score", header: "Match", accessorKey: "score" },
+  { id: "engines", header: "Found by", accessorKey: "engines", filter: "select" },
+  { id: "rank", header: "Best rank", accessorKey: "best_rank" },
+  { id: "answer", header: "Answer", accessorFn: (r) => r.answer ?? "", filter: "select" },
+  { id: "url", header: "URL", accessorKey: "url", filter: "text", hidden: true },
+];
+
+function SweepSection({ sweep, focus }: { sweep: SweepFeed; focus?: FindYouFeed["focus"] }) {
+  const removed = sweep.filters.filter((f) => f.removed);
+  return (
+    <section data-testid="builder-find-you-sweep">
+      <h3 className="mb-1 flex items-center gap-2 font-medium">
+        Sweep · {sweep.path}
+        <span className="font-normal text-muted-foreground">
+          {sweep.calls.length} calls · {sweep.rows.length} rows · {sweep.points ?? "?"} points · {(sweep.ms / 1000).toFixed(1)} s
+        </span>
+      </h3>
+      <MatrxDataTable<SweepCallRow & { id: string }>
+        tableId="builder/decision-sweep-calls"
+        data={sweep.calls.map((r, i) => ({ ...r, id: String(i) }))}
+        columns={SWEEP_CALL_COLUMNS}
+        getRowId={(r) => r.id}
+        pageSize={0}
+        density="condensed"
+        copy={{ label: "Sweep call", listLabel: "Sweep calls", location: "Builder · Decisions", rowKind: "sweep-call", listKind: "sweep-calls",
+          humanRow: (r) => `${r.engine} p${r.page} ${r.query}: ${r.results} rows, ${r.ms} ms, ${r.points ?? "?"} pts` }}
+      />
+      <p className="my-1 text-muted-foreground">
+        Filters: {removed.length ? removed.map((f) => `${f.label} ${f.removed}`).join(" · ") : "nothing removed"}
+      </p>
+      <MatrxDataTable<SweepRowFeed & { id: string }>
+        tableId="builder/decision-sweep-rows"
+        data={sweep.rows.map((r, i) => ({ ...r, id: String(i) }))}
+        columns={SWEEP_ROW_COLUMNS}
+        getRowId={(r) => r.id}
+        pageSize={0}
+        density="condensed"
+        toolbar={{ search: true, searchPlaceholder: "Search rows" }}
+        copy={{ label: "Sweep row", listLabel: "Sweep rows", location: "Builder · Decisions", rowKind: "sweep-row", listKind: "sweep-rows",
+          humanRow: (r) => `${r.tier} · ${r.title ?? ""}\n${r.url}\n${r.tier_reason}` }}
+      />
+      {focus && Object.keys(focus).length ? (
+        <p className="mt-1 text-muted-foreground">
+          Focused sessions: {Object.entries(focus).map(([k, v]) => `${k} ${v.status}${v.found ? " · found" : ""}`).join(" · ")}
+        </p>
+      ) : null}
+    </section>
+  );
 }
 
 const FIND_COLUMNS: MatrxColumnDef<FindRow & { id: string }>[] = [
@@ -239,6 +338,7 @@ export function BuilderDecisionsTab({
             />
           </section>
         ) : null}
+        {findYou?.sweep ? <SweepSection sweep={findYou.sweep} focus={findYou.focus} /> : null}
 
         <section>
           <h3 className="mb-1 font-medium">Skipped steps</h3>
