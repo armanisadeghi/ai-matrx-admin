@@ -242,6 +242,11 @@ export function evidenceFromPayload(payload: unknown): EvidenceItem[] {
 
 /** Add items to a keyed map; a repeated key keeps the higher confidence. Returns a new map only when something changed. */
 export function mergeEvidence(current: Map<string, EvidenceItem>, incoming: EvidenceItem[]): Map<string, EvidenceItem> {
+  const merged = mergeEvidenceRaw(current, incoming);
+  return merged === current ? current : withInferredIdentity(merged);
+}
+
+function mergeEvidenceRaw(current: Map<string, EvidenceItem>, incoming: EvidenceItem[]): Map<string, EvidenceItem> {
   let next: Map<string, EvidenceItem> | null = null;
   for (const item of incoming) {
     const existing = (next ?? current).get(item.key);
@@ -268,6 +273,52 @@ function unionSameAs(a: string[] | undefined, b: string[] | undefined): string[]
   if (!b?.length) return a ?? [];
   if (!a?.length) return b;
   return [...new Set([...a, ...b])];
+}
+
+/** The `social:<platform>:<id>` key a link names when it names an account by the platform's own id (numeric LinkedIn company, YouTube UC… channel, numeric Facebook page). */
+function idLinkKey(url: string | null | undefined): string | null {
+  if (!url) return null;
+  const li = /linkedin\.com\/(?:company|school)\/(\d{3,})/i.exec(url);
+  if (li) return `social:linkedin:${li[1]}`;
+  const yt = /youtube\.com\/channel\/(UC[\w-]{22})/i.exec(url);
+  if (yt) return `social:youtube:${yt[1]}`;
+  const fb = /facebook\.com\/(?:profile\.php\?id=|people\/[^/]+\/)(\d{6,})/i.exec(url);
+  return fb ? `social:facebook:${fb[1]}` : null;
+}
+
+/**
+ * Older stored runs (and any copy the server never re-streamed) lack the `same_as` that says a numeric
+ * /company/<id> row IS the looked-up vanity row. The looked-up account's own data names the id — its
+ * address, or anything read off its profile — so add those keys to its `same_as`. Returns the same map
+ * when nothing was learned.
+ */
+export function withInferredIdentity(items: Map<string, EvidenceItem>): Map<string, EvidenceItem> {
+  const all = [...items.values()];
+  const social = all.filter((i) => i.field === "social");
+  if (social.length < 2) return items;
+  let next: Map<string, EvidenceItem> | null = null;
+  for (const acct of social) {
+    if (!(acct.profile_id || acct.source.kind === "social_profile")) continue;
+    const address = [acct.url, acct.value, acct.source.kind === "social_profile" ? acct.source.url : null]
+      .filter((u): u is string => Boolean(u))
+      .map(profileAddress);
+    const known = new Set([acct.key, ...(acct.same_as ?? [])]);
+    const learned = new Set<string>();
+    const consider = (u: string | null | undefined) => {
+      const k = idLinkKey(u);
+      if (k && !known.has(k) && items.has(k) && items.get(k)!.platform === acct.platform) learned.add(k);
+    };
+    for (const u of [acct.url, acct.value, acct.source.url]) consider(u);
+    for (const i of all) {
+      if (i.source.kind !== "social_profile" || !i.source.url || !address.includes(profileAddress(i.source.url))) continue;
+      consider(i.url);
+      consider(i.value);
+    }
+    if (!learned.size) continue;
+    next ??= new Map(items);
+    next.set(acct.key, { ...acct, same_as: [...(acct.same_as ?? []), ...learned] });
+  }
+  return next ?? items;
 }
 
 type AccountLike = Pick<EvidenceItem, "key" | "same_as"> & Partial<Pick<EvidenceItem, "platform" | "profile_id">>;
@@ -611,7 +662,8 @@ export function compareRows(items: EvidenceItem[]): PlatformRow[] {
 
   // Accounts — one per account key; a looked-up profile beats a bare link found on a page.
   const accounts = new Map<string, EvidenceItem>();
-  for (const i of items.filter((x) => x.field === "social")) {
+  const inferred = withInferredIdentity(new Map(items.map((x) => [x.key, x])));
+  for (const i of items.filter((x) => x.field === "social").map((x) => inferred.get(x.key) ?? x)) {
     const existing = accounts.get(i.key);
     if (!existing || (existing.source.kind !== "social_profile" && i.source.kind === "social_profile")) accounts.set(i.key, i);
   }

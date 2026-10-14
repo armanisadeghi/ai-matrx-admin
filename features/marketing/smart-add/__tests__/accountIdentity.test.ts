@@ -1,4 +1,5 @@
 import { collapseAliasedAccounts, compareRows, evidenceFromPayload, mergeEvidence, type EvidenceItem } from "../evidence";
+import { compareSlots } from "../compare/compareSlots";
 
 // Recorded live on 2026-10-14 (run e6b0140b, fullspecstaff.com): the brand's Linktree links
 // linkedin.com/company/17891469/admin/, the site links /company/full-spectrum-search-group, and the
@@ -48,5 +49,30 @@ describe("one real account = one row, whatever order its identities arrive in", 
     const items = screen([bareFromLinktree], [canonicalNoAlias], [canonicalWithAlias]);
     expect(items.find((i) => i.key === canonicalNoAlias.key)?.same_as).toEqual(["social:linkedin:17891469"]);
     expect(linkedinHandles(items)).toEqual(["full-spectrum-search-group"]);
+  });
+});
+
+describe("compare dialog: vanity + numeric LinkedIn company page are ONE card", () => {
+  const state = { decisions: {}, relations: {}, skipped: new Set<string>(), person: false, ownSites: [] as string[] };
+  // A second, unrelated account so the slot has 2+ candidates when the duplicate is (wrongly) kept.
+  const other = {
+    key: "social:linkedin:someone-else", field: "social", platform: "linkedin", handle: "someone-else",
+    value: "https://www.linkedin.com/company/someone-else", url: "https://www.linkedin.com/company/someone-else",
+    confidence: 0.6, source: { node: "web", kind: "web_search", url: null, where: "search" },
+  };
+  const cards = (items: EvidenceItem[]) =>
+    compareSlots(items, state).find((s) => s.platform === "linkedin")?.candidates.map((c) => c.handle) ?? [];
+
+  it("server same_as (current runs)", () => {
+    expect(cards(screen([bareFromLinktree], [canonicalWithAlias], [other]))).toEqual(["full-spectrum-search-group", "someone-else"]);
+  });
+
+  it("older stored run: no same_as, no profile_id on the numeric row; the id is only in what the profile said", () => {
+    const profileSaid = {
+      key: "social:linkedin:x:website", field: "website", value: "https://www.linkedin.com/company/17891469", url: "https://www.linkedin.com/company/17891469",
+      source: { node: "avatars", kind: "social_profile", url: vanity, where: "linkedin profile" }, confidence: 0.9,
+    };
+    const items = screen([bareFromLinktree], [canonicalNoAlias], [profileSaid], [other]);
+    expect(cards(items)).toEqual(["full-spectrum-search-group", "someone-else"]);
   });
 });
