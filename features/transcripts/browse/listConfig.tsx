@@ -41,6 +41,11 @@ export const transcriptListConfig: EntityListConfig<TranscriptListRow> = {
   surfaceKey: "transcripts-browse",
   // DD-137c / §3.3: where this list OPENS comes from platform.entity_types, never a literal.
   registryToken: "transcript",
+  // The hub mixes transcripts with sessions and segments; only transcripts are `transcript` records.
+  standardBulkActions: {
+    appliesTo: (row) =>
+      row.kind === "transcript" ? null : "only transcripts — not sessions or segments",
+  },
   entityLabel: { singular: "item", plural: "transcripts, sessions & cleanup" },
   sourceFeature: "transcription",
   /**

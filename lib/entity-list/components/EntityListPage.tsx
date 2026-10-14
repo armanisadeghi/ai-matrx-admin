@@ -807,6 +807,7 @@ export function EntityListPage<TRow>({
       rowIdOf: config.getRowId,
       labelOf: config.getRowName,
       config: config.standardBulkActions,
+      favoritesShown: Boolean(config.favorite),
     }),
   );
   const bulkEnabled = bulkActions.length > 0;

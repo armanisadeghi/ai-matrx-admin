@@ -448,8 +448,10 @@ export interface EntityListConfig<TRow> {
    * The built-in bulk verbs (Favorite, Unfavorite, Add tag, Move to Trash —
    * ../standardBulkActions.ts). ON for every surface that sets
    * `registryToken`; turn one off with `{ trash: false }`, all with `false`.
+   * Favorite appears only when the surface declares `favorite` (shows stars).
+   * `appliesTo` skips and names rows the built-ins cannot act on.
    */
-  standardBulkActions?: StandardBulkActionsConfig | false;
+  standardBulkActions?: StandardBulkActionsConfig<TRow> | false;
 
   /**
    * Modifiers for `bulkActions`: the noun the count uses, which rows may be

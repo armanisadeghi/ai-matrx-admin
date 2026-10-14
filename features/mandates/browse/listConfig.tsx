@@ -75,6 +75,8 @@ export const mandateListConfig: EntityListConfig<MandateListRow> = {
   // Where the list OPENS is the landing-tab knob lists.landing_tab/mandate (All by default; an
   // organization or a person overrides it) — never a lane literal on the page.
   registryToken: "mandate",
+  // Code-declared jobs: a person's trash outlives the boot sync and silently drops the job.
+  standardBulkActions: false,
   entityLabel: { singular: "mandate", plural: "mandates" },
   sourceFeature: "agents-other",
   // `mandate` is a registered entity token (agent.mandate) — Attach To rides

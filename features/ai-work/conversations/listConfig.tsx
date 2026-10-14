@@ -22,6 +22,7 @@ import type {
 } from "@/lib/entity-list/config";
 import { formatRelativeTime } from "@ai-matrx/kit/format";
 import { CONVERSATION_COLUMNS } from "./columns";
+import { conversationTrashBulkAction } from "./bulkTrash";
 import {
   fetchConversationFacets,
   fetchConversationPage,
@@ -56,6 +57,9 @@ export const conversationListConfig: EntityListConfig<ConversationBrowseRow> = {
   surfaceKey: "ai-work-conversations",
   // DD-137c / §3.3: where this list OPENS comes from platform.entity_types, never a literal.
   registryToken: "conversation",
+  // Trash goes through the conversation's own cascade (bulkTrash.ts), never the plain built-in.
+  standardBulkActions: { trash: false },
+  bulkActions: [conversationTrashBulkAction],
   // The list RPC applies platform.list_dimension_match (lib/entity-list/dimensionFilter.ts).
   dimensionFilter: true,
   entityLabel: { singular: "conversation", plural: "conversations" },

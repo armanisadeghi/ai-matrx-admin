@@ -35,7 +35,9 @@ export interface UseTableBulkSelectionArgs<TRow> {
   getRowName?: (row: TRow) => string;
   /** The screen's own verbs; an id equal to a built-in replaces it. */
   actions?: EntityBulkAction<TRow>[];
-  standardBulkActions?: StandardBulkActionsConfig | false;
+  standardBulkActions?: StandardBulkActionsConfig<TRow> | false;
+  /** Does this screen show favorites (stars)? Default true. */
+  favoritesShown?: boolean;
   /** Re-read the screen's data after an action changed it. */
   onRefresh: () => void;
   /** Drop removed rows locally; defaults to `onRefresh`. */
@@ -56,6 +58,7 @@ export function useTableBulkSelection<TRow>(args: UseTableBulkSelectionArgs<TRow
       rowIdOf: args.getRowId,
       labelOf: args.getRowName,
       config: args.standardBulkActions,
+      favoritesShown: args.favoritesShown,
     }),
   );
 

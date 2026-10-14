@@ -44,6 +44,8 @@ export interface PerRowOptions<TRow> {
   labelOf?: (row: TRow) => string;
   /** Ids to drop from the list after success (a removal verb). */
   removesRows?: boolean;
+  /** A reason to skip a loaded row without calling the verb; null = run it. */
+  skipReason?: (row: TRow) => string | null;
 }
 
 /**
@@ -64,7 +66,12 @@ export async function runPerRow<TRow>(
   for (let i = 0; i < selection.ids.length; i += PER_ROW_CONCURRENCY) {
     const batch = selection.ids.slice(i, i + PER_ROW_CONCURRENCY);
     const outcomes = await Promise.allSettled(
-      batch.map((id) => verb(id, rowsById.get(id))),
+      batch.map(async (id) => {
+        const row = rowsById.get(id);
+        const reason = row && options.skipReason ? options.skipReason(row) : null;
+        if (reason) throw new Error(reason);
+        await verb(id, row);
+      }),
     );
     outcomes.forEach((outcome, index) => {
       const id = batch[index];
@@ -117,6 +124,7 @@ export function trashBulkAction<TRow>(args: {
   noun: string;
   rowIdOf: (row: TRow) => string;
   labelOf?: (row: TRow) => string;
+  appliesTo?: (row: TRow) => string | null;
 }): EntityBulkAction<TRow> {
   return {
     id: "move-to-trash",
@@ -140,6 +148,7 @@ export function trashBulkAction<TRow>(args: {
           noun: args.noun,
           labelOf: args.labelOf,
           removesRows: true,
+          skipReason: args.appliesTo,
         },
         args.rowIdOf,
       ),
@@ -152,6 +161,7 @@ export function favoriteBulkAction<TRow>(args: {
   noun: string;
   rowIdOf: (row: TRow) => string;
   labelOf?: (row: TRow) => string;
+  appliesTo?: (row: TRow) => string | null;
   favorite: boolean;
 }): EntityBulkAction<TRow> {
   return {
@@ -173,6 +183,7 @@ export function favoriteBulkAction<TRow>(args: {
           done: args.favorite ? "Added to favorites" : "Removed from favorites",
           noun: args.noun,
           labelOf: args.labelOf,
+          skipReason: args.appliesTo,
         },
         args.rowIdOf,
       ),
@@ -185,6 +196,7 @@ export function tagBulkAction<TRow>(args: {
   noun: string;
   rowIdOf: (row: TRow) => string;
   labelOf?: (row: TRow) => string;
+  appliesTo?: (row: TRow) => string | null;
 }): EntityBulkAction<TRow> {
   return {
     id: "add-tag",
@@ -205,7 +217,12 @@ export function tagBulkAction<TRow>(args: {
         async (id) => {
           await fileUnderTag(args.token, id, name);
         },
-        { done: `Tagged "${name}"`, noun: args.noun, labelOf: args.labelOf },
+        {
+          done: `Tagged "${name}"`,
+          noun: args.noun,
+          labelOf: args.labelOf,
+          skipReason: args.appliesTo,
+        },
         args.rowIdOf,
       );
     },
@@ -213,10 +230,15 @@ export function tagBulkAction<TRow>(args: {
 }
 
 /** Which built-in verbs a surface keeps. Every one is on unless set to false. */
-export interface StandardBulkActionsConfig {
+export interface StandardBulkActionsConfig<TRow = never> {
   trash?: boolean;
   favorite?: boolean;
   tag?: boolean;
+  /**
+   * For lists that mix record types or hold rows the built-ins cannot act on:
+   * return a short reason to skip (and name) that row, or null to act on it.
+   */
+  appliesTo?: (row: TRow) => string | null;
 }
 
 /**
@@ -231,19 +253,26 @@ export function standardBulkActionsFor<TRow>(args: {
   noun: string;
   rowIdOf: (row: TRow) => string;
   labelOf?: (row: TRow) => string;
-  config: StandardBulkActionsConfig | false | undefined;
+  config: StandardBulkActionsConfig<TRow> | false | undefined;
+  /**
+   * Whether this screen shows favorites at all (a star or favorites-first).
+   * False → no Favorite verbs: a toast saying "added" with nothing visible
+   * changing is a lie.
+   */
+  favoritesShown?: boolean;
 }): EntityBulkAction<TRow>[] {
   if (!args.token || args.config === false) return [];
-  const on = (key: keyof StandardBulkActionsConfig) =>
+  const on = (key: "trash" | "favorite" | "tag") =>
     !args.config || args.config[key] !== false;
   const base = {
     token: args.token,
     noun: args.noun,
     rowIdOf: args.rowIdOf,
     labelOf: args.labelOf,
+    appliesTo: args.config ? args.config.appliesTo : undefined,
   };
   return [
-    ...(on("favorite")
+    ...(on("favorite") && args.favoritesShown !== false
       ? [
           favoriteBulkAction<TRow>({ ...base, favorite: true }),
           favoriteBulkAction<TRow>({ ...base, favorite: false }),
