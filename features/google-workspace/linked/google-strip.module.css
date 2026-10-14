@@ -1,0 +1,294 @@
+/*
+ * The Google strip on the Workbooks / Documents / Presentations homes is a GOOGLE component, so it
+ * wears Google's own Material 3 values (Google Workspace web, 2025–26), not our theme tokens:
+ * surface #f8fafd, on-surface #1f1f1f, on-surface-variant #444746, outline #747775, divider
+ * #e1e3e1, primary #0b57d0, secondary container #c2e7ff — and Google's dark equivalents. Product
+ * marks render raw on this surface (never on a tinted disc). Type is Roboto (Apache 2.0, loaded by
+ * next/font in GoogleHomeStrip) — Google Sans is not licensed for use outside Google.
+ */
+
+.strip {
+  --g-surface: #f8fafd;
+  --g-on-surface: #1f1f1f;
+  --g-on-surface-variant: #444746;
+  --g-outline: #747775;
+  --g-outline-variant: #c4c7c5;
+  --g-divider: #e1e3e1;
+  --g-primary: #0b57d0;
+  --g-on-primary: #ffffff;
+  --g-tonal: #c2e7ff;
+  --g-on-tonal: #001d35;
+  --g-chip-hover: rgba(31, 31, 31, 0.08);
+  --g-skeleton: #e9eef6;
+
+  display: flex;
+  flex-direction: column;
+  border-radius: 16px;
+  border: 1px solid var(--g-divider);
+  background: var(--g-surface);
+  color: var(--g-on-surface);
+  font-size: 14px;
+  line-height: 20px;
+  letter-spacing: 0.1px;
+  overflow: hidden;
+}
+
+:global(.dark) .strip {
+  --g-surface: #1e1f20;
+  --g-on-surface: #e3e3e3;
+  --g-on-surface-variant: #c4c7c5;
+  --g-outline: #8e918f;
+  --g-outline-variant: #444746;
+  --g-divider: #333537;
+  --g-primary: #a8c7fa;
+  --g-on-primary: #062e6f;
+  --g-tonal: #004a77;
+  --g-on-tonal: #c2e7ff;
+  --g-chip-hover: rgba(227, 227, 227, 0.08);
+  --g-skeleton: #333537;
+}
+
+/* Row 1 — the Google header (like One Tap / the account picker): G mark, "Google Workspace", account chip. */
+.head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 48px;
+  padding: 8px 12px 8px 16px;
+  border-bottom: 1px solid var(--g-divider);
+}
+.headLabel {
+  min-width: 0;
+  flex: 1 1 auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 500;
+  color: var(--g-on-surface-variant);
+}
+
+/* The account chip — Google's: avatar circle + email in a 32px outlined chip (M3 chip corners). */
+.account {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  max-width: min(18rem, 60%);
+  height: 32px;
+  padding: 0 12px 0 4px;
+  border: 1px solid var(--g-outline-variant);
+  border-radius: 8px;
+  color: var(--g-on-surface);
+  font-weight: 500;
+  text-decoration: none;
+  transition: background-color 150ms;
+}
+.account:hover {
+  background: var(--g-chip-hover);
+}
+.account:focus-visible {
+  outline: 2px solid var(--g-primary);
+  outline-offset: 2px;
+}
+.avatar {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 9999px;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1;
+}
+.ellipsis {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Row 2 — the product: raw product icon, its name and a line, the actions. */
+.body {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 16px;
+  padding: 14px 16px;
+}
+.product {
+  display: flex;
+  flex: 1 1 15rem;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+}
+.productText {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+}
+.title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 18px;
+  line-height: 24px;
+  font-weight: 400;
+  letter-spacing: 0;
+  color: var(--g-on-surface);
+}
+.line {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--g-on-surface-variant);
+}
+.actions {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
+
+/* Google's M3 buttons: 40px pills, Roboto Medium 14px. */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 40px;
+  padding: 0 24px;
+  border: 0;
+  border-radius: 20px;
+  font: inherit;
+  font-weight: 500;
+  letter-spacing: 0.1px;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: box-shadow 150ms, background-image 150ms;
+}
+.btn:has(> svg:first-child) {
+  padding: 0 20px;
+}
+.btn > svg {
+  width: 18px;
+  height: 18px;
+  flex: none;
+}
+.btn:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+.btn:focus-visible {
+  outline: 2px solid var(--g-primary);
+  outline-offset: 2px;
+}
+.filled {
+  background-color: var(--g-primary);
+  color: var(--g-on-primary);
+}
+.filled:not(:disabled):hover {
+  background-image: linear-gradient(rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.08));
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 1px 3px 1px rgba(0, 0, 0, 0.15);
+}
+.tonal {
+  background-color: var(--g-tonal);
+  color: var(--g-on-tonal);
+}
+.tonal:not(:disabled):hover {
+  background-image: linear-gradient(var(--g-chip-hover), var(--g-chip-hover));
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 1px 3px 1px rgba(0, 0, 0, 0.15);
+}
+
+/* Row 3 — Material assist chips: 32px, 8px corners, outlined, product icon leading. One row, scrolls sideways. */
+.chips {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 0 16px 14px;
+  scrollbar-width: none;
+  /* A chip that runs past the edge fades out (more scroll sideways) instead of being cut hard. */
+  -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 40px), transparent calc(100% - 4px));
+  mask-image: linear-gradient(to right, #000 calc(100% - 40px), transparent calc(100% - 4px));
+}
+.chips::-webkit-scrollbar {
+  display: none;
+}
+.chip {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 8px;
+  max-width: 16rem;
+  height: 32px;
+  padding: 0 12px 0 8px;
+  border: 1px solid var(--g-outline-variant);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--g-on-surface);
+  font: inherit;
+  font-weight: 500;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color 150ms;
+}
+.chip:not(:disabled):hover {
+  background: var(--g-chip-hover);
+}
+.chip:focus-visible {
+  outline: 2px solid var(--g-primary);
+  outline-offset: 2px;
+}
+.chip:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+.chip > svg {
+  flex: none;
+  width: 18px;
+  height: 18px;
+}
+.chipTrail {
+  flex: none;
+  width: 14px !important;
+  height: 14px !important;
+  color: var(--g-on-surface-variant);
+}
+
+.skeleton {
+  display: inline-block;
+  border-radius: 9999px;
+  background: var(--g-skeleton);
+  animation: pulse 1.6s ease-in-out infinite;
+}
+@keyframes pulse {
+  50% {
+    opacity: 0.55;
+  }
+}
+
+/* A phone: the account chip keeps to its row; the actions take a row of their own, right-aligned. */
+@media (max-width: 639px) {
+  .account {
+    max-width: 62%;
+  }
+  .body {
+    padding: 12px 16px;
+  }
+  /* The product line wraps to a second line on a phone rather than losing its end. */
+  .line {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    white-space: normal;
+  }
+  .actions {
+    flex: 1 1 100%;
+    justify-content: flex-end;
+  }
+}

@@ -20,6 +20,11 @@ import {
   type PresentationRow,
 } from "@/features/presentations/presentation-service";
 import { DeckFirstSlide } from "@/features/presentations/components/DeckFirstSlide";
+import { useGoogleWorkspaceConnection } from "@/features/google-workspace/linked/useGoogleWorkspaceConnection";
+import { GoogleHomeStrip } from "@/features/google-workspace/linked/GoogleHomeStrip";
+import { googleLinkIn } from "@/features/google-workspace/linked/link-store";
+import { selectUserId } from "@/lib/redux/selectors/userSelectors";
+import { useAppSelector } from "@/lib/redux/hooks";
 
 const SOURCE_LABEL: Record<string, string> = {
   created: "Created",
@@ -41,6 +46,10 @@ export default function PresentationsHomePage() {
   const [creating, setCreating] = useState(false);
   const [scope, setScope] = useState<FileScope>("all");
   const homeTemplates = useHomeTemplates("presentation");
+  const userId = useAppSelector(selectUserId);
+  // The Google row and the list land in ONE frame: the list waits for the connection answer too.
+  const google = useGoogleWorkspaceConnection();
+  const homeLoading = loading || (scope !== "trash" && google.state.status === "loading");
 
   const reload = useCallback(async () => {
     setLoading(true);
@@ -88,7 +97,7 @@ export default function PresentationsHomePage() {
         updatedBy: p.updated_by,
         sourceLabel: SOURCE_LABEL[p.source] ?? p.source,
       })}
-      loading={loading}
+      loading={homeLoading}
       error={error}
       scope={scope}
       onScopeChange={setScope}
@@ -101,6 +110,23 @@ export default function PresentationsHomePage() {
           kind={PRESENTATION_HOME}
           blank={<BlankTile shape="slide" onCreate={() => void handleCreate()} creating={creating} />}
           {...homeTemplates}
+        />
+      }
+      googleStrip={
+        <GoogleHomeStrip
+          kind="presentation"
+          google={google}
+          pending={loading}
+          linked={rows.flatMap((p) => {
+            const link = googleLinkIn(p.metadata);
+            return link ? [{ id: p.id, name: p.name, link }] : [];
+          })}
+          unlinked={rows
+            .filter((p) => !googleLinkIn(p.metadata) && p.user_id === userId)
+            .sort((a, b) => (b.updated_at ?? "").localeCompare(a.updated_at ?? ""))
+            .map((p) => ({ id: p.id, name: p.name, updatedAt: p.updated_at }))}
+          hidden={scope === "trash"}
+          onChanged={() => void reload()}
         />
       }
     />

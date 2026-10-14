@@ -1,24 +1,32 @@
 "use client";
 
 /**
- * The Google row at the top of the Workbooks and Documents homes — ONE strip
- * for both. Not connected → one connect card. Connected → everything Google is
- * one click away: Import, New (a blank linked both ways), the recent linked
- * files open in Google, and recent unlinked files send to Google in one click.
- * Holds its height while it resolves, so the list below never jumps.
+ * The Google strip on the Workbooks, Documents and Presentations homes — ONE strip for all three,
+ * drawn as a Google Workspace component (Google's Material 3 surface, type, buttons and chips; the
+ * official G and product marks raw, never on a tinted tile). Not connected → Google's own
+ * "Continue with Google" button. Connected → Google's account chip, then everything Google is one
+ * click away: Import, New (a blank linked both ways), the recent linked files open in Google, and
+ * recent unlinked files send to Google in one click. Holds its height while it resolves, so the
+ * list below never jumps.
+ *
+ * Type: Roboto (Apache 2.0, self-hosted by next/font) — the public face of Google's own web UI;
+ * Google Sans is not licensed for use outside Google.
  */
 
-import { GoogleSignInButton } from "@/components/icons/google-brand";
+import { GoogleG, GoogleSignInButton } from "@/components/icons/google-brand";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
-import { useState } from "react";
-import { ExternalLink, Loader2 } from "lucide-react";
-import { Button, Chip, PromoBanner } from "@ai-matrx/design-system/controls";
+import { useState, type ReactNode } from "react";
+import Link from "next/link";
+import { Roboto } from "next/font/google";
+import { ExternalLink, Plus, RotateCw, Upload } from "lucide-react";
+import { Spinner } from "@/components/ui/loaders/Spinner";
 
-import { errorSentence, toast } from "@/lib/toast";
+import { errorSentence, recordToast, toast } from "@/lib/toast";
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import { approvalQueueHref, SENT_FOR_APPROVAL_MESSAGE } from "@/features/google-workspace/service";
 
-import { GoogleDocsMark, GoogleSheetsMark } from "./marks";
+import { GoogleDocsMark, GoogleSheetsMark, GoogleSlidesMark } from "./marks";
+import styles from "./google-strip.module.css";
 import { createLinkedBlank, importGoogleDocAsDocument, importGoogleSheetAsWorkbook } from "./importers";
 import type { useGoogleWorkspaceConnection } from "./useGoogleWorkspaceConnection";
 import { useGoogleLink } from "./GoogleLinkControl";
@@ -46,6 +54,17 @@ export function chipLabels(items: readonly LinkedItem[]): Array<{ item: LinkedIt
   });
 }
 
+/** Same-named files never read the same in one row ("Untitled document", "Untitled document (2)"). */
+function distinctNames(names: readonly string[]): string[] {
+  const seen = new Map<string, number>();
+  return names.map((name) => {
+    const base = name.trim() || "Untitled";
+    const n = (seen.get(base) ?? 0) + 1;
+    seen.set(base, n);
+    return n === 1 ? base : `${base} (${n})`;
+  });
+}
+
 /** A recent record with no Google link yet — offered as one-click "Send". */
 export interface UnlinkedItem {
   id: string;
@@ -53,16 +72,97 @@ export interface UnlinkedItem {
   updatedAt?: string | null;
 }
 
-// The words keep a floor of their own, and the chips are always ONE row of their own under the
-// words/actions (scrolling sideways when many) — the banner is two rows at every width, so the
-// placeholder and the real banner are the same height and the list below never jumps.
-const STRIP_CLASS =
-  "[&_.matrx-control-promo-text]:min-w-[17rem] [&_.matrx-control-promo-chips]:order-last [&_.matrx-control-promo-chips]:basis-full [&_.matrx-control-promo-chips]:flex-nowrap [&_.matrx-control-promo-chips]:overflow-x-auto [&_.matrx-control-promo-chips]:scrollbar-none [&_.matrx-control-promo-chips>*]:shrink-0";
+const roboto = Roboto({ subsets: ["latin"], weight: ["400", "500"], display: "swap" });
+
+type StripKind = "workbook" | "document" | "presentation";
+
+const PRODUCT: Record<StripKind, { app: string; Mark: (p: { className?: string }) => ReactNode; noun: string }> = {
+  workbook: { app: "Google Sheets", Mark: GoogleSheetsMark, noun: "workbooks" },
+  document: { app: "Google Docs", Mark: GoogleDocsMark, noun: "documents" },
+  presentation: { app: "Google Slides", Mark: GoogleSlidesMark, noun: "presentations" },
+};
 
 const LINKED_SHOWN = 3;
 const UNLINKED_SHOWN = 2;
 
-function SendChip({ kind, item, onSent }: { kind: "workbook" | "document"; item: UnlinkedItem; onSent?: () => void }) {
+/** Google's default-avatar colours: a signed-in account with no photo is its initial on one of these. */
+const AVATAR_COLOURS = ["#1a73e8", "#e8710a", "#188038", "#d93025", "#9334e6", "#007b83", "#c5221f", "#b06000"];
+
+function avatarColour(seed: string): string {
+  let h = 0;
+  for (let i = 0; i < seed.length; i++) h = (h * 31 + seed.charCodeAt(i)) >>> 0;
+  return AVATAR_COLOURS[h % AVATAR_COLOURS.length];
+}
+
+/** Google's account chip: the account's initial in its avatar circle, then the address. Opens the connection settings. */
+function AccountChip({ email, name }: { email: string; name: string | null }) {
+  const initial = (name?.trim() || email).charAt(0).toUpperCase();
+  return (
+    <Link href="/settings/google-workspace" className={styles.account} title={name ? `${name} · ${email}` : email}>
+      <span className={styles.avatar} style={{ background: avatarColour(email) }} aria-hidden>
+        {initial}
+      </span>
+      <span className={styles.ellipsis}>{email}</span>
+    </Link>
+  );
+}
+
+/** The frame every state shares: Google header row, product row, an optional chips row. */
+function Strip({
+  label,
+  account,
+  icon,
+  title,
+  line,
+  actions,
+  chips,
+}: {
+  label: string;
+  account?: ReactNode;
+  icon: ReactNode;
+  title: ReactNode;
+  line: ReactNode;
+  actions?: ReactNode;
+  chips?: ReactNode;
+}) {
+  return (
+    <section className={`${styles.strip} ${roboto.className}`} aria-label={label} data-google-strip>
+      <div className={styles.head}>
+        <GoogleG className="size-[18px] shrink-0" />
+        <span className={styles.headLabel}>Google Workspace</span>
+        {account}
+      </div>
+      <div className={styles.body}>
+        <div className={styles.product}>
+          <span className="flex size-8 shrink-0 items-center justify-center">{icon}</span>
+          <div className={styles.productText}>
+            <span className={styles.title}>{title}</span>
+            <span className={styles.line}>{line}</span>
+          </div>
+        </div>
+        {actions ? <div className={styles.actions}>{actions}</div> : null}
+      </div>
+      {chips ? <div className={styles.chips}>{chips}</div> : null}
+    </section>
+  );
+}
+
+function GButton({
+  kind,
+  busy,
+  icon,
+  children,
+  ...rest
+}: { kind: "filled" | "tonal"; busy?: boolean; icon?: ReactNode; children: ReactNode } & React.ButtonHTMLAttributes<HTMLButtonElement>) {
+  return (
+    <button type="button" className={`matrx-glyph-trim ${styles.btn} ${styles[kind]}`} {...rest}>
+      {busy ? <Spinner size="xs" label="Working" /> : icon}
+      {children}
+    </button>
+  );
+}
+
+function SendChip({ kind, item, label, onSent }: { kind: StripKind; item: UnlinkedItem; label: string; onSent?: () => void }) {
   const g = useGoogleLink(savedRecordGoogleAdapter(kind, item.id, item.name), true);
   const busy = g.busy === "create";
   if (g.link) return null; // just sent: it shows among the linked
@@ -79,20 +179,18 @@ function SendChip({ kind, item, onSent }: { kind: "workbook" | "document"; item:
     onSent?.();
   };
   return (
-    <Chip
-      variant="add"
-      label={`Send “${item.name}” to ${g.appName}`}
-      title={`Send to ${g.appName}`}
-      icon={busy ? <Loader2 className="animate-spin" /> : <Mark />}
-      asChild
+    <button
+      type="button"
+      className={styles.chip}
+      disabled={busy || !g.ready}
+      title={`Send “${item.name}” to ${g.appName}`}
+      aria-label={`Send ${item.name} to ${g.appName}`}
+      onClick={() => void send()}
     >
-      <button
-        type="button"
-        disabled={busy || !g.ready}
-        aria-label={`Send ${item.name} to ${g.appName}`}
-        onClick={() => void send()}
-      />
-    </Chip>
+      {busy ? <Spinner size="xs" label="Sending" /> : <Mark />}
+      <span className={styles.ellipsis}>Send “{label}”</span>
+      <Upload className={styles.chipTrail} aria-hidden />
+    </button>
   );
 }
 
@@ -106,7 +204,7 @@ export function GoogleHomeStrip({
   onImported,
   onChanged,
 }: {
-  kind: "workbook" | "document";
+  kind: StripKind;
   /** The page's read of the Google connection (it also holds its list back until this is known). */
   google: GoogleWorkspaceConnection;
   /** The page's list is still loading: keep the placeholder so both land in one frame. */
@@ -116,91 +214,101 @@ export function GoogleHomeStrip({
   unlinked?: UnlinkedItem[];
   /** The Trash filter: no Google row there. */
   hidden?: boolean;
-  onImported: (id: string) => void;
+  /** A record was made from Google (Import / New); absent for a kind with no Google import (Slides). */
+  onImported?: (id: string) => void;
   /** A record gained a Google link here (reload the list). */
   onChanged?: () => void;
 }) {
   const { state, connect, refresh } = google;
   const [busy, setBusy] = useState<null | "import" | "new">(null);
-  const isSheet = kind === "workbook";
-  const Mark = isSheet ? GoogleSheetsMark : GoogleDocsMark;
-  const app = isSheet ? "Google Sheets" : "Google Docs";
-  const tone = isSheet ? "success" : "info";
+  const { app, Mark, noun } = PRODUCT[kind];
+  // Import a Google file / start a new linked one: Sheets and Docs. Slides sends and opens only.
+  const canMake = kind !== "presentation" && onImported !== undefined;
+  const icon = <Mark className="size-8" />;
 
   if (hidden) return null;
 
   if (pending || state.status === "loading") {
-    // The connected banner's own shape (disc, words, a chips row, New/Import) held while the
-    // connection is read, so the list under it never moves when the real banner lands.
+    // The connected strip's own shape held while the connection is read, so the list never moves.
     return (
-      <PromoBanner
-        icon={<Mark />}
-        tone={tone}
-        className={STRIP_CLASS}
-        eyebrow={app}
+      <Strip
+        label={app}
+        account={<span className={styles.skeleton} style={{ width: 168, height: 32 }} aria-hidden />}
+        icon={icon}
         title={app}
-        line={"\u00A0"}
+        line={<span className={styles.skeleton} style={{ width: 120, height: 12 }} aria-hidden />}
+        actions={
+          canMake ? (
+            <>
+              <span className={styles.skeleton} style={{ width: 88, height: 40 }} aria-hidden />
+              <span className={styles.skeleton} style={{ width: 96, height: 40 }} aria-hidden />
+            </>
+          ) : undefined
+        }
         chips={
           <>
-            <span className="h-6 w-28 animate-pulse rounded-full bg-muted" aria-hidden="true" />
-            <span className="h-6 w-28 animate-pulse rounded-full bg-muted" aria-hidden="true" />
+            <span className={styles.skeleton} style={{ width: 136, height: 32, borderRadius: 8 }} aria-hidden />
+            <span className={styles.skeleton} style={{ width: 136, height: 32, borderRadius: 8 }} aria-hidden />
           </>
         }
-        action={
-          <span className="flex items-center gap-1">
-            <Button variant="outline" disabled>New</Button>
-            <Button variant="primary" disabled>Import</Button>
-          </span>
-        }
-        aria-label={app}
       />
     );
   }
 
   if (state.status === "error") {
     return (
-      <PromoBanner
-        icon={<Mark />}
-        tone="warning"
-        eyebrow={app}
+      <Strip
+        label={app}
+        icon={icon}
         title="Couldn't check your Google connection"
         line={state.error.slice(0, 60)}
-        action={
-          <span className="flex items-center gap-1">
+        actions={
+          <>
             <ErrorAlchemyMenu error={state.error} operation={`Check the ${app} connection`} size="icon" />
-            <Button variant="outline" onClick={refresh}>Retry</Button>
-          </span>
+            <GButton kind="tonal" icon={<RotateCw aria-hidden />} onClick={refresh}>
+              Retry
+            </GButton>
+          </>
         }
-        aria-label={app}
       />
     );
   }
 
   if (state.status === "none") {
     return (
-      <PromoBanner
-        icon={<Mark />}
-        tone={tone}
-        eyebrow={app}
-        title={isSheet ? "Bring your Google Sheets in" : "Bring your Google Docs in"}
-        line={isSheet ? "Import, push and keep workbooks in step" : "Import, push and keep documents in step"}
-        action={
-          <GoogleSignInButton theme="light" text="continue_with" onClick={() => connect(`to use ${app} with your ${kind}s`)} />
+      <Strip
+        label={app}
+        icon={icon}
+        title={`Bring your ${app} in`}
+        line={canMake ? `Import, push and keep ${noun} in step` : `Send ${noun} to ${app} and keep them in step`}
+        actions={
+          <>
+            {/* Google's button has a light and a dark theme of its own: each shows on its own page theme. */}
+            <span className="dark:hidden">
+              <GoogleSignInButton theme="light" text="continue_with" onClick={() => connect(`to use ${app} with your ${noun}`)} />
+            </span>
+            <span className="hidden dark:contents">
+              <GoogleSignInButton theme="dark" text="continue_with" onClick={() => connect(`to use ${app} with your ${noun}`)} />
+            </span>
+          </>
         }
-        aria-label={app}
       />
     );
   }
 
   const runImport = async () => {
+    if (kind === "presentation") return;
     setBusy("import");
     try {
-      const outcome = isSheet
-        ? await importGoogleSheetAsWorkbook(state.connection)
-        : await importGoogleDocAsDocument(state.connection);
+      const outcome =
+        kind === "workbook"
+          ? await importGoogleSheetAsWorkbook(state.connection)
+          : await importGoogleDocAsDocument(state.connection);
       if (outcome) {
-        toast.success(`Imported “${outcome.name}”`, { description: outcome.note ?? undefined });
-        onImported(outcome.id);
+        recordToast.success({ type: kind, id: outcome.id, title: outcome.name }, `Imported “${outcome.name}”`, {
+          description: outcome.note ?? undefined,
+        });
+        onImported?.(outcome.id);
       }
     } catch (error: unknown) {
       toast.error(errorSentence(error));
@@ -210,6 +318,7 @@ export function GoogleHomeStrip({
   };
 
   const runNew = async () => {
+    if (kind === "presentation") return;
     setBusy("new");
     try {
       const made = await createLinkedBlank(kind, state.connection);
@@ -225,7 +334,7 @@ export function GoogleHomeStrip({
             : undefined,
         });
       }
-      onImported(made.id);
+      onImported?.(made.id);
     } catch (error: unknown) {
       toast.error(errorSentence(error));
     } finally {
@@ -238,51 +347,62 @@ export function GoogleHomeStrip({
     .slice(0, LINKED_SHOWN);
   const linkedIds = new Set(linked.map((l) => l.id));
   const sendable = unlinked.filter((u) => !linkedIds.has(u.id)).slice(0, UNLINKED_SHOWN);
+  const email = state.connection.accountEmail;
 
   return (
-    <PromoBanner
-      icon={<Mark />}
-      tone={tone}
-      className={STRIP_CLASS}
-      eyebrow={state.connection.accountEmail ?? app}
+    <Strip
+      label={app}
+      account={email ? <AccountChip email={email} name={state.connection.accountName} /> : undefined}
+      icon={icon}
       title={app}
-      line={linked.length === 0 ? "Import, start new, or send a file" : `${linked.length} linked`}
+      line={
+        linked.length === 0
+          ? canMake
+            ? "Import, start new, or send a file"
+            : "Send a file to open it in Google"
+          : `${linked.length} linked`
+      }
+      actions={
+        canMake ? (
+          <>
+            <GButton
+              kind="tonal"
+              busy={busy === "new"}
+              icon={<Plus aria-hidden />}
+              disabled={busy !== null}
+              title={kind === "workbook" ? "New Google Sheet, linked here" : "New Google Doc, linked here"}
+              onClick={() => void runNew()}
+            >
+              New
+            </GButton>
+            <GButton
+              kind="filled"
+              busy={busy === "import"}
+              disabled={busy !== null}
+              title={`Import from ${app}`}
+              onClick={() => void runImport()}
+            >
+              Import
+            </GButton>
+          </>
+        ) : undefined
+      }
       chips={
         recent.length + sendable.length > 0 ? (
           <>
             {chipLabels(recent).map(({ item, label }) => (
-              <Chip key={item.id} label={label} title={`Open in ${app}`} icon={<ExternalLink />} asChild>
-                <OutboundLink href={item.link.webViewLink ?? "#"} />
-              </Chip>
+              <OutboundLink key={item.id} href={item.link.webViewLink ?? "#"} className={styles.chip} title={`Open “${label}” in ${app}`}>
+                <Mark />
+                <span className={styles.ellipsis}>{label}</span>
+                <ExternalLink className={styles.chipTrail} aria-hidden />
+              </OutboundLink>
             ))}
-            {sendable.map((item) => (
-              <SendChip key={item.id} kind={kind} item={item} onSent={onChanged} />
+            {distinctNames(sendable.map((u) => u.name)).map((label, i) => (
+              <SendChip key={sendable[i].id} kind={kind} item={sendable[i]} label={label} onSent={onChanged} />
             ))}
           </>
         ) : undefined
       }
-      action={
-        <span className="flex items-center gap-1">
-          <Button
-            variant="outline"
-            icon={busy === "new" ? <Loader2 className="animate-spin" /> : undefined}
-            disabled={busy !== null}
-            title={isSheet ? "New Google Sheet, linked here" : "New Google Doc, linked here"}
-            onClick={() => void runNew()}
-          >
-            New
-          </Button>
-          <Button
-            variant="primary"
-            icon={busy === "import" ? <Loader2 className="animate-spin" /> : undefined}
-            disabled={busy !== null}
-            onClick={() => void runImport()}
-          >
-            Import
-          </Button>
-        </span>
-      }
-      aria-label={app}
     />
   );
 }
