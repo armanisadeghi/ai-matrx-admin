@@ -1,4 +1,25 @@
-import { capturePollInterval, parseBrowserCapture } from "../browserCaptures";
+const mockOperations: Array<[string, ...unknown[]]> = [];
+
+function mockQuery(table: string) {
+  const result = table === "associations"
+    ? { data: [{ source_id: "doc-1" }], error: null }
+    : { data: [{ id: "doc-1", updated_at: "2026-10-09T21:00:00Z", social: { schema: "social_capture.v1", status: "parsed", profile: {}, posts: [], notes: [] } }], error: null };
+  const query = {
+    select: (...args: unknown[]) => (mockOperations.push([`${table}.select`, ...args]), query),
+    eq: (...args: unknown[]) => (mockOperations.push([`${table}.eq`, ...args]), query),
+    is: (...args: unknown[]) => (mockOperations.push([`${table}.is`, ...args]), query),
+    in: (...args: unknown[]) => (mockOperations.push([`${table}.in`, ...args]), query),
+    order: (...args: unknown[]) => (mockOperations.push([`${table}.order`, ...args]), query),
+    then: (resolve: (value: typeof result) => unknown) => Promise.resolve(result).then(resolve),
+  };
+  return query;
+}
+
+jest.mock("@/utils/supabase/client", () => ({
+  createClient: () => ({ schema: () => ({ from: (table: string) => mockQuery(table) }) }),
+}));
+
+import { capturePollInterval, fetchBrowserCaptures, parseBrowserCapture } from "../browserCaptures";
 import { instagramIdToShortcode, instagramShortcodeToId, samePost } from "../postMatch";
 
 const social = {
@@ -18,6 +39,13 @@ describe("browser captures", () => {
     expect(c?.profile.followerCount).toBe(7801);
     expect(c?.posts.map((p) => p.platformPostId)).toEqual(["Cseuqn0AFkd", "Das6jaZmsJl"]);
     expect(parseBrowserCapture("doc-1", "x", { ...social, schema: "other" })).toBeNull();
+  });
+
+  it("excludes deleted and archived source records from current capture evidence", async () => {
+    mockOperations.length = 0;
+    await expect(fetchBrowserCaptures([{ type: "social_profile", id: "profile-1" }])).resolves.toHaveLength(1);
+    expect(mockOperations).toContainEqual(["processed_documents.is", "deleted_at", null]);
+    expect(mockOperations).toContainEqual(["processed_documents.is", "archived_at", null]);
   });
 
 });
