@@ -30,6 +30,10 @@ describe("the Surface Context window's value list", () => {
   });
 
   it("shows a machine name only in the admin slot", () => {
-    expect(source).toMatch(/renderRowTrail=\{\s*isAdmin \?/);
+    // The table (and so its machine-name trail) renders only inside the admin "rules" branch; a member
+    // sees the plain values list, never a key.
+    expect(source).toMatch(/isAdmin && valuesMode === "rules" \? \(\s*<ContextRulesTable\b/);
+    expect(source).toMatch(/renderRowTrail=\{\(row\) => <code[^>]*>\{row\.key\}<\/code>\}/);
+    expect(source.match(/<ContextRulesTable\b/g)).toHaveLength(1);
   });
 });
