@@ -132,7 +132,7 @@ export function RowSelectionBar<TRow>({
       data-row-selection-bar
       className={
         compact
-          ? "flex min-h-11 flex-nowrap items-center gap-1 rounded-md border border-border bg-card px-2 py-0.5 lg:min-h-9"
+          ? "flex min-h-11 flex-wrap items-center gap-1 rounded-md border border-border bg-card px-2 py-0.5 lg:min-h-9"
           : "flex min-h-11 flex-wrap items-center gap-2 rounded-md border border-border bg-card px-3 py-1 lg:min-h-9"
       }
     >
@@ -163,7 +163,7 @@ export function RowSelectionBar<TRow>({
         disabled={count === 0}
         className={
           compact
-            ? "m-0 flex min-w-0 flex-1 flex-nowrap items-center gap-0.5 overflow-x-auto border-0 p-0 disabled:opacity-50"
+            ? "m-0 flex min-w-0 flex-1 flex-wrap items-center gap-0.5 border-0 p-0 disabled:opacity-50"
             : "m-0 flex min-w-0 flex-wrap items-center gap-1 border-0 p-0 disabled:opacity-50"
         }
       >
