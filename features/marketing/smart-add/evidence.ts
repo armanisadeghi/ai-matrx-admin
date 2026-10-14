@@ -302,8 +302,9 @@ export function nextRoundSeeds(
     if (item.field === "website" && !website) {
       const host = websiteHost(item.value);
       if (!explored.has(`website:${host}`)) website = item.url ?? item.value;
-    } else if (item.field === "social" && item.source.kind !== "social_profile" && !explored.has(item.key)) {
-      // An account found on a page is only a link: looking it up brings its own profile.
+    } else if (item.field === "social" && (item.source.kind !== "social_profile" || item.anchor) && !explored.has(item.key)) {
+      // An account found on a page is only a link: looking it up brings its own profile. A person's anchor
+      // card was looked up only to be shown; once it is "me" its profile becomes findings in the next round.
       socials.push({ handle_or_url: item.url ?? item.value, ...(item.platform ? { platform: item.platform } : {}) });
     }
   }

@@ -63,7 +63,7 @@ function AnchorCard({
       } ${out ? "opacity-50" : ""}`}
     >
       <div className="flex items-start gap-3">
-        <span className="size-12 shrink-0 overflow-hidden rounded-full border border-border bg-muted">
+        <span className="relative size-12 shrink-0 overflow-hidden rounded-full border border-border bg-muted">
           {item.profile_id ? (
             <SocialImage
               door={profileAvatarDoor(item.profile_id)}
