@@ -15,9 +15,10 @@
  */
 
 import { useState } from "react";
-import { Info, Maximize2, Moon, Star, Sun, X } from "lucide-react";
+import { Maximize2, Moon, Star, Sun, X } from "lucide-react";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
-import { Button, DecisionControl, Field, type DecisionAnswer, type WayOutItem } from "@ai-matrx/design-system/controls";
+import { Button, DecisionControl, Field, PropertyRow, type DecisionAnswer, type WayOutItem } from "@ai-matrx/design-system/controls";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 import { FirstUseHint } from "@ai-matrx/design-system";
 import { formatCount } from "@ai-matrx/kit/format";
 import { profileAvatarDoor } from "@/features/marketing/social/server";
@@ -312,7 +313,7 @@ export function SmartAddSlots({
       <Slot title={person ? "Name" : "Brand name"} ask="Is this your name?" empty={of("name").some((i) => !taglines[i.key]) ? null : empty} after={custom("name", person ? "Your name" : "Brand name")}>
         {of("name").filter((i) => !taglines[i.key]).map((i, n) => (
           <Row key={i.key} item={i} decision={decisions[i.key] ?? null} note={noteOf(i)} below={below(i)} actions={<>{firstChoice(n, choices(i, "name", nameWayOut))}{sourceLink(i)}</>}>
-            <span className="min-w-0 truncate" title={i.value}><Shared id={i.key} positionOnly className="inline-block max-w-full truncate align-top text-lg font-semibold leading-tight">{i.value}</Shared></span>
+            <span className="min-w-0 truncate"><Shared id={i.key} positionOnly className="inline-block max-w-full truncate align-top text-lg font-semibold leading-tight">{i.value}</Shared></span>
           </Row>
         ))}
       </Slot>
@@ -346,7 +347,7 @@ export function SmartAddSlots({
               <OpenLink url={i.url ?? i.value} />
             </>
           }>
-            <span className="truncate text-base font-medium" title={i.label ?? i.value}>{i.label ?? websiteHost(i.value)}</span>
+            <span className="truncate text-base font-medium">{i.label ?? websiteHost(i.value)}</span>
           </Row>
         ))}
       </Slot>
@@ -421,7 +422,7 @@ export function SmartAddSlots({
           <Row key={i.key} item={i} decision={decisions[i.key] ?? null} note={noteOf(i)} below={below(i)} actions={choices(i, "primary", relatedWayOut())} compact>
             <span className="flex min-w-0 items-baseline gap-2 text-sm">
               <span className="w-16 shrink-0 text-xs text-muted-foreground">{CONTACT_LABEL[i.field]}</span>
-              <span className="truncate" title={i.value}>{i.value}</span>
+              <span className="truncate">{i.value}</span>
             </span>
           </Row>
         ))}
@@ -431,7 +432,7 @@ export function SmartAddSlots({
         <Slot title="Expertise" ask="Is this you?" empty={of("expertise").length ? null : started ? "Add what you are known for" : "—"} after={custom("expertise", "e.g. Spanish property law")}>
           {of("expertise").map((i) => (
             <Row key={i.key} item={i} decision={decisions[i.key] ?? null} note={noteOf(i)} actions={choices(i, "plain")} compact>
-              <span className="truncate text-sm" title={i.value}>{i.value}</span>
+              <span className="truncate text-sm">{i.value}</span>
             </Row>
           ))}
         </Slot>
@@ -465,7 +466,7 @@ export function SmartAddSlots({
           >
             <span className="flex min-w-0 items-baseline gap-2 text-sm">
               <span className="w-16 shrink-0 text-xs text-muted-foreground">Tagline</span>
-              <span className="truncate italic" title={i.value}>{i.value}</span>
+              <span className="truncate italic">{i.value}</span>
             </span>
           </Row>
           );
@@ -474,7 +475,7 @@ export function SmartAddSlots({
           <Row key={i.key} item={i} decision={decisions[i.key] ?? null} note={noteOf(i)} actions={<>{choices(i, "primary")}{sourceLink(i)}</>} compact>
             <span className="flex min-w-0 items-baseline gap-2 text-sm">
               <span className="w-16 shrink-0 text-xs text-muted-foreground">Category</span>
-              <span className="truncate" title={i.value}>{i.value}</span>
+              <span className="truncate">{i.value}</span>
             </span>
           </Row>
         ))}
@@ -542,7 +543,8 @@ function Row({
   top?: boolean;
   hideWhere?: boolean;
 }) {
-  return (
+  const info = rowInfo(item, note, hideWhere);
+  const line = (
     <div
       className={`flex flex-col gap-1.5 px-4 animate-in fade-in duration-300 sm:flex-row ${compact ? "py-1" : "py-2"} ${top ? "sm:items-start" : "sm:items-center"} ${
         decision === "no" ? "opacity-40" : ""
@@ -552,44 +554,58 @@ function Row({
       data-decision={decision ?? "open"}
     >
       <div className="flex min-w-0 flex-1 flex-col">
-        {/* One line per row (Arman 2026-10-14: no secondary lines). Where it was found lives in the info card. */}
-        <span className="flex min-w-0 items-center gap-1">
-          {children}
-          <RowInfo item={item} note={note} hideWhere={hideWhere} />
-        </span>
+        {/* One line per row (Arman 2026-10-14: no secondary lines). Where it was found shows on hovering the row. */}
+        <span className="flex min-w-0 items-center gap-1">{children}</span>
         {below}
       </div>
       <div className="flex shrink-0 items-center justify-end gap-1 max-sm:w-full">{actions}</div>
     </div>
   );
-}
-
-/** The row's provenance (where it was read, the page, a way-out note), in a hover card behind a quiet info mark. */
-function RowInfo({ item, note, hideWhere }: { item: EvidenceItem; note?: React.ReactNode; hideWhere?: boolean }) {
-  const where = hideWhere ? "" : whereOf(item);
-  const url = item.source.url && /^https?:\/\//i.test(item.source.url) ? item.source.url : null;
-  if (!where && !note && !url) return null;
+  if (!info) return line;
   return (
-    <HoverCard openDelay={150}>
-      <HoverCardTrigger asChild>
-        {/* ui-exception: a 16px provenance mark beside a value; the 28px Button would make every row taller */}
-        <button
-          type="button"
-          aria-label="Where this was found"
-          className="inline-flex size-5 shrink-0 items-center justify-center rounded-full text-muted-foreground hover:text-foreground focus-visible:outline-2"
-          data-testid="smart-add-row-info"
-        >
-          <Info className="size-3.5" />
-        </button>
-      </HoverCardTrigger>
-      <HoverCardContent align="start" className="flex w-64 flex-col gap-1.5 text-xs">
-        {where ? <span className="text-foreground">Found in {where}</span> : null}
-        {note ? <span>{note}</span> : null}
-        {url ? <span className="truncate text-muted-foreground" title={url}>{url.replace(/^https?:\/\/(www\.)?/i, "")}</span> : null}
+    <HoverCard openDelay={600} closeDelay={200}>
+      <HoverCardTrigger asChild>{line}</HoverCardTrigger>
+      <HoverCardContent align="start" side="bottom" className="flex w-80 max-w-[calc(100vw-2rem)] flex-col gap-2.5" data-testid="smart-add-row-info">
+        {info}
       </HoverCardContent>
     </HoverCard>
   );
 }
+
+const sentenceCase = (t: string) => t.charAt(0).toUpperCase() + t.slice(1);
+
+/** The row's provenance as labelled rows (source, page, found by, certainty), or null when there is nothing to say. */
+function rowInfo(item: EvidenceItem, note?: React.ReactNode, hideWhere?: boolean): React.ReactNode {
+  const where = hideWhere ? "" : whereOf(item);
+  const url = item.source.url && /^https?:\/\//i.test(item.source.url) ? item.source.url : null;
+  const found = KIND_LABEL_UI[item.source.kind] ?? "";
+  const reasons = item.certainty_reasons?.filter(Boolean) ?? [];
+  if (!where && !note && !url && !item.certainty && !reasons.length) return null;
+  return (
+    <>
+      {where ? <PropertyRow label="Source" value={sentenceCase(where)} className="[&_*]:break-words" /> : null}
+      {url ? (
+        <PropertyRow label="Page">
+          <OutboundLink href={url} className="break-all text-primary underline-offset-2 hover:underline">
+            {url.replace(/^https?:\/\/(www\.)?/i, "")}
+          </OutboundLink>
+        </PropertyRow>
+      ) : null}
+      {found ? <PropertyRow label="Found by" value={found} /> : null}
+      {item.certainty ? <PropertyRow label="Certainty" value={sentenceCase(String(item.certainty))} /> : null}
+      {reasons.length ? <PropertyRow label="Reason" value={reasons.join(" ")} className="[&_*]:break-words" /> : null}
+      {note ? <PropertyRow label="Answer">{note}</PropertyRow> : null}
+    </>
+  );
+}
+
+const KIND_LABEL_UI: Record<string, string> = {
+  website: "Website",
+  social_profile: "Profile",
+  link_in_bio: "Link in bio",
+  typed: "You typed it",
+  web_search: "Web search",
+};
 
 const TAGLINE = "tagline";
 /** A name that is not the brand's name, said the way a person says it (the relation kind it lands as). */
@@ -783,9 +799,9 @@ function AccountText({ item, name }: { item: EvidenceItem; name: string | null }
     <span className="flex min-w-0 flex-col">
       <span className="flex min-w-0 items-center gap-1.5 text-sm font-medium">
         <PlatformMark platform={item.platform ?? ""} size={16} />
-        <span className="truncate" title={name ?? handle ?? undefined}>{name ?? handle ?? ""}</span>
+        <span className="truncate">{name ?? handle ?? ""}</span>
       </span>
-      {sub ? <span className="truncate text-xs text-muted-foreground" title={sub}>{sub}</span> : null}
+      {sub ? <span className="truncate text-xs text-muted-foreground">{sub}</span> : null}
     </span>
   );
 }
