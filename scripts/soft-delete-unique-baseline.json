@@ -240,6 +240,11 @@
   ],
   "deliberate": [
     {
+      "index": "ai.setting:setting_key_unique",
+      "reason": "ai.translation_cell.setting_key has a foreign key to ai.setting.key. PostgreSQL requires the referenced key to remain fully unique across archived settings; a partial live-row index cannot enforce that foreign key. A retired canonical key remains the same setting identity for existing translation cells.",
+      "ruled": "Primary Astra lifetime-identity ruling, 2026-10-14 — aidream db/migrations/campaign/st_c2b_wiring.sql K3 FK target inspected"
+    },
+    {
       "index": "platform.rulebook:rulebook_client_token_unique",
       "reason": "client_token is an IDEMPOTENCY KEY, not a name. The point of (created_by, client_token) is that a retried create is refused rather than duplicated, and a retry that arrives after the first rulebook was archived is still the same request — so uniqueness has to span removed rows or the guarantee is only as good as the user not having archived anything. Re-creating an archived rulebook takes a NEW client_token, which every caller already mints per attempt.",
       "ruled": "CI-FIX-2, 2026-09-22"
