@@ -1,12 +1,13 @@
 "use client";
 
 /**
- * What a Refresh of a connected own account uses, and whether its daily Auto-update is on.
- * One read for the whole brand screen; points go through the one cost formatter (`useCostDisplay`).
- * Rule (Arman, 2026-10-14): Refresh is a click; Auto-update is a per-account choice, off by default, with
- * its points shown. Nothing here turns anything on by itself.
+ * What a Refresh of a connected own account uses, and how often it updates automatically.
+ * One read for the whole brand screen.
+ * Rule (Arman, 2026-10-14): free reads update automatically at the person's chosen frequency (default every
+ * 6 hours); a paid read (X) is never automatic — Refresh only, its points named.
  */
 
+import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getConnectedAccountPlans, type ConnectedAccountPlan } from "./server";
 import { socialKeys } from "./hooks";
@@ -25,7 +26,10 @@ export function useConnectedPlans(organizationId: string | null | undefined, ena
     enabled: enabled && Boolean(organizationId),
     staleTime: 5 * 60 * 1000,
   });
-  const byTracked = new Map<string, ConnectedAccountPlan>((plans.data ?? []).map((p) => [p.tracked_account_id, p]));
+  const byTracked = useMemo(
+    () => new Map<string, ConnectedAccountPlan>((plans.data ?? []).map((p) => [p.tracked_account_id, p])),
+    [plans.data],
+  );
 
   /** "Free" for a truly free read, the server's points for a paid one, `null` while the cost is unknown (never "Free"). */
   function refreshCost(trackedAccountId: string | null | undefined): string | null {
@@ -34,14 +38,13 @@ export function useConnectedPlans(organizationId: string | null | undefined, ena
     return plan.usd_per_refresh === 0 ? "Free" : pointsText(plan.points_per_refresh);
   }
 
-  /** The Auto-update setting's cost words, all from the server: points per run and per month. `null` = unknown. */
-  function autoUpdateCost(trackedAccountId: string | null | undefined): string | null {
-    const plan = trackedAccountId ? byTracked.get(trackedAccountId) : undefined;
-    if (!plan || plan.usd_per_refresh == null || plan.points_per_refresh == null) return null;
-    if (plan.usd_per_refresh === 0) return "Free";
-    if (plan.points_per_month == null) return null;
-    return `${pointsText(plan.points_per_refresh)} a run · about ${pointsText(plan.points_per_month)} a month`;
-  }
+  return { byTracked, refreshCost };
+}
 
-  return { byTracked, refreshCost, autoUpdateCost };
+/** A frequency's label: Off, Every hour, Every 6 hours, Daily. */
+export function frequencyLabel(hours: number): string {
+  if (hours <= 0) return "Off";
+  if (hours === 1) return "Every hour";
+  if (hours === 24) return "Daily";
+  return `Every ${hours} hours`;
 }

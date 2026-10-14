@@ -21,7 +21,7 @@ import { countOf, withCostOn } from "../social-actions";
 import { xmlElement, xmlList } from "@ai-matrx/chat/surfaces/runtime/context-bundle";
 import { createSocialAccountsScope, SOCIAL_ACCOUNTS_SURFACE_NAME } from "@/features/surfaces/manifests/marketing-social-accounts.manifest";
 import { useMemo, useState, type ReactNode } from "react";
-import { CalendarClock, Globe, Link2, Plus, RefreshCw, Trash2, UserPlus } from "lucide-react";
+import { Globe, Link2, Plus, RefreshCw, Trash2, UserPlus } from "lucide-react";
 
 import {
   Badge,
@@ -39,7 +39,7 @@ import { GUIDED_CAPTURE_PLATFORMS } from "../gated/guidedJob";
 import { useAccountRows, useInvalidateSocial } from "../hooks";
 import { CONNECTION_STATE_LABELS, CONNECTION_STATE_TONES } from "../connection-state";
 import { useConnectionStates } from "../useConnectionStates";
-import { COST_NOT_KNOWN, useConnectedPlans } from "../useConnectedPlans";
+import { COST_NOT_KNOWN, frequencyLabel, useConnectedPlans } from "../useConnectedPlans";
 import {
   accountLabels,
   accountName,
@@ -54,7 +54,7 @@ import { formatCompact, formatPercentile, outlierBadgeModel } from "../outlier";
 import {
   refreshConnectedAccount,
   refreshProfile,
-  setConnectedAutoUpdate,
+  setConnectedFrequency,
   socialErrorCode,
   socialErrorMessage,
   trackAccount,
@@ -260,28 +260,16 @@ export function AccountsTab() {
     }
   }
 
-  /** Auto-update is the person's per-account choice: off by default, daily, its points named before it turns on. */
-  async function toggleAutoUpdate(row: AccountRow) {
+  /** How often a free connected account updates automatically (0 = Off). Paid reads have no choice: Refresh only. */
+  async function changeFrequency(row: AccountRow, hours: number) {
     if (!row.trackedAccountId) return;
-    const on = plans.byTracked.get(row.trackedAccountId)?.auto_update === true;
-    if (!on) {
-      const cost = plans.autoUpdateCost(row.trackedAccountId);
-      // Unknown cost announces itself and cannot be confirmed: `ready` never settles, so the dialog offers Cancel only.
-      const ok = await confirm({
-        title: `Update ${accountName(row)} every day?`,
-        description: cost === null ? COST_NOT_KNOWN : cost === "Free" ? "Free." : `Uses ${cost}.`,
-        confirmLabel: "Turn on",
-        ...(cost === null ? { ready: new Promise<never>(() => {}), cancelLabel: "Close" } : {}),
-      });
-      if (!ok) return;
-    }
     setBusyRow(row.rowId);
     try {
-      await setConnectedAutoUpdate(row.trackedAccountId, !on, { organizationId });
+      await setConnectedFrequency(row.trackedAccountId, hours, { organizationId });
       await invalidate();
-      toast.success(on ? "Auto-update off" : "Auto-update on");
+      toast.success(`Updates: ${frequencyLabel(hours)}`);
     } catch (err) {
-      toast.error(socialErrorMessage(err, "Couldn't change Auto-update"));
+      toast.error(socialErrorMessage(err, "Couldn't change updates"));
     } finally {
       setBusyRow(null);
     }
@@ -428,6 +416,39 @@ export function AccountsTab() {
         },
       },
       {
+        id: "updates",
+        width: 128,
+        label: "Updates",
+        header: "Updates",
+        accessorFn: (r) => {
+          const plan = r.trackedAccountId ? plans.byTracked.get(r.trackedAccountId) : undefined;
+          return plan ? (plan.automatic ? frequencyLabel(plan.frequency_hours) : "Refresh only") : "";
+        },
+        filter: "select",
+        filterOptions: ["Off", "Every hour", "Every 6 hours", "Every 12 hours", "Daily", "Refresh only"].map((l) => ({ value: l, label: l })),
+        cell: (r) => {
+          const plan = r.trackedAccountId ? plans.byTracked.get(r.trackedAccountId) : undefined;
+          if (!plan) return null;
+          if (!plan.automatic) {
+            return (
+              <span className="text-muted-foreground" title="Reads cost points, so this account updates only when you click Refresh">
+                {["Refresh only", plans.refreshCost(r.trackedAccountId) ?? COST_NOT_KNOWN].join(" · ")}
+              </span>
+            );
+          }
+          if (!canEdit) return frequencyLabel(plan.frequency_hours);
+          return (
+            <Select
+              aria-label={`Updates for ${accountName(r)}`}
+              value={String(plan.frequency_hours)}
+              options={plan.frequency_options.map((h) => ({ value: String(h), label: frequencyLabel(h) }))}
+              disabled={busyRow !== null || (!plan.connected && plan.frequency_hours === 0)}
+              onValueChange={(v) => void changeFrequency(r, Number(v))}
+            />
+          );
+        },
+      },
+      {
         id: "followers",
         width: 72,
         label: "Followers",
@@ -547,7 +568,7 @@ export function AccountsTab() {
       },
     ],
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [brandSeg, organizationId, brandId, brandKind, busyRow, progress, connections.data, canEdit],
+    [brandSeg, organizationId, brandId, brandKind, busyRow, progress, connections.data, canEdit, plans.byTracked],
   );
 
   // A fixed order that does not depend on anything tracking changes (followers, name): tracking an
@@ -821,16 +842,6 @@ export function AccountsTab() {
                   loading: busyRow === row.rowId,
                   disabled: busyRow !== null,
                   onClick: () => void syncConnection(row),
-                },
-                {
-                  id: "auto-update",
-                  icon: CalendarClock,
-                  label: plans.byTracked.get(row.trackedAccountId ?? "")?.auto_update ? "Auto-update on" : "Auto-update",
-                  tooltip: plans.byTracked.get(row.trackedAccountId ?? "")?.auto_update
-                    ? "Daily · turn off"
-                    : ["Update every day", plans.autoUpdateCost(row.trackedAccountId) ?? COST_NOT_KNOWN].join(" · "),
-                  disabled: busyRow !== null,
-                  onClick: () => void toggleAutoUpdate(row),
                 },
               ]
             : []),

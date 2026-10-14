@@ -515,7 +515,7 @@ export async function refreshConnectedAccount(trackedAccountId: string, opts: Ca
   return data;
 }
 
-/** One connected own account: what a Refresh uses and whether daily Auto-update is on (`GET /social/connected-accounts/plans`). */
+/** One connected own account: what a Refresh uses and how often it updates automatically (`GET /social/connected-accounts/plans`). */
 export interface ConnectedAccountPlan {
   tracked_account_id: string;
   provider: string;
@@ -523,12 +523,15 @@ export interface ConnectedAccountPlan {
   /** USD one Refresh is expected to cost (render as points); 0 = free, null = not priced. */
   usd_per_refresh: number | null;
   points_per_refresh: number | null;
-  /** The server's own points for one run (same number as `points_per_refresh`) and for a month of daily runs, rounded as the ledger rounds. */
-  points_per_run: number | null;
-  auto_update: boolean;
-  cadence: "daily";
-  points_per_month: number | null;
+  /** True only for a free read. A paid or unpriced read (X) is Refresh-only: never automatic. */
+  automatic: boolean;
+  /** Hours between automatic reads (the person's choice, else the default); 0 = Off. */
+  frequency_hours: number;
+  frequency_chosen: boolean;
+  /** Hours the person may pick (0 = Off); empty for a paid read. */
+  frequency_options: number[];
   last_read_at: string | null;
+  next_read_at: string | null;
 }
 
 export async function getConnectedAccountPlans(opts: CallOptions): Promise<ConnectedAccountPlan[]> {
@@ -539,11 +542,11 @@ export async function getConnectedAccountPlans(opts: CallOptions): Promise<Conne
   return data?.accounts ?? [];
 }
 
-/** Turn daily Auto-update on or off for ONE connected account (`PUT /social/connected-accounts/{id}/auto-update`). */
-export async function setConnectedAutoUpdate(trackedAccountId: string, enabled: boolean, opts: CallOptions): Promise<void> {
+/** Set how often ONE connected account updates automatically, 0 = Off (`PUT /social/connected-accounts/{id}/frequency`). The server refuses a paid read. */
+export async function setConnectedFrequency(trackedAccountId: string, hours: number, opts: CallOptions): Promise<void> {
   await putJson(
-    `${BASE}/connected-accounts/${trackedAccountId}/auto-update`,
-    { enabled },
+    `${BASE}/connected-accounts/${trackedAccountId}/frequency`,
+    { hours },
     { organizationId: org(opts.organizationId), signal: opts.signal },
   );
 }
