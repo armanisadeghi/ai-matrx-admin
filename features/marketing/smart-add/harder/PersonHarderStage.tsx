@@ -450,7 +450,7 @@ export function PersonHarderStage({
           <div className="flex flex-wrap gap-1.5">
             {sweep.googleNext ? (
               <Button variant="quiet" icon={<ChevronDown aria-hidden />} disabled={searching} onClick={() => void sweepRound({ first: false, googlePage: sweep.googleNext ?? undefined })}>
-                {`More from Google · page ${sweep.googleNext}`}
+                {`More results · page ${sweep.googleNext}`}
               </Button>
             ) : null}
             {!stuck ? (
