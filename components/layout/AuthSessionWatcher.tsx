@@ -485,18 +485,25 @@ export default function AuthSessionWatcher() {
         // entire compiled-kind graph into every route's first load (THE
         // FRAGMENTATION LAW). importing the module alone fetches nothing —
         // module init performs no IO; only demanded sessions refresh.
-        void import("@/features/content-ir/registry/kind-registry").then(
-          (m) => {
-            if (m.kindRegistry.hasBeenDemanded()) void m.kindRegistry.refresh(0);
-          },
-        );
-        void import("@/features/content-ir/registry/component-registry").then(
-          (m) => {
-            if (m.componentRegistry.hasBeenDemanded()) {
-              void m.componentRegistry.refresh(0);
-            }
-          },
-        );
+        //
+        // NOT on `INITIAL_SESSION` (2026-10-13): a cookie-restored session is attached before any
+        // registry read leaves (the session barrier, DD-237 — every kind read waits for the first
+        // auth report), so the registries already loaded as this person and the forced refresh
+        // re-read both catalogs (~8 kind_definition / kind_component reads on /shapes) for nothing.
+        if (event !== "INITIAL_SESSION") {
+          void import("@/features/content-ir/registry/kind-registry").then(
+            (m) => {
+              if (m.kindRegistry.hasBeenDemanded()) void m.kindRegistry.refresh(0);
+            },
+          );
+          void import("@/features/content-ir/registry/component-registry").then(
+            (m) => {
+              if (m.componentRegistry.hasBeenDemanded()) {
+                void m.componentRegistry.refresh(0);
+              }
+            },
+          );
+        }
       }
       if (event === "SIGNED_IN" || event === "USER_UPDATED") {
         setSessionExpired(false);

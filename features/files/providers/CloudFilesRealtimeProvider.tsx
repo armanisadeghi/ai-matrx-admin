@@ -23,9 +23,6 @@ import {
   attachCloudFilesRealtime,
   detachCloudFilesRealtime,
 } from "@/features/files/redux/realtime-middleware";
-import { loadUserFileTree } from "@/features/files/redux/thunks";
-import { whenPrimaryContentShown } from "@/lib/boot/primaryContent";
-import { whenLateIdle } from "@/lib/boot/lateIdle";
 import { selectTreeStatus } from "@/features/files/redux/selectors";
 import {
   invalidateAll as invalidateBlobCache,
@@ -65,27 +62,24 @@ export function CloudFilesRealtimeProvider({
       return undefined;
     }
 
-    // Hydrate the WHOLE tree — and attach its channel, whose SUBSCRIBED reconcile reads it too —
-    // in the late tier: after the page's own content is on screen (`lib/boot/primaryContent`) AND
-    // the page has gone idle plus a few seconds (`lib/boot/lateIdle`). ~1.2 s of database work no
-    // first paint needs: every surface that shows the tree (files pages, cloud tabs, pickers,
-    // `useCloudTree`, the camera library) reads it itself when the tree is still `idle`, so
-    // engaging one before the late tier loads it at once. The middleware also fires a reconcile
-    // on SUBSCRIBED — calling both is intentional: "files are ready" must not wait for the
-    // channel handshake.
-    const controller = new AbortController();
-    void whenPrimaryContentShown()
-      .then(() => whenLateIdle(undefined, controller.signal))
-      .then((ok) => {
-        if (!ok) return;
-        dispatch(attachCloudFilesRealtime(userId));
-        if (selectTreeStatus(store.getState()) === "idle") {
-          void dispatch(loadUserFileTree({ userId }));
-        }
-      });
+    // 🚨 THE TREE LOADS ON DEMAND (2026-10-13). This provider never reads the tree: every surface
+    // that SHOWS it (files pages, cloud tabs, pickers, `useCloudTree`, the camera library, save
+    // dialogs) loads it itself when it is still `idle`. It used to load the whole tree (~1.2 s of
+    // database work, more on reconnects) on every page of the app for nobody. The channel that
+    // keeps a loaded tree live attaches the moment a surface starts that load — while the
+    // snapshot is in flight, so the middleware's backfill does not repeat it.
+    let unsubscribe: (() => void) | null = null;
+    const attachWhenDemanded = (): boolean => {
+      if (selectTreeStatus(store.getState()) === "idle") return false;
+      unsubscribe?.();
+      unsubscribe = null;
+      dispatch(attachCloudFilesRealtime(userId));
+      return true;
+    };
+    if (!attachWhenDemanded()) unsubscribe = store.subscribe(() => void attachWhenDemanded());
 
     return () => {
-      controller.abort();
+      unsubscribe?.();
       dispatch(detachCloudFilesRealtime());
     };
   }, [dispatch, store, userId]);

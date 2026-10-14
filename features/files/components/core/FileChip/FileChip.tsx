@@ -20,6 +20,7 @@ import { Download, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectFileById } from "@/features/files/redux/selectors";
+import { useEnsureCloudFile } from "@/features/files/hooks/useEnsureCloudFile";
 import { truncateFilename, formatFileSize } from "@/features/files/utils/format";
 import { useFileActions } from "@/features/files/components/core/FileActions/useFileActions";
 import { FileIcon } from "@ai-matrx/media/react";
@@ -54,6 +55,8 @@ export function FileChip({
   className,
 }: FileChipProps) {
   const file = useAppSelector((s) => selectFileById(s, fileId));
+  // The chip reads its own file — nothing loads the whole tree for it any more.
+  useEnsureCloudFile(fileId);
   const actions = useFileActions(fileId);
 
   const handleClick = useCallback(() => {
