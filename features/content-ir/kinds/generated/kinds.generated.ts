@@ -7,7 +7,7 @@
 // Verify:      pnpm check:kind-types   (CI-blocking freshness gate)
 // Twin guard:  pnpm check:kind-type-twins
 //
-// 1517 active kinds. THESE ARE THE ONLY KIND PAYLOAD TYPES IN THE REPO.
+// 1519 active kinds. THESE ARE THE ONLY KIND PAYLOAD TYPES IN THE REPO.
 // A hand-written interface mirroring a registered kind is a defect — derive
 // (Pick/Omit) from the type here instead, and never re-declare it.
 //
@@ -21,7 +21,7 @@
 // ─────────────────────────────────────────────────────────────────────────
 
 /** Structural fingerprint of the registry rows this artifact was generated from. */
-export const KIND_REGISTRY_FINGERPRINT = "335564756d43";
+export const KIND_REGISTRY_FINGERPRINT = "a9c055a87330";
 
 // ─────────────────────────────────────────────────────────────────────────
 // Shared nested structures. Deduped by structure across the registry — an
@@ -1442,7 +1442,7 @@ export interface BrandFact {
 /**
  * One finding of an identify round (site, account or web), as the Provision window shows it.
  *  *
- *  * Shared by 3 kinds (brand_identify_findings, brand_intake.early_facts.offer, brand_intake.key_people_finder.offer).
+ *  * Shared by 4 kinds (brand_identify_findings, brand_intake.early_facts.offer, brand_intake.identity_match.offer, brand_intake.key_people_finder.offer).
  */
 export interface BrandFinding {
   url?: string | null;
@@ -5642,6 +5642,22 @@ export interface OfficePortionOut {
 }
 
 /**
+ * * From kind `brand_open_candidates`.
+ */
+export interface OpenCandidate {
+  key: string;
+  /**
+   * account | website | name | logo
+   */
+  type: string;
+  value?: string | null;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+}
+
+/**
  * * From kind `brand_intake_profile`.
  */
 export interface OpenQuestion {
@@ -6365,7 +6381,7 @@ export interface ProductQuantity {
 }
 
 /**
- * * From kind `social_profile_answer_list`.
+ * * Shared by 2 kinds (brand_intake.identity_match.offer, social_profile_answer_list).
  */
 export interface ProfileAnswer {
   /**
@@ -6822,6 +6838,21 @@ export interface RejectedCandidate {
 }
 
 /**
+ * * From kind `brand_relation_kinds`.
+ */
+export interface RelationKind {
+  key: string;
+  label?: string | null;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  stance?: string | null;
+  description?: string | null;
+  has_sentiment?: boolean;
+}
+
+/**
  * Where a remix came from: the source post and the brand voice it was written in.
  *  *
  *  * Shared by 5 kinds (caption_set, carousel, hook_set, short_script, …).
@@ -7121,7 +7152,7 @@ export interface SearchResultItem {
 }
 
 /**
- * * From kind `search_result_list`.
+ * * Shared by 2 kinds (brand_intake.identity_match.offer, search_result_list).
  */
 export interface SearchResultRow {
   url?: string | null;
@@ -9256,7 +9287,7 @@ export interface TranscriptionUsage {
 }
 
 /**
- * * From kind `typed_account_list`.
+ * * Shared by 2 kinds (brand_intake.identity_match.offer, typed_account_list).
  */
 export interface TypedAccount {
   /**
@@ -9640,7 +9671,7 @@ export interface WeatherPlace {
 }
 
 /**
- * * From kind `web_page_list`.
+ * * Shared by 2 kinds (brand_intake.identity_match.offer, web_page_list).
  */
 export interface WebPageRow {
   url?: string | null;
@@ -9654,7 +9685,7 @@ export interface WebPageRow {
 }
 
 /**
- * * Shared by 3 kinds (brand_identify_web_results, brand_intake.early_facts.offer, brand_intake.key_people_finder.offer).
+ * * Shared by 4 kinds (brand_identify_web_results, brand_intake.early_facts.offer, brand_intake.identity_match.offer, brand_intake.key_people_finder.offer).
  */
 export interface WebSearchResultRow {
   url?: string;
@@ -14317,7 +14348,7 @@ export interface BrandIntakeEarlyFactsOffer {
 }
 
 /**
- * Kind `brand_intake.identity_match.offer` (registry v6).
+ * Kind `brand_intake.identity_match.offer` (registry v7).
  */
 export interface BrandIntakeIdentityMatchOffer {
   /**
@@ -14325,17 +14356,30 @@ export interface BrandIntakeIdentityMatchOffer {
    */
   __kind?: "brand_intake.identity_match.offer";
   /**
-   * The website the person typed or confirmed, as a bare domain.
+   * A front page that only routes visitors elsewhere (a division chooser, age gate, splash), as the
+   * page reader found it.
    */
-  domain?: string;
+  site_gate?: {
+    type?: string | null;
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "site_gate";
+  };
   /**
-   * The name searched for: the confirmed name, else the site's own title.
-   */
-  brand_name?: string;
-  /**
-   * The website text and each account exactly as the person typed it this round, one per line, before any parsing.
+   * The website text, then each account, one per line, before any parsing.
    */
   typed_text?: string;
+  /**
+   * Every raw web result an identify round read, from every search engine, in rank order.
+   */
+  web_results?: {
+    items?: WebSearchResultRow[];
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "brand_identify_web_results";
+  };
   /**
    * The account's bio from the social lookup's raw provider JSON; absent when not looked up.
    */
@@ -14345,10 +14389,68 @@ export interface BrandIntakeIdentityMatchOffer {
    */
   candidate_url: string;
   rules_reasons?: string[];
+  search_domain?: string;
+  /**
+   * The confirmed name, else the site's own title.
+   */
+  searched_name?: string;
+  /**
+   * One page as read: its address and its clean main text (plus footer text when it holds contact
+   * details).
+   */
+  site_homepage?: {
+    url?: string | null;
+    text?: string;
+    label?: string | null;
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "web_page";
+    footer_text?: string | null;
+  };
+  /**
+   * The website text exactly as typed this round.
+   */
+  typed_website?: string;
   /**
    * The name the search result's title shows for the account.
    */
   candidate_name?: string;
+  confirmed_name?: string;
+  /**
+   * The findings one source of a Smart Add identify round produced (site, accounts or web).
+   */
+  later_findings?: {
+    items?: BrandFinding[];
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "brand_identify_findings";
+  };
+  /**
+   * The homepage address after redirects.
+   */
+  site_final_url?: string;
+  /**
+   * The social accounts a person typed, exactly as typed, with the platform when they named one.
+   */
+  typed_accounts?: {
+    items?: TypedAccount[];
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "typed_account_list";
+  };
+  /**
+   * The findings one source of a Smart Add identify round produced (site, accounts or web).
+   */
+  web_candidates?: {
+    items?: BrandFinding[];
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "brand_identify_findings";
+  };
   /**
    * What the person has confirmed about the brand so far in Smart Add (empty until they confirm).
    */
@@ -14362,18 +14464,99 @@ export interface BrandIntakeIdentityMatchOffer {
     location?: string | null;
   };
   /**
-   * certain | likely | possible, from the rules (no AI).
+   * How sure the fixed rules are (certain, likely or possible); no AI.
    */
   rules_certainty?: string;
+  /**
+   * Several pages as read, each once, in the order they were read.
+   */
+  site_gate_pages?: {
+    items?: WebPageRow[];
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "web_page_list";
+  };
   /**
    * The account's handle as its address shows it.
    */
   candidate_handle: string;
+  confirmed_domain?: string;
+  /**
+   * Every raw web result an identify round read, from every search engine, in rank order.
+   */
+  own_site_results?: {
+    items?: WebSearchResultRow[];
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "brand_identify_web_results";
+  };
+  /**
+   * Several pages as read, each once, in the order they were read.
+   */
+  site_about_pages?: {
+    items?: WebPageRow[];
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "web_page_list";
+  };
+  /**
+   * One search's whole provider response, exactly as the engine returned it.
+   */
+  brave_name_search?: {
+    query?: string;
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "search_response";
+    engine: string;
+    endpoint?: string;
+    response?: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+  };
+  };
   candidate_engines?: string[];
   /**
    * The search result's title and snippet for this account (often its bio's first line).
    */
   candidate_snippet?: string;
+  /**
+   * One page as read: its address and its clean main text (plus footer text when it holds contact
+   * details).
+   */
+  site_contact_page?: {
+    url?: string | null;
+    text?: string;
+    label?: string | null;
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "web_page";
+    footer_text?: string | null;
+  };
+  /**
+   * One search's whole provider response, exactly as the engine returned it.
+   */
+  brave_local_search?: {
+    query?: string;
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "search_response";
+    engine: string;
+    endpoint?: string;
+    response?: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+  };
+  };
   /**
    * The result rank and the query that found it.
    */
@@ -14386,14 +14569,217 @@ export interface BrandIntakeIdentityMatchOffer {
    * The platform of the found account.
    */
   candidate_platform: string;
+  confirmed_category?: string;
+  confirmed_location?: string;
+  /**
+   * One search's whole provider response, exactly as the engine returned it.
+   */
+  google_name_search?: {
+    query?: string;
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "search_response";
+    engine: string;
+    endpoint?: string;
+    response?: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+  };
+  };
+  /**
+   * A page's header as the page writes it: title, meta description, og / twitter tags, canonical.
+   */
+  site_homepage_head?: {
+    title?: string | null;
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "web_page_head";
+    description?: string | null;
+  };
+  /**
+   * The homepage HTML exactly as fetched.
+   */
+  site_homepage_html?: string;
+  /**
+   * The homepage's main text: no menu, footer or boilerplate.
+   */
+  site_homepage_text?: string;
+  /**
+   * The findings one source of a Smart Add identify round produced (site, accounts or web).
+   */
+  site_page_findings?: {
+    items?: BrandFinding[];
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "brand_identify_findings";
+  };
+  /**
+   * One search's whole provider response, exactly as the engine returned it.
+   */
+  brave_domain_search?: {
+    query?: string;
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "search_response";
+    engine: string;
+    endpoint?: string;
+    response?: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+  };
+  };
   /**
    * The account's follower count from the raw provider JSON; absent when not looked up.
    */
   candidate_followers?: number;
   /**
+   * One search's whole provider response, exactly as the engine returned it.
+   */
+  google_local_search?: {
+    query?: string;
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "search_response";
+    engine: string;
+    endpoint?: string;
+    response?: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+  };
+  };
+  /**
+   * Several pages as read, each once, in the order they were read.
+   */
+  site_gate_offerings?: {
+    items?: WebPageRow[];
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "web_page_list";
+  };
+  /**
+   * One search's whole provider response, exactly as the engine returned it.
+   */
+  google_domain_search?: {
+    query?: string;
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "search_response";
+    engine: string;
+    endpoint?: string;
+    response?: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+  };
+  };
+  /**
+   * Every raw web result an identify round read, from every search engine, in rank order.
+   */
+  own_site_results_raw?: {
+    items?: WebSearchResultRow[];
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "brand_identify_web_results";
+  };
+  /**
+   * The findings one source of a Smart Add identify round produced (site, accounts or web).
+   */
+  site_header_findings?: {
+    items?: BrandFinding[];
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "brand_identify_findings";
+  };
+  /**
+   * Every structured-data (JSON-LD) block a page carries, parsed, exactly as written.
+   */
+  site_homepage_jsonld?: {
+    items?: unknown[];
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "structured_data_list";
+  };
+  /**
+   * One top-level block of a search response beside its result list (Brave: FAQ, infobox, videos,
+   * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
+   */
+  brave_name_search_faq?: {
+    data?: unknown;
+    block: string;
+    query?: string;
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "search_result_block";
+    engine: string;
+  };
+  /**
    * The link on the account's profile, from the raw provider JSON; absent when not looked up.
    */
   candidate_link_in_bio?: string;
+  /**
+   * One top-level block of a search response beside its result list (Brave: FAQ, infobox, videos,
+   * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
+   */
+  brave_local_search_faq?: {
+    data?: unknown;
+    block: string;
+    query?: string;
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "search_result_block";
+    engine: string;
+  };
+  /**
+   * One search's whole provider response, exactly as the engine returned it.
+   */
+  brave_name_news_search?: {
+    query?: string;
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "search_response";
+    engine: string;
+    endpoint?: string;
+    response?: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+  };
+  };
+  /**
+   * One top-level block of a search response beside its result list (Brave: FAQ, infobox, videos,
+   * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
+   */
+  brave_name_search_news?: {
+    data?: unknown;
+    block: string;
+    query?: string;
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "search_result_block";
+    engine: string;
+  };
   /**
    * The account's display name from the social lookup's raw provider JSON; absent when the account was not looked up this round.
    */
@@ -14402,6 +14788,1200 @@ export interface BrandIntakeIdentityMatchOffer {
    * The whole raw provider answer for the account, as JSON text exactly as returned (the source of the five values above).
    */
   candidate_profile_full?: string;
+  /**
+   * Every raw web result an identify round read, from every search engine, in rank order.
+   */
+  later_own_site_results?: {
+    items?: WebSearchResultRow[];
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "brand_identify_web_results";
+  };
+  /**
+   * The findings one source of a Smart Add identify round produced (site, accounts or web).
+   */
+  typed_account_findings?: {
+    items?: BrandFinding[];
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "brand_identify_findings";
+  };
+  /**
+   * Social accounts as their provider answered a profile lookup, one row per account: the whole
+   * answer (raw form) or only its fact fields (clean form).
+   */
+  typed_account_profiles?: {
+    items?: ProfileAnswer[];
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "social_profile_answer_list";
+  };
+  /**
+   * One top-level block of a search response beside its result list (Brave: FAQ, infobox, videos,
+   * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
+   */
+  brave_domain_search_faq?: {
+    data?: unknown;
+    block: string;
+    query?: string;
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "search_result_block";
+    engine: string;
+  };
+  /**
+   * One top-level block of a search response beside its result list (Brave: FAQ, infobox, videos,
+   * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
+   */
+  brave_local_search_news?: {
+    data?: unknown;
+    block: string;
+    query?: string;
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "search_result_block";
+    engine: string;
+  };
+  /**
+   * One search's whole provider response, exactly as the engine returned it.
+   */
+  google_name_news_search?: {
+    query?: string;
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "search_response";
+    engine: string;
+    endpoint?: string;
+    response?: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+  };
+  };
+  /**
+   * One top-level block of a search response beside its result list (Brave: FAQ, infobox, videos,
+   * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
+   */
+  brave_domain_search_news?: {
+    data?: unknown;
+    block: string;
+    query?: string;
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "search_result_block";
+    engine: string;
+  };
+  /**
+   * One search's whole provider response, exactly as the engine returned it.
+   */
+  brave_name_images_search?: {
+    query?: string;
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "search_response";
+    engine: string;
+    endpoint?: string;
+    response?: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+  };
+  };
+  /**
+   * One top-level block of a search response beside its result list (Brave: FAQ, infobox, videos,
+   * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
+   */
+  brave_name_search_videos?: {
+    data?: unknown;
+    block: string;
+    query?: string;
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "search_result_block";
+    engine: string;
+  };
+  /**
+   * One search's whole provider response, exactly as the engine returned it.
+   */
+  brave_name_videos_search?: {
+    query?: string;
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "search_response";
+    engine: string;
+    endpoint?: string;
+    response?: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+  };
+  };
+  /**
+   * One top-level block of a search response beside its result list (Brave: FAQ, infobox, videos,
+   * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
+   */
+  brave_local_search_videos?: {
+    data?: unknown;
+    block: string;
+    query?: string;
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "search_result_block";
+    engine: string;
+  };
+  /**
+   * One search's whole provider response, exactly as the engine returned it.
+   */
+  brave_name_reviews_search?: {
+    query?: string;
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "search_response";
+    engine: string;
+    endpoint?: string;
+    response?: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+  };
+  };
+  /**
+   * One top-level block of a search response beside its result list (Brave: FAQ, infobox, videos,
+   * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
+   */
+  brave_name_search_infobox?: {
+    data?: unknown;
+    block: string;
+    query?: string;
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "search_result_block";
+    engine: string;
+  };
+  /**
+   * One search's result list in rank order: the provider's full objects (raw form) or only the
+   * fields that carry facts (clean form).
+   */
+  brave_name_search_results?: {
+    items?: SearchResultRow[];
+    query?: string;
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "search_result_list";
+    engine: string;
+    endpoint?: string;
+  };
+  /**
+   * One search's whole provider response, exactly as the engine returned it.
+   */
+  google_name_images_search?: {
+    query?: string;
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "search_response";
+    engine: string;
+    endpoint?: string;
+    response?: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+  };
+  };
+  /**
+   * One search's whole provider response, exactly as the engine returned it.
+   */
+  google_name_videos_search?: {
+    query?: string;
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "search_response";
+    engine: string;
+    endpoint?: string;
+    response?: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+  };
+  };
+  /**
+   * The footer text, only when it holds a phone, email or address.
+   */
+  site_homepage_footer_text?: string;
+  /**
+   * One top-level block of a search response beside its result list (Brave: FAQ, infobox, videos,
+   * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
+   */
+  brave_domain_search_videos?: {
+    data?: unknown;
+    block: string;
+    query?: string;
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "search_result_block";
+    engine: string;
+  };
+  /**
+   * One top-level block of a search response beside its result list (Brave: FAQ, infobox, videos,
+   * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
+   */
+  brave_local_search_infobox?: {
+    data?: unknown;
+    block: string;
+    query?: string;
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "search_result_block";
+    engine: string;
+  };
+  /**
+   * One search's result list in rank order: the provider's full objects (raw form) or only the
+   * fields that carry facts (clean form).
+   */
+  brave_local_search_results?: {
+    items?: SearchResultRow[];
+    query?: string;
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "search_result_list";
+    engine: string;
+    endpoint?: string;
+  };
+  /**
+   * One search's whole provider response, exactly as the engine returned it.
+   */
+  google_name_reviews_search?: {
+    query?: string;
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "search_response";
+    engine: string;
+    endpoint?: string;
+    response?: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+  };
+  };
+  /**
+   * One search's result list in rank order: the provider's full objects (raw form) or only the
+   * fields that carry facts (clean form).
+   */
+  google_name_search_results?: {
+    items?: SearchResultRow[];
+    query?: string;
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "search_result_list";
+    engine: string;
+    endpoint?: string;
+  };
+  /**
+   * Social accounts as their provider answered a profile lookup, one row per account: the whole
+   * answer (raw form) or only its fact fields (clean form).
+   */
+  typed_account_profiles_raw?: {
+    items?: ProfileAnswer[];
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "social_profile_answer_list";
+  };
+  /**
+   * One top-level block of a search response beside its result list (Brave: FAQ, infobox, videos,
+   * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
+   */
+  brave_domain_search_infobox?: {
+    data?: unknown;
+    block: string;
+    query?: string;
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "search_result_block";
+    engine: string;
+  };
+  /**
+   * One search's result list in rank order: the provider's full objects (raw form) or only the
+   * fields that carry facts (clean form).
+   */
+  brave_domain_search_results?: {
+    items?: SearchResultRow[];
+    query?: string;
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "search_result_list";
+    engine: string;
+    endpoint?: string;
+  };
+  /**
+   * One top-level block of a search response beside its result list (Brave: FAQ, infobox, videos,
+   * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
+   */
+  brave_name_search_locations?: {
+    data?: unknown;
+    block: string;
+    query?: string;
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "search_result_block";
+    engine: string;
+  };
+  /**
+   * One search's result list in rank order: the provider's full objects (raw form) or only the
+   * fields that carry facts (clean form).
+   */
+  google_local_search_results?: {
+    items?: SearchResultRow[];
+    query?: string;
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "search_result_list";
+    engine: string;
+    endpoint?: string;
+  };
+  /**
+   * One top-level block of a search response beside its result list (Brave: FAQ, infobox, videos,
+   * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
+   */
+  brave_local_search_locations?: {
+    data?: unknown;
+    block: string;
+    query?: string;
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "search_result_block";
+    engine: string;
+  };
+  /**
+   * One search's result list in rank order: the provider's full objects (raw form) or only the
+   * fields that carry facts (clean form).
+   */
+  google_domain_search_results?: {
+    items?: SearchResultRow[];
+    query?: string;
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "search_result_list";
+    engine: string;
+    endpoint?: string;
+  };
+  /**
+   * One top-level block of a search response beside its result list (Brave: FAQ, infobox, videos,
+   * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
+   */
+  brave_domain_search_locations?: {
+    data?: unknown;
+    block: string;
+    query?: string;
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "search_result_block";
+    engine: string;
+  };
+  /**
+   * One top-level block of a search response beside its result list (Brave: FAQ, infobox, videos,
+   * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
+   */
+  brave_name_reviews_search_faq?: {
+    data?: unknown;
+    block: string;
+    query?: string;
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "search_result_block";
+    engine: string;
+  };
+  /**
+   * One top-level block of a search response beside its result list (Brave: FAQ, infobox, videos,
+   * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
+   */
+  brave_name_search_discussions?: {
+    data?: unknown;
+    block: string;
+    query?: string;
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "search_result_block";
+    engine: string;
+  };
+  /**
+   * One search's result list in rank order: the provider's full objects (raw form) or only the
+   * fields that carry facts (clean form).
+   */
+  brave_name_search_results_raw?: {
+    items?: SearchResultRow[];
+    query?: string;
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "search_result_list";
+    engine: string;
+    endpoint?: string;
+  };
+  /**
+   * One top-level block of a search response beside its result list (Brave: FAQ, infobox, videos,
+   * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
+   */
+  google_name_search_answer_box?: {
+    data?: unknown;
+    block: string;
+    query?: string;
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "search_result_block";
+    engine: string;
+  };
+  /**
+   * One top-level block of a search response beside its result list (Brave: FAQ, infobox, videos,
+   * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
+   */
+  brave_local_search_discussions?: {
+    data?: unknown;
+    block: string;
+    query?: string;
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "search_result_block";
+    engine: string;
+  };
+  /**
+   * One search's result list in rank order: the provider's full objects (raw form) or only the
+   * fields that carry facts (clean form).
+   */
+  brave_local_search_results_raw?: {
+    items?: SearchResultRow[];
+    query?: string;
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "search_result_list";
+    engine: string;
+    endpoint?: string;
+  };
+  /**
+   * One search's result list in rank order: the provider's full objects (raw form) or only the
+   * fields that carry facts (clean form).
+   */
+  brave_name_news_search_results?: {
+    items?: SearchResultRow[];
+    query?: string;
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "search_result_list";
+    engine: string;
+    endpoint?: string;
+  };
+  /**
+   * One top-level block of a search response beside its result list (Brave: FAQ, infobox, videos,
+   * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
+   */
+  brave_name_reviews_search_news?: {
+    data?: unknown;
+    block: string;
+    query?: string;
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "search_result_block";
+    engine: string;
+  };
+  /**
+   * One top-level block of a search response beside its result list (Brave: FAQ, infobox, videos,
+   * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
+   */
+  google_local_search_answer_box?: {
+    data?: unknown;
+    block: string;
+    query?: string;
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "search_result_block";
+    engine: string;
+  };
+  /**
+   * One top-level block of a search response beside its result list (Brave: FAQ, infobox, videos,
+   * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
+   */
+  google_name_search_ai_overview?: {
+    data?: unknown;
+    block: string;
+    query?: string;
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "search_result_block";
+    engine: string;
+  };
+  /**
+   * One search's result list in rank order: the provider's full objects (raw form) or only the
+   * fields that carry facts (clean form).
+   */
+  google_name_search_results_raw?: {
+    items?: SearchResultRow[];
+    query?: string;
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "search_result_list";
+    engine: string;
+    endpoint?: string;
+  };
+  /**
+   * One top-level block of a search response beside its result list (Brave: FAQ, infobox, videos,
+   * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
+   */
+  google_name_search_top_stories?: {
+    data?: unknown;
+    block: string;
+    query?: string;
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "search_result_block";
+    engine: string;
+  };
+  /**
+   * One top-level block of a search response beside its result list (Brave: FAQ, infobox, videos,
+   * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
+   */
+  brave_domain_search_discussions?: {
+    data?: unknown;
+    block: string;
+    query?: string;
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "search_result_block";
+    engine: string;
+  };
+  /**
+   * One search's result list in rank order: the provider's full objects (raw form) or only the
+   * fields that carry facts (clean form).
+   */
+  brave_domain_search_results_raw?: {
+    items?: SearchResultRow[];
+    query?: string;
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "search_result_list";
+    engine: string;
+    endpoint?: string;
+  };
+  /**
+   * One top-level block of a search response beside its result list (Brave: FAQ, infobox, videos,
+   * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
+   */
+  google_domain_search_answer_box?: {
+    data?: unknown;
+    block: string;
+    query?: string;
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "search_result_block";
+    engine: string;
+  };
+  /**
+   * One top-level block of a search response beside its result list (Brave: FAQ, infobox, videos,
+   * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
+   */
+  google_local_search_ai_overview?: {
+    data?: unknown;
+    block: string;
+    query?: string;
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "search_result_block";
+    engine: string;
+  };
+  /**
+   * One search's result list in rank order: the provider's full objects (raw form) or only the
+   * fields that carry facts (clean form).
+   */
+  google_local_search_results_raw?: {
+    items?: SearchResultRow[];
+    query?: string;
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "search_result_list";
+    engine: string;
+    endpoint?: string;
+  };
+  /**
+   * One top-level block of a search response beside its result list (Brave: FAQ, infobox, videos,
+   * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
+   */
+  google_local_search_top_stories?: {
+    data?: unknown;
+    block: string;
+    query?: string;
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "search_result_block";
+    engine: string;
+  };
+  /**
+   * One search's result list in rank order: the provider's full objects (raw form) or only the
+   * fields that carry facts (clean form).
+   */
+  google_name_news_search_results?: {
+    items?: SearchResultRow[];
+    query?: string;
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "search_result_list";
+    engine: string;
+    endpoint?: string;
+  };
+  /**
+   * One search's result list in rank order: the provider's full objects (raw form) or only the
+   * fields that carry facts (clean form).
+   */
+  brave_name_images_search_results?: {
+    items?: SearchResultRow[];
+    query?: string;
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "search_result_list";
+    engine: string;
+    endpoint?: string;
+  };
+  /**
+   * One top-level block of a search response beside its result list (Brave: FAQ, infobox, videos,
+   * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
+   */
+  brave_name_reviews_search_videos?: {
+    data?: unknown;
+    block: string;
+    query?: string;
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "search_result_block";
+    engine: string;
+  };
+  /**
+   * One search's result list in rank order: the provider's full objects (raw form) or only the
+   * fields that carry facts (clean form).
+   */
+  brave_name_videos_search_results?: {
+    items?: SearchResultRow[];
+    query?: string;
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "search_result_list";
+    engine: string;
+    endpoint?: string;
+  };
+  /**
+   * One top-level block of a search response beside its result list (Brave: FAQ, infobox, videos,
+   * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
+   */
+  google_domain_search_ai_overview?: {
+    data?: unknown;
+    block: string;
+    query?: string;
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "search_result_block";
+    engine: string;
+  };
+  /**
+   * One search's result list in rank order: the provider's full objects (raw form) or only the
+   * fields that carry facts (clean form).
+   */
+  google_domain_search_results_raw?: {
+    items?: SearchResultRow[];
+    query?: string;
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "search_result_list";
+    engine: string;
+    endpoint?: string;
+  };
+  /**
+   * One top-level block of a search response beside its result list (Brave: FAQ, infobox, videos,
+   * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
+   */
+  google_domain_search_top_stories?: {
+    data?: unknown;
+    block: string;
+    query?: string;
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "search_result_block";
+    engine: string;
+  };
+  /**
+   * One top-level block of a search response beside its result list (Brave: FAQ, infobox, videos,
+   * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
+   */
+  google_name_search_local_results?: {
+    data?: unknown;
+    block: string;
+    query?: string;
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "search_result_block";
+    engine: string;
+  };
+  /**
+   * One top-level block of a search response beside its result list (Brave: FAQ, infobox, videos,
+   * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
+   */
+  brave_name_reviews_search_infobox?: {
+    data?: unknown;
+    block: string;
+    query?: string;
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "search_result_block";
+    engine: string;
+  };
+  /**
+   * One search's result list in rank order: the provider's full objects (raw form) or only the
+   * fields that carry facts (clean form).
+   */
+  brave_name_reviews_search_results?: {
+    items?: SearchResultRow[];
+    query?: string;
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "search_result_list";
+    engine: string;
+    endpoint?: string;
+  };
+  /**
+   * One top-level block of a search response beside its result list (Brave: FAQ, infobox, videos,
+   * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
+   */
+  google_local_search_local_results?: {
+    data?: unknown;
+    block: string;
+    query?: string;
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "search_result_block";
+    engine: string;
+  };
+  /**
+   * One search's result list in rank order: the provider's full objects (raw form) or only the
+   * fields that carry facts (clean form).
+   */
+  google_name_images_search_results?: {
+    items?: SearchResultRow[];
+    query?: string;
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "search_result_list";
+    engine: string;
+    endpoint?: string;
+  };
+  /**
+   * One search's result list in rank order: the provider's full objects (raw form) or only the
+   * fields that carry facts (clean form).
+   */
+  google_name_videos_search_results?: {
+    items?: SearchResultRow[];
+    query?: string;
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "search_result_list";
+    engine: string;
+    endpoint?: string;
+  };
+  /**
+   * One search's result list in rank order: the provider's full objects (raw form) or only the
+   * fields that carry facts (clean form).
+   */
+  brave_name_news_search_results_raw?: {
+    items?: SearchResultRow[];
+    query?: string;
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "search_result_list";
+    engine: string;
+    endpoint?: string;
+  };
+  /**
+   * One top-level block of a search response beside its result list (Brave: FAQ, infobox, videos,
+   * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
+   */
+  google_domain_search_local_results?: {
+    data?: unknown;
+    block: string;
+    query?: string;
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "search_result_block";
+    engine: string;
+  };
+  /**
+   * One search's result list in rank order: the provider's full objects (raw form) or only the
+   * fields that carry facts (clean form).
+   */
+  google_name_reviews_search_results?: {
+    items?: SearchResultRow[];
+    query?: string;
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "search_result_list";
+    engine: string;
+    endpoint?: string;
+  };
+  /**
+   * One top-level block of a search response beside its result list (Brave: FAQ, infobox, videos,
+   * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
+   */
+  google_name_search_knowledge_graph?: {
+    data?: unknown;
+    block: string;
+    query?: string;
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "search_result_block";
+    engine: string;
+  };
+  /**
+   * One top-level block of a search response beside its result list (Brave: FAQ, infobox, videos,
+   * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
+   */
+  brave_name_reviews_search_locations?: {
+    data?: unknown;
+    block: string;
+    query?: string;
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "search_result_block";
+    engine: string;
+  };
+  /**
+   * One top-level block of a search response beside its result list (Brave: FAQ, infobox, videos,
+   * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
+   */
+  google_local_search_knowledge_graph?: {
+    data?: unknown;
+    block: string;
+    query?: string;
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "search_result_block";
+    engine: string;
+  };
+  /**
+   * One search's result list in rank order: the provider's full objects (raw form) or only the
+   * fields that carry facts (clean form).
+   */
+  google_name_news_search_results_raw?: {
+    items?: SearchResultRow[];
+    query?: string;
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "search_result_list";
+    engine: string;
+    endpoint?: string;
+  };
+  /**
+   * One search's result list in rank order: the provider's full objects (raw form) or only the
+   * fields that carry facts (clean form).
+   */
+  brave_name_images_search_results_raw?: {
+    items?: SearchResultRow[];
+    query?: string;
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "search_result_list";
+    engine: string;
+    endpoint?: string;
+  };
+  /**
+   * One search's result list in rank order: the provider's full objects (raw form) or only the
+   * fields that carry facts (clean form).
+   */
+  brave_name_videos_search_results_raw?: {
+    items?: SearchResultRow[];
+    query?: string;
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "search_result_list";
+    engine: string;
+    endpoint?: string;
+  };
+  /**
+   * One top-level block of a search response beside its result list (Brave: FAQ, infobox, videos,
+   * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
+   */
+  google_domain_search_knowledge_graph?: {
+    data?: unknown;
+    block: string;
+    query?: string;
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "search_result_block";
+    engine: string;
+  };
+  /**
+   * One top-level block of a search response beside its result list (Brave: FAQ, infobox, videos,
+   * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
+   */
+  google_name_search_related_questions?: {
+    data?: unknown;
+    block: string;
+    query?: string;
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "search_result_block";
+    engine: string;
+  };
+  /**
+   * One top-level block of a search response beside its result list (Brave: FAQ, infobox, videos,
+   * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
+   */
+  brave_name_reviews_search_discussions?: {
+    data?: unknown;
+    block: string;
+    query?: string;
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "search_result_block";
+    engine: string;
+  };
+  /**
+   * One search's result list in rank order: the provider's full objects (raw form) or only the
+   * fields that carry facts (clean form).
+   */
+  brave_name_reviews_search_results_raw?: {
+    items?: SearchResultRow[];
+    query?: string;
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "search_result_list";
+    engine: string;
+    endpoint?: string;
+  };
+  /**
+   * One top-level block of a search response beside its result list (Brave: FAQ, infobox, videos,
+   * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
+   */
+  google_local_search_related_questions?: {
+    data?: unknown;
+    block: string;
+    query?: string;
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "search_result_block";
+    engine: string;
+  };
+  /**
+   * One search's result list in rank order: the provider's full objects (raw form) or only the
+   * fields that carry facts (clean form).
+   */
+  google_name_images_search_results_raw?: {
+    items?: SearchResultRow[];
+    query?: string;
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "search_result_list";
+    engine: string;
+    endpoint?: string;
+  };
+  /**
+   * One top-level block of a search response beside its result list (Brave: FAQ, infobox, videos,
+   * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
+   */
+  google_name_reviews_search_answer_box?: {
+    data?: unknown;
+    block: string;
+    query?: string;
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "search_result_block";
+    engine: string;
+  };
+  /**
+   * One search's result list in rank order: the provider's full objects (raw form) or only the
+   * fields that carry facts (clean form).
+   */
+  google_name_videos_search_results_raw?: {
+    items?: SearchResultRow[];
+    query?: string;
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "search_result_list";
+    engine: string;
+    endpoint?: string;
+  };
+  /**
+   * One top-level block of a search response beside its result list (Brave: FAQ, infobox, videos,
+   * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
+   */
+  google_domain_search_related_questions?: {
+    data?: unknown;
+    block: string;
+    query?: string;
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "search_result_block";
+    engine: string;
+  };
+  /**
+   * One top-level block of a search response beside its result list (Brave: FAQ, infobox, videos,
+   * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
+   */
+  google_name_reviews_search_ai_overview?: {
+    data?: unknown;
+    block: string;
+    query?: string;
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "search_result_block";
+    engine: string;
+  };
+  /**
+   * One search's result list in rank order: the provider's full objects (raw form) or only the
+   * fields that carry facts (clean form).
+   */
+  google_name_reviews_search_results_raw?: {
+    items?: SearchResultRow[];
+    query?: string;
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "search_result_list";
+    engine: string;
+    endpoint?: string;
+  };
+  /**
+   * One top-level block of a search response beside its result list (Brave: FAQ, infobox, videos,
+   * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
+   */
+  google_name_reviews_search_top_stories?: {
+    data?: unknown;
+    block: string;
+    query?: string;
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "search_result_block";
+    engine: string;
+  };
+  /**
+   * One top-level block of a search response beside its result list (Brave: FAQ, infobox, videos,
+   * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
+   */
+  google_name_reviews_search_local_results?: {
+    data?: unknown;
+    block: string;
+    query?: string;
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "search_result_block";
+    engine: string;
+  };
+  /**
+   * One top-level block of a search response beside its result list (Brave: FAQ, infobox, videos,
+   * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
+   */
+  google_name_reviews_search_knowledge_graph?: {
+    data?: unknown;
+    block: string;
+    query?: string;
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "search_result_block";
+    engine: string;
+  };
+  /**
+   * One top-level block of a search response beside its result list (Brave: FAQ, infobox, videos,
+   * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
+   */
+  google_name_reviews_search_related_questions?: {
+    data?: unknown;
+    block: string;
+    query?: string;
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "search_result_block";
+    engine: string;
+  };
 }
 
 /**
@@ -14582,6 +16162,34 @@ export interface BrandKeyPerson {
   certainty?: string;
   confirmed?: boolean;
   evidence_urls?: string[];
+}
+
+/**
+ * Every account, website, name and logo a Smart Add round found that nobody has decided yet, each once,
+ * with what is known of it (profile basics when it was looked up, where it was found, the fixed rules' read).
+ *  *
+ *  * Kind `brand_open_candidates` (registry v2).
+ */
+export interface BrandOpenCandidates {
+  items?: OpenCandidate[];
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "brand_open_candidates";
+}
+
+/**
+ * The ways a found page or account can relate to a brand (``web.brand_relation_kind``): the shared list plus
+ * the organization's own.
+ *  *
+ *  * Kind `brand_relation_kinds` (registry v2).
+ */
+export interface BrandRelationKinds {
+  items?: RelationKind[];
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "brand_relation_kinds";
 }
 
 /**
@@ -56225,6 +57833,8 @@ export type GeneratedKindSlug =
   | "brand_intake_profile"
   | "brand_key_people"
   | "brand_key_person"
+  | "brand_open_candidates"
+  | "brand_relation_kinds"
   | "brand_we_think"
   | "broken_link_prospecting_preview"
   | "broken_link_prospecting_report"
@@ -57745,6 +59355,8 @@ export interface KindPayloadBySlug {
   "brand_intake_profile": BrandIntakeProfile;
   "brand_key_people": BrandKeyPeople;
   "brand_key_person": BrandKeyPerson;
+  "brand_open_candidates": BrandOpenCandidates;
+  "brand_relation_kinds": BrandRelationKinds;
   "brand_we_think": BrandWeThink;
   "broken_link_prospecting_preview": BrokenLinkProspectingPreview;
   "broken_link_prospecting_report": BrokenLinkProspectingReport;
@@ -59269,6 +60881,8 @@ export const GENERATED_KIND_SLUGS: readonly GeneratedKindSlug[] = [
   "brand_intake_profile",
   "brand_key_people",
   "brand_key_person",
+  "brand_open_candidates",
+  "brand_relation_kinds",
   "brand_we_think",
   "broken_link_prospecting_preview",
   "broken_link_prospecting_report",
