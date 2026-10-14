@@ -56,7 +56,7 @@ interface Sweep {
   ms: number;
 }
 
-function withSweep(cur: Sweep | null, r: FindYouResult): Sweep {
+function withSweep(cur: Sweep | null, r: FindYouResult, extras = false): Sweep {
   const byKey = new Map((cur?.rows ?? []).map((x) => [x.key, x]));
   for (const row of r.rows) if (!byKey.has(row.key)) byKey.set(row.key, row);
   const rows = [...byKey.values()];
@@ -68,7 +68,7 @@ function withSweep(cur: Sweep | null, r: FindYouResult): Sweep {
     tiers: r.tiers.map((t) => ({ ...t, count: rows.filter((x) => x.tier === t.key).length })),
     filters: [...(cur?.filters ?? []), ...r.filters],
     calls: [...(cur?.calls ?? []), ...r.calls],
-    googleNext: r.google_next_page,
+    googleNext: extras && cur ? cur.googleNext : r.google_next_page,
     platformsFirst: r.platforms_first,
     points: cur?.points == null && cur ? null : r.points == null ? null : (cur?.points ?? 0) + r.points,
     ms: (cur?.ms ?? 0) + r.ms,
@@ -181,11 +181,16 @@ export function PersonHarderStage({
   const [gaveUp, setGaveUp] = useState(false);
   const [history, setHistory] = useState<FindYouProvision["history"]>([]);
   const sweepStarted = useRef(false);
+  const extrasRan = useRef(false);
 
-  /** The hard paths' sweep (Brave + Google, tiered) with the harder round inside; `googlePage` = one deeper page. */
-  const sweepRound = async (opts: { first: boolean; googlePage?: number }) => {
+  /**
+   * The hard paths' sweep (tiered) with the harder round inside; `googlePage` = one deeper page; `extras` = only the
+   * queries the deeper path adds on escalation (nothing already run is paid again).
+   */
+  const sweepRound = async (opts: { first: boolean; googlePage?: number; extras?: boolean }) => {
     if (!HARD_PATHS.includes(path)) return;
     sweepStarted.current = true;
+    if (path === "person_near_impossible" && !opts.googlePage) extrasRan.current = true;
     setBusy((n) => n + 1);
     setError(null);
     try {
@@ -203,10 +208,11 @@ export function PersonHarderStage({
         path: path as FindYouPath,
         known_urls: knownUrls,
         google_page: opts.googlePage ?? 0,
+        extras_only: opts.extras ?? false,
       });
       done.current = [...done.current, ...r.queries.map((q) => q.query), ...r.calls.filter((c) => c.page === 1 && c.engine === "google").map((c) => c.query)];
       setBuckets((b) => absorb(b, r));
-      setSweep((cur) => withSweep(cur, r));
+      setSweep((cur) => withSweep(cur, r, opts.extras));
       if (r.error) setError(r.error);
       for (const d of r.decisions) onLog({ at: Date.now(), kind: "round", text: d, points: null });
       onLog({ at: Date.now(), kind: "round", text: `Sweep cost: ${r.points ?? "?"} points in ${r.ms} ms`, points: r.points });
@@ -280,11 +286,15 @@ export function PersonHarderStage({
     started.current = true;
     start();
   }, []);
-  // Escalated mid-session (harder → hard): the sweep runs once, without repeating the searches already done.
-  const escalated = useEffectEvent(() => void sweepRound({ first: false }));
+  // Escalated mid-session: harder → hard runs the sweep once; hard → close to impossible runs ONLY the extra
+  // queries (nothing already paid for runs again) and merges them into the tiered list.
+  const escalated = useEffectEvent(() => {
+    if (!sweepStarted.current) void sweepRound({ first: false });
+    else if (path === "person_near_impossible" && !extrasRan.current) void sweepRound({ first: false, extras: true });
+  });
   useEffect(() => {
-    if (hard && started.current && !sweepStarted.current) escalated();
-  }, [hard]);
+    if (hard && started.current) escalated();
+  }, [hard, path]);
   // A find in a focused window (any helper): that platform's session is done, with a find.
   const helperFound = useEffectEvent((c: HelperCandidate) => {
     const key = focusKeyOf(c.platform);
@@ -399,7 +409,8 @@ export function PersonHarderStage({
     onLog({ at: Date.now(), kind: "answer", text: `Focused session done: ${key} (nothing found)`, bucket: `focus:${key}` });
   };
   const dir = buckets.directory;
-  const webShown = buckets.web.filter((c) => answers[c.key] !== "skip").slice(0, 10 * (pages.web ?? 1));
+  // The hard paths show ONE list (the tiered sweep); the harder round's own web list is for the harder path only.
+  const webShown = hard ? [] : buckets.web.filter((c) => answers[c.key] !== "skip").slice(0, 10 * (pages.web ?? 1));
   const searching = busy > 0;
 
   return (
@@ -408,9 +419,7 @@ export function PersonHarderStage({
         <h2 className="text-base font-semibold text-foreground">Let&apos;s find you</h2>
         <span className="text-xs text-muted-foreground" data-testid="smart-add-find-status">
           {searching
-            ? hard && !sweep
-              ? "Searching the web, up to 150 results…"
-              : "Searching…"
+            ? "Searching…"
             : stuck
               ? "Nothing matched yet"
               : clues.length

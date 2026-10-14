@@ -154,6 +154,8 @@ export interface FindYouRequest extends HarderRequest {
   path: FindYouPath;
   known_urls: string[];
   google_page: number;
+  /** Escalation: only the extra queries the deeper path adds. */
+  extras_only?: boolean;
 }
 
 /** The answer on one sweep row (one click). */
