@@ -283,7 +283,7 @@ describe("review findings from slice 2", () => {
     );
   });
 
-  it("resolveShared answers the SHARED tier under a layered winner", () => {
+  it("resolveShared (package 0.25.91) answers the SHARED tier under a layered winner", () => {
     const registry = new ComponentRegistry(getSystemComponentEntries);
     // The resolver only honours an overlay owned by the CURRENT viewer
     // (0.25.89 viewer probe); this registry has no signed-in session.
@@ -523,4 +523,10 @@ it("the shape page's render-status strip renders the SAME per-person actions (no
   );
   expect(strip).toMatch(/<KindViewActionsRow\b/);
   expect(strip).not.toMatch(/Make my view|For my organization|Change for everyone/);
+});
+
+it("the registry reads the shared tier through the package's public resolveShared — never the private overlay", () => {
+  const source = fs.readFileSync(path.join(__dirname, "../registry/component-registry.ts"), "utf8");
+  expect(source).toMatch(/super\.resolveShared\(/);
+  expect(source).not.toMatch(/\boverlay\?: unknown|Object\.create\(this\)/);
 });

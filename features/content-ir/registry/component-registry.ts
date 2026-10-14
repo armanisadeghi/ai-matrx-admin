@@ -284,38 +284,19 @@ export class ComponentRegistry extends ComponentResolver {
   }
 
   /**
-   * THE SHARED ANSWER, explicitly — what `resolve` would say with no "My view"
-   * / "My organization's view" layered on top. Admin screens and the fix-it
-   * bar ask "what does EVERYONE get?"; reading the overlay winner there
-   * mislabels a person's own view as the shared one.
-   *
-   * The package keeps its overlay tier private and ships no shared-only read
-   * yet, so this resolves through a view of the registry whose overlay is
-   * empty (every other tier is the live one, through the prototype). Pinned
-   * by `component-registry-shared-tier.test.ts`: if the package renames the
-   * tier, that test goes red rather than this answer silently going stale.
+   * THE SHARED ANSWER, explicitly — the package's `resolveShared` (db tier →
+   * compiled floor, never the viewer's "My view" / "My organization's view"),
+   * with this registry's table-kind routing. Admin screens and the fix-it
+   * surfaces read this; reading the overlay winner there mislabels a person's
+   * own view as the shared one.
    */
-  resolveShared(
+  override resolveShared(
     kind: string,
     platform: string,
     role: ComponentRole,
   ): ComponentResolution | null {
-    const resolution = this.resolve(kind, platform, role);
-    if (!resolution?.layer) return resolution;
-    const overlay = (this as unknown as { overlay?: unknown }).overlay;
-    if (!(overlay instanceof Map)) {
-      captureError({
-        source: "content-ir",
-        message:
-          "ComponentRegistry.resolveShared: the resolver's overlay tier is not where it was — the shared answer cannot be separated from a layered one.",
-        callSite: "ComponentRegistry.resolveShared",
-        raw: { kind },
-      });
-      return null;
-    }
-    const sharedView = Object.create(this) as ComponentRegistry;
-    Object.defineProperty(sharedView, "overlay", { value: new Map() });
-    return sharedView.resolve(kind, platform, role);
+    if (isTableKind(kind)) return super.resolveShared(TABLE_KIND_COMPONENT, platform, role);
+    return super.resolveShared(kind, platform, role);
   }
 
   override requestComponent(
