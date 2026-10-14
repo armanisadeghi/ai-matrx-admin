@@ -23,9 +23,10 @@ import type { RecordsDataSource, RecordsError } from "@ai-matrx/records";
 import { BasicInput, Skeleton } from "@ai-matrx/design-system";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { EntityBulkActions } from "@/lib/entity-list/components/EntityBulkBar";
+import { createRecordsClient } from "@ai-matrx/records/core";
+import { RowSelectionBar, useRowSelection } from "@/lib/entity-list/RowSelectionBar";
 import { runPerRow } from "@/lib/entity-list/standardBulkActions";
-import { bulkCountLabel, type EntityBulkAction, type EntityBulkSelection } from "@/lib/entity-list/selection";
+import { bulkCountLabel, type EntityBulkAction } from "@/lib/entity-list/selection";
 
 import { supabase } from "@/utils/supabase/client";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
@@ -37,10 +38,10 @@ import { RECORDS_NOTIFY } from "@/features/unified-data/recordsNotify";
 import { ArchivedTablesList, type ArchivedTable } from "@/features/unified-data/hub/ArchivedTablesList";
 import { restoreTableIn, tableKernelId } from "@/features/unified-data/hub/doors";
 import { createList } from "../service";
-import { archiveTable } from "@/features/data-tables/service";
+import { archiveTableFromHome } from "@/features/unified-data/home/archiveTableFromHome";
 import { listAddress } from "../where-lists-live";
 import { readPickListIndex, type PickListEntry } from "../pick-list-index";
-import { useAppRecordsConfig } from "@/features/data-tables/records-ui-host/recordsUiHost";
+import { useAppRecordsConfig, type AppRecordsConfig } from "@/features/data-tables/records-ui-host/recordsUiHost";
 
 type IndexState =
   | { phase: "reading" }
@@ -58,39 +59,55 @@ function when(at: string | null): string | null {
 const PICK_LIST_NOUN = "pick list";
 
 // Bulk verbs. A pick list is a Table in the record store; the page's only per-row
-// verb is open, so the one batch verb is Move to Trash through the same table door
-// the Data home uses (`archiveTable`), restorable from Trash. A list the person may
-// not delete is skipped and named by the store's own sentence.
-const PICK_LIST_BULK_ACTIONS: EntityBulkAction<PickListEntry>[] = [
-  {
-    id: "move-to-trash",
-    label: "Move to Trash",
-    icon: Trash2,
-    variant: "destructive",
-    confirm: (selection) => ({
-      title: `Move ${bulkCountLabel(selection.count, PICK_LIST_NOUN)} to Trash?`,
-      description:
-        "Every choice in them goes too, and anything that offers these choices stops offering them. Restore from Trash.",
-      confirmLabel: "Move to Trash",
+// verb is open, so the one batch verb is Move to Trash through the Data home's own
+// paged archive (`archiveTableFromHome`: pass by pass, so a big list never half-archives),
+// restorable from Trash. A list the person may not delete — or one too big to move
+// without its own counted confirm — is skipped and named.
+function pickListBulkActions(recordsConfig: AppRecordsConfig): EntityBulkAction<PickListEntry>[] {
+  return [
+    {
+      id: "move-to-trash",
+      label: "Move to Trash",
+      icon: Trash2,
       variant: "destructive",
-    }),
-    run: (selection) =>
-      runPerRow(
-        selection,
-        async (id) => {
-          const done = await archiveTable(id);
-          if (!done.success) throw new Error(done.error);
-        },
-        {
-          done: "Moved to Trash",
-          noun: PICK_LIST_NOUN,
-          labelOf: (list) => list.listName,
-          removesRows: true,
-        },
-        (list) => list.id,
-      ),
-  },
-];
+      confirm: (selection) => ({
+        title: `Move ${bulkCountLabel(selection.count, PICK_LIST_NOUN)} to Trash?`,
+        description:
+          "Every choice in them goes too, and anything that offers these choices stops offering them. Restore from Trash.",
+        confirmLabel: "Move to Trash",
+        variant: "destructive",
+      }),
+      run: (selection) =>
+        runPerRow(
+          selection,
+          async (id, list) => {
+            const organizationId = list?.organizationId ?? recordsConfig.organizationId;
+            if (!organizationId) throw new Error("Its organization is unknown — open it and archive it there.");
+            const result = await archiveTableFromHome({
+              client: createRecordsClient({ ...recordsConfig, organizationId }),
+              tableId: id,
+              notify: RECORDS_NOTIFY,
+              fallbackName: list?.listName ?? id,
+              onOptimisticHide: () => {},
+              onRollback: () => {},
+              onRestored: () => {},
+            });
+            if (result.outcome === "needs-confirm") {
+              throw new Error("Too big to move in a batch — open it and move it to Trash there.");
+            }
+            if (result.outcome === "refused") throw new Error(result.sentence);
+          },
+          {
+            done: "Moved to Trash",
+            noun: PICK_LIST_NOUN,
+            labelOf: (list) => list.listName,
+            removesRows: true,
+          },
+          (list) => list.id,
+        ),
+    },
+  ];
+}
 
 export interface PickListsIndexProps {
   /** The ACTIVE organization's name — only for the "Made in …" hint beside New pick list. */
@@ -109,7 +126,6 @@ export function PickListsIndex({ organizationName, userId, dataSource }: PickLis
   const [state, setState] = useState<IndexState>({ phase: "reading" });
   const [filter, setFilter] = useState("");
   const [reread, setReread] = useState(0);
-  const [ticked, setTicked] = useState<Set<string>>(() => new Set());
 
   useEffect(() => {
     let alive = true;
@@ -167,39 +183,9 @@ export function PickListsIndex({ organizationName, userId, dataSource }: PickLis
         ? state.lists.filter((l) => `${l.listName} ${l.description ?? ""}`.toLowerCase().includes(needle))
         : state.lists;
 
-  const tickedLists = shown.filter((list) => ticked.has(list.id));
-  const allShownTicked = shown.length > 0 && tickedLists.length === shown.length;
-  const toggleList = (id: string) =>
-    setTicked((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  const toggleAllShown = () =>
-    setTicked((prev) => {
-      const next = new Set(prev);
-      for (const list of shown) {
-        if (allShownTicked) next.delete(list.id);
-        else next.add(list.id);
-      }
-      return next;
-    });
-  const buildBulk = (): EntityBulkSelection<PickListEntry> => ({
-    mode: "ids",
-    ids: tickedLists.map((list) => list.id),
-    rows: tickedLists,
-    count: tickedLists.length,
-    filter: {
-      scope: { kind: "all" },
-      orgId: orgFilter ?? null,
-      search: filter,
-      deep: false,
-      archived: "active",
-      filters: {},
-    },
-  });
-  const clearTicked = () => setTicked(new Set());
+  // Ticks clear when the organization filter changes (the text filter only hides rows; hidden rows drop out).
+  const selection = useRowSelection(shown, (list) => list.id, orgFilter ?? "");
+  const bulkActions = pickListBulkActions(recordsConfig);
 
   return (
     <div className="space-y-4" data-pick-lists-index>
@@ -254,33 +240,16 @@ export function PickListsIndex({ organizationName, userId, dataSource }: PickLis
           ) : null}
         </div>
 
-      <div
-        className="flex min-h-9 flex-wrap items-center gap-2 rounded-lg border border-border bg-card px-3 py-1"
-        role="toolbar"
-        aria-label="Bulk pick list actions"
-      >
-        <Checkbox
-          checked={tickedLists.length === 0 ? false : allShownTicked ? true : "indeterminate"}
-          onCheckedChange={toggleAllShown}
-          disabled={shown.length === 0}
-          aria-label="Select all shown pick lists"
-        />
-        <span className="min-w-[6rem] text-xs font-medium tabular-nums text-foreground">
-          {tickedLists.length > 0 ? `${tickedLists.length} selected` : "Tick lists to act on them"}
-        </span>
-        <fieldset
-          disabled={tickedLists.length === 0}
-          className="m-0 flex min-w-0 flex-wrap items-center gap-1 border-0 p-0 disabled:opacity-50"
-        >
-          <EntityBulkActions
-            actions={PICK_LIST_BULK_ACTIONS}
-            selection={{ build: buildBulk, clear: clearTicked, count: tickedLists.length }}
-            noun={PICK_LIST_NOUN}
-            onRemoveRows={clearTicked}
-            onRefresh={() => setReread((n) => n + 1)}
-          />
-        </fieldset>
-      </div>
+      <RowSelectionBar
+        selection={selection}
+        idOf={(list) => list.id}
+        actions={bulkActions}
+        noun={PICK_LIST_NOUN}
+        plural="pick lists"
+        disabled={shown.length === 0}
+        onRefresh={() => setReread((n) => n + 1)}
+        onRemoveRows={selection.clear}
+      />
 
       <section className="rounded-lg border border-border bg-card" aria-label="Pick lists">
         {state.phase === "reading" ? (
@@ -313,8 +282,8 @@ export function PickListsIndex({ organizationName, userId, dataSource }: PickLis
               <li key={list.id} className="border-t border-border first:border-t-0">
                 <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 px-3 py-2">
                   <Checkbox
-                    checked={ticked.has(list.id)}
-                    onCheckedChange={() => toggleList(list.id)}
+                    checked={selection.has(list.id)}
+                    onCheckedChange={() => selection.toggle(list.id)}
                     aria-label={`Select ${list.listName}`}
                     className="shrink-0 self-center"
                   />
