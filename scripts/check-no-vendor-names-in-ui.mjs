@@ -10,7 +10,10 @@ import { join, relative } from "node:path";
 import { tmpdir } from "node:os";
 
 const VENDOR_CI = /scrape\s?creators?|bright\s?data|ensemble\s?data|apify|data\s?for\s?seo|serp\s?api|firecrawl|twilio/i;
-const VENDOR_CS = /\bBrave\b/; // case-sensitive: the English word "brave" is fine
+// case-sensitive: the English word "brave" is fine. A search / model provider named as the engine doing OUR search
+// ("Google deep search", "Grok on X", "searched with Google") is a vendor name too (2026-10-14, Smart Add helpers
+// menu). "Google" / "Grok" alone stay allowed: a platform people connect, a chat app they export, a model they pick.
+const VENDOR_CS = /\bBrave\b|\b(Google|Grok|Bing) deep search\b|\bGrok (on X|people search|search)\b|\bsearch(ed|es)? (with|via|using|on) (Google|Grok|Bing)\b/;
 export const VENDOR = { test: (s) => VENDOR_CI.test(s) || VENDOR_CS.test(s) };
 
 const ROOTS = ["features", "components", "app"];
@@ -79,12 +82,12 @@ function main() {
 function selfTest() {
   const dir = mkdtempSync(join(tmpdir(), "vendor-guard-"));
   const bad = join(dir, "Bad.tsx");
-  writeFileSync(bad, 'export const A = () => <span>Posts via ScrapeCreators</span>;\nconst t = "Estimate from DataForSEO Labs";\n');
+  writeFileSync(bad, 'export const A = () => <span>Posts via ScrapeCreators</span>;\nconst t = "Estimate from DataForSEO Labs";\nconst g = "Google deep search";\nconst x = "Grok on X";\n');
   const good = join(dir, "Good.tsx");
   writeFileSync(good, '// ScrapeCreators note\nconst k = "scrapecreators";\nexport const B = () => <span>Social data</span>;\n');
   const nBad = scanSource(readFileSync(bad, "utf8")).length;
   const nGood = scanSource(readFileSync(good, "utf8")).length;
-  if (nBad !== 2 || nGood !== 0) { console.error(`self-test FAILED bad=${nBad} (want 2) good=${nGood} (want 0)`); process.exit(1); }
-  console.log("self-test ok: planted vendor strings caught (2), clean file passes (0)");
+  if (nBad !== 4 || nGood !== 0) { console.error(`self-test FAILED bad=${nBad} (want 4) good=${nGood} (want 0)`); process.exit(1); }
+  console.log("self-test ok: planted vendor strings caught (4), clean file passes (0)");
 }
 main();

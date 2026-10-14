@@ -9,11 +9,11 @@ export type HelperMethod = (typeof HELPER_METHODS)[number];
 
 export const HELPER_LABELS: Record<HelperMethod, string> = {
   linkedin: "LinkedIn people",
-  google: "Google deep search",
+  google: "Deep web search",
   threads: "Threads users",
   tiktok: "TikTok users",
   youtube: "YouTube channels",
-  grok: "Grok on X",
+  grok: "Search posts on X",
   facebook: "Facebook",
   instagram: "Instagram",
 };

@@ -57,9 +57,42 @@ function set(method: HelperMethod, patch: Partial<HelperSession>) {
   emit();
 }
 
+/** A job belongs to the person it searched: same name (case-folded) and city. */
+function samePerson(a: HelperInput, b: HelperInput): boolean {
+  const k = (x: HelperInput) => `${x.name.trim().toLowerCase()}|${x.city.trim().toLowerCase()}`;
+  return k(a) === k(b);
+}
+
+/** Stop polling a LinkedIn job locally (it is never resumed): a new person, or a job from another run. */
+function dropLinkedinJob() {
+  if (polling) clearTimeout(polling);
+  polling = null;
+  pendingResume = null;
+  try {
+    sessionStorage.removeItem(JOB_KEY);
+  } catch {
+    /* storage unavailable: nothing to drop */
+  }
+  if (sessions.linkedin && sessions.linkedin.status === "polling") sessions = { ...sessions, linkedin: { ...blank(), input: { ...context } } };
+}
+
+/** A saved job waiting for the page to say who the person is (the window can mount before the page). */
+let pendingResume: { snapshot: string; startedAt: number | null; input: HelperInput } | null = null;
+
 export function setHelperContext(next: HelperInput) {
   if (JSON.stringify(next) === JSON.stringify(context)) return;
   context = next;
+  // Jobs are scoped to their person: a job for someone else stops polling; a saved one for this person resumes.
+  const running = sessions.linkedin?.status === "polling" ? sessions.linkedin.input : null;
+  if (next.name.trim() && running && !samePerson(running, next)) dropLinkedinJob();
+  if (pendingResume && next.name.trim()) {
+    const saved = pendingResume;
+    pendingResume = null;
+    if (samePerson(saved.input, next)) {
+      sessions = { ...sessions, linkedin: { ...blank(), input: saved.input, status: "polling", startedAt: saved.startedAt } };
+      schedulePoll(saved.snapshot);
+    } else dropLinkedinJob();
+  }
   // Idle panels follow the page; a panel that already ran keeps what it searched.
   for (const [m, s] of Object.entries(sessions)) {
     if (s && s.status === "idle") sessions = { ...sessions, [m]: { ...s, input: { ...next } } };
@@ -241,6 +274,15 @@ export function resumeLinkedinJob() {
     const raw = sessionStorage.getItem(JOB_KEY);
     if (!raw) return;
     const saved = JSON.parse(raw) as { snapshot: string; startedAt: number | null; input: HelperInput };
+    // Only the job of the person on the page resumes; until the page says who that is, it waits.
+    if (!context.name.trim()) {
+      pendingResume = saved;
+      return;
+    }
+    if (!samePerson(saved.input, context)) {
+      dropLinkedinJob();
+      return;
+    }
     set("linkedin", { input: saved.input, status: "polling", startedAt: saved.startedAt, partial: null });
     schedulePoll(saved.snapshot);
   } catch {
@@ -268,9 +310,11 @@ export function onHelperAnswer(listener: (candidate: HelperCandidate, answer: An
   };
 }
 
-/** A new person (Smart Add reset): helper answers start over. */
+/** A new person (Smart Add reset): helper answers start over and the previous person's LinkedIn job stops polling. */
 export function resetHelperAnswers() {
-  if (!answers.size) return;
+  const polled = sessions.linkedin?.status === "polling" || pendingResume != null;
+  if (polled) dropLinkedinJob();
+  if (!answers.size && !polled) return;
   answers.clear();
   emit();
 }

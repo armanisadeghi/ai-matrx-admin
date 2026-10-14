@@ -19,6 +19,7 @@ import { Check, ChevronDown, SearchX, X } from "lucide-react";
 import { Button } from "@ai-matrx/design-system/controls";
 import { formatCount } from "@ai-matrx/kit/format";
 import { PlatformMark, platformLabel } from "@/features/marketing/social/components/PlatformMark";
+import { browserImageUrl } from "@/lib/media/external-image";
 import { OpenLink } from "../SmartAddExtras";
 import { pollLinkedinJob } from "../helpers/service";
 import { onHelperAnswer } from "../helpers/store";
@@ -528,7 +529,7 @@ function Avatar({ c }: { c: HarderCandidate }) {
   const platform = c.platform === "website" ? "website" : c.platform;
   return (
     <span className="relative flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-full border border-border bg-muted">
-      {c.image_url ? <img src={c.image_url} alt="" className="size-full object-cover" /> : <PlatformMark platform={platform} size={18} />}
+      {c.image_url ? <img src={browserImageUrl(c.image_url)} alt="" className="size-full object-cover" /> : <PlatformMark platform={platform} size={18} />}
     </span>
   );
 }

@@ -16,6 +16,7 @@ import { Button, Field } from "@ai-matrx/design-system/controls";
 import { formatCount } from "@ai-matrx/kit/format";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 import { profileAvatarDoor } from "@/features/marketing/social/server";
+import { browserImageUrl } from "@/lib/media/external-image";
 import { PlatformMark, platformLabel } from "@/features/marketing/social/components/PlatformMark";
 import { SocialImage } from "@/features/marketing/social/components/SocialImage";
 import { websiteHost, type Decision, type EvidenceItem } from "./evidence";
@@ -73,7 +74,7 @@ export function AnchorCard({
               className="size-full object-cover"
             />
           ) : item.image_url ? (
-            <img src={item.image_url} alt="" className="size-full object-cover" />
+            <img src={browserImageUrl(item.image_url)} alt="" className="size-full object-cover" />
           ) : (
             <span className="flex size-full items-center justify-center">
               <PlatformMark platform={platform} size={24} />

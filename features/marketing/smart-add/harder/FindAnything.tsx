@@ -26,7 +26,7 @@ const CHOICES: ReviewChoice[] = [
   { key: "not_me", label: "Not me", pinned: true },
 ];
 
-/** Platform → the helper window that searches it (X runs through Grok). */
+/** Platform → the helper window that searches it. */
 export const FOCUS: { key: string; method: HelperMethod; mark: string; label: string }[] = [
   { key: "linkedin", method: "linkedin", mark: "linkedin", label: "LinkedIn" },
   { key: "facebook", method: "facebook", mark: "facebook", label: "Facebook" },
@@ -35,7 +35,7 @@ export const FOCUS: { key: string; method: HelperMethod; mark: string; label: st
   { key: "youtube", method: "youtube", mark: "youtube", label: "YouTube" },
   { key: "x", method: "grok", mark: "x", label: "X" },
   { key: "threads", method: "threads", mark: "threads", label: "Threads" },
-  { key: "google", method: "google", mark: "website", label: "Google" },
+  { key: "google", method: "google", mark: "website", label: "Web" },
 ];
 
 /** The focus key a found candidate belongs to (a website comes from the Google window). */

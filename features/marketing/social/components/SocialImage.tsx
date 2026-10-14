@@ -14,6 +14,7 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectOrganizationId } from "@/lib/redux/slices/appContextSlice";
+import { blocksCrossOriginImages, proxiedExternalImageUrl } from "@/lib/media/external-image";
 import { cn } from "@/lib/utils";
 
 import { fetchPlaybackUrl } from "../server";
@@ -120,7 +121,9 @@ export function SocialImage({ door, url, fallback, className, alt = "" }: Social
   useEffect(() => {
     let alive = true;
     setSrc(null);
-    const direct = isDrawableUrl(url) ? youtubeThumbSafe(url) : null;
+    const safe = isDrawableUrl(url) ? youtubeThumbSafe(url) : null;
+    // A CDN that blocks cross-origin images (YouTube avatars: ERR_BLOCKED_BY_ORB) is drawn through our proxy.
+    const direct = safe && blocksCrossOriginImages(safe) ? proxiedExternalImageUrl(safe) : safe;
     if (!door) {
       setSrc(direct);
       setState(direct ? "loading" : "failed");
