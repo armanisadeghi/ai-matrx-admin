@@ -544,9 +544,9 @@ export async function createShapeFromPlan(
     emitted_block_schema: k.emittedBlockSchema as Json,
     emitted_json_schema: k.emittedJsonSchema as Json,
     emitted_fingerprint: k.emittedFingerprint,
-    // A user kind has no component — the dual gate's render leg cannot pass.
-    // Inactive kinds render through the generic viewer (correct, not a bug).
-    is_active: false,
+    // Every kind is born active; switching one off is a deliberate act
+    // (Arman, 2026-10-13).
+    is_active: true,
     metadata: {
       source: "schema_proposal",
       user_authored: true,

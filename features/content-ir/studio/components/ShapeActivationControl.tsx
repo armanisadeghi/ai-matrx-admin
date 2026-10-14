@@ -143,8 +143,7 @@ export default function ShapeActivationControl({
       await refreshVerdict();
       onActivationChanged();
     } catch (err) {
-      // The RPC raises with the gate's own blockers; show them verbatim so the
-      // owner knows which asset to go create.
+      // Only access or a missing row can refuse now; show the sentence verbatim.
       const message = err instanceof Error ? err.message : String(err);
       setError(message);
       captureError({
@@ -156,8 +155,8 @@ export default function ShapeActivationControl({
     }
   }
 
+  // Advice only — turning a shape on is never refused (Arman, 2026-10-13).
   const blockers = verdict?.reasons ?? [];
-  const canActivate = verdict?.wouldActivate ?? false;
   // A kind with an ACTIVE component must never be told "no component is
   // required" — if the gate says n/a while a real component exists, the flag
   // is the thing that's wrong, and this says so loudly rather than repeating
@@ -200,24 +199,19 @@ export default function ShapeActivationControl({
           </Button>
         ) : (
           <Button
-            icon={busy || loadingVerdict ? (
+            icon={busy ? (
               <Loader2 className="animate-spin" />
             ) : null}
             variant="primary"
             onClick={() => void flip(true)}
-            disabled={busy || loadingVerdict || !canActivate}
-            title={
-              canActivate
-                ? undefined
-                : "The dual gate is not satisfied yet — see the blockers below."
-            }
+            disabled={busy}
           >
             Activate
           </Button>
         )}
       </div>
 
-      {/* Blockers: the gate's own reasons, naming the missing asset. */}
+      {/* The gate's reasons, shown as advice — they never block the switch. */}
       {!isActive && !loadingVerdict && blockers.length > 0 ? (
         <ul className="mt-2 space-y-1 border-t border-border pt-2">
           {blockers.map((reason) => (
