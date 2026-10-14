@@ -188,6 +188,30 @@ class KindRegistry {
     return this.settledWithout.get(kind) ?? "pending";
   }
 
+  /** Resolves with the first settled {@link schemaState} (never "pending"). Unbounded — callers bound it. */
+  whenSchemaSettled(kind: string): Promise<"loaded" | "absent" | "failed"> {
+    const now = this.schemaState(kind);
+    if (now !== "pending") return Promise.resolve(now);
+    return new Promise((resolve) => {
+      const off = this.subscribeKind(kind, () => {
+        const state = this.schemaState(kind);
+        if (state === "pending") return;
+        off();
+        resolve(state);
+      });
+    });
+  }
+
+  /**
+   * Ask again for a kind whose read never settled — a hung in-flight request
+   * or a latched miss would otherwise make `requestSchema` a no-op forever.
+   */
+  retrySchema(kind: string): void {
+    this.inFlight.delete(kind);
+    this.misses.delete(kind);
+    this.requestSchema(kind);
+  }
+
   /** The kind's `emitted_json_schema`, when the source carried one. */
   getEmittedJsonSchema(kind: string): unknown {
     return this.emittedSchemas.get(kind);

@@ -34,6 +34,8 @@ import { useEnsureKindRenderable } from "@ai-matrx/rich-content/kinds/react/ensu
 import { enterKindRenderHarness } from "@/features/content-ir/react/db-component/kindComponentIncident";
 import { RENDER_PATHS, type RenderPathId, type RenderPathSpec } from "./paths";
 import { readKindSchemaState, runRenderPath } from "./run-path";
+import { useBoundedKindCheck } from "./use-bounded-kind-check";
+import { Button } from "@ai-matrx/design-system/controls";
 import {
   describeRenderVerdict,
   readSharedResolution,
@@ -181,6 +183,7 @@ export default function KindRenderPaths({
   // generic floor for a kind whose component is still on its way.
   const componentsChecked = useSharedViewState(kind) !== "checking";
   const settled = schemaState !== "pending" && componentsChecked;
+  const check = useBoundedKindCheck(kind, settled);
 
   return (
     <div className="space-y-3">
@@ -225,9 +228,19 @@ export default function KindRenderPaths({
         </div>
       )}
 
-      {run && !settled && (
+      {run && !settled && !check.timedOut && (
         <div className="rounded-md border border-border px-3 py-2 text-xs text-muted-foreground">
           Checking this shape…
+        </div>
+      )}
+
+      {run && !settled && check.timedOut && (
+        <div className="flex items-center gap-2 rounded-md border border-amber-500/40 bg-amber-500/5 px-3 py-1.5 text-xs text-amber-700 dark:text-amber-300">
+          <TriangleAlert className="h-3.5 w-3.5 shrink-0" />
+          <span className="flex-1">Couldn&apos;t check this shape — no answer yet.</span>
+          <Button variant="quiet" onClick={check.retry}>
+            Try again
+          </Button>
         </div>
       )}
 
