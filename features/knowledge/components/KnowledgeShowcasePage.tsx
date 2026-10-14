@@ -19,6 +19,7 @@ import {
   ListChecks,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Badge, type BadgeTone } from "@ai-matrx/design-system/controls";
 import { cn } from "@/lib/utils";
 import { RAG_VOCAB } from "@/features/rag/constants/vocabulary";
 import { KnowledgePipelineDiagram } from "./KnowledgePipelineDiagram";
@@ -228,21 +229,21 @@ const WALKTHROUGH: WalkthroughStep[] = [
 
 const STATE_META: Record<
   StepState,
-  { label: string; cls: string; Icon: LucideIcon }
+  { label: string; tone: BadgeTone; Icon: LucideIcon }
 > = {
   built: {
     label: "Live",
-    cls: "bg-success/10 text-success-ink border-success/20",
+    tone: "success",
     Icon: CheckCircle2,
   },
   partial: {
     label: "Partial",
-    cls: "bg-warning/10 text-warning-ink border-warning/20",
+    tone: "warning",
     Icon: Circle,
   },
   planned: {
     label: "Coming",
-    cls: "bg-muted text-muted-foreground border-border",
+    tone: "neutral",
     Icon: Circle,
   },
 };
@@ -261,7 +262,7 @@ export function KnowledgeShowcasePage() {
           className="absolute -top-20 -right-20 h-72 w-72 rounded-full bg-brand-secondary/10 blur-3xl"
         />
         <div className="relative mx-auto max-w-5xl px-4 sm:px-6 pt-12 pb-8 text-center">
-          <div className="inline-flex items-center gap-2 rounded-full border border-brand-secondary/20 bg-brand-secondary/5 px-4 py-1.5 text-sm font-medium text-brand-secondary mb-6">
+          <div className="inline-flex items-center gap-2 rounded-full border border-brand-secondary/20 bg-brand-secondary/5 px-4 py-1.5 type-title text-brand-secondary mb-6">
             <Brain className="h-3.5 w-3.5" />
             The Matrx Knowledge System
           </div>
@@ -298,7 +299,7 @@ export function KnowledgeShowcasePage() {
             <h2 className="text-[clamp(1.5rem,1.25rem+1.5vw,2.5rem)] font-bold tracking-tight">
               What the system actually does
             </h2>
-            <p className="mt-4 text-muted-foreground text-lg max-w-2xl mx-auto">
+            <p className="type-body mt-4 text-muted-foreground max-w-2xl mx-auto">
               Every capability below is a real surface you can open today.
               Follow the link to see it for yourself.
             </p>
@@ -310,20 +311,20 @@ export function KnowledgeShowcasePage() {
                 className={cn(
                   "group relative rounded-2xl border border-border bg-card p-6",
                   "transition-all duration-300",
-                  "hover:border-brand-secondary/30 hover:shadow-lg hover:shadow-brand-secondary/5",
+                  "hover:border-brand-secondary/30",
                 )}
               >
                 <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-secondary/10 text-brand-secondary mb-4 group-hover:scale-110 transition-transform duration-300">
                   <c.icon className="h-5 w-5" />
                 </div>
-                <h3 className="text-base font-semibold mb-2">{c.title}</h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">
+                <h3 className="type-title mb-2">{c.title}</h3>
+                <p className="type-body text-muted-foreground">
                   {c.description}
                 </p>
                 {c.href && (
                   <Link
                     href={c.href}
-                    className="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-brand-secondary hover:underline"
+                    className="type-title mt-4 inline-flex items-center gap-1.5 text-brand-secondary hover:underline"
                   >
                     {c.hrefLabel}
                     <ArrowRight className="h-3.5 w-3.5" />
@@ -338,47 +339,47 @@ export function KnowledgeShowcasePage() {
       {/* Worked example — the ask */}
       <section className="mx-auto max-w-6xl px-4 sm:px-6 py-16 sm:py-24">
         <div className="text-center mb-12">
-          <div className="inline-flex items-center gap-2 rounded-full border border-warning/20 bg-warning/5 px-3 py-1 text-xs font-medium text-warning-ink mb-3">
+          <Badge tone="warning" className="mb-3">
             <ShieldCheck className="h-3 w-3" />
             The ask — what it&apos;s all for
-          </div>
+          </Badge>
           <h2 className="text-[clamp(1.5rem,1.25rem+1.5vw,2.5rem)] font-bold tracking-tight">
             One question, resolved end-to-end
           </h2>
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div className="rounded-2xl border border-warning/30 bg-warning/[0.04] p-6">
-            <p className="text-xs font-bold uppercase tracking-wider text-warning mb-3">
+            <p className="type-label uppercase tracking-wider mb-3">
               Attorney → agent
             </p>
-            <p className="text-base italic text-foreground leading-relaxed">
+            <p className="type-body italic text-foreground">
               &ldquo;Depose Dr. Smith tomorrow. Find where he didn&apos;t follow
               AMA guidelines for John Doe, case #123456, and flag prior injuries
               (preexisting conditions). Settle the case — hit hard, but get
               every fact right.&rdquo;
             </p>
             <div className="mt-5 rounded-xl border border-success/30 bg-success/10 p-4">
-              <div className="flex items-center gap-2 text-success font-semibold">
+              <div className="type-title flex items-center gap-2 text-success-ink">
                 <CheckCircle2 className="h-4 w-4" />
                 Verified deposition brief
               </div>
-              <p className="mt-1 text-sm text-success/90">
+              <p className="type-body mt-1 text-success-ink">
                 cited · accurate · traceable
               </p>
             </div>
           </div>
           <div className="rounded-2xl border border-border bg-card p-6">
-            <p className="text-sm font-semibold mb-4">The agent resolves it:</p>
+            <p className="type-title mb-4">The agent resolves it:</p>
             <ol className="space-y-2.5">
               {WORKED_STEPS.map((s) => (
                 <li
                   key={s.n}
-                  className="flex items-start gap-3 rounded-lg border border-border bg-background/60 px-3 py-2.5"
+                  className="flex items-start gap-3 py-1"
                 >
-                  <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-brand-secondary/10 text-brand-secondary text-xs font-bold">
+                  <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-brand-secondary/10 text-brand-secondary type-meta font-bold">
                     {s.n}
                   </span>
-                  <span className="text-sm text-muted-foreground leading-relaxed">
+                  <span className="type-body text-muted-foreground">
                     {s.text}
                   </span>
                 </li>
@@ -392,19 +393,19 @@ export function KnowledgeShowcasePage() {
       <section className="bg-card/50 border-y border-border">
         <div className="mx-auto max-w-5xl px-4 sm:px-6 py-16 sm:py-24">
           <div className="text-center mb-10 sm:mb-14">
-            <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-xs font-medium text-primary-ink mb-3">
+            <Badge tone="primary" className="mb-3">
               <ListChecks className="h-3 w-3" />
               Try it yourself — a guided run
-            </div>
+            </Badge>
             <h2 className="text-[clamp(1.5rem,1.25rem+1.5vw,2.5rem)] font-bold tracking-tight">
               From a blank file to a pro-level answer
             </h2>
-            <p className="mt-4 text-muted-foreground text-lg max-w-2xl mx-auto">
+            <p className="type-body mt-4 text-muted-foreground max-w-2xl mx-auto">
               An on-screen wizard walks you through the whole system using the
               real UI — not a fake demo. You do each step; the system makes
               something real happen. Tags show what&apos;s live today.
             </p>
-            <div className="mt-5 flex flex-wrap items-center justify-center gap-3 text-xs">
+            <div className="mt-5 flex flex-wrap items-center justify-center gap-3 type-meta">
               <LegendDot stateLabel="Live" />
               <LegendDot stateLabel="Partial" />
               <LegendDot stateLabel="Coming" />
@@ -420,30 +421,23 @@ export function KnowledgeShowcasePage() {
                     "flex items-start gap-4 rounded-2xl border border-border bg-card p-4 sm:p-5",
                     "transition-all duration-300",
                     step.href &&
-                      "hover:border-primary/40 hover:shadow-lg hover:shadow-primary/5",
+                      "hover:border-primary/40",
                   )}
                 >
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary-ink font-bold text-sm">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary-ink type-title">
                     {step.n}
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <h3 className="font-semibold text-sm sm:text-base">
+                      <h3 className="type-title">
                         {step.title}
                       </h3>
-                      <span
-                        className={cn(
-                          "inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider",
-                          meta.cls,
-                        )}
-                      >
-                        {meta.label}
-                      </span>
+                      <Badge tone={meta.tone}>{meta.label}</Badge>
                       {step.href && (
                         <ArrowRight className="h-3.5 w-3.5 ml-auto text-muted-foreground" />
                       )}
                     </div>
-                    <p className="mt-1 text-sm text-muted-foreground leading-relaxed">
+                    <p className="type-body mt-1 text-muted-foreground">
                       {step.description}
                     </p>
                   </div>
@@ -464,7 +458,7 @@ export function KnowledgeShowcasePage() {
           </ol>
 
           <div className="mt-8 rounded-2xl border border-dashed border-border bg-background/40 p-5 text-center">
-            <p className="text-sm text-muted-foreground">
+            <p className="type-body text-muted-foreground">
               <GitBranch className="inline h-4 w-4 mr-1.5 -mt-0.5 text-muted-foreground" />
               The guided wizard that drives you from page to page is on the
               roadmap. The capabilities it strings together are already real —
@@ -480,7 +474,7 @@ export function KnowledgeShowcasePage() {
           <h2 className="text-[clamp(1.5rem,1.25rem+1.5vw,2.5rem)] font-bold tracking-tight">
             See the whole system in motion
           </h2>
-          <p className="mt-4 text-muted-foreground text-lg mb-8">
+          <p className="type-body mt-4 text-muted-foreground mb-8">
             Start with a single document and follow it from source to a cited
             answer.
           </p>
@@ -506,7 +500,7 @@ export function KnowledgeShowcasePage() {
               </Link>
             </Button>
           </div>
-          <div className="mt-6 flex items-center justify-center gap-2 text-sm text-muted-foreground">
+          <div className="mt-6 flex items-center justify-center gap-2 type-body text-muted-foreground">
             <NotebookPen className="h-4 w-4" />
             <span>Save anything you find straight to Notes.</span>
           </div>

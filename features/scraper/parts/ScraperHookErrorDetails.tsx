@@ -3,7 +3,7 @@
 import { useClipboard } from "@ai-matrx/kit/clipboard";
 import { copyNotify } from "@/lib/clipboard/copy-notify";
 import { useState, useCallback } from "react";
-import { Button } from "@ai-matrx/design-system";
+import { Button } from "@ai-matrx/design-system/controls";
 import { Copy, Check } from "lucide-react";
 import { formatScraperDiagnosticsJson } from "@/utils/scraper-diagnostics-json";
 
@@ -29,27 +29,21 @@ export function ScraperHookErrorDetails({
 
   if (diagnostics == null) return null;
   return (
-    <div className="mt-2 rounded-md border border-border bg-muted/60 overflow-hidden">
-      <div className="flex items-center justify-between gap-2 px-2 py-1 border-b border-border bg-muted/80">
-        <span className="text-[10px] text-muted-foreground">
+    <div className="mt-2 rounded-md border border-border bg-muted overflow-hidden">
+      <div className="flex items-center justify-between gap-2 px-2 py-1 border-b border-border">
+        <span className="type-meta text-muted-foreground">
           Diagnostics JSON
         </span>
         <Button
           type="button"
-          variant="ghost"
-          size="sm"
-          className="h-7 px-2"
+          variant="quiet"
+          icon={copied ? <Check className="text-success" /> : <Copy />}
           onClick={handleCopy}
         >
-          {copied ? (
-            <Check className="w-3.5 h-3.5 text-green-600" />
-          ) : (
-            <Copy className="w-3.5 h-3.5" />
-          )}
-          <span className="ml-1 text-[10px]">{copied ? "Copied" : "Copy"}</span>
+          {copied ? "Copied" : "Copy"}
         </Button>
       </div>
-      <pre /* rich-content-exempt: debug or inspector output: logs, JSON, code or source view */ className="max-h-56 overflow-auto p-2 text-[10px] font-mono leading-relaxed whitespace-pre-wrap text-foreground">
+      <pre /* rich-content-exempt: debug or inspector output: logs, JSON, code or source view */ className="max-h-56 overflow-auto p-2 type-meta font-mono whitespace-pre-wrap text-foreground">
         {text}
       </pre>
     </div>

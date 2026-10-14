@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Globe, Search, Zap, Loader2, ScanSearch } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@ai-matrx/design-system/controls";
+import { Input, Tile } from "@ai-matrx/design-system/controls";
 import {
   useScraperApi,
   ScraperResult,
@@ -25,24 +25,18 @@ const MODES = [
     icon: Zap,
     label: "Quick Scrape",
     description: "Extract plain text instantly from any URL",
-    color: "text-teal-600 dark:text-teal-400",
-    bg: "bg-teal-50 dark:bg-teal-950/30 hover:bg-teal-100 dark:hover:bg-teal-950/50",
   },
   {
     href: "/scraper/search",
     icon: Search,
     label: "Search",
     description: "Search keywords across the web, no scraping",
-    color: "text-blue-600 dark:text-blue-400",
-    bg: "bg-blue-50 dark:bg-blue-950/30 hover:bg-blue-100 dark:hover:bg-blue-950/50",
   },
   {
     href: "/scraper/search-and-scrape",
     icon: ScanSearch,
     label: "Search & Scrape",
     description: "Search a keyword and scrape the top results",
-    color: "text-purple-600 dark:text-purple-400",
-    bg: "bg-purple-50 dark:bg-purple-950/30 hover:bg-purple-100 dark:hover:bg-purple-950/50",
   },
 ];
 
@@ -170,7 +164,7 @@ export default function Page() {
         className="h-full flex flex-col overflow-hidden bg-textured"
         style={{ paddingTop: "var(--shell-header-h)" }}
       >
-        <div className="flex-shrink-0 px-3 py-2 border-b border-border/50">
+        <div className="flex-shrink-0 px-3 py-2 border-b border-border">
           <div className="max-w-5xl mx-auto flex gap-2 items-center">
             <Globe className="w-4 h-4 text-muted-foreground flex-shrink-0" />
             <Input
@@ -224,7 +218,7 @@ export default function Page() {
             />
           ) : (error || hookScrapeHasError) && (
             <div className="mt-1 max-w-5xl mx-auto text-center">
-              <p className="text-xs text-destructive">
+              <p className="type-secondary text-destructive">
                 {error || hookScrapeError}
                 <ErrorAlchemyMenu error={error} />
               </p>
@@ -277,7 +271,7 @@ export default function Page() {
             />
           ) : (error || hookScrapeHasError) && (
             <div className="mt-2 text-center w-full">
-              <p className="text-xs text-destructive">
+              <p className="type-secondary text-destructive">
                 {error || hookScrapeError}
                 <ErrorAlchemyMenu error={error} />
               </p>
@@ -314,7 +308,7 @@ export default function Page() {
         {/* Divider */}
         <div className="w-full flex items-center gap-3">
           <div className="flex-1 h-px bg-border" />
-          <span className="text-xs text-muted-foreground">
+          <span className="type-secondary text-muted-foreground">
             or choose a mode
           </span>
           <div className="flex-1 h-px bg-border" />
@@ -322,26 +316,18 @@ export default function Page() {
 
         {/* Mode cards */}
         <div className="w-full grid gap-3">
-          {MODES.map(({ href, icon: Icon, label, description, color, bg }) => (
-            <button
+          {MODES.map(({ href, icon: Icon, label, description }) => (
+            <Tile
               key={href}
+              icon={<Icon />}
+              title={label}
+              line={description}
               onClick={() => router.push(href)}
-              className={`flex items-center gap-4 p-4 rounded-xl border border-border/60 transition-colors text-left ${bg}`}
-            >
-              <div className={`p-2.5 rounded-lg bg-white/60 dark:bg-black/20`}>
-                <Icon className={`w-5 h-5 ${color}`} />
-              </div>
-              <div>
-                <p className="font-semibold text-sm text-foreground">{label}</p>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  {description}
-                </p>
-              </div>
-            </button>
+            />
           ))}
         </div>
 
-        <p className="text-xs text-muted-foreground text-center max-w-md hidden sm:block pb-8">
+        <p className="type-secondary text-muted-foreground text-center max-w-md hidden sm:block pb-8">
           <span className="font-medium">Quick Scrape</span> extracts plain text
           instantly. <span className="font-medium">Full Scrape</span> captures
           structured data, images, links & metadata.

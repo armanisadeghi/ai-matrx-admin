@@ -8,7 +8,6 @@ import {
   Loader2,
   Server,
   RefreshCw,
-  Search,
   AlertCircle,
   CheckCircle2,
   Clock,
@@ -20,7 +19,17 @@ import {
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@ai-matrx/design-system/controls";
+import {
+  Badge as StatusBadge,
+  EmptyState,
+  Input,
+  PropertyRow,
+  RegionSkeleton,
+  SearchField,
+  Select,
+  Tile,
+  type BadgeTone,
+} from "@ai-matrx/design-system/controls";
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
 import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
 import { Label } from "@/components/ui/label";
@@ -34,13 +43,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import { toast, recordToast, dismissRecordToasts } from "@/lib/toast";
 import {
@@ -100,7 +102,7 @@ import { resolveSystemOrgId } from "@/lib/organizations/systemOrg";
 import { supabase } from "@/utils/supabase/client";
 import { pushAddressWithoutNavigating } from "@/lib/url-state/addressWithoutNavigating";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
-import { readOf } from "@ai-matrx/design-system";
+import { ErrorNotice, readOf } from "@ai-matrx/design-system";
 import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
@@ -334,14 +336,10 @@ export function McpServersAdminPage() {
       <div className="min-h-dvh flex flex-col">
         <div className="flex-shrink-0 px-6 py-3 border-b border-border flex items-center gap-3 bg-background">
           <Server className="h-4 w-4 text-muted-foreground" />
-          <h1 className="text-sm font-medium">Tool Registry · MCP Servers</h1>
-          <Badge
-            variant="outline"
-            className="text-[10px]"
-            data-surface-value="mcp_server_count"
-          >
+          <h1 className="type-title">Tool Registry · MCP Servers</h1>
+          <StatusBadge data-surface-value="mcp_server_count">
             {servers.length}
-          </Badge>
+          </StatusBadge>
           {loading && (
             <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />
           )}
@@ -399,7 +397,7 @@ export function McpServersAdminPage() {
             icon={<RefreshCw />}
             variant="quiet"
             onClick={() => void load()}
-            className={`h-7 gap-1.5 text-xs ${servers.length > 0 ? "" : "ml-auto"}`}
+            className={servers.length > 0 ? undefined : "ml-auto"}
           >
             Refresh list
           </Button>
@@ -415,28 +413,20 @@ export function McpServersAdminPage() {
         <div className="flex-1 grid grid-cols-1 md:grid-cols-[360px_1fr] min-h-0">
           <aside className="border-r border-border bg-card flex flex-col">
             <div className="p-3 border-b border-border">
-              <div className="relative">
-                <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-                <Input adornment="start"
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Search servers…"
-                  data-surface-value="mcp_search"
-                />
-              </div>
+              <SearchField
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search servers…"
+                aria-label="Search servers"
+                data-surface-value="mcp_search"
+              />
             </div>
             {error && (
-              <div className="m-3 rounded-md border border-destructive/40 bg-destructive/5 px-3 py-2 text-xs text-destructive-ink flex items-center gap-2">
-                <AlertCircle className="h-3.5 w-3.5" />
-                {error}
-                <ErrorAlchemyMenu error={error} />
-              </div>
+              <ErrorNotice size="compact" message={error} error={error} className="m-3" />
             )}
             <div className="flex-1 overflow-auto">
               {filtered.length === 0 && !loading && !error && (
-                <div className="px-3 py-8 text-center text-xs text-muted-foreground">
-                  No servers match.
-                </div>
+                <EmptyState icon={<Server />} title="No servers match." />
               )}
               <ul data-surface-value="mcp_servers_list">
                 {filtered.map((s) => {
@@ -462,26 +452,19 @@ export function McpServersAdminPage() {
                           attributes: { slug: s.slug, status: s.status },
                         })}
                       />
-                      <button
+                      <Tile
+                        variant="quiet"
+                        selected={isSel}
                         onClick={() => selectServer(s.slug)}
-                        className={`w-full text-left py-2 pl-3 pr-20 border-b border-border/50 hover:bg-muted/40 transition-colors ${isSel ? "bg-muted" : ""}`}
-                      >
-                        <div className="flex items-center gap-2 min-w-0">
-                          <span className="font-mono text-xs truncate flex-1">
-                            {humanizeIdentifier(s.slug)}
+                        title={humanizeIdentifier(s.slug)}
+                        line={s.name}
+                        end={
+                          <span className="flex items-center gap-1">
+                            <FreshnessBadge fresh={fresh} compact />
+                            <StatusBadge>{s.status}</StatusBadge>
                           </span>
-                          <FreshnessBadge fresh={fresh} compact />
-                        </div>
-                        <div className="text-[11px] text-muted-foreground mt-0.5 flex items-center gap-2">
-                          <span className="truncate">{s.name}</span>
-                          <Badge
-                            variant="outline"
-                            className="text-[10px] flex-shrink-0"
-                          >
-                            {s.status}
-                          </Badge>
-                        </div>
-                      </button>
+                        }
+                      />
                     </li>
                   );
                 })}
@@ -499,14 +482,14 @@ export function McpServersAdminPage() {
             ) : deepLinkUnresolved ? (
               <div className="h-full flex flex-col items-center justify-center gap-2 p-12 text-center">
                 <AlertCircle className="h-5 w-5 text-warning" />
-                <p className="text-xs text-muted-foreground">
+                <p className="type-secondary text-muted-foreground">
                   No registered MCP server matches{" "}
                   <code className="font-mono">{deepLink}</code>
                   {loading ? " yet — still loading the list." : "."}
                 </p>
               </div>
             ) : (
-              <div className="h-full flex items-center justify-center text-xs text-muted-foreground p-12">
+              <div className="type-secondary h-full flex items-center justify-center text-muted-foreground p-12">
                 Pick a server to view configs, connected users, and tools.
               </div>
             )}
@@ -541,32 +524,19 @@ function FreshnessBadge({
   fresh: SyncFreshness;
   compact?: boolean;
 }) {
-  const map = {
-    fresh: {
-      Icon: CheckCircle2,
-      label: "fresh",
-      className: "bg-success/10 text-success-ink border-success/30",
-    },
-    stale: {
-      Icon: Clock,
-      label: "stale",
-      className: "bg-warning/10 text-warning-ink border-warning/30",
-    },
-    errored: {
-      Icon: XCircle,
-      label: "error",
-      className: "bg-destructive/10 text-destructive-ink border-destructive/30",
-    },
-    never: {
-      Icon: Clock,
-      label: "never",
-      className: "bg-muted text-muted-foreground border-border",
-    },
-  } as const;
-  const { Icon, label, className } = map[fresh.state];
+  const map: Record<
+    SyncFreshness["state"],
+    { Icon: typeof CheckCircle2; label: string; tone: BadgeTone }
+  > = {
+    fresh: { Icon: CheckCircle2, label: "fresh", tone: "success" },
+    stale: { Icon: Clock, label: "stale", tone: "warning" },
+    errored: { Icon: XCircle, label: "error", tone: "destructive" },
+    never: { Icon: Clock, label: "never", tone: "neutral" },
+  };
+  const { Icon, label, tone } = map[fresh.state];
   return (
-    <span
-      className={`inline-flex items-center gap-1 rounded border px-1.5 py-0.5 text-[10px] font-medium ${className}`}
+    <StatusBadge
+      tone={tone}
       title={
         fresh.state === "errored"
           ? `Last error: ${fresh.lastError ?? "unknown"}`
@@ -577,7 +547,7 @@ function FreshnessBadge({
     >
       <Icon className="h-3 w-3" />
       {!compact && label}
-    </span>
+    </StatusBadge>
   );
 }
 
@@ -680,29 +650,27 @@ function ServerDetail({
           <div className="min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
               <h2
-                className="font-mono text-base font-semibold"
+                className="type-title"
                 data-surface-value="selected_server_slug"
               >
                 {humanizeIdentifier(server.slug)}
               </h2>
-              <Badge variant="outline" className="text-[10px]">
-                {server.status}
-              </Badge>
-              <Badge variant="secondary" className="text-[10px]">
+              <StatusBadge>{server.status}</StatusBadge>
+              <Badge variant="secondary">
                 {server.transport}
               </Badge>
               {server.is_official && (
-                <Badge className="text-[10px]">official</Badge>
+                <StatusBadge tone="primary">official</StatusBadge>
               )}
               <FreshnessBadge fresh={fresh} />
               <TestFreshnessBadge testFresh={testFresh} />
             </div>
-            <p className="text-sm mt-1">
+            <p className="type-body mt-1">
               {server.name}{" "}
               <span className="text-muted-foreground">· {server.vendor}</span>
             </p>
             {server.description && (
-              <p className="text-xs text-muted-foreground mt-1 max-w-prose">
+              <p className="type-secondary text-muted-foreground mt-1 max-w-prose">
                 {server.description}
               </p>
             )}
@@ -764,10 +732,12 @@ function ServerDetail({
           </div>
         </div>
         {fresh.state === "errored" && (
-          <div className="rounded-md border border-destructive/40 bg-destructive/5 px-3 py-2 text-xs text-destructive-ink">
-            <strong>Sync error:</strong> {fresh.lastError}
-            <ErrorAlchemyMenu error={fresh.lastError} />
-          </div>
+          <ErrorNotice
+            size="compact"
+            title="Sync error"
+            message={fresh.lastError}
+            error={fresh.lastError}
+          />
         )}
         {latestTest && <TestResultPanel result={latestTest} />}
       </header>
@@ -936,10 +906,7 @@ function serverToolColumns(): MatrxColumnDef<ServerToolRow>[] {
       filter: "boolean",
       width: 80,
       cell: (row) => (
-        <Badge
-          variant={row.is_active ? "default" : "secondary"}
-          className="text-[10px]"
-        >
+        <Badge variant={row.is_active ? "default" : "secondary"}>
           {row.is_active ? "active" : "inactive"}
         </Badge>
       ),
@@ -1007,7 +974,10 @@ function ConfigsTab({
       await archiveServerConfig(config.id);
       dismissRecordToasts({ type: "mcp_server_config", id: config.id });
       await load();
-      toast.success(`Config ${config.label} archived`);
+      recordToast.success(
+        { type: "mcp_server_config", id: config.id, title: config.label },
+        `Config ${config.label} archived`,
+      );
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Archive failed");
     }
@@ -1016,7 +986,7 @@ function ConfigsTab({
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <p className="text-[11px] text-muted-foreground">
+        <p className="type-secondary text-muted-foreground">
           Transport variants for this server. The default config is used when a
           user connects without specifying one. stdio configs need a command +
           args; HTTP/SSE configs typically just store the endpoint via the
@@ -1068,21 +1038,19 @@ function ConfigsTab({
             <div className="flex items-start gap-2">
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <code className="font-mono text-xs">{c.label}</code>
-                  <Badge variant="outline" className="text-[10px]">
-                    {c.config_type}
-                  </Badge>
+                  <code className="type-title font-mono">{c.label}</code>
+                  <StatusBadge>{c.config_type}</StatusBadge>
                   {c.is_default && (
-                    <Badge className="text-[10px]">default</Badge>
+                    <StatusBadge tone="primary">default</StatusBadge>
                   )}
                   {c.requires_docker && (
-                    <Badge variant="secondary" className="text-[10px]">
+                    <Badge variant="secondary">
                       Docker
                     </Badge>
                   )}
                 </div>
                 {c.notes && (
-                  <p className="text-[11px] text-muted-foreground mt-0.5">
+                  <p className="type-secondary text-muted-foreground mt-0.5">
                     {c.notes}
                   </p>
                 )}
@@ -1126,34 +1094,20 @@ function ConfigsTab({
                 />
               </div>
             </div>
-            <div className="text-[11px] font-mono text-muted-foreground space-y-0.5">
-              <div>
-                command:{" "}
-                <code className="bg-muted px-1 rounded">
-                  {c.command || <em>—</em>}
-                </code>
-              </div>
+            <div className="space-y-2">
+              <PropertyRow label="Command" value={c.command} mono />
               {c.args.length > 0 && (
-                <div>
-                  args:{" "}
-                  <code className="bg-muted px-1 rounded">
-                    {c.args.join(" ")}
-                  </code>
-                </div>
+                <PropertyRow label="Args" value={c.args.join(" ")} mono />
               )}
               {c.npm_package && (
-                <div>
-                  npm:{" "}
-                  <code className="bg-muted px-1 rounded">{c.npm_package}</code>
-                </div>
+                <PropertyRow label="npm package" value={c.npm_package} mono />
               )}
               {c.pip_package && (
-                <div>
-                  pip:{" "}
-                  <code className="bg-muted px-1 rounded">{c.pip_package}</code>
-                </div>
+                <PropertyRow label="pip package" value={c.pip_package} mono />
               )}
-              {c.min_node_version && <div>min Node: {c.min_node_version}</div>}
+              {c.min_node_version && (
+                <PropertyRow label="Min Node" value={c.min_node_version} />
+              )}
             </div>
           </div>
         ))}
@@ -1288,7 +1242,7 @@ function ConfigDialog({
         <div className="space-y-3">
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
-              <Label className="text-xs">Label (unique within server)</Label>
+              <Label className="type-label">Label (unique within server)</Label>
               <Input mono
                 value={label}
                 onChange={(e) => setLabel(e.target.value)}
@@ -1298,26 +1252,23 @@ function ConfigDialog({
               />
             </div>
             <div className="space-y-1">
-              <Label className="text-xs">Config type</Label>
+              <Label className="type-label">Config type</Label>
               <Select
+                aria-label="Config type"
                 value={configType}
                 onValueChange={setConfigType}
                 disabled={busy}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="stdio">stdio</SelectItem>
-                  <SelectItem value="http">http</SelectItem>
-                  <SelectItem value="sse">sse</SelectItem>
-                </SelectContent>
-              </Select>
+                options={[
+                  { value: "stdio", label: "stdio" },
+                  { value: "http", label: "http" },
+                  { value: "sse", label: "sse" },
+                ]}
+              />
             </div>
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
-              <Label className="text-xs">Command</Label>
+              <Label className="type-label">Command</Label>
               <Input mono
                 value={command}
                 onChange={(e) => setCommand(e.target.value)}
@@ -1326,7 +1277,7 @@ function ConfigDialog({
               />
             </div>
             <div className="space-y-1">
-              <Label className="text-xs">Args (whitespace-separated)</Label>
+              <Label className="type-label">Args (whitespace-separated)</Label>
               <Input mono
                 value={argsText}
                 onChange={(e) => setArgsText(e.target.value)}
@@ -1337,7 +1288,7 @@ function ConfigDialog({
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
-              <Label className="text-xs">npm package</Label>
+              <Label className="type-label">npm package</Label>
               <Input mono
                 value={npmPackage}
                 onChange={(e) => setNpmPackage(e.target.value)}
@@ -1346,7 +1297,7 @@ function ConfigDialog({
               />
             </div>
             <div className="space-y-1">
-              <Label className="text-xs">pip package</Label>
+              <Label className="type-label">pip package</Label>
               <Input mono
                 value={pipPackage}
                 onChange={(e) => setPipPackage(e.target.value)}
@@ -1357,7 +1308,7 @@ function ConfigDialog({
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
-              <Label className="text-xs">Minimum Node version</Label>
+              <Label className="type-label">Minimum Node version</Label>
               <Input
                 value={minNode}
                 onChange={(e) => setMinNode(e.target.value)}
@@ -1366,9 +1317,9 @@ function ConfigDialog({
               />
             </div>
             <div className="space-y-1">
-              <Label className="text-xs">Flags</Label>
+              <Label className="type-label">Flags</Label>
               <div className="flex items-center gap-3 h-9">
-                <label className="flex items-center gap-1.5 text-xs cursor-pointer">
+                <label data-clickable className="type-body flex items-center gap-1.5">
                   <Checkbox
                     checked={isDefault}
                     onCheckedChange={(v) => setIsDefault(v === true)}
@@ -1376,7 +1327,7 @@ function ConfigDialog({
                   />
                   Default
                 </label>
-                <label className="flex items-center gap-1.5 text-xs cursor-pointer">
+                <label data-clickable className="type-body flex items-center gap-1.5">
                   <Checkbox
                     checked={requiresDocker}
                     onCheckedChange={(v) => setRequiresDocker(v === true)}
@@ -1388,7 +1339,7 @@ function ConfigDialog({
             </div>
           </div>
           <div className="space-y-1">
-            <Label className="text-xs">
+            <Label className="type-label">
               Env schema (JSON array of {`{ key, label, required, secret }`})
             </Label>
             <Textarea mono
@@ -1397,13 +1348,13 @@ function ConfigDialog({
               rows={5}
               disabled={busy}
             />
-            <p className="text-[11px] text-muted-foreground">
+            <p className="type-secondary text-muted-foreground">
               Drives the per-user setup form when a user connects with this
               config. Leave as <code>[]</code> if no env vars needed.
             </p>
           </div>
           <div className="space-y-1">
-            <Label className="text-xs">Notes (admin-only)</Label>
+            <Label className="type-label">Notes (admin-only)</Label>
             <ProTextarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
@@ -1467,33 +1418,34 @@ function ConnectionsTab({
   if (error) return <ErrorBox msg={error} />;
 
   return (
-    <div className="rounded-md border border-border bg-card p-4 text-sm">
-      <div className="flex items-baseline gap-2">
-        <span
-          className="text-3xl font-semibold tabular-nums"
-          data-surface-value="server_connected_user_count"
-        >
-          {count ?? 0}
-        </span>
-        <span className="text-xs text-muted-foreground">
-          user{count === 1 ? "" : "s"} connected
-        </span>
-        <CopyButtons
-          size="xs"
-          label="Connected users count"
-          className="ml-auto"
-          human={() => `${count ?? 0} user${count === 1 ? "" : "s"} connected`}
-          agent={() => ({
-            kind: "mcp-server-connections",
-            location: PAGE_LOCATION,
-            description:
-              "Count of users connected to the MCP server open in the admin detail pane.",
-            data: { server_id: serverId, connected_users: count ?? 0 },
-            attributes: { count: count ?? 0 },
-          })}
-        />
-      </div>
-      <p className="text-[11px] text-muted-foreground mt-2">
+    <div className="rounded-md border border-border bg-card p-4 space-y-2">
+      <PropertyRow
+        label="Connected users"
+        value={
+          <span
+            className="tabular-nums"
+            data-surface-value="server_connected_user_count"
+          >
+            {count ?? 0}
+          </span>
+        }
+        meta={
+          <CopyButtons
+            size="xs"
+            label="Connected users count"
+            human={() => `${count ?? 0} user${count === 1 ? "" : "s"} connected`}
+            agent={() => ({
+              kind: "mcp-server-connections",
+              location: PAGE_LOCATION,
+              description:
+                "Count of users connected to the MCP server open in the admin detail pane.",
+              data: { server_id: serverId, connected_users: count ?? 0 },
+              attributes: { count: count ?? 0 },
+            })}
+          />
+        }
+      />
+      <p className="type-secondary text-muted-foreground">
         Per-user connection details (auth status, last used, error count) live
         in the per-user Connections page (Phase 6 — coming next).
       </p>
@@ -1570,11 +1522,11 @@ function MetaTabEditor({
           <div>
             <Label
               htmlFor={`mcp-tool-allowlist-${currentServer.id}`}
-              className="text-xs"
+              className="type-label"
             >
               Allowed tool names
             </Label>
-            <p className="mt-1 text-xs text-muted-foreground">
+            <p className="type-secondary mt-1 text-muted-foreground">
               One exact MCP tool name per line. Leave this blank to remove the
               allowlist. Saving blank asks before it widens this server to all
               tools it offers.
@@ -1599,7 +1551,7 @@ function MetaTabEditor({
         />
         <p
           id={`mcp-tool-allowlist-help-${currentServer.id}`}
-          className="text-[11px] text-muted-foreground"
+          className="type-secondary text-muted-foreground"
         >
           Names are trimmed and duplicate lines are saved once. Server status,
           authentication, endpoint, and all other metadata stay unchanged.
@@ -1626,7 +1578,7 @@ function MetaTabEditor({
             })}
           />
         </div>
-        <pre className="font-mono text-[11px] overflow-auto whitespace-pre-wrap leading-relaxed">
+        <pre className="type-meta font-mono overflow-auto whitespace-pre-wrap">
           {JSON.stringify(meta, null, 2)}
         </pre>
       </div>
@@ -1636,60 +1588,50 @@ function MetaTabEditor({
 
 function InlineLoading() {
   return (
-    <div className="flex items-center gap-2 text-xs text-muted-foreground py-3">
-      <Loader2 className="h-3.5 w-3.5 animate-spin" /> Loading…
-    </div>
+    <RegionSkeleton shape="rows" count={2} aria-label="Loading" />
   );
 }
 
 function ErrorBox({ msg }: { msg: string }) {
   return (
-    <div className="rounded-md border border-destructive/40 bg-destructive/5 px-3 py-2 text-xs text-destructive-ink flex items-center gap-2">
-      <AlertCircle className="h-3.5 w-3.5" />
-      {msg}
-      <ErrorAlchemyMenu error={msg} />
-    </div>
+    <ErrorNotice size="compact" message={msg} error={msg} />
   );
 }
 
 function EmptyHint({ children }: { children: React.ReactNode }) {
   return (
-    <div className="rounded-md border border-dashed border-border px-4 py-6 text-center text-xs text-muted-foreground">
-      {children}
-    </div>
+    <EmptyState icon={<Plug />} title={children} />
   );
 }
 
 function TestFreshnessBadge({ testFresh }: { testFresh: TestFreshness }) {
   if (testFresh.state === "untested") {
     return (
-      <span
-        className="inline-flex items-center gap-1 rounded border border-border bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground"
-      >
+      <StatusBadge>
         <Plug className="h-3 w-3" />
         untested
         <InfoHint
           text="No connection test on record. Click 'Test connection' to probe the endpoint."
           label="About untested servers"
         />
-      </span>
+      </StatusBadge>
     );
   }
   if (testFresh.state === "ok") {
     return (
-      <span
-        className={`inline-flex items-center gap-1 rounded border border-success/30 bg-success/10 px-1.5 py-0.5 text-[10px] font-medium text-success-ink`}
+      <StatusBadge
+        tone="success"
         title={`Endpoint reachable as of ${formatRelativeAge(testFresh.ageSec)} — HTTP ${testFresh.statusCode}, ${testFresh.latencyMs}ms`}
       >
         <PlugZap className="h-3 w-3" />
         reachable{" "}
         {testFresh.latencyMs !== null ? `${testFresh.latencyMs}ms` : ""}
-      </span>
+      </StatusBadge>
     );
   }
   return (
-    <span
-      className="inline-flex items-center gap-1 rounded border border-destructive/30 bg-destructive/10 px-1.5 py-0.5 text-[10px] font-medium text-destructive-ink"
+    <StatusBadge
+      tone="destructive"
       title={
         testFresh.error
           ? `${formatRelativeAge(testFresh.ageSec)}: ${testFresh.error}`
@@ -1701,7 +1643,7 @@ function TestFreshnessBadge({ testFresh }: { testFresh: TestFreshness }) {
       <ErrorAlchemyMenu
         error={`${formatRelativeAge(testFresh.ageSec)}: ${testFresh.error}`}
       />
-    </span>
+    </StatusBadge>
   );
 }
 
@@ -1715,21 +1657,17 @@ function TestResultPanel({ result }: { result: McpTestResult }) {
       className={`rounded-md border ${tone} px-3 py-2 space-y-1`}
       data-surface-value="latest_test_result"
     >
-      <div className="flex items-center gap-2 text-xs font-medium">
+      <div className="type-title flex items-center gap-2">
         <Icon className="h-3.5 w-3.5" />
         {result.ok ? "Reachable" : "Unhealthy"}
         {result.statusCode !== null && (
-          <Badge variant="outline" className="text-[10px] font-mono">
-            HTTP {result.statusCode}
-          </Badge>
+          <StatusBadge>HTTP {result.statusCode}</StatusBadge>
         )}
         {result.latencyMs !== null && (
-          <Badge variant="outline" className="text-[10px] font-mono">
-            {result.latencyMs}ms
-          </Badge>
+          <StatusBadge>{result.latencyMs}ms</StatusBadge>
         )}
         {result.endpointTested && (
-          <code className="ml-auto text-[10px] text-muted-foreground truncate max-w-[280px]">
+          <code className="type-meta ml-auto text-muted-foreground truncate max-w-[280px]">
             {result.endpointTested}
           </code>
         )}
@@ -1751,9 +1689,9 @@ function TestResultPanel({ result }: { result: McpTestResult }) {
           })}
         />
       </div>
-      <p className="text-[11px] leading-relaxed">{result.message}</p>
+      <p className="type-secondary">{result.message}</p>
       {result.error && (
-        <p className="text-[11px] font-mono">
+        <p className="type-secondary">
           <strong>error:</strong> {result.error}
           <ErrorAlchemyMenu error={result.error} />
         </p>

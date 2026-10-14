@@ -2,18 +2,18 @@
 
 import { useState } from "react";
 import { Loader2, ChevronLeft, ChevronRight, AlertCircle, Check } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@ai-matrx/design-system/controls";
+import {
+  Badge,
+  Input,
+  PropertyRow,
+  RowGroup,
+  Select,
+  SettingRow,
+} from "@ai-matrx/design-system/controls";
+import { ErrorNotice } from "@ai-matrx/design-system";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import {
   Dialog,
   DialogContent,
@@ -210,28 +210,23 @@ export function AddMcpServerDialog({
               Server provisioned
             </DialogTitle>
           </DialogHeader>
-          <div className="space-y-3 text-sm">
-            <p className="text-muted-foreground">
+          <div className="space-y-3">
+            <p className="type-body text-muted-foreground">
               Four rows were inserted in one transaction. The catalog{" "}
               {refreshing ? "is being fetched now" : autoRefresh ? "fetch was attempted" : "has not been fetched yet"}
-              {refreshError && (
-                <>
-                  {" "}— but the refresh hit an error:{" "}
-                  <code className="bg-destructive/10 text-destructive-ink px-1 rounded">
-                    {refreshError}
-                    <ErrorAlchemyMenu error={refreshError} />
-                  </code>
-                </>
-              )}
+              {refreshError && " — but the refresh hit an error"}
               .
             </p>
-            <div className="rounded-md border border-border bg-card divide-y divide-border text-xs">
+            {refreshError && (
+              <ErrorNotice size="compact" message={refreshError} error={refreshError} />
+            )}
+            <div className="space-y-2">
               <ResultRow label="MCP server" value={result.server_slug} subtle={result.server_id} href={`/administration/agents/mcp-servers#${result.server_slug}`} />
               <ResultRow label="Executor" value={result.executor} />
               <ResultRow label="System bundle" value={result.bundle_name} subtle={result.bundle_id} href={`/administration/agents/bundles`} />
               <ResultRow label="Lister tool" value={result.lister_name} subtle={result.lister_tool_id} href={`/administration/agents/mcp-tools/${result.lister_tool_id}`} />
             </div>
-            <p className="text-[11px] text-muted-foreground">
+            <p className="type-secondary text-muted-foreground">
               {result.next_step}
             </p>
           </div>
@@ -271,14 +266,14 @@ export function AddMcpServerDialog({
 
         {step === "identity" && (
           <div className="space-y-3">
-            <p className="text-[11px] text-muted-foreground">
+            <p className="type-secondary text-muted-foreground">
               Step 1 of 3 — identity. The slug becomes the server's primary key
-              and is also used as the executor kind name (<code className="bg-muted px-1 rounded">mcp.&lt;slug&gt;</code>) and
+              and is also used as the executor kind name (<code className="font-mono">mcp.&lt;slug&gt;</code>) and
               auto-bundle name.
             </p>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label className="text-xs">Slug (URL-safe ID)</Label>
+                <Label className="type-label">Slug (URL-safe ID)</Label>
                 <Input mono
                   value={slug}
                   onChange={(e) => setSlug(e.target.value.toLowerCase())}
@@ -287,18 +282,17 @@ export function AddMcpServerDialog({
                   autoFocus
                 />
                 {slug && !slugValid && (
-                  <p className="text-[11px] text-destructive">
-                    Lowercase letters, digits, hyphens. Start with a letter/digit.
-                  </p>
+                  <ErrorNotice
+                    size="inline"
+                    message="Lowercase letters, digits, hyphens. Start with a letter/digit."
+                  />
                 )}
                 {slugClash && (
-                  <p className="text-[11px] text-destructive">
-                    <code className="font-mono">{slug}</code> already exists.
-                  </p>
+                  <ErrorNotice size="inline" message={`${slug} already exists.`} />
                 )}
               </div>
               <div className="space-y-1.5">
-                <Label className="text-xs">Display name</Label>
+                <Label className="type-label">Display name</Label>
                 <Input
                   value={name}
                   onChange={(e) => setName(e.target.value)}
@@ -309,7 +303,7 @@ export function AddMcpServerDialog({
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label className="text-xs">Vendor</Label>
+                <Label className="type-label">Vendor</Label>
                 <Input
                   value={vendor}
                   onChange={(e) => setVendor(e.target.value)}
@@ -318,27 +312,18 @@ export function AddMcpServerDialog({
                 />
               </div>
               <div className="space-y-1.5">
-                <Label className="text-xs">Category</Label>
+                <Label className="type-label">Category</Label>
                 <Select
+                  aria-label="Category"
                   value={category}
+                  options={CATEGORY_OPTIONS}
                   onValueChange={(v) => setCategory(v as ProvisionMcpServerInput["category"])}
                   disabled={busy}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {CATEGORY_OPTIONS.map((c) => (
-                      <SelectItem key={c.value} value={c.value}>
-                        {c.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                />
               </div>
             </div>
             <div className="space-y-1.5">
-              <Label className="text-xs">Description</Label>
+              <Label className="type-label">Description</Label>
               <ProTextarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
@@ -348,59 +333,55 @@ export function AddMcpServerDialog({
                 disabled={busy}
               />
             </div>
-            <div className="flex items-center gap-3 rounded-md border border-border bg-muted/30 p-3">
-              <Switch checked={isOfficial} onCheckedChange={setIsOfficial} disabled={busy} />
-              <div>
-                <Label className="text-xs">Official server</Label>
-                <p className="text-[11px] text-muted-foreground">
-                  Mark as vendor-blessed. Surfaces a badge in the user-facing catalog.
-                </p>
-              </div>
-            </div>
+            <RowGroup>
+              <SettingRow
+                label="Official server"
+                line="Mark as vendor-blessed. Surfaces a badge in the user-facing catalog."
+              >
+                <Switch
+                  aria-label="Official server"
+                  checked={isOfficial}
+                  onCheckedChange={setIsOfficial}
+                  disabled={busy}
+                />
+              </SettingRow>
+            </RowGroup>
           </div>
         )}
 
         {step === "transport" && (
           <div className="space-y-3">
-            <p className="text-[11px] text-muted-foreground">
+            <p className="type-secondary text-muted-foreground">
               Step 2 of 3 — transport &amp; auth. These determine how matrx-ai
               connects to the server and how user credentials flow.
             </p>
             <div className="space-y-1.5">
-              <Label className="text-xs">Transport</Label>
-              <Select value={transport} onValueChange={(v) => setTransport(v as ProvisionMcpServerInput["transport"])} disabled={busy}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {TRANSPORT_OPTIONS.map((t) => (
-                    <SelectItem key={t.value} value={t.value}>
-                      <div className="flex flex-col items-start">
-                        <span>{t.label}</span>
-                        <span className="text-[10px] text-muted-foreground">{t.hint}</span>
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Label className="type-label">Transport</Label>
+              <Select
+                aria-label="Transport"
+                value={transport}
+                options={TRANSPORT_OPTIONS.map((t) => ({ value: t.value, label: t.label, meta: t.hint }))}
+                onValueChange={(v) => setTransport(v as ProvisionMcpServerInput["transport"])}
+                disabled={busy}
+              />
             </div>
             {(transport === "http" || transport === "sse") && (
               <div className="space-y-1.5">
-                <Label className="text-xs">Endpoint URL</Label>
+                <Label className="type-label">Endpoint URL</Label>
                 <Input mono
                   value={endpointUrl}
                   onChange={(e) => setEndpointUrl(e.target.value)}
                   placeholder="https://mcp.example.com/v1"
                   disabled={busy}
                 />
-                <p className="text-[11px] text-muted-foreground">
+                <p className="type-secondary text-muted-foreground">
                   For OAuth-discovery servers, leave blank if the URL comes from
                   the OAuth metadata document.
                 </p>
               </div>
             )}
             {transport === "stdio" && (
-              <div className="rounded-md border border-warning/40 bg-warning/5 px-3 py-2 text-xs flex items-start gap-2">
+              <div className="rounded-md border border-warning/40 bg-warning/5 px-3 py-2 type-secondary flex items-start gap-2">
                 <AlertCircle className="h-3.5 w-3.5 mt-0.5 text-warning flex-shrink-0" />
                 <div>
                   stdio servers are configured per-variant in <code>tool_mcp_config</code>{" "}
@@ -410,26 +391,18 @@ export function AddMcpServerDialog({
               </div>
             )}
             <div className="space-y-1.5">
-              <Label className="text-xs">Auth strategy</Label>
-              <Select value={authStrategy} onValueChange={(v) => setAuthStrategy(v as ProvisionMcpServerInput["authStrategy"])} disabled={busy}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {AUTH_OPTIONS.map((a) => (
-                    <SelectItem key={a.value} value={a.value}>
-                      <div className="flex flex-col items-start">
-                        <span>{a.label}</span>
-                        <span className="text-[10px] text-muted-foreground">{a.hint}</span>
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Label className="type-label">Auth strategy</Label>
+              <Select
+                aria-label="Auth strategy"
+                value={authStrategy}
+                options={AUTH_OPTIONS.map((a) => ({ value: a.value, label: a.label, meta: a.hint }))}
+                onValueChange={(v) => setAuthStrategy(v as ProvisionMcpServerInput["authStrategy"])}
+                disabled={busy}
+              />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label className="text-xs">Docs URL (optional)</Label>
+                <Label className="type-label">Docs URL (optional)</Label>
                 <Input
                   value={docsUrl}
                   onChange={(e) => setDocsUrl(e.target.value)}
@@ -437,7 +410,7 @@ export function AddMcpServerDialog({
                 />
               </div>
               <div className="space-y-1.5">
-                <Label className="text-xs">Website URL (optional)</Label>
+                <Label className="type-label">Website URL (optional)</Label>
                 <Input
                   value={websiteUrl}
                   onChange={(e) => setWebsiteUrl(e.target.value)}
@@ -450,11 +423,11 @@ export function AddMcpServerDialog({
 
         {step === "review" && (
           <div className="space-y-3">
-            <p className="text-[11px] text-muted-foreground">
+            <p className="type-secondary text-muted-foreground">
               Step 3 of 3 — review &amp; provision. Five rows will be inserted in
               one transaction.
             </p>
-            <div className="rounded-md border border-border bg-card divide-y divide-border text-xs">
+            <div className="space-y-2">
               <ReviewRow label="Server" value={`${name} (${slug})`} />
               <ReviewRow label="Vendor" value={vendor} />
               <ReviewRow label="Category" value={category} />
@@ -463,17 +436,25 @@ export function AddMcpServerDialog({
               {endpointUrl && <ReviewRow label="Endpoint" value={endpointUrl} mono />}
               <ReviewRow label="Will create" value={`mcp.${slug} executor kind, ${slug} system bundle, bundle:list_${slug} lister tool`} />
             </div>
-            <div className="flex items-start gap-3 rounded-md border border-border bg-muted/30 p-3">
-              <Switch checked={autoRefresh} onCheckedChange={setAutoRefresh} disabled={busy} />
-              <div>
-                <Label className="text-xs">Auto-fetch catalog after provision</Label>
-                <p className="text-[11px] text-muted-foreground">
-                  Calls the aidream <code className="bg-background px-1 rounded">/api/mcp-connections/&lt;id&gt;/refresh</code> endpoint{" "}
-                  immediately after the rows are inserted. Disable if the server
-                  isn't reachable yet.
-                </p>
-              </div>
-            </div>
+            <RowGroup>
+              <SettingRow
+                label="Auto-fetch catalog after provision"
+                line={
+                  <>
+                    Calls the aidream <code className="font-mono">/api/mcp-connections/&lt;id&gt;/refresh</code> endpoint{" "}
+                    immediately after the rows are inserted. Disable if the server
+                    isn&apos;t reachable yet.
+                  </>
+                }
+              >
+                <Switch
+                  aria-label="Auto-fetch catalog after provision"
+                  checked={autoRefresh}
+                  onCheckedChange={setAutoRefresh}
+                  disabled={busy}
+                />
+              </SettingRow>
+            </RowGroup>
           </div>
         )}
 
@@ -539,12 +520,7 @@ function ReviewRow({
   value: string;
   mono?: boolean;
 }) {
-  return (
-    <div className="px-3 py-2 grid grid-cols-[140px_1fr] gap-3">
-      <span className="text-muted-foreground">{label}</span>
-      <span className={mono ? "font-mono text-foreground" : "text-foreground"}>{value}</span>
-    </div>
-  );
+  return <PropertyRow label={label} value={value} mono={mono} />;
 }
 
 function ResultRow({
@@ -559,22 +535,21 @@ function ResultRow({
   href?: string;
 }) {
   return (
-    <div className="px-3 py-2 grid grid-cols-[140px_1fr] gap-3 items-start">
-      <span className="text-muted-foreground">{label}</span>
-      <div className="min-w-0">
+    <PropertyRow label={label}>
+      <span className="min-w-0">
         {href ? (
-          <a href={href} className="font-mono text-foreground hover:text-primary hover:underline">
+          <a href={href} className="font-mono hover:text-primary hover:underline">
             {value}
           </a>
         ) : (
-          <code className="font-mono text-foreground">{value}</code>
+          <code className="font-mono">{value}</code>
         )}
         {subtle && (
-          <Badge variant="outline" className="ml-1.5 text-[10px] font-mono">
-            {subtle.slice(0, 8)}…
+          <Badge className="ml-1.5">
+            <code className="font-mono">{subtle.slice(0, 8)}…</code>
           </Badge>
         )}
-      </div>
-    </div>
+      </span>
+    </PropertyRow>
   );
 }

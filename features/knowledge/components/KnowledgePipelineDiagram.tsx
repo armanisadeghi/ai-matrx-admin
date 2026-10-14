@@ -22,6 +22,7 @@ import {
   Workflow,
   ChevronDown,
 } from "lucide-react";
+import { Badge, Chip, ChipSet } from "@ai-matrx/design-system/controls";
 import { RAG_VOCAB } from "@/features/rag/constants/vocabulary";
 import { cn } from "@/lib/utils";
 import { AGENT_ICON } from "@/components/icons/domain-icons";
@@ -198,18 +199,12 @@ export function KnowledgePipelineDiagram() {
         <div className="min-w-0">
           {/* Sources */}
           <div className="rounded-2xl border border-border bg-card/60 p-4 sm:p-5">
-            <p className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground mb-3">
+            <p className="type-label uppercase tracking-widest mb-3">
               Sources
             </p>
             <div className="flex flex-wrap gap-2">
               {SOURCES.map((s) => (
-                <span
-                  key={s.label}
-                  className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-muted/50 px-2.5 py-1.5 text-xs font-medium text-foreground"
-                >
-                  <s.icon className="h-3.5 w-3.5 text-muted-foreground" />
-                  {s.label}
-                </span>
+                <Chip key={s.label} label={s.label} icon={<s.icon />} />
               ))}
             </div>
           </div>
@@ -229,10 +224,8 @@ export function KnowledgePipelineDiagram() {
                     aria-pressed={isFocused}
                     className={cn(
                       "group w-full text-left rounded-2xl border bg-card p-4 sm:p-5 transition-all duration-300",
-                      "hover:shadow-lg hover:shadow-primary/5",
                       toneRing[phase.tone],
-                      isFocused &&
-                        "ring-2 ring-primary/40 shadow-lg shadow-primary/5",
+                      isFocused && "ring-2 ring-primary/40",
                       dimmed && "opacity-55",
                       phase.tone === "hub" && "bg-brand-secondary/[0.04]",
                       phase.tone === "ask" && "bg-warning/[0.04]",
@@ -251,7 +244,7 @@ export function KnowledgePipelineDiagram() {
                         <div className="flex items-center gap-2 flex-wrap">
                           <span
                             className={cn(
-                              "inline-flex items-center rounded-md border px-1.5 py-0.5 text-[10px] font-bold",
+                              "inline-flex items-center rounded-md border px-1.5 py-0.5 type-meta font-bold",
                               toneBadge[phase.tone],
                             )}
                           >
@@ -259,10 +252,7 @@ export function KnowledgePipelineDiagram() {
                           </span>
                           <h3
                             className={cn(
-                              "font-semibold tracking-tight",
-                              phase.tone === "hub" || phase.tone === "ask"
-                                ? "text-base sm:text-lg"
-                                : "text-sm sm:text-base",
+                              "type-title",
                             )}
                           >
                             {phase.title}
@@ -276,7 +266,7 @@ export function KnowledgePipelineDiagram() {
                         </div>
                         <p
                           className={cn(
-                            "mt-1.5 text-sm text-muted-foreground leading-relaxed transition-all",
+                            "type-body mt-1.5 text-muted-foreground transition-all",
                             !isFocused && "line-clamp-2 sm:line-clamp-none",
                           )}
                         >
@@ -284,16 +274,11 @@ export function KnowledgePipelineDiagram() {
                         </p>
 
                         {/* Representation chips (hub gets the full grid) */}
-                        <div className="mt-3 flex flex-wrap gap-1.5">
+                        <ChipSet className="mt-3">
                           {phase.chips.map((c) => (
-                            <span
-                              key={c}
-                              className="inline-flex items-center rounded-md border border-border bg-background/60 px-2 py-0.5 text-[11px] text-muted-foreground"
-                            >
-                              {c}
-                            </span>
+                            <Chip key={c} label={c} />
                           ))}
-                        </div>
+                        </ChipSet>
 
                         {/* Hub facets */}
                         {phase.tone === "hub" && (
@@ -305,11 +290,11 @@ export function KnowledgePipelineDiagram() {
                               >
                                 <div className="flex items-center gap-1.5">
                                   <f.icon className="h-3.5 w-3.5 text-brand-secondary" />
-                                  <span className="text-xs font-semibold">
+                                  <span className="type-title">
                                     {f.title}
                                   </span>
                                 </div>
-                                <p className="mt-0.5 text-[10px] text-muted-foreground leading-snug">
+                                <p className="type-meta mt-0.5 text-muted-foreground">
                                   {f.sub}
                                 </p>
                               </div>
@@ -339,11 +324,11 @@ export function KnowledgePipelineDiagram() {
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-secondary/10 text-brand-secondary">
                 <Workflow className="h-4 w-4" />
               </div>
-              <h3 className="text-sm font-bold tracking-tight text-brand-secondary">
+              <h3 className="type-title text-brand-secondary">
                 Agent Fabric
               </h3>
             </div>
-            <p className="mt-3 text-xs text-muted-foreground leading-relaxed">
+            <p className="type-secondary mt-3 text-muted-foreground">
               Attach an agent at{" "}
               <span className="font-medium text-foreground">
                 any node or edge
@@ -354,13 +339,13 @@ export function KnowledgePipelineDiagram() {
               {FABRIC_FORMS.map((f) => (
                 <span
                   key={f}
-                  className="inline-flex items-center rounded-md border border-brand-secondary/20 bg-card px-2 py-0.5 text-[11px] text-brand-secondary"
+                  className="inline-flex items-center rounded-md border border-brand-secondary/20 bg-card px-2 py-0.5 type-meta text-brand-secondary"
                 >
                   {f}
                 </span>
               ))}
             </div>
-            <p className="mt-4 text-xs text-muted-foreground leading-relaxed">
+            <p className="type-secondary mt-4 text-muted-foreground">
               Overlays every stage — clean, enrich, retrieve, and answer. The
               attorney&apos;s agent in the worked example runs right here.
             </p>
@@ -368,7 +353,7 @@ export function KnowledgePipelineDiagram() {
         </aside>
       </div>
 
-      <p className="mt-4 text-center text-xs text-muted-foreground">
+      <p className="type-secondary mt-4 text-center text-muted-foreground">
         Tap any phase to focus it. Phases 1–7 flow top to bottom · the agent
         fabric overlays every stage.
       </p>
@@ -379,11 +364,9 @@ export function KnowledgePipelineDiagram() {
 function FlowArrow({ label }: { label?: string }) {
   return (
     <div className="flex items-center justify-center gap-2 py-2">
-      <ArrowDown className="h-4 w-4 text-muted-foreground/60" />
+      <ArrowDown className="h-4 w-4 text-muted-foreground" />
       {label && (
-        <span className="rounded-full border border-warning/40 bg-warning/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-warning-ink">
-          {label}
-        </span>
+        <Badge tone="warning">{label}</Badge>
       )}
     </div>
   );

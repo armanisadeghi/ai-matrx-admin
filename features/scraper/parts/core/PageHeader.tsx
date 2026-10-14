@@ -1,7 +1,6 @@
 "use client";
 import React from "react";
-import { Badge } from "@/components/ui/badge";
-import { Switch } from "@/components/ui/switch";
+import { Badge, Switch } from "@ai-matrx/design-system/controls";
 import {
   Tooltip,
   TooltipContent,
@@ -24,6 +23,39 @@ interface PageHeaderProps {
   setFeatureToggles: React.Dispatch<React.SetStateAction<FeatureToggles>>;
 }
 
+function FeatureToggle({
+  id,
+  label,
+  help,
+  checked,
+  onToggle,
+}: {
+  id: string;
+  label: string;
+  help: string;
+  checked: boolean;
+  onToggle: () => void;
+}) {
+  return (
+    <TooltipProvider>
+      <div className="flex items-center gap-2">
+        <Switch id={id} checked={checked} onCheckedChange={onToggle} />
+        <span className="type-secondary text-muted-foreground whitespace-nowrap">
+          {label}
+        </span>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <InfoIcon className="h-3 w-3 text-muted-foreground cursor-help" />
+          </TooltipTrigger>
+          <TooltipContent side="bottom">
+            <p className="w-40 type-secondary">{help}</p>
+          </TooltipContent>
+        </Tooltip>
+      </div>
+    </TooltipProvider>
+  );
+}
+
 const PageHeader = ({
   title,
   url,
@@ -42,12 +74,12 @@ const PageHeader = ({
   };
 
   return (
-    <div className="bg-card rounded-t-lg shadow-md overflow-hidden border border-border">
+    <div className="bg-card rounded-t-lg overflow-hidden border border-border">
       <div className="px-4 py-3 relative">
         <div className="flex flex-row items-center justify-between">
           <div className="flex items-center gap-3 min-w-0">
             <div className="min-w-0">
-              <h1 className="text-xl font-bold text-foreground truncate">
+              <h1 className="type-title text-foreground truncate">
                 {title || "Untitled Page"}
               </h1>
               {url && (
@@ -55,7 +87,7 @@ const PageHeader = ({
                   <ExternalLinkIcon className="text-muted-foreground mr-1.5 h-3 w-3 shrink-0" />
                   <OutboundLink
                     href={url}
-                    className="text-muted-foreground hover:text-foreground text-xs truncate"
+                    className="type-secondary text-muted-foreground hover:text-foreground truncate"
                   >
                     {url || "No URL"}
                   </OutboundLink>
@@ -66,69 +98,29 @@ const PageHeader = ({
                 one): no badge — never an empty red pill that reads as failure. */}
             {status ? (
             <Badge
-              className={`ml-2 shrink-0 text-xs px-2 py-0.5 ${
-                status === "success"
-                  ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/25 border border-emerald-500/30"
-                  : "bg-rose-500/15 text-rose-700 dark:text-rose-300 hover:bg-rose-500/25 border border-rose-500/30"
-              }`}
+              tone={status === "success" ? "success" : "destructive"}
+              className="ml-2 shrink-0"
             >
               {status}
             </Badge>
             ) : null}
           </div>
 
-          <div className="flex items-center gap-2 shrink-0">
-            <TooltipProvider>
-              <div className="flex items-center">
-                <div className="flex items-center gap-2 bg-muted rounded-md px-2 py-1">
-                  <Switch
-                    id="keyword-analysis-toggle"
-                    checked={featureToggles.keywordAnalysis}
-                    onCheckedChange={() =>
-                      handleToggleChange("keywordAnalysis")
-                    }
-                  />
-                  <span className="text-muted-foreground text-xs whitespace-nowrap">
-                    Keyword Analysis
-                  </span>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <InfoIcon className="h-3 w-3 text-muted-foreground cursor-help" />
-                    </TooltipTrigger>
-                    <TooltipContent side="bottom">
-                      <p className="w-40 text-xs">
-                        Enable keyword analysis feature
-                      </p>
-                    </TooltipContent>
-                  </Tooltip>
-                </div>
-              </div>
-            </TooltipProvider>
-
-            <TooltipProvider>
-              <div className="flex items-center">
-                <div className="flex items-center gap-2 bg-muted rounded-md px-2 py-1">
-                  <Switch
-                    id="fact-checker-toggle"
-                    checked={featureToggles.factChecker}
-                    onCheckedChange={() => handleToggleChange("factChecker")}
-                  />
-                  <span className="text-muted-foreground text-xs whitespace-nowrap">
-                    Fact Checker
-                  </span>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <InfoIcon className="h-3 w-3 text-muted-foreground cursor-help" />
-                    </TooltipTrigger>
-                    <TooltipContent side="bottom">
-                      <p className="w-40 text-xs">
-                        Enable fact checking feature
-                      </p>
-                    </TooltipContent>
-                  </Tooltip>
-                </div>
-              </div>
-            </TooltipProvider>
+          <div className="flex items-center gap-3 shrink-0">
+            <FeatureToggle
+              id="keyword-analysis-toggle"
+              label="Keyword Analysis"
+              help="Enable keyword analysis feature"
+              checked={featureToggles.keywordAnalysis}
+              onToggle={() => handleToggleChange("keywordAnalysis")}
+            />
+            <FeatureToggle
+              id="fact-checker-toggle"
+              label="Fact Checker"
+              help="Enable fact checking feature"
+              checked={featureToggles.factChecker}
+              onToggle={() => handleToggleChange("factChecker")}
+            />
           </div>
         </div>
       </div>
