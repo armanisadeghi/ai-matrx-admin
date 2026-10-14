@@ -28,7 +28,43 @@ export type SmartAddStepPair = readonly string[];
 export const IDENTIFY_STEPS: SmartAddStepPair = ["probe", "page", "avatars", "socials", "web", "deep", "local"];
 export const SETUP_STEPS: SmartAddStepPair = ["logo", "accounts", "history"];
 /** Steps whose output may carry the facts agent's `brand_basics` (read for facts only, not shown as steps). */
-const FACT_STEPS: SmartAddStepPair = ["facts", "brand_basics"];
+const FACT_STEPS: SmartAddStepPair = ["facts", "brand_basics", "person_facts"];
+/** The person branch's anchor stage: its findings (read like any step's output, not shown as steps). */
+const ANCHOR_STEPS: SmartAddStepPair = ["person_anchor_search", "person_anchor_extract"];
+/** The person / business verdict step (aidream brand.identify.person_signals). */
+const SIGNALS_STEP = "person_signals";
+
+/** The round's person / business verdict (aidream services/brand_intake/person_signals.py). */
+export interface PersonSignals {
+  verdict: "person" | "business" | "ask" | "unknown";
+  person_score: number;
+  business_score: number;
+  signals: { key: string; weight: number; source: string; value: string }[];
+}
+
+export function parsePersonSignals(raw: unknown): PersonSignals | null {
+  if (typeof raw !== "object" || raw === null) return null;
+  const r = raw as Record<string, unknown>;
+  const verdict = r.verdict;
+  if (verdict !== "person" && verdict !== "business" && verdict !== "ask" && verdict !== "unknown") return null;
+  const signals = Array.isArray(r.signals)
+    ? r.signals
+        .map((x) => (typeof x === "object" && x !== null ? (x as Record<string, unknown>) : null))
+        .filter((x): x is Record<string, unknown> => Boolean(x && typeof x.key === "string"))
+        .map((x) => ({
+          key: String(x.key),
+          weight: typeof x.weight === "number" ? x.weight : 0,
+          source: typeof x.source === "string" ? x.source : "",
+          value: typeof x.value === "string" ? x.value : JSON.stringify(x.value ?? ""),
+        }))
+    : [];
+  return {
+    verdict,
+    person_score: typeof r.person_score === "number" ? r.person_score : 0,
+    business_score: typeof r.business_score === "number" ? r.business_score : 0,
+    signals,
+  };
+}
 /** The "we think" step (mandate brand_intake.we_think): its `brand_we_think` suggestions, per finding key. */
 const WE_THINK_STEPS: SmartAddStepPair = ["we_think"];
 
@@ -121,6 +157,7 @@ export function SmartAddRound({
   onEvidence,
   onFacts,
   onSuggestions,
+  onSignals,
   onView,
 }: {
   runId: string;
@@ -130,6 +167,8 @@ export function SmartAddRound({
   onFacts?: (facts: BrandFact[]) => void;
   /** The we-think agent's suggestions, keyed by finding key (never an answer; the screen glows them). */
   onSuggestions?: (suggestions: Record<string, WeThinkSuggestion>) => void;
+  /** The person / business verdict, once the person_signals step reports it. */
+  onSignals?: (signals: PersonSignals) => void;
   onView: (view: RoundView) => void;
 }) {
   useWorkflowRun(runId);
@@ -142,7 +181,17 @@ export function SmartAddRound({
     setStepState((s) => ({ ...s, [step]: { view, evidence, facts, suggestions } }));
 
   const live = emissions.flatMap((e) => evidenceFromPayload(e.payload));
-  const all = [...live, ...steps.flatMap((s) => stepState[s]?.evidence ?? [])];
+  const all = [...live, ...[...steps, ...ANCHOR_STEPS].flatMap((s) => stepState[s]?.evidence ?? [])];
+  const signalsAggregate = useAppSelector(selectNodeAggregate(runId, SIGNALS_STEP));
+  const signalsOut = signalsAggregate.invocations[signalsAggregate.invocations.length - 1]?.output ?? null;
+  const signals =
+    parsePersonSignals(signalsOut?.person_signals) ??
+    emissions.map((e) => parsePersonSignals((e.payload as Record<string, unknown> | null)?.person_signals)).find(Boolean) ??
+    null;
+  const signalsKey = signals ? JSON.stringify(signals) : "";
+  useEffect(() => {
+    if (signalsKey) onSignals?.(JSON.parse(signalsKey) as PersonSignals);
+  }, [signalsKey, onSignals]);
   // Both callbacks are idempotent on unchanged content (the screen keeps its
   // state when nothing new arrived), so running on every render is safe.
   useEffect(() => {
@@ -168,7 +217,7 @@ export function SmartAddRound({
 
   return (
     <>
-      {[...steps, ...(onFacts ? FACT_STEPS : []), ...(onSuggestions ? WE_THINK_STEPS : [])].map((s) => (
+      {[...steps, ...(onEvidence ? ANCHOR_STEPS : []), ...(onFacts ? FACT_STEPS : []), ...(onSuggestions ? WE_THINK_STEPS : [])].map((s) => (
         <StepWatch key={s} runId={runId} step={s} onStep={onStep} />
       ))}
     </>

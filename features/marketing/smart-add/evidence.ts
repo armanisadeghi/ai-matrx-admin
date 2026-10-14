@@ -72,6 +72,40 @@ export interface EvidenceItem {
   hits?: WebHit[];
   /** The "we think" slot (`{choice, relation_key?, probability, reason}`), raw; read by validate/queue.parseSuggestion. */
   suggestion?: unknown;
+  /** Person anchor stage only: a "Which of these is you?" candidate (aidream brand_identify_person.anchor_item). */
+  anchor?: AnchorInfo | null;
+}
+
+/** One person-anchor candidate's rule score and its privacy-safe profile basics (no AI). */
+export interface AnchorInfo {
+  score: number;
+  /** Why the rules ranked it (hover only). */
+  reasons: string[];
+  /** account | website | link_in_bio … */
+  kind: string;
+  /** LinkedIn /in/ and similar person-only profile forms. */
+  person_profile: boolean;
+  display_name: string | null;
+  bio_line: string | null;
+  location: string | null;
+  followers: number | null;
+  private: boolean;
+}
+
+function parseAnchor(raw: unknown): AnchorInfo | null {
+  if (typeof raw !== "object" || raw === null) return null;
+  const a = raw as Record<string, unknown>;
+  return {
+    score: typeof a.score === "number" ? a.score : 0,
+    reasons: Array.isArray(a.reasons) ? a.reasons.filter((x): x is string => typeof x === "string") : [],
+    kind: asString(a.kind) ?? "account",
+    person_profile: a.person_profile === true,
+    display_name: asString(a.display_name),
+    bio_line: asString(a.bio_line),
+    location: asString(a.location),
+    followers: typeof a.followers === "number" ? a.followers : null,
+    private: a.private === true,
+  };
 }
 
 /** One place a web result was found. */
@@ -194,6 +228,7 @@ export function parseEvidenceItem(raw: unknown): EvidenceItem | null {
     snippet: asString(r.snippet),
     hits: Array.isArray(r.hits) ? r.hits.map(parseHit).filter((h): h is WebHit => h !== null) : [],
     ...(r.suggestion !== undefined && r.suggestion !== null ? { suggestion: r.suggestion } : {}),
+    ...(r.anchor ? { anchor: parseAnchor(r.anchor) } : {}),
   };
 }
 
@@ -210,9 +245,16 @@ export function mergeEvidence(current: Map<string, EvidenceItem>, incoming: Evid
   let next: Map<string, EvidenceItem> | null = null;
   for (const item of incoming) {
     const existing = (next ?? current).get(item.key);
-    if (existing && existing.confidence >= item.confidence) continue;
+    if (existing && existing.confidence >= item.confidence) {
+      // A person-anchor candidate stays one: the anchor basics ride on whichever row is kept.
+      if (item.anchor && !existing.anchor) {
+        next ??= new Map(current);
+        next.set(item.key, { ...existing, anchor: item.anchor });
+      }
+      continue;
+    }
     next ??= new Map(current);
-    next.set(item.key, item);
+    next.set(item.key, existing?.anchor && !item.anchor ? { ...item, anchor: existing.anchor } : item);
   }
   return next ?? current;
 }

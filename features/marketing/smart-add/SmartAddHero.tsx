@@ -62,6 +62,7 @@ function looksLikeDomain(text: string): boolean {
 export function SmartAddHero({
   person,
   onPerson,
+  onFindPerson,
   onWebsite,
   onSocial,
   onPick,
@@ -74,6 +75,8 @@ export function SmartAddHero({
 }: {
   person: boolean;
   onPerson: (person: boolean) => void;
+  /** Person name mode: start the anchor round ("Which of these is you?") on the typed name and city. */
+  onFindPerson?: (name: string, city: string) => void;
   onWebsite: (v: string) => void;
   onSocial: (v: string) => void;
   onPick: (p: SocialPlatform | null) => void;
@@ -119,6 +122,11 @@ export function SmartAddHero({
 
   const submit = (pk: SocialPlatform | null = picked) => {
     if (!readyFor(pk)) return;
+    if (mode === "name" && person && onFindPerson) {
+      onFindPerson(name.trim(), city.trim());
+      setSubmitted(true);
+      return;
+    }
     if (mode === "name") {
       const answers = [customItem("name", name)];
       if (city.trim()) answers.push(customItem("address", city));

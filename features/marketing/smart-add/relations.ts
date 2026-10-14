@@ -238,7 +238,7 @@ export async function routeWebChoices(
   const notUs = answered.filter(({ kind }) => kind.routesTo === "exclusion");
   try {
     await createBrandExclusions(
-      notUs.map(({ item: i }) => {
+      notUs.map(({ item: i, kind }) => {
         const root = webSiteRoot(i);
         return {
           organizationId,
@@ -248,6 +248,7 @@ export async function routeWebChoices(
           url: i.url ?? i.value,
           label: i.label,
           context: { from: "smart_add.web", hits: i.hits ?? [], suggested: suggestions[i.key] ?? null, at } as Json,
+          relationKey: kind.key,
         };
       }),
     );
@@ -263,6 +264,8 @@ export async function excludeNotUs(
   brandId: string,
   items: EvidenceItem[],
   decisions: Record<string, Decision>,
+  /** Person anchors answered "Namesake": kept on the list with that relation, not "not_us". */
+  namesakes: ReadonlySet<string> = new Set(),
 ): Promise<string[]> {
   const at = new Date().toISOString();
   const rows = items
@@ -275,6 +278,7 @@ export async function excludeNotUs(
       url: i.url ?? (i.field === "name" ? null : i.value),
       label: i.label ?? i.value,
       context: { from: "smart_add.compare", where: i.source.where, at } as Json,
+      relationKey: namesakes.has(i.key) ? "namesake" : "not_us",
     }));
   try {
     await createBrandExclusions(rows);

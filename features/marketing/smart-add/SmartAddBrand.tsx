@@ -79,6 +79,7 @@ import {
   wakeFacts,
   type Candidate,
   type Relation,
+  customItem,
 } from "./evidence";
 import {
   excludeNotUs,
@@ -92,7 +93,9 @@ import {
 } from "./relations";
 import { useRelationKinds } from "./SmartAddExtras";
 import { suggestKind, type WebChoice } from "./webKinds";
-import { SETUP_STEPS, SmartAddRound, type RoundView } from "./SmartAddRound";
+import { SETUP_STEPS, SmartAddRound, type PersonSignals, type RoundView } from "./SmartAddRound";
+import { AnchorCards, type AnchorAnswer } from "./AnchorCards";
+import { PersonOrBusinessCard, type PersonOrBusinessAnswer } from "./PersonOrBusinessCard";
 import { SmartAddGateLine } from "./SmartAddGateLine";
 import { SmartAddBioLinks } from "./SmartAddBioLinks";
 import { SmartAddWebRow } from "./SmartAddWebRow";
@@ -171,6 +174,17 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
   const typedKeys = useRef<{ website: string | null; social: string | null }>({ website: null, social: null });
   // Confirmed facts already sent to the workflow ("name:<v>", "location:<v>"): a new one wakes its steps.
   const wokenSent = useRef<Set<string>>(new Set());
+  // Person branch (PEOPLE-AND-CREATORS §3.1, Part 9): the typed name + city, the anchor round's run, and
+  // whether the one grounded round (name + one confirmed anchor) has been sent.
+  const personTyped = useRef<{ name: string; city: string } | null>(null);
+  const anchorRunId = useRef<string | null>(null);
+  const groundedSent = useRef(false);
+  const [affiliations, setAffiliations] = useState<string[]>([]);
+  // Anchor cards answered "Namesake" (a different person with my name): web.brand_relation_kind `namesake`.
+  const [namesakes, setNamesakes] = useState<Set<string>>(new Set());
+  // The latest person / business verdict (brand.identify.person_signals) and whether the person answered it.
+  const [personSignals, setPersonSignals] = useState<PersonSignals | null>(null);
+  const [kindAnswered, setKindAnswered] = useState(false);
 
   const [creating, setCreating] = useState(false);
   const [createError, setCreateError] = useState<string | null>(null);
@@ -190,8 +204,23 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
   // ── rounds ──────────────────────────────────────────────────────────────
 
   /** `firstData`: a round started from what the person typed — it wakes the facts agent at first data. */
-  const startRound = async (seeds: RoundSeeds, woken: ConfirmedFacts = {}, firstData = false) => {
-    if (!seeds.website && seeds.socials.length === 0 && !woken.name && !woken.location) return;
+  const startRound = async (seeds: RoundSeeds, woken: ConfirmedFacts = {}, firstData = false, find = false) => {
+    // A person round carries `person`; the first round after grounding says so, once only (Part 9).
+    const typed = person ? personTyped.current : null;
+    const nowGrounded = Boolean(typed) && (personAnchors.length > 0 || affiliations.length > 0);
+    const groundedRound = !find && nowGrounded && !groundedSent.current;
+    if (!seeds.website && seeds.socials.length === 0 && !woken.name && !woken.location && !find && !groundedRound) return;
+    if (groundedRound) groundedSent.current = true;
+    const personInput = typed
+      ? {
+          name: typed.name,
+          ...(typed.city ? { city: typed.city } : {}),
+          affiliations,
+          anchors: personAnchors,
+          ...(find ? { find: true } : {}),
+          ...(groundedRound ? { grounded: true, ...(anchorRunId.current ? { anchor_run_id: anchorRunId.current } : {}) } : {}),
+        }
+      : null;
     for (const k of seedKeys(seeds, accountSeedKey)) explored.current.add(k);
     const id = crypto.randomUUID();
     setRounds((r) => [...r, { id, runId: null, seeds, error: null }]);
@@ -218,12 +247,15 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
             // What is already ours / not us: the we-think step judges new candidates against it.
             known: knownDecided(items.values(), decisions),
             ...(firstData ? { first_data: true } : {}),
+            ...(personInput ? { person: personInput } : {}),
           },
         },
         "Identification could not start.",
       );
       setRounds((r) => r.map((x) => (x.id === id ? { ...x, runId } : x)));
+      if (find) anchorRunId.current = runId;
     } catch (error) {
+      if (groundedRound) groundedSent.current = false;
       setRounds((r) => r.map((x) => (x.id === id ? { ...x, error: plainStartError(error) } : x)));
     }
   };
@@ -241,6 +273,13 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
     explored.current = new Set();
     wokenSent.current = new Set();
     typedKeys.current = { website: null, social: null };
+    personTyped.current = null;
+    anchorRunId.current = null;
+    groundedSent.current = false;
+    setAffiliations([]);
+    setNamesakes(new Set());
+    setPersonSignals(null);
+    setKindAnswered(false);
   };
 
   // Typed fields → a round, debounced. Changing a field that already ran
@@ -307,6 +346,12 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
 
   // The facts the person confirmed, as the identify workflow reads them.
   const factBasics = confirmedBasics(items, decisions, person);
+  // A person's confirmed anchors: every confirmed account and website (Part 9 grounding).
+  const personAnchors = [
+    ...factBasics.accounts.map((a) => a.url ?? a.value),
+    ...(factBasics.websiteUrl ? [factBasics.websiteUrl] : []),
+    ...factBasics.otherWebsites,
+  ];
   const confirmedFacts: ConfirmedFacts = {
     ...(factBasics.name ? { name: factBasics.name } : {}),
     ...(factBasics.websiteUrl ? { domain: websiteHost(factBasics.websiteUrl) } : {}),
@@ -345,6 +390,55 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
   }, [setupRunId, setupInterrupted, dispatch]);
 
   const decide = (key: string, decision: Decision) => setDecisions((d) => applyDecision(d, items, key, decision));
+
+  /** Person name mode: the anchor round ("Which of these is you?"), with the typed name and city already woken. */
+  const findPerson = (name: string, city: string) => {
+    resetAll();
+    personTyped.current = { name, city };
+    const answers = [customItem("name", name), ...(city ? [customItem("address", city)] : [])];
+    addCustom(answers);
+    // The anchor round carries the woken name and city itself; the wake effect must not send them again.
+    wokenSent.current.add(`name:${name}`);
+    if (city) wokenSent.current.add(`location:${city}`);
+    void startRound({ website: "", socials: [] }, { name, ...(city ? { location: city } : {}) }, false, true);
+  };
+
+  /** "Which of these is you?": several can be "me"; "Namesake" is a not-me kept with its own relation. */
+  const answerAnchor = (item: EvidenceItem, answer: AnchorAnswer | null) => {
+    setNamesakes((cur) => {
+      const next = new Set(cur);
+      if (answer === "namesake") next.add(item.key);
+      else next.delete(item.key);
+      return next;
+    });
+    setDecisions((d) => {
+      const { [item.key]: _drop, ...rest } = d;
+      if (answer === null) return rest;
+      return { ...rest, [item.key]: answer === "me" ? "yes" : "no" };
+    });
+  };
+
+  /** A job, company or major affiliation also grounds a person (Part 9); it starts the grounded round. */
+  const addAffiliation = (text: string) => setAffiliations((cur) => (cur.includes(text) ? cur : [...cur, text]));
+  const runAffiliation = useEffectEvent(() => void startRound({ website: "", socials: [] }));
+  useEffect(() => {
+    if (!affiliations.length || groundedSent.current || created) return;
+    const timer = setTimeout(runAffiliation, CONFIRM_BATCH_MS);
+    return () => clearTimeout(timer);
+  }, [affiliations, created]);
+
+  /** A profile link typed on the anchor cards: confirmed like any account the person adds. */
+  const addAnchorLink = (text: string) => {
+    const parsed = resolveAccountInput({ text });
+    if (parsed.status === "ok") addCustom(customItem("social", parsed.url, { platform: parsed.platform, handle: parsed.handle, url: parsed.url }));
+    else addCustom(customItem("website", text));
+  };
+
+  const answerKind = (answer: PersonOrBusinessAnswer) => {
+    setKindAnswered(true);
+    if (answer === "person" || answer === "both") setPerson(true);
+    if (answer === "business") setPerson(false);
+  };
 
   /** "Custom": the person's own values land in their slots, confirmed — the main one when the slot has none. */
   const addCustom = (added: EvidenceItem | EvidenceItem[]) => {
@@ -581,7 +675,7 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
       const webSaved = await routeWebChoices(organizationId, brand.id, webItems, webChoices, relationKinds, webSuggestions);
       problems.push(...webSaved.problems);
       for (const k of webSaved.keys) relatedSaved.keys.add(k);
-      problems.push(...(await excludeNotUs(organizationId, brand.id, [...items.values()], decisions)));
+      problems.push(...(await excludeNotUs(organizationId, brand.id, [...items.values()], decisions, namesakes)));
       problems.push(
         ...(await saveCandidates(
           organizationId,
@@ -593,7 +687,7 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
       setSaveNotes(problems);
       setCreated(brand);
       // The core is settled: shift to the focus queue for everything else.
-      const settled = coreSettled(basics);
+      const settled = coreSettled(basics, person);
       if (settled) setValidateOrg(organizationId);
       onCreated?.(brand);
       // Nothing explicitly kept: the logo the card shows (the stage's best found one) is saved as the
@@ -721,6 +815,7 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
             onSuggestions={(next) =>
               setSuggestionsByRun((cur) => (JSON.stringify(cur[r.runId as string]) === JSON.stringify(next) ? cur : { ...cur, [r.runId as string]: next }))
             }
+            onSignals={setPersonSignals}
             onView={onView}
           />
         ) : null,
@@ -733,6 +828,7 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
         <SmartAddHero
           person={person}
           onPerson={setPerson}
+          onFindPerson={findPerson}
           onWebsite={setWebsiteText}
           onSocial={setSocialText}
           onPick={setPicked}
@@ -858,6 +954,28 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
         </span>
       </div>
 
+      {personSignals?.verdict === "ask" && !kindAnswered ? (
+        <PersonOrBusinessCard
+          name={basics.name ?? personTyped.current?.name ?? ""}
+          imageUrl={cardBasics.logoUrl}
+          signals={personSignals.signals}
+          onAnswer={answerKind}
+        />
+      ) : null}
+
+      {person && personTyped.current ? (
+        <AnchorCards
+          items={visible}
+          decisions={decisions}
+          namesakes={namesakes}
+          affiliations={affiliations}
+          searching={working && !visible.some((i) => i.anchor)}
+          onAnswer={answerAnchor}
+          onAddLink={addAnchorLink}
+          onAddAffiliation={addAffiliation}
+        />
+      ) : null}
+
       {/* The brand as it stands: the primary choices, building as the person confirms. */}
       <div className="motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-3 motion-safe:duration-500">
       <BrandCard basics={cardBasics} person={person} location={basics.facts.find((f) => f.field === "address")?.value ?? null} />
@@ -967,7 +1085,7 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
         ) : (
           <Button variant="primary" disabled={!canCreate} onClick={() => void create()}>
             {creating ? <Loader2 className="size-3.5 animate-spin" /> : null}
-            {coreSettled(basics) ? "Create and validate" : "Create brand"}
+            {coreSettled(basics, person) ? "Create and validate" : "Create brand"}
           </Button>
         )}
       </div>

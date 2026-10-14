@@ -2782,6 +2782,8 @@ export async function createBrandExclusions(
     url: string | null;
     label: string | null;
     context: Json;
+    /** web.brand_relation_kind key with routes_to exclusion (not_us, namesake); default not_us. */
+    relationKey?: string;
   }>,
 ): Promise<void> {
   const db = await authenticatedWebDb(supabase);
@@ -2794,7 +2796,7 @@ export async function createBrandExclusions(
       match_value: r.matchValue,
       url: r.url,
       label: r.label,
-      relation_key: "not_us",
+      relation_key: r.relationKey ?? "not_us",
       source: "smart_add",
       context: r.context,
     });

@@ -29,7 +29,12 @@ import { suggestKind, type SuggestContext, type WebChoice } from "../webKinds";
  */
 export const VALIDATION_THRESHOLD = { name: true, website: true, minAccounts: 1 } as const;
 
-export function coreSettled(basics: { name: string | null; websiteUrl: string | null; accounts: unknown[] }): boolean {
+export function coreSettled(
+  basics: { name: string | null; websiteUrl: string | null; accounts: unknown[] },
+  person = false,
+): boolean {
+  // A person (PEOPLE-AND-CREATORS §4, Part 9): a name and one confirmed account; the website is optional.
+  if (person) return Boolean(basics.name) && basics.accounts.length >= VALIDATION_THRESHOLD.minAccounts;
   return (
     (!VALIDATION_THRESHOLD.name || Boolean(basics.name)) &&
     (!VALIDATION_THRESHOLD.website || Boolean(basics.websiteUrl)) &&
@@ -151,18 +156,18 @@ export function factsFromPayload(payload: unknown, depth = 0): BrandFact[] {
   if (depth > 4 || typeof payload !== "object" || payload === null) return [];
   if (Array.isArray(payload)) return payload.flatMap((p) => factsFromPayload(p, depth + 1));
   const o = payload as Record<string, unknown>;
-  if (o.__kind === "brand_basics_fact") {
+  if (o.__kind === "brand_basics_fact" || o.__kind === "person_basics_fact") {
     const one = parseFact(o);
     return one ? [one] : [];
   }
   // The kind's list is `facts` (Arman's agent and the registered kind); `items` is read too.
   const list = (b: Record<string, unknown>): unknown[] | null =>
     Array.isArray(b.facts) ? b.facts : Array.isArray(b.items) ? b.items : null;
-  if (o.__kind === "brand_basics") {
+  if (o.__kind === "brand_basics" || o.__kind === "person_basics") {
     return (list(o) ?? []).map(parseFact).filter((f): f is BrandFact => Boolean(f));
   }
   return Object.entries(o).flatMap(([k, v]) => {
-    const block = k === "brand_basics" && typeof v === "object" && v !== null ? list(v as Record<string, unknown>) : null;
+    const block = (k === "brand_basics" || k === "person_basics") && typeof v === "object" && v !== null ? list(v as Record<string, unknown>) : null;
     return block ? block.map(parseFact).filter((f): f is BrandFact => Boolean(f)) : factsFromPayload(v, depth + 1);
   });
 }
@@ -353,6 +358,8 @@ const FACT_GROUPS: readonly (readonly string[])[] = [
   ],
 ];
 const FACT_GROUP = new Map(FACT_GROUPS.flatMap((fields, group) => fields.map((f) => [f, group] as const)));
+/** A field's place inside its group (Official Name before Country before Booking URL); unknown fields last. */
+const FACT_POSITION = new Map(FACT_GROUPS.flatMap((fields) => fields.map((f, i) => [f, i] as const)));
 /** The later pile: a fact field outside the four groups. */
 export const LATER_FACT_GROUP = FACT_GROUPS.length;
 
@@ -364,9 +371,11 @@ function rank(i: FocusItem): number[] {
   const certainty = CERTAINTY_ORDER[i.certainty ?? ""] ?? 1;
   const confidence = i.evidence ? 1 - i.evidence.confidence : 0.5;
   const group = i.fact ? factGroup(i.fact.field) : 0;
+  // MKT-063: inside a group the fields keep the ruling's order, never the alphabet of their keys.
+  const position = i.fact ? (FACT_POSITION.get(i.fact.field) ?? Number.MAX_SAFE_INTEGER) : 0;
   // A later-pile fact comes after the web results.
   const kind = i.fact && group === LATER_FACT_GROUP ? KIND_ORDER.web + 1 : KIND_ORDER[i.kind];
-  return [kind, group, certainty, confidence];
+  return [kind, group, position, certainty, confidence];
 }
 
 function compare(a: FocusItem, b: FocusItem): number {
