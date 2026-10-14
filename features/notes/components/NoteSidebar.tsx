@@ -110,6 +110,7 @@ import {
   type NoteSidebarReveal,
 } from "./NoteSidebarVirtualList";
 import { NoteSidebarBulkBar } from "./NoteSidebarBulkBar";
+import { useRowSelection } from "@/lib/entity-list/RowSelectionBar";
 import { NoteSyncStatusStrip } from "./NoteSyncStatusStrip";
 import { SimpleTooltip } from "@/components/matrx/Tooltip";
 import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
@@ -276,7 +277,6 @@ export function NoteSidebar({ instanceId, onNoteOpened }: NoteSidebarProps) {
   // and a NoteSidebarBulkBar (move / knowledge / export / share / delete)
   // replaces the "New Note / New Folder" bar once something is selected.
   const [selectionMode, setSelectionMode] = useState(false);
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   // DnD state
   const [draggedNoteId, setDraggedNoteId] = useState<string | null>(null);
@@ -531,48 +531,30 @@ export function NoteSidebar({ instanceId, onNoteOpened }: NoteSidebarProps) {
   }, [groupBy, folders, groupedNotes]);
 
   // ── Bulk-selection handlers ─────────────────────────────────────────
-  const selectedNoteRecords = useMemo(
-    () => allNotes.filter((n) => selectedIds.has(n.id)),
-    [allNotes, selectedIds],
-  );
+  // The selection is over the VISIBLE (filtered) notes only: a filter or search that hides a
+  // ticked note drops it from the selection, so an action never touches a note nobody can see.
+  // (Shared notes aren't bulk-actionable and aren't in `filteredNotes`.)
+  const selection = useRowSelection(filteredNotes, (n) => n.id);
 
-  const toggleSelect = useCallback((noteId: string) => {
-    setSelectedIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(noteId)) next.delete(noteId);
-      else next.add(noteId);
-      return next;
-    });
-  }, []);
+  // Rows are memoized: hand them ONE stable toggle (the selection object is new each render).
+  const toggleSelectRef = useRef(selection.toggle);
+  useEffect(() => {
+    toggleSelectRef.current = selection.toggle;
+  });
+  const toggleSelect = useCallback(
+    (noteId: string) => toggleSelectRef.current(noteId),
+    [],
+  );
 
   const exitSelectionMode = useCallback(() => {
     setSelectionMode(false);
-    setSelectedIds(new Set());
-  }, []);
+    selection.clear();
+  }, [selection]);
 
   const toggleSelectionMode = useCallback(() => {
-    setSelectionMode((prev) => {
-      if (prev) setSelectedIds(new Set());
-      return !prev;
-    });
-  }, []);
-
-  // Candidates for "select all" = the currently visible/filtered owner notes
-  // (shared notes aren't bulk-actionable). Drives the select-all toggle.
-  const selectableIds = useMemo(
-    () => filteredNotes.map((n) => n.id),
-    [filteredNotes],
-  );
-  const allVisibleSelected =
-    selectableIds.length > 0 &&
-    selectableIds.every((id) => selectedIds.has(id));
-  const toggleSelectAll = useCallback(() => {
-    setSelectedIds((prev) => {
-      const all =
-        selectableIds.length > 0 && selectableIds.every((id) => prev.has(id));
-      return all ? new Set<string>() : new Set(selectableIds);
-    });
-  }, [selectableIds]);
+    if (selectionMode) selection.clear();
+    setSelectionMode(!selectionMode);
+  }, [selectionMode, selection]);
 
   // ── Handlers ───────────────────────────────────────────────────────
   const toggleFolder = useCallback((folder: string) => {
@@ -852,7 +834,7 @@ export function NoteSidebar({ instanceId, onNoteOpened }: NoteSidebarProps) {
         : {})}
       onSelectNote={selectNote}
       selectionMode={selectionMode}
-      isSelected={selectedIds.has(note.id)}
+      isSelected={selection.has(note.id)}
       onToggleSelect={toggleSelect}
     />
   );
@@ -1415,12 +1397,9 @@ export function NoteSidebar({ instanceId, onNoteOpened }: NoteSidebarProps) {
       {selectionMode && (
         <NoteSidebarBulkBar
           instanceId={instanceId}
-          selectedNotes={selectedNoteRecords}
+          selection={selection}
           openTabIds={openTabIds}
-          onClear={exitSelectionMode}
-          allVisibleSelected={allVisibleSelected}
-          onToggleSelectAll={toggleSelectAll}
-          selectableCount={selectableIds.length}
+          onExit={exitSelectionMode}
         />
       )}
 
