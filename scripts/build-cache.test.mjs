@@ -6,10 +6,8 @@ const { buildCacheDecision: decide } = createRequire(import.meta.url)("./build-c
 const on = "demos";
 const buildCacheDecision = (env) => decide(env, new Set([on])); // the rules, independent of which sites are switched on today
 
-test("main stays cold while the smaller cached profiles remain enabled", () => {
-  assert.equal(decide({ VERCEL: "1", MATRX_PROFILE: "slim" }).on, false);
-  assert.equal(decide({ VERCEL: "1", MATRX_PROFILE: "demos" }).on, true);
-  assert.equal(decide({ VERCEL: "1", MATRX_PROFILE: "admin" }).on, true);
+test("every site compiles cold while the restored-cache compile is unrepaired", () => {
+  for (const profile of ["slim", "demos", "admin", "lab"]) assert.equal(decide({ VERCEL: "1", MATRX_PROFILE: profile }).on, false);
 });
 
 test("on for a listed profile on Vercel", () => assert.equal(buildCacheDecision({ VERCEL: "1", MATRX_PROFILE: on }).on, true));

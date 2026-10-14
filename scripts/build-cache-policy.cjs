@@ -12,7 +12,12 @@
 // v0.4.3141 and v0.4.3142 OOM-killed the optimized compile with the restored
 // cache; v0.4.3143 compiled and served from a [no-cache] release on the same
 // 60 GB builder. Keep main cold until cache memory is measured and repaired.
-const BUILD_CACHE_PROFILES = new Set(["demos", "admin"]);
+// Demos and admin paused too (2026-10-13): the same failure reached them. v0.4.3186/3187 died
+// out_of_memory with the restored cache; v0.4.3188 [cold-build] compiled and stored a fresh 7 GB
+// cache; the next build to restore it (v0.4.3192) hung in the optimized compile until Vercel's
+// 45-minute limit on BOTH sites. A fresh cache breaks the very next warm build, so every profile
+// stays cold until the restored-cache compile is measured and repaired.
+const BUILD_CACHE_PROFILES = new Set([]);
 // Minutes between saves. Restores happen every build; a save (pack + upload) only when the stored
 // cache is older than this, so most of ~50 daily releases skip the upload entirely.
 const BUILD_CACHE_SAVE_EVERY_MIN = 120;
