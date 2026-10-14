@@ -62,9 +62,27 @@ function minutesOf(hhmm: string | null): number | null {
  * "Closed · Opens 8 AM". `now` is minutes since midnight in the place's own
  * clock (its timezone when known). Null when today's window is unreadable.
  */
+const WEEK = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
+
+/** The next day after `todayName` with an opening time: "8 AM Wed". */
+function nextOpening(
+  todayName: string | null,
+  days: { day?: string | null; opens?: string | null }[],
+): string | null {
+  const at = todayName ? WEEK.indexOf(todayName.toLowerCase()) : -1;
+  if (at < 0) return null;
+  for (let step = 1; step <= 7; step++) {
+    const name = WEEK[(at + step) % 7];
+    const hit = days.find((d) => (d.day ?? "").toLowerCase() === name && d.opens);
+    if (hit?.opens) return `${clockLabel(hit.opens)} ${dayLabel(name)}`;
+  }
+  return null;
+}
+
 export function openStatus(
-  today: { opens?: string | null; closes?: string | null } | null,
+  today: { day?: string | null; opens?: string | null; closes?: string | null } | null,
   now: number,
+  days: { day?: string | null; opens?: string | null }[] = [],
 ): { open: boolean; line: string } | null {
   if (!today) return null;
   const opens = minutesOf(today.opens ?? null);
@@ -76,7 +94,10 @@ export function openStatus(
   if (open) return { open, line: `Closes ${clockLabel(today.closes ?? "")}` };
   return {
     open,
-    line: now < opens ? `Opens ${clockLabel(today.opens ?? "")}` : "Opens tomorrow",
+    line:
+      now < opens
+        ? `Opens ${clockLabel(today.opens ?? "")}`
+        : `Opens ${nextOpening(today.day ?? null, days) ?? "tomorrow"}`,
   };
 }
 
@@ -101,6 +122,21 @@ export function minutesNow(timeZone?: string | null): number {
   return date.getHours() * 60 + date.getMinutes();
 }
 
+/** "Closed · Opens 8 AM Wed" — the leading Open/Closed word in the status colour. */
+function ProviderHoursLine({ value }: { value: string }) {
+  const m = /^(open(?: now)?|closed(?: now)?|open 24 hours)\b(.*)$/i.exec(value.trim());
+  if (!m) return <span className="text-foreground">{value}</span>;
+  const open = /^open/i.test(m[1]);
+  return (
+    <span className="tabular-nums">
+      <span className={cn("font-medium", open ? "text-success" : "text-destructive")}>
+        {m[1]}
+      </span>
+      {m[2]}
+    </span>
+  );
+}
+
 export function OpeningHoursBlock({
   serverData,
   className,
@@ -123,8 +159,9 @@ export function OpeningHoursBlock({
   if (days.length === 0 && !today) return null;
 
   const status = openStatus(
-    today ? { opens: text(today.opens), closes: text(today.closes) } : null,
+    today ? { day: todayName, opens: text(today.opens), closes: text(today.closes) } : null,
     minutesNow(timeZone),
+    days.map((d) => ({ day: text(d.day), opens: text(d.opens) })),
   );
   const summary = (
     <>
@@ -138,7 +175,7 @@ export function OpeningHoursBlock({
           {status.line}
         </span>
       ) : summaryText ? (
-        <span className="text-foreground">{summaryText}</span>
+        <ProviderHoursLine value={summaryText} />
       ) : (
         <span className="text-foreground">Hours</span>
       )}

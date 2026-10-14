@@ -32,7 +32,11 @@ import { useCallback, useState } from "react";
 import { toast } from "@/lib/toast";
 import { useAgentLauncher } from "@ai-matrx/chat/agents/hooks/useAgentLauncher";
 import { sourceFeatureFromSurfaceName } from "@ai-matrx/chat/agents/utils/source-feature-from-surface";
-import { useSurfaceAgentRoles } from "@ai-matrx/chat/surfaces/hooks/useSurfaceConfig";
+import {
+  ensureSurfaceConfig,
+  selectSurfaceConfigEntry,
+} from "@ai-matrx/chat/surfaces/redux/surfaceConfigSlice";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { getSurfaceRuntimeForName } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
 import type { ApplicationScope } from "@ai-matrx/chat/agents/types/scope.types";
 
@@ -59,16 +63,36 @@ export function useKindAgentLaunch(
   surfaceName: string,
   roleName: string,
 ): UseKindAgentLaunchResult {
-  const { roles } = useSurfaceAgentRoles(surfaceName);
+  // THE LOAD LAW: the surface config (role / pref / config reads) is fetched
+  // when the user clicks launch, never on mount. `ready` / `roleLabel` read
+  // whatever is already cached and never trigger a fetch.
+  const dispatch = useAppDispatch();
+  const entry = useAppSelector((s) => selectSurfaceConfigEntry(s, surfaceName));
   const { launchAgent } = useAgentLauncher();
   const [launching, setLaunching] = useState(false);
 
-  const role = roles[roleName];
-  const agentId = role?.effectiveAgentId ?? null;
+  const cachedRole = entry?.resolved?.roles?.[roleName];
+  const cachedAgentId = cachedRole?.effective?.[0]?.agentId ?? null;
 
   const launch = useCallback(
     async ({ variables, draftText }: KindAgentLaunchInput) => {
+      setLaunching(true);
+      let agentId = cachedAgentId;
       if (!agentId) {
+        try {
+          const resolved = await dispatch(
+            ensureSurfaceConfig({ surfaceName, force: true }),
+          ).unwrap();
+          agentId = resolved?.roles?.[roleName]?.effective?.[0]?.agentId ?? null;
+        } catch (error) {
+          console.error(
+            `[useKindAgentLaunch] surface config failed for ${surfaceName}:`,
+            error,
+          );
+        }
+      }
+      if (!agentId) {
+        setLaunching(false);
         // The role exists in the manifest but nothing fills it — say so with
         // the exact name to fix, never a shrug.
         toast.error("No agent is set for this job yet", {
@@ -76,7 +100,6 @@ export function useKindAgentLaunch(
         });
         return;
       }
-      setLaunching(true);
       try {
         // Read the live provider at CLICK time, scoped to THIS surface — an
         // unrelated overlay open on top must never win the page's own scope.
@@ -121,13 +144,13 @@ export function useKindAgentLaunch(
         setLaunching(false);
       }
     },
-    [agentId, launchAgent, roleName, surfaceName],
+    [cachedAgentId, dispatch, launchAgent, roleName, surfaceName],
   );
 
   return {
-    ready: Boolean(agentId),
+    ready: Boolean(cachedAgentId),
     launching,
-    roleLabel: role?.role.label ?? null,
+    roleLabel: cachedRole?.role.label ?? null,
     launch,
   };
 }

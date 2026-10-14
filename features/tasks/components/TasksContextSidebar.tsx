@@ -71,8 +71,9 @@ import {
 } from "@/features/scopes/redux/selectors/tree";
 import {
   Button,
+  Chip,
+  ChipSet,
   type ChipTone,
-  Select,
   DisclosureHeader,
   SearchField,
   SettingRow,
@@ -269,42 +270,47 @@ export default function TasksContextSidebar() {
             defaultOpen
             summary={`${activeGroupLabel} · ${activeSortLabel} ${sortOrder === "desc" ? "↓" : "↑"}${showCompleted ? " · +done" : ""}`}
           >
-            <div className="flex items-center gap-2">
-              <span className="type-label w-10 shrink-0">Group</span>
-              <Select
-                className="flex-1 min-w-0"
-                aria-label="Group tasks by"
-                value={groupBy}
-                options={GROUP_MODES.map((m) => ({
-                  value: m.mode,
-                  label: m.label,
-                }))}
-                onValueChange={(v) => dispatch(setGroupBy(v))}
-              />
+            <div className="flex flex-col gap-1">
+              <span className="type-label">Group</span>
+              <ChipSet aria-label="Group tasks by">
+                {GROUP_MODES.map((m) => (
+                  <Chip
+                    key={m.mode}
+                    label={m.label}
+                    pressed={groupBy === m.mode}
+                    asChild
+                  >
+                    <button type="button" onClick={() => dispatch(setGroupBy(m.mode))} />
+                  </Chip>
+                ))}
+              </ChipSet>
             </div>
 
-            <div className="mt-1 flex items-center gap-2">
-              <span className="type-label w-10 shrink-0">Sort</span>
-              <Select
-                className="flex-1 min-w-0"
-                aria-label="Sort tasks by"
-                value={sortBy}
-                options={TASK_SORT_OPTIONS.map((o) => ({
-                  value: o.field,
-                  label: o.label,
-                }))}
-                onValueChange={(v) => dispatch(setSortBy(v as TaskSortField))}
-              />
-              <Button
-                type="button"
-                variant="quiet"
-                icon={<ArrowUpDown />}
-                onClick={() => dispatch(toggleSortOrder())}
-                title={sortOrder === "desc" ? "Descending" : "Ascending"}
-                aria-label={sortOrder === "desc" ? "Descending" : "Ascending"}
-              >
-                {sortOrder === "desc" ? "↓" : "↑"}
-              </Button>
+            <div className="mt-2 flex flex-col gap-1">
+              <span className="type-label">Sort</span>
+              <ChipSet aria-label="Sort tasks by">
+                {TASK_SORT_OPTIONS.map((o) => (
+                  <Chip
+                    key={o.field}
+                    label={o.label}
+                    pressed={sortBy === o.field}
+                    asChild
+                  >
+                    <button type="button" onClick={() => dispatch(setSortBy(o.field as TaskSortField))} />
+                  </Chip>
+                ))}
+                <Chip
+                  label={sortOrder === "desc" ? "Newest first" : "Oldest first"}
+                  icon={<ArrowUpDown />}
+                  asChild
+                >
+                  <button
+                    type="button"
+                    onClick={() => dispatch(toggleSortOrder())}
+                    aria-label={sortOrder === "desc" ? "Descending — switch to ascending" : "Ascending — switch to descending"}
+                  />
+                </Chip>
+              </ChipSet>
             </div>
 
             <SettingRow
@@ -558,7 +564,7 @@ function CollapsibleSidebarSection({
             title={title}
             end={
               !open ? (
-                <span className="type-meta text-foreground truncate max-w-14 min-w-0">
+                <span className="type-meta text-foreground truncate max-w-20 min-w-0">
                   {summary}
                 </span>
               ) : undefined
