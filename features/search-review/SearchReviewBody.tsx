@@ -77,15 +77,12 @@ function SuggestionPopover({
   return (
     <HoverCard openDelay={150}>
       <HoverCardTrigger asChild>
-        <Button
-          variant="outline"
-          icon={<Lightbulb aria-hidden />}
-          onClick={onPick}
-          data-testid="search-review-suggestion"
-          className="shadow-[0_0_0_2px_hsl(var(--primary)/0.35),0_0_14px_hsl(var(--primary)/0.35)] motion-safe:animate-pulse"
-        >
-          {choice.label}
-        </Button>
+        {/* The glow is the frame around the control, never a restyle of it. */}
+        <span className="inline-flex rounded-md shadow-[0_0_14px] shadow-primary/45 ring-2 ring-primary/50">
+          <Button variant="outline" icon={<Lightbulb aria-hidden />} onClick={onPick} data-testid="search-review-suggestion">
+            {choice.label}
+          </Button>
+        </span>
       </HoverCardTrigger>
       <HoverCardContent className="w-80 space-y-1.5 text-xs" align="start">
         <p className="font-medium text-foreground">We think: {choice.label}</p>
@@ -191,7 +188,7 @@ function ResultCard({
         {answer ? (
           <>
             <span className="text-sm font-medium" data-testid="search-review-answer">
-              {answerLabel(answer, choices)}
+              {chosen?.hasSentiment ? chosen.label : answerLabel(answer, choices)}
             </span>
             {chosen?.hasSentiment ? (
               <SegmentedControl
