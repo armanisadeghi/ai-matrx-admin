@@ -34,6 +34,7 @@ import {
   removeBrandRelation,
   type BrandRelationRow,
 } from "@/features/marketing/data/brand-relations";
+import { clearStashedRetraction, restoreRetraction, type RetractionSummary } from "@/features/marketing/data/retraction";
 import { isJsonRecord, type MarketingBrand } from "@/features/marketing/types";
 import { linkPersonToBrand } from "@/features/marketing/smart-add/relations";
 
@@ -58,6 +59,8 @@ interface Row {
   sentiment?: BrandRelationRow["sentiment"];
   grounding?: { where: string | null; reason: string | null; confidence: number | null; by: string | null };
   remove: () => Promise<void>;
+  /** A Not us entry made by a removal: bring back what the removal took (web.decision_retraction_restore). */
+  undo?: () => Promise<void>;
 }
 
 function host(url: string | null): string | null {
@@ -115,6 +118,27 @@ function RelationRowView({ row, canEdit }: { row: Row; canEdit: boolean }) {
         >
           <ExternalLink className="size-3.5" />
         </OutboundLink>
+      ) : null}
+      {canEdit && row.undo ? (
+        <button
+          type="button"
+          className="shrink-0 rounded px-1.5 text-xs text-primary hover:bg-muted"
+          aria-label={`Undo removal of ${row.label}`}
+          disabled={busy}
+          data-testid="brand-relation-undo"
+          onClick={async () => {
+            setBusy(true);
+            try {
+              await row.undo?.();
+            } catch (error) {
+              toast.error(`Could not undo: ${extractErrorMessage(error)}`);
+            } finally {
+              setBusy(false);
+            }
+          }}
+        >
+          Undo
+        </button>
       ) : null}
       {canEdit ? (
         <button
@@ -222,6 +246,14 @@ export function BrandRelationsCard({ brand, canEdit }: { brand: MarketingBrand; 
         await removeBrandExclusion(e.id);
         await refresh();
       },
+      undo: e.retraction
+        ? async () => {
+            await restoreRetraction(e.retraction as RetractionSummary);
+            await clearStashedRetraction(e.id);
+            await refresh();
+            await queryClient.invalidateQueries();
+          }
+        : undefined,
     });
   }
 

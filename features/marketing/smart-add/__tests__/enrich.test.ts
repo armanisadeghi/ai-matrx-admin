@@ -121,3 +121,17 @@ describe("enrich: changes to your brand", () => {
     expect(diff.every((c) => c.kind === "unchanged")).toBe(true);
   });
 });
+
+import { retractionFromContext } from "@/features/marketing/data/retraction";
+
+describe("a removal stays undoable after leaving the screen", () => {
+  const applied = { root: { type: "logo", id: "b1" }, brand_id: "b1", applied: true, at: "2026-10-14T00:00:00Z" };
+  it("reads the applied summary kept on the Not us entry", () => {
+    expect(retractionFromContext({ from: "web.decision_retraction", retraction: applied })?.at).toBe(applied.at);
+  });
+  it("offers nothing for a preview, a manual entry or no context", () => {
+    expect(retractionFromContext({ retraction: { ...applied, applied: false } })).toBeNull();
+    expect(retractionFromContext({ from: "brand_page" })).toBeNull();
+    expect(retractionFromContext(null)).toBeNull();
+  });
+});

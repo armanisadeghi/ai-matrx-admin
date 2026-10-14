@@ -70,8 +70,52 @@ export function previewRetraction(rootType: RetractionRootType, rootId: string, 
 }
 
 /** Take it back: everything the preview listed, plus "Not us" when `exclude`. */
-export function applyRetraction(rootType: RetractionRootType, rootId: string, exclude = true) {
-  return call(rootType, rootId, true, exclude);
+export async function applyRetraction(rootType: RetractionRootType, rootId: string, exclude = true) {
+  const summary = await call(rootType, rootId, true, exclude);
+  // A decision keeps its own summary (context.retraction). A removal with no earlier decision (a brand-page
+  // remove, an enrich removal) has no decision row, so the summary is kept on the "Not us" entry it created:
+  // the brand page's Not us row can then Undo it after the person has left the screen.
+  if (summary.exclusion_id) {
+    try {
+      await stashRetraction(summary.exclusion_id, summary);
+    } catch (error) {
+      // The removal itself succeeded; only the later Undo from the brand page is lost.
+      console.error("Could not keep the undo for this removal", error);
+    }
+  }
+  return summary;
+}
+
+/** Keep an applied summary on its web.brand_exclusion row (context.retraction). */
+async function stashRetraction(exclusionId: string, summary: RetractionSummary): Promise<void> {
+  const db = await authenticatedWebDb(supabase);
+  const { data, error } = await db.from("brand_exclusion").select("context").eq("id", exclusionId).single();
+  if (error) throw new Error(error.message);
+  const context = data.context && typeof data.context === "object" && !Array.isArray(data.context) ? data.context : {};
+  const { error: writeError } = await db
+    .from("brand_exclusion")
+    .update({ context: { ...context, retraction: summary as unknown as Json } })
+    .eq("id", exclusionId);
+  if (writeError) throw new Error(writeError.message);
+}
+
+/** The applied summary kept on a Not us entry, when its removal can still be restored. */
+export function retractionFromContext(context: unknown): RetractionSummary | null {
+  if (!context || typeof context !== "object" || Array.isArray(context)) return null;
+  const r = (context as Record<string, unknown>).retraction;
+  if (!r || typeof r !== "object") return null;
+  const s = r as RetractionSummary;
+  return s.applied && s.at && s.brand_id && s.root?.id ? s : null;
+}
+
+/** After a restore, an entry that stays on the NO LIST (it existed before) no longer offers Undo. */
+export async function clearStashedRetraction(exclusionId: string): Promise<void> {
+  const db = await authenticatedWebDb(supabase);
+  const { data } = await db.from("brand_exclusion").select("context").eq("id", exclusionId).is("deleted_at", null).maybeSingle();
+  if (!data) return;
+  const context = data.context && typeof data.context === "object" && !Array.isArray(data.context) ? { ...(data.context as Record<string, Json>) } : {};
+  delete context.retraction;
+  await db.from("brand_exclusion").update({ context }).eq("id", exclusionId);
 }
 
 /**

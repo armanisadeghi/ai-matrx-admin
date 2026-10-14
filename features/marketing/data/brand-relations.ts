@@ -14,6 +14,7 @@ import type { Json } from "@/types/database.types";
 import { supabase } from "@/utils/supabase/client";
 import { authenticatedWebDb } from "@/utils/supabase/webDb";
 import { isJsonRecord } from "@/features/marketing/types";
+import { retractionFromContext, type RetractionSummary } from "./retraction";
 
 export interface BrandRelationRow {
   id: string;
@@ -37,6 +38,8 @@ export interface BrandExclusionRow {
   url: string | null;
   label: string | null;
   source: string | null;
+  /** The applied removal that put it on the list, while it can still be undone (restore). */
+  retraction: RetractionSummary | null;
 }
 
 function str(value: unknown): string | null {
@@ -87,7 +90,7 @@ export async function listBrandExclusions(brandId: string): Promise<BrandExclusi
   const db = await authenticatedWebDb(supabase);
   const { data, error } = await db
     .from("brand_exclusion")
-    .select("id, match_kind, match_value, url, label, source")
+    .select("id, match_kind, match_value, url, label, source, context")
     .eq("brand_id", brandId)
     .is("deleted_at", null)
     .order("created_at", { ascending: true })
@@ -100,6 +103,7 @@ export async function listBrandExclusions(brandId: string): Promise<BrandExclusi
     url: r.url,
     label: r.label,
     source: r.source,
+    retraction: retractionFromContext(r.context),
   }));
 }
 
