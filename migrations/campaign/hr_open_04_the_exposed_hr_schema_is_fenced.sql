@@ -57,7 +57,20 @@ as $fn$
    order by 1, 2;
 $fn$;
 
-revoke execute on function hr.definer_functions_client_reachable() from public, anon;
+revoke execute on function hr.definer_functions_client_reachable() from public, anon, authenticated;
+
+-- DD-223: this catalogue census is called by the server-side HR conformance guard only.
+-- It takes no entity ID and must never be a direct client door on the exposed hr schema.
+insert into platform.client_callable_door
+  (schema_name, function_name, identity_args, identity_argtypes, reason, declared_by,
+   non_client_lane, signed_in_callers, anonymous_callers)
+values
+  ('hr', 'definer_functions_client_reachable', '', array[]::oid[],
+   'Catalogue-only HR definer grant census with no entity-id arguments; the server-side punch write conformance guard calls it to detect undeclared client access.',
+   'HR-SCHEMA-OPEN hr_open_04',
+   'server_only: hr.punch_write_path_conformance calls this catalogue census over a privileged database connection during release checks; no browser client may inspect the HR function grant inventory.',
+   false, false)
+on conflict do nothing;
 
 -- These thirteen doors entered the sensitive-object census after check 35 shipped. Each exact
 -- signature is already a signed-in platform.client_callable_door; its reviewed registry reason is
