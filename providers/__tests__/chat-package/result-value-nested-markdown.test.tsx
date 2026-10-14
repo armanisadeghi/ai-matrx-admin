@@ -11,6 +11,37 @@ jest.mock("next/dynamic", () => ({
   default: () => jest.requireActual("@ai-matrx/rich-content/markdown-core/MarkdownCoreImpl").default,
 }));
 
+jest.mock("next/navigation", () => ({
+  useRouter: () => ({ push: jest.fn(), refresh: jest.fn() }),
+}));
+
+jest.mock("@ai-matrx/rich-content/host/component-registry", () => {
+  const actual = jest.requireActual("@ai-matrx/rich-content/host/component-registry");
+  return {
+    ...actual,
+    componentRegistry: new Proxy(actual.componentRegistry, {
+      get(target, key) {
+        if (key === "hasSettled") return () => true;
+        return Reflect.get(target, key);
+      },
+    }),
+  };
+});
+
+// This suite checks that nested Markdown reaches the kind renderer without
+// leaking the fenced JSON. The renderer's registry/network lifecycle is tested
+// separately; give this handoff a visible, deterministic endpoint.
+jest.mock("@/features/content-ir/studio/components/KindInstanceRender", () => ({
+  __esModule: true,
+  default: ({ value }: { value: { content?: string } }) =>
+    (jest.requireActual("react") as typeof React).createElement(
+      "span",
+      { "data-test-kind-renderer": true },
+      value.content,
+    ),
+}));
+
+import "@/providers/richContentHost";
 import { ResultValue } from "@ai-matrx/chat/tool-call-visualization/result-fields/ResultValue";
 import { looksLikeMarkdown } from "@ai-matrx/chat/tool-call-visualization/result-fields/shape";
 import { withAppStore } from "@/tests/helpers/WithStoreReads";

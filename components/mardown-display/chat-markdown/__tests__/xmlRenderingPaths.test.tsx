@@ -16,6 +16,8 @@ let mockOutputSchema: unknown | null = null;
 let receivedOutputSchemas: unknown[] = [];
 let mockReduxState: Record<string, unknown> = {
   activeRequests: { byRequestId: {} },
+  userAuth: { id: null },
+  userProfile: { userMetadata: null, fingerprintId: null },
 };
 
 jest.mock("@/lib/redux/hooks", () => ({
@@ -25,6 +27,10 @@ jest.mock("@/lib/redux/hooks", () => ({
   // actions on mount; a noop dispatch keeps this render-path test focused on
   // rendering.
   useAppDispatch: () => () => undefined,
+  useAppStore: () => ({ getState: () => mockReduxState }),
+}));
+jest.mock("next/navigation", () => ({
+  useRouter: () => ({ push: jest.fn(), refresh: jest.fn() }),
 }));
 // The chat package reads these hooks through its own module (P3): one double covers both.
 jest.mock("@ai-matrx/chat/store/hooks", () => jest.requireMock("@/lib/redux/hooks"));
@@ -191,7 +197,11 @@ describe("XML fallback across MarkdownStream rendering paths", () => {
     mockDbSegments = [];
     mockOutputSchema = null;
     receivedOutputSchemas = [];
-    mockReduxState = { activeRequests: { byRequestId: {} } };
+    mockReduxState = {
+      activeRequests: { byRequestId: {} },
+      userAuth: { id: null },
+      userProfile: { userMetadata: null, fingerprintId: null },
+    };
     jest
       .spyOn(globalThis, "requestAnimationFrame")
       .mockImplementation((callback) => {
@@ -314,6 +324,8 @@ describe("XML fallback across MarkdownStream rendering paths", () => {
     }
     accumulator.finalize(dispatch);
     mockReduxState = {
+      userAuth: { id: null },
+      userProfile: { userMetadata: null, fingerprintId: null },
       activeRequests: {
         byRequestId: {
           "redux-xml": {
