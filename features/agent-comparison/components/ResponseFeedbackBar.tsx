@@ -55,33 +55,37 @@ export function ResponseFeedbackBar({ conversationId }: { conversationId: string
     return out.join(",");
   });
 
-  const claim = async (value: number, requestId: string): Promise<boolean> => {
-    if (!setId || !userId) return true;
-    try {
-      const cleared = await clearRankForOthers({
-        userId,
-        comparisonSetId: setId,
-        rank: value,
-        exceptConversationId: conversationId,
-        exceptRequestId: requestId,
-      });
-      for (const conv of cleared) {
-        dispatch(setFeedbackRank({ conversationId: conv, rank: null }));
-      }
-      if (cleared.length > 0) {
-        window.dispatchEvent(
-          new CustomEvent(FEEDBACK_SAVED_EVENT, {
-            detail: { conversationId: cleared[0], setId },
-          }),
+  // Promise chain, not try/catch: the React Compiler cannot compile value
+  // blocks inside a try, and a skipped component memoises nothing.
+  const claim = (value: number, requestId: string): Promise<boolean> => {
+    if (!setId || !userId) return Promise.resolve(true);
+    return clearRankForOthers({
+      userId,
+      comparisonSetId: setId,
+      rank: value,
+      exceptConversationId: conversationId,
+      exceptRequestId: requestId,
+    }).then(
+      (cleared) => {
+        for (const conv of cleared) {
+          dispatch(setFeedbackRank({ conversationId: conv, rank: null }));
+        }
+        if (cleared.length > 0) {
+          window.dispatchEvent(
+            new CustomEvent(FEEDBACK_SAVED_EVENT, {
+              detail: { conversationId: cleared[0], setId },
+            }),
+          );
+        }
+        return true;
+      },
+      (err: unknown) => {
+        toast.error(
+          `Couldn't claim rank ${value}: ${err instanceof Error ? err.message : err}`,
         );
-      }
-      return true;
-    } catch (err) {
-      toast.error(
-        `Couldn't claim rank ${value}: ${err instanceof Error ? err.message : err}`,
-      );
-      return false;
-    }
+        return false;
+      },
+    );
   };
 
   return (

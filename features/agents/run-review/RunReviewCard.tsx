@@ -27,7 +27,7 @@
  * into a surface's Redux) comes in through `RunReviewExtension` — never a fork.
  */
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   ThumbsUp,
   ThumbsDown,
@@ -194,8 +194,14 @@ function RunReviewCardInner({
   const userId = useAppSelector(selectUserId);
   const blind = extension?.blind === true;
   const rankExt = extension?.rank;
-  const onSnapshot = extension?.onSnapshot;
   const refreshEvent = extension?.refreshEvent;
+  // Surfaces pass fresh callbacks every render; the reads below key on the
+  // run only, so they reach the latest callback through a ref — never by
+  // re-reading the server (which would wipe a note being typed).
+  const extensionRef = useRef(extension);
+  useEffect(() => {
+    extensionRef.current = extension;
+  });
 
   const [rating, setRating] = useState<FeedbackRating>(null);
   const [overall, setOverall] = useState<number | null>(null);
@@ -224,7 +230,7 @@ function RunReviewCardInner({
         setScores(snap?.scores ?? {});
         setComment(snap?.comment ?? "");
         setSavedRequestId(match ? requestId : null);
-        onSnapshot?.(snap);
+        extensionRef.current?.onSnapshot?.(snap);
         setFeedbackReadError(null);
       })
       .catch((err: unknown) => {
@@ -234,7 +240,7 @@ function RunReviewCardInner({
     return () => {
       cancelled = true;
     };
-  }, [userId, conversationId, requestId, onSnapshot]);
+  }, [userId, conversationId, requestId]);
 
   // Another answer changed (e.g. took our rank) — re-read ours.
   useEffect(() => {
@@ -246,13 +252,13 @@ function RunReviewCardInner({
           if (!match) return;
           setRank(match.rank ?? null);
           setOverall(match.overall ?? null);
-          onSnapshot?.(snapshotOf(match));
+          extensionRef.current?.onSnapshot?.(snapshotOf(match));
         })
         .catch((err: unknown) => setFeedbackReadError(err));
     };
     window.addEventListener(refreshEvent, handler);
     return () => window.removeEventListener(refreshEvent, handler);
-  }, [userId, conversationId, requestId, refreshEvent, onSnapshot]);
+  }, [userId, conversationId, requestId, refreshEvent]);
 
   const persist = async (next: {
     rating: FeedbackRating;
@@ -264,28 +270,31 @@ function RunReviewCardInner({
     if (!userId) return;
     setBusy(true);
     const trimmed = next.comment.trim() ? next.comment.trim() : null;
-    try {
-      await saveFeedback({
-        userId,
-        conversationId,
-        requestId,
-        rating: next.rating,
-        overall: next.overall,
-        rank: next.rank,
-        comment: trimmed,
-        comparisonSetId: extension?.comparisonSetId ?? null,
-        metadata: { ...extension?.metadata, surface, scores: next.scores },
-      });
-      setSavedRequestId(requestId);
-      onSnapshot?.({ ...next, comment: trimmed });
-      extension?.onSaved?.(requestId);
-    } catch (err) {
-      toast.error(
-        `Couldn't save feedback: ${err instanceof Error ? err.message : err}`,
-      );
-    } finally {
-      setBusy(false);
-    }
+    // A promise chain, not try/finally: the React Compiler skips a component
+    // holding a `finally`, and a skipped component memoises nothing.
+    await saveFeedback({
+      userId,
+      conversationId,
+      requestId,
+      rating: next.rating,
+      overall: next.overall,
+      rank: next.rank,
+      comment: trimmed,
+      comparisonSetId: extension?.comparisonSetId ?? null,
+      metadata: { ...extension?.metadata, surface, scores: next.scores },
+    }).then(
+      () => {
+        setSavedRequestId(requestId);
+        extension?.onSnapshot?.({ ...next, comment: trimmed });
+        extension?.onSaved?.(requestId);
+      },
+      (err: unknown) => {
+        toast.error(
+          `Couldn't save feedback: ${err instanceof Error ? err.message : err}`,
+        );
+      },
+    );
+    setBusy(false);
   };
 
   const handleThumbs = (next: "up" | "down") => {
