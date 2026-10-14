@@ -120,6 +120,30 @@ export function replayUnreadable(
   return view.steps.every((s) => s.phase === "idle" && !s.notes.length);
 }
 
+/** One round as the session judges it: what it was started with, and what came back. */
+export interface SessionRound {
+  seeds: { website: string; socials: { handle_or_url: string; platform?: string | null }[] };
+  view: (Pick<RoundView, "status" | "steps" | "readFailure"> & { entry?: EntryOutcome | null }) | null | undefined;
+}
+
+/**
+ * The session's entry answer. Only a POSITIVE signal says "doesn't exist": the server's `entry_outcome`, or a step note
+ * that names the failure, on the FIRST round, when it is the only round (a later round means something was found and
+ * confirmed). Any round that cannot be read back makes the session "couldn't load", never not-found (an admin opening
+ * someone's session, a lost replay). The answer names what that round was STARTED with, never what is typed now.
+ */
+export function sessionEntry(rounds: SessionRound[], foundReal: boolean): { outcome: EntryOutcome | null; unreadable: boolean } {
+  const unreadable = rounds.some((r) => replayUnreadable(r.view, foundReal));
+  const first = rounds[0];
+  const account = first?.seeds.socials[0];
+  const typed = { website: first?.seeds.website ?? "", social: account?.handle_or_url ?? "", platform: account?.platform ?? null };
+  if (!first || (!typed.website && !typed.social) || rounds.length > 1) return { outcome: null, unreadable };
+  const server = first.view?.entry ?? null;
+  if (isFailedEntry(server)) return { outcome: server, unreadable: false };
+  if (unreadable) return { outcome: null, unreadable };
+  return { outcome: inferEntryOutcome(first.view, typed, foundReal), unreadable: false };
+}
+
 /** How the typed entry reads in a sentence: "@name" for an account, the bare host for a site. */
 export function entryLabel(o: Pick<EntryOutcome, "subject" | "input">): string {
   const text = o.input.trim();

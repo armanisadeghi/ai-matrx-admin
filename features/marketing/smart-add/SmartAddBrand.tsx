@@ -22,7 +22,7 @@ import { Button, Field, SegmentedControl, Select, type SelectOption } from "@ai-
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import { useWorkflowRunControls } from "@/features/workflow-runtime/hooks/useWorkflowRunControls";
-import { inferEntryOutcome, isFailedEntry, quietMs, replayUnreadable } from "./entryOutcome";
+import { isFailedEntry, quietMs, sessionEntry } from "./entryOutcome";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
 import { useCostDisplay } from "@/components/cost/useCostDisplay";
@@ -1252,20 +1252,20 @@ export function SmartAddBrand({
   // ── the entry's honest answer (entryOutcome.ts) ────────────────────────────
   // The first typed round decides whether what was typed exists. A failed entry never morphs into a findings page
   // and never offers Create: the stage says what happened and offers Edit / Try another / Search by name.
-  const entryView = rounds[0]?.runId ? views[rounds[0].runId] : undefined;
   // Proof the entry exists: something a step READ. The facts agent's words are not proof (it once made a brand name
   // out of a handle that does not exist).
   const foundReal = [...items.values()].some(
     (i) => i.source.where !== "the address itself" && i.source.kind !== "typed" && i.source.node !== "facts",
   );
-  const entryTyped = rounds[0] ? Boolean(rounds[0].seeds.website || rounds[0].seeds.socials.length) : false;
-  const entryOutcome = entryTyped
-    ? (entryView?.entry ??
-      inferEntryOutcome(entryView, { website: websiteText.trim(), social: socialText.trim(), platform: picked }, foundReal))
-    : null;
+  // The entry's answer and whether the session could be read back (entryOutcome.ts › sessionEntry).
+  const judged = sessionEntry(
+    rounds.map((r) => ({ seeds: r.seeds, view: r.runId ? views[r.runId] : undefined })),
+    foundReal,
+  );
+  const entryOutcome = judged.outcome;
   const entryFailed = !enrich && isFailedEntry(entryOutcome);
   // The run could not be read back (refused, or an empty replay): "Couldn't load this run", never "doesn't exist".
-  const runUnreadable = !entryFailed && rounds.some((r) => replayUnreadable(r.runId ? views[r.runId] : undefined, foundReal));
+  const runUnreadable = !enrich && !entryFailed && judged.unreadable;
   // Quiet too long while a round runs: the stage says so (never an endless spinner).
   const [quiet, setQuiet] = useState(false);
   useEffect(() => {

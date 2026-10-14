@@ -7,6 +7,7 @@ import {
   parseEntryOutcome,
   quietMs,
   replayUnreadable,
+  sessionEntry,
   stagePhase,
   websiteProblem,
   type EntryOutcome,
@@ -142,5 +143,40 @@ describe("no data is never 'doesn't exist' (admin opening someone else's run, cd
   it("a real finished run that found something is neither", () => {
     expect(replayUnreadable(emptyReplay, true)).toBe(false);
     expect(replayUnreadable({ status: "running", steps: [] }, false)).toBe(false);
+  });
+});
+
+describe("sessionEntry — only a positive signal says doesn't exist", () => {
+  const idle = (name: string) => ({ step: name, phase: "idle", progress: null, notes: [], costUsd: 0, skipped: false });
+  const ig = (handle: string) => ({ website: "", socials: [{ handle_or_url: `https://www.instagram.com/${handle}`, platform: "instagram" }] });
+  const notFoundRound = {
+    seeds: ig("titaniumsuccess"),
+    view: { status: "completed", steps: [step("socials", ["https://www.instagram.com/titaniumsuccess could not be looked up: We couldn't find that account or post."])] },
+  };
+  const emptyRound = { seeds: { website: "", socials: [] }, view: { status: "completed", steps: [idle("probe"), idle("web")] } };
+
+  it("a lone round with a not-found note is not-found, named by what THAT round was started with", () => {
+    const { outcome, unreadable } = sessionEntry([notFoundRound], false);
+    expect(outcome?.status).toBe("not_found");
+    expect(entryLabel(outcome!)).toBe("@titaniumsuccess");
+    expect(unreadable).toBe(false);
+  });
+  it("a later round means the session went on from a finding: never not-found", () => {
+    expect(sessionEntry([notFoundRound, { seeds: ig("titanium.success"), view: { status: "completed", steps: [step("socials")] } }], false).outcome).toBeNull();
+  });
+  it("an unreadable round makes the session couldn't-load, even beside a not-found note", () => {
+    const refused = { seeds: ig("titaniumsuccess"), view: { status: null, steps: [], readFailure: "refused" } };
+    expect(sessionEntry([refused], false)).toEqual({ outcome: null, unreadable: true });
+    expect(sessionEntry([notFoundRound, emptyRound], false)).toEqual({ outcome: null, unreadable: true });
+  });
+  it("an empty replay of a typed round is couldn't-load, not not-found", () => {
+    expect(sessionEntry([{ seeds: ig("titanium.success"), view: { status: "completed", steps: [idle("socials")] } }], false)).toEqual({
+      outcome: null,
+      unreadable: true,
+    });
+  });
+  it("the server's own not-found answer stands", () => {
+    const server = { ...notFoundRound, view: { status: "completed", steps: [], entry: { status: "not_found" as const, subject: "account" as const, input: "x", platform: "instagram" } } };
+    expect(sessionEntry([server], false).outcome?.status).toBe("not_found");
   });
 });
