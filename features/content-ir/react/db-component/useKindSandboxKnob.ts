@@ -45,6 +45,8 @@ import { selectOrganizationId } from "@/lib/redux/slices/appContextSlice";
 import type { RootState } from "@/lib/redux/store";
 import { useScopedKnobs } from "@/lib/scoped-config/useScopedKnobs";
 import type { ScopedKnob } from "@/lib/scoped-config/types";
+import type { ComponentResolution } from "@ai-matrx/content-ir-react";
+import { MAX_INBOUND_BYTES } from "../../sandbox/protocol";
 
 export const KIND_SANDBOX_KNOB = {
     feature: "custom",
@@ -268,4 +270,25 @@ export function useKindSandboxCeilings(): {
     if (error) return { ceilings: null, refusal: `the settings resolver failed: ${error}`, loading: false };
     if (isLoading || !organizationId) return { ceilings: null, refusal: null, loading: true };
     return { ...resolveKindSandboxCeilings(knobs), loading: false };
+}
+
+/**
+ * SHAPE LAYERS (ATTACK S7): a LAYERED body — someone's own view or their
+ * organization's view (`resolution.layer`) — ALWAYS renders in the Shape
+ * sandbox, whatever the organization's `sandbox_org_components` knob says or
+ * whether it has answered yet. The ceiling is the resolved one when there is
+ * one, else the frame's own compiled-in ceiling (the register's default).
+ * Shared rows keep exactly the organization's decision.
+ */
+export function sandboxForResolution(
+    resolution: Pick<ComponentResolution, "layer"> | null | undefined,
+    settings: KindSandboxSettings,
+): KindSandboxSettings {
+    if (!resolution?.layer) return settings;
+    if (settings.enabled && settings.ceilings) return settings;
+    return {
+        enabled: true,
+        ceilings: { messageBytes: settings.ceilings?.messageBytes ?? MAX_INBOUND_BYTES },
+        refusal: null,
+    };
 }

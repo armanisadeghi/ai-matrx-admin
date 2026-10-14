@@ -41,7 +41,11 @@ import {
 import { DbKindComponentErrorBoundary } from "./DbKindComponentErrorBoundary";
 import { KindHtmlFrame } from "./KindHtmlFrame";
 import { KindSandboxFrame } from "./KindSandboxFrame";
-import { useKindSandboxSettings, type KindSandboxSettings } from "./useKindSandboxKnob";
+import {
+  sandboxForResolution,
+  useKindSandboxSettings,
+  type KindSandboxSettings,
+} from "./useKindSandboxKnob";
 import type { RunKindAction } from "../actions/useKindActionRunner";
 import type {
   KindComponentUiOptions,
@@ -234,7 +238,7 @@ const DbKindComponentBody: React.FC<DbKindComponentImplProps> = ({
     organizationId ||
       (typeof valueOrganizationId === "string" ? valueOrganizationId : null),
   );
-  const sandbox = dictatedSandbox ?? organizationSandbox;
+  const decidedSandbox = dictatedSandbox ?? organizationSandbox;
   // 🚨 THE VERSION IS AN ARGUMENT, NEVER A DEPENDENCY (DD-215c). `void
   // registryVersion;` left this read's freshness to whether the React Compiler
   // happened not to memoize `resolveComponent(kind, …)` — and the compiler IS
@@ -250,6 +254,8 @@ const DbKindComponentBody: React.FC<DbKindComponentImplProps> = ({
     () => (kind ? resolveComponent(kind, "web", "output") : null),
   );
   const resolution = suppliedResolution ?? registryResolution;
+  // A layered body (my view / my organization's view) is ALWAYS framed (S7).
+  const sandbox = sandboxForResolution(resolution, decidedSandbox);
   const bodyPending = Boolean(
     resolution &&
       resolution.resolvedBy === "db" &&

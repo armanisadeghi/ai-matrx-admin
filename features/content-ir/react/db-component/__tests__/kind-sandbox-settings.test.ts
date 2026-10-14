@@ -19,7 +19,11 @@
 
 import type { ScopedKnob } from "@/lib/scoped-config/types";
 
-import { resolveKindSandboxSettings } from "../useKindSandboxKnob";
+import {
+    resolveKindSandboxSettings,
+    sandboxForResolution,
+    type KindSandboxSettings,
+} from "../useKindSandboxKnob";
 
 /** A `knob_index` row, with only the fields this decision reads set for real. */
 function row(key: string, effective: unknown): ScopedKnob {
@@ -140,5 +144,25 @@ describe("what happens when the settings cannot be trusted", () => {
                 : knob,
         );
         expect(resolveKindSandboxSettings(rows).enabled).toBe(false);
+    });
+});
+
+describe("sandboxForResolution — layered bodies are always framed (shape layers, S7)", () => {
+    const off: KindSandboxSettings = { enabled: false, ceilings: null, refusal: null };
+    const on: KindSandboxSettings = { enabled: true, ceilings: { messageBytes: 1234 }, refusal: null };
+
+    it("a layered row is framed even with the organization's sandbox OFF", () => {
+        const settings = sandboxForResolution({ layer: { scope: "user", rowId: "r" } }, off);
+        expect(settings.enabled).toBe(true);
+        expect(settings.ceilings?.messageBytes).toBeGreaterThan(0);
+    });
+
+    it("a layered row keeps the organization's resolved ceiling when it has one", () => {
+        expect(sandboxForResolution({ layer: { scope: "organization", rowId: "r" } }, on)).toBe(on);
+    });
+
+    it("a shared row follows the organization's decision unchanged", () => {
+        expect(sandboxForResolution({ layer: null }, off)).toBe(off);
+        expect(sandboxForResolution(null, off)).toBe(off);
     });
 });

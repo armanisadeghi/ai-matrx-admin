@@ -47,6 +47,14 @@ import {
 import { installKindRegistryDebug } from "@ai-matrx/rich-content/kinds/registry/registry-debug";
 import { hasSession, whenSessionReady } from "./session-ready";
 import {
+  KindComponentOverlayLoader,
+  overlayViewerId,
+  readViewerLayerRows,
+  readViewerOrganizationIds,
+  watchOverlayViewer,
+} from "./kind-component-layers";
+import { browserAdminLaneOpen } from "@/utils/supabase/adminLane";
+import {
   getSystemComponentEntries,
   type SystemComponentEntry,
 } from "./system-components";
@@ -159,6 +167,34 @@ export class ComponentRegistry extends ComponentResolver {
   /** True once any fetch was demanded this session (THE ZERO-PREFETCH LAW). */
   private demanded = false;
 
+  /**
+   * SHAPE LAYERS — the viewer's overlay (my view → my organization's view),
+   * read with an explicit audience predicate and re-checked by the resolver.
+   * Synced on every demand (cheap when the viewer and admin lane are
+   * unchanged), on every auth change, and forced on a `kindComponents`
+   * invalidation. Signed out: no read, no overlay.
+   */
+  private readonly overlayLoader = new KindComponentOverlayLoader(this, {
+    viewer: () => ({ userId: overlayViewerId(), laneOpen: browserAdminLaneOpen() }),
+    readOrganizationIds: readViewerOrganizationIds,
+    readRows: readViewerLayerRows,
+    reportError: (message, error) =>
+      captureError({
+        source: "content-ir",
+        message,
+        callSite: "ComponentRegistry.overlay",
+        raw: error,
+      }),
+  });
+
+  /** Re-sync the viewer's overlay — `force` re-reads even for an unchanged viewer. */
+  syncOverlay(force = false): Promise<void> {
+    watchOverlayViewer(() => {
+      void this.overlayLoader.sync();
+    });
+    return this.overlayLoader.sync(force);
+  }
+
   constructor(entries: () => SystemComponentEntry[]) {
     super({
       compiledEntries: entries,
@@ -218,11 +254,13 @@ export class ComponentRegistry extends ComponentResolver {
 
   override ensureWarm(): Promise<void> {
     this.demanded = true;
+    void this.syncOverlay();
     return super.ensureWarm();
   }
 
   override refresh(maxAgeMs?: number): Promise<void> {
     this.demanded = true;
+    void this.syncOverlay();
     return super.refresh(maxAgeMs);
   }
 
@@ -248,6 +286,7 @@ export class ComponentRegistry extends ComponentResolver {
   ): void {
     if (isTableKind(kind)) kind = TABLE_KIND_COMPONENT;
     this.demanded = true;
+    void this.syncOverlay();
     super.requestComponent(kind, platform, role);
     // DD-215. The package's own cold-fetch test asks "is the answer missing or
     // body-less?" — and a COMPILED answer is neither, so every kind that ships
@@ -571,4 +610,6 @@ export function subscribeKindComponents(listener: () => void): () => void {
 // rest, so mounted blocks recompile the edited component without a refresh.
 registerInvalidationCallback(INVALIDATION_KEYS.kindComponents, () => {
   void refreshKindComponents(0);
+  // A layered write (my view / my organization's view) lands the same way.
+  if (componentRegistry.hasBeenDemanded()) void componentRegistry.syncOverlay(true);
 });
