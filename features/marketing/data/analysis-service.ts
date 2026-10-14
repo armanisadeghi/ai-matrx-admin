@@ -56,13 +56,64 @@ async function loadPageReferences(
     await authenticatedWebDb(supabase)
   )
     .from("page")
-    .select("id, path, url, last_seen")
+    .select("id, path, url, latest_snapshot_id")
     .eq("site_id", siteId)
     .is("deleted_at", null)
     .in("id", ids)
     .abortSignal(signal);
   const rows = assertData(response.data, response.error);
-  return new Map(rows.map((row) => [row.id, row]));
+  // The evidence age is the capture the checks read, not the crawler's last
+  // sighting — one read for every referenced page's latest snapshot.
+  const snapshotIds = rows
+    .map((row) => row.latest_snapshot_id)
+    .filter((id): id is string => Boolean(id));
+  const captured = new Map<string, string>();
+  if (snapshotIds.length > 0) {
+    const snaps = await (await authenticatedWebDb(supabase))
+      .from("snapshot")
+      .select("id, captured_at")
+      .in("id", snapshotIds)
+      .abortSignal(signal);
+    for (const snap of assertData(snaps.data, snaps.error)) {
+      captured.set(snap.id, snap.captured_at);
+    }
+  }
+  return new Map(
+    rows.map((row) => [
+      row.id,
+      {
+        id: row.id,
+        path: row.path,
+        url: row.url,
+        captured_at: row.latest_snapshot_id
+          ? (captured.get(row.latest_snapshot_id) ?? null)
+          : null,
+      },
+    ]),
+  );
+}
+
+/** A rolled-up page finding points at its site-wide twin: same site + check. */
+async function loadSharedFindingId(
+  finding: MarketingFinding,
+  signal: AbortSignal,
+): Promise<string | null> {
+  const meta = finding.metadata;
+  if (!meta || typeof meta !== "object" || Array.isArray(meta) || !("rolled_up" in meta)) {
+    return null;
+  }
+  const response = await (await authenticatedWebDb(supabase))
+    .from("finding")
+    .select("id")
+    .eq("site_id", finding.site_id)
+    .eq("subject_type", "site")
+    .eq("item_id", finding.item_id)
+    .is("deleted_at", null)
+    .order("last_detected_at", { ascending: false })
+    .limit(1)
+    .abortSignal(signal);
+  const rows = assertData(response.data, response.error);
+  return rows[0]?.id ?? null;
 }
 
 async function loadAnalysisItem(
@@ -513,7 +564,7 @@ export async function getFindingDetail(
     "web_finding",
   );
 
-  const [pages, item, results] = await Promise.all([
+  const [pages, item, results, sharedFindingId] = await Promise.all([
     loadPageReferences(siteId, [finding.page_id], abortSignal),
     loadAnalysisItem(finding.item_id, abortSignal),
     loadReferencedResults(
@@ -521,9 +572,11 @@ export async function getFindingDetail(
       [finding.first_result_id, finding.last_result_id],
       abortSignal,
     ),
+    loadSharedFindingId(finding, abortSignal),
   ]);
 
   return {
+    sharedFindingId,
     finding,
     page: finding.page_id ? (pages.get(finding.page_id) ?? null) : null,
     item,

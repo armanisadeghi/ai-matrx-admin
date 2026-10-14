@@ -12,8 +12,8 @@ export interface AnalysisPageReference {
   id: string;
   path: string | null;
   url: string;
-  /** When our crawler last saw the page — the age of a finding's evidence. */
-  last_seen?: string | null;
+  /** The capture the page's findings were judged from — the evidence's age. */
+  captured_at?: string | null;
 }
 
 export type AnalysisItemReference = Pick<
@@ -60,6 +60,8 @@ export interface FindingDetailData {
   item: AnalysisItemReference | null;
   firstResult: MarketingAnalysisResult | null;
   lastResult: MarketingAnalysisResult | null;
+  /** The open site-wide finding a rolled-up page finding now lives in. */
+  sharedFindingId: string | null;
 }
 
 export interface AnalysisPagedResult<T> {

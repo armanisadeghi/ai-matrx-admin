@@ -400,10 +400,12 @@ export function FindingDetail({ findingId }: { findingId: string }) {
           : undefined,
         itemLabel,
       );
-  const closure = closureFacts(finding.metadata);
+  // A closure note belongs only to a closed finding (a reopened one carries no
+  // stale "closed" explanation — review, 2026-10-14).
+  const closure = finding.status === "resolved" ? closureFacts(finding.metadata) : [];
   // The evidence is as old as our last look at the page. Past a month, say so:
   // the live page may already be different (2026-10-14 census).
-  const seenAt = data.page?.last_seen ? new Date(data.page.last_seen) : null;
+  const seenAt = data.page?.captured_at ? new Date(data.page.captured_at) : null;
   const seenDays =
     seenAt && !Number.isNaN(seenAt.getTime())
       ? Math.floor((Date.now() - seenAt.getTime()) / 86_400_000)
@@ -412,11 +414,11 @@ export function FindingDetail({ findingId }: { findingId: string }) {
     seenAt && seenDays !== null && !story
       ? [
           {
-            label: "Page last checked",
+            label: "Evidence captured",
             value:
               seenDays > 30
-                ? `${formatCompactDate(data.page?.last_seen ?? null)} — ${seenDays} days ago, may have changed`
-                : formatCompactDate(data.page?.last_seen ?? null),
+                ? `${formatCompactDate(data.page?.captured_at ?? null)} — ${seenDays} days ago, may have changed`
+                : formatCompactDate(data.page?.captured_at ?? null),
           },
         ]
       : [];
@@ -690,7 +692,22 @@ export function FindingDetail({ findingId }: { findingId: string }) {
               : [])),
         ]}
         doors={
-          story?.replacement ? (
+          data.sharedFindingId ? (
+            <Button
+              variant="outline"
+              onClick={() =>
+                navigate(
+                  marketingRoutes.site(
+                    brandId,
+                    site.id,
+                    `/findings/${data.sharedFindingId}`,
+                  ),
+                )
+              }
+            >
+              Open the site-wide finding
+            </Button>
+          ) : story?.replacement ? (
             <Button asChild variant="outline">
               <OutboundLink href={story.replacement.url}>
                 <ExternalLink className="h-3.5 w-3.5" />
