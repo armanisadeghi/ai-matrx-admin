@@ -273,6 +273,7 @@ export const adminNavigationRegistry: readonly AdminNavigationDomain[] = [
             "/administration/intelligence/mandates/references",
             "/administration/intelligence/mandates/[mandateKey]",
             "/administration/intelligence/mandates/[mandateKey]/overrides",
+            "/administration/intelligence/go/[...slug]",
           ]),
         ],
       },
@@ -571,7 +572,12 @@ export const adminNavigationRegistry: readonly AdminNavigationDomain[] = [
         name: "Scheduling",
         iconName: "CalendarClock",
         destinations: [
-          destination("/administration/automation/scheduling"),
+          destination("/administration/automation/scheduling", [
+            "/administration/automation/scheduling/costs",
+            "/administration/automation/scheduling/costs/[kind]/[id]",
+            "/administration/automation/scheduling/support",
+            "/administration/automation/scheduling/triggers",
+          ]),
           destination("/administration/automation/scheduling/tasks", [
             "/administration/automation/scheduling/tasks/[id]",
           ]),
@@ -588,7 +594,13 @@ export const adminNavigationRegistry: readonly AdminNavigationDomain[] = [
         name: "Workflows",
         iconName: "Workflow",
         destinations: [
-          destination("/administration/automation/workflows"),
+          destination("/administration/automation/workflows", [
+            "/administration/automation/workflows/[id]",
+            "/administration/automation/workflows/[id]/design",
+            "/administration/automation/workflows/[id]/runs",
+            "/administration/automation/workflows/[id]/triggers",
+            "/administration/automation/workflows/runs/[runId]",
+          ]),
           destination("/administration/automation/workflow-runs"),
         ],
       },
@@ -636,7 +648,10 @@ export const adminNavigationRegistry: readonly AdminNavigationDomain[] = [
       {
         name: "Alarms",
         iconName: "OctagonAlert",
-        destinations: [destination("/administration/billing/alarms")],
+        destinations: [destination("/administration/billing/alarms", [
+          "/administration/billing/alarms/[id]",
+          "/administration/billing/held-runs/[id]",
+        ])],
       },
       {
         name: "Plans",
@@ -666,11 +681,6 @@ export const adminNavigationRegistry: readonly AdminNavigationDomain[] = [
           destination("/administration/users/coupons"),
           destination("/administration/users/limits"),
           destination("/administration/users/usage-limits"),
-          destination("/administration/usage"),
-          destination("/administration/usage/agents", [
-            "/administration/usage/agents/detail",
-          ]),
-          destination("/administration/usage/reconciliation"),
         ],
       },
       {
@@ -686,6 +696,25 @@ export const adminNavigationRegistry: readonly AdminNavigationDomain[] = [
           destination("/administration/users/agent-review", [
             "/administration/users/agent-review/[id]",
           ]),
+        ],
+      },
+    ],
+  },
+  {
+    name: "Usage",
+    slug: "usage",
+    iconName: "ChartNoAxesCombined",
+    iconColor: "text-sky-600",
+    sections: [
+      {
+        name: "Usage & Cost",
+        iconName: "DollarSign",
+        destinations: [
+          destination("/administration/usage"),
+          destination("/administration/usage/agents", [
+            "/administration/usage/agents/detail",
+          ]),
+          destination("/administration/usage/reconciliation"),
         ],
       },
     ],
@@ -720,7 +749,9 @@ export const adminNavigationRegistry: readonly AdminNavigationDomain[] = [
         iconName: "Container",
         destinations: [
           destination("/administration/compute/sandbox-infra"),
-          destination("/administration/compute/sandbox"),
+          destination("/administration/compute/sandbox", [
+            "/administration/compute/sandbox/[id]",
+          ]),
           destination("/administration/compute/server-logs", [
             "/administration/compute/server-logs/[app]",
           ]),
@@ -896,13 +927,23 @@ export const adminNavigationRegistry: readonly AdminNavigationDomain[] = [
 export const adminMenuDomains: readonly AdminNavigationDomain[] =
   adminNavigationRegistry.filter((domain) => !domain.supersededBy);
 
+/** Exact legacy redirect pages; these do not change route ownership. */
+const adminRedirectAliases = new Map<string, string>([
+  ["/administration/users/usage", "/administration/usage"],
+]);
+
+function canonicalAdminPath(pathname: string): string {
+  return adminRedirectAliases.get(pathOnly(pathname)) ?? pathname;
+}
+
 /**
  * The pathname a menu should highlight: a page inside a superseded domain
  * lights up its new home, so the one menu entry stays selected.
  */
 export function adminMenuPathname(pathname: string): string {
-  const domain = findAdminNavigationDomainByPathname(pathname);
-  return domain?.supersededBy ?? pathname;
+  const canonicalPathname = canonicalAdminPath(pathname);
+  const domain = findAdminNavigationDomainByPathname(canonicalPathname);
+  return domain?.supersededBy ?? canonicalPathname;
 }
 
 export interface AdminNavigationLocation {
@@ -987,6 +1028,15 @@ export function getAdminNavigationArchitectureErrors(): string[] {
     }
   }
 
+  for (const [alias, target] of adminRedirectAliases) {
+    if (!linkHomes.has(target)) {
+      errors.push(`${alias}: redirect target ${target} is not a menu destination`);
+    }
+    if (linkHomes.has(alias)) {
+      errors.push(`${alias}: redirect alias is also a menu destination`);
+    }
+  }
+
   // A superseded domain is hidden from every menu, so its new home MUST be a
   // real menu destination — otherwise its pages would have no menu entry at all.
   for (const domain of adminNavigationRegistry) {
@@ -1011,7 +1061,7 @@ export function getAdminNavigationArchitectureErrors(): string[] {
 
 /** Exact declared page patterns, including hidden/detail leaves. */
 export function getDeclaredAdminRoutePatterns(): string[] {
-  const routes = new Set<string>();
+  const routes = new Set<string>(adminRedirectAliases.keys());
   for (const domain of adminNavigationRegistry) {
     routes.add(adminDomainHref(domain));
   }
@@ -1045,7 +1095,8 @@ export function destinationOwnsPathname(
   pathname: string,
 ): boolean {
   const patterns = [item.link, ...item.ownedRoutes];
-  return patterns.some((pattern) => routePatternRegex(pattern).test(pathname));
+  const canonicalPathname = canonicalAdminPath(pathname);
+  return patterns.some((pattern) => routePatternRegex(pattern).test(canonicalPathname));
 }
 
 /** How specifically `pattern` names `pathname`: literal segments that match. */
@@ -1065,13 +1116,14 @@ function literalMatchScore(pattern: string, pathname: string): number {
 export function findAdminNavigationLocation(
   pathname: string,
 ): AdminNavigationLocation | null {
+  const canonicalPathname = canonicalAdminPath(pathname);
   let best: AdminNavigationLocation | null = null;
   let bestScore = -1;
   for (const location of getAdminNavigationLocations()) {
     const item = location.destination;
     const score = Math.max(
       ...[item.link, ...item.ownedRoutes].map((pattern) =>
-        literalMatchScore(pattern, pathname),
+        literalMatchScore(pattern, canonicalPathname),
       ),
     );
     if (score > bestScore) {
@@ -1091,7 +1143,7 @@ export function findAdminNavigationDomainBySlug(
 export function findAdminNavigationDomainByPathname(
   pathname: string,
 ): AdminNavigationDomain | null {
-  const normalizedPathname = pathOnly(pathname);
+  const normalizedPathname = pathOnly(canonicalAdminPath(pathname));
   return (
     adminNavigationRegistry.find((domain) => {
       const domainHref = adminDomainHref(domain);
@@ -1107,11 +1159,11 @@ export function findAdminNavigationDomainByPathname(
 export function findAdminNavigationLocationByRoutePattern(
   route: string,
 ): AdminNavigationLocation | null {
-  const fullRoute = pathOnly(
+  const fullRoute = pathOnly(canonicalAdminPath(
     route.startsWith("/administration")
       ? route
       : `/administration/${route.replace(/^\//, "")}`,
-  );
+  ));
   return (
     getAdminNavigationLocations().find(({ destination: item }) =>
       [item.link, ...item.ownedRoutes].some(

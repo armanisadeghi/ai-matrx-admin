@@ -1140,7 +1140,7 @@ export const adminCategoriesData: AdminCategory[] = [
       {
         title: "Usage & Cost",
         description:
-          "Per-user AI spend and token usage — the CX usage analytics surfaced inside user management.",
+          "Per-user AI spend and token usage across the platform.",
         iconName: "DollarSign",
         link: "/administration/usage",
         isNew: true,

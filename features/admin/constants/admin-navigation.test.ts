@@ -1,7 +1,10 @@
 import {
+  adminMenuPathname,
   adminMenuDomains,
   adminNavigationRegistry,
   findAdminNavigationLocation,
+  findAdminNavigationLocationByRoutePattern,
+  getDeclaredAdminRoutePatterns,
   getAdminNavigationArchitectureErrors,
 } from "./admin-navigation";
 
@@ -29,6 +32,14 @@ describe("admin navigation registry", () => {
 
   it("reports no architecture errors", () => {
     expect(getAdminNavigationArchitectureErrors()).toEqual([]);
+  });
+
+  it("keeps the legacy users usage redirect owned by Usage", () => {
+    const alias = "/administration/users/usage";
+    expect(getDeclaredAdminRoutePatterns()).toContain(alias);
+    expect(findAdminNavigationLocation(alias)?.destination.link).toBe("/administration/usage");
+    expect(findAdminNavigationLocationByRoutePattern("users/usage")?.destination.link).toBe("/administration/usage");
+    expect(adminMenuPathname(alias)).toBe("/administration/usage");
   });
 
   // Arman, 2026-09-25: Mandates are a Feature of the Intelligence domain and
