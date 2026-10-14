@@ -216,7 +216,7 @@ export function PostMedia({
     return (
       <Frame ratio={ratio} fill={fill} stage={staged}>
         <iframe
-          title="YouTube player"
+          aria-label="YouTube player"
           src={`https://www.youtube-nocookie.com/embed/${encodeURIComponent(platformPostId)}?autoplay=1&rel=0&playsinline=1`}
           allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
           allowFullScreen

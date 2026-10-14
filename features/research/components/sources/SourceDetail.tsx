@@ -1134,7 +1134,7 @@ export default function SourceDetail({ topicId, sourceId }: SourceDetailProps) {
                       src={youTubeEmbedUrl(parsedVideo.videoId, {
                         start: parsedVideo.start,
                       })}
-                      title={typedSource.title ?? "YouTube video"}
+                      aria-label={typedSource.title ?? "YouTube video"}
                       className="w-full h-full"
                       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                       allowFullScreen

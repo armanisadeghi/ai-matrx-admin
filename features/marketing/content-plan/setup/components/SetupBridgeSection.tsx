@@ -1453,7 +1453,7 @@ function FillPreviewPanel({
         </button>
       </div>
       <iframe
-        title={`Authored preview of ${preview.route}`}
+        aria-label={`Authored preview of ${preview.route}`}
         sandbox=""
         srcDoc={srcDoc}
         className="h-96 w-full bg-white"

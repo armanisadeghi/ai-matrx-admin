@@ -145,7 +145,7 @@ function YouTubeOriginal({
     <div className="flex h-full flex-col bg-black">
       <iframe
         key={seek?.nonce ?? "initial"}
-        title="Video"
+        aria-label="Video"
         src={`https://www.youtube-nocookie.com/embed/${videoId}?start=${start}&autoplay=${autoplay}`}
         className="min-h-0 w-full flex-1"
         allow="autoplay; encrypted-media; picture-in-picture"
@@ -239,7 +239,7 @@ function WebSnapshot({
       ) : state.html ? (
         // No scripts, no same-origin: the captured page can never act as us.
         <iframe
-          title="Captured page"
+          aria-label="Captured page"
           sandbox=""
           srcDoc={snapshotDocument(state.html, url)}
           className="min-h-0 w-full flex-1 bg-white"

@@ -95,7 +95,7 @@ describe("html artifact in the canvas", () => {
     expect(frame).not.toBeNull();
     expect(frame.className).toContain("h-full");
     expect(frame.className).toContain("w-full");
-    expect(frame.getAttribute("title")?.length).toBeGreaterThan(0);
+    expect(frame.getAttribute("aria-label")?.length).toBeGreaterThan(0);
     expect(frame.hasAttribute("data-native-title")).toBe(true);
     expect(frame.getAttribute("loading")).toBeNull();
     const sandbox = frame.getAttribute("sandbox") ?? "";

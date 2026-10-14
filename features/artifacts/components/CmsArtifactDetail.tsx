@@ -585,7 +585,7 @@ export function CmsArtifactDetail({ artifactId }: CmsArtifactDetailProps) {
                 <iframe key={previewSandbox}
                   src={artifact.externalUrl}
                   className="w-full h-[400px]"
-                  title="Page preview"
+                  aria-label="Page preview"
                   sandbox={previewSandbox}
                 />
               </div>

@@ -60,7 +60,7 @@ export const KindHtmlFrame: React.FC<KindHtmlFrameProps> = ({
       sandbox="allow-scripts allow-forms"
       className={className ?? "w-full rounded-md border border-border"}
       style={{ minHeight: "300px", height: "400px" }}
-      title={title ?? `${kind} component`}
+      aria-label={title ?? `${kind} component`}
       onLoad={() => {
         // Channel 2 of the injection contract.
         frameRef.current?.contentWindow?.postMessage(

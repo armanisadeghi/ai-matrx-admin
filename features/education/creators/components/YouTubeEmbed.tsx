@@ -18,7 +18,7 @@ export function YouTubeEmbed({
         <iframe
           className="absolute inset-0 h-full w-full"
           src={youTubeEmbedUrl(videoId)}
-          title={title || "YouTube video"}
+          aria-label={title || "YouTube video"}
           loading="lazy"
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
           referrerPolicy="strict-origin-when-cross-origin"

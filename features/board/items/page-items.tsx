@@ -74,7 +74,7 @@ function PageBody({ source, title, interacting, onSource }: ItemBodyProps) {
   return (
     <div className="relative h-full overflow-hidden bg-background">
       <iframe
-        title={title}
+        aria-label={title}
         src={path}
         // The app itself: same origin, so the page is signed in as the person.
         allow="camera; microphone; display-capture; fullscreen; clipboard-read; clipboard-write; autoplay"

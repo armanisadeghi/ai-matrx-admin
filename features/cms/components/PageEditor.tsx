@@ -954,7 +954,7 @@ export default function PageEditor({
                 <div className="relative h-full bg-white">
                   <iframe
                     srcDoc={previewHtml}
-                    title="Page Preview"
+                    aria-label="Page Preview"
                     className="absolute inset-0 w-full h-full border-0"
                     sandbox="allow-scripts"
                   />

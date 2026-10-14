@@ -448,7 +448,7 @@ export function SavePageTab({ state, actions, user }: HtmlPreviewTabProps) {
               key={`${iframeKey}-${previewSandbox}`}
               src={`${previewUrl}?t=${iframeKey}`}
               className="w-full h-full"
-              title="Page Preview"
+              aria-label="Page Preview"
               sandbox={previewSandbox}
             />
           ) : (

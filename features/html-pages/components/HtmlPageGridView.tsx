@@ -82,7 +82,7 @@ function LazyPreviewCard({
         )}
         {visible && (
           <iframe key={previewSandbox}
-            title={`Preview of ${page.meta_title}`}
+            aria-label={`Preview of ${page.meta_title}`}
             src={page.url}
             sandbox={previewSandbox}
             loading="lazy"

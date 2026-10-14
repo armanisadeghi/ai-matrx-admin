@@ -170,7 +170,7 @@ export default function QuickHtmlShareModal({ isOpen, onClose, markdown, title =
                 <div className="flex-1 min-h-0 overflow-hidden">
                     <iframe
                         srcDoc={standaloneHtml}
-                        title="HTML Preview"
+                        aria-label="HTML Preview"
                         className="w-full h-full border-0 bg-white"
                         sandbox="allow-same-origin"
                     />

@@ -94,7 +94,7 @@ export function HtmlPageRenderPreview({
       key={
         `${useLiveUrl ? `live-${page!.id}-${page!.updated_at}` : `draft-${rowId}`}-${previewSandbox}`
       }
-      title={page?.meta_title || sourceTab?.name || "HTML preview"}
+      aria-label={page?.meta_title || sourceTab?.name || "HTML preview"}
       {...(useLiveUrl
         ? {
             src: `${page!.url}${page!.url.includes("?") ? "&" : "?"}preview=1`,

@@ -98,7 +98,7 @@ function renderContent(
         key={sandbox}
         src={maybeUrl}
         className="w-full h-full border-0"
-        title={content.metadata?.title || "Canvas Content"}
+        aria-label={content.metadata?.title || "Canvas Content"}
         sandbox={sandbox}
         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
         allowFullScreen

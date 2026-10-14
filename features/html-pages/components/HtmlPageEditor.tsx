@@ -650,7 +650,7 @@ export default function HtmlPageEditor({
     >
       <iframe
         key={`${dirty ? `draft-${page.id}` : `live-${page.id}-${page.updated_at}`}-${previewSandbox}`}
-        title="Page preview"
+        aria-label="Page preview"
         {...(dirty || !page.url
           ? { srcDoc: htmlContent }
           : {

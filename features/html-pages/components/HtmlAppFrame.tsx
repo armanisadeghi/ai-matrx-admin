@@ -52,7 +52,7 @@ export function HtmlAppFrame({
       <iframe
         key={attempt}
         src={src}
-        title={title}
+        aria-label={title}
         // The title is the frame's accessible name, not a hover tooltip:
         // opt out of the design system's title→tooltip lift so it stays.
         data-native-title=""

@@ -117,7 +117,7 @@ export const PresentationPublishModal: React.FC<PresentationPublishModalProps> =
                                         key={iframeKey}
                                         src={`${publishedUrl}?t=${iframeKey}`}
                                         className="w-full h-full"
-                                        title="Published Presentation Preview"
+                                        aria-label="Published Presentation Preview"
                                         sandbox="allow-same-origin allow-scripts"
                                     />
                                 </div>

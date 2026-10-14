@@ -621,7 +621,7 @@ const HtmlInlinePreview: React.FC<HtmlInlinePreviewProps> = ({
       >
         <iframe key={publishedSandbox}
           src={url ?? undefined}
-          title={title}
+          aria-label={title}
           className="w-full rounded-lg bg-black"
           style={{ aspectRatio: String(aspectRatio) }}
           sandbox={publishedSandbox}
@@ -668,7 +668,7 @@ const HtmlInlinePreview: React.FC<HtmlInlinePreviewProps> = ({
         <iframe key={publishedSandbox}
           ref={frameRef}
           src={cardFrameUrl(url)}
-          title={title}
+          aria-label={title}
           data-native-title=""
           data-html-inline-frame=""
           className="block w-full bg-white"

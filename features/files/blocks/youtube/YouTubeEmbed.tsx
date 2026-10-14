@@ -66,7 +66,7 @@ export const YouTubeEmbed: React.FC<YouTubeEmbedProps> = ({
         {playing ? (
           <iframe
             src={youTubeEmbedUrl(videoId, { start, autoplay: true })}
-            title={label}
+            aria-label={label}
             className="absolute inset-0 h-full w-full"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
             allowFullScreen

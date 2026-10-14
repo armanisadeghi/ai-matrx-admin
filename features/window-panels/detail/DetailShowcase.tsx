@@ -291,7 +291,7 @@ export function DetailShowcase() {
                 <figure key={frame.title} className="flex flex-col gap-1">
                   <figcaption className="text-[11px] font-medium text-muted-foreground">{frame.title}</figcaption>
                   <iframe
-                    title={`${frame.title} at phone width`}
+                    aria-label={`${frame.title} at phone width`}
                     src={frame.src}
                     className="h-[720px] w-[390px] max-w-full rounded-xl border border-border bg-background"
                   />

@@ -68,7 +68,7 @@ export function HtmlTileBody({
     <div ref={boxRef} className="relative h-full overflow-hidden bg-background">
       {loaded ? (
         <iframe
-          title={title}
+          aria-label={title}
           src={src}
           srcDoc={srcDoc}
           sandbox="allow-scripts"

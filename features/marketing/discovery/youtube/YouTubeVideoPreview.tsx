@@ -35,7 +35,7 @@ export function YouTubeVideoPreviewContent({
       <div className="relative aspect-video overflow-hidden rounded-t-3xl bg-black">
         <iframe
           src={youTubeEmbedUrl(video.video_id)}
-          title={video.title}
+          aria-label={video.title}
           className="h-full w-full"
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
           allowFullScreen

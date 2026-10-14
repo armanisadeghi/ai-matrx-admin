@@ -830,7 +830,7 @@ function YouTubeVideoCard({
       <div className="relative aspect-video w-full bg-black">
         <iframe
           src={youTubeEmbedUrl(videoId, { start })}
-          title={label}
+          aria-label={label}
           className="absolute inset-0 h-full w-full"
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
           allowFullScreen
@@ -1022,7 +1022,7 @@ function VideoCard({
         {playing && embed ? (
           <iframe
             src={embed.embedUrl}
-            title={label}
+            aria-label={label}
             className="absolute inset-0 h-full w-full"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
             allowFullScreen

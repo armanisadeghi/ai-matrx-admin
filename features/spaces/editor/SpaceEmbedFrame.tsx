@@ -21,7 +21,7 @@ export function SpaceEmbedFrame({
       data-provider={target.provider}
       src={target.src}
       srcDoc={target.srcDoc}
-      title={title}
+      aria-label={title}
       allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
       allowFullScreen
       sandbox={sandbox}

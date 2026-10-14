@@ -142,7 +142,7 @@ export function TakeoverCanvas({
             <iframe
               key={ticket.streamSessionId}
               src={ticket.endpoint}
-              title="Live cloud browser"
+              aria-label="Live cloud browser"
               className="absolute inset-0 h-full w-full border-0"
               allow="autoplay; fullscreen"
               referrerPolicy="no-referrer"

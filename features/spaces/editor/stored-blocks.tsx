@@ -328,13 +328,13 @@ function MediaBlock({ type, p, edit }: { type: MediaKind; p: Record<string, unkn
       {type === "image" ? <img src={src} alt={Array.isArray(p.caption) ? (p.caption as RichSpan[]).map((s) => s.text).join("") : ""} className="spaces-image" draggable={false} /> : null}
       {type === "video" ? (
         videoEmbed(src) ? (
-          <iframe className="spaces-iframe spaces-iframe-video" src={videoEmbed(src)!} allow="autoplay; encrypted-media; picture-in-picture" allowFullScreen title={name} />
+          <iframe className="spaces-iframe spaces-iframe-video" src={videoEmbed(src)!} allow="autoplay; encrypted-media; picture-in-picture" allowFullScreen aria-label={name} />
         ) : (
           <video className="spaces-video" src={src} controls preload="metadata" />
         )
       ) : null}
       {type === "audio" ? <audio className="spaces-audio" src={src} controls preload="metadata" /> : null}
-      {type === "pdf" ? <iframe className="spaces-iframe spaces-iframe-pdf" src={src} title={name} /> : null}
+      {type === "pdf" ? <iframe className="spaces-iframe spaces-iframe-pdf" src={src} aria-label={name} /> : null}
     </MediaFrame>
   );
 }

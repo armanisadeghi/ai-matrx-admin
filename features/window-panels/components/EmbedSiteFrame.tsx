@@ -16,7 +16,7 @@ export interface EmbedSiteFrameProps {
 export function EmbedSiteFrame({ src, title, className }: EmbedSiteFrameProps) {
   return (
     <iframe
-      title={title}
+      aria-label={title}
       src={src}
       className={cn(
         "h-full min-h-0 w-full flex-1 border-0 bg-background",

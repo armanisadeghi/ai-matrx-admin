@@ -44,7 +44,7 @@ export default function IframeArtifact({
         allowFullScreen
         className="w-full border-0"
         style={{ height, minHeight: "300px" }}
-        title={title}
+        aria-label={title}
       />
     );
   }
@@ -57,7 +57,7 @@ export default function IframeArtifact({
       sandbox={isPublic ? "" : "allow-scripts allow-forms"}
       className="w-full border-0"
       style={{ height, minHeight: "300px" }}
-      title={title}
+      aria-label={title}
     />
   );
 }

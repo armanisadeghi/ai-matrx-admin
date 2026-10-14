@@ -643,7 +643,7 @@ ${wordPressCSS}
                   srcDoc={getCurrentHtmlContent()}
                   className="flex-1 w-full min-h-0 border border-gray-300 dark:border-gray-600 rounded-md"
                   sandbox="allow-scripts"
-                  title="HTML Preview"
+                  aria-label="HTML Preview"
                   style={{ colorScheme: "light", background: "white" }}
                 />
               </div>
@@ -1192,7 +1192,7 @@ ${wordPressCSS}
                         <iframe key={previewSandbox}
                           src={savedPage.url}
                           className="w-full h-full min-h-[600px]"
-                          title={savedPage.title}
+                          aria-label={savedPage.title}
                           sandbox={previewSandbox}
                           style={{ colorScheme: "light" }}
                         />
