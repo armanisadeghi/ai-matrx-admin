@@ -123,7 +123,7 @@ import {
   RowSelectionBar,
   useRowSelection,
   type RowSelection,
-} from "@/components/official/RowSelectionBar";
+} from "@/lib/entity-list/RowSelectionBar";
 import {
   buildMeetingBulkActions,
   meetingIdOf,

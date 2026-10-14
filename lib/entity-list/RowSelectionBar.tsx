@@ -1,15 +1,19 @@
 "use client";
 
-// components/official/RowSelectionBar.tsx
+// lib/entity-list/RowSelectionBar.tsx
 //
-// SELECTION CHROME for hand-built lists that are not a MatrxDataTable (the
-// schedules list, the meetings agenda). Same model as the notes sidebar: the
-// list owns a plain id set (`useRowSelection`), every row shows a checkbox,
-// and the verbs are the platform's shared `EntityBulkActions` — confirms,
-// pending state, named refusals and toasts are the shared ones. This file
-// owns only the select-all / count / clear strip. The strip is always
-// present (actions disabled until a row is ticked) so ticking never shifts
-// the list.
+// THE ONE SELECTION for lists that are not a MatrxDataTable (notes sidebar,
+// pick lists, context items, schedules, meetings). Plain tables use
+// ./useTableBulkSelection.tsx; list pages get it from EntityListPage. Never a
+// fourth copy.
+//
+// The list owns an id set (`useRowSelection`), every row shows a checkbox, and
+// the verbs are the shared `EntityBulkActions` — confirms, pending state, named
+// refusals and toasts are the shared ones. Only rows still ON SCREEN count:
+// ticks a filter took away drop out, and a change of `resetKey` (tab, filter,
+// organization) clears them, so an action never touches a row nobody can see.
+// The strip is always present and reserves room for Clear, so ticking never
+// shifts the list.
 
 import { useState } from "react";
 import { X } from "lucide-react";
@@ -27,6 +31,8 @@ export interface RowSelection<TRow> {
   has: (id: string) => boolean;
   toggle: (id: string) => void;
   toggleAll: () => void;
+  /** Tick or untick a group (a section header's checkbox). */
+  setMany: (ids: string[], ticked: boolean) => void;
   clear: () => void;
   allSelected: boolean;
   someSelected: boolean;
@@ -36,13 +42,22 @@ export interface RowSelection<TRow> {
 export function useRowSelection<TRow>(
   rows: readonly TRow[],
   idOf: (row: TRow) => string,
+  /** Change it (tab, filter, organization) to clear the selection. */
+  resetKey?: string,
 ): RowSelection<TRow> {
   const [ids, setIds] = useState<ReadonlySet<string>>(new Set());
+  const [seenKey, setSeenKey] = useState(resetKey);
+  // Reset during render (React's "adjust state on a prop change" pattern).
+  if (seenKey !== resetKey) {
+    setSeenKey(resetKey);
+    if (ids.size > 0) setIds(new Set());
+  }
+  const onScreen = new Set(rows.map(idOf));
   const selectedRows = rows.filter((row) => ids.has(idOf(row)));
   const allSelected = rows.length > 0 && selectedRows.length === rows.length;
   return {
     rows: selectedRows,
-    has: (id) => ids.has(id),
+    has: (id) => ids.has(id) && onScreen.has(id),
     toggle: (id) =>
       setIds((prev) => {
         const next = new Set(prev);
@@ -52,6 +67,15 @@ export function useRowSelection<TRow>(
       }),
     toggleAll: () =>
       setIds(allSelected ? new Set() : new Set(rows.map(idOf))),
+    setMany: (many, ticked) =>
+      setIds((prev) => {
+        const next = new Set(prev);
+        for (const id of many) {
+          if (ticked) next.add(id);
+          else next.delete(id);
+        }
+        return next;
+      }),
     clear: () => setIds(new Set()),
     allSelected,
     someSelected: selectedRows.length > 0 && !allSelected,
@@ -67,6 +91,7 @@ export function RowSelectionBar<TRow>({
   onRefresh,
   onRemoveRows,
   disabled = false,
+  compact = false,
 }: {
   selection: RowSelection<TRow>;
   idOf: (row: TRow) => string;
@@ -77,6 +102,8 @@ export function RowSelectionBar<TRow>({
   onRemoveRows?: (ids: string[]) => void;
   /** Nothing to select (empty list). */
   disabled?: boolean;
+  /** Icon-only action buttons, for narrow hosts (a sidebar). */
+  compact?: boolean;
 }) {
   const count = selection.rows.length;
   const build = (): EntityBulkSelection<TRow> => ({
@@ -125,21 +152,24 @@ export function RowSelectionBar<TRow>({
           actions={actions}
           selection={{ build, clear: selection.clear, count }}
           noun={noun}
+          compact={compact}
           onRemoveRows={onRemoveRows ?? (() => {})}
           onRefresh={onRefresh}
         />
       </fieldset>
       <div className="flex-1" />
-      {count > 0 ? (
-        <Button
-          type="button"
-          variant="quiet"
-          icon={<X />}
-          onClick={selection.clear}
-        >
-          Clear
-        </Button>
-      ) : null}
+      {/* Always rendered so its room is reserved; hidden while nothing is ticked. */}
+      <Button
+        type="button"
+        variant="quiet"
+        icon={<X />}
+        aria-hidden={count === 0}
+        tabIndex={count === 0 ? -1 : undefined}
+        className={count === 0 ? "invisible" : undefined}
+        onClick={selection.clear}
+      >
+        {compact ? null : "Clear"}
+      </Button>
     </div>
   );
 }

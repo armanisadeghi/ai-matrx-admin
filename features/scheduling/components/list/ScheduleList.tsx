@@ -25,7 +25,7 @@ import { useAppDispatch } from "@/lib/redux/hooks";
 import {
   RowSelectionBar,
   useRowSelection,
-} from "@/components/official/RowSelectionBar";
+} from "@/lib/entity-list/RowSelectionBar";
 import {
   buildScheduleBulkActions,
   scheduleIdOf,
