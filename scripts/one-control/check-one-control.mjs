@@ -8,6 +8,7 @@
  *
  *   prototype-control-class|<file>   a retired `uc-*` prototype class (the decision-board system)
  *   control-visual-override|<file>   a visual className/style handed to a package control
+ *   raw-select|<file>                a native <select> (use the package Select / OptionCombobox)
  *
  * A styled raw <button> is counted by `check:ui-drift` (`styled-raw-button`) — one census per
  * defect, never two. No baseline: the controls shipped with zero sites, so every item is `new`. Loud, never blocking a release: `--strict` exits 1 on a new item and
@@ -25,15 +26,16 @@ import { Linter } from "eslint";
 import tsParser from "@typescript-eslint/parser";
 
 import { emitItem, endItems } from "../checks/items.mjs";
-import { oneControl } from "../lint-rules/one-control-rule.mjs";
-import { ONE_CONTROL_FIX, PROTOTYPE_FIX } from "../lint-rules/one-control.mjs";
+import { noRawSelect, oneControl } from "../lint-rules/one-control-rule.mjs";
+import { ONE_CONTROL_FIX, PROTOTYPE_FIX, RAW_SELECT_FIX } from "../lint-rules/one-control.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const TAG = "[one-control]";
-const RULE_OF = { prototype: "prototype-control-class", override: "control-visual-override" };
+const RULE_OF = { prototype: "prototype-control-class", override: "control-visual-override", raw: "raw-select" };
 export const RULES = {
   "prototype-control-class": { title: "retired uc-* prototype class", fix: PROTOTYPE_FIX },
   "control-visual-override": { title: "visual className/style on a package control", fix: ONE_CONTROL_FIX },
+  "raw-select": { title: "native <select>", fix: RAW_SELECT_FIX },
 };
 
 export function remedyForKey(key) {
@@ -45,17 +47,17 @@ const CONFIG = [
   {
     files: ["**/*.tsx"],
     languageOptions: { parser: tsParser, parserOptions: { ecmaFeatures: { jsx: true } } },
-    plugins: { matrx: { rules: { "one-control": oneControl } } },
-    rules: { "matrx/one-control": "error" },
+    plugins: { matrx: { rules: { "one-control": oneControl, "no-raw-select": noRawSelect } } },
+    rules: { "matrx/one-control": "error", "matrx/no-raw-select": "error" },
   },
 ];
 
 /** One file's sites: [{ rule, line, what }]. */
 export function scanSource(file, text) {
-  if (!/\buc-|\buc\b|design-system\/controls/.test(text)) return [];
+  if (!/\buc-|\buc\b|design-system\/controls|<select\b/.test(text)) return [];
   return linter
     .verify(text, CONFIG, { filename: file })
-    .filter((m) => m.ruleId === "matrx/one-control")
+    .filter((m) => m.ruleId === "matrx/one-control" || m.ruleId === "matrx/no-raw-select")
     .map((m) => ({ rule: RULE_OF[m.messageId], line: m.line, what: m.message.split(" — ")[0].split(":")[0] }));
 }
 
@@ -131,11 +133,12 @@ function selfTest() {
       "proto.tsx": 'export const A = () => <button className="uc-btn uc-btn-primary">New</button>;\n',
       "override.tsx": `${IMPORT}export const B = () => <Button className="h-9 px-6">Save</Button>;\n`,
       "style.tsx": `${IMPORT}export const C = () => <Field style={{ height: 40 }} />;\n`,
+      "select.tsx": 'export const E = () => <select value="a" onChange={() => {}}><option value="a">A</option></select>;\n',
       "clean.tsx": `${IMPORT}export const D = () => <Field className="w-44 flex-1" style={{ width: "11rem" }} />;\n`,
     };
     for (const [name, text] of Object.entries(plant)) writeFileSync(join(dir, name), text);
     const keys = collect({ root: dir }).map((f) => f.key);
-    const want = ["control-visual-override|override.tsx", "control-visual-override|style.tsx", "prototype-control-class|proto.tsx"];
+    const want = ["control-visual-override|override.tsx", "control-visual-override|style.tsx", "prototype-control-class|proto.tsx", "raw-select|select.tsx"];
     const ok = JSON.stringify(keys) === JSON.stringify(want);
     console.log(`${TAG} self-test ${ok ? "PASS" : "FAIL"}: ${JSON.stringify(keys)}`);
     return ok ? 0 : 1;

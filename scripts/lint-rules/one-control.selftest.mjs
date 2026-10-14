@@ -3,7 +3,7 @@
 import test from "node:test";
 import { RuleTester } from "eslint";
 import tsParser from "@typescript-eslint/parser";
-import { noStyledRawButton, oneControl } from "./one-control-rule.mjs";
+import { noRawSelect, noStyledRawButton, oneControl } from "./one-control-rule.mjs";
 
 const tester = new RuleTester({ languageOptions: { parser: tsParser, parserOptions: { ecmaFeatures: { jsx: true } } } });
 const IMPORT = 'import { Button, Field } from "@ai-matrx/design-system/controls";\n';
@@ -30,5 +30,12 @@ test("matrx/no-styled-raw-button", () => {
   tester.run("no-styled-raw-button", noStyledRawButton, {
     valid: [{ code: '<button className="flex-1 truncate">x</button>' }, { code: "<button>x</button>" }],
     invalid: [{ code: '<button className="h-8 rounded-md px-3 bg-primary">x</button>', errors: [{ messageId: "raw" }] }],
+  });
+});
+
+test("matrx/no-raw-select", () => {
+  tester.run("no-raw-select", noRawSelect, {
+    valid: [{ code: `${IMPORT}<Select value="a" options={[]} onValueChange={() => {}} aria-label="x" />` }, { code: "<Select />" }],
+    invalid: [{ code: '<select value="a" onChange={() => {}}><option value="a">A</option></select>', errors: [{ messageId: "raw" }] }],
   });
 });

@@ -21,6 +21,9 @@ export const PROTOTYPE_FIX =
 export const RAW_BUTTON_FIX =
   "A styled raw <button> is a hand-rolled control. Use Button from @ai-matrx/design-system/controls (or a tap button for an icon on a floating bar).";
 
+export const RAW_SELECT_FIX =
+  "A native <select> is a hand-rolled control. Use Select from @ai-matrx/design-system/controls (options array), or OptionCombobox for long/grouped/searchable lists.";
+
 export const isControlsModule = (src) => src === CONTROLS_MODULE;
 
 /** Layout containers from the controls module: they hold controls and may carry a row's own

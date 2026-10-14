@@ -8,6 +8,7 @@
  *   2. a VISUAL class or style key handed to a control imported from
  *      `@ai-matrx/design-system/controls` (the package locks it anyway — the class is a lie).
  * matrx/no-styled-raw-button (warn): a raw <button> whose className carries visual classes.
+ * matrx/no-raw-select (error): any native <select> — the package Select / OptionCombobox replace it.
  *
  * Never an eslint-disable: the census of what is left is `pnpm findings`.
  * Self-test: node --test scripts/lint-rules/one-control.selftest.mjs
@@ -16,6 +17,7 @@ import {
   ONE_CONTROL_FIX,
   PROTOTYPE_FIX,
   RAW_BUTTON_FIX,
+  RAW_SELECT_FIX,
   controlVisualTokens,
   isControlsModule,
   isExemptFile,
@@ -116,6 +118,24 @@ export const noStyledRawButton = {
         if (!cls?.value) return;
         const toks = rawButtonVisualTokens(strings(cls.value).join(" "));
         if (toks.length) context.report({ node: cls, messageId: "raw", data: { tokens: toks.join(" ") } });
+      },
+    };
+  },
+};
+
+export const noRawSelect = {
+  meta: {
+    type: "problem",
+    docs: { description: "A native <select> is a hand-rolled control; use the package Select or OptionCombobox." },
+    schema: [],
+    messages: { raw: `<select> — ${RAW_SELECT_FIX}` },
+  },
+  create(context) {
+    const filename = context.filename ?? context.getFilename?.() ?? "";
+    if (isExemptFile(filename)) return {};
+    return {
+      JSXOpeningElement(node) {
+        if (elementName(node) === "select") context.report({ node, messageId: "raw" });
       },
     };
   },

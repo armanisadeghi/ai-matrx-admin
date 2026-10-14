@@ -18,7 +18,7 @@ import tseslint from "typescript-eslint";
 import { noNavigationForQueryState } from "./scripts/lint-rules/no-navigation-for-query-state.mjs";
 import { emptyStateNeedsReadGate, errorRenderCarriesAlchemy } from "./scripts/lint-rules/error-render-carries-alchemy.mjs";
 import { noCanonicalComponentOverride } from "./scripts/lint-rules/no-canonical-component-override.mjs";
-import { noStyledRawButton, oneControl } from "./scripts/lint-rules/one-control-rule.mjs";
+import { noRawSelect, noStyledRawButton, oneControl } from "./scripts/lint-rules/one-control-rule.mjs";
 import { noHandBuiltChip } from "./scripts/lint-rules/hand-built-chip.mjs";
 
 // eslint-plugin-react's `version: "detect"` (what eslint-config-next sets) calls
@@ -209,6 +209,7 @@ const matrxLintPlugin = {
     "one-control": oneControl,
     "no-hand-built-chip": noHandBuiltChip,
     "no-styled-raw-button": noStyledRawButton,
+    "no-raw-select": noRawSelect,
     "no-raw-storage-media": {
       meta: {
         type: "problem",
@@ -1701,6 +1702,8 @@ export default [
       "matrx/one-control": "error",
       // warn: ~5,600 raw buttons predate the controls; the census is `pnpm findings` (ui-drift).
       "matrx/no-styled-raw-button": "warn",
+      // A native <select> is a hand-rolled control (owner, 2026-10-14): Select / OptionCombobox.
+      "matrx/no-raw-select": "error",
       // THE CHIP LAW (owner, 2026-10-05): a hand-built tinted chip/tag/pill → the package Chip.
       // warn: the census of what is left is `pnpm findings` (ui-drift rule hand-built-chip,
       // shrink-only baseline). Never an eslint-disable.

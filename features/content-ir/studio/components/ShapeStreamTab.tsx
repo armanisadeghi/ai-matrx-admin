@@ -26,6 +26,7 @@ import {
   Play,
   RotateCcw,
 } from "lucide-react";
+import { Button, Select } from "@ai-matrx/design-system/controls";
 import type { Json } from "@/types/database.types";
 import type { RenderBlockPayload } from "@ai-matrx/agents/generated/stream-events";
 import { StreamBlockAccumulator } from "@ai-matrx/chat/agents/redux/execution-system/utils/stream-block-accumulator";
@@ -208,55 +209,40 @@ export default function ShapeStreamTab({
       {/* ── Live render (the production path) ── */}
       <div className="min-w-0">
         <div className="mb-3 flex flex-wrap items-center gap-2">
-          <button
-            type="button"
+          <Button
+            variant="primary"
+            icon={runState === "done" ? <RotateCcw /> : <Play />}
             onClick={play}
             disabled={!canonical || runState === "playing"}
-            className="inline-flex h-11 items-center gap-1.5 rounded-md bg-primary px-3 text-xs font-medium text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
           >
-            {runState === "done" ? (
-              <RotateCcw className="h-3.5 w-3.5" />
-            ) : (
-              <Play className="h-3.5 w-3.5" />
-            )}
             {runState === "done" ? "Replay stream" : "Play stream"}
-          </button>
+          </Button>
           {runState === "playing" ? (
-            <button
-              type="button"
-              onClick={interrupt}
-              className="inline-flex h-11 items-center gap-1.5 rounded-md border border-destructive/40 px-3 text-xs font-medium text-destructive-ink transition-colors hover:bg-destructive/10"
-            >
-              <CircleX className="h-3.5 w-3.5" />
+            <Button variant="danger" icon={<CircleX />} onClick={interrupt}>
               Simulate interruption
-            </button>
+            </Button>
           ) : null}
-          <select
+          <Select<WireMode>
             value={mode}
-            onChange={(e) => setMode(e.target.value as WireMode)}
+            onValueChange={setMode}
             disabled={runState === "playing"}
-            className="h-11 rounded-md border border-border bg-card px-2 text-base text-foreground sm:text-xs"
             aria-label="Wire mode"
-          >
-            {(Object.keys(WIRE_MODE_LABEL) as WireMode[]).map((m) => (
-              <option key={m} value={m}>
-                {WIRE_MODE_LABEL[m]}
-              </option>
-            ))}
-          </select>
-          <select
-            value={speedIdx}
-            onChange={(e) => setSpeedIdx(Number(e.target.value))}
+            options={(Object.keys(WIRE_MODE_LABEL) as WireMode[]).map((m) => ({
+              value: m,
+              label: WIRE_MODE_LABEL[m],
+            }))}
+          />
+          <Select
+            value={String(speedIdx)}
+            onValueChange={(v) => setSpeedIdx(Number(v))}
             disabled={runState === "playing"}
-            className="h-11 rounded-md border border-border bg-card px-2 text-base text-foreground sm:text-xs"
             aria-label="Stream speed"
-          >
-            {SPEEDS.map((s, i) => (
-              <option key={s.label} value={i}>
-                {s.label} ({s.charsPerTick} chars/tick)
-              </option>
-            ))}
-          </select>
+            options={SPEEDS.map((s, i) => ({
+              value: String(i),
+              label: s.label,
+              meta: `${s.charsPerTick} chars/tick`,
+            }))}
+          />
           {progress.total > 0 && (
             <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
               <Gauge className="h-3.5 w-3.5" />
