@@ -3,7 +3,7 @@
   "updated": "2026-10-07",
   "sha": "e389e62b291c8f8958b40ae46c3c3cb67335a4b2",
   "sites": 36071,
-  "count": 23,
+  "count": 24,
   "ids": [
     "arbitrary-text-size|features/esign/signer/parts/PaperField.tsx",
     "primitive-visual-class|components/editor-chrome/EditorRibbon.tsx",
@@ -27,6 +27,7 @@
     "styled-raw-button|features/esign/signer/parts/DocumentStack.tsx",
     "styled-raw-button|features/esign/signer/parts/PaperField.tsx",
     "styled-raw-button|features/file-actions/home/StartBand.tsx",
+    "styled-raw-button|features/marketing/smart-add/validate/ValidateStage.tsx",
     "styled-raw-button|features/rich-document/outline/DocumentOutline.tsx"
   ],
   "counts": {
@@ -11960,6 +11961,11 @@
       "reason": "The More trigger is a tab of this nav primitive itself and must match its sibling link tabs exactly; no design-system control has the nav-tab geometry",
       "accepted_by": "Armani Sadeghi",
       "date": "2026-10-13"
+    },
+    "styled-raw-button|features/marketing/smart-add/validate/ValidateStage.tsx": {
+      "reason": "Flagship validation stage (Arman's elevated-stage rule): the set card's value pills are bespoke toggle chips sized for the stage; no shared toggle-chip control exists",
+      "accepted_by": "Armani Sadeghi",
+      "date": "2026-10-14"
     }
   }
 }
