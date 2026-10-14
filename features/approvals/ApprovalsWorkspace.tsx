@@ -77,10 +77,10 @@ export function ApprovalsWorkspace({
   if (!userId) {
     return (
       <div className="rounded-lg border border-border bg-card p-6 text-center">
-        <p className="text-sm font-medium text-foreground">
+        <p className="type-title text-foreground">
           Sign in to see what is waiting on you
         </p>
-        <p className="mt-1 text-xs text-muted-foreground">
+        <p className="mt-1 type-secondary text-muted-foreground">
           {/* read-gate-exempt: the signed-out state (no user in the auth session), not a read's answer; the queue is never read without a user */}
           Approvals are addressed to a person — there is nothing to show without
           knowing who you are.
@@ -161,7 +161,7 @@ export function ApprovalsWorkspace({
           "already decided" because a row was not on page one is the screen
           lying (Bugbot MEDIUM #2, 2026-09-17). */}
       {focusItemId && focusMessage ? (
-        <p className="mt-2 rounded-md border border-border bg-muted/40 px-2.5 py-1.5 text-xs text-muted-foreground">
+        <p className="mt-2 rounded-md border border-border px-2.5 py-1.5 type-secondary text-muted-foreground">
           {focusMessage}
           {/* THE DOOR LAW: the item exists, so the sentence that says it is not
               an approval also says where it IS. */}
@@ -196,7 +196,7 @@ export function ApprovalsWorkspace({
       {empty ? (
         <div className="mt-3 flex flex-col items-center gap-2 rounded-lg border border-border bg-card p-8 text-center">
           <CheckCircle2 className="size-8 text-success" />
-          <p className="text-sm font-medium text-foreground">
+          <p className="type-title text-foreground">
             {/* 🚨 NEVER "nothing is waiting on you" while the person is holding a
                 link to something that IS (Bugbot round 9 #9). */}
             {waitingElsewhere
@@ -206,7 +206,7 @@ export function ApprovalsWorkspace({
           {/* The copy lives in `./empty-state.ts` so the lane that ships the
               first producer changes it in one place, in the commit that makes
               it true. */}
-          <p className="max-w-md text-xs text-muted-foreground">
+          <p className="max-w-md type-secondary text-muted-foreground">
             {/* The banner above already carries the whole answer and its door;
                 the card only has to stop contradicting it. */}
             {waitingElsewhere

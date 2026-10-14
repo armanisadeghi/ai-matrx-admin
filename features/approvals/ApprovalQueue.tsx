@@ -45,6 +45,7 @@ import {
 } from "lucide-react";
 import AppLink from "@/components/navigation/AppLink";
 import { formatCount } from "@ai-matrx/kit/format";
+import { Badge as KindBadge } from "@ai-matrx/design-system/controls";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -655,13 +656,13 @@ export function ApprovalQueue({
         >
           <div className="flex flex-wrap items-center gap-2">
             <AGENT_ICON className="size-4 shrink-0 text-muted-foreground" />
-            <span className="text-sm font-medium text-foreground">
+            <span className="type-title text-foreground">
               {title ?? "Waiting on your approval"}
             </span>
             <Badge variant="secondary" className="h-5 px-1.5 text-[11px]">
               {count.toLocaleString()}
             </Badge>
-            <span className="text-xs text-muted-foreground">
+            <span className="type-secondary text-muted-foreground">
               Nothing here changes until you decide.
             </span>
             <Button
@@ -706,7 +707,7 @@ export function ApprovalQueue({
                     aria-label="Select every proposal shown"
                     disabled={busy}
                   />
-                  <span className="text-xs text-muted-foreground">
+                  <span className="type-secondary text-muted-foreground">
                     {/* read-gate-exempt: the select-all label counts the proposals on screen and the person's own ticks, not a read's total */}
                     {selectedItems.length > 0
                       ? `${selectedItems.length} of ${allItems.length} shown selected`
@@ -715,7 +716,7 @@ export function ApprovalQueue({
                   {selectedItems.length > 0 ? (
                     <div className="ml-auto flex flex-wrap items-center gap-1.5">
                       {batchRejectNeedsOneKind ? (
-                        <span className="text-[11px] text-muted-foreground">
+                        <span className="type-meta text-muted-foreground">
                           This reject needs rows of one kind
                         </span>
                       ) : null}
@@ -746,10 +747,10 @@ export function ApprovalQueue({
                   .map((section) => (
                     <section key={section.kind.id} className="space-y-1">
                       <div className="flex flex-wrap items-center gap-2 px-1.5">
-                        <h3 className="text-xs font-semibold text-foreground">
+                        <h3 className="type-title text-foreground">
                           {section.kind.label}
                         </h3>
-                        <span className="text-[11px] text-muted-foreground">
+                        <span className="type-meta text-muted-foreground">
                           {section.total > section.items.length
                             ? `${section.items.length} of ${formatCount(section.total)} shown`
                             : `${section.items.length}`}
@@ -758,7 +759,7 @@ export function ApprovalQueue({
                         section.slot?.source.moreHref ? (
                           <AppLink
                             href={section.slot.source.moreHref}
-                            className="ml-auto inline-flex items-center gap-1 text-[11px] text-primary underline-offset-2 hover:underline"
+                            className="ml-auto inline-flex items-center gap-1 type-meta text-primary underline-offset-2 hover:underline"
                              target="_blank"
                              rel="noopener noreferrer"
                            >
@@ -799,22 +800,19 @@ export function ApprovalQueue({
                               />
                               <div className="min-w-0 flex-1 space-y-0.5">
                                 <div className="flex flex-wrap items-center gap-1.5">
-                                  <Badge
-                                    variant="outline"
-                                    className="h-4 shrink-0 whitespace-nowrap px-1 text-[10px] font-normal"
-                                  >
+                                  <KindBadge className="shrink-0">
                                     {item.badge ?? section.kind.label}
-                                  </Badge>
-                                  <span className="break-words text-sm text-foreground">
+                                  </KindBadge>
+                                  <span className="break-words type-body text-foreground">
                                     {item.headline}
                                   </span>
                                 </div>
                                 {item.doors ? (
-                                  <div className="break-words text-xs text-muted-foreground">
+                                  <div className="break-words type-secondary text-muted-foreground">
                                     {item.doors}
                                   </div>
                                 ) : null}
-                                <p className="break-words text-xs text-muted-foreground">
+                                <p className="break-words type-secondary text-muted-foreground">
                                   {item.acceptEffect}
                                   {item.proposedBy
                                     ? ` · proposed by ${item.proposedBy}`
@@ -823,14 +821,14 @@ export function ApprovalQueue({
                                     ? ` · ${new Date(item.proposedAt).toLocaleDateString()}`
                                     : ""}
                                 </p>
-                                <p className="break-words text-[11px]">
+                                <p className="break-words type-meta">
                                   <ModeLine item={item} />
                                 </p>
                                 {/* Not yours to approve — but never hidden, and
                                     never a disabled control with no reason
                                     (THE NO-SILENT-FAILURE LAW). */}
                                 {item.blocked ? (
-                                  <p className="break-words text-[11px] text-warning">
+                                  <p className="break-words type-meta text-warning">
                                     {item.blocked.reason} {item.blocked.whoCan}
                                   </p>
                                 ) : null}
@@ -839,7 +837,7 @@ export function ApprovalQueue({
                                     controls: a second Approve does nothing and a
                                     Reject cannot call a write back. */}
                                 {item.inFlight ? (
-                                  <p className="break-words text-[11px] text-muted-foreground">
+                                  <p className="break-words type-meta text-muted-foreground">
                                     {item.inFlight.sentence}
                                   </p>
                                 ) : null}
@@ -849,7 +847,7 @@ export function ApprovalQueue({
                                     "the change was made by that first approval"
                                     (round-2 verification § A-iii). */}
                                 {item.lastAttempt?.state === "failed" ? (
-                                  <p className="break-words text-[11px] font-medium text-destructive">
+                                  <p className="break-words type-meta text-destructive">
                                     {item.lastAttempt.sentence}
                                     <ErrorAlchemyMenu />
                                   </p>
@@ -863,7 +861,7 @@ export function ApprovalQueue({
                                     second block in the person's document. */}
                                 {item.lastAttempt?.state ===
                                 "applied_unconfirmed" ? (
-                                  <p className="break-words text-[11px] font-medium text-warning">
+                                  <p className="break-words type-meta text-warning">
                                     {item.lastAttempt.sentence}
                                   </p>
                                 ) : null}
@@ -873,7 +871,7 @@ export function ApprovalQueue({
                                     "Nothing is waiting on you" over it and only
                                     the console disagreed (§ A-N6). */}
                                 {item.unreadable ? (
-                                  <p className="break-words text-[11px] font-medium text-warning">
+                                  <p className="break-words type-meta text-warning">
                                     {item.unreadable.sentence}
                                   </p>
                                 ) : null}
@@ -885,7 +883,7 @@ export function ApprovalQueue({
                                     Approve on every kind. It now names the state
                                     and offers nothing — honest, never dead. */}
                                 {item.unknownState ? (
-                                  <p className="break-words text-[11px] font-medium text-warning">
+                                  <p className="break-words type-meta text-warning">
                                     {item.unknownState.sentence}
                                   </p>
                                 ) : null}
@@ -895,7 +893,7 @@ export function ApprovalQueue({
                                     could not say so until after the click
                                     (§ A-N7). */}
                                 {item.expired ? (
-                                  <p className="break-words text-[11px] font-medium text-warning">
+                                  <p className="break-words type-meta text-warning">
                                     {item.expired.sentence}
                                   </p>
                                 ) : null}
@@ -974,7 +972,7 @@ export function ApprovalQueue({
             return (
               <p
                 key={kind.id}
-                className="mt-1.5 break-words text-[11px] text-muted-foreground"
+                className="mt-1.5 break-words type-meta text-muted-foreground"
               >
                 {kind.label}: {requirement.explain}{" "}
                 <AppLink
@@ -1017,13 +1015,13 @@ export function ApprovalQueue({
         content={
           pending ? (
             <div className="space-y-2">
-              <div className="max-h-56 space-y-1.5 overflow-y-auto overscroll-contain rounded-md border border-border bg-muted/40 p-2">
+              <div className="max-h-56 space-y-1.5 overflow-y-auto overscroll-contain rounded-md border border-border p-2">
                 {pending.items.map((item) => (
-                  <div key={item.key} className="text-xs">
-                    <span className="block break-words font-medium text-foreground">
+                  <div key={item.key}>
+                    <span className="block break-words type-title text-foreground">
                       {item.headline}
                     </span>
-                    <span className="block break-words text-muted-foreground">
+                    <span className="block break-words type-secondary text-muted-foreground">
                       {pending.decision === "accept"
                         ? item.acceptEffect
                         : item.rejectEffect}
@@ -1044,7 +1042,7 @@ export function ApprovalQueue({
                 />
               ) : null}
               {asksReason && reasonDropped.length > 0 ? (
-                <p className="text-[11px] text-muted-foreground">
+                <p className="type-meta text-muted-foreground">
                   Your reason is kept on every change except{" "}
                   {reasonDropped.join(", ")}, which does not store one yet.
                 </p>
