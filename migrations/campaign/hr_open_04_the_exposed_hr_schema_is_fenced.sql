@@ -5,6 +5,8 @@
 -- the break-glass contract follows the centralized iam.share_with_person writer introduced later.
 -- No function answer, row, policy, trigger, or performance-review client grant changes.
 -- lane: HR-SCHEMA-OPEN
+-- based-on: hr.definer_functions_client_reachable() eab171625aa7d3a1ed1bc4fd3049daf1a7945a63d33a53947506d97aa28e69f5
+-- based-on: hr.punch_write_path_conformance() 6196fbd6251dbd3fbe118488cb6f80a6152d304c2e7b5d1bb9f31218da3d3032
 
 begin;
 
