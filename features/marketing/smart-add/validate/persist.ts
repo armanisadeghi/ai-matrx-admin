@@ -253,24 +253,45 @@ async function addExclusion(ctx: PersistContext, item: FocusItem): Promise<{ id:
     .select("id")
     .maybeSingle();
   if (error && error.code === "23505") {
-    // Already on the list (unique per brand + match). An earlier Undo soft-deleted it: bring it back.
+    // An active match is already on the list; deleted history must stay deleted.
+    const matching = () => w
+      .from("brand_exclusion")
+      .select("id")
+      .eq("brand_id", brand.id)
+      .eq("match_kind", match.kind)
+      .eq("match_value", match.value);
+    const active = await matching().is("deleted_at", null).limit(1).maybeSingle();
+    if (active.error) throw new Error(active.error.message);
+    if (active.data) return { id: null, undo: async () => undefined };
+
+    // A lifetime-unique row may have been soft-deleted by Undo. Revive only
+    // that row so other deleted history cannot collide with a partial index.
+    const deleted = await matching()
+      .not("deleted_at", "is", null)
+      .order("deleted_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (deleted.error) throw new Error(deleted.error.message);
+    if (!deleted.data) throw new Error("Could not find the exclusion that blocked this answer");
     const revived = await w
       .from("brand_exclusion")
       .update({ deleted_at: null })
-      .eq("brand_id", brand.id)
-      .eq("match_kind", match.kind)
-      .eq("match_value", match.value)
-      .not("deleted_at", "is", null)
+      .eq("id", deleted.data.id)
       .select("id")
       .maybeSingle();
-    if (revived.error) throw new Error(revived.error.message);
-    const again = revived.data?.id ?? null;
+    if (revived.error || !revived.data) throw new Error(revived.error?.message ?? "Could not restore the exclusion");
+    const again = revived.data.id;
     return {
       id: again,
       undo: async () => {
         if (!again) return;
-        const { error: e } = await (await db()).from("brand_exclusion").update({ deleted_at: new Date().toISOString() }).eq("id", again);
-        if (e) throw new Error(e.message);
+        const { data: undone, error: e } = await (await db())
+          .from("brand_exclusion")
+          .update({ deleted_at: new Date().toISOString() })
+          .eq("id", again)
+          .select("id")
+          .maybeSingle();
+        if (e || !undone) throw new Error(e?.message ?? "Could not undo the exclusion");
       },
     };
   }
@@ -280,11 +301,13 @@ async function addExclusion(ctx: PersistContext, item: FocusItem): Promise<{ id:
     id,
     undo: async () => {
       if (!id) return;
-      const { error: e } = await (await db())
+      const { data: undone, error: e } = await (await db())
         .from("brand_exclusion")
         .update({ deleted_at: new Date().toISOString() })
-        .eq("id", id);
-      if (e) throw new Error(e.message);
+        .eq("id", id)
+        .select("id")
+        .maybeSingle();
+      if (e || !undone) throw new Error(e?.message ?? "Could not undo the exclusion");
     },
   };
 }
