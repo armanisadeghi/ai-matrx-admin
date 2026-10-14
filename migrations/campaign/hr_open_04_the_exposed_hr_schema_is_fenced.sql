@@ -149,13 +149,17 @@ begin
    where r.rolname = 'authenticator';
   v_list := string_to_array(
               coalesce((regexp_match(coalesce(v_schemas, ''), 'pgrst\.db_schemas=([^ ]*)'))[1], ''), ',');
-  select coalesce(jsonb_agg(grantee || ':' || privilege_type order by grantee, privilege_type), '[]'::jsonb)
+  select coalesce(jsonb_agg(role_name || ':' || privilege_name order by role_name, privilege_name), '[]'::jsonb)
     into v_bad
-    from information_schema.table_privileges
-   where table_schema = 'hr'
-     and table_name = 'punch'
-     and grantee in ('PUBLIC','anon','authenticated')
-     and privilege_type in ('INSERT','UPDATE','DELETE');
+    from (select r role_name, p privilege_name
+            from unnest(array['anon','authenticated']) r,
+                 unnest(array['INSERT','UPDATE','DELETE']) p
+           where has_table_privilege(r, 'hr.punch', p)
+          union all
+          select 'PUBLIC', privilege_type
+            from information_schema.table_privileges
+           where table_schema = 'hr' and table_name = 'punch' and grantee = 'PUBLIC'
+             and privilege_type in ('INSERT','UPDATE','DELETE')) q;
   check_key := 'pgrst_hr_exposure_is_fenced';
   ok        := 'hr' = any(coalesce(v_list, '{}'::text[]))
                and has_schema_privilege('authenticated', 'hr', 'USAGE')
@@ -232,10 +236,13 @@ begin
   end if;
 
   if exists (
+    select 1
+      from unnest(array['anon','authenticated']) r,
+           unnest(array['INSERT','UPDATE','DELETE']) p
+     where has_table_privilege(r, 'hr.punch', p)
+    union all
     select 1 from information_schema.table_privileges
-     where table_schema = 'hr'
-       and table_name = 'punch'
-       and grantee in ('PUBLIC','anon','authenticated')
+     where table_schema = 'hr' and table_name = 'punch' and grantee = 'PUBLIC'
        and privilege_type in ('INSERT','UPDATE','DELETE')
   ) then
     raise exception 'hr_open_04: a client role still holds raw DML on hr.punch';
