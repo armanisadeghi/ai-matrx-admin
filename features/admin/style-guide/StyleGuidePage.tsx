@@ -17,6 +17,7 @@ import {
   Lock,
   Plus,
   Search,
+  Gem,
   Zap,
 } from "lucide-react";
 import {
@@ -166,6 +167,8 @@ const SWATCHES: { token: string; use: string }[] = [
   { token: "foreground", use: "Content text" },
   { token: "muted-foreground", use: "Everything else" },
   { token: "primary", use: "Main action" },
+  { token: "brand-secondary", use: "Our purple" },
+  { token: "secondary", use: "Quiet grey surface" },
   { token: "success", use: "Done, healthy" },
   { token: "warning", use: "Needs a look" },
   { token: "destructive", use: "Failed, delete" },
@@ -518,6 +521,17 @@ function Colour() {
               {t}
             </Badge>
           ))}
+        </div>
+        <span className="type-label">Our purple — brand-secondary</span>
+        <div className="flex flex-wrap items-center gap-6">
+          <span className="bg-gradient-to-r from-primary to-brand-secondary bg-clip-text type-title text-transparent">
+            Source → knowledge → answer
+          </span>
+          <span className="flex items-center gap-2 type-body text-foreground">
+            <Gem className="size-4 text-brand-secondary" aria-hidden="true" />
+            Accent icon
+          </span>
+          <span className="type-meta text-muted-foreground">secondary is the quiet grey — never write it for purple</span>
         </div>
         <span className="type-label">Names a kind — Chip tones</span>
         <ChipSet>

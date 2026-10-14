@@ -27,7 +27,7 @@
 import React from "react";
 import Link from "next/link";
 import { ClipboardCheck, Cog, Link as LinkIcon } from "lucide-react";
-import { cn } from "@/utils/cn";
+import { Chip } from "@ai-matrx/design-system/controls";
 import { provenanceDoorFor } from "../provenance-door";
 import type { TaskOrigin } from "../constants/status";
 import { AGENT_ICON } from "@/components/icons/domain-icons";
@@ -86,27 +86,10 @@ export function TaskProvenanceChip({
 
   const showOrigin = !!originMeta && (!compact || !label);
 
-  const body = (
-    <>
-      <Icon className="w-2.5 h-2.5 shrink-0" />
-      {originMeta && showOrigin ? originMeta.label : null}
-      {originMeta && showOrigin && label ? (
-        <span className="opacity-50">·</span>
-      ) : null}
-      {label ? <span className="truncate">{label}</span> : null}
-    </>
-  );
-
-  const chipClass = cn(
-    "inline-flex items-center gap-1 h-5 px-1.5 rounded-md border text-[10px] font-medium max-w-full align-middle",
-    "bg-violet-500/10 text-violet-700 dark:text-violet-300 border-violet-500/30",
-    // The hover affordance follows the DOOR, not the mere presence of a url: a
-    // chip that lights up on hover and does nothing is the same lie in miniature.
-    sourceUrl &&
-      provenanceDoorFor(sourceUrl).kind !== "not-a-page" &&
-      "hover:bg-violet-500/20 transition-colors",
-    className,
-  );
+  const text = [originMeta && showOrigin ? originMeta.label : null, label]
+    .filter(Boolean)
+    .join(" · ");
+  const glyph = <Icon />;
 
   if (sourceUrl) {
     const door = provenanceDoorFor(sourceUrl);
@@ -116,42 +99,29 @@ export function TaskProvenanceChip({
     const stopRowClick = (e: React.MouseEvent) => e.stopPropagation();
     if (door.kind === "internal") {
       return (
-        <Link
-          href={door.href}
-          className={chipClass}
-          title={title}
-          onClick={stopRowClick}
-        >
-          {body}
-        </Link>
+        <Chip label={text} tone="violet" icon={glyph} title={title} className={className} asChild>
+          <Link href={door.href} onClick={stopRowClick} data-clickable />
+        </Chip>
       );
     }
     if (door.kind === "external") {
       return (
-        <OutboundLink
-          href={door.href}
-          className={chipClass}
-          title={title}
-          onClick={stopRowClick}
-        >
-          {body}
-        </OutboundLink>
+        <Chip label={text} tone="violet" icon={glyph} title={title} className={className} asChild>
+          <OutboundLink href={door.href} onClick={stopRowClick} data-clickable />
+        </Chip>
       );
     }
     // not-a-page: the provenance is true, so it is shown; it is not a door, so
     // it does not pretend to be one, and the reason is on hover.
     return (
-      <span
-        className={cn(chipClass, "cursor-default")}
+      <Chip
+        label={text}
+        tone="violet"
+        icon={glyph}
+        className={className}
         title={`${sourceLabel ?? "Task provenance"} — ${door.reason}`}
-      >
-        {body}
-      </span>
+      />
     );
   }
-  return (
-    <span className={chipClass} title="Task provenance">
-      {body}
-    </span>
-  );
+  return <Chip label={text} tone="violet" icon={glyph} className={className} title="Task provenance" />;
 }
