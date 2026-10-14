@@ -73,6 +73,7 @@ import {
   mergeEvidence,
   nextRoundSeeds,
   autoWork,
+  releaseChanged,
   orderedEvidence,
   seedKeys,
   linkPages,
@@ -414,6 +415,7 @@ export function SmartAddBrand({
     setComparing(false);
     explored.current = new Set();
     restoredDecisions.current = {};
+    restoredSeen.current = new Set();
     wokenSent.current = new Set();
     typedKeys.current = { website: null, social: null };
     personTyped.current = null;
@@ -531,9 +533,8 @@ export function SmartAddBrand({
 
   // Confirmed websites/accounts not explored yet → the next round.
   // Any other way of changing a restored answer (not only the answer buttons) hands it back to the person.
-  useEffect(() => {
-    for (const [key, d] of Object.entries(restoredDecisions.current)) if (decisions[key] !== d) delete restoredDecisions.current[key];
-  }, [decisions]);
+  const restoredSeen = useRef<Set<string>>(new Set());
+  useEffect(() => releaseChanged(restoredDecisions.current, restoredSeen.current, decisions), [decisions]);
   const work = autoWork(items, decisions, restoredDecisions.current, explored.current, wokenSent.current, person);
   const pending = work.seeds;
   const pendingKey = JSON.stringify(pending);

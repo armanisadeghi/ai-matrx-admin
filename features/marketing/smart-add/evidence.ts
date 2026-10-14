@@ -416,6 +416,22 @@ export function liveOnly(decisions: Record<string, Decision>, restored: Record<s
 }
 
 /**
+ * Hands a restored answer back to the person once they change it. The restore and this check run in the same
+ * effect flush, BEFORE the restored answers reach `decisions`: a key only counts as changed after it was seen
+ * holding its restored value (a stale first look must not release it — that let a reload start a paid round).
+ * Mutates `restored` and `seen`.
+ */
+export function releaseChanged(restored: Record<string, Decision>, seen: Set<string>, decisions: Record<string, Decision>): void {
+  for (const [key, d] of Object.entries(restored)) {
+    if (decisions[key] === d) seen.add(key);
+    else if (seen.has(key)) {
+      delete restored[key];
+      seen.delete(key);
+    }
+  }
+}
+
+/**
  * THE rule for what work a screen state asks for on its own (confirmed sites/accounts → a search round; a confirmed
  * name/location → the woken steps). Answers restored from an earlier visit were already acted on, so a reload or
  * Back asks for nothing: the test (`resumeCost.test.ts`) fails if a restored answer ever starts a round.
