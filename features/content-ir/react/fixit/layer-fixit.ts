@@ -99,10 +99,15 @@ export function composeLayerSeed(input: LayerSeedInput): LayerSeed {
   };
 }
 
-/** Who a layered row is for — read by id at click time (the resolver only carries scope + id). */
-export async function readLayerAudience(
-  rowId: string,
-): Promise<{ target: LayerTarget; organizationId: string | null }> {
+/** Who a layered row is for — the organization named, for the consequence line. */
+export interface LayerAudience {
+  target: LayerTarget;
+  organizationId: string | null;
+  organizationName: string | null;
+}
+
+/** Read by id at click time (the resolver only carries scope + id). */
+export async function readLayerAudience(rowId: string): Promise<LayerAudience> {
   const supabase = createClient();
   const { data, error } = await supabase
     .schema("content_ir")
@@ -116,9 +121,48 @@ export async function readLayerAudience(
     }>();
   if (error) throw operationFailed("read this view", error);
   if (!data) throw new Error("This view is no longer available.");
-  return data.audience_organization_id
-    ? { target: "organization", organizationId: data.audience_organization_id }
-    : { target: "mine", organizationId: null };
+  if (!data.audience_organization_id) {
+    return { target: "mine", organizationId: null, organizationName: null };
+  }
+  const { getOrganizationBySlugOrId } = await import("@/features/organizations/service");
+  const organization = await getOrganizationBySlugOrId(data.audience_organization_id).catch(
+    () => null,
+  );
+  return {
+    target: "organization",
+    organizationId: data.audience_organization_id,
+    organizationName: organization?.name ?? null,
+  };
+}
+
+export type LayerSwitchOffReason = "remove" | "use_shared";
+
+/**
+ * THE CONSEQUENCE, said first (destructive-click law): exactly what switching
+ * this view off does and to whom — me alone, or everyone in the organization.
+ */
+export function describeLayerSwitchOff(input: {
+  audience: LayerAudience;
+  reason: LayerSwitchOffReason;
+}): { title: string; description: string; confirmLabel: string; done: string } {
+  const org = input.audience.organizationName ?? "your organization";
+  const mine = input.audience.target === "mine";
+  const whose = mine ? "your view" : `${org}'s view`;
+  const who = mine ? "You" : `Everyone in ${org}`;
+  return {
+    title: input.reason === "use_shared" ? "Use the newer shared view?" : `Switch off ${whose}?`,
+    description:
+      input.reason === "use_shared"
+        ? `This switches off ${whose}. ${who} will see the shared view. You can undo.`
+        : `${who} will see the shared view instead. You can undo.`,
+    confirmLabel: input.reason === "use_shared" ? "Use shared view" : "Switch off",
+    done: mine ? "Your view is off" : `${org}'s view is off`,
+  };
+}
+
+/** Switch a layered row back on — the undo of {@link switchOffLayer}. */
+export async function switchOnLayer(kind: string, rowId: string): Promise<void> {
+  await setLayerActive(kind, rowId, true);
 }
 
 /**
@@ -127,21 +171,27 @@ export async function readLayerAudience(
  * whether this viewer may write the row.
  */
 export async function switchOffLayer(kind: string, rowId: string): Promise<void> {
+  await setLayerActive(kind, rowId, false);
+}
+
+async function setLayerActive(kind: string, rowId: string, isActive: boolean): Promise<void> {
   const supabase = createClient();
   const { error } = await tryWriteOne(
     supabase
       .schema("content_ir")
       .from("kind_component_layer")
-      .update({ is_active: false })
+      .update({ is_active: isActive })
       .eq("id", rowId)
       .select("id"),
     { action: "update", noun: "view" },
   );
   if (error) {
-    throw error instanceof WriteDidNotLandError ? error : operationFailed("switch off this view", error);
+    throw error instanceof WriteDidNotLandError
+      ? error
+      : operationFailed(isActive ? "switch this view back on" : "switch off this view", error);
   }
   invalidateKindRenderGap(kind);
-  // The overlay reloads on the kindComponents invalidation path; this forces
-  // the shared tier fresh too so the next winner paints without a reload.
+  // The overlay reloads on a forced sync; the shared tier refreshes too so the
+  // next winner paints without a reload.
   await Promise.all([refreshKindComponents(0), componentRegistry.syncOverlay(true)]);
 }

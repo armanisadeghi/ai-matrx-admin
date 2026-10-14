@@ -17,7 +17,11 @@ import type {
 } from "./diagnose-kind-render-gap";
 import type { ComponentLayerScope } from "@ai-matrx/content-ir-react";
 
-/** The owner's per-gap repair (the kind's creator, or a super admin IN the admin lane). */
+/**
+ * The owner's per-gap repair — the kind's creator (or the shared component's
+ * saver). Never admin power: on a user route a super admin is a person, and
+ * their global change is the "Change for everyone" LINK (invariant 6).
+ */
 export type FixItOwnerAction =
   | "register"
   | "add_schema"
@@ -35,11 +39,6 @@ export interface FixItGapRow {
 /** Who is looking — every field is a fact the bar reads, never a guess. */
 export interface FixItViewer {
   userId: string | null;
-  /**
-   * `selectIsSuperAdmin` — TRUE only inside the admin lane, so on a user page
-   * a super admin is an ordinary person here (invariant 6).
-   */
-  isSuperAdminInLane: boolean;
   /** `selectIsSuperAdminPerson` — identity only: decides whether the admin LINK shows. */
   isSuperAdminPerson: boolean;
   /** Owner/admin of the ACTIVE organization (org admin, not platform admin). */
@@ -56,6 +55,22 @@ export interface FixItLayerFacts {
   sharedUpdatedAt: string | null;
 }
 
+/** The viewer's own layered view, as the marker shows it. */
+export interface FixItLayerPlan {
+  mode: "layer";
+  scope: ComponentLayerScope;
+  rowId: string;
+  canEdit: boolean;
+  canRemove: boolean;
+  newerShared: boolean;
+}
+
+/** The per-person view actions — the same everywhere they appear (bar, shape page). */
+export type FixItViewPlan =
+  | { mode: "none" }
+  | FixItLayerPlan
+  | { mode: "actions"; makeMine: boolean; makeOrg: boolean; everyoneHref: string | null };
+
 export type FixItPlan =
   | { mode: "none" }
   | {
@@ -65,14 +80,7 @@ export type FixItPlan =
       makeOrg: boolean;
       everyoneHref: string | null;
     }
-  | {
-      mode: "layer";
-      scope: ComponentLayerScope;
-      rowId: string;
-      canEdit: boolean;
-      canRemove: boolean;
-      newerShared: boolean;
-    };
+  | FixItLayerPlan;
 
 export const GAP_LABEL: Record<KindRenderGap, string> = {
   unregistered: "Not registered, or not shared with you",
@@ -132,22 +140,24 @@ function isNewer(a: string | null, b: string | null): boolean {
   return Number.isFinite(left) && Number.isFinite(right) && left > right;
 }
 
-export function planKindFixIt(
-  diagnosis: KindRenderGapDiagnosis | null,
+/**
+ * THE ONE per-person decision: the viewer's own layered view wins (a marker,
+ * never the generic claim); otherwise anyone signed in may make their own
+ * view, an org admin their organization's, and a super admin (identity) gets
+ * the link to the admin shape page. Signed out: nothing.
+ */
+export function planKindViewActions(
   viewer: FixItViewer,
   layer: FixItLayerFacts | null,
-): FixItPlan {
-  const signedIn = viewer.userId !== null;
-
-  // THE VIEWER'S OWN VIEW WINS: never claim the generic viewer or the shared
-  // ladder over it. Only the viewer's own rows ever reach the overlay, so a
-  // user-scope row is theirs; an organization row is edited by its author or
-  // an org admin (the database decides the write either way). No admin power.
-  if (layer && signedIn) {
+  kind: { slug: string; registered: boolean },
+): FixItViewPlan {
+  if (viewer.userId === null) return { mode: "none" };
+  if (layer) {
+    // Only the viewer's own rows ever reach the overlay, so a user-scope row is
+    // theirs; an organization row is edited by its author or an org admin (the
+    // database decides the write either way). No admin power.
     const mineToEdit =
-      layer.scope === "user" ||
-      layer.createdBy === viewer.userId ||
-      viewer.isOrgAdmin;
+      layer.scope === "user" || layer.createdBy === viewer.userId || viewer.isOrgAdmin;
     return {
       mode: "layer",
       scope: layer.scope,
@@ -157,26 +167,48 @@ export function planKindFixIt(
       newerShared: isNewer(layer.sharedUpdatedAt, layer.updatedAt),
     };
   }
+  return {
+    mode: "actions",
+    makeMine: true,
+    makeOrg: viewer.isOrgAdmin,
+    everyoneHref: viewer.isSuperAdminPerson ? adminShapePath(kind.slug, kind.registered) : null,
+  };
+}
+
+export function planKindFixIt(
+  diagnosis: KindRenderGapDiagnosis | null,
+  viewer: FixItViewer,
+  layer: FixItLayerFacts | null,
+): FixItPlan {
+  const signedIn = viewer.userId !== null;
+
+  if (layer && signedIn) {
+    const view = planKindViewActions(viewer, layer, { slug: diagnosis?.kind ?? "", registered: true });
+    if (view.mode === "layer") return view;
+  }
 
   if (!diagnosis || diagnosis.gaps.length === 0) return { mode: "none" };
   // A signed-out visitor never reads why a shape fell back (they cannot fix it).
-  if (diagnosis.state === "unreadable" || !signedIn) {
-    if (!signedIn && diagnosis.state !== "unreadable") {
-      return {
-        mode: "gaps",
-        rows: diagnosis.gaps.map((gap) => ({ gap, label: GAP_LABEL[gap], ownerAction: null })),
-        makeMine: false,
-        makeOrg: false,
-        everyoneHref: null,
-      };
-    }
-    return { mode: "none" };
+  if (diagnosis.state === "unreadable") return { mode: "none" };
+  if (!signedIn) {
+    return {
+      mode: "gaps",
+      rows: diagnosis.gaps.map((gap) => ({ gap, label: GAP_LABEL[gap], ownerAction: null })),
+      makeMine: false,
+      makeOrg: false,
+      everyoneHref: null,
+    };
   }
 
   const isOwner =
-    viewer.isSuperAdminInLane ||
     diagnosis.kindCreatedBy === viewer.userId ||
     diagnosis.inactiveComponentCreatedBy === viewer.userId;
+  const view = planKindViewActions(viewer, null, {
+    slug: diagnosis.kind,
+    registered: diagnosis.kindDefinitionId !== null,
+  });
+  const actions =
+    view.mode === "actions" ? view : { makeMine: false, makeOrg: false, everyoneHref: null };
 
   return {
     mode: "gaps",
@@ -185,10 +217,8 @@ export function planKindFixIt(
       label: GAP_LABEL[gap],
       ownerAction: ownerActionFor(gap, isOwner, signedIn),
     })),
-    makeMine: true,
-    makeOrg: viewer.isOrgAdmin,
-    everyoneHref: viewer.isSuperAdminPerson
-      ? adminShapePath(diagnosis.kind, diagnosis.kindDefinitionId !== null)
-      : null,
+    makeMine: actions.makeMine,
+    makeOrg: actions.makeOrg,
+    everyoneHref: actions.everyoneHref,
   };
 }

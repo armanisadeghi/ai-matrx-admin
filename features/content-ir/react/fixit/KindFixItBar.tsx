@@ -29,19 +29,8 @@ import { ReactReduxContext } from "react-redux";
 import { Button } from "@ai-matrx/design-system/controls";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
-import { useAppSelector } from "@/lib/redux/hooks";
-import {
-  selectIsSuperAdmin,
-  selectIsSuperAdminPerson,
-  selectUserId,
-} from "@/lib/redux/selectors/userSelectors";
-import { selectOrganizationId } from "@/lib/redux/slices/appContextSlice";
-import { useOrgAdminGate } from "@/features/organizations/admin/hooks";
-import { crossDeploymentHref } from "@/lib/deployment/surfaces";
-import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
 import { toast } from "@/lib/toast";
 import { captureError } from "@/lib/diagnostics/errorCaptureStore";
-import { useOpenAgentRunWindow } from "@/features/overlays/openers/agentRunWindow";
 import { resolveMandate } from "@ai-matrx/chat/mandates/service";
 import { KIND_CREATOR_MANDATE_KEY } from "../../studio/constants";
 import type { Json } from "@/types/database.types";
@@ -56,24 +45,18 @@ import {
 import {
   OWNER_ACTION_LABEL,
   planKindFixIt,
-  type FixItLayerFacts,
   type FixItOwnerAction,
   type FixItPlan,
+  type FixItViewPlan,
 } from "./fixit-plan";
 import {
   SHARED_COMPONENT_NOTE,
   SHARED_REGISTER_BRIEF,
   SHARED_SCHEMA_NOTE,
-  composeLayerSeed,
   formatInstanceSample,
-  readLayerAudience,
-  switchOffLayer,
-  type LayerTarget,
 } from "./layer-fixit";
-import {
-  resolveComponent,
-  resolveSharedComponent,
-} from "../../registry/component-registry";
+import { useKindViewActions } from "./useKindViewActions";
+import { crossDeploymentHref } from "@/lib/deployment/surfaces";
 import { AGENT_ICON } from "@/components/icons/domain-icons";
 import { buildKindAuthoringOffer } from "@/features/content-ir/studio/kind-authoring-offer";
 
@@ -94,31 +77,22 @@ export const KindFixItBar: React.FC<KindFixItBarProps> = (props) => {
   return <KindFixItBarInner {...props} />;
 };
 
-/** The viewer's own layered winner for this kind, if any (resolver `layer`). */
-function readLayerFacts(kind: string): FixItLayerFacts | null {
-  const resolution = resolveComponent(kind, "web", "output");
-  if (!resolution?.layer) return null;
-  const shared = resolveSharedComponent(kind, "web", "output");
-  return {
-    scope: resolution.layer.scope,
-    rowId: resolution.layer.rowId,
-    createdBy: resolution.createdBy,
-    updatedAt: resolution.updatedAt,
-    sharedUpdatedAt: shared?.resolvedBy === "db" ? shared.updatedAt : null,
-  };
-}
-
 const KindFixItBarInner: React.FC<KindFixItBarProps> = ({ kind, value }) => {
-  const userId = useAppSelector(selectUserId);
-  const isSuperAdminInLane = useAppSelector(selectIsSuperAdmin);
-  const isSuperAdminPerson = useAppSelector(selectIsSuperAdminPerson);
-  const activeOrgId = useAppSelector(selectOrganizationId);
-  // Org admin of the ACTIVE organization — the organization a write carries.
-  const orgGate = useOrgAdminGate(userId && activeOrgId ? activeOrgId : undefined);
-  const openRun = useOpenAgentRunWindow();
   const [diagnosis, setDiagnosis] = useState<KindRenderGapDiagnosis | null>(null);
-  const [busy, setBusy] = useState(false);
   const [hidden, setHidden] = useState(false);
+  const actions = useKindViewActions({
+    kind,
+    value,
+    registered: diagnosis ? diagnosis.kindDefinitionId !== null : true,
+    offer: buildKindAuthoringOffer({
+      kindSlug: kind,
+      kindLabel: diagnosis?.kindLabel ?? null,
+      authoringPart: "component",
+      renderGapState: diagnosis?.state ?? null,
+      kindIsActive: diagnosis?.kindDefinitionId ? diagnosis.kindActive : null,
+    }),
+  });
+  const { busy, setBusy, openRun } = actions;
 
   useEffect(() => {
     let alive = true;
@@ -141,19 +115,9 @@ const KindFixItBarInner: React.FC<KindFixItBarProps> = ({ kind, value }) => {
   }, [kind]);
 
   if (hidden) return null;
-  const layer = userId ? readLayerFacts(kind) : null;
-  if (!diagnosis && !layer) return null;
+  if (!diagnosis && !actions.layer) return null;
 
-  const plan = planKindFixIt(
-    diagnosis,
-    {
-      userId,
-      isSuperAdminInLane,
-      isSuperAdminPerson,
-      isOrgAdmin: orgGate.isAdmin && orgGate.orgId === activeOrgId,
-    },
-    layer,
-  );
+  const plan = planKindFixIt(diagnosis, actions.viewer, actions.layer);
 
   const runAction = (label: string, action: () => Promise<void>) => {
     setBusy(true);
@@ -227,47 +191,6 @@ const KindFixItBarInner: React.FC<KindFixItBarProps> = ({ kind, value }) => {
       .finally(() => setBusy(false));
   };
 
-  /** "Make my view" / "For my organization" / Edit my view — the LAYER builder. */
-  const launchLayerBuilder = (target: LayerTarget | "edit", layerRowId?: string) => {
-    setBusy(true);
-    void (async () => {
-      // Every request carries the active organization, or "mine" is refused.
-      const activeOrg = await ensureOrgId(null);
-      let resolvedTarget: LayerTarget = target === "edit" ? "mine" : target;
-      let organizationId = activeOrg;
-      if (target === "edit" && layerRowId) {
-        const audience = await readLayerAudience(layerRowId);
-        resolvedTarget = audience.target;
-        organizationId = audience.organizationId ?? activeOrg;
-      }
-      const resolved = await resolveMandate(KIND_CREATOR_MANDATE_KEY);
-      const seed = composeLayerSeed({
-        kind,
-        target: resolvedTarget,
-        organizationId,
-        registered: diagnosis ? diagnosis.kindDefinitionId !== null : true,
-        layerRowId: layerRowId ?? null,
-        instance: value,
-      });
-      openRun({
-        initialAgentId: resolved.agentId,
-        initialDraftText: seed.draftText,
-        initialVariableValues: {
-          ...buildKindAuthoringOffer({
-            kindSlug: kind,
-            kindLabel: diagnosis?.kindLabel ?? null,
-            authoringPart: "component",
-            renderGapState: diagnosis?.state ?? null,
-            kindIsActive: diagnosis?.kindDefinitionId ? diagnosis.kindActive : null,
-          }),
-          ...seed.variables,
-        },
-      });
-    })()
-      .catch(fail)
-      .finally(() => setBusy(false));
-  };
-
   const runOwnerAction = (action: FixItOwnerAction) => {
     if (!diagnosis) return;
     switch (action) {
@@ -289,13 +212,12 @@ const KindFixItBarInner: React.FC<KindFixItBarProps> = ({ kind, value }) => {
     <KindFixItBarView
       plan={plan}
       busy={busy}
-      onMakeMine={() => launchLayerBuilder("mine")}
-      onMakeOrg={() => launchLayerBuilder("organization")}
+      onMakeMine={actions.onMakeMine}
+      onMakeOrg={actions.onMakeOrg}
       onOwnerAction={runOwnerAction}
-      onEditLayer={(rowId) => launchLayerBuilder("edit", rowId)}
-      onRemoveLayer={(rowId) =>
-        runAction("Your view is off", () => switchOffLayer(kind, rowId))
-      }
+      onEditLayer={actions.onEditLayer}
+      onRemoveLayer={actions.onRemoveLayer}
+      onUseShared={actions.onUseShared}
     />
   );
 };
@@ -309,53 +231,46 @@ const OWNER_ACTION_ICON: Record<FixItOwnerAction, React.ReactNode> = {
   activate: <Power />,
 };
 
-export interface KindFixItBarViewProps {
-  plan: FixItPlan;
+export interface FixItViewHandlers {
   busy: boolean;
   onMakeMine: () => void;
   onMakeOrg: () => void;
-  onOwnerAction: (action: FixItOwnerAction) => void;
   onEditLayer: (rowId: string) => void;
   onRemoveLayer: (rowId: string) => void;
+  onUseShared: (rowId: string) => void;
 }
 
-/** Pure presentation of a {@link FixItPlan} — what the tests render. */
-export function KindFixItBarView({
+/**
+ * THE PER-PERSON VIEW ACTIONS as one piece — the "My view" marker, or Make my
+ * view / For my organization / Change for everyone. Rendered by the fix-it bar
+ * AND the shape page's render-status strip, from the same plan.
+ */
+export function FixItViewActions({
   plan,
   busy,
   onMakeMine,
   onMakeOrg,
-  onOwnerAction,
   onEditLayer,
   onRemoveLayer,
-}: KindFixItBarViewProps): React.ReactElement | null {
+  onUseShared,
+}: FixItViewHandlers & { plan: FixItViewPlan }): React.ReactElement | null {
   if (plan.mode === "none") return null;
-
   if (plan.mode === "layer") {
     return (
-      <div
-        data-fixit-mode="layer"
-        className="mb-2 flex flex-wrap items-center gap-2 rounded-md border border-border bg-card px-2.5 py-1"
-      >
+      <div data-fixit-mode="layer" className="flex flex-wrap items-center gap-2">
         <span className="type-meta text-muted-foreground">
           {plan.scope === "user" ? "My view" : "My organization's view"}
         </span>
         {plan.newerShared ? (
           <span className="type-meta text-muted-foreground">· Newer shared view</span>
         ) : null}
-        <span className="flex-1" />
         {plan.newerShared && plan.canRemove ? (
-          <Button variant="quiet" disabled={busy} onClick={() => onRemoveLayer(plan.rowId)}>
+          <Button variant="quiet" disabled={busy} onClick={() => onUseShared(plan.rowId)}>
             Use it
           </Button>
         ) : null}
         {plan.canEdit ? (
-          <Button
-            variant="quiet"
-            icon={<AGENT_ICON />}
-            disabled={busy}
-            onClick={() => onEditLayer(plan.rowId)}
-          >
+          <Button variant="quiet" icon={<AGENT_ICON />} disabled={busy} onClick={() => onEditLayer(plan.rowId)}>
             Edit
           </Button>
         ) : null}
@@ -367,11 +282,53 @@ export function KindFixItBarView({
       </div>
     );
   }
-
   const everyone = plan.everyoneHref
     ? (crossDeploymentHref(plan.everyoneHref) ?? plan.everyoneHref)
     : null;
-  const hasViewActions = plan.makeMine || plan.makeOrg || everyone !== null;
+  if (!plan.makeMine && !plan.makeOrg && !everyone) return null;
+  return (
+    <div data-fixit-mode="actions" className="flex flex-wrap items-center gap-2">
+      {plan.makeMine ? (
+        <Button variant="primary" icon={<AGENT_ICON />} disabled={busy} onClick={onMakeMine}>
+          Make my view
+        </Button>
+      ) : null}
+      {plan.makeOrg ? (
+        <Button variant="outline" disabled={busy} onClick={onMakeOrg}>
+          For my organization
+        </Button>
+      ) : null}
+      {everyone ? (
+        <Button variant="quiet" iconEnd={<ExternalLink />} asChild>
+          <OutboundLink href={everyone} target="_blank" rel="noopener noreferrer" data-fixit-everyone="">
+            Change for everyone
+          </OutboundLink>
+        </Button>
+      ) : null}
+    </div>
+  );
+}
+
+export interface KindFixItBarViewProps extends FixItViewHandlers {
+  plan: FixItPlan;
+  onOwnerAction: (action: FixItOwnerAction) => void;
+}
+
+/** Pure presentation of a {@link FixItPlan} — what the tests render. */
+export function KindFixItBarView({
+  plan,
+  onOwnerAction,
+  ...handlers
+}: KindFixItBarViewProps): React.ReactElement | null {
+  if (plan.mode === "none") return null;
+
+  if (plan.mode === "layer") {
+    return (
+      <div className="mb-2 rounded-md border border-border bg-card px-2.5 py-1">
+        <FixItViewActions plan={plan} {...handlers} />
+      </div>
+    );
+  }
 
   return (
     <div
@@ -389,7 +346,7 @@ export function KindFixItBarView({
               <Button
                 variant="quiet"
                 icon={OWNER_ACTION_ICON[row.ownerAction]}
-                disabled={busy}
+                disabled={handlers.busy}
                 onClick={() => onOwnerAction(row.ownerAction as FixItOwnerAction)}
               >
                 {OWNER_ACTION_LABEL[row.ownerAction]}
@@ -398,27 +355,17 @@ export function KindFixItBarView({
           </li>
         ))}
       </ul>
-      {hasViewActions ? (
-        <div className="mt-1.5 flex flex-wrap items-center gap-2">
-          {plan.makeMine ? (
-            <Button variant="primary" icon={<AGENT_ICON />} disabled={busy} onClick={onMakeMine}>
-              Make my view
-            </Button>
-          ) : null}
-          {plan.makeOrg ? (
-            <Button variant="outline" disabled={busy} onClick={onMakeOrg}>
-              For my organization
-            </Button>
-          ) : null}
-          {everyone ? (
-            <Button variant="quiet" iconEnd={<ExternalLink />} asChild>
-              <OutboundLink href={everyone} target="_blank" rel="noopener noreferrer" data-fixit-everyone="">
-                Change for everyone
-              </OutboundLink>
-            </Button>
-          ) : null}
-        </div>
-      ) : null}
+      <div className="mt-1.5 empty:hidden">
+        <FixItViewActions
+          plan={{
+            mode: "actions",
+            makeMine: plan.makeMine,
+            makeOrg: plan.makeOrg,
+            everyoneHref: plan.everyoneHref,
+          }}
+          {...handlers}
+        />
+      </div>
     </div>
   );
 }

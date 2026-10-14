@@ -135,6 +135,11 @@ export default function ShapePreviewTab({
           dataOnly={dataOnly}
           isOwnedByViewer={isOwnedByViewer}
           emittedJsonSchema={emittedJsonSchema}
+          sampleValue={
+            examples.status === "ready"
+              ? ((examples.rows.find((row) => row.isCanonical) ?? examples.rows[0])?.data ?? null)
+              : null
+          }
         />
       </div>
       {isOwnedByViewer && (

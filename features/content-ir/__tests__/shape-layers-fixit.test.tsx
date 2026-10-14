@@ -69,7 +69,6 @@ function diagnosis(over: Partial<KindRenderGapDiagnosis> = {}): KindRenderGapDia
 
 const PLAIN: FixItViewer = {
   userId: ME,
-  isSuperAdminInLane: false,
   isSuperAdminPerson: false,
   isOrgAdmin: false,
 };
@@ -85,6 +84,7 @@ function render(plan: ReturnType<typeof planKindFixIt>): string {
       onOwnerAction={noop}
       onEditLayer={noop}
       onRemoveLayer={noop}
+      onUseShared={noop}
     />,
   );
 }
@@ -177,10 +177,13 @@ describe("who gets which action", () => {
     const dir = path.join(__dirname, "../react/fixit");
     for (const file of fs.readdirSync(dir)) {
       const source = fs.readFileSync(path.join(dir, file), "utf8");
-      expect({ file, adminLane: /adminLane|admin-lane|withAdminLane|adminDoorOpen/.test(source) }).toEqual({
+      // No admin-lane request and no lane-gated admin POWER: the only admin
+      // fact the ladder reads is identity (selectIsSuperAdminPerson), for the link.
+      expect({
         file,
-        adminLane: false,
-      });
+        adminLane: /adminLane|admin-lane|withAdminLane|adminDoorOpen/.test(source),
+        lanePower: /selectIsSuperAdmin\b(?!Person)|selectAdminLevel|adminLevel/.test(source),
+      }).toEqual({ file, adminLane: false, lanePower: false });
     }
   });
 });
@@ -348,4 +351,176 @@ describe("review findings from slice 2", () => {
       });
     }
   });
+});
+
+// ── The clicks: consequence + soft-off + undo, and the launch order. ─────────
+
+import { act } from "react";
+import { createRoot } from "react-dom/client";
+import { FixItViewActions } from "../react/fixit/KindFixItBar";
+import { planKindViewActions } from "../react/fixit/fixit-plan";
+import {
+  launchLayerBuilder,
+  runLayerSwitchOff,
+  type LayerSwitchOffDeps,
+} from "../react/fixit/fixit-handlers";
+import type { LayerAudience } from "../react/fixit/layer-fixit";
+
+const MINE_AUDIENCE: LayerAudience = { target: "mine", organizationId: null, organizationName: null };
+const ORG_AUDIENCE: LayerAudience = {
+  target: "organization",
+  organizationId: ORG,
+  organizationName: "Cedar Ridge Dental",
+};
+
+function switchOffDeps(audience: LayerAudience, answer: boolean) {
+  const calls: string[] = [];
+  let undo: (() => void) | null = null;
+  const asked: Array<{ title: string; description: string; confirmLabel: string }> = [];
+  const deps: LayerSwitchOffDeps = {
+    readLayerAudience: async () => audience,
+    confirm: async (options) => {
+      asked.push(options);
+      return answer;
+    },
+    switchOff: async (_kind, rowId) => {
+      calls.push(`off:${rowId}`);
+    },
+    switchOn: async (_kind, rowId) => {
+      calls.push(`on:${rowId}`);
+    },
+    announce: (message, onUndo) => {
+      calls.push(`announce:${message}`);
+      undo = onUndo;
+    },
+  };
+  return { deps, calls, asked, undo: () => undo?.() };
+}
+
+async function click(container: HTMLElement, text: string) {
+  const button = [...container.querySelectorAll("button")].find((b) => b.textContent?.includes(text));
+  if (!button) throw new Error(`no button "${text}"`);
+  await act(async () => {
+    button.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+  });
+}
+
+describe("Remove / Use it name their consequence, switch off softly, and undo", () => {
+  it("Remove on MY view: asks first, names me, switches off (never deletes), Undo switches it back on", async () => {
+    const { deps, calls, asked, undo } = switchOffDeps(MINE_AUDIENCE, true);
+    const container = document.createElement("div");
+    const root = createRoot(container);
+    const plan = planKindViewActions(PLAIN, { scope: "user", rowId: "row-m", createdBy: ME, updatedAt: "2026-10-14T10:00:00Z", sharedUpdatedAt: null }, { slug: "k", registered: true });
+    await act(async () => {
+      root.render(
+        <FixItViewActions
+          plan={plan}
+          busy={false}
+          onMakeMine={noop}
+          onMakeOrg={noop}
+          onEditLayer={noop}
+          onRemoveLayer={(rowId) => void runLayerSwitchOff(deps, { kind: "k", rowId, reason: "remove" })}
+          onUseShared={noop}
+        />,
+      );
+    });
+    await click(container, "Remove");
+    expect(asked[0]).toMatchObject({ title: "Switch off your view?", confirmLabel: "Switch off" });
+    expect(asked[0].description).toContain("You will see the shared view");
+    expect(calls).toEqual(["off:row-m", "announce:Your view is off"]);
+    undo();
+    expect(calls).toContain("on:row-m");
+    act(() => root.unmount());
+  });
+
+  it("Remove on an ORGANIZATION view names everyone in that organization", async () => {
+    const { deps, asked, calls } = switchOffDeps(ORG_AUDIENCE, true);
+    await runLayerSwitchOff(deps, { kind: "k", rowId: "row-o", reason: "remove" });
+    expect(asked[0].title).toBe("Switch off Cedar Ridge Dental's view?");
+    expect(asked[0].description).toContain("Everyone in Cedar Ridge Dental");
+    expect(calls).toContain("announce:Cedar Ridge Dental's view is off");
+  });
+
+  it("Use it says it switches my view off; a No changes nothing", async () => {
+    const { deps, asked, calls } = switchOffDeps(MINE_AUDIENCE, false);
+    const container = document.createElement("div");
+    const root = createRoot(container);
+    const plan = planKindViewActions(PLAIN, { scope: "user", rowId: "row-m", createdBy: ME, updatedAt: "2026-10-14T10:00:00Z", sharedUpdatedAt: "2026-10-14T12:00:00Z" }, { slug: "k", registered: true });
+    await act(async () => {
+      root.render(
+        <FixItViewActions
+          plan={plan}
+          busy={false}
+          onMakeMine={noop}
+          onMakeOrg={noop}
+          onEditLayer={noop}
+          onRemoveLayer={noop}
+          onUseShared={(rowId) => void runLayerSwitchOff(deps, { kind: "k", rowId, reason: "use_shared" })}
+        />,
+      );
+    });
+    await click(container, "Use it");
+    expect(asked[0].title).toBe("Use the newer shared view?");
+    expect(asked[0].description).toContain("switches off your view");
+    expect(calls).toEqual([]);
+    act(() => root.unmount());
+  });
+});
+
+describe("the launch handlers", () => {
+  it("waits for the active organization BEFORE opening the builder", async () => {
+    let releaseOrg: (id: string) => void = () => undefined;
+    const opened: unknown[] = [];
+    const pending = launchLayerBuilder(
+      {
+        ensureOrgId: () => new Promise<string>((resolve) => (releaseOrg = resolve)),
+        resolveAgentId: async () => "agent-1",
+        readLayerAudience: async () => MINE_AUDIENCE,
+        openRun: (options) => opened.push(options),
+      },
+      { kind: "k", target: "mine", registered: true, instance: { a: 1 }, offer: { kind_slug: "k" } },
+    );
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(opened).toHaveLength(0);
+    releaseOrg(ORG);
+    await pending;
+    expect(opened).toHaveLength(1);
+    expect(opened[0]).toMatchObject({
+      initialAgentId: "agent-1",
+      initialVariableValues: { kind_slug: "k", layer_target: "mine" },
+    });
+  });
+
+  it("Make for my organization carries the active organization; Edit targets the row's own audience", async () => {
+    const opened: Array<{ initialVariableValues?: Record<string, string> | null }> = [];
+    const deps = {
+      ensureOrgId: async () => ORG,
+      resolveAgentId: async () => "agent-1",
+      readLayerAudience: async () => ({ ...ORG_AUDIENCE, organizationId: "org-of-row" }),
+      openRun: (options: { initialVariableValues?: Record<string, string> | null }) => opened.push(options),
+    };
+    await launchLayerBuilder(deps, { kind: "k", target: "organization", registered: true, instance: {}, offer: {} });
+    expect(opened[0].initialVariableValues).toMatchObject({ layer_target: "organization", layer_organization_id: ORG });
+    await launchLayerBuilder(deps, { kind: "k", target: "edit", layerRowId: "row-o", registered: true, instance: {}, offer: {} });
+    expect(opened[1].initialVariableValues).toMatchObject({
+      layer_target: "organization",
+      layer_organization_id: "org-of-row",
+      layer_component_id: "row-o",
+    });
+  });
+
+  it("the shape page's actions are the same plan: a plain user who cannot edit gets Make my view", () => {
+    const plan = planKindViewActions(PLAIN, null, { slug: "brand_intake_facts", registered: true });
+    expect(plan).toEqual({ mode: "actions", makeMine: true, makeOrg: false, everyoneHref: null });
+  });
+});
+
+it("the shape page's render-status strip renders the SAME per-person actions (no second copy)", () => {
+  const strip = fs.readFileSync(
+    path.join(__dirname, "../studio/components/ShapeRenderStatusStrip.tsx"),
+    "utf8",
+  );
+  expect(strip).toMatch(/<KindViewActionsRow\b/);
+  expect(strip).not.toMatch(/Make my view|For my organization|Change for everyone/);
 });

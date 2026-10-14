@@ -50,6 +50,7 @@ import { useKindAgentLaunch } from "@/features/content-ir/studio/useKindAgentLau
 import type { Json } from "@/types/database.types";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { AGENT_ICON } from "@/components/icons/domain-icons";
+import { KindViewActionsRow } from "@/features/content-ir/react/fixit/KindViewActionsRow";
 import { asClause } from "@ai-matrx/kit/text";
 import { ReadFailure } from "@ai-matrx/design-system";
 import {
@@ -67,6 +68,8 @@ interface ShapeRenderStatusStripProps {
   dataOnly: boolean;
   isOwnedByViewer: boolean;
   emittedJsonSchema: Json | null;
+  /** The instance the per-person builder designs against (the canonical example). */
+  sampleValue?: unknown;
 }
 
 const SOURCE_ICON: Record<ShapeRenderStatus["source"], typeof BadgeCheck> = {
@@ -83,6 +86,7 @@ export default function ShapeRenderStatusStrip({
   dataOnly,
   isOwnedByViewer,
   emittedJsonSchema,
+  sampleValue = null,
 }: ShapeRenderStatusStripProps) {
   const { launch: launchArtisan, launching: artisanLaunching } =
     useKindAgentLaunch(SHAPES_SURFACE_NAME, SHAPE_COMPONENT_ROLE);
@@ -326,6 +330,14 @@ export default function ShapeRenderStatusStrip({
           )}
         </div>
 
+        {/* Anyone signed in: their own view (or the marker for the one they have). */}
+        <KindViewActionsRow
+          kind={kind}
+          label={label}
+          registered
+          value={sampleValue}
+          offerNewView={status.source !== "custom"}
+        />
         {isOwnedByViewer && (
           <div className="flex flex-wrap items-center gap-1.5">
             {status.source !== "custom" && (
@@ -360,7 +372,7 @@ export default function ShapeRenderStatusStrip({
                 ) : (
                   <AGENT_ICON className="mr-1.5 h-3.5 w-3.5" />
                 )}
-                Build a component with an agent
+                Build shared view
               </Button>
             )}
           </div>
