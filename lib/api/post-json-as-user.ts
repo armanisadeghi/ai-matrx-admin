@@ -46,7 +46,6 @@ export async function postJsonAsUser<T = unknown>({
     // A getter binds the organization even when it is missing, so the call is
     // refused before the wire instead of silently sent org-less.
     organizationId: () => organizationId,
-    aiApiVersion: "v1",
     source: "postJsonAsUser",
   });
   // `buildMatrxRequestUrl` owns the leading-`/api/` strip; keep its path.

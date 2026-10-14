@@ -4,11 +4,7 @@
 // Endpoint paths live in `@ai-matrx/api` (`ENDPOINTS`): import them from there.
 // The base URLs below are this app's environment values and stay here.
 
-// NOTE: The AI runtime v1/v2 spine version now lives in
-// `lib/api/ai-api-version.ts` (the single `AI_API_VERSION_DEFAULT` flag +
-// covered-surface helpers). The old `SPINE_V2_PATH_OVERRIDES` map that lived
-// here used the WRONG `/ai/v2/*` nesting; the backend routes are `/v2/ai/*`.
-// It has been removed — do not reintroduce a per-path v2 map here.
+// AI paths are the plain `/ai/...` routes — there is no AI API version.
 
 /**
  * THE ONE NAME for the aidream production origin.

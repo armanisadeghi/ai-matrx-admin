@@ -104,7 +104,6 @@ import {
   shouldReportMatrxCallError,
   type MatrxCallError,
   type MatrxCallResult,
-  type MatrxProtocolDowngrade,
 } from "@ai-matrx/api";
 import { resolveRunWait, type RunOutputKind } from "@/lib/api/run-wait";
 import { getUserId } from "@/utils/auth/getUserId";
@@ -758,21 +757,6 @@ function maybeLogRequest(
 // ============================================================================
 
 // ============================================================================
-// SECTION 13 — PROTOCOL DOWNGRADE (the app's telemetry record)
-// ============================================================================
-
-/** The app's telemetry record for a v2 → v1 protocol downgrade. */
-function captureProtocolDowngrade(downgrade: MatrxProtocolDowngrade): void {
-  captureError({
-    source: "api-http",
-    code: "ai_v2_downgrade",
-    message: `v2 endpoint failed (${downgrade.reason}); request served by v1 fallback`,
-    details: downgrade.url,
-    status: downgrade.status,
-  });
-}
-
-// ============================================================================
 // SECTION 14 — THE MAIN THUNK CREATOR
 // ============================================================================
 
@@ -1011,10 +995,7 @@ export function callApi<
           onStreamComplete: config.onStreamComplete,
           onStreamError: config.onStreamError,
         },
-        {
-          onProtocolDowngrade: captureProtocolDowngrade,
-          parseStream: parseNdjsonStream,
-        },
+        { parseStream: parseNdjsonStream },
       );
       if (isPaidAi) {
         // The server's usage refusal → a person gets `over` + the limit

@@ -32,8 +32,6 @@ jest.mock("@/lib/redux/slices/apiConfigSlice", () => ({
   selectResolvedBaseUrl: (state: { baseUrl?: string }) =>
     state.baseUrl ?? "https://backend.test",
   selectEndpointOverrideConfig: () => null,
-  selectAiApiVersion: (state: { aiApiVersion?: string }) =>
-    state.aiApiVersion ?? "v1",
 }));
 jest.mock("@/lib/redux/slices/appContextSlice", () => ({
   selectOrganizationId: (state: { organizationId?: string | null }) =>
@@ -68,7 +66,6 @@ interface FakeStateShape {
   fingerprintId?: string | null;
   organizationId?: string | null;
   baseUrl?: string;
-  aiApiVersion?: string;
   appContext?: Record<string, unknown>;
 }
 

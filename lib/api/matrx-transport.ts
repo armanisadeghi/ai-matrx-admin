@@ -20,10 +20,7 @@
  *     admin seat, then the active org; with none, a pressed write holds on the
  *     org picker exactly like `callApi` (`ensureOrganizationContextForCall`);
  *     the conversation transport sends org in the body only and configures none;
- *   - the app's AI API version flag (`selectAiApiVersion` — the admin
- *     sidebar toggle);
- *   - diagnostics sinks: `logApiTarget`, `captureApiError`, and the
- *     `ai_v2_downgrade` telemetry record.
+ *   - diagnostics sinks: `logApiTarget` and `captureApiError`.
  */
 
 import { adminLaneHeadersFor } from "@/lib/api/admin-lane";
@@ -54,11 +51,9 @@ import {
   selectAccessToken,
   selectFingerprintId,
 } from "@/lib/redux/slices/userSlice";
-import { selectAiApiVersion } from "@/lib/redux/slices/apiConfigSlice";
 import { selectOrganizationId } from "@/lib/redux/slices/appContextSlice";
 import { logApiTarget } from "@/lib/api/log-api-target";
 import { captureApiError } from "@/lib/diagnostics/captureApiError";
-import { captureError } from "@/lib/diagnostics/errorCaptureStore";
 
 /**
  * A fully-resolved connection target for one call: where to send it and which
@@ -137,22 +132,13 @@ function diagnosticsFromState(
         path: info.path,
       });
     },
-    onProtocolDowngrade: (downgrade) => {
-      captureError({
-        source: "api-http",
-        code: "ai_v2_downgrade",
-        message: `v2 endpoint failed (${downgrade.reason}); request served by v1 fallback`,
-        details: downgrade.url,
-        ...(downgrade.status !== undefined ? { status: downgrade.status } : {}),
-      });
-    },
   };
 }
 
 /**
  * Build a `MatrxTransport` from a per-call target resolver — the shared
  * identity wiring both host transports (global + conversation) ride: fresh
- * state per call, the app's AI-version flag, Redux credentials, and the
+ * state per call, Redux credentials, and the
  * diagnostics sinks, over the package's production pipeline.
  */
 export function createMatrxTransportFromTarget(
@@ -165,7 +151,6 @@ export function createMatrxTransportFromTarget(
   // re-read fresh per call) — exactly like the pre-package pipeline.
   return createPackageTransport({
     resolveTarget: () => resolveTarget(getState()),
-    aiApiVersion: () => selectAiApiVersion(getState()),
     diagnostics: diagnosticsFromState(getState),
     ...(options.expectedErrorStatuses
       ? { expectedErrorStatuses: options.expectedErrorStatuses }
@@ -245,7 +230,6 @@ export function createMatrxTransport(
     },
     credentials: credentialsFromState(getState),
     readyTimeoutMs: AUTH_READY_WAIT_MS,
-    aiApiVersion: () => selectAiApiVersion(getState()),
     diagnostics: diagnosticsFromState(getState),
     ...(options.expectedErrorStatuses
       ? { expectedErrorStatuses: options.expectedErrorStatuses }

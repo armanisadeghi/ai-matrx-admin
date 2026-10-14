@@ -209,7 +209,12 @@ function SessionsBody(props: SessionsPanelProps & { transport: DesktopCodingTran
       {/* Phone: the list, or the chat. Wide: both. */}
       <div className={cn("flex min-h-0 w-full flex-col border-border lg:w-[340px] lg:shrink-0 lg:border-r", open && "hidden lg:flex")}>{list}</div>
       <div className={cn("min-h-0 min-w-0 flex-1 flex-col", open ? "flex" : "hidden lg:flex")}>{chat}</div>
-      <CodingNewSessionDialog open={newOpen} onOpenChange={setNewOpen} onStarted={(id) => props.onSelect(`#s/${id}`)} />
+      <CodingNewSessionDialog open={newOpen} onOpenChange={setNewOpen} onStarted={(id) => {
+          // The form's job is done once the computer has started it: the chat takes its place.
+          setNewOpen(false);
+          props.onSelect(`#s/${id}`);
+        }}
+      />
     </div>
   );
 }

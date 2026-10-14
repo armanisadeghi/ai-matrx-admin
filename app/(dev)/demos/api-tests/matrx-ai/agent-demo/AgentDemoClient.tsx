@@ -363,7 +363,7 @@ export default function AgentDemoClient() {
 
     try {
       const res = await requestRaw(
-        config.withVersion(`/ai/agents/${agentId.trim()}`),
+        `/ai/agents/${agentId.trim()}`,
         {
           method: "POST",
           headers: {

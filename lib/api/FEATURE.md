@@ -278,6 +278,11 @@ query GETs (unblocked by `apiGet`'s `query` support), and
 
 ## Change Log
 
+- 2026-10-14 — The AI API version is gone. `/ai/...` is the only address every
+  client calls (the server keeps `/v2/ai/...` as a hidden alias for installed
+  old clients). Removed: the admin sidebar v1/v2 toggle, `ai-api-version.ts`,
+  the `aiApiVersionOverride` state, and the silent v2 → v1 retry (it could
+  re-send a paid AI request after a 5xx).
 - 2026-10-01 — **`provider-session-failure.ts`: browser-held provider sessions report their
   failures.** xAI realtime voice and Cartesia TTS talk to the provider directly on broker tokens;
   their error paths call `reportBrowserProviderFailure` (thunk) / `…FromStore` (React-free) →

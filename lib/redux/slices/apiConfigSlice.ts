@@ -39,11 +39,6 @@ import {
 import { ENDPOINTS } from "@ai-matrx/api";
 import { BACKEND_URLS } from "@/lib/api/endpoints";
 import { logApiTarget } from "@/lib/api/log-api-target";
-import { aiVersionPathOverrides } from "@ai-matrx/api";
-import {
-  AI_API_VERSION_DEFAULT,
-  type AiApiVersion,
-} from "@/lib/api/ai-api-version";
 import {
   API_SERVICES,
   allowsLoopbackApiTargets,
@@ -141,16 +136,6 @@ interface ApiConfigState {
   pathOverrides: Record<string, string>;
 
   /**
-   * Admin override for the AI runtime API version (the v1/v2 spine). `null`
-   * means "follow the code-level default" (`AI_API_VERSION_DEFAULT`); a set
-   * value pins this browser to that version and persists across reloads —
-   * exactly like the localhost/production server choice. Scoped to the four
-   * covered AI surfaces only (see lib/api/ai-api-version.ts); never a blanket
-   * path prefix. Read the EFFECTIVE version via `selectAiApiVersion`.
-   */
-  aiApiVersionOverride: AiApiVersion | null;
-
-  /**
    * Whether this browser may target loopback API origins right now. Always true
    * in a development bundle; in a production bundle it tracks admin sign-in
    * (see lib/api/service-routing.ts). Kept in state — not just read from the
@@ -177,7 +162,6 @@ interface PersistedApiConfig {
   serviceOverrides: Partial<Record<ApiService, ServiceEnvironment>>;
   apiVersion: string | null;
   pathOverrides: Record<string, string>;
-  aiApiVersionOverride: AiApiVersion | null;
 }
 
 type LoadedPersistedApiConfig = Omit<PersistedApiConfig, "activeServer"> & {
@@ -192,7 +176,6 @@ function loadPersistedServer(): LoadedPersistedApiConfig {
     serviceOverrides: {},
     apiVersion: null,
     pathOverrides: {},
-    aiApiVersionOverride: null,
   };
   if (typeof window === "undefined") return fallback;
   try {
@@ -247,11 +230,6 @@ function loadPersistedServer(): LoadedPersistedApiConfig {
         parsed.pathOverrides && typeof parsed.pathOverrides === "object"
           ? parsed.pathOverrides
           : {},
-      aiApiVersionOverride:
-        parsed.aiApiVersionOverride === "v1" ||
-        parsed.aiApiVersionOverride === "v2"
-          ? parsed.aiApiVersionOverride
-          : null,
     };
   } catch {
     return fallback;
@@ -268,7 +246,6 @@ function persistServer(state: ApiConfigState): void {
       serviceOverrides: state.serviceOverrides,
       apiVersion: state.apiVersion,
       pathOverrides: state.pathOverrides,
-      aiApiVersionOverride: state.aiApiVersionOverride,
     };
     window.localStorage.setItem(PERSIST_KEY, JSON.stringify(payload));
   } catch {
@@ -317,7 +294,6 @@ const initialState: ApiConfigState = {
   health: buildDefaultHealth(),
   apiVersion: _persisted.apiVersion,
   pathOverrides: _persisted.pathOverrides,
-  aiApiVersionOverride: _persisted.aiApiVersionOverride,
   loopbackUnlocked: allowsLoopbackApiTargets(),
 };
 
@@ -512,7 +488,6 @@ const apiConfigSlice = createSlice({
         state.serviceOverrides = persisted.serviceOverrides;
         state.apiVersion = persisted.apiVersion;
         state.pathOverrides = persisted.pathOverrides;
-        state.aiApiVersionOverride = persisted.aiApiVersionOverride;
         return;
       }
 
@@ -610,18 +585,6 @@ const apiConfigSlice = createSlice({
       persistServer(state);
     },
 
-    /**
-     * Set the AI runtime API version override (v1/v2 spine). Pass `null` to
-     * clear the override and follow the code-level default
-     * (`AI_API_VERSION_DEFAULT`). Persisted across reloads. Applies ONLY to the
-     * four covered AI surfaces — never a blanket path prefix. See
-     * lib/api/ai-api-version.ts.
-     */
-    setAiApiVersion: (state, action: PayloadAction<AiApiVersion | null>) => {
-      state.aiApiVersionOverride = action.payload;
-      persistServer(state);
-    },
-
     /** Clear every API override (version + all path overrides) at once. */
     clearApiOverrides: (state) => {
       state.apiVersion = null;
@@ -668,7 +631,6 @@ export const {
   setApiVersion,
   setPathOverride,
   clearPathOverride,
-  setAiApiVersion,
   clearApiOverrides,
   setServerHealthChecking,
   setServerHealthResult,
@@ -780,44 +742,14 @@ export const selectPathOverrides = (
 ): Record<string, string> => state.apiConfig.pathOverrides;
 
 /**
- * The raw AI-version admin override (`null` = following the code default). Use
- * this to tell whether the toggle has been explicitly flipped; use
- * `selectAiApiVersion` for the version actually in effect.
- */
-export const selectAiApiVersionOverride = (
-  state: StateWithApiConfig,
-): AiApiVersion | null => state.apiConfig.aiApiVersionOverride;
-
-/**
- * The EFFECTIVE AI runtime API version: the admin override when set, otherwise
- * the code-level default (`AI_API_VERSION_DEFAULT`). This is what every AI call
- * site reads to decide v1 vs v2.
- */
-export const selectAiApiVersion = (state: StateWithApiConfig): AiApiVersion =>
-  state.apiConfig.aiApiVersionOverride ?? AI_API_VERSION_DEFAULT;
-
-/**
  * The combined endpoint-override config — ready to hand straight to
  * `resolveEndpointPath(path, config)`. Memoized so it is referentially stable
  * between override changes.
- *
- * The AI version (v1/v2 spine) is folded in as the BASE layer of path
- * overrides — scoped to only the four covered AI surfaces — so every call
- * through the registry picks up v2 automatically. Explicit admin `pathOverrides`
- * are spread last and therefore win over the version default (the surgical
- * "send THIS call elsewhere" escape hatch still overrides).
  */
 export const selectEndpointOverrideConfig = createSelector(
   selectApiVersion,
   selectPathOverrides,
-  selectAiApiVersion,
-  (apiVersion, pathOverrides, aiApiVersion) => ({
-    apiVersion,
-    pathOverrides: {
-      ...aiVersionPathOverrides(aiApiVersion),
-      ...pathOverrides,
-    },
-  }),
+  (apiVersion, pathOverrides) => ({ apiVersion, pathOverrides }),
 );
 
 /** Whether any API override (version or path) is currently active. */

@@ -54,7 +54,6 @@ describe("multi-service API environment selection", () => {
         serviceOverrides: { scraper: "localhost" },
         apiVersion: null,
         pathOverrides: {},
-        aiApiVersionOverride: null,
       }),
     );
 
@@ -93,7 +92,6 @@ describe("multi-service API environment selection", () => {
         serviceOverrides: { scraper: "production" },
         apiVersion: "v2",
         pathOverrides: { "/ai/manual": "/v2/ai/manual" },
-        aiApiVersionOverride: "v2",
       }),
     );
 
@@ -130,7 +128,6 @@ describe("multi-service API environment selection", () => {
       serviceOverrides: { scraper: "localhost" },
       apiVersion: "v2",
       pathOverrides: { "/ai/manual": "/v2/ai/manual" },
-      aiApiVersionOverride: "v2",
     };
     window.localStorage.setItem("matrx.apiConfig.v1", JSON.stringify(persisted));
 
@@ -162,7 +159,6 @@ describe("multi-service API environment selection", () => {
     expect(state.serviceOverrides.scraper).toBe("localhost");
     expect(state.apiVersion).toBe("v2");
     expect(state.pathOverrides).toEqual(persisted.pathOverrides);
-    expect(state.aiApiVersionOverride).toBe("v2");
     window.localStorage.removeItem("matrx.apiConfig.v1");
   });
 
@@ -174,7 +170,6 @@ describe("multi-service API environment selection", () => {
       serviceOverrides: { scraper: "localhost" },
       apiVersion: "v2",
       pathOverrides: { "/ai/manual": "/v2/ai/manual" },
-      aiApiVersionOverride: "v2",
     };
     window.localStorage.setItem("matrx.apiConfig.v1", JSON.stringify(retired));
 

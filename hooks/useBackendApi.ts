@@ -21,11 +21,7 @@
 import { useCallback, useMemo } from "react";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { useApiAuth } from "./useApiAuth";
-import {
-  selectAiApiVersion,
-  selectResolvedServiceBaseUrl,
-} from "@/lib/redux/slices/apiConfigSlice";
-import { applyAiApiVersion } from "@ai-matrx/api";
+import { selectResolvedServiceBaseUrl } from "@/lib/redux/slices/apiConfigSlice";
 import { requestRaw } from "@/lib/python-client";
 import { serviceRequestBase, type ApiService } from "@/lib/api/service-routing";
 
@@ -39,16 +35,6 @@ export function useBackendApi(service: ApiService = "aidream") {
   const backendUrl = serviceRequestBase(
     service,
     useAppSelector((state) => selectResolvedServiceBaseUrl(state, service)),
-  );
-  const aiApiVersion = useAppSelector(selectAiApiVersion);
-
-  // Version the AI runtime path centrally: covered AI surfaces (chat, manual,
-  // agents/{id}, conversations/{id}) get their `/v2` sibling when v2 is active;
-  // every other endpoint passes through untouched. So any caller of this hook
-  // (e.g. useRunAgent) rides the same v2 switch as the rest of the app.
-  const resolvePath = useCallback(
-    (endpoint: string) => applyAiApiVersion(endpoint, aiApiVersion),
-    [aiApiVersion],
   );
 
   const getApiHeaders = useCallback(
@@ -77,7 +63,7 @@ export function useBackendApi(service: ApiService = "aidream") {
         throw new Error(`No ${service} API URL is configured.`);
       }
       return requestRaw(
-        resolvePath(endpoint),
+        endpoint,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -87,7 +73,7 @@ export function useBackendApi(service: ApiService = "aidream") {
         { baseUrlOverride: backendUrl, signal, ...policy },
       );
     },
-    [backendUrl, resolvePath, service],
+    [backendUrl, service],
   );
 
   const get = useCallback(
@@ -100,7 +86,7 @@ export function useBackendApi(service: ApiService = "aidream") {
         throw new Error(`No ${service} API URL is configured.`);
       }
       return requestRaw(
-        resolvePath(endpoint),
+        endpoint,
         {
           method: "GET",
           signal,
@@ -108,7 +94,7 @@ export function useBackendApi(service: ApiService = "aidream") {
         { baseUrlOverride: backendUrl, signal, ...policy },
       );
     },
-    [backendUrl, resolvePath, service],
+    [backendUrl, service],
   );
 
   const upload = useCallback(
@@ -117,7 +103,7 @@ export function useBackendApi(service: ApiService = "aidream") {
         throw new Error(`No ${service} API URL is configured.`);
       }
       return requestRaw(
-        resolvePath(endpoint),
+        endpoint,
         {
           method: "POST",
           body: formData,
@@ -126,7 +112,7 @@ export function useBackendApi(service: ApiService = "aidream") {
         { baseUrlOverride: backendUrl, signal },
       );
     },
-    [backendUrl, resolvePath, service],
+    [backendUrl, service],
   );
 
   const customFetch = useCallback(
@@ -134,13 +120,13 @@ export function useBackendApi(service: ApiService = "aidream") {
       if (!backendUrl) {
         throw new Error(`No ${service} API URL is configured.`);
       }
-      return requestRaw(resolvePath(endpoint), options, {
+      return requestRaw(endpoint, options, {
         baseUrlOverride: backendUrl,
         signal: options.signal ?? undefined,
         allowHttpError: true,
       });
     },
-    [backendUrl, resolvePath, service],
+    [backendUrl, service],
   );
 
   return useMemo(

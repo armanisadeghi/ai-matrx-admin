@@ -296,7 +296,7 @@ export default function ConversationDemoClient() {
 
     try {
       const res = await requestRaw(
-        config.withVersion(`/ai/conversations/${conversationId.trim()}`),
+        `/ai/conversations/${conversationId.trim()}`,
         {
           method: "POST",
           headers: {

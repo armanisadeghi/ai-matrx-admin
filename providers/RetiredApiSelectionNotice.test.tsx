@@ -133,7 +133,6 @@ describe("RetiredApiSelectionNotice", () => {
         serviceOverrides: {},
         apiVersion: null,
         pathOverrides: {},
-        aiApiVersionOverride: null,
       }),
     );
     await act(async () => {
