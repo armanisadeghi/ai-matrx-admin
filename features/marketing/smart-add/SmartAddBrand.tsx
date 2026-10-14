@@ -1212,10 +1212,15 @@ export function SmartAddBrand({
   // The first typed round decides whether what was typed exists. A failed entry never morphs into a findings page
   // and never offers Create: the stage says what happened and offers Edit / Try another / Search by name.
   const entryView = rounds[0]?.runId ? views[rounds[0].runId] : undefined;
+  // Proof the entry exists: something a step READ. The facts agent's words are not proof (it once made a brand name
+  // out of a handle that does not exist).
+  const foundReal = [...items.values()].some(
+    (i) => i.source.where !== "the address itself" && i.source.kind !== "typed" && i.source.node !== "facts",
+  );
   const entryTyped = rounds[0] ? Boolean(rounds[0].seeds.website || rounds[0].seeds.socials.length) : false;
   const entryOutcome = entryTyped
     ? (entryView?.entry ??
-      inferEntryOutcome(entryView, { website: websiteText.trim(), social: socialText.trim(), platform: picked }, hasFindings))
+      inferEntryOutcome(entryView, { website: websiteText.trim(), social: socialText.trim(), platform: picked }, foundReal))
     : null;
   const entryFailed = !enrich && isFailedEntry(entryOutcome);
   // Quiet too long while a round runs: the stage says so (never an endless spinner).

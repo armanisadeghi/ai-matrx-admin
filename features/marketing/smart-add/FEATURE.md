@@ -51,11 +51,29 @@ Rules:
 - 🚨 **Auto-start spends points.** A link that carries a prefill (`website`, `social`, or `name`) starts searching on open, as if Go was pressed. That is the purpose of the link. It happens once per address per tab (sessionStorage `smart-add:auto-started`). A reload, Back/Forward or a duplicate tab never starts a second run. A person link with no occupation or company stops at the one "job or company" ask.
 - **First data:** the name, logo and description rows fill from the web step's own-site listing the moment it lands (`firstData.ts`), even when the site blocks a direct read; the facts agent's brand name, phone, email and category merge into the same rows later under the server's keys, so nothing on screen resets.
 - **Resume:** an address with `run=` rebuilds those rounds from the server (`SmartAddRound` → `useWorkflowRun`) and starts nothing. The typed fields come back from the address. Every answer given on screen before Create (Preferred / Ours / Not us / Related, web kinds, typed values, Skip for now, Tagline moves, the web review's Ask me later / Ignore) is saved as they are given in the person's synced preferences (`smartAdd.runs`, keyed by the first run id; `runMemory.ts`) and restored with the run; `ANSWER_KINDS` in `runMemory.ts` lists every kind and `runMemory.test.ts` fails when a new one is not saved. A name moved to Tagline leaves the name list and is undone from its About item. After Create they live in `web.discovered_item`.
+- **Back / Edit / Start over:** starting a search pushes one history entry (`markSearch`), so browser Back returns to the entry with what was typed and stops the search. The pencil on the input pill and the answer's Edit stop the runs, reset the session and reopen the field; "Start over" (stage "Still working…" row and the findings page's working line) also clears the address. Either asks first (canonical `confirm`) only when findings or answers would be lost, naming the points spent.
 - Nothing personal goes in the address beyond what the person typed into these fields. The active organization is never in it.
 
 ---
 
+## Honest endings (`entryOutcome.ts`)
+
+Every typed entry ends in one answer. The server's first-data point carries `entry_outcome` (aidream `services/brand_intake/entry_outcome.py`); a not-confirmed entry skips every agent. The client reads it (`RoundView.entry`), or infers it from the step notes of a finished run whose only "finding" is the facts agent's guess. A failed entry never morphs into the findings page and never offers Create.
+
+| Input | Outcome | Stage |
+|---|---|---|
+| handle not found / private / empty / unsupported platform / out of points | `not_found` · `private` · `empty` · `unsupported` · `usage_limit` | title + one line; Edit · Try another · Search by name |
+| lookup service failed | `provider_failed` | + Try again |
+| domain does not resolve / times out / refuses us / errors / parked | `no_such_site` · `timed_out` · `blocked` · `site_error` · `parked` | same (Try again on the transient ones); a dead domain is never searched |
+| malformed URL or a handle with characters the platform forbids | never starts | inline line under the field, Go disabled |
+| run quiet past knob `marketing.smart_add_quiet_seconds` (40) | still running | "Still working…" · Stop · Start over |
+| run failed / errored | failed | "The lookup didn't finish" + three quick answers |
+
+Tests: `__tests__/entryOutcome.test.ts` (state machine, inference, copy budgets, up-front checks).
+
 ## Change Log
+
+- 2026-10-14 — Honest endings: entry outcomes (server + inferred), up-front URL/handle checks, quiet-time "Still working…" with Stop / Start over, Edit truly restarts, browser Back returns to the entry, Start over with a confirm when work would be lost.
 
 - 2026-10-14 — Link-in-bio pages (Linktree, Stan, Beacons…) are "Link pages": their own spot (`SmartAddBioLinks.tsx`, `linkPages`), auto-kept as relation `link_in_bio_page` on Create, never a website candidate (`compareRows`) and never compared (`isSettledWithoutAsking` also settles typed items). One service list mirrors the server registry (`lib/link-in-bio.ts`); guard `__tests__/linkPages.test.ts`.
 - 2026-10-14 — Smart Add gets real URLs: mode routes, deep links, `run=` resume, `via`/`view`, helper `?panels=`; `smartAddUrl.ts` + tests (`__tests__/smartAddUrl.test.ts`).
