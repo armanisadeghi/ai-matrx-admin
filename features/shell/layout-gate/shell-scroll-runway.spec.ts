@@ -10,7 +10,7 @@
  *
  * The mechanism, reproduced by this file: `.shell-main` is the scroll owner.
  * While a fixed notice is on screen (`:root[data-admin-attention]`) it appends
- * a `::after` runway — 4.5rem compact, 14rem expanded — so a NATURAL-HEIGHT
+ * a `::after` runway — the measured floating clearance (compact pill included), 14rem expanded — so a NATURAL-HEIGHT
  * page can scroll its last control clear of the notice. On a route body that
  * is already exactly the viewport and clips its own overflow (the chat room),
  * that runway is not clearance, it is SLACK: the whole surface — thread header,
