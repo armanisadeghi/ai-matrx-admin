@@ -64,6 +64,7 @@ describe("we think", () => {
       names: [],
       aliases: ["FSSG"],
       exclusions: ["https://facebook.com/other"],
+      results: [],
     });
   });
 
@@ -75,5 +76,18 @@ describe("we think", () => {
       ] }),
     );
     expect((out[0].suggestion as { choice: string }).choice).toBe("ours");
+  });
+
+  it("puts the web-result classifier's kind on its web result (by address) and sends it back as already suggested", () => {
+    const out = withSuggestions(
+      [item("mention:glassdoor", "mention", "https://www.glassdoor.com/Reviews/FSSG-E1.htm?x=1"), item("web_page:x", "web_page", "https://other.com/a")],
+      suggestionsFromPayload({ __kind: "agent_result", content: [{ __kind: "brand_web_result_classification", notes: [], results: [
+        { url: "https://glassdoor.com/Reviews/FSSG-E1.htm", kind: "review_site", sentiment: "positive", probability: 0.9, reason: "Names us", evidence: [] },
+        { url: "https://other.com/a", kind: "needs_person", sentiment: null, probability: 0.4, reason: "Unclear", evidence: [] },
+      ] }] }),
+    );
+    expect(out[0].suggestion).toMatchObject({ choice: "related", relation_key: "review_site", sentiment: "positive", by: "agent" });
+    expect(out[1].suggestion).toMatchObject({ choice: "later", relation_key: null });
+    expect(knownDecided(out, {}).results).toEqual(["https://www.glassdoor.com/Reviews/FSSG-E1.htm?x=1", "https://other.com/a"]);
   });
 });

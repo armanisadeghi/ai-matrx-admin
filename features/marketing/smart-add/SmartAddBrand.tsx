@@ -255,7 +255,8 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
             woken,
             exclude_keys: exclude,
             // What is already ours / not us: the we-think step judges new candidates against it.
-            known: knownDecided(items.values(), decisions),
+            // `known.results`: web results answered or already classified, so the classifier takes the next batch.
+            known: knownDecided(withSuggestions([...items.values()], Object.assign({}, ...Object.values(suggestionsByRun))), decisions),
             ...(firstData ? { first_data: true } : {}),
             ...(personInput ? { person: personInput } : {}),
           },

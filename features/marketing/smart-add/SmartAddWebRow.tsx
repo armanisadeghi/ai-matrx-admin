@@ -83,8 +83,15 @@ export function SmartAddWebRow({
   }
   const suggestions: Record<string, ReviewSuggestion | null> = {};
   for (const i of row) {
-    const s = suggestKind(i, kinds, ctx);
-    suggestions[i.key] = s ? { kind: s.kind, reason: s.reason, by: "Rules" } : null;
+    // The web-result classifier's suggestion (weThink.withSuggestions) wins over the rules'.
+    const agent = i.suggestion as { by?: string; choice?: string; relation_key?: string | null; sentiment?: ReviewSuggestion["sentiment"]; probability?: number | null; reason?: string; evidence?: string[] } | null | undefined;
+    const agentKind = agent?.by === "agent" ? (agent.relation_key ?? (agent.choice === "ours" || agent.choice === "not_us" ? agent.choice : null)) : null;
+    const s = agentKind ? null : suggestKind(i, kinds, ctx);
+    suggestions[i.key] = agentKind
+      ? { kind: agentKind, sentiment: agent?.sentiment ?? null, probability: agent?.probability ?? null, reason: agent?.reason ?? "", evidence: agent?.evidence, by: "We think" }
+      : s
+        ? { kind: s.kind, reason: s.reason, by: "Rules" }
+        : null;
   }
   const sessionId = usePublishSearchReviewSession(
     row.length

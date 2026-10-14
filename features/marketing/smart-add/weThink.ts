@@ -9,6 +9,7 @@
 
 import { handleKeyPart } from "../social/account-input";
 import { websiteHost, type Decision, type EvidenceItem } from "./evidence";
+import { webAddress } from "./webKinds";
 
 /**
  * MKT-064: one key, however it is spelled. The agent may hand back `vivaespaña-1m` for the card's
@@ -30,6 +31,10 @@ const CHOICE: Record<string, string> = {
 
 export interface WeThinkSuggestion {
   choice: string;
+  /** The web-result classifier's sentiment (mention / review kinds), else absent. */
+  sentiment?: "positive" | "neutral" | "negative" | null;
+  /** Who suggested it: "agent" for the AI steps (we_think, classify). */
+  by?: string;
   relation_key: string | null;
   probability: number | null;
   reason: string;
@@ -54,6 +59,38 @@ function parseOne(raw: unknown): [string, WeThinkSuggestion] | null {
   ];
 }
 
+/** The web-result classifier's key for a result: `url:` + its address (webKinds.webAddress). */
+export function webResultKey(url: string): string {
+  return `url:${webAddress(url)}`;
+}
+
+const WEB_FIELDS = new Set(["listing", "mention", "web_page"]);
+
+/**
+ * One `brand_web_result_classification` entry (aidream mandate `brand_intake.web_result_classifier`) as a
+ * suggestion in the queue's shape: ours / not_us stay, needs_person is Ask me later, every other kind is
+ * related with that kind as relation_key. Glows only; never selected.
+ */
+function parseClass(raw: unknown): [string, WeThinkSuggestion] | null {
+  if (typeof raw !== "object" || raw === null) return null;
+  const r = raw as Record<string, unknown>;
+  if (typeof r.url !== "string" || typeof r.kind !== "string" || !r.url || !r.kind) return null;
+  const choice = r.kind === "ours" ? "ours" : r.kind === "not_us" ? "not_us" : r.kind === "needs_person" ? "later" : "related";
+  const sentiment = r.sentiment === "positive" || r.sentiment === "neutral" || r.sentiment === "negative" ? r.sentiment : null;
+  return [
+    webResultKey(r.url),
+    {
+      choice,
+      relation_key: choice === "related" ? r.kind : null,
+      probability: typeof r.probability === "number" && Number.isFinite(r.probability) ? r.probability : null,
+      reason: typeof r.reason === "string" ? r.reason : "",
+      evidence: Array.isArray(r.evidence) ? r.evidence.filter((e): e is string => typeof e === "string") : [],
+      sentiment,
+      by: "agent",
+    },
+  ];
+}
+
 /**
  * Every we-think suggestion in a step output (or a live frame), keyed by the finding's key: a
  * `brand_we_think` object's `suggestions` (by `__kind` or by key), found at any depth (the step output's
@@ -63,12 +100,16 @@ export function suggestionsFromPayload(payload: unknown, depth = 0): Record<stri
   if (depth > 6 || payload === null || typeof payload !== "object") return {};
   if (Array.isArray(payload)) return Object.assign({}, ...payload.map((p) => suggestionsFromPayload(p, depth + 1)));
   const o = payload as Record<string, unknown>;
+  if ((o.__kind === "brand_web_result_classification" || "results" in o) && Array.isArray(o.results)) {
+    const rows = o.results.map(parseClass).filter((p): p is [string, WeThinkSuggestion] => Boolean(p));
+    if (rows.length || o.__kind === "brand_web_result_classification") return Object.fromEntries(rows);
+  }
   if ((o.__kind === "brand_we_think" || "suggestions" in o) && Array.isArray(o.suggestions)) {
     return Object.fromEntries(
       o.suggestions
         .map(parseOne)
         .filter((p): p is [string, WeThinkSuggestion] => Boolean(p))
-        .map(([k, v]) => [suggestionKey(k), v]),
+        .map(([k, v]) => [suggestionKey(k), { ...v, by: "agent" }]),
     );
   }
   return Object.assign(
@@ -83,7 +124,9 @@ export function suggestionsFromPayload(payload: unknown, depth = 0): Record<stri
 export function withSuggestions(items: EvidenceItem[], suggestions: Record<string, WeThinkSuggestion>): EvidenceItem[] {
   if (!Object.keys(suggestions).length) return items;
   return items.map((i) => {
-    const s = [i.key, ...(i.same_as ?? [])].map((k) => suggestions[k] ?? suggestions[suggestionKey(k)]).find(Boolean);
+    const s =
+      [i.key, ...(i.same_as ?? [])].map((k) => suggestions[k] ?? suggestions[suggestionKey(k)]).find(Boolean) ??
+      (WEB_FIELDS.has(i.field) ? suggestions[webResultKey(i.url ?? i.value)] : undefined);
     if (!s) return i;
     // The option the card actually offers: names answer Preferred / Alias, everything else Ours.
     const name = i.field === "name";
@@ -99,12 +142,16 @@ export interface KnownDecided {
   names: string[];
   aliases: string[];
   exclusions: string[];
+  /** Web results already answered or already suggested by the classifier: the next round classifies the next batch. */
+  results: string[];
 }
 
 export function knownDecided(items: Iterable<EvidenceItem>, decisions: Record<string, Decision>): KnownDecided {
-  const known: KnownDecided = { websites: [], accounts: [], names: [], aliases: [], exclusions: [] };
+  const known: KnownDecided = { websites: [], accounts: [], names: [], aliases: [], exclusions: [], results: [] };
   for (const i of items) {
     const d = decisions[i.key];
+    const agent = (i.suggestion as { by?: string } | null | undefined)?.by === "agent";
+    if (WEB_FIELDS.has(i.field) && (d || agent)) known.results.push(i.url ?? i.value);
     if (!d) continue;
     const exact = i.field === "website" ? websiteHost(i.value) : i.field === "social" ? (i.url ?? i.value) : i.value;
     if (d === "no") known.exclusions.push(exact);
@@ -119,5 +166,6 @@ export function knownDecided(items: Iterable<EvidenceItem>, decisions: Record<st
     names: unique(known.names),
     aliases: unique(known.aliases),
     exclusions: unique(known.exclusions),
+    results: unique(known.results),
   };
 }

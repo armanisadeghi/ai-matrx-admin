@@ -156,14 +156,15 @@ export function factsFromPayload(payload: unknown, depth = 0): BrandFact[] {
   if (depth > 4 || typeof payload !== "object" || payload === null) return [];
   if (Array.isArray(payload)) return payload.flatMap((p) => factsFromPayload(p, depth + 1));
   const o = payload as Record<string, unknown>;
-  if (o.__kind === "brand_basics_fact" || o.__kind === "person_basics_fact") {
+  if (o.__kind === "brand_basics_fact" || o.__kind === "person_basics_fact" || o.__kind === "brand_whats_new_fact") {
     const one = parseFact(o);
     return one ? [one] : [];
   }
   // The kind's list is `facts` (Arman's agent and the registered kind); `items` is read too.
   const list = (b: Record<string, unknown>): unknown[] | null =>
     Array.isArray(b.facts) ? b.facts : Array.isArray(b.items) ? b.items : null;
-  if (o.__kind === "brand_basics" || o.__kind === "person_basics") {
+  // brand_whats_new (the what's-new agent): its facts join the queue; its conflicts are not read here yet.
+  if (o.__kind === "brand_basics" || o.__kind === "person_basics" || o.__kind === "brand_whats_new") {
     return (list(o) ?? []).map(parseFact).filter((f): f is BrandFact => Boolean(f));
   }
   return Object.entries(o).flatMap(([k, v]) => {

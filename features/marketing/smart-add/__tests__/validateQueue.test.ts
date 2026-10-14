@@ -115,6 +115,13 @@ describe("validation queue", () => {
     expect(q.map((x) => x.fact?.field)).toEqual(["official_name", "country", "booking_url"]);
   });
 
+  it("reads the what's-new agent's facts into the queue", () => {
+    const facts = factsFromPayload({ content: [{ __kind: "brand_whats_new", conflicts: [], facts: [
+      { __kind: "brand_whats_new_fact", field: "year_founded", field_label: "Year Founded", value: "2009", certainty: "confirmed", reason: "r", evidence_urls: [], known_field: true },
+    ] }] });
+    expect(facts.map((f) => [f.field, f.value])).toEqual([["year_founded", "2009"]]);
+  });
+
   it("shifts only once name, website and an account are settled", () => {
     expect(VALIDATION_THRESHOLD.minAccounts).toBe(1);
     expect(coreSettled({ name: "X", websiteUrl: "https://x.com", accounts: [] })).toBe(false);

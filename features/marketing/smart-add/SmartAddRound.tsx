@@ -28,7 +28,7 @@ export type SmartAddStepPair = readonly string[];
 export const IDENTIFY_STEPS: SmartAddStepPair = ["probe", "page", "avatars", "socials", "web", "deep", "local"];
 export const SETUP_STEPS: SmartAddStepPair = ["logo", "accounts", "history"];
 /** Steps whose output may carry the facts agent's `brand_basics` (read for facts only, not shown as steps). */
-const FACT_STEPS: SmartAddStepPair = ["facts", "brand_basics", "person_facts"];
+const FACT_STEPS: SmartAddStepPair = ["facts", "brand_basics", "person_facts", "whats_new_1", "whats_new_2", "whats_new_3"];
 /** The person branch's anchor stage: its findings (read like any step's output, not shown as steps). */
 const ANCHOR_STEPS: SmartAddStepPair = ["person_anchor_search", "person_anchor_extract"];
 /** The person / business verdict step (aidream brand.identify.person_signals). */
@@ -66,7 +66,7 @@ export function parsePersonSignals(raw: unknown): PersonSignals | null {
   };
 }
 /** The "we think" step (mandate brand_intake.we_think): its `brand_we_think` suggestions, per finding key. */
-const WE_THINK_STEPS: SmartAddStepPair = ["we_think"];
+const WE_THINK_STEPS: SmartAddStepPair = ["we_think", "classify"];
 
 /** The page step's gate detection (aidream brand_identify_gate.GateReport), as far as the screen uses it. */
 export interface SiteGate {
