@@ -1,4 +1,5 @@
 import type { MatrxDataTableQueryState } from "@ai-matrx/design-system/data-table/types";
+import { applyHiddenView, type HiddenView } from "@/features/access-gate/service/hiddenByMe";
 import {
   buildStoredSeoMetrics,
   parseStoredSeoMetrics,
@@ -2998,6 +2999,8 @@ export async function listBrands(
   signal?: AbortSignal,
   /** The archived-items law: archived brands are one click away (`archived` / `all`). */
   archive: "active" | "archived" | "all" = "active",
+  /** Hidden by me: the person's hidden brand ids and which slice to show. */
+  hidden: { ids: readonly string[]; view: HiddenView } = { ids: [], view: "visible" },
 ): Promise<PagedResult<BrandListRow>> {
   const db = await authenticatedWebDb(supabase);
   const { from, to } = rangeFor(state);
@@ -3015,6 +3018,7 @@ export async function listBrands(
   let query = db.from("brand").select(BRAND_COLUMNS, { count: "exact" });
   if (archive === "active") query = query.is("deleted_at", null);
   else if (archive === "archived") query = query.not("deleted_at", "is", null);
+  query = applyHiddenView(query, hidden.ids, hidden.view);
   const search = cleanSearch(state.search);
   if (search) {
     query = query.or(`name.ilike.%${search}%,website_url.ilike.%${search}%`);

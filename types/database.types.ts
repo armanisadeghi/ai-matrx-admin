@@ -93772,6 +93772,63 @@ export type Database = {
         }
         Relationships: []
       }
+      hidden_item: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          deleted_at: string | null
+          entity_id: string
+          entity_type: string
+          id: string
+          metadata: Json
+          organization_id: string
+          published_to_web: boolean
+          published_to_web_at: string | null
+          published_to_web_by: string | null
+          shown_to: Database["platform"]["Enums"]["shown_to"] | null
+          updated_at: string
+          updated_by: string | null
+          version: number
+          visibility: Database["platform"]["Enums"]["visibility"]
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          entity_id: string
+          entity_type: string
+          id?: string
+          metadata?: Json
+          organization_id: string
+          published_to_web?: boolean
+          published_to_web_at?: string | null
+          published_to_web_by?: string | null
+          shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+          visibility?: Database["platform"]["Enums"]["visibility"]
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          entity_id?: string
+          entity_type?: string
+          id?: string
+          metadata?: Json
+          organization_id?: string
+          published_to_web?: boolean
+          published_to_web_at?: string | null
+          published_to_web_by?: string | null
+          shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+          visibility?: Database["platform"]["Enums"]["visibility"]
+        }
+        Relationships: []
+      }
       judge_verdict: {
         Row: {
           agreed: boolean | null
@@ -98762,6 +98819,7 @@ export type Database = {
         }
         Returns: number
       }
+      _record_row: { Args: { p_id: string; p_type: string }; Returns: Json }
       _registered_at_birth_schema_rename_impl: {
         Args: never
         Returns: undefined
@@ -100402,6 +100460,15 @@ export type Database = {
         Args: { p_depth?: number; p_id: string; p_type: string }
         Returns: boolean
       }
+      hidden_by_me: {
+        Args: { p_type?: string }
+        Returns: {
+          entity_id: string
+          entity_type: string
+          hidden_at: string
+        }[]
+      }
+      hide_for_me: { Args: { p_id: string; p_type: string }; Returns: Json }
       home_labels: {
         Args: { p_scope_ids: string[] }
         Returns: {
@@ -101299,6 +101366,10 @@ export type Database = {
         }
         Returns: number
       }
+      record_removal_rights: {
+        Args: { p_id: string; p_type: string }
+        Returns: Json
+      }
       record_store_kind: {
         Args: { p_token: string }
         Returns: {
@@ -102078,6 +102149,7 @@ export type Database = {
           shape: string
         }[]
       }
+      unhide_for_me: { Args: { p_id: string; p_type: string }; Returns: Json }
       unified_data_store_on: {
         Args: { p_organization_id: string }
         Returns: Json
@@ -145082,6 +145154,14 @@ export type Database = {
           ok: boolean
         }[]
       }
+      __brand_archive_roundtrip: {
+        Args: never
+        Returns: {
+          check_name: string
+          detail: string
+          ok: boolean
+        }[]
+      }
       __decision_retraction_selftest: {
         Args: never
         Returns: {
@@ -145090,6 +145170,12 @@ export type Database = {
           ok: boolean
         }[]
       }
+      _retraction_downgrade: { Args: { p: string }; Returns: string }
+      _retraction_hits: {
+        Args: { p_hosts: string[]; p_keys: string[]; p_urls: string[] }
+        Returns: number
+      }
+      _retraction_url: { Args: { p: string }; Returns: string }
       adopt_offering_template: {
         Args: {
           p_organization_id: string
@@ -145127,19 +145213,6 @@ export type Database = {
         Returns: undefined
       }
       brand_archive: { Args: { p_brand_id: string }; Returns: Json }
-      decision_retraction: {
-        Args: {
-          p_apply?: boolean
-          p_exclude?: boolean
-          p_root_id: string
-          p_root_type: string
-        }
-        Returns: Json
-      }
-      decision_retraction_restore: {
-        Args: { p_summary: Json }
-        Returns: Json
-      }
       brand_archive_associated: {
         Args: { p_brand_id: string; p_items: Json }
         Returns: number
@@ -145275,6 +145348,16 @@ export type Database = {
         Returns: number[]
       }
       cron_min_step: { Args: { p_vals: number[] }; Returns: number }
+      decision_retraction: {
+        Args: {
+          p_apply?: boolean
+          p_exclude?: boolean
+          p_root_id: string
+          p_root_type: string
+        }
+        Returns: Json
+      }
+      decision_retraction_restore: { Args: { p_summary: Json }; Returns: Json }
       is_machine_resource_url: { Args: { page_url: string }; Returns: boolean }
       is_resource_content_type: {
         Args: { content_type_last: string }

@@ -1,5 +1,6 @@
 "use client";
 
+import type { HiddenView } from "@/features/access-gate/service/hiddenByMe";
 import { crawlActivityRefetchInterval } from "@/features/marketing/data/crawl-activity-refresh";
 import { useEffect, useMemo, useRef } from "react";
 import { followRemovalWithToast } from "@/features/trash/cascade";
@@ -817,10 +818,11 @@ export function useBulkDeleteDiscoveredItems() {
 export function useBrands(
   state: MatrxDataTableQueryState,
   archive: "active" | "archived" | "all" = "active",
+  hidden: { ids: readonly string[]; view: HiddenView } = { ids: [], view: "visible" },
 ) {
   return useQuery({
-    queryKey: [...marketingKeys.root, "brands", state, archive] as const,
-    queryFn: ({ signal }) => listBrands(state, signal, archive),
+    queryKey: [...marketingKeys.root, "brands", state, archive, hidden] as const,
+    queryFn: ({ signal }) => listBrands(state, signal, archive, hidden),
     placeholderData: keepPreviousData,
   });
 }

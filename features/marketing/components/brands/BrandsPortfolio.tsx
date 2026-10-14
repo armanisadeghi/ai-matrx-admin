@@ -19,6 +19,8 @@ import {
   Archive,
   ArchiveRestore,
   ScanSearch,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import { toast } from "@/lib/toast";
 import {
@@ -40,8 +42,11 @@ import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceR
 import { createMarketingScope } from "@/features/surfaces/manifests/marketing.manifest";
 import { marketingListQuery } from "@/features/marketing/lib/scopes/marketing-hub-scope";
 import { useMarketingTableState } from "@/features/marketing/data/query-state";
-import { useBrands, useRestoreBrand } from "@/features/marketing/data/hooks";
+import { marketingKeys, useBrands, useRestoreBrand } from "@/features/marketing/data/hooks";
 import { BrandArchiveFlow } from "@/features/marketing/components/brands/BrandArchiveFlow";
+import { HiddenFilter } from "@/features/access-gate/components/HiddenFilter";
+import { useHiddenByMe, useHideForMe } from "@/features/access-gate/hooks/useHiddenByMe";
+import type { HiddenView } from "@/features/access-gate/service/hiddenByMe";
 import {
   ArchiveFilter,
   DEFAULT_ARCHIVE_FILTER,
@@ -106,7 +111,16 @@ export function BrandsPortfolio({
   });
   // THE ARCHIVED-ITEMS LAW: archived brands are one click away; Restore lives on their rows.
   const [archive, setArchive] = useState<ArchiveFilterValue>(DEFAULT_ARCHIVE_FILTER);
-  const brands = useBrands(table.queryState, archive);
+  // HIDDEN BY ME: brands this person hid leave the list and wait in the Hidden view (one click).
+  const [hiddenView, setHiddenView] = useState<HiddenView>("visible");
+  const hiddenIds = useHiddenByMe("web_brand");
+  const { hide: hideBrand, unhide: unhideBrand } = useHideForMe("web_brand", [
+    [...marketingKeys.root, "brands"],
+  ]);
+  const brands = useBrands(table.queryState, archive, {
+    ids: hiddenIds.data ?? [],
+    view: hiddenView,
+  });
   const restoreMutation = useRestoreBrand();
   const [editorOpen, setEditorOpen] = useState(false);
   const [editing, setEditing] = useState<MarketingBrand | null>(null);
@@ -120,6 +134,22 @@ export function BrandsPortfolio({
   const openCreate = () => {
     setEditing(null);
     setEditorOpen(true);
+  };
+
+  const setHidden = async (row: { id: string; name: string }, hidden: boolean) => {
+    try {
+      if (hidden) {
+        await hideBrand.mutateAsync(row.id);
+        toast.success(`Hid ${row.name}. Find it under Hidden.`);
+      } else {
+        await unhideBrand.mutateAsync(row.id);
+        toast.success(`${row.name} is back in your list`);
+      }
+    } catch (error) {
+      toast.error(hidden ? "Could not hide brand" : "Could not show brand", {
+        description: extractErrorMessage(error),
+      });
+    }
   };
 
   const restore = async (row: { id: string; name: string }) => {
@@ -264,6 +294,13 @@ export function BrandsPortfolio({
           destructive: !clickedRow.deleted_at,
           onSelect: () =>
             clickedRow.deleted_at ? void restore(clickedRow) : setDeleting(clickedRow),
+        },
+        {
+          kind: "item",
+          id: hiddenView === "hidden" ? "brand-unhide" : "brand-hide",
+          label: hiddenView === "hidden" ? "Show again" : "Hide for me",
+          icon: hiddenView === "hidden" ? Eye : EyeOff,
+          onSelect: () => void setHidden(clickedRow, hiddenView !== "hidden"),
         },
       ]
     : [];
@@ -502,6 +539,11 @@ export function BrandsPortfolio({
               actions={
                 <div className="flex shrink-0 items-center gap-1">
                   <ArchiveFilter value={archive} onValueChange={setArchive} size="sm" />
+                  <HiddenFilter
+                    count={hiddenIds.data?.length ?? 0}
+                    value={hiddenView}
+                    onValueChange={setHiddenView}
+                  />
                   <Button
                     icon={<LayoutGrid />}
                     type="button"
@@ -588,7 +630,10 @@ export function BrandsPortfolio({
                         }, variant: "ghost" as const, tooltip: "Enrich with Smart Add" }]), ...[row.deleted_at ? { id: "restore", icon: ArchiveRestore, label: `Restore ${row.name}`, onClick: (event: React.MouseEvent<HTMLButtonElement>) => {
                           event.stopPropagation();
                           void restore(row);
-                        }, variant: "ghost" as const, tooltip: "Restore brand" } : { id: "archive", icon: Archive, tone: "destructive" as const, label: `Archive ${row.name}`, onClick: (event: React.MouseEvent<HTMLButtonElement>) => {
+                        }, variant: "ghost" as const, tooltip: "Restore brand" } : hiddenView === "hidden" ? { id: "unhide", icon: Eye, label: `Show ${row.name} again`, onClick: (event: React.MouseEvent<HTMLButtonElement>) => {
+                          event.stopPropagation();
+                          void setHidden(row, false);
+                        }, variant: "ghost" as const, tooltip: "Show again" } : { id: "archive", icon: Archive, tone: "destructive" as const, label: `Archive ${row.name}`, onClick: (event: React.MouseEvent<HTMLButtonElement>) => {
                           event.stopPropagation();
                           setDeleting(row);
                         }, variant: "ghost" as const, tooltip: "Archive brand" }]]}

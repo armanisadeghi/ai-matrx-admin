@@ -2,7 +2,9 @@
 
 import { useState } from "react";
 import {
+  Archive,
   Check,
+  EyeOff,
   KeyRound,
   Loader2,
   Send,
@@ -28,8 +30,18 @@ import {
 } from "@/features/access-gate/service/accessRequests";
 import { ProTextarea } from "@/components/official/ProTextarea";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { useHideForMe } from "@/features/access-gate/hooks/useHiddenByMe";
 
-type RequestChoice = "delete" | "full";
+/**
+ * THE screen for "you can see this, but removing it is not yours to do"
+ * (platform primitive, 2026-10-14). Any record a person can view but may not
+ * archive or delete opens this instead of a refusal: ask the owner/admins to
+ * do it, ask for full access, or hide it for yourself (it leaves your lists and
+ * waits in that list's Hidden view). Open it BEFORE trying the write when
+ * `useRemovalRights` says `canRemove: false`, and after a governed refusal
+ * (`isGovernedActionDenial`).
+ */
+type RequestChoice = "delete" | "hide" | "full";
 
 export function GovernedActionDialog({
   open,
@@ -39,6 +51,9 @@ export function GovernedActionDialog({
   itemName,
   itemLabel = "site",
   href,
+  action = "delete",
+  onHidden,
+  invalidateOnHide = [],
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -47,6 +62,12 @@ export function GovernedActionDialog({
   itemName: string;
   itemLabel?: string;
   href?: string | null;
+  /** The word for the removal the person tried: "archive" or "delete". */
+  action?: "archive" | "delete";
+  /** Called after the person hid the item for themselves. */
+  onHidden?: () => void;
+  /** List query keys to re-read after a hide (the hidden ids refresh on their own). */
+  invalidateOnHide?: readonly unknown[][];
 }) {
   const currentUserId = useAppSelector(selectUserId);
   const { context, isLoading } = useAccessGate(resourceType, resourceId, {
@@ -56,13 +77,33 @@ export function GovernedActionDialog({
   const [note, setNote] = useState("");
   const [busy, setBusy] = useState(false);
   const [sent, setSent] = useState<RequestChoice | null>(null);
+  const { hide } = useHideForMe(resourceType, invalidateOnHide);
+  const verb = action === "archive" ? "archive" : "delete";
+  const ActionIcon = action === "archive" ? Archive : Trash2;
 
   const ownerName =
     context?.owner?.displayName ??
     (context?.organization ? context.organization.name : null) ??
     "the owner";
 
+  async function hideIt() {
+    setBusy(true);
+    try {
+      await hide.mutateAsync(resourceId);
+      toast.success(`Hidden for you. Find ${itemName} under Hidden.`);
+      onHidden?.();
+      onOpenChange(false);
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "We couldn't hide that.",
+      );
+    } finally {
+      setBusy(false);
+    }
+  }
+
   async function sendRequest() {
+    if (choice === "hide") return hideIt();
     setBusy(true);
     try {
       const result =
@@ -112,17 +153,15 @@ export function GovernedActionDialog({
       <DialogContent className="matrx-touch-targets sm:max-w-xl">
         <DialogHeader>
           <div className="mb-2 flex h-11 w-11 items-center justify-center rounded-full bg-destructive/10">
-            <Trash2 className="h-5 w-5 text-destructive" aria-hidden />
+            <ActionIcon className="h-5 w-5 text-destructive" aria-hidden />
           </div>
           <DialogTitle>
-            Full access is needed to delete this {itemLabel}
+            Only {ownerName} can {verb} this {itemLabel}
           </DialogTitle>
           <DialogDescription>
-            You can edit{" "}
+            You can work on{" "}
             <span className="font-medium text-foreground">{itemName}</span>, but
-            deleting work owned by someone else needs full access. Ask{" "}
-            {ownerName}
-            to delete it, or ask them to give you full access.
+            removing it is up to them. Ask them, or hide it just for you.
           </DialogDescription>
         </DialogHeader>
 
@@ -142,7 +181,9 @@ export function GovernedActionDialog({
             <p className="flex items-center gap-2 text-sm font-medium text-foreground">
               <Check className="h-4 w-4 text-primary" aria-hidden />
               {sent === "delete"
-                ? "Deletion requested"
+                ? action === "archive"
+                  ? "Archive requested"
+                  : "Deletion requested"
                 : "Full access requested"}
             </p>
             <p className="mt-1 text-xs text-muted-foreground">
@@ -152,22 +193,30 @@ export function GovernedActionDialog({
           </div>
         ) : (
           <>
-            <div className="grid gap-2 sm:grid-cols-2">
+            <div className="grid gap-2 sm:grid-cols-3">
               <RequestChoiceButton
                 active={choice === "delete"}
-                icon={<Trash2 className="h-4 w-4" aria-hidden />}
-                title="Ask them to delete it"
-                detail="They can approve and delete it directly from your message."
+                icon={<ActionIcon className="h-4 w-4" aria-hidden />}
+                title={`Ask them to ${verb} it`}
+                detail="They approve it from your message."
                 onClick={() => setChoice("delete")}
+              />
+              <RequestChoiceButton
+                active={choice === "hide"}
+                icon={<EyeOff className="h-4 w-4" aria-hidden />}
+                title="Hide it for me"
+                detail="Only you stop seeing it; undo under Hidden."
+                onClick={() => setChoice("hide")}
               />
               <RequestChoiceButton
                 active={choice === "full"}
                 icon={<ShieldCheck className="h-4 w-4" aria-hidden />}
                 title="Request full access"
-                detail="You can manage sharing and delete it yourself after approval."
+                detail={`Then you can ${verb} it yourself.`}
                 onClick={() => setChoice("full")}
               />
             </div>
+            {choice === "hide" ? null : (
             <ProTextarea
               className="min-h-20 text-base md:text-sm"
               value={note}
@@ -175,6 +224,7 @@ export function GovernedActionDialog({
               placeholder="Add a note for the owner (optional)"
               onChange={(event) => setNote(event.target.value)}
             />
+            )}
           </>
         )}
 
@@ -188,6 +238,8 @@ export function GovernedActionDialog({
             <Button
               icon={busy ? (
                 <Loader2 className="animate-spin" aria-hidden />
+              ) : choice === "hide" ? (
+                <EyeOff aria-hidden />
               ) : choice === "delete" ? (
                 <Send aria-hidden />
               ) : (
@@ -197,7 +249,7 @@ export function GovernedActionDialog({
               disabled={busy || isLoading}
               onClick={() => void sendRequest()}
             >
-              Send request
+              {choice === "hide" ? "Hide for me" : "Send request"}
             </Button>
           ) : null}
         </DialogFooter>

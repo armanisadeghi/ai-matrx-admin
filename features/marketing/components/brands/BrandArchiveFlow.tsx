@@ -24,7 +24,12 @@ import {
   useBrandAssociatedItems,
 } from "@/features/marketing/data/hooks";
 import type { BrandArchiveCounts } from "@/features/marketing/data/service";
+import { marketingKeys } from "@/features/marketing/data/hooks";
 import { extractErrorMessage } from "@/utils/errors";
+import { GovernedActionDialog } from "@/features/access-gate/components/GovernedActionDialog";
+import { isGovernedActionDenial } from "@/features/access-gate/lib/governedActionError";
+import { useRemovalRights } from "@/features/access-gate/hooks/useHiddenByMe";
+import { marketingRoutes } from "@/features/marketing/lib/routes";
 
 const COUNT_LABELS: Array<[keyof BrandArchiveCounts, string, string]> = [
   ["websites", "website", "websites"],
@@ -62,13 +67,36 @@ export interface BrandArchiveFlowProps {
 
 export function BrandArchiveFlow({ brand, onCancel, onDone }: BrandArchiveFlowProps) {
   const [archived, setArchived] = useState<{ id: string; name: string } | null>(null);
-  const preview = useBrandArchivePreview(brand && !archived ? brand.id : null);
+  const [refusedId, setRefusedId] = useState<string | null>(null);
+  // Check first (Arman, 2026-10-14): a person who may not archive this brand sees their options —
+  // ask the owner, or hide it for themselves — instead of a confirm that can only fail.
+  const rights = useRemovalRights("web_brand", brand && !archived ? brand.id : null);
+  const refused = Boolean(brand) && (rights.data?.canRemove === false || refusedId === brand?.id);
+  const preview = useBrandArchivePreview(brand && !archived && !refused ? brand.id : null);
   const archive = useArchiveBrand();
 
   return (
     <>
+      {brand ? (
+        <GovernedActionDialog
+          open={refused}
+          onOpenChange={(open) => {
+            if (!open) {
+              setRefusedId(null);
+              onCancel();
+            }
+          }}
+          resourceType="web_brand"
+          resourceId={brand.id}
+          itemName={brand.name}
+          itemLabel="brand"
+          action="archive"
+          href={marketingRoutes.brand(brand.id)}
+          invalidateOnHide={[[...marketingKeys.root, "brands"]]}
+        />
+      ) : null}
       <ConfirmDialog
-        open={Boolean(brand) && !archived}
+        open={Boolean(brand) && !archived && !refused}
         onOpenChange={(open) => {
           if (!open && !archive.isPending) onCancel();
         }}
@@ -76,7 +104,7 @@ export function BrandArchiveFlow({ brand, onCancel, onDone }: BrandArchiveFlowPr
         description={preview.isLoading ? "Counting what goes with it…" : brandArchiveConsequence(preview.data)}
         variant="destructive"
         confirmLabel="Archive brand"
-        busy={archive.isPending}
+        busy={archive.isPending || rights.isLoading}
         onConfirm={async () => {
           if (!brand) return;
           try {
@@ -84,6 +112,10 @@ export function BrandArchiveFlow({ brand, onCancel, onDone }: BrandArchiveFlowPr
             toast.success(`Archived ${brand.name}`);
             setArchived(brand);
           } catch (error) {
+            if (isGovernedActionDenial(error)) {
+              setRefusedId(brand.id);
+              return;
+            }
             toast.error("Could not archive brand", { description: extractErrorMessage(error) });
           }
         }}
