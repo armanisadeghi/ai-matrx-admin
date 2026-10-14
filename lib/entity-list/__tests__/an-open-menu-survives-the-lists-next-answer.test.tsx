@@ -136,11 +136,14 @@ it("an open row menu stays open, on its row, while the list re-reads the same qu
     trigger.click();
   });
   expect(document.querySelector('[role="menu"]')).not.toBeNull();
+  // The design-system ItemMenu arms lazily: the idle button is swapped for the
+  // real menu trigger on first press, so the anchor to hold is the ARMED one.
+  const armed = container.querySelector<HTMLButtonElement>('button[aria-label="Actions for Referral Intake Queue"]')!;
 
   version = 1;
   await draw("v1"); // the service re-states itself; its read is still in flight
   expect(document.querySelector('[role="menu"]')).not.toBeNull();
-  expect(document.contains(trigger)).toBe(true);
+  expect(document.contains(armed)).toBe(true);
 
   await act(async () => {
     release?.();
