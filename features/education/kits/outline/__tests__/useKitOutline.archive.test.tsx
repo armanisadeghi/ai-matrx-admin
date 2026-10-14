@@ -66,19 +66,19 @@ describe("useKitOutline archive separation", () => {
     mockReadLive.mockResolvedValue([{ id: "live-section" }]);
     mockReadArchived.mockResolvedValue([{ id: "archived-section" }]);
     mockCoverage.mockReturnValue({ rows: [], unmapped: { cards: 0, questions: 0 }, max: 0 });
-    let latest: KitOutlineState | null = null;
+    const states: KitOutlineState[] = [];
     const host = document.createElement("div");
     const root = createRoot(host);
 
     await act(async () => {
-      root.render(<Probe onState={(state) => { latest = state; }} />);
+      root.render(<Probe onState={(state) => { states.push(state); }} />);
       await Promise.resolve();
       await Promise.resolve();
       await Promise.resolve();
     });
 
-    expect(latest?.sections?.map((section) => section.id)).toEqual(["live-section"]);
-    expect(latest?.archivedSections?.map((section) => section.id)).toEqual(["archived-section"]);
+    expect(states.at(-1)?.sections?.map((section) => section.id)).toEqual(["live-section"]);
+    expect(states.at(-1)?.archivedSections?.map((section) => section.id)).toEqual(["archived-section"]);
     expect(mockCoverage).toHaveBeenCalledWith(
       expect.arrayContaining([expect.objectContaining({ id: "live-section" })]),
       [],
