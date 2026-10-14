@@ -32,6 +32,8 @@ export const SETUP_STEPS: SmartAddStepPair = ["logo", "accounts", "history"];
 const FACT_STEPS: SmartAddStepPair = ["facts", "brand_basics", "person_facts", "whats_new_1", "whats_new_2", "whats_new_3"];
 /** The person branch's anchor stage: its findings (read like any step's output, not shown as steps). */
 const ANCHOR_STEPS: SmartAddStepPair = ["person_anchor_search", "person_anchor_extract"];
+/** The web step's note when the page read found a parked domain after the search ran. */
+export const PARKED_WEB_NOTE = "Parked domain — web results set aside";
 /** The person / business verdict step (aidream brand.identify.person_signals). */
 const SIGNALS_STEP = "person_signals";
 /** The path decision step (aidream brand.identify.path_decision; PATHS.md). */
@@ -81,7 +83,7 @@ const WE_THINK_STEPS: SmartAddStepPair = ["we_think", "classify"];
 
 /** The page step's gate detection (aidream brand_identify_gate.GateReport), as far as the screen uses it. */
 export interface SiteGate {
-  type: "division_chooser" | "language_gate" | "age_gate" | "splash" | "consent_wall" | "password";
+  type: "division_chooser" | "language_gate" | "age_gate" | "splash" | "consent_wall" | "password" | "parked_domain";
   branches: { label: string; url: string }[];
 }
 
@@ -196,8 +198,13 @@ export function SmartAddRound({
   const onStep = (step: string, view: StepView, evidence: EvidenceItem[], facts: BrandFact[], suggestions: Record<string, WeThinkSuggestion>) =>
     setStepState((s) => ({ ...s, [step]: { view, evidence, facts, suggestions } }));
 
+  // The web search starts with the quick check, never waiting on the whole-page read. When only the page read
+  // (scraper fallback) finds the site is a parked / for-sale domain, the web results it already found are set
+  // aside and the web step says so.
+  const parkedLate = stepState.page?.view.gate?.type === "parked_domain";
+  const keep = (e: EvidenceItem) => !(parkedLate && e.source?.node === "web");
   const live = emissions.flatMap((e) => evidenceFromPayload(e.payload));
-  const all = [...live, ...[...steps, ...ANCHOR_STEPS].flatMap((s) => stepState[s]?.evidence ?? [])];
+  const all = [...live, ...[...steps, ...ANCHOR_STEPS].flatMap((s) => stepState[s]?.evidence ?? [])].filter(keep);
   const signalsAggregate = useAppSelector(selectNodeAggregate(runId, SIGNALS_STEP));
   const signalsOut = signalsAggregate.invocations[signalsAggregate.invocations.length - 1]?.output ?? null;
   const signals =
@@ -239,7 +246,11 @@ export function SmartAddRound({
 
   const idle = (step: string): StepView => ({ step, phase: "idle", progress: null, notes: [], costUsd: 0, skipped: false });
   const spendUsd = useAppSelector(selectRunSpendUsd(runId));
-  const view: RoundView = { runId, status, steps: steps.map((s) => stepState[s]?.view ?? idle(s)), spendUsd };
+  const stepView = (s: string): StepView => {
+    const v = stepState[s]?.view ?? idle(s);
+    return s === "web" && parkedLate && !v.skipped ? { ...v, notes: [...v.notes, PARKED_WEB_NOTE] } : v;
+  };
+  const view: RoundView = { runId, status, steps: steps.map(stepView), spendUsd };
   useEffect(() => {
     onView(view);
   }, [view, onView]);
