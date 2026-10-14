@@ -101,6 +101,17 @@ function useRequestInputs(agentId: string, conversationId: string) {
   return [draft, conversation, typed, variables, resources, context, ui, messages] as const;
 }
 
+/** One settled capture and the exact inputs it answered. */
+interface SettledCapture {
+  inputs: readonly unknown[];
+  preview: ModelViewPreview | null;
+  error: string | null;
+}
+
+function sameInputs(a: readonly unknown[], b: readonly unknown[]): boolean {
+  return a.length === b.length && a.every((v, i) => v === b[i]);
+}
+
 export function ModelViewPanel({ agentId, conversationId }: ModelViewPanelProps) {
   const dispatch = useAppDispatch();
   const store = useAppStore();
@@ -111,40 +122,48 @@ export function ModelViewPanel({ agentId, conversationId }: ModelViewPanelProps)
   const { copyText } = useClipboard({
     notify: (message, kind) => (kind === "error" ? toast.error(message) : toast.success(message)),
   });
-  const [preview, setPreview] = useState<ModelViewPreview | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
   const [raw, setRaw] = useState(false);
   const [nonce, setNonce] = useState(0);
+  // What the request reads. The capture effect re-runs on each change, and the
+  // last SETTLED capture remembers which inputs it answered — so "Capturing…"
+  // and a stale refusal are DERIVED in render, never set from the effect.
+  //
+  // THE KEYSTROKE LAW (React #185, 2026-10-14): this panel re-captures on every
+  // keystroke in the composer. An effect that calls setState on each run turns
+  // every keystroke commit into a second, deferred render; while the main thread
+  // is busy (a fast typist, a heavy capture on screen) the keystrokes outrun that
+  // render, React counts each one as a nested update, and the 51st throws
+  // "Maximum update depth exceeded" from the composer's onChange. State changes
+  // here only from the capture's own async answer.
+  const inputs = [nonce, conversationId, agentId, draft, conversation, typed, variables, resources, context, ui, messages];
+  const [settled, setSettled] = useState<SettledCapture | null>(null);
   const seq = useRef(0);
   const loadedOnce = useRef(false);
+  const current = settled !== null && sameInputs(settled.inputs, inputs);
+  // The previous answer stays on screen until the next lands; a refusal drops it.
+  const preview = settled?.preview ?? null;
+  // A new capture starts clean: the last refusal belongs to the last request, not this one.
+  const error = current ? settled.error : null;
+  const loading = !current;
 
-  // Re-runs on every draft edit, keystroke in the composer, variable or context
-  // change, and Refresh; the previous answer stays on screen until the next lands.
   useEffect(() => {
     const mine = ++seq.current;
+    // The same list, in the same order, as `inputs` above.
+    const answered = [nonce, conversationId, agentId, draft, conversation, typed, variables, resources, context, ui, messages];
     const controller = new AbortController();
-    setLoading(true);
-    // A new capture starts clean: the last refusal belongs to the last request, not this one.
-    setError(null);
     const timer = setTimeout(
       () => {
         loadedOnce.current = true;
         requestModelView(dispatch, store.getState as () => RootState, conversationId, agentId, controller.signal)
           .then((next) => {
             if (mine !== seq.current) return;
-            setPreview(next);
-            setError(null);
+            setSettled({ inputs: answered, preview: next, error: null });
           })
           .catch((e: unknown) => {
             if (mine !== seq.current) return;
             // A refused capture shows its reason alone: the previous request is not what
             // the model would receive now, so it must not stay on screen beside the reason.
-            setPreview(null);
-            setError(e instanceof Error ? e.message : String(e));
-          })
-          .finally(() => {
-            if (mine === seq.current) setLoading(false);
+            setSettled({ inputs: answered, preview: null, error: e instanceof Error ? e.message : String(e) });
           });
       },
       loadedOnce.current ? REFRESH_DELAY_MS : 0,

@@ -3,7 +3,7 @@
  * in order, whitespace kept, nothing hidden — offers the raw payload, copies its
  * exact bytes, and asks again when anything the request reads changes.
  */
-import React, { act } from "react";
+import React, { act, Profiler } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import captured from "./fixtures/captured-requests.json";
 
@@ -261,6 +261,37 @@ describe("ModelViewPanel", () => {
     expect(signals).toHaveLength(2);
     expect(signals[0].aborted).toBe(true);
     expect(signals[1].aborted).toBe(false);
+  });
+
+  // React #185 on the live builder (2026-10-14): the capture effect set state on every
+  // keystroke, so each composer commit queued a second render; a fast typist outran it
+  // and React threw "Maximum update depth exceeded" from the composer's onChange.
+  it("a keystroke is ONE commit: the capture effect never sets state, Capturing is derived", async () => {
+    let commits = 0;
+    const tree = () => (
+      <Profiler id="mv" onRender={() => void commits++}>
+        <ModelViewPanel agentId="agent-1" conversationId="c-1" />
+      </Profiler>
+    );
+    await act(async () => {
+      root.render(tree());
+    });
+    await act(async () => {
+      jest.advanceTimersByTime(600);
+    });
+    await act(async () => {
+      for (let i = 0; i < 5; i++) await Promise.resolve();
+    });
+    // The first capture has landed: nothing is loading.
+    expect(host.querySelector('[data-testid="model-view-capturing"]')).toBeNull();
+    // The composer changes — one keystroke.
+    commits = 0;
+    selected = { userValues: { customer: "Kim" } };
+    await act(async () => {
+      root.render(tree());
+    });
+    expect(commits).toBe(1);
+    expect(host.querySelector('[data-testid="model-view-capturing"]')).not.toBeNull();
   });
 
   it("the header's Raw JSON, Copy all and Refresh keep their names when the panel is narrow", async () => {
