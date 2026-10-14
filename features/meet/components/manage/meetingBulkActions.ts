@@ -78,13 +78,33 @@ export function buildMeetingBulkActions(args: {
       label: "Archive",
       icon: Archive,
       variant: "destructive",
-      confirm: (selection) => ({
-        title: `Archive ${bulkCountLabel(selection.count, NOUN)}?`,
-        description:
-          "They leave your lists; records, notes and recordings are kept. A meeting that has not ended stops admitting anyone, and its invited guests are emailed a cancellation. Restore from Archived.",
-        confirmLabel: "Archive",
-        variant: "destructive",
-      }),
+      confirm: (selection) => {
+        // Built from the selected rows: what the archive does depends on which meetings they are.
+        const series = selection.rows.filter((m) => m.recurrenceRule).length;
+        const notEnded = selection.rows.filter(
+          (m) => m.endedAt === null && !m.deletedAt,
+        ).length;
+        const parts = [
+          "They leave your lists; records, notes and recordings are kept.",
+        ];
+        if (series > 0) {
+          parts.push(
+            `${series} ${series === 1 ? "is a recurring meeting" : "are recurring meetings"} — all dates of a recurring meeting are archived.`,
+          );
+        }
+        if (notEnded > 0) {
+          parts.push(
+            `${notEnded} ${notEnded === 1 ? "meeting is" : "meetings are"} not yet ended and stop${notEnded === 1 ? "s" : ""} admitting anyone — invited guests are emailed a cancellation.`,
+          );
+        }
+        parts.push("Restore from Archived.");
+        return {
+          title: `Archive ${bulkCountLabel(selection.count, NOUN)}?`,
+          description: parts.join(" "),
+          confirmLabel: "Archive",
+          variant: "destructive",
+        };
+      },
       run: async (selection) => {
         await ready();
         const archived: MeetingRecord[] = [];
@@ -101,7 +121,13 @@ export function buildMeetingBulkActions(args: {
               meeting.endedAt === null &&
               invitees.some((i) => i.lastSentSequence !== null)
             ) {
-              await actions.announce(meeting.id, true);
+              const told = await actions.announce(meeting.id, true);
+              // The archive stands, but the guests were not told: that is a refusal to name, not a success.
+              if (!told) {
+                throw new Error(
+                  "archived, but its guests were not emailed the cancellation",
+                );
+              }
             }
           },
           {
