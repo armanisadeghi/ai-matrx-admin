@@ -1,3 +1,4 @@
+-- chair-step: the only non-additive statements REVOKE default EXECUTE on the three functions this file creates before granting them only to service_role; no existing privilege or object is removed
 -- The original public.__list_counts_conformance() runs every catalog, numeric parity, team reach,
 -- and my-teams sample in one statement. PostgREST's statement ceiling cancels it before any of its
 -- seven rows can be returned. These service-only helpers expose the same sample as independent units;
