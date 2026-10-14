@@ -238,6 +238,14 @@ export default function KindDetailClient({
               label={detail.label}
               part="edit"
               emittedJsonSchema={detail.emittedJsonSchema}
+              extraKindContext={{
+                doctorRow: detail.doctorRow,
+                components: detail.components,
+                surfaces: detail.surfaces,
+                skills: detail.skills,
+                contentBlocks: detail.contentBlocks,
+                warnings: detail.warnings,
+              }}
               className="min-h-10"
             >
               Edit with agent

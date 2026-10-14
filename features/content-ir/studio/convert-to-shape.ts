@@ -259,17 +259,15 @@ export interface ConvertToShapeSeed {
 }
 
 /**
- * Fill every declared Shape Creator variable that has corresponding live data.
- * The composer carries only the name the human supplied; machine facts ride
- * their own structured-variable channels.
+ * The existing-Shape variables every creator launch shares: the kind's own
+ * schema, its registration + readiness snapshot, and its web output component
+ * (metadata and live source). Blank for each piece the readiness does not
+ * have, so a from-scratch build sends nothing stale.
  */
-export function buildConvertToShapeSeed(input: {
-  requestedName: string;
-  sampleContent: string;
-  readiness: ShapeReadiness;
-}): ConvertToShapeSeed {
-  const name = input.requestedName.trim();
-  const { definition, component, loading, rootKind, focus } = input.readiness;
+export function buildExistingShapeVariables(
+  readiness: ShapeReadiness,
+): Record<string, string> {
+  const { definition, component, loading, focus } = readiness;
   const kindContext = definition
     ? formatContext("Existing Shape registration", {
         id: definition.id,
@@ -283,7 +281,7 @@ export function buildConvertToShapeSeed(input: {
         metadata: definition.metadata,
         readiness: {
           creator_focus: focus,
-          schema: input.readiness.schema.state,
+          schema: readiness.schema.state,
           output_component: component.state,
           loading_component: loading.state,
           loading_slug: loading.slug,
@@ -302,6 +300,26 @@ export function buildConvertToShapeSeed(input: {
         updated_at: component.row?.updatedAt ?? null,
       })
     : "";
+  return {
+    kind_schema: formatKindSchemaVariable(definition?.emittedJsonSchema),
+    existing_kind_context: kindContext,
+    existing_component_context: componentContext,
+    existing_component_source: component.row?.componentSource?.trim() ?? "",
+  };
+}
+
+/**
+ * Fill every declared Shape Creator variable that has corresponding live data.
+ * The composer carries only the name the human supplied; machine facts ride
+ * their own structured-variable channels.
+ */
+export function buildConvertToShapeSeed(input: {
+  requestedName: string;
+  sampleContent: string;
+  readiness: ShapeReadiness;
+}): ConvertToShapeSeed {
+  const name = input.requestedName.trim();
+  const { rootKind, focus } = input.readiness;
   const kindClause = rootKind
     ? ` The sample's root discriminator is \`${rootKind}\`.`
     : " The sample has no root __kind, so infer one from the payload and preserve it in all stored and emitted data.";
@@ -309,12 +327,9 @@ export function buildConvertToShapeSeed(input: {
   return {
     draftText: `I want to call this Shape "${name}".`,
     variables: {
+      ...buildExistingShapeVariables(input.readiness),
       user_data_sample: input.sampleContent,
-      kind_schema: formatKindSchemaVariable(definition?.emittedJsonSchema),
       task_brief: `${FOCUS_BRIEF[focus]}${kindClause} Use the user-requested display name "${name}".`,
-      existing_kind_context: kindContext,
-      existing_component_context: componentContext,
-      existing_component_source: component.row?.componentSource?.trim() ?? "",
     },
   };
 }

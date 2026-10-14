@@ -62,9 +62,9 @@ import {
   shapeTestHref,
 } from "@/features/content-ir/studio/constants";
 import {
-  composeKindAgentIntent,
-  composeNewShapeIntent,
-} from "@/features/content-ir/studio/kind-agent-intents";
+  loadKindEditSeed,
+  loadKindReferenceSeed,
+} from "@/features/content-ir/studio/kind-edit-seed";
 import { useKindAgentLaunch } from "@/features/content-ir/studio/useKindAgentLaunch";
 import { SHAPE_EDITOR_ANCHOR_ID } from "@/features/content-ir/studio/components/ShapeOwnerEditor";
 import { AGENT_ICON } from "@/components/icons/domain-icons";
@@ -161,17 +161,21 @@ export default function ShapeDetailHeader({
     router.push(`${detailHref}#${SHAPE_EDITOR_ANCHOR_ID}`);
   }
 
-  function launchAgent() {
-    void launch(
-      isOwnedByViewer
-        ? composeKindAgentIntent({
-            kind,
-            label,
-            part: "edit",
-            emittedJsonSchema,
-          })
-        : composeNewShapeIntent({ likeKind: kind, likeLabel: label }),
-    );
+  // Every declared variable the live Shape can fill (schema, registration,
+  // component, up to 3 saved examples; the owner also gets its stored
+  // answers). A non-owner builds a NEW Shape with this one as the reference.
+  const [preparing, setPreparing] = useState(false);
+  async function launchAgent() {
+    setPreparing(true);
+    try {
+      await launch(
+        isOwnedByViewer
+          ? await loadKindEditSeed({ kind, label, part: "edit", emittedJsonSchema })
+          : await loadKindReferenceSeed({ kind, label }),
+      );
+    } finally {
+      setPreparing(false);
+    }
   }
 
   // The agent action is the PRIMARY pill on purpose: only primary/destructive
@@ -182,8 +186,8 @@ export default function ShapeDetailHeader({
   const agentAction = {
     label: isOwnedByViewer ? "Edit with agent" : "Build with agent",
     icon: AGENT_ICON,
-    onPress: launchAgent,
-    disabled: launching,
+    onPress: () => void launchAgent(),
+    disabled: launching || preparing,
     primary: true,
   };
 

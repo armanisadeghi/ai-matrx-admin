@@ -32,7 +32,6 @@ import { captureError } from "@/lib/diagnostics/errorCaptureStore";
 import { useOpenAgentRunWindow } from "@/features/overlays/openers/agentRunWindow";
 import { resolveMandate } from "@ai-matrx/chat/mandates/service";
 import { KIND_CREATOR_MANDATE_KEY } from "../../studio/constants";
-import { composeKindAgentIntent } from "../../studio/kind-agent-intents";
 import type { Json } from "@/types/database.types";
 import {
   diagnoseKindRenderGap,
@@ -152,10 +151,14 @@ const KindFixItBarInner: React.FC<KindFixItBarProps> = ({ kind, value }) => {
   const launchBuilder = (brief: "component" | "register") => {
     setBusy(true);
     void resolveMandate(KIND_CREATOR_MANDATE_KEY)
-      .then((resolved) => {
+      .then(async (resolved) => {
         const seed =
           brief === "component"
-            ? composeKindAgentIntent({
+            ? // Click-time import: the full seed (live registration, component,
+              // saved examples) stays out of every render path's chunk.
+              await (
+                await import("@/features/content-ir/studio/kind-edit-seed")
+              ).loadKindEditSeed({
                 kind: diagnosis.kind,
                 label: diagnosis.kindLabel ?? diagnosis.kind,
                 part: "component",

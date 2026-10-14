@@ -12,14 +12,13 @@
  * Loud when the role has no agent — never a silent no-op.
  */
 
+import { useState } from "react";
 import { PencilRuler } from "lucide-react";
 import { Button } from "@ai-matrx/design-system";
 import { ADMIN_KIND_REGISTRY_SURFACE_NAME } from "@/features/surfaces/manifests/admin-kind-registry.manifest";
 import { useKindAgentLaunch } from "@/features/content-ir/studio/useKindAgentLaunch";
-import {
-  composeKindAgentIntent,
-  type KindAgentIntentInput,
-} from "@/features/content-ir/studio/kind-agent-intents";
+import type { KindAgentIntentInput } from "@/features/content-ir/studio/kind-agent-intents";
+import { loadKindEditSeed } from "@/features/content-ir/studio/kind-edit-seed";
 
 /** Where this button lives by default: the admin kind registry's own role. */
 const ADMIN_KIND_EDITOR_ROLE = "kind_editor";
@@ -32,6 +31,8 @@ interface KindAgentButtonProps extends KindAgentIntentInput {
   surfaceName?: string;
   /** Role name on that surface. */
   roleName?: string;
+  /** Facts the page already holds (doctor row, skills, …) for the agent. */
+  extraKindContext?: Record<string, unknown>;
   variant?: "default" | "outline" | "ghost" | "secondary";
   size?: "default" | "sm";
   className?: string;
@@ -47,6 +48,18 @@ export default function KindAgentButton({
   ...intent
 }: KindAgentButtonProps) {
   const { launch, launching } = useKindAgentLaunch(surfaceName, roleName);
+  const [preparing, setPreparing] = useState(false);
+
+  // Every declared variable the live Shape can fill (schema, registration,
+  // component, up to 3 saved examples, stored answers) — read at click time.
+  async function start() {
+    setPreparing(true);
+    try {
+      await launch(await loadKindEditSeed(intent));
+    } finally {
+      setPreparing(false);
+    }
+  }
 
   return (
     <Button
@@ -54,8 +67,8 @@ export default function KindAgentButton({
       variant={variant}
       size={size}
       className={className}
-      disabled={launching}
-      onClick={() => void launch(composeKindAgentIntent(intent))}
+      disabled={launching || preparing}
+      onClick={() => void start()}
     >
       <PencilRuler className="mr-1.5 h-3.5 w-3.5" />
       {children}

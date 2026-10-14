@@ -18,6 +18,43 @@ export type ExamplesState =
   | { status: "ready"; rows: KindExampleListItem[] };
 
 /**
+ * One read of a kind's `content_ir.kind_example` rows, canonical first then
+ * newest. `limit` caps the read for callers that want only the top few.
+ * Throws with the database message on failure.
+ */
+export async function fetchKindExamples(
+  kindDefinitionId: string,
+  limit?: number,
+): Promise<KindExampleListItem[]> {
+  let query = supabase
+    .schema("content_ir")
+    .from("kind_example")
+    .select(
+      "id,label,description,is_canonical,source,validation_status,kind_version,data,updated_at",
+    )
+    .eq("kind_definition_id", kindDefinitionId)
+    .is("deleted_at", null)
+    .order("is_canonical", { ascending: false })
+    .order("updated_at", { ascending: false });
+  if (limit != null) query = query.limit(limit);
+  const { data, error } = await query;
+  if (error) {
+    throw new Error(`Failed to load kind_example rows: ${error.message}`);
+  }
+  return (data ?? []).map((r): KindExampleListItem => ({
+    id: r.id,
+    label: r.label,
+    description: r.description,
+    isCanonical: r.is_canonical,
+    source: r.source,
+    validationStatus: r.validation_status,
+    kindVersion: r.kind_version,
+    data: r.data,
+    updatedAt: r.updated_at,
+  }));
+}
+
+/**
  * Load a kind's `content_ir.kind_example` rows (canonical first, newest
  * next). One fetch per kind_definition id; errors surface loudly in state.
  */
@@ -36,40 +73,17 @@ export function useKindExamples(
 
   useEffect(() => {
     let cancelled = false;
-    (async () => {
-      const { data, error } = await supabase
-        .schema("content_ir")
-        .from("kind_example")
-        .select(
-          "id,label,description,is_canonical,source,validation_status,kind_version,data,updated_at",
-        )
-        .eq("kind_definition_id", kindDefinitionId)
-        .is("deleted_at", null)
-        .order("is_canonical", { ascending: false })
-        .order("updated_at", { ascending: false });
-      if (cancelled) return;
-      if (error) {
+    fetchKindExamples(kindDefinitionId)
+      .then((rows) => {
+        if (!cancelled) setExamples({ status: "ready", rows });
+      })
+      .catch((error: unknown) => {
+        if (cancelled) return;
         setExamples({
           status: "error",
-          message: `Failed to load kind_example rows: ${error.message}`,
+          message: error instanceof Error ? error.message : String(error),
         });
-        return;
-      }
-      setExamples({
-        status: "ready",
-        rows: (data ?? []).map((r): KindExampleListItem => ({
-          id: r.id,
-          label: r.label,
-          description: r.description,
-          isCanonical: r.is_canonical,
-          source: r.source,
-          validationStatus: r.validation_status,
-          kindVersion: r.kind_version,
-          data: r.data,
-          updatedAt: r.updated_at,
-        })),
       });
-    })();
     return () => {
       cancelled = true;
     };
