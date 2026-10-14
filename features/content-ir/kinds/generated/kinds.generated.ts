@@ -7,7 +7,7 @@
 // Verify:      pnpm check:kind-types   (CI-blocking freshness gate)
 // Twin guard:  pnpm check:kind-type-twins
 //
-// 1536 active kinds. THESE ARE THE ONLY KIND PAYLOAD TYPES IN THE REPO.
+// 1541 active kinds. THESE ARE THE ONLY KIND PAYLOAD TYPES IN THE REPO.
 // A hand-written interface mirroring a registered kind is a defect — derive
 // (Pick/Omit) from the type here instead, and never re-declare it.
 //
@@ -21,7 +21,7 @@
 // ─────────────────────────────────────────────────────────────────────────
 
 /** Structural fingerprint of the registry rows this artifact was generated from. */
-export const KIND_REGISTRY_FINGERPRINT = "9d9acbb79285";
+export const KIND_REGISTRY_FINGERPRINT = "a1a2e9bd2114";
 
 // ─────────────────────────────────────────────────────────────────────────
 // Shared nested structures. Deduped by structure across the registry — an
@@ -1477,6 +1477,16 @@ export interface BrandFact {
    * The pages that show it.
    */
   evidence_urls?: string[];
+}
+
+/**
+ * * From kind `brand_fact_rows`.
+ */
+export interface BrandFactRow {
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
 }
 
 /**
@@ -7162,7 +7172,7 @@ export interface ReviewFinding {
 }
 
 /**
- * * Shared by 5 kinds (person_candidate_list, person_clue_list, person_find_history, person_search_filters, …).
+ * * Shared by 8 kinds (person_candidate_list, person_clue_list, person_find_history, person_search_filters, …).
  */
 export interface Row {
   /**
@@ -9833,7 +9843,7 @@ export interface WeatherPlace {
 }
 
 /**
- * * Shared by 2 kinds (brand_intake.identity_match.offer, web_page_list).
+ * * Shared by 4 kinds (brand_intake.identity_match.offer, seo.page_intent_proposer.offer, seo.page_mapper.offer, web_page_list).
  */
 export interface WebPageRow {
   url?: string | null;
@@ -10142,7 +10152,7 @@ export interface AgentDefinition {
 }
 
 /**
- * Kind `agent_factory.build_job.offer` (registry v3).
+ * Kind `agent_factory.build_job.offer` (registry v6).
  */
 export interface AgentFactoryBuildJobOffer {
   /**
@@ -10258,7 +10268,7 @@ export interface AgentFactoryBuildJobOffer {
    */
   locked_output_schema_prompt?: string;
   /**
-   * The offered value names alone. When absent: greenfield.
+   * The input names alone: the binding's targets, or without a binding the offered value names. When absent: greenfield.
    */
   mandate_offered_value_names?: string[];
   /**
@@ -10270,7 +10280,7 @@ export interface AgentFactoryBuildJobOffer {
    */
   mandate_current_holder_prompt?: string;
   /**
-   * Every value the Mandate's provision offers, one per line: name, kind, guaranteed or optional, description. The agent uses these names exactly. When absent: greenfield — the contract step decides the inputs.
+   * The agent's inputs, one per line. With a binding: each of the binding's targets, as the binding builds it — name, guaranteed or optional, which provision values it combines, description. Without a binding: every value the provision offers (name, kind, guaranteed or optional, description). The agent uses these names exactly. When absent: greenfield — the contract step decides the inputs.
    */
   mandate_offered_values_prompt?: string;
   /**
@@ -10294,7 +10304,7 @@ export interface AgentFactoryBuildRequestOffer {
 }
 
 /**
- * Kind `agent_factory.contract_step.offer` (registry v7).
+ * Kind `agent_factory.contract_step.offer` (registry v10).
  */
 export interface AgentFactoryContractStepOffer {
   /**
@@ -10433,7 +10443,7 @@ export interface AgentFactoryContractStepOffer {
    */
   locked_output_schema_prompt?: string;
   /**
-   * The offered value names alone. When absent: greenfield.
+   * The input names alone: the binding's targets, or without a binding the offered value names. When absent: greenfield.
    */
   mandate_offered_value_names?: string[];
   /**
@@ -10445,7 +10455,7 @@ export interface AgentFactoryContractStepOffer {
    */
   mandate_current_holder_prompt?: string;
   /**
-   * Every value the Mandate's provision offers, one per line: name, kind, guaranteed or optional, description. The agent uses these names exactly. When absent: greenfield — the contract step decides the inputs.
+   * The agent's inputs, one per line. With a binding: each of the binding's targets, as the binding builds it — name, guaranteed or optional, which provision values it combines, description. Without a binding: every value the provision offers (name, kind, guaranteed or optional, description). The agent uses these names exactly. When absent: greenfield — the contract step decides the inputs.
    */
   mandate_offered_values_prompt?: string;
   /**
@@ -10455,7 +10465,7 @@ export interface AgentFactoryContractStepOffer {
 }
 
 /**
- * Kind `agent_factory.goal_step.offer` (registry v6).
+ * Kind `agent_factory.goal_step.offer` (registry v9).
  */
 export interface AgentFactoryGoalStepOffer {
   /**
@@ -10635,7 +10645,7 @@ export interface AgentFactoryGoalStepOffer {
    */
   locked_output_schema_prompt?: string;
   /**
-   * The offered value names alone. When absent: greenfield.
+   * The input names alone: the binding's targets, or without a binding the offered value names. When absent: greenfield.
    */
   mandate_offered_value_names?: string[];
   /**
@@ -10647,7 +10657,7 @@ export interface AgentFactoryGoalStepOffer {
    */
   mandate_current_holder_prompt?: string;
   /**
-   * Every value the Mandate's provision offers, one per line: name, kind, guaranteed or optional, description. The agent uses these names exactly. When absent: greenfield — the contract step decides the inputs.
+   * The agent's inputs, one per line. With a binding: each of the binding's targets, as the binding builds it — name, guaranteed or optional, which provision values it combines, description. Without a binding: every value the provision offers (name, kind, guaranteed or optional, description). The agent uses these names exactly. When absent: greenfield — the contract step decides the inputs.
    */
   mandate_offered_values_prompt?: string;
   /**
@@ -10657,7 +10667,7 @@ export interface AgentFactoryGoalStepOffer {
 }
 
 /**
- * Kind `agent_factory.instructions_step.offer` (registry v7).
+ * Kind `agent_factory.instructions_step.offer` (registry v10).
  */
 export interface AgentFactoryInstructionsStepOffer {
   /**
@@ -10854,7 +10864,7 @@ export interface AgentFactoryInstructionsStepOffer {
    */
   locked_output_schema_prompt?: string;
   /**
-   * The offered value names alone. When absent: greenfield.
+   * The input names alone: the binding's targets, or without a binding the offered value names. When absent: greenfield.
    */
   mandate_offered_value_names?: string[];
   /**
@@ -10866,7 +10876,7 @@ export interface AgentFactoryInstructionsStepOffer {
    */
   mandate_current_holder_prompt?: string;
   /**
-   * Every value the Mandate's provision offers, one per line: name, kind, guaranteed or optional, description. The agent uses these names exactly. When absent: greenfield — the contract step decides the inputs.
+   * The agent's inputs, one per line. With a binding: each of the binding's targets, as the binding builds it — name, guaranteed or optional, which provision values it combines, description. Without a binding: every value the provision offers (name, kind, guaranteed or optional, description). The agent uses these names exactly. When absent: greenfield — the contract step decides the inputs.
    */
   mandate_offered_values_prompt?: string;
   /**
@@ -10876,7 +10886,7 @@ export interface AgentFactoryInstructionsStepOffer {
 }
 
 /**
- * Kind `agent_factory.proof_step.offer` (registry v6).
+ * Kind `agent_factory.proof_step.offer` (registry v9).
  */
 export interface AgentFactoryProofStepOffer {
   /**
@@ -11085,7 +11095,7 @@ export interface AgentFactoryProofStepOffer {
    */
   locked_output_schema_prompt?: string;
   /**
-   * The offered value names alone. When absent: greenfield.
+   * The input names alone: the binding's targets, or without a binding the offered value names. When absent: greenfield.
    */
   mandate_offered_value_names?: string[];
   /**
@@ -11097,7 +11107,7 @@ export interface AgentFactoryProofStepOffer {
    */
   mandate_current_holder_prompt?: string;
   /**
-   * Every value the Mandate's provision offers, one per line: name, kind, guaranteed or optional, description. The agent uses these names exactly. When absent: greenfield — the contract step decides the inputs.
+   * The agent's inputs, one per line. With a binding: each of the binding's targets, as the binding builds it — name, guaranteed or optional, which provision values it combines, description. Without a binding: every value the provision offers (name, kind, guaranteed or optional, description). The agent uses these names exactly. When absent: greenfield — the contract step decides the inputs.
    */
   mandate_offered_values_prompt?: string;
   /**
@@ -11121,7 +11131,7 @@ export interface AgentFactorySystemPlanOffer {
 }
 
 /**
- * Kind `agent_factory.tool_step.offer` (registry v7).
+ * Kind `agent_factory.tool_step.offer` (registry v10).
  */
 export interface AgentFactoryToolStepOffer {
   /**
@@ -11304,7 +11314,7 @@ export interface AgentFactoryToolStepOffer {
    */
   locked_output_schema_prompt?: string;
   /**
-   * The offered value names alone. When absent: greenfield.
+   * The input names alone: the binding's targets, or without a binding the offered value names. When absent: greenfield.
    */
   mandate_offered_value_names?: string[];
   /**
@@ -11316,7 +11326,7 @@ export interface AgentFactoryToolStepOffer {
    */
   mandate_current_holder_prompt?: string;
   /**
-   * Every value the Mandate's provision offers, one per line: name, kind, guaranteed or optional, description. The agent uses these names exactly. When absent: greenfield — the contract step decides the inputs.
+   * The agent's inputs, one per line. With a binding: each of the binding's targets, as the binding builds it — name, guaranteed or optional, which provision values it combines, description. Without a binding: every value the provision offers (name, kind, guaranteed or optional, description). The agent uses these names exactly. When absent: greenfield — the contract step decides the inputs.
    */
   mandate_offered_values_prompt?: string;
   /**
@@ -14432,6 +14442,32 @@ export interface BrandEvidenceItem {
   confidence?: number | null;
   profile_id?: string | null;
   certainty_reasons?: string[];
+}
+
+/**
+ * One brand fact that is a single structured record (the measured voice, the competitive landscape brief…).
+ *  *
+ *  * Kind `brand_fact_object` (registry v2).
+ */
+export interface BrandFactObject {
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "brand_fact_object";
+}
+
+/**
+ * One brand fact that is a list of records (offerings, personas, locations, competitors, people, assets…),
+ * each row as its canonical home stores it.
+ *  *
+ *  * Kind `brand_fact_rows` (registry v2).
+ */
+export interface BrandFactRows {
+  items?: BrandFactRow[];
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "brand_fact_rows";
 }
 
 /**
@@ -20361,7 +20397,7 @@ export interface ContentPlanBranchPurposeOffer {
 }
 
 /**
- * Kind `content_plan.deepen_page.offer` (registry v11).
+ * Kind `content_plan.deepen_page.offer` (registry v16).
  */
 export interface ContentPlanDeepenPageOffer {
   /**
@@ -20553,7 +20589,7 @@ export interface ContentPlanKeywordStrategyOffer {
 }
 
 /**
- * Kind `content_plan.merge_wave.offer` (registry v15).
+ * Kind `content_plan.merge_wave.offer` (registry v20).
  */
 export interface ContentPlanMergeWaveOffer {
   /**
@@ -20639,7 +20675,7 @@ export interface ContentPlanMergeWaveOffer {
 }
 
 /**
- * Kind `content_plan.page_brief.offer` (registry v21).
+ * Kind `content_plan.page_brief.offer` (registry v26).
  */
 export interface ContentPlanPageBriefOffer {
   /**
@@ -21103,7 +21139,7 @@ export interface ContentPlanPlanShapeOffer {
 }
 
 /**
- * Kind `content_plan.research_wave.offer` (registry v15).
+ * Kind `content_plan.research_wave.offer` (registry v20).
  */
 export interface ContentPlanResearchWaveOffer {
   /**
@@ -26524,7 +26560,7 @@ export interface GoogleDeskContextOffer {
 }
 
 /**
- * Kind `google.site_performance_context.offer` (registry v7).
+ * Kind `google.site_performance_context.offer` (registry v12).
  */
 export interface GoogleSitePerformanceContextOffer {
   /**
@@ -26983,7 +27019,7 @@ export interface GraphqlResponse {
 }
 
 /**
- * Kind `growth_loop.stage_dispatch.offer` (registry v10).
+ * Kind `growth_loop.stage_dispatch.offer` (registry v15).
  */
 export interface GrowthLoopStageDispatchOffer {
   /**
@@ -27009,7 +27045,7 @@ export interface GrowthLoopStageDispatchOffer {
 }
 
 /**
- * Kind `growth_loop.stage_quality.offer` (registry v12).
+ * Kind `growth_loop.stage_quality.offer` (registry v17).
  */
 export interface GrowthLoopStageQualityOffer {
   /**
@@ -45483,7 +45519,7 @@ export interface SeoAiVisibilityWritingAuditOffer {
 }
 
 /**
- * Kind `seo.authority_routing.offer` (registry v16).
+ * Kind `seo.authority_routing.offer` (registry v21).
  */
 export interface SeoAuthorityRoutingOffer {
   /**
@@ -45756,7 +45792,7 @@ export interface SeoCoverageAnalysisOffer {
 }
 
 /**
- * Kind `seo.finding_fix.offer` (registry v23).
+ * Kind `seo.finding_fix.offer` (registry v28).
  */
 export interface SeoFindingFixOffer {
   /**
@@ -45960,7 +45996,7 @@ export interface SeoKeywordClassificationOffer {
 }
 
 /**
- * Kind `seo.keyword_expansion.offer` (registry v4).
+ * Kind `seo.keyword_expansion.offer` (registry v9).
  */
 export interface SeoKeywordExpansionOffer {
   /**
@@ -46038,7 +46074,7 @@ export interface SeoKeywordResearchOffer {
 }
 
 /**
- * Kind `seo.landscape_brief.offer` (registry v19).
+ * Kind `seo.landscape_brief.offer` (registry v24).
  */
 export interface SeoLandscapeBriefOffer {
   /**
@@ -46076,7 +46112,7 @@ export interface SeoLandscapeBriefOffer {
 }
 
 /**
- * Kind `seo.map_author.offer` (registry v7).
+ * Kind `seo.map_author.offer` (registry v10).
  */
 export interface SeoMapAuthorOffer {
   /**
@@ -46088,17 +46124,17 @@ export interface SeoMapAuthorOffer {
    */
   map_id: string;
   /**
-   * The brand the map belongs to — a map is owned by a brand, never a site.
+   * The brand the map belongs to; every brand fact is offered with it.
    */
-  brand_name: string;
+  brand_id: string;
   /**
    * The most topics the whole map may have.
    */
-  max_topics: string;
+  max_topics: number;
   /**
    * The fewest topics the whole map should have.
    */
-  min_topics: string;
+  min_topics: number;
   /**
    * Whether changes go straight onto the map ("apply") or are suggested for review first ("propose").
    */
@@ -46108,25 +46144,17 @@ export interface SeoMapAuthorOffer {
    */
   source_kind: string;
   /**
-   * The brand's industry as recorded, or the no-industry sentinel.
-   */
-  brand_industry: string;
-  /**
-   * The places this business serves, one per line, or the no-locations sentinel. Geography is a facet of the map, never a topic branch of its own — this is here so the author does not invent a city tree.
-   */
-  brand_locations: string;
-  /**
    * The full text of the chosen source: the research report, the documents, the typed description, the web pages, or the site's own pages and keyword data. The map must follow this evidence.
    */
   source_material: string;
   /**
+   * How places are treated on this brand's map (the geography_branch_policy setting).
+   */
+  geography_policy?: string;
+  /**
    * What the source material came from, so a claim is traceable: a research document id, a list of file ids, a URL, a site id. Absent for a typed prompt, which is its own citation.
    */
   source_reference?: string;
-  /**
-   * The brand's own description as the owner wrote it, or the explicit no-description sentinel. Never silently absent — the author must be able to tell 'the brand says nothing' from 'nobody looked'.
-   */
-  brand_description: string;
   /**
    * When this run is adding ONE section rather than starting the map, the slug it hangs under. Absent means the whole map.
    */
@@ -46138,11 +46166,11 @@ export interface SeoMapAuthorOffer {
   /**
    * The longest a topic's description can be, in characters. A longer description will not be saved.
    */
-  description_max_chars: string;
+  description_max_chars: number;
 }
 
 /**
- * Kind `seo.map_curation.offer` (registry v7).
+ * Kind `seo.map_curation.offer` (registry v12).
  */
 export interface SeoMapCurationOffer {
   /**
@@ -46341,17 +46369,60 @@ export interface SeoPageAnalysisOffer {
 }
 
 /**
- * Kind `seo.page_intent_proposer.offer` (registry v7).
+ * Kind `seo.page_intent_proposer.offer` (registry v10).
  */
 export interface SeoPageIntentProposerOffer {
+  /**
+   * Several pages as read, each once, in the order they were read.
+   */
+  pages: {
+    items?: WebPageRow[];
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "web_page_list";
+  };
   /**
    * The registered kind this payload is an instance of.
    */
   __kind?: "seo.page_intent_proposer.offer";
+  map_id: string;
   /**
-   * The company whose site this is — a map is owned by a brand, never a site.
+   * Several pages as read, each once, in the order they were read.
    */
-  brand_name: string;
+  roster?: {
+    items?: WebPageRow[];
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "web_page_list";
+  };
+  /**
+   * Several pages as read, each once, in the order they were read.
+   */
+  planned?: {
+    items?: WebPageRow[];
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "web_page_list";
+  };
+  site_id: string;
+  /**
+   * The brand that owns the map; every brand fact is offered with it.
+   */
+  brand_id?: string;
+  /**
+   * Keywords as the database holds them (keyword, value tier, volume, intent…), one row each.
+   */
+  keywords?: {
+    items?: Row[];
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "seo_keyword_rows";
+  };
+  site_name?: string;
   /**
    * A fact about how this map organizes location: this map does not yet split pages by region, so a city page that repeats a general service page is not a duplicate.
    */
@@ -46360,14 +46431,19 @@ export interface SeoPageIntentProposerOffer {
    * The pages to judge, one entry each: the page's address, its title, its status, its clicks and impressions over the last 28 days, its internal links, its backlinks from other sites, every topic it covers, and a summary trimmed to a fixed length. A page that was never crawled says so in plain words rather than showing up empty.
    */
   page_batch: string;
+  page_count: number;
   /**
-   * How many pages are in this batch — the number of answers owed.
+   * Each page's stored renditions (summaries and other derived text), one row per rendition.
    */
-  page_count: string;
-  /**
-   * The site these pages belong to, as name and domain.
-   */
-  site_label: string;
+  renditions?: {
+    items?: Row[];
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "seo_page_renditions";
+  };
+  topic_name?: string;
+  topic_slug: string;
   /**
    * The whole map, showing every topic name a proposal is allowed to use.
    */
@@ -46376,14 +46452,21 @@ export interface SeoPageIntentProposerOffer {
    * How a person will review these proposals: one by one, all at once, or in batches. Knowing that a human reads every one of these before anything happens is what makes an honest low-confidence answer useful instead of useless.
    */
   review_mode: string;
-  /**
-   * The one topic this batch is about — slug, name and description. Every page in the batch currently covers it, which is what makes them siblings and what makes a merge judgement possible at all.
-   */
-  topic_label: string;
+  site_domain?: string;
   /**
    * The planned pages already on this topic. A planned page is a first-class destination for a merge or a redirect — that is how a legacy page folds into a page that does not exist yet — so it is delivered beside the live roster, marked as planned.
    */
   planned_pages: string;
+  /**
+   * One map topic's whole context as the database returns it: its pages, planned pages and keywords.
+   */
+  topic_context?: {
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "seo_topic_context";
+  };
+  pages_on_topic?: number;
   /**
    * Every strong page on this topic, ranked by the traffic it actually receives, whether or not it's in this batch — with its clicks, impressions, content length, internal links pointing to it, backlinks from other sites, page status, and whether someone has already decided what happens to it. This is the complete and only set of pages a merge or redirect may point to, delivered on its own so a topic split across several batches still has one consistent answer to 'which page wins'.
    */
@@ -46392,22 +46475,10 @@ export interface SeoPageIntentProposerOffer {
    * What this topic is meant to show up in search results for, based on the site's own keyword research. This turns 'which page is strongest' into a judgment about actual demand rather than just how much text a page has.
    */
   topic_keywords: string;
-  /**
-   * The minimum confidence a merge, redirect, move, or deletion needs to actually happen; a proposal below this line is kept in place instead, with the reasoning preserved. Telling the proposer this number lets it prefer an honest 'keep' over a shaky recommendation.
-   */
-  confidence_floor: string;
-  /**
-   * The brand's own description as the owner wrote it, or the explicit no-description sentinel. It is what decides whether a page is 'junk' or 'a service this business actually sells'.
-   */
-  brand_description: string;
-  /**
-   * The maximum length each page summary was trimmed to, so the proposer knows how much of a page it is not seeing before calling the evidence thin.
-   */
-  summary_max_words: string;
-  /**
-   * How many days of search performance data every clicks and impressions number here covers. Zero clicks over 28 days and zero clicks over a single day mean very different things.
-   */
-  performance_window_days: string;
+  map_topic_slugs: string[];
+  confidence_floor: number;
+  summary_max_words: number;
+  performance_window_days: number;
 }
 
 /**
@@ -46435,49 +46506,69 @@ export interface SeoPageKeywordMappingOffer {
 }
 
 /**
- * Kind `seo.page_mapper.offer` (registry v7).
+ * Kind `seo.page_mapper.offer` (registry v10).
  */
 export interface SeoPageMapperOffer {
+  /**
+   * Several pages as read, each once, in the order they were read.
+   */
+  pages: {
+    items?: WebPageRow[];
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "web_page_list";
+  };
   /**
    * The registered kind this payload is an instance of.
    */
   __kind?: "seo.page_mapper.offer";
   /**
-   * The company whose map this is — a map is owned by a brand, never a site.
+   * The topical map being filled.
    */
-  brand_name: string;
+  map_id: string;
   /**
-   * The pages to judge, one stanza each: page id, url, the crawled title, the headings and length we hold, the 28-day Search Console clicks, and a summary capped at the delivered word budget. A page we never crawled says so in those words instead of arriving empty.
+   * The site these pages belong to.
+   */
+  site_id: string;
+  /**
+   * The brand that owns the map; every brand fact is offered with it.
+   */
+  brand_id?: string;
+  site_name?: string;
+  /**
+   * The same pages as one readable stanza each, the summary cut to the summary word budget; a page we never crawled says so in those words.
    */
   page_batch: string;
   /**
    * How many pages are in this batch — the number of answers owed.
    */
-  page_count: string;
+  page_count: number;
   /**
-   * The site these pages belong to, as name and domain.
-   */
-  site_label: string;
-  /**
-   * The whole map — every slug the mapper may choose from, with names and descriptions. This is the complete list of valid choices; nothing outside it is allowed.
+   * The whole map as the database renders it — every slug the mapper may choose from, with names and descriptions.
    */
   map_outline: string;
+  site_domain?: string;
   /**
-   * The minimum confidence a placement needs. A placement below this number is dropped and the page stays unmapped, so the mapper can honestly say no instead of guessing.
+   * Map topics that are places, not subjects (a facet, never a branch).
    */
-  confidence_floor: string;
+  geography_slugs?: string[];
   /**
-   * The brand's own description as the owner wrote it, or the explicit no-description sentinel. It is what makes 'recycling' mean this company's recycling.
+   * Every topic slug on the map.
    */
-  brand_description: string;
+  map_topic_slugs: string[];
   /**
-   * The word limit each page summary was cut down to. This tells the mapper how much of a page's content it is not seeing before it judges thin evidence.
+   * The minimum confidence a placement needs; below it the page stays unmapped.
    */
-  summary_max_words: string;
+  confidence_floor: number;
   /**
-   * The most topics a single page is allowed to cover. A page covering more than this has told the reader nothing.
+   * The word limit each page summary was cut down to.
    */
-  max_topics_per_page: string;
+  summary_max_words: number;
+  /**
+   * The most topics a single page is allowed to cover.
+   */
+  max_topics_per_page: number;
 }
 
 /**
@@ -47164,7 +47255,7 @@ export interface SeoSiteEvidenceOffer {
 }
 
 /**
- * Kind `seo.site_intake.offer` (registry v28).
+ * Kind `seo.site_intake.offer` (registry v33).
  */
 export interface SeoSiteIntakeOffer {
   /**
@@ -47241,7 +47332,7 @@ export interface SeoSiteIntakeOffer {
 }
 
 /**
- * Kind `seo.site_strategy_brief.offer` (registry v7).
+ * Kind `seo.site_strategy_brief.offer` (registry v12).
  */
 export interface SeoSiteStrategyBriefOffer {
   /**
@@ -47396,7 +47487,7 @@ export interface SeoTopicAssignmentOffer {
 }
 
 /**
- * Kind `seo.topic_curation.offer` (registry v7).
+ * Kind `seo.topic_curation.offer` (registry v12).
  */
 export interface SeoTopicCurationOffer {
   /**
@@ -47759,6 +47850,19 @@ export interface SeoKeywordRelationshipResearchResult {
   classification?: SeoKeywordClassifyResult | null;
   primary_keyword?: string;
   research_doc_id?: string;
+}
+
+/**
+ * Keywords as the database holds them (keyword, value tier, volume, intent…), one row each.
+ *  *
+ *  * Kind `seo_keyword_rows` (registry v2).
+ */
+export interface SeoKeywordRows {
+  items?: Row[];
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "seo_keyword_rows";
 }
 
 /**
@@ -48196,6 +48300,19 @@ export interface SeoPagePerformance {
   regressions?: SeoPagePerformanceRegression[];
   has_psi_data?: boolean;
   organization_id: string;
+}
+
+/**
+ * Each page's stored renditions (summaries and other derived text), one row per rendition.
+ *  *
+ *  * Kind `seo_page_renditions` (registry v2).
+ */
+export interface SeoPageRenditions {
+  items?: Row[];
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "seo_page_renditions";
 }
 
 /**
@@ -48927,6 +49044,18 @@ export interface SeoStructuredDataValidationResult {
   types_found?: string[];
   warning_count?: number;
   rich_result_eligible_types?: string[];
+}
+
+/**
+ * One map topic's whole context as the database returns it: its pages, planned pages and keywords.
+ *  *
+ *  * Kind `seo_topic_context` (registry v2).
+ */
+export interface SeoTopicContext {
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "seo_topic_context";
 }
 
 /**
@@ -58993,6 +59122,8 @@ export type GeneratedKindSlug =
   | "brand_evidence"
   | "brand_evidence_findings"
   | "brand_evidence_item"
+  | "brand_fact_object"
+  | "brand_fact_rows"
   | "brand_identify_findings"
   | "brand_identify_web_results"
   | "brand_image_fingerprint_list"
@@ -59975,6 +60106,7 @@ export type GeneratedKindSlug =
   | "seo_gsc_search_performance_receipt"
   | "seo_keyword_classify_result"
   | "seo_keyword_relationship_research_result"
+  | "seo_keyword_rows"
   | "seo_keyword_serp_intent_analysis"
   | "seo_keyword_topic_assign_result"
   | "seo_keyword_volume_refresh_result"
@@ -59991,6 +60123,7 @@ export type GeneratedKindSlug =
   | "seo_page_batch_submit_result"
   | "seo_page_keyword_map_result"
   | "seo_page_performance"
+  | "seo_page_renditions"
   | "seo_prospect_capture_preview"
   | "seo_prospect_capture_result"
   | "seo_prospect_import_preview"
@@ -60025,6 +60158,7 @@ export type GeneratedKindSlug =
   | "seo_site_provider_freshness"
   | "seo_spend_summary"
   | "seo_structured_data_validation_result"
+  | "seo_topic_context"
   | "seo_web_analytics_read_result"
   | "serial_observation_timeline"
   | "serp_analysis"
@@ -60532,6 +60666,8 @@ export interface KindPayloadBySlug {
   "brand_evidence": BrandEvidence;
   "brand_evidence_findings": BrandEvidenceFindings;
   "brand_evidence_item": BrandEvidenceItem;
+  "brand_fact_object": BrandFactObject;
+  "brand_fact_rows": BrandFactRows;
   "brand_identify_findings": BrandIdentifyFindings;
   "brand_identify_web_results": BrandIdentifyWebResults;
   "brand_image_fingerprint_list": BrandImageFingerprintList;
@@ -61514,6 +61650,7 @@ export interface KindPayloadBySlug {
   "seo_gsc_search_performance_receipt": SeoGscSearchPerformanceReceipt;
   "seo_keyword_classify_result": SeoKeywordClassifyResult;
   "seo_keyword_relationship_research_result": SeoKeywordRelationshipResearchResult;
+  "seo_keyword_rows": SeoKeywordRows;
   "seo_keyword_serp_intent_analysis": SeoKeywordSerpIntentAnalysis;
   "seo_keyword_topic_assign_result": SeoKeywordTopicAssignResult;
   "seo_keyword_volume_refresh_result": SeoKeywordVolumeRefreshResult;
@@ -61530,6 +61667,7 @@ export interface KindPayloadBySlug {
   "seo_page_batch_submit_result": SeoPageBatchSubmitResult;
   "seo_page_keyword_map_result": SeoPageKeywordMapResult;
   "seo_page_performance": SeoPagePerformance;
+  "seo_page_renditions": SeoPageRenditions;
   "seo_prospect_capture_preview": SeoProspectCapturePreview;
   "seo_prospect_capture_result": SeoProspectCaptureResult;
   "seo_prospect_import_preview": SeoProspectImportPreview;
@@ -61564,6 +61702,7 @@ export interface KindPayloadBySlug {
   "seo_site_provider_freshness": SeoSiteProviderFreshness;
   "seo_spend_summary": SeoSpendSummary;
   "seo_structured_data_validation_result": SeoStructuredDataValidationResult;
+  "seo_topic_context": SeoTopicContext;
   "seo_web_analytics_read_result": SeoWebAnalyticsReadResult;
   "serial_observation_timeline": SerialObservationTimeline;
   "serp_analysis": SerpAnalysis;
@@ -62075,6 +62214,8 @@ export const GENERATED_KIND_SLUGS: readonly GeneratedKindSlug[] = [
   "brand_evidence",
   "brand_evidence_findings",
   "brand_evidence_item",
+  "brand_fact_object",
+  "brand_fact_rows",
   "brand_identify_findings",
   "brand_identify_web_results",
   "brand_image_fingerprint_list",
@@ -63057,6 +63198,7 @@ export const GENERATED_KIND_SLUGS: readonly GeneratedKindSlug[] = [
   "seo_gsc_search_performance_receipt",
   "seo_keyword_classify_result",
   "seo_keyword_relationship_research_result",
+  "seo_keyword_rows",
   "seo_keyword_serp_intent_analysis",
   "seo_keyword_topic_assign_result",
   "seo_keyword_volume_refresh_result",
@@ -63073,6 +63215,7 @@ export const GENERATED_KIND_SLUGS: readonly GeneratedKindSlug[] = [
   "seo_page_batch_submit_result",
   "seo_page_keyword_map_result",
   "seo_page_performance",
+  "seo_page_renditions",
   "seo_prospect_capture_preview",
   "seo_prospect_capture_result",
   "seo_prospect_import_preview",
@@ -63107,6 +63250,7 @@ export const GENERATED_KIND_SLUGS: readonly GeneratedKindSlug[] = [
   "seo_site_provider_freshness",
   "seo_spend_summary",
   "seo_structured_data_validation_result",
+  "seo_topic_context",
   "seo_web_analytics_read_result",
   "serial_observation_timeline",
   "serp_analysis",
