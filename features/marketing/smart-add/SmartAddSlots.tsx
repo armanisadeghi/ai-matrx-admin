@@ -557,7 +557,11 @@ function Row({
   hideWhere?: boolean;
 }) {
   const info = rowInfo(item, note, hideWhere);
-  const line = (
+  // Where it was found opens on hovering the FOUND TEXT only — never the
+  // Yes/No/Other buttons — so answering down the list never drops the card
+  // over the next question (2026-10-14).
+  const value = <span className="flex w-fit min-w-0 max-w-full items-center gap-1">{children}</span>;
+  return (
     <div
       className={`flex flex-col gap-1.5 px-4 animate-in fade-in duration-300 sm:flex-row ${compact ? "py-1" : "py-2"} ${top ? "sm:items-start" : "sm:items-center"} ${
         decision === "no" ? "opacity-40" : ""
@@ -567,21 +571,21 @@ function Row({
       data-decision={decision ?? "open"}
     >
       <div className="flex min-w-0 flex-1 flex-col">
-        {/* One line per row (Arman 2026-10-14: no secondary lines). Where it was found shows on hovering the row. */}
-        <span className="flex min-w-0 items-center gap-1">{children}</span>
+        {/* One line per row (Arman 2026-10-14: no secondary lines). Where it was found shows on hovering the found text. */}
+        {info ? (
+          <HoverCard openDelay={600} closeDelay={150}>
+            <HoverCardTrigger asChild>{value}</HoverCardTrigger>
+            <HoverCardContent align="start" side="bottom" className="flex w-80 max-w-[calc(100vw-2rem)] flex-col gap-2.5" data-testid="smart-add-row-info">
+              {info}
+            </HoverCardContent>
+          </HoverCard>
+        ) : (
+          value
+        )}
         {below}
       </div>
       <div className="flex shrink-0 items-center justify-end gap-1 max-sm:w-full">{actions}</div>
     </div>
-  );
-  if (!info) return line;
-  return (
-    <HoverCard openDelay={600} closeDelay={200}>
-      <HoverCardTrigger asChild>{line}</HoverCardTrigger>
-      <HoverCardContent align="start" side="bottom" className="flex w-80 max-w-[calc(100vw-2rem)] flex-col gap-2.5" data-testid="smart-add-row-info">
-        {info}
-      </HoverCardContent>
-    </HoverCard>
   );
 }
 
