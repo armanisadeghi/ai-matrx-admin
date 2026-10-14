@@ -46,7 +46,7 @@ fi
 say "connection from $ENVFILE"
 eval "$(grep -E '^SUPABASE_MATRIX_(USER|PASSWORD|HOST|PORT|DATABASE_NAME)=' "$ENVFILE" \
         | sed -E "s/^([A-Z_]+)=[\"']?(.*)$/\1='\2'/" | sed -E "s/['\"]'\$/'/")"
-export PGHOST="$SUPABASE_MATRIX_HOST" PGPORT="$SUPABASE_MATRIX_PORT" \
+export PGHOST="$SUPABASE_MATRIX_HOST" PGPORT="5432" \
        PGUSER="$SUPABASE_MATRIX_USER" PGPASSWORD="$SUPABASE_MATRIX_PASSWORD" \
        PGDATABASE="$SUPABASE_MATRIX_DATABASE_NAME"
 night_assert_target production || exit $?

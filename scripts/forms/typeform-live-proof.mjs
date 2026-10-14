@@ -15,6 +15,7 @@ import pg from "pg";
 import { createClient } from "@supabase/supabase-js";
 import { createRecordsClient, ensureTable, supabaseDataSource } from "@ai-matrx/records/core";
 import { chromium } from "playwright";
+import { dsnFor, pgClient } from "../lib/pooled-db.mjs";
 const ORIGIN = (_d = process.argv[2]) !== null && _d !== void 0 ? _d : "http://localhost:3001";
 const ORG = "11d47e36-4b1e-46b8-bdf6-8ef928b730fb";
 const SPACES_FORM = "ab96b127-dc1b-4d8c-8605-b371060ecfa0";
@@ -24,7 +25,6 @@ const envOf = (file) => Object.fromEntries(fs.readFileSync(file, "utf8").split("
     return [l.slice(0, i), l.slice(i + 1).replace(/^["']|["']$/g, "")];
 }));
 const local = { ...envOf("/Users/armanisadeghi/code/matrx-frontend/.env"), ...envOf("/Users/armanisadeghi/code/matrx-frontend/.env.local") };
-const db = envOf("/Users/armanisadeghi/code/aidream/.env");
 let failed = 0;
 const check = (name, ok, extra = {}) => {
     if (!ok)
@@ -43,10 +43,7 @@ async function door(fn, args) {
         throw new Error(`${fn}: ${error.message}${error.hint ? ` — ${error.hint}` : ""}`);
     return data;
 }
-const pgc = new pg.Client({
-    user: db.SUPABASE_MATRIX_USER, password: db.SUPABASE_MATRIX_PASSWORD, host: db.SUPABASE_MATRIX_HOST,
-    port: Number(db.SUPABASE_MATRIX_PORT), database: db.SUPABASE_MATRIX_DATABASE_NAME, ssl: { rejectUnauthorized: false },
-});
+const pgc = pgClient(pg, dsnFor("production", { app: "typeform-live-proof" }));
 await pgc.connect();
 // ── 1. THE FORM ───────────────────────────────────────────────────────────────────────────
 const found = await pgc.query(`select id from custom.record where organization_id = $1 and table_id = custom.table_kernel_id() and deleted_at is null and data->>'name' = $2 limit 1`, [ORG, TABLE_NAME]);

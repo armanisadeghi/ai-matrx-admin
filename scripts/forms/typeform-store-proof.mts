@@ -10,21 +10,9 @@
 import pg from "pg";
 import fs from "node:fs";
 import path from "node:path";
+import { dsnFor, pgClient } from "../lib/pooled-db.mjs";
 
-const envFile = ["/Users/armanisadeghi/code/matrx-frontend/.env", "/Users/armanisadeghi/code/aidream/.env"].find(
-  (f) => fs.existsSync(f) && /SUPABASE_MATRIX_HOST/.test(fs.readFileSync(f, "utf8")),
-);
-if (!envFile) throw new Error("No SUPABASE_MATRIX_* credentials found.");
-const env = Object.fromEntries(
-  fs.readFileSync(envFile, "utf8").split("\n").filter((l) => /^SUPABASE_MATRIX_/.test(l)).map((l) => {
-    const i = l.indexOf("=");
-    return [l.slice(0, i), l.slice(i + 1).replace(/^["']|["']$/g, "")];
-  }),
-);
-const client = new pg.Client({
-  user: env.SUPABASE_MATRIX_USER, password: env.SUPABASE_MATRIX_PASSWORD, host: env.SUPABASE_MATRIX_HOST,
-  port: Number(env.SUPABASE_MATRIX_PORT), database: env.SUPABASE_MATRIX_DATABASE_NAME, ssl: { rejectUnauthorized: false },
-});
+const client = pgClient(pg, dsnFor("production", { app: "typeform-store-proof" }));
 
 const ORG = "00000000-0000-0000-0000-000000000000";
 const T = { const: true };

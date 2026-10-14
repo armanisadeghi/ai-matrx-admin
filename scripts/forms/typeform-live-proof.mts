@@ -13,6 +13,7 @@ import pg from "pg";
 import { createClient } from "@supabase/supabase-js";
 import { createRecordsClient, ensureTable, supabaseDataSource } from "@ai-matrx/records/core";
 import { chromium, type Page } from "playwright";
+import { dsnFor, pgClient } from "../lib/pooled-db.mjs";
 
 const ORIGIN = process.argv[2] ?? "http://localhost:3001";
 const ORG = "11d47e36-4b1e-46b8-bdf6-8ef928b730fb";
@@ -27,7 +28,6 @@ const envOf = (file: string) =>
     }),
   ) as Record<string, string>;
 const local = { ...envOf("/Users/armanisadeghi/code/matrx-frontend/.env"), ...envOf("/Users/armanisadeghi/code/matrx-frontend/.env.local") };
-const db = envOf("/Users/armanisadeghi/code/aidream/.env");
 
 let failed = 0;
 const check = (name: string, ok: boolean, extra: Record<string, unknown> = {}) => {
@@ -46,10 +46,7 @@ async function door<T>(fn: string, args: Record<string, unknown>): Promise<T> {
   return data as T;
 }
 
-const pgc = new pg.Client({
-  user: db.SUPABASE_MATRIX_USER, password: db.SUPABASE_MATRIX_PASSWORD, host: db.SUPABASE_MATRIX_HOST,
-  port: Number(db.SUPABASE_MATRIX_PORT), database: db.SUPABASE_MATRIX_DATABASE_NAME, ssl: { rejectUnauthorized: false },
-});
+const pgc = pgClient(pg, dsnFor("production", { app: "typeform-live-proof" }));
 await pgc.connect();
 
 // ── 1. THE FORM ───────────────────────────────────────────────────────────────────────────
