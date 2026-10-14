@@ -8,6 +8,7 @@
 
 import { ExternalLink } from "lucide-react";
 import { Button, RowGroup } from "@ai-matrx/design-system/controls";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { PlatformMark, platformLabel } from "@/features/marketing/social/components/PlatformMark";
 import { KNOWN_GROUPS, type KnownFact } from "./known";
@@ -90,9 +91,9 @@ export function KnownFactsWindow({
                 </span>
                 <FactValue fact={f} />
                 {f.url ? (
-                  <a href={f.url} target="_blank" rel="noreferrer" className="ml-auto shrink-0 text-muted-foreground" aria-label="Open">
+                  <OutboundLink href={f.url} className="ml-auto shrink-0 text-muted-foreground" aria-label="Open">
                     <ExternalLink className="h-3.5 w-3.5" />
-                  </a>
+                  </OutboundLink>
                 ) : null}
               </label>
             ))}
