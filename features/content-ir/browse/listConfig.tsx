@@ -1,8 +1,11 @@
 "use client";
 
-import { Building2 } from "lucide-react";
+import { Building2, Power, PowerOff } from "lucide-react";
 import type { EntityListConfig } from "@/lib/entity-list/config";
-import { bulkCountLabel } from "@/lib/entity-list/selection";
+import { bulkCountLabel, type EntityBulkAction } from "@/lib/entity-list/selection";
+import { runPerRow, trashBulkAction } from "@/lib/entity-list/standardBulkActions";
+import { supabase } from "@/utils/supabase/client";
+import { setShapeActivation } from "@/features/content-ir/studio/shape-authoring-service";
 import {
   promoteShapesToSystem,
   promotionSummary,
@@ -20,7 +23,7 @@ import { SHAPE_LIST_SCOPES, type ShapeBrowseRow } from "./types";
 import { useShapeRowActions } from "./useShapeRowActions";
 import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
 
-export const shapeListConfig: EntityListConfig<ShapeBrowseRow> = {
+const shapeListBaseConfig: EntityListConfig<ShapeBrowseRow> = {
   surfaceKey: "shapes-browse",
   // DD-137c / §3.3: where this list OPENS comes from platform.entity_types, never a literal.
   registryToken: "content_ir_kind",
@@ -122,31 +125,76 @@ export const shapeListConfig: EntityListConfig<ShapeBrowseRow> = {
   },
 };
 
-/**
- * The same list with the super-admin batch action: tick shapes, promote them
- * all into Matrx System in one database call. Offered only to a person who
- * holds the `shape.promote-to-system` admin feature (ShapeBrowsePage picks);
- * system shapes carry no checkbox.
- */
-export const shapeListConfigWithPromote: EntityListConfig<ShapeBrowseRow> = {
-  ...shapeListConfig,
-  bulkSelection: {
-    isRowSelectable: (row) => row.origin !== "system",
+const SHAPE_NOUN = "shape";
+const shapeId = (row: ShapeBrowseRow) => row.id;
+const shapeLabel = (row: ShapeBrowseRow) => row.label;
+
+/** Batch verbs every viewer gets; each row is decided by the database, refusals are named. */
+const SHAPE_BULK_ACTIONS: EntityBulkAction<ShapeBrowseRow>[] = [
+  {
+    id: "activate",
+    label: "Activate",
+    icon: Power,
+    run: (selection) =>
+      runPerRow(
+        selection,
+        async (id) => {
+          await setShapeActivation(supabase, id, true);
+        },
+        { done: "Activated", noun: SHAPE_NOUN, labelOf: shapeLabel },
+        shapeId,
+      ),
   },
-  bulkActions: [
-    {
-      id: "promote-to-system",
-      label: "Promote to system",
-      icon: Building2,
-      confirm: (selection) => ({
-        title: `Promote ${bulkCountLabel(selection.count, "shape")} to Matrx System?`,
-        description: PROMOTE_CONSEQUENCE,
-        confirmLabel: "Promote to system",
-      }),
-      run: async (selection) => {
-        const result = await promoteShapesToSystem(selection.ids);
-        return { message: promotionSummary(result), refresh: true };
-      },
-    },
-  ],
+  {
+    id: "deactivate",
+    label: "Deactivate",
+    icon: PowerOff,
+    confirm: (selection) => ({
+      title: `Deactivate ${bulkCountLabel(selection.count, SHAPE_NOUN)}?`,
+      description:
+        "They fall back to the generic viewer and can't be bound to agents until activated again.",
+      confirmLabel: "Deactivate",
+    }),
+    run: (selection) =>
+      runPerRow(
+        selection,
+        async (id) => {
+          await setShapeActivation(supabase, id, false);
+        },
+        { done: "Deactivated", noun: SHAPE_NOUN, labelOf: shapeLabel },
+        shapeId,
+      ),
+  },
+  trashBulkAction<ShapeBrowseRow>({
+    token: "content_ir_kind",
+    noun: SHAPE_NOUN,
+    rowIdOf: shapeId,
+    labelOf: shapeLabel,
+  }),
+];
+
+/** Super admins (`shape.promote-to-system`) also get Promote; one DB call for the whole selection. */
+const PROMOTE_BULK_ACTION: EntityBulkAction<ShapeBrowseRow> = {
+  id: "promote-to-system",
+  label: "Promote to system",
+  icon: Building2,
+  confirm: (selection) => ({
+    title: `Promote ${bulkCountLabel(selection.count, SHAPE_NOUN)} to Matrx System?`,
+    description: PROMOTE_CONSEQUENCE,
+    confirmLabel: "Promote to system",
+  }),
+  run: async (selection) => {
+    const result = await promoteShapesToSystem(selection.ids);
+    return { message: promotionSummary(result), refresh: true };
+  },
+};
+
+export const shapeListConfig: EntityListConfig<ShapeBrowseRow> = {
+  ...shapeListBaseConfig,
+  bulkActions: SHAPE_BULK_ACTIONS,
+};
+
+export const shapeListConfigWithPromote: EntityListConfig<ShapeBrowseRow> = {
+  ...shapeListBaseConfig,
+  bulkActions: [...SHAPE_BULK_ACTIONS, PROMOTE_BULK_ACTION],
 };

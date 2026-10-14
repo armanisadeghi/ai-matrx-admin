@@ -75,14 +75,15 @@ export async function promoteShapesToSystem(
 /** One short line for the success toast. */
 export function promotionSummary(result: ShapePromotionResult): string {
   const n = result.promoted.length;
-  const head =
-    n === 1
-      ? `"${result.promoted[0].label}" is now a system shape`
-      : `${n} shapes are now system shapes`;
+  const parts: string[] = [];
+  if (n === 1) parts.push(`"${result.promoted[0].label}" is now a system shape`);
+  else if (n > 1) parts.push(`${n} shapes are now system shapes`);
   const nested = result.nested.length;
-  return nested > 0
-    ? `${head}, with ${nested} nested shape${nested === 1 ? "" : "s"} it uses.`
-    : `${head}.`;
+  if (nested > 0) parts.push(`with ${nested} nested shape${nested === 1 ? "" : "s"} they use`);
+  const already = result.alreadySystem.length;
+  if (already > 0)
+    parts.push(`${already} ${already === 1 ? "was" : "were"} already in the system`);
+  return parts.length > 0 ? `${parts.join("; ")}.` : "Nothing to promote.";
 }
 
 /** The kind's home organization, read by slug — for the detail header. */

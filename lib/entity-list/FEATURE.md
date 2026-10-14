@@ -597,6 +597,13 @@ how that savior page gets built.
   Why: a Claude Code session id pasted into /work/conversations found nothing — the
   row sat one bucket over, behind a chip count nobody reads while staring at an empty
   table. First consumer: `features/ai-work/conversations/listConfig.tsx`.
+- `2026-10-13` — **Shared bulk verbs (`standardBulkActions.ts`).** `runPerRow` runs one
+  per-row verb across a selection, keeps going past refusals and names every skipped row
+  with the database's reason; `trashBulkAction({ token })` is "Move to Trash" for any
+  registered soft-deletable token through `archiveRecord`. 🚨 A bulk action never decides
+  who may tick a row — `isRowSelectable` is only for rows NO action can touch; one action's
+  limits live in its own `run`. First consumer: `/shapes/all` (Activate, Deactivate, Move
+  to Trash, super-admin Promote to system).
 - `2026-09-17` — **Bulk selection, as an opt-in capability of the primitive**
   (`config.bulkActions` + `config.bulkSelection`). Per-row checkbox with a 44px
   touch hit area, shift-click range, header select-all, the honest two-meaning
