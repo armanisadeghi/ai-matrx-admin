@@ -613,6 +613,19 @@ export interface ConfirmedFacts {
   name?: string;
   domain?: string;
   location?: string;
+  category?: string;
+  /** Our best unconfirmed finding — only shapes the enrichment search keyword, never a confirmed fact. */
+  hint_category?: string;
+  hint_location?: string;
+}
+
+/** The surest category and address the round found (not confirmed): the enrichment search's keyword hints. */
+export function bestFindingHints(items: Map<string, EvidenceItem>): Pick<ConfirmedFacts, "hint_category" | "hint_location"> {
+  const best = (field: EvidenceField) =>
+    [...items.values()].filter((i) => i.field === field).sort((a, b) => b.confidence - a.confidence)[0]?.value;
+  const category = best("category");
+  const location = best("address");
+  return { ...(category ? { hint_category: category } : {}), ...(location ? { hint_location: location } : {}) };
 }
 
 /** The links a link-in-bio page shows (exact addresses), grouped by the page they came from, in page order. */

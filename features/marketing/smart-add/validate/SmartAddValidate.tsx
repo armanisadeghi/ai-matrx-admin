@@ -84,7 +84,7 @@ export function SmartAddValidate({
       item,
       answer,
       relationLabel,
-      value: opts.value?.trim() || item.value,
+      value: opts.value?.trim() || (item.kind === "web" ? (item.title ?? item.value) : item.value),
       state: "saving",
       error: null,
       persisted: null,

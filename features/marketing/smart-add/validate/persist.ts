@@ -260,7 +260,10 @@ async function addExclusion(ctx: PersistContext, item: FocusItem): Promise<{ id:
     id,
     undo: async () => {
       if (!id) return;
-      const { error: e } = await (await db()).from("brand_exclusion").delete().eq("id", id);
+      const { error: e } = await (await db())
+        .from("brand_exclusion")
+        .update({ deleted_at: new Date().toISOString() })
+        .eq("id", id);
       if (e) throw new Error(e.message);
     },
   };

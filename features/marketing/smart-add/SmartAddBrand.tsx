@@ -585,7 +585,8 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
       setSaveNotes(problems);
       setCreated(brand);
       // The core is settled: shift to the focus queue for everything else.
-      if (coreSettled(basics)) setValidateOrg(organizationId);
+      const settled = coreSettled(basics);
+      if (settled) setValidateOrg(organizationId);
       onCreated?.(brand);
       if (basics.images.length || accounts.length) {
         try {
@@ -618,7 +619,8 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
           setSaveNotes((n) => [...n, plainStartError(error)]);
         }
       }
-      await showProvision(brand, organizationId, "created");
+      // On the validation page the inputs are captured (Builder panel) but no window covers the queue.
+      await showProvision(brand, organizationId, "created", !settled);
     } catch (error) {
       setCreateError(extractErrorMessage(error));
     } finally {
@@ -633,6 +635,7 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
     brand: MarketingBrand,
     organizationId: string,
     trigger: "created" | "manual",
+    open = true,
   ) => {
     setCapturing(true);
     try {
@@ -646,7 +649,7 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
         ref: { type: "provision_snapshot", id: snapshot.id },
       });
       setProvisionTick((t) => t + 1);
-      openProvision(snapshot.id, `Brand analysis inputs: ${brand.name}`);
+      if (open) openProvision(snapshot.id, `Brand analysis inputs: ${brand.name}`);
     } catch (error) {
       setSaveNotes((n) => [...n, extractErrorMessage(error)]);
     } finally {

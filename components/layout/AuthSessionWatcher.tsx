@@ -226,6 +226,10 @@ export default function AuthSessionWatcher() {
   // The identity this tab booted as (SSR-hydrated userAuth). Captured once —
   // deliberately NOT updated on later changes: a later change IS the defect.
   const bootedIdRef = useRef<string | null>(null);
+  // The identity the last auth event reported. supabase-js re-announces
+  // SIGNED_IN for the SAME person on every tab return (visibilitychange →
+  // session recovery); only a real identity change may redo sign-in work.
+  const lastAuthUserIdRef = useRef<string | null | undefined>(undefined);
   const userAuthId = useAppSelector((state) => state.userAuth.id);
   // App context hydrates after the first client render, and the file-session
   // mint is organization-admitted: minting before it lands is refused at the
@@ -427,14 +431,23 @@ export default function AuthSessionWatcher() {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, session) => {
+      const eventUserId = session?.user?.id ?? null;
+      const identityChanged = eventUserId !== lastAuthUserIdRef.current;
+      lastAuthUserIdRef.current = eventUserId;
+      // A SIGNED_IN for the person already signed in is the tab-return echo,
+      // not a sign-in: re-running sign-in work on it force-reloaded both kind
+      // registries and remounted every database-authored kind component each
+      // time someone came back to the tab.
+      const signInEcho = event === "SIGNED_IN" && !identityChanged;
       // Every tab's own auth event (including INITIAL_SESSION on a fresh page
       // load — the only event a server-action login ever produces) nudges
       // every other tab to re-read the cookie now, not on its next poll.
       if (
-        event === "SIGNED_IN" ||
-        event === "SIGNED_OUT" ||
-        event === "USER_UPDATED" ||
-        event === "INITIAL_SESSION"
+        !signInEcho &&
+        (event === "SIGNED_IN" ||
+          event === "SIGNED_OUT" ||
+          event === "USER_UPDATED" ||
+          event === "INITIAL_SESSION")
       ) {
         try {
           broadcast?.postMessage({ type: "auth-changed", event });
@@ -490,7 +503,9 @@ export default function AuthSessionWatcher() {
         // registry read leaves (the session barrier, DD-237 — every kind read waits for the first
         // auth report), so the registries already loaded as this person and the forced refresh
         // re-read both catalogs (~8 kind_definition / kind_component reads on /shapes) for nothing.
-        if (event !== "INITIAL_SESSION") {
+        // Only when WHO is signed in changed — never on the tab-return echo, and not on
+        // USER_UPDATED (a profile edit changes no kind access).
+        if (event !== "INITIAL_SESSION" && identityChanged) {
           void import("@/features/content-ir/registry/kind-registry").then(
             (m) => {
               if (m.kindRegistry.hasBeenDemanded()) void m.kindRegistry.refresh(0);
@@ -508,7 +523,7 @@ export default function AuthSessionWatcher() {
       if (event === "SIGNED_IN" || event === "USER_UPDATED") {
         setSessionExpired(false);
         // Fresh sign-in → establish the file-session cookie for this identity.
-        void mediaFilesClient.ensureSession({ force: event === "SIGNED_IN" });
+        void mediaFilesClient.ensureSession({ force: event === "SIGNED_IN" && identityChanged });
         const booted = bootedIdRef.current;
         const current = session?.user;
         if (booted && current && current.id !== booted) {
