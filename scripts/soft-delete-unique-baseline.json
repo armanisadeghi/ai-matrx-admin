@@ -393,6 +393,121 @@
       "index": "workbench.product_capture_file:product_capture_file_item_file_uk",
       "reason": "(item_id, file_id) is one permanent product-capture relationship, not a reusable label. The only client writer upserts that full key with deleted_at = NULL after an archive, deliberately restoring the same relation ID so its access history and unrelated properties remain attached rather than creating a second link.",
       "ruled": "Workbenched identity closure, 2026-09-28 — production admin RLS archive-to-client-upsert rollback proof"
+    },
+    {
+      "index": "billing.class_purchase:class_purchase_stripe_checkout_session_id_key",
+      "reason": "stripe_checkout_session_id is Stripe's immutable checkout identity. Provider retries and late callbacks must resolve to the original purchase even after archive, never create a second purchase receipt for the same checkout session.",
+      "ruled": "Primary Astra lifetime-identity ruling, 2026-10-14 — stripe_connect_creator_payouts.sql and billing_usage_owner_and_soft_delete.sql inspected"
+    },
+    {
+      "index": "billing.class_purchase:class_purchase_stripe_payment_intent_id_key",
+      "reason": "stripe_payment_intent_id is Stripe's immutable payment identity. Provider retries and late callbacks must resolve to the original purchase even after archive, never create a second purchase receipt for the same payment intent.",
+      "ruled": "Primary Astra lifetime-identity ruling, 2026-10-14 — stripe_connect_creator_payouts.sql and billing_usage_owner_and_soft_delete.sql inspected"
+    },
+    {
+      "index": "billing.spend_alarm:spend_alarm_alarm_key_key",
+      "reason": "alarm_key is the deterministic delivery identity for one spend threshold occurrence. The writer claims that identity before delivery, so an archived alarm must still suppress a retry of the same occurrence.",
+      "ruled": "Primary Astra lifetime-identity ruling, 2026-10-14 — aidream/services/billing/spend_alarm.py claim and delivery paths inspected"
+    },
+    {
+      "index": "billing.usage_ledger:usage_ledger_check_id_uq",
+      "reason": "check_id is an idempotency identity for one usage charge. Archived ledger rows still represent consumed usage, so replaying the same check must remain unable to create a second charge.",
+      "ruled": "Primary Astra lifetime-identity ruling, 2026-10-14 — billing_consume_hardening.sql and billing_usage_owner_and_soft_delete.sql inspected"
+    },
+    {
+      "index": "canvas.canvas_comment_likes:canvas_comment_likes_comment_id_created_by_key",
+      "reason": "(comment_id, created_by) is one person's lifetime like relationship to one comment. The table is an append-only relationship ledger, so archive cannot authorize a second row for the same relationship.",
+      "ruled": "Primary Astra lifetime-identity ruling, 2026-10-14 — canvas_comment_likes_base_retrofit.sql inspected"
+    },
+    {
+      "index": "canvas.canvas_likes:canvas_likes_canvas_id_created_by_key",
+      "reason": "(canvas_id, created_by) is one person's durable like relationship to one canvas. The like RPC revives the archived row, preserving one identity and its history rather than inserting a replacement.",
+      "ruled": "Primary Astra lifetime-identity ruling, 2026-10-14 — canvas_set_canvas_like_door.sql inspected"
+    },
+    {
+      "index": "communication.dm_messages:dm_messages_agent_msg_client_id_uidx",
+      "reason": "agent-msg client_message_id is a generated replay key for one agent post. A retried post must resolve to the same message even if it was archived, rather than delivering a duplicate direct message.",
+      "ruled": "Primary Astra lifetime-identity ruling, 2026-10-14 — aidream 20261009200000_agent_messaging_idempotent_agent_posts.sql inspected"
+    },
+    {
+      "index": "communication.dm_messages:dm_messages_early_user_feedback_replay",
+      "reason": "The sender plus early-user-feedback client_message_id identifies one feedback delivery attempt forever. Archiving the message cannot make a retry eligible to deliver a duplicate message.",
+      "ruled": "Primary Astra lifetime-identity ruling, 2026-10-14 — 20261001005818_early_user_feedback_dm_replay.sql inspected"
+    },
+    {
+      "index": "communication.dm_messages:dm_messages_notification_replay_key_uidx",
+      "reason": "notification client_message_id is the durable replay key for one notification delivery. It must continue suppressing the same notification after archive so retries cannot create another direct message.",
+      "ruled": "Primary Astra lifetime-identity ruling, 2026-10-14 — dm_messages_one_message_per_notification_key.sql inspected"
+    },
+    {
+      "index": "communication.dm_messages:dm_task_assignment_client_message_id_uidx",
+      "reason": "task-assignment client_message_id is the deterministic receipt for one assignment delivery. An archived receipt must still prevent a retry from sending the same assignment as another direct message.",
+      "ruled": "Primary Astra lifetime-identity ruling, 2026-10-14 — communications_p1_assignment_dm_replay_key.sql inspected"
+    },
+    {
+      "index": "communication.sms_consent:sms_consent_organization_phone_consent_type_key",
+      "reason": "(organization, phone, consent type) is one durable consent record. Consent history must remain attached to that identity across archive and later state changes rather than splitting into duplicate records.",
+      "ruled": "Primary Astra lifetime-identity ruling, 2026-10-14 — chairdoors3b_w1_sms_consent_is_per_organization.sql inspected"
+    },
+    {
+      "index": "content_ir.io_contract:io_contract_org_slug_key",
+      "reason": "(organization_id, slug) is the stable IO contract schema identity used by workflow definitions. Retirement records the lifecycle on that same identity; it does not release the slug for an incompatible second contract.",
+      "ruled": "Primary Astra lifetime-identity ruling, 2026-10-14 — aidream wf_033_content_ir_io_contract_store.sql and wf_034_io_contract_retired_at.sql inspected"
+    },
+    {
+      "index": "crm.outreach_acceptance:outreach_acceptance_current_key",
+      "reason": "(organization, lane, policy version) is one immutable acceptance receipt. Archive cannot permit a second receipt for the same policy acceptance because the original remains the historical proof.",
+      "ruled": "Primary Astra lifetime-identity ruling, 2026-10-14 — crm_06_compliance.sql inspected"
+    },
+    {
+      "index": "crm.sending_claim:sending_claim_organization_claim_key_key",
+      "reason": "(organization_id, claim_key) is an idempotency identity acquired before one outbound send. An archived claim must still prevent retrying the same key from sending the workflow email twice.",
+      "ruled": "Primary Astra lifetime-identity ruling, 2026-10-14 — chairdoors3b_w2_a_workflow_email_is_sent_once.sql inspected"
+    },
+    {
+      "index": "crm.unsubscribe_token:unsubscribe_token_medium_list_key",
+      "reason": "(contact medium, outreach list) owns one durable unsubscribe credential. Archive cannot mint a competing token for the same subscription identity while an issued unsubscribe link may still be used.",
+      "ruled": "Primary Astra lifetime-identity ruling, 2026-10-14 — crm_06_compliance.sql inspected"
+    },
+    {
+      "index": "custom.anon_form_visit:anon_form_visit_form_id_visit_hash_idx",
+      "reason": "(form_id, visit_hash) is one anonymous visit receipt used to count a visit once. Archive must not release the receipt and allow the same visit hash to increment the form count again.",
+      "ruled": "Primary Astra lifetime-identity ruling, 2026-10-14 — typeform visit-store and route counting migrations inspected"
+    },
+    {
+      "index": "deprecated.udt_dataset_fields:udt_dataset_fields_dataset_id_field_name_unique",
+      "reason": "(dataset_id, field_name) is the durable field identity in the legacy UDT dataset. The archive path explicitly revives the same row under the full key, preserving its identity instead of inserting a replacement field.",
+      "ruled": "Primary Astra lifetime-identity ruling, 2026-10-14 — delete_is_archive_udt_rows_and_columns.sql inspected"
+    },
+    {
+      "index": "dictionary.dict_entries:dict_entries_owner_term_uniq",
+      "reason": "The owner, scope, and normalized term identify one durable dictionary entry. The archive-aware writer revives that same entry so its learning history remains attached rather than creating a duplicate term identity.",
+      "ruled": "Primary Astra lifetime-identity ruling, 2026-10-14 — aidream 1355_dictionary_entries_archive_not_delete.sql inspected"
+    },
+    {
+      "index": "platform.device_handoff:device_handoff_secret_hash_key",
+      "reason": "secret_hash is a single-use device handoff credential. An issued credential remains spent after archive; releasing it could bind the same handoff secret to a different row.",
+      "ruled": "Primary Astra lifetime-identity ruling, 2026-10-14 — esign_parity_02_device_handoff.sql and 02b soft-delete migration inspected"
+    },
+    {
+      "index": "rag.kg_sweep_state:kg_sweep_state_group_uidx",
+      "reason": "(organization, scope group) is one durable knowledge-graph sweep cursor. Reusing the group must update the same state identity, including after archive, rather than fork progress across duplicate cursors.",
+      "ruled": "Primary Astra lifetime-identity ruling, 2026-10-14 — aidream kg_033_suggestion_sweep.sql inspected"
+    },
+    {
+      "index": "users.calendar_feed:calendar_feed_token_hash_key",
+      "reason": "token_hash is an issued calendar subscription credential. A token remains globally spent after the feed is ended or archived, so it can never be rebound to a different subscription.",
+      "ruled": "Primary Astra lifetime-identity ruling, 2026-10-14 — calfeed_b1 table and calfeed_b2 mint/end migrations inspected"
+    },
+    {
+      "index": "users.credential_mutation_receipts:credential_mutation_receipts_actor_org_mutation_uq",
+      "reason": "(actor, organization, mutation_id) is one credential mutation receipt and idempotency identity. Archive cannot release it and allow a retry to perform the same credential mutation twice.",
+      "ruled": "Primary Astra lifetime-identity ruling, 2026-10-14 — aidream 0651_credential_mutation_receipts_restricted.sql inspected"
+    },
+    {
+      "index": "users.integration_connections:integration_connections_live_native_device_account",
+      "reason": "The owner, app instance, and provider subject identify one native Beeper device account. Reconnection revives the same archived integration row so provider identity and custody history never split across duplicates.",
+      "ruled": "Primary Astra lifetime-identity ruling, 2026-10-14 — aidream 20261011223008_beeper_personal_device_connections.sql inspected"
     }
   ]
 }
