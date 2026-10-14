@@ -17,6 +17,7 @@
  */
 
 import React from "react";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 import {
   Search,
   Newspaper,
@@ -182,7 +183,7 @@ export default function WebSearchResultsBlock({
           <SectionHeading icon={Search} label="Related searches" />
           <div className="grid gap-2 @md:grid-cols-2">
             {related.map((term, i) => (
-              <a
+              <OutboundLink
                 key={i}
                 href={`/search?q=${encodeURIComponent(term)}`}
                 target="_blank"
@@ -192,7 +193,7 @@ export default function WebSearchResultsBlock({
               >
                 <Search className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
                 <span className="truncate">{term}</span>
-              </a>
+              </OutboundLink>
             ))}
           </div>
         </section>

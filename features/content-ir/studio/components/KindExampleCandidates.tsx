@@ -11,6 +11,7 @@
  */
 
 import { useState } from "react";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 import { CircleAlert, ExternalLink, Loader2, PencilLine, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
@@ -119,7 +120,7 @@ export default function KindExampleCandidates({
               <div key={key} className="flex items-center gap-3 px-3 py-2.5">
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-1.5">
-                    <a
+                    <OutboundLink
                       href={conversationHref(candidate.conversationId, "product")}
                       target="_blank"
                       rel="noreferrer"
@@ -127,7 +128,7 @@ export default function KindExampleCandidates({
                     >
                       <span className="truncate">{candidateLabel(candidate)}</span>
                       <ExternalLink className="h-3 w-3 shrink-0 text-muted-foreground" />
-                    </a>
+                    </OutboundLink>
                     {candidate.alreadyExample ? (
                       <span className="rounded bg-muted px-1.5 py-0.5 text-[11px] text-muted-foreground">
                         saved

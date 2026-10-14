@@ -8,6 +8,7 @@
  */
 
 import { useRef, useState } from "react";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 import { ExternalLink } from "lucide-react";
 import { Button } from "@ai-matrx/design-system/controls";
 import { extractErrorMessage } from "@/utils/errors";
@@ -142,9 +143,9 @@ export function SmartAddValidate({
       onUndo={onUndo}
       footer={
         <Button asChild variant="outline" icon={<ExternalLink aria-hidden />}>
-          <a href={marketingRoutes.brand(marketingSeg(brand))} target="_blank" rel="noreferrer">
+          <OutboundLink href={marketingRoutes.brand(marketingSeg(brand))} target="_blank" rel="noreferrer">
             Open brand
-          </a>
+          </OutboundLink>
         </Button>
       }
     />

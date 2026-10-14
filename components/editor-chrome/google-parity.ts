@@ -6,6 +6,7 @@
 
 import { CircleHelp, Code2, FileText, GraduationCap, Megaphone, MessageSquareWarning, Puzzle, Repeat2, ShieldCheck } from "lucide-react";
 import type { ComponentType } from "react";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 
 import type { EditorMenu, EditorMenuAction, EditorMenuEntry, EditorShortcut } from "./editor-menu-model";
 
@@ -44,7 +45,7 @@ export function googleExtensionsMenu(product: GoogleProduct): EditorMenu {
 }
 
 function openPage(href: string) {
-  if (typeof window !== "undefined") window.open(href, "_blank", "noopener");
+  if (typeof window !== "undefined") openOutbound(href, "_blank", "noopener");
 }
 
 /** The head of Google's Help menu; the editor's own rows (shortcuts, function list) follow. */

@@ -15,6 +15,7 @@ import { useRef, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { CornerDownLeft } from "lucide-react";
 import { IconResolver } from "@ai-matrx/icons";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 import {
   Command,
   CommandDialog,
@@ -177,7 +178,7 @@ export default function MenuSearchPalette({ open, onOpenChange, query, onQueryCh
 
     const crossOrigin = crossDeploymentHref(entry.href);
     if (newTab || entry.external || entry.openInNewTab) {
-      window.open(crossOrigin ?? entry.href, "_blank", "noopener,noreferrer");
+      openOutbound(crossOrigin ?? entry.href, "_blank", "noopener,noreferrer");
       return;
     }
     if (crossOrigin) {
