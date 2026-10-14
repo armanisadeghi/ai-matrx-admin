@@ -22,9 +22,12 @@
  *               written, never stripped)
  *   emit      → `onSubmit(instance)` — only after the structural leg passes
  *
- * Kinds with no stored field list (python-owned, non-object roots) fall back to
- * ONE whole-instance JSON textarea validated against `emitted_json_schema` —
- * the documented "instance-json" mode, same honesty posture as the bridge.
+ * The field list is `inputSchemaForKind`: the stored fields, else the
+ * top-level properties of an object-root `emitted_json_schema` (python-owned
+ * kinds store no `data` but their schema names every field). Only a kind with
+ * no field from either source (scalar/array roots) falls back to ONE
+ * whole-value JSON textarea — the "instance-json" mode. Every field form also
+ * offers that JSON view as an opt-in advanced toggle, never the default.
  *
  * Refusals are LOUD: an unknown kind, a missing/inactive input binding, or an
  * unrouted dedicated component key renders an explicit error card AND reports
@@ -46,7 +49,11 @@ import {
 import { validateStructuralLeg } from "@ai-matrx/content-ir";
 import { getKindInputContractBySlug } from "../registry/schema-source-kind-tables";
 import type { Json } from "@/types/database.types";
-import { decideKindInputPath, type KindInputPath } from "./kind-input-resolution";
+import {
+  decideKindInputPath,
+  inputSchemaForKind,
+  type KindInputPath,
+} from "./kind-input-resolution";
 import {
   assembleKindInstance,
   attributeStructuralErrors,
@@ -116,6 +123,8 @@ export default function KindInputForm({
   const [coercionErrors, setCoercionErrors] = useState<Record<string, string>>({});
   const [jsonParseError, setJsonParseError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  // Advanced: author a field-form kind as raw JSON instead. Off by default.
+  const [jsonView, setJsonView] = useState(false);
 
   // A kind switch resets the whole form. Render-phase state adjustment (the
   // React prop-sync pattern), not an effect — the effect below only LOADS.
@@ -126,6 +135,7 @@ export default function KindInputForm({
     setStructuralDetail(null);
     setCoercionErrors({});
     setJsonParseError(null);
+    setJsonView(false);
   }
 
   useEffect(() => {
@@ -146,10 +156,15 @@ export default function KindInputForm({
           setState({ status: "refused", reason });
           return;
         }
+        const schema = inputSchemaForKind(
+          kind,
+          contract.schema,
+          contract.emittedJsonSchema,
+        );
         const path = decideKindInputPath(
           kind,
           resolveComponent(kind, "web", "input"),
-          contract.schema,
+          schema,
           // A stored JSON Schema is enough to edit against, so a kind with no
           // input-component row still gets the instance-JSON bench instead of
           // a dead end.
@@ -165,8 +180,8 @@ export default function KindInputForm({
           return;
         }
         const pairs =
-          path.mode === "bridged-form" && contract.schema
-            ? pairKindFieldsWithVariables(contract.schema)
+          path.mode === "bridged-form" && schema
+            ? pairKindFieldsWithVariables(schema)
             : [];
         // Prefill (edit flows): seed from the instance value when provided —
         // the exact coercion inverse per field; JSON draft otherwise.
@@ -189,7 +204,7 @@ export default function KindInputForm({
         setState({
           status: "ready",
           path,
-          schema: contract.schema,
+          schema,
           emittedJsonSchema: contract.emittedJsonSchema,
           pairs,
           emptyStringFields:
@@ -288,6 +303,46 @@ export default function KindInputForm({
     await emit(instance);
   }
 
+  /** The form's current draft as JSON — the advanced view's starting text. */
+  function draftAsJson(): string {
+    const assembled = assembleKindInstance(kind, pairs, values, {
+      emptyStringFields,
+    });
+    const { [KIND_KEY]: _kind, ...fields } = assembled.instance as Record<
+      string,
+      unknown
+    >;
+    return JSON.stringify(fields, null, 2);
+  }
+
+  function toggleJsonView(): void {
+    setStructuralDetail(null);
+    setCoercionErrors({});
+    if (!jsonView) {
+      setJsonDraft(draftAsJson());
+      setJsonParseError(null);
+      setJsonView(true);
+      return;
+    }
+    // Back to the fields: carry the JSON edits over, or stay put on bad JSON.
+    let parsed: unknown;
+    try {
+      parsed = jsonDraft.trim() === "" ? {} : (JSON.parse(jsonDraft) as unknown);
+    } catch (error) {
+      setJsonParseError(error instanceof Error ? error.message : String(error));
+      return;
+    }
+    if (parsed === null || typeof parsed !== "object" || Array.isArray(parsed)) {
+      setJsonParseError("Expected an object of fields.");
+      return;
+    }
+    setJsonParseError(null);
+    setValues(initialValuesFromInstance(pairs, parsed as Record<string, unknown>));
+    setJsonView(false);
+  }
+
+  const showFields = path.mode === "bridged-form" && !jsonView;
+
   const attributed = attributeStructuralErrors(
     structuralDetail ?? undefined,
     pairs.map((pair) => pair.fieldKey),
@@ -298,7 +353,7 @@ export default function KindInputForm({
       className="space-y-3"
       onSubmit={(event) => {
         event.preventDefault();
-        void (path.mode === "bridged-form"
+        void (showFields
           ? submitBridgedForm()
           : submitInstanceJson());
       }}
@@ -306,12 +361,23 @@ export default function KindInputForm({
       {schemaMissing && (
         <div className="flex items-start gap-2 rounded-md border border-amber-500/30 bg-amber-500/5 px-3 py-2 text-xs text-amber-800 dark:text-amber-200">
           <CircleAlert className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-          This kind has no emitted_json_schema — instances cannot be validated,
-          so submission is disabled until the schema is materialized.
+          This shape has no schema yet, so entries can&apos;t be checked.
         </div>
       )}
 
-      {path.mode === "bridged-form" ? (
+      {path.mode === "bridged-form" && (
+        <div className="flex justify-end">
+          <button
+            type="button"
+            onClick={toggleJsonView}
+            className="text-[11px] text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
+          >
+            {jsonView ? "Edit as fields" : "Edit as JSON"}
+          </button>
+        </div>
+      )}
+
+      {showFields ? (
         <div className="space-y-4">
           {pairs.map((pair) => {
             const fieldErrors = attributed.byField[pair.fieldKey] ?? [];
@@ -373,20 +439,18 @@ export default function KindInputForm({
         </div>
       ) : (
         <div className="space-y-1">
-          <div className="flex flex-wrap items-center gap-1.5">
-            <span className="text-[11px] text-muted-foreground">
-              Whole-instance JSON — this kind stores no field list (python-owned
-              or non-object root), so the instance is authored directly and
-              validated against its emitted schema.
-            </span>
-          </div>
+          {path.mode === "instance-json" && (
+            <p className="text-[11px] text-muted-foreground">
+              Enter the value as JSON.
+            </p>
+          )}
           <textarea
             value={jsonDraft}
             onChange={(event) => setJsonDraft(event.target.value)}
             spellCheck={false}
             rows={10}
             className="w-full rounded-md border border-border bg-card p-2 font-mono text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
-            placeholder={`JSON instance of "${kind}"`}
+            placeholder="{ }"
           />
           {jsonParseError && (
             <p className="flex items-start gap-1.5 text-[11px] text-red-700 dark:text-red-300">
@@ -403,8 +467,7 @@ export default function KindInputForm({
       {structuralDetail && (
         <div className="space-y-0.5 rounded-md border border-red-500/30 bg-red-500/5 px-3 py-2">
           <p className="text-[11px] font-medium text-red-700 dark:text-red-300">
-            The assembled instance failed the structural leg (ajv over
-            emitted_json_schema):
+            Doesn&apos;t match the shape:
           </p>
           {(attributed.formLevel.length > 0
             ? attributed.formLevel

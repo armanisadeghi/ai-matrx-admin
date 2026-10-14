@@ -1,7 +1,7 @@
 {
   "version": 1,
   "app": "matrx-frontend",
-  "routeCount": 1430,
+  "routeCount": 1431,
   "routes": [
     {
       "pattern": "/",
@@ -5013,6 +5013,11 @@
       "pattern": "/marketing/brands/smart-add/person",
       "status": "live",
       "source": "app/(core)/marketing/brands/smart-add/person/page.tsx"
+    },
+    {
+      "pattern": "/marketing/brands/smart-add/validate/[brandId]",
+      "status": "live",
+      "source": "app/(core)/marketing/brands/smart-add/validate/[brandId]/page.tsx"
     },
     {
       "pattern": "/marketing/calendar",
