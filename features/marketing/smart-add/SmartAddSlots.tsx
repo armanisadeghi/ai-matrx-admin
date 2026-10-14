@@ -27,6 +27,7 @@ import { proxiedExternalImageUrl } from "@/lib/media/external-image";
 import { collapseAliasedAccounts, compareRows, customItem, websiteHost, type Candidate, type Decision, type EvidenceField, type EvidenceItem, type Relation } from "./evidence";
 import { accountHandleLine, CUSTOM_RELATION, CustomAdd, CustomRelation, OpenLink, relationWayOut, useRelationKinds } from "./SmartAddExtras";
 import { webCandidate } from "./relations";
+import { isStaffAccount } from "./staff";
 import { brightnessOf, shadeForBrightness } from "./logo-shade";
 import { SourcesBadge, useLogoGroups, type LogoGroup } from "./logoGroups";
 import { profileUrlFor } from "@/features/marketing/social/link";
@@ -112,7 +113,10 @@ export function SmartAddSlots({
     <CustomAdd field={field} placeholder={placeholder} label={label} onAdd={onAdd} disabled={locked} />
   );
   const of = (...fields: EvidenceField[]) => items.filter((i) => fields.includes(i.field));
-  const socials = collapseAliasedAccounts(of("social"));
+  const allAccounts = collapseAliasedAccounts(of("social"));
+  // A business's person-only profiles (LinkedIn /in/) are its staff: Key people, never its accounts.
+  const staff = allAccounts.filter((i) => isStaffAccount(i, person));
+  const socials = allAccounts.filter((i) => !isStaffAccount(i, person));
   const { kinds, onCustom } = useRelationKinds(onRelate);
   // Near-identical images (one mark from the site and every profile) show as ONE tile; an answer reaches every source.
   const logoGroups = useLogoGroups(of("logo"));
@@ -139,6 +143,37 @@ export function SmartAddSlots({
   const nameByProfile = new Map<string, string>();
   for (const n of of("name")) if (n.source.kind === "social_profile" && n.source.url) nameByProfile.set(n.source.url, n.value);
   const platforms = [...new Set(socials.map((s) => s.platform ?? "other"))];
+  // ── Key people: Yes is the key-person relationship (saved as a person associated to the brand) ──
+  const keyPersonKind = kinds.find((k) => k.routesTo === "key_person") ?? null;
+  const isKeyPerson = (i: EvidenceItem) => relations[i.key]?.routesTo === "key_person";
+  const staffAnswer = (i: EvidenceItem): DecisionAnswer | null =>
+    decisions[i.key] === "no" ? "no" : isKeyPerson(i) ? "yes" : relations[i.key] || skipped.has(i.key) ? "other" : null;
+  const staffChoices = (i: EvidenceItem) => (
+    <DecisionControl
+      value={staffAnswer(i)}
+      onChange={(a) => {
+        if (skipped.has(i.key)) onSkip(i.key, false);
+        if (a === "yes") {
+          if (isKeyPerson(i)) return onRelate(candidateOf(i), null); // pressing Yes again clears it
+          if (decisions[i.key]) onDecide(i.key, decisions[i.key]);
+          if (keyPersonKind) onRelate(candidateOf(i), { key: keyPersonKind.key, label: keyPersonKind.label, routesTo: keyPersonKind.routesTo });
+          return;
+        }
+        if (relations[i.key]) onRelate(candidateOf(i), null);
+        onDecide(i.key, "no");
+      }}
+      wayOut={relatedMenu(keyPersonKind ? [keyPersonKind.key] : [])}
+      onWayOut={(v) => onWayOut(i, v)}
+      wayOutValue={relations[i.key] && !isKeyPerson(i) ? `rel:${relations[i.key].key}` : null}
+      onSkip={() => {
+        clearRow(i);
+        onSkip(i.key, true);
+      }}
+      skipped={skipped.has(i.key)}
+      disabled={locked || !keyPersonKind}
+      className="max-sm:w-auto max-sm:min-w-0 max-sm:flex-1 max-sm:shrink"
+    />
+  );
   const empty = working ? "Looking…" : started ? "Nothing found" : "—";
   // ── the way out: every row's "Other" menu ──────────────────────────────
   const movedFrom = new Map(Object.entries(taglines).map(([nameKey, t]) => [t.key, nameKey]));
@@ -214,28 +249,31 @@ export function SmartAddSlots({
     const main = preferredOf(i.field);
     onDecide(i.key, main ? (mode === "name" ? "alias" : "yes") : "preferred");
   };
-  /** The star: make this kept value the main one (a name's old main one becomes an alias). */
+  /** Make this kept value the main one (a name's old main one becomes an alias). */
   const makeMain = (i: EvidenceItem) => {
     if (decisions[i.key] === "preferred") return;
     const old = preferredOf(i.field);
     if (old && i.field === "name") onDecide(old.key, "alias");
     onDecide(i.key, "preferred");
   };
-  const star = (i: EvidenceItem) =>
-    isYes(decisions[i.key]) ? (
-      <Button
-        variant="quiet"
-        pressed={decisions[i.key] === "preferred"}
-        aria-label={decisions[i.key] === "preferred" ? "Main" : "Make main"}
-        title={decisions[i.key] === "preferred" ? "Main" : "Make main"}
-        icon={<Star />}
-        disabled={locked}
-        onClick={() => makeMain(i)}
-      />
-    ) : null;
+  /** The picker's kinds of yes (Arman 2026-10-14: the picker holds the value; the first Yes is the primary). */
+  const yesKindsOf = (i: EvidenceItem, mode: RowMode): WayOutItem[] | undefined => {
+    if (mode === "plain") return undefined;
+    if (mode === "name") return [{ value: "preferred", label: "Main name" }, { value: "alias", label: "Also known as" }];
+    if (i.field === "website") return [{ value: "preferred", label: "Primary site" }, { value: "yes", label: "Also ours" }];
+    return [{ value: "preferred", label: "Primary" }, { value: "yes", label: "Additional" }];
+  };
+  const setYesKind = (i: EvidenceItem, v: string) => {
+    if (decisions[i.key] === v) return; // the same answer again would clear the row
+    if (v === "preferred") return makeMain(i);
+    onDecide(i.key, v as Decision);
+  };
   const choices = (item: EvidenceItem, mode: RowMode, wayOut?: WayOutItem[]) => (
     <DecisionControl
       value={answerOf(item)}
+      yesKinds={yesKindsOf(item, mode)}
+      yesKind={isYes(decisions[item.key]) ? decisions[item.key] : null}
+      onYesKind={(v) => setYesKind(item, v)}
       onChange={(a) => {
         if (skipped.has(item.key)) onSkip(item.key, false);
         if (a === "yes") sayYes(item, mode);
@@ -255,11 +293,13 @@ export function SmartAddSlots({
     />
   );
 
-  // The first choice row carries the one-time hint (TipKit-style): pick an answer; nothing found is lost.
+  // The first choice row carries the one-time hint (TipKit-style). The buttons explain themselves; the one
+  // thing they cannot show is what happens to a row nobody answers, so that is the whole tip. Its pulse sits on
+  // Yes alone (never a ring around the row); any answer in the row retires it.
   const firstChoice = (n: number, control: React.ReactNode) =>
     n === 0 ? (
-      <FirstUseHint id="smart-add.first-choice" title="Pick Yes, No or Other" detail="Anything you don't mark No stays" when={!locked}>
-        <div className="flex items-center gap-1" data-smart-add-first-choice="">{control}</div>
+      <FirstUseHint id="smart-add.first-choice" title="Unmarked items are kept" pulse='[data-decision-slot="yes"]' align="start" when={!locked}>
+        <div className="flex min-w-0 items-center gap-1 max-sm:flex-1" data-smart-add-first-choice="">{control}</div>
       </FirstUseHint>
     ) : (
       control
@@ -269,7 +309,7 @@ export function SmartAddSlots({
     <div className="flex flex-col divide-y divide-border" data-testid="smart-add-slots">
       <Slot title={person ? "Name" : "Brand name"} ask="Is this your name?" empty={of("name").some((i) => !taglines[i.key]) ? null : empty} after={custom("name", person ? "Your name" : "Brand name")}>
         {of("name").filter((i) => !taglines[i.key]).map((i, n) => (
-          <Row key={i.key} item={i} decision={decisions[i.key] ?? null} lead={star(i)} note={noteOf(i)} below={below(i)} actions={<>{firstChoice(n, choices(i, "name", nameWayOut))}{sourceLink(i)}</>}>
+          <Row key={i.key} item={i} decision={decisions[i.key] ?? null} note={noteOf(i)} below={below(i)} actions={<>{firstChoice(n, choices(i, "name", nameWayOut))}{sourceLink(i)}</>}>
             <span className="min-w-0 truncate" title={i.value}><Shared id={i.key} positionOnly className="inline-block max-w-full truncate align-top text-lg font-semibold leading-tight">{i.value}</Shared></span>
           </Row>
         ))}
@@ -298,7 +338,7 @@ export function SmartAddSlots({
 
       <Slot title="Websites" ask="Is this yours?" empty={of("website").length ? null : empty} after={custom("website", "another-site.com")}>
         {of("website").map((i) => (
-          <Row key={i.key} item={i} decision={decisions[i.key] ?? null} lead={star(i)} note={noteOf(i)} below={below(i)} actions={
+          <Row key={i.key} item={i} decision={decisions[i.key] ?? null} note={noteOf(i)} below={below(i)} actions={
             <>
               {choices(i, "primary", relatedWayOut())}
               <OpenLink url={i.url ?? i.value} />
@@ -312,7 +352,7 @@ export function SmartAddSlots({
       <Slot title="Social accounts" ask={person ? "Is this you?" : "Is this yours?"} empty={socials.length ? null : empty} after={custom("social", "@handle or profile link")}>
         {platforms.map((p) => (
           <div key={p} className="flex flex-col">
-            <div className="px-4 pt-1 text-[11px] font-medium uppercase tracking-wide text-muted-foreground/70">
+            <div className="px-4 pt-1 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
               {platformLabel(p)}
             </div>
             {rankByAnchors(socials.filter((s) => (s.platform ?? "other") === p), personAnchors ?? {})
@@ -346,9 +386,37 @@ export function SmartAddSlots({
         ))}
       </Slot>
 
+      {staff.length ? (
+        <Slot title="Key people" ask="On your team?" empty={null}>
+          {staff.map((i) => (
+            <Row
+              key={i.key}
+              item={i}
+              decision={decisions[i.key] ?? null}
+              note={isKeyPerson(i) ? null : noteOf(i)}
+              below={below(i)}
+              actions={
+                <>
+                  {staffChoices(i)}
+                  {accountUrl(i, candidateByKey.get(i.key)) ? <OpenLink url={accountUrl(i, candidateByKey.get(i.key)) as string} /> : null}
+                </>
+              }
+              hideWhere
+            >
+              <span className="flex min-w-0 items-center gap-3" data-testid="smart-add-key-person">
+                <Shared id={i.key} className="shrink-0">
+                  <Avatar item={i} />
+                </Shared>
+                <AccountText item={i} name={i.label ?? null} />
+              </span>
+            </Row>
+          ))}
+        </Slot>
+      ) : null}
+
       <Slot title="Contact" ask="Is this yours?" empty={of("phone", "email", "address").length ? null : empty} after={custom("contact", "Phone, email or address")}>
         {of("phone", "email", "address").map((i) => (
-          <Row key={i.key} item={i} decision={decisions[i.key] ?? null} lead={star(i)} note={noteOf(i)} below={below(i)} actions={choices(i, "primary", relatedWayOut())} compact>
+          <Row key={i.key} item={i} decision={decisions[i.key] ?? null} note={noteOf(i)} below={below(i)} actions={choices(i, "primary", relatedWayOut())} compact>
             <span className="flex min-w-0 items-baseline gap-2 text-sm">
               <span className="w-16 shrink-0 text-xs text-muted-foreground">{CONTACT_LABEL[i.field]}</span>
               <span className="truncate" title={i.value}>{i.value}</span>
@@ -382,7 +450,7 @@ export function SmartAddSlots({
             key={i.key}
             item={i}
             decision={decisions[i.key] ?? null}
-            lead={star(i)}
+           
             note={moved ? <Badge data-testid="smart-add-moved-from-name">Moved from name</Badge> : noteOf(i)}
             actions={
               <>
@@ -401,7 +469,7 @@ export function SmartAddSlots({
           );
         })}
         {of("category").map((i) => (
-          <Row key={i.key} item={i} decision={decisions[i.key] ?? null} lead={star(i)} note={noteOf(i)} actions={<>{choices(i, "primary")}{sourceLink(i)}</>} compact>
+          <Row key={i.key} item={i} decision={decisions[i.key] ?? null} note={noteOf(i)} actions={<>{choices(i, "primary")}{sourceLink(i)}</>} compact>
             <span className="flex min-w-0 items-baseline gap-2 text-sm">
               <span className="w-16 shrink-0 text-xs text-muted-foreground">Category</span>
               <span className="truncate" title={i.value}>{i.value}</span>
@@ -409,7 +477,7 @@ export function SmartAddSlots({
           </Row>
         ))}
         {of("description").map((i) => (
-          <Row key={i.key} item={i} decision={decisions[i.key] ?? null} lead={star(i)} note={noteOf(i)} actions={<>{choices(i, "primary")}{sourceLink(i)}</>} top>
+          <Row key={i.key} item={i} decision={decisions[i.key] ?? null} note={noteOf(i)} actions={<>{choices(i, "primary")}{sourceLink(i)}</>} top>
             <ReadMore text={i.value} />
           </Row>
         ))}
@@ -440,10 +508,10 @@ function Slot({
     <section className="flex min-h-16 flex-col py-2" aria-label={title}>
       <h3 className="flex items-baseline gap-2 px-4 pb-1 text-xs font-semibold text-muted-foreground">
         {title}
-        {ask && !empty ? <span className="font-normal text-muted-foreground/80">{ask}</span> : null}
-        {hint && !empty ? <span className="font-normal text-muted-foreground/60">{hint}</span> : null}
+        {ask && !empty ? <span className="font-normal text-muted-foreground">{ask}</span> : null}
+        {hint && !empty ? <span className="font-normal text-muted-foreground">{hint}</span> : null}
       </h3>
-      {empty ? <p className="px-4 py-1 text-sm text-muted-foreground/50">{empty}</p> : children}
+      {empty ? <p className="px-4 py-1 text-sm text-muted-foreground">{empty}</p> : children}
       {after}
     </section>
   );
@@ -459,11 +527,8 @@ function Row({
   hideWhere,
   note,
   below,
-  lead,
 }: {
   item: EvidenceItem;
-  /** A small control before the value (the "main one" star). */
-  lead?: React.ReactNode;
   decision: Decision | null;
   /** The chosen way-out answer, as a small badge on the second line. */
   note?: React.ReactNode;
@@ -484,22 +549,19 @@ function Row({
       data-field={item.field}
       data-decision={decision ?? "open"}
     >
-      <div className="flex min-w-0 flex-1 items-center gap-1">
-      {lead !== undefined ? <span className="flex size-7 shrink-0 items-center justify-center">{lead}</span> : null}
       <div className="flex min-w-0 flex-1 flex-col gap-0.5">
         {children}
         {note || (!hideWhere && whereOf(item)) ? (
           <span className="flex min-w-0 items-center gap-1.5">
             {note}
             {hideWhere || !whereOf(item) ? null : (
-              <span className="truncate text-[11px] text-muted-foreground/80" title={item.source.url ?? undefined}>
+              <span className="truncate text-[11px] text-muted-foreground" title={item.source.url ?? undefined}>
                 {whereOf(item)}
               </span>
             )}
           </span>
         ) : null}
         {below}
-      </div>
       </div>
       <div className="flex shrink-0 items-center justify-end gap-1 max-sm:w-full">{actions}</div>
     </div>

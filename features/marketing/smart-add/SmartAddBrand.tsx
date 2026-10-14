@@ -40,6 +40,7 @@ import { runHref } from "@/features/workflow-runtime/run-doors";
 import { roundFailed } from "./roundFailure";
 import { SmartAddSlots } from "./SmartAddSlots";
 import { typedItems, useRunMemory, type WebMark } from "./runMemory";
+import { withoutStaffFacts } from "./staff";
 import { SmartAddHero, stageLogo, stageName, type PersonMore } from "./SmartAddHero";
 import { Shared, riseIn } from "./stage/Shared";
 import { useSessionKnob } from "@/lib/scoped-config/sessionKnob";
@@ -777,7 +778,8 @@ export function SmartAddBrand({
     (setupView?.spendUsd ?? 0);
   // A later round's judgment of a finding wins over an earlier one (it saw more).
   const suggestions: Record<string, WeThinkSuggestion> = Object.assign({}, ...rounds.map((r) => (r.runId ? suggestionsByRun[r.runId] : undefined) ?? {}));
-  const visible = withSuggestions(orderedEvidence(items.values()), suggestions);
+  // Staff profiles' names, photos and bios never reach a business's own slots (they are key people).
+  const visible = withSuggestions(orderedEvidence(withoutStaffFacts(items.values(), person)), suggestions);
   // What is known about the person ranks every candidate card (typed facts, confirmed sites): anchors over counts.
   const knownAnchors: PersonAnchors = {
     city: personTyped.current?.city ?? null,
@@ -809,8 +811,8 @@ export function SmartAddBrand({
   const basics = confirmedBasics(items, decisions, person);
   // The landing card shows the best found name and logo until the person confirms their own, so
   // what the stage found has a real place to land (it is never created from these: Create reads basics).
-  const foundLogo = stageLogo([...items.values()]);
-  const foundName = stageName([...items.values()]);
+  const foundLogo = stageLogo(withoutStaffFacts(items.values(), person));
+  const foundName = stageName(withoutStaffFacts(items.values(), person));
   const cardBasics =
     basics.name && basics.images.length
       ? basics
@@ -995,7 +997,7 @@ export function SmartAddBrand({
         ...(await saveCandidates(
           organizationId,
           brand.id,
-          [...items.values()].filter((i) => !decisions[i.key] && !relatedSaved.keys.has(i.key) && !brokenKeys.current.has(i.key)),
+          withoutStaffFacts(items.values(), person).filter((i) => !decisions[i.key] && !relatedSaved.keys.has(i.key) && !brokenKeys.current.has(i.key)),
         )),
       );
       problems.push(...(await saveFacts(organizationId, brand.id, basics)));
@@ -1345,7 +1347,7 @@ export function SmartAddBrand({
 
       {/* The brand as it stands: the primary choices, building as the person confirms. */}
       <div className="motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-3 motion-safe:duration-500">
-      <BrandCard basics={cardBasics} screenshot={person ? null : (screenshots?.desktop?.url ?? null)} person={person} kind={kindLabel.kind} onKind={answerKind} location={basics.facts.find((f) => f.field === "address")?.value ?? null} />
+      <BrandCard waiting={working} basics={cardBasics} screenshot={person ? null : (screenshots?.desktop?.url ?? null)} person={person} kind={kindLabel.kind} onKind={answerKind} location={basics.facts.find((f) => f.field === "address")?.value ?? null} />
       </div>
 
       {situation === "new" ? (

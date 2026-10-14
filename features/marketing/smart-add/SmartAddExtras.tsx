@@ -13,6 +13,7 @@ import { brightnessOf, shadeForBrightness } from "./logo-shade";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { BadgeCheck, Check, ChevronLeft, ChevronRight, ExternalLink, Globe, Plus, X } from "lucide-react";
 import { Button, DecisionControl, Field, Select, type SelectOption, type WayOutItem } from "@ai-matrx/design-system/controls";
+import { Skeleton } from "@ai-matrx/design-system";
 import { addUtmSource } from "@/utils/url-utm";
 import { extractErrorMessage } from "@/utils/errors";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
@@ -138,6 +139,7 @@ const KIND_LABEL = { business: "Business", person: "Person", both: "Person with 
 /** The primary choices, laid out like an official profile card — builds as the person confirms. */
 export function BrandCard({
   basics,
+  waiting = false,
   screenshot = null,
   person,
   kind,
@@ -145,6 +147,8 @@ export function BrandCard({
   location,
 }: {
   basics: BrandBasics;
+  /** A round is still working: an empty picture box shimmers ("working on it"), never an icon. */
+  waiting?: boolean;
   /** The homepage on a computer (lasting address); its slot is reserved for a business, so it swaps in. */
   screenshot?: string | null;
   person: boolean;
@@ -164,7 +168,11 @@ export function BrandCard({
       aria-label="Your brand"
       data-testid="smart-add-brand-card"
     >
-      <span className={`flex size-20 shrink-0 items-center justify-center overflow-hidden border border-border ${shade === "dark" ? "bg-zinc-800" : "bg-white"} ${person ? "rounded-full" : "rounded-xl"}`}>
+      <span
+        className={`relative flex size-20 shrink-0 items-center justify-center overflow-hidden border border-border ${shade === "dark" ? "bg-zinc-800" : "bg-white"} ${person ? "rounded-full" : "rounded-xl"}`}
+        data-testid="smart-add-card-picture"
+        data-state={primary && dead !== primary.url ? "ready" : waiting ? "waiting" : "empty"}
+      >
         {primary && dead !== primary.url ? (
           <img
             src={primarySrc ?? primary.url}
@@ -176,8 +184,10 @@ export function BrandCard({
             }}
             className={person ? "size-full object-cover" : "max-h-full max-w-full object-contain p-1.5"}
           />
+        ) : waiting ? (
+          <Skeleton motion="shimmer" aria-hidden="true" className="absolute inset-0 rounded-none bg-muted" />
         ) : (
-          <Globe className="size-7 text-muted-foreground/40" />
+          <Globe className="size-7 text-muted-foreground" />
         )}
       </span>
       <div className="flex min-w-0 flex-1 flex-col gap-1">
@@ -217,22 +227,26 @@ export function BrandCard({
           <span className="truncate text-xs text-muted-foreground">{basics.expertise.join(" · ")}</span>
         ) : null}
       </div>
-      {person ? null : <HomepageShot url={screenshot} />}
+      {person ? null : <HomepageShot url={screenshot} waiting={waiting} />}
     </section>
   );
 }
 
 /** The homepage picture's slot: always the same size (no layout shift), empty until the picture loads. */
-function HomepageShot({ url }: { url: string | null }) {
+function HomepageShot({ url, waiting }: { url: string | null; waiting: boolean }) {
   const [loaded, setLoaded] = useState<string | null>(null);
   const [dead, setDead] = useState<string | null>(null);
   const show = url && dead !== url;
   return (
     <span
-      className="hidden h-[5.625rem] w-36 shrink-0 overflow-hidden rounded-lg border border-border bg-muted/40 sm:block"
+      className="relative hidden h-[5.625rem] w-36 shrink-0 overflow-hidden rounded-lg border border-border bg-muted sm:block"
       data-testid="smart-add-homepage-shot"
-      data-state={show && loaded === url ? "ready" : "empty"}
+      data-state={show && loaded === url ? "ready" : (waiting && !dead) || (show && loaded !== url) ? "waiting" : "empty"}
     >
+      {/* Still coming (the round is working, or the picture is loading): a soft shimmer, never a spinner. */}
+      {(show && loaded !== url) || (!show && waiting) ? (
+        <Skeleton motion="shimmer" aria-hidden="true" className="absolute inset-0 rounded-none bg-muted" />
+      ) : null}
       {show ? (
         <img
           src={url}
