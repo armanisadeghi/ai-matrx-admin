@@ -68,6 +68,7 @@ import {
 import { useKindAgentLaunch } from "@/features/content-ir/studio/useKindAgentLaunch";
 import { SHAPE_EDITOR_ANCHOR_ID } from "@/features/content-ir/studio/components/ShapeOwnerEditor";
 import { AGENT_ICON } from "@/components/icons/domain-icons";
+import { toast } from "@/lib/toast";
 import {
   fetchShapeHome,
   isSystemShape,
@@ -108,8 +109,12 @@ export default function ShapeDetailHeader({
       .then((row) => {
         if (live) setHome(row);
       })
-      .catch(() => {
-        if (live) setHome(null);
+      .catch((error: unknown) => {
+        if (!live) return;
+        setHome(null);
+        toast.error(
+          `Promote to system is unavailable: ${error instanceof Error ? error.message : String(error)}`,
+        );
       });
     return () => {
       live = false;
