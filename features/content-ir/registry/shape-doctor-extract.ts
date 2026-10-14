@@ -396,7 +396,9 @@ export function extractDispatchKeysFromTexts(
     let found = 0;
     for (const { text, file } of sources) {
       const start = text.indexOf(`const ${name} = {`);
-      const end = start < 0 ? -1 : text.indexOf("\n} satisfies", start);
+      const sourceEnd = start < 0 ? -1 : text.indexOf("\n} satisfies", start);
+      const builtEnd = start < 0 ? -1 : text.indexOf("\n};", start);
+      const end = sourceEnd >= 0 ? sourceEnd : builtEnd;
       if (start < 0 || end < 0) {
         failures.push({ literal: name, file });
         continue;

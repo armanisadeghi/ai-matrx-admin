@@ -49,14 +49,14 @@ describe("catalog prose reads a kind example as its label (R1)", () => {
 describe("every skill-description render site goes through catalogProseText", () => {
   const root = path.resolve(__dirname, "../../..");
   const SITES: Array<[string, RegExp]> = [
-    ["../aidream/apps/shared/chat/src/agents/components/inputs/smart-input/RunSkillPicker.tsx", /(?:secondary|title)[:=]\s*\{?\s*skill\??\.description/],
+    [require.resolve("@ai-matrx/chat/agents/components/inputs/smart-input/RunSkillPicker"), /(?:secondary|title)[:=]\s*\{?\s*skill\??\.description/],
     ["features/skills/components/SkillConfigPicker.tsx", /\{skill\??\.description|title=\{skill\??\.description/],
     ["features/skills/components/SkillsBrowser.tsx", /(?<!\$)\{s\.description\}/],
     ["features/skills/components/SkillDetailView.tsx", /\{skill\.description/],
-    ["../aidream/apps/shared/chat/src/tool-call-visualization/renderers/skill/SkillInline.tsx", /result\.description\.trim\(\)\s*:/],
+    [require.resolve("@ai-matrx/chat/tool-call-visualization/renderers/skill/SkillInline"), /result\.description\.trim\(\)\s*:/],
   ];
   it.each(SITES)("%s draws no raw description", (file, raw) => {
-    const source = readFileSync(path.join(root, file), "utf8");
+    const source = readFileSync(path.isAbsolute(file) ? file : path.join(root, file), "utf8");
     expect(source).not.toMatch(raw);
     expect(source).toContain("catalogProseText(");
   });

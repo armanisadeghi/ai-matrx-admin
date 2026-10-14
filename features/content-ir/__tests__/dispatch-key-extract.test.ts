@@ -30,7 +30,10 @@ const COMPUTED = {
 describe("extractDispatchKeysFromTexts", () => {
   const sources: DispatchSourceText[] = DISPATCH_SOURCE_KEYS.map((key) => {
     const file = SHAPE_SOURCE_FILES[key].path;
-    return { file, text: readFileSync(resolve(process.cwd(), file), "utf8") };
+    const resolved = key === "blockDispatch"
+      ? require.resolve("@ai-matrx/rich-content/display/chat-markdown/block-registry/block-dispatch")
+      : resolve(process.cwd(), file);
+    return { file, text: readFileSync(resolved, "utf8") };
   });
   const domain = sources.find((s) => s.file === SHAPE_SOURCE_FILES.domainBlockDispatch.path)!;
   const engine = sources.find((s) => s.file === SHAPE_SOURCE_FILES.blockDispatch.path)!;

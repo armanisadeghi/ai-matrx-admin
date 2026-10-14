@@ -47,11 +47,11 @@ describe("conversation titles never draw kind JSON (R4)", () => {
 
   const root = path.resolve(__dirname, "../../..");
   it.each([
-    "../aidream/apps/shared/chat/src/cx-chat/components/SsrSidebarChats.tsx",
-    "../aidream/apps/shared/chat/src/canvas/workspace/ChatPanelTitleMenu.tsx",
-    "../aidream/apps/shared/chat/src/agents/components/conversation-actions/conversation-verbs.ts",
-    "../aidream/apps/shared/chat/src/agents/redux/conversation-list/conversation-list.thunks.ts",
+    require.resolve("@ai-matrx/chat/cx-chat/components/SsrSidebarChats"),
+    require.resolve("@ai-matrx/chat/canvas/workspace/ChatPanelTitleMenu"),
+    require.resolve("@ai-matrx/chat/agents/components/conversation-actions/conversation-verbs"),
+    require.resolve("@ai-matrx/chat/agents/redux/conversation-list/conversation-list.thunks"),
   ])("%s reads titles through conversationTitleText", (file) => {
-    expect(readFileSync(path.join(root, file), "utf8")).toContain("conversationTitleText(");
+    expect(readFileSync(path.isAbsolute(file) ? file : path.join(root, file), "utf8")).toContain("conversationTitleText(");
   });
 });

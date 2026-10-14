@@ -8,11 +8,15 @@
  * app's block folders and artifact renderers, and the rich-content package sources.
  */
 import path from "node:path";
-import fs from "node:fs";
 import { execFileSync } from "node:child_process";
 
 const ROOT = path.resolve(__dirname, "../../..");
-const PACKAGE_SRC = path.resolve(ROOT, "../aidream/apps/shared/rich-content/src");
+const PACKAGE_DIST = path.resolve(
+  path.dirname(
+    require.resolve("@ai-matrx/rich-content/display/chat-markdown/block-registry/block-dispatch"),
+  ),
+  "../../..",
+);
 
 async function violations(globs: string[], cwd: string): Promise<string[]> {
   // A child process: ESLint's flat-config loader needs real dynamic import, which jest's VM lacks.
@@ -37,16 +41,17 @@ describe("kind blocks keep their hooks in one order", () => {
     expect(found).toEqual([]);
   }, 240_000);
 
-  (fs.existsSync(PACKAGE_SRC) ? it : it.skip)(
-    "the rich-content package sources have no conditional hook",
+  it(
+    "the installed rich-content package has no conditional hook",
     async () => {
-      const found = await violations(["**/*.{ts,tsx}"], PACKAGE_SRC);
+      const found = await violations(["**/*.js"], PACKAGE_DIST);
       expect(found).toEqual([]);
     },
     240_000,
   );
 
   it("catches the quiz crash it exists for (planted break)", async () => {
+    const fs = await import("node:fs");
     const dir = fs.mkdtempSync(path.join(ROOT, ".cache-hookplant-"));
     try {
       fs.writeFileSync(

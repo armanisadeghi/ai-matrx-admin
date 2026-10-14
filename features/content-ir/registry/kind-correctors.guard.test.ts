@@ -10,7 +10,7 @@
  */
 
 import { readFileSync, readdirSync, statSync } from "node:fs";
-import { join, relative } from "node:path";
+import { dirname, join, relative, resolve } from "node:path";
 
 const ROOT = join(__dirname, "..", "..", "..");
 // The renderers moved into @ai-matrx/rich-content (2026-10-06) together with the OWNER, so the
@@ -20,17 +20,19 @@ const SCAN = [
   "app",
   "components",
   "features",
-  "../aidream/apps/shared/chat/src",
-  "../aidream/apps/shared/rich-content/src",
   "lib",
   "hooks",
   "utils",
 ];
-const OWNER = "../aidream/apps/shared/rich-content/src/kinds/registry/kind-correctors.ts";
+const PACKAGE_SCAN = [
+  resolve(dirname(require.resolve("@ai-matrx/chat/agents/redux/conversation-list/conversation-list.thunks")), "../../../.."),
+  resolve(dirname(require.resolve("@ai-matrx/rich-content/display/chat-markdown/block-registry/block-dispatch")), "../../.."),
+];
+const OWNER_ABS = require.resolve("@ai-matrx/rich-content/kinds/registry/kind-correctors");
+const OWNER = relative(ROOT, OWNER_ABS);
 // The chat package's bare-host stand-in for the `sessionEnvelope` slot (a host with NO correctors
 // takes the session's own envelope, reported once). Every real host registers `sessionEnvelope`
 // from OWNER (@ai-matrx/chat imports it from @ai-matrx/rich-content directly), so no render path in this app uses it.
-const BARE_HOST_STAND_IN = "../aidream/apps/shared/chat/src/host/content-ir-slots.ts";
 
 function files(dir: string, out: string[] = []): string[] {
   let entries: string[];
@@ -46,7 +48,7 @@ function files(dir: string, out: string[] = []): string[] {
     if (st.isDirectory()) {
       if (name === "__tests__") continue;
       files(full, out);
-    } else if (/\.(ts|tsx)$/.test(name) && !/\.(test|spec)\.tsx?$/.test(name)) {
+    } else if (/\.(ts|tsx|js)$/.test(name) && !name.endsWith(".d.ts") && !/\.(test|spec)\.tsx?$/.test(name)) {
       out.push(full);
     }
   }
@@ -57,7 +59,7 @@ const RAW_IMPORT = /import\s*\{[^}]*\b(envelopeFromCompleteValue|normalizeJsonRe
 const RAW_SESSION_BUILD = /\.buildEnvelope\(\)/;
 
 describe("every envelope goes through the kind-correction step", () => {
-  const all = SCAN.flatMap((d) => files(join(ROOT, d)));
+  const all = [...SCAN.flatMap((d) => files(join(ROOT, d))), ...PACKAGE_SCAN.flatMap((d) => files(d))];
 
   it("scans the app", () => {
     expect(all.length).toBeGreaterThan(1000);
@@ -79,7 +81,7 @@ describe("every envelope goes through the kind-correction step", () => {
     const offenders: string[] = [];
     for (const file of all) {
       const rel = relative(ROOT, file);
-      if (rel === OWNER || rel === BARE_HOST_STAND_IN || rel.startsWith("app/(dev)/")) continue;
+      if (rel === OWNER || rel.startsWith("app/(dev)/")) continue;
       readFileSync(file, "utf8")
         .split("\n")
         .forEach((line, i) => {

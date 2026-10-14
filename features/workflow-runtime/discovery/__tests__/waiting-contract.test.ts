@@ -21,7 +21,9 @@
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 
-const API_TYPES = join(dirname(require.resolve("@ai-matrx/api")), "types.d.ts");
+const API_DIST = dirname(require.resolve("@ai-matrx/api"));
+const API_TYPES = join(API_DIST, "types.d.ts");
+const WORKFLOW_TYPES = join(API_DIST, "workflows.d.ts");
 const WAITING_HOOK = join(
   process.cwd(),
   "features/workflow-runtime/discovery/useWaitingRuns.ts",
@@ -29,6 +31,7 @@ const WAITING_HOOK = join(
 
 describe("the waiting-runs contract survives a type regen", () => {
   const generated = readFileSync(API_TYPES, "utf8");
+  const workflows = readFileSync(WORKFLOW_TYPES, "utf8");
 
   it("still declares GET /runs/waiting", () => {
     expect(generated).toContain('"/runs/waiting"');
@@ -37,7 +40,7 @@ describe("the waiting-runs contract survives a type regen", () => {
   it.each(["WaitingRun", "WaitingRunsResponse", "WaitingSnapshot", "WaitingGap"])(
     "still declares the %s schema",
     (schema) => {
-      expect(generated).toContain(`${schema}: {`);
+      expect(workflows).toContain(`type ${schema} = {`);
     },
   );
 

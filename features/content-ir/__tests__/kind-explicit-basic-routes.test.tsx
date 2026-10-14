@@ -154,9 +154,9 @@ const FIXTURES: Fixture[] = [
       succeeded: 1,
     },
     // The nested `item_error` object sits in a table cell, where the floor
-    // collapses it behind an Expand affordance ("{3 fields}") rather than
-    // dumping it — so the reader-visible proof is the per-item receipt row.
-    visible: ["succeeded", "failed", "Item Error", "{3 fields}"],
+    // summarizes its useful fields in the collapsed cell rather than dumping
+    // raw JSON. The reader sees both item receipts and the actual failure.
+    visible: ["2 rows", "succeeded", "failed", "Item Error", "Row missing."],
   },
   {
     kind: "criteria_gate_result",
