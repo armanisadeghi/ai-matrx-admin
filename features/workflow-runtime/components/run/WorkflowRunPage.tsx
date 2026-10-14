@@ -42,6 +42,7 @@ import { IntelligenceIndicator } from "@/features/mandates/feature-intelligence/
 import { MANDATE_KEYS } from "@ai-matrx/agents/mandates";
 import { SegmentedControl } from "@ai-matrx/design-system/controls";
 import { useRunViewPreference } from "../board/useRunViewPreference";
+import { useBuilderFeed } from "@/hooks/useBuilderFeed";
 import {
   useWorkflowsBasePath,
   workflowDesignHref,
@@ -96,6 +97,16 @@ export function WorkflowRunPage({
   const router = useRouter();
   const searchParams = useSearchParams();
   const runId = runIdProp ?? searchParams.get("run") ?? null;
+  // Admin Builder panel: this page IS one run — its Workflow, Requests and Activity tabs read it
+  // (no-op for everyone else).
+  const builder = useBuilderFeed("workflows.run");
+  useEffect(() => {
+    if (!builder.isActive || !runId) return;
+    builder.publish(
+      { key: `workflow.run.${runId}`, label: "This run", group: "workflow", data: { runId }, ref: { type: "workflow_run", id: runId, label: "This run" } },
+      { prune: ["workflow.run."] },
+    );
+  });
 
   const [definitionId, setDefinitionId] = useState<string | null>(
     definitionIdProp ?? null,

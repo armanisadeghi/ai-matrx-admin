@@ -41,6 +41,7 @@ import type { NodeAggregatePhase } from "../../redux/workflow-runs.selectors";
 import { activityLine } from "./activity-copy";
 import { RunFanOutLanes, RunWorkSetBar } from "./RunFanOut";
 import { StepIconChip } from "./RunHero";
+import { AiTestReplayBadge } from "@/features/ai-test-mode/AiTestReplayBadge";
 import {
   nodeVerbAvailability,
   stepOffersControls,
@@ -201,6 +202,18 @@ function StepControls({
   );
 }
 
+/** AI test mode: the step was answered from a saved result (features/ai-test-mode). */
+function StepReplayBadge({ runId, nodeId }: { runId: string; nodeId: string }) {
+  // Reads the latest invocation's stored output by reference (no fresh object per render).
+  const output = useAppSelector((s) => {
+    const run = s.workflowRuns.byRunId[runId];
+    const keys = run?.nodeAggregates[nodeId]?.invocationKeys;
+    const last = keys && keys.length ? run.nodes[keys[keys.length - 1]] : undefined;
+    return last?.output ?? null;
+  });
+  return <AiTestReplayBadge output={output} className="shrink-0 self-center" />;
+}
+
 function JourneyRow({
   runId,
   runStatus,
@@ -265,6 +278,7 @@ function JourneyRow({
           >
             {step.label}
           </span>
+          <StepReplayBadge runId={runId} nodeId={step.nodeId} />
           <span className="shrink-0 text-[11px] text-muted-foreground">
             {failed ? (
               <AlertTriangle className="h-3.5 w-3.5 text-destructive" />
