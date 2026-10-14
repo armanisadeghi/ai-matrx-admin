@@ -21,7 +21,7 @@
 // ─────────────────────────────────────────────────────────────────────────
 
 /** Structural fingerprint of the registry rows this artifact was generated from. */
-export const KIND_REGISTRY_FINGERPRINT = "e4d0e7879288";
+export const KIND_REGISTRY_FINGERPRINT = "1c78143cd48c";
 
 // ─────────────────────────────────────────────────────────────────────────
 // Shared nested structures. Deduped by structure across the registry — an
@@ -14484,7 +14484,7 @@ export interface BrandKeyPeople {
 }
 
 /**
- * Kind `brand_key_person` (registry v3).
+ * Kind `brand_key_person` (registry v4).
  */
 export interface BrandKeyPerson {
   name?: string;
