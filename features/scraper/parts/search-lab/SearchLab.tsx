@@ -379,7 +379,6 @@ export function SearchLabBody({
           {placesLocation && (
             <div className="flex justify-center">{placesLocation}</div>
           )}
-          {locationLine && <div className="flex justify-center">{locationLine}</div>}
           {optionsPanel}
         </div>
       </div>
@@ -402,8 +401,11 @@ export function SearchLabBody({
           </div>
 
           <div className="flex min-h-10 flex-wrap items-center gap-x-3 gap-y-1">
+            {/* Five short tabs always fit (they need ~265px): no scroll box,
+                whose 6px of underline overhang drew a stray scrollbar. */}
             <Tabs
               aria-label="Result type"
+              className="overflow-visible"
               value={vertical}
               rule={false}
               onValueChange={onVertical}
@@ -588,14 +590,23 @@ function SearchLabOptions({
           }
         />
       </OptionCell>
-      <OptionCell label="Use my location">
-        <Switch
-          aria-label="Use my location"
-          checked={options.nearMe}
-          disabled={form.isLocating}
-          onCheckedChange={(v) => void form.setNearMe(v)}
-          title="Search near where you are"
-        />
+      <OptionCell label="Use my location" className="col-span-2">
+        <div className="flex min-w-0 items-center gap-2">
+          <Switch
+            aria-label="Use my location"
+            checked={options.nearMe}
+            disabled={form.isLocating}
+            onCheckedChange={(v) => void form.setNearMe(v)}
+            title="Search near where you are"
+          />
+          {/* In the cell's own fixed-height row: a refusal never moves the grid. */}
+          {form.locationNote && (
+            <span className="flex min-w-0 items-center gap-1 truncate text-xs text-muted-foreground">
+              <MapPinOff className="h-3.5 w-3.5 shrink-0" />
+              <span className="truncate">{form.locationNote}</span>
+            </span>
+          )}
+        </div>
       </OptionCell>
       <OptionCell label="Defaults">
         <Button

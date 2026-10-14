@@ -106,11 +106,14 @@ export function OpeningHoursBlock({
   className,
   timeZone,
   bare,
+  summaryText,
 }: SearchKindBlockProps & {
   /** The place's IANA zone, so "Open" is judged on its clock. */
   timeZone?: string | null;
   /** No leading clock icon (the host row already labels it "Hours"). */
   bare?: boolean;
+  /** The provider's own status line ("Closed · Opens 8 AM Wed") when today's window is unknown. */
+  summaryText?: string | null;
 }) {
   const { value } = readSearchKindValue<"opening_hours">(serverData);
   const days = items(value.days);
@@ -134,6 +137,8 @@ export function OpeningHoursBlock({
           {" · "}
           {status.line}
         </span>
+      ) : summaryText ? (
+        <span className="text-foreground">{summaryText}</span>
       ) : (
         <span className="text-foreground">Hours</span>
       )}
@@ -150,7 +155,7 @@ export function OpeningHoursBlock({
     );
   }
   return (
-    <details className={cn("group/hours text-sm text-muted-foreground", className)} open={!today}>
+    <details className={cn("group/hours text-sm text-muted-foreground", className)} open={!today && !summaryText}>
       <summary className="inline-flex cursor-pointer list-none items-center gap-1.5 hover:text-foreground [&::-webkit-details-marker]:hidden">
         {summary}
         <ChevronDown className="h-3.5 w-3.5 shrink-0 transition-transform group-open/hours:rotate-180" />

@@ -229,6 +229,8 @@ function sentenceCase(label: string): string {
 const CODE_LABEL_RE = /(^|\s|_)(id|cid|kgmid|place id|coordinates?|latitude|longitude|lat|lng|lon)$/i;
 function isCodeFact(label: string, value: string): boolean {
   if (CODE_LABEL_RE.test(label.trim())) return true;
+  // Pipeline words, not facts a person asked about ("Raw hours", "Unclaimed listing").
+  if (/^(raw\b|unclaimed listing$)/i.test(label.trim())) return true;
   // A long unbroken token with digits ("ChIJN1t_tDeuEmsR…", "0x80dce…") is an id.
   return !/\s/.test(value) && value.length >= 16 && /\d/.test(value) && !/^https?:/i.test(value);
 }
@@ -278,6 +280,7 @@ export function EntityCardBlock({
   className,
 }: SearchKindBlockProps) {
   const { value } = readSearchKindValue<"entity_card">(serverData);
+  const [moreOpen, setMoreOpen] = useState(false);
   const name = text(value.name);
   if (!name) return null;
 
@@ -330,6 +333,19 @@ export function EntityCardBlock({
     const label = factLine(fact.label);
     const factText = factLine(fact.text);
     if (!label || !factText || isCodeFact(label, factText)) return [];
+    // Already shown above as stars, a row of its own or an action.
+    if (/^(rating|review count|reviews|address|phone|hours|website)$/i.test(label.trim())) {
+      const shown: Record<string, boolean> = {
+        rating: ratingValue !== null,
+        "review count": ratingCount !== null,
+        reviews: ratingCount !== null,
+        address: Boolean(placeAddress),
+        phone: Boolean(phone),
+        hours: Boolean(hours || hoursText),
+        website: Boolean(website),
+      };
+      if (shown[label.trim().toLowerCase()]) return [];
+    }
     return [{ label: sentenceCase(label), text: factText, link: strings(fact.links)[0] ?? null }];
   });
   const profiles = items(value.profiles).flatMap((profile) => {
@@ -340,6 +356,8 @@ export function EntityCardBlock({
     return [{ name: pName, url: pUrl, favicon: text(profile.favicon) }];
   });
 
+  // Decided from the text, not measured: no shift. ~4 lines of the panel.
+  const longDescription = description !== null && description.length > 220;
   const hasDetails = Boolean(placeAddress || phone || hours || hoursText);
   const hasActions = Boolean(website || directionsUrl || phone);
 
@@ -393,7 +411,12 @@ export function EntityCardBlock({
       )}
 
       {description && (
-        <p className="mt-3 line-clamp-6 text-sm leading-relaxed text-muted-foreground">
+        <p
+          className={cn(
+            "mt-3 text-sm leading-relaxed text-muted-foreground",
+            longDescription && !moreOpen && "line-clamp-4",
+          )}
+        >
           {description}
           {sourceUrl && (
             <>
@@ -409,12 +432,25 @@ export function EntityCardBlock({
           )}
         </p>
       )}
+      {/* Outside the clamp, so the toggle is never swallowed by it. */}
+      {longDescription && (
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            setMoreOpen((v) => !v);
+          }}
+          className="mt-0.5 text-sm text-foreground underline underline-offset-2 hover:text-primary"
+        >
+          {moreOpen ? "Less" : "More"}
+        </button>
+      )}
 
       {(hasDetails || facts.length > 0) && (
-        <div className="mt-3 space-y-2 border-t border-border pt-3">
-          {placeAddress && <PropertyRow layout="inline" label="Address" value={placeAddress} />}
+        <div className="mt-3 space-y-2.5 border-t border-border pt-3">
+          {placeAddress && <PropertyRow label="Address" value={placeAddress} />}
           {phone && (
-            <PropertyRow layout="inline" label="Phone">
+            <PropertyRow label="Phone">
               <a
                 href={`tel:${phone.replace(/[^\d+]/g, "")}`}
                 onClick={(e) => e.stopPropagation()}
@@ -425,16 +461,21 @@ export function EntityCardBlock({
             </PropertyRow>
           )}
           {(hours || hoursText) && (
-            <PropertyRow layout="inline" label="Hours">
+            <PropertyRow label="Hours">
               {hours ? (
-                <OpeningHoursBlock serverData={hours} timeZone={timeZone} bare />
+                <OpeningHoursBlock
+                  serverData={hours}
+                  timeZone={timeZone}
+                  summaryText={hoursText}
+                  bare
+                />
               ) : (
                 hoursText
               )}
             </PropertyRow>
           )}
           {facts.slice(0, 8).map((fact, i) => (
-            <PropertyRow key={i} layout="inline" label={fact.label}>
+            <PropertyRow key={i} label={fact.label}>
               {fact.link ? (
                 <OutboundLink
                   href={fact.link}
