@@ -21,6 +21,7 @@ import { buildQueue, decisionFor, mergeFacts, type Answer, type BrandFact, type 
 import { persistAnswer, type Persisted } from "./persist";
 import { answeredKeysOf, EMPTY_KNOWN, foldQueue, type KnownOnBrand } from "./fold";
 import { loadSavedFindings } from "./fromSaved";
+import { emptyAnswers, useRunMemory } from "../runMemory";
 import { ValidateStage, type AnsweredEntry, type AnswerOptions } from "./ValidateStage";
 import { RetractionDialog } from "@/features/marketing/components/brands/RetractionDialog";
 
@@ -64,6 +65,9 @@ export function SmartAddValidate({
   };
   const [answered, setAnswered] = useState<Saved[]>([]);
   const [later, setLater] = useState<string[]>([]);
+  // "Ask me later" is kept on the server with the session's other answers (runMemory), per brand, so the back of
+  // the line survives a reload and a return visit.
+  useRunMemory(`validate:${initialBrand.id}`, { ...emptyAnswers(), later }, (saved) => setLater((cur) => [...new Set([...saved.later, ...cur])]));
   // Undo pressed while the save was still in flight: take it back as soon as it lands.
   const undoWhenSaved = useRef<Set<string>>(new Set());
   // An "Ours" that pulled data in (tracking, posts, a crawl) is undone through the retraction: preview first.

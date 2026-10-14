@@ -490,7 +490,7 @@ export function SmartAddBrand({
   // Every answer given before Create is saved as it is given and comes back with `?run=` (runMemory.ts).
   useRunMemory(
     url && !enrich && !created ? (runIds[0] ?? null) : null,
-    { decisions, webChoices, relations, namesakes: [...namesakes], typed: typedItems(items), skipped: [...skipped], taglines, webMarks, separated: [...separated] },
+    { decisions, webChoices, relations, namesakes: [...namesakes], typed: typedItems(items), skipped: [...skipped], taglines, webMarks, separated: [...separated], later: [] },
     (saved) => {
       const moved = Object.values(saved.taglines);
       if (saved.typed.length || moved.length) setItems((cur) => mergeEvidence(cur, [...saved.typed, ...moved]));

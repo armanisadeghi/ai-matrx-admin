@@ -239,6 +239,8 @@ export interface FocusItem {
   folded?: FocusItem[];
   /** fold.ts: a set card (services, categories, locations…): every value, answered at once, each switchable. */
   members?: FocusItem[];
+  /** fold.ts: a person's name as found spelled differently elsewhere ("John Akhoin" / "John Akhoian"). */
+  spellings?: string[];
 }
 
 const KIND_ORDER: Record<FocusKind, number> = { account: 0, website: 0, name: 1, logo: 1, fact: 2, web: 3 };

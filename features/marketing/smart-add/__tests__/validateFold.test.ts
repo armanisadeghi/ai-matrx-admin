@@ -3,7 +3,7 @@
  * thing must reach the stage once, and what the brand already knows must never be asked.
  */
 import { fromRow, type SavedRow } from "../validate/fromSaved";
-import { answeredKeysOf, foldQueue, socialIdentity, streetKey } from "../validate/fold";
+import { answeredKeysOf, foldQueue, sameSpokenName, socialIdentity, streetKey } from "../validate/fold";
 import { buildQueue, type BrandFact } from "../validate/queue";
 import type { EvidenceItem } from "../evidence";
 
@@ -40,6 +40,9 @@ const ROWS: SavedRow[] = [
   row("link", "listing", "https://www.yelp.com/biz/rooter-hero-mission-hills", { label: "Yelp" }, "https://www.yelp.com/biz/rooter-hero-mission-hills"),
   row("fact", "primary_products_services", "Drain cleaning", { field: "primary_products_services" }),
   row("fact", "primary_products_services", "HVAC services", { field: "primary_products_services" }),
+  row("fact", "founder", "John Akhoin", { field: "founder" }),
+  row("fact", "ceo", "John Akhoian", { field: "ceo" }),
+  row("link", "web_page", "https://www.linkedin.com/posts/rooter-hero-plumbing_today-we-asked-ceo-john-akhoian", { label: "Today we asked CEO, John Akhoian what is the best" }, "https://www.linkedin.com/posts/rooter-hero-plumbing_today-we-asked-ceo-john-akhoian"),
 ];
 
 function stage() {
@@ -92,5 +95,14 @@ describe("validate fold", () => {
     const at = (pred: (k: string) => boolean) => q.findIndex((c) => pred(c.key));
     expect(at((k) => k === "set:offerings")).toBeLessThan(at((k) => k === "set:locations"));
     expect(q[0].kind).toBe("account");
+  });
+
+  it("shows one person spelled two ways once, both spellings in the hover", () => {
+    expect(sameSpokenName("John Akhoin", "John Akhoian")).toBe(true);
+    expect(sameSpokenName("John Akhoin", "Jane Akhoin")).toBe(false);
+    const people = stage().filter((c) => /Akhoi/.test(c.value));
+    expect(people).toHaveLength(1);
+    expect(people[0].spellings?.sort()).toEqual(["John Akhoian", "John Akhoin"]);
+    expect(answeredKeysOf(people[0])).toHaveLength(2);
   });
 });

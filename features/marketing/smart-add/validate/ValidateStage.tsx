@@ -153,6 +153,7 @@ function Grounding({ item }: { item: FocusItem }) {
   if (item.certainty) lines.push(["Certainty", item.certainty]);
   if (item.followers !== null && item.followers !== undefined) lines.push(["Followers", formatCount(item.followers)]);
   if (item.detail) lines.push([item.kind === "fact" ? "Why" : "Snippet", item.detail]);
+  if (item.spellings && item.spellings.length > 1) lines.push(["Spelled two ways", item.spellings.join(" · ")]);
   const copies = item.folded ?? [];
   const evidence = [...new Set([...item.evidenceUrls, ...copies.flatMap((c) => c.evidenceUrls)])].slice(0, 6);
   if (!lines.length && !evidence.length && !copies.length) return null;

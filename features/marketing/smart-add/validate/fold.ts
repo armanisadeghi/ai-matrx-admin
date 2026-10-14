@@ -252,6 +252,44 @@ const SETS: [string, string, readonly string[]][] = [
 ];
 const SET_OF = new Map(SETS.flatMap(([key, label, fields]) => fields.map((f) => [f, { key, label }] as const)));
 
+// ── People: one person, however the sources spell them ──────────────────────────────
+
+const PEOPLE_FIELDS = new Set(["founder", "ceo", "president", "owner", "partner", "key_executive", "employee", "staff_contact"]);
+
+function editDistance(a: string, b: string): number {
+  const row = Array.from({ length: b.length + 1 }, (_, i) => i);
+  for (let i = 1; i <= a.length; i++) {
+    let prev = row[0];
+    row[0] = i;
+    for (let j = 1; j <= b.length; j++) {
+      const cur = row[j];
+      row[j] = Math.min(row[j] + 1, row[j - 1] + 1, prev + (a[i - 1] === b[j - 1] ? 0 : 1));
+      prev = cur;
+    }
+  }
+  return row[b.length];
+}
+
+/** Two spellings of one person: same first name, surnames one or two letters apart ("Akhoin" / "Akhoian"). */
+export function sameSpokenName(a: string, b: string): boolean {
+  const x = norm(a).split(" ");
+  const y = norm(b).split(" ");
+  if (x.length < 2 || y.length < 2 || x[0] !== y[0]) return false;
+  const sx = x[x.length - 1];
+  const sy = y[y.length - 1];
+  return sx !== sy && Math.min(sx.length, sy.length) >= 4 && editDistance(sx, sy) <= 2;
+}
+
+/** Every other spelling of `name` written in the findings' own text (titles, snippets, values). */
+function spellingsIn(name: string, texts: string[]): string[] {
+  const first = name.trim().split(/\s+/)[0];
+  if (!first) return [];
+  const re = new RegExp(`\\b${first.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\s+[A-Z][\\p{L}'-]+`, "gu");
+  const found = new Set<string>();
+  for (const t of texts) for (const m of t.matchAll(re)) if (sameSpokenName(name, m[0])) found.add(m[0]);
+  return [...found];
+}
+
 // ── The fold ─────────────────────────────────────────────────────────────────────────
 
 /** How strongly a finding should lead its fold: an account over a fact about it, the agent's fact over a raw copy. */
@@ -316,6 +354,13 @@ export function foldQueue({ queue, known, later }: FoldInput): FocusItem[] {
       else parent[find(i)] = find(j);
     }
   });
+  // One person found under two spellings is one card (each row keeps its own spelling in the data).
+  items.forEach((x, i) => {
+    if (!PEOPLE_FIELDS.has(field(x))) return;
+    items.forEach((y, j) => {
+      if (j > i && PEOPLE_FIELDS.has(field(y)) && sameSpokenName(x.value, y.value)) parent[find(j)] = find(i);
+    });
+  });
   const groups = new Map<number, FocusItem[]>();
   items.forEach((item, i) => groups.set(find(i), [...(groups.get(find(i)) ?? []), item]));
 
@@ -327,7 +372,12 @@ export function foldQueue({ queue, known, later }: FoldInput): FocusItem[] {
     const one: FocusItem = rest.length ? { ...lead, twins, folded: rest } : lead;
     // A host fold of web results reads as the site, with how many pages it has.
     const pages = group.filter((g) => g.kind === "web" || (g.fact && /^https?:\/\//i.test(g.value))).length;
-    folded.push(pages > 1 && !one.title && one.kind !== "account" ? { ...one, title: `${pages} pages` } : one);
+    const withPages = pages > 1 && !one.title && one.kind !== "account" ? { ...one, title: `${pages} pages` } : one;
+    if (PEOPLE_FIELDS.has(field(lead))) {
+      const texts = queue.flatMap((q) => [q.title ?? "", q.detail ?? "", q.value]);
+      const spellings = [...new Set([...group.map((g) => g.value), ...spellingsIn(lead.value, texts)])];
+      folded.push(spellings.length > 1 ? { ...withPages, spellings } : withPages);
+    } else folded.push(withPages);
   }
 
   // Sets: multi-value facts gathered into one card (two or more values; one value stays a plain card).
