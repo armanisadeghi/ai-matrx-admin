@@ -219,7 +219,6 @@ export default function TasksTableView() {
     getRowId: taskId,
     getRowName: taskName,
     actions: bulkActions,
-    standardBulkActions: { trash: false },
     onRefresh: () => {},
     onRemoveRows: () => {},
   });

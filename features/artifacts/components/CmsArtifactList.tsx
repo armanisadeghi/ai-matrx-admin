@@ -335,7 +335,6 @@ export function CmsArtifactList() {
     getRowId: (a) => a.id,
     getRowName: (a) => a.title?.trim() || "Untitled",
     actions: [trashAction],
-    standardBulkActions: { trash: false },
     // The thunk already removed each row from the store.
     onRefresh: () => {},
     onRemoveRows: () => {},

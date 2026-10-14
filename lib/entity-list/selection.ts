@@ -153,6 +153,8 @@ export interface EntityBulkActionResult {
   refresh?: boolean;
   /** Keep the selection. Default is to clear it — the work is done. */
   keepSelection?: boolean;
+  /** Offer Undo on the success toast; runs the action's own reversal. */
+  undo?: () => void | Promise<void>;
 }
 
 /**
@@ -170,6 +172,12 @@ export interface EntityBulkAction<TRow> {
   /** Lucide icon component (never an emoji — repo UI standard). */
   icon?: ComponentType<{ className?: string }>;
   variant?: "default" | "outline" | "destructive";
+  /**
+   * Why this action cannot run on a selection of `count` rows right now
+   * (e.g. "Select exactly one note to share"), or null when it can. The bar
+   * greys the button and shows the reason as its tooltip.
+   */
+  disabledReason?: (count: number) => string | null;
   /**
    * Stop and name the consequence first. REQUIRED in spirit for anything
    * destructive or expensive; returning a confirm is how an action opts in.

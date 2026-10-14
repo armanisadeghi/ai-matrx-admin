@@ -130,6 +130,7 @@ export function NoteSidebarBulkBar({
             actions={actions}
             selection={{ build, clear: onClear, count }}
             noun="note"
+            compact
             onRemoveRows={() => {}}
             onRefresh={() => {}}
           />

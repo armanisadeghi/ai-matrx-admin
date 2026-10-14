@@ -38,6 +38,7 @@ export function EntityBulkActions<TRow>({
   noun,
   onRemoveRows,
   onRefresh,
+  compact = false,
 }: {
   actions: EntityBulkAction<TRow>[];
   /** Only what running an action needs — so a plain table can host the same buttons. */
@@ -45,6 +46,8 @@ export function EntityBulkActions<TRow>({
   noun: string;
   onRemoveRows: (ids: string[]) => void;
   onRefresh: () => void;
+  /** Icon-only buttons (name in the tooltip) for narrow hosts like a sidebar. */
+  compact?: boolean;
 }) {
   const [pending, setPending] = useState<string | null>(null);
 
@@ -89,9 +92,26 @@ export function EntityBulkActions<TRow>({
       if (result.removedIds?.length) onRemoveRows(result.removedIds);
       if (result.refresh) onRefresh();
       if (!result.keepSelection) selection.clear();
+      const undo = result.undo;
       toast.success(
         result.message ??
           `${action.label} — ${bulkCountLabel(target.count, noun)}`,
+        undo
+          ? {
+              action: {
+                label: "Undo",
+                onClick: () => {
+                  void Promise.resolve(undo()).then(
+                    () => onRefresh(),
+                    (error: unknown) =>
+                      toast.error(
+                        error instanceof Error ? error.message : "Undo did not finish.",
+                      ),
+                  );
+                },
+              },
+            }
+          : undefined,
       );
     } catch (error) {
       // NOTHING FAILS SILENTLY: the selection is kept on failure, so the person
@@ -111,6 +131,7 @@ export function EntityBulkActions<TRow>({
       {actions.map((action) => {
         const Icon = action.icon;
         const busy = pending === action.id;
+        const unavailable = action.disabledReason?.(selection.count) ?? null;
         return (
           <Button
             key={action.id}
@@ -118,7 +139,8 @@ export function EntityBulkActions<TRow>({
             size="sm"
             variant={action.variant ?? "outline"}
             className="h-11 gap-1.5 px-2 text-xs lg:h-7"
-            disabled={pending !== null}
+            disabled={pending !== null || unavailable !== null}
+            title={unavailable ?? (compact ? action.label : undefined)}
             aria-label={`${action.label} — ${bulkCountLabel(selection.count, noun)}`}
             data-entity-bulk-action={action.id}
             onClick={(event) => {
@@ -131,7 +153,7 @@ export function EntityBulkActions<TRow>({
             ) : Icon ? (
               <Icon className="h-3.5 w-3.5" />
             ) : null}
-            {action.label}
+            {compact && Icon ? null : action.label}
           </Button>
         );
       })}

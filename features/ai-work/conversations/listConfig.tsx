@@ -57,8 +57,8 @@ export const conversationListConfig: EntityListConfig<ConversationBrowseRow> = {
   surfaceKey: "ai-work-conversations",
   // DD-137c / §3.3: where this list OPENS comes from platform.entity_types, never a literal.
   registryToken: "conversation",
-  // Trash goes through the conversation's own cascade (bulkTrash.ts), never the plain built-in.
-  standardBulkActions: { trash: false },
+  // Trash goes through the conversation's own cascade (bulkTrash.ts): same id as the
+  // built-in, so it REPLACES it in place rather than sitting beside it.
   bulkActions: [conversationTrashBulkAction],
   // The list RPC applies platform.list_dimension_match (lib/entity-list/dimensionFilter.ts).
   dimensionFilter: true,

@@ -24,7 +24,7 @@ import { toast } from "@/lib/toast";
 import { supabase } from "@/utils/supabase/client";
 import { archiveRecord } from "@/features/trash/service";
 import { fileUnderTag } from "@/features/knowledge/hub/tags/tagApi";
-import { promptForValues } from "@/components/dialogs/value-prompts/ValuePromptsDialogHost";
+import { promptForValues } from "@/components/dialogs/value-prompts/valuePromptsOpener";
 import {
   bulkCountLabel,
   type EntityBulkAction,
@@ -283,11 +283,21 @@ export function standardBulkActionsFor<TRow>(args: {
   ];
 }
 
-/** The surface's own actions, then the built-ins it did not replace by id. */
+/**
+ * The surface's own actions, then the built-ins. An own action with a
+ * built-in's id takes that built-in's PLACE, so every bar reads in the same
+ * order (Favorite · Unfavorite · Add tag · Move to Trash) whoever implements it.
+ */
 export function mergeBulkActions<TRow>(
   own: EntityBulkAction<TRow>[],
   standard: EntityBulkAction<TRow>[],
 ): EntityBulkAction<TRow>[] {
-  const ownIds = new Set(own.map((action) => action.id));
-  return [...own, ...standard.filter((action) => !ownIds.has(action.id))];
+  const standardIds = new Set(standard.map((action) => action.id));
+  const replacing = new Map(
+    own.filter((action) => standardIds.has(action.id)).map((action) => [action.id, action]),
+  );
+  return [
+    ...own.filter((action) => !replacing.has(action.id)),
+    ...standard.map((action) => replacing.get(action.id) ?? action),
+  ];
 }

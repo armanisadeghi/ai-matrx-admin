@@ -7,8 +7,8 @@
 // `runPerRow`, so a refused note is skipped and NAMED instead of tallied.
 // The sidebar keeps its own selection state (it is not a MatrxDataTable).
 
-import { Database, Download, House, Share2, Trash2 } from "lucide-react";
-import { toast } from "@/lib/toast";
+import { Database, Download, House, Share2, Tag, Trash2 } from "lucide-react";
+import { promptForValues } from "@/components/dialogs/value-prompts/valuePromptsOpener";
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import { ingestSource } from "@/features/rag/api/ingest";
 import {
@@ -22,7 +22,12 @@ import {
 } from "@/lib/entity-list/standardBulkActions";
 import type { AppDispatch } from "@/lib/redux/store";
 import { removeInstanceTab } from "../redux/slice";
-import { deleteNote, ensureNoteBodiesLoaded, restoreNote } from "../redux/thunks";
+import {
+  deleteNote,
+  ensureNoteBodiesLoaded,
+  restoreNote,
+  saveNoteField,
+} from "../redux/thunks";
 import type { NoteRecord } from "../redux/notes.types";
 import { isNoteContentEmpty } from "../utils/noteUtils";
 import {
@@ -44,7 +49,7 @@ export function buildNoteBulkActions(args: {
   /** Open the Move-to-home picker for the current selection. */
   openMove: () => void;
 }): EntityBulkAction<NoteRecord>[] {
-  const { dispatch, instanceId, openTabIds, onClear, openMove } = args;
+  const { dispatch, instanceId, openTabIds, openMove } = args;
 
   const own: EntityBulkAction<NoteRecord>[] = [
     {
@@ -99,12 +104,43 @@ export function buildNoteBulkActions(args: {
       id: "share",
       label: "Share",
       icon: Share2,
+      disabledReason: (count) =>
+        count === 1 ? null : "Select exactly one note to share",
       run: (selection) => {
         if (selection.rows.length !== 1) {
           throw new Error("Select exactly one note to share.");
         }
         const note = selection.rows[0];
         void openNoteShareModal(dispatch, note.id, note.label);
+      },
+    },
+    {
+      id: "add-tag",
+      label: "Add tag",
+      icon: Tag,
+      run: async (selection) => {
+        const answers = await promptForValues({
+          title: `Tag ${bulkCountLabel(selection.count, NOUN)}`,
+          submitLabel: "Add tag",
+          fields: [{ name: "tag", prompt: "Tag name" }],
+        });
+        const name = answers?.tag?.trim();
+        if (!name) return;
+        // saveNoteField saves the whole note: read the bodies first so a
+        // preview-only list row never overwrites its own content.
+        await dispatch(ensureNoteBodiesLoaded(selection.ids)).unwrap();
+        return runPerRow(
+          selection,
+          async (id, row) => {
+            const current = row?.tags ?? [];
+            if (current.includes(name)) throw new Error(`already tagged "${name}"`);
+            await dispatch(
+              saveNoteField({ noteId: id, field: "tags", value: [...current, name] }),
+            ).unwrap();
+          },
+          { done: `Tagged "${name}"`, noun: NOUN, labelOf },
+          rowIdOf,
+        );
       },
     },
     {
@@ -151,26 +187,23 @@ export function buildNoteBulkActions(args: {
           { done: "Moved to Trash", noun: NOUN, labelOf, removesRows: true },
           rowIdOf,
         );
-        // The success line carries Undo, which the shared toast cannot, so it
-        // is raised here and the selection mode is left; returning nothing
-        // keeps the shell from raising a second toast.
-        const deletedIds = result.removedIds ?? selection.ids;
-        toast.success(result.message ?? "Moved to Trash.", {
-          action: {
-            label: "Undo",
-            onClick: () => {
-              for (const id of deletedIds) dispatch(restoreNote(id));
-              toast.success("Notes restored");
-            },
+        // The shared bar raises the toast (with Undo) and clears the selection.
+        const deletedIds = result.removedIds ?? [];
+        return {
+          ...result,
+          undo: async () => {
+            await Promise.all(
+              deletedIds.map((id) => dispatch(restoreNote(id)).unwrap()),
+            );
           },
-        });
-        onClear();
+        };
       },
     },
   ];
 
-  // Shared built-ins notes lacks: Add tag. Favorites are not shown in notes,
-  // and Trash is replaced above by id.
+  // Shared built-ins notes lacks; favorites are not shown in notes. Trash and
+  // Add tag are replaced above by id: notes keeps its tags in its own `tags`
+  // column (what its tag UI reads), never the platform tag table.
   const standard = standardBulkActionsFor<NoteRecord>({
     token: "note",
     noun: NOUN,
