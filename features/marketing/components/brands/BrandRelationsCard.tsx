@@ -15,6 +15,7 @@ import { Button, Input } from "@ai-matrx/design-system/controls";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { proxiedExternalImageUrl } from "@/lib/media/external-image";
 import { toast } from "@/lib/toast";
 import { extractErrorMessage } from "@/utils/errors";
 import type { Json } from "@/types/database.types";
@@ -56,6 +57,8 @@ interface Row {
   label: string;
   url: string | null;
   kindLabel: string | null;
+  /** A Not us logo: the removed image itself, so the row says which logo it is. */
+  thumb?: string;
   sentiment?: BrandRelationRow["sentiment"];
   grounding?: { where: string | null; reason: string | null; confidence: number | null; by: string | null };
   remove: () => Promise<void>;
@@ -85,9 +88,14 @@ function RelationRowView({ row, canEdit }: { row: Row; canEdit: boolean }) {
   const hasGrounding = Boolean(g && (g.where || g.reason || g.confidence != null));
   const body = (
     <span className="flex min-w-0 flex-1 items-center gap-2">
-      {row.url ? <Favicon hostname={h} size={16} /> : null}
+      {row.thumb ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={proxiedExternalImageUrl(row.thumb)} alt="" className="size-5 shrink-0 rounded object-contain" data-testid="brand-relation-thumb" />
+      ) : row.url ? (
+        <Favicon hostname={h} size={16} />
+      ) : null}
       <span className="truncate text-sm text-foreground">{row.label}</span>
-      {h && h !== row.label ? <span className="hidden truncate text-xs text-muted-foreground sm:inline">{h}</span> : null}
+      {h && !row.thumb && h !== row.label ? <span className="hidden truncate text-xs text-muted-foreground sm:inline">{h}</span> : null}
       {row.sentiment ? (
         <span className={`size-1.5 shrink-0 rounded-full ${SENTIMENT_DOT[row.sentiment] ?? ""}`} aria-label={row.sentiment} />
       ) : null}
@@ -120,9 +128,8 @@ function RelationRowView({ row, canEdit }: { row: Row; canEdit: boolean }) {
         </OutboundLink>
       ) : null}
       {canEdit && row.undo ? (
-        <button
-          type="button"
-          className="shrink-0 rounded px-1.5 text-xs text-primary hover:bg-muted"
+        <Button
+          variant="quiet"
           aria-label={`Undo removal of ${row.label}`}
           disabled={busy}
           data-testid="brand-relation-undo"
@@ -138,15 +145,15 @@ function RelationRowView({ row, canEdit }: { row: Row; canEdit: boolean }) {
           }}
         >
           Undo
-        </button>
+        </Button>
       ) : null}
       {canEdit ? (
-        <button
-          type="button"
-          className="matrx-tap-area inline-flex shrink-0 items-center text-muted-foreground opacity-60 hover:text-destructive group-hover:opacity-100"
+        <Button
+          variant="quiet"
           aria-label={`Remove ${row.label}`}
           title="Remove"
           disabled={busy}
+          icon={busy ? <Loader2 className="animate-spin" /> : <X />}
           onClick={async () => {
             setBusy(true);
             try {
@@ -157,9 +164,7 @@ function RelationRowView({ row, canEdit }: { row: Row; canEdit: boolean }) {
               setBusy(false);
             }
           }}
-        >
-          {busy ? <Loader2 className="size-3.5 animate-spin" /> : <X className="size-3.5" />}
-        </button>
+        />
       ) : null}
     </li>
   );
@@ -242,6 +247,7 @@ export function BrandRelationsCard({ brand, canEdit }: { brand: MarketingBrand; 
       label: e.label ?? e.matchValue,
       url: e.url,
       kindLabel: null,
+      thumb: e.matchKind === "url" && e.label === "Logo" && e.url ? e.url : undefined,
       remove: async () => {
         await removeBrandExclusion(e.id);
         await refresh();
@@ -385,7 +391,7 @@ export function BrandRelationsCard({ brand, canEdit }: { brand: MarketingBrand; 
                 </SelectContent>
               </Select>
             ) : null}
-            <Button type="submit" variant="outline" icon={adding ? <Loader2 className="animate-spin" /> : <Plus />} disabled={adding || !text.trim()}>
+            <Button type="submit" variant="quiet" icon={adding ? <Loader2 className="animate-spin" /> : <Plus />} disabled={adding || !text.trim()}>
               Add
             </Button>
           </form>

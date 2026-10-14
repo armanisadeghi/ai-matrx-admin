@@ -6,10 +6,13 @@
  * all checked). Checked facts seed the run as known, confirmed facts; unchecked ones are not sent and not changed.
  */
 
-import { ExternalLink } from "lucide-react";
+import { useState } from "react";
+import { ExternalLink, Maximize2 } from "lucide-react";
 import { Button, RowGroup } from "@ai-matrx/design-system/controls";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { proxiedExternalImageUrl } from "@/lib/media/external-image";
 import { PlatformMark, platformLabel } from "@/features/marketing/social/components/PlatformMark";
 import { KNOWN_GROUPS, type KnownFact } from "./known";
 
@@ -27,6 +30,37 @@ function FactValue({ fact }: { fact: KnownFact }) {
     return <img src={fact.imageUrl} alt={fact.label} className="h-10 w-auto max-w-[160px] object-contain" />;
   }
   return <span className="min-w-0 truncate text-sm">{fact.value}</span>;
+}
+
+/** The Logo row's Open: a larger preview of the same image (the logo strip's Enlarge), not the raw file. */
+function EnlargeImage({ fact }: { fact: KnownFact }) {
+  const [open, setOpen] = useState(false);
+  const raw = fact.imageUrl ?? "";
+  const src = /^https?:\/\//i.test(raw) ? proxiedExternalImageUrl(raw) : raw;
+  return (
+    <>
+      <Button
+        variant="outline"
+        className="ml-auto shrink-0"
+        aria-label={`Enlarge ${fact.label}`}
+        title="Enlarge"
+        icon={<Maximize2 />}
+        onClick={(e) => {
+          e.preventDefault();
+          setOpen(true);
+        }}
+      />
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogTitle>{fact.label}</DialogTitle>
+          <div className="flex min-h-64 items-center justify-center overflow-hidden rounded-lg border p-4">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={src} alt={fact.label} className="h-[50dvh] w-full object-contain" />
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
 }
 
 export function KnownFactsWindow({
@@ -90,7 +124,9 @@ export function KnownFactsWindow({
                   {f.platform ? platformLabel(f.platform) : f.label}
                 </span>
                 <FactValue fact={f} />
-                {f.url ? (
+                {f.imageUrl ? (
+                  <EnlargeImage fact={f} />
+                ) : f.url ? (
                   <OutboundLink href={f.url} className="ml-auto shrink-0 text-muted-foreground" aria-label="Open">
                     <ExternalLink className="h-3.5 w-3.5" />
                   </OutboundLink>
