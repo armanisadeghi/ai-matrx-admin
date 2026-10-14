@@ -153,7 +153,7 @@ export function PersonHarderStage({
   path?: string;
   /** Pages already confirmed or answered on the screen: the sweep removes them and their look-alikes. */
   knownUrls?: string[];
-  /** Harder path only: "Dig deeper" moves the person to the hard path. */
+  /** "Dig deeper": one rung down (harder → hard → close to impossible). The sweep runs once; deeper rungs reuse it. */
   onEscalate?: () => void;
   /** `person.find_you` for the next round's workflow inputs (the mandate provisions read it). */
   onProvision?: (p: FindYouProvision) => void;
@@ -506,7 +506,7 @@ export function PersonHarderStage({
       {hard && sweep && !sweep.platformsFirst && !stuck ? (
         <FocusList focus={focus} stuck={false} onOpen={openFocus} onDone={doneFocus} />
       ) : null}
-      {!hard && onEscalate && !searching ? (
+      {path !== "person_near_impossible" && onEscalate && !searching && (!hard || stuck) ? (
         <Button variant="quiet" icon={<SearchX aria-hidden />} className="self-start" onClick={onEscalate} data-testid="smart-add-dig-deeper">
           Still not you? Dig deeper
         </Button>

@@ -102,7 +102,6 @@ import { AnchorCards, type AnchorAnswer } from "./AnchorCards";
 import { HelpersMenu } from "./helpers/HelpersMenu";
 import { candidateItem } from "./helpers/candidateItem";
 import { onHelperAnswer, resetHelperAnswers, setHelperContext } from "./helpers/store";
-import { PersonOrBusinessCard, type PersonOrBusinessAnswer } from "./PersonOrBusinessCard";
 import { SmartAddGateLine } from "./SmartAddGateLine";
 import { SmartAddBioLinks } from "./SmartAddBioLinks";
 import { SmartAddWebRow } from "./SmartAddWebRow";
@@ -215,10 +214,10 @@ export function SmartAddBrand({ onCreated, enrich = null }: { onCreated?: (brand
   const [affiliations, setAffiliations] = useState<string[]>([]);
   // Anchor cards answered "Namesake" (a different person with my name): web.brand_relation_kind `namesake`.
   const [namesakes, setNamesakes] = useState<Set<string>>(new Set());
-  // The latest person / business verdict (brand.identify.person_signals) and whether the person answered it.
+  // The latest person / business verdict (brand.identify.person_signals): data only, never a question.
   const [personSignals, setPersonSignals] = useState<PersonSignals | null>(null);
-  // Enrich: the brand already says whether it is a person or a business.
-  const [kindAnswered, setKindAnswered] = useState(Boolean(enrich));
+  // "Person with a business" (a creator or solo professional): a person on the person path.
+  const [kindBoth, setKindBoth] = useState(false);
 
   const [creating, setCreating] = useState(false);
   const [createError, setCreateError] = useState<string | null>(null);
@@ -353,7 +352,7 @@ export function SmartAddBrand({ onCreated, enrich = null }: { onCreated?: (brand
     setAffiliations([]);
     setNamesakes(new Set());
     setPersonSignals(null);
-    setKindAnswered(false);
+    setKindBoth(false);
     resetHelperAnswers();
   };
 
@@ -574,10 +573,10 @@ export function SmartAddBrand({ onCreated, enrich = null }: { onCreated?: (brand
     else addCustom(customItem("website", text));
   };
 
-  const answerKind = (answer: PersonOrBusinessAnswer) => {
-    setKindAnswered(true);
-    if (answer === "person" || answer === "both") setPerson(true);
-    if (answer === "business") setPerson(false);
+  /** The header label's change menu: the tab is the answer; this only corrects it. */
+  const answerKind = (answer: "person" | "business" | "both") => {
+    setKindBoth(answer === "both");
+    setPerson(answer === "person" || answer === "both");
   };
 
   /** "Custom": the person's own values land in their slots, confirmed — the main one when the slot has none. */
@@ -1071,7 +1070,7 @@ export function SmartAddBrand({ onCreated, enrich = null }: { onCreated?: (brand
       <SegmentedControl
         aria-label="Brand kind"
         value={person ? "person" : "company"}
-        onValueChange={(v) => setPerson(v === "person")}
+        onValueChange={(v) => answerKind(v === "person" ? "person" : "business")}
         data={[
           { value: "company", label: "Company" },
           { value: "person", label: "Person" },
@@ -1136,15 +1135,6 @@ export function SmartAddBrand({ onCreated, enrich = null }: { onCreated?: (brand
         </span>
       </div>
 
-      {personSignals?.verdict === "ask" && !kindAnswered ? (
-        <PersonOrBusinessCard
-          name={basics.name ?? personTyped.current?.name ?? ""}
-          imageUrl={cardBasics.logoUrl}
-          signals={personSignals.signals}
-          onAnswer={answerKind}
-        />
-      ) : null}
-
       {findYou && personTyped.current ? (
         <PersonHarderStage
           key={`${personTyped.current.name}|${personTyped.current.city}`}
@@ -1155,8 +1145,10 @@ export function SmartAddBrand({ onCreated, enrich = null }: { onCreated?: (brand
           onConfirm={confirmFound}
           onLog={logFind}
           onEscalate={() => {
-            setEscalatedPath("person_hard");
-            logFind({ at: Date.now(), kind: "escalation", text: "Dig deeper: person_harder → person_hard (asked on the screen)" });
+            const next = FIND_PATHS[FIND_PATHS.indexOf(findPath) + 1];
+            if (!next) return;
+            setEscalatedPath(next);
+            logFind({ at: Date.now(), kind: "escalation", text: `Dig deeper: ${findPath} → ${next} (asked on the screen)` });
           }}
           onProvision={(p) => {
             findYouProvision.current = p;
@@ -1182,7 +1174,7 @@ export function SmartAddBrand({ onCreated, enrich = null }: { onCreated?: (brand
 
       {/* The brand as it stands: the primary choices, building as the person confirms. */}
       <div className="motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-3 motion-safe:duration-500">
-      <BrandCard basics={cardBasics} person={person} location={basics.facts.find((f) => f.field === "address")?.value ?? null} />
+      <BrandCard basics={cardBasics} person={person} kind={kindBoth ? "both" : person ? "person" : "business"} onKind={answerKind} location={basics.facts.find((f) => f.field === "address")?.value ?? null} />
       </div>
       <p className="text-xs text-muted-foreground">Everything found is kept — only “Not us” is left out.</p>
 
