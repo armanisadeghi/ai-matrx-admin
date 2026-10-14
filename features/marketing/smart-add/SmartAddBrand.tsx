@@ -72,6 +72,7 @@ import {
   mergeEvidence,
   nextRoundSeeds,
   orderedEvidence,
+  autoWork,
   seedKeys,
   websiteHost,
   type Decision,
@@ -80,7 +81,6 @@ import {
   type RoundSeeds,
   type SocialSeed,
   type ConfirmedFacts,
-  wakeFacts,
   type Candidate,
   type Relation,
   customItem,
@@ -245,6 +245,9 @@ export function SmartAddBrand({
   /** Images the screen could not load: hidden tiles, never saved as inbox candidates. */
   const brokenKeys = useRef<Set<string>>(new Set());
   const typedKeys = useRef<{ website: string | null; social: string | null }>(resume?.typed.keys ?? { website: null, social: null });
+  // Answers brought back by a reload / Back (runMemory): they were already acted on in the earlier visit, so they never
+  // start a round, a follow-up search or AI work again. An answer the person changes now leaves this map and counts.
+  const restoredDecisions = useRef<Record<string, Decision>>({});
   // Confirmed facts already sent to the workflow ("name:<v>", "location:<v>"): a new one wakes its steps.
   const wokenSent = useRef<Set<string>>(
     new Set(resumePerson?.name ? [`name:${resumePerson.name}`, ...(resumePerson.city ? [`location:${resumePerson.city}`] : [])] : []),
@@ -406,6 +409,7 @@ export function SmartAddBrand({
     typedKeys.current = { website: null, social: null };
     personTyped.current = null;
     personMore.current = { occupation: "", company: "", extra: "" };
+    restoredDecisions.current = {};
     setEscalatedPath(null);
     findYouProvision.current = null;
     sweepFeed.current = { sweep: null, focus: {} };
@@ -461,6 +465,7 @@ export function SmartAddBrand({
       setDecisions((cur) => ({ ...cur, ...saved.decisions }));
       setWebChoices((cur) => ({ ...cur, ...saved.webChoices }));
       setRelations((cur) => ({ ...cur, ...saved.relations }));
+      restoredDecisions.current = { ...restoredDecisions.current, ...saved.decisions };
       setNamesakes((cur) => new Set([...cur, ...saved.namesakes]));
     },
   );
@@ -517,7 +522,12 @@ export function SmartAddBrand({
     setViews((v) => (JSON.stringify(v[view.runId]) === JSON.stringify(view) ? v : { ...v, [view.runId]: view }));
 
   // Confirmed websites/accounts not explored yet → the next round.
-  const pending = nextRoundSeeds(items, decisions, explored.current);
+  // Any other way of changing a restored answer (not only the answer buttons) hands it back to the person.
+  useEffect(() => {
+    for (const [key, d] of Object.entries(restoredDecisions.current)) if (decisions[key] !== d) delete restoredDecisions.current[key];
+  }, [decisions]);
+  const work = autoWork(items, decisions, restoredDecisions.current, explored.current, wokenSent.current, person);
+  const pending = work.seeds;
   const pendingKey = JSON.stringify(pending);
   const runPending = useEffectEvent(() => void startRound(pending));
   useEffect(() => {
@@ -571,10 +581,10 @@ export function SmartAddBrand({
       : {}),
   };
   // A confirmed name / location wakes the steps waiting on it (a new round carrying only those facts).
-  const woken = wakeFacts(confirmedFacts, wokenSent.current);
+  const woken = work.woken;
   const wokenKey = JSON.stringify(woken);
   const runWoken = useEffectEvent(() => {
-    const next = wakeFacts(confirmedFacts, wokenSent.current);
+    const next = autoWork(items, decisions, restoredDecisions.current, explored.current, wokenSent.current, person).woken;
     if (next.name) wokenSent.current.add(`name:${next.name}`);
     if (next.location) wokenSent.current.add(`location:${next.location}`);
     void startRound({ website: "", socials: [] }, next);
@@ -596,7 +606,10 @@ export function SmartAddBrand({
     return () => clearTimeout(timer);
   }, [setupRunId, setupInterrupted, dispatch]);
 
-  const applyAnswer = (key: string, decision: Decision) => setDecisions((d) => applyDecision(d, items, key, decision));
+  const applyAnswer = (key: string, decision: Decision) => {
+    delete restoredDecisions.current[key]; // the person's own answer now: it counts again
+    setDecisions((d) => applyDecision(d, items, key, decision));
+  };
   /** An answer that started follow-up searches or AI work: clearing or flipping it restarts that work, so it asks first. */
   const [restartAsk, setRestartAsk] = useState<{ key: string; decision: Decision } | null>(null);
   const decide = (key: string, decision: Decision) => {

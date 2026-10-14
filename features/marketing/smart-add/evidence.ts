@@ -354,6 +354,33 @@ export function nextRoundSeeds(
   return { website, socials };
 }
 
+/** The answers that still count for starting work: the ones brought back from an earlier visit (unchanged) do not. */
+export function liveOnly(decisions: Record<string, Decision>, restored: Record<string, Decision>): Record<string, Decision> {
+  return Object.fromEntries(Object.entries(decisions).filter(([key, d]) => restored[key] !== d));
+}
+
+/**
+ * THE rule for what work a screen state asks for on its own (confirmed sites/accounts → a search round; a confirmed
+ * name/location → the woken steps). Answers restored from an earlier visit were already acted on, so a reload or
+ * Back asks for nothing: the test (`resumeCost.test.ts`) fails if a restored answer ever starts a round.
+ */
+export function autoWork(
+  items: Map<string, EvidenceItem>,
+  decisions: Record<string, Decision>,
+  restored: Record<string, Decision>,
+  explored: ReadonlySet<string>,
+  woke: ReadonlySet<string>,
+  person = false,
+): { seeds: RoundSeeds; woken: ConfirmedFacts } {
+  const live = liveOnly(decisions, restored);
+  const basics = confirmedBasics(items, live, person);
+  const address = basics.facts.find((f) => f.field === "address")?.value;
+  return {
+    seeds: nextRoundSeeds(items, live, explored),
+    woken: wakeFacts({ ...(basics.name ? { name: basics.name } : {}), ...(address ? { location: address } : {}) }, woke),
+  };
+}
+
 /** The explored-set keys a round's seeds account for. */
 export function seedKeys(seeds: RoundSeeds, accountKey: (seed: SocialSeed) => string | null): string[] {
   const keys: string[] = [];
