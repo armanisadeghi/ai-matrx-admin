@@ -597,6 +597,12 @@ how that savior page gets built.
   Why: a Claude Code session id pasted into /work/conversations found nothing — the
   row sat one bucket over, behind a chip count nobody reads while staring at an empty
   table. First consumer: `features/ai-work/conversations/listConfig.tsx`.
+- `2026-10-14` — **The built-in bulk set is ON for every list with a `registryToken`.**
+  Favorite, Unfavorite, Add tag (`platform.file_under_tag`) and Move to Trash
+  (`archiveRecord`) are merged in by the shell (`standardBulkActionsFor` +
+  `mergeBulkActions`); the surface's own actions come first and replace a built-in
+  with the same id. Opt out per verb with `standardBulkActions: { trash: false }`,
+  or all with `false`. Every verb runs per row and names each refusal.
 - `2026-10-13` — **Shared bulk verbs (`standardBulkActions.ts`).** `runPerRow` runs one
   per-row verb across a selection, keeps going past refusals and names every skipped row
   with the database's reason; `trashBulkAction({ token })` is "Move to Trash" for any
