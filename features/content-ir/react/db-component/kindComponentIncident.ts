@@ -149,29 +149,13 @@ export function setKindComponentIncidentsEnabledForTests(on: boolean): void {
   enabledForTests = on;
 }
 
-/**
- * RENDER HARNESSES ARE NOT READERS (defect 2026-10-14). The kind-registry
- * Preview and the Shape Studio render every path on purpose — streaming
- * frames, partial payloads, a component landing after first paint. A generic
- * floor seen there is the harness doing its job, not a reader being let down,
- * and filing it put a false "a reader got the generic view" sighting on the
- * very page that showed the component rendering fine. A harness enters on
- * mount and leaves on unmount; while any is mounted, `generic_floor_render`
- * is not filed from this page.
+/*
+ * RENDER HARNESSES ARE NOT READERS: a block inside a `KindRenderHarness`
+ * (@ai-matrx/rich-content/kinds/react/render-harness — the kind-registry page,
+ * the Shape Studio, KindRenderPaths) never calls this for `generic_floor_render`.
+ * Scoped to the harness subtree; the page-wide counter that used to live here
+ * silenced real sightings elsewhere on the same page (2026-10-14).
  */
-let harnessDepth = 0;
-export function enterKindRenderHarness(): () => void {
-  harnessDepth += 1;
-  let left = false;
-  return () => {
-    if (left) return;
-    left = true;
-    harnessDepth = Math.max(0, harnessDepth - 1);
-  };
-}
-export function isKindRenderHarnessMounted(): boolean {
-  return harnessDepth > 0;
-}
 
 /** How long a generic-floor sighting waits for the resolver to settle. */
 let genericFloorSettleMs = 2500;
@@ -206,7 +190,6 @@ async function genericFloorStillTrue(
   const componentRole = role as Parameters<typeof componentRegistry.resolve>[2];
   componentRegistry.requestComponent(kind, platform, componentRole);
   await new Promise((resolve) => setTimeout(resolve, genericFloorSettleMs));
-  if (isKindRenderHarnessMounted()) return "false";
   const resolution = componentRegistry.resolve(kind, platform, componentRole);
   const bound =
     resolution !== null &&
@@ -267,13 +250,6 @@ export function reportKindComponentIncident(
 
   void (async () => {
     if (input.errorType === "generic_floor_render") {
-      // Checked here, after the render's effects committed — a harness parent
-      // mounts its effects AFTER the child block that raised the sighting.
-      await Promise.resolve();
-      if (isKindRenderHarnessMounted()) {
-        reported.delete(key);
-        return;
-      }
       const verdict = await genericFloorStillTrue(input.kind, platform, role);
       if (verdict === "unmeasured") {
         await holdUntilRegistryChanges(key);

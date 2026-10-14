@@ -3,8 +3,7 @@
  *
  * On the kind-registry Preview of `brand_basics` the page itself filed
  * "a reader got the generic key/value view" while its own component rendered.
- * Two rules pin the class: a mounted render harness never files, and a
- * sighting is re-measured against the settled resolver before it is filed —
+ * Here: a sighting is re-measured against the settled resolver before it is filed —
  * a warm-up render of a kind that has a component is not a sighting.
  */
 
@@ -52,7 +51,6 @@ import {
   resetSessionReadyForTests,
 } from "../../registry/session-ready";
 import {
-  enterKindRenderHarness,
   reportKindComponentIncident,
   resetKindComponentIncidentDedupe,
   setGenericFloorSettleMsForTests,
@@ -108,26 +106,6 @@ it("files when the only component is held inactive", async () => {
   fileGenericFloor("held_kind");
   await flush();
   expect(filedKinds()).toEqual(["held_kind"]);
-});
-
-it("never files while a render harness is mounted, even for a bare kind", async () => {
-  const leave = enterKindRenderHarness();
-  fileGenericFloor("harness_bare_kind");
-  await flush();
-  expect(filedKinds()).toEqual([]);
-  leave();
-  // Leaving re-arms the reader path: the same kind seen by a reader files.
-  fileGenericFloor("harness_bare_kind");
-  await flush();
-  expect(filedKinds()).toEqual(["harness_bare_kind"]);
-});
-
-it("a harness that mounts after the block (parent effects run last) still suppresses", async () => {
-  fileGenericFloor("late_harness_kind");
-  const leave = enterKindRenderHarness();
-  await flush();
-  leave();
-  expect(filedKinds()).toEqual([]);
 });
 
 it("re-measures with the incident's own platform and role", async () => {

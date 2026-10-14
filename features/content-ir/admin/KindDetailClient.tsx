@@ -17,6 +17,7 @@
  * imported statically and simply not rendered until its tab is active.
  */
 
+import { KindRenderHarness } from "@ai-matrx/rich-content/kinds/react/render-harness";
 import { Select } from "@ai-matrx/design-system/controls";
 import { useMemo, useState } from "react";
 import { commitUrlParams } from "@ai-matrx/kit/url-state";
@@ -188,6 +189,9 @@ export default function KindDetailClient({
   }
 
   return (
+    // The whole per-kind page is a render harness: generic frames here are
+    // the harness at work, never a reader's sighting (render-harness).
+    <KindRenderHarness>
     <SurfaceRuntimeProvider
       surfaceName={ADMIN_KIND_REGISTRY_SURFACE_NAME}
       getScope={() =>
@@ -400,5 +404,6 @@ export default function KindDetailClient({
         </main>
       </div>
     </SurfaceRuntimeProvider>
+    </KindRenderHarness>
   );
 }

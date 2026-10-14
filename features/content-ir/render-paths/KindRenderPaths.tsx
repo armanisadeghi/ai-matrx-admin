@@ -22,16 +22,16 @@
  * question that let every broken kind report healthy.
  */
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { CircleCheck, CircleX, Info, TriangleAlert } from "lucide-react";
 import { SafeBlockRenderer } from "@ai-matrx/rich-content/display/chat-markdown/internal-handlers/SafeBlockRenderer";
 import KindInstanceRender from "@/features/content-ir/studio/components/KindInstanceRender";
 import KindInputForm from "@/features/content-ir/input/KindInputForm";
-import { resolveLoadingSlugForKind } from "@ai-matrx/rich-content/kinds/react/loading/resolve-loading-slug";
+import { useLoadingSlugForKind } from "@ai-matrx/rich-content/kinds/react/loading/use-loading-slug";
 import { resolveKindLoadingComponent } from "@ai-matrx/rich-content/kinds/react/loading/kind-loading-registry";
 import { useContentIrKindVersion } from "@ai-matrx/rich-content/kinds/react/use-registry-repaint";
 import { useEnsureKindRenderable } from "@ai-matrx/rich-content/kinds/react/ensure-kind-renderable";
-import { enterKindRenderHarness } from "@/features/content-ir/react/db-component/kindComponentIncident";
+import { KindRenderHarness } from "@ai-matrx/rich-content/kinds/react/render-harness";
 import { RENDER_PATHS, type RenderPathId, type RenderPathSpec } from "./paths";
 import { readKindSchemaState, runRenderPath } from "./run-path";
 import { useBoundedKindCheck } from "./use-bounded-kind-check";
@@ -160,8 +160,6 @@ export default function KindRenderPaths({
   // `unverified` until a tab switch remounted it. It now demands the schema +
   // component itself and repaints on THIS kind's arrivals in either registry.
   useEnsureKindRenderable(kind);
-  // A harness, not a reader: generic frames here never file a sighting.
-  useEffect(() => enterKindRenderHarness(), []);
   const kindVersion = useContentIrKindVersion(kind);
   const registryVersion = useRegistryVersion() + kindVersion;
   const spec = useMemo(
@@ -186,7 +184,7 @@ export default function KindRenderPaths({
   const layerScope = readViewerLayerScope(kind, registryVersion);
   const viewKey = readViewerViewKey(kind, registryVersion);
 
-  const loading = resolveLoadingSlugForKind(kind);
+  const loading = useLoadingSlugForKind(kind);
   const LoadingComponent = resolveKindLoadingComponent(loading.slug);
   // Measured, never assumed: "pending" until the read settles.
   const schemaState = readKindSchemaState(kind, registryVersion);
@@ -196,7 +194,9 @@ export default function KindRenderPaths({
   const settled = schemaState !== "pending" && componentsChecked;
   const check = useBoundedKindCheck(kind, settled);
 
+  // A harness, not a reader: generic frames inside never file a sighting.
   return (
+    <KindRenderHarness>
     <div className="space-y-3">
       {/* Mode selector — one entry per real path. */}
       <div className="flex flex-wrap gap-1">
@@ -313,5 +313,6 @@ export default function KindRenderPaths({
         ) : null}
       </div>
     </div>
+    </KindRenderHarness>
   );
 }

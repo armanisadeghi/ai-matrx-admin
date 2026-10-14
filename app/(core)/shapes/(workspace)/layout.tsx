@@ -1,3 +1,4 @@
+import { KindRenderHarness } from "@ai-matrx/rich-content/kinds/react/render-harness";
 import { ModuleSignInGate } from "@/features/auth/components/module-landing/ModuleSignInGate";
 import { getSessionVerdict } from "@/utils/supabase/sessionVerdict";
 
@@ -16,5 +17,7 @@ export default async function ShapesWorkspaceLayout({
       />
     );
   }
-  return children;
+  // The Shape Studio (Preview, Test, Stream, Instances, playground) is a
+  // render harness: no generic-floor sighting is filed from inside it.
+  return <KindRenderHarness>{children}</KindRenderHarness>;
 }
