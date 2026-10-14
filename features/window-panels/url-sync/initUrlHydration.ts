@@ -793,6 +793,14 @@ export function initUrlHydration() {
     );
   });
 
+  // Review search results — `?panels=search_review:<sessionId>`. The session is live state held by
+  // its host page; a token with no id opens nothing.
+  registerPanelHydrator("search_review", (dispatch, id) => {
+    const sessionId = getRestorableResourceId(id, "searchReviewWindow");
+    if (!sessionId) return;
+    dispatch(openOverlay({ overlayId: "searchReviewWindow", data: { sessionId } }));
+  });
+
   // Data changes — `?panels=data_changes:<tableId>`: what the latest refresh of one fetched table
   // changed. A token with no table opens nothing.
   registerPanelHydrator("data_changes", (dispatch, id) => {

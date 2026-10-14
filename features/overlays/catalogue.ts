@@ -977,6 +977,13 @@ export const OVERLAY_CATALOGUE = {
     instanceMode: "singleton",
     isWindow: true,
   },
+  // "Review search results" — the platform primitive (features/search-review): web results in the
+  // Search Lab's own renderer with "what is this?" controls; any feature opens it with a session.
+  searchReviewWindow: {
+    label: "Review search results",
+    instanceMode: "singleton",
+    isWindow: true,
+  },
   // U-M2 — one site's Tag Manager tracking, wrapping the canonical
   // `SiteTrackingPanel` (google-native PLAN §4.10 Plane A).
   siteTrackingWindow: {

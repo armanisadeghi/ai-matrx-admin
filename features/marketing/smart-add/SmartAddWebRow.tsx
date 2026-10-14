@@ -1,144 +1,61 @@
 "use client";
 
 /**
- * Smart Add — the "On the web" step: the top web results from every engine, merged and deduped,
- * one row each (the site's own icon, title, the exact address, the snippet, Open, each engine's rank —
- * engine names stay off customer screens), and ONE question per row: what is this to us? The answers are the shared
- * vocabulary `web.brand_relation_kind` (the social rows answer from the same table). A rule-based
- * suggestion (webKinds.suggestKind, no AI) is offered as the highlighted option with its reason in a
- * tooltip; it is never set for the person. Answered rows group by their answer.
+ * Smart Add — the "On the web" step, now OPTIONAL: one compact entry ("Review 37 web results") that
+ * opens the platform's "Review search results" window (features/search-review) beside the flow.
+ *
+ * The window shows every merged + deduped web result (evidence.webRow) in the Search Lab's own
+ * renderer and asks ONE question per result: what is this to us? Answers are the shared vocabulary
+ * `web.brand_relation_kind`; the rule-based suggestion (webKinds.suggestKind, no AI) glows with its
+ * reason on hover and is never set for the person. Answers flow back through `onChoose` into the same
+ * `webChoices` state as before, so create-time persistence (relations.routeWebChoices), the validation
+ * page and the Builder panel feed are unchanged. Ask me later / Ignore stay pending: unanswered
+ * results are kept as candidates at create, exactly as before.
  */
 
 import { useState } from "react";
-import { ExternalLink, Lightbulb, X } from "lucide-react";
-import { Button, SegmentedControl, Select, type SelectOption } from "@ai-matrx/design-system/controls";
-import { OutboundLink } from "@ai-matrx/kit/outbound-react";
+import { Globe } from "lucide-react";
+import { Button } from "@ai-matrx/design-system/controls";
 import type { BrandRelationKind } from "@/features/marketing/data/service";
+import { usePublishSearchReviewSession } from "@/features/search-review/sessionStore";
+import { useOpenSearchReviewWindow } from "@/features/overlays/openers/searchReviewWindow";
+import type { ReviewAnswer, ReviewChoice, ReviewResult, ReviewSuggestion } from "@/features/search-review/types";
 import type { EvidenceItem } from "./evidence";
 import { webRow } from "./evidence";
-import { outboundHref } from "./SmartAddExtras";
-import {
-  engineRanks,
-  groupByKind,
-  STANCE_LABEL,
-  STANCE_ORDER,
-  suggestKind,
-  type Sentiment,
-  type SuggestContext,
-  type WebChoice,
-} from "./webKinds";
+import { STANCE_LABEL, STANCE_ORDER, suggestKind, type SuggestContext, type WebChoice } from "./webKinds";
 
-/** Rows shown before "Show more". */
-const TOP = 10;
+/** The one-click answers; every other kind is under "More". */
+const PINNED = new Set(["ours", "mention", "review_site", "competitor", "not_us", "irrelevant"]);
 
-const SENTIMENTS: { value: Sentiment; label: string }[] = [
-  { value: "positive", label: "Positive" },
-  { value: "neutral", label: "Neutral" },
-  { value: "negative", label: "Negative" },
-];
-
-function orderedKinds(kinds: BrandRelationKind[]): BrandRelationKind[] {
-  return [...kinds].sort(
-    (a, b) => STANCE_ORDER.indexOf(a.stance) - STANCE_ORDER.indexOf(b.stance) || Number(b.isKnown) - Number(a.isKnown),
-  );
+/** An evidence item → the raw-result shape the review window renders (title, url, description, favicon). */
+export function reviewResultOf(item: EvidenceItem): ReviewResult {
+  const url = item.url ?? item.value;
+  // A review/listing page carries the site's name as its label and the page's own title as its handle.
+  const listing = item.field === "listing";
+  return {
+    key: item.key,
+    result: {
+      title: listing ? (item.handle ?? item.label ?? url) : (item.label ?? item.handle ?? url),
+      url,
+      description: item.snippet ?? null,
+      favicon: item.image_url,
+      site_name: listing ? item.label : null,
+    },
+    hits: (item.hits ?? []).map((h) => ({ engine: h.engine, rank: h.rank, query: h.query, endpoint: h.endpoint })),
+  };
 }
 
-function WebResultRow({
-  item,
-  kinds,
-  choice,
-  ctx,
-  onChoose,
-}: {
-  item: EvidenceItem;
-  kinds: BrandRelationKind[];
-  choice: WebChoice | undefined;
-  ctx: SuggestContext;
-  onChoose: (choice: WebChoice | null) => void;
-}) {
-  const [iconOk, setIconOk] = useState(true);
-  const url = item.url ?? item.value;
-  const suggestion = suggestKind(item, kinds, ctx);
-  const suggested = suggestion ? kinds.find((k) => k.key === suggestion.kind) : undefined;
-  const chosen = choice ? kinds.find((k) => k.key === choice.kind) : undefined;
-  const options: SelectOption<string>[] = [
-    { value: "", label: "What is it?" },
-    ...orderedKinds(kinds).map((k) => ({ value: k.key, label: k.label, meta: STANCE_LABEL[k.stance] })),
-  ];
-  const pick = (key: string) => (key ? onChoose({ kind: key, sentiment: null }) : onChoose(null));
-  const ranks = engineRanks(item);
-  // A review/listing page carries the site's name as its label and the page's own title as its handle.
-  const title = item.field === "listing" ? [item.handle, item.label].filter(Boolean).join(" · ") || url : (item.label ?? item.handle ?? url);
-  return (
-    <li
-      className="flex items-start gap-2.5 py-2"
-      data-testid="smart-add-web-item"
-      data-field={item.field}
-      data-key={item.key}
-      data-choice={choice?.kind ?? ""}
-      data-suggested={suggestion?.kind ?? ""}
-    >
-      {item.image_url && iconOk ? (
-        <img
-          src={item.image_url}
-          alt=""
-          className="mt-0.5 size-5 shrink-0 rounded object-contain"
-          loading="lazy"
-          onError={() => setIconOk(false)}
-        />
-      ) : (
-        <span className="mt-0.5 size-5 shrink-0 rounded bg-muted" aria-hidden />
-      )}
-      <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-        <div className="flex flex-wrap items-baseline gap-x-2">
-          <span className="min-w-0 text-sm font-medium break-words">{title}</span>
-          {ranks ? (
-            <span className="text-[11px] text-muted-foreground" data-testid="smart-add-web-ranks">
-              {ranks}
-            </span>
-          ) : null}
-        </div>
-        <span className="text-xs break-all text-muted-foreground" data-testid="smart-add-web-url">
-          {url}
-        </span>
-        {item.snippet ? <p className="line-clamp-2 text-xs text-foreground/80">{item.snippet}</p> : null}
-        <div className="mt-1 flex flex-wrap items-center gap-1.5">
-          {suggested && !choice ? (
-            <Button
-              variant="outline"
-              icon={<Lightbulb aria-hidden />}
-              title={suggestion?.reason}
-              onClick={() => pick(suggested.key)}
-              data-testid="smart-add-web-suggestion"
-            >
-              {suggested.label}
-            </Button>
-          ) : null}
-          <Select
-            aria-label="What is it?"
-            value={choice?.kind ?? ""}
-            options={options}
-            onValueChange={pick}
-            className="min-w-40"
-          />
-          {chosen?.hasSentiment ? (
-            <SegmentedControl
-              aria-label="Sentiment"
-              value={choice?.sentiment ?? null}
-              data={SENTIMENTS}
-              onValueChange={(s) => onChoose({ kind: chosen.key, sentiment: s })}
-            />
-          ) : null}
-          {choice ? (
-            <Button variant="quiet" icon={<X aria-hidden />} aria-label="Clear" title="Clear" onClick={() => onChoose(null)} />
-          ) : null}
-        </div>
-      </div>
-      <Button asChild variant="quiet" icon={<ExternalLink aria-hidden />} aria-label="Open" title="Open">
-        <OutboundLink href={outboundHref(url)} />
-      </Button>
-    </li>
-  );
+export function reviewChoicesOf(kinds: BrandRelationKind[]): ReviewChoice[] {
+  return [...kinds]
+    .sort((a, b) => STANCE_ORDER.indexOf(a.stance) - STANCE_ORDER.indexOf(b.stance) || Number(b.isKnown) - Number(a.isKnown))
+    .map((k) => ({
+      key: k.key,
+      label: k.label,
+      group: STANCE_LABEL[k.stance],
+      description: k.description,
+      hasSentiment: k.hasSentiment,
+      pinned: PINNED.has(k.key),
+    }));
 }
 
 export function SmartAddWebRow({
@@ -154,37 +71,61 @@ export function SmartAddWebRow({
   ctx: SuggestContext;
   onChoose: (item: EvidenceItem, choice: WebChoice | null) => void;
 }) {
-  const [showAll, setShowAll] = useState(false);
+  // Ask me later / Ignore: the person's place in the review, not an answer — nothing is saved for them.
+  const [marks, setMarks] = useState<Record<string, "later" | "ignored">>({});
   const row = webRow(items);
-  if (!row.length) return null;
-  const open = row.filter((i) => !choices[i.key]);
-  const shown = showAll ? open : open.slice(0, TOP);
-  const groups = groupByKind(row, choices, kinds);
-  const rowFor = (i: EvidenceItem) => (
-    <WebResultRow key={i.key} item={i} kinds={kinds} choice={choices[i.key]} ctx={ctx} onChoose={(c) => onChoose(i, c)} />
+  const byKey = new Map(row.map((i) => [i.key, i]));
+  const answers: Record<string, ReviewAnswer> = {};
+  for (const i of row) {
+    const c = choices[i.key];
+    if (c) answers[i.key] = { status: "answered", kind: c.kind, sentiment: c.sentiment };
+    else if (marks[i.key]) answers[i.key] = { status: marks[i.key] };
+  }
+  const suggestions: Record<string, ReviewSuggestion | null> = {};
+  for (const i of row) {
+    const s = suggestKind(i, kinds, ctx);
+    suggestions[i.key] = s ? { kind: s.kind, reason: s.reason, by: "Rules" } : null;
+  }
+  const sessionId = usePublishSearchReviewSession(
+    row.length
+      ? {
+          title: ctx.name ? `On the web · ${ctx.name}` : "On the web",
+          subject: { type: "brand", name: ctx.name ?? "This brand" },
+          results: row.map(reviewResultOf),
+          choices: reviewChoicesOf(kinds),
+          answers,
+          suggestions,
+          onAnswer: (key, answer) => {
+            const item = byKey.get(key);
+            if (!item) return;
+            setMarks(({ [key]: _drop, ...rest }) =>
+              answer && answer.status !== "answered" ? { ...rest, [key]: answer.status } : rest,
+            );
+            onChoose(item, answer?.status === "answered" ? { kind: answer.kind, sentiment: answer.sentiment } : null);
+          },
+        }
+      : null,
   );
+  const open = useOpenSearchReviewWindow();
+  if (!row.length) return null;
+  const answered = row.filter((i) => choices[i.key]).length;
   return (
-    <section className="flex flex-col gap-1 rounded-lg border border-border/70 px-3 py-2" data-testid="smart-add-web-row" data-our-hosts={ctx.ourHosts.join(" ")}>
-      <header className="flex items-baseline gap-2 text-xs font-medium text-foreground/80">
-        On the web
-        <span className="text-[11px] font-normal text-muted-foreground">{row.length}</span>
-      </header>
-      {shown.length ? <ul className="flex flex-col divide-y divide-border/60">{shown.map(rowFor)}</ul> : null}
-      {open.length > TOP ? (
-        <Button variant="quiet" onClick={() => setShowAll((v) => !v)} className="self-start" data-testid="smart-add-web-more">
-          {showAll ? "Show fewer" : `Show ${open.length - TOP} more`}
-        </Button>
-      ) : null}
-      {groups.map((g) => (
-        <div key={g.kind.key} className="flex flex-col pt-1" data-testid="smart-add-web-group" data-kind={g.kind.key}>
-          <span className="text-[11px] font-medium text-muted-foreground" title={g.kind.description ?? undefined}>
-            {[g.kind.label === STANCE_LABEL[g.stance] ? null : STANCE_LABEL[g.stance], g.kind.label, g.items.length]
-              .filter((x) => x !== null)
-              .join(" · ")}
-          </span>
-          <ul className="flex flex-col divide-y divide-border/60">{g.items.map(rowFor)}</ul>
-        </div>
-      ))}
+    <section
+      className="flex items-center gap-2 rounded-lg border border-border/70 px-3 py-2"
+      data-testid="smart-add-web-row"
+      data-our-hosts={ctx.ourHosts.join(" ")}
+    >
+      <Globe className="size-4 shrink-0 text-muted-foreground" aria-hidden />
+      <span className="text-xs font-medium text-foreground/80">On the web</span>
+      <Button
+        variant="outline"
+        className="ml-auto"
+        onClick={() => open(sessionId)}
+        meta={answered ? `${answered} answered` : undefined}
+        data-testid="smart-add-web-review"
+      >
+        {`Review ${row.length} web results`}
+      </Button>
     </section>
   );
 }

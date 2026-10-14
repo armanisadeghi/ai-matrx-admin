@@ -789,6 +789,10 @@ const SiteAnalyticsWindow = lazyOverlay(
     import("@/features/window-panels/windows/marketing/SiteAnalyticsWindow"),
   { ssr: false },
 );
+const SearchReviewWindow = lazyOverlay(
+  () => import("@/features/window-panels/windows/search-review/SearchReviewWindow"),
+  { ssr: false },
+);
 const BrandChannelWindow = lazyOverlay(
   () =>
     import("@/features/window-panels/windows/marketing/BrandChannelWindow"),
@@ -1602,6 +1606,9 @@ export default function OverlayController() {
     siteAnalyticsWindow: useAppSelector((s) =>
       selectIsOverlayOpen(s, "siteAnalyticsWindow"),
     ),
+    searchReviewWindow: useAppSelector((s) =>
+      selectIsOverlayOpen(s, "searchReviewWindow"),
+    ),
     brandChannelWindow: useAppSelector((s) =>
       selectIsOverlayOpen(s, "brandChannelWindow"),
     ),
@@ -2075,6 +2082,9 @@ export default function OverlayController() {
     siteAnalyticsWindow: useAppSelector((s) =>
       selectOverlayData(s, "siteAnalyticsWindow"),
     ) as Record<string, unknown> | null,
+    searchReviewWindow: useAppSelector((s) =>
+      selectOverlayData(s, "searchReviewWindow"),
+    ),
     brandChannelWindow: useAppSelector((s) =>
       selectOverlayData(s, "brandChannelWindow"),
     ) as Record<string, unknown> | null,
@@ -5787,6 +5797,26 @@ export default function OverlayController() {
             }
             siteId={siteId}
             siteLabel={str("siteLabel")}
+          />
+        );
+      })()}
+
+      {/* searchReviewWindow */}
+      {(() => {
+        const isOpen = isOpenById.searchReviewWindow;
+        const data = dataById.searchReviewWindow as
+          Record<string, unknown> | null | undefined;
+        if (!isOpen) return null;
+        const sessionId =
+          typeof data?.sessionId === "string" ? data.sessionId : "";
+        if (!sessionId) return null;
+        return (
+          <SearchReviewWindow
+            isOpen
+            onClose={() =>
+              dispatch(closeOverlay({ overlayId: "searchReviewWindow" }))
+            }
+            sessionId={sessionId}
           />
         );
       })()}

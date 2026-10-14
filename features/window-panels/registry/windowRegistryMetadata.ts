@@ -2177,6 +2177,21 @@ const STATIC_REGISTRY: WindowStaticMetadata[] = [
     urlSync: { key: "brand_channel" },
   },
 
+  // "Review search results" (features/search-review): the host publishes a live session (results,
+  // subject, vocabulary, onAnswer) and only its id travels. Not preserved: the session lives with its
+  // host page, so a reload has nothing to answer into.
+  {
+    slug: "search-review-window",
+    overlayId: "searchReviewWindow",
+    kind: "window",
+    label: "Review search results",
+    defaultData: { sessionId: "" },
+    mobilePresentation: "fullscreen",
+    instanceMode: "singleton",
+    // `?panels=search_review:<sessionId>` — reopens while the host page still holds the session.
+    urlSync: { key: "search_review" },
+  },
+
   // The site discovery panel (KI-040): the canonical `DiscoveryWorkspace` —
   // the Business Discovery Ladder, its proposals queue and the setup doors —
   // beside whatever the person is looking at. Preserved: the ladder's truth is
