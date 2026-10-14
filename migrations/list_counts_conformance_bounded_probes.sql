@@ -1,4 +1,3 @@
--- draft: db_contract_triage rehearse bounded list-count conformance probes on the clone before production review
 -- The original public.__list_counts_conformance() runs every catalog, numeric parity, team reach,
 -- and my-teams sample in one statement. PostgREST's statement ceiling cancels it before any of its
 -- seven rows can be returned. These service-only helpers expose the same sample as independent units;
@@ -141,6 +140,7 @@ SECURITY DEFINER
 SET search_path TO ''
 AS $function$
 DECLARE
+  v_claims text := current_setting('request.jwt.claims', true);
   v_family text := p_unit ->> 'family';
   v_uid uuid := (p_unit ->> 'uid')::uuid;
   v_search text := p_unit ->> 'search';
@@ -181,6 +181,7 @@ BEGIN
     unit := p_unit || jsonb_build_object('kind', 'family_lane', 'empty', true);
     RETURN NEXT;
   END IF;
+  PERFORM set_config('request.jwt.claims', coalesce(v_claims, ''), true);
 END;
 $function$;
 
@@ -269,7 +270,7 @@ BEGIN
       IF r.prosecdef THEN v_bad := v_bad || jsonb_build_object('function', r.sch || '.' || r.fn); END IF;
     END LOOP;
     check_key := 'counts_are_security_invoker'; ok := jsonb_array_length(v_bad) = 0 AND v_checked > 0; severity := 'error';
-    detail := jsonb_build_object('why', 'A SECURITY DEFINER counts function counts rows the invoker list hides from the person.', 'checked', v_checked, 'offenders', v_bad);
+    detail := jsonb_build_object('why', 'A SECURITY DEFINER counts function counts rows the invoker list hides from the person: the count must run as the caller, under the same row security as the list.', 'checked', v_checked, 'offenders', v_bad);
     RETURN NEXT;
 
     v_bad := '[]'::jsonb; v_checked := 0;
@@ -294,7 +295,7 @@ BEGIN
       END IF;
     END LOOP;
     check_key := 'counts_family_registered'; ok := jsonb_array_length(v_bad) = 0 AND v_checked > 0; severity := 'error';
-    detail := jsonb_build_object('why', 'Every counts family with a list twin is registered for numeric comparison.', 'checked', v_checked, 'unregistered', v_bad);
+    detail := jsonb_build_object('why', 'Add the family to v_registry in public.__list_counts_conformance() so its lane totals are compared with its list.', 'checked', v_checked, 'unregistered', v_bad);
     RETURN NEXT;
     RETURN;
   END IF;
@@ -324,7 +325,7 @@ BEGIN
   IF v_kind = 'family_lane' THEN
     IF coalesce((p_unit ->> 'empty')::boolean, false) THEN
       check_key := 'counts_equal_list_every_family'; ok := false; severity := 'error';
-      detail := jsonb_build_object('why', 'Every lane total equals its list total.', 'lane_totals_compared', 0, 'mismatches', '[]'::jsonb, 'no_list_twin_not_compared', '[]'::jsonb);
+      detail := jsonb_build_object('why', 'Every lane total a counts function returns equals the total its list returns for the same search and filters (runs as the server, so it proves the two code paths agree; the definer check above proves they run as the same person).', 'lane_totals_compared', 0, 'mismatches', '[]'::jsonb, 'no_list_twin_not_compared', '[]'::jsonb);
       RETURN NEXT; RETURN;
     END IF;
     v_uid := (p_unit ->> 'uid')::uuid;
@@ -359,7 +360,7 @@ BEGIN
     PERFORM set_config('request.jwt.claims', coalesce(v_claims, ''), true);
     check_key := 'counts_equal_list_every_family'; ok := jsonb_array_length(v_bad) = 0 AND v_checked > 0; severity := 'error';
     detail := jsonb_build_object(
-      'why', 'Every lane total a counts function returns equals the total its list returns for the same search and filters.',
+      'why', 'Every lane total a counts function returns equals the total its list returns for the same search and filters (runs as the server, so it proves the two code paths agree; the definer check above proves they run as the same person).',
       'lane_totals_compared', v_checked, 'mismatches', v_bad,
       'no_list_twin_not_compared', (SELECT coalesce(jsonb_agg(p.proname), '[]'::jsonb) FROM pg_proc AS p WHERE p.pronamespace = 'public'::regnamespace AND p.proname ~ '(_list_counts|_scope_counts)$' AND NOT EXISTS (SELECT 1 FROM pg_proc AS p2 WHERE p2.pronamespace = p.pronamespace AND p2.proname = regexp_replace(p.proname, '_(list_)?(scope_)?counts$', '_list_scoped')))
     );
@@ -369,7 +370,7 @@ BEGIN
   IF v_kind = 'team_reach' THEN
     IF coalesce((p_unit ->> 'empty')::boolean, false) THEN
       check_key := 'team_reach_empty_without_team'; ok := false; severity := 'error';
-      detail := jsonb_build_object('why', 'My team is empty for a person on no team and holds them where they are on one.', 'checked', 0, 'offenders', '[]'::jsonb);
+      detail := jsonb_build_object('why', 'My team is empty for a person on no team in that organization (never a copy of Mine), and holds the person where they are on one.', 'checked', 0, 'offenders', '[]'::jsonb);
       RETURN NEXT; RETURN;
     END IF;
     v_uid := (p_unit ->> 'uid')::uuid; v_org := (p_unit ->> 'org')::uuid; v_on_team := (p_unit ->> 'on_team')::boolean;
@@ -381,14 +382,14 @@ BEGIN
     END IF;
     PERFORM set_config('request.jwt.claims', coalesce(v_claims, ''), true);
     check_key := 'team_reach_empty_without_team'; ok := jsonb_array_length(v_bad) = 0; severity := 'error';
-    detail := jsonb_build_object('why', 'My team is empty for a person on no team and holds them where they are on one.', 'checked', v_checked, 'offenders', v_bad);
+    detail := jsonb_build_object('why', 'My team is empty for a person on no team in that organization (never a copy of Mine), and holds the person where they are on one.', 'checked', v_checked, 'offenders', v_bad);
     RETURN NEXT; RETURN;
   END IF;
 
   IF v_kind = 'my_teams' THEN
     IF coalesce((p_unit ->> 'empty')::boolean, false) THEN
       check_key := 'my_teams_answers_every_person'; ok := false; severity := 'error';
-      detail := jsonb_build_object('why', 'The My team tab must answer every sampled person.', 'checked', 0, 'offenders', '[]'::jsonb);
+      detail := jsonb_build_object('why', 'The My team tab reads public.my_teams: it must answer every person (all organizations, or one they are not in) and never refuse.', 'checked', 0, 'offenders', '[]'::jsonb);
       RETURN NEXT; RETURN;
     END IF;
     v_uid := (p_unit ->> 'uid')::uuid;
@@ -407,7 +408,7 @@ BEGIN
     END;
     PERFORM set_config('request.jwt.claims', coalesce(v_claims, ''), true);
     check_key := 'my_teams_answers_every_person'; ok := jsonb_array_length(v_bad) = 0; severity := 'error';
-    detail := jsonb_build_object('why', 'The My team tab must answer every sampled person.', 'checked', v_checked, 'offenders', v_bad);
+    detail := jsonb_build_object('why', 'The My team tab reads public.my_teams: it must answer every person (all organizations, or one they are not in) and never refuse.', 'checked', v_checked, 'offenders', v_bad);
     RETURN NEXT; RETURN;
   END IF;
 
