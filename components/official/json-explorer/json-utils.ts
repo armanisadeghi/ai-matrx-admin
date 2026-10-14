@@ -264,3 +264,32 @@ export const generateEnhancedBookmarkObject = (
         path: pathArray
     };
 };
+
+// "Label by" for array rows: option VALUES stay "Item N" (the path contract is
+// untouched); only the visible text changes to the chosen field's value.
+export const getArrayLabelKeys = (data: JsonValue | null | undefined): string[] => {
+    if (!Array.isArray(data) || data.length === 0) return [];
+    const first = data[0];
+    if (!first || typeof first !== "object" || Array.isArray(first)) return [];
+    return Object.keys(first).filter((key) => {
+        const value = first[key];
+        return value === null || typeof value !== "object";
+    });
+};
+
+export const getArrayItemLabel = (
+    arrayData: JsonValue | null | undefined,
+    optionKey: string,
+    labelKey: string | undefined,
+    maxLength = 60,
+): string => {
+    if (!labelKey || !optionKey.startsWith("Item ") || !Array.isArray(arrayData)) return optionKey;
+    const index = parseInt(optionKey.replace("Item ", ""));
+    const item = arrayData[index];
+    if (!item || typeof item !== "object" || Array.isArray(item)) return optionKey;
+    const value = item[labelKey];
+    if (value === undefined || value === null || typeof value === "object") return optionKey;
+    const text = String(value);
+    const clipped = text.length > maxLength ? `${text.slice(0, maxLength - 1)}…` : text;
+    return `${index} · ${clipped}`;
+};

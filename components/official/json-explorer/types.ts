@@ -43,6 +43,9 @@ export interface NavigationRowsProps {
   onKeySelect: (rowIndex: number, key: string) => void;
   hiddenPaths?: string[];
   isPathHidden?: (path: PathArray) => boolean;
+  /** rowIndex → field of the array's first item used to label "Item N" options. */
+  arrayLabelKeys?: Record<number, string>;
+  onArrayLabelKeyChange?: (rowIndex: number, labelKey: string | undefined) => void;
 }
 
 export interface ActionButtonsProps {

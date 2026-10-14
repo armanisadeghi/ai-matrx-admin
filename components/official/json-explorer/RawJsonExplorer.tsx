@@ -95,6 +95,21 @@ const RawJsonExplorerBody: React.FC<RawJsonExplorerProps> = ({
     ignorePrefix || "",
   );
 
+  // "List by" per array row: rowIndex → field used to label "Item N" options.
+  const [arrayLabelKeys, setArrayLabelKeys] = useState<Record<number, string>>(
+    {},
+  );
+  const handleArrayLabelKeyChange = (
+    rowIndex: number,
+    labelKey: string | undefined,
+  ) =>
+    setArrayLabelKeys((prev) => {
+      const next = { ...prev };
+      if (labelKey) next[rowIndex] = labelKey;
+      else delete next[rowIndex];
+      return next;
+    });
+
   // Hidden paths feature
   const [hiddenPaths, setHiddenPaths] = useState<string[]>([]);
   // The nav key under the last right-click, resolved at menu-open time
@@ -117,6 +132,7 @@ const RawJsonExplorerBody: React.FC<RawJsonExplorerProps> = ({
 
         // Initialize with just the first row with 'All' selected
         setCurrentPath([[0, "All"]]);
+        setArrayLabelKeys({});
       } catch (error) {
         console.error("Error parsing JSON data:", error);
       }
@@ -486,6 +502,8 @@ const RawJsonExplorerBody: React.FC<RawJsonExplorerProps> = ({
               onKeySelect={handleKeySelect}
               hiddenPaths={hiddenPaths}
               isPathHidden={isPathHidden}
+              arrayLabelKeys={arrayLabelKeys}
+              onArrayLabelKeyChange={handleArrayLabelKeyChange}
             />
           ) : (
             <NavigationRows
@@ -494,6 +512,8 @@ const RawJsonExplorerBody: React.FC<RawJsonExplorerProps> = ({
               onKeySelect={handleKeySelect}
               hiddenPaths={hiddenPaths}
               isPathHidden={isPathHidden}
+              arrayLabelKeys={arrayLabelKeys}
+              onArrayLabelKeyChange={handleArrayLabelKeyChange}
             />
           )}
         </div>

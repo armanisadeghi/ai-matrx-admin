@@ -1,13 +1,16 @@
 "use client";
 import React from "react";
 import { NavigationRowsProps } from "./types";
-import { getKeysAtPath } from "./json-utils";
+import { getArrayItemLabel, getKeysAtPath } from "./json-utils";
+import ArrayLabelBySelect, { getRowData } from "./ArrayLabelBySelect";
 
 const NavigationSelects: React.FC<NavigationRowsProps> = ({
   originalData,
   currentPath,
   onKeySelect,
   isPathHidden,
+  arrayLabelKeys,
+  onArrayLabelKeyChange,
 }) => {
   if (!originalData) return null;
 
@@ -19,6 +22,8 @@ const NavigationSelects: React.FC<NavigationRowsProps> = ({
     // Calculate the path up to this row for getting available keys
     const pathToHere = currentPath.slice(0, idx).map(([_, key]) => key);
     const keysForThisRow = getKeysAtPath(originalData, pathToHere);
+    const labelKey = arrayLabelKeys?.[rowIndex];
+    const rowData = labelKey ? getRowData(originalData, currentPath, idx) : null;
 
     // Create the path for the currently selected option
     const selectedPath = currentPath
@@ -33,7 +38,7 @@ const NavigationSelects: React.FC<NavigationRowsProps> = ({
         data-json-key={selectedKey}
         onChange={(e) => onKeySelect(rowIndex, e.target.value)}
         className={`
-          text-xs px-2 py-1 rounded border min-w-0 flex-shrink
+          text-xs px-2 py-1 rounded border min-w-0 flex-shrink ${labelKey ? "max-w-[20rem]" : ""}
           bg-textured 
           border-gray-300 dark:border-gray-600
           text-gray-900 dark:text-gray-100
@@ -59,7 +64,7 @@ const NavigationSelects: React.FC<NavigationRowsProps> = ({
                 optionIsHidden ? "bg-yellow-100 dark:bg-yellow-900" : ""
               }
             >
-              {key}
+              {getArrayItemLabel(rowData, key, labelKey)}
             </option>
           );
         })}
@@ -79,7 +84,15 @@ const NavigationSelects: React.FC<NavigationRowsProps> = ({
 
   return (
     <div className="border-b border-gray-200 dark:border-gray-700">
-      <div className="flex gap-1 items-center flex-wrap">{selectsToRender}</div>
+      <div className="flex gap-1 items-center flex-wrap">
+        {selectsToRender}
+        <ArrayLabelBySelect
+          originalData={originalData}
+          currentPath={currentPath}
+          arrayLabelKeys={arrayLabelKeys}
+          onArrayLabelKeyChange={onArrayLabelKeyChange}
+        />
+      </div>
     </div>
   );
 };

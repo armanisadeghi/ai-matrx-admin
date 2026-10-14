@@ -2,13 +2,16 @@
 import React from "react";
 import { Button } from "@ai-matrx/design-system";
 import { NavigationRowsProps } from "./types";
-import { getKeysAtPath } from "./json-utils";
+import { getArrayItemLabel, getKeysAtPath } from "./json-utils";
+import ArrayLabelBySelect, { getRowData } from "./ArrayLabelBySelect";
 
 const NavigationRows: React.FC<NavigationRowsProps> = ({ 
   originalData, 
   currentPath, 
   onKeySelect, 
-  isPathHidden 
+  isPathHidden,
+  arrayLabelKeys,
+  onArrayLabelKeyChange,
 }) => {
   if (!originalData) return null;
 
@@ -20,6 +23,8 @@ const NavigationRows: React.FC<NavigationRowsProps> = ({
     // Calculate the path up to this row for getting available keys
     const pathToHere = currentPath.slice(0, idx).map(([_, key]) => key);
     const keysForThisRow = getKeysAtPath(originalData, pathToHere);
+    const labelKey = arrayLabelKeys?.[rowIndex];
+    const rowData = labelKey ? getRowData(originalData, currentPath, idx) : null;
 
     rowsToRender.push(
       <div key={`row-${rowIndex}`} className="flex flex-wrap gap-1 mb-1">
@@ -38,7 +43,7 @@ const NavigationRows: React.FC<NavigationRowsProps> = ({
               onClick={() => onKeySelect(rowIndex, key)}
               className={`text-xs ${isHidden ? 'bg-yellow-200 dark:bg-yellow-800 hover:bg-yellow-300 dark:hover:bg-yellow-900 text-gray-800 dark:text-gray-300' : ''}`}
             >
-              {key}
+              {getArrayItemLabel(rowData, key, labelKey)}
             </Button>
           );
         })}
@@ -58,6 +63,16 @@ const NavigationRows: React.FC<NavigationRowsProps> = ({
 
   return (
     <div className="mb-2 border-b pb-2 border-gray-200 dark:border-gray-700">
+      {onArrayLabelKeyChange ? (
+        <div className="flex">
+          <ArrayLabelBySelect
+            originalData={originalData}
+            currentPath={currentPath}
+            arrayLabelKeys={arrayLabelKeys}
+            onArrayLabelKeyChange={onArrayLabelKeyChange}
+          />
+        </div>
+      ) : null}
       {rowsToRender}
     </div>
   );
