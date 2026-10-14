@@ -75,6 +75,7 @@ import {
   autoWork,
   orderedEvidence,
   seedKeys,
+  linkPages,
   websiteHost,
   type Decision,
   type EvidenceItem,
@@ -947,6 +948,16 @@ export function SmartAddBrand({
         if (k && (k.routesTo === "owns" || k.routesTo === "key_person")) {
           related.push({ candidate: webCandidate(i), relation: { key: k.key, label: k.label, routesTo: k.routesTo } });
         }
+      }
+      // Their link-in-bio pages (Linktree, Stan, …) are theirs without asking: kept as "Link-in-bio page".
+      const linkPageKind = relationKinds.find((k) => k.key === "link_in_bio_page");
+      const ownHandles = [...items.values()].filter((i) => i.field === "social" && i.handle && decisions[i.key] !== "no").map((i) => i.handle as string);
+      for (const page of linkPages(items.values(), ownHandles)) {
+        if (!page.theirs || decisions[page.key] || relations[page.key]) continue;
+        related.push({
+          candidate: webCandidate(page.item),
+          relation: { key: "link_in_bio_page", label: linkPageKind?.label ?? "Link-in-bio page", routesTo: null },
+        });
       }
       const competitors = [
         ...relatedCompetitors(related),

@@ -4,7 +4,7 @@
  * Arman, 2026-10-14:
  *  - SETTLED ITEMS NEVER APPEAR. A candidate already answered on the page (Yes, No, Other or skipped),
  *    or resolved without asking (a business's staff /in/ profiles go to Key people; the website the
- *    person typed — the site we read — is theirs), is never in a comparison. A slot appears only while 2+ unsettled
+ *    person typed — the site we read — is theirs; a link-in-bio page is their link page), is never in a comparison. A slot appears only while 2+ unsettled
  *    candidates remain. Candidates answered INSIDE the compare stay on screen (`kept`) so the person
  *    sees their answer before it moves on.
  *  - THE KNOWN ONE COMES FIRST. Cards are ordered by how sure we are it is theirs: linked from their
@@ -12,6 +12,7 @@
  *    think" ours › followers. The first card only glows (DecisionControl `suggested`), never answers.
  */
 import { compareRows, isOurs, websiteHost, type Candidate, type Decision, type EvidenceItem, type Relation } from "../evidence";
+import { isLinkInBioUrl } from "../../lib/link-in-bio";
 import { isStaffAccount } from "../staff";
 import { parseSuggestion } from "../validate/queue";
 
@@ -42,6 +43,13 @@ const OURS_CHOICES = new Set(["ours", "preferred", "alias"]);
 /** Every key this candidate answers for (its anchor, the bare links that are the same account). */
 function keysOf(c: Candidate): Set<string> {
   return new Set([c.anchor.key, ...c.ownKeys, ...(c.anchor.same_as ?? [])]);
+}
+
+/** Never compared: something the person typed, or a link-in-bio page (Linktree, Stan, …) or what it alone says. */
+export function isSettledWithoutAsking(c: Candidate): boolean {
+  if (c.anchor.source.kind === "typed") return true;
+  if (c.anchor.field === "link_page" || c.anchor.field === "bio_link") return true;
+  return c.platform === "website" && (isLinkInBioUrl(c.url) || isLinkInBioUrl(c.anchor.url ?? c.anchor.value));
 }
 
 /** How sure we are a candidate is the brand's (higher first). Weights are lexicographic: one signal beats all below it. */
@@ -88,6 +96,8 @@ export function compareSlots(
       candidates: row.candidates
         // Resolved without asking: never shown, answered here or not.
         .filter((c) => !isStaffAccount(c.anchor, s.person))
+        // What the person TYPED is settled, and a link-in-bio page is their link page (its own spot), never a rival.
+        .filter((c) => !isSettledWithoutAsking(c))
         .filter((c) => !(c.platform === "website" && c.url && ownHosts.has(websiteHost(c.url)) && !kept.has(c.id)))
         .filter((c) => kept.has(c.id) || !isAnswered(c, s))
         .map((c, n) => ({ c, n, score: certaintyScore(c, ctx) }))

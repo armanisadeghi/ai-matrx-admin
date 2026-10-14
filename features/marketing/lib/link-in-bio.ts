@@ -12,31 +12,66 @@
 import { classifySocialLink } from "../social/link";
 import type { SocialPlatform } from "../social/types";
 
-/** Hosts whose pages are link-in-bio hubs (the page itself is never an account or a website). */
-export const LINK_IN_BIO_HOSTS: readonly string[] = [
-  "linktr.ee",
-  "linktree.com",
-  "beacons.ai",
-  "beacons.page",
-  "stan.store",
-  "lnk.bio",
-  "bio.link",
-  "linkin.bio",
-  "taplink.cc",
-  "taplink.at",
-  "campsite.bio",
-  "hoo.be",
-  "komi.io",
-  "solo.to",
-  "linkpop.com",
-  "snipfeed.co",
-  "allmylinks.com",
-  "msha.ke",
-  "carrd.co",
-  "linkfly.to",
-  "tap.bio",
-  "direct.me",
+/**
+ * The link-in-bio services (Arman's list, SPEC.md "Link-in-bio pages are a source"). A page on one is the
+ * brand's LINK PAGE: never an account, never a website candidate, never compared. Mirrors aidream
+ * `graph_actions/link_in_bio.py` LINK_IN_BIO_REGISTRY entry for entry (both repos guard the same list).
+ */
+export interface LinkInBioService {
+  key: string;
+  name: string;
+  domains: readonly string[];
+  /** Only addresses under this path are profile pages (`bit.ly/m/<name>`). */
+  pathPrefix?: string;
+  /** Profiles live on a subdomain (`name.carrd.co`); the bare domain is the service's own site. */
+  subdomainOnly?: boolean;
+}
+
+export const LINK_IN_BIO_SERVICES: readonly LinkInBioService[] = [
+  { key: "linktree", name: "Linktree", domains: ["linktr.ee"] },
+  { key: "beacons", name: "Beacons", domains: ["beacons.ai", "beacons.page"] },
+  { key: "stan", name: "Stan Store", domains: ["stan.store"] },
+  { key: "lnkbio", name: "Lnk.Bio", domains: ["lnk.bio"] },
+  { key: "later", name: "Later Link in Bio", domains: ["linkin.bio"] },
+  { key: "later_site", name: "Later Link in Bio", domains: ["later.com"], pathPrefix: "/link-in-bio" },
+  { key: "carrd", name: "Carrd", domains: ["carrd.co"], subdomainOnly: true },
+  { key: "campsite", name: "Campsite.bio", domains: ["campsite.bio"] },
+  { key: "biolink", name: "Bio.link", domains: ["bio.link"] },
+  { key: "taplink", name: "Taplink", domains: ["taplink.at", "taplink.cc"] },
+  { key: "milkshake", name: "Milkshake", domains: ["msha.ke", "milkshake.app"] },
+  { key: "hopp", name: "Hopp by Wix", domains: ["hopp.co", "hopp.bio"] },
+  { key: "solo", name: "solo.to", domains: ["solo.to"] },
+  { key: "komi", name: "Komi", domains: ["komi.io"] },
+  { key: "shorby", name: "Shorby", domains: ["shor.by", "shorby.com"] },
+  { key: "bitly", name: "Bitly Pages", domains: ["bit.ly"], pathPrefix: "/m/" },
+  { key: "allmylinks", name: "AllMyLinks", domains: ["allmylinks.com"] },
+  { key: "linkpop", name: "Linkpop", domains: ["linkpop.com"] },
+  { key: "tapbio", name: "Tap.bio", domains: ["tap.bio"] },
+  { key: "hoobe", name: "Hoo.be", domains: ["hoo.be"] },
+  { key: "flowpage", name: "Flowpage", domains: ["flow.page"] },
+  { key: "snipfeed", name: "Snipfeed", domains: ["snipfeed.co"] },
+  { key: "linkfly", name: "Linkfly", domains: ["linkfly.to"] },
+  { key: "directme", name: "Direct.me", domains: ["direct.me"] },
 ];
+
+/** Every link-in-bio host, flat (path- and subdomain-scoped ones included; use `linkInBioService` for an address). */
+export const LINK_IN_BIO_HOSTS: readonly string[] = LINK_IN_BIO_SERVICES.flatMap((s) => s.domains);
+
+/** The service whose page this address is (profile or not), else null. Same rules as the server's `link_in_bio_entry`. */
+export function linkInBioService(raw: string | null | undefined): LinkInBioService | null {
+  const url = parseHttpUrl(raw);
+  if (!url) return null;
+  const host = url.hostname.toLowerCase().replace(/^www\./, "");
+  for (const service of LINK_IN_BIO_SERVICES) {
+    for (const domain of service.domains) {
+      if (host !== domain && !host.endsWith(`.${domain}`)) continue;
+      if (service.subdomainOnly && host === domain) continue;
+      if (service.pathPrefix && !`${url.pathname.replace(/\/+$/, "")}/`.startsWith(`${service.pathPrefix.replace(/\/+$/, "")}/`)) continue;
+      return service;
+    }
+  }
+  return null;
+}
 
 /** Short-link and smart-link hosts: they forward to something else, so they are never a website. */
 export const SHORT_LINK_HOSTS: readonly string[] = [
@@ -99,6 +134,8 @@ const NOISE_HOSTS: readonly string[] = [
   "cloudinary.com",
   "vercel.app",
   "linktr.ee",
+  // Linktree's own site (profiles live on linktr.ee).
+  "linktree.com",
   "giphy.com",
   "stripe.com",
   "apple.com",
@@ -148,8 +185,7 @@ function hostMatches(host: string, list: readonly string[]): boolean {
 
 /** True when the address is a link-in-bio hub page (Linktree, Beacons, Stan, …). */
 export function isLinkInBioUrl(raw: string | null | undefined): boolean {
-  const url = parseHttpUrl(raw);
-  return url ? hostMatches(hostOf(url), LINK_IN_BIO_HOSTS) : false;
+  return linkInBioService(raw) !== null;
 }
 
 export function parseHttpUrl(raw: string | null | undefined): URL | null {
@@ -210,7 +246,7 @@ export function extractPresenceLinks(
       const url = parseHttpUrl(candidate);
       if (!url) continue;
       const host = hostOf(url);
-      if (hostMatches(host, LINK_IN_BIO_HOSTS)) continue;
+      if (isLinkInBioUrl(url.href)) continue;
       const social = classifySocialLink(url.href);
       if (social) {
         if (social.kind !== "profile" || !social.handle) continue;

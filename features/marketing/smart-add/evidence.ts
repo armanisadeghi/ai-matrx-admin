@@ -13,6 +13,7 @@
  */
 
 import { handleKeyPart } from "../social/account-input";
+import { isLinkInBioUrl, linkInBioService } from "../lib/link-in-bio";
 
 export type EvidenceField =
   | "name"
@@ -32,7 +33,10 @@ export type EvidenceField =
   // Any other top web result: the person says what it is to the brand (web.brand_relation_kind).
   | "web_page"
   // A link the brand shows on its link-in-bio page that is neither an account nor its website.
-  | "bio_link";
+  | "bio_link"
+  // A link-in-bio page itself (Linktree, Beacons, Stan, …): a page of links the brand controls.
+  // Never a website candidate, never compared; relation `link_in_bio_page`.
+  | "link_page";
 
 /** How sure the web tier is that a candidate is the brand (fixed rules on the server, no AI). */
 export type Certainty = "certain" | "likely" | "possible";
@@ -172,13 +176,14 @@ export const FIELD_LABEL: Record<EvidenceField, string> = {
   mention: "On the web",
   web_page: "On the web",
   bio_link: "Also linked from their bio",
+  link_page: "Link pages",
 };
 
 /** Fields that live only in the "On the web" row, never in the form's slots. */
 export const WEB_FIELDS: ReadonlySet<EvidenceField> = new Set(["listing", "mention", "web_page"]);
 
 /** Fields shown in their own compact groups, never in the form's slots. */
-export const GROUP_FIELDS: ReadonlySet<EvidenceField> = new Set(["bio_link"]);
+export const GROUP_FIELDS: ReadonlySet<EvidenceField> = new Set(["bio_link", "link_page"]);
 
 function asString(value: unknown): string | null {
   return typeof value === "string" && value.trim() ? value : null;
@@ -589,7 +594,7 @@ export function customItem(
 export function candidateCategory(field: EvidenceField): "media" | "fact" | "social" | "link" | "identity" {
   if (field === "logo") return "media";
   if (field === "social") return "social";
-  if (field === "website" || field === "listing" || field === "mention" || field === "web_page") return "link";
+  if (field === "website" || field === "listing" || field === "mention" || field === "web_page" || field === "link_page") return "link";
   if (field === "phone" || field === "email" || field === "address") return "fact";
   return "identity";
 }
@@ -704,12 +709,21 @@ export function compareRows(items: EvidenceItem[]): PlatformRow[] {
     });
   }
 
-  // Websites — one per host: the address itself plus everything read off that site.
+  // Websites — one per host: the address itself plus everything read off that site. A link-in-bio page
+  // (Linktree, Stan, …) is NEVER a site: what was read off it is not "from a site", and it is never a candidate.
   const siteItems = items.filter(
-    (i) => i.source.kind !== "social_profile" && i.source.kind !== "typed" && i.source.kind !== "web_search" && i.field !== "social",
+    (i) =>
+      i.source.kind !== "social_profile" &&
+      i.source.kind !== "typed" &&
+      i.source.kind !== "web_search" &&
+      i.source.kind !== "link_in_bio" &&
+      !isLinkInBioUrl(i.source.url) &&
+      !LINK_PAGE_FIELDS.has(i.field) &&
+      !(i.field === "website" && isLinkInBioUrl(i.url ?? i.value)) &&
+      i.field !== "social",
   );
   const hosts = new Map<string, EvidenceItem | null>();
-  for (const w of items.filter((i) => i.field === "website")) {
+  for (const w of items.filter((i) => i.field === "website" && !isLinkInBioUrl(i.url ?? i.value))) {
     const h = websiteHost(w.value);
     const current = hosts.get(h);
     if (!current || (current.source.kind === "social_profile" && w.source.kind !== "social_profile")) hosts.set(h, w);
@@ -788,15 +802,60 @@ export function bestFindingHints(items: Map<string, EvidenceItem>): Pick<Confirm
   return { ...(category ? { hint_category: category } : {}), ...(location ? { hint_location: location } : {}) };
 }
 
-/** The links a link-in-bio page shows (exact addresses), grouped by the page they came from, in page order. */
-export function bioLinkGroups(items: Iterable<EvidenceItem>): { from: string; links: EvidenceItem[] }[] {
-  const groups = new Map<string, EvidenceItem[]>();
-  for (const i of items) {
-    if (i.field !== "bio_link") continue;
-    const from = i.source.where ?? "from their bio";
-    groups.set(from, [...(groups.get(from) ?? []), i]);
+/** The fields that belong to a link-in-bio page (the page, and the plain links it shows). */
+const LINK_PAGE_FIELDS: ReadonlySet<EvidenceField> = new Set(["link_page", "bio_link"]);
+
+/** A link-in-bio page of the brand's (Linktree, Beacons, Stan, …), with the plain links it shows. */
+export interface LinkPage {
+  /** The page's evidence key (`link_page:<address>`); saved under it. */
+  key: string;
+  url: string;
+  /** "Linktree", "Stan Store", … */
+  service: string;
+  /** The profile name on the service. */
+  handle: string | null;
+  item: EvidenceItem;
+  /** The links it shows that are neither an account nor a site (those are in their own slots), in page order. */
+  links: EvidenceItem[];
+  /** Theirs without asking: linked from their site, a profile or another link page, typed, or their handle. */
+  theirs: boolean;
+}
+
+const pageAddress = (url: string) =>
+  url.trim().toLowerCase().replace(/^[a-z]+:\/\//, "").replace(/^www\./, "").replace(/[?#].*$/, "").replace(/\/+$/, "");
+const OWN_SOURCES: ReadonlySet<EvidenceSource["kind"]> = new Set(["website", "link_in_bio", "social_profile", "typed"]);
+
+/**
+ * Every link-in-bio page found (the server's `link_page` items, plus the page any `link_in_bio`-sourced finding
+ * was read from), each with its plain links. `handles` = the brand's known handles: a page found on the web
+ * carrying one is theirs too. A page from anywhere else is listed but not theirs (`theirs: false`).
+ */
+export function linkPages(items: Iterable<EvidenceItem>, handles: readonly string[] = []): LinkPage[] {
+  const all = [...items];
+  const known = new Set(handles.map((h) => h.replace(/^@/, "").toLowerCase().replace(/[^a-z0-9]/g, "")).filter(Boolean));
+  const pages = new Map<string, LinkPage>();
+  const add = (item: EvidenceItem) => {
+    const url = item.url ?? item.value;
+    const service = linkInBioService(url);
+    const address = pageAddress(url);
+    if (!service || !address || pages.has(address)) return;
+    const handle = item.handle ?? (address.split("/").filter(Boolean).slice(1).pop() || address.split(".")[0] || null);
+    const theirs = OWN_SOURCES.has(item.source.kind) || known.has((handle ?? "").toLowerCase().replace(/[^a-z0-9]/g, ""));
+    pages.set(address, { key: item.key, url: /^https?:\/\//i.test(url) ? url : `https://${url}`, service: service.name, handle, item, links: [], theirs });
+  };
+  for (const i of all) if (i.field === "link_page") add(i);
+  // Older rounds: a second link page the first one shows arrived as a plain bio link.
+  for (const i of all) if (i.field === "bio_link" && linkInBioService(i.url ?? i.value)) add({ ...i, field: "link_page" });
+  // Older rounds carry no page item: the page their links were read from is the page.
+  for (const i of all) {
+    if (i.source.kind !== "link_in_bio" || !i.source.url || pages.has(pageAddress(i.source.url))) continue;
+    add({ ...i, key: `link_page:${pageAddress(i.source.url)}`, field: "link_page", value: i.source.url, url: i.source.url, label: null, handle: null });
   }
-  return [...groups.entries()].map(([from, links]) => ({ from, links }));
+  for (const i of all) {
+    if (i.field !== "bio_link" || !i.source.url || pages.has(pageAddress(i.url ?? i.value))) continue;
+    pages.get(pageAddress(i.source.url))?.links.push(i);
+  }
+  return [...pages.values()];
 }
 
 const CERTAINTY_RANK: Record<Certainty, number> = { certain: 0, likely: 1, possible: 2 };

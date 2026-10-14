@@ -57,5 +57,6 @@ Rules:
 
 ## Change Log
 
+- 2026-10-14 — Link-in-bio pages (Linktree, Stan, Beacons…) are "Link pages": their own spot (`SmartAddBioLinks.tsx`, `linkPages`), auto-kept as relation `link_in_bio_page` on Create, never a website candidate (`compareRows`) and never compared (`isSettledWithoutAsking` also settles typed items). One service list mirrors the server registry (`lib/link-in-bio.ts`); guard `__tests__/linkPages.test.ts`.
 - 2026-10-14 — Smart Add gets real URLs: mode routes, deep links, `run=` resume, `via`/`view`, helper `?panels=`; `smartAddUrl.ts` + tests (`__tests__/smartAddUrl.test.ts`).
 - 2026-10-14 — Run memory saves every answer kind (skips, tagline moves, web marks); the name row leaves the list on Tagline (Undo on About); mobile Yes/No/Other no longer pushed off the left edge beside an Open link; the run attach reads the row and the event log at once.
