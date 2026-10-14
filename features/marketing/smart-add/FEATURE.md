@@ -71,8 +71,13 @@ Every typed entry ends in one answer. The server's first-data point carries `ent
 
 Tests: `__tests__/entryOutcome.test.ts` (state machine, inference, copy budgets, up-front checks).
 
+## You already have this brand (`brandMatch.ts`)
+
+Checked while the entry is typed (before any search is paid for; Go holds until the person answers) and again from the round's confirmed site, accounts and name. A brand the person can see in any organization matches on the same site domain, the same account (platform + handle), or the same normalized name with a shared city or domain name; a name of only common words never matches. One notice (`ExistingBrandNotice`, laid over the space under the entry row and above the Create bar, never moving the page): Open it, Add what's new to it (enrich, carrying the typed or confirmed website and account in `?website=&social=&platform=`), Create a separate brand. Create asks once with the canonical confirm when a match is unanswered. Reads: `brandMatchLive.ts` (four narrow queries under row security, then one for the matched brands).
+
 ## Change Log
 
+- 2026-10-14 — Duplicate-brand detection: brandMatch, notice at entry and above Create, enrich carry.
 - 2026-10-14 — Honest endings: entry outcomes (server + inferred), up-front URL/handle checks, quiet-time "Still working…" with Stop / Start over, Edit truly restarts, browser Back returns to the entry, Start over with a confirm when work would be lost.
 
 - 2026-10-14 — Link-in-bio pages (Linktree, Stan, Beacons…) are "Link pages": their own spot (`SmartAddBioLinks.tsx`, `linkPages`), auto-kept as relation `link_in_bio_page` on Create, never a website candidate (`compareRows`) and never compared (`isSettledWithoutAsking` also settles typed items). One service list mirrors the server registry (`lib/link-in-bio.ts`); guard `__tests__/linkPages.test.ts`.

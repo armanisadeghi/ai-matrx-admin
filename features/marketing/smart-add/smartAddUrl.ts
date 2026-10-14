@@ -194,7 +194,11 @@ export function smartAddHref(link: SmartAddLink = {}): string {
   return withQuery(smartAddPath(mode ?? "company"), q);
 }
 
-/** Enrich one existing brand through Smart Add. */
-export function smartAddEnrichHref(brandId: string): string {
-  return `${SMART_ADD_BASE}/enrich/${encodeURIComponent(brandId)}`;
+/**
+ * Enrich one existing brand through Smart Add. `carry` is the website and account already typed or confirmed in
+ * a session (the "you already have this brand" notice): they ride the address and join the run as the person's answers.
+ */
+export function smartAddEnrichHref(brandId: string, carry: Pick<SmartAddPrefill, "website" | "social" | "platform"> = {}): string {
+  const q = patchSmartAddSearch(new URLSearchParams(), { website: carry.website, social: carry.social, platform: carry.platform });
+  return withQuery(`${SMART_ADD_BASE}/enrich/${encodeURIComponent(brandId)}`, q);
 }

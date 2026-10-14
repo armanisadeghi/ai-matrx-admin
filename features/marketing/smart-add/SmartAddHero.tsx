@@ -97,6 +97,9 @@ export function SmartAddHero({
   slow = false,
   onRestart,
   onStarted,
+  notice = null,
+  onBeforeStart,
+  released = 0,
 }: {
   person: boolean;
   onPerson: (person: boolean) => void;
@@ -136,6 +139,12 @@ export function SmartAddHero({
   onRestart?: (how: "edit" | "retry" | "over") => Promise<boolean>;
   /** A search starts (one history entry: Back returns here). */
   onStarted?: () => void;
+  /** The "you already have this brand" notice: laid over the space under the entry row (it never moves the page). */
+  notice?: ReactNode;
+  /** Asked before a search starts, with what was typed; false holds the search (the notice says why). */
+  onBeforeStart?: (typed: { website: string; social: string; platform: SocialPlatform | null; name: string; city: string }) => Promise<boolean>;
+  /** Bumped when the held search may go ahead (the person chose a separate brand). */
+  released?: number;
 }) {
   const [mode, setModeState] = useState<Mode | null>(initialVia);
   const setMode = (m: Mode | null) => {
@@ -215,8 +224,23 @@ export function SmartAddHero({
     setMode("name");
   };
 
+  const held = useRef(false);
   const submit = (pk: SocialPlatform | null = picked) => {
     if (!readyFor(pk)) return;
+    if (!onBeforeStart) return go(pk);
+    void onBeforeStart({ website: siteOk ? site.trim() : "", social: socialOkFor(pk) ? social.trim() : "", platform: pk, name: name.trim(), city: city.trim() }).then((ok) => {
+      held.current = !ok;
+      if (ok) go(pk);
+    });
+  };
+  const goHeld = useEffectEvent(() => {
+    if (held.current) {
+      held.current = false;
+      go(picked);
+    }
+  });
+  useEffect(() => goHeld(), [released]);
+  const go = (pk: SocialPlatform | null) => {
     if (mode === "name" && person && onFindPerson) {
       if (!occupation.trim() && !company.trim() && !askedClue) {
         setAskedClue(true);
@@ -527,6 +551,7 @@ export function SmartAddHero({
 
           {/* Below the input: one quiet row of options while entering (fixed height, never shifts). */}
           {phase === "enter" ? (
+            <>
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -555,6 +580,8 @@ export function SmartAddHero({
                 </div>
               )}
             </motion.div>
+            {notice ? <div className="relative h-0 w-full">{notice}</div> : null}
+            </>
           ) : null}
 
           {compact ? (

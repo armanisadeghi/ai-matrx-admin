@@ -22,7 +22,7 @@ export function SmartAddBrandPage() {
         <StageBackdrop />
         <main className="relative h-full overflow-y-auto">
           {enrichBrandId ? (
-            <SmartAddEnrichFlow key={enrichBrandId} brandId={enrichBrandId} onChanged={() => router.refresh()} />
+            <SmartAddEnrichFlow key={enrichBrandId} brandId={enrichBrandId} carry={url.address.prefill} onChanged={() => router.refresh()} />
           ) : url.address.mode ? (
             <SmartAddBrand onCreated={() => router.refresh()} url={url} />
           ) : null}

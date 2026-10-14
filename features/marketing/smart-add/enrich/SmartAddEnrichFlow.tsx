@@ -15,8 +15,19 @@ import { SmartAddBrand, type SmartAddEnrich } from "../SmartAddBrand";
 import { loadBrandSnapshot } from "./brandState";
 import { enrichSeed, knownFacts, type BrandSnapshot, type KnownFact } from "./known";
 import { KnownFactsWindow } from "./KnownFactsWindow";
+import { withCarried } from "./carry";
+import type { SmartAddPrefill } from "../smartAddUrl";
 
-export function SmartAddEnrichFlow({ brandId, onChanged }: { brandId: string; onChanged?: (brand: MarketingBrand) => void }) {
+export function SmartAddEnrichFlow({
+  brandId,
+  onChanged,
+  carry = {},
+}: {
+  brandId: string;
+  onChanged?: (brand: MarketingBrand) => void;
+  /** The website and account a Smart Add session already had (the duplicate-brand notice): joined to the run as answers. */
+  carry?: Pick<SmartAddPrefill, "website" | "social" | "platform">;
+}) {
   const [snapshot, setSnapshot] = useState<BrandSnapshot | null>(null);
   const [known, setKnown] = useState<KnownFact[]>([]);
   const [checked, setChecked] = useState<Set<string>>(new Set());
@@ -63,7 +74,7 @@ export function SmartAddEnrichFlow({ brandId, onChanged }: { brandId: string; on
       checked={checked}
       onChange={setChecked}
       starting={false}
-      onStart={() => setRun({ snapshot, known, checked, seed: enrichSeed(known, checked, snapshot.exclusions) })}
+      onStart={() => setRun({ snapshot, known, checked, seed: withCarried(enrichSeed(known, checked, snapshot.exclusions), carry) })}
     />
   );
 }

@@ -17,6 +17,7 @@
  */
 
 import { useEffect, useEffectEvent, useLayoutEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Check, ExternalLink, Globe, Loader2, RotateCcw, X } from "lucide-react";
 import { Button, Field, SegmentedControl, Select, type SelectOption } from "@ai-matrx/design-system/controls";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
@@ -28,6 +29,11 @@ import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
 import { useCostDisplay } from "@/components/cost/useCostDisplay";
 import { extractErrorMessage } from "@/utils/errors";
 import { planKeptFacts, saveKeptFacts } from "./keptFacts";
+import { probeFromDraft, type BrandMatch, type BrandProbe } from "./brandMatch";
+import { findMatchingBrands } from "./brandMatchLive";
+import { useExistingBrands } from "./useExistingBrands";
+import { ExistingBrandNotice } from "./ExistingBrandNotice";
+import { smartAddEnrichHref } from "./smartAddUrl";
 import { factSlotKey } from "./firstData";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { formatCount } from "@ai-matrx/kit/format";
@@ -66,6 +72,7 @@ import { profileAvatarDoor } from "@/features/marketing/social/server";
 import { PlatformMark, platformLabel } from "@/features/marketing/social/components/PlatformMark";
 import { SocialImage } from "@/features/marketing/social/components/SocialImage";
 import {
+  isSocialPlatform,
   SOCIAL_PLATFORMS,
   SOCIAL_PLATFORM_LABELS,
   type SocialPlatform,
@@ -992,6 +999,22 @@ export function SmartAddBrand({
 
   const create = async () => {
     if (!basics.name) return;
+    // A brand they already have, found by the same site, account or name: ask once, then it is their call.
+    if (confirmedProbe) {
+      const strong = (await findMatchingBrands(confirmedProbe).catch(() => [])).filter((m) => !separateRef.current.has(m.brand.id));
+      if (strong.length) {
+        const names = strong.slice(0, 2).map((m) => m.brand.name).join(" and ");
+        const ok = await confirm({
+          title: "Create another brand?",
+          description: `You already have ${names}${strong.length > 2 ? " and more" : ""}. This makes a separate one.`,
+          confirmLabel: "Create separate brand",
+          cancelLabel: "Not yet",
+        });
+        if (!ok) return;
+        separateRef.current = new Set([...separateRef.current, ...strong.map((m) => m.brand.id)]);
+        setSeparateIds(separateRef.current);
+      }
+    }
     setCreating(true);
     setCreateError(null);
     try {
@@ -1356,6 +1379,59 @@ export function SmartAddBrand({
   useLayoutEffect(() => {
     if (structured) riseIn(pageRef.current);
   }, [structured]);
+  // ── you already have this brand (brandMatch.ts) ──────────────────────────
+  // Checked as soon as the entry is typed, before any search is paid for, and again from what the round confirmed.
+  // It offers and never blocks: open it, add what is new to it (enrich), or create a separate brand.
+  const router = useRouter();
+  const [entryProbe, setEntryProbe] = useState<BrandProbe | null>(null);
+  const [separateIds, setSeparateIds] = useState<ReadonlySet<string>>(new Set());
+  const separateRef = useRef<ReadonlySet<string>>(separateIds);
+  const [released, setReleased] = useState(0);
+  const checkMatches = !enrich && !person;
+  const confirmedProbe: BrandProbe | null =
+    checkMatches && structured
+      ? {
+          domains: [basics.websiteUrl, ...basics.otherWebsites].filter((u): u is string => Boolean(u)).map(websiteHost),
+          accounts: basics.accounts.filter((a) => a.handle).map((a) => ({ platform: a.platform ?? null, handle: a.handle as string })),
+          name: basics.name,
+          place: basics.facts.find((f) => f.field === "address")?.value ?? entryProbe?.place ?? null,
+        }
+      : null;
+  const existing = useExistingBrands(checkMatches ? (confirmedProbe ?? entryProbe) : null);
+  const matches = existing.matches.filter((m) => !separateIds.has(m.brand.id));
+  const chooseSeparate = () => {
+    const next = new Set([...separateRef.current, ...matches.map((m) => m.brand.id)]);
+    separateRef.current = next;
+    setSeparateIds(next);
+    setReleased((n) => n + 1);
+  };
+  /** Add what is new to an existing brand: the enrich flow, carrying the website and account this session has. */
+  const addToExisting = (m: BrandMatch) => {
+    const account = basics.accounts.find((a) => a.platform && isSocialPlatform(a.platform));
+    // Before any search the answers are only what was typed (the entry's probe); later, what the round confirmed.
+    const typed = entryProbe?.accounts.find((a) => a.platform && isSocialPlatform(a.platform));
+    const carried =
+      account && account.platform && isSocialPlatform(account.platform)
+        ? { social: account.url ?? account.value, platform: account.platform }
+        : typed && typed.platform && isSocialPlatform(typed.platform)
+          ? { social: typed.handle, platform: typed.platform }
+          : {};
+    stopRuns();
+    router.push(smartAddEnrichHref(m.brand.id, { website: basics.websiteUrl ?? (typedWebsite || entryProbe?.domains[0] || undefined), ...carried }));
+  };
+  /** Before a search starts: wait (a moment) for the check; a match the person has not answered holds the search. */
+  const beforeStart = async (typed: Parameters<NonNullable<React.ComponentProps<typeof SmartAddHero>["onBeforeStart"]>>[0]) => {
+    if (!checkMatches) return true;
+    const probe = probeFromDraft(typed);
+    setEntryProbe(probe);
+    try {
+      const found = await Promise.race([findMatchingBrands(probe), new Promise<BrandMatch[]>((resolve) => setTimeout(() => resolve([]), 3000))]);
+      return !found.some((m) => !separateRef.current.has(m.brand.id));
+    } catch {
+      return true;
+    }
+  };
+
   const nothingFound = rounds.length > 0 && !working && !hasFindings;
   const listeners = (
     <>
@@ -1416,7 +1492,13 @@ export function SmartAddBrand({
           via={url ? url.address.viaParam : undefined}
           initialVia={url?.address.via ?? null}
           onVia={url?.setVia}
-          onDraft={url?.write}
+          onDraft={(draft) => {
+            url?.write(draft);
+            if (checkMatches) setEntryProbe(probeFromDraft(draft));
+          }}
+          notice={<ExistingBrandNotice placement="below" matches={matches} error={existing.error} onAddTo={addToExisting} onSeparate={chooseSeparate} />}
+          onBeforeStart={beforeStart}
+          released={released}
           autoStart={Boolean(url?.autoStart) && !fresh}
           resumed={Boolean(resume) && !fresh}
           outcome={entryFailed ? entryOutcome : null}
@@ -1684,7 +1766,9 @@ export function SmartAddBrand({
       <SmartAddBioLinks items={visible} />
 
       {/* Create: the confirmed basics, one row. */}
-      <div className="sticky bottom-3 z-10 flex min-h-12 flex-wrap items-center gap-x-3 gap-y-2 rounded-xl border border-border bg-card/95 px-4 py-2 shadow-lg backdrop-blur">
+      <div className="sticky bottom-3 z-10">
+      {created ? null : <ExistingBrandNotice placement="above" matches={matches} error={existing.error} onAddTo={addToExisting} onSeparate={chooseSeparate} />}
+      <div className="flex min-h-12 flex-wrap items-center gap-x-3 gap-y-2 rounded-xl border border-border bg-card/95 px-4 py-2 shadow-lg backdrop-blur">
         {/* Two rows: the brand, then what Create files and what it spends — each fact once, nothing cut off. */}
         <div className="flex min-w-0 flex-1 basis-full items-center gap-2.5 sm:basis-0">
           {basics.logoUrl ? (
@@ -1734,6 +1818,7 @@ export function SmartAddBrand({
             </Button>
           )
         )}
+      </div>
       </div>
       {createError ? (
         <p className="flex items-center gap-1 text-xs text-destructive">
