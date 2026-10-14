@@ -103,5 +103,22 @@ export function useFileFavorites(type: FileEntityType) {
     [s, type],
   );
 
-  return { starredIds: ids, isStarred: (id: string) => ids.has(id), toggle };
+  /** Star or unstar many at once (bulk bar). Throws on failure so the caller can name the row. */
+  const setStarred = useCallback(
+    async (id: string, starred: boolean) => {
+      const { error } = await createClient().rpc("ues_set", {
+        p_entity_type: type,
+        p_entity_id: id,
+        p_is_favorite: starred,
+      });
+      if (error) throw new Error(error.message);
+      const next = new Set(s.ids);
+      if (starred) next.add(id);
+      else next.delete(id);
+      emit(s, next);
+    },
+    [s, type],
+  );
+
+  return { starredIds: ids, isStarred: (id: string) => ids.has(id), toggle, setStarred };
 }

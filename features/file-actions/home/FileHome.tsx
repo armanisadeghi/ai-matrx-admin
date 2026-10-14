@@ -52,6 +52,7 @@ import type { FileKindAdapter } from "../types";
 import type { HomeKind } from "./home-kinds";
 import { RecordThumb } from "./RecordThumb";
 import { FileHomeTable } from "./FileHomeTable";
+import { useFileHomeBulk } from "./useFileHomeBulk";
 import { HomeCardsSkeleton, HomePhoneRowsSkeleton, HomeTableSkeleton } from "./HomeSkeleton";
 import {
   groupHomeItems,
@@ -182,6 +183,14 @@ export function FileHome<Row extends { id: string; user_id: string }>(props: Fil
   const groups = groupHomeItems(sorted, sort, now);
   const visibleRows = sorted.map((d) => d.item.row);
 
+  const bulk = useFileHomeBulk({ kind, adapter, rows: sorted, userId, trashed, reload });
+  // A selection belongs to the list it was ticked in: a new scope or search starts clean.
+  const clearBulk = bulk.clear;
+  useEffect(() => {
+    clearBulk();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [scope, query]);
+
   const ownerLabel = (ownerId: string) =>
     ownerId === userId ? "me" : (ownerNames.get(ownerId) ?? "Someone else");
 
@@ -307,6 +316,7 @@ export function FileHome<Row extends { id: string; user_id: string }>(props: Fil
             </SortGroup>
           </div>
           {dialogs}
+          {bulk.dialog}
 
           {loading ? (
             isPhone ? (
@@ -368,6 +378,7 @@ export function FileHome<Row extends { id: string; user_id: string }>(props: Fil
               sectionsFor={(payload) => sectionsFor(payload, trashed)}
               marksFor={props.marksFor}
               columns={office ? "office" : "google"}
+              selection={bulk.selection}
             />
           ) : null}
 

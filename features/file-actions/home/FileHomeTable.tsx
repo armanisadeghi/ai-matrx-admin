@@ -18,6 +18,7 @@ import {
   type MatrxColumnDef,
   type MatrxTableMenuSection,
 } from "@ai-matrx/design-system/data-table";
+import type { MatrxDataTableSelectionConfig } from "@ai-matrx/design-system/data-table/types";
 import { Badge } from "@ai-matrx/design-system/controls";
 import { EntityRef } from "@/components/official/entity-ref/EntityRef";
 import { formatAbsoluteDate, toEpochMs } from "@/utils/datetime";
@@ -56,6 +57,7 @@ export function FileHomeTable<Row>({
   sectionsFor,
   marksFor,
   columns: columnSet = "google",
+  selection,
 }: {
   kind: HomeKind;
   items: Line<Row>[];
@@ -69,6 +71,8 @@ export function FileHomeTable<Row>({
   marksFor?: (row: Row, where: "card" | "table") => ReactNode;
   /** Column order: Google's (Name, Owner, Last opened by me) or Office's (Name, Opened, Owner). */
   columns?: "google" | "office";
+  /** Row checkboxes + the shared bulk bar (`useFileHomeBulk`). */
+  selection?: MatrxDataTableSelectionConfig<Line<Row>>;
 }) {
   const now = Date.now();
   const columns: MatrxColumnDef<Line<Row>>[] = [
@@ -157,6 +161,7 @@ export function FileHomeTable<Row>({
       tableId={columnSet === "office" ? `${kind.kind}s/home-office` : `${kind.kind}s/home`}
       rowToken={kind.token}
       viewTabs={false}
+      selection={selection}
       data={items}
       columns={ordered}
       getRowId={(l) => l.item.id}
