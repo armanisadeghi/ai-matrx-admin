@@ -410,6 +410,8 @@ export interface SystemPreferences {
   showCostInUsd: boolean;
   /** Guided tutorial ids this person finished (features/guided-tutorials). */
   completedTutorials: string[];
+  /** First-use hint ids this person has learned (FirstUseHint, providers/FirstUseHintHost). */
+  learnedHints: string[];
 }
 
 export interface MessagingPreferences {
@@ -1372,6 +1374,7 @@ export const initializeUserPreferencesState = (
       feedbackFeatureViewCount: 0,
       showCostInUsd: false,
       completedTutorials: [],
+      learnedHints: [],
     },
     messaging: {
       notificationSoundEnabled: true,
