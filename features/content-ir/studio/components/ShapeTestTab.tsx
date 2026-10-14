@@ -396,7 +396,7 @@ export default function ShapeTestTab({
                 <summary className="cursor-pointer px-3 py-2 text-xs font-medium text-muted-foreground hover:text-foreground">
                   Instance JSON
                 </summary>
-                <pre className="max-h-[24rem] overflow-auto border-t border-border p-3 font-mono text-[11px] text-foreground">
+                <pre data-kind-source="explicit" className="max-h-[24rem] overflow-auto border-t border-border p-3 font-mono text-[11px] text-foreground">
                   {JSON.stringify(instance, null, 2)}
                 </pre>
               </details>

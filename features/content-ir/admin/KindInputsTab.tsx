@@ -568,7 +568,7 @@ function JsonPanel({
         <summary className="cursor-pointer px-3 py-1.5 text-[11px] text-muted-foreground hover:text-foreground">
           {text.length.toLocaleString()} chars — click to collapse
         </summary>
-        <pre className="max-h-72 overflow-auto border-t border-border p-3 font-mono text-[11px] text-foreground">
+        <pre data-kind-source="explicit" className="max-h-72 overflow-auto border-t border-border p-3 font-mono text-[11px] text-foreground">
           {text}
         </pre>
       </details>

@@ -181,7 +181,7 @@ export default function KindContentBlockGenerator({
             Copy
           </button>
         </div>
-        <pre className="max-h-72 overflow-auto p-3 font-mono text-[11px] leading-relaxed text-foreground whitespace-pre-wrap">
+        <pre data-kind-source="explicit" className="max-h-72 overflow-auto p-3 font-mono text-[11px] leading-relaxed text-foreground whitespace-pre-wrap">
           {block.template}
         </pre>
       </div>

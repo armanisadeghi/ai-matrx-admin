@@ -27,7 +27,27 @@ import {
  * form — `{\"__kind\":…}` is a raw view of an object holding a string-held
  * kind, and that IS a leak (ruling c, round 6).
  */
-export function screenTextHoldsKind(text: string): boolean {
+/**
+ * A JSON SCHEMA document names `__kind` as a property it DECLARES, never as a
+ * payload value: `"__kind": { "const": "x" }` (key whose value is a schema
+ * object) and `"required": ["__kind", …]` (a name in a list). That is source
+ * text describing a kind, not a kind leaking. Only a document that reads as a
+ * JSON Schema (`$schema` / `$defs` / `definitions` / a `properties` map) gets
+ * the allowance, and only the two declaring forms are removed — a real payload
+ * (`"__kind": "slug"`, a string value) still counts, even inside a schema's
+ * `examples`. Tolerates truncation (the sentinel reads capped excerpts).
+ */
+const SCHEMA_DOCUMENT = /^\s*\{[\s\S]*"(?:\$schema|\$defs|definitions|properties)"\s*:/;
+const DECLARED_KIND_PROPERTY = /(["'])__kind\1\s*:\s*\{/g;
+const REQUIRED_LIST = /("required"\s*:\s*\[)[^\]]*(\]|$)/g;
+
+export function withoutJsonSchemaKindDeclarations(text: string): string {
+  if (!text.includes("__kind") || !SCHEMA_DOCUMENT.test(text)) return text;
+  return text.replace(REQUIRED_LIST, "$1$2").replace(DECLARED_KIND_PROPERTY, '"declared_kind": {');
+}
+
+export function screenTextHoldsKind(rawText: string): boolean {
+  const text = withoutJsonSchemaKindDeclarations(rawText);
   // Every spelling the owner ruled a kind (round 8): escaped, markdown-escaped,
   // repr, typographic quotes, entities, zero-width in the key.
   // Exotic spellings (double entities, `&#95;`, fullwidth quotes, bidi marks
@@ -43,7 +63,8 @@ export function screenTextHoldsKind(text: string): boolean {
  * typographic quotes, entities, a bare prose mention) is DETECTION ONLY: the
  * sentinel reports it (`screenTextHoldsKind`), the frame judge does not fail on it.
  */
-export function screenTextShowsJsonKind(text: string): boolean {
+export function screenTextShowsJsonKind(rawText: string): boolean {
+  const text = withoutJsonSchemaKindDeclarations(rawText);
   return hasJsonKindKey(text) && scanKindSpellingRegions(text).length > 0;
 }
 

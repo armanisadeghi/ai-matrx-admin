@@ -873,10 +873,27 @@ function bumpUnseen(id: string, tier: ErrorTier): void {
  */
 const TRANSPORT_DROP_CODES = new Set(["stream_transport_lost", "StreamTransportError"]);
 
+/**
+ * The bare browser fetch failure ("Failed to fetch" / Safari's "Load failed" /
+ * Firefox's "NetworkError…") on a Supabase or app-API call. A navigating page
+ * kills its in-flight fetches with exactly this and NO abort signal, so the
+ * caller cannot tell it from a lost connection - only the page can (it was
+ * leaving). Real PostgREST answers carry a code/status and never match.
+ */
+const BROWSER_FETCH_FAILURE = /^(?:TypeError: )?(?:Failed to fetch|Load failed|NetworkError when attempting to fetch)/i;
+const FETCH_SOURCES = new Set<string>(["supabase-postgrest", "supabase-exception", "api-network"]);
+
+function isBareBrowserFetchFailure(input: CaptureInput): boolean {
+  if (!FETCH_SOURCES.has(input.source)) return false;
+  if (input.name !== undefined && input.name !== "TypeError") return false;
+  return BROWSER_FETCH_FAILURE.test((input.message ?? "").trim());
+}
+
 function isLeavingPageTransportDrop(input: CaptureInput): boolean {
   const named =
     (input.code !== undefined && TRANSPORT_DROP_CODES.has(input.code)) ||
-    (input.name !== undefined && TRANSPORT_DROP_CODES.has(input.name));
+    (input.name !== undefined && TRANSPORT_DROP_CODES.has(input.name)) ||
+    isBareBrowserFetchFailure(input);
   return named && pageIsLeaving();
 }
 

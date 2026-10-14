@@ -97,7 +97,7 @@ function JsonPeek({ label, value }: { label: string; value: unknown }) {
       <div className="mb-1 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
         {label}
       </div>
-      <pre className="max-h-40 overflow-auto rounded border border-border bg-muted/40 p-2 text-[11px] leading-relaxed text-foreground">
+      <pre data-kind-source="explicit" className="max-h-40 overflow-auto rounded border border-border bg-muted/40 p-2 text-[11px] leading-relaxed text-foreground">
         {JSON.stringify(value, null, 2)}
       </pre>
     </div>
@@ -298,7 +298,7 @@ export default function KindIncidentsTab() {
               {isOpen && (
                 <div className="mt-2 space-y-3 pl-6">
                   <p className="text-xs text-muted-foreground">{copy.hint}</p>
-                  <pre className="max-h-40 overflow-auto whitespace-pre-wrap rounded border border-border bg-muted/40 p-2 text-[11px] leading-relaxed text-foreground">
+                  <pre data-kind-source="explicit" className="max-h-40 overflow-auto whitespace-pre-wrap rounded border border-border bg-muted/40 p-2 text-[11px] leading-relaxed text-foreground">
                     {row.errorMessage}
                   </pre>
                   {row.errorStack && (

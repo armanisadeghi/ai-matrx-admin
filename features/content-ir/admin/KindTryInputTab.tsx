@@ -87,7 +87,7 @@ export default function KindTryInputTab({ kind }: KindTryInputTabProps) {
               Submit the form — the validated canonical instance lands here.
             </p>
           ) : (
-            <pre className="max-h-[32rem] overflow-auto p-3 font-mono text-[11px] text-foreground">
+            <pre data-kind-source="explicit" className="max-h-[32rem] overflow-auto p-3 font-mono text-[11px] text-foreground">
               {submitted}
             </pre>
           )}

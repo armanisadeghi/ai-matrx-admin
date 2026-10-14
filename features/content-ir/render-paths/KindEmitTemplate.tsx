@@ -83,7 +83,7 @@ export default function KindEmitTemplate({
           </button>
         </div>
       </div>
-      <pre className="overflow-x-auto p-3 font-mono text-xs text-foreground">
+      <pre data-kind-source="explicit" className="overflow-x-auto p-3 font-mono text-xs text-foreground">
         {emitPayloadJson(kind, value)}
       </pre>
     </div>

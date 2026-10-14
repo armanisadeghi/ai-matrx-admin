@@ -177,7 +177,7 @@ export default function KindSchemaTab({
             <summary className="cursor-pointer px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground">
               {schemaText.length.toLocaleString()} chars — click to collapse
             </summary>
-            <pre className="overflow-x-auto border-t border-border p-3 font-mono text-xs text-foreground">
+            <pre data-kind-source="explicit" className="overflow-x-auto border-t border-border p-3 font-mono text-xs text-foreground">
               {schemaText}
             </pre>
           </details>
