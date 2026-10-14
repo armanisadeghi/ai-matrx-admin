@@ -11,6 +11,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { adminShapePath, planKindFixIt, planKindViewActions, type FixItViewer } from "../react/fixit/fixit-plan";
 import { FixItViewActions, KindFixItBarView } from "../react/fixit/KindFixItBar";
 import { readOwnInactiveLayerId } from "../react/fixit/layer-fixit";
+import { runLayerSwitchOff } from "../react/fixit/fixit-handlers";
 import { initialBuilderNotes } from "../admin/kind-builder-notes";
 
 const ME = "11111111-1111-1111-1111-111111111111";
@@ -368,5 +369,34 @@ describe("round 3, defect 1: the busiest strip state is one row", () => {
     expect(strip).toMatch(/extraActions=\{/);
     expect(strip).not.toMatch(/Build shared view<\/Button>/);
     expect(strip).toMatch(/flex-nowrap items-center overflow-hidden/);
+  });
+});
+
+describe("round 4: the switch-off handler hands over the personal row id synchronously", () => {
+  const ORG_AUD = { target: "organization" as const, organizationId: "o", organizationName: "Cedar" };
+  const MINE_AUD = { target: "mine" as const, organizationId: null, organizationName: null };
+  async function announced(audience: typeof ORG_AUD | typeof MINE_AUD) {
+    const seen: Array<string | null> = [];
+    await runLayerSwitchOff(
+      {
+        readLayerAudience: async () => audience,
+        readFallthrough: async () => "shared",
+        confirm: async () => true,
+        switchOff: async () => undefined,
+        switchOn: async () => undefined,
+        announce: (_m, _u, ownRowId) => seen.push(ownRowId),
+      },
+      { kind: "k", rowId: "row-1", reason: "remove" },
+    );
+    return seen;
+  }
+  it("announces my own row id for a personal view, and null for an organization's", async () => {
+    expect(await announced(MINE_AUD)).toEqual(["row-1"]);
+    expect(await announced(ORG_AUD)).toEqual([null]);
+  });
+  it("the hook turns it into Edit my view before any async read returns", () => {
+    const hook = fs.readFileSync(path.join(__dirname, "../react/fixit/useKindViewActions.ts"), "utf8");
+    expect(hook).toMatch(/setSwitchedOff\(\{ message, undo, ownRowId \}\)/);
+    expect(hook).toMatch(/switchedOff\.ownRowId\s*\?\s*\{ message: switchedOff\.message, rowId: switchedOff\.ownRowId \}/);
   });
 });

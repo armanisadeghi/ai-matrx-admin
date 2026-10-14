@@ -9209,6 +9209,10 @@ export type Database = {
       spend_alarm_provider_label: { Args: { p: string }; Returns: string }
       spend_alarm_raise: { Args: { p: Json }; Returns: Json }
       spend_alarm_regrade: { Args: { p_grades: Json }; Returns: number }
+      spend_alarm_restate_snapshots: {
+        Args: { p_kinds: string[] }
+        Returns: number
+      }
       spend_alarm_rollup_key: {
         Args: {
           p_kind: string
