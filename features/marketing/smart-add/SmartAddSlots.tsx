@@ -11,6 +11,7 @@
  */
 
 import { useState } from "react";
+import { FirstUseHint } from "@ai-matrx/design-system";
 import { Check, Maximize2, Moon, Star, Sun, Tag, X } from "lucide-react";
 import { Button } from "@ai-matrx/design-system/controls";
 import { formatCount } from "@ai-matrx/kit/format";
@@ -130,11 +131,21 @@ export function SmartAddSlots({
     <Choices item={item} decision={decisions[item.key] ?? null} choices={list} locked={locked} onDecide={onDecide} />
   );
 
+  // The first choice row carries the one-time hint (TipKit-style): pick an answer; nothing found is lost.
+  const firstChoice = (n: number, control: React.ReactNode) =>
+    n === 0 ? (
+      <FirstUseHint id="smart-add.first-choice" title="Pick Yes, No or Other" detail="Anything you don't mark No stays" when={!locked}>
+        <div className="flex items-center gap-1" data-smart-add-first-choice="">{control}</div>
+      </FirstUseHint>
+    ) : (
+      control
+    );
+
   return (
     <div className="flex flex-col divide-y divide-border" data-testid="smart-add-slots">
       <Slot title={person ? "Name" : "Brand name"} empty={of("name").length ? null : empty} after={custom("name", person ? "Your name" : "Brand name")}>
-        {of("name").map((i) => (
-          <Row key={i.key} item={i} decision={decisions[i.key] ?? null} actions={<>{choices(i, NAME_CHOICES)}{sourceLink(i)}</>}>
+        {of("name").map((i, n) => (
+          <Row key={i.key} item={i} decision={decisions[i.key] ?? null} actions={<>{firstChoice(n, choices(i, NAME_CHOICES))}{sourceLink(i)}</>}>
             <span className="min-w-0 truncate" title={i.value}><Shared id={i.key} positionOnly className="inline-block max-w-full truncate align-top text-lg font-semibold leading-tight">{i.value}</Shared></span>
           </Row>
         ))}

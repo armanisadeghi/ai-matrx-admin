@@ -1274,7 +1274,6 @@ export function SmartAddBrand({
       <div className="motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-3 motion-safe:duration-500">
       <BrandCard basics={cardBasics} screenshot={person ? null : (screenshots?.desktop?.url ?? null)} person={person} kind={kindBoth ? "both" : person ? "person" : "business"} onKind={answerKind} location={basics.facts.find((f) => f.field === "address")?.value ?? null} />
       </div>
-      <p className="text-xs text-muted-foreground">Everything found is kept — only “Not us” is left out.</p>
 
       {situation === "new" ? (
         // Brand-new: little to find, so three quick questions fill the essentials in place.
