@@ -580,11 +580,13 @@ export const moveTaskThunk = createAsyncThunk<
  */
 export const deleteTaskThunk = createAsyncThunk<
   void,
-  { taskId: string; projectId: string },
+  // `skipConfirm`: a bulk caller has already asked ONE question naming the count
+  // and the subtasks going along; everything else here is unchanged.
+  { taskId: string; projectId: string; skipConfirm?: boolean },
   { state: RootState; dispatch: AppDispatch }
 >(
   "tasksUi/deleteTask",
-  async ({ taskId, projectId }, { dispatch, getState }) => {
+  async ({ taskId, projectId, skipConfirm }, { dispatch, getState }) => {
     if (getState().tasksUi.operatingTaskIds.includes(taskId)) return;
     const current = getState().tasks.entities[taskId];
     if (!current) return;
@@ -607,6 +609,7 @@ export const deleteTaskThunk = createAsyncThunk<
           : ` and its ${subtaskIds.length} subtasks`;
 
     if (
+      !skipConfirm &&
       !(await confirm({
         title: "Move this task to the trash?",
         description: `This moves "${current.title}"${parts} to the trash. Nothing is destroyed — a task in the trash can be restored.`,

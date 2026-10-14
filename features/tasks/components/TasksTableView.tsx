@@ -2,7 +2,7 @@
 
 import { useTasksRead } from "@/features/tasks/hooks/useTasksRead";
 import React from "react";
-import { CheckCircle2, CircleDashed, Folder } from "lucide-react";
+import { CheckCircle2, CircleDashed, Flag, Folder, RotateCcw, Trash2 } from "lucide-react";
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
 import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
@@ -16,7 +16,14 @@ import {
   selectFilterOrgId,
   setFilterOrgId,
 } from "@/features/tasks/redux/taskUiSlice";
-import { toggleTaskCompleteThunk } from "@/features/tasks/redux/thunks";
+import {
+  deleteTaskThunk,
+  toggleTaskCompleteThunk,
+  updateTaskFieldThunk,
+} from "@/features/tasks/redux/thunks";
+import { useTableBulkSelection } from "@/lib/entity-list/useTableBulkSelection";
+import { runPerRow } from "@/lib/entity-list/standardBulkActions";
+import { bulkCountLabel, type EntityBulkAction } from "@/lib/entity-list/selection";
 import { TASK_LABEL_OPTIONS } from "@/features/tasks/services/taskService";
 import { Button } from "@/components/ui/button";
 import { keyFieldsAiVariant } from "@/features/marketing/lib/copy-payloads";
@@ -101,6 +108,112 @@ export default function TasksTableView() {
     d.setDate(d.getDate() + 7);
     return d.toISOString().split("T")[0];
   }, [today]);
+
+  const taskId = (task: TaskWithProject) => task.id;
+  const taskName = (task: TaskWithProject) => task.title;
+
+  // Batch verbs reuse the row UI's own doors (the complete toggle, the field
+  // updater, the delete thunk) one row at a time, so refusals are skipped and
+  // named. Every row keeps its checkbox; limits live inside each `run`.
+  const priorityAction = (
+    priority: "high" | "medium" | "low",
+    label: string,
+  ): EntityBulkAction<TaskWithProject> => ({
+    id: `set-priority-${priority}`,
+    label,
+    icon: Flag,
+    run: (selection) =>
+      runPerRow(
+        selection,
+        async (id) => {
+          await dispatch(
+            updateTaskFieldThunk({ taskId: id, patch: { priority } }),
+          ).unwrap();
+        },
+        { done: `Priority set to ${priority}`, noun: "task", labelOf: taskName },
+        taskId,
+      ),
+  });
+
+  const bulkActions: EntityBulkAction<TaskWithProject>[] = [
+    {
+      id: "mark-complete",
+      label: "Mark complete",
+      icon: CheckCircle2,
+      run: (selection) =>
+        runPerRow(
+          selection,
+          async (id, row) => {
+            if (row?.completed) throw new Error("already complete");
+            await dispatch(toggleTaskCompleteThunk({ taskId: id })).unwrap();
+          },
+          { done: "Marked complete", noun: "task", labelOf: taskName },
+          taskId,
+        ),
+    },
+    {
+      id: "reopen",
+      label: "Reopen",
+      icon: RotateCcw,
+      run: (selection) =>
+        runPerRow(
+          selection,
+          async (id, row) => {
+            if (row && !row.completed) throw new Error("already open");
+            await dispatch(toggleTaskCompleteThunk({ taskId: id })).unwrap();
+          },
+          { done: "Reopened", noun: "task", labelOf: taskName },
+          taskId,
+        ),
+    },
+    priorityAction("high", "High priority"),
+    priorityAction("medium", "Medium priority"),
+    priorityAction("low", "Low priority"),
+    {
+      // The task's OWN delete door (`deleteTaskThunk`): optimistic slice removal,
+      // subtasks leaving with their parent, project counts, rollback on refusal.
+      // The built-in trash would skip all of that, so it is replaced by id.
+      id: "move-to-trash",
+      label: "Move to Trash",
+      icon: Trash2,
+      variant: "destructive",
+      confirm: (selection) => ({
+        title: `Move ${bulkCountLabel(selection.count, "task")} to Trash?`,
+        description:
+          "Their subtasks go with them. They can be restored from Trash.",
+        confirmLabel: "Move to Trash",
+        variant: "destructive",
+      }),
+      run: (selection) =>
+        runPerRow(
+          selection,
+          async (id, row) => {
+            await dispatch(
+              deleteTaskThunk({
+                taskId: id,
+                projectId: row?.projectId ?? "",
+                skipConfirm: true,
+              }),
+            ).unwrap();
+          },
+          { done: "Moved to Trash", noun: "task", labelOf: taskName },
+          taskId,
+        ),
+    },
+  ];
+
+  // The task list is a live Redux slice (realtime + optimistic), so no refetch.
+  const bulk = useTableBulkSelection<TaskWithProject>({
+    token: "task",
+    noun: "task",
+    rows: tasks,
+    getRowId: taskId,
+    getRowName: taskName,
+    actions: bulkActions,
+    standardBulkActions: { trash: false },
+    onRefresh: () => {},
+    onRemoveRows: () => {},
+  });
 
   const columns = React.useMemo<MatrxColumnDef<TaskWithProject>[]>(
     () => [
@@ -345,6 +458,7 @@ export default function TasksTableView() {
         fitToWidth="grow"
         frameHeight="fill"
         selectedId={selectedTaskId}
+        selection={bulk.selection}
         detail={{ enabled: false }}
         onRowOpen={(task) => dispatch(setSelectedTaskId(task.id))}
         window={{}}

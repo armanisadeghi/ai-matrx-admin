@@ -55,6 +55,7 @@ import { ErrorNotice, StaleDataNotice } from "@ai-matrx/design-system";
 import { ProjectCopyForAiButton } from "@/features/projects/components/ProjectCopyForAiButton";
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
 import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
+import { useTableBulkSelection } from "@/lib/entity-list/useTableBulkSelection";
 import { supabase } from "@/utils/supabase/client";
 import { projectsDb } from "@/utils/supabase/projectsDb";
 import { scopesService } from "@/features/scopes/service/scopesService";
@@ -849,6 +850,7 @@ export function ProjectsHub({
             ) : view === "table" ? (
               <ProjectsTable
                 projects={filtered}
+                onRefresh={refresh}
                 stats={stats}
                 orgMap={orgMap}
                 statsReadFailed={statsReadFailed}
@@ -964,16 +966,30 @@ function ProjectsHubSkeleton({
 
 function ProjectsTable({
   projects,
+  onRefresh,
   stats,
   orgMap,
   statsReadFailed,
 }: {
   projects: ProjectWithRole[];
+  onRefresh: () => void;
   stats: Map<string, Stat>;
   orgMap: OrgMap;
   statsReadFailed: boolean;
 }) {
   const router = useRouter();
+
+  // Built-in verbs only: a project's own delete door is the same plain
+  // `deleted_at` stamp the built-in Move to Trash writes, and this hub re-reads
+  // its list through `onRefresh`.
+  const bulk = useTableBulkSelection<ProjectWithRole>({
+    token: "project",
+    noun: "project",
+    rows: projects,
+    getRowId: (p) => p.id,
+    getRowName: (p) => p.name,
+    onRefresh,
+  });
 
   const orgEntry = React.useCallback(
     (p: ProjectWithRole) =>
@@ -1135,6 +1151,7 @@ function ProjectsTable({
       data={projects}
       columns={columns}
       getRowId={(p) => p.id}
+      selection={bulk.selection}
       defaultSort={{ id: "updated", direction: "desc" }}
       zebra
       pageSize={0}
