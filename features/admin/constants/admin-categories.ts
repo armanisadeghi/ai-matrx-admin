@@ -1046,6 +1046,22 @@ export const adminCategoriesData: AdminCategory[] = [
     ],
   },
   {
+    name: "Communications",
+    landingPath: "/administration/communications/voice",
+    iconName: "Phone",
+    iconColor: "text-sky-600",
+    features: [
+      {
+        title: "Voice Transfers",
+        description:
+          "Configure voice transfer settings for communications and human handoff.",
+        iconName: "Phone",
+        link: "/administration/communications/voice",
+        isNew: true,
+      },
+    ],
+  },
+  {
     name: "Users & Access",
     landingPath: "/administration/users",
     iconName: "Users",

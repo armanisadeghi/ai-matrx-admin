@@ -661,6 +661,19 @@ export const adminNavigationRegistry: readonly AdminNavigationDomain[] = [
     ],
   },
   {
+    name: "Communications",
+    slug: "communications",
+    iconName: "Phone",
+    iconColor: "text-sky-600",
+    sections: [
+      {
+        name: "Voice",
+        iconName: "Phone",
+        destinations: [destination("/administration/communications/voice")],
+      },
+    ],
+  },
+  {
     name: "Users",
     slug: "users",
     iconName: "Users",
