@@ -1036,13 +1036,13 @@ function CurrentAiModelTable({
               {COLUMNS.map((col) => (
                 <th
                   key={col.key}
-                  className={`${col.width} ${col.className ?? ""} px-2 py-1.5 type-label text-left align-middle whitespace-nowrap ${
+                  className={`${col.width} ${col.className ?? ""} px-2 py-1.5 type-meta font-medium text-muted-foreground text-left align-middle whitespace-nowrap ${
                     col.key === "common_name"
                       ? "max-xl:sticky max-xl:left-0 max-xl:z-30 max-xl:bg-card max-xl:shadow-[2px_0_0_hsl(var(--border))]"
                       : ""
                   } ${
                     col.sortable
-                      ? "select-none"
+                      ? "select-none hover:text-foreground"
                       : ""
                   }`}
                   data-clickable={col.sortable || undefined}
@@ -1064,7 +1064,7 @@ function CurrentAiModelTable({
                   </span>
                 </th>
               ))}
-              <th className="w-[210px] min-w-[210px] px-2 py-1.5 type-label text-right align-middle pr-3 max-xl:sticky max-xl:right-0 max-xl:z-30 max-xl:bg-card max-xl:shadow-[-2px_0_0_hsl(var(--border))]">
+              <th className="w-[210px] min-w-[210px] px-2 py-1.5 type-meta font-medium text-muted-foreground text-right align-middle pr-3 max-xl:sticky max-xl:right-0 max-xl:z-30 max-xl:bg-card max-xl:shadow-[-2px_0_0_hsl(var(--border))]">
                 Actions
               </th>
             </tr>
