@@ -1,4 +1,3 @@
-import type { KIND_KEY } from "@ai-matrx/content-ir";
 // THE SHAPES COME FROM THE REGISTRY (`pnpm shape:types`) — this file never
 // re-declares a registered kind's fields (`check:kind-type-twins`).
 import type { TranscriptSegment as TranscriptSegmentKind } from "@/features/content-ir/kinds/generated/kinds.generated";
@@ -69,9 +68,8 @@ import { formatDurationSeconds } from "@ai-matrx/kit/format";
 import { copyToClipboard } from "@/lib/clipboard/copy";
 
 // Define TypeScript types
-export type TranscriptSegment = Omit<
-  TranscriptSegmentKind,
-  typeof KIND_KEY | "speaker" | "isHighlighted"
+export type TranscriptSegment = Required<
+  Pick<TranscriptSegmentKind, "id" | "text" | "seconds" | "timecode">
 > & {
   speaker?: string;
   isHighlighted?: boolean;

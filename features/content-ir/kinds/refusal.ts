@@ -38,6 +38,10 @@ import {
   collectExtras,
   joinBlocks,
 } from "./kind-markdown-utils";
+import type {
+  MissingFact as GeneratedMissingFact,
+  Refusal as GeneratedRefusal,
+} from "./generated/kinds.generated";
 
 /** The registered slug — named once, never spelled by hand elsewhere. */
 export const REFUSAL_KIND = "refusal";
@@ -79,21 +83,19 @@ export const refusalKindSchema: KindSchema = {
 // ---------------------------------------------------------------------------
 
 /** One fact the desk does not have, and what to do about it. */
-export interface MissingFact {
-  fact: string;
+export type MissingFact = Pick<GeneratedMissingFact, "fact"> & {
   /** What this fact rules in or out. Null when the desk did not say. */
-  whyItMatters: string | null;
+  whyItMatters: GeneratedMissingFact["why_it_matters"] | null;
   /** The concrete next move that would supply it. */
-  howToGetIt: string | null;
-}
+  howToGetIt: GeneratedMissingFact["how_to_get_it"] | null;
+};
 
-export interface RefusalData {
-  headline: string;
+export type RefusalData = Pick<GeneratedRefusal, "headline"> & {
   missing: MissingFact[];
-  whatICanSayNow: string | null;
-  protocolFrame: string | null;
-  provenance: string[];
-}
+  whatICanSayNow: GeneratedRefusal["what_i_can_say_now"] | null;
+  protocolFrame: GeneratedRefusal["protocol_frame"] | null;
+  provenance: NonNullable<GeneratedRefusal["provenance"]>;
+};
 
 function isRecordValue(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);

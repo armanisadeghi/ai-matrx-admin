@@ -21,6 +21,10 @@ import type { KindDefinition, KindSchema } from "@ai-matrx/content-ir";
 
 import { joinBlocks } from "./kind-markdown-utils";
 import { isRecord, makeCompleteEnvelopeBridge } from "./legacy-bridge-utils";
+import type {
+  SpaceBuildResult as GeneratedSpaceBuildResult,
+  SpaceNotionImport as GeneratedSpaceNotionImport,
+} from "./generated/kinds.generated";
 
 export const SPACE_BUILD_RESULT_KIND = "space_build_result";
 export const SPACE_DATABASE_DESIGN_KIND = "space_database_design";
@@ -87,12 +91,12 @@ function readDatabase(value: Record<string, unknown>): SpacesDatabaseSummary {
   };
 }
 
-export interface SpaceBuildResultData extends Record<string, unknown> {
-  summary: string;
-  rootSpaceId: string | null;
-  spaceIds: string[];
-  tableIds: string[];
-}
+export type SpaceBuildResultData = Record<string, unknown> & {
+  summary: GeneratedSpaceBuildResult["summary"];
+  rootSpaceId: GeneratedSpaceBuildResult["root_space_id"] | null;
+  spaceIds: GeneratedSpaceBuildResult["space_ids"];
+  tableIds: GeneratedSpaceBuildResult["table_ids"];
+};
 
 export function readSpaceBuildResult(value: Record<string, unknown>): SpaceBuildResultData {
   const root = text(value.root_space_id);
@@ -121,14 +125,14 @@ export function readSpaceDatabaseDesign(value: Record<string, unknown>): SpaceDa
   };
 }
 
-export interface SpaceNotionImportData extends Record<string, unknown> {
-  title: string;
-  icon: string;
+export type SpaceNotionImportData = Record<string, unknown> & {
+  title: GeneratedSpaceNotionImport["title"];
+  icon: GeneratedSpaceNotionImport["icon"];
   /** The page body with `[[database:N]]` lines left out. */
-  markdown: string;
+  markdown: GeneratedSpaceNotionImport["markdown"];
   databases: SpacesDatabaseSummary[];
-  notes: string[];
-}
+  notes: GeneratedSpaceNotionImport["notes"];
+};
 
 const DB_LINE = /^\s*\[\[database:\d+\]\]\s*$/;
 

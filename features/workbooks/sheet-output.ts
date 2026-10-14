@@ -34,8 +34,8 @@ export function downloadSheetAsTsv(
 ): boolean {
   const grid = univerSnapshotToRows(snapshot, { skipHidden: true, ...(options.sheetId ? { sheetId: options.sheetId } : {}) });
   if (!grid || grid.rows.length === 0) return false;
-  const cell = (v: string) => v.replace(/[\t\r\n]+/g, " ");
-  const text = grid.rows.map((r) => r.map(cell).join("\t")).join("\r\n");
+  const [header, ...body] = grid.rows;
+  const text = toDelimitedText(header!, body, { format: "tsv", spreadsheetSafe: false });
   const blob = new Blob(["\uFEFF", text], { type: "text/tab-separated-values;charset=utf-8" });
   downloadFile(`${options.filename.replace(/\.tsv$/i, "")}.tsv`, blob, blob.type);
   return true;

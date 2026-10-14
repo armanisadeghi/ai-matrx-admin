@@ -13,6 +13,7 @@
  */
 
 import type { KindDefinition } from "@ai-matrx/content-ir";
+import type { PickListChoice as GeneratedPickListChoice } from "./generated/kinds.generated";
 
 export const RELATION_KIND = "relation";
 export const PICK_LIST_KIND = "pick_list";
@@ -65,11 +66,9 @@ export const RELATION_KINDS: ReadonlySet<string> = new Set([
   ...(RELATION_DEFINITION.discriminatorAliases ?? []),
 ]);
 
-export interface PickListChoice {
-  recordId: string;
-  label: string;
-  description: string | null;
-}
+export type PickListChoice = Pick<GeneratedPickListChoice, "label" | "description"> & {
+  recordId: GeneratedPickListChoice["_record_id"];
+};
 
 /**
  * The plain sentence refusing a pick_list's choices before any read, or null — the TS mirror of

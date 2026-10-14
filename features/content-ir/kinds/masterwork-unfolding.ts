@@ -43,6 +43,10 @@ import {
   collectExtras,
   joinBlocks,
 } from "./kind-markdown-utils";
+import type {
+  CaseDisclosure as GeneratedCaseDisclosure,
+  UnfoldingRuling as GeneratedUnfoldingRuling,
+} from "./generated/kinds.generated";
 
 /** The registered slugs — named once, never spelled by hand elsewhere. */
 export const CASE_DISCLOSURE_KIND = "case_disclosure";
@@ -172,14 +176,12 @@ export interface CaseLedger {
   requests: CaseLedgerEntry[];
 }
 
-export interface CaseDisclosureData {
-  disclosed: string[];
-  answer: string | null;
-  available: boolean;
-  reason: string | null;
+export type CaseDisclosureData = Required<Pick<GeneratedCaseDisclosure, "disclosed" | "available">> & {
+  answer: NonNullable<GeneratedCaseDisclosure["answer"]> | null;
+  reason: NonNullable<GeneratedCaseDisclosure["reason"]> | null;
   caseOver: boolean;
   ledger: CaseLedger;
-}
+};
 
 /**
  * One dangerous branch, as the judge scores it — the server's `DangerousBranch`
@@ -192,17 +194,16 @@ export interface DangerousBranch {
   why: string | null;
 }
 
-export interface UnfoldingRulingData {
-  diagnosis: string;
+export type UnfoldingRulingData = Pick<GeneratedUnfoldingRuling, "diagnosis"> & {
   /**
    * 0-1, exactly as the server types it (`confidence: float`, ge 0, le 1).
    * Render it with `formatConfidence` — a reader is shown "70%", never 0.7.
    */
-  confidence: number | null;
+  confidence: NonNullable<GeneratedUnfoldingRuling["confidence"]> | null;
   committedAtStep: number | null;
   path: CaseLedger;
   dangerousBranches: DangerousBranch[];
-}
+};
 
 function isRecordValue(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);

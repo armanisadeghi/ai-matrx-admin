@@ -88,7 +88,7 @@ function hash(value: unknown): string {
 
 /** PascalCase identifier from a slug / def name. */
 function pascal(name: string): string {
-  const parts = name.split(/[_\-\s]+/).filter(Boolean);
+  const parts = name.split(/[^A-Za-z0-9]+/).filter(Boolean);
   const joined = parts.map((p) => p.charAt(0).toUpperCase() + p.slice(1)).join("");
   return /^[A-Za-z]/.test(joined) ? joined : `Kind${joined}`;
 }
@@ -123,7 +123,7 @@ function safeName(name: string): string {
   return RESERVED_NAMES.has(name) ? `${name}Kind` : name;
 }
 
-/** `$ref: "#/$defs/Rating"` → "Rating" (only local $defs refs are supported). */
+/** `$ref: "#/$defs/Rating"` → "Rating". */
 function refName(ref: string, kindSlug: string): string {
   const m = /^#\/\$defs\/([A-Za-z0-9_]+)$/.exec(ref);
   if (!m) fail(`unsupported $ref "${ref}" in kind "${kindSlug}" — only local #/$defs/* refs are generated`);
@@ -152,6 +152,33 @@ function declaredKind(schema: unknown): string | null {
     return marker.enum[0];
   }
   return null;
+}
+
+/**
+ * Collect definitions wherever a provider-wrapped object placed them.
+ * Pydantic schemas embedded as property values carry their `$defs` beside that
+ * property while their `$ref`s still use the document-root `#/$defs/*` form.
+ * Hoisting those definitions for type generation preserves that intended graph.
+ */
+function schemaDefs(schema: JsonSchema, kindSlug: string): Record<string, unknown> {
+  const defs: Record<string, unknown> = {};
+  const visit = (node: unknown): void => {
+    if (!isRecord(node)) return;
+    if (isRecord(node.$defs)) {
+      for (const [name, def] of Object.entries(node.$defs)) {
+        const previous = defs[name];
+        if (previous !== undefined && hash(previous) !== hash(def)) {
+          fail(`kind "${kindSlug}" declares two different $defs named "${name}"`);
+        }
+        defs[name] = def;
+      }
+    }
+    for (const [key, value] of Object.entries(node)) {
+      if (key !== "$defs") visit(value);
+    }
+  };
+  visit(schema);
+  return defs;
 }
 
 // ── registry rows ───────────────────────────────────────────────────────────
@@ -216,7 +243,7 @@ function buildNaming(rows: KindRow[], edges: EdgeRow[]): Naming {
   const kindDefs = new Map<string, Map<string, string>>(); // kind → (defName → child slug)
   for (const row of rows) {
     const map = new Map<string, string>();
-    const defs = isRecord(row.schema.$defs) ? row.schema.$defs : {};
+    const defs = schemaDefs(row.schema, row.kind);
     for (const [defName, def] of Object.entries(defs)) {
       const marker = declaredKind(def);
       if (marker && activeSlugs.has(marker)) map.set(defName, marker);
@@ -237,7 +264,7 @@ function buildNaming(rows: KindRow[], edges: EdgeRow[]): Naming {
   //    Pass A — collect every (name, structure) pair and who carries it.
   const byName = new Map<string, Map<string, { schema: JsonSchema; kinds: string[] }>>();
   for (const row of rows) {
-    const defs = isRecord(row.schema.$defs) ? row.schema.$defs : {};
+    const defs = schemaDefs(row.schema, row.kind);
     const asKind = kindDefs.get(row.kind)!;
     for (const [defName, def] of Object.entries(defs)) {
       if (asKind.has(defName)) continue;
@@ -269,7 +296,7 @@ function buildNaming(rows: KindRow[], edges: EdgeRow[]): Naming {
   const defTarget = new Map<string, Map<string, DefTarget>>();
   for (const row of rows) {
     const table = new Map<string, DefTarget>();
-    const defs = isRecord(row.schema.$defs) ? row.schema.$defs : {};
+    const defs = schemaDefs(row.schema, row.kind);
     const asKind = kindDefs.get(row.kind)!;
     for (const [defName, def] of Object.entries(defs)) {
       const childKind = asKind.get(defName);
@@ -290,6 +317,7 @@ function buildNaming(rows: KindRow[], edges: EdgeRow[]): Naming {
 /** The `$defs` name a property schema ultimately points at (through arrays/unions). */
 function refUnderneath(schema: unknown, kindSlug: string): string | null {
   if (!isRecord(schema)) return null;
+  if (schema.$ref === "#") return null;
   if (typeof schema.$ref === "string") return refName(schema.$ref, kindSlug);
   if (isRecord(schema.items)) return refUnderneath(schema.items, kindSlug);
   for (const key of ["anyOf", "oneOf", "allOf"] as const) {
@@ -308,6 +336,7 @@ function refUnderneath(schema: unknown, kindSlug: string): string | null {
 
 interface RenderContext {
   kindSlug: string;
+  rootName: string;
   defs: Map<string, DefTarget>;
 }
 
@@ -317,6 +346,7 @@ function tsType(schema: unknown, ctx: RenderContext): string {
   if (!isRecord(schema)) fail(`non-object schema node in kind "${ctx.kindSlug}"`);
 
   if (typeof schema.$ref === "string") {
+    if (schema.$ref === "#") return ctx.rootName;
     const name = refName(schema.$ref, ctx.kindSlug);
     const target = ctx.defs.get(name);
     if (!target) fail(`kind "${ctx.kindSlug}" refs #/$defs/${name} which is not declared`);
@@ -470,7 +500,11 @@ function renderArtifact(rows: KindRow[], edges: EdgeRow[]): string {
       ].join("\n"),
     );
     for (const [name, def] of [...naming.localDefs].sort(([a], [b]) => (a < b ? -1 : 1))) {
-      const ctx: RenderContext = { kindSlug: def.owner, defs: naming.defTarget.get(def.owner)! };
+      const ctx: RenderContext = {
+        kindSlug: def.owner,
+        rootName: naming.rootName.get(def.owner)!,
+        defs: naming.defTarget.get(def.owner)!,
+      };
       const shared =
         def.sharedBy.length > 1
           ? `\n * Shared by ${def.sharedBy.length} kinds (${def.sharedBy.slice(0, 4).join(", ")}${def.sharedBy.length > 4 ? ", …" : ""}).`
@@ -499,7 +533,11 @@ function renderArtifact(rows: KindRow[], edges: EdgeRow[]): string {
 
   for (const row of rows) {
     const name = naming.rootName.get(row.kind)!;
-    const ctx: RenderContext = { kindSlug: row.kind, defs: naming.defTarget.get(row.kind)! };
+    const ctx: RenderContext = {
+      kindSlug: row.kind,
+      rootName: name,
+      defs: naming.defTarget.get(row.kind)!,
+    };
     const description =
       typeof row.schema.description === "string" && row.schema.description.trim()
         ? `${row.schema.description.trim()}\n *\n * Kind \`${row.kind}\` (registry v${row.version}).`

@@ -1,6 +1,5 @@
 import { useClipboard } from "@ai-matrx/kit/clipboard";
 import { copyNotify } from "@/lib/clipboard/copy-notify";
-import type { KIND_KEY } from "@ai-matrx/content-ir";
 // THE SHAPES COME FROM THE REGISTRY (`pnpm shape:types`) — this file never
 // re-declares a registered kind's fields (`check:kind-type-twins`).
 import type { TranscriptSegment as TranscriptSegmentKind } from "@/features/content-ir/kinds/generated/kinds.generated";
@@ -29,9 +28,8 @@ import {
 } from 'lucide-react';
 
 // Define TypeScript types
-type TranscriptSegment = Omit<
-  TranscriptSegmentKind,
-  typeof KIND_KEY | "speaker" | "isHighlighted"
+type TranscriptSegment = Required<
+  Pick<TranscriptSegmentKind, "id" | "text" | "seconds" | "timecode">
 > & {
   speaker?: string;
   isHighlighted?: boolean;

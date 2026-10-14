@@ -13,12 +13,13 @@
 import type {
   ProofAttestation,
   ProofCheckStatus,
-  ProofResultKind,
+  ProofResult,
 } from "@/features/content-ir/kinds/generated/kinds.generated";
 import type { components } from "@ai-matrx/api/types";
 import { isJsonObject, toJsonRecord } from "@/types/json";
 
-export type { ProofAttestation, ProofCheckStatus, ProofResultKind };
+export type ProofResultKind = ProofResult;
+export type { ProofAttestation, ProofCheckStatus };
 
 /** Registered kind slugs, so call sites never spell one by hand. */
 export const PROOF_ATTESTATION_KIND = "proof_attestation" as const;
