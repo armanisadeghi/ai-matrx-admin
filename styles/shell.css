@@ -1901,7 +1901,11 @@ body[style*="pointer-events: none"] {
    into the fixed card. The compact pill clears one touch target; an expanded
    alarm clears its action row on phones and its card on desktop. */
 :root[data-admin-attention="compact"] {
-  --shell-fixed-alert-clearance: max(4.5rem, env(safe-area-inset-bottom, 0px));
+  /* The compact pill carries data-matrx-floating-bottom, so FloatingClearanceSync
+     already measures it into --matrx-floating-clearance (measured + page end).
+     A constant here stacked a second clearance on it: 4.5rem beat the measured
+     48px + 16px, leaving 24px empty under the page against a 16px page end. */
+  --shell-fixed-alert-clearance: 0px;
 }
 
 /* Keep the default floating notice above table navigation and the complete
