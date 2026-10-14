@@ -70,6 +70,8 @@ export interface EvidenceItem {
   snippet?: string | null;
   /** Web-found items: every engine/query/rank that found it, best rank first. */
   hits?: WebHit[];
+  /** The "we think" slot (`{choice, relation_key?, probability, reason}`), raw; read by validate/queue.parseSuggestion. */
+  suggestion?: unknown;
 }
 
 /** One place a web result was found. */
@@ -191,6 +193,7 @@ export function parseEvidenceItem(raw: unknown): EvidenceItem | null {
     engines: Array.isArray(r.engines) ? r.engines.filter((x): x is string => typeof x === "string") : [],
     snippet: asString(r.snippet),
     hits: Array.isArray(r.hits) ? r.hits.map(parseHit).filter((h): h is WebHit => h !== null) : [],
+    ...(r.suggestion !== undefined && r.suggestion !== null ? { suggestion: r.suggestion } : {}),
   };
 }
 

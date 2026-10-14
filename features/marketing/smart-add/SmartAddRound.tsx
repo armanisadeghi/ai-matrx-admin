@@ -19,12 +19,15 @@ import {
   selectRunStatus,
 } from "@/features/workflow-runtime/redux/workflow-runs.selectors";
 import { evidenceFromPayload, type EvidenceItem } from "./evidence";
+import { factsFromPayload, type BrandFact } from "./validate/queue";
 
 /** The steps a Smart Add workflow shows, in order. */
 export type SmartAddStepPair = readonly string[];
 /** Identify: the raw tier (site, accounts, web) then the confirmed tiers (news/videos/images, local). */
 export const IDENTIFY_STEPS: SmartAddStepPair = ["probe", "page", "avatars", "socials", "web", "deep", "local"];
 export const SETUP_STEPS: SmartAddStepPair = ["logo", "accounts", "history"];
+/** Steps whose output may carry the facts agent's `brand_basics` (read for facts only, not shown as steps). */
+const FACT_STEPS: SmartAddStepPair = ["facts", "brand_basics"];
 
 /** The page step's gate detection (aidream brand_identify_gate.GateReport), as far as the screen uses it. */
 export interface SiteGate {
@@ -73,7 +76,7 @@ function StepWatch({
 }: {
   runId: string;
   step: string;
-  onStep: (step: string, view: StepView, evidence: EvidenceItem[]) => void;
+  onStep: (step: string, view: StepView, evidence: EvidenceItem[], facts: BrandFact[]) => void;
 }) {
   const aggregate = useAppSelector(selectNodeAggregate(runId, step));
   const invocation = aggregate.invocations[aggregate.invocations.length - 1] ?? null;
@@ -91,10 +94,10 @@ function StepWatch({
     errored: aggregate.phase === "failed" || Boolean(invocation?.error),
     gate: parseGate(output?.gate),
   };
-  const signature = JSON.stringify({ view, evidence: evidenceFromPayload(output) });
+  const signature = JSON.stringify({ view, evidence: evidenceFromPayload(output), facts: factsFromPayload(output) });
   useEffect(() => {
-    const { view: v, evidence } = JSON.parse(signature) as { view: StepView; evidence: EvidenceItem[] };
-    onStep(step, v, evidence);
+    const { view: v, evidence, facts } = JSON.parse(signature) as { view: StepView; evidence: EvidenceItem[]; facts: BrandFact[] };
+    onStep(step, v, evidence, facts);
   }, [signature, step, onStep]);
   return null;
 }
@@ -103,19 +106,22 @@ export function SmartAddRound({
   runId,
   steps = IDENTIFY_STEPS,
   onEvidence,
+  onFacts,
   onView,
 }: {
   runId: string;
   steps?: SmartAddStepPair;
   onEvidence?: (items: EvidenceItem[]) => void;
+  /** The facts agent's `brand_basics_fact` items, from live frames and step outputs. */
+  onFacts?: (facts: BrandFact[]) => void;
   onView: (view: RoundView) => void;
 }) {
   useWorkflowRun(runId);
   const status = useAppSelector(selectRunStatus(runId));
   const emissions = useAppSelector(selectRunEmissions(runId));
-  const [stepState, setStepState] = useState<Record<string, { view: StepView; evidence: EvidenceItem[] }>>({});
-  const onStep = (step: string, view: StepView, evidence: EvidenceItem[]) =>
-    setStepState((s) => ({ ...s, [step]: { view, evidence } }));
+  const [stepState, setStepState] = useState<Record<string, { view: StepView; evidence: EvidenceItem[]; facts: BrandFact[] }>>({});
+  const onStep = (step: string, view: StepView, evidence: EvidenceItem[], facts: BrandFact[]) =>
+    setStepState((s) => ({ ...s, [step]: { view, evidence, facts } }));
 
   const live = emissions.flatMap((e) => evidenceFromPayload(e.payload));
   const all = [...live, ...steps.flatMap((s) => stepState[s]?.evidence ?? [])];
@@ -124,6 +130,13 @@ export function SmartAddRound({
   useEffect(() => {
     if (all.length) onEvidence?.(all);
   }, [all, onEvidence]);
+  const facts = [
+    ...emissions.flatMap((e) => factsFromPayload(e.payload)),
+    ...[...steps, ...FACT_STEPS].flatMap((s) => stepState[s]?.facts ?? []),
+  ];
+  useEffect(() => {
+    if (facts.length) onFacts?.(facts);
+  }, [facts, onFacts]);
 
   const idle = (step: string): StepView => ({ step, phase: "idle", progress: null, notes: [], costUsd: 0, skipped: false });
   const view: RoundView = { runId, status, steps: steps.map((s) => stepState[s]?.view ?? idle(s)) };
@@ -133,7 +146,7 @@ export function SmartAddRound({
 
   return (
     <>
-      {steps.map((s) => (
+      {[...steps, ...(onFacts ? FACT_STEPS : [])].map((s) => (
         <StepWatch key={s} runId={runId} step={s} onStep={onStep} />
       ))}
     </>

@@ -1,0 +1,2697 @@
+[
+ {
+  "key": "social:facebook:fullspecstaff",
+  "url": "https://www.facebook.com/FullSpecStaff",
+  "hits": [],
+  "field": "social",
+  "label": "Full Spectrum Search Group",
+  "value": "https://www.facebook.com/FullSpecStaff",
+  "handle": "FullSpecStaff",
+  "source": {
+   "url": "https://www.facebook.com/FullSpecStaff",
+   "kind": "social_profile",
+   "node": "avatars",
+   "where": "facebook profile"
+  },
+  "engines": [],
+  "same_as": [],
+  "snippet": null,
+  "platform": "facebook",
+  "verified": null,
+  "certainty": null,
+  "followers": 216,
+  "image_url": "https://scontent-bos5-1.xx.fbcdn.net/v/t39.30808-1/340100722_1414894579251190_2398704600578422263_n.jpg?stp=dst-jpg_tt6&cstp=mx500x500&ctp=s480x480&_nc_cat=100&ccb=1-7&_nc_sid=2d3e12&_nc_ohc=GtZHldFbAq8Q7kNvwGN9sxx&_nc_oc=AdryclL5mKRUxBWN_-WUCkk-mG8Dn4KDXV0qfGFASbAtFr08MhAS_dUBmLqDPc2g-8E&_nc_zt=24&_nc_ht=scontent-bos5-1.xx&_nc_gid=JByKNU9iGQpjqqHGezELzA&_nc_ss=78289&oh=00_AQPHxTkr2YdY6JgNB3i3JLwMSP3iVq8UqtQGUrTaD-r-kQ&oe=6AD4B140",
+  "confidence": 0.97,
+  "profile_id": "5b3bb7d8-2aad-4533-a889-ab5846e7139e",
+  "certainty_reasons": []
+ },
+ {
+  "key": "name:full spectrum search group",
+  "url": null,
+  "hits": [],
+  "field": "name",
+  "label": null,
+  "value": "Full Spectrum Search Group",
+  "handle": null,
+  "source": {
+   "url": "https://www.facebook.com/FullSpecStaff",
+   "kind": "social_profile",
+   "node": "avatars",
+   "where": "facebook profile"
+  },
+  "engines": [],
+  "same_as": [],
+  "snippet": null,
+  "platform": null,
+  "verified": null,
+  "certainty": null,
+  "followers": null,
+  "image_url": null,
+  "confidence": 0.85,
+  "profile_id": null,
+  "certainty_reasons": []
+ },
+ {
+  "key": "logo:https://scontent-bos5-1.xx.fbcdn.net/v/t39.30808-1/340100722_1414894579251190_2398704600578422263_n.jpg?stp=dst-jpg_tt6&cstp=mx500x500&ctp=s480x480&_nc_cat=100&ccb=1-7&_nc_sid=2d3e12&_nc_ohc=gtzhldfbaq8q7knvwgn9sxx&_nc_oc=adrycll5mkruxbwn_-wuckk-mg8dn4kdxv0qfgfasbatfr08mhas_dubmlqdpc2g-8e&_nc_zt=24&_nc_ht=scontent-bos5-1.xx&_nc_gid=jbyknu9igqpjqqhgezelza&_nc_ss=78289&oh=00_aqphxtkr2ydy6jgnb3i3jlwmsp3ivq8uqtqgurtad-r-kq&oe=6ad4b140",
+  "url": null,
+  "hits": [],
+  "field": "logo",
+  "label": null,
+  "value": "https://scontent-bos5-1.xx.fbcdn.net/v/t39.30808-1/340100722_1414894579251190_2398704600578422263_n.jpg?stp=dst-jpg_tt6&cstp=mx500x500&ctp=s480x480&_nc_cat=100&ccb=1-7&_nc_sid=2d3e12&_nc_ohc=GtZHldFbAq8Q7kNvwGN9sxx&_nc_oc=AdryclL5mKRUxBWN_-WUCkk-mG8Dn4KDXV0qfGFASbAtFr08MhAS_dUBmLqDPc2g-8E&_nc_zt=24&_nc_ht=scontent-bos5-1.xx&_nc_gid=JByKNU9iGQpjqqHGezELzA&_nc_ss=78289&oh=00_AQPHxTkr2YdY6JgNB3i3JLwMSP3iVq8UqtQGUrTaD-r-kQ&oe=6AD4B140",
+  "handle": null,
+  "source": {
+   "url": "https://www.facebook.com/FullSpecStaff",
+   "kind": "social_profile",
+   "node": "avatars",
+   "where": "facebook photo"
+  },
+  "engines": [],
+  "same_as": [],
+  "snippet": null,
+  "platform": "facebook",
+  "verified": null,
+  "certainty": null,
+  "followers": null,
+  "image_url": "https://scontent-bos5-1.xx.fbcdn.net/v/t39.30808-1/340100722_1414894579251190_2398704600578422263_n.jpg?stp=dst-jpg_tt6&cstp=mx500x500&ctp=s480x480&_nc_cat=100&ccb=1-7&_nc_sid=2d3e12&_nc_ohc=GtZHldFbAq8Q7kNvwGN9sxx&_nc_oc=AdryclL5mKRUxBWN_-WUCkk-mG8Dn4KDXV0qfGFASbAtFr08MhAS_dUBmLqDPc2g-8E&_nc_zt=24&_nc_ht=scontent-bos5-1.xx&_nc_gid=JByKNU9iGQpjqqHGezELzA&_nc_ss=78289&oh=00_AQPHxTkr2YdY6JgNB3i3JLwMSP3iVq8UqtQGUrTaD-r-kQ&oe=6AD4B140",
+  "confidence": 0.85,
+  "profile_id": "5b3bb7d8-2aad-4533-a889-ab5846e7139e",
+  "certainty_reasons": []
+ },
+ {
+  "key": "category:recruiter",
+  "url": null,
+  "hits": [],
+  "field": "category",
+  "label": null,
+  "value": "Recruiter",
+  "handle": null,
+  "source": {
+   "url": "https://www.facebook.com/FullSpecStaff",
+   "kind": "social_profile",
+   "node": "avatars",
+   "where": "facebook profile"
+  },
+  "engines": [],
+  "same_as": [],
+  "snippet": null,
+  "platform": null,
+  "verified": null,
+  "certainty": null,
+  "followers": null,
+  "image_url": null,
+  "confidence": 0.8,
+  "profile_id": null,
+  "certainty_reasons": []
+ },
+ {
+  "key": "social:linkedin:full-spectrum-search-group",
+  "url": "https://www.linkedin.com/company/full-spectrum-search-group",
+  "hits": [],
+  "field": "social",
+  "label": "Full Spectrum Search Group",
+  "value": "https://www.linkedin.com/company/full-spectrum-search-group",
+  "handle": "full-spectrum-search-group",
+  "source": {
+   "url": "https://www.linkedin.com/company/full-spectrum-search-group",
+   "kind": "social_profile",
+   "node": "avatars",
+   "where": "linkedin profile"
+  },
+  "engines": [],
+  "same_as": [],
+  "snippet": null,
+  "platform": "linkedin",
+  "verified": null,
+  "certainty": null,
+  "followers": 5233,
+  "image_url": "https://media.licdn.com/dms/image/v2/C560BAQE-qHkv0hmXsg/company-logo_200_200/company-logo_200_200/0/1652803531293/full_spectrum_staffing_solutions_logo?e=2147483647&v=beta&t=tpL4IFmaBRKNkxBL6tRjfiAArNXYyu0R2j14mYo4TZQ",
+  "confidence": 0.97,
+  "profile_id": "bb3707dc-d7a1-4aa3-8aa6-c1a01eb746ac",
+  "certainty_reasons": []
+ },
+ {
+  "key": "logo:https://media.licdn.com/dms/image/v2/c560baqe-qhkv0hmxsg/company-logo_200_200/company-logo_200_200/0/1652803531293/full_spectrum_staffing_solutions_logo?e=2147483647&v=beta&t=tpl4ifmabrknkxbl6trjfiaarnxyyu0r2j14myo4tzq",
+  "url": null,
+  "hits": [],
+  "field": "logo",
+  "label": null,
+  "value": "https://media.licdn.com/dms/image/v2/C560BAQE-qHkv0hmXsg/company-logo_200_200/company-logo_200_200/0/1652803531293/full_spectrum_staffing_solutions_logo?e=2147483647&v=beta&t=tpL4IFmaBRKNkxBL6tRjfiAArNXYyu0R2j14mYo4TZQ",
+  "handle": null,
+  "source": {
+   "url": "https://www.linkedin.com/company/full-spectrum-search-group",
+   "kind": "social_profile",
+   "node": "avatars",
+   "where": "linkedin photo"
+  },
+  "engines": [],
+  "same_as": [],
+  "snippet": null,
+  "platform": "linkedin",
+  "verified": null,
+  "certainty": null,
+  "followers": null,
+  "image_url": "https://media.licdn.com/dms/image/v2/C560BAQE-qHkv0hmXsg/company-logo_200_200/company-logo_200_200/0/1652803531293/full_spectrum_staffing_solutions_logo?e=2147483647&v=beta&t=tpL4IFmaBRKNkxBL6tRjfiAArNXYyu0R2j14mYo4TZQ",
+  "confidence": 0.85,
+  "profile_id": "bb3707dc-d7a1-4aa3-8aa6-c1a01eb746ac",
+  "certainty_reasons": []
+ },
+ {
+  "key": "description:f794af9fd425",
+  "url": null,
+  "hits": [],
+  "field": "description",
+  "label": null,
+  "value": "Full Spectrum is a trusted advisor and leading executive search firm in Skilled Nursing, Home Health & Hospice, Senior Living, and technology companies that support these sectors. When it comes to filling pivotal roles, Full Spectrum leads in three key skills: - Identifying world-class talent - Getting to the heart of the story \u2014 for both candidates and clients - Building trust with key players in",
+  "handle": null,
+  "source": {
+   "url": "https://www.linkedin.com/company/full-spectrum-search-group",
+   "kind": "social_profile",
+   "node": "avatars",
+   "where": "linkedin profile"
+  },
+  "engines": [],
+  "same_as": [],
+  "snippet": null,
+  "platform": null,
+  "verified": null,
+  "certainty": null,
+  "followers": null,
+  "image_url": null,
+  "confidence": 0.75,
+  "profile_id": null,
+  "certainty_reasons": []
+ },
+ {
+  "key": "category:staffing and recruiting",
+  "url": null,
+  "hits": [],
+  "field": "category",
+  "label": null,
+  "value": "Staffing and Recruiting",
+  "handle": null,
+  "source": {
+   "url": "https://www.linkedin.com/company/full-spectrum-search-group",
+   "kind": "social_profile",
+   "node": "avatars",
+   "where": "linkedin profile"
+  },
+  "engines": [],
+  "same_as": [],
+  "snippet": null,
+  "platform": null,
+  "verified": null,
+  "certainty": null,
+  "followers": null,
+  "image_url": null,
+  "confidence": 0.8,
+  "profile_id": null,
+  "certainty_reasons": []
+ },
+ {
+  "key": "website:fullspecstaff.com",
+  "url": "https://www.fullspecstaff.com/",
+  "hits": [],
+  "field": "website",
+  "label": "fullspecstaff.com",
+  "value": "https://www.fullspecstaff.com/",
+  "handle": null,
+  "source": {
+   "url": "https://www.linkedin.com/company/full-spectrum-search-group",
+   "kind": "social_profile",
+   "node": "avatars",
+   "where": "profile link"
+  },
+  "engines": [],
+  "same_as": [],
+  "snippet": null,
+  "platform": null,
+  "verified": null,
+  "certainty": null,
+  "followers": null,
+  "image_url": null,
+  "confidence": 0.85,
+  "profile_id": null,
+  "certainty_reasons": []
+ },
+ {
+  "key": "social:instagram:fullspecstaff",
+  "url": "https://www.instagram.com/fullspecstaff/",
+  "hits": [],
+  "field": "social",
+  "label": "Full Spectrum Search Group",
+  "value": "https://www.instagram.com/fullspecstaff/",
+  "handle": "fullspecstaff",
+  "source": {
+   "url": "https://www.instagram.com/fullspecstaff/",
+   "kind": "social_profile",
+   "node": "avatars",
+   "where": "instagram profile"
+  },
+  "engines": [],
+  "same_as": [],
+  "snippet": null,
+  "platform": "instagram",
+  "verified": false,
+  "certainty": null,
+  "followers": 276,
+  "image_url": "https://scontent-ord5-1.cdninstagram.com/v/t51.2885-19/281433658_1048769312515491_7909570489329048613_n.jpg?_nc_cat=109&ccb=7-5&_nc_sid=bf7eb4&efg=eyJ2ZW5jb2RlX3RhZyI6InByb2ZpbGVfcGljLnd3dy41MDAuQzMifQ%3D%3D&_nc_ohc=nliNmX621FQQ7kNvwEwcTyq&_nc_oc=AdpUNZGQadO26npY-zpaodTOX-2umrDJT6WYZE4Op-hmEIsNyBlFkrXuCZuhCR163wU&_nc_zt=24&_nc_ht=scontent-ord5-1.cdninstagram.com&_nc_ss=78a8c&oh=00_AQO71XWegbo2_POSLHYE1s6X2Vie2tbxmWP_XndqERt5KQ&oe=6AD4C0DB",
+  "confidence": 0.97,
+  "profile_id": "03b23475-6a27-45ee-9f42-50a412c2752b",
+  "certainty_reasons": []
+ },
+ {
+  "key": "logo:https://scontent-ord5-1.cdninstagram.com/v/t51.2885-19/281433658_1048769312515491_7909570489329048613_n.jpg?_nc_cat=109&ccb=7-5&_nc_sid=bf7eb4&efg=eyj2zw5jb2rlx3rhzyi6inbyb2zpbgvfcgljlnd3dy41mdauqzmifq%3d%3d&_nc_ohc=nlinmx621fqq7knvwewctyq&_nc_oc=adpunzgqado26npy-zpaodtox-2umrdjt6wyze4op-hmeisnyblfkrxuczuhcr163wu&_nc_zt=24&_nc_ht=scontent-ord5-1.cdninstagram.com&_nc_ss=78a8c&oh=00_aqo71xwegbo2_poslhye1s6x2vie2tbxmwp_xndqert5kq&oe=6ad4c0db",
+  "url": null,
+  "hits": [],
+  "field": "logo",
+  "label": null,
+  "value": "https://scontent-ord5-1.cdninstagram.com/v/t51.2885-19/281433658_1048769312515491_7909570489329048613_n.jpg?_nc_cat=109&ccb=7-5&_nc_sid=bf7eb4&efg=eyJ2ZW5jb2RlX3RhZyI6InByb2ZpbGVfcGljLnd3dy41MDAuQzMifQ%3D%3D&_nc_ohc=nliNmX621FQQ7kNvwEwcTyq&_nc_oc=AdpUNZGQadO26npY-zpaodTOX-2umrDJT6WYZE4Op-hmEIsNyBlFkrXuCZuhCR163wU&_nc_zt=24&_nc_ht=scontent-ord5-1.cdninstagram.com&_nc_ss=78a8c&oh=00_AQO71XWegbo2_POSLHYE1s6X2Vie2tbxmWP_XndqERt5KQ&oe=6AD4C0DB",
+  "handle": null,
+  "source": {
+   "url": "https://www.instagram.com/fullspecstaff/",
+   "kind": "social_profile",
+   "node": "avatars",
+   "where": "instagram photo"
+  },
+  "engines": [],
+  "same_as": [],
+  "snippet": null,
+  "platform": "instagram",
+  "verified": null,
+  "certainty": null,
+  "followers": null,
+  "image_url": "https://scontent-ord5-1.cdninstagram.com/v/t51.2885-19/281433658_1048769312515491_7909570489329048613_n.jpg?_nc_cat=109&ccb=7-5&_nc_sid=bf7eb4&efg=eyJ2ZW5jb2RlX3RhZyI6InByb2ZpbGVfcGljLnd3dy41MDAuQzMifQ%3D%3D&_nc_ohc=nliNmX621FQQ7kNvwEwcTyq&_nc_oc=AdpUNZGQadO26npY-zpaodTOX-2umrDJT6WYZE4Op-hmEIsNyBlFkrXuCZuhCR163wU&_nc_zt=24&_nc_ht=scontent-ord5-1.cdninstagram.com&_nc_ss=78a8c&oh=00_AQO71XWegbo2_POSLHYE1s6X2Vie2tbxmWP_XndqERt5KQ&oe=6AD4C0DB",
+  "confidence": 0.85,
+  "profile_id": "03b23475-6a27-45ee-9f42-50a412c2752b",
+  "certainty_reasons": []
+ },
+ {
+  "key": "description:a769e078522f",
+  "url": null,
+  "hits": [],
+  "field": "description",
+  "label": null,
+  "value": "\u2728 Long Term Care recruiting experts\n\ud83e\udd1d SRA / Starfish Partners\n\ud83c\udfc6 Top 10 US search firms\n\ud83d\udcaa 112,500 completed searches and counting\nCome thrive with us!",
+  "handle": null,
+  "source": {
+   "url": "https://www.instagram.com/fullspecstaff/",
+   "kind": "social_profile",
+   "node": "avatars",
+   "where": "instagram profile"
+  },
+  "engines": [],
+  "same_as": [],
+  "snippet": null,
+  "platform": null,
+  "verified": null,
+  "certainty": null,
+  "followers": null,
+  "image_url": null,
+  "confidence": 0.75,
+  "profile_id": null,
+  "certainty_reasons": []
+ },
+ {
+  "key": "bio_link:linktr.ee/fullspecreviews",
+  "url": "https://linktr.ee/fullspecreviews",
+  "hits": [],
+  "field": "bio_link",
+  "label": "Full Spectrum Reviews",
+  "value": "https://linktr.ee/fullspecreviews",
+  "handle": null,
+  "source": {
+   "url": "https://linktr.ee/fullspecstaff",
+   "kind": "link_in_bio",
+   "node": "avatars",
+   "where": "from Linktree bio"
+  },
+  "engines": [],
+  "same_as": [],
+  "snippet": null,
+  "platform": null,
+  "verified": null,
+  "certainty": null,
+  "followers": null,
+  "image_url": null,
+  "confidence": 0.5,
+  "profile_id": null,
+  "certainty_reasons": []
+ },
+ {
+  "key": "bio_link:fullspecstaff.com/senior-living-jobs",
+  "url": "https://fullspecstaff.com/senior-living-jobs/",
+  "hits": [],
+  "field": "bio_link",
+  "label": "Full Spectrum Job Board",
+  "value": "https://fullspecstaff.com/senior-living-jobs/",
+  "handle": null,
+  "source": {
+   "url": "https://linktr.ee/fullspecstaff",
+   "kind": "link_in_bio",
+   "node": "avatars",
+   "where": "from Linktree bio"
+  },
+  "engines": [],
+  "same_as": [],
+  "snippet": null,
+  "platform": null,
+  "verified": null,
+  "certainty": null,
+  "followers": null,
+  "image_url": null,
+  "confidence": 0.5,
+  "profile_id": null,
+  "certainty_reasons": []
+ },
+ {
+  "key": "bio_link:fullspecstaff.com",
+  "url": "https://fullspecstaff.com/",
+  "hits": [],
+  "field": "bio_link",
+  "label": "Full Spectrum Website",
+  "value": "https://fullspecstaff.com/",
+  "handle": null,
+  "source": {
+   "url": "https://linktr.ee/fullspecstaff",
+   "kind": "link_in_bio",
+   "node": "avatars",
+   "where": "from Linktree bio"
+  },
+  "engines": [],
+  "same_as": [],
+  "snippet": null,
+  "platform": null,
+  "verified": null,
+  "certainty": null,
+  "followers": null,
+  "image_url": null,
+  "confidence": 0.5,
+  "profile_id": null,
+  "certainty_reasons": []
+ },
+ {
+  "key": "social:linkedin:17891469",
+  "url": "https://www.linkedin.com/company/full-spectrum-search-group",
+  "hits": [],
+  "field": "social",
+  "label": "Full Spectrum Search Group",
+  "value": "https://www.linkedin.com/company/full-spectrum-search-group",
+  "handle": "17891469",
+  "source": {
+   "url": "https://www.linkedin.com/company/full-spectrum-search-group",
+   "kind": "social_profile",
+   "node": "avatars",
+   "where": "linkedin profile"
+  },
+  "engines": [],
+  "same_as": [],
+  "snippet": null,
+  "platform": "linkedin",
+  "verified": null,
+  "certainty": null,
+  "followers": 5233,
+  "image_url": "https://media.licdn.com/dms/image/v2/C560BAQE-qHkv0hmXsg/company-logo_200_200/company-logo_200_200/0/1652803531293/full_spectrum_staffing_solutions_logo?e=2147483647&v=beta&t=tpL4IFmaBRKNkxBL6tRjfiAArNXYyu0R2j14mYo4TZQ",
+  "confidence": 0.97,
+  "profile_id": "bb3707dc-d7a1-4aa3-8aa6-c1a01eb746ac",
+  "certainty_reasons": []
+ },
+ {
+  "key": "social:youtube:ucd0kuqjbgr2ytg3xu8qlfrq",
+  "url": "http://www.youtube.com/@FullSpectrumSearchGroup",
+  "hits": [],
+  "field": "social",
+  "label": "Full Spectrum Search Group",
+  "value": "http://www.youtube.com/@FullSpectrumSearchGroup",
+  "handle": "UCD0KuqjbgR2ytG3Xu8qlfRQ",
+  "source": {
+   "url": "http://www.youtube.com/@FullSpectrumSearchGroup",
+   "kind": "social_profile",
+   "node": "avatars",
+   "where": "youtube profile"
+  },
+  "engines": [],
+  "same_as": [],
+  "snippet": null,
+  "platform": "youtube",
+  "verified": false,
+  "certainty": null,
+  "followers": 15,
+  "image_url": null,
+  "confidence": 0.97,
+  "profile_id": "95552c1e-4056-4391-b34a-afadef4ec9ab",
+  "certainty_reasons": []
+ },
+ {
+  "key": "bio_link:fullspecstaff.com/senior-living/blog",
+  "url": "https://fullspecstaff.com/senior-living/blog/",
+  "hits": [],
+  "field": "bio_link",
+  "label": "Full Spectrum Blog",
+  "value": "https://fullspecstaff.com/senior-living/blog/",
+  "handle": null,
+  "source": {
+   "url": "https://linktr.ee/fullspecstaff",
+   "kind": "link_in_bio",
+   "node": "avatars",
+   "where": "from Linktree bio"
+  },
+  "engines": [],
+  "same_as": [],
+  "snippet": null,
+  "platform": null,
+  "verified": null,
+  "certainty": null,
+  "followers": null,
+  "image_url": null,
+  "confidence": 0.5,
+  "profile_id": null,
+  "certainty_reasons": []
+ },
+ {
+  "key": "bio_link:fullspecstaff.com/wp-content/uploads/2023/04/sra-spotlight-full-spectrum-search.pdf",
+  "url": "http://fullspecstaff.com/wp-content/uploads/2023/04/SRA-Spotlight-Full-Spectrum-Search.pdf",
+  "hits": [],
+  "field": "bio_link",
+  "label": "SRA Spotlight: CEO, Maxwell McNamara, & Senior Managing Partner, Gaston Wilder",
+  "value": "http://fullspecstaff.com/wp-content/uploads/2023/04/SRA-Spotlight-Full-Spectrum-Search.pdf",
+  "handle": null,
+  "source": {
+   "url": "https://linktr.ee/fullspecstaff",
+   "kind": "link_in_bio",
+   "node": "avatars",
+   "where": "from Linktree bio"
+  },
+  "engines": [],
+  "same_as": [],
+  "snippet": null,
+  "platform": null,
+  "verified": null,
+  "certainty": null,
+  "followers": null,
+  "image_url": null,
+  "confidence": 0.5,
+  "profile_id": null,
+  "certainty_reasons": []
+ },
+ {
+  "key": "social:youtube:fullspectrumsearchgroup",
+  "url": "http://www.youtube.com/@FullSpectrumSearchGroup",
+  "hits": [],
+  "field": "social",
+  "label": "Full Spectrum Search Group",
+  "value": "http://www.youtube.com/@FullSpectrumSearchGroup",
+  "handle": "FullSpectrumSearchGroup",
+  "source": {
+   "url": "http://www.youtube.com/@FullSpectrumSearchGroup",
+   "kind": "social_profile",
+   "node": "avatars",
+   "where": "youtube profile"
+  },
+  "engines": [],
+  "same_as": [
+   "social:youtube:ucd0kuqjbgr2ytg3xu8qlfrq"
+  ],
+  "snippet": null,
+  "platform": "youtube",
+  "verified": false,
+  "certainty": null,
+  "followers": 15,
+  "image_url": null,
+  "confidence": 0.97,
+  "profile_id": "95552c1e-4056-4391-b34a-afadef4ec9ab",
+  "certainty_reasons": []
+ },
+ {
+  "key": "description:997a0c6ad15d",
+  "url": null,
+  "hits": [],
+  "field": "description",
+  "label": null,
+  "value": "Full Spectrum Search Group is a trusted advisor and leading executive search firm in Skilled Nursing, Home Health & Hospice, and Senior Living.\n\nWhen it comes to filling pivotal roles, Full Spectrum leads in three key skills:\n- Identifying world-class talent \n- Getting to the heart of the story \u2014 for both candidates and clients \n- Building trust with key players in the market\n\nWith a collective 29",
+  "handle": null,
+  "source": {
+   "url": "http://www.youtube.com/@FullSpectrumSearchGroup",
+   "kind": "social_profile",
+   "node": "avatars",
+   "where": "youtube profile"
+  },
+  "engines": [],
+  "same_as": [],
+  "snippet": null,
+  "platform": null,
+  "verified": null,
+  "certainty": null,
+  "followers": null,
+  "image_url": null,
+  "confidence": 0.75,
+  "profile_id": null,
+  "certainty_reasons": []
+ },
+ {
+  "key": "logo:https://fullspecstaff.com/wp-content/uploads/2022/04/full-spectrum-search-group.svg",
+  "url": null,
+  "hits": [],
+  "field": "logo",
+  "label": null,
+  "value": "https://fullspecstaff.com/wp-content/uploads/2022/04/Full-Spectrum-Search-Group.svg",
+  "handle": null,
+  "source": {
+   "url": "https://fullspecstaff.com",
+   "kind": "website",
+   "node": "page",
+   "where": "schema.org"
+  },
+  "engines": [],
+  "same_as": [],
+  "snippet": null,
+  "platform": null,
+  "verified": null,
+  "certainty": null,
+  "followers": null,
+  "image_url": "https://fullspecstaff.com/wp-content/uploads/2022/04/Full-Spectrum-Search-Group.svg",
+  "confidence": 0.99,
+  "profile_id": null,
+  "certainty_reasons": []
+ },
+ {
+  "key": "name:full spectrum search group",
+  "url": null,
+  "hits": [],
+  "field": "name",
+  "label": null,
+  "value": "Full Spectrum Search Group",
+  "handle": null,
+  "source": {
+   "url": "https://fullspecstaff.com/senior-living/",
+   "kind": "website",
+   "node": "page",
+   "where": "behind \u201cSenior Living\u201d: schema.org"
+  },
+  "engines": [],
+  "same_as": [],
+  "snippet": null,
+  "platform": null,
+  "verified": null,
+  "certainty": null,
+  "followers": null,
+  "image_url": null,
+  "confidence": 0.97,
+  "profile_id": null,
+  "certainty_reasons": []
+ },
+ {
+  "key": "description:5098670a723d",
+  "url": null,
+  "hits": [],
+  "field": "description",
+  "label": null,
+  "value": "Executive recruiters for senior living operators. We place Executive Directors, regional leaders, sales & C-suite talent\u2014permanent & interim, nationwide.",
+  "handle": null,
+  "source": {
+   "url": "https://fullspecstaff.com/senior-living/",
+   "kind": "website",
+   "node": "page",
+   "where": "behind \u201cSenior Living\u201d: meta description"
+  },
+  "engines": [],
+  "same_as": [],
+  "snippet": null,
+  "platform": null,
+  "verified": null,
+  "certainty": null,
+  "followers": null,
+  "image_url": null,
+  "confidence": 0.8,
+  "profile_id": null,
+  "certainty_reasons": []
+ },
+ {
+  "key": "logo:https://fullspecstaff.com/wp-content/uploads/2022/04/full-spectrum-icon.svg",
+  "url": null,
+  "hits": [],
+  "field": "logo",
+  "label": null,
+  "value": "https://fullspecstaff.com/wp-content/uploads/2022/04/Full-Spectrum-Icon.svg",
+  "handle": null,
+  "source": {
+   "url": "https://fullspecstaff.com/senior-living/",
+   "kind": "website",
+   "node": "page",
+   "where": "behind \u201cSenior Living\u201d: app icon"
+  },
+  "engines": [],
+  "same_as": [],
+  "snippet": null,
+  "platform": null,
+  "verified": null,
+  "certainty": null,
+  "followers": null,
+  "image_url": "https://fullspecstaff.com/wp-content/uploads/2022/04/Full-Spectrum-Icon.svg",
+  "confidence": 0.7,
+  "profile_id": null,
+  "certainty_reasons": []
+ },
+ {
+  "key": "social:linkedin:full-spectrum-search-group",
+  "url": "https://www.linkedin.com/company/full-spectrum-search-group",
+  "hits": [],
+  "field": "social",
+  "label": null,
+  "value": "https://www.linkedin.com/company/full-spectrum-search-group",
+  "handle": "full-spectrum-search-group",
+  "source": {
+   "url": "https://fullspecstaff.com/senior-living/",
+   "kind": "website",
+   "node": "page",
+   "where": "behind \u201cSenior Living\u201d: homepage link"
+  },
+  "engines": [],
+  "same_as": [],
+  "snippet": null,
+  "platform": "linkedin",
+  "verified": null,
+  "certainty": null,
+  "followers": null,
+  "image_url": null,
+  "confidence": 0.92,
+  "profile_id": null,
+  "certainty_reasons": []
+ },
+ {
+  "key": "social:instagram:fullspecstaff",
+  "url": "https://www.instagram.com/fullspecstaff",
+  "hits": [],
+  "field": "social",
+  "label": null,
+  "value": "https://www.instagram.com/fullspecstaff",
+  "handle": "fullspecstaff",
+  "source": {
+   "url": "https://fullspecstaff.com/senior-living/",
+   "kind": "website",
+   "node": "page",
+   "where": "behind \u201cSenior Living\u201d: homepage link"
+  },
+  "engines": [],
+  "same_as": [],
+  "snippet": null,
+  "platform": "instagram",
+  "verified": null,
+  "certainty": null,
+  "followers": null,
+  "image_url": null,
+  "confidence": 0.92,
+  "profile_id": null,
+  "certainty_reasons": []
+ },
+ {
+  "key": "social:facebook:fullspecstaff",
+  "url": "https://www.facebook.com/FullSpecStaff",
+  "hits": [],
+  "field": "social",
+  "label": null,
+  "value": "https://www.facebook.com/FullSpecStaff",
+  "handle": "FullSpecStaff",
+  "source": {
+   "url": "https://fullspecstaff.com/senior-living/",
+   "kind": "website",
+   "node": "page",
+   "where": "behind \u201cSenior Living\u201d: homepage link"
+  },
+  "engines": [],
+  "same_as": [],
+  "snippet": null,
+  "platform": "facebook",
+  "verified": null,
+  "certainty": null,
+  "followers": null,
+  "image_url": null,
+  "confidence": 0.92,
+  "profile_id": null,
+  "certainty_reasons": []
+ },
+ {
+  "key": "email:jobs@fullspecstaff.com",
+  "url": null,
+  "hits": [],
+  "field": "email",
+  "label": null,
+  "value": "jobs@fullspecstaff.com",
+  "handle": null,
+  "source": {
+   "url": "https://fullspecstaff.com/senior-living/",
+   "kind": "website",
+   "node": "page",
+   "where": "behind \u201cSenior Living\u201d: homepage text"
+  },
+  "engines": [],
+  "same_as": [],
+  "snippet": null,
+  "platform": null,
+  "verified": null,
+  "certainty": null,
+  "followers": null,
+  "image_url": null,
+  "confidence": 0.9,
+  "profile_id": null,
+  "certainty_reasons": []
+ },
+ {
+  "key": "phone:8665874112",
+  "url": null,
+  "hits": [],
+  "field": "phone",
+  "label": null,
+  "value": "(866) 587-4112",
+  "handle": null,
+  "source": {
+   "url": "https://fullspecstaff.com/senior-living/",
+   "kind": "website",
+   "node": "page",
+   "where": "behind \u201cSenior Living\u201d: homepage text"
+  },
+  "engines": [],
+  "same_as": [],
+  "snippet": null,
+  "platform": null,
+  "verified": null,
+  "certainty": null,
+  "followers": null,
+  "image_url": null,
+  "confidence": 0.82,
+  "profile_id": null,
+  "certainty_reasons": []
+ },
+ {
+  "key": "phone:9498607595",
+  "url": null,
+  "hits": [],
+  "field": "phone",
+  "label": null,
+  "value": "(949) 860-7595",
+  "handle": null,
+  "source": {
+   "url": "https://fullspecstaff.com/senior-living/",
+   "kind": "website",
+   "node": "page",
+   "where": "behind \u201cSenior Living\u201d: homepage text"
+  },
+  "engines": [],
+  "same_as": [],
+  "snippet": null,
+  "platform": null,
+  "verified": null,
+  "certainty": null,
+  "followers": null,
+  "image_url": null,
+  "confidence": 0.82,
+  "profile_id": null,
+  "certainty_reasons": []
+ },
+ {
+  "key": "description:d3fc4132cfda",
+  "url": null,
+  "hits": [],
+  "field": "description",
+  "label": null,
+  "value": "Executive search for home health & hospice operators. We recruit clinical, operations & business-development leaders\u2014permanent & interim, nationwide.",
+  "handle": null,
+  "source": {
+   "url": "https://fullspecstaff.com/home-health-and-hospice/",
+   "kind": "website",
+   "node": "page",
+   "where": "behind \u201cHome Health & Hospice\u201d: meta description"
+  },
+  "engines": [],
+  "same_as": [],
+  "snippet": null,
+  "platform": null,
+  "verified": null,
+  "certainty": null,
+  "followers": null,
+  "image_url": null,
+  "confidence": 0.8,
+  "profile_id": null,
+  "certainty_reasons": []
+ },
+ {
+  "key": "description:cc19970be098",
+  "url": null,
+  "hits": [],
+  "field": "description",
+  "label": null,
+  "value": "Skilled nursing executive search. We place Administrators, DONs, regional & C-suite leaders for SNF operators nationwide\u2014permanent & interim search.",
+  "handle": null,
+  "source": {
+   "url": "https://fullspecstaff.com/skilled-nursing/",
+   "kind": "website",
+   "node": "page",
+   "where": "behind \u201cSkilled Nursing\u201d: meta description"
+  },
+  "engines": [],
+  "same_as": [],
+  "snippet": null,
+  "platform": null,
+  "verified": null,
+  "certainty": null,
+  "followers": null,
+  "image_url": null,
+  "confidence": 0.8,
+  "profile_id": null,
+  "certainty_reasons": []
+ },
+ {
+  "key": "website:fullspecstaff.com",
+  "url": "https://fullspecstaff.com",
+  "hits": [],
+  "field": "website",
+  "label": "fullspecstaff.com",
+  "value": "https://fullspecstaff.com",
+  "handle": null,
+  "source": {
+   "url": "https://fullspecstaff.com",
+   "kind": "website",
+   "node": "probe",
+   "where": "the address itself"
+  },
+  "engines": [],
+  "same_as": [],
+  "snippet": null,
+  "platform": null,
+  "verified": null,
+  "certainty": null,
+  "followers": null,
+  "image_url": null,
+  "confidence": 0.9,
+  "profile_id": null,
+  "certainty_reasons": []
+ },
+ {
+  "key": "name:full spectrum search group",
+  "url": null,
+  "hits": [],
+  "field": "name",
+  "label": null,
+  "value": "Full Spectrum Search Group",
+  "handle": null,
+  "source": {
+   "url": "https://fullspecstaff.com",
+   "kind": "website",
+   "node": "probe",
+   "where": "schema.org"
+  },
+  "engines": [],
+  "same_as": [],
+  "snippet": null,
+  "platform": null,
+  "verified": null,
+  "certainty": null,
+  "followers": null,
+  "image_url": null,
+  "confidence": 0.97,
+  "profile_id": null,
+  "certainty_reasons": []
+ },
+ {
+  "key": "name:healthcare executive search for senior care",
+  "url": null,
+  "hits": [],
+  "field": "name",
+  "label": null,
+  "value": "Healthcare Executive Search for Senior Care",
+  "handle": null,
+  "source": {
+   "url": "https://fullspecstaff.com",
+   "kind": "website",
+   "node": "probe",
+   "where": "page title"
+  },
+  "engines": [],
+  "same_as": [],
+  "snippet": null,
+  "platform": null,
+  "verified": null,
+  "certainty": null,
+  "followers": null,
+  "image_url": null,
+  "confidence": 0.6,
+  "profile_id": null,
+  "certainty_reasons": []
+ },
+ {
+  "key": "description:ea0e020b42ae",
+  "url": null,
+  "hits": [],
+  "field": "description",
+  "label": null,
+  "value": "Full Spectrum Search Group places C-suite and executive leaders across senior living, skilled nursing, home health & hospice \u2014 permanent & interim, nationwide.",
+  "handle": null,
+  "source": {
+   "url": "https://fullspecstaff.com",
+   "kind": "website",
+   "node": "probe",
+   "where": "meta description"
+  },
+  "engines": [],
+  "same_as": [],
+  "snippet": null,
+  "platform": null,
+  "verified": null,
+  "certainty": null,
+  "followers": null,
+  "image_url": null,
+  "confidence": 0.8,
+  "profile_id": null,
+  "certainty_reasons": []
+ },
+ {
+  "key": "logo:https://fullspecstaff.com/wp-content/uploads/2022/04/full-spectrum-icon.svg",
+  "url": null,
+  "hits": [],
+  "field": "logo",
+  "label": null,
+  "value": "https://fullspecstaff.com/wp-content/uploads/2022/04/Full-Spectrum-Icon.svg",
+  "handle": null,
+  "source": {
+   "url": "https://fullspecstaff.com",
+   "kind": "website",
+   "node": "probe",
+   "where": "app icon"
+  },
+  "engines": [],
+  "same_as": [],
+  "snippet": null,
+  "platform": null,
+  "verified": null,
+  "certainty": null,
+  "followers": null,
+  "image_url": "https://fullspecstaff.com/wp-content/uploads/2022/04/Full-Spectrum-Icon.svg",
+  "confidence": 0.7,
+  "profile_id": null,
+  "certainty_reasons": []
+ },
+ {
+  "key": "logo:https://fullspecstaff.com/wp-content/uploads/2022/04/full-spectrum-search-group.svg",
+  "url": null,
+  "hits": [],
+  "field": "logo",
+  "label": null,
+  "value": "https://fullspecstaff.com/wp-content/uploads/2022/04/Full-Spectrum-Search-Group.svg",
+  "handle": null,
+  "source": {
+   "url": "https://fullspecstaff.com",
+   "kind": "website",
+   "node": "probe",
+   "where": "structured data logo"
+  },
+  "engines": [],
+  "same_as": [],
+  "snippet": null,
+  "platform": null,
+  "verified": null,
+  "certainty": null,
+  "followers": null,
+  "image_url": "https://fullspecstaff.com/wp-content/uploads/2022/04/Full-Spectrum-Search-Group.svg",
+  "confidence": 0.99,
+  "profile_id": null,
+  "certainty_reasons": []
+ },
+ {
+  "key": "web:halostaffing.com",
+  "url": "https://halostaffing.com/",
+  "hits": [
+   {
+    "rank": 1,
+    "query": "\"fullspecstaff.com\"",
+    "engine": "google",
+    "endpoint": "web"
+   }
+  ],
+  "field": "web_page",
+  "label": "Welcome to HALO Staffing Group - We've Got You Covered ...",
+  "value": "https://halostaffing.com/",
+  "handle": "halostaffing.com",
+  "source": {
+   "url": "https://halostaffing.com/",
+   "kind": "web_search",
+   "node": "web",
+   "where": "web result 1 for \"fullspecstaff.com\""
+  },
+  "engines": [
+   "google"
+  ],
+  "same_as": [],
+  "snippet": "HALO Staffing Group is a leading provider of medical professionals to the healthcare industry in California and Nevada.",
+  "platform": null,
+  "verified": null,
+  "certainty": "possible",
+  "followers": null,
+  "image_url": "https://halostaffing.com/favicon.ico",
+  "confidence": 0.4,
+  "profile_id": null,
+  "certainty_reasons": [
+   "result 1"
+  ]
+ },
+ {
+  "key": "web:sharestaff.net/divisions/healthcare",
+  "url": "https://sharestaff.net/divisions/healthcare/",
+  "hits": [
+   {
+    "rank": 2,
+    "query": "\"fullspecstaff.com\"",
+    "engine": "google",
+    "endpoint": "web"
+   }
+  ],
+  "field": "web_page",
+  "label": "Healthcare - Nationwide Staffing & Workforce Solutions",
+  "value": "https://sharestaff.net/divisions/healthcare/",
+  "handle": "sharestaff.net",
+  "source": {
+   "url": "https://sharestaff.net/divisions/healthcare/",
+   "kind": "web_search",
+   "node": "web",
+   "where": "web result 2 for \"fullspecstaff.com\""
+  },
+  "engines": [
+   "google"
+  ],
+  "same_as": [],
+  "snippet": "Our healthcare staffing solutions ensure hospitals, clinics, and medical facilities have access to skilled professionals who elevate patient care and ...",
+  "platform": null,
+  "verified": null,
+  "certainty": "possible",
+  "followers": null,
+  "image_url": "https://sharestaff.net/favicon.ico",
+  "confidence": 0.4,
+  "profile_id": null,
+  "certainty_reasons": [
+   "result 2"
+  ]
+ },
+ {
+  "key": "listing:bbb.org/us/ca/laguna-hills/profile/staffing-agencies/full-spectrum-search-group-1126-1000107624",
+  "url": "https://www.bbb.org/us/ca/laguna-hills/profile/staffing-agencies/full-spectrum-search-group-1126-1000107624",
+  "hits": [
+   {
+    "rank": 3,
+    "query": "\"fullspecstaff.com\"",
+    "engine": "google",
+    "endpoint": "web"
+   },
+   {
+    "rank": 5,
+    "query": "\"Full Spectrum Search Group\" reviews",
+    "engine": "brave",
+    "endpoint": "web"
+   }
+  ],
+  "field": "listing",
+  "label": "BBB",
+  "value": "https://www.bbb.org/us/ca/laguna-hills/profile/staffing-agencies/full-spectrum-search-group-1126-1000107624",
+  "handle": "Full Spectrum Search Group",
+  "source": {
+   "url": "https://www.bbb.org/us/ca/laguna-hills/profile/staffing-agencies/full-spectrum-search-group-1126-1000107624",
+   "kind": "web_search",
+   "node": "web",
+   "where": "web result 3 for \"fullspecstaff.com\""
+  },
+  "engines": [
+   "google",
+   "brave"
+  ],
+  "same_as": [],
+  "snippet": "This business offers staffing for health care and senior living industiy services. Years in Business: 9. Business Details. Local BBB: BBB, Mountain West & ...",
+  "platform": "bbb",
+  "verified": null,
+  "certainty": "likely",
+  "followers": null,
+  "image_url": "https://www.bbb.org/favicon.ico",
+  "confidence": 0.7,
+  "profile_id": null,
+  "certainty_reasons": [
+   "BBB",
+   "top 3 result",
+   "name matches \"Full Spectrum Search Group\""
+  ]
+ },
+ {
+  "key": "web:whitecapworkforce.com",
+  "url": "https://whitecapworkforce.com/",
+  "hits": [
+   {
+    "rank": 4,
+    "query": "\"fullspecstaff.com\"",
+    "engine": "google",
+    "endpoint": "web"
+   }
+  ],
+  "field": "web_page",
+  "label": "WhiteCap Workforce Solutions | Staffing & Recruitment Solutions",
+  "value": "https://whitecapworkforce.com/",
+  "handle": "whitecapworkforce.com",
+  "source": {
+   "url": "https://whitecapworkforce.com/",
+   "kind": "web_search",
+   "node": "web",
+   "where": "web result 4 for \"fullspecstaff.com\""
+  },
+  "engines": [
+   "google"
+  ],
+  "same_as": [],
+  "snippet": "WhiteCap Workforce Solutions connects top talent with leading employers through specialized staffing and recruitment solutions across industries and career ...",
+  "platform": null,
+  "verified": null,
+  "certainty": "possible",
+  "followers": null,
+  "image_url": "https://whitecapworkforce.com/favicon.ico",
+  "confidence": 0.4,
+  "profile_id": null,
+  "certainty_reasons": [
+   "result 4"
+  ]
+ },
+ {
+  "key": "web:fullrein.com",
+  "url": "https://fullrein.com/",
+  "hits": [
+   {
+    "rank": 5,
+    "query": "\"fullspecstaff.com\"",
+    "engine": "google",
+    "endpoint": "web"
+   }
+  ],
+  "field": "web_page",
+  "label": "Full Rein - Take the reins of your employment needs",
+  "value": "https://fullrein.com/",
+  "handle": "fullrein.com",
+  "source": {
+   "url": "https://fullrein.com/",
+   "kind": "web_search",
+   "node": "web",
+   "where": "web result 5 for \"fullspecstaff.com\""
+  },
+  "engines": [
+   "google"
+  ],
+  "same_as": [],
+  "snippet": "Our mission at Full Rein is to optimize the delivery of care within the medical industry through affordable technology solutions.",
+  "platform": null,
+  "verified": null,
+  "certainty": "possible",
+  "followers": null,
+  "image_url": "https://fullrein.com/favicon.ico",
+  "confidence": 0.4,
+  "profile_id": null,
+  "certainty_reasons": [
+   "result 5"
+  ]
+ },
+ {
+  "key": "web:aimsforce.com",
+  "url": "https://aimsforce.com/",
+  "hits": [
+   {
+    "rank": 6,
+    "query": "\"fullspecstaff.com\"",
+    "engine": "google",
+    "endpoint": "web"
+   }
+  ],
+  "field": "web_page",
+  "label": "AIMS Force: Healthcare Staffing Agency | DHA, DoD & VA",
+  "value": "https://aimsforce.com/",
+  "handle": "aimsforce.com",
+  "source": {
+   "url": "https://aimsforce.com/",
+   "kind": "web_search",
+   "node": "web",
+   "where": "web result 6 for \"fullspecstaff.com\""
+  },
+  "engines": [
+   "google"
+  ],
+  "same_as": [],
+  "snippet": "WOSB certified healthcare staffing agency. we deliver end-to-end credentialing, rapid deployment, and full lifecycle workforce management across 50 states.",
+  "platform": null,
+  "verified": null,
+  "certainty": "possible",
+  "followers": null,
+  "image_url": "https://aimsforce.com/favicon.ico",
+  "confidence": 0.4,
+  "profile_id": null,
+  "certainty_reasons": [
+   "result 6"
+  ]
+ },
+ {
+  "key": "web:superiorstaffinginc.com",
+  "url": "https://www.superiorstaffinginc.com/",
+  "hits": [
+   {
+    "rank": 7,
+    "query": "\"fullspecstaff.com\"",
+    "engine": "google",
+    "endpoint": "web"
+   }
+  ],
+  "field": "web_page",
+  "label": "Superior Staffing Inc.",
+  "value": "https://www.superiorstaffinginc.com/",
+  "handle": "www.superiorstaffinginc.com",
+  "source": {
+   "url": "https://www.superiorstaffinginc.com/",
+   "kind": "web_search",
+   "node": "web",
+   "where": "web result 7 for \"fullspecstaff.com\""
+  },
+  "engines": [
+   "google"
+  ],
+  "same_as": [],
+  "snippet": "At Superior Staffing, Inc. our goal is to bridge the gap between job seekers and employers in search of qualified candidates.",
+  "platform": null,
+  "verified": null,
+  "certainty": "possible",
+  "followers": null,
+  "image_url": "https://www.superiorstaffinginc.com/favicon.ico",
+  "confidence": 0.4,
+  "profile_id": null,
+  "certainty_reasons": [
+   "result 7"
+  ]
+ },
+ {
+  "key": "web:fulllifestaffing.squarespace.com/find-your-team",
+  "url": "https://fulllifestaffing.squarespace.com/find-your-team",
+  "hits": [
+   {
+    "rank": 8,
+    "query": "\"fullspecstaff.com\"",
+    "engine": "google",
+    "endpoint": "web"
+   }
+  ],
+  "field": "web_page",
+  "label": "Hiring Options \u2014 Full Life Staffing",
+  "value": "https://fulllifestaffing.squarespace.com/find-your-team",
+  "handle": "fulllifestaffing.squarespace.com",
+  "source": {
+   "url": "https://fulllifestaffing.squarespace.com/find-your-team",
+   "kind": "web_search",
+   "node": "web",
+   "where": "web result 8 for \"fullspecstaff.com\""
+  },
+  "engines": [
+   "google"
+  ],
+  "same_as": [],
+  "snippet": "We provide you an experienced and efficient employee to help you and your business short term. (503) 238-4604 (971) 284-1190",
+  "platform": null,
+  "verified": null,
+  "certainty": "possible",
+  "followers": null,
+  "image_url": "https://fulllifestaffing.squarespace.com/favicon.ico",
+  "confidence": 0.4,
+  "profile_id": null,
+  "certainty_reasons": [
+   "result 8"
+  ]
+ },
+ {
+  "key": "web:thestaffingspecialist.com",
+  "url": "https://thestaffingspecialist.com/",
+  "hits": [
+   {
+    "rank": 9,
+    "query": "\"fullspecstaff.com\"",
+    "engine": "google",
+    "endpoint": "web"
+   }
+  ],
+  "field": "web_page",
+  "label": "The Staffing Specialist\u2122 | The Enterprise Recruitment ...",
+  "value": "https://thestaffingspecialist.com/",
+  "handle": "thestaffingspecialist.com",
+  "source": {
+   "url": "https://thestaffingspecialist.com/",
+   "kind": "web_search",
+   "node": "web",
+   "where": "web result 9 for \"fullspecstaff.com\""
+  },
+  "engines": [
+   "google"
+  ],
+  "same_as": [],
+  "snippet": "The Staffing Specialist\u2122 is an Enterprise Recruitment Operating System. TalentBase\u2122, TalentBench\u2122, TalentFit\u2122, and CompIntel\u2122, unified by One Hiring ...",
+  "platform": null,
+  "verified": null,
+  "certainty": "possible",
+  "followers": null,
+  "image_url": "https://thestaffingspecialist.com/favicon.ico",
+  "confidence": 0.4,
+  "profile_id": null,
+  "certainty_reasons": [
+   "result 9"
+  ]
+ },
+ {
+  "key": "social:facebook:fullspecstaff",
+  "url": "https://www.facebook.com/FullSpecStaff",
+  "hits": [
+   {
+    "rank": 2,
+    "query": "\"fullspecstaff.com\"",
+    "engine": "brave",
+    "endpoint": "web"
+   },
+   {
+    "rank": 3,
+    "query": "\"Full Spectrum Search Group\"",
+    "engine": "brave",
+    "endpoint": "web"
+   },
+   {
+    "rank": 6,
+    "query": "\"Full Spectrum Search Group\" reviews",
+    "engine": "brave",
+    "endpoint": "web"
+   }
+  ],
+  "field": "social",
+  "label": "Full Spectrum Search Group",
+  "value": "https://www.facebook.com/FullSpecStaff",
+  "handle": "fullspecstaff",
+  "source": {
+   "url": "https://www.facebook.com/FullSpecStaff/",
+   "kind": "web_search",
+   "node": "web",
+   "where": "web result 2 for \"fullspecstaff.com\""
+  },
+  "engines": [
+   "brave"
+  ],
+  "same_as": [],
+  "snippet": "Jobs@FullSpecStaff.com \u00b7 FullSpecStaff.com \u00b7 Always open \u00b7 100% recommend (10 reviews)\ufeff \u00b7 See all photos \u00b7 October 9, 2025 \u00b7 \u00b7 The best teams aren\u2019t built by chance\u2014they\u2019re built by design. Learn how strategic recruiting makes all the difference.",
+  "platform": "facebook",
+  "verified": null,
+  "certainty": "certain",
+  "followers": null,
+  "image_url": null,
+  "confidence": 0.88,
+  "profile_id": null,
+  "certainty_reasons": [
+   "Facebook page",
+   "names fullspecstaff.com"
+  ]
+ },
+ {
+  "key": "social:linkedin:full-spectrum-search-group",
+  "url": "https://www.linkedin.com/company/full-spectrum-search-group",
+  "hits": [
+   {
+    "rank": 2,
+    "query": "\"Full Spectrum Search Group\"",
+    "engine": "brave",
+    "endpoint": "web"
+   },
+   {
+    "rank": 6,
+    "query": "\"fullspecstaff.com\"",
+    "engine": "brave",
+    "endpoint": "web"
+   },
+   {
+    "rank": 10,
+    "query": "\"Full Spectrum Search Group\" reviews",
+    "engine": "brave",
+    "endpoint": "web"
+   }
+  ],
+  "field": "social",
+  "label": "Full Spectrum Search Group",
+  "value": "https://www.linkedin.com/company/full-spectrum-search-group",
+  "handle": "full-spectrum-search-group",
+  "source": {
+   "url": "https://www.linkedin.com/company/full-spectrum-search-group",
+   "kind": "web_search",
+   "node": "web",
+   "where": "web result 6 for \"fullspecstaff.com\""
+  },
+  "engines": [
+   "brave"
+  ],
+  "same_as": [],
+  "snippet": "Join this esteemed senior living community and enjoy these perks: \ud83d\udca5 Stable occupancy in assisted living and memory care, with robust regional and executive leadership support. \ud83d\udca5 Nationwide operator renowned for exceptional care. \ud83d\udca5 Competitive base salary and attractive commission plan. For details and application, contact Katie Churchill or Gaston Wilder. \ud83d\udcf2 #SeniorLiving #SeniorLivingJobs #FullSpe",
+  "platform": "linkedin",
+  "verified": null,
+  "certainty": "certain",
+  "followers": null,
+  "image_url": null,
+  "confidence": 0.88,
+  "profile_id": null,
+  "certainty_reasons": [
+   "LinkedIn company page",
+   "names fullspecstaff.com"
+  ]
+ },
+ {
+  "key": "web:rocketreach.co/full-spectrum-search-group-email-format_b45c50e2fc6e0c1c",
+  "url": "https://rocketreach.co/full-spectrum-search-group-email-format_b45c50e2fc6e0c1c",
+  "hits": [
+   {
+    "rank": 7,
+    "query": "\"fullspecstaff.com\"",
+    "engine": "brave",
+    "endpoint": "web"
+   }
+  ],
+  "field": "web_page",
+  "label": "Full Spectrum Search Group Email Format | fullspecstaff.com Emails",
+  "value": "https://rocketreach.co/full-spectrum-search-group-email-format_b45c50e2fc6e0c1c",
+  "handle": "rocketreach.co",
+  "source": {
+   "url": "https://rocketreach.co/full-spectrum-search-group-email-format_b45c50e2fc6e0c1c",
+   "kind": "web_search",
+   "node": "web",
+   "where": "web result 7 for \"fullspecstaff.com\""
+  },
+  "engines": [
+   "brave"
+  ],
+  "same_as": [],
+  "snippet": "Full Spectrum Search Group uses 2 email formats: 1. first last_initial@fullspecstaff.com (81.8%). Enter a name to find &amp; verify an email &gt;&gt;&gt;",
+  "platform": null,
+  "verified": null,
+  "certainty": "possible",
+  "followers": null,
+  "image_url": "https://rocketreach.co/favicon.ico",
+  "confidence": 0.4,
+  "profile_id": null,
+  "certainty_reasons": [
+   "names fullspecstaff.com",
+   "result 7"
+  ]
+ },
+ {
+  "key": "web:zoominfo.com/c/full-spectrum-search-group/454364910",
+  "url": "https://www.zoominfo.com/c/full-spectrum-search-group/454364910",
+  "hits": [
+   {
+    "rank": 8,
+    "query": "\"fullspecstaff.com\"",
+    "engine": "brave",
+    "endpoint": "web"
+   },
+   {
+    "rank": 9,
+    "query": "\"Full Spectrum Search Group\"",
+    "engine": "brave",
+    "endpoint": "web"
+   }
+  ],
+  "field": "web_page",
+  "label": "Full Spectrum Search Group - Overview, News & Similar companies | ZoomInfo.com",
+  "value": "https://www.zoominfo.com/c/full-spectrum-search-group/454364910",
+  "handle": "www.zoominfo.com",
+  "source": {
+   "url": "https://www.zoominfo.com/c/full-spectrum-search-group/454364910",
+   "kind": "web_search",
+   "node": "web",
+   "where": "web result 8 for \"fullspecstaff.com\""
+  },
+  "engines": [
+   "brave"
+  ],
+  "same_as": [],
+  "snippet": "View Full Spectrum Search Group (www.fullspecstaff.com) location in California, United States , revenue, industry and description. Find related and similar companies as well as employees by title and much more.",
+  "platform": null,
+  "verified": null,
+  "certainty": "possible",
+  "followers": null,
+  "image_url": "https://www.zoominfo.com/favicon.ico",
+  "confidence": 0.4,
+  "profile_id": null,
+  "certainty_reasons": [
+   "names fullspecstaff.com",
+   "result 8"
+  ]
+ },
+ {
+  "key": "web:wayup.com/i-j-healthcare-recruiter-long-term-care-full-spectrum-search-group-306836271931550",
+  "url": "https://www.wayup.com/i-j-Healthcare-Recruiter-Long-Term-Care-Full-Spectrum-Search-Group-306836271931550/",
+  "hits": [
+   {
+    "rank": 9,
+    "query": "\"fullspecstaff.com\"",
+    "engine": "brave",
+    "endpoint": "web"
+   }
+  ],
+  "field": "web_page",
+  "label": "Full Spectrum Search Group: Healthcare Recruiter - Long-Term Care | WayUp",
+  "value": "https://www.wayup.com/i-j-Healthcare-Recruiter-Long-Term-Care-Full-Spectrum-Search-Group-306836271931550/",
+  "handle": "www.wayup.com",
+  "source": {
+   "url": "https://www.wayup.com/i-j-Healthcare-Recruiter-Long-Term-Care-Full-Spectrum-Search-Group-306836271931550/",
+   "kind": "web_search",
+   "node": "web",
+   "where": "web result 9 for \"fullspecstaff.com\""
+  },
+  "engines": [
+   "brave"
+  ],
+  "same_as": [],
+  "snippet": "Health. Our firm offers health, dental, and vision insurance for full-time employees. ... We would love to connect with you about this position \u2014 and help you open new doors in your career.",
+  "platform": null,
+  "verified": null,
+  "certainty": "possible",
+  "followers": null,
+  "image_url": "https://www.wayup.com/favicon.ico",
+  "confidence": 0.4,
+  "profile_id": null,
+  "certainty_reasons": [
+   "names fullspecstaff.com",
+   "result 9"
+  ]
+ },
+ {
+  "key": "listing:yelp.com/biz/full-spectrum-search-group-laguna-hills",
+  "url": "https://www.yelp.com/biz/full-spectrum-search-group-laguna-hills",
+  "hits": [
+   {
+    "rank": 4,
+    "query": "\"Full Spectrum Search Group\"",
+    "engine": "brave",
+    "endpoint": "web"
+   },
+   {
+    "rank": 7,
+    "query": "\"Full Spectrum Search Group\" reviews",
+    "engine": "brave",
+    "endpoint": "web"
+   },
+   {
+    "rank": 10,
+    "query": "\"fullspecstaff.com\"",
+    "engine": "brave",
+    "endpoint": "web"
+   }
+  ],
+  "field": "listing",
+  "label": "Yelp",
+  "value": "https://www.yelp.com/biz/full-spectrum-search-group-laguna-hills",
+  "handle": "FULL SPECTRUM SEARCH GROUP",
+  "source": {
+   "url": "https://www.yelp.com/biz/full-spectrum-search-group-laguna-hills",
+   "kind": "web_search",
+   "node": "web",
+   "where": "web result 10 for \"fullspecstaff.com\""
+  },
+  "engines": [
+   "brave"
+  ],
+  "same_as": [],
+  "snippet": "The solution is here, come thrive with us!\u2026Read more \u00b7 Suggest an edit \u00b7 23422 Mill Creek Dr \u00b7 Ste 230 \u00b7 Laguna Hills, CA 92653 \u00b7 Get directions \u00b7 Ask a question \u00b7 Yelp users haven\u2019t asked any questions yet about Full Spectrum Search Group. Staffing Agencies \u00b7 Job Recruiters \u00b7 Recruiters \u00b7 Recruitment Agencies \u00b7 Finance Recruiters \u00b7 Executive Assistant Recruiters \u00b7 Business website \u00b7 fullspecstaff",
+  "platform": "yelp",
+  "verified": null,
+  "certainty": "certain",
+  "followers": null,
+  "image_url": "https://www.yelp.com/favicon.ico",
+  "confidence": 0.88,
+  "profile_id": null,
+  "certainty_reasons": [
+   "Yelp",
+   "names fullspecstaff.com"
+  ]
+ },
+ {
+  "key": "web:directrecruiters.com/news/direct-recruiters-inc-expands-executive-search-offerings-with-the-strategic-integration-of-full-spectrum-search-group",
+  "url": "https://directrecruiters.com/news/direct-recruiters-inc-expands-executive-search-offerings-with-the-strategic-integration-of-full-spectrum-search-group/",
+  "hits": [
+   {
+    "rank": 5,
+    "query": "\"Full Spectrum Search Group\"",
+    "engine": "brave",
+    "endpoint": "web"
+   }
+  ],
+  "field": "web_page",
+  "label": "Direct Recruiters, Inc. Expands Executive Search Offerings with the Strategic Integration of Full Spectrum Search Group - Direct Recruiters Inc.",
+  "value": "https://directrecruiters.com/news/direct-recruiters-inc-expands-executive-search-offerings-with-the-strategic-integration-of-full-spectrum-search-group/",
+  "handle": "directrecruiters.com",
+  "source": {
+   "url": "https://directrecruiters.com/news/direct-recruiters-inc-expands-executive-search-offerings-with-the-strategic-integration-of-full-spectrum-search-group/",
+   "kind": "web_search",
+   "node": "web",
+   "where": "web result 5 for \"Full Spectrum Search Group\""
+  },
+  "engines": [
+   "brave"
+  ],
+  "same_as": [],
+  "snippet": "Based in California, Full Spectrum Search Group has been a leading executive search firm in Skilled Nursing, Home Health &amp; Hospice and Senior Living since 2016.",
+  "platform": null,
+  "verified": null,
+  "certainty": "possible",
+  "followers": null,
+  "image_url": "https://directrecruiters.com/favicon.ico",
+  "confidence": 0.4,
+  "profile_id": null,
+  "certainty_reasons": [
+   "name matches \"Full Spectrum Search Group\"",
+   "result 5"
+  ]
+ },
+ {
+  "key": "listing:indeed.com/cmp/full-spectrum-search-group",
+  "url": "https://www.indeed.com/cmp/Full-Spectrum-Search-Group",
+  "hits": [
+   {
+    "rank": 4,
+    "query": "\"Full Spectrum Search Group\" reviews",
+    "engine": "brave",
+    "endpoint": "web"
+   },
+   {
+    "rank": 6,
+    "query": "\"Full Spectrum Search Group\"",
+    "engine": "brave",
+    "endpoint": "web"
+   }
+  ],
+  "field": "listing",
+  "label": "Indeed",
+  "value": "https://www.indeed.com/cmp/Full-Spectrum-Search-Group",
+  "handle": "Full Spectrum Search Group Careers and Employment",
+  "source": {
+   "url": "https://www.indeed.com/cmp/Full-Spectrum-Search-Group",
+   "kind": "web_search",
+   "node": "web",
+   "where": "web result 6 for \"Full Spectrum Search Group\""
+  },
+  "engines": [
+   "brave"
+  ],
+  "same_as": [],
+  "snippet": "Collectively, Full Spectrum Search Group has over 73 years of practical industry and executive search experience in Senior Living, Skilled Nursing, and Home Health &amp; Hospice. We have built management and leadership teams for some of the most ...",
+  "platform": "indeed",
+  "verified": null,
+  "certainty": "possible",
+  "followers": null,
+  "image_url": "https://www.indeed.com/favicon.ico",
+  "confidence": 0.4,
+  "profile_id": null,
+  "certainty_reasons": [
+   "Indeed",
+   "name matches \"Full Spectrum Search Group\"",
+   "result 6"
+  ]
+ },
+ {
+  "key": "web:rocketreach.co/full-spectrum-search-group-profile_b45c50e2fc6e0c1c",
+  "url": "https://rocketreach.co/full-spectrum-search-group-profile_b45c50e2fc6e0c1c",
+  "hits": [
+   {
+    "rank": 7,
+    "query": "\"Full Spectrum Search Group\"",
+    "engine": "brave",
+    "endpoint": "web"
+   }
+  ],
+  "field": "web_page",
+  "label": "Full Spectrum Search Group Information",
+  "value": "https://rocketreach.co/full-spectrum-search-group-profile_b45c50e2fc6e0c1c",
+  "handle": "rocketreach.co",
+  "source": {
+   "url": "https://rocketreach.co/full-spectrum-search-group-profile_b45c50e2fc6e0c1c",
+   "kind": "web_search",
+   "node": "web",
+   "where": "web result 7 for \"Full Spectrum Search Group\""
+  },
+  "engines": [
+   "brave"
+  ],
+  "same_as": [],
+  "snippet": "Full Spectrum Search Group is a Staffing and Recruiting company located in Laguna Hills, California with 21 employees. Find top employees, contact details and business statistics at RocketReach.",
+  "platform": null,
+  "verified": null,
+  "certainty": "possible",
+  "followers": null,
+  "image_url": "https://rocketreach.co/favicon.ico",
+  "confidence": 0.4,
+  "profile_id": null,
+  "certainty_reasons": [
+   "name matches \"Full Spectrum Search Group\"",
+   "result 7"
+  ]
+ },
+ {
+  "key": "listing:mapquest.com/us/california/full-spectrum-search-group-424406868",
+  "url": "https://www.mapquest.com/us/california/full-spectrum-search-group-424406868",
+  "hits": [
+   {
+    "rank": 8,
+    "query": "\"Full Spectrum Search Group\"",
+    "engine": "brave",
+    "endpoint": "web"
+   }
+  ],
+  "field": "listing",
+  "label": "MapQuest",
+  "value": "https://www.mapquest.com/us/california/full-spectrum-search-group-424406868",
+  "handle": "Full Spectrum Search Group, 23422 Mill Creek Dr, Ste 230, Laguna Hills, CA 92653, US",
+  "source": {
+   "url": "https://www.mapquest.com/us/california/full-spectrum-search-group-424406868",
+   "kind": "web_search",
+   "node": "web",
+   "where": "web result 8 for \"Full Spectrum Search Group\""
+  },
+  "engines": [
+   "brave"
+  ],
+  "same_as": [],
+  "snippet": "Full Spectrum Search Group, located in Laguna Hills, CA, specializes in senior living solutions, offering services such as home health, hospice, and skilled nursing.",
+  "platform": "mapquest",
+  "verified": null,
+  "certainty": "possible",
+  "followers": null,
+  "image_url": "https://www.mapquest.com/favicon.ico",
+  "confidence": 0.4,
+  "profile_id": null,
+  "certainty_reasons": [
+   "MapQuest",
+   "name matches \"Full Spectrum Search Group\"",
+   "result 8"
+  ]
+ },
+ {
+  "key": "web:instagram.com/fullspecstaff",
+  "url": "https://www.instagram.com/fullspecstaff",
+  "hits": [
+   {
+    "rank": 10,
+    "query": "\"Full Spectrum Search Group\"",
+    "engine": "brave",
+    "endpoint": "web"
+   }
+  ],
+  "field": "web_page",
+  "label": "Full Spectrum Search Group",
+  "value": "https://www.instagram.com/fullspecstaff",
+  "handle": "www.instagram.com",
+  "source": {
+   "url": "https://www.instagram.com/fullspecstaff/",
+   "kind": "web_search",
+   "node": "web",
+   "where": "web result 10 for \"Full Spectrum Search Group\""
+  },
+  "engines": [
+   "brave"
+  ],
+  "same_as": [],
+  "snippet": "See Instagram photos and videos from Full Spectrum Search Group (@fullspecstaff)",
+  "platform": null,
+  "verified": null,
+  "certainty": "possible",
+  "followers": null,
+  "image_url": "https://www.instagram.com/favicon.ico",
+  "confidence": 0.4,
+  "profile_id": null,
+  "certainty_reasons": [
+   "Instagram profile",
+   "name matches \"Full Spectrum Search Group\"",
+   "result 10"
+  ]
+ },
+ {
+  "key": "listing:indeed.com/cmp/full-spectrum-search-group/reviews",
+  "url": "https://www.indeed.com/cmp/Full-Spectrum-Search-Group/reviews",
+  "hits": [
+   {
+    "rank": 1,
+    "query": "\"Full Spectrum Search Group\" reviews",
+    "engine": "brave",
+    "endpoint": "web"
+   }
+  ],
+  "field": "listing",
+  "label": "Indeed",
+  "value": "https://www.indeed.com/cmp/Full-Spectrum-Search-Group/reviews",
+  "handle": "Working at Full Spectrum Search Group: Employee Reviews",
+  "source": {
+   "url": "https://www.indeed.com/cmp/Full-Spectrum-Search-Group/reviews",
+   "kind": "web_search",
+   "node": "web",
+   "where": "web result 1 for \"Full Spectrum Search Group\" reviews"
+  },
+  "engines": [
+   "brave"
+  ],
+  "same_as": [],
+  "snippet": "My time at Full Spectrum Search Group was all about supporting an incredibly talented team of recruiters and leaders. I learned so much about the recruiting and senior healthcare industries just by being in the (Zoom) room with such a smart, driven group of people.",
+  "platform": "indeed",
+  "verified": null,
+  "certainty": "likely",
+  "followers": null,
+  "image_url": "https://www.indeed.com/favicon.ico",
+  "confidence": 0.7,
+  "profile_id": null,
+  "certainty_reasons": [
+   "Indeed",
+   "top 1 result",
+   "name matches \"Full Spectrum Search Group\""
+  ]
+ },
+ {
+  "key": "listing:glassdoor.com/reviews/full-spectrum-search-group-reviews-e1669208.htm",
+  "url": "https://www.glassdoor.com/Reviews/Full-Spectrum-Search-Group-Reviews-E1669208.htm",
+  "hits": [
+   {
+    "rank": 2,
+    "query": "\"Full Spectrum Search Group\" reviews",
+    "engine": "brave",
+    "endpoint": "web"
+   }
+  ],
+  "field": "listing",
+  "label": "Glassdoor",
+  "value": "https://www.glassdoor.com/Reviews/Full-Spectrum-Search-Group-Reviews-E1669208.htm",
+  "handle": "Full Spectrum Search Group Reviews (15): Pros & Cons of Working At Full Spectrum Search Group",
+  "source": {
+   "url": "https://www.glassdoor.com/Reviews/Full-Spectrum-Search-Group-Reviews-E1669208.htm",
+   "kind": "web_search",
+   "node": "web",
+   "where": "web result 2 for \"Full Spectrum Search Group\" reviews"
+  },
+  "engines": [
+   "brave"
+  ],
+  "same_as": [],
+  "snippet": "Full Spectrum Search Group has an employee rating of 4.6 out of 5 stars, based on 15 company reviews on Glassdoor which indicates that most employees have an excellent working experience there.",
+  "platform": "glassdoor",
+  "verified": null,
+  "certainty": "likely",
+  "followers": null,
+  "image_url": "https://www.glassdoor.com/favicon.ico",
+  "confidence": 0.7,
+  "profile_id": null,
+  "certainty_reasons": [
+   "Glassdoor",
+   "top 2 result",
+   "name matches \"Full Spectrum Search Group\""
+  ]
+ },
+ {
+  "key": "listing:glassdoor.com/overview/working-at-full-spectrum-search-group-ei_ie1669208.11,37.htm",
+  "url": "https://www.glassdoor.com/Overview/Working-at-Full-Spectrum-Search-Group-EI_IE1669208.11,37.htm",
+  "hits": [
+   {
+    "rank": 3,
+    "query": "\"Full Spectrum Search Group\" reviews",
+    "engine": "brave",
+    "endpoint": "web"
+   }
+  ],
+  "field": "listing",
+  "label": "Glassdoor",
+  "value": "https://www.glassdoor.com/Overview/Working-at-Full-Spectrum-Search-Group-EI_IE1669208.11,37.htm",
+  "handle": "Working at Full Spectrum Search Group",
+  "source": {
+   "url": "https://www.glassdoor.com/Overview/Working-at-Full-Spectrum-Search-Group-EI_IE1669208.11,37.htm",
+   "kind": "web_search",
+   "node": "web",
+   "where": "web result 3 for \"Full Spectrum Search Group\" reviews"
+  },
+  "engines": [
+   "brave"
+  ],
+  "same_as": [],
+  "snippet": "Full Spectrum Search Group has an employee rating of 4.6 out of 5 stars, based on 17 company reviews on Glassdoor which indicates that most employees have an excellent working experience there.",
+  "platform": "glassdoor",
+  "verified": null,
+  "certainty": "likely",
+  "followers": null,
+  "image_url": "https://www.glassdoor.com/favicon.ico",
+  "confidence": 0.7,
+  "profile_id": null,
+  "certainty_reasons": [
+   "Glassdoor",
+   "top 3 result",
+   "name matches \"Full Spectrum Search Group\""
+  ]
+ },
+ {
+  "key": "web:indeed.com/cmp/full-spectrum-search-group/reviews/awesome-promotional-opportunities",
+  "url": "https://www.indeed.com/cmp/Full-Spectrum-Search-Group/reviews/awesome-promotional-opportunities?id=1820d54cf141cbf1",
+  "hits": [
+   {
+    "rank": 8,
+    "query": "\"Full Spectrum Search Group\" reviews",
+    "engine": "brave",
+    "endpoint": "web"
+   }
+  ],
+  "field": "web_page",
+  "label": "Full Spectrum Search Group Managing Partner Review: awesome promotional opportunities | Indeed.com",
+  "value": "https://www.indeed.com/cmp/Full-Spectrum-Search-Group/reviews/awesome-promotional-opportunities?id=1820d54cf141cbf1",
+  "handle": "www.indeed.com",
+  "source": {
+   "url": "https://www.indeed.com/cmp/Full-Spectrum-Search-Group/reviews/awesome-promotional-opportunities?id=1820d54cf141cbf1",
+   "kind": "web_search",
+   "node": "web",
+   "where": "web result 8 for \"Full Spectrum Search Group\" reviews"
+  },
+  "engines": [
+   "brave"
+  ],
+  "same_as": [],
+  "snippet": "My time at Full Spectrum Search Group was all about supporting an incredibly talented team of recruiters and leaders. I learned so much about the recruiting and senior healthcare industries just by being in the (Zoom) room with such a smart, driven group of people.",
+  "platform": null,
+  "verified": null,
+  "certainty": "possible",
+  "followers": null,
+  "image_url": "https://www.indeed.com/favicon.ico",
+  "confidence": 0.4,
+  "profile_id": null,
+  "certainty_reasons": [
+   "name matches \"Full Spectrum Search Group\"",
+   "result 8"
+  ]
+ },
+ {
+  "key": "web:simplyhired.com/browse-jobs/companies/full-spectrum-search-group",
+  "url": "https://www.simplyhired.com/browse-jobs/companies/Full-Spectrum-Search-Group",
+  "hits": [
+   {
+    "rank": 9,
+    "query": "\"Full Spectrum Search Group\" reviews",
+    "engine": "brave",
+    "endpoint": "web"
+   }
+  ],
+  "field": "web_page",
+  "label": "Full Spectrum Search Group Employment and Reviews | SimplyHired",
+  "value": "https://www.simplyhired.com/browse-jobs/companies/Full-Spectrum-Search-Group",
+  "handle": "www.simplyhired.com",
+  "source": {
+   "url": "https://www.simplyhired.com/browse-jobs/companies/Full-Spectrum-Search-Group",
+   "kind": "web_search",
+   "node": "web",
+   "where": "web result 9 for \"Full Spectrum Search Group\" reviews"
+  },
+  "engines": [
+   "brave"
+  ],
+  "same_as": [],
+  "snippet": "Read Full Spectrum Search Group reviews, including information from current and former employees on salaries, benefits, and more. Find out what life is like at Full Spectrum Search Group, then browse jobs and apply today!",
+  "platform": null,
+  "verified": null,
+  "certainty": "possible",
+  "followers": null,
+  "image_url": "https://www.simplyhired.com/favicon.ico",
+  "confidence": 0.4,
+  "profile_id": null,
+  "certainty_reasons": [
+   "name matches \"Full Spectrum Search Group\"",
+   "result 9"
+  ]
+ },
+ {
+  "key": "web:directshifts.com/employer-resources/top-healthcare-staffing-agencies-in-new-york-and-how-job-boards-compare",
+  "url": "https://www.directshifts.com/employer-resources/top-healthcare-staffing-agencies-in-new-york-and-how-job-boards-compare",
+  "hits": [
+   {
+    "rank": 1,
+    "query": "\"Full Spectrum Search Group\"",
+    "engine": "google",
+    "endpoint": "web"
+   }
+  ],
+  "field": "web_page",
+  "label": "Top Healthcare Staffing Agencies in New York (and How ...",
+  "value": "https://www.directshifts.com/employer-resources/top-healthcare-staffing-agencies-in-new-york-and-how-job-boards-compare",
+  "handle": "www.directshifts.com",
+  "source": {
+   "url": "https://www.directshifts.com/employer-resources/top-healthcare-staffing-agencies-in-new-york-and-how-job-boards-compare",
+   "kind": "web_search",
+   "node": "web",
+   "where": "web result 1 for \"Full Spectrum Search Group\""
+  },
+  "engines": [
+   "google"
+  ],
+  "same_as": [],
+  "snippet": "The Top Healthcare Staffing Agencies in New York \u00b7 1. DirectShifts (Hybrid Job Board + Staffing Partner) \u00b7 2. AMN Healthcare \u00b7 3. Cross Country ...",
+  "platform": null,
+  "verified": null,
+  "certainty": "possible",
+  "followers": null,
+  "image_url": "https://www.directshifts.com/favicon.ico",
+  "confidence": 0.4,
+  "profile_id": null,
+  "certainty_reasons": [
+   "result 1"
+  ]
+ },
+ {
+  "key": "web:revenuebase.ai/companies/healthcare-recruiting-agencies/united-states",
+  "url": "https://revenuebase.ai/companies/healthcare-recruiting-agencies/united-states",
+  "hits": [
+   {
+    "rank": 2,
+    "query": "\"Full Spectrum Search Group\"",
+    "engine": "google",
+    "endpoint": "web"
+   }
+  ],
+  "field": "web_page",
+  "label": "Top 25 Healthcare recruiting agencies based in the United ...",
+  "value": "https://revenuebase.ai/companies/healthcare-recruiting-agencies/united-states",
+  "handle": "revenuebase.ai",
+  "source": {
+   "url": "https://revenuebase.ai/companies/healthcare-recruiting-agencies/united-states",
+   "kind": "web_search",
+   "node": "web",
+   "where": "web result 2 for \"Full Spectrum Search Group\""
+  },
+  "engines": [
+   "google"
+  ],
+  "same_as": [],
+  "snippet": "Top 25 of 10,587 healthcare recruiting agencies based in the United States, ranked by team size, largest first. Data refreshed Sep 28, 2026.",
+  "platform": null,
+  "verified": null,
+  "certainty": "possible",
+  "followers": null,
+  "image_url": "https://revenuebase.ai/favicon.ico",
+  "confidence": 0.4,
+  "profile_id": null,
+  "certainty_reasons": [
+   "result 2"
+  ]
+ },
+ {
+  "key": "web:huntscanlon.com/three-search-firms-join-forces-to-form-healthsearch-partners",
+  "url": "https://huntscanlon.com/three-search-firms-join-forces-to-form-healthsearch-partners/",
+  "hits": [
+   {
+    "rank": 3,
+    "query": "\"Full Spectrum Search Group\"",
+    "engine": "google",
+    "endpoint": "web"
+   }
+  ],
+  "field": "web_page",
+  "label": "Three Search Firms Join Forces to Form HealthSearch ...",
+  "value": "https://huntscanlon.com/three-search-firms-join-forces-to-form-healthsearch-partners/",
+  "handle": "huntscanlon.com",
+  "source": {
+   "url": "https://huntscanlon.com/three-search-firms-join-forces-to-form-healthsearch-partners/",
+   "kind": "web_search",
+   "node": "web",
+   "where": "web result 3 for \"Full Spectrum Search Group\""
+  },
+  "engines": [
+   "google"
+  ],
+  "same_as": [],
+  "snippet": "HealthSearch Partners combines the leadership of Oak Brook, IL-based CES Executive Search, and Dallas-headquartered firms FaithSearch Partners ...",
+  "platform": null,
+  "verified": null,
+  "certainty": "possible",
+  "followers": null,
+  "image_url": "https://huntscanlon.com/favicon.ico",
+  "confidence": 0.4,
+  "profile_id": null,
+  "certainty_reasons": [
+   "result 3"
+  ]
+ },
+ {
+  "key": "web:idnresearch.com/resource/diversified-search-group",
+  "url": "https://idnresearch.com/resource/diversified-search-group",
+  "hits": [
+   {
+    "rank": 4,
+    "query": "\"Full Spectrum Search Group\"",
+    "engine": "google",
+    "endpoint": "web"
+   }
+  ],
+  "field": "web_page",
+  "label": "Diversified Search Group - IDN Research",
+  "value": "https://idnresearch.com/resource/diversified-search-group",
+  "handle": "idnresearch.com",
+  "source": {
+   "url": "https://idnresearch.com/resource/diversified-search-group",
+   "kind": "web_search",
+   "node": "web",
+   "where": "web result 4 for \"Full Spectrum Search Group\""
+  },
+  "engines": [
+   "google"
+  ],
+  "same_as": [],
+  "snippet": "A curated directory of the meetings, media, organizations, and people that move healthcare forward \u2014 maintained by IHES. Smart people. Small rooms. Big things ...",
+  "platform": null,
+  "verified": null,
+  "certainty": "possible",
+  "followers": null,
+  "image_url": "https://idnresearch.com/favicon.ico",
+  "confidence": 0.4,
+  "profile_id": null,
+  "certainty_reasons": [
+   "result 4"
+  ]
+ },
+ {
+  "key": "web:inc.com/profile/shepherd-search-group",
+  "url": "https://www.inc.com/profile/shepherd-search-group",
+  "hits": [
+   {
+    "rank": 5,
+    "query": "\"Full Spectrum Search Group\"",
+    "engine": "google",
+    "endpoint": "web"
+   }
+  ],
+  "field": "web_page",
+  "label": "Shepherd Search Group is a 2019 Inc. 5000 honoree",
+  "value": "https://www.inc.com/profile/shepherd-search-group",
+  "handle": "www.inc.com",
+  "source": {
+   "url": "https://www.inc.com/profile/shepherd-search-group",
+   "kind": "web_search",
+   "node": "web",
+   "where": "web result 5 for \"Full Spectrum Search Group\""
+  },
+  "engines": [
+   "google"
+  ],
+  "same_as": [],
+  "snippet": "Shepherd Search Group: Operates a recruitment firm offering executive search, permanent placement, interim staffing, and HR services.",
+  "platform": null,
+  "verified": null,
+  "certainty": "possible",
+  "followers": null,
+  "image_url": "https://www.inc.com/favicon.ico",
+  "confidence": 0.4,
+  "profile_id": null,
+  "certainty_reasons": [
+   "result 5"
+  ]
+ },
+ {
+  "key": "web:carezano.com/best/executive-search",
+  "url": "https://carezano.com/best/executive-search",
+  "hits": [
+   {
+    "rank": 6,
+    "query": "\"Full Spectrum Search Group\"",
+    "engine": "google",
+    "endpoint": "web"
+   }
+  ],
+  "field": "web_page",
+  "label": "Top Executive Search & Interim Leadership for Home Care ...",
+  "value": "https://carezano.com/best/executive-search",
+  "handle": "carezano.com",
+  "source": {
+   "url": "https://carezano.com/best/executive-search",
+   "kind": "web_search",
+   "node": "web",
+   "where": "web result 6 for \"Full Spectrum Search Group\""
+  },
+  "engines": [
+   "google"
+  ],
+  "same_as": [],
+  "snippet": "Largest healthcare interim leadership network with executive search for home health, hospice, and post-acute organizations.",
+  "platform": null,
+  "verified": null,
+  "certainty": "possible",
+  "followers": null,
+  "image_url": "https://carezano.com/favicon.ico",
+  "confidence": 0.4,
+  "profile_id": null,
+  "certainty_reasons": [
+   "result 6"
+  ]
+ },
+ {
+  "key": "web:williamsexecsearch.com",
+  "url": "https://williamsexecsearch.com/",
+  "hits": [
+   {
+    "rank": 7,
+    "query": "\"Full Spectrum Search Group\"",
+    "engine": "google",
+    "endpoint": "web"
+   }
+  ],
+  "field": "web_page",
+  "label": "Williams Executive Search Solutions, Inc.",
+  "value": "https://williamsexecsearch.com/",
+  "handle": "williamsexecsearch.com",
+  "source": {
+   "url": "https://williamsexecsearch.com/",
+   "kind": "web_search",
+   "node": "web",
+   "where": "web result 7 for \"Full Spectrum Search Group\""
+  },
+  "engines": [
+   "google"
+  ],
+  "same_as": [],
+  "snippet": "We connect Registered Nurses, Advanced Registered Nurse Practitioners, with leading healthcare institutions, as a leader in medical industry ...",
+  "platform": null,
+  "verified": null,
+  "certainty": "possible",
+  "followers": null,
+  "image_url": "https://williamsexecsearch.com/favicon.ico",
+  "confidence": 0.4,
+  "profile_id": null,
+  "certainty_reasons": [
+   "result 7"
+  ]
+ },
+ {
+  "key": "web:revenuebase.ai/companies/healthcare-executive-search-firms/united-states",
+  "url": "https://revenuebase.ai/companies/healthcare-executive-search-firms/united-states",
+  "hits": [
+   {
+    "rank": 8,
+    "query": "\"Full Spectrum Search Group\"",
+    "engine": "google",
+    "endpoint": "web"
+   }
+  ],
+  "field": "web_page",
+  "label": "Top 25 Healthcare executive search firms based in ...",
+  "value": "https://revenuebase.ai/companies/healthcare-executive-search-firms/united-states",
+  "handle": "revenuebase.ai",
+  "source": {
+   "url": "https://revenuebase.ai/companies/healthcare-executive-search-firms/united-states",
+   "kind": "web_search",
+   "node": "web",
+   "where": "web result 8 for \"Full Spectrum Search Group\""
+  },
+  "engines": [
+   "google"
+  ],
+  "same_as": [],
+  "snippet": "Top 25 of 10,279 healthcare executive search firms based in the United States, ranked by team size, largest first. Data refreshed Sep 28, 2026.",
+  "platform": null,
+  "verified": null,
+  "certainty": "possible",
+  "followers": null,
+  "image_url": "https://revenuebase.ai/favicon.ico",
+  "confidence": 0.4,
+  "profile_id": null,
+  "certainty_reasons": [
+   "result 8"
+  ]
+ },
+ {
+  "key": "web:healthcare-executive-search.healthcarebusinessreview.com/vendors/top-healthcare-executive-search-firms-2022.html",
+  "url": "https://healthcare-executive-search.healthcarebusinessreview.com/vendors/top-healthcare-executive-search-firms-2022.html",
+  "hits": [
+   {
+    "rank": 9,
+    "query": "\"Full Spectrum Search Group\"",
+    "engine": "google",
+    "endpoint": "web"
+   }
+  ],
+  "field": "web_page",
+  "label": "Top 10 Healthcare Executive Search Firms - 2022",
+  "value": "https://healthcare-executive-search.healthcarebusinessreview.com/vendors/top-healthcare-executive-search-firms-2022.html",
+  "handle": "healthcare-executive-search.healthcarebusinessreview.com",
+  "source": {
+   "url": "https://healthcare-executive-search.healthcarebusinessreview.com/vendors/top-healthcare-executive-search-firms-2022.html",
+   "kind": "web_search",
+   "node": "web",
+   "where": "web result 9 for \"Full Spectrum Search Group\""
+  },
+  "engines": [
+   "google"
+  ],
+  "same_as": [],
+  "snippet": "Top Healthcare Executive Search Firms ... EHS Recruiting Company has effectively led the recruiting business by simply creating long-term connections with the ...",
+  "platform": null,
+  "verified": null,
+  "certainty": "possible",
+  "followers": null,
+  "image_url": "https://healthcare-executive-search.healthcarebusinessreview.com/favicon.ico",
+  "confidence": 0.4,
+  "profile_id": null,
+  "certainty_reasons": [
+   "result 9"
+  ]
+ },
+ {
+  "key": "listing:indeed.com/cmp/full-spectrum-analytics,-inc./reviews",
+  "url": "https://www.indeed.com/cmp/Full-Spectrum-Analytics,-Inc./reviews",
+  "hits": [
+   {
+    "rank": 1,
+    "query": "\"Full Spectrum Search Group\" reviews",
+    "engine": "google",
+    "endpoint": "web"
+   }
+  ],
+  "field": "listing",
+  "label": "Indeed",
+  "value": "https://www.indeed.com/cmp/Full-Spectrum-Analytics,-Inc./reviews",
+  "handle": "Working at Full Spectrum Analytics, Inc.: 5 Reviews",
+  "source": {
+   "url": "https://www.indeed.com/cmp/Full-Spectrum-Analytics,-Inc./reviews",
+   "kind": "web_search",
+   "node": "web",
+   "where": "web result 1 for \"Full Spectrum Search Group\" reviews"
+  },
+  "engines": [
+   "google"
+  ],
+  "same_as": [],
+  "snippet": "5 reviews \u00b7 Room for improvement \u00b7 nice people \u00b7 An opportunity to learn and grow \u00b7 Intelligent and experienced service team \u00b7 Can be a good place to work with good ...",
+  "platform": "indeed",
+  "verified": null,
+  "certainty": "possible",
+  "followers": null,
+  "image_url": "https://www.indeed.com/favicon.ico",
+  "confidence": 0.4,
+  "profile_id": null,
+  "certainty_reasons": [
+   "Indeed",
+   "result 1"
+  ]
+ },
+ {
+  "key": "listing:indeed.com/cmp/full-spectrum-processing/reviews",
+  "url": "https://www.indeed.com/cmp/Full-Spectrum-Processing/reviews",
+  "hits": [
+   {
+    "rank": 2,
+    "query": "\"Full Spectrum Search Group\" reviews",
+    "engine": "google",
+    "endpoint": "web"
+   }
+  ],
+  "field": "listing",
+  "label": "Indeed",
+  "value": "https://www.indeed.com/cmp/Full-Spectrum-Processing/reviews",
+  "handle": "Working at Full Spectrum Processing: 4 Reviews",
+  "source": {
+   "url": "https://www.indeed.com/cmp/Full-Spectrum-Processing/reviews",
+   "kind": "web_search",
+   "node": "web",
+   "where": "web result 2 for \"Full Spectrum Search Group\" reviews"
+  },
+  "engines": [
+   "google"
+  ],
+  "same_as": [],
+  "snippet": "some days can be stressful, great management. everyone is friendly and very welcoming and this company is a equal opportunity",
+  "platform": "indeed",
+  "verified": null,
+  "certainty": "possible",
+  "followers": null,
+  "image_url": "https://www.indeed.com/favicon.ico",
+  "confidence": 0.4,
+  "profile_id": null,
+  "certainty_reasons": [
+   "Indeed",
+   "result 2"
+  ]
+ },
+ {
+  "key": "listing:indeed.com/cmp/full-spectrum-er-and-urgent-care/reviews",
+  "url": "https://www.indeed.com/cmp/Full-Spectrum-Er-and-Urgent-Care/reviews",
+  "hits": [
+   {
+    "rank": 3,
+    "query": "\"Full Spectrum Search Group\" reviews",
+    "engine": "google",
+    "endpoint": "web"
+   }
+  ],
+  "field": "listing",
+  "label": "Indeed",
+  "value": "https://www.indeed.com/cmp/Full-Spectrum-Er-and-Urgent-Care/reviews",
+  "handle": "Working at Full Spectrum ER and Urgent Care: 4 Reviews",
+  "source": {
+   "url": "https://www.indeed.com/cmp/Full-Spectrum-Er-and-Urgent-Care/reviews",
+   "kind": "web_search",
+   "node": "web",
+   "where": "web result 3 for \"Full Spectrum Search Group\" reviews"
+  },
+  "engines": [
+   "google"
+  ],
+  "same_as": [],
+  "snippet": "4 reviews \u00b7 Productive and interesting place to work \u00b7 unprofessional \u00b7 it was a very good learning experience \u00b7 Great work environment.",
+  "platform": "indeed",
+  "verified": null,
+  "certainty": "possible",
+  "followers": null,
+  "image_url": "https://www.indeed.com/favicon.ico",
+  "confidence": 0.4,
+  "profile_id": null,
+  "certainty_reasons": [
+   "Indeed",
+   "result 3"
+  ]
+ },
+ {
+  "key": "listing:indeed.com/cmp/full-spectrum/reviews",
+  "url": "https://www.indeed.com/cmp/Full-Spectrum/reviews",
+  "hits": [
+   {
+    "rank": 4,
+    "query": "\"Full Spectrum Search Group\" reviews",
+    "engine": "google",
+    "endpoint": "web"
+   }
+  ],
+  "field": "listing",
+  "label": "Indeed",
+  "value": "https://www.indeed.com/cmp/Full-Spectrum/reviews",
+  "handle": "Working at Full Spectrum: 17 Reviews",
+  "source": {
+   "url": "https://www.indeed.com/cmp/Full-Spectrum/reviews?fcountry=ALL",
+   "kind": "web_search",
+   "node": "web",
+   "where": "web result 4 for \"Full Spectrum Search Group\" reviews"
+  },
+  "engines": [
+   "google"
+  ],
+  "same_as": [],
+  "snippet": "My last job was a fantastic experience. Supportive team, growth opportunities, and challenging projects made it rewarding and enjoyable every day. It was great!",
+  "platform": "indeed",
+  "verified": null,
+  "certainty": "possible",
+  "followers": null,
+  "image_url": "https://www.indeed.com/favicon.ico",
+  "confidence": 0.4,
+  "profile_id": null,
+  "certainty_reasons": [
+   "Indeed",
+   "result 4"
+  ]
+ },
+ {
+  "key": "listing:indeed.com/cmp/full-spectrum-emergency-room/reviews",
+  "url": "https://www.indeed.com/cmp/Full-Spectrum-Emergency-Room/reviews",
+  "hits": [
+   {
+    "rank": 5,
+    "query": "\"Full Spectrum Search Group\" reviews",
+    "engine": "google",
+    "endpoint": "web"
+   }
+  ],
+  "field": "listing",
+  "label": "Indeed",
+  "value": "https://www.indeed.com/cmp/Full-Spectrum-Emergency-Room/reviews",
+  "handle": "Working at Full Spectrum Emergency Room: 3 Reviews",
+  "source": {
+   "url": "https://www.indeed.com/cmp/Full-Spectrum-Emergency-Room/reviews",
+   "kind": "web_search",
+   "node": "web",
+   "where": "web result 5 for \"Full Spectrum Search Group\" reviews"
+  },
+  "engines": [
+   "google"
+  ],
+  "same_as": [],
+  "snippet": "Work-life balance. 3.7. 3.7 out of 5 stars for Work-life balance ; Pay and benefits. 3.0. 3.0 out of 5 stars for Pay and benefits ; Job security and advancement.",
+  "platform": "indeed",
+  "verified": null,
+  "certainty": "possible",
+  "followers": null,
+  "image_url": "https://www.indeed.com/favicon.ico",
+  "confidence": 0.4,
+  "profile_id": null,
+  "certainty_reasons": [
+   "Indeed",
+   "result 5"
+  ]
+ },
+ {
+  "key": "web:glassdoor.com.br/avalia%c3%a7%c3%b5es/avalia%c3%a7%c3%a3o-funcion%c3%a1rio-full-spectrum-search-group-e1669208-rvw84165712.htm",
+  "url": "https://www.glassdoor.com.br/Avalia%C3%A7%C3%B5es/Avalia%C3%A7%C3%A3o-funcion%C3%A1rio-Full-Spectrum-Search-Group-E1669208-RVW84165712.htm",
+  "hits": [
+   {
+    "rank": 6,
+    "query": "\"Full Spectrum Search Group\" reviews",
+    "engine": "google",
+    "endpoint": "web"
+   }
+  ],
+  "field": "web_page",
+  "label": "Full Spectrum Search Group - A Great Place to Work - Glassdoor",
+  "value": "https://www.glassdoor.com.br/Avalia%C3%A7%C3%B5es/Avalia%C3%A7%C3%A3o-funcion%C3%A1rio-Full-Spectrum-Search-Group-E1669208-RVW84165712.htm",
+  "handle": "www.glassdoor.com.br",
+  "source": {
+   "url": "https://www.glassdoor.com.br/Avalia%C3%A7%C3%B5es/Avalia%C3%A7%C3%A3o-funcion%C3%A1rio-Full-Spectrum-Search-Group-E1669208-RVW84165712.htm",
+   "kind": "web_search",
+   "node": "web",
+   "where": "web result 6 for \"Full Spectrum Search Group\" reviews"
+  },
+  "engines": [
+   "google"
+  ],
+  "same_as": [],
+  "snippet": "Confira outras avalia\u00e7\u00f5es da empresa Full Spectrum Search Group ... Very supportive group of people. They put your training and development at the forefront, and ...",
+  "platform": null,
+  "verified": null,
+  "certainty": "possible",
+  "followers": null,
+  "image_url": "https://www.glassdoor.com.br/favicon.ico",
+  "confidence": 0.4,
+  "profile_id": null,
+  "certainty_reasons": [
+   "name matches \"Full Spectrum Search Group\"",
+   "result 6"
+  ]
+ },
+ {
+  "key": "listing:glassdoor.com/reviews/full-spectrum-services-reviews-e2359925.htm",
+  "url": "https://www.glassdoor.com/Reviews/Full-Spectrum-Services-Reviews-E2359925.htm",
+  "hits": [
+   {
+    "rank": 7,
+    "query": "\"Full Spectrum Search Group\" reviews",
+    "engine": "google",
+    "endpoint": "web"
+   }
+  ],
+  "field": "listing",
+  "label": "Glassdoor",
+  "value": "https://www.glassdoor.com/Reviews/Full-Spectrum-Services-Reviews-E2359925.htm",
+  "handle": "Full Spectrum Services Reviews",
+  "source": {
+   "url": "https://www.glassdoor.com/Reviews/Full-Spectrum-Services-Reviews-E2359925.htm",
+   "kind": "web_search",
+   "node": "web",
+   "where": "web result 7 for \"Full Spectrum Search Group\" reviews"
+  },
+  "engines": [
+   "google"
+  ],
+  "same_as": [],
+  "snippet": "Great leadership but limited advancement opportunities \u00b7 Legal assistant. Former employee ; Good remote work culture \u00b7 Senior android developer. Current employee.",
+  "platform": "glassdoor",
+  "verified": null,
+  "certainty": "possible",
+  "followers": null,
+  "image_url": "https://www.glassdoor.com/favicon.ico",
+  "confidence": 0.4,
+  "profile_id": null,
+  "certainty_reasons": [
+   "Glassdoor",
+   "result 7"
+  ]
+ },
+ {
+  "key": "listing:glassdoor.com/reviews/full-spectrum-features-reviews-e5536993.htm",
+  "url": "https://www.glassdoor.com/Reviews/FULL-SPECTRUM-FEATURES-Reviews-E5536993.htm",
+  "hits": [
+   {
+    "rank": 8,
+    "query": "\"Full Spectrum Search Group\" reviews",
+    "engine": "google",
+    "endpoint": "web"
+   }
+  ],
+  "field": "listing",
+  "label": "Glassdoor",
+  "value": "https://www.glassdoor.com/Reviews/FULL-SPECTRUM-FEATURES-Reviews-E5536993.htm",
+  "handle": "FULL SPECTRUM FEATURES Reviews",
+  "source": {
+   "url": "https://www.glassdoor.com/Reviews/FULL-SPECTRUM-FEATURES-Reviews-E5536993.htm",
+   "kind": "web_search",
+   "node": "web",
+   "where": "web result 8 for \"Full Spectrum Search Group\" reviews"
+  },
+  "engines": [
+   "google"
+  ],
+  "same_as": [],
+  "snippet": "Severely underpaid and overworked. Those in my department were frequently overworked, rarely able to take advantage of PTO opportunities due to applied pressure ...",
+  "platform": "glassdoor",
+  "verified": null,
+  "certainty": "possible",
+  "followers": null,
+  "image_url": "https://www.glassdoor.com/favicon.ico",
+  "confidence": 0.4,
+  "profile_id": null,
+  "certainty_reasons": [
+   "Glassdoor",
+   "result 8"
+  ]
+ },
+ {
+  "key": "listing:indeed.com/cmp/full-spectrum-solutions",
+  "url": "https://www.indeed.com/cmp/Full-Spectrum-Solutions",
+  "hits": [
+   {
+    "rank": 9,
+    "query": "\"Full Spectrum Search Group\" reviews",
+    "engine": "google",
+    "endpoint": "web"
+   }
+  ],
+  "field": "listing",
+  "label": "Indeed",
+  "value": "https://www.indeed.com/cmp/Full-Spectrum-Solutions",
+  "handle": "Full Spectrum Solutions Careers and Employment",
+  "source": {
+   "url": "https://www.indeed.com/cmp/Full-Spectrum-Solutions",
+   "kind": "web_search",
+   "node": "web",
+   "where": "web result 9 for \"Full Spectrum Search Group\" reviews"
+  },
+  "engines": [
+   "google"
+  ],
+  "same_as": [],
+  "snippet": "Seasonal times were busy, but other times of the year were rather slow. I learned a significant amount of information about applying good customer service ...",
+  "platform": "indeed",
+  "verified": null,
+  "certainty": "possible",
+  "followers": null,
+  "image_url": "https://www.indeed.com/favicon.ico",
+  "confidence": 0.4,
+  "profile_id": null,
+  "certainty_reasons": [
+   "Indeed",
+   "result 9"
+  ]
+ }
+]

@@ -101,6 +101,8 @@ import { useOpenProvisionWindow } from "@/features/overlays/openers/provisionWin
 import { ProvisionCaptures } from "@/features/provision-window/ProvisionCaptures";
 import { useBuilderFeed } from "@/hooks/useBuilderFeed";
 import { SMART_ADD_SURFACE } from "./builderSurface";
+import { SmartAddValidate } from "./validate/SmartAddValidate";
+import { coreSettled, mergeFacts, type BrandFact } from "./validate/queue";
 
 /** The call point where the brand-intake analysis would run (server: brand_intake/provision.py). */
 const BRAND_INTAKE_POINT = "brand_intake.smart_add_create";
@@ -154,6 +156,11 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
   const [relations, setRelations] = useState<Record<string, RelatedCandidate>>({});
   // "On the web": what each web result is to the brand (web.brand_relation_kind key + sentiment).
   const [webChoices, setWebChoices] = useState<Record<string, WebChoice>>({});
+  // The facts agent's findings (kind brand_basics), answered on the validation page.
+  const [facts, setFacts] = useState<BrandFact[]>([]);
+  // After Create, once the core is settled (validate/queue VALIDATION_THRESHOLD): the focus queue.
+  const [validateOrg, setValidateOrg] = useState<string | null>(null);
+  const validating = Boolean(validateOrg);
   const explored = useRef<Set<string>>(new Set());
   /** Images the screen could not load: hidden tiles, never saved as inbox candidates. */
   const brokenKeys = useRef<Set<string>>(new Set());
@@ -217,6 +224,7 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
     setDecisions({});
     setRelations({});
     setWebChoices({});
+    setFacts([]);
     setComparing(false);
     explored.current = new Set();
     wokenSent.current = new Set();
@@ -279,10 +287,11 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
   const pendingKey = JSON.stringify(pending);
   const runPending = useEffectEvent(() => void startRound(pending));
   useEffect(() => {
-    if (created || pendingKey === JSON.stringify({ website: "", socials: [] })) return;
+    // On the validation page every confirmed site / account still wakes the next round.
+    if ((created && !validating) || pendingKey === JSON.stringify({ website: "", socials: [] })) return;
     const timer = setTimeout(runPending, CONFIRM_BATCH_MS);
     return () => clearTimeout(timer);
-  }, [pendingKey, created]);
+  }, [pendingKey, created, validating]);
 
   // The facts the person confirmed, as the identify workflow reads them.
   const factBasics = confirmedBasics(items, decisions, person);
@@ -303,10 +312,10 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
     void startRound({ website: "", socials: [] }, next);
   });
   useEffect(() => {
-    if (created || wokenKey === "{}") return;
+    if ((created && !validating) || wokenKey === "{}") return;
     const timer = setTimeout(runWoken, CONFIRM_BATCH_MS);
     return () => clearTimeout(timer);
-  }, [wokenKey, created]);
+  }, [wokenKey, created, validating]);
 
   const setupInterrupted = setupView?.status === "cancelled";
   useEffect(() => {
@@ -435,6 +444,8 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
       rounds,
       setup: setupRunId ? { runId: setupRunId } : null,
       items: [...items.values()],
+      facts,
+      validating,
       decisions,
       relations,
       web: { choices: webChoices, suggestions: webSuggestions, context: webCtx },
@@ -573,6 +584,8 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
       problems.push(...(await saveFacts(organizationId, brand.id, basics)));
       setSaveNotes(problems);
       setCreated(brand);
+      // The core is settled: shift to the focus queue for everything else.
+      if (coreSettled(basics)) setValidateOrg(organizationId);
       onCreated?.(brand);
       if (basics.images.length || accounts.length) {
         try {
@@ -684,7 +697,15 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
         />
       ) : null}
       {rounds.map((r) =>
-        r.runId ? <SmartAddRound key={r.runId} runId={r.runId} onEvidence={onEvidence} onView={onView} /> : null,
+        r.runId ? (
+          <SmartAddRound
+            key={r.runId}
+            runId={r.runId}
+            onEvidence={onEvidence}
+            onFacts={(f) => setFacts((cur) => mergeFacts(cur, f))}
+            onView={onView}
+          />
+        ) : null,
       )}
     </>
   );
@@ -703,6 +724,35 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
           nothingFound={nothingFound}
           failed={failedRound}
           onAdd={addCustom}
+        />
+        {listeners}
+      </>
+    );
+  }
+  if (created && validateOrg) {
+    return (
+      <>
+        <SmartAddValidate
+          brand={created}
+          organizationId={validateOrg}
+          items={visible}
+          facts={facts}
+          decisions={decisions}
+          webChoices={webChoices}
+          kinds={relationKinds}
+          ctx={webCtx}
+          broken={brokenKeys.current}
+          working={working}
+          onDecide={(key, d) =>
+            setDecisions((cur) => {
+              if (!d) {
+                const { [key]: _drop, ...rest } = cur;
+                return rest;
+              }
+              return cur[key] === d ? cur : applyDecision(cur, items, key, d);
+            })
+          }
+          publish={builder.publish}
         />
         {listeners}
       </>
@@ -899,7 +949,7 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
         ) : (
           <Button variant="primary" disabled={!canCreate} onClick={() => void create()}>
             {creating ? <Loader2 className="size-3.5 animate-spin" /> : null}
-            Create brand
+            {coreSettled(basics) ? "Create and validate" : "Create brand"}
           </Button>
         )}
       </div>
@@ -1095,6 +1145,8 @@ async function saveCandidates(organizationId: string, brandId: string, items: Ev
           where: i.source.where,
           found_on: i.source.url,
           step: i.source.node,
+          // The validation page answers this row in place (validate/persist.ts).
+          evidence_key: i.key,
           ...(i.hits?.length ? { search: { engines: i.engines ?? [], hits: i.hits, snippet: i.snippet ?? null } } : {}),
         },
         confidence: i.confidence,
