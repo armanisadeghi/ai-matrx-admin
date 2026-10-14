@@ -12,8 +12,14 @@
  */
 
 import { useEffect, useState } from "react";
+import { Chip, Button, PropertyRow } from "@ai-matrx/design-system/controls";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { postJson } from "@/lib/python-client";
+import { proxiedExternalImageUrl } from "@/lib/media/external-image";
+import { profileAvatarDoor } from "@/features/marketing/social/server";
+import { PlatformMark } from "@/features/marketing/social/components/PlatformMark";
+import { SocialImage } from "@/features/marketing/social/components/SocialImage";
 import type { EvidenceItem } from "./evidence";
 
 export interface ImageFingerprint {
@@ -42,10 +48,15 @@ export interface LogoGroup {
   lead: EvidenceItem;
   members: EvidenceItem[];
   sizes: Record<string, ImageFingerprint | undefined>;
+  /** Sources the person separated out of this picture's automatic group (they are tiles of their own now). */
+  apart: EvidenceItem[];
 }
 
-/** Groups the logo items. Every item lands in exactly one group, in the order the items arrived. */
-export function useLogoGroups(logos: EvidenceItem[]): LogoGroup[] {
+/**
+ * Groups the logo items. Every item lands in exactly one group, in the order the items arrived.
+ * `separated`: the keys the person split out of their automatic group; each is its own tile.
+ */
+export function useLogoGroups(logos: EvidenceItem[], separated: ReadonlySet<string>): LogoGroup[] {
   // The request as a string: the effect re-asks only when the set of images changes (findings stream in).
   const request = JSON.stringify(
     [...logos]
@@ -85,15 +96,24 @@ export function useLogoGroups(logos: EvidenceItem[]): LogoGroup[] {
     if (placed.has(item.key)) continue;
     const g = groupOf.get(item.key);
     const keys = g ? g.keys.filter((k) => byKey.has(k) && !placed.has(k)) : [item.key];
-    const members = keys.flatMap((k) => byKey.get(k) ?? []);
     for (const k of keys) placed.add(k);
-    const lead = (g && keys.includes(g.representative) && byKey.get(g.representative)) || members[0] || item;
-    out.push({
-      id: g?.group_id ?? item.key,
-      lead,
-      members: [lead, ...members.filter((m) => m.key !== lead.key)],
-      sizes: Object.fromEntries(keys.map((k) => [k, data?.fingerprints[k]])),
-    });
+    const sizesOf = (ks: string[]) => Object.fromEntries(ks.map((k) => [k, data?.fingerprints[k]]));
+    const apartKeys = keys.filter((k) => separated.has(k));
+    const apart = apartKeys.flatMap((k) => byKey.get(k) ?? []);
+    const stay = keys.filter((k) => !separated.has(k));
+    if (stay.length) {
+      const members = stay.flatMap((k) => byKey.get(k) ?? []);
+      const lead = (g && stay.includes(g.representative) && byKey.get(g.representative)) || members[0] || item;
+      out.push({
+        id: g?.group_id ?? item.key,
+        lead,
+        members: [lead, ...members.filter((m) => m.key !== lead.key)],
+        sizes: sizesOf(stay),
+        apart,
+      });
+    }
+    // A separated source is a tile of its own; its id is its key so the tile survives regrouping.
+    for (const m of apart) out.push({ id: m.key, lead: m, members: [m], sizes: sizesOf([m.key]), apart: apart.filter((a) => a.key !== m.key) });
   }
   return out;
 }
@@ -123,5 +143,133 @@ export function SourcesBadge({ group, labelOf }: { group: LogoGroup; labelOf: (i
         ))}
       </HoverCardContent>
     </HoverCard>
+  );
+}
+
+/** What the person can do to a tile's sources (state lives with the session's answers: runMemory `separated`). */
+export interface SourceControls {
+  separated: ReadonlySet<string>;
+  /** Split these keys out into their own tiles (`true`), or put them back with their group (`false`). */
+  onSeparate: (keys: string[], on: boolean) => void;
+}
+
+/** One image of a source: the profile's own photo through its door, else the address through our image proxy. */
+function SourcePicture({ item, className, size = 16 }: { item: EvidenceItem; className: string; size?: number }) {
+  if (item.profile_id) {
+    return (
+      <SocialImage
+        door={profileAvatarDoor(item.profile_id)}
+        url={item.image_url}
+        fallback={<PlatformMark platform={item.platform ?? ""} size={size} />}
+        className={className}
+      />
+    );
+  }
+  const raw = item.image_url ?? item.value;
+  return <img src={/^https?:\/\//i.test(raw) ? proxiedExternalImageUrl(raw) : raw} alt="" className={className} />;
+}
+
+/**
+ * The enlarged image of a tile. A grouped tile (or one with sources set apart) gets a slim sidebar on the right:
+ * every source with its picture, name, size and format, the one shown on the tile marked, "Separate" per source and
+ * "Separate all". Clicking a source shows it in the preview. Separated sources can always be put back.
+ */
+export function LogoEnlarge({
+  open,
+  onOpenChange,
+  group,
+  controls,
+  labelOf,
+  previewClass,
+  onBackdrop,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  group: LogoGroup;
+  controls: SourceControls;
+  labelOf: (item: EvidenceItem) => string;
+  /** The backdrop the preview sits on (the tile's own light / dark / checker). */
+  previewClass: string;
+  onBackdrop: (shade: "light" | "dark") => void;
+}) {
+  const [viewKey, setViewKey] = useState<string | null>(null);
+  const everything = [...group.members, ...group.apart];
+  const shown = everything.find((m) => m.key === viewKey) ?? group.lead;
+  const nameOf = (m: EvidenceItem) => {
+    const label = labelOf(m) || "image";
+    return m.profile_id ? `${label} photo` : label;
+  };
+  const hasSidebar = everything.length > 1;
+  const fingerprint = (m: EvidenceItem) => group.sizes[m.key];
+  const dims = (m: EvidenceItem) => {
+    const fp = fingerprint(m);
+    return fp?.width && fp?.height ? `${fp.width} × ${fp.height} px` : null;
+  };
+  const sourceRow = (m: EvidenceItem) => {
+    const fp = fingerprint(m);
+    const apart = controls.separated.has(m.key);
+    return (
+      <li key={m.key} className="flex flex-col gap-1.5 border-b border-border pb-2 last:border-b-0" data-testid="smart-add-logo-source">
+        <div className="flex items-center gap-2">
+          {/* ui-exception: a source you select to preview; the 28px Button cannot hold a thumbnail */}
+          <button
+            type="button"
+            onClick={() => setViewKey(m.key)}
+            aria-pressed={shown.key === m.key}
+            aria-label={`Show the ${nameOf(m)}`}
+            className={`flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-md border bg-muted p-1 ${shown.key === m.key ? "border-primary ring-2 ring-primary" : "border-border"}`}
+          >
+            <SourcePicture item={m} className="max-h-full max-w-full object-contain" />
+          </button>
+          <div className="min-w-0 flex-1">
+            <PropertyRow
+              label={nameOf(m)}
+              value={[dims(m), fp?.format ? fp.format.toUpperCase() : null].filter(Boolean).join(" · ") || null}
+              missing="Size unknown"
+              meta={m.key === group.lead.key && group.members.length > 1 ? <Chip label="Shown on the tile" tone="primary" /> : null}
+            />
+          </div>
+        </div>
+        {apart ? (
+          <Button variant="outline" onClick={() => controls.onSeparate([m.key], false)}>Put back</Button>
+        ) : group.members.length > 1 ? (
+          <Button variant="outline" onClick={() => controls.onSeparate([m.key], true)}>Separate</Button>
+        ) : null}
+      </li>
+    );
+  };
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className={hasSidebar ? "max-w-4xl" : "max-w-2xl"} data-testid="smart-add-logo-enlarged">
+        <DialogTitle>{nameOf(shown)}</DialogTitle>
+        <div className="flex flex-col gap-4 md:flex-row">
+          <div className="flex min-w-0 flex-1 flex-col gap-3">
+            <div className={`flex min-h-64 items-center justify-center overflow-hidden rounded-lg border p-4 ${previewClass}`}>
+              <SourcePicture item={shown} size={48} className="h-[50dvh] w-full object-contain" />
+            </div>
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={() => onBackdrop("light")}>Light background</Button>
+              <Button variant="outline" onClick={() => onBackdrop("dark")}>Dark background</Button>
+            </div>
+          </div>
+          {hasSidebar ? (
+            <aside className="flex w-full shrink-0 flex-col gap-2 md:w-72" data-testid="smart-add-logo-sources-sidebar">
+              <div className="type-label">Sources</div>
+              <ul className="flex max-h-[55dvh] flex-col gap-2 overflow-y-auto">{everything.map(sourceRow)}</ul>
+              {group.members.length > 1 ? (
+                <Button variant="outline" onClick={() => controls.onSeparate(group.members.map((m) => m.key), true)}>
+                  Separate all
+                </Button>
+              ) : null}
+              {everything.filter((m) => controls.separated.has(m.key)).length > 1 ? (
+                <Button variant="outline" onClick={() => controls.onSeparate(everything.filter((m) => controls.separated.has(m.key)).map((m) => m.key), false)}>
+                  Put all back
+                </Button>
+              ) : null}
+            </aside>
+          ) : null}
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }

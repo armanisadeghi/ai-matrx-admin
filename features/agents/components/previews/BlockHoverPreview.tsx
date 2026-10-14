@@ -56,8 +56,6 @@ interface BlockHoverPreviewProps {
   children: React.ReactNode;
   side?: "top" | "right" | "bottom" | "left";
   align?: "start" | "center" | "end";
-  openDelay?: number;
-  closeDelay?: number;
   className?: string;
 }
 
@@ -66,14 +64,12 @@ export function BlockHoverPreview({
   children,
   side = "top",
   align = "start",
-  openDelay = 250,
-  closeDelay = 140,
   className,
 }: BlockHoverPreviewProps) {
   if (!hasPreview(item)) return <>{children}</>;
 
   return (
-    <HoverCard openDelay={openDelay} closeDelay={closeDelay}>
+    <HoverCard>
       <HoverCardTrigger asChild>
         <div className="inline-flex min-w-0">{children}</div>
       </HoverCardTrigger>

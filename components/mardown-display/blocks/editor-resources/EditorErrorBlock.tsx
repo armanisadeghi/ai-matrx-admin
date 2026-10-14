@@ -88,7 +88,7 @@ export default function EditorErrorBlock({
   const label = `${file ? basename(file) : "Diagnostic"}${line ? `:${line}` : ""}`;
 
   return (
-    <HoverCard openDelay={120} closeDelay={80}>
+    <HoverCard>
       <HoverCardTrigger asChild>
         <span
           className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-xs font-medium border ${style.bg} ${style.border} ${style.color} cursor-default align-middle`}

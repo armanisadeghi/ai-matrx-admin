@@ -373,8 +373,6 @@ export function SmartToastCard({
       <k.icon aria-hidden className={cn("mr-2 h-3.5 w-3.5 shrink-0", k.tone)} />
       {detail ? (
         <HoverCard
-          openDelay={250}
-          closeDelay={140}
           open={hoverOpen || pinned}
           onOpenChange={(open) => {
             setHoverOpen(open);

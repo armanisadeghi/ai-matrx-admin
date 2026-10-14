@@ -120,7 +120,7 @@ export function WorkflowImpactGradeCell({
   const lead = leadWorkflowVerdict(verdicts);
   if (!lead) return null;
   return (
-    <HoverCard openDelay={150} closeDelay={80}>
+    <HoverCard>
       <HoverCardTrigger asChild>
         <button
           type="button"

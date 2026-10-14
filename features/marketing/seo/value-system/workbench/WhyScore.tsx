@@ -141,7 +141,7 @@ export function WhyScoreHint({
   const openPanel = useOpenGscWhyScoreWindow();
   if (!subject.reasons || subject.reasons.length === 0) return null;
   return (
-    <HoverCard openDelay={120} closeDelay={80}>
+    <HoverCard>
       <HoverCardTrigger asChild>
         <button
           type="button"

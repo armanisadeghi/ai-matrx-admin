@@ -105,7 +105,7 @@ function RelationRowView({ row, canEdit }: { row: Row; canEdit: boolean }) {
   return (
     <li className="group flex min-w-0 items-center gap-1 rounded-md px-1.5 py-1 hover:bg-muted/50" data-testid="brand-relation-row">
       {hasGrounding ? (
-        <HoverCard openDelay={200}>
+        <HoverCard>
           <HoverCardTrigger asChild>{body}</HoverCardTrigger>
           <HoverCardContent className="w-72 space-y-1 text-xs">
             {g?.reason ? <p>{g.reason}</p> : null}

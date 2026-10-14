@@ -209,8 +209,6 @@ interface ConversationHoverPreviewProps {
   align?: "start" | "center" | "end";
   /** When provided, the "Open" button calls this instead of navigating. */
   onOpen?: () => void;
-  openDelay?: number;
-  closeDelay?: number;
   className?: string;
 }
 
@@ -224,12 +222,10 @@ export function ConversationHoverPreview({
   side = "right",
   align = "start",
   onOpen,
-  openDelay = 250,
-  closeDelay = 140,
   className,
 }: ConversationHoverPreviewProps) {
   return (
-    <HoverCard openDelay={openDelay} closeDelay={closeDelay}>
+    <HoverCard>
       <HoverCardTrigger asChild>{children}</HoverCardTrigger>
       <HoverCardContent
         side={side}

@@ -303,8 +303,6 @@ export function WorkflowDetailCard({
         <HoverCard
           open={peekOpen}
           onOpenChange={setPeekOpen}
-          openDelay={200}
-          closeDelay={120}
         >
           <HoverCardTrigger asChild>
             <button

@@ -211,8 +211,6 @@ interface MessageHoverPreviewProps {
   side?: "top" | "right" | "bottom" | "left";
   align?: "start" | "center" | "end";
   onOpen?: () => void;
-  openDelay?: number;
-  closeDelay?: number;
   className?: string;
 }
 
@@ -228,12 +226,10 @@ export function MessageHoverPreview({
   side = "right",
   align = "start",
   onOpen,
-  openDelay = 250,
-  closeDelay = 140,
   className,
 }: MessageHoverPreviewProps) {
   return (
-    <HoverCard openDelay={openDelay} closeDelay={closeDelay}>
+    <HoverCard>
       <HoverCardTrigger asChild>{children}</HoverCardTrigger>
       <HoverCardContent
         side={side}

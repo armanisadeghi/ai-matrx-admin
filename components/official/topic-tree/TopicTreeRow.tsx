@@ -206,7 +206,7 @@ export function TopicTreeRow({
             onCancel={onRenameCancel}
           />
         ) : renderHover && hoverEnabled ? (
-          <HoverCard openDelay={TOPIC_TREE_HOVER_DELAY_MS} closeDelay={80}>
+          <HoverCard>
             <HoverCardTrigger asChild>{label}</HoverCardTrigger>
             <HoverCardContent
               align="start"

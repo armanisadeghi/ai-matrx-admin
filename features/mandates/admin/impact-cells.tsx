@@ -194,7 +194,7 @@ export function ImpactGradeCell({
     null,
   );
   return (
-    <HoverCard openDelay={150} closeDelay={80}>
+    <HoverCard>
       <HoverCardTrigger asChild>
         <button
           type="button"

@@ -72,8 +72,8 @@ import {
   confirmedBasics,
   mergeEvidence,
   nextRoundSeeds,
-  orderedEvidence,
   autoWork,
+  orderedEvidence,
   seedKeys,
   websiteHost,
   type Decision,
@@ -236,6 +236,9 @@ export function SmartAddBrand({
   // web review's Ask me later / Ignore marks: answers like the rest, saved with the run (runMemory.ts).
   const [skipped, setSkipped] = useState<Set<string>>(new Set());
   const [taglines, setTaglines] = useState<Record<string, EvidenceItem>>({});
+  const [separated, setSeparated] = useState<Set<string>>(new Set());
+  const separateLogos = (keys: string[], on: boolean) =>
+    setSeparated((cur) => new Set(on ? [...cur, ...keys] : [...cur].filter((k) => !keys.includes(k))));
   const [webMarks, setWebMarks] = useState<Record<string, WebMark>>({});
   // The facts agent's findings (kind brand_basics), answered on the validation page.
   const [facts, setFacts] = useState<BrandFact[]>([]);
@@ -245,13 +248,13 @@ export function SmartAddBrand({
   // After Create, once the core is settled (validate/queue VALIDATION_THRESHOLD): the focus queue.
   const [validateOrg, setValidateOrg] = useState<string | null>(null);
   const validating = Boolean(validateOrg);
+  // Answers brought back by a reload / Back (runMemory): they were already acted on in the earlier visit, so they never
+  // start a round, a follow-up search or AI work again. An answer the person changes now leaves this map and counts.
+  const restoredDecisions = useRef<Record<string, Decision>>({});
   const explored = useRef<Set<string>>(new Set(resume ? [resume.typed.keys.website, resume.typed.keys.social].filter((k): k is string => Boolean(k)) : []));
   /** Images the screen could not load: hidden tiles, never saved as inbox candidates. */
   const brokenKeys = useRef<Set<string>>(new Set());
   const typedKeys = useRef<{ website: string | null; social: string | null }>(resume?.typed.keys ?? { website: null, social: null });
-  // Answers brought back by a reload / Back (runMemory): they were already acted on in the earlier visit, so they never
-  // start a round, a follow-up search or AI work again. An answer the person changes now leaves this map and counts.
-  const restoredDecisions = useRef<Record<string, Decision>>({});
   // Confirmed facts already sent to the workflow ("name:<v>", "location:<v>"): a new one wakes its steps.
   const wokenSent = useRef<Set<string>>(
     new Set(resumePerson?.name ? [`name:${resumePerson.name}`, ...(resumePerson.city ? [`location:${resumePerson.city}`] : [])] : []),
@@ -409,11 +412,11 @@ export function SmartAddBrand({
     setSuggestionsByRun({});
     setComparing(false);
     explored.current = new Set();
+    restoredDecisions.current = {};
     wokenSent.current = new Set();
     typedKeys.current = { website: null, social: null };
     personTyped.current = null;
     personMore.current = { occupation: "", company: "", extra: "" };
-    restoredDecisions.current = {};
     setEscalatedPath(null);
     findYouProvision.current = null;
     sweepFeed.current = { sweep: null, focus: {} };
@@ -458,17 +461,18 @@ export function SmartAddBrand({
   // Every answer given before Create is saved as it is given and comes back with `?run=` (runMemory.ts).
   useRunMemory(
     url && !enrich && !created ? (runIds[0] ?? null) : null,
-    { decisions, webChoices, relations, namesakes: [...namesakes], typed: typedItems(items), skipped: [...skipped], taglines, webMarks },
+    { decisions, webChoices, relations, namesakes: [...namesakes], typed: typedItems(items), skipped: [...skipped], taglines, webMarks, separated: [...separated] },
     (saved) => {
       const moved = Object.values(saved.taglines);
       if (saved.typed.length || moved.length) setItems((cur) => mergeEvidence(cur, [...saved.typed, ...moved]));
       setSkipped((cur) => new Set([...cur, ...saved.skipped]));
       setTaglines((cur) => ({ ...cur, ...saved.taglines }));
       setWebMarks((cur) => ({ ...cur, ...saved.webMarks }));
+      setSeparated((cur) => new Set([...cur, ...saved.separated]));
+      restoredDecisions.current = { ...restoredDecisions.current, ...saved.decisions };
       setDecisions((cur) => ({ ...cur, ...saved.decisions }));
       setWebChoices((cur) => ({ ...cur, ...saved.webChoices }));
       setRelations((cur) => ({ ...cur, ...saved.relations }));
-      restoredDecisions.current = { ...restoredDecisions.current, ...saved.decisions };
       setNamesakes((cur) => new Set([...cur, ...saved.namesakes]));
     },
   );
@@ -1453,6 +1457,8 @@ export function SmartAddBrand({
           onSkip={skip}
           taglines={taglines}
           onTagline={moveToTagline}
+          separated={separated}
+          onSeparate={separateLogos}
         />
       </div>
 

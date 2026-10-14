@@ -131,8 +131,6 @@ interface NoteHoverPreviewProps {
   side?: "top" | "right" | "bottom" | "left";
   align?: "start" | "center" | "end";
   onOpen?: () => void;
-  openDelay?: number;
-  closeDelay?: number;
   className?: string;
 }
 
@@ -142,12 +140,10 @@ export function NoteHoverPreview({
   side = "top",
   align = "start",
   onOpen,
-  openDelay = 250,
-  closeDelay = 140,
   className,
 }: NoteHoverPreviewProps) {
   return (
-    <HoverCard openDelay={openDelay} closeDelay={closeDelay}>
+    <HoverCard>
       <HoverCardTrigger asChild>{children}</HoverCardTrigger>
       <HoverCardContent
         side={side}

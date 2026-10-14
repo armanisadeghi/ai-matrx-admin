@@ -183,8 +183,6 @@ interface TaskHoverPreviewProps {
   side?: "top" | "right" | "bottom" | "left";
   align?: "start" | "center" | "end";
   onOpen?: () => void;
-  openDelay?: number;
-  closeDelay?: number;
   className?: string;
 }
 
@@ -194,12 +192,10 @@ export function TaskHoverPreview({
   side = "top",
   align = "start",
   onOpen,
-  openDelay = 250,
-  closeDelay = 140,
   className,
 }: TaskHoverPreviewProps) {
   return (
-    <HoverCard openDelay={openDelay} closeDelay={closeDelay}>
+    <HoverCard>
       <HoverCardTrigger asChild>{children}</HoverCardTrigger>
       <HoverCardContent
         side={side}

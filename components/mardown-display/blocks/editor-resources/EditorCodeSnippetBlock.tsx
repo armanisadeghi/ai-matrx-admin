@@ -38,7 +38,7 @@ export default function EditorCodeSnippetBlock({
   const snippet = content.trim();
 
   return (
-    <HoverCard openDelay={120} closeDelay={80}>
+    <HoverCard>
       <HoverCardTrigger asChild>
         <Chip tone="cyan" icon={<Code2 />} label={label} />
       </HoverCardTrigger>

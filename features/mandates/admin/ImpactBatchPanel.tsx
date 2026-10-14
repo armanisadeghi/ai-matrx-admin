@@ -184,7 +184,7 @@ const TIER_FILTER_OPTIONS = BATCH_TIER_ORDER.map((tier) => ({
 
 function GradeHover({ verdict }: { verdict: ImpactVerdict }) {
   return (
-    <HoverCard openDelay={150} closeDelay={80}>
+    <HoverCard>
       <HoverCardTrigger asChild>
         <button
           type="button"

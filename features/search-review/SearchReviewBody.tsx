@@ -75,7 +75,7 @@ function SuggestionPopover({
   onPick: () => void;
 }) {
   return (
-    <HoverCard openDelay={150}>
+    <HoverCard>
       <HoverCardTrigger asChild>
         {/* The glow is the frame around the control, never a restyle of it. */}
         <span className="inline-flex rounded-md shadow-[0_0_14px] shadow-primary/45 ring-2 ring-primary/50">
@@ -111,7 +111,7 @@ function SuggestionPopover({
 function FoundPopover({ result, showEngines }: { result: ReviewResult; showEngines: boolean }) {
   if (!result.hits.length) return null;
   return (
-    <HoverCard openDelay={150}>
+    <HoverCard>
       <HoverCardTrigger asChild>
         <span className="cursor-default text-xs tabular-nums text-muted-foreground" data-testid="search-review-rank">
           #{bestRank(result)}

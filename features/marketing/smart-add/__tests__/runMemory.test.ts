@@ -31,6 +31,7 @@ describe("Smart Add run memory", () => {
       skipped: ["social:facebook:ritual"],
       taglines: { "name:we serve you": customItem("tagline", "We serve you") },
       webMarks: { "web:b": "later" },
+      separated: ["logo:instagram:ritual"],
     };
     // Every declared kind is in the sample, and the empty state names exactly the declared kinds.
     expect(Object.keys(sample).sort()).toEqual(Object.keys(ANSWER_KINDS).sort());

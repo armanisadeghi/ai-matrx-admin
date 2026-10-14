@@ -30,6 +30,8 @@ export interface RunAnswers {
   taglines: Record<string, EvidenceItem>;
   /** The web review's "Ask me later" / "Ignore" marks. */
   webMarks: Record<string, WebMark>;
+  /** Logo sources the person split out of their automatic group (each is a tile of its own); absent = grouped. */
+  separated: string[];
 }
 
 export type WebMark = "later" | "ignored";
@@ -47,6 +49,7 @@ export const ANSWER_KINDS = {
   skipped: true,
   taglines: true,
   webMarks: true,
+  separated: true,
 } as const satisfies Record<keyof RunAnswers, true>;
 
 interface Stored extends RunAnswers {
@@ -55,7 +58,7 @@ interface Stored extends RunAnswers {
 
 const MAX_SESSIONS = 30;
 
-export const emptyAnswers = (): RunAnswers => ({ decisions: {}, webChoices: {}, relations: {}, namesakes: [], typed: [], skipped: [], taglines: {}, webMarks: {} });
+export const emptyAnswers = (): RunAnswers => ({ decisions: {}, webChoices: {}, relations: {}, namesakes: [], typed: [], skipped: [], taglines: {}, webMarks: {}, separated: [] });
 
 export function isEmptyAnswers(a: RunAnswers): boolean {
   return (
@@ -66,7 +69,8 @@ export function isEmptyAnswers(a: RunAnswers): boolean {
     !a.typed.length &&
     !a.skipped.length &&
     !Object.keys(a.taglines).length &&
-    !Object.keys(a.webMarks).length
+    !Object.keys(a.webMarks).length &&
+    !a.separated.length
   );
 }
 
@@ -91,6 +95,7 @@ export function unpack(raw: unknown): RunAnswers | null {
     skipped: Array.isArray(r.skipped) ? r.skipped.filter((x): x is string => typeof x === "string") : [],
     taglines: rec<EvidenceItem>(r.taglines),
     webMarks: rec<WebMark>(r.webMarks),
+    separated: Array.isArray(r.separated) ? r.separated.filter((x): x is string => typeof x === "string") : [],
   };
 }
 

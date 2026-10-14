@@ -283,7 +283,7 @@ function AttachedCell({
   if (n === 0)
     return <span className="text-muted-foreground">Not attached</span>;
   return (
-    <HoverCard openDelay={150}>
+    <HoverCard>
       <HoverCardTrigger asChild>
         <button
           type="button"

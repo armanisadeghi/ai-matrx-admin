@@ -187,8 +187,6 @@ interface DataRefHoverPreviewProps {
   children: React.ReactNode;
   side?: "top" | "right" | "bottom" | "left";
   align?: "start" | "center" | "end";
-  openDelay?: number;
-  closeDelay?: number;
   className?: string;
 }
 
@@ -197,12 +195,10 @@ export function DataRefHoverPreview({
   children,
   side = "top",
   align = "start",
-  openDelay = 250,
-  closeDelay = 140,
   className,
 }: DataRefHoverPreviewProps) {
   return (
-    <HoverCard openDelay={openDelay} closeDelay={closeDelay}>
+    <HoverCard>
       <HoverCardTrigger asChild>{children}</HoverCardTrigger>
       <HoverCardContent
         side={side}

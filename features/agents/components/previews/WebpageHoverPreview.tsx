@@ -107,8 +107,6 @@ interface WebpageHoverPreviewProps {
   children: React.ReactNode;
   side?: "top" | "right" | "bottom" | "left";
   align?: "start" | "center" | "end";
-  openDelay?: number;
-  closeDelay?: number;
   className?: string;
 }
 
@@ -119,12 +117,10 @@ export function WebpageHoverPreview({
   children,
   side = "top",
   align = "start",
-  openDelay = 250,
-  closeDelay = 140,
   className,
 }: WebpageHoverPreviewProps) {
   return (
-    <HoverCard openDelay={openDelay} closeDelay={closeDelay}>
+    <HoverCard>
       <HoverCardTrigger asChild>{children}</HoverCardTrigger>
       <HoverCardContent
         side={side}

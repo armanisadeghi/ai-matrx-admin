@@ -193,7 +193,7 @@ export function FileResourceChip({
           Radix HoverCard root here drops the context-menu handler because
           that root renders no element of its own. */}
       <span className="inline-flex">
-        <HoverCard openDelay={250} closeDelay={120}>
+        <HoverCard>
           <HoverCardTrigger asChild>{chip}</HoverCardTrigger>
           <HoverCardContent
             side="top"

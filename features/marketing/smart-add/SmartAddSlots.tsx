@@ -31,10 +31,9 @@ import { accountHandleLine, CUSTOM_RELATION, CustomAdd, CustomRelation, OpenLink
 import { webCandidate } from "./relations";
 import { isStaffAccount } from "./staff";
 import { brightnessOf, shadeForBrightness } from "./logo-shade";
-import { SourcesBadge, useLogoGroups, type LogoGroup } from "./logoGroups";
+import { LogoEnlarge, SourcesBadge, useLogoGroups, type LogoGroup, type SourceControls } from "./logoGroups";
 import { profileUrlFor } from "@/features/marketing/social/link";
 import { Shared } from "./stage/Shared";
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 
 /** How Yes lands: a name (main, then aliases), a primary-able value (main, then kept), or plain kept. */
 type RowMode = "name" | "primary" | "plain";
@@ -42,7 +41,10 @@ type RowMode = "name" | "primary" | "plain";
 /** Plain words for where a finding was read. Internal names never reach the screen. */
 const WHERE_LABEL: Record<string, string> = {
   "og:image": "share image",
-  "homepage link": "link on the site",
+  "homepage link": "linked on the homepage",
+  "team page link": "linked on the team page",
+  "about page link": "linked on the about page",
+  "footer link": "linked in the site footer",
   "homepage text": "text on the site",
   "header/nav image": "header image",
   "the address itself": "what you typed",
@@ -84,6 +86,8 @@ export function SmartAddSlots({
   onSkip,
   taglines,
   onTagline,
+  separated,
+  onSeparate,
 }: {
   items: EvidenceItem[];
   decisions: Record<string, Decision>;
@@ -110,6 +114,9 @@ export function SmartAddSlots({
   taglines: Record<string, EvidenceItem>;
   /** Move a name to the About tagline (`true`), or put it back (`false`). */
   onTagline: (item: EvidenceItem, on: boolean) => void;
+  /** Logo sources the person split out of their group (kept by the session), and the way to split or put back. */
+  separated: ReadonlySet<string>;
+  onSeparate: (keys: string[], on: boolean) => void;
 }) {
   const custom = (field: EvidenceField | "contact", placeholder: string, label?: string, inline?: boolean) => (
     <CustomAdd field={field} placeholder={placeholder} label={label} onAdd={onAdd} disabled={locked} inline={inline} />
@@ -121,7 +128,8 @@ export function SmartAddSlots({
   const socials = allAccounts.filter((i) => !isStaffAccount(i, person));
   const { kinds, onCustom } = useRelationKinds(onRelate);
   // Near-identical images (one mark from the site and every profile) show as ONE tile; an answer reaches every source.
-  const logoGroups = useLogoGroups(of("logo"));
+  const logoGroups = useLogoGroups(of("logo"), separated);
+  const sourceControls: SourceControls = { separated, onSeparate };
   const isKept = (k: string) => decisions[k] === "yes" || decisions[k] === "preferred";
   const keepGroup = (g: LogoGroup) => {
     for (const m of g.members) if (!isKept(m.key)) onDecide(m.key, "yes");
@@ -172,6 +180,7 @@ export function SmartAddSlots({
         onSkip(i.key, true);
       }}
       skipped={skipped.has(i.key)}
+      onClear={() => clearRow(i)}
       disabled={locked || !keyPersonKind}
       className="max-sm:w-auto max-sm:min-w-0 max-sm:flex-1 max-sm:shrink"
     />
@@ -290,6 +299,7 @@ export function SmartAddSlots({
         onSkip(item.key, true);
       }}
       skipped={skipped.has(item.key)}
+      onClear={() => clearRow(item)}
       disabled={locked}
       // Beside an Open link the control takes the rest of the row (never the whole width, which pushed Yes off the left edge).
       className="max-sm:w-auto max-sm:min-w-0 max-sm:flex-1 max-sm:shrink"
@@ -332,6 +342,9 @@ export function SmartAddSlots({
               onClear={() => clearGroup(g)}
               onPrimary={() => starGroup(g)}
               onBroken={() => onBroken?.(g.lead.key)}
+              group={g}
+              sourceControls={sourceControls}
+              sourceLabel={(m) => (m.platform ? platformLabel(m.platform) : whereOf(m))}
               badge={<SourcesBadge group={g} labelOf={(m) => (m.platform ? platformLabel(m.platform) : whereOf(m))} />}
             />
             </Shared>
@@ -645,6 +658,9 @@ function LogoChoice({
   onPrimary,
   onBroken,
   badge,
+  group,
+  sourceControls,
+  sourceLabel,
 }: {
   item: EvidenceItem;
   decision: Decision | null;
@@ -656,6 +672,10 @@ function LogoChoice({
   onBroken: () => void;
   /** A grouped tile's "3 sources" badge (placed over the tile's corner: no layout shift). */
   badge?: React.ReactNode;
+  /** The tile's group: the enlarged view lists its sources and can separate them. */
+  group: LogoGroup;
+  sourceControls: SourceControls;
+  sourceLabel: (item: EvidenceItem) => string;
 }) {
   const kept = decision === "yes" || decision === "preferred";
   const primary = decision === "preferred";
@@ -745,27 +765,15 @@ function LogoChoice({
         {primary && where ? " · " : ""}
         {where}
       </figcaption>
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-2xl">
-          <DialogTitle>{where ? `Image from ${where}` : "Image"}</DialogTitle>
-          <div className={`flex min-h-64 items-center justify-center overflow-hidden rounded-lg border p-4 ${bg}`}>
-            {item.profile_id ? (
-              <SocialImage
-                door={profileAvatarDoor(item.profile_id)}
-                url={item.image_url}
-                fallback={<PlatformMark platform={item.platform ?? ""} size={48} />}
-                className="max-h-[60dvh] max-w-full object-contain"
-              />
-            ) : (
-              <img src={src} alt="" className="h-[50dvh] w-full object-contain" />
-            )}
-          </div>
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={() => setBackdrop("light")}>Light background</Button>
-            <Button variant="outline" onClick={() => setBackdrop("dark")}>Dark background</Button>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <LogoEnlarge
+        open={open}
+        onOpenChange={setOpen}
+        group={group}
+        controls={sourceControls}
+        labelOf={sourceLabel}
+        previewClass={bg}
+        onBackdrop={setBackdrop}
+      />
     </figure>
   );
 }

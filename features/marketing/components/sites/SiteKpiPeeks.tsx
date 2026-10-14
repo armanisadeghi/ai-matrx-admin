@@ -449,7 +449,7 @@ export function GscMetricPeek({
   // Nothing to peek at when Google has never reported for this site.
   if (site.pages_in_gsc === 0) return <>{children}</>;
   return (
-    <HoverCard open={open} onOpenChange={setOpen} openDelay={250} closeDelay={150}>
+    <HoverCard open={open} onOpenChange={setOpen}>
       <HoverCardTrigger asChild>
         <span className="inline-flex cursor-default underline-offset-4 hover:underline decoration-dotted decoration-muted-foreground/50">
           {children}
@@ -479,7 +479,7 @@ export function PagesPeek({
   const coverage =
     site.page_count > 0 ? (site.pages_in_gsc / site.page_count) * 100 : null;
   return (
-    <HoverCard openDelay={250} closeDelay={150}>
+    <HoverCard>
       <HoverCardTrigger asChild>
         <span className="inline-flex cursor-default underline-offset-4 hover:underline decoration-dotted decoration-muted-foreground/50">
           {children}
