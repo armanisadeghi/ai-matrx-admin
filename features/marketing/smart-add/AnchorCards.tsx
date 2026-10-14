@@ -38,7 +38,8 @@ function answerOf(item: EvidenceItem, decisions: Record<string, Decision>, names
   return null;
 }
 
-function AnchorCard({
+/** One candidate card. Also rendered by the Smart Add helper panels (./helpers), the same answers. */
+export function AnchorCard({
   item,
   answer,
   onAnswer,

@@ -13,6 +13,7 @@
  */
 "use client";
 
+import { isHelperMethod } from "@/features/marketing/smart-add/helpers/types";
 import { readGoogleAgendaWindowLaunchData } from "@/features/google-workspace/calendar/window-types";
 import { isValueMappingMap } from "@ai-matrx/chat/surfaces/types";
 import { isPreparedResourceIdentity } from "@ai-matrx/chat/agents/components/chat/usePreparedResourceSeed";
@@ -624,6 +625,10 @@ const BuilderPanelWindow = lazyOverlay(
 );
 const ErrorInspectorWindow = lazyOverlay(
   () => import("@/features/admin/error-inspector/ErrorInspectorWindow"),
+  { ssr: false },
+);
+const SmartAddHelperWindow = lazyOverlay(
+  () => import("@/features/window-panels/windows/smart-add/SmartAddHelperWindow"),
   { ssr: false },
 );
 const ProvisionWindow = lazyOverlay(
@@ -2243,6 +2248,9 @@ export default function OverlayController() {
     ),
     aiWatchWindow: useAppSelector((s) =>
       selectOpenInstances(s, "aiWatchWindow"),
+    ),
+    smartAddHelperWindow: useAppSelector((s) =>
+      selectOpenInstances(s, "smartAddHelperWindow"),
     ),
     liveRunWindow: useAppSelector((s) =>
       selectOpenInstances(s, "liveRunWindow"),
@@ -6192,6 +6200,32 @@ export default function OverlayController() {
             conversationId={text(data?.conversationId)}
             pageRuns={data?.pageRuns === true}
             label={text(data?.label)}
+          />
+        );
+      })}
+
+      {/* smartAddHelperWindow — multi-instance (instance id = people-search method) */}
+      {instancesById.smartAddHelperWindow.map((inst) => {
+        const data = inst.data as Record<string, unknown> | null | undefined;
+        const method = isHelperMethod(data?.method)
+          ? data.method
+          : isHelperMethod(inst.instanceId)
+            ? inst.instanceId
+            : null;
+        if (!method) return null;
+        return (
+          <SmartAddHelperWindow
+            key={inst.instanceId}
+            method={method}
+            instanceId={inst.instanceId}
+            onClose={() =>
+              dispatch(
+                closeOverlay({
+                  overlayId: "smartAddHelperWindow",
+                  instanceId: inst.instanceId,
+                }),
+              )
+            }
           />
         );
       })}

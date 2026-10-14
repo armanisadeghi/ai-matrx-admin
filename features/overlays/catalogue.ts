@@ -584,6 +584,11 @@ export const OVERLAY_CATALOGUE = {
     instanceMode: "singleton",
     isWindow: true,
   },
+  smartAddHelperWindow: {
+    label: "Smart Add helper",
+    instanceMode: "multi",
+    isWindow: true,
+  },
   filePreviewWindow: {
     label: "File Preview Window",
     instanceMode: "singleton",

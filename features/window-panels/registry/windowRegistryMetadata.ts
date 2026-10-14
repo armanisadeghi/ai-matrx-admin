@@ -1355,6 +1355,18 @@ const STATIC_REGISTRY: WindowStaticMetadata[] = [
     urlSync: { key: "provision" },
   },
 
+  // ── Smart Add helpers (one people-search method per window) ──────────────
+  {
+    slug: "smart-add-helper-window",
+    overlayId: "smartAddHelperWindow",
+    kind: "window",
+    label: "Smart Add helper",
+    instanceMode: "multi",
+    defaultData: { method: null },
+    mobilePresentation: "fullscreen",
+    preservation: { dataKeys: ["method"] },
+  },
+
   // ── People involved (access setup) ───────────────────────────────────────
   {
     slug: "access-setup-window",

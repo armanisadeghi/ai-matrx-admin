@@ -95,6 +95,9 @@ import { useRelationKinds } from "./SmartAddExtras";
 import { suggestKind, type WebChoice } from "./webKinds";
 import { SETUP_STEPS, SmartAddRound, type PersonSignals, type RoundView } from "./SmartAddRound";
 import { AnchorCards, type AnchorAnswer } from "./AnchorCards";
+import { HelpersMenu } from "./helpers/HelpersMenu";
+import { candidateItem } from "./helpers/candidateItem";
+import { onHelperAnswer, resetHelperAnswers, setHelperContext } from "./helpers/store";
 import { PersonOrBusinessCard, type PersonOrBusinessAnswer } from "./PersonOrBusinessCard";
 import { SmartAddGateLine } from "./SmartAddGateLine";
 import { SmartAddBioLinks } from "./SmartAddBioLinks";
@@ -291,6 +294,7 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
     setNamesakes(new Set());
     setPersonSignals(null);
     setKindAnswered(false);
+    resetHelperAnswers();
   };
 
   // Typed fields → a round, debounced. Changing a field that already ran
@@ -363,6 +367,12 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
     ...(factBasics.websiteUrl ? [factBasics.websiteUrl] : []),
     ...factBasics.otherWebsites,
   ];
+  // What the helper windows prefill from (name, city, and the person's typed job / company).
+  const helperCity = personTyped.current?.city || (factBasics.facts.find((f) => f.field === "address")?.value ?? "");
+  const helperName = (person ? personTyped.current?.name : null) ?? factBasics.name ?? "";
+  useEffect(() => {
+    setHelperContext({ name: helperName, city: helperCity, occupation: affiliations[0] ?? "", company: affiliations[1] ?? "" });
+  }, [helperName, helperCity, affiliations]);
   const confirmedFacts: ConfirmedFacts = {
     ...(factBasics.name ? { name: factBasics.name } : {}),
     ...(factBasics.websiteUrl ? { domain: websiteHost(factBasics.websiteUrl) } : {}),
@@ -428,6 +438,14 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
       return { ...rest, [item.key]: answer === "me" ? "yes" : "no" };
     });
   };
+
+  // Smart Add helpers (focused-session windows): they search with what this round knows, and their
+  // "This is me / Not me / Namesake" answers land here exactly like an anchor card's.
+  const helperAnswer = useEffectEvent((item: EvidenceItem, answer: AnchorAnswer | null) => {
+    setItems((cur) => mergeEvidence(cur, [item]));
+    answerAnchor(item, answer);
+  });
+  useEffect(() => onHelperAnswer((c, a) => helperAnswer(candidateItem(c), a)), []);
 
   /** A job, company or major affiliation also grounds a person (Part 9); it starts the grounded round. */
   const addAffiliation = (text: string) => setAffiliations((cur) => (cur.includes(text) ? cur : [...cur, text]));
@@ -901,7 +919,7 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
   return (
     <div className="relative px-4 pb-8 pt-[calc(var(--shell-header-h)+1rem)]" data-smart-add-stage="structured">
     <div ref={pageRef} className="mx-auto flex w-full max-w-3xl flex-col gap-3" data-testid="smart-add-brand">
-      <div className="self-start">
+      <div className="flex items-center justify-between gap-2">
       <SegmentedControl
         aria-label="Brand kind"
         value={person ? "person" : "company"}
@@ -911,6 +929,7 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
           { value: "person", label: "Person" },
         ]}
       />
+      <HelpersMenu person={person} />
       </div>
       <Shared id="signals" as="div" className="grid gap-3 rounded-xl sm:grid-cols-2">
         <label className="flex flex-col gap-1">
