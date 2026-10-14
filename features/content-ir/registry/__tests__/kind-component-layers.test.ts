@@ -90,6 +90,8 @@ function deferred<T>() {
   return { promise, resolve };
 }
 
+const flush = () => new Promise<void>((resolve) => setTimeout(resolve, 0));
+
 function fakeTarget() {
   const calls: Array<["set", ComponentOverlayInput] | ["clear"]> = [];
   const target: OverlayTarget = {
@@ -173,6 +175,7 @@ describe("KindComponentOverlayLoader lifecycle", () => {
   it("installs the viewer's rows once, and an unchanged viewer re-reads nothing", async () => {
     const { loader, calls, reads } = setup({ userId: ME, laneOpen: false });
     const first = loader.sync();
+    await flush();
     reads[0].done.resolve([layerRow({ id: "m", audienceUserId: ME })]);
     await first;
     expect(calls.at(-1)?.[0]).toBe("set");
@@ -188,8 +191,7 @@ describe("KindComponentOverlayLoader lifecycle", () => {
     const theirs = loader.sync();
     expect(calls.filter(([op]) => op === "clear").length).toBeGreaterThanOrEqual(1);
     // await a microtask so both reads have been issued
-    await Promise.resolve();
-    await Promise.resolve();
+    await flush();
     reads[0].done.resolve([layerRow({ id: "m", audienceUserId: ME })]);
     await mine;
     expect(calls.some(([op, input]) => op === "set" && input?.viewerId === ME)).toBe(false);
@@ -202,16 +204,14 @@ describe("KindComponentOverlayLoader lifecycle", () => {
   it("an admin-lane change clears and re-reads", async () => {
     const { loader, calls, reads, setViewer } = setup({ userId: ME, laneOpen: false });
     const first = loader.sync();
-    await Promise.resolve();
-    await Promise.resolve();
+    await flush();
     reads[0].done.resolve([]);
     await first;
     const before = calls.length;
     setViewer({ userId: ME, laneOpen: true });
     const second = loader.sync();
     expect(calls[before]).toEqual(["clear"]);
-    await Promise.resolve();
-    await Promise.resolve();
+    await flush();
     expect(reads).toHaveLength(2);
     reads[1].done.resolve([]);
     await second;

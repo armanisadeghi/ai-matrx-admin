@@ -258,6 +258,9 @@ describe("ComponentRegistry — DB tier", () => {
       pinnedKindVersion: null,
       updatedAt: "2026-01-01T00:00:00Z",
       createdBy: null,
+      // The winning row's identity (compile-cache key) and no layer: a shared row.
+      rowId: "00000000-0000-0000-0000-000000000000",
+      layer: null,
     });
     // The compiled floor is untouched underneath.
     expect(registry.hasCompiled("flashcard_set", "web", "output")).toBe(true);
