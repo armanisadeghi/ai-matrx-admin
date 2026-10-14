@@ -252,7 +252,10 @@ export function DealCreateDialog({
                   {(pipeline?.stages ?? []).map((s) => (
                     <SelectItem key={s.id} value={s.id}>
                       {s.name}
-                      {s.outcome ? ` (${s.outcome})` : ""}
+                      {s.outcome &&
+                      !s.name.toLowerCase().includes(s.outcome)
+                        ? ` (${s.outcome})`
+                        : ""}
                     </SelectItem>
                   ))}
                 </SelectContent>
