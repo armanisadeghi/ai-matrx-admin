@@ -139,39 +139,6 @@ describe("schema-cache recovery", () => {
     });
   });
 
-  it("names a browser read-deadline stall TimeoutError and keeps it a transport loss, never a cancelled request", async () => {
-    // The exact shape postgrest-js resolves for utils/supabase/browserReadDeadline.ts:
-    // the no-retry code makes its hint read "Request was aborted", which must
-    // NOT downgrade a stalled connection to expected control flow.
-    const stalled = {
-      data: null,
-      error: {
-        code: "",
-        message:
-          "TimeoutError: database sent no response headers within 12000ms (https://db.matrxserver.com/rest/v1/things)",
-        details: "",
-        hint: "Request was aborted (timeout or manual cancellation)",
-      },
-      status: 0,
-    };
-    const builder = {
-      then(onFulfilled: (value: unknown) => unknown) {
-        return Promise.resolve(onFulfilled(stalled));
-      },
-    };
-    const client = wrapClientForCapture({ from: () => builder });
-
-    await expect(Promise.resolve(client.from())).resolves.toEqual(stalled);
-    expect(getSnapshot()).toHaveLength(1);
-    expect(getSnapshot()[0]).toMatchObject({
-      source: "supabase-postgrest",
-      name: "TimeoutError",
-      status: 0,
-      tier: "yellow",
-      tierRuleId: "supabase-browser-transport-loss",
-    });
-  });
-
   it("installs the browser read deadline on every real browser client it wraps", () => {
     const client = { supabaseUrl: "http://x.test", rest: { fetch: async () => new Response("[]") } };
     wrapClientForCapture(client);

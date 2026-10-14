@@ -57,7 +57,34 @@ const DEADLINE_METHODS = new Set(["GET", "HEAD"]);
  */
 export const READ_DEADLINE_CODE = "ABORT_ERR";
 
-export const READ_DEADLINE_MARK = "response headers";
+/**
+ * The phrase every deadline error message carries, wherever it is re-wrapped
+ * (postgrest-js prefixes `${name}: `; other layers may not). Detection keys on
+ * this phrase alone — never on a prefix format we do not own.
+ */
+export const READ_DEADLINE_MARK = "sent no response headers within";
+
+/**
+ * Functions whose OWN `statement_timeout` (pg_proc.proconfig) exceeds the
+ * deadline — live 2026-10-14. All are called with POST today, which the
+ * deadline never touches; an rpc call to one with the `get` or `head` option
+ * (a GET/HEAD) would be cut at 12s while still working. The guard in
+ * browserReadDeadline.test.ts fails on any such call in this repo or in
+ * aidream/apps/shared. Refresh with:
+ *   select n.nspname||'.'||p.proname, c from pg_proc p join pg_namespace n
+ *   on n.oid=p.pronamespace, unnest(p.proconfig) c
+ *   where c like 'statement_timeout%';
+ */
+export const LONG_RUNNING_FUNCTIONS: readonly string[] = [
+  "custom.query_visibility_parity", // 20s
+  "custom.template_install", // 90s
+  "custom.template_restore", // 90s
+  "custom.template_uninstall", // 90s
+  "custom.template_upgrade", // 90s
+  "platform.audit_carrying_cycles", // 5min
+  "platform.heal_reachability_drift", // 10min
+  "public.reachability_guard_report", // 10min
+];
 
 const INSTALLED = Symbol.for("matrx.browserReadDeadline.installed");
 
@@ -65,7 +92,7 @@ export class ReadHeaderTimeoutError extends Error {
   override name = "TimeoutError";
   readonly code = READ_DEADLINE_CODE;
   constructor(ms: number, url: string, options?: { cause?: unknown }) {
-    super(`database sent no ${READ_DEADLINE_MARK} within ${ms}ms (${url})`, options);
+    super(`database ${READ_DEADLINE_MARK} ${ms}ms (${url})`, options);
   }
 }
 
@@ -84,6 +111,18 @@ function methodOf(input: RequestInfo | URL, init?: RequestInit): string {
 /**
  * Returns a fetch that bounds TIME-TO-HEADERS for GET/HEAD and passes every
  * other method through untouched.
+ *
+ * THE CLOCK COVERS ONLY THE WIRE. supabase-js's own fetch (fetchWithAuth)
+ * first awaits the access token — auth init, a lock, maybe a refresh — and
+ * only then spreads `init` into the real `fetch(...)`. So `signal` is handed
+ * over as a getter and the timer starts the first time it is READ: the moment
+ * the request goes to the socket. A slow auth init is never blamed on the
+ * database. (Install this INSIDE every other rest.fetch wrapper — one that
+ * spreads `init` before awaiting would read the getter early.)
+ *
+ * The caller's signal is joined with `AbortSignal.any`, which holds no
+ * listener on the caller's signal once the request is done, so a long-lived
+ * shared signal does not collect one listener per read.
  */
 export function readHeaderDeadlineFetch(
   inner: FetchLike,
@@ -96,25 +135,36 @@ export function readHeaderDeadlineFetch(
 
     const url = urlOf(input).split("?")[0];
     const controller = new AbortController();
-    const forwardOuter = () => controller.abort(outer?.reason);
-    outer?.addEventListener("abort", forwardOuter, { once: true });
-
     let timedOut = false;
-    const timer = setTimeout(() => {
-      timedOut = true;
-      controller.abort(new ReadHeaderTimeoutError(ms, url));
-    }, ms);
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    let signal: AbortSignal | undefined;
+    const wireSignal = (): AbortSignal => {
+      if (!signal) {
+        timer = setTimeout(() => {
+          timedOut = true;
+          controller.abort(new ReadHeaderTimeoutError(ms, url));
+        }, ms);
+        signal = outer ? AbortSignal.any([outer, controller.signal]) : controller.signal;
+      }
+      return signal;
+    };
 
-    return inner(input, { ...init, signal: controller.signal }).then(
+    const next: RequestInit = { ...init };
+    Object.defineProperty(next, "signal", {
+      get: wireSignal,
+      enumerable: true,
+      configurable: true,
+    });
+
+    return inner(input, next).then(
       (res) => {
         // Headers arrived: the transport is alive. The body may stream as long
-        // as it needs; the caller's signal stays wired to cancel it.
+        // as it needs; the caller's signal still cancels it.
         clearTimeout(timer);
         return res;
       },
       (cause: unknown) => {
         clearTimeout(timer);
-        outer?.removeEventListener("abort", forwardOuter);
         if (timedOut) throw new ReadHeaderTimeoutError(ms, url, { cause });
         throw cause;
       },
@@ -129,7 +179,8 @@ interface RestCarrier {
 /**
  * Wraps the client's PostgREST fetch (every `.from()`, `.rpc()`, `.schema()`
  * reads `rest.fetch` at call time — the seam installAdminLane and
- * installRestDeadline use). Idempotent. Throws when a real client no longer
+ * installRestDeadline use). Install it FIRST, before any other rest.fetch
+ * wrapper, so it sits innermost (see readHeaderDeadlineFetch). Idempotent. Throws when a real client no longer
  * has that shape — a silent miss would leave every browser read unbounded.
  */
 export function installBrowserReadDeadline<T>(
@@ -164,6 +215,5 @@ export function hasBrowserReadDeadline(client: unknown): boolean {
 export function isBrowserReadDeadlineError(
   error: { message?: string | null } | null | undefined,
 ): boolean {
-  const message = error?.message ?? "";
-  return message.startsWith("TimeoutError") && message.includes(READ_DEADLINE_MARK);
+  return (error?.message ?? "").includes(READ_DEADLINE_MARK);
 }

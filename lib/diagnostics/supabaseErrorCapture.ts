@@ -642,6 +642,14 @@ export function wrapClientForCapture<T>(client: T): T {
   const target = client as object;
   if ((target as { [WRAPPED]?: boolean })[WRAPPED]) return client;
 
+  // THE BROWSER READ DEADLINE binds FIRST so it is the innermost rest.fetch
+  // wrapper and its clock covers only the wire. A PostgREST read whose
+  // response headers have not arrived within 12s is a stalled connection and
+  // fails as a named TimeoutError, once, instead of riding postgrest-js's
+  // 4-attempt retry for ~90s. Bodies, writes, RPCs (POST), auth, storage and
+  // realtime are untouched. Rule and reasons: utils/supabase/browserReadDeadline.ts.
+  installBrowserReadDeadline(target);
+
   // THE SESSION BARRIER (DD-237) binds here, at client construction — the
   // earliest point `INITIAL_SESSION` can be heard, which is what makes the
   // barrier's wait free on every healthy request. Idempotent and browser-only.
@@ -652,13 +660,6 @@ export function wrapClientForCapture<T>(client: T): T {
   // send time from the current path — /administration/** rides the lane,
   // every user page does not. Rule and reasons: utils/supabase/adminLane.ts.
   installAdminLane(target, browserAdminLaneOpen);
-
-  // THE BROWSER READ DEADLINE binds here as well: a PostgREST read whose
-  // response headers have not arrived within 12s is a stalled connection and
-  // fails as a named TimeoutError, once, instead of riding postgrest-js's
-  // 4-attempt retry for ~90s. Bodies, writes, RPCs (POST), auth, storage and
-  // realtime are untouched. Rule and reasons: utils/supabase/browserReadDeadline.ts.
-  installBrowserReadDeadline(target);
 
   return new Proxy(target, {
     get(target, prop, receiver) {
