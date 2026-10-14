@@ -39,6 +39,7 @@ import {
 import { runHref } from "@/features/workflow-runtime/run-doors";
 import { roundFailed } from "./roundFailure";
 import { SmartAddSlots } from "./SmartAddSlots";
+import { typedItems, useRunMemory } from "./runMemory";
 import { SmartAddHero, stageLogo, stageName, type PersonMore } from "./SmartAddHero";
 import { Shared, riseIn } from "./stage/Shared";
 import { useSessionKnob } from "@/lib/scoped-config/sessionKnob";
@@ -418,6 +419,19 @@ export function SmartAddBrand({
   const runKey = runIds.join(",");
   useEffect(() => writeAddress({ runs: runKey ? runKey.split(",") : [] }), [runKey]);
   useEffect(() => writeAddress({ view: comparing ? "compare" : null }), [comparing]);
+
+  // Every answer given before Create is saved as it is given and comes back with `?run=` (runMemory.ts).
+  useRunMemory(
+    url && !enrich && !created ? (runIds[0] ?? null) : null,
+    { decisions, webChoices, relations, namesakes: [...namesakes], typed: typedItems(items) },
+    (saved) => {
+      if (saved.typed.length) setItems((cur) => mergeEvidence(cur, saved.typed));
+      setDecisions((cur) => ({ ...cur, ...saved.decisions }));
+      setWebChoices((cur) => ({ ...cur, ...saved.webChoices }));
+      setRelations((cur) => ({ ...cur, ...saved.relations }));
+      setNamesakes((cur) => new Set([...cur, ...saved.namesakes]));
+    },
+  );
 
   // Typed fields → a round, debounced. Changing a field that already ran
   // supersedes everything (a different brand); filling the other field adds a round.

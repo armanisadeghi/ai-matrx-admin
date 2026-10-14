@@ -658,6 +658,17 @@ export interface InboxPreferences {
   hiddenSources: string[];
 }
 
+/**
+ * Smart Add: the answers a person gave on the screen before Create (Preferred / Ours / Not us / Related /
+ * a web result's kind), saved per session as they are given and restored when the address `?run=` is
+ * opened again (reload, shared tab, Back). A session is named by its first round's run id. Opaque to the
+ * slice: shaped and capped by features/marketing/smart-add/runMemory.ts. After Create the answers live in
+ * web.discovered_item instead.
+ */
+export interface SmartAddPreferences {
+  runs: Record<string, Record<string, unknown>>;
+}
+
 export interface ReversiblePreferences {
   verbs: Record<string, number>;
   pairs: Record<string, number>;
@@ -904,6 +915,7 @@ export interface UserPreferences {
   connectors: ConnectorsPreferences;
   reversible: ReversiblePreferences;
   inbox: InboxPreferences;
+  smartAdd: SmartAddPreferences;
 }
 
 /**
@@ -1457,6 +1469,7 @@ export const initializeUserPreferencesState = (
     reversible: { verbs: {}, pairs: {} },
     // Nothing seen, cleared or hidden yet: every source shows in the bell.
     inbox: { sourcesSeen: {}, sourcesSeenIds: {}, sourcesCleared: {}, sourcesClearedIds: {}, hiddenSources: [] },
+    smartAdd: { runs: {} },
   };
 
   // Merge with defaults to ensure all properties exist
@@ -1562,6 +1575,7 @@ export const initializeUserPreferencesState = (
       sourcesClearedIds: { ...preferences.inbox?.sourcesClearedIds },
       hiddenSources: [...(preferences.inbox?.hiddenSources ?? [])],
     },
+    smartAdd: { runs: { ...preferences.smartAdd?.runs } },
   };
 
   // If setAsLoaded is true, store the merged preferences as the loaded state
@@ -1998,6 +2012,7 @@ const PERSISTED_PREFERENCE_MODULES: Record<keyof UserPreferences, true> = {
   connectors: true,
   reversible: true,
   inbox: true,
+  smartAdd: true,
 };
 
 const PREFERENCE_MODULE_KEYS = Object.keys(
