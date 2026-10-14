@@ -618,7 +618,14 @@ export function FindingDetail({ findingId }: { findingId: string }) {
       ) : null}
       {isMissingPage && provenance.isLoading ? null : (
       <FindingRemedyCard
-        facts={story?.facts}
+        facts={
+          story?.facts ??
+          // Loaded, and nothing came back: the page record is gone or out of
+          // reach. Say so — never fall back silently to the generic remedy.
+          (isMissingPage && provenance.isSuccess && provenance.data === null
+            ? [{ label: "Who links here", value: "Unknown — this page record is gone" }]
+            : undefined)
+        }
         doors={
           story?.replacement ? (
             <Button asChild variant="outline">

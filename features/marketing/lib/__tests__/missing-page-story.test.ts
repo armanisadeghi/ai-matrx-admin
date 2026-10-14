@@ -1,8 +1,9 @@
 /**
  * A broken address is explained from what the site says about it — who links
  * there, whether it ever worked — and the fix follows from those facts.
- * Fixture: the live All Green case (2026-10-14) — a sitewide "Your Industry"
- * link to /industries-served while the real page is /industries.
+ * Fixture shape: a sitewide "Your Industry" link (from All Green, 2026-10-14 —
+ * that live case proved a crawler trailing-slash artifact; the recheck now
+ * asks the slash form, so this is a SHAPE fixture, not a live claim).
  */
 import { parsePageProvenance } from "@/features/marketing/data/page-provenance";
 import { explainMissingPage } from "@/features/marketing/lib/missing-page-story";
@@ -47,17 +48,19 @@ describe("explainMissingPage", () => {
     expect(story.headline).toContain("menu or footer");
     expect(story.remedy.title).toBe("Fix the “Your Industry” link");
     expect(story.remedy.instruction).toContain(
-      "Change the “Your Industry” link from /industries-served to /industries.",
+      "Point the “Your Industry” link at the right page, or remove it. Closest live page we found: /industries.",
     );
     expect(story.remedy.instruction).toContain("one edit fixes all 1,072 pages");
-    expect(story.remedy.instruction).toContain("Don't create a page at /industries-served");
+    expect(story.remedy.instruction).toContain("Don't create a page at /industries-served unless you meant to");
+    // The replacement is a similarity guess; it is never stated as fact.
+    expect(story.remedy.instruction).not.toContain("already covers");
     expect(story.replacement?.path).toBe("/industries");
   });
 
   it("states every measured fact, unknowns included", () => {
     const facts = Object.fromEntries(variant({}).facts.map((f) => [f.label, f.value]));
     expect(facts["Linked from"]).toBe("1,072 of your 1,073 pages · “Your Industry”");
-    expect(facts["Ever worked"]).toMatch(/^Never, since we found it Jul 2[89], 2026$/);
+    expect(facts["Seen working"]).toMatch(/^Not by us, since Jul 2[89], 2026$/);
     expect(facts["In your sitemap"]).toBe("No");
     expect(facts["Google, last 90 days"]).toBe("Not shown in any search");
     expect(facts["Pages under it"]).toBe("12 working, e.g. /industries-served/bulk-storage");
@@ -70,7 +73,7 @@ describe("explainMissingPage", () => {
   it("a page that used to work is restored or redirected, not relinked", () => {
     const story = variant({ ever_worked_at: "2026-05-01T00:00:00Z" });
     expect(story.remedy.title).toBe("Restore or redirect /industries-served");
-    expect(story.remedy.instruction).toContain("redirect /industries-served to /industries");
+    expect(story.remedy.instruction).toContain("Closest live page we found: /industries.");
   });
 
   it("an address nothing asks for is low priority", () => {
@@ -85,6 +88,11 @@ describe("explainMissingPage", () => {
     });
     // Never claim what Google shows when we cannot see Google.
     expect(unbound.headline).not.toContain("Google");
+  });
+
+  it("a sitemap entry becomes a step, not just a fact", () => {
+    const story = variant({ sitemaps: ["https://x.example/sitemap.xml"] });
+    expect(story.remedy.instruction).toContain("Also remove /industries-served from your sitemap.");
   });
 
   it("a few-page link lists where it is", () => {

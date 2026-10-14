@@ -101,12 +101,12 @@ export function explainMissingPage(
     facts.push({ label: "For example", value: samples.slice(0, 3).join(", ") });
   }
   facts.push({
-    label: "Ever worked",
+    label: "Seen working",
     value: worked
       ? `Yes, last on ${worked}`
       : found
-        ? `Never, since we found it ${found}`
-        : "Never seen working",
+        ? `Not by us, since ${found}`
+        : "Not by us",
   });
   if (via) facts.push({ label: "How we found it", value: via });
   facts.push({
@@ -142,10 +142,10 @@ export function explainMissingPage(
       : `the ${plural(sourcePages, "page", "pages")} that carry the link`;
     headline = sitewide
       ? `Your ${linkName} points to ${p.path}, which ${statusWord}. It is on ${n(sourcePages)} of your ${n(crawledPages)} pages, so it sits in your menu or footer.`
-      : `${n(sourcePages)} ${plural(sourcePages, "page links", "pages link")} to ${p.path}, which ${statusWord} and never has.`;
+      : `${n(sourcePages)} ${plural(sourcePages, "page links", "pages link")} to ${p.path}, which ${statusWord}.`;
     steps.push(
       replacement
-        ? `Change the ${linkName} from ${p.path} to ${replacement.path}.`
+        ? `Point the ${linkName} at the right page, or remove it. Closest live page we found: ${replacement.path}.`
         : `Point the ${linkName} at the right page, or remove it.`,
     );
     if (sitewide) {
@@ -153,11 +153,8 @@ export function explainMissingPage(
     } else if (samples.length > 0) {
       steps.push(`It appears on: ${samples.join(", ")}${sourcePages > samples.length ? ", and more" : ""}.`);
     }
-    steps.push(
-      replacement
-        ? `Don't create a page at ${p.path} — ${replacement.path} already covers it.`
-        : `Don't create a page at ${p.path} unless you meant to have one.`,
-    );
+    if (inSitemap) steps.push(`Also remove ${p.path} from your sitemap.`);
+    steps.push(`Don't create a page at ${p.path} unless you meant to have one.`);
   } else if (sourcePages > 0) {
     // A page that existed and went away while links still point at it.
     title = `Restore or redirect ${p.path}`;
@@ -166,9 +163,10 @@ export function explainMissingPage(
     steps.push(`Put the page back at ${p.path}, or`);
     steps.push(
       replacement
-        ? `redirect ${p.path} to ${replacement.path} (a permanent 301 redirect).`
+        ? `redirect ${p.path} to the page that replaced it (a permanent 301 redirect). Closest live page we found: ${replacement.path}.`
         : "redirect it to the page that replaced it (a permanent 301 redirect).",
     );
+    if (inSitemap) steps.push(`If you don't restore it, remove it from your sitemap.`);
     if (sitewide) steps.push(`The ${linkName} is in your menu or footer — update it too.`);
   } else if (hasTraffic || inSitemap) {
     title = hasTraffic ? `Redirect ${p.path}` : `Take ${p.path} out of your sitemap`;
@@ -176,12 +174,12 @@ export function explainMissingPage(
       ? "your host's redirect settings"
       : "your sitemap settings (usually your SEO plugin)";
     headline = hasTraffic
-      ? `Nothing on your site links to ${p.path}, but Google still sends people there.`
+      ? `Nothing on your site links to ${p.path}, but Google still shows it in searches.`
       : `Your sitemap lists ${p.path}, which ${statusWord}.`;
     if (hasTraffic) {
       steps.push(
         replacement
-          ? `Redirect ${p.path} to ${replacement.path} (a permanent 301 redirect).`
+          ? `Redirect ${p.path} to your closest matching page (a permanent 301 redirect) — perhaps ${replacement.path}.`
           : `Redirect ${p.path} to your closest matching page (a permanent 301 redirect).`,
       );
     }
@@ -194,7 +192,7 @@ export function explainMissingPage(
       : `Nothing on your site links to ${p.path} and it isn't in your sitemap.`;
     steps.push(
       replacement
-        ? `Optional: redirect ${p.path} to ${replacement.path} for old bookmarks.`
+        ? `Optional: redirect ${p.path} to your closest page for old bookmarks — perhaps ${replacement.path}.`
         : "Optional: redirect it to your closest page for old bookmarks.",
     );
     steps.push("Otherwise mark this as intentional.");
