@@ -612,3 +612,40 @@ export function CompareSources({
 
 // Keep the relationship picker available to the committed Smart Add slots.
 export { RelationPicker as RelatedChoice };
+
+/** "Related" is a choice like Ours / Not us; once on, a small picker names the exact relationship. */
+export function RelatedChoice({
+  kinds,
+  relation,
+  locked,
+  onRelate,
+  onCustom,
+}: {
+  kinds: BrandRelationKind[];
+  relation: Relation | null;
+  locked?: boolean;
+  onRelate: (relation: Relation | null) => void;
+  onCustom: (label: string) => Promise<void>;
+}) {
+  const [open, setOpen] = useState(false);
+  const on = open || relation !== null;
+  return (
+    <>
+      <Button
+        variant={on ? "primary" : "quiet"}
+        aria-pressed={on}
+        disabled={locked}
+        onClick={() => {
+          if (on) onRelate(null);
+          setOpen(!on);
+        }}
+      >
+        Related
+      </Button>
+      {on ? (
+        <RelationPicker kinds={kinds} relation={relation} onRelate={onRelate} onCustom={onCustom} emptyLabel="Type…" className="w-32" />
+      ) : null}
+    </>
+  );
+}
+
