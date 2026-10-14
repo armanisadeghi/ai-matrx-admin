@@ -7,7 +7,7 @@
 // Verify:      pnpm check:kind-types   (CI-blocking freshness gate)
 // Twin guard:  pnpm check:kind-type-twins
 //
-// 1507 active kinds. THESE ARE THE ONLY KIND PAYLOAD TYPES IN THE REPO.
+// 1517 active kinds. THESE ARE THE ONLY KIND PAYLOAD TYPES IN THE REPO.
 // A hand-written interface mirroring a registered kind is a defect — derive
 // (Pick/Omit) from the type here instead, and never re-declare it.
 //
@@ -21,7 +21,7 @@
 // ─────────────────────────────────────────────────────────────────────────
 
 /** Structural fingerprint of the registry rows this artifact was generated from. */
-export const KIND_REGISTRY_FINGERPRINT = "d525a42c399a";
+export const KIND_REGISTRY_FINGERPRINT = "335564756d43";
 
 // ─────────────────────────────────────────────────────────────────────────
 // Shared nested structures. Deduped by structure across the registry — an
@@ -6365,6 +6365,20 @@ export interface ProductQuantity {
 }
 
 /**
+ * * From kind `social_profile_answer_list`.
+ */
+export interface ProfileAnswer {
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  answer?: unknown;
+  platform?: string | null;
+  provider?: string | null;
+  handle_or_url?: string;
+}
+
+/**
  * * Shared by 2 kinds (entity_card, serp_placement).
  */
 export interface ProfileLink {
@@ -7104,6 +7118,19 @@ export interface SearchResultItem {
   source?: string | null;
   snippet?: string;
   published?: string | null;
+}
+
+/**
+ * * From kind `search_result_list`.
+ */
+export interface SearchResultRow {
+  url?: string | null;
+  rank?: number | null;
+  title?: string | null;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
 }
 
 /**
@@ -9229,6 +9256,18 @@ export interface TranscriptionUsage {
 }
 
 /**
+ * * From kind `typed_account_list`.
+ */
+export interface TypedAccount {
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  platform?: string | null;
+  handle_or_url: string;
+}
+
+/**
  * * Shared by 4 kinds (commerce_intake.disposal_challenge.offer, commerce_intake.enrichment_bundle.offer, commerce_intake.valuation_dossier.offer, product_research).
  */
 export interface UnresolvedIdentity {
@@ -9598,6 +9637,20 @@ export interface WeatherPlace {
    * ISO-3166 alpha-2 country code.
    */
   country_code?: string | null;
+}
+
+/**
+ * * From kind `web_page_list`.
+ */
+export interface WebPageRow {
+  url?: string | null;
+  text?: string;
+  label?: string | null;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  footer_text?: string | null;
 }
 
 /**
@@ -42187,6 +42240,61 @@ export interface SealedCaseToolResult {
 }
 
 /**
+ * One search's whole provider response, exactly as the engine returned it.
+ *  *
+ *  * Kind `search_response` (registry v1).
+ */
+export interface SearchResponse {
+  query?: string;
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "search_response";
+  engine: string;
+  endpoint?: string;
+  response?: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+  };
+}
+
+/**
+ * One top-level block of a search response beside its result list (Brave: FAQ, infobox, videos,
+ * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
+ *  *
+ *  * Kind `search_result_block` (registry v1).
+ */
+export interface SearchResultBlock {
+  data?: unknown;
+  block: string;
+  query?: string;
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "search_result_block";
+  engine: string;
+}
+
+/**
+ * One search's result list in rank order: the provider's full objects (raw form) or only the
+ * fields that carry facts (clean form).
+ *  *
+ *  * Kind `search_result_list` (registry v1).
+ */
+export interface SearchResultList {
+  items?: SearchResultRow[];
+  query?: string;
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "search_result_list";
+  engine: string;
+  endpoint?: string;
+}
+
+/**
  * Kind `search_results` (registry v5).
  */
 export interface SearchResults {
@@ -46310,6 +46418,20 @@ export interface SiteAuditIssue {
 }
 
 /**
+ * A front page that only routes visitors elsewhere (a division chooser, age gate, splash), as the
+ * page reader found it.
+ *  *
+ *  * Kind `site_gate` (registry v1).
+ */
+export interface SiteGate {
+  type?: string | null;
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "site_gate";
+}
+
+/**
  * Output of ``seo.site.intake.analyze`` — the proposed intake interview.
  *  *
  *  * Kind `site_intake_analysis` (registry v7).
@@ -46539,6 +46661,20 @@ export interface SocialProfile {
   posts_upserted?: number;
   following_count?: number | null;
   cost_split_organizations?: number | null;
+}
+
+/**
+ * Social accounts as their provider answered a profile lookup, one row per account: the whole
+ * answer (raw form) or only its fact fields (clean form).
+ *  *
+ *  * Kind `social_profile_answer_list` (registry v1).
+ */
+export interface SocialProfileAnswerList {
+  items?: ProfileAnswer[];
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "social_profile_answer_list";
 }
 
 /**
@@ -47400,6 +47536,19 @@ export interface StringList {
    * The registered kind this payload is an instance of.
    */
   __kind?: "string_list";
+}
+
+/**
+ * Every structured-data (JSON-LD) block a page carries, parsed, exactly as written.
+ *  *
+ *  * Kind `structured_data_list` (registry v1).
+ */
+export interface StructuredDataList {
+  items?: unknown[];
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "structured_data_list";
 }
 
 /**
@@ -50120,6 +50269,19 @@ export interface TrustEnvelope {
    * Human-readable description of the material the answer is grounded in.
    */
   groundedIn?: string | null;
+}
+
+/**
+ * The social accounts a person typed, exactly as typed, with the platform when they named one.
+ *  *
+ *  * Kind `typed_account_list` (registry v1).
+ */
+export interface TypedAccountList {
+  items?: TypedAccount[];
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "typed_account_list";
 }
 
 /**
@@ -53915,6 +54077,50 @@ export interface WebOrphanPagesV1 {
 }
 
 /**
+ * One page as read: its address and its clean main text (plus footer text when it holds contact
+ * details).
+ *  *
+ *  * Kind `web_page` (registry v1).
+ */
+export interface WebPage {
+  url?: string | null;
+  text?: string;
+  label?: string | null;
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "web_page";
+  footer_text?: string | null;
+}
+
+/**
+ * A page's header as the page writes it: title, meta description, og / twitter tags, canonical.
+ *  *
+ *  * Kind `web_page_head` (registry v1).
+ */
+export interface WebPageHead {
+  title?: string | null;
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "web_page_head";
+  description?: string | null;
+}
+
+/**
+ * Several pages as read, each once, in the order they were read.
+ *  *
+ *  * Kind `web_page_list` (registry v1).
+ */
+export interface WebPageList {
+  items?: WebPageRow[];
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "web_page_list";
+}
+
+/**
  * Kind `web_page_weight_v1` (registry v5).
  */
 export interface WebPageWeightV1 {
@@ -56903,6 +57109,9 @@ export type GeneratedKindSlug =
   | "sealed_case_answer"
   | "sealed_case_commit_status"
   | "sealed_case_tool_result"
+  | "search_response"
+  | "search_result_block"
+  | "search_result_list"
   | "search_results"
   | "seat_job_suggestion"
   | "self_prompt_result"
@@ -57032,6 +57241,7 @@ export type GeneratedKindSlug =
   | "shifted_datetime"
   | "short_script"
   | "site_audit_issue"
+  | "site_gate"
   | "site_intake_analysis"
   | "site_intake_apply_result"
   | "site_strategy_result"
@@ -57041,6 +57251,7 @@ export type GeneratedKindSlug =
   | "social.post_breakdown.offer"
   | "social_post"
   | "social_profile"
+  | "social_profile_answer_list"
   | "sorted_list_result"
   | "source_authority_ranking"
   | "source_authority_rankings"
@@ -57069,6 +57280,7 @@ export type GeneratedKindSlug =
   | "stock_image"
   | "stock_image_search_result"
   | "string_list"
+  | "structured_data_list"
   | "structured_document"
   | "structured_info"
   | "structured_info_item"
@@ -57175,6 +57387,7 @@ export type GeneratedKindSlug =
   | "troubleshooting_solution"
   | "troubleshooting_step"
   | "trust_envelope"
+  | "typed_account_list"
   | "unfolding_ruling"
   | "uploaded_asset"
   | "user_inputs"
@@ -57311,6 +57524,9 @@ export type GeneratedKindSlug =
   | "web_nofollow_internal_links_v1"
   | "web_og_image_validity_v1"
   | "web_orphan_pages_v1"
+  | "web_page"
+  | "web_page_head"
+  | "web_page_list"
   | "web_page_weight_v1"
   | "web_pagination_markup_v1"
   | "web_readability_v1"
@@ -58413,6 +58629,9 @@ export interface KindPayloadBySlug {
   "sealed_case_answer": SealedCaseAnswer;
   "sealed_case_commit_status": SealedCaseCommitStatus;
   "sealed_case_tool_result": SealedCaseToolResult;
+  "search_response": SearchResponse;
+  "search_result_block": SearchResultBlock;
+  "search_result_list": SearchResultList;
   "search_results": SearchResults;
   "seat_job_suggestion": SeatJobSuggestion;
   "self_prompt_result": SelfPromptResult;
@@ -58542,6 +58761,7 @@ export interface KindPayloadBySlug {
   "shifted_datetime": ShiftedDatetime;
   "short_script": ShortScript;
   "site_audit_issue": SiteAuditIssue;
+  "site_gate": SiteGate;
   "site_intake_analysis": SiteIntakeAnalysis;
   "site_intake_apply_result": SiteIntakeApplyResult;
   "site_strategy_result": SiteStrategyResult;
@@ -58551,6 +58771,7 @@ export interface KindPayloadBySlug {
   "social.post_breakdown.offer": SocialPostBreakdownOffer;
   "social_post": SocialPost;
   "social_profile": SocialProfile;
+  "social_profile_answer_list": SocialProfileAnswerList;
   "sorted_list_result": SortedListResult;
   "source_authority_ranking": SourceAuthorityRanking;
   "source_authority_rankings": SourceAuthorityRankings;
@@ -58579,6 +58800,7 @@ export interface KindPayloadBySlug {
   "stock_image": StockImage;
   "stock_image_search_result": StockImageSearchResult;
   "string_list": StringList;
+  "structured_data_list": StructuredDataList;
   "structured_document": StructuredDocument;
   "structured_info": StructuredInfo;
   "structured_info_item": StructuredInfoItem;
@@ -58685,6 +58907,7 @@ export interface KindPayloadBySlug {
   "troubleshooting_solution": TroubleshootingSolution;
   "troubleshooting_step": TroubleshootingStep;
   "trust_envelope": TrustEnvelope;
+  "typed_account_list": TypedAccountList;
   "unfolding_ruling": UnfoldingRuling;
   "uploaded_asset": UploadedAsset;
   "user_inputs": UserInputs;
@@ -58821,6 +59044,9 @@ export interface KindPayloadBySlug {
   "web_nofollow_internal_links_v1": WebNofollowInternalLinksV1;
   "web_og_image_validity_v1": WebOgImageValidityV1;
   "web_orphan_pages_v1": WebOrphanPagesV1;
+  "web_page": WebPage;
+  "web_page_head": WebPageHead;
+  "web_page_list": WebPageList;
   "web_page_weight_v1": WebPageWeightV1;
   "web_pagination_markup_v1": WebPaginationMarkupV1;
   "web_readability_v1": WebReadabilityV1;
@@ -59927,6 +60153,9 @@ export const GENERATED_KIND_SLUGS: readonly GeneratedKindSlug[] = [
   "sealed_case_answer",
   "sealed_case_commit_status",
   "sealed_case_tool_result",
+  "search_response",
+  "search_result_block",
+  "search_result_list",
   "search_results",
   "seat_job_suggestion",
   "self_prompt_result",
@@ -60056,6 +60285,7 @@ export const GENERATED_KIND_SLUGS: readonly GeneratedKindSlug[] = [
   "shifted_datetime",
   "short_script",
   "site_audit_issue",
+  "site_gate",
   "site_intake_analysis",
   "site_intake_apply_result",
   "site_strategy_result",
@@ -60065,6 +60295,7 @@ export const GENERATED_KIND_SLUGS: readonly GeneratedKindSlug[] = [
   "social.post_breakdown.offer",
   "social_post",
   "social_profile",
+  "social_profile_answer_list",
   "sorted_list_result",
   "source_authority_ranking",
   "source_authority_rankings",
@@ -60093,6 +60324,7 @@ export const GENERATED_KIND_SLUGS: readonly GeneratedKindSlug[] = [
   "stock_image",
   "stock_image_search_result",
   "string_list",
+  "structured_data_list",
   "structured_document",
   "structured_info",
   "structured_info_item",
@@ -60199,6 +60431,7 @@ export const GENERATED_KIND_SLUGS: readonly GeneratedKindSlug[] = [
   "troubleshooting_solution",
   "troubleshooting_step",
   "trust_envelope",
+  "typed_account_list",
   "unfolding_ruling",
   "uploaded_asset",
   "user_inputs",
@@ -60335,6 +60568,9 @@ export const GENERATED_KIND_SLUGS: readonly GeneratedKindSlug[] = [
   "web_nofollow_internal_links_v1",
   "web_og_image_validity_v1",
   "web_orphan_pages_v1",
+  "web_page",
+  "web_page_head",
+  "web_page_list",
   "web_page_weight_v1",
   "web_pagination_markup_v1",
   "web_readability_v1",
