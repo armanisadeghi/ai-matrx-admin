@@ -174,7 +174,7 @@ export default function ShapePreviewTab({
             <p className="mx-auto mt-1 max-w-sm text-xs text-muted-foreground">
               {isOwnedByViewer
                 ? "Add the first canonical sample above, or try the Shape live."
-                : "Try it live instead — fill the form and watch its component render the result."}
+                : "Try it live — fill the form and see how it renders."}
             </p>
             <Link
               href={shapeTestHref(kind)}
