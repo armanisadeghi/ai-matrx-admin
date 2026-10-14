@@ -229,6 +229,7 @@ async function recordDiscovered(
         .from("discovered_item")
         .update({ deleted_at: new Date().toISOString() })
         .eq("id", id);
+      // access-errors: ok — an undo write on the person's own answer; the tray shows "Not saved"
       if (e) throw new Error(e.message);
     },
   };
