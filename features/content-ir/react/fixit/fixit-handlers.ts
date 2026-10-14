@@ -81,7 +81,8 @@ export interface LayerSwitchOffDeps {
   }) => Promise<boolean>;
   switchOff: (kind: string, rowId: string) => Promise<void>;
   switchOn: (kind: string, rowId: string) => Promise<void>;
-  announce: (message: string, undo: () => void) => void;
+  /** `ownRowId` is set when the switched-off row is the viewer's OWN personal view. */
+  announce: (message: string, undo: () => void, ownRowId: string | null) => void;
 }
 
 /**
@@ -105,6 +106,6 @@ export async function runLayerSwitchOff(
   await deps.switchOff(input.kind, input.rowId);
   deps.announce(words.done, () => {
     void deps.switchOn(input.kind, input.rowId);
-  });
+  }, null);
   return "off";
 }

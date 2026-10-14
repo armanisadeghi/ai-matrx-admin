@@ -90,6 +90,8 @@ export function useKindViewActions(input: {
   const [switchedOff, setSwitchedOff] = useState<{
     message: string;
     undo: () => void;
+    /** Known synchronously from the handler: no window where Make my view could create a second row. */
+    ownRowId: string | null;
   } | null>(null);
   // Repaint when the resolver's tiers change (an overlay load, a switch-off).
   const registryVersion = useSyncExternalStore(
@@ -217,8 +219,8 @@ export function useKindViewActions(input: {
                 description: error instanceof Error ? error.message : String(error),
               });
             }),
-          announce: (message, undo) => {
-            setSwitchedOff({ message, undo });
+          announce: (message, undo, ownRowId) => {
+            setSwitchedOff({ message, undo, ownRowId });
             toast.success(message, {
               duration: UNDO_TOAST_MS,
               action: {
@@ -252,7 +254,9 @@ export function useKindViewActions(input: {
       : switchedOff
         ? ownOffRowId
           ? { message: "Your view is off", turnOn: true, rowId: ownOffRowId }
-          : { message: switchedOff.message }
+          : switchedOff.ownRowId
+            ? { message: switchedOff.message, rowId: switchedOff.ownRowId }
+            : { message: switchedOff.message }
         : ownOffRowId
           ? { message: "Your view is off", turnOn: true, rowId: ownOffRowId }
           : null,
