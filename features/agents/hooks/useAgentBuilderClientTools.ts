@@ -29,6 +29,7 @@ import {
   sampleInputText,
 } from "@/features/agents/samples/service";
 import { applySampleToComposer } from "@/features/agents/samples/apply-sample";
+import { isJsonObject } from "@/types/json";
 import {
   lastRunConversationId,
   nextSendConversationId,
@@ -36,6 +37,13 @@ import {
 } from "./agentBuilderContextBundle";
 
 const fail = (error: string) => ({ ok: false as const, error });
+
+const LIST_VALUE_CHARS = 300;
+/** A value as text, cut to LIST_VALUE_CHARS with its full length named. */
+function clip(value: unknown): string {
+  const text = typeof value === "string" ? value : JSON.stringify(value) ?? "";
+  return text.length <= LIST_VALUE_CHARS ? text : `${text.slice(0, LIST_VALUE_CHARS)}… [${text.length} chars]`;
+}
 const message = (e: unknown) => (e instanceof Error ? e.message : String(e));
 
 export function useAgentBuilderClientTools(agentId: string): void {
@@ -79,15 +87,22 @@ export function useAgentBuilderClientTools(agentId: string): void {
             ...(unattached.length ? { parts_without_a_chip: unattached.length } : {}),
           };
         }
+        // A case's variables can hold whole scraped pages; the list is a summary
+        // (each value cut to LIST_VALUE_CHARS, its full length named). Load one
+        // and read it with agent_builder_read_test_value for the whole value.
         return {
           ok: true,
+          count: rows.length,
+          note: `Values are cut to ${LIST_VALUE_CHARS} chars. Load a case, then agent_builder_read_test_value gives any value in full.`,
           test_cases: rows.map((r) => ({
             id: r.id,
             name: r.label,
             status: r.status,
             freshness: sampleFreshness(r, head),
-            typed_text: sampleInputText(r),
-            variables: r.variables,
+            typed_text: clip(sampleInputText(r)),
+            variables: Object.fromEntries(
+              Object.entries(isJsonObject(r.variables) ? r.variables : {}).map(([k, v]) => [k, clip(v)]),
+            ),
             has_reference_output: Boolean(r.reference_output),
           })),
         };
