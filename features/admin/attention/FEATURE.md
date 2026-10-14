@@ -31,8 +31,8 @@ carried raw uuids.
 | Piece | File | Role |
 |---|---|---|
 | Types | `types.ts` | `AttentionItem` (a decision, not a title), `AttentionSourceState` |
-| Sources (pure) | `sources/schedule-alarms.ts`, `sources/provider-outages.ts`, `sources/dated-changes.ts`, `sources/spend-alarms.ts` | rows → items; summaries |
-| Sources (live) | `sources/useScheduleAlarmSource.ts`, `sources/useProviderOutageSource.ts`, `sources/useDatedChangeSource.ts`, `sources/useSpendAlarmSource.ts` | React Query read + the injected writes |
+| Sources (pure) | `sources/schedule-alarms.ts`, `sources/provider-outages.ts`, `sources/dated-changes.ts`, `sources/spend-alarms.ts`, `sources/deploy-freshness.ts` | rows → items; summaries |
+| Sources (live) | `sources/useScheduleAlarmSource.ts`, `sources/useProviderOutageSource.ts`, `sources/useDatedChangeSource.ts`, `sources/useSpendAlarmSource.ts`, `sources/useDeployFreshnessSource.ts` | React Query read + the injected writes |
 | Notice | `build-notice.ts` | live/muted partition, the title, the pill, `null` at zero; `info` counted apart; `SECTION_LIMIT` (8) rows per source, worst first, `hidden` → "+N more" to its review |
 | Row | `AttentionItemRow.tsx` | the same row on the dock AND the review page |
 | Dock | `AdminAttentionDock.tsx` | float, collapse, snooze, note dialog, runway marker |
@@ -193,7 +193,24 @@ Files: `triage.ts` (pure), `triage-service.ts`, `sources/useAttentionTriage.ts`,
 `aidream/services/attention/tests/test_attention_triage_live.py`; tool:
 `aidream/api/mcp/agent_service/tests/test_attention_tools.py`.
 
+## Deploy freshness
+
+Source `deploy-freshness`: every separately deployed service the Ship Manager reports behind its
+latest release or unhealthy, read through `platform.deploy_freshness_for_attention` (super-admin
+SECURITY DEFINER over `ops.ops_issue_class` `fleet:*`, which the Manager rewrites every 5-minute
+sweep). A class not rewritten in the last hour is not shown; the Manager's heartbeat `fleet:watch`
+older than 30 minutes is its own critical item ("the deploy watch has gone quiet"). Audience rule:
+`agent_fix` for every kind, so the triage agent fixes or files it; the card sees one only when it is
+escalated. The row's fix line is the reason the Manager recorded (e.g. the failed preflight line).
+Files: `deploy-freshness-service.ts`, `sources/deploy-freshness.ts`, `sources/useDeployFreshnessSource.ts`;
+test `__tests__/deploy-freshness-items.test.ts`. Producer: matrx-ship `server-manager/FEATURE.md`
+§ Release freshness.
+
 ## Change log
+
+- **2026-10-13** — Deploy freshness joins the dock. files.matrxserver.com ran a 4-day-old build
+  (13 releases refused to install) and pasted images failed on every page; the Manager's warning
+  reached nobody because its database mirror had skipped every sweep since 2026-08-23.
 
 - **2026-10-11** — Anti-noise triage (section above). Live: 27 pending → 0 on the owner card
   (19 being prepared by agents, 15 info only, 4 muted).

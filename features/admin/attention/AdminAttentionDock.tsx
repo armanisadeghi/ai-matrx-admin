@@ -84,6 +84,7 @@ import { useLocalMutes } from "./useLocalMutes";
 import { useProviderOutageSource } from "./sources/useProviderOutageSource";
 import { useScheduleAlarmSource } from "./sources/useScheduleAlarmSource";
 import { useDatedChangeSource } from "./sources/useDatedChangeSource";
+import { useDeployFreshnessSource } from "./sources/useDeployFreshnessSource";
 import { useSpendAlarmSource } from "./sources/useSpendAlarmSource";
 import { useSpendTodaySource } from "./sources/useSpendTodaySource";
 import { useAttentionTriage } from "./sources/useAttentionTriage";
@@ -136,9 +137,10 @@ export default function AdminAttentionDock() {
   const schedules = useScheduleAlarmSource(canRead);
   const outages = useProviderOutageSource(canRead);
   const datedChanges = useDatedChangeSource(canRead);
+  const deploys = useDeployFreshnessSource(canRead);
   const spendAlarms = useSpendAlarmSource(canRead);
   const spendToday = useSpendTodaySource(canRead);
-  const sources = [datedChanges, spendAlarms, spendToday, schedules, outages];
+  const sources = [datedChanges, spendAlarms, spendToday, schedules, outages, deploys];
   const triageState = useAttentionTriage(canRead);
 
   const float = useDraggableFloat({

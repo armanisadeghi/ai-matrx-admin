@@ -81,6 +81,8 @@ jest.mock("@/features/admin/system-errors/open-outages", () => {
   return { ...actual, fetchOpenOutages: () => fetchOpenOutages() };
 });
 
+const fetchDeployFreshness = jest.fn();
+jest.mock("../deploy-freshness-service", () => ({ fetchDeployFreshness: () => fetchDeployFreshness() }));
 const fetchDatedChanges = jest.fn();
 jest.mock("@/features/admin/dated-changes/service", () => {
   const actual = jest.requireActual("@/features/admin/dated-changes/service");
@@ -381,6 +383,8 @@ beforeEach(() => {
   fetchSystemScheduleAlarms.mockReset();
   fetchDatedChanges.mockReset();
   fetchDatedChanges.mockResolvedValue([]);
+  fetchDeployFreshness.mockReset();
+  fetchDeployFreshness.mockResolvedValue([]);
   fetchSpendAlarmsForAttention.mockReset();
   fetchSpendAlarmsForAttention.mockResolvedValue([]);
   setSpendAlarmStatus.mockClear();

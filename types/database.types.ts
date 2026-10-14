@@ -99751,6 +99751,20 @@ export type Database = {
         Args: { p_definition_id: string }
         Returns: Json
       }
+      deploy_freshness_for_attention: {
+        Args: never
+        Returns: {
+          detail: string
+          facts: Json
+          item_key: string
+          kind: string
+          last_seen_at: string
+          record_href: string
+          sentence: string
+          severity: string
+          title: string
+        }[]
+      }
       deprecate_relation: {
         Args: {
           p_name: string
