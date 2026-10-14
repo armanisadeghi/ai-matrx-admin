@@ -13,7 +13,7 @@ import { ReactReduxContext } from "react-redux";
 
 import { buildKindAuthoringOffer } from "@/features/content-ir/studio/kind-authoring-offer";
 import { planKindViewActions } from "./fixit-plan";
-import { FixItViewActions } from "./KindFixItBar";
+import { FixItViewActions, type FixItExtraAction } from "./KindFixItBar";
 import { useKindViewActions } from "./useKindViewActions";
 
 export interface KindViewActionsRowProps {
@@ -24,6 +24,8 @@ export interface KindViewActionsRowProps {
   value: unknown;
   /** False when the shared view is already a custom component — then only a layer marker shows. */
   offerNewView: boolean;
+  /** Further actions folded into the row's "…" menu (the owner's shared-view builder). */
+  extraActions?: FixItExtraAction[];
 }
 
 export function KindViewActionsRow(props: KindViewActionsRowProps): React.ReactElement | null {
@@ -38,6 +40,7 @@ function KindViewActionsRowInner({
   registered,
   value,
   offerNewView,
+  extraActions,
 }: KindViewActionsRowProps): React.ReactElement | null {
   const actions = useKindViewActions({
     kind,
@@ -47,6 +50,6 @@ function KindViewActionsRowInner({
   });
   const plan = planKindViewActions(actions.viewer, actions.layer, { slug: kind, registered });
   // A view just switched off keeps its Undo marker even when nothing else shows.
-  if (plan.mode === "actions" && !offerNewView && !actions.switchedOff) return null;
-  return <FixItViewActions plan={plan} instance={value} {...actions} />;
+  if (plan.mode === "actions" && !offerNewView && !actions.switchedOff && !extraActions?.length) return null;
+  return <FixItViewActions plan={plan} instance={value} compact extraActions={extraActions} {...actions} />;
 }

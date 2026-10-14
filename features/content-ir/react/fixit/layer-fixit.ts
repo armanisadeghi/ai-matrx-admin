@@ -84,6 +84,11 @@ export function composeLayerSeed(input: LayerSeedInput): LayerSeed {
       ? `Edit my existing view of the Shape (kind) \`${input.kind}\` ${who}. Its component_id is "${input.layerRowId}".`
       : `Build a view of the Shape (kind) \`${input.kind}\` ${who}.`,
     `Call every kindcomp tool with ${toolArgs}${editing ? `, and component_id "${input.layerRowId}"` : ""}. Never change the shared view, the kind's registration or its schema.`,
+    ...(editing
+      ? [
+          `There is exactly one view per person per shape, even a switched-off one: never create a second, update component_id "${input.layerRowId}" (kindcomp_update_code / kindcomp_patch_code). If it is switched off, switch it back on when you finish (kindcomp_update_settings is_active true).`,
+        ]
+      : []),
     input.registered
       ? "Load the kind's context first, then design against the real instance in your data sample."
       : `This name has no readable registration — call kindcomp_get_context with ${toolArgs} and sample = the JSON object in your data sample.`,

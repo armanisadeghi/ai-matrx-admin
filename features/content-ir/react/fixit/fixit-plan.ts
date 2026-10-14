@@ -45,6 +45,8 @@ export interface FixItViewer {
   isOrgAdmin: boolean;
   /** The active organization (writes carry it) — null when none is known. */
   activeOrganizationId?: string | null;
+  /** Its name — the label of the organization repair, so it is never ambiguous. */
+  activeOrganizationName?: string | null;
 }
 
 /** The viewer's own layered winner, when one exists (resolver `layer`). */
@@ -54,6 +56,7 @@ export interface FixItLayerFacts {
   createdBy: string | null;
   /** The organization an organization-scope layer belongs to; null until read. */
   organizationId?: string | null;
+  organizationName?: string | null;
   updatedAt: string | null;
   /** The SHARED tier's `updated_at` (db rows only), for "a newer shared view exists". */
   sharedUpdatedAt: string | null;
@@ -76,13 +79,23 @@ export interface FixItLayerPlan {
   makeMine: boolean;
   makeOrg: boolean;
   everyoneHref: string | null;
+  /** The active organization's name (labels "For <name>"). */
+  orgName?: string | null;
+  /** The winning org view's organization name — set only when it is NOT the active one. */
+  layerOrgName?: string | null;
 }
 
 /** The per-person view actions — the same everywhere they appear (bar, shape page). */
 export type FixItViewPlan =
   | { mode: "none" }
   | FixItLayerPlan
-  | { mode: "actions"; makeMine: boolean; makeOrg: boolean; everyoneHref: string | null };
+  | {
+      mode: "actions";
+      makeMine: boolean;
+      makeOrg: boolean;
+      everyoneHref: string | null;
+      orgName?: string | null;
+    };
 
 export type FixItPlan =
   | { mode: "none" }
@@ -92,6 +105,7 @@ export type FixItPlan =
       makeMine: boolean;
       makeOrg: boolean;
       everyoneHref: string | null;
+      orgName?: string | null;
     }
   | FixItLayerPlan;
 
@@ -191,6 +205,13 @@ export function planKindViewActions(
           (layer.organizationId != null &&
             layer.organizationId !== (viewer.activeOrganizationId ?? null))),
       everyoneHref: viewer.isSuperAdminPerson ? adminShapePath(kind.slug, kind.registered) : null,
+      orgName: viewer.activeOrganizationName ?? null,
+      layerOrgName:
+        layer.scope === "organization" &&
+        layer.organizationId != null &&
+        layer.organizationId !== (viewer.activeOrganizationId ?? null)
+          ? (layer.organizationName ?? null)
+          : null,
     };
   }
   return {
@@ -198,6 +219,7 @@ export function planKindViewActions(
     makeMine: true,
     makeOrg: viewer.isOrgAdmin,
     everyoneHref: viewer.isSuperAdminPerson ? adminShapePath(kind.slug, kind.registered) : null,
+    orgName: viewer.activeOrganizationName ?? null,
   };
 }
 
@@ -250,5 +272,26 @@ export function planKindFixIt(
     makeMine: actions.makeMine,
     makeOrg: actions.makeOrg,
     everyoneHref: actions.everyoneHref,
+    orgName: viewer.activeOrganizationName ?? null,
   };
+}
+
+const ORG_NAME_MAX = 24;
+
+function shortOrgName(name: string): string {
+  return name.length > ORG_NAME_MAX ? `${name.slice(0, ORG_NAME_MAX - 1).trimEnd()}…` : name;
+}
+
+/** The organization repair's label — names the organization so it is never ambiguous. */
+export function orgActionLabel(orgName: string | null | undefined): string {
+  return orgName ? `For ${shortOrgName(orgName)}` : "For my organization";
+}
+
+/** The winning layer's marker — names its organization when it is not the active one. */
+export function layerMarkerLabel(plan: {
+  scope: ComponentLayerScope;
+  layerOrgName?: string | null;
+}): string {
+  if (plan.scope === "user") return "My view";
+  return plan.layerOrgName ? `${shortOrgName(plan.layerOrgName)}'s view` : "My organization's view";
 }

@@ -24,9 +24,15 @@
  */
 
 import React, { useContext, useEffect, useState } from "react";
-import { CircleAlert, ExternalLink, Power, Wrench } from "lucide-react";
+import { CircleAlert, ExternalLink, MoreHorizontal, Power, Wrench } from "lucide-react";
 import { ReactReduxContext } from "react-redux";
 import { Button } from "@ai-matrx/design-system/controls";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 import { toast } from "@/lib/toast";
@@ -44,6 +50,8 @@ import {
 } from "./fixit-actions";
 import {
   OWNER_ACTION_LABEL,
+  layerMarkerLabel,
+  orgActionLabel,
   planKindFixIt,
   type FixItOwnerAction,
   type FixItPlan,
@@ -238,6 +246,13 @@ const OWNER_ACTION_ICON: Record<FixItOwnerAction, React.ReactNode> = {
   activate: <Power />,
 };
 
+export interface FixItExtraAction {
+  key: string;
+  label: string;
+  onClick: () => void;
+  disabled?: boolean;
+}
+
 export interface FixItViewHandlers {
   busy: boolean;
   onMakeMine: () => void;
@@ -245,11 +260,81 @@ export interface FixItViewHandlers {
   onEditLayer: (rowId: string) => void;
   onRemoveLayer: (rowId: string) => void;
   onUseShared: (rowId: string) => void;
-  /** A view this person just switched off — the marker keeps Undo reachable. */
-  switchedOff?: { message: string; turnOn?: boolean } | null;
+  /**
+   * A view this person switched off — the marker keeps Turn on / Undo reachable.
+   * `rowId` is their own switched-off row: the table holds ONE row per person per
+   * shape (switched off still counts), so "Make my view" becomes "Edit my view".
+   */
+  switchedOff?: { message: string; turnOn?: boolean; rowId?: string } | null;
   onUndoSwitchOff?: () => void;
   /** The on-screen instance — carried (by nonce, never in the URL) into the admin builder. */
   instance?: unknown;
+  /**
+   * One fixed-height row: the marker, the turn-on and ONE primary action stay
+   * inline; everything else (and `extraActions`) folds into a "…" menu.
+   */
+  compact?: boolean;
+  extraActions?: FixItExtraAction[];
+}
+
+interface ViewActionItem {
+  key: string;
+  label: string;
+  /** Beside a marker everything is quiet; standing alone the first leads. */
+  tone: "primary" | "outline" | "quiet";
+  icon?: boolean;
+  removes?: boolean;
+  onClick?: () => void;
+  href?: string;
+  disabled?: boolean;
+}
+
+/** The ONE list of per-person actions a plan offers — inline or folded, never two copies. */
+export function viewActionItems(
+  plan: FixItViewPlan,
+  h: FixItViewHandlers,
+): ViewActionItem[] {
+  if (plan.mode === "none") return [];
+  const items: ViewActionItem[] = [];
+  const layer = plan.mode === "layer";
+  const quiet = (tone: ViewActionItem["tone"]) => (layer ? "quiet" : tone);
+  const ownOffRowId = h.switchedOff?.rowId ?? null;
+  if (plan.mode === "layer") {
+    if (plan.newerShared && plan.canRemove) {
+      items.push({ key: "use", label: "Use it", tone: "quiet", onClick: () => h.onUseShared(plan.rowId) });
+    }
+    if (plan.canEdit) {
+      items.push({ key: "edit", label: "Edit", tone: "quiet", icon: true, onClick: () => h.onEditLayer(plan.rowId) });
+    }
+    if (plan.canRemove && !plan.newerShared) {
+      items.push({ key: "remove", label: "Remove", tone: "quiet", removes: true, onClick: () => h.onRemoveLayer(plan.rowId) });
+    }
+  }
+  if (plan.makeMine) {
+    items.push(
+      ownOffRowId
+        ? {
+            key: "edit-own",
+            label: "Edit my view",
+            tone: quiet("primary"),
+            icon: true,
+            onClick: () => h.onEditLayer(ownOffRowId),
+          }
+        : { key: "mine", label: "Make my view", tone: quiet("primary"), icon: true, onClick: h.onMakeMine },
+    );
+  }
+  if (plan.makeOrg) {
+    items.push({ key: "org", label: orgActionLabel(plan.orgName), tone: quiet("outline"), onClick: h.onMakeOrg });
+  }
+  if (plan.everyoneHref) {
+    items.push({
+      key: "everyone",
+      label: "Change for everyone",
+      tone: "quiet",
+      href: crossDeploymentHref(plan.everyoneHref) ?? plan.everyoneHref,
+    });
+  }
+  return items;
 }
 
 /**
@@ -260,13 +345,19 @@ export interface FixItViewHandlers {
 export function FixItViewActions(
   props: FixItViewHandlers & { plan: FixItViewPlan },
 ): React.ReactElement | null {
-  const { switchedOff = null, onUndoSwitchOff, busy } = props;
+  const { switchedOff = null, onUndoSwitchOff, busy, compact } = props;
   const body = <ViewActionsPlan {...props} />;
   if (!switchedOff || !onUndoSwitchOff) return body;
   return (
-    <div className="flex flex-wrap items-center gap-2">
-      <div data-fixit-mode="switched-off" className="flex flex-wrap items-center gap-2">
-        <span className="type-meta text-muted-foreground">{switchedOff.message}</span>
+    <div
+      className={
+        compact
+          ? "flex min-w-0 flex-nowrap items-center gap-2"
+          : "flex flex-wrap items-center gap-2"
+      }
+    >
+      <div data-fixit-mode="switched-off" className="flex shrink-0 items-center gap-2">
+        <span className="type-meta whitespace-nowrap text-muted-foreground">{switchedOff.message}</span>
         <Button variant="quiet" disabled={busy} onClick={onUndoSwitchOff}>
           {switchedOff.turnOn ? "Turn on" : "Undo"}
         </Button>
@@ -276,123 +367,126 @@ export function FixItViewActions(
   );
 }
 
-function ViewActionsPlan({
-  plan,
+function ItemButton({
+  item,
   busy,
-  onMakeMine,
-  onMakeOrg,
-  onEditLayer,
-  onRemoveLayer,
-  onUseShared,
   instance,
-}: FixItViewHandlers & { plan: FixItViewPlan }): React.ReactElement | null {
-  if (plan.mode === "none") return null;
-  if (plan.mode === "layer") {
+}: {
+  item: ViewActionItem;
+  busy: boolean | undefined;
+  instance: unknown;
+}): React.ReactElement {
+  if (item.href) {
+    const href = item.href;
     return (
-      <div data-fixit-mode="layer" className="flex flex-wrap items-center gap-x-2 gap-y-1">
-        <span className="type-meta text-muted-foreground">
-          {plan.scope === "user" ? "My view" : "My organization's view"}
-        </span>
-        {plan.newerShared ? (
-          <span className="type-meta text-muted-foreground">· Newer shared view</span>
-        ) : null}
-        {plan.newerShared && plan.canRemove ? (
-          <Button variant="quiet" disabled={busy} onClick={() => onUseShared(plan.rowId)}>
-            Use it
-          </Button>
-        ) : null}
-        {plan.canEdit ? (
-          <Button variant="quiet" icon={<AGENT_ICON />} disabled={busy} onClick={() => onEditLayer(plan.rowId)}>
-            Edit
-          </Button>
-        ) : null}
-        {plan.canRemove && !plan.newerShared ? (
-          <Button variant="quiet" removes disabled={busy} onClick={() => onRemoveLayer(plan.rowId)}>
-            Remove
-          </Button>
-        ) : null}
-        <PersonActions
-          plan={plan}
-          busy={busy}
-          onMakeMine={onMakeMine}
-          onMakeOrg={onMakeOrg}
-          instance={instance}
-          variant="quiet"
-        />
-      </div>
+      <Button variant="quiet" iconEnd={<ExternalLink />} asChild>
+        <OutboundLink
+          href={href}
+          target="_blank"
+          rel="noopener noreferrer"
+          data-fixit-everyone=""
+          onClick={(event) => {
+            // The builder page opens with the instance filled in: parked under a
+            // one-time nonce, never in the URL (payload stays out of the query).
+            if (!href.includes("/kind-registry/build")) return;
+            const nonce = stashBuilderInstance(instance);
+            if (nonce) event.currentTarget.href = withBuilderHandoff(href, nonce);
+          }}
+        >
+          {item.label}
+        </OutboundLink>
+      </Button>
     );
   }
-  if (!plan.makeMine && !plan.makeOrg && !plan.everyoneHref) return null;
   return (
-    <div data-fixit-mode="actions" className="flex flex-wrap items-center gap-2">
-      <PersonActions
-        plan={plan}
-        busy={busy}
-        onMakeMine={onMakeMine}
-        onMakeOrg={onMakeOrg}
-        instance={instance}
-      />
-    </div>
+    <Button
+      variant={item.tone}
+      icon={item.icon ? <AGENT_ICON /> : undefined}
+      removes={item.removes}
+      disabled={busy}
+      onClick={item.onClick}
+    >
+      {item.label}
+    </Button>
   );
 }
 
-/** Make my view / For my organization / Change for everyone — one copy for every plan shape. */
-function PersonActions({
-  plan,
-  busy,
-  onMakeMine,
-  onMakeOrg,
-  instance,
-  variant,
-}: {
-  plan: { makeMine: boolean; makeOrg: boolean; everyoneHref: string | null };
-  busy: boolean | undefined;
-  onMakeMine: () => void;
-  onMakeOrg: () => void;
-  instance?: unknown;
-  /** Beside a marker everything is quiet; standing alone the first action leads. */
-  variant?: "quiet";
-}): React.ReactElement | null {
-  const everyone = plan.everyoneHref
-    ? (crossDeploymentHref(plan.everyoneHref) ?? plan.everyoneHref)
-    : null;
+function ViewActionsPlan(props: FixItViewHandlers & { plan: FixItViewPlan }): React.ReactElement | null {
+  const { plan, busy, instance, compact, extraActions = [] } = props;
+  if (plan.mode === "none") return null;
+  const items = viewActionItems(plan, props);
+  const marker =
+    plan.mode === "layer" ? (
+      <>
+        <span className="type-meta whitespace-nowrap text-muted-foreground">{layerMarkerLabel(plan)}</span>
+        {plan.newerShared ? (
+          <span className="type-meta whitespace-nowrap text-muted-foreground">· Newer shared view</span>
+        ) : null}
+      </>
+    ) : null;
+  const mode = plan.mode === "layer" ? "layer" : "actions";
+
+  if (compact) {
+    // One line, one height: the first action inline, the rest folded.
+    const [primary, ...rest] = items;
+    const folded = rest.length + extraActions.length;
+    if (!marker && !primary && folded === 0) return null;
+    return (
+      <div data-fixit-mode={mode} className="flex min-w-0 flex-nowrap items-center gap-2">
+        {marker}
+        {primary ? <ItemButton item={primary} busy={busy} instance={instance} /> : null}
+        {folded > 0 ? (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="quiet" icon={<MoreHorizontal />} aria-label="More view actions" />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start">
+              {rest.map((item) =>
+                item.href ? (
+                  <DropdownMenuItem key={item.key} asChild>
+                    <OutboundLink
+                      href={item.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      data-fixit-everyone=""
+                      onClick={(event) => {
+                        if (!item.href?.includes("/kind-registry/build")) return;
+                        const nonce = stashBuilderInstance(instance);
+                        if (nonce) event.currentTarget.href = withBuilderHandoff(item.href, nonce);
+                      }}
+                    >
+                      {item.label}
+                    </OutboundLink>
+                  </DropdownMenuItem>
+                ) : (
+                  <DropdownMenuItem key={item.key} disabled={busy} onClick={item.onClick}>
+                    {item.label}
+                  </DropdownMenuItem>
+                ),
+              )}
+              {extraActions.map((extra) => (
+                <DropdownMenuItem key={extra.key} disabled={busy || extra.disabled} onClick={extra.onClick}>
+                  {extra.label}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        ) : null}
+      </div>
+    );
+  }
+
+  if (!marker && items.length === 0) return null;
   return (
-    <>
-      {plan.makeMine ? (
-        <Button
-          variant={variant ?? "primary"}
-          icon={<AGENT_ICON />}
-          disabled={busy}
-          onClick={onMakeMine}
-        >
-          Make my view
-        </Button>
-      ) : null}
-      {plan.makeOrg ? (
-        <Button variant={variant ?? "outline"} disabled={busy} onClick={onMakeOrg}>
-          For my organization
-        </Button>
-      ) : null}
-      {everyone ? (
-        <Button variant="quiet" iconEnd={<ExternalLink />} asChild>
-          <OutboundLink
-            href={everyone}
-            target="_blank"
-            rel="noopener noreferrer"
-            data-fixit-everyone=""
-            onClick={(event) => {
-              // The builder page opens with the instance filled in: parked under a
-              // one-time nonce, never in the URL (payload stays out of the query).
-              if (!everyone.includes("/kind-registry/build")) return;
-              const nonce = stashBuilderInstance(instance);
-              if (nonce) event.currentTarget.href = withBuilderHandoff(everyone, nonce);
-            }}
-          >
-            Change for everyone
-          </OutboundLink>
-        </Button>
-      ) : null}
-    </>
+    <div
+      data-fixit-mode={mode}
+      className={`flex flex-wrap items-center ${plan.mode === "layer" ? "gap-x-2 gap-y-1" : "gap-2"}`}
+    >
+      {marker}
+      {items.map((item) => (
+        <ItemButton key={item.key} item={item} busy={busy} instance={instance} />
+      ))}
+    </div>
   );
 }
 
@@ -449,6 +543,7 @@ export function KindFixItBarView({
             makeMine: plan.makeMine,
             makeOrg: plan.makeOrg,
             everyoneHref: plan.everyoneHref,
+            orgName: plan.orgName,
           }}
           {...handlers}
         />

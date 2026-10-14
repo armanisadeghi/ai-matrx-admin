@@ -608,7 +608,7 @@ describe("the launch handlers", () => {
 
   it("the shape page's actions are the same plan: a plain user who cannot edit gets Make my view", () => {
     const plan = planKindViewActions(PLAIN, null, { slug: "brand_intake_facts", registered: true });
-    expect(plan).toEqual({ mode: "actions", makeMine: true, makeOrg: false, everyoneHref: null });
+    expect(plan).toEqual({ mode: "actions", makeMine: true, makeOrg: false, everyoneHref: null, orgName: null });
   });
 });
 

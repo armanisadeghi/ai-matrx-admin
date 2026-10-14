@@ -294,3 +294,79 @@ describe("round 2, defect 5: the instance rides a nonce, never the URL", () => {
     expect(client).toMatch(/setStructure\(/);
   });
 });
+
+// ── Round 3 ──────────────────────────────────────────────────────────────────
+import { composeLayerSeed } from "../react/fixit/layer-fixit";
+import { layerMarkerLabel, orgActionLabel } from "../react/fixit/fixit-plan";
+import { viewActionItems } from "../react/fixit/KindFixItBar";
+
+const handlers = {
+  busy: false,
+  onMakeMine: noop,
+  onMakeOrg: noop,
+  onEditLayer: noop,
+  onRemoveLayer: noop,
+  onUseShared: noop,
+};
+
+describe("round 3, defect 2: the organization is named", () => {
+  it("labels For <org>, shortened inside the budget, and falls back when unknown", () => {
+    expect(orgActionLabel("Harbor Dental Group")).toBe("For Harbor Dental Group");
+    expect(orgActionLabel("A Very Long Organization Name Incorporated").length).toBeLessThanOrEqual(28);
+    expect(orgActionLabel(null)).toBe("For my organization");
+  });
+  it("the marker names its organization only when it is not the active one", () => {
+    const admin: FixItViewer = { ...PLAIN, isOrgAdmin: true, activeOrganizationId: "a", activeOrganizationName: "Alpha" };
+    const foreign = planKindViewActions(admin, { ...orgLayer, organizationId: "b", organizationName: "Harbor Dental Group" }, SLUG);
+    const own = planKindViewActions(admin, { ...orgLayer, organizationId: "a", organizationName: "Alpha" }, SLUG);
+    expect(foreign.mode === "layer" && layerMarkerLabel(foreign)).toBe("Harbor Dental Group's view");
+    expect(own.mode === "layer" && layerMarkerLabel(own)).toBe("My organization's view");
+    const markup = renderToStaticMarkup(<FixItViewActions plan={foreign} {...handlers} />);
+    expect(markup).toContain("For Alpha");
+  });
+});
+
+describe("round 3, defect 3: a switched-off view is edited, never duplicated", () => {
+  it("Make my view becomes Edit my view on the existing row id", () => {
+    const calls: string[] = [];
+    const plan = planKindViewActions(PLAIN, null, SLUG);
+    const items = viewActionItems(plan, {
+      ...handlers,
+      onEditLayer: (id) => calls.push(id),
+      switchedOff: { message: "Your view is off", turnOn: true, rowId: "off-row" },
+    });
+    expect(items.map((i) => i.label)).toEqual(["Edit my view"]);
+    items[0].onClick?.();
+    expect(calls).toEqual(["off-row"]);
+    expect(viewActionItems(plan, handlers).map((i) => i.label)).toEqual(["Make my view"]);
+  });
+  it("the edit seed tells the agent: one view per person, update by id, switch it back on", () => {
+    const seed = composeLayerSeed({ kind: "k", target: "mine", organizationId: "o", registered: true, layerRowId: "off-row", instance: {} });
+    expect(seed.variables.task_brief).toContain('component_id "off-row"');
+    expect(seed.variables.task_brief).toMatch(/never create a second/);
+    expect(seed.variables.task_brief).toMatch(/is_active true/);
+  });
+});
+
+describe("round 3, defect 1: the busiest strip state is one row", () => {
+  it("compact: marker + one primary inline, the rest folded into a menu", () => {
+    const admin: FixItViewer = { ...PLAIN, isSuperAdminPerson: true, isOrgAdmin: true, activeOrganizationId: "a", activeOrganizationName: "Alpha" };
+    const plan = planKindViewActions(admin, userLayer, SLUG);
+    const items = viewActionItems(plan, handlers);
+    expect(items.length).toBeGreaterThanOrEqual(4);
+    const markup = renderToStaticMarkup(
+      <FixItViewActions plan={plan} {...handlers} compact extraActions={[{ key: "b", label: "Build shared view", onClick: noop }]} />,
+    );
+    expect(markup).toContain("flex-nowrap");
+    expect(markup).not.toContain("flex-wrap");
+    expect(markup).toContain("More view actions");
+    expect(markup).not.toContain("Build shared view");
+    expect((markup.match(/<button/g) ?? []).length).toBeLessThanOrEqual(2);
+  });
+  it("the strip folds Build shared view into the row instead of a second control group", () => {
+    const strip = fs.readFileSync(path.join(__dirname, "../studio/components/ShapeRenderStatusStrip.tsx"), "utf8");
+    expect(strip).toMatch(/extraActions=\{/);
+    expect(strip).not.toMatch(/Build shared view<\/Button>/);
+    expect(strip).toMatch(/flex-nowrap items-center overflow-hidden/);
+  });
+});

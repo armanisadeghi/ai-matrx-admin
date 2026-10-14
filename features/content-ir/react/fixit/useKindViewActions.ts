@@ -16,7 +16,7 @@ import {
   selectIsSuperAdminPerson,
   selectUserId,
 } from "@/lib/redux/selectors/userSelectors";
-import { selectOrganizationId } from "@/lib/redux/slices/appContextSlice";
+import { selectOrganizationId, selectOrganizationName } from "@/lib/redux/slices/appContextSlice";
 import { useOrgAdminGate } from "@/features/organizations/admin/hooks";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
 import { toast } from "@/lib/toast";
@@ -79,6 +79,7 @@ export function useKindViewActions(input: {
   const userId = useAppSelector(selectUserId);
   const isSuperAdminPerson = useAppSelector(selectIsSuperAdminPerson);
   const activeOrgId = useAppSelector(selectOrganizationId);
+  const activeOrgName = useAppSelector(selectOrganizationName);
   // Org admin of the ACTIVE organization — the organization a write carries.
   const orgGate = useOrgAdminGate(userId && activeOrgId ? activeOrgId : undefined);
   const openRun = useOpenAgentRunWindow();
@@ -130,21 +131,32 @@ export function useKindViewActions(input: {
     isSuperAdminPerson,
     isOrgAdmin: orgGate.isAdmin && orgGate.orgId === activeOrgId,
     activeOrganizationId: activeOrgId ?? null,
+    activeOrganizationName: activeOrgName ?? null,
   };
   const baseLayer = userId ? readLayerFacts(input.kind, registryVersion) : null;
   // Which organization an org-scope winner belongs to — read by row id (the
   // resolver carries scope + id only).
-  const [layerOrg, setLayerOrg] = useState<{ rowId: string; organizationId: string | null } | null>(null);
+  const [layerOrg, setLayerOrg] = useState<{
+    rowId: string;
+    organizationId: string | null;
+    organizationName: string | null;
+  } | null>(null);
   const orgLayerRowId = baseLayer?.scope === "organization" ? baseLayer.rowId : null;
   useEffect(() => {
     if (!orgLayerRowId) return;
     let alive = true;
     void readLayerAudience(orgLayerRowId)
       .then((audience) => {
-        if (alive) setLayerOrg({ rowId: orgLayerRowId, organizationId: audience.organizationId });
+        if (alive) {
+          setLayerOrg({
+            rowId: orgLayerRowId,
+            organizationId: audience.organizationId,
+            organizationName: audience.organizationName,
+          });
+        }
       })
       .catch(() => {
-        if (alive) setLayerOrg({ rowId: orgLayerRowId, organizationId: null });
+        if (alive) setLayerOrg({ rowId: orgLayerRowId, organizationId: null, organizationName: null });
       });
     return () => {
       alive = false;
@@ -152,7 +164,11 @@ export function useKindViewActions(input: {
   }, [orgLayerRowId]);
   const layer =
     baseLayer && baseLayer.scope === "organization" && layerOrg?.rowId === baseLayer.rowId
-      ? { ...baseLayer, organizationId: layerOrg.organizationId }
+      ? {
+        ...baseLayer,
+        organizationId: layerOrg.organizationId,
+        organizationName: layerOrg.organizationName,
+      }
       : baseLayer;
 
   const launchDeps: LayerLaunchDeps = {
@@ -234,9 +250,11 @@ export function useKindViewActions(input: {
     switchedOff: layer?.scope === "user"
       ? null
       : switchedOff
-        ? { message: switchedOff.message }
+        ? ownOffRowId
+          ? { message: "Your view is off", turnOn: true, rowId: ownOffRowId }
+          : { message: switchedOff.message }
         : ownOffRowId
-          ? { message: "Your view is off", turnOn: true }
+          ? { message: "Your view is off", turnOn: true, rowId: ownOffRowId }
           : null,
     onUndoSwitchOff: () => {
       const last = switchedOff;

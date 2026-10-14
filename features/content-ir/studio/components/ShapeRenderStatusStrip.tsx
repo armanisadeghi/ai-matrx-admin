@@ -340,54 +340,47 @@ export default function ShapeRenderStatusStrip({
 
       {/* Controls get their own row: the status above stays one line, and the
           row keeps its height while the viewer's overlay loads (no shift). */}
-      <div className="mt-1.5 flex min-h-7 flex-wrap items-center gap-x-3 gap-y-1">
-        {/* Anyone signed in: their own view (or the marker for the one they have). */}
+      <div className="mt-1.5 flex min-h-7 min-w-0 flex-nowrap items-center overflow-hidden">
+        {/* Anyone signed in: their own view (or the marker for the one they have);
+            the owner's shared-view builder folds into the same "…" menu. */}
         <KindViewActionsRow
           kind={kind}
           label={label}
           registered
           value={sampleValue}
           offerNewView={status.source !== "custom"}
-        />
-        {isOwnedByViewer && (
-          <div className="flex flex-wrap items-center gap-1.5">
-            {status.source !== "custom" && (
-              <Button
-                type="button"
-                variant="outline"
-                disabled={artisanLaunching}
-                onClick={() =>
-                  void launchArtisan(
-                    composeComponentAuthoringIntent({
-                      kind,
-                      label,
-                      emittedJsonSchema,
-                      // Refine the Shape's own default component in place
-                      // when one exists; the generic viewer is never refined.
-                      componentKey:
-                        switchableCandidates.find(
-                          (c) =>
-                            c.isDefault &&
-                            c.componentKey !== GENERIC_STRUCTURED_COMPONENT_KEY,
-                        )?.componentKey ?? null,
-                      renderProblems: status.problems,
-                      componentCandidates: switchableCandidates.map(
-                        (c) => c.componentKey,
+          extraActions={
+            isOwnedByViewer && status.source !== "custom"
+              ? [
+                  {
+                    key: "build-shared",
+                    label: "Build shared view",
+                    disabled: artisanLaunching,
+                    onClick: () =>
+                      void launchArtisan(
+                        composeComponentAuthoringIntent({
+                          kind,
+                          label,
+                          emittedJsonSchema,
+                          // Refine the Shape's own default component in place
+                          // when one exists; the generic viewer is never refined.
+                          componentKey:
+                            switchableCandidates.find(
+                              (c) =>
+                                c.isDefault &&
+                                c.componentKey !== GENERIC_STRUCTURED_COMPONENT_KEY,
+                            )?.componentKey ?? null,
+                          renderProblems: status.problems,
+                          componentCandidates: switchableCandidates.map(
+                            (c) => c.componentKey,
+                          ),
+                        }),
                       ),
-                    }),
-                  )
-                }
-              >
-                {artisanLaunching ? (
-                  <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
-                ) : (
-                  <AGENT_ICON className="mr-1.5 h-3.5 w-3.5" />
-                )}
-                Build shared view
-              </Button>
-            )}
-          </div>
-        )}
+                  },
+                ]
+              : undefined
+          }
+        />
       </div>
 
       {/* Component switching — visible to every viewer read-only; owners get the control. */}
