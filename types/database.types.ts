@@ -25567,6 +25567,50 @@ export type Database = {
         Args: { p_action: string; p_ids: string[]; p_until?: string }
         Returns: number
       }
+      set_voice_transfer_target: {
+        Args: {
+          p_destination_id: string
+          p_expected_version: number
+          p_organization_id: string
+          p_target?: string
+        }
+        Returns: {
+          assigned_at: string | null
+          assistant_enabled: boolean
+          capabilities: Json | null
+          created_at: string
+          created_by: string | null
+          custom_fields: Json
+          deleted_at: string | null
+          friendly_name: string | null
+          id: string
+          is_active: boolean
+          metadata: Json
+          number_type: string
+          organization_id: string
+          phone_number: string
+          program_key: string
+          provider: string
+          provider_account_id: string | null
+          published_to_web: boolean
+          published_to_web_at: string | null
+          published_to_web_by: string | null
+          released_at: string | null
+          shown_to: Database["platform"]["Enums"]["shown_to"] | null
+          twilio_sid: string
+          updated_at: string
+          updated_by: string | null
+          user_id: string | null
+          version: number
+          visibility: Database["platform"]["Enums"]["visibility"]
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "sms_phone_numbers"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       sms_notification_gate: {
         Args: { p_notification_id: string; p_now?: string }
         Returns: {
@@ -145031,6 +145075,14 @@ export type Database = {
     }
     Functions: {
       __brand_archive_conformance: {
+        Args: never
+        Returns: {
+          check_name: string
+          detail: string
+          ok: boolean
+        }[]
+      }
+      __decision_retraction_selftest: {
         Args: never
         Returns: {
           check_name: string

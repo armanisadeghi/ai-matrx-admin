@@ -1,5 +1,6 @@
 /** Exact, read-only admission policy for the closed AI Matrx owner Voice beta. */
 
+import { readVoiceTransferTarget } from "./transfer-target";
 import { normalizeMediumValue } from "@/features/crm/normalize";
 import type { Tables } from "@/types/database.types";
 import { createAdminClient } from "@/utils/supabase/adminClient";
@@ -290,15 +291,5 @@ export function evaluateVoiceOwnerBetaTransfer(
 ): string | null {
   if (evaluateVoiceOwnerBetaAdmission(call, candidates).status !== "authorized")
     return null;
-  const metadata = candidates.destinations[0].metadata;
-  if (
-    !metadata ||
-    typeof metadata !== "object" ||
-    !("voice_transfer_number" in metadata)
-  )
-    return null;
-  const value = metadata.voice_transfer_number;
-  return typeof value === "string" && /^\+1[2-9]\d{9}$/.test(value)
-    ? value
-    : null;
+  return readVoiceTransferTarget(candidates.destinations[0].metadata);
 }

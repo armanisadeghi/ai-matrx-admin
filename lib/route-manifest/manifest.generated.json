@@ -1,7 +1,7 @@
 {
   "version": 1,
   "app": "matrx-frontend",
-  "routeCount": 1424,
+  "routeCount": 1425,
   "routes": [
     {
       "pattern": "/",
@@ -622,6 +622,11 @@
       "pattern": "/administration/chat/cx-dashboard/usage",
       "status": "live",
       "source": "app/(admin)/administration/chat/cx-dashboard/usage/page.tsx"
+    },
+    {
+      "pattern": "/administration/communications/voice",
+      "status": "live",
+      "source": "app/(admin)/administration/communications/voice/page.tsx"
     },
     {
       "pattern": "/administration/compute",
