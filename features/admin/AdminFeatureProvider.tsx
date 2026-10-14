@@ -7,7 +7,8 @@
 
 import dynamic from "next/dynamic";
 import { useAppSelector } from "@/lib/redux/hooks";
-import { selectIsSuperAdmin } from "@/lib/redux/slices/userSlice";
+import { selectIsSuperAdmin, selectIsSuperAdminDebugger } from "@/lib/redux/slices/userSlice";
+import AutoWatch from "@/features/ai-watch/AutoWatch";
 import { selectIsDebugMode } from "@/lib/redux/preferences/adminDebugSlice";
 import { useDebugModePersistence } from "./useDebugModePersistence";
 
@@ -19,10 +20,16 @@ const AdminFeatureProviderCore = dynamic(
 export default function AdminFeatureProvider() {
   const isAdmin = useAppSelector(selectIsSuperAdmin);
   const isDebugMode = useAppSelector(selectIsDebugMode);
-  // The debug switch survives reloads, tabs and devices (saved in user preferences).
-  useDebugModePersistence(Boolean(isAdmin));
+  // The debug switch (sidebar, every page) survives reloads, tabs and devices — saved in user
+  // preferences. Gated like the switch itself: `selectIsSuperAdmin` is false on user pages.
+  const canDebug = useAppSelector(selectIsSuperAdminDebugger);
+  useDebugModePersistence(Boolean(canDebug));
 
-  if (!isAdmin) return null;
-
-  return <AdminFeatureProviderCore isDebugMode={isDebugMode} />;
+  return (
+    <>
+      {/* Auto-watch runs on user pages too (Smart Add); it gates itself on `useCanWatchAi`. */}
+      {canDebug ? <AutoWatch /> : null}
+      {isAdmin ? <AdminFeatureProviderCore isDebugMode={isDebugMode} /> : null}
+    </>
+  );
 }

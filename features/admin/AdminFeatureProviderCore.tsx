@@ -11,7 +11,6 @@ import { lazy, Suspense } from "react";
 import AdminIndicatorWrapper from "@/components/admin/controls/AdminIndicatorWrapper";
 import CredentialExpiryNotifier from "@/components/admin/CredentialExpiryNotifier";
 import { DebugIndicatorManager } from "@/components/debug/DebugIndicatorManager";
-import AutoWatch from "@/features/ai-watch/AutoWatch";
 
 const DevPerfOverlay =
   process.env.NODE_ENV === "development"
@@ -28,7 +27,6 @@ export default function AdminFeatureProviderCore({
       <AdminIndicatorWrapper />
       <CredentialExpiryNotifier />
       <DebugIndicatorManager />
-      <AutoWatch />
       {isDebugMode && DevPerfOverlay && (
         <Suspense fallback={null}>
           <DevPerfOverlay />
