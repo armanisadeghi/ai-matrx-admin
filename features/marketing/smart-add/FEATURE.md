@@ -41,7 +41,7 @@ Smart Add Brand: a person types a website, a social link or a name, Smart Add fi
 | `?social=@handle` or a profile URL (encoded) `&platform=instagram` | social prefill (`platform` only beside `social`) | replace |
 | `?name=…&occupation=…&company=…&city=…` | person prefill (`name` + `city` also name a business) | replace |
 | `?run=<uuid>` (repeated, oldest first) | the session's rounds | replaced as each round starts |
-| `?view=compare` | the side-by-side findings view | replace |
+| `?view=compare` | the compare dialog (`compare/CompareDialog.tsx`; only slots with 2+ unsettled candidates, likeliest first) | push (Back closes it) |
 | `?panels=smart_add_helper:<method>` | a helper window (linkedin, google, facebook, instagram, threads, tiktok, youtube, grok) | the window-panels URL sync |
 
 Rules:

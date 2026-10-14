@@ -5,13 +5,14 @@
  *
  * - mode (company ↔ person) is a ROUTE change: `router.push`, so Back returns to the other mode;
  * - the way in (`via`) is pushed without navigating (Back closes the card);
- * - typed fields, run ids and the view are REPLACED without navigating (no history spam, no RSC fetch).
+ * - the compare view is PUSHED without navigating (a link opens it, Back closes it; its own close goes back);
+ * - typed fields and run ids are REPLACED without navigating (no history spam, no RSC fetch).
  *
  * Auto-start: a link that carries a prefill starts searching on open (it spends points, like Go) —
  * once per address per tab. A reload, Back/Forward or a duplicate tab never starts a second run;
  * an address with `run=` resumes its runs instead.
  */
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
   currentPathWithSearch,
@@ -27,6 +28,7 @@ import {
   type SmartAddPatch,
   type SmartAddMode,
   type SmartAddVia,
+  type SmartAddView,
 } from "./smartAddUrl";
 
 export interface SmartAddAddressBinding {
@@ -35,6 +37,8 @@ export interface SmartAddAddressBinding {
   autoStart: boolean;
   setMode: (mode: SmartAddMode) => void;
   setVia: (via: SmartAddVia | null) => void;
+  /** Open (push) or close the compare view; closing an opened one goes Back. */
+  setView: (view: SmartAddView | null) => void;
   /** Replace this module's keys in the address (`undefined` keeps, `null` removes). */
   write: (patch: SmartAddPatch) => void;
 }
@@ -68,9 +72,37 @@ export function useSmartAddAddress(): SmartAddAddressBinding {
     if (firstTimeInTab(key)) setAutoStart(true);
   }, []);
 
+  // The address as this page last wrote it: Back out of the compare view keeps every run started meanwhile.
+  const latest = useRef<string | null>(null);
+  const pushedView = useRef(false);
   const write = (patch: SmartAddPatch) => {
     const next = patchSmartAddSearch(window.location.search, patch).toString();
     if (next === window.location.search.replace(/^\?/, "")) return;
+    replaceAddressWithoutNavigating(currentPathWithSearch(next));
+    latest.current = next;
+  };
+  const setView = (view: SmartAddView | null) => {
+    const here = window.location.search.replace(/^\?/, "");
+    const next = patchSmartAddSearch(here, { view }).toString();
+    if (next === here) return;
+    if (view) {
+      pushedView.current = true;
+      latest.current = next;
+      pushAddressWithoutNavigating(currentPathWithSearch(next));
+      // Back (the browser's or the close button's) lands on the entry before it opened: carry over what changed since.
+      window.addEventListener(
+        "popstate",
+        () => {
+          pushedView.current = false;
+          if (!latest.current) return;
+          const kept = patchSmartAddSearch(latest.current, { view: null }).toString();
+          if (kept !== window.location.search.replace(/^\?/, "")) replaceAddressWithoutNavigating(currentPathWithSearch(kept));
+        },
+        { once: true },
+      );
+      return;
+    }
+    if (pushedView.current) return window.history.back();
     replaceAddressWithoutNavigating(currentPathWithSearch(next));
   };
   return {
@@ -85,6 +117,7 @@ export function useSmartAddAddress(): SmartAddAddressBinding {
       if (next === window.location.search.replace(/^\?/, "")) return;
       pushAddressWithoutNavigating(currentPathWithSearch(next));
     },
+    setView,
     write,
   };
 }

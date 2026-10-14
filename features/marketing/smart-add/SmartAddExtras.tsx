@@ -3,16 +3,16 @@
 /**
  * Smart Add — the pieces around the slots: "Custom" (type your own value into any slot), the live
  * brand card (the primary choices, shown as they confirm), the situation guide (brand-new /
- * conflicted / established) and the side-by-side compare used when look-alikes are found.
+ * conflicted / established) and the shared pieces the compare dialog (compare/CompareDialog.tsx) uses.
  */
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { proxiedExternalImageUrl } from "@/lib/media/external-image";
 import { brightnessOf, shadeForBrightness } from "./logo-shade";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
-import { BadgeCheck, Check, ChevronLeft, ChevronRight, ExternalLink, Globe, Plus, X } from "lucide-react";
-import { Button, DecisionControl, Field, Select, type SelectOption, type WayOutItem } from "@ai-matrx/design-system/controls";
+import { ExternalLink, Globe, Plus, X } from "lucide-react";
+import { Button, Field, Select, type SelectOption, type WayOutItem } from "@ai-matrx/design-system/controls";
 import { Skeleton } from "@ai-matrx/design-system";
 import { addUtmSource } from "@/utils/url-utm";
 import { extractErrorMessage } from "@/utils/errors";
@@ -22,25 +22,18 @@ import {
   saveCustomRelationKind,
   type BrandRelationKind,
 } from "@/features/marketing/data/service";
-import { formatCount } from "@ai-matrx/kit/format";
-import { profileAvatarDoor } from "@/features/marketing/social/server";
 import { resolveAccountInput } from "@/features/marketing/social/account-input";
-import { PlatformMark, platformLabel } from "@/features/marketing/social/components/PlatformMark";
-import { SocialImage } from "@/features/marketing/social/components/SocialImage";
+import { PlatformMark } from "@/features/marketing/social/components/PlatformMark";
 import {
-  compareRows,
   customItem,
-  isOurs,
   websiteHost,
   type BrandBasics,
   type Candidate,
-  type Decision,
   type EvidenceField,
   type EvidenceItem,
   type Relation,
 } from "./evidence";
 import { STANCE_LABEL, STANCE_ORDER } from "./webKinds";
-import { parseSuggestion } from "./validate/queue";
 
 // ── Custom ──────────────────────────────────────────────────────────────────────
 
@@ -357,34 +350,6 @@ export function useRelationKinds(onRelate: (c: Candidate, relation: Relation | n
 
 const CUSTOM = "__custom";
 
-function CandidateAvatar({ c }: { c: Candidate }) {
-  if (c.platform === "website") {
-    return c.iconUrl ? (
-      <img src={c.iconUrl} alt="" className="size-10 shrink-0 rounded-md object-contain" />
-    ) : (
-      <PlatformMark platform="website" size={40} />
-    );
-  }
-  const initial = (c.name ?? c.handle ?? "?").replace(/^@/, "").charAt(0).toUpperCase();
-  return (
-    <span className="relative size-10 shrink-0">
-      <SocialImage
-        door={c.profileId ? profileAvatarDoor(c.profileId) : null}
-        url={c.photoUrl}
-        fallback={
-          <span className="flex size-10 items-center justify-center rounded-full bg-muted text-sm font-semibold text-muted-foreground">
-            {initial}
-          </span>
-        }
-        className="size-10 rounded-full object-cover"
-      />
-      <span className="absolute -right-1 -bottom-1 rounded-md ring-2 ring-card">
-        <PlatformMark platform={c.platform} size={16} />
-      </span>
-    </span>
-  );
-}
-
 /** A relationship the vocabulary lacks, named in place (saved for the whole organization). */
 export function CustomRelation({ onSave, onCancel }: { onSave: (label: string) => Promise<void>; onCancel: () => void }) {
   const [label, setLabel] = useState("");
@@ -447,184 +412,3 @@ export function relationWayOut(kinds: BrandRelationKind[], exclude: string[] = [
   ];
 }
 export const CUSTOM_RELATION = CUSTOM;
-
-/** One candidate, compact: who it is, and Yes / No / Other (Other's picker names the relationship). */
-function CandidateCard({
-  c,
-  decision,
-  relation,
-  kinds,
-  skipped,
-  onClaim,
-  onRelate,
-  onCustom,
-  onSkip,
-}: {
-  c: Candidate;
-  decision: Decision | undefined;
-  relation: Relation | null;
-  kinds: BrandRelationKind[];
-  skipped: boolean;
-  onClaim: (c: Candidate, decision: "yes" | "no") => void;
-  onRelate: (c: Candidate, relation: Relation | null) => void;
-  onCustom: (c: Candidate, label: string) => Promise<void>;
-  onSkip: () => void;
-}) {
-  const [custom, setCustom] = useState(false);
-  const ours = isOurs(decision);
-  const rejected = decision === "no";
-  // "We think" glows one answer until the person answers; it never answers for them.
-  const weThink = decision || relation ? null : parseSuggestion(c.anchor.suggestion);
-  const handleLine = c.platform === "website" ? (c.url ? websiteHost(c.url) : null) : accountHandleLine(c.platform, c.handle);
-  const title = c.name ?? handleLine ?? c.anchor.value;
-  const sub = [handleLine !== title ? handleLine : null, c.followers != null ? `${formatCount(c.followers)} followers` : null].filter(Boolean).join(" · ");
-  const suggested = !weThink ? null : ["ours", "preferred", "alias"].includes(weThink.choice) ? "yes" : weThink.choice === "not_us" ? "no" : "other";
-  return (
-    <article
-      className={`flex min-w-0 flex-col gap-2 rounded-lg border bg-card p-2.5 ${
-        ours ? "border-primary ring-1 ring-primary/30" : relation ? "border-foreground/30" : "border-border"
-      } ${rejected ? "opacity-60" : ""}`}
-      data-testid="smart-add-candidate"
-      data-candidate={c.id}
-    >
-      <div className="flex min-w-0 items-center gap-2.5">
-        <CandidateAvatar c={c} />
-        <div className="flex min-w-0 flex-1 flex-col">
-          <span className="flex min-w-0 items-center gap-1 text-sm font-semibold">
-            <span className="truncate" title={title}>{title}</span>
-            {c.verified ? <BadgeCheck className="size-3.5 shrink-0 text-primary" aria-label="Verified" /> : null}
-          </span>
-          {sub ? <span className="truncate text-xs text-muted-foreground" title={sub}>{sub}</span> : null}
-          {c.bio ? <span className="truncate text-xs text-muted-foreground/80" title={c.bio}>{c.bio}</span> : null}
-        </div>
-        {c.url ? <OpenLink url={c.url} /> : null}
-      </div>
-      <DecisionControl
-        labels={{ yes: "Ours", no: "Not us" }}
-        value={ours ? "yes" : rejected ? "no" : relation || skipped ? "other" : null}
-        suggested={suggested}
-        onChange={(a) => onClaim(c, a)}
-        wayOut={relationWayOut(kinds)}
-        wayOutValue={relation ? `rel:${relation.key}` : null}
-        onWayOut={(v) => {
-          if (v === CUSTOM) return setCustom(true);
-          const k = kinds.find((x) => `rel:${x.key}` === v);
-          if (k) onRelate(c, { key: k.key, label: k.label, routesTo: k.routesTo });
-        }}
-        onSkip={onSkip}
-        skipped={skipped}
-      />
-      {custom ? (
-        <CustomRelation
-          onCancel={() => setCustom(false)}
-          onSave={async (label) => {
-            await onCustom(c, label);
-            setCustom(false);
-          }}
-        />
-      ) : null}
-    </article>
-  );
-}
-
-/**
- * The compare: ONE comparison at a time — only slots where 2+ candidates compete (a single finding is
- * never here). Each candidate is Yes / No / Other; once every one has an answer it moves on. "2 of 5",
- * Back and Close are always on screen.
- */
-export function CompareSources({
-  items,
-  decisions,
-  relations,
-  onClaim,
-  onRelate,
-  onClose,
-  skipped,
-  onSkip,
-}: {
-  items: EvidenceItem[];
-  decisions: Record<string, Decision>;
-  relations: Record<string, Relation>;
-  /** Candidates set aside with "Other → Skip for now" (kept by the session). */
-  skipped: ReadonlySet<string>;
-  onSkip: (id: string, on: boolean) => void;
-  onClaim: (c: Candidate, decision: "yes" | "no") => void;
-  onRelate: (c: Candidate, relation: Relation | null) => void;
-  onClose?: () => void;
-}) {
-  const rows = compareRows(items).filter((r) => r.candidates.length >= 2);
-  const { kinds, loadError, onCustom } = useRelationKinds(onRelate);
-  const [step, setStep] = useState(0);
-  const at = Math.min(step, Math.max(rows.length - 1, 0));
-  const row = rows[at];
-  const answered = (c: Candidate) => Boolean(decisions[c.anchor.key] || relations[c.id] || skipped.has(c.id));
-  const done = row ? row.candidates.every(answered) : false;
-  // Picked every candidate in this comparison: on to the next one.
-  const advance = useRef<string | null>(null);
-  useEffect(() => {
-    if (!row || !done || advance.current === row.platform || at >= rows.length - 1) return;
-    advance.current = row.platform;
-    const t = setTimeout(() => setStep(at + 1), 350);
-    return () => clearTimeout(t);
-  }, [done, row, at, rows.length]);
-  return (
-    <div className="flex flex-col rounded-xl border border-border bg-card" data-testid="smart-add-compare">
-      <header className="flex items-center gap-2 border-b border-border px-3 py-2">
-        {row ? (
-          <>
-            <PlatformMark platform={row.platform} size={18} />
-            <span className="text-sm font-medium">{row.platform === "website" ? "Website" : platformLabel(row.platform)}</span>
-            <span className="text-xs text-muted-foreground">Which is yours?</span>
-          </>
-        ) : (
-          <span className="text-sm font-medium">Nothing to compare</span>
-        )}
-        <span className="ml-auto text-xs tabular-nums text-muted-foreground" data-testid="smart-add-compare-progress">
-          {rows.length ? `${at + 1} of ${rows.length}` : ""}
-        </span>
-        <Button variant="quiet" aria-label="Back" icon={<ChevronLeft />} disabled={at === 0} onClick={() => setStep(at - 1)} />
-        <Button variant="quiet" aria-label="Next" icon={<ChevronRight />} disabled={at >= rows.length - 1} onClick={() => setStep(at + 1)} />
-        {onClose ? <Button variant="quiet" aria-label="Close" icon={<X />} onClick={onClose} /> : null}
-      </header>
-      {loadError ? (
-        <span className="flex items-center gap-1 px-3 py-2 text-xs text-destructive">
-          {loadError}
-          <ErrorAlchemyMenu error={loadError} />
-        </span>
-      ) : null}
-      {row ? (
-        <section className="grid gap-2 p-3 sm:grid-cols-2" data-testid="smart-add-compare-row" data-platform={row.platform}>
-          {row.candidates.map((c) => (
-            <CandidateCard
-              key={c.id}
-              c={c}
-              decision={decisions[c.anchor.key]}
-              relation={relations[c.id] ?? null}
-              kinds={kinds}
-              skipped={skipped.has(c.id)}
-              onClaim={(x, d) => {
-                onSkip(x.id, false);
-                onClaim(x, d);
-              }}
-              onRelate={(x, relation) => {
-                onSkip(x.id, false);
-                onRelate(x, relation);
-              }}
-              onCustom={async (x, label) => {
-                await onCustom(x, label);
-                onSkip(x.id, false);
-              }}
-              onSkip={() => {
-                if (decisions[c.anchor.key]) onClaim(c, decisions[c.anchor.key] === "no" ? "no" : "yes");
-                if (relations[c.id]) onRelate(c, null);
-                onSkip(c.id, true);
-              }}
-            />
-          ))}
-        </section>
-      ) : (
-        <p className="px-3 py-3 text-sm text-muted-foreground">Every finding has one candidate.</p>
-      )}
-    </div>
-  );
-}

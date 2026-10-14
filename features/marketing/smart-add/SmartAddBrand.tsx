@@ -47,7 +47,8 @@ import { Shared, riseIn } from "./stage/Shared";
 import { useSessionKnob } from "@/lib/scoped-config/sessionKnob";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { useSocialSpend } from "@/features/marketing/social/cost";
-import { BrandCard, CompareSources, CustomAdd, situationOf } from "./SmartAddExtras";
+import { BrandCard, CustomAdd, situationOf } from "./SmartAddExtras";
+import { CompareDialog } from "./compare/CompareDialog";
 import { ADOPTION_RELEASE_GRACE_MS } from "@/features/workflow-runtime/hooks/useWorkflowRun";
 import { detachWorkflowRunState } from "@/features/workflow-runtime/redux/adopt-workflow-run.thunk";
 import { marketingRoutes } from "@/features/marketing/lib/routes";
@@ -210,7 +211,10 @@ export function SmartAddBrand({
   // On the Smart Add page the address IS the kind (/person or /company; a push, so Back flips it back).
   const person = url ? url.address.mode === "person" : personLocal;
   const setPerson = (p: boolean) => (url ? url.setMode(p ? "person" : "company") : setPersonLocal(p));
-  const [comparing, setComparing] = useState(url?.address.view === "compare");
+  // The compare dialog rides the address (`?view=compare`): a link opens it, Back closes it.
+  const [comparingLocal, setComparingLocal] = useState(false);
+  const comparing = url ? url.address.view === "compare" : comparingLocal;
+  const setComparing = (on: boolean) => (url ? url.setView(on ? "compare" : null) : setComparingLocal(on));
   const [rounds, setRounds] = useState<Round[]>(() =>
     (resume?.address.runs ?? []).map((runId, i) => ({
       id: `resume:${runId}`,
@@ -450,7 +454,6 @@ export function SmartAddBrand({
   const runIds = rounds.map((r) => r.runId).filter((id): id is string => Boolean(id));
   const runKey = runIds.join(",");
   useEffect(() => writeAddress({ runs: runKey ? runKey.split(",") : [] }), [runKey]);
-  useEffect(() => writeAddress({ view: comparing ? "compare" : null }), [comparing]);
 
   // Every answer given before Create is saved as it is given and comes back with `?run=` (runMemory.ts).
   useRunMemory(
@@ -1396,26 +1399,13 @@ export function SmartAddBrand({
           <CustomAdd field="address" label="Where you are" placeholder="City or street address" onAdd={addCustom} />
         </div>
       ) : situation === "conflicted" || comparing ? (
-        // Once open, the compare stays put while answers start new lookups.
         <div className="flex flex-col gap-3" data-testid="smart-add-situation">
           <div className="flex items-center gap-2 rounded-lg border border-amber-500/40 bg-amber-500/5 px-4 py-2 text-sm">
             <span className="font-medium">Some of these may be someone else</span>
-            <Button variant="outline" className="ml-auto" onClick={() => setComparing((c) => !c)}>
-              {comparing ? "Back to sections" : "Compare side by side"}
+            <Button variant="outline" className="ml-auto" onClick={() => setComparing(true)}>
+              Compare side by side
             </Button>
           </div>
-          {comparing ? (
-            <CompareSources
-              items={visible}
-              decisions={decisions}
-              relations={Object.fromEntries(Object.entries(relations).map(([k, r]) => [k, r.relation]))}
-              onClaim={claim}
-              onRelate={relate}
-              onClose={() => setComparing(false)}
-              skipped={skipped}
-              onSkip={skip}
-            />
-          ) : null}
         </div>
       ) : situation === "established" ? (
         <div className="rounded-lg border border-primary/30 bg-primary/5 px-4 py-3 text-sm" data-testid="smart-add-situation">
@@ -1423,6 +1413,20 @@ export function SmartAddBrand({
           <span className="text-muted-foreground">Check the card, star your main picks and create.</span>
         </div>
       ) : null}
+      {/* Always mounted: the situation banner above changes as findings load; the dialog must not remount. */}
+      <CompareDialog
+        open={comparing}
+        onClose={() => setComparing(false)}
+        items={visible}
+        decisions={decisions}
+        relations={Object.fromEntries(Object.entries(relations).map(([k, r]) => [k, r.relation]))}
+        onClaim={claim}
+        onRelate={relate}
+        skipped={skipped}
+        onSkip={skip}
+        person={person}
+        ownSites={[typedWebsite, ...rounds.map((r) => r.seeds.website)].filter(Boolean)}
+      />
 
       <div
         className="rounded-xl border border-border bg-card motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-4 motion-safe:duration-700"
