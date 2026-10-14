@@ -21,7 +21,7 @@
 // ─────────────────────────────────────────────────────────────────────────
 
 /** Structural fingerprint of the registry rows this artifact was generated from. */
-export const KIND_REGISTRY_FINGERPRINT = "aaf3a2fce249";
+export const KIND_REGISTRY_FINGERPRINT = "a4917bac3965";
 
 // ─────────────────────────────────────────────────────────────────────────
 // Shared nested structures. Deduped by structure across the registry — an
@@ -13863,7 +13863,7 @@ export interface BrandVoiceRewriteOffer {
 }
 
 /**
- * Kind `brand_basics` (registry v3).
+ * Kind `brand_basics` (registry v4).
  */
 export interface BrandBasics {
   /**
@@ -13885,7 +13885,7 @@ export interface BrandBasics {
 }
 
 /**
- * Kind `brand_basics_fact` (registry v3).
+ * Kind `brand_basics_fact` (registry v4).
  */
 export interface BrandBasicsFact {
   /**
@@ -19660,7 +19660,7 @@ export interface CustomScriptResult {
 }
 
 /**
- * Kind `data.build_or_ask.offer` (registry v15).
+ * Kind `data.build_or_ask.offer` (registry v16).
  */
 export interface DataBuildOrAskOffer {
   /**
@@ -19672,7 +19672,7 @@ export interface DataBuildOrAskOffer {
    */
   selection?: string;
   /**
-   * The route the assistant is on ('/data-v2/<table>'). The fact that decides which guide runs at all.
+   * The route the assistant is on ('/data/<table>'). The fact that decides which guide runs at all.
    */
   page_route?: string;
   /**
