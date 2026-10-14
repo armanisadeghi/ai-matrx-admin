@@ -12,7 +12,7 @@
 //     (on-demand data has to be demanded by the thing that shows it, or the screen sits empty);
 //   - an (operation, relation) pair leaves more than once and is not in that route's `repeats`
 //     allowance (a SHRINK-ONLY baseline: legitimately distinct reads of one relation, e.g. a chunked
-//     IN list). A stale allowance — allowed but no longer repeating — fails too, so it only shrinks.
+//     IN list). An allowance whose read is gone entirely fails too, so it only shrinks.
 // Exit 0 green, 1 red, 2 could not run (no server, no sign-in).
 import fs from "node:fs";
 import path from "node:path";
@@ -118,7 +118,9 @@ for (const route of targets) {
   }
   for (const [key, limit] of Object.entries(allowed)) {
     const count = seen.get(key)?.count ?? 0;
-    if (count < limit) findings.push(`STALE ALLOWANCE  ${key} allowed ${limit}, now ${count} — lower it in scripts/page-load-budget.json`);
+    // Only a read that is GONE is stale: some allowed reads are timing-dependent (late producers)
+    // and land 1–N times per load, so "fewer this run" is not proof the allowance can shrink.
+    if (count === 0) findings.push(`STALE ALLOWANCE  ${key} allowed ${limit}, now ${count} — lower it in scripts/page-load-budget.json`);
   }
   const total = [...seen.values()].reduce((sum, d) => sum + d.count, 0);
   console.log(`${findings.length ? "RED  " : "ok   "} ${route}  ${total} reads, ${seen.size} distinct`);

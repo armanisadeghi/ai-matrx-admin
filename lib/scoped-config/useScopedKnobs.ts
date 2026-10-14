@@ -8,10 +8,12 @@
 
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, useSyncExternalStore } from "react";
 import { useSignedIn } from "./useSignedIn";
 
 import { fetchKnobIndex } from "./service";
+import { effectiveKnobWriteGeneration, subscribeEffectiveKnob } from "./effectiveKnobs";
+
 import type { ScopedKnob } from "./types";
 import { extractErrorMessage } from "@/utils/errors";
 
@@ -45,6 +47,7 @@ export function useScopedKnobs(options: {
     error: string | null;
   } | null>(null);
   const [generation, setGeneration] = useState(0);
+  const knobVersion = useSyncExternalStore(subscribeEffectiveKnob, effectiveKnobWriteGeneration, () => 0);
   const refresh = useCallback(() => setGeneration((n) => n + 1), []);
 
   useEffect(() => {
@@ -54,7 +57,14 @@ export function useScopedKnobs(options: {
     // own layer.
     if (!signedIn || !enabled) return;
     let cancelled = false;
-    void fetchKnobIndex({ organizationId: organizationId ?? null, featurePrefix, userId, overriddenOnly })
+    void fetchKnobIndex({
+      organizationId: organizationId ?? null,
+      featurePrefix,
+      userId,
+      overriddenOnly,
+      // An explicit refresh() reads fresh; a knob write already re-keys the shared read.
+      fresh: generation > 0,
+    })
       .then((knobs) => {
         if (!cancelled) setSnapshot({ requestKey, knobs, isLoading: false, error: null });
       })
@@ -63,7 +73,7 @@ export function useScopedKnobs(options: {
           error: extractErrorMessage(err) });
       });
     return () => { cancelled = true; };
-  }, [organizationId, featurePrefix, userId, overriddenOnly, requestKey, generation, signedIn, enabled]);
+  }, [organizationId, featurePrefix, userId, overriddenOnly, requestKey, generation, signedIn, enabled, knobVersion]);
 
   const current = signedIn && enabled && snapshot?.requestKey === requestKey ? snapshot : null;
   const knobs = current?.knobs ?? [];

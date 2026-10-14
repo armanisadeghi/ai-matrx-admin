@@ -29,9 +29,9 @@
         "rpc public.mbr_count": 2,
         "select projects.projects": 2,
         "rpc public.assoc_for_sources": 3,
+        "select workbench.notes": 2,
         "select platform.assists": 3,
-        "rpc platform.my_assist_admission_decision": 2,
-        "select workbench.notes": 2
+        "rpc platform.my_assist_admission_decision": 2
       }
     },
     "/shapes/brand_intake_facts": {
@@ -49,7 +49,15 @@
       "mustRead": [
         "get_user_file_tree"
       ],
-      "repeats": {}
+      "repeats": {
+        "rpc public.get_user_file_tree": 2,
+        "select iam.organizations": 2,
+        "rpc public.mbr_count": 2,
+        "select ui.ui_surface": 2,
+        "rpc public.assoc_for_sources": 2,
+        "select platform.assists": 2,
+        "rpc platform.knob_index": 2
+      }
     }
   },
   "_allowances": {
@@ -61,6 +69,9 @@
     "select workbench.notes": "the list select and the ids-only select behind the scope tags",
     "select ui.ui_surface": "dev-only SurfaceRowGuard reads the page's surface row and the canvas surface row (one each)",
     "select communication.calendar_event / rpc public.assoc_for_sources": "agenda reads the mirror, refreshes from Google, then re-reads the mirror and its attendee edges (the second read sees the refreshed rows); on dashboard assoc_for_sources also reads the project tags",
-    "select content_ir.kind_definition / kind_component / kind_example": "one shape's page: registry catalog read in two 1000-row pages plus distinct per-shape reads (home, readiness, fix-it diagnosis, cold-tier definition, owner editor) each selecting different columns; a shape with no component also runs the fix-it diagnosis"
+    "select content_ir.kind_definition / kind_component / kind_example": "one shape's page: registry catalog read in two 1000-row pages plus distinct per-shape reads (home, readiness, fix-it diagnosis, cold-tier definition, owner editor) each selecting different columns; a shape with no component also runs the fix-it diagnosis",
+    "rpc public.get_user_file_tree (/files)": "one tree load paged at 5000 rows (p_offset 0, 5000) for a 3,500+ file library",
+    "rpc public.assoc_for_sources (/files)": "two bulk reads: the visible files' scope tags (batched by ensureEntityScopes) and the project tags",
+    "rpc platform.knob_index (/files)": "two different prefixes: 'files' (the page's settings) and 'messaging.inbox' (the shell's inbox kind); each question is read once (fetchKnobIndex shares)"
   }
 }

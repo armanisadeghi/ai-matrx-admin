@@ -545,3 +545,8 @@ export function subscribeEffectiveKnob(listener: () => void): () => void {
 export function effectiveKnobStoreVersion(): number {
   return storeVersion;
 }
+
+/** Bumps only when a knob is WRITTEN (`invalidateEffectiveKnob`) — never when an answer arrives. */
+export function effectiveKnobWriteGeneration(): number {
+  return generation;
+}

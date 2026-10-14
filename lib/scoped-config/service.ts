@@ -19,7 +19,7 @@ import type {
   KnobScopeKindName,
   ScopedKnob,
 } from "./types";
-import { invalidateEffectiveKnob } from "./effectiveKnobs";
+import { effectiveKnobWriteGeneration, invalidateEffectiveKnob } from "./effectiveKnobs";
 
 export type KnobScopeRef = {
   kind: KnobScopeKindName;
@@ -36,7 +36,7 @@ export type KnobRungOverrideRow = {
   set_note: string | null;
 };
 
-export async function fetchKnobIndex(options: {
+type KnobIndexRequest = {
   /** `null` = no organization selected: the platform defaults answer. */
   organizationId: string | null;
   featurePrefix?: string;
@@ -44,7 +44,37 @@ export async function fetchKnobIndex(options: {
   deviceId?: string;
   scopes?: KnobScopeRef[];
   overriddenOnly?: boolean;
-}): Promise<ScopedKnob[]> {
+};
+
+/**
+ * ONE `knob_index` read per question until a knob is WRITTEN (THE LOAD LAW, 2026-10-13): two
+ * components asking the same prefix on one page — or a settings screen re-reading after mounting a
+ * panel — used to read it again each time. Every knob write bumps the write generation
+ * (`invalidateEffectiveKnob`), so a changed setting is always read fresh; `fresh: true` skips the
+ * share (an explicit refresh). A failed read is never shared.
+ */
+const KNOB_INDEX_SHARE_MS = 60_000;
+const sharedKnobIndexReads = new Map<string, { at: number; read: Promise<ScopedKnob[]> }>();
+
+/** Tests only. */
+export function resetSharedKnobIndexReads(): void {
+  sharedKnobIndexReads.clear();
+}
+
+export function fetchKnobIndex(options: KnobIndexRequest & { fresh?: boolean }): Promise<ScopedKnob[]> {
+  const { fresh, ...request } = options;
+  const key = `${effectiveKnobWriteGeneration()}|${JSON.stringify(request)}`;
+  const hit = sharedKnobIndexReads.get(key);
+  if (!fresh && hit && Date.now() - hit.at < KNOB_INDEX_SHARE_MS) return hit.read;
+  const read = readKnobIndex(request);
+  sharedKnobIndexReads.set(key, { at: Date.now(), read });
+  read.catch(() => {
+    if (sharedKnobIndexReads.get(key)?.read === read) sharedKnobIndexReads.delete(key);
+  });
+  return read;
+}
+
+async function readKnobIndex(options: KnobIndexRequest): Promise<ScopedKnob[]> {
   const supabase = createClient();
   const { data, error } = await supabase.schema("platform").rpc("knob_index", {
     // NULL, sent explicitly — `p_organization_id` has no SQL default, so omitting
@@ -511,6 +541,8 @@ export async function setKnobRungLock(options: {
     p_note: options.note,
   });
   if (error) throw new Error(`knob_rung_lock_set failed: ${error.message}`);
+  // A lock changes what every rung below answers: shared index reads must not outlive it.
+  invalidateEffectiveKnob(`${options.feature}.${options.key}`);
   return data as KnobRungLockSetResult;
 }
 
