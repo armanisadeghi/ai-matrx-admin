@@ -337,7 +337,7 @@ export default function KindInputsTab({
                       className="flex items-start gap-1.5 text-[11px] text-red-700 dark:text-red-300"
                     >
                       <X className="mt-0.5 h-3 w-3 shrink-0" />
-                      {debug ? message : humanizeStructuralMessage(message)}
+                      {humanizeStructuralMessage(message)}
                       <ErrorAlchemyMenu error={message} />
                     </p>
                   ))}
@@ -447,7 +447,7 @@ export default function KindInputsTab({
                 Structural validation
               </span>
               <span className="text-[11px] text-muted-foreground">
-                ajv over emitted_json_schema
+                checked against the shape
               </span>
               <span
                 className={`ml-auto flex items-center gap-1 rounded px-1.5 py-0.5 text-[11px] font-medium ${
@@ -508,7 +508,7 @@ export default function KindInputsTab({
                       key={message}
                       className="text-[11px] text-red-700 dark:text-red-300"
                     >
-                      {debug ? message : humanizeStructuralMessage(message)}
+                      {humanizeStructuralMessage(message)}
                       <ErrorAlchemyMenu error={message} />
                     </li>
                   ))}

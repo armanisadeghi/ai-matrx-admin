@@ -1202,7 +1202,7 @@ export function runShapeDoctor(input: ShapeDoctorInput): ShapeDoctorReport {
     } else if (exemption) {
       surface = naCell(exemption, "surface");
     } else {
-      surface = { status: "warn", detail: "no surface registered (legitimate until Stage 5)" };
+      surface = { status: "warn", detail: "no detection surface registered — fine for a kind sent as JSON" };
     }
 
     rows.push({

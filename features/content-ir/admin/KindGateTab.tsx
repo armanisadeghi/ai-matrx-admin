@@ -322,7 +322,7 @@ export default function KindGateTab({
                 {run.wouldActivate
                   ? `Against the ${run.ranAgainst}, this shape passes.`
                   : isActive
-                    ? `Against the ${run.ranAgainst}, this shape does not pass. It is still on and readers still get it; fix what is listed above to make it draw properly.`
+                    ? `Against the ${run.ranAgainst}, this shape does not pass. It is still switched on; this check is advice, not a switch.`
                     : `Against the ${run.ranAgainst}, this shape does not pass yet.`}
               </p>
               {debug && !run.wouldActivate && run.failureSummary && (

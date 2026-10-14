@@ -18,5 +18,5 @@ export function exampleStaleNote(
   currentVersion: number | undefined,
 ): string | null {
   if (currentVersion === undefined || exampleKindVersion >= currentVersion) return null;
-  return `written for v${exampleKindVersion}, shape is now v${currentVersion} — re-check it`;
+  return `older than the shape (now v${currentVersion}) — re-check it`;
 }
