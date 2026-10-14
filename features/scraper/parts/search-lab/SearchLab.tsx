@@ -27,7 +27,7 @@ import {
 } from "lucide-react";
 import {
   Button,
-  NumberStepper,
+  ClampedNumberInput,
   SegmentedControl,
   Select,
   Switch,
@@ -331,7 +331,7 @@ export function SearchLabBody({
         <div className={cn("mx-auto", LAB_WIDTH)}>
           {runs.length === 0 ? (
             <div className="flex flex-col items-center justify-center gap-2 py-24 text-center">
-              <Search className="h-6 w-6 text-muted-foreground/60" />
+              <Search className="h-6 w-6 text-muted-foreground" />
               <p className="text-sm text-muted-foreground">
                 {keywords.trim()
                   ? "Press Enter to search"
@@ -429,6 +429,26 @@ function SearchLabOptions({
           onValueChange={set("language")}
         />
       </OptionCell>
+      <OptionCell label="Results">
+        <ClampedNumberInput
+          aria-label="Results"
+          value={clampCount(maxResults)}
+          onChange={(v) => setMaxResults(String(v))}
+          min={RESULT_LIMIT_MIN}
+          max={RESULT_LIMIT_MAX}
+          className="w-20"
+        />
+      </OptionCell>
+      <OptionCell label="Page">
+        <ClampedNumberInput
+          aria-label="Page"
+          value={options.page}
+          onChange={set("page")}
+          min={1}
+          max={SEARCH_LAB_PAGE_MAX}
+          className="w-20"
+        />
+      </OptionCell>
       <OptionCell label="Time range">
         <Select
           aria-label="Time range"
@@ -437,45 +457,6 @@ function SearchLabOptions({
           onValueChange={(v) => setOption("timeRange", v === "any" ? null : v)}
         />
       </OptionCell>
-      <OptionCell label="Results">
-        <NumberStepper
-          value={clampCount(maxResults)}
-          onChange={(v) => setMaxResults(String(v))}
-          min={RESULT_LIMIT_MIN}
-          max={RESULT_LIMIT_MAX}
-          fallback={RESULT_LIMIT_DEFAULT}
-        />
-      </OptionCell>
-      <OptionCell label="Page">
-        <NumberStepper
-          value={options.page}
-          onChange={set("page")}
-          min={1}
-          max={SEARCH_LAB_PAGE_MAX}
-          fallback={1}
-        />
-      </OptionCell>
-      <OptionCell label="Safe search" className="col-span-2 sm:col-span-1">
-        <SegmentedControl
-          aria-label="Safe search"
-          value={options.safeSearch}
-          onValueChange={set("safeSearch")}
-          data={SAFE_OPTIONS}
-        />
-      </OptionCell>
-      {vertical !== "places" && (
-      <OptionCell label="Location" className="col-span-2">
-        <ProInput
-          aria-label="Location"
-          enableCleanup={false}
-          placeholder="City, region or address"
-          value={options.location ?? ""}
-          onChange={(e) => setOption("location", e.target.value)}
-          wrapperClassName="w-full"
-          className="h-8 text-sm"
-        />
-      </OptionCell>
-      )}
       <OptionCell label="Device">
         <SegmentedControl
           aria-label="Device"
@@ -484,6 +465,28 @@ function SearchLabOptions({
           data={DEVICE_OPTIONS}
         />
       </OptionCell>
+      {/* Three segments never fit one column: it always takes two. */}
+      <OptionCell label="Safe search" className="col-span-2">
+        <SegmentedControl
+          aria-label="Safe search"
+          value={options.safeSearch}
+          onValueChange={set("safeSearch")}
+          data={SAFE_OPTIONS}
+        />
+      </OptionCell>
+      {vertical !== "places" && (
+        <OptionCell label="Location" className="col-span-2">
+          <ProInput
+            aria-label="Location"
+            enableCleanup={false}
+            placeholder="City, region or address"
+            value={options.location ?? ""}
+            onChange={(e) => setOption("location", e.target.value)}
+            wrapperClassName="w-full"
+            className="h-8 text-sm"
+          />
+        </OptionCell>
+      )}
       <OptionCell label="AI answer">
         <Switch
           aria-label="AI answer"
@@ -635,7 +638,7 @@ function EngineColumn({
 
       {outcome && hits === 0 && run.phase === "done" && (
         <div className="flex flex-col items-center gap-1.5 rounded-xl border border-dashed border-border px-4 py-12 text-center">
-          <SearchX className="mb-1 h-6 w-6 text-muted-foreground/60" />
+          <SearchX className="mb-1 h-6 w-6 text-muted-foreground" />
           <p className="text-sm font-medium text-foreground">No results</p>
           <p className="text-xs text-muted-foreground">
             Try other words, another result type or fewer options.

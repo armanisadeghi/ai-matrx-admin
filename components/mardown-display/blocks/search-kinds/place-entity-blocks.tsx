@@ -10,6 +10,7 @@
 import React, { useState } from "react";
 import { ChevronDown, Clock, Globe, Navigation, Phone } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { formatPhoneNumber } from "@/lib/sms/phoneUtils";
 import {
   isRecord,
   num,
@@ -180,7 +181,7 @@ export function LocalPlaceBlock({
                 className="inline-flex items-center gap-1.5 tabular-nums text-muted-foreground hover:text-primary"
               >
                 <Phone className="h-3.5 w-3.5" />
-                {phone}
+                {formatPhoneNumber(phone)}
               </a>
             )}
           </div>
@@ -195,6 +196,24 @@ export function LocalPlaceBlock({
       )}
     </div>
   );
+}
+
+/**
+ * A knowledge-panel fact as plain text. Infobox scrapes carry markup
+ * ("<span><strong>Naming</strong></span>") and placeholder values ("None");
+ * neither is ever shown — markup is stripped, a placeholder drops the row.
+ */
+function factLine(value: unknown): string | null {
+  const raw = text(value);
+  if (!raw) return null;
+  const clean = raw
+    .replace(/<[^>]*>/g, "")
+    .replace(/&nbsp;/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/\s+/g, " ")
+    .trim();
+  if (!clean || /^(none|null|undefined|n\/a)$/i.test(clean)) return null;
+  return clean;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -215,6 +234,7 @@ export function EntityCardBlock({
   const facts = items(value.facts);
   const profiles = items(value.profiles);
   const description = text(value.long_description) ?? text(value.description);
+  const category = text(value.category);
 
   return (
     <div
@@ -223,9 +243,10 @@ export function EntityCardBlock({
       <div className="flex items-start gap-3">
         <div className="min-w-0 flex-1">
           <div className="text-lg font-semibold leading-tight text-foreground">{name}</div>
-          {text(value.category) && (
+          {category && (
             <div className="mt-0.5 text-sm text-muted-foreground">
-              {text(value.category)}
+              {/* Providers send a type word ("place"): shown as a label. */}
+              {category.charAt(0).toUpperCase() + category.slice(1)}
             </div>
           )}
           {isRecord(value.rating) && (
@@ -245,29 +266,30 @@ export function EntityCardBlock({
       {description && (
         <p className="mt-2.5 line-clamp-6 text-sm leading-relaxed text-muted-foreground">
           {description}
-          {sourceUrl && (
-            <OutboundLink
-              href={sourceUrl}
-              onClick={(e) => e.stopPropagation()}
-              className="ml-1.5 text-primary underline-offset-2 hover:underline"
-            >
-              Source
-            </OutboundLink>
-          )}
         </p>
+      )}
+      {/* Outside the clamp: a long description must never swallow its door. */}
+      {description && sourceUrl && (
+        <OutboundLink
+          href={sourceUrl}
+          onClick={(e) => e.stopPropagation()}
+          className="mt-1 inline-block text-sm text-primary underline-offset-2 hover:underline"
+        >
+          Source
+        </OutboundLink>
       )}
 
       {facts.length > 0 && (
         <dl className="mt-3 grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 border-t border-border pt-3 text-sm">
           {facts.slice(0, 8).map((fact, i) => {
-            const label = text(fact.label);
-            const factText = text(fact.text);
+            const label = factLine(fact.label);
+            const factText = factLine(fact.text);
             if (!label || !factText) return null;
             const links = strings(fact.links);
             return (
               <React.Fragment key={i}>
                 <dt className="font-medium text-foreground">{label}</dt>
-                <dd className="text-muted-foreground">
+                <dd className="line-clamp-3 min-w-0 text-muted-foreground" title={factText}>
                   {links.length > 0 ? (
                     <OutboundLink
                       href={links[0]}

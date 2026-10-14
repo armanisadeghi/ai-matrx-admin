@@ -382,7 +382,13 @@ export function DiscussionResultBlock({
   if (!title) return null;
 
   const answers = num(value.answer_count);
-  const score = text(value.score);
+  // A bare number ("2538") is a vote score; it never shows unlabelled.
+  const rawScore = text(value.score);
+  const scoreNum = rawScore && /^-?\d+$/.test(rawScore.trim()) ? Number(rawScore) : null;
+  const score =
+    scoreNum !== null
+      ? `${Intl.NumberFormat().format(scoreNum)} ${Math.abs(scoreNum) === 1 ? "vote" : "votes"}`
+      : rawScore;
   const date = dateLine(value, formatDate);
   const body = text(value.top_answer) ?? text(value.question_text) ?? text(value.snippet);
 
