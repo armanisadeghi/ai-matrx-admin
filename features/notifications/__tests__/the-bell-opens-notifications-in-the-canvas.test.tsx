@@ -26,7 +26,7 @@ jest.mock("@/features/notifications/useInbox", () => ({
   useInboxCounts: () => ({ badge: 2, partial: false, updatesDot: false }),
 }));
 jest.mock("@ai-matrx/messaging/react", () => ({
-  useConversations: () => ({ totalUnreadConversations: 1 }),
+  useUnreadConversationBadge: () => 1,
 }));
 jest.mock("@/features/overlays/openers/authGate", () => ({
   useOpenAuthGateDialog: () => jest.fn(),

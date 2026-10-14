@@ -12,12 +12,13 @@
  *                while that tab is in front.
  *   signed out → the same icon; a click opens the auth gate naming Messages.
  *
- * The badge reads the ONE messaging store (`useConversations` from the
- * package), so it can never disagree with the tab's own list.
+ * The badge reads the ONE messaging store WITHOUT loading the inbox
+ * (`useUnreadConversationBadge`): one server count after the page settles,
+ * the list's own count once the inbox is open — never the inbox for a badge.
  */
 
 import { MessageTapButton } from "@ai-matrx/design-system/tap-target/buttons";
-import { useConversations } from "@ai-matrx/messaging/react";
+import { useUnreadConversationBadge } from "@ai-matrx/messaging/react";
 import { useOpenAuthGateDialog } from "@/features/overlays/openers/authGate";
 import { useMessagesToggle } from "@/features/messaging/canvas/messagesKind";
 
@@ -29,7 +30,7 @@ export const MESSAGES_AUTH_GATE = {
 
 /** Unread conversations — the Messages badge everywhere it is drawn. */
 export function useUnreadConversationCount(): number {
-  return useConversations().totalUnreadConversations;
+  return useUnreadConversationBadge();
 }
 
 function MessagesBadge({ count }: { count: number }) {

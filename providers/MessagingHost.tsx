@@ -56,8 +56,8 @@ import {
   MessagingProvider,
   toMessagingArchiveFilter,
   toMessagingKindFilter,
-  useConversations,
   useMessagingHost,
+  usePassiveMessagingSnapshot,
 } from "@ai-matrx/messaging/react";
 import type { MessagingArchiveFilter, MessagingKindFilter } from "@ai-matrx/messaging/react";
 import type { ActionHandler } from "@ai-matrx/messaging";
@@ -102,6 +102,8 @@ import { unlockAudio } from "@/features/messaging/utils/notificationSound";
 import { toastErrorAlreadyCaptured } from "@/lib/toast";
 import { captureMessagingError } from "@/lib/diagnostics/captureMessagingError";
 import { diagnosticToastCopy } from "@/lib/toast/diagnostic-copy";
+import { whenPrimaryContentShown } from "@/lib/boot/primaryContent";
+import { whenLateIdle } from "@/lib/boot/lateIdle";
 
 // SHELL-DEDUPE: the engine asks the member's conversation list and soft expiries once per engine
 // start; an engine restart a moment after boot (the organization question answering) must share
@@ -117,6 +119,11 @@ const messagingClient = withSharedRpcReads(supabase, {
  * ever arrives. The package's incremental observer refresh backfills missed
  * messages on an interval and window focus, only while the browser is in that lane.
  */
+/** The badge's count waits for the page to finish (`lib/boot`): never part of a first paint. */
+function messagingBadgeWhen(): Promise<boolean> {
+  return whenPrimaryContentShown().then(() => whenLateIdle());
+}
+
 export interface MessagingHostProps {
   children: ReactNode;
 }
@@ -336,6 +343,10 @@ export function MessagingHost({ children }: MessagingHostProps) {
         archiveFilter={archiveKnob}
         kindFilter={kindKnob}
         observerRefresh={{ intervalMs: 5_000, active: browserAdminLaneOpen }}
+        // THE LOAD LAW (lib/diagnostics/loadLedger.ts): the inbox loads when something that shows
+        // it opens (package default `startOn="demand"`); the header badge's one count and its live
+        // channel wait until the page's own content is on screen and the page has settled.
+        badgeWhen={messagingBadgeWhen}
         actions={actions}
         actionRenderers={MESSAGE_ACTION_SURFACES}
         // App chrome around the package's own surfaces: the data attributes the
@@ -382,17 +393,20 @@ export default MessagingHost;
  * control on a list, that choice owns the axis for the rest of the session and
  * this component stops touching it.
  *
- * It renders nothing. It must live INSIDE the provider because
- * `useConversations()` is where the package exposes the live axis.
+ * It renders nothing. It must live INSIDE the provider, and it reads the axis PASSIVELY
+ * (`usePassiveMessagingSnapshot`) so that, mounted on every page, it never loads the inbox.
  */
 function MessagingArchiveKnob({ knob }: { knob: MessagingArchiveFilter }) {
   const host = useMessagingHost();
-  const { archiveFilter, setArchiveFilter } = useConversations();
+  // PASSIVE: this always-mounted reconciler must never load the inbox (2026-10-13) — before the
+  // inbox starts, a filter set here only changes the store and the start reads under it.
+  const archiveFilter = usePassiveMessagingSnapshot()?.archiveFilter ?? "active";
+  const setArchiveFilter = (next: MessagingArchiveFilter) => void host?.engine.setArchiveFilter(next);
   const appliedRef = useRef<MessagingArchiveFilter | null>(null);
   const hostRef = useRef(host);
   const filterRef = useRef(archiveFilter);
   filterRef.current = archiveFilter;
-  // `useConversations()` rebuilds its object every render, so this setter is a
+  // The setter is rebuilt every render, so this setter is a
   // fresh function each time. Reading it through a ref keeps the effect below
   // firing only when the KNOB or the ENGINE actually changes.
   const setFilterRef = useRef(setArchiveFilter);
@@ -429,7 +443,8 @@ function MessagingArchiveKnob({ knob }: { knob: MessagingArchiveFilter }) {
  */
 function MessagingKindKnob({ knob }: { knob: MessagingKindFilter }) {
   const host = useMessagingHost();
-  const { kindFilter, setKindFilter } = useConversations();
+  const kindFilter = usePassiveMessagingSnapshot()?.kindFilter ?? "people";
+  const setKindFilter = (next: MessagingKindFilter) => void host?.engine.setKindFilter(next);
   const appliedRef = useRef<MessagingKindFilter | null>(null);
   const hostRef = useRef(host);
   const filterRef = useRef(kindFilter);

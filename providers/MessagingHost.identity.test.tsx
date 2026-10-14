@@ -126,6 +126,8 @@ jest.mock("@/utils/supabase/client", () => {
     if (fn === "dm_get_or_create_direct_conversation") {
       return { data: "77777777-7777-4777-8777-777777777777", error: null };
     }
+    // knob_index answers an object; an empty ARRAY here reads as `[].keys` (Array.prototype.keys).
+    if (fn === "knob_index") return { data: { keys: [] }, error: null };
     return { data: [], error: null };
   };
   const supabase = {
@@ -204,12 +206,16 @@ jest.mock("@/lib/organizations/ensureOrgId", () => ({
 
 jest.mock("@/lib/toast", () => ({
   toast: { error: jest.fn(), success: jest.fn(), info: jest.fn(), warning: jest.fn() },
+  toastErrorAlreadyCaptured: jest.fn(),
 }));
 
 /** Every user id this app's messaging put on the wire, in order. */
 function idsOnTheWire(): string[] {
   const ids: string[] = [];
   for (const call of rpcCalls) {
+    // The settings read names the SETTINGS SCOPE (whose override to layer), on purpose — see
+    // MessagingHost's `settingsScopeUserId`. It never reaches a messaging table or RPC.
+    if (call.fn.startsWith("knob_")) continue;
     for (const key of ["p_user_id", "p_user1_id"]) {
       const value = call.args?.[key];
       if (typeof value === "string") ids.push(value);
@@ -237,6 +243,14 @@ function inboxReaders(): string[] {
 let container: HTMLDivElement | null = null;
 let root: Root | null = null;
 
+/** Something that SHOWS the inbox: since @ai-matrx/messaging 0.18.46 the inbox loads on demand. */
+function InboxProbe(): null {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const { useConversations } = require("@ai-matrx/messaging/react") as typeof import("@ai-matrx/messaging/react");
+  useConversations();
+  return null;
+}
+
 async function mountHost(): Promise<void> {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const { MessagingHost } = require("./MessagingHost") as typeof import("./MessagingHost");
@@ -246,7 +260,7 @@ async function mountHost(): Promise<void> {
   await act(async () => {
     root?.render(
       <MessagingHost>
-        <div>surface</div>
+        <InboxProbe />
       </MessagingHost>,
     );
   });
