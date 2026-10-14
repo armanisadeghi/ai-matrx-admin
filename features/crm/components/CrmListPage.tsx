@@ -761,7 +761,7 @@ export function CrmListPage({
     actions: inTrash ? [restorePartiesAction] : partyBulkActions,
     // Trash view: Restore only. Live view: own delete replaces Move to Trash,
     // Add tag stays; the list shows no favorites, so no Favorite verbs.
-    standardBulkActions: inTrash ? false : { trash: false },
+    standardBulkActions: inTrash ? false : undefined,
     favoritesShown: false,
     onRefresh: () => list.refresh(),
     onRemoveRows: (ids) => {
