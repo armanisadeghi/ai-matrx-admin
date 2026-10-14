@@ -258,9 +258,20 @@ export function SearchLabBody({
                 variant="quiet"
                 icon={<SlidersHorizontal />}
                 pressed={optionsOpen}
-                meta={changedOptionCount > 0 ? changedOptionCount : undefined}
+                // A corner dot, not an inline count: it sits on the button, so
+                // changing an option never shifts the engine switch beside it.
+                badge={changedOptionCount > 0}
+                title={
+                  changedOptionCount > 0
+                    ? `Options · ${changedOptionCount} changed`
+                    : "Options"
+                }
                 onClick={() => setOptionsOpen((v) => !v)}
-                aria-label="Options"
+                aria-label={
+                  changedOptionCount > 0
+                    ? `Options, ${changedOptionCount} changed`
+                    : "Options"
+                }
                 aria-expanded={optionsOpen}
               >
                 Options
