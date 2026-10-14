@@ -40,10 +40,10 @@ import { ensureScopeTree } from "@/features/scopes/redux/thunks/ensureScopeTree"
 import { ensureScopeSkeleton } from "@/features/scopes/redux/thunks/ensureScopeSkeleton";
 import { registerBlobCacheServiceWorker } from "@/features/files/cache/register-service-worker";
 import { resolveBaseUrl } from "@/lib/python-client";
-import { fetchEntitlementSnapshot, forgetEntitlementSnapshot } from "@/features/entitlements/service";
+import { forgetEntitlementSnapshot } from "@/features/entitlements/service";
 import { UsageGateBridge } from "@/features/entitlements/usage-gate/UsageGateBridge";
 import {
-  setEntitlementSnapshot,
+  setEntitlementsLoading,
   clearEntitlements,
 } from "@/features/entitlements/state/entitlementsSlice";
 import { UrlPanelManager } from "@/features/window-panels/url-sync/UrlPanelManager";
@@ -128,26 +128,22 @@ export default function DeferredSingletonCore() {
     }
   });
 
-  // Hydrate entitlement state (like adminLevel), keyed on the user id so it
-  // also refreshes on in-session login/logout (SPA nav, no reload) and clears
-  // on logout. Cheap resolver RPC; fails soft to the free permissive snapshot.
+  // Entitlement state is DEMAND-DRIVEN: nothing reads `billing.entitlement_snapshot` at boot. The
+  // first mounted consumer (useEntitlement / EducationPricing → useEnsureEntitlementSnapshot)
+  // triggers the shared read. This effect only keeps the slice honest: sign-out clears it, and a
+  // switch of organization (a tier belongs to an organization, DD-047) marks it "not loaded" so
+  // mounted consumers re-read and nothing shows the previous organization's tier.
+  const entitlementOrgRef = useRef<string | null>(null);
   useEffect(() => {
-    let cancelled = false;
-    void (async () => {
-      if (!user?.id) {
-        forgetEntitlementSnapshot();
-        dispatch(clearEntitlements());
-        return;
-      }
-      // A tier belongs to an organization (DD-047): the snapshot is the
-      // organization's, so it re-reads when the person sets or switches one, and
-      // hydrates nothing (null) until there is one.
-      const snapshot = await fetchEntitlementSnapshot();
-      if (!cancelled && snapshot) dispatch(setEntitlementSnapshot(snapshot));
-    })();
-    return () => {
-      cancelled = true;
-    };
+    if (!user?.id) {
+      entitlementOrgRef.current = null;
+      forgetEntitlementSnapshot();
+      dispatch(clearEntitlements());
+      return;
+    }
+    const before = entitlementOrgRef.current;
+    entitlementOrgRef.current = organizationId ?? null;
+    if (before && before !== organizationId) dispatch(setEntitlementsLoading(true));
   }, [user?.id, organizationId, dispatch]);
 
   return (

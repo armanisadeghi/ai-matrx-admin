@@ -40,6 +40,7 @@ import { cn } from "@/lib/utils";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectHasAccount } from "@/lib/redux/selectors/userSelectors";
 import { selectEntitlementTier } from "@/features/entitlements/state/selectors";
+import { useEnsureEntitlementSnapshot } from "@/features/entitlements/hooks";
 import type { EducationPricing as EducationPricingData } from "./loadEducationPricing";
 import { useLoginHref } from "@/hooks/auth/useLoginHref";
 
@@ -150,6 +151,7 @@ export function EducationPricing({
   const router = useRouter();
   const isAuthenticated = useAppSelector(selectHasAccount);
   const tier = useAppSelector(selectEntitlementTier);
+  useEnsureEntitlementSnapshot();
   const isPremium = isAuthenticated && tier === "premium";
   const isFreeMember = isAuthenticated && !isPremium;
   const [checkingOut, setCheckingOut] = useState(false);

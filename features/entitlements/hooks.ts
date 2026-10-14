@@ -23,7 +23,10 @@ import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import {
   makeSelectEntitlement,
   makeSelectOrgCapabilityStatus,
+  selectEntitlementsLoading,
 } from "./state/selectors";
+import { selectUser } from "@/lib/redux/selectors/userSelectors";
+import { selectOrganizationId } from "@/lib/redux/slices/appContextSlice";
 import {
   checkEntitlement,
   consumeEntitlement,
@@ -43,6 +46,33 @@ import type {
   EntitlementResult,
   EntitlementTier,
 } from "./types";
+
+/**
+ * DEMAND-DRIVEN HYDRATION. Nothing reads `billing.entitlement_snapshot` at boot: the first
+ * mounted consumer that needs the snapshot (a meter, a verdict, the tier) triggers the read.
+ * The read itself is shared per organization (`fetchEntitlementSnapshot`), so any number of
+ * consumers mounting together make exactly one request. While it is in flight the slice keeps
+ * its existing "not loaded yet" state (`isLoading: true`), so a consumer behaves exactly as it
+ * did at boot. Re-runs when the person's organization resolves or changes (the core shell marks
+ * the slice loading again on a switch).
+ */
+export function useEnsureEntitlementSnapshot(): void {
+  const dispatch = useAppDispatch();
+  const userId = useAppSelector(selectUser)?.id ?? null;
+  const organizationId = useAppSelector(selectOrganizationId);
+  const loading = useAppSelector(selectEntitlementsLoading);
+  useEffect(() => {
+    if (!userId || !loading) return;
+    let cancelled = false;
+    void fetchEntitlementSnapshot().then((snapshot) => {
+      // null = no organization resolved yet; the effect re-runs when one is set.
+      if (!cancelled && snapshot) dispatch(setEntitlementSnapshot(snapshot));
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [userId, organizationId, loading, dispatch]);
+}
 
 export interface UseEntitlementResult extends EntitlementResult {
   /**
@@ -75,6 +105,7 @@ export function useEntitlement(capability: Capability): UseEntitlementResult {
     [capability],
   );
   const verdict = useAppSelector(selectEntitlement);
+  useEnsureEntitlementSnapshot();
 
   const check = useCallback(
     () => checkEntitlement(capability),
