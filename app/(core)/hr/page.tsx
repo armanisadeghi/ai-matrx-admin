@@ -25,6 +25,8 @@
 import Link from "next/link";
 import { UserPlus } from "lucide-react";
 
+import { Tile } from "@ai-matrx/design-system/controls";
+
 import { Button } from "@/components/ui/button";
 import { hrPeopleNewHref } from "@/features/hr/routes";
 import { resolveHrNav } from "@/features/hr/shared/hr-nav";
@@ -70,17 +72,16 @@ function HrHomeStarters() {
     <div className="w-full min-w-0 space-y-6 p-4 sm:p-6">
       {emptyEmployer && can("identity.write") ? (
         <section className="space-y-2 rounded-lg border border-border bg-card p-4">
-          <h2 className="text-sm font-semibold text-foreground">
+          <h2 className="type-title text-foreground">
             Nobody is in HR here yet
           </h2>
-          <p className="text-sm text-muted-foreground">
+          <p className="type-body text-muted-foreground">
             Adding one person turns on the directory, the org chart and every
             self-service surface. You can link somebody who already has a login,
             or an existing contact, instead of retyping them.
           </p>
-          <Button variant="primary" asChild>
+          <Button variant="primary" icon={<UserPlus />} asChild>
             <Link href={hrPeopleNewHref({ org: orgRef })}>
-              <UserPlus className="mr-2 h-4 w-4" />
               Add the first person
             </Link>
           </Button>
@@ -89,24 +90,18 @@ function HrHomeStarters() {
 
       {doors.length > 0 ? (
         <section className="space-y-3">
-          <h2 className="text-sm font-semibold text-foreground">Where to start</h2>
+          <h2 className="type-title text-foreground">Where to start</h2>
           <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
             {doors.map((door) => (
               <li key={door.key}>
-                <Link
-                  href={door.href}
-                  className="flex min-h-[3.5rem] w-full items-start gap-3 rounded-lg border border-border bg-card p-3 transition-colors hover:bg-accent"
+                <Tile
+                  asChild
+                  icon={<door.icon />}
+                  title={door.label}
+                  line={door.description}
                 >
-                  <door.icon className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
-                  <span className="min-w-0">
-                    <span className="block truncate text-sm font-medium text-foreground">
-                      {door.label}
-                    </span>
-                    <span className="block text-xs text-muted-foreground">
-                      {door.description}
-                    </span>
-                  </span>
-                </Link>
+                  <Link href={door.href} />
+                </Tile>
               </li>
             ))}
           </ul>

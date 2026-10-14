@@ -38,6 +38,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ChevronDown, Users } from "lucide-react";
 
+import { Button } from "@/components/ui/button";
 import RouteHeader from "@/features/shell/components/header/RouteHeader";
 import {
   RouteModeNav,
@@ -178,7 +179,7 @@ export function HrShell({
               <div className="px-4 pt-3 sm:px-6">
                 {crumbs.length > 0 ? (
                   <nav aria-label="Breadcrumb" className="min-w-0">
-                    <ol className="flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-0.5 text-xs text-muted-foreground">
+                    <ol className="flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-0.5 type-secondary text-muted-foreground">
                       {crumbs.map((crumb, index) => (
                         <li key={`${crumb.label}-${index}`} className="flex items-center gap-1.5">
                           {index > 0 ? <span aria-hidden="true">/</span> : null}
@@ -196,7 +197,7 @@ export function HrShell({
                               // The page's title IS the breadcrumb leaf: one h1, never a
                               // second heading in the body.
                               <>
-                                <h1 className="truncate text-sm font-semibold text-foreground">
+                                <h1 className="truncate type-title text-foreground">
                                   {crumb.label}
                                 </h1>
                                 {description ? <InfoHint text={description} /> : null}
@@ -251,7 +252,7 @@ function EmployerSwitcher({
 
   if (employers.length < 2) {
     return (
-      <span className="flex items-center gap-1.5 px-1 text-sm font-medium text-foreground">
+      <span className="flex items-center gap-1.5 px-1 type-title text-foreground">
         <Users className="h-4 w-4 shrink-0 text-primary" />
         <span className="max-w-[110px] truncate sm:max-w-[220px]">{label}</span>
       </span>
@@ -263,15 +264,16 @@ function EmployerSwitcher({
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <button
+        <Button
           type="button"
-          className="flex min-h-11 items-center gap-1.5 rounded-md px-1.5 text-sm font-medium text-foreground transition-colors hover:bg-accent sm:min-h-9"
+          variant="quiet"
+          icon={<Users />}
+          glyphTone="primary"
+          iconEnd={<ChevronDown />}
           aria-label={`Employer: ${label}. Change employer`}
         >
-          <Users className="h-4 w-4 shrink-0 text-primary" />
           <span className="max-w-[110px] truncate sm:max-w-[220px]">{label}</span>
-          <ChevronDown className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-        </button>
+        </Button>
       </PopoverTrigger>
       {/* Fixed width: the list searches as you type. */}
       <PopoverContent
@@ -280,13 +282,14 @@ function EmployerSwitcher({
         className="matrx-touch-targets w-80 p-1"
       >
         {activeOrganizationId ? (
-          <Link
-            href={hrSwitchEmployerHref(pathname, null)}
-            onClick={() => setOpen(false)}
-            className="mx-1 mb-1 flex min-h-9 items-center rounded-md px-2 text-sm text-foreground hover:bg-accent"
-          >
-            All organizations
-          </Link>
+          <Button variant="quiet" asChild>
+            <Link
+              href={hrSwitchEmployerHref(pathname, null)}
+              onClick={() => setOpen(false)}
+            >
+              All organizations
+            </Link>
+          </Button>
         ) : null}
         <HrEmployerChoices
           employers={employers}

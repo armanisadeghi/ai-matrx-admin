@@ -272,8 +272,8 @@ export function HrError({
         <div className="flex items-start gap-3">
           <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-destructive" />
           <div className="min-w-0 space-y-1">
-            <h2 className="text-sm font-semibold text-foreground">{sentence}</h2>
-            <p className="text-sm text-muted-foreground">
+            <h2 className="type-title text-foreground">{sentence}</h2>
+            <p className="type-body text-muted-foreground">
               {nextStep?.trim() ||
                 "Try again. If it keeps happening, nothing was changed — send this screen to whoever runs HR here."}
             </p>
@@ -313,10 +313,10 @@ export function HrError({
         */}
         {code ? (
           <details className="pt-0.5">
-            <summary className="cursor-pointer text-[0.6875rem] text-muted-foreground">
+            <summary className="cursor-pointer type-meta text-muted-foreground">
               Error reference
             </summary>
-            <p className="mt-1 break-words font-mono text-[0.6875rem] text-muted-foreground">
+            <p className="mt-1 break-words font-mono type-meta text-muted-foreground">
               {code}
             </p>
           </details>
@@ -450,10 +450,10 @@ export function HrEmployerPicker({ className }: { className?: string } = {}) {
       <div className={cn("w-full min-w-0 p-4 sm:p-6", className)}>
         <div className="mx-auto flex max-w-xl flex-col items-start gap-3 rounded-lg border border-border bg-card p-4 sm:p-6">
           <Building2 className="h-5 w-5 shrink-0 text-muted-foreground" />
-          <h2 className="text-sm font-semibold text-foreground">
+          <h2 className="type-title text-foreground">
             No employer here uses HR yet
           </h2>
-          <p className="text-sm text-muted-foreground">
+          <p className="type-body text-muted-foreground">
             An owner or admin of an organization turns it on in that
             organization&apos;s settings.
           </p>
@@ -468,7 +468,7 @@ export function HrEmployerPicker({ className }: { className?: string } = {}) {
           Under All organizations this page cannot sum employers or pick one for you. */}
       <p
         data-hr-pick-organization=""
-        className="pb-2 text-sm font-medium text-foreground"
+        className="pb-2 type-title text-foreground"
       >
         Open one employer below to continue.
       </p>
@@ -477,7 +477,7 @@ export function HrEmployerPicker({ className }: { className?: string } = {}) {
         activeOrganizationId={null}
         pathname={pathname}
         framed
-        emptyClassName="text-sm text-muted-foreground"
+        emptyClassName="type-body text-muted-foreground"
       />
     </div>
   );
@@ -541,7 +541,7 @@ export function HrEmployerChoices({
 
   if (ready.length + unfinished.length + off.length === 0) {
     return (
-      <p className={cn("px-2 py-2", emptyClassName ?? "text-xs text-muted-foreground")}>
+      <p className={cn("px-2 py-2", emptyClassName ?? "type-secondary text-muted-foreground")}>
         No employer you belong to has HR ready yet. Its owner or an admin sets it up.
       </p>
     );
@@ -715,7 +715,7 @@ export function HrEmployerSubstitutionNotice({
       role="status"
       data-hr-employer-substitution={reason}
       className={cn(
-        "flex flex-wrap items-center gap-x-2 gap-y-1 rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-900 dark:border-amber-900/60 dark:bg-amber-950/40 dark:text-amber-100",
+        "flex flex-wrap items-center gap-x-2 gap-y-1 rounded-md border border-warning/30 bg-warning/10 px-3 py-2 type-secondary text-warning-ink",
         className,
       )}
     >
@@ -755,18 +755,17 @@ export function HrModuleOff({
     <div className={cn("w-full min-w-0 p-4 sm:p-6", className)}>
       <div className="mx-auto flex max-w-xl flex-col items-start gap-3 rounded-lg border border-border bg-card p-4 sm:p-6">
         <ShieldOff className="h-5 w-5 shrink-0 text-muted-foreground" />
-        <h2 className="text-sm font-semibold text-foreground">
+        <h2 className="type-title text-foreground">
           HR isn&apos;t turned on for this organization
         </h2>
-        <p className="text-sm text-muted-foreground">
+        <p className="type-body text-muted-foreground">
           {canEnable
             ? "You can turn it on in this organization's settings. Nothing is created until you finish setup."
             : "An owner or admin of this organization turns it on."}
         </p>
         {canEnable ? (
-          <Button variant="primary" asChild>
+          <Button variant="primary" icon={<UserCog />} asChild>
             <Link href={hrOrgSettingsPeopleHref(organizationId)}>
-              <UserCog className="mr-2 h-4 w-4" />
               Turn on HR
             </Link>
           </Button>
@@ -801,10 +800,10 @@ export function HrEmptyOrg({
     <div className={cn("w-full min-w-0 p-4 sm:p-6", className)}>
       <div className="mx-auto flex max-w-xl flex-col items-start gap-3 rounded-lg border border-border bg-card p-4 sm:p-6">
         <ClipboardCheck className="h-5 w-5 shrink-0 text-muted-foreground" />
-        <h2 className="text-sm font-semibold text-foreground">
+        <h2 className="type-title text-foreground">
           {canActivate ? "Set up HR for this employer" : "HR isn't set up here yet"}
         </h2>
-        <p className="text-sm text-muted-foreground">
+        <p className="type-body text-muted-foreground">
           {canActivate
             ? "Tell us who the employer of record is, where people work, and who runs HR. It takes three steps and you can change all of it later."
             : "Whoever owns this organization finishes setup before anyone can be added."}
