@@ -21,7 +21,7 @@
 // ─────────────────────────────────────────────────────────────────────────
 
 /** Structural fingerprint of the registry rows this artifact was generated from. */
-export const KIND_REGISTRY_FINGERPRINT = "4276aaec9a61";
+export const KIND_REGISTRY_FINGERPRINT = "8e74c9cc7b27";
 
 // ─────────────────────────────────────────────────────────────────────────
 // Shared nested structures. Deduped by structure across the registry — an
@@ -14376,7 +14376,7 @@ export interface BrandIntakeEarlyFactsOffer {
 }
 
 /**
- * Kind `brand_intake.identity_match.offer` (registry v7).
+ * Kind `brand_intake.identity_match.offer` (registry v8).
  */
 export interface BrandIntakeIdentityMatchOffer {
   /**
@@ -14394,10 +14394,6 @@ export interface BrandIntakeIdentityMatchOffer {
      */
     __kind?: "site_gate";
   };
-  /**
-   * The website text, then each account, one per line, before any parsing.
-   */
-  typed_text?: string;
   /**
    * Every raw web result an identify round read, from every search engine, in rank order.
    */
