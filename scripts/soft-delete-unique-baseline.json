@@ -506,7 +506,7 @@
     },
     {
       "index": "users.integration_connections:integration_connections_live_native_device_account",
-      "reason": "The owner, app instance, and provider subject identify one native Beeper device account. Reconnection revives the same archived integration row so provider identity and custody history never split across duplicates.",
+      "reason": "The owner, app instance, and provider subject identify one native Beeper device account. This source forbids deleted_at; reconnecting under a new consent generation updates the same never-archived row so provider identity and custody history never split across duplicates.",
       "ruled": "Primary Astra lifetime-identity ruling, 2026-10-14 — aidream 20261011223008_beeper_personal_device_connections.sql inspected"
     }
   ]
