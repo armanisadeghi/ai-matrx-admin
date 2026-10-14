@@ -74,6 +74,7 @@ import {
   websiteHost,
   type Decision,
   type EvidenceItem,
+  type LibraryImage,
   type RoundSeeds,
   type SocialSeed,
   type ConfirmedFacts,
@@ -94,7 +95,14 @@ import {
 } from "./relations";
 import { useRelationKinds } from "./SmartAddExtras";
 import { suggestKind, type WebChoice } from "./webKinds";
-import { SETUP_STEPS, SmartAddRound, type PersonSignals, type RoundPath, type RoundView } from "./SmartAddRound";
+import {
+  SETUP_STEPS,
+  SmartAddRound,
+  type BrandScreenshots,
+  type PersonSignals,
+  type RoundPath,
+  type RoundView,
+} from "./SmartAddRound";
 import { PersonHarderStage } from "./harder/PersonHarderStage";
 import type { FindYouProvision, FocusState } from "./harder/types";
 import type { SweepFeed } from "@/features/builder-panel/components/BuilderDecisionsTab";
@@ -254,6 +262,8 @@ export function SmartAddBrand({
   const [namesakes, setNamesakes] = useState<Set<string>>(new Set());
   // The latest person / business verdict (brand.identify.person_signals): data only, never a question.
   const [personSignals, setPersonSignals] = useState<PersonSignals | null>(null);
+  // The homepage pictured on a real browser (desktop + mobile): the card swaps it in once it lands.
+  const [screenshots, setScreenshots] = useState<BrandScreenshots | null>(null);
   // "Person with a business" (a creator or solo professional): a person on the person path.
   const [kindBoth, setKindBoth] = useState(false);
 
@@ -920,7 +930,11 @@ export function SmartAddBrand({
       onCreated?.(brand);
       // Nothing explicitly kept: the logo the card shows (the stage's best found one) is saved as the
       // primary, so a brand never lands on a placeholder while candidates exist.
-      const images = basics.images.length ? basics.images : cardBasics.images;
+      // The homepage pictured (desktop + mobile) lands in the brand's library beside the logo: more than a logo.
+      const images = [
+        ...(basics.images.length ? basics.images : cardBasics.images),
+        ...homepageImages(screenshots),
+      ];
       if (images.length || accounts.length || siteIds.length) {
         try {
           const { runId } = await startSystemRun(
@@ -1054,6 +1068,7 @@ export function SmartAddBrand({
             }
             onSignals={setPersonSignals}
             onPath={(p) => onPath(r.runId as string, p)}
+            onScreenshots={setScreenshots}
             onView={onView}
           />
         ) : null,
@@ -1255,7 +1270,7 @@ export function SmartAddBrand({
 
       {/* The brand as it stands: the primary choices, building as the person confirms. */}
       <div className="motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-3 motion-safe:duration-500">
-      <BrandCard basics={cardBasics} person={person} kind={kindBoth ? "both" : person ? "person" : "business"} onKind={answerKind} location={basics.facts.find((f) => f.field === "address")?.value ?? null} />
+      <BrandCard basics={cardBasics} screenshot={person ? null : (screenshots?.desktop?.url ?? null)} person={person} kind={kindBoth ? "both" : person ? "person" : "business"} onKind={answerKind} location={basics.facts.find((f) => f.field === "address")?.value ?? null} />
       </div>
       <p className="text-xs text-muted-foreground">Everything found is kept — only “Not us” is left out.</p>
 
@@ -1567,4 +1582,12 @@ async function saveCandidates(organizationId: string, brandId: string, items: Ev
   } catch (error) {
     return [`Unreviewed findings: ${extractErrorMessage(error)}`];
   }
+}
+
+/** The homepage pictures as brand images (kind image, never primary): Create files them in the brand's library. */
+function homepageImages(shots: BrandScreenshots | null): LibraryImage[] {
+  const out: LibraryImage[] = [];
+  if (shots?.desktop) out.push({ url: shots.desktop.url, kind: "image", primary: false, source: "Homepage on a computer" });
+  if (shots?.mobile) out.push({ url: shots.mobile.url, kind: "image", primary: false, source: "Homepage on a phone" });
+  return out;
 }
