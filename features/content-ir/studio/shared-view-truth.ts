@@ -51,6 +51,19 @@ export function readViewerLayerScope(
   return resolveComponent(kind, "web", "output")?.layer?.scope ?? null;
 }
 
+/**
+ * The identity of what draws for THIS viewer: the winning row (layered row id,
+ * or the shared component key) plus its `updated_at`. A mounted sandbox frame
+ * keeps the component it was handed, so a card keyed by this remounts when the
+ * winner changes (a view switched off, edited, or turned on).
+ */
+export function readViewerViewKey(kind: string, registryVersion?: number): string {
+  void registryVersion;
+  const resolution = resolveComponent(kind, "web", "output");
+  if (!resolution) return "none";
+  return `${resolution.layer?.rowId ?? resolution.componentKey}@${resolution.updatedAt ?? ""}`;
+}
+
 /** True when the shared answer is a real component (generic viewer / none = false). */
 export function sharedHasComponent(resolution: Resolution): boolean {
   return resolution !== null && resolution.componentKey !== GENERIC_STRUCTURED_COMPONENT_KEY;

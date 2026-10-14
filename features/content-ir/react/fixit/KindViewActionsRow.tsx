@@ -48,5 +48,5 @@ function KindViewActionsRowInner({
   const plan = planKindViewActions(actions.viewer, actions.layer, { slug: kind, registered });
   // A view just switched off keeps its Undo marker even when nothing else shows.
   if (plan.mode === "actions" && !offerNewView && !actions.switchedOff) return null;
-  return <FixItViewActions plan={plan} {...actions} />;
+  return <FixItViewActions plan={plan} instance={value} {...actions} />;
 }

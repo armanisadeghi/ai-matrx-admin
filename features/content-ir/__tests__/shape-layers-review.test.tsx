@@ -187,3 +187,122 @@ describe("defect 1: the Preview verdict re-runs when a view lands or switches of
     expect(source).toMatch(/registryVersion\?: number,\s*\): RenderPathRun \| null \{\s*void registryVersion;/);
   });
 });
+
+// ── Second review round ──────────────────────────────────────────────────────
+import {
+  instanceToBuilderText,
+  stashBuilderInstance,
+  takeBuilderInstance,
+  withBuilderHandoff,
+} from "../admin/kind-builder-handoff";
+
+describe("round 2, defect 1: the card remounts when the winning view changes", () => {
+  const read = (file: string) => fs.readFileSync(path.join(__dirname, file), "utf8");
+  it("blocks are keyed by block id AND the resolved view identity", () => {
+    const source = read("../render-paths/KindRenderPaths.tsx");
+    expect(source).toMatch(/key=\{`\$\{block\.blockId\}:\$\{viewKey\}`\}/);
+    expect(read("../studio/shared-view-truth.ts")).toMatch(/layer\?\.rowId \?\? resolution\.componentKey\}@\$\{resolution\.updatedAt/);
+  });
+});
+
+describe("round 2, defect 2: Turn on stays beside an org view", () => {
+  it("only MY OWN winning view hides the data-read Turn on", () => {
+    const hook = fs.readFileSync(path.join(__dirname, "../react/fixit/useKindViewActions.ts"), "utf8");
+    expect(hook).toMatch(/\?\.scope === "user"\s*:\s*false/);
+    expect(hook).toMatch(/switchedOff: layer\?\.scope === "user"/);
+  });
+  it("the layer marker and the Turn on row render together", () => {
+    const markup = renderToStaticMarkup(
+      <FixItViewActions
+        plan={planKindFixIt(null, PLAIN, orgLayer, SLUG)}
+        busy={false}
+        onMakeMine={noop}
+        onMakeOrg={noop}
+        onEditLayer={noop}
+        onRemoveLayer={noop}
+        onUseShared={noop}
+        switchedOff={{ message: "Your view is off", turnOn: true }}
+        onUndoSwitchOff={noop}
+      />,
+    );
+    expect(markup).toContain("My organization&#x27;s view");
+    expect(markup).toContain("Your view is off");
+    expect(markup).toContain("Turn on");
+  });
+});
+
+describe("round 2, defect 3: For my organization hides only under the ACTIVE organization's view", () => {
+  const ADMIN: FixItViewer = { ...PLAIN, isOrgAdmin: true, activeOrganizationId: "org-active" };
+  it("another organization's view keeps it; the active one's does not; unknown hides", () => {
+    const own = planKindFixIt(null, ADMIN, { ...orgLayer, organizationId: "org-active" }, SLUG);
+    const other = planKindFixIt(null, ADMIN, { ...orgLayer, organizationId: "org-other" }, SLUG);
+    const unknown = planKindFixIt(null, ADMIN, { ...orgLayer, organizationId: null }, SLUG);
+    expect(own.mode === "layer" && own.makeOrg).toBe(false);
+    expect(other.mode === "layer" && other.makeOrg).toBe(true);
+    expect(unknown.mode === "layer" && unknown.makeOrg).toBe(false);
+  });
+});
+
+describe("round 2, defect 4: the fix-it bar and the strip get Turn on from one plan", () => {
+  it("the bar passes switchedOff + undo to the same actions view", () => {
+    const bar = fs.readFileSync(path.join(__dirname, "../react/fixit/KindFixItBar.tsx"), "utf8");
+    expect(bar).toMatch(/switchedOff=\{actions\.switchedOff\}[\s\S]{0,60}onUndoSwitchOff=\{actions\.onUndoSwitchOff\}/);
+  });
+  it("a gaps plan with a switched-off view renders Turn on beside Make my view", () => {
+    const markup = renderToStaticMarkup(
+      <KindFixItBarView
+        plan={{ mode: "gaps", rows: [], makeMine: true, makeOrg: false, everyoneHref: null }}
+        busy={false}
+        onMakeMine={noop}
+        onMakeOrg={noop}
+        onOwnerAction={noop}
+        onEditLayer={noop}
+        onRemoveLayer={noop}
+        onUseShared={noop}
+        switchedOff={{ message: "Your view is off", turnOn: true }}
+        onUndoSwitchOff={noop}
+      />,
+    );
+    expect(markup).toContain("Turn on");
+    expect(markup).toContain("Make my view");
+  });
+});
+
+describe("round 2, defect 5: the instance rides a nonce, never the URL", () => {
+  const store = new Map<string, string>();
+  beforeAll(() => {
+    (globalThis as unknown as { window: unknown }).window = {
+      localStorage: {
+        getItem: (k: string) => store.get(k) ?? null,
+        setItem: (k: string, v: string) => void store.set(k, v),
+        removeItem: (k: string) => void store.delete(k),
+      },
+    };
+  });
+  afterAll(() => {
+    delete (globalThis as unknown as { window?: unknown }).window;
+  });
+
+  it("parks, reads once, and the URL carries only the nonce", () => {
+    const nonce = stashBuilderInstance({ __kind: "x", secret: "payload" }, 1_000);
+    expect(nonce).toBeTruthy();
+    const href = withBuilderHandoff("/administration/utilities/kind-registry/build?kind=x", nonce as string);
+    expect(href).toContain(`handoff=${nonce}`);
+    expect(href).not.toContain("payload");
+    expect(takeBuilderInstance(nonce, 2_000)).toBe(instanceToBuilderText({ __kind: "x", secret: "payload" }));
+    expect(takeBuilderInstance(nonce, 2_000)).toBeNull();
+  });
+
+  it("an entry past its lease is refused", () => {
+    const nonce = stashBuilderInstance({ a: 1 }, 0) as string;
+    expect(takeBuilderInstance(nonce, 11 * 60 * 1000)).toBeNull();
+  });
+
+  it("the link click stashes, and the builder box is filled from the nonce", () => {
+    const bar = fs.readFileSync(path.join(__dirname, "../react/fixit/KindFixItBar.tsx"), "utf8");
+    expect(bar).toMatch(/stashBuilderInstance\(instance\)/);
+    const client = fs.readFileSync(path.join(__dirname, "../admin/KindBuilderClient.tsx"), "utf8");
+    expect(client).toMatch(/takeBuilderInstance\(handoff\)/);
+    expect(client).toMatch(/setStructure\(/);
+  });
+});

@@ -17,7 +17,7 @@
  * the `content_ir.kind_architect` mandate.
  */
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useMandate } from "@ai-matrx/chat/mandates/useMandate";
 import { Hammer, Table2 } from "lucide-react";
@@ -32,6 +32,7 @@ import {
 import { pushAppHref } from "@/lib/deployment/navigate";
 import { MANDATE_KEYS } from "@ai-matrx/agents/mandates";
 import { initialBuilderNotes } from "./kind-builder-notes";
+import { takeBuilderInstance } from "./kind-builder-handoff";
 
 /**
  * The admin one-shot kind builder (agent.definition 'kind_architect', builtin).
@@ -40,7 +41,14 @@ import { initialBuilderNotes } from "./kind-builder-notes";
  */
 const KIND_ARCHITECT_MANDATE = MANDATE_KEYS.content_ir__kind_architect;
 
-export default function KindBuilderClient({ initialKind = null }: { initialKind?: string | null }) {
+export default function KindBuilderClient({
+  initialKind = null,
+  handoff = null,
+}: {
+  initialKind?: string | null;
+  /** One-time nonce of the instance parked by "Change for everyone" (never the data itself). */
+  handoff?: string | null;
+}) {
   // Which agent builds a kind is a MANDATE, not a hardcoded id — swappable from
   // the admin console or an override at /mandates, no deploy.
   const { mandate: architect, error: architectError } = useMandate(KIND_ARCHITECT_MANDATE);
@@ -48,6 +56,12 @@ export default function KindBuilderClient({ initialKind = null }: { initialKind?
   const openRun = useOpenAgentRunWindow();
   const [structure, setStructure] = useState("");
   const [notes, setNotes] = useState(() => initialBuilderNotes(initialKind));
+
+  // The instance the viewer saw render badly, read once from its nonce.
+  useEffect(() => {
+    const text = takeBuilderInstance(handoff);
+    if (text) setStructure((current) => (current.trim() ? current : text));
+  }, [handoff]);
 
   const canStart = structure.trim().length > 0 && architect !== null;
 

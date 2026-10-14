@@ -15,14 +15,17 @@ export const metadata: Metadata = {
 export default async function KindBuilderPage({
   searchParams,
 }: {
-  searchParams: Promise<{ kind?: string | string[] }>;
+  searchParams: Promise<{ kind?: string | string[]; handoff?: string | string[] }>;
 }) {
   // "Change for everyone" on an unregistered name links here with `?kind=<slug>`.
-  const { kind } = await searchParams;
+  const { kind, handoff } = await searchParams;
   const initialKind = typeof kind === "string" && kind.trim() ? kind.trim() : null;
   return (
     <div className="h-[calc(100dvh-2.5rem)] overflow-y-auto bg-textured">
-      <KindBuilderClient initialKind={initialKind} />
+      <KindBuilderClient
+        initialKind={initialKind}
+        handoff={typeof handoff === "string" ? handoff : null}
+      />
     </div>
   );
 }

@@ -43,6 +43,8 @@ export interface FixItViewer {
   isSuperAdminPerson: boolean;
   /** Owner/admin of the ACTIVE organization (org admin, not platform admin). */
   isOrgAdmin: boolean;
+  /** The active organization (writes carry it) — null when none is known. */
+  activeOrganizationId?: string | null;
 }
 
 /** The viewer's own layered winner, when one exists (resolver `layer`). */
@@ -50,6 +52,8 @@ export interface FixItLayerFacts {
   scope: ComponentLayerScope;
   rowId: string;
   createdBy: string | null;
+  /** The organization an organization-scope layer belongs to; null until read. */
+  organizationId?: string | null;
   updatedAt: string | null;
   /** The SHARED tier's `updated_at` (db rows only), for "a newer shared view exists". */
   sharedUpdatedAt: string | null;
@@ -178,7 +182,14 @@ export function planKindViewActions(
       // Under my own view there is nothing more to make for me; under an org
       // view there is. An org admin editing the org view already has "Edit".
       makeMine: layer.scope === "organization",
-      makeOrg: viewer.isOrgAdmin && layer.scope === "user",
+      // Hidden only where "Edit" already is the organization repair: an org view
+      // that belongs to the viewer's ACTIVE organization. Another organization's
+      // view (or one not yet known) never takes the active one's repair away.
+      makeOrg:
+        viewer.isOrgAdmin &&
+        (layer.scope === "user" ||
+          (layer.organizationId != null &&
+            layer.organizationId !== (viewer.activeOrganizationId ?? null))),
       everyoneHref: viewer.isSuperAdminPerson ? adminShapePath(kind.slug, kind.registered) : null,
     };
   }

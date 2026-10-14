@@ -101,8 +101,10 @@ export function useKindViewActions(input: {
   // The viewer's own switched-off row, read from the DATA: a reload forgets the
   // toast and the memory above, but the row (is_active=false) is still theirs.
   const [ownOffRowId, setOwnOffRowId] = useState<string | null>(null);
+  // Only MY OWN view winning hides the offer: an organization view sitting under
+  // a switched-off personal view must not hide "Turn on".
   const hasWinningLayer = userId
-    ? readLayerFacts(input.kind, registryVersion) !== null
+    ? readLayerFacts(input.kind, registryVersion)?.scope === "user"
     : false;
   useEffect(() => {
     if (!viewerKey || hasWinningLayer) {
@@ -127,8 +129,31 @@ export function useKindViewActions(input: {
     userId,
     isSuperAdminPerson,
     isOrgAdmin: orgGate.isAdmin && orgGate.orgId === activeOrgId,
+    activeOrganizationId: activeOrgId ?? null,
   };
-  const layer = userId ? readLayerFacts(input.kind, registryVersion) : null;
+  const baseLayer = userId ? readLayerFacts(input.kind, registryVersion) : null;
+  // Which organization an org-scope winner belongs to — read by row id (the
+  // resolver carries scope + id only).
+  const [layerOrg, setLayerOrg] = useState<{ rowId: string; organizationId: string | null } | null>(null);
+  const orgLayerRowId = baseLayer?.scope === "organization" ? baseLayer.rowId : null;
+  useEffect(() => {
+    if (!orgLayerRowId) return;
+    let alive = true;
+    void readLayerAudience(orgLayerRowId)
+      .then((audience) => {
+        if (alive) setLayerOrg({ rowId: orgLayerRowId, organizationId: audience.organizationId });
+      })
+      .catch(() => {
+        if (alive) setLayerOrg({ rowId: orgLayerRowId, organizationId: null });
+      });
+    return () => {
+      alive = false;
+    };
+  }, [orgLayerRowId]);
+  const layer =
+    baseLayer && baseLayer.scope === "organization" && layerOrg?.rowId === baseLayer.rowId
+      ? { ...baseLayer, organizationId: layerOrg.organizationId }
+      : baseLayer;
 
   const launchDeps: LayerLaunchDeps = {
     ensureOrgId,
@@ -206,7 +231,7 @@ export function useKindViewActions(input: {
     onRemoveLayer: (rowId: string) => switchOff(rowId, "remove"),
     onUseShared: (rowId: string) => switchOff(rowId, "use_shared"),
     // Only while no view of mine is winning (undoing re-lands it; a new view clears it).
-    switchedOff: layer
+    switchedOff: layer?.scope === "user"
       ? null
       : switchedOff
         ? { message: switchedOff.message }

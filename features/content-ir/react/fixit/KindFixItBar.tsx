@@ -56,6 +56,7 @@ import {
   formatInstanceSample,
 } from "./layer-fixit";
 import { useKindViewActions } from "./useKindViewActions";
+import { stashBuilderInstance, withBuilderHandoff } from "../../admin/kind-builder-handoff";
 import { crossDeploymentHref } from "@/lib/deployment/surfaces";
 import { AGENT_ICON } from "@/components/icons/domain-icons";
 import { buildKindAuthoringOffer } from "@/features/content-ir/studio/kind-authoring-offer";
@@ -221,6 +222,9 @@ const KindFixItBarInner: React.FC<KindFixItBarProps> = ({ kind, value }) => {
       onEditLayer={actions.onEditLayer}
       onRemoveLayer={actions.onRemoveLayer}
       onUseShared={actions.onUseShared}
+      switchedOff={actions.switchedOff}
+      instance={value}
+      onUndoSwitchOff={actions.onUndoSwitchOff}
     />
   );
 };
@@ -244,6 +248,8 @@ export interface FixItViewHandlers {
   /** A view this person just switched off — the marker keeps Undo reachable. */
   switchedOff?: { message: string; turnOn?: boolean } | null;
   onUndoSwitchOff?: () => void;
+  /** The on-screen instance — carried (by nonce, never in the URL) into the admin builder. */
+  instance?: unknown;
 }
 
 /**
@@ -278,6 +284,7 @@ function ViewActionsPlan({
   onEditLayer,
   onRemoveLayer,
   onUseShared,
+  instance,
 }: FixItViewHandlers & { plan: FixItViewPlan }): React.ReactElement | null {
   if (plan.mode === "none") return null;
   if (plan.mode === "layer") {
@@ -309,6 +316,7 @@ function ViewActionsPlan({
           busy={busy}
           onMakeMine={onMakeMine}
           onMakeOrg={onMakeOrg}
+          instance={instance}
           variant="quiet"
         />
       </div>
@@ -317,7 +325,13 @@ function ViewActionsPlan({
   if (!plan.makeMine && !plan.makeOrg && !plan.everyoneHref) return null;
   return (
     <div data-fixit-mode="actions" className="flex flex-wrap items-center gap-2">
-      <PersonActions plan={plan} busy={busy} onMakeMine={onMakeMine} onMakeOrg={onMakeOrg} />
+      <PersonActions
+        plan={plan}
+        busy={busy}
+        onMakeMine={onMakeMine}
+        onMakeOrg={onMakeOrg}
+        instance={instance}
+      />
     </div>
   );
 }
@@ -328,12 +342,14 @@ function PersonActions({
   busy,
   onMakeMine,
   onMakeOrg,
+  instance,
   variant,
 }: {
   plan: { makeMine: boolean; makeOrg: boolean; everyoneHref: string | null };
   busy: boolean | undefined;
   onMakeMine: () => void;
   onMakeOrg: () => void;
+  instance?: unknown;
   /** Beside a marker everything is quiet; standing alone the first action leads. */
   variant?: "quiet";
 }): React.ReactElement | null {
@@ -359,7 +375,19 @@ function PersonActions({
       ) : null}
       {everyone ? (
         <Button variant="quiet" iconEnd={<ExternalLink />} asChild>
-          <OutboundLink href={everyone} target="_blank" rel="noopener noreferrer" data-fixit-everyone="">
+          <OutboundLink
+            href={everyone}
+            target="_blank"
+            rel="noopener noreferrer"
+            data-fixit-everyone=""
+            onClick={(event) => {
+              // The builder page opens with the instance filled in: parked under a
+              // one-time nonce, never in the URL (payload stays out of the query).
+              if (!everyone.includes("/kind-registry/build")) return;
+              const nonce = stashBuilderInstance(instance);
+              if (nonce) event.currentTarget.href = withBuilderHandoff(everyone, nonce);
+            }}
+          >
             Change for everyone
           </OutboundLink>
         </Button>

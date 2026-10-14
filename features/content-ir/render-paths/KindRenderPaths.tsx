@@ -36,6 +36,7 @@ import {
   describeRenderVerdict,
   readSharedResolution,
   readViewerLayerScope,
+  readViewerViewKey,
   sharedHasComponent,
   useRegistryVersion,
 } from "@/features/content-ir/studio/shared-view-truth";
@@ -157,6 +158,7 @@ export default function KindRenderPaths({
   // is not "this shape's own component".
   const sharedComponent = sharedHasComponent(readSharedResolution(kind, registryVersion));
   const layerScope = readViewerLayerScope(kind, registryVersion);
+  const viewKey = readViewerViewKey(kind, registryVersion);
 
   const loading = resolveLoadingSlugForKind(kind);
   const LoadingComponent = resolveKindLoadingComponent(loading.slug);
@@ -217,7 +219,7 @@ export default function KindRenderPaths({
         {run ? (
           run.blocks.map((block, index) => (
             <SafeBlockRenderer
-              key={block.blockId}
+              key={`${block.blockId}:${viewKey}`}
               block={{
                 type: block.type,
                 content: block.content ?? "",
