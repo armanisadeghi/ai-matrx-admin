@@ -65,14 +65,16 @@ export function SocialProviderCard() {
   const { format } = useCostDisplay();
   // The Cost page's own reader and window (this month, All organizations): one number for one period.
   const spendRollup = useSeoSpendSummary(null);
+  // org-filter: server-call provider capabilities are requested for the selected organization
   const caps = useQuery({
-    queryKey: ["marketing", "social", "capabilities", organizationId],
+    queryKey: ["marketing", "social", "capabilities", organizationId], // org-filter: server-call cache partition for the selected organization request
     queryFn: ({ signal }) => getCapabilities({ organizationId, signal }),
     enabled,
     staleTime: 60_000,
   });
+  // org-filter: server-call provider credits are requested for the selected organization
   const credits = useQuery({
-    queryKey: ["marketing", "social", "credits", organizationId],
+    queryKey: ["marketing", "social", "credits", organizationId], // org-filter: server-call cache partition for the selected organization request
     queryFn: ({ signal }) => getCredits({ organizationId, signal }),
     enabled,
     staleTime: 60_000,

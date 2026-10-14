@@ -170,7 +170,7 @@ export default function PageCleanupReview() {
     if (store.state !== "store") return;
     setSaves((s) => ({ ...s, [path]: "saving" }));
     try {
-      const organizationId = await ensureOrgId(null);
+    const organizationId = await ensureOrgId(null); // org-filter: write-target cleanup decisions persist in the selected organization
       const written = await upsertAppRow(
         recordsClient(userId),
         pageCleanupDecisions,

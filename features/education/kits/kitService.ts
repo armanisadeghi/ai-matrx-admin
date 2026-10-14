@@ -731,7 +731,7 @@ export async function archiveKit(kit: StudyKit, expectedFingerprint = kitMembers
   const current = await currentKitOrThrow(kit, expectedFingerprint);
   let kitId = kit.sourceId;
   if (kit.sourceType !== KIT_TOKEN) {
-    kitId = await promoteAnchorKit(current, current.organizationId ?? (await ensureOrgId(null)));
+    kitId = await promoteAnchorKit(current, current.organizationId ?? (await ensureOrgId(null))); // org-filter: write-target promotion writes the kit into its or the selected organization
   }
   await archiveKitScope(kitId);
   return { sourceType: KIT_TOKEN, sourceId: kitId };

@@ -152,7 +152,7 @@ async function organizationContextHeaders(
   // ORG-GATE-AUDIT: THE GATE, never the bare kernel. Connecting, binding a site or
   // disconnecting Bing with no organization selected asks, then continues this
   // same request instead of a bare refusal.
-  const organizationId = await ensureOrgId(null);
+  const organizationId = await ensureOrgId(null); // org-filter: server-call Bing integration requests run in the selected organization
   return applyOrganizationContextHeader(base, organizationId);
 }
 

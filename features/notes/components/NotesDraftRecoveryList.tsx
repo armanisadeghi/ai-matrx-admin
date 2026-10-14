@@ -136,7 +136,7 @@ export function NotesDraftRecoveryList({
   const handleRecoverAsNew = async (draft: LocalDraft) => {
     setBusyKey(draft.key);
     try {
-      const capturedOrganizationId = await ensureOrgId(null);
+      const capturedOrganizationId = await ensureOrgId(null); // org-filter: write-target the recovered note is created in the selected organization
       const created = await dispatch(
         createNewNote({
           label: draft.label || "Recovered note",

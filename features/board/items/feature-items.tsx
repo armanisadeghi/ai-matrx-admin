@@ -590,7 +590,7 @@ function MeetingCreateDialog({ onPick, onCancel }: PickerProps) {
   useEffect(() => {
     if (ready || asked.current) return;
     asked.current = true;
-    ensureOrgId(null).catch(() => onCancel());
+    ensureOrgId(null).catch(() => onCancel()); // org-filter: default-for-new a new meeting is created in the selected organization
   }, [ready, onCancel]);
   if (!ready) return null;
   return (

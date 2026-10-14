@@ -28,7 +28,7 @@ export function BoardTemplateGallery({
   initialKey?: string;
 }) {
   const router = useRouter();
-  const organizationId = useAppSelector(selectOrganizationId);
+  const organizationId = useAppSelector(selectOrganizationId); // org-filter: write-target installing a board template writes into the selected organization
   const [saved, setSaved] = useState<BoardTemplateEntry[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [picked, setPicked] = useState<string>(initialKey ?? BUILTIN_BOARD_TEMPLATES[0].key);

@@ -35,7 +35,7 @@ export function PromptBlockEditor({ blockId }: { blockId: string | "new" }) {
   const router = useRouter();
   const params = useSearchParams();
   const meId = useAppSelector(selectUserId);
-  const orgId = useAppSelector(selectActiveOrganizationId);
+  const orgId = useAppSelector(selectActiveOrganizationId); // org-filter: write-target prompt block edits persist in the selected organization
   const isPlatformAdmin = useAppSelector(selectIsSuperAdminPerson);
   const isNew = blockId === "new";
 

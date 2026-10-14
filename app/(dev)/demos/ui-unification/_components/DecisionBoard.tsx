@@ -263,7 +263,6 @@ function ConnectedBoard({ organizationId, userId }: { organizationId: string; us
   const load = useCallback(async () => {
     const { data, error } = await table()
       .select("id, decision_id, winner, note")
-      .eq("organization_id", organizationId)
       .is("deleted_at", null);
     if (error) setLoadError(error.message);
     else {

@@ -38,7 +38,7 @@ async function authHeaders(
   // ORG-GATE-AUDIT: THE GATE, never the bare kernel. Enrolling or removing an
   // authenticator with no organization selected asks, then continues this
   // same request; the polled current-code read never opens a dialog.
-  const organizationId = await ensureOrgId(null);
+  const organizationId = await ensureOrgId(null); // org-filter: server-call authenticator requests run in the selected organization
   const organizationHeaders = applyOrganizationContextHeader({}, organizationId);
   const supabase = createClient();
   const {

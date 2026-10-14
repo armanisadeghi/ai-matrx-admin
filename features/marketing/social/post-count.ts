@@ -36,7 +36,7 @@ export function loadMoreRequest(): { maxPosts: number; continueFromLast: true; q
 /** The person's own row for the default count (their settings, "Personal configuration"). */
 export const POST_COUNT_PERSON_HREF = "/user-settings/general/personal-config#social.profile_posts_default";
 /** Why the count is what it is: a tooltip, never inline text. Pure. */
-export function countReason(count: number | null, choice: PostCountChoice | null, profilePostsMax: number | null | undefined): { text: string; limited: boolean } {
+export function postCountReason(count: number | null, choice: PostCountChoice | null, profilePostsMax: number | null | undefined): { text: string; limited: boolean } {
   const max = profilePostsMax?.toLocaleString("en-US");
   if (count != null && profilePostsMax != null && count > profilePostsMax) {
     return { text: `Capped at ${max} by your organization`, limited: true };

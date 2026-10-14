@@ -693,7 +693,7 @@ export const copyNote = createAsyncThunk<
   // pressing Duplicate with no organization selected asks, then this same
   // copy continues, instead of a bare refusal.
   const copyOrganizationId = record._sharedWithMe
-    ? await ensureOrgId(null)
+    ? await ensureOrgId(null) // org-filter: write-target a shared note copy is created in the selected organization
     : requireOrganizationContext(record.organization_id);
 
   const { data, error } = await supabase

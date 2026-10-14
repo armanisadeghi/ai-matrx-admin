@@ -58,7 +58,8 @@ export function SiteDataInline({ entry, expanded, onToggleExpanded }: ToolRender
     if (!source || !input || !organizationId) return;
     setConfirming(false);
     startRun(runKey, (onProgress) =>
-      fetchData({ sourceKey: source.key, input, maxRecords: count, tableName: tableName ?? title }, { organizationId, onProgress }),
+        // org-filter: server-call the data fetch executes in the selected organization
+        fetchData({ sourceKey: source.key, input, maxRecords: count, tableName: tableName ?? title }, { organizationId, onProgress }),
     );
   };
 

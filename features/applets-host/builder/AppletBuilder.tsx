@@ -358,7 +358,7 @@ export function AppletBuilder({
     let started: { id: string; entry: BuildEntry } | null = null;
     try {
       // A new app needs an organization: with none set, the picker asks and THIS build continues with the pick.
-      const org = appletId || retry ? null : (organizationId ?? (await whenOrgReady(() => ensureOrgId(null))));
+    const org = appletId || retry ? null : (organizationId ?? (await whenOrgReady(() => ensureOrgId(null)))); // org-filter: default-for-new a new applet is created in the selected organization
       // The request is written BEFORE anything runs — a new app is born here and the address becomes its own.
       // An automatic fix round is claimed instead: exactly one tab runs it, every other tab follows that run.
       let begun: { record: BuildRecord; entry: BuildEntry };

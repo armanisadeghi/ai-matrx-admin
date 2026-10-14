@@ -134,6 +134,7 @@ export function GetDataBody({ tileId, source, onSource }: Pick<ItemBodyProps, "t
     if (!input) return;
     const request = { sourceKey: src.key, sourceLabel: src.label, input, count };
     saveDraft({ sourceKey: src.key, values, option: option ?? undefined, count, request });
+    // org-filter: server-call the data fetch executes in the selected organization
     startRun(tileId, (onProgress) => fetchData({ sourceKey: src.key, input, maxRecords: count }, { organizationId, onProgress }));
   };
 

@@ -49,7 +49,7 @@ export async function saveNewPlan(plan: SystemPlan): Promise<string> {
     content: toMarkdown(plan),
     tags: [SYSTEM_PLAN_TAG],
     custom_fields: fieldsOf(plan),
-    organization_id: await ensureOrgId(null),
+    organization_id: await ensureOrgId(null), // org-filter: write-target a newly saved plan belongs to the selected organization
   });
   return note.id;
 }

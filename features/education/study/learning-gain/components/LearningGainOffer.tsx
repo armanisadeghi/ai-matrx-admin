@@ -75,7 +75,7 @@ export function LearningGainOffer({
   const router = useRouter();
   const [isNavigating, startNavigation] = useTransition();
   const userId = useAppSelector(selectUserId);
-  const organizationId = useAppSelector(selectOrganizationId);
+  const organizationId = useAppSelector(selectOrganizationId); // org-filter: server-call the learning gain run executes in the selected organization
   const threshold = knobNumber(
     useEffectiveKnob(organizationId, userId, POST_TEST_MASTERY_KNOB),
     DEFAULT_POST_TEST_MASTERY,

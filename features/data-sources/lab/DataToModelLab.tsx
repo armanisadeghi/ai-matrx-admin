@@ -142,6 +142,7 @@ function DataStep({ organizationId, sources, onLoaded }: { organizationId: strin
     setBusy("Starting");
     setError(null);
     try {
+      // org-filter: server-call the data fetch executes in the selected organization
       const result = await fetchData(
         { sourceKey: source.key, input: { inputs: urls.map((url) => ({ url })) }, maxRecords: urls.length * perInput, includeRecords: true, tableName: `Data to model · ${source.label}` },
         { organizationId, onProgress: (p) => setBusy(p.label) },
@@ -269,8 +270,9 @@ function Provision({ organizationId, loaded, source }: { organizationId: string 
     model && model.pointsInput != null && rate ? { input: model.pointsInput / rate, output: (model.pointsOutput ?? 0) / rate } : null;
 
   // The real tool definition, from a dry run of the tools mode (never sent).
+  // org-filter: server-call the dry run executes in the selected organization
   const toolCapture = useQuery({
-    queryKey: ["data-lab", "dry-run", "tools", modelId, organizationId],
+    queryKey: ["data-lab", "dry-run", "tools", modelId, organizationId], // org-filter: server-call cache partition for the selected organization request
     enabled: Boolean(modelId && organizationId),
     queryFn: () => dryRun({ mode: "tools", modelId, organizationId: organizationId ?? "", text: toolsQuestion, maxIterations: TOOL_TURNS }),
     retry: false,

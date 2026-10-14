@@ -47,7 +47,7 @@ interface Shown {
 export function BlockChipPanel({ target, declared, modelName, creatorId, onDeclare, onClose, onChanged }: Props) {
   const dispatch = useAppDispatch();
   const meId = useAppSelector(selectUserId);
-  const orgId = useAppSelector(selectActiveOrganizationId);
+  const orgId = useAppSelector(selectActiveOrganizationId); // org-filter: write-target prompt block edits persist in the selected organization
   const [shown, setShown] = useState<Shown | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);

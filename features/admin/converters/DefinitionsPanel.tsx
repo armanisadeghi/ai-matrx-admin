@@ -90,7 +90,7 @@ function DefinitionEditor({
   onClose: () => void;
   onSaved: () => void;
 }) {
-  const orgId = useSelector(selectActiveOrganizationId);
+  const orgId = useSelector(selectActiveOrganizationId); // org-filter: write-target converter saves belong to the selected organization
   const [draft, setDraft] = useState<ConverterDefinitionDraft>(
     row ? draftOf(row) : BLANK,
   );

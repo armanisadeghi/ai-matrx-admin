@@ -144,7 +144,7 @@ export function QuickMessageTemplateSaveCore({
       let saved: MessageTemplateDB;
       if (mode === "create") {
         saved = await createTemplate({
-          organization_id: await ensureOrgId(null),
+        organization_id: await ensureOrgId(null), // org-filter: write-target the quick-saved template belongs to the selected organization
           label: label.trim(),
           content: refine.workingContent.trim(),
           role,

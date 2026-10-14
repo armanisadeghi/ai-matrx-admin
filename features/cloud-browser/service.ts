@@ -631,7 +631,7 @@ async function startRun(profileId?: string): Promise<string> {
       // organization selected it asks, then this same start continues.
       start = {
         activationKey: crypto.randomUUID(),
-        organizationId: await ensureOrgId(null),
+        organizationId: await ensureOrgId(null), // org-filter: server-call the browser attempt runs in the selected organization
       };
       startRunAttempts.set(key, start);
     }
@@ -964,7 +964,7 @@ export async function mintStreamTicket(
   // with nothing behind it; a press of Take control / Reconnect (`takeover`)
   // is the person's act, so with no organization selected it asks, then
   // continues this same connect.
-  const organizationId = await ensureOrgId(null);
+  const organizationId = await ensureOrgId(null); // org-filter: server-call the stream ticket is minted for the selected organization
   const { data } = await postJson<unknown>(
     `/browser-manager/runs/${runId}/stream-ticket`,
     { mode, takeover },

@@ -21,9 +21,10 @@ export function useDataTableOffer(place: (items: PlacedItem[]) => void): (text: 
   const organizationId = useFetchOrganizationId();
   return (text: string) => {
     if (!organizationId || !text.trim()) return;
+    // org-filter: server-call the source catalog request runs in the selected organization
     void queryClient
       .fetchQuery({
-        queryKey: dataSourcesKey(organizationId),
+        queryKey: dataSourcesKey(organizationId), // org-filter: server-call cache partition for the selected organization request
         queryFn: ({ signal }) => getDataSources({ organizationId, signal }),
         staleTime: 5 * 60 * 1000,
       })

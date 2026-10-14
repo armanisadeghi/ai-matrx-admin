@@ -24,7 +24,7 @@ import { boardChoices } from "./boardChoices";
 const NEW_BOARD = "__new_board__";
 export function AddToBoard({ tableId, tableName }: { tableId: string; tableName?: string | null }) {
   const router = useRouter();
-  const organizationId = useAppSelector(selectOrganizationId);
+  const organizationId = useAppSelector(selectOrganizationId); // org-filter: write-target adding data writes a tile into the selected organization
   const [busy, setBusy] = useState(false);
   // Where the person is being taken: shown as a REAL link while the route compiles, so a slow first load never leaves a dead button.
   const [pendingHref, setPendingHref] = useState<string | null>(null);

@@ -182,7 +182,7 @@ export function useNotesCollectionWriteHandlers(
               const note = await dispatch(copyNote({ noteId: plan.copyOf, instanceId })).unwrap();
               return { id: note.id, name: note.label };
             }
-            const organizationId = plan.home?.organizationId ?? (await ensureOrgId(null));
+      const organizationId = plan.home?.organizationId ?? (await ensureOrgId(null)); // org-filter: write-target the collection is created in its home or selected organization
             const note = await dispatch(
               createNewNote({
                 label: plan.title,

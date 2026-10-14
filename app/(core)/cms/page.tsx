@@ -221,7 +221,7 @@ export default function SitesListPage() {
     // created, nothing is cleared, and the dialog is exactly as they left it.
     let organizationId: string;
     try {
-      organizationId = await ensureOrgId(null);
+      organizationId = await ensureOrgId(null); // org-filter: default-for-new the new site is created in the selected organization
     } catch (err) {
       setError(
           err instanceof Error

@@ -257,7 +257,7 @@ export async function createLinkedWorkbook(name: string, tableOrganizationId: st
   // a peek that reads null while the ladder is still answering (MEMBER-DEFECTS-4 item 3).
   let organizationId: string;
   try {
-    organizationId = await ensureOrgId(null);
+    organizationId = await ensureOrgId(null); // org-filter: write-target the linked workbook is created in the selected organization
   } catch (error) {
     return { success: false, error: error instanceof Error ? error.message : "Your organization could not be found." };
   }

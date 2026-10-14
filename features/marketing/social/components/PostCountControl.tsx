@@ -15,7 +15,7 @@ import { formatPointsAlways } from "../cost";
 import {
   choiceLabel,
   choiceMenu,
-  countReason,
+  postCountReason,
   postsUsd,
   SOCIAL_LIMITS_HREF,
   POST_COUNT_PERSON_HREF,
@@ -52,7 +52,7 @@ export function PostCountControl({
 }) {
   const { choice, setChoice } = usePostCount();
   const { estimate, count, maxError, max } = usePostCountEstimate(organizationId, platform);
-  const reason = countReason(count, choice, max);
+  const reason = postCountReason(count, choice, max);
   const effective = reason.limited && max != null ? max : count;
   const options: SelectOption<PostCountChoice>[] = choiceMenu(choice).map((c) => ({ value: c, label: choiceLabel(c) }));
   const settingsHref = reason.limited ? SOCIAL_LIMITS_HREF(organizationId, "profile_posts_max") : POST_COUNT_PERSON_HREF;

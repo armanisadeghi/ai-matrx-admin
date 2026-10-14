@@ -173,7 +173,7 @@ function taxonomyNodeLabel(
 export function SystemJobsPanel({ lane }: { lane: "system" | "support" }) {
   const support = lane === "support";
   const { organizationId, canLoad, organizationRequired, organizationState } =
-    useOrganizationRequired();
+  useOrganizationRequired(); // org-filter: server-call system job actions execute in the selected organization
   const [rows, setRows] = useState<SystemTaskResponse[]>([]);
   // What each job costs and how it behaves — the shared automation rollup
   // (scheduler.automation_cost_rollup), keyed by the job's sch_task id.

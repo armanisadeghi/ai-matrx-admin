@@ -107,7 +107,7 @@ async function authHeaders(method: string): Promise<Record<string, string>> {
   // bare kernel (ORG-GATE-AUDIT): attaching or detaching with no organization
   // selected asks, then continues this same request; a background list read
   // keeps the fail-closed refusal before any networking.
-  const organizationId = await ensureOrgId(null);
+  const organizationId = await ensureOrgId(null); // org-filter: server-call attachment API requests run in the selected organization
   return applyOrganizationContextHeader(
     {
       Authorization: `Bearer ${session.access_token}`,

@@ -39,7 +39,7 @@ const ports: TemplatePorts = {
     const { data } = await getClaimsUser(supabase);
     return data?.user?.id ?? null;
   },
-  activeOrgId: () => ensureOrgId(null),
+  activeOrgId: () => ensureOrgId(null), // org-filter: write-target template file writes belong to the selected organization
   async listRows(f) {
     let q = table()
       .select(TEMPLATE_SUMMARY_COLUMNS)

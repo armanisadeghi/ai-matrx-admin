@@ -18,9 +18,10 @@ import { judgeConnection, loadConnectionSnapshot, type PlatformConnection } from
 export function useConnectionStates(recordOrganizationId: string) {
   // Our own team are the provider-side testers while an app is in test mode (see judgeConnection).
   const viewerIsInternal = useAppSelector(selectIsAdminPerson);
+  // org-filter: server-call connection state is requested for the selected organization
   const query = useQuery({
     queryKey: ["marketing", "social", "connection-states"],
-    queryFn: async () => loadConnectionSnapshot(await ensureOrgId(null)),
+    queryFn: async () => loadConnectionSnapshot(await ensureOrgId(null)), // org-filter: server-call connection state is requested for the selected organization
     enabled: Boolean(recordOrganizationId),
     staleTime: 60_000,
   });

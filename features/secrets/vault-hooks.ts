@@ -317,7 +317,7 @@ export function useVault(
         if (isOrganizationRequiredError(e)) {
           // Declining rethrows OrganizationSelectionCancelled, which callers
           // treat as "nothing happened" — no toast, no error banner.
-          await ensureOrgId(null);
+      await ensureOrgId(null); // org-filter: server-call vault actions run in the selected organization
           const retried = await op();
           if (success) toast.success(success);
           await refresh();

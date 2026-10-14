@@ -389,7 +389,7 @@ export function MessageTemplateManager({
       }
 
       const input: CreateMessageTemplateInput = {
-        organization_id: await ensureOrgId(null),
+      organization_id: await ensureOrgId(null), // org-filter: write-target the new message template belongs to the selected organization
         label: createFormData.label,
         content: createFormData.content,
         role: createFormData.role,

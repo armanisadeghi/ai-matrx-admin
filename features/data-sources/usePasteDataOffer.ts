@@ -36,9 +36,10 @@ function usePasteOfferHandler(disabled: boolean) {
     if (disabled || !organizationId) return;
     const text = event.clipboardData?.getData("text/plain") ?? "";
     if (!text.trim() || text.trim().includes("\n") || !asWebAddress(text)) return;
+    // org-filter: server-call the source catalog request runs in the selected organization
     void queryClient
       .fetchQuery({
-        queryKey: dataSourcesKey(organizationId),
+        queryKey: dataSourcesKey(organizationId), // org-filter: server-call cache partition for the selected organization request
         queryFn: ({ signal }) => getDataSources({ organizationId, signal }),
         staleTime: 5 * 60 * 1000,
       })

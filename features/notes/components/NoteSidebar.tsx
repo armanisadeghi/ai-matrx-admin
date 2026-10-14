@@ -693,7 +693,7 @@ export function NoteSidebar({ instanceId, onNoteOpened }: NoteSidebarProps) {
         const home = homeScopeId ? homes.byId.get(homeScopeId) : undefined;
         // A home names its organization; no home = the active one (the database
         // files it in that organization's General).
-        const organizationId = home ? home.organizationId : await ensureOrgId(null);
+    const organizationId = home ? home.organizationId : await ensureOrgId(null); // org-filter: write-target the new note belongs to its home or selected organization
         // The LIVE records: the sidebar list keeps a note's previous body while it is typed.
         const existing = selectAllNotesList(store.getState()).find(
           (n) =>

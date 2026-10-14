@@ -212,7 +212,7 @@ export const toggleTaskEnabled =
     // question leaves it exactly as it was (nothing flipped, nothing sent).
     const organizationId =
       taskOrganizationId(getState, id) ??
-      (await ensureOrgId(null));
+      (await ensureOrgId(null)); // org-filter: write-target the task update uses its own or the selected organization
     // NOT OPTIMISTIC (GATES-TAIL, VERIFIER-21 #1n): with the PATCH held, Pause used to read
     // Enable before the server had agreed. The row is marked "saving" — the control shows its
     // pending state — and flips only once the write has landed.

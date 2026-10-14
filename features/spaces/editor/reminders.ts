@@ -99,6 +99,7 @@ export function usePageReminders(
     if (key === sent.current) return;
     const timer = window.setTimeout(() => {
       sent.current = key;
+      // org-filter: write-target reminder reconciliation writes notices in the selected organization
       void supabase
         .schema("communication")
         .rpc("reconcile_my_notices", { p_scope: reminderScope(spaceId), p_notices: set, p_organization_id: organizationId })

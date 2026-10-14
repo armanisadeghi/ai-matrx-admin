@@ -216,13 +216,14 @@ function SourceRun({
         startRun(
           key,
           (onProgress) =>
+            // org-filter: server-call the data fetch executes in the selected organization
             fetchData(
               { sourceKey: source.key, input, maxRecords: count },
               { organizationId, onProgress },
             ),
           () => {
             void queryClient.invalidateQueries({
-              queryKey: libraryKey(organizationId),
+              queryKey: libraryKey(organizationId), // org-filter: server-call invalidates the selected organization library response
             });
           },
         )

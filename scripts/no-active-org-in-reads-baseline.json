@@ -16,11 +16,6 @@
       "owner": "documents",
       "note": "selectOrganizationId → ensureOrganizationContext → createDocument; reload takes no org"
     },
-    "app/(core)/workbooks/page.tsx::WorkbooksLandingPage::selectOrganizationId#1": {
-      "class": "write-target",
-      "owner": "workbooks",
-      "note": "selectOrganizationId → ensureOrganizationContext for create/import only"
-    },
     "app/(dev)/demos/context-menu/lab/page.dev.tsx::IdentityBanner::selectOrganizationId#1": {
       "class": "not-a-list",
       "owner": "dev-demos",
@@ -35,11 +30,6 @@
       "class": "not-a-list",
       "owner": "dev-demos",
       "note": "orgId feeds EntityRef chip and a scope id for a demo; no list read"
-    },
-    "app/(dev)/demos/scopes/context-lab/page.dev.tsx::ContextHintsPanel::selectActiveOrganizationId#1": {
-      "class": "not-a-list",
-      "owner": "dev-demos",
-      "note": "activeOrgId feeds hasContext display and a target_id; no list read"
     },
     "components/agent-copy/AlchemyHost.tsx::AlchemyHost::selectOrganizationId#1": {
       "class": "not-a-list",
@@ -100,11 +90,6 @@
       "class": "not-a-list",
       "owner": "agents",
       "note": "orgId → selectScopeTypeLabelMap to label bound variables; display labels, not a list the person browses"
-    },
-    "../aidream/apps/shared/chat/src/agents/redux/conversation-list/conversation-trash.thunks.ts::fetchTrashedConversations::selectActiveOrganizationId#1": {
-      "class": "not-a-list",
-      "owner": "agents",
-      "note": "active org → ensureEffectiveKnob trash page-size; fetchTrashed list itself is by viewer"
     },
     "../aidream/apps/shared/chat/src/agents/redux/execution-system/instance-working-document/instance-working-document.thunks.ts::resolveOrgId::getActiveOrgId()#1": {
       "class": "write-target",
@@ -201,11 +186,6 @@
       "owner": "files",
       "note": "organizationId → fetchPlanStatus plan name; no list"
     },
-    "features/google-workspace/GoogleAgentToolsSection.tsx::GoogleAgentToolsSection::selectOrganizationId#1": {
-      "class": "not-a-list",
-      "owner": "google-workspace",
-      "note": "org only part of a remount key"
-    },
     "features/mandates/admin/ImpactBatchPanel.tsx::ImpactBatchPanel::useServerOrganizationId()#1": {
       "class": "admin-platform",
       "owner": "mandates",
@@ -265,11 +245,6 @@
       "class": "not-a-list",
       "owner": "residential-egress",
       "note": "organizationId → useScopedKnobs download URL knob"
-    },
-    "features/scopes/components/active-context/ActiveContextLayersPanel.tsx::ActiveContextLayersPanel::selectActiveOrganizationId#1": {
-      "class": "not-a-list",
-      "owner": "scopes",
-      "note": "orgId only finds the org name to display"
     },
     "features/scopes/components/active-context/ActiveContextPanel.tsx::ActiveContextPanel::selectOrganizationId#1": {
       "class": "not-a-list",

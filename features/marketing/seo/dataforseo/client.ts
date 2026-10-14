@@ -51,7 +51,7 @@ async function organizationContextHeaders(
   // ORG-GATE-AUDIT: THE GATE, never the bare kernel. A run the person starts
   // with no organization selected asks, then continues this same request; a
   // background read keeps the fail-closed refusal.
-  const organizationId = await ensureOrgId(null);
+  const organizationId = await ensureOrgId(null); // org-filter: server-call SEO provider requests run in the selected organization
   return applyOrganizationContextHeader(base, organizationId);
 }
 

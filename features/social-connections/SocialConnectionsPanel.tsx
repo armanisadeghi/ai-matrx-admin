@@ -34,7 +34,7 @@ export function SocialConnectionsPanel({
   returnUrl?: string;
   onChanged?: () => void;
 }) {
-  const activeOrg = useAppSelector(selectOrganizationId);
+  const activeOrg = useAppSelector(selectOrganizationId); // org-filter: server-call social connection requests run in the selected organization
   const organizationId = requestedOrg ?? activeOrg;
   const userId = useAppSelector(selectUserId);
   const backendOrigin = useAppSelector(selectResolvedBaseUrl);

@@ -61,7 +61,7 @@ async function authedDirectiveHeaders(
   // A background READ (the ledger state a card reads on mount) passes
   // `interactive: false`: nobody pressed anything, so it refuses quietly rather
   // than raise a picker out of nowhere.
-  const organizationId = await ensureOrgId(null);
+  const organizationId = await ensureOrgId(null); // org-filter: server-call directive catalog API requests run in the selected organization
   return applyOrganizationContextHeader(
     {
       "Content-Type": "application/json",

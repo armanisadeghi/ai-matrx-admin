@@ -278,7 +278,7 @@ export class VaultImportTransportError extends Error {
  * exactly as before).
  */
 function readActiveOrganizationForIdentity(): Promise<string> {
-  return ensureOrgId(null);
+  return ensureOrgId(null); // org-filter: server-call the frozen vault request runs in the selected organization
 }
 
 async function authHeaders(
@@ -296,7 +296,7 @@ async function authHeaders(
   // refusal. An actor-frozen send never asks (see readActiveOrganizationForIdentity).
   const initialOrganizationId = expectedActor
     ? null
-    : await ensureOrgId(null);
+    : await ensureOrgId(null); // org-filter: server-call vault requests run in the selected organization
   if (initialOrganizationId) {
     applyOrganizationContextHeader({}, initialOrganizationId);
   }

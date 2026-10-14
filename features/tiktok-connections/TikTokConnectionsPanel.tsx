@@ -32,13 +32,13 @@ function tikTokLink(value: string | null | undefined): string | undefined {
 
 export function TikTokConnectionsPanel() {
   const userId = useAppSelector(selectUserId);
-  const organizationId = useAppSelector(selectOrganizationId);
+  const organizationId = useAppSelector(selectOrganizationId); // org-filter: server-call TikTok connection requests run in the selected organization
   return <TikTokConnectionContents key={`${userId}:${organizationId}`} />;
 }
 
 function TikTokConnectionContents() {
   const userId = useAppSelector(selectUserId);
-  const organizationId = useAppSelector(selectOrganizationId);
+  const organizationId = useAppSelector(selectOrganizationId); // org-filter: server-call TikTok connection requests run in the selected organization
   const params = useSearchParams();
   const [connections, setConnections] = useState<Awaited<ReturnType<typeof listTikTokConnections>> | null>(null);
   const [failure, setFailure] = useState<string | null>(null);

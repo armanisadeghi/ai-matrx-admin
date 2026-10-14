@@ -700,7 +700,7 @@ export function KnowledgeHubPage({
     if (sample) throw new Error(SAMPLE_WRITE_REFUSAL);
     let organizationId: string;
     try {
-      organizationId = await ensureOrgId(null);
+      organizationId = await ensureOrgId(null); // org-filter: write-target a new saved view belongs to the selected organization
     } catch (err) {
       // A saved view is filed in an organization. The dialog prints what it catches, so it
       // gets the platform's sentence with the remedy — never the transport's.
@@ -773,7 +773,7 @@ export function KnowledgeHubPage({
         return runViewWrite(v, () => setViewPinned(v.id, false), `Unpinned "${v.name}".`);
       case "duplicate":
         return runViewWrite(v, async () => {
-          const { id, pinError } = await duplicateView(v, await ensureOrgId(null));
+        const { id, pinError } = await duplicateView(v, await ensureOrgId(null)); // org-filter: write-target the duplicated view belongs to the selected organization
           if (pinError) throw new Error(pinError);
           write({ view: { kind: "saved", id }, query: v.definition?.query ?? state.query, layout: v.definition?.layout ?? state.layout });
         }, `Made a personal copy of "${v.name}".`);

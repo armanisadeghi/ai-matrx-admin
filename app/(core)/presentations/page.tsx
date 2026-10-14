@@ -62,7 +62,7 @@ export default function PresentationsHomePage() {
   const handleCreate = async () => {
     setCreating(true);
     try {
-      const organizationId = await ensureOrgId(null);
+    const organizationId = await ensureOrgId(null); // org-filter: default-for-new the new presentation is created in the selected organization
       const res = await createPresentation({ organizationId });
       if (isServiceFailure(res)) throw new Error(res.error);
       router.push(`/presentations/${res.data.id}`);

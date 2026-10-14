@@ -59,7 +59,7 @@ import type {
 export function useEnsureEntitlementSnapshot(): void {
   const dispatch = useAppDispatch();
   const userId = useAppSelector(selectUser)?.id ?? null;
-  const organizationId = useAppSelector(selectOrganizationId);
+  const organizationId = useAppSelector(selectOrganizationId); // org-filter: server-call entitlement snapshots are evaluated for the selected organization
   const loading = useAppSelector(selectEntitlementsLoading);
   useEffect(() => {
     if (!userId || !loading) return;

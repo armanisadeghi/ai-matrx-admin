@@ -963,7 +963,7 @@ export function IntegrationsWorkspace({
     try {
       // This explicit click may ask for an organization. Background catalog
       // reads remain non-interactive through the service's GET default.
-      await ensureOrgId(null);
+      await ensureOrgId(null); // org-filter: server-call the connection test runs in the selected organization
       const discovery = await dispatch(
         discoverServerTools(entry.serverId),
       ).unwrap();

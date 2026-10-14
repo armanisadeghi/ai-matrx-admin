@@ -81,6 +81,7 @@ export async function ownerUpsertKindContentBlock(
   // org-filter: write-target writes into the organization the person is working in; no list reads it
   const organizationId = await ensureOrgId(undefined);
 
+  // org-filter: write-target this lookup is the idempotency preflight for the organization-scoped upsert
   const { data: existing, error: findError } = await browserSupabase
     .schema("agent")
     .from("prompt_block")

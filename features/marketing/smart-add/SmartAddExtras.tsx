@@ -276,7 +276,7 @@ export function useRelationKinds(onRelate: (c: Candidate, relation: Relation | n
     };
   }, []);
   const onCustom = async (c: Candidate, label: string) => {
-    const organizationId = await ensureOrgId(null);
+    const organizationId = await ensureOrgId(null); // org-filter: server-call smart-add research runs in the selected organization
     const kind = await saveCustomRelationKind(organizationId, label);
     setKinds((list) => (list.some((k) => k.key === kind.key) ? list : [...list, kind]));
     onRelate(c, { key: kind.key, label: kind.label, routesTo: kind.routesTo });
