@@ -168,7 +168,7 @@ describe("the sentences", () => {
     expect(describeRenderVerdict({ ...base, layerScope: "organization" })).toContain(
       "Your organization's view rendered",
     );
-    expect(describeRenderVerdict({ ...base, layerScope: null })).not.toContain("own component");
+    expect(describeRenderVerdict({ ...base, layerScope: null })).toContain("generic key/value");
     expect(describeRenderVerdict({ reached: true, sharedHasComponent: true, layerScope: "user" })).toBe(
       "This shape's own component rendered.",
     );

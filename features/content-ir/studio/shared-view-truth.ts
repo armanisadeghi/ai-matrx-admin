@@ -109,5 +109,7 @@ export function describeRenderVerdict(input: {
   if (input.layerScope === "organization") {
     return "Your organization's view rendered. The shared view is the generic viewer.";
   }
-  return "A component rendered. The shared view is the generic viewer.";
+  // No shared component and no layered view of the viewer's: nothing of the
+  // shape's own can have drawn it, whatever marker the route carried.
+  return "The reader gets the generic key/value view here.";
 }
