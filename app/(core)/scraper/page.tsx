@@ -25,18 +25,21 @@ const MODES = [
     icon: Zap,
     label: "Quick Scrape",
     description: "Extract plain text instantly from any URL",
+    tone: "teal" as const,
   },
   {
     href: "/scraper/search",
     icon: Search,
     label: "Search",
     description: "Search keywords across the web, no scraping",
+    tone: "blue" as const,
   },
   {
     href: "/scraper/search-and-scrape",
     icon: ScanSearch,
     label: "Search & Scrape",
     description: "Search a keyword and scrape the top results",
+    tone: "violet" as const,
   },
 ];
 
@@ -316,9 +319,11 @@ export default function Page() {
 
         {/* Mode cards */}
         <div className="w-full grid gap-3">
-          {MODES.map(({ href, icon: Icon, label, description }) => (
+          {MODES.map(({ href, icon: Icon, label, description, tone }) => (
             <Tile
               key={href}
+              hero
+              tone={tone}
               icon={<Icon />}
               title={label}
               line={description}

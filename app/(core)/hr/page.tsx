@@ -90,12 +90,13 @@ function HrHomeStarters() {
 
       {doors.length > 0 ? (
         <section className="space-y-3">
-          <h2 className="type-title text-foreground">Where to start</h2>
+          <h2 className="type-heading text-foreground">Where to start</h2>
           <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
             {doors.map((door) => (
               <li key={door.key}>
                 <Tile
                   asChild
+                  hero
                   icon={<door.icon />}
                   title={door.label}
                   line={door.description}
