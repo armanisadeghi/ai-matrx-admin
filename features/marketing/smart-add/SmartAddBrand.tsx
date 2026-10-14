@@ -65,6 +65,7 @@ import {
   FIELD_LABEL,
   applyDecision,
   candidateCategory,
+  bestFindingHints,
   confirmedBasics,
   mergeEvidence,
   nextRoundSeeds,
@@ -298,6 +299,10 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
   const confirmedFacts: ConfirmedFacts = {
     ...(factBasics.name ? { name: factBasics.name } : {}),
     ...(factBasics.websiteUrl ? { domain: websiteHost(factBasics.websiteUrl) } : {}),
+    // The business type sharpens the later enrichment search ("name" + type + city).
+    ...(factBasics.category ? { category: factBasics.category } : {}),
+    // Not confirmed: our best finding, used only to build that search when nothing is confirmed yet.
+    ...bestFindingHints(items),
     ...(factBasics.facts.find((f) => f.field === "address")?.value
       ? { location: factBasics.facts.find((f) => f.field === "address")?.value }
       : {}),
