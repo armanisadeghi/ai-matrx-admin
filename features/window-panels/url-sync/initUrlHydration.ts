@@ -410,6 +410,7 @@ export function initUrlHydration() {
   registerPanelHydrator("smart_add_helper", (dispatch, id) => {
     if (!isHelperMethod(id)) return "refused";
     dispatch(openOverlay({ overlayId: "smartAddHelperWindow", instanceId: id, data: { method: id } }));
+    return undefined;
   });
 
   registerPanelHydrator("feedback", (dispatch) => {
