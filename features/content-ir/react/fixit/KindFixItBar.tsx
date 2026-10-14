@@ -381,7 +381,7 @@ export function KindFixItBarView({
         {plan.rows.map((row) => (
           <li key={row.gap} data-fixit-gap={row.gap} className="flex items-center gap-2">
             <CircleAlert className="h-3.5 w-3.5 shrink-0 text-amber-600 dark:text-amber-400" />
-            <span className="min-w-0 flex-1 truncate text-xs text-amber-800 dark:text-amber-300">
+            <span className="min-w-0 truncate text-xs text-amber-800 dark:text-amber-300">
               {row.label}
             </span>
             {row.ownerAction ? (
