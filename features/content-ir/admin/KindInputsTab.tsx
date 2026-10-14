@@ -58,6 +58,9 @@ import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
 import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { copyToClipboard } from "@/lib/clipboard/copy";
+import { humanizeStructuralMessage } from "@/features/content-ir/input/humanize-structural-error";
+import { useAppSelector } from "@/lib/redux/hooks";
+import { selectIsAdminDebugger } from "@/lib/redux/selectors/userSelectors";
 
 type SchemaState =
   | { status: "loading" }
@@ -134,6 +137,9 @@ export default function KindInputsTab({
   const [values, setValues] = useState<Record<string, unknown>>({});
   // Bumping this reseeds the form from the bridge's defaultValues.
   const [resetNonce, setResetNonce] = useState(0);
+  const debug = useAppSelector(selectIsAdminDebugger);
+  // No validation is shown until the user has actually typed something.
+  const [touched, setTouched] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -164,6 +170,10 @@ export default function KindInputsTab({
     return () => {
       cancelled = true;
     };
+  }, [kind, resetNonce]);
+
+  useEffect(() => {
+    setTouched(false);
   }, [kind, resetNonce]);
 
   if (schemaState.status === "loading") {
@@ -210,7 +220,7 @@ export default function KindInputsTab({
 
   const leg = validateStructuralLeg(assembled.instance, emittedJsonSchema);
   const attributed = attributeStructuralErrors(
-    leg.ok ? undefined : leg.detail,
+    leg.ok || !touched ? undefined : leg.detail,
     pairs.map((pair) => pair.fieldKey),
   );
 
@@ -225,17 +235,13 @@ export default function KindInputsTab({
           <span className="font-medium text-foreground">
             {Object.keys(schema.fields).length} kind fields
           </span>{" "}
-          converted to{" "}
+          become{" "}
           <span className="font-medium text-foreground">
-            {variables.length} agent variables
-          </span>{" "}
-          by <code className="font-mono">kindFieldsToVariableDefinitions</code>,
-          rendered below with the production{" "}
-          <code className="font-mono">VariableInputComponent</code>. Values are
-          assembled into a <code data-kind-source="explicit" className="font-mono">__kind</code> instance and
-          validated by <code className="font-mono">validateStructuralLeg</code> —
-          the same ajv leg the activation gate runs. Read-only: nothing here is
-          persisted.
+            {variables.length} inputs an agent can take
+          </span>
+          . What you type is checked against the shape as you go, the same way
+          the shape is checked before it can be turned on. Nothing here is
+          saved.
         </p>
       </div>
 
@@ -300,12 +306,13 @@ export default function KindInputsTab({
 
                   <VariableInputComponent
                     value={values[pair.variable.name]}
-                    onChange={(next) =>
+                    onChange={(next) => {
+                      setTouched(true);
                       setValues((prev) => ({
                         ...prev,
                         [pair.variable.name]: next,
-                      }))
-                    }
+                      }));
+                    }}
                     variableName={pair.variable.name}
                     label={pair.variable.label}
                     customComponent={pair.variable.customComponent}
@@ -329,10 +336,10 @@ export default function KindInputsTab({
                   {fieldErrors.map((message) => (
                     <p
                       key={message}
-                      className="flex items-start gap-1.5 font-mono text-[11px] text-red-700 dark:text-red-300"
+                      className="flex items-start gap-1.5 text-[11px] text-red-700 dark:text-red-300"
                     >
                       <X className="mt-0.5 h-3 w-3 shrink-0" />
-                      {message}
+                      {debug ? message : humanizeStructuralMessage(message)}
                       <ErrorAlchemyMenu error={message} />
                     </p>
                   ))}
@@ -446,17 +453,19 @@ export default function KindInputsTab({
               </span>
               <span
                 className={`ml-auto flex items-center gap-1 rounded px-1.5 py-0.5 text-[11px] font-medium ${
-                  leg.ok
-                    ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
-                    : "bg-red-500/10 text-red-700 dark:text-red-300"
+                  !touched
+                    ? "bg-muted text-muted-foreground"
+                    : leg.ok
+                      ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
+                      : "bg-red-500/10 text-red-700 dark:text-red-300"
                 }`}
               >
-                {leg.ok ? (
+                {!touched ? null : leg.ok ? (
                   <Check className="h-3 w-3" />
                 ) : (
                   <X className="h-3 w-3" />
                 )}
-                {leg.ok ? "pass" : "fail"}
+                {!touched ? "not checked yet" : leg.ok ? "pass" : "fail"}
               </span>
             </div>
 
@@ -490,18 +499,20 @@ export default function KindInputsTab({
 
               {/* The raw validator output, verbatim — attribution above is
                   best-effort string parsing and must never be the only view. */}
-              <p className="font-mono text-[11px] text-foreground">
-                {leg.detail ?? (leg.ok ? "passed" : "failed")}
-              </p>
+              {touched && debug && (
+                <p className="font-mono text-[11px] text-foreground">
+                  {leg.detail ?? (leg.ok ? "passed" : "failed")}
+                </p>
+              )}
 
               {attributed.formLevel.length > 0 && (
                 <ul className="space-y-0.5">
                   {attributed.formLevel.map((message) => (
                     <li
                       key={message}
-                      className="font-mono text-[11px] text-red-700 dark:text-red-300"
+                      className="text-[11px] text-red-700 dark:text-red-300"
                     >
-                      {message}
+                      {debug ? message : humanizeStructuralMessage(message)}
                       <ErrorAlchemyMenu error={message} />
                     </li>
                   ))}
@@ -513,11 +524,13 @@ export default function KindInputsTab({
           {/* Assembled instance */}
           <JsonPanel
             title="Assembled instance"
-            subtitle="live form values, in kind space"
+            subtitle="what your answers add up to"
             text={instanceText}
             copyLabel={`${kind} instance`}
           />
 
+          {debug && (
+            <>
           {/* Derived variable definitions */}
           <JsonPanel
             title="Derived VariableDefinition[]"
@@ -533,6 +546,8 @@ export default function KindInputsTab({
             text={reconstructedText}
             copyLabel={`${kind} reconstructed fields`}
           />
+            </>
+          )}
         </div>
       </div>
     </div>

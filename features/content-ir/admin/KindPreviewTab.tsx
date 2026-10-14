@@ -16,13 +16,15 @@ import type { ExamplesState } from "@/features/content-ir/studio/kind-examples";
 interface KindPreviewTabProps {
   kind: string;
   examples: ExamplesState;
+  currentVersion?: number;
 }
 
-export default function KindPreviewTab({ kind, examples }: KindPreviewTabProps) {
+export default function KindPreviewTab({ kind, examples, currentVersion }: KindPreviewTabProps) {
   return (
     <KindExamplePreview
       kind={kind}
       examples={examples}
+      currentVersion={currentVersion}
       showPathFootnote
       emptyState={
         <div className="rounded-md border border-border bg-card px-4 py-8 text-center">
@@ -30,8 +32,8 @@ export default function KindPreviewTab({ kind, examples }: KindPreviewTabProps) 
             No examples for this kind yet.
           </p>
           <p className="mt-1 text-xs text-muted-foreground">
-            Author a canonical <code className="font-mono">kind_example</code>{" "}
-            row (R4) — nothing renders here until a real sample exists.
+            Add an example on the Examples tab. Nothing is drawn here until a
+            real sample exists.
           </p>
         </div>
       }

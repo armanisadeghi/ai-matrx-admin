@@ -64,7 +64,18 @@ function isStoredFieldArray(value: Json | null): value is Json[] {
   );
 }
 
-function typeSummary(el: StoredFieldElement): string {
+/** The child kind a field holds, read off the emitted schema's `$ref` (the field list alone does not name it). */
+function childKindOf(schema: Json | null, field: string): string | null {
+  if (!schema || typeof schema !== "object" || Array.isArray(schema)) return null;
+  const props = (schema as { properties?: Record<string, unknown> }).properties;
+  const node = props?.[field];
+  if (!node || typeof node !== "object") return null;
+  const n = node as { $ref?: unknown; items?: { $ref?: unknown } };
+  const ref = typeof n.$ref === "string" ? n.$ref : typeof n.items?.$ref === "string" ? n.items.$ref : null;
+  return ref ? (ref.split("/").pop() ?? null) : null;
+}
+
+function typeSummary(el: StoredFieldElement, schema: Json | null): string {
   switch (el.type) {
     case "enum":
       return `enum(${el.values.join(" | ")})`;
@@ -75,9 +86,12 @@ function typeSummary(el: StoredFieldElement): string {
     case "inline_object":
       return `inline_object (${el.fields.length} fields)`;
     case "object":
-      return "object → (ref via kind_edge)";
+      return childKindOf(schema, el.name) ?? "nested shape";
     case "array":
-      return "array → (refs via kind_edge)";
+      {
+        const child = childKindOf(schema, el.name);
+        return child ? `list of ${child}` : "list of nested shapes";
+      }
     default:
       return el.type;
   }
@@ -85,6 +99,7 @@ function typeSummary(el: StoredFieldElement): string {
 
 function flattenStoredFields(
   elements: StoredFieldElement[],
+  schema: Json | null,
   prefix = "",
   depth = 0,
 ): FieldRow[] {
@@ -93,12 +108,12 @@ function flattenStoredFields(
     rows.push({
       name: `${prefix}${el.name}`,
       depth,
-      type: typeSummary(el),
+      type: typeSummary(el, schema),
       required: el.required ?? false,
       nullable: el.nullable ?? false,
     });
     if (el.type === "inline_object") {
-      rows.push(...flattenStoredFields(el.fields, `${prefix}${el.name}.`, depth + 1));
+      rows.push(...flattenStoredFields(el.fields, schema, `${prefix}${el.name}.`, depth + 1));
     }
   }
   return rows;
@@ -119,7 +134,7 @@ export default function KindSchemaTab({
     notify: copyNotify,
   });
   const fieldRows = isStoredFieldArray(fieldData)
-    ? flattenStoredFields(fieldData as unknown as StoredFieldElement[])
+    ? flattenStoredFields(fieldData as unknown as StoredFieldElement[], emittedJsonSchema)
     : null;
   const schemaText =
     emittedJsonSchema === null ? null : JSON.stringify(emittedJsonSchema, null, 2);
@@ -134,13 +149,13 @@ export default function KindSchemaTab({
       {/* Fields */}
       <section className="overflow-hidden rounded-md border border-border bg-card">
         <div className="border-b border-border px-3 py-2 text-sm font-semibold text-foreground">
-          Fields (kind_definition.data)
+          Fields
         </div>
         {fieldRows === null ? (
           <div className="flex items-center gap-2 px-3 py-3 text-xs text-muted-foreground">
             <Info className="h-3.5 w-3.5 shrink-0" />
-            No stored field list — python-owned kinds derive their schema from
-            the pydantic mirror; see emitted_json_schema below.
+            This shape has no field list of its own. Its structure is defined by
+            the full schema below.
           </div>
         ) : (
           <MatrxDataTable<FieldRow>
@@ -160,7 +175,7 @@ export default function KindSchemaTab({
       <section className="rounded-md border border-border bg-card">
         <div className="flex items-center gap-2 border-b border-border px-3 py-2">
           <span className="text-sm font-semibold text-foreground">
-            emitted_json_schema
+            Full schema
           </span>
           <button
             type="button"
@@ -183,8 +198,8 @@ export default function KindSchemaTab({
           </details>
         ) : (
           <p className="px-3 py-3 text-xs text-muted-foreground">
-            No emitted_json_schema materialized for this kind — the structural
-            gate cannot run until it exists.
+            This shape has no full schema yet, so its structure can't be
+            checked until one exists.
           </p>
         )}
       </section>

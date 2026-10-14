@@ -13,6 +13,7 @@
  * before save and trusts the DB trigger's `validation_status` verdict after.
  */
 
+import { exampleDisplayLabel, exampleStaleNote } from "@/features/content-ir/studio/example-display";
 import dynamic from "next/dynamic";
 import { useState } from "react";
 import {
@@ -98,6 +99,8 @@ interface KindExampleManagerProps {
   loadStateShownElsewhere?: boolean;
   onExamplesChanged: () => void;
   authMode: ShapeAuthMode;
+  /** The shape's version today — examples written for an older one say so. */
+  currentVersion?: number;
 }
 
 export default function KindExampleManager({
@@ -107,6 +110,7 @@ export default function KindExampleManager({
   loadStateShownElsewhere = false,
   onExamplesChanged,
   authMode,
+  currentVersion,
 }: KindExampleManagerProps) {
   const [draft, setDraft] = useState<ExampleDraft | null>(null);
   const [exampleSaving, setExampleSaving] = useState(false);
@@ -296,7 +300,7 @@ export default function KindExampleManager({
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-1.5">
                   <span className="truncate text-sm font-medium text-foreground">
-                    {row.label ?? "Untitled example"}
+                    {exampleDisplayLabel(row.label, row.isCanonical) ?? "Untitled example"}
                   </span>
                   {row.isCanonical && (
                     <span className="inline-flex items-center gap-1 rounded bg-emerald-500/10 px-1.5 py-0.5 text-[11px] font-medium text-emerald-700 dark:text-emerald-300">
@@ -305,6 +309,9 @@ export default function KindExampleManager({
                   )}
                   <span className="text-[11px] text-muted-foreground">
                     v{row.kindVersion} · {row.validationStatus}
+                    {exampleStaleNote(row.kindVersion, currentVersion)
+                      ? ` · ${exampleStaleNote(row.kindVersion, currentVersion)}`
+                      : ""}
                     {row.source === "captured" ? " · from a run" : ""}
                   </span>
                 </div>

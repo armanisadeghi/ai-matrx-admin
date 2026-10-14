@@ -416,7 +416,7 @@ export default function ShapeInstancesTab({
           className="mt-3 inline-flex h-8 items-center gap-1.5 rounded-md bg-primary px-3 text-xs font-medium text-primary-foreground transition-opacity hover:opacity-90"
         >
           <FlaskConical className="h-3.5 w-3.5" />
-          Fill one in on the Test tab and hit Save
+          Make one on the Test tab
         </Link>
       </div>
     );

@@ -14,27 +14,32 @@
 
 import { ShieldCheck } from "lucide-react";
 
+import { useKindSandboxSettings } from "@/features/content-ir/react/db-component/useKindSandboxKnob";
+
 import {
     SANDBOX_AUTHORING_RULES,
     SANDBOX_HEIGHT_NOTE,
 } from "@/features/content-ir/studio/sandbox-authoring-rules";
 
 export default function SandboxAuthoringRules() {
+    // Say only what is true right now: the frame is a per-organization setting.
+    const framed = useKindSandboxSettings().enabled;
     return (
         <details className="shrink-0 border-b border-border bg-card">
             <summary className="flex cursor-pointer items-center gap-2 px-3 py-2 text-xs font-medium text-foreground">
                 <ShieldCheck className="h-4 w-4 text-muted-foreground" />
                 What this component may and may not do
                 <span className="font-normal text-muted-foreground">
-                    — it renders in an isolated frame
+                    {framed
+                        ? "— it renders in an isolated frame"
+                        : "— the isolated frame is not on for this view"}
                 </span>
             </summary>
             <div className="space-y-3 px-3 pb-3 pt-1">
                 <p className="max-w-3xl text-xs text-muted-foreground">
-                    A component written here runs inside its own frame, so it
-                    cannot reach the page around it, the network, or the signed-in
-                    session. Everything below is enforced while it renders — none
-                    of it is a convention.
+                    {framed
+                        ? "A component written here runs inside its own frame, so it cannot reach the page around it, the network, or the signed-in session. Everything below is enforced while it renders."
+                        : "These are the rules for a component written here. Right now it is drawn in the page itself rather than an isolated frame, so a broken rule may not be caught in this view."}
                 </p>
                 <ul className="grid gap-2 md:grid-cols-2">
                     {SANDBOX_AUTHORING_RULES.map((rule) => (

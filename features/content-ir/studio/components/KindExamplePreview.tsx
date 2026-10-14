@@ -28,6 +28,7 @@ import {
   ChevronRight,
   Loader2,
 } from "lucide-react";
+import { exampleDisplayLabel, exampleStaleNote } from "@/features/content-ir/studio/example-display";
 import KindRenderPaths from "@/features/content-ir/render-paths/KindRenderPaths";
 import type { ExamplesState } from "@/features/content-ir/studio/kind-examples";
 import { ReadFailure } from "@ai-matrx/design-system";
@@ -40,6 +41,8 @@ interface KindExamplePreviewProps {
   emptyState: ReactNode;
   /** The examples read's retry and name, for its failure (the status is `examples.status`). */
   read?: ReadOutcome | undefined;
+  /** The shape's version today — an example written for an older one says so. */
+  currentVersion?: number;
   /**
    * Retired 2026-08-29 — each path now states what it exercises, inline, in
    * `KindRenderPaths`. Kept so existing callers keep compiling; ignored.
@@ -52,6 +55,7 @@ export default function KindExamplePreview({
   examples,
   emptyState,
   read,
+  currentVersion,
 }: KindExamplePreviewProps) {
   const [index, setIndex] = useState(0);
 
@@ -118,11 +122,18 @@ export default function KindExamplePreview({
           {current.validationStatus}
         </span>
         {current.label && (
-          <span className="text-xs text-muted-foreground">{current.label}</span>
+          <span className="text-xs text-muted-foreground">
+            {exampleDisplayLabel(current.label, current.isCanonical)}
+          </span>
         )}
         <span className="ml-auto text-[11px] text-muted-foreground">
           kind v{current.kindVersion} · {current.updatedAt.slice(0, 10)}
         </span>
+        {exampleStaleNote(current.kindVersion, currentVersion) && (
+          <span className="rounded bg-amber-500/10 px-1.5 py-0.5 text-[11px] font-medium text-amber-700 dark:text-amber-300">
+            {exampleStaleNote(current.kindVersion, currentVersion)}
+          </span>
+        )}
       </div>
 
       {/* Every real render path, one mode each. */}

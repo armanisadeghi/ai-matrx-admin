@@ -40,6 +40,8 @@ import type { Json } from "@/types/database.types";
 import type { ExamplesState } from "@/features/content-ir/studio/kind-examples";
 import { Textarea } from "@/components/ui/textarea";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { useAppSelector } from "@/lib/redux/hooks";
+import { selectIsAdminDebugger } from "@/lib/redux/selectors/userSelectors";
 
 const PASTED = "__pasted__";
 
@@ -131,6 +133,8 @@ interface KindGateTabProps {
   examples: ExamplesState;
   /** `kind_definition.metadata.family` — drives the render leg's n/a doctrine. */
   family?: string | null;
+  /** Whether the shape is switched on today — the check advises, it never switches anything. */
+  isActive?: boolean;
 }
 
 export default function KindGateTab({
@@ -138,11 +142,13 @@ export default function KindGateTab({
   emittedJsonSchema,
   examples,
   family = null,
+  isActive = false,
 }: KindGateTabProps) {
   const [sourceId, setSourceId] = useState<string | null>(null);
   const [pasted, setPasted] = useState("");
   const [manualRun, setManualRun] = useState<GateRun | null>(null);
   const [inputError, setInputError] = useState<string | null>(null);
+  const debug = useAppSelector(selectIsAdminDebugger);
 
   // `resolveComponent` is SYNCHRONOUS and answers from the compiled floor until
   // the DB tier warms. Running the gate before that resolves a `source='db'`
@@ -235,14 +241,14 @@ export default function KindGateTab({
               value: r.id,
               label: `${r.isCanonical ? "canonical" : r.source} · ${r.label ?? r.id.slice(0, 8)} · ${r.validationStatus}`,
             })),
-            { value: PASTED, label: "Pasted JSON" },
+            { value: PASTED, label: "Pasted sample" },
           ]}
         />
         <Button variant="primary" icon={<Play />} onClick={runNow}>
           Run gate now
         </Button>
         <span className="text-[11px] text-muted-foreground">
-          Read-only — this page never writes is_active.
+          Read-only — running this never changes the shape.
         </span>
       </div>
 
@@ -284,13 +290,17 @@ export default function KindGateTab({
         <>
           <div className="grid gap-3 sm:grid-cols-2">
             <LegCard
-              title="Structural leg"
+              debug={debug}
+              failText="This sample doesn't match the shape's fields."
+              title="Structure check"
               subtitle="Checked against the emitted schema"
               leg={run.structural}
             />
             <LegCard
-              title="Render leg"
-              subtitle="legacy bridge must produce real serverData — UI leg"
+              debug={debug}
+              failText="The shape can't be drawn from this sample yet."
+              title="Drawing check"
+              subtitle="Checked by drawing the shape from the sample"
               leg={run.render}
             />
           </div>
@@ -309,10 +319,13 @@ export default function KindGateTab({
             )}
             <div>
               <p className="font-medium">
-                Dual-gate verdict against {run.ranAgainst}: would set is_active
-                = {String(run.wouldActivate)}
+                {run.wouldActivate
+                  ? `Against the ${run.ranAgainst}, this shape passes.`
+                  : isActive
+                    ? `Against the ${run.ranAgainst}, this shape does not pass. It is still on and readers still get it; fix what is listed above to make it draw properly.`
+                    : `Against the ${run.ranAgainst}, this shape does not pass yet.`}
               </p>
-              {!run.wouldActivate && run.failureSummary && (
+              {debug && !run.wouldActivate && run.failureSummary && (
                 <p className="mt-0.5 font-mono text-xs opacity-90">
                   {run.failureSummary}
                 </p>
@@ -324,7 +337,7 @@ export default function KindGateTab({
 
       {examples.status === "loading" && !run && (
         <p className="text-xs text-muted-foreground">
-          Waiting for saved samples — or pick Pasted JSON
+          Waiting for saved samples — or paste your own
         </p>
       )}
     </div>
@@ -335,7 +348,13 @@ function LegCard({
   title,
   subtitle,
   leg,
+  debug,
+  failText,
 }: {
+  /** Admin debugging only: the raw checker message. */
+  debug: boolean;
+  /** What a failure means, in the reader's words. */
+  failText: string;
   title: string;
   subtitle: string;
   leg: LegResult | null;
@@ -364,10 +383,14 @@ function LegCard({
         </span>
       </div>
       <p className="mt-1 text-[11px] text-muted-foreground">{subtitle}</p>
-      <p className="mt-2 font-mono text-xs text-foreground">
+      <p className={`mt-2 text-xs text-foreground ${debug ? "font-mono" : ""}`}>
         {leg === null
-          ? "Sample is not an object — no block render path to exercise."
-          : (leg.detail ?? (leg.ok ? "passed" : "failed"))}
+          ? "This sample isn't a set of named fields, so there is nothing to draw."
+          : debug
+            ? (leg.detail ?? (leg.ok ? "passed" : "failed"))
+            : leg.ok
+              ? "Passed."
+              : failText}
       </p>
     </div>
   );

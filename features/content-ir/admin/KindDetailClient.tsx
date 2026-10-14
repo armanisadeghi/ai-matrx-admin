@@ -20,9 +20,8 @@
 import { Select } from "@ai-matrx/design-system/controls";
 import { useMemo, useState } from "react";
 import { commitUrlParams } from "@ai-matrx/kit/url-state";
-import AppLink from "@/components/navigation/AppLink";
 import dynamic from "next/dynamic";
-import { ChevronRight, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import type { KindDetailData } from "@/features/content-ir/admin/kind-detail-types";
 import { useKindExamples } from "@/features/content-ir/studio/kind-examples";
 import KindPreviewTab from "@/features/content-ir/admin/KindPreviewTab";
@@ -202,24 +201,15 @@ export default function KindDetailClient({
       <div className="flex h-[calc(100dvh-2.5rem)] flex-col overflow-hidden bg-textured">
         {/* Header */}
         <header className="flex flex-wrap items-center gap-2 border-b border-border bg-card px-4 py-2 pr-14">
-          <nav
-            aria-label="Breadcrumb"
-            className="flex w-full min-w-0 flex-wrap items-center gap-1 text-sm sm:w-auto"
-          >
-            <AppLink
-              href="/administration/utilities/kind-registry"
-              className="inline-flex min-h-10 items-center text-muted-foreground underline-offset-2 hover:text-foreground hover:underline sm:min-h-0"
-            >
-              Kind Registry
-            </AppLink>
-            <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
-            <h1 className="min-w-0 break-words font-semibold text-foreground">
-              {detail.label}
-            </h1>
-          </nav>
-          <code className="max-w-full break-all rounded bg-muted px-1.5 py-0.5 font-mono text-xs text-foreground">
-            {detail.kind}
-          </code>
+          {/* The app shell above already carries the Kind Registry breadcrumb. */}
+          <h1 className="min-w-0 break-words font-semibold text-foreground">
+            {detail.label}
+          </h1>
+          {detail.label !== detail.kind && (
+            <code className="max-w-full break-all rounded bg-muted px-1.5 py-0.5 font-mono text-xs text-foreground">
+              {detail.kind}
+            </code>
+          )}
           <span
             className={`rounded px-1.5 py-0.5 text-[11px] font-medium ${
               detail.isActive
@@ -304,7 +294,7 @@ export default function KindDetailClient({
               {/* Sightings first: an admin opening a broken kind must not have
                   to go looking for the one fact that matters. */}
               <ShapeOpenSightings kind={detail.kind} canResolve />
-              <KindPreviewTab kind={detail.kind} examples={examples} />
+              <KindPreviewTab kind={detail.kind} examples={examples} currentVersion={detail.version} />
             </div>
           )}
           {tab === "code" && (
@@ -318,6 +308,7 @@ export default function KindDetailClient({
                 examples={examples}
                 onExamplesChanged={refreshExamples}
                 authMode="admin"
+                currentVersion={detail.version}
               />
             </div>
           )}
@@ -328,6 +319,7 @@ export default function KindDetailClient({
               emittedJsonSchema={detail.emittedJsonSchema}
               examples={examples}
               family={detail.doctorRow.family}
+              isActive={detail.isActive}
             />
           )}
           {tab === "schema" && (

@@ -40,11 +40,7 @@ export default function KindTryInputTab({ kind }: KindTryInputTabProps) {
       <div className="flex items-start gap-2 rounded-md border border-border bg-card px-3 py-2 text-xs text-muted-foreground">
         <Info className="mt-0.5 h-3.5 w-3.5 shrink-0" />
         <p>
-          The canonical <code className="font-mono">KindInputForm</code>{" "}
-          (features/content-ir/input/) consumed exactly as a feature would:
-          resolver-gated, bridge-rendered, validated by the activation gate&apos;s
-          structural leg before <code className="font-mono">onSubmit</code>{" "}
-          fires. Nothing here is persisted.
+          Fill in the form the way a person would. What you enter is checked against the shape before it is accepted. Nothing here is saved.
         </p>
       </div>
 
