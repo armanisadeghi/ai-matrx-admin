@@ -35,10 +35,12 @@ import { BuilderWorkflowTab } from "@/features/builder-panel/components/BuilderW
 import { BuilderMandatesTab } from "@/features/builder-panel/components/BuilderMandatesTab";
 import { BuilderAiTab, BuilderProvisionTab } from "@/features/builder-panel/components/BuilderRunsTabs";
 import { BuilderRequestsTab, type RequestFilter } from "@/features/builder-panel/components/BuilderRequestsTab";
+import { EMPTY_REQUEST_FIND, type RequestFind } from "@/features/builder-panel/find";
 import { BuilderActivityTab } from "@/features/builder-panel/components/BuilderActivityTab";
+import { BuilderLoadTab } from "@/features/builder-panel/components/BuilderLoadTab";
 
-export type BuilderTab = "run" | "values" | "calls" | "activity" | "workflow" | "mandates" | "ai" | "provision";
-const TABS: BuilderTab[] = ["run", "values", "calls", "activity", "workflow", "mandates", "ai", "provision"];
+export type BuilderTab = "run" | "values" | "calls" | "load" | "activity" | "workflow" | "mandates" | "ai" | "provision";
+const TABS: BuilderTab[] = ["run", "values", "calls", "load", "activity", "workflow", "mandates", "ai", "provision"];
 /** Round 2 tab names a restored window may still carry. */
 const OLD_TABS: Record<string, BuilderTab> = { data: "values", requests: "calls" };
 
@@ -78,6 +80,10 @@ function BuilderPanelInner({
   const [entryKey, setEntryKey] = useState<string | null>(initialEntryKey ?? null);
   const [requestId, setRequestId] = useState<string | null>(null);
   const [requestFilter, setRequestFilter] = useState<RequestFilter>("page");
+  // Search and filters survive tab switches, so a found call is still found on the way back.
+  const [requestFind, setRequestFind] = useState<RequestFind>(EMPTY_REQUEST_FIND);
+  const [activityQuery, setActivityQuery] = useState("");
+  const [activityKind, setActivityKind] = useState("");
   const [stepFocus, setStepFocus] = useState<{ runId: string; nodeId: string | null } | null>(null);
   const [snapshotFocus, setSnapshotFocus] = useState<string | null>(null);
 
@@ -174,6 +180,7 @@ function BuilderPanelInner({
       return;
     }
     setRequestFilter("all");
+    setRequestFind((f) => ({ ...EMPTY_REQUEST_FIND, sort: f.sort }));
     setRequestId(id);
     setTab("calls");
   };
@@ -248,6 +255,7 @@ function BuilderPanelInner({
               { value: "run", label: "Run", count: null },
               { value: "values", label: "Values", count: entries.length },
               { value: "calls", label: "Page calls", count: pageRows.length || null },
+              { value: "load", label: "Page load", count: null },
               { value: "activity", label: "Activity", count: activity.length || null },
               { value: "workflow", label: "Workflow", count: workflowRuns.length || null },
               { value: "mandates", label: "Mandates", count: mandateKeys.length + (proposals?.length ?? 0) || null },
@@ -309,12 +317,20 @@ function BuilderPanelInner({
           onSelect={setRequestId}
           filter={requestFilter}
           onFilter={setRequestFilter}
+          find={requestFind}
+          onFind={setRequestFind}
+          stepLabels={nodeLabels}
           error={truthError}
         />
       ) : null}
+      {tab === "load" ? <BuilderLoadTab /> : null}
       {tab === "activity" ? (
         <BuilderActivityTab
           rows={activity}
+          query={activityQuery}
+          onQuery={setActivityQuery}
+          kind={activityKind}
+          onKind={setActivityKind}
           onOpenRequest={openRequest}
           onOpenStep={openStep}
           onOpenSnapshot={(id) => {
