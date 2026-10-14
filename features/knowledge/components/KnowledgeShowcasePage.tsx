@@ -339,10 +339,12 @@ export function KnowledgeShowcasePage() {
       {/* Worked example — the ask */}
       <section className="mx-auto max-w-6xl px-4 sm:px-6 py-16 sm:py-24">
         <div className="text-center mb-12">
-          <Badge tone="warning" className="mb-3">
-            <ShieldCheck className="h-3 w-3" />
-            The ask — what it&apos;s all for
-          </Badge>
+          <div className="mb-3">
+            <Badge tone="warning">
+              <ShieldCheck className="h-3 w-3" />
+              The ask — what it&apos;s all for
+            </Badge>
+          </div>
           <h2 className="text-[clamp(1.5rem,1.25rem+1.5vw,2.5rem)] font-bold tracking-tight">
             One question, resolved end-to-end
           </h2>
@@ -393,10 +395,12 @@ export function KnowledgeShowcasePage() {
       <section className="bg-card/50 border-y border-border">
         <div className="mx-auto max-w-5xl px-4 sm:px-6 py-16 sm:py-24">
           <div className="text-center mb-10 sm:mb-14">
-            <Badge tone="primary" className="mb-3">
-              <ListChecks className="h-3 w-3" />
-              Try it yourself — a guided run
-            </Badge>
+            <div className="mb-3">
+              <Badge tone="primary">
+                <ListChecks className="h-3 w-3" />
+                Try it yourself — a guided run
+              </Badge>
+            </div>
             <h2 className="text-[clamp(1.5rem,1.25rem+1.5vw,2.5rem)] font-bold tracking-tight">
               From a blank file to a pro-level answer
             </h2>
