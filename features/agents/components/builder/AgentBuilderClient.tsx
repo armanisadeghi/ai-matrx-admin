@@ -6,8 +6,9 @@ import { useAppSelector, useAppStore } from "@/lib/redux/hooks";
 import { selectAgentReadyForBuilder } from "@ai-matrx/chat/agents/redux/agent-definition/selectors";
 import { useAgentAutoSave } from "@/features/agents/hooks/useAgentAutoSave";
 import { useCreatorOwnershipSync } from "@ai-matrx/chat/agents/hooks/useCreatorOwnershipSync";
-import { useAgentBuilderSurfaceScope } from "@/features/agents/hooks/useAgentBuilderSurfaceScope";
+import { useAgentBuilderPageScope } from "@/features/agents/hooks/useAgentBuilderSurfaceScope";
 import { useAgentBuilderWriteHandlers } from "@/features/agents/hooks/useAgentBuilderWriteHandlers";
+import { AgentBuilderClientTools } from "@/features/agents/hooks/useAgentBuilderClientTools";
 import { AGENT_BUILDER_CONTEXT_MENU_PROPS } from "@ai-matrx/chat/agents/agent-context/buildAgentBuilderContextData";
 import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
 import { useIsMobile } from "@ai-matrx/kit/media-query";
@@ -38,7 +39,7 @@ export function AgentBuilderClient({
   const isReady = useAppSelector((state) =>
     selectAgentReadyForBuilder(state, agentId),
   );
-  const getAgentBuilderScope = useAgentBuilderSurfaceScope(agentId);
+  const getAgentBuilderScope = useAgentBuilderPageScope(agentId);
   // Write half of the surface (manifest `writeTargets`) — registered here, on
   // the provider that owns the whole builder route, so the targets stay wired
   // no matter which panel or tab the user has open.
@@ -73,6 +74,7 @@ export function AgentBuilderClient({
         getWriteHandlers={getAgentBuilderWriteHandlers}
         isOwnConversation={isOwnConversation}
       >
+        <AgentBuilderClientTools agentId={agentId} />
         <AgentBuilderMobile agentId={agentId} />
       </SurfaceRuntimeProvider>
     );
@@ -87,6 +89,7 @@ export function AgentBuilderClient({
       isOwnConversation={isOwnConversation}
     >
       <DebugSessionActivator />
+      <AgentBuilderClientTools agentId={agentId} />
       {desktopContent}
     </SurfaceRuntimeProvider>
   );

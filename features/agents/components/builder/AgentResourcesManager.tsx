@@ -26,7 +26,7 @@ import {
 import { associationsService } from "@/features/scopes/service/associationsService";
 import type { EntityTypeToken } from "@ai-matrx/associations";
 
-const AGENT_RESOURCE_ROLE = "agent_resource";
+import { AGENT_RESOURCE_ROLE } from "./agentResourceRole";
 
 /**
  * The canonical resource picker offers run-only and URL-only resources too.

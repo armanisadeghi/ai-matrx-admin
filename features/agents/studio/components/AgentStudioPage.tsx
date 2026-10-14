@@ -65,7 +65,8 @@ import {
   type AgentSampleRow,
 } from "@/features/agents/samples/service";
 import { fetchFullAgent } from "@/features/agents/redux/fetch-full-agent.thunk";
-import { useAgentBuilderSurfaceScope } from "@/features/agents/hooks/useAgentBuilderSurfaceScope";
+import { useAgentBuilderPageScope } from "@/features/agents/hooks/useAgentBuilderSurfaceScope";
+import { AgentBuilderClientTools } from "@/features/agents/hooks/useAgentBuilderClientTools";
 import { useAgentBuilderWriteHandlers } from "@/features/agents/hooks/useAgentBuilderWriteHandlers";
 import { useAppDispatch, useAppSelector, useAppStore } from "@/lib/redux/hooks";
 import { toast } from "@/lib/toast";
@@ -595,7 +596,7 @@ function StudioWorkspace({ state, go }: { state: StudioState; go: (p: Partial<St
  * targets; the center's runs are the page's own conversations and never receive it.
  */
 function BuilderSurface({ agentId, children }: { agentId: string; children: React.ReactNode }) {
-  const getScope = useAgentBuilderSurfaceScope(agentId);
+  const getScope = useAgentBuilderPageScope(agentId);
   const getWriteHandlers = useAgentBuilderWriteHandlers(agentId);
   const store = useAppStore();
   const isOwnConversation = (id: string) => {
@@ -610,6 +611,7 @@ function BuilderSurface({ agentId, children }: { agentId: string; children: Reac
       getWriteHandlers={getWriteHandlers}
       isOwnConversation={isOwnConversation}
     >
+      <AgentBuilderClientTools agentId={agentId} />
       {children}
     </SurfaceRuntimeProvider>
   );
