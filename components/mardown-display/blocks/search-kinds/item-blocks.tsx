@@ -63,6 +63,12 @@ const Thumb: React.FC<{ src: string; className?: string; alt?: string }> = ({
       loading="lazy"
       className={className}
       onError={() => setFailed(true)}
+      // A provider "thumbnail" that is a tracking pixel or a blank stub (LinkedIn
+      // sends these) is no image: drop it rather than draw an empty tile.
+      onLoad={(e) => {
+        const img = e.currentTarget;
+        if (img.naturalWidth < 24 || img.naturalHeight < 24) setFailed(true);
+      }}
     />
   );
 };
@@ -296,7 +302,7 @@ export function WebResultBlock({ serverData, className }: SearchKindBlockProps) 
         {thumbnail && (
           <Thumb
             src={thumbnail}
-            className="mt-1 h-[72px] w-[72px] flex-shrink-0 rounded-lg bg-muted object-cover @lg:h-[92px] @lg:w-[92px]"
+            className="mt-1 h-[72px] w-[72px] flex-shrink-0 rounded-lg object-cover @lg:h-[92px] @lg:w-[92px]"
           />
         )}
       </div>
