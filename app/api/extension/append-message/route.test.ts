@@ -104,6 +104,7 @@ const conversationRow = {
   version: 1,
   visibility: "personal",
   custom_fields: {},
+  last_activity_at: "2026-08-08T17:30:00.000Z",
 } satisfies CxConversation;
 
 const storedMessageRow = {

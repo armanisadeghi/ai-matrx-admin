@@ -16,10 +16,14 @@
 import {
   fetchConversationBundle,
   type CxMessageRow,
-  type CxToolCallRow,
 } from "@ai-matrx/chat/agents/redux/execution-system/thunks/conversation-bundle";
 import { parsePersistedMessageContent } from "@ai-matrx/chat/agents/redux/execution-system/messages/persisted-content-boundary";
 import type { MessagePart } from "@ai-matrx/agents/generated/stream-events";
+
+/** A tool row exactly as the bundle returns it (the package owns its shape). */
+type BundleToolRow = NonNullable<
+  Awaited<ReturnType<typeof fetchConversationBundle>>["tool_calls"]
+>[number];
 
 // ── shapes ──────────────────────────────────────────────────────────────────
 
@@ -53,7 +57,7 @@ export type AssistantPart =
       name: string;
       args: Record<string, unknown> | null;
       /** Joined observability row — arguments, output, success, timing. */
-      row: CxToolCallRow | null;
+      row: BundleToolRow | null;
     }
   | { kind: "media"; seq: number; mediaKind: string; raw: unknown }
   | { kind: "opaque"; seq: number; label: string; raw: unknown };
@@ -170,7 +174,7 @@ function attachmentsFrom(row: CxMessageRow): TurnAttachment[] {
 
 function assistantPartsFrom(
   row: CxMessageRow,
-  toolRowsByCallId: Map<string, CxToolCallRow>,
+  toolRowsByCallId: Map<string, BundleToolRow>,
   startSeq: number,
 ): AssistantPart[] {
   const { parts, opaque } = safeParts(row.content);
@@ -263,7 +267,7 @@ export async function loadConversationTurns(
     skipObservabilityFallback: true,
   });
 
-  const toolRowsByCallId = new Map<string, CxToolCallRow>();
+  const toolRowsByCallId = new Map<string, BundleToolRow>();
   for (const row of bundle.tool_calls ?? []) {
     if (row.call_id) toolRowsByCallId.set(row.call_id, row);
   }
