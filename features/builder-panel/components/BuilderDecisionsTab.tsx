@@ -58,8 +58,12 @@ export function BuilderDecisionsTab({
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       <div className="flex shrink-0 items-center gap-2 border-b border-border px-3 py-2">
-        <Select aria-label="Round" value={current.runId} onValueChange={setPicked} options={options} />
-        <Button variant="quiet" onClick={() => onOpenStep(current.runId, null)}>{current.runId}</Button>
+        <div className="min-w-0 flex-1">
+          <Select aria-label="Round" className="max-w-full" value={current.runId} onValueChange={setPicked} options={options} />
+        </div>
+        <div className="min-w-0 flex-1">
+          <Button variant="quiet" width="xl" onClick={() => onOpenStep(current.runId, null)}>{current.runId}</Button>
+        </div>
         <Button variant="quiet" className="ml-auto" onClick={() => onOpenStep(current.runId, "path_decision")}>
           Open step
         </Button>
