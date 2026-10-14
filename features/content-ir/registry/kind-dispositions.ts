@@ -2,12 +2,9 @@
  * What a kind's output IS — `content_ir.kind_definition.metadata.disposition`.
  *
  * KINDS-GLUE wave 1b. The closed set is owned by aidream
- * `matrx_graph.content_ir.sdk.KIND_DISPOSITIONS` (the kind store, the activation gate's
- * disposition leg and the registry backstop trigger `zzzz_kind_says_what_its_output_is` all
- * read the same five). This is the browser's copy of that ONE list, pinned to the Python tuple
- * by `__tests__/kind-dispositions.test.ts` (it reads `../aidream/.../sdk.py`), so it can never
- * drift silently. Every browser path that creates a kind runs `kindDispositionRefusal` before
- * the first write.
+ * `matrx_graph.content_ir.sdk.KIND_DISPOSITIONS` and published as a generated
+ * contract by `@ai-matrx/content-ir/registry`. Package CI pins that artifact
+ * to Python; this host consumes the artifact directly.
  *
  *   record   — structured output with keys a person filters by; stored as a record.
  *   envelope — a wrapper whose keys differ every call; keeps the run store.
@@ -16,15 +13,12 @@
  *   prose    — one text body; stays where prose lives.
  */
 
-export const KIND_DISPOSITIONS = [
-  "record",
-  "envelope",
-  "receipt",
-  "proposal",
-  "prose",
-] as const;
+import {
+  KIND_DISPOSITIONS,
+  type KindDisposition,
+} from "@ai-matrx/content-ir/registry";
 
-export type KindDisposition = (typeof KIND_DISPOSITIONS)[number];
+export { KIND_DISPOSITIONS, type KindDisposition };
 
 export function isKindDisposition(value: unknown): value is KindDisposition {
   return (

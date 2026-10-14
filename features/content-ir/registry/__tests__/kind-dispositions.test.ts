@@ -1,9 +1,9 @@
 /**
  * KINDS-GLUE wave 1b — a kind is never born in the browser without saying what its output is.
  *
- * 1. The browser's disposition set IS the SDK's: `KIND_DISPOSITIONS` here equals aidream's
- *    `matrx_graph.content_ir.sdk.KIND_DISPOSITIONS` and the registry backstop trigger's set
- *    (migrations/campaign/kindsglue_c…). A drift in any of the three fails here.
+ * 1. The browser consumes the published disposition artifact; Aidream package
+ *    CI verifies that artifact against matrx-graph's Python tuple, and this
+ *    suite verifies it against the registry backstop trigger.
  * 2. The census, by construction: every file in this repo that inserts or upserts into
  *    `content_ir.kind_definition` runs `kindDispositionRefusal` — a new creation path is caught
  *    the day it is written.
@@ -11,6 +11,7 @@
 
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join, relative } from "node:path";
+import { KIND_DISPOSITIONS as PUBLISHED_KIND_DISPOSITIONS } from "@ai-matrx/content-ir/registry";
 
 import {
   KIND_DISPOSITIONS,
@@ -18,16 +19,6 @@ import {
 } from "../kind-dispositions";
 
 const REPO = join(__dirname, "..", "..", "..", "..");
-const SDK = join(
-  REPO,
-  "..",
-  "aidream",
-  "packages",
-  "matrx-graph",
-  "matrx_graph",
-  "content_ir",
-  "sdk.py",
-);
 const BACKSTOP = join(
   REPO,
   "migrations",
@@ -36,12 +27,8 @@ const BACKSTOP = join(
 );
 
 describe("the disposition set is ONE list", () => {
-  it("equals the SDK's KIND_DISPOSITIONS", () => {
-    const source = readFileSync(SDK, "utf8");
-    const match = /^KIND_DISPOSITIONS[^=]*=\s*\(([^)]*)\)/m.exec(source);
-    expect(match).not.toBeNull();
-    const sdk = [...match![1]!.matchAll(/"([a-z]+)"/g)].map((m) => m[1]);
-    expect([...KIND_DISPOSITIONS]).toEqual(sdk);
+  it("uses the package artifact verified against the SDK's KIND_DISPOSITIONS", () => {
+    expect(KIND_DISPOSITIONS).toBe(PUBLISHED_KIND_DISPOSITIONS);
   });
 
   it("equals the registry backstop trigger's set", () => {
