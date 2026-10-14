@@ -34,8 +34,10 @@ import { fileURLToPath } from "node:url";
 import { exitAfterDrain } from "./lib/exit-after-drain";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const RPC = "__list_counts_conformance";
-const TIMEOUT_MS = 15_000;
+const UNITS_RPC = "__list_counts_conformance_units";
+const FAMILY_UNITS_RPC = "__list_counts_conformance_family_units";
+const PROBE_RPC = "__list_counts_conformance_probe";
+const TIMEOUT_MS = 12_000;
 const STRICT = process.argv.includes("--strict");
 
 /**
@@ -44,7 +46,10 @@ const STRICT = process.argv.includes("--strict");
  */
 const EXPECTED_CHECKS = [
   "counts_delegate_to_list",
+  "counts_are_security_invoker",
+  "counts_family_registered",
   "education_counts_equal_list",
+  "counts_equal_list_every_family",
   "team_reach_empty_without_team",
   "my_teams_answers_every_person",
 ] as const;
@@ -70,6 +75,10 @@ interface ConformanceRow {
   readonly ok: boolean;
   readonly severity?: string;
   readonly detail: Record<string, unknown> | null;
+}
+
+interface ProbeUnitRow {
+  readonly unit: Record<string, unknown>;
 }
 
 /**
@@ -107,44 +116,152 @@ function isRow(value: unknown): value is ConformanceRow {
   return typeof r.check_key === "string" && typeof r.ok === "boolean";
 }
 
+function isUnitRow(value: unknown): value is ProbeUnitRow {
+  if (typeof value !== "object" || value === null) return false;
+  const unit = (value as Record<string, unknown>).unit;
+  return typeof unit === "object" && unit !== null && typeof (unit as Record<string, unknown>).kind === "string";
+}
+
+function describeUnit(unit: Record<string, unknown>, index: number): string {
+  const kind = typeof unit.kind === "string" ? unit.kind : "unknown";
+  const family = typeof unit.family === "string" ? `/${unit.family}` : "";
+  const search = typeof unit.search === "string" ? "/search" : "";
+  return `unit ${index + 1} (${kind}${family}${search})`;
+}
+
+function mergeDetails(
+  left: Record<string, unknown> | null,
+  right: Record<string, unknown> | null,
+): Record<string, unknown> | null {
+  if (!left) return right;
+  if (!right) return left;
+  const out: Record<string, unknown> = { ...left };
+  for (const [key, value] of Object.entries(right)) {
+    if (key === "why") continue;
+    if (key === "checked" || key === "lane_totals_compared") {
+      out[key] = Number(out[key] ?? 0) + Number(value ?? 0);
+      continue;
+    }
+    if (Array.isArray(value)) {
+      const combined = [...(Array.isArray(out[key]) ? out[key] : []), ...value];
+      out[key] = key === "no_list_twin_not_compared"
+        ? [...new Set(combined.map((item) => JSON.stringify(item)))].map((item) => JSON.parse(item) as unknown)
+        : combined;
+      continue;
+    }
+    if (!(key in out)) out[key] = value;
+  }
+  return out;
+}
+
+function aggregateRows(rows: readonly ConformanceRow[]): ConformanceRow[] {
+  const byKey = new Map<string, ConformanceRow>();
+  for (const row of rows) {
+    const current = byKey.get(row.check_key);
+    if (!current) {
+      byKey.set(row.check_key, row);
+      continue;
+    }
+    byKey.set(row.check_key, {
+      check_key: row.check_key,
+      ok: current.ok && row.ok,
+      severity: current.severity ?? row.severity,
+      detail: mergeDetails(current.detail, row.detail),
+    });
+  }
+  return [...byKey.values()];
+}
+
 async function fetchConformance(): Promise<
   { rows: ConformanceRow[]; failure: null } | { rows: null; failure: string }
 > {
   const env = loadSupabaseEnv();
   if (!env) return { rows: null, failure: "no Supabase URL/secret key in env or .env* files" };
 
-  const endpoint = `${env.url.replace(/\/$/, "")}/rest/v1/rpc/${RPC}`;
+  const base = `${env.url.replace(/\/$/, "")}/rest/v1/rpc`;
+  const headers = {
+    apikey: env.key,
+    Authorization: `Bearer ${env.key}`,
+    "Content-Type": "application/json",
+    Accept: "application/json",
+    "Content-Profile": "platform",
+    "Accept-Profile": "platform",
+  };
   try {
-    const res = await fetch(endpoint, {
+    const manifest = await fetch(`${base}/${UNITS_RPC}`, {
       method: "POST",
-      headers: {
-        apikey: env.key,
-        Authorization: `Bearer ${env.key}`,
-        "Content-Type": "application/json",
-        Accept: "application/json",
-        "Content-Profile": "public",
-        "Accept-Profile": "public",
-      },
+      headers,
       body: "{}",
       signal: AbortSignal.timeout(TIMEOUT_MS),
     });
-    if (!res.ok) {
+    if (!manifest.ok) {
       return {
         rows: null,
-        failure: `rpc/${RPC} returned ${res.status}: ${(await res.text()).slice(0, 300)}`,
+        failure: `rpc/${UNITS_RPC} returned ${manifest.status}: ${(await manifest.text()).slice(0, 300)}`,
       };
     }
-    const parsed: unknown = JSON.parse(await res.text());
-    if (!Array.isArray(parsed)) return { rows: null, failure: `rpc/${RPC} did not return an array` };
-    const rows = parsed.filter(isRow);
-    if (rows.length !== parsed.length) {
-      return { rows: null, failure: `rpc/${RPC} returned rows that are not {check_key, ok, ...}` };
+    const unitsValue: unknown = JSON.parse(await manifest.text());
+    if (!Array.isArray(unitsValue) || !unitsValue.every(isUnitRow)) {
+      return { rows: null, failure: `rpc/${UNITS_RPC} did not return [{unit:{kind,...}}]` };
     }
-    return { rows, failure: null };
+    if (unitsValue.length === 0) {
+      return { rows: null, failure: `rpc/${UNITS_RPC} returned zero units — it measured nothing` };
+    }
+
+    const probeUnits: ProbeUnitRow[] = [];
+    for (const [index, { unit }] of unitsValue.entries()) {
+      if (unit.kind !== "family") {
+        probeUnits.push({ unit });
+        continue;
+      }
+      if (unit.empty === true) {
+        probeUnits.push({ unit: { ...unit, kind: "family_lane" } });
+        continue;
+      }
+      const expansion = await fetch(`${base}/${FAMILY_UNITS_RPC}`, {
+        method: "POST",
+        headers,
+        body: JSON.stringify({ p_unit: unit }),
+        signal: AbortSignal.timeout(TIMEOUT_MS),
+      });
+      if (!expansion.ok) {
+        return {
+          rows: null,
+          failure: `rpc/${FAMILY_UNITS_RPC} ${describeUnit(unit, index)} returned ${expansion.status}: ${(await expansion.text()).slice(0, 300)}`,
+        };
+      }
+      const expanded: unknown = JSON.parse(await expansion.text());
+      if (!Array.isArray(expanded) || !expanded.every(isUnitRow) || expanded.length === 0) {
+        return { rows: null, failure: `rpc/${FAMILY_UNITS_RPC} ${describeUnit(unit, index)} returned no lane units` };
+      }
+      probeUnits.push(...expanded);
+    }
+
+    const partialRows: ConformanceRow[] = [];
+    for (const [index, { unit }] of probeUnits.entries()) {
+      const res = await fetch(`${base}/${PROBE_RPC}`, {
+        method: "POST",
+        headers,
+        body: JSON.stringify({ p_unit: unit }),
+        signal: AbortSignal.timeout(TIMEOUT_MS),
+      });
+      if (!res.ok) {
+        return {
+          rows: null,
+          failure: `rpc/${PROBE_RPC} ${describeUnit(unit, index)} returned ${res.status}: ${(await res.text()).slice(0, 300)}`,
+        };
+      }
+      const parsed: unknown = JSON.parse(await res.text());
+      if (!Array.isArray(parsed) || !parsed.every(isRow) || parsed.length === 0) {
+        return { rows: null, failure: `rpc/${PROBE_RPC} ${describeUnit(unit, index)} returned no valid check rows` };
+      }
+      partialRows.push(...parsed);
+    }
+    return { rows: aggregateRows(partialRows), failure: null };
   } catch (err) {
     return {
       rows: null,
-      failure: `could not reach Supabase at ${endpoint} (${err instanceof Error ? err.message : String(err)})`,
+      failure: `could not complete bounded list-count probes (${err instanceof Error ? err.message : String(err)})`,
     };
   }
 }
@@ -185,7 +302,7 @@ async function main(): Promise<number> {
 
   const rows = result.rows;
   if (rows.length === 0) {
-    unmeasured(`rpc/${RPC} returned zero rows — it measured nothing`);
+    unmeasured(`bounded list-count probes returned zero rows — they measured nothing`);
   }
 
   const byKey = new Map(rows.map((r) => [r.check_key, r]));
@@ -194,7 +311,7 @@ async function main(): Promise<number> {
 
   console.log("");
   console.log(
-    `${C.bold}List counts are the list · My team is honest${C.reset} ${C.dim}(public.${RPC})${C.reset}`,
+    `${C.bold}List counts are the list · My team is honest${C.reset} ${C.dim}(bounded service probes)${C.reset}`,
   );
 
   for (const key of EXPECTED_CHECKS) {
