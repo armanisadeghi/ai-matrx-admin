@@ -1,7 +1,7 @@
 {
   "version": 1,
   "app": "matrx-frontend",
-  "routeCount": 1425,
+  "routeCount": 1429,
   "routes": [
     {
       "pattern": "/",
@@ -622,6 +622,11 @@
       "pattern": "/administration/chat/cx-dashboard/usage",
       "status": "live",
       "source": "app/(admin)/administration/chat/cx-dashboard/usage/page.tsx"
+    },
+    {
+      "pattern": "/administration/communications",
+      "status": "live",
+      "source": "app/(admin)/administration/communications/page.tsx"
     },
     {
       "pattern": "/administration/communications/voice",
@@ -4988,6 +4993,21 @@
       "pattern": "/marketing/brands/smart-add",
       "status": "live",
       "source": "app/(core)/marketing/brands/smart-add/page.tsx"
+    },
+    {
+      "pattern": "/marketing/brands/smart-add/company",
+      "status": "live",
+      "source": "app/(core)/marketing/brands/smart-add/company/page.tsx"
+    },
+    {
+      "pattern": "/marketing/brands/smart-add/enrich/[brandId]",
+      "status": "live",
+      "source": "app/(core)/marketing/brands/smart-add/enrich/[brandId]/page.tsx"
+    },
+    {
+      "pattern": "/marketing/brands/smart-add/person",
+      "status": "live",
+      "source": "app/(core)/marketing/brands/smart-add/person/page.tsx"
     },
     {
       "pattern": "/marketing/calendar",
