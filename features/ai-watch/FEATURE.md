@@ -66,6 +66,16 @@ stream's own reservation), `ActiveRequest.mandateRun` (the server's `mandate_run
 
 ## Change Log
 
+- **2026-10-14** — Workflow AI steps are watchable and the window is a chat. The server forwards a
+  step's `record_reserved user_request` (as a `record_update` marker, status `reserved`) and its
+  `context_analysis` (framed node_stream kind) — the run page binds the node's lane to its server
+  run (`adopt-workflow-run.thunk.ts`) and puts the request on the lane's timeline. `page-ai-runs.ts`:
+  the list/light/auto-watch read only AI runs (a lane counts once bound) and the page's workflow
+  runs' recorded calls, so the list outlives the live rows. Debug mode auto-opens the page window
+  on every new automated AI run (`SidebarWatchAiToggle`). The window leads with a Chat section
+  (system, user, assistant via `LiveRunDisplay` / `MarkdownStream`) and shows a workflow step's
+  mandate, step, agent and model from its row.
+
 - **2026-10-13** — Continuation turns (Change it, her replies, host fix rounds, resumes) carry
   their own server frame; the window shows what that turn carried and says the provision was
   not re-applied, instead of "attributed to <key>".
