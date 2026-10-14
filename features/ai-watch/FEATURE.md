@@ -30,9 +30,16 @@ multi-instance; deep link `?panels=ai-watch:<u|c|w|r>-<id>`).
 - `WatchAiRunButton` — the inline door (Applet job output, `features/applets-host/AppletRunOutput.tsx`).
 - Sidebar light — `features/shell/components/controls/SidebarWatchAiToggle.tsx` (Lucide Eye,
   orange while `selectLiveWatchableRuns` is non-empty), mounted in `AdminSidebarSection`.
+- Auto-watch — `AutoWatch.tsx`, mounted by `features/admin/AdminFeatureProvider.tsx` for super-admin
+  debuggers on every page: with debug mode on, each live root workflow run on the page opens its
+  `WorkflowRunWindow` and the page Watch AI window, and each new automated AI call re-opens Watch AI.
+- Workflow run rail — `ProgressRailReadout` marks AI steps (`ai.*`), shows each step's timing, and
+  opens Watch AI on that step's call (`nodeId` option → the call whose `metadata.workflow_node_id` matches).
 
 **Gate** — `useCanWatchAi()` / `selectCanWatchAi` (`useCanWatchAi.ts`): registered admin feature
-`ai.watch` (`utils/auth/adminFeaturesOnUserPages.ts`) AND `adminDebug.isDebugMode`.
+`ai.watch` (`utils/auth/adminFeaturesOnUserPages.ts`) AND `adminDebug.isDebugMode`. Debug mode is
+saved in user preferences (`system.debugMode`, `features/admin/useDebugModePersistence.ts`) and
+survives reloads, tabs and devices until turned off.
 
 **Truth rules (pure, tested)** — `watch-run-truth.ts`: captures filtered by request id (children
 nested), rejoin repeats merged, retried attempts superseded, live capture kept over the recorded
@@ -65,6 +72,14 @@ stream's own reservation), `ActiveRequest.mandateRun` (the server's `mandate_run
 ---
 
 ## Change Log
+
+- **2026-10-14 (b)** — Root causes of "no AI runs, no progress": (1) debug mode was in-memory only;
+  (2) auto-open lived in the sidebar button and the admin provider rendered nothing on user pages;
+  (3) a workflow step never announced its `user_request` (only the HTTP stream's opening frames did),
+  so lanes never bound; (4) every AI step of a run shared the root's request id, so ONE row held a
+  whole round. Server (matrx-ai `run_step_agent`): each step runs under its own request id, announces
+  it, and the reserved row carries `mandate_key` + `workflow_node_id`. Client: persisted debug mode,
+  `AutoWatch`, and the rail's timing / AI steps / Watch AI door.
 
 - **2026-10-14** — Workflow AI steps are watchable and the window is a chat. The server forwards a
   step's `record_reserved user_request` (as a `record_update` marker, status `reserved`) and its
