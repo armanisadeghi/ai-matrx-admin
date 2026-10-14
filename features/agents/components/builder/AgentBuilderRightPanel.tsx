@@ -139,8 +139,10 @@ export function AgentBuilderRightPanel({
             surfaceKey={surfaceKey}
             hideInput={view !== "test"}
             afterMessages={
+              // Auto-clear moves input to a fresh conversation after each run
+              // while the finished one stays on screen — review what is shown.
               <RunReviewCard
-                conversationId={conversationId}
+                conversationId={displayConversationId ?? conversationId}
                 surface="agent-builder"
                 copy={BUILDER_RUN_COPY}
                 extension={{ metadata: { agent_id: agentId } }}
