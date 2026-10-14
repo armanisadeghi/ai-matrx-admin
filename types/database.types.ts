@@ -144942,6 +144942,14 @@ export type Database = {
       }
     }
     Functions: {
+      __brand_archive_conformance: {
+        Args: never
+        Returns: {
+          check_name: string
+          detail: string
+          ok: boolean
+        }[]
+      }
       adopt_offering_template: {
         Args: {
           p_organization_id: string
@@ -144978,6 +144986,24 @@ export type Database = {
         }
         Returns: undefined
       }
+      brand_archive: { Args: { p_brand_id: string }; Returns: Json }
+      brand_archive_associated: {
+        Args: { p_brand_id: string; p_items: Json }
+        Returns: number
+      }
+      brand_archive_preview: { Args: { p_brand_id: string }; Returns: Json }
+      brand_associated_items: {
+        Args: { p_brand_id: string }
+        Returns: {
+          archived: boolean
+          item_id: string
+          item_type: string
+          selectable: boolean
+          title: string
+          type_label: string
+          why: string
+        }[]
+      }
       brand_offering_catalog: {
         Args: { p_site_id: string }
         Returns: {
@@ -145002,6 +145028,7 @@ export type Database = {
           worth_updated_at: string
         }[]
       }
+      brand_restore: { Args: { p_brand_id: string }; Returns: Json }
       conform: {
         Args: {
           p_label: string

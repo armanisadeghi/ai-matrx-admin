@@ -2996,6 +2996,8 @@ const BRAND_COLUMNS =
 export async function listBrands(
   state: MatrxDataTableQueryState,
   signal?: AbortSignal,
+  /** The archived-items law: archived brands are one click away (`archived` / `all`). */
+  archive: "active" | "archived" | "all" = "active",
 ): Promise<PagedResult<BrandListRow>> {
   const db = await authenticatedWebDb(supabase);
   const { from, to } = rangeFor(state);
@@ -3010,10 +3012,9 @@ export async function listBrands(
     sortColumns[requestedSort as keyof typeof sortColumns] ?? "name";
   const ascending = state.sort?.direction !== "desc";
 
-  let query = db
-    .from("brand")
-    .select(BRAND_COLUMNS, { count: "exact" })
-    .is("deleted_at", null);
+  let query = db.from("brand").select(BRAND_COLUMNS, { count: "exact" });
+  if (archive === "active") query = query.is("deleted_at", null);
+  else if (archive === "archived") query = query.not("deleted_at", "is", null);
   const search = cleanSearch(state.search);
   if (search) {
     query = query.or(`name.ilike.%${search}%,website_url.ilike.%${search}%`);
@@ -3625,37 +3626,85 @@ export async function renameSiteSlug(
  * silently. These preflights give friendly copy; the DB trigger
  * `web.brand_soft_delete_guard` enforces the same rule atomically.
  */
-export async function deleteBrand(brandId: string): Promise<void> {
-  const db = await authenticatedWebDb(supabase);
-  const sites = await db
-    .from("site")
-    .select("id", { count: "exact", head: true })
-    .eq("brand_id", brandId)
-    .is("deleted_at", null);
-  if (sites.error) throw sites.error;
-  if (sites.count) {
-    throw new Error(
-      `This brand still owns ${sites.count} site${sites.count === 1 ? "" : "s"}. Delete or move its sites first.`,
-    );
-  }
-  const properties = await db
-    .from("property")
-    .select("id", { count: "exact", head: true })
-    .eq("brand_id", brandId)
-    .is("deleted_at", null);
-  if (properties.error) throw properties.error;
-  if (properties.count) {
-    throw new Error(
-      `This brand still owns ${properties.count} propert${properties.count === 1 ? "y" : "ies"} (social accounts or other presences). Delete them first.`,
-    );
-  }
-  const response = await db
-    .from("brand")
-    .update({ deleted_at: new Date().toISOString() })
-    .eq("id", brandId)
-    .is("deleted_at", null)
-    .select("id");
-  assertMutated(response.data, response.error, "delete this brand");
+/**
+ * What archiving a brand takes with it (live rows): websites, accounts, tracked accounts, captured posts,
+ * findings, facts, assets, offerings, exclusions, crawled pages, crawls, running setup jobs.
+ * `web.brand_archive_preview` — the same counts the archive returns.
+ */
+export interface BrandArchiveCounts {
+  brand_id: string;
+  archived: boolean;
+  websites: number;
+  accounts: number;
+  tracked_accounts: number;
+  posts: number;
+  findings: number;
+  facts: number;
+  assets: number;
+  offerings: number;
+  exclusions: number;
+  pages: number;
+  crawls: number;
+  running_jobs: number;
+}
+
+/** A shared thing the brand was linked to (kept by the archive; the person may archive it too). */
+export interface BrandAssociatedItem {
+  item_type: string;
+  item_id: string;
+  type_label: string;
+  title: string;
+  archived: boolean;
+  selectable: boolean;
+  why: string;
+}
+
+export async function previewBrandArchive(brandId: string): Promise<BrandArchiveCounts> {
+  const response = await (await authenticatedWebDb(supabase)).rpc("brand_archive_preview", {
+    p_brand_id: brandId,
+  });
+  return assertData(response.data, response.error) as unknown as BrandArchiveCounts;
+}
+
+/**
+ * Archive a brand WITH CASCADE (Smart Add fresh start, VISION Part 11). THE one archive: `web.brand_archive`
+ * stamps the brand, and every owned row follows in the same transaction (platform.soft_delete_edge cascade
+ * edges + web._brand_cascade_softdelete_extras: sites and their crawls, properties, tracked accounts and their
+ * captured posts, findings, facts, assets, offerings, exclusions, setup runs). Shared rows (people, other
+ * records, the shared profile cache) are kept — `listBrandAssociatedItems` lists them. Never hard-deletes.
+ */
+export async function archiveBrand(brandId: string): Promise<BrandArchiveCounts> {
+  const response = await (await authenticatedWebDb(supabase)).rpc("brand_archive", {
+    p_brand_id: brandId,
+  });
+  return assertData(response.data, response.error) as unknown as BrandArchiveCounts;
+}
+
+/** Restore an archived brand and exactly what its archive took. */
+export async function restoreBrand(brandId: string): Promise<BrandArchiveCounts> {
+  const response = await (await authenticatedWebDb(supabase)).rpc("brand_restore", {
+    p_brand_id: brandId,
+  });
+  return assertData(response.data, response.error) as unknown as BrandArchiveCounts;
+}
+
+export async function listBrandAssociatedItems(brandId: string): Promise<BrandAssociatedItem[]> {
+  const response = await (await authenticatedWebDb(supabase)).rpc("brand_associated_items", {
+    p_brand_id: brandId,
+  });
+  return (assertData(response.data, response.error) ?? []) as unknown as BrandAssociatedItem[];
+}
+
+/** Archive the shared items the person ticked after a brand archive. Returns how many were archived. */
+export async function archiveBrandAssociatedItems(
+  brandId: string,
+  items: Array<Pick<BrandAssociatedItem, "item_type" | "item_id">>,
+): Promise<number> {
+  const response = await (await authenticatedWebDb(supabase)).rpc("brand_archive_associated", {
+    p_brand_id: brandId,
+    p_items: items,
+  });
+  return assertData(response.data, response.error) as unknown as number;
 }
 
 /**

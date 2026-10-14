@@ -16,7 +16,8 @@ import {
   Plus,
   Share2,
   Table as TableIcon,
-  Trash2,
+  Archive,
+  ArchiveRestore,
 } from "lucide-react";
 import { toast } from "@/lib/toast";
 import {
@@ -32,14 +33,19 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input, Select } from "@ai-matrx/design-system/controls";
-import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import RouteHeader from "@/features/shell/components/header/RouteHeader";
 import { RefreshCwTapButton } from "@ai-matrx/design-system/tap-target/buttons";
 import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
 import { createMarketingScope } from "@/features/surfaces/manifests/marketing.manifest";
 import { marketingListQuery } from "@/features/marketing/lib/scopes/marketing-hub-scope";
 import { useMarketingTableState } from "@/features/marketing/data/query-state";
-import { useBrands, useDeleteBrand } from "@/features/marketing/data/hooks";
+import { useBrands, useRestoreBrand } from "@/features/marketing/data/hooks";
+import { BrandArchiveFlow } from "@/features/marketing/components/brands/BrandArchiveFlow";
+import {
+  ArchiveFilter,
+  DEFAULT_ARCHIVE_FILTER,
+  type ArchiveFilterValue,
+} from "@ai-matrx/design-system";
 import { marketingRoutes } from "@/features/marketing/lib/routes";
 import type { BrandListRow, MarketingBrand } from "@/features/marketing/types";
 import {
@@ -97,8 +103,10 @@ export function BrandsPortfolio({
   const table = useMarketingTableState({
     defaultSort: { id: "name", direction: "asc" },
   });
-  const brands = useBrands(table.queryState);
-  const deleteMutation = useDeleteBrand();
+  // THE ARCHIVED-ITEMS LAW: archived brands are one click away; Restore lives on their rows.
+  const [archive, setArchive] = useState<ArchiveFilterValue>(DEFAULT_ARCHIVE_FILTER);
+  const brands = useBrands(table.queryState, archive);
+  const restoreMutation = useRestoreBrand();
   const [editorOpen, setEditorOpen] = useState(false);
   const [editing, setEditing] = useState<MarketingBrand | null>(null);
   const [deleting, setDeleting] = useState<MarketingBrand | null>(null);
@@ -113,14 +121,12 @@ export function BrandsPortfolio({
     setEditorOpen(true);
   };
 
-  const confirmDelete = async () => {
-    if (!deleting) return;
+  const restore = async (row: { id: string; name: string }) => {
     try {
-      await deleteMutation.mutateAsync(deleting.id);
-      toast.success(`Deleted ${deleting.name}`);
-      setDeleting(null);
+      await restoreMutation.mutateAsync(row.id);
+      toast.success(`Restored ${row.name}`);
     } catch (error) {
-      toast.error("Could not delete brand", {
+      toast.error("Could not restore brand", {
         description: extractErrorMessage(error),
       });
     }
@@ -240,11 +246,12 @@ export function BrandsPortfolio({
         },
         {
           kind: "item",
-          id: "brand-delete",
-          label: "Delete brand",
-          icon: Trash2,
-          destructive: true,
-          onSelect: () => setDeleting(clickedRow),
+          id: clickedRow.deleted_at ? "brand-restore" : "brand-archive",
+          label: clickedRow.deleted_at ? "Restore brand" : "Archive brand",
+          icon: clickedRow.deleted_at ? ArchiveRestore : Archive,
+          destructive: !clickedRow.deleted_at,
+          onSelect: () =>
+            clickedRow.deleted_at ? void restore(clickedRow) : setDeleting(clickedRow),
         },
       ]
     : [];
@@ -482,6 +489,7 @@ export function BrandsPortfolio({
               onStateChange={table.onStateChange}
               actions={
                 <div className="flex shrink-0 items-center gap-1">
+                  <ArchiveFilter value={archive} onValueChange={setArchive} size="sm" />
                   <Button
                     icon={<LayoutGrid />}
                     type="button"
@@ -562,10 +570,13 @@ export function BrandsPortfolio({
                           event.stopPropagation();
                           setEditing(row);
                           setEditorOpen(true);
-                        }, variant: "ghost" as const, tooltip: "Edit brand" }], ...[{ id: "delete", icon: Trash2, tone: "destructive" as const, label: `Delete ${row.name}`, onClick: (event: React.MouseEvent<HTMLButtonElement>) => {
+                        }, variant: "ghost" as const, tooltip: "Edit brand" }], ...[row.deleted_at ? { id: "restore", icon: ArchiveRestore, label: `Restore ${row.name}`, onClick: (event: React.MouseEvent<HTMLButtonElement>) => {
+                          event.stopPropagation();
+                          void restore(row);
+                        }, variant: "ghost" as const, tooltip: "Restore brand" } : { id: "archive", icon: Archive, tone: "destructive" as const, label: `Archive ${row.name}`, onClick: (event: React.MouseEvent<HTMLButtonElement>) => {
                           event.stopPropagation();
                           setDeleting(row);
-                        }, variant: "ghost" as const, tooltip: "Delete brand" }]]}
+                        }, variant: "ghost" as const, tooltip: "Archive brand" }]]}
                   emptyState={{
                     icon: (
                       <Landmark className="h-8 w-8 text-muted-foreground" />
@@ -587,6 +598,7 @@ export function BrandsPortfolio({
                     setEditorOpen(true);
                   }}
                   onDelete={setDeleting}
+                  onRestore={(row) => void restore(row)}
                 />
               )}
             </NonEditableContextMenu>
@@ -599,15 +611,10 @@ export function BrandsPortfolio({
         onOpenChange={setEditorOpen}
         brand={editing}
       />
-      <ConfirmDialog
-        open={Boolean(deleting)}
-        onOpenChange={(open) => !open && setDeleting(null)}
-        title={deleting ? `Delete ${deleting.name}?` : "Delete brand?"}
-        description="The brand moves to trash. Brands that still own sites can’t be deleted — delete or move their sites first."
-        variant="destructive"
-        confirmLabel="Delete brand"
-        busy={deleteMutation.isPending}
-        onConfirm={() => void confirmDelete()}
+      <BrandArchiveFlow
+        brand={deleting ? { id: deleting.id, name: deleting.name } : null}
+        onCancel={() => setDeleting(null)}
+        onDone={() => setDeleting(null)}
       />
     </SurfaceRuntimeProvider>
   );
@@ -731,11 +738,13 @@ function BrandCards({
   loading,
   onEdit,
   onDelete,
+  onRestore,
 }: {
   rows: BrandListRow[];
   loading: boolean;
   onEdit: (row: BrandListRow) => void;
   onDelete: (row: BrandListRow) => void;
+  onRestore: (row: BrandListRow) => void;
 }) {
   if (loading) {
     return (
@@ -852,13 +861,25 @@ function BrandCards({
                   aria-label={`Edit ${row.name}`}
                   onClick={() => onEdit(row)}
                 />
-                <Button
-                  icon={<Trash2 />}
-                  type="button"
-                  variant="quiet"
-                  aria-label={`Delete ${row.name}`}
-                  onClick={() => onDelete(row)}
-                />
+                {row.deleted_at ? (
+                  <Button
+                    icon={<ArchiveRestore />}
+                    type="button"
+                    variant="quiet"
+                    aria-label={`Restore ${row.name}`}
+                    title="Restore"
+                    onClick={() => onRestore(row)}
+                  />
+                ) : (
+                  <Button
+                    icon={<Archive />}
+                    type="button"
+                    variant="quiet"
+                    aria-label={`Archive ${row.name}`}
+                    title="Archive"
+                    onClick={() => onDelete(row)}
+                  />
+                )}
               </div>
             </div>
           </div>

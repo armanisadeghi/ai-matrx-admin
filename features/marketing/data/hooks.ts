@@ -48,7 +48,11 @@ import {
   createManualPage,
   createProperty,
   createSite,
-  deleteBrand,
+  archiveBrand,
+  archiveBrandAssociatedItems,
+  listBrandAssociatedItems,
+  previewBrandArchive,
+  restoreBrand,
   deleteBrandAsset,
   deleteBusinessFact,
   deleteCrawlSession,
@@ -810,10 +814,13 @@ export function useBulkDeleteDiscoveredItems() {
   return useDiscoveryMutation(bulkDeleteDiscoveredItems);
 }
 
-export function useBrands(state: MatrxDataTableQueryState) {
+export function useBrands(
+  state: MatrxDataTableQueryState,
+  archive: "active" | "archived" | "all" = "active",
+) {
   return useQuery({
-    queryKey: [...marketingKeys.root, "brands", state] as const,
-    queryFn: ({ signal }) => listBrands(state, signal),
+    queryKey: [...marketingKeys.root, "brands", state, archive] as const,
+    queryFn: ({ signal }) => listBrands(state, signal, archive),
     placeholderData: keepPreviousData,
   });
 }
@@ -931,15 +938,54 @@ export function useUpdateBrand() {
   });
 }
 
-export function useDeleteBrand() {
+/** What archiving this brand would take with it (live counts). */
+export function useBrandArchivePreview(brandId: string | null) {
+  return useQuery({
+    queryKey: [...marketingKeys.root, "brand", brandId, "archive-preview"] as const,
+    queryFn: () => previewBrandArchive(brandId as string),
+    enabled: Boolean(brandId),
+    staleTime: 0,
+  });
+}
+
+/** THE brand archive (cascade): web.brand_archive. */
+export function useArchiveBrand() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: deleteBrand,
+    mutationFn: archiveBrand,
     onSuccess: () => {
-      void queryClient.invalidateQueries({
-        queryKey: [...marketingKeys.root, "brands"],
-      });
+      // Lists only: the open brand page keeps its loaded record so the shared-items window can finish.
+      void queryClient.invalidateQueries({ queryKey: [...marketingKeys.root, "brands"] });
     },
+  });
+}
+
+export function useRestoreBrand() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: restoreBrand,
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: marketingKeys.root });
+    },
+  });
+}
+
+/** Shared things the brand was linked to (people, other records) — offered after an archive. */
+export function useBrandAssociatedItems(brandId: string | null) {
+  return useQuery({
+    queryKey: [...marketingKeys.root, "brand", brandId, "associated-items"] as const,
+    queryFn: () => listBrandAssociatedItems(brandId as string),
+    enabled: Boolean(brandId),
+    staleTime: 0,
+  });
+}
+
+export function useArchiveBrandAssociatedItems() {
+  return useMutation({
+    mutationFn: (input: {
+      brandId: string;
+      items: Parameters<typeof archiveBrandAssociatedItems>[1];
+    }) => archiveBrandAssociatedItems(input.brandId, input.items),
   });
 }
 

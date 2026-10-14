@@ -29,6 +29,7 @@ import {
   Quote,
   Star,
   Trash2,
+  Archive,
   Type,
   SlidersHorizontal,
 } from "lucide-react";
@@ -71,7 +72,6 @@ import {
   useBrandSites,
   useBusinessFacts,
   useCreateSite,
-  useDeleteBrand,
   useDeleteBrandAsset,
   useDeleteBusinessFact,
   useDeleteProperty,
@@ -97,6 +97,7 @@ import { canEditAccess } from "@/utils/permissions/access-core";
 import { BrandSocialProfilesCard } from "@/features/marketing/components/brands/BrandSocialProfilesCard";
 import { BrandRelationsCard } from "@/features/marketing/components/brands/BrandRelationsCard";
 import { BrandBackgroundWork } from "@/features/marketing/components/brands/BrandBackgroundWork";
+import { BrandArchiveFlow } from "@/features/marketing/components/brands/BrandArchiveFlow";
 import { PersonBrandAvatar, PersonFollowerTotal } from "@/features/marketing/components/brands/PersonBrandAvatar";
 import { BRAND_KIND_COPY, brandKindCopy, isPersonBrand } from "@/features/marketing/lib/brand-kind";
 import { marketingRoutes } from "@/features/marketing/lib/routes";
@@ -417,7 +418,6 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
   // editor level or above. RLS stays the boundary.
   const brandAccess = useAccess("web_brand", brandId);
   const canEdit = canEditAccess(brandAccess.level);
-  const deleteMutation = useDeleteBrand();
   const deleteSiteMutation = useDeleteSite();
   const deletePropertyMutation = useDeleteProperty();
   const deleteAssetMutation = useDeleteBrandAsset();
@@ -839,11 +839,11 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
                     Edit brand
                   </Button>
                   <Button
-                    icon={<Trash2 />}
+                    icon={<Archive />}
                     variant="quiet"
                     onClick={() => setConfirmingDelete(true)}
                   >
-                    Delete
+                    Archive
                   </Button>
                 </>
               ) : null}
@@ -1403,25 +1403,10 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
           }
         }}
       />
-      <ConfirmDialog
-        open={confirmingDelete}
-        onOpenChange={setConfirmingDelete}
-        title={`Delete ${current.name}?`}
-        description="The brand moves to trash. Brands that still own sites can’t be deleted — delete or move their sites first."
-        variant="destructive"
-        confirmLabel="Delete brand"
-        busy={deleteMutation.isPending}
-        onConfirm={async () => {
-          try {
-            await deleteMutation.mutateAsync(current.id);
-            toast.success(`Deleted ${current.name}`);
-            router.push(marketingRoutes.brands());
-          } catch (error) {
-            toast.error("Could not delete brand", {
-              description: extractErrorMessage(error),
-            });
-          }
-        }}
+      <BrandArchiveFlow
+        brand={confirmingDelete ? { id: current.id, name: current.name } : null}
+        onCancel={() => setConfirmingDelete(false)}
+        onDone={() => router.push(marketingRoutes.brands())}
       />
     </SurfaceRuntimeProvider>
   );
