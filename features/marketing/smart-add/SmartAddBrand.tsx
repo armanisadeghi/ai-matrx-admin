@@ -214,6 +214,13 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
     const groundedRound = !find && nowGrounded && !groundedSent.current;
     if (!seeds.website && seeds.socials.length === 0 && !woken.name && !woken.location && !find && !groundedRound) return;
     if (groundedRound) groundedSent.current = true;
+    // The person facts agent reads the anchors' profiles from THIS round's lookups (reused within the session):
+    // a grounded round woken by a name alone still carries the confirmed accounts.
+    if (groundedRound && !seeds.website && seeds.socials.length === 0)
+      seeds = {
+        website: "",
+        socials: factBasics.accounts.map((a) => ({ handle_or_url: a.url ?? a.value, ...(a.platform ? { platform: a.platform } : {}) })),
+      };
     const personInput = typed
       ? {
           name: typed.name,
