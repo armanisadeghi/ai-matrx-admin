@@ -54,7 +54,7 @@ export function NoteHomePanel({
         </h3>
         <HomePickerList
           currentScopeId={note.home_scope_id ?? null}
-          defaultOrganizationId={note.organization_id}
+          initialOrganizationId={note.organization_id}
           onPick={pick}
           busy={busy}
           listClassName="max-h-[200px]"

@@ -270,7 +270,7 @@ export const NoteSidebarRow = memo(function NoteSidebarRow({
             {moveOpen ? (
               <HomePickerList
                 currentScopeId={note.home_scope_id ?? null}
-                defaultOrganizationId={note.organization_id}
+                initialOrganizationId={note.organization_id}
                 onPick={moveTo}
                 busy={moving}
               />

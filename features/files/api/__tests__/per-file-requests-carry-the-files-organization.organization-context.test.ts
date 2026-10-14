@@ -20,22 +20,14 @@ import {
 } from "../fileOrganization";
 
 jest.mock("@/lib/python-client", () => ({
+  del: jest.fn(async () => ({ data: {}, meta: {} })),
   delJson: jest.fn(),
   downloadBlob: jest.fn(async () => ({ blob: new Blob(), filename: null, meta: {} })),
   downloadBlobWithProgress: jest.fn(async () => ({ blob: new Blob(), filename: null, meta: {} })),
-  getJson: jest.fn(),
+  getJson: jest.fn(async () => ({ data: { id: "f-2", organization_id: "org-of-f2" }, meta: {} })),
   patchJson: jest.fn(async () => ({ data: {}, meta: {} })),
   postJson: jest.fn(async () => ({ data: {}, meta: {} })),
   uploadWithProgress: jest.fn(),
-}));
-// The engine's typed REST verbs live in the package (P16f).
-jest.mock("@ai-matrx/media/files/engine/host/typed-client", () => ({
-  apiDelete: jest.fn(async () => ({ data: {}, meta: {} })),
-  apiGet: jest.fn(async () => ({ data: { id: "f-2", organization_id: "org-of-f2" }, meta: {} })),
-  apiMultipart: jest.fn(),
-  apiPost: jest.fn(async () => ({ data: {}, meta: {} })),
-  buildPath: jest.fn((p: string) => p),
-  withQuery: jest.fn((p: string) => p),
 }));
 jest.mock("@/lib/redux/store-singleton", () => ({
   getStoreSingleton: () => ({
@@ -48,22 +40,27 @@ jest.mock("@/lib/redux/store-singleton", () => ({
 }));
 
 const pc = jest.requireMock("@/lib/python-client");
-const tc = jest.requireMock("@ai-matrx/media/files/engine/host/typed-client");
 const FILE = "503e2c1f-7b89-5908-891a-18ca0282fc04";
 const ORG = "884d1ce8-0000-4000-8000-000000000001";
 const lastOpts = (fn: jest.Mock) => fn.mock.calls[fn.mock.calls.length - 1]?.at(-1);
 
 beforeEach(() => {
   jest.clearAllMocks();
+  pc.getJson.mockResolvedValue({
+    data: { id: "f-2", organization_id: "org-of-f2" },
+    meta: {},
+  });
+  pc.del.mockResolvedValue({ data: {}, meta: {} });
+  pc.postJson.mockResolvedValue({ data: {}, meta: {} });
   __resetFileOrganizationsForTest();
   rememberFileOrganization(FILE, ORG);
 });
 
 it("every read and write about one file names the file's organization", async () => {
   await getFileMetadata(FILE);
-  expect(lastOpts(tc.apiGet)).toMatchObject({ organizationId: ORG });
+  expect(lastOpts(pc.getJson)).toMatchObject({ organizationId: ORG });
   await getFile(FILE);
-  expect(lastOpts(tc.apiGet)).toMatchObject({ organizationId: ORG });
+  expect(lastOpts(pc.getJson)).toMatchObject({ organizationId: ORG });
   await downloadFile(FILE);
   expect(lastOpts(pc.downloadBlob)).toMatchObject({ organizationId: ORG });
   await downloadFileWithProgress(FILE, jest.fn());
@@ -71,11 +68,11 @@ it("every read and write about one file names the file's organization", async ()
   await patchFile(FILE, { visibility: "private" } as never);
   expect(lastOpts(pc.patchJson)).toMatchObject({ organizationId: ORG });
   await deleteFile(FILE);
-  expect(lastOpts(tc.apiDelete)).toMatchObject({ organizationId: ORG });
+  expect(lastOpts(pc.del)).toMatchObject({ organizationId: ORG });
   await restoreFile(FILE);
   expect(lastOpts(pc.postJson)).toMatchObject({ organizationId: ORG });
   await renameFile(FILE, { new_path: "a.txt" } as never);
-  expect(lastOpts(tc.apiPost)).toMatchObject({ organizationId: ORG });
+  expect(lastOpts(pc.postJson)).toMatchObject({ organizationId: ORG });
 });
 
 it("a file already in the files slice is sent in its own organization", async () => {

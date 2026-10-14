@@ -19,6 +19,7 @@ import { applyOrganizationContextHeader } from "@/lib/api/organization-context";
 import {
   buildMatrxRequestUrl,
   extractMatrxErrorCode,
+  OrganizationContextError,
   sendMatrxRequest,
 } from "@ai-matrx/api";
 import {
@@ -296,6 +297,9 @@ async function authHeaders(
   const initialOrganizationId = expectedActor
     ? null
     : await ensureOrgId(null);
+  if (initialOrganizationId) {
+    applyOrganizationContextHeader({}, initialOrganizationId);
+  }
   const supabase = createClient();
   const {
     data: { session },
@@ -658,7 +662,8 @@ async function vaultFetch<T>(
       auth,
       organizationId,
     );
-  } catch {
+  } catch (cause) {
+    if (cause instanceof OrganizationContextError) throw cause;
     if (frozenImport) throw new VaultImportTransportError("retryable");
     throw new Error(
       "Vault service unreachable — value operations need the backend online",

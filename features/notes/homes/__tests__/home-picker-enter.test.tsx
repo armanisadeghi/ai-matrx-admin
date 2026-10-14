@@ -74,7 +74,7 @@ describe("home picker: type to filter, Enter moves", () => {
     const onPick = jest.fn();
     await act(async () => {
       root.render(
-        <HomePickerList currentScopeId={HOMES[3].scopeId} defaultOrganizationId="org-x" onPick={onPick} />,
+        <HomePickerList currentScopeId={HOMES[3].scopeId} initialOrganizationId="org-x" onPick={onPick} />,
       );
     });
     const input = await typeIntoFilter(text);
@@ -89,7 +89,7 @@ describe("home picker: type to filter, Enter moves", () => {
   it("typing a home's own name never highlights the home the note is already in", async () => {
     const onPick = jest.fn();
     await act(async () => {
-      root.render(<HomePickerList currentScopeId={HOMES[3].scopeId} defaultOrganizationId="org-x" onPick={onPick} />);
+      root.render(<HomePickerList currentScopeId={HOMES[3].scopeId} initialOrganizationId="org-x" onPick={onPick} />);
     });
     const input = await typeIntoFilter("General");
     await pressEnter(input);

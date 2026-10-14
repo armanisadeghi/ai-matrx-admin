@@ -90,6 +90,10 @@ function receiptErrorResponse(status: number, code: string): Response {
   } as Response;
 }
 
+function sentHeaders(fetchMock: jest.Mock, call = 0): Headers {
+  return new Headers(fetchMock.mock.calls[call]?.[1]?.headers);
+}
+
 describe("Vault and Authenticator organization transport", () => {
   const fetchMock = jest.fn<Promise<Response>, Parameters<typeof fetch>>();
 
@@ -107,10 +111,12 @@ describe("Vault and Authenticator organization transport", () => {
     await fetchAuthenticators();
 
     expect(fetchMock).toHaveBeenCalledTimes(1);
-    expect(fetchMock.mock.calls[0]?.[1]?.headers).toMatchObject({
-      Authorization: `Bearer ${ACCESS_TOKEN}`,
-      "X-Organization-Id": ORGANIZATION_ID,
-    });
+    expect(sentHeaders(fetchMock).get("authorization")).toBe(
+      `Bearer ${ACCESS_TOKEN}`,
+    );
+    expect(sentHeaders(fetchMock).get("x-organization-id")).toBe(
+      ORGANIZATION_ID,
+    );
   });
 
   test.each([
@@ -145,10 +151,12 @@ describe("Vault and Authenticator organization transport", () => {
     expect(
       mockGetClaims.mock.calls.every((args) => args[0] === ACCESS_TOKEN),
     ).toBe(true);
-    expect(fetchMock.mock.calls[0]?.[1]?.headers).toMatchObject({
-      Authorization: `Bearer ${ACCESS_TOKEN}`,
-      "X-Organization-Id": ORGANIZATION_ID,
-    });
+    expect(sentHeaders(fetchMock).get("authorization")).toBe(
+      `Bearer ${ACCESS_TOKEN}`,
+    );
+    expect(sentHeaders(fetchMock).get("x-organization-id")).toBe(
+      ORGANIZATION_ID,
+    );
   });
 
   test("restore sends the frozen actor and recognizes only the root fresh-auth envelope", async () => {
@@ -167,10 +175,10 @@ describe("Vault and Authenticator organization transport", () => {
       body: JSON.stringify({
         deletion_id: "00000000-0000-4000-8000-000000000001",
       }),
-      headers: expect.objectContaining({
-        "X-Organization-Id": ORGANIZATION_ID,
-      }),
     });
+    expect(sentHeaders(fetchMock).get("x-organization-id")).toBe(
+      ORGANIZATION_ID,
+    );
   });
 
   test("restore refuses a source-route nested error envelope", async () => {
@@ -260,11 +268,13 @@ describe("Vault and Authenticator organization transport", () => {
     expect(fetchMock.mock.calls[0]?.[0]).toBe(
       `${AIDREAM_PRODUCTION_URL.replace(/\/+$/, "")}/api/vault/destination/check`,
     );
-    expect(fetchMock.mock.calls[0]?.[1]?.headers).toMatchObject({
-      Authorization: `Bearer ${ACCESS_TOKEN}`,
-      "Content-Type": "application/json",
-      "X-Organization-Id": ORGANIZATION_ID,
-    });
+    expect(sentHeaders(fetchMock).get("authorization")).toBe(
+      `Bearer ${ACCESS_TOKEN}`,
+    );
+    expect(sentHeaders(fetchMock).get("content-type")).toBe("application/json");
+    expect(sentHeaders(fetchMock).get("x-organization-id")).toBe(
+      ORGANIZATION_ID,
+    );
   });
 
   test("reveal distinguishes expired recent auth from an unrelated 401", async () => {
@@ -550,28 +560,30 @@ describe("Vault and Authenticator organization transport", () => {
     );
 
     expect(fetchMock).toHaveBeenCalledTimes(1);
-    expect(fetchMock.mock.calls[0]?.[1]?.headers).toMatchObject({
-      Authorization: `Bearer ${ACCESS_TOKEN}`,
-      "X-Organization-Id": ORGANIZATION_ID,
-    });
+    expect(sentHeaders(fetchMock).get("authorization")).toBe(
+      `Bearer ${ACCESS_TOKEN}`,
+    );
+    expect(sentHeaders(fetchMock).get("x-organization-id")).toBe(
+      ORGANIZATION_ID,
+    );
   });
 
   test("no selected organization is never substituted for request context", async () => {
     installContext(null);
 
-    await expect(fetchAuthenticators()).rejects.toThrow(
-      "Select an organization before sending this request.",
-    );
-    await expect(checkVaultDestination("https://example.com")).rejects.toThrow(
-      "Select an organization before sending this request.",
-    );
+    await expect(fetchAuthenticators()).rejects.toMatchObject({
+      code: "organization_context_required",
+    });
+    await expect(checkVaultDestination("https://example.com")).rejects.toMatchObject({
+      code: "organization_context_required",
+    });
     await expect(
       uploadVaultAttachment(
         "item-1",
         new File(["bytes"], "secret.txt", { type: "text/plain" }),
         { label: "Secret", handling: "revealable" },
       ),
-    ).rejects.toThrow("Select an organization before sending this request.");
+    ).rejects.toMatchObject({ code: "organization_context_required" });
 
     expect(mockGetSession).not.toHaveBeenCalled();
     expect(fetchMock).not.toHaveBeenCalled();

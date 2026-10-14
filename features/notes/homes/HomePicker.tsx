@@ -41,7 +41,7 @@ interface HomePickerListProps {
   /** The home to mark as current (single-note moves). */
   currentScopeId: string | null;
   /** Where "New home…" is created by default (the note's organization). */
-  defaultOrganizationId: string | null;
+  initialOrganizationId: string | null;
   onPick: (home: NoteHome, label: string) => void | Promise<void>;
   busy?: boolean;
   /** Placement of the scrolling list (height). */
@@ -50,7 +50,7 @@ interface HomePickerListProps {
 
 export function HomePickerList({
   currentScopeId,
-  defaultOrganizationId,
+  initialOrganizationId,
   onPick,
   busy = false,
   listClassName,
@@ -60,7 +60,7 @@ export function HomePickerList({
   const activeOrganizationId = useAppSelector(selectActiveOrganizationId);
   const [query, setQuery] = useState("");
   const [creating, setCreating] = useState(false);
-  const [newOrgId, setNewOrgId] = useState<string>(defaultOrganizationId ?? "");
+  const [newOrgId, setNewOrgId] = useState<string>(initialOrganizationId ?? "");
   const [newTypeId, setNewTypeId] = useState<string>("");
   const [saving, setSaving] = useState(false);
 
@@ -249,7 +249,7 @@ export function HomePickerDialog({
         {open ? (
           <HomePickerList
             currentScopeId={noteIds.length === 1 ? (first?.home_scope_id ?? null) : null}
-            defaultOrganizationId={first?.organization_id ?? null}
+            initialOrganizationId={first?.organization_id ?? null}
             onPick={pick}
             busy={busy}
           />
@@ -303,7 +303,7 @@ export function HomeChip({ noteId, className }: { noteId: string; className?: st
         {open ? (
           <HomePickerList
             currentScopeId={note.home_scope_id ?? null}
-            defaultOrganizationId={note.organization_id}
+            initialOrganizationId={note.organization_id}
             onPick={pick}
             busy={busy}
           />

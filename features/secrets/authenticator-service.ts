@@ -39,12 +39,14 @@ async function authHeaders(
   // authenticator with no organization selected asks, then continues this
   // same request; the polled current-code read never opens a dialog.
   const organizationId = await ensureOrgId(null);
+  const organizationHeaders = applyOrganizationContextHeader({}, organizationId);
   const supabase = createClient();
   const {
     data: { session },
   } = await supabase.auth.getSession();
   if (!session?.access_token) throw new Error("Not signed in");
   const headers: Record<string, string> = {
+    ...organizationHeaders,
     Authorization: `Bearer ${session.access_token}`,
   };
   if (json) headers["Content-Type"] = "application/json";

@@ -30,13 +30,14 @@ async function authorizationHeader(
   // Vault file with no organization selected asks, then continues this same
   // upload; a download read keeps the fail-closed refusal.
   const organizationId = await ensureOrgId(null);
+  const organizationHeaders = applyOrganizationContextHeader({}, organizationId);
   const supabase = createClient();
   const {
     data: { session },
   } = await supabase.auth.getSession();
   if (!session?.access_token) throw new Error("Not signed in");
   return applyOrganizationContextHeader(
-    { Authorization: `Bearer ${session.access_token}` },
+    { ...organizationHeaders, Authorization: `Bearer ${session.access_token}` },
     organizationId,
   );
 }

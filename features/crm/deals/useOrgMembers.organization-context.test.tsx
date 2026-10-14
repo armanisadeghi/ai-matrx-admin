@@ -20,6 +20,9 @@ jest.mock("@/features/organizations/service/membershipsService", () => ({
     forUser: async () => ({ ok: true, data: { memberships: [{ containerId: "org-mine" }] } }),
   },
 }));
+jest.mock("@/features/organizations/organizationsIAmIn", () => ({
+  mayReadAsMember: async (orgId: string) => orgId === "org-mine",
+}));
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const { useOrgMembers } = require("./useOrgMembers") as typeof import("./useOrgMembers");

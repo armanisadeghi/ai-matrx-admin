@@ -20,9 +20,49 @@ import {
   type AccountOrganizationChoices,
 } from "@ai-matrx/auth/organizations";
 import { supabase } from "@/utils/supabase/client";
-import { forgetAccountPreferencesRow, readAccountPreferencesRow } from "@/lib/account/accountPreferencesRow";
+import { createSharedReads } from "@/lib/sharedReads";
 
 export type { AccountOrganizationChoices };
+
+export interface AccountPreferencesRow {
+  preferences: unknown;
+  last_active_organization_id: string | null;
+  startup_organization_id: string | null;
+}
+
+export interface AccountPreferencesAnswer {
+  data: AccountPreferencesRow | null;
+  error: { message: string } | null;
+}
+
+interface UntypedUsersSchema {
+  from(table: "user_preferences"): {
+    select(columns: string): {
+      eq(column: "user_id", value: string): { maybeSingle(): PromiseLike<AccountPreferencesAnswer> };
+    };
+  };
+}
+
+const preferenceReads = createSharedReads(5_000);
+const PREFERENCES_KEY = "users.user_preferences:row";
+
+export function readAccountPreferencesRow(userId: string): Promise<AccountPreferencesAnswer> {
+  return preferenceReads.read(
+    userId,
+    PREFERENCES_KEY,
+    () =>
+      (supabase.schema("users") as unknown as UntypedUsersSchema)
+        .from("user_preferences")
+        .select("preferences, last_active_organization_id, startup_organization_id")
+        .eq("user_id", userId)
+        .maybeSingle(),
+    { isFailure: (answer) => answer.error !== null },
+  );
+}
+
+export function forgetAccountPreferencesRow(): void {
+  preferenceReads.forget(PREFERENCES_KEY);
+}
 
 /**
  * Read the account's last active and start-up organizations. A person with no
