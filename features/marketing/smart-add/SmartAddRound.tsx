@@ -20,6 +20,7 @@ import {
 } from "@/features/workflow-runtime/redux/workflow-runs.selectors";
 import { evidenceFromPayload, type EvidenceItem } from "./evidence";
 import { factsFromPayload, type BrandFact } from "./validate/queue";
+import { suggestionsFromPayload, type WeThinkSuggestion } from "./weThink";
 
 /** The steps a Smart Add workflow shows, in order. */
 export type SmartAddStepPair = readonly string[];
@@ -28,6 +29,8 @@ export const IDENTIFY_STEPS: SmartAddStepPair = ["probe", "page", "avatars", "so
 export const SETUP_STEPS: SmartAddStepPair = ["logo", "accounts", "history"];
 /** Steps whose output may carry the facts agent's `brand_basics` (read for facts only, not shown as steps). */
 const FACT_STEPS: SmartAddStepPair = ["facts", "brand_basics"];
+/** The "we think" step (mandate brand_intake.we_think): its `brand_we_think` suggestions, per finding key. */
+const WE_THINK_STEPS: SmartAddStepPair = ["we_think"];
 
 /** The page step's gate detection (aidream brand_identify_gate.GateReport), as far as the screen uses it. */
 export interface SiteGate {
@@ -76,7 +79,7 @@ function StepWatch({
 }: {
   runId: string;
   step: string;
-  onStep: (step: string, view: StepView, evidence: EvidenceItem[], facts: BrandFact[]) => void;
+  onStep: (step: string, view: StepView, evidence: EvidenceItem[], facts: BrandFact[], suggestions: Record<string, WeThinkSuggestion>) => void;
 }) {
   const aggregate = useAppSelector(selectNodeAggregate(runId, step));
   const invocation = aggregate.invocations[aggregate.invocations.length - 1] ?? null;
@@ -94,10 +97,20 @@ function StepWatch({
     errored: aggregate.phase === "failed" || Boolean(invocation?.error),
     gate: parseGate(output?.gate),
   };
-  const signature = JSON.stringify({ view, evidence: evidenceFromPayload(output), facts: factsFromPayload(output) });
+  const signature = JSON.stringify({
+    view,
+    evidence: evidenceFromPayload(output),
+    facts: factsFromPayload(output),
+    suggestions: suggestionsFromPayload(output),
+  });
   useEffect(() => {
-    const { view: v, evidence, facts } = JSON.parse(signature) as { view: StepView; evidence: EvidenceItem[]; facts: BrandFact[] };
-    onStep(step, v, evidence, facts);
+    const { view: v, evidence, facts, suggestions } = JSON.parse(signature) as {
+      view: StepView;
+      evidence: EvidenceItem[];
+      facts: BrandFact[];
+      suggestions: Record<string, WeThinkSuggestion>;
+    };
+    onStep(step, v, evidence, facts, suggestions);
   }, [signature, step, onStep]);
   return null;
 }
@@ -107,6 +120,7 @@ export function SmartAddRound({
   steps = IDENTIFY_STEPS,
   onEvidence,
   onFacts,
+  onSuggestions,
   onView,
 }: {
   runId: string;
@@ -114,14 +128,18 @@ export function SmartAddRound({
   onEvidence?: (items: EvidenceItem[]) => void;
   /** The facts agent's `brand_basics_fact` items, from live frames and step outputs. */
   onFacts?: (facts: BrandFact[]) => void;
+  /** The we-think agent's suggestions, keyed by finding key (never an answer; the screen glows them). */
+  onSuggestions?: (suggestions: Record<string, WeThinkSuggestion>) => void;
   onView: (view: RoundView) => void;
 }) {
   useWorkflowRun(runId);
   const status = useAppSelector(selectRunStatus(runId));
   const emissions = useAppSelector(selectRunEmissions(runId));
-  const [stepState, setStepState] = useState<Record<string, { view: StepView; evidence: EvidenceItem[]; facts: BrandFact[] }>>({});
-  const onStep = (step: string, view: StepView, evidence: EvidenceItem[], facts: BrandFact[]) =>
-    setStepState((s) => ({ ...s, [step]: { view, evidence, facts } }));
+  const [stepState, setStepState] = useState<
+    Record<string, { view: StepView; evidence: EvidenceItem[]; facts: BrandFact[]; suggestions: Record<string, WeThinkSuggestion> }>
+  >({});
+  const onStep = (step: string, view: StepView, evidence: EvidenceItem[], facts: BrandFact[], suggestions: Record<string, WeThinkSuggestion>) =>
+    setStepState((s) => ({ ...s, [step]: { view, evidence, facts, suggestions } }));
 
   const live = emissions.flatMap((e) => evidenceFromPayload(e.payload));
   const all = [...live, ...steps.flatMap((s) => stepState[s]?.evidence ?? [])];
@@ -137,6 +155,10 @@ export function SmartAddRound({
   useEffect(() => {
     if (facts.length) onFacts?.(facts);
   }, [facts, onFacts]);
+  const suggestions = Object.assign({}, ...WE_THINK_STEPS.map((s) => stepState[s]?.suggestions ?? {})) as Record<string, WeThinkSuggestion>;
+  useEffect(() => {
+    if (Object.keys(suggestions).length) onSuggestions?.(suggestions);
+  }, [suggestions, onSuggestions]);
 
   const idle = (step: string): StepView => ({ step, phase: "idle", progress: null, notes: [], costUsd: 0, skipped: false });
   const view: RoundView = { runId, status, steps: steps.map((s) => stepState[s]?.view ?? idle(s)) };
@@ -146,7 +168,7 @@ export function SmartAddRound({
 
   return (
     <>
-      {[...steps, ...(onFacts ? FACT_STEPS : [])].map((s) => (
+      {[...steps, ...(onFacts ? FACT_STEPS : []), ...(onSuggestions ? WE_THINK_STEPS : [])].map((s) => (
         <StepWatch key={s} runId={runId} step={s} onStep={onStep} />
       ))}
     </>

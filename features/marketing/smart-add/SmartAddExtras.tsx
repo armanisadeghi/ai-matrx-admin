@@ -38,6 +38,8 @@ import {
   type Relation,
 } from "./evidence";
 import { STANCE_LABEL } from "./webKinds";
+import { parseSuggestion } from "./validate/queue";
+import { Glow, WeThinkHint } from "./WeThinkHint";
 
 // ── Custom ──────────────────────────────────────────────────────────────────────
 
@@ -462,6 +464,10 @@ function CandidateCard({
 }) {
   const ours = isOurs(decision);
   const rejected = decision === "no";
+  // "We think" glows one option until the person answers; it never answers for them.
+  const weThink = decision || relation ? null : parseSuggestion(c.anchor.suggestion);
+  const weThinkEvidence = (c.anchor.suggestion as { evidence?: unknown } | undefined)?.evidence;
+  const glow = (choices: string[]) => Boolean(weThink && choices.includes(weThink.choice));
   const handleLine = c.platform === "website" ? (c.url ? websiteHost(c.url) : null) : accountHandleLine(c.platform, c.handle);
   const title = c.name ?? handleLine ?? c.anchor.value;
   const findings = c.items.length;
@@ -496,19 +502,32 @@ function CandidateCard({
       <div className="mt-auto flex items-center gap-2 text-[11px] text-muted-foreground">
         <span>{findings === 1 ? "1 finding" : `${findings} findings`}</span>
       </div>
-      <div className="flex flex-wrap items-center gap-1.5">
-        <Button variant={ours ? "primary" : "outline"} icon={<Check />} onClick={() => onClaim(c, "yes")} aria-pressed={ours}>
-          This is us
-        </Button>
-        <Button variant={rejected ? "danger" : "quiet"} icon={<X />} onClick={() => onClaim(c, "no")} aria-pressed={rejected}>
-          Not us
-        </Button>
-        <RelationPicker
+      {weThink ? (
+        <WeThinkHint
+          suggestion={weThink}
           kinds={kinds}
-          relation={relation}
-          onRelate={(r) => onRelate(c, r)}
-          onCustom={(label) => onCustom(c, label)}
+          evidence={Array.isArray(weThinkEvidence) ? weThinkEvidence.filter((e): e is string => typeof e === "string") : undefined}
         />
+      ) : null}
+      <div className="flex flex-wrap items-center gap-1.5">
+        <Glow on={glow(["ours", "preferred", "alias"])}>
+          <Button variant={ours ? "primary" : "outline"} icon={<Check />} onClick={() => onClaim(c, "yes")} aria-pressed={ours}>
+            This is us
+          </Button>
+        </Glow>
+        <Glow on={glow(["not_us"])}>
+          <Button variant={rejected ? "danger" : "quiet"} icon={<X />} onClick={() => onClaim(c, "no")} aria-pressed={rejected}>
+            Not us
+          </Button>
+        </Glow>
+        <Glow on={glow(["related"])}>
+          <RelationPicker
+            kinds={kinds}
+            relation={relation}
+            onRelate={(r) => onRelate(c, r)}
+            onCustom={(label) => onCustom(c, label)}
+          />
+        </Glow>
       </div>
     </article>
   );

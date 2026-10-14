@@ -24,6 +24,7 @@ import { profileAvatarDoor } from "@/features/marketing/social/server";
 import { websiteHost } from "../evidence";
 import { outboundHref } from "../SmartAddExtras";
 import { STANCE_LABEL, STANCE_ORDER } from "../webKinds";
+import { Glow, WeThinkHint } from "../WeThinkHint";
 import { ANSWER_KEY, ANSWER_LABEL, optionsFor, type Answer, type FocusItem } from "./queue";
 
 export interface AnsweredEntry {
@@ -153,38 +154,10 @@ function relationOptions(kinds: BrandRelationKind[]): SelectOption<string>[] {
   ];
 }
 
-/** The "we think" hint: the matching option glows; the reason sits in a hover card. */
+/** The "we think" hint for a focus item (shared with the compare cards): the reason sits in its hover card. */
 function WeThink({ item, kinds }: { item: FocusItem; kinds: BrandRelationKind[] }) {
-  const s = item.suggestion;
-  if (!s) return <span className="h-5" aria-hidden />;
-  const rel = s.relation_key ? kinds.find((k) => k.key === s.relation_key)?.label : null;
-  const label = rel ?? ANSWER_LABEL[s.choice];
-  return (
-    <HoverCard openDelay={120}>
-      <HoverCardTrigger asChild>
-        <span className="flex h-5 items-center gap-1.5 text-xs text-primary" data-testid="validate-we-think" data-choice={s.choice}>
-          <span className="size-1.5 rounded-full bg-primary" aria-hidden />
-          We think: {label}
-          {s.probability !== null ? <span className="tabular-nums text-muted-foreground">{Math.round(s.probability * 100)}%</span> : null}
-        </span>
-      </HoverCardTrigger>
-      {s.reason ? <HoverCardContent className="w-72 text-xs">{s.reason}</HoverCardContent> : null}
-    </HoverCard>
-  );
-}
-
-function Glow({ on, children }: { on: boolean; children: ReactNode }) {
-  return (
-    <span className="relative inline-flex" data-glow={on ? "true" : undefined}>
-      {on ? (
-        <span
-          aria-hidden
-          className="pointer-events-none absolute -inset-1 rounded-full bg-primary/25 blur-md motion-safe:animate-pulse"
-        />
-      ) : null}
-      <span className={`relative inline-flex rounded-full ${on ? "ring-2 ring-primary" : ""}`}>{children}</span>
-    </span>
-  );
+  const evidence = (item.evidence?.suggestion as { evidence?: unknown } | undefined)?.evidence;
+  return <WeThinkHint suggestion={item.suggestion} kinds={kinds} evidence={Array.isArray(evidence) ? evidence.filter((e): e is string => typeof e === "string") : undefined} />;
 }
 
 function FocusCard({

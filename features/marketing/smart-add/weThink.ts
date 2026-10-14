@@ -70,7 +70,11 @@ export function withSuggestions(items: EvidenceItem[], suggestions: Record<strin
   if (!Object.keys(suggestions).length) return items;
   return items.map((i) => {
     const s = suggestions[i.key] ?? (i.same_as ?? []).map((k) => suggestions[k]).find(Boolean);
-    return s ? { ...i, suggestion: s } : i;
+    if (!s) return i;
+    // The option the card actually offers: names answer Preferred / Alias, everything else Ours.
+    const name = i.field === "name";
+    const choice = name && s.choice === "ours" ? "preferred" : !name && (s.choice === "preferred" || s.choice === "alias") ? "ours" : s.choice;
+    return { ...i, suggestion: { ...s, choice } };
   });
 }
 

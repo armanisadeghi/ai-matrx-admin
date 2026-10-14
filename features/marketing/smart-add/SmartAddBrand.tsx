@@ -103,6 +103,7 @@ import { useBuilderFeed } from "@/hooks/useBuilderFeed";
 import { SMART_ADD_SURFACE } from "./builderSurface";
 import { SmartAddValidate } from "./validate/SmartAddValidate";
 import { coreSettled, mergeFacts, type BrandFact } from "./validate/queue";
+import { knownDecided, withSuggestions, type WeThinkSuggestion } from "./weThink";
 
 /** The call point where the brand-intake analysis would run (server: brand_intake/provision.py). */
 const BRAND_INTAKE_POINT = "brand_intake.smart_add_create";
@@ -158,6 +159,8 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
   const [webChoices, setWebChoices] = useState<Record<string, WebChoice>>({});
   // The facts agent's findings (kind brand_basics), answered on the validation page.
   const [facts, setFacts] = useState<BrandFact[]>([]);
+  // The we-think agent's suggestions per finding key: they only glow an option, never answer.
+  const [suggestions, setSuggestions] = useState<Record<string, WeThinkSuggestion>>({});
   // After Create, once the core is settled (validate/queue VALIDATION_THRESHOLD): the focus queue.
   const [validateOrg, setValidateOrg] = useState<string | null>(null);
   const validating = Boolean(validateOrg);
@@ -211,6 +214,8 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
             confirmed: confirmedFacts,
             woken,
             exclude_keys: exclude,
+            // What is already ours / not us: the we-think step judges new candidates against it.
+            known: knownDecided(items.values(), decisions),
             ...(firstData ? { first_data: true } : {}),
           },
         },
@@ -230,6 +235,7 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
     setRelations({});
     setWebChoices({});
     setFacts([]);
+    setSuggestions({});
     setComparing(false);
     explored.current = new Set();
     wokenSent.current = new Set();
@@ -407,7 +413,7 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
     .filter((s) => s.phase === "running" && s.progress)
     .map((s) => s.progress as string);
   const costUsd = roundViews.reduce((sum, v) => sum + (v?.steps.reduce((s, x) => s + x.costUsd, 0) ?? 0), 0);
-  const visible = orderedEvidence(items.values());
+  const visible = withSuggestions(orderedEvidence(items.values()), suggestions);
   const basics = confirmedBasics(items, decisions, person);
   // The landing card shows the best found name and logo until the person confirms their own, so
   // what the stage found has a real place to land (it is never created from these: Create reads basics).
@@ -709,6 +715,9 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
             runId={r.runId}
             onEvidence={onEvidence}
             onFacts={(f) => setFacts((cur) => mergeFacts(cur, f))}
+            onSuggestions={(next) =>
+              setSuggestions((cur) => (Object.entries(next).every(([k, v]) => JSON.stringify(cur[k]) === JSON.stringify(v)) ? cur : { ...cur, ...next }))
+            }
             onView={onView}
           />
         ) : null,
