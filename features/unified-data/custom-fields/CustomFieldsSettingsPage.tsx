@@ -12,7 +12,7 @@ import { ProInput } from "@/components/official/ProInput";
 
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Button, Input } from "@ai-matrx/design-system/controls";
+import { Button, Input, Select } from "@ai-matrx/design-system/controls";
 import { CUSTOM_FIELD_ADDABLE_TYPES, recordsDataSource } from "@ai-matrx/records-ui";
 
 import PageHeader from "@/features/shell/components/header/PageHeader";
@@ -106,19 +106,16 @@ export function CustomFieldsSettingsPage({ token, organizationId }: { token: str
                 disabled={adding || !org}
               />
             </div>
-            <select
+            <Select
               aria-label="Field type"
-              className="h-7 rounded-md border border-border bg-background px-2 text-sm"
               value={type}
-              onChange={(e) => setType(e.target.value)}
+              onValueChange={setType}
               disabled={adding || !org}
-            >
-              {CUSTOM_FIELD_ADDABLE_TYPES.map((t) => (
-                <option key={t.value} value={t.value}>
-                  {t.label}
-                </option>
-              ))}
-            </select>
+              options={CUSTOM_FIELD_ADDABLE_TYPES.map((t) => ({
+                value: t.value,
+                label: t.label,
+              }))}
+            />
             <Button onClick={add} disabled={adding || !org || !label.trim()}>
               Add field
             </Button>

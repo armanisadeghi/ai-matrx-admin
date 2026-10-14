@@ -35,7 +35,7 @@ import {
 import { toast } from "@/lib/toast";
 
 import { cn } from "@/lib/utils";
-import { Input } from "@ai-matrx/design-system/controls";
+import { Input, Select } from "@ai-matrx/design-system/controls";
 import { Label } from "@/components/ui/label";
 import { ProTextarea } from "@/components/official/ProTextarea";
 import { Badge } from "@/components/ui/badge";
@@ -454,24 +454,21 @@ function ResourceEditor({
           <Label className="text-xs uppercase tracking-wide text-muted-foreground">
             Type
           </Label>
-          <select
+          <Select
             value={resourceType}
-            onChange={(e) => setResourceType(e.target.value)}
-            className={cn(
-              "h-8 px-2 text-sm rounded-md w-full",
-              "bg-background border border-border text-foreground",
-              "focus:outline-none focus:ring-1 focus:ring-ring",
-            )}
-          >
-            {RESOURCE_TYPES.map((rt) => (
-              <option key={rt.value} value={rt.value}>
-                {rt.label}
-              </option>
-            ))}
-            {!RESOURCE_TYPES.some((rt) => rt.value === resourceType) && (
-              <option value={resourceType}>{resourceType}</option>
-            )}
-          </select>
+            onValueChange={setResourceType}
+            aria-label="Type"
+            className="w-full"
+            options={[
+              ...RESOURCE_TYPES.map((rt) => ({
+                value: rt.value,
+                label: rt.label,
+              })),
+              ...(!RESOURCE_TYPES.some((rt) => rt.value === resourceType)
+                ? [{ value: resourceType, label: resourceType }]
+                : []),
+            ]}
+          />
         </div>
       </div>
 

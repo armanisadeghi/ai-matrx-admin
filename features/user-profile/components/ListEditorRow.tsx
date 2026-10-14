@@ -9,6 +9,7 @@
 
 import { Plus, Star, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Select } from "@ai-matrx/design-system/controls";
 
 export interface ListEditorRowProps {
   index: number;
@@ -192,20 +193,14 @@ export function SelectField<T extends string>({
   options,
 }: SelectFieldProps<T>) {
   return (
-    <label className="flex flex-col gap-1 text-xs">
+    <div className="flex flex-col gap-1 text-xs">
       {label && <span className="text-muted-foreground">{label}</span>}
-      <select
+      <Select<T>
         value={value}
-        onChange={(e) => onChange(e.target.value as T)}
-        className="h-8 rounded-md border border-border bg-card px-2.5 text-sm text-foreground shadow-sm transition-colors hover:bg-accent/50 focus:outline-none focus:ring-1 focus:ring-primary/30 focus:border-primary/40"
-        style={{ fontSize: "16px" }}
-      >
-        {options.map((opt) => (
-          <option key={opt.value} value={opt.value}>
-            {opt.label}
-          </option>
-        ))}
-      </select>
-    </label>
+        onValueChange={onChange}
+        aria-label={label ?? "Select"}
+        options={options}
+      />
+    </div>
   );
 }

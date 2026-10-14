@@ -46,7 +46,6 @@ import {
   ArrowUpToLine,
   BookOpen,
   BookA,
-  ChevronDown,
   CircleStop,
   GitCompareArrows,
   Layers,
@@ -66,6 +65,7 @@ import {
 import { toast } from "@/lib/toast";
 import { ActiveContextLensChip } from "@/features/scopes/components/active-context/ActiveContextLensChip";
 import { cn } from "@/lib/utils";
+import { Select } from "@ai-matrx/design-system/controls";
 import { useAppDispatch, useAppSelector, useAppStore } from "@/lib/redux/hooks";
 import {
   selectVoicePadEntries,
@@ -2868,21 +2868,17 @@ export default function CleanupPad({
           />
         </div>
         <div className="relative shrink-0">
-          <select
+          <Select<"clean" | "raw">
             value={activeSlot?.source ?? "clean"}
-            onChange={(e) =>
-              activeSlot &&
-              patchSlot(activeSlot.id, {
-                source: e.target.value as "clean" | "raw",
-              })
+            onValueChange={(source) =>
+              activeSlot && patchSlot(activeSlot.id, { source })
             }
             aria-label="Input source for this slot"
-            className="h-7 appearance-none rounded-md border border-border bg-background pl-2 pr-6 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
-          >
-            <option value="clean">Clean</option>
-            <option value="raw">Raw</option>
-          </select>
-          <ChevronDown className="pointer-events-none absolute right-1.5 top-1/2 h-3 w-3 -translate-y-1/2 text-muted-foreground" />
+            options={[
+              { value: "clean", label: "Clean" },
+              { value: "raw", label: "Raw" },
+            ]}
+          />
         </div>
         <button
           type="button"

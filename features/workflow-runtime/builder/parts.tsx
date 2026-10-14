@@ -10,7 +10,7 @@
 import type { ReactNode } from "react";
 
 import { cn } from "@/lib/utils";
-import { SegmentedControl } from "@ai-matrx/design-system/controls";
+import { Select, SegmentedControl } from "@ai-matrx/design-system/controls";
 
 /** A numbered step of the build flow. */
 export function Section({
@@ -118,21 +118,13 @@ export function SelectField<T extends string>({
   className?: string;
 }) {
   return (
-    <select
+    <Select<T>
       value={value}
       aria-label={ariaLabel}
-      onChange={(e) => onChange(e.target.value as T)}
-      className={cn(
-        "h-9 w-full rounded-lg border border-border bg-background px-2 text-sm text-foreground focus:border-primary focus:outline-none",
-        className,
-      )}
-    >
-      {options.map((option) => (
-        <option key={option.value} value={option.value}>
-          {option.label}
-        </option>
-      ))}
-    </select>
+      onValueChange={onChange}
+      options={options}
+      className={className}
+    />
   );
 }
 

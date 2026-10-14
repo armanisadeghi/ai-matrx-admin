@@ -13,7 +13,7 @@ import {
 import { toast, recordToast, dismissRecordToasts } from "@/lib/toast";
 
 import { cn } from "@/lib/utils";
-import { Input } from "@ai-matrx/design-system/controls";
+import { Input, Select } from "@ai-matrx/design-system/controls";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
@@ -521,25 +521,19 @@ export function SkillDetailEditor({
 
           <div className="grid grid-cols-2 gap-4">
             <Field label="Type">
-              <select
+              <Select
                 value={draft.skillType}
-                onChange={(e) => set("skillType", e.target.value as SkillType)}
+                onValueChange={(t) => set("skillType", t as SkillType)}
                 disabled={readOnly}
-                className={cn(
-                  "h-9 px-2 text-sm rounded-md w-full",
-                  "bg-background border border-border text-foreground",
-                  "focus:outline-none focus:ring-1 focus:ring-ring",
-                )}
-              >
-                {KNOWN_SKILL_TYPES.map((t) => (
-                  <option key={t} value={t}>
-                    {t}
-                  </option>
-                ))}
-                {!KNOWN_SKILL_TYPES.includes(draft.skillType) && (
-                  <option value={draft.skillType}>{draft.skillType}</option>
-                )}
-              </select>
+                aria-label="Type"
+                className="w-full"
+                options={[
+                  ...KNOWN_SKILL_TYPES.map((t) => ({ value: t, label: t })),
+                  ...(!KNOWN_SKILL_TYPES.includes(draft.skillType)
+                    ? [{ value: draft.skillType, label: draft.skillType }]
+                    : []),
+                ]}
+              />
             </Field>
 
             <Field label="Version">

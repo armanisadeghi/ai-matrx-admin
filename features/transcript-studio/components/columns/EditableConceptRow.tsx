@@ -1,6 +1,7 @@
 "use client";
 
 import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
+import { Select } from "@ai-matrx/design-system/controls";
 /**
  * Per-row edit/delete UI for concept items. The display mode mirrors
  * `ConceptsColumn`'s original button (kind chip + label + description) and
@@ -86,17 +87,15 @@ export function EditableConceptRow({
   if (editing) {
     return (
       <div className="flex flex-col gap-1.5 px-3 py-2">
-        <select
+        <Select<ConceptKind>
           value={kind}
-          onChange={(e) => setKind(e.target.value as ConceptKind)}
-          className="rounded-md border border-border bg-background px-2 py-1 text-xs font-medium outline-none focus:ring-1 focus:ring-ring"
-        >
-          {KIND_OPTIONS.map((k) => (
-            <option key={k} value={k}>
-              {humanizeIdentifier(k) || k}
-            </option>
-          ))}
-        </select>
+          onValueChange={setKind}
+          aria-label="Concept kind"
+          options={KIND_OPTIONS.map((k) => ({
+            value: k,
+            label: humanizeIdentifier(k) || k,
+          }))}
+        />
         <input
           ref={labelRef}
           value={label}

@@ -21,6 +21,7 @@ import {
 import { ProInput } from "@/components/official/ProInput";
 import { ProTextarea } from "@/components/official/ProTextarea";
 import { Button } from "@/components/ui/button";
+import { Select } from "@ai-matrx/design-system/controls";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { useAssociateTask } from "@/features/tasks/hooks/useAssociateTask";
 import { selectProjects } from "@/features/tasks/redux/selectors";
@@ -101,20 +102,18 @@ export default function GlobalTaskShortcutImpl({ onClose }: Props) {
             wrapperClassName="w-full"
           />
           <div className="flex items-center gap-2">
-            <select
+            <Select
               value={projectId}
-              onChange={(e) => setProjectId(e.target.value)}
-              className="flex-1 h-8 bg-card border border-border rounded-md px-2 text-xs outline-none hover:border-foreground/30"
-            >
-              <option value="">Auto (active project)</option>
-              {projects
-                .filter((p) => p.id !== "__unassigned__")
-                .map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.name}
-                  </option>
-                ))}
-            </select>
+              onValueChange={setProjectId}
+              aria-label="Project"
+              className="flex-1"
+              options={[
+                { value: "", label: "Auto (active project)" },
+                ...projects
+                  .filter((p) => p.id !== "__unassigned__")
+                  .map((p) => ({ value: p.id, label: p.name })),
+              ]}
+            />
             <Button
               icon={isBusy ? (
                 <Loader2 className="animate-spin" />

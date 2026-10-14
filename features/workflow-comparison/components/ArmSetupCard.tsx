@@ -10,7 +10,7 @@ import { useEffect, useRef, useState } from "react";
 import { ChevronDown, Search, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { Input } from "@ai-matrx/design-system/controls";
+import { Input, Select } from "@ai-matrx/design-system/controls";
 import { ReadFailure } from "@ai-matrx/design-system";
 
 import {
@@ -221,29 +221,29 @@ function VersionSelect({
   }, [draft.definitionId]);
 
   return (
-    <label className="flex items-center gap-2 text-xs text-muted-foreground">
+    <div className="flex items-center gap-2 text-xs text-muted-foreground">
       <span className="shrink-0">Version</span>
-      <select
+      <Select
         value={draft.versionNumber === null ? "current" : String(draft.versionNumber)}
-        onChange={(e) =>
+        onValueChange={(v) =>
           onChange({
             ...draft,
-            versionNumber:
-              e.target.value === "current" ? null : Number(e.target.value),
+            versionNumber: v === "current" ? null : Number(v),
           })
         }
-        className="h-7 flex-1 rounded-md border border-border bg-background px-1.5 text-xs text-foreground"
-      >
-        <option value="current">
-          Current{draft.latestVersion ? ` (v${draft.latestVersion})` : ""}
-        </option>
-        {(versions ?? []).map((v) => (
-          <option key={v.versionNumber} value={String(v.versionNumber)}>
-            v{v.versionNumber}
-            {v.changeNote ? ` — ${v.changeNote.slice(0, 40)}` : ""}
-          </option>
-        ))}
-      </select>
-    </label>
+        aria-label="Version"
+        className="flex-1"
+        options={[
+          {
+            value: "current",
+            label: `Current${draft.latestVersion ? ` (v${draft.latestVersion})` : ""}`,
+          },
+          ...(versions ?? []).map((v) => ({
+            value: String(v.versionNumber),
+            label: `v${v.versionNumber}${v.changeNote ? ` — ${v.changeNote.slice(0, 40)}` : ""}`,
+          })),
+        ]}
+      />
+    </div>
   );
 }

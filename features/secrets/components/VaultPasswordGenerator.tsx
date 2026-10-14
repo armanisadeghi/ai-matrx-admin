@@ -11,7 +11,7 @@ import {
 
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Input } from "@ai-matrx/design-system/controls";
+import { Input, Select } from "@ai-matrx/design-system/controls";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "@/lib/toast";
@@ -287,24 +287,22 @@ export function VaultPasswordGenerator({
                     }}
                   />
                 </Label>
-                <label className="text-sm">
-                  Separator{" "}
-                  <select
-                    className="ml-2 rounded border bg-background p-1"
+                <div className="flex items-center gap-2 text-sm">
+                  <span>Separator</span>
+                  <Select<"-" | " " | ".">
                     value={passphrase.separator}
-                    onChange={(e) => {
-                      setPassphrase({
-                        ...passphrase,
-                        separator: e.target.value as "-" | " " | ".",
-                      });
+                    onValueChange={(separator) => {
+                      setPassphrase({ ...passphrase, separator });
                       clear();
                     }}
-                  >
-                    <option value="-">Hyphen</option>
-                    <option value=" ">Space</option>
-                    <option value=".">Period</option>
-                  </select>
-                </label>
+                    aria-label="Separator"
+                    options={[
+                      { value: "-", label: "Hyphen" },
+                      { value: " ", label: "Space" },
+                      { value: ".", label: "Period" },
+                    ]}
+                  />
+                </div>
                 <label className="flex items-center gap-2 text-sm">
                   <Switch
                     checked={passphrase.capitalize}

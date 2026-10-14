@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import { toast } from "@/lib/toast";
 import { Button } from "@/components/ui/button";
-import { Input } from "@ai-matrx/design-system/controls";
+import { Input, Select } from "@ai-matrx/design-system/controls";
 import { cn } from "@/lib/utils";
 import {
   computeTextCounterMetrics,
@@ -203,24 +203,22 @@ export function CharacterCounter({
               Length goal
             </div>
             <div className="flex gap-2">
-              <select
+              <Select
                 value={preset}
-                onChange={(event) => {
+                onValueChange={(value) => {
                   const next =
-                    LIMIT_PRESETS.find(
-                      (item) => item.value === event.target.value,
-                    ) ?? LIMIT_PRESETS[0];
+                    LIMIT_PRESETS.find((item) => item.value === value) ??
+                    LIMIT_PRESETS[0];
                   setPreset(next.value);
                   setLimit(next.limit);
                 }}
-                className="h-9 min-w-0 flex-1 rounded-md border border-input bg-background px-2 text-sm"
-              >
-                {LIMIT_PRESETS.map((item) => (
-                  <option key={item.value} value={item.value}>
-                    {item.label}
-                  </option>
-                ))}
-              </select>
+                aria-label="Length goal"
+                className="min-w-0 flex-1"
+                options={LIMIT_PRESETS.map((item) => ({
+                  value: item.value,
+                  label: item.label,
+                }))}
+              />
               <Input
                 aria-label="Character limit"
                 type="number"

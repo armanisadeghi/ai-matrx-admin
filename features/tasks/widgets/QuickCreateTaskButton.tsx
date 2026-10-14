@@ -8,7 +8,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@ai-matrx/design-system";
-import { Input } from "@ai-matrx/design-system/controls";
+import { Input, Select } from "@ai-matrx/design-system/controls";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/utils/cn";
 import {
@@ -164,18 +164,17 @@ export default function QuickCreateTaskButton(props: QuickCreateTaskButtonProps)
                 rows={2}
               />
               <div className="grid grid-cols-2 gap-2">
-                <select
+                <Select<"low" | "medium" | "high" | "">
                   value={priority}
-                  onChange={(e) =>
-                    setPriority(e.target.value as "low" | "medium" | "high" | "")
-                  }
-                  className="h-7 bg-card border border-border rounded px-2 text-xs outline-none hover:border-foreground/30"
-                >
-                  <option value="">No priority</option>
-                  <option value="high">High</option>
-                  <option value="medium">Medium</option>
-                  <option value="low">Low</option>
-                </select>
+                  onValueChange={setPriority}
+                  aria-label="Priority"
+                  options={[
+                    { value: "", label: "No priority" },
+                    { value: "high", label: "High" },
+                    { value: "medium", label: "Medium" },
+                    { value: "low", label: "Low" },
+                  ]}
+                />
                 <input
                   type="date"
                   value={dueDate}
@@ -183,20 +182,18 @@ export default function QuickCreateTaskButton(props: QuickCreateTaskButtonProps)
                   className="h-7 bg-card border border-border rounded px-2 text-xs outline-none hover:border-foreground/30"
                 />
               </div>
-              <select
+              <Select
                 value={projectId}
-                onChange={(e) => setProjectId(e.target.value)}
-                className="w-full h-7 bg-card border border-border rounded px-2 text-xs outline-none hover:border-foreground/30"
-              >
-                <option value="">Auto (active project)</option>
-                {projects
-                  .filter((p) => p.id !== "__unassigned__")
-                  .map((p) => (
-                    <option key={p.id} value={p.id}>
-                      {p.name}
-                    </option>
-                  ))}
-              </select>
+                onValueChange={setProjectId}
+                aria-label="Project"
+                className="w-full"
+                options={[
+                  { value: "", label: "Auto (active project)" },
+                  ...projects
+                    .filter((p) => p.id !== "__unassigned__")
+                    .map((p) => ({ value: p.id, label: p.name })),
+                ]}
+              />
             </div>
           )}
 

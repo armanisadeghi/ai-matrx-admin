@@ -19,6 +19,7 @@
  */
 
 import { ReadFailure } from "@ai-matrx/design-system";
+import { Select } from "@ai-matrx/design-system/controls";
 import { useMemo, useState } from "react";
 import { ChevronRight, Info, AlertTriangle, MessageSquareText } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -405,24 +406,16 @@ export function ResourcePicker({
                                 </button>
                               );
                             })}
-                            <select
+                            <Select<SelectorOrder>
                               value={sel.order}
-                              onChange={(e) =>
-                                onPatchKind(def.key, {
-                                  order: e.target.value as SelectorOrder,
-                                })
+                              onValueChange={(o) =>
+                                onPatchKind(def.key, { order: o })
                               }
-                              className="h-5 rounded-full border border-border/60 bg-transparent px-1.5 text-[10px] text-muted-foreground"
                               aria-label={`Order ${def.label} by`}
-                            >
-                              {(
+                              options={(
                                 ["importance", "authority", "rank", "recent"] as SelectorOrder[]
-                              ).map((o) => (
-                                <option key={o} value={o}>
-                                  {ORDER_LABEL[o]}
-                                </option>
-                              ))}
-                            </select>
+                              ).map((o) => ({ value: o, label: ORDER_LABEL[o] }))}
+                            />
                             <label className="flex items-center gap-1 text-[10px] text-muted-foreground">
                               Top
                               <input

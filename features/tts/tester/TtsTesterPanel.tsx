@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Loader2, Pause, Play, RotateCcw, Square } from "lucide-react";
 import { SinkAwarePlayer } from "@ai-matrx/media/speech";
 import { cn } from "@/lib/utils";
+import { Select } from "@ai-matrx/design-system/controls";
 import { Slider } from "@/components/ui/slider";
 import {
   EMOTION_OPTIONS,
@@ -211,30 +212,28 @@ export function TtsTesterPanel({
       <div className="grid grid-cols-2 gap-3">
         {/* canonical-model-picker-exempt: TTS provider test wire model, not an ai.model_definition id */}
         <Field label="Model">
-          <select
-            className={selectCls}
+          <Select
+            className="w-full"
             value={config.modelId}
-            onChange={(e) => set("modelId", e.target.value)}
-          >
-            {TEST_MODEL_OPTIONS.map((m) => (
-              <option key={m.value} value={m.value}>
-                {m.label}
-              </option>
-            ))}
-          </select>
+            onValueChange={(v) => set("modelId", v)}
+            aria-label="Model"
+            options={TEST_MODEL_OPTIONS.map((m) => ({
+              value: m.value,
+              label: m.label,
+            }))}
+          />
         </Field>
         <Field label="Emotion" hint="normally none">
-          <select
-            className={selectCls}
+          <Select
+            className="w-full"
             value={config.emotion}
-            onChange={(e) => set("emotion", e.target.value)}
-          >
-            {EMOTION_OPTIONS.map((em) => (
-              <option key={em || "none"} value={em}>
-                {em || "none"}
-              </option>
-            ))}
-          </select>
+            onValueChange={(v) => set("emotion", v)}
+            aria-label="Emotion"
+            options={EMOTION_OPTIONS.map((em) => ({
+              value: em,
+              label: em || "none",
+            }))}
+          />
         </Field>
 
         <div className="col-span-2">
@@ -243,17 +242,16 @@ export function TtsTesterPanel({
             hint={voiceMode === "manual" ? "manual id" : undefined}
           >
             {voiceMode === "select" ? (
-              <select
-                className={selectCls}
+              <Select
+                className="w-full"
                 value={config.voiceId}
-                onChange={(e) => set("voiceId", e.target.value)}
-              >
-                {TEST_VOICE_OPTIONS.map((v) => (
-                  <option key={v.id} value={v.id}>
-                    {v.label}
-                  </option>
-                ))}
-              </select>
+                onValueChange={(v) => set("voiceId", v)}
+                aria-label="Voice"
+                options={TEST_VOICE_OPTIONS.map((v) => ({
+                  value: v.id,
+                  label: v.label,
+                }))}
+              />
             ) : (
               <input
                 type="text"

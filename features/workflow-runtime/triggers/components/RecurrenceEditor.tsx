@@ -17,6 +17,8 @@
 
 import { useMemo } from "react";
 
+import { OptionCombobox, Select } from "@ai-matrx/design-system/controls";
+
 import { nextNCronFires, validateCron } from "@/lib/scheduler-client/next-due";
 
 import {
@@ -102,43 +104,37 @@ function TimeOfDayPicker({
   };
   return (
     <div className="flex items-center gap-1.5">
-      <select
+      <Select
         aria-label="Hour"
-        value={display}
-        onChange={(e) => setDisplay(Number(e.target.value))}
-        className="rounded-md border border-border bg-background px-2 py-1.5 text-base"
-      >
-        {Array.from({ length: 12 }, (_, i) => i + 1).map((h) => (
-          <option key={h} value={h}>
-            {h}
-          </option>
-        ))}
-      </select>
+        value={String(display)}
+        onValueChange={(v) => setDisplay(Number(v))}
+        options={Array.from({ length: 12 }, (_, i) => i + 1).map((h) => ({
+          value: String(h),
+          label: String(h),
+        }))}
+      />
       <span className="text-muted-foreground">:</span>
-      <select
+      <Select
         aria-label="Minute"
-        value={minute}
-        onChange={(e) => onChange(hour, Number(e.target.value))}
-        className="rounded-md border border-border bg-background px-2 py-1.5 text-base"
-      >
-        {[0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55].map((m) => (
-          <option key={m} value={m}>
-            {String(m).padStart(2, "0")}
-          </option>
-        ))}
-      </select>
-      <select
+        value={String(minute)}
+        onValueChange={(v) => onChange(hour, Number(v))}
+        options={[0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55].map((m) => ({
+          value: String(m),
+          label: String(m).padStart(2, "0"),
+        }))}
+      />
+      <Select<"AM" | "PM">
         aria-label="Morning or afternoon"
         value={isPm ? "PM" : "AM"}
-        onChange={(e) => {
+        onValueChange={(v) => {
           const base = hour % 12;
-          onChange(e.target.value === "PM" ? base + 12 : base, minute);
+          onChange(v === "PM" ? base + 12 : base, minute);
         }}
-        className="rounded-md border border-border bg-background px-2 py-1.5 text-base"
-      >
-        <option value="AM">AM</option>
-        <option value="PM">PM</option>
-      </select>
+        options={[
+          { value: "AM", label: "AM" },
+          { value: "PM", label: "PM" },
+        ]}
+      />
     </div>
   );
 }
@@ -196,24 +192,21 @@ export function RecurrenceEditor({
   return (
     <div className="space-y-3">
       <div>
-        <label
-          htmlFor="recurrence-mode"
-          className="text-xs font-medium text-muted-foreground"
+        <span
+                    className="text-xs font-medium text-muted-foreground"
         >
           How often should it run?
-        </label>
-        <select
-          id="recurrence-mode"
+        </span>
+        <Select<RecurrenceMode>
           value={recurrence.mode}
-          onChange={(e) => setMode(e.target.value as RecurrenceMode)}
-          className="mt-1 block w-full max-w-sm rounded-md border border-border bg-background p-2 text-base"
-        >
-          {MODE_ORDER.map((mode) => (
-            <option key={mode} value={mode}>
-              {MODE_LABELS[mode]}
-            </option>
-          ))}
-        </select>
+          onValueChange={setMode}
+          aria-label="How often should it run?"
+          className="mt-1 w-full max-w-sm"
+          options={MODE_ORDER.map((mode) => ({
+            value: mode,
+            label: MODE_LABELS[mode],
+          }))}
+        />
       </div>
 
       {recurrence.mode === "weekly" ? (
@@ -254,29 +247,26 @@ export function RecurrenceEditor({
 
       {recurrence.mode === "monthly" ? (
         <div>
-          <label
-            htmlFor="recurrence-dom"
-            className="text-xs font-medium text-muted-foreground"
+          <span
+                        className="text-xs font-medium text-muted-foreground"
           >
             Which day of the month?
-          </label>
-          <select
-            id="recurrence-dom"
-            value={recurrence.dayOfMonth}
-            onChange={(e) =>
+          </span>
+          <Select
+            value={String(recurrence.dayOfMonth)}
+            onValueChange={(v) =>
               onRecurrenceChange({
                 ...recurrence,
-                dayOfMonth: Number(e.target.value),
+                dayOfMonth: Number(v),
               })
             }
-            className="mt-1 block w-32 rounded-md border border-border bg-background p-2 text-base"
-          >
-            {Array.from({ length: 28 }, (_, i) => i + 1).map((d) => (
-              <option key={d} value={d}>
-                {d}
-              </option>
-            ))}
-          </select>
+            aria-label="Which day of the month?"
+            className="mt-1 w-32"
+            options={Array.from({ length: 28 }, (_, i) => i + 1).map((d) => ({
+              value: String(d),
+              label: String(d),
+            }))}
+          />
           <p className="mt-1 text-[11px] text-muted-foreground">
             Days 1–28 only, so it never skips a short month.
           </p>
@@ -285,29 +275,26 @@ export function RecurrenceEditor({
 
       {recurrence.mode === "hourly" ? (
         <div>
-          <label
-            htmlFor="recurrence-every"
-            className="text-xs font-medium text-muted-foreground"
+          <span
+                        className="text-xs font-medium text-muted-foreground"
           >
             Run it every…
-          </label>
-          <select
-            id="recurrence-every"
-            value={recurrence.everyHours}
-            onChange={(e) =>
+          </span>
+          <Select
+            value={String(recurrence.everyHours)}
+            onValueChange={(v) =>
               onRecurrenceChange({
                 ...recurrence,
-                everyHours: Number(e.target.value),
+                everyHours: Number(v),
               })
             }
-            className="mt-1 block w-40 rounded-md border border-border bg-background p-2 text-base"
-          >
-            {[1, 2, 3, 4, 6, 8, 12].map((h) => (
-              <option key={h} value={h}>
-                {h === 1 ? "hour" : `${h} hours`}
-              </option>
-            ))}
-          </select>
+            aria-label="Run it every"
+            className="mt-1 w-40"
+            options={[1, 2, 3, 4, 6, 8, 12].map((h) => ({
+              value: String(h),
+              label: h === 1 ? "hour" : `${h} hours`,
+            }))}
+          />
         </div>
       ) : null}
 
@@ -340,23 +327,20 @@ export function RecurrenceEditor({
           </span>
           <div className="mt-1.5">
             {recurrence.mode === "hourly" ? (
-              <select
+              <Select
                 aria-label="Minutes past the hour"
-                value={recurrence.minute}
-                onChange={(e) =>
+                value={String(recurrence.minute)}
+                onValueChange={(v) =>
                   onRecurrenceChange({
                     ...recurrence,
-                    minute: Number(e.target.value),
+                    minute: Number(v),
                   })
                 }
-                className="rounded-md border border-border bg-background px-2 py-1.5 text-base"
-              >
-                {[0, 15, 30, 45].map((m) => (
-                  <option key={m} value={m}>
-                    {String(m).padStart(2, "0")} past
-                  </option>
-                ))}
-              </select>
+                options={[0, 15, 30, 45].map((m) => ({
+                  value: String(m),
+                  label: `${String(m).padStart(2, "0")} past`,
+                }))}
+              />
             ) : (
               <TimeOfDayPicker
                 hour={hour}
@@ -377,18 +361,17 @@ export function RecurrenceEditor({
         >
           In which timezone?
         </label>
-        <select
+        <OptionCombobox
           id="recurrence-tz"
           value={timezone}
-          onChange={(e) => onTimezoneChange(e.target.value)}
-          className="mt-1 block w-full max-w-sm rounded-md border border-border bg-background p-2 text-base"
-        >
-          {allTimezones(timezone).map((zone) => (
-            <option key={zone} value={zone}>
-              {zone === browserTimezone() ? `${zone} (yours)` : zone}
-            </option>
-          ))}
-        </select>
+          onChange={onTimezoneChange}
+          options={allTimezones(timezone)}
+          getLabel={(zone) =>
+            zone === browserTimezone() ? `${zone} (yours)` : zone
+          }
+          ariaLabel="In which timezone?"
+          className="mt-1 w-full max-w-sm"
+        />
       </div>
 
       <div className="rounded-lg border border-border bg-muted/40 p-2.5">

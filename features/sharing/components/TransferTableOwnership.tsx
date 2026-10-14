@@ -22,6 +22,7 @@
 import { useEffect, useState } from "react";
 import { ArrowRightLeft, Loader2 } from "lucide-react";
 import { Button } from "@ai-matrx/design-system";
+import { Select } from "@ai-matrx/design-system/controls";
 import {
   Dialog,
   DialogContent,
@@ -155,19 +156,12 @@ export function TransferTableOwnership({
           <div className="flex flex-col gap-3">
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="transfer-to">New owner</Label>
-              <select
-                id="transfer-to"
-                className="h-11 rounded-md border bg-background px-3 text-base sm:h-9 sm:text-sm"
+              <Select
                 value={to}
-                onChange={(e) => setTo(e.target.value)}
-                data-transfer-to
-              >
-                {recipients.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.name}
-                  </option>
-                ))}
-              </select>
+                onValueChange={setTo}
+                aria-label="New owner"
+                options={recipients.map((p) => ({ value: p.id, label: p.name }))}
+              />
             </div>
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="transfer-reason">Why</Label>

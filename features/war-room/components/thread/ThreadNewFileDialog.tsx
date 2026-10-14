@@ -18,6 +18,7 @@
 // nothing here enters the War Room bundle until the user opens it.
 
 import { useMemo, useState } from "react";
+import { Select } from "@ai-matrx/design-system/controls";
 import { FilePlus2, Loader2 } from "lucide-react";
 import { toast, recordToast } from "@/lib/toast";
 import { toastDoor } from "@/components/official/entity-ref/toastDoor";
@@ -179,18 +180,13 @@ export function ThreadNewFileDialog({
             // text-base (16px) avoids iOS input zoom (repo mobile rule).
             className="min-w-0 flex-1 rounded-md border border-border bg-card px-2.5 py-1.5 text-base sm:text-sm text-foreground outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
           />
-          <select
+          <Select<FileLanguageId>
             value={language}
-            onChange={(e) => setLanguage(e.target.value as FileLanguageId)}
+            onValueChange={setLanguage}
             aria-label="File type"
-            className="shrink-0 rounded-md border border-border bg-card px-2.5 py-1.5 text-base sm:text-sm text-foreground outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
-          >
-            {FILE_LANGUAGES.map((l) => (
-              <option key={l.id} value={l.id}>
-                {l.label}
-              </option>
-            ))}
-          </select>
+            className="shrink-0"
+            options={FILE_LANGUAGES.map((l) => ({ value: l.id, label: l.label }))}
+          />
           <span className="shrink-0 rounded bg-muted px-2 py-1 text-[11px] font-medium tabular-nums text-muted-foreground">
             {withExtension(name, language)}
           </span>

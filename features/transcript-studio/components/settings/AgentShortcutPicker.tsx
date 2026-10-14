@@ -3,7 +3,7 @@
 import { useMemo } from "react";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectAllShortcutsArray } from "@ai-matrx/chat/agents/redux/agent-shortcuts/selectors";
-import { cn } from "@/lib/utils";
+import { Select } from "@ai-matrx/design-system/controls";
 
 interface AgentShortcutPickerProps {
   label: string;
@@ -43,27 +43,27 @@ export function AgentShortcutPicker({
 
   return (
     <div className="flex flex-col gap-1.5">
-      <label className="text-[11px] font-medium text-foreground">{label}</label>
-      <select
+      <span className="text-[11px] font-medium text-foreground">{label}</span>
+      <Select
         value={selectedId}
-        onChange={(e) => onChange(e.currentTarget.value)}
-        className={cn(
-          "h-8 w-full rounded-md border border-border/60 bg-background px-2 text-[12px]",
-          "focus:outline-none focus:ring-1 focus:ring-ring",
-        )}
-      >
-        {!hasSelectedInList && (
-          <option value={selectedId}>
-            {selectedId.slice(0, 8)}… (not in registry)
-          </option>
-        )}
-        {options.map((s) => (
-          <option key={s.id} value={s.id}>
-            {s.id === defaultId ? "[default] " : ""}
-            {s.label}
-          </option>
-        ))}
-      </select>
+        onValueChange={onChange}
+        aria-label={label}
+        className="w-full"
+        options={[
+          ...(!hasSelectedInList
+            ? [
+                {
+                  value: selectedId,
+                  label: `${selectedId.slice(0, 8)}… (not in registry)`,
+                },
+              ]
+            : []),
+          ...options.map((s) => ({
+            value: s.id,
+            label: `${s.id === defaultId ? "[default] " : ""}${s.label}`,
+          })),
+        ]}
+      />
       {description && (
         <p className="text-[10px] text-muted-foreground/80">{description}</p>
       )}

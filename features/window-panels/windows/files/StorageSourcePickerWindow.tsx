@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Input } from "@ai-matrx/design-system/controls";
+import { Input, Select } from "@ai-matrx/design-system/controls";
 import { formatFileSize } from "@ai-matrx/kit/format";
 import { SettingDoor } from "@/features/settings/doors/SettingDoor";
 import { WindowPanel } from "@/features/window-panels/WindowPanel";
@@ -454,21 +454,17 @@ export function StorageSourcePickerWindow({
           </div>
           {accounts ? (
             <div className="mt-2 flex items-center gap-2">
-              <label htmlFor="storage-picker-account" className="text-xs font-medium">
-                Account
-              </label>
-              <select
-                id="storage-picker-account"
+              <span className="text-xs font-medium">Account</span>
+              <Select
                 value={connectionId}
-                onChange={(event) => setConnectionId(event.target.value)}
-                className="min-h-10 min-w-0 flex-1 rounded-md border border-input bg-background px-3 text-sm"
-              >
-                {providerAccounts.map((account) => (
-                  <option key={account.id} value={account.id}>
-                    {account.label}{account.email && account.email !== account.label ? ` — ${account.email}` : ""}
-                  </option>
-                ))}
-              </select>
+                onValueChange={setConnectionId}
+                aria-label="Account"
+                className="min-w-0 flex-1"
+                options={providerAccounts.map((account) => ({
+                  value: account.id,
+                  label: `${account.label}${account.email && account.email !== account.label ? ` — ${account.email}` : ""}`,
+                }))}
+              />
               <Button icon={<RefreshCw />} variant="quiet" onClick={() => void refreshAccounts()}> Retry
               </Button>
             </div>

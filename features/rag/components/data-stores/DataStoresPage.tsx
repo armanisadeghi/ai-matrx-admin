@@ -46,7 +46,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Input } from "@ai-matrx/design-system/controls";
+import { Input, Select } from "@ai-matrx/design-system/controls";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
 import {
@@ -433,7 +433,7 @@ function CreateStoreInline({
       }
 
       if (patch.kind !== undefined) {
-        // Validated against the SAME constant the <select> renders — a kind
+        // Validated against the SAME constant the kind Select renders — a kind
         // outside it is rejected, never coerced to "general".
         if (
           typeof patch.kind !== "string" ||
@@ -517,19 +517,12 @@ function CreateStoreInline({
         placeholder="Name (e.g. Smith case)"
         autoFocus
       />
-      <select
+      <Select<(typeof DATA_STORE_KINDS)[number]>
         value={kind}
-        onChange={(e) =>
-          setKind(e.target.value as (typeof DATA_STORE_KINDS)[number])
-        }
-        className="w-full h-8 px-2 rounded border bg-background text-xs"
-      >
-        {DATA_STORE_KINDS.map((k) => (
-          <option key={k} value={k}>
-            {k}
-          </option>
-        ))}
-      </select>
+        onValueChange={setKind}
+        aria-label="Store kind"
+        options={DATA_STORE_KINDS.map((k) => ({ value: k, label: k }))}
+      />
       <Input
         value={description}
         onChange={(e) => setDescription(e.target.value)}
@@ -1213,19 +1206,12 @@ function AddMemberForm({
     >
       <label className="flex flex-col gap-1 text-xs">
         <span className="text-muted-foreground">Source kind</span>
-        <select
+        <Select<(typeof SOURCE_KINDS)[number]>
           value={kind}
-          onChange={(e) =>
-            setKind(e.target.value as (typeof SOURCE_KINDS)[number])
-          }
-          className="h-8 px-2 rounded border bg-background text-xs"
-        >
-          {SOURCE_KINDS.map((k) => (
-            <option key={k} value={k}>
-              {k}
-            </option>
-          ))}
-        </select>
+          onValueChange={setKind}
+          aria-label="Source kind"
+          options={SOURCE_KINDS.map((k) => ({ value: k, label: k }))}
+        />
       </label>
       <label className="flex-1 flex flex-col gap-1 text-xs">
         <span className="text-muted-foreground">source_id (UUID)</span>
@@ -1299,22 +1285,12 @@ function EditStoreForm({
       </label>
       <label className="flex flex-col gap-1 text-xs">
         <span className="text-muted-foreground">kind</span>
-        <select
+        <Select<(typeof DATA_STORE_KINDS)[number]>
           value={draft.kind}
-          onChange={(e) =>
-            setDraft({
-              ...draft,
-              kind: e.target.value as (typeof DATA_STORE_KINDS)[number],
-            })
-          }
-          className="h-8 px-2 rounded border bg-background text-xs"
-        >
-          {DATA_STORE_KINDS.map((k) => (
-            <option key={k} value={k}>
-              {k}
-            </option>
-          ))}
-        </select>
+          onValueChange={(k) => setDraft({ ...draft, kind: k })}
+          aria-label="Kind"
+          options={DATA_STORE_KINDS.map((k) => ({ value: k, label: k }))}
+        />
       </label>
       <label className="flex flex-col gap-1 text-xs sm:col-span-2">
         <span className="text-muted-foreground">description</span>

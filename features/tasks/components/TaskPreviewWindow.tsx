@@ -27,7 +27,7 @@ import {
   DrawerDescription,
   DrawerFooter,
 } from "@/components/ui/drawer";
-import { Input } from "@ai-matrx/design-system/controls";
+import { Input, Select } from "@ai-matrx/design-system/controls";
 import { Button } from "@ai-matrx/design-system";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useIsMobile } from "@ai-matrx/kit/media-query";
@@ -215,42 +215,36 @@ export default function TaskPreviewWindow({
       {/* Top controls */}
       <div className="shrink-0 px-4 py-3 border-b border-border/50 bg-muted/20">
         <div className="flex flex-wrap items-center gap-2 text-xs">
-          <label className="flex items-center gap-1.5 text-muted-foreground">
+          <div className="flex items-center gap-1.5 text-muted-foreground">
             <Folder className="w-3 h-3" />
-            Project:
-            <select
+            <span>Project:</span>
+            <Select
               value={projectId}
-              onChange={(e) => setProjectId(e.target.value)}
-              className="h-7 bg-card border border-border rounded px-2 text-xs outline-none hover:border-foreground/30"
-            >
-              <option value="">Auto</option>
-              {projects
-                .filter((p) => p.id !== "__unassigned__")
-                .map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.name}
-                  </option>
-                ))}
-            </select>
-          </label>
-          <label className="flex items-center gap-1.5 text-muted-foreground">
+              onValueChange={setProjectId}
+              aria-label="Project"
+              options={[
+                { value: "", label: "Auto" },
+                ...projects
+                  .filter((p) => p.id !== "__unassigned__")
+                  .map((p) => ({ value: p.id, label: p.name })),
+              ]}
+            />
+          </div>
+          <div className="flex items-center gap-1.5 text-muted-foreground">
             <Flag className="w-3 h-3" />
-            Default priority:
-            <select
+            <span>Default priority:</span>
+            <Select<"" | "low" | "medium" | "high">
               value={defaultPriority}
-              onChange={(e) =>
-                setDefaultPriority(
-                  e.target.value as "" | "low" | "medium" | "high",
-                )
-              }
-              className="h-7 bg-card border border-border rounded px-2 text-xs outline-none hover:border-foreground/30"
-            >
-              <option value="">None</option>
-              <option value="high">High</option>
-              <option value="medium">Medium</option>
-              <option value="low">Low</option>
-            </select>
-          </label>
+              onValueChange={setDefaultPriority}
+              aria-label="Default priority"
+              options={[
+                { value: "", label: "None" },
+                { value: "high", label: "High" },
+                { value: "medium", label: "Medium" },
+                { value: "low", label: "Low" },
+              ]}
+            />
+          </div>
           {scopeChips.length > 0 && (
             <span className="flex items-center gap-1 ml-auto text-muted-foreground">
               <Tag className="w-3 h-3" />
@@ -324,23 +318,18 @@ export default function TaskPreviewWindow({
                   disabled={!row.include}
                   className="flex-1"
                 />
-                <select
+                <Select<DraftTaskRow["priority"]>
                   value={row.priority}
-                  onChange={(e) =>
-                    patchRow(
-                      row.key,
-                      "priority",
-                      e.target.value as DraftTaskRow["priority"],
-                    )
-                  }
+                  onValueChange={(v) => patchRow(row.key, "priority", v)}
                   disabled={!row.include}
-                  className="h-7 bg-card border border-border rounded px-1 text-[11px] outline-none"
-                >
-                  <option value="">—</option>
-                  <option value="high">High</option>
-                  <option value="medium">Med</option>
-                  <option value="low">Low</option>
-                </select>
+                  aria-label="Priority"
+                  options={[
+                    { value: "", label: "—" },
+                    { value: "high", label: "High" },
+                    { value: "medium", label: "Med" },
+                    { value: "low", label: "Low" },
+                  ]}
+                />
                 <input
                   type="date"
                   value={row.due_date}
