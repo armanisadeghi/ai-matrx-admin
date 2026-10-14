@@ -35,11 +35,40 @@ const SIGNAL_COLUMNS: MatrxColumnDef<PathSignal>[] = [
 
 type PathCost = ReturnType<typeof costByPath>[number];
 
+/** One find-you decision published by a page (Smart Add person harder: `decisions.find_you`). */
+interface FindRow {
+  at: number;
+  kind: string;
+  text: string;
+  bucket?: string | null;
+  url?: string | null;
+  points?: number | null;
+}
+
+export interface FindYouFeed {
+  log: FindRow[];
+  anchorBucket: string | null;
+  anchorUrl: string | null;
+  history: unknown[];
+}
+
+const FIND_COLUMNS: MatrxColumnDef<FindRow & { id: string }>[] = [
+  { id: "at", header: "Time", accessorFn: (r) => new Date(r.at).toLocaleTimeString(), filter: "text" },
+  { id: "kind", header: "Kind", accessorKey: "kind", filter: "select" },
+  { id: "text", header: "Decision", accessorKey: "text", filter: "text",
+    cell: (r) => <span title={r.url ?? r.text}>{r.text}</span> },
+  { id: "bucket", header: "Bucket", accessorFn: (r) => r.bucket ?? "", filter: "select" },
+  { id: "points", header: "Points", accessorFn: (r) => r.points ?? null, filter: "number" },
+];
+
 export function BuilderDecisionsTab({
   rounds,
+  findYou = null,
   onOpenStep,
 }: {
   rounds: RoundDecision[];
+  /** A page's find-you log (Smart Add person harder), when it published one. */
+  findYou?: FindYouFeed | null;
   onOpenStep: (runId: string, nodeId: string | null) => void;
 }) {
   const { format } = useCostDisplay();
@@ -139,6 +168,32 @@ export function BuilderDecisionsTab({
         ) : (
           <p className="text-muted-foreground">{current.missing}</p>
         )}
+
+        {findYou ? (
+          <section>
+            <h3 className="mb-1 flex items-center gap-2 font-medium">
+              Find you
+              <Badge tone={findYou.anchorBucket ? "success" : "warning"}>
+                {findYou.anchorBucket ? `anchor from ${findYou.anchorBucket}` : "no firm anchor yet"}
+              </Badge>
+              <span className="font-normal text-muted-foreground">path history {findYou.history.length}</span>
+            </h3>
+            <MatrxDataTable<FindRow & { id: string }>
+              tableId="builder/decision-find-you"
+              data={findYou.log.map((r, i) => ({ ...r, id: String(i) }))}
+              columns={FIND_COLUMNS}
+              getRowId={(r) => r.id}
+              pageSize={0}
+              density="condensed"
+              toolbar={{ search: true, searchPlaceholder: "Search decisions" }}
+              copy={{
+                label: "Find-you decision", listLabel: "Find-you decisions", location: "Builder · Decisions",
+                rowKind: "find-you-decision", listKind: "find-you-decisions",
+                humanRow: (r) => `${r.kind}: ${r.text}${r.url ? `\n${r.url}` : ""}`,
+              }}
+            />
+          </section>
+        ) : null}
 
         <section>
           <h3 className="mb-1 font-medium">Skipped steps</h3>

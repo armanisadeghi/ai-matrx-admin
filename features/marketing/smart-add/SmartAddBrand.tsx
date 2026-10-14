@@ -39,7 +39,7 @@ import {
 import { runHref } from "@/features/workflow-runtime/run-doors";
 import { roundFailed } from "./roundFailure";
 import { SmartAddSlots } from "./SmartAddSlots";
-import { SmartAddHero, stageLogo, stageName } from "./SmartAddHero";
+import { SmartAddHero, stageLogo, stageName, type PersonMore } from "./SmartAddHero";
 import { Shared, riseIn } from "./stage/Shared";
 import { useSessionKnob } from "@/lib/scoped-config/sessionKnob";
 import { useAppSelector } from "@/lib/redux/hooks";
@@ -93,7 +93,9 @@ import {
 } from "./relations";
 import { useRelationKinds } from "./SmartAddExtras";
 import { suggestKind, type WebChoice } from "./webKinds";
-import { SETUP_STEPS, SmartAddRound, type PersonSignals, type RoundView } from "./SmartAddRound";
+import { SETUP_STEPS, SmartAddRound, type PersonSignals, type RoundPath, type RoundView } from "./SmartAddRound";
+import { PersonHarderStage } from "./harder/PersonHarderStage";
+import type { FindLogEntry, HarderCandidate } from "./harder/types";
 import { AnchorCards, type AnchorAnswer } from "./AnchorCards";
 import { HelpersMenu } from "./helpers/HelpersMenu";
 import { candidateItem } from "./helpers/candidateItem";
@@ -180,6 +182,14 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
   // Person branch (PEOPLE-AND-CREATORS §3.1, Part 9): the typed name + city, the anchor round's run, and
   // whether the one grounded round (name + one confirmed anchor) has been sent.
   const personTyped = useRef<{ name: string; city: string } | null>(null);
+  // Person clues typed beside the city (Part 10): search clues only — they never ground the person.
+  const personMore = useRef<PersonMore>({ occupation: "", company: "", extra: "" });
+  // Each round's path (brand.identify.path_decision), sent back as `path_history` so escalation fires live.
+  const [pathByRun, setPathByRun] = useState<Record<string, RoundPath>>({});
+  // Person harder (PATHS.md person_harder): the find-you log (Builder › Decisions) and the confirmed page
+  // anchors (an employer bio page or a licence record: firm, but not the person's own website).
+  const [findLog, setFindLog] = useState<FindLogEntry[]>([]);
+  const [pageAnchors, setPageAnchors] = useState<string[]>([]);
   const anchorRunId = useRef<string | null>(null);
   const groundedSent = useRef(false);
   const [affiliations, setAffiliations] = useState<string[]>([]);
@@ -229,6 +239,9 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
           name: typed.name,
           ...(typed.city ? { city: typed.city } : {}),
           affiliations,
+          ...(personMore.current.occupation ? { profession: personMore.current.occupation } : {}),
+          ...(personMore.current.company ? { company: personMore.current.company } : {}),
+          ...(personMore.current.extra ? { other: personMore.current.extra } : {}),
           anchors: personAnchors,
           ...(find ? { find: true } : {}),
           ...(groundedRound ? { grounded: true, ...(anchorRunId.current ? { anchor_run_id: anchorRunId.current } : {}) } : {}),
@@ -262,6 +275,8 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
             known: knownDecided(withSuggestions([...items.values()], Object.assign({}, ...Object.values(suggestionsByRun))), decisions),
             ...(firstData ? { first_data: true } : {}),
             ...(personInput ? { person: personInput } : {}),
+            // Earlier rounds' paths, oldest first: a person round with still no anchor moves one rung down.
+            ...(pathHistory.length ? { path_history: pathHistory } : {}),
           },
         },
         "Identification could not start.",
@@ -288,6 +303,10 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
     wokenSent.current = new Set();
     typedKeys.current = { website: null, social: null };
     personTyped.current = null;
+    personMore.current = { occupation: "", company: "", extra: "" };
+    setPathByRun({});
+    setFindLog([]);
+    setPageAnchors([]);
     anchorRunId.current = null;
     groundedSent.current = false;
     setAffiliations([]);
@@ -366,12 +385,25 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
     ...factBasics.accounts.map((a) => a.url ?? a.value),
     ...(factBasics.websiteUrl ? [factBasics.websiteUrl] : []),
     ...factBasics.otherWebsites,
+    ...pageAnchors,
   ];
+  const pathHistory = rounds
+    .map((r) => (r.runId ? pathByRun[r.runId] : undefined))
+    .filter((p): p is RoundPath => Boolean(p))
+    .map((p) => ({ subject: p.subject, path: p.path }));
+  const personPath = [...rounds].reverse().map((r) => (r.runId ? pathByRun[r.runId] : undefined)).find((p) => p?.subject === "person") ?? null;
+  // Find-you mode: the person's path runs the harder rules (person_harder, or hard / near impossible running as it).
+  const findYou = person && Boolean(personTyped.current) && personPath?.runs_as === "person_harder";
   // What the helper windows prefill from (name, city, and the person's typed job / company).
   const helperCity = personTyped.current?.city || (factBasics.facts.find((f) => f.field === "address")?.value ?? "");
   const helperName = (person ? personTyped.current?.name : null) ?? factBasics.name ?? "";
   useEffect(() => {
-    setHelperContext({ name: helperName, city: helperCity, occupation: affiliations[0] ?? "", company: affiliations[1] ?? "" });
+    setHelperContext({
+      name: helperName,
+      city: helperCity,
+      occupation: personMore.current.occupation || (affiliations[0] ?? ""),
+      company: personMore.current.company || (affiliations[1] ?? ""),
+    });
   }, [helperName, helperCity, affiliations]);
   const confirmedFacts: ConfirmedFacts = {
     ...(factBasics.name ? { name: factBasics.name } : {}),
@@ -413,9 +445,10 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
   const decide = (key: string, decision: Decision) => setDecisions((d) => applyDecision(d, items, key, decision));
 
   /** Person name mode: the anchor round ("Which of these is you?"), with the typed name and city already woken. */
-  const findPerson = (name: string, city: string) => {
+  const findPerson = (name: string, city: string, more: PersonMore = { occupation: "", company: "", extra: "" }) => {
     resetAll();
     personTyped.current = { name, city };
+    personMore.current = more;
     const answers = [customItem("name", name), ...(city ? [customItem("address", city)] : [])];
     addCustom(answers);
     // The anchor round carries the woken name and city itself; the wake effect must not send them again.
@@ -455,6 +488,26 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
     const timer = setTimeout(runAffiliation, CONFIRM_BATCH_MS);
     return () => clearTimeout(timer);
   }, [affiliations, created]);
+
+  /** Find-you "yes": an account or the person's own site lands as a confirmed finding (the next round grounds on
+   *  it); an employer bio page or licence record is a page anchor; any other page only teaches clues. */
+  const confirmFound = (c: HarderCandidate) => {
+    if (c.bucket === "social" || c.bucket === "directory" || c.anchor_kind === "personal_site") {
+      helperAnswer(candidateItem(c), "me");
+      return;
+    }
+    if (c.firm) setPageAnchors((cur) => (cur.includes(c.url) ? cur : [...cur, c.url]));
+  };
+  const logFind = (entry: FindLogEntry) => setFindLog((cur) => [...cur, entry]);
+  const runPageAnchor = useEffectEvent(() => void startRound({ website: "", socials: [] }));
+  useEffect(() => {
+    if (!pageAnchors.length || groundedSent.current || created) return;
+    const timer = setTimeout(runPageAnchor, CONFIRM_BATCH_MS);
+    return () => clearTimeout(timer);
+  }, [pageAnchors, created]);
+  const onPath = (runId: string, p: RoundPath) => {
+    setPathByRun((cur) => (JSON.stringify(cur[runId]) === JSON.stringify(p) ? cur : { ...cur, [runId]: p }));
+  };
 
   /** A profile link typed on the anchor cards: confirmed like any account the person adds. */
   const addAnchorLink = (text: string) => {
@@ -597,6 +650,9 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
       basics,
       created,
       provisionPoint: BRAND_INTAKE_POINT,
+      findYou: findYou || findLog.length
+        ? { path: personPath, history: pathHistory, log: findLog, pageAnchors, anchors: personAnchors }
+        : null,
     };
     void import("./builderFeed").then((m) => m.publishSmartAddFeed(builder.publish, state));
   });
@@ -849,6 +905,7 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
               setSuggestionsByRun((cur) => (JSON.stringify(cur[r.runId as string]) === JSON.stringify(next) ? cur : { ...cur, [r.runId as string]: next }))
             }
             onSignals={setPersonSignals}
+            onPath={(p) => onPath(r.runId as string, p)}
             onView={onView}
           />
         ) : null,
@@ -994,6 +1051,16 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
           imageUrl={cardBasics.logoUrl}
           signals={personSignals.signals}
           onAnswer={answerKind}
+        />
+      ) : null}
+
+      {findYou && personTyped.current ? (
+        <PersonHarderStage
+          key={`${personTyped.current.name}|${personTyped.current.city}`}
+          input={{ ...personTyped.current, ...personMore.current }}
+          grounded={personAnchors.length > 0}
+          onConfirm={confirmFound}
+          onLog={logFind}
         />
       ) : null}
 

@@ -59,6 +59,13 @@ function looksLikeDomain(text: string): boolean {
   return /^[^\s@]+\.[a-z]{2,}(\/.*)?$/i.test(text.trim().replace(/^https?:\/\//i, ""));
 }
 
+/** What a person typed beside the name and city (all optional). */
+export interface PersonMore {
+  occupation: string;
+  company: string;
+  extra: string;
+}
+
 export function SmartAddHero({
   person,
   onPerson,
@@ -75,8 +82,8 @@ export function SmartAddHero({
 }: {
   person: boolean;
   onPerson: (person: boolean) => void;
-  /** Person name mode: start the anchor round ("Which of these is you?") on the typed name and city. */
-  onFindPerson?: (name: string, city: string) => void;
+  /** Person name mode: start the anchor round ("Which of these is you?") on the typed name, city and clues. */
+  onFindPerson?: (name: string, city: string, more: PersonMore) => void;
   onWebsite: (v: string) => void;
   onSocial: (v: string) => void;
   onPick: (p: SocialPlatform | null) => void;
@@ -95,6 +102,12 @@ export function SmartAddHero({
   const [picked, setPicked] = useState<SocialPlatform | null>(null);
   const [name, setName] = useState("");
   const [city, setCity] = useState("");
+  // Person clues beside the city (VISION Part 10): occupation, company, anything else (school, a profile link).
+  const [occupation, setOccupation] = useState("");
+  const [company, setCompany] = useState("");
+  const [extra, setExtra] = useState("");
+  // Name + city only: ask once for the job or company before searching (a location never grounds a person).
+  const [askedClue, setAskedClue] = useState(false);
   const [second, setSecond] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
@@ -123,7 +136,11 @@ export function SmartAddHero({
   const submit = (pk: SocialPlatform | null = picked) => {
     if (!readyFor(pk)) return;
     if (mode === "name" && person && onFindPerson) {
-      onFindPerson(name.trim(), city.trim());
+      if (!occupation.trim() && !company.trim() && !askedClue) {
+        setAskedClue(true);
+        return;
+      }
+      onFindPerson(name.trim(), city.trim(), { occupation: occupation.trim(), company: company.trim(), extra: extra.trim() });
       setSubmitted(true);
       return;
     }
@@ -261,6 +278,52 @@ export function SmartAddHero({
                         placeholder="City (optional)"
                         label="City"
                       />
+                      {person ? (
+                        <>
+                          <SubRow
+                            icon={<Briefcase className="size-[1.1rem]" />}
+                            value={occupation}
+                            onChange={setOccupation}
+                            onKeyDown={onFieldKey}
+                            placeholder="Occupation (optional)"
+                            label="Occupation"
+                          />
+                          <SubRow
+                            icon={<Building2 className="size-[1.1rem]" />}
+                            value={company}
+                            onChange={setCompany}
+                            onKeyDown={onFieldKey}
+                            placeholder="Company or employer (optional)"
+                            label="Company or employer"
+                          />
+                          <SubRow
+                            icon={<PenLine className="size-[1.1rem]" />}
+                            value={extra}
+                            onChange={setExtra}
+                            onKeyDown={onFieldKey}
+                            placeholder="Anything else: school, a profile link"
+                            label="Anything else"
+                          />
+                          {askedClue && !occupation.trim() && !company.trim() ? (
+                            <div
+                              data-testid="smart-add-ask-clue"
+                              className="flex items-center justify-between gap-2 border-t border-border/60 px-4 py-2 text-sm"
+                            >
+                              <span className="text-foreground">Your job or company finds you faster</span>
+                              <button
+                                type="button"
+                                className="shrink-0 text-sm font-medium text-primary hover:underline"
+                                onClick={() => {
+                                  onFindPerson?.(name.trim(), city.trim(), { occupation: "", company: "", extra: extra.trim() });
+                                  setSubmitted(true);
+                                }}
+                              >
+                                Search anyway
+                              </button>
+                            </div>
+                          ) : null}
+                        </>
+                      ) : null}
                     </>
                   ) : (
                     <>

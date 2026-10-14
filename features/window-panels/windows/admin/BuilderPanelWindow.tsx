@@ -39,7 +39,7 @@ import { BuilderRequestsTab, type RequestFilter } from "@/features/builder-panel
 import { EMPTY_REQUEST_FIND, type RequestFind } from "@/features/builder-panel/find";
 import { BuilderActivityTab } from "@/features/builder-panel/components/BuilderActivityTab";
 import { BuilderLoadTab } from "@/features/builder-panel/components/BuilderLoadTab";
-import { BuilderDecisionsTab } from "@/features/builder-panel/components/BuilderDecisionsTab";
+import { BuilderDecisionsTab, type FindYouFeed } from "@/features/builder-panel/components/BuilderDecisionsTab";
 import { buildDecisions } from "@/features/builder-panel/decisions";
 
 export type BuilderTab = "run" | "decisions" | "values" | "calls" | "load" | "activity" | "workflow" | "mandates" | "ai" | "provision";
@@ -303,7 +303,13 @@ function BuilderPanelInner({
           <p className="p-3 text-xs text-muted-foreground">Nothing published on this page yet</p>
         )
       ) : null}
-      {tab === "decisions" ? <BuilderDecisionsTab rounds={decisions} onOpenStep={openStep} /> : null}
+      {tab === "decisions" ? (
+        <BuilderDecisionsTab
+          rounds={decisions}
+          findYou={(entries.find((e) => e.key === "decisions.find_you")?.data as FindYouFeed | undefined) ?? null}
+          onOpenStep={openStep}
+        />
+      ) : null}
       {tab === "values" ? (
         <div className="flex min-h-0 flex-1 flex-col md:flex-row">
           <div className="max-h-[40%] min-h-0 shrink-0 overflow-hidden border-b border-border md:max-h-none md:w-64 md:border-b-0 md:border-r">

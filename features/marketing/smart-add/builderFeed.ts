@@ -10,6 +10,7 @@ import type { BuilderPublishInput } from "@/features/builder-panel/types";
 import type { MarketingBrand } from "@/features/marketing/types";
 import type { Decision, EvidenceItem, RoundSeeds, confirmedBasics } from "./evidence";
 import type { RelatedCandidate } from "./relations";
+import type { FindLogEntry } from "./harder/types";
 import type { SuggestContext, WebChoice, WebSuggestion } from "./webKinds";
 
 
@@ -25,6 +26,14 @@ export interface SmartAddFeedState {
   basics: ReturnType<typeof confirmedBasics>;
   created: MarketingBrand | null;
   provisionPoint: string;
+  /** Person harder (PATHS.md person_harder): the path, path_history sent, every find-you decision and query. */
+  findYou?: {
+    path: unknown;
+    history: unknown[];
+    log: FindLogEntry[];
+    pageAnchors: string[];
+    anchors: string[];
+  } | null;
 }
 
 export function publishSmartAddFeed(
@@ -104,6 +113,16 @@ export function publishSmartAddFeed(
       ref: { type: "record", id: s.created.id, table: "web.brand" },
     });
   }
+  if (s.findYou) {
+    const anchor = [...s.findYou.log].reverse().find((e) => e.kind === "anchor") ?? null;
+    out.push({
+      key: "decisions.find_you",
+      label: "Find you (person harder)",
+      group: "derived",
+      data: { ...s.findYou, anchorBucket: anchor?.bucket ?? null, anchorUrl: anchor?.url ?? null },
+      source: "PersonHarderStage · aidream person_harder",
+    });
+  }
   // Findings, rounds and the created brand are sets: what this screen no longer holds leaves.
-  publish(out, { prune: ["finding.", "workflow.round.", "workflow.setup", "create.brand"] });
+  publish(out, { prune: ["finding.", "workflow.round.", "workflow.setup", "create.brand", "decisions.find_you"] });
 }

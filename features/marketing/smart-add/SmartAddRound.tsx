@@ -34,6 +34,16 @@ const FACT_STEPS: SmartAddStepPair = ["facts", "brand_basics", "person_facts", "
 const ANCHOR_STEPS: SmartAddStepPair = ["person_anchor_search", "person_anchor_extract"];
 /** The person / business verdict step (aidream brand.identify.person_signals). */
 const SIGNALS_STEP = "person_signals";
+/** The path decision step (aidream brand.identify.path_decision; PATHS.md). */
+const PATH_STEP = "path_decision";
+
+/** One round's path, as sent back on the next round (`path_history`). */
+export interface RoundPath {
+  subject: string;
+  path: string;
+  runs_as: string;
+  escalation: { from: string; to: string; reason: string } | null;
+}
 
 /** The round's person / business verdict (aidream services/brand_intake/person_signals.py). */
 export interface PersonSignals {
@@ -161,6 +171,7 @@ export function SmartAddRound({
   onFacts,
   onSuggestions,
   onSignals,
+  onPath,
   onView,
 }: {
   runId: string;
@@ -172,6 +183,8 @@ export function SmartAddRound({
   onSuggestions?: (suggestions: Record<string, WeThinkSuggestion>) => void;
   /** The person / business verdict, once the person_signals step reports it. */
   onSignals?: (signals: PersonSignals) => void;
+  /** The round's path (aidream brand.identify.path_decision): {subject, path, runs_as}, for path_history. */
+  onPath?: (decision: RoundPath) => void;
   onView: (view: RoundView) => void;
 }) {
   useWorkflowRun(runId);
@@ -191,6 +204,18 @@ export function SmartAddRound({
     parsePersonSignals(signalsOut?.person_signals) ??
     emissions.map((e) => parsePersonSignals((e.payload as Record<string, unknown> | null)?.person_signals)).find(Boolean) ??
     null;
+  const pathAggregate = useAppSelector(selectNodeAggregate(runId, PATH_STEP));
+  const pathOut = pathAggregate.invocations[pathAggregate.invocations.length - 1]?.output ?? null;
+  const pathRec = (pathOut?.path_decision ??
+    emissions.map((e) => (e.payload as Record<string, unknown> | null)?.path_decision).find(Boolean) ??
+    null) as Record<string, unknown> | null;
+  const pathKey =
+    pathRec && typeof pathRec.path === "string"
+      ? JSON.stringify({ subject: pathRec.subject, path: pathRec.path, runs_as: pathRec.runs_as, escalation: pathRec.escalation ?? null })
+      : "";
+  useEffect(() => {
+    if (pathKey) onPath?.(JSON.parse(pathKey) as RoundPath);
+  }, [pathKey, onPath]);
   const signalsKey = signals ? JSON.stringify(signals) : "";
   useEffect(() => {
     if (signalsKey) onSignals?.(JSON.parse(signalsKey) as PersonSignals);
