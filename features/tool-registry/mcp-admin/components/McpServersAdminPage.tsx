@@ -433,13 +433,13 @@ export function McpServersAdminPage() {
                   const fresh = computeFreshness(s);
                   const isSel = s.slug === selected?.slug;
                   return (
-                    <li key={s.slug} className="relative group/srv">
+                    <li key={s.slug} className="relative group/srv pr-9">
                       {/* Sibling overlay, not a child of the row button — nested
                         buttons are invalid HTML. */}
                       <CopyButtons
                         size="xs"
                         label={`Server ${s.slug}`}
-                        className="absolute right-1.5 bottom-1 z-10 rounded border border-border bg-card opacity-0 group-hover/srv:opacity-100 focus-within:opacity-100"
+                        className="absolute right-1.5 top-1/2 -translate-y-1/2 z-10 rounded border border-border bg-card opacity-0 group-hover/srv:opacity-100 focus-within:opacity-100"
                         human={() => serverSummary(s)}
                         json={() => serverMeta(s)}
                         agent={() => ({
@@ -1255,6 +1255,7 @@ function ConfigDialog({
               <Label className="type-label">Config type</Label>
               <Select
                 aria-label="Config type"
+                className="w-full"
                 value={configType}
                 onValueChange={setConfigType}
                 disabled={busy}

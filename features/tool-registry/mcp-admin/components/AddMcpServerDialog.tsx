@@ -29,7 +29,6 @@ import {
   type ProvisionMcpServerResult,
 } from "@/features/tool-registry/mcp-admin/services/mcpAdmin.service";
 import { ProTextarea } from "@/components/official/ProTextarea";
-import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 
 /**
  * The authored half of the identity step. It lives in `McpServersAdminPage`
@@ -315,6 +314,7 @@ export function AddMcpServerDialog({
                 <Label className="type-label">Category</Label>
                 <Select
                   aria-label="Category"
+                className="w-full"
                   value={category}
                   options={CATEGORY_OPTIONS}
                   onValueChange={(v) => setCategory(v as ProvisionMcpServerInput["category"])}
@@ -359,6 +359,7 @@ export function AddMcpServerDialog({
               <Label className="type-label">Transport</Label>
               <Select
                 aria-label="Transport"
+                className="w-full"
                 value={transport}
                 options={TRANSPORT_OPTIONS.map((t) => ({ value: t.value, label: t.label, meta: t.hint }))}
                 onValueChange={(v) => setTransport(v as ProvisionMcpServerInput["transport"])}
@@ -394,6 +395,7 @@ export function AddMcpServerDialog({
               <Label className="type-label">Auth strategy</Label>
               <Select
                 aria-label="Auth strategy"
+                className="w-full"
                 value={authStrategy}
                 options={AUTH_OPTIONS.map((a) => ({ value: a.value, label: a.label, meta: a.hint }))}
                 onValueChange={(v) => setAuthStrategy(v as ProvisionMcpServerInput["authStrategy"])}
