@@ -48,7 +48,7 @@ export default function SqlFunctionsList({ functions, loading, read, selectedFun
           onClick: async () => {
             const confirmed = await confirm({
               title: 'Delete SQL function?',
-              description: `Delete ${row.schema}.${row.name}. This cannot be undone.`,
+              description: `Delete ${row.schema}.${row.name}. This cannot be undone.`, // destroy-label-ok: database admin DDL on a function, not a record
               confirmLabel: 'Delete',
               variant: 'destructive',
             });

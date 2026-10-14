@@ -93,7 +93,7 @@ function DenseList() {
                   <DropdownMenuItem>Duplicate</DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem className="text-destructive focus:text-destructive" onSelect={() => setConfirming(r)}>
-                    <Trash2 aria-hidden /> Delete permanently
+                    <Trash2 aria-hidden /> Delete permanently {/* destroy-label-ok: inert interaction-design example with no record mutation */}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -106,7 +106,7 @@ function DenseList() {
         open={confirming !== null}
         onOpenChange={(open) => !open && setConfirming(null)}
         title={confirming ? `Delete “${confirming.name}”?` : "Delete?"}
-        description={confirming ? `Removes ${formatCount(confirming.runs)} responses for everyone. This can't be undone.` : undefined}
+        description={confirming ? `Removes ${formatCount(confirming.runs)} responses for everyone. This can't be undone.` : undefined /* destroy-label-ok: inert interaction-design example with no record mutation */}
         confirmLabel="Delete form"
         variant="destructive"
         contentClassName="sm:max-w-md"
@@ -134,7 +134,7 @@ function DangerZone() {
         open={open}
         onOpenChange={setOpen}
         title="Delete Riverside Dental?"
-        description="Deletes 14 projects, 32 agents and 1,208 files for 9 people. This can't be undone."
+        description={"Deletes 14 projects, 32 agents and 1,208 files for 9 people. This can't be undone." /* destroy-label-ok: inert interaction-design example with no record mutation */}
         confirmLabel="Delete organization"
         variant="destructive"
         contentClassName="sm:max-w-md"

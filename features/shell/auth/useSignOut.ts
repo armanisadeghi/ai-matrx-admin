@@ -177,7 +177,7 @@ export function useSignOut() {
 export const FORGET_GUEST_BROWSER_COPY = {
   title: "Forget this browser?",
   description:
-    "Your guest chats, notes and files here are deleted for good. Create a free account to keep them.",
+    "Your guest chats, notes and files here are deleted for good. Create a free account to keep them.", // destroy-label-ok: ending an anonymous identity is privacy cleanup, not a retained-record delete control
   confirmLabel: "Forget and delete",
 } as const;
 

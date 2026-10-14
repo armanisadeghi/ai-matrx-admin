@@ -438,7 +438,7 @@ export function DeleteTiers() {
         <TierLabel n={2} title="Confirm" rule="Permanent or affects others. Names the cost" />
         <div className="mx-3 mb-2 mt-1 flex flex-col gap-2 rounded-lg border border-border bg-card p-3">
           <div className="text-[0.8125rem] font-semibold">Delete “Intake form — dental”?</div>
-          <div className="text-xs text-muted-foreground">Removes 214 responses for 3 people. This can't be undone.</div>
+          <div className="text-xs text-muted-foreground">Removes 214 responses for 3 people. This can't be undone.</div> {/* destroy-label-ok: inert interaction-design example with no record mutation */}
           <ControlRow className="justify-end">
             <Button variant="quiet">Cancel</Button>
             <Button variant="danger">Delete form</Button>

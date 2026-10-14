@@ -47,6 +47,7 @@ function rule(row: RetentionPolicyRow): string {
   if (row.legal_hold) return "Legal hold — kept";
   if (row.mode === "never") return "Keep forever";
   const clock = row.trigger_kind === "untouched" ? "untouched" : "after deletion";
+  // destroy-label-ok: read-only retention schedule, not a client record-destruction control
   const verb = row.mode === "purge" ? "Delete" : "Archive";
   return `${verb} ${row.retention_days ?? "?"} days ${clock}`;
 }
@@ -58,6 +59,7 @@ const columns: MatrxColumnDef<RetentionPolicyRow>[] = [
     header: "Rule",
     accessorFn: rule,
     width: 220,
+    // destroy-label-ok: read-only retention schedule styling, not a client record-destruction control
     cell: (row) => <span className={cn(row.mode === "purge" && row.enabled && !row.legal_hold ? "text-amber-700 dark:text-amber-400" : "text-foreground")}>{rule(row)}</span>,
   },
   { id: "warn", header: "Warns", label: "Days of warning before", accessorFn: (row) => row.warn_days, filter: "number", align: "right", width: 70, cell: (row) => (row.warn_days === null ? "—" : `${row.warn_days}d`) },

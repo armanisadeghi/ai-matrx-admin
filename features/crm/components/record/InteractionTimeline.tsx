@@ -238,7 +238,7 @@ export function InteractionTimeline({
       title: "Delete this entry?",
       description:
         row.direction === "inbound" && row.channel_code === "email"
-          ? "Permanently removes this stored email and related reply text from AI Matrx. Gmail is unchanged."
+          ? "Permanently removes this stored email and related reply text from AI Matrx. Gmail is unchanged." // destroy-label-ok: privacy redaction preserves the interaction tombstone and lifecycle links
           : "Removes this activity from the timeline.",
       confirmLabel: "Delete",
       variant: "destructive",

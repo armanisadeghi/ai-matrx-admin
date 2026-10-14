@@ -121,7 +121,7 @@ export function Feedback() {
         open={confirmOpen}
         onOpenChange={setConfirmOpen}
         title="Delete “Intake form — dental”?"
-        description="Removes 2,140 responses for 3 people. This can't be undone."
+        description={"Removes 2,140 responses for 3 people. This can't be undone." /* destroy-label-ok: inert interaction-design example with no record mutation */}
         confirmLabel="Delete form"
         variant="destructive"
         contentClassName="sm:max-w-md"

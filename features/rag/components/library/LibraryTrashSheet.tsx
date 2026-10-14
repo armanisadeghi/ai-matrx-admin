@@ -6,15 +6,15 @@
  * Lists the caller's soft-deleted processed documents via
  * `rag.fn_list_library_trash` (SECURITY DEFINER, owner-scoped). Two row
  * flavors:
- *   - individually trashed (no `deleted_via`): Restore + Purge per document
- *     (`fn_restore_library_document` / `fn_purge_library_document`).
+ *   - individually trashed (no `deleted_via`): Restore per document
+ *     (`fn_restore_library_document`).
  *   - file-cascade trashed (`deleted_via='file_cascade'`): the family
  *     restores TOGETHER via the file — Restore here calls the cloud-files
  *     `restore_file` RPC, and the DB trigger brings back the whole family
  *     (docs + chunks + memberships) atomically.
  *
- * Purge is the ONLY hard-delete path in the system and works exclusively on
- * rows that are already in the trash (the lifecycle invariant).
+ * Purge remains a service-role lifecycle operation; this client surface never
+ * destroys a document.
  */
 
 import { ReadFailure } from "@ai-matrx/design-system";
@@ -36,22 +36,19 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@ai-matrx/design-system";
 import { toast } from "@/lib/toast";
-import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import { restoreFileDirect } from "@/features/files/api/direct";
 import { supabase } from "@/utils/supabase/client";
 import { ragDb } from "@/utils/supabase/ragDb";
-import { RAG_VOCAB } from "@/features/rag/constants/vocabulary";
 import {
   groupTrashRows,
   piecesWords,
-  type TrashGroup,
   type TrashRow,
 } from "@/features/rag/components/library/trashGroups";
 
 interface LibraryTrashSheetProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  /** Called after any restore/purge so the live list can refresh. */
+  /** Called after a restore so the live list can refresh. */
   onMutated?: () => void;
 }
 
@@ -112,44 +109,6 @@ export function LibraryTrashSheet({
       await finishMutation();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Restore failed");
-    } finally {
-      setBusyId(null);
-    }
-  };
-
-  const handlePurge = async (group: TrashGroup) => {
-    const row = group.head;
-    const proceed = await confirm({
-      title: `Permanently delete "${row.name ?? "document"}"?`,
-      description: `Erases ${group.versions > 1 ? `all ${group.versions} versions of this Source` : "the document"}, its pages, ${RAG_VOCAB.segmentsShort.toLowerCase()}, and embeddings forever. This cannot be undone.`,
-      variant: "destructive",
-      confirmLabel: "Delete forever",
-    });
-    if (!proceed) return;
-    setBusyId(row.id);
-    try {
-      // Children before parents: a person's edits, then recaptures, then the first capture.
-      const order = (id: string) => {
-        const kind = rows?.find((r) => r.id === id)?.derivation_kind;
-        return kind === "manual_curation" ? 0 : kind === "recapture" ? 1 : 2;
-      };
-      const ids = [...group.ids].sort((a, b) => order(a) - order(b));
-      for (const [i, id] of ids.entries()) {
-        const { error } = await ragDb(supabase).rpc("fn_purge_library_document", {
-          p_id: id,
-        });
-        if (error) {
-          throw new Error(
-            i === 0
-              ? "We couldn't permanently delete this document. You may not be allowed to delete it."
-              : `${i} of ${ids.length} versions were deleted forever; the rest could not be. You may not be allowed to delete them.`,
-          );
-        }
-      }
-      toast.success(`Permanently deleted "${row.name ?? "document"}"`);
-      await finishMutation();
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Purge failed");
     } finally {
       setBusyId(null);
     }
@@ -232,18 +191,6 @@ export function LibraryTrashSheet({
                     >
                       {isFamily ? "Restore file" : "Restore"}
                     </Button>
-                    {!isFamily && (
-                      // Family rows purge together via the file — the RPC
-                      // rejects per-doc purge for them, so no button.
-                      <Button
-                        icon={<Trash2 />}
-                        variant="quiet"
-                        disabled={busy}
-                        onClick={() => handlePurge(group)}
-                      >
-                        Purge
-                      </Button>
-                    )}
                   </li>
                 );
               })}

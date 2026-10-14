@@ -49,7 +49,7 @@ export default function EnumsList({ enums, loading, read, onViewDetails, onEditE
           onClick: async () => {
             const confirmed = await confirm({
               title: 'Delete enum?',
-              description: `Delete ${row.schema}.${row.name}. This cannot be undone.`,
+              description: `Delete ${row.schema}.${row.name}. This cannot be undone.`, // destroy-label-ok: database admin DDL on an enum type, not a record
               confirmLabel: 'Delete',
               variant: 'destructive',
             });
