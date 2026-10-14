@@ -8,7 +8,7 @@
  */
 
 import React, { useState } from "react";
-import { ChevronDown, Globe, Navigation, Phone } from "lucide-react";
+import { ChevronDown, Clock, Globe, Navigation, Phone } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   isRecord,
@@ -135,7 +135,12 @@ export function LocalPlaceBlock({
         {isRecord(value.hours) ? (
           <OpeningHoursBlock serverData={value.hours} />
         ) : (
-          hoursText && <div className="text-sm text-muted-foreground">{hoursText}</div>
+          hoursText && (
+            <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+              <Clock className="h-3.5 w-3.5 shrink-0" />
+              <span className="truncate">{hoursText}</span>
+            </div>
+          )
         )}
 
         {extraChips.length > 0 && (
