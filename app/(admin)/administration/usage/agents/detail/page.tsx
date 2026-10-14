@@ -3,6 +3,7 @@
 
 import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
+import { storedMandateKey } from "@ai-matrx/agents/mandates";
 import { AgentSpendDetail } from "@/features/admin/agent-spend/AgentSpendDetail";
 import { useSpendWindow } from "@/features/admin/agent-spend/useSpendWindow";
 
@@ -14,7 +15,7 @@ function Detail() {
       orgId={null}
       seat="admin"
       agentId={params.get("agent")}
-      mandateKey={params.get("mandate")}
+      mandateKey={params.get("mandate") ? storedMandateKey(params.get("mandate")!) : null}
       source={params.get("source")}
       days={days}
       onDaysChange={setDays}

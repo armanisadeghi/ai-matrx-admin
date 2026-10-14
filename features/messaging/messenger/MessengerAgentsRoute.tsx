@@ -16,7 +16,7 @@ import { useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { AgentsMessenger } from "@ai-matrx/chat/messenger/agents/AgentsMessenger";
 import type { AgentsMessengerLocation } from "@ai-matrx/chat/messenger/agents/AgentsMessenger";
-import { MANDATE_KEYS } from "@ai-matrx/agents/mandates";
+import { MANDATE_KEYS, type AnyMandateKey } from "@ai-matrx/agents/mandates";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectDisplayName, selectUserAvatarUrl } from "@/lib/redux/selectors/userSelectors";
 import { StaffRoom } from "@/features/personal-staff/components/StaffRoom";
@@ -62,7 +62,7 @@ export function MessengerAgentsRoute({ initialLocation }: MessengerAgentsRoutePr
   );
 
   const renderSeatRoom = useCallback(
-    ({ mandateKey, agentId }: { mandateKey: string; agentId: string }) =>
+    ({ mandateKey, agentId }: { mandateKey: AnyMandateKey; agentId: string }) =>
       mandateKey === MANDATE_KEYS.personal_staff__front_line ? <StaffRoom seedAgentId={agentId} embedded /> : null,
     [],
   );

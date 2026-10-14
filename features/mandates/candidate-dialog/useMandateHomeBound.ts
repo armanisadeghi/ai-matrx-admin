@@ -10,6 +10,7 @@
 // answer the Candidates tab passes.
 
 import { useEffect, useState } from "react";
+import type { AnyMandateKey } from "@ai-matrx/agents/mandates";
 import { createClient } from "@/utils/supabase/client";
 import { mandateDefinitions } from "@/lib/supabase/mandateStorage";
 import { SYSTEM_ORGANIZATION_ID } from "@/constants/platform-orgs";
@@ -18,7 +19,7 @@ import { mandateHomeBound } from "../mandate-home";
 
 const homes = new Map<string, string | null>();
 
-async function readHomeOrganizationId(mandateKey: string): Promise<string | null> {
+async function readHomeOrganizationId(mandateKey: AnyMandateKey): Promise<string | null> {
   const { data, error } = await mandateDefinitions(createClient())
     .select("organization_id")
     .is("deleted_at", null)
@@ -42,7 +43,7 @@ export function __resetMandateHomeCache(): void {
  * answer (null = system-homed / no home). A failed read leaves `homeName` null
  * and is loud in the console — the label then says "Everyone", as before.
  */
-export function useMandateHomeBound(mandateKey: string): { ready: boolean; homeName: string | null } {
+export function useMandateHomeBound(mandateKey: AnyMandateKey): { ready: boolean; homeName: string | null } {
   const { organizations, loading: orgsLoading } = useUserOrganizations();
   const [homeId, setHomeId] = useState<string | null | undefined>(() => homes.get(mandateKey));
 

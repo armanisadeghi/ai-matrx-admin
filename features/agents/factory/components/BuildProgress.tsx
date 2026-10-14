@@ -19,6 +19,7 @@
  */
 
 import { useEffect, useRef, useState } from "react";
+import { storedMandateKey } from "@ai-matrx/agents/mandates";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ExternalLink, Repeat } from "lucide-react";
@@ -286,7 +287,7 @@ export function BuildProgress({ buildId, onFinished, onRebuilt, onKept, forwardW
       // (an ownerless spec; the server honors it for admins only).
       const next = await startAgentBuild({
         spec: how === "as_text" ? { ...req.spec, response_format: TEXT_ANSWER_FORMAT } : req.spec,
-        mandateKey: req.mandate_key ?? null,
+        mandateKey: req.mandate_key ? storedMandateKey(req.mandate_key) : null,
         unproven: how === "unproven",
         door: req.door ?? null,
         builtin: req.spec.owner === null,

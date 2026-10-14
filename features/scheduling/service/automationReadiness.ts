@@ -10,6 +10,7 @@
 "use client";
 
 import { useSyncExternalStore } from "react";
+import type { AnyMandateKey } from "@ai-matrx/agents/mandates";
 import { supabase } from "@/utils/supabase/client";
 import type { SpendFlagHit } from "@/components/cost/SpendFlagStrip";
 
@@ -99,7 +100,7 @@ export function useAutomationReadiness(): number {
 }
 
 /** The not-ready verdicts for these mandates (optionally one organization's). */
-export function notReadyFor(mandateKeys: readonly (string | null | undefined)[], orgId?: string | null): NotReadyVerdict[] {
+export function notReadyFor(mandateKeys: readonly (AnyMandateKey | null | undefined)[], orgId?: string | null): NotReadyVerdict[] {
   if (!index) return [];
   const out: NotReadyVerdict[] = [];
   for (const key of mandateKeys) {
@@ -122,7 +123,7 @@ export function fillUrlFor(verdict: NotReadyVerdict, missing: ReadinessMissing):
 }
 
 /** The flag-strip hit: one "Not ready" icon, the missing inputs in its tooltip, opening the fill page. */
-export function notReadyHit(mandateKeys: readonly (string | null | undefined)[], orgId?: string | null): SpendFlagHit | null {
+export function notReadyHit(mandateKeys: readonly (AnyMandateKey | null | undefined)[], orgId?: string | null): SpendFlagHit | null {
   const verdicts = notReadyFor(mandateKeys, orgId);
   if (verdicts.length === 0) return null;
   const labels = Array.from(new Set(verdicts.flatMap((v) => v.missing.map((m) => m.label))));

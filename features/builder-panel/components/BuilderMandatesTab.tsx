@@ -29,20 +29,19 @@ export function BuilderMandatesTab({
   const [real, setReal] = useState<RealMandate[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const openMandate = useOpenMandateWindow();
-  const keySig = `${mandateKeys.join(",")}|${provisionKeys.join(",")}`;
-
+  const mandateKeysSig = mandateKeys.join(",");
+  const provisionKeysSig = provisionKeys.join(",");
   useEffect(() => {
     let live = true;
     setReal(null);
     setError(null);
-    const [mk, pk] = keySig.split("|").map((part) => part.split(",").filter(Boolean));
-    fetchSurfaceMandates(mk ?? [], pk ?? [])
+    fetchSurfaceMandates(mandateKeys, provisionKeys)
       .then((rows) => live && setReal(rows))
       .catch((e: unknown) => live && setError(e instanceof Error ? e.message : String(e)));
     return () => {
       live = false;
     };
-  }, [keySig]);
+  }, [mandateKeysSig, provisionKeysSig]);
 
   const shapes = proposals ?? [];
   return (

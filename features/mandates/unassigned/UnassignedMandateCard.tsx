@@ -23,7 +23,7 @@ import { cn } from "@/lib/utils";
 
 export interface UnassignedMandateCardProps {
   /** The job nobody holds — from `readUnassignedMandate`. */
-  mandateKey: string;
+  mandateKey: AnyMandateKey;
   /** The server's one-line sentence ("Nobody is assigned to write agenda drafts yet."). */
   sentence?: string | null;
   className?: string;
@@ -36,7 +36,7 @@ export function UnassignedMandateCard({
 }: UnassignedMandateCardProps) {
   const openMandate = useOpenMandateWindowNext();
   const open = (initialTab: "create-agent" | "holder") =>
-    openMandate({ initialMandateKey: mandateKey as AnyMandateKey, initialTab });
+    openMandate({ initialMandateKey: mandateKey, initialTab });
 
   return (
     <div

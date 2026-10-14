@@ -12,6 +12,7 @@
  */
 
 import { useCallback, useEffect } from "react";
+import type { AnyMandateKey } from "@ai-matrx/agents/mandates";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { closeOverlay, openOverlay } from "@/lib/redux/slices/overlaySlice";
 
@@ -59,7 +60,7 @@ export interface AiRunFeedbackSubject {
   kind: "ai_run";
   /** The server run id (`chat.user_request.id`). */
   userRequestId: string;
-  mandateKey: string | null;
+  mandateKey: AnyMandateKey | null;
   conversationId: string | null;
   holderId: string | null;
   holderVersionId: string | null;

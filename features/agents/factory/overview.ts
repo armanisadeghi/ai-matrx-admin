@@ -15,7 +15,7 @@ import { fetchKnobIndex } from "@/lib/scoped-config/service";
 import { operationFailed } from "@/utils/errors";
 import type { FactoryBuildRow } from "./types";
 import { KEPT_OUTCOMES } from "./types";
-import { MANDATE_KEYS, storedMandateKey, type AnyMandateKey } from "@ai-matrx/agents/mandates";
+import { MANDATE_KEYS, mandateKeyOfShortcut, type AnyMandateKey } from "@ai-matrx/agents/mandates";
 
 export type DoorKey =
   | "agent_author"
@@ -39,7 +39,7 @@ export interface DoorInfo {
   /** Where a person goes to use it; null = no page (a tool or API). */
   href: string | null;
   /** Mandate whose runs are this door's old builder, when attributable. */
-  oldBuilderMandate: string | null;
+  oldBuilderMandate: AnyMandateKey | null;
   /** True when the door always builds through the factory and has no knob (aidream `ALWAYS_PIPELINE_DOORS`). */
   alwaysFactory?: boolean;
   /** Not a door code of its own: builds go through this other door (System Builder → studio). */
@@ -47,7 +47,7 @@ export interface DoorInfo {
 }
 
 /** The Generate page's old builder is the generator shortcut; its runs carry this mandate key. */
-export const GENERATOR_SHORTCUT_MANDATE = storedMandateKey("shortcut.agent_generator");
+export const GENERATOR_SHORTCUT_MANDATE = mandateKeyOfShortcut("agent_generator");
 /** The Mandate page's "+ Agent" old builder: the drafting job. */
 export const HOLDER_DRAFT_MANDATE = MANDATE_KEYS.mandates__holder_draft;
 

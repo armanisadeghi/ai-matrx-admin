@@ -7,6 +7,7 @@
 // code feature id (`podcast`) opens the deepest node all its declared jobs share.
 
 import { createClient } from "@/utils/supabase/server";
+import type { AnyMandateKey } from "@ai-matrx/agents/mandates";
 import { declaredPlacesFor } from "./registry";
 import { RESEARCH_NODE, topicIntelligenceHref } from "./hrefs";
 import { readPlacement, readTaxonomyNodes } from "./placement-data";
@@ -30,7 +31,7 @@ function query(params: Record<string, string>): string {
 
 /** The home (node slug or lane id) of one job for this viewer, or null when they cannot see it. */
 export async function homeOfKey(
-  mandateKey: string,
+  mandateKey: AnyMandateKey,
   viewerId: string | null,
 ): Promise<string | null> {
   const [row] = await readPlacement(await createClient(), [mandateKey]);
@@ -39,7 +40,7 @@ export async function homeOfKey(
 
 /** Where `/intelligence?mandate=<key>&…` sends the viewer. */
 export async function mandateDestination(
-  mandateKey: string,
+  mandateKey: AnyMandateKey,
   context: Record<string, string>,
   viewerId: string | null,
   tree: Tree,

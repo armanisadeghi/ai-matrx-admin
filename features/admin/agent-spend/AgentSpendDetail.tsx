@@ -11,6 +11,7 @@ import { ArrowLeft, ExternalLink } from "lucide-react";
 import { Badge, Button, SegmentedControl } from "@ai-matrx/design-system/controls";
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
 import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
+import type { AnyMandateKey } from "@ai-matrx/agents/mandates";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { EntityRef } from "@/components/official/entity-ref/EntityRef";
 import { Cost } from "@/components/cost/Cost";
@@ -314,7 +315,7 @@ export function AgentSpendDetail({
   seat: SpendSeat;
   orgSlug?: string;
   agentId: string | null;
-  mandateKey: string | null;
+  mandateKey: AnyMandateKey | null;
   source?: string | null;
   days: SpendWindowDays;
   onDaysChange: (d: SpendWindowDays) => void;

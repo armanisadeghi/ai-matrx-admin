@@ -114,7 +114,7 @@ function useTryOverrides(overridesId: string, draft: HolderDraft) {
 
 export function RunTryPanel(props: {
   stored: StoredRunState;
-  mandateKey: string;
+  mandateKey: AnyMandateKey;
   outputKind: string | null;
   audience: "admin" | "product";
 }) {
@@ -132,7 +132,7 @@ function TryWithRun({
   audience,
 }: {
   run: StoredRun;
-  mandateKey: string;
+  mandateKey: AnyMandateKey;
   outputKind: string | null;
   audience: "admin" | "product";
 }) {

@@ -37,7 +37,7 @@ import {
 } from "../services/agentBuilderService";
 import { useAgentLauncher } from "@ai-matrx/chat/agents/hooks/useAgentLauncher";
 import { useMandate } from "@ai-matrx/chat/mandates/useMandate";
-import { MANDATE_KEYS } from "@ai-matrx/agents/mandates";
+import { MANDATE_KEYS, type AnyMandateKey } from "@ai-matrx/agents/mandates";
 import { useOpenMandateWindow } from "@/features/overlays/openers/mandateWindow";
 import { useDeclaredSurfaceMandates } from "@ai-matrx/chat/surfaces/runtime/surface-mandates";
 import { resolvePreferredAuthoringModel } from "@/features/ai-models/preferredAuthoringModel";
@@ -159,7 +159,7 @@ class GeneratorErrorBoundary extends Component<
  */
 export interface AgentGeneratorMandateMode {
   /** The Mandate this agent is drafted to hold (AF-D door #5: the factory proves it on its runs). */
-  mandateKey: string;
+  mandateKey: AnyMandateKey;
   /** Its display name — the factory build's name. */
   label: string;
   /** The offered values of `mandates.holder_draft_brief`, keyed by name. */

@@ -7,6 +7,7 @@
  * A row's name opens its detail page with every run.
  */
 import { notReadyHit, useAutomationReadiness } from "@/features/scheduling/service/automationReadiness";
+import { storedMandateKey } from "@ai-matrx/agents/mandates";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Loader2, RefreshCw } from "lucide-react";
@@ -82,7 +83,7 @@ export function agentFlagHits(row: AgentSpendRow, money: (usd: number) => string
     severity: f.severity,
     detail: f.detail,
   }));
-  const notReady = notReadyHit([row.mandate_key]);
+  const notReady = notReadyHit([row.mandate_key ? storedMandateKey(row.mandate_key) : null]);
   if (notReady) hits.push(notReady);
   return hits;
 }

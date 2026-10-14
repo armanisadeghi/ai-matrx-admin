@@ -13,6 +13,7 @@
 // (create an agent / use an existing one) instead of a paragraph.
 
 import { useRef, useState } from "react";
+import { storedMandateKey, type AnyMandateKey } from "@ai-matrx/agents/mandates";
 import { callApi } from "@/lib/api/call-api";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { adoptForeignStream } from "@ai-matrx/chat/agents/redux/execution-system/thunks/adopt-foreign-stream";
@@ -47,7 +48,7 @@ export interface PrepRun {
   readonly requestId: string | null;
   readonly error: string | null;
   /** Set when the refusal is "nobody holds this job" — render <UnassignedMandateCard>. */
-  readonly unassignedMandateKey: string | null;
+  readonly unassignedMandateKey: AnyMandateKey | null;
 }
 
 /** The server's `{message, remedy}` as one sentence; anything else, said plainly. */
@@ -159,7 +160,7 @@ export function useMeetPrepStream(instanceId: string, label: string) {
     );
     if (controller.signal.aborted) return null;
     const unassignedMandateKey = response.error
-      ? readUnassignedMandate(response.error)
+      ? (() => { const key = readUnassignedMandate(response.error); return key ? storedMandateKey(key) : null; })()
       : null;
     // An unassigned job shows the card, so the error is the one-line sentence
     // alone — never the remedy paragraph the card replaces.

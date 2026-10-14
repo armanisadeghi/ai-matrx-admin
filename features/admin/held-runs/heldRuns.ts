@@ -11,6 +11,7 @@
  */
 
 import { pgErrorToError } from "@ai-matrx/data";
+import { storedMandateKey, type AnyMandateKey } from "@ai-matrx/agents/mandates";
 import { formatSpendUsd } from "@/components/cost/formatAdminCost";
 import { supabase } from "@/utils/supabase/client";
 
@@ -136,7 +137,7 @@ export async function noteHeldRunReplay(
 
 export interface ReplayLaunch {
   door: "mandate" | "agent";
-  mandateKey: string | null;
+  mandateKey: AnyMandateKey | null;
   agentId: string | null;
   /** The agent version the original run resolved to — set only for an "original version" replay. */
   versionId: string | null;
@@ -157,7 +158,7 @@ export function replayLaunch(run: HeldRun, mode: ReplayVersionMode): ReplayLaunc
       userInput,
     };
   }
-  return { door: "mandate", mandateKey: run.mandate_key, agentId: null, versionId: null, variables: run.variables, userInput };
+  return { door: "mandate", mandateKey: run.mandate_key ? storedMandateKey(run.mandate_key) : null, agentId: null, versionId: null, variables: run.variables, userInput };
 }
 
 /** The price line shown before the click — to the cent, never rounded to zero. */

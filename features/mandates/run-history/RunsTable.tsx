@@ -21,7 +21,7 @@ import type {
   MatrxColumnDef,
   MatrxDataTableQueryState,
 } from "@ai-matrx/design-system/data-table/types";
-import { storedMandateKey } from "@ai-matrx/agents/mandates";
+import { storedMandateKey, type AnyMandateKey } from "@ai-matrx/agents/mandates";
 import { useCostDisplay } from "@/components/cost/useCostDisplay";
 import { EntityRef } from "@/components/official/entity-ref/EntityRef";
 import { NewTabLink } from "@/components/official/entity-ref/NewTabLink";
@@ -52,7 +52,7 @@ import {
 } from "./format";
 
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
-export type RunsScope = { mandateKey: string } | { agentId: string };
+export type RunsScope = { mandateKey: AnyMandateKey } | { agentId: string };
 
 export interface RunsTableProps {
   scope: RunsScope;

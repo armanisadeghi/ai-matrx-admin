@@ -10,6 +10,7 @@
  */
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { MANDATE_KEYS } from "@ai-matrx/agents/mandates";
 import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
@@ -110,7 +111,7 @@ export function FactoryDoorsTable({
         loadDoorBuilders(),
         loadOldBuilderRuns([
           STRUCTURE_BUILDER_MANDATE,
-          "agent_studio.chat_brief",
+          MANDATE_KEYS.agent_studio__chat_brief,
           HOLDER_DRAFT_MANDATE,
           GENERATOR_SHORTCUT_MANDATE,
         ]),

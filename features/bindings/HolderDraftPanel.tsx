@@ -25,6 +25,7 @@
 // rung their own — the same rule the picker enforces on its list.
 
 import { PropertyRow } from "@ai-matrx/design-system/controls";
+import { storedMandateKey } from "@ai-matrx/agents/mandates";
 import { AgentGenerator } from "@/features/agents/agent-creators/interactive-builder/AgentGenerator";
 import type { AgentOwner } from "@/features/agents/agent-creators/services/agentBuilderService";
 import type { MandateWorkspaceData } from "@/features/mandates/workspace/useMandateWorkspaceData";
@@ -112,7 +113,7 @@ export function HolderDraftPanel({
     >
       <AgentGenerator
         mandate={{
-          mandateKey: data.mandate.mandate_key,
+          mandateKey: storedMandateKey(data.mandate.mandate_key),
           label: data.mandate.label ?? data.mandate.mandate_key,
           variables,
           owner,

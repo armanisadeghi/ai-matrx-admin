@@ -13,6 +13,7 @@
  */
 
 import { useEffect, useState } from "react";
+import type { AnyMandateKey } from "@ai-matrx/agents/mandates";
 import { usePathname } from "next/navigation";
 import { Select, Tabs, type SelectOption } from "@ai-matrx/design-system/controls";
 import { WindowPanel } from "@/features/window-panels/WindowPanel";
@@ -152,7 +153,7 @@ function BuilderPanelInner({
     ...publishedSnapshots.filter((p) => !truth?.snapshots.some((s) => s.id === p.id)),
   ];
   const mandateRefs = refsOf(entries, "mandate");
-  const mandateKeys = [...new Set(mandateRefs.map((m) => m.ref.mandateKey).filter((k): k is string => Boolean(k)))];
+  const mandateKeys = [...new Set(mandateRefs.map((m) => m.ref.mandateKey).filter((k): k is AnyMandateKey => Boolean(k)))];
   const provisionKeys = [
     ...new Set([
       ...mandateRefs.map((m) => m.ref.provisionKey).filter((k): k is string => Boolean(k)),

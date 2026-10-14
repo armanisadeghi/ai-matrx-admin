@@ -20,6 +20,7 @@
 // `selectIsSuperAdmin` is true, so a non-super-admin browser never asks.
 
 import { supabase } from "@/utils/supabase/client";
+import { storedMandateKey, type AnyMandateKey } from "@ai-matrx/agents/mandates";
 import { runWithSessionRetry } from "@/lib/supabase/authRetry";
 
 export interface MandateCodeLocation {
@@ -31,7 +32,7 @@ export interface MandateCodeLocation {
 }
 
 export interface MandateCodeLocationEntry {
-  mandateKey: string;
+  mandateKey: AnyMandateKey;
   origin: "code" | "user" | string;
   isEnabled: boolean;
   /** The raw stored value; null for an app-created mandate. */
@@ -86,7 +87,7 @@ export function entriesFromPayload(payload: unknown): Map<string, MandateCodeLoc
     if (!isRecord(item) || typeof item.mandate_key !== "string") continue;
     const codePath = typeof item.code_path === "string" ? item.code_path : null;
     out.set(item.mandate_key, {
-      mandateKey: item.mandate_key,
+      mandateKey: storedMandateKey(item.mandate_key),
       origin: typeof item.origin === "string" ? item.origin : "",
       isEnabled: item.is_enabled === true,
       codePath,

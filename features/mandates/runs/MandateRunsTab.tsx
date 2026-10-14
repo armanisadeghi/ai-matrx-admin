@@ -12,6 +12,7 @@
 import { useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { List } from "lucide-react";
+import type { AnyMandateKey } from "@ai-matrx/agents/mandates";
 import { Button } from "@ai-matrx/design-system/controls";
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
 import { WindowPanel } from "@/features/window-panels/WindowPanel";
@@ -23,7 +24,7 @@ import { RunTryPanel } from "./RunTryPanel";
 import { useStoredRun } from "./useStoredRun";
 
 export interface MandateRunsTabProps {
-  mandateKey: string;
+  mandateKey: AnyMandateKey;
   outputKind: string | null;
   view: RunHistoryView;
   audience: "admin" | "product";
@@ -103,7 +104,7 @@ function SelectedRun({
   audience,
 }: {
   conversationId: string;
-  mandateKey: string;
+  mandateKey: AnyMandateKey;
   outputKind: string | null;
   audience: "admin" | "product";
 }) {

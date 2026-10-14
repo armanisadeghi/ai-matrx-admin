@@ -9,6 +9,7 @@
 
 import { useEffect, useSyncExternalStore } from "react";
 import { ExternalLink } from "lucide-react";
+import type { AnyMandateKey } from "@ai-matrx/agents/mandates";
 import type { EntityColumnSpec } from "@/lib/entity-list/columns";
 import {
   codeLocationsSnapshot,
@@ -30,7 +31,7 @@ function useCodeLocations() {
   return state;
 }
 
-export function CodeLocationCell({ mandateKey }: { mandateKey: string }) {
+export function CodeLocationCell({ mandateKey }: { mandateKey: AnyMandateKey }) {
   const state = useCodeLocations();
   if (state.status === "failed") {
     return (
@@ -81,7 +82,7 @@ export function CodeLocationCell({ mandateKey }: { mandateKey: string }) {
 }
 
 /** The column spec, inserted by the page for super admins only. */
-export function codeLocationColumn<TRow extends { mandateKey: string }>(): EntityColumnSpec<TRow> {
+export function codeLocationColumn<TRow extends { mandateKey: AnyMandateKey }>(): EntityColumnSpec<TRow> {
   return {
     id: "codeLocation",
     label: "Code",
@@ -97,7 +98,7 @@ export function codeLocationColumn<TRow extends { mandateKey: string }>(): Entit
 }
 
 /** `columns` with the Code column right after `afterId` (or at the end). */
-export function withCodeLocationColumn<TRow extends { mandateKey: string }>(
+export function withCodeLocationColumn<TRow extends { mandateKey: AnyMandateKey }>(
   columns: EntityColumnSpec<TRow>[],
   afterId = "mandateKey",
 ): EntityColumnSpec<TRow>[] {

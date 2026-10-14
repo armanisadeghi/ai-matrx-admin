@@ -6,6 +6,7 @@
 // recorded before placement was saved shows only what its record delivered.
 
 import { RotateCcw } from "lucide-react";
+import type { AnyMandateKey } from "@ai-matrx/agents/mandates";
 import { Button, RegionSkeleton } from "@ai-matrx/design-system/controls";
 import { ConfigurationTable, ConfigurationTableRow } from "@ai-matrx/design-system/controls";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
@@ -96,7 +97,7 @@ export function RunAsItHappened({
 }: {
   stored: StoredRunState;
   audience: "admin" | "product";
-  mandateKey: string;
+  mandateKey: AnyMandateKey;
   /** The mandate's declared output kind; the value's own `__kind` wins. */
   outputKind: string | null;
 }) {

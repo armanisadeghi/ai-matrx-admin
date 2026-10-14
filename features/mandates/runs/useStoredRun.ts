@@ -4,6 +4,7 @@
 // per conversation id through `GET /mandates/runs/{conversation_id}`.
 
 import { useEffect, useState } from "react";
+import type { AnyMandateKey } from "@ai-matrx/agents/mandates";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { fetchStoredRun, type StoredRun } from "./service";
 
@@ -15,7 +16,7 @@ export interface StoredRunState {
   retry: () => void;
 }
 
-export function useStoredRun(conversationId: string, mandateKey: string): StoredRunState {
+export function useStoredRun(conversationId: string, mandateKey: AnyMandateKey): StoredRunState {
   const dispatch = useAppDispatch();
   const [run, setRun] = useState<StoredRun | null>(null);
   const [error, setError] = useState<string | null>(null);

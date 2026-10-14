@@ -662,7 +662,7 @@ function RunActions({
             subject: {
               kind: "ai_run",
               userRequestId: serverId,
-              mandateKey: frame?.mandate_key ?? null,
+              mandateKey: frame?.mandate_key ? storedMandateKey(frame.mandate_key) : null,
               conversationId: frame?.conversation_id ?? record?.conversationId ?? null,
               holderId,
               holderVersionId: frame?.holder_version_id ?? null,

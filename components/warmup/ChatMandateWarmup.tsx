@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { useWarmOnMount, useWarmup } from "@ai-matrx/agents/react";
+import type { AnyMandateKey } from "@ai-matrx/agents/mandates";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectOrganizationId } from "@/lib/redux/slices/appContextSlice";
 
@@ -16,7 +17,7 @@ export function ChatMandateWarmup({
   mandateKey,
   agentId,
 }: {
-  mandateKey: string;
+  mandateKey: AnyMandateKey;
   agentId?: string | null;
 }) {
   useWarmOnMount(

@@ -85,7 +85,7 @@ export async function listFactoryBuilds(
       createdAt: row.created_at,
       startedAt: row.started_at,
       endedAt: row.ended_at,
-      mandateKey: str(cp?.mandate_key),
+      mandateKey: str(cp?.mandate_key) ? storedMandateKey(str(cp?.mandate_key)!) : null,
       name: str(cp?.display_name) ?? str(cp?.name),
       currentStep: str(cp?.current_step),
       // Old builds (and a worker that died before writing one) carry no outcome: a spine row that
@@ -154,7 +154,7 @@ export async function keptConversationIds(ids: string[]): Promise<Set<string>> {
 }
 
 export interface FactoryMandateOption {
-  key: string;
+  key: AnyMandateKey;
   label: string;
   outputKind: string | null;
   hasHolder: boolean;
@@ -176,7 +176,7 @@ export async function listFactoryMandates(): Promise<FactoryMandateOption[]> {
     .limit(2000);
   if (error) throw operationFailed("load the mandates", error);
   return (data ?? []).map((m) => ({
-    key: m.mandate_key,
+    key: storedMandateKey(m.mandate_key),
     label: mandateDisplayName(storedMandateKey(m.mandate_key), m.label),
     outputKind: m.output_kind ?? null,
     hasHolder: Boolean(m.default_holder_id),

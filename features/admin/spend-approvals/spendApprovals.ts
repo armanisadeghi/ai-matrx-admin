@@ -40,7 +40,7 @@ import {
   type AutomationKind,
 } from "@/features/scheduling/service/automationCosts";
 import { featureLabelOf } from "@/features/mandates/feature-label";
-import { storedMandateKey } from "@ai-matrx/agents/mandates";
+import { storedMandateKey, type AnyMandateKey } from "@ai-matrx/agents/mandates";
 
 export type ApprovalStatus = "waiting" | "approved" | "temporary" | "rejected";
 export type ApprovalSubjectKind = "agent" | "mandate" | AutomationKind;
@@ -194,7 +194,7 @@ const asStatus = (v: string): ApprovalStatus => (v === "approved" || v === "reje
 const asKind = (v: string): ApprovalSubjectKind => (v in SUBJECT_KIND_LABEL ? (v as ApprovalSubjectKind) : "agent");
 
 /** The mandate list's Feature for a key ("" when there is no key). */
-export function approvalFeatureOf(mandateKey: string | null): string {
+export function approvalFeatureOf(mandateKey: AnyMandateKey | null): string {
   return mandateKey ? featureLabelOf(storedMandateKey(mandateKey), null) : "";
 }
 
@@ -241,7 +241,8 @@ export async function fetchSpendApprovals(orgId: string | null): Promise<SpendAp
     const d = byId.get(r.id);
     const autoRuns = num(d?.automated_runs_30d);
     const autoCost = num(d?.automated_cost_30d);
-    const featureKey = r.mandate_key ?? (r.agent_id ? (heldKey.get(r.agent_id) ?? null) : null);
+    const rawFeatureKey = r.mandate_key ?? (r.agent_id ? (heldKey.get(r.agent_id) ?? null) : null);
+    const featureKey = rawFeatureKey ? storedMandateKey(rawFeatureKey) : null;
     return {
     id: r.id,
     automated_runs_30d: autoRuns,

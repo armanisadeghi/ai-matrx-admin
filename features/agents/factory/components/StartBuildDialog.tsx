@@ -12,6 +12,7 @@
  */
 
 import { useEffect, useState } from "react";
+import type { AnyMandateKey } from "@ai-matrx/agents/mandates";
 import { Play } from "lucide-react";
 import { Button } from "@ai-matrx/design-system/controls";
 import {
@@ -36,7 +37,7 @@ interface StartBuildDialogProps {
 export function StartBuildDialog({ open, onOpenChange, onStarted }: StartBuildDialogProps) {
   const [mandates, setMandates] = useState<FactoryMandateOption[] | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
-  const [mandateKey, setMandateKey] = useState("");
+  const [mandateKey, setMandateKey] = useState<AnyMandateKey | "">("");
   const [modelId, setModelId] = useState<string | null>(null);
   const [starting, setStarting] = useState(false);
 
@@ -47,7 +48,6 @@ export function StartBuildDialog({ open, onOpenChange, onStarted }: StartBuildDi
       .catch((e: unknown) => setLoadError(e instanceof Error ? e.message : "Could not load the jobs"));
   }, [open, mandates]);
 
-  const byKey = new Map((mandates ?? []).map((m) => [m.key, m]));
   const withAgent = (mandates ?? []).filter((m) => m.hasHolder).map((m) => m.key);
   const withoutAgent = (mandates ?? []).filter((m) => !m.hasHolder).map((m) => m.key);
 
@@ -79,13 +79,16 @@ export function StartBuildDialog({ open, onOpenChange, onStarted }: StartBuildDi
             <span className="type-secondary font-medium text-muted-foreground">Job</span>
             <OptionCombobox
               value={mandateKey}
-              onChange={setMandateKey}
+              onChange={(key) => {
+                const selected = (mandates ?? []).find((mandate) => mandate.key === key);
+                setMandateKey(selected ? selected.key : "");
+              }}
               groups={[
                 { heading: "Has an agent", options: withAgent },
                 { heading: "No agent yet", options: withoutAgent, collapsed: true },
               ]}
               getLabel={(k) => k}
-              getHint={(k) => byKey.get(k)?.label ?? null}
+              getHint={(key) => (mandates ?? []).find((mandate) => mandate.key === key)?.label ?? null}
               placeholder={mandates ? "Choose a job…" : loadError ? "Could not load jobs" : "Loading jobs…"}
               searchPlaceholder="Search jobs…"
               disabled={!mandates}

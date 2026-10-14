@@ -9,6 +9,7 @@
  */
 import { act } from "react";
 import { createRoot } from "react-dom/client";
+import { MANDATE_KEYS } from "@ai-matrx/agents/mandates";
 
 let door: "legacy" | "pipeline" = "legacy";
 jest.mock("@/features/agents/factory/door", () => ({ useFactoryDoor: () => door }));
@@ -160,7 +161,7 @@ describe("door #6 — /agents/new/generate", () => {
 });
 
 const MANDATE = {
-  mandateKey: "news.coarse_relevance",
+  mandateKey: MANDATE_KEYS.news__coarse_relevance,
   label: "Coarse relevance",
   variables: {},
   owner: { kind: "system" as const },

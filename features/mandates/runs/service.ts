@@ -15,6 +15,7 @@ import type { AppDispatch } from "@/lib/redux/store";
 import { isJsonObject, type JsonObject, type JsonValue } from "@/types/json";
 import type { TypedStreamEvent } from "@ai-matrx/agents/generated/stream-events";
 import { streamErrorText } from "@ai-matrx/api";
+import type { AnyMandateKey } from "@ai-matrx/agents/mandates";
 import { adoptForeignStream } from "@ai-matrx/chat/agents/redux/execution-system/thunks/adopt-foreign-stream";
 
 // ── Shapes (the contract, verbatim field names) ──────────────────────────────
@@ -279,13 +280,13 @@ function contractCall(dispatch: AppDispatch, call: ContractCall) {
 const seg = encodeURIComponent;
 
 /** `?mandate_key=` — the page's mandate, so a Holder-agent run without a mandate record opens. */
-const forMandate = (mandateKey: string | null) => (mandateKey ? `?mandate_key=${seg(mandateKey)}` : "");
+const forMandate = (mandateKey: AnyMandateKey | null) => (mandateKey ? `?mandate_key=${seg(mandateKey)}` : "");
 
 export async function fetchStoredRun(
   dispatch: AppDispatch,
   conversationId: string,
   /** Null for a run this page just made (it carries its own mandate record). */
-  mandateKey: string | null,
+  mandateKey: AnyMandateKey | null,
 ): Promise<StoredRun> {
   const res = await contractCall(dispatch, {
     path: `/mandates/runs/${seg(conversationId)}${forMandate(mandateKey)}`,
@@ -303,7 +304,7 @@ export interface TestHolder {
 
 export async function previewPlacement(
   dispatch: AppDispatch,
-  mandateKey: string,
+  mandateKey: AnyMandateKey,
   input: { provisions: JsonObject; holder: TestHolder; configOverrides: JsonObject },
 ): Promise<PlacementPreview> {
   const res = await contractCall(dispatch, {
@@ -366,7 +367,7 @@ async function streamContract(
 /** POST /ai/mandates/{key} with `test_holder` — stored as a test run. */
 export function streamTestRun(
   dispatch: AppDispatch,
-  mandateKey: string,
+  mandateKey: AnyMandateKey,
   input: { provisions: JsonObject; holder: TestHolder; configOverrides: JsonObject; userInput: string | null },
   onAdopted: (ids: { requestId: string; conversationId: string }) => void,
 ): Promise<StreamedRun> {
@@ -393,7 +394,7 @@ export function streamTestRun(
 export function streamReplay(
   dispatch: AppDispatch,
   conversationId: string,
-  mandateKey: string,
+  mandateKey: AnyMandateKey,
   onAdopted: (ids: { requestId: string; conversationId: string }) => void,
 ): Promise<StreamedRun> {
   return streamContract(

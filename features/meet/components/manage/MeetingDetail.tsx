@@ -23,6 +23,7 @@ import { resolveEntityDoors } from "@/components/official/entity-ref/doors";
 import { AccessGate } from "@/features/access-gate/components/AccessGate";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { useEffect, useState, useTransition } from "react";
+import type { AnyMandateKey } from "@ai-matrx/agents/mandates";
 import { useViewerTimeZone } from "@/hooks/useViewerTimeZone";
 import { useRouter } from "next/navigation";
 import {
@@ -668,7 +669,7 @@ function BriefBlock({
   running: boolean;
   error: string | null;
   /** Nobody holds the brief job — offer to create or pick an agent. */
-  unassignedMandateKey: string | null;
+  unassignedMandateKey: AnyMandateKey | null;
   onPrepare: () => void;
 }) {
   const stored = (meeting.metadata as Record<string, unknown> | null)

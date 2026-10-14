@@ -11,6 +11,7 @@ import {
   type LimitKey,
 } from "@/features/scheduling/service/automationGuardrails";
 import { notReadyHit } from "@/features/scheduling/service/automationReadiness";
+import { storedMandateKey } from "@ai-matrx/agents/mandates";
 import { RunApprovalCell } from "@/features/admin/spend-approvals/RunApprovalCell";
 import { approvalStatusSync } from "@/features/admin/spend-approvals/spendApprovals";
 import Link from "next/link";
@@ -80,7 +81,7 @@ export function automationFlagHits(row: AutomationCostRow | undefined): SpendFla
       detail: `Missing: ${missing.map((k) => LIMIT_LABEL[k]).join(", ")}`,
     });
   }
-  const notReady = notReadyHit(row.mandates, row.organization_id);
+  const notReady = notReadyHit(row.mandates.map(storedMandateKey), row.organization_id);
   if (notReady) hits.push(notReady);
   return hits;
 }
