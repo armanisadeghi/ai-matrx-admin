@@ -29,6 +29,7 @@ import { formatDurationMs } from "@ai-matrx/kit/format";
 import type { StoryRow } from "../story";
 import { findStory } from "../find";
 import { BuilderHighlight } from "./BuilderHighlight";
+import { AiTestReplayBadge } from "@/features/ai-test-mode/AiTestReplayBadge";
 
 const ICONS: Record<string, LucideIcon> = {
   keyboard: Keyboard,
@@ -163,6 +164,7 @@ export function BuilderStorySidebar({
                   <span className="truncate text-xs font-medium">
                     <BuilderHighlight text={row.title} query={query} />
                   </span>
+                  {row.kind !== "call" ? <AiTestReplayBadge output={row.outcome?.output} className="shrink-0" /> : null}
                   <span className="ml-auto shrink-0 text-[10px] tabular-nums text-muted-foreground">
                     {[
                       row.ms !== null && !idle ? formatDurationMs(row.ms, { style: "compact", precision: "fine" }) : null,

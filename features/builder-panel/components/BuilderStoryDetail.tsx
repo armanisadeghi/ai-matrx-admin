@@ -18,6 +18,7 @@ import type { BuilderEntry } from "../types";
 import type { RunRow } from "../data";
 import { BuilderJson } from "./BuilderJson";
 import { storyIcon } from "./BuilderStorySidebar";
+import { AiTestReplayBadge } from "@/features/ai-test-mode/AiTestReplayBadge";
 
 const PANE = "h-72 shrink-0";
 
@@ -71,6 +72,7 @@ export function BuilderStoryDetail({
             {row.status}
           </Badge>
         ) : null}
+        <AiTestReplayBadge output={row.outcome?.output} />
         {row.ms !== null ? <span className="text-[11px] tabular-nums text-muted-foreground">{formatDurationMs(row.ms, { style: "compact", precision: "fine" })}</span> : null}
         {row.costUsd ? <span className="text-[11px] tabular-nums text-muted-foreground">{format(row.costUsd)}</span> : null}
         <span className="ml-auto flex items-center gap-1">

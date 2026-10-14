@@ -17,6 +17,7 @@ import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 import type { MandateProposal, NodeOutcomeRow, RunTruth } from "../data";
 import { BuilderJson } from "./BuilderJson";
 import { ProposalCard } from "./ProposalCard";
+import { AiTestReplayBadge } from "@/features/ai-test-mode/AiTestReplayBadge";
 
 type Tone = "neutral" | "success" | "warning" | "destructive" | "info";
 const STATUS_TONE: Record<string, Tone> = {
@@ -49,6 +50,7 @@ function StepRow({ o, open, onToggle }: { o: NodeOutcomeRow; open: boolean; onTo
         {open ? <ChevronDown className="h-3.5 w-3.5 shrink-0" /> : <ChevronRight className="h-3.5 w-3.5 shrink-0" />}
         <span className="truncate font-mono text-xs">{o.nodeId}</span>
         {o.error ? <Badge tone="destructive">error</Badge> : out.skipped === true ? <Badge>skipped</Badge> : <Badge tone="success">done</Badge>}
+        <AiTestReplayBadge output={o.output} />
         {reqs ? <span className="text-[11px] tabular-nums text-muted-foreground">{reqs} req</span> : null}
         <span className="ml-auto flex shrink-0 items-center gap-2 text-[11px] tabular-nums text-muted-foreground">
           <span>{formatDurationMs(o.durationMs, { style: "compact", precision: "fine" })}</span>

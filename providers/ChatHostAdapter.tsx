@@ -80,6 +80,7 @@ import {
 } from "@/lib/redux/chat-host-from-app";
 import { createWebPrefs } from "@ai-matrx/chat/host";
 import { chatRequestHeaders } from "@ai-matrx/chat/host/request-headers";
+import { aiTestModeHeaders } from "@/lib/api/ai-test-mode";
 import {
   getSessionKnob,
   useSessionKnob,
@@ -469,13 +470,17 @@ export function ChatHostAdapter({ children }: { children: ReactNode }) {
         selectResolvedBaseUrl(store.getState()) ?? DEFAULT_SERVER_URL,
       // THE ONE header builder (the chat package's): credential, organization, admin lane.
       async headers() {
-        return chatRequestHeaders(
-          {
-            accessToken: await identity.getAccessToken(),
-            fingerprintId: identity.current().fingerprintId,
-          },
-          org.active()?.id ?? null,
-        );
+        return {
+          ...chatRequestHeaders(
+            {
+              accessToken: await identity.getAccessToken(),
+              fingerprintId: identity.current().fingerprintId,
+            },
+            org.active()?.id ?? null,
+          ),
+          // AI test mode (lib/api/ai-test-mode.ts): absent when the tab is on real.
+          ...aiTestModeHeaders(),
+        };
       },
       // Every package server call runs this app's own lib/api (P9).
       api: appChatServerApi,

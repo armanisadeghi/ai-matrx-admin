@@ -29,6 +29,7 @@
  */
 
 import { useEffect, useState } from "react";
+import { RunTestReplaysStrip } from "@/features/ai-test-mode/RunTestReplaysStrip";
 import Link from "next/link";
 import { Eye, Send, Wrench } from "lucide-react";
 import { formatCost } from "@ai-matrx/kit/format";
@@ -260,6 +261,7 @@ export default function AiWatchWindow({
         </div>
       ) : null}
       <div className="min-h-0 min-w-0 flex-1 overflow-y-auto">
+        {workflowRunId ? <RunTestReplaysStrip runId={workflowRunId} /> : null}
         <AiWatchRunView
           key={serverId ?? current ?? "none"}
           serverId={serverId}

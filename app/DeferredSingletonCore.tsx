@@ -35,6 +35,7 @@ import LiveCaptureIndicator from "@/features/media-capture/components/LiveCaptur
 import ErrorInspectorBadge from "@/features/admin/error-inspector/ErrorInspectorBadge";
 import NeedsYouAssistProducer from "@/features/capture-ladder/NeedsYouAssistProducer";
 import AdminAttentionDock from "@/features/admin/attention/AdminAttentionDock";
+import AiTestModeDock from "@/features/ai-test-mode/AiTestModeDock";
 import { FirstSignInAgeGateMount } from "@/features/education/compliance/FirstSignInAgeGateMount";
 import { ensureScopeTree } from "@/features/scopes/redux/thunks/ensureScopeTree";
 import { ensureScopeSkeleton } from "@/features/scopes/redux/thunks/ensureScopeSkeleton";
@@ -202,6 +203,7 @@ export default function DeferredSingletonCore() {
           notices it replaced had become furniture (Arman, 2026-09-14). It
           FLOATS: see the component header and styles/shell.css. */}
       <AdminAttentionDock />
+      <AiTestModeDock />
       <LiveCaptureIndicator />
       {/* Render-free. Keeps ONE assist row in step with the capture queue; the
           assists dock above does the showing, so this corner holds one draggable

@@ -1817,6 +1817,13 @@ export const adminCategoriesData: AdminCategory[] = [
         link: "/administration/ai/ai-tasks",
       },
       {
+        title: "AI Test Mode",
+        description:
+          "Saved AI answers test sessions replay: name, pin a stand-in, archive, spend saved.",
+        iconName: "FlaskConical",
+        link: "/administration/ai/ai-test-mode",
+      },
+      {
         title: "Utilities",
         description:
           "Developer utilities hub — text cleaning and other admin transformation tools.",

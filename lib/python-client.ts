@@ -25,6 +25,7 @@
  */
 
 import { adminLaneHeadersFor, adminLaneOrganizationId } from "@/lib/api/admin-lane";
+import { aiTestModeHeaders, withAiTestModeHeader } from "@/lib/api/ai-test-mode";
 import {
   parseHttpError as parseHttpErrorBase,
   parseHttpErrorBody,
@@ -555,6 +556,8 @@ export async function buildHeaders(
       requireOrganizationContext(null, opts.organizationId),
     );
   }
+  // AI test mode rides every request, organization-bound or not (absent when real).
+  headers = withAiTestModeHeader(headers);
 
   return { headers, requestId };
 }
@@ -1095,7 +1098,10 @@ export async function downloadBlobWithProgress(
       xhr.setRequestHeader("X-Cloud-Files-Bypass", opts.cloudFilesBypass);
     xhr.setRequestHeader("X-Request-Id", requestId);
     xhr.setRequestHeader("X-Organization-Id", organizationId);
-    for (const [name, value] of Object.entries(adminLaneHeadersFor(organizationId)))
+    for (const [name, value] of Object.entries({
+      ...adminLaneHeadersFor(organizationId),
+      ...aiTestModeHeaders(),
+    }))
       xhr.setRequestHeader(name, value);
     xhr.setRequestHeader("Accept", "*/*");
 

@@ -36,6 +36,7 @@ import { profileAvatarDoor } from "@/features/marketing/social/server";
 import type { SocialPlatform } from "@/features/marketing/social/types";
 import { customItem, websiteHost, type EvidenceItem } from "./evidence";
 import type { RoundView } from "./SmartAddRound";
+import { AiTestReplayBadge } from "@/features/ai-test-mode/AiTestReplayBadge";
 import { SMART_ADD_ADDRESS_DEBOUNCE_MS, type SmartAddPatch, type SmartAddPrefill, type SmartAddVia } from "./smartAddUrl";
 import { Shared } from "./stage/Shared";
 import { proxiedExternalImageUrl } from "@/lib/media/external-image";
@@ -1018,6 +1019,9 @@ function Centerpiece({
   const photoByPlatform = new Map<string, EvidenceItem>();
   for (const l of logos) if (l.profile_id && l.platform) photoByPlatform.set(l.platform, l);
   const steps = views.flatMap((v) => v.steps).filter((s) => !s.skipped && s.phase !== "idle" && STEP_LABEL[s.step]);
+  // AI test mode: a round answered from saved results says so (a stand-in outranks a replay).
+  const savedReplays = views.flatMap((v) => v.replays ?? []);
+  const savedAnswer = savedReplays.find((r) => r.match === "stand_in") ?? savedReplays[0] ?? null;
 
   return (
     <motion.div
@@ -1171,6 +1175,7 @@ function Centerpiece({
             </motion.span>
           );
         })}
+        {savedAnswer ? <AiTestReplayBadge replay={savedAnswer} /> : null}
       </div>
     </motion.div>
   );

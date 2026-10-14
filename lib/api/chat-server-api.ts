@@ -22,6 +22,7 @@ import {
 } from "@/lib/api/organization-admission";
 import { applyOrganizationContextHeader } from "@/lib/api/organization-context";
 import { adminLaneHeadersFor, adminLaneOrganizationId } from "@/lib/api/admin-lane";
+import { aiTestModeHeaders } from "@/lib/api/ai-test-mode";
 import { adminDoorOpen } from "@/lib/api/adminDoor";
 import { fetchContextState } from "@/lib/api/context-api";
 import { apiGet, apiPatch, apiPost, buildPath } from "@/lib/api/typed-client";
@@ -80,7 +81,12 @@ export const appChatServerApi = {
   waitForOrganizationAdmission,
   applyOrganizationContextHeader,
   adminLaneOrganizationId,
-  adminLaneHeadersFor,
+  // The chat package binds every org-bound request through this; the AI test
+  // mode header rides beside the admin lane (absent when the tab is on real).
+  adminLaneHeadersFor: (organizationId: string | null | undefined): Record<string, string> => ({
+    ...adminLaneHeadersFor(organizationId),
+    ...aiTestModeHeaders(),
+  }),
   adminDoorOpen,
   // context state
   fetchContextState,

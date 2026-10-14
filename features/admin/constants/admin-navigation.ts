@@ -111,7 +111,7 @@ export const adminNavigationRegistry: readonly AdminNavigationDomain[] = [
       {
         name: "Operations",
         iconName: "Activity",
-        destinations: [destination("/administration/ai/ai-tasks")],
+        destinations: [destination("/administration/ai/ai-tasks"), destination("/administration/ai/ai-test-mode")],
       },
     ],
   },

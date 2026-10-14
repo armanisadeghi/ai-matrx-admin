@@ -13,6 +13,7 @@
 import { useEffect, useState } from "react";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { useWorkflowRun } from "@/features/workflow-runtime/hooks/useWorkflowRun";
+import { readAiTestReplay, type AiTestReplay } from "@/features/ai-test-mode/replay";
 import {
   selectNodeAggregate,
   selectRunEmissions,
@@ -144,6 +145,8 @@ export interface StepView {
   skipped: boolean;
   /** The step itself errored (its own error state), whatever the run's overall status says. */
   errored?: boolean;
+  /** The server answered this step from a saved result (AI test mode); null for a real answer. */
+  replay?: AiTestReplay | null;
 }
 
 export interface RoundView {
@@ -152,6 +155,8 @@ export interface RoundView {
   steps: StepView[];
   /** Everything this run spent so far (every paid step: anchors, lookups, searches, agents), USD. */
   spendUsd: number;
+  /** Every watched step (agents included) the server answered from a saved result (AI test mode). */
+  replays?: AiTestReplay[];
 }
 
 function numberOr(value: unknown, fallback: number): number {
@@ -183,6 +188,7 @@ function StepWatch({
     skipped: output?.skipped === true || aggregate.phase === "skipped",
     errored: aggregate.phase === "failed" || Boolean(invocation?.error),
     gate: parseGate(output?.gate),
+    replay: readAiTestReplay(output),
   };
   const signature = JSON.stringify({
     view,
@@ -319,7 +325,8 @@ export function SmartAddRound({
     const v = stepState[s]?.view ?? idle(s);
     return s === "web" && parkedLate && !v.skipped ? { ...v, notes: [...v.notes, PARKED_WEB_NOTE] } : v;
   };
-  const view: RoundView = { runId, status, steps: steps.map(stepView), spendUsd };
+  const replays = Object.values(stepState).flatMap((st) => (st.view.replay ? [st.view.replay] : []));
+  const view: RoundView = { runId, status, steps: steps.map(stepView), spendUsd, ...(replays.length ? { replays } : {}) };
   useEffect(() => {
     onView(view);
   }, [view, onView]);

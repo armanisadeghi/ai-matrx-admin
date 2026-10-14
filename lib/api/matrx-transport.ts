@@ -27,6 +27,7 @@
  */
 
 import { adminLaneHeadersFor } from "@/lib/api/admin-lane";
+import { aiTestModeHeaders } from "@/lib/api/ai-test-mode";
 import type { Action } from "redux";
 import type { ThunkAction } from "redux-thunk";
 import type { RootState } from "@/lib/redux/store";
@@ -229,17 +230,17 @@ export function createMatrxTransport(
       } else if (callOrganizationId) {
         organizationId = requireOrganizationContext(null, callOrganizationId);
       }
+      const policyHeaders: Record<string, string> = {
+        ...(organizationId
+          ? { "X-Organization-Id": organizationId, ...adminLaneHeadersFor(organizationId) }
+          : {}),
+        // AI test mode (lib/api/ai-test-mode.ts): absent when the tab is on real.
+        ...aiTestModeHeaders(),
+      };
       return {
         baseUrl: resolveBaseUrl(state),
         channel: "global",
-        ...(organizationId
-          ? {
-              policyHeaders: {
-                "X-Organization-Id": organizationId,
-                ...adminLaneHeadersFor(organizationId),
-              },
-            }
-          : {}),
+        ...(Object.keys(policyHeaders).length > 0 ? { policyHeaders } : {}),
       };
     },
     credentials: credentialsFromState(getState),
