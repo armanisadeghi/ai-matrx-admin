@@ -1047,7 +1047,7 @@ export const adminCategoriesData: AdminCategory[] = [
   },
   {
     name: "Communications",
-    landingPath: "/administration/communications/voice",
+    landingPath: "/administration/communications",
     iconName: "Phone",
     iconColor: "text-sky-600",
     features: [
