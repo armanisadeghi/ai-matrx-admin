@@ -50,7 +50,7 @@ Rules:
 - Writes go through `@/lib/url-state/addressWithoutNavigating`, so they make no RSC fetch and cause no remount. A write keeps every key it does not own, such as `panels`.
 - 🚨 **Auto-start spends points.** A link that carries a prefill (`website`, `social`, or `name`) starts searching on open, as if Go was pressed. That is the purpose of the link. It happens once per address per tab (sessionStorage `smart-add:auto-started`). A reload, Back/Forward or a duplicate tab never starts a second run. A person link with no occupation or company stops at the one "job or company" ask.
 - **First data:** the name, logo and description rows fill from the web step's own-site listing the moment it lands (`firstData.ts`), even when the site blocks a direct read; the facts agent's brand name, phone, email and category merge into the same rows later under the server's keys, so nothing on screen resets.
-- **Resume:** an address with `run=` rebuilds those rounds from the server (`SmartAddRound` → `useWorkflowRun`) and starts nothing. The typed fields come back from the address. Decisions made on screen before Create (Preferred / Ours / Not us / Related, web kinds, typed values) are saved as they are given in the person's synced preferences (`smartAdd.runs`, keyed by the first run id; `runMemory.ts`) and restored with the run. After Create they live in `web.discovered_item`.
+- **Resume:** an address with `run=` rebuilds those rounds from the server (`SmartAddRound` → `useWorkflowRun`) and starts nothing. The typed fields come back from the address. Every answer given on screen before Create (Preferred / Ours / Not us / Related, web kinds, typed values, Skip for now, Tagline moves, the web review's Ask me later / Ignore) is saved as they are given in the person's synced preferences (`smartAdd.runs`, keyed by the first run id; `runMemory.ts`) and restored with the run; `ANSWER_KINDS` in `runMemory.ts` lists every kind and `runMemory.test.ts` fails when a new one is not saved. A name moved to Tagline leaves the name list and is undone from its About item. After Create they live in `web.discovered_item`.
 - Nothing personal goes in the address beyond what the person typed into these fields. The active organization is never in it.
 
 ---
@@ -58,3 +58,4 @@ Rules:
 ## Change Log
 
 - 2026-10-14 — Smart Add gets real URLs: mode routes, deep links, `run=` resume, `via`/`view`, helper `?panels=`; `smartAddUrl.ts` + tests (`__tests__/smartAddUrl.test.ts`).
+- 2026-10-14 — Run memory saves every answer kind (skips, tagline moves, web marks); the name row leaves the list on Tagline (Undo on About); mobile Yes/No/Other no longer pushed off the left edge beside an Open link; the run attach reads the row and the event log at once.

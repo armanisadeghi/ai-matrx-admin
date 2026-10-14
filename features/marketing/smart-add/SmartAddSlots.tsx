@@ -250,6 +250,8 @@ export function SmartAddSlots({
       }}
       skipped={skipped.has(item.key)}
       disabled={locked}
+      // Beside an Open link the control takes the rest of the row (never the whole width, which pushed Yes off the left edge).
+      className="max-sm:w-auto max-sm:min-w-0 max-sm:flex-1 max-sm:shrink"
     />
   );
 
