@@ -123,6 +123,8 @@ export interface BrandFact {
   evidence_urls: string[];
   known_field: string | null;
   suggestion?: Suggestion | null;
+  /** A what's-new conflict: the value already on file that `value` contradicts. The card asks which is right. */
+  conflict_with?: string | null;
 }
 
 function str(v: unknown): string | null {
@@ -148,6 +150,15 @@ function parseFact(raw: unknown): BrandFact | null {
   };
 }
 
+/** One `brand_whats_new_conflict` (a source value against a known one) as a fact that asks which is right. */
+function parseConflict(raw: unknown): BrandFact | null {
+  if (typeof raw !== "object" || raw === null) return null;
+  const c = raw as Record<string, unknown>;
+  const known = str(c.known_value);
+  const fact = parseFact({ ...c, value: c.new_value, certainty: "likely", known_field: true });
+  return fact && known ? { ...fact, conflict_with: known } : null;
+}
+
 /**
  * Every `brand_basics_fact` in a payload: a `brand_basics` object (by `__kind` or by key) with
  * `items`, wherever it sits in a step output or a live frame (bounded walk).
@@ -160,12 +171,19 @@ export function factsFromPayload(payload: unknown, depth = 0): BrandFact[] {
     const one = parseFact(o);
     return one ? [one] : [];
   }
+  if (o.__kind === "brand_whats_new_conflict") {
+    const one = parseConflict(o);
+    return one ? [one] : [];
+  }
   // The kind's list is `facts` (Arman's agent and the registered kind); `items` is read too.
   const list = (b: Record<string, unknown>): unknown[] | null =>
     Array.isArray(b.facts) ? b.facts : Array.isArray(b.items) ? b.items : null;
-  // brand_whats_new (the what's-new agent): its facts join the queue; its conflicts are not read here yet.
+  // brand_whats_new (the what's-new agent): its facts join the queue, and each conflict joins as a card that asks
+  // which of the two values is right.
   if (o.__kind === "brand_basics" || o.__kind === "person_basics" || o.__kind === "brand_whats_new") {
-    return (list(o) ?? []).map(parseFact).filter((f): f is BrandFact => Boolean(f));
+    const facts = (list(o) ?? []).map(parseFact);
+    const conflicts = o.__kind === "brand_whats_new" && Array.isArray(o.conflicts) ? o.conflicts.map(parseConflict) : [];
+    return [...facts, ...conflicts].filter((f): f is BrandFact => Boolean(f));
   }
   return Object.entries(o).flatMap(([k, v]) => {
     const block = (k === "brand_basics" || k === "person_basics") && typeof v === "object" && v !== null ? list(v as Record<string, unknown>) : null;
@@ -312,9 +330,9 @@ export function focusFromFact(f: BrandFact): FocusItem {
   return {
     key: f.key,
     kind: "fact",
-    label: f.field_label,
+    label: f.conflict_with ? `Two values for ${f.field_label}` : f.field_label,
     value: f.value,
-    title: null,
+    title: f.conflict_with ? `vs ${f.conflict_with} (on file)` : null,
     platform: null,
     profileId: null,
     imageUrl: null,

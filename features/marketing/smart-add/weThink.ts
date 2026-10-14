@@ -9,7 +9,7 @@
 
 import { handleKeyPart } from "../social/account-input";
 import { websiteHost, type Decision, type EvidenceItem } from "./evidence";
-import { webAddress } from "./webKinds";
+import { webIdentity } from "./webKinds";
 
 /**
  * MKT-064: one key, however it is spelled. The agent may hand back `vivaespaña-1m` for the card's
@@ -59,9 +59,9 @@ function parseOne(raw: unknown): [string, WeThinkSuggestion] | null {
   ];
 }
 
-/** The web-result classifier's key for a result: `url:` + its address (webKinds.webAddress). */
+/** The web-result classifier's key for a result: `url:` + its identity (webKinds.webIdentity: address + `?v=`…). */
 export function webResultKey(url: string): string {
-  return `url:${webAddress(url)}`;
+  return `url:${webIdentity(url)}`;
 }
 
 const WEB_FIELDS = new Set(["listing", "mention", "web_page"]);

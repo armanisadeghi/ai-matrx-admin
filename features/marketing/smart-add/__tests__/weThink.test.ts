@@ -90,4 +90,16 @@ describe("we think", () => {
     expect(out[1].suggestion).toMatchObject({ choice: "later", relation_key: null });
     expect(knownDecided(out, {}).results).toEqual(["https://www.glassdoor.com/Reviews/FSSG-E1.htm?x=1", "https://other.com/a"]);
   });
+
+  it("keeps two videos on youtube.com/watch apart (MKT-067) and needs no evidence on a related kind", () => {
+    const out = withSuggestions(
+      [item("web:a", "web_page", "https://www.youtube.com/watch?v=AbC&si=t"), item("web:b", "web_page", "https://youtube.com/watch?v=XyZ")],
+      suggestionsFromPayload({ __kind: "brand_web_result_classification", results: [
+        { url: "https://youtube.com/watch?v=AbC", kind: "ours", sentiment: null, probability: 0.9, reason: "Our channel", evidence: ["fullspecstaff.com"] },
+        { url: "https://www.youtube.com/watch?v=XyZ", kind: "mention", sentiment: "neutral", probability: 0.8, reason: "Names us" },
+      ] }),
+    );
+    expect(out[0].suggestion).toMatchObject({ choice: "ours", evidence: ["fullspecstaff.com"] });
+    expect(out[1].suggestion).toMatchObject({ choice: "related", relation_key: "mention", evidence: [] });
+  });
 });

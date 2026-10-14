@@ -1,5 +1,5 @@
 import type { BrandRelationKind } from "@/features/marketing/data/service";
-import { buildQueue, coreSettled, decisionFor, factGroup, factsFromPayload, LATER_FACT_GROUP, optionsFor, VALIDATION_THRESHOLD } from "../validate/queue";
+import { buildQueue, coreSettled, decisionFor, factGroup, factsFromPayload, focusFromFact, LATER_FACT_GROUP, optionsFor, VALIDATION_THRESHOLD } from "../validate/queue";
 import { fixtureEvidence, fixtureFacts, FIXTURE_BRAND_BASICS } from "../validate/fixtures";
 
 const kind = (key: string, stance: BrandRelationKind["stance"]): BrandRelationKind => ({
@@ -120,6 +120,17 @@ describe("validation queue", () => {
       { __kind: "brand_whats_new_fact", field: "year_founded", field_label: "Year Founded", value: "2009", certainty: "confirmed", reason: "r", evidence_urls: [], known_field: true },
     ] }] });
     expect(facts.map((f) => [f.field, f.value])).toEqual([["year_founded", "2009"]]);
+  });
+
+  it("shows each what's-new conflict as a card asking which value is right (grounding stays on hover)", () => {
+    const facts = factsFromPayload({ __kind: "brand_whats_new", facts: [], conflicts: [
+      { __kind: "brand_whats_new_conflict", field: "phone", field_label: "Phone", known_value: "(949) 555-0100", new_value: "(949) 555-0199",
+        evidence_urls: ["https://fullspecstaff.com/contact"], reason: "Contact page lists another number." },
+    ] });
+    expect(facts).toHaveLength(1);
+    const card = focusFromFact(facts[0]);
+    expect(card).toMatchObject({ kind: "fact", label: "Two values for Phone", value: "(949) 555-0199", title: "vs (949) 555-0100 (on file)",
+      detail: "Contact page lists another number.", evidenceUrls: ["https://fullspecstaff.com/contact"] });
   });
 
   it("shifts only once name, website and an account are settled", () => {

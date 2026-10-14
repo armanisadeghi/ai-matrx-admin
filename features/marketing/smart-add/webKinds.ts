@@ -59,6 +59,23 @@ export function webAddress(url: string): string {
     .replace(/\/+$/, "");
 }
 
+/**
+ * Query parameters that NAME the page (MKT-067): `youtube.com/watch?v=A` and `?v=B` are two videos. Everything
+ * else (utm_*, fbclid, si…) is tracking. Mirrors aidream `brand_identify_web.IDENTIFYING_PARAMS`.
+ */
+const IDENTIFYING_PARAMS = new Set(["v", "id", "fbid", "story_fbid", "list", "k", "q", "p"]);
+
+/** One page's identity: `webAddress` plus its identifying query parameters, sorted, values as given. */
+export function webIdentity(url: string): string {
+  const query = url.trim().split("#", 1)[0].split("?").slice(1).join("?");
+  const keep = [...new URLSearchParams(query)]
+    .map(([k, v]) => [k.toLowerCase(), v] as const)
+    .filter(([k, v]) => IDENTIFYING_PARAMS.has(k) && v)
+    .sort(([a, av], [b, bv]) => (a === b ? av.localeCompare(bv) : a.localeCompare(b)));
+  const base = webAddress(url);
+  return keep.length ? `${base}?${new URLSearchParams(keep as [string, string][]).toString()}` : base;
+}
+
 function hostIs(host: string, base: string): boolean {
   const b = base.replace(/^www\./, "").toLowerCase();
   return host === b || host.endsWith(`.${b}`);
