@@ -82,3 +82,25 @@ describe("3.7 — member-facing text carries no developer harness", () => {
     expect(src).toMatch(/\{debug && \(\s*<span className="ml-auto/);
   });
 });
+
+describe("3.8 — a bulk action never silently does nothing", () => {
+  it("Activate on rows that are already active refuses out loud; Promote on system rows too", async () => {
+    // Imported late: the config pulls the whole browse stack.
+    const { shapeListConfigWithPromote } = await import("../browse/listConfig");
+    const rows = [
+      { id: "a", label: "A", is_active: true, origin: "system" },
+      { id: "b", label: "B", is_active: true, origin: "system" },
+    ] as never[];
+    const selection = {
+      mode: "ids" as const,
+      ids: ["a", "b"],
+      rows,
+      count: 2,
+      filter: {} as never,
+    };
+    const byId = (id: string) => shapeListConfigWithPromote.bulkActions!.find((x) => x.id === id)!;
+    // Planted break: without skipReason this called the database RPC for each row.
+    await expect(Promise.resolve(byId("activate").run(selection))).rejects.toThrow(/already active/);
+    await expect(Promise.resolve(byId("promote-to-system").run(selection))).rejects.toThrow(/already system/);
+  });
+});
