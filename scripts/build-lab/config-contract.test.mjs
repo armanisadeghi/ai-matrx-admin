@@ -1,7 +1,11 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
+import { createRequire } from "node:module";
 import test from "node:test";
 import ts from "typescript";
+
+const require = createRequire(import.meta.url);
+const { BUILD_CACHE_PROFILES, buildCacheDecision } = require("../build-cache-policy.cjs");
 
 // Parse instead of loading next.config.js: loading runs copy/parking hooks.
 test("production builds explicitly retain the measured nonpersistent Turbopack mode", () => {
@@ -26,9 +30,14 @@ test("production builds explicitly retain the measured nonpersistent Turbopack m
   };
   const experimental = property(declaration.initializer, "experimental");
   assert.ok(ts.isObjectLiteralExpression(experimental));
+  const buildCacheSetting = property(experimental, "turbopackFileSystemCacheForBuild");
   assert.equal(
-    property(experimental, "turbopackFileSystemCacheForBuild").kind,
-    ts.SyntaxKind.FalseKeyword,
-    "Re-enabling persistent build caching requires a new measured memory acceptance",
+    buildCacheSetting.getText(source),
+    'require("./scripts/build-cache-policy.cjs").buildCacheDecision().on',
+    "The Next config must keep its build-cache setting behind the measured policy",
   );
+  assert.equal(BUILD_CACHE_PROFILES.size, 0, "Re-enabling persistent build caching requires a new measured memory acceptance");
+  for (const profile of ["slim", "demos", "admin", "lab"]) {
+    assert.equal(buildCacheDecision({ VERCEL: "1", MATRX_PROFILE: profile }).on, false);
+  }
 });
