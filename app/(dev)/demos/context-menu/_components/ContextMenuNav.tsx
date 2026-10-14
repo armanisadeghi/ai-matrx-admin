@@ -1,5 +1,6 @@
 "use client";
 
+import { Select } from "@ai-matrx/design-system/controls";
 import AppLink from "@/components/navigation/AppLink";
 import { usePathname, useRouter } from "next/navigation";
 import { createElement, useTransition, type MouseEvent } from "react";
@@ -53,27 +54,25 @@ export function ContextMenuNav({
     >
       <div className="flex min-h-11 items-center gap-2 px-3 lg:hidden">
         <Home className="h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
-        <label
-          htmlFor="context-menu-demo-page"
-          className="shrink-0 text-xs font-semibold text-foreground"
-        >
+        <label className="shrink-0 text-xs font-semibold text-foreground">
           Demo page
         </label>
-        <select
-          id="context-menu-demo-page"
+        <Select
           value={activeHref}
           disabled={isPending}
-          onChange={(event) => navigate(event.target.value)}
-          className="h-11 min-w-0 flex-1 rounded-md border border-border bg-background px-3 text-[16px] text-foreground outline-none focus:ring-2 focus:ring-primary disabled:cursor-progress disabled:opacity-60"
-        >
-          {!hideHubButton && <option value={CONTEXT_MENU_BASE}>Hub</option>}
-          {pages.map((page) => (
-            <option key={page.slug} value={`${CONTEXT_MENU_BASE}/${page.slug}`}>
-              {page.title}
-              {page.status === "wip" ? " (WIP)" : ""}
-            </option>
-          ))}
-        </select>
+          onValueChange={navigate}
+          aria-label="Demo page"
+          className="min-w-0 flex-1"
+          options={[
+            ...(hideHubButton
+              ? []
+              : [{ value: CONTEXT_MENU_BASE, label: "Hub" }]),
+            ...pages.map((page) => ({
+              value: `${CONTEXT_MENU_BASE}/${page.slug}`,
+              label: `${page.title}${page.status === "wip" ? " (WIP)" : ""}`,
+            })),
+          ]}
+        />
       </div>
 
       <div className="hidden min-h-11 items-center gap-1 overflow-x-auto px-3 lg:flex">

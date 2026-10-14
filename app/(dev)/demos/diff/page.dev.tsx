@@ -7,6 +7,7 @@
  * Route: /demos/diff
  */
 
+import { Select } from "@ai-matrx/design-system/controls";
 import { useState } from "react";
 import { toast } from "@/lib/toast";
 import { DiffViewer, type DiffEngine } from "@ai-matrx/diff/react";
@@ -133,27 +134,29 @@ export default function DiffDemoPage() {
       <div className="shrink-0 flex flex-wrap items-center gap-3 px-4 py-2 border-b border-border text-xs">
         <label className="flex items-center gap-1">
           Engine
-          <select
+          <Select<DiffEngine>
             value={engine}
-            onChange={(e) => setEngine(e.target.value as DiffEngine)}
-            className="border border-border rounded bg-background px-1 py-0.5"
-          >
-            <option value="auto">auto</option>
-            <option value="light">light</option>
-            <option value="monaco">monaco</option>
-          </select>
+            onValueChange={setEngine}
+            aria-label="Engine"
+            options={[
+              { value: "auto", label: "auto" },
+              { value: "light", label: "light" },
+              { value: "monaco", label: "monaco" },
+            ]}
+          />
         </label>
         <label className="flex items-center gap-1">
           View
-          <select
+          <Select<View>
             value={view}
-            onChange={(e) => setView(e.target.value as View)}
-            className="border border-border rounded bg-background px-1 py-0.5"
-          >
-            <option value="highlight">highlight</option>
-            <option value="split">split</option>
-            <option value="inline">inline</option>
-          </select>
+            onValueChange={setView}
+            aria-label="View"
+            options={[
+              { value: "highlight", label: "highlight" },
+              { value: "split", label: "split" },
+              { value: "inline", label: "inline" },
+            ]}
+          />
         </label>
         <label className="flex items-center gap-1">
           Language
@@ -173,16 +176,15 @@ export default function DiffDemoPage() {
         </label>
         <label className="flex items-center gap-1">
           Granularity
-          <select
+          <Select<"word" | "character">
             value={granularity}
-            onChange={(e) =>
-              setGranularity(e.target.value as "word" | "character")
-            }
-            className="border border-border rounded bg-background px-1 py-0.5"
-          >
-            <option value="word">word</option>
-            <option value="character">character</option>
-          </select>
+            onValueChange={setGranularity}
+            aria-label="Granularity"
+            options={[
+              { value: "word", label: "word" },
+              { value: "character", label: "character" },
+            ]}
+          />
         </label>
         <label className="flex items-center gap-1">
           <Checkbox

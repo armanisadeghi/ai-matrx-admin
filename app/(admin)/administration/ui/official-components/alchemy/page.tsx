@@ -1,5 +1,6 @@
 "use client";
 
+import { Select } from "@ai-matrx/design-system/controls";
 import { useState, type ReactNode } from "react";
 import { ArrowLeft, Database } from "lucide-react";
 import AppLink from "@/components/navigation/AppLink";
@@ -286,22 +287,18 @@ function AlchemyExamples() {
           >
               <div className="mb-3 flex flex-wrap items-end justify-between gap-3">
                 <div className="space-y-1">
-                  <Label htmlFor="alchemy-row-filter">
-                    Sample status
-                  </Label>
-                  <select
-                    id="alchemy-row-filter"
+                  <Label>Sample status</Label>
+                  <Select<typeof filter>
                     value={filter}
-                    onChange={(event) =>
-                      setFilter(event.target.value as typeof filter)
-                    }
-                    className="h-9 rounded-md border bg-background px-3 text-sm"
-                  >
-                    <option>All</option>
-                    <option>Ready</option>
-                    <option>Review</option>
-                    <option>Archived</option>
-                  </select>
+                    onValueChange={setFilter}
+                    aria-label="Sample status"
+                    options={[
+                      { value: "All", label: "All" },
+                      { value: "Ready", label: "Ready" },
+                      { value: "Review", label: "Review" },
+                      { value: "Archived", label: "Archived" },
+                    ]}
+                  />
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="text-sm text-muted-foreground">

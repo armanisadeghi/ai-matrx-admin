@@ -6,6 +6,7 @@
  * behavior, and the per-type catalog gallery.
  */
 
+import { Select } from "@ai-matrx/design-system/controls";
 import React, { useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import { Play, RotateCcw, Square } from "lucide-react";
@@ -87,32 +88,26 @@ export default function MermaidPlaygroundPage() {
           <div className="ml-auto flex items-center gap-2 text-xs">
             <label className="flex items-center gap-1">
               Theme
-              <select
-                value={theme}
-                onChange={(e) =>
-                  setTheme(e.target.value as MermaidRenderOptions["theme"])
-                }
-                className="rounded border border-border bg-card px-1 py-0.5"
-              >
-                {["default", "dark", "forest", "neutral", "base"].map((t) => (
-                  <option key={t} value={t}>
-                    {t}
-                  </option>
-                ))}
-              </select>
+              <Select<NonNullable<MermaidRenderOptions["theme"]>>
+                value={theme ?? "default"}
+                onValueChange={setTheme}
+                aria-label="Theme"
+                options={(
+                  ["default", "dark", "forest", "neutral", "base"] as const
+                ).map((t) => ({ value: t, label: t }))}
+              />
             </label>
             <label className="flex items-center gap-1">
               Look
-              <select
-                value={look}
-                onChange={(e) =>
-                  setLook(e.target.value as MermaidRenderOptions["look"])
-                }
-                className="rounded border border-border bg-card px-1 py-0.5"
-              >
-                <option value="classic">classic</option>
-                <option value="handDrawn">handDrawn</option>
-              </select>
+              <Select<NonNullable<MermaidRenderOptions["look"]>>
+                value={look ?? "classic"}
+                onValueChange={setLook}
+                aria-label="Look"
+                options={[
+                  { value: "classic", label: "classic" },
+                  { value: "handDrawn", label: "handDrawn" },
+                ]}
+              />
             </label>
             <Button
               variant="outline"

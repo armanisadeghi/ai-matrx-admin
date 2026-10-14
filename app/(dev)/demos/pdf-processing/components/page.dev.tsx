@@ -19,6 +19,7 @@
  * endpoint-level test pages live at /demos/pdf-processing.
  */
 
+import { Select } from "@ai-matrx/design-system/controls";
 import { useEffect, useState } from "react";
 import AppLink from "@/components/navigation/AppLink";
 import { ChevronDown, ChevronRight, FileText, Loader2 } from "lucide-react";
@@ -134,22 +135,21 @@ export default function PdfComponentsBenchPage() {
             <Loader2 className="h-3 w-3 animate-spin" /> Loading your PDFs…
           </span>
         ) : (
-          <select
+          <Select
             value={fileId}
-            onChange={(e) => setFileId(e.target.value)}
-            className="h-8 min-w-0 max-w-md flex-1 rounded-md border border-border bg-background px-2 text-xs"
+            onValueChange={setFileId}
             aria-label="Choose a PDF to test against"
-          >
-            {pdfs.length === 0 ? (
-              <option value="">No PDFs — upload one at /files first</option>
-            ) : null}
-            {pdfs.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.file_name}
-                {p.size_bytes ? ` · ${formatFileSize(p.size_bytes)}` : ""}
-              </option>
-            ))}
-          </select>
+            className="min-w-0 max-w-md flex-1"
+            options={[
+              ...(pdfs.length === 0
+                ? [{ value: "", label: "No PDFs — upload one at /files first" }]
+                : []),
+              ...pdfs.map((p) => ({
+                value: p.id,
+                label: `${p.file_name}${p.size_bytes ? ` · ${formatFileSize(p.size_bytes)}` : ""}`,
+              })),
+            ]}
+          />
         )}
         {fileId ? (
           <PdfSurfaceSwitcher current="file-viewer" fileId={fileId} size="sm" />

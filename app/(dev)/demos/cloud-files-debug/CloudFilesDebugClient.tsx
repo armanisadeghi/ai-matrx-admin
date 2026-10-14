@@ -17,6 +17,7 @@
  * be tested from one screen without bypassing the real service split.
  */
 
+import { Select } from "@ai-matrx/design-system/controls";
 import React, {
   useCallback,
   useEffect,
@@ -647,19 +648,16 @@ export function CloudFilesDebugClient() {
                 </label>
                 <label className="flex items-center gap-1.5">
                   <span className="text-muted-foreground">Visibility:</span>
-                  <select
+                  <Select<typeof uploadVisibility>
                     value={uploadVisibility}
-                    onChange={(e) =>
-                      setUploadVisibility(
-                        e.target.value as typeof uploadVisibility,
-                      )
-                    }
-                    className="rounded-md border border-border bg-background px-2 py-1"
-                  >
-                    <option value="private">private</option>
-                    <option value="shared">shared</option>
-                    <option value="public">public</option>
-                  </select>
+                    onValueChange={setUploadVisibility}
+                    aria-label="Visibility"
+                    options={[
+                      { value: "private", label: "private" },
+                      { value: "shared", label: "shared" },
+                      { value: "public", label: "public" },
+                    ]}
+                  />
                 </label>
                 <input
                   ref={fileInputRef}
@@ -722,18 +720,17 @@ export function CloudFilesDebugClient() {
           </div>
           <div className="p-3 space-y-2">
             <div className="flex items-center gap-1.5 text-xs">
-              <select
+              <Select<typeof rawMethod>
                 value={rawMethod}
-                onChange={(e) =>
-                  setRawMethod(e.target.value as typeof rawMethod)
-                }
-                className="rounded-md border border-border bg-background px-2 py-1.5 font-mono"
-              >
-                <option>GET</option>
-                <option>POST</option>
-                <option>PATCH</option>
-                <option>DELETE</option>
-              </select>
+                onValueChange={setRawMethod}
+                aria-label="HTTP method"
+                options={[
+                  { value: "GET", label: "GET" },
+                  { value: "POST", label: "POST" },
+                  { value: "PATCH", label: "PATCH" },
+                  { value: "DELETE", label: "DELETE" },
+                ]}
+              />
               <input
                 type="text"
                 value={rawPath}

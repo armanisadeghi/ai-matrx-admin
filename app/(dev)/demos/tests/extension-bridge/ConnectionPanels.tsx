@@ -14,7 +14,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@ai-matrx/design-system/controls";
+import { Input, Select } from "@ai-matrx/design-system/controls";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import {
@@ -179,26 +179,27 @@ export function ConnectionPanels({
             </p>
           )}
           <div className="space-y-1.5">
-            <Label htmlFor="ext-id" className="text-xs">
-              Extension ID
-            </Label>
-            <select
-              id="ext-id"
+            <Label className="text-xs">Extension ID</Label>
+            <Select
               value={extensionId}
-              onChange={(e) => onExtensionIdChange(e.target.value)}
-              className="h-9 w-full rounded-md border border-input bg-background px-2 text-xs"
-            >
-              {KNOWN_EXTENSION_IDS.map((k) => (
-                <option key={k.id} value={k.id}>
-                  {k.label} — {k.id.slice(0, 12)}…
-                </option>
-              ))}
-              {customId.trim() && (
-                <option value={customId.trim()}>
-                  Custom — {customId.trim().slice(0, 12)}…
-                </option>
-              )}
-            </select>
+              onValueChange={onExtensionIdChange}
+              aria-label="Extension ID"
+              className="w-full"
+              options={[
+                ...KNOWN_EXTENSION_IDS.map((k) => ({
+                  value: k.id,
+                  label: `${k.label} — ${k.id.slice(0, 12)}…`,
+                })),
+                ...(customId.trim()
+                  ? [
+                      {
+                        value: customId.trim(),
+                        label: `Custom — ${customId.trim().slice(0, 12)}…`,
+                      },
+                    ]
+                  : []),
+              ]}
+            />
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="custom-id" className="text-xs">

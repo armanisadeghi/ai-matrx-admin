@@ -1,5 +1,6 @@
 "use client";
 
+import { Select } from "@ai-matrx/design-system/controls";
 import { useState } from "react";
 import { Field, FieldGroup, PdfDemoShell } from "@/features/pdf-demo/components/PdfDemoShell";
 import {
@@ -77,17 +78,13 @@ export default function ExtractTablesDemo() {
     >
       <FieldGroup>
         <Field label="Output format">
-          <select
+          <Select<(typeof FORMATS)[number]>
             value={fmt}
-            onChange={(e) => setFmt(e.target.value as (typeof FORMATS)[number])}
-            className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
-          >
-            {FORMATS.map((f) => (
-              <option key={f} value={f}>
-                {f}
-              </option>
-            ))}
-          </select>
+            onValueChange={setFmt}
+            aria-label="Output format"
+            className="w-full"
+            options={FORMATS.map((f) => ({ value: f, label: f }))}
+          />
         </Field>
       </FieldGroup>
     </PdfDemoShell>

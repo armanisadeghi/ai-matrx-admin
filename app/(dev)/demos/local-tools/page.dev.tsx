@@ -1,5 +1,6 @@
 "use client";
 
+import { Select } from "@ai-matrx/design-system/controls";
 import { useEffect, useRef, useState } from "react";
 import AppLink from "@/components/navigation/AppLink";
 import { Button } from "@/components/ui/button";
@@ -334,26 +335,18 @@ export default function LocalToolsDemo() {
             <div className="flex gap-2 flex-wrap">
               <div className="flex flex-col gap-1">
                 <label className="text-xs text-muted-foreground">Tool</label>
-                <select
+                <Select
                   value={customTool}
-                  onChange={(e) => setCustomTool(e.target.value)}
-                  className="h-8 text-xs font-mono rounded border px-2 bg-background"
-                >
-                  {ALL_TOOLS.map((t) => (
-                    <option
-                      key={t}
-                      value={t}
-                      disabled={
-                        availableTools.length > 0 && !availableTools.includes(t)
-                      }
-                    >
-                      {t}
-                      {availableTools.length > 0 && !availableTools.includes(t)
-                        ? " (unavailable)"
-                        : ""}
-                    </option>
-                  ))}
-                </select>
+                  onValueChange={setCustomTool}
+                  aria-label="Tool"
+                  options={ALL_TOOLS.map((t) => ({
+                    value: t,
+                    label:
+                      availableTools.length > 0 && !availableTools.includes(t)
+                        ? `${t} (unavailable)`
+                        : t,
+                  }))}
+                />
               </div>
               <div className="flex flex-col gap-1 flex-1 min-w-[200px]">
                 <label className="text-xs text-muted-foreground">

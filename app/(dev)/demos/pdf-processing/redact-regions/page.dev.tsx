@@ -4,7 +4,7 @@ import { ClampedNumberInput } from "@/components/official/ClampedNumberInput";
 import { useState } from "react";
 import { Plus, Trash2 } from "lucide-react";
 
-import { Input } from "@ai-matrx/design-system/controls";
+import { Input, Select } from "@ai-matrx/design-system/controls";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import {
@@ -126,18 +126,16 @@ export default function RedactRegionsDemo() {
                   <ClampedNumberInput value={r.y1} min={Number.MIN_SAFE_INTEGER} decimal onChange={(n) => updateRegion(i, { y1: n })} />
                 </Field>
                 <Field label="Replacement">
-                  <select
+                  <Select<"BLOCK" | "REMOVE">
                     value={r.replacement}
-                    onChange={(e) =>
-                      updateRegion(i, {
-                        replacement: e.target.value as "BLOCK" | "REMOVE",
-                      })
-                    }
-                    className="w-full rounded-md border border-border bg-background px-2 py-2 text-sm"
-                  >
-                    <option value="BLOCK">BLOCK (paint)</option>
-                    <option value="REMOVE">REMOVE (white)</option>
-                  </select>
+                    onValueChange={(v) => updateRegion(i, { replacement: v })}
+                    aria-label="Replacement"
+                    className="w-full"
+                    options={[
+                      { value: "BLOCK", label: "BLOCK (paint)" },
+                      { value: "REMOVE", label: "REMOVE (white)" },
+                    ]}
+                  />
                 </Field>
               </div>
               <label className="flex items-center gap-2 text-xs text-muted-foreground">

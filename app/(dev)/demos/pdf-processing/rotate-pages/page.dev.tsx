@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Input } from "@ai-matrx/design-system/controls";
+import { Input, Select } from "@ai-matrx/design-system/controls";
 import { Field, FieldGroup, PdfDemoShell } from "@/features/pdf-demo/components/PdfDemoShell";
 import {
   EMPTY_PDF_SOURCE,
@@ -64,17 +64,16 @@ export default function RotatePagesDemo() {
           />
         </Field>
         <Field label="Rotation (degrees, multiple of 90)">
-          <select
-            value={rotation}
-            onChange={(e) => setRotation(Number(e.target.value))}
-            className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
-          >
-            {ROTATIONS.map((r) => (
-              <option key={r} value={r}>
-                {r > 0 ? `+${r}` : r}°
-              </option>
-            ))}
-          </select>
+          <Select
+            value={String(rotation)}
+            onValueChange={(v) => setRotation(Number(v))}
+            aria-label="Rotation (degrees, multiple of 90)"
+            className="w-full"
+            options={ROTATIONS.map((r) => ({
+              value: String(r),
+              label: `${r > 0 ? `+${r}` : r}°`,
+            }))}
+          />
         </Field>
       </FieldGroup>
     </PdfDemoShell>

@@ -1,5 +1,6 @@
 "use client";
 
+import { OptionCombobox, Select } from "@ai-matrx/design-system/controls";
 import { useEffect, useMemo, useState } from "react";
 import { Send, ChevronDown, ChevronRight, History } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -241,21 +242,14 @@ export function RpcTestPanel({
             </RadioGroup>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="rpc-action" className="text-xs">
-              Action
-            </Label>
-            <select
-              id="rpc-action"
+            <Label className="text-xs">Action</Label>
+            <Select<RpcAction>
               value={action}
-              onChange={(e) => setAction(e.target.value as RpcAction)}
-              className="h-9 w-full rounded-md border border-input bg-background px-2 text-sm"
-            >
-              {RPC_ACTIONS.map((a) => (
-                <option key={a} value={a}>
-                  {a}
-                </option>
-              ))}
-            </select>
+              onValueChange={setAction}
+              aria-label="Action"
+              className="w-full"
+              options={RPC_ACTIONS.map((a) => ({ value: a, label: a }))}
+            />
           </div>
         </div>
 
@@ -426,20 +420,17 @@ function CallToolHelper({
         Pick a tool from the cached capabilities catalog ({catalog.length}{" "}
         available):
       </p>
-      <select
-        onChange={(e) => {
-          if (e.target.value) onPick(e.target.value);
+      <OptionCombobox
+        value=""
+        onChange={(v) => {
+          if (v) onPick(v);
         }}
-        defaultValue=""
-        className="h-8 w-full rounded-md border border-input bg-background px-2 text-xs"
-      >
-        <option value="">— choose a tool —</option>
-        {catalog.map((name) => (
-          <option key={name} value={name}>
-            {name}
-          </option>
-        ))}
-      </select>
+        options={catalog}
+        placeholder="— choose a tool —"
+        ariaLabel="Choose a tool"
+        searchable
+        className="w-full"
+      />
     </div>
   );
 }

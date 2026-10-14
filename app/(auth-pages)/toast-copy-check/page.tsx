@@ -1,5 +1,6 @@
 "use client";
 
+import { Select } from "@ai-matrx/design-system/controls";
 import { toast } from "@/lib/toast";
 import { useThemeMode } from "@/styles/themes/useThemeMode";
 
@@ -13,20 +14,18 @@ export default function Page() {
       </p>
       <label>
         Appearance{" "}
-        <select
+        <Select
           aria-label="Appearance"
           value={theme}
-          onChange={(event) =>
-            document.documentElement.classList.toggle(
-              "dark",
-              event.target.value === "dark",
-            )
+          onValueChange={(v) =>
+            document.documentElement.classList.toggle("dark", v === "dark")
           }
-          className="ml-3 rounded border bg-background p-2"
-        >
-          <option value="light">Light</option>
-          <option value="dark">Dark</option>
-        </select>
+          className="ml-3"
+          options={[
+            { value: "light", label: "Light" },
+            { value: "dark", label: "Dark" },
+          ]}
+        />
       </label>
       <button
         className="rounded border px-4 py-2 text-left"

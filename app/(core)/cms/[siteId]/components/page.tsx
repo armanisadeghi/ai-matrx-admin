@@ -15,7 +15,7 @@ import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceR
 import { SurfaceRoleAgentButton } from "@ai-matrx/chat/surfaces/components/chrome/SurfaceRoleAgentButton";
 import { humanLines } from "@/features/marketing/lib/copy-payloads";
 import { Button } from "@/components/ui/button";
-import { Input } from "@ai-matrx/design-system/controls";
+import { Input, Select } from "@ai-matrx/design-system/controls";
 import { ProTextarea } from "@/components/official/ProTextarea";
 import { Badge } from "@/components/ui/badge";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
@@ -305,17 +305,19 @@ export default function ComponentsPage() {
                     <label className="text-sm font-medium block mb-1.5">
                       Type
                     </label>
-                    <select
+                    <Select
                       value={createType}
-                      onChange={(e) => setCreateType(e.target.value)}
-                      className="w-full h-9 rounded-md border border-input bg-background px-3 text-sm"
-                    >
-                      <option value="header">Header</option>
-                      <option value="footer">Footer</option>
-                      <option value="sidebar">Sidebar</option>
-                      <option value="cta">Call to Action</option>
-                      <option value="custom">Custom</option>
-                    </select>
+                      onValueChange={setCreateType}
+                      aria-label="Type"
+                      className="w-full"
+                      options={[
+                        { value: "header", label: "Header" },
+                        { value: "footer", label: "Footer" },
+                        { value: "sidebar", label: "Sidebar" },
+                        { value: "cta", label: "Call to Action" },
+                        { value: "custom", label: "Custom" },
+                      ]}
+                    />
                   </div>
                 </div>
                 <DialogFooter>

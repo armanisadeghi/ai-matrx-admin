@@ -24,6 +24,7 @@
  * Cleanup goes through the sanctioned `destroyInstanceIfAllowed` path.
  */
 
+import { Select } from "@ai-matrx/design-system/controls";
 import { useEffect, useMemo, useState } from "react";
 import {
   AlertTriangle,
@@ -481,22 +482,19 @@ export default function LaunchInspectorDemoPage() {
             <h2 className={PANEL_TITLE}>3 · Launch config</h2>
             <label className="text-[11px] text-muted-foreground">
               displayMode override (open-and-wait)
-              <select
+              <Select<ResultDisplayMode | "">
                 value={displayModeOverride}
-                onChange={(e) =>
-                  setDisplayModeOverride(
-                    e.target.value as ResultDisplayMode | "",
-                  )
-                }
-                className="mt-1 h-11 w-full rounded border border-border bg-background px-2 text-[16px] text-foreground outline-none focus:ring-1 focus:ring-primary sm:h-9 sm:text-sm"
-              >
-                <option value="">(shortcut default)</option>
-                {DISPLAY_MODE_CHOICES.map((m) => (
-                  <option key={m} value={m}>
-                    {m}
-                  </option>
-                ))}
-              </select>
+                onValueChange={setDisplayModeOverride}
+                aria-label="displayMode override"
+                className="mt-1 w-full"
+                options={[
+                  { value: "", label: "(shortcut default)" },
+                  ...DISPLAY_MODE_CHOICES.map((m) => ({
+                    value: m,
+                    label: m,
+                  })),
+                ]}
+              />
             </label>
             <label className="text-[11px] text-muted-foreground">
               runtime.surfaceName (optional — enables agent×surface binding

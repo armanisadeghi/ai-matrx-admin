@@ -1,5 +1,6 @@
 "use client";
 
+import { Select } from "@ai-matrx/design-system/controls";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -379,18 +380,16 @@ export default function PowerShellPage() {
                   <label className="text-[10px] text-muted-foreground">
                     Scope
                   </label>
-                  <select
+                  <Select<typeof envSetScope>
                     value={envSetScope}
-                    onChange={(e) =>
-                      setEnvSetScope(e.target.value as typeof envSetScope)
-                    }
-                    className={`${inputCls} cursor-pointer`}
-                    style={{ fontSize: "16px" }}
-                  >
-                    <option value="Process">Process (current session)</option>
-                    <option value="User">User (Windows, persistent)</option>
-                    <option value="Machine">Machine (Windows, admin)</option>
-                  </select>
+                    onValueChange={setEnvSetScope}
+                    aria-label="Scope"
+                    options={[
+                      { value: "Process", label: "Process (current session)" },
+                      { value: "User", label: "User (Windows, persistent)" },
+                      { value: "Machine", label: "Machine (Windows, admin)" },
+                    ]}
+                  />
                   <Button
                     icon={isLoading("env-set") ? (
                       <Loader2 className="animate-spin" />
@@ -516,25 +515,19 @@ export default function PowerShellPage() {
                   <label className="text-[10px] text-muted-foreground">
                     Type
                   </label>
-                  <select
+                  <Select
                     value={regWriteType}
-                    onChange={(e) => setRegWriteType(e.target.value)}
-                    className={`${inputCls} cursor-pointer`}
-                    style={{ fontSize: "16px" }}
-                  >
-                    {[
+                    onValueChange={setRegWriteType}
+                    aria-label="Type"
+                    options={[
                       "String",
                       "DWord",
                       "QWord",
                       "Binary",
                       "MultiString",
                       "ExpandString",
-                    ].map((t) => (
-                      <option key={t} value={t}>
-                        {t}
-                      </option>
-                    ))}
-                  </select>
+                    ].map((t) => ({ value: t, label: t }))}
+                  />
                   <Button
                     icon={isLoading("reg-write") ? (
                       <Loader2 className="animate-spin" />
@@ -589,17 +582,17 @@ export default function PowerShellPage() {
                   <label className="text-[10px] text-muted-foreground">
                     Status filter (optional)
                   </label>
-                  <select
+                  <Select
                     value={svcStatus}
-                    onChange={(e) => setSvcStatus(e.target.value)}
-                    className={`${inputCls} cursor-pointer`}
-                    style={{ fontSize: "16px" }}
-                  >
-                    <option value="">Any</option>
-                    <option value="running">Running</option>
-                    <option value="stopped">Stopped</option>
-                    <option value="paused">Paused</option>
-                  </select>
+                    onValueChange={setSvcStatus}
+                    aria-label="Status filter (optional)"
+                    options={[
+                      { value: "", label: "Any" },
+                      { value: "running", label: "Running" },
+                      { value: "stopped", label: "Stopped" },
+                      { value: "paused", label: "Paused" },
+                    ]}
+                  />
                   <Button
                     icon={isLoading("svc-list") ? (
                       <Loader2 className="animate-spin" />
@@ -639,20 +632,18 @@ export default function PowerShellPage() {
                   <label className="text-[10px] text-muted-foreground">
                     Action
                   </label>
-                  <select
+                  <Select<typeof svcAction>
                     value={svcAction}
-                    onChange={(e) =>
-                      setSvcAction(e.target.value as typeof svcAction)
-                    }
-                    className={`${inputCls} cursor-pointer`}
-                    style={{ fontSize: "16px" }}
-                  >
-                    <option value="start">start</option>
-                    <option value="stop">stop</option>
-                    <option value="restart">restart</option>
-                    <option value="pause">pause</option>
-                    <option value="resume">resume</option>
-                  </select>
+                    onValueChange={setSvcAction}
+                    aria-label="Action"
+                    options={[
+                      { value: "start", label: "start" },
+                      { value: "stop", label: "stop" },
+                      { value: "restart", label: "restart" },
+                      { value: "pause", label: "pause" },
+                      { value: "resume", label: "resume" },
+                    ]}
+                  />
                   <Button
                     icon={isLoading("svc-control") ? (
                       <Loader2 className="animate-spin" />
@@ -692,20 +683,23 @@ export default function PowerShellPage() {
                 <label className="text-[10px] text-muted-foreground">
                   Log name
                 </label>
-                <select
-                  value={evtLog}
-                  onChange={(e) => setEvtLog(e.target.value)}
-                  className={`${inputCls} cursor-pointer`}
-                  style={{ fontSize: "16px" }}
-                >
-                  {["System", "Application", "Security"].map((l) => (
-                    <option key={l} value={l}>
-                      {l}
-                    </option>
-                  ))}
-                  <option value="custom">Custom…</option>
-                </select>
-                {evtLog === "custom" && (
+                <Select
+                  value={
+                    ["System", "Application", "Security"].includes(evtLog)
+                      ? evtLog
+                      : "custom"
+                  }
+                  onValueChange={setEvtLog}
+                  aria-label="Log name"
+                  options={[
+                    ...["System", "Application", "Security"].map((l) => ({
+                      value: l,
+                      label: l,
+                    })),
+                    { value: "custom", label: "Custom…" },
+                  ]}
+                />
+                {!["System", "Application", "Security"].includes(evtLog) && (
                   <input
                     type="text"
                     className={inputCls}
@@ -717,20 +711,14 @@ export default function PowerShellPage() {
                 <label className="text-[10px] text-muted-foreground">
                   Level
                 </label>
-                <select
+                <Select
                   value={evtLevel}
-                  onChange={(e) => setEvtLevel(e.target.value)}
-                  className={`${inputCls} cursor-pointer`}
-                  style={{ fontSize: "16px" }}
-                >
-                  {["Error", "Warning", "Information", "Critical", "All"].map(
-                    (l) => (
-                      <option key={l} value={l}>
-                        {l}
-                      </option>
-                    ),
+                  onValueChange={setEvtLevel}
+                  aria-label="Level"
+                  options={["Error", "Warning", "Information", "Critical", "All"].map(
+                    (l) => ({ value: l, label: l }),
                   )}
-                </select>
+                />
                 <label className="text-[10px] text-muted-foreground">
                   Count (max 200)
                 </label>

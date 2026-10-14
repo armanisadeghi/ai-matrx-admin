@@ -1,5 +1,6 @@
 "use client";
 
+import { Select } from "@ai-matrx/design-system/controls";
 import { useEffect, useState } from "react";
 import { Field, FieldGroup, PdfDemoShell } from "@/features/pdf-demo/components/PdfDemoShell";
 import {
@@ -86,17 +87,16 @@ export default function StudioDemo() {
           label="Preset"
           hint={activePreset?.usage ?? "Pick a preset id from the studio catalog"}
         >
-          <select
+          <Select
             value={presetId}
-            onChange={(e) => setPresetId(e.target.value)}
-            className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
-          >
-            {renderPresets.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.id} — {p.name}
-              </option>
-            ))}
-          </select>
+            onValueChange={setPresetId}
+            aria-label="Preset"
+            className="w-full"
+            options={renderPresets.map((p) => ({
+              value: p.id,
+              label: `${p.id} — ${p.name}`,
+            }))}
+          />
         </Field>
         <Field label="Operation (from catalog)">
           <code className="rounded bg-muted px-2 py-1 text-sm text-muted-foreground">

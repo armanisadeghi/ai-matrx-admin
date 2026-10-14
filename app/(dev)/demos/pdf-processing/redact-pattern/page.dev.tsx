@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Input } from "@ai-matrx/design-system/controls";
+import { Input, Select } from "@ai-matrx/design-system/controls";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Field,
@@ -93,23 +93,24 @@ export default function RedactPatternDemo() {
           }
         >
           <div className="space-y-2">
-            <select
+            <Select
               value={
                 entries.some((e) => e.id === pattern) ? pattern : "__custom__"
               }
-              onChange={(e) => {
-                if (e.target.value === "__custom__") return;
-                setPattern(e.target.value);
+              onValueChange={(v) => {
+                if (v === "__custom__") return;
+                setPattern(v);
               }}
-              className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
-            >
-              {entries.map((e) => (
-                <option key={e.id} value={e.id}>
-                  {e.id} — {e.description}
-                </option>
-              ))}
-              <option value="__custom__">Custom regex (type below)</option>
-            </select>
+              aria-label="Pattern"
+              className="w-full"
+              options={[
+                ...entries.map((e) => ({
+                  value: e.id,
+                  label: `${e.id} — ${e.description}`,
+                })),
+                { value: "__custom__", label: "Custom regex (type below)" },
+              ]}
+            />
             <Input
               value={pattern}
               onChange={(e) => setPattern(e.target.value)}

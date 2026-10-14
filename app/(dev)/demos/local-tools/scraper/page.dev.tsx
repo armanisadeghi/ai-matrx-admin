@@ -1,5 +1,6 @@
 "use client";
 
+import { Select } from "@ai-matrx/design-system/controls";
 import { useClipboard } from "@ai-matrx/kit/clipboard";
 import { copyNotify } from "@/lib/clipboard/copy-notify";
 import { formatCount, formatDurationMs } from "@ai-matrx/kit/format";
@@ -346,17 +347,16 @@ function SearchPanel({ local }: { local: UseMatrxLocalReturn }) {
             <label className="text-xs font-medium text-muted-foreground">
               Country
             </label>
-            <select
+            <Select
               value={country}
-              onChange={(e) => setCountry(e.target.value)}
-              className="w-full h-8 text-xs rounded border px-2 bg-background"
-            >
-              {["us", "gb", "ca", "au", "de", "fr", "jp"].map((c) => (
-                <option key={c} value={c}>
-                  {c.toUpperCase()}
-                </option>
-              ))}
-            </select>
+              onValueChange={setCountry}
+              aria-label="Country"
+              className="w-full"
+              options={["us", "gb", "ca", "au", "de", "fr", "jp"].map((c) => ({
+                value: c,
+                label: c.toUpperCase(),
+              }))}
+            />
           </div>
           <div className="space-y-1 w-24">
             <label className="text-xs font-medium text-muted-foreground">
@@ -376,17 +376,19 @@ function SearchPanel({ local }: { local: UseMatrxLocalReturn }) {
           <label className="text-xs font-medium text-muted-foreground">
             Freshness
           </label>
-          <select
+          <Select
             value={freshness}
-            onChange={(e) => setFreshness(e.target.value)}
-            className="w-full h-8 text-xs rounded border px-2 bg-background"
-          >
-            <option value="">Any time</option>
-            <option value="pd">Past day</option>
-            <option value="pw">Past week</option>
-            <option value="pm">Past month</option>
-            <option value="py">Past year</option>
-          </select>
+            onValueChange={setFreshness}
+            aria-label="Freshness"
+            className="w-full"
+            options={[
+              { value: "", label: "Any time" },
+              { value: "pd", label: "Past day" },
+              { value: "pw", label: "Past week" },
+              { value: "pm", label: "Past month" },
+              { value: "py", label: "Past year" },
+            ]}
+          />
         </div>
       </div>
 
@@ -526,31 +528,30 @@ function ResearchPanel({ local }: { local: UseMatrxLocalReturn }) {
 
         <div className="space-y-1">
           <label className="text-xs text-muted-foreground">Country</label>
-          <select
+          <Select
             value={country}
-            onChange={(e) => setCountry(e.target.value)}
-            className="h-7 text-xs rounded border px-2 bg-background"
-          >
-            {["us", "gb", "ca", "au", "de", "fr"].map((c) => (
-              <option key={c} value={c}>
-                {c.toUpperCase()}
-              </option>
-            ))}
-          </select>
+            onValueChange={setCountry}
+            aria-label="Country"
+            options={["us", "gb", "ca", "au", "de", "fr"].map((c) => ({
+              value: c,
+              label: c.toUpperCase(),
+            }))}
+          />
         </div>
 
         <div className="space-y-1">
           <label className="text-xs text-muted-foreground">Freshness</label>
-          <select
+          <Select
             value={freshness}
-            onChange={(e) => setFreshness(e.target.value)}
-            className="h-7 text-xs rounded border px-2 bg-background"
-          >
-            <option value="">Any</option>
-            <option value="pd">Past day</option>
-            <option value="pw">Past week</option>
-            <option value="pm">Past month</option>
-          </select>
+            onValueChange={setFreshness}
+            aria-label="Freshness"
+            options={[
+              { value: "", label: "Any" },
+              { value: "pd", label: "Past day" },
+              { value: "pw", label: "Past week" },
+              { value: "pm", label: "Past month" },
+            ]}
+          />
         </div>
 
         <div className="flex gap-2 ml-auto mt-4">

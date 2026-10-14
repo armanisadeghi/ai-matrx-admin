@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Input } from "@ai-matrx/design-system/controls";
+import { Input, Select } from "@ai-matrx/design-system/controls";
 import { Field, FieldGroup, PdfDemoShell } from "@/features/pdf-demo/components/PdfDemoShell";
 import {
   EMPTY_PDF_SOURCE,
@@ -59,14 +59,16 @@ export default function FlattenAnnotationsDemo() {
           />
         </Field>
         <Field label="Bake form widgets too" hint="default on">
-          <select
+          <Select
             value={String(widgets)}
-            onChange={(e) => setWidgets(e.target.value === "true")}
-            className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
-          >
-            <option value="true">Yes — flatten widgets too</option>
-            <option value="false">No — annotations only</option>
-          </select>
+            onValueChange={(v) => setWidgets(v === "true")}
+            aria-label="Bake form widgets too"
+            className="w-full"
+            options={[
+              { value: "true", label: "Yes — flatten widgets too" },
+              { value: "false", label: "No — annotations only" },
+            ]}
+          />
         </Field>
       </FieldGroup>
     </PdfDemoShell>

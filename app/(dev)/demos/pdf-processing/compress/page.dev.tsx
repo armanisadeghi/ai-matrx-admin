@@ -1,5 +1,6 @@
 "use client";
 
+import { Select } from "@ai-matrx/design-system/controls";
 import { useState } from "react";
 import AppLink from "@/components/navigation/AppLink";
 import { ArrowLeft, Loader2, Play, AlertTriangle } from "lucide-react";
@@ -123,19 +124,16 @@ export default function CompressDemo() {
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <label className="flex flex-col gap-1 text-sm">
             <span className="font-medium">Level (minimum tier)</span>
-            <select
-              value={level}
-              onChange={(e) =>
-                setLevel(Number(e.target.value) as CompressLevel)
-              }
-              className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
-            >
-              {([1, 2, 3, 4, 5] as const).map((lvl) => (
-                <option key={lvl} value={lvl}>
-                  {LEVEL_LABELS[lvl]}
-                </option>
-              ))}
-            </select>
+            <Select
+              value={String(level)}
+              onValueChange={(v) => setLevel(Number(v) as CompressLevel)}
+              aria-label="Level (minimum tier)"
+              className="w-full"
+              options={([1, 2, 3, 4, 5] as const).map((lvl) => ({
+                value: String(lvl),
+                label: LEVEL_LABELS[lvl],
+              }))}
+            />
           </label>
           <label className="flex flex-col gap-1 text-sm">
             <span className="font-medium">

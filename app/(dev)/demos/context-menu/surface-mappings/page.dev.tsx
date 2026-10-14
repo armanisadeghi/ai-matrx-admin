@@ -22,6 +22,7 @@
  * All imports are the production functions — nothing here is reimplemented.
  */
 
+import { Select } from "@ai-matrx/design-system/controls";
 import { useEffect, useMemo, useState } from "react";
 import {
   AlertTriangle,
@@ -372,20 +373,16 @@ export default function SurfaceMappingsDemoPage() {
           {/* Surface picker */}
           <section className={`${PANEL} p-2.5 flex flex-col gap-2`}>
             <h2 className={PANEL_TITLE}>2 · Surface</h2>
-            <select
+            <Select
               value={surfaceName}
-              onChange={(e) => {
-                setSurfaceName(e.target.value);
-                reseedScope(e.target.value);
+              onValueChange={(v) => {
+                setSurfaceName(v);
+                reseedScope(v);
               }}
-              className="h-11 w-full rounded border border-border bg-background px-2 text-[16px] outline-none focus:ring-1 focus:ring-primary sm:h-9 sm:text-sm"
-            >
-              {surfaceNames.map((n) => (
-                <option key={n} value={n}>
-                  {n}
-                </option>
-              ))}
-            </select>
+              aria-label="Surface"
+              className="w-full"
+              options={surfaceNames.map((n) => ({ value: n, label: n }))}
+            />
             <div className="space-y-1 text-xs text-muted-foreground">
               <p>
                 Inheritance chain:{" "}

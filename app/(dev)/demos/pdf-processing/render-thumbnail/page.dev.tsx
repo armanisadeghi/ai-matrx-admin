@@ -1,5 +1,6 @@
 "use client";
 
+import { Select } from "@ai-matrx/design-system/controls";
 import { ClampedNumberInput } from "@/components/official/ClampedNumberInput";
 import { useState } from "react";
 import { Field, FieldGroup, PdfDemoShell } from "@/features/pdf-demo/components/PdfDemoShell";
@@ -65,17 +66,13 @@ export default function RenderThumbnailDemo() {
           <ClampedNumberInput value={maxSide} min={32} max={2048} onChange={setMaxSide} />
         </Field>
         <Field label="Format">
-          <select
+          <Select<(typeof FORMATS)[number]>
             value={fmt}
-            onChange={(e) => setFmt(e.target.value as (typeof FORMATS)[number])}
-            className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
-          >
-            {FORMATS.map((f) => (
-              <option key={f} value={f}>
-                {f}
-              </option>
-            ))}
-          </select>
+            onValueChange={setFmt}
+            aria-label="Format"
+            className="w-full"
+            options={FORMATS.map((f) => ({ value: f, label: f }))}
+          />
         </Field>
         <Field label="JPEG / WebP quality">
           <ClampedNumberInput value={jpegQuality} min={1} max={100} onChange={setJpegQuality} />

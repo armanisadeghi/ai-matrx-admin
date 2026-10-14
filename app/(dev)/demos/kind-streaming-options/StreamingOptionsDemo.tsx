@@ -19,6 +19,7 @@
  * behavior.
  */
 
+import { Button, Select } from "@ai-matrx/design-system/controls";
 import { useCallback, useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import { Play, RotateCcw, Zap } from "lucide-react";
@@ -318,41 +319,32 @@ function KindStreamCard({ demo }: { demo: DemoKind }) {
         </span>
         <span className="text-xs text-muted-foreground">{demo.label}</span>
         <span className="ml-auto" />
-        <select
+        <Select<Mode>
           value={mode}
-          onChange={(e) => setMode(e.target.value as Mode)}
-          className="rounded-md border border-border bg-card px-2 py-1 text-xs text-foreground"
+          onValueChange={setMode}
           aria-label={`Rendering posture for ${demo.kind}`}
-        >
-          {(Object.keys(MODE_LABEL) as Mode[]).map((m) => (
-            <option key={m} value={m}>
-              {MODE_LABEL[m]}
-            </option>
-          ))}
-        </select>
-        <button
-          type="button"
+          options={(Object.keys(MODE_LABEL) as Mode[]).map((m) => ({
+            value: m,
+            label: MODE_LABEL[m],
+          }))}
+        />
+        <Button
+          variant="primary"
           onClick={play}
           disabled={running}
-          className="inline-flex items-center gap-1 rounded-md bg-primary px-2.5 py-1 text-xs font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50"
+          icon={complete ? <RotateCcw /> : <Play />}
         >
-          {complete ? (
-            <RotateCcw className="h-3 w-3" />
-          ) : (
-            <Play className="h-3 w-3" />
-          )}
           {complete ? "Replay" : "Play"}
-        </button>
-        <button
-          type="button"
+        </Button>
+        <Button
+          variant="outline"
           onClick={() => run(true)}
           disabled={running}
           title="Skip the stream — render the complete value at once (the DB-load path); must look identical to the streamed end state"
-          className="inline-flex items-center gap-1 rounded-md border border-border bg-card px-2.5 py-1 text-xs font-medium text-foreground hover:bg-accent disabled:opacity-50"
+          icon={<Zap />}
         >
-          <Zap className="h-3 w-3" />
           Instant
-        </button>
+        </Button>
       </div>
       {/* Fixed-height stage: the card NEVER changes shape while content
           streams — content scrolls inside; the final render persists until
