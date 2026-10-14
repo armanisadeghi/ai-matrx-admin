@@ -45,6 +45,9 @@ import { roundFailed } from "./roundFailure";
 import { SmartAddSlots } from "./SmartAddSlots";
 import { typedItems, useRunMemory, type WebMark } from "./runMemory";
 import { withoutStaffFacts } from "./staff";
+import { claimSite } from "./siteOwnership";
+import { liveSiteClaimDeps } from "./siteOwnershipLive";
+import type { KeyPerson } from "./keyPeople";
 import { SmartAddHero, stageLogo, stageLogos, stageName, type PersonMore } from "./SmartAddHero";
 import { Shared, riseIn } from "./stage/Shared";
 import { useSessionKnob } from "@/lib/scoped-config/sessionKnob";
@@ -297,6 +300,8 @@ export function SmartAddBrand({
   const [kindBoth, setKindBoth] = useState(false);
   // The header label's default: the entity-kind step's answer, unless the person changed the label themselves.
   const kindLabel = useEntityKindLabel(kindBoth ? "both" : person ? "person" : "business");
+  // The key-people step's people (mandate brand_intake.key_people_finder), newest round's answer.
+  const [keyPeople, setKeyPeople] = useState<KeyPerson[]>([]);
 
   const [creating, setCreating] = useState(false);
   const [createError, setCreateError] = useState<string | null>(null);
@@ -441,6 +446,7 @@ export function SmartAddBrand({
     setPersonSignals(null);
     setKindBoth(false);
     kindLabel.reset();
+    setKeyPeople([]);
     resetHelperAnswers();
   };
 
@@ -1071,16 +1077,16 @@ export function SmartAddBrand({
       for (const url of [basics.websiteUrl, ...basics.otherWebsites, ...webSites].filter((u): u is string => Boolean(u))) {
         try {
           const parsedUrl = normalizeWebsiteUrl(url);
-          const site = await createSite({
+          // Never reassign a site another brand already tracks: say so and give this brand its own
+          // website row; moving it is the person's explicit choice.
+          const claim = await claimSite(liveSiteClaimDeps, {
             organizationId,
-            name: parsedUrl.hostname,
-            rootUrl: parsedUrl.toString(),
-            domain: parsedUrl.hostname.toLowerCase(),
             brandId: brand.id,
+            rootUrl: parsedUrl.toString(),
+            host: parsedUrl.hostname.toLowerCase(),
           });
-          // An address already saved as a site comes back as that site: link it to THIS brand.
-          if (site.brand_id !== brand.id) await moveSiteBrand(site.id, brand.id);
-          siteIds.push(site.id);
+          if (claim.kind === "tracked-elsewhere") problems.push(claim.note);
+          else siteIds.push(claim.site.id);
         } catch (error) {
           problems.push(`${websiteHost(url)}: ${extractErrorMessage(error)}`);
         }
@@ -1343,6 +1349,7 @@ export function SmartAddBrand({
             }
             onSignals={setPersonSignals}
             onEntityKind={kindLabel.suggest}
+            onKeyPeople={setKeyPeople}
             onPath={(p) => onPath(r.runId as string, p)}
             onScreenshots={setScreenshots}
             onView={onView}
@@ -1607,6 +1614,7 @@ export function SmartAddBrand({
         <SmartAddSlots
           personAnchors={person ? knownAnchors : undefined}
           items={visible}
+          keyPeople={keyPeople}
           decisions={decisions}
           working={working}
           started={rounds.length > 0}

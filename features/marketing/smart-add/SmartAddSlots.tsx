@@ -30,6 +30,7 @@ import { collapseAliasedAccounts, compareRows, customItem, websiteHost, type Can
 import { accountHandleLine, CUSTOM_RELATION, CustomAdd, CustomRelation, OpenLink, relationWayOut, useRelationKinds } from "./SmartAddExtras";
 import { webCandidate } from "./relations";
 import { isStaffAccount } from "./staff";
+import { keyPeopleRows, personTitle, type KeyPerson } from "./keyPeople";
 import { brightnessOf, shadeForBrightness } from "./logo-shade";
 import { LogoEnlarge, SourcesBadge, useLogoGroups, type LogoGroup, type SourceControls } from "./logoGroups";
 import { profileUrlFor } from "@/features/marketing/social/link";
@@ -72,6 +73,7 @@ function whereOf(item: EvidenceItem): string {
 export function SmartAddSlots({
   personAnchors,
   items,
+  keyPeople = [],
   decisions,
   working,
   started,
@@ -90,6 +92,8 @@ export function SmartAddSlots({
   onSeparate,
 }: {
   items: EvidenceItem[];
+  /** The key-people step's people (aidream brand_intake.key_people_finder): they enrich staff rows or add their own. */
+  keyPeople?: KeyPerson[];
   decisions: Record<string, Decision>;
   working: boolean;
   /** False until the first identify round starts: empty slots stay quiet. */
@@ -126,6 +130,8 @@ export function SmartAddSlots({
   // A business's person-only profiles (LinkedIn /in/) are its staff: Key people, never its accounts.
   const staff = allAccounts.filter((i) => isStaffAccount(i, person));
   const socials = allAccounts.filter((i) => !isStaffAccount(i, person));
+  // The key-people agent's people: the staff row a person IS gets their title; everyone else is a row of their own.
+  const people = person ? { byStaff: new Map<string, KeyPerson>(), extra: [] } : keyPeopleRows(keyPeople, staff);
   const { kinds, onCustom } = useRelationKinds(onRelate);
   // Near-identical images (one mark from the site and every profile) show as ONE tile; an answer reaches every source.
   const logoGroups = useLogoGroups(of("logo"), separated);
@@ -401,7 +407,7 @@ export function SmartAddSlots({
         ))}
       </Slot>
 
-      {staff.length ? (
+      {staff.length || people.extra.length ? (
         <Slot title="Key people" ask="On your team?" empty={null}>
           {staff.map((i) => (
             <Row
@@ -422,7 +428,26 @@ export function SmartAddSlots({
                 <Shared id={i.key} className="shrink-0">
                   <Avatar item={i} />
                 </Shared>
-                <AccountText item={i} name={i.label ?? null} />
+                <AccountText item={i} name={withTitle(i.label, people.byStaff.get(i.key))} />
+              </span>
+            </Row>
+          ))}
+          {people.extra.map((i) => (
+            <Row
+              key={i.key}
+              item={i}
+              decision={decisions[i.key] ?? null}
+              note={isKeyPerson(i) ? null : noteOf(i)}
+              below={below(i)}
+              actions={
+                <>
+                  {staffChoices(i)}
+                  {i.url ? <OpenLink url={i.url} /> : null}
+                </>
+              }
+            >
+              <span className="min-w-0 truncate" data-testid="smart-add-key-person">
+                {withTitle(i.value, keyPeople.find((p) => p.name === i.value))}
               </span>
             </Row>
           ))}
@@ -831,4 +856,11 @@ function accountUrl(item: EvidenceItem, candidate: Candidate | undefined): strin
 function photoOf(photo: EvidenceItem | undefined, row: EvidenceItem): Partial<EvidenceItem> {
   if (!photo || photo.platform !== row.platform) return {};
   return { profile_id: photo.profile_id, image_url: photo.image_url };
+}
+
+/** "Gaston Wilder · Senior Managing Partner" — the key-people agent's title beside the name, when it has one. */
+function withTitle(name: string | null, p: KeyPerson | undefined): string | null {
+  const title = p ? personTitle(p) : "";
+  const shown = name ?? p?.name ?? null;
+  return shown && title ? `${shown} · ${title}` : shown;
 }
