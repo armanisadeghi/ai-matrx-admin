@@ -583,11 +583,6 @@
       "index": "scraper.scrape_domain_settings:scrape_domain_settings_domain_id_key",
       "reason": "domain_id is a one-to-one extension of a scrape-domain identity. Settings changes belong on that single durable row, so archive cannot fork one domain's crawler configuration across duplicate settings records.",
       "ruled": "Ship-all source-backed lifetime-identity ruling, 2026-10-14 — matrx-scraper domain configuration schema and server lookup paths inspected"
-    },
-    {
-      "index": "ops.test_replay_cache:test_replay_cache_cache_key_key",
-      "reason": "cache_key is the deterministic SHA-256 identity of an identical provider, method, endpoint and complete parameter set. clear_test_cache archives the cached response; store uses ON CONFLICT (cache_key) with deleted_at = NULL to replace and revive that same identity after the next real call. Global uniqueness is required for this conflict target and prevents competing cache rows; a live-only partial index would break the existing upsert.",
-      "ruled": "Ship-all source-backed cache-identity ruling, 2026-10-14 — aidream/services/runtime/admin_replay_cache.py cache_key, store and clear_test_cache; tests/test_admin_replay_cache.py clear lifecycle inspected"
     }
   ]
 }
