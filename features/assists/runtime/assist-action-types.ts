@@ -44,7 +44,7 @@ export interface AssistActionContext {
     workingMessage: string;
     completeMessage?: string;
   }) => Promise<AssistActionResult>;
-  /** Client-side navigation. */
+  /** Open a route — always a new tab (lib/notice-open/openFromNotice.ts). */
   navigate: (href: string) => void;
   /**
    * Hand a workspace's queued capture pages to the person's own Chrome

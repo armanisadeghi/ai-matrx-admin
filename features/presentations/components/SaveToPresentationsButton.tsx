@@ -16,6 +16,7 @@ import { useAppSelector } from "@/lib/redux/hooks";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
 import { isServiceFailure } from "@/features/data-tables/types";
 import { createPresentation } from "../presentation-service";
+import { openFromNotice } from "@/lib/notice-open/openFromNotice";
 
 export function SaveToPresentationsButton({ deck, title }: { deck: unknown; title?: string }) {
   const router = useRouter();
@@ -44,7 +45,7 @@ export function SaveToPresentationsButton({ deck, title }: { deck: unknown; titl
       if (isServiceFailure(res)) throw new Error(res.error);
       setSavedId(res.data.id);
       toast.success("Saved to Presentations", {
-        action: { label: "Open", onClick: () => router.push(`/presentations/${res.data.id}`) },
+        action: { label: "Open", onClick: () => openFromNotice(`/presentations/${res.data.id}`) },
       });
     } catch (err) {
       toast.error("Could not save the deck", { description: err instanceof Error ? err.message : String(err) });

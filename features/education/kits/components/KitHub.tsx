@@ -98,6 +98,7 @@ import { fetchEducationLibraryPage } from "@/features/education/library/service"
 import type { EducationLibraryRow } from "@/features/education/library/types";
 import { DEFAULT_ENTITY_LIST_QUERY } from "@/lib/entity-list/types";
 import { Chip, ChipSet } from "@ai-matrx/design-system/controls";
+import { openFromNotice } from "@/lib/notice-open/openFromNotice";
 
 const FORMAT_PROMISE: Record<TargetKind, string> = {
   deck: "Build recall one card at a time.",
@@ -670,7 +671,7 @@ export function KitHub({
             void restoreKit(archived).then(
               () => {
                 toast.success(`Put back "${kit.title}".`);
-                router.push(kitHref(archived.sourceType, archived.sourceId));
+                openFromNotice(kitHref(archived.sourceType, archived.sourceId));
               },
               (err: unknown) => toast.error(err instanceof Error ? err.message : "It could not be put back."),
             ),

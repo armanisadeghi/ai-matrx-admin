@@ -72,6 +72,7 @@ import type { OutlineSection } from "@/features/education/kits/outline/types";
 import { gapSections, type GenerationSteer } from "./steering";
 import { announceLineage } from "./announceLineage";
 import { recordSourceLineage } from "./recordSourceLineage";
+import { openFromNotice } from "@/lib/notice-open/openFromNotice";
 
 interface TargetMeta {
   kind: TargetKind;
@@ -310,7 +311,7 @@ export function ConvertContentDialog({
         inKit: Boolean(source.ref?.kitId),
       });
       toast.success(`Created "${result.title}"`, {
-        action: { label: "Open", onClick: () => router.push(result.href) },
+        action: { label: "Open", onClick: () => openFromNotice(result.href) },
       });
       return true;
     } catch (e) {

@@ -4,7 +4,6 @@ import { GmailLogo, GoogleG } from "@/components/icons/google-brand";
 import { InfoHint } from "@/components/official/InfoHint";
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import {
   CheckCircle2,
   ChevronDown,
@@ -101,6 +100,7 @@ import {
 
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
+import { openFromNotice } from "@/lib/notice-open/openFromNotice";
 type BusyAction =
   | "connect-files"
   | "enable-gmail"
@@ -193,7 +193,6 @@ interface GoogleWorkspaceReviewWorkspaceProps {
 export function GoogleWorkspaceReviewWorkspace({
   pickerInitialQuery,
 }: GoogleWorkspaceReviewWorkspaceProps) {
-  const router = useRouter();
   const dispatch = useAppDispatch();
   const google = useGoogleAPI();
   // 🚨 ONE Google authorization window per PERSON — never a per-component
@@ -529,7 +528,7 @@ export function GoogleWorkspaceReviewWorkspace({
         "Your organization asks a person to review this kind of change before it is written. Nothing in Google has changed yet.",
       action: {
         label: "Open the approval",
-        onClick: () => router.push(approvalQueueHref(assistId)),
+        onClick: () => openFromNotice(approvalQueueHref(assistId)),
       },
     });
   };

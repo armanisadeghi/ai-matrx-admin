@@ -1,11 +1,11 @@
 "use client";
 
 import { useEffect } from "react";
-import { useRouter } from "next/navigation";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
 import { toast } from "@/lib/toast";
 import { useOrganizationCap } from "./useOrganizationCap";
+import { openFromNotice } from "@/lib/notice-open/openFromNotice";
 
 const REMINDED_KEY = "matrx:organization-cap-reminded";
 
@@ -15,7 +15,6 @@ const REMINDED_KEY = "matrx:organization-cap-reminded";
  * archive enough to get back under it. Nothing is taken away from them.
  */
 export function OrganizationCapReminder() {
-  const router = useRouter();
   const userId = useAppSelector(selectUserId);
   const { ready, overCap, count, cap } = useOrganizationCap(true, { deferToIdle: true });
 
@@ -32,10 +31,10 @@ export function OrganizationCapReminder() {
       duration: Infinity,
       action: {
         label: "Manage",
-        onClick: () => router.push("/organizations"),
+        onClick: () => openFromNotice("/organizations"),
       },
     });
-  }, [ready, overCap, count, cap, userId, router]);
+  }, [ready, overCap, count, cap, userId]);
 
   return null;
 }

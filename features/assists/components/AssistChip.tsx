@@ -174,6 +174,7 @@ export function AssistChip({
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>{collapsedChip}</PopoverTrigger>
       <PopoverContent
+        data-matrx-notice-surface=""
         align="end"
         sideOffset={6}
         onMouseEnter={cancelClose}

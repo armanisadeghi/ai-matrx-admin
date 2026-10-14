@@ -1,5 +1,5 @@
 /**
- * `navigate` — accepting the assist takes the user to the place where the
+ * `navigate` — accepting the assist opens, in a NEW TAB, the place where the
  * thing happens (a savior page, a fix surface, a wizard).
  */
 
@@ -11,7 +11,7 @@ import type {
 export const navigateAssistAction: AssistActionDefinition = {
   label: "Open page",
   kind: "navigate",
-  description: "Client-side navigate to the assist's href.",
+  description: "Open the assist's href in a new tab — an assist never moves the page.",
   handler: async (assist, ctx): Promise<AssistActionResult> => {
     if (assist.action.kind !== "navigate") {
       return { ok: false, error: "navigate: wrong action payload" };

@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
 import { toast } from "@/lib/toast";
 import { Settings2, Trash2 } from "lucide-react";
 import type { Layout } from "react-resizable-panels";
@@ -47,6 +46,7 @@ import { EditableSessionTitle } from "./EditableSessionTitle";
 // from the moment any session view mounts. Adding a new module is a one-line
 // import inside `modules/index.ts`.
 import "../modules";
+import { openFromNotice } from "@/lib/notice-open/openFromNotice";
 
 interface ActiveSessionViewProps {
   session: StudioSession;
@@ -132,7 +132,6 @@ export function ActiveSessionView({
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const isMobile = useIsMobile();
-  const router = useRouter();
 
   const subtitle = useMemo(() => {
     const created = new Date(session.createdAt).toLocaleString(undefined, {
@@ -177,7 +176,7 @@ export function ActiveSessionView({
               toast.success("Transcript indexed for Knowledge", {
                 action: {
                   label: "View in library",
-                  onClick: () => router.push("/knowledge/library"),
+                  onClick: () => openFromNotice("/knowledge/library"),
                 },
               });
             }}

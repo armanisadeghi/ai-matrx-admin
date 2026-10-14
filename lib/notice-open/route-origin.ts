@@ -1,5 +1,5 @@
 /**
- * Resolve an assist's route against the deployment profile that owns it.
+ * Resolve a route against the deployment profile that owns it.
  *
  * The production app is split across main, admin, and demos origins. Sending a
  * route that the current build does not contain through Next's client router
@@ -8,10 +8,10 @@
  * navigation. Resolve that host boundary before Next sees the route.
  */
 
-export type AssistNavigationTarget =
+export type RouteOriginTarget =
   { kind: "router"; href: string } | { kind: "document"; href: string };
 
-interface AssistNavigationConfig {
+export interface RouteOriginConfig {
   profile: string;
   currentOrigin: string;
   mainOrigin: string;
@@ -26,10 +26,10 @@ function isSurfacePath(pathname: string, prefix: string): boolean {
   return pathname === prefix || pathname.startsWith(`${prefix}/`);
 }
 
-export function resolveAssistNavigation(
+export function resolveRouteOrigin(
   href: string,
-  config: AssistNavigationConfig,
-): AssistNavigationTarget {
+  config: RouteOriginConfig,
+): RouteOriginTarget {
   const requested = new URL(href, config.currentOrigin);
 
   // An explicit external URL keeps its declared destination. It still needs a

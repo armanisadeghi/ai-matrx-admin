@@ -12,16 +12,15 @@
 // as port candidates.
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { toast } from "@/lib/toast";
 import { Database, Trash2, ArrowRightLeft, Info } from "lucide-react";
 import { ProcessForRagButton } from "@/features/rag/components/ProcessForRagButton";
 import { useNoteIngestStatus } from "@/features/notes/hooks/useNoteIngestStatus";
 import { SOURCES_PATH } from "@/features/knowledge/modulePaths";
+import { openFromNotice } from "@/lib/notice-open/openFromNotice";
 
 /** The salvaged cluster, faithful to the deleted NoteToolbar (lines 174-210). */
 function RagCluster({ noteId }: { noteId: string | null }) {
-  const router = useRouter();
   const ingest = useNoteIngestStatus(noteId);
   return (
     <div className="flex items-center gap-2">
@@ -42,7 +41,7 @@ function RagCluster({ noteId }: { noteId: string | null }) {
           toast.success("Note indexed for Knowledge", {
             action: {
               label: "View in library",
-              onClick: () => router.push(SOURCES_PATH),
+              onClick: () => openFromNotice(SOURCES_PATH),
             },
           });
         }}

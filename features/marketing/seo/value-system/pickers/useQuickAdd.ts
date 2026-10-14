@@ -15,7 +15,6 @@
  */
 
 import { useCallback } from "react";
-import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "@/lib/toast";
 import { extractErrorMessage } from "@/utils/errors";
@@ -26,6 +25,7 @@ import {
   QuickAddRefusal,
   type QuickAddedValue,
 } from "../quick-add";
+import { openFromNotice } from "@/lib/notice-open/openFromNotice";
 
 export interface QuickAddInput {
   /** The dimension they picked, or null when they are naming a new one. */
@@ -35,7 +35,6 @@ export interface QuickAddInput {
 }
 
 export function useQuickAdd(siteId: string) {
-  const router = useRouter();
   const queryClient = useQueryClient();
   const site = useMarketingSiteOptional();
   const dimensionsHref = marketingRoutes.site(
@@ -81,7 +80,7 @@ export function useQuickAdd(siteId: string) {
             description: "It lives in your dimensions, where you can describe it, reorder it or rename it.",
             action: {
               label: "Open dimensions",
-              onClick: () => router.push(dimensionsHref),
+              onClick: () => openFromNotice(dimensionsHref),
             },
           },
         );
@@ -95,7 +94,7 @@ export function useQuickAdd(siteId: string) {
               "Create your own dimension for this and its choices are yours to set.",
             action: {
               label: "Make my own dimension",
-              onClick: () => router.push(dimensionsHref),
+              onClick: () => openFromNotice(dimensionsHref),
             },
           });
           return null;
@@ -106,7 +105,7 @@ export function useQuickAdd(siteId: string) {
         return null;
       }
     },
-    [siteId, queryClient, dimensionsHref, router],
+    [siteId, queryClient, dimensionsHref],
   );
 
   return { quickAdd: run, dimensionsHref };

@@ -110,6 +110,7 @@ import {
   rowInSegment,
   type AccountSegment,
 } from "../lib/accountSegments";
+import { openFromNotice } from "@/lib/notice-open/openFromNotice";
 
 const ROSTER_PAGE_SIZE = 50;
 
@@ -430,7 +431,7 @@ function AccountsRoster() {
         {
           action: {
             label: "Open thread",
-            onClick: () => router.push("/messages"),
+            onClick: () => openFromNotice("/messages"),
           },
         },
       );
@@ -441,7 +442,7 @@ function AccountsRoster() {
     } finally {
       setDmSending(false);
     }
-  }, [dmTarget, dmContent, dmSending, researchOwnerId, router, selectedOrganizationId, setDmTarget, setDmContent]);
+  }, [dmTarget, dmContent, dmSending, researchOwnerId, selectedOrganizationId, setDmTarget, setDmContent]);
 
   const columns = useMemo((): MatrxColumnDef<AdminUserRow>[] => {
     return [

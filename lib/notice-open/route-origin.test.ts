@@ -1,4 +1,4 @@
-import { resolveAssistNavigation } from "./navigation";
+import { resolveRouteOrigin } from "./route-origin";
 
 const origins = {
   currentOrigin: "https://www.aimatrx.com",
@@ -7,10 +7,10 @@ const origins = {
   demosOrigin: "https://demos.aimatrx.com",
 };
 
-describe("resolveAssistNavigation", () => {
+describe("resolveRouteOrigin", () => {
   it("sends an admin deep link straight to the admin document from the slim app", () => {
     expect(
-      resolveAssistNavigation(
+      resolveRouteOrigin(
         "/administration/agents/hindsight?enrollment=e-1&finding=f-1",
         { ...origins, profile: "slim" },
       ),
@@ -22,7 +22,7 @@ describe("resolveAssistNavigation", () => {
 
   it("keeps the same admin deep link in Next when the build contains admin routes", () => {
     expect(
-      resolveAssistNavigation("/administration/agents/hindsight", {
+      resolveRouteOrigin("/administration/agents/hindsight", {
         ...origins,
         profile: "full",
       }),
@@ -31,7 +31,7 @@ describe("resolveAssistNavigation", () => {
 
   it("sends a main-app assist directly home from the admin satellite", () => {
     expect(
-      resolveAssistNavigation("/assists", {
+      resolveRouteOrigin("/assists", {
         ...origins,
         profile: "admin",
         currentOrigin: "https://manage.aimatrx.com",
@@ -44,7 +44,7 @@ describe("resolveAssistNavigation", () => {
 
   it("preserves query strings and fragments across the demos boundary", () => {
     expect(
-      resolveAssistNavigation("/demos/tool?case=42#result", {
+      resolveRouteOrigin("/demos/tool?case=42#result", {
         ...origins,
         profile: "core",
       }),
@@ -56,7 +56,7 @@ describe("resolveAssistNavigation", () => {
 
   it("uses document navigation for an explicitly external URL", () => {
     expect(
-      resolveAssistNavigation("https://example.com/fix", {
+      resolveRouteOrigin("https://example.com/fix", {
         ...origins,
         profile: "slim",
       }),

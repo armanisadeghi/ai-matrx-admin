@@ -427,6 +427,7 @@ export default function AdminAttentionDock() {
     return (
       <div
         ref={setCardElement}
+        data-matrx-notice-surface=""
         className="z-50 flex items-center gap-1 shadow-xl"
         style={float.style}
         data-surface-value="admin_attention_dock_collapsed"
@@ -462,6 +463,7 @@ export default function AdminAttentionDock() {
   return (
     <div
       ref={setCardElement}
+      data-matrx-notice-surface=""
       className={shell}
       style={float.style}
       data-surface-value="admin_attention_dock"
@@ -530,6 +532,8 @@ export default function AdminAttentionDock() {
                 </h3>
                 {source.review && (
                   <AppLink
+                  target="_blank"
+                  rel="noopener"
                     href={source.review.href}
                     className="text-[11px] text-muted-foreground underline-offset-2 hover:text-primary hover:underline"
                   >
@@ -551,6 +555,8 @@ export default function AdminAttentionDock() {
               </ul>
               {hidden > 0 && source.review && (
                 <AppLink
+                  target="_blank"
+                  rel="noopener"
                   href={source.review.href}
                   className="mt-1 inline-block text-[11px] text-muted-foreground underline-offset-2 hover:text-primary hover:underline"
                   data-testid={`attention-more-${source.id}`}
@@ -563,6 +569,8 @@ export default function AdminAttentionDock() {
               )}
               {source.delegated && source.delegated.count > 0 && (
                 <AppLink
+                  target="_blank"
+                  rel="noopener"
                   href={source.delegated.href}
                   className="mt-1 inline-block text-[11px] text-muted-foreground underline-offset-2 hover:text-primary hover:underline"
                   data-testid={`attention-delegated-${source.id}`}
@@ -574,6 +582,8 @@ export default function AdminAttentionDock() {
           ))}
           {notice && notice.preparedByAgents > 0 && (
             <AppLink
+                  target="_blank"
+                  rel="noopener"
               href={ATTENTION_REVIEW_HREF}
               className="mt-2 block text-[11px] text-muted-foreground underline-offset-2 hover:text-primary hover:underline"
               data-testid="attention-prepared-by-agents"

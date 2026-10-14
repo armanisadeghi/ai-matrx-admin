@@ -11,7 +11,6 @@
 import { useClipboard } from "@ai-matrx/kit/clipboard";
 import { copyNotify } from "@/lib/clipboard/copy-notify";
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
 import { toast } from "@/lib/toast";
 import {
   Zap,
@@ -90,6 +89,7 @@ import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { SOURCES_PATH } from "@/features/knowledge/modulePaths";
 import { openOutbound } from "@ai-matrx/kit/outbound";
+import { openFromNotice } from "@/lib/notice-open/openFromNotice";
 
 interface ScrapeItemState {
   loading: boolean;
@@ -111,7 +111,6 @@ export function ScraperFloatingWorkspace({
     notify: copyNotify,
   });
   const dispatch = useAppDispatch();
-  const router = useRouter();
   const keywordForm = useScraperKeywordSearchForm();
 
   const [mode, setMode] = useState<WorkspaceMode>(
@@ -502,7 +501,7 @@ export function ScraperFloatingWorkspace({
             toast.success("Page indexed for Knowledge", {
               action: {
                 label: "View in library",
-                onClick: () => router.push(SOURCES_PATH),
+                onClick: () => openFromNotice(SOURCES_PATH),
               },
             });
           }}

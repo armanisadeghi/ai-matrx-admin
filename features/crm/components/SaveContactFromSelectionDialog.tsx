@@ -20,7 +20,6 @@
 //      the result is a DOOR — the saved record opens at /crm/[id].
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import { Building2, Save, User } from "lucide-react";
 import {
   Dialog,
@@ -51,6 +50,7 @@ import {
   type SaveContactPageFacts,
 } from "../agent-context/saveContactOfferedValues";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { openFromNotice } from "@/lib/notice-open/openFromNotice";
 
 export interface SaveContactFromSelectionDialogProps {
   isOpen: boolean;
@@ -92,7 +92,6 @@ export function SaveContactFromSelectionDialog({
   selection,
   origin,
 }: SaveContactFromSelectionDialogProps) {
-  const router = useRouter();
   const mandate = useMandate(CRM_SAVE_CONTACT_AGENT_MANDATE);
   const live = useLiveAgentRun();
   const openLiveRun = useOpenLiveRunWindow();
@@ -192,7 +191,7 @@ export function SaveContactFromSelectionDialog({
             : "Matched an existing record instead of creating a duplicate.",
           action: {
             label: "Open contact",
-            onClick: () => router.push(href),
+            onClick: () => openFromNotice(href),
           },
         },
       );

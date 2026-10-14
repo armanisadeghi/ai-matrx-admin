@@ -28,6 +28,7 @@ import { getVirtualSource } from "@/features/files/virtual-sources/registry";
 import { buildPreviewActions } from "./preview-actions";
 import { editHandoffFor, requestEditTab } from "./edit-handoff";
 import type { PreviewerAction } from "./PreviewerActionBar/PreviewerActionBar";
+import { openFromNotice } from "@/lib/notice-open/openFromNotice";
 
 /** Every preview action for the file, or `[]` while it is not in the store. */
 export function usePreviewActions(fileId: string): PreviewerAction[] {
@@ -137,7 +138,7 @@ export function usePreviewActions(fileId: string): PreviewerAction[] {
                 action: {
                   label: "Open extraction",
                   onClick: () =>
-                    router.push(
+                    openFromNotice(
                       `/knowledge/sources/${encodeURIComponent(documentId)}`,
                     ),
                 },

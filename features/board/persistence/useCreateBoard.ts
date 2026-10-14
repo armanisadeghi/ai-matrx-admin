@@ -14,6 +14,7 @@ import { useAppSelector } from "@/lib/redux/hooks";
 import { selectOrganizationId } from "@/lib/redux/slices/appContextSlice";
 import { toast } from "@/lib/toast";
 import { beginBoardCreate, isBoardError } from "./boardsService";
+import { openFromNotice } from "@/lib/notice-open/openFromNotice";
 
 /**
  * The route change can take a while (a cold route compiles, a background tab throttles): the hook
@@ -49,7 +50,7 @@ export function useCreateBoard(): { creating: boolean; newBoard: () => Promise<v
       setOpening(null);
       toast.warning("Your new board is ready", {
         description: "It is taking longer than usual to open.",
-        action: { label: "Open", onClick: () => router.push(`/board/${opening}`) },
+        action: { label: "Open", onClick: () => openFromNotice(`/board/${opening}`) },
       });
     }, OPEN_GIVE_UP_MS);
     return () => clearTimeout(giveUp);

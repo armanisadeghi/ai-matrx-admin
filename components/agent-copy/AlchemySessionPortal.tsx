@@ -12,7 +12,6 @@
 //             capture → draft → limits → supports → run), outcome announced.
 
 import * as React from "react";
-import { useRouter } from "next/navigation";
 import {
   ContentTransferMenu,
   createTransferEmailActions,
@@ -35,6 +34,7 @@ import {
 } from "./alchemy-session";
 import { extractErrorMessage } from "@/utils/errors";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
+import { openFromNotice } from "@/lib/notice-open/openFromNotice";
 
 export function AlchemySessionPortal() {
   const request = React.useSyncExternalStore(
@@ -53,7 +53,6 @@ function errorText(error: unknown): string {
 function AlchemySession({ request }: { request: AlchemySessionRequest }) {
   const controller = React.useRef<ContentTransferController>(null);
   const capabilities = useContentTransferCapabilities();
-  const router = useRouter();
   const ran = React.useRef(false);
   // The destinations are offered only with a workspace selected; the run below
   // may ASK for one and must then read the capabilities the pick produced.
@@ -162,13 +161,13 @@ function AlchemySession({ request }: { request: AlchemySessionRequest }) {
         const href = outcome && typeof outcome.href === "string" ? outcome.href : null;
         toast.success(`${intent.label}: done`, {
           id: toastId,
-          ...(href ? { action: { label: "Open", onClick: () => router.push(href) } } : {}),
+          ...(href ? { action: { label: "Open", onClick: () => openFromNotice(href) } } : {}),
         });
       } catch (error) {
         toast.error(`${intent.label} did not work`, { id: toastId, description: errorText(error) });
       }
     })();
-  }, [capabilities, request, router]);
+  }, [capabilities, request]);
 
   return (
     <ContentTransferMenu

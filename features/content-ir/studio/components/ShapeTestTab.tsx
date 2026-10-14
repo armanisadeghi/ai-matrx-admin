@@ -43,6 +43,7 @@ import { shapeInstancesHref } from "@/features/content-ir/studio/constants";
 import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
 import { createShapesScope } from "@/features/surfaces/manifests/shapes.manifest";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { openFromNotice } from "@/lib/notice-open/openFromNotice";
 
 interface ShapeTestTabProps {
   kind: string;
@@ -202,7 +203,7 @@ export default function ShapeTestTab({
           action: {
             label: "View in Instances",
             onClick: () => {
-              window.location.href = `${shapeInstancesHref(kind)}?i=${result.id}`;
+              openFromNotice(`${shapeInstancesHref(kind)}?i=${result.id}`);
             },
           },
         },

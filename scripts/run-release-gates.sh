@@ -945,6 +945,10 @@ if $STRICT; then
         # surface-write door bypass, private action registries. Shrink-only baseline; advisory here.
         "Raw clipboard/download/format-lib/door-bypass in app code (Alchemy doors)|pnpm check:alchemy-doors"
         "Alchemy doors guard self-test|pnpm check:alchemy-doors:self-test"
+        # A NOTIFICATION NEVER MOVES THE PAGE (Arman, 2026-10-14): assists, attention dock, bell,
+        # toasts open a window or a new tab — lib/notice-open/openFromNotice.ts.
+        "Same-tab navigation from a notification or toast action|pnpm check:notice-new-tab"
+        "Notification new-tab guard self-test|pnpm check:notice-new-tab:self-test"
         # NO VENDOR NAMES ON CUSTOMER SCREENS (Arman, 2026-10-11: "via ScrapeCreators" reached the site).
         "Vendor name in customer-facing UI text|pnpm check:no-vendor-names"
         "No-vendor-names guard self-test|pnpm check:no-vendor-names:self-test"
@@ -1688,6 +1692,10 @@ else
         # surface-write door bypass, private action registries. Shrink-only baseline; advisory here.
         "Raw clipboard/download/format-lib/door-bypass in app code (Alchemy doors)|pnpm check:alchemy-doors"
         "Alchemy doors guard self-test|pnpm check:alchemy-doors:self-test"
+        # A NOTIFICATION NEVER MOVES THE PAGE (Arman, 2026-10-14): assists, attention dock, bell,
+        # toasts open a window or a new tab — lib/notice-open/openFromNotice.ts.
+        "Same-tab navigation from a notification or toast action|pnpm check:notice-new-tab"
+        "Notification new-tab guard self-test|pnpm check:notice-new-tab:self-test"
         # NO VENDOR NAMES ON CUSTOMER SCREENS (Arman, 2026-10-11: "via ScrapeCreators" reached the site).
         "Vendor name in customer-facing UI text|pnpm check:no-vendor-names"
         "No-vendor-names guard self-test|pnpm check:no-vendor-names:self-test"

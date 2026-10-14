@@ -52,6 +52,7 @@ import { humanizeRelative } from "@/features/scheduling/utils/triggerHumanize";
 import { HELD_RUN_ALARM_KINDS, heldRunHref } from "@/features/admin/held-runs/heldRuns";
 import type { AttentionAction, AttentionItem } from "../types";
 import { openOutbound } from "@ai-matrx/kit/outbound";
+import { openFromNotice } from "@/lib/notice-open/openFromNotice";
 
 export const SPEND_ALARM_SOURCE_ID = "spend-alarms";
 export const SPEND_ALARM_SOURCE_LABEL = "Spend alarms";
@@ -260,7 +261,7 @@ function actionsOf(row: SpendAlarmAttentionRow, deps: SpendAlarmDeps): Attention
         confirmLabel: "Open the run",
       },
       run: async () => {
-        if (typeof window !== "undefined") window.location.assign(heldRunHref(row.id));
+        openFromNotice(heldRunHref(row.id));
       },
     });
   }

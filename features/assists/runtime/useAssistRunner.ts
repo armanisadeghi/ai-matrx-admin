@@ -11,7 +11,6 @@
  */
 
 import { useCallback, useLayoutEffect, useMemo } from "react";
-import { useRouter } from "next/navigation";
 import { toast } from "@/lib/toast";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
@@ -21,7 +20,6 @@ import { openLiveRunWindowAction } from "@/features/overlays/openers/liveRunWind
 import { callApi } from "@/lib/api/call-api";
 import { handToOwnBrowser } from "@/lib/extension-bridge/handToOwnBrowser";
 import { closeOverlay } from "@/lib/redux/slices/overlaySlice";
-import { siteConfig } from "@/config/extras/site";
 import type { Json } from "@/types/database.types";
 import { decideAssist, snoozeAssist, suppressAssistSource } from "../service";
 import { snoozeUntilIso, type SnoozeWindowKey } from "../constants";
@@ -34,7 +32,7 @@ import { assistActionId, assistActionProvider } from "./assist-action-provider";
 import { invokeAction } from "@ai-matrx/alchemy/actions";
 import { useOptionalAlchemyActions } from "@ai-matrx/alchemy/react/host";
 import { ensureInvokedProvider } from "@/features/content-ir/react/actions/invoked-actions";
-import { resolveAssistNavigation } from "./navigation";
+import { openFromNotice } from "@/lib/notice-open/openFromNotice";
 import type { Assist } from "../types";
 
 export interface AssistRunnerApi {
@@ -71,7 +69,6 @@ export interface AssistRunnerApi {
 
 export function useAssistRunner(): AssistRunnerApi {
   const dispatch = useAppDispatch();
-  const router = useRouter();
   const userId = useAppSelector(selectUserId);
   const openAgentRun = useOpenAgentRunWindow();
   const actions = useOptionalAlchemyActions();
@@ -153,24 +150,9 @@ export function useAssistRunner(): AssistRunnerApi {
           });
         });
       },
-      navigate: (href: string) => {
-        const target = resolveAssistNavigation(href, {
-          profile: process.env.NEXT_PUBLIC_MATRX_PROFILE || "full",
-          currentOrigin: window.location.origin,
-          mainOrigin: siteConfig.url,
-          adminOrigin:
-            process.env.NEXT_PUBLIC_ADMIN_ORIGIN?.trim() ||
-            "https://manage.aimatrx.com",
-          demosOrigin:
-            process.env.NEXT_PUBLIC_DEMOS_ORIGIN?.trim() ||
-            "https://demos.aimatrx.com",
-        });
-        if (target.kind === "document") {
-          window.location.assign(target.href);
-          return;
-        }
-        router.push(target.href);
-      },
+      // An assist never moves the page it sits on: every "Open" is a new tab
+      // (lib/notice-open/openFromNotice.ts).
+      navigate: (href: string) => openFromNotice(href),
       handToOwnBrowser: (request) => handToOwnBrowser(request),
       callServer: async (endpoint, body) => {
         const result = await dispatch(
@@ -195,7 +177,7 @@ export function useAssistRunner(): AssistRunnerApi {
         return { ok: true, data: result.data };
       },
     }),
-    [userId, openAgentRun, router, dispatch],
+    [userId, openAgentRun, dispatch],
   );
 
   const acceptAssist = useCallback(

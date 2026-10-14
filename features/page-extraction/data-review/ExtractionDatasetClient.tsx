@@ -102,6 +102,7 @@ import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceR
 import { createKnowledgeScope } from "@/features/surfaces/manifests/knowledge.manifest";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
+import { openFromNotice } from "@/lib/notice-open/openFromNotice";
 
 const PAGE_SIZES = [50, 100, 250, 1000] as const;
 
@@ -825,7 +826,7 @@ export function ExtractionDatasetClient({ jobId }: { jobId: string }) {
       toast.success("Template duplicated", {
         action: {
           label: "Open",
-          onClick: () => router.push(`${EXTRACTIONS_ROUTE}/${newId}`),
+          onClick: () => openFromNotice(`${EXTRACTIONS_ROUTE}/${newId}`),
         },
       });
     } catch (e) {

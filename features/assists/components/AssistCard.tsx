@@ -244,7 +244,7 @@ export function AssistCard({
   };
 
   return (
-    <div className="flex w-full flex-col">
+    <div className="flex w-full flex-col" data-matrx-notice-surface="">
       <div className="flex items-start gap-2 border-b border-border/60 px-3 py-2.5">
         <UrgencyIcon
           className={cn("mt-0.5 h-4 w-4 shrink-0", urgencyMeta.iconClass)}

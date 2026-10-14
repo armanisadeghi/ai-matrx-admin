@@ -239,6 +239,7 @@ export function BellPanel({ variant = "compact", onNavigate, className }: BellPa
 
   return (
     <div
+      data-matrx-notice-surface=""
       className={cn(
         "flex flex-col",
         variant === "compact" ? "max-h-[min(640px,80dvh)]" : "h-full min-h-0",

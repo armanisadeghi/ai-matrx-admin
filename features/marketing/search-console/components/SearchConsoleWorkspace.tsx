@@ -82,6 +82,7 @@ import {
   siteHasGscBinding,
   useSiteOptions,
 } from "@/features/marketing/search-console/components/SiteSwitcher";
+import { openFromNotice } from "@/lib/notice-open/openFromNotice";
 
 const DEFAULT_VISIBLE: readonly GscMetric[] = ["clicks", "impressions"];
 
@@ -268,7 +269,7 @@ export function SearchConsoleWorkspace() {
         description: `${access.remedy} (${described.cause})`,
         action: {
           label: "Fix the connection",
-          onClick: () => startNavigation(() => router.push(fixHref)),
+          onClick: () => openFromNotice(fixHref),
         },
         duration: 12_000,
       });

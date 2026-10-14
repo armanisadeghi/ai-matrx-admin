@@ -36,6 +36,7 @@ import { customToastOnWallClock, toast } from "@/lib/toast";
 import { getSessionKnob } from "@/lib/scoped-config/sessionKnob";
 import { ReversibleNotice } from "./ReversibleNotice";
 import { countThisPersonsAction, tierForThisPerson } from "./reversibleCounts";
+import { openFromNotice } from "@/lib/notice-open/openFromNotice";
 
 type ToastId = string | number;
 
@@ -163,7 +164,7 @@ export function announceReversible(announcement: ReversibleAnnouncement): Announ
             ? {
                 action: {
                   label: `Open ${foundAt.label}`,
-                  onClick: () => window.location.assign(foundAtHref(foundAt)),
+                  onClick: () => openFromNotice(foundAtHref(foundAt)),
                 },
               }
             : {}),

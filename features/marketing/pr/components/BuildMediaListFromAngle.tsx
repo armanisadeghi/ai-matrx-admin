@@ -13,7 +13,6 @@
  */
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { ListPlus } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -47,6 +46,7 @@ import {
   readFacts,
   type StoryAngle,
 } from "@/features/marketing/pr/types";
+import { openFromNotice } from "@/lib/notice-open/openFromNotice";
 
 /** The research form, as far as the angle can fill it. Pure — tested. */
 export function prefillFromAngle(
@@ -113,7 +113,6 @@ export function BuildMediaListFromAngle({ angle }: { angle: StoryAngle }) {
   const [busy, setBusy] = useState(false);
   const userId = useAppSelector(selectUserId);
   const choice = useOutreachListChoice(picking);
-  const router = useRouter();
 
   const open = () => {
     choice.setCreating(true);
@@ -196,7 +195,7 @@ export function BuildMediaListFromAngle({ angle }: { angle: StoryAngle }) {
             toast.success(`Journalists landed on “${list.name}”.`, {
               action: {
                 label: "Open list",
-                onClick: () => router.push(`/crm/outreach-lists/${list.id}`),
+                onClick: () => openFromNotice(`/crm/outreach-lists/${list.id}`),
               },
             })
           }

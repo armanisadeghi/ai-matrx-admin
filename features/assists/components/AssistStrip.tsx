@@ -49,7 +49,9 @@ export function AssistStrip({
   const userId = useAppSelector(selectUserId);
   const authReady = useAppSelector(selectAuthReady);
   // Only WHETHER there is a token matters: a token refresh must not re-run the hydrate effect.
-  const accessToken = useAppSelector((state: RootState) => Boolean(selectAccessToken(state)));
+  const accessToken = useAppSelector((state: RootState) =>
+    Boolean(selectAccessToken(state)),
+  );
   const loaded = useAppSelector(selectAssistsLoaded);
   const surfaceAssists = useAppSelector((state: RootState) =>
     selectAssistsForSurface(state, surfaceName),
@@ -73,13 +75,15 @@ export function AssistStrip({
   const { strong, weak } = partitionByConfidence(assists);
 
   return (
-    <div className={cn("flex flex-wrap items-center gap-1.5", className)}>
+    <div className={cn("flex flex-wrap items-center gap-1.5", className)} data-matrx-notice-surface="">
       {strong.map((assist) => (
         <AssistChip key={assist.id} assist={assist} />
       ))}
       {weak.length > 0 && (
         <Link
           href={ASSISTS_MANAGER_HREF}
+          target="_blank"
+          rel="noopener"
           className="text-[11px] text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
         >
           {weak.length} lower-confidence suggestion

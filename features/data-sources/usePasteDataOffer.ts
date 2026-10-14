@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useEffectEvent, type RefObject } from "react";
-import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 
 import { toast } from "@/lib/toast";
@@ -11,6 +10,7 @@ import { useClipboardPaste } from "@/components/ui/file-upload/useClipboardPaste
 import { dataSourcesKey } from "./hooks";
 import { asWebAddress, dataTableOffer } from "./offer";
 import { getDataSources } from "./server";
+import { openFromNotice } from "@/lib/notice-open/openFromNotice";
 
 /** The Data library prefilled for a source: it opens that source with the pasted link in place (pure). */
 export function getDataHref(opts: { sourceKey?: string; field?: string; value?: string } = {}): string {
@@ -27,7 +27,6 @@ export function getDataHref(opts: { sourceKey?: string; field?: string; value?: 
  * table" (opens the Data library on that source, link filled in). Never fetches on paste; the paste itself lands as usual.
  */
 function usePasteOfferHandler(disabled: boolean) {
-  const router = useRouter();
   const queryClient = useQueryClient();
   // org-filter: write-target the offered fetch makes a new table in the organization she works in
   const { organizationId } = useOrganizationRequired();
@@ -50,7 +49,7 @@ function usePasteOfferHandler(disabled: boolean) {
         toast(offer.source.label, {
           action: {
             label: "Get as data table",
-            onClick: () => router.push(getDataHref({ sourceKey: offer.source.key, field, value: offer.url })),
+            onClick: () => openFromNotice(getDataHref({ sourceKey: offer.source.key, field, value: offer.url })),
           },
         });
       })

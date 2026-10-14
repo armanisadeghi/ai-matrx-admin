@@ -93,7 +93,7 @@ export function ReversibleNotice({ tier, title, foundAt, shortcut, onUndo, onDis
         </Button>
         {foundAt && tier !== "plain" ? (
           <Button asChild size={teach ? "default" : "sm"} variant="outline">
-            <Link href={foundAtHref(foundAt)} onClick={onDismiss} data-reversible-found="">
+            <Link href={foundAtHref(foundAt)} target="_blank" rel="noopener" onClick={onDismiss} data-reversible-found="">
               Open {foundAt.label}
               <ArrowUpRight className="ml-1 h-3.5 w-3.5" aria-hidden />
             </Link>

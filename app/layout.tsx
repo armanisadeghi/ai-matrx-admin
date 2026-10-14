@@ -28,6 +28,7 @@ import "@ai-matrx/messaging/styles.css";
 // video elements, no stage, no control bar.
 import "@ai-matrx/meet/styles.css";
 import { Toaster as Sonner } from "@/components/ui/sonner";
+import NoticeSurfaceGuard from "@/lib/notice-open/NoticeSurfaceGuard";
 import { cn } from "@/lib/utils";
 import { cookies, headers } from "next/headers";
 import { ViewportHintProvider } from "@ai-matrx/kit/media-query";
@@ -147,6 +148,8 @@ export default async function RootLayout({ children }: RootLayoutProps) {
           <UserAcquisitionCapture />
           <PerfVitalsReporter />
           <Sonner />
+          {/* A notification never moves the page: links in notice surfaces open new tabs. */}
+          <NoticeSurfaceGuard />
           {/* Consent-based new-version prompt + post-boot stale-chunk guard.
                         Bakes THIS deployment's id in server-side so the client can
                         compare against /api/version. Never auto-refreshes. */}

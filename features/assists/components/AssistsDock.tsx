@@ -199,7 +199,8 @@ export default function AssistsDock() {
     // A page with its own bottom dock (the phone note editor's toolbar)
     // publishes its height as --page-bottom-dock-h; the launcher sits above it
     // instead of covering the dock's last button.
-    right: "var(--assist-dock-slot-right, calc(0.75rem + var(--app-right-inset, 0px)))",
+    right:
+      "var(--assist-dock-slot-right, calc(0.75rem + var(--app-right-inset, 0px)))",
     bottom:
       "var(--assist-dock-slot-bottom, calc(max(0.75rem, env(safe-area-inset-bottom, 0px)) + var(--page-bottom-dock-h, 0px) + var(--assist-dock-lift, 0px)))",
     top: "var(--assist-dock-slot-top, auto)",
@@ -232,12 +233,11 @@ export default function AssistsDock() {
 
         <Drawer open={open} onOpenChange={setOpen}>
           <DrawerContent
+            data-matrx-notice-surface=""
             className="overflow-hidden"
             style={{
-              height:
-                "min(85dvh, var(--visual-viewport-height, 85dvh))",
-              maxHeight:
-                "min(85dvh, var(--visual-viewport-height, 85dvh))",
+              height: "min(85dvh, var(--visual-viewport-height, 85dvh))",
+              maxHeight: "min(85dvh, var(--visual-viewport-height, 85dvh))",
             }}
           >
             <DrawerHeader className="flex shrink-0 flex-row items-center gap-2 border-b border-border px-3 py-2 text-left">
@@ -286,6 +286,8 @@ export default function AssistsDock() {
               </div>
               <Link
                 href={ASSISTS_MANAGER_HREF}
+                target="_blank"
+                rel="noopener"
                 onClick={() => setOpen(false)}
                 className="mt-3 flex min-h-11 items-center justify-center rounded-md border border-border px-3 text-sm font-medium text-foreground hover:bg-accent"
               >
@@ -300,6 +302,7 @@ export default function AssistsDock() {
 
   return (
     <div
+      data-matrx-notice-surface=""
       className={cn(
         // pointer-events-none on the CONTAINER: it is a layout box larger than
         // its visible children, and it sat over page controls swallowing their
@@ -328,6 +331,8 @@ export default function AssistsDock() {
           {/* A count is a door (THE DOOR LAW) — "+N more" reaches them. */}
           <Link
             href={ASSISTS_MANAGER_HREF}
+            target="_blank"
+            rel="noopener"
             className="px-2 py-0.5 text-[11px] text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
           >
             Want more? Open all assists
@@ -383,7 +388,7 @@ export default function AssistsDock() {
               <Clock className="h-3 w-3" />
             </button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-56">
+          <DropdownMenuContent align="end" className="w-56" data-matrx-notice-surface="">
             <DropdownMenuLabel className="text-[11px] font-normal text-muted-foreground">
               Quiet every assist for…
               <span className="mt-0.5 block">
@@ -410,7 +415,7 @@ export default function AssistsDock() {
               </DropdownMenuItem>
             )}
             <DropdownMenuItem asChild className="gap-2 text-xs">
-              <Link href={ASSISTS_MANAGER_HREF}>
+              <Link href={ASSISTS_MANAGER_HREF} target="_blank" rel="noopener">
                 <ListChecks className="h-3 w-3" />
                 Open all assists
               </Link>

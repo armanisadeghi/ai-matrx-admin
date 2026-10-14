@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectIsSuperAdmin } from "@/lib/redux/slices/userSlice";
 import { toast } from "@/lib/toast";
+import { openFromNotice } from "@/lib/notice-open/openFromNotice";
 import { describeFailure } from "@/lib/failure/transport";
 import { createClient } from "@/utils/supabase/client";
 import {
@@ -65,7 +66,7 @@ export default function CredentialExpiryNotifier() {
     let cancelled = false;
 
     const openManager = (credentialId?: string) => {
-      window.location.assign(
+      openFromNotice(
         credentialId
           ? credentialMaintenancePath(credentialId)
           : credentialMaintenanceIndexPath(),
@@ -219,7 +220,7 @@ export default function CredentialExpiryNotifier() {
           dismissible: words.dismissible,
           action: {
             label: change.attention === "zone_unconfirmed" ? "Confirm time zone" : "Manage",
-            onClick: () => window.location.assign(`${DATED_CHANGES_PAGE_HREF}#${change.id}`),
+            onClick: () => openFromNotice(`${DATED_CHANGES_PAGE_HREF}#${change.id}`),
           },
           ...(words.dismissible
             ? {

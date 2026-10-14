@@ -40,7 +40,6 @@
 import { useCallback, useMemo, useState } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { toast } from "@/lib/toast";
 import { ExternalLink, Image as ImageIcon, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -55,6 +54,7 @@ import { useMediaBlob, useMediaResolution } from "@ai-matrx/media/core";
 import { useTreeReadStatus } from "@/features/files/hooks/useFilesReadStatus";
 import { ReadFailure } from "@ai-matrx/design-system";
 import type { SaveResult } from "@/features/image-studio/modes/shared/types";
+import { openFromNotice } from "@/lib/notice-open/openFromNotice";
 
 const EditModeShell = dynamic(
   () =>
@@ -82,7 +82,6 @@ const UNAVAILABLE_COPY: Record<
 };
 
 export function ImageEditTab({ fileId, className }: ImageEditTabProps) {
-  const router = useRouter();
   const file = useAppSelector((s) => selectFileById(s, fileId));
   const parentFolder = useAppSelector((s) =>
     file?.parentFolderId ? selectFolderById(s, file.parentFolderId) : null,
@@ -127,11 +126,11 @@ export function ImageEditTab({ fileId, className }: ImageEditTabProps) {
         description: result.filename,
         action: {
           label: "Open",
-          onClick: () => router.push(`/files/f/${result.fileId}`),
+          onClick: () => openFromNotice(`/files/f/${result.fileId}`),
         },
       });
     },
-    [router],
+    [],
   );
 
   if (!file && tree.status === "error") {

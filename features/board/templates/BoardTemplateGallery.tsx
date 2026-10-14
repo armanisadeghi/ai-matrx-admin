@@ -16,6 +16,7 @@ import { boardHref, isBoardError } from "../persistence/boardsService";
 import { BoardSketch } from "./BoardSketch";
 import { listBoardTemplates, makeBoardFromTemplate, templateBoardTitle, type BoardTemplateEntry } from "./board-templates";
 import { BUILTIN_BOARD_TEMPLATES } from "./builtin";
+import { openFromNotice } from "@/lib/notice-open/openFromNotice";
 
 export function BoardTemplateGallery({
   open,
@@ -65,7 +66,7 @@ export function BoardTemplateGallery({
       toast.dismiss();
       onOpenChange(false);
       const href = boardHref(board);
-      toast.success(`Made "${board.title}"`, { action: { label: "Open", onClick: () => router.push(href) } });
+      toast.success(`Made "${board.title}"`, { action: { label: "Open", onClick: () => openFromNotice(href) } });
       router.push(href);
     } catch (e) {
       toast.error(isBoardError(e) ? e.message : e instanceof Error ? e.message : "The template could not be used. Try again.");
