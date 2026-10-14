@@ -240,6 +240,8 @@ function consumeNonce(presented: string, hostname: string): boolean {
 const DEV_LOGIN_ACCOUNTS: readonly string[] = [
   (process.env.AI_ADMIN_USERNAME ?? "").trim().toLowerCase(),
   "test@test.com",
+  // The Smart Add Brand test seat (persona factory account; credentials in untracked env files).
+  (process.env.SMARTADD_TEST_USERNAME ?? "").trim().toLowerCase(),
 ].filter(Boolean);
 
 /**
@@ -379,7 +381,9 @@ async function signIn(request: NextRequest): Promise<NextResponse> {
   const password =
     email === (defaultEmail ?? "").trim().toLowerCase()
       ? process.env.AI_ADMIN_PASSWORD
-      : undefined;
+      : email === (process.env.SMARTADD_TEST_USERNAME ?? "").trim().toLowerCase()
+        ? process.env.SMARTADD_TEST_PASSWORD
+        : undefined;
 
   const {
     data: { user },
