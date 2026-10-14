@@ -206,7 +206,10 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
   /** `firstData`: a round started from what the person typed — it wakes the facts agent at first data. */
   const startRound = async (seeds: RoundSeeds, woken: ConfirmedFacts = {}, firstData = false, find = false) => {
     // A person round carries `person`; the first round after grounding says so, once only (Part 9).
-    const typed = person ? personTyped.current : null;
+    // A person who started from a handle (no typed name) is named by the name they confirm (Part 9: a name + one anchor).
+    const typed = person
+      ? (personTyped.current ?? (factBasics.name ? { name: factBasics.name, city: confirmedFacts.location ?? "" } : null))
+      : null;
     const nowGrounded = Boolean(typed) && (personAnchors.length > 0 || affiliations.length > 0);
     const groundedRound = !find && nowGrounded && !groundedSent.current;
     if (!seeds.website && seeds.socials.length === 0 && !woken.name && !woken.location && !find && !groundedRound) return;
