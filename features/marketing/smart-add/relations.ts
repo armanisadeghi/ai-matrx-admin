@@ -28,6 +28,7 @@ import {
   type EvidenceItem,
   type Relation,
 } from "./evidence";
+import { personPartyInput } from "./personParty";
 import { webAddress, type SuggestContext, type WebChoice, type WebSuggestion } from "./webKinds";
 
 export interface RelatedCandidate {
@@ -71,15 +72,7 @@ export async function routeRelated(
     let resolved: Record<string, string> = {};
     if (relation.routesTo === "owns" || relation.routesTo === "key_person") {
       try {
-        const party = await resolveParty({
-          kind: "person",
-          displayName: name,
-          orgId: organizationId,
-          source: "smart_add",
-          sourceDetail: `${relation.label}: ${c.url ?? name}`,
-          ...(c.platform === "website" && c.url ? { primaryDomain: websiteHost(c.url) } : {}),
-          ...(c.bio ? { headline: c.bio.slice(0, 200) } : {}),
-        });
+        const party = await resolveParty(personPartyInput(organizationId, name, relation.label, c));
         const linked = await associationsService.add({
           sourceType: "party",
           sourceId: party.partyId,
