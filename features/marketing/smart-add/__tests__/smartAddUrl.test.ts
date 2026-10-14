@@ -67,6 +67,12 @@ describe("smartAddUrl — query", () => {
     expect(parseSmartAddUrl("/company", "?social=ritual&platform=TikTok").prefill.platform).toBe("tiktok");
   });
 
+  it("/person opens the name fields; /company opens the chooser", () => {
+    expect(parseSmartAddUrl("/marketing/brands/smart-add/person", "").via).toBe("name");
+    expect(parseSmartAddUrl("/marketing/brands/smart-add/person", "?social=@ana").via).toBe("social");
+    expect(parseSmartAddUrl("/marketing/brands/smart-add/company", "").via).toBeNull();
+  });
+
   it("no prefill means no auto-start", () => {
     expect(hasSmartAddPrefill(parseSmartAddUrl("/company", "?via=website"))).toBe(false);
     expect(hasSmartAddPrefill(parseSmartAddUrl("/person", "?city=Austin"))).toBe(false);

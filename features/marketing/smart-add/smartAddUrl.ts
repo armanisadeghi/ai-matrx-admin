@@ -108,9 +108,10 @@ export function parseSmartAddUrl(pathname: string, search: URLSearchParams | str
   return { ...path, via, viaParam, prefill, runs, view };
 }
 
-/** A prefill opens its own way in: a website → the website card, a handle → social, a name → name. */
+/** A prefill opens its own way in: a website → the website card, a handle → social, a name → name; /person → name. */
 export function impliedVia(prefill: SmartAddPrefill, mode: SmartAddMode | null): SmartAddVia | null {
-  if (mode === "person" && prefill.name) return "name";
+  // /person opens on the name, occupation, company and city fields unless a handle or site came with it.
+  if (mode === "person" && (prefill.name || (!prefill.website && !prefill.social))) return "name";
   if (prefill.website) return "website";
   if (prefill.social) return "social";
   if (prefill.name) return "name";
