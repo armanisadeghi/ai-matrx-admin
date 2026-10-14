@@ -418,32 +418,33 @@ export function EntityCardBlock({
           )}
         >
           {description}
-          {sourceUrl && (
-            <>
-              {" "}
-              <OutboundLink
-                href={sourceUrl}
-                onClick={(e) => e.stopPropagation()}
-                className="text-foreground underline underline-offset-2 hover:text-primary"
-              >
-                Source
-              </OutboundLink>
-            </>
-          )}
         </p>
       )}
-      {/* Outside the clamp, so the toggle is never swallowed by it. */}
-      {longDescription && (
-        <button
-          type="button"
-          onClick={(e) => {
-            e.stopPropagation();
-            setMoreOpen((v) => !v);
-          }}
-          className="mt-0.5 text-sm text-foreground underline underline-offset-2 hover:text-primary"
-        >
-          {moreOpen ? "Less" : "More"}
-        </button>
+      {/* Outside the clamp: the toggle and the source are never swallowed by it. */}
+      {description && (longDescription || sourceUrl) && (
+        <div className="mt-0.5 flex items-center gap-3 text-sm">
+          {longDescription && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setMoreOpen((v) => !v);
+              }}
+              className="text-foreground underline underline-offset-2 hover:text-primary"
+            >
+              {moreOpen ? "Less" : "More"}
+            </button>
+          )}
+          {sourceUrl && (
+            <OutboundLink
+              href={sourceUrl}
+              onClick={(e) => e.stopPropagation()}
+              className="text-muted-foreground underline underline-offset-2 hover:text-primary"
+            >
+              Source
+            </OutboundLink>
+          )}
+        </div>
       )}
 
       {(hasDetails || facts.length > 0) && (
