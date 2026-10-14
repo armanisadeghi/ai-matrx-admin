@@ -122,7 +122,7 @@ export function ConversationReferencePicker({
       let request = supabase
         .schema("chat")
         .from("conversation")
-        .select("id, title, updated_at, initial_agent_id")
+        .select("id, title, updated_at, last_activity_at, initial_agent_id")
         // Scope declared explicitly — mine, real chats, alive.
         .eq("created_by", userId)
         .eq("conversation_type", "standard")
@@ -130,7 +130,8 @@ export function ConversationReferencePicker({
         .is("deleted_at", null);
       if (query) request = request.ilike("title", `%${query}%`);
       const { data, error: queryError } = await request
-        .order("updated_at", { ascending: false })
+        // Real activity, never updated_at (any repair/relabel bumps that).
+        .order("last_activity_at", { ascending: false })
         .limit(PAGE_SIZE);
       if (signal.cancelled) return;
       if (queryError) {
@@ -144,7 +145,7 @@ export function ConversationReferencePicker({
           .map((row) => ({
             id: row.id as string,
             title: (row.title ?? null) as string | null,
-            updatedAt: row.updated_at as string,
+            updatedAt: (row.last_activity_at ?? row.updated_at) as string,
             agentId: (row.initial_agent_id ?? null) as string | null,
           })),
       );

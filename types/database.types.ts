@@ -12798,6 +12798,7 @@ export type Database = {
       }
       conversation: {
         Row: {
+          last_activity_at: string
           app_instance_id: string | null
           cache_state: Json
           config: Json
@@ -12841,6 +12842,7 @@ export type Database = {
           visibility: Database["platform"]["Enums"]["visibility"]
         }
         Insert: {
+          last_activity_at?: string
           app_instance_id?: string | null
           cache_state?: Json
           config?: Json
@@ -12884,6 +12886,7 @@ export type Database = {
           visibility?: Database["platform"]["Enums"]["visibility"]
         }
         Update: {
+          last_activity_at?: string
           app_instance_id?: string | null
           cache_state?: Json
           config?: Json
