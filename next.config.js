@@ -2,6 +2,7 @@
 
 const fs = require("fs");
 const path = require("path");
+const { AIDREAM_PRODUCTION_URL } = require("./lib/api/endpoints.ts");
 const { getHeaders } = require("./utils/next-config/headers");
 const {
   adminLegacyRouteRedirects,
@@ -1029,6 +1030,18 @@ const nextConfig = {
   },
   async rewrites() {
     return [
+      {
+        source: "/api/social-oauth/facebook/deauthorize",
+        destination: `${AIDREAM_PRODUCTION_URL}/api/social-oauth/facebook/deauthorize`,
+      },
+      {
+        source: "/api/social-oauth/instagram/deauthorize",
+        destination: `${AIDREAM_PRODUCTION_URL}/api/social-oauth/instagram/deauthorize`,
+      },
+      {
+        source: "/api/social-oauth/threads/deauthorize",
+        destination: `${AIDREAM_PRODUCTION_URL}/api/social-oauth/threads/deauthorize`,
+      },
       {
         source: "/u/:slug*",
         destination: "/apps/custom/:slug*",
