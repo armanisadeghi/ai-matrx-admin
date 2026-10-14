@@ -138,9 +138,9 @@ export const PARTY_COLUMNS: MatrxColumnDef<PartyListRow>[] = [
         {row.do_not_contact && (
           <Badge
             tone="destructive"
+            icon={<PhoneOff aria-hidden />}
             title={row.do_not_contact_reason ?? "Do not contact"}
           >
-            <PhoneOff className="h-3 w-3" aria-hidden />
             DNC
           </Badge>
         )}
