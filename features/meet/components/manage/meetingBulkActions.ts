@@ -94,7 +94,7 @@ export function buildMeetingBulkActions(args: {
         }
         if (notEnded > 0) {
           parts.push(
-            `${notEnded} ${notEnded === 1 ? "meeting is" : "meetings are"} not yet ended and stop${notEnded === 1 ? "s" : ""} admitting anyone — invited guests are emailed a cancellation.`,
+            `${notEnded} ${notEnded === 1 ? "meeting is" : "meetings are"} not yet ended and stop${notEnded === 1 ? "s" : ""} admitting anyone — any guests already invited are emailed a cancellation.`,
           );
         }
         parts.push("Restore from Archived.");

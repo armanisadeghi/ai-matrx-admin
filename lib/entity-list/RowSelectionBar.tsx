@@ -53,6 +53,11 @@ export function useRowSelection<TRow>(
     if (ids.size > 0) setIds(new Set());
   }
   const onScreen = new Set(rows.map(idOf));
+  // A tick on a row that left the screen (search, filter, tab) is DROPPED, not
+  // hidden — it never reappears unasked when the row comes back.
+  if (seenKey === resetKey && [...ids].some((id) => !onScreen.has(id))) {
+    setIds(new Set([...ids].filter((id) => onScreen.has(id))));
+  }
   const selectedRows = rows.filter((row) => ids.has(idOf(row)));
   const allSelected = rows.length > 0 && selectedRows.length === rows.length;
   return {
@@ -164,6 +169,8 @@ export function RowSelectionBar<TRow>({
         variant="quiet"
         icon={<X />}
         aria-hidden={count === 0}
+        aria-label="Clear selection"
+        title="Clear selection"
         tabIndex={count === 0 ? -1 : undefined}
         className={count === 0 ? "invisible" : undefined}
         onClick={selection.clear}

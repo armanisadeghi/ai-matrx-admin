@@ -93,7 +93,7 @@ function pickListBulkActions(recordsConfig: AppRecordsConfig): EntityBulkAction<
               onRestored: () => {},
             });
             if (result.outcome === "needs-confirm") {
-              throw new Error("Too big to move in a batch — open it and move it to Trash there.");
+              throw new Error("needs its own confirm — open it and move it to Trash there");
             }
             if (result.outcome === "refused") throw new Error(result.sentence);
           },

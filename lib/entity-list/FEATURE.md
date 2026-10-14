@@ -597,6 +597,12 @@ how that savior page gets built.
   Why: a Claude Code session id pasted into /work/conversations found nothing — the
   row sat one bucket over, behind a chip count nobody reads while staring at an empty
   table. First consumer: `features/ai-work/conversations/listConfig.tsx`.
+- `2026-10-14` — **`RowSelectionBar.tsx` — THE selection for lists that are not a table.**
+  `useRowSelection(rows, idOf, resetKey)` + `<RowSelectionBar>` (select-all, count,
+  reserved Clear, `compact`) rendering `EntityBulkActions`. Ticks on rows that left the
+  screen are dropped; a `resetKey` change clears. Used by notes, pick lists, context
+  items, schedules and meetings. Three selection homes only: EntityListPage,
+  useTableBulkSelection (plain tables), RowSelectionBar (everything else).
 - `2026-10-14` — **`useTableBulkSelection` — the same bulk bar for a plain `MatrxDataTable`.**
   Screens that render the table directly pass `selection={bulk.selection}` and get the
   identical buttons (`EntityBulkActions`, now typed to need only build/clear/count),
