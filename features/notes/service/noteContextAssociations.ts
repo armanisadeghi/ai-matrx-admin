@@ -24,7 +24,12 @@ export interface NoteContextSettlement {
 // ids a moment apart on /notes; an id already being read shares that read instead of
 // asking `assoc_for_sources` again. In-flight sharing ONLY: an id leaves the map the
 // moment its read settles, so a later call (after any change) always reads fresh.
-const inFlightLinks = new Map<string, Promise<NoteContextLinks>>();
+const inFlightLinks = new Map<string, { flight: Promise<NoteContextLinks>; startedAt: number }>();
+/**
+ * Only a read that left in the same burst is shared (the list read and a note load at page load).
+ * A later ask — after a write changed a link — starts its own read, never one that predates it.
+ */
+const SHARE_WINDOW_MS = 1_000;
 
 async function readLinks(ids: string[]): Promise<Map<string, NoteContextLinks>> {
   const result = await associationsService.listForSources("note", ids);
@@ -72,14 +77,18 @@ export async function hydrateNoteContextLinks<T extends IdentifiedRow>(
   if (rows.length === 0) return [];
 
   const wanted = Array.from(new Set(rows.map((row) => row.id)));
-  const mine = wanted.filter((id) => !inFlightLinks.has(id));
+  const now = Date.now();
+  const mine = wanted.filter((id) => {
+    const entry = inFlightLinks.get(id);
+    return !entry || now - entry.startedAt > SHARE_WINDOW_MS;
+  });
   if (mine.length > 0) {
     const read = readLinks(mine);
     for (const id of mine) {
       const flight = read.then((byNote) => byNote.get(id) ?? emptyLinks());
-      inFlightLinks.set(id, flight);
+      inFlightLinks.set(id, { flight, startedAt: now });
       const leave = () => {
-        if (inFlightLinks.get(id) === flight) inFlightLinks.delete(id);
+        if (inFlightLinks.get(id)?.flight === flight) inFlightLinks.delete(id);
       };
       flight.then(leave, leave);
     }
@@ -87,7 +96,8 @@ export async function hydrateNoteContextLinks<T extends IdentifiedRow>(
   const links = new Map<string, NoteContextLinks>();
   await Promise.all(
     wanted.map(async (id) => {
-      links.set(id, await (inFlightLinks.get(id) as Promise<NoteContextLinks>));
+      const entry = inFlightLinks.get(id);
+      links.set(id, entry ? await entry.flight : emptyLinks());
     }),
   );
   return rows.map((row) => ({ ...row, ...(links.get(row.id) ?? emptyLinks()) }));

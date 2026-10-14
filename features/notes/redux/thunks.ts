@@ -1007,7 +1007,10 @@ export const fetchSharedNotesList = createAsyncThunk<void, void>(
 // One scope-tag read at a time. The assist strip and the sidebar both ask on /notes with no
 // knowledge of each other; the second asker finds one in flight and waits for nothing new.
 // A caller that just CHANGED tags passes `{ refresh: true }` and is never dropped.
-let noteScopesInFlight = false;
+// A refresh may overlap an older read; whichever finishes, the store gets the NEWEST read's answer
+// (an older read landing last would otherwise overwrite fresh tags).
+let noteScopesInFlight = 0;
+let newestNoteScopesRead: Promise<NoteScopeAssignment[]> | null = null;
 
 export const fetchAllNoteScopes = createAsyncThunk<
   NoteScopeAssignment[],
@@ -1015,8 +1018,22 @@ export const fetchAllNoteScopes = createAsyncThunk<
 >(
   "notes/fetchAllNoteScopes",
   async () => {
-    noteScopesInFlight = true;
+    noteScopesInFlight += 1;
+    const run = readAllNoteScopes();
+    newestNoteScopesRead = run;
     try {
+      await run;
+      return await newestNoteScopesRead;
+    } finally {
+      noteScopesInFlight -= 1;
+    }
+  },
+  {
+    condition: (arg) => !(noteScopesInFlight > 0 && !(arg && arg.refresh)),
+  },
+);
+
+async function readAllNoteScopes(): Promise<NoteScopeAssignment[]> {
     // Tags are read from the notes' side (their outgoing scope edges), so
     // first the ids of every note this person can see — shared ones
     // included (row security decides). Ids only: the list read owns the rest.
@@ -1041,11 +1058,4 @@ export const fetchAllNoteScopes = createAsyncThunk<
       scope_name: t.scope_name,
       scope_type: t.scope_type,
     }));
-    } finally {
-      noteScopesInFlight = false;
-    }
-  },
-  {
-    condition: (arg) => !(noteScopesInFlight && !(arg && arg.refresh)),
-  },
-);
+}

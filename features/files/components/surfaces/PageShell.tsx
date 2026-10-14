@@ -165,6 +165,7 @@ import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import RouteHeader from "@/features/shell/components/header/RouteHeader";
 import { FilesTreeErrorState, FilesTreeLoadingState } from "./FilesTreeState";
 import { DragCursorMonitor } from "@ai-matrx/design-system";
+import { useDemandFileTree } from "@/features/files/hooks/useFilesReadStatus";
 
 export interface PageShellProps {
   /** Initial selection (for deep-linked routes). */
@@ -194,6 +195,7 @@ export interface PageShellProps {
 }
 
 export function PageShell(props: PageShellProps) {
+  useDemandFileTree();
   const isMobile = useIsMobile();
   // ssr-viewport-ok: request-hinted — two stateful trees (Redux hydration, realtime, panel layout) that must
   // never both mount, so CSS cannot pick; ViewportHintProvider (app/layout.tsx) gives the server the phone answer.

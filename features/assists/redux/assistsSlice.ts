@@ -20,6 +20,8 @@ import type { Assist } from "../types";
 interface AssistsState {
   pending: Assist[];
   loaded: boolean;
+  /** Whose assists `loaded` describes — another person signing in reads again. */
+  loadedFor: string | null;
   loading: boolean;
   error: string | null;
 }
@@ -27,6 +29,7 @@ interface AssistsState {
 const initialState: AssistsState = {
   pending: [],
   loaded: false,
+  loadedFor: null,
   loading: false,
   error: null,
 };
@@ -38,10 +41,12 @@ export const fetchMyAssists = createAsyncThunk<
 >("assists/fetchMine", async ({ userId }) => listMyPendingAssists(userId), {
   // One read at a time, and none once loaded unless the caller forces it — the strip and the dock
   // both hydrate the slice, so without this each mount of either re-read `list_my_presentable_assists`.
-  condition: ({ force }, { getState }) => {
-    const { loading, loaded } = getState().assists;
+  // A forced read (a write just changed the stack) always goes, even past one in flight.
+  condition: ({ userId, force }, { getState }) => {
+    if (force === true) return true;
+    const { loading, loaded, loadedFor } = getState().assists;
     if (loading) return false;
-    return force === true || !loaded;
+    return !loaded || loadedFor !== userId;
   },
 });
 
@@ -78,6 +83,7 @@ const assistsSlice = createSlice({
       .addCase(fetchMyAssists.fulfilled, (state, action) => {
         state.loading = false;
         state.loaded = true;
+        state.loadedFor = action.meta.arg.userId;
         state.pending = action.payload;
       })
       .addCase(fetchMyAssists.rejected, (state, action) => {

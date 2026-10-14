@@ -8,8 +8,9 @@
 // and says outright that this "only paints — no request leaves on it": the load ladder's answer (the
 // account's last active organization) wins a moment later. A knob read on the painted organization
 // is one wasted `knob_snapshot_delta` for an organization the person then leaves. So a read keyed to
-// the organization the store is still only painting waits for the ladder; every other organization
-// (a page's own, an explicit one, none) is asked at once.
+// the organization the store is still only painting — or to no organization while the ladder has not
+// answered — waits for the ladder (at most HOLD_CAP_MS); any other organization (a page's own, an
+// explicit one) is asked at once.
 
 import { useContext, useEffect, useState, useSyncExternalStore } from "react";
 
@@ -36,15 +37,17 @@ export function isOnlyPainted(organizationId: string | null | undefined, state: 
  */
 export function usePaintedOrganizationHeld(organizationId: string | null | undefined): boolean {
   const store = useContext(ReactReduxContext)?.store;
-  const [capped, setCapped] = useState(false);
-  useEffect(() => {
-    const timer = setTimeout(() => setCapped(true), HOLD_CAP_MS);
-    return () => clearTimeout(timer);
-  }, []);
   const held = useSyncExternalStore(
     (listener) => (store ? store.subscribe(listener) : () => {}),
     () => (store ? isOnlyPainted(organizationId, store.getState() as StateWithContext) : false),
     () => false,
   );
+  // The cap runs only while this reader is actually held — no timer, no re-render, otherwise.
+  const [capped, setCapped] = useState(false);
+  useEffect(() => {
+    if (!held || capped) return undefined;
+    const timer = setTimeout(() => setCapped(true), HOLD_CAP_MS);
+    return () => clearTimeout(timer);
+  }, [held, capped]);
   return held && !capped;
 }

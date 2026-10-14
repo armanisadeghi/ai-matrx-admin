@@ -33,6 +33,7 @@ import {
   normalizeSourceName,
 } from "@/features/rag/components/hit-card/adapters";
 import { useFilesLibraryProvenance } from "@/features/rag/hooks/useLibraryProvenance";
+import { useDemandFileTree } from "@/features/files/hooks/useFilesReadStatus";
 
 export interface RagSearchHitsProps {
   hits: RagSearchHit[];
@@ -67,6 +68,7 @@ export function RagSearchHits({
   maxRows,
   onHitClick,
 }: RagSearchHitsProps) {
+  useDemandFileTree();
   const filesById = useAppSelector(selectAllFilesMap);
 
   const rows = useMemo(

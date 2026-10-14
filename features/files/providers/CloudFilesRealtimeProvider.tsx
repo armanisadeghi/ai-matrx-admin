@@ -9,9 +9,10 @@
  * consolidation rebuild — see
  * [docs/FILE_HANDLING_CONSOLIDATION_PLAN.md](../../../docs/FILE_HANDLING_CONSOLIDATION_PLAN.md).
  *
- * Reads `userId` from Redux (`selectUserId`); attaches the Realtime channel
- * on user change and tears it down on sign-out. Callers don't need to pass
- * `userId` — the provider is identity-driven.
+ * Reads `userId` from Redux (`selectUserId`). It never LOADS the tree (the load
+ * law, 2026-10-13): the surface that shows files asks with `useDemandFileTree`
+ * (`hooks/useFilesReadStatus.ts`); this attaches the realtime channel the
+ * moment that load starts and tears it down on sign-out.
  */
 
 "use client";

@@ -62,6 +62,15 @@ function claimCheckSlot(userId: string): boolean {
   }
 }
 
+/** A check that FAILED was not a check: the next page load may look again. */
+function releaseCheckSlot(userId: string): void {
+  try {
+    window.localStorage.removeItem(CHECK_STAMP_PREFIX + userId);
+  } catch {
+    tabChecked.delete(userId);
+  }
+}
+
 export default function KgNewSuggestionNotifier() {
   const user = useAppSelector(selectUser);
   const userId = user?.id ?? null;
@@ -74,7 +83,13 @@ export default function KgNewSuggestionNotifier() {
     claimedRef.current = userId;
     if (claimCheckSlot(userId)) setDue(true);
   }, [lateReady, userId]);
-  const { items } = useKgSuggestions({ global: true, status: "pending" }, { autoFetch: due });
+  const { items, error: suggestionsError } = useKgSuggestions(
+    { global: true, status: "pending" },
+    { autoFetch: due },
+  );
+  useEffect(() => {
+    if (suggestionsError && userId) releaseCheckSlot(userId);
+  }, [suggestionsError, userId]);
   const openInbox = useOpenKgSuggestions();
 
   // Durable "don't show again" set (loaded once per user). State (not ref) so
@@ -91,6 +106,7 @@ export default function KgNewSuggestionNotifier() {
         if (!cancelled) setAcked(set);
       })
       .catch(() => {
+        releaseCheckSlot(userId);
         if (!cancelled) setAcked(new Set());
       });
     return () => {

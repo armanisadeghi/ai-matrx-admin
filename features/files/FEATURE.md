@@ -71,6 +71,7 @@ in the same change.
    re-creates (never blank) with its undo history. Guards:
    `components/core/FileEditor/__tests__/CloudFileInlineEditor.working-copy.test.tsx`,
    `features/code/editor/__tests__/MonacoEditor.wake.test.tsx`.
+7b. **The tree loads on demand (the load law, 2026-10-13).** No provider loads `get_user_file_tree` on every page. Every surface that SHOWS files calls `useDemandFileTree()` (or `useTreeReadStatus`, which calls it) — PageShell, MobileStack, WindowPanelShell, PickerShell/EmbeddedShell, the code explorer, RAG search hits; a single record shown alone (a chip, a war-room row) uses `useEnsureCloudFile`. `CloudFilesRealtimeProvider` only attaches the live channel once a load starts. `pnpm check:page-load` fails if `/files` stops reading the tree (`mustRead`) or any other page starts.
 8. **Reads hit Supabase directly, except exact-id hydration.** `useEnsureCloudFile` is the one
    exception: it calls the authenticated `GET /files/{id}?include_urls=false` access gate because
    the browser RLS planner can time out before a primary-key lookup. Do not reintroduce a browser

@@ -41,12 +41,14 @@ import { setActiveFileId, setActiveFolderId } from "@/features/files/redux/slice
 import { selectTreeStatus } from "@/features/files/redux/selectors";
 import { useOpenCloudFile } from "../../hooks/useOpenCloudFile";
 import { DragCursorMonitor } from "@ai-matrx/design-system";
+import { useDemandFileTree } from "@/features/files/hooks/useFilesReadStatus";
 
 interface CloudFilesExplorerProps {
   className?: string;
 }
 
 export function CloudFilesExplorer({ className }: CloudFilesExplorerProps) {
+  useDemandFileTree();
   const dispatch = useAppDispatch();
   const userId = useAppSelector((state) => state.userAuth?.id ?? null);
   const openCloudFile = useOpenCloudFile();

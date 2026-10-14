@@ -54,6 +54,7 @@ import {
   setActiveFolderId,
 } from "@/features/files/redux/slice";
 import { DragCursorMonitor } from "@ai-matrx/design-system";
+import { useDemandFileTree } from "@/features/files/hooks/useFilesReadStatus";
 
 export type CloudFilesWindowTab =
   "browse" | "search" | "upload" | "recent" | "shared" | "trash";
@@ -70,6 +71,7 @@ export function WindowPanelShell({
   onTabChange,
   className,
 }: WindowPanelShellProps) {
+  useDemandFileTree();
   const [internalTab, setInternalTab] = useState<CloudFilesWindowTab>("browse");
   const activeTab = activeTabProp ?? internalTab;
 

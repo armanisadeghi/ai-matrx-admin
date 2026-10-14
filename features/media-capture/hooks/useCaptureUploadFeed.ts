@@ -23,8 +23,10 @@ import {
   feedUploadState,
   type CaptureUploadFeedEntry,
 } from "@/features/media-capture/runtime/mediaCaptureDiagnostics";
+import { useDemandFileTree } from "@/features/files/hooks/useFilesReadStatus";
 
 export function useCaptureUploadFeed(): CaptureUploadFeedEntry[] {
+  useDemandFileTree();
   const folders = useAppSelector(selectAllFoldersArray);
   const uploads = useAppSelector(selectVisibleUploads);
 

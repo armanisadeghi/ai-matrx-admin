@@ -1041,6 +1041,13 @@ export const ProTextarea = React.forwardRef<
       [agentAction, valueAsString],
     );
 
+    // The surface's default cleanup agent is read only once the menu opens; a "Clean up" pressed
+    // before it lands takes it the moment it arrives instead of opening with no agent.
+    useEffect(() => {
+      if (menuMode !== "cleanup" || selectedAgent || cleanupAgentId || !cleanupSurfaceAgentId) return;
+      setSelectedAgent(cleanupSurfaceAgentId);
+    }, [menuMode, selectedAgent, cleanupAgentId, cleanupSurfaceAgentId]);
+
     const applyEmbeddedSourceText = useCallback(
       (text: string) => {
         if (!pushToTextarea(text)) {

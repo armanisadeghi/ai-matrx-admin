@@ -23,6 +23,46 @@ export function entityScopesKey(
   return `${entityType}:${entityId}`;
 }
 
+type Dispatch = Parameters<AppThunk>[0];
+interface PendingBatch {
+  ids: Set<string>;
+  done: Promise<void>;
+}
+const pendingBatches = new Map<string, PendingBatch>();
+
+function batchEntityScopes(dispatch: Dispatch, entityType: EntityTypeToken, entityId: string): Promise<void> {
+  const open = pendingBatches.get(entityType);
+  if (open) {
+    open.ids.add(entityId);
+    return open.done;
+  }
+  const ids = new Set<string>([entityId]);
+  const done = new Promise<void>((resolve) => {
+    setTimeout(() => {
+      pendingBatches.delete(entityType);
+      const wanted = [...ids];
+      void scopesService
+        .getEntityScopesBulk(entityType as Parameters<typeof scopesService.getEntityScopesBulk>[0], wanted)
+        .then((res) => {
+          for (const id of wanted) {
+            const key = entityScopesKey(entityType, id);
+            if (!res.ok) dispatch(scopesActions.entityScopesFetchRejected({ key, error: res.error.message }));
+            else dispatch(scopesActions.entityScopesFetchFulfilled({ key, scope_ids: res.data.byEntity[id] ?? [] }));
+          }
+        })
+        .catch((error: unknown) => {
+          const message = error instanceof Error ? error.message : String(error);
+          for (const id of wanted) {
+            dispatch(scopesActions.entityScopesFetchRejected({ key: entityScopesKey(entityType, id), error: message }));
+          }
+        })
+        .finally(resolve);
+    }, 0);
+  });
+  pendingBatches.set(entityType, { ids, done });
+  return done;
+}
+
 export function ensureEntityScopes(
   entityType: EntityTypeToken,
   entityId: string,
@@ -34,6 +74,15 @@ export function ensureEntityScopes(
     const entry = getState().scopesTree.entityScopesByKey[key];
 
     if (!refresh && entry?.status === "ready") return;
+    if (!refresh) {
+      // A list of rows each asking for its own tags used to be N reads (the Files page: one
+      // `assoc_for_entity` per file, 50 on one load). Asks made in the same moment ride ONE
+      // bulk read (`getEntityScopesBulk`); an ask already in flight is not repeated.
+      if (entry?.status === "loading") return;
+      dispatch(scopesActions.entityScopesFetchPending({ key }));
+      await batchEntityScopes(dispatch, entityType, entityId);
+      return;
+    }
     dispatch(scopesActions.entityScopesFetchPending({ key }));
 
     const res = await scopesService.getEntityScopes(entityType, entityId);

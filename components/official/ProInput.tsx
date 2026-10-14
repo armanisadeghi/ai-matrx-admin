@@ -444,6 +444,13 @@ export const ProInput = React.forwardRef<HTMLInputElement, ProInputProps>(
       setMenuMode("cleanup");
     }, [cleanupAction, cleanupAgentId, cleanupSurfaceAgentId, value]);
 
+    // The surface's default agent is read only once the menu opens; a "Clean up" pressed before it
+    // lands takes it the moment it arrives instead of opening with no agent.
+    useEffect(() => {
+      if (menuMode !== "cleanup" || selectedCleanupAgent || cleanupAgentId || !cleanupSurfaceAgentId) return;
+      setSelectedCleanupAgent(cleanupSurfaceAgentId);
+    }, [menuMode, selectedCleanupAgent, cleanupAgentId, cleanupSurfaceAgentId]);
+
     const runCleanup = useCallback(() => {
       const text = inputRef.current?.value ?? String(value ?? "");
       if (!text.trim()) {

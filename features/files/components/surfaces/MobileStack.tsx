@@ -60,6 +60,7 @@ import {
 } from "@/features/files/components/core/RowContextMenu/RowContextMenu";
 import { FilesTreeErrorState, FilesTreeLoadingState } from "./FilesTreeState";
 import { DriveBrowseMobileLink } from "@/features/files/google-drive/DriveBrowseMobileLink";
+import { useDemandFileTree } from "@/features/files/hooks/useFilesReadStatus";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -87,6 +88,7 @@ export function MobileStack({
   className,
   titleSlot,
 }: MobileStackProps) {
+  useDemandFileTree();
   const [stack, setStack] = useState<Frame[]>(() => {
     const base: Frame[] = [{ kind: "folder", folderId: null }];
     if (initialFolderId) {

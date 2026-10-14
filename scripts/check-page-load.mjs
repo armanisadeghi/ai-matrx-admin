@@ -8,6 +8,8 @@
 // route headless, and records every Supabase request for `--settle` ms. It FAILS when
 //   - a relation in `neverOnLoad` (scripts/page-load-budget.json) is read during the load — those are
 //     fetched by the thing that shows them, when it opens (the messaging inbox, the file tree, …);
+//   - a relation in the route's `mustRead` never leaves — the page SHOWS it, so it must load it
+//     (on-demand data has to be demanded by the thing that shows it, or the screen sits empty);
 //   - an (operation, relation) pair leaves more than once and is not in that route's `repeats`
 //     allowance (a SHRINK-ONLY baseline: legitimately distinct reads of one relation, e.g. a chunked
 //     IN list). A stale allowance — allowed but no longer repeating — fails too, so it only shrinks.
@@ -103,9 +105,14 @@ for (const route of targets) {
   if (navigations > 1) console.log(`       (reloaded ${navigations - 1}× during the window — counted the last load only)`);
 
   const allowed = budget.routes[route]?.repeats ?? {};
+  const mustRead = budget.routes[route]?.mustRead ?? [];
   const findings = [];
+  const readRelations = new Set([...seen.values()].map((d) => d.relation));
+  for (const relation of mustRead) {
+    if (!readRelations.has(relation)) findings.push(`NEVER LOADED  ${relation} — this page shows it, so it must read it`);
+  }
   for (const [key, d] of seen) {
-    if (neverOnLoad.has(d.relation)) findings.push(`ON-DEMAND READ ON LOAD  ${key} ×${d.count}`);
+    if (neverOnLoad.has(d.relation) && !mustRead.includes(d.relation)) findings.push(`ON-DEMAND READ ON LOAD  ${key} ×${d.count}`);
     const limit = allowed[key] ?? 1;
     if (d.count > limit) findings.push(`REPEATED  ${key} ×${d.count} (allowed ${limit})`);
   }

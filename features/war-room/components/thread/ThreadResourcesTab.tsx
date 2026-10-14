@@ -47,6 +47,7 @@ import { attachEntityToThread } from "@/features/war-room/redux/thunks";
 import { selectThreadEffectiveContext } from "@/features/war-room/redux/selectors";
 import { useThreadResourcesAdapter } from "@/features/war-room/hooks/useThreadResourcesAdapter";
 import { cn } from "@/lib/utils";
+import { useEnsureCloudFile } from "@/features/files/hooks/useEnsureCloudFile";
 
 // Code-split: the new-file dialog pulls the full Monaco editor. Loading it
 // lazily keeps Monaco out of the War Room bundle.
@@ -148,6 +149,9 @@ function FileResourceRow({
 }) {
   const fileId = row.resourceId;
   const { file, status } = useFile({ kind: "file_id", fileId });
+  // The room's agent context reads this file's record (mime, extraction) from the store; nothing
+  // loads the whole tree on every page any more, so the row that shows the file loads its record.
+  useEnsureCloudFile(fileId);
 
   const name = file?.meta.fileName ?? ctx.title;
   const category = file?.meta.category;

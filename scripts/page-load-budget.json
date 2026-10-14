@@ -1,5 +1,5 @@
 {
-  "_doc": "THE LOAD LAW budget for scripts/check-page-load.mjs (pnpm check:page-load). neverOnLoad: relations fetched only by the thing that shows them, when it opens \u2014 never during a page load on any route. routes.<route>.repeats: SHRINK-ONLY allowance for distinct reads of one relation (e.g. an IN list split into chunks), keyed 'op schema.relation'. Never raise a number to get green: find why it repeats.",
+  "_doc": "THE LOAD LAW budget for scripts/check-page-load.mjs (pnpm check:page-load). neverOnLoad: relations fetched only by the thing that shows them, when it opens \u2014 never during a page load on any route. routes.<route>.repeats: SHRINK-ONLY allowance for distinct reads of one relation (e.g. an IN list split into chunks), keyed 'op schema.relation'. Never raise a number to get green: find why it repeats. routes.<route>.mustRead: relations the page SHOWS and so must load (an on-demand relation listed here is allowed on that route).",
   "neverOnLoad": [
     "get_user_file_tree",
     "get_dm_conversations_with_details",
@@ -12,7 +12,15 @@
   ],
   "routes": {
     "/dashboard": {
-      "repeats": {}
+      "repeats": {
+        "select iam.organizations": 2,
+        "rpc public.mbr_count": 2,
+        "select ui.ui_surface": 2,
+        "select platform.assists": 2,
+        "select communication.calendar_event": 2,
+        "rpc public.assoc_for_sources": 3,
+        "select projects.projects": 2
+      }
     },
     "/notes": {
       "repeats": {
@@ -27,6 +35,20 @@
       }
     },
     "/shapes/brand_intake_facts": {
+      "repeats": {
+        "select iam.organizations": 2,
+        "rpc public.mbr_count": 2,
+        "select ui.ui_surface": 2,
+        "select platform.assists": 2,
+        "select content_ir.kind_definition": 6,
+        "select content_ir.kind_component": 6,
+        "select content_ir.kind_example": 2
+      }
+    },
+    "/files": {
+      "mustRead": [
+        "get_user_file_tree"
+      ],
       "repeats": {}
     }
   },
@@ -34,8 +56,11 @@
     "rpc platform.knob_snapshot_delta": "the notes list's landing-tab knob is read before the organization resolves (holding it would delay the list); the shell's readers use the org address",
     "select iam.organizations / rpc public.mbr_count / select projects.projects": "one read split into IN-list chunks of 100 organizations",
     "rpc public.assoc_for_sources": "three different reads: the list's notes, the visible notes' scope tags, the project tags",
-    "select platform.assists": "three different selects (undecided keys, silenced keys, approvals count)",
+    "select platform.assists": "three different selects (undecided keys, silenced keys, approvals count); on dashboard and shapes: two different selects (pending approvals, silenced keys)",
     "rpc platform.my_assist_admission_decision": "two producers (notes.unorganized, capture_ladder.needs_your_browser)",
-    "select workbench.notes": "the list select and the ids-only select behind the scope tags"
+    "select workbench.notes": "the list select and the ids-only select behind the scope tags",
+    "select ui.ui_surface": "dev-only SurfaceRowGuard reads the page's surface row and the canvas surface row (one each)",
+    "select communication.calendar_event / rpc public.assoc_for_sources": "agenda reads the mirror, refreshes from Google, then re-reads the mirror and its attendee edges (the second read sees the refreshed rows); on dashboard assoc_for_sources also reads the project tags",
+    "select content_ir.kind_definition / kind_component / kind_example": "one shape's page: registry catalog read in two 1000-row pages plus distinct per-shape reads (home, readiness, fix-it diagnosis, cold-tier definition, owner editor) each selecting different columns; a shape with no component also runs the fix-it diagnosis"
   }
 }
