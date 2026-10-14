@@ -7,6 +7,7 @@
  */
 
 import { useEffect, useState } from "react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { proxiedExternalImageUrl } from "@/lib/media/external-image";
 import { brightnessOf, shadeForBrightness } from "./logo-shade";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
@@ -133,14 +134,20 @@ export function CustomAdd({
 
 // ── Brand card ──────────────────────────────────────────────────────────────────
 
+const KIND_LABEL = { business: "Business", person: "Person", both: "Person with a business" } as const;
+
 /** The primary choices, laid out like an official profile card — builds as the person confirms. */
 export function BrandCard({
   basics,
   person,
+  kind,
+  onKind,
   location,
 }: {
   basics: BrandBasics;
   person: boolean;
+  kind: "person" | "business" | "both";
+  onKind: (kind: "person" | "business" | "both") => void;
   location: string | null;
 }) {
   const primary = basics.images.find((i) => i.primary) ?? null;
@@ -172,8 +179,25 @@ export function BrandCard({
         )}
       </span>
       <div className="flex min-w-0 flex-1 flex-col gap-1">
-        <span className={`truncate text-xl font-semibold ${empty ? "text-muted-foreground/50" : ""}`}>
-          {basics.name ?? (person ? "Your name" : "Your brand")}
+        <span className="flex min-w-0 items-baseline gap-2">
+          <span className={`truncate text-xl font-semibold ${empty ? "text-muted-foreground/50" : ""}`}>
+            {basics.name ?? (person ? "Your name" : "Your brand")}
+          </span>
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              className="shrink-0 rounded text-xs text-muted-foreground hover:text-foreground focus-visible:outline-2"
+              data-testid="smart-add-kind-label"
+            >
+              {KIND_LABEL[kind]}
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start">
+              {(Object.keys(KIND_LABEL) as (keyof typeof KIND_LABEL)[]).map((k) => (
+                <DropdownMenuItem key={k} onSelect={() => onKind(k)} data-testid={`smart-add-kind-${k}`}>
+                  {KIND_LABEL[k]}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </span>
         {basics.tagline || basics.category ? (
           <span className="truncate text-sm text-muted-foreground">{basics.tagline ?? basics.category}</span>
