@@ -169,7 +169,7 @@ export function BrandCard({
   const [dead, setDead] = useState<ReadonlySet<string>>(new Set());
   // The picture on screen: only ever one that has loaded. A newer, better candidate loads out of sight and
   // replaces it only once it has drawn; one that fails never takes the good one away (Arman, 2026-10-14).
-  const [shown, setShown] = useState<{ url: string; shade: "light" | "dark" } | null>(null);
+  const [shown, setShown] = useState<{ url: string; shade: "light" | "dark" | "checker" } | null>(null);
   const live = pictures.filter((u) => !dead.has(u));
   const target = live[0] ?? null;
   // A picture the person has since turned down (no longer a candidate) leaves the card.

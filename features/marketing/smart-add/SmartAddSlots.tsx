@@ -328,7 +328,7 @@ export function SmartAddSlots({
         ))}
       </Slot>
 
-      <Slot title={person ? "Headshot & photos" : "Logo & images"} empty={of("logo").length ? null : empty} hint="Pick every image to keep; star the main one">
+      <Slot title={person ? "Headshot & photos" : "Logo & images"} empty={of("logo").length ? null : empty} ask={person ? "Is this you?" : "Are these yours?"}>
         <div className="flex flex-wrap gap-3 px-4 pb-3 pt-1">
           {logoGroups.map((g) => (
             <Shared key={g.id} id={g.lead.key} as="div" className="empty:hidden">

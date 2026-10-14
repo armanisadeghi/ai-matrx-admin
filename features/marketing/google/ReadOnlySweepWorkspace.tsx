@@ -45,6 +45,14 @@ import {
   selectUserId,
 } from "@/lib/redux/selectors/userSelectors";
 import { canUseGoogleOAuthInternalTest } from "@/features/marketing/google/internal-test-reviewer";
+import {
+  YouTubeAnalyticsResult,
+  type YouTubeAnalyticsSelection,
+} from "@/features/marketing/google/YouTubeAnalyticsResult";
+import {
+  canReadYouTubeAnalytics,
+  youtubeAnalyticsWindow,
+} from "@/features/marketing/google/youtube-analytics-request";
 import { selectOrganizationId } from "@/lib/redux/slices/appContextSlice";
 import { selectOrganizationIds } from "@/features/scopes/redux/selectors/tree";
 import { cn } from "@/lib/utils";
@@ -78,12 +86,6 @@ const SWEEP_REQUIRED_CONNECTION_SCOPES = [
 ] as const;
 
 const SWEEP_CAPABILITIES = Object.keys(CAPABILITY) as SweepCapability[];
-
-function isoDate(daysAgo: number): string {
-  const value = new Date();
-  value.setUTCDate(value.getUTCDate() - daysAgo);
-  return value.toISOString().slice(0, 10);
-}
 
 function accountLabel(connection: GoogleConnectionSummary): string {
   return connection.account_email || connection.account_name || connection.id;
@@ -140,6 +142,8 @@ function ReadOnlySweepWorkspaceInner({ reviewMode }: { reviewMode: boolean }) {
     Partial<Record<SweepCapability, string>>
   >({});
   const [youtubeChannelId, setYoutubeChannelId] = useState("");
+  const [youtubeLoadedFor, setYoutubeLoadedFor] =
+    useState<YouTubeAnalyticsSelection | null>(null);
   const [taskImportOpen, setTaskImportOpen] = useState(false);
 
   const connections = (inventory.data?.connections ?? []).filter(
@@ -155,10 +159,13 @@ function ReadOnlySweepWorkspaceInner({ reviewMode }: { reviewMode: boolean }) {
     ),
   );
 
-  const connectionsFor = () => sweepConnections;
+  const youtubeConnections = connections.filter(canReadYouTubeAnalytics);
+
+  const connectionsFor = (capability: SweepCapability) =>
+    capability === "youtube" ? youtubeConnections : sweepConnections;
 
   const selectedConnection = (capability: SweepCapability) => {
-    const candidates = connectionsFor();
+    const candidates = connectionsFor(capability);
     const selected = selectedConnections[capability];
     return (
       candidates.find((connection) => connection.id === selected) ??
@@ -270,15 +277,22 @@ function ReadOnlySweepWorkspaceInner({ reviewMode }: { reviewMode: boolean }) {
   const loadYouTube = async () => {
     const connection = selectedConnection("youtube");
     if (!connection || !youtubeChannelId) return;
+    const reportSelection = {
+      connectionId: connection.id,
+      channelId: youtubeChannelId,
+    };
+    const window = youtubeAnalyticsWindow();
     try {
       await youtube.mutateAsync({
         connectionId: connection.id,
         organizationId: await operationOrganizationId(connection),
         channelId: youtubeChannelId,
-        startDate: isoDate(29),
-        endDate: isoDate(0),
+        startDate: window.startDate,
+        endDate: window.endDate,
       });
+      setYoutubeLoadedFor(reportSelection);
     } catch (error) {
+      setYoutubeLoadedFor(null);
       showReadError("YouTube Analytics", error);
     }
   };
@@ -352,9 +366,11 @@ function ReadOnlySweepWorkspaceInner({ reviewMode }: { reviewMode: boolean }) {
             </p>
             <div className="flex flex-wrap items-center gap-3">
               <Button
-                icon={connect.isPending ? (
-                  <Loader2 className="animate-spin" />
-                ) : null}
+                icon={
+                  connect.isPending ? (
+                    <Loader2 className="animate-spin" />
+                  ) : null
+                }
                 variant="primary"
                 onClick={() => void authorizeSweep()}
                 disabled={!allDisclosuresAccepted || connect.isPending}
@@ -428,7 +444,7 @@ function ReadOnlySweepWorkspaceInner({ reviewMode }: { reviewMode: boolean }) {
             onAccepted={(value) =>
               setAccepted((current) => ({ ...current, calendar: value }))
             }
-            connections={connectionsFor()}
+            connections={connectionsFor("calendar")}
             selectedId={selectedConnection("calendar")?.id ?? ""}
             onSelect={(value) =>
               setSelectedConnections((current) => ({
@@ -467,7 +483,7 @@ function ReadOnlySweepWorkspaceInner({ reviewMode }: { reviewMode: boolean }) {
             onAccepted={(value) =>
               setAccepted((current) => ({ ...current, tasks: value }))
             }
-            connections={connectionsFor()}
+            connections={connectionsFor("tasks")}
             selectedId={selectedConnection("tasks")?.id ?? ""}
             onSelect={(value) =>
               setSelectedConnections((current) => ({
@@ -517,7 +533,7 @@ function ReadOnlySweepWorkspaceInner({ reviewMode }: { reviewMode: boolean }) {
             onAccepted={(value) =>
               setAccepted((current) => ({ ...current, youtube: value }))
             }
-            connections={connectionsFor()}
+            connections={connectionsFor("youtube")}
             selectedId={youtubeConnection?.id ?? ""}
             onSelect={(value) => {
               setSelectedConnections((current) => ({
@@ -525,10 +541,12 @@ function ReadOnlySweepWorkspaceInner({ reviewMode }: { reviewMode: boolean }) {
                 youtube: value,
               }));
               setYoutubeChannelId("");
+              setYoutubeLoadedFor(null);
+              youtube.reset();
             }}
             onLoad={() => void loadYouTube()}
             loading={youtube.isPending}
-            resultLabel="Load 30-day performance"
+            resultLabel="Load 28-day performance"
             loadDisabled={!youtubeChannelId}
             extraControl={
               youtubeConnection ? (
@@ -536,7 +554,11 @@ function ReadOnlySweepWorkspaceInner({ reviewMode }: { reviewMode: boolean }) {
                   aria-label="Owned YouTube channel"
                   className="h-11 w-full rounded-md border border-input bg-background px-3 text-base sm:text-sm"
                   value={youtubeChannelId}
-                  onChange={(event) => setYoutubeChannelId(event.target.value)}
+                  onChange={(event) => {
+                    setYoutubeChannelId(event.target.value);
+                    setYoutubeLoadedFor(null);
+                    youtube.reset();
+                  }}
                 >
                   <option value="">Choose an owned channel</option>
                   {youtubeChannels.map((channel) => (
@@ -548,25 +570,14 @@ function ReadOnlySweepWorkspaceInner({ reviewMode }: { reviewMode: boolean }) {
               ) : null
             }
           >
-            {youtube.data ? (
-              <ResultList empty="No YouTube Analytics rows were returned.">
-                {youtube.data.days.map((day) => (
-                  <li
-                    key={day.day}
-                    className="grid grid-cols-2 gap-2 rounded border p-3 text-xs sm:grid-cols-4"
-                  >
-                    <span>
-                      <strong>{day.day}</strong>
-                    </span>
-                    <span>{day.views.toLocaleString()} views</span>
-                    <span>
-                      {day.estimated_minutes_watched.toLocaleString()} minutes
-                    </span>
-                    <span>+{day.subscribers_gained} subscribers</span>
-                  </li>
-                ))}
-              </ResultList>
-            ) : null}
+            <YouTubeAnalyticsResult
+              report={youtube.data ?? null}
+              loadedFor={youtubeLoadedFor}
+              currentSelection={{
+                connectionId: youtubeConnection?.id ?? "",
+                channelId: youtubeChannelId,
+              }}
+            />
           </CapabilityCard>
 
           <CapabilityCard
@@ -578,7 +589,7 @@ function ReadOnlySweepWorkspaceInner({ reviewMode }: { reviewMode: boolean }) {
             onAccepted={(value) =>
               setAccepted((current) => ({ ...current, tag_manager: value }))
             }
-            connections={connectionsFor()}
+            connections={connectionsFor("tag_manager")}
             selectedId={selectedConnection("tag_manager")?.id ?? ""}
             onSelect={(value) =>
               setSelectedConnections((current) => ({
@@ -707,9 +718,7 @@ function CapabilityCard({
             </select>
             {extraControl}
             <Button
-              icon={loading ? (
-                <Loader2 className="animate-spin" />
-              ) : null}
+              icon={loading ? <Loader2 className="animate-spin" /> : null}
               variant="primary"
               onClick={onLoad}
               disabled={loading || loadDisabled}

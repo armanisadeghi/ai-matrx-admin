@@ -52,6 +52,7 @@ import { useAppSelector } from "@/lib/redux/hooks";
 import { useSocialSpend } from "@/features/marketing/social/cost";
 import { BrandCard, CustomAdd, situationOf } from "./SmartAddExtras";
 import { CompareDialog } from "./compare/CompareDialog";
+import { compareSlots, isAnswered } from "./compare/compareSlots";
 import { ADOPTION_RELEASE_GRACE_MS } from "@/features/workflow-runtime/hooks/useWorkflowRun";
 import { detachWorkflowRunState } from "@/features/workflow-runtime/redux/adopt-workflow-run.thunk";
 import { marketingRoutes } from "@/features/marketing/lib/routes";
@@ -895,9 +896,19 @@ export function SmartAddBrand({
   // picture, and the homepage capture (for a site the person has not turned down).
   const findingPictures =
     roundViews.some((v) => v?.imaging) || rounds.some((r) => !r.error && (!r.runId || !views[r.runId]));
-  const capturing = roundViews.some((v) => v?.shooting);
+  const shotCapturing = roundViews.some((v) => v?.shooting);
   const shotHost = screenshots?.pageUrl ? websiteHost(screenshots.pageUrl) : null;
   const shotSite = !visible.some((i) => i.field === "website" && decisions[i.key] === "no" && (!shotHost || websiteHost(i.value) === shotHost));
+  // The compare bar shows only when the compare window has a real open comparison (2+ unsettled candidates in one
+  // slot) — the same list the window renders, so it can never open on "Nothing left to compare".
+  const compareState = {
+    decisions,
+    relations: Object.fromEntries(Object.entries(relations).map(([k, r]) => [k, r.relation])),
+    skipped,
+    person,
+    ownSites: [typedWebsite, ...rounds.map((r) => r.seeds.website)].filter((u): u is string => Boolean(u)),
+  };
+  const openComparisons = compareSlots(visible, compareState).filter((sl) => !sl.candidates.every((c) => isAnswered(c, compareState))).length;
   const foundName = stageName(withoutStaffFacts(items.values(), person));
   const cardBasics =
     basics.name && basics.images.length
@@ -917,9 +928,7 @@ export function SmartAddBrand({
   const spendOrg = useAppSelector((st) => st.appContext?.organization_id ?? null);
   const spend = useSocialSpend(spendOrg);
   const trackedAccounts = basics.accounts.filter((a) => a.platform);
-  const postsPoints = postsPerAccount
-    ? trackedAccounts.map((a) => spend.postsText(a.platform ?? "", postsPerAccount)).filter(Boolean)
-    : [];
+  const postsPoints = postsPerAccount ? spend.postsTotalText(trackedAccounts.map((a) => a.platform ?? ""), postsPerAccount) : null;
   const situation = situationOf(visible, rounds.length > 0 && !working);
   // One vocabulary for every found thing (web.brand_relation_kind) — the web step answers from it too.
   const { kinds: relationKinds } = useRelationKinds(relate);
@@ -1550,7 +1559,7 @@ export function SmartAddBrand({
         pictures={cardPictures}
         findingPictures={findingPictures}
         screenshot={person || !shotSite ? null : (screenshots?.desktop?.url ?? null)}
-        capturing={!person && capturing && shotSite}
+        capturing={!person && shotCapturing && shotSite}
         person={person}
         kind={kindLabel.kind}
         onKind={answerKind}
@@ -1566,7 +1575,7 @@ export function SmartAddBrand({
           <CustomAdd field="description" label="What you do" placeholder="What you do, in a sentence" onAdd={addCustom} />
           <CustomAdd field="address" label="Where you are" placeholder="City or street address" onAdd={addCustom} />
         </div>
-      ) : situation === "conflicted" || comparing ? (
+      ) : openComparisons > 0 || comparing ? (
         <div className="flex flex-col gap-3" data-testid="smart-add-situation">
           <div className="flex items-center gap-2 rounded-lg border border-amber-500/40 bg-amber-500/5 px-4 py-2 text-sm">
             <span className="font-medium">Some of these may be someone else</span>
@@ -1574,11 +1583,6 @@ export function SmartAddBrand({
               Compare side by side
             </Button>
           </div>
-        </div>
-      ) : situation === "established" ? (
-        <div className="rounded-lg border border-primary/30 bg-primary/5 px-4 py-3 text-sm" data-testid="smart-add-situation">
-          <span className="font-medium">We found plenty.</span>{" "}
-          <span className="text-muted-foreground">Check the card, star your main picks and create.</span>
         </div>
       ) : null}
       {/* Always mounted: the situation banner above changes as findings load; the dialog must not remount. */}
@@ -1642,25 +1646,26 @@ export function SmartAddBrand({
 
       {/* Create: the confirmed basics, one row. */}
       <div className="sticky bottom-3 z-10 flex min-h-12 items-center gap-3 rounded-xl border border-border bg-card/95 px-4 py-2 shadow-lg backdrop-blur">
-        <div className="flex min-w-0 flex-1 items-center gap-2 text-sm">
+        {/* Two rows: the brand, then what Create files and what it spends — each fact once, nothing cut off. */}
+        <div className="flex min-w-0 flex-1 items-center gap-2.5">
           {basics.logoUrl ? (
-            <img src={basics.logoUrl} alt="" className="size-6 shrink-0 rounded object-contain" />
+            <img src={basics.logoUrl} alt="" className="size-8 shrink-0 rounded object-contain" />
           ) : null}
-          <span className="truncate font-medium">{basics.name ?? "Confirm a name to create the brand"}</span>
-          {basics.name && trackedAccounts.length && !created ? (
-            <span className="hidden truncate text-xs text-muted-foreground sm:inline" data-testid="smart-add-posts-preview">
-              {postsPerAccount
-                ? `Then ${postsPerAccount} recent posts per account${postsPoints.length ? ` · ${postsPoints.join(" + ")}` : ""}`
-                : "No post history (setting is 0)"}
-            </span>
-          ) : null}
-          {basics.name ? (
-            <span className="truncate text-xs text-muted-foreground">
-              {[basics.websiteUrl ? websiteHost(basics.websiteUrl) : null, basics.accounts.length ? `${basics.accounts.length} accounts` : null]
-                .filter(Boolean)
-                .join(" · ")}
-            </span>
-          ) : null}
+          <div className="flex min-w-0 flex-col">
+            <span className="truncate text-sm font-medium">{basics.name ?? "Confirm a name to create the brand"}</span>
+            {basics.name ? (
+              <span className="truncate text-xs text-muted-foreground" data-testid="smart-add-posts-preview">
+                {[
+                  basics.websiteUrl ? websiteHost(basics.websiteUrl) : null,
+                  basics.accounts.length ? `${basics.accounts.length} ${basics.accounts.length === 1 ? "account" : "accounts"}` : null,
+                  trackedAccounts.length && !created && postsPerAccount ? `${postsPerAccount} posts each` : null,
+                  trackedAccounts.length && !created ? postsPoints : null,
+                ]
+                  .filter(Boolean)
+                  .join(" · ")}
+              </span>
+            ) : null}
+          </div>
         </div>
         {created ? (
           <a

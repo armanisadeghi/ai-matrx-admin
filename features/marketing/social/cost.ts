@@ -108,6 +108,13 @@ export function useSocialSpend(organizationId: string | null | undefined) {
     return formatPointsAlways(postsUsd(costs.data, platform, count), display.toPoints);
   }
 
+  /** The points one fetch of `count` posts from EACH platform uses, as one total; null when any is unpriced. */
+  function postsTotalText(platforms: string[], count: number): string | null {
+    const each = platforms.map((p) => postsUsd(costs.data, p, count));
+    if (!each.length || each.some((u) => u == null)) return null;
+    return formatPointsAlways(each.reduce<number>((sum, u) => sum + (u ?? 0), 0), display.toPoints);
+  }
+
   /** The points `count` comments will use, always named; null when unpriced. */
   function commentsText(count: number): string | null {
     return formatPointsAlways(commentsUsd(costs.data, count), display.toPoints);
@@ -124,7 +131,7 @@ export function useSocialSpend(organizationId: string | null | undefined) {
     return confirm({ title: dialog.title, description: `Uses ${words.replace(/^≈ /, "about ")}.`, confirmLabel: dialog.confirmLabel });
   }
 
-  return { costText, pointsText, agentCostText, confirmSpend, confirmPosts, postsText, commentsText };
+  return { costText, pointsText, agentCostText, confirmSpend, confirmPosts, postsText, postsTotalText, commentsText };
 }
 
 // ---------------------------------------------------------------------------
