@@ -1,6 +1,6 @@
 {
   "name": "app-matrx",
-  "version": "0.4.3194",
+  "version": "0.4.3195",
   "private": true,
   "scripts": {
     "check:session-handover": "node scripts/check-session-handover.mjs",
