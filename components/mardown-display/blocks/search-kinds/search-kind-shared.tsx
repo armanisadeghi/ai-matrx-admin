@@ -50,11 +50,11 @@ export const SearchFavicon: React.FC<{
     return (
       <span
         className={cn(
-          "flex items-center justify-center bg-muted text-muted-foreground",
+          "flex items-center justify-center text-muted-foreground",
           className,
         )}
       >
-        <Globe className="h-1/2 w-1/2" />
+        <Globe className="h-full w-full" />
       </span>
     );
   }
@@ -164,17 +164,17 @@ export const SearchChip: React.FC<{
   </span>
 );
 
-/** Section heading inside the collection. */
+/** Section heading inside the collection — one quiet row: icon, label, count. */
 export const SectionHeading: React.FC<{
   icon: React.ComponentType<{ className?: string }>;
   label: string;
   count?: number;
 }> = ({ icon: Icon, label, count }) => (
-  <div className="mb-2 flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-    <Icon className="h-3.5 w-3.5" />
+  <div className="mb-2.5 flex items-center gap-1.5 text-sm font-medium text-foreground">
+    <Icon className="h-4 w-4 text-muted-foreground" />
     <span>{label}</span>
     {typeof count === "number" && count > 0 && (
-      <span className="rounded-full bg-muted px-1.5 text-[10px]">{count}</span>
+      <span className="tabular-nums text-muted-foreground">{count}</span>
     )}
   </div>
 );

@@ -8,7 +8,7 @@
  */
 
 import React from "react";
-import { Clock, MapPin, Navigation } from "lucide-react";
+import { ChevronDown, Clock, MapPin, Navigation } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { items, num, readSearchKindValue, text } from "./search-kind-data";
 import { RatingStars } from "./search-kind-shared";
@@ -49,46 +49,52 @@ export function OpeningHoursBlock({ serverData, className }: SearchKindBlockProp
 
   if (days.length === 0 && !today) return null;
 
-  return (
-    <div className={cn("text-xs", className)}>
-      <div className="mb-1 flex items-center gap-1.5 font-medium text-foreground">
-        <Clock className="h-3.5 w-3.5 text-muted-foreground" />
-        <span>Hours</span>
-        {today && (
-          <span className="text-muted-foreground">
-            · today {text(today.opens)}–{text(today.closes)}
-          </span>
-        )}
-      </div>
-      {days.length > 0 && (
-        <div className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-0.5">
-          {days.map((d, i) => {
-            const name = text(d.day);
-            const isToday = name !== null && name === todayName;
-            return (
-              <React.Fragment key={i}>
-                <span
-                  className={cn(
-                    "text-muted-foreground",
-                    isToday && "font-medium text-foreground",
-                  )}
-                >
-                  {name ? dayLabel(name) : ""}
-                </span>
-                <span
-                  className={cn(
-                    "tabular-nums text-muted-foreground",
-                    isToday && "font-medium text-foreground",
-                  )}
-                >
-                  {text(d.opens)}–{text(d.closes)}
-                </span>
-              </React.Fragment>
-            );
-          })}
-        </div>
+  const todayLine = today ? `${text(today.opens) ?? ""}–${text(today.closes) ?? ""}` : null;
+  const summary = (
+    <>
+      <Clock className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+      {todayLine ? (
+        <span className="tabular-nums">
+          <span className="text-foreground">Today</span> {todayLine}
+        </span>
+      ) : (
+        <span className="text-foreground">Hours</span>
       )}
-    </div>
+    </>
+  );
+
+  // The week is one click away; today is what people look for (Google's
+  // local pack). A list without today's row opens straight to the week.
+  if (days.length === 0) {
+    return (
+      <div className={cn("flex items-center gap-1.5 text-sm text-muted-foreground", className)}>
+        {summary}
+      </div>
+    );
+  }
+  return (
+    <details className={cn("group/hours text-sm text-muted-foreground", className)} open={!today}>
+      <summary className="inline-flex cursor-pointer list-none items-center gap-1.5 hover:text-foreground [&::-webkit-details-marker]:hidden">
+        {summary}
+        <ChevronDown className="h-3.5 w-3.5 shrink-0 transition-transform group-open/hours:rotate-180" />
+      </summary>
+      <div className="mt-1 grid grid-cols-[auto_1fr] gap-x-4 gap-y-0.5 pl-5 text-xs">
+        {days.map((d, i) => {
+          const name = text(d.day);
+          const isToday = name !== null && name === todayName;
+          return (
+            <React.Fragment key={i}>
+              <span className={cn(isToday && "font-medium text-foreground")}>
+                {name ? dayLabel(name) : ""}
+              </span>
+              <span className={cn("tabular-nums", isToday && "font-medium text-foreground")}>
+                {text(d.opens)}–{text(d.closes)}
+              </span>
+            </React.Fragment>
+          );
+        })}
+      </div>
+    </details>
   );
 }
 

@@ -22,8 +22,7 @@ import {
   ExternalLink,
   MessagesSquare,
   Play,
-  HelpCircle,
-  Radio,
+  ChevronDown,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatDate } from "@ai-matrx/chat/tool-call-visualization/renderers/search/parseSearch";
@@ -38,7 +37,6 @@ import {
 import {
   BreadcrumbLine,
   RatingStars,
-  SearchChip,
   SearchFavicon,
 } from "./search-kind-shared";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
@@ -90,14 +88,14 @@ export function WebResultBlock({ serverData, className }: SearchKindBlockProps) 
       <div className="flex items-start gap-3">
         <div className="min-w-0 flex-1">
           {/* Favicon + site identity over the breadcrumb, Google's layout. */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2.5">
             <SearchFavicon
               iconUrl={text(value.favicon)}
               url={url}
-              className="h-9 w-9 flex-shrink-0 rounded-full border border-border bg-card p-1.5"
+              className="h-[18px] w-[18px] flex-shrink-0"
             />
             <div className="min-w-0 flex-1">
-              <div className="truncate text-sm font-medium leading-tight text-foreground">
+              <div className="truncate text-sm leading-tight text-foreground">
                 {siteName ?? ""}
               </div>
               <BreadcrumbLine url={url} displayedUrl={text(value.displayed_url)} />
@@ -107,9 +105,9 @@ export function WebResultBlock({ serverData, className }: SearchKindBlockProps) 
           <OutboundLink
             href={url ?? undefined}
             onClick={(e) => e.stopPropagation()}
-            className="group/link mt-1.5 flex items-start gap-1.5"
+            className="group/link mt-1 flex items-start gap-1.5"
           >
-            <span className="text-lg font-medium leading-snug text-primary underline-offset-2 group-hover/link:underline">
+            <span className="text-base leading-snug text-primary underline-offset-2 group-hover/link:underline @lg:text-lg">
               {title}
             </span>
             <ExternalLink className="mt-1.5 h-3.5 w-3.5 flex-shrink-0 text-muted-foreground opacity-0 transition-opacity group-hover/result:opacity-100" />
@@ -117,11 +115,12 @@ export function WebResultBlock({ serverData, className }: SearchKindBlockProps) 
 
           {snippet && (
             <p className="mt-1 line-clamp-2 text-sm leading-relaxed text-muted-foreground">
+              {date && <span className="text-muted-foreground/80">{date} — </span>}
               {snippet}
             </p>
           )}
 
-          {(date || rating || text(value.author)) && (
+          {((!snippet && date) || rating || text(value.author)) && (
             <div className="mt-1.5 flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
               {rating && typeof rating.value === "number" && (
                 <RatingStars
@@ -130,7 +129,7 @@ export function WebResultBlock({ serverData, className }: SearchKindBlockProps) 
                   count={num(rating.count)}
                 />
               )}
-              {date && <span className="opacity-80">{date}</span>}
+              {!snippet && date && <span>{date}</span>}
               {text(value.author) && <span>{text(value.author)}</span>}
             </div>
           )}
@@ -159,7 +158,7 @@ export function WebResultBlock({ serverData, className }: SearchKindBlockProps) 
         {thumbnail && (
           <Thumb
             src={thumbnail}
-            className="mt-1 h-16 w-24 flex-shrink-0 rounded-md border border-border object-cover"
+            className="mt-1 h-14 w-20 flex-shrink-0 rounded-lg bg-muted object-cover @lg:h-[72px] @lg:w-[104px]"
           />
         )}
       </div>
@@ -185,7 +184,7 @@ export function NewsResultBlock({ serverData, className }: SearchKindBlockProps)
       href={url ?? undefined}
       onClick={(e) => e.stopPropagation()}
       className={cn(
-        "group flex max-w-xl flex-col overflow-hidden rounded-lg border border-border bg-card transition-colors hover:border-primary/40",
+        "group flex max-w-xl flex-col overflow-hidden rounded-xl border border-border bg-card transition-colors hover:border-primary/40",
         className,
       )}
     >
@@ -202,7 +201,7 @@ export function NewsResultBlock({ serverData, className }: SearchKindBlockProps)
           <SearchFavicon
             iconUrl={text(value.source_logo)}
             url={url}
-            className="h-4 w-4 rounded"
+            className="h-4 w-4 flex-shrink-0"
           />
           <span className="truncate">{text(value.site_name) ?? ""}</span>
           {value.is_breaking === true && (
@@ -217,10 +216,17 @@ export function NewsResultBlock({ serverData, className }: SearchKindBlockProps)
             {text(value.snippet)}
           </p>
         )}
-        <div className="mt-auto flex items-center gap-2 pt-1 text-xs text-muted-foreground">
-          {date && <span>{date}</span>}
-          {text(value.author) && <span className="truncate">· {text(value.author)}</span>}
-        </div>
+        {(date || text(value.author)) && (
+          <div className="mt-auto flex min-w-0 items-center gap-1.5 pt-1 text-xs text-muted-foreground">
+            {date && <span className="shrink-0">{date}</span>}
+            {text(value.author) && (
+              <span className="truncate">
+                {date ? "· " : ""}
+                {text(value.author)}
+              </span>
+            )}
+          </div>
+        )}
       </div>
     </OutboundLink>
   );
@@ -239,16 +245,15 @@ export function VideoResultBlock({ serverData, className }: SearchKindBlockProps
   const thumbnail = text(value.thumbnail);
   const duration = num(value.duration_seconds);
   const date = dateLine(value, formatDate);
-  const byline = [text(value.channel), text(value.platform)]
-    .filter(Boolean)
-    .join(" · ");
+  // The channel is who made it; the platform only stands in when it is unknown.
+  const byline = text(value.channel) ?? text(value.platform) ?? "";
 
   return (
     <OutboundLink
       href={url ?? undefined}
       onClick={(e) => e.stopPropagation()}
       className={cn(
-        "group flex max-w-xl flex-col overflow-hidden rounded-lg border border-border bg-card transition-colors hover:border-primary/40",
+        "group flex max-w-xl flex-col overflow-hidden rounded-xl border border-border bg-card transition-colors hover:border-primary/40",
         className,
       )}
     >
@@ -276,9 +281,14 @@ export function VideoResultBlock({ serverData, className }: SearchKindBlockProps
           {title}
         </div>
         {(byline || date) && (
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+          <div className="mt-auto flex min-w-0 items-center gap-1.5 text-xs text-muted-foreground">
             {byline && <span className="truncate">{byline}</span>}
-            {date && <span>{byline ? "· " : ""}{date}</span>}
+            {date && (
+              <span className="shrink-0">
+                {byline ? "· " : ""}
+                {date}
+              </span>
+            )}
           </div>
         )}
       </div>
@@ -299,35 +309,62 @@ export function FaqItemBlock({ serverData, className }: SearchKindBlockProps) {
   const answer = text(value.answer);
   const sourceUrl = text(value.source_url);
   const sourceTitle = text(value.source_title);
+  const hasBody = Boolean(answer || sourceUrl);
 
-  return (
-    <div className={cn("rounded-md border border-border bg-card p-3", className)}>
-      <div className="flex items-start gap-2">
-        <HelpCircle className="mt-0.5 h-4 w-4 flex-shrink-0 text-muted-foreground" />
-        <div className="min-w-0 flex-1">
-          <div className="text-sm font-medium text-foreground">{question}</div>
-          {answer && (
-            <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-              {answer}
-            </p>
-          )}
-          {sourceUrl && (
-            <OutboundLink
-              href={sourceUrl}
-              onClick={(e) => e.stopPropagation()}
-              className="mt-1.5 inline-flex max-w-full items-center gap-1.5 text-xs text-primary underline-offset-2 hover:underline"
-            >
-              <SearchFavicon
-                iconUrl={text(value.favicon)}
-                url={sourceUrl}
-                className="h-3.5 w-3.5 rounded"
-              />
-              <span className="truncate">{sourceTitle ?? sourceUrl}</span>
-            </OutboundLink>
-          )}
-        </div>
+  const questionRow = (
+    <>
+      <span className="min-w-0 flex-1 text-sm font-medium text-foreground">
+        {question}
+      </span>
+      {hasBody && (
+        <ChevronDown className="h-4 w-4 flex-shrink-0 text-muted-foreground transition-transform group-open/faq:rotate-180" />
+      )}
+    </>
+  );
+
+  // Google's People-also-ask: the question is the row, the answer opens under it.
+  if (!hasBody) {
+    return (
+      <div
+        className={cn(
+          "flex items-center gap-3 rounded-lg border border-border bg-card px-4 py-3",
+          className,
+        )}
+      >
+        {questionRow}
       </div>
-    </div>
+    );
+  }
+  return (
+    <details
+      className={cn(
+        "group/faq rounded-lg border border-border bg-card",
+        className,
+      )}
+    >
+      <summary className="flex cursor-pointer list-none items-center gap-3 px-4 py-3 hover:bg-muted/40 [&::-webkit-details-marker]:hidden">
+        {questionRow}
+      </summary>
+      <div className="px-4 pb-3.5">
+        {answer && (
+          <p className="text-sm leading-relaxed text-muted-foreground">{answer}</p>
+        )}
+        {sourceUrl && (
+          <OutboundLink
+            href={sourceUrl}
+            onClick={(e) => e.stopPropagation()}
+            className="mt-2 inline-flex max-w-full items-center gap-1.5 text-xs text-primary underline-offset-2 hover:underline"
+          >
+            <SearchFavicon
+              iconUrl={text(value.favicon)}
+              url={sourceUrl}
+              className="h-3.5 w-3.5 flex-shrink-0"
+            />
+            <span className="truncate">{sourceTitle ?? sourceUrl}</span>
+          </OutboundLink>
+        )}
+      </div>
+    </details>
   );
 }
 
@@ -349,42 +386,42 @@ export function DiscussionResultBlock({
   const date = dateLine(value, formatDate);
   const body = text(value.top_answer) ?? text(value.question_text) ?? text(value.snippet);
 
+  const meta = [
+    answers !== null
+      ? `${Intl.NumberFormat().format(answers)} ${answers === 1 ? "answer" : "answers"}`
+      : null,
+    score,
+  ].filter((part): part is string => Boolean(part));
+
   return (
-    <div className={cn("group/result flex items-start gap-3", className)}>
-      <span className="mt-0.5 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
-        <MessagesSquare className="h-4 w-4" />
-      </span>
-      <div className="min-w-0 flex-1">
-        <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-          <SearchFavicon
-            iconUrl={text(value.favicon)}
-            url={url}
-            className="h-3.5 w-3.5 rounded"
-          />
-          <span className="truncate">{text(value.forum_name) ?? ""}</span>
-          {date && <span className="opacity-80">· {date}</span>}
-        </div>
-        <OutboundLink
-          href={url ?? undefined}
-          onClick={(e) => e.stopPropagation()}
-          className="mt-0.5 block text-sm font-medium leading-snug text-primary underline-offset-2 hover:underline"
-        >
-          {title}
-        </OutboundLink>
-        {body && (
-          <p className="mt-1 line-clamp-2 text-sm leading-relaxed text-muted-foreground">
-            {body}
-          </p>
-        )}
-        {(answers !== null || score) && (
-          <div className="mt-1 flex items-center gap-2">
-            {answers !== null && (
-              <SearchChip>{Intl.NumberFormat().format(answers)} answers</SearchChip>
-            )}
-            {score && <SearchChip>{score}</SearchChip>}
-          </div>
-        )}
+    <div className={cn("group/result min-w-0", className)}>
+      <div className="flex min-w-0 items-center gap-1.5 text-xs text-muted-foreground">
+        <SearchFavicon
+          iconUrl={text(value.favicon)}
+          url={url}
+          className="h-4 w-4 flex-shrink-0"
+        />
+        <span className="truncate text-foreground">{text(value.forum_name) ?? ""}</span>
+        {date && <span className="shrink-0">· {date}</span>}
       </div>
+      <OutboundLink
+        href={url ?? undefined}
+        onClick={(e) => e.stopPropagation()}
+        className="mt-0.5 block text-base leading-snug text-primary underline-offset-2 hover:underline"
+      >
+        {title}
+      </OutboundLink>
+      {body && (
+        <p className="mt-0.5 line-clamp-2 text-sm leading-relaxed text-muted-foreground">
+          {body}
+        </p>
+      )}
+      {meta.length > 0 && (
+        <div className="mt-1 flex items-center gap-1.5 text-xs tabular-nums text-muted-foreground">
+          <MessagesSquare className="h-3.5 w-3.5" />
+          <span>{meta.join(" · ")}</span>
+        </div>
+      )}
     </div>
   );
 }

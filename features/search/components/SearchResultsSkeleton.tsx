@@ -16,9 +16,12 @@ import { Skeleton } from "@ai-matrx/design-system";
 function ResultRowSkeleton() {
   return (
     <div className="space-y-2">
-      <div className="flex items-center gap-2">
-        <Skeleton className="h-4 w-4 rounded-full" />
-        <Skeleton className="h-3 w-40" />
+      <div className="flex items-center gap-2.5">
+        <Skeleton className="h-[18px] w-[18px] rounded-full" />
+        <div className="space-y-1.5">
+          <Skeleton className="h-3 w-28" />
+          <Skeleton className="h-2.5 w-48" />
+        </div>
       </div>
       <Skeleton className="h-4 w-3/4" />
       <Skeleton className="h-3 w-full" />
@@ -27,7 +30,26 @@ function ResultRowSkeleton() {
   );
 }
 
-export function SearchResultsSkeleton({ query }: { query: string }) {
+/**
+ * `bare` drops the header line — for hosts (the Search Lab) whose own engine
+ * line already says what is being searched.
+ */
+export function SearchResultsSkeleton({
+  query,
+  bare = false,
+}: {
+  query: string;
+  bare?: boolean;
+}) {
+  if (bare) {
+    return (
+      <div className="my-2 max-w-3xl space-y-6" aria-live="polite" aria-busy="true">
+        {[0, 1, 2, 3, 4].map((i) => (
+          <ResultRowSkeleton key={i} />
+        ))}
+      </div>
+    );
+  }
   return (
     <div className="my-2 space-y-6" aria-live="polite" aria-busy="true">
       <div className="flex items-center gap-2">

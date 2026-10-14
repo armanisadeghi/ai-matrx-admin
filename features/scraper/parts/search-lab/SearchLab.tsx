@@ -19,9 +19,9 @@ import { useState } from "react";
 import {
   AlertTriangle,
   Braces,
-  MapPin,
   RotateCcw,
   Search,
+  SearchX,
   SlidersHorizontal,
   X,
 } from "lucide-react";
@@ -151,6 +151,9 @@ function clampCount(raw: string): number {
 
 type InspectorState = Record<SearchProvider, boolean>;
 
+/** One measure for the search row, the options and the results — they line up. */
+const LAB_WIDTH = "max-w-6xl";
+
 export function SearchLabBody({
   form,
 }: {
@@ -227,9 +230,12 @@ export function SearchLabBody({
 
   return (
     <>
-      <div className="flex-shrink-0 border-b border-border/50 px-3 py-2">
-        <div className="mx-auto max-w-7xl space-y-1.5">
-          <div className="flex flex-wrap items-center gap-y-1.5">
+      <div className="flex-shrink-0 border-b border-border/60 px-3 pb-2 pt-2.5 sm:px-4">
+        <div className={cn("mx-auto space-y-2", LAB_WIDTH)}>
+          {/* Phone: query + Search on one row, engine + Options under it.
+              Wider: one row, Search last. Nothing appears or vanishes here,
+              so the row never shifts. */}
+          <div className="flex flex-wrap items-center gap-2">
             <ProInput
               id="search-lab-query"
               aria-label="Search query"
@@ -238,46 +244,53 @@ export function SearchLabBody({
               value={keywords}
               onChange={(e) => onQuery(e.target.value)}
               onKeyDown={handleKeyDown}
-              wrapperClassName="flex-1 min-w-[220px]"
-              className="h-8 text-sm"
+              wrapperClassName="order-1 min-w-0 flex-1 sm:min-w-[240px]"
+              className="h-9 text-sm"
             />
-            <SegmentedControl
-              aria-label="Search engine"
-              value={engine}
-              onValueChange={setEngine}
-              data={ENGINE_OPTIONS}
-            />
-            <Button
-              variant="quiet"
-              icon={<SlidersHorizontal />}
-              pressed={optionsOpen}
-              meta={changedOptionCount > 0 ? changedOptionCount : undefined}
-              onClick={() => setOptionsOpen((v) => !v)}
-              aria-label="Options"
-            >
-              Options
-            </Button>
-            {runs.length > 0 && !isLoading && (
+            <div className="order-3 flex w-full items-center gap-1 sm:order-2 sm:w-auto">
+              <SegmentedControl
+                aria-label="Search engine"
+                value={engine}
+                onValueChange={setEngine}
+                data={ENGINE_OPTIONS}
+              />
+              <Button
+                variant="quiet"
+                icon={<SlidersHorizontal />}
+                pressed={optionsOpen}
+                meta={changedOptionCount > 0 ? changedOptionCount : undefined}
+                onClick={() => setOptionsOpen((v) => !v)}
+                aria-label="Options"
+                aria-expanded={optionsOpen}
+              >
+                Options
+              </Button>
               <Button
                 variant="quiet"
                 icon={<X />}
                 aria-label="Clear results"
                 title="Clear results"
                 onClick={handleClear}
+                disabled={runs.length === 0 || isLoading}
+                className={cn(
+                  "ml-auto sm:ml-0",
+                  (runs.length === 0 || isLoading) && "invisible",
+                )}
               />
-            )}
+            </div>
             <Button
               variant="primary"
               icon={isLoading ? <Spinner /> : <Search />}
               onClick={() => void handleSearch()}
               disabled={!canSearch}
               aria-label="Search"
+              className="order-2 sm:order-3"
             >
-              {isLoading ? (statusMessage ?? "Searching…") : "Search"}
+              Search
             </Button>
           </div>
 
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
+          <div className="flex min-h-8 flex-wrap items-center gap-x-3 gap-y-2">
             <Tabs
               aria-label="Result type"
               variant="capsule"
@@ -293,7 +306,7 @@ export function SearchLabBody({
                 value={options.location ?? ""}
                 onChange={(e) => setOption("location", e.target.value)}
                 onKeyDown={handleKeyDown}
-                wrapperClassName="w-64 max-w-full"
+                wrapperClassName="w-full sm:w-64"
                 className="h-8 text-sm"
               />
             )}
@@ -314,32 +327,44 @@ export function SearchLabBody({
         </div>
       </div>
 
-      <div className="flex-1 overflow-auto p-4">
-        <div className={cn("mx-auto", compare ? "max-w-7xl" : "max-w-5xl")}>
+      <div className="flex-1 overflow-auto px-3 py-4 sm:px-4 sm:py-5">
+        <div className={cn("mx-auto", LAB_WIDTH)}>
           {runs.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-20 text-center text-muted-foreground">
-              <Search className="mb-3 h-10 w-10 opacity-40" />
-              <p className="text-sm">
+            <div className="flex flex-col items-center justify-center gap-2 py-24 text-center">
+              <Search className="h-6 w-6 text-muted-foreground/60" />
+              <p className="text-sm text-muted-foreground">
                 {keywords.trim()
-                  ? "Press Search to run it"
-                  : "Type a query and press Search"}
+                  ? "Press Enter to search"
+                  : "Search the web, news, images, videos and places"}
               </p>
             </div>
           ) : (
-            <div className={cn(compare && "grid gap-6 md:grid-cols-2")}>
+            <div
+              className={cn(
+                compare && "grid gap-x-8 gap-y-10 lg:grid-cols-2",
+              )}
+            >
               {runs.map((run) => (
                 <EngineColumn
                   key={run.provider}
                   run={run}
                   query={lastRequest?.query ?? keywords.trim()}
+                  statusMessage={statusMessage}
                   inspectorOpen={inspect[run.provider]}
                   onToggleInspector={() => toggleInspector(run.provider)}
+                  onRetry={
+                    // A Matrx re-run is free; Google spends the allowance and
+                    // waits for an explicit Search.
+                    engine === "brave" && run.provider === "brave"
+                      ? () => void handleSearch()
+                      : undefined
+                  }
                 />
               ))}
             </div>
           )}
           {errorDiagnostics && isAdminDebugger && (
-            <div className="mt-3">
+            <div className="mt-4">
               <ScraperHookErrorDetails diagnostics={errorDiagnostics} />
             </div>
           )}
@@ -359,9 +384,9 @@ function OptionCell({
   className?: string;
 }) {
   return (
-    <div className={cn("flex min-w-0 flex-col gap-1", className)}>
-      <span className="text-xs text-muted-foreground">{label}</span>
-      <div className="flex min-w-0 items-center">{children}</div>
+    <div className={cn("flex min-w-0 flex-col gap-1.5", className)}>
+      <span className="text-xs font-medium text-muted-foreground">{label}</span>
+      <div className="flex h-8 min-w-0 items-center">{children}</div>
     </div>
   );
 }
@@ -387,7 +412,7 @@ function SearchLabOptions({
       setOption(key, value);
 
   return (
-    <div className="flex min-w-0 flex-wrap gap-x-5 gap-y-2 rounded-md border border-border bg-card p-2">
+    <div className="grid grid-cols-2 gap-x-5 gap-y-3 rounded-lg border border-border bg-card p-3 sm:grid-cols-[repeat(auto-fill,minmax(9.5rem,1fr))]">
       <OptionCell label="Country">
         <Select
           aria-label="Country"
@@ -430,7 +455,7 @@ function SearchLabOptions({
           fallback={1}
         />
       </OptionCell>
-      <OptionCell label="Safe search">
+      <OptionCell label="Safe search" className="col-span-2 sm:col-span-1">
         <SegmentedControl
           aria-label="Safe search"
           value={options.safeSearch}
@@ -438,7 +463,8 @@ function SearchLabOptions({
           data={SAFE_OPTIONS}
         />
       </OptionCell>
-      <OptionCell label="Location" className="w-64 max-w-full">
+      {vertical !== "places" && (
+      <OptionCell label="Location" className="col-span-2">
         <ProInput
           aria-label="Location"
           enableCleanup={false}
@@ -449,6 +475,7 @@ function SearchLabOptions({
           className="h-8 text-sm"
         />
       </OptionCell>
+      )}
       <OptionCell label="Device">
         <SegmentedControl
           aria-label="Device"
@@ -499,13 +526,17 @@ type InspectorTab = "request" | "raw" | "translation" | "ignored";
 function EngineColumn({
   run,
   query,
+  statusMessage,
   inspectorOpen,
   onToggleInspector,
+  onRetry,
 }: {
   run: KeywordEngineRun;
   query: string;
+  statusMessage: string | null;
   inspectorOpen: boolean;
   onToggleInspector: () => void;
+  onRetry?: () => void;
 }) {
   // Request, raw payload and translation are debug tooling: they show provider
   // internals (vendor names, keys we drop), so they are an admin-debugging view.
@@ -513,26 +544,37 @@ function EngineColumn({
   const { outcome } = run;
   const hits = outcome ? kindToSearchItems(query, outcome.result).length : 0;
   const ignored = outcome?.ignoredOptions ?? [];
+  const label = SEARCH_ENGINE_LABEL[run.provider];
 
   return (
-    <section
-      className="min-w-0 space-y-2"
-      aria-label={`${SEARCH_ENGINE_LABEL[run.provider]} results`}
-    >
-      <div className="flex min-h-8 items-center gap-2 border-b border-border/60 pb-1 text-xs">
-        <span className="text-sm font-semibold text-foreground">
-          {SEARCH_ENGINE_LABEL[run.provider]}
+    <section className="min-w-0 space-y-3" aria-label={`${label} results`}>
+      {/* The engine line is the header: the query is already in the box. */}
+      <div className="flex h-8 min-w-0 items-center gap-2 border-b border-border/60 text-xs">
+        <span
+          aria-hidden
+          className={cn(
+            "h-1.5 w-1.5 shrink-0 rounded-full",
+            run.phase === "error"
+              ? "bg-destructive"
+              : run.phase === "searching"
+                ? "animate-pulse bg-primary"
+                : "bg-success",
+          )}
+        />
+        <span className="text-sm font-medium text-foreground">{label}</span>
+        <span className="min-w-0 truncate tabular-nums text-muted-foreground">
+          {run.phase === "searching" && !outcome
+            ? (statusMessage ?? "Searching…")
+            : run.phase === "error"
+              ? "Failed"
+              : outcome
+                ? `${hits} ${hits === 1 ? "result" : "results"}${
+                    outcome.elapsedMs !== null
+                      ? ` · ${(outcome.elapsedMs / 1000).toFixed(2)} s`
+                      : ""
+                  }`
+                : null}
         </span>
-        {run.phase === "searching" && (
-          <span className="text-muted-foreground">Searching…</span>
-        )}
-        {outcome && (
-          <span className="tabular-nums text-muted-foreground">
-            {hits} {hits === 1 ? "result" : "results"}
-            {outcome.elapsedMs !== null &&
-              ` · ${Math.round(outcome.elapsedMs)} ms`}
-          </span>
-        )}
         {isAdminDebugger && (
           <Button
             variant="quiet"
@@ -549,7 +591,7 @@ function EngineColumn({
       </div>
 
       {ignored.length > 0 && (
-        <div className="flex items-start gap-1.5 text-xs text-muted-foreground">
+        <div className="flex items-start gap-1.5 rounded-md bg-warning/10 px-2.5 py-1.5 text-xs text-muted-foreground">
           <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-warning" />
           <span>
             <span className="font-medium text-foreground">Not applied: </span>
@@ -562,28 +604,43 @@ function EngineColumn({
 
       {run.phase === "error" && (
         <ErrorNotice
-          title="Search failed"
+          title={`${label} search failed`}
           message={run.error ?? "The search failed."}
           size="compact"
+          actions={
+            onRetry ? (
+              <Button variant="quiet" icon={<RotateCcw />} onClick={onRetry}>
+                Try again
+              </Button>
+            ) : undefined
+          }
         />
       )}
 
       {run.phase === "searching" && !outcome && (
-        <SearchResultsSkeleton query={query} />
+        <SearchResultsSkeleton query={query} bare />
       )}
 
       {outcome && (
-        <>
+        // The engine line already names the query and engine, so the
+        // collection's own header line is hidden here.
+        <div className="[&_[data-search-collection-header]]:hidden">
           <KindInstanceRender
             kind="web_search_results"
             value={outcome.result}
+            variant="bare"
           />
-          {hits === 0 && run.phase === "done" && (
-            <p className="py-6 text-center text-sm text-muted-foreground">
-              No results for this result type.
-            </p>
-          )}
-        </>
+        </div>
+      )}
+
+      {outcome && hits === 0 && run.phase === "done" && (
+        <div className="flex flex-col items-center gap-1.5 rounded-xl border border-dashed border-border px-4 py-12 text-center">
+          <SearchX className="mb-1 h-6 w-6 text-muted-foreground/60" />
+          <p className="text-sm font-medium text-foreground">No results</p>
+          <p className="text-xs text-muted-foreground">
+            Try other words, another result type or fewer options.
+          </p>
+        </div>
       )}
     </section>
   );
@@ -614,7 +671,7 @@ function EngineInspector({ run }: { run: KeywordEngineRun }) {
         showSource
         data={outcome.request}
         label="Request sent"
-        className="h-72"
+        className="h-56"
       />
     ) : (
       empty("The server did not report the request.")
@@ -666,8 +723,8 @@ function EngineInspector({ run }: { run: KeywordEngineRun }) {
   }
 
   return (
-    <div className="overflow-hidden rounded-md border border-border bg-card">
-      <div className="px-2 pt-1">
+    <div className="overflow-hidden rounded-lg border border-border bg-card">
+      <div className="border-b border-border/60 px-2 pt-1">
         <Tabs
           aria-label="Inspector"
           value={tab}
