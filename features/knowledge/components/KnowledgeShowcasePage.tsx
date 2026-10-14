@@ -299,7 +299,7 @@ export function KnowledgeShowcasePage() {
             <h2 className="text-[clamp(1.5rem,1.25rem+1.5vw,2.5rem)] font-bold tracking-tight">
               What the system actually does
             </h2>
-            <p className="type-body mt-4 text-muted-foreground max-w-2xl mx-auto">
+            <p className="type-lead mt-4 text-muted-foreground max-w-2xl mx-auto">
               Every capability below is a real surface you can open today.
               Follow the link to see it for yourself.
             </p>
@@ -317,7 +317,7 @@ export function KnowledgeShowcasePage() {
                 <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-secondary/10 text-brand-secondary mb-4 group-hover:scale-110 transition-transform duration-300">
                   <c.icon className="h-5 w-5" />
                 </div>
-                <h3 className="type-title mb-2">{c.title}</h3>
+                <h3 className="type-heading mb-2">{c.title}</h3>
                 <p className="type-body text-muted-foreground">
                   {c.description}
                 </p>
@@ -340,8 +340,7 @@ export function KnowledgeShowcasePage() {
       <section className="mx-auto max-w-6xl px-4 sm:px-6 py-16 sm:py-24">
         <div className="text-center mb-12">
           <div className="mb-3">
-            <Badge tone="warning">
-              <ShieldCheck className="h-3 w-3" />
+            <Badge tone="warning" icon={<ShieldCheck />}>
               The ask — what it&apos;s all for
             </Badge>
           </div>
@@ -351,10 +350,10 @@ export function KnowledgeShowcasePage() {
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div className="rounded-2xl border border-warning/30 bg-warning/[0.04] p-6">
-            <p className="type-label uppercase tracking-wider mb-3">
-              Attorney → agent
-            </p>
-            <p className="type-body italic text-foreground">
+            <div className="mb-3">
+              <Badge tone="warning">Attorney → agent</Badge>
+            </div>
+            <p className="type-lead italic text-foreground">
               &ldquo;Depose Dr. Smith tomorrow. Find where he didn&apos;t follow
               AMA guidelines for John Doe, case #123456, and flag prior injuries
               (preexisting conditions). Settle the case — hit hard, but get
@@ -372,11 +371,11 @@ export function KnowledgeShowcasePage() {
           </div>
           <div className="rounded-2xl border border-border bg-card p-6">
             <p className="type-title mb-4">The agent resolves it:</p>
-            <ol className="space-y-2.5">
+            <ol className="rounded-xl border border-border divide-y divide-border">
               {WORKED_STEPS.map((s) => (
                 <li
                   key={s.n}
-                  className="flex items-start gap-3 py-1"
+                  className="flex items-start gap-3 px-3 py-2.5"
                 >
                   <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-brand-secondary/10 text-brand-secondary type-meta font-bold">
                     {s.n}
@@ -396,15 +395,14 @@ export function KnowledgeShowcasePage() {
         <div className="mx-auto max-w-5xl px-4 sm:px-6 py-16 sm:py-24">
           <div className="text-center mb-10 sm:mb-14">
             <div className="mb-3">
-              <Badge tone="primary">
-                <ListChecks className="h-3 w-3" />
+              <Badge tone="primary" icon={<ListChecks />}>
                 Try it yourself — a guided run
               </Badge>
             </div>
             <h2 className="text-[clamp(1.5rem,1.25rem+1.5vw,2.5rem)] font-bold tracking-tight">
               From a blank file to a pro-level answer
             </h2>
-            <p className="type-body mt-4 text-muted-foreground max-w-2xl mx-auto">
+            <p className="type-lead mt-4 text-muted-foreground max-w-2xl mx-auto">
               An on-screen wizard walks you through the whole system using the
               real UI — not a fake demo. You do each step; the system makes
               something real happen. Tags show what&apos;s live today.
@@ -433,7 +431,7 @@ export function KnowledgeShowcasePage() {
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <h3 className="type-title">
+                      <h3 className="type-heading">
                         {step.title}
                       </h3>
                       <Badge tone={meta.tone}>{meta.label}</Badge>
@@ -478,7 +476,7 @@ export function KnowledgeShowcasePage() {
           <h2 className="text-[clamp(1.5rem,1.25rem+1.5vw,2.5rem)] font-bold tracking-tight">
             See the whole system in motion
           </h2>
-          <p className="type-body mt-4 text-muted-foreground mb-8">
+          <p className="type-lead mt-4 text-muted-foreground mb-8">
             Start with a single document and follow it from source to a cited
             answer.
           </p>

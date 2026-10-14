@@ -250,11 +250,7 @@ export function KnowledgePipelineDiagram() {
                           >
                             {phase.badge}
                           </span>
-                          <h3
-                            className={cn(
-                              "type-title",
-                            )}
-                          >
+                          <h3 className="type-heading">
                             {phase.title}
                           </h3>
                           <ChevronDown
