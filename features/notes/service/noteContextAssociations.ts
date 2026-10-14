@@ -20,19 +20,14 @@ export interface NoteContextSettlement {
   postSaveRecoveryError?: Error;
 }
 
-/**
- * Hydrate the note UI's project/task projection from the canonical association
- * graph in one batched read. The DB note row intentionally owns neither FK.
- */
-export async function hydrateNoteContextLinks<T extends IdentifiedRow>(
-  rows: T[],
-): Promise<Array<T & NoteContextLinks>> {
-  if (rows.length === 0) return [];
+// Reads in flight, by note id. The list read and an opened note's read hydrate the same
+// ids a moment apart on /notes; an id already being read shares that read instead of
+// asking `assoc_for_sources` again. In-flight sharing ONLY: an id leaves the map the
+// moment its read settles, so a later call (after any change) always reads fresh.
+const inFlightLinks = new Map<string, Promise<NoteContextLinks>>();
 
-  const result = await associationsService.listForSources(
-    "note",
-    rows.map((row) => row.id),
-  );
+async function readLinks(ids: string[]): Promise<Map<string, NoteContextLinks>> {
+  const result = await associationsService.listForSources("note", ids);
   if (!result.ok) {
     throw new Error(
       `Could not load note context associations: ${result.error.message}`,
@@ -64,11 +59,38 @@ export async function hydrateNoteContextLinks<T extends IdentifiedRow>(
     }
     byNote.set(edge.sourceId, links);
   }
+  return byNote;
+}
 
-  return rows.map((row) => ({
-    ...row,
-    ...(byNote.get(row.id) ?? emptyLinks()),
-  }));
+/**
+ * Hydrate the note UI's project/task projection from the canonical association
+ * graph in one batched read. The DB note row intentionally owns neither FK.
+ */
+export async function hydrateNoteContextLinks<T extends IdentifiedRow>(
+  rows: T[],
+): Promise<Array<T & NoteContextLinks>> {
+  if (rows.length === 0) return [];
+
+  const wanted = Array.from(new Set(rows.map((row) => row.id)));
+  const mine = wanted.filter((id) => !inFlightLinks.has(id));
+  if (mine.length > 0) {
+    const read = readLinks(mine);
+    for (const id of mine) {
+      const flight = read.then((byNote) => byNote.get(id) ?? emptyLinks());
+      inFlightLinks.set(id, flight);
+      const leave = () => {
+        if (inFlightLinks.get(id) === flight) inFlightLinks.delete(id);
+      };
+      flight.then(leave, leave);
+    }
+  }
+  const links = new Map<string, NoteContextLinks>();
+  await Promise.all(
+    wanted.map(async (id) => {
+      links.set(id, await (inFlightLinks.get(id) as Promise<NoteContextLinks>));
+    }),
+  );
+  return rows.map((row) => ({ ...row, ...(links.get(row.id) ?? emptyLinks()) }));
 }
 
 /**

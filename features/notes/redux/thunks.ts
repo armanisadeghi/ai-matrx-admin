@@ -1004,9 +1004,19 @@ export const fetchSharedNotesList = createAsyncThunk<void, void>(
  * through the `scopesService` chokepoint (which also owns the ctx_scopes /
  * ctx_scope_types join) rather than querying ctx_scope_assignments directly.
  */
-export const fetchAllNoteScopes = createAsyncThunk<NoteScopeAssignment[], void>(
+// One scope-tag read at a time. The assist strip and the sidebar both ask on /notes with no
+// knowledge of each other; the second asker finds one in flight and waits for nothing new.
+// A caller that just CHANGED tags passes `{ refresh: true }` and is never dropped.
+let noteScopesInFlight = false;
+
+export const fetchAllNoteScopes = createAsyncThunk<
+  NoteScopeAssignment[],
+  { refresh?: boolean } | void
+>(
   "notes/fetchAllNoteScopes",
   async () => {
+    noteScopesInFlight = true;
+    try {
     // Tags are read from the notes' side (their outgoing scope edges), so
     // first the ids of every note this person can see — shared ones
     // included (row security decides). Ids only: the list read owns the rest.
@@ -1031,5 +1041,11 @@ export const fetchAllNoteScopes = createAsyncThunk<NoteScopeAssignment[], void>(
       scope_name: t.scope_name,
       scope_type: t.scope_type,
     }));
+    } finally {
+      noteScopesInFlight = false;
+    }
+  },
+  {
+    condition: (arg) => !(noteScopesInFlight && !(arg && arg.refresh)),
   },
 );

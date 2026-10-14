@@ -28,6 +28,10 @@ export interface UseNoteHomesReturn {
 // The names of homes outside the scope tree, kept for the tab: the sidebar remounts (board hide/show,
 // route changes) and must not ask `platform.home_labels` again for homes it already named.
 const outsideTreeCache: Record<string, NoteHome | null> = {};
+// Ids a `home_labels` read is already carrying. The sidebar, the picker and the home chip each mount this hook
+// and (before the tree settles) each asked for the same ids; an id in flight is not asked for again.
+const homeLabelsInFlight = new Set<string>();
+const homeLabelListeners = new Set<(next: Record<string, NoteHome | null>) => void>();
 
 export function useNoteHomes(): UseNoteHomesReturn {
   const tree = useWholeScopeTree();
@@ -41,17 +45,28 @@ export function useNoteHomes(): UseNoteHomesReturn {
   // custom.context_scopes: people have no SELECT on it.
   const [outsideTree, setOutsideTree] = useState<Record<string, NoteHome | null>>(() => ({ ...outsideTreeCache }));
   useEffect(() => {
+    const listener = (next: Record<string, NoteHome | null>) => setOutsideTree((prev) => ({ ...prev, ...next }));
+    homeLabelListeners.add(listener);
+    return () => {
+      homeLabelListeners.delete(listener);
+    };
+  }, []);
+  useEffect(() => {
     if (tree.status !== "ready") return;
     const known = new Set<string>();
     for (const org of tree.organizations) for (const t of org.scope_types) for (const sc of t.scopes) known.add(sc.id);
-    const missing = noteHomeIds.filter((id) => !known.has(id) && !(id in outsideTree));
+    const missing = noteHomeIds.filter(
+      (id) => !known.has(id) && !(id in outsideTree) && !(id in outsideTreeCache) && !homeLabelsInFlight.has(id),
+    );
     if (missing.length === 0) return;
-    let cancelled = false;
+    for (const id of missing) homeLabelsInFlight.add(id);
+    // Not cancelled on cleanup: the answer fills the module cache for every mounted hook, and a re-run of
+    // this effect (the note list growing) must not drop a read already on the wire and then ask again.
     void supabase
       .schema("platform")
       .rpc("home_labels", { p_scope_ids: missing })
       .then(({ data, error }) => {
-        if (cancelled) return;
+        for (const id of missing) homeLabelsInFlight.delete(id);
         if (error) {
           console.error("[notes homes] could not name homes outside the scope tree", error);
           return;
@@ -70,11 +85,8 @@ export function useNoteHomes(): UseNoteHomesReturn {
           };
         }
         Object.assign(outsideTreeCache, next);
-        setOutsideTree((prev) => ({ ...prev, ...next }));
+        for (const listener of homeLabelListeners) listener(next);
       });
-    return () => {
-      cancelled = true;
-    };
   }, [tree.status, tree.organizations, noteHomeIds, outsideTree]);
 
   return useMemo(() => {

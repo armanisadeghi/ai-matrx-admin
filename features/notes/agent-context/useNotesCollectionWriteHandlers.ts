@@ -334,7 +334,7 @@ export function useNotesCollectionWriteHandlers(
             }),
           );
           if (!res.ok) throw new Error(res.error ?? "The scopes could not be saved.");
-          void dispatch(fetchAllNoteScopes());
+          void dispatch(fetchAllNoteScopes({ refresh: true }));
           return {
             summary: picked.length
               ? `The note's scopes are now: ${picked.map((s) => `${s.type ? `${s.type}: ` : ""}${s.name}`).join(", ")}.`

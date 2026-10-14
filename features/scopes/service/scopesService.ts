@@ -225,10 +225,17 @@ export const scopesService = {
         } catch (e) {
           return { read: false as const, failed: { ok: false as const, error: mapThrownError(e, "scopesService") } };
         }
-        return { read: true as const, roleByOrgId, orgsRes, projectsRes };
+        // The project -> scope edges ride the SAME shared read: the skeleton and the whole tree both
+        // need them, and each asked `assoc_for_sources` again (the page-load repeat, 2026-10-13).
+        const projectScopesRes = await bulkEntityScopeIds(
+          "project",
+          (projectsRes.data ?? []).map((p) => p.id),
+        );
+        if (!projectScopesRes.ok) return { read: false as const, failed: projectScopesRes };
+        return { read: true as const, roleByOrgId, orgsRes, projectsRes, projectScopesRes };
       });
       if (!boot.read) return boot.failed;
-      const { roleByOrgId, orgsRes, projectsRes } = boot;
+      const { roleByOrgId, orgsRes, projectsRes, projectScopesRes } = boot;
 
       // THE SCOPE TYPES AND SCOPES, FROM THE STORE (lane SCOPES-READS-WEB): one call of
       // `custom.context_tree` for the LIVE organizations of the caller's memberships — the door
@@ -240,15 +247,11 @@ export const scopesService = {
         .filter((row) => !("archived_at" in row) || !row.archived_at)
         .map((row) => row.id);
       // Beside it, in parallel: the project → scope edges of these projects (see below).
-      const projectIds = (projectsRes.data ?? []).map((p) => p.id);
-      const [treeRes, projectScopesRes] = await Promise.all([
-        skeleton
-          ? scopeDoors().types(liveOrgIds).then((r): RecordsResult<ScopeTypeWithScopes[]> =>
-              r.ok ? ok(r.data.types.map((t) => ({ ...t, scopes: [] }))) : r,
-            )
-          : scopeDoors().tree(liveOrgIds),
-        bulkEntityScopeIds("project", projectIds),
-      ]);
+      const treeRes = await (skeleton
+        ? scopeDoors().types(liveOrgIds).then((r): RecordsResult<ScopeTypeWithScopes[]> =>
+            r.ok ? ok(r.data.types.map((t) => ({ ...t, scopes: [] }))) : r,
+          )
+        : scopeDoors().tree(liveOrgIds));
       if (!treeRes.ok) return treeRes;
       const treeTypes: ScopeTypeWithScopes[] = treeRes.data;
 
@@ -264,7 +267,6 @@ export const scopesService = {
       // for zero project edges (the project-tagged scopes sat past the 1000-row
       // cap). The source-side read answers the same question from the ~30
       // projects in ~60 ms. Guard: scope-tree-reads-project-tags-from-the-source-side.test.ts.
-      if (!projectScopesRes.ok) return projectScopesRes;
       const projectScopes = new Map<string, string[]>(
         Object.entries(projectScopesRes.data),
       );
