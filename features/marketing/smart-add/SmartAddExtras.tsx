@@ -522,10 +522,15 @@ export function CompareSources({
   onClaim,
   onRelate,
   onClose,
+  skipped,
+  onSkip,
 }: {
   items: EvidenceItem[];
   decisions: Record<string, Decision>;
   relations: Record<string, Relation>;
+  /** Candidates set aside with "Other → Skip for now" (kept by the session). */
+  skipped: ReadonlySet<string>;
+  onSkip: (id: string, on: boolean) => void;
   onClaim: (c: Candidate, decision: "yes" | "no") => void;
   onRelate: (c: Candidate, relation: Relation | null) => void;
   onClose?: () => void;
@@ -533,7 +538,6 @@ export function CompareSources({
   const rows = compareRows(items).filter((r) => r.candidates.length >= 2);
   const { kinds, loadError, onCustom } = useRelationKinds(onRelate);
   const [step, setStep] = useState(0);
-  const [skipped, setSkipped] = useState<ReadonlySet<string>>(new Set());
   const at = Math.min(step, Math.max(rows.length - 1, 0));
   const row = rows[at];
   const answered = (c: Candidate) => Boolean(decisions[c.anchor.key] || relations[c.id] || skipped.has(c.id));
@@ -582,21 +586,21 @@ export function CompareSources({
               kinds={kinds}
               skipped={skipped.has(c.id)}
               onClaim={(x, d) => {
-                setSkipped((s) => new Set([...s].filter((k) => k !== x.id)));
+                onSkip(x.id, false);
                 onClaim(x, d);
               }}
               onRelate={(x, relation) => {
-                setSkipped((s) => new Set([...s].filter((id) => id !== x.id)));
+                onSkip(x.id, false);
                 onRelate(x, relation);
               }}
               onCustom={async (x, label) => {
                 await onCustom(x, label);
-                setSkipped((s) => new Set([...s].filter((id) => id !== x.id)));
+                onSkip(x.id, false);
               }}
               onSkip={() => {
                 if (decisions[c.anchor.key]) onClaim(c, decisions[c.anchor.key] === "no" ? "no" : "yes");
                 if (relations[c.id]) onRelate(c, null);
-                setSkipped((s) => new Set(s).add(c.id));
+                onSkip(c.id, true);
               }}
             />
           ))}

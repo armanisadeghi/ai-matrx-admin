@@ -24,7 +24,30 @@ export interface RunAnswers {
   namesakes: string[];
   /** Findings the person typed themselves (their decisions point at these; the run does not return them). */
   typed: EvidenceItem[];
+  /** "Other → Skip for now": the finding keys (and compare candidate ids) the person set aside. */
+  skipped: string[];
+  /** "Other → Tagline or slogan": name finding key → the tagline finding it became (it is not a typed one). */
+  taglines: Record<string, EvidenceItem>;
+  /** The web review's "Ask me later" / "Ignore" marks. */
+  webMarks: Record<string, WebMark>;
 }
+
+export type WebMark = "later" | "ignored";
+
+/**
+ * EVERY kind of answer the screen keeps. A new kind must be added to `RunAnswers`, and TypeScript then forces
+ * a line here; the test (`runMemory.test.ts`) fails until `emptyAnswers`, `unpack` and `isEmptyAnswers` carry it.
+ */
+export const ANSWER_KINDS = {
+  decisions: true,
+  webChoices: true,
+  relations: true,
+  namesakes: true,
+  typed: true,
+  skipped: true,
+  taglines: true,
+  webMarks: true,
+} as const satisfies Record<keyof RunAnswers, true>;
 
 interface Stored extends RunAnswers {
   at: string;
@@ -32,7 +55,7 @@ interface Stored extends RunAnswers {
 
 const MAX_SESSIONS = 30;
 
-export const emptyAnswers = (): RunAnswers => ({ decisions: {}, webChoices: {}, relations: {}, namesakes: [], typed: [] });
+export const emptyAnswers = (): RunAnswers => ({ decisions: {}, webChoices: {}, relations: {}, namesakes: [], typed: [], skipped: [], taglines: {}, webMarks: {} });
 
 export function isEmptyAnswers(a: RunAnswers): boolean {
   return (
@@ -40,7 +63,10 @@ export function isEmptyAnswers(a: RunAnswers): boolean {
     !Object.keys(a.webChoices).length &&
     !Object.keys(a.relations).length &&
     !a.namesakes.length &&
-    !a.typed.length
+    !a.typed.length &&
+    !a.skipped.length &&
+    !Object.keys(a.taglines).length &&
+    !Object.keys(a.webMarks).length
   );
 }
 
@@ -62,6 +88,9 @@ export function unpack(raw: unknown): RunAnswers | null {
     relations: rec<RelatedCandidate>(r.relations),
     namesakes: Array.isArray(r.namesakes) ? r.namesakes.filter((x): x is string => typeof x === "string") : [],
     typed: Array.isArray(r.typed) ? (r.typed as EvidenceItem[]) : [],
+    skipped: Array.isArray(r.skipped) ? r.skipped.filter((x): x is string => typeof x === "string") : [],
+    taglines: rec<EvidenceItem>(r.taglines),
+    webMarks: rec<WebMark>(r.webMarks),
   };
 }
 

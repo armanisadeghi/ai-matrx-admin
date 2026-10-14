@@ -1,4 +1,5 @@
-import { emptyAnswers, isEmptyAnswers, prune, unpack } from "../runMemory";
+import { ANSWER_KINDS, emptyAnswers, isEmptyAnswers, prune, unpack, type RunAnswers } from "../runMemory";
+import { customItem } from "../evidence";
 
 describe("Smart Add run memory", () => {
   it("round-trips what the screen saved and treats junk as nothing", () => {
@@ -18,5 +19,27 @@ describe("Smart Add run memory", () => {
     expect(kept).toHaveLength(30);
     expect(kept).not.toContain("r0");
     expect(kept).toContain("r34");
+  });
+
+  it("saves and restores EVERY kind of answer; a kind added to the screen cannot be missed", () => {
+    const sample: RunAnswers = {
+      decisions: { "name:x": "preferred" },
+      webChoices: { "web:a": { kind: "mention", sentiment: null } },
+      relations: { "social:facebook:x": { candidate: {} as never, relation: { key: "parent", label: "Parent company", routesTo: null } as never } },
+      namesakes: ["k"],
+      typed: [customItem("name", "Typed")],
+      skipped: ["social:facebook:ritual"],
+      taglines: { "name:we serve you": customItem("tagline", "We serve you") },
+      webMarks: { "web:b": "later" },
+    };
+    // Every declared kind is in the sample, and the empty state names exactly the declared kinds.
+    expect(Object.keys(sample).sort()).toEqual(Object.keys(ANSWER_KINDS).sort());
+    expect(Object.keys(emptyAnswers()).sort()).toEqual(Object.keys(ANSWER_KINDS).sort());
+    const back = unpack(JSON.parse(JSON.stringify({ ...sample, at: "x" })))!;
+    for (const kind of Object.keys(ANSWER_KINDS) as (keyof RunAnswers)[]) {
+      expect({ kind, value: back[kind] }).toEqual({ kind, value: sample[kind] });
+      // Each kind alone counts as an answer worth saving.
+      expect(isEmptyAnswers({ ...emptyAnswers(), [kind]: sample[kind] })).toBe(false);
+    }
   });
 });

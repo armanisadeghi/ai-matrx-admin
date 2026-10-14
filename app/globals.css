@@ -808,8 +808,8 @@
     --primary-foreground: 0 0% 100%;
 
     /* Secondary - the quiet NEUTRAL grey surface (stock shadcn meaning) */
-    --secondary: 240 4.8% 95.9%;
-    --secondary-foreground: 240 5.9% 10%;
+    --secondary: 240 5% 92%;
+    --secondary-foreground: 240 10% 10%;
 
     /* Brand secondary - the purple accent. Never `secondary` (that means grey). */
     --brand-secondary: 275 70% 58%;
@@ -824,11 +824,11 @@
     --accent-foreground: 240 10% 10%; /* dark text on light accent */
 
     /* Status colors */
-    --destructive: 0 84% 60%;
+    --destructive: 0 72% 46%;
     --destructive-foreground: 0 0% 98%;
-    --success: 142 76% 36%;
+    --success: 142 76% 27%;
     --success-foreground: 144 70% 98%;
-    --warning: 38 92% 50%;
+    --warning: 32 95% 32%;
     --warning-foreground: 48 96% 98%;
 
     /* UI Elements */
@@ -847,7 +847,7 @@
     /* Enhanced accent colors */
     --accent-2: 280 70% 50%; /* More saturated */
     --accent-3: 200 95% 40%; /* Brighter */
-    --info: 200 98% 39%;
+    --info: 200 98% 33%;
 
     /* Adjusted hover state colors for more contrast */
     --primary-hover: 240 5.9% 15%;
@@ -971,8 +971,8 @@
     --primary-foreground: 0 0% 100%;
 
     /* Secondary - the quiet NEUTRAL grey surface (stock shadcn meaning) */
-    --secondary: 240 3.7% 15.9%;
-    --secondary-foreground: 0 0% 98%;
+    --secondary: 240 4% 24%;
+    --secondary-foreground: 240 5% 90%;
 
     /* Brand secondary - purple with sufficient contrast for small white text */
     --brand-secondary: 275 70% 58%;
@@ -987,12 +987,12 @@
     --accent-foreground: 240 5% 90%; /* light text on dark accent */
 
     /* Status colors - adjusted for dark mode */
-    --destructive: 0 72% 60%;
-    --destructive-foreground: 0 85.7% 97.3%;
+    --destructive: 0 80% 71%;
+    --destructive-foreground: 0 60% 12%;
     --success: 142 69% 58%;
-    --success-foreground: 144 70% 98%;
+    --success-foreground: 144 60% 10%;
     --warning: 48 96% 58%;
-    --warning-foreground: 48 96% 98%;
+    --warning-foreground: 38 90% 10%;
 
     /* UI Elements */
     --border: 240 4% 30%; /* zinc-750 - visible in dark mode */

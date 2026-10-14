@@ -77,6 +77,10 @@ export function SmartAddSlots({
   onRelate,
   onAdd,
   onBroken,
+  skipped,
+  onSkip,
+  taglines,
+  onTagline,
 }: {
   items: EvidenceItem[];
   decisions: Record<string, Decision>;
@@ -96,6 +100,13 @@ export function SmartAddSlots({
   onAdd: (item: EvidenceItem) => void;
   /** An image the browser could not load: its tile is hidden, and it must not be saved as a candidate. */
   onBroken?: (key: string) => void;
+  /** "Other → Skip for now": the keys set aside (kept by the session, so a reload brings them back). */
+  skipped: ReadonlySet<string>;
+  onSkip: (key: string, on: boolean) => void;
+  /** "Other → Tagline or slogan": name key -> the tagline finding it became. The name row leaves the name list. */
+  taglines: Record<string, EvidenceItem>;
+  /** Move a name to the About tagline (`true`), or put it back (`false`). */
+  onTagline: (item: EvidenceItem, on: boolean) => void;
 }) {
   const custom = (field: EvidenceField | "contact", placeholder: string, label?: string) => (
     <CustomAdd field={field} placeholder={placeholder} label={label} onAdd={onAdd} disabled={locked} />
@@ -130,8 +141,7 @@ export function SmartAddSlots({
   const platforms = [...new Set(socials.map((s) => s.platform ?? "other"))];
   const empty = working ? "Looking…" : started ? "Nothing found" : "—";
   // ── the way out: every row's "Other" menu ──────────────────────────────
-  const [skipped, setSkipped] = useState<ReadonlySet<string>>(new Set());
-  const [asTagline, setAsTagline] = useState<ReadonlySet<string>>(new Set());
+  const movedFrom = new Map(Object.entries(taglines).map(([nameKey, t]) => [t.key, nameKey]));
   const [customFor, setCustomFor] = useState<string | null>(null);
   const drop = (set: ReadonlySet<string>, key: string) => new Set([...set].filter((k) => k !== key));
   const candidateOf = (i: EvidenceItem) => candidateByKey.get(i.key) ?? webCandidate(i);
@@ -139,8 +149,8 @@ export function SmartAddSlots({
   const clearRow = (i: EvidenceItem) => {
     if (decisions[i.key]) onDecide(i.key, decisions[i.key]); // answering the same again clears it
     if (relations[i.key]) onRelate(candidateOf(i), null);
-    setSkipped((s) => drop(s, i.key));
-    setAsTagline((s) => drop(s, i.key));
+    if (skipped.has(i.key)) onSkip(i.key, false);
+    if (taglines[i.key]) onTagline(i, false);
   };
   const relatedMenu = (exclude: string[] = []): WayOutItem[] => relationWayOut(kinds, exclude);
   const nameWayOut: WayOutItem[] = [
@@ -153,15 +163,14 @@ export function SmartAddSlots({
     if (value === CUSTOM_RELATION) return setCustomFor(i.key);
     if (value === TAGLINE) {
       clearRow(i);
-      // A real tagline: it lands in the About slot as the brand's tagline (saved as a tagline fact).
-      onAdd({ ...customItem("tagline", i.value), source: i.source, confidence: i.confidence });
-      setAsTagline((s) => new Set(s).add(i.key));
+      // A real tagline: it lands in the About slot as the brand's tagline (saved as a tagline fact), and the
+      // name row leaves the name list (undo is on the About item).
+      onTagline(i, true);
       return;
     }
     const kind = kinds.find((k) => `rel:${k.key}` === value);
     if (!kind) return;
-    setSkipped((s) => drop(s, i.key));
-    setAsTagline((s) => drop(s, i.key));
+    if (skipped.has(i.key)) onSkip(i.key, false);
     const label = i.field === "name" ? (NAME_RELATION_LABEL[kind.key] ?? kind.label) : kind.label;
     onRelate(candidateOf(i), { key: kind.key, label, routesTo: kind.routesTo });
   };
@@ -171,11 +180,9 @@ export function SmartAddSlots({
       ? i.field === "name" && NAME_RELATION_LABEL[relation.key]
         ? relation.label
         : `Related · ${relation.label}`
-      : asTagline.has(i.key)
-        ? "Tagline"
-        : skipped.has(i.key)
-          ? "Skipped for now"
-          : null;
+      : skipped.has(i.key)
+        ? "Skipped for now"
+        : null;
     return text ? <Badge data-testid="smart-add-way-out">{text}</Badge> : null;
   };
   const below = (i: EvidenceItem): React.ReactNode =>
@@ -184,8 +191,7 @@ export function SmartAddSlots({
         onCancel={() => setCustomFor(null)}
         onSave={async (label) => {
           await onCustom(candidateOf(i), label);
-          setSkipped((s) => drop(s, i.key));
-          setAsTagline((s) => drop(s, i.key));
+          if (skipped.has(i.key)) onSkip(i.key, false);
           setCustomFor(null);
         }}
       />
@@ -195,7 +201,7 @@ export function SmartAddSlots({
     const d = decisions[i.key];
     if (d === "no") return "no";
     if (d) return "yes";
-    return relations[i.key] || asTagline.has(i.key) || skipped.has(i.key) ? "other" : null;
+    return relations[i.key] || skipped.has(i.key) ? "other" : null;
   };
   const isYes = (d: Decision | undefined) => d === "preferred" || d === "yes" || d === "alias";
   const preferredOf = (field: EvidenceField) => items.find((x) => x.field === field && decisions[x.key] === "preferred");
@@ -231,17 +237,16 @@ export function SmartAddSlots({
     <DecisionControl
       value={answerOf(item)}
       onChange={(a) => {
-        setSkipped((s) => drop(s, item.key));
-        setAsTagline((s) => drop(s, item.key));
+        if (skipped.has(item.key)) onSkip(item.key, false);
         if (a === "yes") sayYes(item, mode);
         else onDecide(item.key, "no");
       }}
       wayOut={wayOut}
       onWayOut={(v) => onWayOut(item, v)}
-      wayOutValue={relations[item.key] ? `rel:${relations[item.key].key}` : asTagline.has(item.key) ? TAGLINE : null}
+      wayOutValue={relations[item.key] ? `rel:${relations[item.key].key}` : null}
       onSkip={() => {
         clearRow(item);
-        setSkipped((s) => new Set(s).add(item.key));
+        onSkip(item.key, true);
       }}
       skipped={skipped.has(item.key)}
       disabled={locked}
@@ -260,8 +265,8 @@ export function SmartAddSlots({
 
   return (
     <div className="flex flex-col divide-y divide-border" data-testid="smart-add-slots">
-      <Slot title={person ? "Name" : "Brand name"} ask="Is this your name?" empty={of("name").length ? null : empty} after={custom("name", person ? "Your name" : "Brand name")}>
-        {of("name").map((i, n) => (
+      <Slot title={person ? "Name" : "Brand name"} ask="Is this your name?" empty={of("name").some((i) => !taglines[i.key]) ? null : empty} after={custom("name", person ? "Your name" : "Brand name")}>
+        {of("name").filter((i) => !taglines[i.key]).map((i, n) => (
           <Row key={i.key} item={i} decision={decisions[i.key] ?? null} lead={star(i)} note={noteOf(i)} below={below(i)} actions={<>{firstChoice(n, choices(i, "name", nameWayOut))}{sourceLink(i)}</>}>
             <span className="min-w-0 truncate" title={i.value}><Shared id={i.key} positionOnly className="inline-block max-w-full truncate align-top text-lg font-semibold leading-tight">{i.value}</Shared></span>
           </Row>
@@ -367,14 +372,32 @@ export function SmartAddSlots({
           {custom("category", "Category", "Category")}
         </div>
       }>
-        {of("tagline").map((i) => (
-          <Row key={i.key} item={i} decision={decisions[i.key] ?? null} lead={star(i)} note={noteOf(i)} actions={<>{choices(i, "primary")}{sourceLink(i)}</>} compact>
+        {of("tagline").map((i) => {
+          const from = movedFrom.get(i.key);
+          const moved = from ? of("name").find((n) => n.key === from) : undefined;
+          return (
+          <Row
+            key={i.key}
+            item={i}
+            decision={decisions[i.key] ?? null}
+            lead={star(i)}
+            note={moved ? <Badge data-testid="smart-add-moved-from-name">Moved from name</Badge> : noteOf(i)}
+            actions={
+              <>
+                {choices(i, "primary")}
+                {moved ? <Button variant="quiet" disabled={locked} onClick={() => onTagline(moved, false)} data-testid="smart-add-undo-tagline">Undo</Button> : null}
+                {sourceLink(i)}
+              </>
+            }
+            compact
+          >
             <span className="flex min-w-0 items-baseline gap-2 text-sm">
               <span className="w-16 shrink-0 text-xs text-muted-foreground">Tagline</span>
               <span className="truncate italic" title={i.value}>{i.value}</span>
             </span>
           </Row>
-        ))}
+          );
+        })}
         {of("category").map((i) => (
           <Row key={i.key} item={i} decision={decisions[i.key] ?? null} lead={star(i)} note={noteOf(i)} actions={<>{choices(i, "primary")}{sourceLink(i)}</>} compact>
             <span className="flex min-w-0 items-baseline gap-2 text-sm">

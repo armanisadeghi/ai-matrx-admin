@@ -39,7 +39,7 @@ import {
 import { runHref } from "@/features/workflow-runtime/run-doors";
 import { roundFailed } from "./roundFailure";
 import { SmartAddSlots } from "./SmartAddSlots";
-import { typedItems, useRunMemory } from "./runMemory";
+import { typedItems, useRunMemory, type WebMark } from "./runMemory";
 import { SmartAddHero, stageLogo, stageName, type PersonMore } from "./SmartAddHero";
 import { Shared, riseIn } from "./stage/Shared";
 import { useSessionKnob } from "@/lib/scoped-config/sessionKnob";
@@ -225,6 +225,11 @@ export function SmartAddBrand({
   const [relations, setRelations] = useState<Record<string, RelatedCandidate>>({});
   // "On the web": what each web result is to the brand (web.brand_relation_kind key + sentiment).
   const [webChoices, setWebChoices] = useState<Record<string, WebChoice>>({});
+  // "Other → Skip for now" (finding keys / compare candidate ids), "Other → Tagline" (name key -> tagline finding) and the
+  // web review's Ask me later / Ignore marks: answers like the rest, saved with the run (runMemory.ts).
+  const [skipped, setSkipped] = useState<Set<string>>(new Set());
+  const [taglines, setTaglines] = useState<Record<string, EvidenceItem>>({});
+  const [webMarks, setWebMarks] = useState<Record<string, WebMark>>({});
   // The facts agent's findings (kind brand_basics), answered on the validation page.
   const [facts, setFacts] = useState<BrandFact[]>([]);
   // The we-think agent's suggestions per round (run id) then finding key: they only glow an option, never answer.
@@ -385,6 +390,9 @@ export function SmartAddBrand({
     setDecisions({});
     setRelations({});
     setWebChoices({});
+    setSkipped(new Set());
+    setTaglines({});
+    setWebMarks({});
     setFacts([]);
     setSuggestionsByRun({});
     setComparing(false);
@@ -437,9 +445,13 @@ export function SmartAddBrand({
   // Every answer given before Create is saved as it is given and comes back with `?run=` (runMemory.ts).
   useRunMemory(
     url && !enrich && !created ? (runIds[0] ?? null) : null,
-    { decisions, webChoices, relations, namesakes: [...namesakes], typed: typedItems(items) },
+    { decisions, webChoices, relations, namesakes: [...namesakes], typed: typedItems(items), skipped: [...skipped], taglines, webMarks },
     (saved) => {
-      if (saved.typed.length) setItems((cur) => mergeEvidence(cur, saved.typed));
+      const moved = Object.values(saved.taglines);
+      if (saved.typed.length || moved.length) setItems((cur) => mergeEvidence(cur, [...saved.typed, ...moved]));
+      setSkipped((cur) => new Set([...cur, ...saved.skipped]));
+      setTaglines((cur) => ({ ...cur, ...saved.taglines }));
+      setWebMarks((cur) => ({ ...cur, ...saved.webMarks }));
       setDecisions((cur) => ({ ...cur, ...saved.decisions }));
       setWebChoices((cur) => ({ ...cur, ...saved.webChoices }));
       setRelations((cur) => ({ ...cur, ...saved.relations }));
@@ -672,6 +684,34 @@ export function SmartAddBrand({
       }
       return out;
     });
+  };
+
+  const skip = (key: string, on: boolean) =>
+    setSkipped((cur) => {
+      if (cur.has(key) === on) return cur;
+      const next = new Set(cur);
+      if (on) next.add(key);
+      else next.delete(key);
+      return next;
+    });
+
+  /** "Other → Tagline or slogan": the name becomes the About tagline and leaves the name list; Undo puts it back. */
+  const moveToTagline = (name: EvidenceItem, on: boolean) => {
+    if (on) {
+      const tagline: EvidenceItem = { ...customItem("tagline", name.value), source: name.source, confidence: name.confidence };
+      addCustom(tagline);
+      setTaglines((cur) => ({ ...cur, [name.key]: tagline }));
+      return;
+    }
+    const moved = taglines[name.key];
+    setTaglines(({ [name.key]: _drop, ...rest }) => rest);
+    if (!moved) return;
+    setItems((cur) => {
+      const next = new Map(cur);
+      next.delete(moved.key);
+      return next;
+    });
+    setDecisions(({ [moved.key]: _drop, ...rest }) => rest);
   };
 
   /** Compare view: claim or reject everything one source (the site, a profile) found. */
@@ -1327,6 +1367,8 @@ export function SmartAddBrand({
               onClaim={claim}
               onRelate={relate}
               onClose={() => setComparing(false)}
+              skipped={skipped}
+              onSkip={skip}
             />
           ) : null}
         </div>
@@ -1358,6 +1400,10 @@ export function SmartAddBrand({
           onRelate={relate}
           onAdd={addCustom}
           onBroken={(key) => brokenKeys.current.add(key)}
+          skipped={skipped}
+          onSkip={skip}
+          taglines={taglines}
+          onTagline={moveToTagline}
         />
       </div>
 
@@ -1370,6 +1416,8 @@ export function SmartAddBrand({
         onChoose={(item, choice) =>
           setWebChoices(({ [item.key]: _drop, ...rest }) => (choice ? { ...rest, [item.key]: choice } : rest))
         }
+        marks={webMarks}
+        onMark={(key, mark) => setWebMarks(({ [key]: _drop, ...rest }) => (mark ? { ...rest, [key]: mark } : rest))}
       />
       <SmartAddBioLinks items={visible} />
 

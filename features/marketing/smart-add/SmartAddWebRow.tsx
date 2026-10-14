@@ -13,7 +13,6 @@
  * results are kept as candidates at create, exactly as before.
  */
 
-import { useState } from "react";
 import { Globe } from "lucide-react";
 import { Button } from "@ai-matrx/design-system/controls";
 import type { BrandRelationKind } from "@/features/marketing/data/service";
@@ -21,7 +20,9 @@ import { usePublishSearchReviewSession } from "@/features/search-review/sessionS
 import { useOpenSearchReviewWindow } from "@/features/overlays/openers/searchReviewWindow";
 import type { ReviewAnswer, ReviewChoice, ReviewResult, ReviewSuggestion } from "@/features/search-review/types";
 import type { EvidenceItem } from "./evidence";
+import { useState } from "react";
 import { webRow } from "./evidence";
+import type { WebMark } from "./runMemory";
 import { STANCE_LABEL, STANCE_ORDER, suggestKind, type SuggestContext, type WebChoice } from "./webKinds";
 
 /** The one-click answers; every other kind is under "More". */
@@ -64,15 +65,23 @@ export function SmartAddWebRow({
   choices,
   ctx,
   onChoose,
+  marks: savedMarks,
+  onMark: saveMark,
 }: {
   items: EvidenceItem[];
   kinds: BrandRelationKind[];
   choices: Record<string, WebChoice>;
   ctx: SuggestContext;
   onChoose: (item: EvidenceItem, choice: WebChoice | null) => void;
+  /** Ask me later / Ignore: the person's place in the review, kept by the session so a reload returns to it. */
+  marks?: Record<string, WebMark>;
+  onMark?: (key: string, mark: WebMark | null) => void;
 }) {
-  // Ask me later / Ignore: the person's place in the review, not an answer — nothing is saved for them.
-  const [marks, setMarks] = useState<Record<string, "later" | "ignored">>({});
+  // Without a session (the lab) the marks live here.
+  const [localMarks, setLocalMarks] = useState<Record<string, WebMark>>({});
+  const marks = savedMarks ?? localMarks;
+  const onMark = (key: string, mark: WebMark | null) =>
+    saveMark ? saveMark(key, mark) : setLocalMarks(({ [key]: _drop, ...rest }) => (mark ? { ...rest, [key]: mark } : rest));
   const row = webRow(items);
   const byKey = new Map(row.map((i) => [i.key, i]));
   const answers: Record<string, ReviewAnswer> = {};
@@ -108,9 +117,7 @@ export function SmartAddWebRow({
           onAnswer: (key, answer) => {
             const item = byKey.get(key);
             if (!item) return;
-            setMarks(({ [key]: _drop, ...rest }) =>
-              answer && answer.status !== "answered" ? { ...rest, [key]: answer.status } : rest,
-            );
+            onMark(key, answer && answer.status !== "answered" ? answer.status : null);
             onChoose(item, answer?.status === "answered" ? { kind: answer.kind, sentiment: answer.sentiment } : null);
           },
         }

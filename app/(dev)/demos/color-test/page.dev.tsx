@@ -177,7 +177,7 @@ export default function ColorTestPage() {
             </div>
             <div className="p-2 bg-secondary text-secondary-foreground rounded-lg">
               <div className="text-xs font-mono mb-1">bg-secondary</div>
-              <div className="text-xs">Should be purple</div>
+              <div className="text-xs">Should be grey</div>
             </div>
           </div>
         </section>

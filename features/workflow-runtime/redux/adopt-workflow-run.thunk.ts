@@ -537,10 +537,12 @@ export function adoptWorkflowRun(
 
       void (async () => {
         try {
-          const row = await fetchJson<RunRow>(adminDoorPath(`/runs/${runId}`));
-          if (stopped) return;
-
+          // The run row and the durable log are independent reads: ask for both at once (one round trip
+          // fewer before the first frame lands on the screen).
+          const rowRead = fetchJson<RunRow>(adminDoorPath(`/runs/${runId}`));
+          rowRead.catch(() => undefined); // a failure is raised below, where it is awaited
           const cursor = await replayDurableLog(runId, depth);
+          const row = await rowRead;
           if (stopped) return;
           // Seed AFTER replay: the heartbeat tails only land on node
           // invocations that exist, and replay is what creates them. Seeding

@@ -31,7 +31,7 @@ export const actionDefinitions: Record<string, ActionDefinition> = {
         name: 'expand',
         label: "Expand view",
         icon: <Maximize2 className="h-4 w-4"/>,
-        className: "text-secondary hover:bg-secondary hover:text-secondary-foreground",
+        className: "text-brand-secondary hover:bg-secondary hover:text-secondary-foreground",
     },
 };
 
