@@ -329,7 +329,14 @@ export function runRenderPath(
   kind: string,
   value: Record<string, unknown>,
   chunkSize = 36,
+  /**
+   * The component registry's version when this run is made. Unused in the body ON
+   * PURPOSE: it is the React Compiler's memo key, so a caller re-runs when a view
+   * lands after first paint (the verdict routes through the live resolver).
+   */
+  registryVersion?: number,
 ): RenderPathRun | null {
+  void registryVersion;
   const wire = wireForPath(pathId, kind, value);
   if (wire !== null) return runStreamingPath(pathId, kind, wire, chunkSize);
   if (pathId === "reload") return runReloadPath(kind, value);

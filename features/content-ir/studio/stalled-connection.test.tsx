@@ -247,7 +247,7 @@ describe("stalled database line — every loader fails once and heals unprompted
     await lineReturns();
     expect(refresh).toHaveBeenCalledWith(0);
     expect(text()).not.toContain("Try again");
-    expect(text()).toContain("This shape renders through");
+    expect(text()).toContain("Shared view:");
   });
 
   it("render-status strip: one error filed per outage, not per retry", async () => {

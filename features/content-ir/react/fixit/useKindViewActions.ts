@@ -9,7 +9,7 @@
  * (fixit-plan.ts); the clicks are `fixit-handlers.ts` with real dependencies.
  */
 
-import { useState, useSyncExternalStore } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 
 import { useAppSelector } from "@/lib/redux/hooks";
 import {
@@ -39,6 +39,7 @@ import {
 import {
   readLayerAudience,
   readLayerFallthrough,
+  readOwnInactiveLayerId,
   switchOffLayer,
   switchOnLayer,
   type LayerSwitchOffReason,
@@ -95,6 +96,32 @@ export function useKindViewActions(input: {
     () => componentRegistry.getVersion(),
     () => 0,
   );
+
+  const viewerKey = userId ?? "";
+  // The viewer's own switched-off row, read from the DATA: a reload forgets the
+  // toast and the memory above, but the row (is_active=false) is still theirs.
+  const [ownOffRowId, setOwnOffRowId] = useState<string | null>(null);
+  const hasWinningLayer = userId
+    ? readLayerFacts(input.kind, registryVersion) !== null
+    : false;
+  useEffect(() => {
+    if (!viewerKey || hasWinningLayer) {
+      setOwnOffRowId(null);
+      return;
+    }
+    let alive = true;
+    void readOwnInactiveLayerId(input.kind, viewerKey)
+      .then((id) => {
+        if (alive) setOwnOffRowId(id);
+      })
+      .catch(() => {
+        // A failed read just means no Turn on offer; the toast path is unaffected.
+        if (alive) setOwnOffRowId(null);
+      });
+    return () => {
+      alive = false;
+    };
+  }, [input.kind, viewerKey, hasWinningLayer, registryVersion]);
 
   const viewer: FixItViewer = {
     userId,
@@ -179,11 +206,25 @@ export function useKindViewActions(input: {
     onRemoveLayer: (rowId: string) => switchOff(rowId, "remove"),
     onUseShared: (rowId: string) => switchOff(rowId, "use_shared"),
     // Only while no view of mine is winning (undoing re-lands it; a new view clears it).
-    switchedOff: layer ? null : switchedOff ? { message: switchedOff.message } : null,
+    switchedOff: layer
+      ? null
+      : switchedOff
+        ? { message: switchedOff.message }
+        : ownOffRowId
+          ? { message: "Your view is off", turnOn: true }
+          : null,
     onUndoSwitchOff: () => {
       const last = switchedOff;
       setSwitchedOff(null);
-      last?.undo();
+      if (last) {
+        last.undo();
+        return;
+      }
+      const rowId = ownOffRowId;
+      if (!rowId) return;
+      guarded("Turning your view on failed", () =>
+        switchOnLayer(input.kind, rowId).then(() => setOwnOffRowId(null)),
+      );
     },
   };
 }

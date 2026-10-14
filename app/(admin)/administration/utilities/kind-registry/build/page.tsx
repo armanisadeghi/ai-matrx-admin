@@ -12,10 +12,17 @@ export const metadata: Metadata = {
     "Hand the admin builder agent a data structure; it builds and activates the whole kind end to end.",
 };
 
-export default function KindBuilderPage() {
+export default async function KindBuilderPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ kind?: string | string[] }>;
+}) {
+  // "Change for everyone" on an unregistered name links here with `?kind=<slug>`.
+  const { kind } = await searchParams;
+  const initialKind = typeof kind === "string" && kind.trim() ? kind.trim() : null;
   return (
     <div className="h-[calc(100dvh-2.5rem)] overflow-y-auto bg-textured">
-      <KindBuilderClient />
+      <KindBuilderClient initialKind={initialKind} />
     </div>
   );
 }

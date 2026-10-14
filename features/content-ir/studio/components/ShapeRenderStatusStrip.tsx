@@ -72,6 +72,9 @@ interface ShapeRenderStatusStripProps {
   sampleValue?: unknown;
 }
 
+/** What the headline names — the shared view, never the viewer's own layered one. */
+export const SHARED_VIEW_PREFIX = "Shared view:";
+
 const SOURCE_ICON: Record<ShapeRenderStatus["source"], typeof BadgeCheck> = {
   custom: Code2,
   builtin: LayoutTemplate,
@@ -302,15 +305,17 @@ export default function ShapeRenderStatusStrip({
           }`}
         />
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-medium text-foreground">
-            This shape renders through: {status.sourceLabel}
+          {/* The SHARED view's truth — scoped by name so it can never contradict
+              the viewer's own "My view" marker on the actions row below. */}
+          <p className="truncate text-sm font-medium text-foreground">
+            {SHARED_VIEW_PREFIX} {status.sourceLabel}
             {status.componentKey ? (
               <span className="ml-1.5 rounded bg-muted px-1.5 py-0.5 font-mono text-[11px] text-foreground">
                 {status.componentKey}
               </span>
             ) : null}
           </p>
-          <p className="mt-0.5 text-xs text-muted-foreground">
+          <p className="mt-0.5 truncate text-xs text-muted-foreground">
             Why: {asClause(status.why)}.
           </p>
           {hasProblems && (
@@ -331,6 +336,11 @@ export default function ShapeRenderStatusStrip({
           )}
         </div>
 
+      </div>
+
+      {/* Controls get their own row: the status above stays one line, and the
+          row keeps its height while the viewer's overlay loads (no shift). */}
+      <div className="mt-1.5 flex min-h-7 flex-wrap items-center gap-x-3 gap-y-1">
         {/* Anyone signed in: their own view (or the marker for the one they have). */}
         <KindViewActionsRow
           kind={kind}

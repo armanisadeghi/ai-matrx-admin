@@ -229,6 +229,43 @@ export function describeLayerSwitchOff(input: {
   };
 }
 
+/** The slice of the Supabase client {@link readOwnInactiveLayerId} needs (a test seam). */
+export interface LayerReadClient {
+  schema(name: "content_ir"): {
+    from(table: "kind_component_layer"): {
+      select(columns: string): any; // eslint-disable-line @typescript-eslint/no-explicit-any -- PostgREST builder chain
+    };
+  };
+}
+
+/**
+ * The viewer's OWN switched-off personal view of a kind, read from the data so
+ * "Your view is off · Turn on" survives a reload (the toast and component
+ * memory do not). The read declares its own audience (`audience_user_id = me`)
+ * — RLS is the ceiling, never the filter, and an admin lane must never be
+ * handed another person's off view. Newest first; null when there is none.
+ */
+export async function readOwnInactiveLayerId(
+  kind: string,
+  userId: string,
+  client: LayerReadClient = createClient() as unknown as LayerReadClient,
+): Promise<string | null> {
+  const { data, error } = await client
+    .schema("content_ir")
+    .from("kind_component_layer")
+    .select("id")
+    .eq("audience_user_id", userId)
+    .eq("kind", kind)
+    .eq("platform", "web")
+    .eq("role", "output")
+    .eq("is_active", false)
+    .is("deleted_at", null)
+    .order("updated_at", { ascending: false })
+    .limit(1);
+  if (error) throw operationFailed("check whether your view is off", error);
+  return (data?.[0] as { id: string } | undefined)?.id ?? null;
+}
+
 /** Switch a layered row back on — the undo of {@link switchOffLayer}. */
 export async function switchOnLayer(kind: string, rowId: string): Promise<void> {
   await setLayerActive(kind, rowId, true);

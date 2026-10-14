@@ -63,6 +63,15 @@ export interface FixItLayerPlan {
   canEdit: boolean;
   canRemove: boolean;
   newerShared: boolean;
+  /**
+   * The per-person actions that stay ALONGSIDE the marker: a view of one tier
+   * never takes the other tiers' repairs away (a member under an org view can
+   * still make their own; an org admin under their own view can still make the
+   * organization's; a super admin always keeps the link).
+   */
+  makeMine: boolean;
+  makeOrg: boolean;
+  everyoneHref: string | null;
 }
 
 /** The per-person view actions — the same everywhere they appear (bar, shape page). */
@@ -103,9 +112,10 @@ export const OWNER_ACTION_LABEL: Record<FixItOwnerAction, string> = {
 
 /** The admin shape page for a kind — the ONLY door to a change for everyone. */
 export function adminShapePath(kind: string, registered: boolean): string {
-  return registered
-    ? `/administration/utilities/kind-registry/${encodeURIComponent(kind)}`
-    : "/administration/utilities/kind-registry/build";
+  if (registered) return `/administration/utilities/kind-registry/${encodeURIComponent(kind)}`;
+  // The builder page reads `?kind=` so the slug the viewer saw is not lost.
+  const base = "/administration/utilities/kind-registry/build";
+  return kind ? `${base}?kind=${encodeURIComponent(kind)}` : base;
 }
 
 function ownerActionFor(
@@ -165,6 +175,11 @@ export function planKindViewActions(
       canEdit: mineToEdit,
       canRemove: mineToEdit,
       newerShared: isNewer(layer.sharedUpdatedAt, layer.updatedAt),
+      // Under my own view there is nothing more to make for me; under an org
+      // view there is. An org admin editing the org view already has "Edit".
+      makeMine: layer.scope === "organization",
+      makeOrg: viewer.isOrgAdmin && layer.scope === "user",
+      everyoneHref: viewer.isSuperAdminPerson ? adminShapePath(kind.slug, kind.registered) : null,
     };
   }
   return {
@@ -179,11 +194,15 @@ export function planKindFixIt(
   diagnosis: KindRenderGapDiagnosis | null,
   viewer: FixItViewer,
   layer: FixItLayerFacts | null,
+  kind?: { slug: string; registered: boolean },
 ): FixItPlan {
   const signedIn = viewer.userId !== null;
 
   if (layer && signedIn) {
-    const view = planKindViewActions(viewer, layer, { slug: diagnosis?.kind ?? "", registered: true });
+    const view = planKindViewActions(viewer, layer, {
+      slug: kind?.slug ?? diagnosis?.kind ?? "",
+      registered: kind?.registered ?? (diagnosis ? diagnosis.kindDefinitionId !== null : true),
+    });
     if (view.mode === "layer") return view;
   }
 

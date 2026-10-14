@@ -117,7 +117,10 @@ const KindFixItBarInner: React.FC<KindFixItBarProps> = ({ kind, value }) => {
   if (hidden) return null;
   if (!diagnosis && !actions.layer) return null;
 
-  const plan = planKindFixIt(diagnosis, actions.viewer, actions.layer);
+  const plan = planKindFixIt(diagnosis, actions.viewer, actions.layer, {
+    slug: kind,
+    registered: diagnosis ? diagnosis.kindDefinitionId !== null : true,
+  });
 
   const runAction = (label: string, action: () => Promise<void>) => {
     setBusy(true);
@@ -239,7 +242,7 @@ export interface FixItViewHandlers {
   onRemoveLayer: (rowId: string) => void;
   onUseShared: (rowId: string) => void;
   /** A view this person just switched off — the marker keeps Undo reachable. */
-  switchedOff?: { message: string } | null;
+  switchedOff?: { message: string; turnOn?: boolean } | null;
   onUndoSwitchOff?: () => void;
 }
 
@@ -259,7 +262,7 @@ export function FixItViewActions(
       <div data-fixit-mode="switched-off" className="flex flex-wrap items-center gap-2">
         <span className="type-meta text-muted-foreground">{switchedOff.message}</span>
         <Button variant="quiet" disabled={busy} onClick={onUndoSwitchOff}>
-          Undo
+          {switchedOff.turnOn ? "Turn on" : "Undo"}
         </Button>
       </div>
       {body}
@@ -279,7 +282,7 @@ function ViewActionsPlan({
   if (plan.mode === "none") return null;
   if (plan.mode === "layer") {
     return (
-      <div data-fixit-mode="layer" className="flex flex-wrap items-center gap-2">
+      <div data-fixit-mode="layer" className="flex flex-wrap items-center gap-x-2 gap-y-1">
         <span className="type-meta text-muted-foreground">
           {plan.scope === "user" ? "My view" : "My organization's view"}
         </span>
@@ -301,22 +304,56 @@ function ViewActionsPlan({
             Remove
           </Button>
         ) : null}
+        <PersonActions
+          plan={plan}
+          busy={busy}
+          onMakeMine={onMakeMine}
+          onMakeOrg={onMakeOrg}
+          variant="quiet"
+        />
       </div>
     );
   }
+  if (!plan.makeMine && !plan.makeOrg && !plan.everyoneHref) return null;
+  return (
+    <div data-fixit-mode="actions" className="flex flex-wrap items-center gap-2">
+      <PersonActions plan={plan} busy={busy} onMakeMine={onMakeMine} onMakeOrg={onMakeOrg} />
+    </div>
+  );
+}
+
+/** Make my view / For my organization / Change for everyone — one copy for every plan shape. */
+function PersonActions({
+  plan,
+  busy,
+  onMakeMine,
+  onMakeOrg,
+  variant,
+}: {
+  plan: { makeMine: boolean; makeOrg: boolean; everyoneHref: string | null };
+  busy: boolean | undefined;
+  onMakeMine: () => void;
+  onMakeOrg: () => void;
+  /** Beside a marker everything is quiet; standing alone the first action leads. */
+  variant?: "quiet";
+}): React.ReactElement | null {
   const everyone = plan.everyoneHref
     ? (crossDeploymentHref(plan.everyoneHref) ?? plan.everyoneHref)
     : null;
-  if (!plan.makeMine && !plan.makeOrg && !everyone) return null;
   return (
-    <div data-fixit-mode="actions" className="flex flex-wrap items-center gap-2">
+    <>
       {plan.makeMine ? (
-        <Button variant="primary" icon={<AGENT_ICON />} disabled={busy} onClick={onMakeMine}>
+        <Button
+          variant={variant ?? "primary"}
+          icon={<AGENT_ICON />}
+          disabled={busy}
+          onClick={onMakeMine}
+        >
           Make my view
         </Button>
       ) : null}
       {plan.makeOrg ? (
-        <Button variant="outline" disabled={busy} onClick={onMakeOrg}>
+        <Button variant={variant ?? "outline"} disabled={busy} onClick={onMakeOrg}>
           For my organization
         </Button>
       ) : null}
@@ -327,7 +364,7 @@ function ViewActionsPlan({
           </OutboundLink>
         </Button>
       ) : null}
-    </div>
+    </>
   );
 }
 

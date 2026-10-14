@@ -145,8 +145,11 @@ export default function KindRenderPaths({
   // Re-run whenever the path, the kind, or the value changes. The registries
   // are consulted inside, so a component authored moments ago is reflected.
   const run = useMemo(
-    () => runRenderPath(pathId, kind, value),
-    // The registry version re-runs the path when a view lands after first paint.
+    // The registry version is an ARGUMENT, not only a dep: React Compiler infers
+    // a memo's deps from what the callback reads and drops a manual dep it never
+    // sees, so a view landing after first paint (the viewer's overlay) would
+    // keep the first, stale verdict and blocks (defect, 2026-10-14).
+    () => runRenderPath(pathId, kind, value, undefined, registryVersion),
     [pathId, kind, value, registryVersion],
   );
 

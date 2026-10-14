@@ -31,6 +31,7 @@ import {
 } from "@/features/surfaces/manifests/admin-kind-registry.manifest";
 import { pushAppHref } from "@/lib/deployment/navigate";
 import { MANDATE_KEYS } from "@ai-matrx/agents/mandates";
+import { initialBuilderNotes } from "./kind-builder-notes";
 
 /**
  * The admin one-shot kind builder (agent.definition 'kind_architect', builtin).
@@ -39,14 +40,14 @@ import { MANDATE_KEYS } from "@ai-matrx/agents/mandates";
  */
 const KIND_ARCHITECT_MANDATE = MANDATE_KEYS.content_ir__kind_architect;
 
-export default function KindBuilderClient() {
+export default function KindBuilderClient({ initialKind = null }: { initialKind?: string | null }) {
   // Which agent builds a kind is a MANDATE, not a hardcoded id — swappable from
   // the admin console or an override at /mandates, no deploy.
   const { mandate: architect, error: architectError } = useMandate(KIND_ARCHITECT_MANDATE);
   const router = useRouter();
   const openRun = useOpenAgentRunWindow();
   const [structure, setStructure] = useState("");
-  const [notes, setNotes] = useState("");
+  const [notes, setNotes] = useState(() => initialBuilderNotes(initialKind));
 
   const canStart = structure.trim().length > 0 && architect !== null;
 
