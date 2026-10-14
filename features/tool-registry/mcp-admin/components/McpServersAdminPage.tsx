@@ -32,6 +32,7 @@ import {
 } from "@ai-matrx/design-system/controls";
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
 import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
+import { KpiTile } from "@/components/official/kpi/KpiTile";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
@@ -419,6 +420,7 @@ export function McpServersAdminPage() {
                 placeholder="Search servers…"
                 aria-label="Search servers"
                 data-surface-value="mcp_search"
+                className="w-full"
               />
             </div>
             {error && (
@@ -433,7 +435,7 @@ export function McpServersAdminPage() {
                   const fresh = computeFreshness(s);
                   const isSel = s.slug === selected?.slug;
                   return (
-                    <li key={s.slug} className="relative group/srv pr-9">
+                    <li key={s.slug} className="relative group/srv pr-9 border-b border-border">
                       {/* Sibling overlay, not a child of the row button — nested
                         buttons are invalid HTML. */}
                       <CopyButtons
@@ -537,6 +539,7 @@ function FreshnessBadge({
   return (
     <StatusBadge
       tone={tone}
+      icon={<Icon />}
       title={
         fresh.state === "errored"
           ? `Last error: ${fresh.lastError ?? "unknown"}`
@@ -545,7 +548,6 @@ function FreshnessBadge({
             : "Never synced"
       }
     >
-      <Icon className="h-3 w-3" />
       {!compact && label}
     </StatusBadge>
   );
@@ -650,7 +652,7 @@ function ServerDetail({
           <div className="min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
               <h2
-                className="type-title"
+                className="type-heading"
                 data-surface-value="selected_server_slug"
               >
                 {humanizeIdentifier(server.slug)}
@@ -1420,32 +1422,31 @@ function ConnectionsTab({
 
   return (
     <div className="rounded-md border border-border bg-card p-4 space-y-2">
-      <PropertyRow
-        label="Connected users"
-        value={
-          <span
-            className="tabular-nums"
-            data-surface-value="server_connected_user_count"
-          >
-            {count ?? 0}
-          </span>
-        }
-        meta={
-          <CopyButtons
-            size="xs"
-            label="Connected users count"
-            human={() => `${count ?? 0} user${count === 1 ? "" : "s"} connected`}
-            agent={() => ({
-              kind: "mcp-server-connections",
-              location: PAGE_LOCATION,
-              description:
-                "Count of users connected to the MCP server open in the admin detail pane.",
-              data: { server_id: serverId, connected_users: count ?? 0 },
-              attributes: { count: count ?? 0 },
-            })}
-          />
-        }
-      />
+      <div className="flex items-start gap-3">
+        <KpiTile
+          className="flex-1"
+          label="Connected users"
+          value={
+            <span data-surface-value="server_connected_user_count">
+              {count ?? 0}
+            </span>
+          }
+          hint={`user${count === 1 ? "" : "s"} connected`}
+        />
+        <CopyButtons
+          size="xs"
+          label="Connected users count"
+          human={() => `${count ?? 0} user${count === 1 ? "" : "s"} connected`}
+          agent={() => ({
+            kind: "mcp-server-connections",
+            location: PAGE_LOCATION,
+            description:
+              "Count of users connected to the MCP server open in the admin detail pane.",
+            data: { server_id: serverId, connected_users: count ?? 0 },
+            attributes: { count: count ?? 0 },
+          })}
+        />
+      </div>
       <p className="type-secondary text-muted-foreground">
         Per-user connection details (auth status, last used, error count) live
         in the per-user Connections page (Phase 6 — coming next).
@@ -1608,8 +1609,7 @@ function EmptyHint({ children }: { children: React.ReactNode }) {
 function TestFreshnessBadge({ testFresh }: { testFresh: TestFreshness }) {
   if (testFresh.state === "untested") {
     return (
-      <StatusBadge>
-        <Plug className="h-3 w-3" />
+      <StatusBadge icon={<Plug />}>
         untested
         <InfoHint
           text="No connection test on record. Click 'Test connection' to probe the endpoint."
@@ -1622,9 +1622,9 @@ function TestFreshnessBadge({ testFresh }: { testFresh: TestFreshness }) {
     return (
       <StatusBadge
         tone="success"
+        icon={<PlugZap />}
         title={`Endpoint reachable as of ${formatRelativeAge(testFresh.ageSec)} — HTTP ${testFresh.statusCode}, ${testFresh.latencyMs}ms`}
       >
-        <PlugZap className="h-3 w-3" />
         reachable{" "}
         {testFresh.latencyMs !== null ? `${testFresh.latencyMs}ms` : ""}
       </StatusBadge>
@@ -1633,13 +1633,13 @@ function TestFreshnessBadge({ testFresh }: { testFresh: TestFreshness }) {
   return (
     <StatusBadge
       tone="destructive"
+      icon={<XCircle />}
       title={
         testFresh.error
           ? `${formatRelativeAge(testFresh.ageSec)}: ${testFresh.error}`
           : `Last test failed (${formatRelativeAge(testFresh.ageSec)})`
       }
     >
-      <XCircle className="h-3 w-3" />
       unreachable
       <ErrorAlchemyMenu
         error={`${formatRelativeAge(testFresh.ageSec)}: ${testFresh.error}`}
