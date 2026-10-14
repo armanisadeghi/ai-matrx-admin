@@ -112,15 +112,20 @@ export function BrandsPortfolio({
   // THE ARCHIVED-ITEMS LAW: archived brands are one click away; Restore lives on their rows.
   const [archive, setArchive] = useState<ArchiveFilterValue>(DEFAULT_ARCHIVE_FILTER);
   // HIDDEN BY ME: brands this person hid leave the list and wait in the Hidden view (one click).
-  const [hiddenView, setHiddenView] = useState<HiddenView>("visible");
+  const [hiddenViewChoice, setHiddenView] = useState<HiddenView>("visible");
   const hiddenIds = useHiddenByMe("web_brand");
+  // The Hidden view closes itself once nothing is left in it.
+  const hiddenView: HiddenView =
+    hiddenViewChoice === "hidden" && hiddenIds.data?.length === 0 ? "visible" : hiddenViewChoice;
   const { hide: hideBrand, unhide: unhideBrand } = useHideForMe("web_brand", [
     [...marketingKeys.root, "brands"],
   ]);
-  const brands = useBrands(table.queryState, archive, {
-    ids: hiddenIds.data ?? [],
-    view: hiddenView,
-  });
+  const brands = useBrands(
+    table.queryState,
+    archive,
+    { ids: hiddenIds.data ?? [], view: hiddenView },
+    !hiddenIds.isPending,
+  );
   const restoreMutation = useRestoreBrand();
   const [editorOpen, setEditorOpen] = useState(false);
   const [editing, setEditing] = useState<MarketingBrand | null>(null);
@@ -144,6 +149,7 @@ export function BrandsPortfolio({
       } else {
         await unhideBrand.mutateAsync(row.id);
         toast.success(`${row.name} is back in your list`);
+        if ((hiddenIds.data?.length ?? 0) <= 1) setHiddenView("visible");
       }
     } catch (error) {
       toast.error(hidden ? "Could not hide brand" : "Could not show brand", {

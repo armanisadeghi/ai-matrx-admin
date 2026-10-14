@@ -54,6 +54,21 @@ offers a durable action request or full-access request. A generic 42501 (missing
 schema/table/function grants) is still a fault and must never become an owner
 request. **`throw new Error(error.message)` remains a defect.**
 
+## Can't remove it? Ask, or hide it for me (2026-10-14)
+
+Any record a person can see but may not archive or delete gets ONE screen,
+`GovernedActionDialog` (`action="archive" | "delete"`): ask the owner/admins to
+do it, request full access, or **hide it for me**. Check FIRST —
+`useRemovalRights(token, id)` (RPC `platform.record_removal_rights`, mirroring
+`iam._guard_governance_columns`: creator, full access, or platform admin; never
+the active organization) — and open the dialog instead of the confirm when
+`canRemove` is false; `isGovernedActionDenial` covers the refusal path too.
+Hidden by me: `platform.hidden_item` (filed under the record's own org) behind
+`hide_for_me` / `unhide_for_me` / `hidden_by_me`; lists read the ids with
+`useHiddenByMe(token)`, narrow server-side with `applyHiddenView`, and render
+`HiddenFilter` beside `ArchiveFilter` (absent until something is hidden).
+Exemplar: Marketing › Brands (`BrandArchiveFlow`, `BrandsPortfolio`).
+
 ## Using it
 
 ```tsx
@@ -288,6 +303,8 @@ surface means importing them too, never reimplementing the RPC call.
   `recordUnavailable`, assert some consumer reads `.isError`/`.error`.
 
 ## Change Log
+
+- 2026-10-14 — Hidden by me + check-first removal: `GovernedActionDialog` gains archive wording and a "Hide it for me" choice; new `service/hiddenByMe.ts`, `hooks/useHiddenByMe.ts`, `components/HiddenFilter.tsx`; brands adopt it.
 
 - 2026-09-27 — page-pass shared fix: an archived record is said as archived ("This template is in Trash … archived, not erased") with a **Restore** control for its owner or an editor (the generic `entity_undelete` door, then the surface re-reads — `router.refresh()` on a server page). Guard: `service/archivedWords.test.ts`.
 

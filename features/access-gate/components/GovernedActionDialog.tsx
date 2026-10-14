@@ -156,7 +156,7 @@ export function GovernedActionDialog({
             <ActionIcon className="h-5 w-5 text-destructive" aria-hidden />
           </div>
           <DialogTitle>
-            Only {ownerName} can {verb} this {itemLabel}
+            Ask {ownerName} to {verb} this {itemLabel}
           </DialogTitle>
           <DialogDescription>
             You can work on{" "}

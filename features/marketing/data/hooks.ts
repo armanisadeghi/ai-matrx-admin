@@ -819,10 +819,13 @@ export function useBrands(
   state: MatrxDataTableQueryState,
   archive: "active" | "archived" | "all" = "active",
   hidden: { ids: readonly string[]; view: HiddenView } = { ids: [], view: "visible" },
+  /** False until the person's hidden ids are known, so hidden brands never flash in. */
+  enabled = true,
 ) {
   return useQuery({
     queryKey: [...marketingKeys.root, "brands", state, archive, hidden] as const,
     queryFn: ({ signal }) => listBrands(state, signal, archive, hidden),
+    enabled,
     placeholderData: keepPreviousData,
   });
 }
