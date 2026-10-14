@@ -409,7 +409,7 @@ export function PersonHarderStage({
         <span className="text-xs text-muted-foreground" data-testid="smart-add-find-status">
           {searching
             ? hard && !sweep
-              ? "Searching Brave and Google, up to 150 results…"
+              ? "Searching the web, up to 150 results…"
               : "Searching…"
             : stuck
               ? "Nothing matched yet"
