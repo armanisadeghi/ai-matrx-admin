@@ -1613,10 +1613,10 @@ export function SmartAddBrand({
         </div>
       ) : openComparisons > 0 || comparing ? (
         <div className="flex flex-col gap-3" data-testid="smart-add-situation">
-          <div className="flex items-center gap-2 rounded-lg border border-amber-500/40 bg-amber-500/5 px-4 py-2 text-sm">
-            <span className="font-medium">Some of these may be someone else</span>
+          <div className="flex items-center gap-2 rounded-lg border border-warning/40 bg-warning/5 px-4 py-2 text-sm">
+            <span className="font-medium">{openComparisons === 1 ? "1 possible mix-up" : openComparisons > 1 ? `${openComparisons} possible mix-ups` : "Possible mix-ups"}</span>
             <Button variant="outline" className="ml-auto" onClick={() => setComparing(true)}>
-              Compare side by side
+              Compare
             </Button>
           </div>
         </div>
@@ -1682,24 +1682,31 @@ export function SmartAddBrand({
       <SmartAddBioLinks items={visible} />
 
       {/* Create: the confirmed basics, one row. */}
-      <div className="sticky bottom-3 z-10 flex min-h-12 items-center gap-3 rounded-xl border border-border bg-card/95 px-4 py-2 shadow-lg backdrop-blur">
+      <div className="sticky bottom-3 z-10 flex min-h-12 flex-wrap items-center gap-x-3 gap-y-2 rounded-xl border border-border bg-card/95 px-4 py-2 shadow-lg backdrop-blur">
         {/* Two rows: the brand, then what Create files and what it spends — each fact once, nothing cut off. */}
-        <div className="flex min-w-0 flex-1 items-center gap-2.5">
+        <div className="flex min-w-0 flex-1 basis-full items-center gap-2.5 sm:basis-0">
           {basics.logoUrl ? (
             <img src={basics.logoUrl} alt="" className="size-8 shrink-0 rounded object-contain" />
           ) : null}
           <div className="flex min-w-0 flex-col">
             <span className="truncate text-sm font-medium">{basics.name ?? "Confirm a name to create the brand"}</span>
             {basics.name ? (
-              <span className="truncate text-xs text-muted-foreground" data-testid="smart-add-posts-preview">
+              // Each fact stays whole: on a phone the facts wrap to a second line instead of being cut off.
+              <span className="flex min-w-0 flex-wrap gap-x-1.5 text-xs text-muted-foreground" data-testid="smart-add-posts-preview">
                 {[
                   basics.websiteUrl ? websiteHost(basics.websiteUrl) : null,
                   basics.accounts.length ? `${basics.accounts.length} ${basics.accounts.length === 1 ? "account" : "accounts"}` : null,
                   trackedAccounts.length && !created && postsPerAccount ? `${postsPerAccount} posts each` : null,
-                  trackedAccounts.length && !created ? postsPoints : null,
+                  trackedAccounts.length && !created && postsPerAccount ? (postsPoints ?? "points not priced yet") : null,
                 ]
-                  .filter(Boolean)
-                  .join(" · ")}
+                  .filter((f): f is string => Boolean(f))
+                  .map((f, n) => (
+                    // The site is on the card right above: a phone leaves it out of this line.
+                    <span key={f} className={`whitespace-nowrap ${n === 0 && basics.websiteUrl ? "max-sm:hidden" : ""}`}>
+                      {n && !(n === 1 && basics.websiteUrl) ? "· " : n ? <span className="max-sm:hidden">· </span> : ""}
+                      {f}
+                    </span>
+                  ))}
               </span>
             ) : null}
           </div>
@@ -1715,11 +1722,11 @@ export function SmartAddBrand({
           </a>
         ) : (
           enrich ? (
-            <Button variant="primary" onClick={() => setReviewing(true)} data-testid="enrich-review-changes">
+            <Button variant="primary" className="max-sm:w-full" onClick={() => setReviewing(true)} data-testid="enrich-review-changes">
               Review changes
             </Button>
           ) : (
-            <Button variant="primary" disabled={!canCreate} onClick={() => void create()}>
+            <Button variant="primary" className="max-sm:w-full" disabled={!canCreate} onClick={() => void create()}>
               {creating ? <Loader2 className="size-3.5 animate-spin" /> : null}
               {coreSettled(basics, person) ? "Create and validate" : "Create brand"}
             </Button>

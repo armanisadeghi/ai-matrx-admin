@@ -1099,7 +1099,18 @@ function Centerpiece({
   const socials = real.filter((i) => i.field === "social").slice(0, 5);
   const photoByPlatform = new Map<string, EvidenceItem>();
   for (const l of logos) if (l.profile_id && l.platform) photoByPlatform.set(l.platform, l);
-  const steps = views.flatMap((v) => v.steps).filter((s) => !s.skipped && s.phase !== "idle" && STEP_LABEL[s.step]);
+  // One tick per step across every round (a step runs once per round): done only when every round settled it.
+  const steps = [
+    ...views
+      .flatMap((v) => v.steps)
+      .filter((s) => !s.skipped && s.phase !== "idle" && STEP_LABEL[s.step])
+      .reduce((byStep, s) => {
+        const seen = byStep.get(s.step);
+        byStep.set(s.step, !seen || seen.phase === "settled" ? s : seen);
+        return byStep;
+      }, new Map<string, (typeof views)[number]["steps"][number]>())
+      .values(),
+  ];
   // AI test mode: a round answered from saved results says so (a stand-in outranks a replay).
   const savedReplays = views.flatMap((v) => v.replays ?? []);
   const savedAnswer = savedReplays.find((r) => r.match === "stand_in") ?? savedReplays[0] ?? null;

@@ -137,6 +137,8 @@ const KIND_LABEL = { business: "Business", person: "Person", both: "Person with 
 const LOGO_WAIT_MS = 180_000;
 /** The homepage picture: the server's browser gives up at 20s per device, plus filing; past this it is not coming. */
 const SHOT_WAIT_MS = 90_000;
+/** A picture that has neither drawn nor failed by now is treated as not coming. */
+const DRAW_WAIT_MS = 30_000;
 
 /** The primary choices, laid out like an official profile card — builds as the person confirms. */
 export function BrandCard({
@@ -167,15 +169,17 @@ export function BrandCard({
 }) {
   const empty = !basics.name && pictures.length === 0 && !basics.websiteUrl;
   const [dead, setDead] = useState<ReadonlySet<string>>(new Set());
-  // The picture on screen: only ever one that has loaded. A newer, better candidate loads out of sight and
-  // replaces it only once it has drawn; one that fails never takes the good one away (Arman, 2026-10-14).
-  const [shown, setShown] = useState<{ url: string; shade: "light" | "dark" | "checker" } | null>(null);
+  // Pictures that have really drawn, with the backdrop each needs. The card shows the best-ranked one of these, so a
+  // newer, better candidate replaces the shown one only once it has drawn, and one that fails never takes a good
+  // one away (Arman, 2026-10-14). Every better candidate is tried at once, out of sight (the tiles below load the
+  // same pictures, so the browser fetches each once): the first to draw shows, and a better one steps in as it draws.
+  const [loaded, setLoaded] = useState<ReadonlyMap<string, "light" | "dark" | "checker">>(new Map());
   const live = pictures.filter((u) => !dead.has(u));
-  const target = live[0] ?? null;
-  // A picture the person has since turned down (no longer a candidate) leaves the card.
-  const onScreen = shown && pictures.includes(shown.url) ? shown : null;
-  const loading = target !== null && target !== onScreen?.url;
-  const waiting = useBoundedWait(!onScreen && (loading || findingPictures), LOGO_WAIT_MS);
+  const best = live.find((u) => loaded.has(u)) ?? null;
+  const onScreen = best ? { url: best, shade: loaded.get(best) } : null;
+  const probes = live.slice(0, best ? live.indexOf(best) : live.length).filter((u) => !loaded.has(u));
+  const waiting = useBoundedWait(!onScreen && (probes.length > 0 || findingPictures), LOGO_WAIT_MS);
+  const drop = (u: string) => setDead((d) => new Set(d).add(u));
   const srcOf = (u: string) => (/^https?:\/\//i.test(u) ? proxiedExternalImageUrl(u) : u);
   return (
     <section
@@ -189,30 +193,31 @@ export function BrandCard({
         data-state={onScreen ? "ready" : waiting ? "waiting" : "empty"}
       >
         {onScreen ? (
-          <img src={srcOf(onScreen.url)} alt="" className="max-h-full max-w-full object-contain p-1.5" />
+          <img src={srcOf(onScreen.url)} alt="" onError={() => drop(onScreen.url)} className="max-h-full max-w-full object-contain p-1.5" />
         ) : waiting ? (
           <Skeleton motion="shimmer" aria-hidden="true" className="absolute inset-0 rounded-none bg-muted" />
         ) : (
           <Globe className="size-7 text-muted-foreground" />
         )}
-        {loading && target ? (
+        {probes.map((u) => (
           <img
-            key={target}
-            src={srcOf(target)}
+            key={u}
+            src={srcOf(u)}
             alt=""
             aria-hidden
             className="pointer-events-none absolute size-px opacity-0"
             onLoad={(ev) => {
               const b = brightnessOf(ev.currentTarget);
-              setShown({ url: target, shade: b === null ? "light" : shadeForBrightness(b) });
+              const shade = b === null ? "light" : shadeForBrightness(b);
+              setLoaded((m) => new Map(m).set(u, shade));
             }}
-            onError={() => setDead((d) => new Set(d).add(target))}
+            onError={() => drop(u)}
           />
-        ) : null}
+        ))}
       </span>
       <div className="flex min-w-0 flex-1 flex-col gap-1">
         <span className="flex min-w-0 items-baseline gap-2">
-          <span className={`truncate text-xl font-semibold ${empty ? "text-muted-foreground/50" : ""}`}>
+          <span className={`truncate text-xl font-semibold ${empty ? "text-muted-foreground" : ""}`}>
             {basics.name ?? (person ? "Your name" : "Your brand")}
           </span>
           <DropdownMenu>
@@ -262,6 +267,9 @@ function HomepageShot({ url, capturing }: { url: string | null; capturing: boole
   const [dead, setDead] = useState<string | null>(null);
   const show = url !== null && dead !== url;
   const shooting = useBoundedWait(capturing && !show, SHOT_WAIT_MS);
+  // A picture whose request hangs (never loads, never errors) is not coming either.
+  const drawing = useBoundedWait(show && loaded !== url, DRAW_WAIT_MS);
+  if (show && loaded !== url && !drawing) return null;
   if (!show && !shooting) return null;
   return (
     <span
