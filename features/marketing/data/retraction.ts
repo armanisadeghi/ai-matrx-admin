@@ -10,10 +10,12 @@
  * is found by the server). Soft-delete only, one shared timestamp, audit on the decision.
  */
 
+import type { Json } from "@/types/database.types";
 import { supabase } from "@/utils/supabase/client";
 import { authenticatedWebDb } from "@/utils/supabase/webDb";
 
-export type RetractionRootType = "decision" | "property" | "site";
+/** `logo`: the brand's current logo (root id = the brand id): brand.logo_url plus its primary logo assets. */
+export type RetractionRootType = "decision" | "property" | "site" | "logo";
 
 export interface RetractionSummary {
   root: { type: RetractionRootType; id: string };
@@ -35,8 +37,14 @@ export interface RetractionSummary {
   people_unlinked: number;
   snapshots_stale: number;
   exclusion: { match_kind: string; match_value: string } | null;
+  /** Root `logo`: primary logo assets taken, and the logo address. */
+  assets?: number;
+  logo_url?: string | null;
   applied: boolean;
+  /** Set on apply: the shared timestamp every taken row carries (restore matches it exactly). */
+  at?: string;
   exclusion_id?: string | null;
+  exclusion_added?: boolean;
 }
 
 async function call(
@@ -66,6 +74,20 @@ export function applyRetraction(rootType: RetractionRootType, rootId: string, ex
   return call(rootType, rootId, true, exclude);
 }
 
+/**
+ * Bring back exactly what an apply took (`web.decision_retraction_restore`): the rows carrying the apply's
+ * shared timestamp, the decision's earlier answer, and the NO LIST entry the apply added is lifted.
+ * Weakened facts keep their trimmed evidence; cancelled jobs stay cancelled (the next ingest re-runs them).
+ */
+export async function restoreRetraction(summary: RetractionSummary): Promise<Record<string, unknown>> {
+  if (!summary.applied || !summary.at) throw new Error("Only an applied undo can be restored");
+  const { data, error } = await (await authenticatedWebDb(supabase)).rpc("decision_retraction_restore", {
+    p_summary: summary as unknown as Json,
+  });
+  if (error) throw new Error(error.message);
+  return (data ?? {}) as Record<string, unknown>;
+}
+
 const plural = (n: number, one: string, many = `${one}s`) => `${n.toLocaleString()} ${n === 1 ? one : many}`;
 
 /** The consequence, as short parts: "1 account", "36 posts", "12 facts learned from it". */
@@ -73,6 +95,7 @@ export function retractionParts(s: RetractionSummary): string[] {
   const parts: string[] = [];
   if (s.accounts) parts.push(plural(s.accounts, "account"));
   if (s.sites) parts.push(plural(s.sites, "website"));
+  if (s.root.type === "logo") parts.push("the logo");
   if (s.posts) parts.push(plural(s.posts, "post"));
   if (s.pages) parts.push(plural(s.pages, "page"));
   if (s.facts_retracted) parts.push(`${plural(s.facts_retracted, "fact")} learned from it`);

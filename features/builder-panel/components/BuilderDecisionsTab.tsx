@@ -61,12 +61,55 @@ const FIND_COLUMNS: MatrxColumnDef<FindRow & { id: string }>[] = [
   { id: "points", header: "Points", accessorFn: (r) => r.points ?? null, filter: "number" },
 ];
 
+/** Smart Add enrich (ENRICH.md): the seeded known-facts set and the diff against the brand. */
+export interface EnrichDecisionsFeed {
+  brandId: string;
+  known: { id: string; group: string; label: string; value: string; seeded: boolean }[];
+  diff: { id: string; kind: string; label: string; current: string | null; next: string | null; defaultChoice: string }[];
+}
+
+function EnrichSection({ enrich }: { enrich: EnrichDecisionsFeed }) {
+  const seeded = enrich.known.filter((k) => k.seeded).length;
+  const changes = enrich.diff.filter((d) => d.kind !== "unchanged");
+  return (
+    <section data-testid="builder-enrich">
+      <h3 className="mb-1 flex items-center gap-2 font-medium">
+        Enrich
+        <Badge tone="info">{seeded}/{enrich.known.length} known facts seeded</Badge>
+        <span className="font-normal text-muted-foreground">{changes.length} changes · {enrich.diff.length - changes.length} unchanged</span>
+      </h3>
+      <ul className="space-y-0.5">
+        {enrich.known.map((k) => (
+          <li key={k.id} className="flex gap-1.5">
+            <span className={k.seeded ? "" : "text-muted-foreground line-through"}>{k.label}</span>
+            <span className="truncate text-muted-foreground">· {k.value}</span>
+          </li>
+        ))}
+      </ul>
+      <ul className="mt-2 space-y-0.5">
+        {changes.map((d) => (
+          <li key={d.id} className="flex gap-1.5">
+            <Badge tone={d.kind === "conflict" ? "warning" : d.kind === "replace" ? "primary" : "success"}>{d.kind}</Badge>
+            <span>{d.label}</span>
+            <span className="truncate text-muted-foreground">
+              · {d.current ?? ""}{d.current && d.next ? " → " : ""}{d.next ?? ""} · default {d.defaultChoice}
+            </span>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
 export function BuilderDecisionsTab({
   rounds,
   findYou = null,
+  enrich = null,
   onOpenStep,
 }: {
   rounds: RoundDecision[];
+  /** Smart Add enrich: the seeded known facts and the diff, when the page published them. */
+  enrich?: EnrichDecisionsFeed | null;
   /** A page's find-you log (Smart Add person harder), when it published one. */
   findYou?: FindYouFeed | null;
   onOpenStep: (runId: string, nodeId: string | null) => void;
@@ -168,6 +211,8 @@ export function BuilderDecisionsTab({
         ) : (
           <p className="text-muted-foreground">{current.missing}</p>
         )}
+
+        {enrich ? <EnrichSection enrich={enrich} /> : null}
 
         {findYou ? (
           <section>

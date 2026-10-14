@@ -112,6 +112,17 @@ import { SMART_ADD_SURFACE } from "./builderSurface";
 import { SmartAddValidate } from "./validate/SmartAddValidate";
 import { coreSettled, mergeFacts, type BrandFact } from "./validate/queue";
 import { knownDecided, withSuggestions, type WeThinkSuggestion } from "./weThink";
+import type { BrandSnapshot, EnrichSeed, KnownFact } from "./enrich/known";
+import { computeEnrichDiff } from "./enrich/diff";
+import { ChangesReview } from "./enrich/ChangesReview";
+
+/** Enrich an existing brand (ENRICH.md): what we already know, the checked facts' seed, and the brand. */
+export interface SmartAddEnrich {
+  snapshot: BrandSnapshot;
+  known: KnownFact[];
+  checked: ReadonlySet<string>;
+  seed: EnrichSeed;
+}
 
 /** The call point where the brand-intake analysis would run (server: brand_intake/provision.py). */
 const BRAND_INTAKE_POINT = "brand_intake.smart_add_create";
@@ -145,7 +156,7 @@ function accountSeedKey(seed: SocialSeed): string | null {
   return parsed.status === "ok" ? `social:${accountKey(parsed)}` : null;
 }
 
-export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBrand) => void }) {
+export function SmartAddBrand({ onCreated, enrich = null }: { onCreated?: (brand: MarketingBrand) => void; enrich?: SmartAddEnrich | null }) {
   const dispatch = useAppDispatch();
   const { format } = useCostDisplay();
 
@@ -155,12 +166,14 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
   const parsed = resolveAccountInput({ text: socialText, picked });
 
   // A personal brand: a headshot instead of a logo, and expertise.
-  const [person, setPerson] = useState(false);
+  const [person, setPerson] = useState(enrich?.snapshot.brand.kind === "person");
   const [comparing, setComparing] = useState(false);
   const [rounds, setRounds] = useState<Round[]>([]);
   const [views, setViews] = useState<Record<string, RoundView>>({});
-  const [items, setItems] = useState<Map<string, EvidenceItem>>(new Map());
-  const [decisions, setDecisions] = useState<Record<string, Decision>>({});
+  // Enrich: the checked known facts start as confirmed items (the person's own answers, already given).
+  const [items, setItems] = useState<Map<string, EvidenceItem>>(() => new Map((enrich?.seed.items ?? []).map((i) => [i.key, i])));
+  const [decisions, setDecisions] = useState<Record<string, Decision>>(() => ({ ...(enrich?.seed.decisions ?? {}) }));
+  const [reviewing, setReviewing] = useState(false);
   // Compare: candidates that are neither ours nor "not us" — how each relates (keyed by candidate id).
   const [relations, setRelations] = useState<Record<string, RelatedCandidate>>({});
   // "On the web": what each web result is to the brand (web.brand_relation_kind key + sentiment).
@@ -250,11 +263,17 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
     for (const k of seedKeys(seeds, accountSeedKey)) explored.current.add(k);
     const id = crypto.randomUUID();
     setRounds((r) => [...r, { id, runId: null, seeds, error: null }]);
-    const exclude = Object.entries(decisions)
-      .filter(([key, d]) => d === "no" || !key.startsWith("social:"))
-      .map(([key]) => key);
+    const exclude = [
+      ...Object.entries(decisions)
+        .filter(([key, d]) => d === "no" || !key.startsWith("social:"))
+        .map(([key]) => key),
+      // Enrich: the brand's NO LIST never comes back.
+      ...(enrich?.seed.excludeKeys ?? []),
+    ];
+    const knownNow = knownDecided(withSuggestions([...items.values()], Object.assign({}, ...Object.values(suggestionsByRun))), decisions);
     try {
-      const organizationId = await ensureOrgId(null);
+      // Enrich runs carry the BRAND's organization, never the active one.
+      const organizationId = enrich ? enrich.snapshot.brand.organization_id : await ensureOrgId(null);
       const { runId } = await startSystemRun(
         dispatch,
         WORKFLOW_KEY,
@@ -272,7 +291,17 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
             exclude_keys: exclude,
             // What is already ours / not us: the we-think step judges new candidates against it.
             // `known.results`: web results answered or already classified, so the classifier takes the next batch.
-            known: knownDecided(withSuggestions([...items.values()], Object.assign({}, ...Object.values(suggestionsByRun))), decisions),
+            known: enrich
+              ? {
+                  ...knownNow,
+                  exclusions: [...new Set([...knownNow.exclusions, ...enrich.seed.exclusions])],
+                  // Known on the brand, with no evidence field of their own: people, offerings, other facts.
+                  people: enrich.seed.known.people,
+                  offerings: enrich.seed.known.offerings,
+                  facts: enrich.seed.known.facts,
+                  enrich_brand_id: enrich.snapshot.brand.id,
+                }
+              : knownNow,
             ...(firstData ? { first_data: true } : {}),
             ...(personInput ? { person: personInput } : {}),
             // Earlier rounds' paths, oldest first: a person round with still no anchor moves one rung down.
@@ -315,6 +344,18 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
     setKindAnswered(false);
     resetHelperAnswers();
   };
+
+  // Enrich: the first round starts from the checked websites and accounts (it wakes the facts agent like a typed one).
+  const enrichStarted = useRef(false);
+  const startEnrich = useEffectEvent(() => {
+    const seeds = nextRoundSeeds(items, decisions, explored.current);
+    void startRound(seeds, {}, true);
+  });
+  useEffect(() => {
+    if (!enrich || enrichStarted.current) return;
+    enrichStarted.current = true;
+    startEnrich();
+  }, [enrich]);
 
   // Typed fields → a round, debounced. Changing a field that already ran
   // supersedes everything (a different brand); filling the other field adds a round.
@@ -650,6 +691,23 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
       basics,
       created,
       provisionPoint: BRAND_INTAKE_POINT,
+      // Enrich (admin view): the seeded known-facts set and the diff against the brand.
+      enrich: enrich
+        ? {
+            brandId: enrich.snapshot.brand.id,
+            organizationId: enrich.snapshot.brand.organization_id,
+            known: enrich.known.map((f) => ({ id: f.id, group: f.group, label: f.label, value: f.value, seeded: enrich.checked.has(f.id) })),
+            seed: { decisions: enrich.seed.decisions, known: enrich.seed.known, excludeKeys: enrich.seed.excludeKeys, exclusions: enrich.seed.exclusions },
+            diff: computeEnrichDiff({ known: enrich.known, items, decisions, broken: brokenKeys.current }).map((c) => ({
+              id: c.id,
+              kind: c.kind,
+              label: c.label,
+              current: c.current?.value ?? null,
+              next: c.next ? (c.next.image_url ?? c.next.value) : null,
+              defaultChoice: c.defaultChoice,
+            })),
+          }
+        : null,
       findYou: findYou || findLog.length
         ? { path: personPath, history: pathHistory, log: findLog, pageAnchors, anchors: personAnchors }
         : null,
@@ -912,6 +970,22 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
       )}
     </>
   );
+  // Enrich finish: nothing is written until the person confirms the Changes review.
+  const enrichDiff = enrich ? computeEnrichDiff({ known: enrich.known, items, decisions, broken: brokenKeys.current }) : null;
+  if (enrich && reviewing && enrichDiff) {
+    return (
+      <>
+        <ChangesReview
+          snapshot={enrich.snapshot}
+          changes={enrichDiff}
+          kinds={relationKinds}
+          onBack={() => setReviewing(false)}
+          onBrand={() => onCreated?.(enrich.snapshot.brand)}
+        />
+        {listeners}
+      </>
+    );
+  }
   if (!structured) {
     return (
       <>
@@ -1184,10 +1258,16 @@ export function SmartAddBrand({ onCreated }: { onCreated?: (brand: MarketingBran
             Open brand <ExternalLink className="size-3.5" />
           </a>
         ) : (
-          <Button variant="primary" disabled={!canCreate} onClick={() => void create()}>
-            {creating ? <Loader2 className="size-3.5 animate-spin" /> : null}
-            {coreSettled(basics, person) ? "Create and validate" : "Create brand"}
-          </Button>
+          enrich ? (
+            <Button variant="primary" onClick={() => setReviewing(true)} data-testid="enrich-review-changes">
+              Review changes
+            </Button>
+          ) : (
+            <Button variant="primary" disabled={!canCreate} onClick={() => void create()}>
+              {creating ? <Loader2 className="size-3.5 animate-spin" /> : null}
+              {coreSettled(basics, person) ? "Create and validate" : "Create brand"}
+            </Button>
+          )
         )}
       </div>
       {createError ? (

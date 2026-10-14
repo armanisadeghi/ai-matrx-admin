@@ -32,6 +32,7 @@ import {
   Archive,
   Type,
   SlidersHorizontal,
+  ScanSearch,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { toast } from "@/lib/toast";
@@ -827,6 +828,12 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
               ) : null}
               {canEdit ? (
                 <>
+                  <Button asChild variant="outline">
+                    <Link href={marketingRoutes.smartAddEnrich(current.id)} data-testid="brand-enrich-smart-add">
+                      <ScanSearch className="h-3.5 w-3.5" />
+                      Enrich with Smart Add
+                    </Link>
+                  </Button>
                   <Button
                     icon={<Pencil />}
                     variant="outline"

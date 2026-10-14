@@ -145136,6 +145136,10 @@ export type Database = {
         }
         Returns: Json
       }
+      decision_retraction_restore: {
+        Args: { p_summary: Json }
+        Returns: Json
+      }
       brand_archive_associated: {
         Args: { p_brand_id: string; p_items: Json }
         Returns: number

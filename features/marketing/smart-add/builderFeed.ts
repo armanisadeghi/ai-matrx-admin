@@ -14,6 +14,14 @@ import type { FindLogEntry } from "./harder/types";
 import type { SuggestContext, WebChoice, WebSuggestion } from "./webKinds";
 
 
+export interface EnrichFeed {
+  brandId: string;
+  organizationId: string;
+  known: { id: string; group: string; label: string; value: string; seeded: boolean }[];
+  seed: unknown;
+  diff: { id: string; kind: string; label: string; current: string | null; next: string | null; defaultChoice: string }[];
+}
+
 export interface SmartAddFeedState {
   inputs: { website: string; social: string; platform: string | null; person: boolean };
   rounds: { id: string; runId: string | null; seeds: RoundSeeds; error: string | null }[];
@@ -27,6 +35,8 @@ export interface SmartAddFeedState {
   created: MarketingBrand | null;
   provisionPoint: string;
   /** Person harder (PATHS.md person_harder): the path, path_history sent, every find-you decision and query. */
+  /** Enrich an existing brand (ENRICH.md): the seeded known facts and the diff against the brand. */
+  enrich?: EnrichFeed | null;
   findYou?: {
     path: unknown;
     history: unknown[];
@@ -113,6 +123,15 @@ export function publishSmartAddFeed(
       ref: { type: "record", id: s.created.id, table: "web.brand" },
     });
   }
+  if (s.enrich) {
+    out.push({
+      key: "decisions.enrich",
+      label: "Enrich: known facts and changes",
+      group: "derived",
+      data: s.enrich,
+      source: "smart_add.enrich",
+    });
+  }
   if (s.findYou) {
     const anchor = [...s.findYou.log].reverse().find((e) => e.kind === "anchor") ?? null;
     out.push({
@@ -124,5 +143,5 @@ export function publishSmartAddFeed(
     });
   }
   // Findings, rounds and the created brand are sets: what this screen no longer holds leaves.
-  publish(out, { prune: ["finding.", "workflow.round.", "workflow.setup", "create.brand", "decisions.find_you"] });
+  publish(out, { prune: ["finding.", "workflow.round.", "workflow.setup", "create.brand", "decisions.find_you", "decisions.enrich"] });
 }

@@ -39,7 +39,7 @@ import { BuilderRequestsTab, type RequestFilter } from "@/features/builder-panel
 import { EMPTY_REQUEST_FIND, type RequestFind } from "@/features/builder-panel/find";
 import { BuilderActivityTab } from "@/features/builder-panel/components/BuilderActivityTab";
 import { BuilderLoadTab } from "@/features/builder-panel/components/BuilderLoadTab";
-import { BuilderDecisionsTab, type FindYouFeed } from "@/features/builder-panel/components/BuilderDecisionsTab";
+import { BuilderDecisionsTab, type EnrichDecisionsFeed, type FindYouFeed } from "@/features/builder-panel/components/BuilderDecisionsTab";
 import { buildDecisions } from "@/features/builder-panel/decisions";
 
 export type BuilderTab = "run" | "decisions" | "values" | "calls" | "load" | "activity" | "workflow" | "mandates" | "ai" | "provision";
@@ -307,6 +307,7 @@ function BuilderPanelInner({
         <BuilderDecisionsTab
           rounds={decisions}
           findYou={(entries.find((e) => e.key === "decisions.find_you")?.data as FindYouFeed | undefined) ?? null}
+          enrich={(entries.find((e) => e.key === "decisions.enrich")?.data as EnrichDecisionsFeed | undefined) ?? null}
           onOpenStep={openStep}
         />
       ) : null}

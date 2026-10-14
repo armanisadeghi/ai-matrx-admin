@@ -18,6 +18,7 @@ import {
   Table as TableIcon,
   Archive,
   ArchiveRestore,
+  ScanSearch,
 } from "lucide-react";
 import { toast } from "@/lib/toast";
 import {
@@ -244,6 +245,17 @@ export function BrandsPortfolio({
             setEditorOpen(true);
           },
         },
+        ...(clickedRow.deleted_at
+          ? []
+          : [
+              {
+                kind: "item" as const,
+                id: "brand-enrich",
+                label: "Enrich with Smart Add",
+                icon: ScanSearch,
+                onSelect: () => router.push(marketingRoutes.smartAddEnrich(clickedRow.id)),
+              },
+            ]),
         {
           kind: "item",
           id: clickedRow.deleted_at ? "brand-restore" : "brand-archive",
@@ -570,7 +582,10 @@ export function BrandsPortfolio({
                           event.stopPropagation();
                           setEditing(row);
                           setEditorOpen(true);
-                        }, variant: "ghost" as const, tooltip: "Edit brand" }], ...[row.deleted_at ? { id: "restore", icon: ArchiveRestore, label: `Restore ${row.name}`, onClick: (event: React.MouseEvent<HTMLButtonElement>) => {
+                        }, variant: "ghost" as const, tooltip: "Edit brand" }], ...(row.deleted_at ? [] : [{ id: "enrich", icon: ScanSearch, label: `Enrich ${row.name} with Smart Add`, onClick: (event: React.MouseEvent<HTMLButtonElement>) => {
+                          event.stopPropagation();
+                          router.push(marketingRoutes.smartAddEnrich(row.id));
+                        }, variant: "ghost" as const, tooltip: "Enrich with Smart Add" }]), ...[row.deleted_at ? { id: "restore", icon: ArchiveRestore, label: `Restore ${row.name}`, onClick: (event: React.MouseEvent<HTMLButtonElement>) => {
                           event.stopPropagation();
                           void restore(row);
                         }, variant: "ghost" as const, tooltip: "Restore brand" } : { id: "archive", icon: Archive, tone: "destructive" as const, label: `Archive ${row.name}`, onClick: (event: React.MouseEvent<HTMLButtonElement>) => {

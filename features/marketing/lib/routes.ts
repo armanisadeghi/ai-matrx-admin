@@ -155,6 +155,8 @@ export const marketingRoutes = {
   /** New-website intake (static child of /brands so it can't collide with a brand key). */
   /** Smart Add: a website or social link → confirm what we find → the brand (a static child of /brands). */
   smartAddBrand: () => "/marketing/brands/smart-add",
+  /** Enrich an existing brand through Smart Add (the brand page and its row menu). */
+  smartAddEnrich: (brandId: string) => `/marketing/brands/smart-add?enrich=${encodeURIComponent(brandId)}`,
   newSite: (brandId?: string) =>
     brandId
       ? `/marketing/brands/new-website?brand=${brandId}`
