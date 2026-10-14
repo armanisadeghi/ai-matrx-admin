@@ -793,7 +793,11 @@ export async function buildKindStatusBoard(): Promise<KindStatusBoardModel> {
  * `platform_admin_read`, so a super admin sees every organization's rows —
  * the same completeness the RPC gives. Each read is bounded.
  */
-const KIND_GATHER_DEADLINE_MS = 8_000;
+let KIND_GATHER_DEADLINE_MS = 8_000;
+/** Test seam — shortens the per-read deadline. */
+export function setKindGatherDeadlineMsForTests(ms: number): void {
+  KIND_GATHER_DEADLINE_MS = ms;
+}
 
 async function bounded<T>(what: string, work: PromiseLike<{ data: T | null; error: { message: string } | null }>): Promise<T> {
   let timer: ReturnType<typeof setTimeout> | undefined;
