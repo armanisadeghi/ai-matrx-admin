@@ -245,25 +245,68 @@ export function mergeEvidence(current: Map<string, EvidenceItem>, incoming: Evid
   let next: Map<string, EvidenceItem> | null = null;
   for (const item of incoming) {
     const existing = (next ?? current).get(item.key);
+    // Account identity only ever grows: the bare links a row IS (`same_as`) survive whichever copy wins.
+    const sameAs = unionSameAs(existing?.same_as, item.same_as);
     if (existing && existing.confidence >= item.confidence) {
       // A person-anchor candidate stays one: the anchor basics ride on whichever row is kept.
-      if (item.anchor && !existing.anchor) {
+      const anchor = item.anchor && !existing.anchor ? item.anchor : null;
+      const grew = sameAs.length !== (existing.same_as ?? []).length;
+      if (anchor || grew) {
         next ??= new Map(current);
-        next.set(item.key, { ...existing, anchor: item.anchor });
+        next.set(item.key, { ...existing, ...(anchor ? { anchor } : {}), ...(grew ? { same_as: sameAs } : {}) });
       }
       continue;
     }
     next ??= new Map(current);
-    next.set(item.key, existing?.anchor && !item.anchor ? { ...item, anchor: existing.anchor } : item);
+    const kept = existing?.anchor && !item.anchor ? { ...item, anchor: existing.anchor } : item;
+    next.set(item.key, sameAs.length !== (item.same_as ?? []).length ? { ...kept, same_as: sameAs } : kept);
   }
   return next ?? current;
 }
 
-/** Account rows with the bare links the server resolved (`same_as`) folded into the account they are. */
-export function collapseAliasedAccounts<T extends Pick<EvidenceItem, "key" | "same_as">>(accounts: T[]): T[] {
+function unionSameAs(a: string[] | undefined, b: string[] | undefined): string[] {
+  if (!b?.length) return a ?? [];
+  if (!a?.length) return b;
+  return [...new Set([...a, ...b])];
+}
+
+type AccountLike = Pick<EvidenceItem, "key" | "same_as"> & Partial<Pick<EvidenceItem, "platform" | "profile_id">>;
+
+/**
+ * alias key → the account row it folds into. ONE real account = ONE row, by either identity the
+ * server gives: a row naming another's key in `same_as` (a /company/<id> or /channel/UC… link), or two
+ * rows for the same stored profile (`profile_id`) — whichever copy arrived last.
+ */
+export function accountAliases(accounts: AccountLike[]): Map<string, string> {
   const present = new Set(accounts.map((a) => a.key));
-  const aliases = new Set<string>();
-  for (const a of accounts) for (const k of a.same_as ?? []) if (k !== a.key && present.has(k)) aliases.add(k);
+  const aliasOf = new Map<string, string>();
+  for (const a of accounts) for (const k of a.same_as ?? []) if (k !== a.key && present.has(k)) aliasOf.set(k, a.key);
+  const byProfile = new Map<string, AccountLike[]>();
+  for (const a of accounts) {
+    if (!a.profile_id) continue;
+    const id = `${a.platform ?? ""}|${a.profile_id}`;
+    byProfile.set(id, [...(byProfile.get(id) ?? []), a]);
+  }
+  for (const group of byProfile.values()) {
+    if (group.length < 2) continue;
+    // The keeper: not itself an alias, then the one carrying the most links it IS.
+    const keeper = [...group].sort(
+      (x, y) => Number(aliasOf.has(x.key)) - Number(aliasOf.has(y.key)) || (y.same_as?.length ?? 0) - (x.same_as?.length ?? 0),
+    )[0];
+    for (const a of group) if (a.key !== keeper.key && !aliasOf.has(a.key)) aliasOf.set(a.key, keeper.key);
+  }
+  // Follow chains to the final row (a → b → c folds a into c).
+  for (const [k, v] of aliasOf) {
+    let to = v;
+    for (let hops = 0; aliasOf.has(to) && hops < 8; hops++) to = aliasOf.get(to)!;
+    aliasOf.set(k, to);
+  }
+  return aliasOf;
+}
+
+/** Account rows with every alias (see {@link accountAliases}) folded into the account it is. */
+export function collapseAliasedAccounts<T extends AccountLike>(accounts: T[]): T[] {
+  const aliases = accountAliases(accounts);
   return aliases.size ? accounts.filter((a) => !aliases.has(a.key)) : accounts;
 }
 
@@ -547,12 +590,7 @@ export function compareRows(items: EvidenceItem[]): PlatformRow[] {
   }
   // A bare link the server resolved to a looked-up account (`same_as`) is that account, not a second row.
   const aliasKeys = new Map<string, string[]>();
-  for (const a of accounts.values()) {
-    for (const k of a.same_as ?? []) {
-      if (k === a.key || !accounts.has(k)) continue;
-      aliasKeys.set(a.key, [...(aliasKeys.get(a.key) ?? []), k]);
-    }
-  }
+  for (const [alias, to] of accountAliases([...accounts.values()])) aliasKeys.set(to, [...(aliasKeys.get(to) ?? []), alias]);
   for (const merged of aliasKeys.values()) for (const k of merged) accounts.delete(k);
   for (const acct of accounts.values()) {
     // A looked-up profile's findings carry the profile address as their source; match it to the account.
