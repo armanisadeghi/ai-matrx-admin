@@ -39,6 +39,7 @@ import { visibilityWords } from "@/lib/record-words";
 import { PlayTapButton, ZapTapButton } from "@ai-matrx/design-system/tap-target/buttons";
 import { Archive } from "lucide-react";
 import { archiveRecord } from "@/features/trash/service";
+import { runPerRow } from "@/lib/entity-list/standardBulkActions";
 import { archiveConfirmSentence } from "@/features/trash/archiveCopy";
 import {
   fetchDeckFacets,
@@ -408,21 +409,32 @@ export function buildFlashcardSetListConfig(input: {
           )} Cards and study history are kept.`,
           confirmLabel: "Archive",
         }),
-        run: async (selection) => {
-          for (const id of selection.ids)
-            await archiveRecord("fc_set", id, "deck");
-          return {
-            message: `Archived ${selection.count === 1 ? "1 deck" : `${selection.count} decks`}`,
-            removedIds: selection.ids,
-            refresh: true,
-          };
-        },
+        // The limits live here, not on the checkbox: a deck that is not the
+        // person's own, or is already archived, is skipped and named.
+        run: (selection) =>
+          runPerRow(
+            selection,
+            async (id, row) => {
+              if (row && row.created_by !== input.userId)
+                throw new Error("not your deck");
+              if (row?.archived) throw new Error("already archived");
+              await archiveRecord("fc_set", id, "deck");
+            },
+            {
+              done: "Archived",
+              noun: "deck",
+              labelOf: (row) => row.name,
+              removesRows: true,
+            },
+            (row) => row.id,
+          ),
       },
     ],
+    // Archive IS the soft delete behind the built-in "Move to Trash"
+    // (archiveRecord sets deleted_at), so the built-in is off: one button.
+    standardBulkActions: { trash: false },
     bulkSelection: {
       noun: "deck",
-      // Only the person's own live decks can be archived; others show no box.
-      isRowSelectable: (row) => row.created_by === input.userId && !row.archived,
     },
     searchPlaceholder: "Search decks by name, topic, lesson or description…",
     facetSections: [
