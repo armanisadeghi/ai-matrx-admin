@@ -16,6 +16,7 @@ The admin window that shows everything a page has and can do. Product truth:
 | `lib/diagnostics/loadLedger.ts` + `components/BuilderLoadTab.tsx` | **Page load** tab: every Supabase call of each page load (the one proxy in `supabaseErrorCapture.ts` records it), grouped by relation, with when it left (Before paint · Settling · Settled), repeats flagged, and the code that built the query (stack taken at `.from()`/`.rpc()`, formatted only when opened). THE LOAD LAW: only what the page shows leaves before it settles; nothing repeats |
 | `features/builder-panel/requests.ts` | One ordered request list (page + server `output.requests`), the Activity timeline, `isFlowRequest` |
 | `features/builder-panel/story.ts` | The run as a numbered story (`buildStory`): inputs as row 0, each run's steps in finish order, calls inside (searches grouped per engine with the exact queries), idle steps greyed with the definition's `ready_when`; `derivedFor` + `findInResponse` (the path in the raw response a derived value came from) |
+| `features/builder-panel/decisions.ts` + `components/BuilderDecisionsTab.tsx` | **Decisions** tab: per run, the stored `path_decision` step output (aidream `brand.identify.path_decision`): path, signals vs thresholds, entry checks, escalation, skipped steps with reasons (story rows), cost per run and per path. `runPathLabel` puts the path on the story's run row. Design: common-docs smart-add-brand `PATHS.md` |
 | `features/builder-panel/hooks/*` | `useRequestLog`, `useRunTruth` (re-reads while a run is going) |
 | `features/builder-panel/components/*` | Story sidebar + story detail (Sent · Received · What we took from it), Values list (group icons) + entry detail, Page calls, Activity, Workflow, Mandates, AI calls, Provision, proposal card; every value through `BuilderJson` (= `JsonInspector`) |
 | `features/window-panels/windows/admin/BuilderPanelWindow.tsx` | The window (lazy overlay `builderPanelWindow`) |
@@ -60,6 +61,7 @@ useEffect(() => {
 - **Run tab** (a story row): Sent (exact request) · Received (exact raw response) · What we took
   from it (derived entries with `fromNodes` = the step; on a call row only those its response
   holds or its engine found, each with the response path it came from). Step input/output below.
+- **Decisions** (after Run): the path each round chose and why (above).
 - **Secondary tabs:** Values (every published entry, grouped with icons; Derived inside) · Page
   calls (page requests; All / Server still list every server call) · Activity · Workflow ·
   Mandates · AI calls · Provision. Round 2 tab ids `data` / `requests` map to `values` / `calls`.

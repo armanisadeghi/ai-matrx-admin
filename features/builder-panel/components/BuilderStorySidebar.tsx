@@ -9,6 +9,7 @@
 import {
   Database,
   FileSearch,
+  GitFork,
   Globe,
   Image as ImageIcon,
   Keyboard,
@@ -34,6 +35,7 @@ const ICONS: Record<string, LucideIcon> = {
   workflow: Workflow,
   globe: Globe,
   "file-search": FileSearch,
+  "git-fork": GitFork,
   image: ImageIcon,
   "share-2": Share2,
   search: Search,

@@ -11,6 +11,7 @@
 import type { DefinitionNode, NodeOutcomeRow, RunTruth } from "./data";
 import type { RequestRow } from "./requests";
 import type { BuilderEntry } from "./types";
+import { runPathLabel } from "./decisions";
 
 export type StoryRowKind = "inputs" | "run" | "step" | "call" | "record";
 export type StoryStatus = "done" | "failed" | "skipped" | "waiting" | "running";
@@ -170,7 +171,8 @@ export function buildStory(
       kind: "run",
       number: null,
       title: run.label,
-      detail: def?.name ?? null,
+      // The path the round chose (brand.identify.path_decision), beside the workflow name.
+      detail: [def?.name, runPathLabel(truth, run.runId)].filter(Boolean).join(" · ") || null,
       status: runRow ? (runRow.status === "completed" ? "done" : runRow.status === "failed" ? "failed" : "running") : "running",
       reason: null,
       ms: runRow?.completedAt ? Date.parse(runRow.completedAt) - Date.parse(runRow.startedAt ?? runRow.createdAt) : null,

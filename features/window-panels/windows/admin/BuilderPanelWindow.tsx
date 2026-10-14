@@ -39,9 +39,11 @@ import { BuilderRequestsTab, type RequestFilter } from "@/features/builder-panel
 import { EMPTY_REQUEST_FIND, type RequestFind } from "@/features/builder-panel/find";
 import { BuilderActivityTab } from "@/features/builder-panel/components/BuilderActivityTab";
 import { BuilderLoadTab } from "@/features/builder-panel/components/BuilderLoadTab";
+import { BuilderDecisionsTab } from "@/features/builder-panel/components/BuilderDecisionsTab";
+import { buildDecisions } from "@/features/builder-panel/decisions";
 
-export type BuilderTab = "run" | "values" | "calls" | "load" | "activity" | "workflow" | "mandates" | "ai" | "provision";
-const TABS: BuilderTab[] = ["run", "values", "calls", "load", "activity", "workflow", "mandates", "ai", "provision"];
+export type BuilderTab = "run" | "decisions" | "values" | "calls" | "load" | "activity" | "workflow" | "mandates" | "ai" | "provision";
+const TABS: BuilderTab[] = ["run", "decisions", "values", "calls", "load", "activity", "workflow", "mandates", "ai", "provision"];
 /** Round 2 tab names a restored window may still carry. */
 const OLD_TABS: Record<string, BuilderTab> = { data: "values", requests: "calls" };
 
@@ -169,6 +171,7 @@ function BuilderPanelInner({
   const activity = activityRows(requestRows, truth?.runs ?? [], truth?.outcomes ?? [], truth?.snapshots ?? [], nodeLabels);
 
   const story = buildStory(entries, workflowRuns, truth, serverRows);
+  const decisions = buildDecisions(workflowRuns, truth, story);
   const storyRow = story.find((r) => r.id === storyId) ?? story.find((r) => r.kind !== "run" && r.kind !== "inputs" && r.status !== "skipped") ?? story[0] ?? null;
   const storyRun = storyRow?.runId ? truth?.runs.find((r) => r.id === storyRow.runId) ?? null : null;
 
@@ -254,6 +257,7 @@ function BuilderPanelInner({
             onValueChange={(v) => setTab(v)}
             data={[
               { value: "run", label: "Run", count: null },
+              { value: "decisions", label: "Decisions", count: decisions.filter((r) => r.decision).length || null },
               { value: "values", label: "Values", count: entries.length },
               { value: "calls", label: "Page calls", count: pageRows.length || null },
               { value: "load", label: "Page load", count: null },
@@ -299,6 +303,7 @@ function BuilderPanelInner({
           <p className="p-3 text-xs text-muted-foreground">Nothing published on this page yet</p>
         )
       ) : null}
+      {tab === "decisions" ? <BuilderDecisionsTab rounds={decisions} onOpenStep={openStep} /> : null}
       {tab === "values" ? (
         <div className="flex min-h-0 flex-1 flex-col md:flex-row">
           <div className="max-h-[40%] min-h-0 shrink-0 overflow-hidden border-b border-border md:max-h-none md:w-64 md:border-b-0 md:border-r">
