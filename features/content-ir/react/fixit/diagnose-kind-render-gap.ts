@@ -36,8 +36,60 @@ export type KindRenderGapState =
   /** Nothing actionable — generic is simply the current truth. */
   | "generic_is_truth";
 
+/**
+ * ONE rung of the fix-it ladder (shape-layers PLAN v2, "The ladder"). A kind can
+ * stand on several at once — no schema AND no shared view AND not activated —
+ * and the bar lists every one, never only the first.
+ */
+export type KindRenderGap =
+  | "unregistered"
+  | "unreadable"
+  | "no_schema"
+  | "no_component"
+  | "component_inactive"
+  | "component_empty"
+  | "kind_inactive";
+
+/** The facts {@link listKindRenderGaps} reads — pure, so the ladder is testable. */
+export interface KindRenderGapFacts {
+  registered: boolean;
+  signedIn: boolean;
+  hasSchema: boolean;
+  /** Any non-generic shared component row exists (on or off). */
+  hasSharedView: boolean;
+  /** Every non-generic shared row is switched off. */
+  sharedViewOff: boolean;
+  /** The active shared row's code body is empty. */
+  sharedViewEmpty: boolean;
+  kindActive: boolean;
+}
+
+/** Every gap that holds, in ladder order. */
+export function listKindRenderGaps(facts: KindRenderGapFacts): KindRenderGap[] {
+  if (!facts.registered) return [facts.signedIn ? "unregistered" : "unreadable"];
+  const gaps: KindRenderGap[] = [];
+  if (!facts.hasSchema) gaps.push("no_schema");
+  if (!facts.hasSharedView) gaps.push("no_component");
+  else if (facts.sharedViewOff) gaps.push("component_inactive");
+  else if (facts.sharedViewEmpty) gaps.push("component_empty");
+  if (!facts.kindActive) gaps.push("kind_inactive");
+  return gaps;
+}
+
+/** A schema that actually constrains something — `{}` / null are no schema. */
+export function hasRealSchema(schema: unknown): boolean {
+  return (
+    schema !== null &&
+    typeof schema === "object" &&
+    !Array.isArray(schema) &&
+    Object.keys(schema as Record<string, unknown>).length > 0
+  );
+}
+
 export interface KindRenderGapDiagnosis {
   state: KindRenderGapState;
+  /** EVERY gap that holds (ladder order) — the bar lists them all. */
+  gaps: KindRenderGap[];
   kind: string;
   kindDefinitionId: string | null;
   kindLabel: string | null;
@@ -108,6 +160,15 @@ async function compute(kind: string): Promise<KindRenderGapDiagnosis | null> {
   if (!def) {
     return {
       state: session ? "unregistered" : "unreadable",
+      gaps: listKindRenderGaps({
+        registered: false,
+        signedIn: Boolean(session),
+        hasSchema: false,
+        hasSharedView: false,
+        sharedViewOff: false,
+        sharedViewEmpty: false,
+        kindActive: false,
+      }),
       kind,
       kindDefinitionId: null,
       kindLabel: null,
@@ -167,6 +228,15 @@ async function compute(kind: string): Promise<KindRenderGapDiagnosis | null> {
     inactiveComponentId: null as string | null,
     inactiveComponentKey: null as string | null,
     inactiveComponentCreatedBy: null as string | null,
+    gaps: listKindRenderGaps({
+      registered: true,
+      signedIn: Boolean(session),
+      hasSchema: hasRealSchema(def.emitted_json_schema),
+      hasSharedView: real.length > 0,
+      sharedViewOff: real.length > 0 && activeReal.length === 0,
+      sharedViewEmpty: Boolean(emptyDb),
+      kindActive: def.is_active === true,
+    }),
   };
 
   if (real.length === 0) {

@@ -283,6 +283,41 @@ export class ComponentRegistry extends ComponentResolver {
     return super.resolve(kind, platform, role);
   }
 
+  /**
+   * THE SHARED ANSWER, explicitly — what `resolve` would say with no "My view"
+   * / "My organization's view" layered on top. Admin screens and the fix-it
+   * bar ask "what does EVERYONE get?"; reading the overlay winner there
+   * mislabels a person's own view as the shared one.
+   *
+   * The package keeps its overlay tier private and ships no shared-only read
+   * yet, so this resolves through a view of the registry whose overlay is
+   * empty (every other tier is the live one, through the prototype). Pinned
+   * by `component-registry-shared-tier.test.ts`: if the package renames the
+   * tier, that test goes red rather than this answer silently going stale.
+   */
+  resolveShared(
+    kind: string,
+    platform: string,
+    role: ComponentRole,
+  ): ComponentResolution | null {
+    const resolution = this.resolve(kind, platform, role);
+    if (!resolution?.layer) return resolution;
+    const overlay = (this as unknown as { overlay?: unknown }).overlay;
+    if (!(overlay instanceof Map)) {
+      captureError({
+        source: "content-ir",
+        message:
+          "ComponentRegistry.resolveShared: the resolver's overlay tier is not where it was — the shared answer cannot be separated from a layered one.",
+        callSite: "ComponentRegistry.resolveShared",
+        raw: { kind },
+      });
+      return null;
+    }
+    const sharedView = Object.create(this) as ComponentRegistry;
+    Object.defineProperty(sharedView, "overlay", { value: new Map() });
+    return sharedView.resolve(kind, platform, role);
+  }
+
   override requestComponent(
     kind: string,
     platform: string,
@@ -586,6 +621,15 @@ export function resolveComponent(
   role: ComponentRole,
 ): ComponentResolution | null {
   return componentRegistry.resolve(kind, platform, role);
+}
+
+/** The SHARED tier's answer only — never the viewer's own layered view. */
+export function resolveSharedComponent(
+  kind: string,
+  platform: string,
+  role: ComponentRole,
+): ComponentResolution | null {
+  return componentRegistry.resolveShared(kind, platform, role);
 }
 
 /**

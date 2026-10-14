@@ -119,7 +119,21 @@ export function sandboxFrameTitle(
 }
 
 /**
- * Transform once per (kind, row version) — the same staleness key the in-page
+ * THE TRANSFORM-CACHE KEY: kind + the winning ROW + its version. The row id is
+ * load-bearing — every layered body ("My view", "My organization's view")
+ * renders through this frame, and two rows of one kind can share an
+ * `updated_at` (switch my row off and my organization's row, saved in the same
+ * second, wins): keyed by version alone the frame would serve my stale body.
+ */
+export function sandboxTransformKey(
+    kind: string,
+    resolution: Pick<ComponentResolution, "rowId" | "updatedAt">,
+): string {
+    return `${kind}::${resolution.rowId ?? "shared"}::${resolution.updatedAt ?? "unversioned"}`;
+}
+
+/**
+ * Transform once per (kind, row, row version) — the same staleness key the in-page
  * compile cache uses. Babel stays in the page (§1.4); the frame only ever
  * receives plain JSON.
  */
@@ -136,7 +150,7 @@ function transformFor(
     kind: string,
     resolution: ComponentResolution,
 ): TransformEntry {
-    const key = `${kind}::${resolution.updatedAt ?? "unversioned"}`;
+    const key = sandboxTransformKey(kind, resolution);
     const hit = transformCache.get(key);
     if (hit) return hit;
     const declared = (resolution.config as Record<string, unknown> | null)

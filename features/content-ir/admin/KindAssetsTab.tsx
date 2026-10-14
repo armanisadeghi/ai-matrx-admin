@@ -27,7 +27,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { toast } from "@/lib/toast";
 import {
-  resolveComponent,
+  resolveSharedComponent,
   componentRegistry,
 } from "@/features/content-ir/registry/component-registry";
 import { GENERIC_STRUCTURED_COMPONENT_KEY } from "@/features/content-ir/registry/schema-source-kind-components";
@@ -197,7 +197,8 @@ export default function KindAssetsTab({
       .catch(() => undefined)
       .then(() => {
         if (cancelled) return;
-        const resolution = resolveComponent(detail.kind, "web", "output");
+        // The SHARED winner — never the viewer's own layered view.
+        const resolution = resolveSharedComponent(detail.kind, "web", "output");
         setWinnerKey(resolution?.componentKey ?? null);
       });
     return () => {
@@ -583,7 +584,7 @@ export default function KindAssetsTab({
           emptyState={{
             title: "No kind_component rows",
             description:
-              "Compiled/legacy render paths (if any) are noted in the doctor cell above.",
+              "Compiled render paths show in the doctor cell above.",
           }}
         />
         <p className="px-3 py-2 text-[11px] text-muted-foreground">

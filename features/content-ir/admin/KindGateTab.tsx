@@ -32,7 +32,7 @@ import {
 import { kindRegistry } from "@/features/content-ir/registry/kind-registry";
 import {
   componentRegistry,
-  resolveComponent,
+  resolveSharedComponent,
 } from "@/features/content-ir/registry/component-registry";
 import { GENERATED_CONTRACT_FAMILY_VALUES } from "@/features/content-ir/registry/schema-source-kind-tables";
 import type { Json } from "@/types/database.types";
@@ -78,7 +78,9 @@ function computeGateRun(
   // renderer is a `source='db'` row satisfies the render leg the same way a
   // compiled one does. Without this the gate reports "no component" about
   // kinds that have a live, working component.
-  const resolution = resolveComponent(kind, "web", "output");
+  // The SHARED answer explicitly: the admin gate grades what everyone gets,
+  // never this viewer's own layered view.
+  const resolution = resolveSharedComponent(kind, "web", "output");
   // Data-only contract families are never rendered — the render leg is n/a
   // (shape-doctor's `data_only` rule, mirrored by
   // `content_ir.evaluate_kind_activation`).
@@ -279,8 +281,7 @@ export default function KindGateTab({
       {emittedJsonSchema === null && (
         <div className="flex items-center gap-2 rounded-md border border-amber-500/30 bg-amber-500/5 px-3 py-2 text-xs text-amber-800 dark:text-amber-200">
           <Info className="h-3.5 w-3.5 shrink-0" />
-          This kind has no emitted_json_schema — the structural leg will fail
-          until the schema is materialized.
+          No schema yet — the structural leg fails until one exists
         </div>
       )}
 
@@ -329,8 +330,7 @@ export default function KindGateTab({
 
       {examples.status === "loading" && !run && (
         <p className="text-xs text-muted-foreground">
-          Waiting for kind_example rows — or pick &quot;Pasted JSON&quot; to run
-          against your own sample.
+          Waiting for saved samples — or pick Pasted JSON
         </p>
       )}
     </div>
