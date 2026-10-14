@@ -436,8 +436,52 @@ export function classify(root) {
 
   // 3. closure — a swept file importing a held file; a deletion a held file's HEAD copy imports
   let grew = true;
+  const checkedHeldHead = new Set();
   while (grew) {
     grew = false;
+    // A held edit leaves its HEAD text on main. Check that committed text against the other
+    // swept files' new export surfaces too. Otherwise a held importer and a swept exporter can
+    // be split: the exporter lands, the importer's old name stays, and production fails.
+    for (const [f, c] of swept) {
+      if (!reasons.has(f) || c.isNew || checkedHeldHead.has(f)) continue;
+      checkedHeldHead.add(f);
+      let headText;
+      try {
+        headText = git(root, ["show", `HEAD:./${c.path}`]);
+      } catch {
+        continue;
+      }
+      const headHost = ts.createCompilerHost(options, true);
+      const baseHeadGetSourceFile = headHost.getSourceFile.bind(headHost);
+      headHost.getSourceFile = (fileName, languageVersion, onError, shouldCreate) => {
+        const source = resolve(fileName);
+        if (source === f) return ts.createSourceFile(fileName, headText, languageVersion, true);
+        if (
+          source.startsWith(rootPrefix) && !swept.has(source) && SOURCE_EXT.test(source) &&
+          !/\.d\.[cm]?ts$/.test(source) &&
+          !source.slice(rootPrefix.length).split(sep).includes("node_modules")
+        ) {
+          const text = headHost.readFile(fileName);
+          if (text !== undefined) return ts.createSourceFile(fileName, stubSource(fileName, text), languageVersion, true);
+        }
+        return baseHeadGetSourceFile(fileName, languageVersion, onError, shouldCreate);
+      };
+      const headProgram = ts.createProgram({ rootNames: [f], options, host: headHost });
+      const headSource = headProgram.getSourceFile(f);
+      if (!headSource) continue;
+      const diagnostics = headProgram.getSemanticDiagnostics(headSource).filter(
+        (d) => RESOLVE_CODES.has(d.code) && d.start !== undefined,
+      );
+      for (const { spec, node } of specifiersOf(f, headText).specs) {
+        const target = resolveSpec(spec, f, options, ts.sys);
+        if (!target || !swept.has(target) || reasons.has(target)) continue;
+        const bad = diagnostics.find((d) => d.start >= node.getStart() && d.start < node.getEnd());
+        if (bad) {
+          hold(target, `held ${rel(f)} leaves its committed line ${lineOf(headSource, bad.start)} importing it: TS${bad.code} ${message(bad)}`);
+          grew = true;
+        }
+      }
+    }
     for (const [f] of swept) {
       if (reasons.has(f)) continue;
       const sf = program.getSourceFile(f);
@@ -499,10 +543,12 @@ function selfTest() {
     w("lib/intake/fields.ts", "export const INTAKE_FIELDS = ['insurer', 'policyNumber'];\nexport const REQUIRED_FIELDS = ['insurer'];\n");
     w("lib/intake/legacy-form.ts", "export const LEGACY = 1;\n");
     w("lib/intake/insurers.ts", "export const INSURERS = ['Delta Dental', 'Cigna'];\n");
+    w("lib/intake/shared-choice.ts", "export const RelatedChoice = 1;\n");
     // A local shim over the package (features/content-ir/kinds/kind-markdown-utils.ts, v0.4.2989).
     w("lib/intake/warmup-shim.ts", "export * from '@ai-matrx/agents/warmup';\n");
     w("features/intake/IntakeForm.ts", "import { INTAKE_FIELDS } from '@/lib/intake/fields';\nexport const fields = INTAKE_FIELDS;\n");
     w("features/intake/Summary.ts", "import { REQUIRED_FIELDS } from '@/lib/intake/fields';\nexport const required = REQUIRED_FIELDS;\n");
+    w("features/intake/ChoiceSlot.ts", "import { RelatedChoice } from '@/lib/intake/shared-choice';\nexport const choice = RelatedChoice;\n");
     w("features/intake/OldPanel.ts", "import { LEGACY } from '@/lib/intake/legacy-form';\nexport const old = LEGACY;\n");
     // R7b: the deleted file is the ONLY file in its folder (features/skills/service/skillsStreamHandler.ts,
     // 2026-10-08) and the committed importer sits in providers/ behind the `@/` alias.
@@ -526,6 +572,10 @@ function selfTest() {
     w("lib/intake/fields.ts", "export const INTAKE_FIELDS = ['insurer', 'policyNumber', 'groupNumber'];\n");
     // R6 closure — a swept file importing a held swept file
     w("features/intake/UsesWarmup.ts", "import { scope } from '@/providers/WarmupHost';\nexport const s = scope;\n");
+    // R8: the changed importer is held for a missing npm export, so its HEAD import survives.
+    // Removing that HEAD import's export from another changed file must be held as well.
+    w("features/intake/ChoiceSlot.ts", "import { primeIntakeBundle } from '@ai-matrx/agents/warmup';\nexport const choice = primeIntakeBundle;\n");
+    w("lib/intake/shared-choice.ts", "export const RelationPicker = 1;\n");
     // R7 deletion still imported by a committed file
     rmSync(join(dir, "lib/intake/legacy-form.ts"));
     // R7b deletion that takes its whole folder with it
@@ -550,6 +600,8 @@ function selfTest() {
       "features/intake/Rubber.ts": /does not parse/,
       "lib/intake/fields.ts": /Summary\.ts.*REQUIRED_FIELDS/,
       "features/intake/UsesWarmup.ts": /WarmupHost\.ts, which is held/,
+      "features/intake/ChoiceSlot.ts": /primeIntakeBundle/,
+      "lib/intake/shared-choice.ts": /held features\/intake\/ChoiceSlot\.ts.*RelatedChoice/,
       "lib/intake/legacy-form.ts": /OldPanel\.ts/,
       "features/recall/service/recallStream.ts": /providers\/chatRegistration\.ts/,
     };
@@ -573,7 +625,7 @@ function selfTest() {
       console.error("check-sweep-resolves --self-test: RED\n  " + fails.join("\n  "));
       return 1;
     }
-    console.log(`check-sweep-resolves --self-test: GREEN — 7 rules (+ a shim, + a deletion that empties its folder) each held their file, 4 clean files committed; once the package is served the 4 that waited on it go through (${r.seconds}s)`);
+    console.log(`check-sweep-resolves --self-test: GREEN — 8 rules (+ a shim, + a deletion that empties its folder) each held their file, 4 clean files committed; once the package is served the files that waited on it go through (${r.seconds}s)`);
     return 0;
   } finally {
     rmSync(dir, { recursive: true, force: true });
