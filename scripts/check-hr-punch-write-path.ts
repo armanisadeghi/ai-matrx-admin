@@ -15,11 +15,11 @@
  * directly and manufacture a time record that never passed a single invariant —
  * no open-punch check, no rounding rules, no device attestation, no audit trail.
  * RLS says "yes, you are an editor" and lets it through. The only things
- * actually holding the door are structural: hr is NOT in PostgREST's exposed
- * schema list, anon holds no table grants on hr.punch, and the sanctioned
- * writers are a short, enumerated set of SECURITY DEFINER functions with pinned
- * search_paths. Those are facts about the LIVE database, invisible to tsc and
- * invisible to a code review. This gate is what checks them.
+ * actually holding the door are structural: the exposed hr schema grants no
+ * client INSERT/UPDATE/DELETE on hr.punch, anon has no schema access, and the
+ * sanctioned writers are a short, enumerated set of SECURITY DEFINER functions
+ * with pinned search_paths. Those are facts about the LIVE database, invisible
+ * to tsc and invisible to a code review. This gate is what checks them.
  *
  * SPEC-TIME §15 named wiring this query into CI — rather than leaving it as a
  * line on a review checklist — as THE ONLY THING standing between us and a
@@ -140,7 +140,7 @@ const ARM: Arm = ((): Arm => {
  * absence of a key is itself a finding — see the header.
  */
 const EXPECTED_CHECKS = [
-  "pgrst_hr_not_exposed",
+  "pgrst_hr_exposure_is_fenced",
   "punch_triggers_present",
   "anon_no_table_grants_on_punch",
   "only_sanctioned_inserters",
@@ -153,8 +153,9 @@ const EXPECTED_CHECKS = [
   // persist door plus the premium writer, and nothing may ever DELETE a superseded row.
   "only_sanctioned_interval_writers",
   "no_interval_deleters",
-  // The client door surface (hr_l3_15). `hr` is not PostgREST-exposed, so every client-called HR
-  // RPC is a public.hr_* wrapper; this check fences their shape and publishes the live inventory.
+  // The client door surface (hr_l3_15). `hr` is PostgREST-exposed for the standard performance
+  // review system, so every directly callable hr.* definer must carry an exact door declaration;
+  // public.hr_* wrappers remain the other supported surface.
   "client_doors_well_formed",
   // The premium invariant (hr_l3_18), asserted over the ROWS: at most one current premium_only
   // interval per (employment, day, earning code). Two sanctioned writers can emit one for the same
@@ -301,14 +302,10 @@ const EXPECTED_CHECKS = [
   // PUBLIC execute grant, so it runs AS ITS OWNER for anyone who can reach it. L1 found four of its
   // own returning a home address, a salary and a leave request with no permission check of their
   // own BY DESIGN, because one caller gates for all of them — correct while only that caller can
-  // reach them, a hole the moment anything else can. hr being absent from pgrst.db_schemas is a
-  // DEPLOYMENT FACT, not a property of the function. Measured: 297 definer functions in hr, 202
-  // reachable by authenticated, 101 by anon, 99 never revoked at all. The door set is DERIVED and
-  // empty (check 1 asserts hr is not exposed; pg_depend shows zero hr functions called by any RLS
-  // policy, CHECK constraint or column default — the only places a client role evaluates one
-  // itself). The 202 ride a dated baseline so the gate is not red on arrival; the debt prints every
-  // run. This check FLAGS and never revokes — revoking is a migration with a proof through the
-  // public door, one door at a time.
+  // reach them, a hole the moment anything else can. With hr exposed, an exact
+  // platform.client_callable_door declaration is the derived direct-door set; role intent must
+  // match the live grants. pg_depend still derives RLS/default/check callers, and the dated legacy
+  // baseline remains visible until its old grants are retired. This check FLAGS and never revokes.
   "definer_helpers_are_not_client_reachable",
   // hr_l3_107 — CHECK 35, the CROSS-SCHEMA generalization of check 33. The security arc closed four
   // LIVE P0s that check 33 could not see because they were one and two schemas over: an anon SMS
@@ -750,10 +747,10 @@ async function main(): Promise<void> {
     `  ${C.dim}table, so its RLS write policy admits anyone holding editor on the parent — RLS will${C.reset}`,
   );
   console.log(
-    `  ${C.dim}NOT stop this. The structural facts above (schema not exposed to PostgREST, no anon${C.reset}`,
+    `  ${C.dim}NOT stop this. The structural facts above (no client punch DML, no anon schema${C.reset}`,
   );
   console.log(
-    `  ${C.dim}grants, an enumerated set of sanctioned writers, pinned search_paths) are the only${C.reset}`,
+    `  ${C.dim}access, an enumerated set of sanctioned writers, pinned search_paths) are the only${C.reset}`,
   );
   console.log(
     `  ${C.dim}things that do. A failure here means a punch row can be manufactured without passing${C.reset}`,
