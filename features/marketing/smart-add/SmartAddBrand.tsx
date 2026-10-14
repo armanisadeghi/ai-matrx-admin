@@ -1299,6 +1299,7 @@ export function SmartAddBrand({
               relations={Object.fromEntries(Object.entries(relations).map(([k, r]) => [k, r.relation]))}
               onClaim={claim}
               onRelate={relate}
+              onClose={() => setComparing(false)}
             />
           ) : null}
         </div>

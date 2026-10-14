@@ -13,7 +13,7 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import { AnimatePresence, LayoutGroup, MotionConfig, motion } from "motion/react";
 import { Check, ChevronUp, ExternalLink, Info, Loader2, RotateCcw, X } from "lucide-react";
 import { PANEL_MOTION_CLASS } from "@ai-matrx/design-system";
-import { Badge, Button, Field, Select, type SelectOption } from "@ai-matrx/design-system/controls";
+import { Badge, Button, DecisionControl, Field, type WayOutItem } from "@ai-matrx/design-system/controls";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 import { formatCount } from "@ai-matrx/kit/format";
 import { useMediaQuery } from "@ai-matrx/kit/media-query";
@@ -25,7 +25,7 @@ import { profileAvatarDoor } from "@/features/marketing/social/server";
 import { websiteHost } from "../evidence";
 import { outboundHref } from "../SmartAddExtras";
 import { STANCE_LABEL, STANCE_ORDER } from "../webKinds";
-import { Glow, WeThinkHint } from "../WeThinkHint";
+import { WeThinkHint } from "../WeThinkHint";
 import { ANSWER_KEY, ANSWER_LABEL, optionsFor, type Answer, type FocusItem } from "./queue";
 
 export interface AnsweredEntry {
@@ -145,14 +145,16 @@ function Grounding({ item }: { item: FocusItem }) {
   );
 }
 
-function relationOptions(kinds: BrandRelationKind[]): SelectOption<string>[] {
-  return [
-    { value: "", label: "Related…" },
-    ...[...kinds]
-      .filter((k) => k.key !== "ours" && k.key !== "not_us")
-      .sort((a, b) => STANCE_ORDER.indexOf(a.stance) - STANCE_ORDER.indexOf(b.stance) || Number(b.isKnown) - Number(a.isKnown))
-      .map((k) => ({ value: k.key, label: k.label, meta: STANCE_LABEL[k.stance] })),
-  ];
+/** Related ▸ every relationship but Ours / Not us, grouped by stance. */
+function relationItems(kinds: BrandRelationKind[]): WayOutItem[] {
+  const list = [...kinds]
+    .filter((k) => k.key !== "ours" && k.key !== "not_us")
+    .sort((a, b) => STANCE_ORDER.indexOf(a.stance) - STANCE_ORDER.indexOf(b.stance) || Number(b.isKnown) - Number(a.isKnown));
+  return list.map((k, n) => ({
+    value: `rel:${k.key}`,
+    label: k.label,
+    group: n === 0 || list[n - 1].stance !== k.stance ? `Related · ${STANCE_LABEL[k.stance]}` : undefined,
+  }));
 }
 
 /** The "we think" hint for a focus item (shared with the compare cards): the reason sits in its hover card. */
@@ -176,6 +178,9 @@ function FocusCard({
 }) {
   const [draft, setDraft] = useState(item.value);
   const options = optionsFor(item.kind).filter((a) => a !== "later" && a !== "ignore");
+  // Yes / No / Other on every card: Yes is "this is it" (a name: the main name), No is "not us" / "wrong".
+  const yes: Answer = item.kind === "fact" ? "correct" : item.kind === "name" ? "preferred" : "ours";
+  const no: Answer = item.kind === "fact" ? "wrong" : "not_us";
   const glow = (a: Answer) => item.suggestion?.choice === a;
   const fact = item.kind === "fact";
   const web = item.kind === "web";
@@ -230,66 +235,38 @@ function FocusCard({
         </div>
       </div>
       <WeThink item={item} kinds={kinds} />
-      <div className="flex flex-wrap items-center gap-2" role="group" aria-label="Answer">
-        {options.map((a) =>
-          a === "related" ? (
-            suggestedRelation ? (
-              <span key={a} className="inline-flex flex-wrap items-center gap-2">
-                <Glow on>
-                  <Button variant="outline" onClick={() => onAnswer("related", { relationKey: suggestedRelation.key })} data-testid="validate-answer-suggested-relation">
-                    {suggestedRelation.label}
-                  </Button>
-                </Glow>
-                <span data-testid="validate-related">
-                  <Select
-                    aria-label="Related"
-                    value=""
-                    options={relationOptions(kinds)}
-                    onValueChange={(key) => key && onAnswer("related", { relationKey: key })}
-                    className="min-w-28"
-                  />
-                </span>
-              </span>
-            ) : (
-            <Glow key={a} on={glow(a)}>
-              <span data-testid="validate-related">
-                <Select
-                  aria-label="Related"
-                  value=""
-                  options={relationOptions(kinds)}
-                  onValueChange={(key) => key && onAnswer("related", { relationKey: key })}
-                  className="min-w-32"
-                />
-              </span>
-            </Glow>
-            )
-          ) : (
-            <Glow key={a} on={glow(a)}>
-              <Button
-                variant="outline"
-                meta={ANSWER_KEY[a].toUpperCase()}
-                onClick={() => (editing && a === "correct" ? onAnswer("correct", { value: draft }) : onAnswer(a))}
-                data-testid={`validate-answer-${a}`}
-              >
-                {ANSWER_LABEL[a]}
-              </Button>
-            </Glow>
-          ),
-        )}
+      {/* Every decision offers a way out: the main answers + one "Other" menu (Related ▸, Ignore, Skip for now). */}
+      <div className="flex flex-wrap items-center gap-2">
+        <DecisionControl
+          aria-label="Answer"
+          value={null}
+          options={[
+            { value: "yes", label: "Yes", meta: ANSWER_KEY[yes].toUpperCase(), suggested: glow(yes) },
+            { value: "no", label: "No", meta: ANSWER_KEY[no].toUpperCase(), rejects: true, suggested: glow(no) },
+          ]}
+          onChange={(a) => {
+            const answer = a === "yes" ? yes : no;
+            if (editing && answer === "correct") onAnswer("correct", { value: draft });
+            else onAnswer(answer);
+          }}
+          wayOut={[
+            ...(suggestedRelation ? [{ value: `rel:${suggestedRelation.key}`, label: suggestedRelation.label, meta: "We think" }] : []),
+            ...(options.includes("alias") ? [{ value: "alias", label: "Another name we use", meta: ANSWER_KEY.alias.toUpperCase() }] : []),
+            { value: "ignore", label: ANSWER_LABEL.ignore, meta: ANSWER_KEY.ignore.toUpperCase() },
+            ...(options.includes("related") ? relationItems(kinds) : []),
+          ]}
+          onWayOut={(v) => {
+            if (v === "ignore" || v === "alias") onAnswer(v);
+            else if (v.startsWith("rel:")) onAnswer("related", { relationKey: v.slice(4) });
+          }}
+          onSkip={() => onAnswer("later")}
+          skipLabel={ANSWER_LABEL.later}
+        />
         {fact ? (
           <Button variant="quiet" meta="E" onClick={() => setEditing(!editing)} data-testid="validate-edit">
             {editing ? "Cancel" : "Edit"}
           </Button>
         ) : null}
-      </div>
-      <div className="-mt-2 flex items-center gap-1">
-        {(["later", "ignore"] as const).map((a) => (
-          <Glow key={a} on={glow(a)}>
-            <Button variant="quiet" meta={ANSWER_KEY[a].toUpperCase()} onClick={() => onAnswer(a)} data-testid={`validate-answer-${a}`}>
-              {ANSWER_LABEL[a]}
-            </Button>
-          </Glow>
-        ))}
       </div>
     </div>
   );
@@ -388,7 +365,8 @@ export function ValidateStage({
       if (!answer) return;
       e.preventDefault();
       if (answer === "related") {
-        stageRef.current?.querySelector<HTMLElement>("[data-testid=validate-related] button")?.click();
+        // R presses Other: its picker opens (the relationships are in it).
+        stageRef.current?.querySelector<HTMLElement>("[data-testid=validate-focus] [data-decision-option=other]")?.click();
         return;
       }
       onAnswer(current, answer);
