@@ -13,9 +13,8 @@ import { readFileSync, readdirSync, statSync } from "node:fs";
 import { dirname, join, relative, resolve } from "node:path";
 
 const ROOT = join(__dirname, "..", "..", "..");
-// The renderers moved into @ai-matrx/rich-content (2026-10-06) together with the OWNER, so the
-// package's source is scanned too — a guard that stopped looking where the render paths live
-// would pass forever.
+// The renderers moved into @ai-matrx/rich-content (2026-10-06) together with
+// the OWNER, so the installed package artifacts are scanned too.
 const SCAN = [
   "app",
   "components",
@@ -25,14 +24,17 @@ const SCAN = [
   "utils",
 ];
 const PACKAGE_SCAN = [
-  resolve(dirname(require.resolve("@ai-matrx/chat/agents/redux/conversation-list/conversation-list.thunks")), "../../../.."),
-  resolve(dirname(require.resolve("@ai-matrx/rich-content/display/chat-markdown/block-registry/block-dispatch")), "../../.."),
+  resolve(
+    dirname(require.resolve("@ai-matrx/chat/agents/redux/conversation-list/conversation-list.thunks")),
+    "../../../..",
+  ),
+  resolve(
+    dirname(require.resolve("@ai-matrx/rich-content/display/chat-markdown/block-registry/block-dispatch")),
+    "../../..",
+  ),
 ];
 const OWNER_ABS = require.resolve("@ai-matrx/rich-content/kinds/registry/kind-correctors");
 const OWNER = relative(ROOT, OWNER_ABS);
-// The chat package's bare-host stand-in for the `sessionEnvelope` slot (a host with NO correctors
-// takes the session's own envelope, reported once). Every real host registers `sessionEnvelope`
-// from OWNER (@ai-matrx/chat imports it from @ai-matrx/rich-content directly), so no render path in this app uses it.
 
 function files(dir: string, out: string[] = []): string[] {
   let entries: string[];

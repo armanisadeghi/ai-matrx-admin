@@ -5,7 +5,7 @@
  * because nobody ran the linter on the block before committing it.
  *
  * This runs `react-hooks/rules-of-hooks` as an ERROR over every place a kind block lives: the
- * app's block folders and artifact renderers, and the rich-content package sources.
+ * app's block folders and artifact renderers, and the installed rich-content artifact.
  */
 import path from "node:path";
 import { execFileSync } from "node:child_process";

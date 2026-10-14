@@ -156,7 +156,17 @@ test.describe("the Shape sandbox boundary, in a real browser", () => {
         expect(directives, "connect-src never refused anything in the frame").toContain(
             "connect-src",
         );
-        expect(directives, "img-src never refused the remote image").toContain("img-src");
+        // A remote <img> never leaves directly: the frame's image door
+        // (runtime/image-door.ts) rewrites it to the platform proxy — the one
+        // img-src the CSP admits — before the browser requests anything.
+        const appOriginForDoor = new URL(page.url()).origin;
+        const doored = [...attempts.values()].filter(
+            (entry) =>
+                entry.fromSandbox &&
+                entry.url.startsWith(`${appOriginForDoor}/api/image-proxy?url=`) &&
+                entry.url.includes("sandbox-probe.example"),
+        );
+        expect(doored.length, "the remote image did not go through the image door").toBeGreaterThan(0);
         // Chromium names the javascript: URL refusal `script-src-elem` (the
         // effective directive `script-src` falls back to). Either spelling is
         // the browser's, not ours — assert on the family, not the wording.
@@ -211,6 +221,9 @@ test.describe("the Shape sandbox boundary, in a real browser", () => {
                 .filter(
                     (entry) =>
                         entry.url.includes("sandbox-probe.example") &&
+                        // The door's own answer (the proxy refusing an
+                        // unreachable host) is the platform's, not the probe's.
+                        !entry.url.startsWith(`${appOrigin}/api/image-proxy?`) &&
                         entry.outcome.startsWith("answered"),
                 )
                 .map((entry) => entry.url),

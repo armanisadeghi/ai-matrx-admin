@@ -535,6 +535,13 @@ export const KindSandboxFrame: React.FC<KindSandboxFrameProps> = ({
                 // A props change sent while the handshake was open may have gone
                 // down a channel the frame did not adopt; resend the current ones.
                 post({ type: "matrx:sandbox:props", instanceId, props: latestProps.current });
+                // The init may have carried a column width of 0 (offered
+                // before the column was laid out); the frame adopts the
+                // channel now, so hand it the width that applies now.
+                const layout = readLayout();
+                if (layout.readerViewportWidth > 0 && layout.contentWidth > 0) {
+                    post({ type: "matrx:sandbox:layout", instanceId, ...layout });
+                }
             }
             onPortMessage(event);
         };

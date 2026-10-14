@@ -37,6 +37,7 @@ import type { SandboxBodyPayload } from "../transform/transform-kind-body";
 import { executeKindBody } from "./execute-kind-body";
 import { installHostActionDispatcher } from "./host-action-relay";
 import { installPointerExit } from "./pointer-exit";
+import { installImageDoor } from "./image-door";
 import { installLinkInterceptor } from "./link-interceptor";
 import { installVisibleColumn } from "./visible-column";
 
@@ -148,6 +149,9 @@ export function installFrameBridge(mount: FrameMountApi): void {
     window.addEventListener("message", onWindowMessage);
 }
 
+/** How long a frame waits for its column width before saying it never came. */
+const ALLOTTED_WIDTH_GRACE_MS = 2000;
+
 function startInstance(
     init: SandboxInitMessage,
     port: MessagePort,
@@ -194,6 +198,9 @@ function startInstance(
     // ── plain <a href> opens on the page's side (link-interceptor.ts) ─────
     installLinkInterceptor();
 
+    // ── a remote <img> loads through the platform image door (image-door.ts)
+    installImageDoor();
+
     // ── the reader's viewport, not the frame's box (S5b) ──────────────────
     //
     // The whole reasoning lives once, in `protocol.ts` § THE READER'S VIEWPORT.
@@ -201,10 +208,12 @@ function startInstance(
     // so this document's media queries and viewport units already answer the
     // right question; what is left is to lay the component out at the width it
     // is actually allotted rather than across the whole viewport.
+    let widthApplied = false;
     const applyAllottedWidth = (width: unknown): boolean => {
         if (typeof width !== "number" || !Number.isFinite(width) || width <= 0) {
             return false;
         }
+        widthApplied = true;
         container.style.width = `${width}px`;
         // Overlays flip, shift and centre inside the column the reader SEES,
         // not the reader-wide window (visible-column.ts).
@@ -220,19 +229,30 @@ function startInstance(
         // laid out across the reader's whole viewport, which is not where it
         // sits in the page — the reader would see a component wider than its
         // column. Say which half is missing and what it costs.
-        send({
-            type: "matrx:sandbox:error",
-            instanceId,
-            message:
-                "The page did not tell this component how wide it is allowed to be, so it is being laid out across the whole window instead of inside its own column. The component may be wider than the space it sits in.",
-        });
+        //
+        // But an init offered before the host's column was laid out carries
+        // 0, and the real width follows in a `layout` message moments later
+        // (2026-10-14: six brand_basics_fact frames screamed this within
+        // 0.4 s, each then correctly sized). So wait for it, and say nothing
+        // for a frame that is not on screen (zero-width: nothing is laid out
+        // wrong where nobody can see it).
+        window.setTimeout(() => {
+            if (widthApplied || window.innerWidth === 0) return;
+            send({
+                type: "matrx:sandbox:error",
+                instanceId,
+                message:
+                    "The page did not tell this component how wide it is allowed to be, so it is being laid out across the whole window instead of inside its own column. The component may be wider than the space it sits in.",
+            });
+        }, ALLOTTED_WIDTH_GRACE_MS);
     }
 
     // ── what the frame's CSP refused, said out loud (S5) ─────────────────
     //
     // The frame's `img-src` is `data: blob:` plus the platform image door
-    // (chair ruling 2), so an organization component that renders a REMOTE
-    // image gets a broken-image box and nothing else: the browser refuses the
+    // (chair ruling 2). `<img>`/`<source>`/SVG `<image>` are routed through
+    // the door by image-door.ts; anything else that loads a REMOTE image (a
+    // CSS `url()`) gets a broken-image box and nothing else: the browser refuses the
     // request, the component does not know, the reader sees a gap, and the
     // author is never told. That is a silent failure in the exact place the
     // sandbox was supposed to make failures loud.
@@ -256,7 +276,7 @@ function startInstance(
         reportedViolations.add(key);
         const what =
             directive.startsWith("img")
-                ? `This component tried to load an image from ${blocked || "another site"}. Components stored in the database may only show images the platform itself serves, so nothing was displayed. Put the image through the platform's image door, or store it with the Shape.`
+                ? `This component loaded an image from ${blocked || "another site"} in a way the sandbox cannot route (such as a CSS background), so nothing was displayed. Render it as an <img> or KindImage, which load through the platform's image door.`
                 : `This component tried to reach ${blocked || "another site"} (${directive || "a blocked resource"}), which components stored in the database may not do. Nothing was loaded.`;
         send({
             type: "matrx:sandbox:error",

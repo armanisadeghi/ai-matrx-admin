@@ -262,6 +262,9 @@ describe("the frame lays the component out at the width it was given", () => {
     it("says so out loud when the page never told it how wide it may be", async () => {
         const { fromFrame } = startFrame({});
         await settle();
+        // Not at once: the width may still be on its way (see the next case).
+        expect(fromFrame.filter((m) => m.type === "matrx:sandbox:error")).toHaveLength(0);
+        await new Promise((resolve) => setTimeout(resolve, 2100));
         const spoken = fromFrame.filter(
             (m) => m.type === "matrx:sandbox:error",
         ) as Array<{ message: string }>;
@@ -269,6 +272,23 @@ describe("the frame lays the component out at the width it was given", () => {
         expect(spoken[0].message).toContain("how wide it is allowed to be");
         // A sentence a reader can act on, not a code.
         expect(spoken[0].message).toContain("wider than the space it sits in");
+    });
+
+    it("stays quiet when the width arrives just after an init offered before layout", async () => {
+        // 2026-10-14 live: init carried contentWidth 0, the real width came
+        // moments later, and every brand_basics_fact frame still screamed.
+        const { fromFrame, port1, mountPoint } = startFrame({ readerViewportWidth: READER_VIEWPORT, contentWidth: 0 });
+        await settle();
+        port1.postMessage({
+            type: "matrx:sandbox:layout",
+            instanceId: "reader-viewport-1",
+            readerViewportWidth: READER_VIEWPORT,
+            contentWidth: ALLOTTED_COLUMN,
+        });
+        await settle();
+        expect(mountPoint.style.width).toBe(`${ALLOTTED_COLUMN}px`);
+        await new Promise((resolve) => setTimeout(resolve, 2100));
+        expect(fromFrame.filter((m) => m.type === "matrx:sandbox:error")).toHaveLength(0);
     });
 });
 
