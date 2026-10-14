@@ -5,7 +5,7 @@
     "repo-only": "reads the repository and nothing else"
   },
   "counts": {
-    "repo-only": 183,
+    "repo-only": 185,
     "live-db": 70
   },
   "rows": {
@@ -2295,6 +2295,20 @@
       "class": "repo-only",
       "cmd": "pnpm check:alchemy-doors:self-test",
       "reason": "no database access in 2 file(s) reached",
+      "evidence": []
+    },
+    "same-tab-navigation-from-a-notification-or-toast-action": {
+      "label": "Same-tab navigation from a notification or toast action",
+      "class": "repo-only",
+      "cmd": "pnpm check:notice-new-tab",
+      "reason": "no database access in 1 file(s) reached",
+      "evidence": []
+    },
+    "notification-new-tab-guard-self-test": {
+      "label": "Notification new-tab guard self-test",
+      "class": "repo-only",
+      "cmd": "pnpm check:notice-new-tab:self-test",
+      "reason": "no database access in 1 file(s) reached",
       "evidence": []
     },
     "vendor-name-in-customer-facing-ui-text": {
