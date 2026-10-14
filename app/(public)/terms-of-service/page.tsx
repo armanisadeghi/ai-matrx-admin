@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 import { createRouteMetadata } from "@/utils/route-metadata";
 import { siteConfig } from "@/config/extras/site";
 
@@ -14,7 +15,7 @@ export default function TermsOfServicePage() {
       <article className="prose prose-neutral mx-auto max-w-3xl px-4 py-8 dark:prose-invert sm:px-6 sm:py-12">
         <h1>Terms of Service</h1>
         <p>
-          <strong>Last updated:</strong> September 12, 2026
+          <strong>Last updated:</strong> October 14, 2026
         </p>
         <p>
           AI Matrx is a technology product owned and operated by{" "}
@@ -64,6 +65,15 @@ export default function TermsOfServicePage() {
           provider&rsquo;s own account settings. Our{" "}
           <Link href="/privacy-policy">Privacy Policy</Link> explains how we
           handle connected data.
+        </p>
+
+        <p>
+          AI Matrx uses YouTube API Services. By using AI Matrx features that
+          access YouTube, you also agree to be bound by the{" "}
+          <OutboundLink href="https://www.youtube.com/t/terms" rel="external">
+            YouTube Terms of Service
+          </OutboundLink>
+          .
         </p>
 
         <h2>4. Acceptable use</h2>

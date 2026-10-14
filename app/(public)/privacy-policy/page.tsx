@@ -9,7 +9,7 @@ const PrivacyPolicyPage = () => {
       <article className="prose prose-neutral mx-auto max-w-3xl px-4 py-8 dark:prose-invert sm:px-6 sm:py-12">
         <h1>Privacy Policy</h1>
         <p>
-          <strong>Last updated:</strong> October 4, 2026
+          <strong>Last updated:</strong> October 14, 2026
         </p>
         <p>
           AI Matrx is a technology product owned and operated by{" "}
@@ -364,6 +364,39 @@ const PrivacyPolicyPage = () => {
             Google User Data Policy
           </OutboundLink>
           {", including the Limited Use requirements."}
+        </p>
+        <h4>YouTube account data</h4>
+        <p>
+          AI Matrx uses YouTube API Services. If you connect YouTube, we access
+          channel details, uploaded-video details and public statistics. If you
+          also authorize YouTube Analytics, we retrieve the selected channel&rsquo;s
+          private, non-monetary reports, including views, watch time and
+          subscribers gained for the date range you request. These read
+          permissions do not let AI Matrx upload, edit or publish videos.
+        </p>
+        <p>
+          On-demand reports are displayed in AI Matrx. A separately requested
+          channel sync can save video details and daily channel metrics in your
+          account. Disconnecting stops future access but does not itself erase
+          those saved records. For deletion requests or questions, contact{" "}
+          <a href="mailto:support@aimatrx.com">support@aimatrx.com</a>.{" "}
+          If you explicitly include YouTube results in an agent request, the
+          configured model provider may process that information as described
+          in Section 3.1.
+        </p>
+        <p>
+          You can revoke access through your{" "}
+          <OutboundLink
+            href="https://security.google.com/settings/security/permissions"
+            rel="external"
+          >
+            Google Account permissions
+          </OutboundLink>
+          . Google&rsquo;s handling of information is described in the{" "}
+          <OutboundLink href="https://policies.google.com/privacy" rel="external">
+            Google Privacy Policy
+          </OutboundLink>
+          .
         </p>
         <p>
           Mobile information and text-message opt-in data and consent are not
