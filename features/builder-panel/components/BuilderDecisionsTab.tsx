@@ -59,7 +59,7 @@ export function BuilderDecisionsTab({
     <div className="flex min-h-0 flex-1 flex-col">
       <div className="flex shrink-0 items-center gap-2 border-b border-border px-3 py-2">
         <Select aria-label="Round" value={current.runId} onValueChange={setPicked} options={options} />
-        <span className="truncate font-mono text-[11px] text-muted-foreground">{current.runId}</span>
+        <Button variant="quiet" onClick={() => onOpenStep(current.runId, null)}>{current.runId}</Button>
         <Button variant="quiet" className="ml-auto" onClick={() => onOpenStep(current.runId, "path_decision")}>
           Open step
         </Button>
@@ -77,7 +77,7 @@ export function BuilderDecisionsTab({
               </span>
               <span className="ml-auto tabular-nums text-muted-foreground">{format(current.costUsd)}</span>
             </section>
-            {d.flag ? <p className="text-amber-700 dark:text-amber-400">{d.flag}</p> : null}
+            {d.flag ? <p className="text-warning">{d.flag}</p> : null}
             {d.escalation ? (
               <p className="flex items-center gap-1.5">
                 <span className="font-medium">Escalated</span>
@@ -119,7 +119,7 @@ export function BuilderDecisionsTab({
                   {d.checks.map((c) => (
                     <li key={c.path} className={cn("flex items-center gap-1.5", c.path === chosen && "font-medium")}>
                       {c.passed ? (
-                        <Check className="h-3.5 w-3.5 text-emerald-600" />
+                        <Check className="h-3.5 w-3.5 text-success" />
                       ) : (
                         <X className="h-3.5 w-3.5 text-muted-foreground" />
                       )}
