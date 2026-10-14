@@ -210,7 +210,8 @@ export function SmartAddBrand({ onCreated, enrich = null }: { onCreated?: (brand
   const [namesakes, setNamesakes] = useState<Set<string>>(new Set());
   // The latest person / business verdict (brand.identify.person_signals) and whether the person answered it.
   const [personSignals, setPersonSignals] = useState<PersonSignals | null>(null);
-  const [kindAnswered, setKindAnswered] = useState(false);
+  // Enrich: the brand already says whether it is a person or a business.
+  const [kindAnswered, setKindAnswered] = useState(Boolean(enrich));
 
   const [creating, setCreating] = useState(false);
   const [createError, setCreateError] = useState<string | null>(null);
@@ -698,7 +699,7 @@ export function SmartAddBrand({ onCreated, enrich = null }: { onCreated?: (brand
             organizationId: enrich.snapshot.brand.organization_id,
             known: enrich.known.map((f) => ({ id: f.id, group: f.group, label: f.label, value: f.value, seeded: enrich.checked.has(f.id) })),
             seed: { decisions: enrich.seed.decisions, known: enrich.seed.known, excludeKeys: enrich.seed.excludeKeys, exclusions: enrich.seed.exclusions },
-            diff: computeEnrichDiff({ known: enrich.known, items, decisions, broken: brokenKeys.current }).map((c) => ({
+            diff: computeEnrichDiff({ known: enrich.known, items, decisions, broken: brokenKeys.current, seeded: enrich.checked }).map((c) => ({
               id: c.id,
               kind: c.kind,
               label: c.label,
@@ -971,7 +972,7 @@ export function SmartAddBrand({ onCreated, enrich = null }: { onCreated?: (brand
     </>
   );
   // Enrich finish: nothing is written until the person confirms the Changes review.
-  const enrichDiff = enrich ? computeEnrichDiff({ known: enrich.known, items, decisions, broken: brokenKeys.current }) : null;
+  const enrichDiff = enrich ? computeEnrichDiff({ known: enrich.known, items, decisions, broken: brokenKeys.current, seeded: enrich.checked }) : null;
   if (enrich && reviewing && enrichDiff) {
     return (
       <>

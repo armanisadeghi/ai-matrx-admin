@@ -103,6 +103,18 @@ describe("enrich: changes to your brand", () => {
     expect(diff.some((c) => c.kind === "replace")).toBe(false);
   });
 
+  it("un-keeping the known logo during the run (logos have no Not us) is a NO: a conflict, default Keep it", () => {
+    const known = knownFacts(snapshot());
+    const checked = new Set(known.map((f) => f.id));
+    const seed = enrichSeed(known, checked, []);
+    const items = new Map(seed.items.map((i) => [i.key, i]));
+    const { ["logo:https://cdn.example/logo.png"]: _dropped, ...decisions } = seed.decisions;
+    const diff = computeEnrichDiff({ known, items, decisions, seeded: checked });
+    expect(diff.find((c) => c.id === "conflict:logo:https://cdn.example/logo.png")?.defaultChoice).toBe("keep");
+    // Without the seeded set (a fact never sent) the same absence is not a NO.
+    expect(computeEnrichDiff({ known, items, decisions }).some((c) => c.kind === "conflict")).toBe(false);
+  });
+
   it("an unchecked fact the run never touched stays unchanged (nothing negative is recorded)", () => {
     const known = knownFacts(snapshot());
     const diff = computeEnrichDiff({ known, items: new Map(), decisions: {} });

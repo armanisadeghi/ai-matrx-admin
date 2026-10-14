@@ -69,8 +69,13 @@ export function computeEnrichDiff(input: {
   decisions: Record<string, Decision>;
   /** Images the screen could not load: never offered. */
   broken?: ReadonlySet<string>;
+  /** The known facts that seeded the run (checked). One whose answer the person took back during the run
+   *  (an image un-kept: logos have no "Not us" button) counts as a NO, exactly like "Not us". */
+  seeded?: ReadonlySet<string>;
 }): EnrichChange[] {
   const { known, items, decisions } = input;
+  const seeded = input.seeded ?? new Set<string>();
+  const saidNo = (f: KnownFact) => decisions[f.id] === "no" || (seeded.has(f.id) && Boolean(f.item) && !decisions[f.id]);
   const broken = input.broken ?? new Set<string>();
   const knownKeys = new Set(known.map((f) => f.id));
   const out: EnrichChange[] = [];
@@ -78,7 +83,7 @@ export function computeEnrichDiff(input: {
 
   // Conflicts first: the person said NO to something on the brand now.
   for (const f of known) {
-    if (decisions[f.id] === "no" && removable(f)) {
+    if (saidNo(f) && removable(f)) {
       out.push({ id: `conflict:${f.id}`, kind: "conflict", group: f.group, label: f.label, current: f, next: null, nextDecision: null, slot: null, defaultChoice: "keep" });
       handled.add(f.id);
     }
