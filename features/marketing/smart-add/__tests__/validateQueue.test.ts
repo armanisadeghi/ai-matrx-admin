@@ -103,6 +103,18 @@ describe("validation queue", () => {
     expect(q.map((f) => f.fact?.field)).toEqual(["phone", "founder", "parking_info"]);
   });
 
+  it("MKT-063: keeps the ruling's field order inside a group (Official Name, Country, Booking URL), whatever the certainty", () => {
+    const f = (field: string, certainty: string) => ({
+      __kind: "brand_basics_fact", field, field_label: field, value: `${field} value`, certainty, reason: "r.", evidence_urls: [], known_field: true,
+    });
+    const facts = factsFromPayload({ structured_output: { __kind: "brand_basics", facts: [f("booking_url", "confirmed"), f("country", "confirmed"), f("official_name", "likely")] } });
+    const q = buildQueue({
+      items: [], facts, decisions: {}, webChoices: {}, answered: new Set(), later: [], kinds: [],
+      ctx: { domain: null, accountUrls: [] } as never,
+    });
+    expect(q.map((x) => x.fact?.field)).toEqual(["official_name", "country", "booking_url"]);
+  });
+
   it("shifts only once name, website and an account are settled", () => {
     expect(VALIDATION_THRESHOLD.minAccounts).toBe(1);
     expect(coreSettled({ name: "X", websiteUrl: "https://x.com", accounts: [] })).toBe(false);

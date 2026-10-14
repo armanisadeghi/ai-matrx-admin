@@ -66,4 +66,14 @@ describe("we think", () => {
       exclusions: ["https://facebook.com/other"],
     });
   });
+
+  it("MKT-064: a suggestion whose key the agent decoded (or recased) still lands on its card", () => {
+    const out = withSuggestions(
+      [item("social:youtube:vivaespa%c3%b1a-1m", "social", "https://www.youtube.com/@vivaespa%C3%B1a-1m")],
+      suggestionsFromPayload({ __kind: "brand_we_think", suggestions: [
+        { key: "social:youtube:VivaEspaña-1m", choice: "ours", relation_key: null, probability: 0.9, reason: "Links the site", evidence: [] },
+      ] }),
+    );
+    expect((out[0].suggestion as { choice: string }).choice).toBe("ours");
+  });
 });

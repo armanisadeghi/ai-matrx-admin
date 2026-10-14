@@ -7,7 +7,16 @@
  * and nothing is ever selected for the person. Pure (no I/O).
  */
 
+import { handleKeyPart } from "../social/account-input";
 import { websiteHost, type Decision, type EvidenceItem } from "./evidence";
+
+/**
+ * MKT-064: one key, however it is spelled. The agent may hand back `vivaespaña-1m` for the card's
+ * `vivaespa%c3%b1a-1m` (or change case); both sides compare through the account-key helper.
+ */
+export function suggestionKey(key: string): string {
+  return handleKeyPart(key);
+}
 
 /** The agent's choices, as the screens' answers (validate/queue `Answer`): ask_later is "Ask me later". */
 const CHOICE: Record<string, string> = {
@@ -55,7 +64,12 @@ export function suggestionsFromPayload(payload: unknown, depth = 0): Record<stri
   if (Array.isArray(payload)) return Object.assign({}, ...payload.map((p) => suggestionsFromPayload(p, depth + 1)));
   const o = payload as Record<string, unknown>;
   if ((o.__kind === "brand_we_think" || "suggestions" in o) && Array.isArray(o.suggestions)) {
-    return Object.fromEntries(o.suggestions.map(parseOne).filter((p): p is [string, WeThinkSuggestion] => Boolean(p)));
+    return Object.fromEntries(
+      o.suggestions
+        .map(parseOne)
+        .filter((p): p is [string, WeThinkSuggestion] => Boolean(p))
+        .map(([k, v]) => [suggestionKey(k), v]),
+    );
   }
   return Object.assign(
     {},
@@ -69,7 +83,7 @@ export function suggestionsFromPayload(payload: unknown, depth = 0): Record<stri
 export function withSuggestions(items: EvidenceItem[], suggestions: Record<string, WeThinkSuggestion>): EvidenceItem[] {
   if (!Object.keys(suggestions).length) return items;
   return items.map((i) => {
-    const s = suggestions[i.key] ?? (i.same_as ?? []).map((k) => suggestions[k]).find(Boolean);
+    const s = [i.key, ...(i.same_as ?? [])].map((k) => suggestions[k] ?? suggestions[suggestionKey(k)]).find(Boolean);
     if (!s) return i;
     // The option the card actually offers: names answer Preferred / Alias, everything else Ours.
     const name = i.field === "name";
