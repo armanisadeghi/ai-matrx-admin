@@ -88549,6 +88549,90 @@ export type Database = {
         }
         Relationships: []
       }
+      test_replay_cache: {
+        Row: {
+          cache_key: string
+          created_at: string
+          created_by: string | null
+          deleted_at: string | null
+          endpoint: string
+          hit_count: number
+          id: string
+          last_replayed_at: string | null
+          metadata: Json
+          method: string
+          organization_id: string
+          original_credits: number | null
+          original_status: number | null
+          provider: string
+          published_to_web: boolean
+          published_to_web_at: string | null
+          published_to_web_by: string | null
+          request_params: Json
+          response: Json
+          saved_by: string | null
+          shown_to: Database["platform"]["Enums"]["shown_to"] | null
+          updated_at: string
+          updated_by: string | null
+          version: number
+          visibility: Database["platform"]["Enums"]["visibility"]
+        }
+        Insert: {
+          cache_key: string
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          endpoint: string
+          hit_count?: number
+          id?: string
+          last_replayed_at?: string | null
+          metadata?: Json
+          method: string
+          organization_id: string
+          original_credits?: number | null
+          original_status?: number | null
+          provider: string
+          published_to_web?: boolean
+          published_to_web_at?: string | null
+          published_to_web_by?: string | null
+          request_params?: Json
+          response: Json
+          saved_by?: string | null
+          shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+          visibility?: Database["platform"]["Enums"]["visibility"]
+        }
+        Update: {
+          cache_key?: string
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          endpoint?: string
+          hit_count?: number
+          id?: string
+          last_replayed_at?: string | null
+          metadata?: Json
+          method?: string
+          organization_id?: string
+          original_credits?: number | null
+          original_status?: number | null
+          provider?: string
+          published_to_web?: boolean
+          published_to_web_at?: string | null
+          published_to_web_by?: string | null
+          request_params?: Json
+          response?: Json
+          saved_by?: string | null
+          shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+          visibility?: Database["platform"]["Enums"]["visibility"]
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

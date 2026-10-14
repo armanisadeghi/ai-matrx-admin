@@ -28,6 +28,7 @@ import { registerDirectiveHandler } from "@/lib/client-directives/directiveRegis
 import { replaceAddressWithoutNavigating } from "@/lib/url-state/addressWithoutNavigating";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { KnobOverridesAdmin } from "./KnobOverridesAdmin";
+import { TEST_REPLAY_CACHE_KNOB, TestReplayCacheClear } from "./TestReplayCacheClear";
 
 /** `?knob=<feature.key>` — what a mandate page or a doc links a knob by. */
 const KNOB_PARAM = "knob";
@@ -152,13 +153,17 @@ function SystemKnobRows({ feature }: { feature?: string }) {
               {openKey === knob.full_key ? "Hide levels" : "All levels"}
             </button>
           )}
-          rowBelow={(knob) =>
-            openKey === knob.full_key ? (
-              <div className="mb-2 ml-3 border-l-2 border-primary/30 pl-3">
-                <KnobOverridesAdmin knob={knob} onChanged={() => requestCountRefresh((value) => value + 1)} />
-              </div>
-            ) : null
-          }
+          rowBelow={(knob) => (
+            <>
+              {/* REMOVE-BEFORE-LAUNCH: the test replay cache's clear action rides its switch row. */}
+              {knob.full_key === TEST_REPLAY_CACHE_KNOB ? <TestReplayCacheClear /> : null}
+              {openKey === knob.full_key ? (
+                <div className="mb-2 ml-3 border-l-2 border-primary/30 pl-3">
+                  <KnobOverridesAdmin knob={knob} onChanged={() => requestCountRefresh((value) => value + 1)} />
+                </div>
+              ) : null}
+            </>
+          )}
           onChanged={() => {
             requestCountRefresh((value) => value + 1);
             settings.refresh();

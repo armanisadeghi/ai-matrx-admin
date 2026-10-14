@@ -241,6 +241,11 @@ export function BuilderRequestsTab({
                       {PLACE_LABEL[place]}
                     </span>
                   ) : null}
+                  {r.replayedFromTestCache ? (
+                    <Badge tone="warning" title={r.testCacheSavedAt ? `Saved ${r.testCacheSavedAt}; no points charged` : "No points charged"}>
+                      Replayed (test cache)
+                    </Badge>
+                  ) : null}
                   <Badge tone={statusTone(r)}>{r.error ? "error" : (r.status ?? "…")}</Badge>
                   <span className="w-14 shrink-0 text-right text-[10px] tabular-nums text-muted-foreground">
                     {r.ms !== null ? formatDurationMs(r.ms, { style: "compact", precision: "fine" }) : ""}

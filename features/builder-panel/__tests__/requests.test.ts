@@ -66,6 +66,27 @@ describe("builder requests", () => {
     expect(row.runId).toBe("run-1");
   });
 
+  // REMOVE-BEFORE-LAUNCH: the admin test replay cache marks the ledger entry; the row must say so.
+  it("marks a call the server replayed from the test cache, with its saved time", () => {
+    const replayed: NodeOutcomeRow = {
+      ...outcome,
+      output: {
+        requests: [
+          {
+            seq: 1, at: "2026-10-14T10:00:00.000Z", ms: 3, kind: "social_profile", provider: "scrapecreators",
+            label: "instagram profile x", status: 200, error: null, request: {}, response: {},
+            replayed_from_test_cache: true,
+            test_cache: [{ saved_at: "2026-10-14T09:00:00+00:00", points_charged: 0 }],
+          },
+        ],
+      },
+    };
+    const [row] = serverRequestRows([replayed]);
+    expect(row.replayedFromTestCache).toBe(true);
+    expect(row.testCacheSavedAt).toBe("2026-10-14T09:00:00+00:00");
+    expect(serverRequestRows([outcome])[0].replayedFromTestCache).toBe(false);
+  });
+
   it("puts flow work in Activity and leaves session reads out", () => {
     const rows = pageRequestRows(
       [

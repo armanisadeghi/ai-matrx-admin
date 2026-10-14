@@ -31,6 +31,17 @@ export interface RequestRow {
   request: unknown;
   /** The response exactly as received. */
   response: unknown;
+  /** REMOVE-BEFORE-LAUNCH: answered from the admin test replay cache (nothing bought, no points). */
+  replayedFromTestCache: boolean;
+  /** When the replayed answer was originally saved. */
+  testCacheSavedAt: string | null;
+}
+
+/** REMOVE-BEFORE-LAUNCH: the saved time of a ledger entry the server replayed from the test cache. */
+function testCacheSavedAt(r: Record<string, unknown>): string | null {
+  const marks = Array.isArray(r.test_cache) ? r.test_cache : r.test_cache ? [r.test_cache] : [];
+  const first = record(marks[0]);
+  return typeof first.saved_at === "string" ? first.saved_at : null;
 }
 
 function record(value: Json | unknown): Record<string, unknown> {
@@ -64,6 +75,8 @@ function pageRow(r: LoggedRequest): RequestRow {
       body: r.responseBody,
       ...(r.streaming ? { streaming: true } : {}),
     },
+    replayedFromTestCache: false,
+    testCacheSavedAt: null,
   };
   pageRowCache.set(r, row);
   return row;
@@ -96,6 +109,8 @@ export function serverRequestRows(outcomes: NodeOutcomeRow[]): RequestRow[] {
         nodeId: o.nodeId,
         request: r.request ?? null,
         response: r.response ?? null,
+        replayedFromTestCache: r.replayed_from_test_cache === true,
+        testCacheSavedAt: r.replayed_from_test_cache === true ? testCacheSavedAt(r) : null,
       });
     });
   }

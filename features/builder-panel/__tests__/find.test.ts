@@ -21,6 +21,8 @@ function row(over: Partial<RequestRow>): RequestRow {
     nodeId: "web",
     request: { url: "https://api.search.brave.com/res/v1/web/search", args: { q: "fullspecstaff.com", extra_snippets: true } },
     response: { results: [{ url: "https://www.zoominfo.com/c/full-spectrum-search-group" }] },
+    replayedFromTestCache: false,
+    testCacheSavedAt: null,
     ...over,
   };
 }
