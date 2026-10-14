@@ -35,6 +35,7 @@ import { CanvasHostProvider } from "@/features/canvas/host/CanvasHostProvider";
 // tap-target 0.2.0 collapsed that to one implementation, so the second
 // provider is gone with the second tooltip.
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { FirstUseHintHost } from "@/providers/FirstUseHintHost";
 import type { BaseReduxState } from "@/types/reduxTypes";
 import { RefProvider } from "@/lib/refs";
 import { AlchemyHost } from "@/components/agent-copy/AlchemyHost";
@@ -204,6 +205,7 @@ export function Providers({ children, initialReduxState }: ProvidersProps) {
                     <AlchemyHost>
                       <RefProvider>
                         <TooltipProvider delayDuration={200}>
+                          <FirstUseHintHost>
                           <ModuleHeaderProvider>
                             <SelectedImagesProvider>
                               <RequestRecoveryProvider>
@@ -317,6 +319,7 @@ export function Providers({ children, initialReduxState }: ProvidersProps) {
                               </RequestRecoveryProvider>
                             </SelectedImagesProvider>
                           </ModuleHeaderProvider>
+                          </FirstUseHintHost>
                         </TooltipProvider>
                       </RefProvider>
                     </AlchemyHost>
