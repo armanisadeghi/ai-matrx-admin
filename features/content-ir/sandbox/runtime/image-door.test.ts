@@ -18,6 +18,13 @@ describe("image door (frame runtime)", () => {
 
     it("routes every srcset candidate and keeps its descriptor", () => {
         expect(srcsetThroughImageDoor(`${LOGO} 1x, /local.png 2x`, BASE)).toBe(`${DOOR} 1x, /local.png 2x`);
+        // A data: URL's own comma is not a candidate separator.
+        expect(srcsetThroughImageDoor(`data:image/png;base64,AAAA 1x, ${LOGO} 2x`, BASE)).toBe(
+            `data:image/png;base64,AAAA 1x, ${DOOR} 2x`,
+        );
+        expect(srcsetThroughImageDoor(`${LOGO}, /b.png 2x`, BASE)).toBe(`${DOOR}, /b.png 2x`);
+        // Nothing remote: left byte-for-byte alone.
+        expect(srcsetThroughImageDoor("data:image/png;base64,AA,BB 1x", BASE)).toBe("data:image/png;base64,AA,BB 1x");
     });
 
     it("rewrites img src written by attribute AND by property, before any request", () => {

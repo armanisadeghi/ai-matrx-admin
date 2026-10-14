@@ -34,17 +34,34 @@ export function throughImageDoor(value: string, base: string): string {
     return door.href;
 }
 
-/** Each candidate of a `srcset` ("url 2x, url 640w") through the door. */
+/**
+ * Each candidate of a `srcset` ("url 2x, url 640w") through the door. Parsed
+ * the way the HTML spec does — a URL runs to whitespace, so the commas inside
+ * a `data:` URL are never mistaken for candidate separators.
+ */
 export function srcsetThroughImageDoor(value: string, base: string): string {
-    return value
-        .split(",")
-        .map((candidate) => {
-            const trimmed = candidate.trim();
-            if (!trimmed) return candidate;
-            const [url, ...descriptor] = trimmed.split(/\s+/);
-            return [throughImageDoor(url ?? "", base), ...descriptor].join(" ");
-        })
-        .join(", ");
+    if (!/https?:\/\//i.test(value)) return value;
+    const out: string[] = [];
+    let i = 0;
+    while (i < value.length) {
+        while (i < value.length && /[\s,]/.test(value[i] ?? "")) i++;
+        if (i >= value.length) break;
+        let end = i;
+        while (end < value.length && !/\s/.test(value[end] ?? "")) end++;
+        let url = value.slice(i, end);
+        let descriptor = "";
+        if (url.endsWith(",")) {
+            url = url.replace(/,+$/, "");
+        } else {
+            const comma = value.indexOf(",", end);
+            const stop = comma === -1 ? value.length : comma;
+            descriptor = value.slice(end, stop).trim();
+            end = stop;
+        }
+        out.push(descriptor ? `${throughImageDoor(url, base)} ${descriptor}` : throughImageDoor(url, base));
+        i = end;
+    }
+    return out.join(", ");
 }
 
 function isImageSlot(el: Element, name: string): "url" | "srcset" | null {
