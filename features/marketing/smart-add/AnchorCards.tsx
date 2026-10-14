@@ -11,7 +11,7 @@
  */
 
 import { useState } from "react";
-import { Check, Info, Plus, UserX, X } from "lucide-react";
+import { Check, Info, Plus, SearchX, UserX, X } from "lucide-react";
 import { Button, Field } from "@ai-matrx/design-system/controls";
 import { formatCount } from "@ai-matrx/kit/format";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
@@ -19,7 +19,9 @@ import { profileAvatarDoor } from "@/features/marketing/social/server";
 import { browserImageUrl } from "@/lib/media/external-image";
 import { PlatformMark, platformLabel } from "@/features/marketing/social/components/PlatformMark";
 import { SocialImage } from "@/features/marketing/social/components/SocialImage";
+import { rankByAnchors, type PersonAnchors } from "./anchorRank";
 import { websiteHost, type Decision, type EvidenceItem } from "./evidence";
+import { maskOffensive } from "@/lib/text/maskOffensive";
 import { accountHandleLine, OpenLink } from "./SmartAddExtras";
 
 export type AnchorAnswer = "me" | "not_me" | "namesake";
@@ -60,9 +62,10 @@ export function AnchorCard({
   return (
     <li
       data-testid="smart-add-anchor-card"
-      className={`flex w-full flex-col gap-2 rounded-xl border bg-card p-3 transition-opacity ${
-        picked ? "border-primary ring-2 ring-primary" : "border-border"
-      } ${out ? "opacity-50" : ""}`}
+      data-answer={answer ?? "open"}
+      className={`flex w-full flex-col gap-2 rounded-xl border p-3 transition-opacity ${
+        picked ? "border-primary bg-card ring-2 ring-primary" : out ? "border-dashed border-border bg-muted/40" : "border-border bg-card"
+      } ${out ? "opacity-60" : ""}`}
     >
       <div className="flex items-start gap-3">
         <span className="relative size-12 shrink-0 overflow-hidden rounded-full border border-border bg-muted">
@@ -82,7 +85,7 @@ export function AnchorCard({
           )}
         </span>
         <div className="flex min-w-0 flex-1 flex-col">
-          <span className="truncate text-sm font-medium text-foreground">{name}</span>
+          <span className={`truncate text-sm font-medium text-foreground ${out ? "line-through" : ""}`}>{name}</span>
           <span className="flex min-w-0 items-center gap-1 text-xs text-muted-foreground">
             <PlatformMark platform={platform} size={12} />
             <span className="truncate">
@@ -90,7 +93,7 @@ export function AnchorCard({
               {handle ? ` · ${handle}` : ""}
             </span>
           </span>
-          {a?.bio_line ? <span className="line-clamp-1 text-xs text-muted-foreground">{a.bio_line}</span> : null}
+          {a?.bio_line ? <span className="line-clamp-1 text-xs text-muted-foreground">{maskOffensive(a.bio_line)}</span> : null}
           <span className="text-xs text-muted-foreground">
             {[a?.location, followers != null ? `${formatCount(followers)} followers` : null].filter(Boolean).join(" · ")}
           </span>
@@ -131,15 +134,15 @@ export function AnchorCard({
           This is me
         </Button>
         <Button
-          variant="quiet"
+          variant={answer === "not_me" ? "outline" : "quiet"}
           icon={<X aria-hidden />}
           aria-pressed={answer === "not_me"}
           onClick={() => onAnswer(answer === "not_me" ? null : "not_me")}
         >
-          Not me
+          {answer === "not_me" ? "Not you" : "Not me"}
         </Button>
         <Button
-          variant="quiet"
+          variant={answer === "namesake" ? "outline" : "quiet"}
           icon={<UserX aria-hidden />}
           aria-pressed={answer === "namesake"}
           onClick={() => onAnswer(answer === "namesake" ? null : "namesake")}
@@ -160,8 +163,14 @@ export function AnchorCards({
   onAnswer,
   onAddLink,
   onAddAffiliation,
+  anchors: known,
+  onDigDeeper,
 }: {
   items: EvidenceItem[];
+  /** What is known about the person: cards carrying it rank first, other-city namesakes last. */
+  anchors?: PersonAnchors;
+  /** One rung down the find-you ladder; offered until a firm anchor is confirmed. */
+  onDigDeeper?: () => void;
   decisions: Record<string, Decision>;
   namesakes: Set<string>;
   affiliations: string[];
@@ -172,7 +181,7 @@ export function AnchorCards({
   onAddAffiliation: (text: string) => void;
 }) {
   const [text, setText] = useState("");
-  const anchors = anchorItems(items);
+  const anchors = rankByAnchors(anchorItems(items), known ?? {});
   const add = () => {
     const t = text.trim();
     if (!t) return;
@@ -195,6 +204,11 @@ export function AnchorCards({
         </ul>
       ) : !searching ? (
         <p className="text-sm text-muted-foreground">No accounts found for this name.</p>
+      ) : null}
+      {onDigDeeper && !searching ? (
+        <Button variant="quiet" icon={<SearchX aria-hidden />} className="self-start" onClick={onDigDeeper} data-testid="smart-add-anchor-dig-deeper">
+          Not here? Dig deeper
+        </Button>
       ) : null}
       {affiliations.length ? (
         <ul className="flex flex-wrap gap-1.5">

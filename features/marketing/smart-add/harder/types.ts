@@ -21,6 +21,9 @@ export interface HarderCandidate extends HelperCandidate {
   anchor_kind: AnchorKind;
   firm: boolean;
   clues: Clue[];
+  /** The find-anything tier (strong → mid → low → junk), so the list shows the best first and junk last. */
+  tier?: string;
+  tier_reason?: string;
 }
 
 export interface DirectoryQuestion {

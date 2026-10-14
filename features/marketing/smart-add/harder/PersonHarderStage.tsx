@@ -20,7 +20,9 @@ import { Button } from "@ai-matrx/design-system/controls";
 import { formatCount } from "@ai-matrx/kit/format";
 import { PlatformMark, platformLabel } from "@/features/marketing/social/components/PlatformMark";
 import { browserImageUrl } from "@/lib/media/external-image";
+import { maskOffensive } from "@/lib/text/maskOffensive";
 import { OpenLink } from "../SmartAddExtras";
+import { autoEscalation } from "./escalation";
 import { pollLinkedinJob } from "../helpers/service";
 import { onHelperAnswer } from "../helpers/store";
 import type { HelperCandidate } from "../helpers/types";
@@ -96,14 +98,27 @@ function asHarder(c: HelperCandidate, bucket: HarderCandidate["bucket"]): Harder
   return { ...c, bucket, score: 0, reasons: [], anchor_kind: "social", firm: true, clues: [] };
 }
 
+const TIER_ORDER = ["strong", "mid", "low", "junk"];
+const tierRank = (c: HarderCandidate) => {
+  const i = TIER_ORDER.indexOf(c.tier ?? "mid");
+  return i < 0 ? 1 : i;
+};
+
+/**
+ * Rows already on screen keep their place; new rows join the end of their tier (junk last). Never a re-sort by
+ * score, so the same run never reorders between reads (2026-10-14).
+ */
 function mergeInto(list: HarderCandidate[], incoming: HarderCandidate[]): HarderCandidate[] {
   const out = [...list];
+  const fresh: HarderCandidate[] = [];
   for (const c of incoming) {
     const i = out.findIndex((x) => x.key === c.key);
-    if (i < 0) out.push(c);
-    else out[i] = { ...c, ...out[i], sources: [...new Set([...out[i].sources, ...c.sources])] };
+    if (i < 0) {
+      if (!fresh.some((x) => x.key === c.key)) fresh.push(c);
+    } else out[i] = { ...c, ...out[i], sources: [...new Set([...out[i].sources, ...c.sources])] };
   }
-  return out.sort((a, b) => b.score - a.score);
+  // Array.prototype.sort is stable: equal tiers keep their arrival order.
+  return [...out, ...fresh].sort((a, b) => tierRank(a) - tierRank(b));
 }
 
 interface Buckets {
@@ -155,7 +170,7 @@ export function PersonHarderStage({
   /** Pages already confirmed or answered on the screen: the sweep removes them and their look-alikes. */
   knownUrls?: string[];
   /** "Dig deeper": one rung down (harder → hard → close to impossible). The sweep runs once; deeper rungs reuse it. */
-  onEscalate?: () => void;
+  onEscalate?: (why?: string) => void;
   /** `person.find_you` for the next round's workflow inputs (the mandate provisions read it). */
   onProvision?: (p: FindYouProvision) => void;
   /** The sweep's calls, rows and filters for the Builder panel (admins). */
@@ -173,8 +188,18 @@ export function PersonHarderStage({
   const [error, setError] = useState<string | null>(null);
   const [pages, setPages] = useState<Record<string, number>>({});
   const [jobStatus, setJobStatus] = useState<string | null>(null);
+  // A round (or the sweep) has answered at least once: "nothing to mark" only counts after that.
+  const [loaded, setLoaded] = useState(false);
   const done = useRef<string[]>([]);
   const started = useRef(false);
+  // A LinkedIn job belongs to this stage's run: unmounting (a new person, a new run) stops its polling.
+  const alive = useRef(true);
+  useEffect(() => {
+    alive.current = true;
+    return () => {
+      alive.current = false;
+    };
+  }, []);
   const hard = HARD_PATHS.includes(path);
   const [sweep, setSweep] = useState<Sweep | null>(null);
   const [sweepAnswers, setSweepAnswers] = useState<Record<string, SweepAnswer>>({});
@@ -213,6 +238,7 @@ export function PersonHarderStage({
       });
       done.current = [...done.current, ...r.queries.map((q) => q.query), ...r.calls.filter((c) => c.page === 1 && c.engine === "google").map((c) => c.query)];
       setBuckets((b) => absorb(b, r));
+      setLoaded(true);
       setSweep((cur) => withSweep(cur, r, opts.extras));
       if (r.error) setError(r.error);
       for (const d of r.decisions) onLog({ at: Date.now(), kind: "round", text: d, points: null });
@@ -243,6 +269,7 @@ export function PersonHarderStage({
       });
       done.current = [...done.current, ...r.queries.map((q) => q.query)];
       setBuckets((b) => absorb(b, r));
+      setLoaded(true);
       if (r.error) setError(r.error);
       for (const d of r.decisions) onLog({ at: Date.now(), kind: "round", text: d, points: null });
       for (const q of r.queries) onLog({ at: Date.now(), kind: "round", text: `Query: ${q.query} (p${q.page}) → ${q.results} · ${q.why}` });
@@ -259,6 +286,7 @@ export function PersonHarderStage({
     setJobStatus("LinkedIn search running");
     for (let i = 0; i < 40; i++) {
       await new Promise((res) => setTimeout(res, POLL_MS));
+      if (!alive.current) return;
       try {
         const job = await pollLinkedinJob(snapshot);
         if (job.status === "running") {
@@ -387,6 +415,27 @@ export function PersonHarderStage({
     void round({ first: false, page, deepen: bucket });
   };
 
+  const meFound = Object.values(sweepAnswers).includes("me") || Object.values(answers).includes("me");
+  const allSweepAnswered = Boolean(sweep?.rows.length) && sweep!.rows.every((r) => sweepAnswers[r.key]);
+  const stuck = hard && Boolean(sweep) && busy === 0 && !meFound && (gaveUp || allSweepAnswered || !sweep!.rows.length);
+  // Automatic escalation (2026-10-14): on the harder path, every candidate answered Not me (or Skip) and none "me";
+  // on the hard path, the stuck screen after every row is answered or "None of these are me".
+  const harderCands = hard ? [] : [...buckets.web.slice(0, 10 * (pages.web ?? 1)), ...Object.values(buckets.socials).flat(), ...(buckets.directory?.candidates ?? [])];
+  const autoStep = !onEscalate || grounded || busy > 0
+    ? null
+    : hard
+      ? stuck && path === "person_hard" ? { reason: gaveUp ? "None of these are me" : "every result answered, none is you" } : null
+      : loaded
+        ? autoEscalation(path, harderCands.map((c) => (answers[c.key] === "skip" ? "not_me" : (answers[c.key] ?? null))), harderCands.length)
+        : null;
+  const autoKey = autoStep ? `${path}:${autoStep.reason}` : "";
+  const runAuto = useEffectEvent(() => {
+    if (autoStep && onEscalate) onEscalate(autoStep.reason);
+  });
+  useEffect(() => {
+    if (autoKey) runAuto();
+  }, [autoKey]);
+
   if (grounded) {
     return (
       <section data-testid="smart-add-find-you" className="rounded-xl border border-border bg-card p-3 text-sm text-foreground">
@@ -397,9 +446,6 @@ export function PersonHarderStage({
     );
   }
 
-  const meFound = Object.values(sweepAnswers).includes("me") || Object.values(answers).includes("me");
-  const allSweepAnswered = Boolean(sweep?.rows.length) && sweep!.rows.every((r) => sweepAnswers[r.key]);
-  const stuck = hard && Boolean(sweep) && busy === 0 && !meFound && (gaveUp || allSweepAnswered || !sweep!.rows.length);
   const openFocus = (key: string) => {
     setFocus((cur) => ({ ...cur, [key]: { status: "open", found: cur[key]?.found ?? false } }));
     onLog({ at: Date.now(), kind: "round", text: `Focused session opened: ${key}`, bucket: `focus:${key}` });
@@ -476,8 +522,14 @@ export function PersonHarderStage({
         <div data-testid="smart-add-web-about" className="flex flex-col gap-2">
           <h3 className="text-sm font-semibold text-foreground">Is this about you?</h3>
           <ul className="flex flex-col gap-1.5">
-            {webShown.map((c) => (
-              <WebRow key={c.key} c={c} answer={answers[c.key] ?? null} onAnswer={(a) => answer(c, a, "Web")} />
+            {webShown.map((c, i) => (
+              <WebRow
+                key={c.key}
+                c={c}
+                tierLabel={i > 0 && webShown[i - 1].tier !== c.tier ? (WEB_TIER_LABEL[c.tier ?? "mid"] ?? null) : null}
+                answer={answers[c.key] ?? null}
+                onAnswer={(a) => answer(c, a, "Web")}
+              />
             ))}
           </ul>
           {buckets.more.web ? (
@@ -516,8 +568,8 @@ export function PersonHarderStage({
       {hard && sweep && !sweep.platformsFirst && !stuck ? (
         <FocusList focus={focus} stuck={false} onOpen={openFocus} onDone={doneFocus} />
       ) : null}
-      {path !== "person_near_impossible" && onEscalate && !searching && (!hard || stuck) ? (
-        <Button variant="quiet" icon={<SearchX aria-hidden />} className="self-start" onClick={onEscalate} data-testid="smart-add-dig-deeper">
+      {path !== "person_near_impossible" && onEscalate ? (
+        <Button variant="quiet" icon={<SearchX aria-hidden />} className="self-start" disabled={searching} onClick={() => onEscalate()} data-testid="smart-add-dig-deeper">
           Still not you? Dig deeper
         </Button>
       ) : null}
@@ -571,13 +623,13 @@ function PickOne({
               <Avatar c={c} />
               <div className="flex min-w-0 flex-1 flex-col">
                 <span className="truncate text-sm text-foreground">
-                  {c.name ?? c.handle ?? host(c.url)}
+                  {maskOffensive(c.name) ?? c.handle ?? host(c.url)}
                   {c.handle ? <span className="text-muted-foreground"> · @{c.handle}</span> : null}
                 </span>
                 <span className="truncate text-xs text-muted-foreground">
-                  {[c.headline, c.employer, c.location, c.followers != null ? `${formatCount(c.followers)} followers` : null]
+                  {[maskOffensive(c.headline), c.employer, c.location, c.followers != null ? `${formatCount(c.followers)} followers` : null]
                     .filter(Boolean)
-                    .join(" · ") || c.snippet}
+                    .join(" · ") || maskOffensive(c.snippet)}
                 </span>
               </div>
               <OpenLink url={c.url} />
@@ -602,26 +654,33 @@ function PickOne({
   );
 }
 
-function WebRow({ c, answer, onAnswer }: { c: HarderCandidate; answer: HarderAnswer | null; onAnswer: (a: HarderAnswer) => void }) {
+/** The divider shown where the "Is this about you?" list moves down a tier. */
+const WEB_TIER_LABEL: Record<string, string> = { mid: "Also names you", low: "Less likely", junk: "People-search sites" };
+
+function WebRow({ c, tierLabel, answer, onAnswer }: { c: HarderCandidate; tierLabel: string | null; answer: HarderAnswer | null; onAnswer: (a: HarderAnswer) => void }) {
+  const out = answer === "not_me";
   return (
-    <li className={`flex items-start gap-2 rounded-lg border p-2 ${answer === "me" ? "border-primary ring-1 ring-primary" : "border-border"} ${answer === "not_me" ? "opacity-50" : ""}`}>
+    <>
+    {tierLabel ? <li className="pt-1 text-[11px] font-medium uppercase tracking-wide text-muted-foreground" data-testid="smart-add-web-tier">{tierLabel}</li> : null}
+    <li data-answer={answer ?? "open"} data-tier={c.tier ?? "mid"} className={`flex items-start gap-2 rounded-lg border p-2 ${answer === "me" ? "border-primary ring-1 ring-primary" : out ? "border-dashed border-border bg-muted/40 opacity-60" : "border-border"}`}>
       <div className="flex min-w-0 flex-1 flex-col">
-        <span className="truncate text-sm text-foreground">{c.name ?? host(c.url)}</span>
+        <span className={`truncate text-sm text-foreground ${out ? "line-through" : ""}`}>{maskOffensive(c.name) ?? host(c.url)}</span>
         <span className="truncate text-xs text-muted-foreground">{host(c.url)}</span>
-        {c.snippet ? <span className="line-clamp-2 text-xs text-muted-foreground">{c.snippet}</span> : null}
+        {c.snippet ? <span className="line-clamp-2 text-xs text-muted-foreground">{maskOffensive(c.snippet)}</span> : null}
       </div>
       <div className="flex shrink-0 items-center gap-1">
         <OpenLink url={c.url} />
         <Button variant={answer === "me" ? "primary" : "outline"} icon={<Check aria-hidden />} aria-pressed={answer === "me"} onClick={() => onAnswer("me")}>
           Yes it&apos;s me
         </Button>
-        <Button variant="quiet" aria-pressed={answer === "not_me"} onClick={() => onAnswer("not_me")}>
-          Not me
+        <Button variant={out ? "outline" : "quiet"} aria-pressed={out} onClick={() => onAnswer("not_me")}>
+          {out ? "Not you" : "Not me"}
         </Button>
         <Button variant="quiet" onClick={() => onAnswer("skip")}>
           Skip
         </Button>
       </div>
     </li>
+    </>
   );
 }

@@ -21,6 +21,7 @@ import { FirstUseHint } from "@ai-matrx/design-system";
 import { formatCount } from "@ai-matrx/kit/format";
 import { profileAvatarDoor } from "@/features/marketing/social/server";
 import { PlatformMark, platformLabel } from "@/features/marketing/social/components/PlatformMark";
+import { rankByAnchors, type PersonAnchors } from "./anchorRank";
 import { SocialImage } from "@/features/marketing/social/components/SocialImage";
 import { proxiedExternalImageUrl } from "@/lib/media/external-image";
 import { collapseAliasedAccounts, compareRows, customItem, websiteHost, type Candidate, type Decision, type EvidenceField, type EvidenceItem, type Relation } from "./evidence";
@@ -64,6 +65,7 @@ function whereOf(item: EvidenceItem): string {
 }
 
 export function SmartAddSlots({
+  personAnchors,
   items,
   decisions,
   working,
@@ -84,6 +86,8 @@ export function SmartAddSlots({
   locked: boolean;
   /** A personal brand: a headshot instead of a logo, and expertise. */
   person: boolean;
+  /** A person's known anchors (typed city / job / company, confirmed sites): accounts carrying them rank first. */
+  personAnchors?: PersonAnchors;
   onDecide: (key: string, decision: Decision) => void;
   /** Accounts answered "Related": candidate id (the account's key) -> its relationship. */
   relations: Record<string, Relation>;
@@ -304,8 +308,7 @@ export function SmartAddSlots({
             <div className="px-4 pt-1 text-[11px] font-medium uppercase tracking-wide text-muted-foreground/70">
               {platformLabel(p)}
             </div>
-            {socials
-              .filter((s) => (s.platform ?? "other") === p)
+            {rankByAnchors(socials.filter((s) => (s.platform ?? "other") === p), personAnchors ?? {})
               .map((i) => (
                 <Row
                   key={i.key}

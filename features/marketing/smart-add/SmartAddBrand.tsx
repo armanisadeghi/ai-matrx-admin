@@ -107,7 +107,9 @@ import { PersonHarderStage } from "./harder/PersonHarderStage";
 import type { FindYouProvision, FocusState } from "./harder/types";
 import type { SweepFeed } from "@/features/builder-panel/components/BuilderDecisionsTab";
 import type { FindLogEntry, HarderCandidate } from "./harder/types";
-import { AnchorCards, type AnchorAnswer } from "./AnchorCards";
+import { AnchorCards, anchorItems, type AnchorAnswer } from "./AnchorCards";
+import type { PersonAnchors } from "./anchorRank";
+import { autoEscalation, nextPersonRung } from "./harder/escalation";
 import { HelpersMenu } from "./helpers/HelpersMenu";
 import { candidateItem } from "./helpers/candidateItem";
 import { onHelperAnswer, resetHelperAnswers, setHelperContext } from "./helpers/store";
@@ -731,6 +733,34 @@ export function SmartAddBrand({
   // A later round's judgment of a finding wins over an earlier one (it saw more).
   const suggestions: Record<string, WeThinkSuggestion> = Object.assign({}, ...rounds.map((r) => (r.runId ? suggestionsByRun[r.runId] : undefined) ?? {}));
   const visible = withSuggestions(orderedEvidence(items.values()), suggestions);
+  // What is known about the person ranks every candidate card (typed facts, confirmed sites): anchors over counts.
+  const knownAnchors: PersonAnchors = {
+    city: personTyped.current?.city ?? null,
+    occupation: personMore.current.occupation || null,
+    company: personMore.current.company || null,
+    foundHosts: [...personAnchors, ...pageAnchors],
+  };
+  /** One rung down the find-you ladder (easy → harder → hard → close to impossible), asked or automatic. */
+  const stepDown = (why: string) => {
+    const from = findYou ? findPath : (personPath?.runs_as ?? "person_easy");
+    const next = nextPersonRung(from);
+    if (!next) return;
+    setEscalatedPath(next);
+    logFind({ at: Date.now(), kind: "escalation", text: `Dig deeper: ${from} → ${next} (${why})` });
+  };
+  // Automatic escalation: every candidate on the easy screen marked Not me / Namesake, or none found once the round
+  // settled, steps down without the person asking (the harder stages escalate themselves the same way).
+  const easyAnchors = person && personTyped.current && !findYou && !personAnchors.length ? anchorItems(visible) : null;
+  const easyVerdict = easyAnchors && personPath?.subject === "person" && !working
+    ? autoEscalation(personPath.runs_as, easyAnchors.map((i) => (namesakes.has(i.key) ? "namesake" : decisions[i.key] === "no" ? "not_me" : decisions[i.key] ? "me" : null)), easyAnchors.length)
+    : null;
+  const easyVerdictKey = easyVerdict ? `${easyVerdict.from}>${easyVerdict.to}` : "";
+  const runEasyEscalation = useEffectEvent(() => {
+    if (easyVerdict) stepDown(easyVerdict.reason);
+  });
+  useEffect(() => {
+    if (easyVerdictKey) runEasyEscalation();
+  }, [easyVerdictKey]);
   const basics = confirmedBasics(items, decisions, person);
   // The landing card shows the best found name and logo until the person confirms their own, so
   // what the stage found has a real place to land (it is never created from these: Create reads basics).
@@ -1242,12 +1272,7 @@ export function SmartAddBrand({
           grounded={personAnchors.length > 0}
           onConfirm={confirmFound}
           onLog={logFind}
-          onEscalate={() => {
-            const next = FIND_PATHS[FIND_PATHS.indexOf(findPath) + 1];
-            if (!next) return;
-            setEscalatedPath(next);
-            logFind({ at: Date.now(), kind: "escalation", text: `Dig deeper: ${findPath} → ${next} (asked on the screen)` });
-          }}
+          onEscalate={(why) => stepDown(why ?? "asked on the screen")}
           onProvision={(p) => {
             findYouProvision.current = p;
           }}
@@ -1267,6 +1292,8 @@ export function SmartAddBrand({
           onAnswer={answerAnchor}
           onAddLink={addAnchorLink}
           onAddAffiliation={addAffiliation}
+          anchors={knownAnchors}
+          onDigDeeper={!findYou && !personAnchors.length ? () => stepDown("asked on the screen") : undefined}
         />
       ) : null}
 
@@ -1315,6 +1342,7 @@ export function SmartAddBrand({
         data-testid="smart-add-results"
       >
         <SmartAddSlots
+          personAnchors={person ? knownAnchors : undefined}
           items={visible}
           decisions={decisions}
           working={working}
