@@ -1,17 +1,19 @@
 "use client";
 
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { EntityModeHeader } from "@/features/shell/components/header/templates/EntityModeHeader";
 import { marketingRoutes } from "@/features/marketing/lib/routes";
 import { SmartAddBrand } from "./SmartAddBrand";
 import { StageBackdrop } from "./stage/StageBackdrop";
 import { SmartAddEnrichFlow } from "./enrich/SmartAddEnrichFlow";
+import { useSmartAddAddress } from "./useSmartAddAddress";
 
-/** Smart Add on the main site: /marketing/brands/smart-add (the brands list's "Add brand" offers it first).
- *  `?enrich=<brand id>`: enrich that existing brand (enrich/ENRICH.md in common-docs). */
+/** Smart Add on the main site, rendered by the /marketing/brands/smart-add layout: /company, /person,
+ *  or /enrich/<brand id> (enrich that existing brand; enrich/ENRICH.md in common-docs). URLs: smartAddUrl.ts. */
 export function SmartAddBrandPage() {
   const router = useRouter();
-  const enrichBrandId = useSearchParams().get("enrich");
+  const url = useSmartAddAddress();
+  const enrichBrandId = url.address.enrichBrandId;
   return (
     <>
       <EntityModeHeader backHref={marketingRoutes.brands()} entityLabel={enrichBrandId ? "Enrich with Smart Add" : "Smart Add brand"} actions={[]} />
@@ -21,9 +23,9 @@ export function SmartAddBrandPage() {
         <main className="relative h-full overflow-y-auto">
           {enrichBrandId ? (
             <SmartAddEnrichFlow key={enrichBrandId} brandId={enrichBrandId} onChanged={() => router.refresh()} />
-          ) : (
-            <SmartAddBrand onCreated={() => router.refresh()} />
-          )}
+          ) : url.address.mode ? (
+            <SmartAddBrand onCreated={() => router.refresh()} url={url} />
+          ) : null}
         </main>
       </div>
     </>

@@ -116,6 +116,8 @@ import { knownDecided, withSuggestions, type WeThinkSuggestion } from "./weThink
 import type { BrandSnapshot, EnrichSeed, KnownFact } from "./enrich/known";
 import { computeEnrichDiff } from "./enrich/diff";
 import { ChangesReview } from "./enrich/ChangesReview";
+import type { SmartAddAddressBinding } from "./useSmartAddAddress";
+import { SMART_ADD_ADDRESS_DEBOUNCE_MS, type SmartAddAddress } from "./smartAddUrl";
 
 /** Enrich an existing brand (ENRICH.md): what we already know, the checked facts' seed, and the brand. */
 export interface SmartAddEnrich {
@@ -157,19 +159,52 @@ function accountSeedKey(seed: SocialSeed): string | null {
   return parsed.status === "ok" ? `social:${accountKey(parsed)}` : null;
 }
 
-export function SmartAddBrand({ onCreated, enrich = null }: { onCreated?: (brand: MarketingBrand) => void; enrich?: SmartAddEnrich | null }) {
+/** A resumed address (`?run=`): the first round's seeds and typed keys, rebuilt from the typed fields. */
+function resumeTyped(a: SmartAddAddress): { seeds: RoundSeeds; keys: { website: string | null; social: string | null } } {
+  const site = a.prefill.website && /\.[a-z]{2,}/i.test(a.prefill.website) ? a.prefill.website : "";
+  const parsed = resolveAccountInput({ text: a.prefill.social ?? "", picked: a.prefill.platform ?? null });
+  const social = parsed.status === "ok" ? { handle_or_url: parsed.url, platform: parsed.platform } : null;
+  return {
+    seeds: { website: site, socials: social ? [social] : [] },
+    keys: { website: site ? `website:${websiteHost(site)}` : null, social: parsed.status === "ok" ? `social:${accountKey(parsed)}` : null },
+  };
+}
+
+/** `url`: the Smart Add page's address binding (useSmartAddAddress); absent in enrich and the lab. */
+export function SmartAddBrand({
+  onCreated,
+  enrich = null,
+  url = null,
+}: {
+  onCreated?: (brand: MarketingBrand) => void;
+  enrich?: SmartAddEnrich | null;
+  url?: SmartAddAddressBinding | null;
+}) {
   const dispatch = useAppDispatch();
   const { format } = useCostDisplay();
 
-  const [websiteText, setWebsiteText] = useState("");
-  const [socialText, setSocialText] = useState("");
-  const [picked, setPicked] = useState<SocialPlatform | null>(null);
+  // An address carrying `run=` resumes those rounds from the server (a reload, a shared link, Back).
+  const [resume] = useState(() => (url && url.address.runs.length ? { address: url.address, typed: resumeTyped(url.address) } : null));
+  const resumePerson = resume?.address.mode === "person" && resume.address.prefill.name ? resume.address.prefill : null;
+  const [websiteText, setWebsiteText] = useState(resume?.address.prefill.website ?? "");
+  const [socialText, setSocialText] = useState(resume?.address.prefill.social ?? "");
+  const [picked, setPicked] = useState<SocialPlatform | null>(resume?.address.prefill.platform ?? null);
   const parsed = resolveAccountInput({ text: socialText, picked });
 
   // A personal brand: a headshot instead of a logo, and expertise.
-  const [person, setPerson] = useState(enrich?.snapshot.brand.kind === "person");
-  const [comparing, setComparing] = useState(false);
-  const [rounds, setRounds] = useState<Round[]>([]);
+  const [personLocal, setPersonLocal] = useState(enrich?.snapshot.brand.kind === "person");
+  // On the Smart Add page the address IS the kind (/person or /company; a push, so Back flips it back).
+  const person = url ? url.address.mode === "person" : personLocal;
+  const setPerson = (p: boolean) => (url ? url.setMode(p ? "person" : "company") : setPersonLocal(p));
+  const [comparing, setComparing] = useState(url?.address.view === "compare");
+  const [rounds, setRounds] = useState<Round[]>(() =>
+    (resume?.address.runs ?? []).map((runId, i) => ({
+      id: `resume:${runId}`,
+      runId,
+      seeds: i === 0 && resume ? resume.typed.seeds : { website: "", socials: [] },
+      error: null,
+    })),
+  );
   const [views, setViews] = useState<Record<string, RoundView>>({});
   // Enrich: the checked known facts start as confirmed items (the person's own answers, already given).
   const [items, setItems] = useState<Map<string, EvidenceItem>>(() => new Map((enrich?.seed.items ?? []).map((i) => [i.key, i])));
@@ -187,17 +222,19 @@ export function SmartAddBrand({ onCreated, enrich = null }: { onCreated?: (brand
   // After Create, once the core is settled (validate/queue VALIDATION_THRESHOLD): the focus queue.
   const [validateOrg, setValidateOrg] = useState<string | null>(null);
   const validating = Boolean(validateOrg);
-  const explored = useRef<Set<string>>(new Set());
+  const explored = useRef<Set<string>>(new Set(resume ? [resume.typed.keys.website, resume.typed.keys.social].filter((k): k is string => Boolean(k)) : []));
   /** Images the screen could not load: hidden tiles, never saved as inbox candidates. */
   const brokenKeys = useRef<Set<string>>(new Set());
-  const typedKeys = useRef<{ website: string | null; social: string | null }>({ website: null, social: null });
+  const typedKeys = useRef<{ website: string | null; social: string | null }>(resume?.typed.keys ?? { website: null, social: null });
   // Confirmed facts already sent to the workflow ("name:<v>", "location:<v>"): a new one wakes its steps.
-  const wokenSent = useRef<Set<string>>(new Set());
+  const wokenSent = useRef<Set<string>>(
+    new Set(resumePerson?.name ? [`name:${resumePerson.name}`, ...(resumePerson.city ? [`location:${resumePerson.city}`] : [])] : []),
+  );
   // Person branch (PEOPLE-AND-CREATORS §3.1, Part 9): the typed name + city, the anchor round's run, and
   // whether the one grounded round (name + one confirmed anchor) has been sent.
-  const personTyped = useRef<{ name: string; city: string } | null>(null);
+  const personTyped = useRef<{ name: string; city: string } | null>(resumePerson?.name ? { name: resumePerson.name, city: resumePerson.city ?? "" } : null);
   // Person clues typed beside the city (Part 10): search clues only — they never ground the person.
-  const personMore = useRef<PersonMore>({ occupation: "", company: "", extra: "" });
+  const personMore = useRef<PersonMore>({ occupation: resumePerson?.occupation ?? "", company: resumePerson?.company ?? "", extra: "" });
   // Each round's path (brand.identify.path_decision), sent back as `path_history` so escalation fires live.
   const [pathByRun, setPathByRun] = useState<Record<string, RoundPath>>({});
   // Person harder (PATHS.md person_harder): the find-you log (Builder › Decisions) and the confirmed page
@@ -209,7 +246,7 @@ export function SmartAddBrand({ onCreated, enrich = null }: { onCreated?: (brand
   const findYouProvision = useRef<FindYouProvision | null>(null);
   const sweepFeed = useRef<{ sweep: SweepFeed | null; focus: Record<string, FocusState> }>({ sweep: null, focus: {} });
   const [pageAnchors, setPageAnchors] = useState<string[]>([]);
-  const anchorRunId = useRef<string | null>(null);
+  const anchorRunId = useRef<string | null>(resumePerson ? (resume?.address.runs[0] ?? null) : null);
   const groundedSent = useRef(false);
   const [affiliations, setAffiliations] = useState<string[]>([]);
   // Anchor cards answered "Namesake" (a different person with my name): web.brand_relation_kind `namesake`.
@@ -367,6 +404,20 @@ export function SmartAddBrand({ onCreated, enrich = null }: { onCreated?: (brand
     enrichStarted.current = true;
     startEnrich();
   }, [enrich]);
+
+  // ── the address (smartAddUrl.ts): resume, then keep it current ────────────
+  // A resumed person session gets back the name and city they typed, confirmed (as findPerson does).
+  const primeResumedPerson = useEffectEvent(() => {
+    if (!resumePerson?.name) return;
+    addCustom([customItem("name", resumePerson.name), ...(resumePerson.city ? [customItem("address", resumePerson.city)] : [])]);
+  });
+  useEffect(() => primeResumedPerson(), []);
+  const writeAddress = useEffectEvent((patch: Parameters<SmartAddAddressBinding["write"]>[0]) => url?.write(patch));
+  // Every started round's run id rides the address (replace: starting a run is not a page).
+  const runIds = rounds.map((r) => r.runId).filter((id): id is string => Boolean(id));
+  const runKey = runIds.join(",");
+  useEffect(() => writeAddress({ runs: runKey ? runKey.split(",") : [] }), [runKey]);
+  useEffect(() => writeAddress({ view: comparing ? "compare" : null }), [comparing]);
 
   // Typed fields → a round, debounced. Changing a field that already ran
   // supersedes everything (a different brand); filling the other field adds a round.
@@ -936,6 +987,15 @@ export function SmartAddBrand({ onCreated, enrich = null }: { onCreated?: (brand
   // stage/Shared.tsx) and the rest of the page rises in after. Reduced motion swaps instantly.
   const [structured, setStructured] = useState(false);
   const pageRef = useRef<HTMLDivElement>(null);
+  // The structured page's two fields keep the address current (the intake stage writes its own, SmartAddHero).
+  useEffect(() => {
+    if (!structured) return;
+    const timer = setTimeout(
+      () => writeAddress({ website: websiteText.trim() || null, social: socialText.trim() || null, platform: picked }),
+      SMART_ADD_ADDRESS_DEBOUNCE_MS,
+    );
+    return () => clearTimeout(timer);
+  }, [structured, websiteText, socialText, picked]);
   // Something to show = a real finding or an answer the person gave (the quick questions);
   // never the address they typed echoed back.
   const hasFindings = [...items.values()].some((i) => i.source.where !== "the address itself");
@@ -1009,6 +1069,13 @@ export function SmartAddBrand({ onCreated, enrich = null }: { onCreated?: (brand
           person={person}
           onPerson={setPerson}
           onFindPerson={findPerson}
+          initial={url ? (resume?.address.prefill ?? url.address.prefill) : undefined}
+          via={url ? url.address.viaParam : undefined}
+          initialVia={url?.address.via ?? null}
+          onVia={url?.setVia}
+          onDraft={url?.write}
+          autoStart={Boolean(url?.autoStart)}
+          resumed={Boolean(resume)}
           onWebsite={setWebsiteText}
           onSocial={setSocialText}
           onPick={setPicked}

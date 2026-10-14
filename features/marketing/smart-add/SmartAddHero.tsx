@@ -13,7 +13,7 @@
  * typed account's platform until a real logo/name/account arrives from the identify run.
  */
 
-import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
+import { useEffect, useEffectEvent, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
 import { AnimatePresence, MotionConfig, motion } from "motion/react";
 import {
   ArrowLeft,
@@ -36,6 +36,7 @@ import { profileAvatarDoor } from "@/features/marketing/social/server";
 import type { SocialPlatform } from "@/features/marketing/social/types";
 import { customItem, websiteHost, type EvidenceItem } from "./evidence";
 import type { RoundView } from "./SmartAddRound";
+import { SMART_ADD_ADDRESS_DEBOUNCE_MS, type SmartAddPatch, type SmartAddPrefill, type SmartAddVia } from "./smartAddUrl";
 import { Shared } from "./stage/Shared";
 import { proxiedExternalImageUrl } from "@/lib/media/external-image";
 import styles from "./stage/stage.module.css";
@@ -79,6 +80,13 @@ export function SmartAddHero({
   nothingFound,
   failed,
   onAdd,
+  initial,
+  via,
+  initialVia = null,
+  onVia,
+  onDraft,
+  autoStart = false,
+  resumed = false,
 }: {
   person: boolean;
   onPerson: (person: boolean) => void;
@@ -95,21 +103,45 @@ export function SmartAddHero({
   /** A round broke (not "searched and found nothing"). */
   failed: boolean;
   onAdd: (items: EvidenceItem[]) => void;
+  /** The Smart Add page's address (smartAddUrl.ts): typed values from a deep link or a resumed session. */
+  initial?: SmartAddPrefill;
+  /** `via=` as Back/Forward move it; undefined = no address (the lab). */
+  via?: SmartAddVia | null;
+  initialVia?: SmartAddVia | null;
+  /** Choosing or leaving a way in (a history entry, so Back closes the card). */
+  onVia?: (via: SmartAddVia | null) => void;
+  /** What is typed, debounced, for the address. */
+  onDraft?: (draft: SmartAddPatch) => void;
+  /** Opened from a link carrying a prefill: start as if Go was pressed (it spends points). */
+  autoStart?: boolean;
+  /** A resumed session: the search is already running or done. */
+  resumed?: boolean;
 }) {
-  const [mode, setMode] = useState<Mode | null>(null);
-  const [site, setSite] = useState("");
-  const [social, setSocial] = useState("");
-  const [picked, setPicked] = useState<SocialPlatform | null>(null);
-  const [name, setName] = useState("");
-  const [city, setCity] = useState("");
+  const [mode, setModeState] = useState<Mode | null>(initialVia);
+  const setMode = (m: Mode | null) => {
+    setModeState(m);
+    onVia?.(m);
+  };
+  // Back / Forward move `via=`: the card follows the address.
+  const lastVia = useRef(via);
+  useEffect(() => {
+    if (via === undefined || via === lastVia.current) return;
+    lastVia.current = via;
+    setModeState(via);
+  }, [via]);
+  const [site, setSite] = useState(initial?.website ?? "");
+  const [social, setSocial] = useState(initial?.social ?? "");
+  const [picked, setPicked] = useState<SocialPlatform | null>(initial?.platform ?? null);
+  const [name, setName] = useState(initial?.name ?? "");
+  const [city, setCity] = useState(initial?.city ?? "");
   // Person clues beside the city (VISION Part 10): occupation, company, anything else (school, a profile link).
-  const [occupation, setOccupation] = useState("");
-  const [company, setCompany] = useState("");
+  const [occupation, setOccupation] = useState(initial?.occupation ?? "");
+  const [company, setCompany] = useState(initial?.company ?? "");
   const [extra, setExtra] = useState("");
   // Name + city only: ask once for the job or company before searching (a location never grounds a person).
   const [askedClue, setAskedClue] = useState(false);
   const [second, setSecond] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
+  const [submitted, setSubmitted] = useState(resumed);
 
   const parsed = resolveAccountInput({ text: social, picked });
   const socialOk = parsed.status === "ok" && (parsed.detected || Boolean(picked));
@@ -166,6 +198,32 @@ export function SmartAddHero({
     setMode(m);
     setSecond(false);
   };
+
+  // A link with something typed in it starts once, as if Go was pressed.
+  const autoStarted = useRef(false);
+  const startFromLink = useEffectEvent(() => submit());
+  useEffect(() => {
+    if (!autoStart || autoStarted.current) return;
+    autoStarted.current = true;
+    startFromLink();
+  }, [autoStart]);
+
+  // What is typed rides the address (debounced replace; a blank field leaves it).
+  const draft = useEffectEvent(() =>
+    onDraft?.({
+      website: site.trim() || null,
+      social: social.trim() || null,
+      platform: picked,
+      name: name.trim() || null,
+      city: city.trim() || null,
+      occupation: occupation.trim() || null,
+      company: company.trim() || null,
+    }),
+  );
+  useEffect(() => {
+    const timer = setTimeout(draft, SMART_ADD_ADDRESS_DEBOUNCE_MS);
+    return () => clearTimeout(timer);
+  }, [site, social, picked, name, city, occupation, company]);
 
   // 1 / 2 / 3 pick a way in while nothing is focused for typing.
   useEffect(() => {

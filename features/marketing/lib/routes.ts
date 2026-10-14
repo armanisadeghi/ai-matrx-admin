@@ -34,6 +34,7 @@
  */
 
 import { marketingSubViewHref } from "@/features/marketing/lib/site-subviews";
+import { smartAddEnrichHref, smartAddHref, type SmartAddLink } from "@/features/marketing/smart-add/smartAddUrl";
 
 /** The brand asset desk's four views, in display order. */
 export const MARKETING_BRAND_ASSETS_VIEWS = [
@@ -153,10 +154,10 @@ export const marketingRoutes = {
   home: () => "/marketing",
   brands: () => "/marketing/brands",
   /** New-website intake (static child of /brands so it can't collide with a brand key). */
-  /** Smart Add: a website or social link → confirm what we find → the brand (a static child of /brands). */
-  smartAddBrand: () => "/marketing/brands/smart-add",
+  /** Smart Add (/smart-add/company | /person). A prefill makes a deep link that starts on open (smart-add/smartAddUrl.ts). */
+  smartAddBrand: (link?: SmartAddLink) => smartAddHref(link),
   /** Enrich an existing brand through Smart Add (the brand page and its row menu). */
-  smartAddEnrich: (brandId: string) => `/marketing/brands/smart-add?enrich=${encodeURIComponent(brandId)}`,
+  smartAddEnrich: (brandId: string) => smartAddEnrichHref(brandId),
   newSite: (brandId?: string) =>
     brandId
       ? `/marketing/brands/new-website?brand=${brandId}`
