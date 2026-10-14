@@ -6,14 +6,12 @@
     "agent.cmp_response_feedback:cmp_response_feedback_unique",
     "agent.cmp_response_feedback:uq_cmp_response_feedback_rank_per_set",
     "agent.definition_version:agx_version_unique",
-    "agent.drift_alert:agx_drift_alert_open_unique",
     "agent.usage:agx_usage_registry_key_unique",
     "ai.api:api_name_key",
     "ai.api:api_translator_key_key",
     "ai.endpoint:endpoint_vendor_key",
     "ai.model_alias:model_alias_alias_key",
     "ai.voices:voices_provider_voice_uniq",
-    "app.definition:aga_apps_slug_key",
     "app.definition_version:uq_aga_versions_app_version",
     "app.execution:uq_aga_executions_task_id",
     "app.rate_limit:uq_aga_rate_limits_fingerprint",
@@ -29,12 +27,9 @@
     "browser.profile_checkpoint:profile_checkpoint_revision_uq",
     "browser.run:run_activation_uq",
     "browser.stream_ticket:stream_ticket_hash_uq",
-    "canvas.canvas_comment_likes:canvas_comment_likes_comment_id_user_id_key",
-    "canvas.canvas_item_state:canvas_item_state_canvas_created_by_key",
     "canvas.canvas_items:canvas_items_user_content_full_unique",
     "canvas.canvas_items:uq_canvas_items_message_artifact",
     "canvas.canvas_items:uq_canvas_items_source_artifact",
-    "canvas.canvas_likes:canvas_likes_canvas_id_user_id_key",
     "chat.agent_memory:agent_memory_created_by_scope_scope_id_key_key",
     "chat.agent_run_stage:agent_run_stage_run_stage_key_uidx",
     "chat.artifact:uq_cx_artifact_canvas_item_id",
@@ -62,7 +57,6 @@
     "communication.meet_meetings:meet_meetings_slug_key",
     "communication.notification_event_type:notification_event_type_event_key_key",
     "communication.notification_preference:notification_preference_user_org_event_channel_key",
-    "communication.sms_consent:sms_consent_phone_number_consent_type_key",
     "communication.sms_messages:sms_messages_idempotency_key_uidx",
     "communication.sms_messages:sms_messages_twilio_sid_key",
     "communication.sms_notification_preferences:sms_notification_preferences_user_id_key",
@@ -70,7 +64,6 @@
     "communication.sms_phone_numbers:sms_phone_numbers_phone_number_key",
     "communication.sms_phone_numbers:sms_phone_numbers_twilio_sid_key",
     "content_ir.kind_edge:kind_edge_parent_field_child_key",
-    "context.context_items:context_items_key_per_type",
     "context.system_context_item:system_context_item_key_key",
     "crm.merge_candidate:merge_candidate_pair_key",
     "dictionary.dict_settings:dict_settings_owner_uniq",
@@ -153,7 +146,6 @@
     "platform.actor_session:actor_session_hash_unique",
     "platform.actor_token:actor_token_hash_unique",
     "platform.associations:associations_unique",
-    "platform.flexible_data:flexible_data_category_id_slug_key",
     "platform.outcome_event:outcome_event_dedupe_uq",
     "platform.output_feedback:output_feedback_subject_author_uniq",
     "platform.outsider_consumer:outsider_consumer_key_resource_unique",
@@ -170,8 +162,6 @@
     "rag.kg_alerts:kg_alerts_pending_unique",
     "rag.kg_sweep_run:kg_sweep_run_run_id_key",
     "rag.kg_value_matches:kg_value_matches_unique",
-    "rag.scope_association_suggestions:scope_assoc_pending_uniq",
-    "rag.scope_item_value_suggestions:scope_item_value_pending_uniq",
     "rag.scope_suggestions:scope_suggestions_pending_unique",
     "research.rs_context_bundle:rs_context_bundle_slug_key",
     "research.rs_keyword:rs_keyword_topic_position_unique",
@@ -238,7 +228,6 @@
     "web.site:site_brand_slug_key",
     "web.site_item_config:site_item_config_site_id_item_id_key",
     "web.sitemap:sitemap_site_url_unique",
-    "workbench.udt_dataset_fields:udt_dataset_fields_dataset_id_field_name_unique",
     "workflow.definition_version:wf_definition_version_unique_pair",
     "workflow.idempotency:idempotency_created_by_key_route_key",
     "workflow.node_data_slot:wf_node_data_slot_unique",
@@ -263,11 +252,6 @@
     {
       "index": "tool.mcp_user_conn:mcp_user_conn_created_by_server_key",
       "reason": "One connection per person per MCP server, EVER: public.upsert_mcp_connection does ON CONFLICT (created_by, server_id) ... SET deleted_at = NULL, so reconnecting a removed server RESTORES the old row with its config and name. A partial index would break that ON CONFLICT inference and a reconnect would insert a second row beside the removed one.",
-      "ruled": "soft-delete-unique sweep, 2026-09-27 (migrations/soft_delete_partial_unique_mcp_and_parsed_page.sql)"
-    },
-    {
-      "index": "tool.mcp_user_conn:tool_mcp_user_conn_user_id_server_id_key",
-      "reason": "Same rule as mcp_user_conn_created_by_server_key: a trigger keeps user_id equal to created_by, so this is the same one-connection-per-server identity that upsert_mcp_connection and the aidream reconnect paths revive in place (deleted_at = NULL) rather than duplicate.",
       "ruled": "soft-delete-unique sweep, 2026-09-27 (migrations/soft_delete_partial_unique_mcp_and_parsed_page.sql)"
     },
     {
@@ -349,11 +333,6 @@
       "index": "canvas.canvas_item_state:canvas_item_state_canvas_viewer_key",
       "reason": "(canvas_id, viewer_id) is one durable per-viewer artifact-state identity. canvasItemStateService reads only live rows and its matching upsert writes deleted_at null, deliberately reviving the same row after archive instead of allowing a second history row for one viewer.",
       "ruled": "CI-FIX terminal identity correction, 2026-09-28 — canvasItemStateService reader and revive-on-save writer inspected"
-    },
-    {
-      "index": "rag.kg_suggestion_ack:kg_suggestion_ack_created_by_suggestion_key",
-      "reason": "(user_id, suggestion_id) is one lifetime acknowledgement identity, not a reusable name. The owner-only reader returns only deleted_at-null rows, while the matching upsert writes deleted_at null and explicitly revives that same row when its person dismisses again; it never claims an archived acknowledgement can be replayed as a new record.",
-      "ruled": "Owner lifetime-identity ruling, 2026-09-28 — verified revive upsert, owner RLS mirror, census 117 zero mismatch"
     },
     {
       "index": "education.content_certification:content_certification_resource_key",
