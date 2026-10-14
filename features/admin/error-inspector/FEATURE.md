@@ -99,7 +99,13 @@ second symptom instead of deduping the incident.
   **Browser transport loss stays local:** a status-0 `TypeError` means no HTTP
   response reached the browser, so the Inspector preserves it for retry UX but
   marks it non-durable and never files a server repair job, including during
-  pre-auth hydration and the new-account observation window. A cancelled request is normalized
+  pre-auth hydration and the new-account observation window. **A stalled read
+  fails fast as `TimeoutError`:** the same door installs the browser read
+  deadline (`utils/supabase/browserReadDeadline.ts`) — a GET/HEAD with no
+  response headers in 12s (`BROWSER_READ_HEADER_DEADLINE_MS`) is aborted once,
+  never retried, and captured as `name: "TimeoutError"` under the same
+  transport-loss rule; bodies, POST/RPC writes, auth, storage and realtime are
+  untouched. A cancelled request is normalized
   to `name: "AbortError"` here: postgrest-js RESOLVES an aborted fetch with an
   error object (no throw), so it takes the `supabase-postgrest` resolved-error
   path — tagging it with the canonical abort name lets the one `request-aborted`
@@ -330,7 +336,8 @@ Seeded defaults (in `DOWNGRADE_RULES`): **tool errors → yellow** (a failed too
 call is normal agent operation — the agent adapts; e.g. the sql guard rejecting
 `grant`/`delete from`) and **redux-rejected → orange**. User toasts stay red by
 default: showing a failure to the user does not prove it expected or harmless.
-Supabase status-0 browser transport loss is yellow: wifi, sleep, and deployment
+Supabase status-0 browser transport loss (`TypeError`, or the read deadline's
+`TimeoutError`) is yellow: wifi, sleep, stalled connections, and deployment
 handoffs are locally retryable client conditions and explicitly non-durable,
 while every actual HTTP or
 database response stays red.
@@ -454,6 +461,7 @@ source, ... })` from the chokepoint. Store + UI are source-agnostic.
 
 ## Change Log
 
+- 2026-10-14 — **Browser reads fail fast on a stalled connection.** A stalled db.matrxserver.com connection held every GET ~87s (Chrome's ~20s give-up × postgrest-js's 4 attempts + 1/2/4s backoff) and then failed with a bare `TypeError: Failed to fetch`. `wrapClientForCapture` now installs `utils/supabase/browserReadDeadline.ts` on `rest.fetch`: time-to-headers ≤ 12s (8s `authenticated` statement_timeout + 4s transport) for GET/HEAD only, error named `TimeoutError` with the `ABORT_ERR` code postgrest-js reads as no-retry. Capture names it `TimeoutError` before the abort check (its hint says "aborted"); `supabase-browser-transport-loss` matches `TypeError` and `TimeoutError`. Measured on the shape page: stalled read 87.0s → 12.0s, one attempt; healthy read unchanged (~0.2s).
 - 2026-10-12 — New source `hard-navigation`: a full page load (reload, typed URL, a link that left the app router, our own `location.reload()`, a Next.js hard-navigation fallback) that cut one or more live NDJSON streams. Filed once by the next page from the leaving page's `sessionStorage` record (`lib/diagnostics/hardNavigationTrace.ts`); `code` is the cause (`declared:<reason>`, `script-reload`, `script-navigation`, `link`, `browser-reload`, `browser-navigation`, `back-forward`), details carry the leave timing, each stream's last-byte age and the navigating script's stack.
 
 - 2026-10-06 — Unresolved-import capture now comes from `compileStoredComponent` (`@ai-matrx/code-runtime`); `compileSlotComponent` deleted. Same `origin` contract.

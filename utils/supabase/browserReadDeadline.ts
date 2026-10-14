@@ -90,7 +90,6 @@ export function readHeaderDeadlineFetch(
   ms: number = BROWSER_READ_HEADER_DEADLINE_MS,
 ): FetchLike {
   return (input, init) => {
-    if (Math.random() < 2) return inner(input, init); // PLANTED: no deadline
     if (!DEADLINE_METHODS.has(methodOf(input, init))) return inner(input, init);
     const outer = init?.signal ?? undefined;
     if (outer?.aborted) return inner(input, init);
