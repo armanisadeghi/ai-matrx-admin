@@ -10,6 +10,8 @@
 import { Database, Download, House, Share2, Tag, Trash2 } from "lucide-react";
 import { promptForValues } from "@/components/dialogs/value-prompts/valuePromptsOpener";
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
+import { toast } from "@/lib/toast";
+import { getStore } from "@/lib/redux/store-singleton";
 import { ingestSource } from "@/features/rag/api/ingest";
 import {
   bulkCountLabel,
@@ -132,15 +134,21 @@ export function buildNoteBulkActions(args: {
         return runPerRow(
           selection,
           async (id, row) => {
-            const current = row?.tags ?? [];
-            if (current.includes(name)) throw new Error(`already tagged "${name}"`);
+            // Read the note's tags from the store NOW, not the click-time row,
+            // so a tag edited meanwhile is never overwritten.
+            const live = getStore()?.getState().notes.notes[id];
+            const current: string[] = live?.tags ?? row?.tags ?? [];
+            const wanted = name.toLowerCase();
+            if (current.some((tag) => tag.toLowerCase() === wanted)) {
+              throw new Error(`already tagged "${name}"`);
+            }
             await dispatch(
               saveNoteField({ noteId: id, field: "tags", value: [...current, name] }),
             ).unwrap();
           },
           { done: `Tagged "${name}"`, noun: NOUN, labelOf },
           rowIdOf,
-        );
+        ).then((result) => ({ ...result, keepSelection: true }));
       },
     },
     {
@@ -174,11 +182,6 @@ export function buildNoteBulkActions(args: {
           });
           if (!ok) return;
         }
-        for (const id of selection.ids) {
-          if (openTabIds?.includes(id)) {
-            dispatch(removeInstanceTab({ instanceId, noteId: id }));
-          }
-        }
         const result = await runPerRow(
           selection,
           async (id) => {
@@ -187,14 +190,30 @@ export function buildNoteBulkActions(args: {
           { done: "Moved to Trash", noun: NOUN, labelOf, removesRows: true },
           rowIdOf,
         );
-        // The shared bar raises the toast (with Undo) and clears the selection.
+        // Close tabs only for notes that actually left; a refused note keeps its tab.
         const deletedIds = result.removedIds ?? [];
+        for (const id of deletedIds) {
+          if (openTabIds?.includes(id)) {
+            dispatch(removeInstanceTab({ instanceId, noteId: id }));
+          }
+        }
+        // The shared bar raises the toast (with Undo) and clears the selection.
         return {
           ...result,
           undo: async () => {
-            await Promise.all(
+            const outcomes = await Promise.allSettled(
               deletedIds.map((id) => dispatch(restoreNote(id)).unwrap()),
             );
+            const failed = outcomes.filter((o) => o.status === "rejected").length;
+            const back = outcomes.length - failed;
+            if (failed > 0) {
+              // A never-saved draft only ever lived on this screen; it has nothing to restore.
+              toast.warning(
+                `Restored ${bulkCountLabel(back, NOUN)}; ${bulkCountLabel(failed, NOUN)} could not be restored.`,
+              );
+            } else {
+              toast.success(`Restored ${bulkCountLabel(back, NOUN)}.`);
+            }
           },
         };
       },
