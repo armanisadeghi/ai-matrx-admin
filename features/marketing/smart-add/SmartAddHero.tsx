@@ -197,9 +197,11 @@ export function SmartAddHero({
     const p = resolveAccountInput({ text: social, picked: pk });
     return p.status === "ok" && (p.detected || Boolean(pk)) && !handleProblem(p.platform, p.handle);
   };
-  // The one inline problem the entry row shows (only for what the open card holds).
+  // The one inline problem the entry row shows (only for what the open card holds). An email in the main box
+  // is no problem: it is read as an email (VISION Part 19).
   const typedProblem =
-    mode === "website" ? (site.trim() ? siteProblem : null) ?? (second && social.trim() ? handleIssue : null)
+    (mode === "website" && emailIn(site)) || (mode === "social" && emailIn(social)) ? null
+    : mode === "website" ? (site.trim() ? siteProblem : null) ?? (second && social.trim() ? handleIssue : null)
     : mode === "social" ? (social.trim() ? handleIssue : null) ?? (second && site.trim() ? siteProblem : null)
     : null;
   const readyFor = (pk: SocialPlatform | null) => {
