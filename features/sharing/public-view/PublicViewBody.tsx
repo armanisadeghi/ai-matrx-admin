@@ -89,7 +89,7 @@ function Board({ view }: { view: PublishedViewOpen }) {
   if (!group) return <List view={view} />;
   const columns = new Map<string, PublishedViewRow[]>();
   // the columns are the choice's own order when the field has choices, then any value the rows add
-  for (const w of Object.values(view.labels[group.key] ?? {})) columns.set(w, []);
+  for (const w of view.choice_order?.[group.key] ?? Object.values(view.labels[group.key] ?? {})) columns.set(w, []);
   const none: PublishedViewRow[] = [];
   for (const row of view.rows) {
     const words = cellValue(view, group, row);
