@@ -21,6 +21,7 @@ import { selectUser } from "@/lib/redux/selectors/userSelectors";
 import { selectOrganizationId } from "@/lib/redux/slices/appContextSlice";
 import { PersistentDOMConnector } from "@/providers/persistance/PersistentDOMConnector";
 import OverlayController from "@/features/overlays/OverlayController";
+import { PersonPeekHost } from "@/features/data-tables/records-ui-host/PersonPeekHost";
 import AuthSessionWatcher from "@/components/layout/AuthSessionWatcher";
 import PersonTimeZoneCapture from "@/components/layout/PersonTimeZoneCapture";
 import VendorNameRuntimeGuard from "@/components/dev/VendorNameRuntimeGuard";
@@ -152,6 +153,8 @@ export default function DeferredSingletonCore() {
     <>
       <PersistentDOMConnector />
       <OverlayController />
+      {/* A person a table names opens in place (records-ui `openPerson`). */}
+      <PersonPeekHost />
       {/* G1: files any `__kind` drawn as raw text (never-raw law). */}
       <KindLeakSentinel />
       {/* Dev only: a mounted surface with no ui.ui_surface row screams in the console. */}
