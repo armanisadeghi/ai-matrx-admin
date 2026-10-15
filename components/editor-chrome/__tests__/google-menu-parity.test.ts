@@ -51,21 +51,35 @@ describe.each(editors)("%s menus", (_name, build, order) => {
 
 const labels = (entries: EditorMenuEntry[]) => entries.map((e) => (e.kind === "separator" ? "|" : e.label));
 
-describe("Page setup never rides another editor's promise", () => {
+describe("Page setup is a real row, never a promise", () => {
   const handlers = { download: () => {}, navigate: () => {} };
-  const pageSetup = (product: "sheets" | "slides" | "docs") =>
-    flattenMenus([{ id: "file", label: "File", items: buildEditorFileMenu({ product, rows: [], templatesHref: "/t", downloads: [] }, handlers) }]).find((r) => r.id === "file.page-setup");
-  it("Sheets and Slides each announce their own registered promise, in words about their own page", () => {
-    expect(pageSetup("sheets")?.soon).toBe("workbooks.page-setup");
-    expect(pageSetup("slides")?.soon).toBe("presentations.page-setup");
-    expect(getComingSoon("workbooks.page-setup")?.promise).toMatch(/print/i);
-    expect(getComingSoon("presentations.page-setup")?.promise).toMatch(/slide size/i);
+  const run = () => {};
+  const pageSetup = (product: "sheets" | "slides" | "docs", supplied: boolean) =>
+    flattenMenus([
+      {
+        id: "file",
+        label: "File",
+        items: buildEditorFileMenu(
+          { product, rows: supplied ? [{ kind: "action", id: "file.page-setup", label: "Page setup", run }] : [], templatesHref: "/t", downloads: [] },
+          handlers,
+        ),
+      },
+    ]).find((r) => r.id === "file.page-setup");
+  it.each(["sheets", "slides", "docs"] as const)("%s shows the editor's own Page setup row and never Coming Soon", (product) => {
+    expect(pageSetup(product, true)?.soon).toBeUndefined();
+    expect(pageSetup(product, true)?.label).toBe("Page setup");
+  });
+  it.each(["sheets", "slides", "docs"] as const)("%s without the row shows no Page setup at all (no stand-in)", (product) => {
+    expect(pageSetup(product, false)).toBeUndefined();
+  });
+  it("the old promises are gone from the Coming Soon registry", () => {
+    for (const id of ["workbooks.page-setup", "presentations.page-setup", "editor.file.page-setup"]) expect(getComingSoon(id)).toBeUndefined();
   });
 });
 
 describe("Google File menu", () => {
   const handlers = { share: () => {}, copy: () => {}, rename: () => {}, move: () => {}, trash: () => {}, saveAsTemplate: () => {}, download: () => {}, navigate: () => {} };
-  const rows: EditorMenuEntry[] = ["file.new", "file.open", "file.import", "file.history", "file.print", "file.details"].map((id) => ({
+  const rows: EditorMenuEntry[] = ["file.new", "file.open", "file.import", "file.history", "file.print", "file.details", "file.page-setup"].map((id) => ({
     kind: "action",
     id,
     label: id,
@@ -78,7 +92,7 @@ describe("Google File menu", () => {
       "Share", "Email", "Download", "Approvals", "|",
       "Rename", "Move", "Move to trash", "|",
       "Version history", "Make available offline", "|",
-      "file.details", "Security limitations", "Settings", "Page setup", "|",
+      "file.details", "Security limitations", "Settings", "file.page-setup", "|",
       "file.print",
     ]);
     for (const a of flattenMenus([{ id: "file", label: "File", items: menu }]).filter((r) => r.soon)) expect(getComingSoon(a.soon!)).toBeDefined();
@@ -91,7 +105,7 @@ describe("Google File menu", () => {
     const l = labels(menu);
     expect(l).toContain("Import slides");
     expect(l).toContain("Language");
-    expect(l).toContain("Page setup");
+    expect(l).toContain("file.page-setup");
     expect(l).not.toContain("Rename");
     expect(l).not.toContain("Move to trash");
     expect(l[l.length - 1]).toBe("file.print");

@@ -84,7 +84,12 @@ export const WORKBOOK_ADAPTER: FileKindAdapter<Workbook> = {
       label: "PDF (first sheet)",
       run: async () => {
         const snapshot = await latestWorkbookSnapshot(id);
-        if (!(await downloadSheetAsPdf(snapshot, { title: name }))) throw new Error("This sheet has nothing to export");
+        const { readSheetPageSetup } = await import("@/features/workbooks/sheet-page-setup-service");
+        const saved = await readSheetPageSetup(id);
+        if (!saved.ok) throw new Error(saved.error);
+        // No live selection from a list: "selected cells" prints the first sheet.
+        const setup = saved.data.scope === "selection" ? { ...saved.data, scope: "sheet" as const } : saved.data;
+        if (!(await downloadSheetAsPdf(snapshot, { title: name, setup }))) throw new Error("This sheet has nothing to export");
       },
     },
   ],

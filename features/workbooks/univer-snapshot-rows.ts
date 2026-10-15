@@ -18,6 +18,8 @@ interface CellShape {
 
 interface SheetShape {
   name?: string;
+  /** Frozen panes: `xSplit` columns and `ySplit` rows are pinned. */
+  freeze?: { xSplit?: number; ySplit?: number } | null;
   /** Univer marks a hidden column/row `hd: 1` (a table link's Record ID column is one). */
   columnData?: Record<string, { hd?: number } | null | undefined>;
   rowData?: Record<string, { hd?: number } | null | undefined>;
@@ -34,6 +36,27 @@ export interface SnapshotRows {
   sheetName: string;
   /** Dense rectangular grid, trailing empty rows/columns trimmed. */
   rows: string[][];
+  /** Rows pinned at the top of the sheet (Freeze rows), counted in `rows`. */
+  frozenRows: number;
+  /** Columns pinned at the left of the sheet (Freeze columns), counted in each row. */
+  frozenCols: number;
+}
+
+/** A zero-based, inclusive cell range (a selection). */
+export interface CellRange {
+  startRow: number;
+  endRow: number;
+  startColumn: number;
+  endColumn: number;
+}
+
+/** Sheet ids in tab order. */
+export function univerSheetIds(snapshot: unknown): string[] {
+  if (typeof snapshot !== "object" || snapshot === null) return [];
+  const shape = snapshot as SnapshotShape;
+  const sheets = shape.sheets ?? {};
+  const ordered = (shape.sheetOrder ?? []).filter((id) => sheets[id]);
+  return ordered.length ? ordered : Object.keys(sheets);
 }
 
 type Styles = SnapshotShape["styles"];
@@ -68,7 +91,7 @@ function cellText(cell: CellShape | null | undefined, styles?: Styles): string {
  * `skipHidden` leaves out hidden columns and rows: every read-only view (a share page, an agent's
  * read) passes it, so the table link's hidden Record ID column never reaches a reader.
  */
-export function univerSnapshotToRows(snapshot: unknown, options: { sheetId?: string; skipHidden?: boolean } = {}): SnapshotRows | null {
+export function univerSnapshotToRows(snapshot: unknown, options: { sheetId?: string; skipHidden?: boolean; range?: CellRange } = {}): SnapshotRows | null {
   if (typeof snapshot !== "object" || snapshot === null) return null;
   const shape = snapshot as SnapshotShape;
   const sheets = shape.sheets ?? {};
@@ -95,22 +118,38 @@ export function univerSnapshotToRows(snapshot: unknown, options: { sheetId?: str
       if (colIndex > maxCol) maxCol = colIndex;
     }
   }
-  if (maxRow < 0 || maxCol < 0) {
-    return { sheetName: sheet?.name ?? "Sheet1", rows: [] };
+  const range = options.range;
+  if (range) {
+    // A selection prints exactly the cells chosen, empty ones included.
+    maxRow = range.endRow;
+    maxCol = range.endColumn;
   }
+  if (maxRow < 0 || maxCol < 0) {
+    return { sheetName: sheet?.name ?? "Sheet1", rows: [], frozenRows: 0, frozenCols: 0 };
+  }
+  const firstRow = range?.startRow ?? 0;
+  const firstCol = range?.startColumn ?? 0;
 
   const hiddenCol = (c: number) => options.skipHidden === true && sheet?.columnData?.[String(c)]?.hd === 1;
   const hiddenRow = (r: number) => options.skipHidden === true && sheet?.rowData?.[String(r)]?.hd === 1;
   const rows: string[][] = [];
-  for (let r = 0; r <= maxRow; r += 1) {
+  const ySplit = Math.max(0, sheet?.freeze?.ySplit ?? 0);
+  const xSplit = Math.max(0, sheet?.freeze?.xSplit ?? 0);
+  let frozenRows = 0;
+  let frozenCols = 0;
+  for (let r = firstRow; r <= maxRow; r += 1) {
     if (hiddenRow(r)) continue;
+    if (r < ySplit) frozenRows += 1;
     const row: string[] = [];
     const source = cellData[String(r)] ?? {};
-    for (let c = 0; c <= maxCol; c += 1) {
+    let colsFrozenHere = 0;
+    for (let c = firstCol; c <= maxCol; c += 1) {
       if (hiddenCol(c)) continue;
+      if (c < xSplit) colsFrozenHere += 1;
       row.push(cellText(source[String(c)], styles));
     }
+    frozenCols = colsFrozenHere;
     rows.push(row);
   }
-  return { sheetName: sheet?.name ?? "Sheet1", rows };
+  return { sheetName: sheet?.name ?? "Sheet1", rows, frozenRows, frozenCols };
 }

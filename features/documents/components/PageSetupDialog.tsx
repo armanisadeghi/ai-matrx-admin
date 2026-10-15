@@ -7,9 +7,13 @@
  */
 
 import { useEffect, useState } from "react";
-import { Button, Field, SegmentedControl, Select } from "@ai-matrx/design-system/controls";
+import {
+  Field,
+  SegmentedControl,
+  Select,
+} from "@ai-matrx/design-system/controls";
 
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { PageSetupDialogShell } from "@/components/page-setup/PageSetupDialogShell";
 import {
   PAGE_COLORS,
   PAPER_SIZES,
@@ -17,7 +21,9 @@ import {
   type PaperSizeName,
 } from "@/features/documents/document-page-style";
 
-const PAPER_OPTIONS = (Object.keys(PAPER_SIZES) as PaperSizeName[]).map((k) => ({ value: k, label: PAPER_SIZES[k].label }));
+const PAPER_OPTIONS = (Object.keys(PAPER_SIZES) as PaperSizeName[]).map(
+  (k) => ({ value: k, label: PAPER_SIZES[k].label }),
+);
 
 type MarginKey = "marginTop" | "marginBottom" | "marginLeft" | "marginRight";
 const MARGINS: { key: MarginKey; label: string }[] = [
@@ -42,7 +48,9 @@ export function PageSetupDialog({
   onSetDefault: (values: PageSetupValues) => void;
 }) {
   const [v, setV] = useState<PageSetupValues>(initial);
-  const [margins, setMargins] = useState<Record<MarginKey, string>>(() => marginText(initial));
+  const [margins, setMargins] = useState<Record<MarginKey, string>>(() =>
+    marginText(initial),
+  );
   useEffect(() => {
     if (open) {
       setV(initial);
@@ -58,101 +66,91 @@ export function PageSetupDialog({
     }
     return next;
   };
-  const apply = () => {
-    onApply(current());
-    onOpenChange(false);
-  };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md" data-page-setup="">
-        <DialogHeader>
-          <DialogTitle>Page setup</DialogTitle>
-        </DialogHeader>
-        <div className="grid gap-4">
-          <SegmentedControl<"pages" | "pageless">
-            aria-label="Layout"
-            value={v.pageless ? "pageless" : "pages"}
-            onValueChange={(m) => setV((s) => ({ ...s, pageless: m === "pageless" }))}
+    <PageSetupDialogShell
+      open={open}
+      onOpenChange={onOpenChange}
+      dataAttr="data-page-setup"
+      onApply={() => onApply(current())}
+      onSetDefault={() => onSetDefault(current())}
+    >
+      <SegmentedControl<"pages" | "pageless">
+        aria-label="Layout"
+        value={v.pageless ? "pageless" : "pages"}
+        onValueChange={(m) =>
+          setV((s) => ({ ...s, pageless: m === "pageless" }))
+        }
+        data={[
+          { value: "pages", label: "Pages" },
+          { value: "pageless", label: "Pageless" },
+        ]}
+      />
+      <div className="grid grid-cols-2 gap-3">
+        <label className="grid gap-1 text-xs text-muted-foreground">
+          Orientation
+          <SegmentedControl<"portrait" | "landscape">
+            aria-label="Orientation"
+            value={v.orientation}
+            onValueChange={(o) => setV((s) => ({ ...s, orientation: o }))}
             data={[
-              { value: "pages", label: "Pages" },
-              { value: "pageless", label: "Pageless" },
+              { value: "portrait", label: "Portrait" },
+              { value: "landscape", label: "Landscape" },
             ]}
           />
-          <div className="grid grid-cols-2 gap-3">
-            <label className="grid gap-1 text-xs text-muted-foreground">
-              Orientation
-              <SegmentedControl<"portrait" | "landscape">
-                aria-label="Orientation"
-                value={v.orientation}
-                onValueChange={(o) => setV((s) => ({ ...s, orientation: o }))}
-                data={[
-                  { value: "portrait", label: "Portrait" },
-                  { value: "landscape", label: "Landscape" },
-                ]}
-              />
-            </label>
-            <label className="grid gap-1 text-xs text-muted-foreground">
-              Paper size
-              <Select
-                aria-label="Paper size"
-                value={v.paper}
-                onValueChange={(p) => setV((s) => ({ ...s, paper: p as PaperSizeName }))}
-                options={PAPER_OPTIONS}
-              />
-            </label>
-          </div>
-          <div className="grid gap-1 text-xs text-muted-foreground">
-            Page color
-            <div className="flex gap-2" role="radiogroup" aria-label="Page color">
-              {PAGE_COLORS.map((c) => (
-                <button
-                  key={c}
-                  type="button"
-                  role="radio"
-                  aria-checked={v.pageColor === c}
-                  aria-label={`Page color ${c}`}
-                  onClick={() => setV((s) => ({ ...s, pageColor: c }))}
-                  className={`size-7 rounded-full border-2 ${v.pageColor === c ? "border-primary" : "border-border"}`}
-                  style={{ backgroundColor: c }}
-                />
-              ))}
-            </div>
-          </div>
-          <div className="grid gap-1 text-xs text-muted-foreground">
-            Margins (inches)
-            <div className="grid grid-cols-2 gap-2">
-              {MARGINS.map(({ key, label }) => (
-                <label key={key} className="grid min-w-0 gap-1">
-                  {label}
-                  <Field
-                    type="number"
-                    min={0}
-                    max={5}
-                    step={0.25}
-                    aria-label={`${label} margin`}
-                    className="w-full min-w-0"
-                    value={margins[key]}
-                    onChange={(e) => setMargins((m) => ({ ...m, [key]: e.target.value }))}
-                  />
-                </label>
-              ))}
-            </div>
-          </div>
+        </label>
+        <label className="grid gap-1 text-xs text-muted-foreground">
+          Paper size
+          <Select
+            aria-label="Paper size"
+            value={v.paper}
+            onValueChange={(p) =>
+              setV((s) => ({ ...s, paper: p as PaperSizeName }))
+            }
+            options={PAPER_OPTIONS}
+          />
+        </label>
+      </div>
+      <div className="grid gap-1 text-xs text-muted-foreground">
+        Page color
+        <div className="flex gap-2" role="radiogroup" aria-label="Page color">
+          {PAGE_COLORS.map((c) => (
+            <button
+              key={c}
+              type="button"
+              role="radio"
+              aria-checked={v.pageColor === c}
+              aria-label={`Page color ${c}`}
+              onClick={() => setV((s) => ({ ...s, pageColor: c }))}
+              className={`size-7 rounded-full border-2 ${v.pageColor === c ? "border-primary" : "border-border"}`}
+              style={{ backgroundColor: c }}
+            />
+          ))}
         </div>
-        <DialogFooter className="sm:justify-between">
-          <Button variant="quiet" onClick={() => onSetDefault(current())}>
-            Set as default
-          </Button>
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={() => onOpenChange(false)}>
-              Cancel
-            </Button>
-            <Button onClick={apply}>OK</Button>
-          </div>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+      </div>
+      <div className="grid gap-1 text-xs text-muted-foreground">
+        Margins (inches)
+        <div className="grid grid-cols-2 gap-2">
+          {MARGINS.map(({ key, label }) => (
+            <label key={key} className="grid min-w-0 gap-1">
+              {label}
+              <Field
+                type="number"
+                min={0}
+                max={5}
+                step={0.25}
+                aria-label={`${label} margin`}
+                className="w-full min-w-0"
+                value={margins[key]}
+                onChange={(e) =>
+                  setMargins((m) => ({ ...m, [key]: e.target.value }))
+                }
+              />
+            </label>
+          ))}
+        </div>
+      </div>
+    </PageSetupDialogShell>
   );
 }
 

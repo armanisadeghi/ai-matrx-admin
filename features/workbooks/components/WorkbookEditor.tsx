@@ -20,7 +20,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Bookmark, FilePlus2, FolderOpen, History, Info, Loader2, MessageSquare, Printer, Sheet, Upload } from "lucide-react";
+import { Bookmark, FileCog, FilePlus2, FolderOpen, History, Info, Loader2, MessageSquare, Printer, Sheet, Upload } from "lucide-react";
 import { EditorDetailsDialog, formatDetailDate } from "@/components/editor-chrome/EditorDetailsDialog";
 import { importWorkbookFile, unsupportedFileReason } from "@/features/workbooks/import-workbook-file";
 import { workbookSourceLabel } from "@/features/workbooks/workbook-service";
@@ -40,6 +40,10 @@ import { buildSheetMenus, buildSheetToolbar, type SheetChromeHost, type SheetsAp
 import { createWorkbook } from "@/features/workbooks/workbook-service";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
 import { downloadSheetAsCsv, downloadSheetAsHtml, downloadSheetAsPdf, downloadSheetAsTsv, printSheet } from "@/features/workbooks/sheet-output";
+import { pageSetupFromMetadata, type SheetPageSetup } from "@/features/workbooks/sheet-page-setup";
+import { readSheetPageSetup, writeSheetPageSetup } from "@/features/workbooks/sheet-page-setup-service";
+import { SheetPageSetupDialog } from "@/features/workbooks/components/SheetPageSetupDialog";
+import type { CellRange } from "@/features/workbooks/univer-snapshot-rows";
 import { useFileRecordMenu } from "@/features/file-actions/useFileRecordMenu";
 import { WORKBOOK_ADAPTER } from "@/features/file-actions/adapters";
 import type { Workbook } from "@/features/data-tables/types";
@@ -801,12 +805,50 @@ export default function WorkbookEditor({
       ),
     [withActiveSheet],
   );
+  // Print settings live on the workbook (File → Page setup); Print and PDF read them from here.
+  const [pageSetup, setPageSetup] = useState<SheetPageSetup>(() => pageSetupFromMetadata(record?.metadata));
+  const pageSetupRef = useRef(pageSetup);
+  useEffect(() => {
+    pageSetupRef.current = pageSetup;
+  }, [pageSetup]);
+  const [pageSetupOpen, setPageSetupOpen] = useState(false);
+  useEffect(() => {
+    let live = true;
+    void readSheetPageSetup(workbookId).then((res) => {
+      if (live && res.ok) setPageSetup(res.data);
+    });
+    return () => {
+      live = false;
+    };
+  }, [workbookId]);
+  const savePageSetup = useCallback(
+    async (values: SheetPageSetup) => {
+      setPageSetup(values);
+      const res = await writeSheetPageSetup(workbookId, values);
+      if (!res.ok) toast({ title: "Could not save page setup", description: res.error, variant: "destructive" });
+      else setPageSetup(res.data);
+    },
+    [workbookId],
+  );
+  // The cells selected right now, for "Print: selected cells".
+  const activeSelection = useCallback((): CellRange | null => {
+    const range = apiRef.current?.getActiveWorkbook()?.getActiveSheet()?.getSelection()?.getActiveRange()?.getRange();
+    return range ? { startRow: range.startRow, endRow: range.endRow, startColumn: range.startColumn, endColumn: range.endColumn } : null;
+  }, []);
+  const printNothingToast = useCallback(
+    () =>
+      toast({
+        title: pageSetupRef.current.scope === "selection" ? "Select the cells to print first" : "This sheet has nothing to export",
+        variant: "destructive",
+      }),
+    [],
+  );
   const handlePrint = useCallback(
     () =>
       withActiveSheet((snapshot, sheetId, title) =>
-        printSheet(snapshot, { ...(sheetId ? { sheetId } : {}), title }),
+        printSheet(snapshot, { ...(sheetId ? { sheetId } : {}), title, setup: pageSetupRef.current, selection: activeSelection() }),
       ),
-    [withActiveSheet],
+    [withActiveSheet, activeSelection],
   );
 
   // Find and replace / comments are Univer commands; the File menu is the visible door to them.
@@ -829,12 +871,12 @@ export default function WorkbookEditor({
   const handleExportPdf = useCallback(
     () =>
       withActiveSheet((snapshot, sheetId, title) => {
-        void downloadSheetAsPdf(snapshot, { ...(sheetId ? { sheetId } : {}), title }).then((ok) => {
-          if (!ok) toast({ title: "This sheet has nothing to export", variant: "destructive" });
+        void downloadSheetAsPdf(snapshot, { ...(sheetId ? { sheetId } : {}), title, setup: pageSetupRef.current, selection: activeSelection() }).then((ok) => {
+          if (!ok) printNothingToast();
         });
         return true;
       }),
-    [withActiveSheet],
+    [withActiveSheet, activeSelection, printNothingToast],
   );
   const createNewWorkbook = async () => {
     try {
@@ -875,6 +917,7 @@ export default function WorkbookEditor({
     { kind: "action", id: "file.import", label: "Import", icon: Upload, keywords: ["xlsx", "csv", "upload"], run: () => importInputRef.current?.click() },
     { kind: "action", id: "file.history", label: "Version history", icon: History, shortcut: { key: "h", mod: true, alt: true, shift: true, bind: true }, run: snapshotHistory.toggle },
     { kind: "action", id: "file.print", label: "Print", icon: Printer, shortcut: { key: "p", mod: true, bind: true }, run: handlePrint },
+    { kind: "action", id: "file.page-setup", label: "Page setup", icon: FileCog, keywords: ["orientation", "paper size", "margins", "scale", "print"], run: () => setPageSetupOpen(true) },
     { kind: "action", id: "file.details", label: "Details", icon: Info, keywords: ["info", "created", "modified"], run: () => setDetailsOpen(true) },
   ];
   const liveGoogle = useLiveGoogleAdapter("workbook", workbookId);
@@ -1196,6 +1239,7 @@ export default function WorkbookEditor({
           if (f) void importFile(f);
         }}
       />
+      <SheetPageSetupDialog open={pageSetupOpen} onOpenChange={setPageSetupOpen} initial={pageSetup} onApply={(values) => void savePageSetup(values)} />
       <EditorDetailsDialog
         open={detailsOpen}
         onOpenChange={setDetailsOpen}
