@@ -11,7 +11,8 @@ import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { useEffect, useState } from "react";
 import { Play, Square } from "lucide-react";
 import { Badge, Button, Field, PropertyRow } from "@ai-matrx/design-system/controls";
-import { formatDurationMs, formatUsd } from "@ai-matrx/kit/format";
+import { formatDurationMs } from "@ai-matrx/kit/format";
+import { formatSpendUsd } from "@/components/cost/formatAdminCost";
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectIsAdmin } from "@/lib/redux/selectors/userSelectors";
@@ -53,7 +54,7 @@ function seconds(ms: number | null | undefined): string {
 }
 
 function usd(v: number | null | undefined): string {
-  return formatUsd(v, { digits: "adaptive", unknown: "unpriced" });
+  return formatSpendUsd(v, "unpriced");
 }
 
 function Elapsed({ since }: { since: number }) {

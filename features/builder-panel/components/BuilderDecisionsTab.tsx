@@ -10,7 +10,8 @@
 import { useState } from "react";
 import { ArrowRight, Check, CircleDot, X } from "lucide-react";
 import { Badge, Button, Select, type SelectOption } from "@ai-matrx/design-system/controls";
-import { formatDurationMs, formatUsd } from "@ai-matrx/kit/format";
+import { formatDurationMs } from "@ai-matrx/kit/format";
+import { formatAdminUsd } from "@/components/cost/formatAdminCost";
 import { MatrxDataTable, type MatrxColumnDef } from "@ai-matrx/design-system/data-table";
 import { cn } from "@/lib/utils";
 import { useCostDisplay } from "@/components/cost/useCostDisplay";
@@ -93,7 +94,7 @@ const SWEEP_CALL_COLUMNS: MatrxColumnDef<SweepCallRow & { id: string }>[] = [
   { id: "results", header: "Rows", accessorKey: "results" },
   { id: "ms", header: "Time", accessorFn: (r) => formatDurationMs(r.ms, { style: "compact" }) },
   { id: "points", header: "Points", accessorFn: (r) => r.points ?? "?" },
-  { id: "usd", header: "$", accessorFn: (r) => formatUsd(r.usd, { digits: "adaptive" }) },
+  { id: "usd", header: "$", accessorFn: (r) => formatAdminUsd(r.usd) },
   { id: "error", header: "Error", accessorFn: (r) => r.error ?? "", filter: "text" },
 ];
 
