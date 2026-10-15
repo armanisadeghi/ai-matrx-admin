@@ -219,6 +219,25 @@ function refusalText(): string {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+describe("a frame that never speaks is heard by the Error Inspector", () => {
+    // 2026-10-14: the screen said "This view did not load" while the Error
+    // Inspector read "No errors captured" — the failure reached nobody.
+    it("captures one error naming the kind when the silent notice shows", async () => {
+        const { getSnapshot, clearCapturedErrors } = require("@/lib/diagnostics/errorCaptureStore");
+        clearCapturedErrors();
+        const h = await stand({ connect: false });
+        await act(async () => {
+            await new Promise((resolve) => setTimeout(resolve, 8_400));
+        });
+        expect(h.hostEl.textContent ?? "").toContain("did not load");
+        const captured = (getSnapshot() as Array<{ message: string }>).filter((e) =>
+            e.message.includes("the view did not load"),
+        );
+        expect(captured).toHaveLength(1);
+    }, 20_000);
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
 describe("a lost init is offered again, and the answered channel is adopted", () => {
     // The live Fact Check repro (2026-10-05): the Claims tab's frame loaded, its
     // one init was never adopted, and nothing ever asked again — a live frame
