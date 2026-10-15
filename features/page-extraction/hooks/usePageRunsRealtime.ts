@@ -13,7 +13,7 @@
  * stream uses, so the UI converges to the same state regardless of
  * which channel won the race.
  *
- * REALTIME: `@ai-matrx/realtime` owns the channel (`useChannel`). What was here
+ * REALTIME: `@ai-matrx/data/realtime` owns the channel (`useChannel`). What was here
  * was a raw `.channel(...).subscribe()` with manual teardown and NO catch-up
  * read — which defeated the very purpose of this hook: it exists to be the
  * durable counterpart that survives an SSE drop, and a socket that dropped
@@ -25,8 +25,8 @@
 "use client";
 
 import { useCallback } from "react";
-import { defineChannelNamespace } from "@ai-matrx/realtime";
-import { useChannel } from "@ai-matrx/realtime/react";
+import { defineChannelNamespace } from "@ai-matrx/data/realtime";
+import { useChannel } from "@ai-matrx/data/realtime/react";
 import { listPageRunsForRun } from "@/features/page-extraction/api/runs";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import {

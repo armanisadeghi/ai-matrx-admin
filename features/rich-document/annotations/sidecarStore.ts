@@ -21,7 +21,7 @@
 // finds the entry current and the channels joined. Past the grace nothing watched the source, so
 // the entry is marked stale and the next view reads it once.
 
-import type { RealtimeManager } from "@ai-matrx/realtime";
+import type { RealtimeManager } from "@ai-matrx/data/realtime";
 import { getAssociationsStore } from "@/features/scopes/host/associationsStore";
 import { createEchoLedger, type EchoLedger } from "./echo";
 import { canEditSource, listCommentThreads, listEdgeItems } from "./service";

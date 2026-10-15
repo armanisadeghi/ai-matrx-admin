@@ -14,8 +14,8 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState } from "react";
-import { defineChannelNamespace } from "@ai-matrx/realtime";
-import { useChannel } from "@ai-matrx/realtime/react";
+import { defineChannelNamespace } from "@ai-matrx/data/realtime";
+import { useChannel } from "@ai-matrx/data/realtime/react";
 import { readAllRows } from "@ai-matrx/data/db";
 import { supabase } from "@/utils/supabase/client";
 import { knobInts } from "@/lib/knobs/featureKnobs";

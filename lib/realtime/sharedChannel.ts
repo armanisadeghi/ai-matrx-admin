@@ -3,7 +3,7 @@
  *
  * ONE CHANNEL PER SUBJECT, NOT ONE PER MOUNT — the app-shaped half of realtime.
  *
- * `@ai-matrx/realtime` owns everything about a channel: unique instance topics,
+ * `@ai-matrx/data/realtime` owns everything about a channel: unique instance topics,
  * echo suppression, dedup, the decoupled ordered handler queue, jittered
  * reconnect with a stability reset, the `onBackfill` door on every recovery
  * path, tab-sleep/network awareness, diagnostics. None of that is re-implemented
@@ -40,7 +40,7 @@
 
 "use client";
 
-import type { RealtimeManager, ChannelSpec } from "@ai-matrx/realtime";
+import type { RealtimeManager, ChannelSpec } from "@ai-matrx/data/realtime";
 
 interface Holder {
   manager: RealtimeManager;

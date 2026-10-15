@@ -49,7 +49,7 @@ let captured: CapturedSpec | null = null;
 let stopCalls = 0;
 const observe = jest.fn();
 
-jest.mock("@ai-matrx/realtime", () => ({
+jest.mock("@ai-matrx/data/realtime", () => ({
   defineChannelNamespace: (spec: { namespace: string }) => ({
     topic: (parts?: Record<string, string>) =>
       `matrx:${spec.namespace}:${parts?.userId ?? ""}`,

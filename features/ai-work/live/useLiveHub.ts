@@ -3,7 +3,7 @@
 /**
  * The /work Live hub's data: the signed-in person's coding sessions (with
  * presence), their agent-room member rows (with delivery lag), kept live by ONE
- * @ai-matrx/realtime channel over `chat.coding_session` and
+ * @ai-matrx/data/realtime channel over `chat.coding_session` and
  * `communication.dm_session_members` (both published by
  * migrations/agent_messaging_live_hub_realtime_publication.sql), plus new
  * `communication.dm_messages` rows for the room list's unread and last line.
@@ -12,8 +12,8 @@
  * change triggers one debounced re-read, never a per-event fetch.
  */
 import { useEffect, useMemo, useRef, useState } from "react";
-import { defineChannelNamespace } from "@ai-matrx/realtime";
-import { useChannel } from "@ai-matrx/realtime/react";
+import { defineChannelNamespace } from "@ai-matrx/data/realtime";
+import { useChannel } from "@ai-matrx/data/realtime/react";
 import type { Json } from "@/types/database.types";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";

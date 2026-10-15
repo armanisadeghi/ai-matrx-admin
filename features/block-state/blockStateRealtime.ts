@@ -13,7 +13,7 @@ import {
   defineChannelNamespace,
   onRealtimeManagerChange,
   type ChannelHandle,
-} from "@ai-matrx/realtime";
+} from "@ai-matrx/data/realtime";
 import { toBlockStateRow, type BlockStateRow } from "./types";
 
 const sharedChannel = defineChannelNamespace({

@@ -13,7 +13,7 @@
  * same queue.
  *
  * LIVENESS — two mechanisms, deliberately:
- *   • Postgres Changes on the table for this org, via `@ai-matrx/realtime`'s
+ *   • Postgres Changes on the table for this org, via `@ai-matrx/data/realtime`'s
  *     `useChannel` (the ONLY sanctioned door; a fresh `.channel(` in this repo
  *     is a review defect). A row event re-reads the list rather than patching
  *     it, because the events that matter here MOVE a row in or out of the queue
@@ -38,8 +38,8 @@
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { defineChannelNamespace } from "@ai-matrx/realtime";
-import { useChannel } from "@ai-matrx/realtime/react";
+import { defineChannelNamespace } from "@ai-matrx/data/realtime";
+import { useChannel } from "@ai-matrx/data/realtime/react";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
 import {

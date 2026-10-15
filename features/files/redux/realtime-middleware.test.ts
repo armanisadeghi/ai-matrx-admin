@@ -3,8 +3,8 @@ import {
   detachCloudFilesRealtime,
   cloudFilesRealtimeMiddleware,
 } from "./realtime-middleware";
-import { subscribeToRealtimeManager } from "@ai-matrx/realtime";
-jest.mock("@ai-matrx/realtime", () => ({
+import { subscribeToRealtimeManager } from "@ai-matrx/data/realtime";
+jest.mock("@ai-matrx/data/realtime", () => ({
   defineChannelNamespace: () => ({
     topic: ({ userId }: { userId: string }) => `cloud:${userId}`,
   }),

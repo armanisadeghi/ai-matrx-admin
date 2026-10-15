@@ -22,7 +22,7 @@
 // user edited an earlier one — the bug behind the "edit a row and lose
 // everything after it" report.
 //
-// REALTIME: `@ai-matrx/realtime` owns both channels — unique instance topics,
+// REALTIME: `@ai-matrx/data/realtime` owns both channels — unique instance topics,
 // echo suppression, dedup, the decoupled ordered handler queue, jittered
 // reconnect with the stability reset, tab sleep, diagnostics. What was here was
 // two raw `.channel(...).subscribe()` blocks with manual `removeChannel`
@@ -42,7 +42,7 @@ import type { Middleware } from "@reduxjs/toolkit";
 import {
   defineChannelNamespace,
   subscribeToRealtimeManager,
-} from "@ai-matrx/realtime";
+} from "@ai-matrx/data/realtime";
 import type { RootState } from "@/lib/redux/store";
 import {
   listSessions,

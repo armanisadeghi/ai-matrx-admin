@@ -1,6 +1,6 @@
 // providers/RealtimeHost.tsx
 //
-// THE ONE `@ai-matrx/realtime` MOUNT for this app.
+// THE ONE `@ai-matrx/data/realtime` MOUNT for this app.
 //
 // `<RealtimeProvider>` builds exactly one `RealtimeManager`, and that manager
 // owns every channel opened beneath it: unique instance topics, echo
@@ -16,13 +16,13 @@
 // opens ONE websocket) and the signed-in user id, which enables the package's
 // `updated_by` echo test. Everything else is already inside the package.
 //
-// Doctrine: `@ai-matrx/realtime`'s README (the eight rules) + the
+// Doctrine: `@ai-matrx/data/realtime`'s README (the eight rules) + the
 // `supabase-realtime` skill for this repo's remaining hand-rolled channels.
 
 "use client";
 
 import type { ReactNode } from "react";
-import { RealtimeProvider } from "@ai-matrx/realtime/react";
+import { RealtimeProvider } from "@ai-matrx/data/realtime/react";
 import { supabase } from "@/utils/supabase/client";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";

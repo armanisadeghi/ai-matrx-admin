@@ -22,7 +22,7 @@
 
 import React from "react";
 import { RotateCw, WifiOff } from "lucide-react";
-import { RECONNECT_ALARM_ATTEMPTS } from "@ai-matrx/realtime";
+import { RECONNECT_ALARM_ATTEMPTS } from "@ai-matrx/data/realtime";
 import { useAppSelector } from "@/lib/redux/hooks";
 import type { RootState } from "@/lib/redux/rootReducer";
 import { cn } from "@/lib/utils";

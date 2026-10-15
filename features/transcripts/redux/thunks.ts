@@ -8,7 +8,7 @@
  * there is no stale row merge, so no per-row state reconciliation is needed —
  * the fetch always returns fresh rows.
  *
- * REALTIME: `@ai-matrx/realtime` owns the channel — echo suppression, dedup,
+ * REALTIME: `@ai-matrx/data/realtime` owns the channel — echo suppression, dedup,
  * the decoupled ordered handler queue, jittered reconnect with the stability
  * reset, tab sleep, diagnostics. What was here was a module-level
  * `.channel(...).subscribe()`, its own `removeChannel` teardown, and NO catch-up
@@ -23,7 +23,7 @@
 import {
   defineChannelNamespace,
   subscribeToRealtimeManager,
-} from "@ai-matrx/realtime";
+} from "@ai-matrx/data/realtime";
 import type { AppThunk } from "@/lib/redux/store";
 import type { ListScope } from "@/lib/list-scope/types";
 import type {

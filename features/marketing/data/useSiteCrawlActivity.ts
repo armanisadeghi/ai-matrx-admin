@@ -2,8 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useQueryClient, type QueryClient } from "@tanstack/react-query";
-import { defineChannelNamespace, type RealtimeStatus } from "@ai-matrx/realtime";
-import { useChannel } from "@ai-matrx/realtime/react";
+import { defineChannelNamespace, type RealtimeStatus } from "@ai-matrx/data/realtime";
+import { useChannel } from "@ai-matrx/data/realtime/react";
 import {
   marketingKeys,
   useActiveCrawlSessions,
@@ -18,7 +18,7 @@ import type { CrawlSession } from "@/features/marketing/types";
 
 
 /**
- * The channel's live state, straight from `@ai-matrx/realtime`. Aliased rather
+ * The channel's live state, straight from `@ai-matrx/data/realtime`. Aliased rather
  * than redeclared so the two can never drift into a silent mapping bug.
  */
 export type CrawlRealtimeStatus = RealtimeStatus;
@@ -96,7 +96,7 @@ export function useSiteCrawlActivity(siteId: string): SiteCrawlActivity {
     activeIdRef.current = activeId;
   }, [activeId]);
 
-  // REALTIME: `@ai-matrx/realtime` owns this channel. What was here was a raw
+  // REALTIME: `@ai-matrx/data/realtime` owns this channel. What was here was a raw
   // `.channel(...).subscribe()` plus ~55 lines of the package's own job — a
   // reconnect ladder, an attempt counter, a 30s backoff-reset timer, a
   // catch-up-after-connect flag and manual teardown. It reconnected on a

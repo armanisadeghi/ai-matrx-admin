@@ -296,7 +296,7 @@ const config: Config = {
   ],
   // Parked checkouts must not enter the HASTE MAP either: two aidream clones
   // under work/ (2026-09-22) each carry apps/shared/*/package.json, and a
-  // duplicate `@ai-matrx/realtime` name fails EVERY suite that imports the
+  // duplicate `@ai-matrx/data/realtime` name fails EVERY suite that imports the
   // store before a single test runs.
   modulePathIgnorePatterns: [
     "<rootDir>/work/",

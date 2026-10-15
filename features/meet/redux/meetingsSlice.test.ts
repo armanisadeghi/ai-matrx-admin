@@ -13,12 +13,12 @@ const repo = {
 jest.mock("@ai-matrx/meet/core", () => ({ createMeetRepository: () => repo }));
 jest.mock("@/utils/supabase/client", () => ({ supabase: {} }));
 jest.mock("@/lib/scoped-config/service", () => ({ fetchKnobWriteDoor: jest.fn() }));
-jest.mock("@ai-matrx/realtime", () => ({
+jest.mock("@ai-matrx/data/realtime", () => ({
   defineChannelNamespace: ({ namespace }: { namespace: string }) => ({
     topic: (parts: Record<string, string>) => `${namespace}:${Object.values(parts).join(":")}`,
   }),
 }));
-jest.mock("@ai-matrx/realtime/react", () => ({ useRealtimeManager: () => null }));
+jest.mock("@ai-matrx/data/realtime/react", () => ({ useRealtimeManager: () => null }));
 jest.mock("@/lib/realtime/sharedChannel", () => ({ openShared: jest.fn() }));
 
 import { configureStore } from "@reduxjs/toolkit";

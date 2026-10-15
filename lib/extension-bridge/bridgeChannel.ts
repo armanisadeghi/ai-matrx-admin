@@ -1,5 +1,5 @@
 /**
- * The matrx-extend bridge channel — IDENTITY-ONLY WIRING over `@ai-matrx/realtime`.
+ * The matrx-extend bridge channel — IDENTITY-ONLY WIRING over `@ai-matrx/data/realtime`.
  *
  * A per-user Supabase Broadcast channel (`matrx-extension-bridge:<userId>`)
  * carrying `BridgeEnvelope`s in both directions between this app and the Chrome
@@ -10,11 +10,11 @@
  * This module used to hand-roll the channel: `supabase().channel(...)`, a
  * module-level ref-counted map, a `.on()`-before-`subscribe()` ordering comment,
  * a status callback, manual teardown. It was the LAST hand-rolled `.channel(` in
- * this app, and it stayed hand-rolled for exactly one reason: `@ai-matrx/realtime`
+ * this app, and it stayed hand-rolled for exactly one reason: `@ai-matrx/data/realtime`
  * wrapped every broadcast in the Matrx envelope (`{v, cid, eid, ts, data}`) while
  * the DEPLOYED extension reads the bare `BridgeEnvelope` off the wire.
  *
- * That reason no longer exists. `@ai-matrx/realtime` 0.5.0 has a raw-wire mode:
+ * That reason no longer exists. `@ai-matrx/data/realtime` 0.5.0 has a raw-wire mode:
  * `wire: {mode:"raw"}` sends the payload verbatim and never reads an envelope on
  * the way in, and `foreignTopic` keeps the peer's topic string on the wire
  * instead of an `mx:` name. So the channel body moved INTO the package —
@@ -40,7 +40,7 @@
  * this file used to do by hand.
  */
 
-import type { ChannelSpec } from "@ai-matrx/realtime";
+import type { ChannelSpec } from "@ai-matrx/data/realtime";
 import {
   BRIDGE_BROADCAST_EVENT,
   BridgeEnvelopeSchema,

@@ -24,8 +24,8 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const REGISTER = path.join(ROOT, "scripts", "package-twins.json");
 
 const HAND_WIRED = [
-  { re: /\bsupabase(?:\(\))?\s*\.\s*channel\s*\(/, owner: "@ai-matrx/realtime (declare a namespace + useChannel / manager.open)" },
-  { re: /\.on\(\s*["']postgres_changes["']/, owner: "@ai-matrx/realtime (pg-changes binding with onBackfill)" },
+  { re: /\bsupabase(?:\(\))?\s*\.\s*channel\s*\(/, owner: "@ai-matrx/data/realtime (declare a namespace + useChannel / manager.open)" },
+  { re: /\.on\(\s*["']postgres_changes["']/, owner: "@ai-matrx/data/realtime (pg-changes binding with onBackfill)" },
   { re: /\bcreate(?:Browser|Server)Client\s*\(/, owner: "@ai-matrx/data/next (createNextSupabase)" },
 ];
 

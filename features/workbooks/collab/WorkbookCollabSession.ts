@@ -25,7 +25,7 @@
 import * as Y from "yjs";
 import { Awareness } from "y-protocols/awareness";
 
-import { electCollabHost, remoteOriginOf, REMOTE_PARAM_TAG } from "@ai-matrx/realtime/collab";
+import { electCollabHost, remoteOriginOf, REMOTE_PARAM_TAG } from "@ai-matrx/data/realtime/collab";
 
 /**
  * Structural transport contract. `SupabaseYjsProvider` satisfies it in

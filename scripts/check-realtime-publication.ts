@@ -1021,7 +1021,7 @@ function collectBindingSites(sf: ts.SourceFile): BindingSite[] {
       }
     }
 
-    // (b) `postgresChanges: [ … ]` — the @ai-matrx/realtime spec shape.
+    // (b) `postgresChanges: [ … ]` — the @ai-matrx/data/realtime spec shape.
     if (ts.isPropertyAssignment(node) && propertyKey(node.name) === "postgresChanges") {
       const value = unwrap(node.initializer);
       if (ts.isArrayLiteralExpression(value)) {
@@ -1111,7 +1111,7 @@ function displayPath(file: string): string {
 }
 
 /**
- * THE TRANSPORT ITSELF. `@ai-matrx/realtime` and `@ai-matrx/data` contain the
+ * THE TRANSPORT ITSELF. `@ai-matrx/data/realtime` and `@ai-matrx/data` contain the
  * `.on("postgres_changes", …)` calls that every consumer's binding travels
  * through. Those sites name NO table — they hand the caller's binding to the
  * Supabase client — so demanding a literal there is a demand that cannot be met,

@@ -2,9 +2,9 @@
 
 import { useEffect } from "react";
 import { recordToast } from "@/lib/toast";
-import { defineChannelNamespace } from "@ai-matrx/realtime";
+import { defineChannelNamespace } from "@ai-matrx/data/realtime";
 import { supabase } from "@/utils/supabase/client";
-import { useRealtimeManager } from "@ai-matrx/realtime/react";
+import { useRealtimeManager } from "@ai-matrx/data/realtime/react";
 import { useAppDispatch, useAppSelector, useAppStore } from "@/lib/redux/hooks";
 import {
   selectCodeTabs,
@@ -24,7 +24,7 @@ import { getAdapterForTabId } from "../library-sources/registry";
  * the row moved on remotely so they can decide whether to reload before
  * they hit save.
  *
- * REALTIME: `@ai-matrx/realtime` owns every one of these channels — unique
+ * REALTIME: `@ai-matrx/data/realtime` owns every one of these channels — unique
  * instance topics, dedup, the decoupled ordered handler queue, jittered
  * reconnect, tab sleep, diagnostics. What was here was a raw
  * `.channel(...).subscribe()` per tab (with an `as never` cast to get past the

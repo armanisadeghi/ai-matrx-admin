@@ -4,7 +4,7 @@
  * Shared-cache hook for "all jobs on this file". Re-fetches on Realtime
  * INSERT/UPDATE/DELETE on `page_extraction_jobs` for the given file.
  *
- * REALTIME: `@ai-matrx/realtime` owns the channel. What was here was a raw
+ * REALTIME: `@ai-matrx/data/realtime` owns the channel. What was here was a raw
  * `.channel(...).subscribe()`, a hand-copied refcount map, manual teardown, and
  * NO catch-up read — a job started on another device (or by the server) while
  * this tab slept never appeared in the picker. The refcount now lives once, in
@@ -14,8 +14,8 @@
 "use client";
 
 import { useEffect } from "react";
-import { defineChannelNamespace } from "@ai-matrx/realtime";
-import { useRealtimeManager } from "@ai-matrx/realtime/react";
+import { defineChannelNamespace } from "@ai-matrx/data/realtime";
+import { useRealtimeManager } from "@ai-matrx/data/realtime/react";
 import { openShared } from "@/lib/realtime/sharedChannel";
 import { listJobsForFile } from "@/features/page-extraction/api/jobs";
 import type { PageExtractionJob } from "@/features/page-extraction/types";

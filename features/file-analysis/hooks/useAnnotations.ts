@@ -11,7 +11,7 @@
  * cache invalidates so every consumer re-renders with the canonical server
  * state.
  *
- * REALTIME: `@ai-matrx/realtime` owns the channel (unique instance topic, echo
+ * REALTIME: `@ai-matrx/data/realtime` owns the channel (unique instance topic, echo
  * suppression, dedup, the decoupled handler queue, reconnect, backfill, tab
  * sleep). This module hand-rolled none of that and must never grow it back —
  * a second copy beside the package is the named failure. The package README
@@ -36,8 +36,8 @@
 "use client";
 
 import { useCallback, useEffect, useMemo } from "react";
-import { defineChannelNamespace } from "@ai-matrx/realtime";
-import { useRealtimeManager } from "@ai-matrx/realtime/react";
+import { defineChannelNamespace } from "@ai-matrx/data/realtime";
+import { useRealtimeManager } from "@ai-matrx/data/realtime/react";
 import { openShared } from "@/lib/realtime/sharedChannel";
 import * as Api from "@/features/file-analysis/api/file-analysis";
 import type {

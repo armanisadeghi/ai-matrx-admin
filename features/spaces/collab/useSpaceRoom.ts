@@ -5,10 +5,10 @@
 //   postgres_changes on platform.comments for this page — another person's comment, reply, edit,
 //             resolve or delete reaches the thread list without a reload (row security gates delivery).
 // The page's own saves arrive through the store's subscription (store-db, owner's).
-// On @ai-matrx/realtime (supabase-realtime skill): namespace-built topic, backfill = re-read the threads.
+// On @ai-matrx/data/realtime (supabase-realtime skill): namespace-built topic, backfill = re-read the threads.
 
-import { defineChannelNamespace, type RealtimeStatus } from "@ai-matrx/realtime";
-import { usePresence } from "@ai-matrx/realtime/react";
+import { defineChannelNamespace, type RealtimeStatus } from "@ai-matrx/data/realtime";
+import { usePresence } from "@ai-matrx/data/realtime/react";
 import { useRef } from "react";
 
 import { useAppSelector } from "@/lib/redux/hooks";

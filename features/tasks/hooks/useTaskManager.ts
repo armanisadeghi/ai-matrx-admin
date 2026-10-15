@@ -1,6 +1,6 @@
 // Database hooks for task management
 //
-// REALTIME: `@ai-matrx/realtime` owns every channel here. The package supplies
+// REALTIME: `@ai-matrx/data/realtime` owns every channel here. The package supplies
 // the unique instance topic, echo suppression (its write ledger, timestamp-
 // monotonic FIRST), dedup, the decoupled ordered handler queue, jittered
 // reconnect with a stability reset, tab-sleep/network awareness, and the
@@ -25,9 +25,9 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { defineChannelNamespace } from '@ai-matrx/realtime';
-import { useChannel, useRealtimeManager } from '@ai-matrx/realtime/react';
-import type { PostgresChangeDelivery } from '@ai-matrx/realtime';
+import { defineChannelNamespace } from '@ai-matrx/data/realtime';
+import { useChannel, useRealtimeManager } from '@ai-matrx/data/realtime/react';
+import type { PostgresChangeDelivery } from '@ai-matrx/data/realtime';
 import type { DatabaseTask, DatabaseProject, ProjectWithTasks } from '../types';
 import * as taskService from '../services/taskService';
 import * as projectService from '../services/projectService';

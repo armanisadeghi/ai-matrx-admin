@@ -6,7 +6,7 @@
 // until a full page reload (probed live 2026-09-07: 248 tasks on screen, an
 // EMPTY channel registry, a 13s wait, no row).
 //
-// The `@ai-matrx/realtime` channel that already existed lives in
+// The `@ai-matrx/data/realtime` channel that already existed lives in
 // `features/tasks/hooks/useTaskManager.ts` and is mounted only by the two
 // pickers (War Room, resource manager), which keep their own `useState` lists
 // from `taskService.getUserTasks()`. That wiring cannot serve this route: the
@@ -49,7 +49,7 @@ import {
   currentRealtimeManager,
   defineChannelNamespace,
   subscribeToRealtimeManager,
-} from "@ai-matrx/realtime";
+} from "@ai-matrx/data/realtime";
 import type { RootState } from "@/lib/redux/rootReducer";
 import {
   upsertTaskWithLevel,

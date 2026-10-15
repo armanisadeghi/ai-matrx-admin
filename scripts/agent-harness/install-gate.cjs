@@ -43,6 +43,9 @@
 //      nothing stops a primary script).
 //   3. Serialises installs across the sessions that share this checkout: one
 //      install at a time, the second waits, then refuses naming the first's pid.
+//   4. REFUSES an `install` whose lockfile is older than the @ai-matrx packages
+//      installed here (the shared install only moves forward), and records every
+//      install with the process chain that ran it — install-forward-only.cjs.
 //
 // THE INCIDENT (2026-09-12, three times): a `pnpm install` in this shared
 // checkout relinked @ai-matrx/design-system while the :3001 preview was
@@ -58,6 +61,7 @@
 const fs = require('fs');
 const path = require('path');
 const { execFileSync } = require('child_process');
+const forwardOnly = require('./install-forward-only.cjs');
 
 const REPO_ROOT = path.resolve(__dirname, '..', '..');
 const STATE_DIR =
@@ -330,7 +334,7 @@ function serialiseInstall(command) {
 
     if (holderIsAncestor(held.pid)) {
       say(`RE-ENTERING — pid ${process.pid} is a child of lock holder ${held.pid}; continuing the same pnpm install.`);
-      return;
+      return 'reentered';
     }
 
     if (!announced) {
@@ -364,14 +368,24 @@ function serialiseInstall(command) {
       process.exit(1);
     });
   }
+  return 'claimed';
 }
 
 function run() {
   const command = mutatingCommand();
   if (!command) return;
   if (process.env.MATRX_INSTALL_GATE_DISABLE) return;
+  // The shared node_modules only moves forward: a lockfile older than what is installed is
+  // refused here, before a symlink moves (2026-10-15; install-forward-only.cjs).
+  forwardOnly.guardForward({ root: REPO_ROOT, command, refuse, say });
   checkPreviewLease(command);
-  serialiseInstall(command);
+  if (serialiseInstall(command) === 'claimed') {
+    forwardOnly.recordInstall(LOCK_DIR, {
+      at: new Date().toISOString(),
+      command: `pnpm ${command}`,
+      ancestry: forwardOnly.ancestry(),
+    });
+  }
 }
 
 module.exports = { run, mutatingCommand, LOCK_FILE, LOCK_DIR, PREVIEW_META, REPO_ROOT, holderIsAncestor };

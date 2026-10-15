@@ -11,8 +11,8 @@
  */
 "use client";
 
-import type { RealtimeManager } from "@ai-matrx/realtime";
-import { defineChannelNamespace } from "@ai-matrx/realtime";
+import type { RealtimeManager } from "@ai-matrx/data/realtime";
+import { defineChannelNamespace } from "@ai-matrx/data/realtime";
 import { supabase } from "@/utils/supabase/client";
 import { defineWorkingCopyKind } from "@/lib/working-copy/workingCopyKind";
 import { announceWorkingCopyConflict, dismissWorkingCopyConflict } from "@/lib/working-copy/announce";

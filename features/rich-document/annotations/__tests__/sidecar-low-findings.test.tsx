@@ -24,8 +24,8 @@ const service = {
 jest.mock("../service", () => service);
 // The sidecar's live half opens through the realtime manager, once per source (sidecarStore.ts).
 const mockRealtime = { open: jest.fn(() => ({ close: jest.fn() })) as jest.Mock };
-jest.mock("@ai-matrx/realtime/react", () => ({ useChannel: jest.fn(), useRealtimeManager: () => mockRealtime }));
-jest.mock("@ai-matrx/realtime", () => ({ defineChannelNamespace: () => ({ topic: () => "t" }) }));
+jest.mock("@ai-matrx/data/realtime/react", () => ({ useChannel: jest.fn(), useRealtimeManager: () => mockRealtime }));
+jest.mock("@ai-matrx/data/realtime", () => ({ defineChannelNamespace: () => ({ topic: () => "t" }) }));
 jest.mock("@/features/scopes/host/associationsStore", () => ({ getAssociationsStore: () => ({ titles: { fetch: async () => new Map() } }) }));
 jest.mock("@/features/scopes/registry/entityRegistry", () => ({ tryGetEntityInfo: () => null }));
 jest.mock("@/features/scopes/service/associationCandidates", () => ({ searchCandidatesAcrossTokens: jest.fn(async () => ({ results: [], failures: [] })) }));

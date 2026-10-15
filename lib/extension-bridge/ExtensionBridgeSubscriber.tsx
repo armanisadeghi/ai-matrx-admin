@@ -62,7 +62,7 @@ export function ExtensionBridgeSubscriber(): null {
       // requestId — the hook's `reply` exists for exactly that, because a
       // freshly minted id would resolve the wrong caller in the extension's
       // pending-promise table. A publish while the channel is down is reported
-      // by `@ai-matrx/realtime`'s diagnostics (`channel.send.not-connected`),
+      // by `@ai-matrx/data/realtime`'s diagnostics (`channel.send.not-connected`),
       // not swallowed here; the extension retries or falls back to its
       // same-machine `chrome.runtime.sendMessage` path.
       reply(envelope, result);

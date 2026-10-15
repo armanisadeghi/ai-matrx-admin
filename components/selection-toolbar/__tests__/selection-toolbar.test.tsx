@@ -54,8 +54,8 @@ const service = {
   canEditSource: jest.fn(async () => true),
 };
 jest.mock("@/features/rich-document/annotations/service", () => service);
-jest.mock("@ai-matrx/realtime/react", () => ({ useChannel: jest.fn(), useRealtimeManager: () => null }));
-jest.mock("@ai-matrx/realtime", () => ({ defineChannelNamespace: () => ({ topic: () => "t" }) }));
+jest.mock("@ai-matrx/data/realtime/react", () => ({ useChannel: jest.fn(), useRealtimeManager: () => null }));
+jest.mock("@ai-matrx/data/realtime", () => ({ defineChannelNamespace: () => ({ topic: () => "t" }) }));
 jest.mock("next/navigation", () => ({ useRouter: () => ({ push: jest.fn() }) }));
 jest.mock("@/features/scopes/host/associationsStore", () => ({
   getAssociationsStore: () => ({ titles: { fetch: async () => new Map() } }),

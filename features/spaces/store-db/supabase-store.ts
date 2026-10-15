@@ -19,7 +19,7 @@
 
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { guardedUpdate, readAllRows, type PagedReadResult } from "@ai-matrx/data/db";
-import { defineChannelNamespace, subscribeToRealtimeManager } from "@ai-matrx/realtime";
+import { defineChannelNamespace, subscribeToRealtimeManager } from "@ai-matrx/data/realtime";
 import type { Database, Json } from "@/types/database.types";
 import type { SpaceBlock, SpaceDoc, SpaceId, SpaceMedia, SpaceSummary, SpacesStore } from "../contract";
 

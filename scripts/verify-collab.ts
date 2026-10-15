@@ -283,9 +283,9 @@ async function stageB() {
   }
 
   try {
-    const { SupabaseYjsProvider } = await import("@ai-matrx/realtime/collab");
+    const { SupabaseYjsProvider } = await import("@ai-matrx/data/realtime/collab");
     const { createClient } = await import("@supabase/supabase-js");
-    const { createRealtimeManager } = await import("@ai-matrx/realtime");
+    const { createRealtimeManager } = await import("@ai-matrx/data/realtime");
 
     // Two SEPARATE clients, and therefore two MANAGERS = two sockets, like two
     // real browser tabs. One manager cannot stand in for both: the package's

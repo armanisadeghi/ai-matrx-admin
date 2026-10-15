@@ -3,7 +3,7 @@
 // THE ONE `@ai-matrx/messaging` MOUNT for this app.
 //
 // It sits INSIDE `<RealtimeHost>` on purpose. `<MessagingProvider>` rides the
-// manager that provider already built (`@ai-matrx/realtime` 0.3.0 gave it the
+// manager that provider already built (`@ai-matrx/data/realtime` 0.3.0 gave it the
 // probe to notice one), so messaging's channels and the app's other realtime
 // consumers share ONE socket and ONE write ledger — a second manager would make
 // each side's own optimistic writes look remote to the other.

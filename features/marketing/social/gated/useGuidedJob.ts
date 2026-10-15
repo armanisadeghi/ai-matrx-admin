@@ -3,7 +3,7 @@
 /**
  * Live status of ONE capture job (a `media.capture_handoff` row).
  *
- * Realtime is the fast path (`@ai-matrx/realtime`'s `useChannel`, the one
+ * Realtime is the fast path (`@ai-matrx/data/realtime`'s `useChannel`, the one
  * sanctioned door, same publication the needs-you tray uses); a short poll and
  * a re-read on tab focus are the floor that cannot lie — the person leaves for
  * the other tab and comes back, and the result has to be here WITHOUT them
@@ -13,8 +13,8 @@
  */
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { defineChannelNamespace } from "@ai-matrx/realtime";
-import { useChannel } from "@ai-matrx/realtime/react";
+import { defineChannelNamespace } from "@ai-matrx/data/realtime";
+import { useChannel } from "@ai-matrx/data/realtime/react";
 import { createClient } from "@/utils/supabase/client";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import {

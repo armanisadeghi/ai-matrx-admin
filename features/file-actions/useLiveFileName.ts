@@ -9,8 +9,8 @@
 
 import { useCallback } from "react";
 
-import { defineChannelNamespace } from "@ai-matrx/realtime";
-import { useChannel } from "@ai-matrx/realtime/react";
+import { defineChannelNamespace } from "@ai-matrx/data/realtime";
+import { useChannel } from "@ai-matrx/data/realtime/react";
 
 import { createClient } from "@/utils/supabase/client";
 

@@ -6,7 +6,7 @@
  * and the same cached result — no duplicate requests, no flash on remount,
  * no lag when switching tabs/routes.
  *
- * REALTIME: `@ai-matrx/realtime` owns the channel — unique instance topic,
+ * REALTIME: `@ai-matrx/data/realtime` owns the channel — unique instance topic,
  * echo suppression, dedup, the decoupled handler queue, jittered reconnect,
  * the backfill door, tab sleep, diagnostics. This module hand-rolled a static
  * topic (`file-analysis:<fileId>`), a raw `.channel(...).subscribe()`, a manual
@@ -34,8 +34,8 @@
 "use client";
 
 import { useEffect } from "react";
-import { defineChannelNamespace } from "@ai-matrx/realtime";
-import { useRealtimeManager } from "@ai-matrx/realtime/react";
+import { defineChannelNamespace } from "@ai-matrx/data/realtime";
+import { useRealtimeManager } from "@ai-matrx/data/realtime/react";
 import { openShared } from "@/lib/realtime/sharedChannel";
 import * as Api from "@/features/file-analysis/api/file-analysis";
 import type {

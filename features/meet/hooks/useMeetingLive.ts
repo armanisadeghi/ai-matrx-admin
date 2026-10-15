@@ -23,8 +23,8 @@
 // (migrations/meet_realtime_publication.sql, meet_invitees_realtime_publication.sql).
 
 import { useEffect } from "react";
-import { defineChannelNamespace, type ChannelSpec } from "@ai-matrx/realtime";
-import { useRealtimeManager } from "@ai-matrx/realtime/react";
+import { defineChannelNamespace, type ChannelSpec } from "@ai-matrx/data/realtime";
+import { useRealtimeManager } from "@ai-matrx/data/realtime/react";
 import { openShared } from "@/lib/realtime/sharedChannel";
 import { useAppStore } from "@/lib/redux/hooks";
 import {

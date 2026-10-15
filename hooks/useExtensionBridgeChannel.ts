@@ -1,7 +1,7 @@
 /**
  * useExtensionBridgeChannel — React hook for the matrx-extend bridge.
  *
- * Rides `@ai-matrx/realtime`'s `useChannel` on the bridge's spec
+ * Rides `@ai-matrx/data/realtime`'s `useChannel` on the bridge's spec
  * (`lib/extension-bridge/bridgeChannel.ts`). The package owns the channel:
  * ONE shared, ref-counted room per declared topic, so several callers of this
  * hook in one tab share one underlying Supabase channel; enforced teardown;
@@ -37,7 +37,7 @@
 
 import { useCallback, useEffect, useMemo, useRef } from "react";
 import { useSelector } from "react-redux";
-import { useChannel } from "@ai-matrx/realtime/react";
+import { useChannel } from "@ai-matrx/data/realtime/react";
 import {
   bridgeChannelSpec,
   bridgeEnvelope,
