@@ -423,6 +423,33 @@ export async function updateAgentTaskFields(
   if (error) throw pgErrorToError(error);
 }
 
+// ── Automation guardrails (sch_task.guardrails) ────────────────────────────
+// automationGuardrails.ts owns the meaning; this façade owns the table access.
+
+export async function readTaskGuardrailRow(id: string) {
+  const { data, error } = await schedulerDb(supabase)
+    .from("sch_task")
+    .select("enabled, guardrails, metadata, organization_id, user_id")
+    .eq("id", id)
+    .maybeSingle();
+  if (error) throw pgErrorToError(error);
+  return data;
+}
+
+export async function readTaskGuardrailRows(ids: readonly string[]) {
+  const { data, error } = await schedulerDb(supabase)
+    .from("sch_task")
+    .select("id, guardrails, metadata")
+    .in("id", ids as string[]);
+  if (error) throw pgErrorToError(error);
+  return data ?? [];
+}
+
+export async function writeTaskGuardrails(id: string, guardrails: Json): Promise<void> {
+  const { error } = await schedulerDb(supabase).from("sch_task").update({ guardrails }).eq("id", id);
+  if (error) throw pgErrorToError(error);
+}
+
 // ── Run history ────────────────────────────────────────────────────────────
 
 export async function listRunsForTask(

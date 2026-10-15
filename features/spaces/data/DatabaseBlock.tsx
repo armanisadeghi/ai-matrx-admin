@@ -186,6 +186,8 @@ function DatabaseFrame({
     });
   };
 
+  // A row added in the view starts linked to this page's row (records-ui newRowValues), so it stays in the view.
+  const newRowValues = thisRowValues(asked.filters, ownerId);
   const body =
     resolved.state === "waiting" ? (
       <div className="spaces-db-loading" />
@@ -197,6 +199,7 @@ function DatabaseFrame({
     <DatabaseBody
       tableId={tableId}
       view={shown}
+      newRowValues={newRowValues}
       fields={fields}
       onOpenRecord={setOpen}
       editable={editable}
@@ -381,7 +384,7 @@ function DatabaseFrame({
       <Dialog open={expanded} onOpenChange={setExpanded}>
         <DialogContent size="2xl" height="tall" className="spaces-db-expanded overflow-auto">
           <DialogTitle>{props.title || sourceName}</DialogTitle>
-          {resolved.state === "plain" || resolved.state === "resolved" ? <DatabaseBody tableId={tableId} view={shown} fields={fields} onOpenRecord={setOpen} editable={editable} shape={shape} sample={sample} overRows={sample || published} sortOverride={sortOverride} search={search} onSummaries={shape && !sample && !published ? (summaries) => saveView({ summaries } as Partial<SpaceDbView>) : undefined} onFormId={(formId) => saveView({ formId })} onLook={saveView} /> : body}
+          {resolved.state === "plain" || resolved.state === "resolved" ? <DatabaseBody tableId={tableId} view={shown} newRowValues={newRowValues} fields={fields} onOpenRecord={setOpen} editable={editable} shape={shape} sample={sample} overRows={sample || published} sortOverride={sortOverride} search={search} onSummaries={shape && !sample && !published ? (summaries) => saveView({ summaries } as Partial<SpaceDbView>) : undefined} onFormId={(formId) => saveView({ formId })} onLook={saveView} /> : body}
         </DialogContent>
       </Dialog>
     </div>
@@ -391,6 +394,7 @@ function DatabaseFrame({
 function DatabaseBody({
   tableId,
   view,
+  newRowValues,
   fields,
   onOpenRecord,
   editable,
@@ -405,6 +409,8 @@ function DatabaseBody({
 }: {
   tableId: string;
   view: ViewWithSummaries;
+  /** What a row added in this view starts with (the relation to the page's row). */
+  newRowValues: Record<string, string[]>;
   fields: Field[];
   onOpenRecord: (id: string) => void;
   editable: boolean;
@@ -447,6 +453,7 @@ function DatabaseBody({
         embedded
         // A table's row is a "record" (canonical vocabulary); "New page" stays on the Spaces-native entity database.
         newRowLabel={editable ? "New record" : undefined}
+        {...(Object.keys(newRowValues).length ? { newRowValues } : {})}
         sortOverride={sortOverride}
         searchOverride={search.value || null}
         onSearchChange={search.onChange}
