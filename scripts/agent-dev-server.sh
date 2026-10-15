@@ -63,6 +63,11 @@ JAR="$BASE.jar"
 LOCK="$BASE.lock"
 FAILED="$BASE.failed"
 USED="$BASE.used"
+# A request arrived after the server was READY (warm-up traffic does not count): it has been used.
+TOUCHED="$BASE.touched"
+# Epochs of the watchdog's recent restarts (the crash-loop budget).
+RESTARTS="$BASE.restarts"
+HOLDS_DIR="$STATE_DIR/holds"
 
 # The mode this invocation acts in: the requested one, or the running server's once reused.
 use_mode() {
@@ -125,6 +130,21 @@ IDLE_STOP_MIN="${MATRX_PREVIEW_IDLE_STOP_MIN:-30}"
 RECYCLE_GB="${MATRX_PREVIEW_RECYCLE_GB:-40}"
 RECYCLE_IDLE_MIN="${MATRX_PREVIEW_RECYCLE_IDLE_MIN:-5}"
 BUSY_GUARD_MIN="${MATRX_PREVIEW_BUSY_GUARD_MIN:-2}"
+# KEEP-ALIVE (2026-10-15, "the disease of so many localhost issues"). Every stop above used to
+# leave NO server: the next test runner arrived to no listener and paid a 73 s cold compile
+# (minutes under load) inside a 30 s browser timeout. Now every stop the watchdog makes is a
+# RESTART into a fresh server, which `warm` signs in and compiles before anyone needs it, and:
+#   KEEP_SMALL_GB  an idle server under this much real memory is left running — small is not a hog
+#   a server nobody has used since its own start is never recycled for idleness (no restart loop)
+#   a HOLD (`hold <min>`, taken by `pnpm preview:ready`) means a test run is on it: no idle stop,
+#                  no recycle, and no takeover by another session's preview:start. Only the hard
+#                  memory cap still fires, and that one restarts too.
+#   RESTART_BUDGET restarts per RESTART_WINDOW_SEC; past it the watchdog stops restarting and says
+#                  "crash loop" — a server that dies on every boot is a code defect to read, not retry.
+KEEP_SMALL_GB="${MATRX_PREVIEW_KEEP_SMALL_GB:-16}"
+RESTART_BUDGET="${MATRX_PREVIEW_RESTART_BUDGET:-3}"
+RESTART_WINDOW_SEC="${MATRX_PREVIEW_RESTART_WINDOW_SEC:-900}"
+HOLD_MAX_MIN=180
 # A stop by the idle/recycle rules is normal housekeeping. Its FAILED line
 # carries this prefix so the next start and status word it as a recycle.
 RECYCLED_PREFIX="RECYCLED: "
@@ -302,14 +322,8 @@ restart_if_node_modules_moved() {
   # Re-check ownership: a preview:stop/start may have replaced this server meanwhile.
   alive "$pid" && [[ "$(meta_value PID)" == "$pid" ]] || return 1
   stop_for_limit "$pid" "${RECYCLED_PREFIX}restarted because packages were installed under it (${moves:-dependencies relinked}) — a running server keeps the code it booted with and would serve errors that are not bugs"
-  if ! start_fresh_preview; then
-    # Nothing fails silently: the server is gone and the restart did not bring it back. Replace
-    # the RECYCLED line so the next preview:start and preview:status say so, not "normal".
-    local why
-    why="$(grep '\[preview\] ERROR:' "$LOG" 2>/dev/null | tail -1 | sed 's/^\[preview\] ERROR: //')"
-    printf 'the watchdog stopped the preview because packages were installed under it, and its restart FAILED (%s) — run pnpm preview:start\n' "${why:-see the log}" >"$FAILED"
-    printf '[preview] WATCHDOG: restart after a package install FAILED: %s\n' "${why:-see above}" >>"$LOG"
-  fi
+  # Nothing fails silently: a failed restart replaces the RECYCLED line in FAILED.
+  restart_after_stop "packages were installed under it (${moves:-dependencies relinked})" || true
   return 0
 }
 
@@ -322,8 +336,79 @@ install_running() {
 }
 
 # A fresh `start` from the monitor (already detached): same checkout, same inherited profile.
+# Waits for the old tree to let go of the port first — a start racing a dying next-server is
+# the EADDRINUSE boot failure seen 2026-10-15. MATRX_PREVIEW_START_CMD replaces the start in tests.
 start_fresh_preview() {
-  "$REPO_ROOT/scripts/agent-dev-server.sh" start >>"$LOG" 2>&1
+  local _
+  if [[ -n "${MATRX_PREVIEW_START_CMD:-}" ]]; then
+    bash -c "$MATRX_PREVIEW_START_CMD" >>"$LOG" 2>&1
+  else
+    for _ in $(seq 1 40); do
+      lsof -nP -iTCP:"$PORT" -sTCP:LISTEN -t >/dev/null 2>&1 || break
+      sleep 0.5
+    done
+    "$REPO_ROOT/scripts/agent-dev-server.sh" start >>"$LOG" 2>&1
+  fi
+}
+
+# restart_after_stop <why> — the watchdog stopped (or lost) the server; bring a fresh one up,
+# within the crash-loop budget. Returns 0 when a start was attempted and succeeded.
+restart_after_stop() {
+  local why="$1" now recent
+  now="$(date +%s)"
+  recent="$(awk -v since="$(( now - RESTART_WINDOW_SEC ))" '$1 >= since' "$RESTARTS" 2>/dev/null | wc -l | tr -d ' ')"
+  if (( recent >= RESTART_BUDGET )); then
+    local loop="CRASH LOOP: $recent restarts in the last $(( RESTART_WINDOW_SEC / 60 )) min, so the watchdog stopped restarting after: $why — read the end of the log; this is a code or install defect, not load"
+    printf '%s\n' "$loop" >"$FAILED"
+    printf '[preview] WATCHDOG: %s\n' "$loop" >>"$LOG"
+    return 1
+  fi
+  printf '%s\n' "$now" >>"$RESTARTS"
+  printf '[preview] KEEP-ALIVE: starting a fresh preview after: %s\n' "$why" >>"$LOG"
+  if ! start_fresh_preview; then
+    local err
+    err="$(grep '\[preview\] ERROR:' "$LOG" 2>/dev/null | tail -1 | sed 's/^\[preview\] ERROR: //')"
+    printf 'the watchdog restarted the preview after "%s" and the restart FAILED (%s) — run pnpm preview:ready\n' "$why" "${err:-see the log}" >"$FAILED"
+    printf '[preview] WATCHDOG: restart FAILED: %s\n' "${err:-see above}" >>"$LOG"
+    return 1
+  fi
+  return 0
+}
+
+# ── HOLDS: a test run is using the server ─────────────────────────────────────────────────
+# One file per session label under $HOLDS_DIR: "<until-epoch> <session>". Expired files are
+# removed on read. `pnpm preview:ready` takes one; a runner may refresh or release its own.
+hold_file() { printf '%s/%s' "$HOLDS_DIR" "$(printf '%s' "${1:-$SESSION_LABEL}" | tr -c 'A-Za-z0-9._-' '_')"; }
+
+active_holds() { # prints "<label> <minutes-left>" per live hold
+  local f until now
+  now="$(date +%s)"
+  for f in "$HOLDS_DIR"/*; do
+    [[ -f "$f" ]] || continue
+    until="$(awk 'NR == 1 { print $1 }' "$f" 2>/dev/null)"
+    if [[ "$until" =~ ^[0-9]+$ ]] && (( until > now )); then
+      printf '%s %s\n' "$(basename "$f")" "$(( (until - now + 59) / 60 ))"
+    else
+      rm -f "$f"
+    fi
+  done
+}
+
+held() { [[ -n "$(active_holds)" ]]; }
+
+cmd_hold() {
+  local minutes="${1:-45}" f
+  [[ "$minutes" =~ ^[0-9]+$ ]] || fail "hold takes whole minutes (got '$minutes')"
+  (( minutes <= HOLD_MAX_MIN )) || minutes="$HOLD_MAX_MIN"
+  mkdir -p "$HOLDS_DIR"
+  f="$(hold_file)"
+  printf '%s %s\n' "$(( $(date +%s) + minutes * 60 ))" "$SESSION_RAW" >"$f"
+  log "held for $minutes min by $SESSION_LABEL: no idle stop, no recycle, no takeover until then (release: pnpm preview:release)"
+}
+
+cmd_release() {
+  rm -f "$(hold_file)"
+  log "released the hold of $SESSION_LABEL"
 }
 
 report_previous_failure() {
@@ -737,7 +822,7 @@ PY
     echo "OWNER_HOST=$SESSION_HOST"
     echo "MODE=$MODE"
   } >"$META"
-  rm -f "$READY" "$JAR" "$FAILED"
+  rm -f "$READY" "$JAR" "$FAILED" "$TOUCHED"
   date +%s >"$USED" # a fresh start counts as use; the idle clock starts now
 
   # exec_command reaps ordinary child process groups even under `nohup`.
@@ -888,24 +973,32 @@ note_requests() {
   # No `grep -q`: an early exit SIGPIPEs tail and pipefail would turn a match into failure.
   if tail -c "+$(( SCAN_OFFSET + 1 ))" "$LOG" 2>/dev/null | grep -E "$REQUEST_LINE_RE" >/dev/null; then
     date +%s >"$USED"
+    # Lines read in the scan that first sees READY are the warm-up's own; later ones are use.
+    (( READY_SEEN )) && touch "$TOUCHED"
   fi
   SCAN_OFFSET="$size"
+  [[ -f "$READY" ]] && READY_SEEN=1
 }
+READY_SEEN=0
 
-# THE STOP DECISION. preview_stop_reason <kb> <idle-seconds> [footprint|rss]
-# prints the reason to stop now, or nothing. Idle/recycle reasons carry
-# $RECYCLED_PREFIX: they are housekeeping, and are worded that way later.
+# THE STOP DECISION. preview_stop_reason <kb> <idle-seconds> [footprint|rss] [held 0|1] [used 0|1]
+# prints the reason to stop now, or nothing. Every stop is followed by a fresh start (KEEP-ALIVE).
+# Idle/recycle reasons carry $RECYCLED_PREFIX: housekeeping, worded that way later.
 preview_stop_reason() {
-  local kb="$1" idle="$2" source="${3:-footprint}" gb label idle_min
+  local kb="$1" idle="$2" source="${3:-footprint}" is_held="${4:-0}" was_used="${5:-1}" gb label idle_min
   gb="$(kb_to_gb "$kb")"
   label="$(memory_label "$source")"
   idle_min="$(( idle / 60 ))"
   if (( kb >= $(gb_to_kb "$MAX_RSS_GB") )); then
-    printf 'preview stopped at %s %s (cap %s GB); no automatic restart — the next pnpm preview:start starts a fresh one\n' "$gb" "$label" "$MAX_RSS_GB"
-  elif (( idle >= $(min_to_sec "$IDLE_STOP_MIN") )); then
-    printf '%sstopped after %s min unused (no request for %s min; %s %s) — the next pnpm preview:start starts a fresh one\n' "$RECYCLED_PREFIX" "$idle_min" "$IDLE_STOP_MIN" "$gb" "$label"
+    printf 'preview restarted at %s %s (cap %s GB) — a fresh one starts and warms at once\n' "$gb" "$label" "$MAX_RSS_GB"
+  elif (( is_held )); then
+    return 0 # a test run holds it
+  elif (( ! was_used )); then
+    return 0 # fresh since its own start: recycling it would only restart the same thing
+  elif (( idle >= $(min_to_sec "$IDLE_STOP_MIN") && kb >= $(gb_to_kb "$KEEP_SMALL_GB") )); then
+    printf '%srecycled after %s min unused (no request for %s min; %s %s, keep-small %s GB) — a fresh one starts and warms at once\n' "$RECYCLED_PREFIX" "$idle_min" "$IDLE_STOP_MIN" "$gb" "$label" "$KEEP_SMALL_GB"
   elif (( kb >= $(gb_to_kb "$RECYCLE_GB") && idle >= $(min_to_sec "$RECYCLE_IDLE_MIN") )); then
-    printf '%srecycled at %s %s after %s min idle (recycle at %s GB once idle %s min) — the next pnpm preview:start starts a fresh one\n' "$RECYCLED_PREFIX" "$gb" "$label" "$idle_min" "$RECYCLE_GB" "$RECYCLE_IDLE_MIN"
+    printf '%srecycled at %s %s after %s min idle (recycle at %s GB once idle %s min) — a fresh one starts and warms at once\n' "$RECYCLED_PREFIX" "$gb" "$label" "$idle_min" "$RECYCLE_GB" "$RECYCLE_IDLE_MIN"
   fi
 }
 
@@ -927,14 +1020,20 @@ retire_stale_preview() {
   alive "$pid" || return 1
   idle="$(idle_seconds)"
   (( idle >= $(min_to_sec "$BUSY_GUARD_MIN") )) || return 1
-  if (( idle >= $(min_to_sec "$RECYCLE_IDLE_MIN") )); then
+  # A held server is a test run in progress (a page sitting on Supabase-only traffic logs no
+  # request for minutes): never pulled out from under it.
+  held && return 1
+  read -r kb source <<<"$(real_memory_kb "$pid")"
+  # A healthy server of THIS checkout under the recycle size is simply reused — restarting it
+  # would only hand the caller a cold compile. Another checkout's, or a bloated one, is replaced.
+  if (( idle >= $(min_to_sec "$RECYCLE_IDLE_MIN") )) &&
+    { [[ "$(meta_value ROOT)" != "$REPO_ROOT" ]] || (( kb >= $(gb_to_kb "$RECYCLE_GB") )); }; then
     why="unused for $(( idle / 60 )) min"
   elif [[ -f "$READY" ]] && ! preview_answers "$port"; then
     why="not answering on port $port (unused for $(( idle / 60 )) min)"
   else
     return 1
   fi
-  read -r kb source <<<"$(real_memory_kb "$pid")"
   stop_for_limit "$pid" "${RECYCLED_PREFIX}replaced by a new pnpm preview:start (session $SESSION_RAW): the previous preview pid $pid from '$(meta_value ROOT)' was $why at $(kb_to_gb "$kb") $(memory_label "$source") — started a fresh one"
   return 0
 }
@@ -1003,7 +1102,7 @@ stop_for_limit() {
     sleep 0.5
   done
   alive "$pid" && killtree "$pid" KILL
-  rm -f "$META" "$READY" "$JAR" "$USED"
+  rm -f "$META" "$READY" "$JAR" "$USED" "$TOUCHED"
 }
 
 # Keep an error storm from filling the volume. The Next process holds this file
@@ -1044,13 +1143,19 @@ cmd_monitor() {
   [[ "$SCAN_OFFSET" =~ ^[0-9]+$ ]] || SCAN_OFFSET=0
   [[ -f "$USED" ]] || date +%s >"$USED"
 
+  local is_held was_used
   while alive "$expected_pid"; do
     note_requests
     read -r mem_kb mem_source <<<"$(real_memory_kb "$expected_pid")"
-    reason="$(preview_stop_reason "$mem_kb" "$(idle_seconds)" "$mem_source")"
+    is_held=0; held && is_held=1
+    was_used=0; [[ -f "$TOUCHED" ]] && was_used=1
+    reason="$(preview_stop_reason "$mem_kb" "$(idle_seconds)" "$mem_source" "$is_held" "$was_used")"
     if [[ -n "$reason" ]]; then
       # Re-check liveness: a takeover by preview:start may have just stopped it.
-      alive "$expected_pid" && [[ "$(meta_value PID)" == "$expected_pid" ]] && stop_for_limit "$expected_pid" "$reason"
+      if alive "$expected_pid" && [[ "$(meta_value PID)" == "$expected_pid" ]]; then
+        stop_for_limit "$expected_pid" "$reason"
+        restart_after_stop "${reason#"$RECYCLED_PREFIX"}" || true
+      fi
       exit 0
     fi
 
@@ -1069,7 +1174,8 @@ cmd_monitor() {
         last_log_mtime="$log_mtime"
         last_progress="$now"
       elif (( now - last_progress >= NO_PROGRESS_SEC )); then
-        stop_for_limit "$expected_pid" "preview stopped after ${NO_PROGRESS_SEC}s without startup progress; no automatic restart"
+        stop_for_limit "$expected_pid" "preview stopped after ${NO_PROGRESS_SEC}s without startup progress"
+        restart_after_stop "${NO_PROGRESS_SEC}s without startup progress" || true
         exit 0
       fi
     fi
@@ -1078,6 +1184,21 @@ cmd_monitor() {
 
   # The loop only ends when the process is gone and no watchdog limit fired.
   announce_node_modules_change "$expected_pid"
+  # A deliberate stop (preview:stop, a takeover, a watchdog stop) removes or replaces the lease
+  # first. A lease still naming this pid means it DIED on its own — 2026-10-15: an unhandled
+  # `read ECONNRESET` on a socket killed next dev seconds after boot and nothing brought it back.
+  if [[ -f "$META" && "$(meta_value PID)" == "$expected_pid" ]]; then
+    local last_error
+    last_error="$(grep -a -E '^(Error|⨯|[A-Za-z]*Error)[: ]' "$LOG" 2>/dev/null | tail -1 | cut -c1-200)"
+    # An install under it is the better-known killer; announce_node_modules_change just said so.
+    if grep -q 'node_modules changed' "$FAILED" 2>/dev/null; then
+      last_error="$(head -1 "$FAILED")"
+    fi
+    printf 'preview died on its own (last error: %s)\n' "${last_error:-none logged}" >"$FAILED"
+    printf '[preview] WATCHDOG: the preview pid %s died on its own (last error: %s)\n' "$expected_pid" "${last_error:-none logged}" >>"$LOG"
+    rm -f "$META" "$READY" "$JAR" "$USED" "$TOUCHED"
+    restart_after_stop "it died on its own (${last_error:-no error logged})" || true
+  fi
 }
 
 cmd_status() {
@@ -1094,7 +1215,10 @@ cmd_status_one() {
     use_mode "$(meta_value MODE)"
     [[ -n "$MODE" ]] || use_mode unknown
     log "RUNNING mode=$MODE pid=$pid port=$port memory=$(kb_to_gb "$mem_kb") $(memory_label "$mem_source") last-used=$(( idle / 60 )) min ago owner=$owner session=$(meta_value OWNER_SESSION)"
-    log "housekeeping: stopped after ${IDLE_STOP_MIN} min unused; recycled at >= ${RECYCLE_GB} GB once idle ${RECYCLE_IDLE_MIN} min; hard cap ${MAX_RSS_GB} GB; a new preview:start replaces one idle >= ${RECYCLE_IDLE_MIN} min"
+    log "housekeeping: every stop restarts a fresh, warmed server; recycled after ${IDLE_STOP_MIN} min unused when >= ${KEEP_SMALL_GB} GB, or at >= ${RECYCLE_GB} GB once idle ${RECYCLE_IDLE_MIN} min; hard cap ${MAX_RSS_GB} GB; held servers are never recycled"
+    local holds
+    holds="$(active_holds | awk '{ printf "%s%s (%s min left)", (NR > 1 ? ", " : ""), $1, $2 }')"
+    log "holds: ${holds:-none}   ready: $([[ -f "$READY" ]] && echo yes || echo "no (still compiling or warming)")   used since start: $([[ -f "$TOUCHED" ]] && echo yes || echo no)"
     if [[ "$owner" == "$REPO_ROOT" ]]; then
       announce_session_url "$port"
       log "this server hot-reloads edits in THIS checkout; you do not need another server"
@@ -1168,7 +1292,10 @@ cmd_stop() {
     alive "$pid" && killtree "$pid" KILL
   fi
 
-  rm -f "$META" "$LOG" "$READY" "$JAR" "$FAILED" "$USED"
+  # Keep the stopped server's log one generation: deleting it erased the only record of why the
+  # previous server crashed or what it was serving (2026-10-15).
+  [[ -f "$LOG" ]] && mv -f "$LOG" "$LOG.prev"
+  rm -f "$META" "$READY" "$JAR" "$FAILED" "$USED" "$TOUCHED"
   rmdir "$LOCK" 2>/dev/null || true
   log "managed preview stopped; build cache $distdir was preserved"
 }
@@ -1182,7 +1309,9 @@ if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
     stop) cmd_stop ;;
     status) cmd_status ;;
     warm) cmd_warm "${POSITIONAL[0]:-}" ;;
+    hold) cmd_hold "${POSITIONAL[0]:-45}" ;;
+    release) cmd_release ;;
     monitor) cmd_monitor "${POSITIONAL[0]:-}" ;;
-    *) echo "usage: $0 {start|stop|status}" >&2; exit 2 ;;
+    *) echo "usage: $0 {start|stop|status|hold <min>|release}" >&2; exit 2 ;;
   esac
 fi
