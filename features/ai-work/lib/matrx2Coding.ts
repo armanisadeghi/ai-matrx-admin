@@ -289,15 +289,21 @@ export type StartOutcome =
 export async function startCodingRun(
   doors: CodingDoors,
   capability: Pick<DoorCapability, "via" | "computer">,
-  input: { cwd: string; prompt: string },
+  input: { cwd: string; prompt: string; provider?: "claude" | "codex"; accountProfileId?: string | null },
 ): Promise<StartOutcome> {
+  const provider = input.provider ?? "claude";
   if (capability.via === "matrx2" && capability.computer) {
     const computer = capability.computer;
     try {
       return await doors.reach.withClient(computer, async (client) => {
         const transport = transportFor(client, computer.name);
         try {
-          const started = await transport.call("start", { provider: "claude", cwd: input.cwd, prompt: input.prompt });
+          const started = await transport.call("start", {
+            provider,
+            cwd: input.cwd,
+            prompt: input.prompt,
+            ...(input.accountProfileId ? { accountId: input.accountProfileId } : {}),
+          });
           return { via: "matrx2" as const, computer, sessionId: started.session.id, runId: started.run?.runId ?? null, queued: started.queued };
         } finally {
           transport.dispose();
@@ -307,6 +313,7 @@ export async function startCodingRun(
       throw new Error(computerReason(computer.name, error));
     }
   }
+  if (provider !== "claude") throw new Error("Codex runs only on a computer with Matrx 2.");
   return { via: "matrx-local", run: await doors.local.start({ workspace: input.cwd, prompt: input.prompt }) };
 }
 

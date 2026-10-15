@@ -12,6 +12,7 @@ import { fetchRelayStatus } from "@/features/files/devices/console/relay";
 import type { DeviceRow } from "@/features/files/devices/types";
 
 import { CODING_MINOR, computerName, protocolMinor } from "./matrx2Computers";
+import { fileMatrx2Run, startCodingRun, type CodingDoors, type FilingOutcome } from "./matrx2Coding";
 
 export type RunsOn = "cloud" | { deviceId: string };
 
@@ -61,7 +62,37 @@ export function computerSessionLink(deviceId: string, sessionId: string): string
   return `/devices/${encodeURIComponent(deviceId)}?view=sessions&s=${encodeURIComponent(`#s/${sessionId}`)}`;
 }
 
-/** A request id `coding.start` runs once (`^[A-Za-z0-9_-]{8,64}$`). */
-export function newClientRequestId(): string {
-  return `web-${crypto.randomUUID().replace(/-/g, "")}`;
+
+/** What Run needs on the chosen computer (the form's answer). */
+export interface ComputerRunRequest {
+  deviceId: string;
+  name: string;
+  provider: "claude" | "codex";
+  folder: string;
+  accountProfileId: string | null;
+}
+
+/**
+ * Run on the chosen computer through THE coding door (`startCodingRun`, the one start path every
+ * /work surface uses), then file the chat under the person's homes once it reaches AI Matrx
+ * (`fileMatrx2Run`). Returns where to go (the computer's Sessions view on the new session) and the
+ * filing, which the caller follows. A refusal throws with the computer's own words.
+ */
+export async function runOnChosenComputer(
+  doors: CodingDoors,
+  request: ComputerRunRequest,
+  prompt: string,
+): Promise<{ link: string; sessionId: string; filing: Promise<FilingOutcome> }> {
+  const computer = { deviceId: request.deviceId, name: request.name };
+  const started = await startCodingRun(
+    doors,
+    { via: "matrx2", computer },
+    { cwd: request.folder, prompt, provider: request.provider, accountProfileId: request.accountProfileId },
+  );
+  if (started.via !== "matrx2") throw new Error(`${request.name} did not start it.`);
+  return {
+    link: computerSessionLink(request.deviceId, started.sessionId),
+    sessionId: started.sessionId,
+    filing: fileMatrx2Run(doors, started.computer, started.sessionId),
+  };
 }

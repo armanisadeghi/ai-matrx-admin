@@ -14,26 +14,19 @@ import { getClaimsUser } from "@ai-matrx/auth";
 import { DesktopProtocolError } from "@ai-matrx/desktop-protocol";
 import type { DesktopClient } from "@ai-matrx/desktop-protocol/client";
 import { ErrorNotice } from "@ai-matrx/design-system";
-import { Field, Select } from "@ai-matrx/design-system/controls";
+import { Button, Field, Select } from "@ai-matrx/design-system/controls";
 
 import { cn } from "@/lib/utils";
 import { supabase } from "@/utils/supabase/client";
 import { getAccessTokenOrNull } from "@/lib/python-client";
 import { useDeviceClient } from "@/features/files/devices/console/useDeviceClient";
 import type { ConsoleStatus } from "@/features/files/devices/console/connection";
-import { listChooserComputers, type ChooserComputer } from "@/features/ai-work/lib/computerChooser";
+import { listChooserComputers, type ChooserComputer, type ComputerRunRequest } from "@/features/ai-work/lib/computerChooser";
 
 export type CodingProvider = "claude" | "codex";
 
 /** What Run needs to start work on the chosen computer; null until it is ready. */
-export interface ComputerPlan {
-  deviceId: string;
-  name: string;
-  client: DesktopClient;
-  provider: CodingProvider;
-  folder: string;
-  accountProfileId: string | null;
-}
+export type ComputerPlan = ComputerRunRequest;
 
 /** The one live connection to the chosen computer, owned by the page (it outlives a collapsed step). */
 export interface ComputerConnectionState {
@@ -125,6 +118,7 @@ export function RunsOnStep({
   onPlan: (plan: ComputerPlan | null) => void;
 }) {
   const [list, setList] = useState<ListState>({ state: "loading" });
+  const [showUnavailable, setShowUnavailable] = useState(false);
 
   useEffect(() => {
     let alive = true;
@@ -149,6 +143,7 @@ export function RunsOnStep({
     };
   }, []);
 
+  const unavailable = list.state === "ready" ? list.computers.filter((c) => !c.selectable).length : 0;
   const chosen = list.state === "ready" ? list.computers.find((c) => c.device.id === deviceId && c.selectable) ?? null : null;
 
   return (
@@ -167,7 +162,9 @@ export function RunsOnStep({
           }}
         />
         {list.state === "ready" &&
-          list.computers.map((computer) => (
+          list.computers
+            .filter((computer) => computer.selectable || showUnavailable || computer.device.id === deviceId)
+            .map((computer) => (
             <RunsOnOption
               key={computer.device.id}
               testId={`runs-on-computer-${computer.device.id}`}
@@ -182,6 +179,11 @@ export function RunsOnStep({
             />
           ))}
       </ul>
+      {unavailable > 0 && (
+        <Button variant="quiet" className="self-start" onClick={() => setShowUnavailable((v) => !v)} data-testid="runs-on-unavailable">
+          {showUnavailable ? `Hide ${unavailable} unavailable` : `${unavailable} offline or unavailable`}
+        </Button>
+      )}
       {list.state === "loading" && <p className="text-xs text-muted-foreground">Checking your computers…</p>}
       {list.state === "failed" && <ErrorNotice size="inline" className="text-xs" message={list.reason} />}
       {list.state === "ready" && list.computers.length === 0 && (
@@ -285,14 +287,13 @@ function ComputerRunForm({
         ? {
             deviceId: computer.device.id,
             name: computer.name,
-            client,
             provider,
             folder: folder.trim(),
             accountProfileId: provider === "codex" && account !== DEFAULT_ACCOUNT ? account : null,
           }
         : null,
     );
-  }, [ready, client, computer.device.id, computer.name, provider, folder, account, onPlan]);
+  }, [ready, computer.device.id, computer.name, provider, folder, account, onPlan]);
 
   if (!live) {
     return (

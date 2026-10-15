@@ -2,7 +2,7 @@ import type { RelayDeviceStatusEvent } from "@ai-matrx/desktop-protocol";
 
 import type { DeviceRow } from "@/features/files/devices/types";
 
-import { chooserComputer, computerSessionLink, newClientRequestId, orderComputers } from "./computerChooser";
+import { chooserComputer, computerSessionLink, orderComputers } from "./computerChooser";
 
 function device(id: string, name: string | null): DeviceRow {
   return { id, instance_name: name, platform: "darwin", os_version: null, app_version: null, last_seen: null, is_active: true, created_at: null };
@@ -44,9 +44,5 @@ describe("Runs on: a computer's choice is the relay's word", () => {
   it("the link opens that computer's Sessions view on the new session", () => {
     expect(computerSessionLink("dev-1", "s.1")).toBe("/devices/dev-1?view=sessions&s=%23s%2Fs.1");
     expect(new URL(`https://x${computerSessionLink("dev-1", "s.1")}`).searchParams.get("s")).toBe("#s/s.1");
-  });
-
-  it("a request id fits coding.start's pattern", () => {
-    expect(newClientRequestId()).toMatch(/^[A-Za-z0-9_-]{8,64}$/);
   });
 });

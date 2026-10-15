@@ -37,7 +37,6 @@
 import { InfoHint } from "@/components/official/InfoHint";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { DesktopProtocolError } from "@ai-matrx/desktop-protocol";
 import Link from "next/link";
 import {
   ArrowUpRight,
@@ -109,7 +108,7 @@ import type { HostedBilling, OwnPlanStatus } from "@/features/ai-work/lib/ownPla
 import { DestinationStep } from "./DestinationStep";
 import { ComputerConnection, RunsOnStep, type ComputerConnectionState, type ComputerPlan } from "./RunsOnStep";
 import { ErrorNotice } from "@ai-matrx/design-system";
-import { computerSessionLink, newClientRequestId } from "@/features/ai-work/lib/computerChooser";
+import { runOnChosenComputer } from "@/features/ai-work/lib/computerChooser";
 import { HomeStep } from "./HomeStep";
 
 /** Reasonable ceiling for the "did the conversation row land yet?" retry. */
@@ -550,16 +549,16 @@ function ComposerBody({
     setLaunching(true);
     setComputerRefusal(null);
     try {
-      const started = await plan.client.request("coding.start", {
-        provider: plan.provider,
-        cwd: plan.folder,
-        prompt: requestText.trim(),
-        ...(plan.accountProfileId ? { account_profile_id: plan.accountProfileId } : {}),
-        client_request_id: newClientRequestId(),
+      // THE coding door: one start path for every /work surface, then filed under the homes.
+      const run = await runOnChosenComputer(browserCodingDoors, plan, requestText.trim());
+      toast.success(filingPendingSentence(plan.name));
+      void run.filing.then(async (filed) => {
+        if ("conversationId" in filed) await attachHomes(filed.conversationId);
+        else toast.info(filed.pending);
       });
-      router.push(computerSessionLink(plan.deviceId, started.session.id));
+      router.push(run.link);
     } catch (error) {
-      const said = DesktopProtocolError.from(error).message;
+      const said = error instanceof Error ? error.message : String(error);
       setComputerRefusal(`${plan.name} said: ${said}`);
       toast.error(`${plan.name} did not start it`, { description: said });
       setLaunching(false);
