@@ -29,6 +29,7 @@ import type {
   ConversationRowWrapperProps,
   MessageWrapperProps,
 } from "@ai-matrx/messaging/react";
+import { useOpeningConversationId } from "@/features/messaging/lib/openConversation";
 
 const loadChrome = () => import("./MessagingChromeImpl");
 
@@ -73,9 +74,13 @@ export function MessagingConversationRowChrome({
   conversation,
   children,
 }: ConversationRowWrapperProps) {
+  // The row whose thread route is on its way says so (messages-native.css),
+  // so a click on a slow server never reads as a dead click.
+  const opening = useOpeningConversationId() === conversation.conversation.id;
   return (
     <div
       data-conversation-id={conversation.conversation.id}
+      {...(opening ? { "data-opening": "", "aria-busy": true } : {})}
       className="contents"
     >
       {children}

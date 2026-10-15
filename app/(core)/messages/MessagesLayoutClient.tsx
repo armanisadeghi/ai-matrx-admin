@@ -18,16 +18,29 @@
  */
 
 import React from "react";
-import { useRouter } from "next/navigation";
 import { ConversationListPane } from "@/features/messaging/components/ConversationListPane";
 import { useMessagesSurfaceScope } from "@/features/messaging/lib/useMessagesSurfaceScope";
+import {
+  MessagesConversationOpener,
+  useOpenConversation,
+} from "@/features/messaging/lib/openConversation";
 
 export default function MessagesLayoutClient({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const router = useRouter();
+  // One opener for the list beside the thread, the phone list and the thread
+  // header: a row click shows "Opening…" until its route is on screen.
+  return (
+    <MessagesConversationOpener>
+      <MessagesLayoutBody>{children}</MessagesLayoutBody>
+    </MessagesConversationOpener>
+  );
+}
+
+function MessagesLayoutBody({ children }: { children: React.ReactNode }) {
+  const openConversation = useOpenConversation();
   const getScope = useMessagesSurfaceScope();
 
   return (
@@ -39,7 +52,7 @@ export default function MessagesLayoutClient({
       <div className="hidden min-h-0 w-80 shrink-0 flex-col border-r border-border pt-[var(--shell-header-h)] @2xl/messages:flex">
         <ConversationListPane
           className="min-h-0 flex-1"
-          onSelect={(conversationId) => router.push(`/messages/${conversationId}`)}
+          onSelect={openConversation}
           getApplicationScope={getScope}
         />
       </div>

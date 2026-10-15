@@ -3,6 +3,11 @@
  * `[associations] invalid_argument … sourceIds[0] must be a UUID (got "optimistic:mx-…")`:
  * the bubble chrome asked for the links of the composer's optimistic twin. An unsaved row
  * (sending / failed) must never ask; a saved one still does.
+ *
+ * The links arrive through the chrome's ONE lazy `import()` of `MessagingChromeImpl` (which also
+ * carries the kind registry behind `MatrxEnvelopeBlock`), so the heavy neighbours are stubbed —
+ * loading the real registry ran this one-assertion test past the 30s Jest limit — and the
+ * assertion waits for that import to settle.
  */
 import { expect, it, jest } from "@jest/globals";
 import React, { act } from "react";
@@ -17,6 +22,9 @@ jest.mock("../MessageLinks", () => ({
     return null;
   },
 }));
+
+jest.mock("@/features/matrx-envelope/MatrxEnvelopeBlock", () => ({ __esModule: true, default: () => null }));
+jest.mock("@/features/messaging/lib/messaging-menu-actions", () => ({ messageSenderName: () => "Ada" }));
 
 import { MessagingMessageChrome } from "../MessagingChrome";
 import type { MessageWrapperProps } from "@ai-matrx/messaging/react";
@@ -38,5 +46,10 @@ it("asks for links only for saved messages", async () => {
       </>,
     );
   });
+  for (let i = 0; i < 5; i += 1) {
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+  }
   expect(asked).toEqual(["6c1e0b0a-0000-4000-8000-000000000001"]);
 });
