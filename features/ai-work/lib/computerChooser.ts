@@ -96,3 +96,14 @@ export async function runOnChosenComputer(
     filing: fileMatrx2Run(doors, started.computer, started.sessionId),
   };
 }
+
+/**
+ * "Schedule it instead" carries the computer's work into the schedule builder: folder, coding app
+ * and account (the device itself rides as `runs_on`). Empty when nothing is chosen yet. Pure.
+ */
+export function computerScheduleParams(plan: Pick<ComputerRunRequest, "folder" | "provider" | "accountProfileId"> | null): string {
+  if (!plan) return "";
+  const q = new URLSearchParams({ folder: plan.folder, provider: plan.provider });
+  if (plan.accountProfileId) q.set("account", plan.accountProfileId);
+  return `&${q.toString()}`;
+}

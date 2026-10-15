@@ -156,6 +156,8 @@ interface Props {
   initialConversationId?: string | null;
   /** `?runs_on=<device>`: the schedule runs on that Matrx 2 computer (create mode). */
   initialRunsOn?: string | null;
+  /** With `initialRunsOn`: the folder, coding app and account /work had chosen. */
+  initialComputerWork?: { folder: string; provider: "claude" | "codex"; accountProfileId: string };
 }
 
 export function ScheduleForm({
@@ -165,6 +167,7 @@ export function ScheduleForm({
   initialTrigger,
   initialConversationId,
   initialRunsOn,
+  initialComputerWork,
 }: Props) {
   const router = useRouter();
   const dispatch = useAppDispatch();
@@ -175,7 +178,7 @@ export function ScheduleForm({
       ? // Editing a coding schedule on a computer: its work is in metadata.device_op (computerWork.ts).
         { deviceId: task.targetDeviceId, mode: "coding", folder: task.deviceOp?.folder ?? "", provider: task.deviceOp?.provider ?? "claude", accountProfileId: task.deviceOp?.accountProfileId ?? "" }
       : !task && initialRunsOn
-        ? { deviceId: initialRunsOn, mode: "coding", folder: "", provider: "claude", accountProfileId: "" }
+        ? { deviceId: initialRunsOn, mode: "coding", folder: initialComputerWork?.folder ?? "", provider: initialComputerWork?.provider ?? "claude", accountProfileId: initialComputerWork?.accountProfileId ?? "" }
         : null,
   );
   const [errors, setErrors] = useState<Record<string, string>>({});

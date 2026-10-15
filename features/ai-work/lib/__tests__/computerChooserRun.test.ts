@@ -34,3 +34,12 @@ describe("Run on a chosen computer", () => {
     expect(door.fileMatrx2Run).not.toHaveBeenCalled();
   });
 });
+
+describe("Schedule it instead", () => {
+  it("carries the folder, coding app and account into the schedule builder", async () => {
+    const { computerScheduleParams } = await import("../computerChooser");
+    const q = new URLSearchParams(computerScheduleParams({ folder: "/w/a b", provider: "codex", accountProfileId: "acct-9" }).slice(1));
+    expect([q.get("folder"), q.get("provider"), q.get("account")]).toEqual(["/w/a b", "codex", "acct-9"]);
+    expect(computerScheduleParams(null)).toBe("");
+  });
+});

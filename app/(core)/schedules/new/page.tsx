@@ -48,6 +48,12 @@ function NewScheduleContent() {
       initialTrigger={initialTrigger}
       initialConversationId={conversationId || null}
       initialRunsOn={runsOn || null}
+      // /work's "Schedule it instead" carries the computer's work: folder, coding app, account.
+      initialComputerWork={{
+        folder: searchParams.get("folder") ?? "",
+        provider: searchParams.get("provider") === "codex" ? "codex" : "claude",
+        accountProfileId: searchParams.get("account") ?? "",
+      }}
     />
   );
 }

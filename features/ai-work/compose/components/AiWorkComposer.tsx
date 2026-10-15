@@ -111,7 +111,8 @@ import type { HostedBilling, OwnPlanStatus } from "@/features/ai-work/lib/ownPla
 import { DestinationStep } from "./DestinationStep";
 import { ComputerConnection, RunsOnStep, type ComputerConnectionState, type ComputerPlan } from "./RunsOnStep";
 import { ErrorNotice } from "@ai-matrx/design-system";
-import { computerSessionLink, runOnChosenComputer } from "@/features/ai-work/lib/computerChooser";
+import { computerScheduleParams, computerSessionLink, runOnChosenComputer } from "@/features/ai-work/lib/computerChooser";
+import { OpenOnComputerLink } from "./OpenOnComputerLink";
 import { HomeStep } from "./HomeStep";
 
 /** Reasonable ceiling for the "did the conversation row land yet?" retry. */
@@ -459,6 +460,17 @@ function ComposerBody({
     }
   };
 
+  /** Stop waiting for this chat: its pending filing is removed (the chat itself stays on the computer). */
+  const dismissFiling = async (filing: PendingFiling) => {
+    try {
+      if (!browserCodingDoors.filings) throw new Error("Pending chats are not kept here.");
+      await browserCodingDoors.filings.remove(filing);
+      setWaitingFilings((list) => list.filter((f) => f.sessionId !== filing.sessionId));
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "That pending chat could not be dismissed.");
+    }
+  };
+
   const deliverFiling = async (filing: PendingFiling) => {
     const ok = await confirm({
       title: `Deliver ${filing.computerName}'s chats to AI Matrx?`,
@@ -749,7 +761,7 @@ function ComposerBody({
     agentId,
   )}&prompt=${encodeURIComponent(requestText.trim())}${
     // Runs on a chosen computer: the schedule is aimed at it (ScheduleForm's Runs on).
-    runsOnDevice !== null ? `&runs_on=${encodeURIComponent(runsOnDevice)}` : ""
+    runsOnDevice !== null ? `&runs_on=${encodeURIComponent(runsOnDevice)}${computerScheduleParams(computerPlan)}` : ""
   }`;
 
   return (
@@ -1069,9 +1081,7 @@ function ComposerBody({
           <span className="text-foreground">
             Started on {startedRun.computerName} through Matrx 2.{" "}
             {startedRun.link ? (
-              <Link href={startedRun.link} className="text-primary hover:underline">
-                Open it on {startedRun.computerName}
-              </Link>
+              <OpenOnComputerLink href={startedRun.link} name={startedRun.computerName} />
             ) : null}
           </span>
         ) : null}
@@ -1083,6 +1093,9 @@ function ComposerBody({
             </span>
             <Button variant="outline" disabled={delivering === filing.sessionId} onClick={() => void deliverFiling(filing)}>
               Deliver
+            </Button>
+            <Button variant="quiet" disabled={delivering === filing.sessionId} onClick={() => void dismissFiling(filing)}>
+              Dismiss
             </Button>
           </div>
         ))}
