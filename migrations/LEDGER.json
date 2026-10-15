@@ -674,6 +674,12 @@
       "checksum": "7625a98d4fbc527d3f12784ec8e342c45883b15eb87db8f387223a78c5d3fd3b",
       "applied_at": "2026-10-15 18:27:14.262034+00"
     },
+    "migrations/campaign/atshare_h_a_collaborator_column_can_notify_when_assigned.sql": {
+      "source": "matrx-frontend",
+      "filename": "atshare_h_a_collaborator_column_can_notify_when_assigned.sql",
+      "checksum": "ea8b60b857d7b2ca1b33041956d89abf6e7f2677c3619c1add010bb0fc53d5f6",
+      "applied_at": "2026-10-15 18:38:17.04613+00"
+    },
     "migrations/campaign/auditorg_library_audit_names_the_acting_organization.sql": {
       "source": "matrx-frontend",
       "filename": "auditorg_library_audit_names_the_acting_organization.sql",
