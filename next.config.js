@@ -371,6 +371,13 @@ const nextConfig = {
     // — and every restart was a cold compile of minutes under load. If the panic returns
     // ("panic" / "snapshot" in the preview log), set this back to false and say so here.
     turbopackFileSystemCacheForDev: true,
+    // Eviction OFF (2026-10-15, measured): with the cache on, the default 'auto' eviction dropped
+    // Turbopack's hot-reload version state, and the server told EVERY open page to "restart" the
+    // client entry every ~2 s with byte-identical chunks — 15 reloads of one tab in 50 s, every
+    // agent's page in a reload storm. That is very likely the 2026-09-14 "drops active review
+    // pages". Memory is bounded by the preview watchdog's recycle and cap restarts, which the
+    // cache now makes warm.
+    turbopackMemoryEviction: false,
     // ON (2026-08-11): enables `forbidden()` / `unauthorized()` from
     // next/navigation and their `forbidden.tsx` / `unauthorized.tsx`
     // boundaries. Required by `requireAccess(..., { forbid: true })` —
