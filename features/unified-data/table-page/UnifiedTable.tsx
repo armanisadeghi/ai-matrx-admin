@@ -300,6 +300,7 @@ export function UnifiedTableBody({
   onShownViewChange,
   viewAddress,
   onViewAddressChange,
+  onRecordChange,
   content,
   skeleton,
 }: {
@@ -316,6 +317,8 @@ export function UnifiedTableBody({
   /** The view in the address bar (FTS-5): what the address said on arrival, and where changes are written. */
   viewAddress?: ViewAddressState | null;
   onViewAddressChange?: (state: ViewAddressState | null) => void;
+  /** The open record in the address (AT-RECORD): pushed on open, replaced on step and close, so Back closes it. */
+  onRecordChange?: (recordId: string | null, how: "open" | "step" | "close") => void;
 }) {
   const router = useRouter();
   const { tableId, address, object, shared, pendingInvitation } = mount;
@@ -328,6 +331,10 @@ export function UnifiedTableBody({
     ...(onViewAddressChange ? { onViewAddressChange } : {}),
     ...(viewAddress !== undefined ? { viewAddress } : {}),
   };
+  // Passed as a named object, like the two above: an installed records-ui without the prop ignores it.
+  const recordInAddress: { onRecordChange?: (recordId: string | null, how: "open" | "step" | "close") => void } = onRecordChange
+    ? { onRecordChange }
+    : {};
   const loadingFrame = skeleton ?? <TablePageSkeleton layout={skeletonLayoutFor(address.view)} />;
   const pageHeader: { header?: (chrome: { actions: ReactNode }) => ReactNode } = header ? { header } : {};
   const mountedTable = !mount.mountsTheTable ? null : content !== undefined ? (
@@ -348,6 +355,7 @@ export function UnifiedTableBody({
           activeGroupField={address.group}
           {...shownViewReport}
           {...viewInAddress}
+          {...recordInAddress}
           cameFrom={address.from}
           filter={address.filter}
           onViewChanged={onViewChanged}

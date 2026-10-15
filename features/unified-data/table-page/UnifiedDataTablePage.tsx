@@ -31,7 +31,7 @@ import { ChevronLeftTapButton } from "@ai-matrx/design-system/tap-target/buttons
 import { TableSwitcher } from "@/features/unified-data/components/TableSwitcher";
 import { useDeclarePageObjectOrganization } from "@/features/shell/pageObjectOrganization";
 import { useUserOrganizations } from "@/features/organizations/hooks";
-import { replaceAddressWithoutNavigating, currentPathWithSearch } from "@/lib/url-state/addressWithoutNavigating";
+import { pushAddressWithoutNavigating, replaceAddressWithoutNavigating, currentPathWithSearch } from "@/lib/url-state/addressWithoutNavigating";
 import { HeldWritesOnTable } from "@/features/record-change-approvals/HeldWritesOnTable";
 import { usePageCapture } from "@/components/agent-copy/page-capture/usePageCapture";
 import { tablePageCapture } from "@/components/agent-copy/page-capture/pageCapture";
@@ -207,6 +207,18 @@ export function UnifiedDataTablePage({ tableId }: { tableId: string }) {
     replaceAddressWithoutNavigating(currentPathWithSearch(next));
   }, []);
   /**
+   * THE OPEN RECORD IN THE ADDRESS (AT-RECORD): `?record=<id>` is pushed when a record opens (so Back
+   * closes it and a pasted link reopens it) and replaced when she steps to the next record or closes it.
+   */
+  const onRecordChange = useCallback((recordId: string | null, how: "open" | "step" | "close") => {
+    const next = new URLSearchParams(typeof window === "undefined" ? "" : window.location.search);
+    if (recordId) next.set("record", recordId);
+    else next.delete("record");
+    const href = currentPathWithSearch(next);
+    if (how === "open") pushAddressWithoutNavigating(href);
+    else replaceAddressWithoutNavigating(href);
+  }, []);
+  /**
    * THE SHELL HEADER BELIEVES THE TABLE (GATES-TAIL, VERIFIER-21 #7). The table named its own
    * organization, so the header's red "Choose org" would be a lie: nothing here waits for a choice.
    */
@@ -323,6 +335,7 @@ export function UnifiedDataTablePage({ tableId }: { tableId: string }) {
             onViewChanged={onViewChanged}
             viewAddress={viewAddress}
             onViewAddressChange={onViewAddressChange}
+            onRecordChange={onRecordChange}
             onShownViewChange={setShownView}
           />
         </div>

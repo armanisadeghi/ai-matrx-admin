@@ -97,6 +97,7 @@ import {
 } from "./sections";
 import { useKnowledgeSearchStream, type SectionState } from "./useKnowledgeSearchStream";
 import type { DataHomeRow } from "@/features/unified-data/home/dataHomeRows";
+import { recordPageHref } from "@/features/unified-data/table-page/recordPageHref";
 
 /**
  * The data home's tables source (features/unified-data/home/dataHomeTablesSource.ts), loaded with
@@ -120,6 +121,16 @@ export interface KnowledgeCommandBarProps {
   runner?: KnowledgeSearchRunner;
   /** Test seam — production loads the data home's cached door. */
   tablesModule?: TablesModule;
+  /** Test seam — production searches records across every table (`custom.records_search`). */
+  recordsSearch?: (text: string) => Promise<RecordHit[]>;
+}
+
+/** One record the bar found: its name and the table it lives in (`RecordSearchHit`, the fields the bar draws). */
+export interface RecordHit {
+  recordId: string;
+  tableId: string;
+  tableName: string;
+  name: string | null;
 }
 
 type Filter = KnowledgeSectionKey | "commands" | "tables" | null;
@@ -182,6 +193,7 @@ export default function KnowledgeCommandBar({
   primaryAction = "open",
   runner,
   tablesModule,
+  recordsSearch,
 }: KnowledgeCommandBarProps) {
   const { copyText } = useClipboard({
     notify: copyNotify,
@@ -282,6 +294,31 @@ export default function KnowledgeCommandBar({
     ...launcherCommands(audience, tileCtx),
   ];
   const searchingText = text.trim();
+
+  // RECORDS: what she typed, asked of the store's search door after a pause (never one character).
+  // `for` names the words an answer belongs to, so a slow answer never fills a newer question.
+  const [records, setRecords] = useState<{ for: string; hits: RecordHit[]; error: string | null } | null>(null);
+  const wantsRecords = isOpen && searchingText.length >= 2 && chips.length === 0;
+  useEffect(() => {
+    if (!wantsRecords) return;
+    let live = true;
+    const timer = setTimeout(() => {
+      const ask = recordsSearch
+        ? Promise.resolve(recordsSearch(searchingText))
+        : import("@/features/unified-data/home/dataHomeRecordsSource").then((mod) => mod.searchRecordsAcrossTables(searchingText));
+      ask.then(
+        (hits) => live && setRecords({ for: searchingText, hits, error: null }),
+        (error) => {
+          console.error("[command bar] records did not answer:", error);
+          if (live) setRecords({ for: searchingText, hits: [], error: error instanceof Error ? error.message : String(error) });
+        },
+      );
+    }, 250);
+    return () => {
+      live = false;
+      clearTimeout(timer);
+    };
+  }, [wantsRecords, searchingText, recordsSearch]);
   const matchedCommands = filterCommands(allCommands, searchingText);
 
   const close = () => onClose();
@@ -636,6 +673,55 @@ export default function KnowledgeCommandBar({
     );
   };
 
+  const renderRecords = () => {
+    if (!wantsRecords) return null;
+    const answered = records && records.for === searchingText ? records : null;
+    const hits = answered?.hits ?? [];
+    if (answered && !answered.error && hits.length === 0) return null;
+    return (
+      <CommandGroup
+        key="records"
+        heading={
+          <span className="flex items-center gap-1.5" data-testid="command-bar-records">
+            Records
+            {answered && !answered.error ? <span className="tabular-nums text-muted-foreground/80">{hits.length}</span> : null}
+            {!answered ? <Loader2 className="h-3 w-3 animate-spin" aria-label="Searching Records" /> : null}
+          </span>
+        }
+      >
+        {!answered ? (
+          <div className="flex flex-col gap-1.5 px-2 py-1.5" aria-busy>
+            <Skeleton className="h-4 w-3/4" />
+          </div>
+        ) : null}
+        {answered?.error ? (
+          <div role="alert" className="flex items-center gap-1 px-2 py-1 text-xs text-destructive">
+            <span className="min-w-0 flex-1">{answered.error}</span>
+            <ErrorAlchemyMenu error={answered.error} operation="Search Records" calls={["custom.records_search"]} size="xs" />
+          </div>
+        ) : null}
+        {hits.map((hit) => (
+          <CommandItem
+            key={hit.recordId}
+            value={`record:${hit.recordId}`}
+            onSelect={() => {
+              close();
+              startTransition(() => router.push(recordPageHref(hit.tableId, hit.recordId)));
+            }}
+            className="flex items-start gap-2"
+            data-record-hit={hit.recordId}
+          >
+            <div className="min-w-0 flex-1">
+              <div className="truncate text-sm text-foreground">{hit.name ?? "Untitled"}</div>
+              <div className="truncate text-xs text-muted-foreground">{hit.tableName}</div>
+            </div>
+            <CommandShortcut className="hidden sm:inline">Open ↵</CommandShortcut>
+          </CommandItem>
+        ))}
+      </CommandGroup>
+    );
+  };
+
   const renderCommands = () => {
     const expanded = filter === "commands";
     const list = expanded || searchingText ? matchedCommands : matchedCommands.slice(0, COMMANDS_WHEN_EMPTY);
@@ -939,6 +1025,7 @@ export default function KnowledgeCommandBar({
             <>
               {online && orderedKeys.includes("top_hit") ? renderSection("top_hit", sections.top_hit) : null}
               {online && (filter === null || filter === "tables") ? renderTables() : null}
+              {online && filter === null ? renderRecords() : null}
               {online && filter !== "commands" && filter !== "tables"
                 ? orderedKeys.filter((k) => k !== "top_hit").map((k) => renderSection(k, sections[k]))
                 : null}
