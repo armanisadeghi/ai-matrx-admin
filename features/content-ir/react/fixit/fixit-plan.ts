@@ -15,7 +15,7 @@ import type {
   KindRenderGap,
   KindRenderGapDiagnosis,
 } from "./diagnose-kind-render-gap";
-import type { ComponentLayerScope } from "@ai-matrx/content-ir-react";
+import type { ComponentLayerScope } from "@ai-matrx/content-ir/react";
 
 /**
  * The owner's per-gap repair — the kind's creator (or the shared component's

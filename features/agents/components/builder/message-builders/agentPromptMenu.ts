@@ -38,7 +38,7 @@ import {
   sectionInsert,
   variableInsert,
   type PromptInsert,
-} from "@ai-matrx/rich-editor/core/prompt-inserts";
+} from "@ai-matrx/rich-content/editor/core/prompt-inserts";
 import {
   useOpenAgentContentWindow,
   useOpenAgentOptimizerWindow,

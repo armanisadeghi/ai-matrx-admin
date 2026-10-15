@@ -27,7 +27,7 @@ import {
   selectRequest,
 } from "@ai-matrx/chat/agents/redux/execution-system/active-requests/active-requests.selectors";
 import { Button } from "@ai-matrx/design-system/controls";
-import type { KindInstanceRenderProps } from "@ai-matrx/content-ir-react";
+import type { KindInstanceRenderProps } from "@ai-matrx/content-ir/react";
 
 import Link from "next/link";
 import { RotateCcw, TriangleAlert, Wrench } from "lucide-react";

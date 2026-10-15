@@ -96,9 +96,9 @@ configureRichContent({
   readSessionKnob: (knob) => getSessionKnob(knob as never),
   loadHtmlToMarkdown: () =>
     Promise.all([
-      import("@ai-matrx/rich-editor/core/html-to-markdown"),
+      import("@ai-matrx/rich-content/editor/core/html-to-markdown"),
       import("@tiptap/core"),
-      import("@ai-matrx/rich-editor/core/extensions"),
+      import("@ai-matrx/rich-content/editor/core/extensions"),
     ]).then(([{ htmlToMarkdown }, { getSchema }, { createRichEditorExtensions }]) => {
       const schema = getSchema(createRichEditorExtensions());
       return (html: string) => htmlToMarkdown(html, schema);
@@ -167,7 +167,7 @@ configureRichContent({
     RecordAnnotations,
     annotationRecordOf,
     recordKeyOf,
-    // the editor (@ai-matrx/rich-editor)
+    // the editor (@ai-matrx/rich-content/editor)
     ConfirmDialog,
     TextInputDialog,
     EditableContextMenu,

@@ -22,9 +22,9 @@ const REQUIRED: Record<string, RegExp> = {
   "components/matrx/MatrxSplit.tsx": /useTextareaFormatting\(/,
   "features/notes/components/NoteEditorCore.tsx": /useTextareaFormatting\(/,
   "features/notes/components/mobile/MobileNoteEditor.tsx": /useTextareaFormatting\(/,
-  // The editor's own views ship in @ai-matrx/rich-editor (read from the installed package).
-  "node_modules/@ai-matrx/rich-editor/dist/source/SourceEditor.js": /markdownFormatHost\(/,
-  "node_modules/@ai-matrx/rich-editor/dist/visual/VisualEditor.js": /RICH_EDITOR_HOST_KEY/,
+  // The editor's own views ship in @ai-matrx/rich-content/editor (read from the installed package).
+  "node_modules/@ai-matrx/rich-content/editor/dist/source/SourceEditor.js": /markdownFormatHost\(/,
+  "node_modules/@ai-matrx/rich-content/editor/dist/visual/VisualEditor.js": /RICH_EDITOR_HOST_KEY/,
   "../aidream/apps/shared/chat/src/agents/components/inputs/smart-input/AgentTextarea.tsx": /useTextareaFormatting\(/,
   // The editors that used to change capability by tab / were bare textareas.
   "components/mardown-display/chat-markdown/FullScreenMarkdownEditor.tsx": /useTextareaFormatting\(/,
@@ -133,7 +133,7 @@ describe("every long-form editing host is wired to the formatting command layer"
 // ═══════════════════════════════════════════════════════════════════════════
 // VISIBLE in EVERY editable mode (2026-10-07: notes Write — the visual editor —
 // had no formatting buttons at all; they showed only in Plain and Split). Each
-// editor host renders THE toolbar (`@ai-matrx/rich-editor/format/FormatButtons`)
+// editor host renders THE toolbar (`@ai-matrx/rich-content/editor/format/FormatButtons`)
 // inside its EXISTING toolbar row in every editable mode, never in Read; the
 // visual editor registers as a format target, so the buttons drive Write too.
 // ═══════════════════════════════════════════════════════════════════════════
@@ -169,7 +169,7 @@ const VISIBLE_BUTTONS: Record<string, RegExp> = {
   "features/data-tables/records-ui-host/RecordBodyEditor.tsx": /chrome="format"/,
   // the editor's own toolbar row (chrome "full"), Visual and Source alike: Markdown Studio, documents, prompts
   // ... and chrome "format" (a host with no row of its own: a record's body) — its one slim row
-  "node_modules/@ai-matrx/rich-editor/dist/editor/RichEditorImpl.js":
+  "node_modules/@ai-matrx/rich-content/editor/dist/editor/RichEditorImpl.js":
     /^(?=[\s\S]*const editable = view !== "preview" && !readOnly;[\s\S]{0,400}FormatButtons)(?=[\s\S]*chrome === "format" && editable[\s\S]{0,300}FormatButtons)/,
 };
 
@@ -238,9 +238,9 @@ describe("every editor host SHOWS the formatting toolbar in every editable mode"
     const React = require("react") as typeof import("react");
     const { act } = require("react") as typeof import("react");
     const { createRoot } = require("react-dom/client") as typeof import("react-dom/client");
-    const { FormatButtons } = require("@ai-matrx/rich-editor/format/FormatButtons") as typeof import("@ai-matrx/rich-editor/format/FormatButtons");
-    const { formatTargetWithin } = require("@ai-matrx/rich-editor/format/format-target") as typeof import("@ai-matrx/rich-editor/format/format-target");
-    const { useTextareaFormatting } = require("@ai-matrx/rich-editor/format/useTextareaFormatting") as typeof import("@ai-matrx/rich-editor/format/useTextareaFormatting");
+    const { FormatButtons } = require("@ai-matrx/rich-content/editor/format/FormatButtons") as typeof import("@ai-matrx/rich-content/editor/format/FormatButtons");
+    const { formatTargetWithin } = require("@ai-matrx/rich-content/editor/format/format-target") as typeof import("@ai-matrx/rich-content/editor/format/format-target");
+    const { useTextareaFormatting } = require("@ai-matrx/rich-content/editor/format/useTextareaFormatting") as typeof import("@ai-matrx/rich-content/editor/format/useTextareaFormatting");
     /* eslint-enable @typescript-eslint/no-require-imports */
     function Host() {
       const box = React.useRef<HTMLDivElement>(null);
@@ -278,10 +278,10 @@ describe("every editor host SHOWS the formatting toolbar in every editable mode"
     const { createRoot } = require("react-dom/client") as typeof import("react-dom/client");
     const { Editor } = require("@tiptap/core") as typeof import("@tiptap/core");
     const { TextSelection } = require("@tiptap/pm/state") as typeof import("@tiptap/pm/state");
-    const { FormatButtons } = require("@ai-matrx/rich-editor/format/FormatButtons") as typeof import("@ai-matrx/rich-editor/format/FormatButtons");
-    const { formatTargetWithin, registerFormatElement } = require("@ai-matrx/rich-editor/format/format-target") as typeof import("@ai-matrx/rich-editor/format/format-target");
-    const { editorFormatTarget } = require("@ai-matrx/rich-editor/visual/format-actions") as typeof import("@ai-matrx/rich-editor/visual/format-actions");
-    const { createRichEditorExtensions } = require("@ai-matrx/rich-editor/core/extensions") as typeof import("@ai-matrx/rich-editor/core/extensions");
+    const { FormatButtons } = require("@ai-matrx/rich-content/editor/format/FormatButtons") as typeof import("@ai-matrx/rich-content/editor/format/FormatButtons");
+    const { formatTargetWithin, registerFormatElement } = require("@ai-matrx/rich-content/editor/format/format-target") as typeof import("@ai-matrx/rich-content/editor/format/format-target");
+    const { editorFormatTarget } = require("@ai-matrx/rich-content/editor/visual/format-actions") as typeof import("@ai-matrx/rich-content/editor/visual/format-actions");
+    const { createRichEditorExtensions } = require("@ai-matrx/rich-content/editor/core/extensions") as typeof import("@ai-matrx/rich-content/editor/core/extensions");
     /* eslint-enable @typescript-eslint/no-require-imports */
     (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
     // The Write host: the visual editor's zone registered exactly as VisualEditor registers it.

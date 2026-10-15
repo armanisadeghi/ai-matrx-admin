@@ -5,7 +5,7 @@
  * denied microphone — the rich editor did (verify-RC-B4 F8e).
  *
  * SUT: every source file that calls useMicField — this app's own files AND the
- * shipped `@ai-matrx/rich-editor` build the app runs (the rich editor moved into
+ * shipped `@ai-matrx/rich-content/editor` build the app runs (the rich editor moved into
  * that package; it reaches useMicField through the rich-content host binding).
  * The handler passed as `onTranscriptionError` must not call a toast.
  */
@@ -15,7 +15,7 @@ import path from "node:path";
 
 const ROOT = path.resolve(__dirname, "../../..");
 
-const RICH_EDITOR_DIST = "node_modules/@ai-matrx/rich-editor/dist";
+const RICH_EDITOR_DIST = "node_modules/@ai-matrx/rich-content/editor/dist";
 
 /** Package build files (as installed) that call useMicField. */
 function packageConsumers(): string[] {

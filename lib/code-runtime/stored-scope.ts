@@ -13,7 +13,7 @@
  * bundle time, so this file never knows which world it is in. It must stay
  * free of async `import()` (the frame bundle has no code splitting).
  */
-import * as KindKit from "@ai-matrx/content-ir-react/kind-kit";
+import * as KindKit from "@ai-matrx/content-ir/kind-kit";
 import * as Recharts from "recharts";
 import { provideScopeModules } from "@ai-matrx/code-runtime/scope";
 import "./kind-kit-host";
@@ -37,7 +37,7 @@ export function provideStoredComponentScopeModules(): void {
     "@/components/mardown": markdown,
     "@/components/agent-copy/CopyButtons": () => require("@/components/agent-copy/CopyButtons"),
     "@/components/agent-copy/CopyForAiButton": () => require("@/components/agent-copy/CopyForAiButton"),
-    // kind-kit lives in @ai-matrx/content-ir-react; its copy bar and read
+    // kind-kit lives in @ai-matrx/content-ir/react; its copy bar and read
     // notices are this app's (kind-kit-host.ts, registered above).
     "@/components/kind-kit/SortableList": kindKit,
     "@/components/kind-kit/KindPanelGrid": kindKit,

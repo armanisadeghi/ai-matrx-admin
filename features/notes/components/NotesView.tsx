@@ -105,8 +105,8 @@ import { NoteTabBar } from "./NoteTabBar";
 import { NoteSidebar } from "./NoteSidebar";
 import { HomeQuickPick } from "../homes/HomeQuickPick";
 import { cn } from "@/lib/utils";
-import { FormatButtons } from "@ai-matrx/rich-editor/format/FormatButtons";
-import { formatTargetWithin } from "@ai-matrx/rich-editor/format/format-target";
+import { FormatButtons } from "@ai-matrx/rich-content/editor/format/FormatButtons";
+import { formatTargetWithin } from "@ai-matrx/rich-content/editor/format/format-target";
 import { useRecordTitle } from "@/lib/record-title/record-title";
 
 /** Below this width of its own container, the list and the note take turns. */

@@ -8,7 +8,7 @@
 // Arman, 2026-10-08); slash menu, shortcuts and the selection toolbar work too. The package owns
 // the saving; this only reports every change.
 
-import RichEditor from "@ai-matrx/rich-editor/editor/RichEditor";
+import RichEditor from "@ai-matrx/rich-content/editor/editor/RichEditor";
 import type { RichTextEditProps } from "@ai-matrx/records-ui";
 
 export function RecordBodyEditor({ value, onChange, readOnly, placeholder }: RichTextEditProps) {

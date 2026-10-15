@@ -28,14 +28,14 @@ import React from "react";
 import { act } from "react";
 import { createRoot } from "react-dom/client";
 import { Editor, getSchema, type JSONContent } from "@tiptap/core";
-import { createRichEditorExtensions } from "@ai-matrx/rich-editor/core/extensions";
+import { createRichEditorExtensions } from "@ai-matrx/rich-content/editor/core/extensions";
 import {
   buildVisualDocument,
   captureBaseline,
   serializeVisualDocument,
-} from "@ai-matrx/rich-editor/core/visual-document";
+} from "@ai-matrx/rich-content/editor/core/visual-document";
 
-jest.mock("@ai-matrx/rich-editor/editor/RichEditor", () => ({ __esModule: true, default: () => null }));
+jest.mock("@ai-matrx/rich-content/editor/editor/RichEditor", () => ({ __esModule: true, default: () => null }));
 jest.mock("@ai-matrx/rich-content/rich-document/RichDocument", () => ({ RichDocument: () => null }));
 jest.mock("@/components/matrx/MatrxSplit", () => ({ MatrxSplit: () => null }));
 jest.mock("@/features/audio/components/MicrophoneIconButton", () => ({ MicrophoneIconButton: () => null }));

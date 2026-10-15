@@ -4,7 +4,7 @@
  * THE RECORD A DIRECTIVE NAMES, AS IT IS NOW — one read:
  *
  *  - `readDirectiveRecord` is the package's `readRecord` seam
- *    (`@ai-matrx/content-ir-react` 0.16.0): an update card and its confirm say
+ *    (`@ai-matrx/content-ir/react` 0.16.0): an update card and its confirm say
  *    "Status open → done", never just "→ done" (reviewer, 2026-10-02).
  *  - whether a record a card names is in the trash NOW is answered for every
  *    door by `referenceTrash.ts` (`useReferenceDoor().trashed`).
@@ -17,7 +17,7 @@
  */
 
 import { isUuidShape } from "@ai-matrx/kit/uuid";
-import { recordRevision, type DirectiveRecordRef } from "@ai-matrx/content-ir-react";
+import { recordRevision, type DirectiveRecordRef } from "@ai-matrx/content-ir/react";
 
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { supabase } from "@/utils/supabase/client";

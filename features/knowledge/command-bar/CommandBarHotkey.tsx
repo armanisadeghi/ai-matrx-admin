@@ -23,7 +23,7 @@ import { useAppSelector } from "@/lib/redux/hooks";
 import { selectIsOverlayOpen } from "@/lib/redux/slices/overlaySlice";
 import { isSearchKeyClaimed } from "@/features/shell/hooks/searchKeyClaim";
 import { useOpenKnowledgeCommandBar } from "@/features/overlays/openers/knowledgeCommandBar";
-import { editorOwnsKeyEvent } from "@ai-matrx/rich-editor/format/editor-keys";
+import { editorOwnsKeyEvent } from "@ai-matrx/rich-content/editor/format/editor-keys";
 
 export function isCommandBarHotkey(e: KeyboardEvent): boolean {
   return (

@@ -6,7 +6,7 @@
  * which essentially tells the user to click apply and conduct a potentially
  * destructive action without any clue as to what this thing is."
  *
- * The CARD is now `@ai-matrx/content-ir-react`'s (0.11.0) and the package's own
+ * The CARD is now `@ai-matrx/content-ir/react`'s (0.11.0) and the package's own
  * tests pin its behaviour. What only this repo can prove is that the four seams
  * it refuses to own are actually plugged in here: rendering a real ```matrx
  * fence through `MatrxEnvelopeBlock` — the production entry point, nothing

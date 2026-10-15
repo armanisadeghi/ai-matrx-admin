@@ -9,7 +9,7 @@
  * and "Applied 1" must be a way into what was written.
  *
  * The ORDER (ask → only a yes applies → nothing reads "Applying" before) is the
- * package's, pinned in `@ai-matrx/content-ir-react`'s directive-honesty test.
+ * package's, pinned in `@ai-matrx/content-ir/react`'s directive-honesty test.
  * This pins the HOST: the words, the variant, the live names, and the records.
  */
 import { act, type ReactNode } from "react";
@@ -58,7 +58,7 @@ jest.mock("@/features/matrx-envelope/directiveRecordRow", () => ({
 }));
 
 import { decodeDirective } from "@ai-matrx/content-ir";
-import type { DirectiveAskRequest } from "@ai-matrx/content-ir-react";
+import type { DirectiveAskRequest } from "@ai-matrx/content-ir/react";
 import { matrxDirectiveHost } from "@/features/matrx-envelope/directiveHost";
 import { appliedRecords } from "@/features/matrx-envelope/components/DirectiveConsequence";
 

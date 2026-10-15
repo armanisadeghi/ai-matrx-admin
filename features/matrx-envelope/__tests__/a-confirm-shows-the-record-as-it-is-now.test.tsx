@@ -69,7 +69,7 @@ jest.mock("@/features/scopes/redux/selectors/active-context", () => ({
 jest.mock("@/features/scopes/redux/selectors/tree", () => ({ selectOrganizations: () => ({}) }));
 
 import { decodeDirective } from "@ai-matrx/content-ir";
-import type { DirectiveAskRequest } from "@ai-matrx/content-ir-react";
+import type { DirectiveAskRequest } from "@ai-matrx/content-ir/react";
 import { matrxDirectiveHost } from "@/features/matrx-envelope/directiveHost";
 
 const TASK_ID = TASK_ID_FOR_MOCK;

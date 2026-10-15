@@ -11,7 +11,7 @@
  * remembered for that read. A ref without a file id (or with a load error) falls
  * back to the kit's own frame-safe image, which says what happened.
  */
-import { DefaultKindImage, type KindImageProps } from "@ai-matrx/content-ir-react/kind-kit";
+import { DefaultKindImage, type KindImageProps } from "@ai-matrx/content-ir/kind-kit";
 import UnifiedImageBlockRenderer from "@/features/files/blocks/image/UnifiedImageBlockRenderer";
 import type { MatrxImageBlock } from "@/features/files/blocks/image/types";
 import { rememberFileOrganization } from "@/features/files/api/fileOrganization";

@@ -13,7 +13,7 @@ import {
   DirectiveHostProvider,
   DirectiveRender,
   type DirectiveHost,
-} from "@ai-matrx/content-ir-react";
+} from "@ai-matrx/content-ir/react";
 import { matrxDirectiveHost } from "@/features/matrx-envelope/directiveHost";
 
 (

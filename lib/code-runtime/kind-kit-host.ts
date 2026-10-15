@@ -1,6 +1,6 @@
 /**
  * The web app's copy bar and read-state notices, handed to
- * `@ai-matrx/content-ir-react/kind-kit`'s host slots. Import for its side
+ * `@ai-matrx/content-ir/kind-kit`'s host slots. Import for its side
  * effect from every module that renders kit components (the stored-code
  * scope and the app's own kind blocks) — never from app boot.
  *
@@ -17,7 +17,7 @@ import {
   type KindKitReadEmptyProps,
   type KindKitReadStaleNoticeProps,
   type KindImageProps,
-} from "@ai-matrx/content-ir-react/kind-kit";
+} from "@ai-matrx/content-ir/kind-kit";
 
 function AppCopyButtons(props: KindKitCopyProps) {
   const { CopyButtons } = require("@/components/agent-copy/CopyButtons") as typeof import("@/components/agent-copy/CopyButtons");

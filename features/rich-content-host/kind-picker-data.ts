@@ -1,6 +1,6 @@
 /**
  * The editor's kind picker reads this app's kind catalogue (content_ir.kind_definition and its
- * canonical examples) — bound into @ai-matrx/rich-editor through the rich-content app bindings.
+ * canonical examples) — bound into @ai-matrx/rich-content/editor through the rich-content app bindings.
  */
 import { supabase } from "@/utils/supabase/client";
 

@@ -1,11 +1,11 @@
 "use client";
 
 /**
- * THE MATRX DIRECTIVE HOST for `@ai-matrx/content-ir-react`.
+ * THE MATRX DIRECTIVE HOST for `@ai-matrx/content-ir/react`.
  *
  * The package owns the Kind Directives grammar, decoder, naming, item summary,
  * renderer registry, the side-effect card, the fallback floor and the Apply
- * control (`@ai-matrx/content-ir` 0.11.0 + `@ai-matrx/content-ir-react`
+ * control (`@ai-matrx/content-ir` 0.11.0 + `@ai-matrx/content-ir/react`
  * 0.11.0). It refuses to know six things that are HOST property, and this
  * module is all six of them, wired once:
  *
@@ -41,7 +41,7 @@ import type {
   DirectiveAskRequest,
   DirectiveCopyProps,
   DirectiveOpenItemOptions,
-} from "@ai-matrx/content-ir-react";
+} from "@ai-matrx/content-ir/react";
 import type {
   DirectiveItemKindLookup,
   DirectiveNounCatalog,

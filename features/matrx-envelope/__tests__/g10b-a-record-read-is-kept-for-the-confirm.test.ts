@@ -12,7 +12,7 @@ jest.mock("@/utils/supabase/client", () => {
   return { supabase: { from: () => chain, schema: () => ({ from: () => chain }) } };
 });
 
-import { noteRecordChanged } from "@ai-matrx/content-ir-react";
+import { noteRecordChanged } from "@ai-matrx/content-ir/react";
 import { readDirectiveRecord } from "@/features/matrx-envelope/directiveRecordRow";
 
 const ID = "48afefc4-7c41-4d06-8283-d01a76ce16a6";

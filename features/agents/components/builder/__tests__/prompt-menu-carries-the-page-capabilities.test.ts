@@ -13,7 +13,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import type { ContextMenuExtraItem, ContextMenuExtraSection } from "@ai-matrx/context-menu/engine";
-import { insertIntoText, type PromptInsert } from "@ai-matrx/rich-editor/core/prompt-inserts";
+import { insertIntoText, type PromptInsert } from "@ai-matrx/rich-content/editor/core/prompt-inserts";
 import {
   agentPromptMenuSections,
   type AgentBuilderMenuActions,

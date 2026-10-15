@@ -51,7 +51,7 @@ import type {
   KindComponentUiOptions,
   ResolveKindValue,
 } from "./dbKindComponentCache";
-import type { ComponentResolution } from "@ai-matrx/content-ir-react";
+import type { ComponentResolution } from "@ai-matrx/content-ir/react";
 import { useContentIrKindVersion } from "@ai-matrx/rich-content/kinds/react/use-registry-repaint";
 import { readAtVersionForKey } from "@ai-matrx/rich-content/kinds/react/registry-versioned";
 import { resolveLoadingSlugForKind } from "@ai-matrx/rich-content/kinds/react/loading/resolve-loading-slug";

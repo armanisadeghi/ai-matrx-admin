@@ -245,7 +245,7 @@ export interface DoctorDetectorToken {
  * The R6 generic fallback's key — a `kind_component` row may legitimately name
  * it, and the route handles it explicitly (`generic-row`), so it is never a
  * dangling dispatch key. Mirrors GENERIC_STRUCTURED_COMPONENT_KEY in
- * @ai-matrx/content-ir-react (not imported: this module stays dependency-free).
+ * @ai-matrx/content-ir/react (not imported: this module stays dependency-free).
  */
 const GENERIC_STRUCTURED_KEY = "generic_structured";
 

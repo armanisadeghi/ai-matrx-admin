@@ -5,7 +5,7 @@
  * version change + listener call, or the frozen envelope can never upgrade.
  *
  * SUTs: `kindRegistry` (local) and `ComponentRegistry` (the local adapter over
- * `@ai-matrx/content-ir-react`'s ComponentResolver — the dedupe, miss cache
+ * `@ai-matrx/content-ir/react`'s ComponentResolver — the dedupe, miss cache
  * and per-kind versions it owns run for real). The only doubles are the two
  * Supabase loaders, the network boundary. Listener counts and loader call
  * counts ARE the contract here: exactly-one notify, no spurious notify,

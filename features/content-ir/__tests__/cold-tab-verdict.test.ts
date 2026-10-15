@@ -14,7 +14,7 @@
  * as a durable "unregistered" claim.
  *
  * This pins the host side of THE COLD-VERDICT RULE
- * (@ai-matrx/content-ir-react >= 0.9.0).
+ * (@ai-matrx/content-ir/react >= 0.9.0).
  */
 
 import { componentRegistry } from "../registry/component-registry";

@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * THE MATRIX HOST for `@ai-matrx/content-ir-react`.
+ * THE MATRIX HOST for `@ai-matrx/content-ir/react`.
  *
  * The package draws kinds; it refuses to know what a block renderer, a
  * structured-value floor, a shimmer, or a notice look like in THIS app. This
@@ -23,7 +23,7 @@ import { Info } from "lucide-react";
 import {
   ContentIrRenderProvider,
   type ContentIrHost,
-} from "@ai-matrx/content-ir-react";
+} from "@ai-matrx/content-ir/react";
 import { captureError } from "@/lib/diagnostics/errorCaptureStore";
 import { ShimmerText } from "@/components/loaders/ShimmerText";
 import { SafeBlockRenderer } from "@ai-matrx/rich-content/display/chat-markdown/internal-handlers/SafeBlockRenderer";

@@ -3,7 +3,7 @@
  * its kind row — `kind-component:<kind>:<platform>:<role>` — not the bare
  * family `kind-component`, which names no row to fix.
  */
-import type { ComponentResolution } from "@ai-matrx/content-ir-react";
+import type { ComponentResolution } from "@ai-matrx/content-ir/react";
 import { getOrCompileDbKindComponent } from "@/features/content-ir/react/db-component/dbKindComponentCache";
 import {
   clearCapturedErrors,

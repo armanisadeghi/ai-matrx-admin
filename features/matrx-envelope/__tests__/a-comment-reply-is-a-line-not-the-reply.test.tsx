@@ -22,7 +22,7 @@ import { configureStore } from "@reduxjs/toolkit";
 import storeReadsReducer from "@/lib/redux/slices/storeReadsSlice";
 import type { CanvasController } from "@ai-matrx/canvas";
 import { CanvasProvider, registerCanvasKind, useCanvas } from "@ai-matrx/canvas/react";
-import type { DirectiveRendererProps } from "@ai-matrx/content-ir-react";
+import type { DirectiveRendererProps } from "@ai-matrx/content-ir/react";
 import {
   remarkByHandle,
   remarksWithHandle,

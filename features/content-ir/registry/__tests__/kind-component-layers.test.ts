@@ -1,6 +1,6 @@
 /**
  * SHAPE LAYERS — the frontend overlay ADAPTER (slice 2), forcing functions.
- * The lifecycle itself is tested in `@ai-matrx/content-ir-react`
+ * The lifecycle itself is tested in `@ai-matrx/content-ir/react`
  * (`__tests__/overlay-loader.test.ts`); here:
  *
  *  1. The chunk read carries the package's explicit audience predicate and

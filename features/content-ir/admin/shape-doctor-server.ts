@@ -77,7 +77,7 @@ import {
 
 /**
  * Keep the server-only doctor out of the React renderer package: importing
- * @ai-matrx/content-ir-react here evaluates its client provider and
+ * @ai-matrx/content-ir/react here evaluates its client provider and
  * error-boundary graph during Next's server configuration pass. The generic
  * fallback key comes from the registry's server-safe mirror (no react, no
  * module-eval side effects) so this file declares no second spelling of it;

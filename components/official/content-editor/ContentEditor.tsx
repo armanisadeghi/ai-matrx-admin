@@ -25,11 +25,11 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { RichContent } from "@ai-matrx/rich-content/levels/RichContent";
-import { useTextareaFormatting } from "@ai-matrx/rich-editor/format/useTextareaFormatting";
-import { FormatButtons } from "@ai-matrx/rich-editor/format/FormatButtons";
-import { formatTargetWithin } from "@ai-matrx/rich-editor/format/format-target";
+import { useTextareaFormatting } from "@ai-matrx/rich-content/editor/format/useTextareaFormatting";
+import { FormatButtons } from "@ai-matrx/rich-content/editor/format/FormatButtons";
+import { formatTargetWithin } from "@ai-matrx/rich-content/editor/format/format-target";
 import type { ContentEditorProps, EditorMode, EditorModeConfig } from "./types";
-import RichEditor, { type RichEditorController } from "@ai-matrx/rich-editor/editor/RichEditor";
+import RichEditor, { type RichEditorController } from "@ai-matrx/rich-content/editor/editor/RichEditor";
 import { CopyDropdownButton } from "./CopyDropdownButton.lazy";
 import { ContentManagerMenu } from "./ContentManagerMenu.lazy";
 import { EditableContextMenu } from "@ai-matrx/context-menu/react";

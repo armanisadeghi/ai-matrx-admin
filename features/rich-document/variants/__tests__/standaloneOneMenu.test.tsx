@@ -21,7 +21,7 @@ jest.mock("@ai-matrx/rich-content/rich-document/actions/provider", () => ({
 jest.mock("@ai-matrx/rich-content/rich-document/variants/shared/AlchemyDocumentMenu", () => ({ AlchemyDocumentMenu: () => null }));
 jest.mock("@ai-matrx/kit/media-query", () => ({ ...jest.requireActual("@ai-matrx/kit/media-query"), useIsMobile: () => true }));
 
-import { ActionBar } from "@ai-matrx/rich-content/rich-document/variants/ActionBar";
+import { RichDocumentActionBar as ActionBar } from "@ai-matrx/rich-content/rich-document/variants/ActionBar";
 import { MenuVariant } from "@ai-matrx/rich-content/rich-document/variants/MenuVariant";
 import type { RichDocumentActionContext } from "@ai-matrx/rich-content/rich-document/types";
 

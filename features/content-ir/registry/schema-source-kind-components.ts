@@ -112,7 +112,7 @@ export interface KindComponentProjection {
 
 /**
  * THE generic fallback's component key — the platform-wide ONE spelling.
- * `@ai-matrx/content-ir-react` owns and exports this name (re-exported by
+ * `@ai-matrx/content-ir/react` owns and exports this name (re-exported by
  * react/kind-route.ts); every non-react module that cannot reach the react
  * layer mirrors THE SAME NAME here, never a second one. This literal MUST
  * equal the package's export and `content_ir.evaluate_kind_activation`'s

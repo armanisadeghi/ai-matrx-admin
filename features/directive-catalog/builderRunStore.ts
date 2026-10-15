@@ -4,7 +4,7 @@
  * A run was lost once: the page re-rendered right after the confirm, the panel
  * remounted with fresh state, and its result had nowhere to land. The action
  * cards already keep an apply's progress per block outside the component
- * (`@ai-matrx/content-ir-react` ApplyDirectiveButton `applyOutcomes`); the
+ * (`@ai-matrx/content-ir/react` ApplyDirectiveButton `applyOutcomes`); the
  * builder now does the same. The run keeps going whatever the panel does, and
  * a panel that mounts later shows its progress and outcome.
  *

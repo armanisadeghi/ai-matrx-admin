@@ -27,7 +27,7 @@ import {
   KeyRound,
 } from "lucide-react";
 
-import { ApplyDirectiveButton } from "@ai-matrx/content-ir-react";
+import { ApplyDirectiveButton } from "@ai-matrx/content-ir/react";
 import type { DecodedDirective } from "@ai-matrx/content-ir";
 
 import type { PlanTreeDirectiveItem, PlanTreeNodeSpec } from "./types";

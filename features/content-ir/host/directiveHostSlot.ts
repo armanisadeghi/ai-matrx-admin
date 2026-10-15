@@ -15,7 +15,7 @@
  *
  * Guard: `pnpm check:host-cycles` (no static cycle through content-ir/host or matrx-envelope).
  */
-import type { DirectiveHost } from "@ai-matrx/content-ir-react";
+import type { DirectiveHost } from "@ai-matrx/content-ir/react";
 
 let provided: DirectiveHost | undefined;
 let warnedEmpty = false;

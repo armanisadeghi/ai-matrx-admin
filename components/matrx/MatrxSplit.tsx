@@ -25,8 +25,8 @@ import type {
 } from "@ai-matrx/rich-content/rich-document/types";
 import type { ImagePolicyDeclaration } from "@ai-matrx/rich-content/levels/prose/remote-image-policy";
 import { ProTextarea } from "@/components/official/ProTextarea";
-import { useTextareaFormatting } from "@ai-matrx/rich-editor/format/useTextareaFormatting";
-import type { MarkdownImageUpload } from "@ai-matrx/rich-editor/format/markdown-image-upload";
+import { useTextareaFormatting } from "@ai-matrx/rich-content/editor/format/useTextareaFormatting";
+import type { MarkdownImageUpload } from "@ai-matrx/rich-content/editor/format/markdown-image-upload";
 import type { ApplicationScope } from "@ai-matrx/chat/agents/types/scope.types";
 
 // Lazy — only pulled into the bundle when a caller opts into actions by

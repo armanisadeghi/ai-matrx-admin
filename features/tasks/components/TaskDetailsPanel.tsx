@@ -4,7 +4,7 @@ import { useClipboard } from "@ai-matrx/kit/clipboard";
 import { copyNotify } from "@/lib/clipboard/copy-notify";
 import React, { useState, useEffect } from "react";
 import { RichContent } from "@ai-matrx/rich-content/levels/RichContent";
-import { EditInPlace } from "@ai-matrx/rich-editor/in-place/EditInPlace";
+import { EditInPlace } from "@ai-matrx/rich-content/editor/in-place/EditInPlace";
 import { toastWriteFailure } from "@/lib/errors/toastWriteFailure";
 import Link from "next/link";
 import {

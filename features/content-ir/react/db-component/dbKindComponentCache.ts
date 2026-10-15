@@ -4,7 +4,7 @@
  *
  * The cache itself — per-row-version keys, the scream-once latch,
  * loud-never-fatal `props_transform` recovery, config narrowing, key-family
- * invalidation — lives in `@ai-matrx/content-ir-react`
+ * invalidation — lives in `@ai-matrx/content-ir/react`
  * (`db-component/db-kind-component-cache.ts`), absorbed from this module per
  * C22 (this file used to carry all 316 lines of it). Read the semantics
  * there; behavior does not belong here.
@@ -35,7 +35,7 @@ import {
   type KindComponentUiOptions,
   type ResolveKindValue,
   type ComponentResolution,
-} from "@ai-matrx/content-ir-react";
+} from "@ai-matrx/content-ir/react";
 
 import { kindComponentCompiler } from "@ai-matrx/code-runtime";
 import { defaultComponentEntries } from "@ai-matrx/code-runtime/scope";
@@ -64,7 +64,7 @@ export {
  * unresolved import is filed under the kind row (kind, platform, role) rather
  * than the bare family.
  * Row id: `ComponentResolution` carries no `kind_component.id`; naming it here
- * needs `@ai-matrx/content-ir-react` to add `id` to `ComponentResolution`.
+ * needs `@ai-matrx/content-ir/react` to add `id` to `ComponentResolution`.
  */
 let compilingOrigin: string | null = null;
 

@@ -35,7 +35,7 @@ import { composeKindComponentFixIntent } from "../../studio/kind-agent-intents";
 import { buildKindAuthoringOffer } from "@/features/content-ir/studio/kind-authoring-offer";
 import { readEnvelope } from "@ai-matrx/rich-content/kinds/redux/render-block-envelope";
 import { resolveComponent } from "../../registry/component-registry";
-import type { ComponentLayerScope } from "@ai-matrx/content-ir-react";
+import type { ComponentLayerScope } from "@ai-matrx/content-ir/react";
 
 function readKindSlug(
   content: string,

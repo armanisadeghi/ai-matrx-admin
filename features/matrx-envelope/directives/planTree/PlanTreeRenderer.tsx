@@ -11,8 +11,8 @@
  * and NEVER claims to be applying something.
  */
 
-import { DirectiveFallbackCard } from "@ai-matrx/content-ir-react";
-import type { DirectiveRendererProps } from "@ai-matrx/content-ir-react";
+import { DirectiveFallbackCard } from "@ai-matrx/content-ir/react";
+import type { DirectiveRendererProps } from "@ai-matrx/content-ir/react";
 
 import { parsePlanTreeItems } from "./parseDirectiveItems";
 import { useResolvePlanTree } from "./useResolvePlanTree";

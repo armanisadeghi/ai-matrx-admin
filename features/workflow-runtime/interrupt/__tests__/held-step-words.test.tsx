@@ -234,7 +234,7 @@ describe("a held step's deliverable body, REFUSED", () => {
 // RunResultCard (readout-parts.tsx) shows a finished run through
 // KindInstanceRender(kind=RUN_RESULT_KIND), which the block registry routes to
 // RunResultBlock → NodeOutcomeBlock per terminal node. Those bindings' "no
-// component for this shape" fallback is `@ai-matrx/content-ir-react`'s
+// component for this shape" fallback is `@ai-matrx/content-ir/react`'s
 // `fallback` callback, which only ever receives the bare `output` — never the
 // wrapper's `run_id`/`node_id` — so before this lane, NodeOutcomeBlock (and
 // RunResultBlock, which used to render through the package's `RunResultView`

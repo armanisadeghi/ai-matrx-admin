@@ -26,7 +26,7 @@ jest.mock("@/features/item-presentation/useOpenItemPresentation", () => ({
   useOpenItemPresentation: () => jest.fn(),
 }));
 
-import { directiveValueWord, itemChanges } from "@ai-matrx/content-ir-react";
+import { directiveValueWord, itemChanges } from "@ai-matrx/content-ir/react";
 import { CATALOG_ENUM_FIELDS } from "@/features/matrx-envelope/catalog-enum-fields.generated";
 import { matrxDirectiveHost, matrxDirectiveValueLabel } from "@/features/matrx-envelope/directiveHost";
 import { valueWord } from "@/features/directive-catalog/valueVocabulary";

@@ -4,7 +4,7 @@
  * /demos/kind-kit — exercises every kind-kit primitive with sample data.
  * The kit is what DB-authored kind components import; this page is the
  * living proof each primitive behaves as its README contract says.
- * Contracts: @ai-matrx/content-ir-react kind-kit/README.md.
+ * Contracts: @ai-matrx/content-ir/react kind-kit/README.md.
  */
 
 import { useClipboard } from "@ai-matrx/kit/clipboard";
@@ -24,17 +24,17 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import "@/lib/code-runtime/kind-kit-host";
-import { SortableList } from "@ai-matrx/content-ir-react/kind-kit";
-import { KindPanelGrid } from "@ai-matrx/content-ir-react/kind-kit";
-import { KindPanel } from "@ai-matrx/content-ir-react/kind-kit";
-import { KindHeaderBar } from "@ai-matrx/content-ir-react/kind-kit";
+import { SortableList } from "@ai-matrx/content-ir/kind-kit";
+import { KindPanelGrid } from "@ai-matrx/content-ir/kind-kit";
+import { KindPanel } from "@ai-matrx/content-ir/kind-kit";
+import { KindHeaderBar } from "@ai-matrx/content-ir/kind-kit";
 import {
   StreamingSkeleton,
   streamList,
   streamText,
   useStreamingValue,
-} from "@ai-matrx/content-ir-react/kind-kit";
-import { KeywordChip, TagList } from "@ai-matrx/content-ir-react/kind-kit";
+} from "@ai-matrx/content-ir/kind-kit";
+import { KeywordChip, TagList } from "@ai-matrx/content-ir/kind-kit";
 
 interface Bucket {
   id: string;
@@ -132,7 +132,7 @@ export default function KindKitDemoPage() {
         <p className="mt-1 text-sm text-muted-foreground">
           The primitives DB-authored kind components import. Contract:
           <code className="ml-1 rounded bg-muted px-1 py-0.5 text-xs">
-            @ai-matrx/content-ir-react kind-kit/README.md
+            @ai-matrx/content-ir/react kind-kit/README.md
           </code>
         </p>
       </div>

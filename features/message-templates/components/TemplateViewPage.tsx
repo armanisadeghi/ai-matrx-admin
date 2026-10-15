@@ -31,8 +31,8 @@ import {
 } from "@/components/merge-field-input/MergeFieldInput";
 import { TemplateRichText } from "@/features/message-templates/components/TemplateRichText";
 import { MergeFieldTextarea } from "@/components/merge-field-input/MergeFieldTextarea";
-import { FormatButtons } from "@ai-matrx/rich-editor/format/FormatButtons";
-import { formatTargetWithin } from "@ai-matrx/rich-editor/format/format-target";
+import { FormatButtons } from "@ai-matrx/rich-content/editor/format/FormatButtons";
+import { formatTargetWithin } from "@ai-matrx/rich-content/editor/format/format-target";
 import { AppletTagsInput } from "@/features/applets/components/inputs/AppletTagsInput";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";

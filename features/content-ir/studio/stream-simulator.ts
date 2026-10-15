@@ -33,7 +33,7 @@ import {
 import {
   DB_KIND_COMPONENT_KEY,
   GENERIC_STRUCTURED_COMPONENT_KEY,
-} from "@ai-matrx/content-ir-react";
+} from "@ai-matrx/content-ir/react";
 import type { RenderBlockPayload } from "@ai-matrx/agents/generated/stream-events";
 
 export type WireMode = "fenced" | "fenced_one_line" | "bare";

@@ -5,7 +5,7 @@
  *
  * The boundary itself — catch → fallback (never a blank hole) → scream, with
  * the `resetSignal` un-latch when a NEW component version arrives — lives in
- * `@ai-matrx/content-ir-react` (`db-component/DbKindComponentErrorBoundary`),
+ * `@ai-matrx/content-ir/react` (`db-component/DbKindComponentErrorBoundary`),
  * absorbed from this module per C22. Read the semantics there.
  *
  * What stays here is our scream wiring, bound through the `onCaught` seam:
@@ -20,7 +20,7 @@
  *    user (kindComponentIncident.ts).
  */
 import React from "react";
-import { DbKindComponentErrorBoundary as SharedDbKindComponentErrorBoundary } from "@ai-matrx/content-ir-react";
+import { DbKindComponentErrorBoundary as SharedDbKindComponentErrorBoundary } from "@ai-matrx/content-ir/react";
 import { captureReactRenderError } from "@/lib/diagnostics/captureReactError";
 import { reportKindComponentIncident } from "./kindComponentIncident";
 

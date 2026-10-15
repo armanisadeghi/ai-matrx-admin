@@ -25,7 +25,6 @@
 @source "../features";
 @source "../node_modules/@ai-matrx/chat/dist";
 @source "../node_modules/@ai-matrx/coding-sessions/dist";
-@source "../node_modules/@ai-matrx/rich-editor/dist";
 @source "../hooks";
 @source "../lib";
 @source "../providers";
@@ -41,7 +40,7 @@
 @source "../node_modules/@ai-matrx/media/dist";
 @source "../node_modules/@ai-matrx/diff/dist";
 @source "../node_modules/@ai-matrx/records-ui/dist";
-@source "../node_modules/@ai-matrx/content-ir-react/dist";
+@source "../node_modules/@ai-matrx/content-ir/dist";
 @source "../node_modules/@ai-matrx/print/dist";
 @source "../node_modules/@ai-matrx/meet/dist";
 @source "../node_modules/@ai-matrx/messaging/dist";

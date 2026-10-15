@@ -5,7 +5,7 @@
  *
  * Contract: `common-docs/systems/architecture/content-ir/FEATURE.md`.
  * The reader is `@ai-matrx/content-ir` (`wire/runtime-wrapper`); the render
- * half is `@ai-matrx/content-ir-react` (`NodeOutcomeView` / `DelegatedOutput`).
+ * half is `@ai-matrx/content-ir/react` (`NodeOutcomeView` / `DelegatedOutput`).
  *
  * The packet, verbatim: "the front end would know which workflow it came from,
  * which node it came from, and then inside of it, it would see that it's a
@@ -32,7 +32,7 @@
 import {
   DelegatedOutput as SharedDelegatedOutput,
   NodeOutcomeView,
-} from "@ai-matrx/content-ir-react";
+} from "@ai-matrx/content-ir/react";
 import { readNodeOutcomeValue } from "@ai-matrx/content-ir";
 import { ContentIrHostBoundary } from "@/features/content-ir/host/ContentIrHostBoundary";
 import { SettledOutputBody } from "@/features/workflow-runtime/components/SettledOutputBody";
