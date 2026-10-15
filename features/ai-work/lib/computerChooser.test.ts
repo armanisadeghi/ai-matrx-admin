@@ -82,3 +82,13 @@ describe("every computer row says where and when", () => {
     expect(computerRowDetail({ hostname: null, last_seen: null }, false)).toBe("never seen");
   });
 });
+
+describe("a row whose device details did not load", () => {
+  it("says Loading… or Couldn't read, never blank", async () => {
+    const { machineDetail } = await import("./computerChooser");
+    expect(machineDetail(undefined, "loading", () => "x")).toBe("Loading…");
+    expect(machineDetail(undefined, "failed", () => "x")).toBe("Couldn't read");
+    expect(machineDetail(undefined, "ready", () => "x")).toBe("Couldn't read");
+    expect(machineDetail({}, "ready", () => "studio.local")).toBe("studio.local");
+  });
+});

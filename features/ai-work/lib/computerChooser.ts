@@ -132,6 +132,18 @@ export function computerRowDetail(row: { last_seen?: string | null; hostname?: s
   return [host, seen].filter(Boolean).join(" · ");
 }
 
+export type MachinesRead = "loading" | "ready" | "failed";
+
+/**
+ * A row's device detail, never blank: "Loading…" until the device details answer, "Couldn't read"
+ * when they failed (or the row is missing from the answer), otherwise `detail()`. Pure.
+ */
+export function machineDetail(machine: object | undefined, read: MachinesRead, detail: () => string): string {
+  if (read === "loading") return "Loading…";
+  if (read === "failed" || !machine) return "Couldn't read";
+  return detail();
+}
+
 /** Names shared by more than one computer: those rows also say when each was last seen. Pure. */
 export function duplicateNames(names: string[]): Set<string> {
   const seen = new Map<string, number>();

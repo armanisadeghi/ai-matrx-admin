@@ -16,7 +16,7 @@ import { browserCodingDoors } from "@/features/ai-work/lib/matrx2Computers";
 import type { Matrx2ComputerStatus } from "@/features/ai-work/lib/matrx2Coding";
 import { ComputerConnection, type ComputerConnectionState } from "@/features/ai-work/compose/components/RunsOnStep";
 import { ComputerWorkFields } from "@/features/ai-work/components/ComputerWorkFields";
-import { computerRowDetail, distinguishing, duplicateNames, type ComputerRunRequest } from "@/features/ai-work/lib/computerChooser";
+import { computerRowDetail, distinguishing, duplicateNames, type MachinesRead, machineDetail as rowDetailOf, type ComputerRunRequest } from "@/features/ai-work/lib/computerChooser";
 import { supabase } from "@/utils/supabase/client";
 import { HomeStep } from "@/features/ai-work/compose/components/HomeStep";
 import type { SavedRequestHome } from "@/features/ai-work/compose/savedRequests";
@@ -40,6 +40,15 @@ interface Props {
 
 const inputClass = "h-8 w-full rounded-md border border-border bg-background px-2 text-base md:text-sm";
 
+function rowDetail(
+  c: { online: boolean | null },
+  machine: { last_seen: string | null; hostname: string | null; os_version: string | null; platform: string | null } | undefined,
+  read: MachinesRead,
+  duplicate: boolean,
+): string {
+  return rowDetailOf(machine, read, () => (duplicate && c.online === true ? distinguishing(machine ?? {}) : computerRowDetail(machine ?? {}, c.online === true)));
+}
+
 export function RunsOnField({ value, onChange, error }: Props) {
   const [computers, setComputers] = useState<Matrx2ComputerStatus[] | null>(null);
   const [problem, setProblem] = useState<string | null>(null);
@@ -59,6 +68,7 @@ export function RunsOnField({ value, onChange, error }: Props) {
     };
   }, []);
 
+  const [machinesRead, setMachinesRead] = useState<MachinesRead>("loading");
   const [machines, setMachines] = useState<Record<string, { last_seen: string | null; hostname: string | null; os_version: string | null; platform: string | null }>>({});
   const [connection, setConnection] = useState<ComputerConnectionState | null>(null);
   useEffect(() => {
@@ -68,8 +78,15 @@ export function RunsOnField({ value, onChange, error }: Props) {
       .from("app_instances")
       .select("id, last_seen, hostname, os_version, platform")
       .in("id", computers.map((c) => c.deviceId))
-      .then(({ data }) => {
-        if (live) setMachines(Object.fromEntries(((data ?? []) as Array<{ id: string; last_seen: string | null; hostname: string | null; os_version: string | null; platform: string | null }>).map((r) => [r.id, r])));
+      .then(({ data, error }) => {
+        if (!live) return;
+        if (error) {
+          console.warn("[RunsOnField] device details unread", error.message);
+          setMachinesRead("failed");
+          return;
+        }
+        setMachinesRead("ready");
+        setMachines(Object.fromEntries(((data ?? []) as Array<{ id: string; last_seen: string | null; hostname: string | null; os_version: string | null; platform: string | null }>).map((r) => [r.id, r])));
       });
     return () => {
       live = false;
@@ -97,7 +114,7 @@ export function RunsOnField({ value, onChange, error }: Props) {
           ...(value && !computers?.some((c) => c.deviceId === value.deviceId) ? [{ value: value.deviceId, label: "This computer (not listed)" }] : []),
           ...(computers ?? []).map((c) => ({
             value: c.deviceId,
-            label: [c.name, c.online === true ? "online" : c.online === false ? "offline" : "status unknown", machines[c.deviceId] ? (dupes.has(c.name) && c.online === true ? distinguishing(machines[c.deviceId]) : computerRowDetail(machines[c.deviceId], c.online === true)) : ""].filter(Boolean).join(" · "),
+            label: [c.name, c.online === true ? "online" : c.online === false ? "offline" : "status unknown", rowDetail(c, machines[c.deviceId], machinesRead, dupes.has(c.name))].filter(Boolean).join(" · "),
           })),
         ]}
         onValueChange={(id) =>
