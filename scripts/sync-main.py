@@ -1669,6 +1669,53 @@ def _read(path):
         return None
 
 
+def installed_off_lock(d, lock_name):
+    """[name@version] installed under d/node_modules/@ai-matrx that d's lockfile does not name."""
+    text = (_read(os.path.join(d, lock_name)) or b"").decode("utf-8", "replace")
+    locked = {"%s@%s" % (m.group(1), m.group(2)) for m in LOCKED.finditer(text)}
+    if lock_name == "package-lock.json":
+        try:
+            pk = json.loads(text).get("packages") or {}
+            locked = {"%s@%s" % (k.split("node_modules/")[-1], v.get("version")) for k, v in pk.items()
+                      if "@ai-matrx/" in k}
+        except ValueError:
+            locked = set()
+    scope = os.path.join(d, "node_modules", "@ai-matrx")
+    off = []
+    for n in sorted(os.listdir(scope)) if os.path.isdir(scope) else []:
+        try:
+            with open(os.path.join(scope, n, "package.json")) as f:
+                v = json.load(f).get("version")
+        except (OSError, ValueError):
+            continue
+        if v and "@ai-matrx/%s@%s" % (n, v) not in locked:
+            off.append("@ai-matrx/%s@%s" % (n, v))
+    return off
+
+
+def baseline_health(d, tool, lock_name, rels):
+    """The build health of d AS ITS LOCKFILE SAYS. Measured in d when its node_modules is what the
+    lockfile names; otherwise (someone installed under it) in a second scratch tree with a frozen
+    install — an update is judged against the committed state, never against a stray install."""
+    off = installed_off_lock(d, lock_name)
+    if not off:
+        return package_health(d, tool)
+    say("baseline measured in a scratch tree: this checkout's node_modules is not what its lockfile "
+        "names (%s%s)" % (", ".join(off[:6]), " ..." if len(off) > 6 else ""))
+    base, _ = make_trial_tree(d)
+    if base is None:
+        return {"imports": None, "sandbox": None}
+    try:
+        install = [tool, "ci"] if tool == "npm" else [tool, "install", "--frozen-lockfile"]
+        try:
+            ok = subprocess.run(install, cwd=base, capture_output=True, text=True, timeout=1200).returncode == 0
+        except (OSError, subprocess.TimeoutExpired):
+            ok = False
+        return package_health(base, tool) if ok else {"imports": None, "sandbox": None}
+    finally:
+        shutil.rmtree(base, ignore_errors=True)
+
+
 # THE SHARED INSTALL ONLY MOVES FORWARD (2026-10-15). The update used to run IN this checkout: the
 # trial install moved node_modules to npm latest, update_breaks_build() judged it, and a refusal put
 # it back with `pnpm install --frozen-lockfile` — two relinks per sync. In matrx-frontend the shared
@@ -1735,7 +1782,7 @@ def update_matrx_packages():
                         continue
             if not moved_files:
                 continue
-            before = package_health(d, tool)
+            before = baseline_health(d, tool, lock_name, rels)
             after = package_health(tmp, tool)
             broke = update_breaks_build(before, after)
             if broke:

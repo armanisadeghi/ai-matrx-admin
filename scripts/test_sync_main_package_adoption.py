@@ -256,6 +256,22 @@ class RealSync(unittest.TestCase):
         finally:
             fx.close()
 
+    def test_a_stray_install_under_the_checkout_never_becomes_the_baseline(self):
+        # Someone installed chat 0.5.0 under the checkout without committing the lockfile. Measured
+        # there, "before" is already broken, the update breaks nothing NEW, and it would be adopted.
+        # The baseline is the LOCKFILE's state, measured in a scratch tree.
+        fx = Fixture("0.5.0", V0500)
+        try:
+            shutil.rmtree(os.path.join(fx.work, "node_modules/@ai-matrx/chat"))
+            shutil.copytree(os.path.join(fx.store, "chat-0.5.0"), os.path.join(fx.work, "node_modules/@ai-matrx/chat"))
+            out = fx.sync()
+            self.assertIn("'@ai-matrx/chat@0.4.15'", fx.origin_lock(),
+                          "a stray install became the baseline and chat 0.5.0 was adopted:\n" + out.stdout + out.stderr)
+            self.assertIn("PACKAGE UPDATE NOT ADOPTED", out.stdout)
+            self.assertEqual(fx.pnpm_calls_here(), [], "pnpm ran inside the checkout")
+        finally:
+            fx.close()
+
     def test_update_that_keeps_every_import_is_committed(self):
         fx = Fixture("0.4.16", V0416)
         try:
