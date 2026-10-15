@@ -8,6 +8,7 @@ import {
   FALLBACK_ORDER,
   chooseComputer,
   cloudSessionFilter,
+  arrivedByLabel,
   continueTarget,
   createMatrx2Reach,
   fileMatrx2Run,
@@ -226,5 +227,15 @@ describe("filing a start survives the tab, and never delivers by itself", () => 
     expect(attached).toEqual([["conv-9", [{ token: "project", id: "p1" }]]]);
     expect(waiting).toEqual([]);
     expect(store.rows.size).toBe(0);
+  });
+});
+
+// RED WHEN: a chat Matrx 2 delivered reads as Matrx Local (or a "not recorded which" stand-in).
+describe("Arrived by names the app that delivered", () => {
+  it("maps each origin", () => {
+    const humanize = (v: string) => v;
+    expect(arrivedByLabel("matrx_desktop", humanize)).toBe("Matrx 2");
+    expect(arrivedByLabel("matrx_local", humanize)).toBe("Matrx Local");
+    expect(arrivedByLabel(null, humanize)).toBe("Not recorded");
   });
 });

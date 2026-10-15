@@ -218,14 +218,11 @@ export function createMatrx2Reach(deps: ReachDeps): Matrx2Reach {
   };
 }
 
-/**
- * "Arrived by" in words. The desktop history importer (shared by Matrx Local and Matrx 2) stamps
- * every chat `matrx_local` — the server accepts only that or `matrx_sandbox` — so the record cannot
- * tell which desktop app delivered it, and this says so instead of naming the wrong one. Pure.
- */
+/** "Arrived by" in words: each desktop app stamps its own origin (matrx_desktop is Matrx 2). Pure. */
 export function arrivedByLabel(origin: string | null | undefined, humanize: (value: string) => string): string {
   if (!origin) return "Not recorded";
-  if (origin === "matrx_local") return "Desktop import (Matrx 2 or Matrx Local; not recorded which)";
+  if (origin === "matrx_desktop") return "Matrx 2";
+  if (origin === "matrx_local") return "Matrx Local";
   if (origin === "matrx_sandbox") return "Matrx Sandbox";
   return humanize(origin);
 }

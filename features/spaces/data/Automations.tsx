@@ -14,7 +14,7 @@ import { ProInput } from "@/components/official/ProInput";
  * restore, and each automation's runs with every step's status and words. Properties are named by Field id.
  * Nothing here decides access: every call runs as the person and the store refuses in its own words.
  */
-import { createContext, useContext, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { FlaskConical, History, Plus, RotateCcw, Trash2, X } from "lucide-react";
 import { Button, Input, Switch } from "@ai-matrx/design-system/controls";
 import { isButtonField } from "@ai-matrx/records";
@@ -145,21 +145,6 @@ const condWords = (c: unknown): { field: string | null; words: string } => {
   return { field: x?.args?.[0]?.field ?? null, words };
 };
 
-/**
- * The panel's nouns. Spaces says "page" and "property"; a table says the canonical "record" and "field"
- * (common-docs vocabulary). Only this panel's own literals pass through `say`; a person's names never do.
- */
-export type Say = (text: string) => string;
-export const spacesSay: Say = (t) => t;
-export const tableSay: Say = (t) =>
-  t
-    .replace(/\bPages\b/g, "Records").replace(/\bpages\b/g, "records")
-    .replace(/\bPage\b/g, "Record").replace(/\bpage\b/g, "record")
-    .replace(/\bProperty\b/g, "Field").replace(/\bproperty\b/g, "field")
-    .replace(/\bProperties\b/g, "Fields").replace(/\bproperties\b/g, "fields");
-const SayContext = createContext<Say>(spacesSay);
-const useSay = () => useContext(SayContext);
-
 const nameOf = (fields: Field[], id: string | undefined) => fields.find((f) => f.id === id)?.label ?? "a property";
 
 /** A date or date-time property: what "when a date arrives" can wait for. */
@@ -170,16 +155,16 @@ const isDateField = (f: Field) => {
 
 const clock = (at: string | undefined) => at || "09:00";
 
-function describeTrigger(t: AutomationTrigger, fields: Field[], say: Say = spacesSay): string {
+function describeTrigger(t: AutomationTrigger, fields: Field[]): string {
   switch (t.on) {
     case "row_added":
-      return say("Page added");
+      return "Page added";
     case "form_answered":
       return "Form answered";
     case "property_edited":
       return `${nameOf(fields, t.field)} edited${t.to !== undefined && t.to !== null && t.to !== "" ? ` to ${String(t.to)}` : ""}`;
     case "record_updated":
-      return t.fields && t.fields.length > 0 ? `${t.fields.map((id) => nameOf(fields, id)).join(" or ")} updated` : say("Page updated");
+      return t.fields && t.fields.length > 0 ? `${t.fields.map((id) => nameOf(fields, id)).join(" or ")} updated` : "Page updated";
     case "record_matches":
       return t.view_id ? "Enters a view" : "Matches conditions";
     case "button_pressed":
@@ -198,9 +183,9 @@ function describeTrigger(t: AutomationTrigger, fields: Field[], say: Say = space
   }
 }
 
-export function describeSpec(spec: AutomationSpec, fields: Field[], say: Say = spacesSay): string {
-  const when = describeTrigger(spec.trigger, fields, say);
-  const does = spec.actions.map((a) => (a.do === "set" ? `set ${Object.keys(a.values).map((id) => nameOf(fields, id)).join(", ")}` : a.do === "add_row" ? say("add page") : a.do === "edit_rows" ? say("edit pages") : a.do === "notify" ? "notify" : a.do === "email" ? "email" : a.do === "slack" ? "Slack" : a.do));
+export function describeSpec(spec: AutomationSpec, fields: Field[]): string {
+  const when = describeTrigger(spec.trigger, fields);
+  const does = spec.actions.map((a) => (a.do === "set" ? `set ${Object.keys(a.values).map((id) => nameOf(fields, id)).join(", ")}` : a.do === "add_row" ? "add page" : a.do === "edit_rows" ? "edit pages" : a.do === "notify" ? "notify" : a.do === "email" ? "email" : a.do === "slack" ? "Slack" : a.do));
   return `${when} → ${does.join(", ")}`;
 }
 
@@ -260,7 +245,6 @@ const rowName = (row: ReadRow, key: string | undefined) => {
 
 /** TEST — Airtable's "Run test": pick a page, run the automation once now on it, show what each step did. */
 function TestRun({ automation, tableId, fields, onRan }: { automation: AutomationItem; tableId: string; fields: Field[]; onRan: () => void }) {
-  const say = useSay();
   const client = useRecordsClient();
   const scheduled = automation.spec.trigger.on === "schedule";
   const [search, setSearch] = useState("");
@@ -277,7 +261,7 @@ function TestRun({ automation, tableId, fields, onRan }: { automation: Automatio
       if (got.ok) {
         setRows(got.data.rows);
         setProblem(null);
-      } else setProblem(got.error.message || say("The pages could not be read."));
+      } else setProblem(got.error.message || "The pages could not be read.");
     });
     return () => {
       live = false;
@@ -297,7 +281,7 @@ function TestRun({ automation, tableId, fields, onRan }: { automation: Automatio
         <Button variant="outline" disabled={busy} onClick={() => void run(null)}>Run once now</Button>
       ) : (
         <>
-          <ProInput enableVoice={false} enableCleanup={false} aria-label={say("Find a page")} placeholder={say("Test on a page…")} value={search} onChange={(e) => setSearch(e.target.value)} />
+          <ProInput enableVoice={false} enableCleanup={false} aria-label="Find a page" placeholder="Test on a page…" value={search} onChange={(e) => setSearch(e.target.value)} />
           <div className="flex flex-wrap gap-1">
             {(rows ?? []).map((r) => (
               <Button key={r.id} variant="quiet" disabled={busy} onClick={() => void run(r.id)}>
@@ -323,7 +307,6 @@ function TestRun({ automation, tableId, fields, onRan }: { automation: Automatio
 }
 
 function RunHistory({ automationId, limit }: { automationId: string; limit: number }) {
-  const say = useSay();
   const client = useRecordsClient();
   const [runs, setRuns] = useState<AutomationRun[] | null>(null);
   const [problem, setProblem] = useState<string | null>(null);
@@ -347,7 +330,7 @@ function RunHistory({ automationId, limit }: { automationId: string; limit: numb
       {runs.map((r) => (
         <li key={r.run_id} className="flex flex-col" data-run-status={r.status}>
           <span className="type-secondary">
-            <strong className="capitalize">{r.status}</strong> · {say(RUN_TRIGGER[r.trigger?.on ?? ""] ?? r.trigger?.on ?? "Run")} · {new Date(r.at).toLocaleString()}
+            <strong className="capitalize">{r.status}</strong> · {RUN_TRIGGER[r.trigger?.on ?? ""] ?? r.trigger?.on ?? "Run"} · {new Date(r.at).toLocaleString()}
             {r.says ? ` · ${r.says}` : ""}
           </span>
           {r.steps.map((s) => (
@@ -362,16 +345,7 @@ function RunHistory({ automationId, limit }: { automationId: string; limit: numb
 }
 
 /** The Automations popover body: the list (on/off, runs, archive / restore), then the editor. */
-export function AutomationsPanel({ words = "spaces", ...rest }: { tableId: string; organizationId: string | null; fields: Field[]; words?: "spaces" | "table" }) {
-  return (
-    <SayContext.Provider value={words === "table" ? tableSay : spacesSay}>
-      <AutomationsPanelBody {...rest} />
-    </SayContext.Provider>
-  );
-}
-
-function AutomationsPanelBody({ tableId, organizationId, fields }: { tableId: string; organizationId: string | null; fields: Field[] }) {
-  const say = useSay();
+export function AutomationsPanel({ tableId, organizationId, fields }: { tableId: string; organizationId: string | null; fields: Field[] }) {
   const client = useRecordsClient();
   const runsShown = Number(useEffectiveKnob(organizationId, null, RUNS_KNOB) ?? 20) || 20;
   const [list, setList] = useState<AutomationItem[] | null>(null);
@@ -521,13 +495,13 @@ function AutomationsPanelBody({ tableId, organizationId, fields }: { tableId: st
           <ProInput aria-label="Automation name" placeholder="Automation name" value={name} onChange={(e) => setName(e.target.value)} />
           <span className="type-secondary text-muted-foreground">When</span>
           <div className="flex flex-wrap gap-1">
-            <Pill on={on === "row_added"} onClick={() => pickTrigger("row_added")}>{say("Page added")}</Pill>
-            <Pill on={on === "property_edited"} onClick={() => pickTrigger("property_edited")}>{say("Property edited")}</Pill>
+            <Pill on={on === "row_added"} onClick={() => pickTrigger("row_added")}>Page added</Pill>
+            <Pill on={on === "property_edited"} onClick={() => pickTrigger("property_edited")}>Property edited</Pill>
             <Pill on={on === "form_answered"} onClick={() => pickTrigger("form_answered")}>Form answered</Pill>
-            <Pill on={on === "record_updated"} onClick={() => pickTrigger("record_updated")}>{say("Page updated")}</Pill>
+            <Pill on={on === "record_updated"} onClick={() => pickTrigger("record_updated")}>Page updated</Pill>
             <Pill on={on === "record_matches"} onClick={() => pickTrigger("record_matches")}>Matches conditions</Pill>
-            <Pill on={on === "button_pressed"} onClick={() => pickTrigger("button_pressed")} disabledReason={buttonFields.length === 0 ? say("Add a button property first") : undefined}>Button pressed</Pill>
-            <Pill on={on === "date_arrives"} onClick={() => pickTrigger("date_arrives")} disabledReason={dateFields.length === 0 ? say("Add a date property first") : undefined}>Date arrives</Pill>
+            <Pill on={on === "button_pressed"} onClick={() => pickTrigger("button_pressed")} disabledReason={buttonFields.length === 0 ? "Add a button property first" : undefined}>Button pressed</Pill>
+            <Pill on={on === "date_arrives"} onClick={() => pickTrigger("date_arrives")} disabledReason={dateFields.length === 0 ? "Add a date property first" : undefined}>Date arrives</Pill>
             <Pill on={on === "schedule"} onClick={() => pickTrigger("schedule")}>Every…</Pill>
           </div>
           {on === "date_arrives" ? (
@@ -560,7 +534,7 @@ function AutomationsPanelBody({ tableId, organizationId, fields }: { tableId: st
           ) : null}
           {on === "record_updated" ? (
             <div className="flex flex-wrap items-center gap-1" data-testid="spaces-automation-watch">
-              <Pill on={watch.length === 0} onClick={() => setWatch([])}>{say("Any property")}</Pill>
+              <Pill on={watch.length === 0} onClick={() => setWatch([])}>Any property</Pill>
               {fields.map((f) => (
                 <Pill key={f.id} on={watch.includes(f.id)} onClick={() => setWatch(watch.includes(f.id) ? watch.filter((x) => x !== f.id) : [...watch, f.id])}>
                   {f.label || f.key}
@@ -611,7 +585,7 @@ function AutomationsPanelBody({ tableId, organizationId, fields }: { tableId: st
                 </>
               ) : d.kind === "add" ? (
                 <>
-                  <Input aria-label={say("New page name")} placeholder={say("Add a page named")} value={d.title} onChange={(e) => put(i, { title: e.target.value })} />
+                  <Input aria-label="New page name" placeholder="Add a page named" value={d.title} onChange={(e) => put(i, { title: e.target.value })} />
                   {dateFields.length > 0 ? (
                     <>
                       <FieldPills fields={dateFields} value={d.dateField} onPick={(dateField) => put(i, { dateField: d.dateField === dateField ? "" : dateField })} />
@@ -621,7 +595,7 @@ function AutomationsPanelBody({ tableId, organizationId, fields }: { tableId: st
                 </>
               ) : d.kind === "edit" ? (
                 <>
-                  <span className="type-secondary">{say("Edit pages where")}</span>
+                  <span className="type-secondary">Edit pages where</span>
                   <FieldPills fields={fields} value={d.whereField} onPick={(whereField) => put(i, { whereField })} />
                   <Input aria-label="Where value" placeholder="is" value={d.whereIs} onChange={(e) => put(i, { whereIs: e.target.value })} />
                   <span className="type-secondary">set</span>
@@ -639,7 +613,7 @@ function AutomationsPanelBody({ tableId, organizationId, fields }: { tableId: st
                         {f.label}
                       </Pill>
                     ))}
-                  <Input aria-label="Notification text" placeholder={say("Message, {{Name}} for a property")} value={d.text} onChange={(e) => put(i, { text: e.target.value })} />
+                  <Input aria-label="Notification text" placeholder="Message, {{Name}} for a property" value={d.text} onChange={(e) => put(i, { text: e.target.value })} />
                 </>
               ) : d.kind === "webhook" ? (
                 <Input aria-label="Webhook address" placeholder="https://" value={d.url} onChange={(e) => put(i, { url: e.target.value })} />
@@ -656,14 +630,14 @@ function AutomationsPanelBody({ tableId, organizationId, fields }: { tableId: st
                       </Pill>
                     ))}
                   {d.to === "address" ? <Input aria-label="Email address" type="email" placeholder="name@company.com" value={d.address} onChange={(e) => put(i, { address: e.target.value })} /> : null}
-                  <Input aria-label="Email subject" placeholder={say("Subject, {Name} for a property")} value={d.subject} onChange={(e) => put(i, { subject: e.target.value })} />
-                  <Input aria-label="Email message" placeholder={say("Message, {Name} for a property")} value={d.body} onChange={(e) => put(i, { body: e.target.value })} />
+                  <Input aria-label="Email subject" placeholder="Subject, {Name} for a property" value={d.subject} onChange={(e) => put(i, { subject: e.target.value })} />
+                  <Input aria-label="Email message" placeholder="Message, {Name} for a property" value={d.body} onChange={(e) => put(i, { body: e.target.value })} />
                 </>
               ) : d.kind === "slack" ? (
                 <>
                   <span className="type-secondary">Slack</span>
                   <Input aria-label="Slack webhook address" placeholder="https://hooks.slack.com/…" value={d.url} onChange={(e) => put(i, { url: e.target.value })} />
-                  <Input aria-label="Slack message" placeholder={say("Message, {Name} for a property")} value={d.text} onChange={(e) => put(i, { text: e.target.value })} />
+                  <Input aria-label="Slack message" placeholder="Message, {Name} for a property" value={d.text} onChange={(e) => put(i, { text: e.target.value })} />
                 </>
               ) : (
                 <>
@@ -676,9 +650,9 @@ function AutomationsPanelBody({ tableId, organizationId, fields }: { tableId: st
             </div>
           ))}
           <div className="flex flex-wrap gap-1">
-            {timed ? null : <Button variant="quiet" icon={<Plus size={14} />} onClick={() => setDrafts([...drafts, { kind: "set", field: firstField, value: "text", text: "", from: firstField }])}>{say("Set property")}</Button>}
-            <Button variant="quiet" icon={<Plus size={14} />} onClick={() => setDrafts([...drafts, { kind: "add", title: "", dateField: "", inDays: "" }])}>{say("Add page")}</Button>
-            <Button variant="quiet" icon={<Plus size={14} />} onClick={() => setDrafts([...drafts, { kind: "edit", whereField: firstField, whereIs: "", field: firstField, value: "text", text: "", from: firstField }])}>{say("Edit pages")}</Button>
+            {timed ? null : <Button variant="quiet" icon={<Plus size={14} />} onClick={() => setDrafts([...drafts, { kind: "set", field: firstField, value: "text", text: "", from: firstField }])}>Set property</Button>}
+            <Button variant="quiet" icon={<Plus size={14} />} onClick={() => setDrafts([...drafts, { kind: "add", title: "", dateField: "", inDays: "" }])}>Add page</Button>
+            <Button variant="quiet" icon={<Plus size={14} />} onClick={() => setDrafts([...drafts, { kind: "edit", whereField: firstField, whereIs: "", field: firstField, value: "text", text: "", from: firstField }])}>Edit pages</Button>
             <Button variant="quiet" icon={<Plus size={14} />} onClick={() => setDrafts([...drafts, { kind: "notify", to: "author", text: "" }])}>Send notification</Button>
             <Button variant="quiet" icon={<Plus size={14} />} onClick={() => setDrafts([...drafts, { kind: "email", to: "author", address: "", subject: "", body: "" }])}>Send email</Button>
             <Button variant="quiet" icon={<Plus size={14} />} onClick={() => setDrafts([...drafts, { kind: "slack", url: "", text: "" }])}>Slack message</Button>
@@ -703,13 +677,12 @@ function AutomationsPanelBody({ tableId, organizationId, fields }: { tableId: st
                 <button type="button" className="min-w-0 flex-1 text-left" onClick={() => (a.archived_at ? undefined : startEdit(a))}>
                   <div className="type-body truncate">{a.spec.name || a.name}</div>
                   <div className="type-secondary truncate text-muted-foreground">
-                    {describeSpec(a.spec, fields, say)}
+                    {describeSpec(a.spec, fields)}
                     {a.last_run ? ` · last run ${a.last_run.status}` : ""}
                   </div>
                   {a.disabled_reason || a.last_run?.status === "failed" ? (
                     <div className="type-secondary truncate text-destructive" data-testid="spaces-automation-problem">
                       {a.disabled_reason ?? a.last_run?.says}
-                      <ErrorAlchemyMenu error={a.disabled_reason ?? a.last_run?.says ?? ""} />
                     </div>
                   ) : null}
                 </button>
