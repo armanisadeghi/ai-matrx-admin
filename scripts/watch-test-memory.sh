@@ -24,7 +24,9 @@ done
 fp_mb() {
   local out
   out="$(footprint -p "$1" -f bytes 2>/dev/null | awk '/Footprint:/{for(i=1;i<=NF;i++) if($i=="Footprint:"){print $(i+1); exit}}')"
-  if [[ -n "$out" ]]; then echo $(( out / 1048576 )); else echo $(( $(ps -o rss= -p "$1" 2>/dev/null | tr -d ' ' || echo 0) / 1024 )); fi
+  if [[ -n "$out" ]]; then echo $(( out / 1048576 )); return; fi
+  out="$(ps -o rss= -p "$1" 2>/dev/null | tr -d ' ')"   # process may have exited: count it as 0
+  echo $(( ${out:-0} / 1024 ))
 }
 
 echo "watch-test-memory: every ${INTERVAL}s; WARN if renderer>${RENDERER_MB}MB, server>${SERVER_MB}MB, free<${FREE_PCT}%. Read-only, kills nothing."

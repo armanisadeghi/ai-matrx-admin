@@ -7,7 +7,6 @@
 //   __matrxTestMemory.heapMb()          -> JS heap in MB (performance.memory.usedJSHeapSize)
 //   __matrxTestMemory.sizes(15)         -> the biggest Redux slices (approx bytes, node counts)
 //   __matrxTestMemory.reset()           -> reload the page (session cookie survives, so still signed in)
-//   __matrxTestMemory.reset({ clear: ["sliceName"] }) -> also empty those top-level slices first, then reload
 
 type AnyStore = { getState: () => unknown };
 
@@ -89,15 +88,8 @@ export function installTestMemoryGuard(store: AnyStore): void {
       .slice(0, top);
   };
 
-  const reset = (opts: { clear?: string[]; reload?: boolean } = {}) => {
-    if (opts.clear?.length) {
-      (store as unknown as { dispatch: (a: unknown) => void }).dispatch({
-        type: "@@matrxTestMemory/clear",
-        payload: opts.clear,
-      });
-    }
-    if (opts.reload !== false) window.location.reload();
-  };
+  // A reload throws away every in-memory store (Redux included); the session cookie keeps the sign-in.
+  const reset = () => window.location.reload();
 
   (window as unknown as Record<string, unknown>).__matrxTestMemory = { heapMb, sizes, reset };
 }
