@@ -8,6 +8,7 @@ import { callApi } from "@/lib/api/call-api";
 import type { AppDispatch } from "@/lib/redux/store";
 import { supabase } from "@/utils/supabase/client";
 import type { Json } from "@/types/database.types";
+import { withAdminFeature } from "@/utils/auth/adminFeaturesOnUserPages";
 
 export interface ProvisionValue {
   name: string;
@@ -125,8 +126,15 @@ const COLUMNS =
   "id, point_key, point_label, code_location, subject_id, provision_values, coverage, total_chars, expected_output, created_at";
 
 export async function loadProvisionSnapshot(id: string): Promise<ProvisionSnapshot> {
-  const { data, error } = await supabase.schema("mandate").from("provision_snapshot").select(COLUMNS).eq("id", id).single();
+  // Registered admin feature: the one read carries the admin lane, so a platform admin's
+  // platform_admin_read policy opens a snapshot owned by an organization they are not in.
+  // For anyone else the header grants nothing and RLS hides the row as usual.
+  const { data, error } = await withAdminFeature(
+    "provision.open-any-snapshot",
+    supabase.schema("mandate").from("provision_snapshot").select(COLUMNS).eq("id", id).maybeSingle(),
+  );
   if (error) throw new Error(error.message);
+  if (!data) throw new Error("This snapshot belongs to another organization, or no longer exists.");
   return parseSnapshot(data);
 }
 

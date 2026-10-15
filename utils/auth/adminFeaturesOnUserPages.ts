@@ -189,6 +189,13 @@ export const ADMIN_FEATURES_ON_USER_PAGES = {
     doors: ["content_ir.promote_kinds_to_system"],
     ruling: "Arman, 2026-10-13: \"I'm a system admin which means that we need to add a feature here where I can quickly and easily promote things of mine to the system so they're no longer just mine.\"",
   },
+  "provision.open-any-snapshot": {
+    level: "admin",
+    allows: "Open any provision snapshot in the Provision window, including one owned by an organization the admin is not a member of.",
+    where: "Provision window (features/provision-window/data.ts loadProvisionSnapshot)",
+    doors: ["mandate.provision_snapshot (read, platform_admin_read)"],
+    ruling: "Arman, 2026-10-14, relayed by the owning session: platform admins must be able to open every snapshot, he as a non-member super admin included. Confirm the quote.",
+  },
 } as const satisfies Record<string, AdminFeatureOnUserPage>;
 
 export type AdminFeatureOnUserPageId = keyof typeof ADMIN_FEATURES_ON_USER_PAGES;
