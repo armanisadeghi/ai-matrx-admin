@@ -2583,6 +2583,10 @@
           "reason": "A DIFFERENT capability: a dev-demo PANEL with domain props (title, tone, verdict, route, chip, tall) that lays out one gallery entry. Not a styled container and no className/children contract."
         },
         {
+          "file": "features/sharing/public-view/PublicViewBody.tsx",
+          "reason": "A DIFFERENT capability: the public shared-view's Gallery RECORD renderer with domain props (view, row, fields) that lays out one row's title and non-empty fields. Not a styled container and no className/children contract."
+        },
+        {
           "file": "components/animated/demos/AiImageRevealDemo.tsx",
           "reason": "A DIFFERENT capability: a vendored aceternity canvas-reveal demo shell with its own hover state, a fixed h-[30rem] frame and domain props (title, icon). Same word, unrelated component."
         },

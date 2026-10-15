@@ -17,6 +17,7 @@
 import React, { useState } from "react";
 import { ExternalLink, MessageSquareReply, ThumbsUp, TrendingUp, UserRound } from "lucide-react";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@ai-matrx/design-system";
 import { cn } from "@/lib/utils";
 import { MetricChart } from "@/features/marketing/social/components/MetricChart";
 import type { SeriesPoint } from "@/features/marketing/social/mappers";
@@ -34,24 +35,14 @@ interface BlockProps {
 // place_review
 // ─────────────────────────────────────────────────────────────────────────────
 
-function Avatar({ src, name }: { src: string | null; name: string }) {
-  const [failed, setFailed] = useState(false);
-  if (src && !failed) {
-    return (
-      <img
-        src={src}
-        alt=""
-        loading="lazy"
-        referrerPolicy="no-referrer"
-        onError={() => setFailed(true)}
-        className="h-8 w-8 shrink-0 rounded-full bg-muted object-cover"
-      />
-    );
-  }
+function ReviewerAvatar({ src, name }: { src: string | null; name: string }) {
   return (
-    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted text-sm font-medium text-muted-foreground">
-      {name ? name.charAt(0).toUpperCase() : <UserRound className="h-4 w-4" />}
-    </span>
+    <Avatar size="sm">
+      {src ? <AvatarImage src={src} alt="" loading="lazy" referrerPolicy="no-referrer" className="bg-muted object-cover" /> : null}
+      <AvatarFallback className="text-sm">
+        {name ? name.charAt(0).toUpperCase() : <UserRound className="h-4 w-4" />}
+      </AvatarFallback>
+    </Avatar>
   );
 }
 
@@ -69,7 +60,7 @@ export function PlaceReviewBlock({ serverData, className }: BlockProps) {
 
   return (
     <div className={cn("flex min-w-0 gap-3", className)}>
-      <Avatar src={text(value.author_photo)} name={author} />
+      <ReviewerAvatar src={text(value.author_photo)} name={author} />
       <div className="min-w-0 flex-1 space-y-1">
         <div className="truncate text-sm font-medium text-foreground">
           {author || "A visitor"}

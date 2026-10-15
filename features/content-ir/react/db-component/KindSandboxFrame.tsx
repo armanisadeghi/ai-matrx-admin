@@ -50,6 +50,7 @@ import {
 } from "@/features/content-ir/sandbox/theme-tokens";
 import type { SandboxBodyPayload } from "@/features/content-ir/sandbox/transform/transform-kind-body";
 import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
+import { formatDurationMs } from "@ai-matrx/kit/format";
 import type { ComponentResolution } from "@ai-matrx/content-ir-react";
 import type { RunKindAction } from "../actions/useKindActionRunner";
 import type {
@@ -281,8 +282,8 @@ export const KindSandboxFrame: React.FC<KindSandboxFrameProps> = ({
                 message:
                     `[kind-sandbox] ${kind}: the view did not load — the sandbox frame ` +
                     (loaded
-                        ? `loaded but never answered within ${SILENT_FRAME_MS / 1000}s`
-                        : `document never loaded within ${NEVER_LOADED_MS / 1000}s`),
+                        ? `loaded but never answered within ${formatDurationMs(SILENT_FRAME_MS, { style: "compact" })}`
+                        : `document never loaded within ${formatDurationMs(NEVER_LOADED_MS, { style: "compact" })}`),
                 raw: { kind, attempt: frameAttempt, loaded },
             });
         }, loaded ? SILENT_FRAME_MS : NEVER_LOADED_MS);

@@ -1,9 +1,8 @@
 // features/sharing/public-view/format.ts — a stored cell, as words, for a page nobody signed in to read.
 // Pure and deterministic (dates in UTC) so the server paints exactly what the browser would.
 
+import { isUuidShape } from "@ai-matrx/kit/uuid";
 import type { PublishedViewField, PublishedViewOpen, PublishedViewRow } from "./types";
-
-const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export const PERSON_GONE_WORDS = "A person no longer in this organization";
 
@@ -53,7 +52,7 @@ export function cellValue(view: PublishedViewOpen, field: PublishedViewField, ro
   // A PERSON IS NEVER A UUID: a stored person id with no name in `refs` (a kept-aside or departed person)
   // reads as words, never as the id, on a page nobody signed in to read.
   const words = (v: string | number): string => {
-    if (typeof v === "string" && UUID.test(v)) return view.refs[v] ?? PERSON_GONE_WORDS;
+    if (isUuidShape(v)) return view.refs[v] ?? PERSON_GONE_WORDS;
     return String(v);
   };
   if (typeof value === "string" || typeof value === "number") return [words(value)];
@@ -69,8 +68,4 @@ export function titleOf(view: PublishedViewOpen, row: PublishedViewRow): string 
     if (typeof v === "string" && v.trim()) return v;
   }
   return "Untitled";
-}
-
-export function isRecordId(v: string): boolean {
-  return UUID.test(v);
 }
