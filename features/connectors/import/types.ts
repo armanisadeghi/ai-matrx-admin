@@ -7,7 +7,7 @@
  * reviewed write shapes come from `@ai-matrx/api/types`.
  *
  * REMEDY when the remaining Contact paths are generated: delete those local
- * Contact shapes and import the operation types through `lib/api/typed-client` exactly as
+ * Contact shapes and import the operation types from `@ai-matrx/api/types` and call the generated operation through `serverApi` exactly as
  * `features/crm/import/connectors/service.ts` already does for
  * `/crm/import/connectors`. The service beside this file is the only consumer,
  * so the swap is one file plus this one.

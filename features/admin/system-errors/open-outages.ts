@@ -17,14 +17,13 @@
  * again. The client never dedupes, never decides, never accumulates — an
  * empty array means every provider is healthy, and it renders nothing.
  *
- * WHY `getJson` AND NOT `apiGet`. `lib/api/typed-client`'s `apiGet` is bound
- * to the generated OpenAPI contract, and this path is not in
- * `@ai-matrx/api/types` yet (the aidream half landed after
- * this file). A generated file is NEVER hand-edited, so the honest thing is
- * the raw typed helper plus the declared response shape below. MOVE THIS TO
- * `apiGet("/admin/system-errors/open-outages")` the moment `pnpm sync-types`
- * carries the path — at that point this local interface becomes a
- * hand-mirrored contract, which is the exact class typed-client exists to
+ * WHY `getJson` AND NOT A GENERATED OPERATION. This path is not in the generated
+ * `@ai-matrx/api` contract yet (the aidream half landed after this file). A
+ * generated file is NEVER hand-edited, so the honest thing is the raw typed
+ * helper plus the declared response shape below. MOVE THIS TO the generated
+ * `@ai-matrx/api/architecture` operation, called through `serverApi`, the moment
+ * the contract carries the path - at that point this local interface becomes a
+ * hand-mirrored contract, which is the exact class the generated operations
  * kill. A failed read is already captured once into the Error Inspector by
  * `lib/python-client` (`capturePythonClientError`); this module adds no
  * second channel and no toast.

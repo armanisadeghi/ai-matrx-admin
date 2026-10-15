@@ -17,7 +17,7 @@
 // router prefixes are BARE, so the `/api/...` form written in the handoff is
 // unreachable at runtime even though it appears in `/openapi.json`. They are
 // typed against `@ai-matrx/api/types` through
-// `@/lib/api/typed-client`, so a wrong path is a compile error, not a 404 a
+// generated `@ai-matrx/api/<domain>` operations (through `serverApi`), so a wrong path is a compile error, not a 404 a
 // user discovers.
 
 import type { components } from "@ai-matrx/api/types";

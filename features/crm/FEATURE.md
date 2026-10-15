@@ -793,7 +793,7 @@ lands in `/crm/outreach-lists/[listId]`, the workspace that already exists
 - 🚨 **The mounted aidream paths are `/seo/sites/{site_id}/crm/{referring-domains,reputation-outlets,fold-settings}`.**
   aidream router prefixes are BARE — the `/api/seo/...` form written in the
   handoff appears in `/openapi.json` and is unreachable at runtime. They are
-  called through `@/lib/api/typed-client`, so a wrong path is a compile error.
+  called through generated `@ai-matrx/api` operations (`serverApi`), so a wrong path is a compile error.
 - **`crm.resolve_party` is the ONLY domain→party path and it is server-side.**
   Never match a domain to a party in the client to create anything; the fold
   endpoint is the call site, it is idempotent on the domain key, and it stamps

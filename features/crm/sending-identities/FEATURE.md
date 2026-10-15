@@ -32,7 +32,7 @@ operation is server-side work a browser physically cannot do:
 
 There is still **one canonical path per operation**; it just lives in aidream.
 `sending-identities/service.ts` is the only caller, bound to the generated
-contract via `@/lib/api/typed-client` so a backend rename is a compile error.
+contract via generated `@ai-matrx/api` operations (`serverApi`) so a backend rename is a compile error.
 
 ## Files
 

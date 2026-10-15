@@ -204,10 +204,10 @@ function run(): number {
       `${RED}${added.length} NEW file(s) import the raw @/lib/python-client instead of the${RESET}`,
     );
     console.log(
-      `${RED}contract-bound typed client. Route these through @/lib/api/server-api${RESET}`,
+      `${RED}generated operations. Route these through serverApi (@/lib/api/server-api)${RESET}`,
     );
     console.log(
-      `${RED}(apiGet/apiPost/apiPatch/apiPut/apiDelete/apiMultipart + buildPath) so the${RESET}`,
+      `${RED}by calling a generated @ai-matrx/api/<domain> operation, so the${RESET}`,
     );
     console.log(
       `${RED}request body + response are derived from the OpenAPI contract, not asserted:${RESET}`,
