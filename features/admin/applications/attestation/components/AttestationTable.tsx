@@ -7,7 +7,6 @@
 // application's Configuration editor.
 "use client";
 
-import Link from "next/link";
 import { useMemo } from "react";
 import { format, formatDistanceToNow } from "date-fns";
 import { KeyRound } from "lucide-react";
@@ -102,14 +101,8 @@ export function AttestationTable({
       id: "key",
       header: "Key",
       accessorFn: (row) => attestationKeyLabel(row),
-      cell: (row) => (
-        <Link
-          href={attestationEditorHref(app, row)}
-          className="font-mono text-xs underline-offset-4 hover:underline"
-        >
-          {attestationKeyLabel(row)}
-        </Link>
-      ),
+      href: (row) => attestationEditorHref(app, row),
+      cell: (row) => <span className="font-mono text-xs">{attestationKeyLabel(row)}</span>,
       width: 320,
     },
     {

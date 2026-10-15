@@ -17,6 +17,7 @@ import {
   Select,
   type SelectOption,
 } from "@ai-matrx/design-system/controls";
+import { ErrorNotice } from "@ai-matrx/design-system";
 import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
 import {
   ADMIN_APPLICATIONS_SURFACE_NAME,
@@ -181,14 +182,12 @@ export function AttestationClient({
             value={app}
             options={appOptions}
             onValueChange={(v) => navigate(v, null)}
-            size="sm"
           />
           <Select
             aria-label="Build"
             value={buildSha ?? LATEST}
             options={buildOptions}
             onValueChange={(v) => navigate(app, v === LATEST ? null : v)}
-            size="sm"
           />
           <Button variant="outline" onClick={() => void refresh()} disabled={refreshing}>
             Refresh
@@ -231,7 +230,7 @@ export function AttestationClient({
             .
           </Flag>
         ) : null}
-        {error ? <Flag tone="danger">{error}</Flag> : null}
+        {error ? <ErrorNotice title="Attestation could not be read" message={error} /> : null}
 
         {manifest ? (
           <section className="grid gap-3 rounded-md border border-border bg-card p-3 sm:grid-cols-4">

@@ -3051,8 +3051,167 @@ export type Database = {
           },
         ]
       }
+      model_artifact: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          deleted_at: string | null
+          git_oid: string | null
+          header: Json | null
+          id: string
+          metadata: Json
+          organization_id: string
+          path_in_repo: string
+          required_for: Database["ai"]["Enums"]["model_artifact_use"][]
+          role: Database["ai"]["Enums"]["model_artifact_role"]
+          sha256: string | null
+          shard_count: number | null
+          shard_index: number | null
+          size_bytes: number
+          updated_at: string
+          updated_by: string | null
+          url: string | null
+          variant_id: string
+          version: number
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          git_oid?: string | null
+          header?: Json | null
+          id?: string
+          metadata?: Json
+          organization_id: string
+          path_in_repo: string
+          required_for?: Database["ai"]["Enums"]["model_artifact_use"][]
+          role: Database["ai"]["Enums"]["model_artifact_role"]
+          sha256?: string | null
+          shard_count?: number | null
+          shard_index?: number | null
+          size_bytes: number
+          updated_at?: string
+          updated_by?: string | null
+          url?: string | null
+          variant_id: string
+          version?: number
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          git_oid?: string | null
+          header?: Json | null
+          id?: string
+          metadata?: Json
+          organization_id?: string
+          path_in_repo?: string
+          required_for?: Database["ai"]["Enums"]["model_artifact_use"][]
+          role?: Database["ai"]["Enums"]["model_artifact_role"]
+          sha256?: string | null
+          shard_count?: number | null
+          shard_index?: number | null
+          size_bytes?: number
+          updated_at?: string
+          updated_by?: string | null
+          url?: string | null
+          variant_id?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "model_artifact_variant_id_fkey"
+            columns: ["variant_id"]
+            isOneToOne: false
+            referencedRelation: "model_variant"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      model_candidate: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          deleted_at: string | null
+          dismissed_reason: string | null
+          id: string
+          metadata: Json
+          model_id: string | null
+          organization_id: string
+          origin: string
+          published_to_web: boolean
+          published_to_web_at: string | null
+          published_to_web_by: string | null
+          reopened_at: string | null
+          repo: string | null
+          revision: string | null
+          shown_to: Database["platform"]["Enums"]["shown_to"] | null
+          state: string
+          suggested: Json
+          updated_at: string
+          updated_by: string | null
+          upstream_kind: Database["ai"]["Enums"]["model_upstream_kind"]
+          user_discovery_count: number
+          version: number
+          visibility: Database["platform"]["Enums"]["visibility"]
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          dismissed_reason?: string | null
+          id?: string
+          metadata?: Json
+          model_id?: string | null
+          organization_id: string
+          origin: string
+          published_to_web?: boolean
+          published_to_web_at?: string | null
+          published_to_web_by?: string | null
+          reopened_at?: string | null
+          repo?: string | null
+          revision?: string | null
+          shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          state?: string
+          suggested?: Json
+          updated_at?: string
+          updated_by?: string | null
+          upstream_kind: Database["ai"]["Enums"]["model_upstream_kind"]
+          user_discovery_count?: number
+          version?: number
+          visibility?: Database["platform"]["Enums"]["visibility"]
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          dismissed_reason?: string | null
+          id?: string
+          metadata?: Json
+          model_id?: string | null
+          organization_id?: string
+          origin?: string
+          published_to_web?: boolean
+          published_to_web_at?: string | null
+          published_to_web_by?: string | null
+          reopened_at?: string | null
+          repo?: string | null
+          revision?: string | null
+          shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          state?: string
+          suggested?: Json
+          updated_at?: string
+          updated_by?: string | null
+          upstream_kind?: Database["ai"]["Enums"]["model_upstream_kind"]
+          user_discovery_count?: number
+          version?: number
+          visibility?: Database["platform"]["Enums"]["visibility"]
+        }
+        Relationships: []
+      }
       model_definition: {
         Row: {
+          base_model_id: string | null
           capabilities: Json | null
           common_name: string | null
           context_window: number | null
@@ -3072,6 +3231,7 @@ export type Database = {
           mid_fallback_id: string | null
           name: string
           organization_id: string
+          parameter_count: number | null
           pending_cost_rating: number | null
           pending_cost_rating_at: string | null
           pending_cost_rating_by: string | null
@@ -3092,6 +3252,7 @@ export type Database = {
           visibility: Database["platform"]["Enums"]["visibility"]
         }
         Insert: {
+          base_model_id?: string | null
           capabilities?: Json | null
           common_name?: string | null
           context_window?: number | null
@@ -3111,6 +3272,7 @@ export type Database = {
           mid_fallback_id?: string | null
           name: string
           organization_id: string
+          parameter_count?: number | null
           pending_cost_rating?: number | null
           pending_cost_rating_at?: string | null
           pending_cost_rating_by?: string | null
@@ -3131,6 +3293,7 @@ export type Database = {
           visibility?: Database["platform"]["Enums"]["visibility"]
         }
         Update: {
+          base_model_id?: string | null
           capabilities?: Json | null
           common_name?: string | null
           context_window?: number | null
@@ -3150,6 +3313,7 @@ export type Database = {
           mid_fallback_id?: string | null
           name?: string
           organization_id?: string
+          parameter_count?: number | null
           pending_cost_rating?: number | null
           pending_cost_rating_at?: string | null
           pending_cost_rating_by?: string | null
@@ -3319,6 +3483,473 @@ export type Database = {
           },
         ]
       }
+      model_upstream: {
+        Row: {
+          card_url: string | null
+          created_at: string
+          created_by: string | null
+          deleted_at: string | null
+          id: string
+          last_checked_at: string | null
+          library_name: string | null
+          metadata: Json
+          model_id: string
+          organization_id: string
+          pipeline_tag: string | null
+          repo: string | null
+          revision: string | null
+          updated_at: string
+          updated_by: string | null
+          upstream_head: string | null
+          upstream_kind: Database["ai"]["Enums"]["model_upstream_kind"]
+          upstream_tags: string[]
+          version: number
+        }
+        Insert: {
+          card_url?: string | null
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          id?: string
+          last_checked_at?: string | null
+          library_name?: string | null
+          metadata?: Json
+          model_id: string
+          organization_id: string
+          pipeline_tag?: string | null
+          repo?: string | null
+          revision?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          upstream_head?: string | null
+          upstream_kind: Database["ai"]["Enums"]["model_upstream_kind"]
+          upstream_tags?: string[]
+          version?: number
+        }
+        Update: {
+          card_url?: string | null
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          id?: string
+          last_checked_at?: string | null
+          library_name?: string | null
+          metadata?: Json
+          model_id?: string
+          organization_id?: string
+          pipeline_tag?: string | null
+          repo?: string | null
+          revision?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          upstream_head?: string | null
+          upstream_kind?: Database["ai"]["Enums"]["model_upstream_kind"]
+          upstream_tags?: string[]
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "model_upstream_model_id_fkey"
+            columns: ["model_id"]
+            isOneToOne: false
+            referencedRelation: "model_admin"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "model_upstream_model_id_fkey"
+            columns: ["model_id"]
+            isOneToOne: false
+            referencedRelation: "model_config"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "model_upstream_model_id_fkey"
+            columns: ["model_id"]
+            isOneToOne: false
+            referencedRelation: "model_definition"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "model_upstream_model_id_fkey"
+            columns: ["model_id"]
+            isOneToOne: false
+            referencedRelation: "model_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "model_upstream_model_id_fkey"
+            columns: ["model_id"]
+            isOneToOne: false
+            referencedRelation: "test_model_candidates"
+            referencedColumns: ["model_id"]
+          },
+        ]
+      }
+      model_variant: {
+        Row: {
+          accelerators: string[]
+          architecture: string
+          chat_template_kind: string
+          created_at: string
+          created_by: string | null
+          deleted_at: string | null
+          format: Database["ai"]["Enums"]["model_format"]
+          gated: Database["ai"]["Enums"]["model_gated"]
+          id: string
+          is_default: boolean
+          key: string
+          license_id: string | null
+          license_url: string | null
+          memory_bytes_min: number | null
+          memory_bytes_recommended: number | null
+          metadata: Json
+          min_app_version: string | null
+          model_id: string
+          organization_id: string
+          os_arch: string[]
+          quant: string
+          review_state: Database["ai"]["Enums"]["model_review_state"]
+          selection_rank: number
+          tested_on_current_runtime: boolean
+          total_bytes: number
+          updated_at: string
+          updated_by: string | null
+          upstream_id: string | null
+          version: number
+        }
+        Insert: {
+          accelerators?: string[]
+          architecture?: string
+          chat_template_kind?: string
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          format: Database["ai"]["Enums"]["model_format"]
+          gated?: Database["ai"]["Enums"]["model_gated"]
+          id?: string
+          is_default?: boolean
+          key: string
+          license_id?: string | null
+          license_url?: string | null
+          memory_bytes_min?: number | null
+          memory_bytes_recommended?: number | null
+          metadata?: Json
+          min_app_version?: string | null
+          model_id: string
+          organization_id: string
+          os_arch?: string[]
+          quant?: string
+          review_state?: Database["ai"]["Enums"]["model_review_state"]
+          selection_rank?: number
+          tested_on_current_runtime?: boolean
+          total_bytes?: number
+          updated_at?: string
+          updated_by?: string | null
+          upstream_id?: string | null
+          version?: number
+        }
+        Update: {
+          accelerators?: string[]
+          architecture?: string
+          chat_template_kind?: string
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          format?: Database["ai"]["Enums"]["model_format"]
+          gated?: Database["ai"]["Enums"]["model_gated"]
+          id?: string
+          is_default?: boolean
+          key?: string
+          license_id?: string | null
+          license_url?: string | null
+          memory_bytes_min?: number | null
+          memory_bytes_recommended?: number | null
+          metadata?: Json
+          min_app_version?: string | null
+          model_id?: string
+          organization_id?: string
+          os_arch?: string[]
+          quant?: string
+          review_state?: Database["ai"]["Enums"]["model_review_state"]
+          selection_rank?: number
+          tested_on_current_runtime?: boolean
+          total_bytes?: number
+          updated_at?: string
+          updated_by?: string | null
+          upstream_id?: string | null
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "model_variant_model_id_fkey"
+            columns: ["model_id"]
+            isOneToOne: false
+            referencedRelation: "model_admin"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "model_variant_model_id_fkey"
+            columns: ["model_id"]
+            isOneToOne: false
+            referencedRelation: "model_config"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "model_variant_model_id_fkey"
+            columns: ["model_id"]
+            isOneToOne: false
+            referencedRelation: "model_definition"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "model_variant_model_id_fkey"
+            columns: ["model_id"]
+            isOneToOne: false
+            referencedRelation: "model_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "model_variant_model_id_fkey"
+            columns: ["model_id"]
+            isOneToOne: false
+            referencedRelation: "test_model_candidates"
+            referencedColumns: ["model_id"]
+          },
+          {
+            foreignKeyName: "model_variant_upstream_id_fkey"
+            columns: ["upstream_id"]
+            isOneToOne: false
+            referencedRelation: "model_upstream"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      model_verification_run: {
+        Row: {
+          arch: string | null
+          check_kind: string
+          created_at: string
+          created_by: string | null
+          finished_at: string | null
+          hardware_class: Database["ai"]["Enums"]["hardware_class"] | null
+          host_instance_id: string | null
+          id: string
+          log_file_id: string | null
+          measured: Json
+          metadata: Json
+          offering_id: string | null
+          organization_id: string
+          os: string | null
+          result: string
+          runtime_build_id: string | null
+          started_at: string
+          trigger: string
+          updated_at: string
+          updated_by: string | null
+          variant_id: string | null
+          version: number
+        }
+        Insert: {
+          arch?: string | null
+          check_kind: string
+          created_at?: string
+          created_by?: string | null
+          finished_at?: string | null
+          hardware_class?: Database["ai"]["Enums"]["hardware_class"] | null
+          host_instance_id?: string | null
+          id?: string
+          log_file_id?: string | null
+          measured?: Json
+          metadata?: Json
+          offering_id?: string | null
+          organization_id: string
+          os?: string | null
+          result: string
+          runtime_build_id?: string | null
+          started_at?: string
+          trigger: string
+          updated_at?: string
+          updated_by?: string | null
+          variant_id?: string | null
+          version?: number
+        }
+        Update: {
+          arch?: string | null
+          check_kind?: string
+          created_at?: string
+          created_by?: string | null
+          finished_at?: string | null
+          hardware_class?: Database["ai"]["Enums"]["hardware_class"] | null
+          host_instance_id?: string | null
+          id?: string
+          log_file_id?: string | null
+          measured?: Json
+          metadata?: Json
+          offering_id?: string | null
+          organization_id?: string
+          os?: string | null
+          result?: string
+          runtime_build_id?: string | null
+          started_at?: string
+          trigger?: string
+          updated_at?: string
+          updated_by?: string | null
+          variant_id?: string | null
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "model_verification_run_offering_id_fkey"
+            columns: ["offering_id"]
+            isOneToOne: false
+            referencedRelation: "model_admin"
+            referencedColumns: ["offering_id"]
+          },
+          {
+            foreignKeyName: "model_verification_run_offering_id_fkey"
+            columns: ["offering_id"]
+            isOneToOne: false
+            referencedRelation: "model_offering"
+            referencedColumns: ["offering_id"]
+          },
+          {
+            foreignKeyName: "model_verification_run_offering_id_fkey"
+            columns: ["offering_id"]
+            isOneToOne: false
+            referencedRelation: "model_offering_admin"
+            referencedColumns: ["offering_id"]
+          },
+          {
+            foreignKeyName: "model_verification_run_offering_id_fkey"
+            columns: ["offering_id"]
+            isOneToOne: false
+            referencedRelation: "offering"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "model_verification_run_offering_id_fkey"
+            columns: ["offering_id"]
+            isOneToOne: false
+            referencedRelation: "offering_rules_compiled"
+            referencedColumns: ["offering_id"]
+          },
+          {
+            foreignKeyName: "model_verification_run_variant_id_fkey"
+            columns: ["variant_id"]
+            isOneToOne: false
+            referencedRelation: "model_variant"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      model_want: {
+        Row: {
+          auto_download: boolean
+          auto_start: boolean
+          created_at: string
+          created_by: string | null
+          deleted_at: string | null
+          id: string
+          metadata: Json
+          model_id: string
+          organization_id: string
+          priority: number
+          published_to_web: boolean
+          published_to_web_at: string | null
+          published_to_web_by: string | null
+          shown_to: Database["platform"]["Enums"]["shown_to"] | null
+          updated_at: string
+          updated_by: string | null
+          uses: Database["ai"]["Enums"]["model_artifact_use"][]
+          variant_id: string | null
+          variant_policy: string
+          version: number
+          visibility: Database["platform"]["Enums"]["visibility"]
+        }
+        Insert: {
+          auto_download?: boolean
+          auto_start?: boolean
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          id?: string
+          metadata?: Json
+          model_id: string
+          organization_id: string
+          priority?: number
+          published_to_web?: boolean
+          published_to_web_at?: string | null
+          published_to_web_by?: string | null
+          shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          updated_at?: string
+          updated_by?: string | null
+          uses?: Database["ai"]["Enums"]["model_artifact_use"][]
+          variant_id?: string | null
+          variant_policy?: string
+          version?: number
+          visibility?: Database["platform"]["Enums"]["visibility"]
+        }
+        Update: {
+          auto_download?: boolean
+          auto_start?: boolean
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          id?: string
+          metadata?: Json
+          model_id?: string
+          organization_id?: string
+          priority?: number
+          published_to_web?: boolean
+          published_to_web_at?: string | null
+          published_to_web_by?: string | null
+          shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          updated_at?: string
+          updated_by?: string | null
+          uses?: Database["ai"]["Enums"]["model_artifact_use"][]
+          variant_id?: string | null
+          variant_policy?: string
+          version?: number
+          visibility?: Database["platform"]["Enums"]["visibility"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "model_want_model_id_fkey"
+            columns: ["model_id"]
+            isOneToOne: false
+            referencedRelation: "model_admin"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "model_want_model_id_fkey"
+            columns: ["model_id"]
+            isOneToOne: false
+            referencedRelation: "model_config"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "model_want_model_id_fkey"
+            columns: ["model_id"]
+            isOneToOne: false
+            referencedRelation: "model_definition"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "model_want_model_id_fkey"
+            columns: ["model_id"]
+            isOneToOne: false
+            referencedRelation: "model_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "model_want_model_id_fkey"
+            columns: ["model_id"]
+            isOneToOne: false
+            referencedRelation: "test_model_candidates"
+            referencedColumns: ["model_id"]
+          },
+        ]
+      }
       offering: {
         Row: {
           api_id: string
@@ -3349,6 +3980,7 @@ export type Database = {
           updated_at: string
           updated_by: string | null
           usage_basis: string | null
+          variant_id: string | null
           version: number
           visibility: Database["platform"]["Enums"]["visibility"]
         }
@@ -3381,6 +4013,7 @@ export type Database = {
           updated_at?: string
           updated_by?: string | null
           usage_basis?: string | null
+          variant_id?: string | null
           version?: number
           visibility?: Database["platform"]["Enums"]["visibility"]
         }
@@ -3413,6 +4046,7 @@ export type Database = {
           updated_at?: string
           updated_by?: string | null
           usage_basis?: string | null
+          variant_id?: string | null
           version?: number
           visibility?: Database["platform"]["Enums"]["visibility"]
         }
@@ -3479,6 +4113,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "setting_profile"
             referencedColumns: ["id", "api_id"]
+          },
+          {
+            foreignKeyName: "offering_variant_id_fkey"
+            columns: ["variant_id"]
+            isOneToOne: false
+            referencedRelation: "model_variant"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -3565,6 +4206,268 @@ export type Database = {
           website_url?: string | null
         }
         Relationships: []
+      }
+      runtime: {
+        Row: {
+          api_id: string | null
+          created_at: string
+          created_by: string | null
+          deleted_at: string | null
+          id: string
+          key: string
+          metadata: Json
+          name: string
+          organization_id: string
+          published_to_web: boolean
+          published_to_web_at: string | null
+          published_to_web_by: string | null
+          shown_to: Database["platform"]["Enums"]["shown_to"] | null
+          updated_at: string
+          updated_by: string | null
+          upstream_repo: string | null
+          version: number
+          visibility: Database["platform"]["Enums"]["visibility"]
+        }
+        Insert: {
+          api_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          id?: string
+          key: string
+          metadata?: Json
+          name: string
+          organization_id: string
+          published_to_web?: boolean
+          published_to_web_at?: string | null
+          published_to_web_by?: string | null
+          shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          updated_at?: string
+          updated_by?: string | null
+          upstream_repo?: string | null
+          version?: number
+          visibility?: Database["platform"]["Enums"]["visibility"]
+        }
+        Update: {
+          api_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          id?: string
+          key?: string
+          metadata?: Json
+          name?: string
+          organization_id?: string
+          published_to_web?: boolean
+          published_to_web_at?: string | null
+          published_to_web_by?: string | null
+          shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          updated_at?: string
+          updated_by?: string | null
+          upstream_repo?: string | null
+          version?: number
+          visibility?: Database["platform"]["Enums"]["visibility"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "runtime_api_id_fkey"
+            columns: ["api_id"]
+            isOneToOne: false
+            referencedRelation: "api"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      runtime_build: {
+        Row: {
+          accelerator: string
+          arch: string
+          build_kind: string
+          created_at: string
+          created_by: string | null
+          deleted_at: string | null
+          id: string
+          is_active: boolean
+          lock_sha256: string | null
+          metadata: Json
+          min_app_version: string | null
+          organization_id: string
+          os: string
+          published_to_web: boolean
+          published_to_web_at: string | null
+          published_to_web_by: string | null
+          released_at: string | null
+          runtime_id: string
+          runtime_version: string
+          sha256: string | null
+          shown_to: Database["platform"]["Enums"]["shown_to"] | null
+          size_bytes: number | null
+          successor_id: string | null
+          updated_at: string
+          updated_by: string | null
+          url: string | null
+          version: number
+          visibility: Database["platform"]["Enums"]["visibility"]
+        }
+        Insert: {
+          accelerator?: string
+          arch: string
+          build_kind: string
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          id?: string
+          is_active?: boolean
+          lock_sha256?: string | null
+          metadata?: Json
+          min_app_version?: string | null
+          organization_id: string
+          os: string
+          published_to_web?: boolean
+          published_to_web_at?: string | null
+          published_to_web_by?: string | null
+          released_at?: string | null
+          runtime_id: string
+          runtime_version: string
+          sha256?: string | null
+          shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          size_bytes?: number | null
+          successor_id?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          url?: string | null
+          version?: number
+          visibility?: Database["platform"]["Enums"]["visibility"]
+        }
+        Update: {
+          accelerator?: string
+          arch?: string
+          build_kind?: string
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          id?: string
+          is_active?: boolean
+          lock_sha256?: string | null
+          metadata?: Json
+          min_app_version?: string | null
+          organization_id?: string
+          os?: string
+          published_to_web?: boolean
+          published_to_web_at?: string | null
+          published_to_web_by?: string | null
+          released_at?: string | null
+          runtime_id?: string
+          runtime_version?: string
+          sha256?: string | null
+          shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          size_bytes?: number | null
+          successor_id?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          url?: string | null
+          version?: number
+          visibility?: Database["platform"]["Enums"]["visibility"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "runtime_build_runtime_id_fkey"
+            columns: ["runtime_id"]
+            isOneToOne: false
+            referencedRelation: "runtime"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "runtime_build_successor_id_fkey"
+            columns: ["successor_id"]
+            isOneToOne: false
+            referencedRelation: "runtime_build"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      runtime_compat: {
+        Row: {
+          architecture: string
+          chat_template_kind: string
+          created_at: string
+          created_by: string | null
+          deleted_at: string | null
+          evidence_run_id: string | null
+          format: Database["ai"]["Enums"]["model_format"]
+          hardware_class: Database["ai"]["Enums"]["hardware_class"]
+          id: string
+          metadata: Json
+          organization_id: string
+          published_to_web: boolean
+          published_to_web_at: string | null
+          published_to_web_by: string | null
+          quant: string
+          runtime_build_id: string
+          shown_to: Database["platform"]["Enums"]["shown_to"] | null
+          status: string
+          updated_at: string
+          updated_by: string | null
+          version: number
+          visibility: Database["platform"]["Enums"]["visibility"]
+        }
+        Insert: {
+          architecture?: string
+          chat_template_kind?: string
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          evidence_run_id?: string | null
+          format: Database["ai"]["Enums"]["model_format"]
+          hardware_class: Database["ai"]["Enums"]["hardware_class"]
+          id?: string
+          metadata?: Json
+          organization_id: string
+          published_to_web?: boolean
+          published_to_web_at?: string | null
+          published_to_web_by?: string | null
+          quant?: string
+          runtime_build_id: string
+          shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          status?: string
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+          visibility?: Database["platform"]["Enums"]["visibility"]
+        }
+        Update: {
+          architecture?: string
+          chat_template_kind?: string
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          evidence_run_id?: string | null
+          format?: Database["ai"]["Enums"]["model_format"]
+          hardware_class?: Database["ai"]["Enums"]["hardware_class"]
+          id?: string
+          metadata?: Json
+          organization_id?: string
+          published_to_web?: boolean
+          published_to_web_at?: string | null
+          published_to_web_by?: string | null
+          quant?: string
+          runtime_build_id?: string
+          shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          status?: string
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+          visibility?: Database["platform"]["Enums"]["visibility"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "runtime_compat_runtime_build_id_fkey"
+            columns: ["runtime_build_id"]
+            isOneToOne: false
+            referencedRelation: "runtime_build"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       setting: {
         Row: {
@@ -4685,7 +5588,49 @@ export type Database = {
       translation_rationale_code: { Args: { p_text: string }; Returns: string }
     }
     Enums: {
-      [_ in never]: never
+      hardware_class:
+        | "apple_metal"
+        | "x86_cpu"
+        | "arm_cpu"
+        | "nvidia_cuda"
+        | "vulkan_gpu"
+      model_artifact_role:
+        | "weights"
+        | "weights_shard"
+        | "mmproj"
+        | "text_encoder"
+        | "vae"
+        | "tokenizer"
+        | "config"
+        | "voice_pack"
+        | "adapter"
+        | "safetensors_index"
+        | "other"
+      model_artifact_use: "core" | "vision" | "audio_in" | "voices"
+      model_format:
+        | "gguf"
+        | "safetensors"
+        | "ctranslate2"
+        | "onnx"
+        | "ggml_bin"
+        | "mlx"
+        | "diffusers_dir"
+        | "pt"
+      model_gated: "none" | "auto" | "manual"
+      model_review_state:
+        | "discovered"
+        | "files_checked"
+        | "tested"
+        | "offered"
+        | "rejected"
+        | "withdrawn"
+      model_upstream_kind:
+        | "huggingface"
+        | "civitai"
+        | "ollama_library"
+        | "github_release"
+        | "direct_url"
+        | "private_upload"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -8772,6 +9717,13 @@ export type Database = {
       _signup_free_months: { Args: { p_user: string }; Returns: undefined }
       _social_handle: { Args: { p: string }; Returns: string }
       account_spend_today: {
+        Args: { p_user_ids: string[] }
+        Returns: {
+          usd: number
+          user_id: string
+        }[]
+      }
+      account_spend_week: {
         Args: { p_user_ids: string[] }
         Returns: {
           usd: number
@@ -38072,6 +39024,15 @@ export type Database = {
         Returns: Json
       }
       barcode_symbologies: { Args: never; Returns: string[] }
+      base_activity: {
+        Args: {
+          p_before?: number
+          p_limit?: number
+          p_organization_id: string
+          p_subject_id: string
+        }
+        Returns: Json
+      }
       booking_cancel: {
         Args: { p_booking_ref: string; p_origin?: string }
         Returns: {
@@ -40319,6 +41280,17 @@ export type Database = {
           id: string
           searchable: string
         }[]
+      }
+      interface_read: { Args: { p_interface_id: string }; Returns: Json }
+      interface_rows: {
+        Args: {
+          p_element_id: string
+          p_interface_id: string
+          p_limit?: number
+          p_offset?: number
+          p_record_id?: string
+        }
+        Returns: Json
       }
       intern_provenance: { Args: { p_data: Json }; Returns: Json }
       io_cell: {
@@ -92585,6 +93557,147 @@ export type Database = {
           },
         ]
       }
+      config_manifest: {
+        Row: {
+          app: string
+          app_version: string
+          attested_at: string
+          build_sha: string
+          created_at: string
+          created_by: string | null
+          deleted_at: string | null
+          gate_run: Json
+          id: string
+          key_count: number
+          manifest: Json
+          manifest_sha256: string
+          manifest_version: number
+          metadata: Json
+          organization_id: string
+          published_to_web: boolean
+          published_to_web_at: string | null
+          published_to_web_by: string | null
+          shown_to: Database["platform"]["Enums"]["shown_to"] | null
+          updated_at: string
+          updated_by: string | null
+          version: number
+          visibility: Database["platform"]["Enums"]["visibility"]
+        }
+        Insert: {
+          app: string
+          app_version: string
+          attested_at?: string
+          build_sha: string
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          gate_run?: Json
+          id?: string
+          key_count: number
+          manifest: Json
+          manifest_sha256: string
+          manifest_version?: number
+          metadata?: Json
+          organization_id: string
+          published_to_web?: boolean
+          published_to_web_at?: string | null
+          published_to_web_by?: string | null
+          shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+          visibility?: Database["platform"]["Enums"]["visibility"]
+        }
+        Update: {
+          app?: string
+          app_version?: string
+          attested_at?: string
+          build_sha?: string
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          gate_run?: Json
+          id?: string
+          key_count?: number
+          manifest?: Json
+          manifest_sha256?: string
+          manifest_version?: number
+          metadata?: Json
+          organization_id?: string
+          published_to_web?: boolean
+          published_to_web_at?: string | null
+          published_to_web_by?: string | null
+          shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+          visibility?: Database["platform"]["Enums"]["visibility"]
+        }
+        Relationships: []
+      }
+      config_read_bucket: {
+        Row: {
+          app: string
+          app_version: string
+          attested_build: boolean
+          automation: boolean
+          bucket_end: string
+          bucket_start: string
+          build_sha: string
+          created_at: string
+          created_by: string | null
+          device_id: string
+          id: string
+          metadata: Json
+          missing: Json
+          organization_id: string
+          reads: Json
+          updated_at: string
+          updated_by: string | null
+          version: number
+        }
+        Insert: {
+          app: string
+          app_version: string
+          attested_build: boolean
+          automation?: boolean
+          bucket_end: string
+          bucket_start: string
+          build_sha: string
+          created_at?: string
+          created_by?: string | null
+          device_id: string
+          id?: string
+          metadata?: Json
+          missing?: Json
+          organization_id: string
+          reads: Json
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+        }
+        Update: {
+          app?: string
+          app_version?: string
+          attested_build?: boolean
+          automation?: boolean
+          bucket_end?: string
+          bucket_start?: string
+          build_sha?: string
+          created_at?: string
+          created_by?: string | null
+          device_id?: string
+          id?: string
+          metadata?: Json
+          missing?: Json
+          organization_id?: string
+          reads?: Json
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+        }
+        Relationships: []
+      }
       continued_access: {
         Row: {
           access_cutoff_at: string | null
@@ -100196,6 +101309,14 @@ export type Database = {
         }
         Returns: Json
       }
+      carry_children_to_organization: {
+        Args: {
+          p_parent: unknown
+          p_parent_id: string
+          p_target_organization_id: string
+        }
+        Returns: Json
+      }
       carrying_cycle_is_declared: {
         Args: {
           p_a_id: string
@@ -100258,6 +101379,84 @@ export type Database = {
         Returns: string
       }
       comments_topic_admits: { Args: { p_topic: string }; Returns: boolean }
+      config_attestation_releases: {
+        Args: { p_app: string }
+        Returns: {
+          app_version: string
+          attested: boolean
+          attested_at: string
+          build_sha: string
+          gate_keys_read: number
+          installs_7d: number
+          key_count: number
+        }[]
+      }
+      config_attestation_status: {
+        Args: { p_app: string; p_build_sha?: string }
+        Returns: {
+          applied_mismatch: number
+          db_share: number
+          declared: boolean
+          fallback_reads: number
+          feature: string
+          installs: number
+          invalid_reads: number
+          key: string
+          kind: string
+          last_read_at: string
+          observed: boolean
+          pending_release: boolean
+          propagation: string
+          reads: number
+          reason: string
+          reported_propagation_mismatch: boolean
+          shared: boolean
+          status: string
+          stored: boolean
+        }[]
+      }
+      config_manifest_attest: {
+        Args: { p_gate_run?: Json; p_manifest: Json }
+        Returns: {
+          app: string
+          app_version: string
+          attested_at: string
+          build_sha: string
+          created_at: string
+          created_by: string | null
+          deleted_at: string | null
+          gate_run: Json
+          id: string
+          key_count: number
+          manifest: Json
+          manifest_sha256: string
+          manifest_version: number
+          metadata: Json
+          organization_id: string
+          published_to_web: boolean
+          published_to_web_at: string | null
+          published_to_web_by: string | null
+          shown_to: Database["platform"]["Enums"]["shown_to"] | null
+          updated_at: string
+          updated_by: string | null
+          version: number
+          visibility: Database["platform"]["Enums"]["visibility"]
+        }
+        SetofOptions: {
+          from: "*"
+          to: "config_manifest"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      config_reads_report: {
+        Args: { p_organization_id: string; p_report: Json }
+        Returns: number
+      }
+      config_reads_report_server: {
+        Args: { p_instance: Json; p_report: Json }
+        Returns: number
+      }
       confirmation_stamp_coverage: {
         Args: never
         Returns: {
@@ -101715,6 +102914,7 @@ export type Database = {
           relation: string
         }[]
       }
+      org_follow_only: { Args: { p_new: Json; p_old: Json }; Returns: boolean }
       organization_free_link_prefixes: {
         Args: never
         Returns: {
@@ -150310,7 +151510,56 @@ export const Constants = {
     Enums: {},
   },
   ai: {
-    Enums: {},
+    Enums: {
+      hardware_class: [
+        "apple_metal",
+        "x86_cpu",
+        "arm_cpu",
+        "nvidia_cuda",
+        "vulkan_gpu",
+      ],
+      model_artifact_role: [
+        "weights",
+        "weights_shard",
+        "mmproj",
+        "text_encoder",
+        "vae",
+        "tokenizer",
+        "config",
+        "voice_pack",
+        "adapter",
+        "safetensors_index",
+        "other",
+      ],
+      model_artifact_use: ["core", "vision", "audio_in", "voices"],
+      model_format: [
+        "gguf",
+        "safetensors",
+        "ctranslate2",
+        "onnx",
+        "ggml_bin",
+        "mlx",
+        "diffusers_dir",
+        "pt",
+      ],
+      model_gated: ["none", "auto", "manual"],
+      model_review_state: [
+        "discovered",
+        "files_checked",
+        "tested",
+        "offered",
+        "rejected",
+        "withdrawn",
+      ],
+      model_upstream_kind: [
+        "huggingface",
+        "civitai",
+        "ollama_library",
+        "github_release",
+        "direct_url",
+        "private_upload",
+      ],
+    },
   },
   api: {
     Enums: {},
