@@ -68,6 +68,7 @@
    defined (glass, textured background, scrollbar-hide, phone-stack, touch-target floor, KaTeX).
    Defined ONCE in @ai-matrx/design-system; every host imports it. */
 @import "@ai-matrx/design-system/web-theme.css";
+@import "@ai-matrx/design-system/web-base.css";
 
 @theme inline {
   /* Custom color shades (extending Tailwind's default palette) */
@@ -915,10 +916,6 @@
     --sidebar-ring: 217.2 91.2% 59.8%;
 
     /* Scrollbar colors for light mode */
-    --scrollbar-track: 240 5% 96%; /* zinc-100 */
-    --scrollbar-thumb: 240 5% 84%; /* zinc-300 - subtle and minimal */
-    --scrollbar-thumb-hover: 240 5% 70%; /* zinc-400 - slightly more visible */
-    --scrollbar-thumb-active: 240 6% 60%; /* zinc-500 - active state */
 
     --typography-fontFamily-sans:
       ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
@@ -933,9 +930,6 @@
       "Courier New", monospace;
 
     /* Typography scale options for improved readability */
-    --typography-p-lineHeight: 1.6;
-    --typography-p-margin: 1rem;
-    --typography-letter-spacing: 0.01em;
 
   }
 
@@ -1069,162 +1063,12 @@
     --sidebar-ring: 217.2 91.2% 59.8%;
 
     /* Scrollbar colors for dark mode */
-    --scrollbar-track: 240 4% 14%; /* zinc-850 - matches dark background */
-    --scrollbar-thumb: 240 4% 35%; /* zinc-700 - subtle and minimal */
-    --scrollbar-thumb-hover: 240 5% 45%; /* zinc-600 - slightly more visible */
-    --scrollbar-thumb-active: 240 5% 55%; /* zinc-500 - active state */
   }
 }
 
-@layer base {
-  * {
-    border-color: hsl(var(--border));
-    --tw-ring-offset-color: transparent;
-    outline-color: hsl(var(--ring));
-  }
-
-  *:focus-visible {
-    outline: 2px solid hsl(var(--ring));
-    outline-offset: 1px;
-  }
-
-  /* THE CURSOR LAW (common-docs/policies/cursor-law.md) is NOT here: it ships
-     once in @ai-matrx/design-system styles.css and every element inherits it.
-     Never restate a clickable-cursor rule in this file. */
-
-  html {
-    font-size: 16px; /* Base font size */
-  }
-  body {
-    background-color: hsl(var(--background));
-    color: hsl(var(--foreground));
-    background-image: var(--background-texture);
-    font-synthesis-weight: none;
-    text-rendering: optimizeLegibility;
-    font-size: 1.0625rem; /* Slightly larger than default, equivalent to 17px */
-    letter-spacing: var(--typography-letter-spacing);
-    line-height: var(--typography-p-lineHeight);
-    overflow-x: hidden; /* Prevent horizontal layout shift from becoming visible scroll */
-  }
-  h1,
-  h2,
-  h3,
-  h4,
-  h5,
-  h6 {
-    font-family: var(--font-heading);
-    font-weight: 500;
-    letter-spacing: -0.015em;
-    line-height: 1.2;
-  }
-
-  /* Code readability */
-  code,
-  pre {
-    font-family: var(--font-mono);
-  }
-
-  input,
-  textarea,
-  select {
-    font-size: 1.0625rem; /* Match body font size for form elements */
-  }
-
-  /* Native date/time pickers: tell the browser which color scheme to use so
-     the calendar/clock icon and popup match the app theme. Without this the
-     picker icon is always rendered in the OS default (usually dark) even when
-     the app is in dark mode, making it invisible on dark backgrounds. */
-  input[type="date"],
-  input[type="time"],
-  input[type="datetime-local"],
-  input[type="month"],
-  input[type="week"] {
-    color-scheme: light;
-  }
-
-  .dark input[type="date"],
-  .dark input[type="time"],
-  .dark input[type="datetime-local"],
-  .dark input[type="month"],
-  .dark input[type="week"] {
-    color-scheme: dark;
-  }
-
-  /* Native audio/video controls: tell the browser which chrome palette to use.
-     Without this, control bars and icons often stay in the OS default (e.g. light
-     chrome on a dark card). Scoped to [controls] — headless <audio>/<video> used
-     by custom players (AudioPreview, PodcastAudioPlayer, etc.) are untouched. */
-  audio[controls],
-  video[controls] {
-    color-scheme: light;
-    display: block;
-    max-width: 100%;
-  }
-
-  .dark audio[controls],
-  .dark video[controls] {
-    color-scheme: dark;
-  }
-
-  /* RTL/Arabic font size adjustments - make RTL text slightly larger for better readability */
-  .rtl,
-  [dir="rtl"] {
-    font-size: 1.125rem; /* 18px - slightly larger than base 17px for better Arabic readability */
-    line-height: 1.7; /* Slightly increased line height for RTL text */
-  }
-
-  /* RTL-specific adjustments for different text sizes */
-  .rtl.text-sm,
-  [dir="rtl"].text-sm {
-    font-size: 1rem; /* 16px instead of 14px */
-  }
-
-  .rtl.text-lg,
-  [dir="rtl"].text-lg {
-    font-size: 1.25rem; /* 20px instead of 18px */
-  }
-
-  .rtl.text-xl,
-  [dir="rtl"].text-xl {
-    font-size: 1.375rem; /* 22px instead of 20px */
-  }
-
-  .rtl.text-2xl,
-  [dir="rtl"].text-2xl {
-    font-size: 1.5rem; /* 24px instead of 24px (same, but explicit) */
-  }
-
-  /* THE ONE DEFAULT SCROLLBAR — everywhere: pages, dialogs, popovers, window panels.
-     Thin, no track, thumb shown only while the pointer is over the scroller.
-     BASE layer, so anything that asks otherwise wins: `scrollbar-none`, `.scrollbar-visible`,
-     `.scrollbar-contrast`, a component's own rule. (2026-10-14: in the utilities layer it
-     painted a grey track under every horizontal scroller.) */
-  * {
-    scrollbar-width: thin;
-    scrollbar-color: transparent transparent;
-  }
-  *:hover {
-    scrollbar-color: hsl(var(--scrollbar-thumb)) transparent;
-  }
-  /* Engines that still read the -webkit- pseudo-elements (older Safari) */
-  *::-webkit-scrollbar {
-    width: 4px;
-    height: 4px;
-  }
-  *::-webkit-scrollbar-track {
-    background: transparent;
-  }
-  *::-webkit-scrollbar-thumb {
-    background: transparent;
-    border-radius: 2px;
-  }
-  *:hover::-webkit-scrollbar-thumb {
-    background: hsl(var(--scrollbar-thumb));
-  }
-  *::-webkit-scrollbar-thumb:hover {
-    background: hsl(var(--scrollbar-thumb-hover));
-  }
-}
+/* The page base (default border and focus ring, body text, headings, form text, native picker and
+   media colour scheme, RTL sizing, THE ONE DEFAULT SCROLLBAR) is @ai-matrx/design-system/web-base.css,
+   imported above beside web-theme.css — one copy, shared with every package playground. */
 
 @layer components {
   .card {
