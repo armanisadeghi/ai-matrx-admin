@@ -18,6 +18,7 @@ import { SURFACE_META } from "../../constants/surfaces";
 import { humanLines, scheduleDetailLocation } from "../../lib/copy";
 import type { AgendaTask } from "../../types";
 import { runsOnComputer, useComputerStatus } from "./ComputerTargetLine";
+import { homeLabel } from "../../utils/computerWork";
 
 interface Props {
   task: AgendaTask;
@@ -135,7 +136,7 @@ export function SpecCard({ task }: Props) {
                   {work.homes.map((h) => (
                     // The name HomeStep stored with the home (never its id).
                     <span key={`${h.token}:${h.id}`} className="text-xs">
-                      {h.label && h.label !== h.id ? h.label : `A ${h.token.replace("_", " ")}`}
+                      {homeLabel(h)}
                     </span>
                   ))}
                 </span>

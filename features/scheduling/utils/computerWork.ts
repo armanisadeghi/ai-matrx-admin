@@ -70,3 +70,8 @@ export function deviceOpWith(
   }
   return out;
 }
+
+/** How a home reads on the detail: the name the home chooser stored, never its id. Pure. */
+export function homeLabel(h: ComputerWorkHome): string {
+  return h.label && h.label !== h.id ? h.label : `A ${h.token.replace("_", " ")}`;
+}

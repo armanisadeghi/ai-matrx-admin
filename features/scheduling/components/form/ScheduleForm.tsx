@@ -25,7 +25,6 @@ import { cn } from "@/lib/utils";
 import { TRIGGER_TYPES } from "../../constants/triggerTypes";
 import { SURFACE_META, SURFACE_VALUES } from "../../constants/surfaces";
 import {
-  fetchScheduledTask,
   createScheduledTask,
   updateScheduledTask,
 } from "../../redux/tasks/thunks";
@@ -59,7 +58,8 @@ import { ProTextarea } from "@/components/official/ProTextarea";
 import { EditableContextMenu } from "@ai-matrx/context-menu/react";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { ClampedNumberInput } from "@/components/official/ClampedNumberInput";
-import { createComputerAgentTask, createComputerCodingTask, updateComputerCodingTask } from "../../service/queries";
+import { createComputerAgentTask, createComputerCodingTask } from "../../service/queries";
+import { saveComputerCodingEdit } from "../../service/saveComputerCodingEdit";
 import { computerAgentErrors } from "./computerAgentErrors";
 import { ErrorNotice } from "@ai-matrx/design-system";
 import { RunsOnField, type ComputerCodingChoice } from "./RunsOnField";
@@ -249,7 +249,8 @@ export function ScheduleForm({
       setSubmitting(true);
       try {
         if (task) {
-          await updateComputerCodingTask(
+          await saveComputerCodingEdit(
+            dispatch,
             { id: task.id, deviceOp: task.deviceOp ?? null, triggerId: task.triggers[0]?.id ?? null },
             {
               title: form.title.trim(),
@@ -263,8 +264,6 @@ export function ScheduleForm({
               trigger,
             },
           );
-          // The detail reads the store: refresh this row there before showing it (it was stale).
-          await dispatch(fetchScheduledTask(task.id));
           toast.success("Schedule updated");
           startTransition(() => router.push(`/schedules/${task.id}`));
           return;
