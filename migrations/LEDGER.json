@@ -1,6 +1,6 @@
 {
   "note": "Checked-in snapshot of public._schema_migrations for the files under migrations/campaign and migrations/inverse. Written by `pnpm db:apply` on every successful production apply and refreshed whole by the nightly catch-up. Never hand-edited: a self-written checksum is a claim nobody can check. Guard: pnpm check:ledgered-files-unedited.",
-  "generated_at": "2026-10-15T04:48:44.614Z",
+  "generated_at": "2026-10-15T04:59:17.937Z",
   "files": {
     "migrations/campaign/a_chunk_is_the_size_the_client_door_can_actually_carry.sql": {
       "source": "matrx-frontend",
@@ -5641,6 +5641,12 @@
       "filename": "notionpeople_a_a_guest_becomes_the_real_user_on_join.sql",
       "checksum": "b5cd439e48dcea9a9b6114fa23ae700a8da4ec2a00e5fe92ce1c549fb6fee1f2",
       "applied_at": "2026-10-15 04:48:42.104617+00"
+    },
+    "migrations/campaign/notionpeople_b_a_published_view_is_read_signed_out.sql": {
+      "source": "matrx-frontend",
+      "filename": "notionpeople_b_a_published_view_is_read_signed_out.sql",
+      "checksum": "285c110e7bca6ea2be5bb58018e0f23352de5b00edc14282732b398861181470",
+      "applied_at": "2026-10-15 04:59:15.849104+00"
     },
     "migrations/campaign/notionprops2_a_table_takes_its_two_way_partner.sql": {
       "source": "matrx-frontend",
