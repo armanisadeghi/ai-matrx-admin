@@ -1,5 +1,6 @@
 "use client";
 
+import { formatCount } from "@ai-matrx/kit/format";
 import { Badge } from "@/components/ui/badge";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { KpiGrid, KpiTile } from "@/components/official/kpi/KpiTile";
@@ -114,7 +115,7 @@ export function YouTubeAnalyticsResult({
       <KpiGrid className="grid-cols-2 sm:grid-cols-4 lg:grid-cols-4">
         <KpiTile
           label={`Views (${requestedDays}d)`}
-          value={report.summary ? report.summary.views.toLocaleString() : null}
+          value={report.summary ? formatCount(report.summary.views) : null}
           hint={`${requestedDays}-day window`}
           title="Views returned for the selected channel and date window."
         />
@@ -132,7 +133,7 @@ export function YouTubeAnalyticsResult({
           label="Subscribers gained"
           value={
             report.summary
-              ? `+${report.summary.subscribers_gained.toLocaleString()}`
+              ? `+${formatCount(report.summary.subscribers_gained)}`
               : null
           }
           hint={`${requestedDays}-day window`}
@@ -176,7 +177,7 @@ export function YouTubeAnalyticsResult({
                       {formatDate(day.day)}
                     </td>
                     <td className="px-3 py-2 text-right tabular-nums">
-                      {day.views.toLocaleString()}
+                      {formatCount(day.views)}
                     </td>
                     <td className="px-3 py-2 text-right tabular-nums">
                       {formatNumber(day.estimated_minutes_watched)}
@@ -252,7 +253,7 @@ export function YouTubeAnalyticsResult({
                       </a>
                     </td>
                     <td className="px-3 py-2 text-right tabular-nums">
-                      {video.views.toLocaleString()}
+                      {formatCount(video.views)}
                     </td>
                     <td className="px-3 py-2 text-right tabular-nums">
                       {formatNumber(video.estimated_minutes_watched)}

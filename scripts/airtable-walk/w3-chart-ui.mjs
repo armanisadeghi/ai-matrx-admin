@@ -1,0 +1,15 @@
+import { start, out, ORIGIN } from "./lib.mjs";
+const PAGE = process.argv[2];
+const { browser, page } = await start(false);
+await page.goto(`${ORIGIN}/data/pages/${PAGE}`, { waitUntil: "domcontentloaded", timeout: 240000 });
+await page.waitForSelector("text=Event desk", { timeout: 120000 }); await page.waitForTimeout(4000);
+const chartCount = () => page.locator("[data-records-page-block=chart]").count();
+out("charts before", await chartCount());
+await page.getByRole("button", { name: "Edit" }).first().click(); await page.waitForTimeout(1000);
+await page.getByRole("button", { name: /Add block/ }).first().click(); await page.waitForTimeout(500);
+await page.getByRole("menuitem", { name: /^Chart/ }).or(page.getByText("Chart", { exact: true })).first().click(); await page.waitForTimeout(3000);
+out("charts after add", await chartCount());
+await page.reload({ waitUntil: "domcontentloaded" }); await page.waitForSelector("text=Event desk", { timeout: 120000 }); await page.waitForTimeout(5000);
+out("charts after reload", await chartCount());
+await page.screenshot({ path: "/tmp/airtable-walk/c1.png", fullPage: true });
+await browser.close();

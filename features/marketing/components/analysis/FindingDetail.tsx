@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
+import { formatRelativeTime } from "@ai-matrx/kit/format";
 import {
   ArrowLeft,
   CheckCheck,
@@ -406,19 +407,16 @@ export function FindingDetail({ findingId }: { findingId: string }) {
   // The evidence is as old as our last look at the page. Past a month, say so:
   // the live page may already be different (2026-10-14 census).
   const seenAt = data.page?.captured_at ? new Date(data.page.captured_at) : null;
-  const seenDays =
-    seenAt && !Number.isNaN(seenAt.getTime())
-      ? Math.floor((Date.now() - seenAt.getTime()) / 86_400_000)
-      : null;
+  const seenValid = seenAt !== null && !Number.isNaN(seenAt.getTime());
+  const seenStale = seenValid && Date.now() - seenAt.getTime() > 30 * 86_400_000;
   const ageFacts: StoryFact[] =
-    seenAt && seenDays !== null && !story
+    seenValid && !story
       ? [
           {
             label: "Evidence captured",
-            value:
-              seenDays > 30
-                ? `${formatCompactDate(data.page?.captured_at ?? null)} — ${seenDays} days ago, may have changed`
-                : formatCompactDate(data.page?.captured_at ?? null),
+            value: seenStale
+              ? `${formatCompactDate(data.page?.captured_at ?? null)} — ${formatRelativeTime(seenAt, { style: "intl" })}, may have changed`
+              : formatCompactDate(data.page?.captured_at ?? null),
           },
         ]
       : [];

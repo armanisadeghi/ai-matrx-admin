@@ -34,7 +34,7 @@ import { useEnsureKindRenderable } from "@ai-matrx/rich-content/kinds/react/ensu
 import { KindRenderHarness } from "@ai-matrx/rich-content/kinds/react/render-harness";
 import { RENDER_PATHS, type RenderPathId, type RenderPathSpec } from "./paths";
 import { readKindSchemaState, runRenderPath } from "./run-path";
-import { useBoundedKindCheck } from "./use-bounded-kind-check";
+import { useBoundedKindCheck, useKindCheckAnswers } from "./use-bounded-kind-check";
 import { Button } from "@ai-matrx/design-system/controls";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectIsAdminDebugger } from "@/lib/redux/selectors/userSelectors";
@@ -161,7 +161,10 @@ export default function KindRenderPaths({
   // component itself and repaints on THIS kind's arrivals in either registry.
   useEnsureKindRenderable(kind);
   const kindVersion = useContentIrKindVersion(kind);
-  const registryVersion = useRegistryVersion() + kindVersion;
+  // Each time the registries answer for this kind the reads below run again —
+  // the screen never keeps a "pending" read the registries have already settled.
+  const answers = useKindCheckAnswers(kind);
+  const registryVersion = useRegistryVersion() + kindVersion + answers;
   const spec = useMemo(
     () => RENDER_PATHS.find((p) => p.id === pathId) ?? RENDER_PATHS[0]!,
     [pathId],

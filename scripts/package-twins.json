@@ -2450,6 +2450,12 @@
       "allow": []
     },
     {
+      "name": "subscribeSchedulerBroadcast",
+      "package": "@ai-matrx/data/scheduler",
+      "why": "The scheduler realtime feed (sch_task broadcast fan-out over the realtime manager) is owned by @ai-matrx/data/scheduler since 2026-10-14; the hand-vendored scheduler-client mirrors in matrx-frontend and matrx-extend were deleted. A local body of this name is a re-grown copy \u2014 import it from the package.",
+      "allow": []
+    },
+    {
       "name": "ConfirmDialog",
       "package": "@ai-matrx/design-system",
       "why": "The extension's own `window.confirm` replacement (src/components/ConfirmDialog.tsx), deleted 2026-09-08. It was a genuine twin of the package's ConfirmDialog \u2014 same nine props, same six call shapes \u2014 but with an 80%-of-nothing scrim (`bg-black/40`), hardcoded `red-600` confirm and warning colours instead of tokens, no motion, no viewport clamp, no sticky footer, and sub-44px `py-1.5 text-xs` actions on a touch surface. Collapsing it onto the package also picked up the 0.11.6 sticky-footer fix (feedback bf8fb00b). TWO affordances were dropped rather than moved into the package, deliberately and on the record: the header X (Cancel and Escape are both present, and Radix owns Escape) and a destructive AlertTriangle glyph \u2014 an icon on every confirm in the platform is a taste decision that belongs to Arman, not to this lane. Backdrop-click dismissal is gone BY DESIGN: an AlertDialog does not dismiss on a stray click, which is the safer behaviour on a destructive action.",
