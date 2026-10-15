@@ -59,7 +59,9 @@ export async function fetchAttestationManifest(
     .maybeSingle();
   if (error) throw new Error(`Attested manifest failed to load: ${error.message}`);
   if (!data) return null;
-  const manifest = (data.manifest ?? {}) as { bootstrap?: ManifestBootstrap };
+  const manifest = (data.manifest ?? {}) as { bootstrap?: ManifestBootstrap; unresolved?: { count?: number } };
+  const gate = (data.gate_run ?? null) as AttestationManifest["gate_run"];
+  const unresolved = manifest.unresolved?.count ?? gate?.unresolved;
   return {
     app: data.app,
     app_version: data.app_version,
@@ -67,7 +69,8 @@ export async function fetchAttestationManifest(
     attested_at: data.attested_at,
     key_count: data.key_count,
     bootstrap: manifest.bootstrap ?? null,
-    gate_run: (data.gate_run ?? null) as AttestationManifest["gate_run"],
+    gate_run: gate,
+    unresolved: typeof unresolved === "number" ? unresolved : null,
   };
 }
 

@@ -30,6 +30,8 @@ import {
   type ReadSite,
   type SourceFile,
 } from "../settings-guards/lib";
+import { followIndirection, poolMembers } from "./indirection";
+import { loadBundled, packageContribution } from "./package-declarations";
 import { appConfigReads } from "./app-config-reads";
 
 export { appConfigReads };
@@ -101,14 +103,31 @@ export interface Declared {
   dynamic: DynamicRead[];
   annotations: KnobReadsAnnotation[];
   appKeys: Map<string, Set<string>>;
+  /** One line on the bundled @ai-matrx packages' knob declarations. */
+  packages: string;
+}
+
+/** The lockfile at `<rev>` — which @ai-matrx package versions that commit bundles. */
+export function lockfileAt(rev: string): string {
+  return rev === "WORKTREE" ? readFileSync(join(ROOT, "pnpm-lock.yaml"), "utf8") : git(["show", `${rev}:pnpm-lock.yaml`]);
 }
 
 export function declaredAt(rev: string): Declared {
   const files = filesAt(rev);
   const registry = registryAt(rev);
   const scan = scanKnobReads(files, registry, { strictConsts: true });
+  // The bundled packages' own declarations (reads, unresolved reads, exported addresses), then the
+  // second-chance resolver over what the first pass could not name (./indirection.ts).
+  const pkgs = packageContribution(loadBundled(ROOT, lockfileAt(rev)));
+  const followed = followIndirection(files, scan, poolMembers(files, pkgs.addresses));
   const app = appConfigReads(files);
-  return { sites: scan.sites, dynamic: [...scan.dynamic, ...app.dynamic], annotations: scan.annotations, appKeys: app.keys };
+  return {
+    sites: [...followed.sites, ...pkgs.sites],
+    dynamic: [...followed.dynamic, ...pkgs.dynamic, ...app.dynamic],
+    annotations: scan.annotations,
+    appKeys: app.keys,
+    packages: pkgs.summary,
+  };
 }
 
 /** Line-insensitive identity of an unresolved site (file + fn + raw), for the ratchet. */

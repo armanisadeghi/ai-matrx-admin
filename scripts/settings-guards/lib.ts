@@ -719,7 +719,9 @@ export function scanKnobReads(
     // invisible to every family — counted unresolved here instead of silently uncounted.
     if (strict && !isPy) {
       const seenLines = new Set([...sites, ...dynamic].filter((x) => x.file === f.rel).map((x) => `${x.line}|${x.fn.split(" ")[0]}`));
-      const ANY_CALL = new RegExp(`\\b(${FULL_KEY_FNS}|${TS_KNOB_FNS})\\s*(?:<[^>()]*>)?\\(`, "g");
+      // resolveSessionKnob (the async door) joins the catch-all so a computed address through it is
+      // counted and a `KNOB READS` annotation above it has something to cover.
+      const ANY_CALL = new RegExp(`\\b(${FULL_KEY_FNS}|${TS_KNOB_FNS}|resolveSessionKnob)\\s*(?:<[^>()]*>)?\\(`, "g");
       for (let m = ANY_CALL.exec(f.text); m; m = ANY_CALL.exec(f.text)) {
         const before = f.text.slice(Math.max(0, m.index - 40), m.index);
         if (/\b(?:function|import|export\s+(?:async\s+)?function)\s+$|\.\s*$|\b(?:async\s+)?function\s+$/.test(before)) continue;
@@ -748,7 +750,7 @@ export function scanKnobReads(
           const feature = args[0] ? resolveName(args[0], local) : null;
           const key = args[1] ? resolveName(args[1], local) : null;
           hit = feature && key ? { feature, key } : null;
-        } else if (/^(?:useSessionKnob|getSessionKnob)$/.test(fn)) hit = resolveRef(args[0]);
+        } else if (/^(?:useSessionKnob|getSessionKnob|resolveSessionKnob)$/.test(fn)) hit = resolveRef(args[0]);
         else hit = resolveRef(args[2]);
         if (hit) sites.push({ file: f.rel, line, fn, feature: hit.feature, key: hit.key });
         else dynamic.push({ file: f.rel, line, fn, raw: args.join(", ").replace(/\s+/g, " ").slice(0, 80), why: "address argument is computed at run time" });

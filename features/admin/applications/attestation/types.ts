@@ -43,7 +43,9 @@ export interface AttestationManifest {
   attested_at: string;
   key_count: number;
   bootstrap: ManifestBootstrap | null;
-  gate_run: { screens?: string[]; keys_read?: number; run_at?: string } | null;
+  gate_run: { screens?: string[]; keys_read?: number; run_at?: string; unresolved?: number } | null;
+  /** Read sites the generator could not name (each files `missing` at run time); null = not counted. */
+  unresolved: number | null;
 }
 
 export function asStatus(value: string | null): AttestationStatus {
