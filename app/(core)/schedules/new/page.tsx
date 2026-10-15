@@ -22,6 +22,8 @@ function NewScheduleContent() {
   // `?conversationId=<uuid>`: every run appends to that conversation — the /work Live hub's
   // "Run on a schedule" for a manager agent sends the agent's own room conversation.
   const conversationId = searchParams.get("conversationId");
+  // `?runs_on=<device id>`: /work's Timing step for a computer — the schedule runs on that Matrx 2 computer.
+  const runsOn = searchParams.get("runs_on");
   // A data table's "when a row changes, run…" door: `?trigger=event&tableId=<uuid>`.
   const trigger = searchParams.get("trigger");
   const tableId = searchParams.get("tableId");
@@ -45,6 +47,7 @@ function NewScheduleContent() {
       initialPrompt={prompt || undefined}
       initialTrigger={initialTrigger}
       initialConversationId={conversationId || null}
+      initialRunsOn={runsOn || null}
     />
   );
 }

@@ -10,6 +10,7 @@
 // NEVER access .from('sch_*') outside this file — that's the rule that keeps
 // the data shape consistent across the FE.
 
+import { CronExpressionParser } from "cron-parser";
 import { supabase } from "@/utils/supabase/client";
 import { schedulerDb } from "@/utils/supabase/schedulerDb";
 import { tryWriteOne } from "@/utils/supabase/writeOne";
@@ -28,6 +29,7 @@ import type {
   SchRunRow,
   SchTaskRow,
   SchTriggerRow,
+  TriggerConfig,
 } from "../types";
 import {
   createScheduleLoadTimeout,
@@ -662,4 +664,71 @@ export async function clearSystemScheduleAlarmMute(
   taskId: string,
 ): Promise<void> {
   await writeAlarmMute(taskId, null);
+}
+
+// ── A scheduled coding session on a Matrx 2 computer ──────────────────────────────────────────
+
+export interface ComputerCodingTaskInput {
+  title: string;
+  description: string | null;
+  deviceId: string;
+  folder: string;
+  prompt: string;
+  provider: "claude" | "codex";
+  accountProfileId: string | null;
+  trigger: TriggerConfig;
+}
+
+/** When a trigger first fires (the computer's host advances it after each run). Null: not a time trigger. */
+export function firstDueAt(trigger: TriggerConfig, now: Date = new Date()): string | null {
+  if (trigger.type === "one-shot") return new Date(trigger.at).toISOString();
+  if (trigger.type === "interval" || trigger.type === "heartbeat") return new Date(now.getTime() + trigger.every_seconds * 1000).toISOString();
+  if (trigger.type === "cron") return CronExpressionParser.parse(trigger.expression, { currentDate: now, tz: trigger.tz || "UTC" }).next().toISOString();
+  return null;
+}
+
+/**
+ * The row desktop_schedule writes for a coding session (aidream `coding_sessions_drive`): kind
+ * device_op on that computer only (surfaces {desktop}, target_device_id), its coding.start params
+ * without a client_request_id (the computer mints one per run, so every run is a new session), in
+ * the computer's own organization. One time trigger.
+ */
+export async function createComputerCodingTask(input: ComputerCodingTaskInput): Promise<{ id: string }> {
+  const due = firstDueAt(input.trigger);
+  if (!due) throw new Error("A session on a computer runs on a time: every N, a cron, or once.");
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) throw new Error("Sign in to schedule a session on a computer.");
+  const device = await supabase.from("app_instances").select("organization_id").eq("id", input.deviceId).maybeSingle();
+  const organizationId = (device.data as { organization_id: string | null } | null)?.organization_id ?? null;
+  if (device.error || !organizationId) throw new Error(device.error?.message ?? "That computer is not in an organization; open Matrx 2 on it and sign in again.");
+  const params: Record<string, unknown> = { provider: input.provider, cwd: input.folder, prompt: input.prompt };
+  if (input.accountProfileId) params.account_profile_id = input.accountProfileId;
+  const { type, ...config } = input.trigger;
+  const task = await schedulerDb(supabase)
+    .from("sch_task")
+    .insert({
+      user_id: user.id,
+      organization_id: organizationId,
+      kind: "device_op",
+      title: input.title,
+      description: input.description,
+      surfaces: ["desktop"],
+      enabled: true,
+      target_device_id: input.deviceId,
+      metadata: { created_via: "web", device_op: { op: "coding.start", params, tool: "coding_sessions_drive" } },
+    })
+    .select("id")
+    .single();
+  if (task.error || !task.data) throw new Error(task.error?.message ?? "The schedule was not saved.");
+  const id = (task.data as { id: string }).id;
+  const trigger = await schedulerDb(supabase)
+    .from("sch_trigger")
+    .insert({ user_id: user.id, organization_id: organizationId, task_id: id, type, config, enabled: true, next_due_at: due });
+  if (trigger.error) {
+    await schedulerDb(supabase).from("sch_task").update({ deleted_at: new Date().toISOString(), enabled: false }).eq("id", id);
+    throw new Error(`The schedule's time was not saved: ${trigger.error.message}`);
+  }
+  return { id };
 }

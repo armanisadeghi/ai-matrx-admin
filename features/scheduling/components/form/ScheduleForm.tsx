@@ -58,6 +58,8 @@ import { ProTextarea } from "@/components/official/ProTextarea";
 import { EditableContextMenu } from "@ai-matrx/context-menu/react";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { ClampedNumberInput } from "@/components/official/ClampedNumberInput";
+import { createComputerCodingTask } from "../../service/queries";
+import { RunsOnField, type ComputerCodingChoice } from "./RunsOnField";
 
 interface FormState {
   title: string;
@@ -150,6 +152,8 @@ interface Props {
   initialTrigger?: TriggerConfig | null;
   /** Every run appends to this conversation (e.g. a manager agent's room member). */
   initialConversationId?: string | null;
+  /** `?runs_on=<device>`: the schedule runs on that Matrx 2 computer (create mode). */
+  initialRunsOn?: string | null;
 }
 
 export function ScheduleForm({
@@ -158,11 +162,15 @@ export function ScheduleForm({
   initialPrompt,
   initialTrigger,
   initialConversationId,
+  initialRunsOn,
 }: Props) {
   const router = useRouter();
   const dispatch = useAppDispatch();
   const [pending, startTransition] = useTransition();
   const [submitting, setSubmitting] = useState(false);
+  const [computer, setComputer] = useState<ComputerCodingChoice | null>(() =>
+    !task && initialRunsOn ? { deviceId: initialRunsOn, folder: "", provider: "claude", accountProfileId: "" } : null,
+  );
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [form, setForm] = useState<FormState>(() =>
     makeDefault(task, initialAgentId, initialPrompt, initialTrigger, initialConversationId),
@@ -186,6 +194,37 @@ export function ScheduleForm({
     const trigger = buildTriggerConfig(form.triggerType, form.triggerConfig);
     if (!trigger) {
       setErrors({ trigger: "Invalid trigger configuration" });
+      return;
+    }
+
+    // On a Matrx 2 computer: a Claude Code or Codex session started there at each run.
+    if (!task && computer) {
+      const errs: Record<string, string> = {};
+      if (!form.title.trim()) errs.title = "Name the schedule";
+      if (!form.prompt.trim()) errs.prompt = "Say what the session should do";
+      if (!computer.folder.trim()) errs.runsOn = "Choose the folder on that computer";
+      if (!["interval", "cron", "one-shot"].includes(trigger.type)) errs.trigger = "On a computer, a schedule runs on a time: every N, a cron, or once";
+      setErrors(errs);
+      if (Object.keys(errs).length) return;
+      setSubmitting(true);
+      try {
+        const { id } = await createComputerCodingTask({
+          title: form.title.trim(),
+          description: form.description || null,
+          deviceId: computer.deviceId,
+          folder: computer.folder.trim(),
+          prompt: form.prompt.trim(),
+          provider: computer.provider,
+          accountProfileId: computer.accountProfileId.trim() || null,
+          trigger,
+        });
+        toast.success("Schedule saved: it runs on that computer while Matrx 2 is open there");
+        startTransition(() => router.push(`/schedules/${id}`));
+      } catch (err) {
+        setErrors({ runsOn: err instanceof Error ? err.message : String(err) });
+      } finally {
+        setSubmitting(false);
+      }
       return;
     }
 
@@ -448,6 +487,12 @@ export function ScheduleForm({
         </Section>
 
         {/* 2. What to run */}
+        {!task && (
+          <Section title="Runs on">
+            <RunsOnField value={computer} onChange={setComputer} error={errors.runsOn} />
+          </Section>
+        )}
+
         <Section title="What to run">
           <AgentListDropdown
             onSelect={(id) => patch("agentId", id)}
