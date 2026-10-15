@@ -10,7 +10,7 @@ await page.goto(nonce, { waitUntil: "domcontentloaded", timeout: 240000 });
 await page.waitForTimeout(10000);
 const row = page.getByText("Scan", { exact: true }).first();
 console.log("scan label", await row.count());
-const box = await row.boundingBox();
+await row.waitFor({ timeout: 240000 }); const box = await row.boundingBox();
 await page.mouse.click(box.x + 260, box.y + box.height / 2);
 await page.waitForTimeout(2000);
 console.log("file inputs after click", await page.locator("input[type=file]").count(), "buttons:", JSON.stringify((await page.locator("button").allInnerTexts()).filter((t) => /add|upload|attach|file|browse/i.test(t))));
