@@ -8,6 +8,7 @@ export const T = { clients: "eb587b2c-5bac-4d5e-9552-eb0bf0d23fc6", events: "2f3
 export async function start(member = false) {
   const browser = await chromium.launch({ headless: true });
   const ctx = await browser.newContext({ viewport: { width: 1600, height: 1000 } });
+  ctx.setDefaultNavigationTimeout(180000);
   const page = await ctx.newPage();
   const errs = []; page.on("console", (m) => m.type() === "error" && errs.push(m.text().slice(0, 160)));
   const who = await walkSignIn(page, ORIGIN, { member }).catch((e) => "ERR " + e.message.slice(0, 100));

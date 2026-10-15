@@ -83,7 +83,7 @@ try {
   await shot("06-duplicate-done");
   check("duplicate says tables, records, links re-pointed, automations (off), pages", /2 tables with 3 records, 1 links re-pointed, 1 automations \(off\), 1 pages/.test(text), text);
   await page.getByRole("button", { name: "Open the copy" }).click();
-  await page.waitForURL(/\/data\/bases\/[0-9a-f-]{36}/, { timeout: 60000 });
+  await page.waitForURL((u) => /\/data\/bases\/[0-9a-f-]{36}/.test(u.pathname) && !u.pathname.endsWith(home), { timeout: 120000 });
   await page.waitForSelector("[data-base-page]", { timeout: 90000 });
   await page.waitForSelector("text=Note new tasks", { timeout: 60000 }).catch(() => {});
   const copyHome = page.url().split("/").pop();
@@ -101,6 +101,7 @@ try {
   check("the copy made two tables", !!copyProjects && !!copyTasks, listed.map((x) => x.name).join("|"));
   if (copyProjects && copyTasks) {
     made.push(copyProjects.id, copyTasks.id);
+    say("DIAG copy automations:", JSON.stringify((await client.automations({ table_id: copyTasks.id })).data?.automations?.map((x) => [x.name, x.enabled])));
     const f = must(await client.fields({ table_id: copyTasks.id }), "fields").find((x) => x.key === "project");
     check("the copy's link points at the copy's Projects, not the original", f?.relation_target === copyProjects.id && f?.relation_target !== projects, JSON.stringify(f?.relation_target));
   }
@@ -127,7 +128,7 @@ try {
   await page.waitForSelector(`[data-base-page="${home}"]`, { timeout: 90000 });
   await page.locator("[data-base-snapshots]").click();
   await page.locator("[data-snapshot-restore]").first().click();
-  await page.waitForURL(/\/data\/bases\/[0-9a-f-]{36}/, { timeout: 240000 }).catch(() => {});
+  await page.waitForURL((u) => /\/data\/bases\/[0-9a-f-]{36}/.test(u.pathname) && !u.pathname.endsWith(home), { timeout: 240000 }).catch(() => {});
   await page.waitForSelector("[data-base-page]", { timeout: 120000 });
   const restoredHome = page.url().split("/").pop();
   await shot("09-restored-base");
