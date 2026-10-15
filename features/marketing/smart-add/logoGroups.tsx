@@ -13,7 +13,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Chip, Button, PropertyRow } from "@ai-matrx/design-system/controls";
-import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
+import { Peek, PeekHoverCard } from "@ai-matrx/design-system";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { postJson } from "@/lib/python-client";
 import { proxiedExternalImageUrl } from "@/lib/media/external-image";
@@ -125,24 +125,33 @@ const sizeText = (fp: ImageFingerprint | undefined): string =>
 export function SourcesBadge({ group, labelOf }: { group: LogoGroup; labelOf: (item: EvidenceItem) => string }) {
   if (group.members.length < 2) return null;
   return (
-    <HoverCard openDelay={120}>
-      <HoverCardTrigger asChild>
+    <PeekHoverCard
+      side="bottom"
+      align="start"
+      trigger={
         <span
           className="absolute -left-1.5 -top-1.5 rounded-full border border-border bg-background px-1.5 py-0.5 text-[10px] font-medium leading-none text-muted-foreground shadow-sm"
           data-testid="smart-add-logo-sources"
         >
           {group.members.length} sources
         </span>
-      </HoverCardTrigger>
-      <HoverCardContent className="flex w-64 flex-col gap-1 text-xs" data-testid="smart-add-logo-sources-list">
-        {group.members.map((m) => (
-          <span key={m.key} className="flex items-center justify-between gap-3">
-            <span className="truncate">{labelOf(m) || "image"}</span>
-            <span className="shrink-0 tabular-nums text-muted-foreground">{sizeText(group.sizes[m.key])}</span>
-          </span>
-        ))}
-      </HoverCardContent>
-    </HoverCard>
+      }
+    >
+      <Peek
+        size="sm"
+        record={{
+          kind: "Logo",
+          id: group.id,
+          title: `${group.members.length} sources`,
+          subtitle: "The same logo, found in each place",
+          body: group.members.map((m) => {
+            const size = sizeText(group.sizes[m.key]);
+            return { fact: labelOf(m) || "image", ...(size ? { meta: size } : {}) };
+          }),
+          copyData: group.members.map((m) => ({ source: labelOf(m) || "image", size: sizeText(group.sizes[m.key]) })),
+        }}
+      />
+    </PeekHoverCard>
   );
 }
 
