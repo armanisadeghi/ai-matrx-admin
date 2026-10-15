@@ -13,18 +13,27 @@
 //   trashBulkAction  "Move to Trash" for any registered, soft-deletable entity
 //                    token, through the platform's one archive door
 //                    (`archiveRecord`), restorable from Trash.
+//   moveBulkAction   "Move to…" — THE home picker (`pickHome`), then the one
+//                    move door `platform.set_home` per row.
+//   shareBulkAction  "Share…" — the Share dialog's People form
+//                    (`shareWithPeople`), then `share_resource_with_user` per
+//                    row through `shareWithUser`.
 //
 // 🚨 A bulk action never decides who may tick a row. `bulkSelection.
 // isRowSelectable` is for rows NO action can ever touch; one feature's limits
 // live inside that feature's own `run` (skip + report), so the next action a
 // surface adds is not silently blocked on rows the first one could not handle.
 
-import { Star, StarOff, Tag, Trash2 } from "lucide-react";
+import { House, Share2, Star, StarOff, Tag, Trash2 } from "lucide-react";
 import { toast } from "@/lib/toast";
 import { supabase } from "@/utils/supabase/client";
 import { archiveRecord } from "@/features/trash/service";
 import { fileUnderTag } from "@/features/knowledge/hub/tags/tagApi";
 import { promptForValues } from "@/components/dialogs/value-prompts/valuePromptsOpener";
+import { pickHome } from "@/features/scopes/homes/homePickerOpener";
+import { resolveHomeScopeId, setHome } from "@/features/scopes/homes/setHome";
+import { shareWithPeople } from "@/features/sharing/bulk/shareWithPeopleOpener";
+import type { PermissionLevel, ShareActionResult } from "@/utils/permissions/types";
 import {
   bulkCountLabel,
   type EntityBulkAction,
@@ -229,11 +238,164 @@ export function tagBulkAction<TRow>(args: {
   };
 }
 
+/** A column a list row may carry (rows are each surface's own shape). */
+function rowField(row: unknown, key: string): unknown {
+  return row && typeof row === "object" ? (row as Record<string, unknown>)[key] : undefined;
+}
+const rowString = (row: unknown, key: string): string | null => {
+  const value = rowField(row, key);
+  return typeof value === "string" && value ? value : null;
+};
+
+interface BuiltInVerbArgs<TRow> {
+  token: string;
+  noun: string;
+  rowIdOf: (row: TRow) => string;
+  labelOf?: (row: TRow) => string;
+  appliesTo?: (row: TRow) => string | null;
+}
+
+/**
+ * Move every selected row to one home through `platform.set_home`. Each row
+ * carries the `version` the list read (a row changed since is refused by the
+ * database and named); a row the list does not hold moves unversioned.
+ */
+export function moveSelectionToHome<TRow>(
+  selection: EntityBulkSelection<TRow>,
+  home: { scopeId: string; label: string },
+  args: BuiltInVerbArgs<TRow>,
+): Promise<EntityBulkActionResult> {
+  return runPerRow(
+    selection,
+    async (id, row) => {
+      const version = rowField(row, "version");
+      const moved = await setHome({
+        entityType: args.token,
+        entityId: id,
+        scopeId: home.scopeId,
+        expectedVersion: typeof version === "number" ? version : null,
+      });
+      if (!moved.ok) throw new Error(moved.message);
+    },
+    {
+      done: `Moved to ${home.label}`,
+      noun: args.noun,
+      labelOf: args.labelOf,
+      skipReason: args.appliesTo,
+    },
+    args.rowIdOf,
+  );
+}
+
+/** "Move to…" — pick a home (THE home picker), then move every row there. */
+export function moveBulkAction<TRow>(args: BuiltInVerbArgs<TRow>): EntityBulkAction<TRow> {
+  return {
+    // Notes' own move (its Redux-held path) carries this id and takes this place.
+    id: "move-home",
+    label: "Move to…",
+    icon: House,
+    run: async (selection) => {
+      const first = selection.rows[0];
+      const picked = await pickHome({
+        title: `Move ${bulkCountLabel(selection.count, args.noun)} to…`,
+        currentScopeId: selection.count === 1 ? rowString(first, "home_scope_id") : null,
+        initialOrganizationId: rowString(first, "organization_id"),
+      });
+      // Closed without a choice: nothing done, the selection stays.
+      if (!picked) return;
+      const resolved = await resolveHomeScopeId(picked.home.scopeId);
+      if (!resolved.ok) throw new Error(resolved.message);
+      return moveSelectionToHome(selection, { scopeId: resolved.scopeId, label: picked.label }, args);
+    },
+  };
+}
+
+/**
+ * Grant one person `level` on every selected row through `shareWithUser`
+ * (`share_resource_with_user`). The door answers `{success:false, error}`
+ * instead of raising: that row is skipped and named with its sentence.
+ * Answers like the single-record door, so the People form shows it in place.
+ */
+export async function shareSelectionWithPerson<TRow>(
+  selection: EntityBulkSelection<TRow>,
+  userId: string,
+  level: PermissionLevel,
+  args: BuiltInVerbArgs<TRow>,
+): Promise<ShareActionResult> {
+  // Loaded on use: this module rides every list page.
+  const { RESOURCE_TYPES } = await import("@/utils/permissions/registry");
+  const resourceType = RESOURCE_TYPES.find((type) => type === args.token);
+  if (!resourceType) {
+    return { success: false, error: `${args.noun} records cannot be shared from a list yet.` };
+  }
+  const { shareWithUser } = await import("@/utils/permissions/service");
+  try {
+    const result = await runPerRow(
+      selection,
+      async (id, row) => {
+        const organizationId = rowString(row, "organization_id");
+        const answer = await shareWithUser({
+          resourceType,
+          resourceId: id,
+          userId,
+          permissionLevel: level,
+          ...(organizationId ? { organizationId } : {}),
+        });
+        if (!answer.success) throw new Error(answer.error || "Not shared");
+      },
+      {
+        done: "Shared",
+        noun: args.noun,
+        labelOf: args.labelOf,
+        skipReason: args.appliesTo,
+      },
+      args.rowIdOf,
+    );
+    return { success: true, ...(result.message ? { message: result.message } : {}) };
+  } catch (error) {
+    return { success: false, error: error instanceof Error ? error.message : String(error) };
+  }
+}
+
+/** "Share…" — the Share dialog's People form, granting each chosen person on every row. */
+export function shareBulkAction<TRow>(args: BuiltInVerbArgs<TRow>): EntityBulkAction<TRow> {
+  return {
+    // Notes' own share carries this id and takes this place.
+    id: "share",
+    label: "Share…",
+    icon: Share2,
+    run: async (selection) => {
+      const { RESOURCE_TYPES } = await import("@/utils/permissions/registry");
+      const resourceType = RESOURCE_TYPES.find((type) => type === args.token);
+      if (!resourceType) throw new Error(`${args.noun} records cannot be shared from a list yet.`);
+      const organizations = new Set(selection.rows.map((row) => rowString(row, "organization_id")));
+      const [onlyOrganization] = organizations;
+      const answer = await shareWithPeople({
+        title: `Share ${bulkCountLabel(selection.count, args.noun)}`,
+        resourceType,
+        resourceIds: selection.ids,
+        ...(organizations.size === 1 && onlyOrganization ? { organizationId: onlyOrganization } : {}),
+        shareOne: (userId, level) => shareSelectionWithPerson(selection, userId, level, args),
+      });
+      // Closed with nobody granted: nothing done, the selection stays.
+      if (answer.shared === 0) return;
+      return {
+        message: `Shared ${bulkCountLabel(selection.count, args.noun)} with ${answer.shared === 1 ? "1 person" : `${answer.shared} people`}.`,
+        refresh: true,
+      };
+    },
+  };
+}
+
 /** Which built-in verbs a surface keeps. Every one is on unless set to false. */
 export interface StandardBulkActionsConfig<TRow = never> {
   trash?: boolean;
   favorite?: boolean;
   tag?: boolean;
+  /** "Move to…" (`platform.set_home`). */
+  move?: boolean;
+  /** "Share…" (`share_resource_with_user`). */
+  share?: boolean;
   /**
    * For lists that mix record types or hold rows the built-ins cannot act on:
    * return a short reason to skip (and name) that row, or null to act on it.
@@ -244,7 +406,8 @@ export interface StandardBulkActionsConfig<TRow = never> {
 /**
  * THE BUILT-IN BULK SET. Every list that names its record type
  * (`registryToken`) gets these without writing any code; a surface turns one
- * off with `standardBulkActions: { trash: false }`, or all with `false`.
+ * off with `standardBulkActions: { trash: false }` (keys: favorite, tag, move,
+ * share, trash), or all with `false`.
  * The surface's own actions come first, and an own action with the same id
  * replaces the built-in one.
  */
@@ -262,7 +425,7 @@ export function standardBulkActionsFor<TRow>(args: {
   favoritesShown?: boolean;
 }): EntityBulkAction<TRow>[] {
   if (!args.token || args.config === false) return [];
-  const on = (key: "trash" | "favorite" | "tag") =>
+  const on = (key: "trash" | "favorite" | "tag" | "move" | "share") =>
     !args.config || args.config[key] !== false;
   const base = {
     token: args.token,
@@ -279,6 +442,8 @@ export function standardBulkActionsFor<TRow>(args: {
         ]
       : []),
     ...(on("tag") ? [tagBulkAction<TRow>(base)] : []),
+    ...(on("move") ? [moveBulkAction<TRow>(base)] : []),
+    ...(on("share") ? [shareBulkAction<TRow>(base)] : []),
     ...(on("trash") ? [trashBulkAction<TRow>(base)] : []),
   ];
 }
@@ -286,7 +451,8 @@ export function standardBulkActionsFor<TRow>(args: {
 /**
  * The surface's own actions, then the built-ins. An own action with a
  * built-in's id takes that built-in's PLACE, so every bar reads in the same
- * order (Favorite · Unfavorite · Add tag · Move to Trash) whoever implements it.
+ * order (Favorite · Unfavorite · Add tag · Move to… · Share… · Move to Trash)
+ * whoever implements it.
  */
 export function mergeBulkActions<TRow>(
   own: EntityBulkAction<TRow>[],
