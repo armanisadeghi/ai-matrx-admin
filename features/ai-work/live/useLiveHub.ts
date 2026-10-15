@@ -25,10 +25,11 @@ import {
 import { providerMeta } from "@/features/agent-connections/coding-sessions/catalog";
 import { workspaceName } from "../lib/codingSessionPresentation";
 import { conversationTitleText } from "@/features/content-ir/surfaces/kind-text-label";
-import { cleanTitle, effectivePresence, type LivePresence } from "./presence";
+import { cleanTitle, collidingLabelSuffixes, effectivePresence, type LivePresence } from "./presence";
 import type { ConversationSummary } from "@ai-matrx/messaging";
 import {
   fetchAgentMemberInfo,
+  fetchAgentRoom,
   fetchAgentRooms,
   fetchSessionMembers,
   type AgentMemberInfo,
@@ -93,18 +94,27 @@ function toLive(
     seen.add(row.conversation_id);
     main.push(row);
   }
-  return main.map((row) => {
+  const labelled = main.map((row) => {
     const meta = providerMeta(row.provider);
     const title =
       cleanTitle(conversationTitleText(row.conversation?.title?.trim() || null) ?? "") ||
       `${meta?.label ?? "Coding"} session`;
+    return { row, meta, title, workspace: workspaceName(row.metadata) };
+  });
+  // Ten rows with one label are ten rows nobody can tell apart: colliding
+  // labels carry the session's short id, on every surface that shows a title.
+  const suffixes = collidingLabelSuffixes(
+    labelled.map(({ row, title, workspace }) => ({ id: row.id, title, provider: row.provider, workspace })),
+  );
+  return labelled.map(({ row, meta, title, workspace }) => {
+    const suffix = suffixes.get(row.id);
     return {
       id: row.id,
       address: row.conversation_id,
       provider: row.provider,
       providerLabel: meta?.label ?? row.provider,
-      title,
-      workspace: workspaceName(row.metadata),
+      title: suffix ? `${title} · ${suffix}` : title,
+      workspace,
       account: metaString(row.metadata, "provider_account_label"),
       status: row.status,
       lastSeenAt: row.last_seen_at,
@@ -144,6 +154,11 @@ export interface LiveHubState {
   rooms: ConversationSummary[];
   /** False when the room list stopped at its page budget: show "N+", never N. */
   roomsComplete: boolean;
+  /**
+   * Read one room the person just made and put it in the list at once (the
+   * full re-read follows). Resolves when the room is in `rooms`.
+   */
+  adoptRoom: (roomId: string) => Promise<void>;
   /** False until the first read lands: no counts or empty states before it. */
   loaded: boolean;
   loading: boolean;
@@ -159,6 +174,8 @@ export function useLiveHub(): LiveHubState {
   const [agentInfo, setAgentInfo] = useState<Record<string, AgentMemberInfo>>({});
   const [rooms, setRooms] = useState<ConversationSummary[]>([]);
   const [roomsComplete, setRoomsComplete] = useState(true);
+  /** Rooms read one by one (just created) that a list read has not returned yet. */
+  const adopted = useRef<Map<string, ConversationSummary>>(new Map());
   const [loaded, setLoaded] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -215,7 +232,10 @@ export function useLiveHub(): LiveHubState {
         setRows(page.sessions);
         setMembers(memberRows);
         setAgentInfo(info);
-        setRooms(roomRows.rooms);
+        // A just-created room stays listed until the list read carries it.
+        const listed = new Set<string>(roomRows.rooms.map((r) => r.conversation.id));
+        for (const id of [...adopted.current.keys()]) if (listed.has(id)) adopted.current.delete(id);
+        setRooms([...adopted.current.values(), ...roomRows.rooms]);
         setRoomsComplete(roomRows.complete);
         setLoaded(true);
         setError(null);
@@ -313,5 +333,11 @@ export function useLiveHub(): LiveHubState {
     error,
     nowMs,
     refresh: () => setReadTick((n) => n + 1),
+    adoptRoom: async (roomId: string) => {
+      const room = await fetchAgentRoom(roomId);
+      adopted.current.set(roomId, room);
+      setRooms((cur) => [room, ...cur.filter((r) => r.conversation.id !== roomId)]);
+      setReadTick((n) => n + 1);
+    },
   };
 }

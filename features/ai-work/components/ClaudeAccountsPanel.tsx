@@ -36,13 +36,21 @@ import {
   connectClaudeAccount,
   redeemClaudeCode,
 } from "@/features/ai-work/lib/connectClaudeAccount";
-import { claudeAnswerAt } from "@/features/ai-work/lib/claudeConnectFlow";
+import {
+  claudeAnswerAt,
+  elapsedText,
+  parsePendingConnect,
+  PENDING_CONNECT_KEY,
+  resumeStep,
+  type PendingConnect,
+} from "@/features/ai-work/lib/claudeConnectFlow";
 import { SandboxCapacityList } from "@/features/ai-work/components/SandboxCapacityList";
 import {
   cancelOwnPlanSignIn,
   capacityRefusalOf,
   readHostedCapacity,
   newClaudeAccountSlot,
+  readOwnPlanStatus,
   signOutOwnPlan,
   type OwnPlanStatus,
   type SandboxCapacityRefusal,
@@ -108,6 +116,38 @@ async function readClaudeAccounts(): Promise<ClaudeAccountRow[]> {
 
 type Busy = "starting" | "code" | "cancel" | `out:${string}` | null;
 
+/**
+ * The sign-in in progress, remembered across a reload: only the account slot
+ * and the start time (never the code). The sign-in itself lives on the server.
+ */
+function rememberConnect(pending: PendingConnect | null): void {
+  try {
+    if (pending) window.localStorage.setItem(PENDING_CONNECT_KEY, JSON.stringify(pending));
+    else window.localStorage.removeItem(PENDING_CONNECT_KEY);
+  } catch (cause) {
+    console.error("[claude-accounts] could not remember the sign-in in progress", cause);
+  }
+}
+
+function rememberedConnect(): PendingConnect | null {
+  try {
+    return parsePendingConnect(window.localStorage.getItem(PENDING_CONNECT_KEY));
+  } catch {
+    return null;
+  }
+}
+
+/** The sandbox wait, counted every second while it runs. */
+function useElapsed(since: number | null): string | null {
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    if (since === null) return;
+    const t = window.setInterval(() => setNow(Date.now()), 1_000);
+    return () => window.clearInterval(t);
+  }, [since]);
+  return since === null ? null : elapsedText(now - since);
+}
+
 export function ClaudeAccountsPanel() {
   const { copyText } = useClipboard();
   const [rows, setRows] = useState<ClaudeAccountRow[] | null>(null);
@@ -121,6 +161,9 @@ export function ClaudeAccountsPanel() {
   /** The account slot the running Connect is signing in, so Cancel can end it. */
   const connectSlot = useRef<string | null>(null);
   const [capacity, setCapacity] = useState<SandboxCapacityRefusal | null>(null);
+  /** When the running Connect started (survives a reload through rememberConnect). */
+  const [startedAt, setStartedAt] = useState<number | null>(null);
+  const elapsed = useElapsed(busy === "starting" ? startedAt : null);
   const connectorUrl = `${resolveBaseUrl().replace(/\/$/, "")}/api/matrx-mcp`;
 
   const load = () =>
@@ -143,9 +186,12 @@ export function ClaudeAccountsPanel() {
   // A Connect never outlives the panel: leaving the page ends its polling.
   useEffect(() => () => connectAbort.current?.abort(), []);
 
-  const connect = async (opts: { afterStop?: boolean } = {}) => {
+  const connect = async (opts: { afterStop?: boolean; resume?: PendingConnect } = {}) => {
     const taken = new Set((rows ?? []).filter((r) => r.status === "connected").map((r) => r.slot));
-    const slot = taken.has(PRIMARY) ? newClaudeAccountSlot() : PRIMARY;
+    const slot = opts.resume?.slot ?? (taken.has(PRIMARY) ? newClaudeAccountSlot() : PRIMARY);
+    const since = opts.resume?.startedAt ?? Date.now();
+    rememberConnect({ slot, startedAt: since });
+    setStartedAt(since);
     setBusy("starting");
     setCapacity(null);
     setConnectFailure(null);
@@ -157,6 +203,7 @@ export function ClaudeAccountsPanel() {
       if (controller.signal.aborted) return;
       const outcome = await connectClaudeAccount(slot, controller.signal);
       if (outcome.kind === "signed_in") {
+        rememberConnect(null);
         toast.success("Claude account connected");
         reload();
       } else if (outcome.kind === "awaiting") {
@@ -166,9 +213,11 @@ export function ClaudeAccountsPanel() {
         outcome.kind === "timeout" ||
         outcome.kind === "offline"
       ) {
+        rememberConnect(null);
         setConnectFailure(outcome.message);
       }
     } catch (cause) {
+      rememberConnect(null);
       const full = capacityRefusalOf(cause);
       if (full) setCapacity(full);
       else setConnectFailure(getUserMessage(cause));
@@ -182,6 +231,38 @@ export function ClaudeAccountsPanel() {
     }
   };
 
+  // A reload (or a dev-server refresh) must not lose a sign-in in progress:
+  // ask the server where the remembered one stands and resume that step.
+  useEffect(() => {
+    const remembered = rememberedConnect();
+    if (!remembered) return;
+    let current = true;
+    readOwnPlanStatus(PROVIDER, remembered.slot)
+      .then((status) => {
+        if (!current) return;
+        const step = resumeStep(remembered, status, Date.now());
+        if (step.kind === "awaiting") {
+          setStartedAt(remembered.startedAt);
+          setPending({ slot: remembered.slot, status: step.status });
+        } else if (step.kind === "signed_in") {
+          rememberConnect(null);
+          reload();
+        } else if (step.kind === "keep_starting") {
+          void connect({ resume: remembered });
+        } else {
+          rememberConnect(null);
+        }
+      })
+      .catch((cause: unknown) => {
+        if (!current) return;
+        setConnectFailure(`Could not check the sign-in in progress: ${getUserMessage(cause)}`);
+        rememberConnect(null);
+      });
+    return () => {
+      current = false;
+    };
+  }, []);
+
   const finish = async () => {
     if (!pending || !code.trim()) return;
     const typed = code;
@@ -193,6 +274,7 @@ export function ClaudeAccountsPanel() {
     try {
       const outcome = await redeemClaudeCode(typed, slot, controller.signal);
       if (outcome.kind === "settled" && outcome.status.signed_in) {
+        rememberConnect(null);
         toast.success("Claude account connected");
         setPending(null);
         reload();
@@ -220,6 +302,7 @@ export function ClaudeAccountsPanel() {
     connectAbort.current = null;
     connectSlot.current = null;
     running?.abort();
+    rememberConnect(null);
     setPending(null);
     setCode("");
     if (!slot) {
@@ -283,7 +366,14 @@ export function ClaudeAccountsPanel() {
           >
             <span className="flex min-w-0 items-center gap-2 text-xs text-foreground">
               <Loader2 aria-hidden className="size-3.5 shrink-0 animate-spin text-muted-foreground" />
-              <span className="truncate">Starting your sandbox…</span>
+              <span className="min-w-0">
+                <span className="block truncate">
+                  Starting your sandbox…{elapsed ? ` ${elapsed}` : ""}
+                </span>
+                <span className="block truncate text-muted-foreground">
+                  This can take a couple of minutes.
+                </span>
+              </span>
             </span>
             <Button variant="quiet" onClick={() => void cancel()}>
               Cancel

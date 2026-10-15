@@ -22,20 +22,28 @@ export function NewRoomDialog({
   open,
   onOpenChange,
   sessions,
+  loaded,
   onCreated,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   sessions: readonly LiveSession[];
+  /** False while the hub's first read is in flight: the list is not known yet. */
+  loaded: boolean;
   onCreated: (roomId: string) => void;
 }) {
   const [name, setName] = useState("");
   const [picked, setPicked] = useState<string[]>([]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  // Frozen when the dialog opens (it mounts on open): a presence tick must never
-  // re-sort the rows under the person's finger.
-  const [choices] = useState(() => sessions.filter((s) => s.presence !== "ended"));
+  // Frozen once the sessions are known (on open, or when the first read lands
+  // while the dialog is open): a presence tick must never re-sort the rows
+  // under the person's finger.
+  const [frozen, setFrozen] = useState<readonly LiveSession[] | null>(() =>
+    loaded ? sessions.filter((s) => s.presence !== "ended") : null,
+  );
+  if (frozen === null && loaded) setFrozen(sessions.filter((s) => s.presence !== "ended"));
+  const choices = frozen ?? [];
   const [openedAt] = useState(() => Date.now());
 
   const toggle = (address: string) =>
@@ -73,7 +81,13 @@ export function NewRoomDialog({
           aria-label="Room name"
         />
         <div className="max-h-64 space-y-0.5 overflow-y-auto rounded-md border border-border p-1">
-          {choices.length === 0 ? (
+          {frozen === null ? (
+            <div className="space-y-1 p-1" role="status" aria-label="Loading sessions">
+              {[0, 1, 2].map((i) => (
+                <div key={i} className="h-9 animate-pulse rounded bg-muted/60" />
+              ))}
+            </div>
+          ) : choices.length === 0 ? (
             <p className="p-2 text-sm text-muted-foreground">No active sessions to add.</p>
           ) : (
             choices.map((s) => (

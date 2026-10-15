@@ -282,3 +282,69 @@ export async function runClaudeCodeRedeem(deps: RedeemDeps): Promise<RedeemOutco
   }
   return { kind: "cancelled" };
 }
+
+// ---------------------------------------------------------------------------
+// Surviving a reload
+// ---------------------------------------------------------------------------
+//
+// The sign-in lives on the server (in the sandbox); only the page forgets it.
+// The page keeps WHICH account slot it is signing in and since when (never the
+// code), and on mount asks the server's status door where that sign-in is.
+
+export type PendingConnect = {
+  slot: string;
+  /** When Connect was pressed (ms): the elapsed-time line counts from here. */
+  startedAt: number;
+};
+
+export const PENDING_CONNECT_KEY = "matrx:claude-connect-pending";
+
+export function parsePendingConnect(raw: string | null): PendingConnect | null {
+  if (!raw) return null;
+  try {
+    const value = JSON.parse(raw) as unknown;
+    if (typeof value !== "object" || value === null) return null;
+    const { slot, startedAt } = value as Record<string, unknown>;
+    if (typeof slot !== "string" || !slot || typeof startedAt !== "number" || !Number.isFinite(startedAt)) {
+      return null;
+    }
+    return { slot, startedAt };
+  } catch {
+    return null;
+  }
+}
+
+export type ResumeStep =
+  /** The link is waiting: show it and the code field. */
+  | { kind: "awaiting"; status: OwnPlanStatus }
+  /** The sign-in finished while the page was away. */
+  | { kind: "signed_in" }
+  /** The sandbox was still starting: keep waiting for the link. */
+  | { kind: "keep_starting" }
+  /** Nothing to resume (ended, expired or cancelled): forget it. */
+  | { kind: "forget" };
+
+/** Where a remembered sign-in stands, from the server's own status answer. */
+export function resumeStep(
+  pending: PendingConnect,
+  status: OwnPlanStatus,
+  nowMs: number,
+  timeoutMs = CONNECT_TIMEOUT_MS,
+): ResumeStep {
+  if (status.signed_in) return { kind: "signed_in" };
+  if (status.sign_in_url && (status.state === "awaiting_code" || isRedeeming(status))) {
+    return { kind: "awaiting", status };
+  }
+  const young = nowMs - pending.startedAt < timeoutMs;
+  if (young && (status.state === "starting" || status.state === "unavailable" || status.state === "signed_out")) {
+    // The box was still booting when the page went away: the link is not out yet.
+    return { kind: "keep_starting" };
+  }
+  return { kind: "forget" };
+}
+
+/** "0:42": the sandbox wait, counted, so a long boot reads as progress. */
+export function elapsedText(ms: number): string {
+  const s = Math.max(0, Math.floor(ms / 1000));
+  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
+}

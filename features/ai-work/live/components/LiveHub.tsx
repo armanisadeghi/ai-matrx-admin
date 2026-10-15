@@ -16,7 +16,8 @@ import { replaceAddressWithoutNavigating } from "@/lib/url-state/addressWithoutN
 import { Radio } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@ai-matrx/design-system/controls";
-import { agentRoomKind } from "../presence";
+import { ErrorNotice } from "@ai-matrx/design-system";
+import { agentRoomKind, roomCountText, splitRooms } from "../presence";
 import { useLiveHub } from "../useLiveHub";
 import { LiveSidebar, type LiveSelection } from "./LiveSidebar";
 import { SessionDetail } from "./SessionDetail";
@@ -70,10 +71,12 @@ export function LiveHub() {
   const pathname = usePathname();
   const params = useSearchParams();
   const selection = readSelection(new URLSearchParams(params.toString()));
-  const { sessions, members, agentInfo, rooms, roomsComplete, loaded, loading, error, nowMs, refresh } =
+  const { sessions, members, agentInfo, rooms, roomsComplete, loaded, loading, error, nowMs, refresh, adoptRoom } =
     useLiveHub();
   const [newRoomOpen, setNewRoomOpen] = useState(false);
   const [createdDirect, setCreatedDirect] = useState<Record<string, string>>({});
+  /** A room just created whose own read is still in flight (or failed). */
+  const [opening, setOpening] = useState<{ id: string; error: string | null } | null>(null);
   const { ref: rootRef, layout } = useLiveLayout();
 
 
@@ -110,6 +113,19 @@ export function LiveHub() {
       createdDirect[session.address] ??
       null)
     : null;
+
+  /** Open the room the person just made: read it directly, then list it. */
+  const openCreated = async (id: string) => {
+    setOpening({ id, error: null });
+    select({ kind: "room", id });
+    try {
+      await adoptRoom(id);
+      setOpening((cur) => (cur?.id === id ? null : cur));
+    } catch (cause) {
+      const message = cause instanceof Error ? cause.message : "The new room could not be read.";
+      setOpening((cur) => (cur?.id === id ? { id, error: `The room was created, but reading it failed: ${message}` } : cur));
+    }
+  };
 
   const busy = sessions.filter((s) => s.presence === "busy").length;
   const idle = sessions.filter((s) => s.presence === "idle").length;
@@ -177,6 +193,19 @@ export function LiveHub() {
             onOpenSession={(address) => select({ kind: "session", address })}
             onChanged={refresh}
           />
+        ) : selection?.kind === "room" && opening?.id === selection.id ? (
+          <div className="flex flex-1 flex-col items-center justify-center gap-2 p-6 text-sm text-muted-foreground" role="status">
+            {opening.error ? (
+              <>
+                <ErrorNotice message={opening.error} size="compact" />
+                <Button variant="quiet" onClick={() => void openCreated(selection.id)}>
+                  Retry
+                </Button>
+              </>
+            ) : (
+              "Opening the new room…"
+            )}
+          </div>
         ) : selection ? (
           <div className="flex flex-1 flex-col items-center justify-center gap-2 p-6 text-sm text-muted-foreground">
             {loading || !loaded ? "Loading" : selection.kind === "session" ? "This session is not in your recent sessions." : "This room is not in your inbox."}
@@ -189,8 +218,7 @@ export function LiveHub() {
             <Radio className="size-8 text-muted-foreground" />
             {loaded ? (
               <p className="text-sm font-medium">
-                {busy} busy · {idle} idle · {rooms.length}
-                {roomsComplete ? "" : "+"} room{rooms.length === 1 ? "" : "s"}
+                {busy} busy · {idle} idle · {roomCountText(splitRooms(rooms), roomsComplete)}
               </p>
             ) : (
               <div className="h-5 w-48 animate-pulse rounded bg-muted/60" />
@@ -207,10 +235,10 @@ export function LiveHub() {
         open={newRoomOpen}
         onOpenChange={setNewRoomOpen}
         sessions={sessions}
+        loaded={loaded}
         onCreated={(id) => {
           setNewRoomOpen(false);
-          refresh();
-          select({ kind: "room", id });
+          void openCreated(id);
         }}
       />
       )}

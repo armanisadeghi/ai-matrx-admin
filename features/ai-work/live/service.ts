@@ -77,6 +77,11 @@ export async function fetchAgentRooms(): Promise<AgentRoomsRead> {
   return { rooms, complete };
 }
 
+/** One agent room, read directly (with its `metadata`): the room the person just made. */
+export async function fetchAgentRoom(roomId: string): Promise<ConversationSummary> {
+  return agentRooms.getConversationSummary(roomId as ConversationSummary["conversation"]["id"]);
+}
+
 const MEMBER_COLUMNS =
   "id, conversation_id, member_kind, member_id, offered_through, offered_at, delivered_through, delivered_at, delivered_via, lookup_failures, expired_count, last_failure_reason, last_failure_at, muted, created_at" as const;
 

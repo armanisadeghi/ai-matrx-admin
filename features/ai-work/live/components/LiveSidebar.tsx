@@ -22,6 +22,7 @@ import {
   compactAge,
   deliveryLag,
   plainPreview,
+  splitRooms,
   type AgentRoomKind,
 } from "../presence";
 import type { LiveSession } from "../useLiveHub";
@@ -252,14 +253,8 @@ export function LiveSidebar({
   const ended = visible.filter((s) => s.presence === "ended");
   const busy = active.filter((s) => s.presence === "busy").length;
   const matchedRooms = rooms.filter((r) => match(r.displayName));
-  // A direct line nobody has written in yet is reached through its session, not listed.
-  const shownRooms = matchedRooms.filter((r) => {
-    const kind = agentRoomKind(r.conversation.metadata);
-    return kind !== "agent_review" && !(kind === "agent_direct" && !r.lastMessageAt);
-  });
-  const reviewRooms = matchedRooms.filter(
-    (r) => agentRoomKind(r.conversation.metadata) === "agent_review",
-  );
+  // The same split the hub's summary counts (presence.splitRooms): the numbers add up.
+  const { listed: shownRooms, review: reviewRooms } = splitRooms(matchedRooms);
   const agentMembers = members.filter((m) => m.member_kind === "agent_conversation");
   const membersOf = (s: LiveSession) => members.filter((m) => s.bindingIds.includes(m.member_id));
   const roomMemberCount = (id: string) =>

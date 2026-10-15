@@ -158,3 +158,66 @@ export function compactAge(ms: number): string {
   if (h < 48) return `${h}h`;
   return `${Math.round(h / 24)}d`;
 }
+
+/**
+ * Where each agent room is listed, the ONE split every count in the hub uses
+ * (the empty-state summary and the sidebar's section headers), so the numbers
+ * always add up. A direct line nobody has written in yet is reached through
+ * its session, not listed.
+ */
+export interface RoomSplit<T> {
+  /** The Rooms section: direct lines with mail, pairs and named rooms. */
+  listed: T[];
+  /** The Review rooms section. */
+  review: T[];
+  /** Unwritten direct lines: not listed, and never counted as rooms. */
+  unwritten: T[];
+}
+
+export function splitRooms<T extends { conversation: { metadata?: unknown }; lastMessageAt: string | null }>(
+  rooms: readonly T[],
+): RoomSplit<T> {
+  const split: RoomSplit<T> = { listed: [], review: [], unwritten: [] };
+  for (const room of rooms) {
+    const kind = agentRoomKind(room.conversation.metadata);
+    if (kind === "agent_review") split.review.push(room);
+    else if (kind === "agent_direct" && !room.lastMessageAt) split.unwritten.push(room);
+    else split.listed.push(room);
+  }
+  return split;
+}
+
+/** "24 rooms · 926 review rooms": the summary of the same split the sidebar lists. */
+export function roomCountText(split: RoomSplit<unknown>, complete: boolean): string {
+  const more = complete ? "" : "+";
+  const parts = [`${split.listed.length}${more} room${split.listed.length === 1 && complete ? "" : "s"}`];
+  if (split.review.length > 0) {
+    parts.push(`${split.review.length}${more} review room${split.review.length === 1 && complete ? "" : "s"}`);
+  }
+  return parts.join(" · ");
+}
+
+/**
+ * Labels that collide (same title, provider and workspace) get the session's
+ * short id, so ten "Claude Code session · agent-mail-live-test" rows are ten
+ * distinguishable rows. Returns the id suffix per session id; unique labels get
+ * none.
+ */
+export function collidingLabelSuffixes(
+  sessions: readonly { id: string; title: string; provider: string; workspace: string | null }[],
+): Map<string, string> {
+  const groups = new Map<string, string[]>();
+  for (const s of sessions) {
+    const key = [s.title.toLowerCase(), s.provider, s.workspace ?? ""].join("\u0000");
+    groups.set(key, [...(groups.get(key) ?? []), s.id]);
+  }
+  const out = new Map<string, string>();
+  for (const ids of groups.values()) {
+    if (ids.length < 2) continue;
+    // Shortest prefix (from 6 chars) that tells every member of the group apart.
+    let len = 6;
+    while (len < 36 && new Set(ids.map((id) => id.replace(/-/g, "").slice(0, len))).size < ids.length) len += 2;
+    for (const id of ids) out.set(id, id.replace(/-/g, "").slice(0, len));
+  }
+  return out;
+}
