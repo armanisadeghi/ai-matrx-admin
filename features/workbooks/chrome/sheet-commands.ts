@@ -61,6 +61,7 @@ import {
   applyThemeToSheet,
   columnStats,
   describeColumnStats,
+  hasHeaderRow,
   type ThemeRangeLike,
 } from "./sheet-extras";
 
@@ -379,8 +380,17 @@ export function showHiddenSheets(h: SheetChromeHost) {
 /** Insert → Emoji: ask for the character(s) and append them to the active cell's text. */
 /** Column stats for the columns of the selection, shown in the app's own dialog. */
 export function showColumnStats(h: SheetChromeHost, r: RangeLike) {
-  const values = r.getValues();
-  const text = describeColumnStats(columnStats(values), values[0]);
+  let values = r.getValues();
+  const sel = r.getRange();
+  const sheet = sheetOf(h);
+  // One cell or one row selected: report on its whole column, as Google does.
+  if (values.length < 2 && sheet?.getRange && sheet.getLastRow) {
+    const rows = sheet.getLastRow() + 1;
+    const cols = sel.endColumn - sel.startColumn + 1;
+    if (rows > 1) values = sheet.getRange(0, sel.startColumn, rows, cols).getValues();
+  }
+  const titled = hasHeaderRow(values);
+  const text = describeColumnStats(columnStats(titled ? values.slice(1) : values), titled ? values[0] : undefined);
   if (h.report) return h.report("Column stats", text);
   void confirm({
     title: "Column stats",

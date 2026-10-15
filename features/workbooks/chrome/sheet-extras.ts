@@ -21,9 +21,20 @@ export interface ColumnStats {
 const isBlank = (v: unknown) => v === null || v === undefined || (typeof v === "string" && v.trim() === "");
 const asNumber = (v: unknown): number | null => {
   if (typeof v === "number" && Number.isFinite(v)) return v;
-  if (typeof v === "string" && v.trim() !== "" && Number.isFinite(Number(v))) return Number(v);
+  if (typeof v === "string") {
+    const t = v.trim().replace(/^\((.*)\)$/, "-$1").replace(/[$€£,%\s]/g, "");
+    if (t !== "" && Number.isFinite(Number(t))) return Number(t);
+  }
   return null;
 };
+
+/** True when the first row reads as column titles: every filled cell is non-numeric text and there is data below. */
+export function hasHeaderRow(values: unknown[][]): boolean {
+  if (values.length < 2) return false;
+  const first = values[0]!;
+  const filled = first.filter((v) => !isBlank(v));
+  return filled.length > 0 && filled.every((v) => typeof v === "string" && asNumber(v) === null);
+}
 
 /** Counts, distribution and common values for every column of a block of cells. */
 export function columnStats(values: unknown[][], opts: { topN?: number } = {}): ColumnStats[] {
