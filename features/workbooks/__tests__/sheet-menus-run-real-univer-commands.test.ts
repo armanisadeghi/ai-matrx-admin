@@ -92,6 +92,7 @@ function fakeHost(values: unknown[][] = [["a"]], formulas: string[][] = [[""]]) 
     },
     editable: true,
     print: rec("host.print"),
+    report: rec("host.report"),
     formulaBarVisible: () => true,
     toggleFormulaBar: rec("host.toggleFormulaBar"),
     fullScreen: () => false,

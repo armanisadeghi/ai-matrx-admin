@@ -132,6 +132,8 @@ export interface SheetChromeHost {
   fullScreen: () => boolean;
   toggleFullScreen: () => void;
   notify: (message: string) => void;
+  /** Show a plain-text report (Column stats); the editor falls back to the app's own dialog. */
+  report?: (title: string, text: string) => void;
   /** Help → Send feedback (the app's feedback window). */
   sendFeedback?: () => void;
 }
@@ -376,13 +378,13 @@ export function showHiddenSheets(h: SheetChromeHost) {
 
 /** Insert → Emoji: ask for the character(s) and append them to the active cell's text. */
 /** Column stats for the columns of the selection, shown in the app's own dialog. */
-export function showColumnStats(r: RangeLike) {
+export function showColumnStats(h: SheetChromeHost, r: RangeLike) {
   const values = r.getValues();
-  const stats = columnStats(values);
-  const header = values[0];
+  const text = describeColumnStats(columnStats(values), values[0]);
+  if (h.report) return h.report("Column stats", text);
   void confirm({
     title: "Column stats",
-    description: createElement("div", { className: "whitespace-pre-line text-sm" }, describeColumnStats(stats, header)),
+    description: createElement("div", { className: "whitespace-pre-line text-sm" }, text),
     confirmLabel: "Done",
     cancelLabel: null,
   });
@@ -920,7 +922,7 @@ export function buildSheetMenus(h: SheetChromeHost): EditorMenu[] {
           id: "data.column-stats",
           label: "Column stats",
           keywords: ["distribution", "count", "unique", "summary"],
-          run: withRange(h, (r) => showColumnStats(r)),
+          run: withRange(h, (r) => showColumnStats(h, r)),
         },
         { kind: "action", id: "data.validation", label: "Data validation", run: run(h, "data-validation.operation.open-validation-panel", {}) },
 
