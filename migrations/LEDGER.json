@@ -1,6 +1,6 @@
 {
   "note": "Checked-in snapshot of public._schema_migrations for the files under migrations/campaign and migrations/inverse. Written by `pnpm db:apply` on every successful production apply and refreshed whole by the nightly catch-up. Never hand-edited: a self-written checksum is a claim nobody can check. Guard: pnpm check:ledgered-files-unedited.",
-  "generated_at": "2026-10-15T05:13:02.144Z",
+  "generated_at": "2026-10-15T04:59:17.937Z",
   "files": {
     "migrations/campaign/a_chunk_is_the_size_the_client_door_can_actually_carry.sql": {
       "source": "matrx-frontend",
@@ -5636,12 +5636,6 @@
       "checksum": "17097e7b6aeb7320592f4db3a571035432b275c2f3963669ad4c23c2611b1250",
       "applied_at": "2026-10-07 05:59:26.655704+00"
     },
-    "migrations/campaign/notionauto_a_a_plain_column_becomes_automatic_keeping_its_values.sql": {
-      "source": "matrx-frontend",
-      "filename": "notionauto_a_a_plain_column_becomes_automatic_keeping_its_values.sql",
-      "checksum": "d6fc13357e23d848fdbbf62e8ec19c0c9466aea52eeb3f7a75d54b79af3344cf",
-      "applied_at": "2026-10-15 05:11:36.189407+00"
-    },
     "migrations/campaign/notionpeople_a_a_guest_becomes_the_real_user_on_join.sql": {
       "source": "matrx-frontend",
       "filename": "notionpeople_a_a_guest_becomes_the_real_user_on_join.sql",
@@ -5653,12 +5647,6 @@
       "filename": "notionpeople_b_a_published_view_is_read_signed_out.sql",
       "checksum": "285c110e7bca6ea2be5bb58018e0f23352de5b00edc14282732b398861181470",
       "applied_at": "2026-10-15 04:59:15.849104+00"
-    },
-    "migrations/campaign/notionpeople_c_a_published_view_read_is_the_servers_to_call.sql": {
-      "source": "matrx-frontend",
-      "filename": "notionpeople_c_a_published_view_read_is_the_servers_to_call.sql",
-      "checksum": "b9f81ce61ab5d899a13a88924eee792e9e2fcf1b6b453a2b399b7930ed81397a",
-      "applied_at": "2026-10-15 05:13:00.741907+00"
     },
     "migrations/campaign/notionprops2_a_table_takes_its_two_way_partner.sql": {
       "source": "matrx-frontend",
