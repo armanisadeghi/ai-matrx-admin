@@ -30,7 +30,7 @@ jest.mock("@/lib/redux/store-singleton", () => {
   const fake = {
     getState: () => ({
       appContext: { organization_id: "884d1ce8-0000-4000-8000-000000000000", orgBootstrapResolved: true },
-      userAuth: { id: "u1" },
+      userAuth: { id: "u1", accessToken: "test-token", authReady: true },
     }),
     dispatch: jest.fn(),
     subscribe: () => () => {},

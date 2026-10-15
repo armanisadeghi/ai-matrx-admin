@@ -20,7 +20,7 @@ import type {
   TierPolicy,
 } from "@/lib/api/broker/types";
 import { mintToken } from "@ai-matrx/api/architecture";
-import { serverApi, NO_ERROR_CAPTURE_HEADER } from "@/lib/api/server-api";
+import { callOptionsFrom, serverApi } from "@/lib/api/server-api";
 
 export interface MintOptions {
   model?: string;
@@ -47,7 +47,7 @@ export async function mintCredential(
         ttl_seconds: opts.ttlSeconds ?? null,
         model: opts.model ?? null,
         scopes: opts.scopes ?? [],
-      } }, { signal: opts.signal });
+      } }, callOptionsFrom({ signal: opts.signal, captureErrors: opts.captureErrors }));
     return data;
   } catch (err) {
     if (err instanceof BackendApiError && err.status === 503) {

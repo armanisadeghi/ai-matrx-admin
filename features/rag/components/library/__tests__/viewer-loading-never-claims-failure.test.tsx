@@ -108,7 +108,12 @@ jest.mock("@/features/rag/api/fork", () => ({
   forkProcessedDocument: jest.fn(),
 }));
 jest.mock("@/lib/api/server-api", () =>
-  require("@/lib/api/test-support/serverApiEnvelopeMock").serverApiEnvelopeMock(),
+  require("@/lib/api/test-support/serverApiEnvelopeMock").serverApiEnvelopeMock({
+    apiGet: (path: string) => {
+      pageReads.push(path);
+      return new Promise(() => {});
+    },
+  }),
 );
 jest.mock(
   "@/features/shell/components/header/templates/EntityModeHeader",
@@ -211,8 +216,8 @@ describe("the knowledge viewer shows the version people read", () => {
     const text = show(<LibraryPreviewPage documentId="cap" embedded />);
     expect(docReads.filter(Boolean).every((id) => id === "edit")).toBe(true);
     expect(docReads).toContain("edit");
-    expect(pageReads.some((p) => p.endsWith("|edit"))).toBe(true);
-    expect(pageReads.some((p) => p.endsWith("|cap"))).toBe(false);
+    expect(pageReads.some((p) => p.includes("/library/edit/page/"))).toBe(true);
+    expect(pageReads.some((p) => p.includes("/library/cap/page/"))).toBe(false);
     expect(text).toMatch(/Showing edited version/);
     expect(text).toMatch(/View original/);
   });
