@@ -9710,6 +9710,12 @@
       "checksum": "56fe0e49586b0f84af776d2883ec14ab3f690a0df66ede1db4bfe3462abc8391",
       "applied_at": "2026-09-25 01:09:58.027269+00"
     },
+    "migrations/campaign/viewlink_a_a_view_is_shared_by_link.sql": {
+      "source": "matrx-frontend",
+      "filename": "viewlink_a_a_view_is_shared_by_link.sql",
+      "checksum": "95b600fff506a21eacc90f2a35a8812386b7a1e1bf91ccefb3ad560f040df11a",
+      "applied_at": "2026-10-15 06:15:21.482486+00"
+    },
     "migrations/campaign/viewlook_a_look_at_a_view_is_yours_until_you_save_it.sql": {
       "source": "campaign",
       "filename": "viewlook_a_look_at_a_view_is_yours_until_you_save_it.sql",
