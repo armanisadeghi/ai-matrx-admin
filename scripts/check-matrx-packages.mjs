@@ -938,7 +938,7 @@ const FIXTURE_REGISTRY = {
     '@ai-matrx/data': '0.11.0',
     '@ai-matrx/design-system': '0.13.0',
     '@ai-matrx/kit': '0.9.0',
-    '@ai-matrx/realtime': '0.7.5',
+    '@ai-matrx/auth': '0.7.5',
 };
 
 const fixtureRegistry = async (name) => ({

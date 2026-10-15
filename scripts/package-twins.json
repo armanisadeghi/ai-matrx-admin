@@ -33,13 +33,13 @@
     },
     {
       "name": "uniqueChannelTopic",
-      "package": "@ai-matrx/realtime",
+      "package": "@ai-matrx/data",
       "why": "Realtime channel topic minter. The host copy's module-level counter could hand out the same 'unique' topic twice across dual ESM/CJS graphs (data 0.6.3).",
       "allow": []
     },
     {
       "name": "isOwnEcho",
-      "package": "@ai-matrx/realtime",
+      "package": "@ai-matrx/data",
       "why": "Echo suppression. The notes middleware's ~60-line isOwnEcho (monotonic updated_at + equal-timestamp content match + same-actor-while-saving) was deleted in the 2026-09-07 adoption; manager.ledger.classify covers every leg. NOTE: features/files/redux/request-ledger.ts is a DIFFERENT mechanism (a server-stamped metadata.request_id under a documented wire contract) and is allowed.",
       "allow": [
         {
@@ -60,37 +60,37 @@
     },
     {
       "name": "scheduleReconnect",
-      "package": "@ai-matrx/realtime",
+      "package": "@ai-matrx/data",
       "why": "Reconnect backoff. Four hand-rolled ladders (notes, marketing crawl activity, vision-interview room, transcript-studio) were deleted in the 2026-09-07 adoption; the package owns jittered backoff with the 30s stability reset.",
       "allow": []
     },
     {
       "name": "BACKOFF_RESET_AFTER_MS",
-      "package": "@ai-matrx/realtime",
+      "package": "@ai-matrx/data",
       "why": "The stability-reset constant. Resetting the attempt counter on SUBSCRIBED lets a flapping channel cycle at the 1s floor forever, firing a full catch-up each time \u2014 the package encodes the 30s rule once.",
       "allow": []
     },
     {
       "name": "RECONNECT_ALARM_ATTEMPT",
-      "package": "@ai-matrx/realtime",
+      "package": "@ai-matrx/data",
       "why": "Sustained-outage alarm threshold; the package exports RECONNECT_ALARM_ATTEMPTS and screams through its diagnostics sink. Deleted from the notes middleware 2026-09-07.",
       "allow": []
     },
     {
       "name": "attachRealtime",
-      "package": "@ai-matrx/realtime",
+      "package": "@ai-matrx/data",
       "why": "Per-hook refcounted channel attach. Four hand-copied maps (useAnnotations, usePages, useFileAnalysis, useExtractionJobs) collapsed into lib/realtime/sharedChannel.ts on 2026-09-07, whose exported door is `openShared` \u2014 the ONE sanctioned home for the app-shaped fan-in the package's room registry deliberately does not cover for pg-changes. This row exists so a fifth per-hook copy cannot come back.",
       "allow": []
     },
     {
       "name": "toMs",
-      "package": "@ai-matrx/realtime",
+      "package": "@ai-matrx/data",
       "why": "Realtime timestamp normalizer, deleted in the 2026-08-31 realtime adoption.",
       "allow": []
     },
     {
       "name": "isStaleEcho",
-      "package": "@ai-matrx/realtime",
+      "package": "@ai-matrx/data",
       "why": "Echo suppression. The package owns the shared write ledger; per-hook seenRef copies were deleted in the 2026-08-31 realtime adoption.",
       "allow": []
     },
@@ -2441,7 +2441,7 @@
     },
     {
       "name": "createTaskChannelTopic",
-      "package": "@ai-matrx/realtime",
+      "package": "@ai-matrx/data",
       "why": "A `uniqueChannelTopic` twin under a local name: it appended a crypto.randomUUID() suffix to a per-conversation topic so a React 19 remount could not be handed the previous mount's still-joined channel. The package mints the unique INSTANCE topic for every Postgres Changes channel itself (and deliberately does NOT for broadcast/presence, where the topic IS the room \u2014 a hand-rolled suffix there splits the room). Deleted from src/state/lists.ts in the 2026-09-07 realtime adoption.",
       "allow": []
     },
