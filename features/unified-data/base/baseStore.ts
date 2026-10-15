@@ -91,12 +91,3 @@ export async function trashSnapshot(id: string): Promise<void> {
   const { error } = await from("base_snapshot").update({ deleted_at: new Date().toISOString() }).eq("id", id);
   if (error) throw new Error(error.message);
 }
-
-/** Every table this person may read, with the Home it lives in (row security decides which). */
-export async function listHomeTables(homeId?: string): Promise<HomeTable[]> {
-  let q = from("table").select("id,name,organization_id,home_id,icon,color").order("name");
-  if (homeId) q = q.eq("home_id", homeId);
-  const { data, error } = await q.limit(5000);
-  if (error) throw new Error(error.message);
-  return (data ?? []) as HomeTable[];
-}

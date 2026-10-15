@@ -33,11 +33,16 @@ const dash = await client.dashboardDeclare({ table_id: projects, name: "Overview
 const auto = await client.automationDeclare({ table_id: tasks, spec: { name: "Note new tasks", trigger: { kind: "record_created" }, actions: [] } });
 say("seed", { home, projects, tasks, page: dash.ok, automation: auto.ok });
 
-const { browser, page, who, errs } = await start(false);
-say("signed in as", who);
+let browser, page, errs = [];
 const shot = (n) => page.screenshot({ path: `${SHOTS}/${n}.png` });
 const dialog = () => page.locator('[role="dialog"]');
 try {
+  let who;
+  for (let attempt = 1; attempt <= 3 && !browser; attempt++) {
+    try { ({ browser, page, who, errs } = await start(false)); if (String(who).startsWith("ERR")) { await browser.close().catch(() => {}); browser = undefined; } } catch { browser = undefined; }
+  }
+  if (!browser) throw new Error("could not sign in as admin after 3 tries (the preview server was too slow)");
+  say("signed in as", who);
   // list
   await page.goto(`${ORIGIN}/data/bases`, { waitUntil: "domcontentloaded", timeout: 240000 });
   await page.waitForSelector(`[data-base-card="${home}"]`, { timeout: 90000 });
@@ -76,14 +81,14 @@ try {
   await page.waitForTimeout(3000);
   await shot("07-copy-opened");
   // the copy's link column points at the copy's Projects, never the original
-  const all = await sb.schema("custom").from("table").select("id,name,home_id").like("name", `Harbor walk%${tag}%copy%`);
-  const copyProjects = (all.data ?? []).find((x) => x.name.startsWith("Harbor walk Projects"));
-  const copyTasks = (all.data ?? []).find((x) => x.name.startsWith("Harbor walk Tasks"));
-  check("the copy made two tables", !!copyProjects && !!copyTasks, JSON.stringify(all.data));
+  const listed = must(await client.tableList(), "tables").filter((x) => x.name.includes(tag));
+  const copyProjects = listed.find((x) => x.name.startsWith("Harbor walk Projects") && x.name.includes("(copy)"));
+  const copyTasks = listed.find((x) => x.name.startsWith("Harbor walk Tasks") && x.name.includes("(copy)"));
+  check("the copy made two tables", !!copyProjects && !!copyTasks, listed.map((x) => x.name).join("|"));
   if (copyProjects && copyTasks) {
     made.push(copyProjects.id, copyTasks.id);
-    const f = await sb.schema("custom").from("record").select("data").eq("organization_id", (await sb.schema("custom").from("table").select("organization_id").eq("id", copyTasks.id).single()).data.organization_id).eq("data->>entity_definition_id", copyTasks.id).eq("data->>key", "project").limit(1);
-    check("the copy's link points at the copy's Projects, not the original", f.data?.[0]?.data?.relation_target === copyProjects.id, JSON.stringify(f.data));
+    const f = must(await client.fields({ table_id: copyTasks.id }), "fields").find((x) => x.key === "project");
+    check("the copy's link points at the copy's Projects, not the original", f?.relation_target === copyProjects.id && f?.relation_target !== projects, JSON.stringify(f?.relation_target));
   }
 
   // snapshots
@@ -120,10 +125,7 @@ try {
     await page.waitForSelector("[data-table-toolbar], [role=grid], table", { timeout: 120000 }).catch(() => {});
     await shot("10-restored-table-opens");
   }
-  const rt = await sb.schema("custom").from("table").select("id,name").like("name", `%${tag}%restored%`);
-  for (const x of rt.data ?? []) made.push(x.id);
-  const snapT = await sb.schema("custom").from("table").select("id,name").like("name", `Snapshot Before launch%${tag}%`);
-  for (const x of snapT.data ?? []) made.push(x.id);
+  for (const x of must(await client.tableList(), "tables")) if (x.name.includes(tag) && /restored/.test(x.name)) made.push(x.id);
 
   // Airtable picker (aidream answers recorded)
   await page.route("**/airtable-import/bases", (r) => r.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ bases: [{ id: "appHarborStudio01", name: "Harbor Studio (recorded)", permission: "create" }] }) }));
