@@ -13,6 +13,7 @@
 import { CronExpressionParser } from "cron-parser";
 import { supabase } from "@/utils/supabase/client";
 import { schedulerDb } from "@/utils/supabase/schedulerDb";
+import { computerWorkOf, deviceOpWith, type ComputerCodingWork } from "../utils/computerWork";
 import { tryWriteOne } from "@/utils/supabase/writeOne";
 import { pgErrorToError } from "@ai-matrx/data";
 import { withTransientRetry } from "@/lib/db/transientRetry";
@@ -208,6 +209,7 @@ export function rowToAgendaTask(row: JoinedAgentTaskRow): AgendaTask {
     createdAt: row.created_at,
     updatedAt: row.updated_at,
     targetDeviceId: row.target_device_id ?? null,
+    deviceOp: row.kind === "device_op" ? computerWorkOf(row.metadata) : null,
 
     // A task with no `sch_agent_task` row (`kind = 'ping'`) has no agent
     // extension. These are ABSENT, not defaulted-away: `agentId` is null and
@@ -791,4 +793,27 @@ async function insertComputerTask(
     throw new Error(`The schedule's time was not saved: ${trigger.error.message}`);
   }
   return { id };
+}
+
+/**
+ * Save an edited coding schedule on a computer: title, description, the work in
+ * metadata.device_op (what the form does not edit is kept) and its one time trigger. The agent
+ * extension is never touched — a device_op task has none.
+ */
+export async function updateComputerCodingTask(
+  task: { id: string; deviceOp: ComputerCodingWork | null; triggerId: string | null },
+  edit: { title: string; description: string | null; deviceId: string; provider: "claude" | "codex"; folder: string; prompt: string; accountProfileId: string | null; trigger: TriggerConfig },
+): Promise<void> {
+  const current = await schedulerDb(supabase).from("sch_task").select("metadata").eq("id", task.id).maybeSingle();
+  if (current.error || !current.data) throw new Error(current.error?.message ?? "The schedule was not found.");
+  const metadata = { ...((current.data as { metadata: Record<string, unknown> | null }).metadata ?? {}), device_op: deviceOpWith(task.deviceOp, edit) };
+  const saved = await schedulerDb(supabase).from("sch_task").update({ title: edit.title, description: edit.description, metadata, target_device_id: edit.deviceId }).eq("id", task.id);
+  if (saved.error) throw new Error(`The schedule was not saved: ${saved.error.message}`);
+  const due = firstDueAt(edit.trigger);
+  if (!due) throw new Error("A schedule on a computer runs on a time: every N, a cron, or once.");
+  const { type, ...config } = edit.trigger;
+  if (task.triggerId) {
+    const t = await schedulerDb(supabase).from("sch_trigger").update({ type, config, next_due_at: due }).eq("id", task.triggerId);
+    if (t.error) throw new Error(`The schedule's time was not saved: ${t.error.message}`);
+  }
 }

@@ -152,7 +152,7 @@ export interface SchTaskMetadata {
  * controlled from the System jobs console; enabling goes through the admin
  * PATCH, never the user PATCH, which refuses non-agent kinds).
  */
-export type SchedulableKind = "agent" | "tool";
+export type SchedulableKind = "agent" | "tool" | "device_op";
 
 export interface SchTaskRow {
   id: string;
@@ -266,6 +266,8 @@ export interface AgendaTask {
   updatedAt: string;
   /** The Matrx 2 computer that runs this task; null on a desktop task means its computer was removed. */
   targetDeviceId?: string | null;
+  /** A `device_op` task's work (metadata.device_op): a coding session on that computer. */
+  deviceOp?: import("./utils/computerWork").ComputerCodingWork | null;
 
   // agent extension
   agentId: string | null;

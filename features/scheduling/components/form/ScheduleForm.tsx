@@ -58,7 +58,7 @@ import { ProTextarea } from "@/components/official/ProTextarea";
 import { EditableContextMenu } from "@ai-matrx/context-menu/react";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { ClampedNumberInput } from "@/components/official/ClampedNumberInput";
-import { createComputerAgentTask, createComputerCodingTask } from "../../service/queries";
+import { createComputerAgentTask, createComputerCodingTask, updateComputerCodingTask } from "../../service/queries";
 import { computerAgentErrors } from "./computerAgentErrors";
 import { ErrorNotice } from "@ai-matrx/design-system";
 import { RunsOnField, type ComputerCodingChoice } from "./RunsOnField";
@@ -93,7 +93,7 @@ function makeDefault(
       description: task.description ?? "",
       surfaces: task.surfaces,
       tags: task.tags,
-      prompt: task.prompt,
+      prompt: task.deviceOp?.prompt ?? task.prompt,
       agentId: task.agentId,
       variables: task.variables,
       persistentConversationId: task.persistentConversationId ?? "",
@@ -171,7 +171,12 @@ export function ScheduleForm({
   const [pending, startTransition] = useTransition();
   const [submitting, setSubmitting] = useState(false);
   const [computer, setComputer] = useState<ComputerCodingChoice | null>(() =>
-    !task && initialRunsOn ? { deviceId: initialRunsOn, mode: "coding", folder: "", provider: "claude", accountProfileId: "" } : null,
+    task?.kind === "device_op" && task.targetDeviceId
+      ? // Editing a coding schedule on a computer: its work is in metadata.device_op (computerWork.ts).
+        { deviceId: task.targetDeviceId, mode: "coding", folder: task.deviceOp?.folder ?? "", provider: task.deviceOp?.provider ?? "claude", accountProfileId: task.deviceOp?.accountProfileId ?? "" }
+      : !task && initialRunsOn
+        ? { deviceId: initialRunsOn, mode: "coding", folder: "", provider: "claude", accountProfileId: "" }
+        : null,
   );
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [form, setForm] = useState<FormState>(() =>
@@ -229,7 +234,7 @@ export function ScheduleForm({
     }
 
     // On a Matrx 2 computer: a Claude Code or Codex session started there at each run.
-    if (!task && computer) {
+    if (computer && computer.mode !== "agent" && (!task || task.kind === "device_op")) {
       const errs: Record<string, string> = {};
       if (!form.title.trim()) errs.title = "Name the schedule";
       if (!form.prompt.trim()) errs.prompt = "Say what the session should do";
@@ -239,6 +244,24 @@ export function ScheduleForm({
       if (Object.keys(errs).length) return;
       setSubmitting(true);
       try {
+        if (task) {
+          await updateComputerCodingTask(
+            { id: task.id, deviceOp: task.deviceOp ?? null, triggerId: task.triggers[0]?.id ?? null },
+            {
+              title: form.title.trim(),
+              description: form.description || null,
+              deviceId: computer.deviceId,
+              folder: computer.folder.trim(),
+              prompt: form.prompt.trim(),
+              provider: computer.provider,
+              accountProfileId: computer.accountProfileId.trim() || null,
+              trigger,
+            },
+          );
+          toast.success("Schedule updated");
+          startTransition(() => router.push(`/schedules/${task.id}`));
+          return;
+        }
         const { id } = await createComputerCodingTask({
           title: form.title.trim(),
           description: form.description || null,
@@ -518,7 +541,7 @@ export function ScheduleForm({
         </Section>
 
         {/* 2. What to run */}
-        {!task && (
+        {(!task || task.kind === "device_op") && (
           <Section title="Runs on">
             <RunsOnField value={computer} onChange={setComputer} error={errors.runsOn} />
           </Section>

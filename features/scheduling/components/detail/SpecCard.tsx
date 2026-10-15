@@ -17,6 +17,7 @@ import { EntityRef } from "@/components/official/entity-ref/EntityRef";
 import { SURFACE_META } from "../../constants/surfaces";
 import { humanLines, scheduleDetailLocation } from "../../lib/copy";
 import type { AgendaTask } from "../../types";
+import { runsOnComputer } from "./ComputerTargetLine";
 
 interface Props {
   task: AgendaTask;
@@ -25,14 +26,21 @@ interface Props {
 export function SpecCard({ task }: Props) {
   const [promptOpen, setPromptOpen] = useState(false);
   const varEntries = Object.entries(task.variables);
+  // A coding session on a computer keeps its work in metadata.device_op, not in an agent row.
+  const work = task.deviceOp ?? null;
+  const prompt = work ? work.prompt : task.prompt;
+  const app = work ? (work.provider === "codex" ? "Codex" : "Claude Code") : null;
+  const onComputer = runsOnComputer(task);
 
   // What this card renders — prompt included in full, since a truncated
   // prompt is the single most useless thing to hand an agent debugging one.
   const specHuman = () =>
     humanLines([
       ["Schedule", task.title],
-      ["Agent", task.agentId ?? "Platform default"],
-      ["Prompt", task.prompt],
+      ...(work
+        ? ([["Coding app", app], ["Folder", work.folder], ["Account", work.accountProfileId ?? "Its signed-in account"]] as [string, string | null][])
+        : ([["Agent", task.agentId ?? "Platform default"]] as [string, string][])),
+      ["Prompt", prompt],
       ...varEntries.map(
         ([k, v]) =>
           [`Variable ${k}`, typeof v === "string" ? v : JSON.stringify(v)] as [
@@ -40,7 +48,7 @@ export function SpecCard({ task }: Props) {
             string,
           ],
       ),
-      ["Surfaces", task.surfaces.join(", ")],
+      ...(onComputer ? [] : ([["Surfaces", task.surfaces.join(", ")]] as [string, string][])),
       ["Auth mode", task.authMode],
       ["Max runtime", `${task.maxRuntimeSeconds}s`],
       ["Max concurrent", task.maxConcurrent],
@@ -61,7 +69,7 @@ export function SpecCard({ task }: Props) {
             human={specHuman}
             json={() => ({
               agent_id: task.agentId,
-              prompt: task.prompt,
+              prompt,
               variables: task.variables,
               surfaces: task.surfaces,
               auth_mode: task.authMode,
@@ -77,7 +85,7 @@ export function SpecCard({ task }: Props) {
                 "The Agent/Prompt/Execution card of the open schedule, as rendered.",
               data: {
                 agent_id: task.agentId,
-                prompt: task.prompt,
+                prompt,
                 variables: task.variables,
                 surfaces: task.surfaces,
                 auth_mode: task.authMode,
@@ -89,7 +97,7 @@ export function SpecCard({ task }: Props) {
               summary: specHuman(),
               attributes: {
                 schedule_id: task.id,
-                prompt_chars: task.prompt.length,
+                prompt_chars: prompt.length,
               },
               context: {
                 schedule_title: task.title,
@@ -100,6 +108,19 @@ export function SpecCard({ task }: Props) {
             })}
           />
         </div>
+        {work ? (
+          <>
+            <Row label="Coding app" anchor="schedule_coding_app">
+              <span className="text-sm">{app}</span>
+            </Row>
+            <Row label="Folder" anchor="schedule_folder">
+              <span className="font-mono text-xs break-all">{work.folder || "Not provided"}</span>
+            </Row>
+            <Row label="Account" anchor="schedule_account">
+              <span className="text-sm">{work.accountProfileId ? "A saved account" : "Its signed-in account"}</span>
+            </Row>
+          </>
+        ) : (
         <Row label="Agent" anchor="schedule_agent_id">
           {task.agentId ? (
             <EntityRef
@@ -112,6 +133,7 @@ export function SpecCard({ task }: Props) {
             <span className="font-mono text-xs">Platform default</span>
           )}
         </Row>
+        )}
 
         <SectionTitle icon={Code} label="Prompt" />
         <button
@@ -124,11 +146,11 @@ export function SpecCard({ task }: Props) {
           ) : (
             <ChevronRight className="h-3 w-3" />
           )}
-          {promptOpen ? "Hide" : "Show"} prompt ({task.prompt.length} chars)
+          {promptOpen ? "Hide" : "Show"} prompt ({prompt.length} chars)
         </button>
         {promptOpen && (
           <pre /* rich-content-exempt: scraped page text or prompt text shown verbatim */ className="text-xs bg-muted rounded-md p-3 overflow-x-auto whitespace-pre-wrap font-mono max-h-72 overflow-y-auto">
-            {task.prompt}
+            {prompt}
           </pre>
         )}
 
@@ -152,15 +174,17 @@ export function SpecCard({ task }: Props) {
         )}
 
         <SectionTitle icon={Settings} label="Execution" />
-        <Row label="Surfaces" anchor="schedule_surfaces">
-          <div className="flex flex-wrap gap-1">
-            {task.surfaces.map((s) => (
-              <Badge key={s} variant="secondary" className="text-[10px]">
-                {SURFACE_META[s]?.label ?? s}
-              </Badge>
-            ))}
-          </div>
-        </Row>
+        {!onComputer && (
+          <Row label="Surfaces" anchor="schedule_surfaces">
+            <div className="flex flex-wrap gap-1">
+              {task.surfaces.map((s) => (
+                <Badge key={s} variant="secondary" className="text-[10px]">
+                  {SURFACE_META[s]?.label ?? s}
+                </Badge>
+              ))}
+            </div>
+          </Row>
+        )}
         <Row label="Auth mode" anchor="schedule_auth_mode">
           <Badge variant="outline" className="capitalize text-xs">
             {task.authMode}
