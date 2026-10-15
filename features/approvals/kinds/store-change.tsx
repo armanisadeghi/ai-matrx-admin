@@ -28,6 +28,7 @@ import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
 import AppLink from "@/components/navigation/AppLink";
 import { EntityRef } from "@/components/official/entity-ref/EntityRef";
 import { ChangeDiff, type ChangeFieldDiff } from "@/components/ui/change-diff";
+import { StructuredValueView } from "@/components/official/structured-value/StructuredValueView";
 import { openPath } from "@/lib/deep-link/openPath";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
@@ -109,7 +110,7 @@ function askedBy(approval: StoreApproval): string | null {
 export function describe(approval: StoreApproval): Pick<
   ApprovalItem,
   "headline" | "acceptEffect" | "rejectEffect"
-> & { fields: ChangeFieldDiff[] } | null {
+> & { fields: ChangeFieldDiff[]; values?: unknown } | null {
   const row = approval.row;
   if (!row) return null;
   const change = record(row["change"]) ?? {};
@@ -132,11 +133,15 @@ export function describe(approval: StoreApproval): Pick<
   if (wait && wait.change.change === "records") {
     const n = wait.change.rows.length;
     const noun = n === 1 ? "record" : "records";
+    const change = approvalChangeFor(wait, { tableName: table });
     return {
       headline: `Add ${n} ${noun} to ${table}`,
       acceptEffect: `Writes ${n} new ${noun} into ${table}.`,
       rejectEffect,
-      fields: approvalChangeFor(wait, { tableName: table }).fields,
+      fields: change.fields,
+      // Every row, as the table it will become — the same reading the chat card
+      // gives (Arman, 2026-10-14). Absent until the installed package carries it.
+      ...(change.proposedValue ? { values: change.proposedValue.value } : {}),
     };
   }
   if (wait && wait.change.change === "patch") {
@@ -313,10 +318,13 @@ function toItem(approval: StoreApproval): StoreItem {
     proposedAt,
     doors: <Doors approval={approval} />,
     body:
-      said.fields.length || note ? (
+      said.fields.length || note || said.values !== undefined ? (
         <div className="flex flex-col gap-1.5">
           {note ? <p className="text-xs text-muted-foreground">{note}</p> : null}
           <ChangeDiff fields={said.fields} />
+          {said.values !== undefined ? (
+            <StructuredValueView value={said.values} footer={false} />
+          ) : null}
         </div>
       ) : undefined,
     ...(approval.row?.["may_decide"] === false
