@@ -429,6 +429,8 @@ jobs:
         # A new hand-built HoverCardContent or …Peek / …HoverPreview /
         # …DetailCard component is NEW debt. Baseline scripts/one-peek/
         # baseline.json only shrinks (it is the adoption census). Static, ~3s.
+        # CI has no ../aidream checkout, so here it guards THIS repo only; the
+        # shared packages are scanned by the release gates on the dev machine.
         run: pnpm check:one-peek:strict
       - name: the one-peek guard can still fail (self-test)
         run: pnpm check:one-peek:self-test
