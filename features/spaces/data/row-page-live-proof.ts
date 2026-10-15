@@ -166,7 +166,8 @@ async function main() {
     check("the member opens Harbor's page through the row", (await owner(member.db, ensured.spaceId)) === harbor);
     const theirs = await member.records.list({ table_id: payments, filter: { client: harbor } as never });
     const seen = theirs.ok ? theirs.data.rows.map((r) => r.id) : [];
-    check("the member's view of Harbor's payments holds only the one shared with them", theirs.ok ? seen.length === 1 && seen[0] === harborPay[0] : true, theirs.ok ? `${seen.length} rows` : `refused: ${theirs.error.message}`);
+    // A REFUSED READ IS A FAILURE, never a pass: the member holds a share on that row, so the store must answer with it.
+    check("the member's view of Harbor's payments holds only the one shared with them", theirs.ok && seen.length === 1 && seen[0] === harborPay[0], theirs.ok ? `${seen.length} rows` : `refused: ${theirs.error.message}`);
     const startTheirs = await content(member.db).rpc("row_page_ensure", { p_organization_id: orgId, p_record_id: northline, p_title: "x", p_snapshot: { v: 1, blocks: [] } });
     check("a member who may not edit a row cannot start its page", !!startTheirs.error, startTheirs.error?.message ?? "started");
 
