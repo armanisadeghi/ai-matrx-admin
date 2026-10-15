@@ -677,6 +677,8 @@ export interface ComputerCodingTaskInput {
   provider: "claude" | "codex";
   accountProfileId: string | null;
   trigger: TriggerConfig;
+  /** The homes (project, task, War Room) each run's chat is filed under; the computer writes the pending filing. */
+  homes?: Array<{ token: "project" | "task" | "war_room"; id: string; label: string }>;
 }
 
 /** When a trigger first fires (the computer's host advances it after each run). Null: not a time trigger. */
@@ -691,14 +693,15 @@ export function firstDueAt(trigger: TriggerConfig, now: Date = new Date()): stri
  * The row desktop_schedule writes for a coding session (aidream `coding_sessions_drive`): kind
  * device_op on that computer only (surfaces {desktop}, target_device_id), its coding.start params
  * without a client_request_id (the computer mints one per run, so every run is a new session), in
- * the computer's own organization. One time trigger.
+ * the computer's own organization. One time trigger. `device_op.homes`: the computer files each run's
+ * chat under them (a pending filing on its own app_instances row, @ai-matrx/coding-sessions filing).
  */
 export async function createComputerCodingTask(input: ComputerCodingTaskInput): Promise<{ id: string }> {
   const params: Record<string, unknown> = { provider: input.provider, cwd: input.folder, prompt: input.prompt };
   if (input.accountProfileId) params.account_profile_id = input.accountProfileId;
   return insertComputerTask(input, {
     kind: "device_op",
-    metadata: { created_via: "web", device_op: { op: "coding.start", params, tool: "coding_sessions_drive" } },
+    metadata: { created_via: "web", device_op: { op: "coding.start", params, tool: "coding_sessions_drive", ...(input.homes?.length ? { homes: input.homes } : {}) } },
   });
 }
 
