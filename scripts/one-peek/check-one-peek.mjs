@@ -20,13 +20,19 @@
  * Out of scope: the peek's own home (design-system `peek*.tsx`, `hover-card.tsx`), tests, demos, labs.
  *
  * A surface that is genuinely not a record peek (a chart's data-point readout, a colour swatch's
- * preview) says so with `peek-exception: <reason>` on the line or within the 3 lines above it.
+ * preview) says so with `peek-exception: <reason>` on the line or within the 3 lines above it — and
+ * that exception is itself an item (`peek-exception|<file>`) on the same shrink-only ratchet, so a
+ * new one is NEW and gets looked at; it is never a free pass.
+ *
+ * An adapter that renders `<Peek …>` is the intended pattern (`function AgentPeek() { return
+ * <PeekHoverCard …><Peek record={…} /></PeekHoverCard> }`) and is never reported.
  *
  * BASELINE (scripts/one-peek/baseline.json) ONLY SHRINKS: per key a count. A key absent from the
  * baseline, or a count above it, is NEW. `--shrink` lowers counts and drops fixed keys; it never
  * raises one. `--strict` exits 1 on a NEW item. `--list` prints every known item (the census).
  *
  *   node scripts/one-peek/check-one-peek.mjs [paths…] [--strict] [--shrink] [--list]
+ *   node scripts/one-peek/check-one-peek.mjs --write-initial-baseline   (only when no baseline exists)
  *   node scripts/one-peek/check-one-peek.mjs --self-test
  */
 import { execFileSync } from "node:child_process";
@@ -47,6 +53,10 @@ export const RULES = {
     title: "hand-built hover card",
     fix: "Show the record with <Peek record={…} /> inside <PeekHoverCard trigger={…}> from @ai-matrx/design-system (playground: design-system demo/peek-card.html). Not a record peek? `peek-exception: <reason>`.",
   },
+  "peek-exception": {
+    title: "peek exception",
+    fix: "A new `peek-exception:` is reviewed like any new item: say why this is not one record at a glance, or move it onto <Peek record={…} />.",
+  },
   "hand-built-peek": {
     title: "hand-built peek component",
     fix: "Delete the bespoke card; build a PeekRecord and render <Peek record={…} /> in PeekHoverCard / PeekPopover / PeekWindow. What the record needs that Peek cannot say becomes a field IN the package.",
@@ -60,22 +70,38 @@ export function remedyForKey(key) {
 const OUT_OF_SCOPE =
   /(^|\/)node_modules\/|\/dist\/|\.(test|spec)\.tsx$|\/__tests__\/|^app\/\((dev|lab)\)\/|\/demos?\/|\.stories\.tsx$|(^|\/)(playground|scripts)\/|(^|\/)design-system\/src\/(peek[^/]*|hover-card)\.tsx$/;
 
-const HOVER_SOURCES = new Set(["@ai-matrx/design-system", "@/components/ui/hover-card", "./hover-card", "../hover-card"]);
+/** Where a HoverCardContent can come from: the design-system, any `…/hover-card` module, a ui index. */
+const isHoverSource = (src) => src === "@ai-matrx/design-system" || /(^|\/)hover-card$/.test(src) || /(^|\/)components\/ui$/.test(src) || src === "@/components/ui";
+const RADIX_HOVER = "@radix-ui/react-hover-card";
+const NAMESPACE_RE = /import\s+\*\s+as\s+(\w+)\s+from\s*["']@radix-ui\/react-hover-card["']/g;
 const IMPORT_RE = /import\s+(type\s+)?\{([^}]*)\}\s*from\s*["']([^"']+)["']/g;
-const PEEK_NAME = /(Peek|HoverPreview|HoverCard|DetailCard|SneakPeek\w*|QuickLook\w*)$/;
-const DECLARE_RE = /(?:export\s+)?(?:default\s+)?(?:function\s+([A-Z]\w*)|const\s+([A-Z]\w*)\s*(?::[^=]+)?=\s*(?:React\.)?(?:forwardRef|memo|\(|function))/g;
+/**
+ * A component that IS a peek: the word, optionally followed by the surface it draws (AgentPeekCard,
+ * MandatePeekModal, SitePeekBody, RecordPeekShell). What merely OPENS or HOSTS one — AgentPeekButton,
+ * …PeekHost, …PeekProvider — and generic previews (an image PreviewCard) are not peeks.
+ */
+const PEEK_NAME = /(Peek|HoverPreview|HoverCard|DetailCard|QuickLook)(Card|Body|Content|Panel|Modal|Popover|Shell|Dialog|Window|Sheet)?$/;
+const DECLARE_RE =
+  /(?:export\s+)?(?:default\s+)?(?:function\s+([A-Z]\w*)|class\s+([A-Z]\w*)|const\s+([A-Z]\w*)\s*(?::[^=]+)?=\s*(?:React\.)?(?:forwardRef|memo|\(|function|\w+\s*=>))/g;
+/** The file renders the one peek: its peek-named components are adapters, the intended pattern. */
+const RENDERS_PEEK = /<Peek[\s/>]/;
 
 function hoverContentNames(text) {
   const names = new Set();
   for (const m of text.matchAll(IMPORT_RE)) {
-    if (m[1] || !HOVER_SOURCES.has(m[3])) continue;
+    if (m[1]) continue;
+    const src = m[3];
+    const radix = src === RADIX_HOVER;
+    if (!radix && !isHoverSource(src)) continue;
     for (const raw of m[2].split(",")) {
       const part = raw.trim();
       if (!part || part.startsWith("type ")) continue;
       const [imported, local = imported] = part.split(/\s+as\s+/).map((s) => s.trim());
-      if (imported === "HoverCardContent") names.add(local);
+      if (imported === "HoverCardContent" || (radix && imported === "Content")) names.add(local);
     }
   }
+  // `import * as HoverCardPrimitive from "@radix-ui/react-hover-card"` → `<HoverCardPrimitive.Content>`.
+  for (const m of text.matchAll(NAMESPACE_RE)) names.add(`${m[1]}.Content`);
   return names;
 }
 
@@ -84,25 +110,26 @@ function excepted(lines, lineIdx) {
   return false;
 }
 
+const escapeName = (n) => n.replace(/[$.]/g, (c) => `\\${c}`);
+
 /** One file's sites: [{ rule, line, what }]. */
 export function scanSource(file, text) {
   if (OUT_OF_SCOPE.test(file)) return [];
   const lines = text.split("\n");
   const sites = [];
   const lineOf = (index) => text.slice(0, index).split("\n").length;
+  const site = (rule, line, what) =>
+    sites.push(excepted(lines, line - 1) ? { rule: "peek-exception", line, what: `${what} (${rule})` } : { rule, line, what });
   const hover = [...hoverContentNames(text)];
   if (hover.length) {
-    const re = new RegExp(`<(${hover.map((n) => n.replace(/[$]/g, "\\$")).join("|")})(?=[\\s/>])`, "g");
-    for (const m of text.matchAll(re)) {
-      const line = lineOf(m.index);
-      if (!excepted(lines, line - 1)) sites.push({ rule: "hand-built-hover-card", line, what: `<${m[1]}>` });
-    }
+    const re = new RegExp(`<(${hover.map(escapeName).join("|")})(?=[\\s/>])`, "g");
+    for (const m of text.matchAll(re)) site("hand-built-hover-card", lineOf(m.index), `<${m[1]}>`);
   }
+  const adapter = RENDERS_PEEK.test(text);
   for (const m of text.matchAll(DECLARE_RE)) {
-    const name = m[1] ?? m[2];
-    if (!name || !PEEK_NAME.test(name)) continue;
-    const line = lineOf(m.index);
-    if (!excepted(lines, line - 1)) sites.push({ rule: "hand-built-peek", line, what: name });
+    const name = m[1] ?? m[2] ?? m[3];
+    if (!name || !PEEK_NAME.test(name) || adapter) continue;
+    site("hand-built-peek", lineOf(m.index), name);
   }
   return sites;
 }
@@ -196,6 +223,11 @@ export function main(argv = process.argv.slice(2), root = ROOT) {
     console.log(`      fix: ${RULES[f.rule].fix}`);
   }
   if (argv.includes("--list")) for (const f of found) console.log(`  ${f.sites.length}\t${f.key}\t${f.sites.map((s) => s.what).join(", ")}`);
+  if (!paths && argv.includes("--shrink") && !existsSync(resolve(root, AIDREAM_SHARED))) {
+    // Without ../aidream every `aidream:` key looks fixed; shrinking now would delete them all.
+    console.error(`${TAG} --shrink refused: ${AIDREAM_SHARED} is not checked out next to this repo, so the scan is partial`);
+    return 1;
+  }
   if (!paths && argv.includes("--shrink")) {
     const live = new Map(found.map((f) => [f.key, f.sites.length]));
     const kept = {};
@@ -225,16 +257,39 @@ function selfTest() {
       "features/ok/Ok.tsx":
         'import { Peek, PeekHoverCard } from "@ai-matrx/design-system";\nimport { HoverCardContent } from "@ai-matrx/design-system";\nexport function Ok() { return (<PeekHoverCard trigger={<b />}><Peek record={{ kind: "Task", id: "1", title: "t" }} /></PeekHoverCard>); }\n// peek-exception: a chart data-point readout, not a record\nexport const x = <HoverCardContent />;\n',
       "features/ok/Ok.test.tsx": "export function FakePeek() { return null; }\n",
+      // The intended adapter: a peek-named component that renders <Peek>.
+      "features/agents/AgentPeek.tsx":
+        'import { Peek, PeekHoverCard } from "@ai-matrx/design-system";\nexport function AgentPeek() { return (<PeekHoverCard trigger={<b />}><Peek record={{ kind: "Agent", id: "1", title: "t" }} /></PeekHoverCard>); }\n',
+      // The ways around: Radix directly, a ui index, a name with the word inside, a bare arrow, a class.
+      "features/sneaky/Around.tsx":
+        'import * as HoverCardPrimitive from "@radix-ui/react-hover-card";\nimport { HoverCardContent } from "@/components/ui";\nexport const x = (<><HoverCardPrimitive.Content /><HoverCardContent /></>);\nexport const AgentPeekCard = props => <div />;\nexport class NotePeekPanel {}\nexport function AgentPeekButton() { return null; }\n',
     };
     for (const [name, text] of Object.entries(plant)) {
       execFileSync("mkdir", ["-p", dirname(join(dir, name))]);
       writeFileSync(join(dir, name), text);
     }
     const got = collect({ root: dir }).map((f) => `${f.key}=${f.sites.length}`);
-    const want = ["hand-built-hover-card|features/smart-add/Why.tsx=1", "hand-built-peek|features/tasks/TaskHoverPreview.tsx=2"];
+    const want = [
+      "hand-built-hover-card|features/smart-add/Why.tsx=1",
+      "hand-built-hover-card|features/sneaky/Around.tsx=2",
+      "hand-built-peek|features/sneaky/Around.tsx=2",
+      "hand-built-peek|features/tasks/TaskHoverPreview.tsx=2",
+      "peek-exception|features/ok/Ok.tsx=1",
+    ];
     // The ratchet: at the baseline is known; above it is NEW and --strict fails.
     execFileSync("mkdir", ["-p", join(dir, "scripts/one-peek")]);
-    writeFileSync(join(dir, BASELINE), JSON.stringify({ counts: { "hand-built-hover-card|features/smart-add/Why.tsx": 1, "hand-built-peek|features/tasks/TaskHoverPreview.tsx": 1 } }));
+    writeFileSync(
+      join(dir, BASELINE),
+      JSON.stringify({
+        counts: {
+          "hand-built-hover-card|features/smart-add/Why.tsx": 1,
+          "hand-built-hover-card|features/sneaky/Around.tsx": 2,
+          "hand-built-peek|features/sneaky/Around.tsx": 2,
+          "hand-built-peek|features/tasks/TaskHoverPreview.tsx": 1,
+          "peek-exception|features/ok/Ok.tsx": 1,
+        },
+      }),
+    );
     const quiet = console.log;
     console.log = () => {};
     let strict;
