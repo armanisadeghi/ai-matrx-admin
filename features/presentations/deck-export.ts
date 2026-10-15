@@ -162,3 +162,40 @@ export function deckDownloads(loadDeck: () => Promise<Deck>, name: string): File
     { label: "Web page (.html)", run: async () => downloadDeckAsHtml(await loadDeck(), name) },
   ];
 }
+
+/**
+ * File → Download → image (current slide): the slide drawn by the real renderer, captured by the
+ * Alchemy capture door. SVG is a standalone vector wrapper (viewBox = the slide stage) around the
+ * captured picture, so it opens anywhere an .svg does.
+ */
+export async function downloadSlideAsImage(deck: Deck, index: number, name: string, format: "png" | "jpeg" | "svg"): Promise<void> {
+  const slide = deck.slides[index];
+  if (!slide) throw new Error("This presentation has no slides yet");
+  const [{ elementToImage }, { downloadFile }, rendered] = await Promise.all([
+    import("@ai-matrx/alchemy/operate/capture"),
+    import("@ai-matrx/kit/download"),
+    renderDeckSlides({ ...deck, slides: [slide] }, { position: "fixed", left: "-10000px", top: "0", width: `${slideStage(slideSizeOf(deck)).width}px` }),
+  ]);
+  try {
+    const el = rendered.elements[0]!;
+    const file = `${safeName(name)} - slide ${index + 1}`;
+    if (format === "svg") {
+      const png = await elementToImage(el, { type: "image/png", scale: 2, backgroundColor: rendered.background });
+      const url = await new Promise<string>((resolve, reject) => {
+        const fr = new FileReader();
+        fr.onload = () => resolve(String(fr.result));
+        fr.onerror = () => reject(new Error("Could not read the slide picture"));
+        fr.readAsDataURL(png);
+      });
+      const { width, height } = rendered.stage;
+      const svg = `<?xml version="1.0" encoding="UTF-8"?>\n<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}"><image width="${width}" height="${height}" xlink:href="${url}"/></svg>`;
+      downloadFile(`${file}.svg`, new Blob([svg], { type: "image/svg+xml" }), "image/svg+xml");
+      return;
+    }
+    const type = format === "jpeg" ? "image/jpeg" : "image/png";
+    const blob = await elementToImage(el, { type, quality: 0.92, scale: 2, backgroundColor: rendered.background });
+    downloadFile(`${file}.${format === "jpeg" ? "jpg" : "png"}`, blob, type);
+  } finally {
+    rendered.done();
+  }
+}

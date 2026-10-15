@@ -99,7 +99,7 @@ describe("Google File menu", () => {
   });
   it("Slides: Import slides, Language and Page setup in Google's places; no owner rows without rights", () => {
     const menu = buildEditorFileMenu(
-      { product: "slides", rows, templatesHref: "/t", downloads: [{ label: "ODP", soon: "presentations.download-odp" }] },
+      { product: "slides", rows: [...rows, { kind: "action", id: "file.import-slides", label: "Import slides", run: () => {} }], templatesHref: "/t", downloads: [{ label: "ODP", soon: "presentations.download-odp" }] },
       { download: () => {}, navigate: () => {} },
     );
     const l = labels(menu);

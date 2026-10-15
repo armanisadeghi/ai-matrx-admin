@@ -40,7 +40,7 @@ import {
   type EditorMenuEntry,
 } from "@/components/editor-chrome/editor-menu-model";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { ProTextarea } from "@/components/official/ProTextarea";
+import { ProTextarea, type ProTextareaElement } from "@/components/official/ProTextarea";
 import { SlideEditContext, type SlideEditPort } from "@/components/mardown-display/blocks/presentations/slide-edit";
 import { PRESET_LIST } from "@/components/mardown-display/blocks/presentations/presets";
 import { AccessGate } from "@/features/access-gate/components/AccessGate";
@@ -61,8 +61,13 @@ import { cn } from "@/lib/utils";
 
 import { blankDeck, getPath, type DeckAction } from "../deck-model";
 import { historyReducer, initialHistory } from "../deck-history";
-import { buildDeckMenus, buildDeckToolbar, deckPageSetupRow, type DeckChromeHost } from "../deck-commands";
-import { deckDownloads, downloadDeckAsText, printDeck } from "../deck-export";
+import { buildDeckMenus, buildDeckToolbar, deckPageSetupRow, type DeckChromeHost, type DeckPanel } from "../deck-commands";
+import { isSkipped, slideTextStyleOf } from "../deck-slide-ops";
+import { getDeckA11y, setDeckA11y, useDeckA11y } from "../deck-a11y";
+import { plainTextOf } from "../deck-slide-ops";
+import { AccessibilityDialog, BackgroundDialog, CommentsDialog, FindReplaceDialog, ImportSlidesDialog, MotionDialog, SpecialCharsDialog, ThemeBuilderDialog } from "./DeckPanels";
+import { DeckGridView } from "./DeckGridView";
+import { deckDownloads, downloadDeckAsText, downloadSlideAsImage, printDeck } from "../deck-export";
 import {
   createPresentation,
   getPresentation,
@@ -106,6 +111,12 @@ export function PresentationEditor({ presentationId }: { presentationId: string 
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const [imageSearchOpen, setImageSearchOpen] = useState(false);
   const [focusPath, setFocusPath] = useState<string | null>(null);
+  const [panel, setPanel] = useState<DeckPanel | null>(null);
+  const [gridShown, setGridShown] = useState(false);
+  const a11y = useDeckA11y();
+  const notesRef = useRef<ProTextareaElement | null>(null);
+  /** The last slide text or notes box the caret was in: Insert → Special characters and Paste as text land there. */
+  const lastEditable = useRef<HTMLElement | null>(null);
   const savedRevision = useRef(0);
   const uploadRef = useRef<HTMLInputElement>(null);
   const menuBar = useMenuBarState();
@@ -140,9 +151,11 @@ export function PresentationEditor({ presentationId }: { presentationId: string 
 
   // Autosave: every content change (revision) is saved after a short pause; each save is one version.
   const deckRef = useRef(deck);
+  const currentRef = useRef(current);
   useEffect(() => {
     deckRef.current = deck;
-  }, [deck]);
+    currentRef.current = current;
+  }, [deck, current]);
   const saveNow = async () => {
     const revision = hist.revision;
     if (!canEdit || revision === savedRevision.current) return;
@@ -216,6 +229,38 @@ export function PresentationEditor({ presentationId }: { presentationId: string 
     }
   };
 
+  useEffect(() => {
+    const onFocus = (e: FocusEvent) => {
+      const t = e.target;
+      if (t instanceof HTMLElement && (t.isContentEditable || t instanceof HTMLTextAreaElement) && t.closest("[data-presentation-editor]")) lastEditable.current = t;
+    };
+    document.addEventListener("focusin", onFocus);
+    return () => document.removeEventListener("focusin", onFocus);
+  }, []);
+  // Tools → Spelling and grammar: the browser's own checker on every slide text and the notes.
+  useEffect(() => {
+    document.querySelectorAll<HTMLElement>("[data-presentation-editor] [contenteditable], [data-presentation-editor] textarea").forEach((el) => {
+      el.spellcheck = a11y.spellcheck;
+    });
+  });
+  const insertAtCaret = (text: string) => {
+    const el = lastEditable.current;
+    if (!el || !el.isConnected) {
+      toast.error("Click into a slide's text or the notes first");
+      return;
+    }
+    el.focus();
+    document.execCommand("insertText", false, text);
+  };
+  const pastePlain = async () => {
+    try {
+      const { readText } = await import("@ai-matrx/kit/clipboard");
+      insertAtCaret(plainTextOf({ text: (await readText()) ?? "" }));
+    } catch (err) {
+      toast.error("Could not read the clipboard", { description: err instanceof Error ? err.message : String(err) });
+    }
+  };
+
   const host: DeckChromeHost = {
     canEdit,
     slideCount: deck.slides.length,
@@ -238,6 +283,20 @@ export function PresentationEditor({ presentationId }: { presentationId: string 
     hasImage: Boolean(slide && (slide.image_url || slide.imageUrl || getPath(slide, "extra.image") || getPath(slide, "extra.imagePrompt"))),
     showShortcuts: () => setShortcutsOpen(true),
     sendFeedback: () => openFeedback(),
+    skipped: isSkipped(slide),
+    slideNumbers: Boolean(deck.showSlideNumbers),
+    gridShown,
+    spellcheck: a11y.spellcheck,
+    voiceTyping: false,
+    slideTextStyle: slideTextStyleOf(slide),
+    openPanel: (p) => setPanel(p),
+    pastePlain: () => void pastePlain(),
+    toggleGrid: () => setGridShown((v) => !v),
+    toggleSpellcheck: () => setDeckA11y({ ...getDeckA11y(), spellcheck: !getDeckA11y().spellcheck }),
+    toggleVoiceTyping: () => {
+      setNotesShown(true);
+      setTimeout(() => void notesRef.current?.startDictation?.(), 50);
+    },
   };
   const createNew = async () => {
     try {
@@ -270,6 +329,7 @@ export function PresentationEditor({ presentationId }: { presentationId: string 
       shortcut: { key: "p", mod: true, bind: true },
       run: () => printDeck(deckRef.current),
     },
+    { kind: "action", id: "file.import-slides", label: "Import slides", icon: FilePlus2, keywords: ["powerpoint", "pptx", "bring in"], run: () => setPanel("import"), disabled: () => !canEdit },
     deckPageSetupRow(() => setSizeOpen(true)),
     { kind: "action", id: "file.details", label: "Details", icon: Info, keywords: ["info", "created", "modified"], run: () => setDetailsOpen(true) },
   ];
@@ -297,9 +357,9 @@ export function PresentationEditor({ presentationId }: { presentationId: string 
         })),
         { label: "ODP Document (.odp)", soon: "presentations.download-odp" },
         { label: "Plain Text (.txt)", run: async () => downloadDeckAsText(deckRef.current, row?.name ?? "presentation") },
-        { label: "JPEG image (.jpg, current slide)", soon: "presentations.download-image" },
-        { label: "PNG image (.png, current slide)", soon: "presentations.download-image" },
-        { label: "Scalable Vector Graphics (.svg, current slide)", soon: "presentations.download-image" },
+        { label: "JPEG image (.jpg, current slide)", run: async () => downloadSlideAsImage(deckRef.current, currentRef.current, row?.name ?? "presentation", "jpeg") },
+        { label: "PNG image (.png, current slide)", run: async () => downloadSlideAsImage(deckRef.current, currentRef.current, row?.name ?? "presentation", "png") },
+        { label: "Scalable Vector Graphics (.svg, current slide)", run: async () => downloadSlideAsImage(deckRef.current, currentRef.current, row?.name ?? "presentation", "svg") },
       ],
     },
   });
@@ -365,6 +425,10 @@ export function PresentationEditor({ presentationId }: { presentationId: string 
           <div className="flex h-full items-center justify-center">
             <Loader2 className="size-6 animate-spin text-muted-foreground" />
           </div>
+        ) : gridShown ? (
+          <div className="absolute inset-0 flex">
+            <DeckGridView deck={deck} current={current} canEdit={canEdit} dispatch={dispatch} onOpen={(i) => { dispatchHist({ type: "select", index: i }); setGridShown(false); }} />
+          </div>
         ) : slide ? (
           <SlideEditContext.Provider value={canEdit ? editPort : null}>
             <PaperSlide deck={deck} slide={slide} slideNumber={current + 1} className="h-full w-full" />
@@ -380,6 +444,7 @@ export function PresentationEditor({ presentationId }: { presentationId: string 
       {notesShown && slide ? (
         <div className="shrink-0 border-t border-border bg-card px-3 py-2">
           <ProTextarea
+            ref={notesRef}
             aria-label="Speaker notes"
             placeholder="Click to add speaker notes"
             value={slide.notes ?? ""}
@@ -526,6 +591,15 @@ export function PresentationEditor({ presentationId }: { presentationId: string 
           }}
         />
       )}
+
+      <FindReplaceDialog open={panel === "find"} onOpenChange={(o) => !o && setPanel(null)} deck={deck} dispatch={dispatch} goTo={(i) => dispatchHist({ type: "select", index: i })} />
+      <BackgroundDialog open={panel === "background"} onOpenChange={(o) => !o && setPanel(null)} deck={deck} current={current} dispatch={dispatch} presentationId={presentationId} />
+      <MotionDialog open={panel === "motion"} onOpenChange={(o) => !o && setPanel(null)} deck={deck} current={current} dispatch={dispatch} />
+      <SpecialCharsDialog open={panel === "special"} onOpenChange={(o) => !o && setPanel(null)} onInsert={(c) => setTimeout(() => insertAtCaret(c), 0)} />
+      <CommentsDialog open={panel === "comments"} onOpenChange={(o) => !o && setPanel(null)} deck={deck} current={current} dispatch={dispatch} canEdit={canEdit} />
+      <ThemeBuilderDialog open={panel === "theme"} onOpenChange={(o) => !o && setPanel(null)} deck={deck} dispatch={dispatch} />
+      <ImportSlidesDialog open={panel === "import"} onOpenChange={(o) => !o && setPanel(null)} dispatch={dispatch} presentationId={presentationId} />
+      <AccessibilityDialog open={panel === "accessibility"} onOpenChange={(o) => !o && setPanel(null)} />
 
       <TextInputDialog
         open={imageSearchOpen}

@@ -7,10 +7,12 @@ import { useSyncExternalStore } from "react";
 export interface DeckA11y {
   announceSlides: boolean;
   reduceMotion: boolean;
+  /** Tools → Spelling and grammar: the browser checks spelling in slide text and notes. */
+  spellcheck: boolean;
 }
 
 const KEY = "matrx.presentations.a11y";
-const DEFAULT: DeckA11y = { announceSlides: true, reduceMotion: false };
+const DEFAULT: DeckA11y = { announceSlides: true, reduceMotion: false, spellcheck: true };
 const listeners = new Set<() => void>();
 let cache: DeckA11y | null = null;
 

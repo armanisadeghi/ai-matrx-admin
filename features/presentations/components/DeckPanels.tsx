@@ -352,7 +352,7 @@ export function ImportSlidesDialog({ open, onOpenChange, dispatch, presentationI
     if (!file) return;
     setBusy(true);
     try {
-      const { fileId } = await mediaClient.upload(file, { fileName: file.name, mimeType: file.type, shownTo: "private", metadata: { purpose: "presentation_import", presentation_id: presentationId } });
+      const { fileId } = await mediaClient.upload(file, { fileName: file.name, mimeType: file.type, shownTo: "only_me", metadata: { purpose: "presentation_import", presentation_id: presentationId } });
       const ex = await extractOfficeMarkdown(fileId);
       finish(portionsToSlides(ex.portions ?? []));
     } catch (err) {

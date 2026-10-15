@@ -90,7 +90,7 @@ export function buildEditorFileMenu(spec: EditorFileSpec, h: EditorFileHandlers)
     ].filter(Boolean) as EditorMenuEntry[],
   });
   push(row("file.open"));
-  if (spec.product === "slides") push(soon("file.import-slides", "Import slides", "presentations.import-slides"));
+  if (spec.product === "slides") push(row("file.import-slides"));
   else push(row("file.import"));
   push(h.copy && action("file.copy", "Make a copy", h.copy, { icon: Copy }));
   push(sep);
@@ -170,7 +170,7 @@ export function buildEditorFileMenu(spec: EditorFileSpec, h: EditorFileHandlers)
   // ── Print ──
   push(row("file.print"));
   // Rows the editor adds that Google's File menu does not name stay at the end (none today).
-  const placed = new Set(["file.new", "file.open", "file.import", "file.history", "file.print", "file.details", "file.settings", "file.page-setup"]);
+  const placed = new Set(["file.new", "file.open", "file.import", "file.import-slides", "file.history", "file.print", "file.details", "file.settings", "file.page-setup"]);
   const rest = spec.rows.filter((r) => r.kind !== "separator" && !placed.has(r.id));
   if (rest.length) push(sep, ...rest);
   // Never end on (or double) a separator.

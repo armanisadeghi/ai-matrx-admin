@@ -12,8 +12,10 @@ import { Button } from "@ai-matrx/design-system/controls";
 import type { Deck } from "../deck-model";
 import { PaperSlide } from "../slide-paper";
 import { isSkipped, slideTransitionOf } from "../deck-slide-ops";
+import { useDeckA11y } from "../deck-a11y";
 
 export function DeckPresenter({ deck, start, onClose }: { deck: Deck; start: number; onClose: (at: number) => void }) {
+  const a11y = useDeckA11y();
   const [at, setAt] = useState(() => {
     const list = deck.slides.map((sl, i) => (isSkipped(sl) ? -1 : i)).filter((i) => i >= 0);
     return list.find((i) => i >= start) ?? list[list.length - 1] ?? Math.max(0, Math.min(start, deck.slides.length - 1));
@@ -84,9 +86,14 @@ export function DeckPresenter({ deck, start, onClose }: { deck: Deck; start: num
       onClick={() => setAt((n) => step(n, 1))}
     >
       <style>{`@keyframes deck-trans-fade{from{opacity:0}to{opacity:1}}@keyframes deck-trans-slide{from{transform:translateX(100%)}to{transform:none}}@keyframes deck-trans-zoom{from{opacity:0;transform:scale(.7)}to{opacity:1;transform:none}}@keyframes deck-trans-flip{from{opacity:0;transform:perspective(900px) rotateY(80deg)}to{opacity:1;transform:none}}`}</style>
-      <div key={at} className="h-full w-full" data-slide-transition={slideTransitionOf(deck.slides[at]).kind} style={slideTransitionOf(deck.slides[at]).kind === "none" ? undefined : { animation: `deck-trans-${slideTransitionOf(deck.slides[at]).kind} ${slideTransitionOf(deck.slides[at]).ms}ms ease-out both` }}>
+      <div key={at} className="h-full w-full" data-slide-transition={slideTransitionOf(deck.slides[at]).kind} style={a11y.reduceMotion || slideTransitionOf(deck.slides[at]).kind === "none" ? undefined : { animation: `deck-trans-${slideTransitionOf(deck.slides[at]).kind} ${slideTransitionOf(deck.slides[at]).ms}ms ease-out both` }}>
         <PaperSlide deck={deck} slide={deck.slides[at]} slideNumber={at + 1} fullScreen className="h-full w-full" />
       </div>
+      {a11y.announceSlides ? (
+        <span className="sr-only" aria-live="polite" data-deck-announce="">
+          {`Slide ${at + 1} of ${deck.slides.length}${deck.slides[at]?.title ? `: ${deck.slides[at]!.title}` : ""}`}
+        </span>
+      ) : null}
       <div
         className="absolute bottom-4 left-4 flex items-center gap-1 rounded-full bg-neutral-900/90 px-2 py-1 text-white opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100"
         onClick={(e) => e.stopPropagation()}
