@@ -18,7 +18,6 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import { Label } from "@/components/ui/label";
-import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
 import { Input } from "@ai-matrx/design-system";
 import { SwitchLegacy as Switch } from "@/components/ui/switch";
 import { Button } from "@ai-matrx/design-system";
@@ -62,6 +61,11 @@ import { createList } from "@/features/data-tables/pick-lists/service";
 import { useOrganizationRequired } from "@/features/organizations/useOrganizationRequired";
 import { CustomComponentConfigurator } from "./CustomComponentConfigurator";
 import { ContextItemBindingEditor } from "./ContextItemBindingEditor";
+import {
+  keyFollowsLabel,
+  resolveVariableNameEdit,
+  shownVariableName,
+} from "./variable-name-edit";
 import {
   isAutoAssignValue,
   supportsRandomAssignment,
@@ -114,8 +118,9 @@ export function AgentVariableEditor({
 
   // Name buffer — local draft for editing; resets when the variable changes.
   // The field shows what the person typed ("Normal Text"); the `{{key}}` the
-  // messages use (`normal_text`) is derived from it on blur and kept beside it.
-  const shownName = variable?.label?.trim() || humanizeIdentifier(variableName) || variableName;
+  // messages use (`normal_text`) is derived from it on blur and kept beside it
+  // — only while the key already follows the label (see variable-name-edit.ts).
+  const shownName = shownVariableName(variableName, variable?.label);
   const [nameDraftState, setNameDraftState] = useState({
     sourceName: variableName,
     value: shownName,
@@ -144,14 +149,24 @@ export function AgentVariableEditor({
   const effective = extractEffectiveValues(cc);
   const isPicklistBound = !!effective.structuredList?.listId;
 
+  // A key not derived from its label never follows label edits — the line
+  // under the field then shows the real key, never a guess from the label.
+  const keyIsLinked = keyFollowsLabel(variableName, variable.label);
   const sanitizedDraft = nameDraft.trim()
     ? sanitizeVariableName(nameDraft)
     : "";
   const showSanitizationPreview = shouldShowSanitizationPreview(nameDraft);
   const isDuplicate =
+    keyIsLinked &&
     !!sanitizedDraft &&
     sanitizedDraft !== variableName &&
     existingNames.includes(sanitizedDraft);
+  const keyLine = !keyIsLinked
+    ? variableName
+    : sanitizedDraft &&
+        (showSanitizationPreview || sanitizedDraft !== variableName)
+      ? sanitizedDraft
+      : "";
 
   // ── Dispatch helpers ──────────────────────────────────────────────────────
 
@@ -180,30 +195,37 @@ export function AgentVariableEditor({
   // ── Handlers ──────────────────────────────────────────────────────────────
 
   const handleNameBlur = () => {
-    const typed = nameDraft.trim();
-    const sanitized = typed ? sanitizeVariableName(typed) : "";
-    if (!sanitized) {
-      setNameDraft(shownName);
-      return;
+    const edit = resolveVariableNameEdit({
+      typed: nameDraft,
+      key: variableName,
+      label: variable.label,
+      existingNames,
+    });
+    switch (edit.kind) {
+      case "reset":
+        setNameDraft(shownName);
+        return;
+      case "none":
+      case "duplicate": // keep draft; dup border shows
+        return;
+      case "label":
+        updateVariable({ label: edit.label });
+        setNameDraft(shownVariableName(variableName, edit.label));
+        return;
+      case "rename": {
+        const latest =
+          selectAgentVariableDefinitions(store.getState(), agentId) ?? [];
+        const from = currentName.current;
+        dispatchVariables(
+          latest.map((v) =>
+            v.name === from ? { ...v, name: edit.name, label: edit.label } : v,
+          ),
+        );
+        currentName.current = edit.name;
+        onRenamed?.(edit.name);
+        return;
+      }
     }
-    // The person's own words are the label; a name typed AS the key — or exactly
-    // as the humanizer would say it — needs none (an untouched blur never dirties).
-    const label =
-      typed !== sanitized && typed !== humanizeIdentifier(sanitized) ? typed : undefined;
-    if (sanitized === variableName) {
-      if (label !== (variable.label?.trim() || undefined)) updateVariable({ label });
-      setNameDraft(label ?? variableName);
-      return;
-    }
-    if (existingNames.includes(sanitized)) return; // keep draft; dup border shows
-    const latest =
-      selectAgentVariableDefinitions(store.getState(), agentId) ?? [];
-    const from = currentName.current;
-    dispatchVariables(
-      latest.map((v) => (v.name === from ? { ...v, name: sanitized, label } : v)),
-    );
-    currentName.current = sanitized;
-    onRenamed?.(sanitized);
   };
 
   const handleDefaultValueChange = (v: unknown) =>
@@ -387,11 +409,10 @@ export function AgentVariableEditor({
           >
             {isDuplicate ? (
               "This name is taken"
-            ) : sanitizedDraft &&
-              (showSanitizationPreview || sanitizedDraft !== variableName) ? (
+            ) : keyLine ? (
               <>
                 In messages{" "}
-                <code className="font-mono text-foreground">{`{{${sanitizedDraft}}}`}</code>
+                <code className="font-mono text-foreground">{`{{${keyLine}}}`}</code>
               </>
             ) : (
               ""
