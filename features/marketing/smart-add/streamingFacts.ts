@@ -18,13 +18,31 @@ export interface LiveKind {
   kind: string;
   value: Record<string, unknown>;
 }
-import { factsFromPayload, type BrandFact } from "./validate/queue";
+import { factsFromPayload, isFullerFact, type BrandFact } from "./validate/queue";
 
 /** The kinds whose live list is read as facts (the same ones `factsFromPayload` reads at rest). */
 const FACT_KINDS: ReadonlySet<string> = new Set(["brand_basics", "person_basics", "brand_whats_new"]);
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+/** The keys an entry's text fields stream in; while the stream is still inside one of these, its words may be cut. */
+const TEXT_KEYS: ReadonlySet<string> = new Set(["field", "field_label", "value", "certainty", "reason"]);
+
+/**
+ * An open list without its last entry, unless that entry is already whole (MKT-106): JSON streams one key after
+ * another, so once a key beyond the text fields (`evidence_urls`, `known_field`) has begun, `value`, `certainty` and
+ * `reason` are finished. Tagline and About are the agent's last facts; holding the last entry made them wait for
+ * the step to end.
+ */
+function withoutUnfinishedLast(list: unknown[]): unknown[] {
+  const last = list[list.length - 1];
+  if (!isRecord(last)) return list.slice(0, -1);
+  const keys = Object.keys(last);
+  const inProgress = keys[keys.length - 1];
+  const whole = typeof last.value === "string" && typeof last.field === "string" && !TEXT_KEYS.has(inProgress);
+  return whole ? list : list.slice(0, -1);
 }
 
 /**
@@ -39,16 +57,27 @@ export function streamingFacts(live: LiveKind | null | undefined, open: boolean)
   const listKey = Array.isArray(value.facts) ? "facts" : Array.isArray(value.items) ? "items" : null;
   if (!listKey) return [];
   const list = value[listKey] as unknown[];
-  const finished = open ? list.slice(0, -1) : list;
+  const finished = open ? withoutUnfinishedLast(list) : list;
   // Conflicts (what's-new) are read only once the list is closed: they follow the facts in the answer.
   const conflicts = open ? [] : value.conflicts;
   return factsFromPayload({ ...value, conflicts, [listKey]: finished, __kind: live.kind });
 }
 
-/** Add `incoming` to `shown` by key; never removes or replaces one already shown. Same array when nothing is new. */
+/**
+ * Add `incoming` to `shown` by key; never removes one already shown. A fact released while its last key was still
+ * writing (its `reason`, evidence) takes the fuller copy in the same place. Same array when nothing changed.
+ */
 export function ratchetFacts(shown: BrandFact[], incoming: BrandFact[]): BrandFact[] {
   if (!incoming.length) return shown;
+  const byKey = new Map(incoming.map((f) => [f.key, f]));
+  let changed = false;
+  const kept = shown.map((f) => {
+    const next = byKey.get(f.key);
+    if (!next || !isFullerFact(f, next)) return f;
+    changed = true;
+    return next;
+  });
   const seen = new Set(shown.map((f) => f.key));
   const added = incoming.filter((f) => !seen.has(f.key) && seen.add(f.key));
-  return added.length ? [...shown, ...added] : shown;
+  return added.length || changed ? [...kept, ...added] : shown;
 }

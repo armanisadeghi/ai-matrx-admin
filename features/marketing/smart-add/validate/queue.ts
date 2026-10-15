@@ -193,13 +193,22 @@ export function factsFromPayload(payload: unknown, depth = 0): BrandFact[] {
   });
 }
 
+/** `next` is the same fact with more of it written (a longer reason, more evidence): a fact released mid-stream grows into it. */
+export function isFullerFact(f: BrandFact, next: BrandFact): boolean {
+  return next.reason.length > f.reason.length || next.evidence_urls.length > f.evidence_urls.length;
+}
+
 export function mergeFacts(current: BrandFact[], incoming: BrandFact[]): BrandFact[] {
   if (!incoming.length) return current;
   const byKey = new Map(current.map((f) => [f.key, f]));
   let changed = false;
   for (const f of incoming) {
-    if (!byKey.has(f.key)) {
+    const have = byKey.get(f.key);
+    if (!have) {
       byKey.set(f.key, f);
+      changed = true;
+    } else if (isFullerFact(have, f)) {
+      byKey.set(f.key, { ...f, run_id: have.run_id ?? f.run_id });
       changed = true;
     }
   }

@@ -23,4 +23,16 @@ describe("streamingFacts (MKT-085)", () => {
     expect(ratchetFacts(later, [])).toBe(later);
     expect(ratchetFacts(later, streamingFacts(env([phone]), false))).toBe(later);
   });
+  it("MKT-106: releases the last entry once a later key has begun, so a closing Tagline/About fills mid-stream", () => {
+    const tagline = { field: "brand_statement", field_label: "Statement", value: "Coffee, roasted with care.", certainty: "confirmed", reason: "Site header.", evidence_urls: [] };
+    expect(streamingFacts(env([phone, tagline]), true).map((f) => f.value)).toEqual([phone.value, tagline.value]);
+    const writingReason = { field: "brand_statement", value: "Coffee, roasted with care.", certainty: "confirmed", reason: "Site he" };
+    expect(streamingFacts(env([phone, writingReason]), true).map((f) => f.value)).toEqual([phone.value]);
+  });
+  it("MKT-106: a fact released early takes its fuller reason in place", () => {
+    const early = streamingFacts(env([{ ...phone, reason: "Foot", evidence_urls: [] }, half]), false).slice(0, 1);
+    const later = ratchetFacts(early, streamingFacts(env([{ ...phone, reason: "Footer of the site", evidence_urls: ["https://a.b"] }]), false));
+    expect(later).toHaveLength(1);
+    expect(later[0].reason).toBe("Footer of the site");
+  });
 });
