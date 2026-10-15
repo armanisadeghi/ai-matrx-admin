@@ -61,3 +61,15 @@ describe("telling computers apart, and what to do next", () => {
     expect(nextStep({ label: "Codex", why: "not installed" }, "Studio")).toBe("Codex: install it on Studio");
   });
 });
+
+describe("same-day computers with one name", () => {
+  it("are told apart by the time last seen and the machine", async () => {
+    const { distinguishing } = await import("./computerChooser");
+    const a = distinguishing({ last_seen: "2026-10-14T09:05:00Z", hostname: null, platform: "darwin", os_version: "15.1" });
+    const b = distinguishing({ last_seen: "2026-10-14T17:40:00Z", hostname: "studio.local", platform: "darwin", os_version: "15.1" });
+    expect(a).not.toBe(b);
+    expect(a).toMatch(/last seen .*\d:\d\d/);
+    expect(a).toContain("darwin 15.1");
+    expect(b).toContain("studio.local");
+  });
+});

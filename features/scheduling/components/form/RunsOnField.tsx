@@ -16,7 +16,7 @@ import { browserCodingDoors } from "@/features/ai-work/lib/matrx2Computers";
 import type { Matrx2ComputerStatus } from "@/features/ai-work/lib/matrx2Coding";
 import { ComputerConnection, type ComputerConnectionState } from "@/features/ai-work/compose/components/RunsOnStep";
 import { ComputerWorkFields } from "@/features/ai-work/components/ComputerWorkFields";
-import { duplicateNames, lastSeenLabel, type ComputerRunRequest } from "@/features/ai-work/lib/computerChooser";
+import { distinguishing, duplicateNames, type ComputerRunRequest } from "@/features/ai-work/lib/computerChooser";
 import { supabase } from "@/utils/supabase/client";
 import { HomeStep } from "@/features/ai-work/compose/components/HomeStep";
 import type { SavedRequestHome } from "@/features/ai-work/compose/savedRequests";
@@ -59,17 +59,17 @@ export function RunsOnField({ value, onChange, error }: Props) {
     };
   }, []);
 
-  const [lastSeen, setLastSeen] = useState<Record<string, string | null>>({});
+  const [machines, setMachines] = useState<Record<string, { last_seen: string | null; hostname: string | null; os_version: string | null; platform: string | null }>>({});
   const [connection, setConnection] = useState<ComputerConnectionState | null>(null);
   useEffect(() => {
     if (!computers?.length) return;
     let live = true;
     void supabase
       .from("app_instances")
-      .select("id, last_seen")
+      .select("id, last_seen, hostname, os_version, platform")
       .in("id", computers.map((c) => c.deviceId))
       .then(({ data }) => {
-        if (live) setLastSeen(Object.fromEntries(((data ?? []) as Array<{ id: string; last_seen: string | null }>).map((r) => [r.id, r.last_seen])));
+        if (live) setMachines(Object.fromEntries(((data ?? []) as Array<{ id: string; last_seen: string | null; hostname: string | null; os_version: string | null; platform: string | null }>).map((r) => [r.id, r])));
       });
     return () => {
       live = false;
@@ -97,7 +97,7 @@ export function RunsOnField({ value, onChange, error }: Props) {
           ...(value && !computers?.some((c) => c.deviceId === value.deviceId) ? [{ value: value.deviceId, label: "This computer (not listed)" }] : []),
           ...(computers ?? []).map((c) => ({
             value: c.deviceId,
-            label: [c.name, c.online === true ? "online" : c.online === false ? "offline" : "status unknown", dupes.has(c.name) ? lastSeenLabel(lastSeen[c.deviceId]) : ""].filter(Boolean).join(" · "),
+            label: [c.name, c.online === true ? "online" : c.online === false ? "offline" : "status unknown", dupes.has(c.name) && machines[c.deviceId] ? distinguishing(machines[c.deviceId]) : ""].filter(Boolean).join(" · "),
           })),
         ]}
         onValueChange={(id) =>
@@ -121,12 +121,12 @@ export function RunsOnField({ value, onChange, error }: Props) {
           The agent below runs on AI Matrx at each run, using {chosen?.name ?? "that computer"} for its desktop tools. It runs while Matrx 2 is open there.
         </p>
       )}
-      {value && value.mode === "coding" && chosen?.online === true && (
+      {value && value.mode === "coding" && chosen && chosen.online !== false && (
         <>
-          <ComputerConnection key={value.deviceId} deviceId={value.deviceId} onConnection={setConnection} />
+          <ComputerConnection key={`conn-${value.deviceId}`} deviceId={value.deviceId} onConnection={setConnection} />
           {connection && connection.deviceId === value.deviceId ? (
             <ComputerWorkFields
-              key={value.deviceId}
+              key={`fields-${value.deviceId}`}
               computer={{ device: { id: value.deviceId }, name: chosen.name }}
               connection={connection}
               initial={{ deviceId: value.deviceId, name: chosen.name, provider: value.provider, folder: value.folder, accountProfileId: value.accountProfileId || null }}
@@ -137,7 +137,7 @@ export function RunsOnField({ value, onChange, error }: Props) {
           )}
         </>
       )}
-      {value && value.mode === "coding" && chosen?.online !== true && (
+      {value && value.mode === "coding" && (!chosen || chosen.online === false) && (
         <div className="grid gap-2 sm:grid-cols-2">
           <p className="text-xs text-muted-foreground sm:col-span-2">Folder and account suggestions appear while {chosen?.name ?? "that computer"} is online</p>
           <label className="space-y-1 text-xs sm:col-span-2">

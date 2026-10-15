@@ -108,10 +108,18 @@ export function computerScheduleParams(plan: Pick<ComputerRunRequest, "folder" |
   return `&${q.toString()}`;
 }
 
-/** "last seen Oct 12" for a computer, or "" when unknown. Pure (locale formatting aside). */
+/** "last seen Oct 12, 3:04 PM" for a computer, or "" when unknown. Pure (locale formatting aside). */
 export function lastSeenLabel(lastSeen: string | null | undefined): string {
   const t = lastSeen ? Date.parse(lastSeen) : NaN;
-  return Number.isFinite(t) ? `last seen ${new Date(t).toLocaleDateString(undefined, { month: "short", day: "numeric" })}` : "";
+  return Number.isFinite(t)
+    ? `last seen ${new Date(t).toLocaleString(undefined, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}`
+    : "";
+}
+
+/** What tells same-named computers apart: last seen (with the time) and the machine itself. Pure. */
+export function distinguishing(row: { last_seen?: string | null; hostname?: string | null; os_version?: string | null; platform?: string | null }): string {
+  const machine = row.hostname?.trim() || [row.platform, row.os_version].filter(Boolean).join(" ");
+  return [lastSeenLabel(row.last_seen), machine].filter(Boolean).join(" · ");
 }
 
 /** Names shared by more than one computer: those rows also say when each was last seen. Pure. */

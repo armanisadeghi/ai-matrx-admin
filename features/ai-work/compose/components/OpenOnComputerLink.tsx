@@ -6,6 +6,7 @@
  */
 import Link, { useLinkStatus } from "next/link";
 import { Loader2 } from "lucide-react";
+import type { ReactNode } from "react";
 
 function Label({ name }: { name: string }) {
   const { pending } = useLinkStatus();
@@ -22,5 +23,16 @@ export function OpenOnComputerLink({ href, name }: { href: string; name: string 
     <Link href={href} className="text-primary hover:underline" data-testid="open-on-computer">
       <Label name={name} />
     </Link>
+  );
+}
+
+/** Inside any next/link: the idle label, or a spinner and the pending label while it navigates. */
+export function PendingLinkLabel({ idle, pending: pendingText, icon }: { idle: string; pending: string; icon?: ReactNode }) {
+  const { pending } = useLinkStatus();
+  return (
+    <span className="inline-flex items-center gap-1.5" aria-busy={pending}>
+      {pending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : icon}
+      {pending ? pendingText : idle}
+    </span>
   );
 }

@@ -22,7 +22,7 @@ import { getAccessTokenOrNull } from "@/lib/python-client";
 import { useDeviceClient } from "@/features/files/devices/console/useDeviceClient";
 import { ComputerWorkFields } from "@/features/ai-work/components/ComputerWorkFields";
 import type { ConsoleStatus } from "@/features/files/devices/console/connection";
-import { duplicateNames, lastSeenLabel, listChooserComputers, type ChooserComputer, type ComputerRunRequest } from "@/features/ai-work/lib/computerChooser";
+import { distinguishing, duplicateNames, listChooserComputers, type ChooserComputer, type ComputerRunRequest } from "@/features/ai-work/lib/computerChooser";
 
 export type CodingProvider = "claude" | "codex";
 
@@ -175,7 +175,7 @@ export function RunsOnStep({
               label={computer.name}
               detail={[
                 computer.selectable ? "Online · Claude Code or Codex on it" : (computer.reason ?? "Not available"),
-                dupes.has(computer.name) ? lastSeenLabel(computer.device.last_seen) : "",
+                dupes.has(computer.name) ? distinguishing(computer.device) : "",
               ]
                 .filter(Boolean)
                 .join(" · ")}

@@ -112,7 +112,7 @@ import { DestinationStep } from "./DestinationStep";
 import { ComputerConnection, RunsOnStep, type ComputerConnectionState, type ComputerPlan } from "./RunsOnStep";
 import { ErrorNotice } from "@ai-matrx/design-system";
 import { computerScheduleParams, computerSessionLink, runOnChosenComputer } from "@/features/ai-work/lib/computerChooser";
-import { OpenOnComputerLink } from "./OpenOnComputerLink";
+import { OpenOnComputerLink, PendingLinkLabel } from "./OpenOnComputerLink";
 import { HomeStep } from "./HomeStep";
 
 /** Reasonable ceiling for the "did the conversation row land yet?" retry. */
@@ -1002,8 +1002,7 @@ function ComposerBody({
           <div className="flex items-center gap-2 border-t border-border pt-3">
             <Button asChild variant="outline">
               <Link href={scheduleHref}>
-                <CalendarClock className="mr-1.5 h-3.5 w-3.5" />
-                Schedule it instead
+                <PendingLinkLabel idle="Schedule it instead" pending="Opening the schedule builder…" icon={<CalendarClock className="h-3.5 w-3.5" />} />
               </Link>
             </Button>
             <span className="text-xs text-muted-foreground">
