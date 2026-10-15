@@ -78,8 +78,17 @@ Checked while the entry is typed (before any search is paid for; Go holds until 
 
 Each listed brand carries a detail line (organization, site, account count, created date) so same-name brands read apart. The rules are feature knobs `smart_add.brand_match.generic_words`, `.shared_hosts`, `.name_min_length`, `.candidate_limit` (organization-overridable; a missing knob raises, no fallback list). The Create step is `createGate.ts`.
 
+## Weak names (`nameStrength.ts`, `FullNameAsk.tsx`)
+
+The server (aidream `services/brand_intake/name_strength.py`) scores every confirmed name and never searches a weak
+one ("Sarah") alone. The screen sends the anchors (`confirmed.handles`, `confirmed.links`, via `nameAnchors`), reads
+each name search step's `name_strength` (`SmartAddRound` → `onNameStrength`), offers the inline "Full name?" field
+under the Name slot only when `full_name_asked`, and sends the typed value as `confirmed.full_name` /
+`person.full_name` (a fact apart from the display name). Builder › Decisions shows the verdict and every keyword sent.
+
 ## Change Log
 
+- 2026-10-15 — Weak names: anchors sent with every round, inline "Full name?" field, Decisions › Name strength.
 - 2026-10-14 — Duplicate check: detail line per brand, rules moved to feature knobs, Create step extracted and tested.
 - 2026-10-14 — Duplicate-brand detection: brandMatch, notice at entry and above Create, enrich carry.
 - 2026-10-14 — Honest endings: entry outcomes (server + inferred), up-front URL/handle checks, quiet-time "Still working…" with Stop / Start over, Edit truly restarts, browser Back returns to the entry, Start over with a confirm when work would be lost.

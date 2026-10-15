@@ -28,6 +28,7 @@ import { suggestionsFromPayload, type WeThinkSuggestion } from "./weThink";
 import { parseEntityKind, type EntityKind } from "./entityKind";
 import { parseKeyPeople, type KeyPerson } from "./keyPeople";
 import { parseEntryOutcome, type EntryOutcome } from "./entryOutcome";
+import { parseNameStrength, type NameStrength } from "./nameStrength";
 
 /** The steps a Smart Add workflow shows, in order. */
 export type SmartAddStepPair = readonly string[];
@@ -239,6 +240,7 @@ export function SmartAddRound({
   onEntityKind,
   onKeyPeople,
   onPath,
+  onNameStrength,
   onScreenshots,
   onView,
 }: {
@@ -257,6 +259,8 @@ export function SmartAddRound({
   onKeyPeople?: (people: KeyPerson[]) => void;
   /** The round's path (aidream brand.identify.path_decision): {subject, path, runs_as}, for path_history. */
   onPath?: (decision: RoundPath) => void;
+  /** The name-strength verdict a name search reported (the latest step that carries one). */
+  onNameStrength?: (strength: NameStrength) => void;
   /** The homepage pictured (aidream brand.identify.screenshots), desktop and mobile, once its frame lands. */
   onScreenshots?: (shots: BrandScreenshots) => void;
   onView: (view: RoundView) => void;
@@ -323,6 +327,19 @@ export function SmartAddRound({
   useEffect(() => {
     if (pathKey) onPath?.(JSON.parse(pathKey) as RoundPath);
   }, [pathKey, onPath]);
+  // Name strength: every name search step reports the verdict and its keyword; the latest one wins.
+  const nsOut = [
+    useAppSelector(selectNodeAggregate(runId, "web")),
+    useAppSelector(selectNodeAggregate(runId, "deep")),
+    useAppSelector(selectNodeAggregate(runId, "enrich")),
+    useAppSelector(selectNodeAggregate(runId, "local")),
+    useAppSelector(selectNodeAggregate(runId, "person_anchor_search")),
+  ].map((a) => parseNameStrength(a.invocations[a.invocations.length - 1]?.output ?? null));
+  const nameStrength = nsOut.filter((n): n is NameStrength => Boolean(n)).pop() ?? null;
+  const nameStrengthKey = nameStrength ? JSON.stringify(nameStrength) : "";
+  useEffect(() => {
+    if (nameStrengthKey) onNameStrength?.(JSON.parse(nameStrengthKey) as NameStrength);
+  }, [nameStrengthKey, onNameStrength]);
   const shotsAggregate = useAppSelector(selectNodeAggregate(runId, SCREENSHOTS_STEP));
   const shotsOut = shotsAggregate.invocations[shotsAggregate.invocations.length - 1]?.output ?? null;
   const shots =

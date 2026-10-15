@@ -88,6 +88,7 @@ import {
   mergeEvidence,
   nextRoundSeeds,
   autoWork,
+  nameAnchors,
   releaseChanged,
   orderedEvidence,
   seedKeys,
@@ -128,6 +129,8 @@ import {
 import { PersonHarderStage } from "./harder/PersonHarderStage";
 import type { FindYouProvision, FocusState } from "./harder/types";
 import type { SweepFeed } from "@/features/builder-panel/components/BuilderDecisionsTab";
+import { FullNameAsk } from "./FullNameAsk";
+import type { NameStrength } from "./nameStrength";
 import type { FindLogEntry, HarderCandidate } from "./harder/types";
 import { AnchorCards, anchorItems, type AnchorAnswer } from "./AnchorCards";
 import type { PersonAnchors } from "./anchorRank";
@@ -293,6 +296,11 @@ export function SmartAddBrand({
   const personMore = useRef<PersonMore>({ occupation: resumePerson?.occupation ?? "", company: resumePerson?.company ?? "", extra: "" });
   // Each round's path (brand.identify.path_decision), sent back as `path_history` so escalation fires live.
   const [pathByRun, setPathByRun] = useState<Record<string, RoundPath>>({});
+  // Name strength (Report 2026-10-15): the server's verdict on the confirmed name; a weak name with nothing to
+  // anchor it offers the small "Full name?" field. The typed full name is its own fact, never the display name.
+  const [nameStrength, setNameStrength] = useState<NameStrength | null>(null);
+  const [fullName, setFullName] = useState("");
+  const [fullNameSkipped, setFullNameSkipped] = useState(false);
   // Person harder (PATHS.md person_harder): the find-you log (Builder › Decisions) and the confirmed page
   // anchors (an employer bio page or a licence record: firm, but not the person's own website).
   const [findLog, setFindLog] = useState<FindLogEntry[]>([]);
@@ -362,6 +370,7 @@ export function SmartAddBrand({
           ...(personMore.current.company ? { company: personMore.current.company } : {}),
           ...(personMore.current.extra ? { other: personMore.current.extra } : {}),
           anchors: personAnchors,
+          ...(fullName ? { full_name: fullName } : {}),
           ...(findYouProvision.current && !find ? { find_you: findYouProvision.current } : {}),
           ...(find ? { find: true } : {}),
           ...(groundedRound ? { grounded: true, ...(anchorRunId.current ? { anchor_run_id: anchorRunId.current } : {}) } : {}),
@@ -452,6 +461,9 @@ export function SmartAddBrand({
     findYouProvision.current = null;
     sweepFeed.current = { sweep: null, focus: {} };
     setPathByRun({});
+    setNameStrength(null);
+    setFullName("");
+    setFullNameSkipped(false);
     setFindLog([]);
     setPageAnchors([]);
     anchorRunId.current = null;
@@ -631,6 +643,9 @@ export function SmartAddBrand({
     ...(factBasics.facts.find((f) => f.field === "address")?.value
       ? { location: factBasics.facts.find((f) => f.field === "address")?.value }
       : {}),
+    // What anchors a weak name: the confirmed accounts' exact handles, and their links and websites.
+    ...nameAnchors(factBasics.accounts, personAnchors),
+    ...(fullName ? { full_name: fullName } : {}),
   };
   // A confirmed name / location wakes the steps waiting on it (a new round carrying only those facts).
   const woken = work.woken;
@@ -646,6 +661,15 @@ export function SmartAddBrand({
     const timer = setTimeout(runWoken, CONFIRM_BATCH_MS);
     return () => clearTimeout(timer);
   }, [wokenKey, created, validating]);
+
+  // A typed full name re-runs the name searches with it (the woken name steps read `confirmed.full_name`).
+  const runFullName = useEffectEvent(() => {
+    if (fullName && factBasics.name) void startRound({ website: "", socials: [] }, { name: factBasics.name });
+  });
+  useEffect(() => {
+    if (fullName) runFullName();
+  }, [fullName]);
+  const askFullName = Boolean(nameStrength?.fullNameAsked) && !fullName && !fullNameSkipped && !created;
 
   const setupInterrupted = setupView?.status === "cancelled";
   useEffect(() => {
@@ -1456,6 +1480,7 @@ export function SmartAddBrand({
             onEntityKind={kindLabel.suggest}
             onKeyPeople={setKeyPeople}
             onPath={(p) => onPath(r.runId as string, p)}
+            onNameStrength={setNameStrength}
             onScreenshots={setScreenshots}
             onView={onView}
           />
@@ -1748,6 +1773,11 @@ export function SmartAddBrand({
           onTagline={moveToTagline}
           separated={separated}
           onSeparate={separateLogos}
+          nameAsk={
+            askFullName && nameStrength ? (
+              <FullNameAsk shownName={nameStrength.cleaned || nameStrength.name} onFullName={setFullName} onSkip={() => setFullNameSkipped(true)} />
+            ) : null
+          }
         />
       </div>
 

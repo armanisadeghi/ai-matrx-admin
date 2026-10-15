@@ -7,6 +7,7 @@
  */
 import type { RunTruth } from "./data";
 import type { StoryRow, StoryRun } from "./story";
+import { nameSearchRows, type NameSearchRow } from "@/features/marketing/smart-add/nameStrength";
 
 export interface PathSignal {
   key: string;
@@ -57,6 +58,8 @@ export interface RoundDecision {
   missing: string | null;
   skipped: { title: string; reason: string }[];
   costUsd: number;
+  /** Each name search step's name-strength verdict and the keywords it sent (Report 2026-10-15). */
+  nameSearches: NameSearchRow[];
 }
 
 export const PATH_STEP = "path_decision";
@@ -168,6 +171,7 @@ export function buildDecisions(runs: StoryRun[], truth: RunTruth | null, story: 
         .filter((r) => r.runId === run.runId && r.kind === "step" && r.status === "skipped")
         .map((r) => ({ title: r.title, reason: r.reason ?? "skipped" })),
       costUsd,
+      nameSearches: nameSearchRows(outcomes),
     });
   }
   return out;

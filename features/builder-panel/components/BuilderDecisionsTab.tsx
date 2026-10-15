@@ -17,6 +17,7 @@ import { cn } from "@/lib/utils";
 import { useCostDisplay } from "@/components/cost/useCostDisplay";
 import { costByPath, thresholdText, valueText, type RoundDecision, type PathSignal } from "../decisions";
 import { BuilderJson } from "./BuilderJson";
+import type { NameSearchRow } from "@/features/marketing/smart-add/nameStrength";
 
 function pathName(key: string): string {
   return key.replace(/_/g, " ");
@@ -202,6 +203,37 @@ function EnrichSection({ enrich }: { enrich: EnrichDecisionsFeed }) {
   );
 }
 
+const STRENGTH_TONE = { strong: "success", usable_with_anchor: "warning", weak: "destructive" } as const;
+const STRENGTH_LABEL = { strong: "Strong", usable_with_anchor: "Needs an anchor", weak: "Weak" } as const;
+const KIND_LABEL = { full_name: "full name", brand_name: "brand name", display_name: "display name" } as const;
+
+/** Name strength (Report 2026-10-15): per name search step, the verdict and every keyword it sent. */
+function NameSearchSection({ rows }: { rows: NameSearchRow[] }) {
+  const v = rows[rows.length - 1].strength;
+  return (
+    <section data-testid="builder-name-strength">
+      <h3 className="mb-1 flex flex-wrap items-center gap-2 font-medium">
+        Name strength
+        <Badge tone={STRENGTH_TONE[v.strength]}>{STRENGTH_LABEL[v.strength]}</Badge>
+        <span className="font-normal text-muted-foreground">
+          &quot;{v.cleaned || v.name}&quot; · {KIND_LABEL[v.kind]} · {v.reasons.join(" · ")}
+        </span>
+      </h3>
+      <ul className="space-y-0.5">
+        {rows.map((r) => (
+          <li key={r.step} className="flex gap-1.5">
+            <span className="w-36 shrink-0">{r.step}</span>
+            <span className="min-w-0 truncate font-mono" title={r.queries.join("\n")}>
+              {r.queries.length ? r.queries.join(" · ") : "not searched"}
+            </span>
+            <span className="ml-auto shrink-0 text-muted-foreground">{r.strength.why}</span>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
 export function BuilderDecisionsTab({
   rounds,
   findYou = null,
@@ -312,6 +344,8 @@ export function BuilderDecisionsTab({
         ) : (
           <p className="text-muted-foreground">{current.missing}</p>
         )}
+
+        {current.nameSearches.length ? <NameSearchSection rows={current.nameSearches} /> : null}
 
         {enrich ? <EnrichSection enrich={enrich} /> : null}
 

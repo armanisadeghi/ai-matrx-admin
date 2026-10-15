@@ -807,6 +807,22 @@ export interface ConfirmedFacts {
   /** Our best unconfirmed finding — only shapes the enrichment search keyword, never a confirmed fact. */
   hint_category?: string;
   hint_location?: string;
+  /** A person's full name typed apart from the display name ("Full name?"); outranks a weak display name. */
+  full_name?: string;
+  /** Exact handles of the confirmed accounts: a weak name's search keyword leads with one (Report 2026-10-15). */
+  handles?: string[];
+  /** The confirmed accounts' addresses and the confirmed websites / link pages (outbound links). */
+  links?: string[];
+}
+
+/** What anchors a weak name on the server: confirmed handles, and every confirmed address. */
+export function nameAnchors(
+  accounts: readonly Pick<EvidenceItem, "handle" | "url" | "value">[],
+  addresses: readonly string[],
+): Pick<ConfirmedFacts, "handles" | "links"> {
+  const handles = [...new Set(accounts.map((a) => (a.handle ?? "").replace(/^@/, "").trim()).filter(Boolean))];
+  const links = [...new Set([...accounts.map((a) => a.url ?? a.value), ...addresses].filter(Boolean))];
+  return { ...(handles.length ? { handles } : {}), ...(links.length ? { links } : {}) };
 }
 
 /** The surest category and address the round found (not confirmed): the enrichment search's keyword hints. */

@@ -89,6 +89,7 @@ export function SmartAddSlots({
   onTagline,
   separated,
   onSeparate,
+  nameAsk = null,
 }: {
   items: EvidenceItem[];
   /** The key-people step's people (aidream brand_intake.key_people_finder): they enrich staff rows or add their own. */
@@ -120,6 +121,8 @@ export function SmartAddSlots({
   /** Logo sources the person split out of their group (kept by the session), and the way to split or put back. */
   separated: ReadonlySet<string>;
   onSeparate: (keys: string[], on: boolean) => void;
+  /** The small inline "Full name?" field, shown under the Name slot when the name is too weak to search. */
+  nameAsk?: React.ReactNode;
 }) {
   const custom = (field: EvidenceField | "contact", placeholder: string, label?: string, inline?: boolean) => (
     <CustomAdd field={field} placeholder={placeholder} label={label} onAdd={onAdd} disabled={locked} inline={inline} />
@@ -325,7 +328,7 @@ export function SmartAddSlots({
 
   return (
     <div className="flex flex-col divide-y divide-border" data-testid="smart-add-slots">
-      <Slot title={person ? "Name" : "Brand name"} ask="Is this your name?" empty={of("name").some((i) => !taglines[i.key]) ? null : empty} after={custom("name", person ? "Your name" : "Brand name")}>
+      <Slot title={person ? "Name" : "Brand name"} ask="Is this your name?" empty={of("name").some((i) => !taglines[i.key]) ? null : empty} after={<>{nameAsk}{custom("name", person ? "Your name" : "Brand name")}</>}>
         {of("name").filter((i) => !taglines[i.key]).map((i, n) => (
           <Row key={i.key} item={i} decision={decisions[i.key] ?? null} note={noteOf(i)} below={below(i)} actions={<>{firstChoice(n, choices(i, "name", nameWayOut))}{sourceLink(i)}</>}>
             <span className="min-w-0 truncate"><Shared id={i.key} positionOnly className="inline-block max-w-full truncate align-top text-lg font-semibold leading-tight">{i.value}</Shared></span>
