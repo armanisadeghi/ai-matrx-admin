@@ -573,35 +573,51 @@ export const ProTextarea = React.forwardRef<
     const effectiveMinHeight = inlineControls
       ? Math.max(minHeight ?? 0, inlineMinHeight)
       : minHeight;
-    const clusterRef = useRef<HTMLDivElement>(null);
+    // Both measured boxes are watched through CALLBACK refs: the field subtree
+    // can mount again (the right-click wrapper wraps it once it loads), and an
+    // effect that attached once kept watching the detached node — the text
+    // kept a 128px gutter after its controls shrank to 76px (2026-10-15).
+    const clusterRef = useRef<HTMLDivElement | null>(null);
     const [clusterWidth, setClusterWidth] = useState(0);
-    useLayoutEffect(() => {
-      if (!inlineControls) return;
-      const el = clusterRef.current;
-      if (!el) return;
-      const measure = () => setClusterWidth(el.offsetWidth);
+    const clusterObserver = useRef<ResizeObserver | null>(null);
+    const setClusterNode = (node: HTMLDivElement | null) => {
+      if (clusterRef.current === node) return;
+      clusterRef.current = node;
+      clusterObserver.current?.disconnect();
+      clusterObserver.current = null;
+      if (!node || typeof ResizeObserver === "undefined") return;
+      const measure = () => setClusterWidth(node.offsetWidth);
       measure();
-      const observer = new ResizeObserver(measure);
-      observer.observe(el);
-      return () => observer.disconnect();
-    }, [inlineControls]);
+      clusterObserver.current = new ResizeObserver(measure);
+      clusterObserver.current.observe(node);
+    };
     // The field's own width decides what fits beside the text
     // (proFieldControlFit) — a question about this box, never the viewport.
-    const fieldBoxRef = useRef<HTMLDivElement>(null);
+    const fieldBoxRef = useRef<HTMLDivElement | null>(null);
     const [fieldBoxWidth, setFieldBoxWidth] = useState(0);
-    useLayoutEffect(() => {
-      const el = fieldBoxRef.current;
-      if (!el || typeof ResizeObserver === "undefined") return;
+    const fieldBoxObserver = useRef<ResizeObserver | null>(null);
+    const setFieldBoxNode = (node: HTMLDivElement | null) => {
+      if (fieldBoxRef.current === node) return;
+      fieldBoxRef.current = node;
+      fieldBoxObserver.current?.disconnect();
+      fieldBoxObserver.current = null;
+      if (!node || typeof ResizeObserver === "undefined") return;
       const measure = () => {
-        setFieldBoxWidth(el.offsetWidth);
-        const field = el.querySelector("textarea");
+        setFieldBoxWidth(node.offsetWidth);
+        const field = node.querySelector("textarea");
         if (field) setSmallType(Number.parseFloat(getComputedStyle(field).fontSize) < 14);
       };
       measure();
-      const observer = new ResizeObserver(measure);
-      observer.observe(el);
-      return () => observer.disconnect();
-    }, []);
+      fieldBoxObserver.current = new ResizeObserver(measure);
+      fieldBoxObserver.current.observe(node);
+    };
+    useEffect(
+      () => () => {
+        clusterObserver.current?.disconnect();
+        fieldBoxObserver.current?.disconnect();
+      },
+      [],
+    );
     const coarsePointer = useMediaQuery("(pointer: coarse)");
     // 🚨 On a phone the mic's device chevron never sits beside the mic
     // (Arman, 2026-10-15): a composer row has no room for it, so it folds
@@ -1423,7 +1439,7 @@ export const ProTextarea = React.forwardRef<
 
     const field = (
       <div
-        ref={fieldBoxRef}
+        ref={setFieldBoxNode}
         className={cn("relative group", wrapperClassName)}
         onMouseEnter={() => setIsHovered(true)}
         onMouseMove={() => {
@@ -1531,7 +1547,7 @@ export const ProTextarea = React.forwardRef<
             focus from the field, so a focus-revealed row cannot hide
             itself mid-click. */}
             <div
-              ref={clusterRef}
+              ref={setClusterNode}
               onMouseDown={(e) => e.preventDefault()}
               data-matrx-tap-dense={denseInline ? "" : undefined}
               className={cn(

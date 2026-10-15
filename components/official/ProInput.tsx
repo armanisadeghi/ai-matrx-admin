@@ -265,7 +265,7 @@ export const ProInput = React.forwardRef<HTMLInputElement, ProInputProps>(
     const [isAudioAvailable, setIsAudioAvailable] = useState(true);
     const internalRef = useRef<HTMLInputElement>(null);
     // The right-hand controls, measured so the text never runs under them.
-    const clusterRef = useRef<HTMLDivElement>(null);
+    const clusterRef = useRef<HTMLDivElement | null>(null);
     const auxRef = useRef<HTMLDivElement>(null);
     const [clusterWidths, setClusterWidths] = useState({ cluster: 0, aux: 0 });
     // The field's own size: a narrow field reveals the cluster on focus, not
@@ -274,8 +274,15 @@ export const ProInput = React.forwardRef<HTMLInputElement, ProInputProps>(
     const [inputWidth, setInputWidth] = useState(0);
     const [inputHeight, setInputHeight] = useState(0);
     const coarsePointer = useMediaQuery("(pointer: coarse)");
-    useEffect(() => {
-      const cluster = clusterRef.current;
+    // Watched through CALLBACK refs (cluster + field): a subtree that mounts
+    // again must never leave a watcher on the detached node — ProTextarea's
+    // text kept a 128px gutter after its controls shrank to 76px (2026-10-15).
+    const clusterObserver = useRef<ResizeObserver | null>(null);
+    const setClusterNode = (cluster: HTMLDivElement | null) => {
+      if (clusterRef.current === cluster) return;
+      clusterRef.current = cluster;
+      clusterObserver.current?.disconnect();
+      clusterObserver.current = null;
       if (!cluster || typeof ResizeObserver === "undefined") return;
       const measure = () => {
         const next = {
@@ -287,17 +294,32 @@ export const ProInput = React.forwardRef<HTMLInputElement, ProInputProps>(
         );
       };
       measure();
-      const observer = new ResizeObserver(measure);
-      observer.observe(cluster);
-      if (auxRef.current) observer.observe(auxRef.current);
-      return () => observer.disconnect();
-    }, []);
+      clusterObserver.current = new ResizeObserver(measure);
+      clusterObserver.current.observe(cluster);
+      // The aux part fades without resizing the cluster; its own size still counts.
+      if (auxRef.current) clusterObserver.current.observe(auxRef.current);
+    };
     // The element ref is ALWAYS our own, merged into the host's forwarded ref (twin of
     // ProTextarea's). Reading a forwarded ref's `.current` broke every internal feature
     // (apply an agent result, dictation, pre-hydration keep, width measure) whenever a host
     // forwarded a CALLBACK ref — it has no `.current`, so each one returned silently.
     const inputRef = internalRef;
+    const inputObserver = useRef<ResizeObserver | null>(null);
     const setInputRef = (node: HTMLInputElement | null) => {
+      if (internalRef.current !== node) {
+        inputObserver.current?.disconnect();
+        inputObserver.current = null;
+        if (node && typeof ResizeObserver !== "undefined") {
+          const measure = () => {
+            const rect = node.getBoundingClientRect();
+            setInputWidth(rect.width);
+            setInputHeight(rect.height);
+          };
+          measure();
+          inputObserver.current = new ResizeObserver(measure);
+          inputObserver.current.observe(node);
+        }
+      }
       internalRef.current = node;
       if (typeof ref === "function") ref(node);
       else if (ref) (ref as React.MutableRefObject<HTMLInputElement | null>).current = node;
@@ -318,19 +340,13 @@ export const ProInput = React.forwardRef<HTMLInputElement, ProInputProps>(
     useLayoutEffect(() => {
       keepPreHydrationText();
     }, []);
-    useEffect(() => {
-      const el = inputRef.current;
-      if (!el || typeof ResizeObserver === "undefined") return;
-      const measure = () => {
-        const rect = el.getBoundingClientRect();
-        setInputWidth(rect.width);
-        setInputHeight(rect.height);
-      };
-      measure();
-      const observer = new ResizeObserver(measure);
-      observer.observe(el);
-      return () => observer.disconnect();
-    }, [inputRef]);
+    useEffect(
+      () => () => {
+        clusterObserver.current?.disconnect();
+        inputObserver.current?.disconnect();
+      },
+      [],
+    );
     const openAudioDevices = useOpenAudioDevices();
     const cleanupAction = useProTextareaAgentAction();
     const cleanupSurfaceAgentId = useCleanupSurfaceAgentId(
@@ -694,7 +710,7 @@ export const ProInput = React.forwardRef<HTMLInputElement, ProInputProps>(
             reveals this cluster on FOCUS, and the blur used to hide it
             before the click landed (2026-10-05). */}
         <div
-          ref={clusterRef}
+          ref={setClusterNode}
           onMouseDown={(e) => e.preventDefault()}
           data-matrx-glass-plane
           data-matrx-tap-dense={denseField ? "" : undefined}
