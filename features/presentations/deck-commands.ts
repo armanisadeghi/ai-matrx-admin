@@ -76,7 +76,7 @@ export interface DeckChromeHost {
   canRedo: boolean;
   notesShown: boolean;
   /** The current slide (Edit → Copy / Cut hold a copy of it). */
-  currentSlide: DeckSlide | null;
+  currentSlide?: DeckSlide | null;
   dispatch: (a: DeckAction) => void;
   undo: () => void;
   redo: () => void;
