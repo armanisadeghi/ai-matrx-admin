@@ -6,9 +6,7 @@
 
 import { downloadFile } from "@ai-matrx/kit/download";
 
-import { resolveBaseUrl } from "@/lib/python-client";
-import { getStoreSingleton } from "@/lib/redux/store-singleton";
-import { selectAccessToken } from "@/lib/redux/slices/userSlice";
+import { requestRaw } from "@/lib/python-client";
 
 export type OpenFormatTarget = "ods" | "odt" | "rtf" | "odp";
 
@@ -19,23 +17,21 @@ const MIME: Record<OpenFormatTarget, string> = {
   odp: "application/vnd.oasis.opendocument.presentation",
 };
 
-/** Send OpenXML bytes to the converter; resolves to the converted bytes. */
+/**
+ * Send OpenXML bytes to the converter; resolves to the converted bytes. Goes through the canonical
+ * client (`requestRaw`), which carries the bearer token AND the active organization (`X-Organization-Id`)
+ * the server refuses a request without.
+ */
 export async function convertOpenXml(
   bytes: Uint8Array,
   inputName: string,
   target: OpenFormatTarget,
-  fetchImpl: typeof fetch = fetch,
+  request: typeof requestRaw = requestRaw,
 ): Promise<Blob> {
-  const store = getStoreSingleton();
-  const token = store ? selectAccessToken(store.getState()) : null;
   const form = new FormData();
   form.append("file", new Blob([bytes as BlobPart]), inputName);
   form.append("target", target);
-  const res = await fetchImpl(`${resolveBaseUrl().replace(/\/$/, "")}/office/convert-document`, {
-    method: "POST",
-    body: form,
-    ...(token ? { headers: { Authorization: `Bearer ${token}` } } : {}),
-  });
+  const res = await request("/office/convert-document", { method: "POST", body: form }, { allowHttpError: true });
   if (!res.ok) {
     let detail = "";
     try {
