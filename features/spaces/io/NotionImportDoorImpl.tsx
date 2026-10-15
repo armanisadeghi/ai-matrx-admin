@@ -33,6 +33,10 @@ export default function NotionImportDoorImpl({ onClose }: { onClose: () => void 
               <Archive size={16} aria-hidden />
               Notion export (.zip)
             </Button>
+            <Button type="button" variant="outline" onClick={state.chooseConnection}>
+              <Link2 size={16} aria-hidden />
+              From your connected Notion
+            </Button>
             <Button type="button" variant="outline" className="justify-start gap-2" onClick={() => void state.connect()}>
               <Link2 size={16} aria-hidden />
               Connect Notion

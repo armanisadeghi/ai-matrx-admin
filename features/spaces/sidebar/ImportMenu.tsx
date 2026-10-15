@@ -83,6 +83,12 @@ export function ImportButton() {
             </span>
             <span className="flex-1 truncate text-left">Notion export (.zip)</span>
           </button>
+          <button type="button" className="spaces-menu-row" onClick={() => (setOpen(false), notion.chooseConnection())}>
+            <span className="spaces-menu-row-icon">
+              <Link2 size={16} />
+            </span>
+            <span className="flex-1 truncate text-left">From your connected Notion</span>
+          </button>
           <button type="button" className="spaces-menu-row" onClick={() => (setOpen(false), void notion.connect())}>
             <span className="spaces-menu-row-icon">
               <Link2 size={16} />

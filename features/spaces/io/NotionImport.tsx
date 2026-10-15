@@ -10,7 +10,19 @@
 // A rerun of the same export changes nothing (the server keys everything by Notion id).
 
 import { Button, Field } from "@ai-matrx/design-system/controls";
-import { createContext, useContext, useState, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import {
+  fetchAvailability,
+  fetchCatalog,
+  selectMcpAvailabilityForOrganization,
+  selectMcpAvailabilityStatusForOrganization,
+  selectMcpCatalog,
+  selectMcpCatalogStatus,
+} from "@ai-matrx/chat/agents/redux/mcp/mcp.slice";
+import { useConnectMcpServer } from "@/features/connectors/useConnectMcpServer";
+import { catalogConnectionPresentation } from "@/features/settings/pages/integration-catalog-state";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
+import { selectOrganizationId } from "@/lib/redux/slices/appContextSlice";
 
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Progress } from "@/components/ui/progress";
@@ -38,6 +50,7 @@ interface Finished {
 
 type Stage =
   | { phase: "token" }
+  | { phase: "link" }
   | { phase: "uploading"; loaded: number; total: number }
   | { phase: "running"; step: string; done: number; total: number; detail: string }
   | { phase: "finished"; report: Finished }
@@ -91,9 +104,31 @@ async function savedNotionToken(): Promise<string | null> {
   return (data?.[0] as { id?: string } | undefined)?.id ?? null;
 }
 
+/** Whether the person's own hosted Notion connection (Settings → Connections) is live — the same truth the connections screen shows. */
+function useNotionConnection(active: boolean) {
+  const dispatch = useAppDispatch();
+  const organizationId = useAppSelector(selectOrganizationId);
+  const catalog = useAppSelector(selectMcpCatalog);
+  const catalogStatus = useAppSelector(selectMcpCatalogStatus);
+  const availability = useAppSelector((state) => selectMcpAvailabilityForOrganization(state, organizationId));
+  const availabilityStatus = useAppSelector((state) => selectMcpAvailabilityStatusForOrganization(state, organizationId));
+  const { connect, connectingSlug } = useConnectMcpServer();
+  useEffect(() => {
+    if (active && catalogStatus === "idle") void dispatch(fetchCatalog());
+  }, [active, catalogStatus, dispatch]);
+  useEffect(() => {
+    if (active && organizationId && availabilityStatus === "idle") void dispatch(fetchAvailability({ organizationId }));
+  }, [active, organizationId, availabilityStatus, dispatch]);
+  const entry = catalog.find((e) => e.slug === "notion") ?? null;
+  const checking = !entry ? catalogStatus === "idle" || catalogStatus === "loading" : availabilityStatus === "idle" || availabilityStatus === "loading";
+  const ready = !!entry && catalogConnectionPresentation(entry, undefined, false, availability[entry.slug]).connected;
+  return { entry, ready, checking, connect: () => (entry ? connect(entry) : undefined), connecting: !!entry && connectingSlug === entry.slug };
+}
+
 export function useNotionImport() {
   const [stage, setStage] = useState<Stage | null>(null);
   const [token, setToken] = useState("");
+  const [link, setLink] = useState("");
   const { upload } = useFileUpload();
 
   const stream = async (path: string, body: Record<string, unknown>) => {
@@ -133,6 +168,14 @@ export function useNotionImport() {
     }
   };
 
+  const chooseConnection = () => setStage({ phase: "link" });
+
+  const fromConnection = async () => {
+    const root = link.trim();
+    if (!root) return;
+    await stream("/notion-import/connection", { root, name: "Notion import" });
+  };
+
   const connect = async () => {
     const saved = await savedNotionToken().catch(() => null);
     if (saved) await stream("/notion-import/connected", { credential_item_id: saved, name: "Notion workspace" });
@@ -156,7 +199,7 @@ export function useNotionImport() {
     }
   };
 
-  return { stage, setStage, fromZip, connect, token, setToken, saveTokenAndConnect };
+  return { stage, setStage, fromZip, connect, chooseConnection, fromConnection, link, setLink, token, setToken, saveTokenAndConnect };
 }
 
 export interface NotionImportDialogProps {
@@ -170,7 +213,8 @@ export interface NotionImportDialogProps {
 }
 
 export function NotionImportDialog({ state, onOpenPage, onFinished, onOpenTable }: NotionImportDialogProps) {
-  const { stage, setStage, token, setToken, saveTokenAndConnect } = state;
+  const { stage, setStage, token, setToken, saveTokenAndConnect, link, setLink, fromConnection } = state;
+  const notion = useNotionConnection(stage?.phase === "link");
   const busy = stage?.phase === "uploading" || stage?.phase === "running";
   const close = () => {
     if (stage?.phase === "finished") onFinished?.();
@@ -180,7 +224,7 @@ export function NotionImportDialog({ state, onOpenPage, onFinished, onOpenTable 
   return (
     <Dialog open={stage !== null} onOpenChange={(open) => (!open && !busy ? close() : undefined)}>
       <DialogContent className="max-w-[min(620px,96vw)] gap-3 p-4">
-        <DialogTitle>{stage?.phase === "finished" ? "Notion import" : stage?.phase === "token" ? "Connect Notion" : "Importing from Notion"}</DialogTitle>
+        <DialogTitle>{stage?.phase === "finished" ? "Notion import" : stage?.phase === "token" ? "Connect Notion" : stage?.phase === "link" ? "From your connected Notion" : "Importing from Notion"}</DialogTitle>
         {stage?.phase === "token" ? (
           <form
             className="flex flex-col gap-3"
@@ -200,6 +244,36 @@ export function NotionImportDialog({ state, onOpenPage, onFinished, onOpenTable 
               </Button>
             </div>
           </form>
+        ) : null}
+        {stage?.phase === "link" ? (
+          notion.ready ? (
+            <form
+              className="flex flex-col gap-3"
+              onSubmit={(e) => {
+                e.preventDefault();
+                void fromConnection();
+              }}
+            >
+              <Field autoFocus value={link} onChange={(e) => setLink(e.target.value)} placeholder="Notion page or database link" aria-label="Notion page or database link" />
+              <div className="flex justify-end gap-2">
+                <Button type="button" variant="quiet" onClick={close}>
+                  Cancel
+                </Button>
+                <Button type="submit" variant="primary" disabled={!link.trim()}>
+                  Bring it in
+                </Button>
+              </div>
+            </form>
+          ) : (
+            <div className="flex justify-end gap-2">
+              <Button type="button" variant="quiet" onClick={close}>
+                Cancel
+              </Button>
+              <Button type="button" variant="primary" disabled={notion.checking || !notion.entry || notion.connecting} onClick={() => void notion.connect()}>
+                Connect Notion
+              </Button>
+            </div>
+          )
         ) : null}
         {stage?.phase === "uploading" ? (
           <div className="flex flex-col gap-2">
@@ -293,14 +367,14 @@ function SpacesNotionImportDialog({ state }: { state: ReturnType<typeof useNotio
   return <NotionImportDialog state={state} onOpenPage={spaces.open} onFinished={spaces.retryLoad} />;
 }
 
-type Door = Pick<ReturnType<typeof useNotionImport>, "fromZip" | "connect">;
+type Door = Pick<ReturnType<typeof useNotionImport>, "fromZip" | "connect" | "chooseConnection">;
 const DoorContext = createContext<Door | null>(null);
 
 /** Holds the import above the sidebar, so the run and its report outlive any re-render of the menu that started it. */
 export function NotionImportHost({ children }: { children: ReactNode }) {
   const state = useNotionImport();
   return (
-    <DoorContext.Provider value={{ fromZip: state.fromZip, connect: state.connect }}>
+    <DoorContext.Provider value={{ fromZip: state.fromZip, connect: state.connect, chooseConnection: state.chooseConnection }}>
       {children}
       <SpacesNotionImportDialog state={state} />
     </DoorContext.Provider>
