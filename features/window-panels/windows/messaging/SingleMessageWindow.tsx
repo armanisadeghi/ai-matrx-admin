@@ -6,7 +6,7 @@
  */
 
 import React, { useCallback } from "react";
-import { useConversations } from "@ai-matrx/messaging/react";
+import { useConversationSummary } from "@/features/messaging/lib/useConversationSummary";
 import { WindowPanel } from "@/features/window-panels/WindowPanel";
 import { ConversationPane } from "@/features/messaging/components/ConversationPane";
 import { useMessagesSurfaceScope } from "@/features/messaging/lib/useMessagesSurfaceScope";
@@ -24,13 +24,11 @@ export default function SingleMessageWindow({
   instanceId,
   conversationId,
 }: SingleMessageWindowProps) {
-  const { conversations } = useConversations();
   const getScope = useMessagesSurfaceScope(conversationId ?? undefined);
 
   // The title comes from the inbox the engine already holds; before the first
   // read it is honestly generic rather than blank.
-  const conversation =
-    conversations.find((item) => item.conversation.id === conversationId) ?? null;
+  const conversation = useConversationSummary(conversationId);
 
   const collectData = useCallback(
     () => ({ conversationId: conversationId ?? null }),

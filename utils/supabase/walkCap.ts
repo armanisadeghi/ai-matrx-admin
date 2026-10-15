@@ -1,4 +1,6 @@
 import { escapeHtml } from "@ai-matrx/kit/html-escape";
+import { readdirSync, readFileSync } from "node:fs";
+import { join } from "node:path";
 // utils/supabase/walkCap.ts — THE LIVE-DATABASE WALK CAP (development only).
 //
 // WHY (2026-09-26): the live database ran out of memory, and 70% of its time
@@ -72,6 +74,39 @@ export interface WalkRegistry {
 export const WALK_BUSY_PROTECT_MS = 120_000;
 
 /**
+ * HELD HOSTS (2026-10-15). A test run takes a hold through `pnpm preview:ready` / `pnpm preview:hold`
+ * (scripts/agent-dev-server.sh). A run reads pages through scripts for minutes without a click, so
+ * by the rules above it looked idle: today's log alone has 30 evictions and 52 refusals, and runners
+ * landed on "Preview paused" mid-run. A held host is never expired and never evicted; it counts
+ * toward the cap like any walk, so when holds fill the cap a newcomer gets the honest refusal page.
+ * A held host that was parked earlier is re-admitted by its next signed-in request — the hold is the
+ * explicit resume. Holds expire on their own (`hold <min>`, at most 180).
+ */
+export function heldPreviewHosts(dir: string, nowSec: number): Set<string> {
+  const held = new Set<string>();
+  let names: string[];
+  try {
+    names = readdirSync(dir);
+  } catch {
+    return held; // no hold was ever taken
+  }
+  for (const name of names) {
+    try {
+      const until = Number(readFileSync(join(dir, name), "utf8").trim().split(/\s+/)[0]);
+      if (Number.isFinite(until) && until > nowSec) held.add(`${name}.localhost`);
+    } catch {
+      // a hold file removed between the listing and the read
+    }
+  }
+  return held;
+}
+
+/** `s1.localhost:3001` -> `s1.localhost`: holds are per session label, whatever the port. */
+function hostName(host: string): string {
+  return host.replace(/:\d+$/, "");
+}
+
+/**
  * The admission rule. `registry` maps an admitted preview host to the last
  * time of a real document navigation or explicit user interaction; background
  * requests do not refresh it. It tombstones expired/evicted hosts so they can
@@ -83,11 +118,13 @@ export function decideWalkAdmission(
   now: number,
   knobs: WalkKnobs,
   kind: WalkRequestKind = "document",
+  held: ReadonlySet<string> = new Set(),
 ): WalkDecision {
   const windowMs = knobs.windowMinutes * 60_000;
   const evicted: string[] = [];
+  const isHeld = (h: string): boolean => held.has(hostName(h));
   for (const [seenHost, lastSeen] of registry.admitted) {
-    if (now - lastSeen > windowMs) {
+    if (now - lastSeen > windowMs && !isHeld(seenHost)) {
       registry.admitted.delete(seenHost);
       registry.evicted.add(seenHost);
       evicted.push(seenHost);
@@ -106,7 +143,7 @@ export function decideWalkAdmission(
     }
     return { verdict: "refuse", active: active(), evicted };
   }
-  if (registry.evicted.has(host) && kind !== "resume") {
+  if (registry.evicted.has(host) && kind !== "resume" && !isHeld(host)) {
     return { verdict: "parked", active: active(), evicted: [] };
   }
 
@@ -117,6 +154,7 @@ export function decideWalkAdmission(
   const lastRequest = (registry.lastRequest ??= new Map());
   if (existing) lastRequest.set(host, now);
   const isBusy = (h: string): boolean =>
+    isHeld(h) ||
     now - Math.max(registry.admitted.get(h) ?? 0, lastRequest.get(h) ?? 0) < WALK_BUSY_PROTECT_MS;
 
   // A newly admitted host always gets a slot. Break timestamp ties by map
@@ -276,6 +314,8 @@ export interface WalkCapGateInput {
   now: number;
   log: (line: string) => void;
   kind?: WalkRequestKind;
+  /** Hosts a test run holds (`heldPreviewHosts`); never expired or evicted. */
+  held?: ReadonlySet<string>;
 }
 
 function pointsAtProduction(url: string | undefined): boolean {
@@ -299,7 +339,7 @@ export async function walkCapGate(input: WalkCapGateInput): Promise<Response | n
   const knobs = await input.readKnobs();
   if (!knobs) return null; // already screamed; fail open
 
-  const decision = decideWalkAdmission(input.registry, host, input.now, knobs, input.kind);
+  const decision = decideWalkAdmission(input.registry, host, input.now, knobs, input.kind, input.held);
   const count = decision.active.length;
   if (decision.evicted.length) {
     input.log(`[walk-cap] EVICTED ${decision.evicted.join(", ")} to admit ${host}`);
@@ -386,14 +426,20 @@ function scheduleIdleExpiry(state: WalkCapGlobal, knobs: WalkKnobs, now = Date.n
   if (knobs.cap <= 0 || state.registry.admitted.size === 0) return;
 
   const windowMs = knobs.windowMinutes * 60_000;
-  const earliestDeadline = Math.min(...[...state.registry.admitted.values()].map((seen) => seen + windowMs + 1));
+  const held = currentHolds();
+  const expiring = [...state.registry.admitted.entries()].filter(([host]) => !held.has(hostName(host)));
+  // Held hosts never expire; re-check once a minute so a hold that lapses is noticed.
+  const earliestDeadline = expiring.length
+    ? Math.min(...expiring.map(([, seen]) => seen + windowMs + 1))
+    : now + 60_000;
   const delay = Math.max(0, earliestDeadline - now);
   state.idleTimer = setTimeout(() => {
     state.idleTimer = undefined;
     const expired: string[] = [];
     const current = Date.now();
+    const heldNow = currentHolds();
     for (const [host, lastSeen] of state.registry.admitted) {
-      if (current - lastSeen > windowMs) {
+      if (current - lastSeen > windowMs && !heldNow.has(hostName(host))) {
         state.registry.admitted.delete(host);
         state.registry.evicted.add(host);
         expired.push(host);
@@ -409,6 +455,19 @@ function scheduleIdleExpiry(state: WalkCapGlobal, knobs: WalkKnobs, now = Date.n
 /** Test-only seam for timer behavior; production callers use the gate wrapper. */
 export function scheduleWalkIdleExpiryForTest(knobs: WalkKnobs): void {
   scheduleIdleExpiry(processState(), knobs);
+}
+
+// The hold files live in the shared preview's state dir (scripts/agent-dev-server.sh STATE_DIR).
+const HOLDS_TTL_MS = 5_000;
+let holdsCache: { at: number; held: Set<string> } | null = null;
+function currentHolds(): Set<string> {
+  const now = Date.now();
+  if (holdsCache && now - holdsCache.at < HOLDS_TTL_MS) return holdsCache.held;
+  const stateDir =
+    process.env.MATRX_PREVIEW_STATE_DIR ||
+    join(process.env.TMPDIR || "/tmp", `matrx-frontend-preview-${typeof process.getuid === "function" ? process.getuid() : ""}`);
+  holdsCache = { at: now, held: heldPreviewHosts(join(stateDir, "holds"), Math.floor(now / 1000)) };
+  return holdsCache.held;
 }
 
 /** The proxy's entry point: gate one signed-in request with process-wide state. */
@@ -432,6 +491,7 @@ export async function walkCapGateForRequest(
     now: Date.now(),
     log: (line) => console.log(line),
     kind,
+    held: currentHolds(),
   });
   notifyEvicted([...state.registry.evicted].filter((candidate) => !before.has(candidate)));
   const knobs = await state.readKnobs();

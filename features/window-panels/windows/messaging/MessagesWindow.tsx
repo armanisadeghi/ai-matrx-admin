@@ -9,7 +9,8 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { MessageSquare, Plus } from "lucide-react";
 import { asConversationId } from "@ai-matrx/messaging";
-import { useConversations, useMessagingHost, useMessagingSnapshot } from "@ai-matrx/messaging/react";
+import { useMessagingHost, useMessagingSnapshot } from "@ai-matrx/messaging/react";
+import { useConversationSummary } from "@/features/messaging/lib/useConversationSummary";
 import { WindowPanel } from "@/features/window-panels/WindowPanel";
 import { ConversationListPane } from "@/features/messaging/components/ConversationListPane";
 import { ConversationPane } from "@/features/messaging/components/ConversationPane";
@@ -32,11 +33,10 @@ export default function MessagesWindow({
 }: MessagesWindowProps) {
   const host = useMessagingHost();
   const snapshot = useMessagingSnapshot();
-  const { conversations } = useConversations();
 
   const activeConversationId = snapshot?.activeConversationId ?? null;
-  const activeConversation =
-    conversations.find((item) => item.conversation.id === activeConversationId) ?? null;
+  // The summary, never the filtered list page — see useConversationSummary.
+  const activeConversation = useConversationSummary(activeConversationId);
   const getScope = useMessagesSurfaceScope(activeConversationId ?? undefined);
 
   // Hoisted at the window root (composition-root pattern): the sidebar's "+"

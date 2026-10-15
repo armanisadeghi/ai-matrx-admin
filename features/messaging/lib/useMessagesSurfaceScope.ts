@@ -26,11 +26,10 @@ export function useMessagesSurfaceScope(
   return useCallback(() => {
     const snapshot = host?.engine.store.snapshot();
     const conversations = snapshot?.conversations ?? [];
+    // The summary map, never the filtered list page (see useConversationSummary).
     const current =
       conversationId !== undefined
-        ? (conversations.find(
-            (item) => item.conversation.id === conversationId,
-          ) ?? null)
+        ? (snapshot?.conversationSummaries.get(conversationId as never) ?? null)
         : null;
     const thread =
       conversationId !== undefined

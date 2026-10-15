@@ -1,10 +1,15 @@
 /** @jest-environment node */
 
+import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+
 import {
   WALK_CAP_HEADER,
   WALK_BUSY_PROTECT_MS,
   createWalkKnobReader,
   decideWalkAdmission,
+  heldPreviewHosts,
   walkCapDevEndpoint,
   walkCapGateForRequest,
   scheduleWalkIdleExpiryForTest,
@@ -158,6 +163,70 @@ describe("decideWalkAdmission — the live-database walk cap", () => {
     const knobs = { cap: 0, windowMinutes: 10 };
     expect(decideWalkAdmission(registryWith([]), "x.localhost:3001", T0, knobs).verdict).toBe("refuse");
     expect(decideWalkAdmission(registry, "a.localhost:3001", T0, knobs).verdict).toBe("refuse");
+  });
+});
+
+// HELD HOSTS (2026-10-15): a test run that holds the preview reads pages by script for minutes; it
+// was evicted 30 times and refused 52 times in one afternoon's log and landed on "Preview paused".
+describe("decideWalkAdmission — a held test run is never paused", () => {
+  const HELD = new Set(["runner.localhost"]);
+
+  it("a held host idle far past the window is neither expired nor evicted; the newcomer is refused", () => {
+    const registry = registryWith([
+      ["runner.localhost:3001", T0 - 60 * MIN],
+      ["b.localhost:3001", T0 - 3 * MIN],
+      ["c.localhost:3001", T0 - 4 * MIN],
+      ["d.localhost:3001", T0 - 5 * MIN],
+    ]);
+    const decision = decideWalkAdmission(registry, "e.localhost:3001", T0, KNOBS, "document", HELD);
+    expect(registry.admitted.has("runner.localhost:3001")).toBe(true);
+    expect(registry.evicted.has("runner.localhost:3001")).toBe(false);
+    // d (unheld, quiet 5 min) is the one that makes room.
+    expect(decision.verdict).toBe("admit");
+    expect(registry.evicted.has("d.localhost:3001")).toBe(true);
+  });
+
+  it("when held runs fill every slot a newcomer gets the honest refusal, never a held run's slot", () => {
+    const held = new Set(["r1.localhost", "r2.localhost", "r3.localhost", "r4.localhost"]);
+    const registry = registryWith([
+      ["r1.localhost:3001", T0 - 30 * MIN],
+      ["r2.localhost:3001", T0 - 30 * MIN],
+      ["r3.localhost:3001", T0 - 30 * MIN],
+      ["r4.localhost:3001", T0 - 30 * MIN],
+    ]);
+    expect(decideWalkAdmission(registry, "x.localhost:3001", T0, KNOBS, "document", held).verdict).toBe("refuse");
+    expect(registry.admitted.size).toBe(4);
+  });
+
+  it("a held host that was parked earlier is re-admitted by its next signed-in request (the hold is the resume)", () => {
+    const registry = registryWith([["b.localhost:3001", T0 - MIN]]);
+    registry.evicted.add("runner.localhost:3001");
+    expect(decideWalkAdmission(registry, "runner.localhost:3001", T0, KNOBS).verdict).toBe("parked");
+    const decision = decideWalkAdmission(registry, "runner.localhost:3001", T0, KNOBS, "document", HELD);
+    expect(decision.verdict).toBe("admit");
+    expect(registry.evicted.has("runner.localhost:3001")).toBe(false);
+  });
+
+  it("without a hold the same quiet runner is expired exactly as before", () => {
+    const registry = registryWith([["runner.localhost:3001", T0 - 60 * MIN]]);
+    decideWalkAdmission(registry, "e.localhost:3001", T0, KNOBS);
+    expect(registry.evicted.has("runner.localhost:3001")).toBe(true);
+  });
+});
+
+describe("heldPreviewHosts — reads the preview's hold files", () => {
+  it("returns live holds as <label>.localhost and ignores expired, malformed and missing", () => {
+    const dir = mkdtempSync(join(tmpdir(), "walk-holds-"));
+    try {
+      const now = 2_000_000_000;
+      writeFileSync(join(dir, "runner-a"), `${now + 600} session-a\n`);
+      writeFileSync(join(dir, "old"), `${now - 1} session-b\n`);
+      writeFileSync(join(dir, "junk"), "not a number\n");
+      expect([...heldPreviewHosts(dir, now)]).toEqual(["runner-a.localhost"]);
+      expect(heldPreviewHosts(join(dir, "missing"), now).size).toBe(0);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
   });
 });
 

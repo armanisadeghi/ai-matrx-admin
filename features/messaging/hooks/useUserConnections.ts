@@ -138,12 +138,26 @@ interface UseUserConnectionsOptions {
    * making the manager-only `inv_list` request.
    */
   invitationOrganizationId?: string;
+  /**
+   * 🚨 A CLOSED PICKER READS NOTHING (2026-10-15, /messages). The New-conversation dialog is
+   * mounted closed beside every conversation list — twice on /messages — and it names no
+   * organization, so loading the page read the roster of EVERY organization the viewer is in:
+   * 64 `get_organization_members_with_users` requests for the test admin before anyone asked
+   * for a person. A surface that mounts before it is shown passes its open state here; while
+   * `false` the hook issues no request and reports not-loading. Default `true`.
+   */
+  enabled?: boolean;
 }
 
 export function useUserConnections(
   options: UseUserConnectionsOptions = {},
 ): UseUserConnectionsReturn {
-  const { organizationId, includeConversations = false, invitationOrganizationId } = options;
+  const {
+    organizationId,
+    includeConversations = false,
+    invitationOrganizationId,
+    enabled = true,
+  } = options;
 
   const user = useAppSelector(selectUser);
   const currentUserId = user?.id;
@@ -181,7 +195,7 @@ export function useUserConnections(
     role: org.role,
   }));
   const fetchKey =
-    currentUserId && !orgsLoading
+    enabled && currentUserId && !orgsLoading
       ? JSON.stringify([currentUserId, invitationOrganizationId ?? null, nonce, scope])
       : null;
 
@@ -233,7 +247,7 @@ export function useUserConnections(
 
   // Wait for orgs to load — and for conversations only when this surface uses them, so a
   // share dialog never sits on the messaging engine's spinner for a list it will not show.
-  const waiting = currentUserId
+  const waiting = enabled && currentUserId
     ? (includeConversations && convoLoading) || orgsLoading || current === null
     : false;
 

@@ -32,7 +32,6 @@ import { MessagesConversationHeader } from "./MessagesConversationHeader";
 import {
   ConversationView,
   useConversation,
-  useConversations,
   type ConversationViewProps,
 } from "@ai-matrx/messaging/react";
 import { asConversationId, type Message } from "@ai-matrx/messaging";
@@ -52,6 +51,7 @@ import {
 import { useOpenSaveToTable } from "@/features/overlays/openers/saveToTable";
 import { useMessagingAiDemand } from "@/features/messaging/lib/messagingAiDemand";
 import { useOpenConversation } from "@/features/messaging/lib/openConversation";
+import { useConversationSummary } from "@/features/messaging/lib/useConversationSummary";
 
 export interface ConversationPaneProps {
   conversationId: string;
@@ -86,10 +86,8 @@ export function ConversationPane({
   useMessagingAiDemand(showAi);
   const id = asConversationId(conversationId);
   const { messages } = useConversation(id);
-  const { conversations } = useConversations();
-  const conversation =
-    conversations.find((item) => item.conversation.id === conversationId) ??
-    null;
+  // The summary, never the filtered list page — see useConversationSummary.
+  const conversation = useConversationSummary(conversationId);
   const [menuMessage, setMenuMessage] = useState<Message | null>(null);
   const menuRef = useRef<Message | null>(null);
   const openSaveToTable = useOpenSaveToTable();

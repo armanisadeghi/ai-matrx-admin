@@ -98,6 +98,42 @@ below is visible in that one agent.
 Work these steps in order. Skipping ahead (especially straight to "call create") is how
 bad agents get made.
 
+### 🚨 THE PROVISION-FIRST GATE — no agent is built until Arman has signed off the contract (Arman, 2026-10-12 / 2026-10-15)
+
+**This is the required procedure, not a suggestion.** No lane creates, binds, or runs a new
+mandate or agent before all of the following are done, in order. The canonical statement and
+Arman's words are [Provision first](/policies/agents-never-author-agents.md#provision-first-no-new-mandate-or-agent-without-it-arman-2026-10-12) — obey it; this is the operational checklist.
+
+1. **Find the exact call point** — the server `file:line` (and client, if any) where the agent
+   would run. Write the one-sentence position (`real-provisions` step 1).
+2. **Declare the FULL-STATE provision there — EVERY value available at that point and its
+   variations, not the two or three you plan to map.** A provision is THE STATE at the point:
+   identity, records, derived locals, config, media, the cheap fetch, and the live data the
+   position can fetch — each value on its own, raw and clean forms apart, large forms with a
+   summary/full ladder, never shaped to an agent and never combined (that is the binding's job).
+   A provision equal to its agent's variable list is a fake agent wrapper. Follow
+   [real-provisions](/skills/real-provisions/SKILL.md); the gold standard is
+   `brand_intake.early_facts` (~196 grouped values). **List all state** — the point of the tenth
+   value is that nobody touches the declaration when the sixth mandate arrives.
+3. **Make it visible in the admin Builder panel with a static `example` on every value**, so
+   Arman sees the EXACT values available at that point (`feedback-builder-real-data-first`). The
+   provision resolves there with real values he can read and copy.
+4. **Sketch the exact output beside it** — the precise `__kind` (field by field, registered and
+   born active, step 5), or, when no schema exists yet, a plain example of what we expect out.
+5. **Arman copies the values into samples and judges** whether they are enough to reach that
+   output — his call, on real data.
+6. **Agree the mandate with him: inputs (the provision), output (`__kind`), and a written goal.**
+   Create the mandate SEEDLESS (no `seed_version_id`) — it names the job and freezes the contract
+   (goal + output kind + provision) without embedding a Holder. Multiple mandates may stand at one
+   rich position.
+7. **STOP. Arman builds the agent.** A coding agent does not author the Holder. He builds it
+   (through the agent factory), it is tested LIVE with the request and response streamed through
+   AI Watch, he tweaks, and only after his sign-off is the step production-ready.
+
+A coding agent's job ends at step 6: provision declared (full), `__kind` defined, goal written,
+mandate(s) created. Everything below (steps 0–10) is how to do steps 1–6 well and how the agent
+is built once Arman takes it from you — never a licence to skip the gate.
+
 ### 0. Can the agent even answer? — run the manifest work FIRST
 
 🚨 **Before anything else, run [agent-provision](/skills/agent-provision/SKILL.md).** Every rule

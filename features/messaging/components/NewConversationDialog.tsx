@@ -97,6 +97,8 @@ export function NewConversationDialog({
     refresh: refreshConnections,
   } = useUserConnections({
     includeConversations: true,
+    // Mounted closed beside every conversation list: read the rosters only when it opens.
+    enabled: open,
   });
 
   const userSearchCandidates: UserSearchCandidate[] = (() => {

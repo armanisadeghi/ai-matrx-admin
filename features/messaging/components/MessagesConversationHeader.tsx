@@ -12,7 +12,6 @@ import {
 import { asConversationId } from "@ai-matrx/messaging";
 import { useCalls, asUserId } from "@ai-matrx/meet/react";
 import {
-  useConversations,
   useMessagingHost,
   useOnlineUserIds,
 } from "@ai-matrx/messaging/react";
@@ -20,6 +19,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { getInitials } from "@ai-matrx/kit/format";
 import { toast } from "@/lib/toast";
 import { useMessagePins } from "../lib/useMessagePins";
+import { useConversationSummary } from "../lib/useConversationSummary";
 import { NewConversationDialog } from "./NewConversationDialog";
 
 /** Shared thread chrome: route, window and embedded conversations. */
@@ -32,15 +32,13 @@ export function MessagesConversationHeader({
   onBack?: () => void;
   onSelect: (id: string) => void;
 }) {
-  const { conversations } = useConversations();
   const host = useMessagingHost();
   const online = useOnlineUserIds(asConversationId(conversationId));
   const calls = useCalls();
   const { pins, toggle, pending } = useMessagePins();
   const [creating, setCreating] = useState(false);
-  const conversation = conversations.find(
-    (item) => item.conversation.id === conversationId,
-  );
+  // The summary, never the filtered list page — see useConversationSummary.
+  const conversation = useConversationSummary(conversationId);
   const others =
     conversation?.participants.filter(
       (p) => p.userId !== host?.identity.userId,
