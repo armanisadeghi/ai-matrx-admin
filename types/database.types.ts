@@ -3483,6 +3483,123 @@ export type Database = {
           },
         ]
       }
+      model_presentation: {
+        Row: {
+          color: string | null
+          created_at: string
+          created_by: string | null
+          deleted_at: string | null
+          gallery_file_ids: string[]
+          hero_file_id: string | null
+          id: string
+          links: Json
+          media_source: Json
+          metadata: Json
+          model_id: string
+          organization_id: string
+          page: string | null
+          params_label: string | null
+          shelf: string | null
+          shelf_subtitle: string | null
+          shelf_title: string | null
+          summary: string | null
+          symbol: string | null
+          tags: string[]
+          thumbnail_file_id: string | null
+          updated_at: string
+          updated_by: string | null
+          version: number
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          gallery_file_ids?: string[]
+          hero_file_id?: string | null
+          id?: string
+          links?: Json
+          media_source?: Json
+          metadata?: Json
+          model_id: string
+          organization_id: string
+          page?: string | null
+          params_label?: string | null
+          shelf?: string | null
+          shelf_subtitle?: string | null
+          shelf_title?: string | null
+          summary?: string | null
+          symbol?: string | null
+          tags?: string[]
+          thumbnail_file_id?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+        }
+        Update: {
+          color?: string | null
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          gallery_file_ids?: string[]
+          hero_file_id?: string | null
+          id?: string
+          links?: Json
+          media_source?: Json
+          metadata?: Json
+          model_id?: string
+          organization_id?: string
+          page?: string | null
+          params_label?: string | null
+          shelf?: string | null
+          shelf_subtitle?: string | null
+          shelf_title?: string | null
+          summary?: string | null
+          symbol?: string | null
+          tags?: string[]
+          thumbnail_file_id?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "model_presentation_model_id_fkey"
+            columns: ["model_id"]
+            isOneToOne: false
+            referencedRelation: "model_admin"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "model_presentation_model_id_fkey"
+            columns: ["model_id"]
+            isOneToOne: false
+            referencedRelation: "model_config"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "model_presentation_model_id_fkey"
+            columns: ["model_id"]
+            isOneToOne: false
+            referencedRelation: "model_definition"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "model_presentation_model_id_fkey"
+            columns: ["model_id"]
+            isOneToOne: false
+            referencedRelation: "model_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "model_presentation_model_id_fkey"
+            columns: ["model_id"]
+            isOneToOne: false
+            referencedRelation: "test_model_candidates"
+            referencedColumns: ["model_id"]
+          },
+        ]
+      }
       model_upstream: {
         Row: {
           card_url: string | null
@@ -4133,6 +4250,7 @@ export type Database = {
           documentation_link: string | null
           id: string
           is_system: boolean
+          logo_file_id: string | null
           logo_url: string | null
           metadata: Json
           models_link: string | null
@@ -4160,6 +4278,7 @@ export type Database = {
           documentation_link?: string | null
           id?: string
           is_system?: boolean
+          logo_file_id?: string | null
           logo_url?: string | null
           metadata?: Json
           models_link?: string | null
@@ -4187,6 +4306,7 @@ export type Database = {
           documentation_link?: string | null
           id?: string
           is_system?: boolean
+          logo_file_id?: string | null
           logo_url?: string | null
           metadata?: Json
           models_link?: string | null
@@ -33834,6 +33954,152 @@ export type Database = {
         }
         Relationships: []
       }
+      base: {
+        Row: {
+          color: string | null
+          created_at: string
+          created_by: string | null
+          deleted_at: string | null
+          description: string | null
+          home_id: string
+          icon: string | null
+          id: string
+          metadata: Json
+          name: string
+          organization_id: string
+          published_to_web: boolean
+          published_to_web_at: string | null
+          published_to_web_by: string | null
+          shown_to: Database["platform"]["Enums"]["shown_to"] | null
+          snapshot_schedule: Json
+          template: string | null
+          updated_at: string
+          updated_by: string | null
+          version: number
+          visibility: Database["platform"]["Enums"]["visibility"]
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          description?: string | null
+          home_id: string
+          icon?: string | null
+          id?: string
+          metadata?: Json
+          name: string
+          organization_id: string
+          published_to_web?: boolean
+          published_to_web_at?: string | null
+          published_to_web_by?: string | null
+          shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          snapshot_schedule?: Json
+          template?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+          visibility?: Database["platform"]["Enums"]["visibility"]
+        }
+        Update: {
+          color?: string | null
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          description?: string | null
+          home_id?: string
+          icon?: string | null
+          id?: string
+          metadata?: Json
+          name?: string
+          organization_id?: string
+          published_to_web?: boolean
+          published_to_web_at?: string | null
+          published_to_web_by?: string | null
+          shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          snapshot_schedule?: Json
+          template?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+          visibility?: Database["platform"]["Enums"]["visibility"]
+        }
+        Relationships: []
+      }
+      base_snapshot: {
+        Row: {
+          base_id: string
+          created_at: string
+          created_by: string | null
+          deleted_at: string | null
+          expires_at: string | null
+          id: string
+          label: string
+          metadata: Json
+          organization_id: string
+          origin: string
+          published_to_web: boolean
+          published_to_web_at: string | null
+          published_to_web_by: string | null
+          shown_to: Database["platform"]["Enums"]["shown_to"] | null
+          tables: Json
+          updated_at: string
+          updated_by: string | null
+          version: number
+          visibility: Database["platform"]["Enums"]["visibility"]
+        }
+        Insert: {
+          base_id: string
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          expires_at?: string | null
+          id?: string
+          label: string
+          metadata?: Json
+          organization_id: string
+          origin?: string
+          published_to_web?: boolean
+          published_to_web_at?: string | null
+          published_to_web_by?: string | null
+          shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          tables?: Json
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+          visibility?: Database["platform"]["Enums"]["visibility"]
+        }
+        Update: {
+          base_id?: string
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          expires_at?: string | null
+          id?: string
+          label?: string
+          metadata?: Json
+          organization_id?: string
+          origin?: string
+          published_to_web?: boolean
+          published_to_web_at?: string | null
+          published_to_web_by?: string | null
+          shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          tables?: Json
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+          visibility?: Database["platform"]["Enums"]["visibility"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "base_snapshot_base_id_fkey"
+            columns: ["base_id"]
+            isOneToOne: false
+            referencedRelation: "base"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       carrying_rule: {
         Row: {
           container_side: string
@@ -37054,12 +37320,24 @@ export type Database = {
         }
         Returns: undefined
       }
+      _automation_advance: { Args: { p_run_id: string }; Returns: string }
       _automation_bind: {
         Args: { p_expr: Json; p_values: Json }
         Returns: Json
       }
       _automation_check: {
         Args: { p_organization_id: string; p_spec: Json; p_table_id: string }
+        Returns: Json
+      }
+      _automation_check_steps: {
+        Args: {
+          p_acts: Json
+          p_depth: number
+          p_organization_id: string
+          p_path: string
+          p_rowless: boolean
+          p_table_id: string
+        }
         Returns: Json
       }
       _automation_check_timed: {
@@ -37101,11 +37379,16 @@ export type Database = {
           table_id: string
         }[]
       }
+      _automation_ids: { Args: { p_val: Json }; Returns: string[] }
       _automation_is: {
         Args: { p_field_id: string; p_value: Json }
         Returns: Json
       }
       _automation_now: { Args: never; Returns: string }
+      _automation_number: {
+        Args: { p_acts: Json; p_start: number }
+        Returns: Json
+      }
       _automation_run: {
         Args: {
           p_automation: Json
@@ -37119,6 +37402,21 @@ export type Database = {
         }
         Returns: string
       }
+      _automation_step: {
+        Args: {
+          p_act: Json
+          p_automation: Json
+          p_byid: Json
+          p_change_id: string
+          p_fields: Json
+          p_n: number
+          p_organization_id: string
+          p_record_id: string
+          p_table_id: string
+          p_trigger: Json
+        }
+        Returns: Json
+      }
       _automation_text_of: { Args: { p_value: Json }; Returns: string }
       _automation_time_item: {
         Args: {
@@ -37129,6 +37427,7 @@ export type Database = {
         }
         Returns: number
       }
+      _automation_tok: { Args: { p_ctx: Json; p_val: Json }; Returns: Json }
       _automation_value: {
         Args: { p_me: string; p_value: Json; p_values: Json }
         Returns: Json
@@ -37151,6 +37450,7 @@ export type Database = {
         }
         Returns: Json
       }
+      _automation_when: { Args: { p_when: Json }; Returns: boolean }
       _back_link_relation: {
         Args: { p_key: string; p_organization_id: string; p_table_id: string }
         Returns: Json
@@ -38972,6 +39272,10 @@ export type Database = {
         Args: { p_automation_id: string; p_organization_id: string }
         Returns: Json
       }
+      automation_claim_pending: {
+        Args: { p_lease_seconds?: number; p_limit?: number; p_worker: string }
+        Returns: Json
+      }
       automation_declare: {
         Args: {
           p_automation_id?: string
@@ -38982,6 +39286,27 @@ export type Database = {
         Returns: Json
       }
       automation_restore: {
+        Args: { p_automation_id: string; p_organization_id: string }
+        Returns: Json
+      }
+      automation_resume: {
+        Args: {
+          p_error?: string
+          p_logs?: Json
+          p_output: Json
+          p_run_id: string
+        }
+        Returns: Json
+      }
+      automation_revision_restore: {
+        Args: {
+          p_automation_id: string
+          p_organization_id: string
+          p_revision_id: string
+        }
+        Returns: Json
+      }
+      automation_revisions: {
         Args: { p_automation_id: string; p_organization_id: string }
         Returns: Json
       }
@@ -39011,6 +39336,10 @@ export type Database = {
         Returns: Json
       }
       automation_time_tick: { Args: never; Returns: Json }
+      automation_webhook_receive: {
+        Args: { p_automation_id: string; p_body: Json; p_secret: string }
+        Returns: Json
+      }
       automations: {
         Args: {
           p_include_archived?: boolean
@@ -39031,6 +39360,10 @@ export type Database = {
           p_organization_id: string
           p_subject_id: string
         }
+        Returns: Json
+      }
+      base_copy_finish: {
+        Args: { p_organization_id: string; p_pairs: Json }
         Returns: Json
       }
       booking_cancel: {
@@ -40796,6 +41129,15 @@ export type Database = {
         Returns: Json
       }
       filter_list_op_words: { Args: never; Returns: string[] }
+      find_duplicates: {
+        Args: {
+          p_fields: string[]
+          p_limit?: number
+          p_organization_id: string
+          p_table_id: string
+        }
+        Returns: Json
+      }
       form_archive: {
         Args: { p_form_id: string; p_organization_id: string }
         Returns: Json
@@ -102372,6 +102714,7 @@ export type Database = {
       }
       home_scope_org: { Args: { p_scope: string }; Returns: string }
       is_client_channel: { Args: never; Returns: boolean }
+      is_computer_instance: { Args: { p_platform: string }; Returns: boolean }
       is_general_scope: {
         Args: { p_org: string; p_scope: string }
         Returns: boolean

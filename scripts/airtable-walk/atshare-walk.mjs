@@ -13,7 +13,7 @@ const { sb, client } = await store();
 const ORG = "884d1ce8-7b49-4fba-a2f3-0f7dd7c83d4f";
 const table = must(await declareTable(client, { name: "AT-SHARE Walk Orders " + Date.now().toString(36), labelSingular: "Order", labelPlural: "Orders",
   fields: [{ key: "order", label: "Order", type: "text", sort: 10 }, { key: "status", label: "Status", type: "select", sort: 20, options: ["New", "Packed"] }] }), "table");
-for (const o of ["Order 101", "Order 102", "Order 103"]) must(await client.recordWrite({ table_id: table, data: { order: o, status: "New" } }), "row");
+for (const o of ["Order 101", "Order 102", "Order 103", "order 101 "]) must(await client.recordWrite({ table_id: table, data: { order: o, status: "New" } }), "row");
 say("TABLE", table);
 const browser = await chromium.launch({ headless: true });
 let result = "FAIL";
@@ -36,6 +36,14 @@ try {
     const entries = await ap.locator("[data-activity-entry]").allInnerTexts();
     say("ROW3 activity entries:", entries.length); entries.slice(0, 6).forEach((e) => say("  -", e.replace(/\n/g, " | ")));
     await ap.screenshot({ path: "/tmp/at/atshare-activity.png" });
+    await ap.keyboard.press("Escape");
+    await ap.click("[data-find-duplicates]");
+    await ap.getByRole("button", { name: "Order", exact: true }).click();
+    await ap.click("[data-find-duplicates-run]");
+    await ap.waitForSelector("[data-duplicate-group]", { timeout: 60000 });
+    say("ROW4 dedupe groups:", await ap.locator("[data-duplicate-group]").count(), "| members:", (await ap.locator("[data-duplicate-group] li").allInnerTexts()).join(" / "));
+    await ap.screenshot({ path: "/tmp/at/atshare-dupes.png" });
+    await ap.keyboard.press("Escape");
     // OUTSIDER: opens the table, sees the request button, asks.
     const ctx = await browser.newContext({ viewport: { width: 1600, height: 1000 } });
     const host = new URL(ORIGIN).hostname;
