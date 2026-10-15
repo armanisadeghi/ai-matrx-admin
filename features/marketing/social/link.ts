@@ -100,6 +100,8 @@ export interface SocialLink {
 const NON_ACCOUNT_SEGMENTS = new Set([
   "", "explore", "search", "login", "signup", "help", "about", "home", "feed", "hashtag", "tag", "tags",
   "discover", "watch", "results", "trending", "music", "i", "intent", "share", "legal", "privacy", "terms",
+  // Share / submit / intent endpoints are never an account (twin of matrx_social `_SHARE_SEGMENTS`).
+  "sharer", "sharing", "sharearticle", "share-offsite", "submit", "dialog", "compose", "tweet",
 ]);
 
 /**
@@ -119,6 +121,8 @@ export function classifySocialLink(text: string): SocialLink | null {
   // LinkedIn accounts live under /in/<name> or /company/<name>; YouTube under /@name, /c/, /channel/, /user/.
   const handle = handleFromInput(text);
   if (!handle) return null;
+  // Where the address names no account (a pin page, a share endpoint), the last path segment is not a handle.
+  if (!accountFromUrl(platform, url)) return null;
   if (platform === "linkedin" && !["in", "company", "school"].includes(first)) return null;
   if (platform === "youtube" && !(first.startsWith("@") || ["c", "channel", "user"].includes(first))) return null;
   if (platform === "tiktok" && !first.startsWith("@")) return null;
@@ -249,6 +253,9 @@ function accountFromUrl(
     case "instagram":
       if (lower === "stories" && segs[1]) return { handle: segs[1] };
       return IG_SKIP.has(lower) ? null : { handle: at ?? first };
+    case "pinterest":
+      // Twin of matrx_social `account_segment`: pin pages, idea and search pages are never an account.
+      return ["pin", "ideas", "search"].includes(lower) ? null : { handle: at ?? first };
     default:
       return { handle: at ?? first };
   }

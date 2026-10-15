@@ -270,6 +270,42 @@
       null,
       null,
       false
+    ],
+    [
+      "https://www.linkedin.com/shareArticle?mini=true&url=https%3A%2F%2Fexample.com",
+      null,
+      null,
+      false
+    ],
+    [
+      "https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fexample.com",
+      null,
+      null,
+      false
+    ],
+    [
+      "https://www.reddit.com/submit?url=https%3A%2F%2Fexample.com",
+      null,
+      null,
+      false
+    ],
+    [
+      "https://www.facebook.com/dialog/share?href=x",
+      null,
+      null,
+      false
+    ],
+    [
+      "https://www.pinterest.com/pin/create/button/?url=x",
+      null,
+      null,
+      false
+    ],
+    [
+      "https://www.reddit.com/user/spez",
+      "reddit",
+      "spez",
+      false
     ]
   ]
 }
