@@ -1194,40 +1194,36 @@
     font-size: 1.5rem; /* 24px instead of 24px (same, but explicit) */
   }
 
-  /* The DEFAULT scrollbar. It lives in the BASE layer so every other rule wins over it:
-     the shell's auto-hiding bar (`.shell-main *`, styles/shell.css), `scrollbar-none`,
-     `.scrollbar-visible`. In the utilities layer it beat the shell's bar and painted a
-     grey track under every horizontal scroller in the app (2026-10-14). */
+  /* THE ONE DEFAULT SCROLLBAR — everywhere: pages, dialogs, popovers, window panels.
+     Thin, no track, thumb shown only while the pointer is over the scroller.
+     BASE layer, so anything that asks otherwise wins: `scrollbar-none`, `.scrollbar-visible`,
+     `.scrollbar-contrast`, a component's own rule. (2026-10-14: in the utilities layer it
+     painted a grey track under every horizontal scroller.) */
   * {
-    scrollbar-width: thin; /* For Firefox */
-    scrollbar-color: hsl(var(--scrollbar-thumb)) hsl(var(--scrollbar-track)); /* Firefox scrollbar colors */
+    scrollbar-width: thin;
+    scrollbar-color: transparent transparent;
   }
+  *:hover {
+    scrollbar-color: hsl(var(--scrollbar-thumb)) transparent;
+  }
+  /* Engines that still read the -webkit- pseudo-elements (older Safari) */
   *::-webkit-scrollbar {
-    width: 4px; /* Thin scrollbar width globally */
+    width: 4px;
+    height: 4px;
   }
   *::-webkit-scrollbar-track {
-    background: hsl(
-      var(--scrollbar-track)
-    ); /* Global scrollbar track background */
+    background: transparent;
   }
   *::-webkit-scrollbar-thumb {
-    background-color: hsl(
-      var(--scrollbar-thumb)
-    ); /* Global scrollbar thumb color */
-    border-radius: 10px; /* Round the edges of the scrollbar thumb */
-    border: 1px solid hsl(var(--scrollbar-track)); /* Add some padding inside the scrollbar thumb */
+    background: transparent;
+    border-radius: 2px;
+  }
+  *:hover::-webkit-scrollbar-thumb {
+    background: hsl(var(--scrollbar-thumb));
   }
   *::-webkit-scrollbar-thumb:hover {
-    background-color: hsl(
-      var(--scrollbar-thumb-hover)
-    ); /* Hover state for scrollbar thumb */
+    background: hsl(var(--scrollbar-thumb-hover));
   }
-  *::-webkit-scrollbar-thumb:active {
-    background-color: hsl(
-      var(--scrollbar-thumb-active)
-    ); /* Active state for scrollbar thumb */
-  }
-  /* GLOBAL THIN SCROLLBAR WITH PROPER LIGHT/DARK MODE SUPPORT */
 }
 
 @layer components {
@@ -1301,10 +1297,9 @@
     display: none; /* WebKit */
   }
 
-  /* Custom Scrollbar Styles */
+  /* `scrollbar-thin` = the default bar (thin, auto-hiding), stated explicitly. */
   .scrollbar-thin {
-    scrollbar-width: thin; /* For Firefox */
-    scrollbar-color: hsl(var(--scrollbar-thumb)) hsl(var(--scrollbar-track)); /* Firefox scrollbar colors */
+    scrollbar-width: thin;
   }
 
   .scrollbar-thumb-primary {
@@ -1340,35 +1335,6 @@
 
   .scrollbar-visible::-webkit-scrollbar-thumb:hover {
     background-color: hsl(var(--scrollbar-thumb-hover));
-  }
-
-  /* WebKit-based browsers (Chrome, Safari, etc.) */
-  .scrollbar-thin::-webkit-scrollbar {
-    width: 4px; /* Reduced scrollbar width */
-  }
-
-  .scrollbar-thin::-webkit-scrollbar-track {
-    background: hsl(var(--scrollbar-track)); /* Scrollbar track background */
-  }
-
-  .scrollbar-thin::-webkit-scrollbar-thumb {
-    background-color: hsl(var(--scrollbar-thumb)); /* Scrollbar thumb color */
-    border-radius: 10px; /* Round the edges of the scrollbar thumb */
-    border: 1px solid hsl(var(--scrollbar-track)); /* Thin border inside the scrollbar thumb */
-  }
-
-  /* Additional optional hover effect for scrollbar thumb */
-  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
-    background-color: hsl(
-      var(--scrollbar-thumb-hover)
-    ); /* Hover state for scrollbar thumb */
-  }
-
-  /* Optional active effect for the scrollbar thumb */
-  .scrollbar-thin::-webkit-scrollbar-thumb:active {
-    background-color: hsl(
-      var(--scrollbar-thumb-active)
-    ); /* Active state for scrollbar thumb */
   }
 
   /* Auto-hiding overlay scrollbar — invisible until scrolling, floats over content */

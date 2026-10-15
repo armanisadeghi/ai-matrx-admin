@@ -2381,62 +2381,7 @@ body:has(.shell-root[data-pathname^="/administration"]) {
   display: none;
 }
 
-/* Ultra-thin auto-hiding scrollbar (global for shell).
-   In the BASE layer: it is the default, so anything that says otherwise wins —
-   a `scrollbar-none` / `[scrollbar-width:none]` utility, a component's own rule.
-   Unlayered, `.shell-main *` beat every layered utility and put a thin bar back
-   on rows built to hide it (the composer's quick actions, 2026-10-07: the bar
-   sat over the pills and swallowed clicks). */
-@layer base {
-  .shell-main,
-  .shell-main * {
-    scrollbar-width: thin;
-    scrollbar-color: transparent transparent;
-  }
-
-  .shell-main:hover,
-  .shell-main *:hover {
-    scrollbar-color: var(--matrx-glass-bg-hover) transparent;
-  }
-
-  .shell-main::-webkit-scrollbar,
-  .shell-main *::-webkit-scrollbar {
-    width: 4px;
-    height: 4px;
-  }
-
-  .shell-main::-webkit-scrollbar-track,
-  .shell-main *::-webkit-scrollbar-track {
-    background: transparent;
-  }
-
-  .shell-main::-webkit-scrollbar-thumb,
-  .shell-main *::-webkit-scrollbar-thumb {
-    background: transparent;
-    border-radius: 2px;
-    transition: background 200ms ease;
-  }
-
-  .shell-main:hover::-webkit-scrollbar-thumb,
-  .shell-main *:hover::-webkit-scrollbar-thumb {
-    background: var(--matrx-glass-bg-hover);
-  }
-
-  .shell-main *::-webkit-scrollbar-thumb:hover {
-    background: var(--matrx-glass-bg-active);
-  }
-}
-
-/* `scrollbar-thin` (a utility, so it beats the base default above) asks for a THIN bar,
-   not a painted one: inside the shell it stays the same auto-hiding bar. Without this
-   its zinc track shows under every horizontal scroller that carries the class. */
-.shell-main .scrollbar-thin {
-  scrollbar-color: transparent transparent;
-}
-
-.shell-main .scrollbar-thin:hover {
-  scrollbar-color: var(--matrx-glass-bg-hover) transparent;
-}
+/* The shell's scrollbar is the app-wide default (app/globals.css, base layer). */
 
 /* ---------------------------------------------------------------------------
    13. Mobile — Responsive Overrides
@@ -4067,15 +4012,11 @@ html[data-board-embed] .shell-main {
 /* -----------------------------------------------------------------------------
    High-contrast scrollbars (deliberate opt-in)
    ----------------------------------------------------------------------------
-   The shell forces every scrollbar inside `.shell-main` to an ultra-thin,
-   transparent-until-hover style (see the `.shell-main *::-webkit-scrollbar*`
-   block above). That is great for chrome but bad for long-form reading
-   surfaces where the user genuinely needs to SEE and grab the scrollbar.
-
-   These two utilities intentionally override that global rule. They are
-   scoped under `.shell-main` so they out-specify (and follow in source order)
-   the global thumb/hover rules — including `.shell-main *:hover` — and they
-   are NOT gated on shell hover, so the thumb stays visible while scrolling.
+   Every scrollbar in the app is thin and transparent until hover (the one
+   default, app/globals.css, base layer). That is great for chrome but bad for
+   long-form reading surfaces where the user genuinely needs to SEE and grab it.
+   These two utilities override the default anywhere — pages, dialogs, panels —
+   and are NOT gated on hover, so the thumb stays visible while scrolling.
    Use sparingly; only where findability beats minimalism.
 
    - .scrollbar-contrast    → agent conversation / chat reading column
@@ -4083,21 +4024,21 @@ html[data-board-embed] .shell-main {
 --------------------------------------------------------------------------- */
 
 /* Always-visible, higher-contrast scrollbar (agent conversation column) */
-.shell-main .scrollbar-contrast {
+.scrollbar-contrast {
   scrollbar-width: thin;
   scrollbar-color: hsl(var(--muted-foreground) / 0.45) transparent;
 }
-.shell-main .scrollbar-contrast:hover {
+.scrollbar-contrast:hover {
   scrollbar-color: hsl(var(--muted-foreground) / 0.6) transparent;
 }
-.shell-main .scrollbar-contrast::-webkit-scrollbar {
+.scrollbar-contrast::-webkit-scrollbar {
   width: 10px;
   height: 10px;
 }
-.shell-main .scrollbar-contrast::-webkit-scrollbar-track {
+.scrollbar-contrast::-webkit-scrollbar-track {
   background: transparent;
 }
-.shell-main .scrollbar-contrast::-webkit-scrollbar-thumb {
+.scrollbar-contrast::-webkit-scrollbar-thumb {
   background: hsl(var(--muted-foreground) / 0.45);
   border-radius: 6px;
   /* Transparent border + padding-box clip = breathing room around the thumb */
@@ -4105,37 +4046,37 @@ html[data-board-embed] .shell-main {
   background-clip: padding-box;
   transition: background 160ms ease;
 }
-.shell-main .scrollbar-contrast::-webkit-scrollbar-thumb:hover {
+.scrollbar-contrast::-webkit-scrollbar-thumb:hover {
   background: hsl(var(--muted-foreground) / 0.7);
   background-clip: padding-box;
 }
 
 /* Larger, even more persistent + higher-contrast scrollbar (Notes) */
-.shell-main .scrollbar-contrast-lg {
+.scrollbar-contrast-lg {
   scrollbar-width: auto;
   scrollbar-color: hsl(var(--muted-foreground) / 0.55)
     hsl(var(--muted-foreground) / 0.08);
 }
-.shell-main .scrollbar-contrast-lg:hover {
+.scrollbar-contrast-lg:hover {
   scrollbar-color: hsl(var(--muted-foreground) / 0.75)
     hsl(var(--muted-foreground) / 0.08);
 }
-.shell-main .scrollbar-contrast-lg::-webkit-scrollbar {
+.scrollbar-contrast-lg::-webkit-scrollbar {
   width: 12px;
   height: 12px;
 }
-.shell-main .scrollbar-contrast-lg::-webkit-scrollbar-track {
+.scrollbar-contrast-lg::-webkit-scrollbar-track {
   background: hsl(var(--muted-foreground) / 0.08);
   border-radius: 6px;
 }
-.shell-main .scrollbar-contrast-lg::-webkit-scrollbar-thumb {
+.scrollbar-contrast-lg::-webkit-scrollbar-thumb {
   background: hsl(var(--muted-foreground) / 0.55);
   border-radius: 6px;
   border: 2px solid transparent;
   background-clip: padding-box;
   transition: background 160ms ease;
 }
-.shell-main .scrollbar-contrast-lg::-webkit-scrollbar-thumb:hover {
+.scrollbar-contrast-lg::-webkit-scrollbar-thumb:hover {
   background: hsl(var(--muted-foreground) / 0.85);
   background-clip: padding-box;
 }

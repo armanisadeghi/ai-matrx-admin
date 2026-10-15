@@ -1,40 +1,24 @@
 /**
- * A HIDDEN SCROLLBAR STAYS HIDDEN (Arman, 2026-10-07: a scrollbar sat over the
- * composer's quick-action pills — "they actually block you from clicking them
- * buttons. hide it."). The row already asked for no scrollbar; the shell's
- * site-wide thin-scrollbar rule (`.shell-main *`) was unlayered, and unlayered
- * CSS beats every layered utility, so `scrollbar-none` / `[scrollbar-width:none]`
- * lost on every page in the shell.
+ * ONE DEFAULT SCROLLBAR, AND IT LOSES TO EVERYTHING.
  *
- * RED before: the rule sat outside any @layer in styles/shell.css.
+ * Arman, 2026-10-07: a scrollbar sat over the composer's quick-action pills — "they
+ * actually block you from clicking them buttons. hide it." The shell's thin-scrollbar rule
+ * was unlayered, and unlayered CSS beats every layered utility, so `scrollbar-none` lost.
+ *
+ * Arman, 2026-10-14: "this large horizontal scrollbar … has ruined a lot of uis." The
+ * global universal rule sat in the utilities layer, outranked the shell's auto-hiding bar
+ * and painted a grey track under every horizontal scroller.
+ *
+ * Now there is ONE default — app/globals.css, base layer, thin and auto-hiding — used by
+ * pages, dialogs and popovers alike. RED before: the universal rule sat in
+ * `@layer utilities` with a painted track, and the shell kept its own copy.
  */
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
-it("the shell's default scrollbar rules live in the base layer, where any utility beats them", () => {
-  const css = readFileSync(join(__dirname, "../../../styles/shell.css"), "utf8");
-  const rule = css.indexOf(".shell-main *::-webkit-scrollbar {");
-  expect(rule).toBeGreaterThan(-1);
-  const opened = css.lastIndexOf("@layer base {", rule);
-  expect(opened).toBeGreaterThan(-1);
-  // Nothing closes the layer between its opening and the rule.
-  const between = css.slice(opened, rule);
-  const depth = (between.match(/\{/g) ?? []).length - (between.match(/\}/g) ?? []).length;
-  expect(depth).toBeGreaterThanOrEqual(1);
-  // And no unlayered copy of the universal thin rule remains.
-  const unlayered = css.replace(/@layer base \{[\s\S]*?\n\}\n/g, "");
-  expect(unlayered).not.toMatch(/\.shell-main \*\s*\{\s*scrollbar-width:\s*thin/);
-});
+const globals = readFileSync(join(__dirname, "../../../app/globals.css"), "utf8");
+const shell = readFileSync(join(__dirname, "../../../styles/shell.css"), "utf8");
 
-/**
- * THE GLOBAL DEFAULT SCROLLBAR LOSES TO THE SHELL'S (Arman, 2026-10-14: "this large
- * horizontal scrollbar … has ruined a lot of uis"). Once the shell's auto-hiding bar moved
- * into the base layer, app/globals.css's universal `* { scrollbar-color: … }` — sitting in
- * the utilities layer — outranked it and painted a grey track under every horizontal
- * scroller. The default must live in the base layer too, where `.shell-main *` beats it.
- *
- * RED before: the universal rule sat inside `@layer utilities` in app/globals.css.
- */
 function enclosingLayer(css: string, at: number): string | null {
   let depth = 0;
   for (let i = at; i >= 0; i--) {
@@ -50,14 +34,35 @@ function enclosingLayer(css: string, at: number): string | null {
   return null;
 }
 
-it("the global default scrollbar lives in the base layer, below the shell's auto-hiding bar", () => {
-  const css = readFileSync(join(__dirname, "../../../app/globals.css"), "utf8");
-  const rules = [...css.matchAll(/\n\s*\*\s*\{\s*scrollbar-width:/g)];
-  expect(rules.length).toBeGreaterThan(0);
-  for (const r of rules) expect(enclosingLayer(css, r.index!)).toBe("base");
+it("the one default scrollbar lives in the base layer, where any utility beats it", () => {
+  const rules = [...globals.matchAll(/\n\s*\*\s*\{\s*scrollbar-width:/g)];
+  expect(rules).toHaveLength(1);
+  expect(enclosingLayer(globals, rules[0].index!)).toBe("base");
 });
 
-it("scrollbar-thin stays the auto-hiding bar inside the shell", () => {
-  const css = readFileSync(join(__dirname, "../../../styles/shell.css"), "utf8");
-  expect(css).toMatch(/\.shell-main \.scrollbar-thin\s*\{\s*scrollbar-color:\s*transparent transparent;/);
+it("the default is thin with no painted track at rest", () => {
+  expect(globals).toMatch(/\n\s*\*\s*\{\s*scrollbar-width:\s*thin;\s*scrollbar-color:\s*transparent transparent;/);
+});
+
+it("the shell keeps no second copy of the default", () => {
+  expect(shell).not.toMatch(/^\.shell-main(:hover)?(\s*\*)?[^{\n]*\{\s*scrollbar-(width|color)/m);
+});
+
+it("scrollbar-thin asks for a thin bar, never a painted one", () => {
+  const at = globals.indexOf(".scrollbar-thin {");
+  expect(at).toBeGreaterThan(-1);
+  const body = globals.slice(at, globals.indexOf("}", at));
+  expect(body).not.toMatch(/scrollbar-color/);
+});
+
+it("both stylesheets still close every block they open", () => {
+  for (const css of [globals, shell]) {
+    let depth = 0;
+    for (const ch of css.replace(/\/\*[\s\S]*?\*\//g, "")) {
+      if (ch === "{") depth++;
+      else if (ch === "}") depth--;
+      expect(depth).toBeGreaterThanOrEqual(0);
+    }
+    expect(depth).toBe(0);
+  }
 });
