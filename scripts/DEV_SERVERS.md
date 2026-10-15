@@ -173,6 +173,13 @@ Open `/hooks` once after installation and trust the Matrx dev-server guard.
   dev-login) with its pairing rule, and extended the three one-server guards to
   exactly two named servers.
 
+- 2026-10-14: The watchdog restarts the server when an install moves
+  `node_modules` under it (fingerprint differs from boot and holds still 15 s;
+  `restart_if_node_modules_moved`), logging which @ai-matrx versions moved. The
+  launcher records the boot versions (lease `AIMATRX_VERSIONS`, server env
+  `MATRX_PREVIEW_BOOT_PACKAGES`) for `/api/dev/server-freshness` and the
+  super-admin attention dock. Forcing checks: `pnpm check:install-gate:self-test`.
+
 - 2026-09-26: Added the live-database walk cap (`ops.agent_walks` knobs,
   development-only proxy gate).
 

@@ -31,7 +31,7 @@ carried raw uuids.
 | Piece | File | Role |
 |---|---|---|
 | Types | `types.ts` | `AttentionItem` (a decision, not a title), `AttentionSourceState` |
-| Sources (pure) | `sources/schedule-alarms.ts`, `sources/provider-outages.ts`, `sources/dated-changes.ts`, `sources/spend-alarms.ts`, `sources/deploy-freshness.ts` | rows → items; summaries |
+| Sources (pure) | `sources/schedule-alarms.ts`, `sources/provider-outages.ts`, `sources/dated-changes.ts`, `sources/spend-alarms.ts`, `sources/deploy-freshness.ts`, `sources/dev-server-freshness.ts` | rows → items; summaries |
 | Sources (live) | `sources/useScheduleAlarmSource.ts`, `sources/useProviderOutageSource.ts`, `sources/useDatedChangeSource.ts`, `sources/useSpendAlarmSource.ts`, `sources/useDeployFreshnessSource.ts` | React Query read + the injected writes |
 | Notice | `build-notice.ts` | live/muted partition, the title, the pill, `null` at zero; `info` counted apart; `SECTION_LIMIT` (8) rows per source, worst first, `hidden` → "+N more" to its review |
 | Row | `AttentionItemRow.tsx` | the same row on the dock AND the review page |
@@ -206,7 +206,23 @@ Files: `deploy-freshness-service.ts`, `sources/deploy-freshness.ts`, `sources/us
 test `__tests__/deploy-freshness-items.test.ts`. Producer: matrx-ship `server-manager/FEATURE.md`
 § Release freshness.
 
+## Dev server freshness (development only)
+
+Source `dev-server-freshness`: the LOCAL dev server running @ai-matrx packages older than
+`node_modules` (an install relinked them under it). Read from `GET /api/dev/server-freshness`
+(404 in every build; contract `lib/dev-server/server-freshness.ts`), every 15 s, quiet on failure
+because the read fails exactly while the server restarts. The preview watchdog
+(`scripts/agent-dev-server.sh` `restart_if_node_modules_moved`) restarts the server once the install
+settles, so the row normally lives under a minute; after 3 min it turns critical. `machineLocal`:
+the database has never heard of this machine, so the row skips triage and goes on the card first.
+Files: `sources/dev-server-freshness.ts`, `sources/useDevServerFreshnessSource.ts`; tests
+`__tests__/dev-server-freshness-items.test.ts`, `lib/dev-server/__tests__/server-freshness.test.ts`.
+
 ## Change log
+
+- **2026-10-14** — Dev server freshness joins the dock. An install relinked @ai-matrx/api under the
+  running preview and a page logged `First-touch persistence failed 500 ""` — a stale server, not a
+  bug in that feature. The watchdog now restarts on its own; the dock says why while it does.
 
 - **2026-10-13** — Deploy freshness joins the dock. files.matrxserver.com ran a 4-day-old build
   (13 releases refused to install) and pasted images failed on every page; the Manager's warning
