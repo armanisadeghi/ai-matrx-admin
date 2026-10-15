@@ -19,7 +19,7 @@ import type { Decision, EvidenceItem } from "../evidence";
 import type { SuggestContext, WebChoice } from "../webKinds";
 import { buildQueue, decisionFor, mergeFacts, type Answer, type BrandFact, type FocusItem } from "./queue";
 import { persistAnswer, type Persisted } from "./persist";
-import { answeredKeysOf, EMPTY_KNOWN, foldQueue, type KnownOnBrand } from "./fold";
+import { answeredKeysOf, EMPTY_KNOWN, foldQueue, logoImagesOf, logosLabel, type KnownOnBrand } from "./fold";
 import { loadSavedFindings } from "./fromSaved";
 import { loadSavedAnswers, type SavedAnswers } from "./savedAnswers";
 import { emptyAnswers, useRunMemory } from "../runMemory";
@@ -110,7 +110,14 @@ export function SmartAddValidate({
 
   const answeredKeys = new Set(answered.flatMap((a) => answeredKeysOf(a.item)));
   const raw = buildQueue({ items: allItems, facts: allFacts, decisions, webChoices, answered: answeredKeys, later, broken, kinds, ctx });
-  const known: KnownOnBrand = { ...(saved?.known ?? EMPTY_KNOWN), names: [...(saved?.known.names ?? []), brand.name] };
+  // A logo picture already answered (this visit or an earlier one) or saved as the brand's logo is never asked again,
+  // whichever key a later round finds it under (MKT-139).
+  const answeredLogoImages = [...answered.map((a) => a.item), ...(past?.entries ?? []).map((e) => e.item)].filter((i) => i.kind === "logo").flatMap(logoImagesOf);
+  const known: KnownOnBrand = {
+    ...(saved?.known ?? EMPTY_KNOWN),
+    names: [...(saved?.known.names ?? []), brand.name],
+    images: [...(saved?.known.images ?? []), ...(brand.logo_url ? [brand.logo_url] : []), ...answeredLogoImages],
+  };
   const folded = foldQueue({ queue: raw, known, later });
   // The card in focus stays in focus: a finding arriving live never jumps in front of it.
   const pinned = useRef<string | null>(null);
@@ -138,7 +145,7 @@ export function SmartAddValidate({
       item,
       answer,
       relationLabel,
-      value: opts.value?.trim() || (item.kind === "logo" ? `Logos · ${1 + (item.folded?.length ?? 0)}` : item.kind === "web" ? (item.title ?? item.value) : item.value),
+      value: opts.value?.trim() || (item.kind === "logo" ? logosLabel(item) : item.kind === "web" ? (item.title ?? item.value) : item.value),
       state: "saving",
       error: null,
       persisted: null,

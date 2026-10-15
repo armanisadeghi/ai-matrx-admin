@@ -23,6 +23,7 @@ import type { SuggestContext } from "../webKinds";
 import { fromRow, type SavedRow } from "./fromSaved";
 import { focusFromEvidence, focusFromFact, type Answer, type BrandFact, type FocusItem } from "./queue";
 import type { Persisted } from "./persist";
+import { logosLabel } from "./fold";
 
 export interface SavedAnswer {
   id: string;
@@ -107,9 +108,13 @@ export async function loadSavedAnswers(brand: MarketingBrand, kinds: BrandRelati
   if (res.error) throw new Error(res.error.message);
   const rows = res.data ?? [];
   const copiesOf = new Map<string, string[]>();
+  const copyRowsOf = new Map<string, typeof rows>();
   for (const r of rows) {
     const folded = rec(rec(r.context).answer as Json).folded_into;
-    if (typeof folded === "string") copiesOf.set(folded, [...(copiesOf.get(folded) ?? []), r.id]);
+    if (typeof folded === "string") {
+      copiesOf.set(folded, [...(copiesOf.get(folded) ?? []), r.id]);
+      copyRowsOf.set(folded, [...(copyRowsOf.get(folded) ?? []), r]);
+    }
   }
   const out: SavedAnswers = { entries: [], items: [], facts: [] };
   for (const r of rows) {
@@ -126,6 +131,15 @@ export async function loadSavedAnswers(brand: MarketingBrand, kinds: BrandRelati
     } else {
       item = focusFromEvidence(one.item, kinds, ctx);
       out.items.push(one.item);
+      // A logo card settled several pictures: its copies come back with it, so the label and the "already answered"
+      // pictures match the live session's (MKT-139, MKT-140).
+      if (item?.kind === "logo") {
+        const copies = (copyRowsOf.get(r.id) ?? [])
+          .map((c) => fromRow(c as SavedRow))
+          .map((c) => (c && "item" in c ? focusFromEvidence(c.item, kinds, ctx) : null))
+          .filter((c): c is FocusItem => Boolean(c));
+        if (copies.length) item = { ...item, twins: [...item.twins, ...copies.map((c) => c.key)], folded: copies };
+      }
     }
     if (!item) continue;
     const rowIds = [r.id, ...(copiesOf.get(r.id) ?? [])];
@@ -140,7 +154,7 @@ export async function loadSavedAnswers(brand: MarketingBrand, kinds: BrandRelati
       relationLabel: relationKey ? (kinds.find((k) => k.key === relationKey)?.label ?? relationKey) : null,
       value:
         item.kind === "logo"
-          ? "Logos"
+          ? logosLabel(item)
           : item.kind === "account" && item.evidence?.handle
             ? item.evidence.handle.startsWith("@")
               ? item.evidence.handle

@@ -147,8 +147,8 @@ export function SiteIdentityMark({
       className={cn(
         "relative flex shrink-0 items-center justify-center overflow-hidden rounded-md border border-border/60 bg-muted/40",
         className,
-        tile === "light" && "bg-white",
-        tile === "dark" && "bg-zinc-900",
+        tile === "light" && "bg-background dark:bg-foreground",
+        tile === "dark" && "bg-foreground dark:bg-background",
       )}
       style={{ width: size, height: size }}
     >

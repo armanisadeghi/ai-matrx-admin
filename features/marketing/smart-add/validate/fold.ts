@@ -36,6 +36,8 @@ export interface KnownOnBrand {
   values: string[];
   /** Accounts the brand owns as `<platform>:<handle>` (a property row with a handle but no address still counts). */
   accounts?: string[];
+  /** Pictures already answered or saved as the brand's logos: a logo candidate showing one of them is not asked again (MKT-139). */
+  images?: string[];
 }
 
 export const EMPTY_KNOWN: KnownOnBrand = { names: [], hosts: [], urls: [], values: [] };
@@ -139,6 +141,22 @@ function urlOf(item: FocusItem): string | null {
   return v && /^https?:\/\//i.test(v.trim()) ? v.trim() : null;
 }
 
+/** The picture a logo finding shows (its own image address, else the value when that is an address). */
+export function logoImageOf(item: FocusItem): string | null {
+  const v = (item.imageUrl ?? item.evidence?.image_url ?? item.value ?? "").trim();
+  return /^https?:\/\//i.test(v) ? v : null;
+}
+
+/** The tray's label for an answered logo card: how many pictures it settled. One word for live and reloaded answers. */
+export function logosLabel(item: FocusItem): string {
+  return `Logos · ${1 + (item.folded?.length ?? 0)}`;
+}
+
+/** Every picture an answered logo card settled: its own and each folded copy's. */
+export function logoImagesOf(item: FocusItem): string[] {
+  return [item, ...(item.folded ?? [])].map(logoImageOf).filter((u): u is string => Boolean(u));
+}
+
 /** Every identity a finding has; two findings sharing one are the same real thing. */
 export function identities(item: FocusItem): string[] {
   const f = field(item);
@@ -168,7 +186,11 @@ export function identities(item: FocusItem): string[] {
   if (item.kind === "name" || NAME_FIELDS.has(f)) keys.push(`name:${norm(item.value)}`);
   if (CATEGORY_FIELDS.has(f)) keys.push(`cat:${norm(item.value)}`);
   if (ABOUT_FIELDS.has(f)) keys.push("about");
-  if (f === "logo") keys.push("logo");
+  if (f === "logo") {
+    keys.push("logo");
+    const image = logoImageOf(item);
+    if (image) keys.push(`img:${domainAddress(image)}`);
+  }
   if (f === "service_area") keys.push(`area:${norm(item.value)}`);
   if (item.fact) keys.push(`fact:${f}:${norm(item.value)}`);
   return keys;
@@ -189,6 +211,7 @@ function knownKeys(known: KnownOnBrand): Set<string> {
     const handle = rest.join(":").replace(/^@/, "");
     if (platform && handle) keys.add(`acct:${platform === "twitter" ? "x" : platform}:${handle}`);
   }
+  for (const img of known.images ?? []) if (/^https?:\/\//i.test(img)) keys.add(`img:${domainAddress(img)}`);
   for (const v of known.values) {
     if (!v.trim()) continue;
     const digits = v.replace(/\D/g, "").slice(-10);

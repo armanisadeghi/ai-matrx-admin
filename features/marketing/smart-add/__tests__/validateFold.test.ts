@@ -166,3 +166,24 @@ describe("MKT-044 — near-duplicate descriptions are one card", () => {
     expect(answeredKeysOf(cards[0])).toHaveLength(7);
   });
 });
+
+describe("logos already answered (MKT-139)", () => {
+  const logoRows = [
+    row("media", "logo", "https://cdn.example.com/a.png", { image_url: "https://cdn.example.com/a.png" }),
+    row("media", "logo", "https://cdn.example.com/b.png", { image_url: "https://cdn.example.com/b.png" }),
+  ];
+  const queueOf = (rows: SavedRow[]) => {
+    const items = rows.map((r) => fromRow(r)).flatMap((o) => (o && "item" in o ? [o.item] : []));
+    return buildQueue({ items, facts: [], decisions: {}, webChoices: {}, answered: new Set(), later: [], kinds: [], ctx: { ourHosts: [], ourAccounts: [], name: null } });
+  };
+  it("folds every logo into one card", () => {
+    const cards = foldQueue({ queue: queueOf(logoRows), known: { names: [], hosts: [], urls: [], values: [] }, later: [] });
+    expect(cards).toHaveLength(1);
+  });
+  it("drops a logo whose picture was already answered, under whatever key a later round gives it", () => {
+    const cards = foldQueue({ queue: queueOf(logoRows), known: { names: [], hosts: [], urls: [], values: [], images: ["https://cdn.example.com/a.png"] }, later: [] });
+    expect(cards).toHaveLength(1);
+    expect(cards[0].value).toContain("b.png");
+    expect(cards[0].folded ?? []).toHaveLength(0);
+  });
+});
