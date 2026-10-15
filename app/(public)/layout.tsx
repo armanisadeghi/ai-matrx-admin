@@ -4,6 +4,16 @@ import { PublicHeader } from "@/components/matrx/PublicHeader";
 import { PublicFooter } from "@/components/matrx/PublicFooter";
 import { ShellCanvasColumn } from "@/features/canvas/host/ShellCanvasColumn";
 import { Providers } from "@/app/Providers";
+import { GoogleOneTapMount } from "@/features/auth/one-tap/GoogleOneTapMount";
+
+const ONE_TAP_SKIP_PREFIXES = [
+  "/unsubscribe",
+  "/appointment-reminder",
+  "/app_callback",
+  "/l/",
+  "/r/",
+  "/sms",
+];
 
 export default function PublicLayout({
   children,
@@ -23,6 +33,9 @@ export default function PublicLayout({
           --shell-canvas-w on the right, so the canvas never covers the page.
           Tab bodies load lazily per kind. */}
       <ShellCanvasColumn />
+      {/* Google One Tap for signed-out visitors — marketing and shared pages alike. Links that
+          answer one errand (unsubscribe, a reminder, a short link) never prompt. */}
+      <GoogleOneTapMount skipPrefixes={ONE_TAP_SKIP_PREFIXES} />
     </Providers>
   );
 }

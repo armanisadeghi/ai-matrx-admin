@@ -20,6 +20,7 @@ import AuthPageContainer from "@/components/auth/auth-page-container";
 import { HardRedirectForm } from "@/components/auth/HardRedirectForm";
 import { GuestFingerprintField } from "./GuestFingerprintField";
 import {
+  authDestinationOr,
   preserveAuthDestination,
   readAuthDestination,
 } from "@/utils/auth/auth-destination";
@@ -36,6 +37,7 @@ import {
 } from "@/utils/auth/coupon-links";
 import { lookupCouponPreview } from "@/features/entitlements/coupons/couponPreview";
 import { CouponOfferBanner } from "@/features/entitlements/coupons/CouponOfferBanner";
+import { GoogleOneTapMount } from "@/features/auth/one-tap/GoogleOneTapMount";
 
 interface SignUpProps {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
@@ -277,6 +279,7 @@ export default async function SignUp({ searchParams }: SignUpProps) {
           </form>
         </div>
       </div>
+      <GoogleOneTapMount context="signup" destination={authDestinationOr({ redirectTo })} />
     </AuthPageContainer>
   );
 }

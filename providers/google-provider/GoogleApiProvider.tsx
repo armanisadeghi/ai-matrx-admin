@@ -33,6 +33,7 @@ import {
   GOOGLE_IDENTITY_SCRIPT_SRC,
   GOOGLE_IDENTITY_UNAVAILABLE_MESSAGE,
 } from "./googleIdentityReadiness";
+import type { GoogleIdNamespace } from "./googleIdentityId";
 
 export class GoogleAuthorizationCancelledError extends Error {
   constructor() {
@@ -64,6 +65,8 @@ declare global {
           initTokenClient: (config: TokenClientConfig) => TokenClient;
           revoke: (token: string, callback: () => void) => void;
         };
+        /** One Tap — `./googleIdentityId.ts`. */
+        id?: GoogleIdNamespace;
       };
       picker?: GooglePickerNamespace;
     };

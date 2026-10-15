@@ -8,6 +8,7 @@ import { AuthAwareButton } from "@/features/landing/components/AuthAwareButton";
 import { PublicFooter } from "@/components/matrx/PublicFooter";
 import { GoogleOAuthRedirectCallback } from "@/providers/google-provider/GoogleOAuthRedirectCallback";
 import { JsonLd } from "@/components/seo/JsonLd";
+import { GoogleOneTapMount } from "@/features/auth/one-tap/GoogleOneTapMount";
 import { siteConfig } from "@/config/extras/site";
 
 // Enhanced metadata for SEO
@@ -177,6 +178,7 @@ export default async function LandingPage({ searchParams }: LandingPageProps) {
       <div className="relative z-10">
         <PublicFooter />
       </div>
+      <GoogleOneTapMount />
     </div>
   );
 }

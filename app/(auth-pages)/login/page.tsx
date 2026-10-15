@@ -21,6 +21,7 @@ import { AuthMessageType } from "@/components/form-message";
 import { GuestFingerprintField } from "../sign-up/GuestFingerprintField";
 import {
   AUTH_DEST_PARAM,
+  authDestinationOr,
   preserveAuthDestination,
   readAuthDestination,
 } from "@/utils/auth/auth-destination";
@@ -31,6 +32,7 @@ import {
 import { guestRecordsNote, readGuestRecordCount } from "@/lib/guest/guest-record-count";
 import { lookupInvitedEmail } from "@/utils/auth/invited-email-lookup";
 import { RememberedSignInHeading } from "@/features/auth/components/RememberedSignInHeading";
+import { GoogleOneTapMount } from "@/features/auth/one-tap/GoogleOneTapMount";
 
 interface SignInProps {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
@@ -230,6 +232,7 @@ export default async function SignIn({ searchParams }: SignInProps) {
           </form>
         </div>
       </div>
+      <GoogleOneTapMount context="signin" destination={authDestinationOr({ redirectTo })} />
     </AuthPageContainer>
   );
 }
