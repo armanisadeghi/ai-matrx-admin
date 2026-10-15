@@ -7,7 +7,7 @@
  */
 
 import type { ReactNode } from "react";
-import { Peek, PeekHoverCard } from "@ai-matrx/design-system";
+import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 import type { BrandRelationKind } from "@/features/marketing/data/service";
 import { ANSWER_LABEL, type Suggestion } from "./validate/queue";
 
@@ -16,30 +16,32 @@ export function WeThinkHint({ suggestion, kinds, evidence }: { suggestion: Sugge
   if (!suggestion) return <span className="h-5" aria-hidden />;
   const rel = suggestion.relation_key ? kinds.find((k) => k.key === suggestion.relation_key)?.label : null;
   const label = rel ?? ANSWER_LABEL[suggestion.choice];
-  const pct = suggestion.probability !== null ? Math.round(suggestion.probability * 100) : null;
-  const hint = (
-    <span className="flex h-5 items-center gap-1.5 text-xs text-primary" data-testid="validate-we-think" data-choice={suggestion.choice}>
-      <span className="size-1.5 rounded-full bg-primary" aria-hidden />
-      We think: {label}
-      {pct !== null ? <span className="tabular-nums text-muted-foreground">{pct}%</span> : null}
-    </span>
-  );
-  if (!suggestion.reason) return hint;
-  // The reason and its evidence: THE peek on hover.
   return (
-    <PeekHoverCard side="bottom" align="start" trigger={hint}>
-      <Peek
-        size="sm"
-        record={{
-          kind: "Suggestion",
-          id: `we-think:${suggestion.choice}:${suggestion.relation_key ?? ""}`,
-          title: `We think: ${label}`,
-          ...(pct !== null ? { subtitle: `${pct}% sure` } : {}),
-          body: [{ section: "Why", text: suggestion.reason }, ...(evidence?.length ? [{ section: "Evidence", items: evidence }] : [])],
-          copyData: { suggestion: label, probability: pct, reason: suggestion.reason, evidence: evidence ?? [] },
-        }}
-      />
-    </PeekHoverCard>
+    <HoverCard openDelay={120}>
+      <HoverCardTrigger asChild>
+        <span className="flex h-5 items-center gap-1.5 text-xs text-primary" data-testid="validate-we-think" data-choice={suggestion.choice}>
+          <span className="size-1.5 rounded-full bg-primary" aria-hidden />
+          We think: {label}
+          {suggestion.probability !== null ? (
+            <span className="tabular-nums text-muted-foreground">{Math.round(suggestion.probability * 100)}%</span>
+          ) : null}
+        </span>
+      </HoverCardTrigger>
+      {suggestion.reason ? (
+        <HoverCardContent className="flex w-72 flex-col gap-1.5 text-xs" data-testid="we-think-reason">
+          <span>{suggestion.reason}</span>
+          {evidence?.length ? (
+            <ul className="flex flex-col gap-0.5 text-muted-foreground">
+              {evidence.map((e) => (
+                <li key={e} className="break-words">
+                  {e}
+                </li>
+              ))}
+            </ul>
+          ) : null}
+        </HoverCardContent>
+      ) : null}
+    </HoverCard>
   );
 }
 
