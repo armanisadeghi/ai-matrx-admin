@@ -36,7 +36,10 @@
  * module.
  */
 
-import { safeRelativePath } from "@/utils/auth/safe-redirect";
+import {
+  safeAbsoluteReturnUrl,
+  safeRelativePath,
+} from "@/utils/auth/safe-redirect";
 
 /** The parameter name we always WRITE. */
 export const AUTH_DEST_PARAM = "redirectTo";
@@ -152,6 +155,14 @@ export function normalizeAuthDestination(
 
   // safeRelativePath owns the open-redirect rules (protocol-relative,
   // backslash and userinfo tricks). Never re-implement them here.
+  // An absolute URL is legal only on the aimatrx.com family (Office hosts).
+  const absolute = safeAbsoluteReturnUrl(candidate);
+  if (absolute) {
+    const { pathname } = new URL(absolute);
+    // An auth page on any host is still never a destination.
+    if (isNonDestinationPath(pathname)) return null;
+    return absolute;
+  }
   const safe = safeRelativePath(candidate, "");
   if (!safe) return null;
   if (isNonDestinationPath(safe)) return null;
