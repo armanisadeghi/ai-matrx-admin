@@ -64,19 +64,24 @@ export function TemplateThumb({
   const liveSvg =
     !isDeck && !template.thumbnailUrl && snapshot ? snapshotPreviewSvg(template.kind as "workbook" | "document", snapshot) : null;
   return (
-    <div className={cn("flex w-36 min-w-0 flex-col gap-1.5", className)}>
-      <button
-        type="button"
-        data-clickable
-        disabled={busy}
-        aria-label={`Use template ${template.name}`}
-        title={template.description ?? template.name}
-        onClick={() => onSelect?.(template)}
+    <button
+      type="button"
+      data-clickable
+      disabled={busy}
+      aria-label={`Use template ${template.name}`}
+      title={template.description ?? template.name}
+      onClick={() => onSelect?.(template)}
+      className={cn(
+        "group flex w-36 min-w-0 flex-col gap-1.5 rounded-md text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+        busy && "opacity-60",
+        className,
+      )}
+    >
+      <span
         className={cn(
-          "relative w-full overflow-hidden rounded-md border border-border bg-white transition-colors",
+          "relative block w-full overflow-hidden rounded-md border border-border bg-white transition-colors",
           isDeck ? "aspect-video" : "aspect-[320/414]",
-          "hover:border-primary focus-visible:border-primary focus-visible:outline-none",
-          busy && "opacity-60",
+          "group-hover:border-primary group-focus-visible:border-primary",
         )}
       >
         {isDeck ? (
@@ -104,15 +109,15 @@ export function TemplateThumb({
         ) : (
           <span aria-hidden className="block size-full animate-pulse bg-muted" />
         )}
-      </button>
+      </span>
       {caption && (
         // Google's two-line caption: the name, then its style (the part after "—") or its category.
-        <div className="flex min-w-0 flex-col px-0.5 text-sm leading-5" title={cap.full}>
+        <span className="flex min-w-0 flex-col px-0.5 text-sm leading-5" title={cap.full}>
           <span className="truncate font-medium text-foreground">{cap.name}</span>
           <span className="truncate text-muted-foreground">{cap.line}</span>
-        </div>
+        </span>
       )}
-    </div>
+    </button>
   );
 }
 

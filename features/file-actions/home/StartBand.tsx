@@ -64,23 +64,28 @@ export function StartTile({
   shape?: "page" | "slide";
 }) {
   return (
-    <div className={cn("flex shrink-0 flex-col gap-1.5", shape === "slide" ? "w-40 sm:w-48" : "w-28 sm:w-36")}>
-      <button
-        type="button"
-        data-clickable
-        disabled={disabled || busy}
-        aria-label={label}
-        title={title ?? label}
-        onClick={onClick}
+    <button
+      type="button"
+      data-clickable
+      disabled={disabled || busy}
+      aria-label={label}
+      title={title ?? label}
+      onClick={onClick}
+      className={cn(
+        "group flex shrink-0 flex-col gap-1.5 rounded-md text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:opacity-60",
+        shape === "slide" ? "w-40 sm:w-48" : "w-28 sm:w-36",
+      )}
+    >
+      <span
         className={cn(
-          "relative flex w-full items-center justify-center overflow-hidden rounded-md border border-border bg-white transition-colors hover:border-primary focus-visible:border-primary focus-visible:outline-none disabled:opacity-60",
+          "relative flex w-full items-center justify-center overflow-hidden rounded-md border border-border bg-white transition-colors group-hover:border-primary group-focus-visible:border-primary",
           shape === "slide" ? "aspect-video" : "aspect-[320/414]",
         )}
       >
         {busy ? <Spinner size="sm" label="Creating" /> : face}
-      </button>
-      <span className="truncate px-0.5 text-sm font-medium leading-5 text-foreground">{label}</span>
-    </div>
+      </span>
+      <span className="block w-full truncate px-0.5 text-sm font-medium leading-5 text-foreground">{label}</span>
+    </button>
   );
 }
 
