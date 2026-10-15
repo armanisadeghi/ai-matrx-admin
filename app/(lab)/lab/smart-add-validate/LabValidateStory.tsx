@@ -22,7 +22,7 @@ const KINDS: BrandRelationKind[] = [
   id: key,
   key,
   label,
-  routesTo: null,
+  routesTo: key === "founder" ? "owns" : key === "competitor" ? "competitor" : null,
   isKnown: true,
   stance: stance as BrandRelationKind["stance"],
   description: null,

@@ -18,7 +18,7 @@
 
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { AnimatePresence, LayoutGroup, MotionConfig, motion, type Transition } from "motion/react";
+import { AnimatePresence, LayoutGroup, MotionConfig, motion, useMotionValue, useTransform, type PanInfo, type Transition } from "motion/react";
 import { Check, ChevronUp, ExternalLink, Globe, Info, LayoutDashboard, Pencil, RotateCcw, Users, X } from "lucide-react";
 import { PANEL_MOTION_CLASS, Peek, PeekHoverCard, Skeleton, type PeekBlock } from "@ai-matrx/design-system";
 import { Badge, Button, DecisionControl, Field, type WayOutItem } from "@ai-matrx/design-system/controls";
@@ -30,6 +30,7 @@ import { PlatformMark } from "@/features/marketing/social/components/PlatformMar
 import { SocialImage } from "@/features/marketing/social/components/SocialImage";
 import { profileAvatarDoor } from "@/features/marketing/social/server";
 import { websiteHost } from "../evidence";
+import { personNameOnPage } from "../personParty";
 import { outboundHref } from "../SmartAddExtras";
 import { STANCE_LABEL, STANCE_ORDER } from "../webKinds";
 import { WeThinkHint } from "../WeThinkHint";
@@ -72,6 +73,9 @@ const cardVariants = {
         ? { opacity: 0, x: -160, y: -12, rotate: -7, transition: THROW }
         : { opacity: 0, y: 60, scale: 0.94, transition: THROW },
 };
+
+/** How many answers the tray lists before the rest fold behind one button. */
+const TRAY_LIMIT = 5;
 
 /** Keys: one per answer, the same on every card. */
 const KEY = { yes: "Y", no: "N", other: "O" } as const;
@@ -236,8 +240,11 @@ function Hero({
   onCancelEdit,
   off,
   toggleOff,
+  ask,
 }: {
   item: FocusItem;
+  /** Set while the card asks for a person's name (Founder / Key person): the field's label. */
+  ask?: string | null;
   editing: boolean;
   draft: string;
   setDraft: (v: string) => void;
@@ -276,8 +283,9 @@ function Hero({
   if (editing) {
     return (
       <Field
-        aria-label="Value"
-        // ui-exception: the fact's own raw value, edited in place
+        aria-label={ask ?? "Value"}
+        // ui-exception: the fact's own raw value, or a person's name, typed in place
+        placeholder={ask ? "Their name" : undefined}
         value={draft}
         autoFocus
         onChange={(e) => setDraft(e.target.value)}
@@ -331,6 +339,7 @@ function Hero({
 
 function FocusCard({
   item,
+  brandName,
   kinds,
   onAnswer,
   editing,
@@ -339,6 +348,7 @@ function FocusCard({
   toggleOff,
 }: {
   item: FocusItem;
+  brandName: string;
   kinds: BrandRelationKind[];
   onAnswer: (answer: Answer, opts?: AnswerOptions) => void;
   editing: boolean;
@@ -347,6 +357,8 @@ function FocusCard({
   toggleOff: (key: string) => void;
 }) {
   const [draft, setDraft] = useState(item.value);
+  // Founder / Key person on a page asks for the person's name before anything is saved (MKT-043).
+  const [personFor, setPersonFor] = useState<BrandRelationKind | null>(null);
   const set = Boolean(item.members?.length);
   const options = set ? (["correct", "wrong", "later", "ignore"] as Answer[]) : optionsFor(item.kind);
   const { yes, no } = set ? { yes: "correct" as Answer, no: "wrong" as Answer } : yesNo(item);
@@ -360,13 +372,53 @@ function FocusCard({
   const canEdit = item.kind === "fact" && !set;
   // Key hints only where there is a keyboard: a phone shows clean buttons.
   const keys = useMediaQuery("(pointer: fine)");
+  // Phones: the card itself is swiped — right = Yes, left = No, up = Skip for now (MKT-046). Buttons stay.
+  const touch = useMediaQuery("(pointer: coarse)");
+  const swipeable = touch && !editing && !personFor;
+  const x = useMotionValue(0);
+  const y = useMotionValue(0);
+  const tilt = useTransform(x, [-200, 0, 200], [-6, 0, 6]);
+  const yesHint = useTransform(x, [20, 110], [0, 1]);
+  const noHint = useTransform(x, [-110, -20], [1, 0]);
+  const laterHint = useTransform(y, [-110, -20], [1, 0]);
+  const [thrown, setThrown] = useState(false);
+  const onSwipe = (_: unknown, info: PanInfo) => {
+    const dx = info.offset.x + info.velocity.x * 0.15;
+    const dy = info.offset.y + info.velocity.y * 0.15;
+    const far = 110;
+    const decide = (a: Answer, opts?: AnswerOptions) => {
+      setThrown(true);
+      onAnswer(a, opts);
+    };
+    if (Math.abs(dx) >= far && Math.abs(dx) > Math.abs(dy)) decide(dx > 0 ? yes : no, dx > 0 && set ? { off: [...off] } : undefined);
+    else if (!set && dy <= -far) decide("later");
+  };
   return (
-    <div
-      className="flex h-full flex-col gap-6 rounded-3xl border border-border bg-card p-4 shadow-[0_1px_2px_rgb(0_0_0/0.04),0_18px_48px_-20px_rgb(0_0_0/0.28)] sm:p-8"
+    <motion.div
+      drag={swipeable ? (set ? "x" : true) : false}
+      dragSnapToOrigin={!thrown}
+      dragElastic={0.6}
+      dragMomentum={false}
+      onDragEnd={onSwipe}
+      style={{ x, y, rotate: tilt }}
+      className="relative flex h-full flex-col gap-6 rounded-3xl border border-border bg-card p-4 shadow-[0_1px_2px_rgb(0_0_0/0.04),0_18px_48px_-20px_rgb(0_0_0/0.28)] sm:p-8"
       data-testid="validate-focus"
       data-key={item.key}
       data-kind={item.kind}
     >
+      {swipeable ? (
+        <>
+          <motion.span aria-hidden style={{ opacity: yesHint }} className="pointer-events-none absolute top-4 left-4 rounded-full bg-primary px-3 py-1 text-sm font-semibold text-primary-foreground">
+            {ANSWER_LABEL[yes]}
+          </motion.span>
+          <motion.span aria-hidden style={{ opacity: noHint }} className="pointer-events-none absolute top-4 right-4 rounded-full bg-destructive px-3 py-1 text-sm font-semibold text-destructive-foreground">
+            {ANSWER_LABEL[no]}
+          </motion.span>
+          <motion.span aria-hidden style={{ opacity: laterHint }} className="pointer-events-none absolute inset-x-0 top-4 mx-auto w-fit rounded-full bg-muted px-3 py-1 text-sm font-semibold text-foreground">
+            {ANSWER_LABEL.later}
+          </motion.span>
+        </>
+      ) : null}
       <div className="flex items-center gap-2">
         {item.kind === "account" && item.platform ? <PlatformMark platform={item.platform} size={16} /> : null}
         <span className="truncate text-sm font-medium text-muted-foreground" data-testid="validate-label">
@@ -395,11 +447,12 @@ function FocusCard({
       <div className="flex min-h-0 flex-1 flex-col justify-center">
         <Hero
           item={item}
-          editing={editing}
+          editing={editing || Boolean(personFor)}
+          ask={personFor ? `${personFor.label}'s name` : null}
           draft={draft}
           setDraft={setDraft}
-          onSubmitEdit={() => onAnswer("correct", { value: draft })}
-          onCancelEdit={() => setEditing(false)}
+          onSubmitEdit={() => (personFor ? onAnswer("related", { relationKey: personFor.key, value: draft }) : onAnswer("correct", { value: draft }))}
+          onCancelEdit={() => (personFor ? setPersonFor(null) : setEditing(false))}
           off={off}
           toggleOff={toggleOff}
         />
@@ -425,13 +478,21 @@ function FocusCard({
           ]}
           onWayOut={(v) => {
             if (v === "ignore" || v === "alias") onAnswer(v);
-            else if (v.startsWith("rel:")) onAnswer("related", { relationKey: v.slice(4) });
+            else if (v.startsWith("rel:")) {
+              const kind = kinds.find((k) => k.key === v.slice(4));
+              const person = kind?.routesTo === "owns" || kind?.routesTo === "key_person";
+              // An account is the person's own page (its name is the name); anything else asks.
+              if (kind && person && item.kind !== "account") {
+                setDraft(personNameOnPage({ title: item.title, snippet: item.detail }, brandName) ?? "");
+                setPersonFor(kind);
+              } else onAnswer("related", { relationKey: v.slice(4) });
+            }
           }}
           onSkip={() => onAnswer("later")}
           skipLabel={ANSWER_LABEL.later}
         />
       </div>
-    </div>
+    </motion.div>
   );
 }
 
@@ -578,14 +639,25 @@ export function ValidateStage({
   });
 
   const progress = total ? answered.length / total : 0;
+  // The tray never grows into a long list beside a calm card: the latest few, the rest one press away (MKT-055).
+  const [allAnswered, setAllAnswered] = useState(false);
+  const shown = allAnswered ? answered : answered.slice(0, TRAY_LIMIT);
+  const hidden = answered.length - shown.length;
   const tray = (
-    <ul className="flex flex-col gap-0.5">
-      <AnimatePresence initial={false}>
-        {answered.map((e) => (
-          <TrayRow key={e.id} entry={e} onUndo={() => onUndo(e)} />
-        ))}
-      </AnimatePresence>
-    </ul>
+    <>
+      <ul className="flex flex-col gap-0.5">
+        <AnimatePresence initial={false}>
+          {shown.map((e) => (
+            <TrayRow key={e.id} entry={e} onUndo={() => onUndo(e)} />
+          ))}
+        </AnimatePresence>
+      </ul>
+      {answered.length > TRAY_LIMIT ? (
+        <Button variant="quiet" className="mt-1" onClick={() => setAllAnswered((v) => !v)} data-testid="validate-answered-more">
+          {allAnswered ? "Show fewer" : `${hidden} earlier`}
+        </Button>
+      ) : null}
+    </>
   );
 
   return (
@@ -638,6 +710,7 @@ export function ValidateStage({
                   >
                     <FocusCard
                       item={current}
+                      brandName={brandName}
                       kinds={kinds}
                       editing={editing}
                       setEditing={setEditing}
@@ -728,10 +801,15 @@ export function ValidateStage({
             <div className={`grid ${PANEL_MOTION_CLASS} transition-[grid-template-rows] ${trayOpen ? "grid-rows-[1fr]" : "grid-rows-[0fr]"}`}>
               <div className="min-h-0 overflow-hidden" inert={!trayOpen} aria-hidden={!trayOpen}>
                 <ul className="max-h-[45dvh] overflow-y-auto px-2 pt-2">
-                  {answered.slice(1).map((e) => (
+                  {shown.slice(1).map((e) => (
                     <TrayRow key={e.id} entry={e} onUndo={() => onUndo(e)} />
                   ))}
                 </ul>
+                {answered.length > TRAY_LIMIT ? (
+                  <Button variant="quiet" className="mx-2 mb-1" onClick={() => setAllAnswered((v) => !v)}>
+                    {allAnswered ? "Show fewer" : `${hidden} earlier`}
+                  </Button>
+                ) : null}
               </div>
             </div>
             <div className="flex h-14 items-center gap-2 px-3">

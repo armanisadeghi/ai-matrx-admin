@@ -140,3 +140,29 @@ describe("MKT-045 — the validate queue never asks a brand's own account again 
     expect(q.filter((f) => f.kind === "web")).toEqual([]);
   });
 });
+
+describe("MKT-044 — near-duplicate descriptions are one card", () => {
+  it("seven About/description findings reach the stage as one card that answers all seven", () => {
+    const facts: BrandFact[] = [];
+    const items: EvidenceItem[] = [];
+    const texts = [
+      "Full Spectrum Search Group is a trusted advisor and executive search firm.",
+      "Full Spectrum Search Group is a leading executive search firm for senior care.",
+      "We are Full Spectrum Search Group, healthcare executive search.",
+      "Executive search for senior care and healthcare, by Full Spectrum.",
+      "Full Spectrum Search Group — executive recruiters in healthcare.",
+      "Healthcare executive search firm serving senior living operators.",
+      "A trusted advisor to healthcare employers.",
+    ];
+    texts.forEach((t, i) => {
+      const one = fromRow(row("fact", i % 2 ? "description" : "short_description", t, { field: i % 2 ? "description" : "short_description" }));
+      if (one && "fact" in one) facts.push(one.fact);
+      else if (one) items.push(one.item);
+    });
+    const raw = buildQueue({ items, facts, decisions: {}, webChoices: {}, answered: new Set(), later: [], kinds: [], ctx: { ourHosts: [], ourAccounts: [], name: null } });
+    expect(raw).toHaveLength(7);
+    const cards = foldQueue({ queue: raw, known: { names: [], hosts: [], urls: [], values: [] }, later: [] });
+    expect(cards).toHaveLength(1);
+    expect(answeredKeysOf(cards[0])).toHaveLength(7);
+  });
+});

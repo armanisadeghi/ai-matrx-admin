@@ -11,7 +11,7 @@ import { Peek, PeekHoverCard } from "@ai-matrx/design-system";
 import type { BrandRelationKind } from "@/features/marketing/data/service";
 import { ANSWER_LABEL, type Suggestion } from "./validate/queue";
 
-/** The hint: "We think: Ours 92%"; hover for why. Renders an empty line of the same height when there is none. */
+/** The hint: "We think: Ours"; the certainty and the reason live in the hover only (MKT-050). Renders an empty line of the same height when there is none. */
 export function WeThinkHint({ suggestion, kinds, evidence }: { suggestion: Suggestion | null; kinds: BrandRelationKind[]; evidence?: string[] }) {
   if (!suggestion) return <span className="h-5" aria-hidden />;
   const rel = suggestion.relation_key ? kinds.find((k) => k.key === suggestion.relation_key)?.label : null;
@@ -21,7 +21,6 @@ export function WeThinkHint({ suggestion, kinds, evidence }: { suggestion: Sugge
     <span className="flex h-5 items-center gap-1.5 text-xs text-primary" data-testid="validate-we-think" data-choice={suggestion.choice}>
       <span className="size-1.5 rounded-full bg-primary" aria-hidden />
       We think: {label}
-      {pct !== null ? <span className="tabular-nums text-muted-foreground">{pct}%</span> : null}
     </span>
   );
   if (!suggestion.reason) return hint;
