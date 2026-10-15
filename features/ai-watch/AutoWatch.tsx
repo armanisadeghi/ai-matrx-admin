@@ -42,7 +42,12 @@ export default function AutoWatch() {
   const dispatch = useAppDispatch();
   const liveRootRuns = useAppSelector(selectLiveRootRunKey);
   const live = useAppSelector(selectLivePageAiRuns);
-  const automatedKeys = live.filter(isAutomatedRun).map((r) => r.key).join(",");
+  // A live workflow run makes every live AI call on the page its own; otherwise only workflow lanes count
+  // (a person's own chat turn never opens Watch AI).
+  const automatedKeys = live
+    .filter((r) => (liveRootRuns ? true : isAutomatedRun(r)))
+    .map((r) => r.key)
+    .join(",");
 
   // MKT-076: Watch AI opens by itself once per page load; a close sticks until the person reopens it.
   const watchOpened = useRef(false);
@@ -61,8 +66,9 @@ export default function AutoWatch() {
       openedRuns.current.add(runId);
       dispatch(openWorkflowRunWindowAction({ runId }));
     }
-    openWatchAiOnce();
-  }, [canWatch, liveRootRuns, dispatch, openWatchAiOnce]);
+    // Watch AI itself waits for the first AI call (below): a run with no call yet has nothing
+    // to show, and the window would only sit over the page's input.
+  }, [canWatch, liveRootRuns, dispatch]);
 
   const openedCalls = useRef(new Set<string>());
   useEffect(() => {

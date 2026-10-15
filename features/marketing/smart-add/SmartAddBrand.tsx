@@ -1619,7 +1619,7 @@ export function SmartAddBrand({
           : "working";
 
   return (
-    <div className="relative px-4 pb-8 pt-[calc(var(--shell-header-h)+1rem)]" data-smart-add-stage="structured">
+    <div className="relative px-4 pt-[calc(var(--shell-header-h)+1rem)]" data-smart-add-stage="structured">
     <div ref={pageRef} className="mx-auto flex w-full max-w-3xl flex-col gap-3" data-testid="smart-add-brand">
       <div className="flex items-center justify-between gap-2">
       <SegmentedControl

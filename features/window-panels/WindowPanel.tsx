@@ -411,6 +411,9 @@ type WindowPanelCloseBinding =
       onClose: () => void;
     };
 
+/** Minimized tiles paint above any open window (managerZIndex counts up from 1000). */
+const MINIMIZED_TILE_Z_FLOOR = 5000;
+
 export type WindowPanelProps = WindowPanelBaseProps & WindowPanelCloseBinding;
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -578,7 +581,11 @@ export function WindowPanel({
   // the modal tier so it paints above that surface's scrim — otherwise the
   // click that picks an option lands on the scrim and closes the modal
   // (design-system floating-layer; the Source screen's association picker).
-  const zIndex = useFloatingLayerZIndex(managerZIndex);
+  const liftedZIndex = useFloatingLayerZIndex(managerZIndex);
+  // A minimized tile is dock chrome: it rides above every open window, so a focused window can
+  // never bury it (MKT-077 — the tile sat 2 below the front window and only a strip showed).
+  // Stays below the tray (9999) and the modal tier.
+  const zIndex = windowState === "minimized" ? Math.max(liftedZIndex, MINIMIZED_TILE_Z_FLOOR + managerZIndex) : liftedZIndex;
 
   const dispatch = useAppDispatch();
   const windowsHidden = useAppSelector(selectWindowsHidden);

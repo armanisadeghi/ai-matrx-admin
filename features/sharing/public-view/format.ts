@@ -5,6 +5,8 @@ import type { PublishedViewField, PublishedViewOpen, PublishedViewRow } from "./
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
+export const PERSON_GONE_WORDS = "A person no longer in this organization";
+
 export const normChoice = (v: string) => v.toLowerCase().replace(/[^a-z0-9]+/g, "");
 
 function ids(value: unknown): string[] {
@@ -48,8 +50,14 @@ export function cellValue(view: PublishedViewOpen, field: PublishedViewField, ro
     if (d) return [dayText(d, field.format === "datetime" || (typeof value === "string" && value.length > 10))];
   }
   if (typeof value === "boolean") return [value ? "Yes" : "No"];
-  if (typeof value === "string" || typeof value === "number") return [String(value)];
-  if (Array.isArray(value)) return value.filter((v) => typeof v === "string" || typeof v === "number").map(String);
+  // A PERSON IS NEVER A UUID: a stored person id with no name in `refs` (a kept-aside or departed person)
+  // reads as words, never as the id, on a page nobody signed in to read.
+  const words = (v: string | number): string => {
+    if (typeof v === "string" && UUID.test(v)) return view.refs[v] ?? PERSON_GONE_WORDS;
+    return String(v);
+  };
+  if (typeof value === "string" || typeof value === "number") return [words(value)];
+  if (Array.isArray(value)) return value.filter((v): v is string | number => typeof v === "string" || typeof v === "number").map(words);
   return [];
 }
 

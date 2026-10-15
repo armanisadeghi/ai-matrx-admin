@@ -108,13 +108,13 @@ function SuggestionPopover({
 }
 
 /** Where the result was found — query and rank; engine names only for admin debuggers. */
-function FoundPopover({ result, showEngines }: { result: ReviewResult; showEngines: boolean }) {
+function FoundPopover({ result, position, showEngines }: { result: ReviewResult; position: number; showEngines: boolean }) {
   if (!result.hits.length) return null;
   return (
     <HoverCard>
       <HoverCardTrigger asChild>
         <span className="cursor-default text-xs tabular-nums text-muted-foreground" data-testid="search-review-rank">
-          #{bestRank(result)}
+          #{position}
         </span>
       </HoverCardTrigger>
       <HoverCardContent className="w-72 space-y-1 text-xs" align="end">
@@ -139,8 +139,11 @@ function ResultCard({
   showEngines,
   onAnswer,
   tierLabel = null,
+  position,
 }: {
   tierLabel?: string | null;
+  /** 1-based place in the list as shown; the per-query ranks live in the hover. */
+  position: number;
   result: ReviewResult;
   choices: ReviewChoice[];
   answer: ReviewAnswer | undefined;
@@ -191,7 +194,7 @@ function ResultCard({
         <div className="min-w-0 flex-1">
           <SearchKindNested value={toWebResultValue(result)} />
         </div>
-        <FoundPopover result={result} showEngines={showEngines} />
+        <FoundPopover result={result} position={position} showEngines={showEngines} />
       </div>
       <div className="flex flex-wrap items-center gap-1.5" aria-busy={busy}>
         {answer ? (
@@ -308,10 +311,12 @@ export function SearchReviewBody({ session }: { session: SearchReviewSession }) 
         />
       </div>
       {shown.length ? (
-        <ul className="@container min-h-0 flex-1 overflow-y-auto">
+        // A minimized tile docks over the window's foot: the runway lets the last result scroll clear (MKT-081).
+        <ul className="@container min-h-0 flex-1 overflow-y-auto pb-[var(--matrx-floating-measured,0px)]">
           {shown.map((r, i) => (
             <ResultCard
               key={r.key}
+              position={i + 1}
               result={r}
               choices={choices}
               answer={answers[r.key]}

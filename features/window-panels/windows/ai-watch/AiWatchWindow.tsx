@@ -245,8 +245,10 @@ export default function AiWatchWindow({
       urlSyncId="page"
       minWidth={520}
       minHeight={320}
-      width={1040}
-      height="80dvh"
+      // Docked low on the right: the page's own input (Smart Add's Website field) stays reachable.
+      position="bottom-right"
+      width={760}
+      height="55dvh"
       onClose={onClose}
       onCollectData={() => ({
         windowInstanceId,
