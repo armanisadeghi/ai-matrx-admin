@@ -95,6 +95,9 @@ const CANONICAL_PROFILES: Record<string, string> = {
   "Bitly Pages": "https://bit.ly/m/x", AllMyLinks: "https://allmylinks.com/x", Linkpop: "https://linkpop.com/x",
   "Tap.bio": "https://tap.bio/x", "Hoo.be": "https://hoo.be/x", Flowpage: "https://flow.page/x",
   Snipfeed: "https://snipfeed.co/x", Linkfly: "https://linkfly.to/x", "Direct.me": "https://direct.me/x",
+  "Bio.site": "https://bio.site/x", Heylink: "https://heylink.me/x", "Lit.link": "https://lit.link/x",
+  "Link.me": "https://link.me/x", Koji: "https://withkoji.com/@x", Bento: "https://bento.me/x",
+  Linkbio: "https://linkbio.co/x", "Lnk.at": "https://lnk.at/x", LinkInProfile: "https://linkinprofile.com/x",
 };
 
 describe("every service on the canonical list is detected", () => {
