@@ -434,6 +434,14 @@ jobs:
         run: pnpm check:one-peek:strict
       - name: the one-peek guard can still fail (self-test)
         run: pnpm check:one-peek:self-test
+      - name: ONE DOOR TO BROWSER STORAGE
+        # 2026-10-14: outside lib/sync nothing calls localStorage/sessionStorage
+        # directly. Declare the key with @/lib/sync/client-storage (kind + reason),
+        # or move a setting to server preferences. Baseline scripts/check-raw-storage/
+        # baseline.json only shrinks. Static, ~2s.
+        run: pnpm check:raw-storage:strict
+      - name: the raw-storage guard can still fail (self-test)
+        run: pnpm check:raw-storage:self-test
       - name: A ROUTE ADDED WITHOUT A MANIFEST ENTRY IS A LINK THE SPINE REWRITES
         # `aidream/services/notifications/link_honesty.py` asks the route
         # manifest whether a deep link can answer before it puts one in an

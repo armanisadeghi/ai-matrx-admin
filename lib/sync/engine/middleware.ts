@@ -29,6 +29,7 @@ import { noopAdapter } from "../persistence/noop";
 import type { PersistenceAdapter } from "../persistence/types";
 import type { SyncChannel } from "../channel";
 import { buildRehydrateAction, isRehydrateAction } from "./rehydrate";
+import { isIdentityResetAction } from "./identityReset";
 import { readSlice } from "../persistence/idb";
 import { isRemoteFetchStatusAction } from "./remoteFetchStatus";
 import { applyPrePaintDescriptors } from "./applyPrePaint";
@@ -488,7 +489,16 @@ export function createSyncMiddleware(ctx: SyncMiddlewareContext): Middleware {
         }
         return remoteWriteScheduler;
       }
-      if (!isRehydrateAction(a) && !isRemoteFetchStatusAction(a)) {
+      if (isIdentityResetAction(a)) {
+        // THE IDENTITY RESET IS NEVER SAVED. It clears the leaving person's slices to their
+        // defaults; saving those defaults (stamped with the NEW identity, since the swap already
+        // happened) overwrote the incoming person's own cached record moments before their read
+        // landed. The defaults become the baseline only, exactly like a rehydrate.
+        for (const policy of ctx.policies) {
+          const sliceState = selectSliceState(api.getState(), policy.config.sliceName);
+          if (sliceState !== undefined) lastPersistedRef.set(policy.config.sliceName, sliceState);
+        }
+      } else if (!isRehydrateAction(a) && !isRemoteFetchStatusAction(a)) {
         for (const policy of ctx.policies) {
           const caps = getPreset(policy.config.preset);
           if (caps.writeStrategy === "none") continue;

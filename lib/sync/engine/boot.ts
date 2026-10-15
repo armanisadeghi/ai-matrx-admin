@@ -27,7 +27,7 @@ import type { Store } from "@reduxjs/toolkit";
 import { logger } from "../logger";
 import { openSyncChannel, type SyncChannel } from "../channel";
 import { localStorageAdapter, readLegacyKey, removeLegacyKey } from "../persistence/local-storage";
-import { readSlices as readIdbSlices, type IdbSliceRecord } from "../persistence/idb";
+import { clearIdentity, readSlices as readIdbSlices, type IdbSliceRecord } from "../persistence/idb";
 import { getPreset } from "../policies/presets";
 import { buildIdentityResetAction } from "./identityReset";
 import { buildRehydrateAction } from "./rehydrate";
@@ -427,6 +427,18 @@ export async function resyncForIdentity(options: {
 
 type ResyncOptions = Parameters<typeof resyncForIdentity>[0];
 
+function purgeIdentityFromDevice(identityKey: string, policies: readonly Policy<any>[]): void {
+    for (const policy of policies) {
+        // A slice that is not identity-scoped (theme) is the device's, and pre-paint reads it.
+        if (policy.config.identityScoped === false) continue;
+        for (const key of [policy.storageKey, `matrx:idbFallback:${policy.config.sliceName}`]) {
+            const record = localStorageAdapter.read(key);
+            if (record?.identityKey === identityKey) localStorageAdapter.remove(key);
+        }
+    }
+    void clearIdentity(identityKey);
+}
+
 async function resyncForIdentityInner(options: ResyncOptions): Promise<void> {
     const { store, identity, previousIdentity, policies, getIdentity } = options;
     logger.info("boot.identity.resync", {
@@ -453,6 +465,12 @@ async function resyncForIdentityInner(options: ResyncOptions): Promise<void> {
         store.dispatch(
             buildIdentityResetAction(sliceNames, previousIdentity, identity),
         );
+        // NOTHING OF THE LEAVING PERSON STAYS ON THE DEVICE. `clearIdentity` existed for this and
+        // had no caller: after a sign-out or account switch their IndexedDB records and the
+        // localStorage records/mirrors stamped with them (preferences in plain localStorage)
+        // stayed behind indefinitely. The engine never loaded them for someone else, but they
+        // must not remain. Their server copy is untouched; signing back in reloads it.
+        purgeIdentityFromDevice(previousIdentity.key, policies);
     }
 
     const fromLocal = new Set(rehydrateFromStorage(policies, identity, store));

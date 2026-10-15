@@ -38,6 +38,8 @@ export interface PublishedViewOpen {
   refs: Record<string, string>;
   /** Field key → normalised choice → the choice's words. */
   labels: Record<string, Record<string, string>>;
+  /** Field key → the choices' words in the order they were made (a board's column order). */
+  choice_order?: Record<string, string[]>;
 }
 
 export interface PublishedViewArchived {

@@ -373,6 +373,11 @@ if $STRICT; then
         # …Peek / …HoverPreview / …DetailCard component. Baseline scripts/one-peek/baseline.json only shrinks.
         "One peek|pnpm check:one-peek:strict"
         "One peek — self-test|pnpm check:one-peek:self-test"
+        # ONE DOOR TO BROWSER STORAGE (2026-10-14): outside lib/sync nothing calls localStorage /
+        # sessionStorage directly — declare the key in @/lib/sync/client-storage, or move a setting to
+        # server preferences. Baseline scripts/check-raw-storage/baseline.json only shrinks.
+        "Raw storage|pnpm check:raw-storage:strict"
+        "Raw storage — self-test|pnpm check:raw-storage:self-test"
         "UI drift — self-test|pnpm check:ui-drift:self-test"
         # No blocking layers (register ARE-008): a desktop dialog forced to
         # block, or built straight on Radix, hides every AI door on the page.
@@ -1289,6 +1294,8 @@ else
         "Writing boxes — self-test|pnpm check:writing-boxes:self-test"
         "One peek|pnpm check:one-peek"
         "One peek — self-test|pnpm check:one-peek:self-test"
+        "Raw storage|pnpm check:raw-storage"
+        "Raw storage — self-test|pnpm check:raw-storage:self-test"
         "Bare secret fill|pnpm check:fill-secret"
         "Bare secret fill — self-test|pnpm check:fill-secret:self-test"
         "UI drift — self-test|pnpm check:ui-drift:self-test"
