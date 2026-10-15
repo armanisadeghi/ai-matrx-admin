@@ -247,7 +247,11 @@ function ComposerBody({
   );
   const requestText = conversationId ? sliceText : pendingText;
   const lastText = useRef("");
-  lastText.current = requestText;
+  // Kept current from an effect (never written during render); declared before the
+  // carry-over effect below, so that effect reads this render's text, as before.
+  useEffect(() => {
+    lastText.current = requestText;
+  });
   const setRequestText = (text: string) => {
     if (conversationId) dispatch(setUserInputText({ conversationId, text }));
     else setPendingText(text);
