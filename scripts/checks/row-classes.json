@@ -5,7 +5,7 @@
     "repo-only": "reads the repository and nothing else"
   },
   "counts": {
-    "repo-only": 185,
+    "repo-only": 186,
     "live-db": 70
   },
   "rows": {
@@ -13,6 +13,13 @@
       "label": "Every @ai-matrx package is declared and installed at npm latest",
       "class": "repo-only",
       "cmd": "pnpm check:matrx-packages",
+      "reason": "no database access in 1 file(s) reached",
+      "evidence": []
+    },
+    "aidream-package-source-on-main-reached-npm-latest-within-30-": {
+      "label": "aidream package source on main reached npm latest within 30 minutes",
+      "class": "repo-only",
+      "cmd": "pnpm check:npm-publish-lag",
       "reason": "no database access in 1 file(s) reached",
       "evidence": []
     },
