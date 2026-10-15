@@ -152,6 +152,10 @@ export function ProviderConversationTranscript({
    * has no provider session and produces no artifacts.
    */
   const [sessions, setSessions] = useState<readonly ArtifactSessionRef[]>([]);
+  /** Continue exists only for a Claude Code chat (ConversationProvenancePanel's ContinueOnMyMacPanel). */
+  const canContinue = bindingProviders.includes("claude_code");
+  /** The open tab; the banner's Continue opens Source, where Continue and Sync live. */
+  const [tab, setTab] = useState("conversation");
   const [bindingRead, setBindingRead] = useState(false);
   /**
    * Rows that arrived AFTER the server render, counted separately so the
@@ -454,7 +458,8 @@ export function ProviderConversationTranscript({
         </div>
       </section>
       <Tabs
-        defaultValue="conversation"
+        value={tab}
+        onValueChange={setTab}
         className={embedded ? undefined : "mt-3"}
       >
         {/* A wrapper, not a class on the list: the control layer keeps its own display. */}
@@ -497,11 +502,15 @@ export function ProviderConversationTranscript({
             <div className="flex min-w-0 flex-1 items-start gap-3 sm:items-center">
               <CircleDot className="mt-0.5 h-4 w-4 shrink-0 text-sky-600 sm:mt-0 dark:text-sky-400" />
               <p className="min-w-0 text-sm text-foreground">
-                {provider} is mirrored here and cannot be changed from AI Matrx.
-                Replies below stay in AI Matrx and are answered by an AI Matrx
-                agent.
+                {provider} is mirrored here. Replies below stay in AI Matrx;
+                to continue the chat itself, use Continue on your computer.
               </p>
             </div>
+            {canContinue ? (
+              <Button variant="outline" className="sm:shrink-0" onClick={() => setTab("source")}>
+                Continue on your computer
+              </Button>
+            ) : null}
             <Button asChild variant="outline" className="sm:shrink-0">
               <Link href="/chat/new">
                 New AI Matrx chat
