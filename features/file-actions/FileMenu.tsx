@@ -7,7 +7,7 @@
  */
 
 import { isValidElement, useState, type ReactElement, type ReactNode } from "react";
-import { MoreHorizontal, Share2 } from "lucide-react";
+import { MoreHorizontal, MoreVertical, Share2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Button as ToolbarButton } from "@ai-matrx/design-system";
@@ -28,6 +28,7 @@ import { FileMenuItems, promptRename, type FileMenuItemsProps } from "./FileMenu
 import { buildEditorFileMenu, type EditorFileSpec } from "./editor-file-menu";
 import { renderMenuEntries } from "@/components/editor-chrome/EditorMenuBar";
 import { useRouter } from "next/navigation";
+import { useOfficeLook } from "./skin/useOfficeLook";
 import { restoreEditorFocus } from "@/components/editor-chrome/EditorMenuBar";
 import { EditorMenuContent } from "@/components/editor-chrome/editor-menu-surface";
 import { EmailFileDialog } from "./EmailFileDialog";
@@ -52,6 +53,8 @@ export type FileMenuProps = Omit<
   ) => Promise<void> | void;
   /** "icon" is the ⋯ of a list row; "label" is a text "File" button; an element is the editor menu bar's own "File" trigger. */
   trigger?: "icon" | "label" | ReactElement;
+  /** The "icon" trigger's dots. Default: vertical (Google's ⋮) in the Google look, horizontal (Office's ⋯) in Microsoft 365. */
+  menuIcon?: "vertical" | "horizontal";
   disabled?: boolean;
   /**
    * Google Sheets / Docs rows (Open in Google, Create, Update, Push). The ONE Google link
@@ -116,6 +119,7 @@ export function FileMenu({
   projectId = null,
   onMove,
   trigger = "icon",
+  menuIcon,
   disabled,
   google,
   open,
@@ -125,6 +129,8 @@ export function FileMenu({
   ...items
 }: FileMenuProps): ReactNode {
   const router = useRouter();
+  const [look] = useOfficeLook();
+  const vertical = (menuIcon ?? (look === "google" ? "vertical" : "horizontal")) === "vertical";
   const [menuOpened, setMenuOpened] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
   const [emailMode, setEmailMode] = useState<"file" | "collaborators" | null>(null);
@@ -173,7 +179,7 @@ export function FileMenu({
                   </ToolbarButton>
                 ) : (
                   <Button
-                    icon={<MoreHorizontal />}
+                    icon={vertical ? <MoreVertical /> : <MoreHorizontal />}
                     aria-label={`Actions for ${name}`}
                     title="More actions"
                     variant="quiet"

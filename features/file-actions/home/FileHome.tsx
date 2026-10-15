@@ -215,13 +215,15 @@ export function FileHome<Row extends { id: string; user_id: string }>(props: Fil
     startTransition(() => router.push(kind.href(id)));
   };
 
+  // On a phone Google's heading is just "Recent" / "Starred" — the long form wraps to two lines at 375.
+  const noun = isPhone && !office ? "" : ` ${kind.pluralNoun}`;
   const heading = trashed
     ? "Trash"
     : scope === "starred"
       ? office
         ? `Pinned ${kind.pluralNoun}`
-        : `Starred ${kind.pluralNoun}`
-      : `Recent ${kind.pluralNoun}`;
+        : `Starred${noun}`
+      : `Recent${noun}`;
   const accent = OFFICE_ACCENT[kind.kind];
   const scrollToCreate = () =>
     document.getElementById(`file-home-create-${kind.kind}`)?.scrollIntoView({ behavior: "smooth", block: "start" });
