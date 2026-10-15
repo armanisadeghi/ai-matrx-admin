@@ -14,6 +14,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Braces, Check, ChevronDown, ChevronRight, Copy, RefreshCw } from "lucide-react";
+import { ErrorNotice } from "@ai-matrx/design-system";
 import { Badge, Button } from "@ai-matrx/design-system/controls";
 import { useClipboard } from "@ai-matrx/kit/clipboard";
 import { useAppDispatch, useAppSelector, useAppStore } from "@/lib/redux/hooks";
@@ -236,11 +237,7 @@ export function ModelViewPanel({ agentId, conversationId }: ModelViewPanelProps)
         </p>
       ) : null}
 
-      {error ? (
-        <p role="alert" className="rounded-md border border-border bg-card px-3 py-2 text-xs text-destructive">
-          {error}
-        </p>
-      ) : null}
+      {error ? <ErrorNotice message={error} size="compact" /> : null}
 
       {request?.transport === "uncaptured" ? (
         <p role="status" className="rounded-md border border-border bg-card px-3 py-2 text-xs text-muted-foreground">
