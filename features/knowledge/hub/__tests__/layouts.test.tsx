@@ -4,7 +4,7 @@
  * and gallery — and a failed lane shows its sentence with a retry instead of
  * vanishing.
  */
-import { act, useState } from "react";
+import { act, useState, type ReactNode } from "react";
 import { createRoot, type Root } from "react-dom/client";
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -17,6 +17,8 @@ import type { ResultHandlers } from "@/features/knowledge/hub/components/HubResu
 import type { HubLayout } from "@/features/knowledge/hub/hubState";
 import type { KnowledgeHit, KnowledgeSection } from "@/features/knowledge/api/knowledgeSearch";
 import { ClipboardCopy, Copy, Link2 } from "lucide-react";
+import { MatrxDataTableProvider } from "@ai-matrx/design-system/data-table";
+import { CopyButtons } from "@/components/agent-copy/CopyButtons";
 
 function toStates(sections: KnowledgeSection[]): SectionState[] {
   return sections.map((s) => ({
@@ -49,6 +51,9 @@ afterEach(() => {
   act(() => root.unmount());
   host.remove();
 });
+
+/** The app's table host supplies the row and selection Alchemy controls (MatrxDataTableHost › CopyControls). */
+const withCopyHost = (node: ReactNode) => <MatrxDataTableProvider value={{ CopyControls: CopyButtons }}>{node}</MatrxDataTableProvider>;
 
 async function render(layout: HubLayout, fail?: KnowledgeSection["key"][]) {
   const run = createFixtureRunner({ failSections: fail });
@@ -239,7 +244,7 @@ it("uses the table-owned Alchemy control for transcript copy while retaining tra
   };
 
   await act(async () => {
-    root.render(
+    root.render(withCopyHost(
       <div style={{ height: 800 }}>
         <BrowseResults
           layout="table"
@@ -250,7 +255,7 @@ it("uses the table-owned Alchemy control for transcript copy while retaining tra
           onShowMore={jest.fn()}
           onRetry={jest.fn()}
         />
-      </div>,
+      </div>),
     );
   });
 
@@ -259,7 +264,7 @@ it("uses the table-owned Alchemy control for transcript copy while retaining tra
   await act(async () => alchemy?.click());
   expect(copyProjection).toHaveBeenCalledWith(transcript);
   expect(copyListProjection).toHaveBeenCalledWith([transcript]);
-  expect(document.body.textContent).toContain("Transcript metadata");
+  expect(document.body.textContent).toContain("Copy for AI");
   expect(copyProjection.mock.results[0]?.value).toMatchObject({
     human: "Transcript: User interview\nDuration: 12 min\nWords: 1,250",
     agent: {
@@ -345,7 +350,7 @@ it("copies one selected transcript as one no-body transcript-list payload", asyn
     );
   }
 
-  await act(async () => root.render(<SelectionFixture />));
+  await act(async () => root.render(withCopyHost(<SelectionFixture />)));
   copyListProjection.mockClear();
   const select = host.querySelector<HTMLButtonElement>('[aria-label^="Select this transcript record"]');
   expect(select).not.toBeNull();
@@ -364,7 +369,8 @@ it("copies one selected transcript as one no-body transcript-list payload", asyn
   await act(async () => copyForAi?.click());
 
   const copied = clipboard.mock.calls[0]?.[0] as string;
-  expect(copied).toContain("transcript-hub-list");
+  // For AI is one light tag naming what it is (Arman, 2026-10-14).
+  expect(copied).toContain('<content type="Transcript hub list"');
   expect(copied).toContain("transcript-1");
   expect(copied).toContain('rows="1"');
   expect(copied).toContain('body_included="false"');
