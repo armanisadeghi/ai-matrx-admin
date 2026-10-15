@@ -35,6 +35,11 @@ import { Eye, Send, Wrench } from "lucide-react";
 import { formatCost } from "@ai-matrx/kit/format";
 import { LiveRunDisplay } from "@ai-matrx/chat/agents/components/live-run/LiveRunDisplay";
 import { useRetainRequestForViewer } from "@ai-matrx/chat/agents/redux/execution-system/active-requests/useRetainRequestForViewer";
+import {
+  selectLiveKindValue,
+  selectRequest,
+} from "@ai-matrx/chat/agents/redux/execution-system/active-requests/active-requests.selectors";
+import { isWorkflowLaneRequest } from "@/features/workflow-runtime/redux/lane-manager";
 import MarkdownStream from "@ai-matrx/chat/ui/markdown-stream/MarkdownStream";
 import { selectPageAiRuns, selectPageWorkflowRunIds } from "@/features/ai-watch/page-ai-runs";
 import {
@@ -462,7 +467,9 @@ function ChatSection({
         )}
         <div className="mr-8 rounded-md border border-border bg-card p-2">
           <div className="mb-1 font-medium text-muted-foreground">Assistant</div>
-          {liveRequestId ? (
+          {liveRequestId && isWorkflowLaneRequest(liveRequestId) ? (
+            <LaneAnswer requestId={liveRequestId} />
+          ) : liveRequestId ? (
             <LiveRunDisplay requestId={liveRequestId} variant="bare" bodyClassName="max-h-none" />
           ) : recorded ? (
             <MarkdownStream content={recorded} isStreamActive={false} hideCopyButton />
@@ -472,6 +479,35 @@ function ChatSection({
         </div>
       </div>
     </Section>
+  );
+}
+
+/**
+ * A workflow step's call, token by token (MKT-117): the lane's own text as it grows, plus the kind value
+ * forming from it. The kind component's silhouette is not used here: Watch AI shows what the model wrote.
+ */
+function LaneAnswer({ requestId }: { requestId: string }) {
+  const raw = useAppSelector((state) => selectRequest(requestId)(state)?.currentTextRunRaw) ?? "";
+  const forming = useAppSelector(selectLiveKindValue(requestId));
+  if (!raw && !forming) return <div className="text-muted-foreground">Waiting for the first words</div>;
+  return (
+    <div className="flex flex-col gap-2" data-testid="ai-watch-lane-answer">
+      {raw ? (
+        <pre data-kind-source="explicit" className="whitespace-pre-wrap break-words font-mono text-[11px] text-foreground">
+          {raw}
+        </pre>
+      ) : null}
+      {forming ? (
+        <details open>
+          <summary className="cursor-pointer select-none text-muted-foreground">
+            {forming.kind} · {forming.verified ? "verified" : "forming"}
+          </summary>
+          <pre data-kind-source="explicit" className="mt-1 whitespace-pre-wrap break-words font-mono text-[11px] text-foreground">
+            {JSON.stringify(forming.value, null, 2)}
+          </pre>
+        </details>
+      ) : null}
+    </div>
   );
 }
 
