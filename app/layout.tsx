@@ -48,7 +48,6 @@ import { UserAcquisitionCapture } from "@/lib/product-analytics/UserAcquisitionC
 import { PerfVitalsReporter } from "@/lib/perf/PerfVitalsReporter";
 import { AgentTrafficForwarder } from "@/lib/agent-traffic/AgentTrafficForwarder";
 import { DevWalkMonitor } from "@/components/dev/DevWalkMonitor";
-import { HeldRunHmrGuard } from "@/components/dev/HeldRunHmrGuard";
 
 export { metadata, viewport };
 
@@ -107,8 +106,6 @@ export default async function RootLayout({ children }: RootLayoutProps) {
                     yet, so this is the only hook available. After React boots,
                     global-error.tsx and ErrorBoundaryView take over. */}
         <ChunkRecoveryBootScript />
-        {/* Dev only: a held test run's page never hot-reloads from other sessions' edits. */}
-        {process.env.NODE_ENV === "development" ? <HeldRunHmrGuard /> : null}
         {/* An app page placed on a board as a tile drops the shell chrome before paint. */}
         <BoardEmbedBootScript />
         {/* Prevent autofill/password manager interference */}
