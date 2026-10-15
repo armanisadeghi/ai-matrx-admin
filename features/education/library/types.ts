@@ -7,7 +7,7 @@ import type { Database } from "@/types/database.types";
 import type { ListScopeKind } from "@/lib/list-scope/types";
 
 export type EducationLibraryRow =
-  Database["public"]["Functions"]["edu_library_list_scoped"]["Returns"][number];
+  Omit<Database["public"]["Functions"]["edu_library_list_scoped"]["Returns"][number], "total_count">;
 
 export type EducationLibraryKind =
   "fc_set" | "assessment" | "study_media" | "note";

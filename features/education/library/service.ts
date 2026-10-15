@@ -7,6 +7,7 @@
 
 "use client";
 
+import { splitTotalCount } from "@/lib/entity-list/total-count";
 import { supabase } from "@/utils/supabase/client";
 
 import {
@@ -52,8 +53,9 @@ export async function fetchEducationLibraryPage(
   if (error) throw pgError(error);
   // No internal id reaches a list: older per-section decks carry chunk ids
   // in their stored names (`titleWithoutInternalIds`).
-  const rows = (data ?? []).map((row) => ({ ...row, title: titleWithoutInternalIds(row.title) }));
-  return { rows, total: rows.length ? Number(rows[0].total_count) : 0 };
+  const split = splitTotalCount(data ?? []);
+  const rows = split.rows.map((row) => ({ ...row, title: titleWithoutInternalIds(row.title) }));
+  return { rows, total: split.total };
 }
 
 export async function fetchEducationLibraryCounts(

@@ -9,6 +9,7 @@
 // this container), so the rpc names/args are cast — same precedent as the
 // untyped callApi paths. Remove the casts once types regenerate.
 
+import { splitTotalCount } from "@/lib/entity-list/total-count";
 import { supabase } from "@/utils/supabase/client";
 import type {
   EntityFacets,
@@ -61,8 +62,7 @@ export async function fetchSessionPage(
     } as never,
   );
   if (error) throw pgError(error);
-  const rows = (data ?? []) as unknown as SessionListRow[];
-  return { rows, total: rows.length > 0 ? Number(rows[0].total_count) : 0 };
+  return splitTotalCount((data ?? []) as unknown as (SessionListRow & { total_count: number })[]);
 }
 
 export async function fetchSessionScopeCounts(

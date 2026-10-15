@@ -82,7 +82,7 @@ function RailItem({
             style={{ aspectRatio: slideAspect(slideSizeOf(deck)) }}
           >
             <span className="pointer-events-none absolute inset-0">
-              <PaperSlide deck={deck} slide={slide} className="h-full w-full" />
+              <PaperSlide deck={deck} slide={slide} slideNumber={index + 1} className="h-full w-full" />
             </span>
           </button>
         </div>

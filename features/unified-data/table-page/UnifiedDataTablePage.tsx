@@ -28,6 +28,7 @@ import type { RecordFilter } from "@ai-matrx/records";
 
 import RouteHeader from "@/features/shell/components/header/RouteHeader";
 import { TableFavoriteStar } from "./TableFavoriteStar";
+import { TableAccessBar } from "./TableAccessBar";
 import { ChevronLeftTapButton } from "@ai-matrx/design-system/tap-target/buttons";
 import { TableSwitcher } from "@/features/unified-data/components/TableSwitcher";
 import { useDeclarePageObjectOrganization } from "@/features/shell/pageObjectOrganization";
@@ -110,6 +111,8 @@ function TableRouteHeader({
           <LiveDataColumnButton key="live-column" tableId={tableId} organizationId={organizationId} />
           {/* Airtable "sync a view into another base" (lane SYNC-AIRTABLE). */}
           <SyncIntoWorkspaceButton key="sync-into" tableId={tableId} organizationId={organizationId} />
+          {/* Ask for Edit when the person holds less (viewer/commenter), and the table's activity feed (lane AT-SHARE). */}
+          <TableAccessBar key="access" tableId={tableId} organizationId={organizationId} />
           {/* A linked workbook: open as one, or update/refresh the linked one. */}
           <TableWorkbookLinkButton key="workbook-link" tableId={tableId} />
           {/* ONE copy/export on this page (merged-grid review 2, D6: two identical buttons, header and

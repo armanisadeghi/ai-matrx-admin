@@ -211,10 +211,6 @@ export const transcriptListConfig: EntityListConfig<TranscriptListRow> = {
     listAttributes: (visible, all) => ({
       rows: visible.length,
       rows_loaded: all.length,
-      // trx_list_scoped carries the true server-side total on every row, so a
-      // paged view states what it is a slice OF instead of implying the loaded
-      // page is everything.
-      rows_total: all[0]?.total_count ?? visible.length,
     }),
     aiVariants: (visible, all) => [
       keyFieldsAiVariant({
@@ -232,7 +228,6 @@ export const transcriptListConfig: EntityListConfig<TranscriptListRow> = {
         }),
         attributes: {
           rows: visible.length,
-          rows_total: all[0]?.total_count ?? visible.length,
         },
       }),
     ],

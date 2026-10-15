@@ -82,7 +82,6 @@ function libraryRow(
     subtype: "flashcards",
     title,
     topic: "Biology",
-    total_count: 1,
     updated_at: "2026-09-28T00:00:00Z",
     visibility: "private",
   };

@@ -19,7 +19,7 @@ import type { WithFilledMandates } from "@/features/mandates/filled-by/service";
  * `attachFilledMandates` (one `mnd_filled_by` call), never per row.
  */
 export type AgentBrowseRow = WithFilledMandates<
-  Database["public"]["Functions"]["agx_list_scoped"]["Returns"][number]
+  Omit<Database["public"]["Functions"]["agx_list_scoped"]["Returns"][number], "total_count">
 >;
 
 /**

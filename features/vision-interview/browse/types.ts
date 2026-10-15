@@ -30,7 +30,6 @@ export interface SessionListRow {
   is_owner: boolean;
   access_level: string;
   owner_email: string | null;
-  total_count: number;
 }
 
 /** Declared subset of the fixed five scopes (lib/list-scope). */

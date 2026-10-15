@@ -4,6 +4,7 @@
 // RPCs. Both are SECURITY DEFINER and restate the RLS ceiling internally
 // (THE VIEW LAW: never a bare RLS-filtered list read).
 
+import { splitTotalCount } from "@/lib/entity-list/total-count";
 import { supabase } from "@/utils/supabase/client";
 import type { ListScope } from "@/lib/list-scope/types";
 import {
@@ -63,8 +64,7 @@ export async function fetchChaseboxItems(args: {
   });
   if (error) throw pgError(error);
 
-  const rows = data ?? [];
   // The RPC carries the true server-side total on every row, so a paged view
   // states what it is a slice OF instead of implying the page is everything.
-  return { rows, total: rows.length > 0 ? Number(rows[0].total_count) : 0 };
+  return splitTotalCount(data ?? []);
 }

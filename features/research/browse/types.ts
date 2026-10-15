@@ -16,7 +16,7 @@ import type { ListScopeKind } from "@/lib/list-scope/types";
  * a nullable OUT column); `total_count` is the filtered total.
  */
 export type ResearchTopicListRow =
-  Database["public"]["Functions"]["rsx_list_scoped"]["Returns"][number];
+  Omit<Database["public"]["Functions"]["rsx_list_scoped"]["Returns"][number], "total_count">;
 
 /**
  * A topic belongs to an organization (`research_topic` is registered

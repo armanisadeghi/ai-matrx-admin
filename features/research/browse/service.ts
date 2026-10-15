@@ -15,6 +15,7 @@
 //
 // 🚨 `total` is `total_count` — the filtered total from the same predicate.
 
+import { splitTotalCount } from "@/lib/entity-list/total-count";
 import { supabase } from "@/utils/supabase/client";
 import type { EntityListService } from "@/lib/entity-list/config";
 import type {
@@ -70,8 +71,7 @@ export const researchTopicListService: EntityListService<ResearchTopicListRow> =
       p_archived: query.archived,
     });
     if (error) throw pgError(error);
-    const rows = data ?? [];
-    return { rows, total: rows.length > 0 ? Number(rows[0].total_count) : 0 };
+    return splitTotalCount(data ?? []);
   },
 
   async fetchCounts(query: EntityListQuery): Promise<EntityScopeCounts> {

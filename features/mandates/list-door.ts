@@ -46,6 +46,7 @@
 // completely different reason with the same appearance" defect the migration
 // was written to kill (REVIEW-one-resolution.md §8b).
 
+import { splitTotalCount } from "@/lib/entity-list/total-count";
 import { supabase } from "@/utils/supabase/client";
 import type { Json } from "@/types/database.types";
 import { MandateDoorError } from "./door-error";
@@ -142,7 +143,7 @@ export function isMandateListRefusal(error: unknown): boolean {
  */
 export async function listMandatesScoped(
   query: MandateListDoorQuery = {},
-): Promise<MandateListRow[]> {
+): Promise<{ rows: MandateListRow[]; total: number }> {
   const home = query.home ?? ALL_HOMES;
   const organizationId = query.organizationId ?? null;
   const { data, error } = await supabase.rpc("mnd_list_scoped", {
@@ -164,7 +165,7 @@ export async function listMandatesScoped(
       hint: error.hint,
     });
   }
-  return data ?? [];
+  return splitTotalCount(data ?? []);
 }
 
 /**
@@ -176,6 +177,6 @@ export async function countMandatesInHome(
   home: MandateHome,
   query: Omit<MandateListDoorQuery, "home" | "limit" | "offset"> = {},
 ): Promise<number> {
-  const rows = await listMandatesScoped({ ...query, home, limit: 1, offset: 0 });
-  return rows.length > 0 ? Number(rows[0].total_count) : 0;
+  const { total } = await listMandatesScoped({ ...query, home, limit: 1, offset: 0 });
+  return total;
 }

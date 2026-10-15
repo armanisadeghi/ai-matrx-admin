@@ -143,7 +143,6 @@ export const inboxListConfig: EntityListConfig<InboxRow> = {
     listAttributes: (visible, all) => ({
       rows: visible.length,
       rows_loaded: all.length,
-      rows_total: all[0]?.total_count ?? visible.length,
     }),
   },
   emptyState: {

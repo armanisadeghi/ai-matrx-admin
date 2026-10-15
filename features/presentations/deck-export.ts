@@ -64,13 +64,13 @@ async function renderDeckSlides(deck: Deck, hostStyle: Partial<CSSStyleDeclarati
   const roots: ReturnType<typeof createRoot>[] = [];
   const background = slideSurface(resolveDeckTheme(deck.theme ?? undefined)).background;
   const elements: HTMLElement[] = [];
-  for (const slide of deck.slides) {
+  for (const [slideIndex, slide] of deck.slides.entries()) {
     const el = document.createElement("div");
     Object.assign(el.style, { width: `${stage.width}px`, height: `${stage.height}px`, background });
     host.appendChild(el);
     const root = createRoot(el);
     roots.push(root);
-    flushSync(() => root.render(createElement(paper.PaperSlide, { deck, slide, className: "h-full w-full" })));
+    flushSync(() => root.render(createElement(paper.PaperSlide, { deck, slide, slideNumber: slideIndex + 1, className: "h-full w-full" })));
     elements.push(el);
   }
   // ScaledSlide measures after mount, and images resolve async: give both a beat.

@@ -9,6 +9,7 @@
 // SECURITY INVOKER RPCs: the table's RLS is the ceiling; each call declares
 // its lane (THE VIEW LAW).
 
+import { splitTotalCount } from "@/lib/entity-list/total-count";
 import { displayTitle } from "@ai-matrx/rich-content/markdown-core/plain-title";
 import { supabase } from "@/utils/supabase/client";
 import type { Json } from "@/types/database.types";
@@ -66,16 +67,16 @@ export async function fetchDeckPage(
     p_offset: sort.offset,
   });
   if (error) fail("listed", error);
-  const rows = (data ?? []) as (DeckListRow & { total_count: number })[];
+  const split = splitTotalCount((data ?? []) as (DeckListRow & { total_count: number })[]);
   return {
-    rows: rows.map(({ total_count: _total, ...row }) => ({
+    rows: split.rows.map((row) => ({
       ...row,
       // Display form: rows saved before the write boundary cleaned titles
       // still start with a markdown "# " (page-pass 2026-09-27).
       name: displayTitle(row.name),
       folder_ids: row.folder_ids ?? [],
     })),
-    total: rows[0]?.total_count ?? 0,
+    total: split.total,
   };
 }
 

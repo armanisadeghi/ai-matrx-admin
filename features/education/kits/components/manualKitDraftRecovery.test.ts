@@ -6,7 +6,7 @@ const row: EducationLibraryRow = {
   description: "", difficulty: "", due_count: 0, duration_seconds: 0, id: "aid-1", is_owner: true,
   item_count: 0, kind: "fc_set", last_studied_at: "", organization_id: "org-1", organization_name: "Org",
   owner_email: "owner@example.com", source_title: "", status: "active", studied_count: 0, subtype: "flashcards",
-  title: "Fresh flashcards", topic: "", total_count: 1, updated_at: "2026-09-28T00:00:00Z", visibility: "private",
+  title: "Fresh flashcards", topic: "", updated_at: "2026-09-28T00:00:00Z", visibility: "private",
 };
 
 describe("recoverManualKitDraft", () => {

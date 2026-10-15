@@ -24,7 +24,6 @@ function row(kind: string, subtype: string): EducationLibraryRow {
     subtype,
     title: "Study item",
     topic: "",
-    total_count: 1,
     updated_at: "2026-08-21T00:00:00Z",
     visibility: "internal",
   };

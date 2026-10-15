@@ -65,7 +65,6 @@ export function mandateCopyFor(
     }),
     listAttributes: (visible: MandateListRow[], all: MandateListRow[]) => ({
       rows: visible.length,
-      rows_total: all[0]?.total_count ?? visible.length,
     }),
   };
 }

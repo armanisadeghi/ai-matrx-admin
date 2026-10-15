@@ -9,6 +9,7 @@
 // list, its lane counts and its facets read the same rows; `trx_list_scoped`
 // returns `is_archived` per row and `trx_list_facets` takes `p_archived`.
 
+import { splitTotalCount } from "@/lib/entity-list/total-count";
 import { supabase } from "@/utils/supabase/client";
 import { tryWriteOne } from "@/utils/supabase/writeOne";
 
@@ -63,8 +64,7 @@ export async function fetchTranscriptListPage(
 
   if (error) throw pgError(error);
 
-  const rows = (data ?? []) as TranscriptListRow[];
-  return { rows, total: rows.length > 0 ? Number(rows[0].total_count) : 0 };
+  return splitTotalCount(data ?? []);
 }
 
 export async function fetchTranscriptScopeCounts(

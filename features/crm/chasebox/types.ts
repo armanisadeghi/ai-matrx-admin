@@ -19,7 +19,7 @@ import { resolveEntityDoors } from "@/components/official/entity-ref/doors";
 
 /** One row, exactly as crm_chasebox_items returns it. */
 export type ChaseboxRow =
-  Database["public"]["Functions"]["crm_chasebox_items"]["Returns"][number];
+  Omit<Database["public"]["Functions"]["crm_chasebox_items"]["Returns"][number], "total_count">;
 
 export const CHASEBOX_QUEUES = [
   "fresh_replies",

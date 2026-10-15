@@ -121,7 +121,7 @@ export async function fetchMandateListPage(
   mode: MandateListMode,
   coverage: MandateCoverageNarrowing | null = null,
 ): Promise<EntityListPage<MandateListRow>> {
-  const rows = await listMandatesScoped({
+  const { rows, total } = await listMandatesScoped({
     ...(mode.kind === "organization"
       ? { resolutionFor: "org" as const, organizationId: mode.organizationId }
       : {
@@ -139,7 +139,7 @@ export async function fetchMandateListPage(
   });
   return {
     rows: await withCandidates(rows),
-    total: rows.length > 0 ? Number(rows[0].total_count) : 0,
+    total,
   };
 }
 

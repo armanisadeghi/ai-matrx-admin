@@ -10,7 +10,7 @@ import type { EntityFilters } from "@/lib/entity-list/types";
 
 /** One row, exactly as cvx_list_scoped returns it. Never hand-mirrored. */
 export type ConversationBrowseRow =
-  Database["public"]["Functions"]["cvx_list_scoped"]["Returns"][number];
+  Omit<Database["public"]["Functions"]["cvx_list_scoped"]["Returns"][number], "total_count">;
 
 /**
  * Conversations live on a Private table (never published to the web), so a Public tab would

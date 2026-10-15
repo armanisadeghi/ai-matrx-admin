@@ -14,6 +14,7 @@
 
 import type { SlideData, SlideTheme } from "@/components/mardown-display/blocks/presentations/SlideView";
 import { normalizeSlideSize, type SlideSize } from "@/components/mardown-display/blocks/presentations/slide-size";
+import { applySlideOp, replaceAllInSlides, type SlideOp } from "./deck-slide-ops";
 
 export const DECK_KIND = "presentation_deck";
 export const SLIDE_KIND = "presentation_slide";
@@ -26,6 +27,8 @@ export type Deck = {
   theme?: DeckTheme | null;
   /** File → Page setup: the slide size (inches). Missing means widescreen 16:9. */
   slideSize?: SlideSize | null;
+  /** Insert → Slide numbers: the number shows on every slide. */
+  showSlideNumbers?: boolean;
   slides: DeckSlide[];
   [key: string]: unknown;
 };
@@ -180,6 +183,8 @@ export type DeckAction =
   | { type: "load"; deck: Deck }
   | { type: "setTitle"; title: string }
   | { type: "setPreset"; preset: string }
+  /** View → Theme builder: colours, font and look of the deck's master (merged into the theme). */
+  | { type: "setTheme"; theme: Partial<DeckTheme> }
   /** File → Page setup: the deck's slide size. */
   | { type: "setSlideSize"; size: SlideSize }
   | { type: "addSlide"; after: number; layout?: EditorLayout }
@@ -195,7 +200,9 @@ export type DeckAction =
   /** Backspace in an empty list item: the item goes (a list keeps one). */
   | { type: "removeItem"; index: number; path: string }
   | { type: "setNotes"; index: number; notes: string }
-  | { type: "setImage"; index: number; image: string | null; prompt?: string | null };
+  | { type: "setImage"; index: number; image: string | null; prompt?: string | null }
+  /** Skip, background, transition, slide text format, comments, find & replace (deck-slide-ops). */
+  | SlideOp;
 
 export type DeckState = { deck: Deck; current: number };
 
@@ -221,6 +228,8 @@ export function deckReducer(state: DeckState, action: DeckAction): DeckState {
       return { ...state, deck: { ...deck, title: action.title } };
     case "setPreset":
       return { ...state, deck: { ...deck, theme: { ...(deck.theme ?? {}), preset: action.preset } } };
+    case "setTheme":
+      return { ...state, deck: { ...deck, theme: { ...(deck.theme ?? {}), ...action.theme } } };
     case "setSlideSize":
       return { ...state, deck: { ...deck, slideSize: normalizeSlideSize(action.size) } };
     case "addSlide": {
@@ -313,7 +322,27 @@ export function deckReducer(state: DeckState, action: DeckAction): DeckState {
         if ((action.image || action.prompt) && !layout.startsWith("image")) next.layout = "image-split";
         return next;
       });
+    case "setSlideNumbers":
+      return (deck.showSlideNumbers ?? false) === action.show ? state : { ...state, deck: { ...deck, showSlideNumbers: action.show } };
+    case "replaceAll": {
+      const res = replaceAllInSlides(deck.slides, action.find, action.replace, action.matchCase, action.slideIndex);
+      return res.count === 0 ? state : { ...state, deck: { ...deck, slides: res.slides } };
+    }
+    case "appendSlides": {
+      if (action.slides.length === 0) return state;
+      const added = action.slides.map((sl) => ({ ...clone(sl), id: newSlideId() }));
+      return { deck: { ...deck, slides: [...deck.slides, ...added] }, current: n };
+    }
+    case "setBackground":
+    case "setTransition": {
+      if (action.allSlides) return { ...state, deck: { ...deck, slides: deck.slides.map((sl) => applySlideOp(sl, action)) } };
+      return withSlide(state, action.index, (sl) => applySlideOp(sl, action));
+    }
     default:
+      if ("index" in action && typeof (action as { index: unknown }).index === "number") {
+        const a = action as SlideOp & { index: number };
+        return withSlide(state, a.index, (sl) => applySlideOp(sl, a));
+      }
       return state;
   }
 }

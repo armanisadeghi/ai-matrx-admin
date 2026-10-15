@@ -33,6 +33,7 @@ import {
   type TranscriptFacet,
   type TranscriptFacetSelection,
 } from "./transcriptRows";
+import { splitTotalCount } from "@/lib/entity-list/total-count";
 import { readListRpc } from "@/lib/entity-list/readListRpc";
 
 export const TRANSCRIPT_PAGE = 40;
@@ -172,9 +173,9 @@ export function useTranscriptList({ enabled, text, selection, orgId, sort, initi
         setError(message(e, "Your transcripts"));
         return;
       }
-      const list = (data ?? []) as TranscriptListRow[];
+      const { rows: list, total: whole } = splitTotalCount((data ?? []) as (TranscriptListRow & { total_count?: unknown })[]);
       setRows(list);
-      setTotal(list.length ? Number(list[0].total_count) : 0);
+      setTotal(list.length ? whole : 0);
       setStatus("ready");
     })();
     void (async () => {
@@ -216,7 +217,7 @@ export function useTranscriptList({ enabled, text, selection, orgId, sort, initi
               p_limit: 1,
               p_offset: 0,
             });
-            sc.count = re ? -1 : (r as TranscriptListRow[] | null)?.length ? Number((r as TranscriptListRow[])[0].total_count) : 0;
+            sc.count = re ? -1 : splitTotalCount((r ?? []) as (TranscriptListRow & { total_count?: unknown })[]).total;
           }),
         );
         if (cancelled) return;
@@ -249,12 +250,12 @@ export function useTranscriptList({ enabled, text, selection, orgId, sort, initi
         setMoreError(message(e, "More transcripts"));
         return;
       }
-      const next = (data ?? []) as TranscriptListRow[];
+      const { rows: next, total: nextTotal } = splitTotalCount((data ?? []) as (TranscriptListRow & { total_count?: unknown })[]);
       setRows((prev) => {
         const seen = new Set(prev.map((r) => `${r.kind}:${r.id}`));
         return [...prev, ...next.filter((r) => !seen.has(`${r.kind}:${r.id}`))];
       });
-      if (next.length) setTotal(Number(next[0].total_count));
+      if (next.length) setTotal(nextTotal);
     })();
   };
 
@@ -293,12 +294,12 @@ export function useTranscriptList({ enabled, text, selection, orgId, sort, initi
       for (let offset = 0; ; offset += TRANSCRIPT_READ_ALL_PAGE) {
         const { data, error: e } = await call(offset, TRANSCRIPT_READ_ALL_PAGE);
         if (e) throw new Error(message(e, "The matching transcripts"));
-        const page = (data ?? []) as TranscriptListRow[];
+        const { rows: page, total: pageTotal } = splitTotalCount((data ?? []) as (TranscriptListRow & { total_count?: unknown })[]);
         for (const r of page) {
           const k = `${r.kind}:${r.id}`;
           if (!seen.has(k)) (seen.add(k), out.push(r));
         }
-        const whole = page.length ? Number(page[0].total_count) : out.length;
+        const whole = page.length ? pageTotal : out.length;
         if (page.length < TRANSCRIPT_READ_ALL_PAGE || out.length >= whole) return out;
       }
     },

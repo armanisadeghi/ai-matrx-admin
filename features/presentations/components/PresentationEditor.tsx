@@ -367,7 +367,7 @@ export function PresentationEditor({ presentationId }: { presentationId: string 
           </div>
         ) : slide ? (
           <SlideEditContext.Provider value={canEdit ? editPort : null}>
-            <PaperSlide deck={deck} slide={slide} className="h-full w-full" />
+            <PaperSlide deck={deck} slide={slide} slideNumber={current + 1} className="h-full w-full" />
           </SlideEditContext.Provider>
         ) : (
           <div className="flex h-full flex-col items-center justify-center gap-3">

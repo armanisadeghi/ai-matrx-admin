@@ -15,6 +15,7 @@
 // The RPC family (wfx_*) is hand-written from the template in
 // lib/list-scope/FEATURE.md — see migrations/wfx_list_scoped.sql.
 
+import { splitTotalCount } from "@/lib/entity-list/total-count";
 import { supabase } from "@/utils/supabase/client";
 import { overlayFavorites, writeFavorite } from "@/features/scopes/service/favoriteOverlay";
 import { attachFilledMandates } from "@/features/mandates/filled-by/service";
@@ -67,10 +68,9 @@ export async function fetchWorkflowBrowsePage(
 
   if (error) throw pgError(error);
 
-  const listed = (data ?? []) as WorkflowBrowseRow[];
+  const { rows: listed, total } = splitTotalCount((data ?? []) as (WorkflowBrowseRow & { total_count?: unknown })[]);
   // total_count is a window function over the filtered set — identical on every
   // row. Zero rows legitimately means zero matches, not "unknown".
-  const total = listed.length > 0 ? Number(listed[0].total_count) : 0;
   // Stars are per-person state in platform.user_entity_state: one ues_get_bulk
   // for this page overlays them. The RPC's own `is_favorite` (the retired
   // column) is never trusted.

@@ -151,7 +151,6 @@ function baseRow(id: string, kind: string, title: string): TranscriptListRow {
     created_at: "",
     updated_at: "",
     is_owner: false,
-    total_count: 0,
     custom_fields: null,
   };
 }

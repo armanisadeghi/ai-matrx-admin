@@ -46,7 +46,6 @@ const sharedAgent: AgentBrowseRow = {
   source_agent_id: "source-agent-id",
   tags: [],
   task_id: "task-id",
-  total_count: 1,
   custom_fields: {},
   offering_id: null as unknown as string,
   run_count: 0,

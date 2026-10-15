@@ -294,7 +294,7 @@ export async function fetchMandateConsoleData(
   } else {
     // The whole home. The door decides which mandates those are — including
     // refusing this caller outright, which propagates as it is.
-    const scoped = await listMandatesScoped({
+    const { rows: scoped } = await listMandatesScoped({
       home: options.home ?? ALL_HOMES,
       limit: MANDATE_HOME_CEILING,
     });

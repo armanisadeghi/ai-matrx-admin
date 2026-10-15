@@ -13,6 +13,7 @@
 // from loaded rows means loading every row, which is exactly the pattern this
 // page replaced — and at 773 distinct tags it is not a rounding error.
 
+import { splitTotalCount } from "@/lib/entity-list/total-count";
 import { supabase } from "@/utils/supabase/client";
 import { overlayFavorites } from "@/features/scopes/service/favoriteOverlay";
 import { attachFilledMandates } from "@/features/mandates/filled-by/service";
@@ -81,10 +82,9 @@ export async function fetchAgentBrowsePage(
 
   if (error) throw pgError(error);
 
-  const listed = (data ?? []) as AgentBrowseRow[];
+  const { rows: listed, total } = splitTotalCount((data ?? []) as (AgentBrowseRow & { total_count?: unknown })[]);
   // total_count is a window function over the filtered set — identical on every
   // row. Zero rows legitimately means zero matches, not "unknown".
-  const total = listed.length > 0 ? Number(listed[0].total_count) : 0;
   // Stars are per-person state in platform.user_entity_state: one ues_get_bulk
   // for this page overlays them. The RPC's own `is_favorite` (the retired
   // column) is never trusted.

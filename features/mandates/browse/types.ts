@@ -54,7 +54,6 @@ export interface MandateListRow {
   health: string;
   has_settings_override: boolean;
   updated_at: string;
-  total_count: number;
   /** False when the winning rung names a Holder that cannot be reached. */
   holder_live: boolean | null;
   /** False when the winning rung pins a version that cannot be reached. */

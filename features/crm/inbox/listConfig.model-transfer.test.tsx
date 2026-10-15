@@ -69,7 +69,6 @@ const ROW = {
   step: 2,
   subject: HOSTILE,
   thread_key: "thread-842",
-  total_count: 19,
 } satisfies InboxRow;
 
 const ACTIONS: EntityRowActions<InboxRow> = {

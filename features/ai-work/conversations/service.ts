@@ -14,6 +14,7 @@
 // canonical favorites service rather than a second UPDATE against
 // chat.conversation.
 
+import { splitTotalCount } from "@/lib/entity-list/total-count";
 import { supabase } from "@/utils/supabase/client";
 import { tryWriteOne } from "@/utils/supabase/writeOne";
 import type { Json } from "@/types/database.types";
@@ -62,10 +63,9 @@ export async function fetchConversationPage(
 
   if (error) throw pgError(error);
 
-  const rows = (data ?? []) as ConversationBrowseRow[];
   // total_count is a window function over the filtered set — identical on every
   // row. Zero rows legitimately means zero matches, not "unknown".
-  return { rows, total: rows.length > 0 ? Number(rows[0].total_count) : 0 };
+  return splitTotalCount(data ?? []);
 }
 
 export async function fetchConversationScopeCounts(

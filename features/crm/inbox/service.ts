@@ -8,6 +8,7 @@
 // one, and it is a proper scoped RPC rather than a bare RLS-filtered select
 // (THE VIEW LAW: a bare RLS-filtered list read is a defect).
 
+import { splitTotalCount } from "@/lib/entity-list/total-count";
 import { supabase } from "@/utils/supabase/client";
 
 import type {
@@ -50,8 +51,7 @@ export async function fetchInboxListPage(
 
   if (error) throw pgError(error);
 
-  const rows = data ?? [];
-  return { rows, total: rows.length > 0 ? Number(rows[0].total_count) : 0 };
+  return splitTotalCount(data ?? []);
 }
 
 export async function fetchInboxScopeCounts(

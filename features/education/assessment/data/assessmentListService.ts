@@ -10,6 +10,7 @@
 // SECURITY INVOKER RPCs: the table's RLS is the ceiling; each call declares
 // its lane (THE VIEW LAW).
 
+import { splitTotalCount } from "@/lib/entity-list/total-count";
 import { displayTitle } from "@ai-matrx/rich-content/markdown-core/plain-title";
 import { supabase } from "@/utils/supabase/client";
 import { canActOn } from "@/features/access-gate/service/canActOn";
@@ -112,11 +113,8 @@ export async function fetchAssessmentPage(
     p_offset: sort.offset,
   });
   if (error) fail("listed", error);
-  const rows = (data ?? []) as (AssessmentListRow & { total_count: number })[];
-  return {
-    rows: rows.map(({ total_count: _total, ...row }) => cleanRow(row)),
-    total: Number(rows[0]?.total_count ?? 0),
-  };
+  const split = splitTotalCount((data ?? []) as (AssessmentListRow & { total_count: number })[]);
+  return { rows: split.rows.map((row) => cleanRow(row)), total: split.total };
 }
 
 export async function fetchAssessmentLaneCounts(

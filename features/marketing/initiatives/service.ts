@@ -1,4 +1,5 @@
 import { supabase } from "@/utils/supabase/client";
+import { splitTotalCount } from "@/lib/entity-list/total-count";
 import { guardedUpdate } from "@ai-matrx/data/db";
 import type { Database } from "@/types/database.types";
 import type {
@@ -37,8 +38,7 @@ export async function fetchInitiativeListPage(
     p_offset: (query.page - 1) * sort.pageSize,
   });
   if (error) throw error;
-  const rows = data ?? [];
-  return { rows, total: rows[0]?.total_count ?? 0 };
+  return splitTotalCount(data ?? []);
 }
 
 export async function fetchInitiativeScopeCounts(

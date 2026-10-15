@@ -13,7 +13,7 @@ import { resolveEntityDoors } from "@/components/official/entity-ref/doors";
 
 /** One row, exactly as crm_inbox_list_scoped returns it. */
 export type InboxRow =
-  Database["public"]["Functions"]["crm_inbox_list_scoped"]["Returns"][number];
+  Omit<Database["public"]["Functions"]["crm_inbox_list_scoped"]["Returns"][number], "total_count">;
 
 /**
  * Mine + My Orgs, and deliberately no more.

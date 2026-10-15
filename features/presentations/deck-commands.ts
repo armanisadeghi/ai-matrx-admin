@@ -57,10 +57,13 @@ import {
   FileCog,
 } from "lucide-react";
 
+import { AlignCenter, AlignJustify, AlignRight, Italic, Underline, ZoomIn, ZoomOut } from "lucide-react";
+
 import type { EditorMenu, EditorMenuEntry } from "@/components/editor-chrome/editor-menu-model";
 import { googleExtensionsMenu, googleHelpHead, soon } from "@/components/editor-chrome/google-parity";
 import type { EditorToolbarItem } from "@/components/editor-chrome/EditorToolbar";
 import { EDITOR_LAYOUTS, type DeckAction, type DeckSlide, type EditorLayout } from "./deck-model";
+import type { TextStyle } from "./deck-slide-ops";
 import { toast } from "@/lib/toast";
 
 export type DeckPreset = { key: string; name: string };
@@ -90,6 +93,111 @@ export interface DeckChromeHost {
   showShortcuts: () => void;
   /** Help → Send feedback (the app's feedback window). */
   sendFeedback?: () => void;
+  skipped?: boolean;
+  slideNumbers?: boolean;
+  gridShown?: boolean;
+  spellcheck?: boolean;
+  voiceTyping?: boolean;
+  /** The current slide's own text style (Format → Text). */
+  slideTextStyle?: TextStyle;
+  openPanel?: (panel: DeckPanel) => void;
+  pastePlain?: () => void;
+  toggleGrid?: () => void;
+  toggleSpellcheck?: () => void;
+  toggleVoiceTyping?: () => void;
+}
+
+/** The dialogs and panels the menu rows open. */
+export type DeckPanel = "find" | "background" | "motion" | "special" | "comments" | "theme" | "import" | "accessibility";
+
+const TEXT_COLORS = [
+  ["Black", "#000000"],
+  ["Dark grey", "#4B5563"],
+  ["White", "#FFFFFF"],
+  ["Red", "#DC2626"],
+  ["Orange", "#EA580C"],
+  ["Green", "#16A34A"],
+  ["Blue", "#2563EB"],
+  ["Indigo", "#4F46E5"],
+  ["Purple", "#9333EA"],
+] as const;
+
+/** Format → Text styles the current slide's layout text (title, body, bullets). */
+function formatItems(h: DeckChromeHost): EditorMenuEntry[] {
+  const locked = () => !h.canEdit || h.slideCount === 0;
+  const st = () => h.slideTextStyle ?? {};
+  const apply = (style: Partial<TextStyle>) => h.dispatch({ type: "setSlideTextStyle", index: h.current, style });
+  const toggle = (key: "bold" | "italic" | "underline") => () => apply({ [key]: !st()[key] });
+  const scale = (dir: 1 | -1) => () => apply({ scale: Math.round(Math.max(0.5, Math.min(2, (st().scale ?? 1) + dir * 0.1)) * 10) / 10 });
+  return [
+    {
+      kind: "submenu",
+      id: "format.text",
+      label: "Text",
+      icon: Bold,
+      items: [
+        { kind: "action", id: "format.bold", label: "Bold", icon: Bold, shortcut: { key: "b", mod: true }, run: toggle("bold"), checked: () => Boolean(st().bold), disabled: locked },
+        { kind: "action", id: "format.italic", label: "Italic", icon: Italic, shortcut: { key: "i", mod: true }, run: toggle("italic"), checked: () => Boolean(st().italic), disabled: locked },
+        { kind: "action", id: "format.underline", label: "Underline", icon: Underline, shortcut: { key: "u", mod: true }, run: toggle("underline"), checked: () => Boolean(st().underline), disabled: locked },
+        sep,
+        { kind: "action", id: "format.size-up", label: "Increase font size", icon: ZoomIn, run: scale(1), disabled: locked },
+        { kind: "action", id: "format.size-down", label: "Decrease font size", icon: ZoomOut, run: scale(-1), disabled: locked },
+        sep,
+        {
+          kind: "submenu",
+          id: "format.color",
+          label: "Text colour",
+          icon: PaintBucket,
+          items: TEXT_COLORS.map(([name, hex]) => ({
+            kind: "action" as const,
+            id: `format.color.${hex.slice(1).toLowerCase()}`,
+            label: name,
+            keywords: ["color", "colour"],
+            checked: () => (st().color ?? "").toLowerCase() === hex.toLowerCase(),
+            run: () => apply({ color: hex }),
+            disabled: locked,
+          })),
+        },
+      ],
+    },
+    {
+      kind: "submenu",
+      id: "format.align",
+      label: "Align",
+      icon: AlignLeft,
+      items: (
+        [
+          ["left", "Left", AlignLeft],
+          ["center", "Center", AlignCenter],
+          ["right", "Right", AlignRight],
+          ["justify", "Justify", AlignJustify],
+        ] as const
+      ).map(
+        ([key, label, icon]): EditorMenuEntry => ({ kind: "action", id: `format.align.${key}`, label, icon, checked: () => st().align === key, run: () => apply({ align: key }), disabled: locked }),
+      ),
+    },
+    {
+      kind: "submenu",
+      id: "format.spacing",
+      label: "Line spacing",
+      items: [1, 1.15, 1.5, 2].map(
+        (n): EditorMenuEntry => ({ kind: "action", id: `format.spacing.${String(n).replace(".", "-")}`, label: n === 1 ? "Single" : String(n), checked: () => st().lineHeight === n, run: () => apply({ lineHeight: n }), disabled: locked }),
+      ),
+    },
+    soon("format.lists", "Bullets and numbering", "presentations.format-text", { icon: List }),
+    sep,
+    soon("format.options", "Format options", "presentations.format-options"),
+    sep,
+    {
+      kind: "action",
+      id: "format.clear",
+      label: "Clear formatting",
+      icon: RemoveFormatting,
+      shortcut: { key: "\\", mod: true },
+      run: () => h.dispatch({ type: "setSlideTextStyle", index: h.current, style: null }),
+      disabled: locked,
+    },
+  ];
 }
 
 const sep: EditorMenuEntry = { kind: "separator" };
@@ -190,14 +298,14 @@ export function buildDeckMenus(h: DeckChromeHost): EditorMenu[] {
           },
           disabled: locked,
         },
-        soon("edit.paste-plain", "Paste without formatting", "editor.edit.paste-plain", { shortcut: { key: "v", mod: true, shift: true } }),
+        { kind: "action", id: "edit.paste-plain", label: "Paste without formatting", keywords: ["plain text", "clipboard"], shortcut: { key: "v", mod: true, shift: true, bind: true }, run: () => h.pastePlain?.(), disabled: locked },
         sep,
         { kind: "action", id: "edit.select-all", label: "Select all", run: selectAllOnSlide, disabled: () => h.slideCount === 0 },
         { kind: "action", id: "edit.delete", label: "Delete slide", icon: Trash2, keywords: ["remove"], run: () => h.dispatch({ type: "deleteSlide", index: i }), disabled: noSlide },
         sep,
         { kind: "action", id: "edit.duplicate", label: "Duplicate slide", icon: Copy, shortcut: { key: "d", mod: true, bind: true }, run: () => h.dispatch({ type: "duplicateSlide", index: i }), disabled: noSlide },
         sep,
-        soon("edit.find-replace", "Find and replace", "presentations.find-replace", { icon: Search, shortcut: { key: "h", mod: true } }),
+        { kind: "action", id: "edit.find-replace", label: "Find and replace", icon: Search, keywords: ["search", "replace"], shortcut: { key: "h", mod: true, bind: true }, run: () => h.openPanel?.("find"), disabled: () => h.slideCount === 0 },
       ],
     },
     {
@@ -206,9 +314,9 @@ export function buildDeckMenus(h: DeckChromeHost): EditorMenu[] {
       items: [
         { kind: "action", id: "view.present", label: "Present", icon: MonitorPlay, shortcut: { key: "Enter", mod: true, bind: true }, keywords: ["slideshow", "full screen"], run: () => h.present(false) },
         { kind: "action", id: "view.present-start", label: "Present from beginning", icon: MonitorPlay, shortcut: { key: "Enter", mod: true, shift: true, bind: true }, keywords: ["slideshow"], run: () => h.present(true) },
-        soon("view.motion", "Motion", "presentations.motion", { keywords: ["transition", "animation"] }),
-        soon("view.theme-builder", "Theme builder", "presentations.master", { keywords: ["master"] }),
-        soon("view.grid", "Grid view", "presentations.grid-view", { icon: LayoutGrid, shortcut: { key: "1", mod: true, alt: true } }),
+        { kind: "action", id: "view.motion", label: "Motion", keywords: ["transition"], run: () => h.openPanel?.("motion"), disabled: noSlide },
+        { kind: "action", id: "view.theme-builder", label: "Theme builder", keywords: ["master"], run: () => h.openPanel?.("theme"), disabled: locked },
+        { kind: "action", id: "view.grid", label: "Grid view", icon: LayoutGrid, keywords: ["sorter", "thumbnails"], shortcut: { key: "1", mod: true, alt: true, bind: true }, run: () => h.toggleGrid?.(), checked: () => Boolean(h.gridShown), disabled: () => h.slideCount === 0 },
         sep,
         { kind: "action", id: "view.notes", label: "Show speaker notes", icon: StickyNote, keywords: ["notes"], run: h.toggleNotes, checked: () => h.notesShown },
       ],
@@ -240,29 +348,20 @@ export function buildDeckMenus(h: DeckChromeHost): EditorMenu[] {
         soon("insert.word-art", "Word art", "presentations.insert-objects"),
         soon("insert.line", "Line", "presentations.insert-objects", { icon: Slash }),
         sep,
-        soon("insert.special-characters", "Special characters", "editor.insert.special-characters", { icon: Omega }),
+        { kind: "action", id: "insert.special-characters", label: "Special characters", icon: Omega, keywords: ["symbol", "arrow", "emoji"], run: () => h.openPanel?.("special"), disabled: noSlide },
         soon("insert.animation", "Animation", "presentations.motion"),
         sep,
         soon("insert.link", "Link", "presentations.insert-link", { icon: LinkIcon, shortcut: { key: "k", mod: true } }),
-        soon("insert.comment", "Comment", "presentations.comment", { icon: MessageSquarePlus, shortcut: { key: "m", mod: true, alt: true } }),
+        { kind: "action", id: "insert.comment", label: "Comment", icon: MessageSquarePlus, shortcut: { key: "m", mod: true, alt: true, bind: true }, run: () => h.openPanel?.("comments"), disabled: noSlide },
         sep,
         { kind: "submenu", id: "insert.slide", label: "New slide", icon: Plus, items: layoutItems(h, (layout) => h.dispatch({ type: "addSlide", after: i, layout }), "insert.slide", false) },
-        soon("insert.slide-numbers", "Slide numbers", "presentations.slide-numbers", { icon: Hash }),
+        { kind: "action", id: "insert.slide-numbers", label: "Slide numbers", icon: Hash, checked: () => Boolean(h.slideNumbers), run: () => h.dispatch({ type: "setSlideNumbers", show: !h.slideNumbers }), disabled: locked },
       ],
     },
     {
       id: "format",
       label: "Format",
-      items: [
-        soon("format.text", "Text", "presentations.format-text", { icon: Bold }),
-        soon("format.align", "Align and indent", "presentations.format-text", { icon: AlignLeft }),
-        soon("format.spacing", "Line and paragraph spacing", "presentations.format-text"),
-        soon("format.lists", "Bullets and numbering", "presentations.format-text", { icon: List }),
-        sep,
-        soon("format.options", "Format options", "presentations.format-options"),
-        sep,
-        soon("format.clear", "Clear formatting", "presentations.format-text", { icon: RemoveFormatting, shortcut: { key: "\\", mod: true } }),
-      ],
+      items: formatItems(h),
     },
     {
       id: "slide",
@@ -271,7 +370,7 @@ export function buildDeckMenus(h: DeckChromeHost): EditorMenu[] {
         { kind: "action", id: "slide.new", label: "New slide", icon: Plus, shortcut: { key: "m", mod: true, bind: true }, run: () => h.dispatch({ type: "addSlide", after: i }), disabled: locked },
         { kind: "action", id: "slide.duplicate", label: "Duplicate slide", icon: Copy, run: () => h.dispatch({ type: "duplicateSlide", index: i }), disabled: noSlide },
         { kind: "action", id: "slide.delete", label: "Delete slide", icon: Trash2, run: () => h.dispatch({ type: "deleteSlide", index: i }), disabled: noSlide },
-        soon("slide.skip", "Skip slide", "presentations.skip-slide", { icon: EyeOff }),
+        { kind: "action", id: "slide.skip", label: "Skip slide", icon: EyeOff, keywords: ["hide"], checked: () => Boolean(h.skipped), run: () => h.dispatch({ type: "setSkipped", index: i, skipped: !h.skipped }), disabled: noSlide },
         sep,
         {
           kind: "submenu",
@@ -285,11 +384,11 @@ export function buildDeckMenus(h: DeckChromeHost): EditorMenu[] {
           ],
         },
         sep,
-        soon("slide.background", "Change background", "presentations.background", { icon: PaintBucket }),
+        { kind: "action", id: "slide.background", label: "Change background", icon: PaintBucket, run: () => h.openPanel?.("background"), disabled: noSlide },
         { kind: "submenu", id: "slide.layout", label: "Apply layout", icon: LayoutTemplate, items: layoutItems(h, (layout) => h.dispatch({ type: "setLayout", index: i, layout }), "slide.layout", true) },
-        soon("slide.transition", "Transition", "presentations.motion"),
+        { kind: "action", id: "slide.transition", label: "Transition", run: () => h.openPanel?.("motion"), disabled: noSlide },
         sep,
-        soon("slide.edit-theme", "Edit theme", "presentations.master"),
+        { kind: "action", id: "slide.edit-theme", label: "Edit theme", run: () => h.openPanel?.("theme"), disabled: locked },
         {
           kind: "submenu",
           id: "slide.theme",
@@ -326,17 +425,17 @@ export function buildDeckMenus(h: DeckChromeHost): EditorMenu[] {
       id: "tools",
       label: "Tools",
       items: [
-        soon("tools.spelling", "Spelling", "editor.tools.spelling", { icon: SpellCheck }),
+        { kind: "action", id: "tools.spelling", label: "Spelling and grammar", icon: SpellCheck, keywords: ["spellcheck", "proofread"], checked: () => Boolean(h.spellcheck), run: () => h.toggleSpellcheck?.() },
         soon("tools.linked-objects", "Linked objects", "editor.tools.linked-objects"),
         soon("tools.dictionary", "Dictionary", "editor.tools.dictionary"),
         sep,
         soon("tools.qa", "Q&A history", "presentations.qa-history"),
         sep,
-        soon("tools.voice-typing", "Voice type speaker notes", "editor.tools.voice-typing", { icon: Mic }),
+        { kind: "action", id: "tools.voice-typing", label: "Voice type speaker notes", icon: Mic, keywords: ["dictate", "microphone"], checked: () => Boolean(h.voiceTyping), run: () => h.toggleVoiceTyping?.(), disabled: noSlide },
         sep,
         soon("tools.notifications", "Notification settings", "editor.tools.notifications"),
         soon("tools.preferences", "Preferences", "editor.tools.preferences"),
-        soon("tools.accessibility", "Accessibility", "editor.tools.accessibility"),
+        { kind: "action", id: "tools.accessibility", label: "Accessibility", run: () => h.openPanel?.("accessibility") },
       ],
     },
     googleExtensionsMenu("slides"),

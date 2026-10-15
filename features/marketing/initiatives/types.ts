@@ -8,7 +8,7 @@ export type InitiativeUpdate =
   Database["marketing"]["Tables"]["initiative"]["Update"];
 
 export type InitiativeListRow =
-  Database["public"]["Functions"]["mkt_initiative_list_scoped"]["Returns"][number];
+  Omit<Database["public"]["Functions"]["mkt_initiative_list_scoped"]["Returns"][number], "total_count">;
 
 export const INITIATIVE_LIST_SCOPES: ListScopeKind[] = [
   "mine",

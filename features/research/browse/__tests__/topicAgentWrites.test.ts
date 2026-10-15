@@ -27,7 +27,6 @@ const row = (id: string, name: string): ResearchTopicListRow => ({
   project_name: "",
   archived_at: "",
   custom_fields: {},
-  total_count: 2,
 });
 
 const ROWS = [row("t-1", "Battery supply chain"), row("t-2", "Grid storage")];
