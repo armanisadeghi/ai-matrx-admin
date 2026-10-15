@@ -16,8 +16,7 @@
 import { useEffect, useEffectEvent, useState } from "react";
 import { BadgeCheck, Check, ChevronLeft, ChevronRight, ExternalLink, X } from "lucide-react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
-import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
-import { Avatar, AvatarFallback } from "@ai-matrx/design-system";
+import { Avatar, AvatarFallback, Peek, PeekHoverCard, type PeekBlock, type PeekRecord } from "@ai-matrx/design-system";
 import { Button, DecisionControl, PropertyRow } from "@ai-matrx/design-system/controls";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 import { formatCount } from "@ai-matrx/kit/format";
@@ -227,25 +226,27 @@ const SOURCE_LABEL: Record<string, string> = {
 const sentenceCase = (t: string) => t.charAt(0).toUpperCase() + t.slice(1);
 
 /** Where a candidate came from, as labelled rows (shown on hover, like the page rows). */
-function candidateInfo(c: Candidate): React.ReactNode {
+/** Where a candidate came from, as THE peek's record — or null when there is nothing to say. */
+function candidatePeek(c: Candidate, title: string, sub: string): PeekRecord | null {
   const src = c.anchor.source;
   const page = src.url && /^https?:\/\//i.test(src.url) ? src.url : null;
   const weThink = parseSuggestion(c.anchor.suggestion);
   const reasons = c.certaintyReasons?.filter(Boolean) ?? [];
-  const rows = [
-    SOURCE_LABEL[src.kind] ? <PropertyRow key="found" label="Found by" value={SOURCE_LABEL[src.kind]} /> : null,
-    page ? (
-      <PropertyRow key="page" label="Page">
-        <OutboundLink href={page} className="break-all text-primary underline-offset-2 hover:underline">
-          {page.replace(/^https?:\/\/(www\.)?/i, "")}
-        </OutboundLink>
-      </PropertyRow>
-    ) : null,
-    c.certainty ? <PropertyRow key="certainty" label="Certainty" value={sentenceCase(String(c.certainty))} /> : null,
-    reasons.length ? <PropertyRow key="reason" label="Reason" value={reasons.join(" ")} className="[&_*]:break-words" /> : null,
-    weThink?.reason ? <PropertyRow key="we-think" label="We think" value={weThink.reason} className="[&_*]:break-words" /> : null,
-  ].filter(Boolean);
-  return rows.length ? rows : null;
+  const body: PeekBlock[] = [];
+  if (SOURCE_LABEL[src.kind]) body.push({ property: "Found by", value: SOURCE_LABEL[src.kind]! });
+  if (page) body.push({ property: "Page", value: page.replace(/^https?:\/\/(www\.)?/i, ""), href: page });
+  if (c.certainty) body.push({ property: "Certainty", value: sentenceCase(String(c.certainty)) });
+  if (reasons.length) body.push({ property: "Reason", value: reasons.join(" ") });
+  if (weThink?.reason) body.push({ property: "We think", value: weThink.reason });
+  if (!body.length) return null;
+  return {
+    kind: "Candidate",
+    id: c.id,
+    title,
+    ...(sub ? { subtitle: sub } : {}),
+    body,
+    copyData: { name: title, about: sub, foundBy: SOURCE_LABEL[src.kind] ?? null, page, certainty: c.certainty ?? null, reasons, weThink: weThink?.reason ?? null },
+  };
 }
 
 /** One candidate: who it is (hover for where it came from), Open, and the page's Yes / No / Other. */
@@ -279,7 +280,7 @@ function CandidateCard({
   const handleLine = c.platform === "website" ? (c.url ? websiteHost(c.url) : null) : accountHandleLine(c.platform, c.handle);
   const title = c.name ?? handleLine ?? c.anchor.value;
   const sub = [handleLine !== title ? handleLine : null, c.followers != null ? `${formatCount(c.followers)} followers` : null].filter(Boolean).join(" · ");
-  const info = candidateInfo(c);
+  const peek = candidatePeek(c, title, sub);
   const who = (
     <div className="flex min-w-0 flex-1 items-start gap-3">
       <CandidateAvatar c={c} />
@@ -302,13 +303,10 @@ function CandidateCard({
       data-candidate={c.id}
     >
       <div className="flex min-w-0 items-start gap-2">
-        {info ? (
-          <HoverCard openDelay={600} closeDelay={200}>
-            <HoverCardTrigger asChild>{who}</HoverCardTrigger>
-            <HoverCardContent align="start" side="bottom" className="flex w-80 max-w-[calc(100vw-2rem)] flex-col gap-2.5" data-testid="smart-add-candidate-info">
-              {info}
-            </HoverCardContent>
-          </HoverCard>
+        {peek ? (
+          <PeekHoverCard side="bottom" align="start" trigger={who}>
+            <Peek record={peek} />
+          </PeekHoverCard>
         ) : (
           who
         )}

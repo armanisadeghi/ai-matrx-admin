@@ -16,17 +16,16 @@
 
 import { useState } from "react";
 import { Maximize2, Moon, Star, Sun, X } from "lucide-react";
-import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 import { Button, DecisionControl, Field, PropertyRow, type DecisionAnswer, type WayOutItem } from "@ai-matrx/design-system/controls";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
-import { Avatar, AvatarFallback, FirstUseHint } from "@ai-matrx/design-system";
+import { Avatar, AvatarFallback, FirstUseHint, Peek, PeekHoverCard, type PeekBlock, type PeekRecord } from "@ai-matrx/design-system";
 import { formatCount } from "@ai-matrx/kit/format";
 import { profileAvatarDoor } from "@/features/marketing/social/server";
 import { PlatformMark, platformLabel } from "@/features/marketing/social/components/PlatformMark";
 import { rankByAnchors, type PersonAnchors } from "./anchorRank";
 import { SocialImage } from "@/features/marketing/social/components/SocialImage";
 import { proxiedExternalImageUrl } from "@/lib/media/external-image";
-import { collapseAliasedAccounts, compareRows, customItem, websiteHost, type Candidate, type Decision, type EvidenceField, type EvidenceItem, type Relation } from "./evidence";
+import { collapseAliasedAccounts, compareRows, customItem, FIELD_LABEL, websiteHost, type Candidate, type Decision, type EvidenceField, type EvidenceItem, type Relation } from "./evidence";
 import { accountHandleLine, CUSTOM_RELATION, CustomAdd, CustomRelation, OpenLink, relationWayOut, useRelationKinds } from "./SmartAddExtras";
 import { webCandidate } from "./relations";
 import { isStaffAccount } from "./staff";
@@ -226,7 +225,7 @@ export function SmartAddSlots({
     const label = i.field === "name" ? (NAME_RELATION_LABEL[kind.key] ?? kind.label) : kind.label;
     onRelate(candidateOf(i), { key: kind.key, label, routesTo: kind.routesTo });
   };
-  const noteOf = (i: EvidenceItem): React.ReactNode => {
+  const noteOf = (i: EvidenceItem): string | null => {
     const relation = relations[i.key];
     const text = relation
       ? i.field === "name" && NAME_RELATION_LABEL[relation.key]
@@ -236,7 +235,7 @@ export function SmartAddSlots({
         ? "Skipped for now"
         : null;
     // The picker already shows the relationship or the skip; the info card only repeats it for a name's kind.
-    return text ? <span data-testid="smart-add-way-out">{text}</span> : null;
+    return text;
   };
   const below = (i: EvidenceItem): React.ReactNode =>
     customFor === i.key ? (
@@ -491,7 +490,7 @@ export function SmartAddSlots({
             item={i}
             decision={decisions[i.key] ?? null}
            
-            note={moved ? <span data-testid="smart-add-moved-from-name">Moved from name</span> : noteOf(i)}
+            note={moved ? "Moved from name" : noteOf(i)}
             actions={
               <>
                 {choices(i, "primary")}
@@ -570,8 +569,8 @@ function Row({
 }: {
   item: EvidenceItem;
   decision: Decision | null;
-  /** The chosen way-out answer, as a small badge on the second line. */
-  note?: React.ReactNode;
+  /** The chosen way-out answer, shown as the Answer in the row's peek. */
+  note?: string | null;
   /** A short inline editor under the row (a custom relationship). */
   below?: React.ReactNode;
   actions: React.ReactNode;
@@ -580,7 +579,7 @@ function Row({
   top?: boolean;
   hideWhere?: boolean;
 }) {
-  const info = rowInfo(item, note, hideWhere);
+  const peek = rowPeek(item, note ?? null, hideWhere);
   // Where it was found opens on hovering the FOUND TEXT only — never the
   // Yes/No/Other buttons — so answering down the list never drops the card
   // over the next question (2026-10-14).
@@ -596,13 +595,10 @@ function Row({
     >
       <div className="flex min-w-0 flex-1 flex-col">
         {/* One line per row (Arman 2026-10-14: no secondary lines). Where it was found shows on hovering the found text. */}
-        {info ? (
-          <HoverCard openDelay={600} closeDelay={150}>
-            <HoverCardTrigger asChild>{value}</HoverCardTrigger>
-            <HoverCardContent align="start" side="bottom" className="flex w-80 max-w-[calc(100vw-2rem)] flex-col gap-2.5" data-testid="smart-add-row-info">
-              {info}
-            </HoverCardContent>
-          </HoverCard>
+        {peek ? (
+          <PeekHoverCard side="bottom" align="start" trigger={value}>
+            <Peek record={peek} />
+          </PeekHoverCard>
         ) : (
           value
         )}
@@ -615,29 +611,28 @@ function Row({
 
 const sentenceCase = (t: string) => t.charAt(0).toUpperCase() + t.slice(1);
 
-/** The row's provenance as labelled rows (source, page, found by, certainty), or null when there is nothing to say. */
-function rowInfo(item: EvidenceItem, note?: React.ReactNode, hideWhere?: boolean): React.ReactNode {
+/** The row's provenance as THE peek's record (source, page, found by, certainty), or null when there is nothing to say. */
+function rowPeek(item: EvidenceItem, note: string | null, hideWhere?: boolean): PeekRecord | null {
   const where = hideWhere ? "" : whereOf(item);
   const url = item.source.url && /^https?:\/\//i.test(item.source.url) ? item.source.url : null;
   const found = KIND_LABEL_UI[item.source.kind] ?? "";
   const reasons = item.certainty_reasons?.filter(Boolean) ?? [];
   if (!where && !note && !url && !item.certainty && !reasons.length) return null;
-  return (
-    <>
-      {where ? <PropertyRow label="Source" value={sentenceCase(where)} className="[&_*]:break-words" /> : null}
-      {url ? (
-        <PropertyRow label="Page">
-          <OutboundLink href={url} className="break-all text-primary underline-offset-2 hover:underline">
-            {url.replace(/^https?:\/\/(www\.)?/i, "")}
-          </OutboundLink>
-        </PropertyRow>
-      ) : null}
-      {found ? <PropertyRow label="Found by" value={found} /> : null}
-      {item.certainty ? <PropertyRow label="Certainty" value={sentenceCase(String(item.certainty))} /> : null}
-      {reasons.length ? <PropertyRow label="Reason" value={reasons.join(" ")} className="[&_*]:break-words" /> : null}
-      {note ? <PropertyRow label="Answer">{note}</PropertyRow> : null}
-    </>
-  );
+  const body: PeekBlock[] = [];
+  if (where) body.push({ property: "Source", value: sentenceCase(where) });
+  if (url) body.push({ property: "Page", value: url.replace(/^https?:\/\/(www\.)?/i, ""), href: url });
+  if (found) body.push({ property: "Found by", value: found });
+  if (item.certainty) body.push({ property: "Certainty", value: sentenceCase(String(item.certainty)) });
+  if (reasons.length) body.push({ property: "Reason", value: reasons.join(" ") });
+  if (note) body.push({ property: "Answer", value: note });
+  return {
+    kind: "Brand finding",
+    id: item.key,
+    title: FIELD_LABEL[item.field],
+    subtitle: "Where it was found",
+    body,
+    copyData: { field: FIELD_LABEL[item.field], value: item.value, source: where || null, page: url, foundBy: found || null, certainty: item.certainty ?? null, reasons, answer: note },
+  };
 }
 
 const KIND_LABEL_UI: Record<string, string> = {
