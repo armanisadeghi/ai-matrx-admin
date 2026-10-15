@@ -40,6 +40,7 @@ import { profileAvatarDoor } from "@/features/marketing/social/server";
 import type { SocialPlatform } from "@/features/marketing/social/types";
 import { linkInBioService } from "@/features/marketing/lib/link-in-bio";
 import { emailIn } from "./emailInput";
+import { looksLikeDomain, routeNameLink } from "./nameLink";
 import { hasProfileLink, learnProfileLinkHosts, personExtraPrefill, profileLinkIn } from "./personPrefill";
 import { teachFediverseHost } from "./learnDomains";
 import { useFediverseHost } from "./useFediverseHost";
@@ -66,10 +67,6 @@ const STEP_LABEL: Record<string, string> = {
 const PICKABLE: SocialPlatform[] = ["instagram", "tiktok", "youtube", "x", "linkedin", "facebook", "threads", "pinterest"];
 
 const SPRING = { type: "spring", stiffness: 420, damping: 38, mass: 0.8 } as const;
-
-function looksLikeDomain(text: string): boolean {
-  return /^[^\s@]+\.[a-z]{2,}(\/.*)?$/i.test(text.trim().replace(/^https?:\/\//i, ""));
-}
 
 /** What a person typed beside the name and city (all optional). */
 export interface PersonMore {
@@ -236,7 +233,9 @@ export function SmartAddHero({
     : mode === "social" ? emailIn(social)
     : mode === "name" ? emailIn(name) ?? (name.trim() ? null : emailIn(email))
     : null;
-  const ready = Boolean(mainEmail) || readyFor(picked);
+  // MKT-146: a link in the Company name box is routed as a website or account, never taken as the business name.
+  const nameLink = mode === "name" && !person ? routeNameLink(name) : null;
+  const ready = Boolean(mainEmail) || Boolean(nameLink) || readyFor(picked);
 
   const phase: "choose" | "enter" | "identifying" | "nothing" | "outcome" =
     submitted && (outcome || unreadable) ? "outcome" : submitted && nothingFound ? "nothing" : submitted || starting ? "identifying" : mode ? "enter" : "choose";
@@ -282,6 +281,14 @@ export function SmartAddHero({
       void findPerson({ occupation: occupation.trim(), company: company.trim(), extra: extra.trim() });
       return;
     }
+    if (mode === "name" && nameLink) {
+      onWebsite(nameLink.website);
+      onSocial(nameLink.social);
+      onPick(nameLink.platform);
+      onStarted?.();
+      setSubmitted(true);
+      return;
+    }
     if (mode === "name") {
       const answers = [customItem("name", name)];
       if (city.trim()) answers.push(customItem("address", city));
@@ -314,10 +321,14 @@ export function SmartAddHero({
   };
   const held = useRef(false);
   const submit = (pk: SocialPlatform | null = picked) => {
-    if (!mainEmail && !readyFor(pk)) return;
+    if (!mainEmail && !nameLink && !readyFor(pk)) return;
     if (!onBeforeStart) return go(pk);
     setStarting(true);
-    void onBeforeStart({ website: siteOk ? site.trim() : bioLink ?? "", social: socialOkFor(pk) ? social.trim() : "", platform: pk, name: name.trim(), city: city.trim() }).then((ok) => {
+    void onBeforeStart(
+      nameLink
+        ? { website: nameLink.website, social: nameLink.social, platform: nameLink.platform, name: "", city: city.trim() }
+        : { website: siteOk ? site.trim() : bioLink ?? "", social: socialOkFor(pk) ? social.trim() : "", platform: pk, name: name.trim(), city: city.trim() },
+    ).then((ok) => {
       held.current = !ok;
       if (ok) go(pk);
       setStarting(false);

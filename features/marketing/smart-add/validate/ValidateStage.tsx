@@ -28,6 +28,7 @@ import { useMediaQuery } from "@ai-matrx/kit/media-query";
 import type { BrandRelationKind } from "@/features/marketing/data/service";
 import { PlatformMark } from "@/features/marketing/social/components/PlatformMark";
 import { SocialImage } from "@/features/marketing/social/components/SocialImage";
+import { avatarInitial } from "../avatarInitial";
 import { profileAvatarDoor } from "@/features/marketing/social/server";
 import { websiteHost } from "../evidence";
 import { personNameOnPage } from "../personParty";
@@ -101,7 +102,7 @@ function Media({ item, size }: { item: FocusItem; size: number }) {
   const [broken, setBroken] = useState(false);
   const style = { width: size, height: size };
   if (item.kind === "account") {
-    const initial = (item.title ?? item.value).replace(/^@/, "").charAt(0).toUpperCase();
+    const initial = avatarInitial(item.title, item.value);
     return (
       <span className="relative shrink-0" style={style}>
         <SocialImage

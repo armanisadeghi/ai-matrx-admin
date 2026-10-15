@@ -28,6 +28,7 @@ import type { BrandRelationKind } from "@/features/marketing/data/service";
 import { isOurs, websiteHost, type Candidate, type Decision, type EvidenceItem, type Relation } from "../evidence";
 import { accountHandleLine, CUSTOM_RELATION, CustomRelation, relationWayOut, useRelationKinds } from "../SmartAddExtras";
 import { parseSuggestion } from "../validate/queue";
+import { avatarInitial } from "../avatarInitial";
 import { compareSlots, isAnswered, type CompareSlot } from "./compareSlots";
 
 const DONE_MS = 1400;
@@ -198,7 +199,7 @@ function CandidateAvatar({ c }: { c: Candidate }) {
       <PlatformMark platform="website" size={48} />
     );
   }
-  const initial = (c.name ?? c.handle ?? "?").replace(/^@/, "").charAt(0).toUpperCase();
+  const initial = avatarInitial(c.name, c.handle);
   return (
     <span className="relative size-12 shrink-0">
       <Avatar className="size-12">

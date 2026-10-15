@@ -18,6 +18,7 @@ import { useState } from "react";
 import { Maximize2, Moon, Star, Sun, X } from "lucide-react";
 import { Button, DecisionControl, Field, PropertyRow, type DecisionAnswer, type WayOutItem } from "@ai-matrx/design-system/controls";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
+import { avatarInitial } from "./avatarInitial";
 import { Avatar, AvatarFallback, FirstUseHint, Peek, PeekHoverCard, type PeekBlock, type PeekRecord } from "@ai-matrx/design-system";
 import { formatCount } from "@ai-matrx/kit/format";
 import { profileAvatarDoor } from "@/features/marketing/social/server";
@@ -814,7 +815,7 @@ function AccountAvatar({ item }: { item: EvidenceItem }) {
           className="rounded-full"
         />
       ) : (
-        <AvatarFallback>{(item.handle ?? "?").slice(0, 1).toUpperCase()}</AvatarFallback>
+        <AvatarFallback>{avatarInitial(item.label, item.handle)}</AvatarFallback>
       )}
     </Avatar>
   );
