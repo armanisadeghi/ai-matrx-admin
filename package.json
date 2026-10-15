@@ -15,6 +15,8 @@
     "build:kind-sandbox": "tsx features/content-ir/sandbox/build-kind-sandbox.ts",
     "harness:kind-sandbox": "tsx features/content-ir/sandbox/make-acceptance-harness.ts",
     "gen:kind-sandbox-safelist": "tsx features/content-ir/sandbox/generate-class-safelist.ts",
+    "check:host-parity": "node scripts/check-host-parity.mjs",
+    "check:host-parity:self-test": "node scripts/check-host-parity.mjs --self-test",
     "check:kind-sandbox-safelist": "tsx features/content-ir/sandbox/generate-class-safelist.ts --check",
     "witness:kind-sandbox-parity": "tsx features/content-ir/sandbox/make-parity-witness.ts",
     "sweep:kind-sandbox-parity": "tsx features/content-ir/sandbox/parity-sweep.ts",
