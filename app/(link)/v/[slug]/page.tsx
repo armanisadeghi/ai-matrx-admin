@@ -11,30 +11,47 @@
 // are one answer on purpose, so an address cannot be used to learn that something used to be there.
 
 import type { Metadata } from "next";
+import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 
 import { PublicLinkNotice } from "@/components/public-link/PublicLinkNotice";
 import { PublicViewBody } from "@/features/sharing/public-view/PublicViewBody";
-import { publishedView } from "@/features/sharing/public-view/service";
+import { PublicViewLocked } from "@/features/sharing/public-view/PublicViewLocked";
+import { publishedView, SHARE_TOKEN_SHAPE } from "@/features/sharing/public-view/service";
+import { readUnlockCookieValue, unlockCookieName } from "@/features/sharing/public-view/unlock";
 
 // Somebody's board, opened now: never cached across people, and the rows move.
 export const dynamic = "force-dynamic";
 
+// A protected link the visitor already unlocked carries a signed cookie; the store compares its fingerprint on every read.
+async function unlockOf(slug: string): Promise<string | undefined> {
+  if (!SHARE_TOKEN_SHAPE.test(slug)) return undefined;
+  return readUnlockCookieValue(slug, (await cookies()).get(unlockCookieName(slug))?.value);
+}
+
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
-  const view = await publishedView(slug).catch(() => null);
+  const view = await publishedView(slug, undefined, await unlockOf(slug)).catch(() => null);
   return {
-    title: view ? `${view.title} · AI Matrx` : "Not found · AI Matrx",
+    title: !view ? "Not found · AI Matrx" : view.state === "locked" ? "Password needed · AI Matrx" : `${view.title} · AI Matrx`,
     // A published view is meant for the people it was sent to; we do not index it.
     robots: { index: false, follow: false },
   };
 }
 
-export default async function PublishedViewPage({ params }: { params: Promise<{ slug: string }> }) {
+export default async function PublishedViewPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ slug: string }>;
+  searchParams: Promise<{ wrong?: string }>;
+}) {
   const { slug } = await params;
-  const view = await publishedView(slug);
+  const { wrong } = await searchParams;
+  const view = await publishedView(slug, undefined, await unlockOf(slug));
   // A real 404, not a 200 that says "nothing here": a revoked link, a taken-down view and a link nobody made are one answer.
   if (!view) notFound();
+  if (view.state === "locked") return <PublicViewLocked token={slug} wrong={wrong === "1"} />;
   if (view.state === "archived") {
     return <PublicLinkNotice title={view.title} message="The owner has archived this, so it is no longer shown." />;
   }

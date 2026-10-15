@@ -1,5 +1,6 @@
 import { NOT_INDEXED_ROBOTS } from "@/lib/seo/search-engine-indexed";
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 import { cache } from "react";
 import { createClient } from "@/utils/supabase/server";
 import { resolveShareToken } from "@/utils/permissions/shareLinks";
@@ -54,6 +55,11 @@ export async function generateMetadata({
 export default async function SharedTokenPage({ params }: PageProps) {
   const { token } = await params;
   const result = await resolve(token);
+
+  // A shared SAVED VIEW has its own page; this generic viewer would only show its name.
+  if (result.error === "opens_elsewhere" && result.resourceType === "platform_saved_view") {
+    redirect(`/v/${token}`);
+  }
 
   if (!result.success) {
     return <ShareLinkError message={result.message} />;

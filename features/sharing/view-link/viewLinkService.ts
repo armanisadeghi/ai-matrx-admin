@@ -9,6 +9,7 @@
 //   list    `custom.view_share_links(p_view_id)`        rows only for a person who may make one; who made each
 //   mint    `public.create_share_link(...)`             viewer level only
 //   revoke  `custom.revoke_view_share_link(p_link_id)`  its maker, or anyone who may make one
+//   protect `custom.set_view_share_link_protection(...)` a password (stored hashed) and an end date, set or cleared
 //
 // Doors speak a sentence when they refuse; it is passed on as is.
 
@@ -27,6 +28,9 @@ export interface ViewLink {
   createdBy: string;
   createdByName: string | null;
   madeByMe: boolean;
+  hasPassword: boolean;
+  /** ISO moment the link stops opening, or null when it never does. */
+  expiresAt: string | null;
 }
 
 /** Where the holder of this token opens the view: `/v/<token>`, never the `/r/` alias. */
@@ -49,6 +53,8 @@ export async function listViewLinks(viewId: string): Promise<ViewLink[]> {
     createdBy: String(r.created_by),
     createdByName: (r.created_by_name as string | null) ?? null,
     madeByMe: r.made_by_me === true,
+    hasPassword: r.has_password === true,
+    expiresAt: (r.expires_at as string | null) ?? null,
   }));
 }
 
@@ -56,6 +62,27 @@ export async function listViewLinks(viewId: string): Promise<ViewLink[]> {
 export async function makeViewLink(viewId: string, label: string | null): Promise<{ ok: true } | { ok: false; error: string }> {
   const made = await createShareLink({ resourceType: "platform_saved_view", resourceId: viewId, permissionLevel: "viewer", label });
   return made.success ? { ok: true } : { ok: false, error: made.error ?? "The link could not be made." };
+}
+
+export interface ViewLinkProtection {
+  /** A new password; the empty string removes it; undefined leaves it. */
+  password?: string;
+  /** When present (a date, or null for "never"), the expiry is changed to it; absent leaves it. */
+  expiresAt?: Date | null;
+}
+
+/** Sets or clears a link's password and end date; the store's refusal sentence is passed on as is. */
+export async function protectViewLink(linkId: string, change: ViewLinkProtection): Promise<{ ok: true } | { ok: false; error: string }> {
+  const changeExpiry = change.expiresAt !== undefined;
+  const { data, error } = await storeDoors(supabase).rpc("set_view_share_link_protection", {
+    p_link_id: linkId,
+    p_password: change.password ?? null,
+    p_change_expiry: changeExpiry,
+    p_expires_at: changeExpiry && change.expiresAt ? change.expiresAt.toISOString() : null,
+  });
+  if (error) return { ok: false, error: error.message };
+  const answer = data as { success?: boolean; error?: string } | null;
+  return answer?.success ? { ok: true } : { ok: false, error: answer?.error ?? "The link could not be changed." };
 }
 
 export async function turnOffViewLink(linkId: string): Promise<{ ok: true } | { ok: false; error: string }> {

@@ -101,19 +101,35 @@ function Board({ view }: { view: PublishedViewOpen }) {
   }
   const lanes = [...columns.entries()];
   if (none.length) lanes.push(["No " + group.label.toLowerCase(), none]);
+  // The owner's own choice: hide empty groups. Otherwise an empty group stays, as a narrow header (never a full-width hole).
+  const shown = view.board_hide_empty ? lanes.filter(([, rows]) => rows.length > 0) : lanes;
+  // The board scrolls sideways inside its own box. A phone shows one column at a time and snaps to it; wider screens show
+  // 18rem columns. Widths are fixed classes, so nothing moves once the page has drawn.
   return (
-    <div className="flex gap-3 overflow-x-auto pb-2">
-      {lanes.map(([name, rows]) => (
-        <section key={name} className="flex w-64 shrink-0 flex-col gap-2">
-          <h2 className="flex items-baseline gap-2 text-sm font-medium">
-            {name}
-            <span className="text-xs font-normal text-muted-foreground">{rows.length}</span>
-          </h2>
-          {rows.map((row) => (
-            <Card key={row.id} view={view} row={row} fields={fields} />
-          ))}
-        </section>
-      ))}
+    <div className="flex w-full min-w-0 snap-x snap-mandatory items-start gap-3 overflow-x-auto pb-2" data-public-board="">
+      {shown.map(([name, rows]) =>
+        rows.length === 0 ? (
+          <section
+            key={name}
+            aria-label={`${name}, empty`}
+            className="flex w-9 shrink-0 snap-start flex-col items-center gap-2 rounded-lg border border-border py-2"
+            data-public-board-empty=""
+          >
+            <span className="text-xs text-muted-foreground">0</span>
+            <h2 className="text-sm font-medium [writing-mode:vertical-rl]">{name}</h2>
+          </section>
+        ) : (
+          <section key={name} className="flex w-[calc(100vw-2rem)] shrink-0 snap-start flex-col gap-2 sm:w-72" data-public-board-lane="">
+            <h2 className="flex items-baseline gap-2 text-sm font-medium">
+              {name}
+              <span className="text-xs font-normal text-muted-foreground">{rows.length}</span>
+            </h2>
+            {rows.map((row) => (
+              <Card key={row.id} view={view} row={row} fields={fields} />
+            ))}
+          </section>
+        ),
+      )}
     </div>
   );
 }

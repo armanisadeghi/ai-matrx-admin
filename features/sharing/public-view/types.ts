@@ -40,6 +40,10 @@ export interface PublishedViewOpen {
   labels: Record<string, Record<string, string>>;
   /** Field key → the choices' words in the order they were made (a board's column order). */
   choice_order?: Record<string, string[]>;
+  /** The owner chose to hide empty board groups (presentation.boardHideEmpty). */
+  board_hide_empty?: boolean;
+  /** Only on a password-protected link opened with its password: the fingerprint the signed unlock cookie carries. */
+  unlock?: string;
 }
 
 export interface PublishedViewArchived {
@@ -49,5 +53,11 @@ export interface PublishedViewArchived {
   notice: string | null;
 }
 
+/** A password-protected link, not yet unlocked: says nothing of the view. `wrong` = a password was offered and was not right. */
+export interface PublishedViewLocked {
+  state: "locked";
+  wrong: boolean;
+}
+
 /** Null is the 404: revoked, taken down, archived with its table, or never made — all one answer. */
-export type PublishedView = PublishedViewOpen | PublishedViewArchived | null;
+export type PublishedView = PublishedViewOpen | PublishedViewArchived | PublishedViewLocked | null;
