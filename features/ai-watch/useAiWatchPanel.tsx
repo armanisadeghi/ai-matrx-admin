@@ -39,6 +39,7 @@ import {
   selectLiveKindValue,
   selectRequest,
 } from "@ai-matrx/chat/agents/redux/execution-system/active-requests/active-requests.selectors";
+import { formingRows, isKindJsonText } from "@/features/ai-watch/lane-answer";
 import { isWorkflowLaneRequest } from "@/features/workflow-runtime/redux/lane-manager";
 import MarkdownStream from "@ai-matrx/chat/ui/markdown-stream/MarkdownStream";
 import { selectPageAiRuns, selectPageWorkflowRunIds } from "@/features/ai-watch/page-ai-runs";
@@ -483,29 +484,39 @@ function ChatSection({
 }
 
 /**
- * A workflow step's call, token by token (MKT-117): the lane's own text as it grows, plus the kind value
- * forming from it. The kind component's silhouette is not used here: Watch AI shows what the model wrote.
+ * A workflow step's call, token by token (MKT-117): prose as written, and the kind value forming from the lane's
+ * JSON as readable rows (MKT-122). The JSON text itself (`"__kind"`, braces, keys) is never shown: it is how the
+ * value travels, not what the model said.
  */
 function LaneAnswer({ requestId }: { requestId: string }) {
   const raw = useAppSelector((state) => selectRequest(requestId)(state)?.currentTextRunRaw) ?? "";
   const forming = useAppSelector(selectLiveKindValue(requestId));
+  const writingJson = isKindJsonText(raw);
   if (!raw && !forming) return <div className="text-muted-foreground">Waiting for the first words</div>;
+  const rows = forming ? formingRows(forming.value) : [];
   return (
     <div className="flex flex-col gap-2" data-testid="ai-watch-lane-answer">
-      {raw ? (
-        <pre data-kind-source="explicit" className="whitespace-pre-wrap break-words font-mono text-[11px] text-foreground">
+      {raw && !writingJson ? (
+        <div data-kind-source="explicit" className="whitespace-pre-wrap break-words text-foreground">
           {raw}
-        </pre>
+        </div>
       ) : null}
       {forming ? (
-        <details open>
-          <summary className="cursor-pointer select-none text-muted-foreground">
-            {forming.kind} · {forming.verified ? "verified" : "forming"}
-          </summary>
-          <pre data-kind-source="explicit" className="mt-1 whitespace-pre-wrap break-words font-mono text-[11px] text-foreground">
-            {JSON.stringify(forming.value, null, 2)}
-          </pre>
-        </details>
+        <div data-testid="ai-watch-forming-value">
+          <div className="text-muted-foreground">
+            {forming.kind.replace(/_/g, " ")} · {forming.verified ? "verified" : "forming"}
+          </div>
+          <dl className="mt-1 flex flex-col gap-0.5">
+            {rows.map((r, i) => (
+              <div key={i} style={{ paddingLeft: r.depth * 12 }} className="flex gap-2">
+                {r.label ? <dt className="shrink-0 text-muted-foreground">{r.label}</dt> : null}
+                {r.text !== null ? <dd className="min-w-0 break-words text-foreground">{r.text}</dd> : null}
+              </div>
+            ))}
+          </dl>
+        </div>
+      ) : writingJson ? (
+        <div className="text-muted-foreground">Forming the answer</div>
       ) : null}
     </div>
   );

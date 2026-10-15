@@ -1,6 +1,6 @@
 import { parseSmartAddUrl } from "../smartAddUrl";
 import { forgetFediverseHosts } from "@/features/marketing/social/profile-sites";
-import { learnProfileLinkHosts, personExtraPrefill, profileLinkIn } from "../personPrefill";
+import { hasProfileLink, learnProfileLinkHosts, personExtraPrefill, profileLinkIn } from "../personPrefill";
 
 describe("the Person start page reads social= like Company does (MKT-103)", () => {
   const a = parseSmartAddUrl("/marketing/brands/smart-add/person", "?name=Ben%20Werdmuller&social=https%3A%2F%2Fwerd.social%2F%40ben&platform=mastodon");
@@ -49,5 +49,19 @@ describe("a self-hosted Mastodon link typed in a Person box is kept (MKT-119)", 
     global.fetch = jest.fn(async () => ({ ok: false, json: async () => ({}) })) as unknown as typeof fetch;
     await learnProfileLinkHosts([`see ${LINK}`, "https://example.com/about"]);
     expect(profileLinkIn(`see ${LINK}`, "https://example.com/about")).toBeNull();
+  });
+});
+
+describe("a profile link already anchors the search, so the job-or-company gate stays out of its way (MKT-123)", () => {
+  it("a Mastodon server link in Anything else counts before its host is checked", () => {
+    expect(hasProfileLink("Kris Nova", "", "hachyderm.io/@nova")).toBe(true);
+  });
+  it("a Beacons or Instagram link counts", () => {
+    expect(hasProfileLink("Jane", "", "beacons.ai/jane")).toBe(true);
+    expect(hasProfileLink("Jane", "", "https://www.instagram.com/jane/")).toBe(true);
+  });
+  it("a name and a city alone do not", () => {
+    expect(hasProfileLink("Jane Doe", "Austin", "")).toBe(false);
+    expect(hasProfileLink("Jane Doe", "Austin", "UT Austin")).toBe(false);
   });
 });

@@ -465,8 +465,30 @@ async function recordCause(ctx: PersistContext, decisionId: string, targetType: 
   if (!linked.ok) throw new Error(`Could not record where this came from: ${linked.error.message}`);
 }
 
+/**
+ * One save at a time per finding: two answers to the same card (a repeated key press, two tabs of the tray) read
+ * "no row yet" together and each inserted one. The second now waits, finds the first's row, and answers it in place.
+ */
+const saving = new Map<string, Promise<unknown>>();
+
 /** Save one answer in its homes. `relationKey` for Related; `value` for an edited fact. */
 export async function persistAnswer(
+  ctx: PersistContext,
+  item: FocusItem,
+  answer: Answer,
+  opts: { relationKey?: string | null; value?: string } = {},
+): Promise<Persisted> {
+  const slot = `${ctx.getBrand().id}:${item.key}`;
+  const turn = (saving.get(slot) ?? Promise.resolve()).catch(() => undefined).then(() => persistAnswerOnce(ctx, item, answer, opts));
+  saving.set(slot, turn);
+  try {
+    return await turn;
+  } finally {
+    if (saving.get(slot) === turn) saving.delete(slot);
+  }
+}
+
+async function persistAnswerOnce(
   ctx: PersistContext,
   item: FocusItem,
   answer: Answer,

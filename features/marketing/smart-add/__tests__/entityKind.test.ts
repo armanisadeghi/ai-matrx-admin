@@ -6,6 +6,12 @@ describe("entity kind label default", () => {
     expect(parseEntityKind({ content: [{ __kind: "x" }, { entity_kind: "person" }] })).toBe("person");
     expect(parseEntityKind({ entity_kind: "business" })).toBe("business");
   });
+  it("reads the answer an agent result carries as fenced JSON text (MKT-124)", () => {
+    const fenced = '```json\n{"entity_kind": "person", "probability": 0.8, "reason": "Individual profile", "evidence": []}\n```';
+    expect(parseEntityKind({ __kind: "agent_result", content: [{ text: fenced, __kind: "markdown" }] })).toBe("person");
+    expect(parseEntityKind({ content: [{ text: '{"entity_kind": "person_with_business"}' }] })).toBe("both");
+    expect(parseEntityKind({ content: [{ text: "not json {" }] })).toBeNull();
+  });
   it("treats unanswerable and unknown answers as no answer", () => {
     expect(parseEntityKind({ structured_output: { entity_kind: "unanswerable" } })).toBeNull();
     expect(parseEntityKind(null)).toBeNull();

@@ -24,6 +24,20 @@ function fromObject(raw: unknown): EntityKind | null {
   return null;
 }
 
+/** The step's answer as text (a ```json fence or bare JSON object): the answer of an agent result's `content`. */
+function fromText(raw: unknown): EntityKind | null {
+  if (typeof raw !== "string") return null;
+  const body = raw.replace(/^\s*```(?:json)?\s*/i, "").replace(/```\s*$/, "").trim();
+  const start = body.indexOf("{");
+  const end = body.lastIndexOf("}");
+  if (start < 0 || end <= start) return null;
+  try {
+    return fromObject(JSON.parse(body.slice(start, end + 1)));
+  } catch {
+    return null;
+  }
+}
+
 /**
  * The step's answer, from its output (`structured_output` object, or a kind instance in `content`) or an
  * emission payload. "Unanswerable" and anything unknown is null: the label keeps the tab's kind.
@@ -35,7 +49,7 @@ export function parseEntityKind(raw: unknown): EntityKind | null {
   if (direct) return direct;
   if (Array.isArray(r.content)) {
     for (const item of r.content) {
-      const hit = fromObject(item);
+      const hit = fromObject(item) ?? fromText(typeof item === "object" && item !== null ? (item as Record<string, unknown>).text : item);
       if (hit) return hit;
     }
   }

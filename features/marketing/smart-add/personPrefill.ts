@@ -33,6 +33,18 @@ export function profileLinkIn(...texts: (string | null | undefined)[]): string |
 }
 
 /**
+ * Is a profile link typed anywhere? Includes a `host/@user` shape whose host is not yet checked (a Mastodon server),
+ * so the "job or company" gate never stands in front of a link that already anchors the search (MKT-123).
+ */
+export function hasProfileLink(...texts: (string | null | undefined)[]): boolean {
+  if (profileLinkIn(...texts)) return true;
+  return texts
+    .flatMap((t) => (t ?? "").split(/[\s,;]+/))
+    .map((raw) => raw.replace(/^[(<"']+|[)>"'.]+$/g, ""))
+    .some((t) => fediverseProfileShape(t));
+}
+
+/**
  * A Mastodon profile on its own server reads as a website until its host is checked (MKT-102), so a link typed in a
  * Person box was dropped by {@link profileLinkIn} (MKT-119). Check every `host/@user` token first (free, cached by
  * host); `profileLinkIn` then sees the account. Resolves when every check has answered. A failed check is a miss.

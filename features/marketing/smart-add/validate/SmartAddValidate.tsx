@@ -70,6 +70,9 @@ export function SmartAddValidate({
   useRunMemory(`validate:${initialBrand.id}`, { ...emptyAnswers(), later }, (saved) => setLater((cur) => [...new Set([...saved.later, ...cur])]));
   // Undo pressed while the save was still in flight: take it back as soon as it lands.
   const undoWhenSaved = useRef<Set<string>>(new Set());
+  // Cards answered this session, tracked synchronously: a repeated key press or click lands before the next render
+  // removes the card, and must not save it a second time (MKT-125).
+  const answeredNow = useRef<Set<string>>(new Set());
   // An "Ours" that pulled data in (tracking, posts, a crawl) is undone through the retraction: preview first.
   const [retracting, setRetracting] = useState<Saved | null>(null);
 
@@ -110,6 +113,9 @@ export function SmartAddValidate({
       publish({ key: `validate.answer.${item.key}`, label: `Later: ${item.value}`, group: "inputs", data: { item, answer }, source: "smart_add.validate" });
       return;
     }
+    const cardKeys = answeredKeysOf(item);
+    if (cardKeys.some((k) => answeredNow.current.has(k))) return;
+    for (const k of cardKeys) answeredNow.current.add(k);
     const id = crypto.randomUUID();
     const relationLabel = opts.relationKey ? (kinds.find((k) => k.key === opts.relationKey)?.label ?? opts.relationKey) : null;
     const entry: Saved = {
@@ -173,7 +179,12 @@ export function SmartAddValidate({
     };
   };
 
+  const release = (item: FocusItem) => {
+    for (const k of answeredKeysOf(item)) answeredNow.current.delete(k);
+  };
+
   const forget = (entry: AnsweredEntry, label: string) => {
+    release(entry.item);
     setAnswered((list) => list.filter((a) => a.id !== entry.id));
     if (decisionFor(entry.answer) && entry.item.evidence) for (const k of [entry.item.key, ...entry.item.twins]) onDecide(k, null);
     publish({ key: `validate.answer.${entry.item.key}`, label: `${label}: ${entry.value}`, group: "inputs", data: { item: entry.item, undone: entry.answer }, source: "smart_add.validate" });
@@ -187,6 +198,7 @@ export function SmartAddValidate({
       setRetracting(saved);
       return;
     }
+    release(entry.item);
     setAnswered((list) => list.filter((a) => a.id !== entry.id));
     if (decisionFor(entry.answer) && entry.item.evidence) for (const k of [entry.item.key, ...entry.item.twins]) onDecide(k, null);
     publish({ key: `validate.answer.${entry.item.key}`, label: `Undone: ${entry.value}`, group: "inputs", data: { item: entry.item, undone: entry.answer }, source: "smart_add.validate" });

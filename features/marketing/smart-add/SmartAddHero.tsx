@@ -40,7 +40,7 @@ import { profileAvatarDoor } from "@/features/marketing/social/server";
 import type { SocialPlatform } from "@/features/marketing/social/types";
 import { linkInBioService } from "@/features/marketing/lib/link-in-bio";
 import { emailIn } from "./emailInput";
-import { learnProfileLinkHosts, personExtraPrefill, profileLinkIn } from "./personPrefill";
+import { hasProfileLink, learnProfileLinkHosts, personExtraPrefill, profileLinkIn } from "./personPrefill";
 import { teachFediverseHost } from "./learnDomains";
 import { useFediverseHost } from "./useFediverseHost";
 import { customItem, websiteHost, type EvidenceItem } from "./evidence";
@@ -274,7 +274,8 @@ export function SmartAddHero({
     if (typedEmail && mode !== "name") onEmail?.(typedEmail, false);
     if (mode === "name" && person && onFindPerson) {
       if (typedEmail) onEmail?.(typedEmail, false);
-      if (!occupation.trim() && !company.trim() && !askedClue) {
+      // A profile or link-in-bio link anchors the search as well as a job or company does (MKT-123).
+      if (!occupation.trim() && !company.trim() && !hasProfileLink(name, city, extra) && !askedClue) {
         setAskedClue(true);
         return;
       }
