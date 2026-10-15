@@ -43,6 +43,18 @@ export function coreSettled(
   );
 }
 
+/** What the move to the validation page still waits for after Create (empty when the core is settled), for the screen to say (MKT-143). */
+export function validationWaitingFor(
+  basics: { name: string | null; websiteUrl: string | null; accounts: unknown[] },
+  person = false,
+): string[] {
+  const out: string[] = [];
+  if (!basics.name) out.push("a name");
+  if (!person && !basics.websiteUrl) out.push("a confirmed website");
+  if (basics.accounts.length < VALIDATION_THRESHOLD.minAccounts) out.push("a confirmed social account");
+  return out;
+}
+
 // ── Answers ──────────────────────────────────────────────────────────────────────────
 
 export type FocusKind = "account" | "website" | "name" | "fact" | "web" | "logo";

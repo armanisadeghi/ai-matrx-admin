@@ -160,7 +160,7 @@ import { ProvisionCaptures } from "@/features/provision-window/ProvisionCaptures
 import { useBuilderFeed } from "@/hooks/useBuilderFeed";
 import { SMART_ADD_SURFACE } from "./builderSurface";
 import { SmartAddValidate } from "./validate/SmartAddValidate";
-import { coreSettled, mergeFacts, type BrandFact } from "./validate/queue";
+import { coreSettled, mergeFacts, validationWaitingFor, type BrandFact } from "./validate/queue";
 import { knownDecided, withSuggestions, type WeThinkSuggestion } from "./weThink";
 import type { BrandSnapshot, EnrichSeed, KnownFact } from "./enrich/known";
 import { computeEnrichDiff } from "./enrich/diff";
@@ -1910,6 +1910,11 @@ export function SmartAddBrand({
           ) : null}
           <div className="flex min-w-0 flex-col">
             <span className="truncate text-sm font-medium">{basics.name ?? "Confirm a name to create the brand"}</span>
+            {created && !validateOrg && validationWaitingFor(basics, person).length ? (
+              <span className="text-xs text-muted-foreground" data-testid="smart-add-validation-waiting">
+                Saved. Validation opens once there is {validationWaitingFor(basics, person).join(" and ")}.
+              </span>
+            ) : null}
             {basics.name ? (
               // Each fact stays whole: on a phone the facts wrap to a second line instead of being cut off.
               <span className="flex min-w-0 flex-wrap gap-x-1.5 text-xs text-muted-foreground" data-testid="smart-add-posts-preview">

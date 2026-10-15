@@ -13,6 +13,9 @@ const VENDOR_CI = /scrape\s?creators?|bright\s?data|ensemble\s?data|apify|data\s
 const VENDOR_CS = /\bBrave\b/;
 const EXEMPT_PATH = /^\/(administration|demos|dev|admin|privacy-policy|terms|sms)(\/|$)/;
 
+/** Admin surfaces that may name vendors (the Builder panel window, or anything marked `data-admin-surface`). Customer screens stay strict. */
+export const ADMIN_SURFACE_SELECTOR = '[data-admin-surface], [data-window-id="builder-panel-window"]';
+
 export function findVendorName(text: string): string | null {
   return text.match(VENDOR_CI)?.[0] ?? text.match(VENDOR_CS)?.[0] ?? null;
 }
@@ -27,6 +30,7 @@ export default function VendorNameRuntimeGuard() {
       for (let n = walker.nextNode(); n; n = walker.nextNode()) {
         const parent = n.parentElement;
         if (!parent || /^(SCRIPT|STYLE|TEXTAREA|CODE|PRE)$/.test(parent.tagName)) continue;
+        if (parent.closest(ADMIN_SURFACE_SELECTOR)) continue;
         const text = n.textContent ?? "";
         const hit = text.length < 2000 ? findVendorName(text) : null;
         if (hit && !seen.has(text)) {

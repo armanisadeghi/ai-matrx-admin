@@ -76,6 +76,9 @@ describe("inferEntryOutcome — the same answer off the notes of a finished run"
     const out = inferEntryOutcome(view, typed, false);
     expect(out?.status).toBe("unsupported");
     expect(entryCopy(out as EntryOutcome).title).toBe("Can't look that up");
+    // MKT-142: names the page kind that cannot be read, not every LinkedIn account (personal profiles read fine).
+    expect(entryCopy(out as EntryOutcome).line).toBe("We can't read LinkedIn company pages yet.");
+    expect(entryCopy({ ...(out as EntryOutcome), input: "linkedin.com/in/someone" }).line).not.toMatch(/accounts yet/);
   });
   it("never judges a running round or one that found something", () => {
     expect(inferEntryOutcome({ status: "running", steps: [] }, typedIg, false)).toBeNull();

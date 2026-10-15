@@ -94,9 +94,11 @@ function RelationRowView({ row, canEdit }: { row: Row; canEdit: boolean }) {
   const hasGrounding = Boolean(g && (g.where || g.reason || g.confidence != null));
   if (row.pending) {
     return (
-      <li className="flex min-w-0 items-center gap-2 rounded-md px-1.5 py-1 opacity-70" data-testid="brand-relation-pending">
+      <li className="flex min-w-0 items-center gap-1 rounded-md px-1.5 py-1 opacity-70" data-testid="brand-relation-pending">
         <Loader2 className="size-4 shrink-0 animate-spin text-muted-foreground" aria-label="Adding" />
         <span className="truncate text-sm text-foreground">{row.label}</span>
+        {/* The saved row ends in the Remove button; the same, unseen, keeps this row's height when it is swapped (MKT-144). */}
+        {canEdit ? <Button variant="quiet" aria-label="Remove" aria-hidden tabIndex={-1} disabled className="invisible ml-auto" icon={<X />} /> : null}
       </li>
     );
   }

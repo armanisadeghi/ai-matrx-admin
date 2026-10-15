@@ -206,6 +206,15 @@ function platformLabel(platform: string): string {
   return isSocialPlatform(platform) ? SOCIAL_PLATFORM_LABELS[platform] : platform;
 }
 
+/** What can't be read, named by the page kind typed: LinkedIn personal profiles read fine, its company pages do not. */
+function unreadableKind(o: Pick<EntryOutcome, "input" | "platform">): string {
+  const label = platformLabel(o.platform ?? "");
+  if (o.platform === "linkedin") {
+    return /linkedin\.com\/(company|school|showcase)\b|^\/?(company|school|showcase)\//i.test(o.input) ? `${label} company pages` : `that kind of ${label} page`;
+  }
+  return `${label} accounts`;
+}
+
 export interface EntryCopy {
   title: string;
   line: string;
@@ -224,7 +233,7 @@ export function entryCopy(o: EntryOutcome): EntryCopy {
     case "empty":
       return { title: "That account is empty", line: `${who}${on} has no posts.`, retry: false };
     case "unsupported":
-      return { title: "Can't look that up", line: `We can't read ${platformLabel(o.platform ?? "")} accounts yet.`, retry: false };
+      return { title: "Can't look that up", line: `We can't read ${unreadableKind(o)} yet.`, retry: false };
     case "usage_limit":
       return { title: "Out of points", line: "Nothing was charged.", retry: false };
     case "provider_failed":
