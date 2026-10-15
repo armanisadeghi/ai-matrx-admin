@@ -58,7 +58,9 @@ import { ProTextarea } from "@/components/official/ProTextarea";
 import { EditableContextMenu } from "@ai-matrx/context-menu/react";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { ClampedNumberInput } from "@/components/official/ClampedNumberInput";
-import { createComputerCodingTask } from "../../service/queries";
+import { createComputerAgentTask, createComputerCodingTask } from "../../service/queries";
+import { computerAgentErrors } from "./computerAgentErrors";
+import { ErrorNotice } from "@ai-matrx/design-system";
 import { RunsOnField, type ComputerCodingChoice } from "./RunsOnField";
 
 interface FormState {
@@ -169,7 +171,7 @@ export function ScheduleForm({
   const [pending, startTransition] = useTransition();
   const [submitting, setSubmitting] = useState(false);
   const [computer, setComputer] = useState<ComputerCodingChoice | null>(() =>
-    !task && initialRunsOn ? { deviceId: initialRunsOn, folder: "", provider: "claude", accountProfileId: "" } : null,
+    !task && initialRunsOn ? { deviceId: initialRunsOn, mode: "coding", folder: "", provider: "claude", accountProfileId: "" } : null,
   );
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [form, setForm] = useState<FormState>(() =>
@@ -194,6 +196,35 @@ export function ScheduleForm({
     const trigger = buildTriggerConfig(form.triggerType, form.triggerConfig);
     if (!trigger) {
       setErrors({ trigger: "Invalid trigger configuration" });
+      return;
+    }
+
+    // On a Matrx 2 computer, an agent: it runs on AI Matrx bound to that computer, started there.
+    if (!task && computer?.mode === "agent") {
+      const errs = computerAgentErrors({ title: form.title, prompt: form.prompt, agentId: form.agentId, triggerType: trigger.type });
+      setErrors(errs);
+      if (Object.keys(errs).length) return;
+      setSubmitting(true);
+      try {
+        const { id } = await createComputerAgentTask({
+          title: form.title.trim(),
+          description: form.description || null,
+          deviceId: computer.deviceId,
+          agentId: form.agentId as string,
+          prompt: form.prompt.trim(),
+          variables: form.variables,
+          authMode: form.authMode,
+          maxRuntimeSeconds: form.maxRuntimeSeconds,
+          maxConcurrent: form.maxConcurrent,
+          trigger,
+        });
+        toast.success("Schedule saved: the agent runs on that computer while Matrx 2 is open there");
+        startTransition(() => router.push(`/schedules/${id}`));
+      } catch (err) {
+        setErrors({ runsOn: err instanceof Error ? err.message : String(err) });
+      } finally {
+        setSubmitting(false);
+      }
       return;
     }
 
@@ -499,6 +530,7 @@ export function ScheduleForm({
             activeAgentId={form.agentId}
             label={form.agentId ? undefined : "Select the agent"}
           />
+          {errors.agentId && <ErrorNotice title="This schedule cannot be saved yet" message={errors.agentId} />}
           <Field label="Prompt" htmlFor="prompt" error={errors.prompt}>
             <ProTextarea
               id="prompt"

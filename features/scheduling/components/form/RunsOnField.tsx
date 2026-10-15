@@ -4,7 +4,8 @@
  * "Runs on": the cloud (default) or one of the person's Matrx 2 computers, from the one lister
  * (`browserCodingDoors.reach.listComputers`). On a computer the schedule is a Claude Code or Codex
  * session started there at each run, in a folder on that computer, with the person's chosen account
- * (blank: that computer's default login). An offline computer can still be chosen: it runs when
+ * (blank: that computer's default login), or an agent run on AI Matrx bound to that computer (its
+ * desktop tools reach it), started there at each run. An offline computer can still be chosen: it runs when
  * Matrx 2 is open there again, and the schedule says it is waiting.
  */
 import { useEffect, useState } from "react";
@@ -16,6 +17,8 @@ import type { Matrx2ComputerStatus } from "@/features/ai-work/lib/matrx2Coding";
 
 export interface ComputerCodingChoice {
   deviceId: string;
+  /** A coding session started there, or the agent chosen below run on this computer. */
+  mode: "coding" | "agent";
   folder: string;
   provider: "claude" | "codex";
   accountProfileId: string;
@@ -60,11 +63,27 @@ export function RunsOnField({ value, onChange, error }: Props) {
           ...(computers ?? []).map((c) => ({ value: c.deviceId, label: `${c.name} · ${c.online === true ? "online" : c.online === false ? "offline" : "status unknown"}` })),
         ]}
         onValueChange={(id) =>
-          onChange(id !== "cloud" ? { deviceId: id, folder: value?.folder ?? "", provider: value?.provider ?? "claude", accountProfileId: value?.accountProfileId ?? "" } : null)
+          onChange(id !== "cloud" ? { deviceId: id, mode: value?.mode ?? "coding", folder: value?.folder ?? "", provider: value?.provider ?? "claude", accountProfileId: value?.accountProfileId ?? "" } : null)
         }
       />
       {problem && <ErrorNotice title="Your computers could not be listed" message={problem} />}
       {value && (
+        <Select<"coding" | "agent">
+          aria-label="What runs there"
+          value={value.mode}
+          options={[
+            { value: "coding", label: "A coding session there" },
+            { value: "agent", label: "Run an agent on this computer" },
+          ]}
+          onValueChange={(mode) => onChange({ ...value, mode })}
+        />
+      )}
+      {value?.mode === "agent" && (
+        <p className="text-xs text-muted-foreground" data-runs-on-mode="agent">
+          The agent below runs on AI Matrx at each run, using {chosen?.name ?? "that computer"} for its desktop tools. It runs while Matrx 2 is open there.
+        </p>
+      )}
+      {value && value.mode === "coding" && (
         <div className="grid gap-2 sm:grid-cols-2">
           <label className="space-y-1 text-xs sm:col-span-2">
             <span>Folder on {chosen?.name ?? "that computer"}</span>
