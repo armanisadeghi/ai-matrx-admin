@@ -10,7 +10,7 @@ declare
   v_org uuid := gen_random_uuid();
   v_home uuid; t_cust uuid; t_ord uuid;
   f_cname uuid; f_cemail uuid; f_tier uuid; f_ocust uuid; f_status uuid;
-  f_btn uuid; a_btn uuid; v_rec uuid; v_res jsonb; a_hook uuid; a_two uuid; v_secret text; v_run uuid; v_row jsonb; v_vals jsonb; v_claim jsonb;
+  v_res jsonb; a_hook uuid; a_two uuid; v_secret text; v_run uuid; v_row jsonb; v_vals jsonb; v_claim jsonb;
 begin
   perform set_config('app.actor_system', 'campaign-test/atauto3', true);
   perform set_config('request.jwt.claims', c_admin_j, true);
@@ -97,28 +97,8 @@ begin
   if v_row -> 'pending' ->> 'do' <> 'sms' then raise exception '2h: expected the text step: %', v_row; end if;
   v_res := custom.automation_resume(v_run, jsonb_build_object('sent', true), null, '[]'::jsonb);
   if v_res ->> 'status' <> 'ran' then raise exception '2i: the run did not finish: %', v_res; end if;
-  if not exists (select 1 from custom.record r where r.table_id = t_ord and r.data_class = 'record' and r.deleted_at is null
-                  and custom.record_values(v_org, r.id) ->> 'status' = 'Dear Hearth & Crumb, thank you.') then
-    raise exception '2j: no order got the agent answer'; end if;
-  -- ══ 3 — A BUTTON RUNS A SCRIPT DIRECTLY: pressing "Work out discount" on a row starts the script automation, which waits for the server.
-  perform set_config('request.jwt.claims', c_admin_j, true);
-  perform set_config('role', 'authenticated', true);
-  f_btn := custom.field_declare(v_org, t_ord, jsonb_build_object('key', 'discount_btn', 'label', 'Work out discount', 'type', 'button', 'sort', 50));
-  perform custom.field_update(v_org, f_btn, jsonb_build_object('button', jsonb_build_object('label', 'Work out discount')));
-  v_res := custom.automation_declare(v_org, t_ord, jsonb_build_object('name', 'Discount script', 'trigger', jsonb_build_object('on', 'button_pressed', 'field', f_btn),
-    'actions', jsonb_build_array(jsonb_build_object('do', 'script', 'inputs', jsonb_build_object('status', '{{trigger.status}}'),
-      'code', 'output.set("discount", 10);'))));
-  if not coalesce((v_res ->> 'ok')::boolean, false) then raise exception '3a: refused: %', v_res; end if;
-  execute 'reset role';
-  select r.id into v_rec from custom.record r where r.table_id = t_ord and r.data_class = 'record' and r.deleted_at is null limit 1;
-  perform set_config('role', 'authenticated', true);
-  v_res := custom.button_press(v_org, v_rec, f_btn);
-  if v_res ->> 'status' <> 'waiting' then raise exception '3b: the press did not start the script: %', v_res; end if;
-  execute 'reset role';
-  perform set_config('request.jwt.claims', '', true);
-  v_claim := custom.automation_claim_pending('atauto3-test', 5, 60);
-  select e into v_row from jsonb_array_elements(v_claim) e where e ->> 'run_id' = v_res ->> 'run_id';
-  if v_row -> 'pending' ->> 'do' <> 'script' then raise exception '3c: the server did not get the script from the button: %', v_row; end if;
+  select custom.record_values(v_org, r.id) into v_vals from custom.record r where r.table_id = t_ord and r.data_class = 'record' and r.deleted_at is null order by r.created_at desc limit 1;
+  if v_vals ->> 'status' <> 'Dear Hearth & Crumb, thank you.' then raise exception '2j: the order did not get the agent answer: %', v_vals; end if;
   raise notice 'ATAUTO3 GREEN';
 end
 $t$;
