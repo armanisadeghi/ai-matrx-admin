@@ -92,3 +92,12 @@ describe("a row whose device details did not load", () => {
     expect(machineDetail({}, "ready", () => "studio.local")).toBe("studio.local");
   });
 });
+
+describe("a chosen computer before the list arrives", () => {
+  it("reads Loading computers…, never a wrong not listed", async () => {
+    const { unlistedLabel } = await import("./computerChooser");
+    expect(unlistedLabel(null, null)).toBe("Loading computers…");
+    expect(unlistedLabel(null, "relay down")).toBe("Couldn't list your computers");
+    expect(unlistedLabel([], null)).toBe("This computer (not listed)");
+  });
+});

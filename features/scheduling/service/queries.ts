@@ -43,14 +43,11 @@ import {
 
 // ── The reusable select string (per spec §8) ───────────────────────────────
 
-const SELECT_AGENT_TASK = `
-  *,
-  agent:sch_agent_task!inner(agent_id, prompt, variables, persistent_conversation_id, auth_mode, max_runtime_seconds, max_concurrent),
-  triggers:sch_trigger(id, task_id, type, config, enabled, next_due_at, last_fired_at, created_at, updated_at)
-`;
+// The list and the record read share one LEFT-embed shape (SELECT_TASK_RECORD): the old list-only
+// `sch_agent_task!inner` select dropped every task with no agent row (device_op, ping).
 
 /**
- * THE RECORD READ. Identical to `SELECT_AGENT_TASK` except the agent extension
+ * THE RECORD READ (and the list): the agent extension
  * is a LEFT embed.
  *
  * A LIST may narrow itself however it likes — `/schedules` is a list of agent
@@ -311,7 +308,9 @@ export async function listAgentTasks(): Promise<AgendaTask[]> {
           // (sch_task owner policy) is the ceiling, and this list does not
           // take an org filter because a schedule is owned by its user.
           .from("sch_task")
-          .select(SELECT_AGENT_TASK, { count: "exact" })
+          // LEFT embed: a coding session on a computer (device_op) has no sch_agent_task row, and
+          // `!inner` dropped it from the list (re-walk D3).
+          .select(SELECT_TASK_RECORD, { count: "exact" })
           // Every schedule a person owns: agents, and coding sessions on a computer (device_op, its
           // work in metadata.device_op — computerWorkOf). Only `tool` (system work) stays out.
           .in("kind", [...ROSTER_KINDS])

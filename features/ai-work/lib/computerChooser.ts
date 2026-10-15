@@ -150,3 +150,14 @@ export function duplicateNames(names: string[]): Set<string> {
   for (const n of names) seen.set(n, (seen.get(n) ?? 0) + 1);
   return new Set([...seen].filter(([, c]) => c > 1).map(([n]) => n));
 }
+
+/**
+ * The label of a chosen computer the list has not shown (yet): "Loading computers…" while the list is
+ * still coming, never a wrong "not listed" (re-walk: it flashed for 1–2 s); "Couldn't list your
+ * computers" when the list failed; "This computer (not listed)" only once the list truly lacks it. Pure.
+ */
+export function unlistedLabel(computers: readonly unknown[] | null, problem: string | null): string {
+  if (problem) return "Couldn't list your computers";
+  if (computers === null) return "Loading computers…";
+  return "This computer (not listed)";
+}

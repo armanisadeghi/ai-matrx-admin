@@ -11,13 +11,16 @@ const rows = [
 
 function chain(): Record<string, unknown> {
   const c: Record<string, unknown> = {};
-  for (const m of ["select", "is", "order", "range", "abortSignal", "schema", "from"]) c[m] = () => c;
+  let inner = false;
+  for (const m of ["is", "order", "range", "abortSignal", "schema", "from"]) c[m] = () => c;
+  // PostgREST semantics: an `!inner` embed drops every row with no embedded row.
+  c.select = (cols: string) => ((inner = /sch_agent_task!inner/.test(cols)), c);
   c.eq = (k: string, v: unknown) => (filters.push([`eq:${k}`, v]), c);
   c.in = (k: string, v: unknown) => (filters.push([`in:${k}`, v]), c);
   c.returns = () => {
     const kinds = filters.find(([k]) => k === "in:kind")?.[1] as string[] | undefined;
     const only = filters.find(([k]) => k === "eq:kind")?.[1];
-    const data = rows.filter((r) => (kinds ? kinds.includes(r.kind) : only ? r.kind === only : true));
+    const data = rows.filter((r) => (kinds ? kinds.includes(r.kind) : only ? r.kind === only : true)).filter((r) => !inner || r.agent !== null);
     return Promise.resolve({ data, error: null, count: data.length });
   };
   return c;
