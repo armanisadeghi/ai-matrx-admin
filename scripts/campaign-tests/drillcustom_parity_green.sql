@@ -38,7 +38,7 @@ begin
   -- (the door adds only its own contract keys: source, stale_after_knob — null for a custom
   -- Table, which is counted live; lane DRILL-LEDGER-RECORDS — and calendar, the organization's
   -- time zone + week start its periods are cut in; DRILL-FINISH drillfinish_describe_says_its_calendar,
-  -- 2026-09-30. Accepted here by lane SAFETY-NET 2026-10-01: an intended contract addition, not drift.)
+  -- 2026-09-30. Accepted here by lane REGRESSION-BAR 2026-10-01: an intended contract addition, not drift.)
   if (v_door - 'source' - 'stale_after_knob' - 'calendar') <> (v_mine - 'source')
      or not (v_door ? 'stale_after_knob') or jsonb_typeof(v_door -> 'stale_after_knob') <> 'null'
      or jsonb_typeof(v_door -> 'calendar') <> 'object' then

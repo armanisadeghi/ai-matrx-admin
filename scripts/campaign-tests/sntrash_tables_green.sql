@@ -1,6 +1,6 @@
--- SN-TRASH (safety-net, 2026-10-01): a COPY of trashtables_green.sql pinned to the fixture organization (Cedar Ridge
+-- SN-TRASH (regression bar, 2026-10-01): a COPY of trashtables_green.sql pinned to the fixture organization (Cedar Ridge
 -- Physical Therapy), so the suite never picks a table or view from an organization whose record store is switched off.
--- Run it with the runner: node scripts/safety-net/run.mjs --target clone --only tables.sql-trash-tables
+-- Run it with the runner: node scripts/regression-bar/run.mjs --target clone --only tables.sql-trash-tables
 -- Lane TRASH-TABLES — the proof for migrations/campaign/trashtables_archived_tables_and_records_are_in_trash.sql
 --
 -- Use case (VERIFIER-25 item 11): admin@admin.com archives one of their own data Tables from its page

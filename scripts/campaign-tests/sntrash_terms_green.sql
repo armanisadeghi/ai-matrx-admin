@@ -1,4 +1,4 @@
--- LANE SN-TRASH (safety-net, 2026-10-01) — a Term list a person archives is in Trash and comes back (T57).
+-- LANE SN-TRASH (regression bar, 2026-10-01) — a Term list a person archives is in Trash and comes back (T57).
 --
 -- THE REAL USE CASE: the billing coordinator at Cedar Ridge Physical Therapy keeps a Term list "Rehab billing
 -- terms" (CPT, modifier and payer words the transcriber must spell right). She archives it, changes her mind,

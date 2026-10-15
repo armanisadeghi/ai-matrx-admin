@@ -228,8 +228,8 @@
           "reason": "NOT RENDERED UI: a release script's cache-age (minutes) comparison deciding whether to rebuild, plus its own log line; outside the app's dependency graph."
         },
         {
-          "file": "tests/safety-net/run.mjs",
-          "reason": "PROVABLY NOT A DISPLAYED DURATION: `seconds` is a numeric field of the safety-net result record (elapsed seconds), not a rendered unit string."
+          "file": "tests/smoke-journeys/run.mjs",
+          "reason": "PROVABLY NOT A DISPLAYED DURATION: `seconds` is a numeric field of the smoke-journeys result record (elapsed seconds), not a rendered unit string."
         },
         {
           "file": "features/applets/format.ts",

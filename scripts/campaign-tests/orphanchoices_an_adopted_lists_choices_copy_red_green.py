@@ -1,4 +1,4 @@
-"""LANE ORPHAN-CHOICES (2026-10-01, SAFETY-NET-B B0/B11) — A PICK LIST STEP 1 ADOPTS IS COPIED WITH ITS CHOICES.
+"""LANE ORPHAN-CHOICES (2026-10-01, REGRESSION-BAR-B B0/B11) — A PICK LIST STEP 1 ADOPTS IS COPIED WITH ITS CHOICES.
 
     cd matrx-frontend
     uv run --project ../aidream python scripts/campaign-tests/orphanchoices_an_adopted_lists_choices_copy_red_green.py

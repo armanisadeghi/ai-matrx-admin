@@ -19,8 +19,8 @@
 //   - a record view carries no "Linked records" section (<EntityBackLinks>, rendered by <EntityCustomFields> or mounted beside a StandardRecordForm);
 //   - lib/record-pages/record-pages.generated.json is stale.
 //
-// THE LIVE PART (a section that renders nothing, a dead branch) is the safety-net walk
-// scripts/safety-net/walks/custom-fields-everywhere.mjs (check custom-fields.walk-every-record-view).
+// THE LIVE PART (a section that renders nothing, a dead branch) is the regression-bar walk
+// scripts/regression-bar/walks/custom-fields-everywhere.mjs (check custom-fields.walk-every-record-view).
 //
 // PLANTS — never a mutated real file:
 //   RECORD_PAGES_PLANT="<repo path>=<scratch file>[;…]"   read the scratch file in place of the path
