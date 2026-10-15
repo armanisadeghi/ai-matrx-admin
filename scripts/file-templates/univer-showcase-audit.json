@@ -8128,15 +8128,15 @@
     ]
   },
   "integrationPlan": [
-    "Use workbench.file_template and the existing createFromTemplate path; preserve native snapshots without Markdown conversion.",
-    "Capture initialized snapshots from the published source bundles; some examples construct rich content with Facade calls rather than providing a ready-made snapshot.",
-    "Register required plugins in the shared document/workbook editors at the app-aligned 1.0.4 version; confirm commercial license coverage for Pro features.",
-    "Import images through the canonical file pipeline into durable media references; preserve attribution and verify content/artwork reuse rights per source.",
-    "Idempotently upsert system-owned templates with a stable univer:<slug> seed key plus source/content hashes; never overwrite user-created copies.",
-    "Capture actual editor-rendered previews: the current SVG miniature does not render charts, shapes, images or all Pro blocks.",
-    "Set curated sort_order values before existing seeds; both home strip and gallery already use this order. Home strip shows four templates.",
-    "Ensure featured entries lead the home strip even when personal/org entries have lower sort_order; retain category filters in the full gallery.",
-    "Verify creation, editing, save/reload, formulas, images and addon resources in the local preview before marking an imported entry available."
+    "Use workbench.file_template and createFromTemplate; keep source provenance and native content without flattening layouts into Markdown.",
+    "Classify each template by actual used features; a bundled advanced preset alone does not prove every Pro feature is used.",
+    "Implement missing capabilities in the shared Office layer using open-source dependencies and original Matrx models/adapters. Do not install @univerjs-pro packages or preset-sheets-advanced.",
+    "Reuse existing collaboration, history, permissions, file pipeline, ExcelJS conversion and print infrastructure.",
+    "Convert showcase data through explicit adapters into supported Matrx content; preserve unsupported source data and report named gaps until lossless rendering/editing is available.",
+    "Upsert system templates idempotently by univer:<slug> plus source/content hash; user-created copies remain independent.",
+    "Render thumbnails through the same editor/viewer used to open the content, including rich blocks, images, charts and shapes.",
+    "Apply the editorial shortlist using sort_order after import and visual verification; featured templates must lead the four-tile home row.",
+    "Validate create/edit/save/reload, undo/redo, collaboration, export and previews before marking each template compatible."
   ],
   "proposedLeadingTemplates": {
     "workbooks": [
@@ -8158,5 +8158,11 @@
       "docs-traditional/tender-proposal"
     ]
   },
-  "rankingStatus": "Editorial shortlist only; not applied to database. Rich template compatibility and visual verification are still required."
+  "rankingStatus": "Editorial shortlist only; not applied to database. Rich template compatibility and visual verification are still required.",
+  "implementationPolicy": {
+    "edition": "open-source-only",
+    "proLicense": "will not be purchased",
+    "replacementStrategy": "Build original shared capabilities on open-source foundations; reuse existing Matrx services. Pro dependency declarations are evidence about upstream examples, not application dependencies to install.",
+    "status": "gap analysis complete; replacement features and showcase import not implemented"
+  }
 }
