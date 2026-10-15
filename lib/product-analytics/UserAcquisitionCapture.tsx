@@ -13,12 +13,27 @@ import {
   safeObservedUrl,
   type FirstTouchPayload,
 } from "./user-acquisition";
+import { defineClientKey, defineClientKeyFamily } from "@/lib/sync/client-storage";
+
+const firstTouchKey = defineClientKey({
+  id: "acquisition.first-touch.v1",
+  area: "local",
+  kind: "handoff",
+  reason: "A guest's first landing, carried until it is filed with the server on sign-up.",
+  legacyKey: ACQUISITION_STORAGE_KEY,
+});
+
+const enrichedVisitors = defineClientKeyFamily({
+  id: "acquisition.first-touch-filed",
+  area: "session",
+  kind: "handoff",
+  reason: "This tab already filed the first touch for a visitor; a repeat is harmless but wasted.",
+});
 
 function readStored(): FirstTouchPayload | null {
   try {
-    const raw = localStorage.getItem(ACQUISITION_STORAGE_KEY);
-    if (!raw) return null;
-    const parsed: unknown = JSON.parse(raw);
+    const parsed: unknown = firstTouchKey.getJSON();
+    if (parsed === null) return null;
     const result = FirstTouchPayloadSchema.safeParse(parsed);
     if (result.success) return result.data;
   } catch (error) {
@@ -109,13 +124,9 @@ export function UserAcquisitionCapture() {
       const guestFingerprint = await getFingerprint();
       if (cancelled) return;
       const visitorId = acquisitionVisitorId() ?? guestFingerprint;
-      const sessionKey = `${ACQUISITION_STORAGE_KEY}:${visitorId}:persisted`;
-      try {
-        if (sessionStorage.getItem(sessionKey)) return;
-      } catch {
-        // Privacy-restricted browsers can disable session storage. The atomic
-        // database function makes a repeat enrichment harmless.
-      }
+      // Privacy-restricted browsers can disable session storage. The atomic
+      // database function makes a repeat enrichment harmless.
+      if (enrichedVisitors.get(visitorId)) return;
       const stored = readStored();
       const observed = buildPayload(visitorId, guestFingerprint, landing);
       const payload: FirstTouchPayload = stored
@@ -130,11 +141,8 @@ export function UserAcquisitionCapture() {
             capture_source: "browser_enrichment",
           }
         : observed;
-      try {
-        localStorage.setItem(ACQUISITION_STORAGE_KEY, JSON.stringify(payload));
-      } catch {
-        // Persistence is an optimization; the request still carries the data.
-      }
+      // Persistence is an optimization; the request still carries the data.
+      firstTouchKey.setJSON(payload);
 
       let response: Response | null = null;
       for (let attempt = 0; attempt <= retryDelaysMs.length; attempt += 1) {
@@ -168,11 +176,7 @@ export function UserAcquisitionCapture() {
           await response.text(),
         );
       } else {
-        try {
-          sessionStorage.setItem(sessionKey, "1");
-        } catch {
-          // See the privacy-mode note above.
-        }
+        enrichedVisitors.set(visitorId, "1");
       }
     })().catch((error: unknown) => {
       console.error("[user-acquisition] First-touch capture failed", error);

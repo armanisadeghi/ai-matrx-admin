@@ -16,7 +16,16 @@
  * per STALL_REPORT_COOLDOWN_MS; repeats collapse into the same entry's count.
  */
 
+import { defineClientKey } from "@/lib/sync/client-storage";
 import { captureError } from "./errorCaptureStore";
+
+const stallMonitorOptIn = defineClientKey({
+  id: "diagnostics.stall-monitor",
+  area: "local",
+  kind: "diagnostic",
+  reason: "Developer opt-in for the stall monitor on the dev server; set by hand in devtools.",
+  legacyKey: "matrx:stall-monitor",
+});
 
 export const STALL_SINGLE_FRAME_MS = 2_000;
 export const STALL_WINDOW_MS = 10_000;
@@ -130,15 +139,11 @@ export function installMainThreadStallMonitor(): void {
   if (!type) return;
   // The dev server compiles routes on the main thread's clock (multi-second
   // frames on first visit) — that is tooling, not the product. Local
-  // verification opts in with localStorage `matrx:stall-monitor` = "1".
+  // verification opts in with localStorage `matrx:client:diagnostics.stall-monitor` = "1"
+  // (the old `matrx:stall-monitor` still works and is moved on first read).
   if (process.env.NODE_ENV === "development") {
-    let optedIn = false;
-    try {
-      optedIn = window.localStorage.getItem("matrx:stall-monitor") === "1";
-    } catch {
-      /* storage blocked: stay off in development */
-    }
-    if (!optedIn) return;
+    // Storage blocked: stay off in development.
+    if (stallMonitorOptIn.get() !== "1") return;
   }
   installed = true;
   const detect = createStallDetector();

@@ -126,7 +126,7 @@ describe("RetiredApiSelectionNotice", () => {
     expect(warning).toHaveBeenCalledTimes(1);
 
     window.localStorage.setItem(
-      "matrx.apiConfig.v1",
+      "matrx:client:api-config.v1",
       JSON.stringify({
         activeServer: "ec2",
         customUrl: null,
@@ -141,7 +141,7 @@ describe("RetiredApiSelectionNotice", () => {
 
     expect(warning).toHaveBeenCalledTimes(2);
     expect(store.getState().apiConfig.retiredEc2ApiSelectionNotice).toBe(false);
-    window.localStorage.removeItem("matrx.apiConfig.v1");
+    window.localStorage.removeItem("matrx:client:api-config.v1");
     await mounted.unmount();
   });
 });

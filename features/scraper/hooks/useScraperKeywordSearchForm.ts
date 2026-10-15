@@ -24,14 +24,25 @@
 import { useRef, useState } from "react";
 import { useBackendApi } from "@/hooks/useBackendApi";
 import { useGeolocation } from "@/hooks/brokers/useGeolocation";
-import { runKindSearch } from "@/features/search/service";
-import { SEARCH_ENGINE_LABEL } from "@/features/search/types";
+import {
+  runKindSearch,
+  runSearchDoor,
+  SEARCH_DOORS,
+  socialDoorBody,
+} from "@/features/search/service";
+import {
+  SEARCH_ENGINE_LABEL,
+  SOCIAL_SEARCH_PLATFORMS,
+  tabHasEngineChoice,
+} from "@/features/search/types";
 import type {
   SearchOutcome,
   SearchPhase,
   SearchProvider,
   SearchRequestOptions,
+  SearchTab,
   SearchVertical,
+  SocialSearchPlatform,
 } from "@/features/search/types";
 import type { SearchResultItem } from "@/features/scraper/types/scraper-api";
 import {
@@ -46,8 +57,16 @@ export type KeywordSearchEngine = SearchProvider | "compare";
 
 export const KEYWORD_SEARCH_ENGINES: readonly KeywordSearchEngine[] =
   SEARCH_LAB_ENGINE_VALUES;
-export const KEYWORD_SEARCH_VERTICALS: readonly SearchVertical[] =
+export const KEYWORD_SEARCH_VERTICALS: readonly SearchTab[] =
   SEARCH_LAB_VERTICAL_VALUES;
+export const KEYWORD_SOCIAL_PLATFORMS: readonly SocialSearchPlatform[] =
+  SOCIAL_SEARCH_PLATFORMS;
+
+/** Social calls spend points per returned record: never more than this. */
+export const SOCIAL_COUNT_MAX = 20;
+
+/** Who answered a run: an engine, or the social door (which names none). */
+export type SearchRunSource = SearchProvider | "social";
 
 /**
  * The knobs beside the query (everything but vertical, count and raw
@@ -75,7 +94,7 @@ export const DEFAULT_KEYWORD_SEARCH_OPTIONS: KeywordSearchOptions = {
 
 /** One engine's run. */
 export interface KeywordEngineRun {
-  provider: SearchProvider;
+  provider: SearchRunSource;
   phase: SearchPhase;
   outcome: SearchOutcome | null;
   error: string | null;
@@ -87,7 +106,10 @@ export interface KeywordEngineRun {
 export interface KeywordSearchRequest {
   query: string;
   engine: KeywordSearchEngine;
-  vertical: SearchVertical;
+  /** The tab: a vertical of `/search-kinds/search`, or "social". */
+  vertical: SearchTab;
+  /** Social tab only: which platform(s) a keyword search covers. */
+  socialPlatform: SocialSearchPlatform;
   count: number;
   options: KeywordSearchOptions;
 }
@@ -95,11 +117,11 @@ export interface KeywordSearchRequest {
 /** Failure info for the error disclosure — safe to JSON.stringify. */
 export interface KeywordSearchDiagnostics {
   hook: "useScraperKeywordSearchForm";
-  endpoint: "/search-kinds/search";
+  endpoint: "/search-kinds/search" | "/search-kinds/social";
   request: Omit<KeywordSearchRequest, "options"> & {
     options: KeywordSearchOptions;
   };
-  failures: { provider: SearchProvider; message: string }[];
+  failures: { provider: SearchRunSource; message: string }[];
   at: string;
 }
 
@@ -107,7 +129,8 @@ export interface UseScraperKeywordSearchFormInit {
   keywords?: string;
   maxResults?: number;
   engine?: KeywordSearchEngine;
-  vertical?: SearchVertical;
+  vertical?: SearchTab;
+  socialPlatform?: SocialSearchPlatform;
   options?: Partial<KeywordSearchOptions>;
   /** Called with the exact request each time a search starts (URL sync). */
   onSearch?: (request: KeywordSearchRequest) => void;
@@ -125,8 +148,10 @@ export interface UseScraperKeywordSearchFormReturn {
   setMaxResults: (v: string) => void;
   engine: KeywordSearchEngine;
   setEngine: (engine: KeywordSearchEngine) => void;
-  vertical: SearchVertical;
-  setVertical: (vertical: SearchVertical) => void;
+  vertical: SearchTab;
+  setVertical: (vertical: SearchTab) => void;
+  socialPlatform: SocialSearchPlatform;
+  setSocialPlatform: (platform: SocialSearchPlatform) => void;
   options: KeywordSearchOptions;
   setOption: <K extends keyof KeywordSearchOptions>(
     key: K,
@@ -170,7 +195,16 @@ export interface UseScraperKeywordSearchFormReturn {
   resetAll: () => void;
 }
 
-function enginesFor(engine: KeywordSearchEngine): SearchProvider[] {
+/**
+ * Who answers a tab. Engine tabs follow the switch; Shopping, Jobs and Trends
+ * are Google-only; Social has its own door.
+ */
+export function sourcesFor(
+  engine: KeywordSearchEngine,
+  tab: SearchTab,
+): SearchRunSource[] {
+  if (tab === "social") return ["social"];
+  if (!tabHasEngineChoice(tab)) return ["google"];
   return engine === "compare" ? ["brave", "google"] : [engine];
 }
 
@@ -238,6 +272,33 @@ export function kindToSearchItems(
     description: str(r.site_name),
     thumbnail: str(r.thumbnail) ?? str(r.image_url) ?? null,
   }));
+  push(result.products, (r) => ({
+    ...base(r, "product"),
+    title: str(r.title),
+    url: str(r.url) ?? str(r.product_url) ?? str(r.link),
+    description: str(r.price_text) ?? str(r.merchant) ?? str(r.store),
+  }));
+  push(result.jobs, (r) => ({
+    ...base(r, "job"),
+    title: str(r.title),
+    url: str(r.apply_url) ?? str(r.url) ?? str(r.share_url),
+    description:
+      [str(r.company_name) ?? str(r.company), str(r.location)]
+        .filter(Boolean)
+        .join(" · ") || undefined,
+  }));
+  push(result.posts, (r) => ({
+    ...base(r, "social_post"),
+    title: str(r.caption)?.slice(0, 140) ?? str(r.title),
+    url: str(r.url) ?? str(r.post_url),
+    description: str(r.handle) ?? str(r.platform),
+  }));
+  push(result.profiles, (r) => ({
+    ...base(r, "social_profile"),
+    title: str(r.display_name) ?? str(r.handle),
+    url: str(r.url) ?? str(r.profile_url),
+    description: str(r.bio) ?? str(r.platform),
+  }));
   push(result.places, (r) => ({
     ...base(r, "place"),
     title: str(r.name),
@@ -280,8 +341,11 @@ export function useScraperKeywordSearchForm(
   const [engine, setEngine] = useState<KeywordSearchEngine>(
     init.engine ?? "brave",
   );
-  const [vertical, setVertical] = useState<SearchVertical>(
+  const [vertical, setVertical] = useState<SearchTab>(
     init.vertical ?? "web",
+  );
+  const [socialPlatform, setSocialPlatform] = useState<SocialSearchPlatform>(
+    init.socialPlatform ?? "all",
   );
   const [options, setOptions] = useState<KeywordSearchOptions>({
     ...DEFAULT_KEYWORD_SEARCH_OPTIONS,
@@ -331,6 +395,7 @@ export function useScraperKeywordSearchForm(
     query: keywords.trim(),
     engine,
     vertical,
+    socialPlatform,
     count: clampCount(maxResults),
     options,
   };
@@ -350,12 +415,15 @@ export function useScraperKeywordSearchForm(
   const handleSearch = async (overrides?: Partial<KeywordSearchRequest>) => {
     const request: KeywordSearchRequest = { ...current, ...overrides };
     request.query = request.query.trim();
-    if (!request.query) return;
+    // The Social tab with an empty box is "Trending now"; every other tab
+    // needs words.
+    if (!request.query && request.vertical !== "social") return;
 
     // Overrides become the inputs, so the form shows what actually ran.
     if (overrides?.query !== undefined) setKeywords(overrides.query);
     if (overrides?.engine) setEngine(overrides.engine);
     if (overrides?.vertical) setVertical(overrides.vertical);
+    if (overrides?.socialPlatform) setSocialPlatform(overrides.socialPlatform);
     if (overrides?.count !== undefined) setMaxResults(String(overrides.count));
     if (overrides?.options) setOptions(overrides.options);
 
@@ -380,7 +448,7 @@ export function useScraperKeywordSearchForm(
     setLastRequest(request);
     init.onSearch?.(request);
 
-    const providers = enginesFor(request.engine);
+    const providers = sourcesFor(request.engine, request.vertical);
     const wantRaw = includeRaw || Boolean(init.alwaysIncludeRaw);
     setRuns(
       providers.map((provider) => ({
@@ -393,7 +461,7 @@ export function useScraperKeywordSearchForm(
     );
 
     const patchRun = (
-      provider: SearchProvider,
+      provider: SearchRunSource,
       patch: Partial<KeywordEngineRun>,
     ) =>
       setRuns((prev) =>
@@ -405,7 +473,7 @@ export function useScraperKeywordSearchForm(
     const { nearMe: _nearMe, ...knobs } = request.options;
     const requestOptions: SearchRequestOptions = {
       ...knobs,
-      vertical: request.vertical,
+      vertical: request.vertical === "social" ? "web" : request.vertical,
       // The AI answer exists for web results only; never send a switch the
       // UI shows as disabled.
       aiAnswer: request.options.aiAnswer && request.vertical === "web",
@@ -414,7 +482,7 @@ export function useScraperKeywordSearchForm(
       longitude: coords?.longitude ?? null,
     };
 
-    const failures: { provider: SearchProvider; message: string }[] = [];
+    const failures: { provider: SearchRunSource; message: string }[] = [];
     let anyHits = false;
 
     await Promise.all(
@@ -422,6 +490,31 @@ export function useScraperKeywordSearchForm(
         const controller = new AbortController();
         controllers.current.push(controller);
         try {
+          if (provider === "social") {
+            // Trending reads TikTok's chart; a keyword search covers the
+            // chosen platform(s). Never more records than the cap.
+            const trending = !request.query;
+            const outcome = await runSearchDoor({
+              post,
+              endpoint: SEARCH_DOORS.social.endpoint,
+              expectKinds: SEARCH_DOORS.social.kinds,
+              body: socialDoorBody({
+                mode: trending ? "trending" : "search",
+                platform:
+                  trending && request.socialPlatform === "all"
+                    ? "tiktok"
+                    : request.socialPlatform,
+                query: request.query,
+                count: Math.min(request.count, SOCIAL_COUNT_MAX),
+              }),
+              signal: controller.signal,
+            });
+            if (controller.signal.aborted) return;
+            if (kindToSearchItems(request.query, outcome.result).length > 0)
+              anyHits = true;
+            patchRun(provider, { outcome, phase: "done" });
+            return;
+          }
           await runKindSearch({
             post,
             query: request.query,
@@ -452,7 +545,10 @@ export function useScraperKeywordSearchForm(
     if (failures.length > 0) {
       setDiagnostics({
         hook: "useScraperKeywordSearchForm",
-        endpoint: "/search-kinds/search",
+        endpoint:
+          request.vertical === "social"
+            ? "/search-kinds/social"
+            : "/search-kinds/search",
         request,
         failures,
         at: new Date().toISOString(),
@@ -468,7 +564,7 @@ export function useScraperKeywordSearchForm(
     ? failed
         .map((run) =>
           runs.length > 1
-            ? `${SEARCH_ENGINE_LABEL[run.provider]}: ${run.error}`
+            ? `${run.provider === "social" ? "Social" : SEARCH_ENGINE_LABEL[run.provider]}: ${run.error}`
             : (run.error ?? ""),
         )
         .join(" ")
@@ -498,6 +594,7 @@ export function useScraperKeywordSearchForm(
     setMaxResults(String(RESULT_LIMIT_DEFAULT));
     setEngine("brave");
     setVertical("web");
+    setSocialPlatform("all");
     setOptions(DEFAULT_KEYWORD_SEARCH_OPTIONS);
     setSelectedHitIndex(null);
   };
@@ -511,6 +608,8 @@ export function useScraperKeywordSearchForm(
     setEngine,
     vertical,
     setVertical,
+    socialPlatform,
+    setSocialPlatform,
     options,
     setOption: (key, value) =>
       setOptions((prev) => ({ ...prev, [key]: value })),

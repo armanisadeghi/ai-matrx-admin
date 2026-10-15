@@ -47,6 +47,7 @@ import {
   type ApiService,
   type ServiceEnvironment,
 } from "@/lib/api/service-routing";
+import { defineClientKey } from "@/lib/sync/client-storage";
 
 // ============================================================================
 // TYPES
@@ -152,7 +153,13 @@ interface ApiConfigState {
 // and `setLoopbackAccess(true)` re-reads it. Sanitizing never writes back, so
 // the admin's stored choice survives an anonymous visit in the same browser.
 // SSR-safe: no-op on the server, lazy-read on the client.
-const PERSIST_KEY = "matrx.apiConfig.v1";
+const apiConfigKey = defineClientKey({
+  id: "api-config.v1",
+  area: "local",
+  kind: "device",
+  reason: "Which AI server this browser talks to; localhost and pins only mean something on this machine.",
+  legacyKey: "matrx.apiConfig.v1",
+});
 
 interface PersistedApiConfig {
   activeServer: string;
@@ -179,9 +186,8 @@ function loadPersistedServer(): LoadedPersistedApiConfig {
   };
   if (typeof window === "undefined") return fallback;
   try {
-    const raw = window.localStorage.getItem(PERSIST_KEY);
-    if (!raw) return fallback;
-    const parsed = JSON.parse(raw) as Partial<PersistedApiConfig>;
+    const parsed = apiConfigKey.getJSON<Partial<PersistedApiConfig>>();
+    if (!parsed) return fallback;
     const valid: ServerEnvironment[] = [
       "production",
       "development",
@@ -247,7 +253,7 @@ function persistServer(state: ApiConfigState): void {
       apiVersion: state.apiVersion,
       pathOverrides: state.pathOverrides,
     };
-    window.localStorage.setItem(PERSIST_KEY, JSON.stringify(payload));
+    apiConfigKey.setJSON(payload);
   } catch {
     /* quota / privacy mode — non-fatal */
   }
@@ -261,22 +267,18 @@ function persistServer(state: ApiConfigState): void {
 function persistRetiredEc2Acknowledgement(): void {
   if (typeof window === "undefined") return;
   try {
-    const raw = window.localStorage.getItem(PERSIST_KEY);
-    const parsed: unknown = raw ? JSON.parse(raw) : null;
+    const parsed: unknown = apiConfigKey.getJSON();
     if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
       return;
     }
-    window.localStorage.setItem(
-      PERSIST_KEY,
-      JSON.stringify({
+    apiConfigKey.setJSON({
         ...parsed,
         activeServer:
           (parsed as { activeServer?: unknown }).activeServer === "ec2"
             ? "production"
             : (parsed as { activeServer?: unknown }).activeServer,
         retiredEc2ApiSelectionNotice: false,
-      }),
-    );
+    });
   } catch {
     // The raw retained record is unavailable. Do not overwrite it with the
     // anonymous-safe in-memory view, which could erase an admin's loopback

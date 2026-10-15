@@ -76,7 +76,7 @@ describe("Error Inspector entries survive a reload", () => {
       });
     }
     leavePage();
-    const stored = window.sessionStorage.getItem("matrx:error-inspector:v1");
+    const stored = window.sessionStorage.getItem("matrx:client:diagnostics.error-inspector.v1");
     expect(stored).not.toBeNull();
     expect(stored!.length).toBeLessThan(1_100_000);
 
@@ -96,7 +96,7 @@ describe("Error Inspector entries survive a reload", () => {
   });
 
   it("a broken or blocked storage never breaks capture", () => {
-    window.sessionStorage.setItem("matrx:error-inspector:v1", "{not json");
+    window.sessionStorage.setItem("matrx:client:diagnostics.error-inspector.v1", "{not json");
     const page = loadPage();
     expect(page.getSnapshot()).toHaveLength(0);
     const spy = jest

@@ -19,6 +19,7 @@
 import { readAllRows } from "@ai-matrx/data/db";
 
 import { createClient } from "@/utils/supabase/client";
+import { defineClientKeyFamily } from "@/lib/sync/client-storage";
 
 const TTL_MS = 60_000;
 
@@ -94,29 +95,23 @@ async function loadFeature(feature: string): Promise<Map<string, KnobValue>> {
  * this tab's sessionStorage with the moment it was read, so the contract ("live within a minute,
  * everywhere") is unchanged: a stored window older than TTL_MS is never used.
  */
-const STORED_PREFIX = "matrx.featureKnobs.v2:";
+const storedWindows = defineClientKeyFamily({
+  id: "knobs.feature-window.v2",
+  area: "session",
+  kind: "cache",
+  reason: "This tab's 60 s window of one feature's knob values; never used once older than TTL_MS.",
+});
 
 function readStoredWindow(feature: string): FeatureWindow | null {
-  if (typeof window === "undefined") return null;
-  try {
-    const raw = window.sessionStorage.getItem(STORED_PREFIX + feature);
-    if (!raw) return null;
-    const stored = JSON.parse(raw) as { at?: unknown; rows?: unknown };
-    if (typeof stored.at !== "number" || !Array.isArray(stored.rows)) return null;
-    if (Date.now() - stored.at >= TTL_MS || stored.at > Date.now()) return null;
-    return { at: stored.at, map: new Map(stored.rows as Array<[string, KnobValue]>) };
-  } catch {
-    return null;
-  }
+  const stored = storedWindows.getJSON<{ at?: unknown; rows?: unknown }>(feature);
+  if (!stored || typeof stored.at !== "number" || !Array.isArray(stored.rows)) return null;
+  if (Date.now() - stored.at >= TTL_MS || stored.at > Date.now()) return null;
+  return { at: stored.at, map: new Map(stored.rows as Array<[string, KnobValue]>) };
 }
 
 function storeWindow(feature: string, at: number, map: Map<string, KnobValue>): void {
-  if (typeof window === "undefined") return;
-  try {
-    window.sessionStorage.setItem(STORED_PREFIX + feature, JSON.stringify({ at, rows: [...map.entries()] }));
-  } catch {
-    // A full or blocked sessionStorage only means the next reload reads this feature again.
-  }
+  // A full or blocked sessionStorage only means the next reload reads this feature again.
+  storedWindows.setJSON(feature, { at, rows: [...map.entries()] });
 }
 
 async function ensureFeature(feature: string): Promise<Map<string, KnobValue>> {
@@ -149,18 +144,7 @@ async function ensureFeature(feature: string): Promise<Map<string, KnobValue>> {
 /** Drop every cached window (tests, and after an admin write in the same tab). */
 export function invalidateFeatureKnobs(): void {
   windows.clear();
-  if (typeof window !== "undefined") {
-    try {
-      const doomed: string[] = [];
-      for (let i = 0; i < window.sessionStorage.length; i += 1) {
-        const k = window.sessionStorage.key(i);
-        if (k && k.startsWith(STORED_PREFIX)) doomed.push(k);
-      }
-      for (const k of doomed) window.sessionStorage.removeItem(k);
-    } catch {
-      // nothing stored to forget
-    }
-  }
+  storedWindows.clear();
 }
 
 async function readKnob(feature: string, key: string): Promise<KnobValue> {

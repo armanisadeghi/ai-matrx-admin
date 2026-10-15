@@ -60,7 +60,7 @@ describe("hard-navigation trace", () => {
     const crawl = leaving.trackLiveStream("/api/scraper/crawler/sites/site-1/sessions");
     leaving.noteHardNavigationReason("new-version-refresh:chunk");
     window.dispatchEvent(new Event("beforeunload"));
-    expect(window.sessionStorage.getItem("matrx:hard-navigation:v1")).not.toBeNull();
+    expect(window.sessionStorage.getItem("matrx:client:diagnostics.hard-navigation.v1")).not.toBeNull();
 
     // The next page boots in the same tab.
     const next = freshModule();
@@ -71,7 +71,7 @@ describe("hard-navigation trace", () => {
       source: "hard-navigation",
       code: "declared:new-version-refresh:chunk",
     });
-    expect(window.sessionStorage.getItem("matrx:hard-navigation:v1")).toBeNull();
+    expect(window.sessionStorage.getItem("matrx:client:diagnostics.hard-navigation.v1")).toBeNull();
     // This module's listeners stay on the shared jsdom window; leave no
     // open stream behind for the next test's leave to report.
     crawl.close("ended");
@@ -94,7 +94,7 @@ describe("hard-navigation trace", () => {
     leaving.installHardNavigationTrace();
     const stream = leaving.trackLiveStream("https://scraper.example.test/api/run?token=SECRET789");
     window.dispatchEvent(new Event("beforeunload"));
-    const stored = window.sessionStorage.getItem("matrx:hard-navigation:v1") ?? "";
+    const stored = window.sessionStorage.getItem("matrx:client:diagnostics.hard-navigation.v1") ?? "";
     expect(stored).not.toContain("SECRET");
     expect(stored).toContain("/marketing/viva");
 
@@ -145,7 +145,7 @@ describe("hard-navigation trace", () => {
     // The next page's own leave is still recorded.
     const live = next.trackLiveStream("/ai/chat");
     window.dispatchEvent(new Event("beforeunload"));
-    expect(window.sessionStorage.getItem("matrx:hard-navigation:v1")).toContain("/ai/chat");
+    expect(window.sessionStorage.getItem("matrx:client:diagnostics.hard-navigation.v1")).toContain("/ai/chat");
     live.close("ended");
   });
 });

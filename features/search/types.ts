@@ -29,8 +29,63 @@ export function searchEngineLabel(source: string): string {
   return (SEARCH_ENGINE_LABEL as Record<string, string>)[source.toLowerCase()] ?? source;
 }
 
-/** Result types (one provider call each). */
-export type SearchVertical = "web" | "news" | "images" | "videos" | "places";
+/**
+ * Result types of `POST /search-kinds/search` (one provider call each).
+ * Shopping, jobs and trends are Google-only and return their own kind
+ * (`shopping_results`, `job_search_results`, `trend_report`).
+ */
+export type SearchVertical =
+  | "web"
+  | "news"
+  | "images"
+  | "videos"
+  | "places"
+  | "shopping"
+  | "jobs"
+  | "trends";
+
+/**
+ * The page's tabs: every vertical plus Social, which has its own door
+ * (`POST /search-kinds/social`). "web" shows as "All".
+ */
+export type SearchTab = SearchVertical | "social";
+
+/** Tabs both engines answer — the only tabs that show the engine switch. */
+export const ENGINE_TABS: readonly SearchTab[] = [
+  "web",
+  "news",
+  "images",
+  "videos",
+  "places",
+];
+
+export function tabHasEngineChoice(tab: SearchTab): boolean {
+  return ENGINE_TABS.includes(tab);
+}
+
+/** Platforms the social door searches by keyword ("all" = every one). */
+export const SOCIAL_SEARCH_PLATFORMS = [
+  "all",
+  "tiktok",
+  "youtube",
+  "reddit",
+  "threads",
+  "pinterest",
+] as const;
+export type SocialSearchPlatform = (typeof SOCIAL_SEARCH_PLATFORMS)[number];
+
+/**
+ * What the box understood the input to be. "words" searches the current tab;
+ * the rest each have one action (profile lookup, platform chips, reading a
+ * page, search by image).
+ */
+export type SearchInputMode =
+  | "words"
+  | "handle"
+  | "profile"
+  | "post"
+  | "link"
+  | "image";
 export type SearchSafeSearch = "off" | "moderate" | "strict";
 export type SearchTimeRange = "day" | "week" | "month" | "year";
 export type SearchDevice = "desktop" | "mobile";

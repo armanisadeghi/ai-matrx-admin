@@ -150,7 +150,7 @@ skill's `gap #14 of 2026-08-24` and `gap #16 of 2026-08-24` → the gate section
     components. Three undocumented things stand between you and a working link:
     `/demos/*` is PARKED unless the preview server runs as
     `MATRX_PREVIEW_PROFILE=user pnpm preview:start`; the frontend calls PRODUCTION aidream unless
-    `localStorage["matrx.apiConfig.v1"]` sets `{"activeServer":"localhost"}`; and the browser
+    `localStorage["matrx:client:api-config.v1"]` sets `{"activeServer":"localhost"}`; and the browser
     needs a session from the nonce handshake (`openssl rand -hex 16 > .dev-login-nonce`, then
     `/api/dev-login?nonce=<that value>&next=/demos/<family>`; `?token=` was removed).
 18. **THE SHOW-WHAT-YOU-HIDE LAW (Arman, 2026-08-23 — standing, all families).** *"On anything at

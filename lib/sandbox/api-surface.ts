@@ -16,6 +16,7 @@
  */
 
 import type { SandboxTier } from "@/types/sandbox";
+import { defineClientKeyFamily } from "@/lib/sync/client-storage";
 
 export interface ApiSurfaceRoute {
     path: string;
@@ -36,7 +37,12 @@ export interface ApiSurface {
 }
 
 const memoryCache = new Map<SandboxTier, Promise<ApiSurface>>();
-const STORAGE_KEY_PREFIX = "matrx:sandbox:api-surface:";
+const storedSurfaces = defineClientKeyFamily({
+    id: "sandbox.api-surface",
+    area: "session",
+    kind: "cache",
+    reason: "This tab's copy of a sandbox tier's API descriptor, at most ten minutes old.",
+});
 const STORAGE_TTL_MS = 10 * 60 * 1000; // 10 minutes
 
 interface StoredSurface {
@@ -45,11 +51,8 @@ interface StoredSurface {
 }
 
 function readStored(tier: SandboxTier): ApiSurface | null {
-    if (typeof window === "undefined") return null;
     try {
-        const raw = window.sessionStorage.getItem(STORAGE_KEY_PREFIX + tier);
-        if (!raw) return null;
-        const parsed = JSON.parse(raw) as StoredSurface;
+        const parsed = storedSurfaces.getJSON<StoredSurface>(tier);
         if (!parsed?.surface || Date.now() - parsed.fetchedAt > STORAGE_TTL_MS) {
             return null;
         }
@@ -60,8 +63,7 @@ function readStored(tier: SandboxTier): ApiSurface | null {
 }
 
 function writeStored(tier: SandboxTier, surface: ApiSurface): void {
-    if (typeof window === "undefined") return;
-    try {
+    {
         const stored: StoredSurface = {
             fetchedAt: Date.now(),
             surface: {
@@ -71,12 +73,8 @@ function writeStored(tier: SandboxTier, surface: ApiSurface): void {
                 routes: surface.routes,
             },
         };
-        window.sessionStorage.setItem(
-            STORAGE_KEY_PREFIX + tier,
-            JSON.stringify(stored),
-        );
-    } catch {
-        /* storage may be full or disabled; ignore */
+        // Storage may be full or disabled; the memory cache still serves.
+        storedSurfaces.setJSON(tier, stored);
     }
 }
 
@@ -148,26 +146,12 @@ export async function fetchApiSurface(
 export function invalidateApiSurface(tier?: SandboxTier): void {
     if (tier) {
         memoryCache.delete(tier);
-        if (typeof window !== "undefined") {
-            try {
-                window.sessionStorage.removeItem(STORAGE_KEY_PREFIX + tier);
-            } catch {
-                /* ignore */
-            }
-        }
+        storedSurfaces.remove(tier);
         return;
     }
     memoryCache.clear();
-    if (typeof window !== "undefined") {
-        try {
-            for (const key of Object.keys(window.sessionStorage)) {
-                if (key.startsWith(STORAGE_KEY_PREFIX)) {
-                    window.sessionStorage.removeItem(key);
-                }
-            }
-        } catch {
-            /* ignore */
-        }
+    {
+        storedSurfaces.clear();
     }
 }
 

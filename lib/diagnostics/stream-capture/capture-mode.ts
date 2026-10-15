@@ -18,18 +18,21 @@
 
 import { useCallback, useEffect, useState } from "react";
 
+import { defineClientKey } from "@/lib/sync/client-storage";
+
 import { setCaptureMode } from "./recorder";
 
-const PREF_KEY = "matrx.capture.full";
+const capturePrefKey = defineClientKey({
+  id: "diagnostics.stream-capture-full",
+  area: "local",
+  kind: "diagnostic",
+  reason: "Per-browser debugging switch read at boot, before Redux exists.",
+  legacyKey: "matrx.capture.full",
+});
 
 export function readCapturePref(): boolean {
-  if (typeof window === "undefined") return false;
-  try {
-    return window.localStorage.getItem(PREF_KEY) === "true";
-  } catch {
-    // Private mode / storage disabled — default to the safe, tight setting.
-    return false;
-  }
+  // Private mode / storage disabled — default to the safe, tight setting.
+  return capturePrefKey.get() === "true";
 }
 
 /**
@@ -48,11 +51,8 @@ export function applyPersistedCaptureMode(): void {
 }
 
 function writeCapturePref(enabled: boolean): void {
-  try {
-    window.localStorage.setItem(PREF_KEY, String(enabled));
-  } catch {
-    // Non-fatal: the mode still applies for this session.
-  }
+  // Non-fatal when refused: the mode still applies for this session.
+  capturePrefKey.set(String(enabled));
 }
 
 /**

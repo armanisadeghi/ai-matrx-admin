@@ -18,6 +18,7 @@ import {
   Notebook,
   StickyNote,
   Table2,
+  Telescope,
   Wrench,
   Plug,
   Upload,
@@ -181,6 +182,13 @@ export const RESOURCE_PICKER_MENU_CATEGORIES: ResourcePickerMenuCategory[] = [
         label: "Documents",
         icon: FileText,
         iconClassName: "text-indigo-600 dark:text-indigo-400",
+        requiresCapability: null,
+      },
+      {
+        id: "research",
+        label: "Research",
+        icon: Telescope,
+        iconClassName: "text-orange-600 dark:text-orange-400",
         requiresCapability: null,
       },
       {

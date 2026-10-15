@@ -34,6 +34,22 @@ import {
 } from "./item-blocks";
 import { ImageResultBlock } from "./image-blocks";
 import {
+  JobResultBlock,
+  JobSearchResultsBlock,
+  ProductResultBlock,
+  ShoppingResultsBlock,
+} from "./vertical-blocks";
+import {
+  PlaceReviewBlock,
+  PlaceReviewsBlock,
+  SocialSearchResultsBlock,
+  TrendReportBlock,
+} from "./insight-blocks";
+import {
+  SocialPostBlock,
+  SocialProfileBlock,
+} from "../social-kinds/social-kind-blocks";
+import {
   AiAnswerKindBlock,
   EntityCardBlock,
   LocalPlaceBlock,
@@ -66,7 +82,24 @@ const CANONICAL_COMPONENTS: Record<
   opening_hours: OpeningHoursBlock,
   postal_address: PostalAddressBlock,
   geo_coordinates: GeoCoordinatesBlock,
+  // Universal search (2026-10-14): the Google-only verticals, place reviews
+  // and the social collection, plus the social items they nest.
+  product_result: ProductResultBlock,
+  shopping_results: ShoppingResultsBlock,
+  job_result: JobResultBlock,
+  job_search_results: JobSearchResultsBlock,
+  trend_report: TrendReportBlock,
+  place_review: PlaceReviewBlock,
+  place_reviews: PlaceReviewsBlock,
+  social_search_results: SocialSearchResultsBlock,
+  social_post: SocialPostBlock,
+  social_profile: SocialProfileBlock,
 };
+
+/** True when a kind has a compiled canonical component in this family. */
+export function hasCanonicalSearchComponent(kind: string): boolean {
+  return kind in CANONICAL_COMPONENTS;
+}
 
 const nestedBlockMemo = new WeakMap<object, RenderBlock>();
 

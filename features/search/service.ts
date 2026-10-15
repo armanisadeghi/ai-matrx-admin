@@ -169,3 +169,140 @@ export async function runKindSearch({
     );
   }
 }
+
+// ── The newer search doors (universal search, 2026-10-14) ──────────────────
+//
+// Social, place reviews and search-by-image each have their own aidream door.
+// They stream NDJSON like `/search-kinds/search` and carry ONE data event whose
+// `result` is a kind instance (discriminated by `__kind`). The reader takes the
+// last such event; it accepts any event `type` so a server-side rename of the
+// event never blanks the screen, but it insists the result IS the kind asked
+// for — a different kind is a contract break, said out loud.
+
+/** The transport, with the optional request policy `useBackendApi().post` takes. */
+export type SearchDoorPost = (
+  endpoint: string,
+  body: unknown,
+  signal?: AbortSignal,
+  policy?: { expectedErrorStatuses?: number[] },
+) => Promise<Response>;
+
+/** A door that is not deployed yet answers 404 — said in plain words. */
+export const DOOR_NOT_LIVE_MESSAGE = "This kind of search isn't available yet.";
+
+function statusOf(err: unknown): number | null {
+  return isRecord(err) && typeof err.status === "number" ? err.status : null;
+}
+
+export interface SearchDoorArgs {
+  post: SearchDoorPost;
+  endpoint: string;
+  body: Record<string, unknown>;
+  /** The kind(s) the door is contracted to return. */
+  expectKinds: readonly string[];
+  signal?: AbortSignal;
+}
+
+/**
+ * One call to a kind-returning search door. Returns the outcome in the same
+ * shape `/search-kinds/search` produces, so one Inspector reads every door:
+ * `request` is what the server says it sent (or the body we sent), `raw` is
+ * the whole data event.
+ */
+export async function runSearchDoor({
+  post,
+  endpoint,
+  body,
+  expectKinds,
+  signal,
+}: SearchDoorArgs): Promise<SearchOutcome> {
+  let response: Response;
+  try {
+    response = await post(endpoint, body, signal, {
+      expectedErrorStatuses: [404],
+    });
+  } catch (err: unknown) {
+    if (statusOf(err) === 404) throw new Error(DOOR_NOT_LIVE_MESSAGE);
+    throw err;
+  }
+
+  let outcome: SearchOutcome | null = null;
+  let wrongKind: string | null = null;
+  await consumeStream(
+    response,
+    {
+      onData: (data) => {
+        if (!isRecord(data) || !isRecord(data.result)) return;
+        const kind = typeof data.result.__kind === "string" ? data.result.__kind : "";
+        if (!expectKinds.includes(kind)) {
+          wrongKind = kind || "(no __kind)";
+          return;
+        }
+        const notes = Array.isArray(data.notes)
+          ? data.notes
+          : Array.isArray(data.ignored_options)
+            ? data.ignored_options
+            : [];
+        outcome = {
+          result: data.result,
+          translation: readTranslation(data.translation),
+          raw: data,
+          ignoredOptions: notes.map(String),
+          request: isRecord(data.request) ? data.request : { endpoint, ...body },
+          elapsedMs: typeof data.elapsed_ms === "number" ? data.elapsed_ms : null,
+        };
+      },
+      onError: (e) => {
+        throw new Error(e.user_message || e.message || "The search failed.");
+      },
+    },
+    signal,
+  );
+
+  if (outcome) return outcome;
+  if (wrongKind) {
+    console.error(
+      `[search] ${endpoint} returned kind ${wrongKind}; expected ${expectKinds.join(" | ")}`,
+    );
+    throw new Error("The search came back in a shape this page can't show.");
+  }
+  throw new Error(
+    "The search ended without returning any results. Try again in a moment.",
+  );
+}
+
+/** Social search / trending / profile — `POST /search-kinds/social`. */
+export function socialDoorBody(args: {
+  mode: "search" | "trending" | "profile";
+  platform: string;
+  query?: string;
+  handle?: string;
+  url?: string;
+  count: number;
+}): Record<string, unknown> {
+  const body: Record<string, unknown> = {
+    mode: args.mode,
+    platform: args.platform,
+    count: args.count,
+  };
+  if (args.query?.trim()) body.query = args.query.trim();
+  if (args.handle?.trim()) body.handle = args.handle.trim().replace(/^@/, "");
+  if (args.url?.trim()) body.url = args.url.trim();
+  return body;
+}
+
+export const SEARCH_DOORS = {
+  social: { endpoint: "/search-kinds/social", kinds: ["social_search_results"] },
+  reviews: { endpoint: "/search-kinds/place-reviews", kinds: ["place_reviews"] },
+  image: {
+    endpoint: "/search-kinds/image",
+    kinds: ["reverse_image_search_results"],
+  },
+} as const;
+
+/** The kind each Google-only vertical of `/search-kinds/search` returns. */
+export const VERTICAL_RESULT_KIND = {
+  shopping: "shopping_results",
+  jobs: "job_search_results",
+  trends: "trend_report",
+} as const;

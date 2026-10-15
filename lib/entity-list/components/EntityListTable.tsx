@@ -51,6 +51,7 @@ import { resolveItemMenuConfig } from "@ai-matrx/chat/ui/item-types";
 import type { ReadOutcome } from "@ai-matrx/design-system";
 import { fitColumnWidths } from "../columnWidths";
 import type { SavedListView } from "@/lib/redux/preferences/userPreferencesSlice";
+import { defineClientKeyFamily } from "@/lib/sync/client-storage";
 
 /**
  * The row's own menu merged into the table's ONE primary "Row" section (an
@@ -260,16 +261,20 @@ const PAGE_OWNS_COLUMN_PICKER = { columns: false } as const;
  */
 type FittedWidths = Map<string, string | number | undefined>;
 const LAST_FITTED_WIDTHS = new Map<string, FittedWidths>();
-const WIDTHS_STORAGE_PREFIX = "matrx:list-fitted-widths:";
+const fittedWidthsStore = defineClientKeyFamily({
+  id: "entity-list.fitted-widths",
+  area: "local",
+  kind: "ui-layout",
+  reason: "Column widths fitted to this screen's content, so a revisit paints without a jump.",
+  legacyKey: (suffix) => `matrx:list-fitted-widths:${suffix}`,
+});
 const noopSubscribe = () => () => {};
 
 function readFittedWidths(key: string): FittedWidths | undefined {
   const cached = LAST_FITTED_WIDTHS.get(key);
   if (cached) return cached;
   try {
-    const raw = window.localStorage.getItem(WIDTHS_STORAGE_PREFIX + key);
-    if (!raw) return undefined;
-    const parsed: unknown = JSON.parse(raw);
+    const parsed: unknown = fittedWidthsStore.getJSON(key);
     if (!parsed || typeof parsed !== "object") return undefined;
     const widths: FittedWidths = new Map(
       Object.entries(parsed as Record<string, unknown>).filter(
@@ -292,14 +297,8 @@ function rememberFittedWidths(key: string, widths: FittedWidths): void {
     [...widths].every(([id, w]) => previous.get(id) === w);
   LAST_FITTED_WIDTHS.set(key, widths);
   if (same) return;
-  try {
-    window.localStorage.setItem(
-      WIDTHS_STORAGE_PREFIX + key,
-      JSON.stringify(Object.fromEntries([...widths].filter(([, w]) => w !== undefined))),
-    );
-  } catch {
-    /* storage unavailable (private window) — memory still serves this visit */
-  }
+  // Storage unavailable (private window) — memory still serves this visit.
+  fittedWidthsStore.setJSON(key, Object.fromEntries([...widths].filter(([, w]) => w !== undefined)));
 }
 
 export function EntityListTable<TRow>({

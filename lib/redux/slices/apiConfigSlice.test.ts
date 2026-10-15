@@ -47,7 +47,7 @@ describe("multi-service API environment selection", () => {
   it("restores a persisted localhost choice when an admin unlocks, and drops it again on lock", () => {
     jest.replaceProperty(process.env, "NODE_ENV", "production");
     window.localStorage.setItem(
-      "matrx.apiConfig.v1",
+      "matrx:client:api-config.v1",
       JSON.stringify({
         activeServer: "localhost",
         customUrl: null,
@@ -76,16 +76,16 @@ describe("multi-service API environment selection", () => {
     expect(state.activeServer).toBe("production");
     expect(state.serviceOverrides.scraper).toBeUndefined();
     expect(
-      JSON.parse(window.localStorage.getItem("matrx.apiConfig.v1") ?? "{}")
+      JSON.parse(window.localStorage.getItem("matrx:client:api-config.v1") ?? "{}")
         .activeServer,
     ).toBe("localhost");
 
-    window.localStorage.removeItem("matrx.apiConfig.v1");
+    window.localStorage.removeItem("matrx:client:api-config.v1");
   });
 
   it("migrates a persisted retired EC2 AI API selection to production with a durable notice", () => {
     window.localStorage.setItem(
-      "matrx.apiConfig.v1",
+      "matrx:client:api-config.v1",
       JSON.stringify({
         activeServer: "ec2",
         customUrl: "https://unrelated-custom.example",
@@ -112,12 +112,12 @@ describe("multi-service API environment selection", () => {
     state = reducer(state, acknowledgeRetiredEc2ApiSelectionNotice());
     expect(state.retiredEc2ApiSelectionNotice).toBe(false);
     expect(
-      JSON.parse(window.localStorage.getItem("matrx.apiConfig.v1") ?? "{}"),
+      JSON.parse(window.localStorage.getItem("matrx:client:api-config.v1") ?? "{}"),
     ).toMatchObject({
       activeServer: "production",
       retiredEc2ApiSelectionNotice: false,
     });
-    window.localStorage.removeItem("matrx.apiConfig.v1");
+    window.localStorage.removeItem("matrx:client:api-config.v1");
   });
 
   it("acknowledges a retired selection without erasing anonymous-sanitized loopback choices", async () => {
@@ -129,7 +129,7 @@ describe("multi-service API environment selection", () => {
       apiVersion: "v2",
       pathOverrides: { "/ai/manual": "/v2/ai/manual" },
     };
-    window.localStorage.setItem("matrx.apiConfig.v1", JSON.stringify(persisted));
+    window.localStorage.setItem("matrx:client:api-config.v1", JSON.stringify(persisted));
 
     // A fresh module import is the real production browser boot boundary: the
     // slice reads localStorage before any provider can acknowledge its notice.
@@ -146,7 +146,7 @@ describe("multi-service API environment selection", () => {
       state,
       apiConfig.acknowledgeRetiredEc2ApiSelectionNotice(),
     );
-    expect(JSON.parse(window.localStorage.getItem("matrx.apiConfig.v1") ?? "{}"))
+    expect(JSON.parse(window.localStorage.getItem("matrx:client:api-config.v1") ?? "{}"))
       .toMatchObject({
         ...persisted,
         activeServer: "production",
@@ -159,7 +159,7 @@ describe("multi-service API environment selection", () => {
     expect(state.serviceOverrides.scraper).toBe("localhost");
     expect(state.apiVersion).toBe("v2");
     expect(state.pathOverrides).toEqual(persisted.pathOverrides);
-    window.localStorage.removeItem("matrx.apiConfig.v1");
+    window.localStorage.removeItem("matrx:client:api-config.v1");
   });
 
   it("does not overwrite a valid selection made after boot and before acknowledgement", async () => {
@@ -171,7 +171,7 @@ describe("multi-service API environment selection", () => {
       apiVersion: "v2",
       pathOverrides: { "/ai/manual": "/v2/ai/manual" },
     };
-    window.localStorage.setItem("matrx.apiConfig.v1", JSON.stringify(retired));
+    window.localStorage.setItem("matrx:client:api-config.v1", JSON.stringify(retired));
 
     jest.resetModules();
     const apiConfig = await import("./apiConfigSlice");
@@ -185,7 +185,7 @@ describe("multi-service API environment selection", () => {
       retiredEc2ApiSelectionNotice: true,
     };
     window.localStorage.setItem(
-      "matrx.apiConfig.v1",
+      "matrx:client:api-config.v1",
       JSON.stringify(concurrentChoice),
     );
 
@@ -193,12 +193,12 @@ describe("multi-service API environment selection", () => {
       state,
       apiConfig.acknowledgeRetiredEc2ApiSelectionNotice(),
     );
-    expect(JSON.parse(window.localStorage.getItem("matrx.apiConfig.v1") ?? "{}"))
+    expect(JSON.parse(window.localStorage.getItem("matrx:client:api-config.v1") ?? "{}"))
       .toMatchObject({
         ...concurrentChoice,
         retiredEc2ApiSelectionNotice: false,
       });
-    window.localStorage.removeItem("matrx.apiConfig.v1");
+    window.localStorage.removeItem("matrx:client:api-config.v1");
   });
 
   it("rejects every loopback selection path in a production bundle with no admin", () => {

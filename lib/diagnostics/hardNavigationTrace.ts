@@ -33,6 +33,7 @@
 import { captureError } from "@/lib/diagnostics/errorCaptureStore";
 import { shortenChunkPaths } from "@/lib/diagnostics/sanitizeErrorContextForAi";
 import { formatDurationMs } from "@ai-matrx/kit/format";
+import { defineClientKey } from "@/lib/sync/client-storage";
 
 /**
  * Origin + path ONLY. A query or hash can carry a credential (`?code=`, a
@@ -57,7 +58,12 @@ export function sanitizeNavigationStack(stack: string | undefined): string | nul
     .join("\n");
 }
 
-const RECORD_KEY = "matrx:hard-navigation:v1";
+const leaveRecordKey = defineClientKey({
+  id: "diagnostics.hard-navigation.v1",
+  area: "session",
+  kind: "diagnostic",
+  reason: "This tab's record of the page it is leaving, read once by the next page load.",
+});
 /** Kept in sync with ChunkRecoveryBootScript's KEY (its one allowed copy). */
 const CHUNK_RELOAD_KEY = "chunk-load-recovery:last-reload";
 /** A leave record older than this at the next boot belongs to something else. */
@@ -166,7 +172,7 @@ function writeRecord(phase: "beforeunload" | "pagehide"): void {
     const keptStreams =
       sameLeave && previous.streams.length > 0 ? previous.streams : snapshot;
     if (keptStreams.length === 0) {
-      window.sessionStorage.removeItem(RECORD_KEY);
+      leaveRecordKey.remove();
       return;
     }
     const record: LeaveRecord = {
@@ -179,21 +185,15 @@ function writeRecord(phase: "beforeunload" | "pagehide"): void {
       declared: declared && now - declared.at <= CAUSE_WINDOW_MS ? declared : null,
       streams: keptStreams,
     };
-    window.sessionStorage.setItem(RECORD_KEY, JSON.stringify(record));
+    leaveRecordKey.setJSON(record);
   } catch {
     /* storage blocked — the trace is best-effort, never a page breaker */
   }
 }
 
 function readRecord(): LeaveRecord | null {
-  try {
-    const text = window.sessionStorage.getItem(RECORD_KEY);
-    if (!text) return null;
-    const parsed = JSON.parse(text) as Partial<LeaveRecord>;
-    return parsed?.v === 1 && Array.isArray(parsed.streams) ? (parsed as LeaveRecord) : null;
-  } catch {
-    return null;
-  }
+  const parsed = leaveRecordKey.getJSON<Partial<LeaveRecord>>();
+  return parsed?.v === 1 && Array.isArray(parsed.streams) ? (parsed as LeaveRecord) : null;
 }
 
 function newPageNavigationType(): string {
@@ -234,11 +234,7 @@ function reportPreviousLeave(): void {
 
 function fileLeaveRecord(): void {
   const record = readRecord();
-  try {
-    window.sessionStorage.removeItem(RECORD_KEY);
-  } catch {
-    /* ignore */
-  }
+  leaveRecordKey.remove();
   if (!record || record.streams.length === 0) return;
   const pageStart = performance.timeOrigin;
   const leftAt = record.beforeunloadAt ?? record.pagehideAt ?? 0;
@@ -247,6 +243,7 @@ function fileLeaveRecord(): void {
   const cause = hardNavigationCause(record, newPageType);
   let chunkReloadAt: number | null = null;
   try {
+    // raw-storage-exception: the key is owned by ChunkRecoveryBootScript's pre-paint inline script.
     const value = Number(window.sessionStorage.getItem(CHUNK_RELOAD_KEY) || 0);
     chunkReloadAt = value || null;
   } catch {
@@ -307,11 +304,7 @@ export function installHardNavigationTrace(): void {
   });
   window.addEventListener("pageshow", () => {
     // A cancelled leave or a back/forward-cache restore: this page lives on.
-    try {
-      window.sessionStorage.removeItem(RECORD_KEY);
-    } catch {
-      /* ignore */
-    }
+    leaveRecordKey.remove();
     beforeunloadAt = null;
     lastNavigation = null;
     declared = null;

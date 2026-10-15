@@ -15,6 +15,8 @@ import { FileUrlResourcePicker } from "./FileUrlResourcePicker";
 import { AudioResourcePicker } from "./AudioResourcePicker";
 import { WorkbooksResourcePicker } from "./WorkbooksResourcePicker";
 import { DocumentsResourcePicker } from "./DocumentsResourcePicker";
+import { ResearchResourcePicker } from "./ResearchResourcePicker";
+import { researchTopicResource } from "./resource-adapters";
 import { ContextValuesResourcePicker } from "./ContextValuesResourcePicker";
 import { ComposerConnectorsPanel } from "@ai-matrx/chat/agents/components/inputs/smart-input/composer/ComposerConnectorsPanel";
 import { ToolsResourcePicker } from "./ToolsResourcePicker";
@@ -386,6 +388,17 @@ export function ResourcePickerMenu({
               type: "document",
               data: { id: document.id, title: document.document_name },
             });
+          }}
+        />
+      );
+    }
+
+    if (activeView === "research") {
+      return (
+        <ResearchResourcePicker
+          onBack={goBack}
+          onSelect={(topic) => {
+            void selectOne(researchTopicResource(topic));
           }}
         />
       );

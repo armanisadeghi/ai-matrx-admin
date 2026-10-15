@@ -12,12 +12,21 @@
  */
 import { useCallback, useLayoutEffect, useState, type CSSProperties } from "react";
 
+import { defineClientKeyFamily } from "@/lib/sync/client-storage";
+
 interface SlotSize {
   w: number;
   h: number;
 }
 
-const storageKey = (surfaceKey: string, name: string) => `matrx:list-slot-size:${surfaceKey}:${name}`;
+const slotSizes = defineClientKeyFamily({
+  id: "entity-list.slot-size",
+  area: "local",
+  kind: "ui-layout",
+  reason: "Measured size of a list's control strip on this screen, reserved before hydration.",
+  legacyKey: (suffix) => `matrx:list-slot-size:${suffix}`,
+});
+const slotSuffix = (surfaceKey: string, name: string) => `${surfaceKey}:${name}`;
 
 /**
  * The size a slot reserves on a FIRST visit, before any visit has measured it. Without one the
@@ -39,30 +48,23 @@ const FIRST_VISIT_SIZE: Record<string, SlotSize> = {
  * remembered size while the HTML is still being parsed — the same numbers, applied earlier.
  */
 export function reserveSlotScript(surfaceKey: string, name: string): string {
+  // raw-storage-exception: a pre-paint inline script string; it reads the declared key's storageKey.
   return `(function(){try{var e=document.currentScript.previousElementSibling,v=JSON.parse(localStorage.getItem(${JSON.stringify(
-    storageKey(surfaceKey, name),
+    slotSizes.storageKey(slotSuffix(surfaceKey, name)),
   )}))||${JSON.stringify(FIRST_VISIT_SIZE[`${surfaceKey}:${name}`] ?? null)};if(e&&v&&v.w>0&&v.h>0){e.style.minWidth=v.w+"px";e.style.minHeight=v.h+"px";e.style.display="flex"}}catch(_){}})()`;
 }
 
 /** Read the stored size; a missing, malformed or zero entry reserves nothing. */
 export function readSlotSize(surfaceKey: string, name: string): SlotSize | null {
-  try {
-    const raw = window.localStorage.getItem(storageKey(surfaceKey, name));
-    const parsed = raw ? (JSON.parse(raw) as Partial<SlotSize>) : null;
-    return parsed && Number(parsed.w) > 0 && Number(parsed.h) > 0
-      ? { w: Number(parsed.w), h: Number(parsed.h) }
-      : (FIRST_VISIT_SIZE[`${surfaceKey}:${name}`] ?? null);
-  } catch {
-    return FIRST_VISIT_SIZE[`${surfaceKey}:${name}`] ?? null;
-  }
+  const parsed = slotSizes.getJSON<Partial<SlotSize>>(slotSuffix(surfaceKey, name));
+  return parsed && Number(parsed.w) > 0 && Number(parsed.h) > 0
+    ? { w: Number(parsed.w), h: Number(parsed.h) }
+    : (FIRST_VISIT_SIZE[`${surfaceKey}:${name}`] ?? null);
 }
 
 function writeSlotSize(surfaceKey: string, name: string, size: SlotSize): void {
-  try {
-    window.localStorage.setItem(storageKey(surfaceKey, name), JSON.stringify(size));
-  } catch {
-    /* a full or blocked store only costs the reservation */
-  }
+  // A full or blocked store only costs the reservation.
+  slotSizes.setJSON(slotSuffix(surfaceKey, name), size);
 }
 
 /**

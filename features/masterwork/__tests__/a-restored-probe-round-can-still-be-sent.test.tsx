@@ -1,3 +1,4 @@
+import { durableRunPointerStorageKey } from "@/lib/durable-run/useDurableRun";
 /**
  * A RESTORED PROBE ROUND CAN STILL BE SENT — AND NEVER FAILS SILENTLY.
  *
@@ -112,7 +113,7 @@ import type { Rulebook } from "../types";
 
 const RULEBOOK_ID = "3f7c1f52-7b3e-4a2f-9c11-2b6a7d2e4a01";
 const RUN_ID = "8a51d0c4-9d77-4a52-9a3f-1c5d2e9f0b33";
-const POINTER_KEY = `${MASTERWORK_RUN_WIRE.pointerPrefix}probe:${RULEBOOK_ID}`;
+const POINTER_KEY = durableRunPointerStorageKey(MASTERWORK_RUN_WIRE, `probe:${RULEBOOK_ID}`);
 const REJOIN_PATH = "/masterworks/runs/{run_id}/rejoin";
 const PROBE_PATH = "/masterworks/probe";
 

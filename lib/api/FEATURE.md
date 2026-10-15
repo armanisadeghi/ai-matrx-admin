@@ -22,7 +22,7 @@ In local development, the shell API environment control owns four independently 
 `aidream`, `scraper`, `files`, and `seo`. A normal click switches every target between
 Production and Localhost and clears old exceptions. The adjacent detail menu can pin one
 service to Production or Localhost while the remaining services follow the global choice;
-both the global choice and pins persist in `matrx.apiConfig.v1`.
+both the global choice and pins persist in `matrx:client:api-config.v1`.
 
 - Loopback targets are gated on ADMIN PRESENCE, not on `NODE_ENV`. A development bundle
   always allows them; a deployed bundle allows them only while an admin is signed in.

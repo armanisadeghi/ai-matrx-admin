@@ -47,6 +47,7 @@ import { getStoreSingleton } from "@/lib/redux/store-singleton";
 import { createClient } from "@/utils/supabase/client";
 import { registerDirectiveHandler } from "@/lib/client-directives/directiveRegistry";
 import { getWebDeviceId } from "./deviceId";
+import { defineClientKey } from "@/lib/sync/client-storage";
 
 const TTL_MS = 60_000;
 
@@ -280,7 +281,12 @@ type PlatformRpc = (name: string, args: Record<string, unknown>) => Promise<RpcR
  * old call returned (proven equal per person by scripts/campaign-tests/knobsnapshot_equivalence.sql).
  */
 type DefaultsEntry = { version: string; values: Record<string, unknown> };
-const DEFAULTS_STORAGE_KEY = "matrx.knobDefaults.v1";
+const storedDefaultsKey = defineClientKey({
+  id: "knobs.defaults.v1",
+  area: "local",
+  kind: "cache",
+  reason: "Copy of the platform knob defaults keyed by version; a stale copy is only a miss.",
+});
 let defaultsCache: DefaultsEntry | null = null;
 let defaultsInFlight: Promise<DefaultsEntry> | null = null;
 
@@ -288,24 +294,13 @@ let defaultsInFlight: Promise<DefaultsEntry> | null = null;
 const lastAnswers = new Map<string, { etag: string; resolved: Record<string, unknown> }>();
 
 function readStoredDefaults(): DefaultsEntry | null {
-  if (typeof window === "undefined") return null;
-  try {
-    const raw = window.localStorage.getItem(DEFAULTS_STORAGE_KEY);
-    if (!raw) return null;
-    const parsed = JSON.parse(raw) as DefaultsEntry;
-    return parsed && typeof parsed.version === "string" && parsed.values ? parsed : null;
-  } catch {
-    return null;
-  }
+  const parsed = storedDefaultsKey.getJSON<DefaultsEntry>();
+  return parsed && typeof parsed.version === "string" && parsed.values ? parsed : null;
 }
 
 function storeDefaults(entry: DefaultsEntry): void {
-  if (typeof window === "undefined") return;
-  try {
-    window.localStorage.setItem(DEFAULTS_STORAGE_KEY, JSON.stringify(entry));
-  } catch {
-    // Storage full or blocked: the in-memory copy still serves this tab.
-  }
+  // Storage full or blocked: the in-memory copy still serves this tab.
+  storedDefaultsKey.setJSON(entry);
 }
 
 function platformRpc(supabase: ReturnType<typeof createClient>): PlatformRpc {

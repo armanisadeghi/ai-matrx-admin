@@ -60,8 +60,7 @@ import {
   RESUMING_AFTER_RESTART_DETAIL,
   RESUMING_AFTER_RESTART_MESSAGE,
   useDurableRun,
-  type DurableRunHandle,
-} from "./useDurableRun";
+  type DurableRunHandle, durableRunPointerStorageKey } from "./useDurableRun";
 
 (globalThis as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean })
   .IS_REACT_ACT_ENVIRONMENT = true;
@@ -69,7 +68,7 @@ import {
 const RUN_ID = "9c2e6a0e-2c8e-4a2a-9e1c-4a2f9d9a7b10";
 const LAUNCH_PATH = "/masterworks/ingest-corpus" as const;
 const REJOIN_PATH = "/masterworks/runs/{run_id}/rejoin";
-const POINTER_KEY = `${MASTERWORK_RUN_WIRE.pointerPrefix}corpus:${RUN_ID}`;
+const POINTER_KEY = durableRunPointerStorageKey(MASTERWORK_RUN_WIRE, `corpus:${RUN_ID}`);
 
 type Result = { added: number };
 

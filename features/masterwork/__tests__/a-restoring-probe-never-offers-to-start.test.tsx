@@ -1,3 +1,4 @@
+import { durableRunPointerStorageKey } from "@/lib/durable-run/useDurableRun";
 /**
  * A RESTORING PROBE NEVER OFFERS TO START.
  *
@@ -90,7 +91,7 @@ const RULEBOOK_ID = "7c2b19de-4a30-4f65-91cd-0b7ae2d4c118";
 function plantTheReceipt(): void {
   const key = `probe:${RULEBOOK_ID}`;
   window.localStorage.setItem(
-    `${MASTERWORK_RUN_WIRE.pointerPrefix}${key}`,
+    durableRunPointerStorageKey(MASTERWORK_RUN_WIRE, `${key}`),
     JSON.stringify({
       runId: "6f0a1b2c-3d4e-4f50-8a9b-0c1d2e3f4a5b",
       startedAt: Date.now() - 20_000,
@@ -226,7 +227,7 @@ describe("a restoring probe never offers to start", () => {
   it("brings back the round already answered while the next one is written", async () => {
     const key = `probe:${RULEBOOK_ID}`;
     window.localStorage.setItem(
-      `${MASTERWORK_RUN_WIRE.pointerPrefix}${key}`,
+      durableRunPointerStorageKey(MASTERWORK_RUN_WIRE, `${key}`),
       JSON.stringify({
         runId: "6f0a1b2c-3d4e-4f50-8a9b-0c1d2e3f4a5b",
         startedAt: Date.now() - 20_000,

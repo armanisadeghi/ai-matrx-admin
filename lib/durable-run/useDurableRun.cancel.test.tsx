@@ -58,7 +58,7 @@ jest.mock("@/lib/diagnostics/errorCaptureStore", () => ({
 import { MASTERWORK_RUN_WIRE } from "@/features/masterwork/durable-run/useMasterworkRun";
 
 import { DurableRunFailure } from "./DurableRunFailure";
-import { useDurableRun, type DurableRunHandle } from "./useDurableRun";
+import { useDurableRun, type DurableRunHandle, durableRunPointerStorageKey } from "./useDurableRun";
 
 (globalThis as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean })
   .IS_REACT_ACT_ENVIRONMENT = true;
@@ -272,7 +272,7 @@ describe("Cancel stops the run on the server, and a stop is not a failure", () =
     });
     // The launch really did leave a rejoin receipt behind — otherwise the
     // assertion below would pass for the wrong reason.
-    const pointerKey = `${MASTERWORK_RUN_WIRE.pointerPrefix}corpus:${RUN_ID}`;
+    const pointerKey = durableRunPointerStorageKey(MASTERWORK_RUN_WIRE, `corpus:${RUN_ID}`);
     expect(localStorage.getItem(pointerKey)).not.toBeNull();
 
     await act(async () => {

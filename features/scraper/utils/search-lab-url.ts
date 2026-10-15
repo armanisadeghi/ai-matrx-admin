@@ -5,7 +5,8 @@
  * keep links short.
  *
  *   q        query                    engine  brave | google | compare
- *   type     web|news|images|videos|places
+ *   type     web|news|images|videos|places|social|shopping|jobs|trends
+ *   sp       social platform (social tab only; default all)
  *   n        result count             country, lang  2-letter codes
  *   safe     off|moderate|strict (default off)      time    day|week|month|year
  *   page     1..10                    loc     free-text location
@@ -17,13 +18,15 @@
 import type {
   SearchDevice,
   SearchSafeSearch,
+  SearchTab,
   SearchTimeRange,
-  SearchVertical,
+  SocialSearchPlatform,
 } from "@/features/search/types";
 import {
   DEFAULT_KEYWORD_SEARCH_OPTIONS,
   KEYWORD_SEARCH_ENGINES,
   KEYWORD_SEARCH_VERTICALS,
+  KEYWORD_SOCIAL_PLATFORMS,
   type KeywordSearchEngine,
   type KeywordSearchOptions,
 } from "@/features/scraper/hooks/useScraperKeywordSearchForm";
@@ -36,7 +39,8 @@ import {
 export interface SearchLabUrlState {
   query: string;
   engine: KeywordSearchEngine;
-  vertical: SearchVertical;
+  vertical: SearchTab;
+  socialPlatform: SocialSearchPlatform;
   count: number;
   options: KeywordSearchOptions;
 }
@@ -66,6 +70,8 @@ export function parseSearchLabParams(params: URLSearchParams): SearchLabUrlState
     query: params.get("q")?.trim() ?? "",
     engine: pick(KEYWORD_SEARCH_ENGINES, params.get("engine")) ?? "brave",
     vertical: pick(KEYWORD_SEARCH_VERTICALS, params.get("type")) ?? "web",
+    socialPlatform:
+      pick(KEYWORD_SOCIAL_PLATFORMS, params.get("sp")) ?? "all",
     count:
       int(params.get("n"), RESULT_LIMIT_MIN, RESULT_LIMIT_MAX) ?? RESULT_LIMIT_DEFAULT,
     options: {
@@ -89,6 +95,8 @@ export function buildSearchLabQuery(state: SearchLabUrlState): string {
   if (state.query.trim()) p.set("q", state.query.trim());
   if (state.engine !== "brave") p.set("engine", state.engine);
   if (state.vertical !== "web") p.set("type", state.vertical);
+  if (state.vertical === "social" && state.socialPlatform !== "all")
+    p.set("sp", state.socialPlatform);
   if (state.count !== RESULT_LIMIT_DEFAULT) p.set("n", String(state.count));
   if (o.country !== d.country) p.set("country", o.country);
   if (o.language !== d.language) p.set("lang", o.language);

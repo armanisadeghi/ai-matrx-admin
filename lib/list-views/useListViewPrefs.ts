@@ -31,18 +31,15 @@ import {
   setPreference,
   type ListViewPrefs,
 } from "@/lib/redux/preferences/userPreferencesSlice";
+import { readRetiredKey, removeRetiredKey } from "@/lib/sync/client-storage";
 import { resolveListViewPrefs } from "./defaults";
 
 /** `localStorage` never changes under us here — see the read below. */
 const subscribeToNothing = () => () => {};
 
 function readLocalStorage(key: string): string | null {
-  try {
-    return window.localStorage.getItem(key);
-  } catch {
-    // Private mode / disabled storage — nothing to adopt.
-    return null;
-  }
+  // Private mode / disabled storage — nothing to adopt.
+  return readRetiredKey("local", key);
 }
 
 export interface UseListViewPrefsResult {
@@ -149,11 +146,7 @@ export function useListViewPrefs(
   // reload for a user who has not touched the control yet.
   useEffect(() => {
     if (!legacy || stored === undefined) return;
-    try {
-      window.localStorage.removeItem(legacy.key);
-    } catch {
-      // Nothing to clean.
-    }
+    removeRetiredKey("local", legacy.key);
   }, [legacy, stored]);
 
   const setPrefs = useCallback(

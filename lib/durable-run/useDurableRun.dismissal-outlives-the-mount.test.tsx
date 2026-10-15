@@ -79,7 +79,7 @@ jest.mock("@/lib/diagnostics/errorCaptureStore", () => ({
 
 import { MASTERWORK_RUN_WIRE } from "@/features/masterwork/durable-run/useMasterworkRun";
 
-import { peekDurableRun, useDurableRun } from "./useDurableRun";
+import { peekDurableRun, useDurableRun, durableRunPointerStorageKey } from "./useDurableRun";
 
 (
   globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT?: boolean }
@@ -89,7 +89,7 @@ import { peekDurableRun, useDurableRun } from "./useDurableRun";
 const WIRE = MASTERWORK_RUN_WIRE;
 
 const KEY = "rulebook-1";
-const POINTER = `${WIRE.pointerPrefix}${KEY}`;
+const POINTER = durableRunPointerStorageKey(WIRE, `${KEY}`);
 const RUN_ID = "run-shadow-inbox-1";
 
 /** The receipt a completed Shadow-the-inbox sitting leaves behind. */

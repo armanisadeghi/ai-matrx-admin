@@ -13,7 +13,17 @@
 // Named clearly so the next agent replacing it with a platform-issued device
 // identity (the same one matrx-local and matrx-extend carry) can grep for it.
 
+import { defineClientKey } from "@/lib/sync/client-storage";
+
 export const WEB_DEVICE_ID_STORAGE_KEY = "matrx.settings.web_device_id";
+
+const deviceIdKey = defineClientKey({
+  id: "settings.web-device-id",
+  area: "local",
+  kind: "device",
+  reason: "Names this browser profile for the device settings rung; clearing site data forgets it.",
+  legacyKey: WEB_DEVICE_ID_STORAGE_KEY,
+});
 
 let memo: string | null = null;
 
@@ -21,18 +31,14 @@ let memo: string | null = null;
 export function getWebDeviceId(): string | null {
   if (memo) return memo;
   if (typeof window === "undefined") return null;
-  try {
-    const existing = window.localStorage.getItem(WEB_DEVICE_ID_STORAGE_KEY);
-    if (existing && /^[0-9a-f-]{36}$/i.test(existing)) {
-      memo = existing;
-      return existing;
-    }
-    const minted = crypto.randomUUID();
-    window.localStorage.setItem(WEB_DEVICE_ID_STORAGE_KEY, minted);
-    memo = minted;
-    return minted;
-  } catch {
-    // Private mode / storage blocked: the device rung is simply not addressed.
-    return null;
+  const existing = deviceIdKey.get();
+  if (existing && /^[0-9a-f-]{36}$/i.test(existing)) {
+    memo = existing;
+    return existing;
   }
+  const minted = crypto.randomUUID();
+  // Private mode / storage blocked: the device rung is simply not addressed.
+  if (!deviceIdKey.set(minted)) return null;
+  memo = minted;
+  return minted;
 }

@@ -300,7 +300,64 @@ export const makeStore = (initialState?: Partial<BaseReduxState>) => {
   });
 
   let bootPromise: Promise<void> | null = null;
-  let identityWatchAttached = false;
+  // True once bootSync has resolved: persisted records for `bootIdentity` are loaded.
+  let bootSyncDone = false;
+  let bootIdentity: IdentityKey = initialIdentity;
+
+  /** Who the store says is here right now (the same derivation as lib/sync/identity). */
+  const liveIdentity = (): IdentityKey => {
+    const s = store.getState() as {
+      userAuth?: { id?: string | null };
+      userProfile?: { fingerprintId?: string | null };
+    };
+    return deriveIdentity({
+      userId: s.userAuth?.id ?? null,
+      fingerprintId: s.userProfile?.fingerprintId ?? null,
+    });
+  };
+
+  /** Leave `previous` for `next`: reset identity-scoped slices, then load next's records. */
+  const runResync = (previous: IdentityKey, next: IdentityKey) => {
+    syncContext.setIdentity(next);
+    // The signed-in person's persisted records are read HERE, not at
+    // boot — so hydration is not settled again until this finishes.
+    resyncsInFlight += 1;
+    notifySettled();
+    void resyncForIdentity({
+      store,
+      identity: next,
+      // The identity we are LEAVING. `resyncForIdentity` resets every
+      // identity-scoped slice when this was a real person, because a
+      // rehydrate alone cannot clear what it declines to load.
+      previousIdentity: previous,
+      policies: syncPolicies,
+      getIdentity: () => syncContext.getIdentity(),
+    }).finally(() => {
+      resyncsInFlight -= 1;
+      notifySettled();
+    });
+  };
+
+  // THE IDENTITY WATCH IS ATTACHED WITH THE STORE, never after boot (2026-10-14). Auth is not
+  // always settled when the store is built: a page that rendered anonymous gets its real user
+  // from `usePublicAuthSync` ~100ms later, and a server-seeded user can be cleared by the
+  // browser's own session check — both usually BEFORE boot (which waits for load + idle). When
+  // the watch was attached in boot's `.then()`, those changes fired to nobody: the engine booted
+  // as the wrong person (another account's cached org/preferences in a signed-out tab) or stayed
+  // `guest:*` all session with preference saves silently dropped.
+  //   - before boot: just adopt the new identity — boot loads its records;
+  //   - during boot: settled after bootSync resolves (compared against what boot loaded);
+  //   - after boot: leave the old identity and load the new one.
+  onIdentityChange((next) => {
+    const previous = syncContext.getIdentity();
+    if (next.key === previous.key) return;
+    if (!bootStarted) {
+      syncContext.setIdentity(next);
+      return;
+    }
+    if (!bootSyncDone) return;
+    runResync(previous, next);
+  });
 
   const syncContext: StoreSyncContext = {
     channel: syncChannel,
@@ -315,9 +372,15 @@ export const makeStore = (initialState?: Partial<BaseReduxState>) => {
     boot: () => {
       if (bootPromise) return bootPromise;
 
+      // Boot as whoever is actually here — the store may have moved since it was built
+      // (and the derivation at build time knows no guest fingerprint).
+      const live = liveIdentity();
+      if (live.key !== syncContext.identity.key) syncContext.setIdentity(live);
+      bootIdentity = syncContext.identity;
+
       bootPromise = bootSync({
         store,
-        identity: syncContext.identity,
+        identity: bootIdentity,
         policies: syncPolicies,
         openChannel: () => syncContext.channel,
         // Runtime identity swaps must be visible to stale refreshes without
@@ -325,37 +388,11 @@ export const makeStore = (initialState?: Partial<BaseReduxState>) => {
         getIdentity: () => syncContext.getIdentity(),
       })
         .then(async (result) => {
-          // Auth is not always present when the store is built: a page that
-          // rendered anonymous gets its real user from `usePublicAuthSync`
-          // ~100ms later, and a module-level store singleton outlives that
-          // render. Until this watcher existed, the engine kept the `guest:*`
-          // identity for the whole tab, so every identity-scoped cache and
-          // every `remote.fetch` gated on `identity.type === "auth"` (the
-          // active organization among them) stayed dark for the session.
-          if (identityWatchAttached) return;
-          identityWatchAttached = true;
-          onIdentityChange((next) => {
-            const previous = syncContext.getIdentity();
-            if (next.key === previous.key) return;
-            syncContext.setIdentity(next);
-            // The signed-in person's persisted records are read HERE, not at
-            // boot — so hydration is not settled again until this finishes.
-            resyncsInFlight += 1;
-            notifySettled();
-            void resyncForIdentity({
-              store,
-              identity: next,
-              // The identity we are LEAVING. `resyncForIdentity` resets every
-              // identity-scoped slice when this was a real person, because a
-              // rehydrate alone cannot clear what it declines to load.
-              previousIdentity: previous,
-              policies: syncPolicies,
-              getIdentity: () => syncContext.getIdentity(),
-            }).finally(() => {
-              resyncsInFlight -= 1;
-              notifySettled();
-            });
-          });
+          bootSyncDone = true;
+          // A sign-in/out that landed while boot was loading: boot loaded `bootIdentity`'s
+          // records, so move from there to whoever is here now.
+          const now = liveIdentity();
+          if (now.key !== bootIdentity.key) runResync(bootIdentity, now);
           await result.idbHydration;
         })
         .catch((error: unknown) => {

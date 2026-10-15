@@ -6,7 +6,12 @@ import {
 } from "@/features/scraper/hooks/useScraperKeywordSearchForm";
 
 jest.mock("@/hooks/useBackendApi", () => ({ useBackendApi: () => ({}) }));
-jest.mock("@/features/search/service", () => ({ runKindSearch: jest.fn() }));
+jest.mock("@/features/search/service", () => ({
+  runKindSearch: jest.fn(),
+  runSearchDoor: jest.fn(),
+  socialDoorBody: jest.fn(),
+  SEARCH_DOORS: {},
+}));
 jest.mock("@/hooks/brokers/useGeolocation", () => ({ useGeolocation: () => async () => null }));
 
 describe("search lab URL", () => {
@@ -45,6 +50,43 @@ describe("search lab URL", () => {
     expect(state.count).toBe(10);
     expect(state.options.country).toBe("us");
     expect(state.options.page).toBe(1);
+  });
+});
+
+describe("search URL — the newer tabs", () => {
+  it("carries the social platform only on the social tab", () => {
+    const state = parseSearchLabParams(new URLSearchParams("q=nike&type=social&sp=tiktok"));
+    expect(state.vertical).toBe("social");
+    expect(state.socialPlatform).toBe("tiktok");
+    expect(buildSearchLabQuery(state)).toBe("q=nike&type=social&sp=tiktok");
+    expect(buildSearchLabQuery({ ...state, vertical: "web" })).toBe("q=nike");
+  });
+
+  it("accepts every tab and refuses an unknown platform", () => {
+    for (const type of ["shopping", "jobs", "trends"]) {
+      expect(parseSearchLabParams(new URLSearchParams(`q=x&type=${type}`)).vertical).toBe(type);
+    }
+    expect(parseSearchLabParams(new URLSearchParams("q=x&type=social&sp=myspace")).socialPlatform).toBe("all");
+  });
+});
+
+describe("kindToSearchItems — the newer kinds", () => {
+  it("flattens products, jobs, posts and profiles", () => {
+    const items = kindToSearchItems("q", {
+      __kind: "shopping_results",
+      source: "google",
+      products: [{ __kind: "product_result", title: "Shoe", url: "https://s.test", price_text: "$90", position: 1 }],
+      jobs: [{ __kind: "job_result", title: "Barista", company_name: "Cafe", location: "Austin", apply_url: "https://j.test" }],
+      posts: [{ __kind: "social_post", caption: "hello", url: "https://t.test/p", platform: "tiktok" }],
+      profiles: [{ __kind: "social_profile", handle: "nike", display_name: "Nike", url: "https://t.test/@nike" }],
+    });
+    expect(items.map((i) => [i.type, i.title, i.url])).toEqual([
+      ["product", "Shoe", "https://s.test"],
+      ["job", "Barista", "https://j.test"],
+      ["social_post", "hello", "https://t.test/p"],
+      ["social_profile", "Nike", "https://t.test/@nike"],
+    ]);
+    expect(items[1].description).toBe("Cafe · Austin");
   });
 });
 

@@ -10,6 +10,7 @@
 import React, { useState } from "react";
 import { ChevronDown, Clock, Globe, Navigation, Phone } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { PlaceReviewsLoader } from "@/features/search/components/PlaceReviewsLoader";
 import { formatPhoneNumber } from "@/lib/sms/phoneUtils";
 import {
   isRecord,
@@ -99,13 +100,20 @@ export function LocalPlaceBlock({
   );
   const blurb = descIsType ? null : description;
 
+  // Reviews come from Google Maps by its place id; other engines' ids are
+  // their own and cannot be looked up there.
+  const placeId = text(value.place_id);
+  const reviewsId =
+    placeId && text(value.source)?.toLowerCase() === "google" ? placeId : null;
+
   return (
     <div
       className={cn(
-        "flex min-w-0 items-start gap-3 rounded-xl border border-border bg-card p-3.5",
+        "flex min-w-0 flex-col gap-2 rounded-xl border border-border bg-card p-3.5",
         className,
       )}
     >
+    <div className="flex min-w-0 items-start gap-3">
       <div className="min-w-0 flex-1 space-y-1">
         {website ? (
           <OutboundLink
@@ -194,6 +202,8 @@ export function LocalPlaceBlock({
           className="h-16 w-16 flex-shrink-0 rounded-lg bg-muted object-cover @md:h-[88px] @md:w-[88px]"
         />
       )}
+    </div>
+      {reviewsId && <PlaceReviewsLoader placeId={reviewsId} />}
     </div>
   );
 }

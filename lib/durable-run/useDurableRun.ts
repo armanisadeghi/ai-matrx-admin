@@ -65,6 +65,7 @@ import type { AppDispatch } from "@/lib/redux/store";
 import { captureError } from "@/lib/diagnostics/errorCaptureStore";
 import type { paths } from "@ai-matrx/api/types";
 import { streamErrorText } from "@ai-matrx/api";
+import { defineClientKeyFamily } from "@/lib/sync/client-storage";
 
 /**
  * A pointer older than this is not worth rejoining: every durable run holds a
@@ -429,21 +430,31 @@ interface RunPointer {
   dismissed?: boolean;
 }
 
-function pointerKey(wire: DurableRunWire, key: string): string {
+const runPointers = defineClientKeyFamily({
+  id: "durable-run.pointer",
+  area: "local",
+  kind: "handoff",
+  reason: "Which run this browser launched under a key, so a reload or a redeploy rejoins it.",
+  legacyKey: (suffix) => suffix,
+});
+
+function pointerSuffix(wire: DurableRunWire, key: string): string {
   return `${wire.pointerPrefix}${key}`;
 }
 
+/** The browser-storage key a run pointer lives under (tests seed and inspect it). */
+export function durableRunPointerStorageKey(wire: DurableRunWire, key: string): string {
+  return runPointers.storageKey(pointerSuffix(wire, key));
+}
+
 function readPointer(wire: DurableRunWire, key: string): RunPointer | null {
-  if (typeof window === "undefined") return null;
   try {
-    const raw = window.localStorage.getItem(pointerKey(wire, key));
-    if (!raw) return null;
-    const parsed = JSON.parse(raw) as Partial<RunPointer>;
-    if (typeof parsed.runId !== "string" || !parsed.runId) return null;
+    const parsed = runPointers.getJSON<Partial<RunPointer>>(pointerSuffix(wire, key));
+    if (!parsed || typeof parsed.runId !== "string" || !parsed.runId) return null;
     const startedAt =
       typeof parsed.startedAt === "number" ? parsed.startedAt : 0;
     if (!startedAt || Date.now() - startedAt > POINTER_MAX_AGE_MS) {
-      window.localStorage.removeItem(pointerKey(wire, key));
+      runPointers.remove(pointerSuffix(wire, key));
       return null;
     }
     const stringMap = (raw: unknown): Record<string, string> | undefined =>
@@ -513,21 +524,12 @@ function writePointer(
   key: string,
   pointer: RunPointer,
 ): void {
-  if (typeof window === "undefined") return;
-  try {
-    window.localStorage.setItem(pointerKey(wire, key), JSON.stringify(pointer));
-  } catch {
-    /* private mode / quota — the run still works, it just cannot be rejoined */
-  }
+  // Private mode / quota — the run still works, it just cannot be rejoined.
+  runPointers.setJSON(pointerSuffix(wire, key), pointer);
 }
 
 function clearPointer(wire: DurableRunWire, key: string): void {
-  if (typeof window === "undefined") return;
-  try {
-    window.localStorage.removeItem(pointerKey(wire, key));
-  } catch {
-    /* nothing to do */
-  }
+  runPointers.remove(pointerSuffix(wire, key));
 }
 
 function eventRecord(event: TypedStreamEvent): Record<string, unknown> | null {

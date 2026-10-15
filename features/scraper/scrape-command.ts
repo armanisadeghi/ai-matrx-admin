@@ -175,5 +175,9 @@ export const SEARCH_LAB_VERTICAL_VALUES = [
   "images",
   "videos",
   "places",
+  "social",
+  "shopping",
+  "jobs",
+  "trends",
 ] as const;
 export type SearchLabVerticalValue = (typeof SEARCH_LAB_VERTICAL_VALUES)[number];
