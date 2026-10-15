@@ -60,12 +60,12 @@ import {
   RESULT_LIMIT_MAX,
   RESULT_LIMIT_MIN,
 } from "@/features/scraper/scrape-command";
+import type { SearchRunSource } from "@/features/scraper/hooks/useScraperKeywordSearchForm";
 import type {
   SearchTranslationDrop,
   SearchDevice,
-  SearchProvider,
   SearchSafeSearch,
-  SearchVertical,
+  SearchTab,
 } from "@/features/search/types";
 import { SEARCH_ENGINE_LABEL } from "@/features/search/types";
 import { cn } from "@/lib/utils";
@@ -84,7 +84,7 @@ const VERTICAL_OPTIONS = [
   { value: "images", label: "Images" },
   { value: "videos", label: "Videos" },
   { value: "places", label: "Places" },
-] as const satisfies readonly { value: SearchVertical; label: string }[];
+] as const satisfies readonly { value: SearchTab; label: string }[];
 
 const COUNTRY_OPTIONS = [
   ["us", "United States"],
@@ -156,7 +156,7 @@ function clampCount(raw: string): number {
   return Math.min(RESULT_LIMIT_MAX, Math.max(RESULT_LIMIT_MIN, n));
 }
 
-type InspectorState = Record<SearchProvider, boolean>;
+type InspectorState = Record<SearchRunSource, boolean>;
 
 /** One measure for the header and the results — they line up. */
 const LAB_WIDTH = "max-w-6xl";
@@ -252,15 +252,16 @@ export function SearchLabBody({
   const [inspect, setInspect] = useState<InspectorState>({
     brave: false,
     google: false,
+    social: false,
   });
   // A link that carries a query opens on the results layout (it is about to
   // run, or waits for Search) — never the start screen for one frame.
   const [pinnedTop, setPinnedTop] = useState(() => keywords.trim() !== "");
 
-  const toggleInspector = (provider: SearchProvider) =>
+  const toggleInspector = (provider: SearchRunSource) =>
     setInspect((prev) => ({ ...prev, [provider]: !prev[provider] }));
 
-  const onVertical = (next: SearchVertical) => {
+  const onVertical = (next: SearchTab) => {
     setVertical(next);
     if (options.page !== 1) setOption("page", 1);
     // A Brave re-run costs nothing worth guarding; Google waits for Search.
@@ -646,7 +647,8 @@ function EngineColumn({
   const { outcome } = run;
   const hits = outcome ? kindToSearchItems(query, outcome.result).length : 0;
   const ignored = outcome?.ignoredOptions ?? [];
-  const label = SEARCH_ENGINE_LABEL[run.provider];
+  const label =
+    run.provider === "social" ? "Social" : SEARCH_ENGINE_LABEL[run.provider];
 
   return (
     <section className="min-w-0 space-y-3" aria-label={`${label} results`}>

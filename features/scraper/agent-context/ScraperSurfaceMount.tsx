@@ -57,7 +57,7 @@ export interface ScraperSurfaceMountProps {
    * page's tab, social platform and input mode — `features/search/agent`).
    * Read at trigger time, like `context`.
    */
-  extraScope?: () => Record<string, unknown>;
+  extraScope?: () => object;
   /** Write handlers the hosted experience adds (same declared target names). */
   extraWriteHandlers?: () => Record<string, (value: unknown) => void>;
   children: ReactNode;

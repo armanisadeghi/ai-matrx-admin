@@ -124,6 +124,11 @@ export function SearchWorkspace({ query }: { query: string }) {
     return createSearchScope({
       search_query: query,
       search_status: phase,
+      // This workspace only ever runs the Matrx web search.
+      search_vertical: "web",
+      search_engine: "brave",
+      social_platform: "all",
+      input_mode: "words",
       search_provider: str(value.source),
       altered_query: str(value.altered_query),
       search_results: outcome ? outcome.result : undefined,

@@ -147,6 +147,7 @@ async function gotrue(target, method, path, body) {
 /**
  * Create a tagged, passwordless auth user through the GoTrue admin API.
  * @param {FixtureTarget} target
+ * @param {{ suite?: string, purpose?: string, ttlHours?: number, persona?: Awaited<ReturnType<typeof makePersona>>, useCase?: string }} [options]
  */
 export async function createFixtureUser(target, { suite, purpose, ttlHours = DEFAULT_TTL_HOURS, persona, useCase } = {}) {
   const who = persona ?? (await makePersona({ useCase }));
