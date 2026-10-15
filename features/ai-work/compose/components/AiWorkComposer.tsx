@@ -718,7 +718,10 @@ function ComposerBody({
 
   const scheduleHref = `/schedules/new?agentId=${encodeURIComponent(
     agentId,
-  )}&prompt=${encodeURIComponent(requestText.trim())}`;
+  )}&prompt=${encodeURIComponent(requestText.trim())}${
+    // Runs on a chosen computer: the schedule is aimed at it (ScheduleForm's Runs on).
+    runsOnDevice !== null ? `&runs_on=${encodeURIComponent(runsOnDevice)}` : ""
+  }`;
 
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-3 px-4 py-4">
