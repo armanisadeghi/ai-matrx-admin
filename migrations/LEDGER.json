@@ -584,6 +584,12 @@
       "checksum": "bdac213d5f484c34f8704348f79c0a843a37d6064782c2c95279fa6f13a66e52",
       "applied_at": "2026-10-15 03:59:00.231228+00"
     },
+    "migrations/campaign/atdbfix_b_a_webhook_test_receiver_keeps_what_it_got.sql": {
+      "source": "matrx-frontend",
+      "filename": "atdbfix_b_a_webhook_test_receiver_keeps_what_it_got.sql",
+      "checksum": "2c9616fc25867746c72250f74b5e19e8a2c14340ec07687a65e3d53e552237a9",
+      "applied_at": "2026-10-15 04:14:39.464138+00"
+    },
     "migrations/campaign/atmerge_a_a_merge_writes_each_links_value_beside_its_edge.sql": {
       "source": "matrx-frontend",
       "filename": "atmerge_a_a_merge_writes_each_links_value_beside_its_edge.sql",
