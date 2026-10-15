@@ -175,6 +175,10 @@ export async function startConfigAttestation(): Promise<boolean> {
   document.addEventListener("visibilitychange", () => {
     if (document.visibilityState === "hidden") void recorder.flush();
   });
+  // Development handle for proofs: flush now and read the counters from the console.
+  if (process.env.NODE_ENV === "development") {
+    (window as unknown as Record<string, unknown>).__matrxConfigAttestation = { flush: () => recorder.flush(), counters: configAttestationCounters, installId, sha };
+  }
   log("info", "started", { sha, appVersion, installId });
   return true;
 }
