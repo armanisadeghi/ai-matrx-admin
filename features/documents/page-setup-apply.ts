@@ -16,7 +16,7 @@ export interface PageSetupApiLike {
   executeCommand(id: string, params?: object): Promise<unknown> | unknown;
   getActiveDocument?(): {
     getId(): string;
-    getDocumentDataModel(): { getSnapshot(): { documentStyle?: Record<string, unknown> } };
+    getDocumentDataModel?(): { getSnapshot(): { documentStyle?: Record<string, unknown> } } | null;
   } | null;
 }
 
@@ -25,7 +25,7 @@ const RICH_TEXT_EDITING_MUTATION = "doc.mutation.rich-text-editing";
 
 /** The open document's current page settings, in the dialog's terms. */
 export function readPageSetup(api: PageSetupApiLike | null | undefined): PageSetupValues {
-  const style = api?.getActiveDocument?.()?.getDocumentDataModel().getSnapshot().documentStyle;
+  const style = api?.getActiveDocument?.()?.getDocumentDataModel?.()?.getSnapshot().documentStyle;
   return pageSetupFromStyle(style as Parameters<typeof pageSetupFromStyle>[0]);
 }
 
@@ -33,7 +33,7 @@ export function readPageSetup(api: PageSetupApiLike | null | undefined): PageSet
 async function writePageColor(api: PageSetupApiLike, color: string): Promise<void> {
   const doc = api.getActiveDocument?.();
   if (!doc) return;
-  const style = doc.getDocumentDataModel().getSnapshot().documentStyle ?? {};
+  const style = doc.getDocumentDataModel?.()?.getSnapshot().documentStyle ?? {};
   const old = style[PAGE_COLOR_KEY];
   if (old === color || (old === undefined && color === "#ffffff")) return;
   const jsonX = JSONX.getInstance();

@@ -42,7 +42,7 @@ import {
   type MarketingBrand,
 } from "@/features/marketing/types";
 import { candidateCategory, websiteHost } from "../evidence";
-import { webAddress } from "../webKinds";
+import { webIdentity } from "../webKinds";
 import { webSiteRoot } from "../relations";
 import { claimSite } from "../siteOwnership";
 import { liveSiteClaimDeps } from "../siteOwnershipLive";
@@ -370,7 +370,7 @@ async function addExclusion(ctx: PersistContext, item: FocusItem): Promise<{ id:
           ? { kind: "host", value: websiteHost(item.value) }
           : root
             ? { kind: "host", value: websiteHost(root) }
-            : { kind: "url", value: webAddress(url ?? item.value) };
+            : { kind: "url", value: webIdentity(url ?? item.value) };
   const w = await db();
   const { data, error } = await w
     .from("brand_exclusion")

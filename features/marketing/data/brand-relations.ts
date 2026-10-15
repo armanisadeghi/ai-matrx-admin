@@ -14,6 +14,7 @@ import type { Json } from "@/types/database.types";
 import { supabase } from "@/utils/supabase/client";
 import { authenticatedWebDb } from "@/utils/supabase/webDb";
 import { isJsonRecord } from "@/features/marketing/types";
+import { exclusionMatchForUrl } from "@/features/marketing/smart-add/webKinds";
 import { retractionFromContext, type RetractionSummary } from "./retraction";
 
 export interface BrandRelationRow {
@@ -188,9 +189,7 @@ export async function addBrandExclusion(input: { organizationId: string; brandId
   const url = looksLikeUrl(text) ? absoluteUrl(text) : null;
   let match: { kind: "host" | "url" | "name"; value: string };
   if (url) {
-    const parsed = new URL(url);
-    const host = parsed.hostname.replace(/^www\./, "").toLowerCase();
-    match = parsed.pathname.replace(/\/+$/, "") ? { kind: "url", value: `${host}${parsed.pathname}`.toLowerCase() } : { kind: "host", value: host };
+    match = exclusionMatchForUrl(url);
   } else {
     match = { kind: "name", value: text.toLowerCase() };
   }

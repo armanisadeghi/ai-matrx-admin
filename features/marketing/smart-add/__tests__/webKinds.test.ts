@@ -1,6 +1,6 @@
 import type { BrandRelationKind } from "@/features/marketing/data/service";
 import { parseEvidenceItem, webRow, type EvidenceItem } from "../evidence";
-import { engineRanks, groupByKind, suggestKind, type SuggestContext } from "../webKinds";
+import { engineRanks, exclusionMatchForUrl, groupByKind, suggestKind, type SuggestContext } from "../webKinds";
 
 const kind = (key: string, stance: BrandRelationKind["stance"], match: Partial<BrandRelationKind["match"]> = {}): BrandRelationKind => ({
   id: key,
@@ -122,5 +122,17 @@ describe("On the web: live false positives stay fixed", () => {
     const listing = parseEvidenceItem({ ...web("https://www.yelp.com/biz/fs", "x"), key: "listing:yelp.com/biz/fs", field: "listing" }) as EvidenceItem;
     const mention = parseEvidenceItem({ ...web("https://yelp.com/biz/fs/", "x"), key: "mention:yelp.com/biz/fs", field: "mention" }) as EvidenceItem;
     expect(webRow([mention, listing]).map((i) => i.key)).toEqual(["listing:yelp.com/biz/fs"]);
+  });
+});
+
+describe("a Not-us web exclusion keeps the query that names the page (MKT-073)", () => {
+  it("excluding one YouTube video does not exclude every video", () => {
+    const one = exclusionMatchForUrl("https://www.youtube.com/watch?v=AbC123&si=trk");
+    expect(one).toEqual({ kind: "url", value: "youtube.com/watch?v=AbC123" });
+    expect(one).not.toEqual(exclusionMatchForUrl("https://www.youtube.com/watch?v=Zzz999"));
+  });
+  it("a bare site stays a host, a path page a url", () => {
+    expect(exclusionMatchForUrl("https://www.yelp.com/")).toEqual({ kind: "host", value: "yelp.com" });
+    expect(exclusionMatchForUrl("https://yelp.com/biz/x?utm_source=a")).toEqual({ kind: "url", value: "yelp.com/biz/x" });
   });
 });

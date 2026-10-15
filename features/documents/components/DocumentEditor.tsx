@@ -984,7 +984,7 @@ function defaultEmptyDocument(defaultPage: PageSetupValues | null = null): Parti
 
 /** The open page's width in layout pixels (Letter's when the editor has no document yet). */
 function readPageSetupWidth(api: PageSetupApiLike | null): number {
-  const style = api?.getActiveDocument?.()?.getDocumentDataModel().getSnapshot().documentStyle as
+  const style = api?.getActiveDocument?.()?.getDocumentDataModel?.()?.getSnapshot().documentStyle as
     | { pageSize?: { width?: number } }
     | undefined;
   return style?.pageSize?.width ?? defaultDocumentPageStyle().pageSize?.width ?? 816;

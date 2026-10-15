@@ -76,6 +76,15 @@ export function webIdentity(url: string): string {
   return keep.length ? `${base}?${new URLSearchParams(keep as [string, string][]).toString()}` : base;
 }
 
+/**
+ * What a "Not us" on a web address stores (MKT-073): the whole host for a bare site, else the page's identity
+ * (`webIdentity`), so excluding one YouTube video never excludes every video.
+ */
+export function exclusionMatchForUrl(url: string): { kind: "host" | "url"; value: string } {
+  const identity = webIdentity(url);
+  return /[/?]/.test(identity) ? { kind: "url", value: identity } : { kind: "host", value: identity };
+}
+
 function hostIs(host: string, base: string): boolean {
   const b = base.replace(/^www\./, "").toLowerCase();
   return host === b || host.endsWith(`.${b}`);

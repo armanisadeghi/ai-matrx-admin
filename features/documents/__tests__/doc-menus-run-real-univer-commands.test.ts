@@ -26,6 +26,9 @@ function fakeHost() {
     wordCount: () => calls.push({ kind: "host.wordCount", args: [] }),
     fullScreen: () => false,
     toggleFullScreen: () => calls.push({ kind: "host.toggleFullScreen", args: [] }),
+    openPageSetup: () => calls.push({ kind: "host.openPageSetup", args: [] }),
+    pageless: () => false,
+    setPageless: (v) => calls.push({ kind: "host.setPageless", args: [v] }),
   };
   return { host, calls };
 }

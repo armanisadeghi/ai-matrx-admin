@@ -2,7 +2,8 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { compareRows, linkPages, parseEvidenceItem, type EvidenceItem } from "../evidence";
 import { compareSlots, isSettledWithoutAsking } from "../compare/compareSlots";
-import { isLinkInBioUrl, LINK_IN_BIO_SERVICES, linkInBioService } from "../../lib/link-in-bio";
+import { isLinkInBioUrl, linkInBioService } from "../../lib/link-in-bio";
+import snapshot from "@/lib/web-domains/__tests__/snapshot.fixture.json";
 
 // The stored fullspecstaff.com round (2026-10-14): the typed site, plus the five links its Linktree
 // (linktr.ee/fullspecstaff, read off its Instagram profile) shows. The compare asked "Which is yours?"
@@ -57,7 +58,7 @@ describe("link pages: their own spot, with their links", () => {
   it("fullspecstaff (stored round, no page item yet): the Linktree is their link page, its links under it", () => {
     const pages = linkPages(round);
     const main = pages.find((p) => p.url === LINKTREE);
-    expect(main?.service).toBe("Linktree");
+    expect(main?.service).toBe("linktr.ee");
     expect(main?.theirs).toBe(true);
     expect(main?.links.map((l) => l.url)).toContain("https://fullspecstaff.com/senior-living-jobs/");
     // The second Linktree it shows is a link page too, not a plain link.
@@ -102,9 +103,10 @@ describe("every service on the canonical list is detected", () => {
     expect(isLinkInBioUrl(url)).toBe(true);
   });
 
-  it("the registry and the canonical list are the same services", () => {
-    const listed = new Set(Object.values(CANONICAL_PROFILES).map((u) => linkInBioService(u)!.key));
-    expect([...listed].sort()).toEqual(LINK_IN_BIO_SERVICES.map((s) => s.key).sort());
+  it("the canonical list and the registry's link_in_bio hosts are the same services", () => {
+    const listed = new Set(Object.values(CANONICAL_PROFILES).map((u) => linkInBioService(u)!.host));
+    const registered = new Set((snapshot as { host: string; category: string }[]).filter((r) => r.category === "link_in_bio").map((r) => r.host));
+    expect([...listed].sort()).toEqual([...registered].sort());
   });
 
   it("ordinary addresses are not link pages", () => {

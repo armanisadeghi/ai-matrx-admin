@@ -11,66 +11,37 @@
 
 import { classifySocialLink } from "../social/link";
 import type { SocialPlatform } from "../social/types";
+import { liveKnownDomainRules, ruleFor, type KnownDomainRule } from "@/lib/web-domains/registry";
+import packagedLinkInBio from "@/lib/web-domains/link-in-bio.packaged.json";
 
 /**
- * The link-in-bio services (Arman's list, SPEC.md "Link-in-bio pages are a source"). A page on one is the
- * brand's LINK PAGE: never an account, never a website candidate, never compared. Mirrors aidream
- * `graph_actions/link_in_bio.py` LINK_IN_BIO_REGISTRY entry for entry (both repos guard the same list).
+ * A link-in-bio service page. WHICH hosts are link-in-bio is the known-domain registry's answer
+ * (`web.domain_category`, category `link_in_bio`; `lib/web-domains/registry.ts`) — the same registry aidream
+ * reads. Nothing here lists hosts: add a host to the table, or let the learning loop add it.
  */
 export interface LinkInBioService {
-  key: string;
+  /** The registry rule's host (`linktr.ee`, `beacons.ai`). */
+  host: string;
+  /** Shown as the page's service name. */
   name: string;
-  domains: readonly string[];
-  /** Only addresses under this path are profile pages (`bit.ly/m/<name>`). */
-  pathPrefix?: string;
-  /** Profiles live on a subdomain (`name.carrd.co`); the bare domain is the service's own site. */
-  subdomainOnly?: boolean;
 }
 
-export const LINK_IN_BIO_SERVICES: readonly LinkInBioService[] = [
-  { key: "linktree", name: "Linktree", domains: ["linktr.ee"] },
-  { key: "beacons", name: "Beacons", domains: ["beacons.ai", "beacons.page"] },
-  { key: "stan", name: "Stan Store", domains: ["stan.store"] },
-  { key: "lnkbio", name: "Lnk.Bio", domains: ["lnk.bio"] },
-  { key: "later", name: "Later Link in Bio", domains: ["linkin.bio"] },
-  { key: "later_site", name: "Later Link in Bio", domains: ["later.com"], pathPrefix: "/link-in-bio" },
-  { key: "carrd", name: "Carrd", domains: ["carrd.co"], subdomainOnly: true },
-  { key: "campsite", name: "Campsite.bio", domains: ["campsite.bio"] },
-  { key: "biolink", name: "Bio.link", domains: ["bio.link"] },
-  { key: "taplink", name: "Taplink", domains: ["taplink.at", "taplink.cc"] },
-  { key: "milkshake", name: "Milkshake", domains: ["msha.ke", "milkshake.app"] },
-  { key: "hopp", name: "Hopp by Wix", domains: ["hopp.co", "hopp.bio"] },
-  { key: "solo", name: "solo.to", domains: ["solo.to"] },
-  { key: "komi", name: "Komi", domains: ["komi.io"] },
-  { key: "shorby", name: "Shorby", domains: ["shor.by", "shorby.com"] },
-  { key: "bitly", name: "Bitly Pages", domains: ["bit.ly"], pathPrefix: "/m/" },
-  { key: "allmylinks", name: "AllMyLinks", domains: ["allmylinks.com"] },
-  { key: "linkpop", name: "Linkpop", domains: ["linkpop.com"] },
-  { key: "tapbio", name: "Tap.bio", domains: ["tap.bio"] },
-  { key: "hoobe", name: "Hoo.be", domains: ["hoo.be"] },
-  { key: "flowpage", name: "Flowpage", domains: ["flow.page"] },
-  { key: "snipfeed", name: "Snipfeed", domains: ["snipfeed.co"] },
-  { key: "linkfly", name: "Linkfly", domains: ["linkfly.to"] },
-  { key: "directme", name: "Direct.me", domains: ["direct.me"] },
-];
+/** Until the live registry is read, the link_in_bio rules packaged from it (never hand-edited; a parity test guards the copy). */
+const PACKAGED_RULES = packagedLinkInBio as unknown as readonly { host: string; path_pattern: string; category: string; provenance: string; confidence: number }[];
+const PACKAGED: readonly KnownDomainRule[] = PACKAGED_RULES.map((r) => ({
+  host: r.host,
+  pathPattern: r.path_pattern,
+  category: r.category,
+  provenance: r.provenance as KnownDomainRule["provenance"],
+  confidence: r.confidence,
+}));
 
-/** Every link-in-bio host, flat (path- and subdomain-scoped ones included; use `linkInBioService` for an address). */
-export const LINK_IN_BIO_HOSTS: readonly string[] = LINK_IN_BIO_SERVICES.flatMap((s) => s.domains);
-
-/** The service whose page this address is (profile or not), else null. Same rules as the server's `link_in_bio_entry`. */
+/** The service whose page this address is (profile or not), else null. Same rule as aidream's `link_in_bio_entry`. */
 export function linkInBioService(raw: string | null | undefined): LinkInBioService | null {
   const url = parseHttpUrl(raw);
   if (!url) return null;
-  const host = url.hostname.toLowerCase().replace(/^www\./, "");
-  for (const service of LINK_IN_BIO_SERVICES) {
-    for (const domain of service.domains) {
-      if (host !== domain && !host.endsWith(`.${domain}`)) continue;
-      if (service.subdomainOnly && host === domain) continue;
-      if (service.pathPrefix && !`${url.pathname.replace(/\/+$/, "")}/`.startsWith(`${service.pathPrefix.replace(/\/+$/, "")}/`)) continue;
-      return service;
-    }
-  }
-  return null;
+  const rule = ruleFor(url.href, ["link_in_bio"], liveKnownDomainRules() ?? PACKAGED);
+  return rule ? { host: rule.host, name: rule.host } : null;
 }
 
 /** Short-link and smart-link hosts: they forward to something else, so they are never a website. */

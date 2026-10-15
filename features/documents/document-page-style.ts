@@ -11,7 +11,14 @@
  * (markdown import), and `sanitizeUniverDocSnapshot` (recovery for snapshots
  * that reached storage without it — notably `origin='agent'` writes).
  */
-import { DocumentFlavor, PageOrientType, type IDocumentData } from "@univerjs/core";
+import type { DocumentFlavor, IDocumentData, PageOrientType } from "@univerjs/core";
+
+// Univer's enum values, written out: this file is read by tests and the markdown importer, which must not
+// pull Univer's runtime in just for four numbers (guarded by the page-style test).
+const TRADITIONAL = 1 as DocumentFlavor;
+const MODERN = 2 as DocumentFlavor;
+const PORTRAIT = 0 as PageOrientType;
+const LANDSCAPE = 1 as PageOrientType;
 
 type DocumentStyle = NonNullable<IDocumentData["documentStyle"]>;
 
@@ -34,8 +41,8 @@ export type PaperSizeName = keyof typeof PAPER_SIZES;
 /** A real page, like Google Docs: Letter, one-inch margins (624px of text), paginated. */
 export const DEFAULT_DOCUMENT_PAGE_STYLE: DocumentStyle = {
   pageSize: { width: 816, height: 1056 },
-  documentFlavor: DocumentFlavor.TRADITIONAL,
-  pageOrient: PageOrientType.PORTRAIT,
+  documentFlavor: TRADITIONAL,
+  pageOrient: PORTRAIT,
   marginTop: PX_PER_INCH,
   marginBottom: PX_PER_INCH,
   marginLeft: PX_PER_INCH,
@@ -94,7 +101,7 @@ const round2 = (n: number) => Math.round(n * 100) / 100;
 
 /** The dialog's values, read from a document's style (missing parts fall back to the default page). */
 export function pageSetupFromStyle(style: DocumentStyle | undefined): PageSetupValues {
-  const landscape = style?.pageOrient === PageOrientType.LANDSCAPE;
+  const landscape = style?.pageOrient === LANDSCAPE;
   const w = style?.pageSize?.width ?? DEFAULT_DOCUMENT_PAGE_STYLE.pageSize!.width!;
   const h = style?.pageSize?.height ?? DEFAULT_DOCUMENT_PAGE_STYLE.pageSize!.height!;
   const [pw, ph] = landscape ? [h, w] : [w, h];
@@ -105,7 +112,7 @@ export function pageSetupFromStyle(style: DocumentStyle | undefined): PageSetupV
   const inch = (v: number | undefined) => round2((v ?? PX_PER_INCH) / PX_PER_INCH);
   const color = (style as Record<string, unknown> | undefined)?.[PAGE_COLOR_KEY];
   return {
-    pageless: style?.documentFlavor === DocumentFlavor.MODERN,
+    pageless: style?.documentFlavor === MODERN,
     orientation: landscape ? "landscape" : "portrait",
     paper,
     marginTop: inch(style?.marginTop),
@@ -121,8 +128,8 @@ export function pageSetupCommandParams(v: PageSetupValues) {
   const base = PAPER_SIZES[v.paper];
   const landscape = v.orientation === "landscape";
   return {
-    documentFlavor: v.pageless ? DocumentFlavor.MODERN : DocumentFlavor.TRADITIONAL,
-    pageOrient: landscape ? PageOrientType.LANDSCAPE : PageOrientType.PORTRAIT,
+    documentFlavor: v.pageless ? MODERN : TRADITIONAL,
+    pageOrient: landscape ? LANDSCAPE : PORTRAIT,
     pageSize: landscape ? { width: base.height, height: base.width } : { width: base.width, height: base.height },
     marginTop: Math.round(v.marginTop * PX_PER_INCH),
     marginBottom: Math.round(v.marginBottom * PX_PER_INCH),

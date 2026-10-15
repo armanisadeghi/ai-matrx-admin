@@ -10,7 +10,7 @@
  */
 
 import { supabase } from "@/utils/supabase/client";
-import type { KnownDomainRule } from "./registry";
+import { setLiveKnownDomainRules, type KnownDomainRule } from "./registry";
 
 const PROVENANCES = new Set(["seeded", "learned", "pattern", "admin_approved"]);
 /** Matches the seeded `web_domains.cache_seconds` knob (300). */
@@ -34,6 +34,7 @@ export async function fetchKnownDomainRules(): Promise<KnownDomainRule[]> {
       confidence: Number(r.confidence),
     }));
     cache = { at: Date.now(), rules };
+    setLiveKnownDomainRules(rules);
     return rules;
   })();
   try {

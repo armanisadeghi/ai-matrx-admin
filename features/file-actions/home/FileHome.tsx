@@ -6,9 +6,11 @@
  * "Recent …" with the owner filter (plus Starred and Trash), grid ⇄ list, Google's four sorts and
  * the upload door, grouped Today / Previous 7 days / Previous 30 days / Earlier.
  *
- * Grid cards show the file's real first page / first sheet (`RecordThumb`). The desktop list is the
- * canonical table (Google's columns first: Name, Owner, Last opened by me; every older column kept,
- * every column sorts and filters). A phone gets Google's mobile list.
+ * Grid cards show the file's real first page / first sheet (`RecordThumb`). The Google Look's desktop
+ * list is Google's calm list (`GoogleFileList`: icon + name, owner, date, ⋮, grouped by time); the
+ * Microsoft 365 look keeps the canonical table (every column, bulk selection). A phone gets
+ * Google's mobile list. The "Recent …" row sticks under the app header in every view
+ * (`useStickyHomeHeader`) and, in the Google list, names the time group under it.
  *
  * The page keeps what is its own (load, create, import, the Google strip's data) and hands it in.
  * Every per-file action is the shared file menu (`useFileItemActions`), on ⋮ and on right-click.
@@ -298,7 +300,7 @@ export function FileHome<Row extends { id: string; user_id: string }>(props: Fil
         {/* Google's search: one big filled pill (48px, ~720px) centred over the page, the Look switch
             at the row's end. It stays here, not in the app header: the header is 44px (a 48px pill
             cannot sit in it) and its right side is the app's own icons. */}
-        <div className="mx-auto flex w-full max-w-[72rem] flex-wrap items-center gap-x-3 gap-y-2 px-3 pb-3 pt-2 sm:grid sm:grid-cols-[minmax(14rem,1fr)_minmax(0,45rem)_minmax(14rem,1fr)] sm:px-6">
+        <div className="mx-auto flex w-full max-w-[80rem] items-center gap-3 px-3 pb-3 pt-2 sm:grid sm:grid-cols-[minmax(14rem,1fr)_minmax(0,45rem)_minmax(14rem,1fr)] sm:px-6">
           <span aria-hidden className="hidden sm:block" />
           <SearchField
             filled
@@ -306,7 +308,7 @@ export function FileHome<Row extends { id: string; user_id: string }>(props: Fil
             onChange={(e) => setQuery(e.target.value)}
             placeholder={`Search ${kind.pluralNoun}`}
             aria-label={`Search ${kind.pluralNoun}`}
-            className="min-w-0 basis-full sm:basis-auto"
+            className="min-w-0 flex-1"
           />
           <OfficeLookSwitch className="shrink-0 sm:justify-self-end" />
         </div>
@@ -423,7 +425,7 @@ export function FileHome<Row extends { id: string; user_id: string }>(props: Fil
               userId={userId}
               navigatingId={navigatingId}
               onOpen={open}
-              menuFor={(row, control) => menuFor(row, trashed, control)}
+              menuFor={(row, control) => menuFor(row, trashed, control, { shareButton: false })}
               marksFor={props.marksFor}
             />
           ) : null}

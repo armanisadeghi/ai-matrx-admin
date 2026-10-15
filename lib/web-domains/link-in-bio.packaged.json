@@ -1,0 +1,205 @@
+[
+{
+"category": "link_in_bio",
+"confidence": 1.0,
+"host": "allmylinks.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "link_in_bio",
+"confidence": 1.0,
+"host": "beacons.ai",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "link_in_bio",
+"confidence": 1.0,
+"host": "beacons.page",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "link_in_bio",
+"confidence": 1.0,
+"host": "bio.link",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "link_in_bio",
+"confidence": 1.0,
+"host": "bit.ly",
+"path_pattern": "^bit\\.ly/m/",
+"provenance": "seeded"
+},
+{
+"category": "link_in_bio",
+"confidence": 1.0,
+"host": "campsite.bio",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "link_in_bio",
+"confidence": 1.0,
+"host": "carrd.co",
+"path_pattern": "^[a-z0-9-]+\\.carrd\\.co",
+"provenance": "seeded"
+},
+{
+"category": "link_in_bio",
+"confidence": 1.0,
+"host": "direct.me",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "link_in_bio",
+"confidence": 1.0,
+"host": "flow.page",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "link_in_bio",
+"confidence": 1.0,
+"host": "hoo.be",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "link_in_bio",
+"confidence": 1.0,
+"host": "hopp.bio",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "link_in_bio",
+"confidence": 1.0,
+"host": "hopp.co",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "link_in_bio",
+"confidence": 1.0,
+"host": "komi.io",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "link_in_bio",
+"confidence": 1.0,
+"host": "later.com",
+"path_pattern": "^later\\.com/link-in-bio/",
+"provenance": "seeded"
+},
+{
+"category": "link_in_bio",
+"confidence": 1.0,
+"host": "linkfly.to",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "link_in_bio",
+"confidence": 1.0,
+"host": "linkin.bio",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "link_in_bio",
+"confidence": 1.0,
+"host": "linkpop.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "link_in_bio",
+"confidence": 1.0,
+"host": "linktr.ee",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "link_in_bio",
+"confidence": 1.0,
+"host": "lnk.bio",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "link_in_bio",
+"confidence": 1.0,
+"host": "milkshake.app",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "link_in_bio",
+"confidence": 1.0,
+"host": "msha.ke",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "link_in_bio",
+"confidence": 1.0,
+"host": "shor.by",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "link_in_bio",
+"confidence": 1.0,
+"host": "shorby.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "link_in_bio",
+"confidence": 1.0,
+"host": "snipfeed.co",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "link_in_bio",
+"confidence": 1.0,
+"host": "solo.to",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "link_in_bio",
+"confidence": 1.0,
+"host": "stan.store",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "link_in_bio",
+"confidence": 1.0,
+"host": "tap.bio",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "link_in_bio",
+"confidence": 1.0,
+"host": "taplink.at",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "link_in_bio",
+"confidence": 1.0,
+"host": "taplink.cc",
+"path_pattern": "",
+"provenance": "seeded"
+}
+]

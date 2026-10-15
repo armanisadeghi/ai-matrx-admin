@@ -108,3 +108,15 @@ export function withKnownDomainRules<T extends CategoryMatched>(items: T[], rule
     };
   });
 }
+
+let live: readonly KnownDomainRule[] | null = null;
+
+/** The rules the last live read returned, for pure callers that cannot await (null until a read lands). */
+export function liveKnownDomainRules(): readonly KnownDomainRule[] | null {
+  return live;
+}
+
+/** Called by the live reader (`./service.ts`) with every rule it fetched. */
+export function setLiveKnownDomainRules(rules: readonly KnownDomainRule[] | null): void {
+  live = rules;
+}
