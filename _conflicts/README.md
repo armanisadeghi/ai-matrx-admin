@@ -31,3 +31,4 @@ Its files stay as they are.
 ## Docs and comments — both versions kept
 
 ## Held files
+- _conflicts/2026-10-14-204506/pnpm-lock.yaml.held — LOCAL latest unknown; GITHUB latest 2026-10-14 20:43; LOCAL lacks 23 of GITHUB's 29 new lines; GITHUB lacks 35 of LOCAL's 41 new lines; recover: git show 6c0e6534db:'pnpm-lock.yaml' / e3c80634e2:'pnpm-lock.yaml'
