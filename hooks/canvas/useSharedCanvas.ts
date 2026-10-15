@@ -6,6 +6,15 @@ import { getActiveOrgId } from '@/lib/organizations/activeOrg';
 import { resolveSharedCanvas } from '@/features/canvas/shared/resolveSharedCanvas';
 import { getCanvasViewScope } from '@/features/canvas/shared/canvasViewTracking';
 import type { SharedCanvasItem } from '@/types/canvas-social';
+import { defineClientKey } from '@/lib/sync/client-storage';
+
+const canvasSessionKey = defineClientKey({
+    id: 'canvas.view-session',
+    area: 'session',
+    kind: 'device',
+    reason: 'Names this tab as one viewing session when a canvas view is recorded.',
+    legacyKey: 'canvas_session_id',
+});
 
 export function useSharedCanvas(shareToken: string | null) {
     const supabase = createClient();
@@ -47,10 +56,10 @@ async function trackView(canvasId: string) {
         if (!scope) return;
 
         // Get or create session ID
-        let sessionId = sessionStorage.getItem('canvas_session_id');
+        let sessionId = canvasSessionKey.get();
         if (!sessionId) {
-            sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-            sessionStorage.setItem('canvas_session_id', sessionId);
+            sessionId = `session_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`;
+            canvasSessionKey.set(sessionId);
         }
 
         const { error } = await supabase

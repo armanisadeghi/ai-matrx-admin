@@ -1,7 +1,7 @@
 {
   "version": 1,
   "app": "matrx-frontend",
-  "routeCount": 1433,
+  "routeCount": 1434,
   "routes": [
     {
       "pattern": "/",
@@ -6939,6 +6939,11 @@
       "pattern": "/user-settings/[[...path]]",
       "status": "live",
       "source": "app/(core)/user-settings/[[...path]]/page.tsx"
+    },
+    {
+      "pattern": "/v/[slug]",
+      "status": "live",
+      "source": "app/(link)/v/[slug]/page.tsx"
     },
     {
       "pattern": "/vault",

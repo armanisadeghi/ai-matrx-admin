@@ -68,6 +68,11 @@ import {
 import { replaceAppHref } from "@/lib/deployment/navigate";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { ReadFailure } from "@ai-matrx/design-system";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
+import { setPreference } from "@/lib/redux/preferences/userPreferencesSlice";
+import { selectPreferencesLoadStatus } from "@/lib/redux/preferences/userPreferenceSelectors";
+import type { RootState } from "@/lib/redux/store";
+import { readRetiredKey, removeRetiredKey } from "@/lib/sync/client-storage";
 import { ClampedNumberInput } from "@/components/official/ClampedNumberInput";
 
 // ─── App registry ─────────────────────────────────────────────────────────────
@@ -112,38 +117,33 @@ function logsApiUrl(appKey: AppKey, lines: number): string {
 }
 
 const LINE_OPTIONS = [50, 100, 200, 500, 1000, 2000, 5000, 10000];
-const NOISE_EXCLUDES_STORAGE_KEY = "matrx:server-log-noise-excludes";
+/** Where the filters lived per browser before they moved to the person's saved preferences. */
+const RETIRED_NOISE_EXCLUDES_KEY = "matrx:server-log-noise-excludes";
 
-function loadNoiseExcludes(): LogNoiseExcludes {
-  if (typeof window === "undefined") return { ...DEFAULT_NOISE_EXCLUDES };
-  try {
-    const raw = window.localStorage.getItem(NOISE_EXCLUDES_STORAGE_KEY);
-    if (!raw) return { ...DEFAULT_NOISE_EXCLUDES };
-    const parsed = JSON.parse(raw) as Partial<LogNoiseExcludes> & {
-      adminDb?: boolean;
-    };
-    return {
-      cloudFiles: parsed.cloudFiles ?? DEFAULT_NOISE_EXCLUDES.cloudFiles,
-      healthChecks: parsed.healthChecks ?? DEFAULT_NOISE_EXCLUDES.healthChecks,
-      admin: parsed.admin ?? parsed.adminDb ?? DEFAULT_NOISE_EXCLUDES.admin,
-      replaySweep: parsed.replaySweep ?? DEFAULT_NOISE_EXCLUDES.replaySweep,
-      wakeListener: parsed.wakeListener ?? DEFAULT_NOISE_EXCLUDES.wakeListener,
-      autoIngestListener:
-        parsed.autoIngestListener ?? DEFAULT_NOISE_EXCLUDES.autoIngestListener,
-    };
-  } catch {
-    return { ...DEFAULT_NOISE_EXCLUDES };
-  }
+const selectSavedNoiseExcludes = (state: RootState): Record<string, boolean> | null =>
+  state.userPreferences?.dataTools?.serverLogNoiseExcludes ?? null;
+
+function resolveNoiseExcludes(saved: (Partial<LogNoiseExcludes> & { adminDb?: boolean }) | null): LogNoiseExcludes {
+  if (!saved) return { ...DEFAULT_NOISE_EXCLUDES };
+  return {
+    cloudFiles: saved.cloudFiles ?? DEFAULT_NOISE_EXCLUDES.cloudFiles,
+    healthChecks: saved.healthChecks ?? DEFAULT_NOISE_EXCLUDES.healthChecks,
+    admin: saved.admin ?? saved.adminDb ?? DEFAULT_NOISE_EXCLUDES.admin,
+    replaySweep: saved.replaySweep ?? DEFAULT_NOISE_EXCLUDES.replaySweep,
+    wakeListener: saved.wakeListener ?? DEFAULT_NOISE_EXCLUDES.wakeListener,
+    autoIngestListener: saved.autoIngestListener ?? DEFAULT_NOISE_EXCLUDES.autoIngestListener,
+  };
 }
 
-function persistNoiseExcludes(excludes: LogNoiseExcludes) {
+/** The filters this browser kept before the move, read once and removed. */
+function takeRetiredNoiseExcludes(): (Partial<LogNoiseExcludes> & { adminDb?: boolean }) | null {
+  const raw = readRetiredKey("local", RETIRED_NOISE_EXCLUDES_KEY);
+  removeRetiredKey("local", RETIRED_NOISE_EXCLUDES_KEY);
+  if (!raw) return null;
   try {
-    window.localStorage.setItem(
-      NOISE_EXCLUDES_STORAGE_KEY,
-      JSON.stringify(excludes),
-    );
+    return JSON.parse(raw) as Partial<LogNoiseExcludes> & { adminDb?: boolean };
   } catch {
-    // localStorage full or disabled
+    return null;
   }
 }
 
@@ -902,14 +902,32 @@ export default function CoolifyLogViewer({
   const [viewMode, setViewMode] = useState<ViewMode>("log-only");
   const [showFilters, setShowFilters] = useState(false);
   const [showRange, setShowRange] = useState(false);
-  const [filters, setFiltersState] = useState<LogFilters>(() => ({
-    ...defaultFilters(),
-    noiseExcludes: loadNoiseExcludes(),
-  }));
-  const setFilters = useCallback((next: LogFilters) => {
-    setFiltersState(next);
-    persistNoiseExcludes(next.noiseExcludes);
-  }, []);
+  // Noise filters are the person's saved choice (server preferences, every
+  // device); the rest of the filters are this view's moment.
+  const dispatch = useAppDispatch();
+  const savedNoiseExcludes = useAppSelector(selectSavedNoiseExcludes);
+  const preferencesLoaded = useAppSelector(selectPreferencesLoadStatus) === "loaded";
+  const [viewFilters, setFiltersState] = useState<LogFilters>(() => defaultFilters());
+  const filters: LogFilters = { ...viewFilters, noiseExcludes: resolveNoiseExcludes(savedNoiseExcludes) };
+  const saveNoiseExcludes = useCallback(
+    (next: LogNoiseExcludes) =>
+      dispatch(setPreference({ module: "dataTools", preference: "serverLogNoiseExcludes", value: { ...next } })),
+    [dispatch],
+  );
+  const setFilters = useCallback(
+    (next: LogFilters) => {
+      setFiltersState(next);
+      saveNoiseExcludes(next.noiseExcludes);
+    },
+    [saveNoiseExcludes],
+  );
+  const adoptedRetired = useRef(false);
+  useEffect(() => {
+    if (!preferencesLoaded || adoptedRetired.current) return;
+    adoptedRetired.current = true;
+    const retired = takeRetiredNoiseExcludes();
+    if (retired && savedNoiseExcludes === null) saveNoiseExcludes(resolveNoiseExcludes(retired));
+  }, [preferencesLoaded, savedNoiseExcludes, saveNoiseExcludes]);
   const [selectedLine, setSelectedLine] = useState<ParsedLogLine | null>(null);
 
   // Selection state — anchor is first click, tail is shift-click endpoint

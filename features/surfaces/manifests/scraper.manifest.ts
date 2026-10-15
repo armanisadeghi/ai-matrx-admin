@@ -31,6 +31,10 @@ import type {
   SurfaceWriteTarget,
 } from "@ai-matrx/chat/surfaces/types";
 import {
+  searchExperienceValues,
+  searchExperienceWriteTargets,
+} from "./_search-experience.values";
+import {
   PAGE_LIMIT_MAX,
   PAGE_LIMIT_MIN,
   RESULT_LIMIT_MAX,
@@ -137,7 +141,7 @@ const surfaceSpecific: SurfaceValue[] = [
     name: "search_vertical",
     label: "Search result type",
     description:
-      "The Search Lab result type: web, news, images, videos, or places. Only on the /scraper/search route.",
+      "The search tab: web (shown as All), news, images, videos, places, social, shopping, jobs or trends. Only on the /scraper/search route.",
     valueType: "string",
     alwaysAvailable: false,
     typicalCharCount: 6,
@@ -155,6 +159,8 @@ const surfaceSpecific: SurfaceValue[] = [
     sortOrder: 312,
     group: "target",
   },
+  // The search page's tab/platform/input values (shared with matrx-user/search).
+  ...searchExperienceValues("target", 313, false),
   {
     name: "scraped_url",
     label: "Scraped URL",
@@ -443,6 +449,8 @@ const surfaceSpecific: SurfaceValue[] = [
  * shadows nothing declared here.
  */
 const writeTargets: SurfaceWriteTarget[] = [
+  // The search page's own target (shared with matrx-user/search).
+  ...searchExperienceWriteTargets("target", 128),
   {
     name: "scrape_command",
     label: "Scrape command",
@@ -558,7 +566,7 @@ You are on the Web scraper surface: the user scrapes live web pages (single URL,
 The primary payload is the SELECTED scraped page: scraped_url / scraped_title identify it, scraped_content_text (also the baseline content) and scraped_content_markdown carry its body, scraped_metadata and scraped_links carry its structure. results_overview lists every page scraped this session; search_hits lists web-search results not yet scraped.
 Everything here is OBSERVED evidence pulled from live pages — never invent content that isn't in the scraped body. Check scrape_success / scrape_failure_reason before treating the content as valid; an empty body means the page came back blank, not that the site has no content.
 target_url and search_keyword are the user's live inputs — what they intend to scrape next, distinct from what has already been scraped.
-You can STAGE the next run for the user but never start it: scrape_command sets the mode and its target, scrape_page_limit the deep-mode page budget, scrape_result_limit the web-search hit budget, and on /scraper/search search_engine (brave | google | compare) and search_vertical (web | news | images | videos | places). Staging only fills the form — the user presses Scrape, because a run spends real time against someone else's server.
+You can STAGE the next run for the user but never start it: scrape_command sets the mode and its target, scrape_page_limit the deep-mode page budget, scrape_result_limit the web-search hit budget, and on /scraper/search search_engine (brave | google | compare), search_vertical (the tab: web | news | images | videos | places | social | shopping | jobs | trends) and social_platform. On /scraper/search the box also reads links, profiles and images: input_mode says which, and a read page fills the scraped_* values. Staging only fills the form — the user presses Scrape, because a run spends real time against someone else's server.
 selected_result_page and selected_search_hit put something ALREADY fetched on screen; neither fetches anything. When you have judged which search hit is worth scraping, select it and let the user press the button.
 The scraped_* values are fetched evidence and are NOT writable — a page's body, title, links and metadata are what a real server returned, and this pane feeds Knowledge ingestion directly, so never try to "correct" them.
 </surface_intro>`,
@@ -605,6 +613,9 @@ export function createScraperScope(values: {
   max_results?: number;
   search_engine?: string;
   search_vertical?: string;
+  social_platform?: string;
+  input_mode?: string;
+  special_result?: Record<string, unknown>;
   scraped_url?: string;
   scraped_title?: string;
   scraped_content_text?: string;

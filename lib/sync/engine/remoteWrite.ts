@@ -509,18 +509,27 @@ export function createRemoteWriteScheduler(
     }
 
     function onIdentitySwap(): void {
+        const dropped: string[] = [];
         for (const [name, record] of pending) {
             // An unsaved edit of a hold-until-hydrated slice is not lost with
             // the swap: it is saved, merged, once the new identity's read lands.
             const policy = bySlice.get(name);
-            if (policy?.config.holdUntilHydrated === true) holdForHydration(name);
+            const held = policy?.config.holdUntilHydrated === true;
+            if (held) holdForHydration(name);
+            else dropped.push(name);
             abortByCaller(record.inFlightController, "identity changed");
             if (record.timerHandle) clearTimeout(record.timerHandle);
+            // A "we'll keep trying" notice for the person who left would otherwise stay up
+            // forever, its Retry doing nothing.
+            if (record.failures > 0) failureNotice.recovered(name);
             pending.delete(name);
         }
-        logger.info("remote.write.identity-swap.drop", {
-            meta: { dropped: pending.size },
-        });
+        if (dropped.length > 0) {
+            // The leaving person's unsaved edit cannot be saved as anyone else: say so.
+            logger.warn("remote.write.identity-swap.lost", { meta: { slices: dropped } });
+        } else {
+            logger.info("remote.write.identity-swap.drop", { meta: { dropped: 0 } });
+        }
     }
 
     // --- pagehide wiring ---

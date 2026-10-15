@@ -672,6 +672,25 @@ export interface SmartAddPreferences {
   runs: Record<string, Record<string, unknown>>;
 }
 
+/**
+ * Choices made inside the shared data tools (the JSON truncator, the server-log
+ * viewer). They used to live in per-browser localStorage keys and were lost on
+ * every other device; they follow the person now. `null` = the tool's own
+ * default (a surface's props or the viewer's preset), never a stored value.
+ */
+export interface DataToolsPreferences {
+  truncator: {
+    autoThreshold: number | null;
+    autoLeadChars: number | null;
+    autoTailChars: number | null;
+    autoArrayKeepN: number | null;
+    /** `"none"` = no depth limit; `null` = the surface's default depth. */
+    maxDepth: number | "none" | null;
+  };
+  /** The server-log viewer's noise filters (features/server-logs/log-rules.ts); null = defaults. */
+  serverLogNoiseExcludes: Record<string, boolean> | null;
+}
+
 export interface ReversiblePreferences {
   verbs: Record<string, number>;
   pairs: Record<string, number>;
@@ -919,6 +938,7 @@ export interface UserPreferences {
   reversible: ReversiblePreferences;
   inbox: InboxPreferences;
   smartAdd: SmartAddPreferences;
+  dataTools: DataToolsPreferences;
 }
 
 /**
@@ -1474,6 +1494,10 @@ export const initializeUserPreferencesState = (
     // Nothing seen, cleared or hidden yet: every source shows in the bell.
     inbox: { sourcesSeen: {}, sourcesSeenIds: {}, sourcesCleared: {}, sourcesClearedIds: {}, hiddenSources: [] },
     smartAdd: { runs: {} },
+    dataTools: {
+      truncator: { autoThreshold: null, autoLeadChars: null, autoTailChars: null, autoArrayKeepN: null, maxDepth: null },
+      serverLogNoiseExcludes: null,
+    },
   };
 
   // Merge with defaults to ensure all properties exist
@@ -1580,6 +1604,10 @@ export const initializeUserPreferencesState = (
       hiddenSources: [...(preferences.inbox?.hiddenSources ?? [])],
     },
     smartAdd: { runs: { ...preferences.smartAdd?.runs } },
+    dataTools: {
+      truncator: { ...defaultPreferences.dataTools.truncator, ...preferences.dataTools?.truncator },
+      serverLogNoiseExcludes: preferences.dataTools?.serverLogNoiseExcludes ?? null,
+    },
   };
 
   // If setAsLoaded is true, store the merged preferences as the loaded state
@@ -2017,6 +2045,7 @@ const PERSISTED_PREFERENCE_MODULES: Record<keyof UserPreferences, true> = {
   reversible: true,
   inbox: true,
   smartAdd: true,
+  dataTools: true,
 };
 
 const PREFERENCE_MODULE_KEYS = Object.keys(

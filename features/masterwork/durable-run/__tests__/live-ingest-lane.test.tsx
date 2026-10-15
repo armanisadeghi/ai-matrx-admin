@@ -81,7 +81,7 @@ function writePointer(
   } = {},
 ): void {
   window.localStorage.setItem(
-    `matrx.masterwork-run.${surface}:${over.rulebookId ?? RULEBOOK_ID}`,
+    `matrx:client:durable-run.pointer:matrx.masterwork-run.${surface}:${over.rulebookId ?? RULEBOOK_ID}`,
     JSON.stringify({
       runId: over.runId ?? `run-${surface}`,
       startedAt: over.startedAt ?? Date.now() - 30_000,

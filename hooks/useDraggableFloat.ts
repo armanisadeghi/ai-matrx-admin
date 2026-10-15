@@ -27,6 +27,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { defineClientKeyFamily } from "@/lib/sync/client-storage";
 
 export interface DraggableFloatPosition {
   x: number;
@@ -70,29 +71,28 @@ function overlaps(
   );
 }
 
+const floatPositions = defineClientKeyFamily({
+  id: "draggable-float.position",
+  area: "local",
+  kind: "ui-layout",
+  reason: "Where a floating surface was dragged to on this screen; another screen has other edges.",
+  legacyKey: (suffix) => suffix,
+});
+
 function readStored(storageKey: string): DraggableFloatPosition | null {
-  try {
-    const raw = window.localStorage.getItem(storageKey);
-    if (!raw) return null;
-    const parsed = JSON.parse(raw) as Partial<DraggableFloatPosition>;
-    if (typeof parsed?.x !== "number" || typeof parsed?.y !== "number")
-      return null;
-    return { x: parsed.x, y: parsed.y };
-  } catch {
+  const parsed = floatPositions.getJSON<Partial<DraggableFloatPosition>>(storageKey);
+  if (typeof parsed?.x !== "number" || typeof parsed?.y !== "number")
     return null;
-  }
+  return { x: parsed.x, y: parsed.y };
 }
 
 function writeStored(
   storageKey: string,
   value: DraggableFloatPosition | null,
 ): void {
-  try {
-    if (value) window.localStorage.setItem(storageKey, JSON.stringify(value));
-    else window.localStorage.removeItem(storageKey);
-  } catch {
-    // Storage refused (private mode) — the in-memory position still applies.
-  }
+  // Storage refused (private mode) — the in-memory position still applies.
+  if (value) floatPositions.setJSON(storageKey, value);
+  else floatPositions.remove(storageKey);
 }
 
 /**

@@ -43,6 +43,15 @@ import {
   type PlacedOrgNode,
 } from "./layout";
 import { usePanZoom } from "./usePanZoom";
+import { defineClientKeyFamily } from "@/lib/sync/client-storage";
+
+const orgChartViews = defineClientKeyFamily({
+  id: "org-chart.view",
+  area: "local",
+  kind: "ui-layout",
+  reason: "Which branches are collapsed and whether the minimap shows, for one chart on this screen.",
+  legacyKey: (suffix) => suffix,
+});
 
 export interface OrgChartEdgeKind {
   label: string;
@@ -228,21 +237,17 @@ export function OrgChart<T>({
     if (loadedPersist.current === storageKey) return;
     loadedPersist.current = storageKey;
     skipNextWrite.current = true; // this pass still holds the previous view
-    try {
-      const raw = window.localStorage.getItem(storageKey);
-      if (!raw) {
-        setCollapsed(new Set());
-        setShowMinimap(true);
-        return;
-      }
-      const saved = JSON.parse(raw) as { collapsed?: unknown; minimap?: unknown };
-      if (Array.isArray(saved.collapsed)) {
-        setCollapsed(new Set(saved.collapsed.filter((k): k is string => typeof k === "string")));
-      }
-      if (typeof saved.minimap === "boolean") setShowMinimap(saved.minimap);
-    } catch {
-      // Storage unavailable (private window, blocked site data): start fresh.
+    // Storage unavailable (private window, blocked site data): start fresh.
+    const saved = orgChartViews.getJSON<{ collapsed?: unknown; minimap?: unknown }>(storageKey);
+    if (!saved) {
+      setCollapsed(new Set());
+      setShowMinimap(true);
+      return;
     }
+    if (Array.isArray(saved.collapsed)) {
+      setCollapsed(new Set(saved.collapsed.filter((k): k is string => typeof k === "string")));
+    }
+    if (typeof saved.minimap === "boolean") setShowMinimap(saved.minimap);
   }, [storageKey]);
   const collapsedKey = [...collapsed].sort().join("|");
   useEffect(() => {
@@ -251,14 +256,8 @@ export function OrgChart<T>({
       skipNextWrite.current = false;
       return;
     }
-    try {
-      window.localStorage.setItem(
-        storageKey,
-        JSON.stringify({ collapsed: collapsedKey ? collapsedKey.split("|") : [], minimap: showMinimap }),
-      );
-    } catch {
-      // Storage unavailable: the view simply isn't remembered.
-    }
+    // Storage unavailable: the view simply isn't remembered.
+    orgChartViews.setJSON(storageKey, { collapsed: collapsedKey ? collapsedKey.split("|") : [], minimap: showMinimap });
   }, [storageKey, collapsedKey, showMinimap]);
 
   const layout = layoutOrgForest(roots, {

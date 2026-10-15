@@ -9,11 +9,18 @@
  */
 
 import { ACQUISITION_VISITOR_COOKIE } from "@/lib/product-analytics/user-acquisition";
+import { defineClientKey } from "@/lib/sync/client-storage";
 
 let cachedFingerprint: string | null = null;
 
 // Storage configuration
-const STORAGE_KEY = "ai_matrx_guest_fp";
+const guestFingerprintKey = defineClientKey({
+  id: "guest-fingerprint",
+  area: "local",
+  kind: "device",
+  reason: "This browser's guest visitor id, mirrored from the visitor cookie for synchronous reads.",
+  legacyKey: "ai_matrx_guest_fp",
+});
 const STORAGE_VERSION = "1";
 
 interface FingerprintData {
@@ -42,11 +49,8 @@ function storeFingerprint(fingerprint: string): void {
     createdAt: now,
     lastUsed: now,
   };
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(fpData));
-  } catch {
-    // Privacy-restricted browsers still retain the response cookie.
-  }
+  // Privacy-restricted browsers still retain the response cookie.
+  guestFingerprintKey.setJSON(fpData);
 }
 
 /**
@@ -63,9 +67,8 @@ export async function getFingerprint(): Promise<string> {
   // Layer 2: Try to load from localStorage with version validation
   if (typeof window !== "undefined") {
     try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored) {
-        const data: FingerprintData = JSON.parse(stored);
+      const data = guestFingerprintKey.getJSON<FingerprintData>();
+      if (data) {
 
         // Validate version and fingerprint existence
         if (data.version === STORAGE_VERSION && data.fingerprint) {
@@ -73,7 +76,7 @@ export async function getFingerprint(): Promise<string> {
 
           // Update lastUsed timestamp
           data.lastUsed = Date.now();
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+          guestFingerprintKey.setJSON(data);
 
           console.log("✅ Loaded cached fingerprint from localStorage");
           return data.fingerprint;
@@ -115,15 +118,14 @@ export function getCachedFingerprint(): string | null {
   // Try localStorage with version validation
   if (typeof window !== "undefined") {
     try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored) {
-        const data: FingerprintData = JSON.parse(stored);
+      const data = guestFingerprintKey.getJSON<FingerprintData>();
+      if (data) {
         if (data.version === STORAGE_VERSION && data.fingerprint) {
           cachedFingerprint = data.fingerprint;
 
           // Update lastUsed timestamp
           data.lastUsed = Date.now();
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+          guestFingerprintKey.setJSON(data);
 
           return data.fingerprint;
         }
@@ -147,9 +149,7 @@ export function getCachedFingerprint(): string | null {
  */
 export function clearCachedFingerprint(): void {
   cachedFingerprint = null;
-  if (typeof window !== "undefined") {
-    localStorage.removeItem(STORAGE_KEY);
-  }
+  guestFingerprintKey.remove();
 }
 
 /**

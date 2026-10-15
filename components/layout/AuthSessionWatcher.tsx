@@ -67,6 +67,7 @@ import { contextValuesActions } from "@/features/scopes/redux/contextValuesSlice
 import { clearUserAuth } from "@/lib/redux/slices/userAuthSlice";
 import { selectOrganizationId } from "@/lib/redux/slices/appContextSlice";
 import { whenLateIdle } from "@/lib/boot/lateIdle";
+import { defineClientKeyFamily } from "@/lib/sync/client-storage";
 import { mediaFilesClient } from "@/features/files/media-client/client";
 import {
   ACTIVITY_RECHECK_THROTTLE_MS,
@@ -146,7 +147,12 @@ function openAuthBroadcast(): BroadcastChannel | null {
 // The server decides whether to write at all (`record_person_timezone` writes
 // only when nothing the person declared already answers), so there is nothing
 // to pre-check and nothing to retry here.
-const TIMEZONE_CAPTURE_STORAGE_PREFIX = "matrx.tz-captured.";
+const timezoneCapturedKeys = defineClientKeyFamily({
+  id: "auth.timezone-captured",
+  area: "session",
+  kind: "handoff",
+  reason: "This tab already sent the browser time zone for a person; a reload must not resend it.",
+});
 const timezoneCapturedThisTab = new Set<string>();
 
 /** For tests, and for an in-place auth swap. */
@@ -164,14 +170,10 @@ export async function captureBrowserTimezoneOnce(
   if (!userId) return false;
   if (timezoneCapturedThisTab.has(userId)) return false;
 
-  const storageKey = `${TIMEZONE_CAPTURE_STORAGE_PREFIX}${userId}`;
-  try {
-    if (sessionStorage.getItem(storageKey)) {
-      timezoneCapturedThisTab.add(userId);
-      return false;
-    }
-  } catch {
-    /* privacy mode: the in-memory set still holds for this tab */
+  // Privacy mode: the in-memory set still holds for this tab.
+  if (timezoneCapturedKeys.get(userId)) {
+    timezoneCapturedThisTab.add(userId);
+    return false;
   }
 
   // Older browsers (and a few locked-down ones) yield nothing here. An absent
@@ -191,11 +193,7 @@ export async function captureBrowserTimezoneOnce(
     // Claim the slot BEFORE the request: a second SIGNED_IN arriving while this
     // one is in flight must not send a second POST.
     timezoneCapturedThisTab.add(userId);
-    try {
-      sessionStorage.setItem(storageKey, "1");
-    } catch {
-      /* privacy mode */
-    }
+    timezoneCapturedKeys.set(userId, "1");
 
     const { fetchWithOrganization } = await import(
       "@/lib/organizations/fetchWithOrganization"

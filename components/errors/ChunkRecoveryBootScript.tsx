@@ -48,11 +48,12 @@ const SCRIPT = `(function(){
       }
       // Pre-hydration: nothing rendered yet, reload is lossless. Loop-guarded
       // so a genuinely broken new build doesn't trap the user in reloads.
+      // raw-storage-exception: a pre-paint inline script string that cannot import the door.
       try {
         var last = Number(sessionStorage.getItem(KEY) || 0);
         var now = Date.now();
         if (last && now - last < GUARD_MS) return;
-        sessionStorage.setItem(KEY, String(now));
+        sessionStorage.setItem(KEY, String(now)); // raw-storage-exception: the same inline script
       } catch (e) { /* private mode etc. — fall through */ }
       location.reload();
     }

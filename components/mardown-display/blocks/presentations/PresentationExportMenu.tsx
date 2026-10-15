@@ -2,7 +2,7 @@
 import { GoogleSlidesLogo } from "@/components/icons/google-brand";
 import { Badge } from "@ai-matrx/design-system/controls";
 import { getActiveOrgId } from "@/lib/organizations/activeOrg";
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { announceComingSoon } from "@/lib/coming-soon/announce";
 import {
   Download,
@@ -67,6 +67,12 @@ const PresentationExportMenu: React.FC<PresentationExportMenuProps> = ({
   const googleApi = useGoogleAPIOptional();
   const isAuthenticated = googleApi?.isAuthenticated ?? false;
   const token = googleApi?.token ?? null;
+  // The export runs inside one async click handler; after a sign-in the new
+  // token arrives through context, so the handler reads it from here.
+  const latestToken = useRef<string | null>(token);
+  useEffect(() => {
+    latestToken.current = token;
+  }, [token]);
   const signIn = googleApi?.signIn;
   const hasSlideScope =
     googleApi?.getGrantedScopes().includes(GOOGLE_SLIDES_SCOPE) ?? false;
@@ -267,15 +273,10 @@ const PresentationExportMenu: React.FC<PresentationExportMenuProps> = ({
               return;
             }
 
-            // After successful sign-in, wait for the context to update
-            // and get the fresh token from localStorage
+            // After a successful sign-in, wait for the context to carry the
+            // fresh token (it was never written to localStorage).
             await new Promise((resolve) => setTimeout(resolve, 500));
-
-            // Get the fresh token that was just saved
-            const savedToken = localStorage.getItem("google_auth_token");
-            if (savedToken) {
-              authToken = savedToken;
-            }
+            authToken = latestToken.current;
 
             setExportStatus("Creating presentation...");
           }

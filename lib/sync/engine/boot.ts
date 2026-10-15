@@ -148,7 +148,9 @@ function rehydrateFromStorage(
                 sliceName: policy.config.sliceName,
                 meta: { got: record.version, want: policy.config.version },
             });
-            localStorageAdapter.remove(policy.storageKey);
+            // Only an OLDER record is ours to delete. A NEWER one belongs to a tab already on the
+            // next deploy; deleting it made old and new tabs erase each other's records mid-deploy.
+            if (record.version < policy.config.version) localStorageAdapter.remove(policy.storageKey);
             continue;
         }
         if (record.identityKey !== identity.key) {

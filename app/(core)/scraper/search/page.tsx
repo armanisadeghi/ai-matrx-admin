@@ -1,64 +1,31 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { usePathname, useSearchParams } from "next/navigation";
-import { replaceAddressWithoutNavigating } from "@/lib/url-state/addressWithoutNavigating";
-import { useScraperKeywordSearchForm } from "@/features/scraper/hooks/useScraperKeywordSearchForm";
-import { ScraperKeywordSearchPageBody } from "@/features/scraper/parts/ScraperKeywordSearchPanel";
 import { ScraperSurfaceMount } from "@/features/scraper/agent-context/ScraperSurfaceMount";
 import { RESULT_LIMIT_DEFAULT } from "@/features/scraper/scrape-command";
-import { useAppSelector } from "@/lib/redux/hooks";
-import { selectIsAdminDebugger } from "@/lib/redux/selectors/userSelectors";
+import { SearchExperience } from "@/features/search/components/SearchExperience";
+import { useSearchRoute } from "@/features/search/hooks/useSearchRoute";
 import {
-  buildSearchLabQuery,
-  parseSearchLabParams,
-} from "@/features/scraper/utils/search-lab-url";
+  searchExperienceValues,
+  searchExperienceWriteHandlers,
+} from "@/features/search/agent/searchSurface";
 
+/**
+ * `/scraper/search` — the search page inside the Webscraper tabs. Same
+ * `SearchExperience` as `/search`; this route keeps the `matrx-user/scraper`
+ * surface (its scrape values fill when a link is read) and the scrape doors.
+ */
 export default function ScraperSearchPage() {
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
-  // The link is read ONCE, on arrival; after that the form owns the inputs and
-  // each search writes them back (a shareable test link).
-  const [initial] = useState(() =>
-    parseSearchLabParams(new URLSearchParams(searchParams.toString())),
-  );
-
-  // Admin debuggers always get the provider's raw payload, so the Inspector's
-  // Request and Raw response are both there for every search.
-  const isAdminDebugger = useAppSelector(selectIsAdminDebugger);
-
-  const form = useScraperKeywordSearchForm({
-    alwaysIncludeRaw: isAdminDebugger,
-    keywords: initial.query,
-    maxResults: initial.count,
-    engine: initial.engine,
-    vertical: initial.vertical,
-    options: initial.options,
-    onSearch: (request) => {
-      const qs = buildSearchLabQuery(request);
-      replaceAddressWithoutNavigating(qs ? `${pathname}?${qs}` : pathname);
-    },
-  });
-
-  // A Brave-only link runs on arrival. Google spends a shared allowance, so a
-  // link naming it fills the form and waits for the Search click.
-  const autoRan = useRef(false);
-  useEffect(() => {
-    if (autoRan.current) return;
-    autoRan.current = true;
-    if (initial.query && initial.engine === "brave") {
-      void form.handleSearch();
-    }
-  }, []);
+  const { form, inputs } = useSearchRoute();
+  const read =
+    inputs.special?.type === "read" ? inputs.scraper.data : null;
 
   return (
-    // `matrx-user/scraper` — the web-search mount. Nothing is scraped here, so
-    // it owns the keyword, engine, result type, the result budget and which
-    // hit is open; there is no single-URL input and no page budget.
     <ScraperSurfaceMount
       context={{
         mode: "web",
-        selected: null,
+        selected: read,
+        results: read ? [read] : [],
+        selectedIndex: read ? 0 : undefined,
         activeTab: "pretty",
         failureReason: form.hasError ? form.error : null,
         searchKeyword: form.keywords,
@@ -68,7 +35,7 @@ export default function ScraperSearchPage() {
         useMyLocation: form.options.nearMe,
         searchHits: form.flatResults,
         selectedHitIndex: form.selectedHitIndex,
-        isScraping: form.isLoading,
+        isScraping: form.isLoading || inputs.scraper.isLoading,
       }}
       write={{
         setKeyword: form.setKeywords,
@@ -79,14 +46,19 @@ export default function ScraperSearchPage() {
         selectSearchHit: (index) => form.setSelectedHitIndex(index),
         hitCount: form.flatResults.length,
         notHereHint:
-          "This is the Search route, which searches without scraping. Open /scraper/quick for a single URL, /scraper/search-and-scrape to search and scrape, or the floating Web Scraper workspace, which owns every mode at once.",
+          "This is the Search route. Open /scraper/quick for a single URL, /scraper/search-and-scrape to search and scrape, or the floating Web Scraper workspace, which owns every mode at once.",
+      }}
+      extraScope={() => searchExperienceValues(form, inputs)}
+      extraWriteHandlers={() => {
+        const { social_platform } = searchExperienceWriteHandlers(form);
+        return { social_platform };
       }}
     >
       <div
         className="h-full flex flex-col overflow-hidden bg-textured"
         style={{ paddingTop: "var(--shell-header-h)" }}
       >
-        <ScraperKeywordSearchPageBody form={form} />
+        <SearchExperience form={form} inputs={inputs} surface="scraper" />
       </div>
     </ScraperSurfaceMount>
   );

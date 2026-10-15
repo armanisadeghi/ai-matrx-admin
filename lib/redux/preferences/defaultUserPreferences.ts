@@ -280,4 +280,10 @@ export const defaultUserPreferences: UserPreferences = {
   inbox: { sourcesSeen: {}, sourcesSeenIds: {}, sourcesCleared: {}, sourcesClearedIds: {}, hiddenSources: [] },
   // Smart Add answers per session. Keep in sync with userPreferencesSlice.ts.
   smartAdd: { runs: {} },
+  // Shared data tools (JSON truncator, server-log viewer); null = the tool's default.
+  // Keep in sync with userPreferencesSlice.ts.
+  dataTools: {
+    truncator: { autoThreshold: null, autoLeadChars: null, autoTailChars: null, autoArrayKeepN: null, maxDepth: null },
+    serverLogNoiseExcludes: null,
+  },
 };

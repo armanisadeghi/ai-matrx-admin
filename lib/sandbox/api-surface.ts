@@ -63,19 +63,17 @@ function readStored(tier: SandboxTier): ApiSurface | null {
 }
 
 function writeStored(tier: SandboxTier, surface: ApiSurface): void {
-    {
-        const stored: StoredSurface = {
-            fetchedAt: Date.now(),
-            surface: {
-                service: surface.service,
-                version: surface.version,
-                tier: surface.tier,
-                routes: surface.routes,
-            },
-        };
-        // Storage may be full or disabled; the memory cache still serves.
-        storedSurfaces.setJSON(tier, stored);
-    }
+    const stored: StoredSurface = {
+        fetchedAt: Date.now(),
+        surface: {
+            service: surface.service,
+            version: surface.version,
+            tier: surface.tier,
+            routes: surface.routes,
+        },
+    };
+    // Storage may be full or disabled; the memory cache still serves.
+    storedSurfaces.setJSON(tier, stored);
 }
 
 function hydrate(
@@ -150,9 +148,7 @@ export function invalidateApiSurface(tier?: SandboxTier): void {
         return;
     }
     memoryCache.clear();
-    {
-        storedSurfaces.clear();
-    }
+    storedSurfaces.clear();
 }
 
 /**

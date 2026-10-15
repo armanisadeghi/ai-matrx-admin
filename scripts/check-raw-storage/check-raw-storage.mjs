@@ -19,6 +19,8 @@
  *   raw-alias|<file>   the storage object handed around (`const s = window.localStorage`,
  *                      `Object.keys(localStorage)`, `storage ?? window.sessionStorage`) — the way
  *                      around the first rule.
+ *   storage-param|<file>  a function typed to take a `Storage` (`(storage: Storage) => …`): the
+ *                      injected twin of raw-alias, where the raw calls hide behind a parameter.
  *
  * A call that genuinely cannot use the door (a pre-paint inline <script> string, the admin storage
  * inspector) says so with `raw-storage-exception: <reason>` on the line or within the 3 lines above
@@ -55,6 +57,10 @@ export const RULES = {
     title: "browser-storage object passed around",
     fix: "Do not hand localStorage/sessionStorage around; read and write through a declared key from @/lib/sync/client-storage.",
   },
+  "storage-param": {
+    title: "function taking a Storage object",
+    fix: "Instead of injecting a Storage (a third way around the door), declare the key with @/lib/sync/client-storage and inject the declared key, or read it inside.",
+  },
   "raw-storage-exception": {
     title: "raw-storage exception",
     fix: "A new `raw-storage-exception:` is reviewed like any new item: say why the door cannot serve this (e.g. a pre-paint inline script string), or move it onto @/lib/sync/client-storage.",
@@ -74,6 +80,8 @@ const ALIAS_RE = new RegExp(
   String.raw`(?:=|\?\?|\|\||\(|,|\breturn)\s*(?:window\.|globalThis\.|self\.)?(${STORE})\b(?!\s*\??\.|\s*\[|\s*[!=]==?|\s+in\b|\s*:)`,
   "g",
 );
+
+const PARAM_RE = /:\s*(?:Storage|Pick<Storage[^>]*>)(?![\w$])/g;
 
 function excepted(lines, lineIdx) {
   for (let i = Math.max(0, lineIdx - 3); i <= lineIdx; i++) if (/raw-storage-exception:/.test(lines[i] ?? "")) return true;
@@ -109,10 +117,11 @@ export function scanSource(file, text) {
     for (const [rule, re] of [
       ["raw-call", CALL_RE],
       ["raw-alias", ALIAS_RE],
+      ["storage-param", PARAM_RE],
     ]) {
       re.lastIndex = 0;
       for (const m of line.matchAll(re)) {
-        if (rule === "raw-alias" && insidePlainString(line, m.index)) continue;
+        if (rule !== "raw-call" && insidePlainString(line, m.index)) continue;
         if (rule === "raw-call" && insidePlainString(line, m.index) && !excepted(lines, idx)) continue;
         const what = m[0].trim().slice(0, 60);
         sites.push(excepted(lines, idx) ? { rule: "raw-storage-exception", line: idx + 1, what: `${what} (${rule})` } : { rule, line: idx + 1, what });
@@ -213,7 +222,7 @@ export function main(argv = process.argv.slice(2), root = ROOT) {
   }
   const sum = (r) => found.filter((f) => f.rule === r).reduce((n, f) => n + f.sites.length, 0);
   console.log(
-    `${TAG} ${found.length} item(s): ${sum("raw-call")} raw calls, ${sum("raw-alias")} aliases, ${sum("raw-storage-exception")} exceptions; ${fresh} new${paths ? " (narrowed scan)" : ""}`,
+    `${TAG} ${found.length} item(s): ${sum("raw-call")} raw calls, ${sum("raw-alias")} aliases, ${sum("storage-param")} Storage params, ${sum("raw-storage-exception")} exceptions; ${fresh} new${paths ? " (narrowed scan)" : ""}`,
   );
   return argv.includes("--strict") && fresh ? 1 : 0;
 }
@@ -227,7 +236,7 @@ function selfTest() {
       "features/a/Draft.tsx":
         'export function load() { return localStorage.getItem("draft"); }\nexport const save = (v: string) => window.sessionStorage?.setItem("k", v);\nexport const peek = (k: string) => localStorage[k];\n',
       "features/b/Around.ts":
-        "const store = window.localStorage;\nexport const all = Object.keys(sessionStorage);\nexport const pick = (s?: Storage) => s ?? globalThis.localStorage;\n",
+        "const store = window.localStorage;\nexport const all = Object.keys(sessionStorage);\nexport const pick = (s?: Storage) => s ?? globalThis.localStorage;\nexport function load(store: Pick<Storage, \"getItem\">) { return store; }\n",
       "lib/x/boot.tsx":
         "// raw-storage-exception: pre-paint inline script string\nexport const script = `try{localStorage.getItem('w')}catch(e){}`;\n",
       // Quiet: the door, comments, plain strings, typeof checks, lib/sync, tests.
@@ -245,6 +254,7 @@ function selfTest() {
       "raw-alias|features/b/Around.ts=3",
       "raw-call|features/a/Draft.tsx=3",
       "raw-storage-exception|lib/x/boot.tsx=1",
+      "storage-param|features/b/Around.ts=2",
     ];
     execFileSync("mkdir", ["-p", join(dir, "scripts/check-raw-storage")]);
     writeFileSync(

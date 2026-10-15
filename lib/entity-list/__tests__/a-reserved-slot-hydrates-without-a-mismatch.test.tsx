@@ -26,7 +26,7 @@ function Page({ style }: { style: React.CSSProperties | undefined }) {
 }
 
 it("the slot the pre-hydration script reserved hydrates with no attribute mismatch", async () => {
-  window.localStorage.setItem("matrx:list-slot-size:data-home:tabs", JSON.stringify({ w: 278, h: 31 }));
+  window.localStorage.setItem("matrx:client:entity-list.slot-size:data-home:tabs", JSON.stringify({ w: 278, h: 31 }));
   const container = document.createElement("div");
   container.innerHTML = renderToString(<Page style={undefined} />);
   document.body.appendChild(container);

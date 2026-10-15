@@ -1,0 +1,12 @@
+import { chromium } from "playwright";
+import { execSync } from "node:child_process";
+const TB = "85c830ae-98aa-4e2a-a864-8115e53a1a5d";
+const url = execSync(`cd ../.. && pnpm dev-login /data/${TB}`, { encoding: "utf8" }).match(/OPEN\s*:\s*(\S+)/)[1];
+const b = await chromium.launch({ headless: true });
+const p = await (await b.newContext({ viewport: { width: 1600, height: 900 } })).newPage();
+p.on("console", (m) => m.type() === "error" && console.log("ERR", m.text().slice(0, 150)));
+await p.goto(url, { waitUntil: "domcontentloaded", timeout: 120000 });
+await p.waitForTimeout(30000);
+console.log(p.url(), await p.title());
+await p.screenshot({ path: "/tmp/airtable-walk/dbg.png" });
+await b.close();

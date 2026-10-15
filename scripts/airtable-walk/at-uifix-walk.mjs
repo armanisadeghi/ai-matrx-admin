@@ -9,6 +9,7 @@ const page = await (await browser.newContext({ viewport: { width: 1600, height: 
 await page.goto(nonceUrl(), { waitUntil: "domcontentloaded", timeout: 240000 });
 const ready = async () => { await page.waitForSelector("[data-table-toolbar]", { timeout: 240000 }); await page.waitForTimeout(4000); };
 await ready();
+await page.goto(`${ORIGIN}/data/${TB}`, { waitUntil: "domcontentloaded", timeout: 240000 }); await ready();
 // 3. help text
 const head = page.locator('button[aria-description]').filter({ hasText: /weekly/i }).first();
 await head.hover(); await page.waitForTimeout(1200);

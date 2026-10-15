@@ -47,6 +47,14 @@ import {
 } from "lucide-react";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { SegmentedControl } from "@ai-matrx/design-system/controls";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
+import {
+  setPreference,
+  type DataToolsPreferences,
+} from "@/lib/redux/preferences/userPreferencesSlice";
+import { selectPreferencesLoadStatus } from "@/lib/redux/preferences/userPreferenceSelectors";
+import { readRetiredKey, removeRetiredKey } from "@/lib/sync/client-storage";
+import type { RootState } from "@/lib/redux/store";
 
 // ─── Public types (exported so consumers can reference them) ─────────────────
 
@@ -110,11 +118,41 @@ const DEFAULT_OPTS: TruncateOpts = {
 };
 
 const DEFAULT_ARRAY_KEEP = 3;
-const AUTO_TRUNCATE_LS_KEY = "data-truncator:auto-threshold";
-const AUTO_ARRAY_LS_KEY = "data-truncator:auto-array-keep";
-const MAX_DEPTH_LS_KEY = "data-truncator:max-depth";
-const AUTO_LEAD_CHARS_LS_KEY = "data-truncator:auto-lead-chars";
-const AUTO_TAIL_CHARS_LS_KEY = "data-truncator:auto-tail-chars";
+type TruncatorPrefs = DataToolsPreferences["truncator"];
+
+const selectTruncatorPrefs = (state: RootState): TruncatorPrefs | undefined =>
+  state.userPreferences?.dataTools?.truncator;
+
+/**
+ * The per-browser keys these settings lived under before they moved to the
+ * person's saved preferences. Read once, adopted when nothing is saved yet, then
+ * removed.
+ */
+const RETIRED_TRUNCATOR_KEYS: Record<Exclude<keyof TruncatorPrefs, "maxDepth">, string> & { maxDepth: string } = {
+  autoThreshold: "data-truncator:auto-threshold",
+  autoLeadChars: "data-truncator:auto-lead-chars",
+  autoTailChars: "data-truncator:auto-tail-chars",
+  autoArrayKeepN: "data-truncator:auto-array-keep",
+  maxDepth: "data-truncator:max-depth",
+};
+
+function adoptRetiredTruncatorPrefs(saved: TruncatorPrefs | undefined): Partial<TruncatorPrefs> {
+  const adopted: Partial<TruncatorPrefs> = {};
+  for (const field of ["autoThreshold", "autoLeadChars", "autoTailChars", "autoArrayKeepN"] as const) {
+    const raw = readRetiredKey("local", RETIRED_TRUNCATOR_KEYS[field]);
+    removeRetiredKey("local", RETIRED_TRUNCATOR_KEYS[field]);
+    const v = raw === null ? NaN : parseInt(raw);
+    if (saved?.[field] == null && !isNaN(v) && v >= 0) adopted[field] = v;
+  }
+  const depth = readRetiredKey("local", RETIRED_TRUNCATOR_KEYS.maxDepth);
+  removeRetiredKey("local", RETIRED_TRUNCATOR_KEYS.maxDepth);
+  if (saved?.maxDepth == null && depth !== null) {
+    const v = parseInt(depth);
+    if (depth === "null") adopted.maxDepth = "none";
+    else if (!isNaN(v) && v >= 1) adopted.maxDepth = v;
+  }
+  return adopted;
+}
 const DEFAULT_AUTO_THRESHOLD = 100;
 
 // NumInput is an alias for the shared NumericStepper component.
@@ -1855,18 +1893,35 @@ export function JsonTruncator({
   const [searchQuery, setSearchQuery] = useState("");
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [autoTruncateEnabled, setAutoTruncateEnabled] = useState(false);
-  const [autoThreshold, setAutoThreshold] =
-    useState<number>(defaultAutoThreshold);
-  const [autoLeadChars, setAutoLeadChars] = useState<number>(
-    DEFAULT_OPTS.leadChars,
+  // The auto-settings are the person's saved choices (server preferences, every
+  // device); a field never chosen falls back to this surface's prop default.
+  const dispatch = useAppDispatch();
+  const savedTruncator = useAppSelector(selectTruncatorPrefs);
+  const preferencesLoaded = useAppSelector(selectPreferencesLoadStatus) === "loaded";
+  const saveTruncator = useCallback(
+    (patch: Partial<TruncatorPrefs>) =>
+      dispatch(
+        setPreference({
+          module: "dataTools",
+          preference: "truncator",
+          value: { ...savedTruncator, ...patch },
+        }),
+      ),
+    [dispatch, savedTruncator],
   );
-  const [autoTailChars, setAutoTailChars] = useState<number>(
-    DEFAULT_OPTS.tailChars,
-  );
+  const autoThreshold = savedTruncator?.autoThreshold ?? defaultAutoThreshold;
+  const autoLeadChars = savedTruncator?.autoLeadChars ?? DEFAULT_OPTS.leadChars;
+  const autoTailChars = savedTruncator?.autoTailChars ?? DEFAULT_OPTS.tailChars;
+  const autoArrayKeepN = savedTruncator?.autoArrayKeepN ?? defaultArrayKeep;
+  const savedDepth = savedTruncator?.maxDepth;
+  const maxDepth: number | null =
+    savedDepth === "none" ? null : (savedDepth ?? defaultMaxDepth);
+  const setAutoThreshold = (v: number) => saveTruncator({ autoThreshold: v });
+  const setAutoLeadChars = (v: number) => saveTruncator({ autoLeadChars: v });
+  const setAutoTailChars = (v: number) => saveTruncator({ autoTailChars: v });
+  const setAutoArrayKeepN = (v: number) => saveTruncator({ autoArrayKeepN: v });
+  const setMaxDepth = (v: number | null) => saveTruncator({ maxDepth: v === null ? "none" : v });
   const [autoArrayEnabled, setAutoArrayEnabled] = useState(false);
-  const [autoArrayKeepN, setAutoArrayKeepN] =
-    useState<number>(defaultArrayKeep);
-  const [maxDepth, setMaxDepth] = useState<number | null>(defaultMaxDepth);
   const [actualDepth, setActualDepth] = useState<number | null>(null);
   const [highlightedOffset, setHighlightedOffset] = useState<number>(-1);
   const [activeTab, setActiveTab] = useState<JsonTruncatorTab>(() =>
@@ -1875,60 +1930,15 @@ export function JsonTruncator({
 
   const outputRef = useRef<HTMLTextAreaElement>(null);
 
-  // Persist / restore auto-settings (localStorage overrides prop defaults when present)
+  // Settings saved in this browser before they moved to the person's
+  // preferences are adopted once (only where nothing is saved yet).
+  const adoptedRetired = useRef(false);
   useEffect(() => {
-    const t = localStorage.getItem(AUTO_TRUNCATE_LS_KEY);
-    if (t) {
-      const v = parseInt(t);
-      if (!isNaN(v) && v > 0) setAutoThreshold(v);
-    } else {
-      setAutoThreshold(defaultAutoThreshold);
-    }
-    const lead = localStorage.getItem(AUTO_LEAD_CHARS_LS_KEY);
-    if (lead) {
-      const v = parseInt(lead);
-      if (!isNaN(v) && v >= 0) setAutoLeadChars(v);
-    }
-    const tail = localStorage.getItem(AUTO_TAIL_CHARS_LS_KEY);
-    if (tail) {
-      const v = parseInt(tail);
-      if (!isNaN(v) && v >= 0) setAutoTailChars(v);
-    }
-    const a = localStorage.getItem(AUTO_ARRAY_LS_KEY);
-    if (a) {
-      const v = parseInt(a);
-      if (!isNaN(v) && v > 0) setAutoArrayKeepN(v);
-    } else {
-      setAutoArrayKeepN(defaultArrayKeep);
-    }
-    const d = localStorage.getItem(MAX_DEPTH_LS_KEY);
-    if (d === "null") {
-      setMaxDepth(null);
-    } else if (d !== null) {
-      const v = parseInt(d);
-      if (!isNaN(v) && v >= 1) setMaxDepth(v);
-    } else {
-      setMaxDepth(defaultMaxDepth);
-    }
-  }, [defaultAutoThreshold, defaultArrayKeep, defaultMaxDepth]);
-  useEffect(() => {
-    localStorage.setItem(AUTO_TRUNCATE_LS_KEY, String(autoThreshold));
-  }, [autoThreshold]);
-  useEffect(() => {
-    localStorage.setItem(AUTO_LEAD_CHARS_LS_KEY, String(autoLeadChars));
-  }, [autoLeadChars]);
-  useEffect(() => {
-    localStorage.setItem(AUTO_TAIL_CHARS_LS_KEY, String(autoTailChars));
-  }, [autoTailChars]);
-  useEffect(() => {
-    localStorage.setItem(AUTO_ARRAY_LS_KEY, String(autoArrayKeepN));
-  }, [autoArrayKeepN]);
-  useEffect(() => {
-    localStorage.setItem(
-      MAX_DEPTH_LS_KEY,
-      maxDepth === null ? "null" : String(maxDepth),
-    );
-  }, [maxDepth]);
+    if (!preferencesLoaded || adoptedRetired.current) return;
+    adoptedRetired.current = true;
+    const adopted = adoptRetiredTruncatorPrefs(savedTruncator);
+    if (Object.keys(adopted).length > 0) saveTruncator(adopted);
+  }, [preferencesLoaded, savedTruncator, saveTruncator]);
 
   // If initialValue changes externally, re-parse
   useEffect(() => {

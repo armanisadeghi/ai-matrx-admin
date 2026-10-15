@@ -149,6 +149,9 @@ async function completeIdbOperation<T>(
   return null;
 }
 
+/** How long a failed open is remembered before the next caller tries again. */
+const IDB_OPEN_RETRY_MS = 30_000;
+
 export function openDb(): Promise<MatrxSyncDb | null> {
   if (dbPromise) return dbPromise;
   if (!hasIndexedDb()) {
@@ -176,10 +179,15 @@ export function openDb(): Promise<MatrxSyncDb | null> {
       });
       return db;
     } catch (err) {
-      if (activeConnection === connection) activeConnection = null;
       logger.warn("idb.open.error", {
-        meta: { error: extractErrorMessage(err) },
+        meta: { error: extractErrorMessage(err), retryInMs: IDB_OPEN_RETRY_MS },
       });
+      // A failed open used to stay memoized as `null` for the rest of the tab: one transient
+      // failure (another tab mid-upgrade, a busy disk) turned IndexedDB off until reload.
+      // Forget it after a cooldown so the next read or write tries again.
+      setTimeout(() => {
+        if (activeConnection === connection) invalidateDb(connection);
+      }, IDB_OPEN_RETRY_MS);
       return null;
     }
   })();

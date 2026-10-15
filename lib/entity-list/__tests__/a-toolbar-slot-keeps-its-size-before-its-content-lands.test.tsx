@@ -12,7 +12,7 @@ import { reserveSlotScript, useReservedSlot } from "../components/useReservedSlo
 
 (globalThis as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
-const KEY = "matrx:list-slot-size:data-home:tabs";
+const KEY = "matrx:client:entity-list.slot-size:data-home:tabs";
 const RO = globalThis.ResizeObserver;
 
 beforeAll(() => {

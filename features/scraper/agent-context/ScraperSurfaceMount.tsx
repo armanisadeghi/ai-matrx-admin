@@ -52,26 +52,41 @@ export interface ScraperSurfaceMountProps {
    * surface still publishes its scope, it just offers no write tool.
    */
   write?: Omit<ScraperWriteMount, "mode" | "isScraping">;
+  /**
+   * Values a hosted experience adds on top of the scraper's own (the search
+   * page's tab, social platform and input mode — `features/search/agent`).
+   * Read at trigger time, like `context`.
+   */
+  extraScope?: () => Record<string, unknown>;
+  /** Write handlers the hosted experience adds (same declared target names). */
+  extraWriteHandlers?: () => Record<string, (value: unknown) => void>;
   children: ReactNode;
 }
 
 export function ScraperSurfaceMount({
   context,
   write,
+  extraScope,
+  extraWriteHandlers,
   children,
 }: ScraperSurfaceMountProps) {
   // Both callbacks read `context` / `write` from the CURRENT render, so a
   // launch or an apply always sees what the user is looking at right now.
   const getScope = () =>
-    buildScraperContextData(context) as unknown as SurfaceScopePayload;
+    ({
+      ...buildScraperContextData(context),
+      ...extraScope?.(),
+    }) as unknown as SurfaceScopePayload;
 
   const getWriteHandlers = write
-    ? () =>
-        buildScraperWriteHandlers({
+    ? () => ({
+        ...buildScraperWriteHandlers({
           ...write,
           mode: context.mode,
           isScraping: Boolean(context.isScraping),
-        })
+        }),
+        ...extraWriteHandlers?.(),
+      })
     : undefined;
 
   return (
