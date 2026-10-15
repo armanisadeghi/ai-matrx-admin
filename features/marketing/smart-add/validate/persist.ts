@@ -122,6 +122,7 @@ async function recordDiscovered(
   relationKey: string | null,
   value: string,
   resolved: { resolved_property_id?: string; resolved_fact_id?: string },
+  trail: { homes: string[]; before: Record<string, Json> } = { homes: [], before: {} },
 ): Promise<{ id: string; undo: () => Promise<void> }> {
   const brand = ctx.getBrand();
   const w = await db();
@@ -132,6 +133,9 @@ async function recordDiscovered(
     by: "person",
     at,
     from: "smart_add.validate",
+    // What the answer wrote and what it replaced: a reload's Undo (savedAnswers.ts) takes it back from this alone.
+    homes: trail.homes,
+    before: trail.before,
     suggested: item.suggestion ? (item.suggestion as unknown as Json) : null,
     ...(item.fact && value !== item.fact.value ? { edited_from: item.fact.value } : {}),
   };
@@ -240,9 +244,10 @@ async function recordDiscovered(
   };
 }
 
-async function patchProfile(ctx: PersistContext, edit: (profile: Record<string, Json>) => Record<string, Json>) {
+async function patchProfile(ctx: PersistContext, edit: (profile: Record<string, Json>) => Record<string, Json>, before?: Record<string, Json>) {
   const brand = ctx.getBrand();
   const current = (isJsonRecord(brand.profile) ? { ...brand.profile } : {}) as Record<string, Json>;
+  if (before) before.profile = current as Json;
   const next = await updateBrand({ brandId: brand.id, expectedVersion: brand.version, patch: { profile: edit(current) as Json } });
   ctx.setBrand(next);
   return async () => {
@@ -309,6 +314,7 @@ async function settleKeptFact(
   resolved: { resolved_property_id?: string; resolved_fact_id?: string },
   homes: string[],
   undos: (() => Promise<void>)[],
+  trail: Record<string, Json>,
 ): Promise<boolean> {
   const w = await db();
   const link = await w
@@ -351,6 +357,7 @@ async function settleKeptFact(
   if (error) throw new Error(error.message);
   if (answer === "correct") resolved.resolved_fact_id = factId;
   homes.push(`web.business_fact:${factId}`);
+  trail.fact = { value: before.value, confirmed_at: before.confirmed_at, metadata: before.metadata, kept: true };
   undos.push(async () => {
     const { error: e } = await (await db())
       .from("business_fact")
@@ -500,6 +507,7 @@ async function persistAnswerOnce(
 ): Promise<Persisted> {
   const homes: string[] = [];
   const undos: (() => Promise<void>)[] = [];
+  const before: Record<string, Json> = {};
   const resolved: { resolved_property_id?: string; resolved_fact_id?: string } = {};
   const value = opts.value?.trim() || item.value;
   const ev = item.evidence;
@@ -565,20 +573,21 @@ async function persistAnswerOnce(
   }
   if (answer === "preferred" && item.kind === "name") {
     const brand = ctx.getBrand();
-    const before = brand.name;
+    const nameBefore = brand.name;
+    before.name = nameBefore;
     const next = await updateBrand({ brandId: brand.id, expectedVersion: brand.version, patch: { name: value } });
     ctx.setBrand(next);
     homes.push(`web.brand.name:${brand.id}`);
     undos.push(async () => {
       const latest = ctx.getBrand();
-      ctx.setBrand(await updateBrand({ brandId: latest.id, expectedVersion: latest.version, patch: { name: before } }));
+      ctx.setBrand(await updateBrand({ brandId: latest.id, expectedVersion: latest.version, patch: { name: nameBefore } }));
     });
   }
   if (answer === "alias" && item.kind === "name") {
     const undo = await patchProfile(ctx, (p) => {
       const aliases = parseBrandProfile(p as Json).brand_aliases ?? [];
       return aliases.includes(value) ? p : { ...p, brand_aliases: [...aliases, value] };
-    });
+    }, before);
     homes.push(`web.brand.profile.brand_aliases:${ctx.getBrand().id}`);
     undos.push(undo);
   }
@@ -624,7 +633,7 @@ async function persistAnswerOnce(
             },
           ] as Json,
         };
-      });
+      }, before);
       homes.push(`web.brand.profile.competitors:${ctx.getBrand().id}`);
       undos.push(undo);
     }
@@ -646,10 +655,10 @@ async function persistAnswerOnce(
       }
       const list = Array.isArray(p.competitors) ? p.competitors : [];
       return { ...p, competitors: [...list, { name: value }] as Json };
-    });
+    }, before);
     homes.push(`web.brand.profile.${profileHome}:${ctx.getBrand().id}`);
     undos.push(undo);
-  } else if ((answer === "correct" || answer === "wrong") && item.kind === "fact" && (await settleKeptFact(ctx, item, answer, value, resolved, homes, undos))) {
+  } else if ((answer === "correct" || answer === "wrong") && item.kind === "fact" && (await settleKeptFact(ctx, item, answer, value, resolved, homes, undos, before))) {
     // The fact Create kept (keptFacts.ts) is settled in place: confirmed, or soft-deleted — never a second row.
   } else if (answer === "correct" && item.kind === "fact") {
     const field = item.fact?.field ?? ev?.field ?? "other";
@@ -684,7 +693,7 @@ async function persistAnswerOnce(
   }
 
   try {
-    const discovered = await recordDiscovered(ctx, item, answer, opts.relationKey ?? null, value, resolved);
+    const discovered = await recordDiscovered(ctx, item, answer, opts.relationKey ?? null, value, resolved, { homes: [...homes], before });
     homes.unshift(`web.discovered_item:${discovered.id}`);
     undos.unshift(discovered.undo);
     // Provenance: the site exists because of this decision (the account's is resolved_property_id).

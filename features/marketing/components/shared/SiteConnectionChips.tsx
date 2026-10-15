@@ -5,6 +5,8 @@ import { Globe2 } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@ai-matrx/design-system";
 import { cn } from "@/lib/utils";
 import type { MarketingSite } from "@/features/marketing/types";
+import { brightnessOf } from "@/features/marketing/smart-add/logo-shade";
+import { proxiedExternalImageUrl } from "@/lib/media/external-image";
 import { secureImageUrl } from "@/features/marketing/lib/website-url";
 import type { SiteConnectionState } from "@/features/marketing/lib/site-status";
 import { useSiteConnectionStatuses } from "@/features/marketing/tracking/hooks";
@@ -129,6 +131,8 @@ export function SiteIdentityMark({
   className?: string;
 }) {
   const [failed, setFailed] = useState<Record<string, true>>({});
+  // A logo the tile's own colour swallows (a grey mark on the dark theme: MKT-048) gets a tile that shows it.
+  const [shade, setShade] = useState<Record<string, "light" | "dark">>({});
   const ordered =
     prefer === "logo"
       ? [site.logo_url, site.favicon_url]
@@ -137,11 +141,14 @@ export function SiteIdentityMark({
     .filter((url): url is string => Boolean(url))
     .map((url) => secureImageUrl(url))
     .find((url) => !failed[url]);
+  const tile = prefer === "logo" && src && src === secureImageUrl(site.logo_url ?? "") ? shade[src] : undefined;
   return (
     <span
       className={cn(
-        "flex shrink-0 items-center justify-center overflow-hidden rounded-md border border-border/60 bg-muted/40",
+        "relative flex shrink-0 items-center justify-center overflow-hidden rounded-md border border-border/60 bg-muted/40",
         className,
+        tile === "light" && "bg-white",
+        tile === "dark" && "bg-zinc-900",
       )}
       style={{ width: size, height: size }}
     >
@@ -163,6 +170,19 @@ export function SiteIdentityMark({
           style={{ width: size * 0.55, height: size * 0.55 }}
         />
       )}
+      {tile === undefined && prefer === "logo" && src && src === secureImageUrl(site.logo_url ?? "") ? (
+        // Same-origin copy of the logo, read once for its brightness (the logo's own host will not let us read pixels).
+        <img
+          src={proxiedExternalImageUrl(src)}
+          alt=""
+          aria-hidden
+          className="pointer-events-none absolute size-px opacity-0"
+          onLoad={(ev) => {
+            const b = brightnessOf(ev.currentTarget);
+            setShade((m) => ({ ...m, [src]: b !== null && b > 0.8 ? "dark" : "light" }));
+          }}
+        />
+      ) : null}
     </span>
   );
 }

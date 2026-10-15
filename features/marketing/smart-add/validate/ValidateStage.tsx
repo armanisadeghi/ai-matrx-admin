@@ -491,7 +491,7 @@ function FocusCard({
               const person = kind?.routesTo === "owns" || kind?.routesTo === "key_person";
               // An account is the person's own page (its name is the name); anything else asks.
               if (kind && person && item.kind !== "account") {
-                setDraft(personNameOnPage({ title: item.title, snippet: item.detail }, brandName) ?? "");
+                setDraft(personNameOnPage({ title: item.title, snippet: item.detail }, brandName, item.evidence?.url ?? item.openUrl ?? item.value) ?? "");
                 setPersonFor(kind);
               } else onAnswer("related", { relationKey: v.slice(4) });
             }

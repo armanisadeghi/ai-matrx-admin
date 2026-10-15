@@ -32,6 +32,8 @@ describe("the person's name a web page names (MKT-040)", () => {
     expect(personNameOnPage({ title: "Ritual Coffee Roasters — San Francisco… | day9.coffee" }, "Ritual Coffee Roasters")).toBeNull();
   });
   it("prefills a name the title or snippet gives", () => {
+    expect(personNameOnPage({ title: "Outdoor Supply Hardware | Tools" }, "California Hot Sauce Solutions", "https://outdoorsupplyhardware.com")).toBeNull();
+    expect(personNameOnPage({ title: "Acme Widgets | Home" }, "Zed", "https://acmewidgets.com")).toBeNull();
     expect(personNameOnPage({ title: "Eric Rivera | Founder, Ritual" }, "Ritual Coffee Roasters")).toBe("Eric Rivera");
     expect(personNameOnPage({ title: "About", snippet: "Ritual was founded by Jane Smith in 2005." }, "Ritual")).toBe("Jane Smith");
   });

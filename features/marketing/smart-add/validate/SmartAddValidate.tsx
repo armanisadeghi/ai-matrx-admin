@@ -21,6 +21,7 @@ import { buildQueue, decisionFor, mergeFacts, type Answer, type BrandFact, type 
 import { persistAnswer, type Persisted } from "./persist";
 import { answeredKeysOf, EMPTY_KNOWN, foldQueue, type KnownOnBrand } from "./fold";
 import { loadSavedFindings } from "./fromSaved";
+import { loadSavedAnswers, type SavedAnswers } from "./savedAnswers";
 import { emptyAnswers, useRunMemory } from "../runMemory";
 import { ValidateStage, type AnsweredEntry, type AnswerOptions } from "./ValidateStage";
 import { RetractionDialog } from "@/features/marketing/components/brands/RetractionDialog";
@@ -80,18 +81,32 @@ export function SmartAddValidate({
   // live rounds' findings join on top (same key = the live copy).
   const [saved, setSaved] = useState<{ items: Ev[]; facts: BrandFact[]; known: KnownOnBrand } | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
+  // Earlier answers (a reload, a return visit) fill the Answered tray, latest first, each undoable (MKT-137).
+  const [past, setPast] = useState<SavedAnswers | null>(null);
   useEffect(() => {
     let live = true;
-    loadSavedFindings(brandRef.current)
-      .then((s) => live && setSaved(s))
+    Promise.all([loadSavedFindings(brandRef.current), loadSavedAnswers(brandRef.current, kinds, ctx)])
+      .then(([s, a]) => {
+        if (!live) return;
+        setSaved(s);
+        setPast(a);
+        setAnswered((list) => {
+          const have = new Set(list.map((x) => x.id));
+          const mine = new Set(list.flatMap((x) => answeredKeysOf(x.item)));
+          const earlier: Saved[] = a.entries
+            .filter((e) => !have.has(e.id) && !answeredKeysOf(e.item).some((k) => mine.has(k)))
+            .map((e) => ({ id: e.id, item: e.item, answer: e.answer, relationLabel: e.relationLabel, value: e.value, state: "saved", error: null, persisted: e.persisted }));
+          return [...list, ...earlier];
+        });
+      })
       .catch((e: unknown) => live && setLoadError(extractErrorMessage(e)));
     return () => {
       live = false;
     };
   }, []);
   const liveKeys = new Set(items.map((i) => i.key));
-  const allItems = [...items, ...(saved?.items ?? []).filter((i) => !liveKeys.has(i.key))];
-  const allFacts = mergeFacts(facts, saved?.facts ?? []);
+  const allItems = [...items, ...[...(saved?.items ?? []), ...(past?.items ?? [])].filter((i) => !liveKeys.has(i.key))];
+  const allFacts = mergeFacts(facts, [...(saved?.facts ?? []), ...(past?.facts ?? [])]);
 
   const answeredKeys = new Set(answered.flatMap((a) => answeredKeysOf(a.item)));
   const raw = buildQueue({ items: allItems, facts: allFacts, decisions, webChoices, answered: answeredKeys, later, broken, kinds, ctx });

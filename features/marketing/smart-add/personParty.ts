@@ -22,7 +22,7 @@ export function personPartyInput(
   };
 }
 
-const NOT_A_PERSON = /\b(inc|llc|ltd|co|corp|company|coffee|roasters?|restaurant|cafe|shop|store|staffing|solutions|services|group|home|about|contact|news|blog|official|jobs|careers|reviews?|menu|order|team|us)\b/i;
+const NOT_A_PERSON = /\b(inc|llc|ltd|co|corp|company|coffee|roasters?|restaurant|cafe|shop|store|staffing|solutions|services|group|home|about|contact|news|blog|official|jobs|careers|reviews?|menu|order|team|us|supply|supplies|hardware|outdoor|outdoors|products?|systems?|studio|studios|labs?|partners|industries|enterprises|trading|foods?|market|sauces?|hot|co\.)\b/i;
 
 /**
  * A person's name the page names, to prefill the ask when a web result is answered Founder / Key person
@@ -33,7 +33,19 @@ const NOT_A_PERSON = /\b(inc|llc|ltd|co|corp|company|coffee|roasters?|restaurant
 export function personNameOnPage(
   page: { title?: string | null; snippet?: string | null },
   brandName: string | null,
+  siteUrl?: string | null,
 ): string | null {
+  // The site's own name (its host, letters only) is a company, never a person (MKT-136).
+  let hostStem = "";
+  try {
+    hostStem = new URL(/^https?:\/\//i.test(siteUrl ?? "") ? (siteUrl as string) : `https://${siteUrl ?? ""}`).hostname
+      .replace(/^www\./, "")
+      .split(".")[0]
+      .replace(/[^a-z0-9]/gi, "")
+      .toLowerCase();
+  } catch {
+    hostStem = "";
+  }
   const brand = (brandName ?? "").toLowerCase();
   const candidates = [
     ...(page.title ?? "").split(/\s+[|\-–—:·•»,]\s+|\s*\|\s*/),
@@ -45,6 +57,8 @@ export function personNameOnPage(
     if (words.length < 2 || words.length > 4) continue;
     if (!words.every((w) => /^[A-Z][a-zA-Z'.-]+$/.test(w))) continue;
     if (NOT_A_PERSON.test(text)) continue;
+    const letters = text.replace(/[^a-z0-9]/gi, "").toLowerCase();
+    if (hostStem.length >= 4 && (hostStem.includes(letters) || letters.includes(hostStem))) continue;
     if (brand && (brand.includes(text.toLowerCase()) || text.toLowerCase().includes(brand))) continue;
     return text;
   }
