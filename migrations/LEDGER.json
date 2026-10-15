@@ -1,6 +1,6 @@
 {
   "note": "Checked-in snapshot of public._schema_migrations for the files under migrations/campaign and migrations/inverse. Written by `pnpm db:apply` on every successful production apply and refreshed whole by the nightly catch-up. Never hand-edited: a self-written checksum is a claim nobody can check. Guard: pnpm check:ledgered-files-unedited.",
-  "generated_at": "2026-10-15T03:59:01.943Z",
+  "generated_at": "2026-10-15T04:35:19.887Z",
   "files": {
     "migrations/campaign/a_chunk_is_the_size_the_client_door_can_actually_carry.sql": {
       "source": "matrx-frontend",
@@ -5672,6 +5672,12 @@
       "checksum": "084f902097833d94c8b966567945dd45bd3e600c1dc70c0e65d4bb247c625c04",
       "applied_at": "2026-10-08 14:59:22.93421+00"
     },
+    "migrations/campaign/notionq_a_a_multi_pick_and_a_linked_field_filter_a_list.sql": {
+      "source": "matrx-frontend",
+      "filename": "notionq_a_a_multi_pick_and_a_linked_field_filter_a_list.sql",
+      "checksum": "317501b3a90f324aad321e489f5f5fe63dc1e577232ac854c968bb03cac80965",
+      "applied_at": "2026-10-15 04:35:17.40078+00"
+    },
     "migrations/campaign/notionsmall2_a_a_view_can_be_locked.sql": {
       "source": "matrx-frontend",
       "filename": "notionsmall2_a_a_view_can_be_locked.sql",
@@ -5719,6 +5725,12 @@
       "filename": "notionsmall4_b_the_calendar_reads_the_organizations_week.sql",
       "checksum": "fdbf6c0f4b1567ad8fc140539355eecb5ca954fb36d7b1c2f65d5a3ae254ce2e",
       "applied_at": "2026-10-09 07:46:30.610256+00"
+    },
+    "migrations/campaign/notionsync_a_a_notion_source_is_remembered_and_synced.sql": {
+      "source": "matrx-frontend",
+      "filename": "notionsync_a_a_notion_source_is_remembered_and_synced.sql",
+      "checksum": "c1cb564aea1002748337338087fcbf08a906c13bcd21c7fa992240884e5c4f99",
+      "applied_at": "2026-10-15 04:09:25.457309+00"
     },
     "migrations/campaign/olderdoors_a_moved_older_table_reads_marked_and_refuses_writes.sql": {
       "source": "matrx-frontend",
@@ -11059,12 +11071,6 @@
       "filename": "writeperf4_the_field_set_is_read_once_per_row_down.sql",
       "checksum": "faa8f0c7ba79f6453a6127a85cdf4549ca35ceb45a87cf6e5bee8ce5368ff7c6",
       "applied_at": "2026-09-22 09:33:14.786775+00"
-    },
-    "migrations/campaign/notionsync_a_a_notion_source_is_remembered_and_synced.sql": {
-      "source": "matrx-frontend",
-      "filename": "notionsync_a_a_notion_source_is_remembered_and_synced.sql",
-      "checksum": "c1cb564aea1002748337338087fcbf08a906c13bcd21c7fa992240884e5c4f99",
-      "applied_at": "2026-10-15 04:09:25.457309+00"
     }
   }
 }
