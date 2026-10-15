@@ -146,10 +146,21 @@ if (!st.running) {
   say(`server: running (pid ${st.pid}, ${st.memGb} GB real memory${st.ready ? "" : ", still warming"})`);
 }
 
-// node_modules moved under a live server: the watchdog restarts it once the install settles; do it now.
+// node_modules moved under a live server: the watchdog restarts it once the install settles, after
+// any held run. Do it now only when no OTHER session holds the server — a restart under someone's run
+// is the very thing holds exist to stop. Otherwise go on: the page check below still restarts if the
+// stale code really breaks this page (STALE SERVER).
+const otherHolds = (st.text.match(/holds: ([^\n]*?)\s{3}ready:/)?.[1] || "")
+  .split(", ")
+  .map((h) => h.split(" (")[0].trim())
+  .filter((h) => h && h !== "none" && `${h}.localhost` !== HOST);
 if (st.nmMoved && repair) {
-  say("server: packages were installed under the running server — restarting it now so it serves what is on disk");
-  restartServer();
+  if (otherHolds.length) {
+    say(`server: packages were installed under it; another run holds it (${otherHolds.join(", ")}), so it restarts after that run — this check goes on`);
+  } else {
+    say("server: packages were installed under the running server — restarting it now so it serves what is on disk");
+    restartServer();
+  }
 }
 
 // ── 3. hold ──────────────────────────────────────────────────────────────────
