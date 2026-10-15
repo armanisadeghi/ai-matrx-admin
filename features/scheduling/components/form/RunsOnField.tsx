@@ -8,12 +8,16 @@
  * desktop tools reach it), started there at each run. An offline computer can still be chosen: it runs when
  * Matrx 2 is open there again, and the schedule says it is waiting.
  */
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { ErrorNotice } from "@ai-matrx/design-system";
 import { Select } from "@ai-matrx/design-system/controls";
 
 import { browserCodingDoors } from "@/features/ai-work/lib/matrx2Computers";
 import type { Matrx2ComputerStatus } from "@/features/ai-work/lib/matrx2Coding";
+import { ComputerConnection, type ComputerConnectionState } from "@/features/ai-work/compose/components/RunsOnStep";
+import { ComputerWorkFields } from "@/features/ai-work/components/ComputerWorkFields";
+import { duplicateNames, lastSeenLabel, type ComputerRunRequest } from "@/features/ai-work/lib/computerChooser";
+import { supabase } from "@/utils/supabase/client";
 
 export interface ComputerCodingChoice {
   deviceId: string;
@@ -51,7 +55,34 @@ export function RunsOnField({ value, onChange, error }: Props) {
     };
   }, []);
 
+  const [lastSeen, setLastSeen] = useState<Record<string, string | null>>({});
+  const [connection, setConnection] = useState<ComputerConnectionState | null>(null);
+  useEffect(() => {
+    if (!computers?.length) return;
+    let live = true;
+    void supabase
+      .from("app_instances")
+      .select("id, last_seen")
+      .in("id", computers.map((c) => c.deviceId))
+      .then(({ data }) => {
+        if (live) setLastSeen(Object.fromEntries(((data ?? []) as Array<{ id: string; last_seen: string | null }>).map((r) => [r.id, r.last_seen])));
+      });
+    return () => {
+      live = false;
+    };
+  }, [computers]);
+  const dupes = duplicateNames((computers ?? []).map((c) => c.name));
+
   const chosen = value ? computers?.find((c) => c.deviceId === value.deviceId) : null;
+  // The shared fields report the work once it can run there; only a real change is passed on.
+  const onWork = useCallback(
+    (work: ComputerRunRequest | null) => {
+      if (!work || !value) return;
+      const next = { ...value, provider: work.provider, folder: work.folder, accountProfileId: work.accountProfileId ?? "" };
+      if (next.provider !== value.provider || next.folder !== value.folder || next.accountProfileId !== value.accountProfileId) onChange(next);
+    },
+    [value, onChange],
+  );
   return (
     <div className="space-y-2" data-runs-on={value?.deviceId ?? "cloud"}>
       <Select<string>
@@ -60,7 +91,10 @@ export function RunsOnField({ value, onChange, error }: Props) {
         options={[
           { value: "cloud", label: "AI Matrx cloud" },
           ...(value && !computers?.some((c) => c.deviceId === value.deviceId) ? [{ value: value.deviceId, label: "This computer (not listed)" }] : []),
-          ...(computers ?? []).map((c) => ({ value: c.deviceId, label: `${c.name} · ${c.online === true ? "online" : c.online === false ? "offline" : "status unknown"}` })),
+          ...(computers ?? []).map((c) => ({
+            value: c.deviceId,
+            label: [c.name, c.online === true ? "online" : c.online === false ? "offline" : "status unknown", dupes.has(c.name) ? lastSeenLabel(lastSeen[c.deviceId]) : ""].filter(Boolean).join(" · "),
+          })),
         ]}
         onValueChange={(id) =>
           onChange(id !== "cloud" ? { deviceId: id, mode: value?.mode ?? "coding", folder: value?.folder ?? "", provider: value?.provider ?? "claude", accountProfileId: value?.accountProfileId ?? "" } : null)
@@ -83,8 +117,25 @@ export function RunsOnField({ value, onChange, error }: Props) {
           The agent below runs on AI Matrx at each run, using {chosen?.name ?? "that computer"} for its desktop tools. It runs while Matrx 2 is open there.
         </p>
       )}
-      {value && value.mode === "coding" && (
+      {value && value.mode === "coding" && chosen?.online === true && (
+        <>
+          <ComputerConnection key={value.deviceId} deviceId={value.deviceId} onConnection={setConnection} />
+          {connection && connection.deviceId === value.deviceId ? (
+            <ComputerWorkFields
+              key={value.deviceId}
+              computer={{ device: { id: value.deviceId }, name: chosen.name }}
+              connection={connection}
+              initial={{ deviceId: value.deviceId, name: chosen.name, provider: value.provider, folder: value.folder, accountProfileId: value.accountProfileId || null }}
+              onPlan={onWork}
+            />
+          ) : (
+            <p className="text-xs text-muted-foreground">Connecting to {chosen.name}…</p>
+          )}
+        </>
+      )}
+      {value && value.mode === "coding" && chosen?.online !== true && (
         <div className="grid gap-2 sm:grid-cols-2">
+          <p className="text-xs text-muted-foreground sm:col-span-2">Folder and account suggestions appear while {chosen?.name ?? "that computer"} is online</p>
           <label className="space-y-1 text-xs sm:col-span-2">
             <span>Folder on {chosen?.name ?? "that computer"}</span>
             <input className={inputClass} value={value.folder} placeholder="/Users/you/Projects/site" onChange={(e) => onChange({ ...value, folder: e.target.value })} />

@@ -692,7 +692,8 @@ export function ScheduleForm({
           </div>
         </Section>
 
-        {/* 4. Where to run */}
+        {/* 4. Where to run — a computer decides that itself (Runs on), so no surfaces then. */}
+        {!computer && (
         <Section title="Where to run">
           <Field label="Surfaces" error={errors.surfaces}>
             <div className="flex flex-wrap gap-2">
@@ -734,6 +735,7 @@ export function ScheduleForm({
             </p>
           </Field>
         </Section>
+        )}
 
         {/* 5. How to run */}
         <Section title="How to run">

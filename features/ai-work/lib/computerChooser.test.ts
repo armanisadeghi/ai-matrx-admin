@@ -46,3 +46,18 @@ describe("Runs on: a computer's choice is the relay's word", () => {
     expect(new URL(`https://x${computerSessionLink("dev-1", "s.1")}`).searchParams.get("s")).toBe("#s/s.1");
   });
 });
+
+describe("telling computers apart, and what to do next", () => {
+  it("names shared by several computers also say when each was last seen", async () => {
+    const { duplicateNames, lastSeenLabel } = await import("./computerChooser");
+    expect([...duplicateNames(["My Computer", "Studio", "My Computer"])]).toEqual(["My Computer"]);
+    expect(lastSeenLabel("2026-10-12T10:00:00Z")).toMatch(/^last seen /);
+    expect(lastSeenLabel(null)).toBe("");
+  });
+
+  it("an app that cannot run on that computer says what to do", async () => {
+    const { nextStep } = await import("../components/ComputerWorkFields");
+    expect(nextStep({ label: "Codex", why: "not signed in" }, "Studio")).toBe("Codex: sign in on Studio in Matrx 2 › Code › Accounts");
+    expect(nextStep({ label: "Codex", why: "not installed" }, "Studio")).toBe("Codex: install it on Studio");
+  });
+});

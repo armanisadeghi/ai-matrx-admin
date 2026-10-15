@@ -107,3 +107,16 @@ export function computerScheduleParams(plan: Pick<ComputerRunRequest, "folder" |
   if (plan.accountProfileId) q.set("account", plan.accountProfileId);
   return `&${q.toString()}`;
 }
+
+/** "last seen Oct 12" for a computer, or "" when unknown. Pure (locale formatting aside). */
+export function lastSeenLabel(lastSeen: string | null | undefined): string {
+  const t = lastSeen ? Date.parse(lastSeen) : NaN;
+  return Number.isFinite(t) ? `last seen ${new Date(t).toLocaleDateString(undefined, { month: "short", day: "numeric" })}` : "";
+}
+
+/** Names shared by more than one computer: those rows also say when each was last seen. Pure. */
+export function duplicateNames(names: string[]): Set<string> {
+  const seen = new Map<string, number>();
+  for (const n of names) seen.set(n, (seen.get(n) ?? 0) + 1);
+  return new Set([...seen].filter(([, c]) => c > 1).map(([n]) => n));
+}
