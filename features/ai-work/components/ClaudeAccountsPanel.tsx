@@ -18,7 +18,7 @@
  * send and read mail.
  */
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { Check, Copy, ExternalLink, KeyRound, Loader2, LogOut, Plus, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useClipboard } from "@ai-matrx/kit/clipboard";
@@ -137,6 +137,15 @@ function rememberedConnect(): PendingConnect | null {
   }
 }
 
+const noSubscription = () => () => {};
+function rememberedConnectRaw(): string | null {
+  try {
+    return window.localStorage.getItem(PENDING_CONNECT_KEY);
+  } catch {
+    return null;
+  }
+}
+
 /** The sandbox wait, counted every second while it runs. */
 function useElapsed(since: number | null): string | null {
   const [now, setNow] = useState(() => Date.now());
@@ -164,6 +173,11 @@ export function ClaudeAccountsPanel() {
   /** When the running Connect started (survives a reload through rememberConnect). */
   const [startedAt, setStartedAt] = useState<number | null>(null);
   const elapsed = useElapsed(busy === "starting" ? startedAt : null);
+  // A remembered sign-in (read after hydration; the server render has none)
+  // is being checked with the server until `resumeChecked`.
+  const rememberedRaw = useSyncExternalStore(noSubscription, rememberedConnectRaw, () => null);
+  const [resumeChecked, setResumeChecked] = useState(false);
+  const resuming = rememberedRaw !== null && !resumeChecked && busy === null && pending === null;
   const connectorUrl = `${resolveBaseUrl().replace(/\/$/, "")}/api/matrx-mcp`;
 
   const load = () =>
@@ -240,6 +254,7 @@ export function ClaudeAccountsPanel() {
     readOwnPlanStatus(PROVIDER, remembered.slot)
       .then((status) => {
         if (!current) return;
+        setResumeChecked(true);
         const step = resumeStep(remembered, status, Date.now());
         if (step.kind === "awaiting") {
           setStartedAt(remembered.startedAt);
@@ -255,6 +270,7 @@ export function ClaudeAccountsPanel() {
       })
       .catch((cause: unknown) => {
         if (!current) return;
+        setResumeChecked(true);
         setConnectFailure(`Could not check the sign-in in progress: ${getUserMessage(cause)}`);
         rememberConnect(null);
       });
@@ -350,7 +366,7 @@ export function ClaudeAccountsPanel() {
             variant="outline"
             icon={<Plus />}
             onClick={() => void connect()}
-            disabled={busy !== null || pending !== null}
+            disabled={busy !== null || pending !== null || resuming}
           >
             Connect
           </Button>
@@ -378,6 +394,16 @@ export function ClaudeAccountsPanel() {
             <Button variant="quiet" onClick={() => void cancel()}>
               Cancel
             </Button>
+          </div>
+        )}
+
+        {resuming && (
+          <div
+            className="mt-3 flex items-center gap-2 rounded-lg border border-border p-3 text-xs text-foreground"
+            role="status"
+          >
+            <Loader2 aria-hidden className="size-3.5 shrink-0 animate-spin text-muted-foreground" />
+            <span className="truncate">Checking your sign-in in progress…</span>
           </div>
         )}
 

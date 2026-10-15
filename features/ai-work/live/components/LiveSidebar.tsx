@@ -156,7 +156,7 @@ function RoomRowBody({
           </span>
           <span className="flex-1" />
           {room.unreadCount > 0 && (
-            <span className="rounded-full bg-primary px-1.5 text-xs font-semibold leading-4 text-primary-foreground tabular-nums">
+            <span className="shrink-0 whitespace-nowrap rounded-full bg-primary px-1.5 text-xs font-semibold leading-4 text-primary-foreground tabular-nums">
               {room.unreadCount}
             </span>
           )}
