@@ -173,7 +173,7 @@ function DatabaseFrame({
   const saveView = (patch: Partial<SpaceDbView>) => save({ views: views.map((v) => (v.id === active.id ? { ...v, ...patch } : v)), activeViewId: active.id });
   const isChart = active.layout === "chart";
 
-  // "+ New page" (F7): Notion adds a row in place and opens it. A refused empty row (a required
+  // "+ New record" (F7): Notion adds a row in place and opens it. A refused empty row (a required
   // column, a read-only sample) falls back to the whole-record form, which says why.
   const addRow = () => {
     // A row added in a "This page's row" view starts linked to that row, so it stays in the view.
@@ -437,7 +437,7 @@ function DatabaseBody({
   const date = needsDate ? (fields.find((f) => ["datetime", "date"].includes(kindOf(f))) ?? fields.find((f) => ["created_time", "modified_time"].includes(kindOf(f))))?.key : undefined;
   const spec = viewSpec(tableId, { ...view, groupField: view.groupField ?? group ?? null, dateField: view.dateField ?? date ?? null }, fields);
   // Notion's inline database: records-ui's embedded grid (no tick-boxes, Actions column or pager; one-line
-  // rows; its own "New page" line, which writes the row in place). The magnifier is this block's own, in
+  // rows; its own "New record" line, which writes the row in place). The magnifier is this block's own, in
   // its toolbar row beside filter and sort (searchBox={false}; N-19).
   return (
     <div className="spaces-db-body">
@@ -445,7 +445,8 @@ function DatabaseBody({
         view={spec}
         chooser={false}
         embedded
-        newRowLabel={editable ? "New page" : undefined}
+        // A table's row is a "record" (canonical vocabulary); "New page" stays on the Spaces-native entity database.
+        newRowLabel={editable ? "New record" : undefined}
         sortOverride={sortOverride}
         searchOverride={search.value || null}
         onSearchChange={search.onChange}

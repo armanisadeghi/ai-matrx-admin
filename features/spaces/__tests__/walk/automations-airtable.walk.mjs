@@ -100,7 +100,7 @@ await act(page, async () => {
 // A row (needed for the test run and the real run).
 await act(page, async () => {
   if (!(await frame.locator("tbody tr").filter({ hasText: /\S/ }).count()) || (await frame.getByText("No records yet").count())) {
-    await frame.getByRole("button", { name: /^(New page|Add the first row)$/ }).first().click();
+    await frame.getByRole("button", { name: /^(New record|New page|Add the first row)$/ }).first().click();
     await page.waitForTimeout(4000);
     await page.keyboard.press("Escape");
   }
