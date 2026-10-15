@@ -45,6 +45,7 @@
 // Inside StoreProvider: every port reads the live store, and the same store is
 // handed to the package (`store`), which keeps its `chatHost` slice synced.
 
+import { thisMachineLocalModels } from "@/features/ai-models/local/this-machine-local-models";
 import type { ReactNode } from "react";
 import { ChatProvider } from "@ai-matrx/chat/host/react";
 import { useNextNavigation } from "@ai-matrx/chat/next/navigation";
@@ -495,6 +496,9 @@ export function ChatHostAdapter({ children }: { children: ReactNode }) {
     feedback: { submit: (input) => submitFeedback(input) },
     routes: { workflowStudio: WORKFLOWS_APP_URL },
     canvas: appChatCanvasPort,
+    // The person's local models, for the chat composer's picker only (never ModelCatalogHost):
+    // Matrx 2 on THIS computer, paired; a pick opens Confidential Chat there.
+    localModels: thisMachineLocalModels(),
   };
 
   // The app's store IS the chat store (its root reducer spreads chatReducers):
