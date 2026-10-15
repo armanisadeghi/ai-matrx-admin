@@ -269,6 +269,12 @@ const CAUSE_COPY: Record<string, CauseCopy> = {
       `${where ?? what} looked for something that isn't there any more — it was probably rebuilt while this page was open.`,
     nextStep: "Reload the page and press Run it again.",
   },
+  // The website's bot wall (Cloudflare and the like) refused our reader — never "not authorized", never a fault of
+  // the person's (matrx_graph failure.py SITE_BLOCKED). Retrying right away meets the same wall.
+  site_blocked: {
+    headline: (what, where) => `${where ?? what} was turned away by the website's bot protection.`,
+    nextStep: "The rest of the run is unaffected. Add what that page holds yourself, or try again later.",
+  },
   timed_out: {
     headline: (what, where) => `${where ?? what} ran past the time limit and was stopped.`,
     nextStep:

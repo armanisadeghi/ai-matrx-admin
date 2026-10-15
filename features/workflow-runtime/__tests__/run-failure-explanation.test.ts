@@ -105,6 +105,17 @@ describe("the structured path", () => {
     expect(result.technical).toContain("ZeroDivisionError");
   });
 
+  it("says a website's bot wall turned the step away, never 'not authorized' or a fault", () => {
+    // matrx_graph failure.py SITE_BLOCKED: the live Cloudflare challenge message.
+    const result = explainRunFailure(
+      { cause: "site_blocked", step_label: "Page read", technical: "403 Forbidden: Cloudflare challenge page" },
+      "Smart Add",
+    );
+    expect(result.headline).toBe("Page read was turned away by the website's bot protection.");
+    expect(result.unrecognized).toBe(false);
+    expect(result.technical).toContain("Cloudflare");
+  });
+
   it("falls back to the server's sentence for a cause this bundle doesn't know", () => {
     // A server deployed ahead of this client. Its `message` is already human —
     // using it beats pretending we understood nothing.
