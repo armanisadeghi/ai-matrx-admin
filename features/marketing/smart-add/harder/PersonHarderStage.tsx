@@ -14,6 +14,7 @@
  * Server: aidream services/brand_intake/person_harder.py. Deeper pages run on click only.
  */
 
+import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { useEffect, useEffectEvent, useRef, useState } from "react";
 import { Check, ChevronDown, SearchX, X } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@ai-matrx/design-system";
@@ -154,6 +155,11 @@ function absorb(b: Buckets, r: HarderResult): Buckets {
   };
 }
 
+/** Stamps a log line when it is written (an event moment, never a render-time read). */
+function logNow(onLog: (entry: FindLogEntry) => void, entry: Omit<FindLogEntry, "at">): void {
+  onLog({ at: Date.now(), ...entry } as FindLogEntry);
+}
+
 export function PersonHarderStage({
   input,
   path = "person_harder",
@@ -242,8 +248,8 @@ export function PersonHarderStage({
       setLoaded(true);
       setSweep((cur) => withSweep(cur, r, opts.extras));
       if (r.error) setError(r.error);
-      for (const d of r.decisions) onLog({ at: Date.now(), kind: "round", text: d, points: null });
-      onLog({ at: Date.now(), kind: "round", text: `Sweep cost: ${r.points ?? "?"} points in ${r.ms} ms`, points: r.points });
+      for (const d of r.decisions) logNow(onLog, { kind: "round", text: d, points: null });
+      logNow(onLog, { kind: "round", text: `Sweep cost: ${r.points ?? "?"} points in ${r.ms} ms`, points: r.points });
       if (r.directory?.job?.snapshot_id) void poll(r.directory.job.snapshot_id);
     } catch (e) {
       setError(e instanceof Error ? e.message : "The search failed");
@@ -272,9 +278,9 @@ export function PersonHarderStage({
       setBuckets((b) => absorb(b, r));
       setLoaded(true);
       if (r.error) setError(r.error);
-      for (const d of r.decisions) onLog({ at: Date.now(), kind: "round", text: d, points: null });
-      for (const q of r.queries) onLog({ at: Date.now(), kind: "round", text: `Query: ${q.query} (p${q.page}) → ${q.results} · ${q.why}` });
-      onLog({ at: Date.now(), kind: "round", text: `Round cost: ${r.points ?? "?"} points in ${r.ms} ms`, points: r.points });
+      for (const d of r.decisions) logNow(onLog, { kind: "round", text: d, points: null });
+      for (const q of r.queries) logNow(onLog, { kind: "round", text: `Query: ${q.query} (p${q.page}) → ${q.results} · ${q.why}` });
+      logNow(onLog, { kind: "round", text: `Round cost: ${r.points ?? "?"} points in ${r.ms} ms`, points: r.points });
       if (r.directory?.job?.snapshot_id) void poll(r.directory.job.snapshot_id);
     } catch (e) {
       setError(e instanceof Error ? e.message : "The search failed");
@@ -300,7 +306,7 @@ export function PersonHarderStage({
           directory: { platform: "linkedin", pages: b.directory?.pages ?? [], job: b.directory?.job ?? null, candidates: mergeInto(b.directory?.candidates ?? [], found) },
         }));
         setJobStatus(job.status === "done" ? null : `LinkedIn search ${job.status}`);
-        onLog({ at: Date.now(), kind: "round", text: `LinkedIn people search ${job.status}: ${found.length} people`, points: job.points });
+        logNow(onLog, { kind: "round", text: `LinkedIn people search ${job.status}: ${found.length} people`, points: job.points });
         return;
       } catch (e) {
         setJobStatus(e instanceof Error ? `LinkedIn search: ${e.message}` : "LinkedIn search failed");
@@ -330,7 +336,7 @@ export function PersonHarderStage({
     const key = focusKeyOf(c.platform);
     setFocus((cur) => ({ ...cur, [key]: { status: "done", found: true } }));
     setHistory((h) => [...h, { query: `focused session: ${key}`, answer: "me", firm_anchor: true, bucket: `focus:${key}`, url: c.url }]);
-    onLog({ at: Date.now(), kind: "anchor", text: `Found in the ${key} window: ${c.url}`, bucket: `focus:${key}`, url: c.url });
+    logNow(onLog, { kind: "anchor", text: `Found in the ${key} window: ${c.url}`, bucket: `focus:${key}`, url: c.url });
   });
   useEffect(() => onHelperAnswer((c, a) => (a === "me" ? helperFound(c) : undefined)), []);
   // person.find_you (the next round's workflow input) and the Builder feed, kept current every render.
@@ -384,16 +390,16 @@ export function PersonHarderStage({
     const tierLabel = sweep?.tiers.find((t) => t.key === row.tier)?.label ?? row.tier;
     setHistory((h) => [...h, { query: row.hits[0]?.query ?? "", answer: a, firm_anchor: a === "me" && row.firm, bucket: `sweep:${row.tier}`, url: row.url }]);
     if (a === "me") answer(sweepCandidate(row), "me", `Sweep · ${tierLabel}`);
-    else onLog({ at: Date.now(), kind: "answer", text: `Sweep · ${tierLabel}: ${a} · ${row.title ?? row.url}`, bucket: `sweep:${row.tier}`, url: row.url });
+    else logNow(onLog, { kind: "answer", text: `Sweep · ${tierLabel}: ${a} · ${row.title ?? row.url}`, bucket: `sweep:${row.tier}`, url: row.url });
   };
 
   const answer = (c: HarderCandidate, a: HarderAnswer, bucketLabel: string) => {
     setAnswers((cur) => ({ ...cur, [c.key]: a }));
-    onLog({ at: Date.now(), kind: "answer", text: `${bucketLabel}: ${a} · ${c.name ?? c.url}`, bucket: c.bucket, url: c.url });
+    logNow(onLog, { kind: "answer", text: `${bucketLabel}: ${a} · ${c.name ?? c.url}`, bucket: c.bucket, url: c.url });
     if (a !== "me") return;
     onConfirm(c);
     if (c.firm) {
-      onLog({ at: Date.now(), kind: "anchor", text: `FIRM anchor (${c.anchor_kind}) from ${bucketLabel}: ${c.url}`, bucket: c.bucket, url: c.url });
+      logNow(onLog, { kind: "anchor", text: `FIRM anchor (${c.anchor_kind}) from ${bucketLabel}: ${c.url}`, bucket: c.bucket, url: c.url });
       return;
     }
     const known = new Set(clues.map((x) => `${x.kind}:${x.value.toLowerCase()}`));
@@ -401,13 +407,13 @@ export function PersonHarderStage({
     if (!fresh.length) return;
     const next = [...clues, ...fresh];
     setClues(next);
-    for (const x of fresh) onLog({ at: Date.now(), kind: "clue", text: `Clue ${x.kind}: ${x.value}`, url: c.url });
+    for (const x of fresh) logNow(onLog, { kind: "clue", text: `Clue ${x.kind}: ${x.value}`, url: c.url });
     void round({ first: false, clues: next });
   };
 
   const pickNone = (list: HarderCandidate[], bucketLabel: string) => {
     setAnswers((cur) => ({ ...cur, ...Object.fromEntries(list.map((c) => [c.key, "not_me" as const])) }));
-    onLog({ at: Date.now(), kind: "answer", text: `${bucketLabel}: none of these (${list.length})` });
+    logNow(onLog, { kind: "answer", text: `${bucketLabel}: none of these (${list.length})` });
   };
 
   const deeper = (bucket: string) => {
@@ -449,12 +455,12 @@ export function PersonHarderStage({
 
   const openFocus = (key: string) => {
     setFocus((cur) => ({ ...cur, [key]: { status: "open", found: cur[key]?.found ?? false } }));
-    onLog({ at: Date.now(), kind: "round", text: `Focused session opened: ${key}`, bucket: `focus:${key}` });
+    logNow(onLog, { kind: "round", text: `Focused session opened: ${key}`, bucket: `focus:${key}` });
   };
   const doneFocus = (key: string) => {
     setFocus((cur) => ({ ...cur, [key]: { status: "done", found: cur[key]?.found ?? false } }));
     setHistory((h) => [...h, { query: `focused session: ${key}`, answer: "nothing", firm_anchor: false, bucket: `focus:${key}` }]);
-    onLog({ at: Date.now(), kind: "answer", text: `Focused session done: ${key} (nothing found)`, bucket: `focus:${key}` });
+    logNow(onLog, { kind: "answer", text: `Focused session done: ${key} (nothing found)`, bucket: `focus:${key}` });
   };
   const dir = buckets.directory;
   // The hard paths show ONE list (the tiered sweep); the harder round's own web list is for the harder path only.
@@ -475,7 +481,12 @@ export function PersonHarderStage({
                 : null}
         </span>
       </header>
-      {error ? <p className="text-xs text-destructive">{error}</p> : null}
+      {error ? (
+        <p className="flex items-center gap-1 text-xs text-destructive">
+          {error}
+          <ErrorAlchemyMenu error={error} />
+        </p>
+      ) : null}
 
       {dir && (dir.candidates.length || jobStatus) ? (
         <PickOne

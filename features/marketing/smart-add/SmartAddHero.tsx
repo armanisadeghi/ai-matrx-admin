@@ -13,7 +13,8 @@
  * typed account's platform until a real logo/name/account arrives from the identify run.
  */
 
-import { useEffect, useEffectEvent, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
+import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { useEffect, useEffectEvent, useRef, useState, useSyncExternalStore, type KeyboardEvent, type ReactNode } from "react";
 import { AnimatePresence, MotionConfig, motion } from "motion/react";
 import { Button } from "@ai-matrx/design-system/controls";
 import {
@@ -562,8 +563,9 @@ export function SmartAddHero({
                 Back
               </Button>
               {typedProblem ? (
-                <span role="alert" data-testid="smart-add-entry-problem" className="min-w-0 flex-1 truncate px-3 text-destructive-ink">
-                  {typedProblem}
+                <span role="alert" data-testid="smart-add-entry-problem" className="flex min-w-0 flex-1 items-center gap-1 px-3 text-destructive-ink">
+                  <span className="min-w-0 truncate">{typedProblem}</span>
+                  <ErrorAlchemyMenu error={typedProblem} />
                 </span>
               ) : null}
               {mode === "name" ? (
@@ -1336,9 +1338,9 @@ function accountLabel(s: EvidenceItem, names: EvidenceItem[]): string {
  * read (no CORS) leaves the list empty, so nothing is ever invented.
  */
 function useLogoColors(url: string | null): string[] {
-  const [colors, setColors] = useState<string[]>([]);
+  // Held with the url it was sampled from, so a new url reads as empty until its own sample lands.
+  const [sampled, setSampled] = useState<{ url: string; colors: string[] } | null>(null);
   useEffect(() => {
-    setColors([]);
     if (!url) return;
     let alive = true;
     const img = new Image();
@@ -1372,10 +1374,10 @@ function useLogoColors(url: string | null): string[] {
           if (picked.every((p) => Math.hypot(p[0] - c[0], p[1] - c[1], p[2] - c[2]) > 64)) picked.push(c);
           if (picked.length === 4) break;
         }
-        setColors(picked.map((c) => `#${c.map((v) => v.toString(16).padStart(2, "0")).join("")}`));
+        setSampled({ url, colors: picked.map((c) => `#${c.map((v) => v.toString(16).padStart(2, "0")).join("")}`) });
       } catch {
         // A tainted canvas (the host refused the read): no swatches, never made-up ones.
-        setColors([]);
+        setSampled({ url, colors: [] });
       }
     };
     // Through our image proxy: same origin, so the canvas may read the pixels.
@@ -1384,28 +1386,38 @@ function useLogoColors(url: string | null): string[] {
       alive = false;
     };
   }, [url]);
-  return colors;
+  return url && sampled?.url === url ? sampled.colors : NO_COLORS;
 }
 
+const NO_COLORS: string[] = [];
+
+const REDUCED_MOTION = "(prefers-reduced-motion: reduce)";
+function subscribeReducedMotion(notify: () => void): () => void {
+  const mq = window.matchMedia?.(REDUCED_MOTION);
+  mq?.addEventListener?.("change", notify);
+  return () => mq?.removeEventListener?.("change", notify);
+}
+const reducedMotionNow = () => Boolean(window.matchMedia?.(REDUCED_MOTION).matches);
+
 function Typewriter({ text }: { text: string }) {
-  const [shown, setShown] = useState(0);
+  const reduced = useSyncExternalStore(subscribeReducedMotion, reducedMotionNow, () => false);
+  // The count belongs to the text it was typed for; a new text starts again from zero.
+  const [typed, setTyped] = useState({ text, n: 0 });
+  const shown = reduced ? text.length : typed.text === text ? typed.n : 0;
   useEffect(() => {
-    if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) {
-      setShown(text.length);
-      return;
-    }
-    setShown(0);
+    if (reduced) return;
     const id = setInterval(() => {
-      setShown((n) => {
+      setTyped((t) => {
+        const n = t.text === text ? t.n : 0;
         if (n >= text.length) {
           clearInterval(id);
-          return n;
+          return t.text === text ? t : { text, n };
         }
-        return n + 1;
+        return { text, n: n + 1 };
       });
     }, 38);
     return () => clearInterval(id);
-  }, [text]);
+  }, [text, reduced]);
   return <span className={shown < text.length ? styles.caret : undefined}>{text.slice(0, shown) || " "}</span>;
 }
 

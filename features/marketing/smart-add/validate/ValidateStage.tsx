@@ -16,6 +16,7 @@
  * A suggestion only glows; it is never chosen. The stage height is fixed: nothing moves around a new card.
  */
 
+import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { AnimatePresence, LayoutGroup, MotionConfig, motion, type Transition } from "motion/react";
 import { Check, ChevronUp, ExternalLink, Globe, Info, LayoutDashboard, Pencil, RotateCcw, Users, X } from "lucide-react";
@@ -469,8 +470,9 @@ function TrayRow({ entry, onUndo }: { entry: AnsweredEntry; onUndo: () => void }
     >
       <Thumb item={entry.item} size={28} />
       <span className="min-w-0 flex-1 truncate text-sm">{entry.value}</span>
-      <span className="shrink-0 text-xs text-muted-foreground" title={entry.error ?? undefined}>
+      <span className="flex shrink-0 items-center gap-1 text-xs text-muted-foreground" title={entry.error ?? undefined}>
         {entry.state === "failed" ? "Not saved" : (entry.relationLabel ?? ANSWER_LABEL[entry.answer])}
+        {entry.state === "failed" && entry.error ? <ErrorAlchemyMenu error={entry.error} /> : null}
       </span>
       {entry.state === "failed" ? <X className="size-3.5 shrink-0 text-destructive" aria-label="Not saved" /> : null}
       <Button variant="quiet" icon={<RotateCcw aria-hidden />} aria-label="Undo" title="Undo" onClick={onUndo} data-testid="validate-undo" />
@@ -537,10 +539,13 @@ export function ValidateStage({
   const total = answered.length + queue.length;
   const left = queue.length;
 
-  useEffect(() => {
+  // A new card starts clean: adjusted during render, not in an effect.
+  const [seenKey, setSeenKey] = useState(current?.key);
+  if (seenKey !== current?.key) {
+    setSeenKey(current?.key);
     setEditing(false);
     setOff(new Set());
-  }, [current?.key]);
+  }
 
   // The next cards' images load before they are needed.
   useEffect(() => {
@@ -677,7 +682,10 @@ export function ValidateStage({
                     data-testid="validate-done"
                   >
                     {loadError ? (
-                      <span className="text-base text-destructive">{loadError}</span>
+                      <span className="flex items-center gap-1 text-base text-destructive">
+                        {loadError}
+                        <ErrorAlchemyMenu error={loadError} />
+                      </span>
                     ) : (
                       <>
                         <motion.span
