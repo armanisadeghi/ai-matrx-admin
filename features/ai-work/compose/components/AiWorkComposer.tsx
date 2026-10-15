@@ -439,11 +439,16 @@ function ComposerBody({
   };
 
   const refreshFilings = async () => {
-    const waiting = await resumePendingFilings(browserCodingDoors, async (conversationId, filing) => {
-      await attachHomes(conversationId, filing.homes as SavedRequestHome[]);
-      toast.success(`The chat from ${filing.computerName} is filed under its homes.`);
-    });
-    if (!filingAbort.current?.signal.aborted) setWaitingFilings(waiting);
+    try {
+      const waiting = await resumePendingFilings(browserCodingDoors, async (conversationId, filing) => {
+        await attachHomes(conversationId, filing.homes as SavedRequestHome[]);
+        toast.success(`The chat from ${filing.computerName} is filed under its homes.`);
+      });
+      if (!filingAbort.current?.signal.aborted) setWaitingFilings(waiting);
+    } catch (error) {
+      console.error("[ai-work/new] pending filings", error);
+      toast.error(error instanceof Error ? error.message : "Pending filings could not be read.");
+    }
   };
 
   const deliverFiling = async (filing: PendingFiling) => {

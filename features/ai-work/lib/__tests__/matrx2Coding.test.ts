@@ -196,7 +196,7 @@ describe("continue reaches the computer that holds the chat", () => {
 describe("filing a start survives the tab, and never delivers by itself", () => {
   function memoryStore() {
     const rows = new Map<string, PendingFiling>();
-    return { rows, list: async () => [...rows.values()], put: async (f: PendingFiling) => void rows.set(f.sessionId, f), remove: async (id: string) => void rows.delete(id) };
+    return { rows, list: async () => [...rows.values()], put: async (f: PendingFiling) => void rows.set(f.sessionId, f), remove: async (f: PendingFiling) => void rows.delete(f.sessionId) };
   }
 
   // RED WHEN: filing runs coding.reconcile (every chat on the computer) without the person asking.

@@ -9,6 +9,8 @@
  */
 import { getClaimsUser } from "@ai-matrx/auth";
 import { createDesktopClient } from "@ai-matrx/desktop-protocol/client";
+import { mergeJsonColumn, type JsonObject } from "@ai-matrx/data/db";
+import type { Json } from "@/types/database.types";
 
 import { supabase } from "@/utils/supabase/client";
 import { getAccessTokenOrNull } from "@/lib/python-client";
@@ -19,9 +21,11 @@ import type { DeviceRow } from "@/features/files/devices/types";
 import {
   CODING_MINOR,
   createMatrx2Reach,
+  filingsFromMetadata,
+  metadataWithFiling,
+  metadataWithoutFiling,
   protocolMinor,
   type CodingDoors,
-  type PendingFiling,
   type PendingFilingStore,
   type ReachClient,
   type ReachDeps,
@@ -73,46 +77,54 @@ export const browserReachDeps: ReachDeps = {
   },
 };
 
-/**
- * Pending filings live in this browser until filed: the start happened here and its homes were
- * chosen here, and a filing is resumed on this browser's next /work load. One key, entries per
- * person (a shared browser never files someone else's start).
- */
-const FILINGS_KEY = "ai-work.matrx2-pending-filings";
-type StoredFiling = PendingFiling & { userId: string };
+type FilingClient = Pick<typeof supabase, "from">;
 
-function readAll(): StoredFiling[] {
-  if (typeof localStorage === "undefined") return [];
-  try {
-    const parsed = JSON.parse(localStorage.getItem(FILINGS_KEY) ?? "[]") as unknown;
-    return Array.isArray(parsed) ? (parsed as StoredFiling[]) : [];
-  } catch {
-    return [];
-  }
+/**
+ * Pending filings on the server: each in its computer's own `app_instances` row
+ * (`metadata.ai_work.pending_filings`, merged under the row's version so Matrx 2's own metadata
+ * keys survive). Row security is the person's own rows; nothing here widens it.
+ */
+export function createServerFilingStore(client: FilingClient, userId: () => Promise<string | null>): PendingFilingStore {
+  const merge = async (deviceId: string, next: (metadata: Record<string, unknown>) => Record<string, unknown>) => {
+    const uid = await userId();
+    if (!uid) throw new Error("Sign in to file this chat.");
+    const result = await mergeJsonColumn<{ id: string; version: number; metadata: unknown }>({
+      fetchCurrent: () => client.from("app_instances").select("id, version, metadata").eq("id", deviceId).eq("user_id", uid).maybeSingle(),
+      readColumn: (row) => row.metadata,
+      merge: (current) => next(current) as JsonObject,
+      applyUpdate: ({ value, expectedVersion, nextVersion }) =>
+        client
+          .from("app_instances")
+          .update({ metadata: value as Json, version: nextVersion })
+          .eq("id", deviceId)
+          .eq("user_id", uid)
+          .eq("version", expectedVersion)
+          .select("id, version, metadata")
+          .maybeSingle(),
+    });
+    if (result.status === "saved") return;
+    const why = result.status === "error" ? (result.error instanceof Error ? result.error.message : String((result.error as { message?: string })?.message ?? result.error)) : result.status === "not_found" ? "that computer's row is not visible to you" : "it kept changing under another writer";
+    throw new Error(`The pending filing could not be saved: ${why}.`);
+  };
+  return {
+    async list() {
+      const uid = await userId();
+      if (!uid) return [];
+      const { data, error } = await client.from("app_instances").select("id, metadata").eq("user_id", uid).eq("is_active", true).is("deleted_at", null);
+      if (error) throw new Error(`Pending filings could not be read: ${error.message}`);
+      return (data ?? []).flatMap((row) => filingsFromMetadata((row as { metadata: unknown }).metadata));
+    },
+    put: (filing) => merge(filing.deviceId, (metadata) => metadataWithFiling(metadata, filing)),
+    remove: (filing) => merge(filing.deviceId, (metadata) => metadataWithoutFiling(metadata, filing.sessionId)),
+  };
 }
 
-async function currentUserId(): Promise<string | null> {
+export const browserFilingStore: PendingFilingStore = createServerFilingStore(supabase, async () => {
   const {
     data: { user },
   } = await getClaimsUser(supabase);
   return user?.id ?? null;
-}
-
-export const browserFilingStore: PendingFilingStore = {
-  async list() {
-    const userId = await currentUserId();
-    return readAll().filter((f) => f.userId === userId);
-  },
-  async put(filing) {
-    const userId = await currentUserId();
-    if (!userId) return;
-    const rest = readAll().filter((f) => f.sessionId !== filing.sessionId);
-    localStorage.setItem(FILINGS_KEY, JSON.stringify([...rest, { ...filing, userId }]));
-  },
-  async remove(sessionId) {
-    localStorage.setItem(FILINGS_KEY, JSON.stringify(readAll().filter((f) => f.sessionId !== sessionId)));
-  },
-};
+});
 
 /** The doors as the browser opens them: Matrx 2 first, Matrx Local announced after. */
 export const browserCodingDoors: CodingDoors = {

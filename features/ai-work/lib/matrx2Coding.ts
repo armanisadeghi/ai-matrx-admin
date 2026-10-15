@@ -117,7 +117,34 @@ export interface PendingFiling {
 export interface PendingFilingStore {
   list(): Promise<PendingFiling[]>;
   put(filing: PendingFiling): Promise<void>;
-  remove(sessionId: string): Promise<void>;
+  remove(filing: PendingFiling): Promise<void>;
+}
+
+/**
+ * WHERE A PENDING FILING LIVES: on the server, in the computer's own row (`app_instances`, the
+ * person's, read by every /work load), under `metadata.ai_work.pending_filings`. Merged with every
+ * other metadata key (Matrx 2 writes `metadata.app` there). So a start on one browser resumes on
+ * another, and one that never reaches AI Matrx stays visible. These three are the pure halves.
+ */
+export function filingsFromMetadata(metadata: unknown): PendingFiling[] {
+  const aiWork = metadata && typeof metadata === "object" && !Array.isArray(metadata) ? (metadata as Record<string, unknown>).ai_work : null;
+  const list = aiWork && typeof aiWork === "object" && !Array.isArray(aiWork) ? (aiWork as Record<string, unknown>).pending_filings : null;
+  return Array.isArray(list) ? (list.filter((f) => f && typeof f === "object" && typeof (f as PendingFiling).sessionId === "string") as PendingFiling[]) : [];
+}
+
+function withFilings(metadata: Record<string, unknown>, filings: PendingFiling[]): Record<string, unknown> {
+  const aiWork = metadata.ai_work && typeof metadata.ai_work === "object" && !Array.isArray(metadata.ai_work) ? (metadata.ai_work as Record<string, unknown>) : {};
+  return { ...metadata, ai_work: { ...aiWork, pending_filings: filings } };
+}
+
+/** The metadata with this filing added (or replaced, by session). Pure. */
+export function metadataWithFiling(metadata: Record<string, unknown>, filing: PendingFiling): Record<string, unknown> {
+  return withFilings(metadata, [...filingsFromMetadata(metadata).filter((f) => f.sessionId !== filing.sessionId), filing]);
+}
+
+/** The metadata without that session's filing. Pure. */
+export function metadataWithoutFiling(metadata: Record<string, unknown>, sessionId: string): Record<string, unknown> {
+  return withFilings(metadata, filingsFromMetadata(metadata).filter((f) => f.sessionId !== sessionId));
 }
 
 export interface CodingDoors {
@@ -515,8 +542,10 @@ export async function fileMatrx2Run(
     const conversationId = await doors.reach.findConversation(providerSessionId).catch(() => null);
     if (conversationId) return { conversationId };
   }
-  await doors.filings?.put({ deviceId: computer.deviceId, computerName: computer.name, sessionId, providerSessionId, homes: options.homes ?? [], startedAt: Date.now() });
-  return { pending: [filingPendingSentence(computer.name), reason].filter(Boolean).join(" ") };
+  const remembered = await (doors.filings?.put({ deviceId: computer.deviceId, computerName: computer.name, sessionId, providerSessionId, homes: options.homes ?? [], startedAt: Date.now() }) ?? Promise.resolve())
+    .then(() => null)
+    .catch((error: unknown) => `It is not remembered for filing: ${error instanceof Error ? error.message : String(error)}`);
+  return { pending: [filingPendingSentence(computer.name), reason, remembered].filter(Boolean).join(" ") };
 }
 
 /**
@@ -549,7 +578,7 @@ export async function resumePendingFilings(
     const conversationId = providerSessionId ? await doors.reach.findConversation(providerSessionId).catch(() => null) : null;
     if (conversationId) {
       await attach(conversationId, filing);
-      await store.remove(filing.sessionId);
+      await store.remove(filing);
     } else waiting.push({ ...filing, providerSessionId });
   }
   return waiting;
