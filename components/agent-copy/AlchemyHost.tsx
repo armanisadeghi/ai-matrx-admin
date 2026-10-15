@@ -396,14 +396,17 @@ function AlchemyCapabilitiesGate({
   const { ai: _inheritedAi, ...inheritedRest } = capabilities;
   // PP-01a/b: the preparation workspace opens in a real WindowPanel (the same WindowPort the
   // Alchemy host ports carry), never a page-local dialog.
-  const hostWindow = useContext(AlchemyHostPortsContext)?.window;
+  const hostPorts = useContext(AlchemyHostPortsContext);
+  const hostWindow = hostPorts?.window;
+  // The person's own settings: Choose what to copy keeps their choices per kind of data ("Save as my default").
+  const hostPersistence = hostPorts?.persistence;
   // The menu's "HTML preview" action opens the app's one HTML preview overlay on the prepared text.
   const openHtmlPreview = useOpenHtmlPreviewBridge();
   const htmlPreview = useMemo(
     () => ({ open: ({ content, title }: { content: string; title: string }) => { openHtmlPreview({ content, title, showSaveButton: false }); } }),
     [openHtmlPreview],
   );
-  const nonAiCapabilities = { ...inheritedRest, formats, htmlPreview, ...(hostWindow ? { window: hostWindow } : {}) };
+  const nonAiCapabilities = { ...inheritedRest, formats, htmlPreview, ...(hostWindow ? { window: hostWindow } : {}), ...(hostPersistence ? { persistence: hostPersistence } : {}) };
   return (
     <ContentTransferCapabilitiesProvider
       value={
