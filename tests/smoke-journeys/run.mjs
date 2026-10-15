@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// One command:  node tests/smoke-journeys/run.mjs [journeyId ...]      (or: pnpm test:smoke-journeys)
+// One command:  node tests/smoke-journeys/run.mjs [journeyId ...]
 // Journeys: j1-auth-org j2-records j3-files j4-chat j5-notes-assoc j6-surfaces
 // Fault proof: SMOKE_FAULT=j1-auth-org node tests/smoke-journeys/run.mjs j1-auth-org   (must go RED)
 import { readdirSync, writeFileSync } from "node:fs";
