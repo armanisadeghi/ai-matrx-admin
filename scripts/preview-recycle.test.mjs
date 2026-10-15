@@ -295,6 +295,43 @@ test("an install restart is deliberate: it never counts toward the crash-loop bu
   }
 });
 
+// THE START LOCK (2026-10-15): a start that spent >10 s deleting a big cache had its lock taken by a
+// second start, whose next dev boot wiped the running server's build folder (every page 500).
+test("a start lock whose holder is alive is waited for, never taken after 10 s", async () => {
+  const dir = stateDir();
+  const holder = fakeServer();
+  try {
+    mkdirSync(join(dir, "shared-next-dev.lock"));
+    writeFileSync(join(dir, "shared-next-dev.lock", "pid"), `${holder}\n`);
+    const child = spawn("bash", ["-c", `source "${SCRIPT}"; acquire_start_lock; echo rc=$?`], {
+      env: { ...process.env, MATRX_PREVIEW_STATE_DIR: dir },
+    });
+    let out = "";
+    child.stdout.on("data", (d) => (out += d));
+    await new Promise((r) => setTimeout(r, 12000));
+    assert.equal(out, "", "still waiting on a live holder after 12 s");
+    process.kill(holder, "SIGKILL");
+    await new Promise((r) => child.on("exit", r));
+    assert.match(out, /rc=0/, "takes the lock once its holder is gone");
+    assert.equal(readFileSync(join(dir, "shared-next-dev.lock", "pid"), "utf8").trim(), String(child.pid));
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("a start lock whose holder is dead is taken at once", () => {
+  const dir = stateDir();
+  try {
+    mkdirSync(join(dir, "shared-next-dev.lock"));
+    writeFileSync(join(dir, "shared-next-dev.lock", "pid"), "999999\n");
+    const t0 = Date.now();
+    assert.match(sourced(dir, "acquire_start_lock; echo rc=$?").out, /rc=0/);
+    assert.ok(Date.now() - t0 < 5000);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
 test("hold writes a dated hold that status lists, release removes it, and an expired one is dropped", () => {
   const dir = stateDir();
   try {
