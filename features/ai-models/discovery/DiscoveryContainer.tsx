@@ -6,7 +6,7 @@
 // its variants, files, signature, license, fit and proposed media → the admin picks → promote →
 // a test run on the cloud test machine → offered. Ambiguities stop with their code shown in words.
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import { AlertTriangle, CheckCircle2, ExternalLink, Loader2, ScanSearch } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
@@ -45,7 +45,7 @@ import {
   loadPromoted,
   testedLabel,
 } from "./api";
-import { compatLabel, describeRun, describeTestRequest } from "./run-words";
+import { compatLabel, describeRun, describeTestRequest, promoteBlockedBecause } from "./run-words";
 
 const TEST_POLL_SECONDS_KNOB = { feature: "ai.models", key: "test_poll_seconds" } as const;
 const TEST_POLL_COUNT_KNOB = { feature: "ai.models", key: "test_poll_count" } as const;
@@ -77,6 +77,8 @@ export default function DiscoveryContainer() {
   const auth = useAuth();
   const [candidates, setCandidates] = useState<Candidate[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  // The row the server just answered for Check: shown at once even before the list re-read has it.
+  const [justChecked, setJustChecked] = useState<Candidate | null>(null);
   const [link, setLink] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -111,8 +113,9 @@ export default function DiscoveryContainer() {
     setError(null);
     try {
       const row = await discoveryApi.resolve(auth, link.trim());
-      await refresh();
+      setJustChecked(row);
       setSelectedId(row.id);
+      await refresh();
       setLink("");
     } catch (err) {
       setError(extractErrorMessage(err));
@@ -121,7 +124,8 @@ export default function DiscoveryContainer() {
     }
   };
 
-  const selected = candidates.find((c) => c.id === selectedId) ?? null;
+  const selected =
+    candidates.find((c) => c.id === selectedId) ?? (justChecked?.id === selectedId ? justChecked : null);
 
   return (
     <div className="flex h-full min-h-0 flex-col">
@@ -170,12 +174,15 @@ export default function DiscoveryContainer() {
         </div>
         <div className="min-h-0 overflow-y-auto">
           {selected ? (
-            <CandidateDetail
-              key={selected.id + selected.updated_at}
-              candidate={selected}
-              auth={auth}
-              onChanged={refresh}
-            />
+            // Its own boundary: a part of the panel that loads lazily never blanks the whole page.
+            <Suspense fallback={<p className="p-6 text-sm text-muted-foreground">Opening {selected.repo ?? "candidate"}…</p>}>
+              <CandidateDetail
+                key={selected.id + selected.updated_at}
+                candidate={selected}
+                auth={auth}
+                onChanged={refresh}
+              />
+            </Suspense>
           ) : (
             <p className="p-6 text-sm text-muted-foreground">Choose a candidate or paste a link</p>
           )}
@@ -202,6 +209,7 @@ function CandidateDetail({
   const [chosen, setChosen] = useState<Set<string>>(
     () => new Set(variants.filter((v) => !v.ambiguous).map((v) => v.key)),
   );
+  const blockedBecause = promoteBlockedBecause(ambiguities, chosen);
   const [defaultKey, setDefaultKey] = useState<string>(
     () => variants.find((v) => !v.ambiguous)?.key ?? "",
   );
@@ -437,17 +445,18 @@ function CandidateDetail({
       ) : null}
 
       <footer className="flex flex-wrap items-center gap-2 border-t border-border pt-4">
-        <Button onClick={() => void promote(false, false)} disabled={busy || chosen.size === 0}>
+        <Button onClick={() => void promote(false, false)} disabled={busy || blockedBecause !== null}>
           {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
           Promote
         </Button>
         <Button
           variant="outline"
           onClick={() => void promote(true, true)}
-          disabled={busy || chosen.size === 0}
+          disabled={busy || blockedBecause !== null}
         >
           Promote and offer without a test run
         </Button>
+        {blockedBecause ? <p className="w-full text-xs text-foreground">{blockedBecause}</p> : null}
         <span className="text-xs text-muted-foreground">Offered untested shows “Not yet tested by us”</span>
         {message ? (
           message.ok ? (

@@ -24,7 +24,11 @@ export function describeRun(run: VerificationRun, all: VerificationRun[]): RunWo
   const label = isCorrection ? "correction" : run.check_kind.replace("_", " ");
   const result = isCorrection ? "harness defect noted" : run.result;
   const tps = str(m.tokens_per_second);
-  const headline = `${label} · ${result}${where}${tps && run.result === "pass" ? ` · ${tps} tokens/s` : ""}`;
+  const target = isCorrection ? str(m.corrects_run_id) : null;
+  const targetShown = target ? all.some((r) => r.id === target) : false;
+  const headline = `${label} · ${result}${target ? ` for run ${target.slice(0, 8)}` : ""}${where}${
+    tps && run.result === "pass" ? ` · ${tps} tokens/s` : ""
+  }`;
   let reason = str(m.reason);
   if (!reason && run.result !== "pass") {
     const stage = str(m.stage);
@@ -33,8 +37,12 @@ export function describeRun(run: VerificationRun, all: VerificationRun[]): RunWo
   }
   return {
     headline,
-    reason: run.result === "pass" && !isCorrection ? null : reason,
-    correctedBy: correction ? str(correction.measured?.reason) ?? "a later row corrected this run" : null,
+    // A correction's words are shown ONCE, on the run it corrects; the correction row itself only
+    // names that run (its own reason shows only when that run is not in the list).
+    reason: (run.result === "pass" && !isCorrection) || targetShown ? null : reason,
+    correctedBy: correction
+      ? (str(correction.measured?.reason)?.replace(/^correction:\s*/i, "") || null) ?? "a later row corrected this run"
+      : null,
     isCorrection,
   };
 }
@@ -86,4 +94,21 @@ export function describeTestRequest(
     default:
       return { tone: "error", text: `Queued test is in an unknown state: ${req.status}.` };
   }
+}
+
+/**
+ * Why Promote is not available yet, in words — or null when it is. Mirrors the server's refusal
+ * (discovery.promote_candidate: no chosen variant, or an open problem that applies to the chosen
+ * variants or to the whole repository), so the buttons are never offered for a promote the server
+ * would refuse.
+ */
+export function promoteBlockedBecause(
+  ambiguities: readonly { code: string; variant: string | null; words?: string }[],
+  chosen: ReadonlySet<string>,
+): string | null {
+  if (chosen.size === 0) return "Choose at least one variant without an open problem.";
+  const blocking = ambiguities.filter((a) => !a.variant || chosen.has(a.variant));
+  if (!blocking.length) return null;
+  const which = blocking.map((a) => `${a.variant ? `variant ${a.variant}` : "whole repository"}: ${a.words ?? a.code}`);
+  return `Make the decisions above first, or leave those variants out (${which.join("; ")}).`;
 }

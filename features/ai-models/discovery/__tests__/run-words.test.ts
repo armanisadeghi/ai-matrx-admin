@@ -1,4 +1,4 @@
-import { compatLabel, describeRun, describeTestRequest } from "../run-words";
+import { compatLabel, describeRun, describeTestRequest, promoteBlockedBecause } from "../run-words";
 import type { VerificationRun } from "../api";
 
 const base: VerificationRun = {
@@ -28,10 +28,14 @@ describe("describeRun", () => {
       result: "error",
       measured: { kind: "correction", corrects_run_id: "b66809d0", reason: "Correction: harness defect." },
     };
-    expect(describeRun(base, [base, fix]).correctedBy).toBe("Correction: harness defect.");
+    // the words appear ONCE, on the corrected run, without a doubled "Correction:" prefix
+    expect(describeRun(base, [base, fix]).correctedBy).toBe("harness defect.");
     const own = describeRun(fix, [base, fix]);
     expect(own.isCorrection).toBe(true);
-    expect(own.headline.startsWith("correction · harness defect noted")).toBe(true);
+    expect(own.headline.startsWith("correction · harness defect noted for run b66809d0")).toBe(true);
+    expect(own.reason).toBeNull();
+    // when the corrected run is not listed, the correction row keeps its own words
+    expect(describeRun(fix, [fix]).reason).toBe("Correction: harness defect.");
   });
 
   it("shows the recorded reason for an error and none for a pass", () => {
@@ -86,5 +90,29 @@ describe("describeTestRequest — every queued-test state has words", () => {
       text: "Queued test is in an unknown state: paused.",
     });
     expect(describeTestRequest(undefined, when)).toBeNull();
+  });
+});
+
+describe("promoteBlockedBecause — Promote is offered only when the server would accept it", () => {
+  const amb = [
+    { code: "multiple_mmproj", variant: "q4_k_m", words: "More than one vision projector." },
+    { code: "quant_unparsed", variant: "weird", words: "Quant not recognised." },
+  ];
+
+  it("blocks with words while a chosen variant has an open decision", () => {
+    expect(promoteBlockedBecause(amb, new Set(["q4_k_m", "q8_0"]))).toBe(
+      "Make the decisions above first, or leave those variants out (variant q4_k_m: More than one vision projector.).",
+    );
+  });
+
+  it("a whole-repository problem blocks any choice; nothing chosen says so", () => {
+    expect(promoteBlockedBecause([{ code: "gated", variant: null, words: "Gated." }], new Set(["q8_0"]))).toContain(
+      "whole repository: Gated.",
+    );
+    expect(promoteBlockedBecause(amb, new Set())).toBe("Choose at least one variant without an open problem.");
+  });
+
+  it("leaving the problem variants out unblocks", () => {
+    expect(promoteBlockedBecause(amb, new Set(["q8_0"]))).toBeNull();
   });
 });
