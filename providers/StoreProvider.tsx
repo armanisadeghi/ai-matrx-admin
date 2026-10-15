@@ -78,6 +78,14 @@ function getOrCreateClientStore(
   // `app/Providers.tsx::setGlobalUserId` (deleted).
   attachStore(store);
 
+  // Test/dev only: gives real-test runners `window.__matrxTestMemory` (heap reading + a reset that
+  // keeps the sign-in). Not compiled into production; also refuses any non-localhost host.
+  if (process.env.NODE_ENV !== "production") {
+    void import("@/lib/diagnostics/testMemoryGuard").then((m) =>
+      m.installTestMemoryGuard(store),
+    );
+  }
+
   // Keep the `theme` cookie in lockstep with Redux so the server-side
   // pre-paint always reflects the user's last choice. Active context is not
   // mirrored to a cookie: appContextPolicy owns its local cache, while the
