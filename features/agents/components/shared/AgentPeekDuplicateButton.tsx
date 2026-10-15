@@ -11,7 +11,7 @@
 // record is loaded (ownership is never guessed), and in a host with no
 // builder door.
 
-import { useEffect } from "react";
+import { useEffect, type ReactNode } from "react";
 import { useAgentDuplicateFlow } from "@/features/agents/hooks/useAgentDuplicateFlow";
 import { CopyPlus, Loader2 } from "lucide-react";
 import { Button } from "@ai-matrx/design-system/controls";
@@ -25,10 +25,18 @@ import { selectAgentById, selectAgentReadyForBuilder } from "@ai-matrx/chat/agen
 export function AgentPeekDuplicateButton({
   agentId,
   onStart,
+  children,
 }: {
   agentId: string;
   /** Close the peek once a copy is made and its dialog closes (the dialog opens above it). */
   onStart?: () => void;
+  /**
+   * THE PEEK'S DOOR (2026-10-14): the agent card is drawn by @ai-matrx/design-system's Peek, whose
+   * Duplicate is a door it places itself (behind More). Given `children`, this renders the dialog
+   * and hands the card `{ onDuplicate, busy }` — or `null` while Duplicate is not offered — instead
+   * of drawing a button of its own.
+   */
+  children?: (duplicate: { onDuplicate: () => void; busy: boolean } | null) => ReactNode;
 }) {
   const dispatch = useAppDispatch();
   const userId = useAppSelector(selectUserId);
@@ -48,13 +56,22 @@ export function AgentPeekDuplicateButton({
     if (!isReady) void dispatch(fetchFullAgent(agentId)).unwrap().catch(() => undefined);
   }, [dispatch, agentId, isReady]);
 
-  if (!isReady || !record) return null;
-  const ownsIt = record.isOwner === true || (record.createdBy != null && record.createdBy === userId);
-  if (ownsIt) return null;
+  const ownsIt = Boolean(record) && (record!.isOwner === true || (record!.createdBy != null && record!.createdBy === userId));
+  const offered = isReady && Boolean(record) && !ownsIt;
 
   // THE one Duplicate dialog (version + name). It opens above the peek; the
   // peek closes once the dialog does (closing it first would unmount the dialog).
   const duplicate = () => void duplicateFlow.openDuplicate({ agentId, asSystem: false });
+
+  if (children) {
+    return (
+      <>
+        {duplicateFlow.dialog}
+        {children(offered ? { onDuplicate: duplicate, busy } : null)}
+      </>
+    );
+  }
+  if (!offered) return null;
 
   return (
     <>
