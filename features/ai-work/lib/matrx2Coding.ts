@@ -11,6 +11,8 @@
  * Which computer: the one the page names; otherwise the online one; with several online, the
  * newest check-in, and the `notice` says which BEFORE anything runs. Only that computer gets a
  * socket — the rest are read from the relay's status, never connected to.
+ *
+ * Pending filings live in `app_instances.metadata`, not `custom_fields`: system-managed state the person never edits; the UI shows a status derived from it, never the raw field.
  */
 import {
   createDesktopProtocolTransport,
