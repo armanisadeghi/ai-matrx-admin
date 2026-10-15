@@ -43,6 +43,14 @@ import { ClassicViewNotice } from "./ClassicViewNotice";
  * that differs between the two routes is therefore derived HERE, on the
  * client, from this one serializable word.
  */
+// System Agents management shows the platform's own agents, and a star is the
+// signed-in PERSON's own state — the admin seat never acts as itself — so the
+// bulk bar keeps Add tag and Move to Trash but not Favorite / Unfavorite.
+const systemAdminAgentListConfig = {
+  ...agentListConfig,
+  standardBulkActions: { favorite: false },
+};
+
 export type AgentBrowseVariant = "user" | "system-admin" | "support-admin";
 
 export interface AgentBrowsePageProps {
@@ -89,7 +97,7 @@ export function AgentBrowsePage({
 
   return (
     <EntityListPage
-      config={agentListConfig}
+      config={systemAdmin ? systemAdminAgentListConfig : agentListConfig}
       // THE SCOPE COMES FROM THE PAGE (Arman, 2026-09-26: "No one acts as
       // themselves in admin"). The System Agents page MANAGES the platform's
       // own agents: the system corpus alone, with no scope tabs. Browsing an

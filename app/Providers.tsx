@@ -152,6 +152,7 @@ import { GlobalAuthSync } from "@/features/auth/components/GlobalAuthSync";
 import { GuestAiAllowanceBridge } from "@/components/guest/GuestAiAllowanceBridge";
 import { SandboxGateHost } from "@/components/dialogs/sandbox-gate/SandboxGateHost";
 import { ValuePromptsDialogHost } from "@/components/dialogs/value-prompts/ValuePromptsDialogHost";
+import { RecordBulkDialogsHost } from "@/lib/entity-list/dialogs/RecordBulkDialogsHost";
 import { ScopeMismatchDialogHost } from "@/components/dialogs/scope-mismatch/ScopeMismatchDialogHost";
 import { ConversationRenameDialogHost } from "@ai-matrx/chat/agents/components/conversation-actions/rename/ConversationRenameDialogHost";
 import { GoogleOAuthRedirectNotice } from "@/providers/google-provider/GoogleOAuthRedirectNotice";
@@ -282,6 +283,9 @@ export function Providers({ children, initialReduxState }: ProvidersProps) {
                                   See components/dialogs/sandbox-gate/. */}
                                           <SandboxGateHost />
                                           <ValuePromptsDialogHost />
+                                          {/* The built-in bulk verbs' dialogs: `pickHome` (Move to…)
+                                  and `shareWithPeople` (Share…). See lib/entity-list/dialogs/. */}
+                                          <RecordBulkDialogsHost />
                                           {/* Imperative chat↔scope mismatch dialog host.
                                   Exposes `promptScopeMismatch({current, chat})` —
                                   the 3-way pre-send ask (switch / combine / keep)

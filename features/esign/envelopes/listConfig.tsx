@@ -12,7 +12,8 @@ export const envelopeListConfig: EntityListConfig<EnvelopeListRow> = {
   surfaceKey: "esign-envelopes-browse",
   registryToken: "esign_envelope",
   // A sent or signed envelope is never trashed from a list; only its own draft door deletes.
-  standardBulkActions: { trash: false },
+  // No Move to…: a sent envelope's signing record belongs to the organization that sent it.
+  standardBulkActions: { trash: false, move: false },
   entityLabel: { singular: "envelope", plural: "envelopes" },
   sourceFeature: "documents",
   scopes: ENVELOPE_LIST_SCOPES,

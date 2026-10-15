@@ -50,6 +50,10 @@ import { filterAndSortBySearch } from "@ai-matrx/kit/search-scoring";
 import { CrossCuttingTagsPanel } from "./CrossCuttingTagsPanel";
 import { ReadFailure } from "@ai-matrx/design-system";
 import { StaleDataNotice } from "@ai-matrx/design-system";
+import { Checkbox } from "@/components/ui/checkbox";
+import { RowSelectionBar, useRowSelection } from "@/lib/entity-list/RowSelectionBar";
+import { runPerRow } from "@/lib/entity-list/standardBulkActions";
+import { bulkCountLabel, type EntityBulkAction } from "@/lib/entity-list/selection";
 
 export default function TagManager() {
   const { topicId } = useTopicContext();
@@ -147,6 +151,56 @@ export default function TagManager() {
     },
     [api, topicId, refresh],
   );
+
+  // Bulk bar over the tags on screen: the same two verbs as the row buttons (paid Consolidate and
+  // Move to Trash). A tag is not itself taggable, so no built-in set.
+  const tagSelection = useRowSelection(filtered, (t) => t.id);
+  const tagBulkActions: EntityBulkAction<ResearchTag>[] = [
+    {
+      id: "consolidate-tags",
+      label: "Consolidate",
+      icon: Layers,
+      confirm: (target) => {
+        const sources = target.rows.reduce((n, t) => n + (t.source_count ?? 0), 0);
+        return {
+          title: `Consolidate ${bulkCountLabel(target.count, "tag")}?`,
+          description: `Runs a paid AI synthesis across ${sources} source${sources === 1 ? "" : "s"} and takes several minutes. Any tag consolidated before is replaced and its earlier spend repeats.`,
+          confirmLabel: "Run consolidation",
+        };
+      },
+      run: (target) =>
+        runPerRow(
+          target,
+          async (id) => {
+            await api.consolidateTag(topicId, id);
+          },
+          { done: "Consolidated", noun: "tag", labelOf: (t) => t.name },
+          (t) => t.id,
+        ),
+    },
+    {
+      id: "move-to-trash",
+      label: "Move to Trash",
+      icon: Trash2,
+      variant: "destructive",
+      confirm: (target) => ({
+        title: `Move ${bulkCountLabel(target.count, "tag")} to Trash?`,
+        description:
+          "They leave this topic with their groupings. The sources stay. Restore from Trash brings back tags, assignments and consolidations.",
+        confirmLabel: "Move to Trash",
+        variant: "destructive",
+      }),
+      run: (target) =>
+        runPerRow(
+          target,
+          async (id) => {
+            await deleteTagService(id);
+          },
+          { done: "Moved to Trash", noun: "tag", labelOf: (t) => t.name, removesRows: true },
+          (t) => t.id,
+        ),
+    },
+  ];
 
   const formContent = (
     <div className="space-y-3 p-4">
@@ -280,11 +334,29 @@ export default function TagManager() {
         </div>
       ) : (
         <div className="space-y-1.5">
+          <RowSelectionBar
+            selection={tagSelection}
+            idOf={(t) => t.id}
+            actions={tagBulkActions}
+            noun="tag"
+            plural="tags"
+            onRefresh={refresh}
+            onRemoveRows={() => {
+              tagSelection.clear();
+              refresh();
+            }}
+          />
           {filtered.map((tag) => (
             <div
               key={tag.id}
               className="flex items-center gap-2.5 rounded-xl border border-border/50 bg-card/60 backdrop-blur-sm p-2.5 sm:p-3 group"
             >
+              <Checkbox
+                checked={tagSelection.has(tag.id)}
+                onCheckedChange={() => tagSelection.toggle(tag.id)}
+                aria-label={`Select ${tag.name}`}
+                className="shrink-0"
+              />
               <GripVertical className="h-4 w-4 text-muted-foreground shrink-0 cursor-grab hidden sm:block" />
               <div className="flex-1 min-w-0">
                 <Link

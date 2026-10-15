@@ -63,6 +63,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import { recordToast, toast } from "@/lib/toast";
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
+import { useTableBulkSelection } from "@/lib/entity-list/useTableBulkSelection";
+import { runPerRow } from "@/lib/entity-list/standardBulkActions";
+import type { EntityBulkAction } from "@/lib/entity-list/selection";
 import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
 import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import {
@@ -887,6 +890,136 @@ export default function SystemJobsPage() {
   // Nothing here can load without an organization, and the refusal happens
   // before the wire — so the screen says exactly that, with the picker, rather
   // than printing the transport's sentence into an empty-table caption.
+  // BULK ENABLE / DISABLE — the same patches the row Power button sends, once
+  // per job. Enabling starts real recurring server work and disabling a
+  // database job stops real maintenance, so both name the count and the
+  // consequence. Built-ins are off: platform jobs are not favouritable or
+  // trashable records.
+  const jobBulkActions: EntityBulkAction<SystemTaskResponse>[] = [
+    {
+      id: "enable-jobs",
+      label: "Enable",
+      icon: Power,
+      confirm: (sel) => ({
+        title: `Enable ${sel.count} system job${sel.count === 1 ? "" : "s"}?`,
+        description: `This starts real recurring server work for ${sel.count} job${sel.count === 1 ? "" : "s"}, each on its own schedule until disabled. Jobs with no registered handler are refused and named.`,
+        confirmLabel: "Enable",
+      }),
+      run: (sel) =>
+        runPerRow(
+          sel,
+          async (id) => {
+            applyPatched(await patchSystemTask(id, { enabled: true }));
+          },
+          {
+            done: "Enabled",
+            noun: "job",
+            labelOf: (r) => r.title,
+            skipReason: (r) => (r.enabled ? "Already enabled" : null),
+          },
+          (r) => r.id,
+        ),
+    },
+    {
+      id: "disable-jobs",
+      label: "Disable",
+      icon: Power,
+      variant: "destructive",
+      confirm: (sel) => ({
+        title: `Disable ${sel.count} system job${sel.count === 1 ? "" : "s"}?`,
+        description: `${sel.count} job${sel.count === 1 ? "" : "s"} stop running on schedule until re-enabled.`,
+        confirmLabel: "Disable",
+        variant: "destructive",
+      }),
+      run: (sel) =>
+        runPerRow(
+          sel,
+          async (id) => {
+            applyPatched(await patchSystemTask(id, { enabled: false }));
+          },
+          {
+            done: "Disabled",
+            noun: "job",
+            labelOf: (r) => r.title,
+            skipReason: (r) => (r.enabled ? null : "Already disabled"),
+          },
+          (r) => r.id,
+        ),
+    },
+  ];
+  const jobBulk = useTableBulkSelection<SystemTaskResponse>({
+    noun: "job",
+    rows,
+    getRowId: (r) => r.id,
+    getRowName: (r) => r.title,
+    actions: jobBulkActions,
+    standardBulkActions: false,
+    onRefresh: () => void load(),
+    onRemoveRows: () => undefined,
+  });
+  const dbJobBulkActions: EntityBulkAction<DbJobResponse>[] = [
+    {
+      id: "enable-db-jobs",
+      label: "Enable",
+      icon: Power,
+      confirm: (sel) => ({
+        title: `Enable ${sel.count} database job${sel.count === 1 ? "" : "s"}?`,
+        description: `This starts real recurring work inside Postgres for ${sel.count} job${sel.count === 1 ? "" : "s"}, each on its own schedule until disabled.`,
+        confirmLabel: "Enable",
+      }),
+      run: (sel) =>
+        runPerRow(
+          sel,
+          async (id) => {
+            applyDbPatched(await patchDbJob(Number(id), { active: true }));
+          },
+          {
+            done: "Enabled",
+            noun: "database job",
+            labelOf: (j) => j.jobname ?? `job ${j.jobid}`,
+            skipReason: (j) => (j.active ? "Already enabled" : null),
+          },
+          (j) => String(j.jobid),
+        ),
+    },
+    {
+      id: "disable-db-jobs",
+      label: "Disable",
+      icon: Power,
+      variant: "destructive",
+      confirm: (sel) => ({
+        title: `Disable ${sel.count} database job${sel.count === 1 ? "" : "s"}?`,
+        description: `This stops real database maintenance. ${sel.count} job${sel.count === 1 ? "" : "s"} — pruning, refreshes, partitions — stop until re-enabled.`,
+        confirmLabel: "Disable",
+        variant: "destructive",
+      }),
+      run: (sel) =>
+        runPerRow(
+          sel,
+          async (id) => {
+            applyDbPatched(await patchDbJob(Number(id), { active: false }));
+          },
+          {
+            done: "Disabled",
+            noun: "database job",
+            labelOf: (j) => j.jobname ?? `job ${j.jobid}`,
+            skipReason: (j) => (j.active ? null : "Already disabled"),
+          },
+          (j) => String(j.jobid),
+        ),
+    },
+  ];
+  const dbJobBulk = useTableBulkSelection<DbJobResponse>({
+    noun: "database job",
+    rows: dbRows,
+    getRowId: (j) => String(j.jobid),
+    getRowName: (j) => j.jobname ?? `job ${j.jobid}`,
+    actions: dbJobBulkActions,
+    standardBulkActions: false,
+    onRefresh: () => void loadDb(),
+    onRemoveRows: () => undefined,
+  });
+
   // A read that FAILED says so and offers Retry, never the picker-backed
   // refusal — nobody read this person's memberships (R37).
   if (organizationState === "unavailable") {
@@ -937,6 +1070,7 @@ export default function SystemJobsPage() {
         >
           <MatrxDataTable
             urlState={{ id: "scheduling-system-jobs" }}
+            selection={jobBulk.selection}
             data={rows}
             columns={[
               ...columns.slice(0, 1),
@@ -1026,6 +1160,7 @@ export default function SystemJobsPage() {
         >
           <MatrxDataTable
             urlState={{ id: "scheduling-db-jobs" }}
+            selection={dbJobBulk.selection}
             data={dbRows}
             columns={[...(dbColumns), { id: "custom-actions", header: "Actions", sortable: false, filter: false, customActions: (r) => renderDbRowActions(r) }]}
             getRowId={(r) => String(r.jobid)}

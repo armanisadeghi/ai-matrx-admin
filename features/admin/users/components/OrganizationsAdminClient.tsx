@@ -14,6 +14,9 @@ import {
   X,
 } from "lucide-react";
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
+import { useTableBulkSelection } from "@/lib/entity-list/useTableBulkSelection";
+import { runPerRow } from "@/lib/entity-list/standardBulkActions";
+import type { EntityBulkAction } from "@/lib/entity-list/selection";
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
 import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
 import { Badge } from "@/components/ui/badge";
@@ -538,6 +541,81 @@ export function OrganizationsAdminClient() {
     },
   ];
 
+  // BULK MEMBERSHIP — the same /api/admin/users/organizations door the row
+  // buttons use, once per member. The server's own refusals (last owner, a
+  // person's only organization) are skipped and named per person. Built-ins
+  // are off: a membership is not a favouritable or trashable record.
+  const memberBulkActions: EntityBulkAction<MemberDisplayRow>[] = [
+    {
+      id: "set-role-admin",
+      label: "Make admin",
+      icon: UserRound,
+      confirm: (sel) => ({
+        title: `Make ${sel.count} member${sel.count === 1 ? "" : "s"} admin?`,
+        description: `${sel.count} ${sel.count === 1 ? "person" : "people"} will become Admin in ${selectedOrganization?.name ?? "this organization"}.`,
+        confirmLabel: "Make admin",
+      }),
+      run: (sel) =>
+        runPerRow(
+          sel,
+          async (_id, member) => {
+            if (!selectedOrganization || !member) throw new Error("No organization selected");
+            await mutateMembership("PATCH", {
+              organizationId: selectedOrganization.id,
+              userId: member.user_id,
+              role: "admin",
+            });
+          },
+          {
+            done: "Made admin",
+            noun: "member",
+            labelOf: (m) => m.display_name ?? m.email ?? m.user_id,
+            skipReason: (m) => (m.role === "admin" ? "Already admin" : null),
+          },
+          (m) => m.id,
+        ),
+    },
+    {
+      id: "remove-members",
+      label: "Remove",
+      icon: Trash2,
+      variant: "destructive",
+      confirm: (sel) => ({
+        title: `Remove ${sel.count} member${sel.count === 1 ? "" : "s"} from ${selectedOrganization?.name ?? "this organization"}?`,
+        description: `${sel.count} ${sel.count === 1 ? "person" : "people"} will lose this membership. The last owner and anyone whose only organization this is are skipped and named.`,
+        confirmLabel: "Remove members",
+        variant: "destructive",
+      }),
+      run: (sel) =>
+        runPerRow(
+          sel,
+          async (_id, member) => {
+            if (!selectedOrganization || !member) throw new Error("No organization selected");
+            await mutateMembership("DELETE", {
+              organizationId: selectedOrganization.id,
+              userId: member.user_id,
+            });
+          },
+          {
+            done: "Removed",
+            noun: "member",
+            labelOf: (m) => m.display_name ?? m.email ?? m.user_id,
+          },
+          (m) => m.id,
+        ),
+    },
+  ];
+  const memberBulk = useTableBulkSelection<MemberDisplayRow>({
+    noun: "member",
+    rows: members,
+    getRowId: (m) => m.id,
+    getRowName: (m) => m.display_name ?? m.email ?? m.user_id,
+    actions: memberBulkActions,
+    standardBulkActions: false,
+    // mutateMembership already bumps refreshKey after each change.
+    onRefresh: () => {},
+  });
+
   // Counts come from the directory read: a failed read shows "—", never 0.
   const directoryRead = readOf({ loading, error, data: directory }, { what: "organizations" });
 
@@ -837,6 +915,7 @@ export function OrganizationsAdminClient() {
             >
             <MatrxDataTable
               urlState={{ id: "organization-members" }}
+              selection={memberBulk.selection}
               data={members}
               columns={[...(memberColumns), { id: "custom-actions", header: "Actions", sortable: false, filter: false, customActions: (member) => (
                 <>

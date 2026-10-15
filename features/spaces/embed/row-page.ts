@@ -134,14 +134,14 @@ export async function saveRowPageAsTemplate(
   return String(data);
 }
 
-/** The id of the row's page (`row_body`), as the reader may see it. */
-export async function findRowPageId(
-  db: { schema: (n: "platform") => { from: (t: "associations") => unknown } },
-  recordId: string,
-): Promise<string | null> {
-  type Q = { eq: (k: string, v: string) => Q; is: (k: string, v: null) => Q; maybeSingle: () => Promise<{ data: { target_id: string } | null; error: { message: string } | null }> };
-  const table = db.schema("platform").from("associations") as { select: (c: string) => Q };
-  const { data, error } = await table.select("target_id").eq("source_type", "record").eq("source_id", recordId).eq("target_type", "document").eq("label", "row_body").is("deleted_at", null).maybeSingle();
+/**
+ * The id of the row's page (`row_body`), asked through the read door `content.row_page_for`: whoever may read
+ * the row (View, Comment or Edit) gets its page at that level — the edge itself is hidden from a reader outside
+ * the row's organization, so a plain select of it answered "no page" for exactly the people a row is shared with.
+ * Null = no page, or no access to the row.
+ */
+export async function findRowPageId(db: RowPageDb, recordId: string): Promise<string | null> {
+  const { data, error } = await db.schema("content").rpc<string | null>("row_page_for", { p_record_id: recordId });
   if (error) throw new Error(error.message);
-  return data?.target_id ?? null;
+  return data ?? null;
 }

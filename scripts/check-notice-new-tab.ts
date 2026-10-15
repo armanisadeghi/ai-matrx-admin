@@ -27,6 +27,7 @@ const NOTICE_DIRS = [
   "components/layout/AnnouncementExperience.tsx",
   "components/layout/AnnouncementProviderImpl.tsx",
   "components/admin/CredentialExpiryNotifier.tsx",
+  "components/layout/AuthSessionWatcherImpl.tsx",
   "features/kg-suggestions/components/KgNewSuggestionNotifier.tsx",
 ];
 /** Files inside a notice dir that are a full page, not a notification. Each with its reason. */

@@ -1,0 +1,10 @@
+import { createClient } from "@supabase/supabase-js";
+import { store } from "./store.mjs";
+import { env } from "./lib.mjs";
+const TB = "85c830ae-98aa-4e2a-a864-8115e53a1a5d", ORG = "884d1ce8-7b49-4fba-a2f3-0f7dd7c83d4f";
+const level = process.argv[2];
+const m = createClient(env.NEXT_PUBLIC_SUPABASE_URL, env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY, { auth: { persistSession: false } });
+const { data: a } = await m.auth.signInWithPassword({ email: "test@test.com", password: env.AI_MEMBER_PASSWORD });
+const { sb } = await store();
+const r = await sb.schema("custom").rpc(level === "revoke" ? "share_revoke" : "share_grant", level === "revoke" ? { p_organization_id: ORG, p_subject_id: TB, p_principal_kind: "user", p_principal_id: a.user.id } : { p_organization_id: ORG, p_subject_id: TB, p_principal_kind: "user", p_principal_id: a.user.id, p_level: level });
+console.log(level, JSON.stringify(r.error ?? r.data).slice(0, 200));

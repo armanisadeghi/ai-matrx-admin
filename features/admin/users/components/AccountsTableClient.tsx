@@ -36,6 +36,10 @@ import {
   X,
 } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
+import { useTableBulkSelection } from "@/lib/entity-list/useTableBulkSelection";
+import { runPerRow } from "@/lib/entity-list/standardBulkActions";
+import type { EntityBulkAction } from "@/lib/entity-list/selection";
+import { Lock, Unlock } from "lucide-react";
 import { setTopTierAccess } from "@/features/ai-models/topTierAccess";
 import { formatCount } from "@ai-matrx/kit/format";
 import { Cost } from "@/components/cost/Cost";
@@ -200,7 +204,6 @@ function AccountsRoster() {
   const [planTarget, setPlanTarget] = useState<ChangePlanSubject | null>(null);
   const [freeMonthsPeople, setFreeMonthsPeople] = useState<FreeMonthsPerson[] | null>(null);
   const [tutorialPerson, setTutorialPerson] = useState<TutorialRecipient | null>(null);
-  const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
   const researchOwnerId = useAppSelector(state => state.userAuth.id);
   const costDisplay = useCostDisplay();
   const [refreshKey, setRefreshKey] = useState(0);
@@ -916,6 +919,102 @@ function AccountsRoster() {
     ? classifiedRows.filter((row) => row.id === focusedUserId)
     : classifiedRows.filter((row) => rowInSegment(row, segment));
 
+  // BULK CLOSE / REOPEN — the roster's own iam.close_account / reopen_account,
+  // once per person; refusals (your own account, an erased one) are skipped and
+  // named. Built-ins are off: people are not favouritable/trashable records.
+  const accountBulkActions: EntityBulkAction<AdminUserRow>[] = [
+    {
+      id: "give-free-months",
+      label: "Give free months…",
+      icon: Gift,
+      // The dialog resolves nothing, so the selection stays; people without
+      // an account of their own are named and left out, never unticked.
+      run: (sel) => {
+        const people = sel.rows.filter((row) => !row.is_anonymous);
+        if (people.length === 0) throw new Error("Anonymous visitors have no billing account to credit.");
+        if (people.length < sel.rows.length) {
+          toast.warning(`${sel.rows.length - people.length} anonymous visitor(s) left out`);
+        }
+        setFreeMonthsPeople(
+          people.map((row) => ({ id: row.id, label: row.display_name ?? row.email ?? row.id })),
+        );
+      },
+    },
+    {
+      id: "close-accounts",
+      label: "Close",
+      icon: Lock,
+      variant: "destructive",
+      confirm: (sel) => ({
+        title: `Close ${sel.count} account${sel.count === 1 ? "" : "s"}?`,
+        description: `${sel.count} ${sel.count === 1 ? "person" : "people"} cannot sign in again; open sessions can work for up to an hour. API keys are revoked; schedules and connections pause. Records stay. Reopen any time.`,
+        confirmLabel: "Close accounts",
+        variant: "destructive",
+      }),
+      run: async (sel) => {
+        return runPerRow(
+          sel,
+          async (id) => {
+            const { error } = await createClient()
+              .schema("iam")
+              .rpc("close_account", { p_user: id, p_reason: "closed by a platform admin" });
+            if (error) throw new Error(error.message);
+          },
+          {
+            done: "Closed",
+            noun: "account",
+            labelOf: (row) => row.email ?? row.display_name ?? row.id,
+            skipReason: (row) =>
+              row.id === researchOwnerId
+                ? "Your own account"
+                : row.banned
+                  ? "Already closed"
+                  : null,
+          },
+          (row) => row.id,
+        );
+      },
+    },
+    {
+      id: "reopen-accounts",
+      label: "Reopen",
+      icon: Unlock,
+      confirm: (sel) => ({
+        title: `Reopen ${sel.count} account${sel.count === 1 ? "" : "s"}?`,
+        description: `${sel.count} ${sel.count === 1 ? "person" : "people"} can sign in again; paused schedules and connections resume. Revoked API keys stay revoked.`,
+        confirmLabel: "Reopen",
+      }),
+      run: async (sel) => {
+        return runPerRow(
+          sel,
+          async (id) => {
+            const { error } = await createClient()
+              .schema("iam")
+              .rpc("reopen_account", { p_user: id, p_reason: "reopened by a platform admin" });
+            if (error) throw new Error(error.message);
+          },
+          {
+            done: "Reopened",
+            noun: "account",
+            labelOf: (row) => row.email ?? row.display_name ?? row.id,
+            skipReason: (row) =>
+              row.erased ? "Erased — cannot be reopened" : !row.banned ? "Already open" : null,
+          },
+          (row) => row.id,
+        );
+      },
+    },
+  ];
+  const accountBulk = useTableBulkSelection<AdminUserRow>({
+    noun: "account",
+    rows: visibleRows,
+    getRowId: (row) => row.id,
+    getRowName: (row) => row.email ?? row.display_name ?? row.id,
+    actions: accountBulkActions,
+    standardBulkActions: false,
+    onRefresh: () => setRefreshKey((key) => key + 1),
+  });
+
   function selectSegment(next: string) {
     const params = new URLSearchParams(searchParams.toString());
     if (next === DEFAULT_ACCOUNT_SEGMENT) params.delete("segment");
@@ -1056,6 +1155,7 @@ function AccountsRoster() {
           ]}
         >
         <MatrxDataTable
+          selection={accountBulk.selection}
           data={visibleRows}
           columns={[...(columns), { id: "custom-actions", header: "Manage", sortable: false, filter: false, customActions: (row) => (
             <DropdownMenu>
@@ -1237,25 +1337,6 @@ function AccountsRoster() {
           // filter miss — that blames a control the user never touched for a
           // record that simply is not in this list. The banner above says what
           // actually happened; this only has to stop contradicting it.
-          selection={{
-            selectedIds: selectedUserIds,
-            onSelectedIdsChange: setSelectedUserIds,
-            isRowSelectable: (row) => !row.is_anonymous,
-            noun: "account",
-            actions: (selected) => (
-              <Button
-                icon={<Gift />}
-                variant="outline"
-                disabled={selected.length === 0}
-                onClick={() =>
-                  setFreeMonthsPeople(
-                    selected.map((row) => ({ id: row.id, label: row.display_name ?? row.email ?? row.id })),
-                  )
-                }
-              > Give free months…
-              </Button>
-            ),
-          }}
           read={readOf({ loading, error }, { what: "user accounts" })}
           emptyState={
             focusMissed

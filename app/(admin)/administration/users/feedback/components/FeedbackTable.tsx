@@ -6,6 +6,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
   AlertCircle,
   AlertTriangle,
+  Ban,
   Brain,
   CheckCircle2,
   ChevronRight,
@@ -73,6 +74,9 @@ import { feedbackBrief, feedbackRowSummary } from "../format";
 import { csvExportItem, jsonExportItem } from "@/components/agent-copy/export";
 import { replaceAddressWithoutNavigating } from "@/lib/url-state/addressWithoutNavigating";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { useTableBulkSelection } from "@/lib/entity-list/useTableBulkSelection";
+import { runPerRow } from "@/lib/entity-list/standardBulkActions";
+import type { EntityBulkAction } from "@/lib/entity-list/selection";
 
 const TABLE_ID = "admin-feedback";
 const DONE: FeedbackStatus[] = ["resolved", "closed", "wont_fix", "deferred"];
@@ -391,6 +395,127 @@ export default function FeedbackTable() {
     },
     [load, rows],
   );
+  // BULK TRIAGE — the same verbs the row and the detail dialog already have
+  // (approve into the work queue, defer, close, won't fix), batched. Built-in
+  // verbs are off: feedback is a platform queue, not a favouritable record.
+  const feedbackBulkActions: EntityBulkAction<UserFeedback>[] = [
+    {
+      id: "approve",
+      label: "Approve",
+      icon: CheckCircle2,
+      variant: "default",
+      confirm: (sel) => ({
+        title: `Approve ${sel.count} feedback item${sel.count === 1 ? "" : "s"}?`,
+        description:
+          "Each is added to the end of the work queue, in the order shown. Items already approved are skipped.",
+        confirmLabel: "Approve",
+      }),
+      run: async (sel) => {
+        const base = Math.max(0, ...rows.map((row) => row.work_priority ?? 0));
+        const order = new Map(sel.ids.map((id, index) => [id, index + 1]));
+        return runPerRow(
+          sel,
+          async (id) => {
+            const result = await setAdminDecision(id, "approved", undefined, base + (order.get(id) ?? 1));
+            if (!result.success) throw new Error(result.error ?? "Could not approve");
+          },
+          {
+            done: "Approved",
+            noun: "item",
+            labelOf: (row) => row.description.slice(0, 40),
+            skipReason: (row) => (row.admin_decision === "approved" ? "Already approved" : null),
+          },
+          (row) => row.id,
+        );
+      },
+    },
+    {
+      id: "defer",
+      label: "Defer",
+      icon: MinusCircle,
+      confirm: (sel) => ({
+        title: `Defer ${sel.count} feedback item${sel.count === 1 ? "" : "s"}?`,
+        description: "Each decision becomes Deferred and leaves the work queue.",
+        confirmLabel: "Defer",
+      }),
+      run: (sel) =>
+        runPerRow(
+          sel,
+          async (id) => {
+            const result = await setAdminDecision(id, "deferred");
+            if (!result.success) throw new Error(result.error ?? "Could not defer");
+          },
+          { done: "Deferred", noun: "item", labelOf: (row) => row.description.slice(0, 40) },
+          (row) => row.id,
+        ),
+    },
+    {
+      id: "close",
+      label: "Close",
+      icon: XCircle,
+      variant: "destructive",
+      confirm: (sel) => ({
+        title: `Close ${sel.count} feedback item${sel.count === 1 ? "" : "s"}?`,
+        description:
+          "Each is force-closed whatever its stage. Reopen one from its own status menu.",
+        confirmLabel: "Close",
+        variant: "destructive",
+      }),
+      run: (sel) =>
+        runPerRow(
+          sel,
+          async (id) => {
+            const result = await forceCloseFeedback(id, "closed");
+            if (!result.success) throw new Error(result.error ?? "Could not close");
+          },
+          {
+            done: "Closed",
+            noun: "item",
+            labelOf: (row) => row.description.slice(0, 40),
+            skipReason: (row) => (row.status === "closed" ? "Already closed" : null),
+          },
+          (row) => row.id,
+        ),
+    },
+    {
+      id: "wont-fix",
+      label: "Won't fix",
+      icon: Ban,
+      variant: "destructive",
+      confirm: (sel) => ({
+        title: `Mark ${sel.count} feedback item${sel.count === 1 ? "" : "s"} won't fix?`,
+        description:
+          "Each is force-closed as Won't Fix. Change one back from its own status menu.",
+        confirmLabel: "Won't fix",
+        variant: "destructive",
+      }),
+      run: (sel) =>
+        runPerRow(
+          sel,
+          async (id) => {
+            const result = await forceCloseFeedback(id, "wont_fix");
+            if (!result.success) throw new Error(result.error ?? "Could not update");
+          },
+          {
+            done: "Marked won't fix",
+            noun: "item",
+            labelOf: (row) => row.description.slice(0, 40),
+            skipReason: (row) => (row.status === "wont_fix" ? "Already won't fix" : null),
+          },
+          (row) => row.id,
+        ),
+    },
+  ];
+  const bulk = useTableBulkSelection<UserFeedback>({
+    noun: "feedback item",
+    rows,
+    getRowId: (row) => row.id,
+    getRowName: (row) => row.description.slice(0, 40),
+    actions: feedbackBulkActions,
+    standardBulkActions: false,
+    favoritesShown: false,
+    onRefresh: () => void load(),
+  });
   const columns = useMemo<MatrxColumnDef<UserFeedback>[]>(
     () => [
       {
@@ -916,6 +1041,7 @@ export default function FeedbackTable() {
             )
           }
           getRowHref={(r) => feedbackHref(r.id)}
+          selection={bulk.selection}
           detail={{ enabled: false }}
           window={{ enabled: false }}
           onRowOpen={open}

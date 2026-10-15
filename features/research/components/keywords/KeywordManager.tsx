@@ -45,6 +45,14 @@ import { Favicon } from "../overview/live-pipeline/ui/Favicon";
 import { idMatchesQuery } from "@ai-matrx/kit/search-scoring";
 import KeywordOverlapMatrix from "./KeywordOverlapMatrix";
 import { ReadFailure } from "@ai-matrx/design-system";
+import { Checkbox } from "@/components/ui/checkbox";
+import { RowSelectionBar, useRowSelection } from "@/lib/entity-list/RowSelectionBar";
+import {
+  mergeBulkActions,
+  runPerRow,
+  standardBulkActionsFor,
+} from "@/lib/entity-list/standardBulkActions";
+import { bulkCountLabel } from "@/lib/entity-list/selection";
 
 /**
  * The keyword's FOCUSED LENS, viewable and editable in place. A goal changes
@@ -305,6 +313,54 @@ export default function KeywordManager() {
     await commitAdd(kw);
   };
 
+  // Bulk bar over the keywords on screen. "Move to Trash" is this feature's own door
+  // (`deleteKeywordService`), so it replaces the built-in in place; Add tag is the built-in.
+  const keywordSelection = useRowSelection(filtered, (k) => k.id);
+  const keywordBulkActions = mergeBulkActions(
+    [
+      {
+        id: "move-to-trash",
+        label: "Move to Trash",
+        icon: Trash2,
+        variant: "destructive" as const,
+        confirm: (target) => {
+          const results = target.rows.reduce((n, k) => n + (k.result_count ?? 0), 0);
+          return {
+            title: `Move ${bulkCountLabel(target.count, "keyword")} to Trash?`,
+            description: `They and their ${results} search result${results === 1 ? "" : "s"} leave this topic. Restore from Trash to bring them and any synthesis back.`,
+            confirmLabel: "Move to Trash",
+            variant: "destructive" as const,
+          };
+        },
+        run: async (target) => {
+          const outcome = await runPerRow(
+            target,
+            async (id) => {
+              await deleteKeywordService(id);
+            },
+            {
+              done: "Moved to Trash",
+              noun: "keyword",
+              labelOf: (k: ResearchKeyword) => k.keyword,
+              removesRows: true,
+            },
+            (k: ResearchKeyword) => k.id,
+          );
+          refreshProgress();
+          return outcome;
+        },
+      },
+    ],
+    standardBulkActionsFor<ResearchKeyword>({
+      token: "research_keyword",
+      noun: "keyword",
+      rowIdOf: (k) => k.id,
+      labelOf: (k) => k.keyword,
+      config: undefined,
+      favoritesShown: false,
+    }),
+  );
+
   // Moving a keyword to Trash is a soft delete: its search results and
   // per-keyword synthesis stay put, and restoring it from Trash brings them
   // all back. Name the keyword and the exact count before it leaves the list.
@@ -491,6 +547,21 @@ export default function KeywordManager() {
         searchPlaceholder="Filter keywords..."
       />
 
+      {filtered.length > 0 && !isLoading && (
+        <RowSelectionBar
+          selection={keywordSelection}
+          idOf={(k: ResearchKeyword) => k.id}
+          actions={keywordBulkActions}
+          noun="keyword"
+          plural="keywords"
+          onRefresh={refresh}
+          onRemoveRows={() => {
+            keywordSelection.clear();
+            refresh();
+          }}
+        />
+      )}
+
       {/* Keyword list — only this section shows loading */}
       {isLoading ? (
         <div className="space-y-1.5">
@@ -535,6 +606,12 @@ export default function KeywordManager() {
                 className="rounded-xl border border-border/50 bg-card/60 backdrop-blur-sm transition-all hover:border-primary/25"
               >
                 <div className="group flex items-start gap-2 p-2.5">
+                  <Checkbox
+                    checked={keywordSelection.has(kw.id)}
+                    onCheckedChange={() => keywordSelection.toggle(kw.id)}
+                    aria-label={`Select ${kw.keyword}`}
+                    className="mt-1 shrink-0"
+                  />
                   <Link
                     href={`/research/topics/${topicId}/keywords/${kw.id}`}
                     className="min-w-0 flex-1"

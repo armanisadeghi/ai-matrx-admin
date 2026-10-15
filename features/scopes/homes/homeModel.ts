@@ -1,8 +1,8 @@
-// features/notes/homes/homeModel.ts
+// features/scopes/homes/homeModel.ts
 //
-// ITEM HOMES (common-docs systems/data/scopes-context/VISION.md, 2026-10-10): every note
-// lives in exactly ONE home, and a home is a scope. The note's organization IS the home's
-// organization. Every organization has one built-in "General" scope (scope type slug
+// ITEM HOMES (common-docs systems/data/scopes-context/VISION.md, 2026-10-10): every record
+// with a home (notes first) lives in exactly ONE home, and a home is a scope. Its organization
+// IS the home's organization. Every organization has one built-in "General" scope (scope type slug
 // `general`) — that organization's "nothing". Pure functions only: the hook, the picker, the
 // sidebar and the move thunk all read these.
 
@@ -11,7 +11,7 @@ import type { ScopeTypeWithScopes } from "@ai-matrx/records/scopes";
 /** The slug of the built-in General scope type every organization carries. */
 export const GENERAL_SCOPE_TYPE_SLUG = "general";
 
-export interface NoteHome {
+export interface ItemHome {
   scopeId: string;
   /** The scope's own name ("General" for an organization's General). */
   name: string;
@@ -54,8 +54,8 @@ export function isGeneralScopeType(type: Pick<ScopeTypeWithScopes, "slug">): boo
 
 /** Every home a person can put a note in: each organization's General (a placeholder
  *  until it exists — every organization offers one), then its scopes. */
-export function buildHomes(organizations: readonly HomeOrganization[]): NoteHome[] {
-  const homes: NoteHome[] = [];
+export function buildHomes(organizations: readonly HomeOrganization[]): ItemHome[] {
+  const homes: ItemHome[] = [];
   for (const org of organizations) {
     const hasGeneral = org.scope_types.some((type) => isGeneralScopeType(type) && type.scopes.length > 0);
     if (!hasGeneral) {
@@ -96,7 +96,7 @@ export function buildHomes(organizations: readonly HomeOrganization[]): NoteHome
  * organization, and two same-named scopes from different organizations carry theirs.
  */
 export function homeDisplayName(
-  home: NoteHome,
+  home: ItemHome,
   options: { notesSpanManyOrganizations: boolean; collidingNames?: ReadonlySet<string> },
 ): string {
   if (home.isGeneral) {
@@ -109,7 +109,7 @@ export function homeDisplayName(
 }
 
 /** Lower-cased names held by scopes in more than one organization (Generals excluded). */
-export function collidingHomeNames(homes: readonly NoteHome[]): Set<string> {
+export function collidingHomeNames(homes: readonly ItemHome[]): Set<string> {
   const orgsByName = new Map<string, Set<string>>();
   for (const home of homes) {
     if (home.isGeneral) continue;
@@ -133,12 +133,12 @@ export function collidingHomeNames(homes: readonly NoteHome[]): Set<string> {
  * organization's slug when those differ, else the kind of home, else a short id.
  */
 export function homeLabels(
-  homes: readonly NoteHome[],
+  homes: readonly ItemHome[],
   options: { notesSpanManyOrganizations: boolean },
 ): Map<string, string> {
   const collidingNames = collidingHomeNames(homes);
   const labels = new Map<string, string>();
-  const byLabel = new Map<string, NoteHome[]>();
+  const byLabel = new Map<string, ItemHome[]>();
   for (const home of homes) {
     const label = homeDisplayName(home, { ...options, collidingNames });
     labels.set(home.scopeId, label);
@@ -149,11 +149,11 @@ export function homeLabels(
   }
   for (const group of byLabel.values()) {
     if (group.length < 2) continue;
-    const distinct = (pick: (home: NoteHome) => string | undefined) => {
+    const distinct = (pick: (home: ItemHome) => string | undefined) => {
       const values = group.map(pick);
       return values.every(Boolean) && new Set(values.map((v) => v!.toLocaleLowerCase())).size === group.length;
     };
-    const suffix: (home: NoteHome) => string = distinct((h) => h.organizationSlug)
+    const suffix: (home: ItemHome) => string = distinct((h) => h.organizationSlug)
       ? (h) => h.organizationSlug!
       : distinct((h) => h.scopeTypeLabel)
         ? (h) => h.scopeTypeLabel
@@ -164,7 +164,7 @@ export function homeLabels(
 }
 
 /** The shortest id prefix (at least four characters) that tells each home of the group apart. */
-function shortIds(group: readonly NoteHome[]): (home: NoteHome) => string {
+function shortIds(group: readonly ItemHome[]): (home: ItemHome) => string {
   const full = new Map(group.map((h) => [h.scopeId, (placeholderGeneralOrganization(h.scopeId) ?? h.scopeId).replace(/-/g, "")]));
   let size = 4;
   while (size < 32 && new Set(Array.from(full.values(), (id) => id.slice(0, size))).size < group.length) size += 2;
@@ -174,13 +174,13 @@ function shortIds(group: readonly NoteHome[]): (home: NoteHome) => string {
 export interface HomeSection {
   /** "General", or a scope type's singular label. */
   label: string;
-  homes: NoteHome[];
+  homes: ItemHome[];
 }
 
 /** General first, then one section per scope type label (merged across organizations). */
-export function homeSections(homes: readonly NoteHome[]): HomeSection[] {
-  const general: NoteHome[] = [];
-  const byType = new Map<string, NoteHome[]>();
+export function homeSections(homes: readonly ItemHome[]): HomeSection[] {
+  const general: ItemHome[] = [];
+  const byType = new Map<string, ItemHome[]>();
   for (const home of homes) {
     if (home.isGeneral) {
       general.push(home);
@@ -230,7 +230,7 @@ export function homeReceiptFrom(data: unknown): HomeReceipt {
     typeof row.organization_id !== "string" ||
     typeof row.version !== "number"
   ) {
-    throw new Error("The move answered without a receipt. Reload and check where the note is.");
+    throw new Error("The move answered without a receipt. Reload and check where it is.");
   }
   return {
     homeScopeId: row.home_scope_id,
@@ -249,8 +249,8 @@ export function homeRefusalMessage(error: { code?: string | null; message?: stri
   const message = error.message?.trim();
   if (message) return message;
   if (error.code === "40001") return "This was changed somewhere else. Reload it and move it again.";
-  if (error.code === "42501") return "You cannot move this note there.";
-  return "The note could not be moved.";
+  if (error.code === "42501") return "You cannot move this there.";
+  return "This could not be moved.";
 }
 
 /**
@@ -263,7 +263,7 @@ export function homeRefusalMessage(error: { code?: string | null; message?: stri
  */
 export function homeMatchScore(
   query: string,
-  home: Pick<NoteHome, "name" | "organizationName" | "scopeTypeLabel">,
+  home: Pick<ItemHome, "name" | "organizationName" | "scopeTypeLabel">,
   label: string = home.name,
 ): number {
   const q = query.trim().toLocaleLowerCase();

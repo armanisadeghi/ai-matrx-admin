@@ -20,11 +20,11 @@
  * so the modal's dep graph never enters the static graph of any route.
  */
 
-import { useRouter } from "next/navigation";
 import { LogIn, AlertTriangle, RefreshCw, UserX } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useLoginHref } from "@/hooks/auth/useLoginHref";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { openFromNotice } from "@/lib/notice-open/openFromNotice";
 
 interface AuthSessionWatcherImplProps {
   variant: "expired" | "identity-changed";
@@ -44,7 +44,6 @@ export default function AuthSessionWatcherImpl({
   rescuedDraftCount = 0,
 }: AuthSessionWatcherImplProps) {
   const loginHref = useLoginHref();
-  const router = useRouter();
 
   if (variant === "identity-changed") {
     return (
@@ -115,7 +114,8 @@ export default function AuthSessionWatcherImpl({
         <Button
           icon={<LogIn />}
           variant="primary"
-          onClick={() => router.push(loginHref)}
+          // A notice never moves the page: sign in in a new tab; this tab resumes on its own.
+          onClick={() => openFromNotice(loginHref)}
           className="w-full"
         >
           Sign In Again

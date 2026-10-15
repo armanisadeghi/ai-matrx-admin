@@ -30,6 +30,7 @@ import {
 } from "@ai-matrx/design-system";
 import { useAgentDuplicateFlow } from "../../hooks/useAgentDuplicateFlow";
 import { useAgentChangeReach } from "@/features/mandates/admin/useAgentChangeReach";
+import { openFromNotice, reserveNoticeTab, type ReservedNoticeTab } from "@/lib/notice-open/openFromNotice";
 
 /**
  * Shared save behaviour for an agent record.
@@ -69,6 +70,7 @@ export function useAgentSaveAction(
 
   const [showModelWarning, setShowModelWarning] = useState(false);
   const [readOnlySavePromptOpen, setReadOnlySavePromptOpen] = useState(false);
+  const [createdFromNotice, setCreatedFromNotice] = useState<string | null>(null);
   const {
     openDuplicate,
     dialog: duplicateDialog,
@@ -93,17 +95,33 @@ export function useAgentSaveAction(
   const canSave = (isDirty || isNewRoute) && !isLoading;
   const isReadOnlySave = accessResolved && isReadOnly && !isNewRoute;
 
-  const handleSave = async () => {
-    if (isLoading || isDuplicating) return;
+  // `noticeTab`: the save was pressed from a notification (the name-taken toast). It
+  // never moves this page — a brand-new agent opens in that reserved new tab instead.
+  const saveNow = async (noticeTab?: ReservedNoticeTab) => {
+    if (isLoading || isDuplicating) {
+      noticeTab?.cancel();
+      return;
+    }
 
     if (isReadOnlySave) {
+      noticeTab?.cancel();
       setReadOnlySavePromptOpen(true);
       return;
     }
 
     try {
       if (isNewRoute) {
-        if (!agentRecord) return;
+        // Already created from a notification: this tab still shows the draft, so Save
+        // opens that agent instead of creating a second one.
+        if (createdFromNotice) {
+          // agent-link-ok: the user agent this tab already created
+          (noticeTab ?? { go: openFromNotice }).go(`/agents/${createdFromNotice}/build`);
+          return;
+        }
+        if (!agentRecord) {
+          noticeTab?.cancel();
+          return;
+        }
         const newId = await dispatch(
           createAgent({
             name: agentRecord.name,
@@ -124,12 +142,20 @@ export function useAgentSaveAction(
             mcpServers: agentRecord.mcpServers,
           }),
         ).unwrap();
+        if (noticeTab) {
+          setCreatedFromNotice(newId);
+          toast.success("Agent created — opened in a new tab");
+          // agent-link-ok: save-as creates a user agent for this user
+          noticeTab.go(`/agents/${newId}/build`);
+          return;
+        }
         toast.success("Agent created!");
         // agent-link-ok: save-as creates a user agent for this user; the pathname check is a route test, not a link
         router.replace(`/agents/${newId}/build`);
         return;
       }
 
+      noticeTab?.cancel();
       await dispatch(saveAgent(agentId)).unwrap();
       toast.success("Agent saved!");
       void announceReach(agentRecord?.name ?? null);
@@ -137,6 +163,7 @@ export function useAgentSaveAction(
         setShowModelWarning(true);
       }
     } catch (e) {
+      noticeTab?.cancel();
       // THE CATALOG'S OWN SENTENCE, WITH ITS OFFER (V24-TAILS): a name already taken in this
       // organization is refused in words, and one press takes the free name and saves again.
       const taken = agentNameTaken(e);
@@ -145,8 +172,10 @@ export function useAgentSaveAction(
           action: {
             label: `Use "${taken.suggestion}"`,
             onClick: () => {
+              // Reserved inside the press, so the browser lets the new tab open after the save.
+              const tab = reserveNoticeTab();
               dispatch(setAgentField({ id: agentId, field: "name", value: taken.suggestion }));
-              void handleSave();
+              void saveNow(tab);
             },
           },
         });
@@ -157,6 +186,9 @@ export function useAgentSaveAction(
       );
     }
   };
+
+  // The page's Save button: never hands its click event to `saveNow`.
+  const handleSave = () => saveNow();
 
   const handleReadOnlyDuplicate = async () => {
     setReadOnlySavePromptOpen(false);

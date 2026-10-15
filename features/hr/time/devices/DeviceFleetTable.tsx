@@ -19,6 +19,9 @@
 
 import { useState } from "react";
 import { KeyRound, ShieldCheck, ShieldOff, ShieldX } from "lucide-react";
+import { useTableBulkSelection } from "@/lib/entity-list/useTableBulkSelection";
+import { runPerRow } from "@/lib/entity-list/standardBulkActions";
+import { bulkCountLabel, type EntityBulkAction } from "@/lib/entity-list/selection";
 
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
@@ -97,6 +100,87 @@ export function DeviceFleetTable({
       setBusyId(null);
     }
   }
+
+  // Bulk bar: the same trust verbs as the row buttons, run over the ticked tablets. A tablet the
+  // verb can't apply to keeps its checkbox; the run skips and names it with the reason.
+  const trustAction = (
+    id: string,
+    label: string,
+    icon: EntityBulkAction<KioskDeviceRow>["icon"],
+    trustState: KioskTrustState,
+    reason: string,
+    skip: (row: KioskDeviceRow) => string | null,
+    consequence: string | null,
+  ): EntityBulkAction<KioskDeviceRow> => ({
+    id,
+    label,
+    icon,
+    variant: trustState === "revoked" ? "destructive" : "outline",
+    confirm: consequence
+      ? (target) => ({
+          title: `${label} ${bulkCountLabel(target.count, "tablet")}?`,
+          description: consequence,
+          confirmLabel: label,
+          variant: trustState === "revoked" ? "destructive" : "default",
+        })
+      : undefined,
+    run: (target) =>
+      runPerRow(
+        target,
+        async (deviceId) => {
+          await source.setTrust({ deviceId, trustState, reason });
+        },
+        {
+          done: label === "Approve" ? "Approved" : label === "Pause" ? "Paused" : "Revoked",
+          noun: "tablet",
+          labelOf: (row) => row.deviceName,
+          skipReason: skip,
+        },
+        (row) => row.id,
+      ),
+  });
+  const bulk = useTableBulkSelection<KioskDeviceRow>({
+    noun: "tablet",
+    rows,
+    getRowId: (row) => row.id,
+    getRowName: (row) => row.deviceName,
+    onRefresh: onChanged,
+    onRemoveRows: () => onChanged(),
+    actions: [
+      trustAction(
+        "kiosk-approve",
+        "Approve",
+        ShieldCheck,
+        "trusted",
+        "Approved from device management",
+        (row) =>
+          row.trustState === "pending" || row.trustState === "suspended"
+            ? null
+            : row.trustState === "revoked"
+              ? "Revoked tablets must be paired again"
+              : "Already approved",
+        null,
+      ),
+      trustAction(
+        "kiosk-pause",
+        "Pause",
+        ShieldOff,
+        "suspended",
+        "Paused from device management",
+        (row) => (row.trustState === "trusted" ? null : "Only an approved tablet can be paused"),
+        "They stop recording time within a minute. You can approve them again at any time.",
+      ),
+      trustAction(
+        "kiosk-revoke",
+        "Revoke",
+        ShieldX,
+        "revoked",
+        "Revoked from device management",
+        (row) => (row.trustState === "revoked" ? "Already revoked" : null),
+        "They stop recording time within a minute and must be paired again from scratch.",
+      ),
+    ],
+  });
 
   async function reissue(row: KioskDeviceRow) {
     setBusyId(row.id);
@@ -385,7 +469,12 @@ export function DeviceFleetTable({
           },
         ]}
       >
-      <MatrxDataTable data={rows} columns={columns} getRowId={(row) => row.id} />
+      <MatrxDataTable
+        data={rows}
+        columns={columns}
+        getRowId={(row) => row.id}
+        selection={bulk.selection}
+      />
       </NonEditableContextMenu>
     </div>
   );

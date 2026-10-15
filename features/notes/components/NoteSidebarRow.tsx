@@ -11,9 +11,9 @@
 import { memo, useState, useSyncExternalStore } from "react";
 import { FileText, House } from "lucide-react";
 import { Popover, PopoverAnchor, PopoverContent } from "@ai-matrx/design-system";
-import { HomePickerList } from "../homes/HomePicker";
+import { HomePickerList } from "@/features/scopes/homes/HomePickerList";
 import { moveNoteToHome } from "../homes/moveNoteToHome";
-import type { NoteHome } from "../homes/homeModel";
+import type { ItemHome } from "@/features/scopes/homes/homeModel";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { ItemRow } from "@ai-matrx/design-system/item";
@@ -117,7 +117,7 @@ export const NoteSidebarRow = memo(function NoteSidebarRow({
   // Click-to-move (beside drag): the row's own home picker, anchored here.
   const [moveOpen, setMoveOpen] = useState(false);
   const [moving, setMoving] = useState(false);
-  const moveTo = async (home: NoteHome, label: string) => {
+  const moveTo = async (home: ItemHome, label: string) => {
     if (moving) return;
     setMoving(true);
     try {

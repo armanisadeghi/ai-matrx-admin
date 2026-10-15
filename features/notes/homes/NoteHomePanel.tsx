@@ -16,9 +16,9 @@ import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { cn } from "@/lib/utils";
 import { selectNoteById } from "../redux/selectors";
 import { NoteContextSection } from "../components/NoteContextSection";
-import { HomePickerList } from "./HomePicker";
+import { HomePickerList } from "@/features/scopes/homes/HomePickerList";
 import { moveNoteToHome } from "./moveNoteToHome";
-import type { NoteHome } from "./homeModel";
+import type { ItemHome } from "@/features/scopes/homes/homeModel";
 
 export function NoteHomePanel({
   noteId,
@@ -35,7 +35,7 @@ export function NoteHomePanel({
   const [busy, setBusy] = useState(false);
   if (!note) return null;
 
-  const pick = async (home: NoteHome, label: string) => {
+  const pick = async (home: ItemHome, label: string) => {
     if (busy) return;
     setBusy(true);
     try {

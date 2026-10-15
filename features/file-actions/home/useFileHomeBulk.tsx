@@ -144,7 +144,8 @@ export function useFileHomeBulk<Row extends { id: string; user_id: string }>(arg
     getRowId: idOf,
     getRowName: nameOf,
     actions: trashed ? [restore] : [star(true), star(false), move, ...downloads, trash],
-    standardBulkActions: trashed ? false : undefined,
+    // No built-in Move to…: these records move between projects through "Move to project".
+    standardBulkActions: trashed ? false : { move: false },
     onRefresh: refresh,
   });
 

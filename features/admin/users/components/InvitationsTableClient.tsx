@@ -32,6 +32,9 @@ import {
   useServerTable,
 } from "@/features/admin/shared/server-table/useServerTable";
 import type { MatrxDataTableQueryState } from "@ai-matrx/design-system/data-table/types";
+import { useTableBulkSelection } from "@/lib/entity-list/useTableBulkSelection";
+import { runPerRow } from "@/lib/entity-list/standardBulkActions";
+import type { EntityBulkAction } from "@/lib/entity-list/selection";
 
 interface InvitationRequest {
   id: string;
@@ -157,6 +160,78 @@ export function InvitationsTableClient() {
     [notes, reason, load],
   );
 
+  // BULK REVIEW — the same PATCH the detail panel sends, once per pending
+  // request. Approve emails each applicant a code and Reject notifies them, so
+  // both stop and say how many people will be emailed. Built-ins are off:
+  // access requests are not favouritable records.
+  const bulkActions: EntityBulkAction<InvitationRequest>[] = (
+    [
+      {
+        id: "approve" as const,
+        label: "Approve",
+        icon: CheckCircle,
+        variant: "default" as const,
+        done: "Approved",
+        title: (n: number) => `Approve ${n} request${n === 1 ? "" : "s"}?`,
+        body: (n: number) =>
+          `${n} applicant${n === 1 ? "" : "s"} will each be emailed an access code. Requests that are not pending are skipped.`,
+      },
+      {
+        id: "reject" as const,
+        label: "Reject",
+        icon: XCircle,
+        variant: "destructive" as const,
+        done: "Rejected",
+        title: (n: number) => `Reject ${n} request${n === 1 ? "" : "s"}?`,
+        body: (n: number) =>
+          `${n} applicant${n === 1 ? "" : "s"} will each be emailed that the request was declined. Requests that are not pending are skipped.`,
+      },
+    ] as const
+  ).map((verb) => ({
+    id: verb.id,
+    label: verb.label,
+    icon: verb.icon,
+    variant: verb.variant,
+    confirm: (sel) => ({
+      title: verb.title(sel.count),
+      description: verb.body(sel.count),
+      confirmLabel: verb.label,
+      variant: verb.id === "reject" ? "destructive" : "default",
+    }),
+    run: (sel) =>
+      runPerRow(
+        sel,
+        async (id) => {
+          const res = await fetch(`/api/admin/invitation-requests/${id}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ action: verb.id, notes: "", rejectionReason: "" }),
+          });
+          const json = await res.json();
+          if (!json.success) throw new Error(json.msg ?? "Action failed");
+          if (json.data?.emailSent === false) {
+            toast.warning("Saved, but the email did not send");
+          }
+        },
+        {
+          done: verb.done,
+          noun: "request",
+          labelOf: (row) => row.email,
+          skipReason: (row) => (row.status === "pending" ? null : `Already ${row.status}`),
+        },
+        (row) => row.id,
+      ),
+  }));
+  const bulk = useTableBulkSelection<InvitationRequest>({
+    noun: "request",
+    rows,
+    getRowId: (r) => r.id,
+    getRowName: (r) => r.email,
+    actions: bulkActions,
+    standardBulkActions: false,
+    onRefresh: load,
+  });
+
   const columns = useMemo((): MatrxColumnDef<InvitationRequest>[] => {
     return [
       { id: "full_name", accessorKey: "full_name", header: "Name", filter: "text", width: 160 },
@@ -271,6 +346,7 @@ export function InvitationsTableClient() {
           {...tableProps}
           columns={columns}
           getRowId={(r) => r.id}
+          selection={bulk.selection}
           selectedId={selectedId}
           onSelectedIdChange={(id) => {
             setSelectedId(id);

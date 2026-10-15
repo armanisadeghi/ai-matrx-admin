@@ -7,7 +7,7 @@
  * rendered it; links elsewhere on the page are untouched.
  */
 import { interceptNoticeLinkClick } from "../NoticeSurfaceGuard";
-import { openFromNotice } from "../openFromNotice";
+import { openFromNotice, reserveNoticeTab } from "../openFromNotice";
 
 const opened: Array<[string | undefined, string | undefined]> = [];
 beforeEach(() => {
@@ -77,4 +77,26 @@ it("the door never opens a script link", () => {
 it("the door opens a route in a new tab", () => {
   openFromNotice("/approvals?item=a-1");
   expect(opened).toEqual([[`${window.location.origin}/approvals?item=a-1`, "_blank"]]);
+});
+
+it("a tab reserved in the press is sent to the saved record later, cut loose from this page", () => {
+  const tab = { opener: window as unknown, closed: false, location: { href: "about:blank" }, close: jest.fn() };
+  window.open = ((url?: string | URL, target?: string) => {
+    opened.push([url?.toString(), target]);
+    return tab as unknown as Window;
+  }) as typeof window.open;
+  const reserved = reserveNoticeTab();
+  expect(opened).toEqual([["about:blank", "_blank"]]);
+  reserved.go("/agents/a-1/build");
+  expect(tab.location.href).toBe(`${window.location.origin}/agents/a-1/build`);
+  expect(tab.opener).toBeNull();
+  reserved.cancel();
+  expect(tab.close).not.toHaveBeenCalled();
+});
+
+it("a reserved tab with nothing to open closes", () => {
+  const tab = { opener: null, closed: false, location: { href: "about:blank" }, close: jest.fn() };
+  window.open = (() => tab as unknown as Window) as typeof window.open;
+  reserveNoticeTab().cancel();
+  expect(tab.close).toHaveBeenCalledTimes(1);
 });

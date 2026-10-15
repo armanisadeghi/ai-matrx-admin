@@ -11,13 +11,13 @@ import { supabase } from "@/utils/supabase/client";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { useWholeScopeTree } from "@/features/scopes/hooks/useWholeScopeTree";
 import { selectNoteHomeIds, selectNoteOrganizationIds } from "../redux/selectors";
-import { buildHomes, homeLabels, type NoteHome } from "./homeModel";
+import { buildHomes, homeLabels, type ItemHome } from "@/features/scopes/homes/homeModel";
 
 export interface UseNoteHomesReturn {
-  homes: NoteHome[];
-  byId: ReadonlyMap<string, NoteHome>;
+  homes: ItemHome[];
+  byId: ReadonlyMap<string, ItemHome>;
   /** Each organization's General (scope id) by organization id. */
-  generalByOrganization: ReadonlyMap<string, NoteHome>;
+  generalByOrganization: ReadonlyMap<string, ItemHome>;
   /** The label a home shows (organization only where it is the meaning). */
   labelOf: (scopeId: string | null | undefined) => string | null;
   notesSpanManyOrganizations: boolean;
@@ -27,11 +27,11 @@ export interface UseNoteHomesReturn {
 
 // The names of homes outside the scope tree, kept for the tab: the sidebar remounts (board hide/show,
 // route changes) and must not ask `platform.home_labels` again for homes it already named.
-const outsideTreeCache: Record<string, NoteHome | null> = {};
+const outsideTreeCache: Record<string, ItemHome | null> = {};
 // Ids a `home_labels` read is already carrying. The sidebar, the picker and the home chip each mount this hook
 // and (before the tree settles) each asked for the same ids; an id in flight is not asked for again.
 const homeLabelsInFlight = new Set<string>();
-const homeLabelListeners = new Set<(next: Record<string, NoteHome | null>) => void>();
+const homeLabelListeners = new Set<(next: Record<string, ItemHome | null>) => void>();
 
 export function useNoteHomes(): UseNoteHomesReturn {
   const tree = useWholeScopeTree();
@@ -43,9 +43,9 @@ export function useNoteHomes(): UseNoteHomesReturn {
   // `platform.home_labels` — the door for homes the person meets — so the
   // sidebar never shows a nameless group. Never a direct read of
   // custom.context_scopes: people have no SELECT on it.
-  const [outsideTree, setOutsideTree] = useState<Record<string, NoteHome | null>>(() => ({ ...outsideTreeCache }));
+  const [outsideTree, setOutsideTree] = useState<Record<string, ItemHome | null>>(() => ({ ...outsideTreeCache }));
   useEffect(() => {
-    const listener = (next: Record<string, NoteHome | null>) => setOutsideTree((prev) => ({ ...prev, ...next }));
+    const listener = (next: Record<string, ItemHome | null>) => setOutsideTree((prev) => ({ ...prev, ...next }));
     homeLabelListeners.add(listener);
     return () => {
       homeLabelListeners.delete(listener);
@@ -71,7 +71,7 @@ export function useNoteHomes(): UseNoteHomesReturn {
           console.error("[notes homes] could not name homes outside the scope tree", error);
           return;
         }
-        const next: Record<string, NoteHome | null> = {};
+        const next: Record<string, ItemHome | null> = {};
         for (const id of missing) next[id] = null;
         for (const row of data ?? []) {
           next[row.scope_id] = {
@@ -92,13 +92,13 @@ export function useNoteHomes(): UseNoteHomesReturn {
   return useMemo(() => {
     const homes = buildHomes(tree.organizations);
     const byId = new Map(homes.map((home) => [home.scopeId, home]));
-    const generalByOrganization = new Map<string, NoteHome>();
+    const generalByOrganization = new Map<string, ItemHome>();
     for (const home of homes) {
       if (home.isGeneral && !generalByOrganization.has(home.organizationId)) {
         generalByOrganization.set(home.organizationId, home);
       }
     }
-    const outside = Object.values(outsideTree).filter((home): home is NoteHome => home !== null);
+    const outside = Object.values(outsideTree).filter((home): home is ItemHome => home !== null);
     const labels = homeLabels([...homes, ...outside.filter((home) => !byId.has(home.scopeId))], {
       notesSpanManyOrganizations,
     });

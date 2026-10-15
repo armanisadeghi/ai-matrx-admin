@@ -10,36 +10,13 @@
 // says the database's own reason.
 
 import { createAsyncThunk } from "@reduxjs/toolkit";
-import { supabase } from "@/utils/supabase/client";
 import { toast } from "@/lib/toast";
 import type { RootState } from "@/lib/redux/store";
 import { applyNoteHomeReceipt } from "../redux/slice";
 import { saveNote } from "../redux/thunks";
 import type { NoteRecord } from "../redux/notes.types";
-import {
-  homeReceiptFrom,
-  homeRefusalMessage,
-  placeholderGeneralOrganization,
-  type HomeReceipt,
-} from "./homeModel";
-
-/**
- * A real home scope id for `scopeId`: an organization's General that does not
- * exist yet (a placeholder) is created once, as the system, by
- * `platform.ensure_general_scope` — only when a person actually chooses it.
- */
-export async function resolveHomeScopeId(
-  scopeId: string,
-): Promise<{ ok: true; scopeId: string } | { ok: false; message: string }> {
-  const organizationId = placeholderGeneralOrganization(scopeId);
-  if (!organizationId) return { ok: true, scopeId };
-  const { data, error } = await supabase
-    .schema("platform")
-    .rpc("ensure_general_scope", { p_org: organizationId });
-  if (error) return { ok: false, message: homeRefusalMessage(error) };
-  if (typeof data !== "string") return { ok: false, message: "That organization's General could not be opened." };
-  return { ok: true, scopeId: data };
-}
+import type { HomeReceipt } from "@/features/scopes/homes/homeModel";
+import { resolveHomeScopeId, setHome } from "@/features/scopes/homes/setHome";
 
 export type MoveNoteToHomeResult =
   | { ok: true; receipt: HomeReceipt }
@@ -94,20 +71,14 @@ export const moveNoteToHome = createAsyncThunk<MoveNoteToHomeResult, MoveNoteToH
     const current = (getState() as RootState).notes.notes[noteId] as NoteRecord | undefined;
     if (!current) return refuse("This note is not open here. Reload and try again.");
 
-    const { data, error } = await supabase.schema("platform").rpc("set_home", {
-      p_entity_type: "note",
-      p_entity_id: noteId,
-      p_scope_id: scopeId,
-      p_expected_version: current.version,
+    const moved = await setHome({
+      entityType: "note",
+      entityId: noteId,
+      scopeId,
+      expectedVersion: current.version,
     });
-    if (error) return refuse(homeRefusalMessage(error));
-
-    let receipt: HomeReceipt;
-    try {
-      receipt = homeReceiptFrom(data);
-    } catch (malformed) {
-      return refuse((malformed as Error).message);
-    }
+    if (!moved.ok) return refuse(moved.message);
+    const receipt: HomeReceipt = moved.receipt;
 
     dispatch(
       applyNoteHomeReceipt({

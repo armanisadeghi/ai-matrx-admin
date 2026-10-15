@@ -22,8 +22,6 @@ Element.prototype.scrollIntoView ??= () => {};
 jest.mock("@/lib/redux/hooks", () => ({ useAppDispatch: () => jest.fn(), useAppSelector: () => undefined }));
 jest.mock("@/lib/toast", () => ({ toast: { success: jest.fn(), error: jest.fn() } }));
 jest.mock("@/features/scopes/redux/thunks/scopeTreeMutations", () => ({ createScope: jest.fn() }));
-jest.mock("../../redux/selectors", () => ({ selectNoteById: () => () => undefined }));
-jest.mock("../moveNoteToHome", () => ({ moveNoteToHome: jest.fn(), moveNotesToHome: jest.fn() }));
 
 const home = (scopeId: string, name: string, organizationName: string, scopeTypeLabel: string, isGeneral = false) => ({
   scopeId, name, organizationName, scopeTypeLabel, isGeneral, organizationId: `org-${organizationName}`, scopeTypeId: scopeTypeLabel,
@@ -34,11 +32,11 @@ const HOMES = [
   home("5c4b3a29-0000-4000-8000-000000000003", "Port of Oakland lane", "Compass Route Relocation Advisors", "Lane"),
   home("1d2e3f40-0000-4000-8000-000000000004", "General", "admin's Workspace", "General", true),
 ];
-jest.mock("../useNoteHomes", () => ({
-  useNoteHomes: () => ({ homes: HOMES, organizations: [], status: "ready" }),
+jest.mock("../useHomeChoices", () => ({
+  useHomeChoices: () => ({ homes: HOMES, organizations: [], status: "ready" }),
 }));
 
-import { HomePickerList } from "../HomePicker";
+import { HomePickerList } from "../HomePickerList";
 
 let container: HTMLDivElement;
 let root: Root;

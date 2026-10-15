@@ -29,7 +29,7 @@ export type { SaveMode, UpdateMethod } from "./quickNoteSaveVocabulary";
 import type { SaveMode, UpdateMethod } from "./quickNoteSaveVocabulary";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
 import { useNoteHomes } from "@/features/notes/homes/useNoteHomes";
-import { resolveHomeScopeId } from "@/features/notes/homes/moveNoteToHome";
+import { resolveHomeScopeId } from "@/features/scopes/homes/setHome";
 
 export interface UseQuickNoteSaveArgs {
   initialContent: string;

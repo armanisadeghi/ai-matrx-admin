@@ -15,7 +15,7 @@ jest.mock("../../redux/thunks", () => ({ saveNote: jest.fn() }));
 import { toast } from "@/lib/toast";
 import notesReducer, { upsertNoteFromServer } from "../../redux/slice";
 import { moveNoteToHome } from "../moveNoteToHome";
-import { buildHomes, collidingHomeNames, homeDisplayName } from "../homeModel";
+import { buildHomes, collidingHomeNames, homeDisplayName } from "@/features/scopes/homes/homeModel";
 
 const ORG_A = "00000000-0000-4000-8000-00000000000a";
 const ORG_B = "00000000-0000-4000-8000-00000000000b";

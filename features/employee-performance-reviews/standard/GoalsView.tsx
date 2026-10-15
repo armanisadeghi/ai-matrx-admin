@@ -15,6 +15,8 @@ import { GoalEditorDialog, GoalProgressDialog } from "./GoalDialogs";
 import { GOAL_STATUS_LABEL, GOAL_STATUS_TONE, alignmentRows, progressLabel, type Goal } from "./goals";
 import { archiveGoal, listGoals } from "./service";
 import { formatDay } from "./status";
+import { useTableBulkSelection } from "@/lib/entity-list/useTableBulkSelection";
+import { runPerRow } from "@/lib/entity-list/standardBulkActions";
 
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { readOf } from "@ai-matrx/design-system";
@@ -73,6 +75,45 @@ export function GoalsView({
     const seen = new Set<string>();
     return [...(goals ?? []), ...(alignable ?? [])].filter((g) => (seen.has(g.goalId) ? false : (seen.add(g.goalId), true)));
   }, [goals, alignable]);
+
+  // Bulk bar: Archive through the goal's own door (`hr_goal_archive`), only where this viewer may
+  // edit. Supporting goals stay and become top-level, as they do for a single archive.
+  const bulk = useTableBulkSelection<Row>({
+    noun: "goal",
+    rows,
+    getRowId: (g) => g.goalId,
+    getRowName: (g) => g.title,
+    onRefresh: reload,
+    actions: canEdit
+      ? [
+          {
+            id: "archive-goals",
+            label: "Archive",
+            icon: Archive,
+            variant: "destructive",
+            confirm: (target) => {
+              const kept = target.rows.reduce((n, g) => n + (g.childCount ?? 0), 0);
+              return {
+                title: `Archive ${target.count} ${target.count === 1 ? "goal" : "goals"}?`,
+                description: `They leave the list and future reviews. ${kept > 0 ? `Goals that support them stay and become top-level goals.` : "Nothing else changes."}`,
+                confirmLabel: "Archive",
+                variant: "destructive",
+              };
+            },
+            run: (target) =>
+              runPerRow(
+                target,
+                async (id) => {
+                  const r = await archiveGoal(id);
+                  if (!r.ok) throw new Error(r.message);
+                },
+                { done: "Archived", noun: "goal", labelOf: (g) => g.title, removesRows: true },
+                (g) => g.goalId,
+              ),
+          },
+        ]
+      : [],
+  });
 
   const columns: MatrxColumnDef<Row>[] = [
     {
@@ -135,6 +176,7 @@ export function GoalsView({
           data={rows}
           columns={columns}
           getRowId={(g) => g.goalId}
+          selection={bulk.selection}
           pageSize={0}
           density="condensed"
           viewTabs={false}

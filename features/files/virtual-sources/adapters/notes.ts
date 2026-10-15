@@ -23,8 +23,8 @@
 import { StickyNote } from "lucide-react";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
 import { readAllRows } from "@ai-matrx/data/db";
-import { homeReceiptFrom, homeRefusalMessage } from "@/features/notes/homes/homeModel";
-import { resolveHomeScopeId } from "@/features/notes/homes/moveNoteToHome";
+import { homeReceiptFrom, homeRefusalMessage } from "@/features/scopes/homes/homeModel";
+import { resolveHomeScopeId } from "@/features/scopes/homes/setHome";
 import {
   homeVidFromScopeId,
   nameHomeDirectories,

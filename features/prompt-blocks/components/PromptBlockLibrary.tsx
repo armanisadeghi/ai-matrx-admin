@@ -38,7 +38,8 @@ export function PromptBlockLibrary() {
     noun: "block",
     rowIdOf: (r) => r.id,
     labelOf: (r) => r.name,
-    config: undefined,
+    // No Share…: a prompt block is not a shareable resource type (no share registry row).
+    config: { share: false },
     favoritesShown: false,
   });
   const reload = () => {

@@ -222,6 +222,34 @@ export async function getAllTopics(
   return (data ?? []).map(rowToResearchTopic);
 }
 
+/** One row of the attach picker: only what the picker shows. */
+export interface ResearchTopicPickerRow {
+  id: string;
+  name: string;
+  description: string | null;
+  status: string;
+  updated_at: string;
+}
+
+/**
+ * The topics a person can attach to a chat — every organization they belong
+ * to (the same declared scope as `getAllTopics`, never the active org), lean
+ * columns, newest first.
+ */
+export async function getTopicPickerRows(): Promise<ResearchTopicPickerRow[]> {
+  const userId = requireUserId();
+  const listScope = await defaultListFilter("research_topic", { userId });
+  let query = supabase
+    .schema("research")
+    .from("rs_topic")
+    .select("id, name, description, status, updated_at")
+    .is("deleted_at", null);
+  query = listScope.apply(query);
+  const { data, error } = await query.order("updated_at", { ascending: false });
+  if (error) throw error;
+  return data ?? [];
+}
+
 /** Result of `createTopic`: the topic is ALWAYS valid; the optional project
  *  edge reports its own outcome so a failed link never invalidates the topic
  *  — the caller surfaces a loud, retryable warning instead. */

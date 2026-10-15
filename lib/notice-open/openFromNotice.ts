@@ -67,3 +67,38 @@ export function openFromNotice(href: string | null | undefined): void {
 export function noticeLinkProps(href: string): { href: string; target: "_blank"; rel: "noopener" } {
   return { href, target: "_blank", rel: "noopener" };
 }
+
+export interface ReservedNoticeTab {
+  /** Send the reserved tab to `href` (or open a new tab now if the browser refused the reservation). */
+  go: (href: string) => void;
+  /** Nothing to open after all: close the reserved tab. */
+  cancel: () => void;
+}
+
+/**
+ * For a notification action that only knows its destination after async work
+ * (save, then open the saved record): reserve the new tab inside the click, so
+ * the popup blocker never eats it once the click's activation has expired.
+ * Call `go(href)` when the destination is known, `cancel()` when there is none.
+ */
+export function reserveNoticeTab(): ReservedNoticeTab {
+  const tab = typeof window === "undefined" ? null : window.open("about:blank", "_blank");
+  let settled = false;
+  return {
+    go: (href) => {
+      if (settled) return;
+      settled = true;
+      if (!tab || tab.closed || !isWebOrInternal(href)) {
+        openFromNotice(href);
+        return;
+      }
+      tab.opener = null;
+      tab.location.href = noticeTabHref(href);
+    },
+    cancel: () => {
+      if (settled) return;
+      settled = true;
+      tab?.close();
+    },
+  };
+}

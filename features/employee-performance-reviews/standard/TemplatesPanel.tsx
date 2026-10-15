@@ -19,6 +19,8 @@ import { toast } from "@/lib/toast";
 import { useReloadOnReviewsChanged } from "./invalidation";
 import { templateProblemMessage } from "./messages";
 import { archiveTemplate, getTemplate, listTemplates, saveTemplate } from "./service";
+import { useTableBulkSelection } from "@/lib/entity-list/useTableBulkSelection";
+import { runPerRow } from "@/lib/entity-list/standardBulkActions";
 import { formatDay } from "./status";
 import {
   buildMetadataPayload,
@@ -133,6 +135,40 @@ export function TemplatesPanel() {
     humanRow: (t) => [`Template: ${t.name}`, `Sections: ${t.sectionCount}`, `Questions: ${t.questionCount}`, `Cycles: ${t.cycleCount}`].join("\n"),
   };
 
+  // Bulk bar: Archive through the template's own door; the default template is skipped and named.
+  const bulk = useTableBulkSelection<TemplateRow>({
+    noun: "template",
+    rows: rows ?? [],
+    getRowId: (t) => t.templateId,
+    getRowName: (t) => t.name,
+    onRefresh: reload,
+    actions: [
+      {
+        id: "archive-templates",
+        label: "Archive",
+        icon: Archive,
+        variant: "destructive",
+        confirm: (target) => ({
+          title: `Archive ${target.count} ${target.count === 1 ? "template" : "templates"}?`,
+          description:
+            "They stop being offered for new cycles. Existing cycles keep their own copy and are not changed.",
+          confirmLabel: "Archive",
+          variant: "destructive",
+        }),
+        run: (target) =>
+          runPerRow(
+            target,
+            async (id) => {
+              const r = await archiveTemplate(id);
+              if (!r.ok) throw new Error(r.message);
+            },
+            { done: "Archived", noun: "template", labelOf: (t) => t.name, removesRows: true },
+            (t) => t.templateId,
+          ),
+      },
+    ],
+  });
+
   if (!organizationId) return null;
   return (
     <section aria-label="Review templates" className="space-y-3">
@@ -147,6 +183,7 @@ export function TemplatesPanel() {
           data={rows}
           columns={columns}
           getRowId={(t) => t.templateId}
+          selection={bulk.selection}
           pageSize={0}
           density="condensed"
           viewTabs={false}

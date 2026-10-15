@@ -47,6 +47,13 @@ import {
   type MergedTrashCounts,
 } from "@/features/trash/sources";
 import { formatRelativeTime } from "@ai-matrx/kit/format";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  RowSelectionBar,
+  useRowSelection,
+} from "@/lib/entity-list/RowSelectionBar";
+import { runPerRow } from "@/lib/entity-list/standardBulkActions";
+import type { EntityBulkAction } from "@/lib/entity-list/selection";
 
 /** Rows per page — per kind in personal mode, per merged page in organization mode. */
 export const TRASH_PAGE = 50;
@@ -104,6 +111,15 @@ export interface TrashListProps {
   includeKind?: (kind: string) => boolean;
   /** Words that narrow the rows by title (a host's search box). */
   filterText?: string;
+}
+
+const trashRowKey = (item: TrashListItem) => `${item.entity_token}:${item.id}`;
+
+function shownItemsForSelection(items: TrashListItem[], filterText?: string): TrashListItem[] {
+  const words = (filterText ?? "").trim().toLowerCase();
+  return words
+    ? items.filter((i) => `${i.title ?? ""} ${i.label ?? ""}`.toLowerCase().includes(words))
+    : items;
 }
 
 export function TrashList({
@@ -213,6 +229,12 @@ export function TrashList({
     void loadItems();
   }, [loadItems, refreshKey]);
 
+  const rowSelection = useRowSelection(
+    shownItemsForSelection(items, filterText),
+    trashRowKey,
+    `${kind ?? ""}|${member ?? ""}|${refreshKey}`,
+  );
+
   const words = (filterText ?? "").trim().toLowerCase();
   const shownItems = words
     ? items.filter((i) => `${i.title ?? ""} ${i.label ?? ""}`.toLowerCase().includes(words))
@@ -292,6 +314,43 @@ export function TrashList({
   };
 
   const busyId = scope.mode === "personal" ? (scope.busyId ?? null) : null;
+
+  const bulkActions: EntityBulkAction<TrashListItem>[] = [
+    {
+      id: "trash-restore",
+      label: "Restore",
+      icon: RotateCcw,
+      run: (sel) =>
+        runPerRow(
+          sel,
+          async (_key, item) => {
+            if (!item) throw new Error("No longer in the list.");
+            if (organizationId) {
+              const res = await restoreFromOrgTrash(organizationId, item.entity_token, item.id);
+              if (!res.restored) throw new Error(res.message ?? "Not restored.");
+            } else {
+              await sourceForItem(PERSONAL_TRASH_SOURCES, item).restore(item);
+            }
+          },
+          {
+            done: "Restored",
+            noun: "item",
+            labelOf: (item) => item.title?.trim() || item.label,
+            skipReason: (item) =>
+              scope.mode === "personal" && scope.isVaultItem?.(item)
+                ? "Vault credentials restore one at a time, through their own review."
+                : null,
+          },
+          trashRowKey,
+        ).then((result) => {
+          // Re-read rows and counts: a restore can bring a parent back with it.
+          void loadItems();
+          void loadCounts();
+          for (const item of sel.rows) onRestoredRef.current?.(item);
+          return result;
+        }),
+    },
+  ];
 
   return (
     <div data-trash-scope={scope.mode}>
@@ -382,6 +441,17 @@ export function TrashList({
             : "Nothing in the trash."}
         </div>
       ) : (
+        <>
+        <div className="pb-2">
+          <RowSelectionBar
+            selection={rowSelection}
+            idOf={trashRowKey}
+            actions={bulkActions}
+            noun="item"
+            plural="items"
+            onRefresh={() => {}}
+          />
+        </div>
         <ul className="divide-border divide-y rounded-lg border">
           {shownItems.map((item) => {
             const Icon = getResourceIcon(item.entity_token);
@@ -396,6 +466,11 @@ export function TrashList({
                   rowClassName?.(item),
                 )}
               >
+                <Checkbox
+                  checked={rowSelection.has(trashRowKey(item))}
+                  onCheckedChange={() => rowSelection.toggle(trashRowKey(item))}
+                  aria-label={`Select ${item.title?.trim() || item.label}`}
+                />
                 <Icon className="text-muted-foreground h-4 w-4 shrink-0" />
                 <span className="min-w-0 flex-1 text-sm sm:truncate">
                   {/* On a phone the title wraps to two lines instead of cutting off what it is in. */}
@@ -434,6 +509,7 @@ export function TrashList({
             );
           })}
         </ul>
+        </>
       )}
 
       {more && (
