@@ -7,6 +7,7 @@
  * the helper store. Admins get a fact block: source, endpoint, cost, measured time, raw requests.
  */
 
+import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { useEffect, useState } from "react";
 import { Play, Square } from "lucide-react";
 import { Badge, Button, Field, PropertyRow } from "@ai-matrx/design-system/controls";
@@ -239,7 +240,12 @@ export function HelperPanel({ method }: { method: HelperMethod }) {
         </div>
       </form>
 
-      {session.error ? <p className="text-xs text-destructive">{session.error}</p> : null}
+      {session.error ? (
+        <p className="flex items-center gap-1 text-xs text-destructive">
+          {session.error}
+          <ErrorAlchemyMenu error={session.error} />
+        </p>
+      ) : null}
       {session.status === "cancelled" ? <p className="text-xs text-muted-foreground">Cancelled.</p> : null}
       {isAdmin ? <AdminBlock info={info} session={session} /> : null}
       {r ? <Results method={method} result={r} /> : null}
