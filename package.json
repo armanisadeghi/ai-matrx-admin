@@ -583,6 +583,8 @@
     "shape:activate": "tsx scripts/shape/activate-kinds.ts",
     "shape:types": "tsx scripts/shape/generate-kind-types.ts",
     "check:kind-types": "tsx scripts/shape/generate-kind-types.ts --check",
+    "check:app-instances-computer-only": "tsx scripts/check-app-instances-computer-only.ts",
+    "check:app-instances-computer-only:self-test": "tsx scripts/check-app-instances-computer-only.ts --self-test",
     "check:settings": "tsx scripts/check-settings.ts",
     "check:settings-orphans": "tsx scripts/check-settings-orphans.ts",
     "check:settings-unregistered": "tsx scripts/check-settings-unregistered.ts",
