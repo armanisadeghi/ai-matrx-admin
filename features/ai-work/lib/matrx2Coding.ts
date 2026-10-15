@@ -22,12 +22,34 @@ import {
   type RecentFolder,
 } from "@ai-matrx/coding-sessions";
 
-import type {
-  LocalReconcileResult,
-  LocalResumableVerdict,
-  LocalRuntimeCapability,
-  LocalRuntimeRun,
-} from "./matrxLocalRuntime";
+/*
+ * Matrx Local's answers, by SHAPE (structurally identical to `matrxLocalRuntime.ts`'s types, which
+ * satisfy them). Not imported: that module pulls the browser's Supabase client, and the live proof
+ * in matrx-desktop type-checks this file from outside this app. Deleted with Matrx Local.
+ */
+export interface LocalRuntimeCapability {
+  state: "loading" | "ready" | "unreachable";
+  available: boolean;
+  reasons: string[];
+  claudeCli: string | null;
+  claudeAccountLabel: string | null;
+  workspaceRoots: string[];
+  approvedFolders: string[];
+  activeRuns: number;
+}
+export interface LocalRuntimeRun {
+  conversation_id: string | null;
+}
+export interface LocalResumableVerdict {
+  resumable: boolean;
+  reason?: string;
+  session_id?: string;
+  workspace?: string;
+}
+export interface LocalReconcileResult {
+  actions: Array<{ step: string; outcome: string; detail?: string | null }>;
+  truth: { verdict: { sentence: string; remedy: string | null } };
+}
 
 /**
  * THE fallback order. Matrx 2 first; Matrx Local while it is still installed. Deleted together
