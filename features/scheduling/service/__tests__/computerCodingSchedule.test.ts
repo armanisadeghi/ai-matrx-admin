@@ -54,18 +54,18 @@ function readBack() {
 
 describe("a coding schedule on a computer: save, read, edit", () => {
   it("round-trips its work, never an empty prompt or an agent default", async () => {
-    await createComputerCodingTask({ title: "Nightly tidy", description: null, deviceId: "dev-1", folder: "/w/site", prompt: "Tidy the README", provider: "codex", accountProfileId: "acct-1", trigger: { type: "one-shot", at: "2030-01-15T17:00:00.000Z" } } as never);
+    await createComputerCodingTask({ title: "Nightly tidy", description: null, deviceId: "dev-1", folder: "/w/site", prompt: "Tidy the README", provider: "codex", accountProfileId: "acct-1", homes: [{ token: "project", id: "p-1", label: "Site" }], trigger: { type: "one-shot", at: "2030-01-15T17:00:00.000Z" } } as never);
     const task = readBack();
     expect(task.kind).toBe("device_op");
     expect(task.targetDeviceId).toBe("dev-1");
-    expect(task.deviceOp).toMatchObject({ provider: "codex", folder: "/w/site", prompt: "Tidy the README", accountProfileId: "acct-1" });
+    expect(task.deviceOp).toMatchObject({ provider: "codex", folder: "/w/site", prompt: "Tidy the README", accountProfileId: "acct-1", homes: [{ token: "project", id: "p-1", label: "Site" }] });
 
     await updateComputerCodingTask(
       { id: task.id, deviceOp: task.deviceOp ?? null, triggerId: "trg-1" },
-      { title: "Nightly tidy", description: null, deviceId: "dev-1", folder: "/w/site", prompt: "Tidy the README and CHANGELOG", provider: "claude", accountProfileId: null, trigger: { type: "one-shot", at: "2030-01-16T17:00:00.000Z" } as never },
+      { title: "Nightly tidy", description: null, deviceId: "dev-1", folder: "/w/site", prompt: "Tidy the README and CHANGELOG", provider: "claude", accountProfileId: null, homes: [{ token: "war_room", id: "w-1", label: "Launch" }], trigger: { type: "one-shot", at: "2030-01-16T17:00:00.000Z" } as never },
     );
     const edited = readBack();
-    expect(edited.deviceOp).toMatchObject({ provider: "claude", prompt: "Tidy the README and CHANGELOG", accountProfileId: null });
+    expect(edited.deviceOp).toMatchObject({ provider: "claude", prompt: "Tidy the README and CHANGELOG", accountProfileId: null, homes: [{ token: "war_room", id: "w-1", label: "Launch" }] });
     expect((edited.deviceOp?.raw as { tool?: string }).tool).toBe("coding_sessions_drive");
     expect(writes.some((w) => w.table === "sch_agent_task")).toBe(false);
   });

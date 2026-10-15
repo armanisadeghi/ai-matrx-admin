@@ -44,7 +44,7 @@ import type {
 import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
 import { createSchedulesScope } from "@/features/surfaces/manifests/schedules.manifest";
 import { buildOpenScheduleValues } from "../../lib/schedules-scope";
-import { validateCron } from "@/lib/scheduler-client/next-due";
+import { validateCron } from "@ai-matrx/data/scheduler";
 import { OneShotForm } from "./triggers/OneShotForm";
 import { IntervalForm } from "./triggers/IntervalForm";
 import { CronForm } from "./triggers/CronForm";
@@ -176,7 +176,7 @@ export function ScheduleForm({
   const [computer, setComputer] = useState<ComputerCodingChoice | null>(() =>
     task?.kind === "device_op" && task.targetDeviceId
       ? // Editing a coding schedule on a computer: its work is in metadata.device_op (computerWork.ts).
-        { deviceId: task.targetDeviceId, mode: "coding", folder: task.deviceOp?.folder ?? "", provider: task.deviceOp?.provider ?? "claude", accountProfileId: task.deviceOp?.accountProfileId ?? "" }
+        { deviceId: task.targetDeviceId, mode: "coding", folder: task.deviceOp?.folder ?? "", provider: task.deviceOp?.provider ?? "claude", accountProfileId: task.deviceOp?.accountProfileId ?? "", homes: task.deviceOp?.homes ?? [] }
       : !task && initialRunsOn
         ? { deviceId: initialRunsOn, mode: "coding", folder: initialComputerWork?.folder ?? "", provider: initialComputerWork?.provider ?? "claude", accountProfileId: initialComputerWork?.accountProfileId ?? "" }
         : null,
@@ -258,6 +258,7 @@ export function ScheduleForm({
               prompt: form.prompt.trim(),
               provider: computer.provider,
               accountProfileId: computer.accountProfileId.trim() || null,
+              homes: computer.homes ?? [],
               trigger,
             },
           );
@@ -273,6 +274,7 @@ export function ScheduleForm({
           prompt: form.prompt.trim(),
           provider: computer.provider,
           accountProfileId: computer.accountProfileId.trim() || null,
+              homes: computer.homes ?? [],
           trigger,
         });
         toast.success("Schedule saved");

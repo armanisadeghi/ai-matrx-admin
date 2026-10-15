@@ -18,6 +18,8 @@ import { ComputerConnection, type ComputerConnectionState } from "@/features/ai-
 import { ComputerWorkFields } from "@/features/ai-work/components/ComputerWorkFields";
 import { duplicateNames, lastSeenLabel, type ComputerRunRequest } from "@/features/ai-work/lib/computerChooser";
 import { supabase } from "@/utils/supabase/client";
+import { HomeStep } from "@/features/ai-work/compose/components/HomeStep";
+import type { SavedRequestHome } from "@/features/ai-work/compose/savedRequests";
 
 export interface ComputerCodingChoice {
   deviceId: string;
@@ -26,6 +28,8 @@ export interface ComputerCodingChoice {
   folder: string;
   provider: "claude" | "codex";
   accountProfileId: string;
+  /** Where each run's chat is filed (project, task, War Room); the computer files it. */
+  homes?: SavedRequestHome[];
 }
 
 interface Props {
@@ -157,6 +161,13 @@ export function RunsOnField({ value, onChange, error }: Props) {
             <input className={inputClass} value={value.accountProfileId} onChange={(e) => onChange({ ...value, accountProfileId: e.target.value })} />
           </label>
           <p className="text-xs text-muted-foreground sm:col-span-2">Each run starts a new session there with the prompt above. A run started by a schedule is not filed under your homes yet; it reaches AI Matrx when the computer delivers its history.</p>
+        </div>
+      )}
+      {value && value.mode === "coding" && (
+        <div className="space-y-1" data-runs-on-homes>
+          <span className="text-xs">File each run under</span>
+          {/* /work/new's own home chooser (HomeStep), shared — the computer files each run's chat there. */}
+          <HomeStep homes={value.homes ?? []} onChange={(homes) => onChange({ ...value, homes })} />
         </div>
       )}
       {error && <ErrorNotice title="This schedule cannot be saved yet" message={error} />}

@@ -10,11 +10,11 @@
 // NEVER access .from('sch_*') outside this file — that's the rule that keeps
 // the data shape consistent across the FE.
 
-import { CronExpressionParser } from "cron-parser";
+import { computeNextDueAt, type ScheduledTriggerConfig } from "@ai-matrx/data/scheduler";
 import { supabase } from "@/utils/supabase/client";
 import { schedulerDb } from "@/utils/supabase/schedulerDb";
 import type { SchedulableKind } from "../types";
-import { computerWorkOf, deviceOpWith, type ComputerCodingWork } from "../utils/computerWork";
+import { computerWorkOf, deviceOpWith, type ComputerCodingWork, type ComputerWorkHome } from "../utils/computerWork";
 import { tryWriteOne } from "@/utils/supabase/writeOne";
 import { pgErrorToError } from "@ai-matrx/data";
 import { withTransientRetry } from "@/lib/db/transientRetry";
@@ -692,12 +692,9 @@ export interface ComputerCodingTaskInput {
   homes?: Array<{ token: "project" | "task" | "war_room"; id: string; label: string }>;
 }
 
-/** When a trigger first fires (the computer's host advances it after each run). Null: not a time trigger. */
+/** When a trigger first fires (the computer's host advances it after each run). Null: not a time trigger. THE calculation is @ai-matrx/data/scheduler's. */
 export function firstDueAt(trigger: TriggerConfig, now: Date = new Date()): string | null {
-  if (trigger.type === "one-shot") return new Date(trigger.at).toISOString();
-  if (trigger.type === "interval" || trigger.type === "heartbeat") return new Date(now.getTime() + trigger.every_seconds * 1000).toISOString();
-  if (trigger.type === "cron") return CronExpressionParser.parse(trigger.expression, { currentDate: now, tz: trigger.tz || "UTC" }).next().toISOString();
-  return null;
+  return computeNextDueAt(trigger as ScheduledTriggerConfig, now).nextDueAt;
 }
 
 /**
@@ -811,7 +808,7 @@ async function insertComputerTask(
  */
 export async function updateComputerCodingTask(
   task: { id: string; deviceOp: ComputerCodingWork | null; triggerId: string | null },
-  edit: { title: string; description: string | null; deviceId: string; provider: "claude" | "codex"; folder: string; prompt: string; accountProfileId: string | null; trigger: TriggerConfig },
+  edit: { title: string; description: string | null; deviceId: string; provider: "claude" | "codex"; folder: string; prompt: string; accountProfileId: string | null; homes?: ComputerWorkHome[]; trigger: TriggerConfig },
 ): Promise<void> {
   const current = await schedulerDb(supabase).from("sch_task").select("metadata").eq("id", task.id).maybeSingle();
   if (current.error || !current.data) throw new Error(current.error?.message ?? "The schedule was not found.");

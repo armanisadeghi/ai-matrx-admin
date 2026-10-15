@@ -38,7 +38,7 @@ export function SpecCard({ task }: Props) {
     humanLines([
       ["Schedule", task.title],
       ...(work
-        ? ([["Coding app", app], ["Folder", work.folder], ["Account", work.accountProfileId ?? "Its signed-in account"]] as [string, string | null][])
+        ? ([["Coding app", app], ["Folder", work.folder], ["Account", work.accountProfileId ?? "Its signed-in account"], ["Filed under", work.homes.map((h) => h.label).join(", ") || null]] as [string, string | null][])
         : ([["Agent", task.agentId ?? "Platform default"]] as [string, string][])),
       ["Prompt", prompt],
       ...varEntries.map(
@@ -118,6 +118,17 @@ export function SpecCard({ task }: Props) {
             </Row>
             <Row label="Account" anchor="schedule_account">
               <span className="text-sm">{work.accountProfileId ? "A saved account" : "Its signed-in account"}</span>
+            </Row>
+            <Row label="Filed under" anchor="schedule_homes">
+              {work.homes.length ? (
+                <span className="flex flex-wrap gap-1">
+                  {work.homes.map((h) => (
+                    <EntityRef key={`${h.token}:${h.id}`} token={h.token} id={h.id} wrap nameClassName="text-xs" />
+                  ))}
+                </span>
+              ) : (
+                <span className="text-sm text-muted-foreground">Not filed</span>
+              )}
             </Row>
           </>
         ) : (
