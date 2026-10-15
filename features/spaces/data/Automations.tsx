@@ -20,7 +20,7 @@ import { Button, Input, Switch } from "@ai-matrx/design-system/controls";
 import { isButtonField } from "@ai-matrx/records";
 import type { AutomationAction, AutomationItem, AutomationRun, AutomationSpec, AutomationTrigger, AutomationValue, AutomationWeekday, ReadRow, SavedViewRow } from "@ai-matrx/records";
 import { useMyLevel, useRecordsClient, type Field } from "@ai-matrx/records/react";
-import { rightsReason, whatYouMayDo } from "@ai-matrx/records-ui";
+import { whatYouMayDo } from "@ai-matrx/records-ui";
 
 import { useEffectiveKnob } from "@/lib/scoped-config/effectiveKnobs.client";
 
@@ -372,12 +372,15 @@ export function AutomationsPanel({ words = "spaces", ...rest }: { tableId: strin
 }
 
 /**
- * WHY THE ON/OFF SWITCH (and archive / restore) IS CLOSED, in one short line, or null when it is open. The store's
- * doors (`automation_set_enabled` / `_archive` / `_restore`) ask the Editor level; a viewer pressing the switch
- * used to get nothing at all (lane AT-UIFIX item 4). Same ladder the door reads (`organise` = editor).
+ * WHY THE ON/OFF SWITCH (and archive / restore) IS CLOSED, in one short line, or null when it is open. Automations
+ * change how the table behaves: structure, which the access ladder gives to Full access (lane AT-UIFIX item 4;
+ * `common-docs/policies/access-ladder.md`: Edit = content, Full = structure). A viewer pressing the switch used to
+ * get nothing at all. The ladder's own word is said, never the store's internal level name.
  */
-export function automationSwitchReason(rights: Parameters<typeof rightsReason>[0]): string | null {
-  return rightsReason(rights, "organise");
+export function automationSwitchReason(rights: { known: boolean; level: unknown; structure: boolean }): string | null {
+  if (!rights.known) return "Checking your access…";
+  if (rights.structure) return null;
+  return rights.level === null ? "You don't have access" : "Needs Full access";
 }
 
 function AutomationsPanelBody({ tableId, organizationId, fields }: { tableId: string; organizationId: string | null; fields: Field[] }) {
