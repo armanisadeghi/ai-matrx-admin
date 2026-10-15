@@ -770,6 +770,25 @@ export default function WorkbookEditor({
     }
   }, [workbookId, workbookName]);
 
+  // OpenDocument: the same xlsx the editor already builds, converted by the office service (LibreOffice).
+  const handleExportOds = useCallback(async () => {
+    const workbook = apiRef.current?.getActiveWorkbook();
+    if (!workbook) return;
+    try {
+      const name = workbookName ?? workbookId;
+      const { univerSnapshotToXlsxBytes } = await import("@/features/workbooks/univer-to-xlsx");
+      const { downloadOpenXmlAs } = await import("@/features/file-actions/office-convert");
+      const bytes = await univerSnapshotToXlsxBytes(workbook.save(), { resolveImage: resolveExportImage });
+      await downloadOpenXmlAs(bytes, `${name}.xlsx`, name, "ods");
+    } catch (err) {
+      toast({
+        title: "Could not export as OpenDocument",
+        description: err instanceof Error ? err.message : String(err),
+        variant: "destructive",
+      });
+    }
+  }, [workbookId, workbookName]);
+
   // CSV / Print read the ACTIVE sheet of the live workbook.
   const withActiveSheet = useCallback(
     (run: (snapshot: unknown, sheetId: string | undefined, title: string) => boolean) => {
@@ -942,7 +961,7 @@ export default function WorkbookEditor({
       templatesHref: "/workbooks/templates",
       downloads: [
         { label: "Microsoft Excel (.xlsx)", run: handleExportXlsx },
-        { label: "OpenDocument (.ods)", soon: "workbooks.download-ods" },
+        { label: "OpenDocument (.ods)", run: handleExportOds },
         { label: "PDF (.pdf)", run: async () => handleExportPdf() },
         { label: "Web Page (.html)", run: async () => handleExportHtml() },
         { label: "Comma Separated Values (.csv)", run: async () => handleExportCsv() },
