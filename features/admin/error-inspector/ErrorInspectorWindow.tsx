@@ -213,7 +213,7 @@ export default function ErrorInspectorWindow({
               : "No errors match the filter."}
           </div>
         ) : (
-          <ul className="p-1 space-y-0.5">
+          <ul className="p-1 space-y-0.5 w-0 min-w-full">
             {filtered.map((e) => {
               const active = selected?.id === e.id;
               return (
