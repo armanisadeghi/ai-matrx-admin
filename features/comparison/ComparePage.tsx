@@ -173,7 +173,7 @@ function CompareBody({ kinds, organizationId }: { kinds: ComparisonKindInfo[]; o
           )}
         </section>
       ) : kind ? (
-        <EmptyState title={`${kind.label} is coming soon`} description={kind.discovery_note || kind.description} />
+        <EmptyState title={`${kind.label} is coming soon`} line={kind.discovery_note || kind.description} />
       ) : null}
     </div>
   );
@@ -196,7 +196,7 @@ function KindTile({ kind, selected, onSelect }: { kind: ComparisonKindInfo; sele
     >
       <div className="flex w-full items-center justify-between">
         <span className="text-sm font-medium text-foreground">{kind.label}</span>
-        {coming ? <Badge variant="outline">Soon</Badge> : null}
+        {coming ? <Badge tone="info">Soon</Badge> : null}
       </div>
       <span className="line-clamp-2 text-xs text-muted-foreground">{kind.description}</span>
     </button>
