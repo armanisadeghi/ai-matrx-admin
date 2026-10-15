@@ -14,6 +14,15 @@ export function useBasePort(): BasePort {
     automationSetEnabled: (args) => client.automationSetEnabled(args),
     dashboards: (id) => client.dashboards({ table_id: id }) as never,
     dashboardDeclare: (args) => client.dashboardDeclare({ table_id: args.table_id, name: args.name, blocks: args.blocks as never, presentation: args.presentation }),
+    // A NEW base is a new Home, made the way a table's Home is made (declareTable): a record in the person kernel. Copies move in by the one move door.
+    createHome: async (name) => {
+      const kernel = await client.personKernelId();
+      if (!kernel.ok) return kernel;
+      return client.recordWrite({ table_id: kernel.data, data: { name } });
+    },
+    moveInto: (id, home) => client.recordReparent({ record_id: id, parent_id: home }),
+    fieldsOf: (id) => client.fields({ table_id: id }) as never,
+    viewsOf: (id) => client.views({ table_id: id }) as never,
     // A table is put away in passes; this loops them until the store says done.
     archive: async (id) => {
       for (let pass = 0; pass < 400; pass += 1) {
