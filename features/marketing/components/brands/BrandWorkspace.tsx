@@ -96,6 +96,7 @@ import { canEditAccess } from "@/utils/permissions/access-core";
 import { BrandSocialProfilesCard } from "@/features/marketing/components/brands/BrandSocialProfilesCard";
 import { BrandRelationsCard } from "@/features/marketing/components/brands/BrandRelationsCard";
 import { BrandBackgroundWork } from "@/features/marketing/components/brands/BrandBackgroundWork";
+import { BrandOfferingsPanel } from "@/features/marketing/offerings/BrandOfferingsPanel";
 import { BrandArchiveFlow } from "@/features/marketing/components/brands/BrandArchiveFlow";
 import { PersonBrandAvatar, PersonFollowerTotal } from "@/features/marketing/components/brands/PersonBrandAvatar";
 import { BRAND_KIND_COPY, brandKindCopy, isPersonBrand } from "@/features/marketing/lib/brand-kind";
@@ -895,6 +896,14 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
             organizationId={current.organization_id}
             canEdit={canEdit}
           />
+
+          {/* Products & services: found from the brand's site, accounts and listings, each with its quote; Yes / No. */}
+          <section className="min-w-0 rounded-lg border border-border bg-card p-3" id="products-and-services">
+            <h2 className="type-title mb-2">Products &amp; services</h2>
+            <BrandOfferingsPanel
+              brand={{ id: current.id, name: current.name, organizationId: current.organization_id }}
+            />
+          </section>
 
           {/* What AI says about this brand — the owner is the brand, so it shows with or without a site. */}
           <BrandAiVisibilityCard
