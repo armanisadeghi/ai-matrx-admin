@@ -1,0 +1,330 @@
+#!/usr/bin/env node
+// scripts/preview-ready.mjs — `pnpm preview:ready [route] [--hold <min>] [--member] [--no-repair]`
+//
+// THE ONE PREFLIGHT for anything that tests in the browser against the shared localhost preview.
+// It says READY only when YOUR session's page really loads signed in, and it repairs what it can on
+// the way. Built 2026-10-15 after three real-test runs in one day died for environment reasons and
+// none for the product: a preview stopped while unused (no listener, 73 s cold compile inside a
+// 30 s browser timeout), a stale install showed `Export GmailMark doesn't exist in target module`
+// on every page, and an agent at load 178 did not dare restart a broken server.
+//
+// What it does, in order (each step prints one line):
+//   1. machine  — load and free memory, said plainly; never a reason to give up, only to wait longer
+//   2. server   — not running: starts it. Lease held by another checkout: NOT READY, says whose.
+//   3. hold     — takes a hold for this session (default 45 min): the watchdog will not recycle the
+//                 server, and another session's preview:start will not replace it, while you test
+//   4. listener — waits until port 3001 answers at all
+//   5. sign-in  — mints a single-use dev-login nonce on YOUR hostname and loads the route through it
+//                 with a cookie jar, the way the browser will; waits through cold compiles
+//   6. verdict  — 200 on the route itself (not /login), no build-error page. On a build error it
+//                 tells the two cases apart:
+//                   STALE SERVER — the installed package DOES export the name: the server is serving
+//                                  a module graph from before an install. Restarted, re-checked.
+//                   CODE         — the import really is ahead of the installed package, or a file is
+//                                  broken: names the file and whether it is someone's uncommitted
+//                                  edit or a commit (hash, author). Not a product defect of the
+//                                  page under test; not fixable by restarting.
+//   7. browser  — prints a FRESH sign-in URL for the browser pane, the lane-lock holder, and one
+//                 line of JavaScript to run in the page to confirm it there too.
+//
+// Exit 0 = READY (last line starts "READY"); exit 1 = NOT READY (last line says why).
+// Safe to run any time, from any number of sessions: it never stops a healthy server, and a
+// restart only happens for a dead or provably stale one (CLAUDE.md: "everyone blips, that is fine").
+
+import { spawnSync } from "node:child_process";
+import { existsSync, readFileSync, statSync } from "node:fs";
+import http from "node:http";
+import os from "node:os";
+import { dirname, join, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
+import { diagnoseBuildError, verdictOf } from "./lib/preview-ready-judge.mjs";
+
+const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+const SERVER = join(ROOT, "scripts", "agent-dev-server.sh");
+const PORT = 3001;
+const LANE_LOCK = "/tmp/matrx-browser-lane.lock";
+const AGENT_HEADER = { "X-Matrx-Agent-Traffic": "preview-ready" };
+
+// ── args ─────────────────────────────────────────────────────────────────────
+const args = process.argv.slice(2);
+let route = "/dashboard";
+let holdMin = 45;
+let member = false;
+let repair = true;
+let budgetSec = 0; // 0 = scale with load
+for (let i = 0; i < args.length; i++) {
+  const a = args[i];
+  if (a === "--hold") holdMin = Number(args[++i]);
+  else if (a === "--member") member = true;
+  else if (a === "--no-repair") repair = false;
+  else if (a === "--timeout") budgetSec = Number(args[++i]);
+  else if (a === "-h" || a === "--help") {
+    console.log("pnpm preview:ready [route=/dashboard] [--hold <min>=45] [--member] [--no-repair] [--timeout <sec>]");
+    process.exit(0);
+  } else if (a.startsWith("/")) route = a;
+  else {
+    console.error(`[ready] unknown argument: ${a}`);
+    process.exit(2);
+  }
+}
+if (!Number.isFinite(holdMin) || holdMin < 0) holdMin = 45;
+
+const started = Date.now();
+const secs = () => ((Date.now() - started) / 1000).toFixed(0);
+const say = (msg) => console.log(`[ready] ${msg}`);
+function notReady(why, extra = []) {
+  for (const line of extra) say(line);
+  console.log(`NOT READY: ${why}`);
+  process.exit(1);
+}
+
+function sh(cmd, cmdArgs, opts = {}) {
+  const r = spawnSync(cmd, cmdArgs, { cwd: ROOT, encoding: "utf8", env: process.env, ...opts });
+  return { out: `${r.stdout ?? ""}${r.stderr ?? ""}`, code: r.status ?? 1 };
+}
+const server = (...a) => sh("bash", [SERVER, ...a]);
+
+// The session hostname, exactly as preview:start / dev-login derive it.
+const HOST = sh("bash", [
+  "-c",
+  `source scripts/agent-harness/preview-session.sh; source scripts/agent-harness/shared-servers.sh; shared_server_host "$(preview_session_label "${ROOT}")"`,
+]).out.trim();
+if (!/^[a-z0-9.-]+\.localhost$/i.test(HOST)) notReady(`could not work out this session's hostname (got "${HOST}")`);
+
+// ── 1. machine ───────────────────────────────────────────────────────────────
+const cores = os.cpus().length;
+const load = os.loadavg()[0];
+const freePct = Number(sh("bash", ["-c", "memory_pressure 2>/dev/null | awk '/free percentage/{gsub(\"%\",\"\",$NF); print $NF}'"]).out.trim()) || null;
+const overload = load / cores;
+if (!budgetSec) budgetSec = overload > 3 ? 900 : overload > 1.5 ? 600 : 360;
+say(
+  `machine: load ${load.toFixed(0)} on ${cores} cores${freePct != null ? `, ${freePct}% memory free` : ""}` +
+    (overload > 3 ? " — overloaded by other work; pages compile slowly, waiting up to " + Math.round(budgetSec / 60) + " min" : ""),
+);
+
+// ── 2. server ────────────────────────────────────────────────────────────────
+function status() {
+  const s = server("status").out;
+  const m = s.match(/RUNNING mode=(\S+) pid=(\d+) port=(\d+) memory=([\d.]+) GB [^\n]*last-used=(\d+) min ago owner=(\S+)/);
+  return {
+    text: s,
+    running: Boolean(m),
+    pid: m ? Number(m[2]) : null,
+    memGb: m ? Number(m[4]) : null,
+    owner: m ? m[6] : null,
+    ready: /ready: yes/.test(s),
+    nmMoved: /node_modules changed under this running server/.test(s),
+    crashLoop: /CRASH LOOP/.test(s),
+    unmanaged: /UNMANAGED\/BLOCKING/.test(s),
+  };
+}
+
+let st = status();
+if (st.crashLoop && !st.running) {
+  notReady("the preview keeps dying on boot (CRASH LOOP) — that is a code or install defect, not this run's fault", [
+    ...st.text.split("\n").filter((l) => /CRASH LOOP|WATCHDOG/.test(l)).slice(0, 3),
+    `read the end of the preview log: ${logPath()}`,
+  ]);
+}
+if (st.unmanaged) notReady("an unmanaged dev server holds the one slot", [st.text.trim()]);
+if (st.running && st.owner !== ROOT) {
+  notReady(`the one preview serves another checkout (${st.owner}); test from the shared main checkout`);
+}
+if (!st.running) {
+  if (!repair) notReady("no preview is running (re-run without --no-repair to start it)");
+  say("server: not running — starting the shared preview");
+  const s = server("start");
+  if (s.code !== 0) notReady("preview:start failed", s.out.trim().split("\n").slice(-5));
+  st = status();
+} else {
+  say(`server: running (pid ${st.pid}, ${st.memGb} GB real memory${st.ready ? "" : ", still warming"})`);
+}
+
+// node_modules moved under a live server: the watchdog restarts it once the install settles; do it now.
+if (st.nmMoved && repair) {
+  say("server: packages were installed under the running server — restarting it now so it serves what is on disk");
+  restartServer();
+}
+
+// ── 3. hold ──────────────────────────────────────────────────────────────────
+if (holdMin > 0) {
+  const h = server("hold", String(holdMin));
+  say(h.code === 0 ? `hold: ${holdMin} min for this session — no recycle or takeover until then (pnpm preview:release when done)` : `hold: could not take one (${h.out.trim()})`);
+}
+
+// ── 4. listener ──────────────────────────────────────────────────────────────
+function request(path, { cookies = {}, timeoutMs = 30000, host = HOST } = {}) {
+  return new Promise((resolveReq) => {
+    const cookieHeader = Object.entries(cookies)
+      .map(([k, v]) => `${k}=${v}`)
+      .join("; ");
+    const req = http.request(
+      {
+        host: "127.0.0.1",
+        port: PORT,
+        path,
+        method: "GET",
+        headers: { Host: `${host}:${PORT}`, ...AGENT_HEADER, ...(cookieHeader ? { Cookie: cookieHeader } : {}) },
+        timeout: timeoutMs,
+      },
+      (res) => {
+        const chunks = [];
+        res.on("data", (c) => chunks.push(c));
+        res.on("end", () => resolveReq({ status: res.statusCode, headers: res.headers, body: Buffer.concat(chunks).toString("utf8") }));
+        res.on("error", (e) => resolveReq({ status: 0, error: String(e) }));
+      },
+    );
+    req.on("timeout", () => {
+      req.destroy();
+      resolveReq({ status: 0, error: "timeout" });
+    });
+    req.on("error", (e) => resolveReq({ status: 0, error: e.code || String(e) }));
+    req.end();
+  });
+}
+
+const deadline = started + budgetSec * 1000;
+const left = () => Math.max(0, deadline - Date.now());
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+async function waitForListener() {
+  let lastSay = 0;
+  while (left() > 0) {
+    const r = await request("/_next/static/__matrx_health", { timeoutMs: 10000, host: "localhost" });
+    if (r.status > 0) return true;
+    if (Date.now() - lastSay > 20000) {
+      say(`listener: waiting for port ${PORT} (${secs()}s)`);
+      lastSay = Date.now();
+    }
+    // A server that died during the wait: the watchdog restarts it; if nothing is there, start it.
+    if (!status().running && repair) {
+      say("listener: the server is gone — starting it");
+      server("start");
+    }
+    await sleep(2000);
+  }
+  return false;
+}
+
+function restartServer() {
+  const stop = server("stop");
+  if (stop.code !== 0) say(`restart: stop said: ${stop.out.trim().split("\n").pop()}`);
+  const s = server("start");
+  if (s.code !== 0) notReady("restart failed", s.out.trim().split("\n").slice(-5));
+  // The old hold lived in the state dir and survives a stop; re-take it to be sure.
+  if (holdMin > 0) server("hold", String(holdMin));
+}
+
+function logPath() {
+  const dir = process.env.MATRX_PREVIEW_STATE_DIR || join(process.env.TMPDIR || "/tmp", `matrx-frontend-preview-${process.getuid()}`);
+  return join(dir, "shared-next-dev.log");
+}
+
+function logTailSince(bytesAtStart) {
+  try {
+    const p = logPath();
+    const size = statSync(p).size;
+    const from = size >= bytesAtStart ? bytesAtStart : 0;
+    const fd = readFileSync(p);
+    return fd.subarray(Math.max(from, size - 400000)).toString("utf8");
+  } catch {
+    return "";
+  }
+}
+function logSize() {
+  try {
+    return statSync(logPath()).size;
+  } catch {
+    return 0;
+  }
+}
+
+// ── 5. sign-in load ──────────────────────────────────────────────────────────
+function mintLoginPath(target) {
+  const r = sh("bash", [join(ROOT, "scripts", "dev-login.sh"), target, ...(member ? ["--member"] : [])]);
+  const m = r.out.match(/OPEN\s*:\s*http:\/\/[^/]+(\/api\/dev-login\?\S+)/);
+  if (!m) notReady("could not mint a dev-login nonce", r.out.trim().split("\n").slice(-3));
+  return m[1];
+}
+
+async function signedInLoad(target) {
+  const cookies = {};
+  let path = mintLoginPath(target);
+  const hops = [];
+  let current = path;
+  let lastSay = Date.now();
+  const ticker = setInterval(() => {
+    if (Date.now() - lastSay > 20000) {
+      say(`sign-in: still loading ${current.split("?")[0]} (${secs()}s; a first compile can take minutes)`);
+      lastSay = Date.now();
+    }
+  }, 5000);
+  try {
+    for (let hop = 0; hop < 6; hop++) {
+      current = path;
+      const r = await request(path, { cookies, timeoutMs: Math.max(5000, left()) });
+      hops.push({ path, status: r.status });
+      for (const c of [].concat(r.headers?.["set-cookie"] ?? [])) {
+        const [pair] = c.split(";");
+        const eq = pair.indexOf("=");
+        if (eq > 0) cookies[pair.slice(0, eq).trim()] = pair.slice(eq + 1).trim();
+      }
+      if (r.status >= 300 && r.status < 400 && r.headers.location) {
+        const loc = new URL(r.headers.location, `http://${HOST}:${PORT}`);
+        path = loc.pathname + loc.search;
+        continue;
+      }
+      return { ...r, finalPath: path, hops };
+    }
+    return { status: 0, error: "too many redirects", finalPath: path, hops };
+  } finally {
+    clearInterval(ticker);
+  }
+}
+
+// ── run ──────────────────────────────────────────────────────────────────────
+if (!(await waitForListener())) notReady(`port ${PORT} never answered in ${Math.round(budgetSec / 60)} min`);
+say(`listener: port ${PORT} answers (${secs()}s)`);
+
+let restarted = false;
+for (let attempt = 1; attempt <= 2; attempt++) {
+  const logStart = logSize();
+  const r = await signedInLoad(route);
+  const v = verdictOf(r, route, say);
+  if (v.ok) {
+    say(`sign-in: ${route} loaded signed in as ${member ? "test@test.com" : "admin@admin.com"} on ${HOST} (${secs()}s)`);
+    break;
+  }
+  say(`sign-in: FAILED — ${v.why}`);
+  if (v.kind === "timeout") notReady(`${route} did not load within ${Math.round(budgetSec / 60)} min (machine load ${load.toFixed(0)})`);
+  const d = await diagnoseBuildError(`${r.body || ""}\n${logTailSince(logStart)}`, ROOT);
+  for (const line of d.lines) say(line);
+  if (d.stale && repair && !restarted) {
+    say("repair: restarting the preview so it serves the installed packages");
+    restartServer();
+    restarted = true;
+    if (!(await waitForListener())) notReady("the restarted preview never answered");
+    continue;
+  }
+  if (v.kind === "signed-out" && attempt === 1) continue; // one retry: a nonce raced another mint
+  notReady(v.why);
+}
+
+// ── 7. browser ───────────────────────────────────────────────────────────────
+let lane = "free";
+try {
+  if (existsSync(LANE_LOCK)) {
+    const owner = existsSync(join(LANE_LOCK, "owner")) ? readFileSync(join(LANE_LOCK, "owner"), "utf8").trim() : "unknown";
+    const ageMin = Math.round((Date.now() - statSync(LANE_LOCK).mtimeMs) / 60000);
+    lane = `held by ${owner} for ${ageMin} min`;
+  }
+} catch {
+  /* unreadable lock: report free */
+}
+say(`browser lane: ${lane}`);
+const browserUrl = `http://${HOST}:${PORT}${mintLoginPath(route)}`;
+say("in the page, confirm with javascript_tool:");
+say(
+  "  ({ path: location.pathname, signedOut: location.pathname.startsWith('/login'), overlay: (document.querySelector('nextjs-portal')?.shadowRoot?.textContent || '').match(/Build Error|Runtime Error|Unhandled Runtime/)?.[0] || null, heapMb: Math.round((performance.memory?.usedJSHeapSize || 0) / 1048576) })",
+);
+console.log(`READY ${browserUrl}`);
