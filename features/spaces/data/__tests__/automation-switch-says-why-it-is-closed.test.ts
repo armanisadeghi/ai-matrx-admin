@@ -1,6 +1,6 @@
 // LANE AT-UIFIX item 4: a viewer (test@test.com) pressed an automation's on/off switch and nothing happened and
 // nothing was said — the door wants the Editor level. The switch is closed with a one-line reason instead.
-jest.mock("@ai-matrx/records/react", () => ({ useRecordsClient: () => ({}), useTable: () => null }));
+jest.mock("@ai-matrx/records/react", () => ({ useRecordsClient: () => ({}), useMyLevel: () => ({ loading: false, error: null, data: null }) }));
 jest.mock("@/components/errors/ErrorAlchemyMenu", () => ({ ErrorAlchemyMenu: () => null }));
 jest.mock("@ai-matrx/design-system/controls", () => ({ Button: () => null, Input: () => null, Switch: () => null }));
 
