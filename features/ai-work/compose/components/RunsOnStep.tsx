@@ -8,7 +8,7 @@
  * recent folders, and its saved Codex accounts. What the computer cannot answer is said.
  */
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { CircleDot, Lock, Monitor } from "lucide-react";
 import { getClaimsUser } from "@ai-matrx/auth";
 import { DesktopProtocolError } from "@ai-matrx/desktop-protocol";
@@ -20,6 +20,7 @@ import { cn } from "@/lib/utils";
 import { supabase } from "@/utils/supabase/client";
 import { getAccessTokenOrNull } from "@/lib/python-client";
 import { useDeviceClient } from "@/features/files/devices/console/useDeviceClient";
+import type { ConsoleStatus } from "@/features/files/devices/console/connection";
 import { listChooserComputers, type ChooserComputer } from "@/features/ai-work/lib/computerChooser";
 
 export type CodingProvider = "claude" | "codex";
@@ -32,6 +33,32 @@ export interface ComputerPlan {
   provider: CodingProvider;
   folder: string;
   accountProfileId: string | null;
+}
+
+/** The one live connection to the chosen computer, owned by the page (it outlives a collapsed step). */
+export interface ComputerConnectionState {
+  deviceId: string;
+  client: DesktopClient;
+  status: ConsoleStatus;
+}
+
+/**
+ * Mount once per chosen computer, OUTSIDE any collapsible step: a step that closes unmounts its
+ * body, and a connection owned there would close under a plan that still points at it.
+ */
+export function ComputerConnection({ deviceId, onConnection }: { deviceId: string; onConnection: (c: ComputerConnectionState | null) => void }) {
+  const { client, status } = useDeviceClient(deviceId);
+  // The status object is rebuilt on every render: report it only when what it SAYS changes.
+  const said = `${status.pill}|${status.label}|${status.detail ?? ""}`;
+  const latest = useRef(status);
+  useEffect(() => {
+    latest.current = status;
+  });
+  useEffect(() => {
+    onConnection({ deviceId, client, status: latest.current });
+  }, [deviceId, client, said, onConnection]);
+  useEffect(() => () => onConnection(null), [onConnection]);
+  return null;
 }
 
 type ListState = { state: "loading" } | { state: "ready"; computers: ChooserComputer[] } | { state: "failed"; reason: string };
@@ -83,11 +110,17 @@ function RunsOnOption({
 
 export function RunsOnStep({
   deviceId,
+  connection,
+  plan,
   onChange,
   onPlan,
 }: {
   /** null = the AI Matrx cloud. */
   deviceId: string | null;
+  /** The page's live connection to the chosen computer (see ComputerConnection). */
+  connection: ComputerConnectionState | null;
+  /** The plan already made, so reopening this step keeps the choices. */
+  plan: ComputerPlan | null;
   onChange: (deviceId: string | null, name: string | null) => void;
   onPlan: (plan: ComputerPlan | null) => void;
 }) {
@@ -154,7 +187,12 @@ export function RunsOnStep({
       {list.state === "ready" && list.computers.length === 0 && (
         <p className="text-xs text-muted-foreground">No computer runs Matrx 2 on this account</p>
       )}
-      {chosen && <ComputerRunForm key={chosen.device.id} computer={chosen} onPlan={onPlan} />}
+      {chosen &&
+        (connection && connection.deviceId === chosen.device.id ? (
+          <ComputerRunForm key={chosen.device.id} computer={chosen} connection={connection} initial={plan} onPlan={onPlan} />
+        ) : (
+          <p className="text-xs text-muted-foreground">Connecting to {chosen.name}…</p>
+        ))}
     </div>
   );
 }
@@ -165,15 +203,26 @@ function said(error: unknown): string {
   return DesktopProtocolError.from(error).message;
 }
 
-function ComputerRunForm({ computer, onPlan }: { computer: ChooserComputer; onPlan: (plan: ComputerPlan | null) => void }) {
-  const { client, status } = useDeviceClient(computer.device.id);
+function ComputerRunForm({
+  computer,
+  connection,
+  initial,
+  onPlan,
+}: {
+  computer: ChooserComputer;
+  connection: ComputerConnectionState;
+  initial: ComputerPlan | null;
+  onPlan: (plan: ComputerPlan | null) => void;
+}) {
+  const { client, status } = connection;
+  const kept = initial && initial.deviceId === computer.device.id ? initial : null;
   const live = status.pill === "live";
   const [providers, setProviders] = useState<Loaded<Array<{ provider: CodingProvider; label: string; ready: boolean; why: string | null }>>>({ state: "loading" });
   const [folders, setFolders] = useState<Loaded<string[]>>({ state: "loading" });
   const [accounts, setAccounts] = useState<Loaded<Array<{ id: string; label: string }>>>({ state: "loading" });
-  const [provider, setProvider] = useState<CodingProvider>("claude");
-  const [folder, setFolder] = useState("");
-  const [account, setAccount] = useState(DEFAULT_ACCOUNT);
+  const [provider, setProvider] = useState<CodingProvider>(kept?.provider ?? "claude");
+  const [folder, setFolder] = useState(kept?.folder ?? "");
+  const [account, setAccount] = useState(kept?.accountProfileId ?? DEFAULT_ACCOUNT);
 
   useEffect(() => {
     if (!live) return;
@@ -221,8 +270,14 @@ function ComputerRunForm({ computer, onPlan }: { computer: ChooserComputer; onPl
     };
   }, [client, live]);
 
+  const savedAccounts = accounts.state === "ready" ? accounts.value : [];
+  // Codex can run on a saved account (its own home) even when its default sign-in is missing.
+  const runnable = (p: { provider: CodingProvider; ready: boolean; why: string | null }) =>
+    p.ready || (p.provider === "codex" && p.why === "not signed in" && savedAccounts.length > 0);
   const chosenProvider = providers.state === "ready" ? providers.value.find((p) => p.provider === provider) : undefined;
-  const ready = live && Boolean(chosenProvider?.ready) && folder.trim().length > 0;
+  const defaultSignedIn = Boolean(chosenProvider?.ready);
+  const accountOk = provider !== "codex" || defaultSignedIn || account !== DEFAULT_ACCOUNT;
+  const ready = live && Boolean(chosenProvider && runnable(chosenProvider)) && accountOk && folder.trim().length > 0;
 
   useEffect(() => {
     onPlan(
@@ -261,7 +316,7 @@ function ComputerRunForm({ computer, onPlan }: { computer: ChooserComputer; onPl
             onValueChange={(v) => setProvider(v as CodingProvider)}
             options={
               providers.state === "ready"
-                ? providers.value.map((p) => ({ value: p.provider, label: p.why ? `${p.label} (${p.why})` : p.label, disabled: !p.ready }))
+                ? providers.value.map((p) => ({ value: p.provider, label: p.why && !runnable(p) ? `${p.label} (${p.why})` : p.label, disabled: !runnable(p) }))
                 : [
                     { value: "claude", label: "Claude Code" },
                     { value: "codex", label: "Codex" },
@@ -269,7 +324,7 @@ function ComputerRunForm({ computer, onPlan }: { computer: ChooserComputer; onPl
             }
           />
         )}
-        {chosenProvider && !chosenProvider.ready && (
+        {chosenProvider && !runnable(chosenProvider) && (
           <p className="text-xs text-muted-foreground">
             {chosenProvider.label} is {chosenProvider.why} on {computer.name}
           </p>
@@ -286,8 +341,8 @@ function ComputerRunForm({ computer, onPlan }: { computer: ChooserComputer; onPl
               value={account}
               onValueChange={setAccount}
               options={[
-                { value: DEFAULT_ACCOUNT, label: "Its signed-in account" },
-                ...(accounts.state === "ready" ? accounts.value.map((a) => ({ value: a.id, label: a.label })) : []),
+                { value: DEFAULT_ACCOUNT, label: defaultSignedIn ? "Its signed-in account" : "Choose a saved account", disabled: !defaultSignedIn },
+                ...savedAccounts.map((a) => ({ value: a.id, label: a.label })),
               ]}
             />
           )}

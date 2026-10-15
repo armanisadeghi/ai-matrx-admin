@@ -85,12 +85,15 @@ import {
   type CodingBridgeCapability,
 } from "@/features/ai-work/lib/codingBridgeCapability";
 import { startHostedRun } from "@/features/ai-work/lib/hostedSandboxRun";
+import { INITIAL_LOCAL_CAPABILITY } from "@/features/ai-work/lib/matrxLocalRuntime";
 import {
-  INITIAL_LOCAL_CAPABILITY,
-  readLocalRuntimeCapability,
-  startLocalRuntimeSession,
-  type LocalRuntimeCapability,
-} from "@/features/ai-work/lib/matrxLocalRuntime";
+  fileMatrx2Run,
+  filingPendingSentence,
+  readCodingCapability,
+  startCodingRun,
+  type DoorCapability,
+} from "@/features/ai-work/lib/matrx2Coding";
+import { browserCodingDoors } from "@/features/ai-work/lib/matrx2Computers";
 import { destinationAvailability, type WorkDestinationId } from "../destinations";
 import {
   createSavedRequest,
@@ -104,7 +107,7 @@ import { HostedRunControls } from "./HostedRunControls";
 import { HostedBillingStep } from "./HostedBillingStep";
 import type { HostedBilling, OwnPlanStatus } from "@/features/ai-work/lib/ownPlan";
 import { DestinationStep } from "./DestinationStep";
-import { RunsOnStep, type ComputerPlan } from "./RunsOnStep";
+import { ComputerConnection, RunsOnStep, type ComputerConnectionState, type ComputerPlan } from "./RunsOnStep";
 import { ErrorNotice } from "@ai-matrx/design-system";
 import { computerSessionLink, newClientRequestId } from "@/features/ai-work/lib/computerChooser";
 import { HomeStep } from "./HomeStep";
@@ -210,9 +213,14 @@ function ComposerBody({
   const [destination, setDestination] = useState<WorkDestinationId>("ai-matrx");
   const [bridgeCapability, setBridgeCapability] =
     useState<CodingBridgeCapability>(INITIAL_BRIDGE_CAPABILITY);
-  const [localCapability, setLocalCapability] = useState<LocalRuntimeCapability>(
-    INITIAL_LOCAL_CAPABILITY,
-  );
+  const [localCapability, setLocalCapability] = useState<DoorCapability>({
+    ...INITIAL_LOCAL_CAPABILITY,
+    via: "matrx2",
+    computer: null,
+    notice: null,
+  });
+  /** A Matrx 2 run not yet filed under its homes: said, never skipped. */
+  const [filingNote, setFilingNote] = useState<string | null>(null);
   const [localFolder, setLocalFolder] = useState<string>("");
   // ── "Runs on": null = the AI Matrx cloud (every destination below); a device id = one of the
   //    person's Matrx 2 computers, where Claude Code or Codex starts through the relay.
@@ -221,6 +229,7 @@ function ComposerBody({
   const [runsOnName, setRunsOnName] = useState<string | null>(null);
   const [computerPlan, setComputerPlanState] = useState<ComputerPlan | null>(null);
   const [computerRefusal, setComputerRefusal] = useState<string | null>(null);
+  const [computerConnection, setComputerConnection] = useState<ComputerConnectionState | null>(null);
   const setComputerPlan = useCallback((plan: ComputerPlan | null) => {
     setComputerPlanState(plan);
     setComputerRefusal(null);
@@ -282,9 +291,9 @@ function ComposerBody({
     void readBridgeCapability("claude_code", "matrx_sandbox").then((next) => {
       if (!cancelled) setBridgeCapability(next);
     });
-    // The LOCAL runtime answer comes from the user's own Matrx Local app over
-    // the per-user bridge channel — a timeout is reported as unreachable.
-    void readLocalRuntimeCapability().then((next) => {
+    // The person's own computer: Matrx 2 first (relay status, then one socket to
+    // the one computer that runs it), Matrx Local announced after (matrx2Coding).
+    void readCodingCapability(browserCodingDoors).then((next) => {
       if (cancelled) return;
       setLocalCapability(next);
       setLocalFolder((current) => current || (next.approvedFolders[0] ?? ""));
@@ -423,27 +432,44 @@ function ComposerBody({
     if (!canRun || destination !== "claude-code") return;
     setLaunching(true);
     try {
-      const run = await startLocalRuntimeSession({
-        workspace: localFolder,
+      const started = await startCodingRun(browserCodingDoors, localCapability, {
+        cwd: localFolder,
         prompt: requestText.trim(),
       });
+      if (started.via === "matrx2") {
+        // No per-turn cloud mirror on Matrx 2: the chat is filed once it reaches AI Matrx.
+        const pending = filingPendingSentence(started.computer.name);
+        setFilingNote(pending);
+        toast.success(pending);
+        void fileMatrx2Run(browserCodingDoors, started.computer, started.sessionId).then(async (filed) => {
+          if ("pending" in filed) {
+            setFilingNote(filed.pending);
+            return;
+          }
+          setFilingNote(null);
+          setLaunched(filed.conversationId);
+          await attachHomes(filed.conversationId);
+        });
+        return;
+      }
+      const run = started.run;
       if (!run.conversation_id) {
         toast.success(
-          "Claude Code is starting on your Mac. The conversation appears in Conversations as soon as the first turn lands.",
+          "Claude Code is starting through Matrx Local. The conversation appears in Conversations as soon as the first turn lands.",
         );
         return;
       }
       setLaunched(run.conversation_id);
       toast.success(
-        "Claude Code is running on your Mac. The session mirrors into this conversation at each turn.",
+        "Claude Code is running through Matrx Local. The session mirrors into this conversation at each turn.",
       );
       await attachHomes(run.conversation_id);
     } catch (error) {
       console.error("[ai-work/new] local launch failed", error);
       toast.error(
         error instanceof Error
-          ? `Claude Code could not start on your Mac — ${error.message}`
-          : "Claude Code could not start on your Mac.",
+          ? `Claude Code could not start — ${error.message}`
+          : "Claude Code could not start.",
       );
     } finally {
       setLaunching(false);
@@ -654,6 +680,9 @@ function ComposerBody({
 
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-3 px-4 py-4">
+      {runsOnDevice !== null && (
+        <ComputerConnection key={runsOnDevice} deviceId={runsOnDevice} onConnection={setComputerConnection} />
+      )}
       <header>
         <div className="flex items-center gap-1.5"><h1 className="text-lg font-semibold text-foreground">Start work</h1><InfoHint text="Say what you want done, choose who does it and what they should know, then run it now or save it." label="About starting work" /></div>
       </header>
@@ -679,6 +708,8 @@ function ComposerBody({
       >
         <RunsOnStep
           deviceId={runsOnDevice}
+          connection={computerConnection}
+          plan={computerPlan}
           onChange={(deviceId, name) => {
             setRunsOnDevice(deviceId);
             setRunsOnName(name);
@@ -701,10 +732,10 @@ function ComposerBody({
               htmlFor="ai-work-local-folder"
               className="text-xs font-medium text-foreground"
             >
-              Folder on your Mac
+              Folder on your computer
             </label>
             <Select
-              aria-label="Folder on your Mac"
+              aria-label="Folder on your computer"
               value={localFolder}
               onValueChange={setLocalFolder}
               options={localCapability.approvedFolders.map((folder) => ({
@@ -713,14 +744,21 @@ function ComposerBody({
               }))}
             />
             <p className="text-xs text-muted-foreground">
-              Only folders you approved in Matrx Local are offered. The session
-              runs with your own Claude Code login
+              {localCapability.via === "matrx2"
+                ? "Folders recently used on that computer are offered."
+                : "Only folders you approved in Matrx Local are offered."}{" "}
+              The session runs with your own Claude Code login
               {localCapability.claudeAccountLabel
                 ? ` (${localCapability.claudeAccountLabel})`
                 : ""}
               .
             </p>
           </div>
+        )}
+        {runsOnDevice === null && destination === "claude-code" && (localCapability.notice || filingNote) && (
+          <p className="mt-2 text-xs text-muted-foreground">
+            {[localCapability.notice, filingNote].filter(Boolean).join(" ")}
+          </p>
         )}
         {runsOnDevice === null && destination === "claude-code-hosted" &&
           hostedAvailability.selectable && (
