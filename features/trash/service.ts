@@ -9,6 +9,8 @@
  * There is no purge: permanent destruction belongs to the retention engine
  * (common-docs/systems/architecture/database/data-lifecycle/projects/data-lifecycle-platform/PLAN.md), not to a button.
  */
+import { fetchRemovalRights } from "@/features/access-gate/service/hiddenByMe";
+import { RemovalNotYoursError } from "@/features/access-gate/cant-remove/cantRemoveOpener";
 import { supabase } from "@/utils/supabase/client";
 import type { Database } from "@/types/database.types";
 import { tryWriteOne } from "@/utils/supabase/writeOne";
@@ -334,6 +336,11 @@ export function parseVaultRecoveryPreview(raw: unknown): VaultRecoveryPreview {
 export async function archiveRecord(token: string, id: string, noun = "this"): Promise<void> {
   const info = tryGetEntityInfo(token);
   if (!info) throw new Error(`This kind of record (${token}) can't be archived from here yet.`);
+  // CHECK FIRST (2026-10-14): a record the person can see but not remove is the owner's call. Throw the
+  // typed refusal so the caller opens the owner-choices screen (`offerOwnerChoices`) instead of a
+  // database refusal. An unreadable answer falls through to the write, whose refusal says the same.
+  const rights = await fetchRemovalRights(token, id).catch(() => null);
+  if (rights?.canView && !rights.canRemove) throw new RemovalNotYoursError(token, id);
   const table = (supabase.schema(info.schema as never) as unknown as {
     from: (t: string) => {
       update: (v: Record<string, unknown>) => {

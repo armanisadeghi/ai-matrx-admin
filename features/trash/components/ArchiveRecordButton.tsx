@@ -16,6 +16,7 @@ import { toast } from "@/lib/toast";
 import { announceReversible } from "@/lib/reversible/announceReversible";
 import { TRASH_HREF } from "../archiveCopy";
 import { archiveRecord, restoreFromTrash } from "../service";
+import { offerOwnerChoices } from "@/features/access-gate/cant-remove/cantRemoveOpener";
 
 interface ArchiveRecordProps {
   /** Registered entity token (platform.entity_types). */
@@ -50,6 +51,18 @@ export async function archiveRecordReversibly({
   try {
     await archiveRecord(token, id, what);
   } catch (e) {
+    // Not theirs to remove: the owner-choices screen (ask the owner, or hide it for me), never a refusal toast.
+    if (
+      offerOwnerChoices(e, {
+        token,
+        id,
+        itemName: subjectOf(what),
+        itemLabel: noun ?? token.replace(/_/g, " "),
+        action: "archive",
+      })
+    ) {
+      return false;
+    }
     toast.error(e instanceof Error ? e.message : String(e));
     return false;
   }

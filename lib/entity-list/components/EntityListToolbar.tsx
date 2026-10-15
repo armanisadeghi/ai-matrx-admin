@@ -49,6 +49,7 @@ import type {
   EntityScopeCounts,
 } from "../types";
 import type { ListScope } from "@/lib/list-scope/types";
+import { HiddenByMeButton } from "@/features/access-gate/components/HiddenByMeButton";
 import { EntityFilterPanel } from "./EntityFilterPanel";
 import { EntityColumnPicker } from "./EntityColumnPicker";
 import { ReservedSlot } from "./ReservedSlot";
@@ -78,6 +79,10 @@ interface Props<TRow> {
   onOrgChange?: (orgId: string | null) => void;
   hasFavorites: boolean;
   hasArchived: boolean;
+  /** The list's entity token: renders the one-click "Hidden by me" place (absent until something is hidden). */
+  hiddenToken?: string;
+  /** The list's plural word ("notes") for the Hidden panel. */
+  pluralLabel?: string;
   /** "Search agents…" */
   searchPlaceholder: string;
   /**
@@ -173,6 +178,8 @@ export function EntityListToolbar<TRow>({
   onOrgChange,
   hasFavorites,
   hasArchived,
+  hiddenToken,
+  pluralLabel,
   searchPlaceholder,
   shortSearchPlaceholder,
   deepSearchLabel,
@@ -312,6 +319,9 @@ export function EntityListToolbar<TRow>({
           onResetFilters={onResetFilters}
         />
   );
+  const hiddenPlace = hiddenToken ? (
+    <HiddenByMeButton token={hiddenToken} pluralLabel={pluralLabel ?? "items"} />
+  ) : null;
   const viewMenu = (
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
@@ -425,6 +435,7 @@ export function EntityListToolbar<TRow>({
           </button>
         )}
         {filterPanel}
+        {hiddenPlace}
         {viewMenu}
         {tableControlsRef && <div ref={tableControlsRef} data-entity-list-table-controls hidden />}
       </div>
@@ -466,6 +477,8 @@ export function EntityListToolbar<TRow>({
       {searchBox}
 
       {filterPanel}
+
+      {hiddenPlace}
 
       {prefs.view === "table" && !columnsInViewMenu && (
         <EntityColumnPicker

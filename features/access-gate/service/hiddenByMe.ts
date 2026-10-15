@@ -51,10 +51,11 @@ export async function fetchRemovalRights(
   };
 }
 
-export async function hideForMe(token: string, id: string): Promise<void> {
+export async function hideForMe(token: string, id: string, label?: string | null): Promise<void> {
   const { error } = await platformRpc().rpc("hide_for_me", {
     p_type: token,
     p_id: id,
+    p_label: label ?? undefined,
   });
   if (error) throw operationFailed("hide this item", error);
 }
@@ -67,13 +68,31 @@ export async function unhideForMe(token: string, id: string): Promise<void> {
   if (error) throw operationFailed("show this item again", error);
 }
 
-/** The caller's hidden record ids for one token (a person hides few things). */
-export async function listHiddenByMe(token: string): Promise<string[]> {
+export interface HiddenItem {
+  token: string;
+  id: string;
+  /** The name the person saw when they hid it (null for an older hide). */
+  label: string | null;
+  hiddenAt: string;
+}
+
+/** The caller's hidden records — one token, or every token when omitted. */
+export async function listHiddenItems(token?: string): Promise<HiddenItem[]> {
   const { data, error } = await platformRpc().rpc("hidden_by_me", {
-    p_type: token,
+    p_type: token ?? undefined,
   });
   if (error) throw operationFailed("load your hidden items", error);
-  return (data ?? []).map((row) => row.entity_id);
+  return (data ?? []).map((row) => ({
+    token: row.entity_type,
+    id: row.entity_id,
+    label: row.label,
+    hiddenAt: row.hidden_at,
+  }));
+}
+
+/** The caller's hidden record ids for one token (a person hides few things). */
+export async function listHiddenByMe(token: string): Promise<string[]> {
+  return (await listHiddenItems(token)).map((item) => item.id);
 }
 
 /** Which slice of a list to show with respect to the person's hidden items. */

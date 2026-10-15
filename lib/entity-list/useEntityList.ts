@@ -10,6 +10,7 @@
 // never overwrite a newer one. That class of bug is invisible until a user
 // types fast on a slow connection and the list settles on the wrong results.
 
+import { useHiddenByMe } from "@/features/access-gate/hooks/useHiddenByMe";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { ListViewPrefs } from "@/lib/redux/preferences/userPreferencesSlice";
 import { useAppSelector } from "@/lib/redux/hooks";
@@ -333,6 +334,8 @@ export function useEntityList<TRow>({
   // second render to catch up).
   const debouncedSearch = searchDebounceMs <= 0 ? query.search : heldSearch;
   const [rows, setRows] = useState<TRow[]>([]);
+  const hiddenIds = useHiddenByMe(registryToken ?? "", Boolean(registryToken));
+  const hiddenSet = new Set(hiddenIds.data ?? []);
   const [total, setTotal] = useState(0);
   /** The open-ended page's "a next page exists" (`EntityListPage.hasMore`); undefined = counted. */
   const [hasMore, setHasMore] = useState<boolean | undefined>(undefined);
@@ -841,10 +844,18 @@ export function useEntityList<TRow>({
     [invalidateDerivedReads],
   );
 
+  // HIDDEN BY ME (2026-10-14): records this person hid leave the list for them alone; they wait in the
+  // toolbar's "Hidden" place. A person hides a handful of things, so the page is narrowed here once,
+  // for every list, instead of in each list's own read.
+  const shownRows = showPeek ? peekedPage.rows : rowsAnswerThisQuestion ? rows : [];
+  const visibleRows =
+    hiddenSet.size === 0 ? shownRows : shownRows.filter((row) => !hiddenSet.has(getRowId(row)));
+  const shownTotal = showPeek ? peekedPage.total : rowsAnswerThisQuestion ? total : 0;
+
   return {
     query,
-    rows: showPeek ? peekedPage.rows : rowsAnswerThisQuestion ? rows : [],
-    total: showPeek ? peekedPage.total : rowsAnswerThisQuestion ? total : 0,
+    rows: visibleRows,
+    total: Math.max(0, shownTotal - (shownRows.length - visibleRows.length)),
     hasMore: showPeek ? peekedPage.hasMore : rowsAnswerThisQuestion ? hasMore : undefined,
     counts: peekedCounts ?? counts,
     countsLoading,

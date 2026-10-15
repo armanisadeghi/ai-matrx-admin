@@ -1,5 +1,6 @@
 "use client";
 
+import { useQueryClient } from "@tanstack/react-query";
 import { useState, type ReactNode } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -123,9 +124,10 @@ export function BrandsPortfolio({
   // The Hidden view closes itself once nothing is left in it.
   const hiddenView: HiddenView =
     hiddenViewChoice === "hidden" && hiddenIds.data?.length === 0 ? "visible" : hiddenViewChoice;
-  const { hide: hideBrand, unhide: unhideBrand } = useHideForMe("web_brand", [
-    [...marketingKeys.root, "brands"],
-  ]);
+  const queryClient = useQueryClient();
+  const { hide: hideBrand, unhide: unhideBrand } = useHideForMe("web_brand", () =>
+    queryClient.invalidateQueries({ queryKey: [...marketingKeys.root, "brands"] }),
+  );
   const brands = useBrands(
     table.queryState,
     archive,
@@ -150,7 +152,7 @@ export function BrandsPortfolio({
   const setHidden = async (row: { id: string; name: string }, hidden: boolean) => {
     try {
       if (hidden) {
-        await hideBrand.mutateAsync(row.id);
+        await hideBrand.mutateAsync({ id: row.id, label: row.name });
         toast.success(`Hid ${row.name}. Find it under Hidden.`);
       } else {
         await unhideBrand.mutateAsync(row.id);

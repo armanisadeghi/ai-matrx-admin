@@ -23553,6 +23553,66 @@ export type Database = {
         }
         Relationships: []
       }
+      webhook_test_receipt: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          deleted_at: string | null
+          delivery_event_id: string | null
+          event: string | null
+          id: string
+          metadata: Json
+          organization_id: string
+          raw_body: string | null
+          received_at: string
+          received_body: Json | null
+          signature: string | null
+          signature_valid: boolean
+          updated_at: string
+          updated_by: string | null
+          version: number
+          webhook_id: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          delivery_event_id?: string | null
+          event?: string | null
+          id?: string
+          metadata?: Json
+          organization_id: string
+          raw_body?: string | null
+          received_at?: string
+          received_body?: Json | null
+          signature?: string | null
+          signature_valid: boolean
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+          webhook_id: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          delivery_event_id?: string | null
+          event?: string | null
+          id?: string
+          metadata?: Json
+          organization_id?: string
+          raw_body?: string | null
+          received_at?: string
+          received_body?: Json | null
+          signature?: string | null
+          signature_valid?: boolean
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+          webhook_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -26354,6 +26414,7 @@ export type Database = {
         Returns: Json
       }
       _space_public_media: { Args: { p_blob: Json }; Returns: Json }
+      _space_row_of: { Args: { p_doc: string }; Returns: string }
       _space_tree_ids: { Args: { p_space_id: string }; Returns: string[] }
       _write_came_through: { Args: { p_doors: string[] }; Returns: boolean }
       annotation_create: {
@@ -26466,6 +26527,19 @@ export type Database = {
         }[]
       }
       realtime_topic_admits: { Args: { p_topic: string }; Returns: boolean }
+      row_page_ensure: {
+        Args: {
+          p_organization_id: string
+          p_record_id: string
+          p_snapshot: Json
+          p_title: string
+        }
+        Returns: {
+          created: boolean
+          space_id: string
+        }[]
+      }
+      row_page_for: { Args: { p_record_id: string }; Returns: string }
       search_documents: {
         Args: {
           p_archive?: string
@@ -26560,6 +26634,14 @@ export type Database = {
           title: string
           updated_at: string
           version: number
+        }[]
+      }
+      space_owning_row: {
+        Args: { p_space_id: string }
+        Returns: {
+          organization_id: string
+          record_id: string
+          table_id: string
         }[]
       }
       space_public_view: { Args: { p_key: string }; Returns: Json }
@@ -28293,6 +28375,18 @@ export type Database = {
           p_version?: number
         }
         Returns: Json
+      }
+      chat_offered_shapes: {
+        Args: never
+        Returns: {
+          color: string
+          description: string
+          icon: string
+          kind: string
+          label: string
+          short_label: string
+          sort_order: number
+        }[]
       }
       check_kind_admission: {
         Args: { p_kind: string; p_organization_id: string; p_version?: number }
@@ -34999,6 +35093,93 @@ export type Database = {
         }
         Relationships: []
       }
+      synced_source: {
+        Row: {
+          connector: Json
+          created_at: string
+          created_by: string | null
+          cursor: Json
+          deleted_at: string | null
+          id: string
+          last_report: Json | null
+          last_run_id: string | null
+          mapping: Json | null
+          metadata: Json
+          organization_id: string
+          owner: string | null
+          published_to_web: boolean
+          published_to_web_at: string | null
+          published_to_web_by: string | null
+          shown_to: Database["platform"]["Enums"]["shown_to"] | null
+          source_kind: string
+          source_ref: string
+          status: string
+          synced_at: string | null
+          target: string | null
+          title: string | null
+          updated_at: string
+          updated_by: string | null
+          version: number
+          visibility: Database["platform"]["Enums"]["visibility"]
+        }
+        Insert: {
+          connector?: Json
+          created_at?: string
+          created_by?: string | null
+          cursor?: Json
+          deleted_at?: string | null
+          id?: string
+          last_report?: Json | null
+          last_run_id?: string | null
+          mapping?: Json | null
+          metadata?: Json
+          organization_id: string
+          owner?: string | null
+          published_to_web?: boolean
+          published_to_web_at?: string | null
+          published_to_web_by?: string | null
+          shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          source_kind: string
+          source_ref: string
+          status?: string
+          synced_at?: string | null
+          target?: string | null
+          title?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+          visibility?: Database["platform"]["Enums"]["visibility"]
+        }
+        Update: {
+          connector?: Json
+          created_at?: string
+          created_by?: string | null
+          cursor?: Json
+          deleted_at?: string | null
+          id?: string
+          last_report?: Json | null
+          last_run_id?: string | null
+          mapping?: Json | null
+          metadata?: Json
+          organization_id?: string
+          owner?: string | null
+          published_to_web?: boolean
+          published_to_web_at?: string | null
+          published_to_web_by?: string | null
+          shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          source_kind?: string
+          source_ref?: string
+          status?: string
+          synced_at?: string | null
+          target?: string | null
+          title?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+          visibility?: Database["platform"]["Enums"]["visibility"]
+        }
+        Relationships: []
+      }
       template: {
         Row: {
           card: Json
@@ -36470,6 +36651,7 @@ export type Database = {
         Returns: Json
       }
       _formula_literal_normalised: { Args: { p_expr: Json }; Returns: Json }
+      _fx_arr: { Args: { p_v: Json }; Returns: Json }
       _fx_autonumber: {
         Args: {
           p_key: string
@@ -36489,6 +36671,25 @@ export type Database = {
         Args: { p_format: string; p_ts: string }
         Returns: string
       }
+      _fx_datetime_parse: {
+        Args: { p_format: string; p_text: string }
+        Returns: string
+      }
+      _fx_dl: {
+        Args: { p_v: Json; p_what: string }
+        Returns: Record<string, unknown>
+      }
+      _fx_ext: {
+        Args: {
+          p_context: Json
+          p_op: string
+          p_organization_id: string
+          p_vals: Json[]
+        }
+        Returns: Json
+      }
+      _fx_flat: { Args: { p_vals: Json[] }; Returns: Json }
+      _fx_flatten: { Args: { p_v: Json }; Returns: Json }
       _fx_iso: { Args: { p_date_only: boolean; p_ts: string }; Returns: string }
       _fx_item_text: { Args: { p_x: Json }; Returns: string }
       _fx_itemkey: { Args: { p_x: Json }; Returns: Json }
@@ -36521,6 +36722,10 @@ export type Database = {
         Returns: Json
       }
       _fx_loose: { Args: { p_v: Json }; Returns: number }
+      _fx_months_between: {
+        Args: { p_a: string; p_b: string }
+        Returns: number
+      }
       _fx_num: { Args: { p_v: Json; p_what: string }; Returns: number }
       _fx_num_text: { Args: { p_n: number }; Returns: string }
       _fx_ordinal: { Args: { p_n: number }; Returns: string }
@@ -36535,6 +36740,7 @@ export type Database = {
         Args: { p_allowed: string[]; p_fn: string; p_v: Json }
         Returns: string
       }
+      _fx_unit_norm: { Args: { p_fn: string; p_v: Json }; Returns: string }
       _fx_workday: {
         Args: { p_days: number; p_holidays: Json; p_start: string }
         Returns: string
@@ -36772,6 +36978,10 @@ export type Database = {
         Returns: Json
       }
       _parity_types_sentence: { Args: never; Returns: string }
+      _person_cell_repoint: {
+        Args: { p_cell: Json; p_from: string; p_to: string }
+        Returns: Json
+      }
       _pick_list_index_of: {
         Args: { p_me: string; p_organization_id: string }
         Returns: Json
@@ -37007,6 +37217,15 @@ export type Database = {
           p_expr: Json
           p_organization_id: string
           p_values: Json
+        }
+        Returns: Json
+      }
+      _saved_view_public_read: {
+        Args: {
+          p_namespace: string
+          p_notice: string
+          p_org: string
+          p_view_id: string
         }
         Returns: Json
       }
@@ -38311,6 +38530,10 @@ export type Database = {
         Returns: Json
       }
       choice_words: { Args: { p_field: Json }; Returns: string }
+      choice_words_normalize: {
+        Args: { p_const: Json; p_field: Json }
+        Returns: Json
+      }
       client_write_grants: {
         Args: never
         Returns: {
@@ -39515,6 +39738,10 @@ export type Database = {
           parity: boolean
         }[]
       }
+      field_make_automatic: {
+        Args: { p_field_id: string; p_kind: string; p_organization_id: string }
+        Returns: Json
+      }
       field_options: {
         Args: { p_field_id: string; p_organization_id: string }
         Returns: {
@@ -39603,6 +39830,11 @@ export type Database = {
       }
       file_kernel_id: { Args: never; Returns: string }
       filter_is_rule: { Args: { p_filter: Json }; Returns: boolean }
+      filter_list_op: {
+        Args: { p_a: Json; p_b?: Json; p_op: string }
+        Returns: Json
+      }
+      filter_list_op_words: { Args: never; Returns: string[] }
       form_archive: {
         Args: { p_form_id: string; p_organization_id: string }
         Returns: Json
@@ -41213,6 +41445,7 @@ export type Database = {
         }
         Returns: Json
       }
+      published_view_read: { Args: { p_slug: string }; Returns: Json }
       query_access_ids: {
         Args: { p_organization_id: string; p_required?: string }
         Returns: string[]
@@ -42284,6 +42517,7 @@ export type Database = {
           total: number
         }[]
       }
+      revoke_view_share_link: { Args: { p_link_id: string }; Returns: Json }
       rollup_value: {
         Args: {
           p_field_data: Json
@@ -42310,6 +42544,15 @@ export type Database = {
       row_template_declare: {
         Args: { p_organization_id: string; p_spec: Json; p_table_id: string }
         Returns: string
+      }
+      row_template_default: {
+        Args: { p_organization_id: string; p_table_id: string }
+        Returns: {
+          body: Json
+          name: string
+          template_id: string
+          values: Json
+        }[]
       }
       row_templates: {
         Args: { p_organization_id: string; p_table_id: string }
@@ -42573,6 +42816,15 @@ export type Database = {
         Args: { p_reason: string; p_table_id: string }
         Returns: Json
       }
+      set_view_share_link_protection: {
+        Args: {
+          p_change_expiry?: boolean
+          p_expires_at?: string
+          p_link_id: string
+          p_password?: string
+        }
+        Returns: Json
+      }
       share_access: {
         Args: { p_organization_id: string; p_subject_id: string }
         Returns: {
@@ -42667,6 +42919,10 @@ export type Database = {
           table_id: string
           why: string
         }[]
+      }
+      shared_view_read: {
+        Args: { p_password?: string; p_token: string; p_unlock?: string }
+        Returns: Json
       }
       shares_outside: {
         Args: { p_organization_id: string }
@@ -42851,6 +43107,47 @@ export type Database = {
           table_id: string
         }[]
       }
+      synced_source_by_ref: {
+        Args: {
+          p_organization_id: string
+          p_source_kinds: string[]
+          p_source_ref: string
+        }
+        Returns: Json
+      }
+      synced_source_finish: {
+        Args: {
+          p_cursor: Json
+          p_id: string
+          p_mapping: Json
+          p_report: Json
+          p_run_id: string
+          p_synced_at: string
+        }
+        Returns: undefined
+      }
+      synced_source_read: {
+        Args: {
+          p_organization_id: string
+          p_source_kind: string
+          p_target: string
+        }
+        Returns: Json
+      }
+      synced_source_save: {
+        Args: {
+          p_actor: string
+          p_connector: Json
+          p_organization_id: string
+          p_owner: string
+          p_source_kind: string
+          p_source_ref: string
+          p_target: string
+          p_title: string
+        }
+        Returns: string
+      }
+      synced_sources_for: { Args: { p_source_ref: string }; Returns: Json }
       table_access_setup: { Args: { p_table_id: string }; Returns: Json }
       table_access_setup_preview: {
         Args: { p_moves?: Json; p_setup: Json; p_table_id: string }
@@ -43439,6 +43736,10 @@ export type Database = {
         Args: { p_data: Json; p_organization_id: string; p_table_id: string }
         Returns: string[]
       }
+      unmatched_people_resolve: {
+        Args: { p_organization_id: string; p_user_id: string }
+        Returns: number
+      }
       unresolved_sources_of: {
         Args: {
           p_by_id?: boolean
@@ -43561,6 +43862,23 @@ export type Database = {
           p_view_id: string
         }
         Returns: Json
+      }
+      view_share_links: {
+        Args: { p_view_id: string }
+        Returns: {
+          created_at: string
+          created_by: string
+          created_by_name: string
+          expires_at: string
+          has_password: boolean
+          id: string
+          label: string
+          last_used_at: string
+          made_by_me: boolean
+          permission_level: string
+          token: string
+          use_count: number
+        }[]
       }
       views: {
         Args: { p_organization_id: string; p_table_id?: string }
@@ -44617,6 +44935,90 @@ export type Database = {
           published_to_web_at?: string | null
           published_to_web_by?: string | null
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+          visibility?: Database["platform"]["Enums"]["visibility"]
+        }
+        Relationships: []
+      }
+      notion_sync_source: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          credential_field_id: string | null
+          credential_item_id: string | null
+          deleted_at: string | null
+          id: string
+          kind: string
+          last_report: Json | null
+          metadata: Json
+          notion_cursor: string | null
+          notion_id: string
+          organization_id: string
+          published_to_web: boolean
+          published_to_web_at: string | null
+          published_to_web_by: string | null
+          set_by: string
+          shown_to: Database["platform"]["Enums"]["shown_to"] | null
+          space_id: string | null
+          synced_at: string | null
+          table_id: string | null
+          title: string | null
+          updated_at: string
+          updated_by: string | null
+          version: number
+          visibility: Database["platform"]["Enums"]["visibility"]
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          credential_field_id?: string | null
+          credential_item_id?: string | null
+          deleted_at?: string | null
+          id?: string
+          kind: string
+          last_report?: Json | null
+          metadata?: Json
+          notion_cursor?: string | null
+          notion_id: string
+          organization_id: string
+          published_to_web?: boolean
+          published_to_web_at?: string | null
+          published_to_web_by?: string | null
+          set_by: string
+          shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          space_id?: string | null
+          synced_at?: string | null
+          table_id?: string | null
+          title?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+          visibility?: Database["platform"]["Enums"]["visibility"]
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          credential_field_id?: string | null
+          credential_item_id?: string | null
+          deleted_at?: string | null
+          id?: string
+          kind?: string
+          last_report?: Json | null
+          metadata?: Json
+          notion_cursor?: string | null
+          notion_id?: string
+          organization_id?: string
+          published_to_web?: boolean
+          published_to_web_at?: string | null
+          published_to_web_by?: string | null
+          set_by?: string
+          shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          space_id?: string | null
+          synced_at?: string | null
+          table_id?: string | null
+          title?: string | null
           updated_at?: string
           updated_by?: string | null
           version?: number
@@ -94034,6 +94436,7 @@ export type Database = {
           entity_id: string
           entity_type: string
           id: string
+          label: string | null
           metadata: Json
           organization_id: string
           published_to_web: boolean
@@ -94052,6 +94455,7 @@ export type Database = {
           entity_id: string
           entity_type: string
           id?: string
+          label?: string | null
           metadata?: Json
           organization_id: string
           published_to_web?: boolean
@@ -94070,6 +94474,7 @@ export type Database = {
           entity_id?: string
           entity_type?: string
           id?: string
+          label?: string | null
           metadata?: Json
           organization_id?: string
           published_to_web?: boolean
@@ -97267,6 +97672,35 @@ export type Database = {
           visibility?: Database["platform"]["Enums"]["visibility"]
         }
         Relationships: []
+      }
+      share_link_password: {
+        Row: {
+          link_id: string
+          password_hash: string
+          set_at: string
+          set_by: string | null
+        }
+        Insert: {
+          link_id: string
+          password_hash: string
+          set_at?: string
+          set_by?: string | null
+        }
+        Update: {
+          link_id?: string
+          password_hash?: string
+          set_at?: string
+          set_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "share_link_password_link_id_fkey"
+            columns: ["link_id"]
+            isOneToOne: true
+            referencedRelation: "share_links"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       share_links: {
         Row: {
@@ -100720,9 +101154,13 @@ export type Database = {
           entity_id: string
           entity_type: string
           hidden_at: string
+          label: string
         }[]
       }
-      hide_for_me: { Args: { p_id: string; p_type: string }; Returns: Json }
+      hide_for_me: {
+        Args: { p_id: string; p_label?: string; p_type: string }
+        Returns: Json
+      }
       home_labels: {
         Args: { p_scope_ids: string[] }
         Returns: {
@@ -104000,9 +104438,11 @@ export type Database = {
           created_by: string | null
           deleted_at: string | null
           id: string
+          key_propagation: Json
           metadata: Json
           min_supported_app_version: string
           organization_id: string
+          owned_knob_features: string[]
           published_to_web: boolean
           published_to_web_at: string | null
           published_to_web_by: string | null
@@ -104020,9 +104460,11 @@ export type Database = {
           created_by?: string | null
           deleted_at?: string | null
           id?: string
+          key_propagation?: Json
           metadata?: Json
           min_supported_app_version: string
           organization_id: string
+          owned_knob_features?: string[]
           published_to_web?: boolean
           published_to_web_at?: string | null
           published_to_web_by?: string | null
@@ -104040,9 +104482,11 @@ export type Database = {
           created_by?: string | null
           deleted_at?: string | null
           id?: string
+          key_propagation?: Json
           metadata?: Json
           min_supported_app_version?: string
           organization_id?: string
+          owned_knob_features?: string[]
           published_to_web?: boolean
           published_to_web_at?: string | null
           published_to_web_by?: string | null
@@ -106277,9 +106721,11 @@ export type Database = {
           created_by: string | null
           deleted_at: string | null
           id: string
+          key_propagation: Json
           metadata: Json
           min_supported_app_version: string
           organization_id: string
+          owned_knob_features: string[]
           published_to_web: boolean
           published_to_web_at: string | null
           published_to_web_by: string | null
@@ -117582,6 +118028,7 @@ export type Database = {
         Returns: undefined
       }
       member_source_entity_token: { Args: { p_kind: string }; Returns: string }
+      readable_sources: { Args: { p_kinds: string[] }; Returns: Json }
       recall_entities: {
         Args: {
           p_limit?: number
@@ -142725,6 +143172,7 @@ export type Database = {
           relation_key: string | null
           resolved_asset_id: string | null
           resolved_fact_id: string | null
+          resolved_offering_id: string | null
           resolved_property_id: string | null
           reviewed_at: string | null
           reviewed_by: string | null
@@ -142756,6 +143204,7 @@ export type Database = {
           relation_key?: string | null
           resolved_asset_id?: string | null
           resolved_fact_id?: string | null
+          resolved_offering_id?: string | null
           resolved_property_id?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
@@ -142787,6 +143236,7 @@ export type Database = {
           relation_key?: string | null
           resolved_asset_id?: string | null
           resolved_fact_id?: string | null
+          resolved_offering_id?: string | null
           resolved_property_id?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
@@ -142822,6 +143272,13 @@ export type Database = {
             columns: ["resolved_fact_id"]
             isOneToOne: false
             referencedRelation: "business_fact"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "discovered_item_resolved_offering_id_fkey"
+            columns: ["resolved_offering_id"]
+            isOneToOne: false
+            referencedRelation: "brand_offering"
             referencedColumns: ["id"]
           },
           {
@@ -142866,6 +143323,7 @@ export type Database = {
           evidence_count: number
           host: string
           id: string
+          label: string | null
           metadata: Json
           note: string | null
           organization_id: string
@@ -142892,6 +143350,7 @@ export type Database = {
           evidence_count?: number
           host: string
           id?: string
+          label?: string | null
           metadata?: Json
           note?: string | null
           organization_id: string
@@ -142918,6 +143377,7 @@ export type Database = {
           evidence_count?: number
           host?: string
           id?: string
+          label?: string | null
           metadata?: Json
           note?: string | null
           organization_id?: string
@@ -147182,6 +147642,73 @@ export type Database = {
           },
           {
             foreignKeyName: "wf_checkpoint_run_id_fkey"
+            columns: ["run_id"]
+            isOneToOne: false
+            referencedRelation: "v_engram_confirmed_run"
+            referencedColumns: ["run_id"]
+          },
+        ]
+      }
+      checkpoint_value: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          metadata: Json
+          organization_id: string
+          run_id: string
+          size_bytes: number
+          updated_at: string
+          updated_by: string | null
+          value: Json
+          value_hash: string
+          version: number
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          metadata?: Json
+          organization_id: string
+          run_id: string
+          size_bytes?: number
+          updated_at?: string
+          updated_by?: string | null
+          value: Json
+          value_hash: string
+          version?: number
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          metadata?: Json
+          organization_id?: string
+          run_id?: string
+          size_bytes?: number
+          updated_at?: string
+          updated_by?: string | null
+          value?: Json
+          value_hash?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "checkpoint_value_run_id_fkey"
+            columns: ["run_id"]
+            isOneToOne: false
+            referencedRelation: "_run_facts"
+            referencedColumns: ["run_id"]
+          },
+          {
+            foreignKeyName: "checkpoint_value_run_id_fkey"
+            columns: ["run_id"]
+            isOneToOne: false
+            referencedRelation: "run"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "checkpoint_value_run_id_fkey"
             columns: ["run_id"]
             isOneToOne: false
             referencedRelation: "v_engram_confirmed_run"

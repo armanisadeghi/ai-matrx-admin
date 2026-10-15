@@ -10,6 +10,7 @@
 "use client";
 
 // wizard-draft-exempt: this reads only the 'deck just made' marker (a banner flag), no typed text is ever put back into a field
+import { ensureRemovable, offerOwnerChoices } from "@/features/access-gate/cant-remove/cantRemoveOpener";
 import { recordUnavailableMessage } from "@/lib/records/recordUnavailable";
 import { useEffect, useState, useTransition } from "react";
 import dynamic from "next/dynamic";
@@ -788,9 +789,18 @@ export function SetDetailView({
   // person lands back on the list, where the toast's Undo stays reachable.
   const archiveDeck = async () => {
     const name = data?.set.name ? `"${data.set.name}"` : "this deck";
+    const removal = {
+      token: "fc_set",
+      id: setId,
+      itemName: data?.set.name ?? "this deck",
+      itemLabel: "deck",
+      action: "archive" as const,
+    };
+    if (!(await ensureRemovable(removal))) return;
     try {
       await archiveRecord("fc_set", setId, "deck");
     } catch (err) {
+      if (offerOwnerChoices(err, removal)) return;
       toast.error(err instanceof Error ? err.message : `${name} was not archived.`);
       return;
     }

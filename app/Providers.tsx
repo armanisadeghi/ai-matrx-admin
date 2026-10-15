@@ -154,6 +154,7 @@ import { SandboxGateHost } from "@/components/dialogs/sandbox-gate/SandboxGateHo
 import { ValuePromptsDialogHost } from "@/components/dialogs/value-prompts/ValuePromptsDialogHost";
 import { RecordBulkDialogsHost } from "@/lib/entity-list/dialogs/RecordBulkDialogsHost";
 import { ScopeMismatchDialogHost } from "@/components/dialogs/scope-mismatch/ScopeMismatchDialogHost";
+import { CantRemoveDialogHost } from "@/features/access-gate/cant-remove/CantRemoveDialogHost";
 import { ConversationRenameDialogHost } from "@ai-matrx/chat/agents/components/conversation-actions/rename/ConversationRenameDialogHost";
 import { GoogleOAuthRedirectNotice } from "@/providers/google-provider/GoogleOAuthRedirectNotice";
 import { SandboxLifecycleObserver } from "@/lib/sandbox/SandboxLifecycleObserver";
@@ -293,6 +294,7 @@ export function Providers({ children, initialReduxState }: ProvidersProps) {
                                   chat's durable tags. Dismiss cancels the send.
                                   See components/dialogs/scope-mismatch/. */}
                                           <ScopeMismatchDialogHost />
+                                          <CantRemoveDialogHost />
                                           {/* The ONE rename-a-conversation dialog.
                                   `openConversationRename(id, title)` from the
                                   header menu and the answer menu's

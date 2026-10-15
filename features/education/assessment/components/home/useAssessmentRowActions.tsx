@@ -7,6 +7,7 @@
 // drift. Archive goes through Trash's one archive (`archiveRecord`), so the
 // assessment is restorable from /trash and from this list's Archived filter.
 
+import { ensureRemovable, offerOwnerChoices } from "@/features/access-gate/cant-remove/cantRemoveOpener";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
@@ -135,7 +136,14 @@ export function makeAssessmentRowActions(config: KindConfig) {
                         label: "Archive",
                         icon: Archive,
                         tone: "destructive" as const,
-                        onSelect: () => setPendingArchive(row),
+                        onSelect: () =>
+                          void ensureRemovable({
+                            token: "assessment",
+                            id: row.id,
+                            itemName: row.title,
+                            itemLabel: noun,
+                            action: "archive",
+                          }).then((ok) => ok && setPendingArchive(row)),
                       },
                 ],
               },
@@ -163,6 +171,18 @@ export function makeAssessmentRowActions(config: KindConfig) {
             await archiveRecord("assessment", pendingArchive.id, noun);
           } catch (e) {
             setBusy(false);
+            if (
+              offerOwnerChoices(e, {
+                token: "assessment",
+                id: pendingArchive.id,
+                itemName: pendingArchive.title,
+                itemLabel: noun,
+                action: "archive",
+              })
+            ) {
+              setPendingArchive(null);
+              return;
+            }
             toast.error(e instanceof Error ? e.message : `Could not archive this ${noun}.`);
             return;
           }

@@ -1160,6 +1160,8 @@ export function EntityListPage<TRow>({
             onOrgChange={list.setOrgId}
             hasFavorites={Boolean(config.favorite)}
             hasArchived={config.supportsArchived !== false}
+            hiddenToken={config.registryToken}
+            pluralLabel={config.entityLabel.plural}
             searchPlaceholder={
               config.searchPlaceholder ?? `Search ${config.entityLabel.plural}…`
             }

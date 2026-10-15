@@ -8,6 +8,7 @@
 // Studio / Cleanup / Scribe), with the same secondary destinations the old
 // hub cards carried.
 
+import { ensureRemovable, offerOwnerChoices } from "@/features/access-gate/cant-remove/cantRemoveOpener";
 import { useClipboard } from "@ai-matrx/kit/clipboard";
 import { copyNotify } from "@/lib/clipboard/copy-notify";
 import { useRouter } from "next/navigation";
@@ -54,6 +55,14 @@ export function useTranscriptRowActions(
   // THE ONE ARCHIVE for a transcript (restorable: the toast's Undo and Trash).
   const archiveTranscript = async (row: TranscriptListRow) => {
     const name = row.title?.trim() ? `"${row.title.trim()}"` : "this transcript";
+    const removal = {
+      token: "transcript",
+      id: row.id,
+      itemName: row.title?.trim() || "this transcript",
+      itemLabel: "transcript",
+      action: "archive" as const,
+    };
+    if (!(await ensureRemovable(removal))) return;
     const ok = await confirm({
       title: `Archive ${name}?`,
       // The list's Filters panel carries Archived, so restore lives there (V6-B, verify-7 #2).
@@ -65,6 +74,7 @@ export function useTranscriptRowActions(
     try {
       await archiveRecord("transcript", row.id, "transcript");
     } catch (err) {
+      if (offerOwnerChoices(err, removal)) return;
       toast.error(err instanceof Error ? err.message : `${name} was not archived.`);
       return;
     }

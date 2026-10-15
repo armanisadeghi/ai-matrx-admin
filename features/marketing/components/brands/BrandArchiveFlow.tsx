@@ -11,6 +11,7 @@
  */
 
 import { useEffect, useMemo, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { toast } from "@/lib/toast";
 import { Button } from "@/components/ui/button";
@@ -74,6 +75,7 @@ export function BrandArchiveFlow({ brand, onCancel, onDone }: BrandArchiveFlowPr
   const refused = Boolean(brand) && (rights.data?.canRemove === false || refusedId === brand?.id);
   const preview = useBrandArchivePreview(brand && !archived && !refused ? brand.id : null);
   const archive = useArchiveBrand();
+  const queryClient = useQueryClient();
 
   return (
     <>
@@ -92,7 +94,7 @@ export function BrandArchiveFlow({ brand, onCancel, onDone }: BrandArchiveFlowPr
           itemLabel="brand"
           action="archive"
           href={marketingRoutes.brand(brand.id)}
-          invalidateOnHide={[[...marketingKeys.root, "brands"]]}
+          onHidden={() => void queryClient.invalidateQueries({ queryKey: [...marketingKeys.root, "brands"] })}
         />
       ) : null}
       <ConfirmDialog

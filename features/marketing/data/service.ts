@@ -2491,7 +2491,7 @@ export async function getSiteHeroScreenshot(
 }
 
 const DISCOVERED_COLUMNS =
-  "id, organization_id, created_at, updated_at, created_by, updated_by, deleted_at, version, metadata, custom_fields, brand_id, site_id, snapshot_id, source, category, guessed_kind, url, value, value_hash, context, confidence, status, resolved_asset_id, resolved_fact_id, resolved_property_id, reviewed_by, reviewed_at, relation_key, sentiment";
+  "id, organization_id, created_at, updated_at, created_by, updated_by, deleted_at, version, metadata, custom_fields, brand_id, site_id, snapshot_id, source, category, guessed_kind, url, value, value_hash, context, confidence, status, resolved_asset_id, resolved_fact_id, resolved_offering_id, resolved_property_id, reviewed_by, reviewed_at, relation_key, sentiment";
 
 /**
  * Discovery inbox for a brand, optionally narrowed by status. Controlled

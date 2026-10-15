@@ -53,7 +53,6 @@ export function GovernedActionDialog({
   href,
   action = "delete",
   onHidden,
-  invalidateOnHide = [],
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -64,10 +63,8 @@ export function GovernedActionDialog({
   href?: string | null;
   /** The word for the removal the person tried: "archive" or "delete". */
   action?: "archive" | "delete";
-  /** Called after the person hid the item for themselves. */
+  /** Called after the person hid the item (re-read a list that narrows server-side). */
   onHidden?: () => void;
-  /** List query keys to re-read after a hide (the hidden ids refresh on their own). */
-  invalidateOnHide?: readonly unknown[][];
 }) {
   const currentUserId = useAppSelector(selectUserId);
   const { context, isLoading } = useAccessGate(resourceType, resourceId, {
@@ -77,7 +74,7 @@ export function GovernedActionDialog({
   const [note, setNote] = useState("");
   const [busy, setBusy] = useState(false);
   const [sent, setSent] = useState<RequestChoice | null>(null);
-  const { hide } = useHideForMe(resourceType, invalidateOnHide);
+  const { hide } = useHideForMe(resourceType);
   const verb = action === "archive" ? "archive" : "delete";
   const ActionIcon = action === "archive" ? Archive : Trash2;
 
@@ -89,7 +86,7 @@ export function GovernedActionDialog({
   async function hideIt() {
     setBusy(true);
     try {
-      await hide.mutateAsync(resourceId);
+      await hide.mutateAsync({ id: resourceId, label: itemName });
       toast.success(`Hidden for you. Find ${itemName} under Hidden.`);
       onHidden?.();
       onOpenChange(false);

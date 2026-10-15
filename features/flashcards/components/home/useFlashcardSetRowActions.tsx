@@ -7,6 +7,7 @@
 // Archive goes through Trash's one archive (`archiveRecord`), so the deck is
 // restorable from /trash and from this list's own Archived filter.
 
+import { ensureRemovable, offerOwnerChoices } from "@/features/access-gate/cant-remove/cantRemoveOpener";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
@@ -229,7 +230,14 @@ export function useFlashcardSetRowActions(
                   label: "Archive",
                   icon: Archive,
                   tone: "destructive",
-                  onSelect: () => setPendingArchive(row),
+                  onSelect: () =>
+                    void ensureRemovable({
+                      token: "fc_set",
+                      id: row.id,
+                      itemName: row.name,
+                      itemLabel: "deck",
+                      action: "archive",
+                    }).then((ok) => ok && setPendingArchive(row)),
                 },
           ],
         },
@@ -317,6 +325,18 @@ export function useFlashcardSetRowActions(
           await archiveRecord("fc_set", pendingArchive.id, "deck");
         } catch (e) {
           setBusy(false);
+          if (
+            offerOwnerChoices(e, {
+              token: "fc_set",
+              id: pendingArchive.id,
+              itemName: pendingArchive.name,
+              itemLabel: "deck",
+              action: "archive",
+            })
+          ) {
+            setPendingArchive(null);
+            return;
+          }
           toast.error(
             e instanceof Error ? e.message : "Could not archive this deck.",
           );
