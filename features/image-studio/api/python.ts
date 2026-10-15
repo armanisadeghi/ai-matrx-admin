@@ -16,7 +16,6 @@
  */
 
 import { postJson, postNdjson } from "@/lib/python-client";
-import { apiGet } from "@/lib/api/typed-client";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
 import type { components } from "@ai-matrx/api/types";
 import type { ImageGenerateSize } from "@/features/image-studio/constants/generation-options";
@@ -26,6 +25,8 @@ import type {
   ImageGenerateCompleteData,
 } from "@ai-matrx/agents/generated/stream-events";
 import { streamErrorText } from "@ai-matrx/api";
+import { listImageOps } from "@ai-matrx/api/media";
+import { serverApi } from "@/lib/api/server-api";
 
 // ---------------------------------------------------------------------------
 // Output options — shared across every op
@@ -413,7 +414,7 @@ export type ImageOpsCatalog = components["schemas"]["ImageOpsCatalog"];
 export async function listOps(): Promise<ImageOpsCatalog> {
   // GET, not POST — POSTing a GET-only route returns 405. Contract-bound: the
   // response type is derived from the `/images/ops` operation, not asserted.
-  const { data } = await apiGet("/images/ops");
+  const data = await listImageOps(serverApi, {});
   return data;
 }
 

@@ -15,7 +15,6 @@
  * recovery path, so a pending-credentials 503 must not fill Error Inspector.
  */
 
-import { apiGet, apiPost } from "@/lib/api/typed-client";
 import { BackendApiError, describeBackendFailure } from "@ai-matrx/api";
 import { OrganizationContextError } from "@/lib/api/organization-context";
 import type { components } from "@ai-matrx/api/types";
@@ -26,6 +25,8 @@ import type {
   LuluShippingOption,
 } from "./types";
 import { buildCatalog } from "./catalog";
+import { catalog, price, shippingOptions } from "@ai-matrx/api/publish";
+import { serverApi, NO_ERROR_CAPTURE_HEADER } from "@/lib/api/server-api";
 
 type CostCalculationResult = components["schemas"]["CostCalculationResult"];
 type ShippingOption = components["schemas"]["ShippingOption"];
@@ -76,10 +77,7 @@ export function toFetchState<T>(error: unknown): LuluFetchState<T> {
 // ---------------------------------------------------------------------------
 
 export async function fetchCatalog(signal?: AbortSignal): Promise<LuluCatalog> {
-  const { data } = await apiGet("/lulu/catalog", {
-    signal,
-    captureErrors: false,
-  });
+  const data = await catalog(serverApi, {}, { signal: signal, headers: { [NO_ERROR_CAPTURE_HEADER]: "off" } });
   return buildCatalog(data);
 }
 
@@ -127,17 +125,13 @@ export async function fetchShippingOptions(
   query: ShippingOptionsQuery,
   signal?: AbortSignal,
 ): Promise<LuluShippingOption[]> {
-  const { data } = await apiGet("/lulu/shipping-options", {
-    signal,
-    captureErrors: false,
-    query: {
+  const data = await shippingOptions(serverApi, { query: {
       country_code: query.countryCode,
       pod_package_id: query.podPackageId,
       page_count: query.pageCount,
       quantity: query.quantity,
       ...(query.stateCode ? { state_code: query.stateCode } : {}),
-    },
-  });
+    } }, { signal: signal, headers: { [NO_ERROR_CAPTURE_HEADER]: "off" } });
   return (data.options ?? []).map(toShippingOption);
 }
 
@@ -227,9 +221,7 @@ export async function fetchPrice(
   request: PriceRequest,
   signal?: AbortSignal,
 ): Promise<LuluPriceResult> {
-  const { data } = await apiPost(
-    "/lulu/price",
-    {
+  const data = await price(serverApi, { body: {
       line_items: [
         {
           pod_package_id: request.podPackageId,
@@ -248,9 +240,7 @@ export async function fetchPrice(
           : {}),
       },
       shipping_option: asShippingLevel(request.shippingLevel),
-    },
-    { signal, captureErrors: false },
-  );
+    } }, { signal: signal, headers: { [NO_ERROR_CAPTURE_HEADER]: "off" } });
   return toPriceResult(data);
 }
 

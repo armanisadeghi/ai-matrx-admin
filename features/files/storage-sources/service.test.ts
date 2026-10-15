@@ -10,9 +10,11 @@ import {
 const mockApiPost = jest.fn();
 const mockGetFile = jest.fn();
 
-jest.mock("@/lib/api/typed-client", () => ({
-  apiPost: (...args: unknown[]) => mockApiPost(...args),
-}));
+jest.mock("@/lib/api/server-api", () =>
+  require("@/lib/api/test-support/serverApiEnvelopeMock").serverApiEnvelopeMock({
+      apiPost: (...args: unknown[]) => mockApiPost(...args),
+  }),
+);
 jest.mock("@/features/files/api/files", () => ({
   getFile: (...args: unknown[]) => mockGetFile(...args),
 }));

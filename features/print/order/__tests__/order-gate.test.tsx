@@ -34,7 +34,9 @@ import { createRoot, type Root } from "react-dom/client";
 
 import { OrderFlow } from "../OrderFlow";
 
-jest.mock("@/lib/api/typed-client", () => ({ apiGet: jest.fn() }));
+jest.mock("@/lib/api/server-api", () =>
+  require("@/lib/api/test-support/serverApiEnvelopeMock").serverApiEnvelopeMock(),
+);
 
 /**
  * jsdom refuses to let `window.location` be redefined, so the ONE line that
@@ -52,7 +54,7 @@ const mockedIsDevOrigin = (
 ).isDevOriginSurface;
 
 const mockedApiGet = (
-  jest.requireMock("@/lib/api/typed-client") as { apiGet: jest.Mock }
+  jest.requireActual("@/lib/api/test-support/serverApiEnvelopeMock") as { apiGet: jest.Mock }
 ).apiGet;
 
 /** The seeded platform defaults, paired in test mode. */

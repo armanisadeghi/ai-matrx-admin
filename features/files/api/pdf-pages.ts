@@ -1,6 +1,7 @@
-import { apiPost, buildPath } from "@/lib/api/typed-client";
-import type { RequestOptions, ResponseMeta } from "@/lib/python-client";
+import type { RequestOptions } from "@/lib/python-client";
 import type { components } from "@ai-matrx/api/types";
+import { selectPdfPages as selectPdfPagesOp } from "@ai-matrx/api/files";
+import { serverApi, callOptionsFrom } from "@/lib/api/server-api";
 
 // Types DERIVED from the OpenAPI contract — never hand-mirrored. A backend
 // rename lights up every callsite in the same `pnpm sync-types` PR.
@@ -15,10 +16,6 @@ export function selectPdfPages(
   fileId: string,
   request: PdfPageSelectionRequest,
   opts: RequestOptions = {},
-): Promise<{ data: PdfPageSelectionResult; meta: ResponseMeta }> {
-  return apiPost(
-    buildPath("/files/{file_id}/pdf-pages", { file_id: fileId }),
-    request,
-    opts,
-  );
+): Promise<{ data: PdfPageSelectionResult }> {
+  return selectPdfPagesOp(serverApi, { path: { file_id: fileId }, body: request }, callOptionsFrom(opts)).then((data) => ({ data }));
 }

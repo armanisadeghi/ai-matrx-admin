@@ -33,9 +33,10 @@
  * precedent this call site copies).
  */
 
-import { apiPost } from "@/lib/api/typed-client";
 import { isOrganizationRequiredError } from "@ai-matrx/auth/organizations";
 import type { components } from "@ai-matrx/api/types";
+import { codingSessionBridge } from "@ai-matrx/api/code";
+import { serverApi } from "@/lib/api/server-api";
 
 /** The eleven operations a `BridgeCapabilityReport` grades, from the contract. */
 export type BridgeOperation = components["schemas"]["BridgeOperation"];
@@ -119,7 +120,7 @@ export async function readBridgeCapability(
   origin: BridgeCapabilityOrigin,
 ): Promise<CodingBridgeCapability> {
   try {
-    const { data } = await apiPost("/coding-sessions/bridge", {
+    const data = await codingSessionBridge(serverApi, { body: {
       schema_version: 1,
       // `CodingSessionBridgeRestRequest.action` is `BridgeAction | string`, so
       // this binds to the CURRENT contract. A build that does not implement
@@ -127,7 +128,7 @@ export async function readBridgeCapability(
       action: "capabilities",
       provider,
       origin,
-    });
+    } });
 
     const refusal = data.refusal;
     if (refusal) {

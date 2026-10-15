@@ -1,9 +1,11 @@
-import { apiPost } from "@/lib/api/typed-client";
+import { apiPost } from "@/lib/api/test-support/serverApiEnvelopeMock";
 import { getFile } from "@/features/files/api/files";
 import type { FileRecordApi } from "@/features/files/types";
 import { importGoogleDriveFile } from "@/features/files/storage-sources/service";
 
-jest.mock("@/lib/api/typed-client", () => ({ apiPost: jest.fn() }));
+jest.mock("@/lib/api/server-api", () =>
+  require("@/lib/api/test-support/serverApiEnvelopeMock").serverApiEnvelopeMock(),
+);
 jest.mock("@/features/files/api/files", () => ({ getFile: jest.fn() }));
 
 function fileRow(overrides: Partial<FileRecordApi> = {}): FileRecordApi {

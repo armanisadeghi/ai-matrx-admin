@@ -25,15 +25,11 @@ import type { TypedStreamEvent } from "@ai-matrx/agents/generated/stream-events"
 
 const apiPost = jest.fn();
 
-jest.mock("@/lib/api/typed-client", () => ({
-  apiPost: (...args: unknown[]) => apiPost(...args),
-  // The real interpolator, typed out: the guard must prove the runtime id
-  // reaches the URL, so faking this would defeat the point.
-  buildPath: (template: string, params: Record<string, string>) =>
-    template.replace(/\{([^}]+)\}/g, (_m, key: string) =>
-      encodeURIComponent(params[key]),
-    ),
-}));
+jest.mock("@/lib/api/server-api", () =>
+  require("@/lib/api/test-support/serverApiEnvelopeMock").serverApiEnvelopeMock({
+      apiPost: (...args: unknown[]) => apiPost(...args),
+  }),
+);
 
 // Mocked only so importing the module under test does not pull the execution
 // system and the Redux store into a unit suite. Neither is exercised here.

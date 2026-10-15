@@ -20,8 +20,9 @@
  * is `unavailable` with the server's own `detail`.
  */
 
-import { apiGet, apiPost, buildPath, withQuery } from "@/lib/api/typed-client";
 import type { components } from "@ai-matrx/api/types";
+import { hostedRuntimeStatus, ownPlanCancel, ownPlanSignInStart, ownPlanSignOut, ownPlanStatus, ownPlanSubmitCode } from "@ai-matrx/api/code";
+import { serverApi } from "@/lib/api/server-api";
 
 export type OwnPlanProvider = components["schemas"]["OwnPlanProvider"];
 export type OwnPlanState = components["schemas"]["OwnPlanState"];
@@ -63,9 +64,7 @@ export async function readOwnPlanStatus(
   provider: OwnPlanProvider,
   account?: OwnPlanAccount,
 ): Promise<OwnPlanStatus> {
-  const { data } = await apiGet(buildPath(OWN_PLAN_STATUS_PATH, { provider }), {
-    query: accountQuery(account),
-  });
+  const data = await ownPlanStatus(serverApi, { path: { provider }, query: accountQuery(account) });
   return data;
 }
 
@@ -74,10 +73,7 @@ export async function startOwnPlanSignIn(
   provider: OwnPlanProvider,
   account?: OwnPlanAccount,
 ): Promise<OwnPlanStatus> {
-  const { data } = await apiPost(
-    withQuery(buildPath(OWN_PLAN_SIGN_IN_PATH, { provider }), accountQuery(account)),
-    undefined,
-  );
+  const data = await ownPlanSignInStart(serverApi, { path: { provider }, query: accountQuery(account) });
   return data;
 }
 
@@ -87,10 +83,7 @@ export async function submitOwnPlanCode(
   code: string,
   account?: OwnPlanAccount,
 ): Promise<OwnPlanStatus> {
-  const { data } = await apiPost(
-    withQuery(buildPath(OWN_PLAN_CODE_PATH, { provider }), accountQuery(account)),
-    { authorization_code: code.trim() },
-  );
+  const data = await ownPlanSubmitCode(serverApi, { path: { provider }, query: accountQuery(account), body: { authorization_code: code.trim() } });
   return data;
 }
 
@@ -99,10 +92,7 @@ export async function cancelOwnPlanSignIn(
   provider: OwnPlanProvider,
   account?: OwnPlanAccount,
 ): Promise<OwnPlanStatus> {
-  const { data } = await apiPost(
-    withQuery(buildPath(OWN_PLAN_CANCEL_PATH, { provider }), accountQuery(account)),
-    undefined,
-  );
+  const data = await ownPlanCancel(serverApi, { path: { provider }, query: accountQuery(account) });
   return data;
 }
 
@@ -111,10 +101,7 @@ export async function signOutOwnPlan(
   provider: OwnPlanProvider,
   account?: OwnPlanAccount,
 ): Promise<OwnPlanStatus> {
-  const { data } = await apiPost(
-    withQuery(buildPath(OWN_PLAN_SIGN_OUT_PATH, { provider }), accountQuery(account)),
-    undefined,
-  );
+  const data = await ownPlanSignOut(serverApi, { path: { provider }, query: accountQuery(account) });
   return data;
 }
 
@@ -208,6 +195,6 @@ export function capacityFromReadiness(readiness: unknown): SandboxCapacityRefusa
 
 /** Read the hosted runtime's readiness and report the cap refusal, if any. */
 export async function readHostedCapacity(): Promise<SandboxCapacityRefusal | null> {
-  const { data } = await apiGet(HOSTED_RUNTIME_PATH);
+  const data = await hostedRuntimeStatus(serverApi, {});
   return capacityFromReadiness(data);
 }

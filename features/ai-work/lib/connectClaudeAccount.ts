@@ -5,7 +5,8 @@
  * calls this, so each one gets the same bounded, cancellable, honest wait.
  */
 
-import { apiGet } from "@/lib/api/typed-client";
+import { hostedRuntimeStatus } from "@ai-matrx/api/code";
+import { serverApi } from "@/lib/api/server-api";
 import { getUserMessage } from "@ai-matrx/api";
 import {
   runClaudeCodeRedeem,
@@ -15,7 +16,6 @@ import {
 } from "@/features/ai-work/lib/claudeConnectFlow";
 import {
   capacityRefusalOf,
-  HOSTED_RUNTIME_PATH,
   readOwnPlanStatus,
   startOwnPlanSignIn,
   submitOwnPlanCode,
@@ -55,7 +55,7 @@ export function connectClaudeAccount(
 ): Promise<ConnectOutcome> {
   return runClaudeConnect({
     start: () => startOwnPlanSignIn("claude_code", account),
-    readiness: async () => (await apiGet(HOSTED_RUNTIME_PATH)).data,
+    readiness: async () => await hostedRuntimeStatus(serverApi, {}),
     isFatal: (cause) => capacityRefusalOf(cause) !== null,
     isNetwork: isUnreachable,
     describe: (cause) => getUserMessage(cause),

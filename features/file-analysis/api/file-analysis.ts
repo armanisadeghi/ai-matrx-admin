@@ -52,14 +52,14 @@ import {
   postNdjson,
   putJson,
   type RequestOptions,
-  type ResponseMeta,
 } from "@/lib/python-client";
-import { apiGet, apiPost, apiPut, buildPath } from "@/lib/api/typed-client";
 // Every request about one file carries THAT file's organization (read from the file, never
 // the picker) — the same rule as features/files/api/files.ts (VERIFIER-23 #4 sibling census).
 import { withFileOrganization } from "@/features/files/api/fileOrganization";
 import type { components } from "@ai-matrx/api/types";
 import type { TypedStreamEvent } from "@ai-matrx/agents/generated/stream-events";
+import { activePagesEndpoint, bulkFromCandidatesEndpoint, createAnnotationEndpoint, createEntityEndpoint, escrowRecover, escrowWrappingKey, excludePageEndpoint, extractAtBboxEndpoint, extractRegionEndpoint, fetchAnalysis, fetchLabelCatalog, findSimilarEndpoint, getPageEndpoint, keyFindingsEndpoint, listEntitiesEndpoint, listOverridesEndpoint, listPagesEndpoint, manifestEndpoint, overridePageTextEndpoint, redactMask, redactRestore, renderPageWithOverlayEndpoint, snapBboxEndpoint, updateAnnotationEndpoint, updateEntityEndpoint } from "@ai-matrx/api/files";
+import { serverApi, callOptionsFrom } from "@/lib/api/server-api";
 
 // ─── Type re-exports (named locally for callers) ────────────────────────────
 
@@ -130,7 +130,7 @@ export type EscrowWrappingKeyResponse = Schemas["EscrowWrappingKeyResponse"];
 export type EscrowRecoverBody = Schemas["EscrowRecoverBody"];
 export type EscrowRecoverResponse = Schemas["EscrowRecoverResponse"];
 
-type Result<T> = Promise<{ data: T; meta: ResponseMeta }>;
+type Result<T> = Promise<{ data: T }>;
 const fid = (id: string) => encodeURIComponent(id);
 
 // ─── Analysis ────────────────────────────────────────────────────────────────
@@ -139,10 +139,7 @@ export function getAnalysis(
   fileId: string,
   opts: RequestOptions = {},
 ): Result<FileAnalysisResponse> {
-  return apiGet(
-    buildPath("/files/{file_id}/analysis", { file_id: fileId }),
-    withFileOrganization(fileId, opts),
-  );
+  return fetchAnalysis(serverApi, { path: { file_id: fileId } }, callOptionsFrom(withFileOrganization(fileId, opts))).then((data) => ({ data }));
 }
 
 /**
@@ -174,17 +171,14 @@ export function listPages(
   fileId: string,
   opts: RequestOptions = {},
 ): Result<FilePageOut[]> {
-  return apiGet(buildPath("/files/{file_id}/pages", { file_id: fileId }), withFileOrganization(fileId, opts));
+  return listPagesEndpoint(serverApi, { path: { file_id: fileId } }, callOptionsFrom(withFileOrganization(fileId, opts))).then((data) => ({ data }));
 }
 
 export function getActivePageIds(
   fileId: string,
   opts: RequestOptions = {},
 ): Result<ActivePageIdsResponse> {
-  return apiGet(
-    buildPath("/files/{file_id}/active-pages", { file_id: fileId }),
-    withFileOrganization(fileId, opts),
-  );
+  return activePagesEndpoint(serverApi, { path: { file_id: fileId } }, callOptionsFrom(withFileOrganization(fileId, opts))).then((data) => ({ data }));
 }
 
 export function getPage(
@@ -192,13 +186,10 @@ export function getPage(
   pageId: string,
   opts: RequestOptions = {},
 ): Result<FilePageOut> {
-  return apiGet(
-    buildPath("/files/{file_id}/pages/{page_id}", {
+  return getPageEndpoint(serverApi, { path: {
       file_id: fileId,
       page_id: pageId,
-    }),
-    withFileOrganization(fileId, opts),
-  );
+    } }, callOptionsFrom(withFileOrganization(fileId, opts))).then((data) => ({ data }));
 }
 
 export function excludePage(
@@ -207,14 +198,10 @@ export function excludePage(
   body: ExcludePageBody,
   opts: RequestOptions = {},
 ): Result<FilePageOut> {
-  return apiPost(
-    buildPath("/files/{file_id}/pages/{page_id}/exclude", {
+  return excludePageEndpoint(serverApi, { path: {
       file_id: fileId,
       page_id: pageId,
-    }),
-    body,
-    withFileOrganization(fileId, opts),
-  );
+    }, body: body }, callOptionsFrom(withFileOrganization(fileId, opts))).then((data) => ({ data }));
 }
 
 export function includePage(
@@ -248,24 +235,17 @@ export function overridePageText(
   body: OverridePageTextBody,
   opts: RequestOptions = {},
 ): Result<FilePageOverrideOut> {
-  return apiPost(
-    buildPath("/files/{file_id}/pages/{page_id}/override-text", {
+  return overridePageTextEndpoint(serverApi, { path: {
       file_id: fileId,
       page_id: pageId,
-    }),
-    body,
-    withFileOrganization(fileId, opts),
-  );
+    }, body: body }, callOptionsFrom(withFileOrganization(fileId, opts))).then((data) => ({ data }));
 }
 
 export function listOverrides(
   fileId: string,
   opts: RequestOptions = {},
 ): Result<FilePageOverrideOut[]> {
-  return apiGet(
-    buildPath("/files/{file_id}/overrides", { file_id: fileId }),
-    withFileOrganization(fileId, opts),
-  );
+  return listOverridesEndpoint(serverApi, { path: { file_id: fileId } }, callOptionsFrom(withFileOrganization(fileId, opts))).then((data) => ({ data }));
 }
 
 // ─── Annotations ─────────────────────────────────────────────────────────────
@@ -297,11 +277,7 @@ export function createAnnotation(
   body: AnnotationCreateBody,
   opts: RequestOptions = {},
 ): Result<AnnotationOut> {
-  return apiPost(
-    buildPath("/files/{file_id}/annotations", { file_id: fileId }),
-    body,
-    withFileOrganization(fileId, opts),
-  );
+  return createAnnotationEndpoint(serverApi, { path: { file_id: fileId }, body: body }, callOptionsFrom(withFileOrganization(fileId, opts))).then((data) => ({ data }));
 }
 
 export function updateAnnotation(
@@ -310,14 +286,10 @@ export function updateAnnotation(
   body: AnnotationUpdateBody,
   opts: RequestOptions = {},
 ): Result<AnnotationOut> {
-  return apiPut(
-    buildPath("/files/{file_id}/annotations/{annotation_id}", {
+  return updateAnnotationEndpoint(serverApi, { path: {
       file_id: fileId,
       annotation_id: annotationId,
-    }),
-    body,
-    withFileOrganization(fileId, opts),
-  );
+    }, body: body }, callOptionsFrom(withFileOrganization(fileId, opts))).then((data) => ({ data }));
 }
 
 export function deleteAnnotation(
@@ -336,13 +308,9 @@ export function extractAtBbox(
   body: ExtractAtBboxBody,
   opts: RequestOptions = {},
 ): Result<ExtractAtBboxResponse> {
-  return apiPost(
-    buildPath("/files/{file_id}/annotations/extract-at-bbox", {
+  return extractAtBboxEndpoint(serverApi, { path: {
       file_id: fileId,
-    }),
-    body,
-    withFileOrganization(fileId, opts),
-  );
+    }, body: body }, callOptionsFrom(withFileOrganization(fileId, opts))).then((data) => ({ data }));
 }
 
 export function snapBbox(
@@ -350,11 +318,7 @@ export function snapBbox(
   body: SnapBboxBody,
   opts: RequestOptions = {},
 ): Result<SnapBboxResponse> {
-  return apiPost(
-    buildPath("/files/{file_id}/annotations/snap-bbox", { file_id: fileId }),
-    body,
-    withFileOrganization(fileId, opts),
-  );
+  return snapBboxEndpoint(serverApi, { path: { file_id: fileId }, body: body }, callOptionsFrom(withFileOrganization(fileId, opts))).then((data) => ({ data }));
 }
 
 export function bulkFromCandidates(
@@ -362,33 +326,23 @@ export function bulkFromCandidates(
   body: BulkCandidateBody,
   opts: RequestOptions = {},
 ): Result<BulkCandidateResponse> {
-  return apiPost(
-    buildPath("/files/{file_id}/annotations/bulk-from-candidates", {
+  return bulkFromCandidatesEndpoint(serverApi, { path: {
       file_id: fileId,
-    }),
-    body,
-    withFileOrganization(fileId, opts),
-  );
+    }, body: body }, callOptionsFrom(withFileOrganization(fileId, opts))).then((data) => ({ data }));
 }
 
 export function getKeyFindings(
   fileId: string,
   opts: RequestOptions = {},
 ): Result<KeyFindingsResponse> {
-  return apiGet(
-    buildPath("/files/{file_id}/key-findings", { file_id: fileId }),
-    withFileOrganization(fileId, opts),
-  );
+  return keyFindingsEndpoint(serverApi, { path: { file_id: fileId } }, callOptionsFrom(withFileOrganization(fileId, opts))).then((data) => ({ data }));
 }
 
 export function getAnnotationManifest(
   fileId: string,
   opts: RequestOptions = {},
 ): Result<ManifestResponse> {
-  return apiGet(
-    buildPath("/files/{file_id}/annotations/manifest", { file_id: fileId }),
-    withFileOrganization(fileId, opts),
-  );
+  return manifestEndpoint(serverApi, { path: { file_id: fileId } }, callOptionsFrom(withFileOrganization(fileId, opts))).then((data) => ({ data }));
 }
 
 // ─── Label catalog ───────────────────────────────────────────────────────────
@@ -421,7 +375,7 @@ export function putAnalysisPreferences(
 export function getLabelCatalog(
   opts: RequestOptions = {},
 ): Result<LabelCatalogResponse> {
-  return apiGet("/annotations/label-catalog", opts);
+  return fetchLabelCatalog(serverApi, {}, callOptionsFrom(opts)).then((data) => ({ data }));
 }
 
 // ─── Entities ────────────────────────────────────────────────────────────────
@@ -430,10 +384,7 @@ export function listEntities(
   fileId: string,
   opts: RequestOptions = {},
 ): Result<EntityOut[]> {
-  return apiGet(
-    buildPath("/files/{file_id}/entities", { file_id: fileId }),
-    withFileOrganization(fileId, opts),
-  );
+  return listEntitiesEndpoint(serverApi, { path: { file_id: fileId } }, callOptionsFrom(withFileOrganization(fileId, opts))).then((data) => ({ data }));
 }
 
 export function createEntity(
@@ -441,11 +392,7 @@ export function createEntity(
   body: EntityCreateBody,
   opts: RequestOptions = {},
 ): Result<EntityOut> {
-  return apiPost(
-    buildPath("/files/{file_id}/entities", { file_id: fileId }),
-    body,
-    withFileOrganization(fileId, opts),
-  );
+  return createEntityEndpoint(serverApi, { path: { file_id: fileId }, body: body }, callOptionsFrom(withFileOrganization(fileId, opts))).then((data) => ({ data }));
 }
 
 export function updateEntity(
@@ -454,14 +401,10 @@ export function updateEntity(
   body: EntityUpdateBody,
   opts: RequestOptions = {},
 ): Result<EntityOut> {
-  return apiPut(
-    buildPath("/files/{file_id}/entities/{entity_id}", {
+  return updateEntityEndpoint(serverApi, { path: {
       file_id: fileId,
       entity_id: entityId,
-    }),
-    body,
-    withFileOrganization(fileId, opts),
-  );
+    }, body: body }, callOptionsFrom(withFileOrganization(fileId, opts))).then((data) => ({ data }));
 }
 
 export function deleteEntity(
@@ -477,11 +420,7 @@ export function findSimilar(
   body: FindSimilarBody,
   opts: RequestOptions = {},
 ): Result<FindSimilarResponse> {
-  return apiPost(
-    buildPath("/files/{file_id}/entities/find-similar", { file_id: fileId }),
-    body,
-    withFileOrganization(fileId, opts),
-  );
+  return findSimilarEndpoint(serverApi, { path: { file_id: fileId }, body: body }, callOptionsFrom(withFileOrganization(fileId, opts))).then((data) => ({ data }));
 }
 
 export function promoteAnnotationToEntity(
@@ -516,11 +455,7 @@ export function extractRegion(
   body: RegionExtractRequest,
   opts: RequestOptions = {},
 ): Result<RegionExtractResponse> {
-  return apiPost(
-    buildPath("/files/{file_id}/regions/extract", { file_id: fileId }),
-    body,
-    withFileOrganization(fileId, opts),
-  );
+  return extractRegionEndpoint(serverApi, { path: { file_id: fileId }, body: body }, callOptionsFrom(withFileOrganization(fileId, opts))).then((data) => ({ data }));
 }
 
 export function renderPageWithOverlay(
@@ -528,13 +463,9 @@ export function renderPageWithOverlay(
   body: RenderRequest,
   opts: RequestOptions = {},
 ): Result<RenderResponse> {
-  return apiPost(
-    buildPath("/files/{file_id}/render-page-with-overlay", {
+  return renderPageWithOverlayEndpoint(serverApi, { path: {
       file_id: fileId,
-    }),
-    body,
-    withFileOrganization(fileId, opts),
-  );
+    }, body: body }, callOptionsFrom(withFileOrganization(fileId, opts))).then((data) => ({ data }));
 }
 
 // ─── Extracted text (Knowledge-ready) ─────────────────────────────────────────────
@@ -561,18 +492,14 @@ export function maskFile(
   body: MaskRequestBody,
   opts: RequestOptions = {},
 ): Result<MaskResponse> {
-  return apiPost(
-    buildPath("/files/{file_id}/redact/mask", { file_id: fileId }),
-    body,
-    withFileOrganization(fileId, opts),
-  );
+  return redactMask(serverApi, { path: { file_id: fileId }, body: body }, callOptionsFrom(withFileOrganization(fileId, opts))).then((data) => ({ data }));
 }
 
 export function restoreText(
   body: RestoreRequestBody,
   opts: RequestOptions = {},
 ): Result<RestoreResponse> {
-  return apiPost("/redact/restore", body, opts);
+  return redactRestore(serverApi, { body: body }, callOptionsFrom(opts)).then((data) => ({ data }));
 }
 
 export function revokeSession(
@@ -592,7 +519,7 @@ export function revokeSession(
 export function getEscrowWrappingKey(
   opts: RequestOptions = {},
 ): Result<EscrowWrappingKeyResponse> {
-  return apiGet("/redact/escrow/wrapping-key", opts);
+  return escrowWrappingKey(serverApi, {}, callOptionsFrom(opts)).then((data) => ({ data }));
 }
 
 /** Org-authorized, audit-logged KMS unwrap of an escrowed session key. */
@@ -600,5 +527,5 @@ export function recoverEscrowedKey(
   body: EscrowRecoverBody,
   opts: RequestOptions = {},
 ): Result<EscrowRecoverResponse> {
-  return apiPost("/redact/escrow/recover", body, opts);
+  return escrowRecover(serverApi, { body: body }, callOptionsFrom(opts)).then((data) => ({ data }));
 }

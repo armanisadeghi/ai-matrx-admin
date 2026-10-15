@@ -35,7 +35,6 @@ import {
   type RecordsClient,
 } from "@ai-matrx/records/core";
 import { personActor, recordsDataSource } from "@ai-matrx/records-ui/helpers";
-import { apiPost } from "@/lib/api/typed-client";
 import { getUserMessage } from "@ai-matrx/api";
 import {
   storeKindRecord,
@@ -73,6 +72,8 @@ import {
   notifyKindRecordsChanged,
   subscribeToKindRecordChanges as onKindRecordsChanged,
 } from "./record-change-bus";
+import { saveOutput } from "@ai-matrx/api/architecture";
+import { serverApi } from "@/lib/api/server-api";
 
 // Any record write anywhere drops the per-message landing reads, so the next strip reads fresh.
 onKindRecordsChanged(() => forgetMessageLandings());
@@ -908,11 +909,11 @@ export async function saveKindOutput(args: {
   kind: string;
 }): Promise<RecordResult<SaveOutputAnswer>> {
   try {
-    const { data } = await apiPost("/kind-outputs/save", {
+    const data = await saveOutput(serverApi, { body: {
       message_id: args.messageId,
       fingerprint: args.fingerprint,
       ordinal: args.ordinal ?? 0,
-    });
+    } });
     // aidream 3da63bb0ac adds `already_saved` + `not_saved`; read them before the API types regenerate.
     const answer = data as typeof data & { already_saved?: string[]; not_saved?: string | null };
     forgetMessageLandings();

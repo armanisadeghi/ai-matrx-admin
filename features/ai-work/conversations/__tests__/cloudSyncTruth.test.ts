@@ -24,10 +24,12 @@ import {
   type CloudDiagnosis,
 } from "../cloudSyncTruth";
 
-jest.mock("@/lib/api/typed-client", () => ({ apiPost: jest.fn() }));
+jest.mock("@/lib/api/server-api", () =>
+  require("@/lib/api/test-support/serverApiEnvelopeMock").serverApiEnvelopeMock(),
+);
 
 const mockedApiPost = (
-  jest.requireMock("@/lib/api/typed-client") as { apiPost: jest.Mock }
+  jest.requireActual("@/lib/api/test-support/serverApiEnvelopeMock") as { apiPost: jest.Mock }
 ).apiPost;
 
 /** A diagnosis with every field present; each test overrides only what it means. */

@@ -1,4 +1,4 @@
-import { apiMultipart, apiPost } from "@/lib/api/typed-client";
+import { apiMultipart, apiPost } from "@/lib/api/test-support/serverApiEnvelopeMock";
 import {
   generateSpeech,
   previewVoice,
@@ -6,10 +6,9 @@ import {
   transcribeAudioUrl,
 } from "../speechApi";
 
-jest.mock("@/lib/api/typed-client", () => ({
-  apiPost: jest.fn(),
-  apiMultipart: jest.fn(),
-}));
+jest.mock("@/lib/api/server-api", () =>
+  require("@/lib/api/test-support/serverApiEnvelopeMock").serverApiEnvelopeMock(),
+);
 jest.mock("@/lib/organizations/ensureOrgId", () => ({
   ensureOrgId: jest.fn().mockResolvedValue("org-1"),
 }));

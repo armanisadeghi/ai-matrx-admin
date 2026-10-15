@@ -32,7 +32,9 @@ import { CloudSyncTruthPanel } from "../components/CloudSyncTruthPanel";
   globalThis as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }
 ).IS_REACT_ACT_ENVIRONMENT = true;
 
-jest.mock("@/lib/api/typed-client", () => ({ apiPost: jest.fn() }));
+jest.mock("@/lib/api/server-api", () =>
+  require("@/lib/api/test-support/serverApiEnvelopeMock").serverApiEnvelopeMock(),
+);
 
 /**
  * The Mac-side door. Mocked WHOLE because the real module opens a Supabase
@@ -62,7 +64,7 @@ jest.mock("@/components/dialogs/confirm/ConfirmDialogHost", () => ({
 }));
 
 const mockedApiPost = (
-  jest.requireMock("@/lib/api/typed-client") as { apiPost: jest.Mock }
+  jest.requireActual("@/lib/api/test-support/serverApiEnvelopeMock") as { apiPost: jest.Mock }
 ).apiPost;
 const mockedDoors = (
   jest.requireMock("@/features/ai-work/lib/matrx2Computers") as {

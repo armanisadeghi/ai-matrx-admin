@@ -33,13 +33,14 @@
  * a probe here: `lib/codingBridgeCapability.ts`.
  */
 
-import { apiPost, buildPath } from "@/lib/api/typed-client";
 import { callApi } from "@/lib/api/call-api";
 import type { AppThunk } from "@/lib/redux/store";
 import type { TypedStreamEvent } from "@ai-matrx/agents/generated/stream-events";
 import { adoptForeignStream } from "@ai-matrx/chat/agents/redux/execution-system/thunks/adopt-foreign-stream";
 import type { AnyMandateKey } from "@ai-matrx/agents/mandates";
 import type { HostedBilling } from "@/features/ai-work/lib/ownPlan";
+import { cancelClaudeManagedRuntime } from "@ai-matrx/api/code";
+import { serverApi } from "@/lib/api/server-api";
 
 /** See THE TWO-HOMES RULE. The one url for a hosted turn. */
 export const HOSTED_STREAM_PATH = "/coding-sessions/claude/stream" as const;
@@ -200,9 +201,6 @@ export function startHostedRun(
 export async function cancelHostedRun(
   runtimeId: string,
 ): Promise<{ runtimeId: string; cancelled: boolean }> {
-  const { data } = await apiPost(
-    buildPath(HOSTED_CANCEL_PATH, { runtime_id: runtimeId }),
-    undefined,
-  );
+  const data = await cancelClaudeManagedRuntime(serverApi, { path: { runtime_id: runtimeId } });
   return { runtimeId: data.runtime_id, cancelled: data.cancelled };
 }

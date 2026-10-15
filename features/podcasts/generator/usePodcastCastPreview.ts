@@ -1,11 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { apiGet } from "@/lib/api/typed-client";
 import { isOrganizationRequiredError } from "@ai-matrx/auth/organizations";
 import type { components } from "@ai-matrx/api/types";
 import type { PodcastSpeaker } from "./types";
 import type { VoiceProvider } from "./voiceCatalog";
+import { castPreviewEndpoint } from "@ai-matrx/api/publish";
+import { serverApi } from "@/lib/api/server-api";
 
 type PodcastCastPreviewWire = components["schemas"]["PodcastCastPreview"];
 
@@ -55,11 +56,8 @@ export function usePodcastCastPreview(
   useEffect(() => {
     const controller = new AbortController();
 
-    void apiGet("/podcast/cast-preview", {
-      signal: controller.signal,
-      query: { host_count: hostCount, show_id: showId },
-    })
-      .then(({ data }) =>
+    void castPreviewEndpoint(serverApi, { query: { host_count: hostCount, show_id: showId } }, { signal: controller.signal })
+      .then((data) =>
         setResult({
           key: requestKey,
           preview: normalizePreview(data),

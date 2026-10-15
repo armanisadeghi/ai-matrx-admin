@@ -11,7 +11,6 @@
  */
 import { supabase } from "@/utils/supabase/client";
 import { operationFailed } from "@/utils/errors";
-import { apiPost } from "@/lib/api/typed-client";
 import { getUserMessage } from "@ai-matrx/api";
 import {
   createMessagingRepository,
@@ -20,6 +19,8 @@ import {
   type JsonObject,
 } from "@ai-matrx/messaging";
 import type { MemberCursor } from "./presence";
+import { agentMessages } from "@ai-matrx/api/communications";
+import { serverApi } from "@/lib/api/server-api";
 
 // The hub lists agent rooms on its own axis: the app's one messaging engine
 // carries the /messages People|Agents filter, which the hub must not move.
@@ -113,7 +114,7 @@ async function roomsCall(body: {
   goal?: string;
 }): Promise<{ roomId: string; name: string | null }> {
   try {
-    const { data } = await apiPost("/agent-messages", { action: "rooms", ...body });
+    const data = await agentMessages(serverApi, { body: { action: "rooms", ...body } });
     const roomId = typeof data.room_id === "string" ? data.room_id : null;
     if (!roomId) throw new Error("The messaging service answered without a room.");
     return { roomId, name: typeof data.name === "string" ? data.name : null };
@@ -150,7 +151,7 @@ export interface ManagerCandidate {
 /** The person's own agents and published agents that can message a room. */
 export async function listManagerAgents(): Promise<ManagerCandidate[]> {
   try {
-    const { data } = await apiPost("/agent-messages", { action: "rooms", room_op: "agents" });
+    const data = await agentMessages(serverApi, { body: { action: "rooms", room_op: "agents" } });
     const list = Array.isArray(data.agents) ? data.agents : [];
     return list.flatMap((item) => {
       if (!isJsonObject(item) || typeof item.agent_id !== "string") return [];

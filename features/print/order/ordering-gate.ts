@@ -44,8 +44,9 @@
  * reader, and leave ordering shut while you do.
  */
 
-import { apiGet } from "@/lib/api/typed-client";
 import type { components } from "@ai-matrx/api/types";
+import { paymentMode } from "@ai-matrx/api/publish";
+import { serverApi, NO_ERROR_CAPTURE_HEADER } from "@/lib/api/server-api";
 
 export type PrintPaymentMode = components["schemas"]["PrintPaymentMode"];
 
@@ -57,12 +58,7 @@ export async function readPaymentMode(
   signal?: AbortSignal,
 ): Promise<PaymentModeProbe> {
   try {
-    const { data } = await apiGet("/lulu/payment-mode", {
-      signal,
-      // This caller owns the outcome: an unanswered mode is rendered on screen
-      // and closes the button, so it is not an unhandled system error.
-      captureErrors: false,
-    });
+    const data = await paymentMode(serverApi, {}, { signal: signal, headers: { [NO_ERROR_CAPTURE_HEADER]: "off" } });
     return { status: "ok", report: data };
   } catch (error: unknown) {
     return {

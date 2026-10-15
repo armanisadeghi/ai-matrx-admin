@@ -16,17 +16,12 @@ const apiPost = jest.fn();
 jest.mock("@/lib/api/call-api", () => ({
   callApi: (...args: unknown[]) => callApi(...args),
 }));
-jest.mock("@/lib/api/typed-client", () => ({
-  apiGet: (...args: unknown[]) => apiGet(...args),
-  apiPost: (...args: unknown[]) => apiPost(...args),
-  // The real pure URL helper: a double must not drop a function the product
-  // calls (submitOwnPlanCode builds its URL with it).
-  withQuery: jest.requireActual("@/lib/api/typed-client").withQuery,
-  buildPath: (template: string, params: Record<string, string>) =>
-    template.replace(/\{([^}]+)\}/g, (_m, key: string) =>
-      encodeURIComponent(params[key]),
-    ),
-}));
+jest.mock("@/lib/api/server-api", () =>
+  require("@/lib/api/test-support/serverApiEnvelopeMock").serverApiEnvelopeMock({
+      apiGet: (...args: unknown[]) => apiGet(...args),
+      apiPost: (...args: unknown[]) => apiPost(...args),
+  }),
+);
 jest.mock(
   "@ai-matrx/chat/agents/redux/execution-system/thunks/adopt-foreign-stream",
   () => ({ adoptForeignStream: () => ({ type: "test/adopt" }) }),

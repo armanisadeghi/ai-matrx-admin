@@ -7,8 +7,9 @@
  * typed shapes — no pricing math, no status invention.
  */
 
-import { apiGet, apiPost, buildPath } from "@/lib/api/typed-client";
 import type { components } from "@ai-matrx/api/types";
+import { cancelOrder as cancelOrderOp, createOrder as createOrderOp, listOrders as listOrdersOp } from "@ai-matrx/api/publish";
+import { serverApi, NO_ERROR_CAPTURE_HEADER } from "@/lib/api/server-api";
 
 export type PrintOrder = components["schemas"]["PrintOrderPublic"];
 export type PrintOrderCheckout = components["schemas"]["PrintOrderCheckout"];
@@ -18,25 +19,17 @@ export async function createOrder(
   body: PrintOrderCreate,
   signal?: AbortSignal,
 ): Promise<PrintOrderCheckout> {
-  const { data } = await apiPost("/lulu/orders", body, {
-    signal,
-    captureErrors: false,
-  });
+  const data = await createOrderOp(serverApi, { body: body }, { signal: signal, headers: { [NO_ERROR_CAPTURE_HEADER]: "off" } });
   return data;
 }
 
 export async function listOrders(signal?: AbortSignal): Promise<PrintOrder[]> {
-  const { data } = await apiGet("/lulu/orders", { signal, captureErrors: false });
+  const data = await listOrdersOp(serverApi, {}, { signal: signal, headers: { [NO_ERROR_CAPTURE_HEADER]: "off" } });
   return data;
 }
 
 export async function cancelOrder(orderId: string): Promise<PrintOrder> {
-  const { data } = await apiPost(
-    buildPath("/lulu/orders/{order_id}/cancel", { order_id: orderId }),
-    // The cancel endpoint takes no body; the path carries everything.
-    undefined as never,
-    { captureErrors: false },
-  );
+  const data = await cancelOrderOp(serverApi, { path: { order_id: orderId } }, { headers: { [NO_ERROR_CAPTURE_HEADER]: "off" } });
   return data;
 }
 

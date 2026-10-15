@@ -25,10 +25,11 @@
  */
 
 import { useEffect, useState } from "react";
-import { apiGet, buildPath } from "@/lib/api/typed-client";
 import { hrMockEnabled } from "@/features/hr/mock/transport";
 import { toExportFailure, type ExportFailure } from "../errors";
 import type { AsyncAccepted } from "../types";
+import { operationStatus } from "@ai-matrx/api/architecture";
+import { serverApi } from "@/lib/api/server-api";
 
 /** How often the spine is asked. The runs this follows are seconds-to-minutes, not hours. */
 const POLL_INTERVAL_MS = 2000;
@@ -81,11 +82,9 @@ export function useExportRun(options?: {
 
     const poll = async () => {
       try {
-        const { data } = await apiGet(
-          buildPath("/runtime/operations/{request_id}", {
+        const data = await operationStatus(serverApi, { path: {
             request_id: accepted.request_id,
-          }),
-        );
+          } });
         if (cancelled) return;
         const view = data.operations[0];
         if (!view) {

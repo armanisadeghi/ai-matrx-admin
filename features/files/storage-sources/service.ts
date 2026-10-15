@@ -1,4 +1,5 @@
-import { apiPost } from "@/lib/api/typed-client";
+import { browseProviderFolder, importProviderFile } from "@ai-matrx/api/files";
+import { serverApi } from "@/lib/api/server-api";
 import { BackendApiError } from "@ai-matrx/api";
 import { getFile } from "@/features/files/api/files";
 import { apiFileRecordToCloudFile } from "@/features/files/redux/converters";
@@ -96,9 +97,7 @@ export async function browseStorageSource(args: {
     cursor: args.cursor ?? null,
     page_size: args.pageSize,
   };
-  const { data } = args.signal
-    ? await apiPost("/storage-sources/browse", body, { signal: args.signal })
-    : await apiPost("/storage-sources/browse", body);
+  const data = await browseProviderFolder(serverApi, { body }, args.signal ? { signal: args.signal } : undefined);
   if (
     data.provider !== args.provider ||
     data.connection_id !== args.connectionId ||
@@ -128,9 +127,7 @@ export async function importStorageSourceFile(args: {
     file_path: filePath,
     visibility: "personal" as const,
   };
-  const { data } = args.signal
-    ? await apiPost("/storage-sources/import", body, { signal: args.signal })
-    : await apiPost("/storage-sources/import", body);
+  const data = await importProviderFile(serverApi, { body }, args.signal ? { signal: args.signal } : undefined);
   const { data: canonicalRow } = await getFile(data.file_id);
   if (canonicalRow.id !== data.file_id) {
     throw new Error("Matrx Files returned a different file after the import.");

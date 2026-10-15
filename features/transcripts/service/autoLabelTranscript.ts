@@ -6,7 +6,8 @@
  * persist to the transcripts row when the title is still a placeholder.
  */
 
-import { apiPost } from "@/lib/api/typed-client";
+import { label } from "@ai-matrx/api/content";
+import { serverApi } from "@/lib/api/server-api";
 
 const TITLE_MIN_CHARS = 8;
 const LABEL_INPUT_MAX_CHARS = 8000;
@@ -23,11 +24,11 @@ export async function autoLabelDraftTranscript(
   // Next app NOR the aidream backend (the real route is "/content-label", no
   // "/api" prefix), so auto-labeling 404'd silently for every FE-direct save.
   // Bound to the contract so the wrong path can't come back (it wouldn't type).
-  await apiPost("/content-label", {
+  await label(serverApi, { body: {
     text: trimmed.slice(0, LABEL_INPUT_MAX_CHARS),
     content_type: "transcript",
     label_max_chars: LABEL_MAX_CHARS,
     persist_transcript_id: transcriptId,
     persist_label: true,
-  });
+  } });
 }

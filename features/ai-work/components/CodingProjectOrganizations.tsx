@@ -18,8 +18,9 @@ import type {
 import { ProjectOrganizations } from "@ai-matrx/coding-sessions/projects/react";
 import type { components } from "@ai-matrx/api/types";
 
-import { apiGet, apiPut } from "@/lib/api/typed-client";
 import { putJson } from "@/lib/python-client";
+import { readCodingSessionConnectionOrganization, writeCodingSessionConnectionOrganization } from "@ai-matrx/api/code";
+import { serverApi, callOptionsFrom } from "@/lib/api/server-api";
 
 type WireReport = components["schemas"]["CodingSessionConnectionOrganization"];
 type WireMove = Omit<ProjectMoveReport, "report"> & { report: WireReport };
@@ -55,13 +56,12 @@ const PATH = "/coding-sessions/connection/organization" as const;
 export function CodingProjectOrganizations() {
   const port = useMemo<ProjectOrganizationsPort>(
     () => ({
-      read: async () => toReport((await apiGet(PATH)).data),
+      read: async () => toReport(await readCodingSessionConnectionOrganization(serverApi, {})),
       // A choice is made IN the organization being chosen, so the write carries it even when
       // no organization is selected in the app (the client refuses an org-less write).
       chooseForAllProjects: async (organizationId) =>
         toReport(
-          (await apiPut(PATH, { organization_id: organizationId }, organizationId ? { organizationId } : {}))
-            .data,
+          await writeCodingSessionConnectionOrganization(serverApi, { body: { organization_id: organizationId } }, callOptionsFrom(organizationId ? { organizationId } : {})),
         ),
       // PUT …/project is not in the published contract yet (next @ai-matrx/agents release);
       // switch to apiPut then. Shape: aidream CodingProjectMoveReport.

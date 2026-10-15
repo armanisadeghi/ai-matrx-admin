@@ -8,14 +8,9 @@ const mockUploadWithProgress: jest.Mock = jest.requireMock(
   "@/lib/python-client",
 ).uploadWithProgress;
 
-jest.mock("@/lib/api/typed-client", () => ({
-  apiDelete: jest.fn(),
-  apiGet: jest.fn(),
-  apiMultipart: jest.fn(),
-  apiPost: jest.fn(),
-  buildPath: jest.fn(),
-  withQuery: jest.fn(),
-}));
+jest.mock("@/lib/api/server-api", () =>
+  require("@/lib/api/test-support/serverApiEnvelopeMock").serverApiEnvelopeMock(),
+);
 
 it("sends strict force-new-copy intent and reason in multipart", async () => {
   mockUploadWithProgress.mockResolvedValue({

@@ -1,8 +1,9 @@
-import { apiMultipart, apiPost } from "@/lib/api/typed-client";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
 import type { components } from "@ai-matrx/api/types";
 import type { TranscriptionOptions, TranscriptionResult } from "../types";
 import { CATALOG_VOICES } from "@/features/audio/service/engines";
+import { textToSpeech, transcribeFile, transcribeUpload, transcribeUrl, voicePreviewRoute } from "@ai-matrx/api/audio";
+import { serverApi, callOptionsFrom } from "@/lib/api/server-api";
 
 type TranscriptionWire = components["schemas"]["aidream__services__audio__speech__TranscriptionResponse"];
 type SpeechWire = components["schemas"]["SpeechResponse"];
@@ -52,7 +53,7 @@ export async function transcribeAudioFile(
   form.append("file", file);
   if (options?.language) form.append("language", options.language);
   if (options?.model) form.append("model", options.model);
-  const { data } = await apiMultipart("/audio/transcribe", form, request);
+  const data = await transcribeUpload(serverApi, { body: form }, callOptionsFrom(request));
   return normalizeTranscription(data);
 }
 
@@ -74,16 +75,12 @@ export async function transcribeCloudFile(
   signal?: AbortSignal,
 ): Promise<TranscriptionResult> {
   const organizationId = await ensureOrgId(params.organizationId);
-  const { data } = await apiPost(
-    "/audio/transcribe-file",
-    {
+  const data = await transcribeFile(serverApi, { body: {
       file_id: params.fileId,
       language: params.language ?? null,
       organization_id: organizationId,
       ...(params.model ? { model: params.model } : {}),
-    },
-    { signal },
-  );
+    } }, { signal: signal });
   return normalizeTranscription(data);
 }
 
@@ -93,12 +90,12 @@ export async function transcribeAudioUrl(
   organizationId?: string,
 ): Promise<TranscriptionResult> {
   const resolvedOrganizationId = await ensureOrgId(organizationId);
-  const { data } = await apiPost("/audio/transcribe-url", {
+  const data = await transcribeUrl(serverApi, { body: {
     url,
     language: options?.language,
     organization_id: resolvedOrganizationId,
     ...(options?.model ? { model: options.model } : {}),
-  });
+  } });
   return normalizeTranscription(data);
 }
 
@@ -128,7 +125,7 @@ export async function generateSpeech(
       ? { offering_id: options.offeringId }
       : {}),
   };
-  const { data } = await apiPost("/audio/text-to-speech", body);
+  const data = await textToSpeech(serverApi, { body: body });
   return data;
 }
 
@@ -164,7 +161,7 @@ export function previewVoice(
       organization_id: organizationId,
       ...(params.offeringId ? { offering_id: params.offeringId } : {}),
     };
-    const { data } = await apiPost("/audio/voice-preview", body);
+    const data = await voicePreviewRoute(serverApi, { body: body });
     return data;
   })();
   previewCache.set(key, request);

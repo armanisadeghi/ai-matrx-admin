@@ -41,7 +41,8 @@
 // green light. Such a verdict is downgraded to `unknown`, here, before any
 // component can render it.
 
-import { apiPost } from "@/lib/api/typed-client";
+import { codingSessionBridge } from "@ai-matrx/api/code";
+import { serverApi } from "@/lib/api/server-api";
 
 /** The CLOSED verdict set (contract §1). Anything else is not a verdict. */
 export const SYNC_VERDICT_CODES = [
@@ -325,7 +326,7 @@ export async function readCloudSyncTruth(
 ): Promise<CloudSyncTruth> {
   let payload: unknown;
   try {
-    const { data } = await apiPost("/coding-sessions/bridge", {
+    const data = await codingSessionBridge(serverApi, { body: {
       schema_version: 1,
       // `CodingSessionBridgeRestRequest.action` is `BridgeAction | string`, so
       // this type-checks against the CURRENT contract while the server half of
@@ -333,7 +334,7 @@ export async function readCloudSyncTruth(
       action: "diagnose",
       provider,
       provider_session_id: providerSessionId,
-    });
+    } });
     payload = data;
   } catch (error) {
     return {
