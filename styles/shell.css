@@ -451,6 +451,19 @@
   transition: grid-template-columns var(--matrx-motion-duration-panel) var(--matrx-motion-ease-panel);
 }
 
+/* 🚨 THE APP FRAME FOLLOWS THE KEYBOARD (Arman, 2026-10-15). iOS Safari never
+   resizes the layout viewport for its keyboard; it pans the visible area
+   instead, so a fixed full-height frame put the composer and the newest
+   messages behind the keyboard. VisualViewportSync sets data-keyboard-open and
+   the two measurements only while a software keyboard covers the page; the
+   frame then occupies exactly the visible area. top/height (never transform):
+   fixed descendants stay viewport-relative. */
+:root[data-keyboard-open] .shell-root {
+  top: var(--visual-viewport-offset-top, 0px);
+  bottom: auto;
+  height: var(--visual-viewport-height, 100%);
+}
+
 /* A chat dock that opens or closes because the ROUTE changed (ShellChatWidthInstant) lands in one frame:
    sliding the page there is a layout shift with no input behind it (/chat/new to /notes, 0.2). */
 .shell-root[data-shell-instant],

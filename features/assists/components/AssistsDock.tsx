@@ -73,6 +73,7 @@ import { useDockDrag } from "./useDockDrag";
 import { useAssistClearance } from "../assistClearance";
 import { useAssistsPrefs } from "../hooks/useAssistsPrefs";
 import { ASSISTS_MANAGER_HREF } from "../constants";
+import { ASSISTS_OPEN_EVENT } from "../mobileInbox";
 import {
   chooseAssistPresentationCycle,
   isAssistPresentationCycleCurrent,
@@ -153,6 +154,15 @@ export default function AssistsDock() {
     setPresentationCycle,
   ]);
 
+  // On a phone the header's ⋮ sheet carries the Assists row (../mobileInbox.ts);
+  // its press asks this dock to open the Drawer.
+  useEffect(() => {
+    if (!isMobile) return;
+    const onOpen = () => setOpen(true);
+    window.addEventListener(ASSISTS_OPEN_EVENT, onOpen);
+    return () => window.removeEventListener(ASSISTS_OPEN_EVENT, onOpen);
+  }, [isMobile]);
+
   // The scroll area under the floating control reserves room for it, so the
   // control never sits on a row's menu, a pager arrow or a card's answer
   // (list-shell fix D, 2026-09-28 — ../assistClearance.ts).
@@ -190,23 +200,6 @@ export default function AssistsDock() {
     top: "var(--assist-dock-slot-top, auto)",
   };
 
-  // The mobile launcher follows the established inbox/chat-launcher pattern:
-  // one 44pt edge button, never a content-width floating pill. The shell's
-  // VisualViewportSync writes the keyboard inset; translating by that amount
-  // moves this ambient control out of the visible viewport while the user is
-  // typing instead of parking it above the keyboard and over the composer.
-  const mobileLauncherStyle = {
-    // A page with its own bottom dock (the phone note editor's toolbar)
-    // publishes its height as --page-bottom-dock-h; the launcher sits above it
-    // instead of covering the dock's last button.
-    right:
-      "var(--assist-dock-slot-right, calc(0.75rem + var(--app-right-inset, 0px)))",
-    bottom:
-      "var(--assist-dock-slot-bottom, calc(max(0.75rem, env(safe-area-inset-bottom, 0px)) + var(--page-bottom-dock-h, 0px) + var(--assist-dock-lift, 0px)))",
-    top: "var(--assist-dock-slot-top, auto)",
-    transform: "translateY(var(--keyboard-inset-height, 0px))",
-  };
-
   // Quiet means invisible (Arman, 2026-10-02). The way back on lives on the
   // Assists page, which is in the sidebar.
   if (quiet) return null;
@@ -214,23 +207,9 @@ export default function AssistsDock() {
   if (isMobile) {
     return (
       <>
-        <button
-          type="button"
-          onClick={() => setOpen(true)}
-          aria-label={`Open ${visible.length} assist${visible.length === 1 ? "" : "s"}`}
-          data-assists-dock=""
-          data-assist-dock-pending=""
-          data-matrx-floating-bottom=""
-          data-matrx-floating-follows-page=""
-          className="data-[assist-dock-pending]:invisible fixed right-3 z-40 flex h-11 w-11 items-center justify-center rounded-full border border-primary/30 bg-glass text-foreground shadow-glass backdrop-blur-glass backdrop-saturate-glass transition-[background-color,transform] hover:bg-glass-hover md:hidden data-[assist-dock-yield]:pointer-events-none data-[assist-dock-yield]:opacity-30"
-          style={mobileLauncherStyle}
-        >
-          <Lightbulb className="h-5 w-5 text-primary" />
-          <span className="absolute -left-1 -top-1 flex min-h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-semibold leading-none text-primary-foreground ring-2 ring-background">
-            {visible.length}
-          </span>
-        </button>
-
+        {/* 🚨 NO FLOATING LAUNCHER ON A PHONE (Arman, 2026-10-15): the count
+            lives on the header's ⋮ sheet (../mobileInbox.ts), which opens
+            this Drawer — a phone screen has no corner to spare. */}
         <Drawer open={open} onOpenChange={setOpen}>
           <DrawerContent
             data-matrx-notice-surface=""

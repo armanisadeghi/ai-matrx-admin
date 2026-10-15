@@ -73,12 +73,12 @@ describe("the assists pill is drawn only where it will stay", () => {
     ])).toEqual([false, true]);
   });
 
-  it("the pill ships hidden in both markups (desktop and mobile)", () => {
+  it("the pill ships hidden (a phone has no floating pill — mobileInbox.ts)", () => {
     const src = readFileSync(join(__dirname, "../components/AssistsDock.tsx"), "utf8");
     const pending = src.match(/data-assist-dock-pending=""/g) ?? [];
     const hidden = src.match(/data-\[assist-dock-pending\]:invisible/g) ?? [];
-    expect(pending).toHaveLength(2);
-    expect(hidden).toHaveLength(2);
+    expect(pending).toHaveLength(1);
+    expect(hidden).toHaveLength(1);
     // The desktop CONTAINER is the box that moves: it hides with its pending pill.
     expect(src).toContain("has-[[data-assist-dock-pending]]:invisible");
   });

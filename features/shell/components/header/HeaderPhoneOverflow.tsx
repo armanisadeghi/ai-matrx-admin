@@ -17,6 +17,7 @@
  *   Messages      → the Messages canvas tab; its unread count on the row
  *   Notifications → the Notifications canvas tab (notifications ruling 4: it
  *                   opens windows or new tabs only, never moves the page)
+ *   Assists       → the assists Drawer, its count on the row (2026-10-15)
  *
  * The owner's header ruling (2026-09-19: "a consistent set … never hiding
  * things and only disabling when inactive") still holds per device: a phone
@@ -33,6 +34,7 @@ import {
   ChevronRight,
   EllipsisVertical,
   Layers,
+  Lightbulb,
   MessageSquare,
   MessagesSquare,
   Search,
@@ -62,6 +64,12 @@ import {
 import { useMessagesToggle } from "@/features/messaging/canvas/messagesKind";
 import { useNotificationsToggle } from "@/features/notifications/canvas/notificationsKind";
 import { useInboxCounts } from "@/features/notifications/useInbox";
+import {
+  openAssistsInbox,
+  useAssistsInboxCount,
+} from "@/features/assists/mobileInbox";
+import { ASSISTS_MANAGER_HREF } from "@/features/assists/constants";
+import { openFromNotice } from "@/lib/notice-open/openFromNotice";
 import { cn } from "@/lib/utils";
 import {
   pushPhonePageActionsHost,
@@ -150,7 +158,30 @@ function OverflowTrigger({ onOpen, unread }: { onOpen: () => void; unread: numbe
 function SignedInOverflowTrigger({ onOpen }: { onOpen: () => void }) {
   const counts = useInboxCounts();
   const messages = useUnreadConversationCount();
-  return <OverflowTrigger onOpen={onOpen} unread={counts.badge + messages} />;
+  const assists = useAssistsInboxCount();
+  return <OverflowTrigger onOpen={onOpen} unread={counts.badge + messages + assists} />;
+}
+
+/**
+ * 🚨 ON A PHONE, ASSISTS LIVE HERE (Arman, 2026-10-15) — never as a floating
+ * corner button over the page (`features/assists/mobileInbox.ts`). With
+ * assists waiting the row opens the assists Drawer; with none it opens the
+ * Assists page in a new tab, so the row is never a dead press.
+ */
+function AssistsRow({ onDone }: { onDone: () => void }) {
+  const count = useAssistsInboxCount();
+  return (
+    <Row
+      icon={<Lightbulb className="h-5 w-5" />}
+      label="Assists"
+      onClick={() => {
+        onDone();
+        if (count > 0) openAssistsInbox();
+        else openFromNotice(ASSISTS_MANAGER_HREF);
+      }}
+      trailing={<CountBadge count={count} />}
+    />
+  );
 }
 
 function MessagesRowTrailing() {
@@ -395,6 +426,7 @@ export function HeaderPhoneOverflow({
                 }}
                 trailing={isAuthenticated ? <InboxRowTrailing /> : undefined}
               />
+              {isAuthenticated ? <AssistsRow onDone={close} /> : null}
               {isAuthenticated ? <AiTestModeSheetRow /> : null}
               {canvas.isAvailable || !canvas.availabilityKnown ? (
                 <Row

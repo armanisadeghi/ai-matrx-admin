@@ -77,6 +77,17 @@ jest.mock("@/features/messaging/components/shell/MessagesHeaderButton", () => ({
   MESSAGES_AUTH_GATE: { featureName: "Messages", featureDescription: "x" },
   useUnreadConversationCount: () => 2,
 }));
+// Assists on a phone (2026-10-15): the row carries the count and opens the Drawer.
+let assistCount = 4;
+const openAssistsInbox = jest.fn();
+const openFromNotice = jest.fn();
+jest.mock("@/features/assists/mobileInbox", () => ({
+  useAssistsInboxCount: () => assistCount,
+  openAssistsInbox: () => openAssistsInbox(),
+}));
+jest.mock("@/lib/notice-open/openFromNotice", () => ({
+  openFromNotice: (href: string) => openFromNotice(href),
+}));
 // The real Messages and Notifications canvas kinds — the rows open THEM.
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const { messagesKind, MESSAGES_KIND } = require("@/features/messaging/canvas/messagesKind") as typeof import("@/features/messaging/canvas/messagesKind");
@@ -130,6 +141,7 @@ afterEach(() => {
   jest.clearAllMocks();
   canvasStore = createCanvasStore();
   canvasPresented = true;
+  assistCount = 4;
 });
 
 /** Two real tabs on the canvas; the active one is titled `hello.py`. */
@@ -180,6 +192,26 @@ describe("HeaderPhoneOverflow — the same four, the same states", () => {
     expect(canvasStore.getState().isOpen).toBe(true);
   });
 
+  it("Assists carries its count, opens the assists Drawer, and lights the ⋮ dot", () => {
+    mount(true);
+    // 3 inbox + 2 messages + 4 assists
+    expect(host.querySelector('button[aria-label$="9 new"]')).not.toBeNull();
+    openSheet();
+    expect(row("Assists")?.textContent).toContain("4");
+    click(row("Assists"));
+    expect(openAssistsInbox).toHaveBeenCalledTimes(1);
+    expect(openFromNotice).not.toHaveBeenCalled();
+  });
+
+  it("Assists with none waiting opens the Assists page in a new tab, never a dead press", () => {
+    assistCount = 0;
+    mount(true);
+    openSheet();
+    click(row("Assists"));
+    expect(openAssistsInbox).not.toHaveBeenCalled();
+    expect(openFromNotice).toHaveBeenCalledWith("/assists");
+  });
+
   it("Messages opens the Messages canvas tab", () => {
     mount(true);
     openSheet();
@@ -220,10 +252,11 @@ describe("HeaderPhoneOverflow — the same four, the same states", () => {
   });
 
   it("signed in, Notifications opens the Notifications canvas tab and the count rides the button", () => {
+    assistCount = 0;
     mount(true);
     // The number rides the button's name; the visible mark is a dot in the
     // corner, never a "99+" pill over the ⋮ (page-pass, 2026-09-27).
-    // 3 notifications + 2 unread conversations.
+    // 3 notifications + 2 unread conversations (no assists waiting).
     const trigger = host.querySelector('button[aria-label^="Search, intelligence"]');
     expect(trigger?.getAttribute("aria-label")).toContain("5 new");
     const dot = host.querySelector("[data-header-overflow-unread]");
