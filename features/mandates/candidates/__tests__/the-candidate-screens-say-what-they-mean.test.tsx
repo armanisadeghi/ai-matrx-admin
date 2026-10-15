@@ -76,7 +76,9 @@ function click(el: HTMLElement) {
 }
 
 
-jest.mock("@/lib/api/typed-client", () => ({ apiGet: jest.fn(), apiPost: jest.fn(), buildPath: jest.fn() }));
+jest.mock("@/lib/api/server-api", () =>
+  require("@/lib/api/test-support/serverApiEnvelopeMock").serverApiEnvelopeMock(),
+);
 jest.mock("@/utils/supabase/client", () => ({ supabase: {} }));
 jest.mock("@/components/cost/Cost", () => ({ Cost: () => <span>—</span> }));
 jest.mock("@/features/mandates/admin/bench-output-preview", () => ({

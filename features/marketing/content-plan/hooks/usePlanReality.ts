@@ -20,12 +20,13 @@
  */
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { apiPost, buildPath } from "@/lib/api/typed-client";
 import { toast } from "@/lib/toast";
 import { extractErrorMessage } from "@/utils/errors";
 import type { components } from "@ai-matrx/api/types";
 
 import { planKeys } from "../data/hooks";
+import { contentPlanReconcile } from "@ai-matrx/api/marketing";
+import { serverApi } from "@/lib/api/server-api";
 
 export type RealityReport = components["schemas"]["ReconcileReport"];
 export type RealityMatch = components["schemas"]["ReconcileMatch"];
@@ -34,10 +35,7 @@ async function runReconcile(
   siteId: string,
   writeEdges: boolean,
 ): Promise<RealityReport> {
-  const { data } = await apiPost(
-    buildPath("/content-plan/sites/{site_id}/reconcile", { site_id: siteId }),
-    { write_edges: writeEdges },
-  );
+  const data = await contentPlanReconcile(serverApi, { path: { site_id: siteId }, body: { write_edges: writeEdges } });
   return data;
 }
 

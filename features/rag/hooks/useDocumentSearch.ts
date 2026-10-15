@@ -22,8 +22,9 @@
  */
 
 import { useCallback, useMemo, useRef, useState } from "react";
-import { apiPost, buildPath } from "@/lib/api/typed-client";
 import type { components } from "@ai-matrx/api/types";
+import { testSearchLibraryDocument } from "@ai-matrx/api/knowledge";
+import { serverApi } from "@/lib/api/server-api";
 
 // Wire shapes DERIVED from the generated OpenAPI contract, never hand-mirrored.
 export type DocSearchHit = components["schemas"]["LibraryTestSearchHit"];
@@ -84,15 +85,12 @@ export function useDocumentSearch(documentId: string): UseDocumentSearch {
       setError(null);
       setHits(null);
       try {
-          const { data } = await apiPost(
-          buildPath("/rag/library/{processed_document_id}/test-search", {
+          const data = await testSearchLibraryDocument(serverApi, { path: {
             processed_document_id: documentId,
-          }),
-          {
+          }, body: {
             query: q,
             limit: RESULT_LIMIT,
-            },
-        );
+            } });
         if (seq !== seqRef.current) return [];
         const newHits = Array.isArray(data?.hits) ? data.hits : [];
         setHits(newHits);

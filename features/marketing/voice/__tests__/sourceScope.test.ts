@@ -24,7 +24,9 @@ function builder(table: string) {
 jest.mock("@/utils/supabase/client", () => ({
   supabase: { schema: () => ({ from: (t: string) => builder(t) }) },
 }));
-jest.mock("@/lib/api/typed-client", () => ({ apiPost: jest.fn(), buildPath: jest.fn() }));
+jest.mock("@/lib/api/server-api", () =>
+  require("@/lib/api/test-support/serverApiEnvelopeMock").serverApiEnvelopeMock(),
+);
 
 import { searchSources } from "../service";
 

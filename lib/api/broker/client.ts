@@ -12,7 +12,6 @@
  *   - 401  → no session; surfaces as the standard auth error.
  */
 
-import { apiPost } from "@/lib/api/typed-client";
 import { BackendApiError } from "@ai-matrx/api";
 import type {
   BrokeredCredential,
@@ -20,6 +19,8 @@ import type {
   CredentialRequest,
   TierPolicy,
 } from "@/lib/api/broker/types";
+import { mintToken } from "@ai-matrx/api/architecture";
+import { serverApi, NO_ERROR_CAPTURE_HEADER } from "@/lib/api/server-api";
 
 export interface MintOptions {
   model?: string;
@@ -40,17 +41,13 @@ export async function mintCredential(
   opts: MintOptions = {},
 ): Promise<BrokeredCredential> {
   try {
-    const { data } = await apiPost(
-      "/broker/tokens",
-      {
+    const data = await mintToken(serverApi, { body: {
         audience,
         tier_policy: tierPolicy,
         ttl_seconds: opts.ttlSeconds ?? null,
         model: opts.model ?? null,
         scopes: opts.scopes ?? [],
-      },
-      { signal: opts.signal, captureErrors: opts.captureErrors },
-    );
+      } }, { signal: opts.signal });
     return data;
   } catch (err) {
     if (err instanceof BackendApiError && err.status === 503) {

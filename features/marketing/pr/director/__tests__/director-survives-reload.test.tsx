@@ -40,11 +40,9 @@ let messageCount = 0;
 let executing = false;
 let cacheOnly = false;
 let serverOperations = 0;
-jest.mock("@/lib/api/typed-client", () => ({
-  buildPath: (p: string, params: Record<string, string>) =>
-    p.replace(/\{(\w+)\}/g, (_m, k: string) => params[k]),
-  apiGet: async () => ({ data: { operation_count: serverOperations, operations: [] } }),
-}));
+jest.mock("@/lib/api/server-api", () =>
+  require("@/lib/api/test-support/serverApiEnvelopeMock").serverApiEnvelopeMock(),
+);
 let userMessages: Array<{ role: string; content: unknown }> = [];
 /** Resume outcomes in order: "fail" rejects as an unwritten row, "hang" never settles. */
 let resumePlan: Array<"ok" | "fail" | "hold"> = [];

@@ -34,7 +34,6 @@ import {
 } from "@ai-matrx/chat/agents/redux/execution-system/messages/messages.selectors";
 import { selectIsCacheOnly } from "@ai-matrx/chat/agents/redux/execution-system/conversations/conversations.selectors";
 import { useAppDispatch, useAppSelector, useAppStore } from "@/lib/redux/hooks";
-import { apiGet, buildPath } from "@/lib/api/typed-client";
 import { cn } from "@/lib/utils";
 
 import {
@@ -49,6 +48,8 @@ import {
 import { replaceAddressWithoutNavigating } from "@/lib/url-state/addressWithoutNavigating";
 
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { operationsByLink } from "@ai-matrx/api/architecture";
+import { serverApi, NO_ERROR_CAPTURE_HEADER } from "@/lib/api/server-api";
 /** The front door's starting points. `send` runs now; otherwise the words wait in the composer for the rest. */
 export const PR_STARTING_POINTS: ReadonlyArray<{
   label: string;
@@ -131,14 +132,10 @@ async function reopenWithRetry<T>(
  *  safe side: never send a person's question twice on a guess. */
 async function serverIsWorkingOn(conversationId: string): Promise<boolean> {
   try {
-    const { data } = await apiGet(
-      buildPath("/runtime/operations/by-link/{link_kind}/{link_id}", {
+    const data = await operationsByLink(serverApi, { path: {
         link_kind: "conversation",
         link_id: conversationId,
-      }),
-      // 404 is an expected answer here (no operation), so it stays out of the Error Inspector.
-      { captureErrors: false },
-    );
+      } }, { headers: { [NO_ERROR_CAPTURE_HEADER]: "off" } });
     return ((data as { operation_count?: number } | null)?.operation_count ?? 0) > 0;
   } catch (error) {
     // 404 is the server's "no operation you own for this conversation".

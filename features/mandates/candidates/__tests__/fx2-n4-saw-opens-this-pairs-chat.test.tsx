@@ -17,7 +17,9 @@ import { createRoot, type Root } from "react-dom/client";
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
-jest.mock("@/lib/api/typed-client", () => ({ apiGet: jest.fn(), apiPost: jest.fn(), buildPath: jest.fn() }));
+jest.mock("@/lib/api/server-api", () =>
+  require("@/lib/api/test-support/serverApiEnvelopeMock").serverApiEnvelopeMock(),
+);
 jest.mock("@/utils/supabase/client", () => ({ supabase: {} }));
 jest.mock("@/components/cost/Cost", () => ({ Cost: () => <span>—</span> }));
 jest.mock("@/features/mandates/admin/bench-output-preview", () => ({

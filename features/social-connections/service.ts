@@ -1,18 +1,13 @@
 import { createClient } from "@/utils/supabase/client";
 import { operationFailed } from "@/utils/errors";
-import { apiGet, apiPost } from "@/lib/api/typed-client";
+import { socialOauthAttach, socialOauthConfig, socialOauthDisconnect, socialOauthDiscover, socialOauthRefresh, socialOauthSelect, socialOauthSync } from "@ai-matrx/api/integrations";
+import { serverApi } from "@/lib/api/server-api";
 
 export async function discoverXAccount(
   connectionId: string,
   organizationId: string,
 ) {
-  return (
-    await apiPost(
-      "/social-oauth/x/discover",
-      { connection_id: connectionId },
-      { organizationId },
-    )
-  ).data;
+  return await socialOauthDiscover(serverApi, { body: { connection_id: connectionId } }, { organizationId: organizationId });
 }
 
 export async function selectXAccount(
@@ -20,13 +15,7 @@ export async function selectXAccount(
   resourceRef: string,
   organizationId: string,
 ) {
-  return (
-    await apiPost(
-      "/social-oauth/x/select",
-      { connection_id: connectionId, resource_ref: resourceRef },
-      { organizationId },
-    )
-  ).data;
+  return await socialOauthSelect(serverApi, { body: { connection_id: connectionId, resource_ref: resourceRef } }, { organizationId: organizationId });
 }
 
 export async function attachXAccount(
@@ -35,47 +24,29 @@ export async function attachXAccount(
   brandId: string,
   organizationId: string,
 ) {
-  return (
-    await apiPost(
-      "/social-oauth/x/attach",
-      {
+  return await socialOauthAttach(serverApi, { body: {
         connection_id: connectionId,
         resource_ref: resourceRef,
         brand_id: brandId,
-      },
-      { organizationId },
-    )
-  ).data;
+      } }, { organizationId: organizationId });
 }
 
 export async function refreshXAccess(
   connectionId: string,
   organizationId: string,
 ) {
-  return (
-    await apiPost(
-      "/social-oauth/x/refresh",
-      { connection_id: connectionId },
-      { organizationId },
-    )
-  ).data;
+  return await socialOauthRefresh(serverApi, { body: { connection_id: connectionId } }, { organizationId: organizationId });
 }
 
 export async function disconnectXAccount(
   connectionId: string,
   organizationId: string,
 ) {
-  return (
-    await apiPost(
-      "/social-oauth/x/disconnect",
-      { connection_id: connectionId },
-      { organizationId },
-    )
-  ).data;
+  return await socialOauthDisconnect(serverApi, { body: { connection_id: connectionId } }, { organizationId: organizationId });
 }
 
 export async function getXConfig(organizationId: string) {
-  return (await apiGet("/social-oauth/x/config", { organizationId })).data;
+  return await socialOauthConfig(serverApi, {}, { organizationId: organizationId });
 }
 
 export async function syncXAccount(
@@ -95,11 +66,5 @@ export async function syncXAccount(
     throw operationFailed("find your connected X brand account", result.error);
   if (result.data.length !== 1)
     throw new Error("Select your X account for this brand first.");
-  return (
-    await apiPost(
-      "/social-oauth/x/sync",
-      { connection_id: connectionId, tracked_account_id: result.data[0].id },
-      { organizationId },
-    )
-  ).data;
+  return await socialOauthSync(serverApi, { body: { connection_id: connectionId, tracked_account_id: result.data[0].id } }, { organizationId: organizationId });
 }

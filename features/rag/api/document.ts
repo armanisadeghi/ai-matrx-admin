@@ -7,7 +7,6 @@
  * derived from the generated OpenAPI contract, never asserted.
  */
 
-import { apiGet, buildPath } from "@/lib/api/typed-client";
 import type {
   ChunkRow,
   DocumentDetail,
@@ -15,24 +14,22 @@ import type {
   PageDetail,
   PageSummary,
 } from "@/features/rag/types/documents";
+import { getDocumentChunks, getDocumentLineage, getDocumentOverview, getDocumentPage, getDocumentPages } from "@ai-matrx/api/content";
+import { serverApi } from "@/lib/api/server-api";
 
 // ---------------------------------------------------------------------------
 // Reads
 // ---------------------------------------------------------------------------
 
 export async function fetchDocument(docId: string): Promise<DocumentDetail> {
-  const { data } = await apiGet(
-    buildPath("/document/{doc_id}", { doc_id: docId }),
-  );
+  const data = await getDocumentOverview(serverApi, { path: { doc_id: docId } });
   return data;
 }
 
 export async function fetchDocumentLineage(
   docId: string,
 ): Promise<LineageTree> {
-  const { data } = await apiGet(
-    buildPath("/document/{doc_id}/lineage", { doc_id: docId }),
-  );
+  const data = await getDocumentLineage(serverApi, { path: { doc_id: docId } });
   return data;
 }
 
@@ -40,10 +37,7 @@ export async function fetchDocumentPages(
   docId: string,
   range: { from?: number; to?: number } = {},
 ): Promise<PageSummary[]> {
-  const { data } = await apiGet(
-    buildPath("/document/{doc_id}/pages", { doc_id: docId }),
-    { query: { from: range.from, to: range.to } },
-  );
+  const data = await getDocumentPages(serverApi, { path: { doc_id: docId }, query: { from: range.from, to: range.to } });
   return data;
 }
 
@@ -52,19 +46,14 @@ export async function fetchDocumentPage(
   pageIndex: number,
   opts: { includeBlocks?: boolean; includeWords?: boolean } = {},
 ): Promise<PageDetail> {
-  const { data } = await apiGet(
-    buildPath("/document/{doc_id}/page/{page_index}", {
+  const data = await getDocumentPage(serverApi, { path: {
       doc_id: docId,
       page_index: pageIndex,
-    }),
-    {
-      query: {
+    }, query: {
         // Only send the flag when it's ON — matches the server default (off).
         include_blocks: opts.includeBlocks || undefined,
         include_words: opts.includeWords || undefined,
-      },
-    },
-  );
+      } });
   return data;
 }
 
@@ -77,17 +66,12 @@ export async function fetchDocumentChunks(
     limit?: number;
   } = {},
 ): Promise<ChunkRow[]> {
-  const { data } = await apiGet(
-    buildPath("/document/{doc_id}/chunks", { doc_id: docId }),
-    {
-      query: {
+  const data = await getDocumentChunks(serverApi, { path: { doc_id: docId }, query: {
         parent_only: filters.parentOnly || undefined,
         children_only: filters.childrenOnly || undefined,
         section_kind: filters.sectionKind,
         limit: filters.limit || undefined,
-      },
-    },
-  );
+      } });
   return data;
 }
 

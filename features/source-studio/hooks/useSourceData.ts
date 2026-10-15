@@ -13,7 +13,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/utils/supabase/client";
 import { ragDb } from "@/utils/supabase/ragDb";
-import { apiGet, buildPath } from "@/lib/api/typed-client";
 import type { components } from "@ai-matrx/api/types";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
@@ -28,6 +27,8 @@ import type {
   SourceOriginalFacts,
   StudioPortion,
 } from "@/features/source-studio/sourceStudioModel";
+import { listLibraryChunks } from "@ai-matrx/api/knowledge";
+import { serverApi } from "@/lib/api/server-api";
 
 // ── The Source row ────────────────────────────────────────────────────────
 
@@ -213,13 +214,10 @@ export function useSourceChunks(documentId: string | null): UseSourceChunks {
     if (!documentId) return undefined;
     let cancelled = false;
     const k = `${documentId}:${tick}`;
-    apiGet(
-      buildPath("/rag/library/{processed_document_id}/chunks", {
+    listLibraryChunks(serverApi, { path: {
         processed_document_id: documentId,
-      }),
-      { query: { limit: SOURCE_CHUNK_LIMIT } },
-    )
-      .then(({ data }) => {
+      }, query: { limit: SOURCE_CHUNK_LIMIT } })
+      .then((data) => {
         if (cancelled) return;
         setState({
           forKey: k,

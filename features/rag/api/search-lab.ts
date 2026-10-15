@@ -10,8 +10,9 @@
  */
 import { getJson, postJson, postNdjson } from "@/lib/python-client";
 import { adminDoorOpen, adminDoorPath } from "@/lib/api/adminDoor";
-import { apiPost } from "@/lib/api/typed-client";
 import type { components } from "@ai-matrx/api/types";
+import { agentToolGetChunkEndpoint, agentToolSearchEndpoint, diagnoseEndpoint, expandEndpoint } from "@ai-matrx/api/knowledge";
+import { serverApi } from "@/lib/api/server-api";
 
 // ---------------------------------------------------------------------------
 // /expand — multi-query + HyDE preview
@@ -31,9 +32,7 @@ export async function ragExpand(
   body: ExpandRequest,
   opts: { signal?: AbortSignal } = {},
 ): Promise<ExpandResponse> {
-  const { data } = await apiPost("/rag/search-lab/expand", body, {
-    signal: opts.signal,
-  });
+  const data = await expandEndpoint(serverApi, { body: body }, { signal: opts.signal });
   return data;
 }
 
@@ -101,9 +100,7 @@ export async function ragDiagnose(
     );
     return data;
   }
-  const { data } = await apiPost("/rag/search-lab/diagnose", body, {
-    signal: opts.signal,
-  });
+  const data = await diagnoseEndpoint(serverApi, { body: body }, { signal: opts.signal });
   return data;
 }
 
@@ -195,9 +192,7 @@ export async function ragAgentToolSearch(
   body: AgentToolSearchRequest,
   opts: { signal?: AbortSignal } = {},
 ): Promise<AgentToolSearchResponse> {
-  const { data } = await apiPost("/rag/search-lab/tool/search", body, {
-    signal: opts.signal,
-  });
+  const data = await agentToolSearchEndpoint(serverApi, { body: body }, { signal: opts.signal });
   return data;
 }
 
@@ -216,8 +211,6 @@ export async function ragAgentToolGetChunk(
   body: AgentToolGetChunkRequest,
   opts: { signal?: AbortSignal } = {},
 ): Promise<AgentToolGetChunkResponse> {
-  const { data } = await apiPost("/rag/search-lab/tool/get-chunk", body, {
-    signal: opts.signal,
-  });
+  const data = await agentToolGetChunkEndpoint(serverApi, { body: body }, { signal: opts.signal });
   return data;
 }

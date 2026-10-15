@@ -8,8 +8,9 @@
  * gets `payload: null` + `payload_withheld_reason`, which the pair body shows.
  */
 
-import { apiGet, apiPost, buildPath } from "@/lib/api/typed-client";
 import type { components } from "@ai-matrx/api/types";
+import { getMandateCandidate, getMandateCandidateRun, postMandateCandidateDiscard, postMandateCandidatePromote, postMandateCandidatePutBack, postMandateCandidateRunAgreement } from "@ai-matrx/api/intelligence";
+import { serverApi } from "@/lib/api/server-api";
 
 export type LiveCandidate = components["schemas"]["LiveCandidate"];
 export type LiveCandidateRun = components["schemas"]["LiveCandidateRun"];
@@ -21,16 +22,12 @@ export type LiveCandidatePromoteResult = components["schemas"]["LiveCandidatePro
 export type LiveCandidateVersionChoice = components["schemas"]["LiveCandidateVersionChoice"];
 
 export async function fetchCandidateRun(runId: string): Promise<LiveCandidateRun> {
-  const { data } = await apiGet(
-    buildPath("/mandate-candidate-runs/{run_id}", { run_id: runId }),
-  );
+  const data = await getMandateCandidateRun(serverApi, { path: { run_id: runId } });
   return data;
 }
 
 export async function fetchCandidate(candidateId: string): Promise<LiveCandidateDetail> {
-  const { data } = await apiGet(
-    buildPath("/mandate-candidates/{candidate_id}", { candidate_id: candidateId }),
-  );
+  const data = await getMandateCandidate(serverApi, { path: { candidate_id: candidateId } });
   return data;
 }
 
@@ -38,10 +35,7 @@ export async function recordCandidateAgreement(
   runId: string,
   agreement: "agree" | "disagree",
 ): Promise<LiveCandidateRun> {
-  const { data } = await apiPost(
-    buildPath("/mandate-candidate-runs/{run_id}/agreement", { run_id: runId }),
-    { agreement },
-  );
+  const data = await postMandateCandidateRunAgreement(serverApi, { path: { run_id: runId }, body: { agreement } });
   return data.run;
 }
 
@@ -49,25 +43,16 @@ export async function promoteCandidate(
   candidateId: string,
   versionId?: string | null,
 ): Promise<LiveCandidatePromoteResult> {
-  const { data } = await apiPost(
-    buildPath("/mandate-candidates/{candidate_id}/promote", { candidate_id: candidateId }),
-    versionId ? { version_id: versionId } : {},
-  );
+  const data = await postMandateCandidatePromote(serverApi, { path: { candidate_id: candidateId }, body: versionId ? { version_id: versionId } : {} });
   return data;
 }
 
 export async function putBackCandidate(candidateId: string): Promise<LiveCandidate> {
-  const { data } = await apiPost(
-    buildPath("/mandate-candidates/{candidate_id}/put-back", { candidate_id: candidateId }),
-    undefined,
-  );
+  const data = await postMandateCandidatePutBack(serverApi, { path: { candidate_id: candidateId } });
   return data;
 }
 
 export async function discardCandidate(candidateId: string): Promise<LiveCandidate> {
-  const { data } = await apiPost(
-    buildPath("/mandate-candidates/{candidate_id}/discard", { candidate_id: candidateId }),
-    {},
-  );
+  const data = await postMandateCandidateDiscard(serverApi, { path: { candidate_id: candidateId }, body: {} });
   return data;
 }

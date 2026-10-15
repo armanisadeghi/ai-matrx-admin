@@ -8,8 +8,9 @@
  * what the ledger holds.
  */
 
-import { apiGet } from "@/lib/api/typed-client";
 import { isJsonObject } from "@/types/json";
+import { siteDiscoveryStatus } from "@ai-matrx/api/marketing";
+import { serverApi } from "@/lib/api/server-api";
 
 export const DISCOVERY_STEP_ORDER = [
   "business_model",
@@ -83,8 +84,6 @@ export async function getDiscoveryStatus(siteId: string): Promise<DiscoveryStatu
   // `apiGet` throws on any non-OK response; a resolved call IS the data.
   // The OpenAPI contract types this as an open object (`dict[str, Any]`);
   // field-by-field parse is the ingress, never a whole-payload cast.
-  const { data } = await apiGet("/seo/keywords/discovery/status", {
-    query: { site_id: siteId },
-  });
+  const data = await siteDiscoveryStatus(serverApi, { query: { site_id: siteId } });
   return parseDiscoveryStatus(data);
 }

@@ -10,7 +10,6 @@
  * python-client attaches the Supabase session token itself.
  */
 import { BackendApiError } from "@ai-matrx/api";
-import { apiGet, apiPost } from "@/lib/api/typed-client";
 import { adminDoorOpen } from "@/lib/api/adminDoor";
 import { getJson } from "@/lib/python-client";
 
@@ -20,6 +19,8 @@ import type {
   FindingFromWalkRequest,
   WalkUnitKind,
 } from "./types";
+import { descend as descendOp, findingFromWalk as findingFromWalkOp } from "@ai-matrx/api/data";
+import { serverApi } from "@/lib/api/server-api";
 
 /**
  * One layer of the walk: the unit, its producing provider call, and every
@@ -42,9 +43,7 @@ export async function descend(
     const { data } = await getJson<DescendOut>(`/admin/review/descend?${qs}`);
     return data;
   }
-  const { data } = await apiGet("/review/descend", {
-    query: { unit_kind: unitKind, unit_id: unitId },
-  });
+  const data = await descendOp(serverApi, { query: { unit_kind: unitKind, unit_id: unitId } });
   return data;
 }
 
@@ -56,7 +55,7 @@ export async function descend(
 export async function findingFromWalk(
   body: FindingFromWalkRequest,
 ): Promise<FindingFromWalkOut> {
-  const { data } = await apiPost("/review/findings/from-walk", body);
+  const data = await findingFromWalkOp(serverApi, { body: body });
   return data;
 }
 

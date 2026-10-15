@@ -1,5 +1,4 @@
 import { readConnectionStatus } from "@/features/connectors/connection-status";
-import { apiPost, buildPath } from "@/lib/api/typed-client";
 import { createClient } from "@/utils/supabase/client";
 import { getClaimsUser } from "@ai-matrx/auth";
 import { operationFailed } from "@/utils/errors";
@@ -10,6 +9,8 @@ import type {
   StorageLifecycleResult,
   StorageOAuthProvider,
 } from "@/features/storage-connections/types";
+import { authorizeStorage, disconnectStorage, refreshStorage } from "@ai-matrx/api/files";
+import { serverApi } from "@/lib/api/server-api";
 
 const CONNECTION_SELECT =
   "id, provider, account_email, account_name, scopes, status, last_verified_at, last_error, created_at, metadata";
@@ -87,10 +88,7 @@ export async function listStorageConnections(
 export async function startStorageAuthorization(
   provider: StorageOAuthProvider,
 ): Promise<StorageAuthorizationStart> {
-  const { data } = await apiPost(
-    buildPath("/storage-oauth/{provider}/authorize", { provider }),
-    undefined,
-  );
+  const data = await authorizeStorage(serverApi, { path: { provider } });
   return {
     authorizationUrl: data.authorization_url,
     provider: data.provider,
@@ -122,10 +120,7 @@ export async function refreshStorageConnection(
   provider: StorageOAuthProvider,
   connectionId: string,
 ): Promise<StorageLifecycleResult> {
-  const { data } = await apiPost(
-    buildPath("/storage-oauth/{provider}/refresh", { provider }),
-    { connection_id: connectionId },
-  );
+  const data = await refreshStorage(serverApi, { path: { provider }, body: { connection_id: connectionId } });
   return lifecycleResult(data);
 }
 
@@ -133,9 +128,6 @@ export async function disconnectStorageConnection(
   provider: StorageOAuthProvider,
   connectionId: string,
 ): Promise<StorageLifecycleResult> {
-  const { data } = await apiPost(
-    buildPath("/storage-oauth/{provider}/disconnect", { provider }),
-    { connection_id: connectionId },
-  );
+  const data = await disconnectStorage(serverApi, { path: { provider }, body: { connection_id: connectionId } });
   return lifecycleResult(data);
 }

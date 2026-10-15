@@ -17,14 +17,26 @@ import {
   type SourcesTransport,
 } from "@ai-matrx/agents/sources/runtime";
 import type { SourceRef } from "@ai-matrx/agents/sources";
-import { apiPost } from "@/lib/api/typed-client";
+import { sourcesManifest, sourcesPartsSearch, sourcesResolve } from "@ai-matrx/api/knowledge";
+import { callOptionsFrom, serverApi } from "@/lib/api/server-api";
+
+const DOORS = {
+  "/sources/manifest": sourcesManifest,
+  "/sources/resolve": sourcesResolve,
+  "/sources/parts/search": sourcesPartsSearch,
+} as const;
 
 const transport: SourcesTransport = {
   async post(path, body, options) {
     // The three door bodies are the frozen contract (`@ai-matrx/agents/sources`);
     // the generated wire types are the same shapes, only looser (Pydantic
     // defaults read as optional), so the answer is narrowed back to the contract.
-    const { data } = await apiPost(path, body as never, options);
+    const door = DOORS[path] as (
+      api: typeof serverApi,
+      args: { body: never },
+      options: ReturnType<typeof callOptionsFrom>,
+    ) => Promise<unknown>;
+    const data = await door(serverApi, { body: body as never }, callOptionsFrom(options));
     return data as SourceDoorCalls[typeof path]["answer"];
   },
 };

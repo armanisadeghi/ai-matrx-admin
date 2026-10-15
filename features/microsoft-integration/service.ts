@@ -14,7 +14,6 @@
  * sanctioned contract-bound client, so a server rename lights this file up red.
  */
 
-import { apiPost } from "@/lib/api/typed-client";
 import { createClient } from "@/utils/supabase/client";
 import { getClaimsUser } from "@ai-matrx/auth";
 import { operationFailed } from "@/utils/errors";
@@ -23,6 +22,8 @@ import type {
   MicrosoftConnection,
   MicrosoftConnectionRow,
 } from "@/features/microsoft-integration/types";
+import { microsoftIntegrationsAuthorize, microsoftIntegrationsDisconnect, preflight } from "@ai-matrx/api/integrations";
+import { serverApi } from "@/lib/api/server-api";
 
 const CONNECTION_SELECT =
   "id, owner_type, owner_user_id, provider, account_email, account_name, scopes, status, last_verified_at, last_error, created_at, updated_at, metadata, deleted_at";
@@ -94,9 +95,9 @@ export interface MicrosoftAuthorizationStart {
 export async function startMicrosoftAuthorization(
   campaigns: readonly MicrosoftCampaign[],
 ): Promise<MicrosoftAuthorizationStart> {
-  const { data } = await apiPost("/microsoft-integrations/authorize", {
+  const data = await microsoftIntegrationsAuthorize(serverApi, { body: {
     campaigns: [...campaigns],
-  });
+  } });
   return {
     authorizationUrl: data.authorization_url,
     campaigns: data.campaigns,
@@ -108,9 +109,9 @@ export async function startMicrosoftAuthorization(
 export async function preflightMicrosoftConnection(
   connectionId: string,
 ): Promise<{ status: string; scopes: readonly string[] }> {
-  const { data } = await apiPost("/microsoft-integrations/preflight", {
+  const data = await preflight(serverApi, { body: {
     connection_id: connectionId,
-  });
+  } });
   return { status: data.status, scopes: (data.scopes ?? []).map(shortScope) };
 }
 
@@ -118,7 +119,7 @@ export async function preflightMicrosoftConnection(
 export async function disconnectMicrosoftConnection(
   connectionId: string,
 ): Promise<void> {
-  await apiPost("/microsoft-integrations/disconnect", {
+  await microsoftIntegrationsDisconnect(serverApi, { body: {
     connection_id: connectionId,
-  });
+  } });
 }

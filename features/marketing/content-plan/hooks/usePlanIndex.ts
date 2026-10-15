@@ -28,10 +28,11 @@
  */
 import { useQuery } from "@tanstack/react-query";
 
-import { apiGet, buildPath } from "@/lib/api/typed-client";
 import type { components } from "@ai-matrx/api/types";
 
 import { planKeys } from "../data/hooks";
+import { planIndexRoute } from "@ai-matrx/api/marketing";
+import { serverApi } from "@/lib/api/server-api";
 
 export type PlanIndexView = components["schemas"]["PlanIndexView"];
 export type PlanIndexEntry = components["schemas"]["PlanIndexEntry"];
@@ -109,12 +110,7 @@ async function loadPlanIndex(
   nodeId: string | null,
   signal?: AbortSignal,
 ): Promise<PlanIndexView> {
-  const { data } = await apiGet(
-    buildPath("/content-plan/sites/{site_id}/plan-index", { site_id: siteId }),
-    // withQuery drops empty values, so a site-level view sends no node_id at
-    // all rather than `?node_id=` (which the server would read as a node).
-    { query: { node_id: nodeId ?? undefined }, signal },
-  );
+  const data = await planIndexRoute(serverApi, { path: { site_id: siteId }, query: { node_id: nodeId ?? undefined } }, { signal: signal });
   return data;
 }
 

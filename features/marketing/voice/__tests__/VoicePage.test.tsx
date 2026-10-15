@@ -50,7 +50,9 @@ jest.mock("../service", () => {
 jest.mock("@/lib/redux/hooks", () => ({ useAppSelector: () => "user-1" }));
 jest.mock("@/lib/redux/selectors/userSelectors", () => ({ selectUserId: () => "user-1" }));
 jest.mock("@/utils/supabase/client", () => ({ supabase: {} }));
-jest.mock("@/lib/api/typed-client", () => ({ apiPost: jest.fn(), buildPath: jest.fn() }));
+jest.mock("@/lib/api/server-api", () =>
+  require("@/lib/api/test-support/serverApiEnvelopeMock").serverApiEnvelopeMock(),
+);
 
 // ProTextarea needs the app's Redux store (its agent actions); this suite tests the host, so the
 // writing box renders as the plain textarea it wraps.

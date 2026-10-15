@@ -13,11 +13,12 @@
  */
 
 import { postJson } from "@/lib/python-client";
-import { apiGet, buildPath } from "@/lib/api/typed-client";
 import { BackendApiError } from "@ai-matrx/api";
 import { withFileOrganization } from "@/features/files/api/fileOrganization";
 import type { components } from "@ai-matrx/api/types";
 import type { IngestResponse } from "./ingest";
+import { getFileRagStatus } from "@ai-matrx/api/files";
+import { serverApi, callOptionsFrom } from "@/lib/api/server-api";
 
 /**
  * The file's full Knowledge lifecycle status. DERIVED from the generated OpenAPI
@@ -46,13 +47,7 @@ export async function fetchFileRagStatus(
   fileId: string,
   signal?: AbortSignal,
 ): Promise<FileRagStatus> {
-  const { data } = await apiGet(
-    buildPath("/files/{file_id}/rag-status", { file_id: fileId }),
-    // A request about one file carries THAT file's organization, read from the
-    // file — never the picker (VERIFIER-23 #4: this went out bare and got 400
-    // organization_required on /files/f/<id> in a fresh session).
-    withFileOrganization(fileId, { signal }),
-  );
+  const data = await getFileRagStatus(serverApi, { path: { file_id: fileId } }, callOptionsFrom(withFileOrganization(fileId, { signal })));
   return data;
 }
 

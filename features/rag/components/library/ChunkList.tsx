@@ -23,7 +23,6 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@ai-matrx/design-system";
 import { cn } from "@/lib/utils";
-import { apiGet, buildPath } from "@/lib/api/typed-client";
 import {
   OrganizationRequiredNotice,
 } from "@/features/organizations/components/OrganizationRequiredNotice";
@@ -56,6 +55,8 @@ import {
   citedChunkFacts,
   timeRangeLabel,
 } from "@/features/rag/components/source-inspector/citedAnchor";
+import { listLibraryChunks } from "@ai-matrx/api/knowledge";
+import { serverApi } from "@/lib/api/server-api";
 
 /** The structural shape ChunkCard needs. Any endpoint chunk row that carries
  *  these fields renders without adaptation. */
@@ -433,13 +434,10 @@ export function ChunksOnPage({
     setLoading(true);
     setError(null);
     setOrgRequired(false);
-    apiGet(
-      buildPath("/rag/library/{processed_document_id}/chunks", {
+    listLibraryChunks(serverApi, { path: {
         processed_document_id: documentId,
-      }),
-      { query: { limit, page_number: pageNumber } },
-    )
-      .then(({ data }) => {
+      }, query: { limit, page_number: pageNumber } })
+      .then((data) => {
         if (cancelled || !data) return;
         setChunks(Array.isArray(data.chunks) ? data.chunks : []);
         setTotal(typeof data.total === "number" ? data.total : 0);

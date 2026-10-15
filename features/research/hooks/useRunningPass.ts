@@ -3,9 +3,10 @@
 import { useCallback, useEffect, useState } from "react";
 
 import { callApi } from "@/lib/api/call-api";
-import { apiGet, buildPath } from "@/lib/api/typed-client";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { toast } from "@/lib/toast";
+import { operationsByLink } from "@ai-matrx/api/architecture";
+import { serverApi, NO_ERROR_CAPTURE_HEADER } from "@/lib/api/server-api";
 
 const POLL_MS = 6000;
 /** `rs_topic.status` values while a pass is working. */
@@ -35,14 +36,10 @@ export function useRunningPass(topicId: string, topicStatus: string | null | und
     let cancelled = false;
     const look = async () => {
       try {
-        const { data } = await apiGet(
-          buildPath("/runtime/operations/by-link/{link_kind}/{link_id}", {
+        const data = await operationsByLink(serverApi, { path: {
             link_kind: "rs_topic",
             link_id: topicId,
-          }),
-          // 404 = "no operation you own for this topic": an answer, not an error.
-          { captureErrors: false },
-        );
+          } }, { headers: { [NO_ERROR_CAPTURE_HEADER]: "off" } });
         const live = (data?.operations ?? []).find((o) => !o.is_terminal);
         if (cancelled) return;
         setRunning(Boolean(live));

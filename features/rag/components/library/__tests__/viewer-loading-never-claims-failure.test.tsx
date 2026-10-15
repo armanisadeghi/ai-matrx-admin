@@ -107,14 +107,9 @@ jest.mock("@/features/overlays/openers/diffViewerWindow", () => ({
 jest.mock("@/features/rag/api/fork", () => ({
   forkProcessedDocument: jest.fn(),
 }));
-jest.mock("@/lib/api/typed-client", () => ({
-  apiGet: jest.fn((path: string) => {
-    pageReads.push(path);
-    return new Promise(() => {});
-  }),
-  buildPath: (p: string, params: Record<string, unknown>) =>
-    `${p}|${String(params.processed_document_id)}`,
-}));
+jest.mock("@/lib/api/server-api", () =>
+  require("@/lib/api/test-support/serverApiEnvelopeMock").serverApiEnvelopeMock(),
+);
 jest.mock(
   "@/features/shell/components/header/templates/EntityModeHeader",
   () => ({

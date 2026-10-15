@@ -1,7 +1,8 @@
-import { apiPost } from "@/lib/api/typed-client";
 import { createClient } from "@/utils/supabase/client";
 import { getClaimsUser } from "@ai-matrx/auth";
 import { operationFailed } from "@/utils/errors";
+import { attachTiktok, authorizeTiktok, disconnectTiktok, discoverTiktok, finishTiktok, refreshTiktok, videosTiktok } from "@ai-matrx/api/integrations";
+import { serverApi } from "@/lib/api/server-api";
 
 export async function listTikTokConnections(signal?: AbortSignal) {
   const client = createClient();
@@ -22,7 +23,7 @@ const PROOF_KEY = "matrx.tiktok.consent";
 export async function startTikTokAuthorization(userId: string, organizationId: string) {
   const proof = Array.from(crypto.getRandomValues(new Uint8Array(32)), byte => byte.toString(16).padStart(2, "0")).join("");
   const hash = Array.from(new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(proof))), byte => byte.toString(16).padStart(2, "0")).join("");
-  const { data } = await apiPost("/tiktok-integrations/authorize", { browser_proof_hash: hash });
+  const data = await authorizeTiktok(serverApi, { body: { browser_proof_hash: hash } });
   const state = new URL(data.authorization_url).searchParams.get("state");
   if (!state) throw new Error("TikTok authorization did not return a consent state.");
   sessionStorage.setItem(PROOF_KEY, JSON.stringify({ proof, state, userId, organizationId, expiresAt: Date.now() + 600_000 }));
@@ -39,27 +40,27 @@ export async function finishTikTokAuthorization(state: string, code: string, use
       typeof value.expiresAt !== "number" || value.expiresAt < Date.now()) {
     throw new Error("TikTok consent belongs to a different account, organization or browser. Reconnect TikTok.");
   }
-  const result = await apiPost("/tiktok-integrations/finish", { state, code, browser_proof: value.proof });
+  const result = await finishTiktok(serverApi, { body: { state, code, browser_proof: value.proof } });
   sessionStorage.removeItem(PROOF_KEY);
-  return result.data;
+  return result;
 }
 
 export async function discoverTikTokAccount(connectionId: string) {
-  return (await apiPost("/tiktok-integrations/discover", { connection_id: connectionId })).data;
+  return await discoverTiktok(serverApi, { body: { connection_id: connectionId } });
 }
 
 export async function listTikTokVideos(connectionId: string, cursor?: number) {
-  return (await apiPost<"/tiktok-integrations/videos">("/tiktok-integrations/videos", { connection_id: connectionId, cursor })).data;
+  return await videosTiktok(serverApi, { body: { connection_id: connectionId, cursor } });
 }
 
 export async function attachTikTokAccount(connectionId: string, resourceRef: string) {
-  return (await apiPost("/tiktok-integrations/attach", { connection_id: connectionId, resource_ref: resourceRef })).data;
+  return await attachTiktok(serverApi, { body: { connection_id: connectionId, resource_ref: resourceRef } });
 }
 
 export async function refreshTikTokConnection(connectionId: string) {
-  return (await apiPost("/tiktok-integrations/refresh", { connection_id: connectionId })).data;
+  return await refreshTiktok(serverApi, { body: { connection_id: connectionId } });
 }
 
 export async function disconnectTikTokConnection(connectionId: string) {
-  return (await apiPost("/tiktok-integrations/disconnect", { connection_id: connectionId })).data;
+  return await disconnectTiktok(serverApi, { body: { connection_id: connectionId } });
 }

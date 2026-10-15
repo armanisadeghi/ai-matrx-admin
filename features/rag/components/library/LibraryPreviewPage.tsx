@@ -49,7 +49,6 @@ import { cn } from "@/lib/utils";
 import { EntityModeHeader } from "@/features/shell/components/header/templates/EntityModeHeader";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@ai-matrx/design-system";
-import { apiGet, buildPath } from "@/lib/api/typed-client";
 import { OrganizationRequiredNotice } from "@/features/organizations/components/OrganizationRequiredNotice";
 import { isOrganizationRequiredError } from "@ai-matrx/auth/organizations";
 import type { components } from "@ai-matrx/api/types";
@@ -88,6 +87,8 @@ import { PageContentHeader } from "./PageContentHeader";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { SOURCES_PATH } from "@/features/knowledge/modulePaths";
 import { SegmentedControl } from "@ai-matrx/design-system/controls";
+import { getLibraryFullPage } from "@ai-matrx/api/knowledge";
+import { serverApi } from "@/lib/api/server-api";
 
 // Full-page payload — DERIVED from the generated contract (never hand-mirrored).
 type ApiFullPage = components["schemas"]["LibraryFullPage"];
@@ -702,13 +703,11 @@ function PageContent({
     setLoading(true);
     setError(null);
     setOrgRequired(false);
-    apiGet(
-      buildPath("/rag/library/{processed_document_id}/page/{page_index}", {
+    getLibraryFullPage(serverApi, { path: {
         processed_document_id: documentId,
         page_index: pageIndex,
-      }),
-    )
-      .then(({ data }) => {
+      } })
+      .then((data) => {
         if (!cancelled && data) setPage(data);
       })
       .catch((err) => {

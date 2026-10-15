@@ -33,7 +33,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 import { supabase } from "@/utils/supabase/client";
-import { apiDelete, apiGet, apiPost, buildPath } from "@/lib/api/typed-client";
 import type { Database } from "@/types/database.types";
 
 import {
@@ -43,6 +42,8 @@ import {
   type EgressPairingByCode,
   type EgressStatus,
 } from "./types";
+import { approvePairing as approvePairingOp, denyPairing as denyPairingOp, describePairing, egressStatus, removeDevice } from "@ai-matrx/api/web";
+import { serverApi } from "@/lib/api/server-api";
 
 /**
  * A supabase client scoped to the `platform` schema — same pattern as
@@ -122,7 +123,7 @@ export async function renameHomeConnection(
  * with a live token, which is why this is a server call.
  */
 export async function removeHomeConnection(deviceId: string): Promise<void> {
-  await apiDelete(buildPath("/egress/devices/{device_id}", { device_id: deviceId }));
+  await removeDevice(serverApi, { path: { device_id: deviceId } });
 }
 
 /**
@@ -137,9 +138,7 @@ export async function removeHomeConnection(deviceId: string): Promise<void> {
 export async function fetchPairingByCode(
   userCode: string,
 ): Promise<EgressPairingByCode> {
-  const { data } = await apiGet(
-    buildPath("/egress/pairings/by-code/{user_code}", { user_code: userCode }),
-  );
+  const data = await describePairing(serverApi, { path: { user_code: userCode } });
   return data as unknown as EgressPairingByCode;
 }
 
@@ -151,23 +150,17 @@ export async function fetchPairingByCode(
 export async function approvePairing(
   userCode: string,
 ): Promise<EgressPairingApproveResult> {
-  const { data } = await apiPost(
-    buildPath("/egress/pairings/by-code/{user_code}/approve", {
+  const data = await approvePairingOp(serverApi, { path: {
       user_code: userCode,
-    }),
-    undefined,
-  );
+    } });
   return data as unknown as EgressPairingApproveResult;
 }
 
 /** Deny: the code is spent and the helper is told no. */
 export async function denyPairing(userCode: string): Promise<void> {
-  await apiPost(
-    buildPath("/egress/pairings/by-code/{user_code}/deny", {
+  await denyPairingOp(serverApi, { path: {
       user_code: userCode,
-    }),
-    undefined,
-  );
+    } });
 }
 
 /**
@@ -178,6 +171,6 @@ export async function denyPairing(userCode: string): Promise<void> {
  * {@link fetchPairingByCode}.
  */
 export async function fetchEgressStatus(): Promise<EgressStatus> {
-  const { data } = await apiGet("/egress/status");
+  const data = await egressStatus(serverApi, {});
   return data as unknown as EgressStatus;
 }

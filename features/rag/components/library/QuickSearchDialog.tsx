@@ -18,11 +18,12 @@ import { Input } from "@ai-matrx/design-system/controls";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Loader2, Search as SearchIcon, ExternalLink } from "lucide-react";
-import { apiPost, buildPath } from "@/lib/api/typed-client";
 import type { components } from "@ai-matrx/api/types";
 import { RAG_VOCAB } from "@/features/rag/constants/vocabulary";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
+import { testSearchLibraryDocument } from "@ai-matrx/api/knowledge";
+import { serverApi } from "@/lib/api/server-api";
 
 // Search hit — DERIVED from the generated contract (never hand-mirrored).
 type ApiHit = components["schemas"]["LibraryTestSearchHit"];
@@ -67,15 +68,12 @@ export function QuickSearchDialog({
     setError(null);
     setHits(null);
     try {
-      const { data } = await apiPost(
-        buildPath("/rag/library/{processed_document_id}/test-search", {
+      const data = await testSearchLibraryDocument(serverApi, { path: {
           processed_document_id: processedDocumentId,
-        }),
-        {
+        }, body: {
           query: query.trim(),
           limit: 15,
-        },
-      );
+        } });
       setHits(Array.isArray(data?.hits) ? data.hits : []);
       setTotal(
         typeof data?.total_chunks_in_doc === "number"

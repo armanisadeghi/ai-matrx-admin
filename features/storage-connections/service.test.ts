@@ -11,11 +11,11 @@ import type { StorageConnectionRow } from "@/features/storage-connections/types"
 const mockApiPost = jest.fn();
 const mockCreateClient = jest.fn();
 
-jest.mock("@/lib/api/typed-client", () => ({
-  apiPost: (...args: unknown[]) => mockApiPost(...args),
-  buildPath: (path: string, params: Record<string, string>) =>
-    path.replace("{provider}", params.provider),
-}));
+jest.mock("@/lib/api/server-api", () =>
+  require("@/lib/api/test-support/serverApiEnvelopeMock").serverApiEnvelopeMock({
+      apiPost: (...args: unknown[]) => mockApiPost(...args),
+  }),
+);
 jest.mock("@/utils/supabase/client", () => ({
   createClient: () => mockCreateClient(),
 }));

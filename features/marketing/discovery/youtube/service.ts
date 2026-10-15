@@ -1,4 +1,3 @@
-import { apiGet, apiPost, buildPath } from "@/lib/api/typed-client";
 import { callApi } from "@/lib/api/call-api";
 import type { TypedStreamEvent } from "@/lib/api/types";
 import type { AppDispatch } from "@/lib/redux/store";
@@ -13,6 +12,8 @@ import type {
   YouTubeVideoLibraryRecord,
 } from "./types";
 import { parseYouTubeSearchPage, parseYouTubeSearchRequest } from "./types";
+import { addTopicYoutubeVideos, enrichYoutubeVideoComments, getYoutubeLibraryVideo, getYoutubeVideo, listTopicYoutubeVideos, processTopicYoutubeVideos, processYoutubeVideo, searchTopicYoutube, searchYoutube } from "@ai-matrx/api/knowledge";
+import { serverApi } from "@/lib/api/server-api";
 
 export interface YouTubeSearchHistoryEntry {
   id: string;
@@ -103,25 +104,21 @@ export async function getYouTubeSearchHistory(
 export async function searchYouTube(
   request: YouTubeSearchRequest,
 ): Promise<YouTubeSearchPage> {
-  const { data } = await apiPost("/research/youtube/search", request);
+  const data = await searchYoutube(serverApi, { body: request });
   return data;
 }
 
 export async function getYouTubeVideo(
   videoId: string,
 ): Promise<YouTubeVideoCandidate> {
-  const { data } = await apiGet(
-    buildPath("/research/youtube/videos/{video_id}", { video_id: videoId }),
-  );
+  const data = await getYoutubeVideo(serverApi, { path: { video_id: videoId } });
   return data;
 }
 
 export async function getYouTubeLibraryVideo(
   videoId: string,
 ): Promise<YouTubeVideoLibraryRecord> {
-  const { data } = await apiGet(
-    buildPath("/research/youtube/library/{video_id}", { video_id: videoId }),
-  );
+  const data = await getYoutubeLibraryVideo(serverApi, { path: { video_id: videoId } });
   return data;
 }
 
@@ -129,12 +126,9 @@ export async function processYouTubeVideo(
   videoId: string,
   force = false,
 ): Promise<ProcessYouTubeVideosResponse> {
-  const { data } = await apiPost(
-    buildPath("/research/youtube/videos/{video_id}/process", {
+  const data = await processYoutubeVideo(serverApi, { path: {
       video_id: videoId,
-    }),
-    { force },
-  );
+    }, body: { force } });
   return data;
 }
 
@@ -189,12 +183,9 @@ export async function streamYouTubeVideoAnalysis(
 export async function enrichYouTubeComments(
   videoId: string,
 ): Promise<YouTubeVideoLibraryRecord> {
-  const { data } = await apiPost(
-    buildPath("/research/youtube/videos/{video_id}/comments", {
+  const data = await enrichYoutubeVideoComments(serverApi, { path: {
       video_id: videoId,
-    }),
-    { force: true },
-  );
+    }, body: { force: true } });
   return data;
 }
 
@@ -202,21 +193,16 @@ export async function searchTopicYouTube(
   topicId: string,
   request: YouTubeSearchRequest,
 ): Promise<YouTubeSearchPage> {
-  const { data } = await apiPost(
-    buildPath("/research/topics/{topic_id}/youtube/search", {
+  const data = await searchTopicYoutube(serverApi, { path: {
       topic_id: topicId,
-    }),
-    request,
-  );
+    }, body: request });
   return data;
 }
 
 export async function getTopicYouTubeVideos(
   topicId: string,
 ): Promise<YouTubeVideoLibraryRecord[]> {
-  const { data } = await apiGet(
-    buildPath("/research/topics/{topic_id}/youtube", { topic_id: topicId }),
-  );
+  const data = await listTopicYoutubeVideos(serverApi, { path: { topic_id: topicId } });
   return data;
 }
 
@@ -225,12 +211,9 @@ export async function addTopicYouTubeVideos(
   videoIds: string[],
   keywordId?: string,
 ): Promise<YouTubeVideoLibraryRecord[]> {
-  const { data } = await apiPost(
-    buildPath("/research/topics/{topic_id}/youtube/add", {
+  const data = await addTopicYoutubeVideos(serverApi, { path: {
       topic_id: topicId,
-    }),
-    { video_ids: videoIds, keyword_id: keywordId },
-  );
+    }, body: { video_ids: videoIds, keyword_id: keywordId } });
   return data;
 }
 
@@ -239,11 +222,8 @@ export async function processTopicYouTubeVideos(
   videoIds: string[],
   force = false,
 ): Promise<ProcessYouTubeVideosResponse> {
-  const { data } = await apiPost(
-    buildPath("/research/topics/{topic_id}/youtube/process", {
+  const data = await processTopicYoutubeVideos(serverApi, { path: {
       topic_id: topicId,
-    }),
-    { video_ids: videoIds, force },
-  );
+    }, body: { video_ids: videoIds, force } });
   return data;
 }

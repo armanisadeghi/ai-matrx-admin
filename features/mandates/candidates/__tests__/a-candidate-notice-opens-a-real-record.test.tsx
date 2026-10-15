@@ -82,12 +82,11 @@ function click(el: HTMLElement) {
 }
 
 const apiGet = jest.fn();
-jest.mock("@/lib/api/typed-client", () => ({
-  apiGet: (...args: unknown[]) => apiGet(...args),
-  apiPost: jest.fn(),
-  buildPath: (template: string, params: Record<string, string>) =>
-    template.replace(/\{([^}]+)\}/g, (_: string, k: string) => params[k]),
-}));
+jest.mock("@/lib/api/server-api", () =>
+  require("@/lib/api/test-support/serverApiEnvelopeMock").serverApiEnvelopeMock({
+      apiGet: (...args: unknown[]) => apiGet(...args),
+  }),
+);
 jest.mock("@/features/organizations/awaitWorkspace", () => ({
   awaitOrganizationForRecordRead: async () => ({ status: "ready" }),
 }));

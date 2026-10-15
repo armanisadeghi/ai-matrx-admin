@@ -1,7 +1,9 @@
-import { apiPost } from "@/lib/api/typed-client";
+import { apiPost } from "@/lib/api/test-support/serverApiEnvelopeMock";
 import { mintCredential } from "@/lib/api/broker/client";
 
-jest.mock("@/lib/api/typed-client", () => ({ apiPost: jest.fn() }));
+jest.mock("@/lib/api/server-api", () =>
+  require("@/lib/api/test-support/serverApiEnvelopeMock").serverApiEnvelopeMock(),
+);
 
 const apiPostMock = apiPost as unknown as jest.Mock;
 

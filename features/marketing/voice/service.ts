@@ -10,8 +10,9 @@
 //   fixVoice           → aidream POST /brand-voice/fix (the enforce loop on one draft)
 
 import type { components } from "@ai-matrx/api/types";
-import { apiPost, buildPath } from "@/lib/api/typed-client";
 import { supabase } from "@/utils/supabase/client";
+import { confirmVoiceDoor, extractVoiceDoor, fixVoiceDoor } from "@ai-matrx/api/marketing";
+import { serverApi } from "@/lib/api/server-api";
 
 export type VoiceMeasureResult = components["schemas"]["VoiceMeasureResult"];
 export type VoiceConfirmation = components["schemas"]["VoiceConfirmation"];
@@ -215,11 +216,7 @@ export async function measureVoice(
   ownerId: string,
   samples: VoiceSampleRef[],
 ): Promise<VoiceMeasureResult> {
-  const { data } = await apiPost(
-    "/brand-voice/extract",
-    { profile_scope: scope, owner_id: ownerId, samples },
-    { organizationId },
-  );
+  const data = await extractVoiceDoor(serverApi, { body: { profile_scope: scope, owner_id: ownerId, samples } }, { organizationId: organizationId });
   return data;
 }
 
@@ -228,11 +225,7 @@ export async function confirmVoice(
   fingerprintId: string,
   edits: VoiceConfirmation,
 ): Promise<ConfirmedVoice> {
-  const { data } = await apiPost(
-    buildPath("/brand-voice/{fingerprint_id}/confirm", { fingerprint_id: fingerprintId }),
-    edits,
-    { organizationId },
-  );
+  const data = await confirmVoiceDoor(serverApi, { path: { fingerprint_id: fingerprintId }, body: edits }, { organizationId: organizationId });
   return data;
 }
 
@@ -242,11 +235,7 @@ export async function fixVoice(
   draft: string,
   surface: VoiceSurface,
 ): Promise<VoiceTextOutcome> {
-  const { data } = await apiPost(
-    "/brand-voice/fix",
-    { fingerprint_id: fingerprintId, draft, surface },
-    { organizationId },
-  );
+  const data = await fixVoiceDoor(serverApi, { body: { fingerprint_id: fingerprintId, draft, surface } }, { organizationId: organizationId });
   return data;
 }
 
