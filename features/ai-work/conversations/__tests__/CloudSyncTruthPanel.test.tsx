@@ -43,8 +43,18 @@ jest.mock("@/lib/api/typed-client", () => ({ apiPost: jest.fn() }));
 jest.mock("@/features/ai-work/lib/matrxLocalRuntime", () => ({
   MATRX_LOCAL_UNREACHABLE_SENTENCE:
     "Matrx Local did not answer. Make sure the desktop app is running and signed in on your Mac.",
-  readLocalRuntimeCapability: jest.fn(),
-  reconcileCodingSession: jest.fn(),
+}));
+
+/**
+ * The browser's wiring for the coding doors, mocked; the door module itself
+ * (`matrx2Coding.ts`) is the SHIPPED one. By default the person has no Matrx 2
+ * computer, so the door falls back to Matrx Local, announced.
+ */
+jest.mock("@/features/ai-work/lib/matrx2Computers", () => ({
+  browserCodingDoors: {
+    reach: { listComputers: jest.fn(async () => []), withClient: jest.fn(), findConversation: jest.fn() },
+    local: { capability: jest.fn(), start: jest.fn(), resumable: jest.fn(), reconcile: jest.fn() },
+  },
 }));
 
 jest.mock("@/components/dialogs/confirm/ConfirmDialogHost", () => ({
@@ -54,16 +64,16 @@ jest.mock("@/components/dialogs/confirm/ConfirmDialogHost", () => ({
 const mockedApiPost = (
   jest.requireMock("@/lib/api/typed-client") as { apiPost: jest.Mock }
 ).apiPost;
-const mockedCapability = (
-  jest.requireMock("@/features/ai-work/lib/matrxLocalRuntime") as {
-    readLocalRuntimeCapability: jest.Mock;
+const mockedDoors = (
+  jest.requireMock("@/features/ai-work/lib/matrx2Computers") as {
+    browserCodingDoors: {
+      reach: { listComputers: jest.Mock; withClient: jest.Mock };
+      local: { capability: jest.Mock; reconcile: jest.Mock };
+    };
   }
-).readLocalRuntimeCapability;
-const mockedReconcile = (
-  jest.requireMock("@/features/ai-work/lib/matrxLocalRuntime") as {
-    reconcileCodingSession: jest.Mock;
-  }
-).reconcileCodingSession;
+).browserCodingDoors;
+const mockedCapability = mockedDoors.local.capability;
+const mockedReconcile = mockedDoors.local.reconcile;
 const mockedConfirm = (
   jest.requireMock("@/components/dialogs/confirm/ConfirmDialogHost") as {
     confirm: jest.Mock;
@@ -371,7 +381,7 @@ describe("the reconcile door", () => {
     await act(async () => {
       reconcileButton().click();
     });
-    expect(text()).toContain("Matrx Local is reconciling this conversation");
+    expect(text()).toContain("Your computer is delivering what AI Matrx lacks");
     expect(reconcileButton().disabled).toBe(true);
 
     await act(async () => {
@@ -431,7 +441,7 @@ describe("the reconcile door", () => {
       reconcileButton().click();
     });
     expect(text()).toContain(
-      "Matrx Local did not answer. Make sure the desktop app is running and signed in on your Mac.",
+      "No computer runs Matrx 2 on this account. Matrx Local did not answer.",
     );
   });
 
@@ -448,5 +458,52 @@ describe("the reconcile door", () => {
       reconcileButton().click();
     });
     expect(text()).toContain("The transcript file is no longer on this Mac.");
+  });
+});
+
+describe("the reconcile door on a Matrx 2 computer", () => {
+  function onStudioMac(answer: { state: string; summary: string }) {
+    mockedDoors.reach.listComputers.mockResolvedValueOnce([
+      { deviceId: "d1", name: "Studio Mac", online: true, protocolVersion: "1.40" },
+    ]);
+    const request = jest.fn(async () => answer);
+    mockedDoors.reach.withClient.mockImplementationOnce(async (_computer: unknown, work: (client: unknown) => unknown) => work({ request }));
+    return request;
+  }
+
+  // RED WHEN: the confirm promises "this conversation" while Matrx 2 delivers
+  // every chat on that computer.
+  it("names the true scope in the confirm: every chat on that computer", async () => {
+    serverAnswers(diagnosis({ cloud_sentence: "Hook capture is a summary." }));
+    onStudioMac({ state: "done", summary: "Imported 2 sessions." });
+    await render();
+    await act(async () => {
+      reconcileButton().click();
+    });
+    const options = mockedConfirm.mock.calls.at(-1)?.[0] as { title: string; description: string };
+    expect(options.title).toBe("Deliver Studio Mac's chats to AI Matrx?");
+    expect(options.description).toBe(
+      "Studio Mac delivers every chat on it that AI Matrx lacks or is behind on, this one included. Running it again changes nothing.",
+    );
+  });
+
+  // RED WHEN: Matrx 2's answer is reworded, faked into the four counts, or the
+  // door goes to Matrx Local while a Matrx 2 computer answered.
+  it("shows the computer's summary verbatim and never asks Matrx Local", async () => {
+    serverAnswers(diagnosis({ cloud_sentence: "Hook capture is a summary." }));
+    const request = onStudioMac({ state: "nothing_to_do", summary: "Nothing missing: 3 sessions already in AI Matrx." });
+    await render();
+    await act(async () => {
+      reconcileButton().click();
+    });
+    expect(request).toHaveBeenCalledWith(
+      "coding.reconcile",
+      { provider: "claude", provider_session_id: "session-1" },
+      { timeoutMs: 180_000 },
+    );
+    expect(text()).toContain("From Studio Mac (Matrx 2).");
+    expect(text()).toContain("Nothing missing: 3 sessions already in AI Matrx.");
+    expect(mockedReconcile).not.toHaveBeenCalled();
+    expect(mockedCapability).not.toHaveBeenCalled();
   });
 });

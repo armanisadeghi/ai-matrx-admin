@@ -100,7 +100,7 @@ describe("destinationAvailability", () => {
   it("says it is still asking while the local engine has not answered", () => {
     expect(destinationAvailability("claude-code", READY_UNAVAILABLE)).toEqual({
       selectable: false,
-      reason: "Checking your Matrx Local app…",
+      reason: "Checking your computer…",
     });
   });
 
@@ -138,5 +138,18 @@ describe("destinationAvailability", () => {
         }),
       ),
     ).toEqual({ selectable: true, reason: null });
+  });
+
+  it("names the Matrx 2 computer, not Matrx Local, when it has no recent folder", () => {
+    const availability = destinationAvailability("claude-code", READY_UNAVAILABLE, {
+      ...localCapability({}),
+      via: "matrx2",
+      computer: { deviceId: "d1", name: "Studio Mac" },
+      notice: "Runs on Studio Mac (Matrx 2).",
+    });
+    expect(availability).toEqual({
+      selectable: false,
+      reason: "No recent folders on Studio Mac yet. Open a folder in Claude Code there first.",
+    });
   });
 });

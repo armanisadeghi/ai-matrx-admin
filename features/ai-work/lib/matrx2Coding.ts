@@ -462,7 +462,7 @@ export async function reconcileCodingSession(
   const reasons = "reasons" in answer ? answer.reasons : [];
   try {
     const capability = await doors.local.capability();
-    if (capability.state === "unreachable") return { via: "none", sentence: [...reasons, ...capability.reasons].join(" ") };
+    if (capability.state === "unreachable") return { via: "none", sentence: [...reasons, ...(capability.reasons.length ? capability.reasons : ["Matrx Local did not answer."])].join(" ") };
     return { via: "matrx-local", result: await doors.local.reconcile(input.providerSessionId), notice: `${fallbackNotice(reasons)} Through Matrx Local.` };
   } catch (error) {
     return { via: "none", sentence: [...reasons, error instanceof Error ? error.message : String(error)].join(" ") };

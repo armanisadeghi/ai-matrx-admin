@@ -49,10 +49,14 @@ import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import { formatSessionTimestamp } from "@/features/agent-connections/coding-sessions/verdict";
 import {
   MATRX_LOCAL_UNREACHABLE_SENTENCE,
-  readLocalRuntimeCapability,
-  reconcileCodingSession,
   type LocalReconcileAction,
 } from "@/features/ai-work/lib/matrxLocalRuntime";
+import {
+  pickComputer,
+  reconcileCodingSession,
+  reconcileScopeSentence,
+} from "@/features/ai-work/lib/matrx2Coding";
+import { browserCodingDoors } from "@/features/ai-work/lib/matrx2Computers";
 import {
   readCloudSyncTruth,
   type CloudSyncTruth,
@@ -147,6 +151,8 @@ type ReconcileState =
       sentence: string;
       remedy: string | null;
       actions: LocalReconcileAction[];
+      /** Which computer answered, or the announced Matrx Local fallback. */
+      source: string | null;
     }
   | { phase: "failed"; sentence: string };
 
@@ -178,39 +184,56 @@ export function CloudSyncTruthPanel({
   const diagnosis = truth?.diagnosis ?? null;
 
   const askToReconcile = async () => {
+    // Which computer answers is known BEFORE the confirm, so the confirm can
+    // name the true scope: Matrx 2 delivers every chat on that computer that
+    // AI Matrx lacks, not only this one (matrx2Coding).
+    setReconcile({ phase: "reaching" });
+    const chosen = await pickComputer(browserCodingDoors);
+    setReconcile({ phase: "idle" });
     // A destructive/expensive click names its consequence first: a first
-    // reconcile can import thousands of entries and add messages to this
-    // conversation, and it spends server projection work.
+    // reconcile can import thousands of entries and add messages, and it
+    // spends server projection work.
     const ok = await confirm({
-      title: "Ask Matrx Local to reconcile this conversation?",
-      description:
-        "Your Mac will deliver every entry of this session's transcript that never reached AI Matrx, ask the server to re-project the entries that failed, and pull the cloud copy back down. A first reconcile on a long session can add thousands of entries and many messages to this conversation, and it spends server projection work. Entries held back because AI Matrx already has this session under a different Claude account are never re-sent. Running it again on an already-reconciled session changes nothing.",
+      title: chosen.computer
+        ? `Deliver ${chosen.computer.name}'s chats to AI Matrx?`
+        : "Ask Matrx Local to reconcile this conversation?",
+      description: chosen.computer
+        ? reconcileScopeSentence(chosen)
+        : `${reconcileScopeSentence(chosen)} A first reconcile on a long session can add thousands of entries and many messages to this conversation, and it spends server projection work. Entries held back because AI Matrx already has this session under a different Claude account are never re-sent. Running it again on an already-reconciled session changes nothing.`,
       confirmLabel: "Reconcile",
     });
     if (!ok) return;
 
-    // Reachability FIRST, at the bridge's own 8s timeout: that timeout is the
-    // only offline signal there is, and asking for reconcile directly would
-    // make an offline Mac look like a three-minute hang.
-    setReconcile({ phase: "reaching" });
-    const capability = await readLocalRuntimeCapability();
-    if (capability.state === "unreachable") {
-      setReconcile({
-        phase: "unreachable",
-        sentence: capability.reasons[0] ?? MATRX_LOCAL_UNREACHABLE_SENTENCE,
-      });
-      return;
-    }
-
     setReconcile({ phase: "running" });
     try {
-      const result = await reconcileCodingSession(providerSessionId);
-      setReconcile({
-        phase: "done",
-        sentence: result.truth.verdict.sentence,
-        remedy: result.truth.verdict.remedy,
-        actions: result.actions ?? [],
+      const outcome = await reconcileCodingSession(browserCodingDoors, chosen, {
+        providerSessionId,
+        provider,
       });
+      if (outcome.via === "none") {
+        setReconcile({
+          phase: "unreachable",
+          sentence: outcome.sentence || MATRX_LOCAL_UNREACHABLE_SENTENCE,
+        });
+        return;
+      }
+      setReconcile(
+        outcome.via === "matrx2"
+          ? {
+              phase: "done",
+              sentence: outcome.summary,
+              remedy: null,
+              actions: [],
+              source: `From ${outcome.computer.name} (Matrx 2).`,
+            }
+          : {
+              phase: "done",
+              sentence: outcome.result.truth.verdict.sentence,
+              remedy: outcome.result.truth.verdict.remedy,
+              actions: outcome.result.actions ?? [],
+              source: outcome.notice,
+            },
+      );
       // The cloud half moved, so re-read it rather than leaving the old numbers
       // on screen next to a fresh verdict.
       setReloadToken((token) => token + 1);
@@ -356,7 +379,7 @@ export function CloudSyncTruthPanel({
         <div className="flex flex-wrap items-center gap-2">
           <Laptop className="h-4 w-4 shrink-0 text-muted-foreground" />
           <span className="text-sm font-medium text-foreground">
-            Ask Matrx Local to reconcile
+            Ask your computer to reconcile
           </span>
           <Button
             icon={busy ? (
@@ -370,27 +393,27 @@ export function CloudSyncTruthPanel({
             className="ml-auto shrink-0"
           >
             {reconcile.phase === "reaching"
-              ? "Reaching your Mac…"
+              ? "Reaching your computer…"
               : reconcile.phase === "running"
                 ? "Reconciling…"
                 : "Reconcile"}
           </Button>
         </div>
         <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-          Your Mac reads the two layers this page cannot: Claude&apos;s own
-          transcript and your local copy. It delivers what never arrived, asks
-          the server to re-project what failed, and answers with the full truth.
+          Your computer reads what this page cannot: Claude&apos;s own
+          transcript. It delivers what never reached AI Matrx and answers in
+          its own words.
         </p>
 
         {reconcile.phase === "reaching" ? (
           <p className="mt-2 text-xs text-muted-foreground">
-            Asking whether that Mac is reachable…
+            Asking which of your computers can answer…
           </p>
         ) : null}
         {reconcile.phase === "running" ? (
           <p className="mt-2 text-xs text-muted-foreground">
-            Matrx Local is reconciling this conversation. A long transcript
-            takes a while — this page will show its answer when it is done.
+            Your computer is delivering what AI Matrx lacks. A long transcript
+            takes a while; its answer shows here when it is done.
           </p>
         ) : null}
         {reconcile.phase === "unreachable" || reconcile.phase === "failed" ? (
@@ -401,6 +424,9 @@ export function CloudSyncTruthPanel({
         ) : null}
         {reconcile.phase === "done" ? (
           <div className="mt-2 border-l-2 border-border bg-muted/40 px-3 py-2">
+            {reconcile.source ? (
+              <p className="text-xs text-muted-foreground">{reconcile.source}</p>
+            ) : null}
             <p className="text-sm leading-relaxed text-foreground">
               {reconcile.sentence}
             </p>

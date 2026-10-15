@@ -26,6 +26,7 @@
 
 import type { CodingBridgeCapability } from "@/features/ai-work/lib/codingBridgeCapability";
 import type { LocalRuntimeCapability } from "@/features/ai-work/lib/matrxLocalRuntime";
+import type { DoorCapability } from "@/features/ai-work/lib/matrx2Coding";
 
 export type WorkDestinationId =
   | "ai-matrx"
@@ -106,7 +107,7 @@ const HOSTED_REFUSED_WITHOUT_REASON =
 export function destinationAvailability(
   id: WorkDestinationId,
   bridgeCapability: CodingBridgeCapability,
-  localCapability?: LocalRuntimeCapability,
+  localCapability?: LocalRuntimeCapability | DoorCapability,
 ): DestinationAvailability {
   if (id === "ai-matrx") return { selectable: true, reason: null };
 
@@ -142,7 +143,7 @@ export function destinationAvailability(
   if (id === "claude-code") {
     const local = localCapability ?? null;
     if (!local || local.state === "loading") {
-      return { selectable: false, reason: "Checking your Matrx Local app…" };
+      return { selectable: false, reason: "Checking your computer…" };
     }
     if (local.state === "unreachable") {
       return {
@@ -156,6 +157,13 @@ export function destinationAvailability(
       return {
         selectable: false,
         reason: local.reasons.join(" · ") || "The local runtime is not ready.",
+      };
+    }
+    const onMatrx2 = "via" in local && local.via === "matrx2" ? (local as DoorCapability) : null;
+    if (local.approvedFolders.length === 0 && onMatrx2) {
+      return {
+        selectable: false,
+        reason: `No recent folders on ${onMatrx2.computer?.name ?? "that computer"} yet. Open a folder in Claude Code there first.`,
       };
     }
     if (local.approvedFolders.length === 0) {

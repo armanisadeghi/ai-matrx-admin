@@ -2,8 +2,11 @@
 
 // Continue on my Mac — the capability-gated NATIVE continuation door.
 //
-// Shown only for Claude Code bindings. The verdict comes from the user's OWN
-// Matrx Local app over the per-user bridge channel: native resume is offered
+// Shown only for Claude Code bindings. The person's Matrx 2 computer is asked
+// first (matrx2Coding: its own sessions, then its newest chats); a chat it
+// cannot continue says why in one sentence, and is never passed over to Matrx
+// Local. Only when no Matrx 2 computer answers is Matrx Local asked, announced.
+// From Matrx Local, over the per-user bridge channel: native resume is offered
 // when, and only when, Claude's own transcript for this session exists on that
 // machine and its workspace folder is still present. Every other state is
 // stated truthfully (app unreachable, transcript not on this machine,
@@ -16,16 +19,16 @@ import { AlertTriangle, Laptop, Loader2, Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/lib/toast";
+import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import {
-  checkLocalResumable,
-  startLocalRuntimeSession,
-  type LocalResumableVerdict,
-} from "@/features/ai-work/lib/matrxLocalRuntime";
+  continueCodingRun,
+  fileMatrx2Run,
+  readContinueVerdict,
+  type ContinueVerdict,
+} from "@/features/ai-work/lib/matrx2Coding";
+import { browserCodingDoors } from "@/features/ai-work/lib/matrx2Computers";
 
-type VerdictState =
-  | { state: "loading" }
-  | { state: "unreachable"; reason: string }
-  | { state: "ready"; verdict: LocalResumableVerdict };
+type VerdictState = { state: "loading" } | { state: "known"; door: ContinueVerdict };
 
 function reasonText(reason: string | undefined): string {
   switch (reason) {
@@ -59,49 +62,63 @@ export function ContinueOnMyMacPanel({
 
   useEffect(() => {
     let cancelled = false;
-    checkLocalResumable(providerSessionId)
-      .then((next) => {
-        if (!cancelled) setVerdict({ state: "ready", verdict: next });
-      })
-      .catch((error: unknown) => {
-        if (!cancelled) {
-          setVerdict({
-            state: "unreachable",
-            reason:
-              error instanceof Error
-                ? error.message
-                : "Matrx Local is not reachable.",
-          });
-        }
-      });
+    void readContinueVerdict(browserCodingDoors, providerSessionId).then((door) => {
+      if (!cancelled) setVerdict({ state: "known", door });
+    });
     return () => {
       cancelled = true;
     };
   }, [providerSessionId]);
 
+  const [runningNote, setRunningNote] = useState<string | null>(null);
+  const door = verdict.state === "known" ? verdict.door : null;
+  const canContinue =
+    (door?.via === "matrx2" && door.target.state === "ready") ||
+    (door?.via === "matrx-local" && door.verdict.resumable);
+
   const start = async () => {
-    if (verdict.state !== "ready" || !verdict.verdict.resumable) return;
+    if (!door || !canContinue) return;
     if (!prompt.trim()) {
       toast.error("Write what Claude Code should do next.");
       return;
     }
+    let confirmElsewhere = false;
+    if (door.via === "matrx2" && door.target.state === "ready" && door.target.elsewhere) {
+      confirmElsewhere = await confirm({
+        title: "This chat is open somewhere else",
+        description: `${door.target.elsewhere.message} Continuing puts a second Claude Code on it.`,
+        confirmLabel: "Continue anyway",
+      });
+      if (!confirmElsewhere) return;
+    }
     setStarting(true);
     try {
-      const run = await startLocalRuntimeSession({
-        workspace: verdict.verdict.workspace!,
+      const outcome = await continueCodingRun(browserCodingDoors, door, {
+        providerSessionId,
         prompt: prompt.trim(),
-        resume_session_id: verdict.verdict.session_id ?? providerSessionId,
+        confirmElsewhere,
       });
-      setStartedConversationId(run.conversation_id);
+      if (outcome.via === "matrx2") {
+        setRunningNote(outcome.sentence);
+        toast.success(outcome.sentence);
+        void fileMatrx2Run(browserCodingDoors, outcome.computer, outcome.sessionId).then((filed) => {
+          if ("conversationId" in filed) {
+            setRunningNote(null);
+            setStartedConversationId(filed.conversationId);
+          } else setRunningNote(filed.pending);
+        });
+        return;
+      }
+      setStartedConversationId(outcome.run.conversation_id);
       toast.success(
-        "Claude Code is continuing this session on your Mac, with its full history.",
+        "Claude Code is continuing this session through Matrx Local, with its full history.",
       );
     } catch (error) {
-      console.error("[ai-work] local continue failed", error);
+      console.error("[ai-work] continue failed", error);
       toast.error(
         error instanceof Error
-          ? `The session could not continue on your Mac — ${error.message}`
-          : "The session could not continue on your Mac.",
+          ? `The session could not continue — ${error.message}`
+          : "The session could not continue.",
       );
     } finally {
       setStarting(false);
@@ -120,35 +137,45 @@ export function ContinueOnMyMacPanel({
       {verdict.state === "loading" && (
         <div className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
           <Loader2 className="h-3.5 w-3.5 animate-spin" />
-          Asking your Matrx Local app whether this session can natively
-          resume…
+          Asking your computer whether this chat can continue…
         </div>
       )}
 
-      {verdict.state === "unreachable" && (
+      {door && door.via !== "none" && door.notice && (
+        <p className="mt-2 text-xs text-muted-foreground">{door.notice}</p>
+      )}
+
+      {door?.via === "none" && (
         <div className="mt-2 flex items-start gap-2 text-xs text-muted-foreground">
           <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-600" />
-          {verdict.reason}
+          {door.sentence}
         </div>
       )}
 
-      {verdict.state === "ready" && !verdict.verdict.resumable && (
+      {door?.via === "matrx2" && door.target.state === "blocked" && (
         <div className="mt-2 flex items-start gap-2 text-xs text-muted-foreground">
           <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-600" />
-          {reasonText(verdict.verdict.reason)}
+          {door.target.sentence}
         </div>
       )}
 
-      {verdict.state === "ready" && verdict.verdict.resumable && (
+      {door?.via === "matrx-local" && !door.verdict.resumable && (
+        <div className="mt-2 flex items-start gap-2 text-xs text-muted-foreground">
+          <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-600" />
+          {reasonText(door.verdict.reason)}
+        </div>
+      )}
+
+      {door && canContinue && (
         <div className="mt-2 flex flex-col gap-2">
           <p className="text-xs text-muted-foreground">
-            Claude's own transcript is on your Mac
-            {verdict.verdict.workspace
-              ? ` (${verdict.verdict.workspace})`
-              : ""}
-            , so this is a NATIVE resume — the session continues with its full
-            history, using your own Claude Code login.
+            {door.via === "matrx2" && door.target.state === "ready"
+              ? `On ${door.computer.name}, in ${door.target.cwd}: it continues with its full history.`
+              : `Claude's own transcript is on your Mac${door.via === "matrx-local" && door.verdict.workspace ? ` (${door.verdict.workspace})` : ""}: it continues with its full history.`}
           </p>
+          {door.via === "matrx2" && door.target.state === "ready" && door.target.elsewhere && (
+            <p className="text-xs text-amber-600 dark:text-amber-400">{door.target.elsewhere.message}</p>
+          )}
           <Textarea
             value={prompt}
             onChange={(event) => setPrompt(event.target.value)}
@@ -163,6 +190,9 @@ export function ContinueOnMyMacPanel({
               )} variant="primary" onClick={() => void start()} disabled={starting}>
               Continue on my Mac
             </Button>
+            {runningNote && !startedConversationId && (
+              <span className="text-xs text-muted-foreground">{runningNote}</span>
+            )}
             {startedConversationId &&
               (startedConversationId === conversationId ? (
                 <span className="text-xs text-muted-foreground">
