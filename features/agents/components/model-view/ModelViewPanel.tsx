@@ -237,7 +237,14 @@ export function ModelViewPanel({ agentId, conversationId }: ModelViewPanelProps)
         </p>
       ) : null}
 
-      {error ? <ErrorNotice message={error} size="compact" /> : null}
+      {error ? (
+        <ErrorNotice
+          message={error}
+          operation="Capture the model request (agent builder Model view)"
+          details={{ agentId, conversationId }}
+          size="compact"
+        />
+      ) : null}
 
       {request?.transport === "uncaptured" ? (
         <p role="status" className="rounded-md border border-border bg-card px-3 py-2 text-xs text-muted-foreground">
