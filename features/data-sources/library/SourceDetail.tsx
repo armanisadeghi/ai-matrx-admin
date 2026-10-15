@@ -39,7 +39,7 @@ import { RefusalView } from "../RefusalView";
 import { FetchProgress } from "../FetchProgress";
 import { clearRun, resumeRun, runState, startRun, useRun } from "../runs";
 import { fetchData, getJob } from "../server";
-import type { Library, LibrarySource } from "./catalog";
+import { orderTellingFields, type Library, type LibrarySource } from "./catalog";
 import { GroupMark } from "./groupMark";
 import {
   libraryKey,
@@ -278,6 +278,37 @@ function Section({
   );
 }
 
+/** The columns a fetch brings back: the telling ones first, the long tail folded behind "Show all". */
+function WhatYouGet({ fields }: { fields: string[] }) {
+  const [all, setAll] = useState(false);
+  const PREVIEW = 8;
+  if (fields.length === 0) {
+    return <p className="text-xs text-muted-foreground">Every column the source returns becomes a table column</p>;
+  }
+  const ordered = orderTellingFields(fields);
+  const shown = all ? ordered : ordered.slice(0, PREVIEW);
+  const more = ordered.length - shown.length;
+  return (
+    <div className="flex flex-col gap-2">
+      <ChipSet>
+        {shown.map((f) => (
+          <Chip key={f} label={f} />
+        ))}
+        {!all && more > 0 && (
+          <button type="button" data-clickable="" onClick={() => setAll(true)} className="rounded-full px-1.5 text-xs font-medium text-primary hover:underline">
+            +{more} more
+          </button>
+        )}
+      </ChipSet>
+      {all && ordered.length > PREVIEW && (
+        <Button variant="quiet" className="self-start" onClick={() => setAll(false)}>
+          Show fewer
+        </Button>
+      )}
+    </div>
+  );
+}
+
 function SourceForm({
   source,
   library,
@@ -365,17 +396,7 @@ function SourceForm({
             : undefined
         }
       >
-        {source.outputFields.length ? (
-          <ChipSet>
-            {source.outputFields.map((f) => (
-              <Chip key={f} label={f} />
-            ))}
-          </ChipSet>
-        ) : (
-          <p className="text-xs text-muted-foreground">
-            Every column the source returns becomes a table column
-          </p>
-        )}
+        <WhatYouGet fields={source.outputFields} />
       </Section>
 
       <Section title="What to enter">

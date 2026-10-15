@@ -1,18 +1,22 @@
 "use client";
 
 /**
- * /data/library — every data source the platform can fetch into a table, at its own price.
- * One row on top (search · Featured · All · a chip per group with its count), the featured shelf
- * first, then every group; a huge subgroup (the single-store product collectors) is one collapsed,
- * searchable compact list, never a wall of cards. A source opens in the `dataSourceWindow` panel
- * (`SourceDetail`), which runs the same fetch as the board. `?source=<key>` opens one on arrival.
+ * /data/library — the data library, built for a person with a job to do, not a developer reading a
+ * catalog. It OPENS on everyday tasks in plain words ("See what customers say about a company"),
+ * eight big doors (`./tasks.ts`). Tapping one shows the real sources that answer it, live-verified
+ * first and the rest under "More sources"; a task with a single source opens it straight away.
+ * "Browse all sources" is the secondary door to the full catalog — search, group chips, the shelf,
+ * and the huge single-store collections as one compact searchable list.
  *
- * Members see points only (each source's own price); dollars only through `useCostDisplay`'s rule.
+ * A source opens in the `dataSourceWindow` panel (`SourceDetail`), which runs the same fetch as the
+ * board. `?source=<key>` opens one on arrival (a pasted address fills a field); nothing fetches
+ * until Get data. Members see points only (each source's own price); dollars only through
+ * `useCostDisplay`'s rule.
  */
 
-import { useEffect, useRef, useState } from "react";
+import { createElement, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { ChevronRight, SearchX, ShieldCheck } from "lucide-react";
+import { ArrowLeft, ChevronRight, SearchX, ShieldCheck } from "lucide-react";
 import { Badge, Button, Chip, ChipSet, DisclosureHeader, EmptyState, RegionSkeleton, SearchField, Tile } from "@ai-matrx/design-system/controls";
 import { ReadFailure } from "@ai-matrx/design-system";
 import { formatCount } from "@ai-matrx/kit/format";
@@ -34,9 +38,10 @@ import {
   type LibrarySource,
 } from "./catalog";
 import { GroupMark } from "./groupMark";
+import { LIBRARY_TASKS, resolveTask, resolveTasks, type ResolvedTask } from "./tasks";
 import { useLibrary, useLibraryOrganizationId, usePriceText } from "./hooks";
 
-type View = { kind: "featured" } | { kind: "all" } | { kind: "group"; group: string };
+type View = { kind: "home" } | { kind: "browse" } | { kind: "task"; id: string };
 
 export function DataLibraryPage() {
   const organizationId = useLibraryOrganizationId();
@@ -48,7 +53,7 @@ export function DataLibraryPage() {
         <div className="h-full overflow-y-auto" data-matrx-page-scroll="" data-data-library="">
           {!organizationId || library.isLoading ? (
             <div className="mx-auto max-w-6xl p-4">
-              <RegionSkeleton shape="cards" count={8} aria-label="Loading data sources" />
+              <RegionSkeleton shape="cards" count={8} aria-label="Loading tasks" />
             </div>
           ) : library.error || !library.data ? (
             <div className="mx-auto max-w-6xl p-4">
@@ -64,11 +69,8 @@ export function DataLibraryPage() {
 }
 
 function LibraryBody({ library }: { library: Library }) {
-  const [query, setQuery] = useState("");
-  const [view, setView] = useState<View>({ kind: "featured" });
+  const [view, setView] = useState<View>({ kind: "home" });
   const openSource = useOpenDataSourceWindow();
-  const price = usePriceText();
-  const { rate } = useCostDisplay();
 
   // `?source=<key>` (a link from anywhere): open that source once.
   const params = useSearchParams();
@@ -84,6 +86,192 @@ function LibraryBody({ library }: { library: Library }) {
     }
   }, [linked, linkedField, linkedValue, library.sources, openSource]);
 
+  const openTask = (resolved: ResolvedTask) => {
+    // One source answers the job: skip the picker and go straight into it.
+    if (resolved.all.length === 1) openSource(resolved.all[0].key);
+    else setView({ kind: "task", id: resolved.task.id });
+  };
+
+  const task = view.kind === "task" ? LIBRARY_TASKS.find((t) => t.id === view.id) : undefined;
+  const resolved = task ? resolveTask(library, task) : null;
+  if (resolved && resolved.all.length > 0) {
+    return <TaskView resolved={resolved} onOpen={openSource} onHome={() => setView({ kind: "home" })} onBrowse={() => setView({ kind: "browse" })} />;
+  }
+  if (view.kind === "browse") {
+    return <BrowseAllSources library={library} onHome={() => setView({ kind: "home" })} onOpen={openSource} />;
+  }
+  // Home (and the safe fall-back when a task no longer lands on anything).
+  return <TaskHome library={library} onOpenTask={openTask} onBrowse={() => setView({ kind: "browse" })} onOpenSource={openSource} />;
+}
+
+// ─── the task-first home ──────────────────────────────────────────────────────
+
+function TaskHome({
+  library,
+  onOpenTask,
+  onBrowse,
+  onOpenSource,
+}: {
+  library: Library;
+  onOpenTask: (r: ResolvedTask) => void;
+  onBrowse: () => void;
+  onOpenSource: (key: string) => void;
+}) {
+  const [query, setQuery] = useState("");
+  const tasks = resolveTasks(library);
+  const searching = query.trim().length > 0;
+  const matches = searching ? searchSources(library.sources, query).slice(0, 12) : [];
+
+  return (
+    <div className="mx-auto flex max-w-6xl flex-col gap-7 px-4 pb-12 pt-5">
+      {/* Elevated stage: a plain opening and one search box, over a quiet primary wash. */}
+      <section className="overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-primary/10 via-card to-card p-6 sm:p-8">
+        <h1 className="text-balance text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">What would you like to pull in?</h1>
+        <p className="mt-2 max-w-xl text-sm text-muted-foreground">Pick a task — we pull it into a table</p>
+        <div className="mt-5 max-w-md">
+          <SearchField value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search reviews, prices, jobs…" aria-label="Search data sources" />
+        </div>
+      </section>
+
+      {searching ? (
+        <section className="flex flex-col gap-3" aria-label="Search results">
+          {matches.length === 0 ? (
+            <EmptyState icon={<SearchX className="h-5 w-5" />} title="Nothing matches" line="Try a task below, or browse every source." />
+          ) : (
+            <>
+              <SectionTitle title="Matches" count={matches.length} />
+              <CardGrid sources={matches} onOpen={onOpenSource} />
+            </>
+          )}
+          <Button variant="quiet" className="self-start" onClick={onBrowse} icon={<ChevronRight className="h-4 w-4" />}>
+            Browse all sources
+          </Button>
+        </section>
+      ) : (
+        <>
+          <section className="flex flex-col gap-3" aria-label="Tasks">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              {tasks.map((r) => (
+                <TaskCard key={r.task.id} resolved={r} onOpen={() => onOpenTask(r)} />
+              ))}
+            </div>
+          </section>
+
+          <div className="flex items-center justify-center">
+            <Button variant="outline" onClick={onBrowse} icon={<ChevronRight className="h-4 w-4" />} meta={formatCount(library.sources.length)}>
+              Browse all sources
+            </Button>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+function TaskCard({ resolved, onOpen }: { resolved: ResolvedTask; onOpen: () => void }) {
+  const { task, confirmed, all } = resolved;
+  return (
+    <button
+      type="button"
+      data-clickable=""
+      data-task-card={task.id}
+      onClick={onOpen}
+      className="group flex min-h-40 flex-col gap-3 rounded-xl border border-border bg-card p-4 text-left transition-colors hover:border-primary/60 hover:bg-accent/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+    >
+      <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary transition-colors group-hover:bg-primary/15" aria-hidden>
+        {createElement(task.icon, { className: "h-5 w-5" })}
+      </span>
+      <div className="flex-1">
+        <div className="text-base font-semibold leading-snug text-foreground">{task.title}</div>
+        <p className="mt-1 text-sm text-muted-foreground">{task.example}</p>
+      </div>
+      <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+        {confirmed.length > 0 ? (
+          <>
+            <ShieldCheck className="h-3.5 w-3.5 text-success" aria-hidden />
+            {formatCount(confirmed.length)} ready
+          </>
+        ) : (
+          `${formatCount(all.length)} ${all.length === 1 ? "source" : "sources"}`
+        )}
+        <ChevronRight className="ml-auto h-4 w-4 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
+      </span>
+    </button>
+  );
+}
+
+// ─── one task: the sources that answer it ─────────────────────────────────────
+
+function TaskView({
+  resolved,
+  onOpen,
+  onHome,
+  onBrowse,
+}: {
+  resolved: ResolvedTask;
+  onOpen: (key: string) => void;
+  onHome: () => void;
+  onBrowse: () => void;
+}) {
+  const { task, confirmed, more } = resolved;
+  return (
+    <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 pb-12 pt-4">
+      <div className="flex items-center gap-2">
+        <Button variant="quiet" onClick={onHome} icon={<ArrowLeft className="h-4 w-4" />}>
+          All tasks
+        </Button>
+        <Button variant="quiet" className="ml-auto" onClick={onBrowse}>
+          Browse all sources
+        </Button>
+      </div>
+
+      <section className="flex items-start gap-3.5">
+        <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary" aria-hidden>
+          {createElement(task.icon, { className: "h-6 w-6" })}
+        </span>
+        <div className="min-w-0">
+          <h1 className="text-xl font-semibold tracking-tight text-foreground sm:text-2xl">{task.title}</h1>
+          <p className="mt-1 text-sm text-muted-foreground">{task.example}</p>
+        </div>
+      </section>
+
+      {confirmed.length > 0 && (
+        <section className="flex flex-col gap-3" aria-label="Ready now">
+          <div className="flex items-center gap-1.5">
+            <ShieldCheck className="h-4 w-4 text-success" aria-hidden />
+            <SectionTitle title="Ready now" count={confirmed.length} />
+          </div>
+          <CardGrid sources={confirmed} onOpen={onOpen} rich />
+        </section>
+      )}
+
+      {more.length > 0 && (
+        <section className="flex flex-col gap-3" aria-label="More sources">
+          <div>
+            <SectionTitle title="More sources" count={more.length} />
+            <p className="text-xs text-muted-foreground">Not confirmed yet — they may need a nudge.</p>
+          </div>
+          <CardGrid sources={more} onOpen={onOpen} />
+        </section>
+      )}
+
+      {confirmed.length === 0 && more.length === 0 && (
+        <EmptyState icon={<SearchX className="h-5 w-5" />} title="Nothing here yet" line="Browse every source instead." />
+      )}
+    </div>
+  );
+}
+
+// ─── browse all sources (the full catalog, the secondary door) ────────────────
+
+type BrowseView = { kind: "featured" } | { kind: "all" } | { kind: "group"; group: string };
+
+function BrowseAllSources({ library, onHome, onOpen }: { library: Library; onHome: () => void; onOpen: (key: string) => void }) {
+  const [query, setQuery] = useState("");
+  const [view, setView] = useState<BrowseView>({ kind: "featured" });
+  const price = usePriceText();
+  const { rate } = useCostDisplay();
+
   const searching = query.trim().length > 0;
   const inView = view.kind === "group" ? library.sources.filter((s) => s.group === view.group) : library.sources;
   const matches = searchSources(inView, query);
@@ -97,7 +285,10 @@ function LibraryBody({ library }: { library: Library }) {
   return (
     <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 pb-10">
       <div className="sticky top-0 z-10 -mx-4 flex flex-col gap-2 border-b border-border bg-background/95 px-4 py-2 backdrop-blur md:flex-row md:items-center">
-        <div className="w-full md:w-64 md:shrink-0">
+        <Button variant="quiet" className="shrink-0 self-start md:self-center" onClick={onHome} icon={<ArrowLeft className="h-4 w-4" />}>
+          Tasks
+        </Button>
+        <div className="w-full md:w-60 md:shrink-0">
           <SearchField value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search sources" aria-label="Search data sources" />
         </div>
         <div className="-mx-4 flex min-w-0 flex-1 items-center gap-1.5 overflow-x-auto px-4 md:mx-0 md:px-0" role="toolbar" aria-label="Filter by group">
@@ -121,14 +312,14 @@ function LibraryBody({ library }: { library: Library }) {
       {featured.length > 0 && (
         <section className="flex flex-col gap-3" aria-label="Featured">
           <SectionTitle title="Featured" count={featured.length} />
-          <CardGrid sources={featured} onOpen={openSource} rich />
+          <CardGrid sources={featured} onOpen={onOpen} rich />
         </section>
       )}
 
       {sections.length === 0 ? (
         <EmptyState icon={<SearchX className="h-5 w-5" />} title="Nothing matches" line="Try a site, a kind of record, or a column name." />
       ) : (
-        sections.map((sec) => <GroupSection key={sec.group} section={sec} searching={searching} onOpen={openSource} />)
+        sections.map((sec) => <GroupSection key={sec.group} section={sec} searching={searching} onOpen={onOpen} />)
       )}
     </div>
   );
@@ -289,4 +480,3 @@ function CompactList({
     </div>
   );
 }
-

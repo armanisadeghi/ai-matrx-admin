@@ -301,9 +301,14 @@ export function librarySections(sources: readonly LibrarySource[], minList = COM
 /** Identity columns (a link, an id) say little on a card: they go after the telling ones. */
 const plumbing = (f: string) => /^(url|id)$|\b(url|id)$/i.test(f.trim());
 
+/** Every field, the telling ones first and the identity columns (link, id) last. */
+export function orderTellingFields(fields: readonly string[]): string[] {
+  return [...fields.filter((f) => !plumbing(f)), ...fields.filter(plumbing)];
+}
+
 /** The first `max` telling output fields and how many more (every field is still counted). */
 export function fieldPreview(fields: readonly string[], max = 4): { shown: string[]; more: number } {
-  const ordered = [...fields.filter((f) => !plumbing(f)), ...fields.filter(plumbing)];
+  const ordered = orderTellingFields(fields);
   return { shown: ordered.slice(0, max), more: Math.max(0, fields.length - max) };
 }
 
