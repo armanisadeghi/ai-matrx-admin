@@ -90,6 +90,23 @@
   :is(.mx-msg__row-time, .mx-msg__row-preview) {
   color: inherit;
 }
+/* A row whose thread route is on its way (features/messaging/lib/openConversation.tsx):
+   it pulses until the thread is on screen, so a slow route never reads as a dead click. */
+.messages-native [data-opening] .mx-msg__row {
+  cursor: progress;
+  animation: mx-msg-row-opening 1s ease-in-out infinite;
+}
+@keyframes mx-msg-row-opening {
+  50% {
+    opacity: 0.6;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .messages-native [data-opening] .mx-msg__row {
+    animation: none;
+    opacity: 0.7;
+  }
+}
 .messages-native .mx-msg__badge {
   min-width: 16px;
   height: 16px;
