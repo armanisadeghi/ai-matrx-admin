@@ -97,14 +97,20 @@ function closureFacts(metadata: unknown): StoryFact[] {
   if (unverified) {
     return [
       {
-        label: "Closed — can't confirm now",
+        label: "Why it closed",
         value:
           typeof unverified.reason === "string" ? unverified.reason : "The last check could not judge it",
       },
     ];
   }
   if (pick("rolled_up")) {
-    return [{ label: "Closed — shared cause", value: "Now one site-wide finding for this check" }];
+    return [{ label: "Why it closed", value: "Now one site-wide finding for this check" }];
+  }
+  if (pick("below_bar")) {
+    return [{ label: "Why it closed", value: "Minor — kept on the page itself, not in this list" }];
+  }
+  if (pick("cause_gone")) {
+    return [{ label: "Why it closed", value: "The shared cause is fixed" }];
   }
   const retracted = pick("retracted");
   if (retracted && typeof retracted.reason === "string") {
