@@ -14,6 +14,7 @@ import {
   DOC_BACKGROUND_COMPONENT_KEY,
   applyUniverDocSurfaceColors,
   type UniverDocRenderLike,
+  PAGE_EDGE_NONE,
 } from "@/features/documents/hooks/useUniverDocSurfaceTheme";
 import { univerDocSurfaceColors } from "@/features/documents/univer-doc-surface-theme";
 
@@ -73,7 +74,7 @@ describe("applyUniverDocSurfaceColors", () => {
     expect(result).toEqual({ applied: true, unreached: [] });
     expect(h.canvasEle.style.backgroundColor).toBe(dark.frame);
     expect(h.fills).toEqual([
-      [dark.frame, dark.page, dark.pageStroke, dark.marginStroke],
+      [dark.frame, dark.page, PAGE_EDGE_NONE, dark.marginStroke],
     ]);
     expect(h.dirtied).toEqual(
       expect.arrayContaining(["background", "main", "scene"]),

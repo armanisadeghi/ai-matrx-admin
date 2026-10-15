@@ -49,6 +49,9 @@ interface FillColorSetter {
 
 interface FillColorTarget {
   setFillColors?: FillColorSetter;
+  /** `DocBackground.draw(ctx, bounds)` — wrapped once to put the paper shadow under each page. */
+  draw?: (ctx: ShadowContext, bounds?: unknown) => unknown;
+  _drawPageBackgroundImage?: (...args: unknown[]) => unknown;
   makeDirty?: (dirty: boolean) => void;
   /** `DocBackground` reads the document it paints through its skeleton. */
   getSkeleton?: () => {
@@ -93,6 +96,86 @@ function pageColorOf(background: FillColorTarget): string | undefined {
   return typeof c === "string" && /^#[0-9a-f]{6}$/i.test(c) ? c : undefined;
 }
 
+/** The slice of Univer's rendering context the paper shadow touches. */
+interface ShadowContext {
+  translate: (x: number, y: number) => void;
+  shadowColor: string;
+  shadowBlur: number;
+  shadowOffsetX: number;
+  shadowOffsetY: number;
+}
+
+/**
+ * Google Docs' paper shadow, in CSS pixels: a soft 1px drop with a hairline ring
+ * (`0 1px 3px 1px rgba(60,64,67,.15), 0 1px 2px rgba(60,64,67,.3)` collapsed to one canvas shadow).
+ * Canvas shadows ignore the context transform, so a device-pixel value stays the same at every zoom.
+ */
+const PAGE_SHADOW = {
+  light: "rgba(60, 64, 67, 0.38)",
+  dark: "rgba(0, 0, 0, 0.7)",
+  blurCssPx: 5,
+  offsetYCssPx: 1,
+} as const;
+
+/** A fully transparent stroke: the page's own outline, replaced by the shadow. */
+export const PAGE_EDGE_NONE = "rgba(255, 255, 255, 0)";
+
+const SHADOW_INSTALLED = Symbol.for("matrx.univerDocPageShadow");
+
+/**
+ * Put a soft shadow under every page of a paged document.
+ *
+ * `DocBackground.draw` paints the desk, then for each page does `ctx.save(); ctx.translate(page);
+ * Rect.drawWith(page)` followed by `_drawPageBackgroundImage`. The wrapper arms the shadow on that
+ * per-page `translate` (so the paper and its border cast it) and disarms it in
+ * `_drawPageBackgroundImage` (so the margin guides do not). The pageless flavour never calls
+ * `translate`, so it stays flat.
+ */
+function installPageShadow(background: FillColorTarget, mode: "light" | "dark"): void {
+  const holder = background as FillColorTarget & { [SHADOW_INSTALLED]?: "light" | "dark" };
+  const already = holder[SHADOW_INSTALLED] !== undefined;
+  holder[SHADOW_INSTALLED] = mode;
+  if (already) return;
+  const draw = background.draw;
+  if (typeof draw !== "function") return;
+  const dpr = () => (typeof window === "undefined" ? 1 : window.devicePixelRatio || 1);
+  background.draw = function (this: unknown, ctx: ShadowContext, bounds?: unknown) {
+    const translate = ctx.translate;
+    // The first `translate` of a draw belongs to the desk fill, never to a page; arming it would
+    // shadow the desk rectangle's own edge.
+    let deskDone = false;
+    ctx.translate = function (this: ShadowContext, x: number, y: number) {
+      translate.call(ctx, x, y);
+      if (!deskDone) {
+        deskDone = true;
+        return;
+      }
+      ctx.shadowColor = PAGE_SHADOW[holder[SHADOW_INSTALLED] ?? "light"];
+      ctx.shadowBlur = PAGE_SHADOW.blurCssPx * dpr();
+      ctx.shadowOffsetX = 0;
+      ctx.shadowOffsetY = PAGE_SHADOW.offsetYCssPx * dpr();
+    };
+    try {
+      return draw.call(this, ctx, bounds);
+    } finally {
+      // Own property assigned above; removing it restores the prototype method.
+      delete (ctx as Partial<ShadowContext>).translate;
+    }
+  };
+  const image = background._drawPageBackgroundImage;
+  if (typeof image === "function") {
+    background._drawPageBackgroundImage = function (this: unknown, ...args: unknown[]) {
+      const ctx = args[0] as ShadowContext | undefined;
+      if (ctx) {
+        ctx.shadowColor = "transparent";
+        ctx.shadowBlur = 0;
+        ctx.shadowOffsetY = 0;
+      }
+      return image.apply(this, args);
+    };
+  }
+}
+
 /** Marks (and carries the state of) the wrapper installed below. */
 const HOST_COLORS = Symbol.for("matrx.univerDocSurfaceColors");
 
@@ -131,6 +214,7 @@ export interface UniverDocRenderLike {
 export function applyUniverDocSurfaceColors(
   render: UniverDocRenderLike | null | undefined,
   colors: UniverDocSurfaceColors,
+  mode: "light" | "dark" = "light",
 ): { applied: boolean; unreached: string[] } {
   if (!render) return { applied: false, unreached: ["render"] };
   const unreached: string[] = [];
@@ -143,7 +227,9 @@ export function applyUniverDocSurfaceColors(
   const forDocument = (palette: UniverDocSurfaceColors) => {
     if (!background) return palette;
     const chosen = pageColorOf(background);
-    return surfaceColorsForFlavor(chosen ? { ...palette, page: chosen } : palette, flavorOf(background));
+    const flavored = surfaceColorsForFlavor(chosen ? { ...palette, page: chosen } : palette, flavorOf(background));
+    // A paged sheet is edged by its shadow, like Google Docs — a stroke would cast the shadow INWARD.
+    return flavored.frame === palette.frame ? { ...flavored, pageStroke: PAGE_EDGE_NONE } : flavored;
   };
 
   // The canvas ELEMENT's CSS background is what shows wherever the renderer
@@ -180,6 +266,7 @@ export function applyUniverDocSurfaceColors(
       wrapped[HOST_COLORS] = colors;
       background.setFillColors = wrapped;
     }
+    installPageShadow(background, mode);
     const stated = forDocument(colors);
     background.setFillColors?.(
       stated.frame,
@@ -262,7 +349,7 @@ export function useUniverDocSurfaceTheme(
       if (cancelled) return;
 
       const paint = (render: UniverDocRenderLike | null) => {
-        const result = applyUniverDocSurfaceColors(render, colors);
+        const result = applyUniverDocSurfaceColors(render, colors, mode);
         if (!result.applied) {
           // NOTHING FAILS SILENTLY. A miss here means the document is wearing
           // Univer's hardcoded light page and desk inside whatever theme the

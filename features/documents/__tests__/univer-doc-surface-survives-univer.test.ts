@@ -32,6 +32,7 @@ import {
   applyUniverDocSurfaceColors,
   DOC_BACKGROUND_COMPONENT_KEY,
   type UniverDocRenderLike,
+  PAGE_EDGE_NONE,
 } from "@/features/documents/hooks/useUniverDocSurfaceTheme";
 import {
   isUniverParseableColor,
@@ -131,7 +132,7 @@ describe("Univer cannot reset the page back to its light defaults", () => {
     // Before this change that landed four `undefined`s, which is Univer's
     // light page and desk. Now the host's palette IS the default.
     expect(h.applied).toEqual([
-      [dark.frame, dark.page, dark.pageStroke, dark.marginStroke],
+      [dark.frame, dark.page, PAGE_EDGE_NONE, dark.marginStroke],
     ]);
     expect(h.canvasEle.style.backgroundColor).toBe(dark.frame);
   });
@@ -147,7 +148,7 @@ describe("Univer cannot reset the page back to its light defaults", () => {
     h.background.setFillColors?.(undefined, undefined, undefined, undefined);
 
     expect(h.applied).toEqual([
-      [light.frame, light.page, light.pageStroke, light.marginStroke],
+      [light.frame, light.page, PAGE_EDGE_NONE, light.marginStroke],
     ]);
     expect(h.canvasEle.style.backgroundColor).toBe(light.frame);
   });
