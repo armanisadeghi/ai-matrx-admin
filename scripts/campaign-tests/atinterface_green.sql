@@ -11,6 +11,7 @@
 --   3 the outsider's review element serves another client's rows, the hidden notes column, or a draft-only element
 --   4 a number element does not count exactly the element's rows; p_record_id reaches a row outside the element
 --   5 a stranger (shared nothing) reads anything
+--   6 an element with a current-user column but no me_only shows the client another client's rows (atinterface_b)
 -- Runs inside one transaction and always ends in ROLLBACK (scripts/campaign-tests/viewlink_run.py <this> [<migration>]).
 
 do $t$
@@ -58,6 +59,7 @@ begin
                        'columns', jsonb_build_array('title', 'status'), 'me_field', 'client_contact', 'me_only', true),
     jsonb_build_object('id', 'e-count', 'kind', 'number', 'table_id', v_tbl, 'filter', jsonb_build_object('status', 'Ready for approval'),
                        'me_field', 'client_contact', 'me_only', true),
+    jsonb_build_object('id', 'e-board', 'kind', 'layout', 'layout', 'kanban', 'table_id', v_tbl, 'group_field', 'status', 'me_field', 'client_contact'),
     jsonb_build_object('id', 'e-head', 'kind', 'heading', 'text', 'Approvals'))));
 
   perform set_config('role', 'authenticated', true);
@@ -111,6 +113,16 @@ begin
   v_out := custom.interface_rows(v_if, 'e-review', v_northwind);
   if jsonb_array_length(v_out -> 'rows') <> 0 then raise exception '4b: p_record_id reached a row outside his set'; end if;
   raise notice '4 PASS - the number counts 2; naming another client''s row by id answers no row.';
+
+  -- ══ 6 — a board with a current-user column but no me_only: the client sees his 3 posts, the owner every post ══
+  v_out := custom.interface_rows(v_if, 'e-board');
+  if jsonb_array_length(v_out -> 'rows') <> 3 or v_out::text like '%Northwind%' then
+    raise exception '6a: the client''s board served % rows: %', jsonb_array_length(v_out -> 'rows'), left(v_out::text, 300);
+  end if;
+  perform set_config('request.jwt.claims', c_admin_j, true);
+  if jsonb_array_length(custom.interface_rows(v_if, 'e-board') -> 'rows') <> 4 then raise exception '6b: the owner''s board is narrowed'; end if;
+  perform set_config('request.jwt.claims', c_out_j, true);
+  raise notice '6 PASS - one board: the client sees his 3 Comtech posts, the owner all 4.';
 
   -- ══ 5 — a stranger ══
   perform set_config('request.jwt.claims', c_test_j, true);
