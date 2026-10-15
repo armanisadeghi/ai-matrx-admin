@@ -95,3 +95,32 @@ export async function readActivity(organizationId: string, subjectId: string, be
   if (error) throw new Error(error.message);
   return parseActivity(data);
 }
+
+/** The finder runs at the merge's own level: Edit or above. */
+export function canFindDuplicates(level: string | null | undefined): boolean {
+  return level === "editor" || level === "admin" || level === "owner";
+}
+
+export interface DuplicateGroup {
+  members: { id: string; title: string }[];
+}
+
+export function parseDuplicates(data: unknown): DuplicateGroup[] {
+  const root = data && typeof data === "object" ? (data as Record<string, unknown>) : {};
+  const groups = Array.isArray(root.groups) ? root.groups : [];
+  const out: DuplicateGroup[] = [];
+  for (const g of groups) {
+    const members = g && typeof g === "object" && Array.isArray((g as Record<string, unknown>).members) ? ((g as Record<string, unknown>).members as unknown[]) : [];
+    const kept = members
+      .filter((m): m is Record<string, unknown> => !!m && typeof m === "object" && typeof (m as Record<string, unknown>).id === "string")
+      .map((m) => ({ id: m.id as string, title: typeof m.title === "string" && m.title ? m.title : "(untitled)" }));
+    if (kept.length > 1) out.push({ members: kept });
+  }
+  return out;
+}
+
+export async function findDuplicates(organizationId: string, tableId: string, fields: string[]): Promise<DuplicateGroup[]> {
+  const { data, error } = await storeDoors(supabase).rpc("find_duplicates", { p_organization_id: organizationId, p_table_id: tableId, p_fields: fields, p_limit: 50 });
+  if (error) throw new Error(error.message);
+  return parseDuplicates(data);
+}
