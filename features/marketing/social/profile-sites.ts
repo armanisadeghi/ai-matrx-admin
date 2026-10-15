@@ -20,8 +20,6 @@ export interface ProfileSite {
   reserved?: ReadonlySet<string>;
   /** Profile address; `{h}` is the handle. */
   url: string;
-  /** The site's own brand colour for its tile (third-party identity, like PropertyKindMark's tiles). */
-  tile: string;
 }
 
 const COMMON = [
@@ -33,37 +31,37 @@ const COMMON = [
 const reserved = (...more: string[]) => new Set([...COMMON, ...more].map((s) => s.toLowerCase()));
 
 export const PROFILE_SITES: readonly ProfileSite[] = [
-  { id: "github", label: "GitHub", hosts: ["github.com"], rule: "first", url: "https://github.com/{h}", tile: "bg-[#181717] text-white dark:bg-white dark:text-black",
+  { id: "github", label: "GitHub", hosts: ["github.com"], rule: "first", url: "https://github.com/{h}",
     reserved: reserved("orgs", "organizations", "marketplace", "sponsors", "collections", "enterprise", "issues", "pulls", "codespaces", "copilot", "customer-stories", "readme", "events", "site", "team", "resources", "solutions", "pages", "gist", "account", "users", "repos", "stars", "watching") },
-  { id: "gitlab", label: "GitLab", hosts: ["gitlab.com"], rule: "first", url: "https://gitlab.com/{h}", tile: "bg-[#FC6D26] text-white",
+  { id: "gitlab", label: "GitLab", hosts: ["gitlab.com"], rule: "first", url: "https://gitlab.com/{h}",
     reserved: reserved("users", "groups", "projects", "dashboard", "-", "admin", "public") },
-  { id: "stackoverflow", label: "Stack Overflow", hosts: ["stackoverflow.com"], rule: "users", url: "https://stackoverflow.com/users/{h}", tile: "bg-[#F58025] text-white" },
-  { id: "huggingface", label: "Hugging Face", hosts: ["huggingface.co"], rule: "first", url: "https://huggingface.co/{h}", tile: "bg-[#FFD21E] text-black",
+  { id: "stackoverflow", label: "Stack Overflow", hosts: ["stackoverflow.com"], rule: "users", url: "https://stackoverflow.com/users/{h}" },
+  { id: "huggingface", label: "Hugging Face", hosts: ["huggingface.co"], rule: "first", url: "https://huggingface.co/{h}",
     reserved: reserved("models", "datasets", "spaces", "papers", "organizations", "tasks", "learn", "posts", "collections", "enterprise", "chat", "inference-endpoints") },
-  { id: "kaggle", label: "Kaggle", hosts: ["kaggle.com"], rule: "first", url: "https://www.kaggle.com/{h}", tile: "bg-[#20BEFF] text-white",
+  { id: "kaggle", label: "Kaggle", hosts: ["kaggle.com"], rule: "first", url: "https://www.kaggle.com/{h}",
     reserved: reserved("competitions", "datasets", "code", "models", "discussions", "learn", "c", "d", "kernels", "organizations", "benchmarks", "rankings") },
-  { id: "devto", label: "DEV", hosts: ["dev.to"], rule: "first", url: "https://dev.to/{h}", tile: "bg-black text-white dark:bg-white dark:text-black",
+  { id: "devto", label: "DEV", hosts: ["dev.to"], rule: "first", url: "https://dev.to/{h}",
     reserved: reserved("t", "top", "latest", "listings", "podcasts", "videos", "enter", "series", "badge") },
-  { id: "hashnode", label: "Hashnode", hosts: ["hashnode.com"], subHosts: ["hashnode.dev"], rule: "at", url: "https://hashnode.com/@{h}", tile: "bg-[#2962FF] text-white" },
-  { id: "medium", label: "Medium", hosts: ["medium.com"], subHosts: ["medium.com"], rule: "at", url: "https://medium.com/@{h}", tile: "bg-black text-white dark:bg-white dark:text-black" },
-  { id: "substack", label: "Substack", hosts: ["substack.com"], subHosts: ["substack.com"], rule: "at", url: "https://{h}.substack.com", tile: "bg-[#FF6719] text-white" },
-  { id: "behance", label: "Behance", hosts: ["behance.net"], rule: "first", url: "https://www.behance.net/{h}", tile: "bg-[#1769FF] text-white",
+  { id: "hashnode", label: "Hashnode", hosts: ["hashnode.com"], subHosts: ["hashnode.dev"], rule: "at", url: "https://hashnode.com/@{h}" },
+  { id: "medium", label: "Medium", hosts: ["medium.com"], subHosts: ["medium.com"], rule: "at", url: "https://medium.com/@{h}" },
+  { id: "substack", label: "Substack", hosts: ["substack.com"], subHosts: ["substack.com"], rule: "at", url: "https://{h}.substack.com" },
+  { id: "behance", label: "Behance", hosts: ["behance.net"], rule: "first", url: "https://www.behance.net/{h}",
     reserved: reserved("gallery", "galleries", "joblist", "hire", "assets", "onboarding", "for_you", "live", "moodboard") },
-  { id: "dribbble", label: "Dribbble", hosts: ["dribbble.com"], rule: "first", url: "https://dribbble.com/{h}", tile: "bg-[#EA4C89] text-white",
+  { id: "dribbble", label: "Dribbble", hosts: ["dribbble.com"], rule: "first", url: "https://dribbble.com/{h}",
     reserved: reserved("shots", "designers", "stories", "hiring", "pro", "learn", "following", "session", "uploads") },
-  { id: "producthunt", label: "Product Hunt", hosts: ["producthunt.com"], rule: "at", url: "https://www.producthunt.com/@{h}", tile: "bg-[#DA552F] text-white" },
-  { id: "keybase", label: "Keybase", hosts: ["keybase.io"], rule: "first", url: "https://keybase.io/{h}", tile: "bg-[#33A0FF] text-white",
+  { id: "producthunt", label: "Product Hunt", hosts: ["producthunt.com"], rule: "at", url: "https://www.producthunt.com/@{h}" },
+  { id: "keybase", label: "Keybase", hosts: ["keybase.io"], rule: "first", url: "https://keybase.io/{h}",
     reserved: reserved("_", "team", "docs", "blog") },
-  { id: "mastodon", label: "Mastodon", hosts: ["mastodon.social", "mastodon.online", "mstdn.social", "fosstodon.org", "hachyderm.io", "infosec.exchange", "mas.to", "techhub.social"], rule: "at", url: "https://mastodon.social/@{h}", tile: "bg-[#6364FF] text-white" },
-  { id: "bluesky", label: "Bluesky", hosts: ["bsky.app"], rule: "profile", url: "https://bsky.app/profile/{h}", tile: "bg-[#0085FF] text-white" },
-  { id: "twitch", label: "Twitch", hosts: ["twitch.tv"], rule: "first", url: "https://www.twitch.tv/{h}", tile: "bg-[#9146FF] text-white",
+  { id: "mastodon", label: "Mastodon", hosts: ["mastodon.social", "mastodon.online", "mstdn.social", "fosstodon.org", "hachyderm.io", "infosec.exchange", "mas.to", "techhub.social"], rule: "at", url: "https://mastodon.social/@{h}" },
+  { id: "bluesky", label: "Bluesky", hosts: ["bsky.app"], rule: "profile", url: "https://bsky.app/profile/{h}" },
+  { id: "twitch", label: "Twitch", hosts: ["twitch.tv"], rule: "first", url: "https://www.twitch.tv/{h}",
     reserved: reserved("directory", "videos", "p", "subscriptions", "inventory", "wallet", "drops", "turbo", "prime", "store", "broadcast") },
-  { id: "soundcloud", label: "SoundCloud", hosts: ["soundcloud.com"], rule: "first", url: "https://soundcloud.com/{h}", tile: "bg-[#FF5500] text-white",
+  { id: "soundcloud", label: "SoundCloud", hosts: ["soundcloud.com"], rule: "first", url: "https://soundcloud.com/{h}",
     reserved: reserved("stream", "you", "charts", "pages", "mobile", "upload", "people", "stations", "imprint", "connect") },
-  { id: "bandcamp", label: "Bandcamp", hosts: [], subHosts: ["bandcamp.com"], rule: "first", url: "https://{h}.bandcamp.com", tile: "bg-[#408294] text-white" },
-  { id: "patreon", label: "Patreon", hosts: ["patreon.com"], rule: "first", url: "https://www.patreon.com/{h}", tile: "bg-black text-white dark:bg-white dark:text-black",
+  { id: "bandcamp", label: "Bandcamp", hosts: [], subHosts: ["bandcamp.com"], rule: "first", url: "https://{h}.bandcamp.com" },
+  { id: "patreon", label: "Patreon", hosts: ["patreon.com"], rule: "first", url: "https://www.patreon.com/{h}",
     reserved: reserved("c", "posts", "creators", "product", "become-a-patreon-creator", "m", "messages", "membership", "member", "policy", "checkout", "file", "bePatron") },
-  { id: "kofi", label: "Ko-fi", hosts: ["ko-fi.com"], rule: "first", url: "https://ko-fi.com/{h}", tile: "bg-[#FF5E5B] text-white",
+  { id: "kofi", label: "Ko-fi", hosts: ["ko-fi.com"], rule: "first", url: "https://ko-fi.com/{h}",
     reserved: reserved("manage", "shop", "account", "s", "post", "i", "home", "explore-creators") },
 ];
 

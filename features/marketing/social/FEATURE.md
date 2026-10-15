@@ -62,7 +62,11 @@ Standards components (`@/features/marketing/social/components/…`)
 - `MetricChart` (+ `seriesToCsv`, `contiguousRunSplit`) — one hand-drawn SVG chart for post metrics and account followers.
 - `ProviderFallbackNotice` (+ `hasFallback`, `providerName`) — `via <provider>` chip with the reason as tooltip.
 - `PlatformMark` (+ `platformLabel`) — wraps the existing `PropertyKindMark`, which already carries every social platform
-  glyph on its brand color (no extension was needed).
+  glyph on its brand color (no extension was needed). The developer / creator profile sites (GitHub, GitLab, Stack Overflow,
+  Hugging Face, Kaggle, DEV, Hashnode, Medium, Substack, Behance, Dribbble, Product Hunt, Keybase, Mastodon, Bluesky,
+  Twitch, SoundCloud, Bandcamp, Patreon, Ko-fi) wear their real mark from `@ai-matrx/icons/brand` (Simple Icons), raw: the
+  brand's colour on no tile; Mastodon and Twitch resolve here too, ahead of `PropertyKindMark`'s stand-in glyphs. Test:
+  `__tests__/profile-site-marks.test.tsx`.
 - `SocialsContext` / `useSocials()` — `{brandId, brandSeg, organizationId, openTrack}` for any tab body.
 - `TrackAccountDialog`, `AccountsTab`, `AccountDetail`, `SocialsShell`, `SocialsTabPlaceholder`.
 
