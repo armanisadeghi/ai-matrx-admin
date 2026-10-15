@@ -1,0 +1,372 @@
+"use client";
+
+// features/unified-data/base/BaseScreens.tsx — the Bases list, the Base page and its verbs (lane AT-BASE).
+//
+// A Base is a Home's group of tables. Its page lists the tables, the pages (interfaces) and the automations that belong to them,
+// with a name, icon, color and description a person can change. Duplicate base, snapshots and the two importers start here. The
+// whole-base verbs are @ai-matrx/records `duplicateBase` / `snapshotBase` / `restoreSnapshot` over the records client.
+
+import { ensureTable } from "@ai-matrx/records/core";
+import { duplicateBase, restoreSnapshot, snapshotBase, type BaseCopyProgress, type BaseTable } from "@ai-matrx/records";
+import { useRecordsClient } from "@ai-matrx/records/react";
+import { Button, Field } from "@ai-matrx/design-system/controls";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useState } from "react";
+
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { TEMPLATE_GALLERY_HREF } from "@/features/make/gallery/galleryHref";
+
+import { AirtableImportDialog } from "./AirtableImportDialog";
+import { SheetsImportDialog } from "./SheetsImportDialog";
+import {
+  listBases, listHomeTables, listSnapshots, readBase, saveBase, saveSnapshot, setSnapshotSchedule, trashSnapshot,
+  type BaseIdentity, type BaseSnapshotRow, type HomeTable,
+} from "./baseStore";
+import { useBasePort } from "./useBasePort";
+
+const COLORS = ["#2563eb", "#7c3aed", "#db2777", "#dc2626", "#ea580c", "#ca8a04", "#16a34a", "#0891b2", "#475569"];
+
+function Swatch({ color, icon, name }: { color: string | null; icon: string | null; name: string }) {
+  return (
+    <span className="flex size-9 shrink-0 items-center justify-center rounded-md text-sm font-semibold text-white" style={{ background: color || "#475569" }} aria-hidden>
+      {icon || name.slice(0, 1).toUpperCase() || "B"}
+    </span>
+  );
+}
+
+function Words({ children }: { children: string }) {
+  return <p className="text-xs text-muted-foreground">{children}</p>;
+}
+
+// ── the list ────────────────────────────────────────────────────────────────────────────────
+
+export function BasesHome() {
+  const router = useRouter();
+  const [state, setState] = useState<{ bases: Array<{ homeId: string; name: string; icon: string | null; color: string | null; description: string | null; tables: number }> } | { error: string } | null>(null);
+  const [creating, setCreating] = useState(false);
+
+  const load = useCallback(async () => {
+    try {
+      const [tables, identities] = await Promise.all([listHomeTables(), listBases()]);
+      const byHome = new Map<string, HomeTable[]>();
+      for (const t of tables) if (t.home_id) byHome.set(t.home_id, [...(byHome.get(t.home_id) ?? []), t]);
+      const named = new Map(identities.map((b) => [b.home_id, b]));
+      const bases = [...byHome.entries()].map(([homeId, ts]) => {
+        const id = named.get(homeId);
+        return { homeId, name: id?.name ?? ts[0]?.name ?? "Untitled base", icon: id?.icon ?? null, color: id?.color ?? null, description: id?.description ?? null, tables: ts.length };
+      });
+      // A Base someone named comes first; the rest are Homes that hold tables and have not been named yet.
+      bases.sort((a, b) => Number(named.has(b.homeId)) - Number(named.has(a.homeId)) || a.name.localeCompare(b.name));
+      setState({ bases });
+    } catch (e) {
+      setState({ error: e instanceof Error ? e.message : "The bases could not be read." });
+    }
+  }, []);
+  useEffect(() => void load(), [load]);
+
+  return (
+    <div className="mx-auto flex w-full max-w-4xl flex-col gap-3 p-4" data-bases-home="">
+      <div className="flex items-center justify-between">
+        <h1 className="text-lg font-semibold">Bases</h1>
+        <Button variant="primary" onClick={() => setCreating(true)}>New base</Button>
+      </div>
+      {state === null ? <Words>Reading your bases…</Words> : "error" in state ? <Words>{state.error}</Words> : state.bases.length === 0 ? <Words>No tables yet. Make a base to begin.</Words> : (
+        <ul className="grid gap-2 sm:grid-cols-2">
+          {state.bases.map((b) => (
+            <li key={b.homeId}>
+              <Link href={`/data/bases/${b.homeId}`} className="flex items-start gap-3 rounded-md border border-border p-3 hover:bg-muted" data-base-card={b.homeId}>
+                <Swatch color={b.color} icon={b.icon} name={b.name} />
+                <span className="min-w-0">
+                  <span className="block truncate text-sm font-medium">{b.name}</span>
+                  <span className="block truncate text-xs text-muted-foreground">{b.tables} {b.tables === 1 ? "table" : "tables"}{b.description ? ` · ${b.description}` : ""}</span>
+                </span>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      )}
+      <NewBaseDialog open={creating} onOpenChange={setCreating} onMade={(homeId) => router.push(`/data/bases/${homeId}`)} />
+    </div>
+  );
+}
+
+// ── create ──────────────────────────────────────────────────────────────────────────────────
+
+export function NewBaseDialog({ open, onOpenChange, onMade }: { open: boolean; onOpenChange: (o: boolean) => void; onMade: (homeId: string) => void }) {
+  const client = useRecordsClient();
+  const [name, setName] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [problem, setProblem] = useState<string | null>(null);
+
+  const makeEmpty = async () => {
+    setBusy(true);
+    setProblem(null);
+    // A table born without a Home makes its own: that Home is the new base.
+    const made = await ensureTable(client, { name: `${name.trim()} — Table 1`.slice(0, 80), fields: [{ key: "name", label: "Name", type: "text" }] });
+    if (!made.ok) {
+      setBusy(false);
+      setProblem(made.error.message);
+      return;
+    }
+    try {
+      const mine = (await listHomeTables()).find((t) => t.id === made.data);
+      const home = mine?.home_id ?? made.homeId;
+      await saveBase(mine?.organization_id ?? "", home, { name, template: "blank" });
+      onMade(home);
+    } catch (e) {
+      setProblem(e instanceof Error ? e.message : "The base could not be named.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={(o) => (!busy ? onOpenChange(o) : undefined)}>
+      <DialogContent className="max-w-[min(520px,96vw)] gap-3 p-4" data-new-base="">
+        <DialogTitle>New base</DialogTitle>
+        <Field autoFocus value={name} onChange={(e) => setName(e.target.value)} placeholder="Name of the base" aria-label="Name of the base" />
+        {problem ? <Words>{problem}</Words> : null}
+        <div className="flex flex-col gap-2">
+          <Button variant="primary" disabled={busy || !name.trim()} onClick={() => void makeEmpty()} data-new-base-empty="">Start empty</Button>
+          <div className="flex gap-2">
+            <Link href={TEMPLATE_GALLERY_HREF} className="flex-1"><Button variant="quiet" className="w-full" type="button">From a template</Button></Link>
+            <Link href="/make" className="flex-1"><Button variant="quiet" className="w-full" type="button">Describe it</Button></Link>
+          </div>
+          <Words>Templates and described apps make their tables in a new base; open it here afterwards and name it.</Words>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// ── the page ────────────────────────────────────────────────────────────────────────────────
+
+interface Extras {
+  pages: Array<{ id: string; name: string; table: string }>;
+  automations: Array<{ id: string; name: string; enabled: boolean; table: string }>;
+}
+
+export function BasePage({ homeId }: { homeId: string }) {
+  const client = useRecordsClient();
+  const [tables, setTables] = useState<HomeTable[] | null>(null);
+  const [identity, setIdentity] = useState<BaseIdentity | null>(null);
+  const [extras, setExtras] = useState<Extras>({ pages: [], automations: [] });
+  const [error, setError] = useState<string | null>(null);
+  const [dialog, setDialog] = useState<null | "edit" | "duplicate" | "snapshots" | "airtable" | "sheets">(null);
+
+  const load = useCallback(async () => {
+    try {
+      const ts = await listHomeTables(homeId);
+      setTables(ts);
+      const org = ts[0]?.organization_id;
+      setIdentity(org ? await readBase(org, homeId) : null);
+      const pages: Extras["pages"] = [];
+      const automations: Extras["automations"] = [];
+      for (const t of ts) {
+        const [d, a] = await Promise.all([client.dashboards({ table_id: t.id }), client.automations({ table_id: t.id })]);
+        if (d.ok) for (const x of d.data) pages.push({ id: x.dashboard_id, name: x.name, table: t.name });
+        if (a.ok) for (const x of a.data.automations) automations.push({ id: x.id, name: x.name, enabled: x.enabled, table: t.name });
+      }
+      setExtras({ pages, automations });
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "The base could not be read.");
+    }
+  }, [client, homeId]);
+  useEffect(() => void load(), [load]);
+
+  if (error) return <div className="p-4"><Words>{error}</Words></div>;
+  if (tables === null) return <div className="p-4"><Words>Reading the base…</Words></div>;
+  if (tables.length === 0) return <div className="p-4"><Words>This base has no tables you can open.</Words></div>;
+  const name = identity?.name ?? tables[0]?.name ?? "Untitled base";
+  const org = tables[0]!.organization_id;
+
+  return (
+    <div className="mx-auto flex w-full max-w-4xl flex-col gap-4 p-4" data-base-page={homeId}>
+      <header className="flex items-start gap-3">
+        <Swatch color={identity?.color ?? null} icon={identity?.icon ?? null} name={name} />
+        <div className="min-w-0 flex-1">
+          <h1 className="truncate text-lg font-semibold" data-base-name="">{name}</h1>
+          {identity?.description ? <Words>{identity.description}</Words> : null}
+        </div>
+        <div className="flex flex-wrap justify-end gap-2">
+          <Button variant="quiet" onClick={() => setDialog("edit")}>{identity ? "Edit" : "Name this base"}</Button>
+          <Button variant="quiet" onClick={() => setDialog("duplicate")} data-base-duplicate="">Duplicate</Button>
+          <Button variant="quiet" onClick={() => setDialog("snapshots")} data-base-snapshots="">Snapshots</Button>
+          <Button variant="quiet" onClick={() => setDialog("airtable")} data-base-airtable="">From Airtable</Button>
+          <Button variant="quiet" onClick={() => setDialog("sheets")} data-base-sheets="">From Google Sheets</Button>
+        </div>
+      </header>
+
+      <section aria-label="Tables">
+        <h2 className="mb-1 text-sm font-medium">Tables · {tables.length}</h2>
+        <ul className="divide-y divide-border rounded-md border border-border">
+          {tables.map((t) => (
+            <li key={t.id}><Link href={`/data/${t.id}`} className="block px-3 py-2 text-sm hover:bg-muted" data-base-table={t.id}>{t.name}</Link></li>
+          ))}
+        </ul>
+      </section>
+      <section aria-label="Interfaces">
+        <h2 className="mb-1 text-sm font-medium">Pages · {extras.pages.length}</h2>
+        {extras.pages.length === 0 ? <Words>None yet.</Words> : (
+          <ul className="divide-y divide-border rounded-md border border-border">
+            {extras.pages.map((p) => <li key={p.id} className="flex justify-between px-3 py-2 text-sm"><span>{p.name}</span><span className="text-xs text-muted-foreground">{p.table}</span></li>)}
+          </ul>
+        )}
+      </section>
+      <section aria-label="Automations">
+        <h2 className="mb-1 text-sm font-medium">Automations · {extras.automations.length}</h2>
+        {extras.automations.length === 0 ? <Words>None yet.</Words> : (
+          <ul className="divide-y divide-border rounded-md border border-border">
+            {extras.automations.map((a) => <li key={a.id} className="flex justify-between px-3 py-2 text-sm"><span>{a.name}</span><span className="text-xs text-muted-foreground">{a.enabled ? "On" : "Off"} · {a.table}</span></li>)}
+          </ul>
+        )}
+      </section>
+
+      <EditDialog open={dialog === "edit"} onClose={() => setDialog(null)} current={identity} fallbackName={name} onSave={async (v) => { await saveBase(org, homeId, v); setDialog(null); await load(); }} />
+      <DuplicateDialog open={dialog === "duplicate"} onClose={() => setDialog(null)} name={name} tables={tables} organizationId={org} />
+      <SnapshotsDialog open={dialog === "snapshots"} onClose={() => setDialog(null)} homeId={homeId} organizationId={org} name={name} tables={tables} identity={identity} onNeedIdentity={async () => (await saveBase(org, homeId, { name })) } />
+      <AirtableImportDialog open={dialog === "airtable"} onClose={() => { setDialog(null); void load(); }} organizationId={org} />
+      <SheetsImportDialog open={dialog === "sheets"} onClose={() => { setDialog(null); void load(); }} organizationId={org} />
+    </div>
+  );
+}
+
+function EditDialog({ open, onClose, current, fallbackName, onSave }: { open: boolean; onClose: () => void; current: BaseIdentity | null; fallbackName: string; onSave: (v: { name: string; icon: string; color: string; description: string }) => Promise<void> }) {
+  const [v, setV] = useState({ name: fallbackName, icon: current?.icon ?? "", color: current?.color ?? COLORS[0]!, description: current?.description ?? "" });
+  const [busy, setBusy] = useState(false);
+  useEffect(() => { if (open) setV({ name: current?.name ?? fallbackName, icon: current?.icon ?? "", color: current?.color ?? COLORS[0]!, description: current?.description ?? "" }); }, [open, current, fallbackName]);
+  return (
+    <Dialog open={open} onOpenChange={(o) => (!o && !busy ? onClose() : undefined)}>
+      <DialogContent className="max-w-[min(480px,96vw)] gap-3 p-4" data-base-edit="">
+        <DialogTitle>Base</DialogTitle>
+        <Field value={v.name} onChange={(e) => setV({ ...v, name: e.target.value })} aria-label="Name" placeholder="Name" />
+        <Field value={v.icon} maxLength={2} onChange={(e) => setV({ ...v, icon: e.target.value })} aria-label="Icon" placeholder="Icon (a letter or emoji)" />
+        <div className="flex gap-1.5" role="radiogroup" aria-label="Color">
+          {COLORS.map((c) => (
+            <button key={c} type="button" role="radio" aria-checked={v.color === c} aria-label={c} onClick={() => setV({ ...v, color: c })}
+              className="size-6 rounded-full border-2" style={{ background: c, borderColor: v.color === c ? "currentColor" : "transparent" }} />
+          ))}
+        </div>
+        <Field value={v.description} onChange={(e) => setV({ ...v, description: e.target.value })} aria-label="Description" placeholder="Description" />
+        <div className="flex justify-end gap-2">
+          <Button variant="quiet" onClick={onClose} disabled={busy}>Cancel</Button>
+          <Button variant="primary" disabled={busy || !v.name.trim()} onClick={async () => { setBusy(true); try { await onSave(v); } finally { setBusy(false); } }}>Save</Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// ── duplicate ───────────────────────────────────────────────────────────────────────────────
+
+function DuplicateDialog({ open, onClose, name, tables, organizationId }: { open: boolean; onClose: () => void; name: string; tables: HomeTable[]; organizationId: string }) {
+  const port = useBasePort();
+  const router = useRouter();
+  const [withRecords, setWithRecords] = useState(true);
+  const [phase, setPhase] = useState<{ kind: "ask" } | { kind: "copying"; p: BaseCopyProgress | null } | { kind: "done"; text: string; open: string | null } | { kind: "refused"; text: string }>({ kind: "ask" });
+  const go = async () => {
+    setPhase({ kind: "copying", p: null });
+    const list: BaseTable[] = tables.map((t) => ({ id: t.id, name: t.name }));
+    const res = await duplicateBase(port, { organizationId, tables: list, withRecords, nameFor: (t) => `${t.name} (copy)`, onProgress: (p) => setPhase({ kind: "copying", p }) });
+    if (!res.ok) { setPhase({ kind: "refused", text: `Stopped at ${res.stoppedAt.name}. ${(res.error as { message?: string })?.message ?? ""} ${res.made.length} of ${list.length} tables were copied.` }); return; }
+    const first = res.data.tables[0]?.copy.id ?? null;
+    const home = first ? (await listHomeTables()).find((t) => t.id === first)?.home_id ?? null : null;
+    // The copy's tables share one new Home only if the store made one for the first and the rest followed; say the truth.
+    setPhase({ kind: "done", open: home ? `/data/bases/${home}` : first ? `/data/${first}` : null,
+      text: `${res.data.tables.length} tables${withRecords ? ` with ${res.data.tables.reduce((n, t) => n + t.records, 0)} records` : ""}, ${res.data.relinkedColumns} links re-pointed, ${res.data.automations} automations (off), ${res.data.pages} pages.${res.data.extrasRefused.length ? ` ${res.data.extrasRefused.join(" ")}` : ""}` });
+  };
+  return (
+    <Dialog open={open} onOpenChange={(o) => (!o && phase.kind !== "copying" ? (setPhase({ kind: "ask" }), onClose()) : undefined)}>
+      <DialogContent className="max-w-[min(520px,96vw)] gap-3 p-4" data-base-duplicate-dialog="">
+        <DialogTitle>Duplicate {name}</DialogTitle>
+        {phase.kind === "ask" ? (
+          <>
+            <label className="flex items-center justify-between gap-2 text-sm"><span>Copy the records too</span><input type="checkbox" checked={withRecords} onChange={(e) => setWithRecords(e.target.checked)} aria-label="Copy the records too" /></label>
+            <Words>{`${tables.length} tables, their views, pages and automations (automations start off).`}</Words>
+            <div className="flex justify-end gap-2"><Button variant="quiet" onClick={onClose}>Cancel</Button><Button variant="primary" onClick={() => void go()} data-base-duplicate-go="">Duplicate</Button></div>
+          </>
+        ) : null}
+        {phase.kind === "copying" ? <Words>{phase.p ? `Copying ${phase.p.tableName} (${phase.p.at} of ${phase.p.of})…` : "Starting the copy…"}</Words> : null}
+        {phase.kind === "refused" ? <Words>{phase.text}</Words> : null}
+        {phase.kind === "done" ? (
+          <>
+            <p className="text-sm" data-base-duplicate-done="">{phase.text}</p>
+            <div className="flex justify-end">{phase.open ? <Button variant="primary" onClick={() => router.push(phase.open!)}>Open the copy</Button> : null}</div>
+          </>
+        ) : null}
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// ── snapshots ───────────────────────────────────────────────────────────────────────────────
+
+function SnapshotsDialog({ open, onClose, homeId, organizationId, name, tables, identity, onNeedIdentity }: {
+  open: boolean; onClose: () => void; homeId: string; organizationId: string; name: string; tables: HomeTable[]; identity: BaseIdentity | null; onNeedIdentity: () => Promise<BaseIdentity>;
+}) {
+  const port = useBasePort();
+  const router = useRouter();
+  const [base, setBase] = useState<BaseIdentity | null>(identity);
+  const [rows, setRows] = useState<BaseSnapshotRow[]>([]);
+  const [label, setLabel] = useState("");
+  const [busy, setBusy] = useState<string | null>(null);
+  const [note, setNote] = useState<string | null>(null);
+  const load = useCallback(async (b: BaseIdentity | null) => { if (b) setRows(await listSnapshots(b.id)); }, []);
+  useEffect(() => { if (open) { setBase(identity); void load(identity); } }, [open, identity, load]);
+
+  const take = async () => {
+    setBusy("Taking the snapshot…"); setNote(null);
+    try {
+      const b = base ?? (await onNeedIdentity());
+      setBase(b);
+      const when = label.trim() || new Date().toLocaleString();
+      const res = await snapshotBase(port, { organizationId, tables: tables.map((t) => ({ id: t.id, name: t.name })), label: when, onProgress: (p) => setBusy(`Copying ${p.tableName} (${p.at} of ${p.of})…`) });
+      if (!res.ok) { setNote(`The snapshot stopped at ${res.stoppedAt.name}; nothing is left in your lists.`); return; }
+      await saveSnapshot(organizationId, b.id, res.snapshot);
+      setLabel(""); await load(b);
+    } catch (e) { setNote(e instanceof Error ? e.message : "The snapshot failed."); } finally { setBusy(null); }
+  };
+  const restore = async (s: BaseSnapshotRow) => {
+    setBusy("Restoring as a new base…"); setNote(null);
+    const res = await restoreSnapshot(port, { organizationId, snapshot: { label: s.label, origin: s.origin, tables: s.tables }, onProgress: (p) => setBusy(`Copying ${p.tableName} (${p.at} of ${p.of})…`) });
+    setBusy(null);
+    if (!res.ok) { setNote(`The restore stopped at ${res.stoppedAt.name}. The snapshot itself is untouched.`); return; }
+    const first = res.data.tables[0]?.copy.id;
+    const home = first ? (await listHomeTables()).find((t) => t.id === first)?.home_id : null;
+    setNote(`Restored as a new base: ${res.data.tables.length} tables.`);
+    if (home) router.push(`/data/bases/${home}`);
+  };
+  const scheduleOn = base?.snapshot_schedule?.enabled === true;
+  return (
+    <Dialog open={open} onOpenChange={(o) => (!o && !busy ? onClose() : undefined)}>
+      <DialogContent className="max-w-[min(560px,96vw)] gap-3 p-4" data-base-snapshots-dialog="">
+        <DialogTitle>Snapshots of {name}</DialogTitle>
+        <div className="flex gap-2">
+          <Field value={label} onChange={(e) => setLabel(e.target.value)} placeholder="Label (optional)" aria-label="Snapshot label" disabled={!!busy} />
+          <Button variant="primary" disabled={!!busy} onClick={() => void take()} data-snapshot-take="">Take snapshot</Button>
+        </div>
+        {busy ? <Words>{busy}</Words> : null}
+        {note ? <Words>{note}</Words> : null}
+        <ul className="divide-y divide-border rounded-md border border-border">
+          {rows.length === 0 ? <li className="px-3 py-2"><Words>No snapshots yet.</Words></li> : rows.map((s) => (
+            <li key={s.id} className="flex items-center justify-between gap-2 px-3 py-2 text-sm" data-snapshot={s.id}>
+              <span className="min-w-0 truncate">{s.label}<span className="ml-2 text-xs text-muted-foreground">{s.tables.length} tables · {new Date(s.created_at).toLocaleDateString()}</span></span>
+              <span className="flex gap-1">
+                <Button variant="quiet" disabled={!!busy} onClick={() => void restore(s)} data-snapshot-restore="">Restore as new base</Button>
+                <Button variant="quiet" disabled={!!busy} onClick={async () => { await trashSnapshot(s.id); await load(base); }}>Remove</Button>
+              </span>
+            </li>
+          ))}
+        </ul>
+        <label className="flex items-center justify-between gap-2 text-sm">
+          <span>Take a snapshot every week</span>
+          <input type="checkbox" checked={scheduleOn} aria-label="Take a snapshot every week" disabled={!!busy}
+            onChange={async (e) => { const b = base ?? (await onNeedIdentity()); await setSnapshotSchedule(b.id, e.target.checked); setBase({ ...b, snapshot_schedule: { enabled: e.target.checked, every: "weekly" } }); }} />
+        </label>
+        <Words>Off until you turn it on. Snapshots you remove stay recoverable for 90 days.</Words>
+        <span hidden data-home={homeId} />
+      </DialogContent>
+    </Dialog>
+  );
+}
