@@ -1,5 +1,21 @@
 [
 {
+"category": "free_mail",
+"confidence": 1.0,
+"host": "126.com",
+"label": "NetEase Mail",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "free_mail",
+"confidence": 1.0,
+"host": "163.com",
+"label": "NetEase Mail",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
 "category": "press_release",
 "confidence": 1.0,
 "host": "24-7pressrelease.com",
@@ -144,6 +160,14 @@
 "provenance": "seeded"
 },
 {
+"category": "free_mail",
+"confidence": 1.0,
+"host": "aol.com",
+"label": "AOL Mail",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
 "category": "news",
 "confidence": 1.0,
 "host": "apnews.com",
@@ -208,6 +232,14 @@
 "provenance": "seeded"
 },
 {
+"category": "free_mail",
+"confidence": 1.0,
+"host": "att.net",
+"label": "AT&T",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
 "category": "professional_registry",
 "confidence": 1.0,
 "host": "avvo.com",
@@ -236,6 +268,14 @@
 "confidence": 1.0,
 "host": "bamboohr.com",
 "label": "",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "social",
+"confidence": 1.0,
+"host": "bandcamp.com",
+"label": "Bandcamp",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -304,6 +344,30 @@
 "provenance": "seeded"
 },
 {
+"category": "social",
+"confidence": 1.0,
+"host": "behance.net",
+"label": "Behance",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "free_mail",
+"confidence": 1.0,
+"host": "bellsouth.net",
+"label": "AT&T",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "link_in_bio",
+"confidence": 1.0,
+"host": "bento.me",
+"label": "Bento",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
 "category": "directory",
 "confidence": 1.0,
 "host": "bing.com",
@@ -316,6 +380,14 @@
 "confidence": 1.0,
 "host": "bio.link",
 "label": "Bio.link",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "link_in_bio",
+"confidence": 1.0,
+"host": "bio.site",
+"label": "Bio Site",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -451,7 +523,23 @@
 "category": "social",
 "confidence": 1.0,
 "host": "bsky.app",
-"label": "",
+"label": "Bluesky",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "free_mail",
+"confidence": 1.0,
+"host": "btinternet.com",
+"label": "BT",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "non_contact_mail",
+"confidence": 1.0,
+"host": "bugsnag.com",
+"label": "Bugsnag",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -584,6 +672,14 @@
 "provenance": "seeded"
 },
 {
+"category": "free_mail",
+"confidence": 1.0,
+"host": "charter.net",
+"label": "Spectrum",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
 "category": "people_search",
 "confidence": 1.0,
 "host": "checkpeople.com",
@@ -672,6 +768,22 @@
 "provenance": "seeded"
 },
 {
+"category": "free_mail",
+"confidence": 1.0,
+"host": "comcast.net",
+"label": "Xfinity",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "non_contact_mail",
+"confidence": 1.0,
+"host": "company.com",
+"label": "Placeholder",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
 "category": "review_site",
 "confidence": 1.0,
 "host": "complaintsboard.com",
@@ -692,6 +804,14 @@
 "confidence": 1.0,
 "host": "contactout.com",
 "label": "",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "free_mail",
+"confidence": 1.0,
+"host": "cox.net",
+"label": "Cox",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -776,6 +896,14 @@
 "provenance": "seeded"
 },
 {
+"category": "social",
+"confidence": 1.0,
+"host": "dev.to",
+"label": "DEV",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
 "category": "link_in_bio",
 "confidence": 1.0,
 "host": "direct.me",
@@ -824,6 +952,14 @@
 "provenance": "seeded"
 },
 {
+"category": "non_contact_mail",
+"confidence": 1.0,
+"host": "domain.com",
+"label": "Placeholder",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
 "category": "food_delivery",
 "confidence": 1.0,
 "host": "doordash.com",
@@ -852,6 +988,22 @@
 "confidence": 1.0,
 "host": "dre.ca.gov",
 "label": "",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "social",
+"confidence": 1.0,
+"host": "dribbble.com",
+"label": "Dribbble",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "free_mail",
+"confidence": 1.0,
+"host": "earthlink.net",
+"label": "EarthLink",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -904,6 +1056,14 @@
 "provenance": "seeded"
 },
 {
+"category": "non_contact_mail",
+"confidence": 1.0,
+"host": "email.com",
+"label": "Placeholder",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
 "category": "academic_journal",
 "confidence": 1.0,
 "host": "emerald.com",
@@ -952,6 +1112,30 @@
 "provenance": "seeded"
 },
 {
+"category": "non_contact_mail",
+"confidence": 1.0,
+"host": "example.com",
+"label": "Placeholder",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "non_contact_mail",
+"confidence": 1.0,
+"host": "example.net",
+"label": "Placeholder",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "non_contact_mail",
+"confidence": 1.0,
+"host": "example.org",
+"label": "Placeholder",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
 "category": "directory",
 "confidence": 1.0,
 "host": "f6s.com",
@@ -988,6 +1172,22 @@
 "confidence": 1.0,
 "host": "fastcompany.com",
 "label": "",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "free_mail",
+"confidence": 1.0,
+"host": "fastmail.com",
+"label": "Fastmail",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "free_mail",
+"confidence": 1.0,
+"host": "fastmail.fm",
+"label": "Fastmail",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1144,6 +1344,22 @@
 "provenance": "seeded"
 },
 {
+"category": "social",
+"confidence": 1.0,
+"host": "github.com",
+"label": "GitHub",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "social",
+"confidence": 1.0,
+"host": "gitlab.com",
+"label": "GitLab",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
 "category": "review_site",
 "confidence": 1.0,
 "host": "glassdoor.com",
@@ -1164,6 +1380,38 @@
 "confidence": 1.0,
 "host": "globenewswire.com",
 "label": "",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "free_mail",
+"confidence": 1.0,
+"host": "gmail.com",
+"label": "Gmail",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "free_mail",
+"confidence": 1.0,
+"host": "gmx.com",
+"label": "GMX",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "free_mail",
+"confidence": 1.0,
+"host": "gmx.de",
+"label": "GMX",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "free_mail",
+"confidence": 1.0,
+"host": "gmx.net",
+"label": "GMX",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1200,6 +1448,14 @@
 "provenance": "seeded"
 },
 {
+"category": "free_mail",
+"confidence": 1.0,
+"host": "googlemail.com",
+"label": "Gmail",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
 "category": "job_board",
 "confidence": 1.0,
 "host": "greenhouse.io",
@@ -1224,6 +1480,22 @@
 "provenance": "seeded"
 },
 {
+"category": "social",
+"confidence": 1.0,
+"host": "hashnode.com",
+"label": "Hashnode",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "social",
+"confidence": 1.0,
+"host": "hashnode.dev",
+"label": "Hashnode",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
 "category": "aggregator",
 "confidence": 1.0,
 "host": "headtopics.com",
@@ -1236,6 +1508,22 @@
 "confidence": 1.0,
 "host": "healthgrades.com",
 "label": "",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "free_mail",
+"confidence": 1.0,
+"host": "hey.com",
+"label": "HEY",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "link_in_bio",
+"confidence": 1.0,
+"host": "heylink.me",
+"label": "HeyLink",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1296,6 +1584,38 @@
 "provenance": "seeded"
 },
 {
+"category": "free_mail",
+"confidence": 1.0,
+"host": "hotmail.co.uk",
+"label": "Outlook",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "free_mail",
+"confidence": 1.0,
+"host": "hotmail.com",
+"label": "Outlook",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "free_mail",
+"confidence": 1.0,
+"host": "hotmail.de",
+"label": "Outlook",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "free_mail",
+"confidence": 1.0,
+"host": "hotmail.fr",
+"label": "Outlook",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
 "category": "review_site",
 "confidence": 1.0,
 "host": "houzz.com",
@@ -1312,6 +1632,14 @@
 "provenance": "seeded"
 },
 {
+"category": "social",
+"confidence": 1.0,
+"host": "huggingface.co",
+"label": "Hugging Face",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
 "category": "data_broker",
 "confidence": 1.0,
 "host": "hunter.io",
@@ -1324,6 +1652,14 @@
 "confidence": 1.0,
 "host": "i-newswire.com",
 "label": "",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "free_mail",
+"confidence": 1.0,
+"host": "icloud.com",
+"label": "iCloud Mail",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1496,10 +1832,42 @@
 "provenance": "seeded"
 },
 {
+"category": "free_mail",
+"confidence": 1.0,
+"host": "juno.com",
+"label": "Juno",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
 "category": "professional_registry",
 "confidence": 1.0,
 "host": "justia.com",
 "label": "",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "social",
+"confidence": 1.0,
+"host": "kaggle.com",
+"label": "Kaggle",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "social",
+"confidence": 1.0,
+"host": "keybase.io",
+"label": "Keybase",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "social",
+"confidence": 1.0,
+"host": "ko-fi.com",
+"label": "Ko-fi",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1544,10 +1912,34 @@
 "provenance": "seeded"
 },
 {
+"category": "free_mail",
+"confidence": 1.0,
+"host": "libero.it",
+"label": "Libero",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "link_in_bio",
+"confidence": 1.0,
+"host": "link.me",
+"label": "Link.me",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
 "category": "academic_journal",
 "confidence": 1.0,
 "host": "link.springer.com",
 "label": "",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "link_in_bio",
+"confidence": 1.0,
+"host": "linkbio.co",
+"label": "LinkBio",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1594,6 +1986,14 @@
 {
 "category": "link_in_bio",
 "confidence": 1.0,
+"host": "linkinprofile.com",
+"label": "LinkInProfile",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "link_in_bio",
+"confidence": 1.0,
 "host": "linkpop.com",
 "label": "Linkpop",
 "path_pattern": "",
@@ -1604,6 +2004,38 @@
 "confidence": 1.0,
 "host": "linktr.ee",
 "label": "Linktree",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "link_in_bio",
+"confidence": 1.0,
+"host": "lit.link",
+"label": "lit.link",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "free_mail",
+"confidence": 1.0,
+"host": "live.co.uk",
+"label": "Outlook",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "free_mail",
+"confidence": 1.0,
+"host": "live.com",
+"label": "Outlook",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "link_in_bio",
+"confidence": 1.0,
+"host": "lnk.at",
+"label": "Lnk.at",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1636,6 +2068,30 @@
 "confidence": 1.0,
 "host": "lusha.com",
 "label": "",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "free_mail",
+"confidence": 1.0,
+"host": "mac.com",
+"label": "iCloud Mail",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "free_mail",
+"confidence": 1.0,
+"host": "mail.com",
+"label": "mail.com",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "free_mail",
+"confidence": 1.0,
+"host": "mail.ru",
+"label": "Mail.ru",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1707,7 +2163,7 @@
 "category": "social",
 "confidence": 1.0,
 "host": "mastodon.social",
-"label": "",
+"label": "Mastodon",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1736,10 +2192,26 @@
 "provenance": "seeded"
 },
 {
+"category": "free_mail",
+"confidence": 1.0,
+"host": "me.com",
+"label": "iCloud Mail",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
 "category": "blog_platform",
 "confidence": 1.0,
 "host": "medium.com",
 "label": "",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "social",
+"confidence": 1.0,
+"host": "medium.com",
+"label": "Medium",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1792,6 +2264,14 @@
 "provenance": "seeded"
 },
 {
+"category": "free_mail",
+"confidence": 1.0,
+"host": "msn.com",
+"label": "Outlook",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
 "category": "people_search",
 "confidence": 1.0,
 "host": "myheritage.com",
@@ -1820,6 +2300,14 @@
 "confidence": 1.0,
 "host": "nature.com",
 "label": "",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "free_mail",
+"confidence": 1.0,
+"host": "naver.com",
+"label": "Naver Mail",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2104,6 +2592,38 @@
 "provenance": "seeded"
 },
 {
+"category": "free_mail",
+"confidence": 1.0,
+"host": "orange.fr",
+"label": "Orange",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "free_mail",
+"confidence": 1.0,
+"host": "outlook.com",
+"label": "Outlook",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "free_mail",
+"confidence": 1.0,
+"host": "outlook.de",
+"label": "Outlook",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "free_mail",
+"confidence": 1.0,
+"host": "outlook.fr",
+"label": "Outlook",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
 "category": "directory",
 "confidence": 1.0,
 "host": "owler.com",
@@ -2124,6 +2644,14 @@
 "confidence": 1.0,
 "host": "patch.com",
 "label": "",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "social",
+"confidence": 1.0,
+"host": "patreon.com",
+"label": "Patreon",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2220,6 +2748,14 @@
 "confidence": 1.0,
 "host": "plos.org",
 "label": "",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "free_mail",
+"confidence": 1.0,
+"host": "pm.me",
+"label": "Proton Mail",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2344,10 +2880,42 @@
 "provenance": "seeded"
 },
 {
+"category": "social",
+"confidence": 1.0,
+"host": "producthunt.com",
+"label": "Product Hunt",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
 "category": "review_site",
 "confidence": 1.0,
 "host": "productreview.com.au",
 "label": "",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "free_mail",
+"confidence": 1.0,
+"host": "proton.me",
+"label": "Proton Mail",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "free_mail",
+"confidence": 1.0,
+"host": "protonmail.ch",
+"label": "Proton Mail",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "free_mail",
+"confidence": 1.0,
+"host": "protonmail.com",
+"label": "Proton Mail",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2400,6 +2968,14 @@
 "provenance": "seeded"
 },
 {
+"category": "free_mail",
+"confidence": 1.0,
+"host": "qq.com",
+"label": "QQ Mail",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
 "category": "forum",
 "confidence": 1.0,
 "host": "quora.com",
@@ -2424,6 +3000,14 @@
 "provenance": "seeded"
 },
 {
+"category": "non_contact_mail",
+"confidence": 1.0,
+"host": "raygun.io",
+"label": "Raygun",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
 "category": "real_estate",
 "confidence": 1.0,
 "host": "realtor.com",
@@ -2444,6 +3028,14 @@
 "confidence": 1.0,
 "host": "redfin.com",
 "label": "",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "free_mail",
+"confidence": 1.0,
+"host": "rediffmail.com",
+"label": "Rediffmail",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2488,10 +3080,26 @@
 "provenance": "seeded"
 },
 {
+"category": "free_mail",
+"confidence": 1.0,
+"host": "rocketmail.com",
+"label": "Yahoo Mail",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
 "category": "data_broker",
 "confidence": 1.0,
 "host": "rocketreach.co",
 "label": "",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "non_contact_mail",
+"confidence": 1.0,
+"host": "rollbar.com",
+"label": "Rollbar",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2508,6 +3116,14 @@
 "confidence": 1.0,
 "host": "sagepub.com",
 "label": "",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "free_mail",
+"confidence": 1.0,
+"host": "sbcglobal.net",
+"label": "AT&T",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2564,6 +3180,22 @@
 "confidence": 1.0,
 "host": "send2press.com",
 "label": "",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "non_contact_mail",
+"confidence": 1.0,
+"host": "sentry-cdn.com",
+"label": "Sentry",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "non_contact_mail",
+"confidence": 1.0,
+"host": "sentry.io",
+"label": "Sentry",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2688,6 +3320,14 @@
 "provenance": "seeded"
 },
 {
+"category": "social",
+"confidence": 1.0,
+"host": "soundcloud.com",
+"label": "SoundCloud",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
 "category": "people_search",
 "confidence": 1.0,
 "host": "spokeo.com",
@@ -2744,6 +3384,14 @@
 "provenance": "seeded"
 },
 {
+"category": "social",
+"confidence": 1.0,
+"host": "stackoverflow.com",
+"label": "Stack Overflow",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
 "category": "link_in_bio",
 "confidence": 1.0,
 "host": "stan.store",
@@ -2768,10 +3416,26 @@
 "provenance": "seeded"
 },
 {
+"category": "social",
+"confidence": 1.0,
+"host": "substack.com",
+"label": "Substack",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
 "category": "directory",
 "confidence": 1.0,
 "host": "superpages.com",
 "label": "",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "free_mail",
+"confidence": 1.0,
+"host": "t-online.de",
+"label": "T-Online",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2883,7 +3547,7 @@
 "category": "social",
 "confidence": 1.0,
 "host": "threads.com",
-"label": "",
+"label": "Threads",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2891,7 +3555,7 @@
 "category": "social",
 "confidence": 1.0,
 "host": "threads.net",
-"label": "",
+"label": "Threads",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -3000,10 +3664,26 @@
 "provenance": "seeded"
 },
 {
+"category": "free_mail",
+"confidence": 1.0,
+"host": "tuta.io",
+"label": "Tuta",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "free_mail",
+"confidence": 1.0,
+"host": "tutanota.com",
+"label": "Tuta",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
 "category": "social",
 "confidence": 1.0,
 "host": "twitch.tv",
-"label": "",
+"label": "Twitch",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -3036,6 +3716,14 @@
 "confidence": 1.0,
 "host": "usatoday.com",
 "label": "",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "free_mail",
+"confidence": 1.0,
+"host": "users.noreply.github.com",
+"label": "GitHub no-reply",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -3076,6 +3764,14 @@
 "confidence": 1.0,
 "host": "veripages.com",
 "label": "",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "free_mail",
+"confidence": 1.0,
+"host": "verizon.net",
+"label": "Verizon",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -3144,6 +3840,14 @@
 "provenance": "seeded"
 },
 {
+"category": "free_mail",
+"confidence": 1.0,
+"host": "web.de",
+"label": "WEB.DE",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
 "category": "directory",
 "confidence": 1.0,
 "host": "wellfound.com",
@@ -3192,6 +3896,22 @@
 "provenance": "seeded"
 },
 {
+"category": "link_in_bio",
+"confidence": 1.0,
+"host": "withkoji.com",
+"label": "Koji",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "non_contact_mail",
+"confidence": 1.0,
+"host": "wixpress.com",
+"label": "Wix internal",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
 "category": "data_broker",
 "confidence": 1.0,
 "host": "wiza.co",
@@ -3232,10 +3952,82 @@
 "provenance": "seeded"
 },
 {
+"category": "free_mail",
+"confidence": 1.0,
+"host": "yahoo.ca",
+"label": "Yahoo Mail",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "free_mail",
+"confidence": 1.0,
+"host": "yahoo.co.in",
+"label": "Yahoo Mail",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "free_mail",
+"confidence": 1.0,
+"host": "yahoo.co.uk",
+"label": "Yahoo Mail",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
 "category": "aggregator",
 "confidence": 1.0,
 "host": "yahoo.com",
 "label": "",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "free_mail",
+"confidence": 1.0,
+"host": "yahoo.com",
+"label": "Yahoo Mail",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "free_mail",
+"confidence": 1.0,
+"host": "yahoo.com.au",
+"label": "Yahoo Mail",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "free_mail",
+"confidence": 1.0,
+"host": "yahoo.de",
+"label": "Yahoo Mail",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "free_mail",
+"confidence": 1.0,
+"host": "yahoo.fr",
+"label": "Yahoo Mail",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "free_mail",
+"confidence": 1.0,
+"host": "yandex.com",
+"label": "Yandex Mail",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "free_mail",
+"confidence": 1.0,
+"host": "yandex.ru",
+"label": "Yandex Mail",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -3277,6 +4069,22 @@
 "host": "yelp.com",
 "label": "",
 "path_pattern": "^yelp\\.com/biz/",
+"provenance": "seeded"
+},
+{
+"category": "free_mail",
+"confidence": 1.0,
+"host": "ymail.com",
+"label": "Yahoo Mail",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "non_contact_mail",
+"confidence": 1.0,
+"host": "yourdomain.com",
+"label": "Placeholder",
+"path_pattern": "",
 "provenance": "seeded"
 },
 {
@@ -3332,6 +4140,22 @@
 "confidence": 1.0,
 "host": "zocdoc.com",
 "label": "",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "free_mail",
+"confidence": 1.0,
+"host": "zoho.com",
+"label": "Zoho Mail",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "free_mail",
+"confidence": 1.0,
+"host": "zohomail.com",
+"label": "Zoho Mail",
 "path_pattern": "",
 "provenance": "seeded"
 },

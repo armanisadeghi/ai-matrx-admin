@@ -26,8 +26,24 @@
 {
 "category": "link_in_bio",
 "confidence": 1.0,
+"host": "bento.me",
+"label": "Bento",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "link_in_bio",
+"confidence": 1.0,
 "host": "bio.link",
 "label": "Bio.link",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "link_in_bio",
+"confidence": 1.0,
+"host": "bio.site",
+"label": "Bio Site",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -74,6 +90,14 @@
 {
 "category": "link_in_bio",
 "confidence": 1.0,
+"host": "heylink.me",
+"label": "HeyLink",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "link_in_bio",
+"confidence": 1.0,
 "host": "hoo.be",
 "label": "Hoo.be",
 "path_pattern": "",
@@ -114,6 +138,22 @@
 {
 "category": "link_in_bio",
 "confidence": 1.0,
+"host": "link.me",
+"label": "Link.me",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "link_in_bio",
+"confidence": 1.0,
+"host": "linkbio.co",
+"label": "LinkBio",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "link_in_bio",
+"confidence": 1.0,
 "host": "linkfly.to",
 "label": "Linkfly",
 "path_pattern": "",
@@ -130,6 +170,14 @@
 {
 "category": "link_in_bio",
 "confidence": 1.0,
+"host": "linkinprofile.com",
+"label": "LinkInProfile",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "link_in_bio",
+"confidence": 1.0,
 "host": "linkpop.com",
 "label": "Linkpop",
 "path_pattern": "",
@@ -140,6 +188,22 @@
 "confidence": 1.0,
 "host": "linktr.ee",
 "label": "Linktree",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "link_in_bio",
+"confidence": 1.0,
+"host": "lit.link",
+"label": "lit.link",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "link_in_bio",
+"confidence": 1.0,
+"host": "lnk.at",
+"label": "Lnk.at",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -228,6 +292,14 @@
 "confidence": 1.0,
 "host": "taplink.cc",
 "label": "Taplink",
+"path_pattern": "",
+"provenance": "seeded"
+},
+{
+"category": "link_in_bio",
+"confidence": 1.0,
+"host": "withkoji.com",
+"label": "Koji",
 "path_pattern": "",
 "provenance": "seeded"
 }

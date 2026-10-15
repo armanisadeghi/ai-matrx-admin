@@ -53,13 +53,35 @@ export function findMatchingBrands(probe: BrandProbe, opts: { ignoreBrandId?: st
   const key = `${probeKey(probe)}|${opts.ignoreBrandId ?? ""}`;
   const hit = cache.get(key);
   if (hit) return hit;
-  const run = read(probe, opts.ignoreBrandId ?? null);
+  const run = withRetryOnGatewayError(() => read(probe, opts.ignoreBrandId ?? null));
   cache.set(key, run);
   // A failed read is not remembered: the next ask tries again.
   run.catch(() => cache.delete(key));
   // Brands change; an answer is good for this long.
   setTimeout(() => cache.delete(key), 60_000);
   return run;
+}
+
+/** A gateway or network blip (502/503/504, a dropped fetch) — worth one more try; a real error (bad filter, row security) is not. */
+export function isGatewayBlip(message: string): boolean {
+  return /\b50[234]\b|bad gateway|service unavailable|gateway time-?out|failed to fetch|fetch failed|networkerror|load failed/i.test(message);
+}
+
+/**
+ * The check runs while a Smart Add round is still arriving, so a probe changes many times and several reads fly at once.
+ * A gateway blip on one of them must not paint "Couldn't check your brands" (MKT-091): try again, up to 3 times, then raise
+ * the last error unchanged so the screen still says what failed.
+ */
+export async function withRetryOnGatewayError<T>(run: () => Promise<T>, attempts = 3, waitMs = 400): Promise<T> {
+  for (let i = 1; ; i++) {
+    try {
+      return await run();
+    } catch (e) {
+      const message = e instanceof Error ? e.message : String(e);
+      if (i >= attempts || !isGatewayBlip(message)) throw e;
+      await new Promise((r) => setTimeout(r, waitMs * i));
+    }
+  }
 }
 
 async function read(probe: BrandProbe, ignoreBrandId: string | null): Promise<BrandMatch[]> {
