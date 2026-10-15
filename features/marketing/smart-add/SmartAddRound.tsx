@@ -23,6 +23,8 @@ import {
 } from "@/features/workflow-runtime/redux/workflow-runs.selectors";
 import { evidenceFromPayload, type EvidenceItem } from "./evidence";
 import { factsFromPayload, type BrandFact } from "./validate/queue";
+import { ratchetFacts, streamingFacts } from "./streamingFacts";
+import { selectKindEnvelope } from "@ai-matrx/chat/agents/redux/execution-system/active-requests/active-requests.selectors";
 import { brandNameFromPayload, factEvidence, webFirstData } from "./firstData";
 import { suggestionsFromPayload, type WeThinkSuggestion } from "./weThink";
 import { parseEntityKind, type EntityKind } from "./entityKind";
@@ -212,10 +214,18 @@ function StepWatch({
     gate: parseGate(output?.gate),
     replay: readAiTestReplay(output),
   };
+  // MKT-085: the facts agent's answer lands in the slots AS IT STREAMS — each finished fact in the step's
+  // live envelope (the lane's own accumulator, stream-everything), ratcheted so a shown fact never leaves.
+  const laneRequestId = invocation?.laneRequestId ?? null;
+  const envelope = useAppSelector((state) => (laneRequestId ? selectKindEnvelope(laneRequestId)(state) : null));
+  const settled = aggregate.phase === "settled" || aggregate.phase === "failed" || aggregate.phase === "skipped";
+  const [shownFacts, setShownFacts] = useState<BrandFact[]>([]);
+  const nextFacts = ratchetFacts(ratchetFacts(shownFacts, streamingFacts(envelope, !settled)), factsFromPayload(output));
+  if (nextFacts !== shownFacts) setShownFacts(nextFacts);
   const signature = JSON.stringify({
     view,
     evidence: evidenceFromPayload(output),
-    facts: factsFromPayload(output),
+    facts: nextFacts,
     suggestions: suggestionsFromPayload(output),
   });
   useEffect(() => {
@@ -401,7 +411,7 @@ export function SmartAddRound({
   return (
     <>
       {[...steps, ...(onEvidence ? ANCHOR_STEPS : []), ...(onFacts ? FACT_STEPS : []), ...(onSuggestions ? WE_THINK_STEPS : [])].map((s) => (
-        <StepWatch key={s} runId={runId} step={s} onStep={onStep} />
+        <StepWatch key={`${runId}:${s}`} runId={runId} step={s} onStep={onStep} />
       ))}
     </>
   );
