@@ -869,26 +869,30 @@ cmd_warm() {
   local expected_pid="${1:-}"
   alive "$expected_pid" || exit 0
 
-  local attempt
-  for attempt in $(seq 1 90); do
-    if curl --max-time 5 -fsS -o /dev/null -H "$AGENT_TRAFFIC_HEADER" "http://$SESSION_HOST:$PORT/" 2>/dev/null; then
-      # Warm on THIS session's host, with THIS session's nonce file. The old
-      # warm-up logged in on bare localhost, which both wrote into the shared
-      # cookie jar and consumed the one shared nonce file out from under any
-      # agent mid-handshake.
-      mint_nonce "$SESSION_HOST"
-      if [[ -n "${NONCE:-}" ]]; then
-        curl -fsS -L -c "$JAR" -b "$JAR" -o /dev/null -H "$AGENT_TRAFFIC_HEADER" \
-          "http://$SESSION_HOST:$PORT/api/dev-login?nonce=$NONCE&next=/dashboard" \
-          2>/dev/null || true
-      fi
-      rm -f "$JAR" "$NONCE_PATH"
-      touch "$READY"
-      exit 0
-    fi
+  # 1. Wait for the listener with the instant static probe (compiles nothing), up to 10 min.
+  local attempt answered=0
+  for attempt in $(seq 1 300); do
+    if preview_answers "$PORT"; then answered=1; break; fi
     alive "$expected_pid" || exit 0
     sleep 2
   done
+  (( answered )) || exit 0
+
+  # 2. Compile the sign-in path and the dashboard, signed in, on THIS session's host and nonce.
+  # Each request may take minutes: a cold compile under load took 6 min on 2026-10-15, and the old
+  # 5 s per-request limit meant the warm-up never finished and the server never read as ready.
+  # The old warm-up logged in on bare localhost, which both wrote into the shared cookie jar and
+  # consumed the one shared nonce file out from under any agent mid-handshake.
+  local warm_max="${MATRX_PREVIEW_WARM_MAX_SEC:-900}"
+  mint_nonce "$SESSION_HOST"
+  if [[ -n "${NONCE:-}" ]]; then
+    curl -fsS -L --max-time "$warm_max" -c "$JAR" -b "$JAR" -o /dev/null -H "$AGENT_TRAFFIC_HEADER" \
+      "http://$SESSION_HOST:$PORT/api/dev-login?nonce=$NONCE&next=/dashboard" \
+      2>/dev/null || true
+  fi
+  rm -f "$JAR" "${NONCE_PATH:-}"
+  alive "$expected_pid" || exit 0
+  touch "$READY"
 }
 
 group_rss_kb() {

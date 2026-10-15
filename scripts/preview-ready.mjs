@@ -24,6 +24,10 @@
 //                                  broken: names the file and whether it is someone's uncommitted
 //                                  edit or a commit (hash, author). Not a product defect of the
 //                                  page under test; not fixable by restarting.
+//   6b. warm    — `--warm /a,/b`: loads every other route the run will visit, signed in, so the
+//                 browser never sits on a minutes-long first compile (the census's top cost:
+//                 "navigate timed out after 300s" and "pane is currently hidden" timeouts were
+//                 the page waiting on a cold compile, not a crash)
 //   7. browser  — prints a FRESH sign-in URL for the browser pane, the lane-lock holder, and one
 //                 line of JavaScript to run in the page to confirm it there too.
 //
@@ -52,14 +56,16 @@ let holdMin = 45;
 let member = false;
 let repair = true;
 let budgetSec = 0; // 0 = scale with load
+let warm = [];
 for (let i = 0; i < args.length; i++) {
   const a = args[i];
   if (a === "--hold") holdMin = Number(args[++i]);
   else if (a === "--member") member = true;
   else if (a === "--no-repair") repair = false;
   else if (a === "--timeout") budgetSec = Number(args[++i]);
+  else if (a === "--warm") warm = String(args[++i] ?? "").split(",").map((r) => r.trim()).filter((r) => r.startsWith("/"));
   else if (a === "-h" || a === "--help") {
-    console.log("pnpm preview:ready [route=/dashboard] [--hold <min>=45] [--member] [--no-repair] [--timeout <sec>]");
+    console.log("pnpm preview:ready [route=/dashboard] [--warm /a,/b] [--hold <min>=45] [--member] [--no-repair] [--timeout <sec>]");
     process.exit(0);
   } else if (a.startsWith("/")) route = a;
   else {
@@ -329,6 +335,22 @@ for (let attempt = 1; attempt <= 2; attempt++) {
   }
   if (v.kind === "signed-out" && attempt === 1) continue; // one retry: a nonce raced another mint
   notReady(v.why);
+}
+
+// ── 6b. warm the run's other routes ──────────────────────────────────────────
+for (const extra of warm) {
+  if (left() < 15000) {
+    say(`warm: out of time before ${extra} — it will compile on first visit`);
+    break;
+  }
+  const t0 = Date.now();
+  const r = await signedInLoad(extra);
+  const v = verdictOf(r, extra, say);
+  say(v.ok ? `warm: ${extra} compiled and loads signed in (${((Date.now() - t0) / 1000).toFixed(0)}s)` : `warm: ${extra} — ${v.why}`);
+  if (!v.ok && v.kind === "page-error") {
+    const d = await diagnoseBuildError(r.body || "", ROOT);
+    for (const line of d.lines) say(`  ${line}`);
+  }
 }
 
 // ── 7. browser ───────────────────────────────────────────────────────────────
