@@ -93,10 +93,10 @@ export function sortHomeItems<Row>(
   const dated = items.map((i) => datedFor(i, sort, openedAt, userId));
   const byName = (a: DatedItem<Row>, b: DatedItem<Row>) => a.item.name.localeCompare(b.item.name);
   if (sort === "title") return dated.sort(byName);
-  // "Last opened by me": opened files first (newest open first), then the never-opened by modified.
-  // "Last modified by me": my modifications first, then everyone else's.
-  const tier = (d: DatedItem<Row>) =>
-    sort === "opened" ? (d.verb === "Opened" ? 0 : 1) : sort === "modified-by-me" ? (d.verb === "You modified" ? 0 : 1) : 0;
+  // "Last opened by me": ONE timeline by date — a file never opened counts from its modified date, so it
+  // sits among the other files of its day (Google); it was a separate tail that repeated "Today".
+  // "Last modified by me": my modifications first within a time group, then everyone else's.
+  const tier = (d: DatedItem<Row>) => (sort === "modified-by-me" ? (d.verb === "You modified" ? 0 : 1) : 0);
   return dated.sort((a, b) => tier(a) - tier(b) || (b.at ?? 0) - (a.at ?? 0) || byName(a, b));
 }
 
@@ -113,21 +113,22 @@ export function bucketOf(at: number | null, now: number): { key: string; label: 
 }
 
 /**
- * Consecutive runs of one bucket become a group. The "tier" sorts put a second run after the
- * first (opened files, then never-opened ones), so a bucket label can repeat — the key keeps the
- * run index so React never sees two groups with one key.
+ * One group per bucket, in Google's order (Today, Previous 7 days, Previous 30 days, Earlier); inside a
+ * bucket the items keep the order the sort gave them. A heading never repeats, whatever the sort's tiers.
  */
 export function groupHomeItems<Row>(sorted: readonly DatedItem<Row>[], sort: HomeSortKey, now: number): HomeGroup<Row>[] {
   if (sort === "title") return sorted.length ? [{ key: "all", label: null, items: [...sorted] }] : [];
-  const groups: HomeGroup<Row>[] = [];
+  const byKey = new Map<string, HomeGroup<Row>>();
   for (const d of sorted) {
     const b = bucketOf(d.at, now);
-    const last = groups[groups.length - 1];
-    if (last && last.label === b.label) last.items.push(d);
-    else groups.push({ key: `${b.key}-${groups.length}`, label: b.label, items: [d] });
+    const group = byKey.get(b.key);
+    if (group) group.items.push(d);
+    else byKey.set(b.key, { key: b.key, label: b.label, items: [d] });
   }
-  return groups;
+  return BUCKET_ORDER.flatMap((k) => (byKey.has(k) ? [byKey.get(k)!] : []));
 }
+
+const BUCKET_ORDER = ["today", "7", "30", "earlier"] as const;
 
 /** Google's card date: a time today, "Oct 3" this year, "Oct 3, 2024" before. */
 export function homeDateLabel(at: number | null, now: number): string {

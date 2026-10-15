@@ -52,10 +52,10 @@ describe("sorts", () => {
     ["fresh-open", daysAgo(0.05)],
   ]);
 
-  it("Last opened by me: what I opened, newest open first, then the never-opened by modified", () => {
+  it("Last opened by me: one timeline — a never-opened file counts from its modified date", () => {
     const s = sortHomeItems(rows, "opened", opened, "me");
-    expect(s.map((d) => d.item.id)).toEqual(["fresh-open", "old-open", "never"]);
-    expect(s.map((d) => d.verb)).toEqual(["Opened", "Opened", "Modified"]);
+    expect(s.map((d) => d.item.id)).toEqual(["fresh-open", "never", "old-open"]);
+    expect(s.map((d) => d.verb)).toEqual(["Opened", "Modified", "Opened"]);
   });
 
   it("Last modified by me: my edits first, everyone else's after", () => {
@@ -92,6 +92,32 @@ describe("groups", () => {
     const g = groupHomeItems(sortHomeItems(rows, "opened", opened, "me"), "opened", NOW);
     const keys = g.map((x) => x.key);
     expect(new Set(keys).size).toBe(keys.length);
+  });
+
+  it("a never-opened file from today sits under the single Today heading, not after Previous 7 days", () => {
+    const rows = [
+      item("opened-3d", "A", { updatedAt: daysAgo(30) }),
+      item("never-today", "B", { updatedAt: daysAgo(0.1) }),
+      item("opened-today", "C", { updatedAt: daysAgo(30) }),
+    ];
+    const opened = new Map([
+      ["opened-3d", daysAgo(3)],
+      ["opened-today", daysAgo(0.05)],
+    ]);
+    const g = groupHomeItems(sortHomeItems(rows, "opened", opened, "me"), "opened", NOW);
+    expect(g.map((x) => x.label)).toEqual(["Today", "Previous 7 days"]);
+    expect(g[0]!.items.map((d) => d.item.id)).toEqual(["opened-today", "never-today"]);
+  });
+
+  it("no heading repeats under Last modified by me either (my edits first inside each group)", () => {
+    const rows = [
+      item("theirs-today", "A", { updatedBy: "them", updatedAt: daysAgo(0.1) }),
+      item("mine-week", "B", { updatedAt: daysAgo(3) }),
+      item("mine-today", "C", { updatedAt: daysAgo(0.2) }),
+    ];
+    const g = groupHomeItems(sortHomeItems(rows, "modified-by-me", new Map(), "me"), "modified-by-me", NOW);
+    expect(g.map((x) => x.label)).toEqual(["Today", "Previous 7 days"]);
+    expect(g[0]!.items.map((d) => d.item.id)).toEqual(["mine-today", "theirs-today"]);
   });
 
   it("a card dated today shows a time, this year a day, older a year", () => {
