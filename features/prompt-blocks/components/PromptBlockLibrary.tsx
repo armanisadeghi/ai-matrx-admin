@@ -8,7 +8,10 @@ import { Badge, Button, EmptyState, SearchField, Tabs } from "@ai-matrx/design-s
 import RouteHeader from "@/features/shell/components/header/RouteHeader";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
-import { loadBlocks } from "../blocksCache";
+import { Checkbox } from "@/components/ui/checkbox";
+import { RowSelectionBar, useRowSelection } from "@/lib/entity-list/RowSelectionBar";
+import { standardBulkActionsFor } from "@/lib/entity-list/standardBulkActions";
+import { invalidateBlocks, loadBlocks } from "../blocksCache";
 import { BLOCK_LANES, BLOCK_LANE_LABEL, matchesQuery, partitionByLane, type BlockLane } from "../lanes";
 import type { PromptBlockRow } from "../types";
 
@@ -27,6 +30,23 @@ export function PromptBlockLibrary() {
 
   const lanes = useMemo(() => partitionByLane(rows ?? [], meId), [rows, meId]);
   const shown = lanes[lane].filter((r) => matchesQuery(r, query));
+  // Ticks clear when the lane changes; rows a search hides drop out of the selection.
+  const selection = useRowSelection(shown, (r) => r.id, lane);
+  // Built-ins only: a block the person can't archive (a System block) is skipped and named by the run.
+  const bulkActions = standardBulkActionsFor<PromptBlockRow>({
+    token: "agent_prompt_block",
+    noun: "block",
+    rowIdOf: (r) => r.id,
+    labelOf: (r) => r.name,
+    config: undefined,
+    favoritesShown: false,
+  });
+  const reload = () => {
+    invalidateBlocks();
+    loadBlocks()
+      .then(setRows)
+      .catch((e) => setError(e instanceof Error ? e.message : "Could not load blocks"));
+  };
 
   return (
     <div className="flex h-full flex-col overflow-hidden bg-textured">
@@ -65,13 +85,32 @@ export function PromptBlockLibrary() {
               }
             />
           )}
+          {rows && shown.length > 0 && (
+            <div className="mb-1.5">
+              <RowSelectionBar
+                selection={selection}
+                idOf={(r) => r.id}
+                actions={bulkActions}
+                noun="block"
+                plural="blocks"
+                onRefresh={reload}
+                onRemoveRows={selection.clear}
+              />
+            </div>
+          )}
           <ul className="flex flex-col gap-1.5">
             {shown.map((row) => (
-              <li key={row.id}>
+              <li key={row.id} className="flex items-center gap-2 rounded-lg border border-border bg-card pl-3 hover:bg-accent">
+                <Checkbox
+                  checked={selection.has(row.id)}
+                  onCheckedChange={() => selection.toggle(row.id)}
+                  aria-label={`Select ${row.name}`}
+                  className="shrink-0"
+                />
                 <Link
                   href={`/agents/prompt-blocks/${row.id}`}
                   data-testid={`prompt-block-row-${row.name}`}
-                  className="flex items-center gap-3 rounded-lg border border-border bg-card px-3 py-2 hover:bg-accent"
+                  className="flex min-w-0 flex-1 items-center gap-3 py-2 pr-3"
                 >
                   <span className="min-w-0 flex-1">
                     <span className="block truncate font-mono text-sm">{row.name}</span>
