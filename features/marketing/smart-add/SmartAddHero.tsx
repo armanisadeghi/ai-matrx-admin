@@ -369,11 +369,12 @@ export function SmartAddHero({
   // What is typed rides the address (debounced replace; a blank field leaves it).
   const draft = useEffectEvent(() =>
     onDraft?.({
-      website: site.trim() || null,
-      social: social.trim() || null,
-      platform: picked,
+      // A link typed in the name box rides the address as `website=`/`social=`, never as `name=` (MKT-148).
+      website: nameLink?.website || site.trim() || null,
+      social: nameLink?.social || social.trim() || null,
+      platform: nameLink?.social ? nameLink.platform : picked,
       // An email typed in the name box rides the address as `email=`, never as a name (MKT-095).
-      name: emailIn(name) ? null : name.trim() || null,
+      name: emailIn(name) || nameLink ? null : name.trim() || null,
       city: city.trim() || null,
       occupation: occupation.trim() || null,
       company: company.trim() || null,
@@ -383,7 +384,7 @@ export function SmartAddHero({
   useEffect(() => {
     const timer = setTimeout(draft, SMART_ADD_ADDRESS_DEBOUNCE_MS);
     return () => clearTimeout(timer);
-  }, [site, social, picked, name, city, occupation, company, email]);
+  }, [site, social, picked, name, city, occupation, company, email, nameLink?.website, nameLink?.social, nameLink?.platform]);
 
   // 1 / 2 / 3 pick a way in while nothing is focused for typing.
   useEffect(() => {

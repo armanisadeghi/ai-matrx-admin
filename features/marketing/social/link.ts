@@ -69,6 +69,7 @@ export function handleFromInput(text: string): string {
     const found = accountFromUrl(platform, url);
     if (found?.handle) return found.handle.replace(/^r\//, "").replace(/^@/, "");
   }
+  if (url && platform === "facebook" && /^\/profile\.php\/?$/i.test(url.pathname)) return "";
   const raw = url
     ? (url.pathname.split("/").filter(Boolean).find((s) => s.startsWith("@")) ??
         url.pathname.split("/").filter(Boolean).pop() ??
@@ -122,12 +123,19 @@ export function classifySocialLink(text: string): SocialLink | null {
   if (platform === "youtube" && !(first.startsWith("@") || ["c", "channel", "user"].includes(first))) return null;
   if (platform === "tiktok" && !first.startsWith("@")) return null;
   // Facebook's own index pages are never an account (twin of matrx_social `_FACEBOOK_SECTIONS`).
-  if (platform === "facebook" && FACEBOOK_SECTIONS.has(first) && !(first === "p" && /-\d{8,}$/.test(segments[1] ?? ""))) return null;
+  if (platform === "facebook" && FACEBOOK_SECTIONS.has(first) && !(first === "p" && /-\d{8,}$/.test(segments[1] ?? "")) && !(first === "profile.php" && facebookProfilePhpId(url))) return null;
   return { kind: "profile", platform, url: url.href, handle };
 }
 
 /** Facebook address shapes whose first segment is a section, not the account: directory stubs
  *  (`/pages/<name>/<id>`), people search (`/public/<name>`), Q&A spam (`/fb-answers/…`). */
+/** `facebook.com/profile.php?id=<numeric>`: the handle is the `id` query value (MKT-149; twin of matrx_social `_facebook_profile_php_id`). */
+function facebookProfilePhpId(url: URL): string | null {
+  if (url.pathname.replace(/^\/+|\/+$/g, "").toLowerCase() !== "profile.php") return null;
+  const id = (url.searchParams.get("id") ?? "").trim();
+  return /^\d+$/.test(id) ? id : null;
+}
+
 const FACEBOOK_SECTIONS = new Set(["pages", "people", "groups", "profile.php", "p", "watch", "events", "public", "fb-answers"]);
 
 // ---------------------------------------------------------------------------
@@ -227,6 +235,10 @@ function accountFromUrl(
       // `facebook.com/p/<Page-Name>-<numeric id>` is a real page address; the numeric id is the handle.
       if (lower === "p") {
         const id = /-(\d{8,})$/.exec(segs[1] ?? "")?.[1];
+        return id ? { handle: id } : null;
+      }
+      if (lower === "profile.php") {
+        const id = facebookProfilePhpId(url);
         return id ? { handle: id } : null;
       }
       return { handle: at ?? first };
