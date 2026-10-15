@@ -7,7 +7,7 @@ their own docs: sidebar `components/sidebar/FEATURE.md`, route headers
 file holds the two laws that span them.
 
 **Canvas chrome** — a page that hosts `ChatCanvasWorkspace` flips this shell to
-`data-shell-chrome="canvas"`: the shell header (by visibility — its chat button stays) and
+`data-shell-chrome="canvas"`: the shell header (by visibility) and
 the phone dock step aside for the page's own header; the SIDEBAR, account rail and THE
 CHAT (`ShellChatDock`, the one chat on every page but /chat and /code) stay, and the
 sidebar's Chats side opens conversations in it: read
@@ -122,9 +122,11 @@ through to the global handler). Claims are counted (`searchKeyClaim.ts`), releas
 
 The shell chat opens by default at >= 1440px. A route whose own layout needs the width is listed in
 `SHELL_CHAT_CLOSED_BY_DEFAULT_PAGES` (`../aidream/apps/shared/chat/src/canvas/workspace/shell-chat-route.ts`; `/spaces` is on it):
-the chat starts closed, the person opens it by hand (header toggle, Cmd+\), and a remembered choice still wins.
+the chat starts closed, the person opens it by hand (the rail's Chat row on a desktop, the header toggle at 768–1023px, the ⋮ row on a phone, Cmd+\), and a remembered choice still wins.
 
 ## Change log
+
+- `2026-10-15` — claude: **The chat's door is the rail's first row** (`sidebar/SidebarChatToggle.tsx`, `.shell-nav-chat`, pressed while docked open). The header's `ShellChatToggle` shows only at 768–1023px (no rail there); the header, the dock's top row and the canvas header no longer reserve room for a fixed button — a closed chat's button sat where every page puts its back chevron.
 
 - `2026-10-08` — claude (lane AF): **Shell eager set shrinks.** The chat package's preview hook slot is `useHtmlPreviewStateOnDemand` (loads the real hook — and `@ai-matrx/print/markdown` — when a preview first opens; it suspends into the overlay's loading state), and `lib/organizations/linkOrganizationSession.ts` dropped `"use client"` so `appContextSlice`'s `import()` of it is an on-demand chunk, not a client reference. KaTeX stays eager only through the `convertMarkdownToHtml` slot until `@ai-matrx/chat` 0.5.2 (awaits it) is served. Guard: `pnpm check:shell-eager-graph`.
 
