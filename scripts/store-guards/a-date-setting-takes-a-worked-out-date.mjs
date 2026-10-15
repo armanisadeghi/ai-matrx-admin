@@ -162,16 +162,8 @@ try {
       failures.push(`${k.name}: wanted ${k.want !== undefined ? `taken (${k.want})` : `"${k.refused}"`}, got ${got.ok ? `taken (${got.key})` : `"${got.says}"`}`);
     }
   }
-  // THE PICKER'S COPY OF THE NODE TABLE (records-ui `FORMULA_NODE_RESULTS`) answers as the store does.
-  // `--node-table <file>` reads another copy (the plant that proves this half can go red).
-  const tableAt = process.argv.indexOf("--node-table");
-  const ts = readFileSync(tableAt > 0 ? resolve(process.argv[tableAt + 1]) : resolve(ROOT, "../aidream/apps/shared/records-ui/src/workedOutDate.ts"), "utf8");
-  const block = /FORMULA_NODE_RESULTS[^=]*= \{([\s\S]*?)\};/.exec(ts)?.[1] ?? "";
-  const mirror = Object.fromEntries([...block.matchAll(/"([^"]+)":\s*"([^"]+)"/g)].map((m) => [m[1], m[2]]));
-  const live = Object.fromEntries((await client.query("select node, result from custom.formula_node_kinds()")).rows.map((r) => [r.node, r.result]));
-  for (const node of new Set([...Object.keys(mirror), ...Object.keys(live)])) {
-    if (mirror[node] !== live[node]) failures.push(`records-ui FORMULA_NODE_RESULTS["${node}"] is ${mirror[node] ?? "missing"}, the store says ${live[node] ?? "missing"}`);
-  }
+  // The node table (`FORMULA_NODE_RESULTS`) is generated, and guarded against the LIVE store by
+  // a-formula-node-results-are-generated.mjs (this guard runs on the clone, which trails production).
 } finally {
   await client.query("rollback").catch(() => {});
   await client.end();
