@@ -1,31 +1,23 @@
 /**
- * Runs on › Run an agent on this computer: an agent-kind task aimed at that computer only
- * (surfaces {desktop}, target_device_id), its agent row, and a time trigger, all in the
- * computer's own organization. A failed agent row undoes the task and says so.
+ * Runs on › Run an agent on this computer. The save goes through the ONE device-task door, aidream
+ * POST /scheduling/device-tasks (see computerTasks.test.ts); the web sends the form's agent shape
+ * and writes no scheduler row itself. The server owns the rows, the organization and the undo of a
+ * partial save; here we prove what is sent, what comes back, and that a refusal reaches the person.
  */
-const writes: Array<{ table: string; op: string; row: Record<string, unknown> }> = [];
-let failAgent = false;
-
-function table(name: string) {
-  return {
-    insert: (row: Record<string, unknown>) => {
-      writes.push({ table: name, op: "insert", row });
-      const result = name === "sch_agent_task" && failAgent ? { error: { message: "denied" } } : { data: { id: "task-1" }, error: null };
-      return { ...result, select: () => ({ single: async () => result }), then: (r: (v: unknown) => unknown) => Promise.resolve(result).then(r) };
-    },
-    update: (row: Record<string, unknown>) => ({ eq: async () => (writes.push({ table: name, op: "update", row }), { error: null }) }),
-  };
-}
-
-jest.mock("@/utils/supabase/client", () => ({
-  supabase: {
-    auth: { getUser: async () => ({ data: { user: { id: "user-1" } } }) },
-    from: (t: string) => ({ select: () => ({ eq: () => ({ maybeSingle: async () => (t === "app_instances" ? { data: { organization_id: "org-device" }, error: null } : { data: null, error: null }) }) }) }),
-  },
+jest.mock("./schedulerClient", () => ({
+  createDeviceTask: jest.fn(),
+  updateDeviceTask: jest.fn(),
 }));
-jest.mock("@/utils/supabase/schedulerDb", () => ({ schedulerDb: () => ({ from: table }) }));
+const noWrite = (what: string) => () => {
+  throw new Error(`the web wrote a scheduler row itself (${what})`);
+};
+jest.mock("@/utils/supabase/client", () => ({ supabase: { from: jest.fn(() => noWrite("supabase.from")()) } }));
+jest.mock("@/utils/supabase/schedulerDb", () => ({ schedulerDb: jest.fn(() => noWrite("schedulerDb")()) }));
 
 import { createComputerAgentTask } from "./queries";
+import { createDeviceTask, updateDeviceTask } from "./schedulerClient";
+import { supabase } from "@/utils/supabase/client";
+import { schedulerDb } from "@/utils/supabase/schedulerDb";
 import { computerAgentErrors } from "../components/form/computerAgentErrors";
 
 const input = {
@@ -43,23 +35,40 @@ const input = {
 
 describe("an agent scheduled on one computer", () => {
   beforeEach(() => {
-    writes.length = 0;
-    failAgent = false;
+    jest.clearAllMocks();
+    (createDeviceTask as jest.Mock).mockResolvedValue({ id: "task-1", next_run_at: "2026-10-15T02:00:00Z" });
   });
 
-  it("is an agent task for that computer only, in its organization, with its agent and time", async () => {
+  it("POSTs the agent, its prompt and limits and its time, bound to that computer, to the one door", async () => {
+    await createComputerAgentTask(input);
+    expect(createDeviceTask).toHaveBeenCalledTimes(1);
+    expect(createDeviceTask).toHaveBeenCalledWith({
+      device_id: "device-1",
+      name: "Morning brief",
+      description: null,
+      agent: { agent_id: "agent-1", prompt: "Summarise my desktop", variables: { a: 1 }, auth_mode: "ask", max_runtime_seconds: 900, max_concurrent: 1 },
+      trigger: { type: "interval", every_seconds: 3600 },
+    });
+    // A create is never an edit, and an agent task carries no tool.
+    expect(updateDeviceTask).not.toHaveBeenCalled();
+    expect((createDeviceTask as jest.Mock).mock.calls[0][0]).not.toHaveProperty("tool");
+  });
+
+  it("answers with the id the server made, nothing else", async () => {
     await expect(createComputerAgentTask(input)).resolves.toEqual({ id: "task-1" });
-    const [task, agent, trigger] = writes;
-    expect(task).toMatchObject({ table: "sch_task", row: { kind: "agent", target_device_id: "device-1", surfaces: ["desktop"], organization_id: "org-device", user_id: "user-1" } });
-    expect(agent).toMatchObject({ table: "sch_agent_task", row: { id: "task-1", organization_id: "org-device", agent_id: "agent-1", prompt: "Summarise my desktop", max_runtime_seconds: 900 } });
-    expect(trigger).toMatchObject({ table: "sch_trigger", row: { task_id: "task-1", type: "interval", config: { every_seconds: 3600 } } });
   });
 
-  it("a refused agent row undoes the task and says so", async () => {
-    failAgent = true;
+  it("writes no scheduler row from the browser", async () => {
+    await createComputerAgentTask(input);
+    expect(supabase.from).not.toHaveBeenCalled();
+    expect(schedulerDb).not.toHaveBeenCalled();
+  });
+
+  it("a refusal from the server reaches the caller as is (no row was made, nothing to undo)", async () => {
+    (createDeviceTask as jest.Mock).mockRejectedValue(new Error("The schedule's agent was not saved: denied"));
     await expect(createComputerAgentTask(input)).rejects.toThrow("The schedule's agent was not saved: denied");
-    expect(writes.some((w) => w.table === "sch_task" && w.op === "update" && w.row.enabled === false)).toBe(true);
-    expect(writes.some((w) => w.table === "sch_trigger")).toBe(false);
+    expect(supabase.from).not.toHaveBeenCalled();
+    expect(schedulerDb).not.toHaveBeenCalled();
   });
 
   it("needs a name, an agent, a prompt and a time", () => {
