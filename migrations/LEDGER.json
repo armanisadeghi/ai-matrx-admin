@@ -1,6 +1,6 @@
 {
   "note": "Checked-in snapshot of public._schema_migrations for the files under migrations/campaign and migrations/inverse. Written by `pnpm db:apply` on every successful production apply and refreshed whole by the nightly catch-up. Never hand-edited: a self-written checksum is a claim nobody can check. Guard: pnpm check:ledgered-files-unedited.",
-  "generated_at": "2026-10-15T16:35:17.694Z",
+  "generated_at": "2026-10-15T16:41:50.287Z",
   "files": {
     "migrations/campaign/a_chunk_is_the_size_the_client_door_can_actually_carry.sql": {
       "source": "matrx-frontend",
@@ -596,17 +596,17 @@
       "checksum": "2c9616fc25867746c72250f74b5e19e8a2c14340ec07687a65e3d53e552237a9",
       "applied_at": "2026-10-15 04:14:39.464138+00"
     },
+    "migrations/campaign/atinterface_a_an_interface_is_shared_and_read_through_its_elements.sql": {
+      "source": "matrx-frontend",
+      "filename": "atinterface_a_an_interface_is_shared_and_read_through_its_elements.sql",
+      "checksum": "6b426de2fc0bc56db4813b2370e7d197272401d9993dd6d31977fb37d91baec1",
+      "applied_at": "2026-10-15 16:41:47.729121+00"
+    },
     "migrations/campaign/atmerge_a_a_merge_writes_each_links_value_beside_its_edge.sql": {
       "source": "matrx-frontend",
       "filename": "atmerge_a_a_merge_writes_each_links_value_beside_its_edge.sql",
       "checksum": "e8022181d73ff22eb7717a084d075af9fd90c0e94754b59eab8a02a6c62db269",
       "applied_at": "2026-10-15 02:15:07.406802+00"
-    },
-    "migrations/campaign/atshare_a_a_whole_table_can_be_shared_outside_the_organization.sql": {
-      "source": "matrx-frontend",
-      "filename": "atshare_a_a_whole_table_can_be_shared_outside_the_organization.sql",
-      "checksum": "575788d20be111ce4bc298c5abcd54dc28aa917c8b77efc9ea5dc5e0770f42c6",
-      "applied_at": "2026-10-15 16:35:15.864757+00"
     },
     "migrations/campaign/auditorg_library_audit_names_the_acting_organization.sql": {
       "source": "matrx-frontend",
