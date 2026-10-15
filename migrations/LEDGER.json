@@ -596,6 +596,12 @@
       "checksum": "27943868a512dbeccbf30cfc47d0a12ed2497383e48802fe119a87408a2f6853",
       "applied_at": "2026-10-15 18:06:41.307265+00"
     },
+    "migrations/campaign/atauto3_b_a_script_run_has_a_price.sql": {
+      "source": "matrx-frontend",
+      "filename": "atauto3_b_a_script_run_has_a_price.sql",
+      "checksum": "599aabf866f4ce1142bb3ad683bcc5bbfb7732d80083031e2fc6a44a861f42a0",
+      "applied_at": "2026-10-15 18:28:24.457945+00"
+    },
     "migrations/campaign/atbase_a_a_base_has_a_name_snapshots_and_a_copy_that_points_inward.sql": {
       "source": "matrx-frontend",
       "filename": "atbase_a_a_base_has_a_name_snapshots_and_a_copy_that_points_inward.sql",
@@ -11239,12 +11245,6 @@
       "filename": "writeperf4_the_field_set_is_read_once_per_row_down.sql",
       "checksum": "faa8f0c7ba79f6453a6127a85cdf4549ca35ceb45a87cf6e5bee8ce5368ff7c6",
       "applied_at": "2026-09-22 09:33:14.786775+00"
-    },
-    "migrations/campaign/atauto3_b_a_script_run_has_a_price.sql": {
-      "source": "matrx-frontend",
-      "filename": "atauto3_b_a_script_run_has_a_price.sql",
-      "checksum": "599aabf866f4ce1142bb3ad683bcc5bbfb7732d80083031e2fc6a44a861f42a0",
-      "applied_at": "2026-10-15 18:28:24.457945+00"
     }
   }
 }
