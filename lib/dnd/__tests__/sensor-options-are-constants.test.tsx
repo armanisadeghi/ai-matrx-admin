@@ -31,7 +31,7 @@ function Shell({ inline }: { inline: boolean }) {
     useSensor(KeyboardSensor, SORTABLE_KEYBOARD_OPTIONS),
   );
   return (
-    <DndContext sensors={sensors} collisionDetection={closestCenter}>
+    <DndContext id="sensor-options-are-constants-test-dnd" sensors={sensors} collisionDetection={closestCenter}>
       {Array.from({ length: 10 }, (_, i) => <Item key={i} id={`item-${i}`} />)}
     </DndContext>
   );

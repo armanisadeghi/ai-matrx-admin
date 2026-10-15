@@ -153,7 +153,7 @@ export function FileList({
   }
 
   return (
-    <DndContext
+    <DndContext id="filelist-dnd"
       sensors={sensors}
       collisionDetection={closestCenter}
       onDragEnd={handleDragEnd}

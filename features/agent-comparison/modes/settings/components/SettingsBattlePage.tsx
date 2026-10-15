@@ -123,7 +123,7 @@ export function SettingsBattlePage({
             onAdd={() => dispatch(addColumnToSettingsBattle(undefined))}
           />
         ) : (
-          <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
+          <DndContext id="settingsbattlepage-dnd" sensors={sensors} onDragEnd={handleDragEnd}>
             <DragCursorMonitor />
             <SortableContext
               items={columnIds}

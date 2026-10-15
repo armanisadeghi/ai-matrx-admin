@@ -366,7 +366,7 @@ export function SpeechScriptEditor({
       )}
 
       <div className="text-xs">
-        <DndContext
+        <DndContext id="speechscripteditor-dnd"
           sensors={sensors}
           collisionDetection={closestCenter}
           onDragEnd={handleDragEnd}

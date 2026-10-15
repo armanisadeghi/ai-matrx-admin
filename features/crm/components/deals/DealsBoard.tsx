@@ -291,7 +291,7 @@ export function DealsBoard({
           narrow with the list view&apos;s filters to see the rest.
         </div>
       )}
-      <DndContext
+      <DndContext id="dealsboard-dnd"
         sensors={sensors}
         collisionDetection={closestCenter}
         onDragStart={onDragStart}

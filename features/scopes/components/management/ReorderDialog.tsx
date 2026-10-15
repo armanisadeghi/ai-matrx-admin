@@ -113,7 +113,7 @@ export function ReorderDialog({
         </DialogHeader>
 
         <div className="max-h-[55dvh] overflow-y-auto -mx-1 px-1">
-          <DndContext
+          <DndContext id="reorderdialog-dnd"
             sensors={sensors}
             collisionDetection={closestCenter}
             onDragEnd={handleDragEnd}

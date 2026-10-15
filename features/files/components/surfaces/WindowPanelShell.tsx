@@ -89,7 +89,7 @@ export function WindowPanelShell({
     // future enhancement); FileTree's monitor will simply observe an empty
     // stream of drag events, which is fine. FileList renders its own inner
     // DndContext for the file-row dragging that surface already supports.
-    <DndContext>
+    <DndContext id="windowpanelshell-dnd">
       <DragCursorMonitor />
       <div
         className={cn("flex h-full w-full flex-col overflow-hidden", className)}

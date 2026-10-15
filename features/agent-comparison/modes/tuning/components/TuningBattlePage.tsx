@@ -106,7 +106,7 @@ export function TuningBattlePage({ setId = null }: { setId?: string | null }) {
             onAdd={() => dispatch(addColumnToTuningBattle(undefined))}
           />
         ) : (
-          <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
+          <DndContext id="tuningbattlepage-dnd" sensors={sensors} onDragEnd={handleDragEnd}>
             <DragCursorMonitor />
             <SortableContext
               items={columnIds}

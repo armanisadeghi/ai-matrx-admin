@@ -78,7 +78,7 @@ export function ThreadSortable({
   }
 
   return (
-    <DndContext
+    <DndContext id="threaddrag-dnd"
       sensors={sensors}
       collisionDetection={closestCenter}
       onDragEnd={handleDragEnd}

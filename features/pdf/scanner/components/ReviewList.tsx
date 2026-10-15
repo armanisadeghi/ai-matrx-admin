@@ -70,7 +70,7 @@ export function ReviewList({
   };
 
   return (
-    <DndContext
+    <DndContext id="reviewlist-dnd"
       sensors={sensors}
       collisionDetection={closestCenter}
       onDragEnd={handleDragEnd}

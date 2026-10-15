@@ -202,7 +202,7 @@ export function OptionsEditor({
         </p>
       )}
 
-      <DndContext
+      <DndContext id="optionseditor-dnd"
         sensors={sensors}
         collisionDetection={closestCenter}
         onDragEnd={handleDragEnd}

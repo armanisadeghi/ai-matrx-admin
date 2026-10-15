@@ -242,7 +242,7 @@ export function TopicTree({
   if (!dnd.enabled) return tree;
 
   return (
-    <DndContext
+    <DndContext id="topictree-dnd"
       sensors={dnd.sensors}
       collisionDetection={pointerWithin}
       onDragStart={dnd.onDragStart}

@@ -301,7 +301,7 @@ export function PlanTree({
   const activeNode = activeId ? byId.get(activeId) : null;
 
   return (
-    <DndContext
+    <DndContext id="plantree-dnd"
       sensors={sensors}
       collisionDetection={pointerWithin}
       onDragStart={handleDragStart}

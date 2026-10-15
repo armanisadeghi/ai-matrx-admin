@@ -134,7 +134,7 @@ export function BattlePage({ setId = null }: { setId?: string | null }) {
       <BattleRouteNotice status={routeStatus} mode="open" />
 
       <div className="flex-1 min-h-0 flex">
-        <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
+        <DndContext id="battlepage-dnd" sensors={sensors} onDragEnd={handleDragEnd}>
           <DragCursorMonitor />
           <SortableContext
             items={columnIds}

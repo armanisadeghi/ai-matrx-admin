@@ -219,7 +219,7 @@ export function OrchestraMemberGrid({
         memberCount={members.length}
         onOpen={onOpenConductor}
       />
-      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
+      <DndContext id="orchestramembergrid-dnd" sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
         <DragCursorMonitor />
         <SortableContext items={members.map((m) => m.agentId)} strategy={verticalListSortingStrategy}>
           <div className="space-y-2">

@@ -324,7 +324,7 @@ export function SkillCategoryTreeEditor({
             No categories yet. Click <strong>+ New category</strong> to add one.
           </div>
         ) : (
-          <DndContext
+          <DndContext id="skillcategorytreeeditor-dnd"
             sensors={sensors}
             collisionDetection={closestCenter}
             onDragStart={onDragStart}

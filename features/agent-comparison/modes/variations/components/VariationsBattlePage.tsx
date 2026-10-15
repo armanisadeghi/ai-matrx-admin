@@ -137,7 +137,7 @@ export function VariationsBattlePage({
           routeStatus.kind === "error") ? null : columns.length === 0 ? (
           <EmptyState sourceAgentReady={!!sourceAgentId} />
         ) : (
-          <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
+          <DndContext id="variationsbattlepage-dnd" sensors={sensors} onDragEnd={handleDragEnd}>
             <DragCursorMonitor />
             <SortableContext
               items={columnIds}

@@ -104,7 +104,7 @@ export function ModelBattlePage({ setId = null }: { setId?: string | null }) {
               onAdd={() => dispatch(addColumnToModelBattle(undefined))}
             />
           ) : (
-            <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
+            <DndContext id="modelbattlepage-dnd" sensors={sensors} onDragEnd={handleDragEnd}>
               <DragCursorMonitor />
               <SortableContext
                 items={columnIds}

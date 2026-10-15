@@ -108,7 +108,7 @@ export function RequestModBattlePage({
             onAdd={() => dispatch(addColumnToRequestModBattle(undefined))}
           />
         ) : (
-          <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
+          <DndContext id="requestmodbattlepage-dnd" sensors={sensors} onDragEnd={handleDragEnd}>
             <DragCursorMonitor />
             <SortableContext
               items={columnIds}

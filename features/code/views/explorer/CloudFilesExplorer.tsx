@@ -171,7 +171,7 @@ function CloudFilesTree({
   );
 
   return (
-    <DndContext sensors={sensors}>
+    <DndContext id="cloudfilesexplorer-dnd" sensors={sensors}>
       <DragCursorMonitor />
       <FileTree
         className={className}

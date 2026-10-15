@@ -173,7 +173,7 @@ export function SkillResourcesPanel({
           No resources yet.
         </div>
       ) : (
-        <DndContext
+        <DndContext id="skillresourcespanel-dnd"
           sensors={sensors}
           collisionDetection={closestCenter}
           onDragEnd={onDragEnd}

@@ -116,7 +116,7 @@ export function SystemPromptBattlePage({
             onAdd={() => dispatch(addColumnToSystemPromptBattle(undefined))}
           />
         ) : (
-          <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
+          <DndContext id="systempromptbattlepage-dnd" sensors={sensors} onDragEnd={handleDragEnd}>
             <DragCursorMonitor />
             <SortableContext
               items={columnIds}

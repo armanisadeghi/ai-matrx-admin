@@ -409,7 +409,7 @@ function ScoreCriteria({
   };
   return (
     <div className="flex flex-col gap-1">
-      <DndContext
+      <DndContext id="decisionquestionseditor-dnd-1"
         sensors={sensors}
         collisionDetection={closestCenter}
         onDragEnd={handleDragEnd}
@@ -941,7 +941,7 @@ export function DecisionQuestionsEditor({
           </span>
         </button>
       ) : (
-        <DndContext
+        <DndContext id="decisionquestionseditor-dnd-2"
           sensors={sensors}
           collisionDetection={closestCenter}
           onDragEnd={handleDragEnd}

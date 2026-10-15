@@ -845,7 +845,7 @@ function PageShellDesktop({
             </span>
           }
         />
-        <DndContext
+        <DndContext id="pageshell-dnd"
           sensors={dndSensors}
           collisionDetection={closestCenter}
           onDragStart={handleDragStart}

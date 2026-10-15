@@ -216,7 +216,7 @@ export function DesktopReview({
             </div>
           </div>
         ) : (
-          <DndContext
+          <DndContext id="desktopreview-dnd"
             sensors={sensors}
             collisionDetection={closestCenter}
             onDragEnd={handleDragEnd}

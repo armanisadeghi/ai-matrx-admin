@@ -570,7 +570,7 @@ function KeywordEditor({
 
   return (
     <div className="space-y-2">
-      <DndContext
+      <DndContext id="researchinitform-dnd"
         sensors={sensors}
         collisionDetection={closestCenter}
         onDragEnd={handleDragEnd}

@@ -700,7 +700,7 @@ export function SiteMap({
             </Button>
           </div>
         ) : (
-          <DndContext
+          <DndContext id="sitemap-dnd"
             sensors={sensors}
             collisionDetection={pointerWithin}
             onDragStart={handleDragStart}
