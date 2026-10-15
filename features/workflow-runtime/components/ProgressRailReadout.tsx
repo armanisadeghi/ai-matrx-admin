@@ -17,6 +17,7 @@
  */
 
 import { useEffect, useState } from "react";
+import { formatDurationMs } from "@ai-matrx/kit/format";
 import { CheckCircle2, CircleDashed, Eye, Loader2 } from "lucide-react";
 
 import { useCanWatchAi } from "@/features/ai-watch/useCanWatchAi";
@@ -101,13 +102,6 @@ export function isAiStep(specType: string | null): boolean {
   return Boolean(specType && specType.startsWith("ai."));
 }
 
-function formatMs(ms: number): string {
-  if (ms < 1000) return `${Math.max(0, Math.round(ms))}ms`;
-  const s = ms / 1000;
-  if (s < 60) return `${s < 10 ? s.toFixed(1) : Math.round(s)}s`;
-  return `${Math.floor(s / 60)}m ${Math.round(s % 60)}s`;
-}
-
 /** How long the step took (settled), or has been working (running, ticking). */
 function StepTiming({ invocations, running }: { invocations: NodeInvocationState[]; running: boolean }) {
   const [now, setNow] = useState(() => Date.now());
@@ -122,7 +116,7 @@ function StepTiming({ invocations, running }: { invocations: NodeInvocationState
   if (running && starts.length) ms = now - Math.min(...starts);
   else if (durations.length) ms = Math.max(...durations);
   if (ms === null) return null;
-  return <span className="tabular-nums">{formatMs(ms)} · </span>;
+  return <span className="tabular-nums">{formatDurationMs(Math.max(0, ms), { style: "compact" })} · </span>;
 }
 
 function RailNodeRow({

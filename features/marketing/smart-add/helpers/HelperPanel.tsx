@@ -10,6 +10,7 @@
 import { useEffect, useState } from "react";
 import { Play, Square } from "lucide-react";
 import { Badge, Button, Field, PropertyRow } from "@ai-matrx/design-system/controls";
+import { formatDurationMs, formatUsd } from "@ai-matrx/kit/format";
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectIsAdmin } from "@/lib/redux/selectors/userSelectors";
@@ -47,12 +48,11 @@ function useMethodInfo(method: HelperMethod): HelperMethodInfo | null {
 }
 
 function seconds(ms: number | null | undefined): string {
-  return ms == null ? "—" : ms < 10_000 ? `${(ms / 1000).toFixed(1)} s` : `${Math.round(ms / 1000)} s`;
+  return formatDurationMs(ms, { style: "compact" });
 }
 
 function usd(v: number | null | undefined): string {
-  if (v == null) return "unpriced";
-  return v < 0.01 ? `$${v.toFixed(4)}` : `$${v.toFixed(2)}`;
+  return formatUsd(v, { digits: "adaptive", unknown: "unpriced" });
 }
 
 function Elapsed({ since }: { since: number }) {
@@ -61,7 +61,7 @@ function Elapsed({ since }: { since: number }) {
     const t = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(t);
   }, []);
-  return <span className="tabular-nums">{Math.round((now - since) / 1000)} s</span>;
+  return <span className="tabular-nums">{formatDurationMs(now - since, { style: "clock" })}</span>;
 }
 
 function HelperCard({ candidate }: { candidate: HelperCandidate }) {

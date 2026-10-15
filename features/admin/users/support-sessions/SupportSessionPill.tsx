@@ -9,6 +9,7 @@
 import { useEffect, useState } from "react";
 import { Clock, LifeBuoy, Loader2, Plus, X } from "lucide-react";
 import { Button } from "@ai-matrx/design-system/controls";
+import { formatDurationSeconds } from "@ai-matrx/kit/format";
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import { toast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
@@ -26,15 +27,6 @@ import {
 
 const RECHECK_MS = 60_000;
 const ENDING_SOON_SECONDS = 120;
-
-function formatLeft(seconds: number): string {
-  const s = Math.max(0, seconds);
-  const h = Math.floor(s / 3600);
-  const m = Math.floor((s % 3600) / 60);
-  const sec = s % 60;
-  const mm = String(m).padStart(h > 0 ? 2 : 1, "0");
-  return `${h > 0 ? `${h}:` : ""}${mm}:${String(sec).padStart(2, "0")}`;
-}
 
 async function leave(why: "ended" | "expired") {
   clearSupportSessionCookie();
@@ -180,7 +172,7 @@ export default function SupportSessionPill() {
         <span className="max-w-48 truncate text-sm">as {session.target_email}</span>
         <Clock className="h-3.5 w-3.5 shrink-0" aria-hidden />
         <span className="font-mono text-sm tabular-nums" aria-live="polite">
-          {formatLeft(secondsLeft)}
+          {formatDurationSeconds(secondsLeft, { style: "clock" })}
         </span>
         <Button
           variant="outline"

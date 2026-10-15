@@ -6,6 +6,7 @@
 import { useState } from "react";
 import { Copy, LifeBuoy, Loader2 } from "lucide-react";
 import { useClipboard } from "@ai-matrx/kit/clipboard";
+import { formatDurationMinutes } from "@ai-matrx/kit/format";
 import { Button, PropertyRow, SegmentedControl } from "@ai-matrx/design-system/controls";
 import { copyNotify } from "@/lib/clipboard/copy-notify";
 import { ProInput } from "@/components/official/ProInput";
@@ -33,7 +34,7 @@ export interface SupportSessionTarget {
 
 const LENGTH_OPTIONS = SUPPORT_SESSION_LENGTHS.map((m) => ({
   value: String(m),
-  label: m < 60 ? `${m} min` : `${m / 60} hr`,
+  label: formatDurationMinutes(m, { style: "long", abbreviate: true }),
 }));
 
 /** A local build keeps its own origin; every deployed build sends the person to the main app. */

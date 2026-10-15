@@ -28,6 +28,7 @@ import "server-only";
 
 import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
+import { formatDurationMs } from "@ai-matrx/kit/format";
 import { createClient } from "@/utils/supabase/server";
 import type { Json } from "@/types/database.types";
 import committedSnapshot from "@/scripts/shape/shapes-status.json";
@@ -803,7 +804,7 @@ async function bounded<T>(what: string, work: PromiseLike<{ data: T | null; erro
   let timer: ReturnType<typeof setTimeout> | undefined;
   const deadline = new Promise<never>((_, reject) => {
     timer = setTimeout(
-      () => reject(new Error(`no answer reading ${what} after ${KIND_GATHER_DEADLINE_MS / 1000}s`)),
+      () => reject(new Error(`no answer reading ${what} after ${formatDurationMs(KIND_GATHER_DEADLINE_MS, { style: "compact" })}`)),
       KIND_GATHER_DEADLINE_MS,
     );
   });

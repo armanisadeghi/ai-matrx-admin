@@ -19,7 +19,7 @@ import { useEffect, useEffectEvent, useRef, useState } from "react";
 import { Check, ChevronDown, SearchX, X } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@ai-matrx/design-system";
 import { Button } from "@ai-matrx/design-system/controls";
-import { formatCount } from "@ai-matrx/kit/format";
+import { formatCount, formatDurationMs } from "@ai-matrx/kit/format";
 import { PlatformMark, platformLabel } from "@/features/marketing/social/components/PlatformMark";
 import { browserImageUrl } from "@/lib/media/external-image";
 import { maskOffensive } from "@/lib/text/maskOffensive";
@@ -297,7 +297,7 @@ export function PersonHarderStage({
       try {
         const job = await pollLinkedinJob(snapshot);
         if (job.status === "running") {
-          setJobStatus(`LinkedIn search running · ${Math.round(((i + 1) * POLL_MS) / 1000)} s`);
+          setJobStatus(`LinkedIn search running · ${formatDurationMs((i + 1) * POLL_MS, { style: "compact" })}`);
           continue;
         }
         const found = job.candidates.filter((c) => c.platform === "linkedin").map((c) => asHarder(c, "directory"));

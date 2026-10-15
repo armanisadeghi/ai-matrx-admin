@@ -10,6 +10,7 @@
 import { useState } from "react";
 import { ArrowRight, Check, CircleDot, X } from "lucide-react";
 import { Badge, Button, Select, type SelectOption } from "@ai-matrx/design-system/controls";
+import { formatDurationMs, formatUsd } from "@ai-matrx/kit/format";
 import { MatrxDataTable, type MatrxColumnDef } from "@ai-matrx/design-system/data-table";
 import { cn } from "@/lib/utils";
 import { useCostDisplay } from "@/components/cost/useCostDisplay";
@@ -90,9 +91,9 @@ const SWEEP_CALL_COLUMNS: MatrxColumnDef<SweepCallRow & { id: string }>[] = [
   { id: "query", header: "Query", accessorKey: "query", filter: "text" },
   { id: "page", header: "Page", accessorKey: "page" },
   { id: "results", header: "Rows", accessorKey: "results" },
-  { id: "ms", header: "Time", accessorFn: (r) => `${(r.ms / 1000).toFixed(1)} s` },
+  { id: "ms", header: "Time", accessorFn: (r) => formatDurationMs(r.ms, { style: "compact" }) },
   { id: "points", header: "Points", accessorFn: (r) => r.points ?? "?" },
-  { id: "usd", header: "$", accessorFn: (r) => (r.usd == null ? "" : `$${r.usd.toFixed(4)}`) },
+  { id: "usd", header: "$", accessorFn: (r) => formatUsd(r.usd, { digits: "adaptive" }) },
   { id: "error", header: "Error", accessorFn: (r) => r.error ?? "", filter: "text" },
 ];
 
@@ -115,7 +116,7 @@ function SweepSection({ sweep, focus }: { sweep: SweepFeed; focus?: FindYouFeed[
       <h3 className="mb-1 flex items-center gap-2 font-medium">
         Sweep · {sweep.path}
         <span className="font-normal text-muted-foreground">
-          {sweep.calls.length} calls · {sweep.rows.length} rows · {sweep.points ?? "?"} points · {(sweep.ms / 1000).toFixed(1)} s
+          {sweep.calls.length} calls · {sweep.rows.length} rows · {sweep.points ?? "?"} points · {formatDurationMs(sweep.ms, { style: "compact" })}
         </span>
       </h3>
       <MatrxDataTable<SweepCallRow & { id: string }>
