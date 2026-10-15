@@ -25,7 +25,7 @@ import { EditorDetailsDialog, formatDetailDate } from "@/components/editor-chrom
 import { useRouter } from "next/navigation";
 import { useMenuBarState } from "@/components/editor-chrome/EditorMenuBar";
 import { EditorTitleField } from "@/components/editor-chrome/EditorTitleField";
-import type { EditorMenuEntry } from "@ai-matrx/office/core";
+import { type EditorMenuEntry, type DocumentRow } from "@ai-matrx/office/core";
 import { FileTitleMarks } from "@/features/file-actions/FileTitleMarks";
 import { useLiveFileName } from "@/features/file-actions/useLiveFileName";
 import { useToolToggle } from "@/features/canvas/host/toolCanvas";
@@ -67,7 +67,6 @@ import { Button } from "@ai-matrx/design-system/controls";
 import { ProInput } from "@/components/official/ProInput";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { isServiceFailure } from "@/features/data-tables/types";
-import { type DocumentRow } from "@ai-matrx/office/core";
 import {
   buildDocumentContextData,
   DOCUMENTS_SURFACE_NAME,

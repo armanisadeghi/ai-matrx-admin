@@ -39,7 +39,15 @@ import { EditorRibbon } from "@/components/editor-chrome/EditorRibbon";
 import { OfficeLookSwitch } from "@/features/file-actions/skin/OfficeLookSwitch";
 import { DOC_RIBBON } from "@/features/documents/chrome/doc-ribbon";
 import { EditorSaveStatus } from "@/components/editor-chrome/EditorTitleField";
-import { boundActions, matchesShortcut, type EditorMenuEntry } from "@ai-matrx/office/core";
+import {
+  boundActions,
+  matchesShortcut,
+  type EditorMenuEntry,
+  defaultDocumentPageStyle,
+  PAGE_COLOR_KEY,
+  pageSetupCommandParams,
+  type PageSetupValues,
+} from "@ai-matrx/office/core";
 import { buildDocMenus, buildDocToolbar, type DocChromeHost, type DocsApiLike } from "@/features/documents/chrome/doc-commands";
 import { univerDocToMarkdown } from "@/features/documents/univer-doc-to-markdown";
 import { bodyTextOf } from "@/features/documents/document-body-text";
@@ -101,7 +109,6 @@ import { useToolToggle } from "@/features/canvas/host/toolCanvas";
 import { toast } from "@/components/ui/use-toast";
 
 import { fitZoomRatio } from "@/features/documents/utils/fitZoomRatio";
-import { defaultDocumentPageStyle, PAGE_COLOR_KEY, pageSetupCommandParams, type PageSetupValues } from "@ai-matrx/office/core";
 import { applyPageSetup, readPageSetup, type PageSetupApiLike } from "@ai-matrx/office/core/page-setup-apply";
 import { PageSetupDialog } from "@/features/documents/components/PageSetupDialog";
 import { setPreference } from "@/lib/redux/preferences/userPreferencesSlice";

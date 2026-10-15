@@ -8,7 +8,7 @@
 
 import { ActivityFeedButton } from "@/features/unified-data/table-page/TableAccessBar";
 import { ensureTable } from "@ai-matrx/records/core";
-import { duplicateBase, restoreSnapshot, snapshotBase, type BaseCopyProgress, type BaseTable } from "@ai-matrx/records";
+import { duplicateBase, restoredBaseName, restoreSnapshot, snapshotBase, type BaseCopyProgress, type BaseTable } from "@ai-matrx/records";
 import { useRecordsClient } from "@ai-matrx/records/react";
 import { Button, Field } from "@ai-matrx/design-system/controls";
 import Link from "next/link";
@@ -17,6 +17,7 @@ import { useCallback, useEffect, useState } from "react";
 
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { recordsDataSource } from "@ai-matrx/records-ui/helpers";
+import { isInterface, isPage } from "@ai-matrx/records-ui";
 import { MakeMount } from "@/features/make/MakeMount";
 import { useObjectOrganization } from "@/features/unified-data/objectOrganization";
 import { createClient } from "@/utils/supabase/client";
@@ -42,8 +43,17 @@ async function homeTables(client: Client, organizationId?: string, everyOrganiza
   const parts = await Promise.all(orgs.map((o) => client.tableList(o ? { organization_id: o } : undefined)));
   const failed = parts.find((r) => !r.ok);
   if (failed && !failed.ok && parts.every((r) => !r.ok)) throw new Error(failed.error.message);
-  const rows = parts.flatMap((r) => (r.ok ? r.data : []));
-  return rows.map((t) => ({ id: t.id, name: t.name, organization_id: t.organization_id, home_id: (t as { parent_id?: string | null }).parent_id ?? t.home_id ?? null, icon: null, color: null }));
+  // A snapshot's tables are put away and a copy in progress is the app's: neither is ever part of a base.
+  const rows = parts.flatMap((r) => (r.ok ? r.data : [])).filter((t) => t.kept_for !== "snapshot" && t.kept_for !== "copying" && !t.archived_at);
+  return rows.map((t) => ({ id: t.id, name: t.name, organization_id: t.organization_id, home_id: t.home_id ?? null, icon: null, color: null }));
+}
+
+/** A page opens on its own screen, an interface on its own, any other dashboard on its table (the data home's rule). */
+function pageHref(d: { dashboard_id: string; presentation?: Record<string, unknown> | null }, tableId: string): string {
+  const presentation = d.presentation ?? null;
+  if (isInterface({ presentation })) return `/data/interfaces/${d.dashboard_id}`;
+  if (isPage({ presentation })) return `/data/pages/${d.dashboard_id}`;
+  return `/data/${tableId}?dashboard=${d.dashboard_id}`;
 }
 
 const COLORS = ["#2563eb", "#7c3aed", "#db2777", "#dc2626", "#ea580c", "#ca8a04", "#16a34a", "#0891b2", "#475569"];
@@ -188,8 +198,8 @@ export function NewBaseDialog({ open, onOpenChange, onMade }: { open: boolean; o
 // ── the page ────────────────────────────────────────────────────────────────────────────────
 
 interface Extras {
-  pages: Array<{ id: string; name: string; table: string }>;
-  automations: Array<{ id: string; name: string; enabled: boolean; table: string }>;
+  pages: Array<{ id: string; name: string; table: string; href: string }>;
+  automations: Array<{ id: string; name: string; enabled: boolean; table: string; href: string }>;
 }
 
 /** The page reads the base's tables first (row security, no store client), then mounts the record store for THE BASE'S OWN organization. */
@@ -218,8 +228,8 @@ function BasePageBody({ homeId, organizationId }: { homeId: string; organization
       const automations: Extras["automations"] = [];
       for (const t of ts) {
         const [d, a] = await Promise.all([client.dashboards({ table_id: t.id }), client.automations({ table_id: t.id })]);
-        if (d.ok) for (const x of d.data) pages.push({ id: x.dashboard_id, name: x.name, table: t.name });
-        if (a.ok) for (const x of a.data.automations) automations.push({ id: x.id, name: x.name, enabled: x.enabled, table: t.name });
+        if (d.ok) for (const x of d.data) pages.push({ id: x.dashboard_id, name: x.name, table: t.name, href: pageHref(x, t.id) });
+        if (a.ok) for (const x of a.data.automations) automations.push({ id: x.id, name: x.name, enabled: x.enabled, table: t.name, href: `/data/${t.id}` });
       }
       setExtras({ pages, automations });
     } catch (e) {
@@ -264,7 +274,7 @@ function BasePageBody({ homeId, organizationId }: { homeId: string; organization
         <h2 className="mb-1 text-sm font-medium">Pages · {extras.pages.length}</h2>
         {extras.pages.length === 0 ? <Words>None yet.</Words> : (
           <ul className="divide-y divide-border rounded-md border border-border">
-            {extras.pages.map((p) => <li key={p.id} className="flex justify-between px-3 py-2 text-sm"><span>{p.name}</span><span className="text-xs text-muted-foreground">{p.table}</span></li>)}
+            {extras.pages.map((p) => <li key={p.id}><Link href={p.href} className="flex justify-between px-3 py-2 text-sm hover:bg-muted" data-base-page-item={p.id}><span>{p.name}</span><span className="text-xs text-muted-foreground">{p.table}</span></Link></li>)}
           </ul>
         )}
       </section>
@@ -272,13 +282,13 @@ function BasePageBody({ homeId, organizationId }: { homeId: string; organization
         <h2 className="mb-1 text-sm font-medium">Automations · {extras.automations.length}</h2>
         {extras.automations.length === 0 ? <Words>None yet.</Words> : (
           <ul className="divide-y divide-border rounded-md border border-border">
-            {extras.automations.map((a) => <li key={a.id} className="flex justify-between px-3 py-2 text-sm"><span>{a.name}</span><span className="text-xs text-muted-foreground">{a.enabled ? "On" : "Off"} · {a.table}</span></li>)}
+            {extras.automations.map((a) => <li key={a.id}><Link href={a.href} className="flex justify-between px-3 py-2 text-sm hover:bg-muted" data-base-automation={a.id}><span>{a.name}</span><span className="text-xs text-muted-foreground">{a.enabled ? "On" : "Off"} · {a.table}</span></Link></li>)}
           </ul>
         )}
       </section>
 
       <EditDialog open={dialog === "edit"} onClose={() => setDialog(null)} current={identity} fallbackName={name} onSave={async (v) => { await saveBase(org, homeId, v); setDialog(null); await load(); }} />
-      <DuplicateDialog open={dialog === "duplicate"} onClose={() => setDialog(null)} name={name} tables={tables} organizationId={org} />
+      <DuplicateDialog open={dialog === "duplicate"} onClose={() => setDialog(null)} name={name} tables={tables} organizationId={org} identity={identity} />
       <SnapshotsDialog open={dialog === "snapshots"} onClose={() => setDialog(null)} homeId={homeId} organizationId={org} name={name} tables={tables} identity={identity} onNeedIdentity={async () => (await saveBase(org, homeId, { name })) } />
       <AirtableImportDialog open={dialog === "airtable"} onClose={() => { setDialog(null); void load(); }} organizationId={org} />
       <SheetsImportDialog open={dialog === "sheets"} onClose={() => { setDialog(null); void load(); }} organizationId={org} />
@@ -314,8 +324,7 @@ function EditDialog({ open, onClose, current, fallbackName, onSave }: { open: bo
 
 // ── duplicate ───────────────────────────────────────────────────────────────────────────────
 
-function DuplicateDialog({ open, onClose, name, tables, organizationId }: { open: boolean; onClose: () => void; name: string; tables: HomeTable[]; organizationId: string }) {
-  const client = useRecordsClient();
+function DuplicateDialog({ open, onClose, name, tables, organizationId, identity }: { open: boolean; onClose: () => void; name: string; tables: HomeTable[]; organizationId: string; identity: BaseIdentity | null }) {
   const port = useBasePort();
   const router = useRouter();
   const [withRecords, setWithRecords] = useState(true);
@@ -323,11 +332,13 @@ function DuplicateDialog({ open, onClose, name, tables, organizationId }: { open
   const go = async () => {
     setPhase({ kind: "copying", p: null });
     const list: BaseTable[] = tables.map((t) => ({ id: t.id, name: t.name }));
-    const res = await duplicateBase(port, { organizationId, tables: list, withRecords, nameFor: (t) => `${t.name} (copy)`, onProgress: (p) => setPhase({ kind: "copying", p }) });
+    const copyName = `${name} (copy)`;
+    const res = await duplicateBase(port, { organizationId, tables: list, withRecords, nameFor: (t) => `${t.name} (copy)`, homeName: copyName, onProgress: (p) => setPhase({ kind: "copying", p }) });
     if (!res.ok) { setPhase({ kind: "refused", text: `Stopped at ${res.stoppedAt.name}. ${(res.error as { message?: string })?.message ?? ""} ${res.made.length} of ${list.length} tables were copied.` }); return; }
     const first = res.data.tables[0]?.copy.id ?? null;
-    const home = first ? (await homeTables(client, organizationId)).find((t) => t.id === first)?.home_id ?? null : null;
-    // The copy's tables share one new Home only if the store made one for the first and the rest followed; say the truth.
+    // The copy is its own base: the new Home carries the name, icon, color and description of this one.
+    const home = res.data.homeId;
+    if (home) await saveBase(organizationId, home, { name: copyName, icon: identity?.icon ?? null, color: identity?.color ?? null, description: identity?.description ?? null, template: "duplicate" });
     setPhase({ kind: "done", open: home ? `/data/bases/${home}` : first ? `/data/${first}` : null,
       text: `${res.data.tables.length} tables${withRecords ? ` with ${res.data.tables.reduce((n, t) => n + t.records, 0)} records` : ""}, ${res.data.relinkedColumns} links re-pointed, ${res.data.automations} automations (off), ${res.data.pages} pages.${res.data.extrasRefused.length ? ` ${res.data.extrasRefused.join(" ")}` : ""}` });
   };
@@ -360,7 +371,6 @@ function DuplicateDialog({ open, onClose, name, tables, organizationId }: { open
 function SnapshotsDialog({ open, onClose, homeId, organizationId, name, tables, identity, onNeedIdentity }: {
   open: boolean; onClose: () => void; homeId: string; organizationId: string; name: string; tables: HomeTable[]; identity: BaseIdentity | null; onNeedIdentity: () => Promise<BaseIdentity>;
 }) {
-  const client = useRecordsClient();
   const port = useBasePort();
   const router = useRouter();
   const [base, setBase] = useState<BaseIdentity | null>(identity);
@@ -385,12 +395,13 @@ function SnapshotsDialog({ open, onClose, homeId, organizationId, name, tables, 
   };
   const restore = async (s: BaseSnapshotRow) => {
     setBusy("Restoring as a new base…"); setNote(null);
-    const res = await restoreSnapshot(port, { organizationId, snapshot: { label: s.label, origin: s.origin, tables: s.tables }, onProgress: (p) => setBusy(`Copying ${p.tableName} (${p.at} of ${p.of})…`) });
+    const restoredOn = new Date().toLocaleDateString();
+    const res = await restoreSnapshot(port, { organizationId, baseName: name, restoredOn, snapshot: { label: s.label, origin: s.origin, tables: s.tables }, onProgress: (p) => setBusy(`Copying ${p.tableName} (${p.at} of ${p.of})…`) });
     setBusy(null);
     if (!res.ok) { setNote(`The restore stopped at ${res.stoppedAt.name}. The snapshot itself is untouched.`); return; }
-    const first = res.data.tables[0]?.copy.id;
-    const home = first ? (await homeTables(client, organizationId)).find((t) => t.id === first)?.home_id : null;
-    setNote(`Restored as a new base: ${res.data.tables.length} tables.`);
+    const home = res.data.homeId;
+    if (home) await saveBase(organizationId, home, { name: restoredBaseName(name, restoredOn), icon: identity?.icon ?? null, color: identity?.color ?? null, description: identity?.description ?? null, template: "restore" });
+    setNote(`Restored as a new base: ${res.data.tables.length} tables${res.data.extrasRefused.length ? `. ${res.data.extrasRefused.join(" ")}` : ""}.`);
     if (home) router.push(`/data/bases/${home}`);
   };
   const scheduleOn = base?.snapshot_schedule?.enabled === true;

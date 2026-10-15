@@ -52,9 +52,14 @@ import {
 } from "lucide-react";
 
 import { promptForValues } from "@/components/dialogs/value-prompts/valuePromptsOpener";
-import type { EditorMenu, EditorMenuEntry } from "@ai-matrx/office/core";
-import { googleExtensionsMenu, googleHelpHead, soon } from "@ai-matrx/office/core";
-import type { EditorToolbarItem } from "@ai-matrx/office/core";
+import {
+  type EditorMenu,
+  type EditorMenuEntry,
+  googleExtensionsMenu,
+  googleHelpHead,
+  soon,
+  type EditorToolbarItem,
+} from "@ai-matrx/office/core";
 import { createElement } from "react";
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import type { FilterView, SheetMacro, SheetPrefs } from "./sheet-row-extras";
