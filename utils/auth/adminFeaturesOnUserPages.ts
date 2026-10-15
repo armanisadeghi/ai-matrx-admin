@@ -194,7 +194,7 @@ export const ADMIN_FEATURES_ON_USER_PAGES = {
     allows: "Open any provision snapshot in the Provision window, including one owned by an organization the admin is not a member of.",
     where: "Provision window (features/provision-window/data.ts loadProvisionSnapshot)",
     doors: ["mandate.provision_snapshot (read, platform_admin_read)"],
-    ruling: "Arman, 2026-10-14, relayed by the owning session: platform admins must be able to open every snapshot, he as a non-member super admin included. Confirm the quote.",
+    ruling: "Arman, 2026-10-12 (smart-add-brand VISION Part 4): \"I will never again allow agents to run randomly without me having full visibility into the inputs and the outputs.\" Provision windows are how he sees those inputs, for every organization.",
   },
 } as const satisfies Record<string, AdminFeatureOnUserPage>;
 
