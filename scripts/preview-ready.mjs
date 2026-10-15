@@ -287,16 +287,37 @@ if (!(await waitForListener())) notReady(`port ${PORT} never answered in ${Math.
 say(`listener: port ${PORT} answers (${secs()}s)`);
 
 let restarted = false;
+let capWaitSaid = 0;
 for (let attempt = 1; attempt <= 2; attempt++) {
   const logStart = logSize();
   const r = await signedInLoad(route);
+  // THE LIVE-DATABASE WALK CAP (utils/supabase/walkCap.ts): at most N session hosts sign in against
+  // production at once. Our hold keeps us in once admitted; while every slot is busy, wait for one.
+  if (r.status === 503 && r.headers?.["x-matrx-walk-cap"] === "refused" && left() > 25000) {
+    if (Date.now() - capWaitSaid > 60000) {
+      const holders = [...(r.body || "").matchAll(/<code>([^<]+\.localhost[^<]*)<\/code> — last signed-in request ([^<]+)</g)].map((m) => `${m[1]} (${m[2]})`);
+      say(`walk cap: every live-database slot is in use${holders.length ? ` — ${holders.join(", ")}` : ""}; waiting for one (${secs()}s)`);
+      capWaitSaid = Date.now();
+    }
+    await sleep(20000);
+    attempt--;
+    continue;
+  }
+  // The server went away mid-request (a restart after an install, or a crash the watchdog is
+  // restarting): wait for it to answer again and load again — never call that a timeout.
+  if (r.status === 0 && /ECONNRESET|ECONNREFUSED|socket hang up|EPIPE/.test(r.error || "") && left() > 25000) {
+    say(`sign-in: the server restarted under the request (${r.error}); waiting for it and loading again (${secs()}s)`);
+    if (!(await waitForListener())) notReady(`port ${PORT} never answered again after a restart`);
+    attempt--;
+    continue;
+  }
   const v = verdictOf(r, route, say);
   if (v.ok) {
     say(`sign-in: ${route} loaded signed in as ${member ? "test@test.com" : "admin@admin.com"} on ${HOST} (${secs()}s)`);
     break;
   }
   say(`sign-in: FAILED — ${v.why}`);
-  if (v.kind === "timeout") notReady(`${route} did not load within ${Math.round(budgetSec / 60)} min (machine load ${load.toFixed(0)})`);
+  if (v.kind === "timeout") notReady(`${route} did not load within ${Math.round(budgetSec / 60)} min (${r.error}; machine load ${os.loadavg()[0].toFixed(0)})`);
   const d = await diagnoseBuildError(`${r.body || ""}\n${logTailSince(logStart)}`, ROOT);
   for (const line of d.lines) say(line);
   if (d.stale && repair && !restarted) {

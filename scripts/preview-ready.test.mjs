@@ -36,6 +36,12 @@ test("a 500, an error page or a build error in the body is NOT READY even with s
   assert.equal(verdictOf({ status: 0, error: "timeout", finalPath: "/dashboard" }, "/dashboard").kind, "timeout");
 });
 
+test("the walk cap's refusal and parking are named as such, not as a page error", () => {
+  const h = (v) => ({ "x-matrx-walk-cap": v });
+  assert.equal(verdictOf({ status: 503, headers: h("refused"), body: "", finalPath: "/dashboard" }, "/dashboard").kind, "walk-cap");
+  assert.equal(verdictOf({ status: 409, headers: h("evicted"), body: "", finalPath: "/dashboard" }, "/dashboard").kind, "parked");
+});
+
 test("STALE SERVER: the installed package exports the name — a restart fixes it (the GmailMark case)", async () => {
   const d = await diagnoseBuildError(turbopackError("components/icons/google-brand.tsx", "GmailMark"), ROOT);
   assert.equal(d.stale, true, d.lines.join("\n"));

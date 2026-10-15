@@ -294,6 +294,8 @@ NM_SETTLE_SEC=15
 NM_CHECK_EVERY=5 # monitor ticks (2s each) between fingerprint reads
 NM_PENDING=""
 NM_PENDING_SINCE=0
+NM_HELD_DEFER_SEC="${MATRX_PREVIEW_INSTALL_DEFER_SEC:-1200}"
+NM_DEFER_SAID=0
 restart_if_node_modules_moved() {
   local pid="$1" recorded current now moves
   recorded="$(meta_value NM_FINGERPRINT)"
@@ -317,13 +319,23 @@ restart_if_node_modules_moved() {
     return 1
   fi
   (( now - NM_PENDING_SINCE >= NM_SETTLE_SEC )) || return 1
+  # A test run holds the server: a restart now costs it a cold compile mid-run (2026-10-15: three
+  # installs in six minutes restarted it three times). Defer while held, at most NM_HELD_DEFER_SEC;
+  # a page that really breaks on the old graph is repaired by `pnpm preview:ready` (STALE SERVER).
+  if held && (( now - NM_PENDING_SINCE < NM_HELD_DEFER_SEC )); then
+    if (( ! NM_DEFER_SAID )); then
+      printf '[preview] packages were installed under the server; a test run holds it, so the restart waits (at most %s min)\n' "$(( NM_HELD_DEFER_SEC / 60 ))" >>"$LOG"
+      NM_DEFER_SAID=1
+    fi
+    return 1
+  fi
   moves="$(aimatrx_version_moves "$(meta_value AIMATRX_VERSIONS)")"
   moves="${moves%; }"
   # Re-check ownership: a preview:stop/start may have replaced this server meanwhile.
   alive "$pid" && [[ "$(meta_value PID)" == "$pid" ]] || return 1
   stop_for_limit "$pid" "${RECYCLED_PREFIX}restarted because packages were installed under it (${moves:-dependencies relinked}) — a running server keeps the code it booted with and would serve errors that are not bugs"
   # Nothing fails silently: a failed restart replaces the RECYCLED line in FAILED.
-  restart_after_stop "packages were installed under it (${moves:-dependencies relinked})" || true
+  restart_after_stop "packages were installed under it (${moves:-dependencies relinked})" 0 || true
   return 0
 }
 
@@ -354,16 +366,17 @@ start_fresh_preview() {
 # restart_after_stop <why> — the watchdog stopped (or lost) the server; bring a fresh one up,
 # within the crash-loop budget. Returns 0 when a start was attempted and succeeded.
 restart_after_stop() {
-  local why="$1" now recent
+  local why="$1" budgeted="${2:-1}" now recent
   now="$(date +%s)"
   recent="$(awk -v since="$(( now - RESTART_WINDOW_SEC ))" '$1 >= since' "$RESTARTS" 2>/dev/null | wc -l | tr -d ' ')"
-  if (( recent >= RESTART_BUDGET )); then
+  # An install restart is deliberate, not a crash: it never counts toward the crash-loop budget.
+  if (( budgeted && recent >= RESTART_BUDGET )); then
     local loop="CRASH LOOP: $recent restarts in the last $(( RESTART_WINDOW_SEC / 60 )) min, so the watchdog stopped restarting after: $why — read the end of the log; this is a code or install defect, not load"
     printf '%s\n' "$loop" >"$FAILED"
     printf '[preview] WATCHDOG: %s\n' "$loop" >>"$LOG"
     return 1
   fi
-  printf '%s\n' "$now" >>"$RESTARTS"
+  (( budgeted )) && printf '%s\n' "$now" >>"$RESTARTS"
   printf '[preview] KEEP-ALIVE: starting a fresh preview after: %s\n' "$why" >>"$LOG"
   if ! start_fresh_preview; then
     local err
