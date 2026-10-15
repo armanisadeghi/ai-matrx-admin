@@ -18,7 +18,7 @@ export async function setupFlashRun(page, agentName) {
       if (agentName) {
         await trigger(page).click({ timeout: 8000 });
         await page.waitForTimeout(800);
-        await page.getByText(agentName, { exact: true }).first().click({ timeout: 8000 });
+        await page.getByText(agentName).last().click({ timeout: 8000 });
         await page.waitForTimeout(2500);
       }
       await trigger(page).click({ timeout: 8000 });

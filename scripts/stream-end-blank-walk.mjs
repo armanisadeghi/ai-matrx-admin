@@ -1,5 +1,5 @@
 // scripts/stream-end-blank-walk.mjs — a live assistant reply must NOT go blank when its stream ends.
-// Headless, admin@admin.com, Content Writing Partner. Samples the page text every 500ms after sending
+// Headless, admin@admin.com, Content Writing Partner on Gemini 3.8 Flash (lib/flash-test-setup.mjs). Samples the page text every 500ms after sending
 // and fails (exit 1) if the answer text was visible and then disappeared before a reload.
 //   node scripts/stream-end-blank-walk.mjs "<prompt>" [outDir]
 import { chromium } from "playwright";
@@ -7,6 +7,7 @@ import { mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { execSync } from "node:child_process";
+import { setupFlashRun } from "./lib/flash-test-setup.mjs";
 const PROMPT = process.argv[2] || "Say hello in two sentences.";
 const OUT = process.argv[3] || mkdtempSync(join(tmpdir(), "se-blank-"));
 console.log("screenshots:", OUT);
@@ -18,13 +19,7 @@ const page = await ctx.newPage();
 await page.goto(url, { timeout: 180000 });
 if (page.url().includes("__dev-walk")) { await page.getByRole("button", { name: "Resume this preview" }).click(); await page.waitForURL(u=>!u.href.includes("__dev-walk"),{timeout:180000}); }
 await page.waitForTimeout(6000);
-for (let a = 0; a < 4; a++) {
-  if (await page.getByText("Content Writing Partner").count() && !(await page.getByText("General Chat · ").count())) break;
-  await page.getByText("General Chat", {exact:false}).first().click().catch(()=>{});
-  await page.getByText("Content Writing Partner").first().click({timeout:8000}).catch(()=>{});
-  await page.waitForTimeout(1500);
-}
-if (!(await page.getByText("Content Writing Partner").count())) { console.log("ABORT: agent not Content Writing Partner (General Chat is spend-gated)"); await b.close(); process.exit(2); }
+if (!(await setupFlashRun(page, "Content Writing Partner"))) { await b.close(); process.exit(2); }
 await page.locator("textarea").first().fill(PROMPT);
 await page.keyboard.press("Enter");
 const samples = [];

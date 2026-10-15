@@ -1,6 +1,6 @@
 // scripts/remarks-final-walk.mjs — REMARKS (comments, choices, ticks, edits, new-chat-about) FINAL WALK, live.
 //
-// Headless, as admin@admin.com, against the shared dev server (:3001). Agent: Content Writing Partner.
+// Headless, as admin@admin.com, against the shared dev server (:3001). Agent: Content Writing Partner on Gemini 3.8 Flash (lib/flash-test-setup.mjs; no test exemption from the $1 run hold).
 // The walk ABORTS (exit 2) if the picker will not hold it — General Chat is spend-gated by design and
 // no spend is ever approved here.
 //
@@ -11,6 +11,7 @@
 //   4 tick two items -> one chip, ticks stay  8 no reply goes blank at stream end
 //
 //   node scripts/remarks-final-walk.mjs [outDir]       ITEMS=3,1,2 to run a subset (order kept as listed)
+import { setupFlashRun } from "./lib/flash-test-setup.mjs";
 import { chromium } from "playwright";
 import { mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -73,16 +74,9 @@ async function signIn(browser, route, viewport = { width: 1400, height: 1000 }) 
   return { ctx, page };
 }
 const headerBtns = (page) => page.evaluate(() => [...document.querySelectorAll("button")].map((b) => b.innerText).filter((t) => /·/.test(t)));
+// Content Writing Partner on Gemini 3.8 Flash (Arman 2026-10-15: no test exemption from the $1 hold).
 async function pickAgent(page) {
-  for (let a = 0; a < 6; a++) {
-    const h = await headerBtns(page);
-    if (h.some((t) => t.startsWith("Content Writing Partner"))) return true;
-    await page.locator("button", { hasText: "General Chat ·" }).first().click({ timeout: 8000 }).catch(() => {});
-    await page.waitForTimeout(1500);
-    await page.getByText("Content Writing Partner").first().click({ timeout: 8000 }).catch(() => {});
-    await page.waitForTimeout(4000);
-  }
-  return false;
+  return setupFlashRun(page, "Content Writing Partner");
 }
 const AN = '[data-message-group][aria-label="Assistant answer"]';
 const US = '[data-message-group][aria-label="Your message"]';

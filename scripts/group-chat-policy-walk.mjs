@@ -1,5 +1,6 @@
 // scripts/group-chat-policy-walk.mjs — Group Chat inspector policy save sticks (live, headless).
 //   node scripts/group-chat-policy-walk.mjs [outDir]
+// Sends no AI message (policy edits only), so no model setup is needed; any walk that does send one uses lib/flash-test-setup.mjs (Gemini 3.8 Flash).
 // Captures every /group-chat request (method, full headers, body) + response + OPTIONS preflights.
 import { chromium } from "playwright";
 import { mkdtempSync } from "node:fs";

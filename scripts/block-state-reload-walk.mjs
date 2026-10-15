@@ -7,12 +7,13 @@
 // row (features/block-state/hostEntity.ts decides the holder now).
 //
 // Headless, as admin@admin.com, against the shared dev server (:3001): asks
-// Content Writing Partner for a questionnaire (one real AI call), lets the reply
+// Content Writing Partner on Gemini 3.8 Flash for a questionnaire (one real AI call), lets the reply
 // settle, reloads, answers + Submits, waits, reloads, and signs in a SECOND
 // browser context. Records every block_state_* request/response body. Exit 1
 // unless the answers and the chip are back after the reload AND in context 2.
 //
 //   node scripts/block-state-reload-walk.mjs [outDir]
+import { setupFlashRun } from "./lib/flash-test-setup.mjs";
 import { chromium } from "playwright";
 import { mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -42,8 +43,7 @@ const b = await chromium.launch({ headless: true });
 const ctx = await b.newContext({ viewport: { width: 1400, height: 1000 } });
 const page = await signIn(ctx, "/chat/new"); hook(page, "A");
 await page.waitForTimeout(6000);
-await page.getByText("General Chat", {exact:false}).first().click();
-await page.getByText("Content Writing Partner").click();
+if (!(await setupFlashRun(page, "Content Writing Partner"))) process.exit(2);   // Gemini 3.8 Flash, never GPT 5.4
 await page.waitForTimeout(1500);
 await page.locator("textarea").first().fill("Ask me a few questions to scope my launch.");
 await page.keyboard.press("Enter");

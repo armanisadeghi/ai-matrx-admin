@@ -1,5 +1,6 @@
 // scripts/board-tile-comment-chip-walk.mjs — a board TILE comment sent "With next message" shows a chip in the board chat (live, headless).
 //   node scripts/board-tile-comment-chip-walk.mjs [outDir]
+// Sends no AI message (comment chip only), so no model setup is needed; any walk that does send one uses lib/flash-test-setup.mjs (Gemini 3.8 Flash).
 import { chromium } from "playwright";
 import { mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
