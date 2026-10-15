@@ -43,7 +43,7 @@ describe("HighlightedText: {{#name}}…{{/name}} sections", () => {
     const html = renderToStaticMarkup(<HighlightedText text="{{#ghost}}x{{/ghost}}" validVariables={["extra"]} />);
     expect(html).not.toContain("data-section");
     expect(html).not.toContain("Undefined variable");
-    expect(html).toContain("is not declared, so this is sent to the model as written");
+    expect(html).toContain('title="Plain text: &quot;ghost&quot; is not declared"');
   });
 
   it("an unclosed marker stays neutral", () => {
