@@ -14,7 +14,7 @@
 // `useTaskManager` hooks and the /tasks route's `tasksRealtimeMiddleware`), so
 // the description they must agree on lives here.
 //
-// Nothing about CHANNELS lives here — channels are `@ai-matrx/realtime`'s job.
+// Nothing about CHANNELS lives here — channels are `@ai-matrx/data/realtime`'s job.
 
 export const TASKS_TABLE = "projects.tasks";
 export const PROJECTS_TABLE = "projects.projects";

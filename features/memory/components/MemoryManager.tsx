@@ -9,7 +9,7 @@
  * (RLS-scoped to the user). A realtime subscription keeps the list fresh so
  * in-session agent edits surface without a manual refresh.
  *
- * REALTIME: `@ai-matrx/realtime` owns the channel (`useChannel`). What was here
+ * REALTIME: `@ai-matrx/data/realtime` owns the channel (`useChannel`). What was here
  * was a raw `.channel(...).subscribe()` with a manual `removeChannel` teardown
  * and no catch-up read — so a sandbox that synced its memory back while this tab
  * was asleep left the list silently stale. `onBackfill` re-reads on every
@@ -21,8 +21,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { FileText, Plus, Save, Trash2, Loader2, Brain } from "lucide-react";
 import { toast } from "@/lib/toast";
-import { defineChannelNamespace } from "@ai-matrx/realtime";
-import { useChannel } from "@ai-matrx/realtime/react";
+import { defineChannelNamespace } from "@ai-matrx/data/realtime";
+import { useChannel } from "@ai-matrx/data/realtime/react";
 import { getUserId } from "@/utils/auth/getUserId";
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import {

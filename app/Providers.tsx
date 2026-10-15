@@ -53,7 +53,7 @@ import { ReactQueryProvider } from "@/providers/ReactQueryProvider";
 // until the user's first audio engagement. See providers/AudioSystemHost.tsx.
 import { AudioSystemHost } from "@/providers/AudioSystemHost";
 import { RequestRecoveryProvider } from "@/features/request-recovery/providers/RequestRecoveryProvider";
-// THE ONE @ai-matrx/realtime mount. Every channel the app opens belongs to the
+// THE ONE @ai-matrx/data/realtime mount. Every channel the app opens belongs to the
 // single RealtimeManager this provider builds — a second mount anywhere would
 // build a second manager with its own channels and its own write ledger.
 // See providers/RealtimeHost.tsx.

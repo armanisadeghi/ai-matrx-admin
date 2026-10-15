@@ -17,7 +17,7 @@
  * Canonical reference: `/Users/armanisadeghi/code/common-docs/systems/apps/extension/CHANNELS.md`.
  */
 
-import { defineChannelNamespace } from "@ai-matrx/realtime";
+import { defineChannelNamespace } from "@ai-matrx/data/realtime";
 import { z } from "zod";
 
 // ---------------------------------------------------------------------------
@@ -45,7 +45,7 @@ export const BRIDGE_CHANNEL_PREFIX = "matrx-extension-bridge" as const;
 export const BRIDGE_BROADCAST_EVENT = "FRONTEND_RPC" as const;
 
 /**
- * The bridge's `@ai-matrx/realtime` channel namespace — the ONE producer of the
+ * The bridge's `@ai-matrx/data/realtime` channel namespace — the ONE producer of the
  * topic string, and the reason nothing else in this app can claim the name.
  *
  * 🚨 `foreignTopic` is load-bearing. The topic is the DEPLOYED extension's

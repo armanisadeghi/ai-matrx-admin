@@ -3,7 +3,7 @@
  *
  * Every channel mechanic (ref-counted shared rooms, jittered reconnect with a
  * stability reset, the decoupled ordered handler queue, dedup, tab-sleep and
- * network awareness, diagnostics) belongs to `@ai-matrx/realtime`. There is no
+ * network awareness, diagnostics) belongs to `@ai-matrx/data/realtime`. There is no
  * `.channel(` in this file and there must never be one — a second copy beside
  * the package is the named failure.
  *
@@ -18,7 +18,7 @@
  *    redelivered directive is one directive, not two.
  */
 
-import type { ChannelSpec } from "@ai-matrx/realtime";
+import type { ChannelSpec } from "@ai-matrx/data/realtime";
 import {
   DIRECTIVE_BROADCAST_EVENT,
   parseDirective,

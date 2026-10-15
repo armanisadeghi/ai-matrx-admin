@@ -97,7 +97,7 @@ import { UniverFindReplacePlugin } from "@univerjs/find-replace";
 import { UniverDocsFindReplacePlugin } from "@univerjs/docs-find-replace";
 import findReplaceEnUS from "@univerjs/find-replace/locale/en-US";
 import "@univerjs/find-replace/lib/index.css";
-import { useRealtimeManager } from "@ai-matrx/realtime/react";
+import { useRealtimeManager } from "@ai-matrx/data/realtime/react";
 
 import { supabase } from "@/utils/supabase/client";
 import { useThemeMode } from "@/styles/themes/useThemeMode";
@@ -132,7 +132,7 @@ import { matrxImagePorts } from "@ai-matrx/office/univer";
 import { disposeUniverInstance } from "@ai-matrx/office/univer";
 import { registerUniverFacadeDependencies } from "@ai-matrx/office/univer";
 import { readCollabAntiEntropyMs } from "@/lib/knobs/collabAntiEntropy";
-import { RemotePeerChips as RemoteCursorsLayer } from "@ai-matrx/realtime/collab/react";
+import { RemotePeerChips as RemoteCursorsLayer } from "@ai-matrx/data/realtime/collab/react";
 import { documentHistoryToggleInput } from "@ai-matrx/office/univer/history";
 import { DocumentPageReferenceCopyButton } from "@/features/documents/components/DocumentPageReferenceCopyButton";
 import { DocumentGoogleLink, useDocumentGoogleLink } from "@/features/google-workspace/linked/EditorGoogleLinks";
@@ -153,7 +153,7 @@ import type {
   DocumentCollabFactory,
 } from "@/features/documents/document-model/documentModel";
 import type { CommandServiceLike } from "@/features/workbooks/collab/WorkbookCollabSession";
-import type { AwarenessState } from "@ai-matrx/realtime/collab";
+import type { AwarenessState } from "@ai-matrx/data/realtime/collab";
 
 import { getClaimsUser } from "@ai-matrx/auth";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
@@ -167,7 +167,7 @@ type Props = {
   /** Used as the document display name on export / shell. Falls back to documentId. */
   documentName?: string;
   /**
-   * Opt in to v2 CRDT collab — see `@ai-matrx/realtime` README (collab).
+   * Opt in to v2 CRDT collab — see `@ai-matrx/data/realtime` README (collab).
    * The document's model joins ONE Yjs room per document (channel prefix
    * "document", so docs and workbooks never share a room) and binds it to the
    * model's command stream, so every view of the document in this tab is in
@@ -1024,7 +1024,7 @@ function collabFactoryFor(documentId: string): DocumentCollabFactory {
     if (!uid) return null;
     const [{ WorkbookCollabSession }, { SupabaseYjsProvider }] = await Promise.all([
       import("@/features/workbooks/collab/WorkbookCollabSession"),
-      import("@ai-matrx/realtime/collab"),
+      import("@ai-matrx/data/realtime/collab"),
     ]);
     const clientId =
       typeof crypto !== "undefined" && "randomUUID" in crypto

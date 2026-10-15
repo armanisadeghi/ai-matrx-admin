@@ -44,7 +44,7 @@
  * directive is announced (see `directiveRegistry.ts`) rather than dropped.
  */
 
-import { defineChannelNamespace } from "@ai-matrx/realtime";
+import { defineChannelNamespace } from "@ai-matrx/data/realtime";
 import { z } from "zod";
 import {
   CrossComponentEnvelopeSchema,

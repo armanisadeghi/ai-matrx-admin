@@ -8,7 +8,7 @@
 //
 // REALTIME — THIS FILE USED TO BE THE DOCTRINE; NOW THE PACKAGE IS.
 // -----------------------------------------------------------------
-// `@ai-matrx/realtime` owns the channel and everything this module used to
+// `@ai-matrx/data/realtime` owns the channel and everything this module used to
 // hand-roll: unique instance topics, the write ledger, dedup, the decoupled
 // ordered handler queue, jittered reconnect WITH the stability reset (and its
 // own sustained-outage alarm), tab-sleep and network awareness, diagnostics.
@@ -57,7 +57,7 @@ import {
   subscribeToRealtimeManager,
   type RealtimeStatus,
   type WriteLedger,
-} from "@ai-matrx/realtime";
+} from "@ai-matrx/data/realtime";
 import {
   upsertNoteFromServer,
   removeNote,

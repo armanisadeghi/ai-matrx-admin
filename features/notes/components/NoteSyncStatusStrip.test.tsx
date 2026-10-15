@@ -35,7 +35,7 @@ import {
   type ChannelMetrics,
   type ChannelSpec,
   type RealtimeManager,
-} from "@ai-matrx/realtime";
+} from "@ai-matrx/data/realtime";
 import notesReducer from "../redux/slice";
 import { fetchNotesList } from "../redux/thunks";
 import { notesRealtimeMiddleware } from "../redux/realtimeMiddleware";

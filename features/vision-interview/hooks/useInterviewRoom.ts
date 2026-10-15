@@ -109,7 +109,7 @@ export function useInterviewRoom(sessionId: string) {
     };
 
     // Backoff, the attempt counter, the healthy-timer reset and the catch-up
-    // refetch all used to live here; `@ai-matrx/realtime` owns every one of
+    // refetch all used to live here; `@ai-matrx/data/realtime` owns every one of
     // them now, and its backfill door fires on tab wake and network restore
     // too — not only on a channel error, which is what this hook could see.
     void hydrate();

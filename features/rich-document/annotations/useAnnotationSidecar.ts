@@ -17,8 +17,8 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
-import { defineChannelNamespace } from "@ai-matrx/realtime";
-import { useRealtimeManager } from "@ai-matrx/realtime/react";
+import { defineChannelNamespace } from "@ai-matrx/data/realtime";
+import { useRealtimeManager } from "@ai-matrx/data/realtime/react";
 import { getUserId } from "@/utils/auth/getUserId";
 import { ANCHOR_WRITES_ENABLED, DEFAULT_HIGHLIGHT_COLOR, type HighlightColor } from "./constants";
 import type { TextAnchor } from "./anchor";

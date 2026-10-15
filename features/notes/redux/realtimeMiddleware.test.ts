@@ -6,7 +6,7 @@
  * The previous version of this file drove a mocked `supabase.channel` and
  * asserted the reconnect-alarm escalation ladder — backoff attempts, the
  * "still down after 5 attempts" console.error, the stale-SUBSCRIBED teardown.
- * Every one of those is now `@ai-matrx/realtime`'s job and is pinned by that
+ * Every one of those is now `@ai-matrx/data/realtime`'s job and is pinned by that
  * package's own regression suite. Re-asserting them here would test the
  * package through a mock of a client the middleware no longer touches, which
  * is the definition of a test that cannot fail for the right reason.
@@ -37,7 +37,7 @@ import {
   type PostgresChangeBinding,
   type RealtimeManager,
   type WriteLedger,
-} from "@ai-matrx/realtime";
+} from "@ai-matrx/data/realtime";
 import { fetchNotesList } from "./thunks";
 import { notesRealtimeMiddleware } from "./realtimeMiddleware";
 
@@ -155,7 +155,7 @@ function baseState(): RootState {
   } as unknown as RootState;
 }
 
-describe("notes realtime middleware on @ai-matrx/realtime", () => {
+describe("notes realtime middleware on @ai-matrx/data/realtime", () => {
   let stub: ReturnType<typeof stubManager>;
   let opened: Harness | null = null;
 

@@ -6,13 +6,13 @@
  *    opens is `mx:<feature>:…`. This one is `matrx-extension-bridge:<userId>`
  *    because the DEPLOYED extension listens there. An `mx:` rename would put
  *    this app in a room of one — no error, no traffic, nothing on a screen.
- * 2. **The wire is raw.** `@ai-matrx/realtime` normally wraps a broadcast in the
+ * 2. **The wire is raw.** `@ai-matrx/data/realtime` normally wraps a broadcast in the
  *    Matrx envelope; the extension parses a bare `BridgeEnvelope` with a Zod
  *    schema and logs "malformed payload" for anything else. The spec must
  *    declare `wire: {mode:"raw"}` or the frontend goes mute to the extension.
  *
  * Byte identity of the raw SEND is proven inside the package
- * (`@ai-matrx/realtime` `src/core/raw-wire.test.ts`, against this same fixture);
+ * (`@ai-matrx/data/realtime` `src/core/raw-wire.test.ts`, against this same fixture);
  * here we prove this app asks for it.
  */
 

@@ -19,7 +19,7 @@ import { readAllRows } from "@ai-matrx/data/db";
 import {
   defineChannelNamespace,
   subscribeToRealtimeManager,
-} from "@ai-matrx/realtime";
+} from "@ai-matrx/data/realtime";
 import type {
   HoleClassification,
   HoleStatus,
@@ -355,7 +355,7 @@ const interviewRoomChannel = defineChannelNamespace({
  * RLS authorizes delivery (interview.* components ride the parent session's
  * access), so there is no client-side owner filter.
  *
- * REALTIME: `@ai-matrx/realtime` owns the channel — unique instance topic, echo
+ * REALTIME: `@ai-matrx/data/realtime` owns the channel — unique instance topic, echo
  * suppression, dedup, the decoupled ordered handler queue, jittered reconnect
  * WITH THE STABILITY RESET, tab sleep, diagnostics. What this replaced was a
  * raw `.channel(...).subscribe()` here plus a hand-rolled backoff ladder,

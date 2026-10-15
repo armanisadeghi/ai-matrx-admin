@@ -115,9 +115,9 @@ import {
 import { matrxImagePorts } from "@ai-matrx/office/univer";
 import { disposeUniverInstance } from "@ai-matrx/office/univer";
 import { isWorkbookSnapshotMutation } from "@ai-matrx/office/univer";
-import { mayAutosave, remoteOriginOf } from "@ai-matrx/realtime/collab";
+import { mayAutosave, remoteOriginOf } from "@ai-matrx/data/realtime/collab";
 import { readCollabAntiEntropyMs } from "@/lib/knobs/collabAntiEntropy";
-import { RemotePeerChips as RemoteCursorsLayer } from "@ai-matrx/realtime/collab/react";
+import { RemotePeerChips as RemoteCursorsLayer } from "@ai-matrx/data/realtime/collab/react";
 import { WorkbookCursorOverlay } from "@/features/workbooks/components/WorkbookCursorOverlay";
 import { getLatestSnapshot, saveSnapshot } from "@/features/workbooks/workbook-service";
 import { useWorkbookGoogleLink, useLiveGoogleAdapter } from "@/features/google-workspace/linked/EditorGoogleLinks";
@@ -149,7 +149,7 @@ type Props = {
   /** Used as the XLSX filename on export. Falls back to workbookId. */
   workbookName?: string;
   /**
-   * Opt in to v2 CRDT collab — see `@ai-matrx/realtime` README (collab).
+   * Opt in to v2 CRDT collab — see `@ai-matrx/data/realtime` README (collab).
    * Defaults to `false` so v1 behavior (snapshot-per-save last-write-wins)
    * is unchanged until the workbook page explicitly turns this on. When
    * `true`, the editor wires a `WorkbookCollabSession`, broadcasts mutations
@@ -205,7 +205,7 @@ export default function WorkbookEditor({
     null,
   );
   const [remoteAwareness, setRemoteAwareness] = useState<
-    Map<number, import("@ai-matrx/realtime/collab").AwarenessState>
+    Map<number, import("@ai-matrx/data/realtime/collab").AwarenessState>
   >(new Map());
   const [collabIsHost, setCollabIsHost] = useState(true); // solo = host by default
   const [collabSelfUid, setCollabSelfUid] = useState<string>("");
@@ -491,7 +491,7 @@ export default function WorkbookEditor({
     const [{ WorkbookCollabSession }, { SupabaseYjsProvider }] =
       await Promise.all([
         import("@/features/workbooks/collab/WorkbookCollabSession"),
-        import("@ai-matrx/realtime/collab"),
+        import("@ai-matrx/data/realtime/collab"),
       ]);
 
     // Univer's `__getInjector` is technically a private path (the double
@@ -558,7 +558,7 @@ export default function WorkbookEditor({
           new Map(
             aw.getStates() as Map<
               number,
-              import("@ai-matrx/realtime/collab").AwarenessState
+              import("@ai-matrx/data/realtime/collab").AwarenessState
             >,
           ),
         );

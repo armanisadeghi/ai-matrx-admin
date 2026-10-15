@@ -43,9 +43,9 @@ const service = {
 jest.mock("../service", () => service);
 // The sidecar's live half opens through the realtime manager, once per source (sidecarStore.ts).
 const mockRealtime = { open: jest.fn(() => ({ close: jest.fn() })) as jest.Mock };
-jest.mock("@ai-matrx/realtime/react", () => ({ useChannel: jest.fn(), useRealtimeManager: () => mockRealtime }));
+jest.mock("@ai-matrx/data/realtime/react", () => ({ useChannel: jest.fn(), useRealtimeManager: () => mockRealtime }));
 // Topics built the way the package builds a foreign topic: root + ":" + parts in order.
-jest.mock("@ai-matrx/realtime", () => ({
+jest.mock("@ai-matrx/data/realtime", () => ({
   defineChannelNamespace: (spec: { foreignTopic?: string; namespace: string; parts: string[] }) => ({
     topic: (parts: Record<string, string>) => [spec.foreignTopic ?? `mx:${spec.namespace}`, ...spec.parts.map((k) => parts[k])].join(":"),
   }),

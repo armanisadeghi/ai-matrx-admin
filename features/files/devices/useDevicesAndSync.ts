@@ -22,7 +22,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import {
   subscribeToRealtimeManager,
   defineChannelNamespace,
-} from "@ai-matrx/realtime";
+} from "@ai-matrx/data/realtime";
 
 import { useAppSelector } from "@/lib/redux/hooks";
 import {

@@ -6,7 +6,7 @@
 // Postgres. Presence backs the ROSTER (identity + host flag, and auto-recovers
 // it on reconnect); throttled `score` broadcasts carry the mutable scoreboard.
 //
-// REALTIME: `@ai-matrx/realtime` owns the channel. THE TOPIC IS THE ROOM here —
+// REALTIME: `@ai-matrx/data/realtime` owns the channel. THE TOPIC IS THE ROOM here —
 // broadcast and presence route on it — so the package puts the declared topic on
 // the wire verbatim and ref-counts one underlying channel per room inside this
 // client (README rule 7, the topic-semantics split). What this replaced was a
@@ -32,8 +32,8 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { defineChannelNamespace, type PresenceMember } from "@ai-matrx/realtime";
-import { useChannel } from "@ai-matrx/realtime/react";
+import { defineChannelNamespace, type PresenceMember } from "@ai-matrx/data/realtime";
+import { useChannel } from "@ai-matrx/data/realtime/react";
 import type { GameBroadcastEvent, LivePlayer, RoomPhase } from "../types";
 
 interface PresenceIdentity extends Record<string, unknown> {

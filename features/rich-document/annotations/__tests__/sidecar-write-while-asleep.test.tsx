@@ -38,8 +38,8 @@ const service = {
 };
 jest.mock("../service", () => service);
 const mockRealtime = { open: jest.fn(() => ({ close: jest.fn() })) as jest.Mock };
-jest.mock("@ai-matrx/realtime/react", () => ({ useChannel: jest.fn(), useRealtimeManager: () => mockRealtime }));
-jest.mock("@ai-matrx/realtime", () => ({
+jest.mock("@ai-matrx/data/realtime/react", () => ({ useChannel: jest.fn(), useRealtimeManager: () => mockRealtime }));
+jest.mock("@ai-matrx/data/realtime", () => ({
   defineChannelNamespace: (spec: { foreignTopic?: string; namespace: string; parts: string[] }) => ({
     topic: (parts: Record<string, string>) =>
       [spec.foreignTopic ?? `mx:${spec.namespace}`, ...spec.parts.map((k) => parts[k])].join(":"),

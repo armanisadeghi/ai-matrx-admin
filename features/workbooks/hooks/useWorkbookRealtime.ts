@@ -8,7 +8,7 @@
  * NOT a CRDT layer. This is "last write wins on the snapshot row," matching
  * the v1 storage model in `udt_v2_workbook_snapshots.sql`. Real concurrent
  * collab (per-keystroke CRDT updates) is a follow-up phase. *
- * REALTIME: `@ai-matrx/realtime` owns the channel (`useChannel`) — dedup, the
+ * REALTIME: `@ai-matrx/data/realtime` owns the channel (`useChannel`) — dedup, the
  * decoupled ordered handler queue, jittered reconnect, tab sleep, diagnostics.
  * What was here was a raw `.channel(...).subscribe()` with manual teardown and
  * NO catch-up read, which on this surface is the worst version of the bug: a
@@ -25,8 +25,8 @@
 
 import { useCallback } from "react";
 
-import { defineChannelNamespace } from "@ai-matrx/realtime";
-import { useChannel } from "@ai-matrx/realtime/react";
+import { defineChannelNamespace } from "@ai-matrx/data/realtime";
+import { useChannel } from "@ai-matrx/data/realtime/react";
 import { supabase } from "@/utils/supabase/client";
 
 export type WorkbookRealtimeEvent = {

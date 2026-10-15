@@ -8,7 +8,7 @@
  *
  *  1. joins the two server-bus rooms this session listens on —
  *     `matrx-server-bus:<userId>` (this user) and `matrx-server-bus:platform`
- *     (everyone) — through `@ai-matrx/realtime`, whose room registry
+ *     (everyone) — through `@ai-matrx/data/realtime`, whose room registry
  *     guarantees one underlying channel per topic per tab;
  *  2. fans every well-formed directive into the opt-in handler registry.
  *
@@ -26,7 +26,7 @@
 
 import { useEffect } from "react";
 import { useSelector } from "react-redux";
-import { useChannel } from "@ai-matrx/realtime/react";
+import { useChannel } from "@ai-matrx/data/realtime/react";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
 import { invalidateFeatureKnobs } from "@/lib/knobs/featureKnobs";
 import { notifyRefreshRequired } from "@/components/errors/refresh-directive";

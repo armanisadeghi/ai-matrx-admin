@@ -21,7 +21,7 @@
  *
  * REALTIME — A FOREIGN PEER OWNS THIS WIRE.
  * ----------------------------------------
- * `@ai-matrx/realtime` owns the channel, in RAW WIRE mode. The other end is a
+ * `@ai-matrx/data/realtime` owns the channel, in RAW WIRE mode. The other end is a
  * separately released program: the deployed Matrx Local desktop app parses this
  * exact v2 envelope shape (`app/api/cross_component_envelope.py`) on this exact
  * topic. Wrapping it in the Matrx envelope, or renaming the topic to an `mx:`
@@ -49,7 +49,7 @@ import {
   onRealtimeManagerChange,
   type ChannelHandle,
   type ChannelSpec,
-} from "@ai-matrx/realtime";
+} from "@ai-matrx/data/realtime";
 
 import { getClaimsUser } from "@ai-matrx/auth";
 /**

@@ -8,14 +8,14 @@
  * than the provider's 1.5 s alone timer) and before presence has reported anyone. B must wait for the
  * room's body, never seed version 42 beside A's copy.
  *
- * Real SupabaseYjsProvider and @ai-matrx/realtime manager over the fake broadcast network of
+ * Real SupabaseYjsProvider and @ai-matrx/data/realtime manager over the fake broadcast network of
  * convergence.test.ts (fixed delay here).
  */
 import * as Y from "yjs";
 import { Awareness } from "y-protocols/awareness";
-import { createInertEnvironment, createRealtimeManager, type RealtimeManager } from "@ai-matrx/realtime";
+import { createInertEnvironment, createRealtimeManager, type RealtimeManager } from "@ai-matrx/data/realtime";
 
-import { SupabaseYjsProvider } from "@ai-matrx/realtime/collab";
+import { SupabaseYjsProvider } from "@ai-matrx/data/realtime/collab";
 
 import { joinRoom } from "../join-room";
 

@@ -311,7 +311,7 @@ export interface NotesSliceState {
    * alone cannot tell a screen whether the package's backoff is still working
    * (say so, quietly) or has given up (say so, loudly, with a way out), so a
    * boolean could only ever produce a banner that lies in one direction. The
-   * status comes from `@ai-matrx/realtime`'s `onStatusChange`; `idle` is the
+   * status comes from `@ai-matrx/data/realtime`'s `onStatusChange`; `idle` is the
    * pre-subscription state and must never draw a banner.
    */
   realtimeStatus: NotesRealtimeStatus;

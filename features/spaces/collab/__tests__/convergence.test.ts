@@ -1,19 +1,19 @@
 /**
  * Co-editing convergence (round 22, item 1): two members of one Space room type at the same time —
  * in the same paragraph and in different blocks — over the REAL SupabaseYjsProvider and the REAL
- * `@ai-matrx/realtime` manager, on a fake broadcast network that delivers every frame after a random
+ * `@ai-matrx/data/realtime` manager, on a fake broadcast network that delivers every frame after a random
  * delay (so frames from the two members interleave and arrive out of order, as Supabase may deliver
  * them). When the typing stops and every frame has landed, both documents must be byte-identical in
  * content and hold no pending (undeliverable) updates.
  *
- * The fake network is the one in @ai-matrx/realtime's collab/fake-network.ts,
+ * The fake network is the one in @ai-matrx/data/realtime's collab/fake-network.ts,
  * plus jitter and an optional drop rate.
  */
 import * as Y from "yjs";
 import { Awareness } from "y-protocols/awareness";
-import { createInertEnvironment, createRealtimeManager, type RealtimeManager } from "@ai-matrx/realtime";
+import { createInertEnvironment, createRealtimeManager, type RealtimeManager } from "@ai-matrx/data/realtime";
 
-import { SupabaseYjsProvider } from "@ai-matrx/realtime/collab";
+import { SupabaseYjsProvider } from "@ai-matrx/data/realtime/collab";
 
 type Listener = (payload: { event: string; payload?: unknown }) => void;
 

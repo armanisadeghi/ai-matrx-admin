@@ -8,7 +8,7 @@ import {
   type Message,
   type MessagingRepository,
 } from "@ai-matrx/messaging";
-import type { RealtimeManager } from "@ai-matrx/realtime";
+import type { RealtimeManager } from "@ai-matrx/data/realtime";
 
 const conversationId = asConversationId("77777777-7777-4777-8777-777777777777");
 const userId = asUserId("22222222-2222-4222-8222-222222222222");

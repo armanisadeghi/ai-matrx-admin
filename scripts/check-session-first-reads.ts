@@ -113,7 +113,7 @@ const PACKAGE_ALLOWED_TO_BUILD_A_CLIENT = "@ai-matrx/data";
  * DATABASE ARGUMENT (DD-240) — the shape the database compares against
  * `auth.uid()` and refuses at 403 when the copy has gone stale.
  *
- * `actorId` is deliberately NOT here. `@ai-matrx/realtime` uses it for write-
+ * `actorId` is deliberately NOT here. `@ai-matrx/data/realtime` uses it for write-
  * ledger echo suppression (`input.updatedBy === actorId`) and never sends it to
  * the database, so a stale one mis-attributes an echo — a different, smaller
  * defect with a different owner, and calling it this one would make this rule
@@ -617,7 +617,7 @@ function selfTest(): number {
   checks.push([
     "an identity inside a CALLBACK's body is not this rule's business",
     unverifiedIdentityHandoffs(`
-      import { subscribeToRealtimeManager } from "@ai-matrx/realtime";
+      import { subscribeToRealtimeManager } from "@ai-matrx/data/realtime";
       subscribeToRealtimeManager(() => ({
         topic: cloudFilesChannel.topic({ userId }),
         postgresChanges: [],

@@ -9,7 +9,7 @@
  * One channel per fileId is shared across every consumer (FileInfoTab,
  * DocumentTab, the status chip) and torn down when the last listener detaches.
  *
- * REALTIME: `@ai-matrx/realtime` owns the channel — unique instance topic, echo
+ * REALTIME: `@ai-matrx/data/realtime` owns the channel — unique instance topic, echo
  * suppression, dedup, the decoupled handler queue, jittered reconnect, tab
  * sleep, diagnostics. What used to be here was a raw `.channel(...).subscribe()`
  * on a static topic with a hand-rolled listener map and NO catch-up read: a tab
@@ -26,7 +26,7 @@
 
 "use client";
 
-import { subscribeToRealtimeManager, defineChannelNamespace } from "@ai-matrx/realtime";
+import { subscribeToRealtimeManager, defineChannelNamespace } from "@ai-matrx/data/realtime";
 
 type Listener = () => void;
 

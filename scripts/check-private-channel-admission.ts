@@ -24,7 +24,7 @@
  * `matrx-extend/src` and under `matrx-local/desktop/src` — the four places the census found
  * channel declarations.
  *
- * HOW A TOPIC PREFIX IS RESOLVED. `@ai-matrx/realtime`'s `defineChannelNamespace` builds every
+ * HOW A TOPIC PREFIX IS RESOLVED. `@ai-matrx/data/realtime`'s `defineChannelNamespace` builds every
  * topic in one place: `foreignTopic` is used verbatim as the root, and a plain `namespace` is
  * prefixed `mx:`. So the guard finds the namespace declarations, then finds every channel spec
  * carrying `private: true`, and follows its `topic:` expression back to the namespace whose
@@ -495,7 +495,7 @@ function selfTest(): never {
   writeFileSync(
     file,
     [
-      'import { defineChannelNamespace, subscribeToRealtimeManager } from "@ai-matrx/realtime";',
+      'import { defineChannelNamespace, subscribeToRealtimeManager } from "@ai-matrx/data/realtime";',
       "",
       "const plantedChannel = defineChannelNamespace({",
       '  namespace: "planted-guard-probe",',

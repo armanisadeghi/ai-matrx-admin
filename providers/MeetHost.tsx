@@ -6,7 +6,7 @@
 // of that sandwich are deliberate:
 //
 //   inside RealtimeHost  — `<MeetProvider>` renders a `<RealtimeProvider>` of
-//     its own, which since `@ai-matrx/realtime` 0.3.0 PROBES for a manager
+//     its own, which since `@ai-matrx/data/realtime` 0.3.0 PROBES for a manager
 //     already above it and rides that one. So calls, meetings, messaging and
 //     every other realtime consumer in this app share ONE socket and ONE write
 //     ledger. A second manager would make each side's optimistic writes look

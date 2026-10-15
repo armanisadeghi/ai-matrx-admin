@@ -125,8 +125,8 @@ jest.mock("@/features/google-workspace/linked/EditorGoogleLinks", () => ({
   useDocumentGoogleLink: () => ({ mark: null, items: null, dialog: null }),
 }));
 jest.mock("@univerjs/preset-sheets-core", () => ({ DragManagerService: class {}, HoverManagerService: class {} }));
-jest.mock("@ai-matrx/realtime/react", () => ({ useRealtimeManager: () => null, useChannel: () => undefined }));
-jest.mock("@ai-matrx/realtime", () => ({
+jest.mock("@ai-matrx/data/realtime/react", () => ({ useRealtimeManager: () => null, useChannel: () => undefined }));
+jest.mock("@ai-matrx/data/realtime", () => ({
   defineChannelNamespace: () => ({ topic: () => "udt-document-snapshots:x" }),
 }));
 jest.mock("@/features/canvas/host/toolCanvas", () => ({
@@ -136,7 +136,7 @@ jest.mock("@/features/canvas/host/toolCanvas", () => ({
 jest.mock("@/features/documents/hooks/useUniverDocSurfaceTheme", () => ({ useUniverDocSurfaceTheme: () => {} }));
 jest.mock("@/features/documents/univer-doc-canvas-colors", () => ({ renderDocumentCanvasColorsVerbatim: () => ({ applied: true }) }));
 jest.mock("@/features/documents/utils/sanitizeUniverDocSnapshot", () => ({ sanitizeUniverDocSnapshot: (s: unknown) => s }));
-jest.mock("@ai-matrx/realtime/collab/react", () => ({ RemotePeerChips: () => null }));
+jest.mock("@ai-matrx/data/realtime/collab/react", () => ({ RemotePeerChips: () => null }));
 jest.mock("@/features/documents/components/DocumentPageReferenceCopyButton", () => ({ DocumentPageReferenceCopyButton: () => null }));
 jest.mock("@/components/errors/ErrorAlchemyMenu", () => ({ ErrorAlchemyMenu: () => null }));
 jest.mock("@/components/ui/use-toast", () => ({ toast: jest.fn() }));

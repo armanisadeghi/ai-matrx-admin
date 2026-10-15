@@ -1003,7 +1003,6 @@
     "@ai-matrx/messaging": "latest",
     "@ai-matrx/office": "latest",
     "@ai-matrx/print": "latest",
-    "@ai-matrx/realtime": "latest",
     "@ai-matrx/records": "latest",
     "@ai-matrx/records-ui": "latest",
     "@ai-matrx/rich-content": "latest",
