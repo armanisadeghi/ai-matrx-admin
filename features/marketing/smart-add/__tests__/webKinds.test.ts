@@ -155,3 +155,25 @@ describe("a wrong Not us is the worst error: own pages and articles are never No
     expect(suggestKind(web("https://ritualcoffeeroasters.co.uk/", "Ritual Coffee Roasters UK"), KINDS, RC)?.kind).toBe("not_us");
   });
 });
+
+describe("a common-name business: other cities and strangers (MKT-039)", () => {
+  const EP: SuggestContext = { ourHosts: [], ourAccounts: [], name: "Elite Plumbing", place: "Austin, TX" };
+  const kindOf = (url: string, label: string, snippet = "") => suggestKind(web(url, label, { snippet }), KINDS, EP)?.kind;
+  it("the same name in another state is Not us", () => {
+    expect(kindOf("https://eliteplumbingin.com/", "Elite Plumbing - Indianapolis, IN")).toBe("not_us");
+    expect(kindOf("https://example.com/a", "Elite Plumbing", "Serving Phoenix, AZ since 1990")).toBe("not_us");
+    expect(kindOf("https://example.com/b", "Elite Plumbing Milwaukee", "Wisconsin's trusted plumber")).toBe("not_us");
+  });
+  it("the same name in our own state stays a mention", () => {
+    expect(kindOf("https://example.com/c", "Elite Plumbing - Austin, TX", "Elite Plumbing in Austin")).toBe("mention");
+  });
+  it("with only a city known, a page naming a state and not our city is Not us", () => {
+    const ctx = { ...EP, place: "Austin" };
+    expect(suggestKind(web("https://x.com/", "Elite Plumbing, Des Moines, Iowa"), KINDS, ctx)?.kind).toBe("not_us");
+    expect(suggestKind(web("https://x.com/", "Elite Plumbing, Austin, Texas"), KINDS, ctx)?.kind).toBe("mention");
+  });
+  it("obituary and people-search pages are Irrelevant", () => {
+    expect(kindOf("https://www.legacy.com/us/obituaries/x", "John Elite Plumbing owner obituary")).toBe("irrelevant");
+    expect(kindOf("https://www.spokeo.com/Elite-Plumbing", "Elite Plumbing - Spokeo")).toBe("irrelevant");
+  });
+});
