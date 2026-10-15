@@ -23,9 +23,7 @@ import {
   createContext,
   useCallback,
   useContext,
-  useEffect,
   useMemo,
-  useRef,
   useState,
   useTransition,
   type ReactNode,
@@ -53,24 +51,25 @@ export function MessagesConversationOpener({
   const router = useRouter();
   const pathname = usePathname();
   const [, startTransition] = useTransition();
+  // The conversation being opened. The moment the route moves (to the thread,
+  // or anywhere else) nothing is opening — reset while rendering (React's
+  // "adjust state when a prop changes"), so no effect has to clear it and a
+  // later return to /messages never shows a stale "Opening…".
   const [openingId, setOpeningId] = useState<string | null>(null);
-  const openingRef = useRef<string | null>(null);
-
-  // The route moved (to the thread, or anywhere else): nothing is opening.
-  useEffect(() => {
-    openingRef.current = null;
+  const [seenPathname, setSeenPathname] = useState(pathname);
+  if (seenPathname !== pathname) {
+    setSeenPathname(pathname);
     setOpeningId(null);
-  }, [pathname]);
+  }
 
   const open = useCallback(
     (conversationId: string) => {
       const href = conversationHref(conversationId);
-      if (pathname === href || openingRef.current === conversationId) return;
-      openingRef.current = conversationId;
+      if (pathname === href || openingId === conversationId) return;
       setOpeningId(conversationId);
       startTransition(() => router.push(href));
     },
-    [pathname, router],
+    [pathname, router, openingId],
   );
 
   const value = useMemo(() => ({ openingId, open }), [openingId, open]);

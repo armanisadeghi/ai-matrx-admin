@@ -40,7 +40,6 @@ jest.mock("@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext", () => ({
   SurfaceRuntimeProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 jest.mock("@/features/messaging/components/ConversationListPane", () => {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
   const { MessagingConversationRowChrome } = require("@/features/messaging/components/MessagingChrome");
   return {
     ConversationListPane: ({ onSelect }: { onSelect?: (id: string) => void }) => (
@@ -85,7 +84,7 @@ it("a clicked row and the pane say the thread is opening until its route lands",
   render();
   expect(container.textContent).toContain("Pick or start a conversation");
 
-  act(() => rows()[0]!.click());
+  act(() => rows()[0]?.click());
 
   expect(mockPush).toHaveBeenCalledTimes(1);
   expect(mockPush).toHaveBeenCalledWith("/messages/c-agents-1");
@@ -96,12 +95,18 @@ it("a clicked row and the pane say the thread is opening until its route lands",
   }
 
   // A second click (the list beside the thread or the phone list) does not push twice.
-  act(() => rows()[1]!.click());
+  act(() => rows()[1]?.click());
   expect(mockPush).toHaveBeenCalledTimes(1);
 
   // The route lands: nothing is "opening" any more.
   mockPathname = "/messages/c-agents-1";
   render();
   expect(container.textContent).not.toContain("Opening conversation…");
+  expect(container.querySelector("[data-opening]")).toBeNull();
+
+  // Back to the list: still nothing opening (never a stale "Opening…").
+  mockPathname = "/messages";
+  render();
+  expect(container.textContent).toContain("Pick or start a conversation");
   expect(container.querySelector("[data-opening]")).toBeNull();
 });
