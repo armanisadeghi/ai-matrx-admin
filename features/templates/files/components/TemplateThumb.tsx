@@ -8,7 +8,6 @@
  */
 import { useEffect, useState, type ReactNode } from "react";
 import { InlineMediaRef } from "@ai-matrx/media/react";
-import { FileSpreadsheet, FileText, Presentation } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import type { TemplateSummary } from "../types";
@@ -36,6 +35,14 @@ function useTemplateSnapshot(template: TemplateSummary): unknown {
   return snapshot;
 }
 
+/** "Resume — Classic" → Resume / Classic (Google's name + style); a plain name keeps its category. */
+export function captionOf(template: Pick<TemplateSummary, "name" | "category">): { name: string; line: string; full: string } {
+  const full = template.name;
+  const [name, ...rest] = full.split(/\s+[—–-]\s+/);
+  const style = rest.join(" — ").trim();
+  return style ? { name: name.trim(), line: style, full } : { name: full, line: template.category, full };
+}
+
 export function TemplateThumb({
   template,
   onSelect,
@@ -51,11 +58,11 @@ export function TemplateThumb({
   /** Placement only (width). */
   className?: string;
 }): ReactNode {
+  const cap = captionOf(template);
   const snapshot = useTemplateSnapshot(template);
   const isDeck = template.kind === "presentation";
   const liveSvg =
     !isDeck && !template.thumbnailUrl && snapshot ? snapshotPreviewSvg(template.kind as "workbook" | "document", snapshot) : null;
-  const KindIcon = template.kind === "workbook" ? FileSpreadsheet : isDeck ? Presentation : FileText;
   return (
     <div className={cn("flex w-36 min-w-0 flex-col gap-1.5", className)}>
       <button
@@ -99,9 +106,10 @@ export function TemplateThumb({
         )}
       </button>
       {caption && (
-        <div className="flex min-w-0 items-center gap-1.5 px-0.5">
-          <KindIcon className="size-3.5 shrink-0 text-muted-foreground" aria-hidden />
-          <span className="truncate text-xs font-medium text-foreground">{template.name}</span>
+        // Google's two-line caption: the name, then its style (the part after "—") or its category.
+        <div className="flex min-w-0 flex-col px-0.5 text-sm leading-5" title={cap.full}>
+          <span className="truncate font-medium text-foreground">{cap.name}</span>
+          <span className="truncate text-muted-foreground">{cap.line}</span>
         </div>
       )}
     </div>
@@ -118,9 +126,9 @@ export function TemplateThumbSkeleton({ kind, className }: { kind: TemplateSumma
           kind === "presentation" ? "aspect-video" : "aspect-[320/414]",
         )}
       />
-      <div className="flex h-4 min-w-0 items-center gap-1.5 px-0.5">
-        <div className="size-3.5 shrink-0 animate-pulse rounded bg-muted" />
+      <div className="flex h-10 min-w-0 flex-col justify-center gap-2 px-0.5">
         <div className="h-3 w-2/3 animate-pulse rounded bg-muted" />
+        <div className="h-3 w-1/2 animate-pulse rounded bg-muted" />
       </div>
     </div>
   );

@@ -79,8 +79,31 @@ export function StartTile({
       >
         {busy ? <Spinner size="sm" label="Creating" /> : face}
       </button>
-      <span className="truncate px-0.5 text-xs font-medium text-foreground">{label}</span>
+      <span className="truncate px-0.5 text-sm font-medium leading-5 text-foreground">{label}</span>
     </div>
+  );
+}
+
+/**
+ * Our Blank mark (Google has its four-colour plus; this is ours, not a copy): a heavy rounded plus in
+ * the brand's primary-to-secondary sweep (tokens, so a re-brand carries it), the cross lit where the arms meet. The same in both themes — it
+ * sits on the paper-white tile face.
+ */
+function BrandPlus() {
+  return (
+    <svg viewBox="0 0 48 48" className="size-14" aria-hidden>
+      <defs>
+        <linearGradient id="matrx-blank-plus" x1="8" y1="8" x2="40" y2="40" gradientUnits="userSpaceOnUse">
+          <stop offset="0" style={{ stopColor: "hsl(var(--primary))" }} />
+          <stop offset="1" style={{ stopColor: "hsl(var(--brand-secondary))" }} />
+        </linearGradient>
+      </defs>
+      <path
+        d="M24 6.5a3.5 3.5 0 0 1 3.5 3.5v10.5H38a3.5 3.5 0 0 1 0 7H27.5V38a3.5 3.5 0 0 1-7 0V27.5H10a3.5 3.5 0 0 1 0-7h10.5V10A3.5 3.5 0 0 1 24 6.5Z"
+        fill="url(#matrx-blank-plus)"
+      />
+      <rect x="20.5" y="20.5" width="7" height="7" rx="1" fill="#fff" opacity="0.22" />
+    </svg>
   );
 }
 
@@ -98,14 +121,15 @@ export function BlankTile({
   return (
     <StartTile
       shape={shape}
-      label={office && kind ? `Blank ${kind.startNoun}` : "Blank"}
+      label={kind ? `Blank ${kind.startNoun}` : "Blank"}
       busy={creating}
       onClick={onCreate}
       face={
-        <Plus
-          className={cn("size-12 stroke-[1.25]", office ? "text-[var(--office-accent)]" : "text-primary")}
-          aria-hidden
-        />
+        office ? (
+          <Plus className="size-12 stroke-[1.25] text-[var(--office-accent)]" aria-hidden />
+        ) : (
+          <BrandPlus />
+        )
       }
     />
   );
@@ -143,7 +167,7 @@ export function StartBand({
     >
       <div className="mx-auto w-full max-w-[72rem] px-3 py-3 sm:px-6 sm:py-4">
         <div className="flex h-9 items-center gap-1">
-          <h2 className="min-w-0 flex-1 truncate text-sm font-medium text-foreground">{title}</h2>
+          <h2 className="min-w-0 flex-1 truncate text-base text-foreground">{title}</h2>
           {!hidden && gallery ? (
             <Button
               variant="quiet"
