@@ -193,7 +193,7 @@ export function FileHome<Row extends { id: string; user_id: string }>(props: Fil
   const scoped = filterByScope(rows, scope, userId, starredIds).map(toItem);
   const matched = scoped.filter((i) => matchesHomeQuery(i, query));
   const sorted = sortHomeItems(matched, sort, opened, userId);
-  const now = Date.now();
+  const [now] = useState(() => Date.now());
   const groups = groupHomeItems(sorted, sort, now);
   const visibleRows = sorted.map((d) => d.item.row);
 
@@ -202,7 +202,6 @@ export function FileHome<Row extends { id: string; user_id: string }>(props: Fil
   const clearBulk = bulk.clear;
   useEffect(() => {
     clearBulk();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [scope, query]);
 
   const ownerLabel = (ownerId: string) =>
@@ -232,8 +231,8 @@ export function FileHome<Row extends { id: string; user_id: string }>(props: Fil
   // names the time group under it. Office keeps its table (with bulk selection).
   const googleList = !office && !isPhone && view === "table";
   const groupLabels = new Map(groups.map((g) => [g.key, g.label]));
-  const sticky = useStickyHomeHeader(googleList ? groups.map((g) => g.key) : [], `${lookSettled}:${look}:${view}:${isPhone}:${loading}:${showList}`);
-  const stickyTitle = (sticky.currentGroup ? groupLabels.get(sticky.currentGroup) : groups[0]?.label) ?? heading;
+  const { sentinelRef: stickySentinelRef, barRef: stickyBarRef, groupRef: stickyGroupRef, stuck: stickyStuck, currentGroup: stickyCurrentGroup } = useStickyHomeHeader(googleList ? groups.map((g) => g.key) : [], `${lookSettled}:${look}:${view}:${isPhone}:${loading}:${showList}`);
+  const stickyTitle = (stickyCurrentGroup ? groupLabels.get(stickyCurrentGroup) : groups[0]?.label) ?? heading;
   const dateHeading = sort === "title" ? "Last modified" : (HOME_SORT_OPTIONS.find((o) => o.value === sort)?.label ?? "");
   const sortControls = (
     <SortGroup single={!props.onPickFile}>
@@ -318,23 +317,23 @@ export function FileHome<Row extends { id: string; user_id: string }>(props: Fil
         ) : null}
 
         <section aria-label={heading} className="w-full pb-6 pt-3">
-          <div ref={sticky.sentinelRef} aria-hidden className="h-0" />
+          <div ref={stickySentinelRef} aria-hidden className="h-0" />
           {/* Google's sticky header row: sticks under the app header in every view, lifts with Google's
               shadow only once stuck, and paints the strip above it (behind the see-through app header)
               so nothing scrolls visibly behind the header while it holds. */}
           <div
-            ref={sticky.barRef}
-            data-stuck={sticky.stuck || undefined}
+            ref={stickyBarRef}
+            data-stuck={stickyStuck || undefined}
             className={cn(
               "sticky top-[var(--shell-header-h)] z-20 bg-background transition-shadow duration-200",
-              sticky.stuck && "shadow-md",
+              stickyStuck && "shadow-md",
             )}
           >
             <span
               aria-hidden
               className={cn(
                 "pointer-events-none absolute inset-x-0 bottom-full h-[var(--shell-header-h)] bg-background transition-opacity duration-200",
-                sticky.stuck ? "opacity-100" : "opacity-0",
+                stickyStuck ? "opacity-100" : "opacity-0",
               )}
             />
             <div className="mx-auto w-full max-w-[72rem] px-3 sm:px-6">
@@ -442,7 +441,7 @@ export function FileHome<Row extends { id: string; user_id: string }>(props: Fil
               onOpen={open}
               menuFor={(row, control) => menuFor(row, trashed, control, { shareButton: false })}
               marksFor={props.marksFor}
-              groupRef={sticky.groupRef}
+              groupRef={stickyGroupRef}
             />
           ) : null}
 
