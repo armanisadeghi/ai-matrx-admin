@@ -18,7 +18,7 @@ export interface LiveKind {
   kind: string;
   value: Record<string, unknown>;
 }
-import { factsFromPayload, isFullerFact, type BrandFact } from "./validate/queue";
+import { factsFromPayload, grownFact, type BrandFact } from "./validate/queue";
 
 /** The kinds whose live list is read as facts (the same ones `factsFromPayload` reads at rest). */
 const FACT_KINDS: ReadonlySet<string> = new Set(["brand_basics", "person_basics", "brand_whats_new"]);
@@ -65,7 +65,7 @@ export function streamingFacts(live: LiveKind | null | undefined, open: boolean)
 
 /**
  * Add `incoming` to `shown` by key; never removes one already shown. A fact released while its last key was still
- * writing (its `reason`, evidence) takes the fuller copy in the same place. Same array when nothing changed.
+ * writing (its `reason`, evidence) grows in the same place (`grownFact`: a join, so it settles). Same array when nothing changed.
  */
 export function ratchetFacts(shown: BrandFact[], incoming: BrandFact[]): BrandFact[] {
   if (!incoming.length) return shown;
@@ -73,9 +73,10 @@ export function ratchetFacts(shown: BrandFact[], incoming: BrandFact[]): BrandFa
   let changed = false;
   const kept = shown.map((f) => {
     const next = byKey.get(f.key);
-    if (!next || !isFullerFact(f, next)) return f;
+    const grown = next ? grownFact(f, next) : null;
+    if (!grown) return f;
     changed = true;
-    return next;
+    return grown;
   });
   const seen = new Set(shown.map((f) => f.key));
   const added = incoming.filter((f) => !seen.has(f.key) && seen.add(f.key));
