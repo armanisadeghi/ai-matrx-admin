@@ -70,3 +70,17 @@ describe("a coding schedule on a computer: save, read, edit", () => {
     expect(writes.some((w) => w.table === "sch_agent_task")).toBe(false);
   });
 });
+
+describe("a freshly created task read from the HTTP answer", () => {
+  it("keeps its own kind and its computer work", async () => {
+    const { taskDetailToAgendaTask } = await import("../queries");
+    const task = taskDetailToAgendaTask({
+      task: { id: "t", user_id: "u", kind: "device_op", title: "x", description: null, queue: "default", surfaces: ["desktop"], enabled: true, expires_at: null, tags: [], next_due_at: null, last_run_at: null, created_at: "", updated_at: "", target_device_id: "dev-1", metadata: { device_op: { op: "coding.start", params: { provider: "claude", cwd: "/w", prompt: "Go" } } } },
+      agent_task: null,
+      triggers: [],
+    } as never);
+    expect(task.kind).toBe("device_op");
+    expect(task.targetDeviceId).toBe("dev-1");
+    expect(task.deviceOp).toMatchObject({ folder: "/w", prompt: "Go" });
+  });
+});

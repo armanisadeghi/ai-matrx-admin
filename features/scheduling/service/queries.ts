@@ -13,6 +13,7 @@
 import { CronExpressionParser } from "cron-parser";
 import { supabase } from "@/utils/supabase/client";
 import { schedulerDb } from "@/utils/supabase/schedulerDb";
+import type { SchedulableKind } from "../types";
 import { computerWorkOf, deviceOpWith, type ComputerCodingWork } from "../utils/computerWork";
 import { tryWriteOne } from "@/utils/supabase/writeOne";
 import { pgErrorToError } from "@ai-matrx/data";
@@ -231,6 +232,11 @@ export function rowToAgendaTask(row: JoinedAgentTaskRow): AgendaTask {
 
 // ── TaskDetailResponse → AgendaTask reshape (HTTP path) ────────────────────
 
+/** The schedule's own kind; an unknown one reads as agent (the default form). Pure. */
+export function detailKind(kind: unknown): SchedulableKind {
+  return kind === "tool" || kind === "device_op" ? kind : "agent";
+}
+
 export function taskDetailToAgendaTask(detail: TaskDetailResponse): AgendaTask {
   const t = detail.task;
   const agent = detail.agent_task;
@@ -250,7 +256,10 @@ export function taskDetailToAgendaTask(detail: TaskDetailResponse): AgendaTask {
     // The HTTP TaskResponse does not carry organization_id; the record read
     // (getAgentTask → rowToAgendaTask) does, and every write path re-reads it.
     organizationId: null,
-    kind: t.kind === "tool" ? "tool" : "agent",
+    // Every kind keeps its own label (a coding session on a computer is device_op, never "agent").
+    kind: detailKind(t.kind),
+    deviceOp: detailKind(t.kind) === "device_op" ? computerWorkOf((t as { metadata?: unknown }).metadata) : null,
+    targetDeviceId: (t as { target_device_id?: string | null }).target_device_id ?? null,
     // The HTTP TaskResponse carries no metadata column. This reshape is used
     // for a freshly CREATED task only (createScheduledTask); every update path
     // re-reads the row through getAgentTask, which carries the real metadata.
