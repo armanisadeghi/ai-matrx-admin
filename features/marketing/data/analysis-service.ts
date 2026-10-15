@@ -38,6 +38,10 @@ function assertData<T>(data: T | null, error: unknown): T {
   return data;
 }
 
+/** What "needs attention" means in the site register (see listSiteFindings). */
+export const FINDING_ATTENTION_STATUSES = ["open", "reopened", "acknowledged"] as const;
+export const FINDING_ATTENTION_SEVERITIES = ["critical", "high", "med"] as const;
+
 function allowedFilter(value: string | null, allowed: Set<string>) {
   return value && allowed.has(value) ? value : null;
 }
@@ -341,8 +345,15 @@ export async function listSiteFindings(
   if (itemKey) query = query.ilike("item_key", `%${itemKey}%`);
   if (category) query = query.ilike("category", `%${category}%`);
   if (subcategory) query = query.ilike("subcategory", `%${subcategory}%`);
+  // WHERE A FINDING SHOWS (Arman, 2026-10-14: "the little things matter only
+  // when you're looking at that specific page"). The site register opens on
+  // what needs attention — open, medium and up. Closed and minor findings are
+  // one switch away ("Everything") and always on the page itself.
+  const everything = analysisSelectFilter(state, "scope") === "all";
   if (status) query = query.eq("status", status);
+  else if (!everything) query = query.in("status", [...FINDING_ATTENTION_STATUSES]);
   if (severity) query = query.eq("severity", severity);
+  else if (!everything) query = query.in("severity", [...FINDING_ATTENTION_SEVERITIES]);
   if (subjectType) query = query.eq("subject_type", subjectType);
   if (suppressed !== null) query = query.eq("suppressed", suppressed);
   if (isUuidFilter(itemId)) query = query.eq("item_id", itemId);

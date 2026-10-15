@@ -55,6 +55,7 @@ import type {
   FindingListRow,
 } from "@/features/marketing/data/analysis-types";
 import { useMarketingTableState } from "@/features/marketing/data/query-state";
+import { SegmentedControl } from "@ai-matrx/design-system/controls";
 import {
   humanLines,
   keyFieldsAiVariant,
@@ -376,6 +377,27 @@ export function FindingsTable() {
         toolbar={{
           searchPlaceholder:
             "Search item, category, subcategory, or suppression reason…",
+          leading: (
+            <SegmentedControl
+              aria-label="Which findings"
+              value={
+                table.state.columnFilters?.scope?.kind === "select" &&
+                table.state.columnFilters.scope.value === "all"
+                  ? "all"
+                  : "attention"
+              }
+              onValueChange={(value) => {
+                const filters = { ...(table.state.columnFilters ?? {}) };
+                if (value === "all") filters.scope = { kind: "select", value: "all" };
+                else delete filters.scope;
+                table.onStateChange({ ...table.state, columnFilters: filters, page: 1 });
+              }}
+              data={[
+                { value: "attention", label: "Needs attention" },
+                { value: "all", label: "Everything" },
+              ]}
+            />
+          ),
           actions: (
             <div className="flex items-center gap-2">
               <CopyButtons
