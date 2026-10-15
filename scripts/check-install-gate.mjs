@@ -338,7 +338,7 @@ check("the preview stays silent when node_modules did not change", () => {
 // Each run drives `restart_if_node_modules_moved` through a sequence of fingerprint readings
 // with a fake clock; stopping and starting are stubbed so nothing real is touched.
 // ---------------------------------------------------------------------------
-function restartDecisions(recorded, readings) {
+function restartDecisions(recorded, readings, stubs = "") {
   const stateDir = mkdtempSync(join(tmpdir(), "preview-restart-"));
   writeFileSync(
     join(stateDir, "shared-next-dev.meta"),
@@ -349,15 +349,19 @@ function restartDecisions(recorded, readings) {
     source "${DEV_SERVER}"
     stop_for_limit() { echo "STOP $2"; }
     start_fresh_preview() { echo START; }
+    install_running() { return 1; }
+    ${stubs}
     for r in ${readings.map(([t, fp]) => `"${t}:${fp}"`).join(" ")}; do
       nm_fingerprint() { echo "\${r#*:}"; }
       date() { echo "\${r%%:*}"; }
       if restart_if_node_modules_moved ${holder.pid}; then echo "RESTARTED at \${r%%:*}"; fi
     done`;
-  const out = execFileSync("bash", ["-c", script], {
+  let out = execFileSync("bash", ["-c", script], {
     env: { ...process.env, MATRX_PREVIEW_STATE_DIR: stateDir },
     encoding: "utf8",
   });
+  const failed = join(stateDir, "shared-next-dev.failed");
+  if (existsSync(failed)) out += `\nFAILED-FILE ${readFileSync(failed, "utf8")}`;
   rmSync(stateDir, { recursive: true, force: true });
   return out;
 }
@@ -378,6 +382,17 @@ check("the watchdog restarts the server once the install settles, naming what mo
 check("an unchanged node_modules, or one mid-reinstall, never restarts", () => {
   assert.ok(!restartDecisions("boot", [[100, "boot"], [200, "boot"]]).includes("RESTARTED"));
   assert.ok(!restartDecisions("boot", [[100, "missing"], [200, "missing"]]).includes("RESTARTED"));
+});
+
+check("a still-running install (its lock held) defers the restart past the settle window", () => {
+  const out = restartDecisions("boot", [[100, "done"], [110, "done"], [130, "done"]], "install_running() { return 0; }");
+  assert.ok(!out.includes("RESTARTED"), `never restart while pnpm holds its install lock:\n${out}`);
+});
+
+check("a restart that fails to start says FAILED, never 'recycled (normal)'", () => {
+  const out = restartDecisions("boot", [[100, "done"], [110, "done"], [116, "done"]], "start_fresh_preview() { return 1; }");
+  assert.ok(out.includes("FAILED-FILE the watchdog stopped the preview") && out.includes("restart FAILED"), out);
+  assert.ok(!/FAILED-FILE RECYCLED/.test(out), out);
 });
 
 // ---------------------------------------------------------------------------

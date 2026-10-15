@@ -290,14 +290,35 @@ restart_if_node_modules_moved() {
     return 1
   fi
   [[ "$current" != missing ]] || return 1
+  # A held install lock (scripts/agent-harness/install-gate.cjs) means pnpm is still at work — a
+  # long tarball fetch can hold the tree still for longer than the settle window. Restart after it.
+  if install_running; then
+    NM_PENDING_SINCE="$now"
+    return 1
+  fi
   (( now - NM_PENDING_SINCE >= NM_SETTLE_SEC )) || return 1
   moves="$(aimatrx_version_moves "$(meta_value AIMATRX_VERSIONS)")"
   moves="${moves%; }"
   # Re-check ownership: a preview:stop/start may have replaced this server meanwhile.
   alive "$pid" && [[ "$(meta_value PID)" == "$pid" ]] || return 1
   stop_for_limit "$pid" "${RECYCLED_PREFIX}restarted because packages were installed under it (${moves:-dependencies relinked}) — a running server keeps the code it booted with and would serve errors that are not bugs"
-  start_fresh_preview
+  if ! start_fresh_preview; then
+    # Nothing fails silently: the server is gone and the restart did not bring it back. Replace
+    # the RECYCLED line so the next preview:start and preview:status say so, not "normal".
+    local why
+    why="$(grep '\[preview\] ERROR:' "$LOG" 2>/dev/null | tail -1 | sed 's/^\[preview\] ERROR: //')"
+    printf 'the watchdog stopped the preview because packages were installed under it, and its restart FAILED (%s) — run pnpm preview:start\n' "${why:-see the log}" >"$FAILED"
+    printf '[preview] WATCHDOG: restart after a package install FAILED: %s\n' "${why:-see above}" >>"$LOG"
+  fi
   return 0
+}
+
+# Is a pnpm install in this checkout still running? (its gate's lock is held by a live pid)
+install_running() {
+  local lock="$REPO_ROOT/.matrx-harness/install.lock" holder
+  [[ -f "$lock" ]] || return 1
+  holder="$(sed -n 's/.*"pid"[[:space:]]*:[[:space:]]*\([0-9][0-9]*\).*/\1/p' "$lock" | head -1)"
+  alive "$holder"
 }
 
 # A fresh `start` from the monitor (already detached): same checkout, same inherited profile.
