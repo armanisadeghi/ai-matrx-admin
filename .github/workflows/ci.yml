@@ -423,6 +423,15 @@ jobs:
         # the baseline is NEW — while ProTextarea, typed, read-only, monospace
         # and excepted boxes stay quiet.
         run: pnpm check:writing-boxes:self-test
+      - name: THERE IS ONE PEEK
+        # Arman, 2026-10-14: one record at a glance is <Peek record> inside
+        # PeekHoverCard / PeekPopover / PeekWindow from @ai-matrx/design-system.
+        # A new hand-built HoverCardContent or …Peek / …HoverPreview /
+        # …DetailCard component is NEW debt. Baseline scripts/one-peek/
+        # baseline.json only shrinks (it is the adoption census). Static, ~3s.
+        run: pnpm check:one-peek:strict
+      - name: the one-peek guard can still fail (self-test)
+        run: pnpm check:one-peek:self-test
       - name: A ROUTE ADDED WITHOUT A MANIFEST ENTRY IS A LINK THE SPINE REWRITES
         # `aidream/services/notifications/link_honesty.py` asks the route
         # manifest whether a deep link can answer before it puts one in an

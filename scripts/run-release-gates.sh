@@ -368,6 +368,11 @@ if $STRICT; then
         # `ui-exception:`. Baseline scripts/writing-boxes/baseline.json only shrinks.
         "Writing boxes|pnpm check:writing-boxes:strict"
         "Writing boxes — self-test|pnpm check:writing-boxes:self-test"
+        # THERE IS ONE PEEK (Arman, 2026-10-14): one record at a glance is <Peek record> in
+        # PeekHoverCard / PeekPopover / PeekWindow — never a hand-built HoverCardContent or a
+        # …Peek / …HoverPreview / …DetailCard component. Baseline scripts/one-peek/baseline.json only shrinks.
+        "One peek|pnpm check:one-peek:strict"
+        "One peek — self-test|pnpm check:one-peek:self-test"
         "UI drift — self-test|pnpm check:ui-drift:self-test"
         # No blocking layers (register ARE-008): a desktop dialog forced to
         # block, or built straight on Radix, hides every AI door on the page.
@@ -1282,6 +1287,8 @@ else
         "One control|pnpm check:one-control"
         "Writing boxes|pnpm check:writing-boxes"
         "Writing boxes — self-test|pnpm check:writing-boxes:self-test"
+        "One peek|pnpm check:one-peek"
+        "One peek — self-test|pnpm check:one-peek:self-test"
         "Bare secret fill|pnpm check:fill-secret"
         "Bare secret fill — self-test|pnpm check:fill-secret:self-test"
         "UI drift — self-test|pnpm check:ui-drift:self-test"
