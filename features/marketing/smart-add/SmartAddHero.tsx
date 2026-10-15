@@ -154,7 +154,7 @@ export function SmartAddHero({
   onRestart?: (how: "edit" | "retry" | "over") => Promise<boolean>;
   /** A search starts (one history entry: Back returns here). */
   onStarted?: () => void;
-  /** The "you already have this brand" notice: laid over the space under the entry row (it never moves the page). */
+  /** The "you already have this brand" notice: in flow under the entry row (MKT-121: never over page controls). */
   notice?: ReactNode;
   /** Asked before a search starts, with what was typed; false holds the search (the notice says why). */
   onBeforeStart?: (typed: { website: string; social: string; platform: SocialPlatform | null; name: string; city: string }) => Promise<boolean>;
@@ -659,7 +659,7 @@ export function SmartAddHero({
                 </div>
               )}
             </motion.div>
-            {notice ? <div className="relative h-0 w-full">{notice}</div> : null}
+            {notice ? <div className="relative w-full">{notice}</div> : null}
             </>
           ) : null}
 

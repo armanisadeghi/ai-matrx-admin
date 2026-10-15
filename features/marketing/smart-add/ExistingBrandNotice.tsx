@@ -3,8 +3,8 @@
 /**
  * Smart Add · "You already have <Brand>" (BRAND-MATCH in FEATURE.md).
  * One short notice, never a block: open the brand, add what is new to it (the enrich flow, carrying this
- * session's answers), or create a separate one. It lays itself over the space below its anchor
- * (`position: absolute`), so it never pushes the page.
+ * session's answers), or create a separate one. It always sits IN FLOW (MKT-121:
+ * floating over the page it covered "Review web results"): under the entry field, or stacked above the Create bar inside the bar's sticky box.
  */
 import { ExternalLink } from "lucide-react";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
@@ -29,10 +29,12 @@ export function ExistingBrandNotice({
   /** `above`: opens upward from its anchor (the Create bar); `below`: opens downward (the entry field). */
   placement: "above" | "below";
 }) {
-  const place = placement === "above" ? "bottom-full mb-2" : "top-full mt-3";
+  const above = placement === "above";
+  const place = above ? "relative mb-2" : "relative mt-3";
+  const quietPlace = above ? "absolute inset-x-0 bottom-full mb-2" : "absolute inset-x-0 top-full mt-3"; // one muted line: never worth moving the page
   if (!matches.length) {
     return error ? (
-      <p role="status" className={`absolute inset-x-0 ${place} text-center text-xs text-muted-foreground`} data-testid="existing-brand-check-failed">
+      <p role="status" className={`${quietPlace} text-center text-xs text-muted-foreground`} data-testid="existing-brand-check-failed">
         Couldn&apos;t check your brands <ErrorAlchemyMenu error={error} operation="Check for an existing brand" />
       </p>
     ) : null;
@@ -43,7 +45,7 @@ export function ExistingBrandNotice({
     <div
       role="status"
       data-testid="existing-brand-notice"
-      className={`absolute inset-x-0 ${place} z-20 flex flex-col gap-2 rounded-lg border border-warning/40 bg-card px-4 py-3 text-left shadow-lg`}
+      className={`${place} z-20 flex flex-col gap-2 rounded-lg border border-warning/40 bg-card px-4 py-3 text-left shadow-lg`}
     >
       {single ? null : <span className="text-sm font-medium text-foreground">You already have {matches.length} similar brands</span>}
       <ul className="flex flex-col gap-2">
