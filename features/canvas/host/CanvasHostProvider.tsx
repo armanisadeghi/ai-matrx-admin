@@ -9,7 +9,7 @@
 
 import { useEffect, useState, type ReactNode } from "react";
 import { useStore } from "react-redux";
-import { bindCanvasToReduxStore, type CanvasErrorReport } from "@ai-matrx/canvas";
+import { bindCanvasToReduxStore, canvasActions, CANVAS_LAUNCHER_KIND, type CanvasErrorReport, type CanvasState } from "@ai-matrx/canvas";
 import { CanvasProvider } from "@ai-matrx/canvas/react";
 import type { RootState } from "@/lib/redux/rootReducer";
 import { reportCanvasOpenDrop } from "@/features/canvas/openRequest";
@@ -85,10 +85,40 @@ function useShellRegionWidth(): number | null {
   return region;
 }
 
+/**
+ * MKT-112: a canvas saved open whose tabs were all live views (a run, Watch AI — `restore: false`)
+ * comes back as an open, empty column. A restored canvas with nothing to show closes instead; this
+ * runs once, on the first hydrated state, so a person who opens an empty canvas later keeps it.
+ */
+export function canvasIsEmptyOpen(state: CanvasState): boolean {
+  return state.isOpen && Object.values(state.items).every((item) => item.kind === CANVAS_LAUNCHER_KIND);
+}
+
+function closeRestoredEmptyCanvas(binding: ReturnType<typeof bindCanvasToReduxStore>): () => void {
+  let done = false;
+  const check = () => {
+    if (done) return;
+    const state = binding.getState();
+    if (!state.hydrated) return;
+    done = true;
+    if (canvasIsEmptyOpen(state)) binding.dispatch(canvasActions.setOpen(false));
+  };
+  check();
+  const unsubscribe = binding.subscribe(() => {
+    check();
+    if (done) unsubscribe();
+  });
+  return () => {
+    done = true;
+    unsubscribe();
+  };
+}
+
 export function CanvasHostProvider({ children }: { children: ReactNode }) {
   const store = useStore<RootState>();
   const [binding] = useState(() => bindCanvasToReduxStore(store, (root) => root.canvasHost));
   const regionWidth = useShellRegionWidth();
+  useEffect(() => closeRestoredEmptyCanvas(binding), [binding]);
   // The print adapters load in the background once the page is idle (a message's Print looks
   // them up after its own awaits); an artifact tab's body also waits for them before it renders.
   useEffect(
