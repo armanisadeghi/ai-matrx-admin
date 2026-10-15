@@ -76,7 +76,7 @@ begin
   f_eb := custom.field_declare(v_org, t2, jsonb_build_object('key','edited_by','label','Last edited by','type','text','sort',50));
   v_ids := '{}';
   for i in 1..5 loop
-    v_ids := v_ids || custom.record_write(v_org, t2, jsonb_build_object('title','Item '||i,'nid', i*10,
+    v_ids := v_ids || custom.record_write(v_org, t2, jsonb_build_object('title','Item '||i,'nid', i*10.0,   -- the importer's parser hands numbers over as 10.0
        'made_at', '2024-0'||i||'-01T10:00:00Z', 'edited_at', '2025-0'||i||'-15T09:30:00Z', 'made_by','Ana Whitfield','edited_by','Dev Patel'));
   end loop;
   v_ids := v_ids || custom.record_write(v_org, t2, jsonb_build_object('title','Item 6'));
