@@ -53,6 +53,8 @@ import {
 } from "@/features/ai-work/lib/matrxLocalRuntime";
 import {
   pickChatHolder,
+  readChatHolding,
+  type ChatHolding,
   reconcileCodingSession,
   reconcileScopeSentence,
 } from "@/features/ai-work/lib/matrx2Coding";
@@ -107,14 +109,14 @@ function VerdictIcon({ code }: { code: SyncVerdictCode }) {
 }
 
 /** One of the four counts. An unknown cell states WHO can answer it. */
-function Count({ label, value }: { label: string; value: number | null }) {
+function Count({ label, value, unknown = ONLY_MATRX_LOCAL_CAN_SEE_THIS }: { label: string; value: number | null; unknown?: string }) {
   return (
     <div className="min-w-0 border-b border-r border-border px-3 py-2.5 last:border-r-0">
       <dt className="text-xs font-medium text-muted-foreground">{label}</dt>
       <dd className="mt-0.5 break-words">
         {value === null ? (
           <span className="text-xs leading-snug text-muted-foreground">
-            {ONLY_MATRX_LOCAL_CAN_SEE_THIS}
+            {unknown}
           </span>
         ) : (
           <span className="text-lg font-semibold tabular-nums text-foreground">
@@ -145,7 +147,7 @@ type ReconcileState =
   | { phase: "idle" }
   | { phase: "reaching" }
   | { phase: "unreachable"; sentence: string }
-  | { phase: "running" }
+  | { phase: "running"; where: string }
   | {
       phase: "done";
       sentence: string;
@@ -167,10 +169,14 @@ export function CloudSyncTruthPanel({
   const [reading, setReading] = useState(true);
   const [reloadToken, setReloadToken] = useState(0);
   const [reconcile, setReconcile] = useState<ReconcileState>({ phase: "idle" });
+  /** Read both halves again (Check again, or after a reconcile moved them). */
+  const reread = () => {
+    setReading(true);
+    setReloadToken((token) => token + 1);
+  };
 
   useEffect(() => {
     let cancelled = false;
-    setReading(true);
     void readCloudSyncTruth(providerSessionId, provider).then((next) => {
       if (cancelled) return;
       setTruth(next);
@@ -180,6 +186,21 @@ export function CloudSyncTruthPanel({
       cancelled = true;
     };
   }, [providerSessionId, provider, reloadToken]);
+
+  // ── The computer side: which Matrx 2 computer holds this chat (asked through the
+  //    shared reach). Matrx 2 cannot count transcript entries, so it says where the
+  //    chat is and when it changed; the counts it cannot give stay unknown, by name.
+  const [holding, setHolding] = useState<ChatHolding | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    void readChatHolding(browserCodingDoors, providerSessionId).then((next) => {
+      if (!cancelled) setHolding(next);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [providerSessionId, reloadToken]);
+  const onMatrx2 = holding?.via === "matrx2" ? holding : null;
 
   const diagnosis = truth?.diagnosis ?? null;
 
@@ -204,7 +225,7 @@ export function CloudSyncTruthPanel({
     });
     if (!ok) return;
 
-    setReconcile({ phase: "running" });
+    setReconcile({ phase: "running", where: chosen.computer ? `${chosen.computer.name} (Matrx 2)` : "Matrx Local" });
     try {
       const outcome = await reconcileCodingSession(browserCodingDoors, chosen, {
         providerSessionId,
@@ -236,7 +257,7 @@ export function CloudSyncTruthPanel({
       );
       // The cloud half moved, so re-read it rather than leaving the old numbers
       // on screen next to a fresh verdict.
-      setReloadToken((token) => token + 1);
+      reread();
     } catch (error) {
       setReconcile({
         phase: "failed",
@@ -266,7 +287,7 @@ export function CloudSyncTruthPanel({
         <Button
           icon={<RefreshCw className={cn("h-3.5 w-3.5", reading && "animate-spin")} />}
           variant="quiet"
-          onClick={() => setReloadToken((token) => token + 1)}
+          onClick={() => reread()}
           disabled={reading}
           className="shrink-0"
         >
@@ -305,11 +326,20 @@ export function CloudSyncTruthPanel({
 
       {/* ── The four counts, side by side ───────────────────────────────── */}
       <dl className="mt-3 grid grid-cols-2 border-t border-border sm:grid-cols-4">
-        <Count label={COUNT_LABELS[0]} value={null} />
+        <Count label={COUNT_LABELS[0]} value={null} unknown={onMatrx2 ? `On ${onMatrx2.computer.name}; Matrx 2 does not count entries` : undefined} />
         <Count label={COUNT_LABELS[1]} value={diagnosis?.entries ?? null} />
         <Count label={COUNT_LABELS[2]} value={diagnosis?.messages ?? null} />
-        <Count label={COUNT_LABELS[3]} value={null} />
+        <Count label={COUNT_LABELS[3]} value={null} unknown={onMatrx2 ? "Matrx 2 keeps no local copy" : undefined} />
       </dl>
+
+      {/* ── Where the chat itself is ─────────────────────────────────────── */}
+      <p className="mt-2 text-xs text-muted-foreground">
+        {holding === null
+          ? "Asking your computers which one holds this chat…"
+          : onMatrx2
+            ? `${onMatrx2.computer.name} (Matrx 2) holds this chat${onMatrx2.updatedAt ? `; it last changed ${formatSessionTimestamp(onMatrx2.updatedAt)}` : ""}. Reconcile delivers anything AI Matrx lacks.`
+            : `No Matrx 2 computer holds it: ${holding.via === "none" ? holding.sentence : ""} Only Matrx Local could still read it.`}
+      </p>
 
       {/* ── What only the cloud can answer ──────────────────────────────── */}
       {diagnosis ? (
@@ -395,7 +425,7 @@ export function CloudSyncTruthPanel({
             {reconcile.phase === "reaching"
               ? "Reaching your computer…"
               : reconcile.phase === "running"
-                ? "Reconciling…"
+                ? `Delivering on ${reconcile.where}…`
                 : "Reconcile"}
           </Button>
         </div>
@@ -407,12 +437,12 @@ export function CloudSyncTruthPanel({
 
         {reconcile.phase === "reaching" ? (
           <p className="mt-2 text-xs text-muted-foreground">
-            Asking which of your computers can answer…
+            Finding which of your computers holds this chat…
           </p>
         ) : null}
         {reconcile.phase === "running" ? (
           <p className="mt-2 text-xs text-muted-foreground">
-            Your computer is delivering what AI Matrx lacks. A long transcript
+            {reconcile.where} is delivering what AI Matrx lacks. A long transcript
             takes a while; its answer shows here when it is done.
           </p>
         ) : null}

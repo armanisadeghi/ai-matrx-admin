@@ -41,6 +41,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/utils/cn";
 import { formatSessionTimestamp } from "@/features/agent-connections/coding-sessions/verdict";
 import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
+import { arrivedByLabel } from "@/features/ai-work/lib/matrx2Coding";
 import { providerLabel } from "../presentation";
 import {
   EMPTY_SYNC_STATE,
@@ -193,7 +194,7 @@ function AccountCard({ account }: { account: SyncAccountState }) {
         </PropertyRow>
         <PropertyRow label="Arrived by">
           {account.origin
-            .map((o) => `${humanizeIdentifier(o.value)} (${o.count})`)
+            .map((o) => `${arrivedByLabel(o.value, humanizeIdentifier)} (${o.count})`)
             .join(", ") || "None recorded"}
         </PropertyRow>
         <PropertyRow label="Bindings not active">

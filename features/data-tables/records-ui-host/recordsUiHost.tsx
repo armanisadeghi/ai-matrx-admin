@@ -206,12 +206,13 @@ export function recordsUiHostFor({ ports, merged, gridContext, rights }: Records
     chat: (ctx) => <RecordScopedChat ctx={ctx} organizationId={ports.organizationId} />,
     // A record page's body, in the platform's one rich editor (records-ui ≥0.96 `editRichText`).
     editRichText: (props) => <RecordBodyEditor {...props} />,
-    // A row with a body Space (record → document, label row_body, from the Notion importer) shows it in the
-    // Spaces editor (records-ui ≥0.101.22 `renderRecordBody`); every other row keeps its own body (fallback).
+    // EVERY ROW IS A PAGE: a row's body is its Space (record → document, label row_body) in the Spaces editor
+    // (records-ui ≥0.101.22 `renderRecordBody`); someone who may edit a row with none starts it on open (its
+    // notes, then its table's default template — features/spaces/embed/row-page.ts). Readers keep the old body.
     // Spread as its own object: a records-ui build before the port ignores the key.
     ...{
       renderRecordBody: (args) => (
-        <RecordBodySpace tableId={args.tableId} recordId={args.recordId} record={args.record} readOnly={args.readOnly} fallback={args.fallback} />
+        <RecordBodySpace tableId={args.tableId} recordId={args.recordId} record={args.record} readOnly={args.readOnly} organizationId={ports.organizationId} fallback={args.fallback} />
       ),
     },
     // A relation cell wears its record's (else its table's) icon; the store keeps a picked icon as a NAME

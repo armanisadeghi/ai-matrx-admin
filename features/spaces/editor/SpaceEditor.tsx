@@ -61,6 +61,7 @@ import { rankSlashItems } from "./slash-rank";
 import { planColumnHeal, type HealBlock } from "./column-heal";
 import { columnDropper } from "./column-drop";
 import { usePersonTimeZone } from "@/hooks/usePersonTimeZone";
+import { PageOfBlocksProvider } from "../data/owning-row";
 
 const PLACEHOLDERS = {
   ...en.placeholders,
@@ -314,6 +315,8 @@ export function SpaceEditor({ spaceId, initialBlocks, editable, onChange, slash,
   }, [editor]);
 
   return (
+    // "This page's row" views ask which row this page belongs to (data/owning-row.tsx).
+    <PageOfBlocksProvider spaceId={spaceId}>
     <div
       ref={setZoneElement}
       className="contents"
@@ -488,6 +491,7 @@ export function SpaceEditor({ spaceId, initialBlocks, editable, onChange, slash,
     {editable ? <AppletPickerHost /> : null}
     <SuggestionCard getView={() => editor.prosemirrorView ?? null} canResolve={editable} />
     </div>
+    </PageOfBlocksProvider>
   );
 }
 

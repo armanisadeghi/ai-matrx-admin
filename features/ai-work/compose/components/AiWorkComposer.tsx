@@ -222,6 +222,8 @@ function ComposerBody({
   const filingAbort = useRef<AbortController | null>(null);
   /** What Run is doing right now, in words (a start can take tens of seconds). */
   const [runStatus, setRunStatus] = useState<string | null>(null);
+  /** The pending filing being delivered right now (its row says so). */
+  const [delivering, setDelivering] = useState<string | null>(null);
   /** The run just started on a Matrx 2 computer: where it ran, and where to open it. */
   const [startedRun, setStartedRun] = useState<{ computerName: string; link: string | null } | null>(null);
   const [filingNote, setFilingNote] = useState<string | null>(null);
@@ -464,8 +466,13 @@ function ComposerBody({
       confirmLabel: "Deliver",
     });
     if (!ok) return;
-    toast.info(await deliverFromComputer(browserCodingDoors, filing));
-    await refreshFilings();
+    setDelivering(filing.sessionId);
+    try {
+      toast.info(await deliverFromComputer(browserCodingDoors, filing));
+      await refreshFilings();
+    } finally {
+      setDelivering(null);
+    }
   };
 
   // ── Starts on a Matrx 2 computer that were not filed yet: filed now if their
@@ -1071,16 +1078,18 @@ function ComposerBody({
         {waitingFilings.map((filing) => (
           <div key={filing.sessionId} className="flex items-center gap-2">
             <span className="min-w-0 flex-1">
+              {delivering === filing.sessionId ? `Delivering on ${filing.computerName}… ` : null}
               Not in AI Matrx yet: {filingNote && startedRun?.computerName === filing.computerName ? filingNote : filingPendingSentence(filing.computerName)}
             </span>
-            <Button variant="outline" onClick={() => void deliverFiling(filing)}>
+            <Button variant="outline" disabled={delivering === filing.sessionId} onClick={() => void deliverFiling(filing)}>
               Deliver
             </Button>
           </div>
         ))}
       </div>
 
-      <div className="sticky bottom-0 flex items-center gap-2 border-t border-border bg-background/95 py-3 backdrop-blur">
+      {/* No bottom padding of its own: the page end below it is already the page's (measured 28px = 12 + 16, walk2). */}
+      <div className="sticky bottom-0 flex items-center gap-2 border-t border-border bg-background/95 pt-3 backdrop-blur">
         <Button icon={launching ? (
             <Loader2 className="animate-spin" />
           ) : (

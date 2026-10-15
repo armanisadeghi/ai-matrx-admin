@@ -14,6 +14,8 @@ import { recordActions, recordNameIn, toDropdownEntries, useRecordActionHost, us
 import { useRecord, useTable, type ReadRow } from "@ai-matrx/records/react";
 import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import type { ContextMenuExtraItem, ContextMenuExtraSection } from "@ai-matrx/context-menu/engine";
+import { saveRowPageAsTableTemplate } from "@/features/spaces/embed/RecordBodySpace";
+import { toast } from "@/lib/toast";
 
 type Actions = ReturnType<typeof recordActions>;
 type Action = Actions[number];
@@ -70,7 +72,33 @@ export function RecordPageMenu({ tableId, recordId, children }: { tableId: strin
       contextData={{ content: name || "Record" }}
       menuDesign="global"
       menuFeatureTitle="Record"
-      resolveExtraSectionsOnOpen={() => (section.current ? [section.current] : undefined)}
+      resolveExtraSectionsOnOpen={() => {
+        const sections = section.current ? [section.current] : [];
+        // EVERY ROW IS A PAGE (lane ROW-PAGE-VIEWS): this row's page — its blocks and "This page's row"
+        // views — becomes the table's default template; every new row's page starts from it.
+        const organizationId = table.data?.organization_id;
+        if (row && organizationId) {
+          sections.push({
+            id: "row-page",
+            label: "Page",
+            items: [
+              {
+                kind: "item",
+                id: "row-page-template",
+                label: "Use this page as the template",
+                onSelect: () => {
+                  const tableName = table.data?.name?.trim() || "Row";
+                  void saveRowPageAsTableTemplate({ organizationId, tableId, recordId, name: `${tableName} page` }).then(
+                    () => toast.success(`New ${tableName} rows now start from this page.`),
+                    (err: unknown) => toast.error(err instanceof Error ? err.message : "The template could not be saved."),
+                  );
+                },
+              },
+            ],
+          });
+        }
+        return sections.length ? sections : undefined;
+      }}
     >
       <div className="contents">
         {row ? <RecordActionsSource tableId={tableId} row={{ id: row.record_id, document: row.document, hidden: row.hidden, level: "" /* rights: useRecordRights */ }} name={name} into={section} /> : null}

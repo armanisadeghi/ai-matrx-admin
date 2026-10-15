@@ -34,6 +34,7 @@ import { createClient } from "@/utils/supabase/server";
 import type { SpaceBlock, SpaceDoc } from "../contract";
 import { activeView, chartTileSpecs, DEFAULT_CHART, ENTITY_PAGE, entityChartBy, entityRowsArgs, entityShownColumns, hasListFilter } from "../data/first-reads";
 import { viewSpec } from "../data/view-spec";
+import { usesThisRow } from "../data/this-row";
 import { AGENCY_SAMPLE_ID, readDatabaseProps, type DatabaseBlockProps, type SpaceDbView } from "../data/sources";
 import { SupabaseSpacesStore } from "../store-db/supabase-store";
 import { linkedPageIds } from "./linked-pages";
@@ -183,6 +184,9 @@ async function tableBlockSeed(reads: PageReads, { props }: DatabaseOnPage): Prom
   if (!where) return null;
   if (!where.organizationId || props.sample === AGENCY_SAMPLE_ID) return { tableId, where: where.where, records: null };
   const view = activeView(props.views, props.activeViewId);
+  // "This page's row" is resolved in the browser (data/owning-row.tsx); the server never asks the store
+  // with the token, so the block draws its own first page.
+  if (usesThisRow(view.filters)) return { tableId, where: where.where, records: null };
   const page = await reads.tablePage(tableId, where.organizationId, gridSpecOf(tableId, view));
   if (serverRowsOf(page)?.on !== true) return { tableId, where: where.where, records: null };
   const filter = (view.filters ?? {}) as Record<string, unknown>;
