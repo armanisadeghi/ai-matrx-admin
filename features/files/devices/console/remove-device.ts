@@ -19,6 +19,7 @@ export async function removeDevice(device: Pick<DeviceRow, "id" | "organization_
   const organizationId = device.organization_id;
   if (!organizationId) throw new Error("This computer's record has no organization, so it cannot be changed here");
   await writeOne(
+    // app-instances: not-a-computer-list (retires one device row the console already listed)
     supabase
       .from("app_instances")
       .update({ is_active: false, organization_id: organizationId })

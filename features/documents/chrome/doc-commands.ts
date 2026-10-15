@@ -43,6 +43,7 @@ import {
 } from "lucide-react";
 
 import { googleExtensionsMenu, googleHelpHead, soon } from "@/components/editor-chrome/google-parity";
+import type { DocDialogId } from "@/features/documents/components/DocumentToolDialogs";
 import type { EditorMenu, EditorMenuEntry } from "@/components/editor-chrome/editor-menu-model";
 import type { EditorToolbarItem } from "@/components/editor-chrome/EditorToolbar";
 
@@ -67,12 +68,25 @@ export interface DocChromeHost {
   /** Whether the document is laid out pageless, and a way to switch (Format → Pageless). */
   pageless?: () => boolean;
   setPageless?: (pageless: boolean) => void;
+  /** Tools the editor owns: dialogs, the editing mode and the ruler. */
+  tools?: {
+    open: (id: DocDialogId) => void;
+    mode: () => DocMode;
+    setMode: (mode: DocMode) => void;
+    ruler: () => boolean;
+    toggleRuler: () => void;
+    /** Format → Image options: the image panel for the selected picture. */
+    imageOptions: () => void;
+  };
   /** View → Show: panels the editor owns. */
   show?: {
     outline: () => boolean;
     toggleOutline: () => void;
   };
 }
+
+/** View → Mode. Editing and Viewing are real; Suggesting needs a tracked-changes layer Univer's free docs lack. */
+export type DocMode = "editing" | "viewing";
 
 export const DOC_STYLES = [
   { id: "normal", label: "Normal text", command: "doc.command.normal-text-heading" },
@@ -277,7 +291,15 @@ export function buildDocMenus(h: DocChromeHost): EditorMenu[] {
       id: "view",
       label: "View",
       items: [
-        soon("view.mode", "Mode", "documents.mode", { keywords: ["editing", "suggesting", "viewing"] }),
+        {
+          kind: "submenu",
+          id: "view.mode",
+          label: "Mode",
+          keywords: ["editing", "viewing", "read only"],
+          items: ([["editing", "Editing"], ["viewing", "Viewing"]] as const).map(
+            ([mode, label]): EditorMenuEntry => ({ kind: "action", id: `view.mode.${mode}`, label, checked: () => (h.tools?.mode() ?? "editing") === mode, run: () => h.tools?.setMode(mode) }),
+          ),
+        },
         { kind: "separator" },
         {
           kind: "submenu",
@@ -292,7 +314,7 @@ export function buildDocMenus(h: DocChromeHost): EditorMenu[] {
               checked: () => !h.pageless?.(),
               run: () => h.setPageless?.(!h.pageless?.()),
             },
-            soon("view.show.ruler", "Show ruler", "documents.show-ruler"),
+            { kind: "action", id: "view.show.ruler", label: "Show ruler", keywords: ["margins", "inches"], checked: () => !!h.tools?.ruler(), run: () => h.tools?.toggleRuler() },
             {
               kind: "action",
               id: "view.show.outline",
@@ -317,16 +339,16 @@ export function buildDocMenus(h: DocChromeHost): EditorMenu[] {
       items: [
         { kind: "action", id: "insert.image", label: "Image", icon: Image, keywords: ["picture", "photo"], run: run(h, "doc.command.insert-float-image") },
         { kind: "action", id: "insert.table", label: "Table", icon: Table, run: run(h, "doc.operation.create-table") },
-        soon("insert.building-blocks", "Building blocks", "documents.building-blocks"),
+        { kind: "action", id: "insert.building-blocks", label: "Building blocks", keywords: ["template", "meeting notes", "tracker", "email draft"], run: () => h.tools?.open("building-blocks") },
         soon("insert.smart-chips", "Smart chips", "editor.insert.smart-chips"),
         { kind: "action", id: "insert.link", label: "Link", icon: Link, shortcut: { key: "k", mod: true }, run: run(h, "doc.operation.show-hyper-link-edit-popup") },
         soon("insert.drawing", "Drawing", "editor.insert.drawing"),
         soon("insert.chart", "Chart", "editor.insert.chart", { icon: BarChart3 }),
-        soon("insert.symbols", "Special characters", "editor.insert.special-characters", { icon: Omega }),
+        { kind: "action", id: "insert.symbols", label: "Special characters", icon: Omega, keywords: ["symbols", "arrows", "math"], run: () => h.tools?.open("special") },
         soon("insert.tabs", "Tabs", "documents.tabs"),
         { kind: "separator" },
         { kind: "action", id: "insert.horizontal-line", label: "Horizontal line", run: run(h, "doc.command.horizontal-line") },
-        soon("insert.emoji", "Emoji", "editor.insert.emoji"),
+        { kind: "action", id: "insert.emoji", label: "Emoji", keywords: ["smiley", "reaction"], run: () => h.tools?.open("emoji") },
         soon("insert.footnote", "Footnote", "documents.footnote", { shortcut: { key: "f", mod: true, alt: true } }),
         {
           kind: "submenu",
@@ -339,7 +361,7 @@ export function buildDocMenus(h: DocChromeHost): EditorMenu[] {
         },
         { kind: "submenu", id: "insert.page-numbers", label: "Page numbers", items: pageNumberEntries(h, "insert.page-numbers") },
         { kind: "submenu", id: "insert.headers-footers", label: "Headers and footers", items: headersFootersEntries(h, "insert.headers-footers") },
-        soon("insert.bookmark", "Bookmark", "documents.bookmark"),
+        { kind: "action", id: "insert.bookmark", label: "Bookmark", keywords: ["anchor", "link target"], run: () => h.tools?.open("bookmarks") },
         { kind: "submenu", id: "insert.toc", label: "Table of contents", items: tocEntries(h) },
         { kind: "separator" },
         { kind: "action", id: "insert.comment", label: "Comment", icon: MessageSquarePlus, run: run(h, "docs.operation.start-add-comment") },
@@ -382,8 +404,8 @@ export function buildDocMenus(h: DocChromeHost): EditorMenu[] {
         },
         { kind: "separator" },
         soon("format.table", "Table", "documents.table-properties"),
-        soon("format.image", "Image", "documents.image-options"),
-        soon("format.borders", "Borders and lines", "documents.borders-lines"),
+        { kind: "action", id: "format.image", label: "Image options", keywords: ["crop", "wrap", "size", "picture"], run: () => h.tools?.imageOptions() },
+        { kind: "action", id: "format.borders", label: "Borders and lines", keywords: ["rule", "paragraph border"], run: () => h.tools?.open("borders") },
         { kind: "separator" },
         { kind: "action", id: "format.clear", label: "Clear formatting", icon: RemoveFormatting, run: run(h, "ui.command.clear-formatting") },
       ],
@@ -395,13 +417,13 @@ export function buildDocMenus(h: DocChromeHost): EditorMenu[] {
         soon("tools.spelling", "Spelling and grammar", "editor.tools.spelling", { icon: SpellCheck }),
         { kind: "action", id: "tools.word-count", label: "Word count", shortcut: { key: "c", mod: true, shift: true, bind: true }, run: () => h.wordCount() },
         soon("tools.review-suggestions", "Review suggested edits", "documents.review-suggestions"),
-        soon("tools.compare", "Compare documents", "documents.compare"),
+        { kind: "action", id: "tools.compare", label: "Compare documents", keywords: ["diff", "differences"], run: () => h.tools?.open("compare") },
         soon("tools.citations", "Citations", "documents.citations"),
         soon("tools.linked-objects", "Linked objects", "editor.tools.linked-objects"),
         soon("tools.dictionary", "Dictionary", "editor.tools.dictionary", { shortcut: { key: "y", mod: true, shift: true } }),
         { kind: "separator" },
         soon("tools.translate", "Translate document", "documents.translate", { icon: Languages }),
-        soon("tools.voice-typing", "Voice typing", "editor.tools.voice-typing", { icon: Mic, shortcut: { key: "s", mod: true, shift: true } }),
+        { kind: "action", id: "tools.voice-typing", label: "Voice typing", icon: Mic, keywords: ["dictate", "microphone"], shortcut: { key: "s", mod: true, shift: true }, run: () => h.tools?.open("voice") },
         { kind: "separator" },
         soon("tools.notifications", "Notification settings", "editor.tools.notifications"),
         soon("tools.preferences", "Preferences", "editor.tools.preferences"),

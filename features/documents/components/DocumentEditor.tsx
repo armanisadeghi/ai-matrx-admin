@@ -81,6 +81,10 @@ import { UniverDocsTocUIPlugin } from "@univerjs/docs-toc-ui";
 import docsTocEnUS from "@univerjs/docs-toc-ui/locale/en-US";
 import "@univerjs/docs-toc-ui/lib/index.css";
 import { DocumentOutlinePanel } from "@/features/documents/components/DocumentOutlinePanel";
+import { DocumentToolDialogs, type DocDialogId } from "@/features/documents/components/DocumentToolDialogs";
+import { DocumentRuler } from "@/features/documents/components/DocumentRuler";
+import { createDocEditOps, writeDocumentStyleKey } from "@/features/documents/doc-edit-ops";
+import { DOCUMENT_LANGUAGE_KEY, bookmarkFromHash, readDocumentLanguage } from "@/features/documents/doc-tools-core";
 import { UniverFindReplacePlugin } from "@univerjs/find-replace";
 import { UniverDocsFindReplacePlugin } from "@univerjs/docs-find-replace";
 import findReplaceEnUS from "@univerjs/find-replace/locale/en-US";
@@ -278,6 +282,7 @@ export default function DocumentEditor({
         liveDocument().deleteRange({ startOffset: start, endOffset: end }),
       insertText: (at, text) => liveDocument().insertText(at, text),
       openPageSetup: () => setPageSetupOpen(true),
+      openTool: (id) => setToolDialog(id),
       runCommand: async (commandId) => {
         const api = apiRef.current as unknown as { executeCommand?: (id: string) => Promise<unknown> | unknown } | null;
         if (!api?.executeCommand) throw new Error("The document editor is still opening. Try again in a moment.");
@@ -295,6 +300,12 @@ export default function DocumentEditor({
   const [pageSetupOpen, setPageSetupOpen] = useState(false);
   // View → Show outline.
   const [outlineOpen, setOutlineOpen] = useState(false);
+  // The Docs tools: which dialog is open, the editing mode, the ruler, the document language.
+  const [toolDialog, setToolDialog] = useState<DocDialogId | null>(null);
+  const [docMode, setDocMode] = useState<"editing" | "viewing">("editing");
+  const [rulerShown, setRulerShown] = useState(false);
+  const [language, setLanguage] = useState("en-US");
+  const [stageWidth, setStageWidth] = useState(0);
   const [pageRev, setPageRev] = useState(0);
   const dispatch = useAppDispatch();
 
@@ -613,11 +624,49 @@ export default function DocumentEditor({
       toast({ title: "Page setup failed", description: err instanceof Error ? err.message : String(err) });
     }
   };
+  const editOps = useMemo(
+    () =>
+      createDocEditOps({
+        api: () => apiRef.current as never,
+        injector: () => (univerRef.current as unknown as { __getInjector?: () => { get: <T>(t: unknown) => T | undefined } } | null)?.__getInjector?.() ?? null,
+      }),
+    [],
+  );
+  // Viewing mode is Univer's own read-only permission on this document.
+  useEffect(() => {
+    if (bootState !== "ready") return;
+    void editOps.setViewOnly(docMode === "viewing");
+  }, [bootState, docMode, editOps, unitId]);
+  useEffect(() => {
+    if (bootState !== "ready") return;
+    const style = (apiRef.current as unknown as PageSetupApiLike | null)?.getActiveDocument?.()?.getDocumentDataModel?.()?.getSnapshot().documentStyle;
+    setLanguage(readDocumentLanguage(style));
+  }, [bootState, unitId]);
+  // A link ending #bookmark=<name> opens at that bookmark.
+  useEffect(() => {
+    if (bootState !== "ready" || typeof window === "undefined") return;
+    const name = bookmarkFromHash(window.location.hash);
+    const hit = name ? editOps.bookmarks().find((b) => b.name.toLowerCase() === name.toLowerCase()) : undefined;
+    if (hit) editOps.goTo(hit.offset + 1);
+  }, [bootState, editOps, unitId]);
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el || !rulerShown) return undefined;
+    const measure = () => setStageWidth(el.clientWidth);
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [rulerShown, bootState]);
+  const setDocumentLanguage = (code: string) => {
+    setLanguage(code);
+    void writeDocumentStyleKey(apiRef.current as never, DOCUMENT_LANGUAGE_KEY, code);
+  };
   const chromeHost: DocChromeHost | null =
     bootState === "ready" && apiRef.current
       ? {
           api: apiRef.current as unknown as DocsApiLike,
-          editable,
+          editable: editable && docMode === "editing",
           unitId: () => unitId,
           zoom: () => zoom,
           print: printDocument,
@@ -631,6 +680,14 @@ export default function DocumentEditor({
           show: {
             outline: () => outlineOpen,
             toggleOutline: () => setOutlineOpen((v) => !v),
+          },
+          tools: {
+            open: (id) => setToolDialog(id),
+            mode: () => docMode,
+            setMode: (m) => setDocMode(m),
+            ruler: () => rulerShown,
+            toggleRuler: () => setRulerShown((v) => !v),
+            imageOptions: () => void editOps.openImagePanel(),
           },
         }
       : null;
@@ -683,6 +740,17 @@ export default function DocumentEditor({
   ) : null;
 
   const pageSetupDialog = ready ? (
+    <>
+    <DocumentToolDialogs
+      open={toolDialog}
+      onClose={() => setToolDialog(null)}
+      ops={editOps}
+      documentId={documentId}
+      documentName={documentName ?? "Untitled document"}
+      language={language}
+      onLanguage={setDocumentLanguage}
+      exec={(id, params) => (apiRef.current as unknown as DocsApiLike | null)?.executeCommand(id, params)}
+    />
     <PageSetupDialog
       open={pageSetupOpen}
       onOpenChange={setPageSetupOpen}
@@ -693,6 +761,7 @@ export default function DocumentEditor({
         toast({ title: "Saved as the page for new documents" });
       }}
     />
+    </>
   ) : null;
 
   if (chrome) {
@@ -794,8 +863,18 @@ export default function DocumentEditor({
                 }}
               />
             ) : null}
-            <div className="relative min-h-0 min-w-0 flex-1">
-              <div ref={containerRef} className="absolute inset-0" />
+            <div className="flex min-h-0 min-w-0 flex-1 flex-col">
+              {rulerShown && ready ? (
+                <DocumentRuler
+                  containerWidth={stageWidth}
+                  zoom={zoom}
+                  rev={pageRev}
+                  readStyle={() => (apiRef.current as unknown as PageSetupApiLike | null)?.getActiveDocument?.()?.getDocumentDataModel?.()?.getSnapshot().documentStyle as never}
+                />
+              ) : null}
+              <div className="relative min-h-0 min-w-0 flex-1">
+                <div ref={containerRef} className="absolute inset-0" />
+              </div>
             </div>
           </div>
         </div>

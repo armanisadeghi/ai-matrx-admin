@@ -23,9 +23,7 @@ const ROWS: Row[] = [
   // ── Edit / View / Insert / Format (shared) ──
   ["editor.insert.drawing", "Drawing", "file-actions", "Draw shapes, lines and text boxes and place the drawing in the file.", "Editor Insert → Drawing"],
   ["editor.insert.chart", "Chart", "file-actions", "Insert a chart that stays linked to its data and updates with it.", "Editor Insert → Chart"],
-  ["editor.insert.emoji", "Emoji", "file-actions", "Pick an emoji from a searchable panel and insert it at the cursor.", "Editor Insert → Emoji"],
   ["editor.insert.smart-chips", "Smart chips", "file-actions", "Insert live chips for people, files, dates and places.", "Editor Insert → Smart chips"],
-  ["editor.insert.special-characters", "Special characters", "file-actions", "Search and insert symbols, arrows and characters from any script.", "Editor Insert → Special characters"],
   // ── Tools (shared) ──
   ["editor.tools.spelling", "Spelling and grammar", "file-actions", "Check spelling and grammar as you type and step through every suggestion.", "Editor Tools → Spelling"],
   ["editor.tools.notifications", "Notification settings", "file-actions", "Choose when you are told about comments and changes in this file.", "Editor Tools → Notification settings"],
@@ -34,7 +32,6 @@ const ROWS: Row[] = [
   ["editor.tools.preferences", "Preferences", "file-actions", "Set substitutions, smart quotes and automatic detection for this editor.", "Editor Tools → Preferences"],
   ["editor.tools.dictionary", "Dictionary", "file-actions", "Look up the selected word without leaving the file.", "Editor Tools → Dictionary"],
   ["editor.tools.linked-objects", "Linked objects", "file-actions", "See and refresh every chart and table linked from another file.", "Editor Tools → Linked objects"],
-  ["editor.tools.voice-typing", "Voice typing", "file-actions", "Dictate into the file (or the speaker notes) with your microphone.", "Editor Tools → Voice typing"],
   // ── Extensions + Help (shared) ──
   ["editor.extensions.add-ons", "Add-ons", "file-actions", "Install add-ons that bring new tools into the editor.", "Editor Extensions → Add-ons"],
   ["editor.extensions.scripts", "Scripts", "file-actions", "Write scripts that automate this file and connect it to other services.", "Editor Extensions → Scripts"],
@@ -56,19 +53,12 @@ const ROWS: Row[] = [
   ["workbooks.autocomplete", "Autocomplete", "workbooks", "Turn cell autocomplete on or off while you type.", "Workbook Tools → Autocomplete"],
   ["workbooks.suggestion-controls", "Suggestion controls", "workbooks", "Choose which automatic suggestions (autocomplete, formulas) appear.", "Workbook Tools → Suggestion controls"],
   // ── Document only ──
-  ["documents.mode", "Editing mode", "documents", "Switch between editing, suggesting and viewing.", "Document View → Mode"],
-  ["documents.show-ruler", "Show ruler", "documents", "Show a ruler above the page for margins and indents.", "Document View → Show"],
   ["documents.show-nonprinting", "Show non-printing characters", "documents", "Show spaces, tabs and paragraph marks while you write.", "Document View → Show"],
-  ["documents.building-blocks", "Building blocks", "documents", "Insert ready-made blocks: meeting notes, project trackers, email drafts.", "Document Insert → Building blocks"],
   ["documents.footnote", "Footnote", "documents", "Add a numbered footnote at the cursor.", "Document Insert → Footnote"],
-  ["documents.bookmark", "Bookmark", "documents", "Bookmark a spot so links can jump straight to it.", "Document Insert → Bookmark"],
   ["documents.tabs", "Document tabs", "documents", "Split a long document into tabs, each with its own outline.", "Document Insert → Tabs"],
   ["documents.columns", "Columns", "documents", "Lay the text out in two or more columns.", "Document Format → Columns"],
   ["documents.table-properties", "Table properties", "documents", "Set column widths, cell padding, borders and alignment for a table.", "Document Format → Table"],
-  ["documents.image-options", "Image options", "documents", "Crop, recolour, wrap text around and resize an image precisely.", "Document Format → Image"],
-  ["documents.borders-lines", "Borders and lines", "documents", "Add borders around paragraphs and decorative lines.", "Document Format → Borders and lines"],
   ["documents.review-suggestions", "Review suggested edits", "documents", "Step through every suggested edit and accept or reject each one.", "Document Tools → Review suggested edits"],
-  ["documents.compare", "Compare documents", "documents", "Compare this document with another and see every difference marked.", "Document Tools → Compare documents"],
   ["documents.citations", "Citations", "documents", "Add sources and insert citations and a bibliography in your chosen style.", "Document Tools → Citations"],
   ["documents.translate", "Translate document", "documents", "Make a translated copy of this document in another language.", "Document Tools → Translate document"],
   // ── Presentation only ──

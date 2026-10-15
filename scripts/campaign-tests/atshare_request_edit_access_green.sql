@@ -35,11 +35,19 @@ begin
   if jsonb_array_length(coalesce(v_req->'recipients','[]'::jsonb)) < 1 then raise exception 'CLAUSE 1 FAILED: nobody was told: %', v_req; end if;
   raise notice 'CLAUSE 1 OK: request filed, % recipient(s)', jsonb_array_length(v_req->'recipients');
 
+  if v_req->>'entity_label' <> 'Table' or v_req->>'entity_title' <> 'Jobs' then
+    raise exception 'CLAUSE 1 FAILED: the request does not name the table: %', v_req;
+  end if;
+  raise notice 'CLAUSE 1 OK: the request names the table: % %', v_req->>'entity_label', v_req->>'entity_title';
+
   -- CLAUSE 2 — the owner holds it in the inbox, and the viewer still reads at View.
   perform set_config('request.jwt.claims', c_admin_j, true);
   v_list := public.access_request_list('inbox');
   if not (v_list::text like '%' || v_id::text || '%') then raise exception 'CLAUSE 2 FAILED: the owner''s inbox does not hold the request: %', left(v_list::text, 400); end if;
-  raise notice 'CLAUSE 2 OK: the owner''s inbox holds the request';
+  if not (v_list::text like '%"entity_label": "Table"%') or not (v_list::text like '%"entity_title": "Jobs"%') then
+    raise exception 'CLAUSE 2 FAILED: the inbox row does not name the table: %', left(v_list::text, 600);
+  end if;
+  raise notice 'CLAUSE 2 OK: the owner''s inbox holds the request and names the table';
 
   -- CLAUSE 3 — approving grants Edit, at once.
   v_dec := public.access_request_decide(v_id, 'grant', 'editor', null);

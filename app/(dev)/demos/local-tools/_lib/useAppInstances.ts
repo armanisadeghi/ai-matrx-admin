@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { supabase } from '@/utils/supabase/client';
 import { tryWriteOne, WriteDidNotLandError } from '@/utils/supabase/writeOne';
 import { operationFailed } from '@/utils/errors';
+import { onlyComputers } from "@/lib/app-instances/computers";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -74,11 +75,14 @@ async function withWsAuthToken(wsUrl: string): Promise<string> {
 
 /** RLS-scoped direct read of the user's registered Matrx Local instances. */
 export async function fetchAppInstances(): Promise<AppInstance[]> {
-    const { data, error } = await supabase
-        .from('app_instances')
-        .select('id,instance_id,instance_name,platform,os_version,hostname,username,cpu_model,cpu_cores,ram_total_gb,is_active,last_seen,created_at,updated_at,tunnel_url,tunnel_active,tunnel_updated_at,tunnel_ws_url')
-        .is('deleted_at', null)
-        .order('last_seen', { ascending: false });
+    const { data, error } = await onlyComputers(
+        supabase
+            .from('app_instances')
+            .select('id,instance_id,instance_name,platform,os_version,hostname,username,cpu_model,cpu_cores,ram_total_gb,is_active,last_seen,created_at,updated_at,tunnel_url,tunnel_active,tunnel_updated_at,tunnel_ws_url')
+            .is('deleted_at', null)
+            .order('last_seen', { ascending: false }),
+        supabase,
+    );
     if (error) throw operationFailed('load your Matrx Local machines', error);
     return data ?? [];
 }
@@ -300,6 +304,7 @@ export function useAppInstances() {
     // Update tunnel fields in Supabase
     const saveTunnelUrl = useCallback(async (instanceId: string, tunnelUrl: string, tunnelWsUrl: string) => {
         const { error: err } = await tryWriteOne(
+            // app-instances: not-a-computer-list (writes the tunnel of a machine picked from the computer list)
             supabase
                 .from('app_instances')
                 .update({

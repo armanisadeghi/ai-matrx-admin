@@ -27,6 +27,7 @@ import { VIEW_ADDRESS_KEYS, viewAddressFromParams, viewAddressToParams } from "@
 import type { RecordFilter } from "@ai-matrx/records";
 
 import RouteHeader from "@/features/shell/components/header/RouteHeader";
+import { useYieldedFallback } from "@/features/shell/components/header/useYieldedFallback";
 import { TableFavoriteStar } from "./TableFavoriteStar";
 import { TableAccessBar } from "./TableAccessBar";
 import { ChevronLeftTapButton } from "@ai-matrx/design-system/tap-target/buttons";
@@ -75,6 +76,10 @@ function TableRouteHeader({
   const router = useRouter();
   const table = useTable(tableId);
   const name = table.data?.name?.trim();
+  // THE FALLBACK HEADER DRAWS ONCE (AT-SHARE): while the page's own header is mounted the fallback is
+  // hidden, but it still mounted every control — each one read its own data twice and the controls sat in
+  // the DOM twice. Once the page header has taken over, the fallback holds nothing.
+  const yielded = useYieldedFallback(fallback);
   // Back is the person's own last page (the app's rule); a link opened cold goes to the tables.
   const back = () => {
     if (typeof window !== "undefined" && window.history.length > 1) router.back();
@@ -83,7 +88,7 @@ function TableRouteHeader({
   return (
     <RouteHeader
       fallback={fallback}
-      left={
+      left={yielded ? null : (
         <>
           <ChevronLeftTapButton variant="transparent" onClick={back} ariaLabel="Back" />
           {name ? (
@@ -95,8 +100,8 @@ function TableRouteHeader({
             <span className="truncate px-1.5 text-sm font-medium text-foreground">Data</span>
           )}
         </>
-      }
-      right={
+      )}
+      right={yielded ? null : (
         <>
           {/* A write the store held for a person, decided from here as well as from the chat.
               Absent unless something is waiting. */}
@@ -120,7 +125,7 @@ function TableRouteHeader({
               still registered, so agents and "Copy full context" read it. */}
           {actions}
         </>
-      }
+      )}
     />
   );
 }

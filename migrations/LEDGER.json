@@ -1,6 +1,6 @@
 {
   "note": "Checked-in snapshot of public._schema_migrations for the files under migrations/campaign and migrations/inverse. Written by `pnpm db:apply` on every successful production apply and refreshed whole by the nightly catch-up. Never hand-edited: a self-written checksum is a claim nobody can check. Guard: pnpm check:ledgered-files-unedited.",
-  "generated_at": "2026-10-15T17:20:48.773Z",
+  "generated_at": "2026-10-15T18:06:43.652Z",
   "files": {
     "migrations/campaign/a_chunk_is_the_size_the_client_door_can_actually_carry.sql": {
       "source": "matrx-frontend",
@@ -590,6 +590,12 @@
       "checksum": "ddf6ddd55036409e60e1ed23d67893e5492fbea267bb708094b282124cd01906",
       "applied_at": "2026-10-15 17:02:36.191044+00"
     },
+    "migrations/campaign/atauto3_a_find_reads_labels_and_the_server_runs_agents_emails_and_texts.sql": {
+      "source": "matrx-frontend",
+      "filename": "atauto3_a_find_reads_labels_and_the_server_runs_agents_emails_and_texts.sql",
+      "checksum": "27943868a512dbeccbf30cfc47d0a12ed2497383e48802fe119a87408a2f6853",
+      "applied_at": "2026-10-15 18:06:41.307265+00"
+    },
     "migrations/campaign/atbase_a_a_base_has_a_name_snapshots_and_a_copy_that_points_inward.sql": {
       "source": "matrx-frontend",
       "filename": "atbase_a_a_base_has_a_name_snapshots_and_a_copy_that_points_inward.sql",
@@ -649,6 +655,12 @@
       "filename": "atshare_d_a_table_can_find_its_likely_duplicates.sql",
       "checksum": "3b87ae11502f7fa7528959fab06aedb7c65260656fff95295650a7179f2a2f5e",
       "applied_at": "2026-10-15 17:16:48.87166+00"
+    },
+    "migrations/campaign/atshare_e_an_access_request_names_the_table.sql": {
+      "source": "matrx-frontend",
+      "filename": "atshare_e_an_access_request_names_the_table.sql",
+      "checksum": "eea0bb78cee077fb75f01d79214732bb0ee96080c3271c91631a7b1c959b46c7",
+      "applied_at": "2026-10-15 18:00:08.970635+00"
     },
     "migrations/campaign/auditorg_library_audit_names_the_acting_organization.sql": {
       "source": "matrx-frontend",

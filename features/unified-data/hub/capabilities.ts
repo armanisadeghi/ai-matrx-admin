@@ -23,7 +23,7 @@
 
 import type { RecordsClient } from "@ai-matrx/records/core";
 import type { RecordsDataSource, Table } from "@ai-matrx/records";
-import { isPage, type VisibilityLane } from "@ai-matrx/records-ui";
+import { isInterface, isPage, type VisibilityLane } from "@ai-matrx/records-ui";
 
 import * as doors from "./doors";
 import type { ChangedByKind, DataHomeItemKind, DataHomeItemRow, DataHomeTableRow, DoorFailure, TableFactRow } from "./doors";
@@ -431,6 +431,21 @@ export const HUB_CAPABILITIES: readonly HubCapability[] = [
           };
           // A PAGE BUILT FROM TABLES is a dashboard record that says so (`presentation.kind`, records-ui
           // `isPage`, v6 lane 11 wave D): its own kind on the home, and it opens on its own screen.
+          // AN INTERFACE (lane AT-INTERFACE) is a dashboard record holding named pages: listed with the pages,
+          // opened on its own screen.
+          if (isInterface({ presentation: dash.presentation ?? null })) {
+            const draft = dash.presentation?.["draft"] as { pages?: unknown[] } | undefined;
+            const published = dash.presentation?.["published"] as { pages?: unknown[] } | undefined;
+            const pages = (published?.pages ?? draft?.pages ?? []).length;
+            return {
+              ...rowFacts(ctx, row),
+              id: dash.dashboard_id,
+              kind: "page",
+              title: dash.name || "(untitled interface)",
+              facts: ["Interface", plural(pages, "page")],
+              href: `/data/interfaces/${dash.dashboard_id}`,
+            };
+          }
           if (isPage({ presentation: dash.presentation ?? null })) {
             const blocks = Array.isArray(dash.presentation?.["page_blocks"]) ? (dash.presentation["page_blocks"] as unknown[]).length : 0;
             return {

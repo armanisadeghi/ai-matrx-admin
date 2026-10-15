@@ -1,7 +1,7 @@
 {
   "version": 1,
   "app": "matrx-frontend",
-  "routeCount": 1434,
+  "routeCount": 1438,
   "routes": [
     {
       "pattern": "/",
@@ -329,6 +329,11 @@
       "source": "app/(admin)/administration/ai/ai-models/deprecated-audit/page.tsx"
     },
     {
+      "pattern": "/administration/ai/ai-models/discovery",
+      "status": "live",
+      "source": "app/(admin)/administration/ai/ai-models/discovery/page.tsx"
+    },
+    {
       "pattern": "/administration/ai/ai-models/endpoints",
       "status": "live",
       "source": "app/(admin)/administration/ai/ai-models/endpoints/page.tsx"
@@ -412,6 +417,11 @@
       "pattern": "/administration/applications",
       "status": "live",
       "source": "app/(admin)/administration/applications/page.tsx"
+    },
+    {
+      "pattern": "/administration/applications/attestation",
+      "status": "live",
+      "source": "app/(admin)/administration/applications/attestation/page.tsx"
     },
     {
       "pattern": "/administration/applications/catalogs",
@@ -2482,6 +2492,16 @@
       "pattern": "/data/[tableId]/r/[recordId]",
       "status": "live",
       "source": "app/(core)/data/[tableId]/r/[recordId]/page.tsx"
+    },
+    {
+      "pattern": "/data/bases",
+      "status": "live",
+      "source": "app/(core)/data/bases/page.tsx"
+    },
+    {
+      "pattern": "/data/bases/[homeId]",
+      "status": "live",
+      "source": "app/(core)/data/bases/[homeId]/page.tsx"
     },
     {
       "pattern": "/data/connect",

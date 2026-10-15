@@ -28,6 +28,7 @@ import type {
   SyncMappingRow,
   DesiredState,
 } from "./types";
+import { onlyComputers } from "@/lib/app-instances/computers";
 
 /** Only what this surface renders — never `select("*")`. */
 const MAPPING_COLUMNS =
@@ -42,12 +43,15 @@ const DEVICE_COLUMNS =
  * SHARED with this user out of a list titled "your devices".
  */
 export async function fetchDevices(userId: string): Promise<DeviceRow[]> {
-  const { data, error } = await supabase
-    .from("app_instances")
-    .select(DEVICE_COLUMNS)
-    .eq("created_by", userId)
-    .is("deleted_at", null)
-    .order("last_seen", { ascending: false, nullsFirst: false });
+  const { data, error } = await onlyComputers(
+    supabase
+      .from("app_instances")
+      .select(DEVICE_COLUMNS)
+      .eq("created_by", userId)
+      .is("deleted_at", null)
+      .order("last_seen", { ascending: false, nullsFirst: false }),
+    supabase,
+  );
   if (error) throw error;
   return (data ?? []) as unknown as DeviceRow[];
 }

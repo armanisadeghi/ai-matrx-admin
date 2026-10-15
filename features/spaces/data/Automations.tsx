@@ -23,6 +23,7 @@ import type { AutomationAction, AutomationItem, AutomationRun, AutomationSpec, A
 import { useMyLevel, useRecordsClient, type Field } from "@ai-matrx/records/react";
 import { whatYouMayDo } from "@ai-matrx/records-ui";
 
+import { FlowStepEditor, stepCount, type Step } from "./AutomationSteps";
 import { useEffectiveKnob } from "@/lib/scoped-config/effectiveKnobs.client";
 
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
@@ -46,17 +47,23 @@ type Draft =
   | { kind: "agent"; prompt: string }
   /** AT-AUTO2: a script step — JavaScript run by the server in the owner's sandbox; inputs are `name = {{token}}` lines. */
   | { kind: "script"; code: string; inputs: string }
-  /** AT-AUTO2: find / update / archive / if-else / repeat, edited as the step's own JSON until the visual group editor lands. */
-  | { kind: "step"; json: string };
+  /** AT-AUTO3: find / update / archive / if-else / repeat / agent / Gmail / text, edited visually (AutomationSteps.tsx). */
+  | { kind: "flow"; step: Step };
 
-/** AT-AUTO2: the starting shape of each advanced step, with tokens the run fills in. */
-const STEP_TEMPLATES: Record<string, (tableId: string) => unknown> = {
-  "Find records": (t) => ({ do: "find", table_id: t, where: { op: "eq", args: [{ field: "<field id>" }, { const: "{{trigger.body.email}}" }] }, limit: 1 }),
-  "Update records": (t) => ({ do: "update", table_id: t, record: "{{step1.records}}", values: { "<field id>": "{{trigger.body.status}}" } }),
-  "Archive records": () => ({ do: "archive", record: "{{step1.records}}" }),
-  "If / else": () => ({ do: "if", branches: [{ label: "VIP", when: { all: [{ value: "{{step1.first.tier}}", is: "equals", to: "VIP" }] }, actions: [] }], else: [] }),
-  "Repeat for each": () => ({ do: "for_each", list: "{{trigger.body.items}}", actions: [] }),
-};
+/** The step kinds the visual flow editor owns. */
+const FLOW_DO = new Set(["find", "update", "archive", "if", "for_each", "run_mandate", "gmail", "sms"]);
+
+/** AT-AUTO3: the starting shape of each flow step (the editor fills the rest by choosing). */
+const FLOW_BUTTONS: Array<[string, (tableId: string) => Step]> = [
+  ["Find records", (t) => ({ do: "find", table_id: t, limit: 50 })],
+  ["Update records", (t) => ({ do: "update", table_id: t, record: "", values: {} })],
+  ["Archive records", () => ({ do: "archive", record: "" })],
+  ["If / else", () => ({ do: "if", branches: [{ label: "", when: { all: [{ value: "", is: "equals", to: "" }] }, actions: [] }], else: [] })],
+  ["Repeat for each", () => ({ do: "for_each", list: "", actions: [] })],
+  ["Ask an agent", () => ({ do: "run_mandate", mandate_key: "", variables: {} })],
+  ["Send Gmail", () => ({ do: "gmail", to: "", subject: "", body: "" })],
+  ["Send a text", () => ({ do: "sms", to: "", message: "" })],
+];
 
 function scriptInputs(lines: string): Record<string, string> {
   const out: Record<string, string> = {};
@@ -104,17 +111,14 @@ function toAction(d: Draft, tableId: string, titleField: string): AutomationActi
       return { do: "agent", prompt: d.prompt };
     case "script":
       return { do: "script", code: d.code, inputs: scriptInputs(d.inputs) };
-    case "step":
-      try {
-        return JSON.parse(d.json) as AutomationAction;
-      } catch {
-        return { do: "step-json-invalid" } as unknown as AutomationAction;
-      }
+    case "flow":
+      return d.step as unknown as AutomationAction;
   }
 }
 
 /** Back from the store's spec to the panel's drafts (editing an automation that exists). */
 function toDraft(a: AutomationAction, firstField: string): Draft {
+  if (FLOW_DO.has(a.do)) return { kind: "flow", step: a as unknown as Step };
   const one = (values: Record<string, AutomationValue>) => {
     const [field, v] = Object.entries(values)[0] ?? [firstField, ""];
     const o = v && typeof v === "object" && !Array.isArray(v) ? (v as Record<string, unknown>) : null;
@@ -156,12 +160,8 @@ function toDraft(a: AutomationAction, firstField: string): Draft {
       return { kind: "agent", prompt: a.prompt };
     case "script":
       return { kind: "script", code: a.code, inputs: Object.entries(a.inputs ?? {}).map(([k, v]) => `${k} = ${String(v)}`).join("\n") };
-    case "find":
-    case "update":
-    case "archive":
-    case "if":
-    case "for_each":
-      return { kind: "step", json: JSON.stringify(a, null, 2) };
+    default:
+      return { kind: "flow", step: a as unknown as Step };
   }
 }
 
@@ -874,8 +874,18 @@ function AutomationsPanelBody({ tableId, organizationId, fields }: { tableId: st
                   <textarea aria-label="Script" className="min-h-24 w-full rounded border border-border bg-background p-1 font-mono text-xs" placeholder={'output.set("discount", input.total > 500 ? 5 : 0);'} value={d.code} onChange={(e) => put(i, { code: e.target.value })} />
                   <textarea aria-label="Script inputs" className="min-h-10 w-full rounded border border-border bg-background p-1 font-mono text-xs" placeholder="total = {{trigger.body.total}}" value={d.inputs} onChange={(e) => put(i, { inputs: e.target.value })} />
                 </div>
-              ) : d.kind === "step" ? (
-                <textarea aria-label="Step" data-testid="spaces-automation-step-json" className="min-h-24 w-full rounded border border-border bg-background p-1 font-mono text-xs" value={d.json} onChange={(e) => put(i, { json: e.target.value })} />
+              ) : d.kind === "flow" ? (
+                <div className="w-full">
+                  <FlowStepEditor
+                    step={d.step}
+                    onChange={(step) => put(i, { step })}
+                    number={1 + drafts.slice(0, i).reduce((n, x) => n + stepCount(toAction(x, tableId, firstField) as unknown as Step), 0)}
+                    before={drafts.slice(0, i).map((x, j) => ({ n: 1 + drafts.slice(0, j).reduce((m, y) => m + stepCount(toAction(y, tableId, firstField) as unknown as Step), 0), step: toAction(x, tableId, firstField) as unknown as Step }))}
+                    tableId={tableId}
+                    fields={fields}
+                    trigger={triggerSpec()}
+                  />
+                </div>
               ) : (
                 <>
                   <Input aria-label="Agent prompt" placeholder="Ask an agent" value={d.prompt} onChange={(e) => put(i, { prompt: e.target.value })} />
@@ -895,12 +905,11 @@ function AutomationsPanelBody({ tableId, organizationId, fields }: { tableId: st
             <Button variant="quiet" icon={<Plus size={14} />} onClick={() => setDrafts([...drafts, { kind: "slack", url: "", text: "" }])}>Slack message</Button>
             <Button variant="quiet" icon={<Plus size={14} />} onClick={() => setDrafts([...drafts, { kind: "webhook", url: "" }])}>Webhook</Button>
             <Button variant="quiet" icon={<Plus size={14} />} onClick={() => setDrafts([...drafts, { kind: "script", code: "", inputs: "" }])}>Run a script</Button>
-            {Object.entries(STEP_TEMPLATES).map(([label, make]) => (
-              <Button key={label} variant="quiet" icon={<Plus size={14} />} onClick={() => setDrafts([...drafts, { kind: "step", json: JSON.stringify(make(tableId), null, 2) }])}>
+            {FLOW_BUTTONS.map(([label, make]) => (
+              <Button key={label} variant="quiet" icon={<Plus size={14} />} onClick={() => setDrafts([...drafts, { kind: "flow", step: make(tableId) }])}>
                 {label}
               </Button>
             ))}
-            <Button variant="quiet" icon={<Plus size={14} />} onClick={() => setDrafts([...drafts, { kind: "agent", prompt: "" }])}>Agent</Button>
           </div>
           {said ? <p className="type-secondary text-destructive">{said}</p> : null}
           <div className="flex justify-end gap-1">

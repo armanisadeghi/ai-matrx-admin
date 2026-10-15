@@ -100,6 +100,7 @@ export const adminNavigationRegistry: readonly AdminNavigationDomain[] = [
           destination("/administration/ai/ai-models/audit"),
           destination("/administration/ai/ai-models/deprecated-audit"),
           destination("/administration/ai/ai-models/provider-sync"),
+          destination("/administration/ai/ai-models/discovery"),
           destination("/administration/ai/ai-models/providers"),
           destination("/administration/ai/ai-models/endpoints"),
           destination("/administration/ai/ai-models/offerings"),

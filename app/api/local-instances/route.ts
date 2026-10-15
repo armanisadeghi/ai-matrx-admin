@@ -14,6 +14,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase/server';
 import { getClaimsUser } from "@ai-matrx/auth";
+import { onlyComputers } from "@/lib/app-instances/computers";
 
 export interface LocalInstance {
   id: string;
@@ -45,7 +46,7 @@ export async function GET(): Promise<NextResponse> {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { data: instances, error: dbError } = await supabase
+    const { data: instances, error: dbError } = await onlyComputers(supabase
       .from('app_instances')
       .select(`
         id,
@@ -65,7 +66,7 @@ export async function GET(): Promise<NextResponse> {
         tunnel_updated_at
       `)
       .eq('user_id', user.id)
-      .order('last_seen', { ascending: false });
+      .order('last_seen', { ascending: false }), supabase);
 
     if (dbError) {
       console.error('[local-instances] Supabase error:', dbError.message);

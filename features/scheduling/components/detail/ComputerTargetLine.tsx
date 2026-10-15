@@ -47,6 +47,7 @@ export function ComputerTargetLine({ task }: { task: AgendaTask }) {
       const computer = listed.find((c) => c.deviceId === target);
       if (!computer) return answer({ tone: "danger", text: "Computer removed" });
       if (computer.online === true) return answer(null);
+      // app-instances: not-a-computer-list (last_seen of a computer already found in the computer list)
       const { data } = await supabase.from("app_instances").select("last_seen").eq("id", target).maybeSingle();
       const since = (data as { last_seen: string | null } | null)?.last_seen ?? null;
       const state = computer.online === null ? "status unknown" : since ? `offline since ${humanizeRelative(since)}` : "offline";

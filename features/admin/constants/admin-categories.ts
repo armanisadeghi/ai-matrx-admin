@@ -427,6 +427,13 @@ export const adminCategoriesData: AdminCategory[] = [
         link: "/administration/ai/ai-models/provider-sync",
       },
       {
+        title: "Model Discovery",
+        description:
+          "Paste a Hugging Face link to read every file, variant and image of a downloadable model, resolve anything ambiguous, test it on a cloud machine and promote it to the catalog.",
+        iconName: "ScanSearch",
+        link: "/administration/ai/ai-models/discovery",
+      },
+      {
         title: "Providers",
         description:
           "Manage the ai.provider catalog — name, slug, website, docs links, and logo for every model provider.",

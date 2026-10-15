@@ -74,6 +74,7 @@ export function RunsOnField({ value, onChange, error }: Props) {
   useEffect(() => {
     if (!computers?.length) return;
     let live = true;
+    // app-instances: not-a-computer-list (details of computers already chosen from the computer list)
     void supabase
       .from("app_instances")
       .select("id, last_seen, hostname, os_version, platform")
