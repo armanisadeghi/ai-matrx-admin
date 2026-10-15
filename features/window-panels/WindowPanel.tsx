@@ -1689,8 +1689,9 @@ export function WindowPanel({
       >
         {header}
 
-        {/* Debug strip — shown in the body when open, or in the minimized shell */}
-        {isDebugMode && <DebugStrip rect={rect} zIndex={zIndex} />}
+        {/* Debug strip — body of an open window only. A minimized tile is too small for it: the
+            strip wrapped to fill the whole tile and hid the preview (MKT-077). */}
+        {isDebugMode && !isMinimized && <DebugStrip rect={rect} zIndex={zIndex} />}
 
         {(!isMinimized || pendingTrayCapture || retainBodyOnMinimize) && (
           <WindowPanelBodyShell

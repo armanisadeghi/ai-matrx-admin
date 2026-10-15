@@ -224,7 +224,7 @@ function ResultCard({
                 </Button>
               ))}
             {more.length > 1 ? (
-              <Select aria-label="More answers" value="" options={more} onValueChange={pick} className="min-w-28" />
+              <Select aria-label="More answers" value="" options={more} onValueChange={pick} align="end" className="min-w-28" />
             ) : null}
             <span className="ml-auto flex items-center gap-1">
               <Button variant="quiet" icon={<Clock aria-hidden />} onClick={() => send({ status: "later" })}>

@@ -481,14 +481,14 @@ function ChatSection({
               <div className="mb-1 font-medium capitalize text-muted-foreground">{turn.role}</div>
               {turn.role === "system" ? (
                 <details>
-                  <summary className="cursor-pointer select-none text-foreground">
+                  <summary data-kind-source="explicit" className="cursor-pointer select-none text-foreground">
                     {turn.text.slice(0, 120)}
                     {turn.text.length > 120 ? "…" : ""}
                   </summary>
-                  <pre className="mt-1 whitespace-pre-wrap break-words font-mono text-[11px] text-foreground">{turn.text}</pre>
+                  <pre data-kind-source="explicit" className="mt-1 whitespace-pre-wrap break-words font-mono text-[11px] text-foreground">{turn.text}</pre>
                 </details>
               ) : (
-                <pre className="whitespace-pre-wrap break-words font-mono text-[11px] text-foreground">{turn.text}</pre>
+                <pre data-kind-source="explicit" className="whitespace-pre-wrap break-words font-mono text-[11px] text-foreground">{turn.text}</pre>
               )}
             </div>
           ))
@@ -829,7 +829,7 @@ function Block({ label, value, open = false }: { label: string; value: unknown; 
   return (
     <details open={open} className="rounded border border-border">
       <summary className="cursor-pointer select-none px-2 py-1 font-medium">{label}</summary>
-      <pre className="max-h-[50vh] overflow-auto whitespace-pre-wrap break-words border-t border-border p-2 font-mono text-[11px]">
+      <pre data-kind-source="explicit" className="max-h-[50vh] overflow-auto whitespace-pre-wrap break-words border-t border-border p-2 font-mono text-[11px]">
         {text}
       </pre>
     </details>

@@ -7,7 +7,7 @@
  * With debug mode on, a page that starts a workflow run opens, by themselves:
  *   - the run's Workflow run window (the canonical `WorkflowRunWindow`: every step, its state,
  *     timing, AI steps clickable into Watch AI) — once per run, from its first event;
- *   - the page's Watch AI window — once per run, and again for every new automated AI call.
+ *   - the page's Watch AI window — once per page load (a close sticks).
  *
  * Mounted once for admins (AdminFeatureProviderCore), never inside a menu: it used to live in the
  * sidebar's Watch AI button, so it ran only while that button was mounted, and it fired only once
@@ -16,7 +16,7 @@
  * A run that is already over when the page adopts it (a reload, a resumed address) opens nothing.
  */
 
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { createSelector } from "@reduxjs/toolkit";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { useCanWatchAi } from "./useCanWatchAi";
@@ -44,6 +44,14 @@ export default function AutoWatch() {
   const live = useAppSelector(selectLivePageAiRuns);
   const automatedKeys = live.filter(isAutomatedRun).map((r) => r.key).join(",");
 
+  // MKT-076: Watch AI opens by itself once per page load; a close sticks until the person reopens it.
+  const watchOpened = useRef(false);
+  const openWatchAiOnce = useCallback(() => {
+    if (watchOpened.current) return;
+    watchOpened.current = true;
+    dispatch(watchAiRunAction());
+  }, [dispatch]);
+
   const openedRuns = useRef(new Set<string>());
   useEffect(() => {
     if (!canWatch || !liveRootRuns) return;
@@ -53,8 +61,8 @@ export default function AutoWatch() {
       openedRuns.current.add(runId);
       dispatch(openWorkflowRunWindowAction({ runId }));
     }
-    dispatch(watchAiRunAction());
-  }, [canWatch, liveRootRuns, dispatch]);
+    openWatchAiOnce();
+  }, [canWatch, liveRootRuns, dispatch, openWatchAiOnce]);
 
   const openedCalls = useRef(new Set<string>());
   useEffect(() => {
@@ -62,8 +70,8 @@ export default function AutoWatch() {
     const fresh = automatedKeys.split(",").filter((k) => !openedCalls.current.has(k));
     if (!fresh.length) return;
     for (const k of fresh) openedCalls.current.add(k);
-    dispatch(watchAiRunAction());
-  }, [canWatch, automatedKeys, dispatch]);
+    openWatchAiOnce();
+  }, [canWatch, automatedKeys, openWatchAiOnce]);
 
   return null;
 }
