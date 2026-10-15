@@ -19,7 +19,9 @@ describe("schedule route terminal clearance", () => {
     expect(source).toContain(
       ':root[data-admin-attention] .shell-main::after',
     );
-    expect(source).toContain("height: var(--shell-fixed-alert-clearance)");
+    expect(source).toMatch(
+      /\.shell-main::after \{[^}]*height: max\(var\(--shell-fixed-alert-clearance\)/,
+    );
   });
 
   it("reserves mobile and desktop space above the fixed schedule alarm in every route scroller", () => {

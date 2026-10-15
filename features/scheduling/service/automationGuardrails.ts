@@ -13,6 +13,7 @@
 import { supabase } from "@/utils/supabase/client";
 import { schedulerDb } from "@/utils/supabase/schedulerDb";
 import { pgErrorToError } from "@ai-matrx/data";
+import { readTaskGuardrailRow, readTaskGuardrailRows, writeTaskGuardrails } from "@/features/scheduling/service/queries";
 import type { Json } from "@/types/database.types";
 import type { AutomationKind } from "@/features/scheduling/service/automationCosts";
 
@@ -160,12 +161,7 @@ async function fetchLimitsOnly(kind: GuardrailKind, id: string): Promise<Guardra
     enabled = data.enabled;
     raw = data.guardrails;
   } else {
-    const { data, error } = await schedulerDb(supabase)
-      .from("sch_task")
-      .select("enabled, guardrails, metadata, organization_id, user_id")
-      .eq("id", id)
-      .maybeSingle();
-    if (error) throw pgErrorToError(error);
+    const data = await readTaskGuardrailRow(id);
     if (!data) return null;
     enabled = data.enabled;
     raw = data.guardrails;
@@ -207,9 +203,7 @@ export async function fetchGuardrailsFor(
       if (error) throw pgErrorToError(error);
       for (const r of data ?? []) out.set(r.id, { guardrails: parseGuardrails(r.guardrails), paused: parsePause(r.metadata) });
     } else {
-      const { data, error } = await schedulerDb(supabase).from("sch_task").select("id, guardrails, metadata").in("id", part);
-      if (error) throw pgErrorToError(error);
-      for (const r of data ?? []) out.set(r.id, { guardrails: parseGuardrails(r.guardrails), paused: parsePause(r.metadata) });
+      for (const r of await readTaskGuardrailRows(part)) out.set(r.id, { guardrails: parseGuardrails(r.guardrails), paused: parsePause(r.metadata) });
     }
   }
   return out;
@@ -230,8 +224,12 @@ export async function saveGuardrails(kind: GuardrailKind, id: string, g: Guardra
       ? await supabase.schema("workflow").from("trigger").update({ guardrails: payload }).eq("id", id)
       : kind === "agent_schedule"
         ? await schedulerDb(supabase).from("agent_schedule").update({ guardrails: payload }).eq("id", id)
-        : await schedulerDb(supabase).from("sch_task").update({ guardrails: payload }).eq("id", id);
-  if (res.error) throw pgErrorToError(res.error);
+        : null;
+  if (res) {
+    if (res.error) throw pgErrorToError(res.error);
+  } else {
+    await writeTaskGuardrails(id, payload);
+  }
 }
 
 export async function resumeAutomation(kind: GuardrailKind, id: string): Promise<boolean> {
