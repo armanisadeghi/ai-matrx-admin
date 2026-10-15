@@ -35,7 +35,7 @@ import { EditorRibbon } from "@/components/editor-chrome/EditorRibbon";
 import { OfficeLookSwitch } from "@/features/file-actions/skin/OfficeLookSwitch";
 import { SHEET_RIBBON } from "@/features/workbooks/chrome/sheet-ribbon";
 import { EditorSaveStatus } from "@/components/editor-chrome/EditorTitleField";
-import { boundActions, matchesShortcut, type EditorMenuEntry } from "@ai-matrx/office/core";
+import { boundActions, matchesShortcut, type EditorMenuEntry, type Workbook } from "@ai-matrx/office/core";
 import { buildSheetMenus, buildSheetToolbar, sheetPageSetupRow, type SheetChromeHost, type SheetsApiLike } from "@/features/workbooks/chrome/sheet-commands";
 import { createWorkbook } from "@/features/workbooks/workbook-service";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
@@ -48,7 +48,6 @@ import { useSheetExtras } from "@/features/workbooks/components/useSheetExtras";
 import type { CellRange } from "@/features/workbooks/univer-snapshot-rows";
 import { useFileRecordMenu } from "@/features/file-actions/useFileRecordMenu";
 import { WORKBOOK_ADAPTER } from "@/features/file-actions/adapters";
-import type { Workbook } from "@ai-matrx/office/core";
 
 import {
   createUniver,

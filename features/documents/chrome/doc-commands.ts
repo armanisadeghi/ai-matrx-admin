@@ -42,10 +42,15 @@ import {
   Undo2,
 } from "lucide-react";
 
-import { googleExtensionsMenu, googleHelpHead, soon } from "@ai-matrx/office/core";
+import {
+  googleExtensionsMenu,
+  googleHelpHead,
+  soon,
+  type EditorMenu,
+  type EditorMenuEntry,
+  type EditorToolbarItem,
+} from "@ai-matrx/office/core";
 import type { DocDialogId } from "@/features/documents/components/DocumentToolDialogs";
-import type { EditorMenu, EditorMenuEntry } from "@ai-matrx/office/core";
-import type { EditorToolbarItem } from "@ai-matrx/office/core";
 
 export interface DocsApiLike {
   executeCommand(id: string, params?: object): Promise<unknown> | unknown;

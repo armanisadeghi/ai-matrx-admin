@@ -9,9 +9,15 @@ import { buildDeckMenus, buildDeckToolbar, deckPageSetupRow, type DeckChromeHost
 import { SHEET_RIBBON, SHEET_GOOGLE_ONLY } from "@/features/workbooks/chrome/sheet-ribbon";
 import { DOC_RIBBON, DOC_GOOGLE_ONLY } from "@/features/documents/chrome/doc-ribbon";
 import { DECK_RIBBON, DECK_GOOGLE_ONLY } from "@/features/presentations/deck-ribbon";
-import { flattenMenus, type EditorMenu } from "@ai-matrx/office/core";
-import type { EditorToolbarItem } from "@ai-matrx/office/core";
-import { resolveRibbon, ribbonCoverage, type GoogleOnlyRows, type RibbonTabSpec } from "@ai-matrx/office/core";
+import {
+  flattenMenus,
+  type EditorMenu,
+  type EditorToolbarItem,
+  resolveRibbon,
+  ribbonCoverage,
+  type GoogleOnlyRows,
+  type RibbonTabSpec,
+} from "@ai-matrx/office/core";
 
 /** A host that answers anything (an editor API we never call here): every read is callable. */
 function anything(): never {

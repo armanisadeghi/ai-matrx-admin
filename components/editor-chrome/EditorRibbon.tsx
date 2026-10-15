@@ -23,17 +23,20 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { EditorMenuContent } from "./editor-menu-surface";
-import { formatShortcut, type EditorMenu, type EditorMenuEntry } from "@ai-matrx/office/core";
-import { rememberEditorFocus, renderMenuEntries, restoreEditorFocus } from "./EditorMenuBar";
-import { useFitCount } from "./useFitCount";
-import { MenusSearch, type EditorToolbarItem } from "./EditorToolbar";
 import {
+  formatShortcut,
+  type EditorMenu,
+  type EditorMenuEntry,
+  type EditorToolbarItem,
   resolveRibbon,
   type ResolvedRibbonControl,
   type ResolvedRibbonGroup,
   type RibbonSize,
   type RibbonTabSpec,
 } from "@ai-matrx/office/core";
+import { rememberEditorFocus, renderMenuEntries, restoreEditorFocus } from "./EditorMenuBar";
+import { useFitCount } from "./useFitCount";
+import { MenusSearch } from "./EditorToolbar";
 
 type IconType = React.ComponentType<{ className?: string }>;
 
