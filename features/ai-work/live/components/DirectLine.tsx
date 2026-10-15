@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ErrorNotice } from "@ai-matrx/design-system";
-import { asConversationId, type Message, type RecipientDelivery } from "@ai-matrx/messaging";
+import { asConversationId, isAgentAuthored, type Message, type RecipientDelivery } from "@ai-matrx/messaging";
 import { useConversation } from "@ai-matrx/messaging/react";
 import { ConversationPane } from "@/features/messaging/components/ConversationPane";
 import type { LivePresence } from "../presence";
@@ -36,7 +36,7 @@ function WaitingLine({
   const { messages } = useConversation(asConversationId(roomId));
   const mine = [...messages]
     .reverse()
-    .find((m) => m.metadata.actor_kind !== "agent" && m.deliveryState !== "failed");
+    .find((m) => !isAgentAuthored(m) && m.deliveryState !== "failed");
   const state = mine ? deliveryStatusFor?.(mine)?.[0]?.state : undefined;
   if (mine && (state === "delivered" || state === "expired" || state === undefined)) return null;
   const text = mine
