@@ -23,14 +23,10 @@ import {
   ArrowDownUp,
   ArrowUpRight,
   BarChart3,
-  Calendar,
   ChartNoAxesColumn,
-  ClipboardList,
   Database,
-  GalleryHorizontalEnd,
   GanttChart,
   Kanban,
-  LayoutDashboard,
   List,
   ListFilter,
   Maximize2,
@@ -63,31 +59,9 @@ import { DEFAULT_CHART } from "./first-reads";
 import { effectiveHidden, kindOf, scalarFilters, viewSpec, type ViewWithSummaries } from "./view-spec";
 import { BlockRecordsSeed } from "../page/space-seed-context";
 import { NewPropertyPanel } from "./NewProperty";
-import { SpaceIcon } from "../page/SpaceIcon";
+import { LAYOUTS, viewIcon, type Layout } from "./view-icons";
 import { useStructureEdit } from "../page/structure";
 import { AGENCY_SAMPLE_ID, newViewId, readDatabaseProps, type ChartSettings, type DatabaseBlockProps, type SpaceDbView, type SpaceViewLayout } from "./sources";
-
-type Layout = SpaceViewLayout | "dashboard" | "form";
-
-const LAYOUTS: Array<{ id: Layout; label: string; icon: typeof Table2 }> = [
-  { id: "grid", label: "Table", icon: Table2 },
-  { id: "kanban", label: "Board", icon: Kanban },
-  { id: "gallery", label: "Gallery", icon: GalleryHorizontalEnd },
-  { id: "list", label: "List", icon: List },
-  { id: "calendar", label: "Calendar", icon: Calendar },
-  { id: "timeline", label: "Timeline", icon: GanttChart },
-  { id: "chart", label: "Chart", icon: PieChart },
-  { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { id: "form", label: "Form", icon: ClipboardList },
-];
-
-/** A view's icon: any Lucide name it stores ("DollarSign", "UserX") through SpaceIcon (DynamicIcon past the
- *  curated set), else its layout's glyph. */
-function viewIcon(view: SpaceDbView, size: number): ReactNode {
-  if (view.icon) return <SpaceIcon media={{ icon: view.icon }} size={size} />;
-  const Icon = LAYOUTS.find((l) => l.id === view.layout)?.icon ?? Table2;
-  return <Icon size={size} strokeWidth={1.8} />;
-}
 
 export interface DatabaseBlockViewProps {
   blockId: string;

@@ -54,7 +54,6 @@ export default function ValuePromptsDialogHostImpl() {
     onActivate: (next) => setAnswers(initialAnswers(next)),
   });
 
-  const hasRequired = !!request?.fields.some((f) => f.required);
   const missingRequired = !!request?.fields.some(
     (f) => f.required && !(answers[f.name] ?? "").trim(),
   );
@@ -67,24 +66,16 @@ export default function ValuePromptsDialogHostImpl() {
   const handleOpenChange = React.useCallback(
     (next: boolean) => {
       if (next || !request) return;
-      // Required fields lock the dialog open — re-render keeps it visible.
-      if (hasRequired) return;
+      // Every prompt can be cancelled (Escape, the X, outside click): required fields only
+      // disable the submit button; callers get `null`.
       settle(null);
     },
-    [request, hasRequired, settle],
+    [request, settle],
   );
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent
-        className="sm:max-w-md"
-        onInteractOutside={(e) => {
-          if (hasRequired) e.preventDefault();
-        }}
-        onEscapeKeyDown={(e) => {
-          if (hasRequired) e.preventDefault();
-        }}
-      >
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>{request?.title ?? ""}</DialogTitle>
           <DialogDescription>
@@ -120,15 +111,9 @@ export default function ValuePromptsDialogHostImpl() {
           ))}
         </div>
         <DialogFooter>
-          {!hasRequired && (
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => settle(null)}
-            >
-              Cancel
-            </Button>
-          )}
+          <Button type="button" variant="outline" onClick={() => settle(null)}>
+            Cancel
+          </Button>
           <Button
             variant="primary"
             type="button"

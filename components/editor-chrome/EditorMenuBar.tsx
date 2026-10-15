@@ -36,20 +36,64 @@ import { useFitCount } from "./useFitCount";
 let focusBeforeMenu: HTMLElement | null = null;
 export function rememberEditorFocus() {
   const el = document.activeElement;
-  if (el instanceof HTMLElement && !el.closest("[data-editor-menubar],[data-editor-toolbar],[data-editor-ribbon],[role=menu]")) focusBeforeMenu = el;
+  if (el instanceof HTMLElement && el !== document.body && !el.closest("[data-editor-menubar],[data-editor-toolbar],[data-editor-ribbon],[role=menu]")) focusBeforeMenu = el;
 }
 /** True while any dropdown (or a menu bar trigger) is open. */
 export function anyEditorMenuOpen(): boolean {
   return !!document.querySelector('[role=menu][data-state="open"],[data-editor-menubar-trigger][data-state="open"]');
 }
+/** True while a dialog or floating window (opened from a menu row) is on screen. */
+function anyDialogOpen(): boolean {
+  return !!document.querySelector('[role=dialog][data-state="open"],[role=alertdialog][data-state="open"],[role=dialog]:not([data-state])');
+}
+let pendingRestore: { stop: () => void } | null = null;
+function restoreNow() {
+  const el = focusBeforeMenu;
+  if (!el || !el.isConnected) return;
+  if (anyEditorMenuOpen() || anyDialogOpen()) return;
+  // Something else (a window's field, a dialog's input) already holds the caret: leave it.
+  const active = document.activeElement;
+  if (active && active !== document.body && !active.closest("[data-editor-menubar],[data-editor-toolbar],[data-editor-ribbon]")) return;
+  el.focus({ preventScroll: true });
+}
+/**
+ * The caret goes back to the document only when every menu is closed AND no dialog opened
+ * from a menu row is open. A dialog (its chunk may mount a moment after the menu closes) keeps
+ * focus, so Escape and its X close it; once it is gone the caret returns to the document.
+ */
 export function restoreEditorFocus(e: Event) {
   e.preventDefault();
-  // Radix fires this after the next menu (if any) has mounted; wait one frame to be sure.
-  requestAnimationFrame(() => {
-    const el = focusBeforeMenu;
-    if (!el || !el.isConnected || anyEditorMenuOpen()) return;
-    el.focus({ preventScroll: true });
+  pendingRestore?.stop();
+  // A dialog opened by the chosen row may already be mounted by now.
+  let sawDialog = anyDialogOpen();
+  let settle: ReturnType<typeof setTimeout> | undefined;
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const mo = new MutationObserver(() => {
+    if (anyEditorMenuOpen()) return stop();
+    if (anyDialogOpen()) {
+      sawDialog = true;
+      clearTimeout(timer);
+      clearTimeout(settle);
+    } else if (sawDialog) {
+      // Radix hands focus back to the (gone) menu row first; take it after that.
+      clearTimeout(settle);
+      settle = setTimeout(() => {
+        restoreNow();
+        stop();
+      }, 80);
+    }
   });
+  if (!sawDialog) timer = setTimeout(() => stop(), 3000);
+  function stop() {
+    mo.disconnect();
+    clearTimeout(timer);
+    clearTimeout(settle);
+    if (pendingRestore?.stop === stop) pendingRestore = null;
+  }
+  mo.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ["data-state"] });
+  pendingRestore = { stop };
+  // Radix fires this before a menu row's dialog has mounted; give React two frames.
+  requestAnimationFrame(() => requestAnimationFrame(restoreNow));
 }
 
 /** The text trigger of one menu (also handed to the File menu host). */
