@@ -53,7 +53,7 @@ function restoreNow() {
   if (anyEditorMenuOpen() || anyDialogOpen()) return;
   // Something else (a window's field, a dialog's input) already holds the caret: leave it.
   const active = document.activeElement;
-  if (active && active !== document.body && !active.closest("[data-editor-menubar],[data-editor-toolbar],[data-editor-ribbon]")) return;
+  if (active && active !== document.body && !active.closest("[data-editor-menubar],[data-editor-toolbar],[data-editor-ribbon],[role=dialog],[role=alertdialog]")) return;
   el.focus({ preventScroll: true });
 }
 /**
@@ -69,6 +69,7 @@ export function restoreEditorFocus(e: Event) {
   let settle: ReturnType<typeof setTimeout> | undefined;
   let timer: ReturnType<typeof setTimeout> | undefined;
   const mo = new MutationObserver(() => {
+    if (typeof document === "undefined") return stop();
     if (anyEditorMenuOpen()) return stop();
     if (anyDialogOpen()) {
       sawDialog = true;
