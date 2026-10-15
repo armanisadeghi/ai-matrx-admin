@@ -45,7 +45,6 @@ import { cn } from "@/lib/utils";
 import { useTableBulkSelection } from "@/lib/entity-list/useTableBulkSelection";
 import { runPerRow } from "@/lib/entity-list/standardBulkActions";
 import type { EntityBulkAction } from "@/lib/entity-list/selection";
-import { promptForValues } from "@/components/dialogs/value-prompts/ValuePromptsDialogHost";
 import { SavedViewBar } from "../saved-views/SavedViewBar";
 import { useDealList } from "../../deals/useDealList";
 import { usePipelines } from "../../deals/usePipelines";
@@ -78,6 +77,8 @@ import {
 import type { DealViewDefinition } from "../../deals/views";
 import { buildDealColumns } from "./columns";
 import { DealCreateDialog } from "./DealCreateDialog";
+import { StagePickDialog, buildStageChoices } from "./StagePickDialog";
+import type { StageChoice } from "./StagePickDialog";
 import { DealsBoard } from "./DealsBoard";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import {
@@ -451,6 +452,15 @@ export function DealsPage() {
    * (its delete is the plain `deleted_at` write). Each deal resolves its stage
    * inside its OWN pipeline; a deal with no such stage is skipped and named.
    */
+  const [stagePick, setStagePick] = useState<{
+    count: number;
+    choices: StageChoice[];
+    resolve: (c: StageChoice | null) => void;
+  } | null>(null);
+  const closeStagePick = (c: StageChoice | null) => {
+    stagePick?.resolve(c);
+    setStagePick(null);
+  };
   const stagesOfDeal = (row: DealListRow | undefined) => {
     if (!row) throw new Error("Not on screen — reselect it");
     const pipeline = pipelines.find((p) =>
@@ -492,25 +502,41 @@ export function DealsPage() {
     label: "Move to stage",
     icon: ArrowRight,
     run: async (selection) => {
-      const answers = await promptForValues({
-        title: `Move ${selection.count} ${selection.count === 1 ? "deal" : "deals"} to a stage`,
-        description: "Type a stage name; each deal uses its own pipeline.",
-        submitLabel: "Move",
-        fields: [{ name: "stage", prompt: "Stage name", required: true }],
+      const pipelineIds = new Set<string>();
+      for (const row of selection.rows) {
+        const p = pipelines.find((x) =>
+          x.stages.some((st) => st.id === row.stage_id),
+        );
+        if (p) pipelineIds.add(p.id);
+      }
+      const choices = buildStageChoices(
+        pipelines.filter((p) => pipelineIds.has(p.id)),
+      );
+      if (choices.length === 0) throw new Error("No stages to move to");
+      const choice = await new Promise<StageChoice | null>((resolve) =>
+        setStagePick({ count: selection.count, choices, resolve }),
+      );
+      if (!choice) return;
+      const ok = await confirm({
+        title: `Move ${selection.count} ${selection.count === 1 ? "deal" : "deals"} to ${choice.label}?`,
+        description:
+          "Each deal moves to that stage in its own pipeline; deals whose pipeline lacks it are skipped and named.",
+        confirmLabel: "Move",
       });
-      const wanted = answers?.stage?.trim().toLowerCase();
-      if (!wanted) return;
+      if (!ok) return;
       return runPerRow(
         selection,
         async (id, row) => {
-          const stage = stagesOfDeal(row).find(
-            (st) => st.name.trim().toLowerCase() === wanted,
+          const pipeline = pipelines.find((p) =>
+            p.stages.some((st) => st.id === row?.stage_id),
           );
-          if (!stage) throw new Error(`No stage called "${answers?.stage?.trim()}"`);
-          if (stage.id === row?.stage_id) throw new Error("Already there");
-          await moveDealToStage({ dealId: id, stageId: stage.id });
+          if (!pipeline) throw new Error("Its pipeline is not loaded");
+          const stageId = choice.stageByPipeline[pipeline.id];
+          if (!stageId) throw new Error(`Its pipeline has no "${choice.name}" stage`);
+          if (stageId === row?.stage_id) throw new Error("Already there");
+          await moveDealToStage({ dealId: id, stageId });
         },
-        { done: `Moved to ${answers?.stage?.trim()}`, noun: "deal", labelOf: (r) => r.name },
+        { done: `Moved to ${choice.name}`, noun: "deal", labelOf: (r) => r.name },
         (r) => r.id,
       );
     },
@@ -851,6 +877,13 @@ export function DealsPage() {
         )}
       </div>
 
+      <StagePickDialog
+        open={stagePick !== null}
+        count={stagePick?.count ?? 0}
+        choices={stagePick?.choices ?? []}
+        onPick={closeStagePick}
+        onCancel={() => closeStagePick(null)}
+      />
       <DealCreateDialog
         open={createOpen}
         onOpenChange={setCreateOpen}
