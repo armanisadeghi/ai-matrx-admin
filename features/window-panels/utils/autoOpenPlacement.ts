@@ -24,8 +24,7 @@ const MARKS = Symbol.for("matrx.windowPanels.autoOpenedMarks");
 const GAP = 12;
 const SIBLING_GAP = 8;
 /** Narrowest window worth docking; anything tighter goes to the tray. */
-export const AUTO_OPEN_MIN_WIDTH = 300;
-const MIN_HEIGHT = 180;
+export const AUTO_OPEN_MIN_WIDTH = 280;
 
 function marks(): Set<string> {
   const host = globalThis as unknown as Record<symbol, Set<string>>;
@@ -93,6 +92,7 @@ export function resolveAutoOpenPlacement(args: {
   width: number;
   height: number;
   minWidth: number;
+  minHeight: number;
   top: number;
   viewport: { vw: number; vh: number };
   siblings: WindowRect[];
@@ -133,8 +133,8 @@ export function resolveAutoOpenPlacement(args: {
     ? Math.max(...inGutter.map((s) => s.y + s.height)) + SIBLING_GAP
     : args.top;
   const room = vh - y - GAP;
-  if (room < MIN_HEIGHT) return parked;
+  if (room < args.minHeight) return parked;
   const share = inGutter.length ? room : Math.floor((vh - args.top - GAP) / 2);
-  const height = Math.max(MIN_HEIGHT, Math.min(args.height, share, room));
+  const height = Math.min(room, Math.max(args.minHeight, Math.min(args.height, share)));
   return { rect: { x, y, width, height }, minimized: false };
 }

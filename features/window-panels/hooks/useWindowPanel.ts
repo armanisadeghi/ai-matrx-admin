@@ -146,6 +146,17 @@ const NARROW_VIEWPORT = 768;
 
 /** Ids of auto-opened windows docked in a gutter, so the next one stacks under them. */
 const autoDocked = new Set<string>();
+/** Open order of auto-opened windows: a window stacks only under EARLIER ones, never chases a later one. */
+const autoOrder = new Map<string, number>();
+let autoOrderNext = 0;
+const earlierDocked = (id: string) =>
+  (other: { id: string; state: string }) =>
+    other.id !== id &&
+    other.state === "windowed" &&
+    autoDocked.has(other.id) &&
+    (autoOrder.get(other.id) ?? 0) < (autoOrder.get(id) ?? 0);
+/** Seconds an auto-opened window keeps re-checking the page's layout. */
+const AUTO_REPLACE_TICKS = 40;
 
 /** The shell header's height (`--shell-header-h`) plus a gap; 44px fallback. */
 function shellHeaderClearance(): number {
@@ -328,13 +339,15 @@ export function useWindowPanel(
     const { vw, vh } = safeViewportDims();
     let autoPlaced: ReturnType<typeof resolveAutoOpenPlacement> | null = null;
     if (opts.autoOpened && vw >= NARROW_VIEWPORT) {
+      if (!autoOrder.has(id)) autoOrder.set(id, autoOrderNext++);
       const siblings = Object.values(store.getState().windowManager.windows)
-        .filter((win) => win.state === "windowed" && autoDocked.has(win.id))
+        .filter(earlierDocked(id))
         .map((win) => win.windowed);
       autoPlaced = resolveAutoOpenPlacement({
         width: w,
         height: h,
         minWidth,
+        minHeight,
         top: shellHeaderClearance(),
         viewport: { vw, vh },
         siblings,
@@ -381,9 +394,76 @@ export function useWindowPanel(
     return () => {
       if (confirmationTimer !== null) window.clearTimeout(confirmationTimer);
       autoDocked.delete(id);
+      autoOrder.delete(id);
       dispatch(unregisterWindow(id));
     };
   }, [id]);
+
+  // ── Auto-opened windows keep clear of the page while it settles ──────────────
+  // The page's working column is measured at open, but a page lays itself out AFTER a run starts
+  // (Smart Add grows from one field into the full card column). Re-place every second for a while
+  // until the person touches the window; the page always wins the space.
+  const autoTouchedRef = useRef(false);
+  useEffect(() => {
+    if (isInteracting) autoTouchedRef.current = true;
+  }, [isInteracting]);
+  useEffect(() => {
+    if (!opts.autoOpened) return undefined;
+    let ticks = 0;
+    let lastMinimized: boolean | null = null;
+    const timer = window.setInterval(() => {
+      ticks += 1;
+      if (ticks > AUTO_REPLACE_TICKS) {
+        window.clearInterval(timer);
+        return;
+      }
+      const win = store.getState().windowManager.windows[id];
+      if (!win || autoTouchedRef.current) return;
+      const { vw, vh } = safeViewportDims();
+      if (vw < NARROW_VIEWPORT) return;
+      const isMin = win.state === "minimized";
+      // A change the person made (restore/minimize by hand) ends our say.
+      if (lastMinimized !== null && isMin !== lastMinimized) {
+        autoTouchedRef.current = true;
+        return;
+      }
+      if (win.state !== "windowed" && !isMin) return;
+      const siblings = Object.values(store.getState().windowManager.windows)
+        .filter(earlierDocked(id))
+        .map((o) => o.windowed);
+      const next = resolveAutoOpenPlacement({
+        width: win.windowed.width,
+        height: win.windowed.height,
+        minWidth,
+        minHeight,
+        top: shellHeaderClearance(),
+        viewport: { vw, vh },
+        siblings,
+      });
+      if (next.minimized) {
+        autoDocked.delete(id);
+        if (!isMin) {
+          dispatch(minimizeWindow({ id, viewportWidth: vw, viewportHeight: vh }));
+        }
+        lastMinimized = true;
+        return;
+      }
+      autoDocked.add(id);
+      if (isMin) dispatch(restoreWindow(id));
+      const cur = store.getState().windowManager.windows[id]?.windowed;
+      if (
+        !cur ||
+        Math.abs(cur.x - next.rect.x) > 4 ||
+        Math.abs(cur.y - next.rect.y) > 4 ||
+        Math.abs(cur.width - next.rect.width) > 4 ||
+        Math.abs(cur.height - next.rect.height) > 4
+      ) {
+        dispatch(updateWindowRect({ id, rect: next.rect }));
+      }
+      lastMinimized = false;
+    }, 1000);
+    return () => window.clearInterval(timer);
+  }, [opts.autoOpened, id, minWidth, minHeight, store, dispatch]);
 
   // ── Keep title in sync if it changes after mount ─────────────────────────
   useEffect(() => {

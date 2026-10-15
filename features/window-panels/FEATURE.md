@@ -1130,3 +1130,7 @@ A re-entry into the viewport resets the dwell timer — a glance outside doesn't
 - **2026-04-11** — `INVENTORY.md` last reviewed.
 
 - 2026-09-13 — Alchemy Portal owner: prepared-resource Tools entry waits for successful attachment and current identity; RunControlsWindow forwards initialTab to the canonical mobile sheet.
+
+## Auto-opened windows (MKT-104)
+
+A window the system opens by itself (debug auto-open: Workflow run, Watch AI) calls `markAutoOpened(overlayId, instanceId)` from `utils/autoOpenPlacement.ts` before dispatching its open. `WindowPanel` then docks it in the widest free gutter beside the page's measured working column (stacked, shrunk to fit, re-checked for 40s while the page settles) or parks it in the tray when no gutter fits. It never opens over the page; a person's drag/minimize/restore ends the system's say.
