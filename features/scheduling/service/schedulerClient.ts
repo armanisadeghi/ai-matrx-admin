@@ -131,6 +131,9 @@ async function request<T>(
     // Carry the server's wire code so callers can tell "organization_required" apart.
     const wireCode = extractMatrxErrorCode(body);
     if (wireCode) (refused as { code?: string }).code = wireCode;
+    // The server's request id, so a failure on screen can be looked up in the server's error log.
+    const requestId = (body as { request_id?: unknown } | null)?.request_id;
+    if (typeof requestId === "string" && requestId) (refused as { requestId?: string }).requestId = requestId;
     throw refused;
   }
   return (await res.json()) as T;

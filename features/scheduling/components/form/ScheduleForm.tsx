@@ -18,7 +18,6 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { toast } from "@/lib/toast";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { cn } from "@/lib/utils";
@@ -64,6 +63,7 @@ import { mergeTyped } from "../../utils/typedBeforeHydration";
 import { computerAgentErrors } from "./computerAgentErrors";
 import { ErrorNotice } from "@ai-matrx/design-system";
 import { RunsOnField, type ComputerCodingChoice } from "./RunsOnField";
+import { SaveProblem, saveFailureFrom, type SaveFailure } from "./SaveProblem";
 
 interface FormState {
   title: string;
@@ -184,6 +184,7 @@ export function ScheduleForm({
         : null,
   );
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [saveFailure, setSaveFailure] = useState<SaveFailure | null>(null);
   const [form, setForm] = useState<FormState>(() =>
     makeDefault(task, initialAgentId, initialPrompt, initialTrigger, initialConversationId),
   );
@@ -211,6 +212,7 @@ export function ScheduleForm({
   };
 
   const submit = async () => {
+    setSaveFailure(null);
     const trigger = buildTriggerConfig(form.triggerType, form.triggerConfig);
     if (!trigger) {
       setErrors({ trigger: "Invalid trigger configuration" });
@@ -239,7 +241,7 @@ export function ScheduleForm({
         toast.success("Schedule saved");
         startTransition(() => router.push(`/schedules/${id}`));
       } catch (err) {
-        setErrors({ runsOn: err instanceof Error ? err.message : String(err) });
+        setSaveFailure(saveFailureFrom(err));
       } finally {
         setSubmitting(false);
       }
@@ -291,7 +293,7 @@ export function ScheduleForm({
         toast.success("Schedule saved");
         startTransition(() => router.push(`/schedules/${id}`));
       } catch (err) {
-        setErrors({ runsOn: err instanceof Error ? err.message : String(err) });
+        setSaveFailure(saveFailureFrom(err));
       } finally {
         setSubmitting(false);
       }
@@ -859,13 +861,7 @@ export function ScheduleForm({
 
         <Separator />
 
-        {Object.keys(errors).length > 0 && (
-          <Alert variant="destructive">
-            <AlertDescription>
-              Please fix the highlighted fields above before saving.
-            </AlertDescription>
-          </Alert>
-        )}
+        <SaveProblem failure={saveFailure} fieldErrors={errors} />
 
         <div className="flex items-center justify-end gap-2">
           <Button
