@@ -26,6 +26,10 @@ import {
   adoptWorkflowRun,
   type AdoptedWorkflowRun,
 } from "../redux/adopt-workflow-run.thunk";
+import {
+  cancelRunRelease,
+  scheduleRunRelease,
+} from "../redux/run-state-retention";
 
 interface AdoptionEntry {
   handle: AdoptedWorkflowRun;
@@ -73,6 +77,7 @@ export function useWorkflowRun(runId: string | null): UseWorkflowRunResult {
   useEffect(() => {
     if (!runId) return;
     const adoptions = adoptionsFor(dispatch);
+    cancelRunRelease(dispatch, runId); // watched again: keep its state
     let entry = adoptions.get(runId);
     if (entry) {
       entry.refCount++;
@@ -99,6 +104,11 @@ export function useWorkflowRun(runId: string | null): UseWorkflowRunResult {
         if (held.refCount > 0 || adoptions.get(runId) !== held) return;
         held.handle.stop();
         adoptions.delete(runId);
+        // Nobody watches this run any more: release its slice state after the
+        // retention window (MKT-165). Reopening re-reads it from the database.
+        scheduleRunRelease(dispatch, runId, {
+          isWatched: (id) => adoptions.has(id),
+        });
       }, ADOPTION_RELEASE_GRACE_MS);
     };
   }, [runId, dispatch]);
