@@ -20,12 +20,20 @@ let rowState: { state: string; decided_at?: string; decided_by_name?: string } =
 };
 
 jest.mock("@/utils/supabase/client", () => ({ createClient: () => ({}) }));
-jest.mock("@ai-matrx/records-ui", () => ({
-  ...(jest.requireActual("@ai-matrx/records-ui") as object),
-  recordsDataSource: () => ({
+function mockApprovalSource() {
+  return {
     rpc: async (name: string) =>
       name === "work_approval_read" ? { data: rowState, error: null } : { data: null, error: null },
-  }),
+  };
+}
+// The card reads the light `/helpers` entry; the root re-exports the same helper. Stub both.
+jest.mock("@ai-matrx/records-ui", () => ({
+  ...(jest.requireActual("@ai-matrx/records-ui") as object),
+  recordsDataSource: () => mockApprovalSource(),
+}));
+jest.mock("@ai-matrx/records-ui/helpers", () => ({
+  ...(jest.requireActual("@ai-matrx/records-ui/helpers") as object),
+  recordsDataSource: () => mockApprovalSource(),
 }));
 jest.mock("@/lib/redux/hooks", () => ({ useAppSelector: () => ORG }));
 // The chat package reads these hooks through its own module (P3): one double covers both.

@@ -182,12 +182,21 @@ jest.mock("@/utils/supabase/client", () => ({
   },
   createClient: () => mockFakeClient(),
 }));
-jest.mock("@ai-matrx/records-ui", () => ({
-  ...jest.requireActual("@ai-matrx/records-ui"),
-  recordsDataSource: () => ({
+function mockRecordsDataSource() {
+  return {
     rpc: (fn: string, args: Record<string, unknown>) => mockRpc(fn, args),
     schema: () => ({ from: () => mockTable([]) }),
-  }),
+  };
+}
+// `store-door.ts` reads the light `/helpers` entry; the root re-exports the same helper.
+// Both are stubbed so whichever entry a module imports reaches these doors.
+jest.mock("@ai-matrx/records-ui", () => ({
+  ...jest.requireActual("@ai-matrx/records-ui"),
+  recordsDataSource: () => mockRecordsDataSource(),
+}));
+jest.mock("@ai-matrx/records-ui/helpers", () => ({
+  ...jest.requireActual("@ai-matrx/records-ui/helpers"),
+  recordsDataSource: () => mockRecordsDataSource(),
 }));
 // The assists ledger answers an empty page: this suite is about the store's rows.
 jest.mock("../data", () => ({
@@ -236,6 +245,7 @@ jest.mock("@/components/ui/confirm-dialog", () => ({
 /* eslint-disable import/first -- after the mocks above */
 import { ApprovalQueue } from "../ApprovalQueue";
 import { APPROVAL_KINDS } from "../registry";
+import { forgetWaitingWorkInbox } from "../sharedInbox";
 /* eslint-enable import/first */
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -297,6 +307,9 @@ function buttonIn(row: HTMLElement, label: string): HTMLButtonElement {
 beforeEach(() => {
   pending = [FIELD_APPROVAL, RECORDS_APPROVAL, PATCH_APPROVAL];
   decideCalls.length = 0;
+  // Each test is a new page load: the inbox read one page shares (`sharedInbox.ts`, 5 s) must not
+  // carry the previous test's list into this one.
+  forgetWaitingWorkInbox();
 });
 
 afterEach(() => {

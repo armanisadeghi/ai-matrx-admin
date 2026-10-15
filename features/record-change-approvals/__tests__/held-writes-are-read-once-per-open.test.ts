@@ -6,6 +6,11 @@
  */
 const rpc = jest.fn(async () => ({ data: [], error: null }));
 jest.mock("@ai-matrx/records-ui", () => ({ recordsDataSource: () => ({ rpc }) }));
+// `HeldWritesOnTable` reads the light `/helpers` entry: the same stub answers there.
+jest.mock("@ai-matrx/records-ui/helpers", () => ({
+  ...(jest.requireActual("@ai-matrx/records-ui/helpers") as object),
+  recordsDataSource: () => ({ rpc }),
+}));
 jest.mock("@/utils/supabase/client", () => {
   const client = { auth: { getSession: jest.fn(), onAuthStateChange: jest.fn() } };
   return { createClient: () => client, supabase: client };

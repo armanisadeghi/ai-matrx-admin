@@ -52,6 +52,12 @@ jest.mock("@ai-matrx/records-ui", () => {
     recordsDataSource: () => dataSource,
   };
 });
+// The host's data source reads the light `/helpers` entry: the same door answers there.
+jest.mock("@ai-matrx/records-ui/helpers", () => ({
+  ...(jest.requireActual("@ai-matrx/records-ui/helpers") as object),
+  personActor: () => ({ actor: "user" }),
+  recordsDataSource: () => ({ rpc: (...args: unknown[]) => whereIdOpens(...(args as [])) }),
+}));
 jest.mock("@ai-matrx/design-system", () => ({ Button: () => null }));
 jest.mock("@/features/access-gate/components/AccessGate", () => ({ AccessGate: () => null }));
 jest.mock("@/features/sharing/components/TableTransferOffer", () => ({ TableTransferOffer: () => null }));
