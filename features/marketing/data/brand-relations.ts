@@ -159,7 +159,7 @@ export async function addBrandRelation(input: {
     category,
     guessed_kind: guessedKind(input.relationKey, url),
     url,
-    value: { text, label: url ? host ?? text : text } as Json,
+    value: { text, label: url ? displayAddress(text) || host || text : text } as Json,
     context: {
       where: "Added on the brand page",
       answer: { by: "person", from: "brand_page", at: now },
@@ -223,6 +223,8 @@ export function profileAliases(profile: Json | null | undefined): string[] {
 export interface ProfileCompetitor {
   name: string;
   domain?: string;
+  /** The address exactly as the person typed it (scheme added), so Open goes where they pointed. */
+  url?: string;
   handles?: string[];
 }
 
@@ -236,6 +238,7 @@ export function profileCompetitors(profile: Json | null | undefined): ProfileCom
       out.push({
         name: entry.name,
         ...(typeof entry.domain === "string" ? { domain: entry.domain } : {}),
+        ...(typeof entry.url === "string" ? { url: entry.url } : {}),
         ...(Array.isArray(entry.handles) ? { handles: entry.handles.filter((h): h is string => typeof h === "string") } : {}),
       });
     }
@@ -247,5 +250,10 @@ export function competitorFromText(text: string): ProfileCompetitor {
   const t = text.trim();
   if (!looksLikeUrl(t)) return { name: t };
   const host = hostOf(t) ?? t;
-  return { name: host, domain: host };
+  return { name: displayAddress(t), domain: host, url: absoluteUrl(t) };
+}
+
+/** An address as typed, for display: no scheme, no trailing slash. A leading "www." stays. */
+export function displayAddress(text: string): string {
+  return text.trim().replace(/^https?:\/\//i, "").replace(/\/+$/, "");
 }

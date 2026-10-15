@@ -56,23 +56,31 @@ export interface AnswerOptions {
   off?: string[];
 }
 
-type Throw = "yes" | "no" | "later";
+/** "instant": answered right after the last answer: the card is gone at once, never a pile of leaving cards. */
+type Throw = "yes" | "no" | "later" | "instant";
 
 /** Quick and physical: the card leaves on a stiff spring, the next one rises on a softer one. */
-const THROW: Transition = { type: "spring", stiffness: 520, damping: 38, mass: 0.7 };
+const THROW: Transition = { type: "tween", duration: 0.14, ease: "easeOut" };
 const RISE: Transition = { type: "spring", stiffness: 380, damping: 32 };
 const FLY: Transition = { type: "spring", stiffness: 420, damping: 36 };
 
 const cardVariants = {
   enter: { opacity: 0, y: 18, scale: 0.955 },
   center: { opacity: 1, y: 0, scale: 1, x: 0, rotate: 0, transition: RISE },
+  // A card that was answered leaves at once: a fixed short tween (a spring keeps old cards on screen for
+  // seconds when answers come fast) and it can no longer be clicked while it goes (MKT-131).
   exit: (dir: Throw) =>
-    dir === "yes"
-      ? { opacity: 0, x: 160, y: -24, rotate: 7, transition: THROW }
+    dir === "instant"
+      ? { opacity: 0, pointerEvents: "none" as const, transition: { duration: 0 } }
+      : dir === "yes"
+      ? { opacity: 0, x: 160, y: -24, rotate: 7, pointerEvents: "none" as const, transition: THROW }
       : dir === "no"
-        ? { opacity: 0, x: -160, y: -12, rotate: -7, transition: THROW }
-        : { opacity: 0, y: 60, scale: 0.94, transition: THROW },
+        ? { opacity: 0, x: -160, y: -12, rotate: -7, pointerEvents: "none" as const, transition: THROW }
+        : { opacity: 0, y: 60, scale: 0.94, pointerEvents: "none" as const, transition: THROW },
 };
+
+/** Two answers closer than this: the earlier card leaves without its throw animation (MKT-131). */
+const RAPID_MS = 600;
 
 /** How many answers the tray lists before the rest fold behind one button. */
 const TRAY_LIMIT = 5;
@@ -575,6 +583,7 @@ export function ValidateStage({
   const [editing, setEditing] = useState(false);
   const [off, setOff] = useState<Set<string>>(new Set());
   const [dir, setDir] = useState<Throw>("yes");
+  const lastAnswerAt = useRef(0);
   const [trayOpen, setTrayOpen] = useState(false);
   const stageRef = useRef<HTMLDivElement>(null);
   const wide = useMediaQuery("(min-width: 1024px)");
@@ -598,7 +607,10 @@ export function ValidateStage({
   }, [queue]);
 
   const answer = (item: FocusItem, a: Answer, opts?: AnswerOptions) => {
-    setDir(a === "later" ? "later" : ["not_us", "wrong", "ignore"].includes(a) ? "no" : "yes");
+    const now = Date.now();
+    const fast = now - lastAnswerAt.current < RAPID_MS;
+    lastAnswerAt.current = now;
+    setDir(fast ? "instant" : a === "later" ? "later" : ["not_us", "wrong", "ignore"].includes(a) ? "no" : "yes");
     onAnswer(item, a, opts);
   };
 

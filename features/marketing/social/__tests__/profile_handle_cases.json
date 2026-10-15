@@ -246,6 +246,18 @@
       null,
       null,
       false
+    ],
+    [
+      "https://www.facebook.com/p/Joes-Pizza-NYC-100064756012345/",
+      "facebook",
+      "100064756012345",
+      false
+    ],
+    [
+      "https://www.facebook.com/p/Joes-Pizza",
+      null,
+      null,
+      false
     ]
   ]
 }

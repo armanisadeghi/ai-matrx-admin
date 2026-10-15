@@ -33,15 +33,27 @@ export function reviewResultOf(item: EvidenceItem): ReviewResult {
   const url = item.url ?? item.value;
   // A review/listing page carries the site's name as its label and the page's own title as its handle.
   const listing = item.field === "listing";
+  const trimmed = {
+    title: listing ? (item.handle ?? item.label ?? url) : (item.label ?? item.handle ?? url),
+    url,
+    description: item.snippet ?? null,
+    favicon: item.image_url,
+    site_name: listing ? item.label : null,
+  };
+  // The engine's own object (extra snippets, cluster, FAQ, thumbnail, publisher...) draws the rich result; our
+  // cleaned title / description (entities decoded once) replace its raw ones. Without it: the short fields.
+  const best = [...(item.rawResults ?? [])].sort((a, b) => a.rank - b.rank)[0];
+  const result = best
+    ? {
+        ...best.result,
+        title: trimmed.title,
+        description: trimmed.description ?? best.result.description ?? best.result.snippet ?? null,
+        ...(listing && item.label ? { site_name: item.label } : {}),
+      }
+    : trimmed;
   return {
     key: item.key,
-    result: {
-      title: listing ? (item.handle ?? item.label ?? url) : (item.label ?? item.handle ?? url),
-      url,
-      description: item.snippet ?? null,
-      favicon: item.image_url,
-      site_name: listing ? item.label : null,
-    },
+    result,
     hits: (item.hits ?? []).map((h) => ({ engine: h.engine, rank: h.rank, query: h.query, endpoint: h.endpoint })),
   };
 }

@@ -47,7 +47,7 @@ export function looksLikePostUrl(text: string): boolean {
   const p = url.pathname.toLowerCase();
   return (
     /\/video\/\d+/.test(p) ||
-    /^\/(p|reel|reels|tv)\//.test(p) ||
+    (/^\/(p|reel|reels|tv)\//.test(p) && !(host(url).endsWith("facebook.com") && /^\/p\/[^/]*-\d{8,}\/?$/.test(p))) ||
     p.startsWith("/watch") ||
     p.startsWith("/shorts/") ||
     host(url) === "youtu.be" ||
@@ -122,7 +122,7 @@ export function classifySocialLink(text: string): SocialLink | null {
   if (platform === "youtube" && !(first.startsWith("@") || ["c", "channel", "user"].includes(first))) return null;
   if (platform === "tiktok" && !first.startsWith("@")) return null;
   // Facebook's own index pages are never an account (twin of matrx_social `_FACEBOOK_SECTIONS`).
-  if (platform === "facebook" && FACEBOOK_SECTIONS.has(first)) return null;
+  if (platform === "facebook" && FACEBOOK_SECTIONS.has(first) && !(first === "p" && /-\d{8,}$/.test(segments[1] ?? ""))) return null;
   return { kind: "profile", platform, url: url.href, handle };
 }
 
@@ -223,6 +223,14 @@ function accountFromUrl(
       return ["playlist", "feed", "shorts", "live", "embed", "results", "channel"].includes(lower)
         ? null
         : { handle: first, variant: "at" };
+    case "facebook": {
+      // `facebook.com/p/<Page-Name>-<numeric id>` is a real page address; the numeric id is the handle.
+      if (lower === "p") {
+        const id = /-(\d{8,})$/.exec(segs[1] ?? "")?.[1];
+        return id ? { handle: id } : null;
+      }
+      return { handle: at ?? first };
+    }
     case "snapchat":
       if (lower === "add") return segs[1] ? { handle: segs[1] } : null;
       return { handle: at ?? first };

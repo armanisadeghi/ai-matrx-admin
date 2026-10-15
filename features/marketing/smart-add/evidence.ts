@@ -76,6 +76,8 @@ export interface EvidenceItem {
   snippet?: string | null;
   /** Web-found items: every engine/query/rank that found it, best rank first. */
   hits?: WebHit[];
+  /** Web-found items: each engine's own result object as served (rank-matched to `hits`), best rank first. */
+  rawResults?: RawResult[];
   /** The "we think" slot (`{choice, relation_key?, probability, reason}`), raw; read by validate/queue.parseSuggestion. */
   suggestion?: unknown;
   /** Person anchor stage only: a "Which of these is you?" candidate (aidream brand_identify_person.anchor_item). */
@@ -115,6 +117,12 @@ function parseAnchor(raw: unknown): AnchorInfo | null {
 }
 
 /** One place a web result was found. */
+export interface RawResult {
+  engine: string;
+  rank: number;
+  result: Record<string, unknown>;
+}
+
 export interface WebHit {
   engine: string;
   rank: number;
@@ -191,6 +199,14 @@ function asString(value: unknown): string | null {
   return typeof value === "string" && value.trim() ? value : null;
 }
 
+function parseRawResult(raw: unknown): RawResult | null {
+  if (typeof raw !== "object" || raw === null) return null;
+  const h = raw as Record<string, unknown>;
+  const result = h.result;
+  if (typeof h.rank !== "number" || typeof result !== "object" || result === null || Array.isArray(result)) return null;
+  return { engine: asString(h.engine) ?? "", rank: h.rank, result: result as Record<string, unknown> };
+}
+
 function parseHit(raw: unknown): WebHit | null {
   if (typeof raw !== "object" || raw === null) return null;
   const h = raw as Record<string, unknown>;
@@ -237,6 +253,9 @@ export function parseEvidenceItem(raw: unknown): EvidenceItem | null {
     engines: Array.isArray(r.engines) ? r.engines.filter((x): x is string => typeof x === "string") : [],
     snippet: asString(r.snippet),
     hits: Array.isArray(r.hits) ? r.hits.map(parseHit).filter((h): h is WebHit => h !== null) : [],
+    ...(Array.isArray(r.raw_results) && r.raw_results.length
+      ? { rawResults: r.raw_results.map(parseRawResult).filter((h): h is RawResult => h !== null) }
+      : {}),
     ...(r.suggestion !== undefined && r.suggestion !== null ? { suggestion: r.suggestion } : {}),
     ...(r.anchor ? { anchor: parseAnchor(r.anchor) } : {}),
   };
@@ -986,6 +1005,7 @@ export function webRow(items: Iterable<EvidenceItem>): EvidenceItem[] {
       snippet: keep.snippet ?? other.snippet,
       engines: [...new Set([...(keep.engines ?? []), ...(other.engines ?? [])])],
       hits: [...(keep.hits ?? []), ...(other.hits ?? [])].sort((a, b) => a.rank - b.rank),
+      rawResults: [...(keep.rawResults ?? []), ...(other.rawResults ?? [])].sort((a, b) => a.rank - b.rank),
     });
   }
   return [...byAddress.values()]

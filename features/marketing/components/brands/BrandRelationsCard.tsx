@@ -52,6 +52,10 @@ const GROUP_TITLES: Record<GroupKey, string> = {
 
 const ALIAS = "__alias";
 
+/** Each group's fixed column: names / people / related, then competitors / listings, then not-us. */
+const COLUMNS: GroupKey[][] = [["names", "people", "related"], ["competitors", "about"], ["not_us"]];
+const COLUMN_PLACE = ["", "", "md:col-start-2 xl:col-start-3 xl:row-start-1"];
+
 interface Row {
   id: string;
   label: string;
@@ -60,6 +64,8 @@ interface Row {
   /** A Not us logo: the removed image itself, so the row says which logo it is. */
   thumb?: string;
   sentiment?: BrandRelationRow["sentiment"];
+  /** Shown the moment Add is pressed, until the save lands: a dimmed row with a spinner. */
+  pending?: boolean;
   grounding?: { where: string | null; reason: string | null; confidence: number | null; by: string | null };
   remove: () => Promise<void>;
   /** A Not us entry made by a removal: bring back what the removal took (web.decision_retraction_restore). */
@@ -69,7 +75,7 @@ interface Row {
 function host(url: string | null): string | null {
   if (!url) return null;
   try {
-    return new URL(url).hostname.replace(/^www\./, "");
+    return new URL(url).hostname;
   } catch {
     return null;
   }
@@ -86,6 +92,14 @@ function RelationRowView({ row, canEdit }: { row: Row; canEdit: boolean }) {
   const h = host(row.url);
   const g = row.grounding;
   const hasGrounding = Boolean(g && (g.where || g.reason || g.confidence != null));
+  if (row.pending) {
+    return (
+      <li className="flex min-w-0 items-center gap-2 rounded-md px-1.5 py-1 opacity-70" data-testid="brand-relation-pending">
+        <Loader2 className="size-4 shrink-0 animate-spin text-muted-foreground" aria-label="Adding" />
+        <span className="truncate text-sm text-foreground">{row.label}</span>
+      </li>
+    );
+  }
   const body = (
     <span className="flex min-w-0 flex-1 items-center gap-2">
       {row.thumb ? (
@@ -95,7 +109,7 @@ function RelationRowView({ row, canEdit }: { row: Row; canEdit: boolean }) {
         <Favicon hostname={h} size={16} />
       ) : null}
       <span className="truncate text-sm text-foreground">{row.label}</span>
-      {h && !row.thumb && h !== row.label ? <span className="hidden truncate text-xs text-muted-foreground sm:inline">{h}</span> : null}
+      {h && !row.thumb && h !== row.label ? <span className="min-w-0 shrink truncate text-xs text-muted-foreground">{h}</span> : null}
       {row.sentiment ? (
         <span className={`size-1.5 shrink-0 rounded-full ${SENTIMENT_DOT[row.sentiment] ?? ""}`} aria-label={row.sentiment} />
       ) : null}
@@ -187,6 +201,7 @@ export function BrandRelationsCard({ brand, canEdit }: { brand: MarketingBrand; 
   const [choice, setChoice] = useState<string>("competitor");
   const [sentiment, setSentiment] = useState<"positive" | "neutral" | "negative">("neutral");
   const [adding, setAdding] = useState(false);
+  const [pendingAdd, setPendingAdd] = useState<{ group: GroupKey; label: string } | null>(null);
 
   const kindByKey = new Map((kinds.data ?? []).map((k) => [k.key, k]));
   const refresh = async () => {
@@ -217,7 +232,7 @@ export function BrandRelationsCard({ brand, canEdit }: { brand: MarketingBrand; 
     groups.competitors.push({
       id: `competitor:${index}:${c.name}`,
       label: c.name,
-      url: c.domain ? `https://${c.domain}` : null,
+      url: c.url ?? (c.domain ? `https://${c.domain}` : null),
       kindLabel: c.handles?.join(" ") ?? null,
       remove: () =>
         patchProfile((p) => ({
@@ -263,6 +278,12 @@ export function BrandRelationsCard({ brand, canEdit }: { brand: MarketingBrand; 
     });
   }
 
+  if (pendingAdd) {
+    groups[pendingAdd.group].push({
+      id: "pending-add", label: pendingAdd.label, url: null, kindLabel: null, pending: true, remove: async () => {},
+    });
+  }
+
   const options = [
     { key: ALIAS, label: "Another name" },
     ...(kinds.data ?? [])
@@ -275,6 +296,14 @@ export function BrandRelationsCard({ brand, canEdit }: { brand: MarketingBrand; 
     const value = text.trim();
     if (!value) return;
     setAdding(true);
+    setPendingAdd({
+      label: value,
+      group:
+        choice === ALIAS ? "names"
+        : choice === "competitor" ? "competitors"
+        : chosenKind?.routesTo === "exclusion" ? "not_us"
+        : groupOf(chosenKind, choice),
+    });
     try {
       if (choice === ALIAS) {
         await patchProfile((p) => ({ ...p, brand_aliases: [...new Set([...profileAliases(p), value])] }));
@@ -317,6 +346,7 @@ export function BrandRelationsCard({ brand, canEdit }: { brand: MarketingBrand; 
       toast.error(`Could not add: ${extractErrorMessage(error)}`);
     } finally {
       setAdding(false);
+      setPendingAdd(null);
     }
   };
 
@@ -335,19 +365,24 @@ export function BrandRelationsCard({ brand, canEdit }: { brand: MarketingBrand; 
         ) : filled.length === 0 ? (
           <p className="text-sm text-muted-foreground">No names, people or related pages yet.</p>
         ) : (
-          <div className="grid gap-x-6 gap-y-3 md:grid-cols-2 xl:grid-cols-3">
-            {filled.map((key) => (
-              <section key={key} className="min-w-0">
-                <h4 className="mb-1 flex items-center gap-1.5 px-1.5 text-xs font-medium text-muted-foreground">
-                  {GROUP_TITLES[key]}
-                  <span className="tabular-nums">{groups[key].length}</span>
-                </h4>
-                <ul className="grid min-w-0 grid-cols-1">
-                  {groups[key].map((row) => (
-                    <RelationRowView key={row.id} row={row} canEdit={canEdit} />
-                  ))}
-                </ul>
-              </section>
+          // Every group has its own fixed column, so adding or removing one never moves another (layout shift = 0).
+          <div className="grid gap-x-6 gap-y-0 md:grid-cols-2 xl:grid-cols-3">
+            {COLUMNS.map((column, i) => (
+              <div key={i} className={`grid min-w-0 content-start gap-3 [&:not(:empty)]:mb-3 ${COLUMN_PLACE[i]}`}>
+                {column.filter((key) => groups[key].length > 0).map((key) => (
+                  <section key={key} className="min-w-0">
+                    <h4 className="mb-1 flex items-center gap-1.5 px-1.5 text-xs font-medium text-muted-foreground">
+                      {GROUP_TITLES[key]}
+                      <span className="tabular-nums">{groups[key].length}</span>
+                    </h4>
+                    <ul className="grid min-w-0 grid-cols-1">
+                      {groups[key].map((row) => (
+                        <RelationRowView key={row.id} row={row} canEdit={canEdit} />
+                      ))}
+                    </ul>
+                  </section>
+                ))}
+              </div>
             ))}
           </div>
         )}
