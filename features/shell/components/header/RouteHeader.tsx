@@ -73,6 +73,7 @@ import {
   Popover,
   PopoverContent,
   PopoverTrigger,
+  TapDefaultVariant,
 } from "@ai-matrx/design-system";
 import { MoreHorizontalTapButton } from "@ai-matrx/design-system/tap-target/buttons";
 import PageHeader from "./PageHeader";
@@ -500,7 +501,10 @@ export default function RouteHeader({
           // `nav` is excluded to keep it one 6px gap.
           className="relative z-10 flex min-w-0 items-center overflow-hidden whitespace-nowrap [&_h1]:truncate [&_h2]:truncate [&_svg]:shrink-0 [&>span]:min-w-0 [&>span]:truncate [&_.matrx-tap-target+*:not(.matrx-tap-target,.matrx-tap-group,nav)]:ms-[3px]"
         >
-          {leftNode}
+          {/* The left cell is a back button BESIDE a title: tap buttons here that
+              name no variant are non-glass (rule 2, all glass or none). An
+              explicit variant still wins. */}
+          <TapDefaultVariant value="transparent">{leftNode}</TapDefaultVariant>
         </div>
         {hasCenter ? (
           <div
