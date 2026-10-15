@@ -135,7 +135,7 @@ describe_running() {
   printf '%s\n' "$1" | awk 'NF>=3 { printf "%s%s on port %s (pid %s)", (n++ ? ", " : ""), $3, $2, $1 } END { if (!n) printf "none" }'
 }
 
-ONE_SERVER="The only dev server allowed on this machine is the shared one on port 3001: pnpm preview:start (clone database, the default) or pnpm preview:start --live (live database). A second or per-agent server is refused: extra dev servers exhausted memory and stalled or rebooted the Mac."
+ONE_SERVER="The only dev server allowed on this machine is the shared one on port 3001: pnpm preview:start (live database; test as admin@admin.com), checked with pnpm preview:ready. A second or per-agent server is refused: extra dev servers exhausted memory and stalled or rebooted the Mac."
 
 # Kill a preview server and its whole process tree (workers + pnpm/next wrappers).
 # Kills the server's process group for a clean sweep, but NEVER the group this hook
@@ -207,8 +207,18 @@ PY
     input=$(cat)
     cmd=$(printf '%s' "$input" | /usr/bin/python3 -c 'import sys,json;print((json.load(sys.stdin).get("tool_input") or {}).get("command",""))' 2>/dev/null)
 
-    # Only care about commands that BOOT a Next dev server.
-    if ! printf '%s' "$cmd" | grep -qE '(^|[[:space:];&|])(pnpm|npm|yarn|bun)( run)? dev([[:space:]]|$)|(^|[[:space:];&|])next dev([[:space:]]|$)'; then
+    # Only care about commands that BOOT a Next dev server — judged on the command with its
+    # quoted strings and heredoc bodies removed. A commit message or a note that merely SAYS
+    # "next dev" is not a launch (2026-10-15: this gate refused a `git commit -m "…killed next
+    # dev at boot…"` and named a stale pid as the reason).
+    launch_text=$(printf '%s' "$cmd" | /usr/bin/python3 -c '
+import re, sys
+t = sys.stdin.read()
+t = re.sub(r"<<-?\s*([\x27\x22]?)(\w+)\1[^\n]*\n.*?\n\s*\2\s*(\n|$)", " ", t, flags=re.S)
+t = re.sub(r"\x27[^\x27]*\x27", " ", t)
+t = re.sub(r"\x22(?:[^\x22\\\\]|\\\\.)*\x22", " ", t, flags=re.S)
+print(t)' 2>/dev/null || printf '%s' "$cmd")
+    if ! printf '%s' "$launch_text" | grep -qE '(^|[[:space:];&|])(pnpm|npm|yarn|bun)( run)? dev([[:space:]]|$)|(^|[[:space:];&|])next dev([[:space:]]|$)'; then
       exit 0
     fi
     # `--help`, greps and echoes about dev servers are not launches.
@@ -239,7 +249,7 @@ print(json.dumps({
     "hookSpecificOutput": {
         "hookEventName": "PreToolUse",
         "permissionDecision": "deny",
-        "permissionDecisionReason": "Raw pnpm/npm/yarn/bun/next dev launches are untracked and would be a second server. Run pnpm preview:start (clone database, port 3001) or pnpm preview:start --live (live database); it starts or reuses the one managed server.",
+        "permissionDecisionReason": "Raw pnpm/npm/yarn/bun/next dev launches are untracked and would be a second server. Run pnpm preview:ready (or pnpm preview:start); it starts or reuses the one managed server on port 3001.",
     }
 }))
 PY

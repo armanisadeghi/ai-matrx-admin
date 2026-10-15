@@ -117,9 +117,17 @@ describe("guard 2 — the PreToolUse hook refuses every raw launch, including a 
     (command) => {
       const out = hook("guard-bash", bash(command));
       expect(decision(out)).toBe("deny");
-      expect(out).toContain("pnpm preview:start --live");
+      expect(out).toContain("pnpm preview:ready");
     },
   );
+
+  it.each([
+    'git commit -m "the ECONNRESET killed next dev at boot"',
+    "git commit -F - <<'EOF'\nnext dev died; pnpm dev is banned\nEOF",
+    "echo 'run pnpm dev'",
+  ])("allows %s — text that only MENTIONS a launch is not one", (command) => {
+    expect(hook("guard-bash", bash(command))).toBe("");
+  });
 
   it("allows the one launcher in either mode", () => {
     expect(hook("guard-bash", bash("pnpm preview:start --live"))).toBe("");
