@@ -358,6 +358,8 @@ export function accountHandleLine(platform: string | null | undefined, handle: s
   const h = (handle ?? "").replace(/^@/, "");
   if (!h) return null;
   if (platform === "youtube" && /^UC[\w-]{22}$/.test(h)) return `youtube.com/channel/${h}`;
+  // A Facebook page known only by its number is not a handle either (MKT-098): show the address it is.
+  if (platform === "facebook" && /^\d{6,}$/.test(h)) return `facebook.com/profile.php?id=${h}`;
   return `@${h}`;
 }
 

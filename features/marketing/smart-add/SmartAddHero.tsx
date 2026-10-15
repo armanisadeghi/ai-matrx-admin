@@ -38,6 +38,7 @@ import { PlatformMark, platformLabel } from "@/features/marketing/social/compone
 import { SocialImage } from "@/features/marketing/social/components/SocialImage";
 import { profileAvatarDoor } from "@/features/marketing/social/server";
 import type { SocialPlatform } from "@/features/marketing/social/types";
+import { linkInBioService } from "@/features/marketing/lib/link-in-bio";
 import { emailIn } from "./emailInput";
 import { personExtraPrefill } from "./personPrefill";
 import { customItem, websiteHost, type EvidenceItem } from "./evidence";
@@ -195,21 +196,30 @@ export function SmartAddHero({
   const host = siteOk ? websiteHost(site.trim()) : null;
   const needsPick = social.trim() !== "" && needsPlatformPick(parsed, null);
 
+  // A link-in-bio page (Linktree, Beacons) pasted into the social box is a valid start: it is read as the web
+  // address, then its links (MKT-097). It is never an account, so it never needs a platform.
+  const bioLink = social.trim() && linkInBioService(social) ? social.trim() : null;
   const socialOkFor = (pk: SocialPlatform | null) => {
+    if (bioLink) return false;
     const p = resolveAccountInput({ text: social, picked: pk });
     return p.status === "ok" && (p.detected || Boolean(pk)) && !handleProblem(p.platform, p.handle);
   };
   // The one inline problem the entry row shows (only for what the open card holds). An email in the main box
   // is no problem: it is read as an email (VISION Part 19).
+  // Social text that is neither an account, a bare handle nor a link-in-bio page says why Go does nothing.
+  const socialShapeProblem =
+    !bioLink && parsed.status === "invalid" ? "That isn't a social account address."
+    : !bioLink && parsed.status === "post" ? "That's a post. Paste the account's address."
+    : null;
   const typedProblem =
     (mode === "website" && emailIn(site)) || (mode === "social" && emailIn(social)) ? null
     : mode === "website" ? (site.trim() ? siteProblem : null) ?? (second && social.trim() ? handleIssue : null)
-    : mode === "social" ? (social.trim() ? handleIssue : null) ?? (second && site.trim() ? siteProblem : null)
+    : mode === "social" ? (social.trim() ? handleIssue ?? socialShapeProblem : null) ?? (second && site.trim() ? siteProblem : null)
     : null;
   const readyFor = (pk: SocialPlatform | null) => {
     const ok = socialOkFor(pk);
     return mode === "website" ? siteOk && (!second || !social.trim() || ok)
-      : mode === "social" ? ok && (!second || !site.trim() || siteOk)
+      : mode === "social" ? (bioLink ? !(second && site.trim()) : ok && (!second || !site.trim() || siteOk))
       : mode === "name" ? name.trim().length > 1
       : false;
   };
@@ -269,7 +279,7 @@ export function SmartAddHero({
       setSubmitted(true);
       return;
     }
-    onWebsite(siteOk ? site.trim() : "");
+    onWebsite(siteOk ? site.trim() : bioLink ?? "");
     onSocial(socialOkFor(pk) ? social.trim() : "");
     onPick(pk);
     onStarted?.();
@@ -280,7 +290,7 @@ export function SmartAddHero({
     if (!mainEmail && !readyFor(pk)) return;
     if (!onBeforeStart) return go(pk);
     setStarting(true);
-    void onBeforeStart({ website: siteOk ? site.trim() : "", social: socialOkFor(pk) ? social.trim() : "", platform: pk, name: name.trim(), city: city.trim() }).then((ok) => {
+    void onBeforeStart({ website: siteOk ? site.trim() : bioLink ?? "", social: socialOkFor(pk) ? social.trim() : "", platform: pk, name: name.trim(), city: city.trim() }).then((ok) => {
       held.current = !ok;
       if (ok) go(pk);
       setStarting(false);

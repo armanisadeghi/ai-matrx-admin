@@ -54,7 +54,9 @@ export function AnchorCard({
   const a = item.anchor;
   const platform = item.field === "website" ? "website" : (item.platform ?? "");
   const handle = item.field === "website" ? websiteHost(item.url ?? item.value) : accountHandleLine(item.platform, item.handle);
-  const name = a?.display_name ?? item.label ?? handle ?? item.value;
+  // A bare number is never a name (MKT-098): the exact handle or address stands in.
+  const nameOf = (v: string | null | undefined) => (v && /\p{L}/u.test(v) ? v : null);
+  const name = nameOf(a?.display_name) ?? nameOf(item.label) ?? handle ?? item.value;
   const url = item.url ?? item.value;
   const followers = a?.followers ?? item.followers;
   const picked = answer === "me";
