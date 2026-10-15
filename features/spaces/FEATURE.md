@@ -56,10 +56,14 @@ Block document: a tree of `SpaceBlock` (`id`, `type`, `text: RichSpan[]`, `color
   relation column as "contains" (`custom.record_filter_sql`), so one-to-many and many-to-many both work. The server
   seed skips such views. Record page right-click › Page › "Use this page as the template" saves the page as the table's
   default template. Row pages stay out of the sidebar (`content.space_list`). Tests: `data/__tests__/this-row.test.ts`,
-  `embed/__tests__/row-page.test.ts`; live proof `data/row-page-live-proof.ts` (18/18). Gap: the embedded grid's own
-  "+ New page" line and board/gallery adds write `{}` (records-ui has no new-row values prop), so a row added there
-  is unlinked and leaves the view — use the block's New button; the template's preset VALUES apply only through
-  "From template", its BODY only through the default template.
+  `embed/__tests__/row-page.test.ts`; live proof `data/row-page-live-proof.ts` (18/18). A row added in a "This page's
+  row" view (the grid's "+ New record" line, board, gallery, list, calendar) starts linked to the page's row: the block
+  hands `newRowValues` to records-ui's ViewSwitcher (0.115.78+) and every add path writes them; a table's add line reads
+  "New record" (vocabulary: Record; the entity database keeps "New page"). A NEW row page made from the default
+  template also applies its preset values to the row, only into empty columns (`presetsForEmptyColumns`). The page's
+  space is reserved (`embed/row-page-slot.ts`): the editor settles out of sight and everything under it is held unpainted
+  until then; measured layout shift 0 from the page on a row with and without a page. Gap: a viewer (no edit right)
+  who was shared the row cannot read the `row_body` association (RLS), so sees the old Notes body, not the page's views.
 
 - 2026-10-14 — Tiered breadcrumb (lane TIERED-NAV, Notion's breadcrumb menu). The topbar crumbs are the one shared
   `components/official/tiered-breadcrumb` primitive (`nav/tiered-crumbs.tsx`): a segment opens "Other pages in <parent>"
