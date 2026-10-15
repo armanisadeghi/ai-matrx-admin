@@ -1,0 +1,15 @@
+import { createClient } from "@supabase/supabase-js";
+import { createRecordsClient, supabaseDataSource } from "@ai-matrx/records/core";
+import { env } from "./lib.mjs";
+const sb = createClient(env.NEXT_PUBLIC_SUPABASE_URL, env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY, { auth: { persistSession: false } });
+const { data: auth } = await sb.auth.signInWithPassword({ email: env.AI_ADMIN_USERNAME, password: env.AI_ADMIN_PASSWORD });
+const client = createRecordsClient({ dataSource: supabaseDataSource(sb), organizationId: "884d1ce8-7b49-4fba-a2f3-0f7dd7c83d4f", actor: { actor: "user", user_id: auth.user.id, on_behalf_of: null } });
+const table = process.argv[2];
+const f = (await client.fields({ table_id: table })).data.find((x) => x.key === "lead");
+console.log("field now", JSON.stringify({ type: f.type, format: f.format, parity: f.parity_type, rules: f.rules, rt: f.relation_target }));
+const r = await client.fieldUpdate({ field_id: f.id, patch: { parity_type: "member" } });
+console.log("to member", JSON.stringify(r).slice(0, 200));
+const g = (await client.fields({ table_id: table })).data.find((x) => x.key === "lead");
+console.log("field after", JSON.stringify({ type: g.type, format: g.format, parity: g.parity_type, rules: g.rules, rt: g.relation_target }));
+const l = await client.list({ table_id: table, limit: 10 });
+console.log(JSON.stringify(l.data.rows.map((x) => ({ lead: x.document.lead, ret: x.document._retired?.map((e) => e.value) }))));
