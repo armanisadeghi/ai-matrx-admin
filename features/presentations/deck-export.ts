@@ -39,6 +39,24 @@ export async function deckAsPptxBase64(deck: Deck, name: string): Promise<string
   return btoa(binary);
 }
 
+/** File → Download → ODP: the same .pptx the PowerPoint download makes, converted to OpenDocument by aidream's office service (LibreOffice). Nothing is stored. */
+export async function downloadDeckAsOdp(deck: Deck, name: string): Promise<void> {
+  if (deck.slides.length === 0) throw new Error("This presentation has no slides yet");
+  const [{ exportToPowerPoint }, { requestRaw }, { downloadFile }] = await Promise.all([
+    import("@/components/mardown-display/blocks/presentations/presentation-export"),
+    import("@/lib/python-client"),
+    import("@ai-matrx/kit/download"),
+  ]);
+  const res = await exportToPowerPoint(asPresentationData(deck), { filename: safeName(name), returnBlob: true });
+  if (!res.success || !res.blob) throw new Error(res.error ?? res.message);
+  const form = new FormData();
+  form.append("file", res.blob, `${safeName(name)}.pptx`);
+  form.append("target", "odp");
+  const converted = await requestRaw("/office/convert-document", { method: "POST", body: form });
+  const blob = new Blob([await converted.arrayBuffer()], { type: "application/vnd.oasis.opendocument.presentation" });
+  downloadFile(`${safeName(name)}.odp`, blob, blob.type);
+}
+
 export async function downloadDeckAsHtml(deck: Deck, name: string): Promise<void> {
   const [{ generatePresentationHTML }, { downloadFile }] = await Promise.all([
     import("@/components/mardown-display/blocks/presentations/presentation-html-generator"),

@@ -67,7 +67,7 @@ import { getDeckA11y, setDeckA11y, useDeckA11y } from "../deck-a11y";
 import { plainTextOf } from "../deck-slide-ops";
 import { AccessibilityDialog, BackgroundDialog, CommentsDialog, FindReplaceDialog, ImportSlidesDialog, MotionDialog, SpecialCharsDialog, ThemeBuilderDialog } from "./DeckPanels";
 import { DeckGridView } from "./DeckGridView";
-import { deckDownloads, downloadDeckAsText, downloadSlideAsImage, printDeck } from "../deck-export";
+import { deckDownloads, downloadDeckAsOdp, downloadDeckAsText, downloadSlideAsImage, printDeck } from "../deck-export";
 import {
   createPresentation,
   getPresentation,
@@ -355,7 +355,7 @@ export function PresentationEditor({ presentationId }: { presentationId: string 
           ...d,
           label: d.label.startsWith("PowerPoint") ? "Microsoft PowerPoint (.pptx)" : d.label === "PDF" ? "PDF Document (.pdf)" : d.label,
         })),
-        { label: "ODP Document (.odp)", soon: "presentations.download-odp" },
+        { label: "ODP Document (.odp)", run: async () => downloadDeckAsOdp(deckRef.current, row?.name ?? "presentation") },
         { label: "Plain Text (.txt)", run: async () => downloadDeckAsText(deckRef.current, row?.name ?? "presentation") },
         { label: "JPEG image (.jpg, current slide)", run: async () => downloadSlideAsImage(deckRef.current, currentRef.current, row?.name ?? "presentation", "jpeg") },
         { label: "PNG image (.png, current slide)", run: async () => downloadSlideAsImage(deckRef.current, currentRef.current, row?.name ?? "presentation", "png") },
