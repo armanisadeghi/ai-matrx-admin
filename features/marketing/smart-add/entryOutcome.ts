@@ -68,6 +68,7 @@ export function parseEntryOutcome(raw: unknown): EntryOutcome | null {
 
 /** The socials step's note for a lookup that failed, by the provider's own sentence. */
 const SOCIAL_NOTE: [RegExp, EntryStatus][] = [
+  [/can't read that on this platform|platform yet/i, "unsupported"],
   [/couldn't find that account|not found|does not exist/i, "not_found"],
   [/private|forbidden/i, "private"],
   [/no posts|empty/i, "empty"],

@@ -67,6 +67,16 @@ describe("inferEntryOutcome — the same answer off the notes of a finished run"
     };
     expect(inferEntryOutcome(view, typedIg, false)?.status).toBe("not_found");
   });
+  it("a platform we cannot read is unsupported, never an empty search (MKT-034, run 6afbffaf)", () => {
+    const view = {
+      status: "completed",
+      steps: [step("socials", ["https://www.linkedin.com/company/titanium-success could not be looked up: We can't read that on this platform yet."])],
+    };
+    const typed = { website: "", social: "linkedin.com/company/titanium-success", platform: "linkedin" };
+    const out = inferEntryOutcome(view, typed, false);
+    expect(out?.status).toBe("unsupported");
+    expect(entryCopy(out as EntryOutcome).title).toBe("Can't look that up");
+  });
   it("never judges a running round or one that found something", () => {
     expect(inferEntryOutcome({ status: "running", steps: [] }, typedIg, false)).toBeNull();
     expect(inferEntryOutcome({ status: "completed", steps: [] }, typedIg, true)).toBeNull();

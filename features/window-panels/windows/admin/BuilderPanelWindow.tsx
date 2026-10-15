@@ -218,6 +218,23 @@ function BuilderPanelInner({
     label: f.route === pathname ? f.surfaceKey : `${f.surfaceKey} · ${f.route ?? ""}`,
   }));
 
+  const feedName =
+    feeds.length > 1 && surfaceKey ? (
+      <Select
+        aria-label="Surface"
+        className="hidden shrink-0 sm:flex"
+        align="end"
+        value={surfaceKey}
+        onValueChange={(v) => {
+          setSurfacePick(v);
+          setEntryKey(null);
+        }}
+        options={surfaceOptions}
+      />
+    ) : surfaceKey ? (
+      <span className="hidden max-w-[220px] shrink-0 truncate font-mono text-[11px] text-muted-foreground sm:inline">{surfaceKey}</span>
+    ) : null;
+
   return (
     <WindowPanel
       title="Builder"
@@ -243,11 +260,15 @@ function BuilderPanelInner({
       sidebarDefaultSize={320}
       actionsRight={
         feed ? (
-          <CopyButtons
-            label={`Builder feed: ${feed.surfaceKey}`}
-            sourceId={`builder:${feed.surfaceKey}`}
-            json={() => ({ ...feedSnapshot(feed), requests: requestRows, runs: truth })}
-          />
+          <>
+            {feedName}
+            <CopyButtons
+              label={`Builder feed: ${feed.surfaceKey}`}
+              sourceId={`builder:${feed.surfaceKey}`}
+              data={{ ...feedSnapshot(feed), requests: requestRows, runs: truth }}
+              dataType="Agent"
+            />
+          </>
         ) : null
       }
       bodyClassName="flex min-h-0 flex-1 flex-col overflow-hidden p-0"
@@ -261,7 +282,7 @@ function BuilderPanelInner({
         </div>
       )}
       <div className="flex shrink-0 items-center gap-2 border-b border-border px-3">
-        <div className="min-w-0 flex-1 overflow-x-auto">
+        <div className="min-w-0 flex-1 [&_[role=tablist]]:flex-wrap">
           <Tabs
             aria-label="Builder sections"
             rule={false}
@@ -281,21 +302,6 @@ function BuilderPanelInner({
             ]}
           />
         </div>
-        {feeds.length > 1 && surfaceKey ? (
-          <Select
-            aria-label="Surface"
-            className="hidden shrink-0 sm:flex"
-            align="end"
-            value={surfaceKey}
-            onValueChange={(v) => {
-              setSurfacePick(v);
-              setEntryKey(null);
-            }}
-            options={surfaceOptions}
-          />
-        ) : surfaceKey ? (
-          <span className="hidden max-w-[40%] shrink-0 truncate font-mono text-[11px] text-muted-foreground sm:inline">{surfaceKey}</span>
-        ) : null}
       </div>
       {tab === "run" ? (
         storyRow ? (
