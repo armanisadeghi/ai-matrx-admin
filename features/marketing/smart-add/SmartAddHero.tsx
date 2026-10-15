@@ -225,22 +225,6 @@ export function SmartAddHero({
     setMode("name");
   };
 
-  const held = useRef(false);
-  const submit = (pk: SocialPlatform | null = picked) => {
-    if (!readyFor(pk)) return;
-    if (!onBeforeStart) return go(pk);
-    void onBeforeStart({ website: siteOk ? site.trim() : "", social: socialOkFor(pk) ? social.trim() : "", platform: pk, name: name.trim(), city: city.trim() }).then((ok) => {
-      held.current = !ok;
-      if (ok) go(pk);
-    });
-  };
-  const goHeld = useEffectEvent(() => {
-    if (held.current) {
-      held.current = false;
-      go(picked);
-    }
-  });
-  useEffect(() => goHeld(), [released]);
   const go = (pk: SocialPlatform | null) => {
     if (mode === "name" && person && onFindPerson) {
       if (!occupation.trim() && !company.trim() && !askedClue) {
@@ -264,6 +248,22 @@ export function SmartAddHero({
     onStarted?.();
     setSubmitted(true);
   };
+  const held = useRef(false);
+  const submit = (pk: SocialPlatform | null = picked) => {
+    if (!readyFor(pk)) return;
+    if (!onBeforeStart) return go(pk);
+    void onBeforeStart({ website: siteOk ? site.trim() : "", social: socialOkFor(pk) ? social.trim() : "", platform: pk, name: name.trim(), city: city.trim() }).then((ok) => {
+      held.current = !ok;
+      if (ok) go(pk);
+    });
+  };
+  const goHeld = useEffectEvent(() => {
+    if (held.current) {
+      held.current = false;
+      go(picked);
+    }
+  });
+  useEffect(() => goHeld(), [released]);
   /** Try the same input again (a lookup service hiccup, a slow site). */
   const retry = async () => {
     if ((await onRestart?.("retry")) === false) return;
