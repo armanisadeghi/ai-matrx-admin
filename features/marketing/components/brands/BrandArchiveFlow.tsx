@@ -27,6 +27,7 @@ import {
 } from "@/features/marketing/data/hooks";
 import type { BrandArchiveCounts } from "@/features/marketing/data/service";
 import { extractErrorMessage } from "@/utils/errors";
+import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { GovernedActionDialog } from "@/features/access-gate/components/GovernedActionDialog";
 import { isGovernedActionDenial } from "@/features/access-gate/lib/governedActionError";
 import { useRemovalRights } from "@/features/access-gate/hooks/useHiddenByMe";
@@ -189,8 +190,9 @@ function BrandSharedItemsWindow({
             <Loader2 className="h-4 w-4 animate-spin" /> Loading
           </div>
         ) : items.isError ? (
-          <div role="alert" className="p-3 text-sm text-destructive">
-            {extractErrorMessage(items.error)}
+          <div role="alert" className="flex items-start gap-2 p-3 text-sm text-destructive">
+            <span className="min-w-0 flex-1">{extractErrorMessage(items.error)}</span>
+            <ErrorAlchemyMenu error={items.error} />
           </div>
         ) : (
           <ul className="divide-y divide-border">
