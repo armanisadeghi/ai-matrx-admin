@@ -1,8 +1,7 @@
-// Moved to `@ai-matrx/icons/brand-glyphs` (agent core A1) — the model picker lives in
-// `@ai-matrx/agents` and may not import the app. This path re-exports the package so the one
-// implementation serves every consumer here.
+// Brand-name resolution lives in icons; tap buttons live in design-system.
+// Keep this app-facing path so existing callers use the shared package implementations.
 export {
   resolveMakerBrandId,
-  getMakerBrandTapButton,
   type MakerBrandId,
 } from "@ai-matrx/icons/brand-glyphs";
+export { getMakerBrandTapButton } from "@ai-matrx/design-system/tap-target/ai-buttons";
