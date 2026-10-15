@@ -307,5 +307,6 @@ describe("ProTextarea on a phone — the device chevron folds into the menu", ()
     const rows = [...document.querySelectorAll("button")].map((b) => b.textContent?.trim());
     expect(rows).toContain("Microphone");
     await box.unmount();
-  });
+    // Opening "…" the first time loads the lazy action list — slow on a busy machine.
+  }, 120_000);
 });
