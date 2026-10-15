@@ -69,7 +69,7 @@ interface TextRunLike {
 }
 
 /** Inverse of markdown-to-univer-doc's HEADING_FONT_SIZE. */
-const HEADING_LEVEL_BY_FONT_SIZE: Record<number, number> = {
+export const HEADING_LEVEL_BY_FONT_SIZE: Record<number, number> = {
   26: 1,
   22: 2,
   18: 3,
