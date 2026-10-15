@@ -608,6 +608,12 @@
       "checksum": "6b426de2fc0bc56db4813b2370e7d197272401d9993dd6d31977fb37d91baec1",
       "applied_at": "2026-10-15 16:41:47.729121+00"
     },
+    "migrations/campaign/atinterface_b_a_client_contact_sees_only_rows_that_name_her.sql": {
+      "source": "matrx-frontend",
+      "filename": "atinterface_b_a_client_contact_sees_only_rows_that_name_her.sql",
+      "checksum": "a9bd972b66b5a39ff886e1ccb47395c89cf17533c589ba243a6ce9b729217641",
+      "applied_at": "2026-10-15 17:14:44.793871+00"
+    },
     "migrations/campaign/atmerge_a_a_merge_writes_each_links_value_beside_its_edge.sql": {
       "source": "matrx-frontend",
       "filename": "atmerge_a_a_merge_writes_each_links_value_beside_its_edge.sql",
