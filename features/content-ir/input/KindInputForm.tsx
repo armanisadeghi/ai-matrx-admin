@@ -425,7 +425,7 @@ export default function KindInputForm({
                 {fieldErrors.map((message) => (
                   <p
                     key={message}
-                    className="flex items-start gap-1.5 font-mono text-[11px] text-red-700 dark:text-red-300"
+                    className="flex items-start gap-1.5 text-[11px] text-red-700 dark:text-red-300"
                   >
                     <X className="mt-0.5 h-3 w-3 shrink-0" />
                     {humanizeStructuralMessage(message)}
