@@ -177,6 +177,8 @@ export interface RoundView {
   entry?: EntryOutcome | null;
   /** Why the run could not be READ (the attach refused), never the run's own failure. */
   readFailure?: string | null;
+  /** The facts agent's step failed in this round (MKT-061): the screen says the facts are missing. */
+  factsFailed?: boolean;
   /** The homepage picture is being taken right now (its own step runs in a live run), never "the round is busy". */
   shooting: boolean;
   /** A step that can bring a logo or photo (lookups, page reads, facts) is running right now in a live run. */
@@ -300,6 +302,8 @@ export function SmartAddRound({
   const factsAggregate = useAppSelector(selectNodeAggregate(runId, "facts"));
   const factsInvocation = factsAggregate.invocations[factsAggregate.invocations.length - 1];
   const factsOut = factsInvocation?.output ?? null;
+  const personFactsAggregate = useAppSelector(selectNodeAggregate(runId, "person_facts"));
+  const factsFailed = factsAggregate.phase === "failed" || personFactsAggregate.phase === "failed";
   // MKT-106: the brand name fills from the forming value too, not only the step's final output (ratcheted: once shown, it stays).
   const factsLaneId = factsInvocation?.laneRequestId ?? null;
   const selectFactsLive = factsLaneId ? selectLiveKindValue(factsLaneId) : null;
@@ -414,6 +418,7 @@ export function SmartAddRound({
     ...(replays.length ? { replays } : {}),
     ...(entry ? { entry } : {}),
     ...(readFailure ? { readFailure } : {}),
+    ...(factsFailed ? { factsFailed: true } : {}),
   };
   useEffect(() => {
     onView(view);

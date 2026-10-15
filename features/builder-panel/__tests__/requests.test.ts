@@ -102,3 +102,23 @@ describe("builder requests", () => {
     expect(activity.find((a) => a.kind === "step")?.costUsd).toBe(0.05);
   });
 });
+
+describe("a failed step keeps its requests (MKT-058)", () => {
+  it("reads the ledger from error.details when the failed output is empty", () => {
+    const failed: NodeOutcomeRow = {
+      ...outcome,
+      id: "o2",
+      nodeId: "history",
+      output: {},
+      error: {
+        code: "history_failed",
+        message: "the provider refused",
+        details: { requests: [{ seq: 1, kind: "social_posts", provider: "social", status: 401, error: "401" }] },
+      },
+    };
+    const rows = serverRequestRows([failed]);
+    expect(rows).toHaveLength(1);
+    expect(rows[0].status).toBe(401);
+    expect(rows[0].nodeId).toBe("history");
+  });
+});

@@ -9,7 +9,9 @@
  * When a run can NOT continue (its steps were replaced, or the resume is refused) or the brand's sites
  * were never crawled, "Run setup again" starts a fresh setup from what is already confirmed on the
  * brand: its tracked accounts get their post history, sites with no crawled pages get the crawl;
- * images already saved are not saved again.
+ * images already saved are not saved again. While the run WAITS at the basics gate it cannot be started
+ * again (a start returns the open run), so "Run setup again" there runs only the crawl and post-history
+ * steps, on their own (smart_add_brand_ingest, subject ingest:<brand id>) — MKT-059.
  */
 
 import { useState } from "react";
@@ -26,10 +28,12 @@ import { runHref } from "@/features/workflow-runtime/run-doors";
 import { HumanGatePanel } from "@/features/workflow-runtime/interrupt/HumanGatePanel";
 import { lookupSystemRun, startSystemRun } from "@/features/education/kits/systemRuns";
 import { countSitePages, listBrandProperties, listBrandSites } from "@/features/marketing/data/service";
+import { loadAccounts } from "@/features/marketing/components/brands/BrandBackgroundWork";
 import { useSessionKnob } from "@/lib/scoped-config/sessionKnob";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 const SETUP_KEY = "smart_add_brand_setup";
+const INGEST_KEY = "smart_add_brand_ingest";
 const STOPPED = new Set(["failed", "errored", "cancelled", "stopped"]);
 
 function useSetupRun(brandId: string, organizationId: string) {
@@ -80,24 +84,61 @@ export function SmartAddSetupStatus({ brandId, organizationId }: { brandId: stri
   });
   const run = useSetupRun(brandId, organizationId);
   const r = run.data;
+  const waiting = r?.status === "interrupted";
+  const postless = useQuery({
+    queryKey: ["marketing", "smart-add-setup-postless", brandId],
+    queryFn: async () => (await loadAccounts(brandId)).filter((a) => a.posts === 0),
+    enabled: waiting,
+    staleTime: 60_000,
+  });
   const uncrawled = (sites.data ?? []).filter((x) => x.pages === 0);
   if (!r) return null;
   const stopped = STOPPED.has(r.status);
-  const canRunAgain = (stopped && (r.status !== "errored" || resumeRefused)) || (r.status === "completed" && uncrawled.length > 0);
+  const missingWork = uncrawled.length > 0 || (postless.data?.length ?? 0) > 0;
+  const canRunAgain =
+    (stopped && (r.status !== "errored" || resumeRefused)) || (r.status === "completed" && uncrawled.length > 0) || (waiting && missingWork);
   if (r.status === "completed" && !canRunAgain) return null;
 
   const runAgain = async () => {
     setRerunning(true);
     try {
       await ensureOrgId(organizationId);
+      if (waiting) {
+        // The setup run is open at the gate, so a setup start would return it and crawl nothing: run the
+        // crawl and post-history steps on their own for what is still missing.
+        const missingAccounts = (postless.data ?? []).map((a) => ({ handle_or_url: a.handleOrUrl, platform: a.kind, property_id: a.propertyId }));
+        const started = await startSystemRun(
+          dispatch,
+          INGEST_KEY,
+          {
+            subject: `ingest:${brandId}`,
+            organizationId,
+            sourceFeature: "marketing",
+            inputs: { brand_id: brandId, accounts: missingAccounts, sites: uncrawled.map((x) => x.id), every_site: false },
+          },
+          "The crawl and posts could not start.",
+        );
+        if (started.duplicate) toast.info("Already fetching the missing crawl and posts");
+        else
+          toast.success(
+            [uncrawled.length ? `crawling ${uncrawled.length} site${uncrawled.length === 1 ? "" : "s"}` : "", missingAccounts.length ? `fetching posts for ${missingAccounts.length}` : ""]
+              .filter(Boolean)
+              .join(" · ")
+              .replace(/^./, (c) => c.toUpperCase()),
+          );
+        await queryClient.invalidateQueries({ queryKey: ["marketing", "smart-add-setup-sites", brandId] });
+        await queryClient.invalidateQueries({ queryKey: ["marketing", "brand-work-sites", brandId] });
+        return;
+      }
       const properties = await listBrandProperties(brandId);
       const accounts = properties
         .filter((p) => p.kind !== "website" && (p.url || p.handle))
         .map((p) => ({ handle_or_url: p.url ?? p.handle ?? "", platform: p.kind, property_id: p.id }));
       // The setup run crawls every site of the brand on the server; a site already crawling or
       // crawled is skipped there (brand.setup.crawl_sites).
+      let duplicate = false;
       if (accounts.length || uncrawled.length) {
-        await startSystemRun(
+        duplicate = (await startSystemRun(
           dispatch,
           SETUP_KEY,
           {
@@ -108,8 +149,9 @@ export function SmartAddSetupStatus({ brandId, organizationId }: { brandId: stri
             inputs: { brand_id: brandId, images: [], accounts, sites: [], max_posts: maxPosts },
           },
           "The setup could not start again.",
-        );
+        )).duplicate;
       }
+      if (duplicate) throw new Error("a setup run for this brand is still open");
       toast.success(
         `Setup started again${uncrawled.length ? ` · crawling ${uncrawled.length} site${uncrawled.length === 1 ? "" : "s"}` : ""}`,
       );

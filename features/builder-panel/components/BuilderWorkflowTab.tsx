@@ -17,6 +17,7 @@ import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 import type { MandateProposal, NodeOutcomeRow, RunTruth } from "../data";
 import { BuilderJson } from "./BuilderJson";
 import { ProposalCard } from "./ProposalCard";
+import { outcomeRequests } from "../requests";
 import { AiTestReplayBadge } from "@/features/ai-test-mode/AiTestReplayBadge";
 
 type Tone = "neutral" | "success" | "warning" | "destructive" | "info";
@@ -38,7 +39,7 @@ function StepRow({ o, open, onToggle }: { o: NodeOutcomeRow; open: boolean; onTo
   const { format } = useCostDisplay();
   const out = record(o.output);
   const cost = typeof out.cost_usd === "number" ? out.cost_usd : null;
-  const reqs = Array.isArray(out.requests) ? out.requests.length : 0;
+  const reqs = outcomeRequests(o).length;
   return (
     <li className="border-b border-border last:border-b-0">
       <button

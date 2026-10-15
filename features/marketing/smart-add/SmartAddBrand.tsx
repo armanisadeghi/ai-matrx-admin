@@ -917,6 +917,8 @@ export function SmartAddBrand({
     .map((s) => s.progress as string);
   // The typed site refused or timed out: the screen says so (its rows came from the web instead).
   const siteUnread = rounds.map((r, i) => siteReadFailure(roundViews[i], r.seeds.website)).find(Boolean) ?? null;
+  // The facts agent failed and no round brought a fact: say so, never carry on as if nothing were missing (MKT-061).
+  const factsMissing = facts.length === 0 && roundViews.some((v) => v?.factsFailed);
   // Every paid step of every round (anchor searches and profile lookups included) and the setup run: never
   // "Free so far" after a paid lookup (PEOPLE-AND-CREATORS §10).
   const costUsd =
@@ -1025,6 +1027,7 @@ export function SmartAddBrand({
     basics.name ?? foundName?.value ?? null,
     {
       accounts: visible.filter((i) => i.field === "social").map((i) => i.url),
+      place: confirmedFacts.location ?? factBasics.facts.find((f) => f.field === "address")?.value ?? null,
       handles: [...basics.accounts.map((a) => a.handle ?? null), ...visible.filter((i) => i.field === "social").map((i) => i.handle)],
     },
   );
@@ -1725,6 +1728,13 @@ export function SmartAddBrand({
           <span className="flex min-w-0 shrink items-center gap-1 truncate" data-testid="smart-add-site-unread">
             <TriangleAlert className="size-3 shrink-0 text-warning" />
             <span className="truncate">{siteReadLine(siteUnread)}</span>
+          </span>
+        ) : null}
+        {factsMissing ? (
+          <span className="flex min-w-0 shrink items-center gap-1 truncate" data-testid="smart-add-facts-failed">
+            <TriangleAlert className="size-3 shrink-0 text-warning" />
+            <span className="truncate">Couldn&apos;t find the brand&apos;s facts</span>
+            <ErrorAlchemyMenu error="The facts step failed in this round" />
           </span>
         ) : null}
         <span className="ml-auto shrink-0 tabular-nums">

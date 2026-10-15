@@ -86,11 +86,21 @@ export function pageRequestRows(log: LoggedRequest[], route: string | null): Req
   return log.filter((r) => !route || r.route === route).map(pageRow);
 }
 
+/**
+ * The requests a step recorded. A completed step carries them on `output.requests`; a failed step's
+ * output is empty, so its ledger rides `error.details.requests` (MKT-058) — the failing calls are the point.
+ */
+export function outcomeRequests(o: Pick<NodeOutcomeRow, "output" | "error">): unknown[] {
+  const fromOutput = record(o.output).requests;
+  if (Array.isArray(fromOutput)) return fromOutput;
+  const fromError = record(record(o.error).details).requests;
+  return Array.isArray(fromError) ? fromError : [];
+}
+
 export function serverRequestRows(outcomes: NodeOutcomeRow[]): RequestRow[] {
   const rows: RequestRow[] = [];
   for (const o of outcomes) {
-    const list = record(o.output).requests;
-    if (!Array.isArray(list)) continue;
+    const list = outcomeRequests(o);
     list.forEach((raw, i) => {
       const r = record(raw);
       const ended = typeof r.at === "string" ? Date.parse(r.at) : Date.parse(o.completedAt);

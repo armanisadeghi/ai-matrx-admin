@@ -38,6 +38,8 @@ import { SectionCard } from "@/features/marketing/components/shared/MarketingUi"
 import { marketingRoutes } from "@/features/marketing/lib/routes";
 import { marketingSeg } from "@/features/marketing/lib/keys";
 import type { MarketingBrand } from "@/features/marketing/types";
+import { accountKey, loadPostHistoryNotes } from "./postHistoryOutcomes";
+import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 
 const ACTIVE = new Set(["queued", "running"]);
 
@@ -91,7 +93,7 @@ async function loadSites(brandId: string): Promise<SiteJob[]> {
   });
 }
 
-async function loadAccounts(brandId: string): Promise<AccountJob[]> {
+export async function loadAccounts(brandId: string): Promise<AccountJob[]> {
   const properties = (await listBrandProperties(brandId)).filter((p) => p.kind !== "website" && (p.url || p.handle));
   if (!properties.length) return [];
   const tracked = await supabase
@@ -170,6 +172,18 @@ export function BrandBackgroundWork({ brand, canEdit }: { brand: MarketingBrand;
     refetchInterval: (q) => ((q.state.data ?? []).some((s) => s.crawl && ACTIVE.has(s.crawl.status)) ? 10_000 : false),
   });
   const accounts = useQuery({ queryKey: ["marketing", "brand-work-accounts", brand.id], queryFn: () => loadAccounts(brand.id) });
+  // What the server's post-history step said per account (setup + ingest runs): a refused walk shows here.
+  const historyNotes = useQuery({
+    queryKey: ["marketing", "brand-work-history", brand.id, (accounts.data ?? []).map((a) => a.propertyId).join(",")],
+    queryFn: () =>
+      loadPostHistoryNotes([
+        `brand:${brand.id}`,
+        `ingest:${brand.id}`,
+        ...(accounts.data ?? []).map((a) => `ingest:${a.propertyId}`),
+      ]),
+    enabled: accounts.isSuccess,
+    staleTime: 30_000,
+  });
 
   const mark = (key: string, on: boolean) => setBusy((b) => ({ ...b, [key]: on }));
 
@@ -198,8 +212,8 @@ export function BrandBackgroundWork({ brand, canEdit }: { brand: MarketingBrand;
       const maxPosts = await rememberedMaxPostsPlain();
       const opts = { organizationId: brand.organization_id };
       if (account.profileId) {
-        // Already tracked: only posts newer than what we hold.
-        await refreshProfile(account.profileId, { maxPosts, continueFromLast: true }, opts);
+        // Only posts newer than what we hold — or, holding none, from the newest (a saved place may be stale).
+        await refreshProfile(account.profileId, { maxPosts, continueFromLast: account.posts > 0 }, opts);
       } else {
         await trackAccount(
           {
@@ -308,7 +322,10 @@ export function BrandBackgroundWork({ brand, canEdit }: { brand: MarketingBrand;
             {(accounts.data ?? []).map((account) => {
               const key = `acct:${account.propertyId}`;
               const active = Boolean(busy[key]);
-              const state = active ? "running" : errors[key] ? "failed" : account.trackedId ? "done" : "todo";
+              // A failed server walk counts until a later fetch lands posts (MKT-057).
+              const serverError = account.posts === 0 ? (historyNotes.data?.get(accountKey(account.handleOrUrl))?.error ?? null) : null;
+              const shownError = errors[key] || serverError || "";
+              const state = active ? "running" : shownError ? "failed" : account.trackedId ? "done" : "todo";
               const points = defaultPosts ? spend.postsText(account.kind, defaultPosts) : null;
               return (
                 <li key={account.propertyId} className="flex min-w-0 flex-wrap items-center gap-x-2 rounded-md px-1 py-1 hover:bg-muted/50 sm:flex-nowrap" data-testid="brand-work-account">
@@ -325,9 +342,9 @@ export function BrandBackgroundWork({ brand, canEdit }: { brand: MarketingBrand;
                     {account.trackedId ? `${account.posts.toLocaleString()} posts` : "Not fetched"}
                     {account.lastPostAt ? ` · ${when(account.lastPostAt)}` : ""}
                   </span>
-                  {errors[key] ? (
-                    <span className="order-last basis-full truncate pl-6 text-xs text-destructive sm:order-none sm:basis-auto sm:pl-0" title={errors[key]}>
-                      {errors[key]}
+                  {shownError && !active ? (
+                    <span className="order-last basis-full truncate pl-6 text-xs text-destructive sm:order-none sm:basis-auto sm:pl-0" title={shownError}>
+                      {shownError}<ErrorAlchemyMenu error={shownError} />
                     </span>
                   ) : null}
                   {canEdit ? (
@@ -341,7 +358,7 @@ export function BrandBackgroundWork({ brand, canEdit }: { brand: MarketingBrand;
                         disabled={active}
                         onClick={() => void fetchPosts(account)}
                       >
-                        {active ? "Fetching" : errors[key] ? "Retry" : account.trackedId ? "Fetch new" : "Fetch posts"}
+                        {active ? "Fetching" : shownError ? "Retry" : account.trackedId ? "Fetch new" : "Fetch posts"}
                       </Button>
                     </span>
                   ) : null}
