@@ -14,7 +14,7 @@ jest.mock("@/components/official/VoiceTextarea", () => ({
 }));
 jest.mock("@/features/agents/factory/service", () => ({ startAgentBuild: jest.fn() }));
 jest.mock("@/lib/organizations/ensureOrgId", () => ({ ensureOrgId: jest.fn() }));
-jest.mock("@/lib/coming-soon/announce", () => ({ announceComingSoon: jest.fn() }));
+jest.mock("@ai-matrx/kit/coming-soon", () => ({ announceComingSoon: jest.fn() }));
 
 import { StudioStart } from "../components/StudioStart";
 

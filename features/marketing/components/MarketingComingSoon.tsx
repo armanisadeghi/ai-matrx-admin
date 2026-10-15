@@ -46,7 +46,7 @@ import {
   type MarketingNavPillar,
 } from "@/features/marketing/lib/marketing-nav";
 import { marketingRoutes } from "@/features/marketing/lib/routes";
-import { getComingSoon } from "@/lib/coming-soon/registry";
+import { getComingSoon } from "@ai-matrx/kit/coming-soon";
 
 const ICONS: Readonly<Record<string, LucideIcon>> = {
   BadgeDollarSign,

@@ -8,7 +8,7 @@ import { normalizeMathProblemLatex } from "@/features/math/utils/latex-normalize
 import { downloadMathProblem, uploadMathProblem } from "@/features/math/utils/math-problem-persistence";
 import ContentBlockWrapper from "@ai-matrx/rich-content/display/blocks/common/ContentBlockWrapper";
 import { mathPrinter } from "./math-printer";
-import { announceComingSoon } from "@/lib/coming-soon/announce";
+import { announceComingSoon } from "@ai-matrx/kit/coming-soon";
 import { PrintOptionsDialog, usePrintOptions } from "@ai-matrx/print/react";
 
 interface MathProblemBlockProps {

@@ -40,7 +40,7 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 
 import { hrHref } from "../routes";
-import { STAGE_LINE } from "@/lib/coming-soon/announce";
+import { STAGE_LINE } from "@ai-matrx/kit/coming-soon";
 import { COMING_SOON } from "@/lib/coming-soon/registry";
 
 import { HrShell } from "./HrShell";

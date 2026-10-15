@@ -35,7 +35,7 @@ import { InfoHint } from "@/components/official/InfoHint";
 import { AlertTriangle, CheckCircle2, CircleDashed, Clock, ShieldAlert, UserX } from "lucide-react";
 
 import { cn } from "@/lib/utils";
-import { announceComingSoon } from "@/lib/coming-soon/announce";
+import { announceComingSoon } from "@ai-matrx/kit/coming-soon";
 import { Button } from "@/components/ui/button";
 import type { PeriodWorkflowHealth, RowHealth } from "../api/periodReads";
 // The vocabulary lives in a React-free module so the headless proof can assert it.

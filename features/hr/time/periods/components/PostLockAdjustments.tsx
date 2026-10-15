@@ -25,7 +25,7 @@ import Link from "next/link";
 import { FileWarning, Plus } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { announceComingSoon } from "@/lib/coming-soon/announce";
+import { announceComingSoon } from "@ai-matrx/kit/coming-soon";
 import { formatHours, formatLocalDate, formatMoney } from "../../shared/format";
 import type { PayPeriodRow } from "../../api/types";
 import type { TimeAdjustmentRow } from "../api/periodReads";

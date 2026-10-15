@@ -3,7 +3,7 @@ import { GoogleSlidesLogo } from "@/components/icons/google-brand";
 import { Badge } from "@ai-matrx/design-system/controls";
 import { getActiveOrgId } from "@/lib/organizations/activeOrg";
 import React, { useEffect, useRef, useState } from "react";
-import { announceComingSoon } from "@/lib/coming-soon/announce";
+import { announceComingSoon } from "@ai-matrx/kit/coming-soon";
 import {
   Download,
   FileText,

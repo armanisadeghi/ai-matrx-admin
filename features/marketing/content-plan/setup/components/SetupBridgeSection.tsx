@@ -71,7 +71,7 @@ import { planKeys } from "../../data/hooks";
 import { marketingKeys } from "@/features/marketing/data/hooks";
 import {  } from "lucide-react";
 import { AdminDocHint } from "@/features/admin/components/AdminDocHint";
-import { announceComingSoon } from "@/lib/coming-soon/announce";
+import { announceComingSoon } from "@ai-matrx/kit/coming-soon";
 
 import {
   fetchFreshSite,

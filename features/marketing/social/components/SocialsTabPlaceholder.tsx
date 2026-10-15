@@ -9,8 +9,8 @@
 import { Hourglass } from "lucide-react";
 
 import { Button, EmptyState } from "@ai-matrx/design-system/controls";
-import { announceComingSoon } from "@/lib/coming-soon/announce";
-import { getComingSoon } from "@/lib/coming-soon/registry";
+import { announceComingSoon } from "@ai-matrx/kit/coming-soon";
+import { getComingSoon } from "@ai-matrx/kit/coming-soon";
 
 export function SocialsTabPlaceholder({ comingSoonId }: { comingSoonId: string }) {
   const entry = getComingSoon(comingSoonId);

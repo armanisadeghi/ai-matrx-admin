@@ -33,7 +33,7 @@ import {
 
 import type { ItemMenuConfig } from "@ai-matrx/chat/ui/item-types";
 import { useOpenTaskQuickCreateWindow } from "@/features/overlays/openers/taskQuickCreateWindow";
-import { announceComingSoon } from "@/lib/coming-soon/announce";
+import { announceComingSoon } from "@ai-matrx/kit/coming-soon";
 
 import type { HrCapability } from "../../constants";
 import {

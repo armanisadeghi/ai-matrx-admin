@@ -16,7 +16,7 @@ import { AlertTriangle } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ComingSoonBadge } from "@/components/coming-soon/ComingSoonBadge";
-import { announceComingSoon } from "@/lib/coming-soon/announce";
+import { announceComingSoon } from "@ai-matrx/kit/coming-soon";
 import { cn } from "@/lib/utils";
 import type {
   ContractCheck,

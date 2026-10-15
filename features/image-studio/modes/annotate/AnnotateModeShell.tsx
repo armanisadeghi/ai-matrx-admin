@@ -21,7 +21,7 @@ import { ReadFailure } from "@ai-matrx/design-system";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Loader2, Save, ShieldAlert, Zap } from "lucide-react";
 import { toast } from "@/lib/toast";
-import { announceComingSoon } from "@/lib/coming-soon/announce";
+import { announceComingSoon } from "@ai-matrx/kit/coming-soon";
 import { Button } from "@/components/ui/button";
 import { useImageSource } from "../shared/use-image-source";
 import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";

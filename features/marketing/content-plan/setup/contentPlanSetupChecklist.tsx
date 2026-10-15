@@ -42,7 +42,7 @@
 
 import Link from "next/link";
 
-import { announceComingSoon } from "@/lib/coming-soon/announce";
+import { announceComingSoon } from "@ai-matrx/kit/coming-soon";
 import { registerChecklist } from "@/lib/guided-setup/registry";
 import type { CheckResult } from "@/lib/guided-setup/types";
 import { marketingRoutes } from "@/features/marketing/lib/routes";

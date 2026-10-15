@@ -282,7 +282,7 @@ export function useWorkbookTableLink({
     toast.success("Unlinked; the table and the sheet no longer sync");
   };
 
-  const none = { ready: false, mark: null, items: null, dialog: null } as const;
+  const none = { ready: false, mark: null, items: null, dialog: null, makeTable: null, linkedTableId: null } as const;
   if (!enabled || links === null) return none;
 
   if (!link) {
@@ -290,6 +290,8 @@ export function useWorkbookTableLink({
     return {
       ready: true,
       mark: null,
+      makeTable: linking ? null : makeTable,
+      linkedTableId: null,
       items: (
         <DropdownMenuItem
           disabled={linking || !openSaveToTable}
@@ -335,6 +337,8 @@ export function useWorkbookTableLink({
   );
   return {
     ready: true,
+    makeTable: null,
+    linkedTableId: link.table_id,
     // Google's cloud-icon spot: a small mark by the title, only while this sheet is linked.
     mark: (
       <DropdownMenu modal={false}>

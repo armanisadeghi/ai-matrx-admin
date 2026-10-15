@@ -24,7 +24,7 @@ import { openOverlay } from "@/lib/redux/slices/overlaySlice";
 import { buildRecordReferenceFence } from "@/features/matrx-envelope/recordReference";
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import { buildAgentDeleteConfirm } from "@/features/agents/deletion/agentDeleteConfirm";
-import { announceComingSoon } from "@/lib/coming-soon/announce";
+import { announceComingSoon } from "@ai-matrx/kit/coming-soon";
 import type { ItemMenuConfig } from "@ai-matrx/chat/ui/item-types";
 import { buildAgentMenu } from "./agentActionRegistry";
 import { agentHref, isSystemAgentRow } from "./agentPaths";

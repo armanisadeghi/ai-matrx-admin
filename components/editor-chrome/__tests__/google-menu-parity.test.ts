@@ -7,7 +7,7 @@ import { buildSheetMenus, type SheetChromeHost } from "@/features/workbooks/chro
 import { buildDocMenus, type DocChromeHost } from "@/features/documents/chrome/doc-commands";
 import { buildDeckMenus, type DeckChromeHost } from "@/features/presentations/deck-commands";
 import { buildEditorFileMenu } from "@/features/file-actions/editor-file-menu";
-import { getComingSoon } from "@/lib/coming-soon/registry";
+import { getComingSoon } from "@ai-matrx/kit/coming-soon";
 import { flattenMenus, type EditorMenu, type EditorMenuEntry } from "../editor-menu-model";
 
 function anything(): never {
@@ -99,7 +99,7 @@ describe("Google File menu", () => {
   });
   it("Slides: Import slides, Language and Page setup in Google's places; no owner rows without rights", () => {
     const menu = buildEditorFileMenu(
-      { product: "slides", rows: [...rows, { kind: "action", id: "file.import-slides", label: "Import slides", run: () => {} }], templatesHref: "/t", downloads: [{ label: "ODP", soon: "presentations.download-odp" }] },
+      { product: "slides", rows: [...rows, { kind: "action", id: "file.import-slides", label: "Import slides", run: () => {} }], templatesHref: "/t", downloads: [{ label: "ODP", run: async () => {} }] },
       { download: () => {}, navigate: () => {} },
     );
     const l = labels(menu);

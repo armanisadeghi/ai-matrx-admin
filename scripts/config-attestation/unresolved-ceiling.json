@@ -1,0 +1,4 @@
+{
+  "ceiling": 35,
+  "why": "2026-10-15: 64 unresolved sites before pooled pair constants, PAIR.feature members and positional argument parsing; 35 remain once multi-line and extra-argument calls became visible — 6 import constants from the @ai-matrx/detail npm package (not in this tree), the rest are computed keys (topical-map, templates, study-kit, notes picker, masterwork settings, spaces). Shrink-only: pnpm check:knob-reads-declared --write."
+}

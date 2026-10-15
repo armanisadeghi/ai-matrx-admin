@@ -25,7 +25,7 @@ export function soon(
     label,
     soon: promise,
     ...opts,
-    run: () => import("@/lib/coming-soon/announce").then((m) => m.announceComingSoon(promise)),
+    run: () => import("@ai-matrx/kit/coming-soon").then((m) => m.announceComingSoon(promise)),
   };
 }
 

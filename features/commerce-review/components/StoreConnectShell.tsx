@@ -13,7 +13,7 @@ import { CheckCircle2, Circle, Store } from "lucide-react";
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
-import { announceComingSoon } from "@/lib/coming-soon/announce";
+import { announceComingSoon } from "@ai-matrx/kit/coming-soon";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectOrganizationId } from "@/lib/redux/slices/appContextSlice";
 

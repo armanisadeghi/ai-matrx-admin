@@ -18,8 +18,6 @@ const ROWS: Row[] = [
   ["editor.file.offline", "Make available offline", "file-actions", "Keep this file on this device so you can open and edit it without a connection.", "Editor File → Make available offline"],
   ["editor.file.security-limitations", "Security limitations", "file-actions", "See which features this file's sharing and security settings switch off, and why.", "Editor File → Security limitations"],
   ["editor.file.language", "Language", "file-actions", "Set the file's language for spelling, hyphenation and voice typing.", "Editor File → Language"],
-  ["workbooks.settings", "Spreadsheet settings", "workbooks", "Set the spreadsheet's locale, time zone and recalculation rules.", "Workbook File → Settings"],
-  ["presentations.download-odp", "Download as OpenDocument (.odp)", "presentations", "Download the deck as an OpenDocument presentation.", "Presentation File → Download"],
   // ── Edit / View / Insert / Format (shared) ──
   ["editor.insert.drawing", "Drawing", "file-actions", "Draw shapes, lines and text boxes and place the drawing in the file.", "Editor Insert → Drawing"],
   ["editor.insert.chart", "Chart", "file-actions", "Insert a chart that stays linked to its data and updates with it.", "Editor Insert → Chart"],
@@ -39,19 +37,9 @@ const ROWS: Row[] = [
   ["editor.help.training", "Training", "file-actions", "Short lessons that teach this editor, from basics to advanced.", "Editor Help → Training"],
   ["editor.help.updates", "Updates", "file-actions", "See what changed in this editor recently.", "Editor Help → Updates"],
   // ── Workbook only ──
-  ["workbooks.show-formulas", "Show formulas", "workbooks", "Show every cell's formula in place of its value.", "Workbook View → Show"],
-  ["workbooks.show-protected-ranges", "Show protected ranges", "workbooks", "Shade every protected range so you can see what is locked.", "Workbook View → Show"],
   ["workbooks.group", "Group rows and columns", "workbooks", "Group rows or columns so they collapse and expand together.", "Workbook View → Group"],
-  ["workbooks.timeline", "Timeline", "workbooks", "Turn rows with dates into a timeline view.", "Workbook Insert → Timeline"],
   ["workbooks.pivot-table", "Pivot table", "workbooks", "Summarise a range with a pivot table on a new sheet.", "Workbook Insert → Pivot table"],
-  ["workbooks.filter-views", "Filter views", "workbooks", "Save named filters that only change your view, not anyone else's.", "Workbook Data → Filter views"],
   ["workbooks.slicer", "Slicer", "workbooks", "Add a slicer that filters charts and tables from one control.", "Workbook Data → Add a slicer"],
-  ["workbooks.named-functions", "Named functions", "workbooks", "Save a formula as your own reusable function.", "Workbook Data → Named functions"],
-  ["workbooks.data-extraction", "Data extraction", "workbooks", "Pull fields out of smart chips into their own columns.", "Workbook Data → Data extraction"],
-  ["workbooks.data-connectors", "Data connectors", "workbooks", "Connect the workbook to a database and keep the data refreshed.", "Workbook Data → Data connectors"],
-  ["workbooks.create-form", "Create a form", "workbooks", "Create a form whose answers land in a new sheet of this workbook.", "Workbook Tools → Create a new form"],
-  ["workbooks.autocomplete", "Autocomplete", "workbooks", "Turn cell autocomplete on or off while you type.", "Workbook Tools → Autocomplete"],
-  ["workbooks.suggestion-controls", "Suggestion controls", "workbooks", "Choose which automatic suggestions (autocomplete, formulas) appear.", "Workbook Tools → Suggestion controls"],
   // ── Document only ──
   ["documents.show-nonprinting", "Show non-printing characters", "documents", "Show spaces, tabs and paragraph marks while you write.", "Document View → Show"],
   ["documents.footnote", "Footnote", "documents", "Add a numbered footnote at the cursor.", "Document Insert → Footnote"],

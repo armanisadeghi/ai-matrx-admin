@@ -16,7 +16,7 @@ import { useEffect, useState } from "react";
 import { TriangleAlert, Wand2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/utils/supabase/client";
-import { announceComingSoon } from "@/lib/coming-soon/announce";
+import { announceComingSoon } from "@ai-matrx/kit/coming-soon";
 import { declaredOutputKind } from "../contract-check";
 import { kindPhrase } from "../provision-shapes";
 import type { MandateLadderRow } from "../workspace/useMandateLadder";

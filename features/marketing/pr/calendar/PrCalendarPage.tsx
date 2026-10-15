@@ -31,7 +31,7 @@ import { ReadGate } from "@ai-matrx/design-system";
 import { useRead } from "@ai-matrx/design-system";
 import { useMarketingBrand } from "@/features/marketing/lib/brand-context";
 import { marketingRoutes } from "@/features/marketing/lib/routes";
-import { getComingSoon } from "@/lib/coming-soon/registry";
+import { getComingSoon } from "@ai-matrx/kit/coming-soon";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { toast } from "@/lib/toast";
 import { cn } from "@/lib/utils";

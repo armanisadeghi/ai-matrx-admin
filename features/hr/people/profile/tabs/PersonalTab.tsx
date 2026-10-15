@@ -25,7 +25,7 @@ import { useState } from "react";
 import { AlertTriangle } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { announceComingSoon } from "@/lib/coming-soon/announce";
+import { announceComingSoon } from "@ai-matrx/kit/coming-soon";
 import { toast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 import { updateHrEmployee } from "@/features/hr/service";

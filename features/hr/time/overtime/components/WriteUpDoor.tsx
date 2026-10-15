@@ -30,7 +30,7 @@ import { FileText } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { announceComingSoon } from "@/lib/coming-soon/announce";
+import { announceComingSoon } from "@ai-matrx/kit/coming-soon";
 import { UNAPPROVED_OT_IS_PAID } from "../overtimeVocabulary";
 import { InfoHint } from "@/components/official/InfoHint";
 

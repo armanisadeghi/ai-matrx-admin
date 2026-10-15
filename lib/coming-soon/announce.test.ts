@@ -1,6 +1,7 @@
+import { announceComingSoon, getComingSoon } from "@ai-matrx/kit/coming-soon";
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
-import { announceComingSoon } from "./announce";
-import { getComingSoon } from "./registry";
+import "./registry";
+import "./announce";
 
 jest.mock("@/components/dialogs/confirm/ConfirmDialogHost", () => ({
   confirm: jest.fn().mockResolvedValue(true),
@@ -8,7 +9,7 @@ jest.mock("@/components/dialogs/confirm/ConfirmDialogHost", () => ({
 
 const mockedConfirm = jest.mocked(confirm);
 
-describe("announceComingSoon", () => {
+describe("announceComingSoon (app registry + announcer)", () => {
   beforeEach(() => mockedConfirm.mockClear());
 
   it("renders the registered promise through the canonical acknowledge dialog", async () => {
@@ -26,9 +27,7 @@ describe("announceComingSoon", () => {
   });
 
   it("fails closed for an unregistered promise id in development", async () => {
-    await expect(announceComingSoon("test.unregistered")).rejects.toThrow(
-      "is not in lib/coming-soon/registry.ts",
-    );
+    await expect(announceComingSoon("test.unregistered")).rejects.toThrow("is not registered");
     expect(mockedConfirm).not.toHaveBeenCalled();
   });
 });

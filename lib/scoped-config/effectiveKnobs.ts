@@ -48,6 +48,7 @@ import { createClient } from "@/utils/supabase/client";
 import { registerDirectiveHandler } from "@/lib/client-directives/directiveRegistry";
 import { getWebDeviceId } from "./deviceId";
 import { defineClientKey } from "@/lib/sync/client-storage";
+import { noteKnobReadOnce } from "@/lib/config-attestation/readLedger";
 
 const TTL_MS = 60_000;
 
@@ -213,7 +214,10 @@ export function peekEffectiveKnob(
 ): unknown {
   const snapshot = snapshots.get(snapshotAddr(organizationId ?? null, userId ?? null, scopes));
   if (!snapshot) return undefined;
-  return snapshot.resolved[fullKeyOf(ref)];
+  const value = snapshot.resolved[fullKeyOf(ref)];
+  // Config attestation: once per (address, snapshot) — a Set lookup here, the rest after render.
+  if (value !== undefined) noteKnobReadOnce(snapshot, ref, value);
+  return value;
 }
 
 /**
@@ -257,6 +261,7 @@ export function ensureEffectiveKnob(
           "never a dotted string a helper has to re-split.",
       );
     }
+    noteKnobReadOnce(snapshot, ref, snapshot.resolved[fullKey]);
     return snapshot.resolved[fullKey];
   });
 }

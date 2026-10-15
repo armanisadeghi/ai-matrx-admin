@@ -820,9 +820,11 @@ after_watch_rollout() {
     local rc=0
     release_outcome_report "$TARGET" "$RELEASE_COMMIT_MSG" "$RELEASE_SHA" "$NEW_VERSION" || rc=$?
     case "$rc" in
-        0) after_publish_route_manifest ;;
-        2) SHIP_FINDINGS_JSON="$ROLLOUT_JSON" ship_finding "WARNING" "Rollout" "UNVERIFIED — ${NEW_TAG} was pushed but no Vercel credential could confirm the build" "bash scripts/release-outcome.sh --report $TARGET \"$RELEASE_COMMIT_MSG\" $RELEASE_SHA" ;;
-        *) SHIP_FINDINGS_JSON="$ROLLOUT_JSON" ship_finding "ERROR" "Rollout" "ROLLOUT FAILED: ${NEW_TAG} (${RELEASE_SHA:0:10}) is pushed but NOT live — see the release log" "bash scripts/release-outcome.sh --report $TARGET \"$RELEASE_COMMIT_MSG\" $RELEASE_SHA" ;;
+        0) after_publish_route_manifest; after_publish_config_attestation ;;
+        2) SHIP_FINDINGS_JSON="$ROLLOUT_JSON" ship_finding "WARNING" "Config attestation" "NOT ATTESTED — ${NEW_TAG} (${RELEASE_SHA:0:10}) rollout was not confirmed, so its config manifest was not attested" "pnpm -s config:manifest --sha $RELEASE_SHA --out tmp/config-manifest/$RELEASE_SHA.json && (cd ../aidream && uv run python scripts/attest_config_manifest.py --app ai-matrx --manifest \$PWD/tmp/config-manifest/$RELEASE_SHA.json)"
+           SHIP_FINDINGS_JSON="$ROLLOUT_JSON" ship_finding "WARNING" "Rollout" "UNVERIFIED — ${NEW_TAG} was pushed but no Vercel credential could confirm the build" "bash scripts/release-outcome.sh --report $TARGET \"$RELEASE_COMMIT_MSG\" $RELEASE_SHA" ;;
+        *) SHIP_FINDINGS_JSON="$ROLLOUT_JSON" ship_finding "WARNING" "Config attestation" "NOT ATTESTED — ${NEW_TAG} (${RELEASE_SHA:0:10}) did not roll out, so its config manifest was not attested" ""
+           SHIP_FINDINGS_JSON="$ROLLOUT_JSON" ship_finding "ERROR" "Rollout" "ROLLOUT FAILED: ${NEW_TAG} (${RELEASE_SHA:0:10}) is pushed but NOT live — see the release log" "bash scripts/release-outcome.sh --report $TARGET \"$RELEASE_COMMIT_MSG\" $RELEASE_SHA" ;;
     esac
 }
 # ── Route manifest: THE DEPLOY THAT CHANGES THE ROUTES PUBLISHES THEM ───────
@@ -860,8 +862,50 @@ after_publish_route_manifest() {
     fi
 }
 
+# ── Config attestation: THE SHA THAT ROLLED OUT DECLARES WHAT IT READS ───────
+#
+# Lane CONFIG-ATTEST-ROLLOUT (2026-10-15; common-docs/systems/platform/app-config/attestation/FEATURE.md).
+# Runs only on a green rollout of the MAIN project — the one the web app is served from; an
+# admin/demos-only release builds the same sha for other projects and is not attested here (WARNING).
+# The manifest is generated from the git tree of $RELEASE_SHA (never this dirty checkout) against
+# the registry snapshot committed in that tree, so a re-run is byte-identical and the attest RPC
+# stays idempotent. Every failure is a WARNING finding (pre-launch: advisory, never a block).
+# Also checks owned_knob_features drift (a feature the web owns that another app now reads).
+after_publish_config_attestation() {
+    local manifest out rc=0
+    if [[ "$TARGET" != "main" && "$TARGET" != "all" ]]; then
+        SHIP_FINDINGS_JSON="$ROLLOUT_JSON" ship_finding "WARNING" "Config attestation" \
+            "NOT ATTESTED — target '$TARGET' does not include the main project, so ${RELEASE_SHA:0:10} was not attested" ""
+        return 0
+    fi
+    if [[ ! -f "$AIDREAM_DIR/scripts/attest_config_manifest.py" ]]; then
+        SHIP_FINDINGS_JSON="$ROLLOUT_JSON" ship_finding "WARNING" "Config attestation" \
+            "NOT ATTESTED — the aidream checkout is missing at $AIDREAM_DIR, so ${NEW_TAG} has no config manifest and every key reads 'no build attested'" \
+            "AIDREAM_DIR=<aidream checkout> then: pnpm -s config:manifest --sha $RELEASE_SHA --out tmp/config-manifest/$RELEASE_SHA.json"
+        return 0
+    fi
+    manifest="$REPO_ROOT/tmp/config-manifest/$RELEASE_SHA.json"
+    out="$(cd "$REPO_ROOT" && pnpm -s config:manifest --sha "$RELEASE_SHA" --out "$manifest" 2>&1 \
+        && cd "$AIDREAM_DIR" && uv run python scripts/attest_config_manifest.py --app ai-matrx --manifest "$manifest" 2>&1)" || rc=$?
+    printf '%s\n' "$out" >>"${RELEASE_LOG_FILE:-/dev/null}"
+    if (( rc != 0 )); then
+        SHIP_FINDINGS_JSON="$ROLLOUT_JSON" ship_finding "WARNING" "Config attestation" \
+            "NOT ATTESTED — ${NEW_TAG} is live but its config manifest was not attested (exit $rc): $(printf '%s' "$out" | tail -1 | cut -c1-200)" \
+            "pnpm -s config:manifest --sha $RELEASE_SHA --out $manifest && (cd $AIDREAM_DIR && uv run python scripts/attest_config_manifest.py --app ai-matrx --manifest $manifest)"
+    fi
+    rc=0
+    out="$(cd "$REPO_ROOT" && pnpm -s config:owned-features --check 2>&1)" || rc=$?
+    printf '%s\n' "$out" >>"${RELEASE_LOG_FILE:-/dev/null}"
+    if (( rc != 0 )); then
+        SHIP_FINDINGS_JSON="$ROLLOUT_JSON" ship_finding "WARNING" "Config attestation" \
+            "OWNERSHIP DRIFT — ai-matrx owned_knob_features no longer matches who reads them: $(printf '%s' "$out" | tail -1 | cut -c1-200)" \
+            "pnpm config:owned-features --check"
+    fi
+}
+
 WATCH_PID=""
 if $NO_WATCH; then
+    SHIP_FINDINGS_JSON="$ROLLOUT_JSON" ship_finding "WARNING" "Config attestation" "NOT ATTESTED — --no-watch skipped the rollout proof, so ${NEW_TAG} (${RELEASE_SHA:0:10}) has no config manifest" "pnpm -s config:manifest --sha $RELEASE_SHA --out tmp/config-manifest/$RELEASE_SHA.json && (cd ../aidream && uv run python scripts/attest_config_manifest.py --app ai-matrx --manifest \$PWD/tmp/config-manifest/$RELEASE_SHA.json)"
     SHIP_FINDINGS_JSON="$ROLLOUT_JSON" ship_finding "WARNING" "Rollout" "UNWATCHED — ${NEW_TAG} was pushed with --no-watch; nothing here claims it is live" "bash scripts/release-outcome.sh --report $TARGET \"$RELEASE_COMMIT_MSG\" $RELEASE_SHA"
     # No watch means nothing proved the routes are serving, so nothing may
     # publish them as live. Say it rather than leave the manifest silently stale.

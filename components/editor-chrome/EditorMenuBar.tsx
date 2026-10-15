@@ -20,7 +20,7 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { getComingSoon } from "@/lib/coming-soon/registry";
+import { getComingSoon } from "@ai-matrx/kit/coming-soon";
 import { cn } from "@/lib/utils";
 import { EditorMenuContent, EditorMenuSubContent } from "./editor-menu-surface";
 import { formatShortcut, type EditorMenu, type EditorMenuEntry } from "./editor-menu-model";

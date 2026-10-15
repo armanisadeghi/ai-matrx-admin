@@ -1,7 +1,7 @@
 {
   "version": 1,
   "app": "matrx-frontend",
-  "routeCount": 1438,
+  "routeCount": 1439,
   "routes": [
     {
       "pattern": "/",
@@ -2517,6 +2517,11 @@
       "pattern": "/data/dashboards",
       "status": "live",
       "source": "app/(core)/data/dashboards/page.tsx"
+    },
+    {
+      "pattern": "/data/interfaces/[interfaceId]",
+      "status": "live",
+      "source": "app/(core)/data/interfaces/[interfaceId]/page.tsx"
     },
     {
       "pattern": "/data/library",

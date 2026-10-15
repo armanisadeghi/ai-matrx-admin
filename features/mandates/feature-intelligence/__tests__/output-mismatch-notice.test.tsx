@@ -31,7 +31,7 @@ jest.mock("@/utils/supabase/client", () => {
 });
 
 const announce = jest.fn();
-jest.mock("@/lib/coming-soon/announce", () => ({
+jest.mock("@ai-matrx/kit/coming-soon", () => ({
   announceComingSoon: (key: string) => announce(key),
 }));
 

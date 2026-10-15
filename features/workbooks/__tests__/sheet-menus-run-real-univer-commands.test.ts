@@ -98,6 +98,11 @@ function fakeHost(values: unknown[][] = [["a"]], formulas: string[][] = [[""]]) 
     fullScreen: () => false,
     toggleFullScreen: rec("host.toggleFullScreen"),
     notify: rec("host.notify"),
+    openPanel: rec("host.openPanel"),
+    viewOverlays: { state: () => ({ formulas: false, protectedRanges: false }), toggle: rec("host.toggleOverlay") },
+    macros: { list: () => [], recording: () => false, start: rec("host.macroStart"), stop: rec("host.macroStop"), cancel: rec("host.macroCancel"), replay: rec("host.macroReplay") },
+    filterViews: { list: () => [], saveCurrent: rec("host.saveFilterView"), apply: rec("host.applyFilterView") },
+    prefs: { get: () => ({ autocomplete: true, formulaHints: true }), toggle: rec("host.togglePref") },
   };
   return { host, calls };
 }

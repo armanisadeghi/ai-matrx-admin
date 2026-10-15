@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { Zap } from "lucide-react";
 import { SectionToolbar } from "../SectionToolbar";
 import { SectionFooter } from "../SectionFooter";
-import { getComingSoon } from "@/lib/coming-soon/registry";
+import { getComingSoon } from "@ai-matrx/kit/coming-soon";
 
 // The promise is READ from the registry, and rendering is FAIL-CLOSED: no
 // entry means no promise on screen, so deleting the entry when hooks ship

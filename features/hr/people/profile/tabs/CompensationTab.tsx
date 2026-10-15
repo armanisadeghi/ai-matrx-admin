@@ -31,7 +31,7 @@
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
-import { announceComingSoon } from "@/lib/coming-soon/announce";
+import { announceComingSoon } from "@ai-matrx/kit/coming-soon";
 import { cn } from "@/lib/utils";
 
 import { hrStructureFocusHref, type HrOrgRef } from "../../../routes";

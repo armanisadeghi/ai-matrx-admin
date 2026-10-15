@@ -11,6 +11,7 @@ import "@ai-matrx/meet/tokens.css";
 // above, so this app's own tokens and Tailwind utilities win.
 import "@ai-matrx/agents/catalog/styles.css";
 import "./globals.css";
+import "@/lib/coming-soon/registry";
 import "@/providers/chatServerRegistration";
 // Tap-button geometry (the .matrx-tap-* system) ships in the package.
 import "@ai-matrx/design-system/tap-target.css";
@@ -58,6 +59,10 @@ import SessionIntegrityGate from "@/features/shell/components/SessionIntegrityGa
 import { UrlStateDoor } from "@/lib/url-state/UrlStateDoor";
 import { OutboundReferralDecorator } from "@ai-matrx/kit/outbound-decorator";
 import { BUILD_IDENTITY_META, serverBuildIdentity } from "@/lib/deployment/build-identity";
+import { localBuildSha, serverAppVersion } from "@/lib/config-attestation/buildIdentity.server";
+import { APP_VERSION_META, LOCAL_BUILD_META } from "@/lib/config-attestation/meta";
+import { ConfigAttestationBoot } from "@/components/config-attestation/ConfigAttestationBoot";
+import { WebAppNotice } from "@/components/config-attestation/WebAppNotice";
 
 export default async function RootLayout({ children }: RootLayoutProps) {
   // Phase 3: server-read theme cookie so the very first HTML frame has the
@@ -71,6 +76,7 @@ export default async function RootLayout({ children }: RootLayoutProps) {
   //   3. themePolicy's cookie-write side-effect (PR 3.B) keeps the cookie
   //      in lockstep with the Redux action on every toggle.
   const buildIdentity = serverBuildIdentity();
+  const localSha = buildIdentity.commitSha ? "" : localBuildSha();
   const cookieStore = await cookies();
   const themeCookie = cookieStore.get("theme")?.value;
   const isDark = themeCookie === "dark";
@@ -109,7 +115,10 @@ export default async function RootLayout({ children }: RootLayoutProps) {
         <meta name="google" content="notranslate" />
         {/* Build identity at REQUEST time, never compiled in (lib/deployment/build-identity.ts). */}
         <meta name={BUILD_IDENTITY_META.deploymentId} content={buildIdentity.deploymentId} />
-        <meta name={BUILD_IDENTITY_META.commitSha} content={buildIdentity.commitSha} />
+        <meta name={BUILD_IDENTITY_META.commitSha} content={buildIdentity.commitSha || localSha} />
+        {/* Config attestation: the version this page was served as, and whether the sha is a local checkout's HEAD. */}
+        <meta name={APP_VERSION_META} content={serverAppVersion()} />
+        <meta name={LOCAL_BUILD_META} content={!buildIdentity.commitSha && localSha ? "true" : "false"} />
         {/* Sync-engine pre-paint script — declarative, built from
                     each policy's `prePaint` descriptors. Owns `.dark` class
                     and `data-theme` on <html> before first paint when the
@@ -158,6 +167,9 @@ export default async function RootLayout({ children }: RootLayoutProps) {
           <NewVersionWatcher
             deploymentId={process.env.VERCEL_DEPLOYMENT_ID ?? null}
           />
+          {/* Config attestation: count this tab's config reads per build; show the app's notice. */}
+          <ConfigAttestationBoot />
+          <WebAppNotice />
           {/* Glass portal layer — lives outside all content stacking contexts.
                     NO position, NO z-index, NO transform, NO overflow, NO filter here — ever.
                     Children (dock, panels) are position:fixed themselves.

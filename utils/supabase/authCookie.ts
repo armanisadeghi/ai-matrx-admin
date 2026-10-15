@@ -12,6 +12,7 @@
 // Docs: https://supabase.com/docs/guides/getting-started/api-keys
 
 import { createNextSupabase } from "@ai-matrx/data/next";
+import { MATRX_AUTH_COOKIE } from "@ai-matrx/auth/cookies";
 import type { CookieOptionsWithName } from "@supabase/ssr";
 import type { Database } from "@/types/database.types";
 import { wrapClientForCapture } from "@/lib/diagnostics/supabaseErrorCapture";
@@ -23,7 +24,7 @@ import { wrapClientForCapture } from "@/lib/diagnostics/supabaseErrorCapture";
  * Bump the cookie name whenever the Supabase auth authority is replaced, and
  * move the previous name to `legacyCookieName`.
  */
-export const LEGACY_AUTH_COOKIE_NAME = "sb-matrx-auth";
+export const LEGACY_AUTH_COOKIE_NAME = MATRX_AUTH_COOKIE.legacy;
 
 export const supabaseNext = createNextSupabase<Database>({
   // STATIC member accesses — Next only inlines NEXT_PUBLIC_* into client
@@ -31,8 +32,8 @@ export const supabaseNext = createNextSupabase<Database>({
   supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL,
   publishableKey: process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
   apexDomain: "aimatrx.com",
-  cookieName: "sb-matrx-auth-v2",
-  legacyCookieName: LEGACY_AUTH_COOKIE_NAME,
+  cookieName: MATRX_AUTH_COOKIE.current,
+  legacyCookieName: MATRX_AUTH_COOKIE.legacy,
   // Every .from()/.rpc()/.schema() error is recorded into the diagnostics
   // store (lib/diagnostics/errorCaptureStore.ts) and surfaced in the admin
   // Error Inspector. The wrapper is a no-op on the server and never alters

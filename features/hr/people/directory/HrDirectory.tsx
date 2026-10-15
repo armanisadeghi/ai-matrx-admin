@@ -36,7 +36,7 @@ import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
 import { ItemContextMenu, ItemMenu } from "@ai-matrx/design-system/item";
 import { Button } from "@/components/ui/button";
 import { MoreHorizontal } from "lucide-react";
-import { announceComingSoon } from "@/lib/coming-soon/announce";
+import { announceComingSoon } from "@ai-matrx/kit/coming-soon";
 import { useTableBulkSelection } from "@/lib/entity-list/useTableBulkSelection";
 import type { EntityBulkAction } from "@/lib/entity-list/selection";
 import { useListViewPrefs } from "@/lib/list-views/useListViewPrefs";

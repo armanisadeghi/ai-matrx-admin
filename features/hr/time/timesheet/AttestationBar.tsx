@@ -26,7 +26,7 @@ import { useState } from "react";
 import { CheckCircle2, FileWarning, Lock, PencilLine } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { announceComingSoon } from "@/lib/coming-soon/announce";
+import { announceComingSoon } from "@ai-matrx/kit/coming-soon";
 import { toast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 

@@ -20,7 +20,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Bookmark, FilePlus2, FolderOpen, History, Info, Loader2, MessageSquare, Printer, Sheet, Upload } from "lucide-react";
+import { Bookmark, FilePlus2, FolderOpen, History, Info, Loader2, MessageSquare, Printer, Settings, Sheet, Upload } from "lucide-react";
 import { EditorDetailsDialog, formatDetailDate } from "@/components/editor-chrome/EditorDetailsDialog";
 import { importWorkbookFile, unsupportedFileReason } from "@/features/workbooks/import-workbook-file";
 import { workbookSourceLabel } from "@/features/workbooks/workbook-service";
@@ -43,6 +43,8 @@ import { downloadSheetAsCsv, downloadSheetAsHtml, downloadSheetAsPdf, downloadSh
 import { pageSetupFromMetadata, type SheetPageSetup } from "@/features/workbooks/sheet-page-setup";
 import { readSheetPageSetup, writeSheetPageSetup } from "@/features/workbooks/sheet-page-setup-service";
 import { SheetPageSetupDialog } from "@/features/workbooks/components/SheetPageSetupDialog";
+import { SheetToolPanels, type PanelApi } from "@/features/workbooks/components/SheetToolPanels";
+import { useSheetExtras } from "@/features/workbooks/components/useSheetExtras";
 import type { CellRange } from "@/features/workbooks/univer-snapshot-rows";
 import { useFileRecordMenu } from "@/features/file-actions/useFileRecordMenu";
 import { WORKBOOK_ADAPTER } from "@/features/file-actions/adapters";
@@ -932,6 +934,15 @@ export default function WorkbookEditor({
       toast({ title: "Could not import", description: err instanceof Error ? err.message : String(err), variant: "destructive" });
     }
   };
+  // Settings, macros, filter views, connectors, suggestion prefs and the View → Show modes.
+  const sheetExtras = useSheetExtras({
+    apiRef,
+    injector: () => (univerRef.current as unknown as { __getInjector?: () => { get<T>(token: unknown): T } } | null)?.__getInjector?.() ?? null,
+    workbookId,
+    editable,
+    ready: bootState === "ready",
+    bumpChrome,
+  });
   // Google's File rows this editor owns (the rest are the shared file menu's).
   const fileExtras: EditorMenuEntry[] = [
     { kind: "separator" },
@@ -941,6 +952,7 @@ export default function WorkbookEditor({
     { kind: "action", id: "file.history", label: "Version history", icon: History, shortcut: { key: "h", mod: true, alt: true, shift: true, bind: true }, run: snapshotHistory.toggle },
     { kind: "action", id: "file.print", label: "Print", icon: Printer, shortcut: { key: "p", mod: true, bind: true }, run: handlePrint },
     sheetPageSetupRow(() => setPageSetupOpen(true)),
+    { kind: "action", id: "file.settings", label: "Settings", icon: Settings, keywords: ["locale", "time zone", "calculation"], run: () => sheetExtras.openSettings() },
     { kind: "action", id: "file.details", label: "Details", icon: Info, keywords: ["info", "created", "modified"], run: () => setDetailsOpen(true) },
   ];
   const liveGoogle = useLiveGoogleAdapter("workbook", workbookId);
@@ -1130,6 +1142,7 @@ export default function WorkbookEditor({
           toggleFullScreen: () => setFullScreen((v) => !v),
           notify: (message) => toast({ title: message }),
           sendFeedback: () => openFeedback(),
+          ...sheetExtras.host,
         }
       : null;
   const menus = chromeHost ? buildSheetMenus(chromeHost) : [];
@@ -1261,6 +1274,12 @@ export default function WorkbookEditor({
           e.target.value = "";
           if (f) void importFile(f);
         }}
+      />
+      <SheetToolPanels
+        {...sheetExtras.panelProps}
+        api={apiRef.current as unknown as PanelApi | null}
+        linkedTableId={tableLink.linkedTableId}
+        makeTable={tableLink.makeTable}
       />
       <SheetPageSetupDialog open={pageSetupOpen} onOpenChange={setPageSetupOpen} initial={pageSetup} onApply={(values) => void savePageSetup(values)} />
       <EditorDetailsDialog

@@ -22,7 +22,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { announceComingSoon } from "@/lib/coming-soon/announce";
+import { announceComingSoon } from "@ai-matrx/kit/coming-soon";
 import { cn } from "@/lib/utils";
 import { ConnectorMark } from "./ConnectorMark";
 import { connectorsFor } from "./registry";

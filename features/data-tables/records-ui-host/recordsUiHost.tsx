@@ -45,6 +45,7 @@ import { useAgentLauncher } from "@ai-matrx/chat/agents/hooks/useAgentLauncher";
 import { recordPageHref } from "@/features/unified-data/table-page/recordPageHref";
 import { recordStoreShare } from "@/features/sharing/components/RecordStoreShareSurface";
 import { viewLinkPort } from "@/features/sharing/view-link/ViewLinkPanel";
+import { LINK_PREVIEW_PORT } from "./linkPreviewPort";
 import { recordStoreColumnAccess } from "@/features/access-setup/components/ColumnAccessPanel";
 import { APPLETS_PORT } from "@/features/applets/embed/appletsPort";
 import { RecordScopedChat } from "@/features/unified-data/record-chat/RecordScopedChat";
@@ -203,6 +204,9 @@ export function recordsUiHostFor({ ports, merged, gridContext, rights }: Records
     // "Share view link…" in the view menu (lane VIEW-LINK): an Anyone link on ONE saved view, opened at /v/<token>.
     // Spread as its own object: a records-ui build before the port ignores the key.
     ...{ shareViewLink: viewLinkPort },
+    // URL preview on a URL cell (records-ui `linkPreview`, lane AT-SHARE): the SERVER reads the page's metadata. Spread:
+    // a records-ui build before the port ignores the key.
+    ...{ linkPreview: LINK_PREVIEW_PORT },
     // "Who can see and edit…" on a column header (access-setup PLAN §12, records-ui `columnAccess`).
     // Spread as its own object: a records-ui build before the port ignores the key.
     ...{ columnAccess: recordStoreColumnAccess },

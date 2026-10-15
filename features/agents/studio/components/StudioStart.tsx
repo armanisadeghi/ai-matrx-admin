@@ -17,7 +17,7 @@ import { ProTextarea } from "@/components/official/ProTextarea";
 import { ExamplesField, filledExamples } from "@/features/agents/factory/components/ExamplesField";
 import { startAgentBuild } from "@/features/agents/factory/service";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
-import { announceComingSoon } from "@/lib/coming-soon/announce";
+import { announceComingSoon } from "@ai-matrx/kit/coming-soon";
 import { toast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 import { STUDIO_MODES, type StudioMode } from "../modes";

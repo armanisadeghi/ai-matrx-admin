@@ -511,17 +511,62 @@ function unquote(raw: string): string | null {
 export function scanKnobReads(
   files: SourceFile[],
   registry: KnobRow[] = [],
+  opts: {
+    /**
+     * CONFIG-ATTEST-ROLLOUT (2026-10-15): a constant NAME declared with different values in two
+     * files is UNRESOLVED, never a guess. The pooled map is last-file-wins, so `FEATURE` or `KNOB`
+     * declared in many modules could silently name the wrong key. The manifest generator
+     * (scripts/config-attestation/) runs strict; the settings guards keep their historic pooling.
+     */
+    strictConsts?: boolean;
+  } = {},
 ): {
   sites: ReadSite[];
   dynamic: DynamicRead[];
   consts: Map<string, string>;
+  /** Constant names declared with DIFFERENT values in several files (string and pair constants). */
+  ambiguous: Set<string>;
+  /** `KNOB READS "feature" "key" …` annotations; `covered: false` = no computed read within 3 lines below it. */
+  annotations: KnobReadsAnnotation[];
 } {
   const consts = new Map<string, string>();
-  for (const f of files) for (const [k, v] of localStringConsts(f.text)) consts.set(k, v);
+  const ambiguous = new Set<string>();
+  for (const f of files) {
+    for (const [k, v] of localStringConsts(f.text)) {
+      const prior = consts.get(k);
+      if (prior !== undefined && prior !== v) ambiguous.add(k);
+      consts.set(k, v);
+    }
+  }
+  // EXPORTED pair constants (`export const POINTS_RATE_KNOB = { feature, key }`) pooled across
+  // files the same way: an importing file resolves by name, and a collision is unresolved.
+  const globalPairs = new Map<string, { feature: string; key: string }>();
+  for (const f of files) {
+    if (f.rel.endsWith(".py")) continue;
+    PAIR_CONST_RE.lastIndex = 0;
+    for (let m = PAIR_CONST_RE.exec(f.text); m; m = PAIR_CONST_RE.exec(f.text)) {
+      if (!/^\s*export\b/.test(m[0])) continue;
+      const prior = globalPairs.get(m[1]);
+      if (prior && (prior.feature !== m[2] || prior.key !== m[3])) ambiguous.add(m[1]);
+      globalPairs.set(m[1], { feature: m[2], key: m[3] });
+    }
+  }
+  const strict = opts.strictConsts === true;
   const sites: ReadSite[] = [];
   const dynamic: DynamicRead[] = [];
+  const annotations: KnobReadsAnnotation[] = [];
+  const pooled = (name: string): string | null => (strict && ambiguous.has(name) ? null : (consts.get(name) ?? null));
+  // `PAIR.feature` / `PAIR.key` — a member of a `{ feature, key }` constant (this file's, or an
+  // exported one pooled above) is as static as the constant itself.
+  let filePairs = new Map<string, { feature: string; key: string }>();
+  const pairMember = (raw: string): string | null => {
+    const m = /^([A-Za-z_$][\w$]*)\.(feature|key)$/.exec(raw.trim());
+    if (!m) return null;
+    const pair = filePairs.get(m[1]) ?? (ambiguous.has(m[1]) ? undefined : globalPairs.get(m[1]));
+    return pair ? pair[m[2] as "feature" | "key"] : null;
+  };
   const resolveName = (raw: string, local: Map<string, string>) =>
-    unquote(raw) ?? local.get(raw.trim()) ?? consts.get(raw.trim()) ?? null;
+    unquote(raw) ?? local.get(raw.trim()) ?? pooled(raw.trim()) ?? pairMember(raw) ?? null;
   // The registry's keys per feature — what the feature-map and template
   // families resolve against. Without a registry those two families stay
   // silent (they can only ever name keys that exist).
@@ -550,6 +595,11 @@ export function scanKnobReads(
     if (!/knob/i.test(f.text) || HELPER_MODULES.test(f.rel)) continue;
     const isPy = f.rel.endsWith(".py");
     const local = localStringConsts(f.text);
+    filePairs = new Map();
+    if (!isPy) {
+      PAIR_CONST_RE.lastIndex = 0;
+      for (let m = PAIR_CONST_RE.exec(f.text); m; m = PAIR_CONST_RE.exec(f.text)) filePairs.set(m[1], { feature: m[2], key: m[3] });
+    }
     const re = isPy ? PY_CALL_RE : TS_CALL_RE;
     re.lastIndex = 0;
     for (let m = re.exec(f.text); m; m = re.exec(f.text)) {
@@ -631,18 +681,28 @@ export function scanKnobReads(
         `\\b(${FULL_KEY_FNS}|resolveSessionKnob)\\s*\\((?:[\\s\\S]{0,120}?,)?\\s*([A-Z][A-Z0-9_]{2,})\\s*,?\\s*\\)`,
         "g",
       );
+      const pairNamed = new Set<number>();
       for (let m = PAIR_BY_NAME.exec(f.text); m; m = PAIR_BY_NAME.exec(f.text)) {
-        const pair = pairConsts.get(m[2]);
+        const pair = pairConsts.get(m[2]) ?? (ambiguous.has(m[2]) ? undefined : globalPairs.get(m[2]));
         if (!pair) continue;
+        pairNamed.add(lineOf(f.text, m.index));
         sites.push({ file: f.rel, line: lineOf(f.text, m.index), fn: m[1], feature: pair.feature, key: pair.key });
       }
       FULL_KEY_RE.lastIndex = 0;
       for (let m = FULL_KEY_RE.exec(f.text); m; m = FULL_KEY_RE.exec(f.text)) {
         const [, fn, rawFull] = m;
         const line = lineOf(f.text, m.index);
+        // A pair constant passed by name is resolved above, not a computed full key.
+        if (pairNamed.has(line) && (pairConsts.has(rawFull.trim()) || globalPairs.has(rawFull.trim()))) continue;
         const full = resolveName(rawFull, local);
         if (!full) {
-          dynamic.push({ file: f.rel, line, fn, raw: rawFull.trim(), why: "full key is computed at run time" });
+          dynamic.push({
+            file: f.rel,
+            line,
+            fn,
+            raw: rawFull.trim(),
+            why: ambiguous.has(rawFull.trim()) ? "constant name has different values in several files" : "full key is computed at run time",
+          });
           continue;
         }
         const at = full.lastIndexOf(".");
@@ -651,6 +711,47 @@ export function scanKnobReads(
           continue;
         }
         sites.push({ file: f.rel, line, fn, feature: full.slice(0, at), key: full.slice(at + 1) });
+      }
+    }
+
+    // STRICT CATCH-ALL (manifest generator): a reader call whose argument shape none of the
+    // families above recognised (`useSessionKnob(fullKey)`, `knobInt(kindFeature(k), key)`) was
+    // invisible to every family — counted unresolved here instead of silently uncounted.
+    if (strict && !isPy) {
+      const seenLines = new Set([...sites, ...dynamic].filter((x) => x.file === f.rel).map((x) => `${x.line}|${x.fn.split(" ")[0]}`));
+      const ANY_CALL = new RegExp(`\\b(${FULL_KEY_FNS}|${TS_KNOB_FNS})\\s*(?:<[^>()]*>)?\\(`, "g");
+      for (let m = ANY_CALL.exec(f.text); m; m = ANY_CALL.exec(f.text)) {
+        const before = f.text.slice(Math.max(0, m.index - 40), m.index);
+        if (/\b(?:function|import|export\s+(?:async\s+)?function)\s+$|\.\s*$|\b(?:async\s+)?function\s+$/.test(before)) continue;
+        const line = lineOf(f.text, m.index);
+        if (seenLines.has(`${line}|${m[1]}`)) continue;
+        // A file-local function of the same name (a parser called `knobNumber`) is not a reader.
+        if (new RegExp(`\\b(?:function\\s+${m[1]}\\b|(?:const|let)\\s+${m[1]}\\s*=)`).test(f.text)) continue;
+        // Parse the balanced argument list and resolve the address arguments by position:
+        // knobX(feature, key) · useEffectiveKnob/ensure/peek(org, user, ref, …) · useSessionKnob/getSessionKnob(ref).
+        const args = splitArgs(f.text, m.index + m[0].length);
+        const fn = m[1];
+        const resolveRef = (raw: string | undefined): { feature: string; key: string } | null => {
+          if (!raw) return null;
+          const t = raw.trim();
+          const pair = filePairs.get(t) ?? (ambiguous.has(t) ? undefined : globalPairs.get(t));
+          if (pair) return pair;
+          const inline = /^\{\s*feature\s*:\s*["']([\w.]+)["']\s*,\s*key\s*:\s*["']([\w.]+)["']\s*,?\s*\}$/.exec(t);
+          if (inline) return { feature: inline[1], key: inline[2] };
+          const full = resolveName(t, local);
+          if (!full) return null;
+          const at = full.lastIndexOf(".");
+          return at > 0 ? { feature: full.slice(0, at), key: full.slice(at + 1) } : null;
+        };
+        let hit: { feature: string; key: string } | null = null;
+        if (new RegExp(`^(?:${TS_KNOB_FNS})$`).test(fn)) {
+          const feature = args[0] ? resolveName(args[0], local) : null;
+          const key = args[1] ? resolveName(args[1], local) : null;
+          hit = feature && key ? { feature, key } : null;
+        } else if (/^(?:useSessionKnob|getSessionKnob)$/.test(fn)) hit = resolveRef(args[0]);
+        else hit = resolveRef(args[2]);
+        if (hit) sites.push({ file: f.rel, line, fn, feature: hit.feature, key: hit.key });
+        else dynamic.push({ file: f.rel, line, fn, raw: args.join(", ").replace(/\s+/g, " ").slice(0, 80), why: "address argument is computed at run time" });
       }
     }
 
@@ -695,8 +796,66 @@ export function scanKnobReads(
       }
     }
   }
-  return { sites, dynamic, consts };
+  // KNOB READS family (CONFIG-ATTEST-ROLLOUT): `// KNOB READS "feature" "k1" "k2"` declares the keys
+  // a genuinely computed read can take. It covers the computed (dynamic) reads in the 3 lines below
+  // it, which then count as reads of exactly those keys. An annotation with no computed read below
+  // it is returned `covered: false` — the manifest generator fails on it, so a declaration can never
+  // outlive the read it describes.
+  for (const f of files) {
+    if (!/KNOB[ -]READS/.test(f.text)) continue;
+    KNOB_READS_RE.lastIndex = 0;
+    for (let m = KNOB_READS_RE.exec(f.text); m; m = KNOB_READS_RE.exec(f.text)) {
+      const line = lineOf(f.text, m.index);
+      const keys = [...m[2].matchAll(/["']([\w.]+)["']/g)].map((k) => k[1]);
+      const covered = dynamic.filter((d) => d.file === f.rel && d.line > line && d.line <= line + 3);
+      annotations.push({ file: f.rel, line, feature: m[1], keys, covered: covered.length > 0 });
+      if (covered.length === 0) continue;
+      for (const d of covered) dynamic.splice(dynamic.indexOf(d), 1);
+      for (const key of keys) sites.push({ file: f.rel, line, fn: "KNOB READS", feature: m[1], key });
+    }
+  }
+  return { sites, dynamic, consts, ambiguous, annotations };
 }
+
+/** Top-level comma split of a call's arguments, from just after its `(` to the matching `)`. */
+function splitArgs(text: string, from: number): string[] {
+  const out: string[] = [];
+  let depth = 0;
+  let cur = "";
+  let quote: string | null = null;
+  for (let i = from; i < text.length && i < from + 2000; i++) {
+    const c = text[i];
+    if (quote) {
+      cur += c;
+      if (c === "\\") cur += text[++i] ?? "";
+      else if (c === quote) quote = null;
+      continue;
+    }
+    if (c === '"' || c === "'" || c === "`") quote = c;
+    else if (c === "(" || c === "[" || c === "{") depth++;
+    else if (c === ")" || c === "]" || c === "}") {
+      if (depth === 0) break;
+      depth--;
+    } else if (c === "," && depth === 0) {
+      out.push(cur.trim());
+      cur = "";
+      continue;
+    }
+    cur += c;
+  }
+  if (cur.trim()) out.push(cur.trim());
+  return out;
+}
+
+export interface KnobReadsAnnotation {
+  file: string;
+  line: number;
+  feature: string;
+  keys: string[];
+  covered: boolean;
+}
+
+const KNOB_READS_RE = /KNOB[ -]READS\s+["']([A-Za-z][\w.]*)["']((?:[ \t]+["'][A-Za-z][\w.]*["'])+)/g;
 
 /**
  * Knob keys read from INSIDE the database — function bodies and view

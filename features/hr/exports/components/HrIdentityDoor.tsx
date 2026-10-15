@@ -26,7 +26,7 @@
 
 import Link from "next/link";
 import { ExternalLink } from "lucide-react";
-import { announceComingSoon } from "@/lib/coming-soon/announce";
+import { announceComingSoon } from "@ai-matrx/kit/coming-soon";
 import { hrPayPeriodHref } from "@/features/hr/routes";
 import { cn } from "@/lib/utils";
 

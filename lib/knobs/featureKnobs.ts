@@ -20,6 +20,7 @@ import { readAllRows } from "@ai-matrx/data/db";
 
 import { createClient } from "@/utils/supabase/client";
 import { defineClientKeyFamily } from "@/lib/sync/client-storage";
+import { noteConfigRead } from "@/lib/config-attestation/readLedger";
 
 const TTL_MS = 60_000;
 
@@ -102,6 +103,9 @@ const storedWindows = defineClientKeyFamily({
   reason: "This tab's 60 s window of one feature's knob values; never used once older than TTL_MS.",
 });
 
+/** Features whose current window came from sessionStorage, not a read on this page. */
+const restoredWindows = new Set<string>();
+
 function readStoredWindow(feature: string): FeatureWindow | null {
   const stored = storedWindows.getJSON<{ at?: unknown; rows?: unknown }>(feature);
   if (!stored || typeof stored.at !== "number" || !Array.isArray(stored.rows)) return null;
@@ -120,6 +124,7 @@ async function ensureFeature(feature: string): Promise<Map<string, KnobValue>> {
   if (!held) {
     const stored = readStoredWindow(feature);
     if (stored) {
+      restoredWindows.add(feature);
       windows.set(feature, stored);
       return stored.map;
     }
@@ -129,6 +134,7 @@ async function ensureFeature(feature: string): Promise<Map<string, KnobValue>> {
     pending = loadFeature(feature)
       .then((next) => {
         const at = Date.now();
+        restoredWindows.delete(feature);
         windows.set(feature, { at, map: next });
         storeWindow(feature, at, next);
         return next;
@@ -150,6 +156,9 @@ export function invalidateFeatureKnobs(): void {
 async function readKnob(feature: string, key: string): Promise<KnobValue> {
   const all = await ensureFeature(feature);
   const hit = all.get(key);
+  // Config attestation: every typed read is counted (`cache` when this window was restored from
+  // sessionStorage rather than fetched on this page; a missing row is an invalid read).
+  noteConfigRead("knob", feature, key, restoredWindows.has(feature) ? "cache" : "db", hit, hit === undefined);
   if (hit === undefined) {
     throw new Error(
       `Missing feature knob "${feature}.${key}". Knobs have no code fallback by ` +

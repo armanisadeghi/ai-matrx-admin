@@ -57,6 +57,8 @@ import { googleExtensionsMenu, googleHelpHead, soon } from "@/components/editor-
 import type { EditorToolbarItem } from "@/components/editor-chrome/EditorToolbar";
 import { createElement } from "react";
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
+import type { FilterView, SheetMacro, SheetPrefs } from "./sheet-row-extras";
+import type { ViewOverlayState } from "./sheet-view-overlays";
 import {
   SHEET_THEMES,
   applyThemeToSheet,
@@ -138,7 +140,26 @@ export interface SheetChromeHost {
   report?: (title: string, text: string) => void;
   /** Help → Send feedback (the app's feedback window). */
   sendFeedback?: () => void;
+  /** Open one of the editor's own panels (settings, timeline, filter views, named functions, extraction, connectors, form, macros). */
+  openPanel: (panel: SheetPanel) => void;
+  /** View → Show → Formulas / Protected ranges: painted modes, never saved. */
+  viewOverlays: { state(): ViewOverlayState; toggle(key: keyof ViewOverlayState): void };
+  /** Extensions → Macros: recordings kept on the workbook. */
+  macros: {
+    list(): SheetMacro[];
+    recording(): boolean;
+    start(): void;
+    stop(): void;
+    cancel(): void;
+    replay(id: string): void;
+  };
+  /** Data → Filter views: named filters kept on the workbook. */
+  filterViews: { list(): FilterView[]; saveCurrent(): void; apply(id: string): void };
+  /** Tools → Autocomplete / Suggestion controls. */
+  prefs: { get(): SheetPrefs; toggle(key: keyof SheetPrefs): void };
 }
+
+export type SheetPanel = "settings" | "timeline" | "filter-views" | "named-functions" | "data-extraction" | "data-connectors" | "create-form" | "macros";
 
 // ─── Univer enums (values from @univerjs/core 1.0.4) ───
 const H_ALIGN = { left: 1, center: 2, right: 3 } as const;
@@ -686,8 +707,23 @@ export function buildSheetMenus(h: SheetChromeHost): EditorMenu[] {
               checked: () => h.formulaBarVisible(),
               run: () => h.toggleFormulaBar(),
             },
-            soon("view.show.formulas", "Formulas", "workbooks.show-formulas", { shortcut: { key: "`", mod: true } }),
-            soon("view.show.protected", "Protected ranges", "workbooks.show-protected-ranges"),
+            {
+              kind: "action",
+              id: "view.show.formulas",
+              label: "Formulas",
+              keywords: ["show formulas"],
+              shortcut: { key: "`", mod: true },
+              checked: () => h.viewOverlays.state().formulas,
+              run: () => h.viewOverlays.toggle("formulas"),
+            },
+            {
+              kind: "action",
+              id: "view.show.protected",
+              label: "Protected ranges",
+              keywords: ["show protected ranges", "locked"],
+              checked: () => h.viewOverlays.state().protectedRanges,
+              run: () => h.viewOverlays.toggle("protectedRanges"),
+            },
           ],
         },
         {
@@ -778,7 +814,7 @@ export function buildSheetMenus(h: SheetChromeHost): EditorMenu[] {
         { kind: "action", id: "insert.sheet", label: "Sheet", keywords: ["new sheet", "tab"], run: run(h, "sheet.command.insert-sheet") },
         { kind: "separator" },
         { kind: "action", id: "insert.table", label: "Table", keywords: ["convert to table"], run: run(h, "sheet.operation.open-table-selector") },
-        soon("insert.timeline", "Timeline", "workbooks.timeline"),
+        { kind: "action", id: "insert.timeline", label: "Timeline", keywords: ["dates", "gantt"], run: () => h.openPanel("timeline") },
         { kind: "separator" },
         soon("insert.chart", "Chart", "editor.insert.chart", { icon: BarChart3 }),
         soon("insert.pivot", "Pivot table", "workbooks.pivot-table"),
@@ -911,12 +947,23 @@ export function buildSheetMenus(h: SheetChromeHost): EditorMenu[] {
         },
         { kind: "separator" },
         { kind: "action", id: "data.filter", label: "Create a filter", icon: Filter, keywords: ["remove filter"], run: run(h, "sheet.command.smart-toggle-filter") },
-        soon("data.filter-views", "Create filter view", "workbooks.filter-views"),
+        {
+          kind: "submenu",
+          id: "data.filter-views",
+          label: "Filter views",
+          keywords: ["named filter", "save filter"],
+          items: [
+            { kind: "action", id: "data.filter-views.save", label: "Save current filter as a view", run: () => h.filterViews.saveCurrent() },
+            ...h.filterViews.list().map((v) => ({ kind: "action" as const, id: `data.filter-views.apply.${v.id}`, label: v.name, run: () => h.filterViews.apply(v.id) })),
+            { kind: "separator" as const },
+            { kind: "action", id: "data.filter-views.manage", label: "Manage filter views", run: () => h.openPanel("filter-views") },
+          ],
+        },
         soon("data.slicer", "Add a slicer", "workbooks.slicer"),
         { kind: "separator" },
         { kind: "action", id: "data.protect", label: "Protect sheets and ranges", keywords: ["permission", "lock"], run: run(h, "sheet.command.add-range-protection-from-toolbar") },
         { kind: "action", id: "data.named-ranges", label: "Named ranges", keywords: ["defined names", "name a range"], run: run(h, "sidebar.operation.defined-name", { value: "open" }) },
-        soon("data.named-functions", "Named functions", "workbooks.named-functions"),
+        { kind: "action", id: "data.named-functions", label: "Named functions", keywords: ["lambda", "custom function"], run: () => h.openPanel("named-functions") },
         {
           kind: "action",
           id: "data.randomize",
@@ -987,20 +1034,29 @@ export function buildSheetMenus(h: SheetChromeHost): EditorMenu[] {
             },
           ],
         },
-        soon("data.extraction", "Data extraction", "workbooks.data-extraction"),
+        { kind: "action", id: "data.extraction", label: "Data extraction", keywords: ["extract", "emails", "links", "phone numbers"], run: () => h.openPanel("data-extraction") },
         { kind: "separator" },
-        soon("data.connectors", "Data connectors", "workbooks.data-connectors"),
+        { kind: "action", id: "data.connectors", label: "Data connectors", keywords: ["csv", "url", "table", "refresh", "import"], run: () => h.openPanel("data-connectors") },
       ],
     },
     {
       id: "tools",
       label: "Tools",
       items: [
-        soon("tools.form", "Create a new form", "workbooks.create-form"),
+        { kind: "action", id: "tools.form", label: "Create a new form", keywords: ["survey", "responses"], run: () => h.openPanel("create-form") },
         { kind: "separator" },
         soon("tools.spelling", "Spelling", "editor.tools.spelling"),
-        soon("tools.suggestions", "Suggestion controls", "workbooks.suggestion-controls"),
-        soon("tools.autocomplete", "Autocomplete", "workbooks.autocomplete"),
+        {
+          kind: "submenu",
+          id: "tools.suggestions",
+          label: "Suggestion controls",
+          keywords: ["hints", "suggestions"],
+          items: [
+            { kind: "action", id: "tools.suggestions.functions", label: "Function suggestions while typing", checked: () => h.prefs.get().autocomplete, run: () => h.prefs.toggle("autocomplete") },
+            { kind: "action", id: "tools.suggestions.hints", label: "Argument hints while typing", checked: () => h.prefs.get().formulaHints, run: () => h.prefs.toggle("formulaHints") },
+          ],
+        },
+        { kind: "action", id: "tools.autocomplete", label: "Autocomplete", keywords: ["autocomplete formulas"], checked: () => h.prefs.get().autocomplete, run: () => h.prefs.toggle("autocomplete") },
         { kind: "separator" },
         soon("tools.notifications", "Notification settings", "editor.tools.notifications"),
         soon("tools.accessibility", "Accessibility", "editor.tools.accessibility"),
@@ -1020,10 +1076,14 @@ export function buildSheetMenus(h: SheetChromeHost): EditorMenu[] {
         icon: Repeat2,
         keywords: ["record", "replay", "automation"],
         items: [
-          { kind: "action", id: "extensions.macros.record", label: "Record macro", run: run(h, "action-recorder.command.start-recording") },
-          { kind: "action", id: "extensions.macros.stop", label: "Stop and save recording", run: run(h, "action-recorder.command.complete-recording") },
-          { kind: "action", id: "extensions.macros.panel", label: "Manage macros", run: run(h, "action-recorder.operation.open-panel") },
-          { kind: "action", id: "extensions.macros.replay", label: "Replay saved macro", run: run(h, "action-recorder.command.replay-local-records") },
+          h.macros.recording()
+            ? { kind: "action", id: "extensions.macros.stop", label: "Stop and save recording", run: () => h.macros.stop() }
+            : { kind: "action", id: "extensions.macros.record", label: "Record macro", run: () => h.macros.start() },
+          ...(h.macros.recording() ? [{ kind: "action" as const, id: "extensions.macros.cancel", label: "Discard recording", run: () => h.macros.cancel() }] : []),
+          { kind: "separator" as const },
+          ...h.macros.list().map((m) => ({ kind: "action" as const, id: `extensions.macros.replay.${m.id}`, label: m.name, run: () => h.macros.replay(m.id) })),
+          ...(h.macros.list().length ? [{ kind: "separator" as const }] : []),
+          { kind: "action", id: "extensions.macros.manage", label: "Manage macros", run: () => h.openPanel("macros") },
         ],
       },
     }),

@@ -22,6 +22,8 @@
 // chunk first loads.
 
 import React from "react";
+import "@/lib/coming-soon/registry";
+import "@/lib/coming-soon/announce";
 // The formatted-text engine's host (@ai-matrx/rich-content): a client wrapper configures it before any child renders.
 import { RichContentHostProvider } from "@/providers/RichContentHostProvider";
 // disaster

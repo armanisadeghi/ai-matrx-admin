@@ -22,7 +22,7 @@
 import { InfoHint } from "@/components/official/InfoHint";
 import { CalendarRange } from "lucide-react";
 
-import { announceComingSoon } from "@/lib/coming-soon/announce";
+import { announceComingSoon } from "@ai-matrx/kit/coming-soon";
 import { Button } from "@/components/ui/button";
 import { boundaryWeeksSentence } from "../periodStateMachine";
 

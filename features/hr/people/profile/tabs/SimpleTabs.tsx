@@ -32,7 +32,7 @@ import { FileWarning, Info, ShieldAlert, UserPlus } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { InfoHint } from "@/components/official/InfoHint";
-import { announceComingSoon } from "@/lib/coming-soon/announce";
+import { announceComingSoon } from "@ai-matrx/kit/coming-soon";
 import { cn } from "@/lib/utils";
 import { NewCorrectiveActionDialog } from "@/features/hr/people/relations/components/NewCorrectiveActionDialog";
 

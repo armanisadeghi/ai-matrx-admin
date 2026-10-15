@@ -26,6 +26,8 @@
 import { useEffect, useRef } from "react";
 import { noteHardNavigationReason } from "@/lib/diagnostics/hardNavigationTrace";
 import { toast } from "@/lib/toast";
+import { readAppConfigKey } from "@/lib/config-attestation/appConfig";
+import { APP_VERSION_META } from "@/lib/config-attestation/meta";
 import {
   APP_BOOTED_FLAG,
   CHUNK_LOAD_ERROR_EVENT,
@@ -36,6 +38,17 @@ import {
 } from "@/components/errors/refresh-directive";
 
 const POLL_INTERVAL_MS = 5 * 60_000;
+
+/** Numeric dotted-version compare: -1 / 0 / 1. Non-numeric parts compare as 0. */
+export function compareVersions(a: string, b: string): number {
+  const pa = a.split(".").map((x) => Number.parseInt(x, 10) || 0);
+  const pb = b.split(".").map((x) => Number.parseInt(x, 10) || 0);
+  for (let i = 0; i < Math.max(pa.length, pb.length); i++) {
+    const d = (pa[i] ?? 0) - (pb[i] ?? 0);
+    if (d !== 0) return d < 0 ? -1 : 1;
+  }
+  return 0;
+}
 /** Min gap between tab-shown/focus-triggered checks. */
 const CHECK_THROTTLE_MS = 60_000;
 /** After "Not now", stay quiet this long (chunk errors re-prompt sooner). */
@@ -109,6 +122,30 @@ export function NewVersionWatcher({ deploymentId }: NewVersionWatcherProps) {
       showPrompt("directive", { title: detail?.title, body: detail?.body });
     };
     window.addEventListener(REFRESH_REQUIRED_EVENT, onRefreshRequired);
+
+    // MINIMUM SUPPORTED VERSION (config attestation, 2026-10-15): the `ai-matrx` row's
+    // `min_supported_app_version`, read through the one app-config door (counted), compared with
+    // the version this page was served as. Older → the same consent prompt, never a forced reload.
+    const checkMinimumVersion = async () => {
+      const current = document.querySelector<HTMLMetaElement>(`meta[name="${APP_VERSION_META}"]`)?.content ?? "";
+      const { value: minimum, error } = await readAppConfigKey<string>("min_supported_app_version");
+      if (error) {
+        console.error("[new-version] min_supported_app_version could not be read", error);
+        return;
+      }
+      if (!minimum || !current) {
+        console.warn("[new-version] minimum-version check skipped", { minimum: minimum ?? null, current: current || null });
+        return;
+      }
+      if (compareVersions(current, minimum) < 0) {
+        console.warn("[new-version] this page is older than the minimum supported version", { current, minimum });
+        showPrompt("directive", {
+          title: "This version is no longer supported",
+          body: `Refresh to load the current version (this page is ${current}; ${minimum} or newer is required).`,
+        });
+      }
+    };
+    void checkMinimumVersion();
 
     if (!deploymentId) {
       return () => {

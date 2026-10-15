@@ -52,8 +52,7 @@ jest.mock("@/features/marketing/components/shared/DataFreshnessLine", () => ({
     <div>{`through ${dataThrough ?? "never"}`}</div>
   ),
 }));
-jest.mock("@/lib/coming-soon/registry", () => ({ getComingSoon: () => null }));
-jest.mock("@/lib/coming-soon/announce", () => ({ STAGE_LINE: {} }));
+jest.mock("@ai-matrx/kit/coming-soon", () => ({ getComingSoon: () => null, STAGE_LINE: {} }));
 jest.mock("next/link", () => ({
   __esModule: true,
   default: ({ children, href }: { children: React.ReactNode; href: string }) => (

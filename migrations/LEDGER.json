@@ -1,6 +1,6 @@
 {
   "note": "Checked-in snapshot of public._schema_migrations for the files under migrations/campaign and migrations/inverse. Written by `pnpm db:apply` on every successful production apply and refreshed whole by the nightly catch-up. Never hand-edited: a self-written checksum is a claim nobody can check. Guard: pnpm check:ledgered-files-unedited.",
-  "generated_at": "2026-10-15T18:21:01.314Z",
+  "generated_at": "2026-10-15T18:38:19.422Z",
   "files": {
     "migrations/campaign/a_chunk_is_the_size_the_client_door_can_actually_carry.sql": {
       "source": "matrx-frontend",
@@ -596,6 +596,12 @@
       "checksum": "27943868a512dbeccbf30cfc47d0a12ed2497383e48802fe119a87408a2f6853",
       "applied_at": "2026-10-15 18:06:41.307265+00"
     },
+    "migrations/campaign/atauto3_b_a_script_run_has_a_price.sql": {
+      "source": "matrx-frontend",
+      "filename": "atauto3_b_a_script_run_has_a_price.sql",
+      "checksum": "599aabf866f4ce1142bb3ad683bcc5bbfb7732d80083031e2fc6a44a861f42a0",
+      "applied_at": "2026-10-15 18:28:24.457945+00"
+    },
     "migrations/campaign/atbase_a_a_base_has_a_name_snapshots_and_a_copy_that_points_inward.sql": {
       "source": "matrx-frontend",
       "filename": "atbase_a_a_base_has_a_name_snapshots_and_a_copy_that_points_inward.sql",
@@ -667,6 +673,18 @@
       "filename": "atshare_f_a_base_without_a_home_record_has_a_feed.sql",
       "checksum": "a4d5e85d5fe5d7f4b00ed187842a49915551a8c11bef349191d5fb4d50507901",
       "applied_at": "2026-10-15 18:21:00.019706+00"
+    },
+    "migrations/campaign/atshare_g_a_last_modified_column_can_watch_chosen_fields.sql": {
+      "source": "matrx-frontend",
+      "filename": "atshare_g_a_last_modified_column_can_watch_chosen_fields.sql",
+      "checksum": "7625a98d4fbc527d3f12784ec8e342c45883b15eb87db8f387223a78c5d3fd3b",
+      "applied_at": "2026-10-15 18:27:14.262034+00"
+    },
+    "migrations/campaign/atshare_h_a_collaborator_column_can_notify_when_assigned.sql": {
+      "source": "matrx-frontend",
+      "filename": "atshare_h_a_collaborator_column_can_notify_when_assigned.sql",
+      "checksum": "ea8b60b857d7b2ca1b33041956d89abf6e7f2677c3619c1add010bb0fc53d5f6",
+      "applied_at": "2026-10-15 18:38:17.04613+00"
     },
     "migrations/campaign/auditorg_library_audit_names_the_acting_organization.sql": {
       "source": "matrx-frontend",

@@ -21,7 +21,7 @@ import type { LucideIcon } from "lucide-react";
 import { ArrowRight } from "lucide-react";
 
 import PageHeader from "@/features/shell/components/header/PageHeader";
-import { STAGE_LINE } from "@/lib/coming-soon/announce";
+import { STAGE_LINE } from "@ai-matrx/kit/coming-soon";
 import { COMING_SOON } from "@/lib/coming-soon/registry";
 
 export interface ModulePromiseDoor {

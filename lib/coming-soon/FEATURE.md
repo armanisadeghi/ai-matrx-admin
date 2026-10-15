@@ -16,9 +16,11 @@ So: same handling as a found defect. **Report it, and ask to solve it.**
 
 | File | Role |
 |---|---|
-| `types.ts` | `ComingSoonEntry` — id, label, owner feature, the user-facing promise, stage, blocker, surfaces |
-| `registry.ts` | THE list. `COMING_SOON`, `getComingSoon`, `listComingSoon(owner?)` |
-| `announce.ts` | `announceComingSoon(id)` — the one way to tell a user |
+| `types.ts` | Re-exports `ComingSoonEntry` etc. from `@ai-matrx/kit/coming-soon` |
+| `registry.ts` | THE app list. `COMING_SOON`; importing it registers every row into the shared registry (`app/layout.tsx`, `app/Providers.tsx`, `AppletProviders.tsx` import it) |
+| `announce.ts` | The app's announcer (global confirm host); importing it sets it on the shared primitive |
+
+**The primitive lives in `@ai-matrx/kit/coming-soon`** (W1-G6a): `announceComingSoon(id)`, `getComingSoon`, `listComingSoon(owner?)`, `registerComingSoon`, `setComingSoonAnnouncer`, `STAGE_LINE`. Import those from the kit, never from this folder. A duplicate id across two registrations fails.
 
 `announceComingSoon` rides the existing global confirm host with a single OK button (`cancelLabel: null`). No new overlay, no new singleton, no new dialog component.
 

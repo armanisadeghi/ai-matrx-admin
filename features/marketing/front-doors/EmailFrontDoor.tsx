@@ -26,7 +26,7 @@ import { Building2, FileText, MailCheck, Send } from "lucide-react";
 
 import { useCrmContext } from "@/features/crm/hooks/useCrmContext";
 import { listSendingIdentities } from "@/features/crm/sending-identities/service";
-import { getComingSoon } from "@/lib/coming-soon/registry";
+import { getComingSoon } from "@ai-matrx/kit/coming-soon";
 import {
   MarketingDoorBoard,
   MarketingFrontDoorPage,

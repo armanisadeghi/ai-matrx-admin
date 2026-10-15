@@ -1,4 +1,4 @@
-import { getComingSoon } from "@/lib/coming-soon/registry";
+import { getComingSoon } from "@ai-matrx/kit/coming-soon";
 import { getConnector } from "./registry";
 
 describe("connector availability registry", () => {

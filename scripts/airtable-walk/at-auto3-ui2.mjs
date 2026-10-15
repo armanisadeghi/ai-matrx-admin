@@ -3,6 +3,7 @@ import { store } from "./store.mjs";
 import { readFileSync } from "node:fs";
 const S = JSON.parse(readFileSync("/tmp/airtable-walk/at-auto3.json", "utf8"));
 const { browser, page, who, errs } = await start(false);
+page.setDefaultTimeout(10000);
 await open(page, S.ord);
 await page.getByRole("button", { name: "Table menu" }).first().click();
 await page.waitForTimeout(500);
@@ -24,11 +25,18 @@ await ifc.getByTestId("automation-when-row").getByLabel("Compared with").fill("V
 // add a step inside the If path: Send Gmail
 await ifc.getByTestId("automation-if-branch").getByTestId("automation-add-step").click();
 await page.locator('[data-step-kind="gmail"]').last().click();
+const g = page.locator('[data-step-kind="gmail"]').last();
+await g.getByTestId("automation-token-picker").first().click();
+await page.locator('[data-token="{{step1.first.email}}"]').first().click();
+await g.getByLabel("Subject").fill("Thank you for your VIP order");
+await g.getByLabel("Message").fill("We will prioritise it.");
 await page.waitForTimeout(600);
 await page.screenshot({ path: "/tmp/airtable-walk/aa3-4-if.png" });
 out("steps now:", JSON.stringify(await page.getByTestId("automation-step").evaluateAll((els) => els.map((e) => e.getAttribute("data-step-n") + ":" + e.getAttribute("data-step-kind")))));
 await page.getByRole("button", { name: "Save" }).click();
 await page.waitForTimeout(2500);
+out("after save:", (await dlg.innerText().catch(() => "closed")).replace(/\n/g, " | ").slice(-300));
+await page.screenshot({ path: "/tmp/airtable-walk/aa3-5-saved.png" });
 const { client } = await store();
 const l = await client.automations({ table_id: S.ord });
 const a = l.data.automations.find((x) => x.spec.name === "Tier onto new orders");

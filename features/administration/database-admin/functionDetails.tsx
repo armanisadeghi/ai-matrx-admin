@@ -18,7 +18,7 @@ import SyntaxHighlighter from "./SyntaxHighlighter";
 import { cn } from "@/lib/utils";
 import type { DatabaseFunction } from "./types";
 import { enumUrlCodec, useUrlState } from "@ai-matrx/kit/url-state";
-import { announceComingSoon } from "@/lib/coming-soon/announce";
+import { announceComingSoon } from "@ai-matrx/kit/coming-soon";
 
 interface FunctionDetailsProps {
   func: DatabaseFunction | null;

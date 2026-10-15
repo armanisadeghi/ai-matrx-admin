@@ -29,7 +29,7 @@ import { NoWebsiteState } from "@/features/marketing/components/shared/NoWebsite
 import { QueryError } from "@/features/marketing/components/shared/MarketingUi";
 import { useMarketingBrandOptional } from "@/features/marketing/lib/brand-context";
 import { BrandNewsMonitors } from "@/features/marketing/news-monitor/BrandNewsMonitors";
-import { getComingSoon } from "@/lib/coming-soon/registry";
+import { getComingSoon } from "@ai-matrx/kit/coming-soon";
 import {
   MarketingDoorBoard,
   MarketingFrontDoorPage,

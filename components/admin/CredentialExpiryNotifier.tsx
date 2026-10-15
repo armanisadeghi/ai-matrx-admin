@@ -6,7 +6,7 @@ import { selectIsSuperAdmin } from "@/lib/redux/slices/userSlice";
 import { toast } from "@/lib/toast";
 import { openFromNotice } from "@/lib/notice-open/openFromNotice";
 import { describeFailure } from "@/lib/failure/transport";
-import { createClient } from "@/utils/supabase/client";
+import { readAppConfigKey } from "@/lib/config-attestation/appConfig";
 import {
   credentialMaintenanceIndexPath,
   credentialMaintenancePath,
@@ -79,17 +79,12 @@ export default function CredentialExpiryNotifier() {
     }
 
     const loadCredentialMaintenance = async () => {
-      const supabase = createClient();
-      const { data, error } = await supabase
-        .from("app_config")
-        .select("config")
-        .eq("app", WEB_APP_CONFIG_SLUG)
-        .is("deleted_at", null)
-        .maybeSingle();
+      // The one door to this app's row: counts the read for config attestation.
+      const { value: maintenance, found, error } = await readAppConfigKey("credential_maintenance");
 
       if (cancelled) return;
 
-      if (error || !data) {
+      if (error || !found) {
         // WALL W2 (2026-09-15). An Expert on `/masterwork/new` was shown a
         // permanent toast titled "Credential monitoring is unavailable" whose
         // body was, verbatim, `canceling statement due to statement timeout`.
@@ -134,7 +129,7 @@ export default function CredentialExpiryNotifier() {
         return;
       }
 
-      const parsed = parseCredentialMaintenanceMap(data.config);
+      const parsed = parseCredentialMaintenanceMap({ credential_maintenance: maintenance });
       if (!parsed.success) {
         toast.error("Credential monitoring is misconfigured", {
           id: CONFIG_ERROR_TOAST_ID,

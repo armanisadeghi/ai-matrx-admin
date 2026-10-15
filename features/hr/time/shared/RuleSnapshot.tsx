@@ -23,7 +23,7 @@ import { createContext, useContext, useEffect, useState, type ReactNode } from "
 
 import { DataRowWindow } from "@ai-matrx/design-system/data-table/data-row-window";
 import { ErrorBoundaryWithCapture } from "@/lib/error-boundary/ErrorBoundaryWithCapture";
-import { announceComingSoon } from "@/lib/coming-soon/announce";
+import { announceComingSoon } from "@ai-matrx/kit/coming-soon";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { revealWindow } from "@/lib/redux/slices/windowManagerSlice";
 import { cn } from "@/lib/utils";

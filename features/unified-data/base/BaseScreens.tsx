@@ -16,17 +16,35 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { recordsDataSource } from "@ai-matrx/records-ui/helpers";
 import { MakeMount } from "@/features/make/MakeMount";
+import { useObjectOrganization } from "@/features/unified-data/objectOrganization";
+import { createClient } from "@/utils/supabase/client";
 import { TEMPLATE_GALLERY_HREF } from "@/features/make/gallery/galleryHref";
+import { useAppSelector } from "@/lib/redux/hooks";
+import { selectOrganizationsList } from "@/features/scopes/redux/selectors/tree";
 import { useOrganizationRequired } from "@/features/organizations/useOrganizationRequired";
 
 import { AirtableImportDialog } from "./AirtableImportDialog";
 import { SheetsImportDialog } from "./SheetsImportDialog";
 import {
-  listBases, listHomeTables, listSnapshots, readBase, saveBase, saveSnapshot, setSnapshotSchedule, trashSnapshot,
+  listBases, listSnapshots, readBase, saveBase, saveSnapshot, setSnapshotSchedule, trashSnapshot,
   type BaseIdentity, type BaseSnapshotRow, type HomeTable,
 } from "./baseStore";
 import { useBasePort } from "./useBasePort";
+
+type Client = ReturnType<typeof useRecordsClient>;
+
+/** Every table the store lists for this person (the store decides which; with an organization, that one), with the Home each lives in. */
+async function homeTables(client: Client, organizationId?: string, everyOrganization?: readonly string[]): Promise<HomeTable[]> {
+  // Reads span every organization the person belongs to (the active one is never a filter): ask each through the one client.
+  const orgs = organizationId ? [organizationId] : everyOrganization?.length ? [...everyOrganization] : [undefined];
+  const parts = await Promise.all(orgs.map((o) => client.tableList(o ? { organization_id: o } : undefined)));
+  const failed = parts.find((r) => !r.ok);
+  if (failed && !failed.ok && parts.every((r) => !r.ok)) throw new Error(failed.error.message);
+  const rows = parts.flatMap((r) => (r.ok ? r.data : []));
+  return rows.map((t) => ({ id: t.id, name: t.name, organization_id: t.organization_id, home_id: (t as { parent_id?: string | null }).parent_id ?? t.home_id ?? null, icon: null, color: null }));
+}
 
 const COLORS = ["#2563eb", "#7c3aed", "#db2777", "#dc2626", "#ea580c", "#ca8a04", "#16a34a", "#0891b2", "#475569"];
 
@@ -45,13 +63,23 @@ function Words({ children }: { children: string }) {
 // ── the list ────────────────────────────────────────────────────────────────────────────────
 
 export function BasesHome() {
+  // org-filter: read-scope the records client is mounted for the organization new things are saved to; the list itself is the store's, not a filter on it
+  const active = useOrganizationRequired();
+  if (active.organizationState !== "ready" || !active.organizationId) return <div className="p-4"><Words>Choose the organization you are working in (top bar) to see its bases.</Words></div>;
+  return <MakeMount organizationId={active.organizationId}><BasesBody /></MakeMount>;
+}
+
+function BasesBody() {
+  const client = useRecordsClient();
+  const everyOrg = useAppSelector(selectOrganizationsList).map((o) => o.id);
+  const orgKey = everyOrg.join(",");
   const router = useRouter();
   const [state, setState] = useState<{ bases: Array<{ homeId: string; name: string; icon: string | null; color: string | null; description: string | null; tables: number }> } | { error: string } | null>(null);
   const [creating, setCreating] = useState(false);
 
   const load = useCallback(async () => {
     try {
-      const [tables, identities] = await Promise.all([listHomeTables(), listBases()]);
+      const [tables, identities] = await Promise.all([homeTables(client, undefined, orgKey ? orgKey.split(",") : undefined), listBases()]);
       const byHome = new Map<string, HomeTable[]>();
       for (const t of tables) if (t.home_id) byHome.set(t.home_id, [...(byHome.get(t.home_id) ?? []), t]);
       const named = new Map(identities.map((b) => [b.home_id, b]));
@@ -65,7 +93,7 @@ export function BasesHome() {
     } catch (e) {
       setState({ error: e instanceof Error ? e.message : "The bases could not be read." });
     }
-  }, []);
+  }, [client, orgKey]);
   useEffect(() => void load(), [load]);
 
   return (
@@ -127,7 +155,7 @@ export function NewBaseDialog({ open, onOpenChange, onMade }: { open: boolean; o
       return;
     }
     try {
-      const mine = (await listHomeTables()).find((t) => t.id === made.data);
+      const mine = (await homeTables(client)).find((t) => t.id === made.data);
       const home = mine?.home_id ?? made.homeId;
       await saveBase(mine?.organization_id ?? "", home, { name, template: "blank" });
       onMade(home);
@@ -166,18 +194,13 @@ interface Extras {
 
 /** The page reads the base's tables first (row security, no store client), then mounts the record store for THE BASE'S OWN organization. */
 export function BasePage({ homeId }: { homeId: string }) {
-  const [org, setOrg] = useState<string | null | undefined>(undefined);
-  const [error, setError] = useState<string | null>(null);
-  useEffect(() => {
-    listHomeTables(homeId).then((ts) => setOrg(ts[0]?.organization_id ?? null), (e) => setError(e instanceof Error ? e.message : "The base could not be read."));
-  }, [homeId]);
-  if (error) return <div className="p-4"><Words>{error}</Words></div>;
-  if (org === undefined) return <div className="p-4"><Words>Reading the base…</Words></div>;
-  if (org === null) return <div className="p-4"><Words>This base has no tables you can open.</Words></div>;
-  return <MakeMount organizationId={org}><BasePageBody homeId={homeId} /></MakeMount>;
+  const where = useObjectOrganization(recordsDataSource(createClient()), homeId);
+  if (where.state === "resolving") return <div className="p-4"><Words>Reading the base…</Words></div>;
+  if (where.state !== "found") return <div className="p-4"><Words>This base was not found, or you have not been given it.</Words></div>;
+  return <MakeMount organizationId={where.organizationId}><BasePageBody homeId={homeId} organizationId={where.organizationId} /></MakeMount>;
 }
 
-function BasePageBody({ homeId }: { homeId: string }) {
+function BasePageBody({ homeId, organizationId }: { homeId: string; organizationId: string }) {
   const client = useRecordsClient();
   const [tables, setTables] = useState<HomeTable[] | null>(null);
   const [identity, setIdentity] = useState<BaseIdentity | null>(null);
@@ -187,7 +210,7 @@ function BasePageBody({ homeId }: { homeId: string }) {
 
   const load = useCallback(async () => {
     try {
-      const ts = await listHomeTables(homeId);
+      const ts = (await homeTables(client, organizationId)).filter((t) => t.home_id === homeId);
       setTables(ts);
       const org = ts[0]?.organization_id;
       setIdentity(org ? await readBase(org, homeId) : null);
@@ -202,7 +225,7 @@ function BasePageBody({ homeId }: { homeId: string }) {
     } catch (e) {
       setError(e instanceof Error ? e.message : "The base could not be read.");
     }
-  }, [client, homeId]);
+  }, [client, homeId, organizationId]);
   useEffect(() => void load(), [load]);
 
   if (error) return <div className="p-4"><Words>{error}</Words></div>;
@@ -292,6 +315,7 @@ function EditDialog({ open, onClose, current, fallbackName, onSave }: { open: bo
 // ── duplicate ───────────────────────────────────────────────────────────────────────────────
 
 function DuplicateDialog({ open, onClose, name, tables, organizationId }: { open: boolean; onClose: () => void; name: string; tables: HomeTable[]; organizationId: string }) {
+  const client = useRecordsClient();
   const port = useBasePort();
   const router = useRouter();
   const [withRecords, setWithRecords] = useState(true);
@@ -302,7 +326,7 @@ function DuplicateDialog({ open, onClose, name, tables, organizationId }: { open
     const res = await duplicateBase(port, { organizationId, tables: list, withRecords, nameFor: (t) => `${t.name} (copy)`, onProgress: (p) => setPhase({ kind: "copying", p }) });
     if (!res.ok) { setPhase({ kind: "refused", text: `Stopped at ${res.stoppedAt.name}. ${(res.error as { message?: string })?.message ?? ""} ${res.made.length} of ${list.length} tables were copied.` }); return; }
     const first = res.data.tables[0]?.copy.id ?? null;
-    const home = first ? (await listHomeTables()).find((t) => t.id === first)?.home_id ?? null : null;
+    const home = first ? (await homeTables(client, organizationId)).find((t) => t.id === first)?.home_id ?? null : null;
     // The copy's tables share one new Home only if the store made one for the first and the rest followed; say the truth.
     setPhase({ kind: "done", open: home ? `/data/bases/${home}` : first ? `/data/${first}` : null,
       text: `${res.data.tables.length} tables${withRecords ? ` with ${res.data.tables.reduce((n, t) => n + t.records, 0)} records` : ""}, ${res.data.relinkedColumns} links re-pointed, ${res.data.automations} automations (off), ${res.data.pages} pages.${res.data.extrasRefused.length ? ` ${res.data.extrasRefused.join(" ")}` : ""}` });
@@ -336,6 +360,7 @@ function DuplicateDialog({ open, onClose, name, tables, organizationId }: { open
 function SnapshotsDialog({ open, onClose, homeId, organizationId, name, tables, identity, onNeedIdentity }: {
   open: boolean; onClose: () => void; homeId: string; organizationId: string; name: string; tables: HomeTable[]; identity: BaseIdentity | null; onNeedIdentity: () => Promise<BaseIdentity>;
 }) {
+  const client = useRecordsClient();
   const port = useBasePort();
   const router = useRouter();
   const [base, setBase] = useState<BaseIdentity | null>(identity);
@@ -364,7 +389,7 @@ function SnapshotsDialog({ open, onClose, homeId, organizationId, name, tables, 
     setBusy(null);
     if (!res.ok) { setNote(`The restore stopped at ${res.stoppedAt.name}. The snapshot itself is untouched.`); return; }
     const first = res.data.tables[0]?.copy.id;
-    const home = first ? (await listHomeTables()).find((t) => t.id === first)?.home_id : null;
+    const home = first ? (await homeTables(client, organizationId)).find((t) => t.id === first)?.home_id : null;
     setNote(`Restored as a new base: ${res.data.tables.length} tables.`);
     if (home) router.push(`/data/bases/${home}`);
   };

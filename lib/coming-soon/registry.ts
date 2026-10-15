@@ -11,6 +11,8 @@
 // Never render a bare "coming soon" string. Register it, then call
 // `announceComingSoon(id)`.
 
+import { globalSlot } from "@ai-matrx/kit/global-slot";
+import { registerComingSoon } from "@ai-matrx/kit/coming-soon";
 import type { ComingSoonEntry } from "./types";
 import { EDITOR_MENU_COMING_SOON } from "./editor-menus";
 
@@ -1004,11 +1006,13 @@ export const COMING_SOON: Record<string, ComingSoonEntry> = {
   },
 };
 
-export function getComingSoon(id: string): ComingSoonEntry | undefined {
-  return COMING_SOON[id];
-}
+// Start-up registration (W1-G6a): this module is the app's side of the shared registry in
+// `@ai-matrx/kit/coming-soon`. Importing it registers every row above; `app/layout.tsx` and
+// `app/Providers.tsx` import it for that effect. A re-evaluation (HMR) first removes what the
+// previous evaluation registered, so a duplicate id can only ever mean two real owners.
+const UNREGISTER_KEY = "ai-matrx.frontend.coming-soon.unregister";
+const previous = globalSlot<{ off: (() => void) | null }>(UNREGISTER_KEY, () => ({ off: null }));
+previous.off?.();
+previous.off = registerComingSoon(COMING_SOON);
 
-export function listComingSoon(owner?: string): ComingSoonEntry[] {
-  const all = Object.values(COMING_SOON);
-  return owner ? all.filter((e) => e.owner === owner) : all;
-}
+export { getComingSoon, listComingSoon } from "@ai-matrx/kit/coming-soon";

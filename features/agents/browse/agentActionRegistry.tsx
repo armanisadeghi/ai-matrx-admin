@@ -47,7 +47,7 @@ import {
   ExternalLink,
 } from "lucide-react";
 import type { ItemMenuConfig, ItemMenuEntry } from "@ai-matrx/chat/ui/item-types";
-import { announceComingSoon } from "@/lib/coming-soon/announce";
+import { announceComingSoon } from "@ai-matrx/kit/coming-soon";
 // The row decides its own shell (a builtin lives under the admin System Agents
 // tree); ./agentPaths is the one place that answers it.
 import { agentHref as rowHref, AGENT_BASE_PATH } from "./agentPaths";
