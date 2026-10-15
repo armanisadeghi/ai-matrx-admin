@@ -152,7 +152,6 @@ export function AttestationClient({
   const health = scored ? Math.round((counts.green / scored) * 100) : null;
   const unattested = data.releases.filter((r) => !r.attested);
   const manifest = data.manifest;
-  const keysRead = manifest?.gate_run?.keys_read ?? 0;
 
   const appOptions: SelectOption[] = applications.map((a) => ({ value: a, label: a }));
   const buildOptions: SelectOption[] = [
@@ -204,9 +203,8 @@ export function AttestationClient({
           <SummaryStat label="Check" value={counts.amber} tone={counts.amber ? "warning" : undefined} />
           <SummaryStat label="Wrong" value={counts.red} tone={counts.red ? "danger" : undefined} />
           <SummaryStat
-            label="Release run coverage"
-            value={manifest ? `${keysRead} of ${manifest.key_count}` : "—"}
-            tone={manifest && keysRead === 0 ? "danger" : undefined}
+            label="Declared keys"
+            value={manifest ? manifest.key_count : "—"}
           />
         </div>
 
@@ -214,10 +212,6 @@ export function AttestationClient({
           <Flag tone="danger">
             No build of <code className="font-mono">{app}</code> is attested. Every stored key
             shows red until a release attests its manifest.
-          </Flag>
-        ) : keysRead === 0 ? (
-          <Flag tone="danger">
-            The release run for {manifest.app_version} read 0 keys.
           </Flag>
         ) : null}
         {unattested.length > 0 ? (
