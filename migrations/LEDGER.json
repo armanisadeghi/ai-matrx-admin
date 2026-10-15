@@ -1,6 +1,6 @@
 {
   "note": "Checked-in snapshot of public._schema_migrations for the files under migrations/campaign and migrations/inverse. Written by `pnpm db:apply` on every successful production apply and refreshed whole by the nightly catch-up. Never hand-edited: a self-written checksum is a claim nobody can check. Guard: pnpm check:ledgered-files-unedited.",
-  "generated_at": "2026-10-15T02:07:19.284Z",
+  "generated_at": "2026-10-15T02:12:48.335Z",
   "files": {
     "migrations/campaign/a_chunk_is_the_size_the_client_door_can_actually_carry.sql": {
       "source": "matrx-frontend",
@@ -3733,6 +3733,18 @@
       "filename": "formula_c_mid_counts_from_zero.sql",
       "checksum": "ba1ee4502d9bf1780d41dade74d9990734606cee7000a30bb396d98719be3085",
       "applied_at": "2026-10-15 02:07:17.113761+00"
+    },
+    "migrations/campaign/formula_d_a_column_has_help_text.sql": {
+      "source": "matrx-frontend",
+      "filename": "formula_d_a_column_has_help_text.sql",
+      "checksum": "cff7aaff5a281d3c0d593e998e2944dc166b618a368530065de753e6cc535401",
+      "applied_at": "2026-10-15 02:09:40.571803+00"
+    },
+    "migrations/campaign/formula_e_a_rollup_has_airtables_aggregates.sql": {
+      "source": "matrx-frontend",
+      "filename": "formula_e_a_rollup_has_airtables_aggregates.sql",
+      "checksum": "4ac72589bf44d6472c7366c3d805a3ed8597d5a8f7eddfe6c459ee80400a9045",
+      "applied_at": "2026-10-15 02:12:46.312235+00"
     },
     "migrations/campaign/formula_red_planner_never_plans_created_by.sql": {
       "source": "matrx-frontend",
