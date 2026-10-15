@@ -24,6 +24,7 @@ import DomainPanelResizeHandle from "./DomainPanelResizeHandle";
 import { DOMAIN_PANEL_PREPAINT_SCRIPT } from "./domain-panel-width";
 import ShellIcon from "../ShellIcon";
 import SidebarWindowToggleIsland from "./SidebarWindowToggleIsland";
+import SidebarChatToggle from "./SidebarChatToggle";
 import {
   navItemsForViewer,
   primaryNavItems,
@@ -71,6 +72,9 @@ export default function Sidebar({ pathname, isAuthenticated }: SidebarProps) {
         aria-label="Main navigation"
         data-sidebar-view={initialView}
       >
+        {/* The Side Chat's door — first in the rail on every view (main or route menu). */}
+        {isAuthenticated && <SidebarChatToggle />}
+
         {/* Route menu switch + content — client island, renders nothing on Small/Medium routes */}
         <RouteMenuSlot />
 

@@ -3184,20 +3184,28 @@ html[data-board-embed] .shell-main {
 .shell-root[data-no-sidebar] .shell-chat-dock,
 .shell-root[data-no-sidebar] .shell-chat-toggle,
 .shell-root[data-pathname^="/administration/launchpad"] .shell-chat-dock,
-.shell-root[data-pathname^="/administration/launchpad"] .shell-chat-toggle {
+.shell-root[data-pathname^="/administration/launchpad"] .shell-chat-toggle,
+.shell-root[data-pathname^="/administration/launchpad"] .shell-nav-chat {
   display: none !important;
 }
 
-/* THE CHAT BUTTON NEVER MOVES (owner, 2026-10-02): one button, fixed at the
-   chat column's left edge on the header's line. Closed, it is the first thing
-   in the header; open, the same pixel sits inside the chat's own header row.
-   Nothing reflows around it — the header and the dock's top row each reserve
-   its room. It follows only the sidebar's edge, which it must. The offset
-   lands the VISIBLE circle on the shell gutter (no padding around the tap
-   button: the tap-target guard). */
-.shell-root {
-  --shell-chat-toggle-x: calc(var(--shell-edge-gutter) - var(--matrx-tap-gap, 0px) / 2);
-  --shell-chat-toggle-room: calc(var(--shell-chat-toggle-x) + var(--matrx-tap-box, 2.375rem));
+/* THE CHAT'S DOOR (owner, 2026-10-15): on a desktop it is the rail's first
+   row (SidebarChatToggle), beside the sidebar toggle — never in the page
+   header, where every page puts its back chevron and a closed chat's button
+   looked wrong. Pressed while the chat is docked open. Below 1024px the rail
+   is hidden and the header's ShellChatToggle (768–1023px) or the phone's ⋮
+   row (< 768px) is the door. */
+.shell-nav-chat {
+  display: none;
+}
+
+.shell-root[data-shell-chat-available] .shell-nav-chat {
+  display: flex;
+}
+
+.shell-root[data-shell-chat-open] .shell-nav-chat {
+  background: var(--shell-pill-bg);
+  border: 1px solid var(--shell-pill-border);
 }
 
 .shell-chat-toggle {
@@ -3206,59 +3214,15 @@ html[data-board-embed] .shell-main {
   pointer-events: auto;
 }
 
-.shell-root[data-shell-chat-available] .shell-chat-toggle {
-  display: flex;
-}
-
-/* A PHONE'S TITLE KEEPS THE ROW (2026-10-15): below 768px the chat button
-   moves into the ⋮ sheet (HeaderPhoneOverflow's "Chat" row, the same door),
-   so the header holds hamburger · page · ⋮ and nothing else. */
-@media (max-width: 767px) {
+@media (min-width: 768px) and (max-width: 1023px) {
   .shell-root[data-shell-chat-available] .shell-chat-toggle {
-    display: none;
+    display: flex;
   }
 }
 
-@media (min-width: 1024px) {
-  .shell-root[data-shell-chat-available] .shell-chat-toggle {
-    position: fixed;
-    top: 0;
-    left: calc(var(--shell-sidebar-w) + var(--shell-chat-toggle-x));
-    z-index: 31;
-    height: 2.75rem;
-    align-items: center;
-    transition: left var(--matrx-motion-duration-panel) var(--matrx-motion-ease-panel);
-  }
-
-  .shell-root > #shell-sidebar-toggle:checked ~ * .shell-chat-toggle {
-    left: calc(var(--shell-sidebar-w-expanded) + var(--shell-chat-toggle-x));
-  }
-
-  .shell-root[data-shell-chat-available] .shell-header {
-    padding-left: var(--shell-chat-toggle-room);
-  }
-}
-
-/* Canvas pages: the chat button stays at its pixel over the page's own header
-   (or the dock's top row), and that header starts after it. Behind a
-   full-screen canvas the chat steps aside, and so does its button. */
-@media (min-width: 1024px) {
-  .shell-root[data-shell-chrome="canvas"][data-shell-chat-available] .shell-chat-toggle {
-    visibility: visible;
-  }
-
-  .shell-root[data-shell-chrome="canvas"][data-shell-chat-available] .canvas-workspace-header {
-    padding-left: var(--shell-chat-toggle-room);
-  }
-}
-
-.shell-root[data-canvas-fullscreen] .shell-chat-toggle {
+.shell-root[data-canvas-fullscreen] .shell-chat-toggle,
+.shell-root[data-canvas-fullscreen] .shell-nav-chat {
   display: none !important;
-}
-
-/* The dock's top row starts after the button that sits over it. */
-.shell-chat-dock-header {
-  padding-left: var(--shell-chat-toggle-room);
 }
 
 /* The phone's left control gets the same gutter, so both ends match there
