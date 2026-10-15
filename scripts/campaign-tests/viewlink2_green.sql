@@ -180,6 +180,12 @@ begin
   if (custom.shared_view_read(v_tok2) ->> 'board_hide_empty')::boolean is not true then raise exception '8b: the board hides empty groups and the reading does not say so'; end if;
   raise notice '8 PASS - the public reading carries the owner''s hide-empty-groups choice.';
 
+  -- 9 the board's columns follow the choices' own order
+  if custom.shared_view_read(v_tok2) -> 'choice_order' -> 'status' is distinct from '["Draft","In progress","Ready for approval","Approved","Published"]'::jsonb then
+    raise exception '9: choice_order is %', custom.shared_view_read(v_tok2) -> 'choice_order';
+  end if;
+  raise notice '9 PASS - the reading carries each choice field''s choices in the order they were made.';
+
   raise notice 'VIEWLINK2 GREEN - every part passed.';
 end
 $t$;

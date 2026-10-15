@@ -104,7 +104,7 @@ function Board({ view }: { view: PublishedViewOpen }) {
   // The owner's own choice: hide empty groups. Otherwise an empty group stays, as a narrow header (never a full-width hole).
   const shown = view.board_hide_empty ? lanes.filter(([, rows]) => rows.length > 0) : lanes;
   // The board scrolls sideways inside its own box. A phone shows one column at a time and snaps to it; wider screens show
-  // 18rem columns. Widths are fixed classes, so nothing moves once the page has drawn.
+  // 18rem columns, and the narrow empty-group headers are left out (a swipe should land on cards). Widths are fixed classes, so nothing moves once the page has drawn.
   return (
     <div className="flex w-full min-w-0 snap-x snap-mandatory items-start gap-3 overflow-x-auto pb-2" data-public-board="">
       {shown.map(([name, rows]) =>
@@ -112,7 +112,7 @@ function Board({ view }: { view: PublishedViewOpen }) {
           <section
             key={name}
             aria-label={`${name}, empty`}
-            className="flex w-9 shrink-0 snap-start flex-col items-center gap-2 rounded-lg border border-border py-2"
+            className="hidden w-9 shrink-0 snap-start flex-col items-center gap-2 rounded-lg border border-border py-2 sm:flex"
             data-public-board-empty=""
           >
             <span className="text-xs text-muted-foreground">0</span>
