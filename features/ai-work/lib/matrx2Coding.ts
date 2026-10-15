@@ -64,9 +64,13 @@ export const CODING_MINOR = 38;
 /** How many of a computer's newest chats Continue looks through (`coding.discover` has no lookup by id). */
 export const DISCOVER_WINDOW = 200;
 
-/** A started run is followed this long for its chat to reach AI Matrx. */
-export const FILING_WAIT_MS = 10 * 60_000;
-const FILING_POLL_MS = 3_000;
+/** How long a start waits for the chat's own id (its first output) before filing is recorded as pending. */
+export const FILING_WAIT_MS = 20_000;
+const FILING_POLL_MS = 1_000;
+/** How long one computer gets to answer the relay's connect. */
+export const READY_MS = 6_000;
+/** The most computers a door tries (newest check-in first). */
+export const MAX_COMPUTERS = 4;
 
 export interface Matrx2Computer {
   deviceId: string;
@@ -96,9 +100,93 @@ export interface MatrxLocalDoor {
   reconcile(providerSessionId: string): Promise<LocalReconcileResult>;
 }
 
+/**
+ * A chat started on a Matrx 2 computer that has not reached AI Matrx yet, with the homes it is to be
+ * filed under. Kept until it is filed, so filing survives the tab closing: the next /work load
+ * resumes it (`resumePendingFilings`). Delivery itself is always the person's explicit act.
+ */
+export interface PendingFiling {
+  deviceId: string;
+  computerName: string;
+  sessionId: string;
+  providerSessionId: string | null;
+  homes: unknown[];
+  startedAt: number;
+}
+
+export interface PendingFilingStore {
+  list(): Promise<PendingFiling[]>;
+  put(filing: PendingFiling): Promise<void>;
+  remove(sessionId: string): Promise<void>;
+}
+
 export interface CodingDoors {
   reach: Matrx2Reach;
   local: MatrxLocalDoor;
+  /** Where unfiled starts wait. Absent: filing is reported pending and not remembered. */
+  filings?: PendingFilingStore;
+}
+
+// ── THE relay reach (one implementation; the browser injects its wiring) ─────
+
+/** A desktop-protocol client the reach can open, wait on and close. */
+export type ReachClient = DesktopProtocolLikeClient & {
+  connect(): void;
+  ready(options: { timeoutMs: number }): Promise<{ protocol_version: string }>;
+  close(): void;
+};
+
+export interface ReachDeps {
+  /** The signed-in person's token and id, or null when signed out. */
+  session(): Promise<{ token: string; userId: string } | null>;
+  /** The person's active computers, newest check-in first. Throws on a failed query. */
+  devices(userId: string): Promise<Array<{ id: string; name: string }>>;
+  /** The relay's word on one computer; null when it cannot say. */
+  relayStatus(deviceId: string, token: string): Promise<{ online: boolean; protocol_version?: string | null } | null>;
+  /** A client to that computer through the relay. */
+  client(deviceId: string): ReachClient;
+  /** The AI Matrx conversation for a `cloudSessionFilter`, read as the person. */
+  conversation(userId: string, filter: string): Promise<string | null>;
+}
+
+/** The one relay reach: the browser's (matrx2Computers.ts) and the live proof's are both this. */
+export function createMatrx2Reach(deps: ReachDeps): Matrx2Reach {
+  return {
+    async listComputers(deviceId) {
+      const session = await deps.session();
+      if (!session) return { reason: "Sign in to reach your computers." };
+      let devices: Array<{ id: string; name: string }>;
+      try {
+        devices = await deps.devices(session.userId);
+      } catch (error) {
+        return { reason: `Your computers could not be listed: ${error instanceof Error ? error.message : String(error)}` };
+      }
+      // The page's own computer is filtered BEFORE the cap, so a named fifth computer is still asked.
+      const pool = (deviceId ? devices.filter((d) => d.id === deviceId) : devices).slice(0, MAX_COMPUTERS);
+      return Promise.all(
+        pool.map(async (d) => {
+          const status = await deps.relayStatus(d.id, session.token).catch(() => null);
+          return { deviceId: d.id, name: d.name, online: status ? status.online : null, protocolVersion: status?.protocol_version ?? null };
+        }),
+      );
+    },
+    async withClient(computer, work) {
+      const client = deps.client(computer.deviceId);
+      try {
+        client.connect();
+        const welcome = await client.ready({ timeoutMs: READY_MS });
+        if (protocolMinor(welcome.protocol_version) < CODING_MINOR) throw new Error("update Matrx 2 to reach its coding sessions from here.");
+        return await work(client);
+      } finally {
+        client.close();
+      }
+    },
+    async findConversation(providerSessionId) {
+      const session = await deps.session();
+      if (!session) return null;
+      return deps.conversation(session.userId, cloudSessionFilter(providerSessionId));
+    },
+  };
 }
 
 // ── Pure helpers ─────────────────────────────────────────────────────────────
@@ -142,6 +230,8 @@ export function cloudSessionFilter(providerSessionId: string): string {
 
 export interface ComputerPick {
   computer: Matrx2Computer | null;
+  /** The other online computers, in the order they are tried after `computer`. */
+  others?: Matrx2Computer[];
   /** Why each other computer will not run it. */
   reasons: string[];
   /** Said before anything runs: which computer runs it. Null when none. */
@@ -170,16 +260,18 @@ export function chooseComputer(statuses: Matrx2ComputerStatus[], deviceId?: stri
   const first = candidates[0];
   if (!first) return { computer: null, reasons, notice: null };
   const computer = { deviceId: first.deviceId, name: first.name };
+  const others = candidates.slice(1).map((c) => ({ deviceId: c.deviceId, name: c.name }));
+  // The device list is newest check-in first (`last_seen` descending).
   const notice =
     candidates.length > 1 && !deviceId
-      ? `Runs on ${first.name}: ${candidates.length} of your computers run Matrx 2, and this is the most recent.`
+      ? `Runs on ${first.name}, the newest of ${candidates.length} online.`
       : `Runs on ${first.name} (Matrx 2).`;
-  return { computer, reasons, notice };
+  return { computer, others, reasons, notice };
 }
 
 /** The line shown when Matrx 2 could not take it and Matrx Local is tried. */
 export function fallbackNotice(reasons: string[]): string {
-  return `No Matrx 2 computer answered (${reasons.join(" ") || "none found"}). Trying Matrx Local.`;
+  return `No Matrx 2 computer answered: ${reasons.join(" ") || "none found."} Trying Matrx Local.`;
 }
 
 /** Matrx 2's providers + recent folders, as the composer's capability. Pure. */
@@ -232,9 +324,25 @@ async function pick(doors: CodingDoors, deviceId?: string | null): Promise<Compu
   return chooseComputer(listed, deviceId);
 }
 
-/** Which computer would run it, said before anything runs (the reconcile confirm uses it). */
+/** Which computer would run it, said before anything runs. */
 export async function pickComputer(doors: CodingDoors, deviceId?: string | null): Promise<ComputerPick> {
   return pick(doors, deviceId);
+}
+
+/**
+ * The computer that holds this chat (each online one asked, the page's own first), for the
+ * reconcile confirm to name. None holds it: no computer, and the reasons say so.
+ */
+export async function pickChatHolder(doors: CodingDoors, providerSessionId: string, deviceId?: string | null): Promise<ComputerPick> {
+  const id = nativeSessionId(providerSessionId);
+  const chosen = await pick(doors, deviceId);
+  const found = await firstComputerWith<boolean>(doors, chosen, async (client, computer) => {
+    const target = await locateChat(client, computer, id);
+    // A chat with no folder or one open elsewhere is still on this computer: it can be delivered.
+    return target.state === "ready" || !/^This chat is not among/.test(target.sentence) ? { value: true } : { notHere: target.sentence };
+  });
+  if (found.found) return { computer: found.computer, others: [], reasons: chosen.reasons, notice: `Runs on ${found.computer.name}, which holds this chat.` };
+  return { computer: null, others: [], reasons: [...found.reasons, ...(found.notHere.length ? [notHereSentence(found.notHere)] : [])], notice: null };
 }
 
 function transportFor(client: DesktopProtocolLikeClient, name: string) {
@@ -250,6 +358,52 @@ async function onComputer<T>(doors: CodingDoors, chosen: ComputerPick, work: (cl
   } catch (error) {
     return { reasons: [...chosen.reasons, computerReason(computer.name, error)] };
   }
+}
+
+/**
+ * Ask each online computer in turn (the chosen one first) until one has it. `work` returns the
+ * value, or a sentence for "not on this computer". `answered`: some computer answered, so the door
+ * does not fall back to Matrx Local. Used by Full Download, Continue and Reconcile.
+ */
+export async function firstComputerWith<T>(
+  doors: CodingDoors,
+  chosen: ComputerPick,
+  work: (client: DesktopProtocolLikeClient, computer: Matrx2Computer) => Promise<{ value: T } | { notHere: string }>,
+): Promise<{ found: true; computer: Matrx2Computer; value: T } | { found: false; reasons: string[]; notHere: string[]; answered: boolean }> {
+  const reasons = [...chosen.reasons];
+  const notHere: string[] = [];
+  for (const computer of chosen.computer ? [chosen.computer, ...(chosen.others ?? [])] : []) {
+    try {
+      const answer = await doors.reach.withClient(computer, (client) => work(client, computer));
+      if ("value" in answer) return { found: true, computer, value: answer.value as T };
+      notHere.push(answer.notHere);
+    } catch (error) {
+      reasons.push(computerReason(computer.name, error));
+    }
+  }
+  return { found: false, reasons, notHere, answered: notHere.length > 0 };
+}
+
+/** Is that chat on this computer, and where can it continue? */
+async function locateChat(client: DesktopProtocolLikeClient, computer: Matrx2Computer, id: string): Promise<ContinueTarget> {
+  const transport = transportFor(client, computer.name);
+  try {
+    const sessions = await transport.call("listSessions");
+    const discovered = sessions.some((s) => s.providerSessionId === id) ? [] : await transport.call("discoverSessions", { limit: DISCOVER_WINDOW });
+    return continueTarget(computer.name, id, sessions, discovered);
+  } finally {
+    transport.dispose();
+  }
+}
+
+/** "not among the newest 200 chats on A." + "… on B." → one sentence naming both. Pure. */
+export function notHereSentence(sentences: string[]): string {
+  const window = /^This chat is not among the newest (\d+) chats on (.+)\.$/;
+  const names = sentences.map((s) => window.exec(s)).filter((m): m is RegExpExecArray => m !== null);
+  if (names.length === sentences.length && names.length > 1) {
+    return `This chat is not among the newest ${names[0]?.[1]} chats on ${names.map((m) => m[2]).join(" or ")}.`;
+  }
+  return sentences.join(" ");
 }
 
 export type DoorCapability = LocalRuntimeCapability & {
@@ -319,49 +473,105 @@ export async function startCodingRun(
 
 /** The line shown while a Matrx 2 chat has not reached AI Matrx yet. */
 export function filingPendingSentence(name: string): string {
-  return `Running on ${name}. It is filed under your homes once the chat reaches AI Matrx.`;
+  return `Running on ${name}. Filed under your homes once ${name} delivers it to AI Matrx.`;
 }
 
 export type FilingOutcome = { conversationId: string } | { pending: string };
 
 /**
- * The join from a Matrx 2 chat to its AI Matrx conversation. The computer has no per-turn cloud
- * mirror: when the run ends, its importer (`coding.reconcile`) delivers what AI Matrx lacks, and
- * the conversation is found by the chat's provider session id. Never throws: a "not yet" is a
- * sentence.
+ * The join from a Matrx 2 chat to its AI Matrx conversation, by the chat's own id. Matrx 2 has no
+ * per-turn cloud mirror and no per-chat delivery, and a delivery sends EVERY chat that computer has
+ * (`coding.reconcile`), so filing never delivers by itself: it reads the chat's id, files at once
+ * when the chat is already in AI Matrx, and otherwise records a pending filing (with its homes)
+ * that the next /work load resumes. Never throws: a "not yet" is a sentence.
  */
 export async function fileMatrx2Run(
   doors: CodingDoors,
   computer: Matrx2Computer,
   sessionId: string,
-  options: { waitMs?: number; pollMs?: number; signal?: AbortSignal } = {},
+  options: { homes?: unknown[]; waitMs?: number; pollMs?: number; signal?: AbortSignal } = {},
 ): Promise<FilingOutcome> {
   const deadline = Date.now() + (options.waitMs ?? FILING_WAIT_MS);
   const pollMs = options.pollMs ?? FILING_POLL_MS;
+  let providerSessionId: string | null = null;
+  let reason: string | null = null;
   try {
-    return await doors.reach.withClient(computer, async (client) => {
+    providerSessionId = await doors.reach.withClient(computer, async (client) => {
       const transport = transportFor(client, computer.name);
       try {
-        let session: CodingSession | undefined;
         for (;;) {
-          if (options.signal?.aborted) return { pending: filingPendingSentence(computer.name) };
-          session = (await transport.call("listSessions")).find((s) => s.id === sessionId);
-          const done = session?.lastRunStatus && session.lastRunStatus !== "running" && session.lastRunStatus !== "starting";
-          if (session?.providerSessionId && done) break;
-          if (Date.now() > deadline) return { pending: `Still running on ${computer.name}. It is filed under your homes once the chat reaches AI Matrx; Sync on its page delivers it.` };
+          const found = (await transport.call("listSessions")).find((s) => s.id === sessionId)?.providerSessionId ?? null;
+          if (found || options.signal?.aborted || Date.now() > deadline) return found;
           await new Promise((r) => setTimeout(r, pollMs));
         }
-        const providerSessionId = session.providerSessionId as string;
-        const delivered = (await client.request("coding.reconcile", { provider: "claude", provider_session_id: providerSessionId }, { timeoutMs: 180_000 })) as { state: string; summary: string };
-        const conversationId = await doors.reach.findConversation(providerSessionId);
-        if (conversationId) return { conversationId };
-        return { pending: `Not in AI Matrx yet: ${delivered.summary}` };
       } finally {
         transport.dispose();
       }
     });
   } catch (error) {
-    return { pending: `Not filed yet. ${computerReason(computer.name, error)}` };
+    reason = computerReason(computer.name, error);
+  }
+  if (providerSessionId) {
+    const conversationId = await doors.reach.findConversation(providerSessionId).catch(() => null);
+    if (conversationId) return { conversationId };
+  }
+  await doors.filings?.put({ deviceId: computer.deviceId, computerName: computer.name, sessionId, providerSessionId, homes: options.homes ?? [], startedAt: Date.now() });
+  return { pending: [filingPendingSentence(computer.name), reason].filter(Boolean).join(" ") };
+}
+
+/**
+ * The next /work load: every pending filing whose chat has reached AI Matrx is filed (`attach`
+ * with its homes) and forgotten. Returns what still waits, for the page to show.
+ */
+export async function resumePendingFilings(
+  doors: CodingDoors,
+  attach: (conversationId: string, filing: PendingFiling) => Promise<void>,
+): Promise<PendingFiling[]> {
+  const store = doors.filings;
+  if (!store) return [];
+  const waiting: PendingFiling[] = [];
+  for (const filing of await store.list()) {
+    let providerSessionId = filing.providerSessionId;
+    if (!providerSessionId) {
+      const computer = { deviceId: filing.deviceId, name: filing.computerName };
+      providerSessionId = await doors.reach
+        .withClient(computer, async (client) => {
+          const transport = transportFor(client, computer.name);
+          try {
+            return (await transport.call("listSessions")).find((s) => s.id === filing.sessionId)?.providerSessionId ?? null;
+          } finally {
+            transport.dispose();
+          }
+        })
+        .catch(() => null);
+      if (providerSessionId) await store.put({ ...filing, providerSessionId });
+    }
+    const conversationId = providerSessionId ? await doors.reach.findConversation(providerSessionId).catch(() => null) : null;
+    if (conversationId) {
+      await attach(conversationId, filing);
+      await store.remove(filing.sessionId);
+    } else waiting.push({ ...filing, providerSessionId });
+  }
+  return waiting;
+}
+
+/** A start whose filing went pending before its homes were known (the chooser's Run): add them. */
+export async function addHomesToFiling(doors: CodingDoors, sessionId: string, homes: unknown[]): Promise<void> {
+  const store = doors.filings;
+  const filing = (await store?.list())?.find((f) => f.sessionId === sessionId);
+  if (store && filing) await store.put({ ...filing, homes });
+}
+
+/** The person's explicit "deliver now" for a pending filing: that computer's whole delivery, scope said by the caller. */
+export async function deliverFromComputer(doors: CodingDoors, filing: PendingFiling): Promise<string> {
+  const computer = { deviceId: filing.deviceId, name: filing.computerName };
+  try {
+    const answer = (await doors.reach.withClient(computer, (client) =>
+      client.request("coding.reconcile", { provider: "claude", provider_session_id: filing.providerSessionId ?? filing.sessionId }, { timeoutMs: 180_000 }),
+    )) as { summary: string };
+    return `${computer.name}: ${answer.summary}`;
+  } catch (error) {
+    return computerReason(computer.name, error);
   }
 }
 
@@ -370,27 +580,29 @@ export type ContinueVerdict =
   | { via: "matrx-local"; verdict: LocalResumableVerdict; notice: string }
   | { via: "none"; sentence: string };
 
-/** Can this chat continue, and where. A computer that answered is never passed over for Matrx Local. */
+/**
+ * Can this chat continue, and where: the computer that holds it (each online one is asked, the
+ * page's own first). A computer that answered is never passed over for Matrx Local.
+ */
 export async function readContinueVerdict(doors: CodingDoors, providerSessionId: string, deviceId?: string | null): Promise<ContinueVerdict> {
   const id = nativeSessionId(providerSessionId);
   const chosen = await pick(doors, deviceId);
-  const answer = await onComputer(doors, chosen, async (client, computer) => {
-    const transport = transportFor(client, computer.name);
-    try {
-      const sessions = await transport.call("listSessions");
-      const discovered = sessions.some((s) => s.providerSessionId === id) ? [] : await transport.call("discoverSessions", { limit: DISCOVER_WINDOW });
-      return continueTarget(computer.name, id, sessions, discovered);
-    } finally {
-      transport.dispose();
-    }
+  const found = await firstComputerWith<ContinueTarget>(doors, chosen, async (client, computer) => {
+    const target = await locateChat(client, computer, id);
+    return target.state === "ready" ? { value: target } : { notHere: target.sentence };
   });
-  if ("value" in answer && chosen.computer) return { via: "matrx2", computer: chosen.computer, notice: chosen.notice, target: answer.value };
-  const reasons = "reasons" in answer ? answer.reasons : [];
+  if (found.found) {
+    const notice = found.computer.deviceId === chosen.computer?.deviceId ? chosen.notice : `Runs on ${found.computer.name}, which holds this chat.`;
+    return { via: "matrx2", computer: found.computer, notice, target: found.value };
+  }
+  if (found.answered && chosen.computer) {
+    return { via: "matrx2", computer: chosen.computer, notice: chosen.notice, target: { state: "blocked", sentence: notHereSentence(found.notHere) } };
+  }
   try {
     const verdict = await doors.local.resumable(providerSessionId);
-    return { via: "matrx-local", verdict, notice: `${fallbackNotice(reasons)} Through Matrx Local.` };
+    return { via: "matrx-local", verdict, notice: `${fallbackNotice(found.reasons)} Through Matrx Local.` };
   } catch (error) {
-    return { via: "none", sentence: [...reasons, error instanceof Error ? error.message : String(error)].join(" ") };
+    return { via: "none", sentence: [...found.reasons, error instanceof Error ? error.message : String(error)].join(" ") };
   }
 }
 
@@ -423,7 +635,7 @@ export async function continueCodingRun(
               })
             ).id;
           const sent = await transport.call("send", sessionId, input.prompt);
-          return { via: "matrx2" as const, computer, sessionId, queued: sent.queued, sentence: `Running on ${computer.name}. New turns appear here once the chat reaches AI Matrx.` };
+          return { via: "matrx2" as const, computer, sessionId, queued: sent.queued, sentence: `Running on ${computer.name}. New turns appear here once ${computer.name} delivers them.` };
         } finally {
           transport.dispose();
         }

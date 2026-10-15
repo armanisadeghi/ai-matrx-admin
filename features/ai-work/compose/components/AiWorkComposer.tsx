@@ -47,6 +47,7 @@ import {
   Play,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import { Input, Select } from "@ai-matrx/design-system/controls";
 import { recordToast, toast } from "@/lib/toast";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
@@ -84,13 +85,16 @@ import {
   type CodingBridgeCapability,
 } from "@/features/ai-work/lib/codingBridgeCapability";
 import { startHostedRun } from "@/features/ai-work/lib/hostedSandboxRun";
-import { INITIAL_LOCAL_CAPABILITY } from "@/features/ai-work/lib/matrxLocalRuntime";
 import {
+  addHomesToFiling,
+  deliverFromComputer,
   fileMatrx2Run,
   filingPendingSentence,
   readCodingCapability,
+  resumePendingFilings,
   startCodingRun,
   type DoorCapability,
+  type PendingFiling,
 } from "@/features/ai-work/lib/matrx2Coding";
 import { browserCodingDoors } from "@/features/ai-work/lib/matrx2Computers";
 import { destinationAvailability, type WorkDestinationId } from "../destinations";
@@ -212,13 +216,11 @@ function ComposerBody({
   const [destination, setDestination] = useState<WorkDestinationId>("ai-matrx");
   const [bridgeCapability, setBridgeCapability] =
     useState<CodingBridgeCapability>(INITIAL_BRIDGE_CAPABILITY);
-  const [localCapability, setLocalCapability] = useState<DoorCapability>({
-    ...INITIAL_LOCAL_CAPABILITY,
-    via: "matrx2",
-    computer: null,
-    notice: null,
-  });
-  /** A Matrx 2 run not yet filed under its homes: said, never skipped. */
+  // Read only once "Claude Code on my Mac" is picked: no relay socket on every open of this page.
+  const [localCapability, setLocalCapability] = useState<DoorCapability | null>(null);
+  /** Starts on a Matrx 2 computer not yet filed under their homes (kept until filed). */
+  const [waitingFilings, setWaitingFilings] = useState<PendingFiling[]>([]);
+  const filingAbort = useRef<AbortController | null>(null);
   const [filingNote, setFilingNote] = useState<string | null>(null);
   const [localFolder, setLocalFolder] = useState<string>("");
   // ── "Runs on": null = the AI Matrx cloud (every destination below); a device id = one of the
@@ -290,8 +292,16 @@ function ComposerBody({
     void readBridgeCapability("claude_code", "matrx_sandbox").then((next) => {
       if (!cancelled) setBridgeCapability(next);
     });
-    // The person's own computer: Matrx 2 first (relay status, then one socket to
-    // the one computer that runs it), Matrx Local announced after (matrx2Coding).
+    return () => {
+      cancelled = true;
+    };
+  }, [organizationId]);
+
+  // ── The person's own computer, read lazily: Matrx 2 first (relay status, then
+  //    one socket to the computer that runs it), Matrx Local announced after.
+  useEffect(() => {
+    if (destination !== "claude-code" || runsOnDevice !== null || localCapability) return;
+    let cancelled = false;
     void readCodingCapability(browserCodingDoors).then((next) => {
       if (cancelled) return;
       setLocalCapability(next);
@@ -300,7 +310,8 @@ function ComposerBody({
     return () => {
       cancelled = true;
     };
-  }, [organizationId]);
+  }, [destination, runsOnDevice, localCapability]);
+
 
   // ── Reopen a saved request into the form.
   useEffect(() => {
@@ -353,7 +364,7 @@ function ComposerBody({
       : destination === "ai-matrx"
       ? Boolean(conversationId)
       : destination === "claude-code"
-        ? localCapability.available && Boolean(localFolder)
+        ? Boolean(localCapability?.available) && Boolean(localFolder)
         : destination === "claude-code-hosted"
           ? hostedAvailability.selectable && !hostedRunning && ownPlanReady
           : false);
@@ -366,8 +377,8 @@ function ComposerBody({
    * pair, a revoked permission) is permanent: retrying it four times would just
    * be four identical errors in the console before the same honest report.
    */
-  const attachHomes = async (runConversationId: string) => {
-    for (const home of homes) {
+  const attachHomes = async (runConversationId: string, onto: SavedRequestHome[] = homes) => {
+    for (const home of onto) {
       let attached = false;
       /** The server's own refusal, in its own words. Never re-worded here. */
       let refusal: ReturnType<typeof readTypedRefusal> = null;
@@ -427,8 +438,36 @@ function ComposerBody({
     }
   };
 
+  const refreshFilings = async () => {
+    const waiting = await resumePendingFilings(browserCodingDoors, async (conversationId, filing) => {
+      await attachHomes(conversationId, filing.homes as SavedRequestHome[]);
+      toast.success(`The chat from ${filing.computerName} is filed under its homes.`);
+    });
+    if (!filingAbort.current?.signal.aborted) setWaitingFilings(waiting);
+  };
+
+  const deliverFiling = async (filing: PendingFiling) => {
+    const ok = await confirm({
+      title: `Deliver ${filing.computerName}'s chats to AI Matrx?`,
+      description: `${filing.computerName} delivers every chat on it that AI Matrx lacks, this one included.`,
+      confirmLabel: "Deliver",
+    });
+    if (!ok) return;
+    toast.info(await deliverFromComputer(browserCodingDoors, filing));
+    await refreshFilings();
+  };
+
+  // ── Starts on a Matrx 2 computer that were not filed yet: filed now if their
+  //    chat has reached AI Matrx, otherwise shown below. Aborted on leaving.
+  useEffect(() => {
+    const controller = new AbortController();
+    filingAbort.current = controller;
+    void refreshFilings();
+    return () => controller.abort();
+  }, []);
+
   const handleRunOnMyMac = async () => {
-    if (!canRun || destination !== "claude-code") return;
+    if (!canRun || destination !== "claude-code" || !localCapability) return;
     setLaunching(true);
     try {
       const started = await startCodingRun(browserCodingDoors, localCapability, {
@@ -440,9 +479,10 @@ function ComposerBody({
         const pending = filingPendingSentence(started.computer.name);
         setFilingNote(pending);
         toast.success(pending);
-        void fileMatrx2Run(browserCodingDoors, started.computer, started.sessionId).then(async (filed) => {
+        void fileMatrx2Run(browserCodingDoors, started.computer, started.sessionId, { homes, signal: filingAbort.current?.signal }).then(async (filed) => {
           if ("pending" in filed) {
             setFilingNote(filed.pending);
+            await refreshFilings();
             return;
           }
           setFilingNote(null);
@@ -554,7 +594,10 @@ function ComposerBody({
       toast.success(filingPendingSentence(plan.name));
       void run.filing.then(async (filed) => {
         if ("conversationId" in filed) await attachHomes(filed.conversationId);
-        else toast.info(filed.pending);
+        else {
+          await addHomesToFiling(browserCodingDoors, run.sessionId, homes);
+          toast.info(filed.pending);
+        }
       });
       router.push(run.link);
     } catch (error) {
@@ -720,12 +763,12 @@ function ComposerBody({
             <DestinationStep
               value={destination}
               bridgeCapability={bridgeCapability}
-              localCapability={localCapability}
+              localCapability={localCapability ?? undefined}
               onChange={setDestination}
             />
           </div>
         )}
-        {runsOnDevice === null && destination === "claude-code" && localCapability.available && (
+        {runsOnDevice === null && destination === "claude-code" && localCapability?.available && (
           <div className="mt-3 flex flex-col gap-1.5">
             <label
               htmlFor="ai-work-local-folder"
@@ -754,11 +797,21 @@ function ComposerBody({
             </p>
           </div>
         )}
-        {runsOnDevice === null && destination === "claude-code" && (localCapability.notice || filingNote) && (
+        {runsOnDevice === null && destination === "claude-code" && (
           <p className="mt-2 text-xs text-muted-foreground">
-            {[localCapability.notice, filingNote].filter(Boolean).join(" ")}
+            {localCapability
+              ? [localCapability.notice, filingNote].filter(Boolean).join(" ")
+              : "Checking your computer…"}
           </p>
         )}
+        {waitingFilings.map((filing) => (
+          <div key={filing.sessionId} className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
+            <span className="min-w-0 flex-1">Started on {filing.computerName}, not in AI Matrx yet.</span>
+            <Button variant="outline" onClick={() => void deliverFiling(filing)}>
+              Deliver
+            </Button>
+          </div>
+        ))}
         {runsOnDevice === null && destination === "claude-code-hosted" &&
           hostedAvailability.selectable && (
             <HostedBillingStep

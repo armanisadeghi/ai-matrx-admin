@@ -60,7 +60,8 @@ describe("destinationAvailability", () => {
       (destination) =>
         destinationAvailability(destination.id, READY_UNAVAILABLE).selectable,
     );
-    expect(selectable.map((d) => d.id)).toEqual(["ai-matrx"]);
+    // "On my Mac" is offered until asked: it is asked only once picked (no socket on every open).
+    expect(selectable.map((d) => d.id)).toEqual(["ai-matrx", "claude-code"]);
   });
 
   // The hosted destination's verdict is the bridge's, and nothing else — its
@@ -72,6 +73,7 @@ describe("destinationAvailability", () => {
     );
     expect(selectable.map((d) => d.id)).toEqual([
       "ai-matrx",
+      "claude-code",
       "claude-code-hosted",
     ]);
   });
@@ -97,8 +99,10 @@ describe("destinationAvailability", () => {
   // "Claude Code on my Mac" reads the user's OWN Matrx Local engine and
   // NOTHING else — the bridge verdict passed alongside it is the hosted
   // sandbox's, and must never leak into this branch. These assert that.
-  it("says it is still asking while the local engine has not answered", () => {
-    expect(destinationAvailability("claude-code", READY_UNAVAILABLE)).toEqual({
+  // RED WHEN: the computer is asked on every page open (a relay socket per visit): unasked is offered.
+  it("is offered before it is asked, and says it is checking once asked", () => {
+    expect(destinationAvailability("claude-code", READY_UNAVAILABLE)).toEqual({ selectable: true, reason: null });
+    expect(destinationAvailability("claude-code", READY_UNAVAILABLE, localCapability({ state: "loading" }))).toEqual({
       selectable: false,
       reason: "Checking your computer…",
     });

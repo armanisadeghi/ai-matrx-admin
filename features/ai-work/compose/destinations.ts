@@ -141,8 +141,10 @@ export function destinationAvailability(
   }
 
   if (id === "claude-code") {
-    const local = localCapability ?? null;
-    if (!local || local.state === "loading") {
+    // Not asked yet: offered, and asked the moment it is picked (no socket on every open).
+    if (!localCapability) return { selectable: true, reason: null };
+    const local = localCapability;
+    if (local.state === "loading") {
       return { selectable: false, reason: "Checking your computer…" };
     }
     if (local.state === "unreachable") {

@@ -25,7 +25,8 @@ import type { AppDispatch } from "@/lib/redux/store";
 import type { components } from "@ai-matrx/api/types";
 import { downloadFile } from "@/features/files/api/files";
 import { callMatrxLocal } from "./matrxLocalRuntime";
-import { askMatrx2Computers } from "./matrx2Computers";
+import { browserCodingDoors } from "./matrx2Computers";
+import { firstComputerWith, pickComputer } from "./matrx2Coding";
 import { downloadFile as saveFile } from "@ai-matrx/kit/download";
 
 export type RawTranscriptSource = components["schemas"]["RawTranscriptSource"];
@@ -62,22 +63,25 @@ async function fromMatrx2Computer(
   provider: "claude" | "codex",
   providerSessionId: string,
 ): Promise<{ step: FullDownloadStep } | { reasons: string[] }> {
-  const answer = await askMatrx2Computers(async (client, name) => {
+  const answer = await firstComputerWith<{ name: string; fileName: string; subagents: number; backup: boolean }>(browserCodingDoors, await pickComputer(browserCodingDoors), async (client, computer) => {
     const chunks: Uint8Array[] = [];
     const stream = client.stream("coding.transcript.raw", { provider, provider_session_id: providerSessionId }, {
       onData: (payload) => void chunks.push(payload),
     });
-    const head = await stream.result;
+    const head = (await stream.result) as { available: boolean; reason?: string | null; file_name?: string | null; subagents: number; backup_refreshed: boolean };
     if (!head.available) {
       stream.cancel();
-      return null;
+      return { notHere: `${computer.name}: ${head.reason ?? "this chat is not on it."}` };
     }
     await stream.done;
     const fileName = head.file_name ?? `${providerSessionId}.jsonl`;
     saveBlob(new Blob(chunks as BlobPart[], { type: "application/x-ndjson" }), fileName);
-    return { name, fileName, subagents: head.subagents, backup: head.backup_refreshed };
+    return { value: { name: computer.name, fileName, subagents: head.subagents, backup: head.backup_refreshed } };
   });
-  if ("reasons" in answer) return { reasons: answer.reasons.length ? answer.reasons : ["Not on your Matrx 2 computers."] };
+  if (!answer.found) {
+    const reasons = [...answer.reasons, ...answer.notHere];
+    return { reasons: reasons.length ? reasons : ["Not on your Matrx 2 computers."] };
+  }
   return {
     step: {
       kind: "this_computer",

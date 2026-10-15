@@ -23,21 +23,23 @@ jest.mock("@/lib/api/call-api", () => ({ callApi: jest.fn() }));
 jest.mock("@/features/files/api/files", () => ({ downloadFile: jest.fn(async () => ({ blob: new Blob(["gz"]), filename: "backup.jsonl.gz" })) }));
 jest.mock("../matrxLocalRuntime", () => ({ callMatrxLocal: jest.fn(async () => localReply) }));
 jest.mock("../matrx2Computers", () => ({
-  askMatrx2Computers: async (work: (client: unknown, name: string) => Promise<unknown>) => {
-    const client = {
-      stream: (op: string, params: { provider_session_id: string }, handlers: { onData: (p: Uint8Array) => void }) => {
-        asks.push(`${op}:${params.provider_session_id}`);
-        const has = computerHas;
-        if (has) for (const part of [has.file.slice(0, 5), has.file.slice(5)]) handlers.onData(new TextEncoder().encode(part));
-        return {
-          result: Promise.resolve(has ? { available: true, file_name: "chat.jsonl", subagents: has.subagents, backup_refreshed: has.backup } : { available: false }),
-          done: Promise.resolve("eof"),
-          cancel: () => undefined,
-        };
-      },
-    };
-    const value = await work(client, "Arman's MacBook Pro");
-    return value ? { device: { id: "d1" }, name: "Arman's MacBook Pro", value } : { reasons: ["Arman's MacBook Pro doesn't have this chat."] };
+  browserCodingDoors: {
+    reach: {
+      listComputers: async () => [{ deviceId: "d1", name: "Arman's MacBook Pro", online: true, protocolVersion: "1.40" }],
+      withClient: async (_computer: unknown, work: (client: unknown) => Promise<unknown>) =>
+        work({
+          stream: (op: string, params: { provider_session_id: string }, handlers: { onData: (p: Uint8Array) => void }) => {
+            asks.push(`${op}:${params.provider_session_id}`);
+            const has = computerHas;
+            if (has) for (const part of [has.file.slice(0, 5), has.file.slice(5)]) handlers.onData(new TextEncoder().encode(part));
+            return {
+              result: Promise.resolve(has ? { available: true, file_name: "chat.jsonl", subagents: has.subagents, backup_refreshed: has.backup } : { available: false, reason: "doesn't have this chat." }),
+              done: Promise.resolve("eof"),
+              cancel: () => undefined,
+            };
+          },
+        }),
+    },
   },
 }));
 
@@ -71,7 +73,7 @@ describe("Full Download on a Matrx 2 computer", () => {
     computerHas = null;
     localReply = { found: false, detail: "Matrx Local is not running." };
     const result = await fullDownloadOne(SOURCE, null);
-    expect(result.step).toEqual({ kind: "not_available", reasons: ["Arman's MacBook Pro doesn't have this chat.", "Matrx Local is not running.", "No cloud backup: the owner has not turned it on."] });
+    expect(result.step).toEqual({ kind: "not_available", reasons: ["Arman's MacBook Pro: doesn't have this chat.", "Matrx Local is not running.", "No cloud backup: the owner has not turned it on."] });
     expect(saved).toEqual([]);
   });
 

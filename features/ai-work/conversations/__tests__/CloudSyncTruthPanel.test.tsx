@@ -466,8 +466,15 @@ describe("the reconcile door on a Matrx 2 computer", () => {
     mockedDoors.reach.listComputers.mockResolvedValueOnce([
       { deviceId: "d1", name: "Studio Mac", online: true, protocolVersion: "1.40" },
     ]);
-    const request = jest.fn(async () => answer);
-    mockedDoors.reach.withClient.mockImplementationOnce(async (_computer: unknown, work: (client: unknown) => unknown) => work({ request }));
+    // The computer holds the chat (its own session), then reconciles.
+    const request = jest.fn(async (op: string, _params?: unknown, _options?: unknown) =>
+      op === "coding.sessions.list"
+        ? { sessions: [{ id: "s1", providerSessionId: "session-1", cwd: "/w", provider: "claude" }], runs: {}, recent: [], title_status: { state: "ready" } }
+        : answer,
+    );
+    mockedDoors.reach.withClient.mockImplementation(async (_computer: unknown, work: (client: unknown) => unknown) =>
+      work({ request, stream: () => ({}), on: () => () => undefined, getState: () => ({ status: "ready", welcome: { protocol_version: "1.40" }, lastError: null }), subscribe: () => () => undefined }),
+    );
     return request;
   }
 

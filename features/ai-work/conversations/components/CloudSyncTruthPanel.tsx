@@ -52,7 +52,7 @@ import {
   type LocalReconcileAction,
 } from "@/features/ai-work/lib/matrxLocalRuntime";
 import {
-  pickComputer,
+  pickChatHolder,
   reconcileCodingSession,
   reconcileScopeSentence,
 } from "@/features/ai-work/lib/matrx2Coding";
@@ -188,7 +188,7 @@ export function CloudSyncTruthPanel({
     // name the true scope: Matrx 2 delivers every chat on that computer that
     // AI Matrx lacks, not only this one (matrx2Coding).
     setReconcile({ phase: "reaching" });
-    const chosen = await pickComputer(browserCodingDoors);
+    const chosen = await pickChatHolder(browserCodingDoors, providerSessionId);
     setReconcile({ phase: "idle" });
     // A destructive/expensive click names its consequence first: a first
     // reconcile can import thousands of entries and add messages, and it

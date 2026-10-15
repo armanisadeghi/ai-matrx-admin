@@ -22,7 +22,6 @@ import { toast } from "@/lib/toast";
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import {
   continueCodingRun,
-  fileMatrx2Run,
   readContinueVerdict,
   type ContinueVerdict,
 } from "@/features/ai-work/lib/matrx2Coding";
@@ -101,12 +100,6 @@ export function ContinueOnMyMacPanel({
       if (outcome.via === "matrx2") {
         setRunningNote(outcome.sentence);
         toast.success(outcome.sentence);
-        void fileMatrx2Run(browserCodingDoors, outcome.computer, outcome.sessionId).then((filed) => {
-          if ("conversationId" in filed) {
-            setRunningNote(null);
-            setStartedConversationId(filed.conversationId);
-          } else setRunningNote(filed.pending);
-        });
         return;
       }
       setStartedConversationId(outcome.run.conversation_id);
