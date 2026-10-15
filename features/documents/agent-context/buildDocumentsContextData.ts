@@ -15,7 +15,7 @@ import {
   createDocumentsScope,
   type DocumentSummaryValue,
 } from "@/features/surfaces/manifests/documents.manifest";
-import type { DocumentRow } from "@/features/data-tables/types";
+import type { DocumentRow } from "@ai-matrx/office/core";
 import type { HomeSortKey } from "@/features/file-actions/home/recent";
 
 export const DOCUMENTS_SURFACE_NAME = "matrx-user/documents" as const;

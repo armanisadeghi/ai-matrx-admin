@@ -4,7 +4,8 @@
  * rename / copy / move / trash / restore / download are defined exactly once.
  */
 
-import { isServiceFailure, type DocumentRow, type Workbook } from "@/features/data-tables/types";
+import { isServiceFailure } from "@/features/data-tables/types";
+import { type DocumentRow, type Workbook } from "@ai-matrx/office/core";
 import {
   copyWorkbook,
   deleteWorkbook,

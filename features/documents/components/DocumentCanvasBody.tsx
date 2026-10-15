@@ -26,7 +26,8 @@ import { AlertTriangle, ExternalLink, Loader2 } from "lucide-react";
 
 import { supabase } from "@/utils/supabase/client";
 import { getDocument } from "@/features/documents/document-service";
-import { isServiceFailure, type DocumentRow } from "@/features/data-tables/types";
+import { isServiceFailure } from "@/features/data-tables/types";
+import { type DocumentRow } from "@ai-matrx/office/core";
 import { cn } from "@/lib/utils";
 
 import { getClaimsUser } from "@ai-matrx/auth";

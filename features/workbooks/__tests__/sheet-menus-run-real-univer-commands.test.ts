@@ -21,7 +21,7 @@ import {
   type SheetChromeHost,
   type WorksheetLike,
 } from "../chrome/sheet-commands";
-import { flattenMenus, type EditorMenuEntry } from "@/components/editor-chrome/editor-menu-model";
+import { flattenMenus, type EditorMenuEntry } from "@ai-matrx/office/core";
 
 // "Custom number format" asks in our own dialog; the test answers it.
 jest.mock("@/components/dialogs/value-prompts/valuePromptsOpener", () => ({

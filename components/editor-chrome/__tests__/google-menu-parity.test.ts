@@ -8,7 +8,7 @@ import { buildDocMenus, type DocChromeHost } from "@/features/documents/chrome/d
 import { buildDeckMenus, type DeckChromeHost } from "@/features/presentations/deck-commands";
 import { buildEditorFileMenu } from "@/features/file-actions/editor-file-menu";
 import { getComingSoon } from "@/lib/coming-soon/registry";
-import { flattenMenus, type EditorMenu, type EditorMenuEntry } from "../editor-menu-model";
+import { flattenMenus, type EditorMenu, type EditorMenuEntry } from "@ai-matrx/office/core";
 
 function anything(): never {
   const fn = function () {} as unknown as object;

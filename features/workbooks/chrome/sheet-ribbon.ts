@@ -66,7 +66,7 @@ import {
   AlignJustify,
   Hash,
 } from "lucide-react";
-import type { GoogleOnlyRows, RibbonTabSpec } from "@/components/editor-chrome/ribbon-model";
+import type { GoogleOnlyRows, RibbonTabSpec } from "@ai-matrx/office/core";
 
 /**
  * Menu rows (id or whole submenu id -> reason) the Microsoft look deliberately does not place.

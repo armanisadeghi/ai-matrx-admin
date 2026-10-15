@@ -39,7 +39,7 @@ import { EditorRibbon } from "@/components/editor-chrome/EditorRibbon";
 import { OfficeLookSwitch } from "@/features/file-actions/skin/OfficeLookSwitch";
 import { DOC_RIBBON } from "@/features/documents/chrome/doc-ribbon";
 import { EditorSaveStatus } from "@/components/editor-chrome/EditorTitleField";
-import { boundActions, matchesShortcut, type EditorMenuEntry } from "@/components/editor-chrome/editor-menu-model";
+import { boundActions, matchesShortcut, type EditorMenuEntry } from "@ai-matrx/office/core";
 import { buildDocMenus, buildDocToolbar, type DocChromeHost, type DocsApiLike } from "@/features/documents/chrome/doc-commands";
 import { univerDocToMarkdown } from "@/features/documents/univer-doc-to-markdown";
 import { bodyTextOf } from "@/features/documents/document-body-text";
@@ -101,8 +101,8 @@ import { useToolToggle } from "@/features/canvas/host/toolCanvas";
 import { toast } from "@/components/ui/use-toast";
 
 import { fitZoomRatio } from "@/features/documents/utils/fitZoomRatio";
-import { defaultDocumentPageStyle, PAGE_COLOR_KEY, pageSetupCommandParams, type PageSetupValues } from "@/features/documents/document-page-style";
-import { applyPageSetup, readPageSetup, type PageSetupApiLike } from "@/features/documents/page-setup-apply";
+import { defaultDocumentPageStyle, PAGE_COLOR_KEY, pageSetupCommandParams, type PageSetupValues } from "@ai-matrx/office/core";
+import { applyPageSetup, readPageSetup, type PageSetupApiLike } from "@ai-matrx/office/core/page-setup-apply";
 import { PageSetupDialog } from "@/features/documents/components/PageSetupDialog";
 import { setPreference } from "@/lib/redux/preferences/userPreferencesSlice";
 import {
@@ -123,7 +123,8 @@ import {
 import { matrxImagePorts } from "@/lib/univer/matrxImagePorts";
 import { disposeUniverInstance } from "@/lib/univer/disposeUniverInstance";
 import { registerUniverFacadeDependencies } from "@/lib/univer/registerUniverFacadeDependencies";
-import { RemoteCursorsLayer } from "@/lib/collab/RemoteCursorsLayer";
+import { readCollabAntiEntropyMs } from "@/lib/knobs/collabAntiEntropy";
+import { RemotePeerChips as RemoteCursorsLayer } from "@ai-matrx/realtime/collab/react";
 import { documentHistoryToggleInput } from "@/lib/univer/historyKinds";
 import { DocumentPageReferenceCopyButton } from "@/features/documents/components/DocumentPageReferenceCopyButton";
 import { DocumentGoogleLink, useDocumentGoogleLink } from "@/features/google-workspace/linked/EditorGoogleLinks";
@@ -144,7 +145,7 @@ import type {
   DocumentCollabFactory,
 } from "@/features/documents/document-model/documentModel";
 import type { CommandServiceLike } from "@/features/workbooks/collab/WorkbookCollabSession";
-import type { AwarenessState } from "@/lib/collab/types";
+import type { AwarenessState } from "@ai-matrx/realtime/collab";
 
 import { getClaimsUser } from "@ai-matrx/auth";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
@@ -158,7 +159,7 @@ type Props = {
   /** Used as the document display name on export / shell. Falls back to documentId. */
   documentName?: string;
   /**
-   * Opt in to v2 CRDT collab — see `lib/collab/FEATURE.md`.
+   * Opt in to v2 CRDT collab — see `@ai-matrx/realtime` README (collab).
    * The document's model joins ONE Yjs room per document (channel prefix
    * "document", so docs and workbooks never share a room) and binds it to the
    * model's command stream, so every view of the document in this tab is in
@@ -1015,7 +1016,7 @@ function collabFactoryFor(documentId: string): DocumentCollabFactory {
     if (!uid) return null;
     const [{ WorkbookCollabSession }, { SupabaseYjsProvider }] = await Promise.all([
       import("@/features/workbooks/collab/WorkbookCollabSession"),
-      import("@/lib/collab/SupabaseYjsProvider"),
+      import("@ai-matrx/realtime/collab"),
     ]);
     const clientId =
       typeof crypto !== "undefined" && "randomUUID" in crypto
@@ -1039,6 +1040,7 @@ function collabFactoryFor(documentId: string): DocumentCollabFactory {
           doc,
           awareness,
           onLeaderChange,
+          readAntiEntropyIntervalMs: readCollabAntiEntropyMs,
         }),
       onAwarenessChange: (aw) => {
         host = session.electHost().isHost;

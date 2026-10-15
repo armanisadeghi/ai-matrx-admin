@@ -10,7 +10,7 @@ import { createRoot, type Root } from "react-dom/client";
 import { MenusSearch } from "../EditorToolbar";
 import { EditorTitleField } from "../EditorTitleField";
 import { fitCount, MORE_BUTTON_WIDTH } from "../useFitCount";
-import type { EditorMenu } from "../editor-menu-model";
+import type { EditorMenu } from "@ai-matrx/office/core";
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 

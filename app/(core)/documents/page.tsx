@@ -28,7 +28,8 @@ import {
   listAccessibleDocuments,
   listTrashedDocuments,
 } from "@/features/documents/document-service";
-import { isServiceFailure, type DocumentRow } from "@/features/data-tables/types";
+import { isServiceFailure } from "@/features/data-tables/types";
+import { type DocumentRow } from "@ai-matrx/office/core";
 import { documentSourceLabel } from "@/features/documents/utils/documentsHubDisplay";
 import {
   buildDocumentsLibraryContextData,

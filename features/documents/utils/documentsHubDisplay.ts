@@ -1,4 +1,4 @@
-import type { DocumentSource } from "@/features/data-tables/types";
+import type { DocumentSource } from "@ai-matrx/office/core";
 
 const SOURCE_LABELS: Record<DocumentSource, string> = {
   created: "Created",

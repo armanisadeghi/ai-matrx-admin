@@ -6,7 +6,7 @@
  * Geometry is in 96-dpi CSS pixels, like the rest of the document stack (`PX_PER_INCH`).
  */
 
-import { PAPER_SIZES, PX_PER_INCH, type PaperSizeName } from "@/features/documents/document-page-style";
+import { PAPER_SIZES, PX_PER_INCH, type PaperSizeName } from "@ai-matrx/office/core";
 
 export const SHEET_SCALES = ["normal", "width", "height", "page"] as const;
 export type SheetScale = (typeof SHEET_SCALES)[number];

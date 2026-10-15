@@ -8,7 +8,7 @@ import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 
 import { EditorTitleField } from "../EditorTitleField";
-import { flattenMenus, formatShortcut, matchesShortcut, searchActions, type EditorMenu } from "../editor-menu-model";
+import { flattenMenus, formatShortcut, matchesShortcut, searchActions, type EditorMenu } from "@ai-matrx/office/core";
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 const flush = () => act(async () => {});

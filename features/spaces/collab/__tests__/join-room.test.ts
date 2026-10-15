@@ -15,7 +15,7 @@ import * as Y from "yjs";
 import { Awareness } from "y-protocols/awareness";
 import { createInertEnvironment, createRealtimeManager, type RealtimeManager } from "@ai-matrx/realtime";
 
-import { SupabaseYjsProvider } from "@/lib/collab/SupabaseYjsProvider";
+import { SupabaseYjsProvider } from "@ai-matrx/realtime/collab";
 
 import { joinRoom } from "../join-room";
 

@@ -17,12 +17,8 @@ import { requireOrganizationContext } from "@/lib/api/organization-context";
 import { supabase } from "@/utils/supabase/client";
 import { tryWriteOne, writeOneRow } from "@/utils/supabase/writeOne";
 
-import type {
-  ServiceResult,
-  Workbook,
-  WorkbookSnapshot,
-  WorkbookSnapshotOrigin,
-} from "@/features/data-tables/types";
+import type { ServiceResult, WorkbookSnapshotOrigin } from "@/features/data-tables/types";
+import type { Workbook, WorkbookSnapshot } from "@ai-matrx/office/core";
 
 import { getClaimsUser } from "@ai-matrx/auth";
 // ─── workbooks ────────────────────────────────────────────────────────────────

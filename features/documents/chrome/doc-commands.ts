@@ -42,10 +42,10 @@ import {
   Undo2,
 } from "lucide-react";
 
-import { googleExtensionsMenu, googleHelpHead, soon } from "@/components/editor-chrome/google-parity";
+import { googleExtensionsMenu, googleHelpHead, soon } from "@ai-matrx/office/core";
 import type { DocDialogId } from "@/features/documents/components/DocumentToolDialogs";
-import type { EditorMenu, EditorMenuEntry } from "@/components/editor-chrome/editor-menu-model";
-import type { EditorToolbarItem } from "@/components/editor-chrome/EditorToolbar";
+import type { EditorMenu, EditorMenuEntry } from "@ai-matrx/office/core";
+import type { EditorToolbarItem } from "@ai-matrx/office/core";
 
 export interface DocsApiLike {
   executeCommand(id: string, params?: object): Promise<unknown> | unknown;

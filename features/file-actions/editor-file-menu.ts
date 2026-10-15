@@ -22,8 +22,8 @@ import {
   Tag,
 } from "lucide-react";
 
-import type { EditorMenuAction, EditorMenuEntry } from "@/components/editor-chrome/editor-menu-model";
-import { sep, soon, type GoogleProduct } from "@/components/editor-chrome/google-parity";
+import type { EditorMenuAction, EditorMenuEntry } from "@ai-matrx/office/core";
+import { sep, soon, type GoogleProduct } from "@ai-matrx/office/core";
 import type { FileDownload } from "./types";
 
 /** A Download row: a live format, or a Google format we cannot write yet. */

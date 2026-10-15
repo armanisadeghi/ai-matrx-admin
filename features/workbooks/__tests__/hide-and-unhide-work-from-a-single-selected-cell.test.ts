@@ -14,7 +14,7 @@ import {
 import { SetSelectionsOperation, UniverSheetsPlugin } from "@univerjs/preset-sheets-core";
 
 import { buildSheetMenus, type SheetChromeHost } from "../chrome/sheet-commands";
-import { flattenMenus } from "@/components/editor-chrome/editor-menu-model";
+import { flattenMenus } from "@ai-matrx/office/core";
 
 let promptAnswer: Record<string, string> | null = null;
 jest.mock("@/components/dialogs/value-prompts/valuePromptsOpener", () => ({

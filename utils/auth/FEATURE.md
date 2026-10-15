@@ -84,6 +84,12 @@ sales page after signing in.
 - **`safeRelativePath` ([safe-redirect.ts](./safe-redirect.ts)) owns the
   open-redirect rules** — protocol-relative, backslash, userinfo, percent-encoded
   variants. `normalizeAuthDestination` delegates to it. Never re-implement them.
+- **Absolute returns are allowlisted, in the same owner.** `safeAbsoluteReturnUrl` /
+  `safeReturnUrl` ([safe-redirect.ts](./safe-redirect.ts)) accept `https://aimatrx.com` and
+  `https://*.aimatrx.com` only (Office hosts like `docs.aimatrx.com` send a signed-out visitor to
+  www login with an absolute `next`); no userinfo, port, backslash, or look-alike host
+  (`aimatrx.com.evil.com`). `normalizeAuthDestination` accepts them; auth pages are still refused.
+  Guard: `__tests__/absolute-return-allowlist.test.ts`.
 - **Source detection is duck-typed** (`typeof source.get === "function"`), not
   `instanceof`. A server action's `FormData` can come from a different realm; a
   failed `instanceof` would silently drop the destination with no error.

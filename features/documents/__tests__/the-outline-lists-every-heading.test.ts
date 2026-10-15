@@ -1,6 +1,6 @@
 import { collectOutline } from "../chrome/doc-outline";
 import { buildDocMenus, type DocChromeHost } from "../chrome/doc-commands";
-import { flattenMenus } from "@/components/editor-chrome/editor-menu-model";
+import { flattenMenus } from "@ai-matrx/office/core";
 
 describe("document outline", () => {
   it("lists paragraph-style headings and sized bold headings, skips body text", () => {

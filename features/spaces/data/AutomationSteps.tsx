@@ -14,7 +14,7 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { ArrowDown, ArrowUp, ChevronDown, ChevronRight, Plus, X } from "lucide-react";
 import { Button, Input, Select } from "@ai-matrx/design-system/controls";
-import { Popover, PopoverContent, PopoverTrigger } from "@ai-matrx/design-system";
+import { ErrorNotice, Popover, PopoverContent, PopoverTrigger } from "@ai-matrx/design-system";
 import { optionKey, optionLabel, type AutomationTrigger, type Field, type RuleExpression } from "@ai-matrx/records";
 import { useOptionalRecordsClient, useTables } from "@ai-matrx/records/react";
 import { ConditionGroup, type ConditionField } from "@ai-matrx/records-ui";
@@ -23,8 +23,10 @@ import { fetchMandateCatalogue, type MandateCatalogue } from "@/features/mandate
 import { useMandateInputSurface } from "@/features/mandates/input-surface";
 import { useAppDispatch } from "@/lib/redux/hooks";
 
-/** One step as the editor holds it: the engine's own shape, read loosely because groups carry any kind inside. */
-export type Step = { do: string } & Record<string, unknown>;
+import { stepCount, type Step } from "./automation-step-count";
+
+export type { Step };
+export { stepCount };
 
 type Source = { token: string; label: string; group: string; list?: boolean };
 type Scoped = { n: number; step: Step };
@@ -34,13 +36,6 @@ const rec = (v: unknown): Record<string, unknown> => (v && typeof v === "object"
 const arr = (v: unknown): Step[] => (Array.isArray(v) ? (v as Step[]) : []);
 const TOKEN = /\{\{\s*([^{}]+?)\s*\}\}/g;
 const tok = (path: string) => `{{${path}}}`;
-
-/** How many numbered steps a step is: itself and everything inside it, as the engine numbers them. */
-export function stepCount(s: Step): number {
-  if (s.do === "if") return 1 + arr(s.else).reduce((n, x) => n + stepCount(x), 0) + (Array.isArray(s.branches) ? (s.branches as Array<{ actions?: Step[] }>).reduce((n, b) => n + arr(b.actions).reduce((m, x) => m + stepCount(x), 0), 0) : 0);
-  if (s.do === "for_each") return 1 + arr(s.actions).reduce((n, x) => n + stepCount(x), 0);
-  return 1;
-}
 
 interface Env {
   tableId: string;
@@ -117,7 +112,7 @@ function labelOf(token: string, sources: Source[]): string {
   return path;
 }
 
-function Pick({ value, onChange, options, label }: { value: string; onChange: (v: string) => void; options: Array<{ value: string; label: string }>; label: string; className?: string }) {
+function Pick({ value, onChange, options, label }: { value: string; onChange: (v: string) => void; options: Array<{ value: string; label: string }>; label: string }) {
   return <Select aria-label={label} value={value} onValueChange={onChange} options={options} />;
 }
 
@@ -239,7 +234,7 @@ function ValueRows({ tableFields, values, onChange, sources }: { tableFields: Fi
           <div key={k} className="flex flex-wrap items-center gap-1">
             <Pick label="Field" value={k} onChange={(n) => setKey(k, n)} options={tableFields.filter((x) => x.id === k || !used.has(x.id)).map((x) => ({ value: x.id, label: x.label || x.key }))} />
             <span className="shrink-0 whitespace-nowrap text-xs text-muted-foreground">to</span>
-            <Pick label="Kind of value" value={mode} onChange={(m) => setVal(k, m === "now" ? { now: true } : m === "me" ? { me: true } : m === "clear" ? { clear: true } : m === "days" ? { in_days: 0 } : "")} options={[{ value: "value", label: "A value" }, { value: "now", label: "Now" }, { value: "me", label: "Me" }, { value: "clear", label: "Empty" }, { value: "days", label: "In some days" }]} className="h-8 w-auto min-w-[6rem] text-xs" />
+            <Pick label="Kind of value" value={mode} onChange={(m) => setVal(k, m === "now" ? { now: true } : m === "me" ? { me: true } : m === "clear" ? { clear: true } : m === "days" ? { in_days: 0 } : "")} options={[{ value: "value", label: "A value" }, { value: "now", label: "Now" }, { value: "me", label: "Me" }, { value: "clear", label: "Empty" }, { value: "days", label: "In some days" }]} />
             {mode === "days" ? <Input aria-label="Days from now" type="number" value={String(rec(v).in_days ?? 0)} onChange={(e) => setVal(k, { in_days: Number(e.target.value) || 0 })} /> : null}
             {mode === "value" ? <ChoiceOrText field={f} value={str(v)} onChange={(t) => setVal(k, t)} sources={sources} /> : null}
             <Button variant="quiet" aria-label="Remove field" icon={<X size={12} />} onClick={() => onChange(Object.fromEntries(entries.filter(([x]) => x !== k)))} />
@@ -335,7 +330,7 @@ function FindWhere({ where, onChange, tableFields, sources }: { where: RuleExpre
   const parts: unknown[] = where && (where as { op?: string }).op === "and" ? ((where as unknown as { args: unknown[] }).args ?? []) : where ? [where] : [];
   const isTokenRow = (p: unknown) => {
     const c = rec(rec(p).args instanceof Array ? (rec(p).args as unknown[])[1] : null);
-    return typeof c.const === "string" && TOKEN.test(c.const) && ((TOKEN.lastIndex = 0), true);
+    return typeof c.const === "string" && new RegExp(TOKEN.source).test(c.const);
   };
   const tokenRows = parts.filter(isTokenRow);
   const rest = parts.filter((p) => !isTokenRow(p));
@@ -359,7 +354,7 @@ function FindWhere({ where, onChange, tableFields, sources }: { where: RuleExpre
           <div key={i} className="flex flex-wrap items-center gap-1" data-testid="automation-find-token-row">
             <span className="shrink-0 whitespace-nowrap text-xs text-muted-foreground">and</span>
             <Pick label="Field" value={r.field} onChange={(f) => join(rest, tokenRows.map((x, j) => (j === i ? mk(r.op, f, r.to) : x)))} options={tableFields.map((f) => ({ value: f.id, label: f.label || f.key }))} />
-            <Pick label="Is" value={r.op} onChange={(op) => join(rest, tokenRows.map((x, j) => (j === i ? mk(op, r.field, r.to) : x)))} options={[{ value: "eq", label: "is" }, { value: "ne", label: "is not" }, { value: "contains", label: "contains" }]} className="h-8 w-auto min-w-[6rem] text-xs" />
+            <Pick label="Is" value={r.op} onChange={(op) => join(rest, tokenRows.map((x, j) => (j === i ? mk(op, r.field, r.to) : x)))} options={[{ value: "eq", label: "is" }, { value: "ne", label: "is not" }, { value: "contains", label: "contains" }]} />
             <TokenText label="Matches" value={r.to} onChange={(to) => join(rest, tokenRows.map((x, j) => (j === i ? mk(r.op, r.field, to) : x)))} sources={sources} />
             <Button variant="quiet" aria-label="Remove match" icon={<X size={12} />} onClick={() => join(rest, tokenRows.filter((_, j) => j !== i))} />
           </div>
@@ -392,8 +387,8 @@ function MandateRows({ step, onChange, sources }: { step: Step; onChange: (s: St
   const entries = Object.values(catalogue ?? {}).sort((a, b) => a.label.localeCompare(b.label));
   return (
     <div className="flex flex-col gap-1" data-testid="automation-agent-step">
-      {problem ? <p className="text-xs text-destructive">{problem}</p> : null}
-      <Pick label="Agent" value={key} onChange={(k) => onChange({ ...step, mandate_key: k, variables: {} })} options={entries.map((m) => ({ value: m.mandate_key, label: m.label }))} className="h-8 w-auto min-w-[14rem] text-xs" />
+      {problem ? <ErrorNotice size="inline" message={problem} /> : null}
+      <Pick label="Agent" value={key} onChange={(k) => onChange({ ...step, mandate_key: k, variables: {} })} options={entries.map((m) => ({ value: m.mandate_key, label: m.label }))} />
       {key && surface.status === "ready"
         ? surface.surface.inputs.map((inp) => (
             <div key={inp.name} className="flex flex-wrap items-center gap-1">
@@ -408,7 +403,7 @@ function MandateRows({ step, onChange, sources }: { step: Step; onChange: (s: St
           <TokenText label="Message to the agent" value={str(step.input)} onChange={(v) => onChange({ ...step, input: v })} sources={sources} />
         </div>
       ) : null}
-      {key && surface.status === "error" ? <p className="text-xs text-destructive">{surface.message}</p> : null}
+      {key && surface.status === "error" ? <ErrorNotice size="inline" message={surface.message} /> : null}
     </div>
   );
 }
@@ -449,7 +444,7 @@ function newStep(kind: string, env: Env): Step {
   }
 }
 
-export const STEP_KINDS = ["find", "update", "archive", "if", "for_each", "add_row", "script", "run_mandate", "gmail", "sms", "email", "slack", "webhook"] as const;
+const STEP_KINDS = ["find", "update", "archive", "if", "for_each", "add_row", "script", "run_mandate", "gmail", "sms", "email", "slack", "webhook"] as const;
 
 function AddStep({ onAdd, kinds = STEP_KINDS }: { onAdd: (kind: string) => void; kinds?: readonly string[] }) {
   const [open, setOpen] = useState(false);
@@ -648,13 +643,9 @@ function IfEditor({ step, n, onChange, scope, sources }: { step: Step; n: number
   const setBranch = (i: number, patch: Partial<{ label: string; when: Record<string, unknown>; actions: Step[] }>) =>
     onChange({ ...step, branches: branches.map((b, j) => (j === i ? { ...b, ...patch } : b)) });
   // numbers: the group is n; its paths' steps follow in order
-  let next = n + 1;
-  const starts = branches.map((b) => {
-    const s = next;
-    next += arr(b.actions).reduce((m, x) => m + stepCount(x), 0);
-    return s;
-  });
-  const elseStart = next;
+  const sizes = branches.map((b) => arr(b.actions).reduce((m, x) => m + stepCount(x), 0));
+  const starts = sizes.map((_, i) => n + 1 + sizes.slice(0, i).reduce((a, b) => a + b, 0));
+  const elseStart = n + 1 + sizes.reduce((a, b) => a + b, 0);
   const inner: Scope = scope;
   return (
     <div className="flex flex-col gap-2" data-testid="automation-if">
@@ -684,10 +675,8 @@ function IfEditor({ step, n, onChange, scope, sources }: { step: Step; n: number
 /** A list of steps, each numbered as the engine numbers it, each able to use what the steps before it hand over. */
 export function StepList({ steps, onChange, startN, scope }: { steps: Step[]; onChange: (s: Step[]) => void; startN: number; scope: Scope }) {
   const env = useEnv();
-  let n = startN;
   const cards = steps.map((s, i) => {
-    const my = n;
-    n += stepCount(s);
+    const my = startN + steps.slice(0, i).reduce((a, x) => a + stepCount(x), 0);
     const earlier: Scoped[] = [];
     let m = startN;
     for (let j = 0; j < i; j++) {

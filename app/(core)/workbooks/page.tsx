@@ -29,7 +29,8 @@ import { BlankTile, StartBand, StartTile } from "@/features/file-actions/home/St
 import { useHomeTemplates } from "@/features/templates/files/components/HomeTemplates";
 import { FromTableTile } from "@/features/workbooks/components/FromTableTile";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
-import { isServiceFailure, type Workbook } from "@/features/data-tables/types";
+import { isServiceFailure } from "@/features/data-tables/types";
+import { type Workbook } from "@ai-matrx/office/core";
 // xlsx-to-univer (xlsx + @univerjs/*) and smart-importer (xlsx) are heavy —
 // this is a LIST page that renders no spreadsheet. Both load via
 // await import() inside the async upload handlers (code-splitting skill,

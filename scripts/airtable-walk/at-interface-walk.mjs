@@ -98,7 +98,8 @@ try {
     await ap.screenshot({ path: `${SHOTS}/admin-overview.png`, fullPage: true });
     for (const p of pages.slice(1)) {
       await ap.click(`[data-records-interface-page="${p.id}"]`);
-      await ap.waitForTimeout(6000);
+      await ap.waitForSelector(`[data-records-interface-page="${p.id}"][aria-current="page"]`, { timeout: 30000 }).catch(() => say("  (page did not switch)"));
+      await ap.waitForTimeout(5000);
       say(`ADMIN ${p.name}: Northwind shown`, /Northwind/.test(await ap.locator("[data-records-interface]").innerText()), "| layout:", await ap.locator("[data-records-page-layout]").getAttribute("data-records-page-layout").catch(() => "-"));
       await ap.screenshot({ path: `${SHOTS}/admin-${p.name.replace(/\s+/g, "-").toLowerCase()}.png`, fullPage: true });
     }
@@ -106,7 +107,7 @@ try {
     await ap.click("[data-records-interface-edit]");
     await ap.waitForSelector("[data-records-interface-editor]");
     const nameBox = ap.locator('input[aria-label="Page name"]');
-    await nameBox.fill("Approvals"); await nameBox.press("Enter");
+    await nameBox.fill("Approvals"); await nameBox.press("Tab");
     await ap.waitForSelector("[data-records-interface-publish]", { timeout: 60000 });
     say("ADMIN draft edit -> Publish offered:", await ap.locator("[data-records-interface-publish]").count(), "| Clear offered:", await ap.locator("[data-records-interface-clear]").count());
     await ap.click("[data-records-interface-clear]");
@@ -147,6 +148,7 @@ try {
         say("OUTSIDER next -> detail:", (await op.locator("[data-records-page-detail]").first().innerText()).replace(/\n/g, " | ").slice(0, 120));
         for (const p of pages.slice(0, 3)) {
           await op.click(`[data-records-interface-page="${p.id}"]`);
+          await op.waitForSelector(`[data-records-interface-page="${p.id}"][aria-current="page"]`, { timeout: 30000 }).catch(() => say("  (page did not switch)"));
           await op.waitForTimeout(5000);
           const t = await op.locator("[data-records-interface]").innerText();
           say(`OUTSIDER ${p.name}: Northwind`, /Northwind/.test(t), "| Comtech", /Comtech/.test(t), "| numbers", JSON.stringify(await op.locator("[data-records-page-number]").allInnerTexts()));
@@ -165,7 +167,11 @@ try {
   await browser.close();
   if (!KEEP) {
     if (iface) say("cleanup interface:", JSON.stringify(await client.dashboardDelete({ dashboard_id: iface })).slice(0, 80));
-    for (const t of tables) say("cleanup table:", JSON.stringify(await client.tableArchive({ table_id: t })).slice(0, 80));
+    for (const t of tables) {
+      let r;
+      for (let i = 0; i < 10; i++) { r = await client.tableArchive({ table_id: t }); if (!r.ok || r.data?.done !== false) break; }
+      say("cleanup table:", JSON.stringify(r).slice(0, 80));
+    }
   }
 }
 say("RESULT", result, "(screenshots in", SHOTS + ")");

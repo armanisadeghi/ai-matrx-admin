@@ -8,7 +8,7 @@ import { readFileSync, readdirSync, existsSync } from "node:fs";
 import { join } from "node:path";
 
 import { buildDocMenus, buildDocToolbar, type DocChromeHost } from "../chrome/doc-commands";
-import { flattenMenus, type EditorMenuEntry } from "@/components/editor-chrome/editor-menu-model";
+import { flattenMenus, type EditorMenuEntry } from "@ai-matrx/office/core";
 
 function fakeHost() {
   const calls: { kind: string; args: unknown[] }[] = [];

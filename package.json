@@ -998,6 +998,7 @@
     "@ai-matrx/media": "latest",
     "@ai-matrx/meet": "latest",
     "@ai-matrx/messaging": "latest",
+    "@ai-matrx/office": "latest",
     "@ai-matrx/print": "latest",
     "@ai-matrx/realtime": "latest",
     "@ai-matrx/records": "latest",

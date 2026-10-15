@@ -6,14 +6,14 @@
  * them). When the typing stops and every frame has landed, both documents must be byte-identical in
  * content and hold no pending (undeliverable) updates.
  *
- * The fake network is the one in lib/collab/__tests__/supabase-yjs-provider.test.ts,
+ * The fake network is the one in @ai-matrx/realtime's collab/fake-network.ts,
  * plus jitter and an optional drop rate.
  */
 import * as Y from "yjs";
 import { Awareness } from "y-protocols/awareness";
 import { createInertEnvironment, createRealtimeManager, type RealtimeManager } from "@ai-matrx/realtime";
 
-import { SupabaseYjsProvider } from "@/lib/collab/SupabaseYjsProvider";
+import { SupabaseYjsProvider } from "@ai-matrx/realtime/collab";
 
 type Listener = (payload: { event: string; payload?: unknown }) => void;
 

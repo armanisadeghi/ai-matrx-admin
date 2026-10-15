@@ -11,7 +11,7 @@ import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 
 import { EditorMenuBar, useMenuBarState } from "../EditorMenuBar";
-import type { EditorMenu } from "../editor-menu-model";
+import type { EditorMenu } from "@ai-matrx/office/core";
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 

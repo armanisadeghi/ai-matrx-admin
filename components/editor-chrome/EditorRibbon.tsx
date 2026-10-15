@@ -23,7 +23,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { EditorMenuContent } from "./editor-menu-surface";
-import { formatShortcut, type EditorMenu, type EditorMenuEntry } from "./editor-menu-model";
+import { formatShortcut, type EditorMenu, type EditorMenuEntry } from "@ai-matrx/office/core";
 import { rememberEditorFocus, renderMenuEntries, restoreEditorFocus } from "./EditorMenuBar";
 import { useFitCount } from "./useFitCount";
 import { MenusSearch, type EditorToolbarItem } from "./EditorToolbar";
@@ -33,7 +33,7 @@ import {
   type ResolvedRibbonGroup,
   type RibbonSize,
   type RibbonTabSpec,
-} from "./ribbon-model";
+} from "@ai-matrx/office/core";
 
 type IconType = React.ComponentType<{ className?: string }>;
 

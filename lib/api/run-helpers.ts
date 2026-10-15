@@ -50,15 +50,6 @@ export type AgentStartBody = WithInjectedScope<
   components["schemas"]["AgentStartRequest"]
 >;
 
-/** Body type for POST /ai/prompts/{prompt_id} */
-export type PromptStartBody = WithInjectedScope<
-  components["schemas"]["PromptStartRequest"]
->;
-
-/** Body type for POST /ai/agents-blocks/{agent_id} */
-export type AgentBlocksStartBody =
-  components["schemas"]["AgentBlocksStartRequest"];
-
 /** Body type for POST /ai/conversations/{conversation_id} */
 export type ConversationContinueBody =
   components["schemas"]["ConversationContinueRequest"];
@@ -178,38 +169,6 @@ export function callCancelAgentAssignmentSession(
   >;
 }
 
-// ─── Agent Blocks: Start new block-streaming conversation ────────────────────
-
-export interface CallAgentBlocksStartOptions {
-  agentId: string;
-  body: AgentBlocksStartBody;
-  signal?: AbortSignal;
-  scopeOverrides?: Partial<CallScope>;
-  onStreamEvent?: (event: TypedStreamEvent) => void;
-  onStreamComplete?: (
-    requestId: string | null,
-    conversationId: string | null,
-  ) => void;
-  onStreamError?: (error: ApiCallError) => void;
-  _testOverrides?: TestOverrides;
-}
-
-export function callAgentBlocksStart(options: CallAgentBlocksStartOptions) {
-  return callApi({
-    path: "/ai/agents-blocks/{agent_id}",
-    method: "POST",
-    pathParams: { agent_id: options.agentId },
-    body: options.body,
-    stream: true,
-    signal: options.signal,
-    scopeOverrides: options.scopeOverrides,
-    onStreamEvent: options.onStreamEvent,
-    onStreamComplete: options.onStreamComplete,
-    onStreamError: options.onStreamError,
-    _testOverrides: options._testOverrides,
-  });
-}
-
 // ─── Conversation: Continue existing conversation ─────────────────────────────
 
 export interface CallConversationContinueOptions {
@@ -250,88 +209,6 @@ export function callConversationContinue(
 // rides `@ai-matrx/api`'s `cancelAgentRun` over the host transport —
 // see `cancelAgentRunRequest` in `lib/api/matrx-transport.ts`. Same URL, same
 // auth/org headers, same `ApiCallResult` envelope for callers.
-
-// ─── Warm-up: Pre-load agent into server cache ────────────────────────────────
-
-/**
- * Valid `source` values for warm endpoints.
- * Tells the backend exactly which table to query:
- * - `"prompt"` → `prompts` table
- * - `"builtin"` → `agent.definition` table (migrated from `prompt_builtins`; same UUIDs)
- * - `"prompt_version"` → `prompt_versions` table
- * - `"builtin_version"` → `prompt_builtin_versions` table
- * - `undefined` → fallback chain (prompts → builtins)
- */
-export type WarmSource =
-  "prompt" | "builtin" | "prompt_version" | "builtin_version";
-
-export function callWarmAgent(agentId: string, source?: WarmSource) {
-  return callApi({
-    path: "/ai/agents/{agent_id}/warm",
-    // Background (rejoin / warm-up): never opens the workspace picker.
-    method: "POST",
-    pathParams: { agent_id: agentId },
-    body: (source ? { source } : undefined) as any,
-    stream: false,
-  });
-}
-
-export function callWarmConversation(conversationId: string) {
-  return callApi({
-    path: "/ai/conversations/{conversation_id}/warm",
-    // Background (rejoin / warm-up): never opens the workspace picker.
-    method: "POST",
-    pathParams: { conversation_id: conversationId },
-    stream: false,
-  });
-}
-
-// ─── Prompt: Start new conversation ──────────────────────────────────────────
-
-export interface CallPromptStartOptions {
-  promptId: string;
-  body: PromptStartBody;
-  signal?: AbortSignal;
-  scopeOverrides?: Partial<CallScope>;
-  onStreamStart?: (
-    requestId: string | null,
-    conversationId: string | null,
-  ) => void;
-  onStreamEvent?: (event: TypedStreamEvent) => void;
-  onStreamComplete?: (
-    requestId: string | null,
-    conversationId: string | null,
-  ) => void;
-  onStreamError?: (error: ApiCallError) => void;
-  _testOverrides?: TestOverrides;
-}
-
-export function callPromptStart(options: CallPromptStartOptions) {
-  return callApi({
-    path: "/ai/prompts/{prompt_id}",
-    method: "POST",
-    pathParams: { prompt_id: options.promptId },
-    body: options.body,
-    stream: true,
-    signal: options.signal,
-    scopeOverrides: options.scopeOverrides,
-    onStreamStart: options.onStreamStart,
-    onStreamEvent: options.onStreamEvent,
-    onStreamComplete: options.onStreamComplete,
-    onStreamError: options.onStreamError,
-    _testOverrides: options._testOverrides,
-  });
-}
-
-export function callWarmPrompt(promptId: string) {
-  return callApi({
-    path: "/ai/prompts/{prompt_id}/warm",
-    // Background (rejoin / warm-up): never opens the workspace picker.
-    method: "POST",
-    pathParams: { prompt_id: promptId },
-    stream: false,
-  });
-}
 
 // ─── Conversation: Observational Memory cost summary ─────────────────────────
 //

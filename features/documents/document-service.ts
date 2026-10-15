@@ -21,12 +21,8 @@ import { supabase } from "@/utils/supabase/client";
 import { tryWriteOne, writeOneRow } from "@/utils/supabase/writeOne";
 import { requireOrganizationContext } from "@/lib/api/organization-context";
 
-import type {
-  DocumentRow,
-  DocumentSnapshot,
-  DocumentSnapshotOrigin,
-  ServiceResult,
-} from "@/features/data-tables/types";
+import type { DocumentSnapshotOrigin, ServiceResult } from "@/features/data-tables/types";
+import type { DocumentRow, DocumentSnapshot } from "@ai-matrx/office/core";
 
 import { getClaimsUser } from "@ai-matrx/auth";
 // ─── documents ───────────────────────────────────────────────────────────────

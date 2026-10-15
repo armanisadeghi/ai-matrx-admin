@@ -3,7 +3,7 @@
 Domain tree: content > workbooks. Split out of `features/data-tables` on 2026-10-07; routes
 `/workbooks` and `/workbooks/[id]` are unchanged. Documents (the Univer doc editor) are the sibling
 feature `features/documents`; both share `lib/univer/` (theme, facade, dispose, snapshot-mutation
-helpers) and `lib/collab/` (Yjs over Supabase Broadcast). `features/data-tables/export-targets.ts`
+helpers) and `@ai-matrx/realtime/collab` (Yjs over Supabase Broadcast). `features/data-tables/export-targets.ts`
 still builds the workbook a table is exported into.
 
 ## History (moved from data-tables)
@@ -24,7 +24,7 @@ separate live surface (`workbook-service.ts`, `document-service.ts`, `/workbooks
 - ✅ **Snapshot history viewer + restore** — `WorkbookHistoryViewer` lists snapshots newest-first with origin badges (autosave / manual / imported / restored); Restore writes a NEW snapshot from the chosen one so the realtime hook hot-swaps automatically. Snapshots are append-only; restoring does not delete history.
 - ✅ **Export workbook → XLSX** — `downloadUniverAsXlsx` (ExcelJS via the door; see the Excel import/export line below for what it carries and names). Wired as a toolbar button in `WorkbookEditor`; filename = workbook name.
 - ✅ **Share + permission gating** — `udt_workbooks` added to client-side `SHAREABLE_RESOURCE_REGISTRY` (DB registry had it from P1). `/workbooks/[id]` header gets the standard `<ShareButton>`. Page calls `has_permission(udt_workbooks, id, 'editor')` at mount to decide whether the editor mounts in editable or viewer-only mode (owner always edits; shared editors detected via the RPC; everyone else sees viewer mode).
-- ✅ **V2 — full CRDT collab is LIVE.** Yjs over Supabase Broadcast via the public `onMutationExecutedForCollab` hook; `collab` flag ON at `/workbooks/[id]`. Verified by `lib/collab/verify-collab.ts` (10/10, incl. real-Broadcast e2e). See `collab/FEATURE.md` — run the verify gate before touching the provider/session.
+- ✅ **V2 — full CRDT collab is LIVE.** Yjs over Supabase Broadcast via the public `onMutationExecutedForCollab` hook; `collab` flag ON at `/workbooks/[id]`. Verified by `scripts/verify-collab.ts` (10/10, incl. real-Broadcast e2e). See `collab/FEATURE.md` — run the verify gate before touching the provider/session.
 
 **P5 — operational hardening (decided 2026-06-06):**
 - ✅ **aidream attribution — honest NULL.** Decided to keep `changed_by = NULL` for service_role / pool writes (no JWT). The audit trail honestly reports "system write" rather than misattributing to row owners. No code change required on aidream's side.

@@ -133,7 +133,7 @@ jest.mock("@/features/documents/utils/sanitizeUniverDocSnapshot", () => ({ sanit
 jest.mock("@/lib/univer/disposeUniverInstance", () => ({
   disposeUniverInstance: (u: { dispose: () => void } | null) => u?.dispose(),
 }));
-jest.mock("@/lib/collab/RemoteCursorsLayer", () => ({ RemoteCursorsLayer: () => null }));
+jest.mock("@ai-matrx/realtime/collab/react", () => ({ RemotePeerChips: () => null }));
 jest.mock("@/features/documents/components/DocumentPageReferenceCopyButton", () => ({ DocumentPageReferenceCopyButton: () => null }));
 jest.mock("@/components/errors/ErrorAlchemyMenu", () => ({ ErrorAlchemyMenu: () => null }));
 jest.mock("@/components/ui/use-toast", () => ({ toast: jest.fn() }));

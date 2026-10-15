@@ -31,7 +31,8 @@ import {
   listDocumentSnapshots,
   saveDocumentSnapshot,
 } from "@/features/documents/document-service";
-import { isServiceFailure, type DocumentSnapshot } from "@/features/data-tables/types";
+import { isServiceFailure } from "@/features/data-tables/types";
+import { type DocumentSnapshot } from "@ai-matrx/office/core";
 import { AGENT_ICON } from "@/components/icons/domain-icons";
 import { ErrorNotice } from "@ai-matrx/design-system";
 

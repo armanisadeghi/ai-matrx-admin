@@ -36,7 +36,7 @@
 import type { ICommandInfo, IDocumentData } from "@univerjs/core";
 import type { CommitReason } from "@/lib/working-copy/coalescedCommit";
 import type { WorkingCopyHandle } from "@/lib/working-copy/workingCopyKind";
-import type { AwarenessState } from "@/lib/collab/types";
+import type { AwarenessState } from "@ai-matrx/realtime/collab";
 import { isSnapshotMutation } from "@/lib/univer/isSnapshotMutation";
 import type {
   CollabMutationInfo,

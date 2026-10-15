@@ -21,7 +21,7 @@
 
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 
-import type { AwarenessState } from "@/lib/collab/types";
+import type { AwarenessState } from "@ai-matrx/realtime/collab";
 
 // Univer facade is loose at the boundary; narrow with structural types.
 type CellRect = { left: number; top: number; width: number; height: number };

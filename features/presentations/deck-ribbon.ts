@@ -48,8 +48,8 @@ import {
   Wand,
   Workflow,
 } from "lucide-react";
-import type { GoogleOnlyRows, RibbonTabSpec } from "@/components/editor-chrome/ribbon-model";
-import { AUTOMATE_TAB, HELP_HEAD_CONTROLS } from "@/components/editor-chrome/ribbon-parity";
+import type { GoogleOnlyRows, RibbonTabSpec } from "@ai-matrx/office/core";
+import { AUTOMATE_TAB, HELP_HEAD_CONTROLS } from "@ai-matrx/office/core";
 
 /** Menu rows the Microsoft look deliberately does not place (id -> reason). Empty: every row is placed. */
 export const DECK_GOOGLE_ONLY: GoogleOnlyRows = {};

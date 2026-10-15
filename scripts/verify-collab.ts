@@ -5,7 +5,7 @@
  *
  * Run from the repo root:
  *
- *   npx tsx lib/collab/verify-collab.ts
+ *   npx tsx scripts/verify-collab.ts
  *
  * Stage A (always runs, no network):
  *   Two WorkbookCollabSessions joined by an in-memory loopback transport.
@@ -283,7 +283,7 @@ async function stageB() {
   }
 
   try {
-    const { SupabaseYjsProvider } = await import("@/lib/collab/SupabaseYjsProvider");
+    const { SupabaseYjsProvider } = await import("@ai-matrx/realtime/collab");
     const { createClient } = await import("@supabase/supabase-js");
     const { createRealtimeManager } = await import("@ai-matrx/realtime");
 

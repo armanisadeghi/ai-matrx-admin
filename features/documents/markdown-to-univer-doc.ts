@@ -55,7 +55,7 @@ import { LocaleType } from "@univerjs/presets";
 import {
   DEFAULT_DOCUMENT_PAGE_STYLE,
   defaultDocumentPageStyle,
-} from "@/features/documents/document-page-style";
+} from "@ai-matrx/office/core";
 import {
   findTableEnd,
   rowCells,

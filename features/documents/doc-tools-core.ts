@@ -3,7 +3,7 @@
  * geometry and the document language. No Univer import, so each is proven on plain snapshots.
  */
 
-import { PX_PER_INCH } from "@/features/documents/document-page-style";
+import { PX_PER_INCH } from "@ai-matrx/office/core";
 import { markdownToUniverDoc } from "@/features/documents/markdown-to-univer-doc";
 
 export interface BuildingBlock {

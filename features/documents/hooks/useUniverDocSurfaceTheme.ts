@@ -21,7 +21,7 @@
 import { useEffect } from "react";
 
 import { useThemeMode } from "@/styles/themes/useThemeMode";
-import { PAGE_COLOR_KEY } from "@/features/documents/document-page-style";
+import { PAGE_COLOR_KEY } from "@ai-matrx/office/core";
 
 import {
   domTokenReader,

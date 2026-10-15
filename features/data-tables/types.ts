@@ -13,11 +13,9 @@ type E = Database["public"]["Enums"];
 
 // ─── Row shapes (from Supabase) ──────────────────────────────────────────────
 
-export type Workbook = T["udt_workbooks"]["Row"];
 export type WorkbookInsert = T["udt_workbooks"]["Insert"];
 export type WorkbookUpdate = T["udt_workbooks"]["Update"];
 
-export type WorkbookSnapshot = T["udt_workbook_snapshots"]["Row"];
 export type WorkbookSnapshotInsert = T["udt_workbook_snapshots"]["Insert"];
 
 /** Origin of a snapshot. Free text in the DB; this enum is advisory. */
@@ -29,11 +27,9 @@ export type WorkbookSnapshotOrigin =
 
 // ─── documents (mirror of workbooks; Univer preset-docs-core surface) ────────
 
-export type DocumentRow = T["udt_documents"]["Row"];
 export type DocumentInsert = T["udt_documents"]["Insert"];
 export type DocumentUpdate = T["udt_documents"]["Update"];
 
-export type DocumentSnapshot = T["udt_document_snapshots"]["Row"];
 export type DocumentSnapshotInsert = T["udt_document_snapshots"]["Insert"];
 
 /** Same advisory enum as workbooks — string column in the DB. */
@@ -142,7 +138,6 @@ export type TableMetadata = {
 export type FieldDataType = E["field_data_type"];
 export type RowChangeKind = E["row_change_kind"];
 export type WorkbookSource = E["workbook_source"];
-export type DocumentSource = E["document_source"];
 export type PermissionLevel = E["permission_level"];
 
 export const FIELD_DATA_TYPES: readonly FieldDataType[] = [

@@ -16,6 +16,7 @@ mkdirSync(SHOTS, { recursive: true });
 const { sb, client } = await store();
 const tag = Date.now().toString(36);
 const made = [];
+const homes = [];
 const fails = [];
 const check = (label, ok, detail = "") => { say((ok ? "PASS " : "FAIL ") + label + (ok ? "" : "  — " + String(detail).slice(0, 300))); if (!ok) fails.push(label); };
 
@@ -23,6 +24,7 @@ const check = (label, ok, detail = "") => { say((ok ? "PASS " : "FAIL ") + label
 const p = await ensureTable(client, { name: `Harbor walk Projects ${tag}`, fields: [{ key: "name", label: "Name", type: "text", sort: 10 }, { key: "budget", label: "Budget", type: "number", sort: 20 }] });
 if (!p.ok) throw new Error("projects " + JSON.stringify(p.error));
 const projects = p.data, home = p.homeId;
+homes.push(home);
 const t = await ensureTable(client, { name: `Harbor walk Tasks ${tag}`, homeId: home, fields: [{ key: "task", label: "Task", type: "text", sort: 10 }, { key: "project", label: "Project", type: "relation", relationTarget: projects, sort: 20 }] });
 if (!t.ok) throw new Error("tasks " + JSON.stringify(t.error));
 const tasks = t.data;
@@ -30,8 +32,12 @@ made.push(projects, tasks);
 const pr = must(await client.recordWrite({ table_id: projects, data: { name: "Rebrand", budget: 12000 } }), "project");
 for (const task of ["Logo", "Palette"]) must(await client.recordWrite({ table_id: tasks, data: { task, project: pr } }), "task");
 const dash = await client.dashboardDeclare({ table_id: projects, name: "Overview", blocks: [], presentation: { kind: "page" } });
-const auto = await client.automationDeclare({ table_id: tasks, spec: { name: "Note new tasks", trigger: { kind: "record_created" }, actions: [] } });
-say("seed", { home, projects, tasks, page: dash.ok, automation: auto.ok });
+const taskField = must(await client.fields({ table_id: tasks }), "fields").find((f) => f.key === "task");
+// The store answers ok:true with {ok:false,_errors} for a spec it refuses: the seed checks BOTH, or the walk would "pass" over a base with no automation in it.
+const auto = await client.automationDeclare({ table_id: tasks, spec: { name: "Note new tasks", trigger: { on: "property_edited", field: taskField.id }, actions: [{ do: "notify", to: { author: true }, text: "A task changed" }] } });
+if (!dash.ok) throw new Error("seed page refused: " + JSON.stringify(dash.error));
+if (!auto.ok || !auto.data.ok) throw new Error("seed automation refused: " + JSON.stringify(auto.ok ? auto.data._errors : auto.error));
+say("seed", { home, projects, tasks, page: dash.ok, automation: true });
 
 let browser, page, errs = [];
 const shot = (n) => page.screenshot({ path: `${SHOTS}/${n}.png` });
@@ -77,9 +83,17 @@ try {
   await shot("06-duplicate-done");
   check("duplicate says tables, records, links re-pointed, automations (off), pages", /2 tables with 3 records, 1 links re-pointed, 1 automations \(off\), 1 pages/.test(text), text);
   await page.getByRole("button", { name: "Open the copy" }).click();
-  await page.waitForURL(/\/data\/(bases\/)?[0-9a-f-]{36}/, { timeout: 60000 });
-  await page.waitForTimeout(3000);
+  await page.waitForURL(/\/data\/bases\/[0-9a-f-]{36}/, { timeout: 60000 });
+  await page.waitForSelector("[data-base-page]", { timeout: 90000 });
+  await page.waitForSelector("text=Note new tasks", { timeout: 60000 }).catch(() => {});
+  const copyHome = page.url().split("/").pop();
+  homes.push(copyHome);
   await shot("07-copy-opened");
+  const copyBody = await page.locator("[data-base-page]").innerText();
+  check("the copy is a NEW base (a different Home) named '(copy)'", copyHome !== home && /\(copy\)/.test(await page.locator("[data-base-name]").innerText()), copyHome + " " + home);
+  check("the copy's page lists its 2 tables, the page and the automation switched Off", (await page.locator("[data-base-table]").count()) === 2 && copyBody.includes("Overview") && /Note new tasks[\s\S]*Off/.test(copyBody), copyBody.slice(0, 400));
+  const originalAfter = await page.goto(`${ORIGIN}/data/bases/${home}`, { waitUntil: "domcontentloaded" }).then(() => page.waitForSelector(`[data-base-page="${home}"]`, { timeout: 90000 })).then(() => page.locator("[data-base-table]").count());
+  check("the original base still lists exactly its own 2 tables", originalAfter === 2, String(originalAfter));
   // the copy's link column points at the copy's Projects, never the original
   const listed = must(await client.tableList(), "tables").filter((x) => x.name.includes(tag));
   const copyProjects = listed.find((x) => x.name.startsWith("Harbor walk Projects") && x.name.includes("(copy)"));
@@ -118,6 +132,10 @@ try {
   const restoredHome = page.url().split("/").pop();
   await shot("09-restored-base");
   check("restore opens a NEW base (not the one it came from)", restoredHome !== home, restoredHome);
+  homes.push(restoredHome);
+  check("the restored base is named '(restored <date>)'", /\(restored /.test(await page.locator("[data-base-name]").innerText()));
+  const restoredBody = await page.locator("[data-base-page]").innerText();
+  check("the restored base lists its page and its automation, switched Off", restoredBody.includes("Overview") && /Note new tasks[\s\S]*Off/.test(restoredBody), restoredBody.slice(0, 400));
   const restoredTables = await page.locator("[data-base-table]").allInnerTexts();
   check("the restored base has its tables, working", restoredTables.length === 2 && restoredTables.every((n) => /restored/.test(n)), restoredTables.join("|"));
   if (restoredTables.length) {
@@ -140,6 +158,26 @@ try {
   await shot("11-airtable-token-step");
   check("the Airtable picker asks for the token in a password field (the person types it)", (await page.locator('[data-airtable-import] input[type=password]').count()) === 1);
   say("(Airtable list and import are recorded answers; no token was typed or saved)");
+  await page.keyboard.press("Escape");
+
+  // One-time Sheets import: REAL server, a public Google sample sheet (Google's own "Class Data" example, read-only for everyone). No company Google account is used.
+  await page.locator("[data-base-sheets]").click();
+  await page.waitForSelector("[data-sheets-import]");
+  await page.getByLabel("Google Sheets link").fill("https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/edit");
+  await shot("12-sheets-dialog");
+  await page.locator("[data-sheets-go]").click();
+  const sheetsOutcome = await Promise.race([
+    page.waitForSelector("[data-sheets-done]", { timeout: 120000 }).then(() => "done"),
+    page.waitForSelector('[data-sheets-import] [role="alert"]', { timeout: 120000 }).then(async () => "alert: " + (await page.locator('[data-sheets-import] [role="alert"]').innerText())),
+  ]).catch((e) => "timeout " + e.message.split("\n")[0]);
+  await shot("13-sheets-result");
+  check("the one-time Sheets dialog brought a public sheet in as a table (real server)", sheetsOutcome === "done", sheetsOutcome);
+  if (sheetsOutcome === "done") {
+    const href = await page.locator("[data-sheets-done] a").getAttribute("href");
+    const sheetTable = href?.split("/").pop();
+    check("the Sheets table has rows", /\d+ rows are now a table/.test(await page.locator("[data-sheets-done]").innerText()));
+    if (sheetTable) made.push(sheetTable);
+  }
   await browser.close().catch(() => {});
 } catch (e) {
   fails.push("the walk stopped: " + (e && e.message ? e.message.split("\n")[0] : e));
@@ -151,7 +189,9 @@ try {
     for (const id of [...new Set(made)]) {
       for (let i = 0; i < 40; i++) { const r = await client.tableArchive({ table_id: id, chunk: 20, includeTable: true }); if (!r.ok || r.data.done) break; }
     }
-    say("archived", made.length, "tables");
+    for (const h of new Set(homes)) await client.recordDelete({ record_id: h }).catch(() => {});
+    say("archived", made.length, "tables and", new Set(homes).size, "homes");
   }
-  say(fails.length ? "FAILED: " + fails.join("; ") : "ALL PASSED");
+  // Honest exit: any failed check, or a stop partway, is a non-zero exit and never "ALL PASSED".
+  if (fails.length) { say("FAILED: " + fails.join("; ")); process.exitCode = 1; } else say("ALL PASSED");
 }

@@ -6,7 +6,7 @@
 
 import { downloadFile } from "@ai-matrx/kit/download";
 import { toDelimitedText } from "@ai-matrx/alchemy/operate/read";
-import { PX_PER_INCH } from "@/features/documents/document-page-style";
+import { PX_PER_INCH } from "@ai-matrx/office/core";
 import type { SheetPageSetup } from "@/features/workbooks/sheet-page-setup";
 import { buildPrintDocument, collectPrintSheets, printDocumentHtml } from "@/features/workbooks/sheet-print-pages";
 import { univerSnapshotToRows, type CellRange } from "@/features/workbooks/univer-snapshot-rows";

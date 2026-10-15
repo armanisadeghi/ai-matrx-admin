@@ -35,7 +35,7 @@ import { EditorRibbon } from "@/components/editor-chrome/EditorRibbon";
 import { OfficeLookSwitch } from "@/features/file-actions/skin/OfficeLookSwitch";
 import { SHEET_RIBBON } from "@/features/workbooks/chrome/sheet-ribbon";
 import { EditorSaveStatus } from "@/components/editor-chrome/EditorTitleField";
-import { boundActions, matchesShortcut, type EditorMenuEntry } from "@/components/editor-chrome/editor-menu-model";
+import { boundActions, matchesShortcut, type EditorMenuEntry } from "@ai-matrx/office/core";
 import { buildSheetMenus, buildSheetToolbar, sheetPageSetupRow, type SheetChromeHost, type SheetsApiLike } from "@/features/workbooks/chrome/sheet-commands";
 import { createWorkbook } from "@/features/workbooks/workbook-service";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
@@ -48,7 +48,7 @@ import { useSheetExtras } from "@/features/workbooks/components/useSheetExtras";
 import type { CellRange } from "@/features/workbooks/univer-snapshot-rows";
 import { useFileRecordMenu } from "@/features/file-actions/useFileRecordMenu";
 import { WORKBOOK_ADAPTER } from "@/features/file-actions/adapters";
-import type { Workbook } from "@/features/data-tables/types";
+import type { Workbook } from "@ai-matrx/office/core";
 
 import {
   createUniver,
@@ -115,8 +115,9 @@ import {
 import { matrxImagePorts } from "@/lib/univer/matrxImagePorts";
 import { disposeUniverInstance } from "@/lib/univer/disposeUniverInstance";
 import { isWorkbookSnapshotMutation } from "@/lib/univer/isSnapshotMutation";
-import { mayAutosave, remoteOriginOf } from "@/features/workbooks/collab/autosave-writer";
-import { RemoteCursorsLayer } from "@/lib/collab/RemoteCursorsLayer";
+import { mayAutosave, remoteOriginOf } from "@ai-matrx/realtime/collab";
+import { readCollabAntiEntropyMs } from "@/lib/knobs/collabAntiEntropy";
+import { RemotePeerChips as RemoteCursorsLayer } from "@ai-matrx/realtime/collab/react";
 import { WorkbookCursorOverlay } from "@/features/workbooks/components/WorkbookCursorOverlay";
 import { getLatestSnapshot, saveSnapshot } from "@/features/workbooks/workbook-service";
 import { useWorkbookGoogleLink, useLiveGoogleAdapter } from "@/features/google-workspace/linked/EditorGoogleLinks";
@@ -148,7 +149,7 @@ type Props = {
   /** Used as the XLSX filename on export. Falls back to workbookId. */
   workbookName?: string;
   /**
-   * Opt in to v2 CRDT collab — see `lib/collab/FEATURE.md`.
+   * Opt in to v2 CRDT collab — see `@ai-matrx/realtime` README (collab).
    * Defaults to `false` so v1 behavior (snapshot-per-save last-write-wins)
    * is unchanged until the workbook page explicitly turns this on. When
    * `true`, the editor wires a `WorkbookCollabSession`, broadcasts mutations
@@ -204,7 +205,7 @@ export default function WorkbookEditor({
     null,
   );
   const [remoteAwareness, setRemoteAwareness] = useState<
-    Map<number, import("@/lib/collab/types").AwarenessState>
+    Map<number, import("@ai-matrx/realtime/collab").AwarenessState>
   >(new Map());
   const [collabIsHost, setCollabIsHost] = useState(true); // solo = host by default
   const [collabSelfUid, setCollabSelfUid] = useState<string>("");
@@ -490,7 +491,7 @@ export default function WorkbookEditor({
     const [{ WorkbookCollabSession }, { SupabaseYjsProvider }] =
       await Promise.all([
         import("@/features/workbooks/collab/WorkbookCollabSession"),
-        import("@/lib/collab/SupabaseYjsProvider"),
+        import("@ai-matrx/realtime/collab"),
       ]);
 
     // Univer's `__getInjector` is technically a private path (the double
@@ -550,13 +551,14 @@ export default function WorkbookEditor({
           doc,
           awareness,
           onLeaderChange,
+          readAntiEntropyIntervalMs: readCollabAntiEntropyMs,
         }),
       onAwarenessChange: (aw) => {
         setRemoteAwareness(
           new Map(
             aw.getStates() as Map<
               number,
-              import("@/lib/collab/types").AwarenessState
+              import("@ai-matrx/realtime/collab").AwarenessState
             >,
           ),
         );

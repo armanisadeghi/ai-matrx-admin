@@ -29,37 +29,12 @@ import {
   type EditorMenu,
   type EditorMenuEntry,
   type EditorShortcut,
-} from "./editor-menu-model";
+  type EditorToolbarItem,
+} from "@ai-matrx/office/core";
 import { rememberEditorFocus, renderMenuEntries, restoreEditorFocus } from "./EditorMenuBar";
 import { useFitCount } from "./useFitCount";
 
 type IconType = React.ComponentType<{ className?: string }>;
-
-export type EditorToolbarItem =
-  | {
-      kind: "button";
-      id: string;
-      label: string;
-      icon: IconType;
-      run: () => unknown;
-      shortcut?: EditorShortcut;
-      active?: boolean;
-      disabled?: boolean;
-    }
-  | { kind: "separator"; id: string }
-  | {
-      kind: "menu";
-      id: string;
-      label: string;
-      icon?: IconType;
-      /** Text shown on the trigger (e.g. "100%", "Arial"). */
-      text?: string;
-      /** Trigger width class for text triggers (keeps the row still as text changes). */
-      widthClass?: string;
-      items: EditorMenuEntry[];
-      disabled?: boolean;
-    }
-  | { kind: "node"; id: string; node: ReactNode };
 
 /** Google's "Menus" box: type to find any command in the menu tree. */
 export function MenusSearch({ menus, className }: { menus: EditorMenu[]; className?: string }) {

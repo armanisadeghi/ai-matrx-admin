@@ -10,7 +10,7 @@ import { useState } from "react";
 import { Field, SegmentedControl, SettingRow, Select, Switch } from "@ai-matrx/design-system/controls";
 
 import { PageSetupDialogShell } from "@/components/page-setup/PageSetupDialogShell";
-import { PAPER_SIZES, type PaperSizeName } from "@/features/documents/document-page-style";
+import { PAPER_SIZES, type PaperSizeName } from "@ai-matrx/office/core";
 import {
   MARGIN_PRESET_INCHES,
   type SheetAlignH,

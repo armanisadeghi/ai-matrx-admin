@@ -24,7 +24,8 @@ import {
   renameWorkbook,
   updateWorkbookDescription,
 } from "@/features/workbooks/workbook-service";
-import { isServiceFailure, type Workbook } from "@/features/data-tables/types";
+import { isServiceFailure } from "@/features/data-tables/types";
+import { type Workbook } from "@ai-matrx/office/core";
 import { canActOn } from "@/features/access-gate/service/canActOn";
 
 // Univer hard-depends on `window` / `document`. Mount client-only.

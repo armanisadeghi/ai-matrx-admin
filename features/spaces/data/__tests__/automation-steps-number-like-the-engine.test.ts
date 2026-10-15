@@ -1,6 +1,6 @@
 /** AT-AUTO3: the visual editor numbers steps exactly as custom._automation_number does (depth-first, a group before its inner steps),
  * because a chip "Step 8 · Script answer" is stored as {{step8.output.x}}. The pipeline is atauto2_green.sql's. */
-import { stepCount, type Step } from "../AutomationSteps";
+import { stepCount, type Step } from "../automation-step-count";
 
 const pipeline: Step[] = [
   { do: "find" },

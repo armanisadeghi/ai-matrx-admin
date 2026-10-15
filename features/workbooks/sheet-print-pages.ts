@@ -4,7 +4,7 @@
  * same pages, so what the browser prints is what the PDF holds.
  */
 
-import { PX_PER_INCH } from "@/features/documents/document-page-style";
+import { PX_PER_INCH } from "@ai-matrx/office/core";
 import {
   PRINT_ROW_HEIGHT,
   planSheetPrint,

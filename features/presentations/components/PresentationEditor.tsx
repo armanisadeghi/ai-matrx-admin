@@ -38,7 +38,7 @@ import {
   formatShortcut,
   matchesShortcut,
   type EditorMenuEntry,
-} from "@/components/editor-chrome/editor-menu-model";
+} from "@ai-matrx/office/core";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ProTextarea, type ProTextareaElement } from "@/components/official/ProTextarea";
 import { SlideEditContext, type SlideEditPort } from "@/components/mardown-display/blocks/presentations/slide-edit";

@@ -19,7 +19,7 @@ import {
   PAPER_SIZES,
   type PageSetupValues,
   type PaperSizeName,
-} from "@/features/documents/document-page-style";
+} from "@ai-matrx/office/core";
 
 const PAPER_OPTIONS = (Object.keys(PAPER_SIZES) as PaperSizeName[]).map(
   (k) => ({ value: k, label: PAPER_SIZES[k].label }),

@@ -36,7 +36,7 @@ import {
 } from "@univerjs/preset-sheets-core";
 
 import { buildSheetMenus, type SheetChromeHost } from "../chrome/sheet-commands";
-import { flattenMenus } from "@/components/editor-chrome/editor-menu-model";
+import { flattenMenus } from "@ai-matrx/office/core";
 
 jest.mock("@/components/dialogs/value-prompts/valuePromptsOpener", () => ({ promptForValues: async () => null }));
 

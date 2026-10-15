@@ -23,7 +23,7 @@ import {
 import { getComingSoon } from "@ai-matrx/kit/coming-soon";
 import { cn } from "@/lib/utils";
 import { EditorMenuContent, EditorMenuSubContent } from "./editor-menu-surface";
-import { formatShortcut, type EditorMenu, type EditorMenuEntry } from "./editor-menu-model";
+import { formatShortcut, type EditorMenu, type EditorMenuEntry } from "@ai-matrx/office/core";
 import { useFitCount } from "./useFitCount";
 
 /**

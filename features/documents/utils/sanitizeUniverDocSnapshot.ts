@@ -29,7 +29,7 @@ import type { IDocumentData } from "@univerjs/core";
 import {
   defaultDocumentPageStyle,
   isLegacySqueezedPageStyle,
-} from "@/features/documents/document-page-style";
+} from "@ai-matrx/office/core";
 
 /**
  * Map of every string name that could appear in a legacy snapshot to its

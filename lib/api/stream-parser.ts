@@ -139,29 +139,6 @@ async function* traceLiveStream(
 // STREAM EVENT HELPERS
 // ============================================================================
 
-/** Extract accumulated text from chunk events */
-export function accumulateChunks(events: TypedStreamEvent[]): string {
-  let text = "";
-  for (const event of events) {
-    if (isChunkEvent(event)) {
-      text += event.data.text;
-    }
-  }
-  return text;
-}
-
-/** Extract the first error from stream events, if any */
-export function findStreamError(
-  events: TypedStreamEvent[],
-): ErrorPayload | null {
-  for (const event of events) {
-    if (isErrorEvent(event)) {
-      return event.data;
-    }
-  }
-  return null;
-}
-
 // ============================================================================
 // CALLBACK-BASED STREAM CONSUMER
 // ============================================================================

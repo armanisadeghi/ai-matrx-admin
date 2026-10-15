@@ -3,7 +3,7 @@
 /** View → Show ruler: inch ticks along the top of the page, margins shaded, at the current zoom. */
 
 import { useEffect, useState } from "react";
-import { PX_PER_INCH } from "@/features/documents/document-page-style";
+import { PX_PER_INCH } from "@ai-matrx/office/core";
 import { rulerGeometry } from "@/features/documents/doc-tools-core";
 
 interface Props {

@@ -1,4 +1,4 @@
-import { flattenMenus, boundActions } from "@/components/editor-chrome/editor-menu-model";
+import { flattenMenus, boundActions } from "@ai-matrx/office/core";
 import { buildDeckMenus, buildDeckToolbar, type DeckChromeHost } from "../deck-commands";
 import type { DeckAction } from "../deck-model";
 

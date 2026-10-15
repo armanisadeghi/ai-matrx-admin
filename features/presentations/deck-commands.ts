@@ -59,9 +59,9 @@ import {
 
 import { AlignCenter, AlignJustify, AlignRight, Italic, Underline, ZoomIn, ZoomOut } from "lucide-react";
 
-import type { EditorMenu, EditorMenuEntry } from "@/components/editor-chrome/editor-menu-model";
-import { googleExtensionsMenu, googleHelpHead, soon } from "@/components/editor-chrome/google-parity";
-import type { EditorToolbarItem } from "@/components/editor-chrome/EditorToolbar";
+import type { EditorMenu, EditorMenuEntry } from "@ai-matrx/office/core";
+import { googleExtensionsMenu, googleHelpHead, soon } from "@ai-matrx/office/core";
+import type { EditorToolbarItem } from "@ai-matrx/office/core";
 import { EDITOR_LAYOUTS, type DeckAction, type DeckSlide, type EditorLayout } from "./deck-model";
 import type { TextStyle } from "./deck-slide-ops";
 import { toast } from "@/lib/toast";
