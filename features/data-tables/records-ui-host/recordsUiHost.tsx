@@ -167,6 +167,15 @@ export function recordsUiHostFor({ ports, merged, gridContext, rights }: Records
     // …in the TABLE's organization: the file window lists only its files and uploads there.
     pickFiles: (ask) => RECORDS_FILES.pickFiles({ ...ask, organizationId: ports.organizationId }),
     members: ports.members,
+    // A kept-aside person opens the Person record it is, at /o/<id> (records-ui `openPerson`).
+    // Spread as its own object: a records-ui build before the port ignores the key.
+    ...{
+      openPerson: (target: { recordId: string }) => {
+        const href = `/o/${target.recordId}`;
+        if (ports.navigate) ports.navigate(href);
+        else window.open(href, "_blank", "noopener");
+      },
+    },
     onAskForOne: ports.onAskForOne,
     openRecords: ports.openRecords,
     ...(ports.navigate ? { navigate: ports.navigate } : {}),

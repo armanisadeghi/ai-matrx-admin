@@ -490,7 +490,6 @@ export default function DocumentEditor({
         setUnitId(mountedUnit);
 
         const kept: KeptUniver = { host, univer, univerAPI, unitId: mountedUnit };
-        (window as unknown as Record<string, unknown>).__dbgDoc = { univer, univerAPI, unitId: mountedUnit }; // TEMPDBG
         detach = attachPort(kept);
         booted = kept;
         setBootState("ready");
