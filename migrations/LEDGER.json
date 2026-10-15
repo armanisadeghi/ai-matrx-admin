@@ -11059,6 +11059,12 @@
       "filename": "writeperf4_the_field_set_is_read_once_per_row_down.sql",
       "checksum": "faa8f0c7ba79f6453a6127a85cdf4549ca35ceb45a87cf6e5bee8ce5368ff7c6",
       "applied_at": "2026-09-22 09:33:14.786775+00"
+    },
+    "migrations/campaign/notionsync_a_a_notion_source_is_remembered_and_synced.sql": {
+      "source": "matrx-frontend",
+      "filename": "notionsync_a_a_notion_source_is_remembered_and_synced.sql",
+      "checksum": "c1cb564aea1002748337338087fcbf08a906c13bcd21c7fa992240884e5c4f99",
+      "applied_at": "2026-10-15 04:09:25.457309+00"
     }
   }
 }
