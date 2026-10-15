@@ -17,4 +17,14 @@ if (!existsSync(script)) {
   process.exit(2);
 }
 const r = spawnSync(process.execPath, [script, ...process.argv.slice(2)], { cwd: aidream, stdio: "inherit" });
-process.exit(r.status ?? 2);
+// The failed-publish classes (FAILING / VERIFY_FAILED / LATEST_BEHIND / NO_GITHEAD / UNBOUND /
+// GATE_BLOCKED / STUCK / STALE) used to be a paid GitHub workflow (publish-watch) that opened an
+// "NPM PUBLISH FAILING" issue nobody read; the same script runs here, locally, for free (2026-10-15).
+const health = join(aidream, "scripts", "check_ts_publish_health.mjs");
+let hs = 0;
+if (existsSync(health)) {
+  const h = spawnSync(process.execPath, [health], { cwd: aidream, stdio: "inherit" });
+  hs = h.status ?? 2;
+  if (hs !== 0) console.log("[npm-publish-lag] ERROR publish health (check_ts_publish_health.mjs) reports a failed or stalled publish; read the linked run, fix the cause, re-run `node scripts/check_ts_publish_health.mjs` in aidream until it prints OK.");
+}
+process.exit((r.status ?? 2) !== 0 ? (r.status ?? 2) : hs);
