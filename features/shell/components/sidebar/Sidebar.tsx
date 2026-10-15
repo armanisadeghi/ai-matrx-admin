@@ -20,6 +20,8 @@ import SidebarMenuSearch from "./SidebarMenuSearch";
 import AdminSidebarSection from "./admin-menu/AdminSidebarSection";
 import RouteMenuSlot from "./RouteMenuSlot";
 import RouteHeaderSlot from "./RouteHeaderSlot";
+import DomainPanelResizeHandle from "./DomainPanelResizeHandle";
+import { DOMAIN_PANEL_PREPAINT_SCRIPT } from "./domain-panel-width";
 import ShellIcon from "../ShellIcon";
 import SidebarWindowToggleIsland from "./SidebarWindowToggleIsland";
 import {
@@ -44,6 +46,8 @@ export default function Sidebar({ pathname, isAuthenticated }: SidebarProps) {
     // tooltip (the design-system title takeover), opening beside the rail —
     // it only appears while the label is hidden (collapsed rail).
     <aside className="shell-sidebar" data-title-side="right">
+      {/* Publishes the person's dragged panel width before first paint (no shift on load). */}
+      <script dangerouslySetInnerHTML={{ __html: DOMAIN_PANEL_PREPAINT_SCRIPT }} />
       {/* Brand Section — Route header override + default toggle fallback */}
       <div className="shell-sidebar-brand">
         {/* Route header override — rendered by client island, empty on Small/Medium routes */}
@@ -115,6 +119,7 @@ export default function Sidebar({ pathname, isAuthenticated }: SidebarProps) {
         <AdminSidebarSection />
         <SidebarWindowToggleIsland />
       </div>
+      <DomainPanelResizeHandle />
     </aside>
   );
 }

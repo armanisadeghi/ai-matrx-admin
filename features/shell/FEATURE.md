@@ -195,3 +195,8 @@ the chat starts closed, the person opens it by hand (header toggle, Cmd+\), and 
   fallback-hide rule in `styles/shell.css` covers both). A page had two
   `[data-page-header-portal]` nodes from first paint to hydration (~1-2s) — the
   real one plus the ghost's clone. Guard: `page-header-ssr.test.tsx` counts one.
+- **2026-10-15** — The domain panel (chats list beside the icon strip) is user-resizable: a drag edge on
+  the sidebar's right border (`DomainPanelResizeHandle`, double-click resets, arrows nudge; 192–480px)
+  stored in localStorage and published as `--shell-domain-panel-w-user` before first paint
+  (`domain-panel-width.ts`). The sidebar's right border now uses `hsl(var(--border))` — it was
+  `rgba(255,255,255,0.2)`, invisible in light mode — and runs the full height. Panel padding 8px → 4px.

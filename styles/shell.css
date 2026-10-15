@@ -84,7 +84,7 @@
   --shell-sidebar-bg: transparent;
   --shell-sidebar-bg-expanded: var(--background);
   --shell-sidebar-border: transparent;
-  --shell-sidebar-border-expanded: rgba(255, 255, 255, 0.2);
+  --shell-sidebar-border-expanded: hsl(var(--border));
 
   --shell-overlay-bg: rgba(0, 0, 0, 0.2);
 
@@ -126,7 +126,7 @@
   --shell-sidebar-bg: transparent;
   --shell-sidebar-bg-expanded: var(--background);
   --shell-sidebar-border: transparent;
-  --shell-sidebar-border-expanded: rgba(255, 255, 255, 0.06);
+  --shell-sidebar-border-expanded: hsl(var(--border));
 
   --shell-overlay-bg: rgba(0, 0, 0, 0.5);
 
@@ -1175,7 +1175,8 @@ button.shell-nav-flyout-item {
    strip keeps its collapsed look whatever the checkbox says. */
 @media (min-width: 1024px) {
   .shell-root[data-domain-panel] {
-    --shell-domain-panel-w: 15rem;
+    /* The person's dragged width (DomainPanelResizeHandle) rides on <html>. */
+    --shell-domain-panel-w: var(--shell-domain-panel-w-user, 15rem);
     --shell-sidebar-w-expanded: calc(var(--shell-sidebar-w) + var(--shell-domain-panel-w));
   }
 
@@ -1225,8 +1226,41 @@ button.shell-nav-flyout-item {
   .shell-root[data-domain-panel] .shell-sidebar-route-nav {
     grid-column: 2;
     grid-row: 1 / -1;
-    padding: 0 0.5rem 0.25rem;
+    padding: 0 0.25rem 0.25rem;
     border-left: 1px solid var(--shell-sidebar-border-expanded);
+  }
+
+  /* The drag edge on the sidebar's right border: only with the panel open. */
+  .shell-sidebar-resize {
+    display: none;
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 6px;
+    cursor: col-resize;
+    touch-action: none;
+    z-index: 2;
+  }
+
+  .shell-root[data-domain-panel] > #shell-sidebar-toggle:checked ~ .shell-sidebar .shell-sidebar-resize,
+  .shell-root[data-domain-panel] > #shell-sidebar-toggle:checked ~ * .shell-sidebar .shell-sidebar-resize {
+    display: block;
+  }
+
+  .shell-sidebar-resize:hover,
+  .shell-sidebar-resize[data-dragging] {
+    background: hsl(var(--border));
+  }
+
+  html[data-shell-resizing] {
+    cursor: col-resize;
+    user-select: none;
+  }
+
+  html[data-shell-resizing] .shell-root,
+  html[data-shell-resizing] .shell-sidebar {
+    transition: none !important;
   }
 
   /* The panel's first row names the domain, on the header's line. */
@@ -1237,7 +1271,7 @@ button.shell-nav-flyout-item {
     /* The brand row's height, which canvas chrome keeps when it zeroes
        --shell-header-h (the workspace header is the same 2.75rem). */
     height: 2.75rem;
-    padding: 0 0.375rem;
+    padding: 0 0.5rem;
     font-size: 0.875rem;
     font-weight: 600;
     color: var(--shell-nav-text-hover);
