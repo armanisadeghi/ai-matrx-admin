@@ -52,7 +52,7 @@ import {
 } from "@/lib/diagnostics/capturePythonClientError";
 import { noticeUsageRefusal } from "@/features/entitlements/usage-gate/usageGate";
 import { noticeNotAMemberRefusal } from "@/lib/organizations/organizationRefusal";
-import { resolveBaseUrl, resolveFilesBaseUrl } from "@/lib/python-client";
+import { resolveBaseUrl, resolveFilesBaseUrl, type RequestOptions } from "@/lib/python-client";
 import { getStore } from "@/lib/redux/store-singleton";
 import { selectAccessToken, selectFingerprintId } from "@/lib/redux/slices/userSlice";
 import { getCachedFingerprint } from "@/lib/services/fingerprint-service";
@@ -63,6 +63,11 @@ import type { RootState } from "@/lib/redux/store";
 export const SERVER_API_AUTH_READY_MS = 8000;
 /** Header the website has always sent for the guest fingerprint. */
 export const GUEST_FINGERPRINT_HEADER = "X-Guest-Fingerprint";
+/**
+ * A call that owns its own recovery path says so with this header; the client strips it before
+ * the wire and skips the Error Inspector capture (the old `captureErrors: false`).
+ */
+export const NO_ERROR_CAPTURE_HEADER = "x-matrx-client-capture";
 
 function currentState(): RootState | null {
   const store = getStore();
@@ -202,6 +207,10 @@ function noticeRefusals(err: MatrxApiError): void {
   }
 }
 
+function capturesErrors(options: CallOptions | undefined): boolean {
+  return !Object.keys(options?.headers ?? {}).some((h) => h.toLowerCase() === NO_ERROR_CAPTURE_HEADER);
+}
+
 async function surfaceError(
   err: unknown,
   op: OperationDescriptor,
@@ -210,7 +219,7 @@ async function surfaceError(
 ): Promise<never> {
   if (err instanceof MatrxApiError) noticeRefusals(err);
   const mapped = await toBackendApiError(err);
-  if (!cancelledByCaller(options?.signal)) {
+  if (!cancelledByCaller(options?.signal) && capturesErrors(options)) {
     let url = op.p;
     try {
       url = inner.url(op, args);
@@ -248,7 +257,29 @@ export function serverCallHeaders(
 async function prepare(op: OperationDescriptor, options?: CallOptions): Promise<CallOptions> {
   // Fetch-on-mount traffic races the active-organization bootstrap: wait for the answer, never guess.
   if (!options?.organizationId && hasSessionToken()) await waitForOrganizationAdmission();
-  return { ...options, headers: { ...serverCallHeaders(op, options), ...options?.headers } };
+  const callerHeaders = Object.fromEntries(
+    Object.entries(options?.headers ?? {}).filter(([h]) => h.toLowerCase() !== NO_ERROR_CAPTURE_HEADER),
+  );
+  return { ...options, headers: { ...serverCallHeaders(op, options), ...callerHeaders } };
+}
+
+/**
+ * The old `RequestOptions` of the website's request helpers, as the package's `CallOptions`.
+ * For wrapper modules whose own signature still takes `RequestOptions`.
+ */
+export function callOptionsFrom(opts: RequestOptions = {}): CallOptions {
+  const headers: Record<string, string> = {};
+  if (opts.idempotencyKey) headers["X-Idempotency-Key"] = opts.idempotencyKey;
+  if (opts.cloudFilesBypass) headers["X-Cloud-Files-Bypass"] = opts.cloudFilesBypass;
+  if (opts.guestFingerprint) headers[GUEST_FINGERPRINT_HEADER] = opts.guestFingerprint;
+  if (opts.captureErrors === false) headers[NO_ERROR_CAPTURE_HEADER] = "off";
+  return {
+    ...(opts.signal ? { signal: opts.signal } : {}),
+    ...(opts.organizationId ? { organizationId: opts.organizationId } : {}),
+    ...(opts.onUploadProgress ? { onUploadProgress: opts.onUploadProgress } : {}),
+    ...(opts.timeoutMs ? { totalTimeoutMs: opts.timeoutMs } : {}),
+    ...(Object.keys(headers).length > 0 ? { headers } : {}),
+  };
 }
 
 /** The website's client: `createApi` plus the identity and error policy above. */
