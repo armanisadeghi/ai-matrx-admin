@@ -44,9 +44,11 @@ export type AppConfigNotice = z.infer<typeof noticeSchema>;
  */
 export const appConfigV1Schema = z
   .object({
-    aidream_server_url: httpsUrlSchema,
-    matrx_files_url: httpsUrlSchema,
-    scraper_server_url: httpsUrlSchema,
+    // Optional: only rows whose app reads a server URL carry it (ai-matrx reads none; matrx-local,
+    // matrx-extend and the desktop rows do). A row that carries one keeps it required in the editor.
+    aidream_server_url: httpsUrlSchema.optional(),
+    matrx_files_url: httpsUrlSchema.optional(),
+    scraper_server_url: httpsUrlSchema.optional(),
     flags: z.record(z.string(), z.boolean()),
     notice: noticeSchema.nullable(),
     credential_maintenance: credentialMaintenanceMapSchema.optional(),
@@ -99,7 +101,10 @@ export const EMPTY_NOTICE_DRAFT: NoticeDraft = {
 
 /** The editor's working decomposition of a config payload. */
 export interface ConfigDraft {
+  /** The URL fields; a key absent from the row starts empty and stays absent unless filled in. */
   urls: Record<UrlKey, string>;
+  /** URL keys the loaded row carried: clearing one is a validation error, never a silent delete. */
+  carriedUrls: UrlKey[];
   /** Boolean flag entries — editable via switches. */
   flags: Record<string, boolean>;
   /**
@@ -127,8 +132,10 @@ export function configToDraft(config: unknown): ConfigDraft {
     matrx_files_url: "",
     scraper_server_url: "",
   };
+  const carriedUrls: UrlKey[] = [];
   for (const key of URL_KEYS) {
     const value = source[key];
+    if (key in source) carriedUrls.push(key);
     if (typeof value === "string") urls[key] = value;
   }
 
@@ -174,6 +181,7 @@ export function configToDraft(config: unknown): ConfigDraft {
 
   return {
     urls,
+    carriedUrls,
     flags,
     malformedFlags,
     notice,
@@ -181,6 +189,16 @@ export function configToDraft(config: unknown): ConfigDraft {
     malformedCredentialMaintenance,
     extras,
   };
+}
+
+/** URL keys to save: every filled one, plus a carried one even when cleared (so validation names it). */
+function urlEntries(draft: ConfigDraft): Partial<Record<UrlKey, string>> {
+  const out: Partial<Record<UrlKey, string>> = {};
+  for (const key of URL_KEYS) {
+    const value = draft.urls[key].trim();
+    if (value.length > 0 || draft.carriedUrls.includes(key)) out[key] = value;
+  }
+  return out;
 }
 
 /**
@@ -207,9 +225,7 @@ export function draftToConfig(draft: ConfigDraft): Record<string, unknown> {
 
   return {
     ...draft.extras,
-    aidream_server_url: draft.urls.aidream_server_url.trim(),
-    matrx_files_url: draft.urls.matrx_files_url.trim(),
-    scraper_server_url: draft.urls.scraper_server_url.trim(),
+    ...urlEntries(draft),
     flags: { ...draft.malformedFlags, ...draft.flags },
     notice,
     ...(Object.keys(credentialMaintenance).length > 0
