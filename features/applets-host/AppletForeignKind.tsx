@@ -9,7 +9,7 @@
 
 import { useEffect, useState, type ComponentType } from "react";
 import type { PlatformHost } from "@ai-matrx/applets/platform";
-import type { KindInstanceRenderProps } from "@ai-matrx/content-ir-react";
+import type { KindInstanceRenderProps } from "@ai-matrx/content-ir/react";
 import { RegionSkeleton } from "@ai-matrx/design-system/controls";
 import KindInstanceRender, { kindIsRoutable } from "@/features/content-ir/studio/components/KindInstanceRender";
 import { compileStoredComponent } from "@/lib/code-runtime/compile-stored";

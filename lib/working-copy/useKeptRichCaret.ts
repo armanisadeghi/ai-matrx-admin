@@ -18,7 +18,7 @@
  */
 
 import { useLayoutEffect, type RefObject } from "react";
-import type { RichEditorController } from "@ai-matrx/rich-editor/editor/RichEditor";
+import type { RichEditorController } from "@ai-matrx/rich-content/editor/editor/RichEditor";
 import { useAppStore } from "@/lib/redux/hooks";
 import { personIsTypingElsewhere } from "@/lib/dom/focus-guard";
 import { getKeptRichCaret, workingCopyRichCaretKept, type KeptRichCaret } from "./workingCopySlice";

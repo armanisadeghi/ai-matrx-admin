@@ -315,7 +315,7 @@ describe("ComponentRegistry — warm tier", () => {
 
   it("warm failure: compiled floor keeps serving, one captured error per refused attempt, retryable", async () => {
     // The scream is the host's `reportError` seam — the registry binds it to
-    // `captureError` (Error Inspector). Since @ai-matrx/content-ir-react
+    // `captureError` (Error Inspector). Since @ai-matrx/content-ir/react
     // 0.11.8 the package no longer ALSO prints its own console.error, so the
     // seam is the only place the failure lands and the only honest assertion.
     // Spy BEFORE construction: the registry captures the binding then.
@@ -340,7 +340,7 @@ describe("ComponentRegistry — warm tier", () => {
       // capture seam — two fetches refused, two reports, never a silent retry.
       expect(captured).toHaveBeenCalledTimes(2);
       // The scream is worded by the shared resolver
-      // (`@ai-matrx/content-ir-react`), which owns the warm lifecycle.
+      // (`@ai-matrx/content-ir/react`), which owns the warm lifecycle.
       for (const call of captured.mock.calls) {
         expect(String(call[0]?.message)).toContain(
           "component-resolver warm load failed",

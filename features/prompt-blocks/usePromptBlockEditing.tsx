@@ -9,7 +9,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode, type
 import { Boxes } from "lucide-react";
 import { Button } from "@ai-matrx/design-system/controls";
 import type { ContextMenuExtraSection } from "@ai-matrx/context-menu/engine";
-import type { RichEditorController } from "@ai-matrx/rich-editor/editor/RichEditor";
+import type { RichEditorController } from "@ai-matrx/rich-content/editor/editor/RichEditor";
 import { toast } from "@/lib/toast";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectAgentById } from "@ai-matrx/chat/agents/redux/agent-definition/selectors";

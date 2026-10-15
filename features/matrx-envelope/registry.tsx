@@ -5,7 +5,7 @@
  * package registry.
  *
  * The registry itself, THE PREFIX TIER, the side-effect card and the never-null
- * floor all live in `@ai-matrx/content-ir-react/directives` (0.11.0) — one
+ * floor all live in `@ai-matrx/content-ir/react-directives` (0.11.0) — one
  * implementation for every AI Matrx client. What stays here is only what is
  * genuinely this app's property: the live reference chip (which resolves an
  * entity out of Supabase and opens it in a window panel), the context-groom
@@ -53,7 +53,7 @@ import { useReferenceDoor } from "@/features/matrx-envelope/components/useRefere
 import {
   type DirectiveRenderer,
   registerDirectiveRenderer,
-} from "@ai-matrx/content-ir-react";
+} from "@ai-matrx/content-ir/react";
 import type { ReferenceItem } from "@ai-matrx/agents/envelope";
 import {
   coerceRefToStrings,

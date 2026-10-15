@@ -1,4 +1,4 @@
-import type { ComponentResolution } from "@ai-matrx/content-ir-react";
+import type { ComponentResolution } from "@ai-matrx/content-ir/react";
 import type { PlaygroundDemo } from "./types";
 
 /** A short, stable hash of the source — the compile cache's version key. */

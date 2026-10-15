@@ -470,6 +470,12 @@ function currentHolds(): Set<string> {
   return holdsCache.held;
 }
 
+/** True when a test run holds this preview host (`pnpm preview:ready` / `preview:hold`). Dev only. */
+export function isHeldPreviewHost(host: string | null): boolean {
+  if (process.env.NODE_ENV !== "development" || !host) return false;
+  return currentHolds().has(hostName(host));
+}
+
 /** The proxy's entry point: gate one signed-in request with process-wide state. */
 export async function walkCapGateForRequest(
   host: string | null,

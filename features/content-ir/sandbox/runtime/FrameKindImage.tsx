@@ -4,7 +4,7 @@
  * frame-safe `DefaultKindImage` — the whole image, sized from its dimensions,
  * with Expand and Share relayed to the host's canonical windows via runAction.
  */
-import { DefaultKindImage, type KindImageProps } from "@ai-matrx/content-ir-react/kind-kit";
+import { DefaultKindImage, type KindImageProps } from "@ai-matrx/content-ir/kind-kit";
 
 export function AppKindImage(props: KindImageProps) {
   return <DefaultKindImage {...props} />;

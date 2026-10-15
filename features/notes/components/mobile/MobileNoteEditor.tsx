@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useState, useEffect, useRef, useCallback, useMemo, useLayoutEffect } from "react";
-import { useTextareaFormatting } from "@ai-matrx/rich-editor/format/useTextareaFormatting";
-import { formatTargetWithin } from "@ai-matrx/rich-editor/format/format-target";
+import { useTextareaFormatting } from "@ai-matrx/rich-content/editor/format/useTextareaFormatting";
+import { formatTargetWithin } from "@ai-matrx/rich-content/editor/format/format-target";
 import { Eye } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { useNotesRedux } from "../../hooks/useNotesRedux";
@@ -16,7 +16,7 @@ import { toastErrorAlreadyCaptured } from "@/lib/toast";
 import { EditableContextMenu } from "@ai-matrx/context-menu/react";
 import { CONTEXT_MENU_HEADING_KEY } from "@ai-matrx/context-menu/engine";
 import { RichDocument } from "@ai-matrx/rich-content/rich-document/RichDocument";
-import { EditInPlace } from "@ai-matrx/rich-editor/in-place/EditInPlace";
+import { EditInPlace } from "@ai-matrx/rich-content/editor/in-place/EditInPlace";
 import { NOTE_EXCLUDED_ACTIONS } from "../../constants/noteExcludedActions";
 import { noteIdentityContentSource } from "../../richDocumentSource";
 import { usePreparedNoteContentSource } from "../../usePreparedNoteContentSource";
@@ -25,7 +25,7 @@ import { NOTES_EDITOR_CONTEXT_MENU_PROPS } from "@/features/notes/agent-context/
 import { useNotesSurfaceRuntime } from "@/features/notes/agent-context/useNotesSurfaceRuntime";
 import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
 import { useOptionalNotesInstanceId } from "../../context/NotesInstanceContext";
-import RichEditor, { type RichEditorController } from "@ai-matrx/rich-editor/editor/RichEditor";
+import RichEditor, { type RichEditorController } from "@ai-matrx/rich-content/editor/editor/RichEditor";
 import { isRichEditorMode, type EditorMode } from "../NoteEditorCore";
 import { useRememberNoteEditorMode } from "../../hooks/usePreferredDefaultEditorMode";
 import { updateNoteTags, updateNoteLabel } from "../../redux/slice";
@@ -43,7 +43,7 @@ import { NoteDraftRecoveryBanner } from "../NoteDraftRecoveryBanner";
 import { NoteWorkingCopyAlert } from "../NoteWorkingCopyAlert";
 import { authoredBy } from "@ai-matrx/rich-content/levels/prose/remote-image-policy";
 import { cn } from "@/lib/utils";
-import { insertAtRichCaret } from "@ai-matrx/rich-editor/editor/caretInsert";
+import { insertAtRichCaret } from "@ai-matrx/rich-content/editor/editor/caretInsert";
 import { downloadFile } from "@ai-matrx/kit/download";
 
 /**

@@ -4,7 +4,7 @@
  * WHAT AN IN-CONTENT DIRECTIVE WILL DO, SAID BEFORE IT DOES IT — and the
  * records it names, by their live names, as ways in.
  *
- * The host half of `@ai-matrx/content-ir-react` 0.12.0's `renderRecord` seam
+ * The host half of `@ai-matrx/content-ir/react` 0.12.0's `renderRecord` seam
  * and of the `ask` dialog. The package knows an update/delete item points at
  * record `{noun, id}`; only the host can say what that record is CALLED and how
  * to open it. Both answers already exist, so neither is written here:
@@ -40,7 +40,7 @@ import {
   type DirectiveHost,
   type DirectiveRecordProps,
   type DirectiveRecordRef,
-} from "@ai-matrx/content-ir-react";
+} from "@ai-matrx/content-ir/react";
 import type { ConfirmOptions } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import { cn } from "@/lib/utils";
 import { useReferenceDoor } from "@/features/matrx-envelope/components/useReferenceDoor";

@@ -45,7 +45,7 @@ jest.mock("@/features/matrx-envelope/directiveRecordRow", () => ({
 }));
 
 import { decodeDirective } from "@ai-matrx/content-ir";
-import type { DirectiveAskRequest } from "@ai-matrx/content-ir-react";
+import type { DirectiveAskRequest } from "@ai-matrx/content-ir/react";
 import { matrxDirectiveHost } from "@/features/matrx-envelope/directiveHost";
 
 const NOTE_ID = "4127fbc8-0000-4000-8000-000000000002";

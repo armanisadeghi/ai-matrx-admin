@@ -51,7 +51,7 @@ import {
 import type { SandboxBodyPayload } from "@/features/content-ir/sandbox/transform/transform-kind-body";
 import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
 import { formatDurationMs } from "@ai-matrx/kit/format";
-import type { ComponentResolution } from "@ai-matrx/content-ir-react";
+import type { ComponentResolution } from "@ai-matrx/content-ir/react";
 import type { RunKindAction } from "../actions/useKindActionRunner";
 import type {
     KindComponentUiOptions,

@@ -45,7 +45,7 @@ import { selectOrganizationId } from "@/lib/redux/slices/appContextSlice";
 import type { RootState } from "@/lib/redux/store";
 import { useScopedKnobs } from "@/lib/scoped-config/useScopedKnobs";
 import type { ScopedKnob } from "@/lib/scoped-config/types";
-import type { ComponentResolution } from "@ai-matrx/content-ir-react";
+import type { ComponentResolution } from "@ai-matrx/content-ir/react";
 import { MAX_INBOUND_BYTES } from "../../sandbox/protocol";
 
 export const KIND_SANDBOX_KNOB = {

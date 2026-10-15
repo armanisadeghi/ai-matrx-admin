@@ -57,7 +57,7 @@ jest.mock("@/features/matrx-envelope/directiveRecordRow", () => ({
 }));
 
 import { decodeDirective } from "@ai-matrx/content-ir";
-import type { DirectiveAskRequest } from "@ai-matrx/content-ir-react";
+import type { DirectiveAskRequest } from "@ai-matrx/content-ir/react";
 import { askDirective, matrxDirectiveHost } from "@/features/matrx-envelope/directiveHost";
 import { wordServerFieldNames } from "@/features/matrx-envelope/directiveFailureWords";
 

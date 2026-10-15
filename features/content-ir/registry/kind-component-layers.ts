@@ -4,7 +4,7 @@
  * The lifecycle (signed out → no read; user / lane change clears then re-reads;
  * late reads discarded; bounded outage with one error per outage; coalesced
  * forced syncs) and THE AUDIENCE PREDICATE live in ONE place —
- * `@ai-matrx/content-ir-react` (`KindComponentOverlayLoader`,
+ * `@ai-matrx/content-ir/react` (`KindComponentOverlayLoader`,
  * `readViewerLayerRows`). This file injects only what is this app's:
  *
  *  - the viewer id (one lazy `onAuthStateChange`),
@@ -27,7 +27,7 @@ import {
   readViewerLayerRows as readViewerLayerRowsVia,
   type KindComponentLayerRow,
   type LayerDbRow,
-} from "@ai-matrx/content-ir-react";
+} from "@ai-matrx/content-ir/react";
 import { readAllRows } from "@ai-matrx/data/db";
 import { getStoreSingleton } from "@/lib/redux/store-singleton";
 

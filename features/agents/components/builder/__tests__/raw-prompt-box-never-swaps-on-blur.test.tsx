@@ -57,9 +57,9 @@ jest.mock("@/features/agents/components/builder/message-builders/AddBlockButton"
   BlockList: () => null,
   offeredBlockTypes: () => [],
 }));
-jest.mock("@ai-matrx/rich-editor/format/PromptInsertMenu", () => ({ PromptInsertMenu: () => null }));
-jest.mock("@ai-matrx/rich-editor/format/PromptFixReview", () => ({ PromptFixReview: () => null }));
-jest.mock("@ai-matrx/rich-editor/format/useTextareaFormatting", () => ({ useTextareaFormatting: () => undefined }));
+jest.mock("@ai-matrx/rich-content/editor/format/PromptInsertMenu", () => ({ PromptInsertMenu: () => null }));
+jest.mock("@ai-matrx/rich-content/editor/format/PromptFixReview", () => ({ PromptFixReview: () => null }));
+jest.mock("@ai-matrx/rich-content/editor/format/useTextareaFormatting", () => ({ useTextareaFormatting: () => undefined }));
 jest.mock("@ai-matrx/chat/agents/message-flags/MessageFlagToggles", () => ({ MessageFlagToggles: () => null }));
 jest.mock("@/features/agents/message-flags/useMessageFlags", () => ({
   useMessageFlags: () => ({ flags: [], states: {}, onToggle: () => undefined }),

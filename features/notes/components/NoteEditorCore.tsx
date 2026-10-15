@@ -28,8 +28,8 @@
 // - Conflict resolution UI
 
 import React, { useRef, useCallback, useEffect, useLayoutEffect, useState } from "react";
-import { useTextareaFormatting } from "@ai-matrx/rich-editor/format/useTextareaFormatting";
-import { createMarkdownImageUpload } from "@ai-matrx/rich-editor/format/markdown-image-upload";
+import { useTextareaFormatting } from "@ai-matrx/rich-content/editor/format/useTextareaFormatting";
+import { createMarkdownImageUpload } from "@ai-matrx/rich-content/editor/format/markdown-image-upload";
 import { useFileUpload } from "@/features/files/handler/hooks/useFileUpload";
 import { fileUrls } from "@/features/files/handler/utils/python-base";
 import { Textarea } from "@/components/ui/textarea";
@@ -52,11 +52,11 @@ import {
   NOTE_READONLY_SAVE_MESSAGE,
 } from "../utils/writeErrors";
 import { cn } from "@/lib/utils";
-import { EditInPlace } from "@ai-matrx/rich-editor/in-place/EditInPlace";
+import { EditInPlace } from "@ai-matrx/rich-content/editor/in-place/EditInPlace";
 import RichEditor, {
   type RichEditorController,
   type RichEditorView,
-} from "@ai-matrx/rich-editor/editor/RichEditor";
+} from "@ai-matrx/rich-content/editor/editor/RichEditor";
 import { noteIdentityContentSource } from "../richDocumentSource";
 import type { ImagePolicyDeclaration } from "@ai-matrx/rich-content/levels/prose/remote-image-policy";
 import { NOTE_EXCLUDED_ACTIONS } from "../constants/noteExcludedActions";

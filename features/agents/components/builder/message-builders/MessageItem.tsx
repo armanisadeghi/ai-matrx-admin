@@ -69,11 +69,11 @@ import type {
 import { useAgentUndoRedo } from "@/features/agents/hooks/useAgentUndoRedo";
 import { useAgentBuilderSurfaceScope } from "@/features/agents/hooks/useAgentBuilderSurfaceScope";
 import { RichContent } from "@ai-matrx/rich-content/levels/RichContent";
-import { useTextareaFormatting } from "@ai-matrx/rich-editor/format/useTextareaFormatting";
-import { PromptInsertMenu } from "@ai-matrx/rich-editor/format/PromptInsertMenu";
-import { PromptFixReview } from "@ai-matrx/rich-editor/format/PromptFixReview";
-import type { PromptInsert } from "@ai-matrx/rich-editor/core/prompt-inserts";
-import type { RichEditorController } from "@ai-matrx/rich-editor/editor/RichEditor";
+import { useTextareaFormatting } from "@ai-matrx/rich-content/editor/format/useTextareaFormatting";
+import { PromptInsertMenu } from "@ai-matrx/rich-content/editor/format/PromptInsertMenu";
+import { PromptFixReview } from "@ai-matrx/rich-content/editor/format/PromptFixReview";
+import type { PromptInsert } from "@ai-matrx/rich-content/editor/core/prompt-inserts";
+import type { RichEditorController } from "@ai-matrx/rich-content/editor/editor/RichEditor";
 import {
   PromptWriteBox,
   insertPromptText,

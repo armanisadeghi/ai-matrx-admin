@@ -10,11 +10,11 @@
 
 import { useMemo, useEffect } from "react";
 import { useSelectionZone } from "@ai-matrx/rich-content/selection-toolbar/selection-zones";
-import { formatCommandForKey, keyNameOf } from "@ai-matrx/rich-editor/core/markdown-format";
-import { applySourceEdit } from "@ai-matrx/rich-editor/core/source-format";
-import { ensureFormatActions } from "@ai-matrx/rich-editor/format/format-actions";
-import { isApplePlatform } from "@ai-matrx/rich-editor/format/useTextareaFormatting";
-import { markdownFormatHost, registerFormatElement, textFormatTarget } from "@ai-matrx/rich-editor/format/format-target";
+import { formatCommandForKey, keyNameOf } from "@ai-matrx/rich-content/editor/core/markdown-format";
+import { applySourceEdit } from "@ai-matrx/rich-content/editor/core/source-format";
+import { ensureFormatActions } from "@ai-matrx/rich-content/editor/format/format-actions";
+import { isApplePlatform } from "@ai-matrx/rich-content/editor/format/useTextareaFormatting";
+import { markdownFormatHost, registerFormatElement, textFormatTarget } from "@ai-matrx/rich-content/editor/format/format-target";
 
 export interface MergeFieldFormatApi {
   getValue: () => string;

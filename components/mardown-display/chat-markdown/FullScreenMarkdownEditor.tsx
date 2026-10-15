@@ -29,11 +29,11 @@ import LinesViewer, {
 } from "./analyzer/analyzer-options/lines-viewer";
 import SectionViewerV2 from "./analyzer/analyzer-options/section-viewer-V2";
 import { RichContent } from "@ai-matrx/rich-content/levels/RichContent";
-import RichEditor, { type RichEditorController } from "@ai-matrx/rich-editor/editor/RichEditor";
+import RichEditor, { type RichEditorController } from "@ai-matrx/rich-content/editor/editor/RichEditor";
 import { MatrxSplit } from "@/components/matrx/MatrxSplit";
-import { useTextareaFormatting } from "@ai-matrx/rich-editor/format/useTextareaFormatting";
-import { FormatButtons } from "@ai-matrx/rich-editor/format/FormatButtons";
-import { formatTargetWithin } from "@ai-matrx/rich-editor/format/format-target";
+import { useTextareaFormatting } from "@ai-matrx/rich-content/editor/format/useTextareaFormatting";
+import { FormatButtons } from "@ai-matrx/rich-content/editor/format/FormatButtons";
+import { formatTargetWithin } from "@ai-matrx/rich-content/editor/format/format-target";
 import SuspenseLoader from "@/components/loaders/SuspenseLoader";
 import { selectIsSuperAdmin } from "@/lib/redux/slices/userSlice";
 import { useIsMobile } from "@ai-matrx/kit/media-query";

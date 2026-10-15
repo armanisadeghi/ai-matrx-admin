@@ -1,7 +1,7 @@
 /**
  * A DIRECTIVE CARD SURVIVES A RELOAD — the host half (reviewer defect 5, 2026-10-02).
  *
- * The package (`@ai-matrx/content-ir-react` 0.14.0) reads `applyState` on mount
+ * The package (`@ai-matrx/content-ir/react` 0.14.0) reads `applyState` on mount
  * and renders an applied block as its tally. This pins the HOST seam: it asks
  * the server's ledger (never computes the key), in the SAME namespace `confirm`
  * applies in — no conversation, the person's — batches every card on a page into

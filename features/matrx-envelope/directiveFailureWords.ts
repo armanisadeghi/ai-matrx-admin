@@ -1,6 +1,6 @@
 /**
  * THE APP'S PLAIN WORDS FOR A FAILED ACTION CARD — the `explainFailure` seam of
- * `@ai-matrx/content-ir-react` (0.17.0).
+ * `@ai-matrx/content-ir/react` (0.17.0).
  *
  * The package already shows verb-aware defaults with the raw text behind
  * "Details". This names the failures the app recognises, so the sentence says
@@ -20,7 +20,7 @@ import {
   directiveFieldLabel,
   type DirectiveFailure,
   type DirectiveFailureWords,
-} from "@ai-matrx/content-ir-react";
+} from "@ai-matrx/content-ir/react";
 import {
   CATALOG_ALIASES,
   CATALOG_NOUNS,

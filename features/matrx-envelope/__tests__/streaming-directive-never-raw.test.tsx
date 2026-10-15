@@ -8,7 +8,7 @@
  * could only honour a COMPLETE shell, so for the whole stream the person
  * watched the JSON grow in a `<pre>` and snap into the card at the last byte.
  *
- * The fix lives in `@ai-matrx/content-ir-react` 0.11.11 (THE PROVISIONAL
+ * The fix lives in `@ai-matrx/content-ir/react` 0.11.11 (THE PROVISIONAL
  * TIER). What only this repo can prove is that the production dispatch
  * (`resolveBlockDispatch("matrx")` → `MatrxEnvelopeBlock`) hands the package
  * the stream state — so mid-stream is "Writing…", and a document that never

@@ -9,9 +9,9 @@
 import Link from "next/link";
 import { ExternalLink, PencilLine, Loader2 } from "lucide-react";
 
-import { DirectiveFallbackCard } from "@ai-matrx/content-ir-react";
+import { DirectiveFallbackCard } from "@ai-matrx/content-ir/react";
 import { marketingRoutes } from "@/features/marketing/lib/routes";
-import type { DirectiveRendererProps } from "@ai-matrx/content-ir-react";
+import type { DirectiveRendererProps } from "@ai-matrx/content-ir/react";
 
 import { parsePlanNodePatchItems } from "./parseDirectiveItems";
 import { useResolvePatchedNode } from "./useResolvePlanTree";

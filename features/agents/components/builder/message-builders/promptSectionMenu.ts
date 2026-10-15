@@ -1,7 +1,7 @@
-import type { RichEditorController } from "@ai-matrx/rich-editor/editor/RichEditor";
+import type { RichEditorController } from "@ai-matrx/rich-content/editor/editor/RichEditor";
 import { wrapInSection, wrapSelectionInText } from "@ai-matrx/chat/agents/utils/variable-utils";
 import type { ContextMenuExtraSection } from "@ai-matrx/context-menu/engine";
-import { sectionMenuSection } from "@ai-matrx/rich-editor/core/section-menu";
+import { sectionMenuSection } from "@ai-matrx/rich-content/editor/core/section-menu";
 
 /**
  * Right-click on a selected piece of a prompt textarea: "Only include when filled / empty" over the

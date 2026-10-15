@@ -4,7 +4,7 @@
  * The resolver itself — the (kind, platform, role) tiers, the compiled floor,
  * the DB override, the granular per-kind repaint counters, the cold-fetch
  * dedupe, the warm/refresh lifecycle with loud recovery — now lives in
- * `@ai-matrx/content-ir-react` (`ComponentResolver`), because every UI that
+ * `@ai-matrx/content-ir/react` (`ComponentResolver`), because every UI that
  * renders a kind has to make exactly those decisions and a second copy of them
  * is a guaranteed divergence.
  *
@@ -32,7 +32,7 @@ import {
   type ComponentResolution,
   type ComponentRole,
   type KindComponentRow,
-} from "@ai-matrx/content-ir-react";
+} from "@ai-matrx/content-ir/react";
 import { captureError } from "@/lib/diagnostics/errorCaptureStore";
 import { isTableKind } from "@ai-matrx/records";
 import {
@@ -139,7 +139,7 @@ function reportUnroutableRole(
     `is IGNORED. It is deliberately NOT treated as an "output" component: an unknown role ` +
     `coerced to "output" collides with the kind's real output row under one resolver key, and ` +
     `fetch order alone would decide which one renders. To make this role live, widen ` +
-    `ComponentRole in @ai-matrx/content-ir-react AND implement its dispatch.`;
+    `ComponentRole in @ai-matrx/content-ir/react AND implement its dispatch.`;
   console.error(message);
   try {
     captureError({

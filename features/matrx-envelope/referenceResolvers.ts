@@ -24,7 +24,7 @@
 
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { useEffect, useRef, useState } from "react";
-import { noteRecordChanged, recordRevision, useRecordRevision } from "@ai-matrx/content-ir-react";
+import { noteRecordChanged, recordRevision, useRecordRevision } from "@ai-matrx/content-ir/react";
 
 import { scopesService } from "@/features/scopes/service/scopesService";
 import { supabase } from "@/utils/supabase/client";

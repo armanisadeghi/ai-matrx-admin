@@ -4,7 +4,7 @@
  * The Matrix binding of `KindInstanceRender` — render ONE canonical kind
  * instance through the REAL production path, never a lookalike.
  *
- * The component itself lives in `@ai-matrx/content-ir-react`: the routing
+ * The component itself lives in `@ai-matrx/content-ir/react`: the routing
  * three-state lifecycle ("checking" is not "missing"), the eager targeted
  * resolve, the warm-then-refresh order, the unroutable fallback rule, and the
  * bare/card variants. Read the semantics there. This module supplies our host
@@ -17,7 +17,7 @@ import {
   kindIsRoutable as kindIsRoutableShared,
   isRecordValue as isRecordValueShared,
   type KindInstanceRenderProps,
-} from "@ai-matrx/content-ir-react";
+} from "@ai-matrx/content-ir/react";
 import { correctKindValue } from "@ai-matrx/rich-content/kinds/registry/kind-correctors";
 import { KindCorrectionsNotice } from "@/features/content-ir/react/db-component/KindCorrectionsNotice";
 import {

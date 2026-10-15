@@ -9,7 +9,7 @@
 // the refs and a minimal agent scope live here.
 
 import { useCallback, useRef, useState, type ReactNode } from "react";
-import type { RichEditorController } from "@ai-matrx/rich-editor/editor/RichEditor";
+import type { RichEditorController } from "@ai-matrx/rich-content/editor/editor/RichEditor";
 import type { ApplicationScope } from "@ai-matrx/chat/agents/types/scope.types";
 import { TaskDescriptionField, type TaskDescriptionMode } from "./TaskDescriptionField";
 

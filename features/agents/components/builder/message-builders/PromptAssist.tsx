@@ -20,14 +20,14 @@
 import { useMemo, useRef, useState, type RefObject } from "react";
 import { cn } from "@/lib/utils";
 import { EditableContextMenu } from "@ai-matrx/context-menu/react";
-import { sectionMenuSection, wrapEditorSelection } from "@ai-matrx/rich-editor/core/section-menu";
+import { sectionMenuSection, wrapEditorSelection } from "@ai-matrx/rich-content/editor/core/section-menu";
 import type { ContextMenuExtraSection } from "@ai-matrx/context-menu/engine";
-import RichEditor, { type RichEditorController } from "@ai-matrx/rich-editor/editor/RichEditor";
-import type { PromptBlockHost } from "@ai-matrx/rich-editor/editor/RichEditorContext";
-import { FormatButtons } from "@ai-matrx/rich-editor/format/FormatButtons";
-import { textareaFormatTarget } from "@ai-matrx/rich-editor/format/format-target";
-import { insertIntoText, type PromptInsert } from "@ai-matrx/rich-editor/core/prompt-inserts";
-import type { PromptInsertKind, PromptInsertContextItem } from "@ai-matrx/rich-editor/format/PromptInsertMenu";
+import RichEditor, { type RichEditorController } from "@ai-matrx/rich-content/editor/editor/RichEditor";
+import type { PromptBlockHost } from "@ai-matrx/rich-content/editor/editor/RichEditorContext";
+import { FormatButtons } from "@ai-matrx/rich-content/editor/format/FormatButtons";
+import { textareaFormatTarget } from "@ai-matrx/rich-content/editor/format/format-target";
+import { insertIntoText, type PromptInsert } from "@ai-matrx/rich-content/editor/core/prompt-inserts";
+import type { PromptInsertKind, PromptInsertContextItem } from "@ai-matrx/rich-content/editor/format/PromptInsertMenu";
 import { kindSchemaToJsonSchema } from "@ai-matrx/content-ir";
 import {
   catalogResolver,

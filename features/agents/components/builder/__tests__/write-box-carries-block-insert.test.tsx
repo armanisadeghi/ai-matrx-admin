@@ -20,11 +20,11 @@ jest.mock("@ai-matrx/context-menu/react", () => ({
     return <div>{props.children as React.ReactNode}</div>;
   },
 }));
-jest.mock("@ai-matrx/rich-editor/editor/RichEditor", () => ({ __esModule: true, default: () => <div /> }));
-jest.mock("@ai-matrx/rich-editor/core/section-menu", () => ({ sectionMenuSection: () => null, wrapEditorSelection: () => undefined }));
-jest.mock("@ai-matrx/rich-editor/format/FormatButtons", () => ({ FormatButtons: () => null }));
-jest.mock("@ai-matrx/rich-editor/format/format-target", () => ({ textareaFormatTarget: () => null }));
-jest.mock("@ai-matrx/rich-editor/core/prompt-inserts", () => ({ insertIntoText: () => ({ text: "", caret: 0 }) }));
+jest.mock("@ai-matrx/rich-content/editor/editor/RichEditor", () => ({ __esModule: true, default: () => <div /> }));
+jest.mock("@ai-matrx/rich-content/editor/core/section-menu", () => ({ sectionMenuSection: () => null, wrapEditorSelection: () => undefined }));
+jest.mock("@ai-matrx/rich-content/editor/format/FormatButtons", () => ({ FormatButtons: () => null }));
+jest.mock("@ai-matrx/rich-content/editor/format/format-target", () => ({ textareaFormatTarget: () => null }));
+jest.mock("@ai-matrx/rich-content/editor/core/prompt-inserts", () => ({ insertIntoText: () => ({ text: "", caret: 0 }) }));
 jest.mock("@ai-matrx/content-ir", () => ({ kindSchemaToJsonSchema: () => null }));
 jest.mock("@/features/content-ir/registry/kind-catalog", () => ({ catalogResolver: () => null, listAllKinds: async () => [], listCompiledKinds: () => [] }));
 jest.mock("@/lib/redux/hooks", () => ({ useAppSelector: () => [] }));

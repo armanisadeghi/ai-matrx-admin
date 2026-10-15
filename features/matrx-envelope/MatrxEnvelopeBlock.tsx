@@ -6,7 +6,7 @@
  *
  * SINCE 2026-09-08 THIS IS A THIN HOST WRAPPER. The pipeline it used to carry
  * — decode → registered renderer → side-effect card → the never-null floor —
- * is `DirectiveRender` from `@ai-matrx/content-ir-react/directives`, so every
+ * is `DirectiveRender` from `@ai-matrx/content-ir/react-directives`, so every
  * AI Matrx client (this app, the dashboard, Workflow Studio, the extension)
  * draws a directive through ONE implementation instead of four that drift.
  *
@@ -30,7 +30,7 @@ import React from "react";
 import {
   DirectiveHostProvider,
   DirectiveRender,
-} from "@ai-matrx/content-ir-react";
+} from "@ai-matrx/content-ir/react";
 
 import { matrxDirectiveHost } from "@/features/matrx-envelope/directiveHost";
 import { DirectiveFenceProvider } from "@/features/matrx-envelope/directiveFence";

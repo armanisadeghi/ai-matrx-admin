@@ -8,8 +8,8 @@
  * of Link-based navigation, since this is a contextual toolbar, not a nav bar.
  */
 
-import { FormatButtons } from "@ai-matrx/rich-editor/format/FormatButtons";
-import type { FormatTarget } from "@ai-matrx/rich-editor/format/format-target";
+import { FormatButtons } from "@ai-matrx/rich-content/editor/format/FormatButtons";
+import type { FormatTarget } from "@ai-matrx/rich-content/editor/format/format-target";
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import type { LucideIcon } from "lucide-react";
 import type { ContentTransferController } from "@ai-matrx/alchemy/react/workspace";

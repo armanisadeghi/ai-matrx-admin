@@ -31,8 +31,8 @@ jest.mock("@/lib/diagnostics/errorCaptureStore", () => ({
 }));
 
 const seen: unknown[] = [];
-jest.mock("@ai-matrx/content-ir-react", () => {
-  const actual = jest.requireActual("@ai-matrx/content-ir-react");
+jest.mock("@ai-matrx/content-ir/react", () => {
+  const actual = jest.requireActual("@ai-matrx/content-ir/react");
   return {
     ...actual,
     KindInstanceRender: (props: { value: unknown }) => {

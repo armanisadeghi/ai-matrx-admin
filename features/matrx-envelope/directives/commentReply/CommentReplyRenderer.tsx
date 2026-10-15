@@ -32,7 +32,7 @@ import { foldHead } from "@/features/rich-document/annotations/foldText";
 import type { AnnotationAuthor, AnnotationItem, AnnotationSource } from "@/features/rich-document/annotations/types";
 import { useStoreRead } from "@/lib/redux/store-reads/useStoreRead";
 import { useSelector } from "react-redux";
-import type { DirectiveRendererProps } from "@ai-matrx/content-ir-react";
+import type { DirectiveRendererProps } from "@ai-matrx/content-ir/react";
 import { useOptionalCanvas } from "@ai-matrx/canvas/react";
 import { selectConversationMessages } from "@ai-matrx/chat/agents/redux/execution-system/messages/messages.selectors";
 import type { MessageRecord } from "@ai-matrx/chat/agents/redux/execution-system/messages/messages.slice";

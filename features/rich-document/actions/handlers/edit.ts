@@ -31,7 +31,7 @@ import {
 import { openStructuredRawViewer } from "@ai-matrx/chat/agents/components/messages-display/message-options/openAssistantMessageEditor";
 import { acknowledgedPreparedSource, prepareContentEdit, savePreparedContentEdit } from "./preparedEdit";
 import { updateMessageRecord } from "@ai-matrx/chat/agents/redux/execution-system/messages/messages.slice";
-import { openEditInPlaceFromLastInteraction } from "@ai-matrx/rich-editor/in-place/EditInPlace";
+import { openEditInPlaceFromLastInteraction } from "@ai-matrx/rich-content/editor/in-place/EditInPlace";
 
 registerAction({
   id: "edit",

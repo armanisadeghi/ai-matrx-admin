@@ -13,9 +13,9 @@
 import { useRef, type ReactNode, type Ref, type RefObject } from "react";
 import { PenLine, SplitSquareHorizontal, Type } from "lucide-react";
 import { SegmentedControl } from "@ai-matrx/design-system/controls";
-import RichEditor, { type RichEditorController } from "@ai-matrx/rich-editor/editor/RichEditor";
-import { FormatButtons } from "@ai-matrx/rich-editor/format/FormatButtons";
-import { formatTargetWithin } from "@ai-matrx/rich-editor/format/format-target";
+import RichEditor, { type RichEditorController } from "@ai-matrx/rich-content/editor/editor/RichEditor";
+import { FormatButtons } from "@ai-matrx/rich-content/editor/format/FormatButtons";
+import { formatTargetWithin } from "@ai-matrx/rich-content/editor/format/format-target";
 import { useMeasure } from "@ai-matrx/kit/hooks";
 import type { ApplicationScope } from "@ai-matrx/chat/agents/types/scope.types";
 import { MatrxSplit } from "@/components/matrx/MatrxSplit";

@@ -2,7 +2,7 @@
  * THE PREFIX TIER, as THIS HOST wires it.
  *
  * The registry, the resolution order and the side-effect tier all live in
- * `@ai-matrx/content-ir-react` (0.11.0) and are proven by the package's own
+ * `@ai-matrx/content-ir/react` (0.11.0) and are proven by the package's own
  * tests. What is still this repo's to prove is what `features/matrx-envelope/
  * registry.tsx` REGISTERS into that registry — the app-specific renderers, and
  * the deliberate ABSENCE of a local side-effect registration now that the
@@ -16,7 +16,7 @@
 import {
   getDirectiveRenderer,
   registerDirectiveRenderer,
-} from "@ai-matrx/content-ir-react";
+} from "@ai-matrx/content-ir/react";
 
 // Side-effect import: this is the module under test — its registrations run at
 // import time, exactly as they do when MatrxEnvelopeBlock pulls it in.
