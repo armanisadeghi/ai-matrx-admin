@@ -157,10 +157,7 @@ function Grounding({ item }: { item: FocusItem }) {
   const copies = item.folded ?? [];
   if (copies.length) body.push({ section: "Also found as", items: copies.map((c) => (c.kind === "web" ? (c.title ?? c.value) : c.value)), limit: 6 });
   const evidence = [...new Set([...item.evidenceUrls, ...copies.flatMap((c) => c.evidenceUrls)])].slice(0, 6);
-  if (evidence.length) {
-    body.push({ section: "Evidence" });
-    for (const u of evidence) body.push({ fact: websiteHost(u), href: outboundHref(u) });
-  }
+  if (evidence.length) body.push({ section: "Evidence", links: evidence.map((u) => ({ text: websiteHost(u), href: outboundHref(u) })) });
   if (!body.length) return null;
   return (
     <PeekHoverCard
