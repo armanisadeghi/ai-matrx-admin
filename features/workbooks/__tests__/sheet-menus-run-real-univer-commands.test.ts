@@ -25,7 +25,7 @@ import { flattenMenus, type EditorMenuEntry } from "@/components/editor-chrome/e
 
 // "Custom number format" asks in our own dialog; the test answers it.
 jest.mock("@/components/dialogs/value-prompts/valuePromptsOpener", () => ({
-  promptForValues: async () => ({ pattern: "0.0%" }),
+  promptForValues: async () => ({ pattern: "0.0%", emoji: "\u{1F600}" }),
 }));
 
 type Call = { kind: string; args: unknown[] };
