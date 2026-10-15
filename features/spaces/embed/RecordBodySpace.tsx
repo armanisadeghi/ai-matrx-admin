@@ -21,16 +21,17 @@
 import { ErrorNotice } from "@ai-matrx/design-system";
 import { RegionSkeleton } from "@ai-matrx/design-system/controls";
 import dynamic from "next/dynamic";
-import { Component, useEffect, useState, type ErrorInfo, type ReactNode } from "react";
+import { Component, useCallback, useEffect, useState, type ErrorInfo, type ReactNode } from "react";
 
 import { bodyFieldOf, recordNameIn } from "@ai-matrx/records-ui";
-import { useFields, useTable } from "@ai-matrx/records/react";
+import { useFields, useRecordsClient, useTable } from "@ai-matrx/records/react";
 
 import { captureReactRenderError } from "@/lib/diagnostics/captureReactError";
 import { captureError } from "@/lib/diagnostics/errorCaptureStore";
 import { createClient } from "@/utils/supabase/client";
 
 import { primeOwningRow } from "../data/owning-row";
+import { ReleaseProvider, reservedHeight } from "./row-page-slot";
 import { ensureRowPage, findRowPageId, saveRowPageAsTemplate, type RowPageDb } from "./row-page";
 
 const RecordBodySpaceImpl = dynamic(() => import("./RecordBodySpaceImpl"), {
@@ -103,7 +104,7 @@ type Ensured = { state: "idle" } | { state: "found"; spaceId: string } | { state
 
 /** One start per row per load, however often the record page re-renders while it runs. */
 const starting = new Map<string, Promise<string>>();
-function startRowPage(args: { organizationId: string; tableId: string; recordId: string; title: string; notes: string | null }): Promise<string> {
+function startRowPage(args: Parameters<typeof ensureRowPage>[1]): Promise<string> {
   const kept = starting.get(args.recordId);
   if (kept) return kept;
   const run = ensureRowPage(createClient() as unknown as RowPageDb, args).then(
@@ -137,6 +138,7 @@ function startRowPage(args: { organizationId: string; tableId: string; recordId:
 function useEnsuredRowPage(args: { body: RowBodyState; readOnly: boolean; organizationId: string | null | undefined; tableId: string; recordId: string; record: unknown }): Ensured {
   const fields = useFields(args.tableId);
   const table = useTable(args.tableId);
+  const client = useRecordsClient();
   const [answer, setAnswer] = useState<{ recordId: string; state: Ensured } | null>(null);
   const document = (args.record as { document?: Record<string, unknown> } | null | undefined)?.document ?? null;
   const ready = args.body.state === "none" && !args.readOnly && !!args.organizationId && !!fields.data && !!table.data && !!document;
@@ -148,16 +150,57 @@ function useEnsuredRowPage(args: { body: RowBodyState; readOnly: boolean; organi
   useEffect(() => {
     if (!ready || !organizationId) return;
     let live = true;
-    startRowPage({ organizationId, tableId, recordId, title, notes: notesText }).then(
+    const applyValues = async (patch: Record<string, unknown>) => {
+      const written = await client.recordUpdate({ record_id: recordId as never, patch });
+      // The page exists by now: a refused preset is reported, never a reason to say the page could not start.
+      if (!written.ok)
+        captureError({
+          source: "supabase-postgrest",
+          operation: "rpc",
+          schema: "custom",
+          relation: "record_update",
+          message: `A row template's values could not be applied to the new row: ${written.error.message}`,
+          callSite: "features/spaces/embed/RecordBodySpace.tsx useEnsuredRowPage",
+        });
+    };
+    startRowPage({ organizationId, tableId, recordId, title, notes: notesText, document, applyValues }).then(
       (spaceId) => live && setAnswer({ recordId, state: { state: "found", spaceId } }),
       (err: unknown) => live && setAnswer({ recordId, state: { state: "failed", message: err instanceof Error ? err.message : String(err) } }),
     );
     return () => {
       live = false;
     };
-  }, [ready, recordId, tableId, organizationId, title, notesText]);
+  }, [ready, recordId, tableId, organizationId, title, notesText, client]);
   return answer?.recordId === args.recordId ? answer.state : { state: "idle" };
 }
+
+/**
+ * The space a row's page holds, reserved before it arrives: the loading frames and the settled page sit in
+ * one box of a fixed minimum height (`row-page-slot.ts`), so the page's arrival moves nothing under it.
+ */
+function PageSlot({ recordId, children }: { recordId: string; children: ReactNode }) {
+  // Everything UNDER the page on the record page (links, history, comments) is held out of sight until the
+  // page has settled: a hidden element is never a layout shift when the page takes its height. Released by
+  // the page, or after a cap so a page that cannot settle never hides them.
+  const [holding, setHolding] = useState(true);
+  const release = useCallback(() => setHolding(false), []);
+  useEffect(() => {
+    const cap = window.setTimeout(release, HOLD_CAP_MS);
+    return () => window.clearTimeout(cap);
+  }, [release]);
+  return (
+    <ReleaseProvider value={release}>
+      <div data-row-page-slot="" {...(holding ? { "data-holding": "" } : {})} className="relative min-w-0" style={{ minHeight: reservedHeight(recordId) }}>
+        {holding ? <style>{HOLD_CSS}</style> : null}
+        {children}
+      </div>
+    </ReleaseProvider>
+  );
+}
+
+/** What follows the page's section while the slot holds: laid out in place, not painted. */
+const HOLD_CSS = '[data-record-body="host"]:has([data-row-page-slot][data-holding]) ~ * { visibility: hidden; }';
+const HOLD_CAP_MS = 8000;
 
 /** The row's body Space in the Spaces editor, or `fallback` (default nothing) when the row has no body Space. */
 export function RecordBodySpace({ tableId, recordId, record, readOnly, organizationId, fallback = null }: RecordBodySpaceProps) {
@@ -166,14 +209,20 @@ export function RecordBodySpace({ tableId, recordId, record, readOnly, organizat
   const spaceId = body.state === "found" ? body.spaceId : ensured.state === "found" ? ensured.spaceId : null;
   if (spaceId) {
     return (
-      <ImplBoundary fallback={fallback}>
-        <RecordBodySpaceImpl spaceId={spaceId} readOnly={readOnly} fallback={fallback} />
-      </ImplBoundary>
+      <PageSlot recordId={recordId}>
+        <ImplBoundary fallback={fallback}>
+          <RecordBodySpaceImpl spaceId={spaceId} recordId={recordId} readOnly={readOnly} fallback={fallback} />
+        </ImplBoundary>
+      </PageSlot>
     );
   }
   // Someone who may edit: the page is on its way (looked up, then started) — its frame, not the old body.
   if (!readOnly && organizationId && (body.state === "loading" || (body.state === "none" && ensured.state === "idle"))) {
-    return <RegionSkeleton shape="rows" count={4} aria-label="Loading the page" />;
+    return (
+      <PageSlot recordId={recordId}>
+        <RegionSkeleton shape="rows" count={4} aria-label="Loading the page" />
+      </PageSlot>
+    );
   }
   if (ensured.state === "failed") {
     return (
