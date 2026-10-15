@@ -67,6 +67,11 @@ export interface DocChromeHost {
   /** Whether the document is laid out pageless, and a way to switch (Format → Pageless). */
   pageless?: () => boolean;
   setPageless?: (pageless: boolean) => void;
+  /** View → Show: panels the editor owns. */
+  show?: {
+    outline: () => boolean;
+    toggleOutline: () => void;
+  };
 }
 
 export const DOC_STYLES = [
@@ -102,6 +107,77 @@ const HIGHLIGHTS = [
 
 const run = (h: DocChromeHost, id: string, params?: object) => () =>
   params ? h.api.executeCommand(id, params) : h.api.executeCommand(id);
+
+/** DocumentEditArea values in @univerjs/engine-render. */
+const EDIT_AREA = { header: "HEADER", footer: "FOOTER" } as const;
+
+/**
+ * Put a page-number (or page-count) field in the header or footer: open that area (Univer makes it
+ * if the page has none), drop the field at the cursor, and return to the body.
+ */
+const putField = (h: DocChromeHost, area: keyof typeof EDIT_AREA, fieldType: "PAGE" | "NUMPAGES") => async () => {
+  const unitId = h.unitId();
+  if (!unitId) return;
+  await h.api.executeCommand("doc.command.open-header-footer-panel", { editArea: EDIT_AREA[area] });
+  await h.api.executeCommand("doc.command.insert-header-footer-field", { unitId, fieldType });
+  await h.api.executeCommand("doc.command.close-header-footer", { unitId });
+};
+
+const openArea = (h: DocChromeHost, area: keyof typeof EDIT_AREA) => run(h, "doc.command.open-header-footer-panel", { editArea: EDIT_AREA[area] });
+
+const headersFootersEntries = (h: DocChromeHost, prefix: string): EditorMenuEntry[] => [
+  { kind: "action", id: `${prefix}.header`, label: "Header", keywords: ["page header"], run: openArea(h, "header") },
+  { kind: "action", id: `${prefix}.footer`, label: "Footer", keywords: ["page footer"], run: openArea(h, "footer") },
+];
+
+const pageNumberEntries = (h: DocChromeHost, prefix: string): EditorMenuEntry[] => [
+  { kind: "action", id: `${prefix}.header`, label: "Page number in header", keywords: ["page number"], run: putField(h, "header", "PAGE") },
+  { kind: "action", id: `${prefix}.footer`, label: "Page number in footer", keywords: ["page number"], run: putField(h, "footer", "PAGE") },
+  { kind: "action", id: `${prefix}.count-header`, label: "Page count in header", keywords: ["number of pages"], run: putField(h, "header", "NUMPAGES") },
+  { kind: "action", id: `${prefix}.count-footer`, label: "Page count in footer", keywords: ["number of pages"], run: putField(h, "footer", "NUMPAGES") },
+];
+
+/** Univer's SpacingRule.AUTO: line spacing is a multiple of the line height. */
+const SPACING_AUTO = 0;
+const spacing = (h: DocChromeHost, paragraph: object) => run(h, "doc-paragraph-setting.command", { paragraph });
+const lineSpacingEntries = (h: DocChromeHost): EditorMenuEntry[] => [
+  ...([["single", "Single", 1], ["1.15", "1.15", 1.15], ["1.5", "1.5", 1.5], ["double", "Double", 2]] as const).map(
+    ([key, label, value]): EditorMenuEntry => ({
+      kind: "action",
+      id: `format.line-spacing.${key}`,
+      label,
+      keywords: ["line spacing", "line height"],
+      run: spacing(h, { lineSpacing: value, spacingRule: SPACING_AUTO }),
+    }),
+  ),
+  { kind: "separator" },
+  { kind: "action", id: "format.line-spacing.add-before", label: "Add space before paragraph", keywords: ["paragraph spacing"], run: spacing(h, { spaceAbove: { v: 12 } }) },
+  { kind: "action", id: "format.line-spacing.add-after", label: "Add space after paragraph", keywords: ["paragraph spacing"], run: spacing(h, { spaceBelow: { v: 12 } }) },
+  { kind: "action", id: "format.line-spacing.remove-before", label: "Remove space before paragraph", keywords: ["paragraph spacing"], run: spacing(h, { spaceAbove: { v: 0 } }) },
+  { kind: "action", id: "format.line-spacing.remove-after", label: "Remove space after paragraph", keywords: ["paragraph spacing"], run: spacing(h, { spaceBelow: { v: 0 } }) },
+];
+
+const tocEntries = (h: DocChromeHost): EditorMenuEntry[] => [
+  {
+    kind: "action",
+    id: "insert.toc.insert",
+    label: "Insert table of contents",
+    keywords: ["contents", "headings"],
+    run: () => {
+      const unitId = h.unitId();
+      return h.api.executeCommand("doc.command.insert-table-of-contents", {
+        ...(unitId ? { unitId } : {}),
+        levels: 3,
+        showPageNumbers: true,
+        rightAlignPageNumbers: true,
+        tabLeader: "dots",
+        format: "classic",
+      });
+    },
+  },
+  { kind: "action", id: "insert.toc.update", label: "Update table of contents", keywords: ["refresh"], run: run(h, "doc.command.update-table-of-contents") },
+  { kind: "action", id: "insert.toc.remove", label: "Remove table of contents", run: run(h, "doc.command.delete-table-of-contents") },
+];
 
 const slug = (s: string) => s.toLowerCase().replace(/\s+/g, "-");
 
@@ -208,9 +284,24 @@ export function buildDocMenus(h: DocChromeHost): EditorMenu[] {
           id: "view.show",
           label: "Show",
           items: [
-            soon("view.show.print-layout", "Show print layout", "documents.show-print-layout"),
+            {
+              kind: "action",
+              id: "view.show.print-layout",
+              label: "Show print layout",
+              keywords: ["pages", "pageless"],
+              checked: () => !h.pageless?.(),
+              run: () => h.setPageless?.(!!h.pageless?.()),
+            },
             soon("view.show.ruler", "Show ruler", "documents.show-ruler"),
-            soon("view.show.outline", "Show outline", "documents.show-outline", { shortcut: { key: "h", mod: true, alt: true } }),
+            {
+              kind: "action",
+              id: "view.show.outline",
+              label: "Show outline",
+              keywords: ["headings", "contents"],
+              shortcut: { key: "h", mod: true, alt: true },
+              checked: () => !!h.show?.outline(),
+              run: () => h.show?.toggleOutline(),
+            },
             soon("view.show.non-printing", "Show non-printing characters", "documents.show-nonprinting"),
           ],
         },
@@ -246,10 +337,10 @@ export function buildDocMenus(h: DocChromeHost): EditorMenu[] {
             { kind: "action", id: "insert.break.column", label: "Column break", run: run(h, "docs.operation.insert-column-break") },
           ],
         },
-        soon("insert.page-numbers", "Page numbers", "documents.page-numbers"),
-        soon("insert.headers-footers", "Headers and footers", "documents.headers-footers"),
+        { kind: "submenu", id: "insert.page-numbers", label: "Page numbers", items: pageNumberEntries(h, "insert.page-numbers") },
+        { kind: "submenu", id: "insert.headers-footers", label: "Headers and footers", items: headersFootersEntries(h, "insert.headers-footers") },
         soon("insert.bookmark", "Bookmark", "documents.bookmark"),
-        soon("insert.toc", "Table of contents", "documents.table-of-contents"),
+        { kind: "submenu", id: "insert.toc", label: "Table of contents", items: tocEntries(h) },
         { kind: "separator" },
         { kind: "action", id: "insert.comment", label: "Comment", icon: MessageSquarePlus, run: run(h, "docs.operation.start-add-comment") },
       ],
@@ -274,13 +365,13 @@ export function buildDocMenus(h: DocChromeHost): EditorMenu[] {
         },
         { kind: "submenu", id: "format.styles", label: "Paragraph styles", items: styleEntries(h) },
         { kind: "submenu", id: "format.align", label: "Align", icon: AlignLeft, items: alignEntries(h) },
-        soon("format.line-spacing", "Line and paragraph spacing", "documents.line-spacing"),
+        { kind: "submenu", id: "format.line-spacing", label: "Line and paragraph spacing", items: lineSpacingEntries(h) },
         soon("format.columns", "Columns", "documents.columns"),
         { kind: "submenu", id: "format.lists", label: "Bullets and numbering", icon: List, items: listEntries(h) },
         { kind: "submenu", id: "format.font-size", label: "Font size", items: sizeEntries(h) },
         { kind: "separator" },
-        soon("format.headers-footers", "Headers and footers", "documents.headers-footers"),
-        soon("format.page-numbers", "Page numbers", "documents.page-numbers"),
+        { kind: "submenu", id: "format.headers-footers", label: "Headers and footers", items: headersFootersEntries(h, "format.headers-footers") },
+        { kind: "submenu", id: "format.page-numbers", label: "Page numbers", items: pageNumberEntries(h, "format.page-numbers") },
         { kind: "action", id: "format.page-setup", label: "Page setup", keywords: ["margins", "orientation", "paper size"], run: () => h.openPageSetup?.() },
         {
           kind: "action",

@@ -76,6 +76,11 @@ import "@univerjs/preset-docs-drawing/lib/index.css";
 import { UniverDocsThreadCommentPreset } from "@univerjs/preset-docs-thread-comment";
 import docsCommentEnUS from "@univerjs/preset-docs-thread-comment/locales/en-US";
 import "@univerjs/preset-docs-thread-comment/lib/index.css";
+import { UniverDocsTocPlugin } from "@univerjs/docs-toc";
+import { UniverDocsTocUIPlugin } from "@univerjs/docs-toc-ui";
+import docsTocEnUS from "@univerjs/docs-toc-ui/locale/en-US";
+import "@univerjs/docs-toc-ui/lib/index.css";
+import { DocumentOutlinePanel } from "@/features/documents/components/DocumentOutlinePanel";
 import { UniverFindReplacePlugin } from "@univerjs/find-replace";
 import { UniverDocsFindReplacePlugin } from "@univerjs/docs-find-replace";
 import findReplaceEnUS from "@univerjs/find-replace/locale/en-US";
@@ -288,6 +293,8 @@ export default function DocumentEditor({
 
   // File → Page setup: the dialog's state, and a counter that re-fits the zoom to the new page width.
   const [pageSetupOpen, setPageSetupOpen] = useState(false);
+  // View → Show outline.
+  const [outlineOpen, setOutlineOpen] = useState(false);
   const [pageRev, setPageRev] = useState(0);
   const dispatch = useAppDispatch();
 
@@ -401,7 +408,7 @@ export default function DocumentEditor({
         container.appendChild(host);
         const { univer, univerAPI } = createUniver({
           locale: LocaleType.EN_US,
-          locales: { [LocaleType.EN_US]: merge({}, docsCoreEnUS, docsLinkEnUS, docsDrawingEnUS, docsCommentEnUS, findReplaceEnUS) },
+          locales: { [LocaleType.EN_US]: merge({}, docsCoreEnUS, docsLinkEnUS, docsDrawingEnUS, docsCommentEnUS, findReplaceEnUS, docsTocEnUS) },
           theme: defaultTheme,
           darkMode: darkModeRef.current,
           presets: [
@@ -415,7 +422,7 @@ export default function DocumentEditor({
             UniverDocsDrawingPreset(),
             UniverDocsThreadCommentPreset(),
           ],
-          plugins: [UniverFindReplacePlugin, UniverDocsFindReplacePlugin],
+          plugins: [UniverFindReplacePlugin, UniverDocsFindReplacePlugin, UniverDocsTocPlugin, UniverDocsTocUIPlugin],
         });
         if (cancelled) {
           host.remove();
@@ -621,6 +628,10 @@ export default function DocumentEditor({
           openPageSetup: () => setPageSetupOpen(true),
           pageless: () => readPageSetup(apiRef.current as unknown as PageSetupApiLike).pageless,
           setPageless: (pageless) => void changePage({ ...readPageSetup(apiRef.current as unknown as PageSetupApiLike), pageless }),
+          show: {
+            outline: () => outlineOpen,
+            toggleOutline: () => setOutlineOpen((v) => !v),
+          },
         }
       : null;
   const menus = chromeHost ? buildDocMenus(chromeHost) : [];
@@ -772,8 +783,20 @@ export default function DocumentEditor({
           )}
           {chrome.notice}
           <WorkingCopyAlert kind={documentWorkingCopy} id={documentId} />
-          <div className="relative min-h-0 flex-1">
-            <div ref={containerRef} className="absolute inset-0" />
+          <div className="flex min-h-0 flex-1">
+            {outlineOpen && ready ? (
+              <DocumentOutlinePanel
+                readSnapshot={liveSnapshot}
+                onClose={() => setOutlineOpen(false)}
+                onJump={(offset) => {
+                  const doc = apiRef.current?.getActiveDocument() as unknown as { setSelection?: (a: number, b: number) => void } | null;
+                  doc?.setSelection?.(offset, offset);
+                }}
+              />
+            ) : null}
+            <div className="relative min-h-0 min-w-0 flex-1">
+              <div ref={containerRef} className="absolute inset-0" />
+            </div>
           </div>
         </div>
       </EditorDocumentHeader>

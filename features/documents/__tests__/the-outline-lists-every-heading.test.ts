@@ -10,10 +10,10 @@ describe("document outline", () => {
         paragraphs: [
           { startIndex: 5, paragraphStyle: { namedStyleType: 4 } },
           { startIndex: 15 },
-          { startIndex: 22, paragraphStyle: {} },
-          { startIndex: 28 },
+          { startIndex: 23, paragraphStyle: {} },
+          { startIndex: 29 },
         ],
-        textRuns: [{ st: 16, ed: 22, ts: { bl: 1, fs: 22 } }],
+        textRuns: [{ st: 16, ed: 23, ts: { bl: 1, fs: 22 } }],
       },
     };
     expect(collectOutline(snapshot)).toEqual([

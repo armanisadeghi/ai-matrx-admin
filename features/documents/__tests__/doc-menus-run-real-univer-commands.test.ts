@@ -29,6 +29,7 @@ function fakeHost() {
     openPageSetup: () => calls.push({ kind: "host.openPageSetup", args: [] }),
     pageless: () => false,
     setPageless: (v) => calls.push({ kind: "host.setPageless", args: [v] }),
+    show: { outline: () => false, toggleOutline: () => calls.push({ kind: "host.toggleOutline", args: [] }) },
   };
   return { host, calls };
 }
@@ -41,7 +42,7 @@ function univerCommandIds(): Set<string> {
     const name = dir.slice("@univerjs+".length).split("@")[0]!;
     const file = join(pnpm, dir, "node_modules", "@univerjs", name, "lib", "es", "index.js");
     if (!existsSync(file)) continue;
-    for (const m of readFileSync(file, "utf8").matchAll(/"([a-z-]+\.(?:command|operation)\.[A-Za-z0-9.-]+)"/g)) ids.add(m[1]!);
+    for (const m of readFileSync(file, "utf8").matchAll(/"([a-z-]+\.(?:command|operation)\.[A-Za-z0-9.-]+|[a-z-]+\.command)"/g)) ids.add(m[1]!);
   }
   return ids;
 }
