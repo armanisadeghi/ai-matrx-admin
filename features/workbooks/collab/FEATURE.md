@@ -5,7 +5,7 @@
 **Last updated:** `2026-06-12`
 
 > **Before changing the provider or session, run the gate:**
-> `npx tsx lib/collab/verify-collab.ts`
+> `npx tsx scripts/verify-collab.ts`
 > (needs `NEXT_PUBLIC_SUPABASE_URL` + `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
 > for Stage B; Stage A runs offline). It caught three shipped-silent bugs on
 > first run — treat it as mandatory, not optional.

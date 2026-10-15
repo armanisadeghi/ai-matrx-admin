@@ -10,6 +10,7 @@ import {
   fetchAttestationManifest,
   fetchAttestationReleases,
   fetchAttestationStatus,
+  fetchSourceBreakdown,
 } from "@/features/admin/applications/attestation/rpc";
 
 /** The application this tab opens on when the link names none. */
@@ -45,14 +46,15 @@ export default async function ApplicationsAttestationPage({
     typeof query.build === "string" && /^[0-9a-f]{40}$/.test(query.build) ? query.build : null;
 
   let initialError: string | null = null;
-  let initial: Awaited<ReturnType<typeof load>> = { rows: [], releases: [], manifest: null };
+  let initial: Awaited<ReturnType<typeof load>> = { rows: [], releases: [], manifest: null, sources: {} };
   async function load() {
     const [rows, releases, manifest] = await Promise.all([
       fetchAttestationStatus(supabase, app, buildSha),
       fetchAttestationReleases(supabase, app),
       fetchAttestationManifest(supabase, app, buildSha),
     ]);
-    return { rows, releases, manifest };
+    const sources = manifest ? await fetchSourceBreakdown(supabase, app, manifest.build_sha) : {};
+    return { rows, releases, manifest, sources };
   }
   try {
     initial = await load();

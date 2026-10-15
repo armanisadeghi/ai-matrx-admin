@@ -13,6 +13,7 @@ import { KeyRound } from "lucide-react";
 import { Badge, type BadgeTone } from "@ai-matrx/design-system/controls";
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
 import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
+import type { SourceCounts } from "@/features/admin/applications/attestation/rpc";
 import { knobHref } from "@/features/admin/limits/knobHref";
 import {
   APPLICATIONS_ADMIN_LOCATION,
@@ -75,6 +76,8 @@ interface AttestationTableProps {
   app: string;
   rows: AttestationStatusRow[];
   tableId: string;
+  /** Per-key read counts by value source; absent when no attested build has reads. */
+  sources?: Record<string, SourceCounts>;
   isFetching?: boolean;
   readError?: unknown;
   onRetry?: () => void;
@@ -84,6 +87,7 @@ export function AttestationTable({
   app,
   rows,
   tableId,
+  sources,
   isFetching,
   readError,
   onRetry,
@@ -169,6 +173,34 @@ export function AttestationTable({
       width: 110,
     },
     {
+      id: "fallback_from",
+      header: "Fallback from",
+      accessorFn: (row) => row.fallback_reads ?? 0,
+      align: "right",
+      cell: (row) => {
+        const c = sources?.[attestationRowId(row)];
+        const parts = c
+          ? [
+              ["cache", c.cache],
+              ["snapshot", c.snapshot],
+              ["env", c.env],
+            ].filter(([, n]) => Number(n) > 0)
+          : [];
+        if (!parts.length) {
+          return <span className="text-xs text-muted-foreground">—</span>;
+        }
+        return (
+          <span
+            className="font-mono text-xs"
+            title={c ? `database ${c.db} · cache ${c.cache} · snapshot ${c.snapshot} · env ${c.env}` : undefined}
+          >
+            {parts.map(([k, n]) => `${k} ${n}`).join(" · ")}
+          </span>
+        );
+      },
+      width: 170,
+    },
+    {
       id: "invalid_reads",
       header: "Invalid",
       accessorKey: "invalid_reads",
@@ -201,7 +233,7 @@ export function AttestationTable({
         ),
       width: 130,
     },
-  ], [app]);
+  ], [app, sources]);
 
   return (
     <MatrxDataTable

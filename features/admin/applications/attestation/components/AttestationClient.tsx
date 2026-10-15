@@ -17,7 +17,6 @@ import {
   Select,
   type SelectOption,
 } from "@ai-matrx/design-system/controls";
-import { ErrorNotice } from "@ai-matrx/design-system";
 import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
 import {
   ADMIN_APPLICATIONS_SURFACE_NAME,
@@ -28,6 +27,8 @@ import {
   fetchAttestationManifest,
   fetchAttestationReleases,
   fetchAttestationStatus,
+  fetchSourceBreakdown,
+  type SourceCounts,
 } from "@/features/admin/applications/attestation/rpc";
 import { AttestationTable } from "@/features/admin/applications/attestation/components/AttestationTable";
 import {
@@ -43,6 +44,7 @@ interface AttestationData {
   rows: AttestationStatusRow[];
   releases: AttestationReleaseRow[];
   manifest: AttestationManifest | null;
+  sources: Record<string, SourceCounts>;
 }
 
 interface AttestationClientProps {
@@ -114,7 +116,10 @@ export function AttestationClient({
         fetchAttestationReleases(supabase, app),
         fetchAttestationManifest(supabase, app, buildSha),
       ]);
-      setData({ rows, releases, manifest });
+      const sources = manifest
+        ? await fetchSourceBreakdown(supabase, app, manifest.build_sha)
+        : {};
+      setData({ rows, releases, manifest, sources });
       setError(null);
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
@@ -224,7 +229,6 @@ export function AttestationClient({
             .
           </Flag>
         ) : null}
-        {error ? <ErrorNotice title="Attestation could not be read" message={error} /> : null}
 
         {manifest ? (
           <section className="grid gap-3 rounded-md border border-border bg-card p-3 sm:grid-cols-4">
@@ -245,6 +249,7 @@ export function AttestationClient({
             app={app}
             rows={main}
             tableId="application-attestation"
+            sources={data.sources}
             isFetching={refreshing}
             readError={error}
             onRetry={() => void refresh()}
