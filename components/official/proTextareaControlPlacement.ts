@@ -39,12 +39,16 @@ export const INLINE_CONTROLS_MIN_HEIGHT_PX = SUBMIT_BUTTON_WIDTH_PX + 2 * TAP_HA
  * the host's line height — `1lh`), and a right gutter the measured cluster
  * width plus the half-gap, so text never runs under a control.
  */
-export function inlineControlsFieldPadding(clusterWidthPx: number): {
+export function inlineControlsFieldPadding(
+  clusterWidthPx: number,
+  /** The one-line height: 44px, or 34px for a dense (small-type) box. */
+  minHeightPx: number = INLINE_CONTROLS_MIN_HEIGHT_PX,
+): {
   paddingTop: string;
   paddingBottom: string;
   paddingRight: string;
 } {
-  const block = `calc((${INLINE_CONTROLS_MIN_HEIGHT_PX}px - 1lh) / 2 - 1px)`;
+  const block = `calc((${minHeightPx}px - 1lh) / 2 - 1px)`;
   return {
     paddingTop: block,
     paddingBottom: block,
@@ -94,16 +98,5 @@ export function clusterPlacementProblems(p: ClusterPlacement): string[] {
   return problems;
 }
 
-/**
- * Below this field width an inline-controls box is COMPACT (a phone composer,
- * a narrow side panel): the mic drops its device chevron — the device choice
- * moves into the "…" menu — so the text keeps room to type, and the live
- * dictation strip draws ABOVE the field instead of over its one line
- * (2026-10-15, /work/live on a 375px phone: mic + chevron + "…" + send left
- * the text ~80px).
- */
-export const INLINE_COMPACT_MAX_PX = 360;
-
-export function isInlineCompact(fieldWidthPx: number): boolean {
-  return fieldWidthPx > 0 && fieldWidthPx < INLINE_COMPACT_MAX_PX;
-}
+// What fits beside the text — and what moves inside "…" — is decided by THE
+// ONE FITTING RULE shared with ProInput: `proFieldControlFit.ts`.

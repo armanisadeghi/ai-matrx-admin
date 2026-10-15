@@ -60,6 +60,8 @@ const fakeState = {
     context: null,
   },
   userAuth: { id: "test-user", createdAt: null },
+  // Read by the "…" menu's action list (the phone-menu case opens it).
+  appContext: { organization_id: null },
   userPreferences: {
     mediaDevices: {
       audioInputDeviceId: "default",
@@ -106,7 +108,8 @@ jest.mock("@/utils/supabase/client", () => ({
   },
 }));
 
-jest.mock("@ai-matrx/kit/media-query", () => ({ ...jest.requireActual("@ai-matrx/kit/media-query"), useIsMobile: () => false }));
+let mockIsMobile = false;
+jest.mock("@ai-matrx/kit/media-query", () => ({ ...jest.requireActual("@ai-matrx/kit/media-query"), useIsMobile: () => mockIsMobile }));
 
 // The "…" menu's agent machinery is a different subsystem entirely; stubbing it
 // keeps this suite about the recorder path and nothing else.
@@ -173,6 +176,7 @@ beforeAll(() => {
 });
 
 beforeEach(() => {
+  mockIsMobile = false;
   recorderStart.mockClear();
   recorderStop.mockClear();
   toast.error.mockClear();
@@ -277,5 +281,31 @@ describe("ProTextarea imperative dictation handle", () => {
     expect(typeof node!.requestClose).toBe("function");
     await act(async () => root.unmount());
     container.remove();
+  });
+});
+
+// Arman, 2026-10-15: on a phone the mic's device chevron never sits beside the
+// mic; it folds into the "…" menu, and that menu exists even when the field
+// has no other action, so choosing a microphone is never lost.
+describe("ProTextarea on a phone — the device chevron folds into the menu", () => {
+  it("desktop keeps the chevron beside the mic", async () => {
+    const box = await mount({ showCopyButton: false });
+    expect(box.container.querySelector('button[aria-label="Choose microphone"]')).not.toBeNull();
+    await box.unmount();
+  });
+
+  it("a phone shows the mic, no chevron, and a \"…\" menu that holds Microphone", async () => {
+    mockIsMobile = true;
+    const box = await mount({ showCopyButton: false });
+    expect(box.container.querySelector('button[aria-label="Start voice input"]')).not.toBeNull();
+    expect(box.container.querySelector('button[aria-label="Choose microphone"]')).toBeNull();
+    const more = box.container.querySelector<HTMLButtonElement>('button[aria-label="More options"]');
+    expect(more).not.toBeNull();
+    await act(async () => {
+      more!.click();
+    });
+    const rows = [...document.querySelectorAll("button")].map((b) => b.textContent?.trim());
+    expect(rows).toContain("Microphone");
+    await box.unmount();
   });
 });

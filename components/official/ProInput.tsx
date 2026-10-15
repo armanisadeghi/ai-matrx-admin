@@ -70,11 +70,16 @@
 
 import React, { useCallback, useState, useRef, useEffect, useEffectEvent, useId, useLayoutEffect } from "react";
 import {
+  PRO_INPUT_TEXT_GAP_PX,
   hoverRevealsCluster,
-  proInputClusterTier,
   reservedRightPaddingPx,
 } from "@/components/official/proInputReservedPadding";
-import { Check, Copy, Loader2, Mic, SlidersHorizontal } from "lucide-react";
+import {
+  controlSizes,
+  fitFieldControls,
+  isDenseField,
+} from "@/components/official/proFieldControlFit";
+import { Check, Copy, Loader2, Mic, SlidersHorizontal, X } from "lucide-react";
 import { motion } from "motion/react";
 import { useMicField } from "@/features/audio/hooks/useMicField";
 import { cn } from "@/lib/utils";
@@ -113,6 +118,7 @@ import { useProTextareaAgentAction } from "./useProTextareaAgentAction";
 import { ProTextAgentActionPopoverBody } from "./ProTextAgentActionPopoverBody";
 import { AGENT_ICON } from "@/components/icons/domain-icons";
 import { copyText } from "@ai-matrx/kit/clipboard";
+import { useIsMobile, useMediaQuery } from "@ai-matrx/kit/media-query";
 import { ReadAloudMenuRow } from "./ReadAloudMenuRow";
 /** Real HTMLInputElement with optional expando methods set by ProInput. */
 export interface ProInputElement extends HTMLInputElement {
@@ -262,8 +268,12 @@ export const ProInput = React.forwardRef<HTMLInputElement, ProInputProps>(
     const clusterRef = useRef<HTMLDivElement>(null);
     const auxRef = useRef<HTMLDivElement>(null);
     const [clusterWidths, setClusterWidths] = useState({ cluster: 0, aux: 0 });
-    // The field's own width: a narrow field reveals the cluster on focus, not hover.
+    // The field's own size: a narrow field reveals the cluster on focus, not
+    // hover; the width decides what fits (proFieldControlFit) and a field
+    // shorter than a tap box takes the dense 28px controls.
     const [inputWidth, setInputWidth] = useState(0);
+    const [inputHeight, setInputHeight] = useState(0);
+    const coarsePointer = useMediaQuery("(pointer: coarse)");
     useEffect(() => {
       const cluster = clusterRef.current;
       if (!cluster || typeof ResizeObserver === "undefined") return;
@@ -311,7 +321,11 @@ export const ProInput = React.forwardRef<HTMLInputElement, ProInputProps>(
     useEffect(() => {
       const el = inputRef.current;
       if (!el || typeof ResizeObserver === "undefined") return;
-      const measure = () => setInputWidth(el.getBoundingClientRect().width);
+      const measure = () => {
+        const rect = el.getBoundingClientRect();
+        setInputWidth(rect.width);
+        setInputHeight(rect.height);
+      };
       measure();
       const observer = new ResizeObserver(measure);
       observer.observe(el);
@@ -564,23 +578,36 @@ export const ProInput = React.forwardRef<HTMLInputElement, ProInputProps>(
     const showMic = enableVoice && isAudioAvailable;
     const showClear = clearable && hasContent;
     const cleanupEligible = type === "text" && enableCleanup;
-    // The hover cluster steps down to fit the room the field has
-    // (proInputClusterTier): mic capsule + "…", then "…" alone with voice
-    // inside it, then nothing. A live recording always keeps its stop button.
-    const clusterTier = proInputClusterTier(
-      inputWidth,
-      clusterWidths.cluster - clusterWidths.aux,
-    );
+    // THE ONE FITTING RULE (proFieldControlFit): Send and "…" always show;
+    // the mic (with, then without, its device chooser) and Clear stay inline
+    // while the text keeps its floor, and whatever does not fit moves inside
+    // "…" — never deleted. 🚨 On a phone the device chevron never sits beside
+    // the mic (Arman, 2026-10-15): it is always "Microphone" inside "…".
+    // A live recording always keeps its stop button.
+    const isMobile = useIsMobile();
+    const denseField = isDenseField(inputHeight);
+    const fit = fitFieldControls({
+      fieldWidth: inputWidth,
+      sizes: controlSizes({ coarse: coarsePointer, dense: denseField }),
+      fixedPx: (startIcon ? 36 : 12) + PRO_INPUT_TEXT_GAP_PX,
+      hasSubmit: !!onSubmit,
+      menuHasOwnItems: !disabled && (showCopyButton || cleanupEligible || hasContent),
+      mic: showMic,
+      chooserMayBeInline: !isMobile,
+      clear: showClear,
+      expand: false,
+    });
     const voiceBusy = isRecording || isTranscribing;
-    const showMicInline = showMic && (clusterTier === "full" || voiceBusy);
-    const voiceInMenu = showMic && !showMicInline && clusterTier === "menu";
-    const micChoiceInMenu = showMic && clusterTier === "menu";
+    const showMicInline =
+      showMic && (fit.mic === "with-chooser" || fit.mic === "alone" || voiceBusy);
+    const voiceInMenu = showMic && !showMicInline;
+    const micChoiceInMenu = fit.chooserInMenu;
+    const clearInline = showClear && fit.clearInline;
+    const clearInMenu = showClear && !fit.clearInline;
     const showMenu =
       !disabled &&
-      // An open menu never unmounts under the person if the field shrinks.
-      (clusterTier !== "none" || menuOpen) &&
-      (showCopyButton || cleanupEligible || micChoiceInMenu || hasContent);
-    const rightPadding = rightPaddingClass(!!onSubmit, showClear);
+      (showCopyButton || cleanupEligible || micChoiceInMenu || clearInMenu || hasContent);
+    const rightPadding = rightPaddingClass(!!onSubmit, clearInline);
     const auxVisible =
       (showHoverControls || menuOpen) && (showMicInline || showMenu);
     const measuredRightPadding = reservedRightPaddingPx({
@@ -670,6 +697,7 @@ export const ProInput = React.forwardRef<HTMLInputElement, ProInputProps>(
           ref={clusterRef}
           onMouseDown={(e) => e.preventDefault()}
           data-matrx-glass-plane
+          data-matrx-tap-dense={denseField ? "" : undefined}
           className="absolute right-0 top-1/2 -translate-y-1/2 flex items-center z-10"
         >
           <div
@@ -683,7 +711,8 @@ export const ProInput = React.forwardRef<HTMLInputElement, ProInputProps>(
           >
             {showMicInline && (
               <MicWithDeviceMenu
-                showDeviceMenu={clusterTier === "full" ? undefined : false}
+                showDeviceMenu={micChoiceInMenu ? false : undefined}
+                dense={denseField}
                 tabIndex={auxiliaryControlsTabIndex}
                 deviceMenuAriaLabel={
                   auxiliaryControlsLabel
@@ -746,6 +775,19 @@ export const ProInput = React.forwardRef<HTMLInputElement, ProInputProps>(
                 >
                   {menuMode === "menu" ? (
                     <div className="flex flex-col p-1">
+                      {clearInMenu && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setMenuOpen(false);
+                            handleClear();
+                          }}
+                          className="flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-left text-sm text-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+                        >
+                          <X className="h-4 w-4" />
+                          Clear
+                        </button>
+                      )}
                       <ReadAloudMenuRow
                         text={valueAsString}
                         onDone={() => setMenuOpen(false)}
@@ -843,7 +885,7 @@ export const ProInput = React.forwardRef<HTMLInputElement, ProInputProps>(
             )}
           </div>
 
-          {showClear && (
+          {clearInline && (
             <XTapButton
               variant="transparent"
               onClick={handleClear}

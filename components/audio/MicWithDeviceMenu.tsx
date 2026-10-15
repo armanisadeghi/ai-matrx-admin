@@ -49,6 +49,12 @@ export interface MicWithDeviceMenuProps {
   deviceMenuAriaLabel?: string;
   iconClassName?: string;
   tabIndex?: number;
+  /**
+   * The host field is shorter than a tap box (`isDenseField`): the capsule
+   * shrinks to 24px with 14px glyphs so it never sticks out of the field.
+   * Touch screens keep their padded hit strips.
+   */
+  dense?: boolean;
 }
 
 export function MicWithDeviceMenu({
@@ -62,6 +68,7 @@ export function MicWithDeviceMenu({
   deviceMenuAriaLabel = "Choose microphone",
   iconClassName,
   tabIndex,
+  dense = false,
 }: MicWithDeviceMenuProps) {
   const deviceMenuVisible = showDeviceMenu ?? (!isRecording && !isTranscribing);
   const { handleOpenChange, openSettings } = useMicDevicePicker();
@@ -82,8 +89,18 @@ export function MicWithDeviceMenu({
     // Plain ink, no glass border: the hosts pair it with a transparent "…"
     // tap button, so the row is all non-glass (tap-target placement rule 2)
     // and reads as two quiet icons, not a stack of pills.
-    <div className="relative mx-[3px] inline-flex h-7 shrink-0 items-center pointer-coarse:h-10">
-      <div className="relative flex h-7 items-stretch rounded-full pointer-coarse:h-9">
+    <div
+      className={cn(
+        "relative mx-[3px] inline-flex shrink-0 items-center",
+        dense ? "h-6" : "h-7 pointer-coarse:h-10",
+      )}
+    >
+      <div
+        className={cn(
+          "relative flex items-stretch rounded-full",
+          dense ? "h-6" : "h-7 pointer-coarse:h-9",
+        )}
+      >
         {isRecording && (
           <>
             <span
@@ -118,9 +135,9 @@ export function MicWithDeviceMenu({
           )}
         >
           {isTranscribing && !isRecording ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
+            <Loader2 className={cn(dense ? "h-3.5 w-3.5" : "h-4 w-4", "animate-spin")} />
           ) : (
-            <Mic className="h-4 w-4" />
+            <Mic className={dense ? "h-3.5 w-3.5" : "h-4 w-4"} />
           )}
         </button>
 
@@ -139,7 +156,7 @@ export function MicWithDeviceMenu({
                   "rounded-r-full text-muted-foreground hover:bg-muted/60 hover:text-foreground active:bg-muted-foreground/15",
                 )}
               >
-                <ChevronDown className="h-3.5 w-3.5" />
+                <ChevronDown className={dense ? "h-3 w-3" : "h-3.5 w-3.5"} />
               </button>
             </PopoverTrigger>
             <PopoverContent

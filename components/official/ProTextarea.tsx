@@ -157,7 +157,12 @@ const TEXT_AGENT_ACTION_IDS = [
 ] as const;
 import { EditableContextMenu } from "@ai-matrx/context-menu/react";
 import { useIsInsideContextMenu } from "@ai-matrx/context-menu/react";
-import { Check, Loader2, Mic, Send } from "lucide-react";
+import { Check, Loader2, Maximize2, Mic, Send, SlidersHorizontal } from "lucide-react";
+import {
+  DENSE_SIZES,
+  controlSizes,
+  fitFieldControls,
+} from "@/components/official/proFieldControlFit";
 import { motion } from "motion/react";
 import { useOpenDiffViewerWindow } from "@/features/overlays/openers/diffViewerWindow";
 import { useMicField } from "@/features/audio/hooks/useMicField";
@@ -230,8 +235,8 @@ import {
 import { ProTextAgentActionPopoverBody } from "./ProTextAgentActionPopoverBody";
 import {
   INLINE_CONTROLS_MIN_HEIGHT_PX,
+  TAP_HALF_GAP_PX,
   inlineControlsFieldPadding,
-  isInlineCompact,
   proTextareaClusterPlacement,
   type ProTextareaControls,
 } from "./proTextareaControlPlacement";
@@ -240,6 +245,7 @@ import {
   composerKeyIntent,
   intentTakesTheKey,
 } from "@ai-matrx/kit/composer-keys";
+import { useIsMobile, useMediaQuery } from "@ai-matrx/kit/media-query";
 
 const FILL_HEIGHT_REGEX =
   /(?:^|\s)(h-full|h-dvh|flex-1|grow|inset-0|min-h-0)(?:\s|$)/;
@@ -544,14 +550,28 @@ export const ProTextarea = React.forwardRef<
       markdownFormatting,
       uploadImage,
       expandable = false,
-      controls = "row",
+      controls,
       ...props
     },
     ref,
   ) => {
-    const inlineControls = controls === "inline" && !editor;
+    // A one-row box (`rows={1}`: grid cells, quick notes, one-line composers)
+    // takes the inline controls on its own: a reserved 44px button row under
+    // one line of text made those boxes ~80px tall. An explicit `controls`
+    // still wins.
+    const resolvedControls: ProTextareaControls =
+      controls ?? (props.rows !== undefined && Number(props.rows) <= 1 ? "inline" : "row");
+    const inlineControls = resolvedControls === "inline" && !editor;
+    // A small-type inline box (under 14px — `text-xs` cells) is DENSE: 28px
+    // controls (the design system's dense field scope), so its one line is
+    // 34px instead of 44px. Phones raise every field to 16px, so they never are.
+    const [smallType, setSmallType] = useState(false);
+    const denseInline = inlineControls && smallType;
+    const inlineMinHeight = denseInline
+      ? DENSE_SIZES.box + 2 * TAP_HALF_GAP_PX
+      : INLINE_CONTROLS_MIN_HEIGHT_PX;
     const effectiveMinHeight = inlineControls
-      ? Math.max(minHeight ?? 0, INLINE_CONTROLS_MIN_HEIGHT_PX)
+      ? Math.max(minHeight ?? 0, inlineMinHeight)
       : minHeight;
     const clusterRef = useRef<HTMLDivElement>(null);
     const [clusterWidth, setClusterWidth] = useState(0);
@@ -565,21 +585,28 @@ export const ProTextarea = React.forwardRef<
       observer.observe(el);
       return () => observer.disconnect();
     }, [inlineControls]);
-    // The field's own width decides the compact inline shape
-    // (`isInlineCompact`) — a question about this box, never the viewport.
+    // The field's own width decides what fits beside the text
+    // (proFieldControlFit) — a question about this box, never the viewport.
     const fieldBoxRef = useRef<HTMLDivElement>(null);
     const [fieldBoxWidth, setFieldBoxWidth] = useState(0);
     useLayoutEffect(() => {
-      if (!inlineControls) return;
       const el = fieldBoxRef.current;
-      if (!el) return;
-      const measure = () => setFieldBoxWidth(el.offsetWidth);
+      if (!el || typeof ResizeObserver === "undefined") return;
+      const measure = () => {
+        setFieldBoxWidth(el.offsetWidth);
+        const field = el.querySelector("textarea");
+        if (field) setSmallType(Number.parseFloat(getComputedStyle(field).fontSize) < 14);
+      };
       measure();
       const observer = new ResizeObserver(measure);
       observer.observe(el);
       return () => observer.disconnect();
-    }, [inlineControls]);
-    const compactInline = inlineControls && isInlineCompact(fieldBoxWidth);
+    }, []);
+    const coarsePointer = useMediaQuery("(pointer: coarse)");
+    // 🚨 On a phone the mic's device chevron never sits beside the mic
+    // (Arman, 2026-10-15): a composer row has no room for it, so it folds
+    // into the "…" menu as "Microphone" (proFieldControlFit).
+    const isMobile = useIsMobile();
     const openAudioDevices = useOpenAudioDevices();
     const generatedId = useId();
     const inputId = idProp ?? (floatingLabel ? generatedId : undefined);
@@ -1272,11 +1299,38 @@ export const ProTextarea = React.forwardRef<
       !isAudioAvailable || disabled || (isTranscribing && !isRecording);
 
     const showBoundAgentsMenu = boundAgentsEnabled;
+    // The menu's OWN actions; "…" also shows to hold whatever did not fit.
     const showMenu =
       !disabled &&
       (showCopyButton ||
         enabledAgentActionIds.length > 0 ||
         showBoundAgentsMenu);
+    // THE ONE FITTING RULE (proFieldControlFit), shared with ProInput: Send
+    // and "…" always show; the mic (with, then without, its device chooser)
+    // and Expand stay inline while there is room, and whatever does not fit
+    // moves inside "…" — never deleted. A reserved row has the whole width to
+    // itself; inline controls share it with the text, which keeps its floor.
+    const micOffered = enableVoice && isAudioAvailable;
+    const fit = fitFieldControls({
+      fieldWidth: fieldBoxWidth,
+      sizes: controlSizes({ coarse: coarsePointer, dense: denseInline }),
+      fixedPx: inlineControls ? 12 + 2 * TAP_HALF_GAP_PX : 8,
+      minText: inlineControls ? undefined : 0,
+      hasSubmit: !!onSubmit,
+      menuHasOwnItems: showMenu,
+      mic: micOffered,
+      chooserMayBeInline: !isMobile,
+      clear: false,
+      expand: expandable && !editor && overflowing,
+    });
+    const voiceBusyNow = isRecording || isTranscribing;
+    const micInline =
+      micOffered && (fit.mic === "with-chooser" || fit.mic === "alone" || voiceBusyNow);
+    const voiceInMenu = micOffered && !micInline;
+    const micChoiceInMenu = !disabled && fit.chooserInMenu;
+    const expandInMenu = fit.folded.includes("expand");
+    // A phone keeps the device choice reachable even with no other action.
+    const menuShown = !disabled && (showMenu || voiceInMenu || micChoiceInMenu || expandInMenu);
     // Touch devices have no hover, so the control cluster is ALWAYS visible
     // there (pointer-coarse). Reserve one shallow toolbar row below the text,
     // not a right gutter on every line: this preserves full-width lines while
@@ -1364,13 +1418,12 @@ export const ProTextarea = React.forwardRef<
       minHeight:
         effectiveMinHeight !== undefined ? `${effectiveMinHeight}px` : style?.minHeight,
       maxHeight: maxHeight !== undefined ? `${maxHeight}px` : style?.maxHeight,
-      ...(inlineControls ? inlineControlsFieldPadding(clusterWidth) : {}),
+      ...(inlineControls ? inlineControlsFieldPadding(clusterWidth, inlineMinHeight) : {}),
     };
 
     const field = (
       <div
         ref={fieldBoxRef}
-        data-pro-textarea-compact={compactInline ? "" : undefined}
         className={cn("relative group", wrapperClassName)}
         onMouseEnter={() => setIsHovered(true)}
         onMouseMove={() => {
@@ -1480,13 +1533,14 @@ export const ProTextarea = React.forwardRef<
             <div
               ref={clusterRef}
               onMouseDown={(e) => e.preventDefault()}
+              data-matrx-tap-dense={denseInline ? "" : undefined}
               className={cn(
                 "absolute z-10 flex items-center",
                 proTextareaClusterPlacement(!!onSubmit, inlineControls ? "inline" : "row").className,
                 editor?.singleLine && "top-1/2 bottom-auto -translate-y-1/2",
               )}
             >
-              {expandable && !editor && overflowing ? (
+              {fit.expandInline ? (
                 // Always shown (not on hover only): it says there is more text.
                 <MaximizeTapButton
                   tabIndex={auxiliaryControlsTabIndex}
@@ -1511,7 +1565,7 @@ export const ProTextarea = React.forwardRef<
                     : "opacity-0 pointer-events-none",
                 )}
               >
-                {enableVoice && isAudioAvailable && (
+                {micInline && (
                   <MicWithDeviceMenu
                     tabIndex={auxiliaryControlsTabIndex}
                     deviceMenuAriaLabel={
@@ -1520,7 +1574,8 @@ export const ProTextarea = React.forwardRef<
                         : undefined
                     }
                     onMicClick={handleVoiceClick}
-                    {...(compactInline && showMenu ? { showDeviceMenu: false } : {})}
+                    {...(micChoiceInMenu ? { showDeviceMenu: false } : {})}
+                    dense={denseInline}
                     disabled={isVoiceDisabled}
                     isRecording={isRecording}
                     isTranscribing={isTranscribing}
@@ -1537,7 +1592,7 @@ export const ProTextarea = React.forwardRef<
                   />
                 )}
 
-                {showMenu && (
+                {menuShown && (
                   <Popover open={menuOpen} onOpenChange={handleMenuOpenChange}>
                     <PopoverTrigger asChild>
                       <MoreHorizontalTapButton
@@ -1578,21 +1633,52 @@ export const ProTextarea = React.forwardRef<
                     >
                       {menuMode === "menu" ? (
                         <div className="flex flex-col p-1">
-                          {/* Compact: the mic's device chevron folded in here. */}
-                          {compactInline && enableVoice && isAudioAvailable ? (
+                          {/* Controls that did not fit beside the text
+                            (proFieldControlFit) live here — never deleted.
+                            On a phone the device chooser is always here. */}
+                          {expandInMenu || voiceInMenu || micChoiceInMenu ? (
                             <>
-                              <button
-                                type="button"
-                                className="flex min-h-9 w-full items-center gap-2 rounded-md px-2 text-left text-sm text-foreground hover:bg-accent"
-                                onClick={() => {
-                                  setMenuOpen(false);
-                                  openAudioDevices();
-                                }}
-                              >
-                                <Mic className="h-4 w-4 text-muted-foreground" />
-                                Microphone
-                              </button>
-                              <div className="my-1 h-px bg-border" role="separator" />
+                              {expandInMenu ? (
+                                <button
+                                  type="button"
+                                  className="flex min-h-9 w-full items-center gap-2 rounded-md px-2 text-left text-sm text-foreground hover:bg-accent"
+                                  onClick={() => {
+                                    setMenuOpen(false);
+                                    setExpandOpen(true);
+                                  }}
+                                >
+                                  <Maximize2 className="h-4 w-4 text-muted-foreground" />
+                                  Expand
+                                </button>
+                              ) : null}
+                              {voiceInMenu ? (
+                                <button
+                                  type="button"
+                                  disabled={isVoiceDisabled}
+                                  className="flex min-h-9 w-full items-center gap-2 rounded-md px-2 text-left text-sm text-foreground hover:bg-accent disabled:opacity-50"
+                                  onClick={() => {
+                                    setMenuOpen(false);
+                                    handleVoiceClick();
+                                  }}
+                                >
+                                  <Mic className="h-4 w-4 text-muted-foreground" />
+                                  Voice input
+                                </button>
+                              ) : null}
+                              {micChoiceInMenu ? (
+                                <button
+                                  type="button"
+                                  className="flex min-h-9 w-full items-center gap-2 rounded-md px-2 text-left text-sm text-foreground hover:bg-accent"
+                                  onClick={() => {
+                                    setMenuOpen(false);
+                                    openAudioDevices();
+                                  }}
+                                >
+                                  <SlidersHorizontal className="h-4 w-4 text-muted-foreground" />
+                                  Microphone
+                                </button>
+                              ) : null}
+                              {showMenu ? <div className="my-1 h-px bg-border" role="separator" /> : null}
                             </>
                           ) : null}
                           {/* The ONE action registry — the same actions a
