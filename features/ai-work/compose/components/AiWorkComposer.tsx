@@ -36,7 +36,6 @@
 
 import { InfoHint } from "@/components/official/InfoHint";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
   ArrowUpRight,
@@ -112,7 +111,7 @@ import type { HostedBilling, OwnPlanStatus } from "@/features/ai-work/lib/ownPla
 import { DestinationStep } from "./DestinationStep";
 import { ComputerConnection, RunsOnStep, type ComputerConnectionState, type ComputerPlan } from "./RunsOnStep";
 import { ErrorNotice } from "@ai-matrx/design-system";
-import { runOnChosenComputer } from "@/features/ai-work/lib/computerChooser";
+import { computerSessionLink, runOnChosenComputer } from "@/features/ai-work/lib/computerChooser";
 import { HomeStep } from "./HomeStep";
 
 /** Reasonable ceiling for the "did the conversation row land yet?" retry. */
@@ -221,11 +220,14 @@ function ComposerBody({
   /** Starts on a Matrx 2 computer not yet filed under their homes (kept until filed). */
   const [waitingFilings, setWaitingFilings] = useState<PendingFiling[]>([]);
   const filingAbort = useRef<AbortController | null>(null);
+  /** What Run is doing right now, in words (a start can take tens of seconds). */
+  const [runStatus, setRunStatus] = useState<string | null>(null);
+  /** The run just started on a Matrx 2 computer: where it ran, and where to open it. */
+  const [startedRun, setStartedRun] = useState<{ computerName: string; link: string | null } | null>(null);
   const [filingNote, setFilingNote] = useState<string | null>(null);
   const [localFolder, setLocalFolder] = useState<string>("");
   // ── "Runs on": null = the AI Matrx cloud (every destination below); a device id = one of the
   //    person's Matrx 2 computers, where Claude Code or Codex starts through the relay.
-  const router = useRouter();
   const [runsOnDevice, setRunsOnDevice] = useState<string | null>(null);
   const [runsOnName, setRunsOnName] = useState<string | null>(null);
   const [computerPlan, setComputerPlanState] = useState<ComputerPlan | null>(null);
@@ -467,23 +469,26 @@ function ComposerBody({
   useEffect(() => {
     const controller = new AbortController();
     filingAbort.current = controller;
-    void refreshFilings();
-    return () => controller.abort();
+    const first = setTimeout(() => void refreshFilings(), 0);
+    return () => {
+      clearTimeout(first);
+      controller.abort();
+    };
   }, []);
 
   const handleRunOnMyMac = async () => {
     if (!canRun || destination !== "claude-code" || !localCapability) return;
     setLaunching(true);
     try {
+      setRunStatus(localCapability.computer ? `Starting on ${localCapability.computer.name} through Matrx 2…` : "Starting through Matrx Local…");
       const started = await startCodingRun(browserCodingDoors, localCapability, {
         cwd: localFolder,
         prompt: requestText.trim(),
       });
       if (started.via === "matrx2") {
         // No per-turn cloud mirror on Matrx 2: the chat is filed once it reaches AI Matrx.
-        const pending = filingPendingSentence(started.computer.name);
-        setFilingNote(pending);
-        toast.success(pending);
+        setStartedRun({ computerName: started.computer.name, link: computerSessionLink(started.computer.deviceId, started.sessionId) });
+        toast.success(`Started on ${started.computer.name} through Matrx 2.`);
         void fileMatrx2Run(browserCodingDoors, started.computer, started.sessionId, { homes, signal: filingAbort.current?.signal }).then(async (filed) => {
           if ("pending" in filed) {
             setFilingNote(filed.pending);
@@ -509,6 +514,7 @@ function ComposerBody({
       );
       await attachHomes(run.conversation_id);
     } catch (error) {
+      setRunStatus(null);
       console.error("[ai-work/new] local launch failed", error);
       toast.error(
         error instanceof Error
@@ -595,16 +601,23 @@ function ComposerBody({
     setComputerRefusal(null);
     try {
       // THE coding door: one start path for every /work surface, then filed under the homes.
+      setRunStatus(`Starting on ${plan.name} through Matrx 2…`);
       const run = await runOnChosenComputer(browserCodingDoors, plan, requestText.trim());
-      toast.success(filingPendingSentence(plan.name));
+      setRunStatus(null);
+      setStartedRun({ computerName: plan.name, link: run.link });
+      toast.success(`Started on ${plan.name} through Matrx 2.`);
+      // The result stays here (where it ran, and its filing), with a link to the computer's view.
       void run.filing.then(async (filed) => {
-        if ("conversationId" in filed) await attachHomes(filed.conversationId);
-        else {
+        if ("conversationId" in filed) {
+          setLaunched(filed.conversationId);
+          await attachHomes(filed.conversationId);
+        } else {
           await addHomesToFiling(browserCodingDoors, run.sessionId, homes);
-          toast.info(filed.pending);
+          setFilingNote(filed.pending);
+          await refreshFilings();
         }
       });
-      router.push(run.link);
+      setLaunching(false);
     } catch (error) {
       const said = error instanceof Error ? error.message : String(error);
       setComputerRefusal(`${plan.name} said: ${said}`);
@@ -729,7 +742,7 @@ function ComposerBody({
   }`;
 
   return (
-    <div className="mx-auto flex max-w-3xl flex-col gap-3 px-4 py-4">
+    <div className="mx-auto flex max-w-3xl flex-col gap-3 px-4 pt-4">
       {runsOnDevice !== null && (
         <ComputerConnection key={runsOnDevice} deviceId={runsOnDevice} onConnection={setComputerConnection} />
       )}
@@ -805,21 +818,6 @@ function ComposerBody({
             </p>
           </div>
         )}
-        {runsOnDevice === null && destination === "claude-code" && (
-          <p className="mt-2 text-xs text-muted-foreground">
-            {localCapability
-              ? [localCapability.notice, filingNote].filter(Boolean).join(" ")
-              : "Checking your computer…"}
-          </p>
-        )}
-        {waitingFilings.map((filing) => (
-          <div key={filing.sessionId} className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
-            <span className="min-w-0 flex-1">Started on {filing.computerName}, not in AI Matrx yet.</span>
-            <Button variant="outline" onClick={() => void deliverFiling(filing)}>
-              Deliver
-            </Button>
-          </div>
-        ))}
         {runsOnDevice === null && destination === "claude-code-hosted" &&
           hostedAvailability.selectable && (
             <HostedBillingStep
@@ -1048,6 +1046,35 @@ function ComposerBody({
           </dd>
         </dl>
       </ComposerSection>
+
+      {/* ── The result, where Run is: which computer runs it (or why Matrx Local
+           is tried), progress, where it ran, and any start not in AI Matrx yet. */}
+      <div className="flex flex-col gap-1.5 text-xs text-muted-foreground" aria-live="polite">
+        {runsOnDevice === null && destination === "claude-code" ? (
+          <span>{localCapability ? localCapability.notice : "Checking your computer…"}</span>
+        ) : null}
+        {launching && runStatus ? <span className="text-foreground">{runStatus}</span> : null}
+        {startedRun ? (
+          <span className="text-foreground">
+            Started on {startedRun.computerName} through Matrx 2.{" "}
+            {startedRun.link ? (
+              <Link href={startedRun.link} className="text-primary hover:underline">
+                Open it on {startedRun.computerName}
+              </Link>
+            ) : null}
+          </span>
+        ) : null}
+        {waitingFilings.map((filing) => (
+          <div key={filing.sessionId} className="flex items-center gap-2">
+            <span className="min-w-0 flex-1">
+              Not in AI Matrx yet: {filingNote && startedRun?.computerName === filing.computerName ? filingNote : filingPendingSentence(filing.computerName)}
+            </span>
+            <Button variant="outline" onClick={() => void deliverFiling(filing)}>
+              Deliver
+            </Button>
+          </div>
+        ))}
+      </div>
 
       <div className="sticky bottom-0 flex items-center gap-2 border-t border-border bg-background/95 py-3 backdrop-blur">
         <Button icon={launching ? (

@@ -75,6 +75,11 @@ export function FullDownloadButton({
         )}
         Full Download
       </button>
+      {state.phase === "working" ? (
+        <p className="text-right text-xs text-muted-foreground" aria-live="polite">
+          Asking your computers, then the cloud backup…
+        </p>
+      ) : null}
       {state.phase === "failed" ? (
         <p className="max-w-sm truncate text-right text-xs text-amber-700 dark:text-amber-400" title={state.message}>
           {state.message}
@@ -102,15 +107,25 @@ function FullDownloadOutcome({ result }: { result: FullDownloadResult }) {
   const name = PROVIDER_NAMES[result.provider] ?? result.provider;
   const step = result.step;
   if (step.kind === "this_computer") {
-    return <span title={clip(step.savedPath)}>{name}: saved to Downloads</span>;
+    const from = step.savedPath.split(", from ")[1];
+    return <span title={clip(step.savedPath)}>{name}: saved to Downloads{from ? ` from ${from}` : ""}</span>;
   }
   if (step.kind === "cloud_backup") {
     return <span title={clip(step.thisComputer)}>{name}: downloaded cloud backup</span>;
   }
+  // Each place that was asked says why, by name (each reason starts with its computer or source).
   return (
-    <span className="text-amber-700 dark:text-amber-400" title={clip(step.reasons.join(" "))}>
-      {name}: not available
-    <ErrorAlchemyMenu error={clip(step.reasons.join(" "))} /></span>
+    <span className="flex flex-col items-end text-amber-700 dark:text-amber-400" title={clip(step.reasons.join(" "))}>
+      <span>
+        {name}: not available
+        <ErrorAlchemyMenu error={clip(step.reasons.join(" "))} />
+      </span>
+      {step.reasons.slice(0, 3).map((reason) => (
+        <span key={reason} className="text-muted-foreground">
+          {clip(reason)}
+        </span>
+      ))}
+    </span>
   );
 }
 

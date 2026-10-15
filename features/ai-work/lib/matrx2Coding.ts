@@ -279,8 +279,12 @@ export function chooseComputer(statuses: Matrx2ComputerStatus[], deviceId?: stri
   const reasons: string[] = [];
   const online: Matrx2ComputerStatus[] = [];
   const unknown: Matrx2ComputerStatus[] = [];
+  // Offline computers: only the two most recently seen are named (the ones the person could mean).
+  const offline = pool.filter((s) => s.online === false);
+  for (const s of offline.slice(0, 2)) reasons.push(`${s.name}: offline or asleep.`);
+  if (offline.length > 2) reasons.push(`${offline.length - 2} more ${offline.length - 2 === 1 ? "is" : "are"} offline.`);
   for (const s of pool) {
-    if (s.online === false) reasons.push(`${s.name}: offline or asleep.`);
+    if (s.online === false) continue;
     else if (protocolMinor(s.protocolVersion) > 0 && protocolMinor(s.protocolVersion) < CODING_MINOR) reasons.push(`${s.name}: update Matrx 2 to reach its coding sessions from here.`);
     else if (s.online) online.push(s);
     else unknown.push(s);

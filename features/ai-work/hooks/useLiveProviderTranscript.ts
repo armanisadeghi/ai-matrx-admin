@@ -62,6 +62,8 @@ export interface LiveTranscriptStatus {
   error: string | null;
   /** Manual re-check — also how an idle transcript resumes. */
   checkNow: () => void;
+  /** What the last "Check now" found, in words: never a silent click. */
+  lastCheck: string | null;
   /**
    * One newest-side read REGARDLESS of liveness, for a turn AI Matrx itself
    * just wrote onto this conversation (the in-app reply composer).
@@ -101,6 +103,7 @@ export function useLiveProviderTranscript({
   const [lastSeenAt, setLastSeenAt] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [lastCheck, setLastCheck] = useState<string | null>(null);
 
   // Mutable values the cycle reads at event time — never effect deps, or the
   // timer would be torn down and rebuilt on every arriving message.
@@ -112,7 +115,7 @@ export function useLiveProviderTranscript({
   });
 
   const runCycleRef = useRef<
-    ((options?: { force?: boolean }) => void) | null
+    ((options?: { force?: boolean; manual?: boolean }) => void) | null
   >(null);
 
   useEffect(() => {
@@ -138,8 +141,15 @@ export function useLiveProviderTranscript({
       }, delay);
     };
 
-    const cycle = async (options?: { force?: boolean }) => {
-      if (disposed || inFlight) return;
+    const cycle = async (options?: { force?: boolean; manual?: boolean }) => {
+      const said = (words: string) => {
+        if (options?.manual && !disposed) setLastCheck(`Checked ${new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}: ${words}`);
+      };
+      if (disposed) return;
+      if (inFlight) {
+        said("a check is already running.");
+        return;
+      }
       // A hidden tab is not being watched; stop reading and resume on focus.
       if (
         typeof document !== "undefined" &&
@@ -163,6 +173,7 @@ export function useLiveProviderTranscript({
           setMode("idle");
           setError(null);
           clear();
+          said("this session is not delivering anything new.");
           return;
         }
 
@@ -179,6 +190,7 @@ export function useLiveProviderTranscript({
         if (messages.length > 0 || toolCalls.length > 0) {
           onArrivalRef.current({ messages, toolCalls });
         }
+        said(messages.length > 0 ? `${messages.length} new ${messages.length === 1 ? "turn" : "turns"}.` : "nothing new.");
 
         if (!session.live) {
           // Forced one-shot read on a settled session: the rows are applied,
@@ -213,6 +225,7 @@ export function useLiveProviderTranscript({
             ? readError.message
             : "Live update read failed",
         );
+        said("the read failed (shown beside).");
         backoffMs = Math.min(
           backoffMs > 0 ? backoffMs * 2 : LIVE_POLL_INTERVAL_MS,
           LIVE_POLL_MAX_BACKOFF_MS,
@@ -233,7 +246,7 @@ export function useLiveProviderTranscript({
       }
     };
 
-    runCycleRef.current = (options?: { force?: boolean }) => {
+    runCycleRef.current = (options?: { force?: boolean; manual?: boolean }) => {
       void cycle(options);
     };
 
@@ -257,12 +270,12 @@ export function useLiveProviderTranscript({
   }, [conversationId]);
 
   const checkNow = useCallback(() => {
-    runCycleRef.current?.();
+    runCycleRef.current?.({ manual: true });
   }, []);
 
   const refreshNow = useCallback(() => {
     runCycleRef.current?.({ force: true });
   }, []);
 
-  return { mode, lastSeenAt, busy, error, checkNow, refreshNow };
+  return { mode, lastSeenAt, busy, error, checkNow, lastCheck, refreshNow };
 }

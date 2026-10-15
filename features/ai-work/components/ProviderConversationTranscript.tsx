@@ -678,6 +678,7 @@ function LiveTranscriptIndicator({ status }: { status: LiveTranscriptStatus }) {
         <RefreshCw className={cn("h-3 w-3", status.busy && "animate-spin")} />
         Check now
       </button>
+      {status.lastCheck ? <span className="text-muted-foreground">{status.lastCheck}</span> : null}
       {status.error ? (
         <span className="inline-flex items-center gap-1 text-amber-600 dark:text-amber-400">
           <CircleAlert className="h-3 w-3 shrink-0" />

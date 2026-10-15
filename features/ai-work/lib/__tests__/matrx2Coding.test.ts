@@ -72,6 +72,12 @@ describe("which computer runs it", () => {
     expect(named.notice).toBe("Runs on Laptop (Matrx 2).");
   });
 
+  // RED WHEN: every disposable or long-gone computer is listed in the fallback line.
+  it("names only the two most recent offline computers", () => {
+    const pick = chooseComputer(["A", "B", "C", "D"].map((n) => mac({ deviceId: n, name: n, online: false })));
+    expect(pick.reasons).toEqual(["A: offline or asleep.", "B: offline or asleep.", "2 more are offline."]);
+  });
+
   it("says why each other computer cannot", () => {
     const pick = chooseComputer([mac({ online: false }), mac({ deviceId: "d2", name: "Old iMac", protocolVersion: "1.30" })]);
     expect(pick.computer).toBeNull();
