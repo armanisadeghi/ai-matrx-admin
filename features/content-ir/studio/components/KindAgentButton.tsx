@@ -68,6 +68,8 @@ export default function KindAgentButton({
       size={size}
       className={className}
       disabled={launching || preparing}
+      // An expensive click names its consequence first: this starts a run.
+      title="Starts an agent run in a window on this page"
       onClick={() => void start()}
     >
       <PencilRuler className="mr-1.5 h-3.5 w-3.5" />
