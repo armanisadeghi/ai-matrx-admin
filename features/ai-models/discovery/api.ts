@@ -66,6 +66,10 @@ export interface Suggested {
   license_url: string | null;
   pipeline_tag: string | null;
   summary: string;
+  summary_source?: string;
+  capabilities?: { input: string[]; output: string[]; interaction: string };
+  capabilities_basis?: string;
+  maker_match?: { matched: boolean; words: string; provider_id: string | null; provider_name: string };
   tags: string[];
   links: { label: string; url: string }[];
   media: SuggestedMedia[];
@@ -113,6 +117,9 @@ export interface PromoteResult {
     file_check: string;
     label: string;
   }[];
+  notes?: string[];
+  presentation_changes?: { kept: string[]; replaced: string[]; set: string[] };
+  media?: { file_id?: string; step: string; ok: boolean; words?: string }[];
 }
 
 export interface CallAuth {
@@ -179,6 +186,7 @@ export interface PromotedVariant {
   architecture: string;
   chat_template_kind: string;
   format: ModelFormat;
+  metadata: { test_request?: { status: string; requested_at?: string; result?: string; reason?: string } } | null;
 }
 
 export interface VerificationRun {
@@ -202,6 +210,7 @@ export interface CompatRow {
   chat_template_kind: string;
   status: string;
   runtime_build_id: string;
+  runtime_build: { os: string; arch: string; runtime_version: string | null; is_active: boolean } | null;
 }
 
 export async function loadPromoted(modelId: string): Promise<{
@@ -214,7 +223,7 @@ export async function loadPromoted(modelId: string): Promise<{
     .schema("ai")
     .from("model_variant")
     .select(
-      "id, key, quant, review_state, tested_on_current_runtime, is_default, architecture, chat_template_kind, format",
+      "id, key, quant, review_state, tested_on_current_runtime, is_default, architecture, chat_template_kind, format, metadata",
     )
     .eq("model_id", modelId)
     .is("deleted_at", null)
@@ -239,7 +248,9 @@ export async function loadPromoted(modelId: string): Promise<{
     const { data, error } = await supabase
       .schema("ai")
       .from("runtime_compat")
-      .select("id, hardware_class, quant, architecture, chat_template_kind, status, runtime_build_id")
+      .select(
+        "id, hardware_class, quant, architecture, chat_template_kind, status, runtime_build_id, runtime_build(os, arch, runtime_version, is_active)",
+      )
       .eq("format", v.format)
       .eq("quant", v.quant)
       .eq("architecture", v.architecture)
@@ -247,7 +258,10 @@ export async function loadPromoted(modelId: string): Promise<{
       .is("deleted_at", null);
     if (error) throw error;
     for (const row of data ?? []) {
-      if (!compat.some((c) => c.id === row.id)) compat.push(row as CompatRow);
+      const r = row as unknown as CompatRow;
+      // Only the builds users can get today; a retired build's row is history, not compatibility.
+      if (r.runtime_build && !r.runtime_build.is_active) continue;
+      if (!compat.some((c) => c.id === r.id)) compat.push(r);
     }
   }
   return {
