@@ -295,14 +295,265 @@ export type Database = {
         }
         Relationships: []
       }
+      support_session_events: {
+        Row: {
+          admin_user_id: string
+          created_at: string
+          created_by: string | null
+          event: string
+          expires_at: string | null
+          id: string
+          metadata: Json
+          organization_id: string
+          support_session_id: string
+          target_last_active_at: string | null
+          target_live_sign_ins: number
+          target_user_id: string
+          updated_at: string
+          updated_by: string | null
+          version: number
+          via: string
+        }
+        Insert: {
+          admin_user_id: string
+          created_at?: string
+          created_by?: string | null
+          event: string
+          expires_at?: string | null
+          id?: string
+          metadata?: Json
+          organization_id: string
+          support_session_id: string
+          target_last_active_at?: string | null
+          target_live_sign_ins: number
+          target_user_id: string
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+          via: string
+        }
+        Update: {
+          admin_user_id?: string
+          created_at?: string
+          created_by?: string | null
+          event?: string
+          expires_at?: string | null
+          id?: string
+          metadata?: Json
+          organization_id?: string
+          support_session_id?: string
+          target_last_active_at?: string | null
+          target_live_sign_ins?: number
+          target_user_id?: string
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+          via?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "support_session_events_support_session_id_fkey"
+            columns: ["support_session_id"]
+            isOneToOne: false
+            referencedRelation: "support_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      support_sessions: {
+        Row: {
+          auth_session_id: string | null
+          claim_expires_at: string
+          claim_token_hash: string | null
+          created_at: string
+          created_by: string | null
+          end_reason: string | null
+          ended_at: string | null
+          expires_at: string | null
+          id: string
+          metadata: Json
+          minutes_granted: number
+          organization_id: string
+          reason: string
+          started_at: string | null
+          status: string
+          support_ip: unknown
+          support_user_agent: string | null
+          target_user_id: string
+          updated_at: string
+          updated_by: string | null
+          version: number
+        }
+        Insert: {
+          auth_session_id?: string | null
+          claim_expires_at: string
+          claim_token_hash?: string | null
+          created_at?: string
+          created_by?: string | null
+          end_reason?: string | null
+          ended_at?: string | null
+          expires_at?: string | null
+          id?: string
+          metadata?: Json
+          minutes_granted: number
+          organization_id: string
+          reason: string
+          started_at?: string | null
+          status?: string
+          support_ip?: unknown
+          support_user_agent?: string | null
+          target_user_id: string
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+        }
+        Update: {
+          auth_session_id?: string | null
+          claim_expires_at?: string
+          claim_token_hash?: string | null
+          created_at?: string
+          created_by?: string | null
+          end_reason?: string | null
+          ended_at?: string | null
+          expires_at?: string | null
+          id?: string
+          metadata?: Json
+          minutes_granted?: number
+          organization_id?: string
+          reason?: string
+          started_at?: string | null
+          status?: string
+          support_ip?: unknown
+          support_user_agent?: string | null
+          target_user_id?: string
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      _support_session_close: {
+        Args: { p_id: string; p_reason: string; p_via: string }
+        Returns: {
+          auth_session_id: string | null
+          claim_expires_at: string
+          claim_token_hash: string | null
+          created_at: string
+          created_by: string | null
+          end_reason: string | null
+          ended_at: string | null
+          expires_at: string | null
+          id: string
+          metadata: Json
+          minutes_granted: number
+          organization_id: string
+          reason: string
+          started_at: string | null
+          status: string
+          support_ip: unknown
+          support_user_agent: string | null
+          target_user_id: string
+          updated_at: string
+          updated_by: string | null
+          version: number
+        }
+        SetofOptions: {
+          from: "*"
+          to: "support_sessions"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      _support_session_log: {
+        Args: {
+          p_event: string
+          p_session: Database["admin"]["Tables"]["support_sessions"]["Row"]
+          p_via: string
+        }
+        Returns: undefined
+      }
+      _support_session_via: {
+        Args: { p_row: Database["admin"]["Tables"]["support_sessions"]["Row"] }
+        Returns: string
+      }
+      _support_target_activity: {
+        Args: { p_user_id: string }
+        Returns: Record<string, unknown>
+      }
       set_top_tier_model_access: {
         Args: { p_enabled: boolean; p_note?: string; p_user: string }
         Returns: Json
+      }
+      support_session_abort: { Args: { p_id: string }; Returns: undefined }
+      support_session_activate: {
+        Args: { p_auth_session_id: string; p_id: string }
+        Returns: {
+          expires_at: string
+        }[]
+      }
+      support_session_claim: {
+        Args: { p_claim_token: string }
+        Returns: {
+          id: string
+          target_email: string
+          target_user_id: string
+        }[]
+      }
+      support_session_close_expired: { Args: never; Returns: number }
+      support_session_create: {
+        Args: { p_minutes: number; p_reason: string; p_target_user_id: string }
+        Returns: {
+          claim_expires_at: string
+          claim_token: string
+          id: string
+        }[]
+      }
+      support_session_current: {
+        Args: never
+        Returns: {
+          admin_email: string
+          admin_user_id: string
+          expires_at: string
+          id: string
+          reason: string
+          started_at: string
+          status: string
+          target_email: string
+          target_user_id: string
+        }[]
+      }
+      support_session_end: { Args: { p_id: string }; Returns: undefined }
+      support_session_extend: {
+        Args: { p_id: string; p_minutes: number }
+        Returns: {
+          expires_at: string
+        }[]
+      }
+      support_session_list: {
+        Args: { p_limit?: number }
+        Returns: {
+          admin_email: string
+          admin_user_id: string
+          created_at: string
+          end_reason: string
+          ended_at: string
+          events: Json
+          expires_at: string
+          id: string
+          minutes_granted: number
+          reason: string
+          started_at: string
+          status: string
+          support_ip: string
+          support_user_agent: string
+          target_email: string
+          target_user_id: string
+        }[]
       }
       top_tier_model_access_list: {
         Args: never
@@ -120498,6 +120749,7 @@ export type Database = {
           shown_to: Database["platform"]["Enums"]["shown_to"] | null
           surfaces: string[]
           tags: string[]
+          target_device_id: string | null
           taxonomy_node_id: string | null
           title: string
           updated_at: string
@@ -120528,6 +120780,7 @@ export type Database = {
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
           surfaces?: string[]
           tags?: string[]
+          target_device_id?: string | null
           taxonomy_node_id?: string | null
           title: string
           updated_at?: string
@@ -120558,6 +120811,7 @@ export type Database = {
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
           surfaces?: string[]
           tags?: string[]
+          target_device_id?: string | null
           taxonomy_node_id?: string | null
           title?: string
           updated_at?: string
