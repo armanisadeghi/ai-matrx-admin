@@ -1,6 +1,6 @@
 {
   "note": "Checked-in snapshot of public._schema_migrations for the files under migrations/campaign and migrations/inverse. Written by `pnpm db:apply` on every successful production apply and refreshed whole by the nightly catch-up. Never hand-edited: a self-written checksum is a claim nobody can check. Guard: pnpm check:ledgered-files-unedited.",
-  "generated_at": "2026-10-15T18:38:19.422Z",
+  "generated_at": "2026-10-15T19:26:41.548Z",
   "files": {
     "migrations/campaign/a_chunk_is_the_size_the_client_door_can_actually_carry.sql": {
       "source": "matrx-frontend",
@@ -601,6 +601,12 @@
       "filename": "atauto3_b_a_script_run_has_a_price.sql",
       "checksum": "599aabf866f4ce1142bb3ad683bcc5bbfb7732d80083031e2fc6a44a861f42a0",
       "applied_at": "2026-10-15 18:28:24.457945+00"
+    },
+    "migrations/campaign/atauto4_a_sandbox_second_priced_from_the_host_cost.sql": {
+      "source": "matrx-frontend",
+      "filename": "atauto4_a_sandbox_second_priced_from_the_host_cost.sql",
+      "checksum": "906d295f6a04afcd8a044c7c154ca4546070a2f02795180120a81b8af1f675f7",
+      "applied_at": "2026-10-15 19:26:40.403383+00"
     },
     "migrations/campaign/atbase_a_a_base_has_a_name_snapshots_and_a_copy_that_points_inward.sql": {
       "source": "matrx-frontend",
