@@ -4,11 +4,10 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ErrorNotice } from "@ai-matrx/design-system";
 import { InfoHint } from "@/components/official/InfoHint";
-import { getEntityInfo } from "@/features/scopes/registry/entityRegistry";
+import { resolveEntityDoors } from "@/components/official/entity-ref/doors";
 import { loadTransferContexts } from "./transfer-context-service";
 import type { TransferContextItem } from "./transfer-context";
 export function VoiceTransferHistory() {
-  const conversationHref = getEntityInfo("conversation").hrefFor;
   const [items, setItems] = useState<TransferContextItem[]>([]),
     [loading, setLoading] = useState(true),
     [error, setError] = useState("");
@@ -70,28 +69,33 @@ export function VoiceTransferHistory() {
         <p className="text-sm text-muted-foreground">No transfer callbacks.</p>
       ) : (
         <ul className="space-y-2">
-          {items.map((item) => (
-            <li
-              key={item.callId}
-              className="flex flex-wrap items-center justify-between gap-2 rounded-lg border p-3"
-            >
-              <time dateTime={item.observedAt} className="text-sm">
-                {new Date(item.observedAt).toLocaleString()}
-              </time>
-              {item.conversationId && conversationHref ? (
-                <Link
-                  className="text-sm text-primary underline underline-offset-4"
-                  href={conversationHref(item.conversationId)}
-                >
-                  Open conversation
-                </Link>
-              ) : (
-                <span className="text-sm text-muted-foreground">
-                  Context unavailable
-                </span>
-              )}
-            </li>
-          ))}
+          {items.map((item) => {
+            const conversationHref = item.conversationId
+              ? resolveEntityDoors("conversation", item.conversationId).href
+              : null;
+            return (
+              <li
+                key={item.callId}
+                className="flex flex-wrap items-center justify-between gap-2 rounded-lg border p-3"
+              >
+                <time dateTime={item.observedAt} className="text-sm">
+                  {new Date(item.observedAt).toLocaleString()}
+                </time>
+                {conversationHref ? (
+                  <Link
+                    className="text-sm text-primary underline underline-offset-4"
+                    href={conversationHref}
+                  >
+                    Open conversation
+                  </Link>
+                ) : (
+                  <span className="text-sm text-muted-foreground">
+                    Context unavailable
+                  </span>
+                )}
+              </li>
+            );
+          })}
         </ul>
       )}
     </section>
