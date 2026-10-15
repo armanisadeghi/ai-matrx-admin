@@ -18,7 +18,7 @@
 
 import { useEffect, useReducer, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { FilePlus2, FolderOpen, History, Info, Loader2, MonitorPlay, Presentation } from "lucide-react";
+import { FilePlus2, FolderOpen, History, Info, Loader2, MonitorPlay, Presentation, Printer } from "lucide-react";
 import { EditorDetailsDialog, formatDetailDate } from "@/components/editor-chrome/EditorDetailsDialog";
 
 import { Button } from "@ai-matrx/design-system/controls";
@@ -62,7 +62,7 @@ import { cn } from "@/lib/utils";
 import { blankDeck, getPath, type DeckAction } from "../deck-model";
 import { historyReducer, initialHistory } from "../deck-history";
 import { buildDeckMenus, buildDeckToolbar, type DeckChromeHost } from "../deck-commands";
-import { deckDownloads } from "../deck-export";
+import { deckDownloads, downloadDeckAsText, printDeck } from "../deck-export";
 import {
   createPresentation,
   getPresentation,
@@ -258,6 +258,14 @@ export function PresentationEditor({ presentationId }: { presentationId: string 
       shortcut: { key: "h", mod: true, alt: true, shift: true, bind: true },
       run: () => setHistoryOpen((v) => !v),
     },
+    {
+      kind: "action",
+      id: "file.print",
+      label: "Print",
+      icon: Printer,
+      shortcut: { key: "p", mod: true, bind: true },
+      run: () => printDeck(deckRef.current),
+    },
     { kind: "action", id: "file.details", label: "Details", icon: Info, keywords: ["info", "created", "modified"], run: () => setDetailsOpen(true) },
   ];
   const menus = buildDeckMenus(host);
@@ -283,7 +291,7 @@ export function PresentationEditor({ presentationId }: { presentationId: string 
           label: d.label.startsWith("PowerPoint") ? "Microsoft PowerPoint (.pptx)" : d.label === "PDF" ? "PDF Document (.pdf)" : d.label,
         })),
         { label: "ODP Document (.odp)", soon: "presentations.download-odp" },
-        { label: "Plain Text (.txt)", soon: "presentations.download-text" },
+        { label: "Plain Text (.txt)", run: async () => downloadDeckAsText(deckRef.current, row?.name ?? "presentation") },
         { label: "JPEG image (.jpg, current slide)", soon: "presentations.download-image" },
         { label: "PNG image (.png, current slide)", soon: "presentations.download-image" },
         { label: "Scalable Vector Graphics (.svg, current slide)", soon: "presentations.download-image" },

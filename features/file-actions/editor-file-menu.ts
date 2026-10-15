@@ -45,6 +45,8 @@ export type EditorFileSpec = {
 
 export type EditorFileHandlers = {
   share?: () => void;
+  /** Email this file / Email collaborators (opens the email dialog in that mode). */
+  email?: (mode: "file" | "collaborators") => void;
   copy?: () => void;
   rename?: () => void;
   move?: () => void;
@@ -110,8 +112,12 @@ export function buildEditorFileMenu(spec: EditorFileSpec, h: EditorFileHandlers)
     label: "Email",
     icon: Mail,
     items: [
-      soon("file.email.file", "Email this file", "editor.file.email"),
-      soon("file.email.collaborators", "Email collaborators", "editor.file.email"),
+      ...(h.email
+        ? [
+            action("file.email.file", "Email this file", () => h.email?.("file")),
+            action("file.email.collaborators", "Email collaborators", () => h.email?.("collaborators")),
+          ]
+        : []),
     ],
   });
   push({
@@ -161,7 +167,7 @@ export function buildEditorFileMenu(spec: EditorFileSpec, h: EditorFileHandlers)
   push(sep);
 
   // ── Print ──
-  push(row("file.print") ?? (spec.product === "slides" ? soon("file.print", "Print", "presentations.print") : undefined));
+  push(row("file.print"));
   // Rows the editor adds that Google's File menu does not name stay at the end (none today).
   const placed = new Set(["file.new", "file.open", "file.import", "file.history", "file.print", "file.details", "file.settings", "file.page-setup"]);
   const rest = spec.rows.filter((r) => r.kind !== "separator" && !placed.has(r.id));

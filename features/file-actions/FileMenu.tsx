@@ -30,6 +30,7 @@ import { renderMenuEntries } from "@/components/editor-chrome/EditorMenuBar";
 import { useRouter } from "next/navigation";
 import { restoreEditorFocus } from "@/components/editor-chrome/EditorMenuBar";
 import { EditorMenuContent } from "@/components/editor-chrome/editor-menu-surface";
+import { EmailFileDialog } from "./EmailFileDialog";
 import { MoveToProjectDialog } from "./MoveToProjectDialog";
 import { SaveAsTemplateDialog } from "@/features/templates/files/components/SaveAsTemplateDialog";
 import type { TemplateKind } from "@/features/templates/files/types";
@@ -126,6 +127,7 @@ export function FileMenu({
   const router = useRouter();
   const [menuOpened, setMenuOpened] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
+  const [emailMode, setEmailMode] = useState<"file" | "collaborators" | null>(null);
   const [moveOpen, setMoveOpen] = useState(false);
   const [templateOpen, setTemplateOpen] = useState(false);
   const { name, trashed } = items;
@@ -189,6 +191,7 @@ export function FileMenu({
                     {renderMenuEntries(
                       buildEditorFileMenu(editorFile, {
                         ...(shareable ? { share: () => setShareOpen(true) } : {}),
+                        email: (mode) => setEmailMode(mode),
                         ...(items.onCopy ? { copy: () => void items.onCopy?.() } : {}),
                         ...(items.canManage && items.onRename
                           ? { rename: () => void promptRename(name, items.onRename!) }
@@ -230,6 +233,15 @@ export function FileMenu({
           resourceType={resourceType}
           resourceId={id}
           resourceName={name}
+        />
+      )}
+      {emailMode && (
+        <EmailFileDialog
+          mode={emailMode}
+          resourceType={resourceType}
+          resourceId={id}
+          name={name}
+          onClose={() => setEmailMode(null)}
         />
       )}
       {moveOpen && onMove && (

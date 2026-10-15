@@ -314,6 +314,7 @@ export const SHEET_RIBBON: RibbonTabSpec[] = [
           { ref: "tools.activity", label: "Activity dashboard", icon: Activity },
           { ref: "tools.notifications", label: "Notification settings", icon: Bell },
           { ref: "tools.suggestions", label: "Suggestion controls", icon: Lightbulb },
+          { ref: "tools.autocomplete", label: "Autocomplete", icon: Lightbulb },
         ],
       },
     ],

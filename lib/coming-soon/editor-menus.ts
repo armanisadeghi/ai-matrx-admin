@@ -13,7 +13,6 @@ type Row = [id: string, label: string, owner: string, promise: string, surface: 
 const ROWS: Row[] = [
   // ── File (all three editors) ──
   ["editor.file.publish-to-web", "Publish to web", "file-actions", "Publish a live, read-only copy of this file at a public link that updates as you edit.", "Editor File → Share"],
-  ["editor.file.email", "Email this file", "file-actions", "Email this file, or a note to everyone it is shared with, straight from the editor.", "Editor File → Email"],
   ["editor.file.approvals", "Approvals", "file-actions", "Ask named people to approve this version, and lock it once they do.", "Editor File → Approvals"],
   ["editor.file.name-version", "Name current version", "file-actions", "Give the current version a name so it is easy to find and restore in version history.", "Editor File → Version history"],
   ["editor.file.offline", "Make available offline", "file-actions", "Keep this file on this device so you can open and edit it without a connection.", "Editor File → Make available offline"],
@@ -26,10 +25,8 @@ const ROWS: Row[] = [
   ["documents.download-rtf", "Download as rich text (.rtf)", "documents", "Download the document as rich text.", "Document File → Download"],
   ["documents.download-epub", "Download as EPUB", "documents", "Download the document as an EPUB e-book.", "Document File → Download"],
   ["presentations.download-odp", "Download as OpenDocument (.odp)", "presentations", "Download the deck as an OpenDocument presentation.", "Presentation File → Download"],
-  ["presentations.download-text", "Download as plain text", "presentations", "Download every slide's text, in order, as a plain text file.", "Presentation File → Download"],
   ["presentations.download-image", "Download a slide as an image", "presentations", "Download the current slide as a JPEG, PNG or SVG image.", "Presentation File → Download"],
   ["presentations.import-slides", "Import slides", "presentations", "Bring slides in from another presentation or a PowerPoint file.", "Presentation File → Import slides"],
-  ["presentations.print", "Print slides", "presentations", "Print the deck, or preview handouts and notes pages before printing.", "Presentation File → Print"],
   // ── Edit / View / Insert / Format (shared) ──
   ["editor.edit.paste-plain", "Paste without formatting", "file-actions", "Paste the clipboard as plain text, taking on the surrounding style.", "Document and Presentation Edit"],
   ["editor.insert.drawing", "Drawing", "file-actions", "Draw shapes, lines and text boxes and place the drawing in the file.", "Editor Insert → Drawing"],
@@ -54,7 +51,6 @@ const ROWS: Row[] = [
   ["editor.help.training", "Training", "file-actions", "Short lessons that teach this editor, from basics to advanced.", "Editor Help → Training"],
   ["editor.help.updates", "Updates", "file-actions", "See what changed in this editor recently.", "Editor Help → Updates"],
   // ── Workbook only ──
-  ["workbooks.move-rows-columns", "Move rows and columns", "workbooks", "Move the selected rows up or down and columns left or right.", "Workbook Edit → Move"],
   ["workbooks.show-formulas", "Show formulas", "workbooks", "Show every cell's formula in place of its value.", "Workbook View → Show"],
   ["workbooks.show-protected-ranges", "Show protected ranges", "workbooks", "Shade every protected range so you can see what is locked.", "Workbook View → Show"],
   ["workbooks.group", "Group rows and columns", "workbooks", "Group rows or columns so they collapse and expand together.", "Workbook View → Group"],
@@ -66,11 +62,11 @@ const ROWS: Row[] = [
   ["workbooks.slicer", "Slicer", "workbooks", "Add a slicer that filters charts and tables from one control.", "Workbook Data → Add a slicer"],
   ["workbooks.named-ranges", "Named ranges", "workbooks", "Name a range and use the name in formulas.", "Workbook Data → Named ranges"],
   ["workbooks.named-functions", "Named functions", "workbooks", "Save a formula as your own reusable function.", "Workbook Data → Named functions"],
-  ["workbooks.randomize-range", "Randomize range", "workbooks", "Shuffle the rows of the selected range into a random order.", "Workbook Data → Randomize range"],
   ["workbooks.column-stats", "Column stats", "workbooks", "See counts, distribution and common values for a column.", "Workbook Data → Column stats"],
   ["workbooks.data-extraction", "Data extraction", "workbooks", "Pull fields out of smart chips into their own columns.", "Workbook Data → Data extraction"],
   ["workbooks.data-connectors", "Data connectors", "workbooks", "Connect the workbook to a database and keep the data refreshed.", "Workbook Data → Data connectors"],
   ["workbooks.create-form", "Create a form", "workbooks", "Create a form whose answers land in a new sheet of this workbook.", "Workbook Tools → Create a new form"],
+  ["workbooks.autocomplete", "Autocomplete", "workbooks", "Turn cell autocomplete on or off while you type.", "Workbook Tools → Autocomplete"],
   ["workbooks.suggestion-controls", "Suggestion controls", "workbooks", "Choose which automatic suggestions (autocomplete, formulas) appear.", "Workbook Tools → Suggestion controls"],
   // ── Document only ──
   ["documents.mode", "Editing mode", "documents", "Switch between editing, suggesting and viewing.", "Document View → Mode"],

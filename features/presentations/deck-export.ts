@@ -48,50 +48,82 @@ export async function downloadDeckAsHtml(deck: Deck, name: string): Promise<void
   downloadFile(`${safeName(name)}.html`, new Blob([html], { type: "text/html" }), "text/html");
 }
 
-export async function downloadDeckAsPdf(deck: Deck, name: string): Promise<void> {
-  if (deck.slides.length === 0) throw new Error("This presentation has no slides yet");
-  const [{ createRoot }, { createElement }, { flushSync }, paper, { exportToPDF }] = await Promise.all([
+/** Draws every slide with the real renderer (SlideView on paper) into a host; `done()` unmounts it. */
+async function renderDeckSlides(deck: Deck, hostStyle: Partial<CSSStyleDeclaration>) {
+  const [{ createRoot }, { createElement }, { flushSync }, paper] = await Promise.all([
     import("react-dom/client"),
     import("react"),
     import("react-dom"),
     import("./slide-paper"),
-    import("@/components/mardown-display/blocks/presentations/presentation-export"),
   ]);
   const host = document.createElement("div");
   host.setAttribute("aria-hidden", "true");
-  Object.assign(host.style, { position: "fixed", left: "-10000px", top: "0", width: `${SLIDE_STAGE.width}px` });
+  Object.assign(host.style, hostStyle);
   document.body.appendChild(host);
   const roots: ReturnType<typeof createRoot>[] = [];
-  try {
-    const elements: HTMLElement[] = [];
-    for (const slide of deck.slides) {
-      const el = document.createElement("div");
-      Object.assign(el.style, { width: `${SLIDE_STAGE.width}px`, height: `${SLIDE_STAGE.height}px`, background: slideSurface(resolveDeckTheme(deck.theme ?? undefined)).background });
-      host.appendChild(el);
-      const root = createRoot(el);
-      roots.push(root);
-      flushSync(() =>
-        root.render(
-          createElement(paper.PaperSlide, {
-            deck,
-            slide,
-            className: "h-full w-full",
-          }),
-        ),
-      );
-      elements.push(el);
-    }
-    // ScaledSlide measures after mount, and images resolve async: give both a beat.
-    await new Promise((r) => setTimeout(r, 600));
-    const res = await exportToPDF(elements, safeName(name), {
-      quality: 2,
-      backgroundColor: slideSurface(resolveDeckTheme(deck.theme ?? undefined)).background,
-    });
-    if (!res.success) throw new Error(res.error ?? res.message);
-  } finally {
+  const background = slideSurface(resolveDeckTheme(deck.theme ?? undefined)).background;
+  const elements: HTMLElement[] = [];
+  for (const slide of deck.slides) {
+    const el = document.createElement("div");
+    Object.assign(el.style, { width: `${SLIDE_STAGE.width}px`, height: `${SLIDE_STAGE.height}px`, background });
+    host.appendChild(el);
+    const root = createRoot(el);
+    roots.push(root);
+    flushSync(() => root.render(createElement(paper.PaperSlide, { deck, slide, className: "h-full w-full" })));
+    elements.push(el);
+  }
+  // ScaledSlide measures after mount, and images resolve async: give both a beat.
+  await new Promise((r) => setTimeout(r, 600));
+  const done = () => {
     for (const r of roots) r.unmount();
     host.remove();
+  };
+  return { host, elements, background, done };
+}
+
+export async function downloadDeckAsPdf(deck: Deck, name: string): Promise<void> {
+  if (deck.slides.length === 0) throw new Error("This presentation has no slides yet");
+  const [{ exportToPDF }, rendered] = await Promise.all([
+    import("@/components/mardown-display/blocks/presentations/presentation-export"),
+    renderDeckSlides(deck, { position: "fixed", left: "-10000px", top: "0", width: `${SLIDE_STAGE.width}px` }),
+  ]);
+  try {
+    const res = await exportToPDF(rendered.elements, safeName(name), { quality: 2, backgroundColor: rendered.background });
+    if (!res.success) throw new Error(res.error ?? res.message);
+  } finally {
+    rendered.done();
   }
+}
+
+/** Every slide's text, in order, as a .txt file (a slide per paragraph block, numbered). */
+export async function downloadDeckAsText(deck: Deck, name: string): Promise<void> {
+  if (deck.slides.length === 0) throw new Error("This presentation has no slides yet");
+  const [{ downloadFile }, { deckPlainText }] = await Promise.all([import("@ai-matrx/kit/download"), import("./deck-model")]);
+  const text = deck.slides
+    .map((slide, i) => `Slide ${i + 1}\n${deckPlainText({ ...deck, slides: [slide] })}`)
+    .join("\n\n");
+  downloadFile(`${safeName(name)}.txt`, new Blob([text], { type: "text/plain" }), "text/plain");
+}
+
+/** Print the deck: every slide on its own landscape page, through the browser's print dialog. */
+export async function printDeck(deck: Deck): Promise<void> {
+  if (deck.slides.length === 0) throw new Error("This presentation has no slides yet");
+  const rendered = await renderDeckSlides(deck, {});
+  const style = document.createElement("style");
+  style.textContent = `@page{size:${SLIDE_STAGE.width}px ${SLIDE_STAGE.height}px;margin:0}
+@media screen{[data-deck-print-host]{position:fixed;left:-10000px;top:0}}
+@media print{body>*:not([data-deck-print-host]){display:none!important}
+[data-deck-print-host]>div{break-after:page;page-break-after:always;overflow:hidden}
+[data-deck-print-host]>div:last-child{break-after:auto;page-break-after:auto}}`;
+  rendered.host.setAttribute("data-deck-print-host", "");
+  document.head.appendChild(style);
+  const cleanup = () => {
+    window.removeEventListener("afterprint", cleanup);
+    style.remove();
+    rendered.done();
+  };
+  window.addEventListener("afterprint", cleanup);
+  window.print();
 }
 
 /** The File menu / list menu downloads for a deck (a loader keeps the list cheap: the deck loads on click). */

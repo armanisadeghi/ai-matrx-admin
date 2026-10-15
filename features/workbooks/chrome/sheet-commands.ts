@@ -236,6 +236,56 @@ export function removeDuplicateRows(r: RangeLike): number | "formulas" {
   return removed;
 }
 
+/** Data → Randomize range: the rows of the selection in a random order (values only). */
+export function randomizeRows(r: RangeLike, random: () => number = Math.random): number | "formulas" {
+  if (hasFormula(r.getFormulas())) return "formulas";
+  const rows = r.getValues().map((row) => row.map((v) => (v === undefined ? null : v)));
+  if (rows.length < 2) return 0;
+  for (let i = rows.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(random() * (i + 1));
+    [rows[i], rows[j]] = [rows[j]!, rows[i]!];
+  }
+  r.setValues(rows);
+  return rows.length;
+}
+
+/** Univer's RANGE_TYPE: a whole-row / whole-column selection. */
+const RANGE_ROW = 1;
+const RANGE_COLUMN = 2;
+
+/**
+ * Edit → Move → Row up / down, Column left / right: the selection's whole rows (or columns) go one
+ * place over, through Univer's own move command (`toRange` is the index the block lands before).
+ */
+export function moveSelection(h: SheetChromeHost, axis: "row" | "column", step: -1 | 1) {
+  return () => {
+    const r = rangeOf(h)?.getRange();
+    if (!r) {
+      h.notify("Select cells first");
+      return undefined;
+    }
+    const [start, end] = axis === "row" ? [r.startRow, r.endRow] : [r.startColumn, r.endColumn];
+    if (step < 0 && start === 0) {
+      h.notify(axis === "row" ? "Already the first row" : "Already the first column");
+      return undefined;
+    }
+    const target = step < 0 ? start - 1 : end + 2;
+    const whole =
+      axis === "row"
+        ? { startRow: start, endRow: end, startColumn: 0, endColumn: 16383, rangeType: RANGE_ROW }
+        : { startRow: 0, endRow: 1048575, startColumn: start, endColumn: end, rangeType: RANGE_COLUMN };
+    const to =
+      axis === "row"
+        ? { startRow: target, endRow: target, startColumn: 0, endColumn: 16383, rangeType: RANGE_ROW }
+        : { startRow: 0, endRow: 1048575, startColumn: target, endColumn: target, rangeType: RANGE_COLUMN };
+    return h.api.executeCommand(axis === "row" ? "sheet.command.move-rows" : "sheet.command.move-cols", {
+      fromRange: whole,
+      toRange: to,
+      range: whole,
+    });
+  };
+}
+
 function numberFormatEntries(h: SheetChromeHost): EditorMenuEntry[] {
   return [
     ...NUMBER_FORMATS.map(
@@ -426,10 +476,10 @@ export function buildSheetMenus(h: SheetChromeHost): EditorMenu[] {
           id: "edit.move",
           label: "Move",
           items: [
-            soon("edit.move.row-up", "Row up", "workbooks.move-rows-columns"),
-            soon("edit.move.row-down", "Row down", "workbooks.move-rows-columns"),
-            soon("edit.move.column-left", "Column left", "workbooks.move-rows-columns"),
-            soon("edit.move.column-right", "Column right", "workbooks.move-rows-columns"),
+            { kind: "action", id: "edit.move.row-up", label: "Row up", keywords: ["move row"], run: moveSelection(h, "row", -1) },
+            { kind: "action", id: "edit.move.row-down", label: "Row down", keywords: ["move row"], run: moveSelection(h, "row", 1) },
+            { kind: "action", id: "edit.move.column-left", label: "Column left", keywords: ["move column"], run: moveSelection(h, "column", -1) },
+            { kind: "action", id: "edit.move.column-right", label: "Column right", keywords: ["move column"], run: moveSelection(h, "column", 1) },
           ],
         },
         { kind: "separator" },
@@ -683,7 +733,16 @@ export function buildSheetMenus(h: SheetChromeHost): EditorMenu[] {
         { kind: "action", id: "data.protect", label: "Protect sheets and ranges", keywords: ["permission", "lock"], run: run(h, "sheet.command.add-range-protection-from-toolbar") },
         soon("data.named-ranges", "Named ranges", "workbooks.named-ranges"),
         soon("data.named-functions", "Named functions", "workbooks.named-functions"),
-        soon("data.randomize", "Randomize range", "workbooks.randomize-range", { keywords: ["shuffle"] }),
+        {
+          kind: "action",
+          id: "data.randomize",
+          label: "Randomize range",
+          keywords: ["shuffle"],
+          run: withRange(h, (r) => {
+            const n = randomizeRows(r);
+            h.notify(n === "formulas" ? "Randomize skips ranges with formulas" : n === 0 ? "Select two or more rows" : `${n} rows shuffled`);
+          }),
+        },
         { kind: "separator" },
         soon("data.column-stats", "Column stats", "workbooks.column-stats"),
         { kind: "action", id: "data.validation", label: "Data validation", run: run(h, "data-validation.operation.open-validation-panel", {}) },
@@ -751,6 +810,7 @@ export function buildSheetMenus(h: SheetChromeHost): EditorMenu[] {
         { kind: "separator" },
         soon("tools.spelling", "Spelling", "editor.tools.spelling"),
         soon("tools.suggestions", "Suggestion controls", "workbooks.suggestion-controls"),
+        soon("tools.autocomplete", "Autocomplete", "workbooks.autocomplete"),
         { kind: "separator" },
         soon("tools.notifications", "Notification settings", "editor.tools.notifications"),
         soon("tools.accessibility", "Accessibility", "editor.tools.accessibility"),
