@@ -131,6 +131,30 @@ describe.each(editors)("%s ribbon", (_name, ribbon, googleOnly, build) => {
     expect(ribbonCoverage(ribbon, menus, toolbar, { "no.such.row": "x" }).badGoogleOnly).toEqual(["no.such.row"]);
   });
 
+  it("a command appears once per group, and no two icon-only controls of a group wear the same icon", () => {
+    const { menus, toolbar } = build();
+    const dupes: string[] = [];
+    for (const tab of resolveRibbon(ribbon, menus, toolbar)) {
+      for (const g of tab.groups) {
+        const refs = new Set<string>();
+        const icons = new Map<unknown, string>();
+        for (const c of g.controls) {
+          const ref = c.key.split("/").slice(2).join("/");
+          if (refs.has(ref)) dupes.push(`${tab.id}/${g.id}: ${ref} placed twice`);
+          refs.add(ref);
+          const model = c.kind === "toolbar" ? ("icon" in c.item ? c.item.icon : undefined) : c.kind === "action" ? c.action.icon : c.submenu.icon;
+          const icon = c.icon ?? model;
+          // Icon-only controls are told apart by their icon alone; a labelled control is read.
+          if (!icon || c.size !== "icon") continue;
+          const prior = icons.get(icon);
+          if (prior) dupes.push(`${tab.id}/${g.id}: ${ref} wears the same icon as ${prior}`);
+          icons.set(icon, ref);
+        }
+      }
+    }
+    expect(dupes).toEqual([]);
+  });
+
   it("starts on Home and every tab has a group", () => {
     const { menus, toolbar } = build();
     const tabs = resolveRibbon(ribbon, menus, toolbar);

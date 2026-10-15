@@ -62,6 +62,8 @@ import {
   SpellCheck,
   TableProperties,
   Tag,
+  AlignJustify,
+  Hash,
 } from "lucide-react";
 import type { GoogleOnlyRows, RibbonTabSpec } from "@/components/editor-chrome/ribbon-model";
 
@@ -117,7 +119,7 @@ export const SHEET_RIBBON: RibbonTabSpec[] = [
           { ref: "tb.rotate", size: "icon" },
           { ref: "tb.wrap", size: "icon" },
           { ref: "tb.merge", size: "icon" },
-          { ref: "format.alignment", size: "icon" },
+          { ref: "format.alignment", size: "icon", icon: AlignJustify },
         ],
       },
       {
@@ -130,7 +132,7 @@ export const SHEET_RIBBON: RibbonTabSpec[] = [
           { ref: "tb.percent", size: "icon" },
           { ref: "tb.decimal-less", size: "icon" },
           { ref: "tb.decimal-more", size: "icon" },
-          { ref: "format.number", size: "icon", label: "Number format" },
+          { ref: "format.number", size: "icon", label: "Number format", icon: Hash },
         ],
       },
       {

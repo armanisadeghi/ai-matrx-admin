@@ -45,6 +45,8 @@ import {
   SpellCheck,
   Square,
   Superscript,
+  Ellipsis,
+  AlignJustify,
 } from "lucide-react";
 import type { GoogleOnlyRows, RibbonTabSpec } from "@/components/editor-chrome/ribbon-model";
 import { AUTOMATE_TAB, HELP_HEAD_CONTROLS } from "@/components/editor-chrome/ribbon-parity";
@@ -79,7 +81,7 @@ export const DOC_RIBBON: RibbonTabSpec[] = [
           { ref: "tb.bold", size: "icon" },
           { ref: "tb.italic", size: "icon" },
           { ref: "tb.underline", size: "icon" },
-          { ref: "format.text", size: "icon", label: "More" },
+          { ref: "format.text", size: "icon", label: "More", icon: Ellipsis },
           { ref: "tb.highlight", size: "icon" },
           { ref: "tb.text-color", size: "icon" },
         ],
@@ -92,9 +94,9 @@ export const DOC_RIBBON: RibbonTabSpec[] = [
           { ref: "tb.bulleted", size: "icon" },
           { ref: "tb.numbered", size: "icon" },
           { ref: "tb.checklist", size: "icon" },
-          { ref: "format.lists", size: "icon", label: "Lists" },
+          { ref: "format.lists", size: "icon", label: "Lists", icon: ListTree },
           { ref: "tb.align", size: "icon" },
-          { ref: "format.align", size: "icon", label: "Align" },
+          { ref: "format.align", size: "icon", label: "Align", icon: AlignJustify },
         ],
       },
       {
