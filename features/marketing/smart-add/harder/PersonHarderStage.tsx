@@ -16,6 +16,7 @@
 
 import { useEffect, useEffectEvent, useRef, useState } from "react";
 import { Check, ChevronDown, SearchX, X } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@ai-matrx/design-system";
 import { Button } from "@ai-matrx/design-system/controls";
 import { formatCount } from "@ai-matrx/kit/format";
 import { PlatformMark, platformLabel } from "@/features/marketing/social/components/PlatformMark";
@@ -577,12 +578,14 @@ export function PersonHarderStage({
   );
 }
 
-function Avatar({ c }: { c: HarderCandidate }) {
-  const platform = c.platform === "website" ? "website" : c.platform;
+function CandidateAvatar({ c }: { c: HarderCandidate }) {
   return (
-    <span className="relative flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-full border border-border bg-muted">
-      {c.image_url ? <img src={browserImageUrl(c.image_url)} alt="" className="size-full object-cover" /> : <PlatformMark platform={platform} size={18} />}
-    </span>
+    <Avatar size="md" className="border border-border">
+      {c.image_url ? <AvatarImage src={browserImageUrl(c.image_url)} alt="" className="object-cover" /> : null}
+      <AvatarFallback>
+        <PlatformMark platform={c.platform} size={18} />
+      </AvatarFallback>
+    </Avatar>
   );
 }
 
@@ -620,7 +623,7 @@ function PickOne({
           const on = picked?.key === c.key;
           return (
             <li key={c.key} className={`flex items-center gap-2 rounded-lg px-1.5 py-1 ${on ? "bg-primary/10 ring-1 ring-primary" : ""} ${picked && !on ? "opacity-50" : ""}`}>
-              <Avatar c={c} />
+              <CandidateAvatar c={c} />
               <div className="flex min-w-0 flex-1 flex-col">
                 <span className="truncate text-sm text-foreground">
                   {maskOffensive(c.name) ?? c.handle ?? host(c.url)}

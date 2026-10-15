@@ -17,6 +17,7 @@ import { useEffect, useEffectEvent, useState } from "react";
 import { BadgeCheck, Check, ChevronLeft, ChevronRight, ExternalLink, X } from "lucide-react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
+import { Avatar, AvatarFallback } from "@ai-matrx/design-system";
 import { Button, DecisionControl, PropertyRow } from "@ai-matrx/design-system/controls";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 import { formatCount } from "@ai-matrx/kit/format";
@@ -201,14 +202,14 @@ function CandidateAvatar({ c }: { c: Candidate }) {
   const initial = (c.name ?? c.handle ?? "?").replace(/^@/, "").charAt(0).toUpperCase();
   return (
     <span className="relative size-12 shrink-0">
-      <SocialImage
-        door={c.profileId ? profileAvatarDoor(c.profileId) : null}
-        url={c.photoUrl}
-        fallback={
-          <span className="type-title flex size-12 items-center justify-center rounded-full bg-muted text-muted-foreground">{initial}</span>
-        }
-        className="size-12 rounded-full object-cover"
-      />
+      <Avatar className="size-12">
+        <SocialImage
+          door={c.profileId ? profileAvatarDoor(c.profileId) : null}
+          url={c.photoUrl}
+          fallback={<AvatarFallback className="type-title">{initial}</AvatarFallback>}
+          className="rounded-full"
+        />
+      </Avatar>
       <span className="absolute -right-1 -bottom-1 rounded-md ring-2 ring-card">
         <PlatformMark platform={c.platform} size={18} />
       </span>

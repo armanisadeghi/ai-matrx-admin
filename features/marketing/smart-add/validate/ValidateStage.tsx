@@ -19,7 +19,7 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { AnimatePresence, LayoutGroup, MotionConfig, motion, type Transition } from "motion/react";
 import { Check, ChevronUp, ExternalLink, Globe, Info, LayoutDashboard, Pencil, RotateCcw, Users, X } from "lucide-react";
-import { PANEL_MOTION_CLASS } from "@ai-matrx/design-system";
+import { PANEL_MOTION_CLASS, Skeleton } from "@ai-matrx/design-system";
 import { Badge, Button, DecisionControl, Field, type WayOutItem } from "@ai-matrx/design-system/controls";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 import { formatCount } from "@ai-matrx/kit/format";
@@ -489,10 +489,7 @@ export function ValidateStageSkeleton() {
     <div className="flex flex-col items-center px-4 pt-[calc(var(--shell-header-h,0px)+1.5rem)]" data-testid="validate-skeleton">
       <div className="h-7 w-full max-w-[40rem]" />
       <div className="mt-3 h-1 w-full max-w-[40rem] rounded-full bg-muted" />
-      <div className="relative mt-[10vh] h-[24rem] w-full max-w-[40rem] overflow-hidden rounded-3xl border border-border bg-card">
-        <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-muted to-transparent motion-safe:animate-[validate-sweep_1.6s_ease-in-out_infinite]" />
-      </div>
-      <style>{"@keyframes validate-sweep{to{transform:translateX(100%)}}"}</style>
+      <Skeleton motion="shimmer" className="mt-[10vh] h-[24rem] w-full max-w-[40rem] rounded-3xl border border-border bg-card" />
     </div>
   );
 }

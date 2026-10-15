@@ -19,7 +19,7 @@ import { Maximize2, Moon, Star, Sun, X } from "lucide-react";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 import { Button, DecisionControl, Field, PropertyRow, type DecisionAnswer, type WayOutItem } from "@ai-matrx/design-system/controls";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
-import { FirstUseHint } from "@ai-matrx/design-system";
+import { Avatar, AvatarFallback, FirstUseHint } from "@ai-matrx/design-system";
 import { formatCount } from "@ai-matrx/kit/format";
 import { profileAvatarDoor } from "@/features/marketing/social/server";
 import { PlatformMark, platformLabel } from "@/features/marketing/social/components/PlatformMark";
@@ -394,7 +394,7 @@ export function SmartAddSlots({
                 >
                   <span className="flex min-w-0 items-center gap-3">
                     <Shared id={i.key} className="shrink-0">
-                      <Avatar item={i.profile_id ? i : { ...i, ...photoOf(photoByPlatform.get(i.platform ?? ""), i) }} />
+                      <AccountAvatar item={i.profile_id ? i : { ...i, ...photoOf(photoByPlatform.get(i.platform ?? ""), i) }} />
                     </Shared>
                     <AccountText
                       item={i}
@@ -426,7 +426,7 @@ export function SmartAddSlots({
             >
               <span className="flex min-w-0 items-center gap-3" data-testid="smart-add-key-person">
                 <Shared id={i.key} className="shrink-0">
-                  <Avatar item={i} />
+                  <AccountAvatar item={i} />
                 </Shared>
                 <AccountText item={i} name={withTitle(i.label, people.byStaff.get(i.key))} />
               </span>
@@ -803,22 +803,20 @@ function LogoChoice({
 }
 
 /** The account's real profile photo (round, 40px); the platform logo sits beside the name. */
-function Avatar({ item }: { item: EvidenceItem }) {
+function AccountAvatar({ item }: { item: EvidenceItem }) {
   return (
-    <span className="relative size-10 shrink-0">
+    <Avatar size="lg">
       {item.profile_id || item.image_url ? (
         <SocialImage
           door={item.profile_id ? profileAvatarDoor(item.profile_id) : null}
           url={item.image_url}
-          fallback={<span className="flex size-10 items-center justify-center rounded-full bg-muted" />}
-          className="size-10 rounded-full object-cover"
+          fallback={<AvatarFallback />}
+          className="rounded-full"
         />
       ) : (
-        <span className="flex size-10 items-center justify-center rounded-full bg-muted text-sm font-medium text-muted-foreground">
-          {(item.handle ?? "?").slice(0, 1).toUpperCase()}
-        </span>
+        <AvatarFallback>{(item.handle ?? "?").slice(0, 1).toUpperCase()}</AvatarFallback>
       )}
-    </span>
+    </Avatar>
   );
 }
 

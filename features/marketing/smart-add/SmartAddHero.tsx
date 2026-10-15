@@ -558,9 +558,9 @@ export function SmartAddHero({
               transition={{ delay: 0.5, duration: 0.3 }}
               className="mt-5 flex h-9 w-full items-center justify-between px-1 text-sm"
             >
-              <QuietButton onClick={() => setMode(null)} icon={<ArrowLeft className="size-4" />}>
+              <Button variant="quiet" onClick={() => setMode(null)} icon={<ArrowLeft className="size-4" />}>
                 Back
-              </QuietButton>
+              </Button>
               {typedProblem ? (
                 <span role="alert" data-testid="smart-add-entry-problem" className="min-w-0 flex-1 truncate px-3 text-destructive-ink">
                   {typedProblem}
@@ -573,9 +573,9 @@ export function SmartAddHero({
                   {/* A creator entered by handle is marked a person here (PEOPLE-AND-CREATORS §10). */}
                   {mode === "social" ? <KindToggle person={person} onPerson={onPerson} /> : null}
                   {second ? null : (
-                    <QuietButton onClick={() => setSecond(true)} icon={<Plus className="size-4" />}>
+                    <Button variant="quiet" onClick={() => setSecond(true)} icon={<Plus className="size-4" />}>
                       {mode === "website" ? "Add a social" : "Add a website"}
-                    </QuietButton>
+                    </Button>
                   )}
                 </div>
               )}
@@ -876,19 +876,6 @@ function GoButton({ disabled, onClick }: { disabled: boolean; onClick: () => voi
       className={`${styles.go} flex size-12 shrink-0 items-center justify-center rounded-[0.9rem] text-primary-foreground sm:size-14 sm:rounded-2xl`}
     >
       <ArrowRight className="size-6" strokeWidth={2.25} />
-    </button>
-  );
-}
-
-function QuietButton({ onClick, icon, children }: { onClick: () => void; icon: ReactNode; children: ReactNode }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="inline-flex h-9 items-center gap-1.5 rounded-lg px-3 font-medium text-muted-foreground transition-colors hover:bg-foreground/5 hover:text-foreground"
-    >
-      {icon}
-      {children}
     </button>
   );
 }
@@ -1571,9 +1558,9 @@ function NothingFound({
           <GoButton disabled={!ready} onClick={send} />
         </div>
       </div>
-      <QuietButton onClick={onRetry} icon={<ArrowLeft className="size-4" />}>
+      <Button variant="quiet" onClick={onRetry} icon={<ArrowLeft className="size-4" />}>
         Try another
-      </QuietButton>
+      </Button>
     </motion.div>
   );
 }

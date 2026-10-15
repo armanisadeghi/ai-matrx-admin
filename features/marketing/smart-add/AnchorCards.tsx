@@ -12,6 +12,7 @@
 
 import { useState } from "react";
 import { Check, Info, Plus, SearchX, UserX, X } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@ai-matrx/design-system";
 import { Button, Field } from "@ai-matrx/design-system/controls";
 import { formatCount } from "@ai-matrx/kit/format";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
@@ -68,22 +69,26 @@ export function AnchorCard({
       } ${out ? "opacity-60" : ""}`}
     >
       <div className="flex items-start gap-3">
-        <span className="relative size-12 shrink-0 overflow-hidden rounded-full border border-border bg-muted">
+        <Avatar className="size-12 border border-border">
           {item.profile_id ? (
             <SocialImage
               door={profileAvatarDoor(item.profile_id)}
               url={item.image_url}
-              fallback={<PlatformMark platform={platform} size={24} />}
-              className="size-full object-cover"
+              fallback={
+                <AvatarFallback>
+                  <PlatformMark platform={platform} size={24} />
+                </AvatarFallback>
+              }
             />
-          ) : item.image_url ? (
-            <img src={browserImageUrl(item.image_url)} alt="" className="size-full object-cover" />
           ) : (
-            <span className="flex size-full items-center justify-center">
-              <PlatformMark platform={platform} size={24} />
-            </span>
+            <>
+              {item.image_url ? <AvatarImage src={browserImageUrl(item.image_url)} alt="" className="object-cover" /> : null}
+              <AvatarFallback>
+                <PlatformMark platform={platform} size={24} />
+              </AvatarFallback>
+            </>
           )}
-        </span>
+        </Avatar>
         <div className="flex min-w-0 flex-1 flex-col">
           <span className={`truncate text-sm font-medium text-foreground ${out ? "line-through" : ""}`}>{name}</span>
           <span className="flex min-w-0 items-center gap-1 text-xs text-muted-foreground">
