@@ -277,6 +277,20 @@ test("past the restart budget the watchdog stops restarting and says CRASH LOOP"
   }
 });
 
+test("an install restart is deliberate: it never counts toward the crash-loop budget", () => {
+  const dir = stateDir();
+  const marker = join(dir, "restart-ran");
+  try {
+    writeFileSync(join(dir, "shared-next-dev.restarts"), `${now() - 60}\n${now() - 30}\n${now() - 10}\n`);
+    const r = sourced(dir, "restart_after_stop 'packages were installed' 0; echo rc=$?", { MATRX_PREVIEW_START_CMD: `touch '${marker}'` });
+    assert.match(r.out, /rc=0/);
+    assert.ok(existsSync(marker), "a budget full of crashes must not block an install restart");
+    assert.equal(readFileSync(join(dir, "shared-next-dev.restarts"), "utf8").trim().split("\n").length, 3, "and it adds nothing to the budget");
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
 test("hold writes a dated hold that status lists, release removes it, and an expired one is dropped", () => {
   const dir = stateDir();
   try {
