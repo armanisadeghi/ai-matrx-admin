@@ -413,8 +413,8 @@ export async function readChatHolding(doors: CodingDoors, providerSessionId: str
   const found = await firstComputerWith<string | null>(doors, chosen, async (client, computer) => {
     const transport = transportFor(client, computer.name);
     try {
-      const sessions = await transport.call("listSessions");
-      if (sessions.some((x) => x.providerSessionId === id)) return { value: null };
+      const own = (await transport.call("listSessions")).find((x) => x.providerSessionId === id);
+      if (own) return { value: own.updatedAt ?? null };
       const chat = (await transport.call("discoverSessions", { limit: DISCOVER_WINDOW })).find((c) => c.providerSessionId === id);
       return chat ? { value: chat.updatedAt } : { notHere: `This chat is not among the newest ${DISCOVER_WINDOW} chats on ${computer.name}.` };
     } finally {

@@ -279,9 +279,8 @@ export function CloudSyncTruthPanel({
             Is this conversation in sync?
           </h3>
           <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">
-            What AI Matrx itself holds for this session. The transcript on your
-            Mac and your Mac&apos;s local copy are not visible from here — only
-            the desktop app can read those.
+            What AI Matrx itself holds for this session, and which of your
+            computers holds the chat.
           </p>
         </div>
         <Button
@@ -301,7 +300,9 @@ export function CloudSyncTruthPanel({
           <Loader2 className="h-3.5 w-3.5 animate-spin" />
           Asking AI Matrx what it holds for this session…
         </div>
-      ) : truth ? (
+      ) : truth && !(onMatrx2 && truth.verdict.code === "unknown") ? (
+        // A computer holding the chat answers below; the server's "cannot tell" is shown only
+        // when no Matrx 2 computer answered.
         <div
           className={cn(
             "mt-3 border-l-2 px-3 py-2",

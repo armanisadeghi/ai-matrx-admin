@@ -121,8 +121,8 @@ function FullDownloadOutcome({ result }: { result: FullDownloadResult }) {
         <ErrorAlchemyMenu error={clip(step.reasons.join(" "))} />
       </span>
       {step.reasons.map((reason) => (
-        <span key={reason} className="text-muted-foreground">
-          {clip(reason)}
+        <span key={reason} className="whitespace-normal break-words text-muted-foreground">
+          {reason}
         </span>
       ))}
     </span>
