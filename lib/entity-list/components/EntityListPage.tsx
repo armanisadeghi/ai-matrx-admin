@@ -745,6 +745,13 @@ export function EntityListPage<TRow>({
   const resolvedEmptyState =
     failureEmptyState ??
     allArchivedEmptyState ??
+    // Every match on this page is one the person hid: say so, never point at a lane that shows the same rows.
+    ((list.hiddenOnPage ?? 0) > 0
+      ? {
+          title: `Only hidden ${plural} match`,
+          description: "You hid them. Open Hidden to show them again.",
+        }
+      : null) ??
     otherLaneEmptyState ??
     // Nothing may be asserted about "none" until the archived count answers.
     // These two branches are short-lived and rare (only an empty live half

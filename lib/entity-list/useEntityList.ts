@@ -864,6 +864,7 @@ export function useEntityList<TRow>({
     facetsLoading,
     facetsError: peekedFacets !== undefined ? null : facetsError,
     archivedProbe,
+    hiddenOnPage: shownRows.length - visibleRows.length,
     defaultArchived: defaultQuery.archived,
     isLoading: showPeek ? false : isLoading || (!rowsAnswerThisQuestion && error === null),
     isFetching: showPeek ? false : isFetching,

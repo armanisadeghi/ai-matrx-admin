@@ -93,6 +93,8 @@ export interface EntityListController<TRow> {
    * this says `{ state: "known", total: 0 }`. See ./types.ts § ArchivedProbe.
    */
   archivedProbe: ArchivedProbe;
+  /** Rows on this page the person hid for themselves (Hidden by me) — taken out of `rows`. */
+  hiddenOnPage?: number;
   /**
    * Where this surface's archive axis STARTS — the user's knob (law §6), not
    * the literal "active". `countActiveFilters` compares against it so an
