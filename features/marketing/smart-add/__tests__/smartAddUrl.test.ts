@@ -87,7 +87,9 @@ describe("smartAddUrl — patch keeps what it does not own", () => {
     const next = patchSmartAddSearch("panels=smart_add_helper:linkedin&website=old.com", { website: "new.com", runs: [RUN_A, RUN_B] });
     expect(next.get("panels")).toBe("smart_add_helper:linkedin");
     expect(next.get("website")).toBe("new.com");
-    expect(next.getAll("run")).toEqual([RUN_A, RUN_B]);
+    expect(next.getAll("run")).toEqual([`${RUN_A},${RUN_B}`]);
+    // MKT-115: two rounds never write two `run=` names, and the list reads back whole.
+    expect(parseSmartAddUrl("", next).runs).toEqual([RUN_A, RUN_B]);
   });
 
   it("null removes a key; undefined leaves it", () => {

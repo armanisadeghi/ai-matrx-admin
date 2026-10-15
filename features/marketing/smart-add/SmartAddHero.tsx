@@ -660,6 +660,19 @@ export function SmartAddHero({
             </>
           ) : null}
 
+          {/* The kind never blanks while a round runs: the toggle above is read-only here (MKT-116). */}
+          {compact ? (
+            <div className="mt-5 flex h-9 w-full items-center justify-end px-1">
+              <span
+                data-testid="smart-add-running-kind"
+                className="inline-flex h-7 items-center gap-1.5 rounded-full bg-foreground/5 px-3 text-sm font-medium text-muted-foreground"
+              >
+                {person ? <UserRound className="size-3.5" /> : <Building2 className="size-3.5" />}
+                {person ? "Person" : "Company"}
+              </span>
+            </div>
+          ) : null}
+
           {compact ? (
             <Centerpiece
               items={items}

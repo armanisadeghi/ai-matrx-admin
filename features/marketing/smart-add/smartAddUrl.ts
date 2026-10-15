@@ -167,7 +167,9 @@ export function patchSmartAddSearch(base: URLSearchParams | string, patch: Smart
   for (const key of SMART_ADD_PARAMS) {
     const v = next[key];
     if (Array.isArray(v)) {
-      for (const r of v.filter((x) => isUuidShape(x)).slice(0, MAX_RUNS)) out.append(key, r);
+      // One list param, oldest first (`run=a,b`): the address never carries two `run=` names (MKT-115).
+      const ids = v.filter((x) => isUuidShape(x)).slice(0, MAX_RUNS);
+      if (ids.length) out.set(key, ids.join(","));
       continue;
     }
     if (key === "via" && v && !VIAS.includes(v as SmartAddVia)) continue;
