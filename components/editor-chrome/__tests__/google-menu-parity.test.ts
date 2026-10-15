@@ -7,7 +7,7 @@ import { buildSheetMenus, type SheetChromeHost } from "@/features/workbooks/chro
 import { buildDocMenus, type DocChromeHost } from "@/features/documents/chrome/doc-commands";
 import { buildDeckMenus, type DeckChromeHost } from "@/features/presentations/deck-commands";
 import { buildEditorFileMenu } from "@/features/file-actions/editor-file-menu";
-import { getComingSoon } from "@ai-matrx/kit/coming-soon";
+import { getComingSoon } from "@/lib/coming-soon/registry";
 import { flattenMenus, type EditorMenu, type EditorMenuEntry } from "../editor-menu-model";
 
 function anything(): never {

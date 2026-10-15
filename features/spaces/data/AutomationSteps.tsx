@@ -13,8 +13,8 @@
  */
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { ArrowDown, ArrowUp, ChevronDown, ChevronRight, Plus, X } from "lucide-react";
-import { Button, Input } from "@ai-matrx/design-system/controls";
-import { Popover, PopoverContent, PopoverTrigger, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@ai-matrx/design-system";
+import { Button, Input, Select } from "@ai-matrx/design-system/controls";
+import { Popover, PopoverContent, PopoverTrigger } from "@ai-matrx/design-system";
 import { optionKey, optionLabel, type AutomationTrigger, type Field, type RuleExpression } from "@ai-matrx/records";
 import { useOptionalRecordsClient, useTables } from "@ai-matrx/records/react";
 import { ConditionGroup, type ConditionField } from "@ai-matrx/records-ui";
@@ -55,21 +55,24 @@ const useEnv = () => {
   return e;
 };
 
-/** The fields of any table by id, read once. */
-function useTableFields(tableId: string, own: { tableId: string; fields: Field[] }): Field[] {
+/** The fields of every table named, read once each (the automation's own table is already in hand). */
+function useFieldsMap(ids: string[], own: { tableId: string; fields: Field[] }): Record<string, Field[]> {
   const client = useOptionalRecordsClient();
-  const [read, setRead] = useState<Field[] | null>(null);
+  const [read, setRead] = useState<Record<string, Field[]>>({});
+  const want = Array.from(new Set(ids.filter((i) => i && i !== own.tableId))).sort().join(",");
   useEffect(() => {
-    if (!tableId || tableId === own.tableId || !client) return;
+    if (!client || !want) return;
     let live = true;
-    void client.fields({ table_id: tableId as never }).then((got) => {
-      if (live) setRead(got.ok ? (got.data ?? []) : []);
-    });
+    for (const id of want.split(",")) {
+      void client.fields({ table_id: id as never }).then((got) => {
+        if (live) setRead((now) => ({ ...now, [id]: got.ok ? (got.data ?? []) : [] }));
+      });
+    }
     return () => {
       live = false;
     };
-  }, [client, tableId, own.tableId]);
-  return tableId === own.tableId || !tableId ? own.fields : (read ?? []);
+  }, [client, want]);
+  return { ...read, [own.tableId]: own.fields };
 }
 
 /** What a step before this one hands over, by name. */
@@ -114,21 +117,8 @@ function labelOf(token: string, sources: Source[]): string {
   return path;
 }
 
-function Pick({ value, onChange, options, label, className }: { value: string; onChange: (v: string) => void; options: Array<{ value: string; label: string }>; label: string; className?: string }) {
-  return (
-    <Select value={value} onValueChange={onChange}>
-      <SelectTrigger aria-label={label} className={className ?? "h-8 w-auto min-w-[8rem] text-xs"}>
-        <SelectValue placeholder={label} />
-      </SelectTrigger>
-      <SelectContent>
-        {options.map((o) => (
-          <SelectItem key={o.value} value={o.value}>
-            {o.label}
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
-  );
+function Pick({ value, onChange, options, label }: { value: string; onChange: (v: string) => void; options: Array<{ value: string; label: string }>; label: string; className?: string }) {
+  return <Select aria-label={label} value={value} onValueChange={onChange} options={options} />;
 }
 
 /** The token picker: groups of named values, plus a name box for a webhook's own data. */
@@ -155,9 +145,9 @@ function SourceMenu({ sources, onPick, webhook, label, listOnly }: { sources: So
             {shown
               .filter((s) => s.group === g)
               .map((s) => (
-                <button key={s.token} type="button" className="rounded px-1 py-0.5 text-left hover:bg-muted" data-token={s.token} onClick={() => pick(s.token)}>
+                <Button key={s.token} variant="quiet" data-token={s.token} onClick={() => pick(s.token)}>
                   {s.label.replace(`${g} · `, "")}
-                </button>
+                </Button>
               ))}
           </div>
         ))}
@@ -188,16 +178,14 @@ function Chip({ label, onRemove }: { label: string; onRemove?: () => void }) {
     <span className="inline-flex items-center gap-1 rounded border border-border bg-muted px-1 text-xs" data-testid="automation-chip">
       {label}
       {onRemove ? (
-        <button type="button" aria-label={`Remove ${label}`} onClick={onRemove}>
-          <X size={10} />
-        </button>
+        <Button variant="quiet" aria-label={`Remove ${label}`} icon={<X size={10} />} onClick={onRemove} />
       ) : null}
     </span>
   );
 }
 
 /** Words with named chips in them. The stored text keeps the engine's tokens; the person only ever sees chips. */
-function TokenText({ value, onChange, sources, placeholder, label }: { value: string; onChange: (v: string) => void; sources: Source[]; placeholder?: string; label: string }) {
+function TokenText({ value, onChange, sources, placeholder, label, single }: { single?: boolean; value: string; onChange: (v: string) => void; sources: Source[]; placeholder?: string; label: string }) {
   const env = useEnv();
   const parts: Array<{ text: string } | { token: string }> = [];
   let last = 0;
@@ -216,8 +204,8 @@ function TokenText({ value, onChange, sources, placeholder, label }: { value: st
       {chips.map((c, i) => (
         <Chip key={`${c.token}${i}`} label={labelOf(c.token, sources)} onRemove={() => onChange(rebuild(lead + tail, chips.filter((_, j) => j !== i).map((x) => x.token)))} />
       ))}
-      <Input aria-label={label} className={chips.length ? "w-28" : undefined} placeholder={chips.length ? "add words" : placeholder} value={lead + tail} onChange={(e) => onChange(rebuild(e.target.value, chips.map((x) => x.token)))} />
-      <SourceMenu sources={sources} webhook={env.trigger?.on === "webhook"} label="Use a value" onPick={(t) => onChange(rebuild(lead + tail, [...chips.map((x) => x.token), t]))} />
+      <Input aria-label={label} placeholder={chips.length ? "add words" : placeholder} value={lead + tail} onChange={(e) => onChange(rebuild(e.target.value, chips.map((x) => x.token)))} />
+      <SourceMenu sources={sources} webhook={env.trigger?.on === "webhook"} label="Use a value" onPick={(t) => onChange(single ? t : rebuild(lead + tail, [...chips.map((x) => x.token), t]))} />
     </span>
   );
 }
@@ -227,7 +215,7 @@ function TokenPick({ value, onChange, sources, label, listOnly }: { value: strin
   const env = useEnv();
   return (
     <span className="inline-flex flex-wrap items-center gap-1" data-testid="automation-token-pick">
-      {value ? <Chip label={labelOf(value, sources)} onRemove={() => onChange("")} /> : <span className="text-xs text-muted-foreground">Nothing chosen</span>}
+      {value ? <Chip label={labelOf(value, sources)} onRemove={() => onChange("")} /> : <span className="shrink-0 whitespace-nowrap text-xs text-muted-foreground">Nothing chosen</span>}
       <SourceMenu sources={sources} webhook={env.trigger?.on === "webhook"} label={label} onPick={onChange} listOnly={listOnly} />
     </span>
   );
@@ -250,9 +238,9 @@ function ValueRows({ tableFields, values, onChange, sources }: { tableFields: Fi
         return (
           <div key={k} className="flex flex-wrap items-center gap-1">
             <Pick label="Field" value={k} onChange={(n) => setKey(k, n)} options={tableFields.filter((x) => x.id === k || !used.has(x.id)).map((x) => ({ value: x.id, label: x.label || x.key }))} />
-            <span className="text-xs text-muted-foreground">to</span>
+            <span className="shrink-0 whitespace-nowrap text-xs text-muted-foreground">to</span>
             <Pick label="Kind of value" value={mode} onChange={(m) => setVal(k, m === "now" ? { now: true } : m === "me" ? { me: true } : m === "clear" ? { clear: true } : m === "days" ? { in_days: 0 } : "")} options={[{ value: "value", label: "A value" }, { value: "now", label: "Now" }, { value: "me", label: "Me" }, { value: "clear", label: "Empty" }, { value: "days", label: "In some days" }]} className="h-8 w-auto min-w-[6rem] text-xs" />
-            {mode === "days" ? <Input aria-label="Days from now" type="number" className="w-20" value={String(rec(v).in_days ?? 0)} onChange={(e) => setVal(k, { in_days: Number(e.target.value) || 0 })} /> : null}
+            {mode === "days" ? <Input aria-label="Days from now" type="number" value={String(rec(v).in_days ?? 0)} onChange={(e) => setVal(k, { in_days: Number(e.target.value) || 0 })} /> : null}
             {mode === "value" ? <ChoiceOrText field={f} value={str(v)} onChange={(t) => setVal(k, t)} sources={sources} /> : null}
             <Button variant="quiet" aria-label="Remove field" icon={<X size={12} />} onClick={() => onChange(Object.fromEntries(entries.filter(([x]) => x !== k)))} />
           </div>
@@ -321,14 +309,14 @@ function WhenEditor({ when, onChange, sources }: { when: Record<string, unknown>
   return (
     <div className="flex flex-col gap-1" data-testid="automation-when">
       <div className="flex items-center gap-1">
-        <span className="text-xs text-muted-foreground">When</span>
+        <span className="shrink-0 whitespace-nowrap text-xs text-muted-foreground">When</span>
         <Pick label="How these are joined" value={joiner} onChange={(j) => write(rows, j)} options={[{ value: "all", label: "all of these hold" }, { value: "any", label: "any of these holds" }]} />
       </div>
       {rows.map((r, i) => {
         const op = OPS.find((o) => o.value === r.is) ?? OPS[0]!;
         return (
           <div key={i} className="flex flex-wrap items-center gap-1" data-testid="automation-when-row">
-            <TokenText label="Compare" value={str(r.value)} onChange={(v) => write(rows.map((x, j) => (j === i ? { ...x, value: v } : x)))} sources={sources} placeholder="A value" />
+            <TokenText single label="Compare" value={str(r.value)} onChange={(v) => write(rows.map((x, j) => (j === i ? { ...x, value: v } : x)))} sources={sources} placeholder="A value" />
             <Pick label="Is" value={op.value} onChange={(is) => write(rows.map((x, j) => (j === i ? { ...x, is } : x)))} options={OPS.map((o) => ({ value: o.value, label: o.label }))} />
             {op.needsTo ? <TokenText label="Compared with" value={str(r.to)} onChange={(to) => write(rows.map((x, j) => (j === i ? { ...x, to } : x)))} sources={sources} placeholder="Value" /> : null}
             <Button variant="quiet" aria-label="Remove condition" icon={<X size={12} />} onClick={() => write(rows.filter((_, j) => j !== i))} />
@@ -369,7 +357,7 @@ function FindWhere({ where, onChange, tableFields, sources }: { where: RuleExpre
         const r = rowOf(p);
         return (
           <div key={i} className="flex flex-wrap items-center gap-1" data-testid="automation-find-token-row">
-            <span className="text-xs text-muted-foreground">and</span>
+            <span className="shrink-0 whitespace-nowrap text-xs text-muted-foreground">and</span>
             <Pick label="Field" value={r.field} onChange={(f) => join(rest, tokenRows.map((x, j) => (j === i ? mk(r.op, f, r.to) : x)))} options={tableFields.map((f) => ({ value: f.id, label: f.label || f.key }))} />
             <Pick label="Is" value={r.op} onChange={(op) => join(rest, tokenRows.map((x, j) => (j === i ? mk(op, r.field, r.to) : x)))} options={[{ value: "eq", label: "is" }, { value: "ne", label: "is not" }, { value: "contains", label: "contains" }]} className="h-8 w-auto min-w-[6rem] text-xs" />
             <TokenText label="Matches" value={r.to} onChange={(to) => join(rest, tokenRows.map((x, j) => (j === i ? mk(r.op, r.field, to) : x)))} sources={sources} />
@@ -409,14 +397,14 @@ function MandateRows({ step, onChange, sources }: { step: Step; onChange: (s: St
       {key && surface.status === "ready"
         ? surface.surface.inputs.map((inp) => (
             <div key={inp.name} className="flex flex-wrap items-center gap-1">
-              <span className="text-xs text-muted-foreground">{inp.label || inp.name}</span>
+              <span className="shrink-0 whitespace-nowrap text-xs text-muted-foreground">{inp.label || inp.name}</span>
               <TokenText label={inp.label || inp.name} value={str(vars[inp.name])} onChange={(v) => onChange({ ...step, variables: { ...vars, [inp.name]: v } })} sources={sources} placeholder={inp.placeholder ?? ""} />
             </div>
           ))
         : null}
       {key && surface.status === "ready" && surface.surface.acceptsUserInput ? (
         <div className="flex flex-wrap items-center gap-1">
-          <span className="text-xs text-muted-foreground">Message to the agent</span>
+          <span className="shrink-0 whitespace-nowrap text-xs text-muted-foreground">Message to the agent</span>
           <TokenText label="Message to the agent" value={str(step.input)} onChange={(v) => onChange({ ...step, input: v })} sources={sources} />
         </div>
       ) : null}
@@ -474,9 +462,9 @@ function AddStep({ onAdd, kinds = STEP_KINDS }: { onAdd: (kind: string) => void;
       </PopoverTrigger>
       <PopoverContent sizing="content" align="start" className="flex w-56 flex-col p-1 text-xs">
         {kinds.map((k) => (
-          <button key={k} type="button" className="rounded px-2 py-1 text-left hover:bg-muted" data-step-kind={k} onClick={() => { onAdd(k); setOpen(false); }}>
+          <Button key={k} variant="quiet" data-step-kind={k} onClick={() => { onAdd(k); setOpen(false); }}>
             {KIND_TITLE[k] ?? k}
-          </button>
+          </Button>
         ))}
       </PopoverContent>
     </Popover>
@@ -494,22 +482,22 @@ function StepCard({ n, step, onChange, onRemove, onMove, scope }: { n: number; s
   const env = useEnv();
   const own = { tableId: env.tableId, fields: env.fields };
   const targetId = str(step.table_id) || env.tableId;
-  const tfields = useTableFields(targetId, own);
+  const scopeTables = scope.steps.map((x) => str(x.step.table_id)).concat(scope.itemFrom ? [str(scope.itemFrom.table_id)] : [], [targetId]);
+  const fieldsMap = useFieldsMap(scopeTables, own);
+  const tfields = fieldsMap[targetId] ?? [];
   const tableName = (id: string) => nameOfTable(env, id);
-  // the table a record list comes from, for the fields of a repeat's item
-  const fieldsAnywhere = (id: string) => (id === env.tableId ? env.fields : tfields);
   const sources: Source[] = useMemo(() => {
     const out: Source[] = [...triggerSources(env)];
-    for (const s of scope.steps) out.push(...sourcesOf(s.n, s.step, (tid) => (tid === targetId ? tfields : tid === env.tableId ? env.fields : []), tableName));
+    for (const s of scope.steps) out.push(...sourcesOf(s.n, s.step, (tid) => fieldsMap[tid] ?? [], tableName));
     if (scope.inLoop) {
       const from = scope.itemFrom;
-      const lf = from ? (str(from.table_id) === env.tableId ? env.fields : []) : [];
+      const lf = from ? (fieldsMap[str(from.table_id)] ?? []) : [];
       out.push({ token: tok("item.id"), label: "Item › Record", group: "Item" }, { token: tok("index"), label: "Position in the list", group: "Item" });
       for (const f of lf) out.push({ token: tok(`item.${f.key}`), label: `Item › ${f.label || f.key}`, group: "Item" });
     }
     return out;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [scope, env, tfields, targetId]);
+  }, [scope, env, fieldsMap, targetId]);
   const [open, setOpen] = useState(true);
   const group = step.do === "if" || step.do === "for_each";
   const tableOptions = env.tables.map((t) => ({ value: t.id, label: t.name }));
@@ -520,11 +508,9 @@ function StepCard({ n, step, onChange, onRemove, onMove, scope }: { n: number; s
     <div className="flex flex-col gap-1 rounded border border-border p-2" data-testid="automation-step" data-step-kind={step.do} data-step-n={n}>
       <div className="flex items-center gap-1">
         {group ? (
-          <button type="button" aria-label={open ? "Collapse" : "Expand"} onClick={() => setOpen(!open)}>
-            {open ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
-          </button>
+          <Button variant="quiet" aria-label={open ? "Collapse" : "Expand"} icon={open ? <ChevronDown size={14} /> : <ChevronRight size={14} />} onClick={() => setOpen(!open)} />
         ) : null}
-        <span className="text-xs text-muted-foreground">Step {n}</span>
+        <span className="shrink-0 whitespace-nowrap text-xs text-muted-foreground">Step {n}</span>
         <span className="type-body">{KIND_TITLE[step.do] ?? step.do}</span>
         <span className="flex-1" />
         <Button variant="quiet" aria-label="Move up" icon={<ArrowUp size={12} />} onClick={() => onMove(-1)} />
@@ -534,7 +520,7 @@ function StepCard({ n, step, onChange, onRemove, onMove, scope }: { n: number; s
       {step.do === "find" ? (
         <>
           <div className="flex items-center gap-1">
-            <span className="text-xs text-muted-foreground">In</span>
+            <span className="shrink-0 whitespace-nowrap text-xs text-muted-foreground">In</span>
             <Pick label="Table" value={targetId} onChange={(t) => set({ table_id: t, where: undefined })} options={tableOptions} />
           </div>
           <FindWhere where={(step.where as RuleExpression | undefined) ?? null} onChange={(w) => set({ where: w ?? undefined })} tableFields={tfields} sources={sources} />
@@ -543,9 +529,9 @@ function StepCard({ n, step, onChange, onRemove, onMove, scope }: { n: number; s
       {step.do === "update" ? (
         <>
           <div className="flex flex-wrap items-center gap-1">
-            <span className="text-xs text-muted-foreground">In</span>
+            <span className="shrink-0 whitespace-nowrap text-xs text-muted-foreground">In</span>
             <Pick label="Table" value={targetId} onChange={(t) => set({ table_id: t, values: {} })} options={tableOptions} />
-            <span className="text-xs text-muted-foreground">change</span>
+            <span className="shrink-0 whitespace-nowrap text-xs text-muted-foreground">change</span>
             <TokenPick label="Choose records" value={str(step.record)} onChange={(v) => set({ record: v })} sources={recordSources} />
           </div>
           <ValueRows tableFields={tfields} values={rec(step.values)} onChange={(v) => set({ values: v })} sources={sources} />
@@ -554,7 +540,7 @@ function StepCard({ n, step, onChange, onRemove, onMove, scope }: { n: number; s
       {step.do === "add_row" ? (
         <>
           <div className="flex items-center gap-1">
-            <span className="text-xs text-muted-foreground">In</span>
+            <span className="shrink-0 whitespace-nowrap text-xs text-muted-foreground">In</span>
             <Pick label="Table" value={targetId} onChange={(t) => set({ table_id: t, values: {} })} options={tableOptions} />
           </div>
           <ValueRows tableFields={tfields} values={rec(step.values)} onChange={(v) => set({ values: v })} sources={sources} />
@@ -562,7 +548,7 @@ function StepCard({ n, step, onChange, onRemove, onMove, scope }: { n: number; s
       ) : null}
       {step.do === "archive" ? (
         <div className="flex flex-wrap items-center gap-1">
-          <span className="text-xs text-muted-foreground">Archive</span>
+          <span className="shrink-0 whitespace-nowrap text-xs text-muted-foreground">Archive</span>
           <TokenPick label="Choose records" value={str(step.record)} onChange={(v) => set({ record: v })} sources={recordSources} />
         </div>
       ) : null}
@@ -571,7 +557,7 @@ function StepCard({ n, step, onChange, onRemove, onMove, scope }: { n: number; s
           <textarea aria-label="Script" className="min-h-20 w-full rounded border border-border bg-background p-1 font-mono text-xs" placeholder={'output.set("discount", input.total > 500 ? 5 : 0);'} value={str(step.code)} onChange={(e) => set({ code: e.target.value })} />
           {Object.entries(rec(step.inputs)).map(([k, v]) => (
             <div key={k} className="flex flex-wrap items-center gap-1">
-              <span className="text-xs text-muted-foreground">{k}</span>
+              <span className="shrink-0 whitespace-nowrap text-xs text-muted-foreground">{k}</span>
               <TokenText label={`Input ${k}`} value={str(v)} onChange={(t) => set({ inputs: { ...rec(step.inputs), [k]: t } })} sources={sources} />
               <Button variant="quiet" aria-label={`Remove input ${k}`} icon={<X size={12} />} onClick={() => { const { [k]: _gone, ...keep } = rec(step.inputs); set({ inputs: keep }); }} />
             </div>
@@ -610,7 +596,7 @@ function StepCard({ n, step, onChange, onRemove, onMove, scope }: { n: number; s
       {step.do === "for_each" ? (
         <>
           <div className="flex flex-wrap items-center gap-1">
-            <span className="text-xs text-muted-foreground">For each item in</span>
+            <span className="shrink-0 whitespace-nowrap text-xs text-muted-foreground">For each item in</span>
             <TokenPick label="Choose a list" value={str(step.list)} onChange={(v) => set({ list: v })} sources={sources} listOnly />
           </div>
           {open ? (
@@ -629,10 +615,9 @@ function StepCard({ n, step, onChange, onRemove, onMove, scope }: { n: number; s
         open ? (
           <IfEditor step={step} n={n} onChange={onChange} scope={scope} sources={sources} />
         ) : (
-          <span className="text-xs text-muted-foreground">{(Array.isArray(step.branches) ? step.branches.length : 0)} paths</span>
+          <span className="shrink-0 whitespace-nowrap text-xs text-muted-foreground">{(Array.isArray(step.branches) ? step.branches.length : 0)} paths</span>
         )
       ) : null}
-      {void fieldsAnywhere}
       {void childScope}
     </div>
   );
@@ -676,12 +661,12 @@ function IfEditor({ step, n, onChange, scope, sources }: { step: Step; n: number
       {branches.map((b, i) => (
         <div key={i} className="ml-1 flex flex-col gap-1 border-l border-border pl-2" data-testid="automation-if-branch">
           <div className="flex items-center gap-1">
-            <span className="text-xs text-muted-foreground">{i === 0 ? "If" : "Else if"}</span>
+            <span className="shrink-0 whitespace-nowrap text-xs text-muted-foreground">{i === 0 ? "If" : "Else if"}</span>
             <Input aria-label="Path name" placeholder="Name this path" value={str(b.label)} onChange={(e) => setBranch(i, { label: e.target.value })} />
             {branches.length > 1 ? <Button variant="quiet" aria-label="Remove path" icon={<X size={12} />} onClick={() => onChange({ ...step, branches: branches.filter((_, j) => j !== i) })} /> : null}
           </div>
           <WhenEditor when={b.when} onChange={(w) => setBranch(i, { when: w })} sources={sources} />
-          <span className="text-xs text-muted-foreground">Then</span>
+          <span className="shrink-0 whitespace-nowrap text-xs text-muted-foreground">Then</span>
           <StepList steps={arr(b.actions)} onChange={(a) => setBranch(i, { actions: a })} startN={starts[i] ?? n + 1} scope={inner} />
         </div>
       ))}
@@ -689,7 +674,7 @@ function IfEditor({ step, n, onChange, scope, sources }: { step: Step; n: number
         Add an else-if path
       </Button>
       <div className="ml-1 flex flex-col gap-1 border-l border-border pl-2" data-testid="automation-else">
-        <span className="text-xs text-muted-foreground">Otherwise</span>
+        <span className="shrink-0 whitespace-nowrap text-xs text-muted-foreground">Otherwise</span>
         <StepList steps={elseSteps} onChange={(a) => onChange({ ...step, else: a })} startN={elseStart} scope={inner} />
       </div>
     </div>
