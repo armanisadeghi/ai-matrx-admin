@@ -177,6 +177,10 @@ The user-facing Shape System surface (route family `app/(core)/shapes/`, all URL
 
 <!-- CONVERGE: Kinds hold no data — "A kind is a shape for agent output. Persisted data lands in standard or custom tables through bindings. The kind-instance store is retired." (declared 2026-09-10, AI Matrx Data Doctrine R6; §7 lists content_ir.kind_instance → Deprecated). Observed here: this doc describes kind_instance rows as the user's saved instances with studio/instance-service.ts as the write path. Live 2026-09-10: 130 rows, newest write 2026-08-30, five server tools plus this browser write path. Reconcile when you next change this for another reason. Do NOT escalate. Register: /projects/data-doctrine-adoption/REGISTER.md#dd-027 -->
 
+## A deliberate switch-off survives a bulk activation (2026-10-14)
+
+Every `content_ir.kind_component` switch-off, by any path, stamps `metadata.deactivated_at` and `metadata.deactivated_reason` (DB trigger `zz_deliberate_off_survives_bulk_on`). Rows whose notes start "SWITCHED OFF" or "Deactivated" count as marked too. A blanket `update ... set is_active = true` (no signed-in person) leaves marked rows OFF and raises a WARNING naming them. A person's activation, `set local content_ir.activation_ok = '1'`, or an update that clears `metadata.deactivated_at` activates and clears the marker. New rows are born active; activation by a person is never refused. Cause of the original undo: a one-off blanket `update content_ir.kind_component set is_active = true where not is_active` (2026-10-14 05:10:44 UTC, the born-active session).
+
 ## Roadmap (strangler-fig — see plan `~/.claude/plans/your-task-is-to-rippling-wind.md`)
 
 **Full cross-repository status, gap analysis, and remaining-work decomposition:** `/Users/armanisadeghi/code/common-docs/systems/architecture/content-ir/FEATURE.md`.
