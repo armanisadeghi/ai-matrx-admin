@@ -122,8 +122,8 @@ function Page({ firstOpen }: { firstOpen: boolean }) {
   // /messages mounts the dialog beside BOTH conversation lists (sidebar + phone list).
   return (
     <>
-      <NewConversationDialog open={firstOpen} onOpenChange={() => undefined} />
-      <NewConversationDialog open={false} onOpenChange={() => undefined} />
+      <NewConversationDialog open={firstOpen} onOpenChange={() => undefined} onCreated={() => undefined} />
+      <NewConversationDialog open={false} onOpenChange={() => undefined} onCreated={() => undefined} />
     </>
   );
 }
