@@ -464,9 +464,9 @@ export function FileHome<Row extends { id: string; user_id: string }>(props: Fil
           ) : null}
 
           {showList && !isPhone && view === "cards"
-            ? groups.map((g) => (
-                <div key={g.key} className="pt-2">
-                  {g.label ? <h3 className="pb-3 pt-4 text-sm font-medium text-foreground">{g.label}</h3> : null}
+            ? groups.map((g, gi) => (
+                <div key={g.key} className={gi > 0 ? "pt-2" : undefined}>
+                  {g.label ? <h3 className={cn("pb-3 text-sm font-medium text-foreground", gi > 0 ? "pt-4" : "pt-1")}>{g.label}</h3> : null}
                   <div className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,11.5rem),1fr))] gap-4">
                     {g.items.map((d) => (
                       <FileCardContextArea key={d.item.id} className="grid min-w-0" menu={(control) => menuFor(d.item.row, trashed, control, { shareButton: false })}>
