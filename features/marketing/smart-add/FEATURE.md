@@ -36,6 +36,7 @@ Smart Add Brand: a person types a website, a social link or a name, Smart Add fi
 |---|---|---|
 | `/smart-add/company`, `/smart-add/person` | the kind | switching kind is `router.push` (Back flips it back) |
 | `/smart-add/enrich/<brandId>` | enrich that brand | a link |
+| `/smart-add/validate/<brandId>` | the validation stage from the brand's saved findings; Create (core settled) switches the address here (`toValidate`: replace, no navigation, the live session stays mounted via `validateAddressOwner`); a reload loads saved data and starts no round | replace after Create |
 | `?via=website\|social\|name` | the open way-in card (when absent: implied by a prefill; `/person` opens the name fields) | pushed without navigating (Back closes the card) |
 | `?website=ritualcoffee.com` | company prefill | typing replaces it, debounced 400 ms |
 | `?social=@handle` or a profile URL (encoded) `&platform=instagram` | social prefill (`platform` only beside `social`) | replace |

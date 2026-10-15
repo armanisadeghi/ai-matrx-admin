@@ -205,10 +205,13 @@ function resumeTyped(a: SmartAddAddress): { seeds: RoundSeeds; keys: { website: 
 /** `url`: the Smart Add page's address binding (useSmartAddAddress); absent in enrich and the lab. */
 export function SmartAddBrand({
   onCreated,
+  onValidating,
   enrich = null,
   url = null,
 }: {
   onCreated?: (brand: MarketingBrand) => void;
+  /** Create settled the core and the validation stage is up: the page moves the address to the brand's validate route. */
+  onValidating?: (brand: MarketingBrand) => void;
   enrich?: SmartAddEnrich | null;
   url?: SmartAddAddressBinding | null;
 }) {
@@ -229,7 +232,10 @@ export function SmartAddBrand({
   // A personal brand: a headshot instead of a logo, and expertise.
   const [personLocal, setPersonLocal] = useState(enrich?.snapshot.brand.kind === "person");
   // On the Smart Add page the address IS the kind (/person or /company; a push, so Back flips it back).
-  const person = url ? url.address.mode === "person" : personLocal;
+  // The address leaves /company|/person for /validate/<brand> after Create; the kind it had stays.
+  const lastMode = useRef(url?.address.mode ?? null);
+  if (url?.address.mode) lastMode.current = url.address.mode;
+  const person = url ? lastMode.current === "person" : personLocal;
   const setPerson = (p: boolean) => (url ? url.setMode(p ? "person" : "company") : setPersonLocal(p));
   // The compare dialog rides the address (`?view=compare`): a link opens it, Back closes it.
   const [comparingLocal, setComparingLocal] = useState(false);
@@ -1169,6 +1175,7 @@ export function SmartAddBrand({
       const settled = coreSettled(basics, person);
       if (settled) setValidateOrg(organizationId);
       onCreated?.(brand);
+      if (settled) onValidating?.(brand);
       // Nothing explicitly kept: the logo the card shows (the stage's best found one) is saved as the
       // primary, so a brand never lands on a placeholder while candidates exist.
       // The homepage pictured (desktop + mobile) lands in the brand's library beside the logo: more than a logo.

@@ -215,3 +215,12 @@ export function parseValidatePath(pathname: string): string | null {
   const parts = rest.split("/").filter(Boolean);
   return parts[0]?.toLowerCase() === "validate" && parts[1] && BRAND_SEGMENT.test(parts[1]) ? parts[1] : null;
 }
+
+/**
+ * Who renders a `/validate/<brand>` address: the live session that just created that brand (it keeps its
+ * state, so the switch after Create never remounts) or the saved-data page (a reload, a link, Back/Forward).
+ */
+export function validateAddressOwner(pathBrandId: string | null, liveBrandId: string | null): "saved" | "live" | null {
+  if (!pathBrandId) return null;
+  return pathBrandId === liveBrandId ? "live" : "saved";
+}

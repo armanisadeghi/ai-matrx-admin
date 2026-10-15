@@ -25,6 +25,7 @@ import {
   parseSmartAddUrl,
   patchSmartAddSearch,
   smartAddPath,
+  smartAddValidateHref,
   type SmartAddAddress,
   type SmartAddPatch,
   type SmartAddMode,
@@ -42,6 +43,8 @@ export interface SmartAddAddressBinding {
   setView: (view: SmartAddView | null) => void;
   /** Replace this module's keys in the address (`undefined` keeps, `null` removes). */
   write: (patch: SmartAddPatch) => void;
+  /** Create settled: the address becomes /validate/<brand> (replace, no navigation, no remount). */
+  toValidate: (brandId: string) => void;
   /** A search starts: one history entry, so Back returns to the entry with what was typed. */
   markSearch: () => void;
 }
@@ -122,6 +125,7 @@ export function useSmartAddAddress(): SmartAddAddressBinding {
     },
     setView,
     write,
+    toValidate: (brandId) => replaceAddressWithoutNavigating(smartAddValidateHref(brandId)),
     markSearch: () => pushAddressWithoutNavigating(currentPathWithSearch(window.location.search.replace(/^\?/, ""))),
   };
 }

@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { EntityModeHeader } from "@/features/shell/components/header/templates/EntityModeHeader";
 import { marketingRoutes } from "@/features/marketing/lib/routes";
@@ -7,7 +8,7 @@ import { SmartAddBrand } from "./SmartAddBrand";
 import { StageBackdrop } from "./stage/StageBackdrop";
 import { SmartAddEnrichFlow } from "./enrich/SmartAddEnrichFlow";
 import { useSmartAddAddress } from "./useSmartAddAddress";
-import { parseValidatePath } from "./smartAddUrl";
+import { parseValidatePath, validateAddressOwner } from "./smartAddUrl";
 import { SmartAddValidatePage } from "./validate/SmartAddValidatePage";
 
 /** Smart Add on the main site, rendered by the /marketing/brands/smart-add layout: /company, /person,
@@ -16,6 +17,8 @@ export function SmartAddBrandPage() {
   const router = useRouter();
   const url = useSmartAddAddress();
   const enrichBrandId = url.address.enrichBrandId;
+  // The brand this live session just created: its validate address is the session itself, not a fresh load.
+  const [liveBrandId, setLiveBrandId] = useState<string | null>(null);
   const validateBrandId = parseValidatePath(usePathname() ?? "");
   return (
     <>
@@ -24,12 +27,19 @@ export function SmartAddBrandPage() {
       <div className="group relative h-full overflow-hidden bg-background">
         <StageBackdrop />
         <main className="relative h-full overflow-y-auto">
-          {validateBrandId ? (
+          {validateBrandId && validateAddressOwner(validateBrandId, liveBrandId) === "saved" ? (
             <SmartAddValidatePage key={validateBrandId} brandId={validateBrandId} />
           ) : enrichBrandId ? (
             <SmartAddEnrichFlow key={enrichBrandId} brandId={enrichBrandId} carry={url.address.prefill} onChanged={() => router.refresh()} />
-          ) : url.address.mode ? (
-            <SmartAddBrand onCreated={() => router.refresh()} url={url} />
+          ) : url.address.mode || validateAddressOwner(validateBrandId, liveBrandId) === "live" ? (
+            <SmartAddBrand
+              onCreated={() => router.refresh()}
+              onValidating={(brand) => {
+                setLiveBrandId(brand.id);
+                url.toValidate(brand.id);
+              }}
+              url={url}
+            />
           ) : null}
         </main>
       </div>

@@ -5,6 +5,9 @@ import {
   patchSmartAddSearch,
   smartAddEnrichHref,
   smartAddHref,
+  smartAddValidateHref,
+  parseValidatePath,
+  validateAddressOwner,
 } from "../smartAddUrl";
 
 const RUN_A = "0f8fad5b-d9cb-469f-a165-70867728950e";
@@ -106,5 +109,27 @@ describe("smartAddUrl — patch keeps what it does not own", () => {
     expect(patchSmartAddSearch("via=website&website=a.com", { via: null }).has("via")).toBe(false);
     const a = parseSmartAddUrl("/company", "website=a.com");
     expect([a.via, a.viaParam]).toEqual(["website", null]);
+  });
+});
+
+describe("smartAddUrl — validate route", () => {
+  const ID = "56433163-63d7-4c03-b6c1-9cf3c34024e7";
+  it("builds and reads the validate address", () => {
+    expect(smartAddValidateHref(ID)).toBe(`/marketing/brands/smart-add/validate/${ID}`);
+    expect(parseValidatePath(smartAddValidateHref(ID))).toBe(ID);
+    expect(parseValidatePath("/marketing/brands/smart-add/company")).toBeNull();
+    expect(parseValidatePath("/marketing/brands/smart-add/validate/..%2F")).toBeNull();
+  });
+  it("a validate address carries no mode, prefill or runs, so it can never start a paid round", () => {
+    const a = parseSmartAddUrl(smartAddValidateHref(ID), "");
+    expect(a.mode).toBeNull();
+    expect(a.runs).toEqual([]);
+    expect(hasSmartAddPrefill(a)).toBe(false);
+  });
+  it("the live session that created the brand keeps the address; any other arrival loads saved data", () => {
+    expect(validateAddressOwner(ID, ID)).toBe("live");
+    expect(validateAddressOwner(ID, null)).toBe("saved");
+    expect(validateAddressOwner(ID, "other")).toBe("saved");
+    expect(validateAddressOwner(null, ID)).toBeNull();
   });
 });
