@@ -58,6 +58,7 @@ import { CALENDAR_FEED_PORT } from "@/features/calendar-feed/calendarFeedPort";
 import { RECORDS_NOTIFY } from "@/features/unified-data/recordsNotify";
 import { RECORDS_FILES } from "@/features/unified-data/recordsFiles";
 import { RECORDS_TEXT, recordsTextBox } from "@/features/unified-data/recordsCleanText";
+import { openPersonPeek, type PersonTarget } from "./PersonPeekHost";
 import { RECORDS_REFERENCES } from "@/features/unified-data/recordsReferences";
 import { RECORDS_AGENT_PORTS } from "@/features/data-tables/records-ui-host/recordsAgentPorts";
 import {
@@ -167,16 +168,11 @@ export function recordsUiHostFor({ ports, merged, gridContext, rights }: Records
     // …in the TABLE's organization: the file window lists only its files and uploads there.
     pickFiles: (ask) => RECORDS_FILES.pickFiles({ ...ask, organizationId: ports.organizationId }),
     members: ports.members,
-    // A named person opens where people live: the table's organization workspace (a Person row has no
-    // screen of its own: /o/<person row> answers "no screen"). records-ui `openPerson`.
+    // A named person opens IN PLACE: the account's peek, else the contact held by their email, else what the
+    // table knows (`PersonPeekHost`) — never the organization workspace. records-ui `openPerson`.
     // Spread as its own object: a records-ui build before the port ignores the key.
     ...{
-      openPerson: () => {
-        if (!ports.organizationId) return;
-        const href = `/organizations/${ports.organizationId}`;
-        if (ports.navigate) ports.navigate(href);
-        else window.open(href, "_blank", "noopener");
-      },
+      openPerson: (target: PersonTarget) => openPersonPeek(target),
     },
     onAskForOne: ports.onAskForOne,
     openRecords: ports.openRecords,
