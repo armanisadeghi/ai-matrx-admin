@@ -31,6 +31,7 @@ import { extractErrorMessage } from "@/utils/errors";
 import { planKeptFacts, saveKeptFacts } from "./keptFacts";
 import { probeFromDraft, type BrandMatch, type BrandProbe } from "./brandMatch";
 import { findMatchingBrands } from "./brandMatchLive";
+import { gateCreate } from "./createGate";
 import { useExistingBrands } from "./useExistingBrands";
 import { ExistingBrandNotice } from "./ExistingBrandNotice";
 import { smartAddEnrichHref } from "./smartAddUrl";
@@ -1006,20 +1007,11 @@ export function SmartAddBrand({
   const create = async () => {
     if (!basics.name) return;
     // A brand they already have, found by the same site, account or name: ask once, then it is their call.
-    if (confirmedProbe) {
-      const strong = (await findMatchingBrands(confirmedProbe).catch(() => [])).filter((m) => !separateRef.current.has(m.brand.id));
-      if (strong.length) {
-        const names = strong.slice(0, 2).map((m) => m.brand.name).join(" and ");
-        const ok = await confirm({
-          title: "Create another brand?",
-          description: `You already have ${names}${strong.length > 2 ? " and more" : ""}. This makes a separate one.`,
-          confirmLabel: "Create separate brand",
-          cancelLabel: "Not yet",
-        });
-        if (!ok) return;
-        separateRef.current = new Set([...separateRef.current, ...strong.map((m) => m.brand.id)]);
-        setSeparateIds(separateRef.current);
-      }
+    const gate = await gateCreate({ probe: confirmedProbe, find: findMatchingBrands, ask: confirm, answered: separateRef.current });
+    if (!gate.proceed) return;
+    if (gate.answered !== separateRef.current) {
+      separateRef.current = gate.answered;
+      setSeparateIds(gate.answered);
     }
     setCreating(true);
     setCreateError(null);

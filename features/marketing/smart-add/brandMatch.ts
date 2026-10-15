@@ -30,6 +30,10 @@ export interface BrandCandidate {
   slug: string | null;
   name: string;
   organizationId: string;
+  /** The organization's name, when it could be read. */
+  organizationName: string | null;
+  /** When the brand was created (ISO). */
+  createdAt: string | null;
   domains: string[];
   accounts: { platform: string | null; handle: string }[];
   /** Every address text the brand holds. */
@@ -44,27 +48,35 @@ export type MatchReason =
 export interface BrandMatch {
   brand: BrandCandidate;
   reasons: MatchReason[];
+  /** What tells this brand apart from a same-name one (describeCandidate). */
+  detail: string;
 }
 
-/** Hosts that are shared by many brands: typing one is never "the brand's own site". */
-const SHARED_HOSTS = new Set([
-  "instagram.com", "facebook.com", "fb.com", "twitter.com", "x.com", "tiktok.com", "youtube.com", "youtu.be",
-  "linkedin.com", "pinterest.com", "threads.net", "snapchat.com", "reddit.com", "yelp.com", "google.com",
-  "linktr.ee", "linktree.com", "stan.store", "beacons.ai", "bio.link", "carrd.co", "wixsite.com", "wordpress.com",
-  "squarespace.com", "shopify.com", "myshopify.com", "github.io", "medium.com", "substack.com", "etsy.com",
-  "amazon.com", "ebay.com", "tripadvisor.com", "wikipedia.org", "gmail.com", "yahoo.com", "outlook.com",
-]);
+/**
+ * The matching rules that are settings (feature knobs smart_add.brand_match.*; read in brandMatchLive.ts):
+ * the common-word list, the shared-host list and the shortest name that can match. The platform seeds the
+ * starting values; an organization may override them.
+ */
+export interface MatchRules {
+  /** Words that name a kind of business, not a business: a name made only of these never matches. */
+  genericWords: ReadonlySet<string>;
+  /** Hosts shared by many brands: typing one is never "the brand's own site". */
+  sharedHosts: ReadonlySet<string>;
+  nameMinLength: number;
+}
 
-/** Words that name a kind of business, not a business: a name made only of these never matches. */
-const GENERIC_WORDS = new Set([
-  "the", "and", "a", "of", "my", "our", "your", "best", "new", "old", "good", "great", "local", "first", "city",
-  "coffee", "cafe", "restaurant", "bar", "grill", "pizza", "shop", "store", "market", "studio", "studios", "salon",
-  "spa", "gym", "fitness", "clinic", "dental", "dentist", "law", "legal", "realty", "real", "estate", "homes",
-  "home", "auto", "repair", "services", "service", "solutions", "group", "consulting", "marketing", "design",
-  "media", "digital", "agency", "company", "enterprises", "partners", "international", "global", "systems",
-  "technologies", "tech", "labs", "lab", "works", "house", "bakery", "bistro", "kitchen", "food", "foods",
-  "beauty", "health", "wellness", "yoga", "photography", "construction", "cleaning", "plumbing", "roofing",
-]);
+const wordList = (v: unknown, what: string): Set<string> => {
+  if (!Array.isArray(v) || v.some((x) => typeof x !== "string")) throw new Error(`Smart Add setting ${what} is not a list of words`);
+  return new Set((v as string[]).map((x) => x.trim().toLowerCase()).filter(Boolean));
+};
+
+/** The knob values → rules. A value of the wrong shape raises by name; there is no fallback list. */
+export function parseMatchRules(v: { genericWords: unknown; sharedHosts: unknown; nameMinLength: unknown }): MatchRules {
+  const min = typeof v.nameMinLength === "number" ? v.nameMinLength : Number(v.nameMinLength);
+  if (!Number.isFinite(min) || min < 1) throw new Error("Smart Add setting brand_match.name_min_length is not a number");
+  return { genericWords: wordList(v.genericWords, "brand_match.generic_words"), sharedHosts: wordList(v.sharedHosts, "brand_match.shared_hosts"), nameMinLength: min };
+}
+
 /** Dropped from names before comparing ("Ritual Coffee Co." = "Ritual Coffee"). */
 const LEGAL_SUFFIXES = new Set(["inc", "llc", "ltd", "co", "corp", "corporation", "company", "incorporated", "limited", "llp", "pllc"]);
 /** Address words that carry no place ("Main Street, Suite 4"). */
@@ -93,9 +105,9 @@ export function normalizeName(name: string): string {
 }
 
 /** A name that says nothing about which business it is ("Coffee", "The Studio"). */
-export function isGenericName(name: string): boolean {
+export function isGenericName(name: string, rules: MatchRules): boolean {
   const w = words(name).filter((x) => !LEGAL_SUFFIXES.has(x));
-  return w.every((x) => GENERIC_WORDS.has(x) || x.length < 3);
+  return w.every((x) => rules.genericWords.has(x) || x.length < 3);
 }
 
 /** A host as the brand data stores it: lowercase, no scheme, path or www. "" when it is not a host. */
@@ -111,8 +123,8 @@ export function normalizeHost(input: string): string {
 }
 
 /** True for a host many brands share (a social network, a link page, a site builder). */
-export function isSharedHost(host: string): boolean {
-  return [...SHARED_HOSTS].some((h) => host === h || host.endsWith(`.${h}`));
+export function isSharedHost(host: string, rules: MatchRules): boolean {
+  return [...rules.sharedHosts].some((h) => host === h || host.endsWith(`.${h}`));
 }
 
 /** The name part of a host: ritualcoffee.co.uk and ritualcoffee.com both say "ritualcoffee". */
@@ -149,13 +161,13 @@ function sharesPlace(probePlace: string, places: string[]): string | null {
 }
 
 /** Existing brands that match the probe, strongest reasons first. Pure. */
-export function matchBrands(probe: BrandProbe, pool: BrandCandidate[]): BrandMatch[] {
-  const hosts = new Set(probe.domains.map(normalizeHost).filter((h) => h && !isSharedHost(h)));
+export function matchBrands(probe: BrandProbe, pool: BrandCandidate[], rules: MatchRules): BrandMatch[] {
+  const hosts = new Set(probe.domains.map(normalizeHost).filter((h) => h && !isSharedHost(h, rules)));
   const accounts = probe.accounts
     .map((a) => ({ platform: a.platform, handle: normalizeHandle(a.handle) }))
     .filter((a) => a.handle.length >= 2);
   const name = probe.name ? normalizeName(probe.name) : "";
-  const nameUsable = name.length >= 3 && !isGenericName(name);
+  const nameUsable = name.length >= rules.nameMinLength && !isGenericName(name, rules);
   const labels = new Set([...hosts].map(domainLabel));
   const out: BrandMatch[] = [];
   for (const brand of pool) {
@@ -169,12 +181,12 @@ export function matchBrands(probe: BrandProbe, pool: BrandCandidate[]): BrandMat
       if (hit) reasons.push({ kind: "account", platform: hit.platform ?? a.platform, handle: a.handle });
     }
     if (nameUsable && normalizeName(brand.name) === name) {
-      const sharedLabel = brandHosts.find((h) => !isSharedHost(h) && labels.has(domainLabel(h)));
+      const sharedLabel = brandHosts.find((h) => !isSharedHost(h, rules) && labels.has(domainLabel(h)));
       const place = probe.place ? sharesPlace(probe.place, brand.places) : null;
       if (place) reasons.push({ kind: "name", shared: "city", value: place });
       else if (sharedLabel) reasons.push({ kind: "name", shared: "domain", value: sharedLabel });
     }
-    if (reasons.length) out.push({ brand, reasons });
+    if (reasons.length) out.push({ brand, reasons, detail: describeCandidate(brand, rules) });
   }
   const weight = (m: BrandMatch) => m.reasons.length * 10 + (m.reasons.some((r) => r.kind === "site") ? 5 : 0);
   return out.sort((a, b) => weight(b) - weight(a) || a.brand.name.localeCompare(b.brand.name));
@@ -214,9 +226,21 @@ export function probeKey(p: BrandProbe): string {
   ]);
 }
 
-/** The short line under the brand's name: its site, then its accounts. */
-export function describeCandidate(b: BrandCandidate): string {
-  const site = b.domains.map(normalizeHost).find((h) => h && !isSharedHost(h));
+/** "Oct 12", or "Oct 12, 2025" when it was not this year. Empty when the date is unreadable. */
+export function shortDate(iso: string | null | undefined, now: Date = new Date()): string {
+  if (!iso) return "";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  const opts: Intl.DateTimeFormatOptions = d.getFullYear() === now.getFullYear() ? { month: "short", day: "numeric" } : { month: "short", day: "numeric", year: "numeric" };
+  return d.toLocaleDateString("en-US", opts);
+}
+
+/**
+ * What tells two same-name brands apart, under the brand's name: organization, site, account count, when it
+ * was created ("Harbor Dental Group · ritualcoffee.com · 3 accounts · Oct 12"). A part with no value is left out.
+ */
+export function describeCandidate(b: BrandCandidate, rules: MatchRules, now?: Date): string {
+  const site = b.domains.map(normalizeHost).find((h) => h && !isSharedHost(h, rules));
   const n = b.accounts.length;
-  return [site, n ? `${n} ${n === 1 ? "account" : "accounts"}` : null].filter(Boolean).join(" · ");
+  return [b.organizationName, site, n ? `${n} ${n === 1 ? "account" : "accounts"}` : null, shortDate(b.createdAt, now)].filter(Boolean).join(" · ");
 }

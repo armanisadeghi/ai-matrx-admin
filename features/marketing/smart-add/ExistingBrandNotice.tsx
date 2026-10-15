@@ -10,7 +10,7 @@ import { ExternalLink } from "lucide-react";
 import { Button } from "@ai-matrx/design-system/controls";
 import { marketingRoutes } from "@/features/marketing/lib/routes";
 import { marketingSeg } from "@/features/marketing/lib/keys";
-import { describeCandidate, type BrandMatch } from "./brandMatch";
+import type { BrandMatch } from "./brandMatch";
 
 const MAX_LISTED = 4;
 
@@ -48,10 +48,16 @@ export function ExistingBrandNotice({
       <ul className="flex flex-col gap-2">
         {listed.map((m) => (
           <li key={m.brand.id} className="flex flex-wrap items-center gap-x-3 gap-y-1.5" data-testid="existing-brand-row">
-            <span className="min-w-0 flex-1 basis-48 text-sm text-foreground">
-              {single ? "You already have " : ""}
-              <span className="font-medium">{m.brand.name}</span>
-              {describeCandidate(m.brand) ? <span className="text-muted-foreground"> ({describeCandidate(m.brand)})</span> : null}
+            <span className="flex min-w-0 flex-1 basis-48 flex-col text-sm text-foreground">
+              <span>
+                {single ? "You already have " : ""}
+                <span className="font-medium">{m.brand.name}</span>
+              </span>
+              {m.detail ? (
+                <span className="text-xs text-muted-foreground" data-testid="existing-brand-detail">
+                  {m.detail}
+                </span>
+              ) : null}
             </span>
             <div className="flex flex-wrap items-center gap-2">
               <a
