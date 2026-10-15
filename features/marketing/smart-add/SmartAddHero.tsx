@@ -41,6 +41,7 @@ import type { SocialPlatform } from "@/features/marketing/social/types";
 import { linkInBioService } from "@/features/marketing/lib/link-in-bio";
 import { emailIn } from "./emailInput";
 import { personExtraPrefill } from "./personPrefill";
+import { useFediverseHost } from "./useFediverseHost";
 import { customItem, websiteHost, type EvidenceItem } from "./evidence";
 import type { RoundView } from "./SmartAddRound";
 import { AiTestReplayBadge } from "@/features/ai-test-mode/AiTestReplayBadge";
@@ -187,6 +188,7 @@ export function SmartAddHero({
   // link-started round and a pressed Go show the same stage from the first moment.
   const [starting, setStarting] = useState(false);
 
+  useFediverseHost(social);
   const parsed = resolveAccountInput({ text: social, picked });
   // Up-front checks: an address or handle that cannot exist never starts a paid run; the reason shows inline.
   const siteProblem = websiteProblem(site);
