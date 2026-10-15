@@ -51,7 +51,8 @@ import { webSiteRoot } from "../relations";
 import { claimSite } from "../siteOwnership";
 import { siteNameOf } from "../siteName";
 import { liveSiteClaimDeps } from "../siteOwnershipLive";
-import type { Answer, FocusItem } from "./queue";
+import { resolveAccountInput } from "../../social/account-input";
+import { GAP_PREFIX, type Answer, type FocusItem } from "./queue";
 
 export interface PersistContext {
   organizationId: string;
@@ -499,6 +500,46 @@ export async function persistAnswer(
   }
 }
 
+/** A core gap card (MKT-143): the typed website / account / name lands where Create would have put it; anything else is a skip. */
+async function persistGap(ctx: PersistContext, item: FocusItem, answer: Answer, value: string): Promise<Persisted> {
+  const none: Persisted = { discoveredId: null, homes: [], undo: async () => undefined };
+  if (answer !== "correct" || !value) return none;
+  const kind = item.key.slice(GAP_PREFIX.length);
+  if (kind === "website") {
+    const site = await addSite(ctx, value);
+    return { ...none, homes: site.id ? [`web.site:${site.id}`] : [], undo: site.undo };
+  }
+  if (kind === "account") {
+    const parsed = resolveAccountInput({ text: value });
+    if (parsed.status !== "ok") throw new Error("That is not a social account link or @handle we can read.");
+    const row = await createProperty({
+      organizationId: ctx.organizationId,
+      brandId: ctx.getBrand().id,
+      kind: parsed.platform as Parameters<typeof createProperty>[0]["kind"],
+      url: parsed.url ?? null,
+      handle: parsed.handle,
+      displayName: null,
+      status: "active",
+    });
+    startIngest(ctx, row.id, { accounts: [{ handle_or_url: parsed.url ?? parsed.handle, platform: parsed.platform, property_id: row.id }] });
+    return { ...none, homes: [`web.property:${row.id}`], undo: async () => deleteProperty(row.id) };
+  }
+  if (kind === "name") {
+    const brand = ctx.getBrand();
+    const before = brand.name;
+    ctx.setBrand(await updateBrand({ brandId: brand.id, expectedVersion: brand.version, patch: { name: value } }));
+    return {
+      ...none,
+      homes: [`web.brand.name:${brand.id}`],
+      undo: async () => {
+        const latest = ctx.getBrand();
+        ctx.setBrand(await updateBrand({ brandId: latest.id, expectedVersion: latest.version, patch: { name: before } }));
+      },
+    };
+  }
+  return none;
+}
+
 async function persistAnswerOnce(
   ctx: PersistContext,
   item: FocusItem,
@@ -514,6 +555,7 @@ async function persistAnswerOnce(
   let siteId: string | null = null;
 
   if (answer === "later") return { discoveredId: null, homes, undo: async () => undefined };
+  if (item.key.startsWith(GAP_PREFIX)) return persistGap(ctx, item, answer, value);
 
   if (answer === "ours" && item.kind === "account" && ev) {
     const row = await createProperty({

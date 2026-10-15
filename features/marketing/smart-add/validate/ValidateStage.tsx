@@ -594,7 +594,8 @@ export function ValidateStage({
   const [seenKey, setSeenKey] = useState(current?.key);
   if (seenKey !== current?.key) {
     setSeenKey(current?.key);
-    setEditing(false);
+    // A core gap card is an empty field: it opens ready to type in.
+    setEditing(Boolean(current?.key.startsWith("gap:")));
     setOff(new Set());
   }
 

@@ -469,6 +469,9 @@ export function foldQueue({ queue, known, later }: FoldInput): FocusItem[] {
   return plain
     .map((item) => ({ item, later: laterOf(item), section: SECTION_ORDER.indexOf(sectionOf(item)), at: position.get(item.members?.[0]?.key ?? item.key) ?? 0 }))
     .sort((a, b) => {
+      // The missing core (gap cards, queue.ts coreGaps) leads whatever its section (MKT-143).
+      const gap = Number(b.item.key.startsWith("gap:")) - Number(a.item.key.startsWith("gap:"));
+      if (gap) return gap;
       if ((a.later >= 0) !== (b.later >= 0)) return a.later >= 0 ? 1 : -1;
       if (a.later >= 0) return a.later - b.later;
       return a.section - b.section || a.at - b.at;

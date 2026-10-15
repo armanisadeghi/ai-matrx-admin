@@ -160,7 +160,7 @@ import { ProvisionCaptures } from "@/features/provision-window/ProvisionCaptures
 import { useBuilderFeed } from "@/hooks/useBuilderFeed";
 import { SMART_ADD_SURFACE } from "./builderSurface";
 import { SmartAddValidate } from "./validate/SmartAddValidate";
-import { coreSettled, mergeFacts, validationWaitingFor, type BrandFact } from "./validate/queue";
+import { mergeFacts, coreGaps, type CoreGap, type BrandFact } from "./validate/queue";
 import { knownDecided, withSuggestions, type WeThinkSuggestion } from "./weThink";
 import type { BrandSnapshot, EnrichSeed, KnownFact } from "./enrich/known";
 import { computeEnrichDiff } from "./enrich/diff";
@@ -292,8 +292,9 @@ export function SmartAddBrand({
   // The we-think agent's suggestions per round (run id) then finding key: they only glow an option, never answer.
   // Kept per round so two rounds judging one finding never overwrite each other back and forth.
   const [suggestionsByRun, setSuggestionsByRun] = useState<Record<string, Record<string, WeThinkSuggestion>>>({});
-  // After Create, once the core is settled (validate/queue VALIDATION_THRESHOLD): the focus queue.
+  // After Create, always: the focus queue (what the core lacks leads it, validate/queue coreGaps).
   const [validateOrg, setValidateOrg] = useState<string | null>(null);
+  const [validateGaps, setValidateGaps] = useState<CoreGap[]>([]);
   const validating = Boolean(validateOrg);
   // Answers brought back by a reload / Back (runMemory): they were already acted on in the earlier visit, so they never
   // start a round, a follow-up search or AI work again. An answer the person changes now leaves this map and counts.
@@ -1256,11 +1257,12 @@ export function SmartAddBrand({
       problems.push(...(await saveKeptFacts(organizationId, brand.id, factPlan, written)).problems);
       setSaveNotes(problems);
       setCreated(brand);
-      // The core is settled: shift to the focus queue for everything else.
-      const settled = coreSettled(basics, person);
-      if (settled) setValidateOrg(organizationId);
+      // Shift to the focus queue for everything else.
+      // Always (validation offers, never blocks): what the core still lacks becomes the first cards there (MKT-143).
+      setValidateGaps(coreGaps(basics, person));
+      setValidateOrg(organizationId);
       onCreated?.(brand);
-      if (settled) onValidating?.(brand);
+      onValidating?.(brand);
       // Nothing explicitly kept: the logo the card shows (the stage's best found one) is saved as the
       // primary, so a brand never lands on a placeholder while candidates exist.
       // The homepage pictured (desktop + mobile) lands in the brand's library beside the logo: more than a logo.
@@ -1301,7 +1303,7 @@ export function SmartAddBrand({
         }
       }
       // On the validation page the inputs are captured (Builder panel) but no window covers the queue.
-      await showProvision(brand, organizationId, "created", !settled);
+      await showProvision(brand, organizationId, "created", false);
     } catch (error) {
       setCreateError(extractErrorMessage(error));
     } finally {
@@ -1648,6 +1650,7 @@ export function SmartAddBrand({
           ctx={webCtx}
           broken={brokenKeys.current}
           working={working}
+          gaps={validateGaps}
           onDecide={(key, d) =>
             setDecisions((cur) => {
               if (!d) {
@@ -1910,11 +1913,6 @@ export function SmartAddBrand({
           ) : null}
           <div className="flex min-w-0 flex-col">
             <span className="truncate text-sm font-medium">{basics.name ?? "Confirm a name to create the brand"}</span>
-            {created && !validateOrg && validationWaitingFor(basics, person).length ? (
-              <span className="text-xs text-muted-foreground" data-testid="smart-add-validation-waiting">
-                Saved. Validation opens once there is {validationWaitingFor(basics, person).join(" and ")}.
-              </span>
-            ) : null}
             {basics.name ? (
               // Each fact stays whole: on a phone the facts wrap to a second line instead of being cut off.
               <span className="flex min-w-0 flex-wrap gap-x-1.5 text-xs text-muted-foreground" data-testid="smart-add-posts-preview">
@@ -1953,7 +1951,7 @@ export function SmartAddBrand({
           ) : (
             <Button variant="primary" className="max-sm:w-full" disabled={!canCreate} onClick={() => void create()}>
               {creating ? <Loader2 className="size-3.5 animate-spin" /> : null}
-              {coreSettled(basics, person) ? "Create and validate" : "Create brand"}
+              Create and validate
             </Button>
           )
         )}

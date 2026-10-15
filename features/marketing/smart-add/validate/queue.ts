@@ -43,16 +43,40 @@ export function coreSettled(
   );
 }
 
-/** What the move to the validation page still waits for after Create (empty when the core is settled), for the screen to say (MKT-143). */
-export function validationWaitingFor(
+export type CoreGap = "name" | "website" | "account";
+/** A gap card's key: the part of the core Create saved without (MKT-143). Typed values land through persist.ts. */
+export const GAP_PREFIX = "gap:";
+
+/** What of the core is missing after Create, in the order the cards come. Validation offers, never blocks. */
+export function coreGaps(
   basics: { name: string | null; websiteUrl: string | null; accounts: unknown[] },
   person = false,
-): string[] {
-  const out: string[] = [];
-  if (!basics.name) out.push("a name");
-  if (!person && !basics.websiteUrl) out.push("a confirmed website");
-  if (basics.accounts.length < VALIDATION_THRESHOLD.minAccounts) out.push("a confirmed social account");
+): CoreGap[] {
+  const out: CoreGap[] = [];
+  if (!basics.name) out.push("name");
+  if (!person && !basics.websiteUrl) out.push("website");
+  if (basics.accounts.length < VALIDATION_THRESHOLD.minAccounts) out.push("account");
   return out;
+}
+
+const GAP_COPY: Record<CoreGap, { label: string; reason: string }> = {
+  name: { label: "Brand name", reason: "The name this brand goes by. Type it, or skip for now." },
+  website: { label: "Website", reason: "The brand's own website, so it can be read and tracked. Type it, or skip for now." },
+  account: { label: "Social account", reason: "One social account of the brand's (a link or @handle). Type it, or skip for now." },
+};
+
+/** The missing core as empty fact cards: the card opens in edit, the typed value is saved by persist.ts. */
+export function gapFacts(gaps: readonly CoreGap[]): BrandFact[] {
+  return gaps.map((g) => ({
+    key: `${GAP_PREFIX}${g}`,
+    field: `gap_${g}`,
+    field_label: GAP_COPY[g].label,
+    value: "",
+    certainty: "",
+    reason: GAP_COPY[g].reason,
+    evidence_urls: [],
+    known_field: null,
+  }));
 }
 
 // ── Answers ──────────────────────────────────────────────────────────────────────────
@@ -463,6 +487,8 @@ export interface QueueInput {
   broken?: ReadonlySet<string>;
   kinds: BrandRelationKind[];
   ctx: SuggestContext;
+  /** The part of the core still missing: its cards come first (MKT-143). */
+  gaps?: BrandFact[];
 }
 
 /** The open findings in focus order, the later pile last. Typed values and answered ones are out. */
@@ -498,7 +524,8 @@ export function buildQueue(rawInput: QueueInput): FocusItem[] {
   const now = all.filter((f) => !laterSet.has(f.key)).sort(compare);
   const byKey = new Map(all.map((f) => [f.key, f]));
   const back = input.later.map((k) => byKey.get(k)).filter((f): f is FocusItem => Boolean(f));
-  return [...now, ...back];
+  const gapCards = (input.gaps ?? []).filter((g) => open(g.key) && !laterSet.has(g.key)).map(focusFromFact);
+  return [...gapCards, ...now, ...back];
 }
 
 /** The decision the identify workflow reads for an answer (wakes the next round / the confirmed tiers). */

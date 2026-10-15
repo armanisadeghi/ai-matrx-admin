@@ -1,5 +1,5 @@
 import type { BrandRelationKind } from "@/features/marketing/data/service";
-import { buildQueue, coreSettled, decisionFor, factGroup, factsFromPayload, focusFromFact, LATER_FACT_GROUP, optionsFor, VALIDATION_THRESHOLD } from "../validate/queue";
+import { buildQueue, coreGaps, coreSettled, gapFacts, decisionFor, factGroup, factsFromPayload, focusFromFact, LATER_FACT_GROUP, optionsFor, VALIDATION_THRESHOLD } from "../validate/queue";
 import { fixtureEvidence, fixtureFacts, FIXTURE_BRAND_BASICS } from "../validate/fixtures";
 
 const kind = (key: string, stance: BrandRelationKind["stance"]): BrandRelationKind => ({
@@ -131,6 +131,16 @@ describe("validation queue", () => {
     const card = focusFromFact(facts[0]);
     expect(card).toMatchObject({ kind: "fact", label: "Two values for Phone", value: "(949) 555-0199", title: "vs (949) 555-0100 (on file)",
       detail: "Contact page lists another number.", evidenceUrls: ["https://fullspecstaff.com/contact"] });
+  });
+
+  it("names the missing core, and its cards lead the queue until answered (MKT-143)", () => {
+    expect(coreGaps({ name: "X", websiteUrl: null, accounts: [] })).toEqual(["website", "account"]);
+    expect(coreGaps({ name: "X", websiteUrl: null, accounts: [] }, true)).toEqual(["account"]);
+    expect(coreGaps({ name: "X", websiteUrl: "https://x.com", accounts: [{}] })).toEqual([]);
+    const gaps = gapFacts(["website", "account"]);
+    expect(queue({ gaps }).slice(0, 2).map((c) => c.key)).toEqual(["gap:website", "gap:account"]);
+    expect(queue({ gaps, answered: new Set(["gap:website"]) })[0].key).toBe("gap:account");
+    expect(queue().some((c) => c.key.startsWith("gap:"))).toBe(false);
   });
 
   it("shifts only once name, website and an account are settled", () => {

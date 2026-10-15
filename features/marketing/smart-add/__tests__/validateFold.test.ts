@@ -3,6 +3,7 @@
  * thing must reach the stage once, and what the brand already knows must never be asked.
  */
 import { fromRow, type SavedRow } from "../validate/fromSaved";
+import { gapFacts } from "../validate/queue";
 import { accountOfPost, answeredKeysOf, foldQueue, sameSpokenName, socialIdentity, streetKey } from "../validate/fold";
 import { buildQueue, type BrandFact } from "../validate/queue";
 import type { EvidenceItem } from "../evidence";
@@ -45,6 +46,10 @@ const ROWS: SavedRow[] = [
   row("link", "web_page", "https://www.linkedin.com/posts/rooter-hero-plumbing_today-we-asked-ceo-john-akhoian", { label: "Today we asked CEO, John Akhoian what is the best" }, "https://www.linkedin.com/posts/rooter-hero-plumbing_today-we-asked-ceo-john-akhoian"),
 ];
 
+function fixtureFactsForGap(): BrandFact[] {
+  return ROWS.map(fromRow).flatMap((one) => (one && "fact" in one ? [one.fact] : []));
+}
+
 function stage() {
   const items: EvidenceItem[] = [];
   const facts: BrandFact[] = [];
@@ -62,6 +67,12 @@ function stage() {
 }
 
 describe("validate fold", () => {
+  it("keeps the missing-core gap cards in front, one card each (MKT-143)", () => {
+    const raw = buildQueue({ items: [], facts: fixtureFactsForGap(), decisions: {}, webChoices: {}, answered: new Set(), later: [], kinds: [], ctx: { ourHosts: [], ourAccounts: [], name: null }, gaps: gapFacts(["website", "account"]) });
+    const out = foldQueue({ queue: raw, known: { names: [], hosts: [], urls: [], values: [] }, later: [] });
+    expect(out.slice(0, 2).map((c) => c.key)).toEqual(["gap:website", "gap:account"]);
+  });
+
   it("normalizes identities", () => {
     expect(streetKey("300 East Esplanade Dr., Suite 101, Oxnard")).toBe("300 e esplanade dr");
     expect(streetKey("Los Angeles, California")).toBeNull();

@@ -17,7 +17,7 @@ import { marketingSeg } from "@/features/marketing/lib/keys";
 import type { EvidenceItem as Ev } from "../evidence";
 import type { Decision, EvidenceItem } from "../evidence";
 import type { SuggestContext, WebChoice } from "../webKinds";
-import { buildQueue, decisionFor, mergeFacts, type Answer, type BrandFact, type FocusItem } from "./queue";
+import { buildQueue, decisionFor, gapFacts, mergeFacts, type Answer, type BrandFact, type CoreGap, type FocusItem } from "./queue";
 import { persistAnswer, type Persisted } from "./persist";
 import { answeredKeysOf, EMPTY_KNOWN, foldQueue, logoImagesOf, logosLabel, type KnownOnBrand } from "./fold";
 import { loadSavedFindings } from "./fromSaved";
@@ -43,6 +43,7 @@ export function SmartAddValidate({
   working,
   onDecide,
   publish,
+  gaps = [],
 }: {
   brand: MarketingBrand;
   organizationId: string;
@@ -54,6 +55,8 @@ export function SmartAddValidate({
   ctx: SuggestContext;
   broken: ReadonlySet<string>;
   working: boolean;
+  /** The part of the core Create saved without: its cards come first (MKT-143). */
+  gaps?: CoreGap[];
   /** The workflow-facing answer (null = cleared): a confirmed finding seeds / wakes the next round. */
   onDecide: (key: string, decision: Decision | null) => void;
   publish: (entry: BuilderPublishInput) => void;
@@ -109,7 +112,9 @@ export function SmartAddValidate({
   const allFacts = mergeFacts(facts, [...(saved?.facts ?? []), ...(past?.facts ?? [])]);
 
   const answeredKeys = new Set(answered.flatMap((a) => answeredKeysOf(a.item)));
-  const raw = buildQueue({ items: allItems, facts: allFacts, decisions, webChoices, answered: answeredKeys, later, broken, kinds, ctx });
+  // A gap is closed once its card is answered, or once an answered "ours" / "preferred" card gave that part of the core.
+  const given = (g: CoreGap) => answered.some((a) => (g === "account" ? a.item.kind === "account" && a.answer === "ours" : g === "website" ? a.item.kind === "website" && a.answer === "ours" : a.item.kind === "name" && a.answer === "preferred"));
+  const raw = buildQueue({ items: allItems, facts: allFacts, decisions, webChoices, answered: answeredKeys, later, broken, kinds, ctx, gaps: gapFacts(gaps.filter((g) => !given(g))) });
   // A logo picture already answered (this visit or an earlier one) or saved as the brand's logo is never asked again,
   // whichever key a later round finds it under (MKT-139).
   const answeredLogoImages = [...answered.map((a) => a.item), ...(past?.entries ?? []).map((e) => e.item)].filter((i) => i.kind === "logo").flatMap(logoImagesOf);
