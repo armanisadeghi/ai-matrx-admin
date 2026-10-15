@@ -1,0 +1,22 @@
+import { chromium } from "playwright";
+import { execSync } from "node:child_process";
+const TB = "85c830ae-98aa-4e2a-a864-8115e53a1a5d";
+const out = console.log;
+const url = execSync(`cd ../.. && pnpm dev-login /data/${TB}`, { encoding: "utf8" }).match(/OPEN\s*:\s*(\S+)/)[1];
+const b = await chromium.launch({ headless: true });
+const page = await (await b.newContext({ viewport: { width: 1600, height: 900 } })).newPage();
+await page.goto(url, { waitUntil: "domcontentloaded", timeout: 240000 });
+await page.waitForSelector("[data-table-toolbar]", { timeout: 240000 }); await page.waitForTimeout(4000);
+page.on("request", (r) => { if (globalThis.__rec) console.log("REQ", r.method(), r.url().replace(/^https?:\/\/[^/]+/, "").slice(0, 110)); });
+const rows = () => page.locator("[data-matrx-cell-col='account']").count();
+const grp = async () => ((await page.locator('[aria-label="Group rows by a column"]').first().textContent()) ?? "").trim();
+// the person's own look on All records: sorted by Weekly loaves
+await page.locator('button[aria-description]').filter({ hasText: /weekly/i }).first().click(); await page.waitForTimeout(2500);
+out("before copy: rows", await rows(), "group", await grp());
+await page.locator("[data-view-picker]").click(); await page.waitForTimeout(800);
+await page.locator('[data-view-action="copy-settings"]').click(); await page.waitForTimeout(500);
+globalThis.__rec = true; await page.locator("[data-view-copy-from]").first().click();
+await page.waitForTimeout(3500);
+out("after copy (no reload): rows", await rows(), "group", await grp());
+await page.screenshot({ path: "/tmp/airtable-walk/u-d1b.png" });
+await b.close();
