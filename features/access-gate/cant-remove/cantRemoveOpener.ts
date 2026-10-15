@@ -48,6 +48,18 @@ export function isRemovalNotYours(error: unknown): boolean {
   return error instanceof RemovalNotYoursError || isGovernedActionDenial(error);
 }
 
+/** One open screen per record: a double click never queues the same screen twice. */
+const showing = new Set<string>();
+function openOnce(request: CantRemoveRequest) {
+  const key = `${request.token}:${request.id}`;
+  if (showing.has(key)) return;
+  showing.add(key);
+  void cantRemoveOpener
+    .open(request)
+    .catch(() => undefined)
+    .finally(() => showing.delete(key));
+}
+
 /**
  * When `error` means "not yours to remove", open the owner-choices screen and
  * answer true (the caller shows nothing else). Otherwise answer false.
@@ -57,7 +69,7 @@ export function offerOwnerChoices(
   request: CantRemoveRequest,
 ): boolean {
   if (!isRemovalNotYours(error)) return false;
-  void cantRemoveOpener.open(request).catch(() => undefined);
+  openOnce(request);
   return true;
 }
 
@@ -70,7 +82,7 @@ export function offerOwnerChoices(
 export async function ensureRemovable(request: CantRemoveRequest): Promise<boolean> {
   const rights = await fetchRemovalRights(request.token, request.id).catch(() => null);
   if (rights?.canView && !rights.canRemove) {
-    void cantRemoveOpener.open(request).catch(() => undefined);
+    openOnce(request);
     return false;
   }
   return true;

@@ -90,6 +90,14 @@ state, and a pasted link reproduces the list exactly.
   `useSearchParams()` until hydration, the kit's live snapshot after. Guard:
   `__tests__/first-render-reads-the-url.test.tsx` (RED "Mine" on the kit hook).
 
+## Hidden by me (2026-10-15)
+
+A list with `registryToken` takes the person's hidden records out of `rows`
+(`hiddenOnPage` says how many on this page), renders `HiddenByMeButton` beside
+the filters (absent until something is hidden), and an empty page whose matches
+are all hidden says "Only hidden … match". Source of truth:
+`features/access-gate/FEATURE.md` § Can't remove it?
+
 ## The archive axis is a LAW, and its default is a knob
 
 THE ARCHIVED-ITEMS LAW (`../../../common-docs/policies/archived-items.md`,

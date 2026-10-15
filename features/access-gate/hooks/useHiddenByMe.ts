@@ -25,50 +25,83 @@ import {
   unhideForMe,
   type HiddenItem,
 } from "@/features/access-gate/service/hiddenByMe";
+import { createClient } from "@/utils/supabase/client";
 
 interface Slot {
   items: HiddenItem[] | undefined;
+  /** Stable ids array for `items` (lists memoise on it). */
+  ids: string[] | undefined;
   loading: Promise<void> | null;
+  /** The last read failed: the next mount retries instead of trusting []. */
+  failed: boolean;
 }
 
 const slots = new Map<string, Slot>();
 const listeners = new Set<() => void>();
 let version = 0;
+let watchingAuth = false;
 
 function emit() {
   version += 1;
   listeners.forEach((listener) => listener());
 }
 
+/** A sign-in, sign-out or account switch empties the store: hides belong to one person. */
+function watchAuth() {
+  if (watchingAuth || typeof window === "undefined") return;
+  watchingAuth = true;
+  try {
+    createClient().auth.onAuthStateChange((event) => {
+      if (event === "SIGNED_IN" || event === "SIGNED_OUT" || event === "USER_UPDATED") {
+        slots.clear();
+        emit();
+      }
+    });
+  } catch {
+    // No auth client in this host (tests): nothing to watch.
+  }
+}
+
 function slotFor(token: string): Slot {
   let slot = slots.get(token);
   if (!slot) {
-    slot = { items: undefined, loading: null };
+    slot = { items: undefined, ids: undefined, loading: null, failed: false };
     slots.set(token, slot);
   }
   return slot;
 }
 
-/** (Re)read one token's hidden items into the store. */
+function settle(slot: Slot, items: HiddenItem[], failed: boolean) {
+  slot.items = items;
+  slot.ids = items.map((item) => item.id);
+  slot.failed = failed;
+}
+
+/** (Re)read one token's hidden items into the store. Signed out → nothing is hidden. */
 export function refreshHiddenByMe(token: string): Promise<void> {
+  watchAuth();
   const slot = slotFor(token);
-  const loading = listHiddenItems(token)
-    .then((items) => {
-      slot.items = items;
-    })
-    .catch(() => {
+  const loading = (async () => {
+    try {
+      const { data } = await createClient().auth.getSession();
+      if (!data.session) {
+        settle(slot, [], true);
+        return;
+      }
+      settle(slot, await listHiddenItems(token), false);
+    } catch {
       // An unreadable answer hides nothing: the list stays whole, never wrongly short.
-      slot.items = slot.items ?? [];
-    })
-    .finally(() => {
-      slot.loading = null;
-      emit();
-    });
+      settle(slot, slot.items ?? [], true);
+    }
+  })().finally(() => {
+    slot.loading = null;
+    emit();
+  });
   slot.loading = loading;
   return loading;
 }
 
-function useHiddenSlot(token: string, enabled: boolean): HiddenItem[] | undefined {
+function useHiddenSlot(token: string, enabled: boolean): Slot | undefined {
   useSyncExternalStore(
     (listener) => {
       listeners.add(listener);
@@ -82,22 +115,22 @@ function useHiddenSlot(token: string, enabled: boolean): HiddenItem[] | undefine
   useEffect(() => {
     if (!active) return;
     const current = slotFor(token);
-    if (current.items === undefined && !current.loading) void refreshHiddenByMe(token);
+    if ((current.items === undefined || current.failed) && !current.loading) void refreshHiddenByMe(token);
   }, [active, token]);
-  return slot?.items;
+  return slot;
 }
 
 export function useHiddenByMe(token: string, enabled = true) {
-  const items = useHiddenSlot(token, enabled);
+  const slot = useHiddenSlot(token, enabled);
   return {
-    data: items?.map((item) => item.id),
-    isPending: enabled && Boolean(token) && items === undefined,
+    data: slot?.ids,
+    isPending: enabled && Boolean(token) && slot?.ids === undefined,
   };
 }
 
 export function useHiddenItems(token: string, enabled = true) {
-  const items = useHiddenSlot(token, enabled);
-  return { data: items, isPending: enabled && items === undefined };
+  const slot = useHiddenSlot(token, enabled);
+  return { data: slot?.items, isPending: enabled && slot?.items === undefined };
 }
 
 export function useRemovalRights(token: string, id: string | null) {

@@ -69,6 +69,18 @@ Hidden by me: `platform.hidden_item` (filed under the record's own org) behind
 `HiddenFilter` beside `ArchiveFilter` (absent until something is hidden).
 Exemplar: Marketing › Brands (`BrandArchiveFlow`, `BrandsPortfolio`).
 
+Platform-wide (2026-10-15): ONE host — `cant-remove/CantRemoveDialogHost`
+(mounted in `app/Providers.tsx`) behind `ensureRemovable(request)` (call before
+any archive/delete confirm) and `offerOwnerChoices(error, request)` (call in the
+catch). `features/trash` `archiveRecord` checks rights before writing and throws
+`RemovalNotYoursError`, so `ArchiveRecordButton` and every caller of it get the
+screen. Every `EntityListPage` with a `registryToken` drops the person's hidden
+rows (`useEntityList`, client-side, one page at a time) and shows
+`HiddenByMeButton` in its toolbar. Hidden ids live in a module store in
+`hooks/useHiddenByMe.ts` (cleared on sign-in/out; no query client needed).
+Open: a list that hides client-side counts hidden rows on OTHER pages in its
+total — lists that need exact paging narrow server-side with `applyHiddenView`.
+
 ## Using it
 
 ```tsx
@@ -303,6 +315,8 @@ surface means importing them too, never reimplementing the RPC call.
   `recordUnavailable`, assert some consumer reads `.isError`/`.error`.
 
 ## Change Log
+
+- 2026-10-15 — Rollout: `cant-remove/` host + `ensureRemovable`/`offerOwnerChoices`; `archiveRecord` checks first; transcripts, decks, assessments adopt; list shell hides + `HiddenByMeButton`; hides store the record's name.
 
 - 2026-10-14 — Hidden by me + check-first removal: `GovernedActionDialog` gains archive wording and a "Hide it for me" choice; new `service/hiddenByMe.ts`, `hooks/useHiddenByMe.ts`, `components/HiddenFilter.tsx`; brands adopt it.
 
