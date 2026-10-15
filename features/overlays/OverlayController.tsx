@@ -8016,6 +8016,7 @@ export default function OverlayController() {
                 ? data.conversationId
                 : null
             }
+            readOnly={data?.readOnly === true}
           />
         );
       })}
