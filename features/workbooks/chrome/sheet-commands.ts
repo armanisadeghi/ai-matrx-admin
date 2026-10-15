@@ -54,6 +54,15 @@ import { promptForValues } from "@/components/dialogs/value-prompts/valuePrompts
 import type { EditorMenu, EditorMenuEntry } from "@/components/editor-chrome/editor-menu-model";
 import { googleExtensionsMenu, googleHelpHead, soon } from "@/components/editor-chrome/google-parity";
 import type { EditorToolbarItem } from "@/components/editor-chrome/EditorToolbar";
+import { createElement } from "react";
+import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
+import {
+  SHEET_THEMES,
+  applyThemeToSheet,
+  columnStats,
+  describeColumnStats,
+  type ThemeRangeLike,
+} from "./sheet-extras";
 
 // ─── the slice of Univer's facade this map uses (structural, so tests can fake it) ───
 
@@ -88,6 +97,10 @@ export interface WorksheetLike {
   hideSheet?(): unknown;
   showSheet?(): unknown;
   getMaxColumns?(): number;
+  /** Used size, 0-based last row/column (Univer facade). */
+  getLastRow?(): number;
+  getLastColumn?(): number;
+  getRange?(row: number, column: number, numRows: number, numColumns: number): ThemeRangeLike & Pick<RangeLike, "getValues">;
   setFrozenRows(rows: number): unknown;
   setFrozenColumns(columns: number): unknown;
   getFrozenRows(): number;
@@ -362,6 +375,33 @@ export function showHiddenSheets(h: SheetChromeHost) {
 }
 
 /** Insert → Emoji: ask for the character(s) and append them to the active cell's text. */
+/** Column stats for the columns of the selection, shown in the app's own dialog. */
+export function showColumnStats(r: RangeLike) {
+  const values = r.getValues();
+  const stats = columnStats(values);
+  const header = values[0];
+  void confirm({
+    title: "Column stats",
+    description: createElement("div", { className: "whitespace-pre-line text-sm" }, describeColumnStats(stats, header)),
+    confirmLabel: "Done",
+    cancelLabel: null,
+  });
+}
+
+/** Apply a workbook theme (fonts + header/banding colours) to every sheet's used data. */
+export function applyThemeToAllSheets(h: SheetChromeHost, themeId: string): number {
+  const theme = SHEET_THEMES.find((t) => t.id === themeId);
+  const sheets = h.api.getActiveWorkbook()?.getSheets?.() ?? [];
+  if (!theme) return 0;
+  let cells = 0;
+  for (const sheet of sheets) {
+    const getRange = sheet.getRange?.bind(sheet);
+    if (!getRange) continue;
+    cells += applyThemeToSheet(theme, getRange as (a: number, b: number, c: number, d: number) => ThemeRangeLike, (sheet.getLastRow?.() ?? -1) + 1, (sheet.getLastColumn?.() ?? -1) + 1);
+  }
+  return cells;
+}
+
 export function insertEmoji(h: SheetChromeHost) {
   return withRange(h, async (r) => {
     const answers = await promptForValues({
@@ -772,7 +812,22 @@ export function buildSheetMenus(h: SheetChromeHost): EditorMenu[] {
       id: "format",
       label: "Format",
       items: [
-        soon("format.theme", "Theme", "workbooks.theme", { icon: Palette }),
+        {
+          kind: "submenu",
+          id: "format.theme",
+          label: "Theme",
+          icon: Palette,
+          keywords: ["fonts", "colours", "colors", "style"],
+          items: SHEET_THEMES.map((t) => ({
+            kind: "action" as const,
+            id: `format.theme.${t.id}`,
+            label: t.label,
+            run: () => {
+              const n = applyThemeToAllSheets(h, t.id);
+              h.notify(n ? `${t.label} theme applied` : "Nothing to style yet");
+            },
+          })),
+        },
         { kind: "separator" },
         { kind: "submenu", id: "format.number", label: "Number", icon: DollarSign, items: numberFormatEntries(h) },
         {
@@ -847,7 +902,7 @@ export function buildSheetMenus(h: SheetChromeHost): EditorMenu[] {
         soon("data.slicer", "Add a slicer", "workbooks.slicer"),
         { kind: "separator" },
         { kind: "action", id: "data.protect", label: "Protect sheets and ranges", keywords: ["permission", "lock"], run: run(h, "sheet.command.add-range-protection-from-toolbar") },
-        soon("data.named-ranges", "Named ranges", "workbooks.named-ranges"),
+        { kind: "action", id: "data.named-ranges", label: "Named ranges", keywords: ["defined names", "name a range"], run: run(h, "sidebar.operation.defined-name", { value: "open" }) },
         soon("data.named-functions", "Named functions", "workbooks.named-functions"),
         {
           kind: "action",
@@ -860,7 +915,13 @@ export function buildSheetMenus(h: SheetChromeHost): EditorMenu[] {
           }),
         },
         { kind: "separator" },
-        soon("data.column-stats", "Column stats", "workbooks.column-stats"),
+        {
+          kind: "action",
+          id: "data.column-stats",
+          label: "Column stats",
+          keywords: ["distribution", "count", "unique", "summary"],
+          run: withRange(h, (r) => showColumnStats(r)),
+        },
         { kind: "action", id: "data.validation", label: "Data validation", run: run(h, "data-validation.operation.open-validation-panel", {}) },
 
         {

@@ -1,4 +1,5 @@
 "use client";
+import { VoiceTransferHistory } from "./VoiceTransferHistory";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@ai-matrx/design-system/controls";
@@ -151,6 +152,7 @@ export function VoiceTransferSettings() {
           />
         ))
       )}
+      <VoiceTransferHistory />
     </main>
   );
 }
