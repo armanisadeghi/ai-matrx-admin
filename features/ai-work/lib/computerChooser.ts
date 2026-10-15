@@ -122,6 +122,16 @@ export function distinguishing(row: { last_seen?: string | null; hostname?: stri
   return [lastSeenLabel(row.last_seen), machine].filter(Boolean).join(" · ");
 }
 
+/**
+ * The detail on a computer row: its host name wherever the row holds one, and for an offline (or
+ * unknown, removed, too-old) computer its last seen — "never seen" when it never checked in. Pure.
+ */
+export function computerRowDetail(row: { last_seen?: string | null; hostname?: string | null }, online: boolean): string {
+  const host = row.hostname?.trim() || "";
+  const seen = online ? "" : lastSeenLabel(row.last_seen) || "never seen";
+  return [host, seen].filter(Boolean).join(" · ");
+}
+
 /** Names shared by more than one computer: those rows also say when each was last seen. Pure. */
 export function duplicateNames(names: string[]): Set<string> {
   const seen = new Map<string, number>();

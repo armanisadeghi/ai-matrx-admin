@@ -17,6 +17,8 @@ export interface DeviceRow {
   /** `public.app_instances.id` — the device identity everywhere (C13). */
   id: string;
   instance_name: string | null;
+  /** The machine's host name, when the app reported one. */
+  hostname?: string | null;
   platform: string | null;
   os_version: string | null;
   app_version: string | null;

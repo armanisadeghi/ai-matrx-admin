@@ -73,3 +73,12 @@ describe("same-day computers with one name", () => {
     expect(b).toContain("studio.local");
   });
 });
+
+describe("every computer row says where and when", () => {
+  it("shows the host name, last seen for an offline row, and never seen when it never checked in", async () => {
+    const { computerRowDetail } = await import("./computerChooser");
+    expect(computerRowDetail({ hostname: "studio.local", last_seen: null }, true)).toBe("studio.local");
+    expect(computerRowDetail({ hostname: "studio.local", last_seen: "2026-10-14T17:40:00Z" }, false)).toMatch(/^studio\.local · last seen /);
+    expect(computerRowDetail({ hostname: null, last_seen: null }, false)).toBe("never seen");
+  });
+});

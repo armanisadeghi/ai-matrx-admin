@@ -16,7 +16,7 @@ import { browserCodingDoors } from "@/features/ai-work/lib/matrx2Computers";
 import type { Matrx2ComputerStatus } from "@/features/ai-work/lib/matrx2Coding";
 import { ComputerConnection, type ComputerConnectionState } from "@/features/ai-work/compose/components/RunsOnStep";
 import { ComputerWorkFields } from "@/features/ai-work/components/ComputerWorkFields";
-import { distinguishing, duplicateNames, type ComputerRunRequest } from "@/features/ai-work/lib/computerChooser";
+import { computerRowDetail, distinguishing, duplicateNames, type ComputerRunRequest } from "@/features/ai-work/lib/computerChooser";
 import { supabase } from "@/utils/supabase/client";
 import { HomeStep } from "@/features/ai-work/compose/components/HomeStep";
 import type { SavedRequestHome } from "@/features/ai-work/compose/savedRequests";
@@ -97,7 +97,7 @@ export function RunsOnField({ value, onChange, error }: Props) {
           ...(value && !computers?.some((c) => c.deviceId === value.deviceId) ? [{ value: value.deviceId, label: "This computer (not listed)" }] : []),
           ...(computers ?? []).map((c) => ({
             value: c.deviceId,
-            label: [c.name, c.online === true ? "online" : c.online === false ? "offline" : "status unknown", dupes.has(c.name) && machines[c.deviceId] ? distinguishing(machines[c.deviceId]) : ""].filter(Boolean).join(" · "),
+            label: [c.name, c.online === true ? "online" : c.online === false ? "offline" : "status unknown", machines[c.deviceId] ? (dupes.has(c.name) && c.online === true ? distinguishing(machines[c.deviceId]) : computerRowDetail(machines[c.deviceId], c.online === true)) : ""].filter(Boolean).join(" · "),
           })),
         ]}
         onValueChange={(id) =>
