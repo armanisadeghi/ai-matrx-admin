@@ -44,6 +44,7 @@ import { MANDATE_KEYS } from "@ai-matrx/agents/mandates";
 import { useAgentLauncher } from "@ai-matrx/chat/agents/hooks/useAgentLauncher";
 import { recordPageHref } from "@/features/unified-data/table-page/recordPageHref";
 import { recordStoreShare } from "@/features/sharing/components/RecordStoreShareSurface";
+import { viewLinkPort } from "@/features/sharing/view-link/ViewLinkPanel";
 import { recordStoreColumnAccess } from "@/features/access-setup/components/ColumnAccessPanel";
 import { APPLETS_PORT } from "@/features/applets/embed/appletsPort";
 import { RecordScopedChat } from "@/features/unified-data/record-chat/RecordScopedChat";
@@ -189,6 +190,9 @@ export function recordsUiHostFor({ ports, merged, gridContext, rights }: Records
       },
     },
     share: recordStoreShare,
+    // "Share view link…" in the view menu (lane VIEW-LINK): an Anyone link on ONE saved view, opened at /v/<token>.
+    // Spread as its own object: a records-ui build before the port ignores the key.
+    ...{ shareViewLink: viewLinkPort },
     // "Who can see and edit…" on a column header (access-setup PLAN §12, records-ui `columnAccess`).
     // Spread as its own object: a records-ui build before the port ignores the key.
     ...{ columnAccess: recordStoreColumnAccess },

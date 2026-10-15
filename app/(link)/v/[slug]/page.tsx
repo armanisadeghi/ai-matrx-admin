@@ -11,8 +11,9 @@
 // are one answer on purpose, so an address cannot be used to learn that something used to be there.
 
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 
-import { NO_SUCH_LINK, PublicLinkNotice } from "@/components/public-link/PublicLinkNotice";
+import { PublicLinkNotice } from "@/components/public-link/PublicLinkNotice";
 import { PublicViewBody } from "@/features/sharing/public-view/PublicViewBody";
 import { publishedView } from "@/features/sharing/public-view/service";
 
@@ -32,7 +33,8 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 export default async function PublishedViewPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const view = await publishedView(slug);
-  if (!view) return <PublicLinkNotice title="Nothing here" message={NO_SUCH_LINK} />;
+  // A real 404, not a 200 that says "nothing here": a revoked link, a taken-down view and a link nobody made are one answer.
+  if (!view) notFound();
   if (view.state === "archived") {
     return <PublicLinkNotice title={view.title} message="The owner has archived this, so it is no longer shown." />;
   }
