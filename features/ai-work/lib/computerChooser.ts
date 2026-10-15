@@ -132,9 +132,32 @@ export function computerRowDetail(row: { last_seen?: string | null; hostname?: s
   return [host, seen].filter(Boolean).join(" · ");
 }
 
+export type MachinesRead = "loading" | "ready" | "failed";
+
+/**
+ * A row's device detail, never blank: "Loading…" until the device details answer, "Couldn't read"
+ * when they failed (or the row is missing from the answer), otherwise `detail()`. Pure.
+ */
+export function machineDetail(machine: object | undefined, read: MachinesRead, detail: () => string): string {
+  if (read === "loading") return "Loading…";
+  if (read === "failed" || !machine) return "Couldn't read";
+  return detail();
+}
+
 /** Names shared by more than one computer: those rows also say when each was last seen. Pure. */
 export function duplicateNames(names: string[]): Set<string> {
   const seen = new Map<string, number>();
   for (const n of names) seen.set(n, (seen.get(n) ?? 0) + 1);
   return new Set([...seen].filter(([, c]) => c > 1).map(([n]) => n));
+}
+
+/**
+ * The label of a chosen computer the list has not shown (yet): "Loading computers…" while the list is
+ * still coming, never a wrong "not listed" (re-walk: it flashed for 1–2 s); "Couldn't list your
+ * computers" when the list failed; "This computer (not listed)" only once the list truly lacks it. Pure.
+ */
+export function unlistedLabel(computers: readonly unknown[] | null, problem: string | null): string {
+  if (problem) return "Couldn't list your computers";
+  if (computers === null) return "Loading computers…";
+  return "This computer (not listed)";
 }
