@@ -3,7 +3,7 @@
   "updated": "2026-10-07",
   "sha": "e389e62b291c8f8958b40ae46c3c3cb67335a4b2",
   "sites": 36071,
-  "count": 24,
+  "count": 25,
   "ids": [
     "arbitrary-text-size|features/esign/signer/parts/PaperField.tsx",
     "primitive-visual-class|components/editor-chrome/EditorRibbon.tsx",
@@ -28,7 +28,8 @@
     "styled-raw-button|features/esign/signer/parts/PaperField.tsx",
     "styled-raw-button|features/file-actions/home/StartBand.tsx",
     "styled-raw-button|features/marketing/smart-add/validate/ValidateStage.tsx",
-    "styled-raw-button|features/rich-document/outline/DocumentOutline.tsx"
+    "styled-raw-button|features/rich-document/outline/DocumentOutline.tsx",
+    "styled-raw-button|features/templates/files/components/TemplateThumb.tsx"
   ],
   "counts": {
     "arbitrary-text-size|app/(admin)/administration/_nav/AdminNavTreeMenu.tsx": 2,
@@ -11966,6 +11967,11 @@
       "reason": "Flagship validation stage (Arman's elevated-stage rule): the set card's value pills are bespoke toggle chips sized for the stage; no shared toggle-chip control exists",
       "accepted_by": "Armani Sadeghi",
       "date": "2026-10-14"
+    },
+    "styled-raw-button|features/templates/files/components/TemplateThumb.tsx": {
+      "reason": "The template tile face is a paper-shaped preview (Google's template tile), not a control; same shape as StartTile; unchanged button, line moved by the caption edit",
+      "accepted_by": "Armani Sadeghi",
+      "date": "2026-10-15"
     }
   }
 }
