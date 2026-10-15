@@ -270,12 +270,24 @@ export const KindSandboxFrame: React.FC<KindSandboxFrameProps> = ({
     React.useEffect(() => {
         if (heard) return;
         setSilent(false);
-        const timer = window.setTimeout(
-            () => setSilent(true),
-            loaded ? SILENT_FRAME_MS : NEVER_LOADED_MS,
-        );
+        const timer = window.setTimeout(() => {
+            setSilent(true);
+            // 🚨 A FRAME THAT NEVER SPEAKS IS A FAILURE THE ERROR INSPECTOR HEARS (2026-10-14).
+            // The screen said "This view did not load" while the inspector read "No errors
+            // captured" — a reviewer took the notice for the inspector itself failing. One
+            // capture per attempt, naming the kind and whether the document ever loaded.
+            captureError({
+                source: "content-ir",
+                message:
+                    `[kind-sandbox] ${kind}: the view did not load — the sandbox frame ` +
+                    (loaded
+                        ? `loaded but never answered within ${SILENT_FRAME_MS / 1000}s`
+                        : `document never loaded within ${NEVER_LOADED_MS / 1000}s`),
+                raw: { kind, attempt: frameAttempt, loaded },
+            });
+        }, loaded ? SILENT_FRAME_MS : NEVER_LOADED_MS);
         return () => window.clearTimeout(timer);
-    }, [heard, loaded, frameAttempt]);
+    }, [heard, loaded, frameAttempt, kind]);
     /** Channels offered to the frame and not yet answered on (see INIT_RETRY_MS). */
     const offeredPorts = React.useRef<MessagePort[]>([]);
     const initRetryTimer = React.useRef<number | null>(null);
