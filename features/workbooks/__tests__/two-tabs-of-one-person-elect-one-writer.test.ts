@@ -1,36 +1,62 @@
 /**
- * Two tabs of one person on one workbook: exactly ONE of them is the host that writes the canonical
- * snapshot. Review 2026-10-15: both were host (same uid), so one edit wrote a snapshot and patched
- * udt_workbooks from both tabs.
+ * One edit is written ONCE. Review 2026-10-15: with two tabs of one person on one workbook, the tab that
+ * made an edit AND the tab that received it both wrote a snapshot and patched udt_workbooks.
+ * Each scenario counts how many tabs would write one edit.
  */
-import { electCollabHost } from "../collab/WorkbookCollabSession";
+import { electCollabHost, mayAutosave, remoteOriginOf, REMOTE_PARAM_TAG } from "../collab/autosave-writer";
 
-const tabs = [
-  { uid: "u-1", clientId: "tab-b" },
-  { uid: "u-1", clientId: "tab-a" },
-];
+type Tab = { uid: string; clientId: string };
+const states = (tabs: Tab[]) => tabs.map((t) => ({ uid: t.uid, clientId: t.clientId }));
 
-describe("host election across tabs of one person", () => {
-  it("exactly one of two same-uid tabs is host", () => {
-    const a = electCollabHost(tabs, "u-1", "tab-a", true).isHost;
-    const b = electCollabHost(tabs, "u-1", "tab-b", true).isHost;
-    expect([a, b].filter(Boolean)).toHaveLength(1);
-    expect(a).toBe(true);
+/** How many tabs write one edit made in `origin`, given everyone present. */
+function writers(tabs: Tab[], origin: Tab): number {
+  const room = states(tabs);
+  return tabs.filter((t) => {
+    const e = electCollabHost(room, t.uid, t.clientId, true, true);
+    return mayAutosave({
+      collab: true,
+      isHost: e.isHost,
+      hostUid: e.hostUid,
+      selfUid: t.uid,
+      remoteFrom: t === origin ? null : origin.uid,
+    });
+  }).length;
+}
+
+const a: Tab = { uid: "u-1", clientId: "tab-a" };
+const b: Tab = { uid: "u-1", clientId: "tab-b" };
+const other: Tab = { uid: "u-2", clientId: "tab-z" };
+
+describe("one edit, one write", () => {
+  it("two tabs of one person: the edit is written once, from either tab", () => {
+    expect(writers([a, b], a)).toBe(1);
+    expect(writers([a, b], b)).toBe(1);
   });
 
-  it("a lower uid still outranks every tab of a higher uid", () => {
-    const states = [...tabs, { uid: "u-0", clientId: "z" }];
-    expect(electCollabHost(states, "u-1", "tab-a", true).isHost).toBe(false);
-    expect(electCollabHost(states, "u-0", "z", true).isHost).toBe(true);
+  it("two people: the host writes the other person's edit, the host's own edit is written by the host", () => {
+    expect(writers([a, other], a)).toBe(1);
+    expect(writers([a, other], other)).toBe(1);
   });
 
-  it("a same-tab holder that is not the tab leader is never host", () => {
-    expect(electCollabHost(tabs, "u-1", "tab-a", false).isHost).toBe(false);
+  it("two tabs of the host person plus another person: still exactly one writer per edit", () => {
+    expect(writers([a, b, other], other)).toBe(1);
+    expect(writers([a, b, other], a)).toBe(1);
   });
 
-  it("the old rule (uid alone) elects both tabs; this guard fails on it", () => {
-    const oldRule = (uid: string) => [...tabs].map((s) => s.uid).sort()[0] === uid;
-    expect([oldRule("u-1"), oldRule("u-1")]).toEqual([true, true]); // both tabs host under the old rule
-    expect(electCollabHost(tabs, "u-1", "tab-b", true).isHost).toBe(false);
+  it("solo is written", () => {
+    expect(mayAutosave({ collab: true, isHost: true, hostUid: null, selfUid: "u-1", remoteFrom: null })).toBe(true);
+    expect(mayAutosave({ collab: false, isHost: false, hostUid: null, selfUid: "", remoteFrom: null })).toBe(true);
+  });
+
+  it("the old rule (every host tab writes whatever it applied) writes twice; this guard fails on it", () => {
+    const old = [a, b].filter((t) => electCollabHost(states([a, b]), t.uid, t.clientId, true, false).isHost).length;
+    expect(old).toBe(2);
+  });
+
+  it("reads the origin off a tagged mutation", () => {
+    expect(remoteOriginOf({ [REMOTE_PARAM_TAG]: "u-9" })).toBe("u-9");
+    expect(remoteOriginOf({ [REMOTE_PARAM_TAG]: true })).toBe(true);
+    expect(remoteOriginOf({ x: 1 })).toBeNull();
+    expect(remoteOriginOf(null)).toBeNull();
   });
 });

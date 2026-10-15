@@ -106,6 +106,7 @@ import {
 import { matrxImagePorts } from "@/lib/univer/matrxImagePorts";
 import { disposeUniverInstance } from "@/lib/univer/disposeUniverInstance";
 import { isWorkbookSnapshotMutation } from "@/lib/univer/isSnapshotMutation";
+import { mayAutosave, remoteOriginOf } from "@/features/workbooks/collab/autosave-writer";
 import { RemoteCursorsLayer } from "@/lib/collab/RemoteCursorsLayer";
 import { WorkbookCursorOverlay } from "@/features/workbooks/components/WorkbookCursorOverlay";
 import { getLatestSnapshot, saveSnapshot } from "@/features/workbooks/workbook-service";
@@ -231,6 +232,11 @@ export default function WorkbookEditor({
   const editableRef = useRef(editable);
   const collabRef = useRef(collab);
   const collabIsHostRef = useRef(collabIsHost);
+  /** The person whose tabs write the canonical snapshot (null until a peer is known = solo). */
+  const collabHostUidRef = useRef<string | null>(null);
+  const collabSelfUidRef = useRef("");
+  /** True once an edit this tab may write has been seen since the last save. */
+  const saveAllowedRef = useRef(false);
   useEffect(() => {
     editableRef.current = editable;
   }, [editable]);
@@ -240,6 +246,9 @@ export default function WorkbookEditor({
   useEffect(() => {
     collabIsHostRef.current = collabIsHost;
   }, [collabIsHost]);
+  useEffect(() => {
+    collabSelfUidRef.current = collabSelfUid;
+  }, [collabSelfUid]);
 
   // Initial dark-mode value for createUniver; live changes handled by
   // useUniverDarkModeSync below (avoids a light→dark flash on boot).
@@ -395,12 +404,24 @@ export default function WorkbookEditor({
             if (!isWorkbookSnapshotMutation(command)) return;
             if (!editableRef.current || replacingRef.current) return;
             setSaveStatus("dirty");
+            // One edit is written ONCE: by the tab that made it (or, for another person's edit, the
+            // elected host) — never by every tab that merely applied it (mayAutosave).
+            if (
+              mayAutosave({
+                collab: collabRef.current,
+                isHost: collabIsHostRef.current,
+                hostUid: collabHostUidRef.current,
+                selfUid: collabSelfUidRef.current,
+                remoteFrom: remoteOriginOf(command.params),
+              })
+            ) {
+              saveAllowedRef.current = true;
+            }
             if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
             saveTimerRef.current = setTimeout(() => {
               if (!editableRef.current) return;
-              // V2: only the elected host writes the canonical snapshot.
-              // Solo / no-collab path: collabIsHost defaults true, so we save.
-              if (collabRef.current && !collabIsHostRef.current) return;
+              if (!saveAllowedRef.current) return;
+              saveAllowedRef.current = false;
               void performSave();
             }, 2500);
           },
@@ -529,7 +550,8 @@ export default function WorkbookEditor({
             >,
           ),
         );
-        const election = session.electHost();
+        const election = session.electHost({ tabTieBreak: true });
+        collabHostUidRef.current = election.hostUid;
         setCollabIsHost(election.isHost);
       },
       // A peer restored history / took Google's version: show the newest save.

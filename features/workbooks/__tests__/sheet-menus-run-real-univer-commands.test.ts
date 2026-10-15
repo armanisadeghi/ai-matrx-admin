@@ -64,14 +64,27 @@ function fakeHost(values: unknown[][] = [["a"]], formulas: string[][] = [[""]]) 
     zoom: rec("sheet.zoom"),
     getZoom: () => 1,
     getSelection: () => ({ getActiveRange: () => range }),
+    getMaxRows: () => 1000,
+    getMaxColumns: () => 26,
+    getSheetName: () => "Sheet1",
+    isSheetHidden: () => false,
+    hideSheet: rec("sheet.hideSheet"),
+    showSheet: rec("sheet.showSheet"),
   };
+  const hiddenSheet: WorksheetLike = {
+    ...sheet,
+    getSheetId: () => "s2",
+    isSheetHidden: () => true,
+    showSheet: rec("sheet.showSheet"),
+  };
+  const visibleSheet: WorksheetLike = { ...sheet, getSheetId: () => "s3" };
   const host: SheetChromeHost = {
     api: {
       executeCommand: (id: string, params?: object) => {
         calls.push({ kind: "exec", args: params ? [id, params] : [id] });
         return true;
       },
-      getActiveWorkbook: () => ({ getActiveSheet: () => sheet }),
+      getActiveWorkbook: () => ({ getId: () => "wb", getActiveSheet: () => sheet, getSheets: () => [sheet, visibleSheet, hiddenSheet] }),
       newDataValidation: () => ({
         requireCheckbox: () => ({ build: () => "checkbox-rule" }),
         requireValueInList: (v: string[]) => ({ build: () => `list:${v.join("|")}` }),

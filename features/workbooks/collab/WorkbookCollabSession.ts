@@ -25,6 +25,8 @@
 import * as Y from "yjs";
 import { Awareness } from "y-protocols/awareness";
 
+import { electCollabHost, remoteOriginOf, REMOTE_PARAM_TAG } from "./autosave-writer";
+
 /**
  * Structural transport contract. `SupabaseYjsProvider` satisfies it in
  * production; the verification harness injects an in-memory loopback
@@ -51,6 +53,8 @@ export type CollabMutationInfo = {
   id: string;
   type: number; // CommandType.MUTATION = 2 in Univer's enum
   params: MutationParams;
+  /** Who made it (the person's uid), so a peer can tell its own other tab's edit from a stranger's. */
+  uid?: string;
 };
 
 type ExecuteOptions = {
@@ -101,7 +105,6 @@ export type WorkbookCollabSessionOptions = {
 /** What `announceReplaced` writes into the room's control map. */
 type ReplacedSignal = { snapshotId: string; by: string; nonce: string };
 
-const REMOTE_PARAM_TAG = "__matrxRemote";
 const MUTATIONS_ARRAY_KEY = "mutations";
 const CONTROL_MAP_KEY = "control";
 const REPLACED_KEY = "replaced";
@@ -332,7 +335,7 @@ export class WorkbookCollabSession {
    * (lexicographic). Host is the only client that writes canonical snapshots.
    * No election protocol; recompute whenever awareness changes.
    */
-  electHost(): { isHost: boolean; hostUid: string | null } {
+  electHost(opts: { tabTieBreak?: boolean } = {}): { isHost: boolean; hostUid: string | null } {
     if (!this.awareness) return { isHost: false, hostUid: null };
     const states = Array.from(this.awareness.getStates().values()) as Array<
       Record<string, unknown>
@@ -340,7 +343,7 @@ export class WorkbookCollabSession {
     // Lowest uid wins ACROSS tabs; inside this tab only the room's tab leader
     // may be host, because every same-tab holder carries the same uid.
     const leader = this.provider?.isTabLeader?.() ?? true;
-    return electCollabHost(states, this.options.uid, this.options.clientId, leader);
+    return electCollabHost(states, this.options.uid, this.options.clientId, leader, opts.tabTieBreak ?? false);
   }
 
   // ─── internals ────────────────────────────────────────────────────────
@@ -355,7 +358,7 @@ export class WorkbookCollabSession {
       info.params &&
       typeof info.params === "object" &&
       !Array.isArray(info.params) &&
-      (info.params as Record<string, unknown>)[REMOTE_PARAM_TAG] === true
+      remoteOriginOf(info.params) !== null
     ) {
       return;
     }
@@ -384,7 +387,7 @@ export class WorkbookCollabSession {
     }
 
     const yArray = this.doc.getArray<CollabMutationInfo>(MUTATIONS_ARRAY_KEY);
-    yArray.push([{ id: info.id, type: info.type, params: safeParams }]);
+    yArray.push([{ id: info.id, type: info.type, params: safeParams, uid: this.options.uid }]);
   }
 
   private applyRemoteMutation(op: CollabMutationInfo): void {
@@ -394,7 +397,7 @@ export class WorkbookCollabSession {
       op.params && typeof op.params === "object" && !Array.isArray(op.params)
         ? {
             ...(op.params as Record<string, unknown>),
-            [REMOTE_PARAM_TAG]: true,
+            [REMOTE_PARAM_TAG]: op.uid ?? true,
           }
         : op.params;
 
@@ -416,32 +419,6 @@ export class WorkbookCollabSession {
 }
 
 // ─── helpers ────────────────────────────────────────────────────────────
-
-/**
- * THE host election (the host is the only client that writes the canonical snapshot). The lowest uid
- * wins; two tabs of ONE person share a uid, so the tie breaks on the tab's own client id. Without
- * that, both tabs were host and one edit was written twice: once by the tab that made it and again
- * by the tab that received it (review 2026-10-15). Exactly one candidate, exactly one writer.
- */
-export function electCollabHost(
-  states: Array<Record<string, unknown>>,
-  selfUid: string,
-  selfClientId: string,
-  tabLeader: boolean,
-): { isHost: boolean; hostUid: string | null } {
-  const keys = states
-    .filter((s): s is Record<string, unknown> & { uid: string } => typeof s.uid === "string")
-    .map((s) => ({ uid: s.uid, clientId: typeof s.clientId === "string" ? s.clientId : "" }))
-    .sort((a, b) => {
-      if (a.uid !== b.uid) return a.uid < b.uid ? -1 : 1;
-      return a.clientId < b.clientId ? -1 : a.clientId > b.clientId ? 1 : 0;
-    });
-  const host = keys[0] ?? null;
-  return {
-    isHost: !!host && host.uid === selfUid && host.clientId === selfClientId && tabLeader,
-    hostUid: host?.uid ?? null,
-  };
-}
 
 /**
  * A workbook holds no Univer DOCUMENT units of its own: the `doc.mutation.*` stream a sheet emits is
