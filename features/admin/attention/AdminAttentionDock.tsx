@@ -86,6 +86,7 @@ import { useScheduleAlarmSource } from "./sources/useScheduleAlarmSource";
 import { useDatedChangeSource } from "./sources/useDatedChangeSource";
 import { useDeployFreshnessSource } from "./sources/useDeployFreshnessSource";
 import { useDevServerFreshnessSource } from "./sources/useDevServerFreshnessSource";
+import { usePackageCopiesSource } from "./sources/usePackageCopiesSource";
 import { useSpendAlarmSource } from "./sources/useSpendAlarmSource";
 import { useSpendTodaySource } from "./sources/useSpendTodaySource";
 import { useKnownDomainSource } from "./sources/useKnownDomainSource";
@@ -144,7 +145,8 @@ export default function AdminAttentionDock() {
   const spendToday = useSpendTodaySource(canRead);
   const knownDomains = useKnownDomainSource(canRead);
   const devServer = useDevServerFreshnessSource(canRead);
-  const sources = [devServer, datedChanges, spendAlarms, spendToday, schedules, outages, deploys, knownDomains];
+  const packageCopies = usePackageCopiesSource(canRead);
+  const sources = [devServer, datedChanges, spendAlarms, spendToday, schedules, outages, deploys, knownDomains, packageCopies];
   const triageState = useAttentionTriage(canRead);
 
   const float = useDraggableFloat({

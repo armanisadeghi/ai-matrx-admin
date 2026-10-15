@@ -1,0 +1,23 @@
+{
+  "generatedAt": "2026-10-15T20:34:25.829Z",
+  "apps": {
+    "matrx-frontend": {
+      "twins": {
+        "open": 0,
+        "census": 342
+      },
+      "db": {
+        "calls": 9450,
+        "files": 1622
+      },
+      "deep": {
+        "subpaths": 2,
+        "files": 1,
+        "examples": [
+          "@ai-matrx/chat",
+          "@ai-matrx/chat/agents/hooks/useAgentUndoRedo"
+        ]
+      }
+    }
+  }
+}
