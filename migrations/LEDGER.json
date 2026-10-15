@@ -1,6 +1,6 @@
 {
   "note": "Checked-in snapshot of public._schema_migrations for the files under migrations/campaign and migrations/inverse. Written by `pnpm db:apply` on every successful production apply and refreshed whole by the nightly catch-up. Never hand-edited: a self-written checksum is a claim nobody can check. Guard: pnpm check:ledgered-files-unedited.",
-  "generated_at": "2026-10-15T07:39:32.997Z",
+  "generated_at": "2026-10-15T08:39:32.349Z",
   "files": {
     "migrations/campaign/a_chunk_is_the_size_the_client_door_can_actually_carry.sql": {
       "source": "matrx-frontend",
@@ -6409,6 +6409,18 @@
       "filename": "person_timezone_day_zone_reads_the_profile_first.sql",
       "checksum": "eec1d4ab323a582839c4d1060502d82a2f9a387b88363fe5c6ab708fde0f1699",
       "applied_at": "2026-10-08 01:20:35.649332+00"
+    },
+    "migrations/campaign/personundo_a_person_column_changed_to_words_converts_in_the_store.sql": {
+      "source": "matrx-frontend",
+      "filename": "personundo_a_person_column_changed_to_words_converts_in_the_store.sql",
+      "checksum": "996f0d06a850cd1b1545596d71a0ffd9d1a76da705468365ba3fa8bf2cf978d0",
+      "applied_at": "2026-10-15 08:30:10.445879+00"
+    },
+    "migrations/campaign/personundo_b_an_email_change_is_undone_whole.sql": {
+      "source": "matrx-frontend",
+      "filename": "personundo_b_an_email_change_is_undone_whole.sql",
+      "checksum": "0274a429be23546eb100a417e23f67fa467cd197684c7e910c431d2f11756059",
+      "applied_at": "2026-10-15 08:39:30.625046+00"
     },
     "migrations/campaign/picklists_a_a_pick_list_is_read_and_updated_through_store_doors.sql": {
       "source": "matrx-frontend",
