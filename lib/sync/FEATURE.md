@@ -76,6 +76,12 @@ hydration errors.
 
 ## Change log
 
+- 2026-10-15 — **A paint-only cache is declared, not faked.** `remote.cachePaintsOnly: true`
+  means the cached record only paints: every boot fetches at once with no
+  `boot.cache.insufficient` warning, and a fetch result never warms the cache
+  through `remote.fetch` (use `persistAfterLoad`). appContext used
+  `cacheSatisfies: () => false`, which raised that orange warning on every page
+  load. Exclusive with `cacheSatisfies`. Guard: `engine.boot.idb.test.ts`.
 - 2026-10-14 — **An edit is never lost to a tab closing before its save
   lands.** The server leg starts before the IndexedDB leg is awaited; a page
   turning hidden flushes like `pagehide`; at that moment every outstanding

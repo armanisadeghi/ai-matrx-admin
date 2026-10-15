@@ -411,6 +411,7 @@ function replayUnsavedWrites(
  * extra reconcile is always cheaper than a session running on missing data.
  */
 function cachedStateIsSufficient(policy: Policy<any>, store: Store): boolean {
+    if (policy.config.remote?.cachePaintsOnly === true) return false;
     const satisfies = policy.config.remote?.cacheSatisfies;
     if (typeof satisfies !== "function") return true;
     const sliceState = (store.getState() as Record<string, unknown>)[
@@ -459,7 +460,10 @@ function scheduleColdBootFallbacks(
             }
             continue;
         }
-        if (hydrated.has(policy.config.sliceName)) {
+        if (
+            hydrated.has(policy.config.sliceName) &&
+            policy.config.remote.cachePaintsOnly !== true
+        ) {
             logger.warn("boot.cache.insufficient", {
                 sliceName: policy.config.sliceName,
                 meta: {

@@ -203,6 +203,15 @@ export interface PolicyConfig<TState = unknown> {
          */
         cacheSatisfies?: (state: TState) => boolean;
         /**
+         * The cached record only PAINTS; it is never an answer. Every boot
+         * asks `remote.fetch` at once (an expected cold-boot fetch — no
+         * `boot.cache.insufficient` warning), and a fetch result never warms
+         * the cache through this path (use `persistAfterLoad`). Use this
+         * instead of `cacheSatisfies: () => false`, which made the engine
+         * warn on every page load (2026-10-15).
+         */
+        cachePaintsOnly?: true;
+        /**
          * Stale-while-revalidate at boot (2026-09-27). A cache hit still paints
          * instantly, and the engine ALSO fires `remote.fetch` right away (as a
          * `stale-refresh`, so a loaded slice stays loaded) instead of trusting

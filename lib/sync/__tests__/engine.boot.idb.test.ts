@@ -24,6 +24,7 @@ import {
 } from "../persistence/idb";
 import type { SyncChannel } from "../channel";
 import type { IdentityKey } from "../types";
+import { logger } from "../logger";
 
 const identity: IdentityKey = { type: "auth", userId: "u1", key: "auth:u1" };
 const otherIdentity: IdentityKey = { type: "auth", userId: "u2", key: "auth:u2" };
@@ -49,6 +50,7 @@ function makeWarmSetup(opts: {
         reason: "cold-boot" | "stale-refresh" | "manual";
     }) => Promise<Partial<WarmState> | null>;
     cacheSatisfies?: (state: WarmState) => boolean;
+    cachePaintsOnly?: true;
 }) {
     const policy = definePolicy<WarmState>({
         sliceName: "warm",
@@ -62,6 +64,7 @@ function makeWarmSetup(opts: {
                       ...(opts.cacheSatisfies
                           ? { cacheSatisfies: opts.cacheSatisfies }
                           : {}),
+                      ...(opts.cachePaintsOnly ? { cachePaintsOnly: true as const } : {}),
                   },
               }
             : {}),
@@ -293,6 +296,46 @@ describe("bootSync — IDB hydration + cold-boot fallback", () => {
         await Promise.resolve();
         expect(fetchCalled).toBe(true);
         expect(store.getState().warm.items).toEqual(["reconciled"]);
+    });
+
+    // 2026-10-15: appContext declared `cacheSatisfies: () => false` and the
+    // engine warned `boot.cache.insufficient` (orange) on EVERY page load for
+    // every person. A paint-only cache fetches at once, silently; a cache that
+    // genuinely falls short still warns.
+    it("a paint-only cache fetches at boot without the insufficient warning; a short cache still warns", async () => {
+        const warn = jest.spyOn(logger, "warn");
+        try {
+            for (const paintOnly of [true, false]) {
+                warn.mockClear();
+                await clearAll();
+                let fetchCalled = false;
+                await writeSlice("auth:u1", "warm", 1, { items: ["cached"] });
+                const { policy, store } = makeWarmSetup({
+                    fetch: async () => {
+                        fetchCalled = true;
+                        return { items: ["answered"] };
+                    },
+                    ...(paintOnly
+                        ? { cachePaintsOnly: true as const }
+                        : { cacheSatisfies: () => false }),
+                });
+                const result = await bootSync({
+                    store,
+                    identity,
+                    policies: [policy],
+                    openChannel: () => fakeChannel(),
+                });
+                expect(await result.idbHydration).toEqual(["warm"]);
+                await Promise.resolve();
+                await Promise.resolve();
+                await Promise.resolve();
+                expect(fetchCalled).toBe(true);
+                const warned = warn.mock.calls.some(([event]) => event === "boot.cache.insufficient");
+                expect(warned).toBe(!paintOnly);
+            }
+        } finally {
+            warn.mockRestore();
+        }
     });
 
     it("does NOT fetch when the cached record satisfies remote.cacheSatisfies", async () => {

@@ -96,10 +96,8 @@ describe("per tab", () => {
   });
 
   it("a cached record never satisfies the load — every load asks the account", () => {
-    const satisfies = appContextPolicy.config.remote?.cacheSatisfies;
-    expect(
-      satisfies?.({ organization_id: CLINIC, organization_name: "Cedar Ridge" } as never),
-    ).toBe(false);
+    expect(appContextPolicy.config.remote?.cachePaintsOnly).toBe(true);
+    expect(appContextPolicy.config.remote?.cacheSatisfies).toBeUndefined();
   });
 });
 

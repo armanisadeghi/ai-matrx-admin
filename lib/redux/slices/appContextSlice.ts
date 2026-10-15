@@ -572,7 +572,7 @@ export const appContextPolicy = definePolicy<AppContextState>({
     // A field the record does not carry stays absent, so a failed ladder read
     // (flags only) changes no organization. The ladder's answer carries
     // `orgBootstrapResolved: true`; a cached record never does (a fetch result
-    // is never written to the cache — see `cacheSatisfies`), so the reducer
+    // is never written to the cache — see `cachePaintsOnly`), so the reducer
     // can tell paint from answer.
     return {
       ...("organization_id" in r ? { organization_id: str(r.organization_id) } : {}),
@@ -730,6 +730,6 @@ export const appContextPolicy = definePolicy<AppContextState>({
     // satisfies the boot (the fetch fires at once), and a ladder result is
     // never written into the cache — a cached record must never carry
     // `orgBootstrapResolved`, or the reducer would take paint for an answer.
-    cacheSatisfies: () => false,
+    cachePaintsOnly: true,
   },
 });

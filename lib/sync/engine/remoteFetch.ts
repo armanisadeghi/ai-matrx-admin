@@ -161,8 +161,8 @@ export async function invokeRemoteFetch(opts: InvokeRemoteFetchOptions): Promise
         // booted org-less and nudged the user to pick again (the recurring
         // "my organization didn't stick" class).
         const satisfies = policy.config.remote?.cacheSatisfies;
-        let resultSufficient = true;
-        if (typeof satisfies === "function") {
+        let resultSufficient = policy.config.remote?.cachePaintsOnly !== true;
+        if (resultSufficient && typeof satisfies === "function") {
             try {
                 resultSufficient = satisfies(state) === true;
             } catch (err) {

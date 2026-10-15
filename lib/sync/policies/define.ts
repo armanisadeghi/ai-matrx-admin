@@ -166,7 +166,19 @@ export function definePolicy<TState>(config: PolicyConfig<TState>): Policy<TStat
             write: rWrite,
             debounceMs,
             cacheSatisfies,
+            cachePaintsOnly,
         } = config.remote;
+        if (cachePaintsOnly !== undefined) {
+            if (cachePaintsOnly !== true) {
+                fail(`"${sliceName}": remote.cachePaintsOnly must be true when set`);
+            }
+            if (rFetch === undefined) {
+                fail(`"${sliceName}": remote.cachePaintsOnly requires remote.fetch`);
+            }
+            if (cacheSatisfies !== undefined) {
+                fail(`"${sliceName}": remote.cachePaintsOnly and remote.cacheSatisfies are exclusive`);
+            }
+        }
         if (cacheSatisfies !== undefined) {
             if (typeof cacheSatisfies !== "function") {
                 fail(`"${sliceName}": remote.cacheSatisfies must be a function`);
