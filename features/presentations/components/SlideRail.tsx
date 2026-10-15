@@ -15,6 +15,7 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import { useId } from "react";
 import { Copy, Plus, Trash2 } from "lucide-react";
 import { DragCursorMonitor } from "@ai-matrx/design-system";
 import {
@@ -115,6 +116,9 @@ export function SlideRail({
   onSelect: (i: number) => void;
   dispatch: (a: DeckAction) => void;
 }) {
+  // dnd-kit numbers its screen-reader descriptions from a module counter, which differs between the
+  // server render and the browser (a hydration error). A stable id per context fixes it.
+  const dndId = useId();
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
@@ -135,7 +139,7 @@ export function SlideRail({
         horizontal ? "flex h-[5.5rem] items-center gap-2 border-t border-border px-2" : "flex w-48 flex-col gap-3 border-r border-border px-2 py-3",
       )}
     >
-      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
+      <DndContext id={dndId} sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
         <DragCursorMonitor />
         <SortableContext items={ids} strategy={horizontal ? horizontalListSortingStrategy : verticalListSortingStrategy}>
           {deck.slides.map((s, i) => (
