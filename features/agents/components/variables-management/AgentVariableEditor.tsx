@@ -28,7 +28,6 @@ import { toast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 import {
   sanitizeVariableName,
-  shouldShowSanitizationPreview,
   variableValueToDisplay,
 } from "@ai-matrx/chat/agents/utils/variable-utils";
 import type {
@@ -162,17 +161,15 @@ export function AgentVariableEditor({
   const sanitizedDraft = nameDraft.trim()
     ? sanitizeVariableName(nameDraft)
     : "";
-  const showSanitizationPreview = shouldShowSanitizationPreview(nameDraft);
   const isDuplicate =
     keyIsLinked &&
     !!sanitizedDraft &&
     sanitizedDraft !== variableName &&
     existingNames.includes(sanitizedDraft);
-  // The draft's future key while a linked name is being retyped; the real key otherwise.
+  // The draft's future key while a linked name is being retyped; the real key
+  // (with Change) otherwise — including a linked label like "Store vocabulary".
   const draftKey =
-    keyIsLinked &&
-    sanitizedDraft &&
-    (showSanitizationPreview || sanitizedDraft !== variableName)
+    keyIsLinked && sanitizedDraft && sanitizedDraft !== variableName
       ? sanitizedDraft
       : "";
   const keyLine = draftKey || variableName;
@@ -249,6 +246,7 @@ export function AgentVariableEditor({
   const handleChangeKey = (value: string) => {
     const next = sanitizeVariableName(value.trim());
     const from = currentName.current;
+    setIsChangingKey(false);
     if (!next || next === from) return;
     const state = store.getState();
     const latest = selectAgentVariableDefinitions(state, agentId) ?? [];
