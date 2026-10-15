@@ -148,7 +148,7 @@ export function buildEditorFileMenu(spec: EditorFileSpec, h: EditorFileHandlers)
     label: "Version history",
     icon: History,
     items: [
-      soon("file.history.name", "Name current version", "editor.file.name-version", { icon: Tag }),
+      row("file.history.name") ?? soon("file.history.name", "Name current version", "editor.file.name-version", { icon: Tag }),
       ...(history ? [{ ...history, label: "See version history" }] : []),
     ],
   });
@@ -162,7 +162,7 @@ export function buildEditorFileMenu(spec: EditorFileSpec, h: EditorFileHandlers)
     push(row("file.settings") ?? soon("file.settings", "Settings", "workbooks.settings", { icon: Settings, keywords: ["locale", "time zone", "calculation"] }));
     push(row("file.page-setup"));
   } else {
-    push(soon("file.language", "Language", "editor.file.language", { icon: Languages }));
+    push(row("file.language") ?? soon("file.language", "Language", "editor.file.language", { icon: Languages }));
     push(row("file.page-setup"));
   }
   push(sep);
@@ -170,7 +170,7 @@ export function buildEditorFileMenu(spec: EditorFileSpec, h: EditorFileHandlers)
   // ── Print ──
   push(row("file.print"));
   // Rows the editor adds that Google's File menu does not name stay at the end (none today).
-  const placed = new Set(["file.new", "file.open", "file.import", "file.import-slides", "file.history", "file.print", "file.details", "file.settings", "file.page-setup"]);
+  const placed = new Set(["file.history.name", "file.language", "file.new", "file.open", "file.import", "file.import-slides", "file.history", "file.print", "file.details", "file.settings", "file.page-setup"]);
   const rest = spec.rows.filter((r) => r.kind !== "separator" && !placed.has(r.id));
   if (rest.length) push(sep, ...rest);
   // Never end on (or double) a separator.

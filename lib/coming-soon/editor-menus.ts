@@ -19,10 +19,6 @@ const ROWS: Row[] = [
   ["editor.file.security-limitations", "Security limitations", "file-actions", "See which features this file's sharing and security settings switch off, and why.", "Editor File → Security limitations"],
   ["editor.file.language", "Language", "file-actions", "Set the file's language for spelling, hyphenation and voice typing.", "Editor File → Language"],
   ["workbooks.settings", "Spreadsheet settings", "workbooks", "Set the spreadsheet's locale, time zone and recalculation rules.", "Workbook File → Settings"],
-  ["workbooks.download-ods", "Download as OpenDocument (.ods)", "workbooks", "Download the workbook as an OpenDocument spreadsheet.", "Workbook File → Download"],
-  ["documents.download-odt", "Download as OpenDocument (.odt)", "documents", "Download the document as an OpenDocument text file.", "Document File → Download"],
-  ["documents.download-rtf", "Download as rich text (.rtf)", "documents", "Download the document as rich text.", "Document File → Download"],
-  ["documents.download-epub", "Download as EPUB", "documents", "Download the document as an EPUB e-book.", "Document File → Download"],
   ["presentations.download-odp", "Download as OpenDocument (.odp)", "presentations", "Download the deck as an OpenDocument presentation.", "Presentation File → Download"],
   // ── Edit / View / Insert / Format (shared) ──
   ["editor.insert.drawing", "Drawing", "file-actions", "Draw shapes, lines and text boxes and place the drawing in the file.", "Editor Insert → Drawing"],

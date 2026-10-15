@@ -41,6 +41,8 @@ export interface DocumentBodyPort {
   runCommand?: (commandId: string) => Promise<void>;
   /** File → Page setup: open the page setup dialog in the open editor. */
   openPageSetup?: () => void;
+  /** File → Language (and the other Docs tool dialogs): open one in the open editor. */
+  openTool?: (id: "language") => void;
 }
 
 export interface BodyText {

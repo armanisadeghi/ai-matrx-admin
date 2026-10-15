@@ -20,7 +20,7 @@
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import dynamic from "next/dynamic";
-import { FileCog, FilePlus2, FolderOpen, History, Info, Loader2, MessageSquare, Printer, Search } from "lucide-react";
+import { FileCog, FilePlus2, FolderOpen, History, Info, Languages, Loader2, MessageSquare, Printer, Search, Tag } from "lucide-react";
 import { EditorDetailsDialog, formatDetailDate } from "@/components/editor-chrome/EditorDetailsDialog";
 import { useRouter } from "next/navigation";
 import { useMenuBarState } from "@/components/editor-chrome/EditorMenuBar";
@@ -60,8 +60,12 @@ import {
   createDocument,
   getDocument,
   renameDocument,
+  saveDocumentSnapshot,
   updateDocumentDescription,
 } from "@/features/documents/document-service";
+import { Button } from "@ai-matrx/design-system/controls";
+import { ProInput } from "@/components/official/ProInput";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { isServiceFailure, type DocumentRow } from "@/features/data-tables/types";
 import {
   buildDocumentContextData,
@@ -361,6 +365,19 @@ export function DocumentRecord({
       toast.error(err instanceof Error ? err.message : String(err));
     }
   };
+  // File → Version history → Name current version: a labelled snapshot of the open text.
+  const [nameVersionOpen, setNameVersionOpen] = useState(false);
+  const [versionName, setVersionName] = useState("");
+  const saveNamedVersion = async () => {
+    const label = versionName.trim();
+    const port = bodyPortRef.current;
+    const snapshot = port?.getSnapshot?.();
+    if (!label || !snapshot) return;
+    setNameVersionOpen(false);
+    const res = await saveDocumentSnapshot({ documentId: id, snapshot, label, origin: "named" });
+    if (isServiceFailure(res)) toast.error(`Could not name this version: ${res.error}`);
+    else toast.success(`Saved this version as "${label}"`);
+  };
   // Google Docs' File rows the page owns (the rest are the shared file menu's).
   const pageFileExtras: EditorMenuEntry[] = [
     { kind: "separator" },
@@ -369,6 +386,8 @@ export function DocumentRecord({
     { kind: "action", id: "file.history", label: "Version history", icon: History, shortcut: { key: "h", mod: true, alt: true, shift: true, bind: true }, run: history.toggle },
     { kind: "action", id: "file.print", label: "Print", icon: Printer, shortcut: { key: "p", mod: true, bind: true }, run: printDocument },
     { kind: "action", id: "file.page-setup", label: "Page setup", icon: FileCog, keywords: ["margins", "orientation", "paper size", "pageless"], run: () => bodyPortRef.current?.openPageSetup?.() },
+    { kind: "action", id: "file.language", label: "Language", icon: Languages, keywords: ["spelling", "locale"], run: () => bodyPortRef.current?.openTool?.("language") },
+    ...(canEdit ? [{ kind: "action" as const, id: "file.history.name", label: "Name current version", icon: Tag, keywords: ["label", "milestone"], run: () => { setVersionName(""); setNameVersionOpen(true); } }] : []),
     { kind: "action", id: "file.details", label: "Details", icon: Info, keywords: ["info", "created", "modified"], run: () => setDetailsOpen(true) },
   ];
   const liveDocDownload = (label: string, format: "pdf" | "docx" | "markdown" | "text" | "html") => ({
@@ -378,6 +397,15 @@ export function DocumentRecord({
       await exportContent(documentMarkdown(), format, docRef.current?.document_name);
     },
   });
+  const runOpenDownload = async (format: "epub" | "odt" | "rtf") => {
+    try {
+      const { downloadOpenFormat } = await import("@/features/documents/export-open-formats");
+      const file = await downloadOpenFormat(documentMarkdown(), format, doc?.document_name);
+      toast.success(`${file} downloaded`);
+    } catch (err) {
+      toast.error(`Download failed: ${err instanceof Error ? err.message : String(err)}`);
+    }
+  };
   const liveGoogle = useLiveGoogleAdapter("document", id);
   const fileMenu = useFileRecordMenu(DOCUMENT_ADAPTER, doc, {
     listHref: "/documents",
@@ -411,12 +439,12 @@ export function DocumentRecord({
             templatesHref: "/documents/templates",
             downloads: [
               liveDocDownload("Microsoft Word (.docx)", "docx"),
-              { label: "OpenDocument Format (.odt)", soon: "documents.download-odt" },
-              { label: "Rich Text Format (.rtf)", soon: "documents.download-rtf" },
+              { label: "OpenDocument Format (.odt)", run: () => void runOpenDownload("odt") },
+              { label: "Rich Text Format (.rtf)", run: () => void runOpenDownload("rtf") },
               liveDocDownload("PDF Document (.pdf)", "pdf"),
               liveDocDownload("Plain Text (.txt)", "text"),
               liveDocDownload("Web Page (.html)", "html"),
-              { label: "EPUB Publication (.epub)", soon: "documents.download-epub" },
+              { label: "EPUB Publication (.epub)", run: () => void runOpenDownload("epub") },
               liveDocDownload("Markdown (.md)", "markdown"),
             ],
           },
@@ -630,6 +658,17 @@ export function DocumentRecord({
           ]}
         />
       ) : null}
+      <Dialog open={nameVersionOpen} onOpenChange={setNameVersionOpen}>
+        <DialogContent className="max-w-sm" data-doc-name-version="">
+          <DialogHeader>
+            <DialogTitle>Name current version</DialogTitle>
+          </DialogHeader>
+          <ProInput aria-label="Version name" placeholder="For example, Draft sent to legal" value={versionName} maxLength={120} autoFocus onChange={(e) => setVersionName(e.target.value)} onKeyDown={(e) => e.key === "Enter" && void saveNamedVersion()} />
+          <div className="flex justify-end">
+            <Button disabled={!versionName.trim()} onClick={() => void saveNamedVersion()}>Save version</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
       {layout === "page" && permsResolved && doc ? null : renderHeader({ title, actions })}
       {/* The editor owns a static status/action bar at its very top; the host
           decides the clearance above it (the page's glass header needs it). */}

@@ -290,7 +290,7 @@ export function buildDocMenus(h: DocChromeHost): EditorMenu[] {
               label: "Show print layout",
               keywords: ["pages", "pageless"],
               checked: () => !h.pageless?.(),
-              run: () => h.setPageless?.(!!h.pageless?.()),
+              run: () => h.setPageless?.(!h.pageless?.()),
             },
             soon("view.show.ruler", "Show ruler", "documents.show-ruler"),
             {
