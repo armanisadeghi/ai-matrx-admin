@@ -14,7 +14,7 @@
 // data-sidebar-view on <nav> controls which is visible (default: "main").
 
 import NavItem from "./NavItem";
-import NavFlyoutGroup from "./NavFlyoutGroup";
+import PrimaryNavFlyoutGroup from "./PrimaryNavFlyoutGroup";
 import FavoritesNavGroup from "./FavoritesNavGroup";
 import SidebarMenuSearch from "./SidebarMenuSearch";
 import AdminSidebarSection from "./admin-menu/AdminSidebarSection";
@@ -27,7 +27,6 @@ import SidebarWindowToggleIsland from "./SidebarWindowToggleIsland";
 import {
   navItemsForViewer,
   primaryNavItems,
-  settingsItem,
 } from "../../constants/nav-data";
 import { initialSidebarView } from "./sidebar-initial-view";
 import { ADMIN_FOOTER_PREPAINT_SCRIPT } from "./admin-menu/admin-footer-reserve";
@@ -40,7 +39,6 @@ interface SidebarProps {
 export default function Sidebar({ pathname, isAuthenticated }: SidebarProps) {
   const initialView = initialSidebarView(pathname);
   const visibleItems = navItemsForViewer(primaryNavItems, isAuthenticated);
-  const activeCandidates = [...visibleItems, settingsItem];
   return (
     // `data-title-side="right"`: every `title` in the rail shows as the fleet
     // tooltip (the design-system title takeover), opening beside the rail —
@@ -86,10 +84,10 @@ export default function Sidebar({ pathname, isAuthenticated }: SidebarProps) {
           {isAuthenticated && <FavoritesNavGroup />}
           {visibleItems.map((item) =>
             item.children ? (
-              <NavFlyoutGroup
+              <PrimaryNavFlyoutGroup
                 key={item.label}
-                item={item}
-                candidates={activeCandidates}
+                label={item.label}
+                isAuthenticated={isAuthenticated}
               />
             ) : (
               <NavItem key={item.label} item={item} />
