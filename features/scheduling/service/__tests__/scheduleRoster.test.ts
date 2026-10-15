@@ -5,8 +5,8 @@
  */
 const filters: Array<[string, unknown]> = [];
 const rows = [
-  { id: "a", kind: "agent", metadata: {}, agent: { agent_id: "ag", prompt: "Hi", variables: {}, persistent_conversation_id: null, auth_mode: "ask", max_runtime_seconds: 600, max_concurrent: 1 }, triggers: [] },
-  { id: "c", kind: "device_op", target_device_id: "dev-1", metadata: { device_op: { op: "coding.start", params: { provider: "claude", cwd: "/w", prompt: "Tidy" } } }, agent: null, triggers: [] },
+  { id: "a", kind: "agent", surfaces: ["server"], metadata: {}, agent: { agent_id: "ag", prompt: "Hi", variables: {}, persistent_conversation_id: null, auth_mode: "ask", max_runtime_seconds: 600, max_concurrent: 1 }, triggers: [] },
+  { id: "c", kind: "device_op", surfaces: ["desktop"], target_device_id: "dev-1", metadata: { device_op: { op: "coding.start", params: { provider: "claude", cwd: "/w", prompt: "Tidy" } } }, agent: null, triggers: [] },
 ];
 
 function chain(): Record<string, unknown> {
@@ -37,5 +37,16 @@ describe("the schedule list", () => {
     expect(list.map((t) => t.id).sort()).toEqual(["a", "c"]);
     expect(computer?.kind).toBe("device_op");
     expect(computer?.deviceOp).toMatchObject({ folder: "/w", prompt: "Tidy" });
+  });
+});
+
+describe("a computer row in the schedule list", () => {
+  it("reads what runs where, from the same list path (never the Desktop app surface)", async () => {
+    const { listAgentTasks } = await import("../queries");
+    const { computerScheduleLabel } = await import("../../utils/computerWork");
+    const list = await listAgentTasks();
+    expect(computerScheduleLabel(list.find((t) => t.id === "c")!, "Studio")).toBe("Coding session on Studio");
+    expect(computerScheduleLabel(list.find((t) => t.id === "a")!, "Studio")).toBeNull();
+    expect(computerScheduleLabel({ kind: "agent", targetDeviceId: "d", surfaces: ["desktop"] }, "Studio")).toBe("Agent on Studio");
   });
 });

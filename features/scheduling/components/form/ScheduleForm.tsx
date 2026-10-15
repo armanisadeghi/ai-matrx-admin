@@ -9,7 +9,7 @@
 
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2, Save, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -60,6 +60,7 @@ import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { ClampedNumberInput } from "@/components/official/ClampedNumberInput";
 import { createComputerAgentTask, createComputerCodingTask } from "../../service/queries";
 import { saveComputerCodingEdit } from "../../service/saveComputerCodingEdit";
+import { mergeTyped } from "../../utils/typedBeforeHydration";
 import { computerAgentErrors } from "./computerAgentErrors";
 import { ErrorNotice } from "@ai-matrx/design-system";
 import { RunsOnField, type ComputerCodingChoice } from "./RunsOnField";
@@ -193,6 +194,14 @@ export function ScheduleForm({
   // interrupting ordinary keystrokes.
   const [variablesEditorRevision, setVariablesEditorRevision] = useState(0);
   const [tagInput, setTagInput] = useState("");
+
+  // Keystrokes that landed in the server-rendered inputs before hydration are kept (mergeTyped).
+  useEffect(() => {
+    const read = (id: string) => (document.getElementById(id) as HTMLInputElement | HTMLTextAreaElement | null)?.value;
+    const typed = { title: read("title"), description: read("description") };
+    const timer = setTimeout(() => setForm((s) => mergeTyped(s, typed)), 0);
+    return () => clearTimeout(timer);
+  }, []);
 
   const patch = <K extends keyof FormState>(k: K, v: FormState[K]) =>
     setForm((s) => ({ ...s, [k]: v }));
