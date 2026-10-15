@@ -84,9 +84,13 @@ describe("an agent-input kind renders as a typed form", () => {
     expect(path).toEqual({ mode: "bridged-form" });
   });
 
-  it("would refuse loudly if the campaign forgot the input component row", () => {
-    const path = decideKindInputPath(KIND, null, schemaFromStoredFields(), false);
-    expect(path.mode).toBe("refused");
+  it("a missing input component row never costs a kind with fields its form (SHAPES-BUGS 2.4)", () => {
+    // Fields are what the form renders; the row is a registry detail. Only a
+    // kind with nothing to edit at all (no fields, no schema) is refused.
+    expect(decideKindInputPath(KIND, null, schemaFromStoredFields(), false)).toEqual({
+      mode: "bridged-form",
+    });
+    expect(decideKindInputPath(KIND, null, null, false).mode).toBe("refused");
   });
 
   it("falls back to whole-instance JSON when no field list was stored", () => {
