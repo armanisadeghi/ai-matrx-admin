@@ -372,15 +372,14 @@ export function AutomationsPanel({ words = "spaces", ...rest }: { tableId: strin
 }
 
 /**
- * WHY THE ON/OFF SWITCH (and archive / restore) IS CLOSED, in one short line, or null when it is open. Automations
- * change how the table behaves: structure, which the access ladder gives to Full access (lane AT-UIFIX item 4;
- * `common-docs/policies/access-ladder.md`: Edit = content, Full = structure). A viewer pressing the switch used to
- * get nothing at all. The ladder's own word is said, never the store's internal level name.
+ * WHY THE ON/OFF SWITCH (and archive / restore) IS CLOSED, in one short line, or null when it is open. The store's
+ * doors (`automation_set_enabled` / `_archive` / `_restore`) ask Edit, so the panel asks Edit, no more (lane
+ * AT-UIFIX item 4). A viewer pressing the switch used to get nothing at all. The ladder's own word is said.
  */
-export function automationSwitchReason(rights: { known: boolean; level: unknown; structure: boolean }): string | null {
+export function automationSwitchReason(rights: { known: boolean; level: unknown; organise: boolean }): string | null {
   if (!rights.known) return "Checking your access…";
-  if (rights.structure) return null;
-  return rights.level === null ? "You don't have access" : "Needs Full access";
+  if (rights.organise) return null;
+  return rights.level === null ? "You don't have access" : "Needs Edit access";
 }
 
 function AutomationsPanelBody({ tableId, organizationId, fields }: { tableId: string; organizationId: string | null; fields: Field[] }) {

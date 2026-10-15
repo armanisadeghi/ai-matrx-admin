@@ -6,19 +6,19 @@ jest.mock("@ai-matrx/design-system/controls", () => ({ Button: () => null, Input
 
 import { automationSwitchReason } from "../Automations";
 
-const rights = (level: string | null, structure: boolean) => ({ known: true, level, structure });
+const rights = (level: string | null, organise: boolean) => ({ known: true, level, organise });
 
 describe("the automation switch", () => {
   it("says what it needs, in one short line, to a viewer", () => {
     const why = automationSwitchReason(rights("viewer", false));
-    expect(why).toBe("Needs Full access");
+    expect(why).toBe("Needs Edit access");
     expect(why!.length).toBeLessThanOrEqual(60);
   });
   it("says so plainly to someone with no access at all", () => {
     expect(automationSwitchReason(rights(null, false))).toBe("You don't have access");
   });
-  it("is closed to a member holding only Edit (automations are structure), open to Full access", () => {
-    expect(automationSwitchReason(rights("editor", false))).toBe("Needs Full access");
+  it("is OPEN to a member holding Edit (the door asks Edit) and to Full access", () => {
+    expect(automationSwitchReason(rights("editor", true))).toBeNull();
     expect(automationSwitchReason(rights("admin", true))).toBeNull();
   });
 });
