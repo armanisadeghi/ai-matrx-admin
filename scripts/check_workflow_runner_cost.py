@@ -1024,17 +1024,127 @@ def manifest_self_test() -> int:
     return 0
 
 
+# ── Budget verdicts in the release train: a forecast never turns testing off (2026-10-15) ────────
+# The train's core guards run this checker, and test.yml's ci-breaker pauses EVERY train job after
+# three reds. A repo or ceiling overage that the pushed change did not cause therefore used to stop
+# all testing until the cap was decided. With --base, an overage fails only when this change raised
+# the forecast; otherwise it is reported loudly (warning annotation + job-summary line) and passes.
+# Every other problem (missing entry, stale shape, wrong sums) still fails. Without --base (by hand,
+# the workflow-change gate) the checker is unchanged.
+BUDGET_MARKERS = ("/week share of the $", "/week ceiling (")
+
+
+def is_budget_problem(problem: str) -> bool:
+    return any(m in problem for m in BUDGET_MARKERS)
+
+
+def base_billed(root: Path, base: str) -> float | None:
+    """The manifest's billed $/week at ``base`` (None when it cannot be read there)."""
+    try:
+        text = subprocess.run(["git", "-C", str(root), "show", f"{base}:{MANIFEST}"], capture_output=True, text=True, check=True).stdout
+        return manifest_billed(json.loads(text))
+    except (subprocess.CalledProcessError, json.JSONDecodeError, OSError):
+        return None
+
+
+def split_budget(root: Path, problems: list[str], base: str) -> tuple[list[str], list[str]]:
+    """(failing, reported): budget overages move to ``reported`` unless this change raised the forecast."""
+    budget = [p for p in problems if is_budget_problem(p)]
+    if not budget:
+        return problems, []
+    own = _load_manifest(root)
+    head = manifest_billed(own) if own else 0.0
+    before = base_billed(root, base)
+    rest = [p for p in problems if not is_budget_problem(p)]
+    if before is not None and head > before + 0.005:
+        return rest + [f"{p} — and this change RAISES the forecast ${before:.2f} -> ${head:.2f}/week (base {base[:10]})" for p in budget], []
+    note = "unchanged by this change" if before is not None else f"base {base[:10]} unreadable, so not attributed to this change"
+    return rest, [f"{p} [{note}: reported, not failed]" for p in budget]
+
+
+def report_budget(lines: list[str]) -> None:
+    gh = "GITHUB_ACTIONS" in os.environ
+    for line in lines:
+        print(f"::warning::CI SPEND OVER BUDGET: {line}" if gh else f"CI SPEND OVER BUDGET: {line}")
+    summary = os.environ.get("GITHUB_STEP_SUMMARY")
+    if summary and lines:
+        with open(summary, "a", encoding="utf-8") as fh:
+            fh.write("### CI SPEND OVER BUDGET (reported, not failed: this change did not raise it)\n")
+            fh.writelines(f"- {line}\n" for line in lines)
+
+
+def budget_self_test() -> int:
+    """An unchanged tree over budget passes; a change that raises the forecast fails."""
+    import tempfile
+
+    def leg(runs: float) -> dict:
+        return {"linux": {"jobs": ["a"], "runs_per_week": runs, "minutes_per_run": 1, "usd_per_week": round(runs * 0.006, 2)}}
+
+    def manifest(runs: float) -> dict:
+        legs = leg(runs)
+        usd = legs["linux"]["usd_per_week"]
+        return {"repo": "t", "visibility": "private", "repo_share_usd": 1, "total_usd_per_week": usd, "workflows": {
+            "w.yml": {"triggers": ["push"], "crons": [], "benefit": "b", "owner_reason": "o", "usd_per_week": usd, "legs": legs}}}
+
+    wf = "on:\n  push:\n    branches: [main]\njobs:\n  a:\n    runs-on: ubuntu-latest\n    timeout-minutes: 5\n    steps:\n      - run: echo\n"
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp) / "repo"
+        (root / ".github/workflows").mkdir(parents=True)
+        (root / ".github/workflows/w.yml").write_text(wf)
+        git = lambda *a: subprocess.run(["git", "-C", str(root), *a], check=True, capture_output=True)  # noqa: E731
+        git("init", "-q")
+        git("-c", "user.email=t@t", "-c", "user.name=t", "commit", "-q", "--allow-empty", "-m", "root")
+        (root / MANIFEST).write_text(json.dumps(manifest(500)))  # $3/week over a $1 share
+        git("add", "-A")
+        git("-c", "user.email=t@t", "-c", "user.name=t", "commit", "-q", "-m", "over budget")
+        base = subprocess.run(["git", "-C", str(root), "rev-parse", "HEAD"], capture_output=True, text=True, check=True).stdout.strip()
+        old_probe = globals()["VISIBILITY_PROBE"]
+        globals()["VISIBILITY_PROBE"] = lambda _root: None
+        try:
+            probs = check_root(root)
+            if not any(is_budget_problem(p) for p in probs):
+                print(f"BUDGET SELF-TEST FAIL: the planted overage was not seen: {probs}")
+                return 1
+            failing, reported = split_budget(root, probs, base)
+            if failing or not reported:
+                print(f"BUDGET SELF-TEST FAIL: an unchanged over-budget tree must pass and report; failing={failing}")
+                return 1
+            (root / MANIFEST).write_text(json.dumps(manifest(900)))  # the change raises $3 -> $5.40
+            failing, reported = split_budget(root, check_root(root), base)
+            if not any("RAISES the forecast" in p for p in failing) or reported:
+                print(f"BUDGET SELF-TEST FAIL: a cost-raising change must fail; failing={failing} reported={reported}")
+                return 1
+            (root / MANIFEST).write_text(json.dumps(manifest(300)))  # a cut, still over: passes
+            failing, _ = split_budget(root, check_root(root), base)
+            if failing:
+                print(f"BUDGET SELF-TEST FAIL: a cost-cutting change still over budget must pass; failing={failing}")
+                return 1
+            failing, _ = split_budget(root, ["w.yml: no entry in .github/ci-cost.json"], base)
+            if failing != ["w.yml: no entry in .github/ci-cost.json"]:
+                print("BUDGET SELF-TEST FAIL: a non-budget problem must still fail under --base")
+                return 1
+        finally:
+            globals()["VISIBILITY_PROBE"] = old_probe
+    print("budget self-test ok: over budget + unchanged passes (reported), a cost-raising change fails, a cut passes, other problems still fail")
+    return 0
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__.split("\n", 1)[0])
     parser.add_argument("--root", type=Path, default=Path(__file__).resolve().parent.parent)
     parser.add_argument("--self-test", action="store_true")
     parser.add_argument("--summary", action="store_true", help="print $/week per repo and in total, then check")
+    parser.add_argument("--base", help="release train: a budget overage fails only if the change since this git ref raised the forecast")
     args = parser.parse_args()
     if args.self_test:
-        return self_test() or schedule_self_test() or manifest_self_test() or money_self_test()
+        return self_test() or schedule_self_test() or manifest_self_test() or money_self_test() or budget_self_test()
     problems = check_root(args.root) + check_twins(args.root)
+    reported: list[str] = []
+    if args.base:
+        problems, reported = split_budget(args.root, problems, args.base)
     if args.summary or not problems:
         print(cost_summary(args.root))
+    report_budget(reported)
     for p in problems:
         print(f"::error::{p}" if "GITHUB_ACTIONS" in os.environ else p)
     if problems:
