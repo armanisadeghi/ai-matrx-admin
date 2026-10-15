@@ -1,5 +1,6 @@
 import type { components } from "@ai-matrx/api/types";
-import { apiGet, apiPost, buildPath } from "@/lib/api/typed-client";
+import { checkPartyJournalistActivity, confirmPartyContactCandidate, derivePartyJournalistBeat, findPartyContacts, listPartyContactCandidates, readPartyJournalistBeat, rejectPartyContactCandidate, verifyPartyContactAddress } from "@ai-matrx/api/crm";
+import { serverApi } from "@/lib/api/server-api";
 
 /**
  * The enrichment doors (WP3). Every one is a thin call onto a server service
@@ -38,9 +39,7 @@ export async function fetchContactCandidates(
   partyId: string,
   options?: { includeResolved?: boolean },
 ): Promise<ContactCandidateView[]> {
-  const { data } = await apiGet(buildPath(CANDIDATES, { party_id: partyId }), {
-    query: { include_resolved: options?.includeResolved ? "true" : "false" },
-  });
+  const data = await listPartyContactCandidates(serverApi, { path: { party_id: partyId }, query: { include_resolved: Boolean(options?.includeResolved) } });
   return data;
 }
 
@@ -50,10 +49,10 @@ export async function findContacts(
   organizationId: string,
   input?: { personName?: string; usePaidProviders?: boolean },
 ): Promise<WaterfallResult> {
-  const { data } = await apiPost(buildPath(FIND, { party_id: partyId }), {
+  const data = await findPartyContacts(serverApi, { path: { party_id: partyId }, body: {
     person_name: input?.personName ?? null,
     use_paid_providers: input?.usePaidProviders ?? true,
-  }, { organizationId });
+  } }, { organizationId: organizationId });
   return data;
 }
 
@@ -68,14 +67,10 @@ export async function confirmCandidate(
   candidateId: string,
   input: { acceptRoleAddress: boolean; acceptUnverified: boolean },
 ): Promise<ContactCandidateView> {
-  const { data } = await apiPost(
-    buildPath(CONFIRM, { party_id: partyId, candidate_id: candidateId }),
-    {
+  const data = await confirmPartyContactCandidate(serverApi, { path: { party_id: partyId, candidate_id: candidateId }, body: {
       accept_role_address: input.acceptRoleAddress,
       accept_unverified: input.acceptUnverified,
-    },
-    { organizationId },
-  );
+    } }, { organizationId: organizationId });
   return data;
 }
 
@@ -86,11 +81,7 @@ export async function rejectCandidate(
   candidateId: string,
   reason?: string,
 ): Promise<ContactCandidateView> {
-  const { data } = await apiPost(
-    buildPath(REJECT, { party_id: partyId, candidate_id: candidateId }),
-    { reason: reason ?? null },
-    { organizationId },
-  );
+  const data = await rejectPartyContactCandidate(serverApi, { path: { party_id: partyId, candidate_id: candidateId }, body: { reason: reason ?? null } }, { organizationId: organizationId });
   return data;
 }
 
@@ -100,10 +91,10 @@ export async function verifyAddress(
   organizationId: string,
   mediumId: string,
 ): Promise<FinalMileResult> {
-  const { data } = await apiPost(buildPath(VERIFY, { party_id: partyId }), {
+  const data = await verifyPartyContactAddress(serverApi, { path: { party_id: partyId }, body: {
     medium_id: mediumId,
     force: false,
-  }, { organizationId });
+  } }, { organizationId: organizationId });
   return data;
 }
 
@@ -113,11 +104,11 @@ export async function checkJournalistActivity(
   organizationId: string,
   input?: { windowDays?: number; useSearch?: boolean },
 ): Promise<ActivityVerdict> {
-  const { data } = await apiPost(buildPath(ACTIVITY, { party_id: partyId }), {
+  const data = await checkPartyJournalistActivity(serverApi, { path: { party_id: partyId }, body: {
     // Omitted = the organization's `pr.beat_recency_days` knob (E9, default 90).
     ...(input?.windowDays ? { window_days: input.windowDays } : {}),
     use_search: input?.useSearch ?? true,
-  }, { organizationId });
+  } }, { organizationId: organizationId });
   return data;
 }
 
@@ -125,7 +116,7 @@ export async function checkJournalistActivity(
 export async function fetchJournalistBeat(
   partyId: string,
 ): Promise<BeatProfile | null> {
-  const { data } = await apiGet(buildPath(BEAT, { party_id: partyId }));
+  const data = await readPartyJournalistBeat(serverApi, { path: { party_id: partyId } });
   return data ?? null;
 }
 
@@ -137,8 +128,8 @@ export async function deriveJournalistBeat(
 ): Promise<BeatProfile> {
   // The server's field is `pitch` (aidream 90ea9a2874 renamed it from
   // campaign_context; the old name is only an input alias).
-  const { data } = await apiPost(buildPath(BEAT, { party_id: partyId }), {
+  const data = await derivePartyJournalistBeat(serverApi, { path: { party_id: partyId }, body: {
     pitch: pitch?.trim() ? pitch.trim() : null,
-  }, { organizationId });
+  } }, { organizationId: organizationId });
   return data;
 }

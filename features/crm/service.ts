@@ -16,7 +16,6 @@
 import { teamReachOrFilter } from "@/lib/list-scope/teamReach";
 import { supabase } from "@/utils/supabase/client";
 import { tryWriteOne, WriteDidNotLandError } from "@/utils/supabase/writeOne";
-import { apiPost } from "@/lib/api/typed-client";
 import { isUuidShape } from "@ai-matrx/kit/uuid";
 import { associationsService } from "@/features/scopes/service/associationsService";
 import { recordUnavailable } from "@/lib/records/recordUnavailable";
@@ -93,6 +92,8 @@ import {
 } from "@/features/unified-data/standard-field-columns/wholeResult";
 import { announceRecordChange } from "@/lib/records/recordChanges";
 import { postgrestError } from "@/lib/failure/postgrestError";
+import { resolvePartiesBatchDoor, resolvePartyDoor } from "@ai-matrx/api/crm";
+import { serverApi } from "@/lib/api/server-api";
 export { normalizeMediumValue };
 
 // ── List page ───────────────────────────────────────────────────────────────
@@ -597,15 +598,7 @@ function toResolvedParty(row: {
 export async function resolveParty(
   input: ResolvePartyInput,
 ): Promise<ResolvedParty> {
-  const { data } = await apiPost(RESOLVE_PARTY, resolveRequestBody(input), {
-    // 🚨 THE ORG RIDES THE HEADER AS WELL AS THE BODY, AND THAT IS THE POINT.
-    // This create used to send the org ONLY in the body, so nothing could
-    // disagree with it and nothing did: whatever the form resolved was accepted
-    // in silence. `applyOrganizationContextHeader` is the same fail-closed kernel
-    // `callApi` uses — a missing or malformed value throws BEFORE any networking,
-    // and the two values are now the same value from the same place.
-    organizationId: input.orgId,
-  });
+  const data = await resolvePartyDoor(serverApi, { body: resolveRequestBody(input) }, { organizationId: input.orgId });
   const resolved = toResolvedParty(data);
   // Every list of parties on this page re-asks (the create window knows no list).
   if (resolved.created) announceRecordChange({ token: "party", kind: "created", id: resolved.partyId });
@@ -629,11 +622,7 @@ export async function resolvePartiesBatch(
   if (inputs.length === 0) return [];
   // Every row in a batch is stamped with the same org — the caller resolved it
   // once — so the header binds that one value for the whole request.
-  const { data } = await apiPost(
-    RESOLVE_PARTY_BATCH,
-    { parties: inputs.map(resolveRequestBody) },
-    { organizationId: inputs[0].orgId },
-  );
+  const data = await resolvePartiesBatchDoor(serverApi, { body: { parties: inputs.map(resolveRequestBody) } }, { organizationId: inputs[0].orgId });
   const items = data.map((row) => ({
     index: row.index,
     resolved: row.resolved ? toResolvedParty(row.resolved) : undefined,

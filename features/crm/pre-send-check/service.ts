@@ -10,7 +10,8 @@
 // list's send step (outlet groups). Server: aidream `aidream/services/pitch_advisories/pre_send.py`.
 
 import type { components } from "@ai-matrx/api/types";
-import { apiPost } from "@/lib/api/typed-client";
+import { preSendCheckDoor } from "@ai-matrx/api/crm";
+import { serverApi } from "@/lib/api/server-api";
 
 export type PreSendCheckRequest = components["schemas"]["PreSendCheckDoorRequest"];
 export type PreSendCheckReport = components["schemas"]["PreSendCheckReport"];
@@ -22,7 +23,7 @@ export async function runPreSendCheck(
   organizationId: string,
   request: PreSendCheckRequest,
 ): Promise<PreSendCheckReport> {
-  const { data } = await apiPost("/crm/pre-send-check", request, { organizationId });
+  const data = await preSendCheckDoor(serverApi, { body: request }, { organizationId: organizationId });
   return data;
 }
 

@@ -12,11 +12,11 @@
 
 const apiPost = jest.fn(async () => ({ data: {}, meta: {} }));
 const postJson = jest.fn(async () => ({ data: {}, meta: {} }));
-jest.mock("@/lib/api/typed-client", () => ({
-  apiPost: (...args: unknown[]) => apiPost(...(args as [])),
-  buildPath: (path: string, params: Record<string, string>) =>
-    path.replace(/\{(\w+)\}/g, (_m, key: string) => params[key]),
-}));
+jest.mock("@/lib/api/server-api", () =>
+  require("@/lib/api/test-support/serverApiEnvelopeMock").serverApiEnvelopeMock({
+      apiPost: (...args: unknown[]) => apiPost(...(args as [])),
+  }),
+);
 jest.mock("@/lib/python-client", () => ({
   postJson: (...args: unknown[]) => postJson(...(args as [])),
 }));

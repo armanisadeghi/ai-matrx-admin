@@ -1,5 +1,6 @@
 import type { components } from "@ai-matrx/api/types";
-import { apiGet, apiPost, buildPath } from "@/lib/api/typed-client";
+import { confirmOutletContactCandidate, listOutletContactCandidates } from "@ai-matrx/api/crm";
+import { serverApi } from "@/lib/api/server-api";
 
 export type OutletContactExtraction =
   components["schemas"]["OutletContactExtraction"];
@@ -18,9 +19,7 @@ const CONFIRM_PATH =
 export async function fetchOutletContactCandidates(
   outletPartyId: string,
 ): Promise<OutletContactExtraction> {
-  const { data } = await apiGet(
-    buildPath(CANDIDATES_PATH, { outlet_party_id: outletPartyId }),
-  );
+  const data = await listOutletContactCandidates(serverApi, { path: { outlet_party_id: outletPartyId } });
   return data;
 }
 
@@ -34,14 +33,11 @@ export async function confirmOutletContact(
     acceptRoleAddress: boolean;
   },
 ): Promise<ConfirmedOutletContact> {
-  const { data } = await apiPost(
-    buildPath(CONFIRM_PATH, { outlet_party_id: outletPartyId }),
-    {
+  const data = await confirmOutletContactCandidate(serverApi, { path: { outlet_party_id: outletPartyId }, body: {
       candidate_key: input.candidateKey,
       email_keys: input.emailKeys,
       accept_low_confidence: input.acceptLowConfidence,
       accept_role_address: input.acceptRoleAddress,
-    },
-  );
+    } });
   return data;
 }

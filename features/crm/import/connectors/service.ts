@@ -8,8 +8,9 @@
 // Microsoft Graph and the rest add a server registry entry and reuse ALL of
 // this file untouched.
 
-import { apiGet, apiPost, buildPath } from "@/lib/api/typed-client";
 import type { ImportConnectorMeta, ParsedImportData } from "../types";
+import { fetchConnectorContacts as fetchConnectorContactsOp, listImportConnectors as listImportConnectorsOp, persistConnectorCursor as persistConnectorCursorOp } from "@ai-matrx/api/crm";
+import { serverApi } from "@/lib/api/server-api";
 
 const CONNECTORS_PATH = "/crm/import/connectors";
 const CONNECTOR_FETCH_PATH = "/crm/import/connectors/{provider_key}/fetch";
@@ -38,9 +39,7 @@ export interface ImportConnector {
 export async function listImportConnectors(
   orgId: string,
 ): Promise<ImportConnector[]> {
-  const { data } = await apiGet(CONNECTORS_PATH, {
-    query: { organization_id: orgId },
-  });
+  const data = await listImportConnectorsOp(serverApi, { query: { organization_id: orgId } });
   return data.map((item) => ({
     providerKey: item.provider_key,
     displayName: item.display_name,
@@ -76,14 +75,11 @@ export interface ConnectorFetchArgs {
 export async function fetchConnectorContacts(
   args: ConnectorFetchArgs,
 ): Promise<ParsedImportData> {
-  const { data } = await apiPost(
-    buildPath(CONNECTOR_FETCH_PATH, { provider_key: args.providerKey }),
-    {
+  const data = await fetchConnectorContactsOp(serverApi, { path: { provider_key: args.providerKey }, body: {
       connection_id: args.connectionId,
       organization_id: args.orgId,
       mode: args.mode ?? "auto",
-    },
-  );
+    } });
 
   const headers = [
     "First name",
@@ -164,13 +160,10 @@ export async function persistConnectorCursor(args: {
   syncToken: string;
   counts?: Record<string, number>;
 }): Promise<void> {
-  await apiPost(
-    buildPath(CONNECTOR_CURSOR_PATH, { provider_key: args.providerKey }),
-    {
+  await persistConnectorCursorOp(serverApi, { path: { provider_key: args.providerKey }, body: {
       connection_id: args.connectionId,
       organization_id: args.orgId,
       sync_token: args.syncToken,
       counts: args.counts ?? {},
-    },
-  );
+    } });
 }

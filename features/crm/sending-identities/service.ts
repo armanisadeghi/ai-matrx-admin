@@ -15,13 +15,6 @@
 // gate (`send_through_identity`), never an endpoint a client can aim.
 
 import {
-  apiDelete,
-  apiGet,
-  apiPatch,
-  apiPost,
-  buildPath,
-} from "@/lib/api/typed-client";
-import {
   DEFAULT_PURPOSE_FILTER,
   PROMOTE_NEEDS_CONNECTION,
   type SendingPurposeFilter,
@@ -35,6 +28,8 @@ import type {
   SendingIdentityView,
   SendingPolicyView,
 } from "./types";
+import { checkAuthentication as checkAuthenticationOp, checkDomain as checkDomainOp, createSendingIdentity as createSendingIdentityOp, disableSendingIdentity, getBringUpReadiness as getBringUpReadinessOp, getSendingIdentity as getSendingIdentityOp, getSendingPolicy as getSendingPolicyOp, listConnectable, listSendingEvents as listSendingEventsOp, listSendingIdentities as listSendingIdentitiesOp, pauseSendingIdentity as pauseSendingIdentityOp, refreshIdentityHealth as refreshIdentityHealthOp, resumeSendingIdentity as resumeSendingIdentityOp, setSendingPolicy as setSendingPolicyOp, startIdentityWarmup, updateSendingIdentity as updateSendingIdentityOp } from "@ai-matrx/api/crm";
+import { serverApi } from "@/lib/api/server-api";
 
 const IDENTITY_PATH = "/sending-identities/{identity_id}";
 
@@ -56,12 +51,10 @@ export async function listSendingIdentities(
   organizationId?: string,
   purpose: SendingPurposeFilter = DEFAULT_PURPOSE_FILTER,
 ): Promise<SendingIdentityView[]> {
-  const { data } = await apiGet("/sending-identities", {
-    query: {
+  const data = await listSendingIdentitiesOp(serverApi, { query: {
       purpose,
       ...(organizationId ? { organization_id: organizationId } : {}),
-    },
-  });
+    } });
   return data;
 }
 
@@ -75,9 +68,7 @@ export async function getSendingIdentity(
   id: string,
   opts: { organizationId?: string } = {},
 ): Promise<SendingIdentityDetail> {
-  const { data } = await apiGet(buildPath(IDENTITY_PATH, { identity_id: id }), {
-    organizationId: opts.organizationId,
-  });
+  const data = await getSendingIdentityOp(serverApi, { path: { identity_id: id } }, { organizationId: opts.organizationId });
   return data;
 }
 
@@ -88,9 +79,7 @@ export async function getSendingIdentity(
 export async function listConnectableMailboxes(
   organizationId?: string,
 ): Promise<ConnectableMailbox[]> {
-  const { data } = await apiGet("/sending-identities/connectable", {
-    query: organizationId ? { organization_id: organizationId } : undefined,
-  });
+  const data = await listConnectable(serverApi, { query: organizationId ? { organization_id: organizationId } : undefined });
   return data;
 }
 
@@ -101,10 +90,10 @@ export async function createSendingIdentity(body: {
   display_name?: string | null;
   organization_id?: string | null;
 }): Promise<SendingIdentityDetail> {
-  const { data } = await apiPost("/sending-identities", {
+  const data = await createSendingIdentityOp(serverApi, { body: {
     provider: "google_workspace",
     ...body,
-  });
+  } });
   return data;
 }
 
@@ -143,42 +132,30 @@ export async function updateSendingIdentity(
   id: string,
   patch: Record<string, unknown>,
 ): Promise<SendingIdentityDetail> {
-  const { data } = await apiPatch(
-    buildPath(IDENTITY_PATH, { identity_id: id }),
-    patch,
-  );
+  const data = await updateSendingIdentityOp(serverApi, { path: { identity_id: id }, body: patch });
   return data;
 }
 
 /** Resolve the DNS TXT challenge. The only path to a verified domain. */
 export async function checkDomain(id: string): Promise<CheckReport> {
-  const { data } = await apiPost(
-    buildPath("/sending-identities/{identity_id}/check-domain", {
+  const data = await checkDomainOp(serverApi, { path: {
       identity_id: id,
-    }),
-    {},
-  );
+    } });
   return data;
 }
 
 /** Measure SPF, DKIM and DMARC against live DNS. */
 export async function checkAuthentication(id: string): Promise<CheckReport> {
-  const { data } = await apiPost(
-    buildPath("/sending-identities/{identity_id}/check-authentication", {
+  const data = await checkAuthenticationOp(serverApi, { path: {
       identity_id: id,
-    }),
-    {},
-  );
+    } });
   return data;
 }
 
 export async function startWarmup(id: string): Promise<SendingIdentityDetail> {
-  const { data } = await apiPost(
-    buildPath("/sending-identities/{identity_id}/start-warmup", {
+  const data = await startIdentityWarmup(serverApi, { path: {
       identity_id: id,
-    }),
-    {},
-  );
+    } });
   return data;
 }
 
@@ -186,10 +163,7 @@ export async function pauseSendingIdentity(
   id: string,
   reason: string,
 ): Promise<SendingIdentityDetail> {
-  const { data } = await apiPost(
-    buildPath("/sending-identities/{identity_id}/pause", { identity_id: id }),
-    { reason },
-  );
+  const data = await pauseSendingIdentityOp(serverApi, { path: { identity_id: id }, body: { reason } });
   return data;
 }
 
@@ -200,22 +174,16 @@ export async function pauseSendingIdentity(
 export async function resumeSendingIdentity(
   id: string,
 ): Promise<SendingIdentityDetail> {
-  const { data } = await apiPost(
-    buildPath("/sending-identities/{identity_id}/resume", { identity_id: id }),
-    {},
-  );
+  const data = await resumeSendingIdentityOp(serverApi, { path: { identity_id: id }, body: {} });
   return data;
 }
 
 export async function refreshIdentityHealth(
   id: string,
 ): Promise<SendingIdentityDetail> {
-  const { data } = await apiPost(
-    buildPath("/sending-identities/{identity_id}/refresh-health", {
+  const data = await refreshIdentityHealthOp(serverApi, { path: {
       identity_id: id,
-    }),
-    {},
-  );
+    } });
   return data;
 }
 
@@ -224,23 +192,18 @@ export async function listSendingEvents(
   limit = 100,
   opts: { organizationId?: string } = {},
 ): Promise<SendingEventRecord[]> {
-  const { data } = await apiGet(
-    buildPath("/sending-identities/{identity_id}/events", { identity_id: id }),
-    { query: { limit }, organizationId: opts.organizationId },
-  );
+  const data = await listSendingEventsOp(serverApi, { path: { identity_id: id }, query: { limit } }, { organizationId: opts.organizationId });
   return data;
 }
 
 export async function removeSendingIdentity(id: string): Promise<void> {
-  await apiDelete(buildPath(IDENTITY_PATH, { identity_id: id }));
+  await disableSendingIdentity(serverApi, { path: { identity_id: id } });
 }
 
 export async function getSendingPolicy(
   organizationId?: string,
 ): Promise<SendingPolicyView> {
-  const { data } = await apiGet("/sending-identities/policy", {
-    query: organizationId ? { organization_id: organizationId } : undefined,
-  });
+  const data = await getSendingPolicyOp(serverApi, { query: organizationId ? { organization_id: organizationId } : undefined });
   return data;
 }
 
@@ -250,11 +213,11 @@ export async function setSendingPolicy(
   reason?: string,
   organizationId?: string,
 ): Promise<SendingPolicyView> {
-  const { data } = await apiPost("/sending-identities/policy", {
+  const data = await setSendingPolicyOp(serverApi, { body: {
     outreach_enabled: outreachEnabled,
     reason: reason ?? null,
     organization_id: organizationId ?? null,
-  });
+  } });
   return data;
 }
 
@@ -267,8 +230,6 @@ export async function setSendingPolicy(
 export async function getBringUpReadiness(
   organizationId?: string,
 ): Promise<BringUpReadiness> {
-  const { data } = await apiGet("/sending-identities/bring-up-readiness", {
-    query: organizationId ? { organization_id: organizationId } : undefined,
-  });
+  const data = await getBringUpReadinessOp(serverApi, { query: organizationId ? { organization_id: organizationId } : undefined });
   return data;
 }

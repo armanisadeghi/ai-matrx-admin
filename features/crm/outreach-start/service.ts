@@ -21,10 +21,11 @@
 // user discovers.
 
 import type { components } from "@ai-matrx/api/types";
-import { apiGet, apiPost, apiPut, buildPath } from "@/lib/api/typed-client";
 import { supabase } from "@/utils/supabase/client";
 import { operationFailed } from "@/utils/errors";
 import type { PartyRow } from "../types";
+import { foldReferringDomainsEndpoint, foldReputationOutletsEndpoint, readCrmFoldSettings, writeCrmFoldSettings } from "@ai-matrx/api/marketing";
+import { serverApi } from "@/lib/api/server-api";
 
 export type DomainFoldReport = components["schemas"]["DomainFoldReport"];
 export type FoldedDomain = components["schemas"]["FoldedDomain"];
@@ -93,9 +94,7 @@ export function isNonProspectDomainVerdict(verdict: string | null): boolean {
 export async function readSiteCrmFoldSettings(
   siteId: string,
 ): Promise<SiteCrmFoldSettings> {
-  const { data } = await apiGet(
-    buildPath("/seo/sites/{site_id}/crm/fold-settings", { site_id: siteId }),
-  );
+  const data = await readCrmFoldSettings(serverApi, { path: { site_id: siteId } });
   return data;
 }
 
@@ -103,10 +102,7 @@ export async function writeSiteCrmFoldSettings(
   siteId: string,
   patch: components["schemas"]["UpdateCrmFoldSettingsRequest"],
 ): Promise<SiteCrmFoldSettings> {
-  const { data } = await apiPut(
-    buildPath("/seo/sites/{site_id}/crm/fold-settings", { site_id: siteId }),
-    patch,
-  );
+  const data = await writeCrmFoldSettings(serverApi, { path: { site_id: siteId }, body: patch });
   return data;
 }
 
@@ -122,15 +118,9 @@ export async function foldSiteDomains(args: {
   source: FoldSource;
   body?: components["schemas"]["FoldDomainsRequest"];
 }): Promise<DomainFoldReport> {
-  const path =
-    args.source === "backlink"
-      ? buildPath("/seo/sites/{site_id}/crm/referring-domains", {
-          site_id: args.siteId,
-        })
-      : buildPath("/seo/sites/{site_id}/crm/reputation-outlets", {
-          site_id: args.siteId,
-        });
-  const { data } = await apiPost(path, args.body ?? {});
+  const fold =
+    args.source === "backlink" ? foldReferringDomainsEndpoint : foldReputationOutletsEndpoint;
+  const data = await fold(serverApi, { path: { site_id: args.siteId }, body: args.body ?? {} });
   return data;
 }
 

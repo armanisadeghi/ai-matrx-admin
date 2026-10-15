@@ -1,8 +1,9 @@
 import type { components } from "@ai-matrx/api/types";
 import { BackendApiError } from "@ai-matrx/api";
-import { apiPost, buildPath } from "@/lib/api/typed-client";
 import { postJson } from "@/lib/python-client";
 import { isJsonObject } from "@/types/json";
+import { approveMessageDraft, createMessageDraft, sendMessageDraft } from "@ai-matrx/api/marketing";
+import { serverApi } from "@/lib/api/server-api";
 
 export type OutreachDraft = components["schemas"]["DraftResponse"];
 export type OutreachSendResult = components["schemas"]["SendResponse"];
@@ -46,13 +47,13 @@ export async function createOutreachDraft(input: {
   reputationCaseId?: string;
   backlinkId?: string;
 }): Promise<OutreachDraft> {
-  const { data } = await apiPost("/outreach/single/drafts", {
+  const data = await createMessageDraft(serverApi, { body: {
     outreach_list_id: input.outreachListId,
     member_id: input.memberId,
     template_id: input.templateId,
     reputation_case_id: input.reputationCaseId ?? null,
     backlink_id: input.backlinkId ?? null,
-  }, { organizationId: input.organizationId });
+  } }, { organizationId: input.organizationId });
   return data;
 }
 
@@ -60,13 +61,9 @@ export async function approveOutreachDraft(
   draftId: string,
   organizationId: string,
 ): Promise<OutreachDraft> {
-  const { data } = await apiPost(
-    buildPath("/outreach/single/drafts/{draft_id}/approve", {
+  const data = await approveMessageDraft(serverApi, { path: {
       draft_id: draftId,
-    }),
-    {},
-    { organizationId },
-  );
+    }, body: {} }, { organizationId: organizationId });
   return data;
 }
 
@@ -74,13 +71,9 @@ export async function sendOutreachDraft(
   draftId: string,
   organizationId: string,
 ): Promise<OutreachSendResult> {
-  const { data } = await apiPost(
-    buildPath("/outreach/single/drafts/{draft_id}/send", {
+  const data = await sendMessageDraft(serverApi, { path: {
       draft_id: draftId,
-    }),
-    {},
-    { organizationId },
-  );
+    }, body: {} }, { organizationId: organizationId });
   return data;
 }
 

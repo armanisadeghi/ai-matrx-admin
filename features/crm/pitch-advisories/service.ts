@@ -11,8 +11,9 @@
 // button and lets the action run (common-docs/policies/limits-are-knobs-agents-set-them.md).
 
 import type { components } from "@ai-matrx/api/types";
-import { apiPost } from "@/lib/api/typed-client";
 import { createClient } from "@/utils/supabase/client";
+import { checkPitchAdvisoriesDoor } from "@ai-matrx/api/crm";
+import { serverApi } from "@/lib/api/server-api";
 
 export type PitchAdvisoryReport = components["schemas"]["PitchAdvisoryReport"];
 export type PitchAdvisory = components["schemas"]["PitchAdvisory"];
@@ -27,9 +28,7 @@ export async function checkPitchAdvisories(
   organizationId: string,
   request: PitchAdvisoryRequest,
 ): Promise<PitchAdvisoryReport> {
-  const { data } = await apiPost("/crm/pitch-advisories", request, {
-    organizationId,
-  });
+  const data = await checkPitchAdvisoriesDoor(serverApi, { body: request }, { organizationId: organizationId });
   return data;
 }
 

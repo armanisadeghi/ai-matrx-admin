@@ -20,10 +20,11 @@ import type {
   MediaResearchRow,
   TypedStreamEvent,
 } from "@ai-matrx/agents/generated/stream-events";
-import { apiPost, buildPath } from "@/lib/api/typed-client";
 import { callApi } from "@/lib/api/call-api";
 import type { AppDispatch } from "@/lib/redux/store";
 import { streamErrorText } from "@ai-matrx/api";
+import { mediaResearchPreviewDoor } from "@ai-matrx/api/crm";
+import { serverApi } from "@/lib/api/server-api";
 
 export type MediaResearchRequest = components["schemas"]["MediaResearchRequest"];
 export type MediaResearchPreview = components["schemas"]["MediaResearchPreview"];
@@ -38,11 +39,7 @@ export async function previewMediaResearch(
   listId: string,
   request: MediaResearchRequest,
 ): Promise<MediaResearchPreview> {
-  const { data } = await apiPost(
-    buildPath("/crm/outreach-lists/{list_id}/media-research/preview", { list_id: listId }),
-    { request },
-    { organizationId },
-  );
+  const data = await mediaResearchPreviewDoor(serverApi, { path: { list_id: listId }, body: { request } }, { organizationId: organizationId });
   return data;
 }
 
