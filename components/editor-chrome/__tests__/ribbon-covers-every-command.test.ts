@@ -45,7 +45,12 @@ function sheetHost(): SheetChromeHost {
     toggleFullScreen: () => {},
     notify: () => {},
     sendFeedback: () => {},
-  } as SheetChromeHost;
+    openPanel: () => {},
+    viewOverlays: { state: () => ({ formulas: false, protectedRanges: false }), toggle: () => {} },
+    macros: { list: () => [], recording: () => false, start: () => {}, stop: () => {}, cancel: () => {}, replay: () => {} },
+    filterViews: { list: () => [], saveCurrent: () => {}, apply: () => {} },
+    prefs: { get: () => ({ autocomplete: true, formulaHints: true }), toggle: () => {} },
+  } as unknown as SheetChromeHost;
 }
 
 function docHost(): DocChromeHost {
