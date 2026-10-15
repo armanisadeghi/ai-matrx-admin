@@ -59,6 +59,20 @@ compile a live answer).
 
 ## Limits (feature knobs, feature `templates`)
 
+## File template showcase imports
+
+`files/seeds/univer-showcase-templates.json` holds 22 native snapshots from the 20 supported
+Univer showcases: 15 workbooks and seven documents (the knowledge-base example has three pages).
+`scripts/file-templates/seed-featured-templates.ts --showcase-only` reconciles them by stable
+`univer:<slug>` seed keys, with source provenance and content hashes. Negative `sort_order` values
+put the curated designs first in the existing home row and gallery. Demo-owner permission
+resources are removed when capturing these templates; formulas, validation, conditional formats,
+filters, document styles, headers and footers remain native. Do not import the advanced Sheets
+preset or any Pro plugin. Verify imports against the installed free models with
+`node scripts/file-templates/verify-showcase-templates.mjs` before reseeding.
+
+## Limits (feature knobs, feature `templates`)
+
 `seed_row_cap` (org-overridable) and `preview_rows` (org + user) via `useScopedTemplateKnobs`;
 `attached_poll_ms`, `run_lease_seconds`, `archive_max_passes` platform-locked via `templateKnob`
 (`knobs.ts`). A missing knob is said, never replaced by a constant.
