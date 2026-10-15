@@ -55,6 +55,8 @@ function makeFixture({ mode, extraPnpmfile = "" }) {
   mkdirSync(join(dir, "scripts/agent-harness"), { recursive: true });
   mkdirSync(stateDir, { recursive: true });
   copyFileSync(GATE_SRC, join(dir, "scripts/agent-harness/install-gate.cjs"));
+  // The gate requires its forward-only half (the shared install only moves forward).
+  copyFileSync(join(dirname(GATE_SRC), "install-forward-only.cjs"), join(dir, "scripts/agent-harness/install-forward-only.cjs"));
 
   const pkg = {
     name: "install-gate-fixture",
