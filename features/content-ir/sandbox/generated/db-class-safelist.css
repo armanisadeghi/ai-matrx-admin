@@ -1,6 +1,6 @@
 /* GENERATED — do not edit by hand.
  *
- * The Tailwind utilities the 223 organization-authored component
+ * The Tailwind utilities the 232 organization-authored component
  * bodies in content_ir.kind_component use. Tailwind emits a utility only for a
  * class it SCANS in a source file; these classes live in the database, so
  * without this file they produce no CSS and the component silently renders
@@ -10,11 +10,11 @@
  * Regenerate:  pnpm gen:kind-sandbox-safelist
  * Verify:      pnpm check:kind-sandbox-safelist   (fails when the live bodies move)
  *
- * Corpus fingerprint — rows: 223; newest updated_at: 2026-10-14T07:18:39.041932+00:00; candidates: 169cd8af8746d8e6
- * Candidates scanned: 7242
+ * Corpus fingerprint — rows: 232; newest updated_at: 2026-10-15T07:06:06.870182+00:00; candidates: 4670830423171f3e
+ * Candidates scanned: 7268
  * Of those, Tailwind generates: 1695
- * Already covered by the repo source scan: 1300
- * Closed by this file: 395
+ * Already covered by the repo source scan: 1301
+ * Closed by this file: 394
  */
 @source inline("!pl-1");
 @source inline("-inset-x-1");

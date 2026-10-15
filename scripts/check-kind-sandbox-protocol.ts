@@ -167,6 +167,9 @@ const GATE_READERS_ALLOWED = [
     // The gate itself, and the frame that consumes the ceilings it resolved.
     "features/content-ir/react/db-component/useKindSandboxKnob.ts",
     "features/content-ir/react/db-component/KindSandboxFrame.tsx",
+    // The authoring-rules panel above the code editor SAYS whether the frame is on for this view (an honest
+    // screen, law 4). It renders no kind component and sits on no selection path.
+    "features/content-ir/studio/components/SandboxAuthoringRules.tsx",
     // This guard, which has to name the symbols it looks for.
     "scripts/check-kind-sandbox-protocol.ts",
 ] as const;
