@@ -173,7 +173,7 @@ function CompareBody({ kinds, organizationId }: { kinds: ComparisonKindInfo[]; o
           )}
         </section>
       ) : kind ? (
-        <EmptyState title={`${kind.label} is coming soon`} description={kind.discovery_note || kind.description} />
+        <EmptyState title={`${kind.label} is coming soon`} line={kind.discovery_note || kind.description} />
       ) : null}
     </div>
   );
