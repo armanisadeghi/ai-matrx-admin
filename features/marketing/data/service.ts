@@ -3032,6 +3032,12 @@ export async function listBrands(
   if (search) {
     query = query.or(`name.ilike.%${search}%,website_url.ilike.%${search}%`);
   }
+  // Every column the table lets a person filter is applied here (name, status).
+  const name = textFilter(state, "name");
+  if (name) query = query.ilike("name", `%${name}%`);
+  const statuses = selectFilterValues(state, "status");
+  if (statuses.length === 1) query = query.eq("status", statuses[0]);
+  if (statuses.length > 1) query = query.in("status", statuses);
   query = query.order(sortColumn, { ascending, nullsFirst: false });
   query = query.order("id", { ascending });
   const response = await query

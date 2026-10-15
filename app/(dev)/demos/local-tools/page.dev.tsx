@@ -339,13 +339,15 @@ export default function LocalToolsDemo() {
                   value={customTool}
                   onValueChange={setCustomTool}
                   aria-label="Tool"
-                  options={ALL_TOOLS.map((t) => ({
-                    value: t,
-                    label:
-                      availableTools.length > 0 && !availableTools.includes(t)
-                        ? `${t} (unavailable)`
-                        : t,
-                  }))}
+                  options={ALL_TOOLS.map((t) => {
+                    const unavailable =
+                      availableTools.length > 0 && !availableTools.includes(t);
+                    return {
+                      value: t,
+                      label: unavailable ? `${t} (unavailable)` : t,
+                      disabled: unavailable,
+                    };
+                  })}
                 />
               </div>
               <div className="flex flex-col gap-1 flex-1 min-w-[200px]">

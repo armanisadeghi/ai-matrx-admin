@@ -109,6 +109,12 @@ export function BrandsPortfolio({
   const table = useMarketingTableState({
     defaultSort: { id: "name", direction: "asc" },
   });
+  // A search or column filter that matches nothing is "no matches", never "no brands yet".
+  const narrowed =
+    table.state.search.trim() !== "" ||
+    Object.keys(table.state.columnFilters).length > 0;
+  const clearNarrowing = () =>
+    table.onStateChange({ ...table.state, search: "", columnFilters: {}, page: 1 });
   // THE ARCHIVED-ITEMS LAW: archived brands are one click away; Restore lives on their rows.
   const [archive, setArchive] = useState<ArchiveFilterValue>(DEFAULT_ARCHIVE_FILTER);
   // HIDDEN BY ME: brands this person hid leave the list and wait in the Hidden view (one click).
@@ -647,8 +653,12 @@ export function BrandsPortfolio({
                     icon: (
                       <Landmark className="h-8 w-8 text-muted-foreground" />
                     ),
-                    title: "No brands yet",
-                    action: (
+                    title: narrowed ? "No matching brands" : "No brands yet",
+                    action: narrowed ? (
+                      <Button variant="outline" onClick={clearNarrowing}>
+                        Clear filters
+                      </Button>
+                    ) : (
                       <Button variant="primary" onClick={openCreate}>
                         Add your first brand
                       </Button>
@@ -659,6 +669,8 @@ export function BrandsPortfolio({
                 <BrandCards
                   rows={listRows}
                   loading={brands.isLoading}
+                  narrowed={narrowed}
+                  onClearNarrowing={clearNarrowing}
                   onEdit={(row) => {
                     setEditing(row);
                     setEditorOpen(true);
@@ -802,12 +814,16 @@ function BrandCardQueryControls({
 function BrandCards({
   rows,
   loading,
+  narrowed,
+  onClearNarrowing,
   onEdit,
   onDelete,
   onRestore,
 }: {
   rows: BrandListRow[];
   loading: boolean;
+  narrowed: boolean;
+  onClearNarrowing: () => void;
   onEdit: (row: BrandListRow) => void;
   onDelete: (row: BrandListRow) => void;
   onRestore: (row: BrandListRow) => void;
@@ -831,8 +847,13 @@ function BrandCards({
         <Landmark className="mx-auto h-8 w-8 text-muted-foreground" />
         {/* read-gate-exempt: BrandCards renders only in the parent's non-error branch; a failed brands read shows QueryError there instead */}
         <p className="mt-3 text-sm font-medium text-foreground">
-          No brands yet
+          {narrowed ? "No matching brands" : "No brands yet"}
         </p>
+        {narrowed ? (
+          <Button variant="outline" className="mt-3" onClick={onClearNarrowing}>
+            Clear filters
+          </Button>
+        ) : null}
       </div>
     );
   }

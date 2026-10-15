@@ -358,6 +358,7 @@ export function TranscriptionCleanupContextPanel({
                 options={[
                   {
                     value: "",
+                    disabled: true,
                     label: loadingNotes
                       ? "Loading notes…"
                       : notesError && contextNotes === null
