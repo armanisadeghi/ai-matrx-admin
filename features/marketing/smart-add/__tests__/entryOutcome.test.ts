@@ -220,6 +220,13 @@ describe("siteReadFailure", () => {
     expect(stepCouldNotRead({ step: "page", notes: [] })).toBe(false);
   });
 
+  it("a link-in-bio page that failed is not the typed site blocking us (MKT-108)", () => {
+    const bio = { steps: [{ ...view.steps[1], notes: ["The bio link linktr.ee could not be read: the site answered 429"] }] };
+    expect(siteReadFailure(bio, "dynamiteroasting.com")).toBeNull();
+    const mixed = { steps: [{ ...view.steps[0], notes: [] }, { ...view.steps[1], notes: ["The bio link linktr.ee could not be read: the site answered 429", "dynamiteroasting.com could not be read: request_error"] }] };
+    expect(siteReadFailure(mixed, "dynamiteroasting.com")?.status).toBe("site_error");
+  });
+
   it("is null when the page was read, or nothing was typed", () => {
     expect(siteReadFailure({ steps: [{ ...view.steps[1], notes: [] }] }, "dynamiteroasting.com")).toBeNull();
     expect(siteReadFailure(view, "")).toBeNull();

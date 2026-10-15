@@ -162,6 +162,7 @@ import { knownDecided, withSuggestions, type WeThinkSuggestion } from "./weThink
 import type { BrandSnapshot, EnrichSeed, KnownFact } from "./enrich/known";
 import { computeEnrichDiff } from "./enrich/diff";
 import { ChangesReview } from "./enrich/ChangesReview";
+import { browserImageUrl } from "@/lib/media/external-image";
 import type { SmartAddAddressBinding } from "./useSmartAddAddress";
 import { SMART_ADD_ADDRESS_DEBOUNCE_MS, type SmartAddAddress } from "./smartAddUrl";
 
@@ -1873,7 +1874,7 @@ export function SmartAddBrand({
         {/* Two rows: the brand, then what Create files and what it spends — each fact once, nothing cut off. */}
         <div className="flex min-w-0 flex-1 basis-full items-center gap-2.5 sm:basis-0">
           {basics.logoUrl ? (
-            <img src={basics.logoUrl} alt="" className="size-8 shrink-0 rounded object-contain" />
+            <img src={browserImageUrl(basics.logoUrl)} alt="" className="size-8 shrink-0 rounded object-contain" />
           ) : null}
           <div className="flex min-w-0 flex-col">
             <span className="truncate text-sm font-medium">{basics.name ?? "Confirm a name to create the brand"}</span>

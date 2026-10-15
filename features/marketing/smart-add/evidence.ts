@@ -15,6 +15,7 @@
 import { handleKeyPart } from "../social/account-input";
 import { isLinkInBioUrl, linkInBioService } from "../lib/link-in-bio";
 import { webProfileAsAccount } from "./ownAccountRows";
+import { isPlaceholderName } from "./placeholderName";
 
 export type EvidenceField =
   | "name"
@@ -205,12 +206,15 @@ export function parseEvidenceItem(raw: unknown): EvidenceItem | null {
   const field = asString(r.field) as EvidenceField | null;
   const value = asString(r.value);
   if (!key || !field || !value || !(FIELD_ORDER.includes(field) || WEB_FIELDS.has(field) || GROUP_FIELDS.has(field))) return null;
+  // A name finding that is only "UNKNOWN" / "N/A" says nothing: it is never offered (MKT-107).
+  if (field === "name" && isPlaceholderName(value)) return null;
   const src = (typeof r.source === "object" && r.source !== null ? r.source : {}) as Record<string, unknown>;
+  const label = asString(r.label);
   return {
     key,
     field,
     value,
-    label: asString(r.label),
+    label: isPlaceholderName(label) ? null : label,
     image_url: asString(r.image_url),
     url: asString(r.url),
     platform: asString(r.platform),

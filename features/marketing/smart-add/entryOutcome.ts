@@ -107,10 +107,13 @@ export function inferEntryOutcome(
 
 /** A page-read note that says the site's own pages could not be opened (aidream brand_identify_page notes). */
 const SITE_UNREAD = /could not be read|is not reachable/i;
+/** A link-in-bio page the site links to failing is that page's note, never the typed site's (MKT-108). */
+const OTHER_PAGE = /^the bio link /i;
+const siteUnread = (n: string) => SITE_UNREAD.test(n) && !OTHER_PAGE.test(n.trim());
 
 /** The step's notes say it could not open the site (its progress line, e.g. "the long way", is over). */
 export function stepCouldNotRead(step: Pick<RoundView["steps"][number], "step" | "notes">): boolean {
-  return (step.step === "page" || step.step === "probe") && step.notes.some((n) => SITE_UNREAD.test(n));
+  return (step.step === "page" || step.step === "probe") && step.notes.some(siteUnread);
 }
 
 /**
@@ -123,8 +126,9 @@ export function siteReadFailure(
 ): (EntryOutcome & { subject: "website" }) | null {
   if (!view || !website.trim()) return null;
   const page = view.steps.filter((s) => s.step === "page").flatMap((s) => s.notes);
-  if (!page.some((n) => SITE_UNREAD.test(n))) return null;
-  const note = [...view.steps.filter((s) => s.step === "probe").flatMap((s) => s.notes), ...page].join(" ");
+  if (!page.some(siteUnread)) return null;
+  // The typed site's own notes only: a bio-link page that answered 429 is not the site refusing us.
+  const note = [...view.steps.filter((s) => s.step === "probe").flatMap((s) => s.notes), ...page.filter((n) => !OTHER_PAGE.test(n.trim()))].join(" ");
   const hit = SITE_NOTE.find(([re]) => re.test(note));
   return { status: hit?.[1] ?? "site_error", subject: "website", input: website.trim(), platform: null };
 }

@@ -48,7 +48,7 @@ import { AiTestReplayBadge } from "@/features/ai-test-mode/AiTestReplayBadge";
 import { SMART_ADD_ADDRESS_DEBOUNCE_MS, type SmartAddPatch, type SmartAddPrefill, type SmartAddVia } from "./smartAddUrl";
 import { Shared } from "./stage/Shared";
 import { entryCopy, handleProblem, websiteProblem, type EntryOutcome } from "./entryOutcome";
-import { proxiedExternalImageUrl } from "@/lib/media/external-image";
+import { browserImageUrl, proxiedExternalImageUrl } from "@/lib/media/external-image";
 import styles from "./stage/stage.module.css";
 import { withReferral } from "@ai-matrx/kit/outbound";
 
@@ -985,7 +985,9 @@ function SiteMark({ host, small }: { host: string | null; small?: boolean }) {
     return () => clearTimeout(t);
   }, [host]);
   const sources = settled ? [`https://${settled}/favicon.ico`, `https://${settled}/apple-touch-icon.png`] : [];
-  const src = sources[step] ?? null;
+  // Through our image proxy: a site that answers its own icon with Cross-Origin-Resource-Policy is blocked when the
+  // browser loads it directly (ERR_BLOCKED_BY_RESPONSE.NotSameOrigin, MKT-108), and a missing icon is a 404 here.
+  const src = sources[step] ? proxiedExternalImageUrl(sources[step]) : null;
   const size = small ? "size-5" : "size-7";
   const shown = src !== null && loaded === src;
   return (
@@ -1225,7 +1227,7 @@ function Centerpiece({
                     className="size-full rounded-full object-cover"
                   />
                 ) : (
-                  <img src={logo.image_url ?? ""} alt="" className="max-h-[78%] max-w-[78%] object-contain drop-shadow-[0_10px_24px_hsl(var(--foreground)/0.18)]" />
+                  <img src={browserImageUrl(logo.image_url ?? "")} alt="" className="max-h-[78%] max-w-[78%] object-contain drop-shadow-[0_10px_24px_hsl(var(--foreground)/0.18)]" />
                 )}
               </Shared>
             ) : (
