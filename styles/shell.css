@@ -2427,6 +2427,17 @@ body:has(.shell-root[data-pathname^="/administration"]) {
   }
 }
 
+/* `scrollbar-thin` (a utility, so it beats the base default above) asks for a THIN bar,
+   not a painted one: inside the shell it stays the same auto-hiding bar. Without this
+   its zinc track shows under every horizontal scroller that carries the class. */
+.shell-main .scrollbar-thin {
+  scrollbar-color: transparent transparent;
+}
+
+.shell-main .scrollbar-thin:hover {
+  scrollbar-color: var(--matrx-glass-bg-hover) transparent;
+}
+
 /* ---------------------------------------------------------------------------
    13. Mobile — Responsive Overrides
    --------------------------------------------------------------------------- */

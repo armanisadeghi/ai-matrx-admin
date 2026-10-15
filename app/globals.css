@@ -1193,6 +1193,41 @@
   [dir="rtl"].text-2xl {
     font-size: 1.5rem; /* 24px instead of 24px (same, but explicit) */
   }
+
+  /* The DEFAULT scrollbar. It lives in the BASE layer so every other rule wins over it:
+     the shell's auto-hiding bar (`.shell-main *`, styles/shell.css), `scrollbar-none`,
+     `.scrollbar-visible`. In the utilities layer it beat the shell's bar and painted a
+     grey track under every horizontal scroller in the app (2026-10-14). */
+  * {
+    scrollbar-width: thin; /* For Firefox */
+    scrollbar-color: hsl(var(--scrollbar-thumb)) hsl(var(--scrollbar-track)); /* Firefox scrollbar colors */
+  }
+  *::-webkit-scrollbar {
+    width: 4px; /* Thin scrollbar width globally */
+  }
+  *::-webkit-scrollbar-track {
+    background: hsl(
+      var(--scrollbar-track)
+    ); /* Global scrollbar track background */
+  }
+  *::-webkit-scrollbar-thumb {
+    background-color: hsl(
+      var(--scrollbar-thumb)
+    ); /* Global scrollbar thumb color */
+    border-radius: 10px; /* Round the edges of the scrollbar thumb */
+    border: 1px solid hsl(var(--scrollbar-track)); /* Add some padding inside the scrollbar thumb */
+  }
+  *::-webkit-scrollbar-thumb:hover {
+    background-color: hsl(
+      var(--scrollbar-thumb-hover)
+    ); /* Hover state for scrollbar thumb */
+  }
+  *::-webkit-scrollbar-thumb:active {
+    background-color: hsl(
+      var(--scrollbar-thumb-active)
+    ); /* Active state for scrollbar thumb */
+  }
+  /* GLOBAL THIN SCROLLBAR WITH PROPER LIGHT/DARK MODE SUPPORT */
 }
 
 @layer components {
@@ -1256,38 +1291,6 @@
 }
 
 @layer utilities {
-
-  /* GLOBAL THIN SCROLLBAR WITH PROPER LIGHT/DARK MODE SUPPORT */
-  * {
-    scrollbar-width: thin; /* For Firefox */
-    scrollbar-color: hsl(var(--scrollbar-thumb)) hsl(var(--scrollbar-track)); /* Firefox scrollbar colors */
-  }
-  *::-webkit-scrollbar {
-    width: 4px; /* Thin scrollbar width globally */
-  }
-  *::-webkit-scrollbar-track {
-    background: hsl(
-      var(--scrollbar-track)
-    ); /* Global scrollbar track background */
-  }
-  *::-webkit-scrollbar-thumb {
-    background-color: hsl(
-      var(--scrollbar-thumb)
-    ); /* Global scrollbar thumb color */
-    border-radius: 10px; /* Round the edges of the scrollbar thumb */
-    border: 1px solid hsl(var(--scrollbar-track)); /* Add some padding inside the scrollbar thumb */
-  }
-  *::-webkit-scrollbar-thumb:hover {
-    background-color: hsl(
-      var(--scrollbar-thumb-hover)
-    ); /* Hover state for scrollbar thumb */
-  }
-  *::-webkit-scrollbar-thumb:active {
-    background-color: hsl(
-      var(--scrollbar-thumb-active)
-    ); /* Active state for scrollbar thumb */
-  }
-  /* GLOBAL THIN SCROLLBAR WITH PROPER LIGHT/DARK MODE SUPPORT */
 
   .hide-scrollbar {
     scrollbar-width: none; /* Firefox */
