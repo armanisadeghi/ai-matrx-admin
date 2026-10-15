@@ -1,52 +1,40 @@
 /**
  * features/files/components/surfaces/desktop/BulkActionsBar.tsx
  *
- * The Files bulk actions, drawn INSIDE the table's own selection bar
- * (`MatrxDataTable` `selection.actions`), which owns the count, "Select all N"
- * and Clear. It used to be a fixed pill floating over the table's footer.
- * `ids` is what the actions act on: the checked ids, or — when the person chose
- * "Select all N" — every item matching the list's current filters.
+ * The Files bulk verbs, rendered by the SHARED `EntityBulkActions` inside the
+ * table's own selection bar (`MatrxDataTable` `selection.actions`), which owns
+ * the count, "Select all N" and Clear. Each verb calls the same files-engine
+ * thunk it always did; rows are files OR folders, so every verb resolves the
+ * row's record type itself and skips-and-names what it cannot touch
+ * (`runPerRow`). The ticks stay in Redux (shortcuts and the agent context read
+ * them); `clear` here is `clearSelection`.
  *
- * Bulk delete and bulk move shipped 2026-04-26 (`DELETE /files/bulk`,
- * `POST /files/bulk/move`, `POST /folders/bulk/move`). Download is still
- * fanned out per-file with a small concurrency limit so we don't hammer
- * the signed-URL endpoint. Folder deletion has no bulk variant yet, so
- * mixed file+folder selections still skip folders with a transient note.
+ * `ids` is the checked ids, or — after "Select all N" — every item matching
+ * the list's current filters.
  */
 
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useMemo } from "react";
 import {
-  AlertCircle,
   Download,
   FolderInput,
   Globe,
-  Loader2,
   Lock,
   Star,
+  Tag,
   Trash2,
   Users,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { runWithConcurrency } from "@ai-matrx/kit/concurrency";
+import { downloadUrl } from "@ai-matrx/kit/download";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { EntityBulkActions } from "@/lib/entity-list/components/EntityBulkBar";
+import { runPerRow } from "@/lib/entity-list/standardBulkActions";
+import type {
+  EntityBulkAction,
+  EntityBulkSelection,
+} from "@/lib/entity-list/selection";
+import { promptForValues } from "@/components/dialogs/value-prompts/valuePromptsOpener";
 import {
   selectAllFilesMap,
   selectAllFoldersMap,
@@ -63,405 +51,300 @@ import {
 import { openFolderPicker } from "@/features/files/components/pickers/CloudFilesPickerHost";
 import { ingestFile } from "@/features/rag/api/ingest";
 import { clearFileDocumentCache } from "@/features/files/api/document-lookup";
+import { fileUnderTag } from "@/features/knowledge/hub/tags/tagApi";
 import type { Visibility } from "@/features/files/types";
-import { downloadUrl } from "@ai-matrx/kit/download";
 
-const MAX_PARALLEL = 4;
-/**
- * Mime types we know are useless to Knowledge-ingest. Images / video / audio /
- * archives have no text we can chunk, so silently skip them in bulk
- * reprocess and report the count back via the transient note.
- */
 const NON_INGESTABLE_MIME_PREFIXES = ["image/", "video/", "audio/"];
+
+const idOf = (id: string) => id;
 
 export function BulkActionsBar({ ids }: { ids: readonly string[] }) {
   const dispatch = useAppDispatch();
   const filesById = useAppSelector(selectAllFilesMap);
   const foldersById = useAppSelector(selectAllFoldersMap);
 
-  const [busyKind, setBusyKind] = useState<
-    "download" | "move" | "delete" | "visibility" | "reprocess" | null
-  >(null);
-  const [confirmDelete, setConfirmDelete] = useState(false);
-  const [transientNote, setTransientNote] = useState<string | null>(null);
+  const actions = useMemo<EntityBulkAction<string>[]>(() => {
+    const isFile = (id: string) => Boolean(filesById[id]);
+    const isFolder = (id: string) => Boolean(foldersById[id]);
+    const nameOf = (id: string) =>
+      filesById[id]?.fileName ?? foldersById[id]?.folderName ?? id;
+    const filesOnly = (id: string) =>
+      isFile(id) ? null : "Only files can do this — folders are skipped.";
+    const count = (n: number) => `${n} ${n === 1 ? "item" : "items"}`;
 
-  // Split the selected ids into files vs folders. We only support bulk file
-  // operations right now — folders fall back to per-row actions until the
-  // backend gains bulk endpoints (PYTHON_TEAM_COMMS Phase 12).
-  const { selectedFileIds, selectedFolderIds } = useMemo(() => {
-    const fileIds: string[] = [];
-    const folderIds: string[] = [];
-    for (const id of ids) {
-      if (filesById[id]) fileIds.push(id);
-      else if (foldersById[id]) folderIds.push(id);
-    }
-    return { selectedFileIds: fileIds, selectedFolderIds: folderIds };
-  }, [ids, filesById, foldersById]);
-
-  const totalCount = ids.length;
-  const hasFiles = selectedFileIds.length > 0;
-  const hasAny = totalCount > 0;
-
-  const showFolderNote = useCallback(
-    (verb: string) => {
-      if (selectedFolderIds.length === 0) return;
-      const noun =
-        selectedFolderIds.length === 1
-          ? "1 folder was"
-          : `${selectedFolderIds.length} folders were`;
-      setTransientNote(
-        `${noun} skipped — bulk ${verb} for folders is coming soon.`,
-      );
-      window.setTimeout(() => setTransientNote(null), 4500);
-    },
-    [selectedFolderIds.length],
-  );
-
-  // ─── Handlers ───────────────────────────────────────────────────────────
-
-  const handleDownload = useCallback(async () => {
-    if (!hasFiles || busyKind) return;
-    setBusyKind("download");
-    showFolderNote("download");
-    try {
-      // Fan-out to /files/{id}/url with bounded concurrency, then trigger a
-      // hidden-anchor click for each. Browsers handle the queue. We avoid
-      // window.open() which would be blocked as a popup.
-      //
-      // FUTURE: /files/{id}/url returns a signed INLINE URL; depending on
-      // mime type some files render in the tab instead of downloading. Once
-      // the asset endpoint is hooked into the bulk flow we should switch to
-      // `asset.variants.original.download_url` (forces Content-Disposition:
-      // attachment server-side). The single-file ActionBar already prefers
-      // /files/{id}/download via `useFileActions.download` for this reason.
-      // The bulk fan-out keeps the signed-URL path for now to avoid N
-      // round-trips to the asset endpoint just to pick a different URL key.
-      await runWithConcurrency(selectedFileIds, MAX_PARALLEL, async (id) => {
-        const result = await dispatch(
-          getFileUrlThunk({ fileId: id }),
-        );
-        const url = (result as { payload?: { url?: string } } | undefined)
-          ?.payload?.url;
-        if (!url) return;
-        downloadUrl(url, filesById[id]?.fileName ?? "");
-      });
-    } finally {
-      setBusyKind(null);
-    }
-  }, [
-    busyKind,
-    dispatch,
-    filesById,
-    hasFiles,
-    selectedFileIds,
-    showFolderNote,
-  ]);
-
-  const handleMove = useCallback(async () => {
-    if (!hasAny || busyKind) return;
-    const target = await openFolderPicker({
-      title: `Move ${totalCount} ${totalCount === 1 ? "item" : "items"} to folder`,
-      description: "Choose a destination folder.",
-    });
-    // openFolderPicker returns undefined if cancelled (null = root).
-    if (target === undefined) return;
-    setBusyKind("move");
-    try {
-      // Files: moveFile thunk. Folders: updateFolder with parentId patch.
-      // Skip folders being moved into themselves or one of their descendants
-      // (the parent thunk would either fail server-side or cause a cycle).
-      const isDescendantOf = (candidate: string, ancestor: string) => {
-        let cursor: string | null = candidate;
-        const seen = new Set<string>();
-        while (cursor && !seen.has(cursor)) {
-          if (cursor === ancestor) return true;
-          seen.add(cursor);
-          cursor = foldersById[cursor]?.parentId ?? null;
-        }
-        return false;
-      };
-      await runWithConcurrency(selectedFileIds, MAX_PARALLEL, async (id) => {
-        await dispatch(
-          moveFileThunk({ fileId: id, newParentFolderId: target }),
-        ).unwrap();
-      });
-      await runWithConcurrency(selectedFolderIds, MAX_PARALLEL, async (id) => {
-        if (target !== null && isDescendantOf(target, id)) return; // cycle
-        if (foldersById[id]?.parentId === target) return; // no-op
-        await dispatch(
-          updateFolderThunk({ folderId: id, patch: { parentId: target } }),
-        ).unwrap();
-      });
-      dispatch(clearSelection());
-    } finally {
-      setBusyKind(null);
-    }
-  }, [
-    busyKind,
-    dispatch,
-    foldersById,
-    hasAny,
-    selectedFileIds,
-    selectedFolderIds,
-    totalCount,
-  ]);
-
-  const handleDelete = useCallback(async () => {
-    if (!hasAny || busyKind) return;
-    setConfirmDelete(false);
-    setBusyKind("delete");
-    try {
-      await runWithConcurrency(selectedFileIds, MAX_PARALLEL, async (id) => {
-        await dispatch(deleteFileThunk({ fileId: id })).unwrap();
-      });
-      await runWithConcurrency(selectedFolderIds, MAX_PARALLEL, async (id) => {
-        await dispatch(deleteFolderThunk({ folderId: id })).unwrap();
-      });
-      dispatch(clearSelection());
-    } finally {
-      setBusyKind(null);
-    }
-  }, [busyKind, dispatch, hasAny, selectedFileIds, selectedFolderIds]);
-
-  const handleVisibility = useCallback(
-    async (visibility: Visibility) => {
-      if (!hasAny || busyKind) return;
-      setBusyKind("visibility");
-      try {
-        await runWithConcurrency(selectedFileIds, MAX_PARALLEL, async (id) => {
-          await dispatch(
-            updateFileMetadata({ fileId: id, patch: { visibility } }),
-          ).unwrap();
-        });
-        await runWithConcurrency(
-          selectedFolderIds,
-          MAX_PARALLEL,
-          async (id) => {
-            await dispatch(
-              updateFolderThunk({ folderId: id, patch: { visibility } }),
-            ).unwrap();
+    const visibilityAction = (
+      id: string,
+      label: string,
+      icon: EntityBulkAction<string>["icon"],
+      visibility: Visibility,
+      sentence: string,
+    ): EntityBulkAction<string> => ({
+      id,
+      label,
+      icon,
+      confirm:
+        visibility === "public"
+          ? (sel) => ({
+              title: `Make ${count(sel.count)} public?`,
+              description: sentence,
+              confirmLabel: "Make public",
+            })
+          : undefined,
+      run: (sel) =>
+        runPerRow(
+          sel,
+          async (fid) => {
+            if (isFile(fid)) {
+              await dispatch(
+                updateFileMetadata({ fileId: fid, patch: { visibility } }),
+              ).unwrap();
+            } else if (isFolder(fid)) {
+              await dispatch(
+                updateFolderThunk({ folderId: fid, patch: { visibility } }),
+              ).unwrap();
+            } else {
+              throw new Error("No longer in the list.");
+            }
           },
-        );
-      } finally {
-        setBusyKind(null);
-      }
-    },
-    [busyKind, dispatch, hasAny, selectedFileIds, selectedFolderIds],
-  );
+          { done: "Visibility set", noun: "item", labelOf: nameOf },
+          idOf,
+        ),
+    });
 
-  // ─── Knowledge: bulk reprocess for selected files ─────────────────────────────
-  //
-  // Fan out `/knowledge/ingest` calls (non-streaming — bulk is fire-and-forget;
-  // per-file streaming progress would crowd the UI). Skip:
-  //   - virtual-source files (notes/code/applet rows are ingested
-  //     via their own `source_kind`, not the cld_file path)
-  //   - obviously non-ingestable mimes (images / video / audio)
-  // Report skipped counts in the same transient note we already use for
-  // folder skips, so the user understands what happened.
-  const handleReprocess = useCallback(async () => {
-    if (!hasFiles || busyKind) return;
-    setBusyKind("reprocess");
-
-    let ingestable: string[] = [];
-    let skippedVirtual = 0;
-    let skippedKind = 0;
-    for (const id of selectedFileIds) {
-      const f = filesById[id];
-      if (!f) continue;
-      if (f.source.kind === "virtual") {
-        skippedVirtual++;
-        continue;
-      }
-      const mime = f.mimeType ?? "";
-      if (NON_INGESTABLE_MIME_PREFIXES.some((p) => mime.startsWith(p))) {
-        skippedKind++;
-        continue;
-      }
-      ingestable.push(id);
-    }
-
-    let succeeded = 0;
-    let failed = 0;
-    try {
-      await runWithConcurrency(ingestable, MAX_PARALLEL, async (id) => {
-        try {
-          await ingestFile(id);
-          clearFileDocumentCache(id);
-          if (typeof window !== "undefined") {
-            // Notify any open <DocumentTab/> for this file to re-probe.
-            window.dispatchEvent(
-              new CustomEvent("cloud-files:document-processed", {
-                detail: { fileId: id },
-              }),
-            );
-          }
-          succeeded++;
-        } catch {
-          failed++;
-        }
-      });
-
-      const parts: string[] = [];
-      parts.push(
-        `Reprocessed ${succeeded} ${succeeded === 1 ? "file" : "files"} for Knowledge`,
-      );
-      if (failed > 0) parts.push(`${failed} failed`);
-      if (skippedVirtual > 0) parts.push(`${skippedVirtual} virtual skipped`);
-      if (skippedKind > 0) parts.push(`${skippedKind} non-text skipped`);
-      setTransientNote(parts.join(" · "));
-      window.setTimeout(() => setTransientNote(null), 5000);
-    } finally {
-      setBusyKind(null);
-    }
-  }, [busyKind, filesById, hasFiles, selectedFileIds]);
-
-  // Hidden when nothing is selected. Mounting is conditional in the parent;
-  // this guard is belt-and-suspenders.
-  if (totalCount === 0) return null;
-
-  return (
-    <div
-      className="relative flex flex-wrap items-center gap-1"
-      role="toolbar"
-      aria-label="Bulk actions"
-    >
-
-      <BulkActionButton
-        icon={<Download className="h-3.5 w-3.5" />}
-        label="Download"
-        onClick={handleDownload}
-        running={busyKind === "download"}
-        disabled={!hasFiles || busyKind !== null}
-      />
-      <BulkActionButton
-        icon={<FolderInput className="h-3.5 w-3.5" />}
-        label="Move…"
-        onClick={handleMove}
-        running={busyKind === "move"}
-        disabled={!hasAny || busyKind !== null}
-      />
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <button
-            type="button"
-            disabled={!hasAny || busyKind !== null}
-            className={cn(
-              "flex h-8 items-center gap-1.5 rounded-full px-3 text-xs font-medium transition-colors",
-              "disabled:cursor-not-allowed disabled:opacity-50",
-              "text-foreground hover:bg-accent",
-            )}
-          >
-            {busyKind === "visibility" ? (
-              <Loader2 className="h-3.5 w-3.5 animate-spin" />
-            ) : (
-              <Lock className="h-3.5 w-3.5" />
-            )}
-            Visibility
-          </button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="center" className="w-44">
-          <DropdownMenuItem onClick={() => void handleVisibility("personal")}>
-            <Lock className="mr-2 h-4 w-4" /> Private
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => void handleVisibility("link")}>
-            <Users className="mr-2 h-4 w-4" /> Shared
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => void handleVisibility("public")}>
-            <Globe className="mr-2 h-4 w-4" /> Public
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-      <BulkActionButton
-        icon={<Star className="h-3.5 w-3.5" />}
-        label="Reprocess for Knowledge"
-        onClick={handleReprocess}
-        running={busyKind === "reprocess"}
-        disabled={!hasFiles || busyKind !== null}
-        title="Re-run extract/clean/chunk/embed on each selected file. Skips images, audio, video, and virtual sources."
-      />
-      <BulkActionButton
-        icon={<Trash2 className="h-3.5 w-3.5" />}
-        label="Move to Trash"
-        onClick={() => setConfirmDelete(true)}
-        running={busyKind === "delete"}
-        disabled={!hasAny || busyKind !== null}
-        tone="destructive"
-      />
-
-
-      {transientNote ? (
-        <div className="absolute -top-9 left-1/2 -translate-x-1/2 flex items-center gap-1.5 rounded-md border border-warning/40 bg-warning/10 px-2 py-1 text-[11px] text-warning-ink whitespace-nowrap">
-          <AlertCircle className="h-3 w-3" />
-          {transientNote}
-        </div>
-      ) : null}
-
-      <AlertDialog open={confirmDelete} onOpenChange={setConfirmDelete}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>
-              Move {totalCount} {totalCount === 1 ? "item" : "items"} to Trash?
-            </AlertDialogTitle>
-            <AlertDialogDescription>
-              {selectedFolderIds.length > 0 && selectedFileIds.length > 0
-                ? `${selectedFileIds.length} file${selectedFileIds.length === 1 ? "" : "s"} and ${selectedFolderIds.length} folder${selectedFolderIds.length === 1 ? "" : "s"} (with all contents) will move to Trash. You can restore them from Trash at any time.`
-                : selectedFolderIds.length > 0
+    return [
+      {
+        id: "files-download",
+        label: "Download",
+        icon: Download,
+        run: (sel) =>
+          runPerRow(
+            sel,
+            async (fid) => {
+              const result = await dispatch(getFileUrlThunk({ fileId: fid }));
+              const url = (result as { payload?: { url?: string } } | undefined)
+                ?.payload?.url;
+              if (!url) throw new Error("No download link came back.");
+              downloadUrl(url, filesById[fid]?.fileName ?? "");
+            },
+            {
+              done: "Download started",
+              noun: "file",
+              labelOf: nameOf,
+              skipReason: (fid) =>
+                isFile(fid) ? null : "Folders cannot be downloaded.",
+            },
+            idOf,
+          ),
+      },
+      {
+        id: "files-move",
+        label: "Move…",
+        icon: FolderInput,
+        run: async (sel) => {
+          const target = await openFolderPicker({
+            title: `Move ${count(sel.count)} to folder`,
+            description: "Choose a destination folder.",
+          });
+          // undefined = cancelled (null = root).
+          if (target === undefined) return;
+          const isDescendantOf = (candidate: string, ancestor: string) => {
+            let cursor: string | null = candidate;
+            const seen = new Set<string>();
+            while (cursor && !seen.has(cursor)) {
+              if (cursor === ancestor) return true;
+              seen.add(cursor);
+              cursor = foldersById[cursor]?.parentId ?? null;
+            }
+            return false;
+          };
+          return runPerRow(
+            sel,
+            async (fid) => {
+              if (isFile(fid)) {
+                await dispatch(
+                  moveFileThunk({ fileId: fid, newParentFolderId: target }),
+                ).unwrap();
+              } else {
+                await dispatch(
+                  updateFolderThunk({
+                    folderId: fid,
+                    patch: { parentId: target },
+                  }),
+                ).unwrap();
+              }
+            },
+            {
+              done: "Moved",
+              noun: "item",
+              labelOf: nameOf,
+              skipReason: (fid) => {
+                if (isFolder(fid)) {
+                  if (target !== null && isDescendantOf(target, fid))
+                    return "A folder cannot move into itself.";
+                  if (foldersById[fid]?.parentId === target)
+                    return "Already in that folder.";
+                }
+                return null;
+              },
+            },
+            idOf,
+          );
+        },
+      },
+      visibilityAction(
+        "files-visibility-private",
+        "Private",
+        Lock,
+        "personal",
+        "",
+      ),
+      visibilityAction(
+        "files-visibility-shared",
+        "Shared",
+        Users,
+        "link",
+        "",
+      ),
+      visibilityAction(
+        "files-visibility-public",
+        "Public",
+        Globe,
+        "public",
+        "Anyone with the link will be able to see them.",
+      ),
+      {
+        id: "files-reprocess",
+        label: "Reprocess for Knowledge",
+        icon: Star,
+        run: (sel) =>
+          runPerRow(
+            sel,
+            async (fid) => {
+              await ingestFile(fid);
+              clearFileDocumentCache(fid);
+              if (typeof window !== "undefined") {
+                window.dispatchEvent(
+                  new CustomEvent("cloud-files:document-processed", {
+                    detail: { fileId: fid },
+                  }),
+                );
+              }
+            },
+            {
+              done: "Reprocessed for Knowledge",
+              noun: "file",
+              labelOf: nameOf,
+              skipReason: (fid) => {
+                const f = filesById[fid];
+                if (!f) return "Folders cannot be reprocessed.";
+                if (f.source.kind === "virtual")
+                  return "Virtual sources are ingested through their own door.";
+                const mime = f.mimeType ?? "";
+                if (NON_INGESTABLE_MIME_PREFIXES.some((p) => mime.startsWith(p)))
+                  return "No text to extract.";
+                return null;
+              },
+            },
+            idOf,
+          ),
+      },
+      {
+        id: "files-tag",
+        label: "Add tag",
+        icon: Tag,
+        run: async (sel) => {
+          const values = await promptForValues({
+            title: `Tag ${count(sel.count)}`,
+            description: "A new name creates the tag.",
+            submitLabel: "Add tag",
+            fields: [{ name: "tag", prompt: "Tag name" }],
+          });
+          const name = values?.tag?.trim();
+          if (!name) return;
+          return runPerRow(
+            sel,
+            async (fid) => {
+              await fileUnderTag("file", fid, name);
+            },
+            {
+              done: `Tagged "${name}"`,
+              noun: "file",
+              labelOf: nameOf,
+              skipReason: filesOnly,
+            },
+            idOf,
+          );
+        },
+      },
+      {
+        id: "files-trash",
+        label: "Move to Trash",
+        icon: Trash2,
+        variant: "destructive",
+        confirm: (sel) => {
+          const nFolders = sel.ids.filter(isFolder).length;
+          const nFiles = sel.ids.filter(isFile).length;
+          return {
+            title: `Move ${count(sel.count)} to Trash?`,
+            description:
+              nFolders > 0 && nFiles > 0
+                ? `${nFiles} file${nFiles === 1 ? "" : "s"} and ${nFolders} folder${nFolders === 1 ? "" : "s"} (with all contents) will move to Trash. You can restore them from Trash at any time.`
+                : nFolders > 0
                   ? "Folders will be moved to Trash along with all of their contents. You can restore them from Trash at any time."
-                  : "These files will move to Trash. You can restore them from Trash at any time."}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => void handleDelete()}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              Move to Trash
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </div>
-  );
-}
+                  : "These files will move to Trash. You can restore them from Trash at any time.",
+            confirmLabel: "Move to Trash",
+            variant: "destructive",
+          };
+        },
+        run: (sel) =>
+          runPerRow(
+            sel,
+            async (fid) => {
+              if (isFile(fid)) {
+                await dispatch(deleteFileThunk({ fileId: fid })).unwrap();
+              } else if (isFolder(fid)) {
+                await dispatch(deleteFolderThunk({ folderId: fid })).unwrap();
+              } else {
+                throw new Error("No longer in the list.");
+              }
+            },
+            { done: "Moved to Trash", noun: "item", labelOf: nameOf },
+            idOf,
+          ),
+      },
+    ];
+  }, [dispatch, filesById, foldersById]);
 
-// ─── Sub-components ───────────────────────────────────────────────────────
+  if (ids.length === 0) return null;
 
-interface BulkActionButtonProps {
-  icon: React.ReactNode;
-  label: string;
-  onClick: () => void;
-  running?: boolean;
-  disabled?: boolean;
-  tone?: "default" | "destructive";
-  title?: string;
-}
+  const build = (): EntityBulkSelection<string> => ({
+    mode: "ids",
+    ids: [...ids],
+    rows: [...ids],
+    count: ids.length,
+    filter: {
+      scope: { kind: "all" },
+      orgId: null,
+      search: "",
+      deep: false,
+      archived: "active",
+      filters: {},
+    },
+  });
 
-function BulkActionButton({
-  icon,
-  label,
-  onClick,
-  running,
-  disabled,
-  tone = "default",
-  title,
-}: BulkActionButtonProps) {
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      disabled={disabled}
-      title={title}
-      className={cn(
-        "flex h-8 items-center gap-1.5 rounded-full px-3 text-xs font-medium transition-colors",
-        "disabled:cursor-not-allowed disabled:opacity-50",
-        tone === "destructive"
-          ? "text-destructive-ink hover:bg-destructive/10"
-          : "text-foreground hover:bg-accent",
-      )}
-    >
-      {running ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : icon}
-      {label}
-    </button>
+    <EntityBulkActions
+      actions={actions}
+      selection={{
+        build,
+        clear: () => {
+          dispatch(clearSelection());
+        },
+        count: ids.length,
+      }}
+      noun="item"
+      onRemoveRows={() => {}}
+      onRefresh={() => {}}
+    />
   );
 }
