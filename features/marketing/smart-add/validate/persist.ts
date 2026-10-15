@@ -11,6 +11,7 @@
  *   Preferred (name)        → web.brand.name
  *   Alias (name)            → web.brand.profile.brand_aliases
  *   Related: competitor     → web.brand.profile.competitors
+ *   Related: founder / key person → crm.party (person) + its association to the brand (relations.linkPersonToBrand)
  *   Not us                  → web.brand_exclusion
  *   Correct / edited (fact) → web.business_fact (resolved_fact_id; source `discovered`, provenance in
  *                             metadata), or its web.brand profile key (aliases, service area, competitors)
@@ -21,9 +22,11 @@ import type { Json } from "@/types/database.types";
 import { supabase } from "@/utils/supabase/client";
 import { authenticatedWebDb } from "@/utils/supabase/webDb";
 import {
+  createBrandAsset,
   createBusinessFact,
   createProperty,
   createSite,
+  deleteBrandAsset,
   deleteBusinessFact,
   deleteProperty,
   deleteSite,
@@ -33,6 +36,7 @@ import {
 } from "@/features/marketing/data/service";
 import { startSystemRun } from "@/features/education/kits/systemRuns";
 import { associationsService } from "@/features/scopes/service/associationsService";
+import { linkPersonToBrand } from "../relations";
 import { getStoreSingleton } from "@/lib/redux/store-singleton";
 import { normalizeWebsiteUrl } from "@/features/marketing/lib/website-url";
 import {
@@ -531,6 +535,34 @@ async function persistAnswerOnce(
       undos.push(site.undo);
     }
   }
+  if (answer === "ours" && item.kind === "logo") {
+    // MKT-048: Yes on a logo saves it — a library asset, and the brand's own logo when it has none yet,
+    // so the header and Brand assets stop showing a placeholder. A second yes adds a non-primary asset.
+    const url = (ev?.image_url ?? item.value ?? "").trim();
+    if (!/^https?:\/\//i.test(url)) throw new Error("This logo has no picture address to save.");
+    const brand = ctx.getBrand();
+    const makePrimary = !brand.logo_url;
+    const asset = await createBrandAsset({
+      organizationId: ctx.organizationId,
+      brandId: brand.id,
+      kind: brand.kind === "person" ? "headshot" : "logo",
+      sourceUrl: url,
+      title: item.title ?? ev?.label ?? null,
+      notes: `Smart Add validation · ${ev?.source.where ?? ev?.source.kind ?? "found"}${ev?.source.url ? ` · ${ev.source.url}` : ""}`,
+      isPrimary: makePrimary,
+      source: "discovered",
+    });
+    homes.push(`web.brand_asset:${asset.id}`);
+    undos.push(() => deleteBrandAsset(asset.id));
+    if (makePrimary) {
+      ctx.setBrand(await updateBrand({ brandId: brand.id, expectedVersion: brand.version, patch: { logo_url: url } }));
+      homes.push(`web.brand.logo_url:${brand.id}`);
+      undos.push(async () => {
+        const latest = ctx.getBrand();
+        ctx.setBrand(await updateBrand({ brandId: latest.id, expectedVersion: latest.version, patch: { logo_url: null } }));
+      });
+    }
+  }
   if (answer === "preferred" && item.kind === "name") {
     const brand = ctx.getBrand();
     const before = brand.name;
@@ -552,6 +584,31 @@ async function persistAnswerOnce(
   }
   if (answer === "related" && opts.relationKey) {
     const kind = ctx.kinds.find((k) => k.key === opts.relationKey);
+    if (kind && (kind.routesTo === "owns" || kind.routesTo === "key_person")) {
+      // MKT-043: Founder / Key person makes the person and links them to the brand, the same path Create uses.
+      // The name is the person's (typed, or the account's own name) — never a page title.
+      const name = (opts.value?.trim() || (item.kind === "account" ? (item.title ?? item.value) : "")).trim();
+      if (!name) throw new Error(`${kind.label} needs the person's name.`);
+      const page = item.kind === "web" || item.kind === "website";
+      const person = await linkPersonToBrand(
+        ctx.organizationId,
+        ctx.getBrand().id,
+        name,
+        { routesTo: kind.routesTo, label: kind.label },
+        { url: item.openUrl, platform: page ? "website" : (item.platform ?? ev?.platform ?? null), bio: item.detail },
+      );
+      homes.push(`crm.party:${person.partyId}`, person.home);
+      undos.push(async () => {
+        const gone = await associationsService.remove({
+          sourceType: "party",
+          sourceId: person.partyId,
+          targetType: "web_brand",
+          targetId: ctx.getBrand().id,
+          role: kind.routesTo ?? undefined,
+        });
+        if (!gone.ok) throw new Error(gone.error.message);
+      });
+    }
     if (kind?.routesTo === "competitor") {
       const domain = item.openUrl ? websiteHost(item.openUrl) : null;
       const undo = await patchProfile(ctx, (p) => {

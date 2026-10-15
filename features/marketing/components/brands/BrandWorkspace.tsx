@@ -821,7 +821,7 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
                 />
               </div>
             ) : null}
-            <div className="flex shrink-0 items-center gap-1.5">
+            <div className="flex w-full flex-wrap items-center gap-1.5 sm:w-auto sm:shrink-0">
               <CopyButtons size="icon" {...brandCopy} />
               <ShareButton
                 resourceType="web_brand"

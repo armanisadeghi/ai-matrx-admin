@@ -486,11 +486,11 @@ export function SectionCard({
         className,
       )}
     >
-      <div className="flex h-9 shrink-0 items-center justify-between border-b border-border px-3">
-        <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+      <div className="flex min-h-9 shrink-0 flex-wrap items-center justify-between gap-x-2 gap-y-1 border-b border-border px-3 py-0.5">
+        <h2 className="min-w-0 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
           {title}
         </h2>
-        <div className="flex items-center gap-2">
+        <div className="ml-auto flex min-w-0 flex-wrap items-center justify-end gap-x-2 gap-y-1">
           {copy ? <CopyButtons size="icon" {...copy} /> : null}
           {headerExtra}
           {action && "href" in action ? (

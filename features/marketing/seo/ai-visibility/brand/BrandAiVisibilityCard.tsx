@@ -7,6 +7,7 @@
 
 import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
+import { ErrorNotice } from "@ai-matrx/design-system";
 
 import { SectionCard } from "@/features/marketing/components/shared/MarketingUi";
 import { marketingRoutes } from "@/features/marketing/lib/routes";
@@ -41,13 +42,13 @@ export function BrandAiVisibilityCard({
       }
     >
       {checks.isPending ? (
-        <div className="h-16 animate-pulse rounded-md bg-muted/50" />
+        <div className="m-3 h-16 animate-pulse rounded-md bg-muted/50" />
       ) : checks.isError ? (
-        <p className="text-sm text-destructive">{checks.error.message}</p>
+        <ErrorNotice className="m-3" error={checks.error} operation="Load AI checks" />
       ) : estimate.isError && canEdit && !latest ? (
-        <p className="text-sm text-destructive">{estimate.error.message}</p>
+        <ErrorNotice className="m-3" error={estimate.error} operation="Estimate the AI check" />
       ) : latest ? (
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:gap-6">
+        <div className="flex flex-col gap-3 px-3 py-2.5 sm:flex-row sm:items-start sm:gap-6">
           <div className="shrink-0">
             <div className="text-3xl font-semibold tabular-nums">
               {latest.score == null ? "—" : `${latest.score}%`}
@@ -61,7 +62,7 @@ export function BrandAiVisibilityCard({
           </div>
         </div>
       ) : (
-        <p className="text-sm text-muted-foreground">
+        <p className="px-3 py-2.5 text-sm text-muted-foreground">
           {competitors.length === 0 ? (
             <>
               Add who you compete with to run a check.{" "}

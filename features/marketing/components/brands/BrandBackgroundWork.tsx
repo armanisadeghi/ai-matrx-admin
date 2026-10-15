@@ -271,7 +271,7 @@ export function BrandBackgroundWork({ brand, canEdit }: { brand: MarketingBrand;
               return (
                 <li key={site.id} className="flex min-w-0 flex-wrap items-center gap-x-2 rounded-md px-1 py-1 hover:bg-muted/50 sm:flex-nowrap" data-testid="brand-work-site">
                   <StatusIcon state={state} />
-                  <Link href={marketingRoutes.website(seg, site.id, "/crawls")} className="min-w-0 flex-1 truncate text-sm hover:text-primary">
+                  <Link href={marketingRoutes.website(seg, site.id, "/crawls")} className="min-w-0 basis-[calc(100%-3.25rem)] break-all text-sm hover:text-primary sm:flex-1 sm:basis-0 sm:truncate sm:break-normal">
                     {site.name}
                   </Link>
                   <span className="shrink-0 text-xs tabular-nums text-muted-foreground">
@@ -315,11 +315,11 @@ export function BrandBackgroundWork({ brand, canEdit }: { brand: MarketingBrand;
                   <StatusIcon state={state} />
                   <PropertyKindMark kind={account.kind} size={16} />
                   {account.trackedId ? (
-                    <Link href={`${marketingRoutes.brandSocials(seg)}/accounts`} className="min-w-0 flex-1 truncate text-sm hover:text-primary">
+                    <Link href={`${marketingRoutes.brandSocials(seg)}/accounts`} className="min-w-0 basis-[calc(100%-3.25rem)] break-all text-sm hover:text-primary sm:flex-1 sm:basis-0 sm:truncate sm:break-normal">
                       {account.label}
                     </Link>
                   ) : (
-                    <span className="min-w-0 flex-1 truncate text-sm">{account.label}</span>
+                    <span className="min-w-0 basis-[calc(100%-3.25rem)] break-all text-sm sm:flex-1 sm:basis-0 sm:truncate sm:break-normal">{account.label}</span>
                   )}
                   <span className="shrink-0 text-xs tabular-nums text-muted-foreground">
                     {account.trackedId ? `${account.posts.toLocaleString()} posts` : "Not fetched"}
@@ -333,9 +333,7 @@ export function BrandBackgroundWork({ brand, canEdit }: { brand: MarketingBrand;
                   {canEdit ? (
                     <span className="inline-flex shrink-0 items-center gap-1.5">
                       {points && !active ? (
-                        <span className="hidden sm:inline-flex">
-                          <Badge tone="neutral">{points}</Badge>
-                        </span>
+                        <Badge tone="neutral">{points}</Badge>
                       ) : null}
                       <Button
                         variant="quiet"
