@@ -106,6 +106,16 @@ function viewOf(c: ResolvedRibbonControl): ControlView {
   };
 }
 
+/**
+ * Office closes the overflow flyout once a command ran. A press on a command button or a menu row (menus
+ * render in a portal, but React events still bubble to the flyout) closes it; a button or row that only
+ * opens a menu (aria-haspopup) keeps it open so the person can reach the item inside.
+ */
+function closesOverflow(target: EventTarget | null): boolean {
+  const hit = (target as HTMLElement | null)?.closest?.('[role^="menuitem"], button[data-editor-command]');
+  return !!hit && !hit.hasAttribute("aria-haspopup");
+}
+
 const runSafely = (run?: () => unknown) => void Promise.resolve(run?.()).catch(() => {});
 
 function Dropdown({ view, trigger }: { view: ControlView; trigger: ReactNode }) {
@@ -285,6 +295,7 @@ function RibbonPanel({
   extensions?: ReactNode;
 }) {
   const rowRef = useRef<HTMLDivElement | null>(null);
+  const [moreOpen, setMoreOpen] = useState(false);
   const fit = useFitCount(rowRef, tab.groups.length);
   const shown = compact ? tab.groups.length : fit;
   const folded = tab.groups.slice(shown);
@@ -306,11 +317,19 @@ function RibbonPanel({
       ))}
       {!compact && folded.length > 0 ? (
         <div data-fit-more="" className="flex w-8 shrink-0 items-start justify-center pt-1">
-          <Popover>
+          <Popover open={moreOpen} onOpenChange={setMoreOpen}>
             <PopoverTrigger asChild>
               <Button variant="quiet" icon={<ChevronsRight />} aria-label="More groups" title="More groups" />
             </PopoverTrigger>
-            <PopoverContent sizing="content" align="end" sideOffset={6} className="max-w-[calc(100vw-1rem)] p-1">
+            <PopoverContent
+              sizing="content"
+              align="end"
+              sideOffset={6}
+              className="max-w-[calc(100vw-1rem)] p-1"
+              onClick={(e) => {
+                if (closesOverflow(e.target)) setMoreOpen(false);
+              }}
+            >
               <div className="flex w-[min(56rem,calc(100vw-2rem))] flex-wrap items-stretch" data-ribbon-folded="">
                 {folded.map((g) => (
                   <div key={g.id} className="h-24 py-1">
