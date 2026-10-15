@@ -290,6 +290,9 @@ export function taskDetailToAgendaTask(detail: TaskDetailResponse): AgendaTask {
 
 // ── Reads ──────────────────────────────────────────────────────────────────
 
+/** The kinds the person's schedule list shows (every kind but system `tool` work). */
+export const ROSTER_KINDS = ["agent", "device_op"] as const;
+
 export async function listAgentTasks(): Promise<AgendaTask[]> {
   // Excludes soft-deleted rows (deleted_at IS NOT NULL). Paused tasks
   // (enabled=false but deleted_at=NULL) remain visible -- pause is a
@@ -309,7 +312,9 @@ export async function listAgentTasks(): Promise<AgendaTask[]> {
           // take an org filter because a schedule is owned by its user.
           .from("sch_task")
           .select(SELECT_AGENT_TASK, { count: "exact" })
-          .eq("kind", "agent")
+          // Every schedule a person owns: agents, and coding sessions on a computer (device_op, its
+          // work in metadata.device_op — computerWorkOf). Only `tool` (system work) stays out.
+          .in("kind", [...ROSTER_KINDS])
           .is("deleted_at", null)
           .order("updated_at", { ascending: false })
           .order("id", { ascending: true })
