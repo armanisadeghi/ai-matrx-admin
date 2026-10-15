@@ -223,6 +223,7 @@ export function PresentationEditor({ presentationId }: { presentationId: string 
     canUndo: hist.past.length > 0,
     canRedo: hist.future.length > 0,
     notesShown,
+    currentSlide: slide ?? null,
     dispatch,
     undo: () => canEdit && dispatchHist({ type: "undo" }),
     redo: () => canEdit && dispatchHist({ type: "redo" }),

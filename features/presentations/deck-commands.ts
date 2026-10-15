@@ -59,7 +59,8 @@ import {
 import type { EditorMenu, EditorMenuEntry } from "@/components/editor-chrome/editor-menu-model";
 import { googleExtensionsMenu, googleHelpHead, soon } from "@/components/editor-chrome/google-parity";
 import type { EditorToolbarItem } from "@/components/editor-chrome/EditorToolbar";
-import { EDITOR_LAYOUTS, type DeckAction, type EditorLayout } from "./deck-model";
+import { EDITOR_LAYOUTS, type DeckAction, type DeckSlide, type EditorLayout } from "./deck-model";
+import { toast } from "@/lib/toast";
 
 export type DeckPreset = { key: string; name: string };
 
@@ -74,6 +75,8 @@ export interface DeckChromeHost {
   canUndo: boolean;
   canRedo: boolean;
   notesShown: boolean;
+  /** The current slide (Edit → Copy / Cut hold a copy of it). */
+  currentSlide: DeckSlide | null;
   dispatch: (a: DeckAction) => void;
   undo: () => void;
   redo: () => void;
@@ -102,6 +105,26 @@ function layoutItems(h: DeckChromeHost, run: (layout: EditorLayout) => void, idP
   }));
 }
 
+/** Edit → Copy / Cut hold a slide here until Paste; it outlives a deck, so a slide can move between decks. */
+let slideClipboard: DeckSlide | null = null;
+
+/** Edit → Select all: every text on the slide stage selected, so the browser's own copy takes it. */
+function selectAllOnSlide() {
+  const stage = document.querySelector("[data-deck-canvas]");
+  const sel = window.getSelection();
+  if (!stage || !sel) return;
+  const active = document.activeElement;
+  if (active instanceof HTMLInputElement || active instanceof HTMLTextAreaElement) {
+    active.select();
+    return;
+  }
+  if (active instanceof HTMLElement && active.isContentEditable) {
+    sel.selectAllChildren(active);
+    return;
+  }
+  sel.selectAllChildren(stage);
+}
+
 export function buildDeckMenus(h: DeckChromeHost): EditorMenu[] {
   const locked = () => !h.canEdit;
   const noSlide = () => !h.canEdit || h.slideCount === 0;
@@ -114,12 +137,51 @@ export function buildDeckMenus(h: DeckChromeHost): EditorMenu[] {
         { kind: "action", id: "edit.undo", label: "Undo", icon: Undo2, shortcut: { key: "z", mod: true, bind: true }, run: h.undo, disabled: () => !h.canEdit || !h.canUndo },
         { kind: "action", id: "edit.redo", label: "Redo", icon: Redo2, shortcut: { key: "z", mod: true, shift: true, bind: true }, keywords: ["again"], run: h.redo, disabled: () => !h.canEdit || !h.canRedo },
         sep,
-        soon("edit.cut", "Cut", "presentations.clipboard", { icon: Scissors, shortcut: { key: "x", mod: true } }),
-        soon("edit.copy", "Copy", "presentations.clipboard", { icon: CopyIcon, shortcut: { key: "c", mod: true } }),
-        soon("edit.paste", "Paste", "presentations.clipboard", { icon: Clipboard, shortcut: { key: "v", mod: true } }),
+        {
+          kind: "action",
+          id: "edit.cut",
+          label: "Cut slide",
+          icon: Scissors,
+          keywords: ["cut"],
+          run: () => {
+            if (!h.currentSlide) return;
+            slideClipboard = structuredClone(h.currentSlide);
+            h.dispatch({ type: "deleteSlide", index: i });
+            toast.success("Slide cut");
+          },
+          disabled: noSlide,
+        },
+        {
+          kind: "action",
+          id: "edit.copy",
+          label: "Copy slide",
+          icon: CopyIcon,
+          keywords: ["copy"],
+          run: () => {
+            if (!h.currentSlide) return;
+            slideClipboard = structuredClone(h.currentSlide);
+            toast.success("Slide copied");
+          },
+          disabled: () => h.slideCount === 0,
+        },
+        {
+          kind: "action",
+          id: "edit.paste",
+          label: "Paste slide",
+          icon: Clipboard,
+          keywords: ["paste"],
+          run: () => {
+            if (!slideClipboard) {
+              toast.error("Copy or cut a slide first");
+              return;
+            }
+            h.dispatch({ type: "pasteSlide", after: i, slide: slideClipboard });
+          },
+          disabled: locked,
+        },
         soon("edit.paste-plain", "Paste without formatting", "editor.edit.paste-plain", { shortcut: { key: "v", mod: true, shift: true } }),
         sep,
-        soon("edit.select-all", "Select all", "presentations.select-all", { shortcut: { key: "a", mod: true } }),
+        { kind: "action", id: "edit.select-all", label: "Select all", run: selectAllOnSlide, disabled: () => h.slideCount === 0 },
         { kind: "action", id: "edit.delete", label: "Delete slide", icon: Trash2, keywords: ["remove"], run: () => h.dispatch({ type: "deleteSlide", index: i }), disabled: noSlide },
         sep,
         { kind: "action", id: "edit.duplicate", label: "Duplicate slide", icon: Copy, shortcut: { key: "d", mod: true, bind: true }, run: () => h.dispatch({ type: "duplicateSlide", index: i }), disabled: noSlide },

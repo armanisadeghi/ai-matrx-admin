@@ -20,6 +20,7 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { getComingSoon } from "@/lib/coming-soon/registry";
 import { cn } from "@/lib/utils";
 import { EditorMenuContent, EditorMenuSubContent } from "./editor-menu-surface";
 import { formatShortcut, type EditorMenu, type EditorMenuEntry } from "./editor-menu-model";
@@ -119,6 +120,12 @@ export const MenuBarTrigger = forwardRef<
   );
 });
 
+/** A Coming Soon row's tooltip: the registered promise (what it will do), never a bare phrase. */
+function soonTitle(id: string): string | undefined {
+  const entry = getComingSoon(id);
+  return entry?.promise;
+}
+
 /** Dropdown rows for a slice of the model (also used inside the File menu). */
 export function renderMenuEntries(entries: EditorMenuEntry[], keyPrefix = ""): ReactNode {
   return entries.map((e, i) => {
@@ -143,7 +150,7 @@ export function renderMenuEntries(entries: EditorMenuEntry[], keyPrefix = ""): R
       <DropdownMenuItem
         key={e.id}
         data-editor-command={e.id}
-        {...(e.soon ? { "data-soon": "", title: "Coming soon" } : {})}
+        {...(e.soon ? { "data-soon": "", title: soonTitle(e.soon) } : {})}
         disabled={e.disabled?.() ?? false}
         onSelect={() => void Promise.resolve(e.run()).catch(() => {})}
       >
