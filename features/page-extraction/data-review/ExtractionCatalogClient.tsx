@@ -60,6 +60,7 @@ import { formatRelativeTime } from "@ai-matrx/kit/format";
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
 import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { useTableBulkSelection } from "@/lib/entity-list/useTableBulkSelection";
 
 const STATUS_STYLES: Record<string, string> = {
   completed:
@@ -136,6 +137,23 @@ export function ExtractionCatalogClient() {
       return tags.some((t) => need.has(t));
     });
   }, [entries, filterScopeIds, scopesByJob]);
+
+  // Bulk bar: Add tag + Move to Trash. A dataset whose extraction is still running keeps its
+  // checkbox; the run skips and names it.
+  const bulk = useTableBulkSelection<ExtractionCatalogEntry>({
+    token: EXTRACTION_ENTITY_TYPE,
+    noun: "dataset",
+    rows: contextFilteredEntries,
+    getRowId: (row) => row.jobId,
+    getRowName: (row) => row.name,
+    onRefresh: () => void load(),
+    standardBulkActions: {
+      appliesTo: (row) =>
+        row.latestRunStatus === "running" || row.latestRunStatus === "queued"
+          ? "An extraction is still running"
+          : null,
+    },
+  });
 
   const onFilterChange = useCallback((sel: ContextSelection) => {
     setFilterScopeIds(sel.scopeIds);
@@ -343,6 +361,7 @@ export function ExtractionCatalogClient() {
                 isLoading={loading}
                 isFetching={isFetching}
                 detail={{ enabled: false }}
+                selection={bulk.selection}
                 getRowHref={(row) => `/knowledge/extractions/${row.jobId}`}
                 onRowOpen={(row) => open(row.jobId)}
 
