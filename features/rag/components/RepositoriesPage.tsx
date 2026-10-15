@@ -43,6 +43,9 @@ import type { components } from "@ai-matrx/api/types";
 import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
 import { buildKnowledgeRepositoriesContextData } from "@/features/rag/agent-context/buildKnowledgeRepositoriesContextData";
 import { readOf } from "@ai-matrx/design-system";
+import { useTableBulkSelection } from "@/lib/entity-list/useTableBulkSelection";
+import { runPerRow } from "@/lib/entity-list/standardBulkActions";
+import { bulkCountLabel, type EntityBulkAction } from "@/lib/entity-list/selection";
 
 const KNOWLEDGE_REPOSITORIES_SURFACE = "matrx-user/knowledge-repositories";
 
@@ -302,6 +305,58 @@ export function RepositoriesPage() {
     }
   };
 
+  // Bulk bar: Index (expensive, so it names the work first) + the built-in Add tag / Move to Trash.
+  // A row with no repository id, no files or already fully indexed is skipped and named, never unticked.
+  const bulk = useTableBulkSelection<ApiRepo>({
+    token: "code_repository",
+    noun: "repository",
+    rows: repos,
+    getRowId: (repo) => repo.repository_id ?? repo.name,
+    getRowName: (repo) => repo.name,
+    onRefresh: () => setRefreshKey((n) => n + 1),
+    standardBulkActions: {
+      appliesTo: (repo) =>
+        repo.repository_id ? null : "Not a saved repository yet",
+    },
+    actions: [
+      {
+        id: "index-repositories",
+        label: "Index",
+        icon: Database,
+        confirm: (target) => ({
+          title: `Index ${bulkCountLabel(target.count, "repository")}?`,
+          description:
+            "Reads every code file, writes chunks and embeddings. This uses compute and can take minutes.",
+          confirmLabel: "Index",
+        }),
+        run: (target) =>
+          runPerRow(
+            target,
+            async (id) => {
+              await postJson<ApiIndexResponse, Record<string, never>>(
+                `/knowledge/repositories/${id}/index`,
+                {} as Record<string, never>,
+              );
+            },
+            {
+              done: "Indexed",
+              noun: "repository",
+              labelOf: (repo) => repo.name,
+              skipReason: (repo) =>
+                !repo.repository_id
+                  ? "Not a saved repository yet"
+                  : repo.file_count === 0
+                    ? "No code files to index"
+                    : isFullyIndexed(repo)
+                      ? "Already indexed (use Re-index on its row)"
+                      : null,
+            },
+            (repo) => repo.repository_id ?? repo.name,
+          ),
+      } satisfies EntityBulkAction<ApiRepo>,
+    ],
+  });
+
   const getScope = () =>
     buildKnowledgeRepositoriesContextData({
       repositories: repos,
@@ -401,6 +456,7 @@ export function RepositoriesPage() {
                   );
               }}
               detail={{ enabled: false }}
+              selection={bulk.selection}
               density="condensed"
               pageSize={0}
               isFetching={loading && repos.length > 0}
