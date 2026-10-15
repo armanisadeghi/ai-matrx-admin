@@ -910,7 +910,6 @@
   "lib/extension-bridge/chrome-rpc.ts": 1,
   "lib/redux/slices/agent-settings/agentSettingsSlice.ts": 3,
   "lib/redux/slices/apiConfigSlice.ts": 1,
-  "lib/scheduler-client/next-due.ts": 1,
   "lib/services/agent-feedback.service.ts": 12,
   "providers/google-provider/GoogleApiProvider.tsx": 3,
   "providers/google-provider/GoogleOAuthRedirectCallback.tsx": 2,

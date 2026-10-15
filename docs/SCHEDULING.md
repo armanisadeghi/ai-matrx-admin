@@ -386,7 +386,7 @@ All four tables are RLS-protected with owner-only policies: a row is readable / 
 Live updates ride `@ai-matrx/realtime` — never a hand-rolled `supabase.channel(...)` (the
 package owns reconnect, the mandatory `onBackfill` catch-up, echo suppression and dedup; a raw
 channel silently goes stale after a laptop sleep). This repo's scheduler surfaces already do
-this: `lib/scheduler-client/realtime.ts` opens the `scheduler-user` private-broadcast channel
+this: `@ai-matrx/data/scheduler` opens the `scheduler-user` private-broadcast channel
 with `wire: raw` and a `resync` door. For a per-task Run History view, declare a namespace and
 use the hook:
 

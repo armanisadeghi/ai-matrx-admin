@@ -11,7 +11,7 @@ import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
 import { browserAdminLaneOpen } from "@/utils/supabase/adminLane";
 import { selectTaskById } from "../redux/tasks/selectors";
-import { subscribeSchedulerBroadcast } from "@/lib/scheduler-client/realtime";
+import { subscribeSchedulerBroadcast } from "@ai-matrx/data/scheduler";
 import { removeRun, upsertRun } from "../redux/runs/slice";
 import { fetchRunsForTaskThunk } from "../redux/runs/thunks";
 import { patchTask } from "../redux/tasks/slice";

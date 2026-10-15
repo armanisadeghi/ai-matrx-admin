@@ -2,7 +2,7 @@
 //
 // LANE REALTIME-2 — THE SCHEDULER'S PRIVATE CHANNEL: DOES IT JOIN, AND DOES IT DELIVER?
 //
-// `lib/scheduler-client/realtime.ts` has declared `private: true` on
+// `@ai-matrx/data/scheduler` (realtime) has declared `private: true` on
 // `scheduler:user:<user_id>` since it was written. RLS has been ENABLED on
 // `realtime.messages` with ZERO POLICIES since this database was created, and lane REALTIME's
 // one policy registers exactly one prefix — `custom:table`. So this channel has joined

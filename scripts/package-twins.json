@@ -2450,17 +2450,6 @@
       "allow": []
     },
     {
-      "name": "subscribeSchedulerBroadcast",
-      "package": "@ai-matrx/realtime",
-      "why": "NOT a package twin \u2014 a sanctioned MIRROR. src/lib/scheduler-client/ is the hand-vendored copy of matrx-frontend/lib/scheduler-client/ (see its README's mirror policy), and this function is the ref-counted fan-out over the package's own `manager.open({private:true, wire:{mode:'raw'}})`. The channel logic itself is 100% the package's; what is local is the sch_task payload filtering the mirror exists to carry.",
-      "allow": [
-        {
-          "file": "lib/scheduler-client/realtime.ts",
-          "reason": "This is the ORIGIN of the sanctioned mirror, not a twin of it: matrx-extend's src/lib/scheduler-client/ is the hand-vendored copy OF THIS DIRECTORY, and that repo's own register already allows its copy on exactly that ground. NOTE (2026-09-12): @ai-matrx/realtime exports no symbol of this name at all (zero hits in realtime/src/), so the row's own `fix:` import line is impossible in every root \u2014 the row itself needs re-examining. What is local here is the sch_task payload filtering and the ref-counted per-user fan-out; the channel is the package's manager.open()."
-        }
-      ]
-    },
-    {
       "name": "ConfirmDialog",
       "package": "@ai-matrx/design-system",
       "why": "The extension's own `window.confirm` replacement (src/components/ConfirmDialog.tsx), deleted 2026-09-08. It was a genuine twin of the package's ConfirmDialog \u2014 same nine props, same six call shapes \u2014 but with an 80%-of-nothing scrim (`bg-black/40`), hardcoded `red-600` confirm and warning colours instead of tokens, no motion, no viewport clamp, no sticky footer, and sub-44px `py-1.5 text-xs` actions on a touch surface. Collapsing it onto the package also picked up the 0.11.6 sticky-footer fix (feedback bf8fb00b). TWO affordances were dropped rather than moved into the package, deliberately and on the record: the header X (Cancel and Escape are both present, and Radix owns Escape) and a destructive AlertTriangle glyph \u2014 an icon on every confirm in the platform is a taste decision that belongs to Arman, not to this lane. Backdrop-click dismissal is gone BY DESIGN: an AlertDialog does not dismiss on a stray click, which is the safer behaviour on a destructive action.",
