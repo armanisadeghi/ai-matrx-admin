@@ -98,6 +98,7 @@ const MAPPERS: Mappers = {
   transcript_session: (data) => createSourceRef("studio_session", data.id),
   workbook: (data) => createSourceRef("workbook", data.id),
   document: (data) => createSourceRef("udt_document", data.id),
+  research_topic: (data) => createSourceRef("research_topic", data.id),
   context_value: (data) =>
     intake(
       "context_value",
