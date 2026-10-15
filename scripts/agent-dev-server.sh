@@ -235,7 +235,74 @@ nm_moved_note() {
   [[ -n "$recorded" ]] || return 0
   current="$(nm_fingerprint)"
   [[ "$current" != "$recorded" ]] || return 0
-  printf 'WARNING node_modules changed under this running server since it started — an install ran while it was live, so pages may load two copies of one package (e.g. "useRecordsClient was called outside <RecordsProvider>"). Restart it before trusting what it shows: pnpm preview:stop && pnpm preview:start\n'
+  printf 'WARNING node_modules changed under this running server since it started — an install ran while it was live, so pages may load two copies of one package (e.g. "useRecordsClient was called outside <RecordsProvider>"). The watchdog restarts it once the install settles (%ss); to do it now: pnpm preview:stop && pnpm preview:start\n' "$NM_SETTLE_SEC"
+}
+
+# Our own packages as they sit on disk, one "@ai-matrx/<name>@<version>" per line, sorted.
+# Recorded at start (lease AIMATRX_VERSIONS + the server's MATRX_PREVIEW_BOOT_PACKAGES, which
+# app/api/dev/server-freshness compares against disk for the admin attention dock).
+aimatrx_versions() {
+  local dir version
+  for dir in "$REPO_ROOT"/node_modules/@ai-matrx/*/; do
+    [[ -f "${dir}package.json" ]] || continue
+    version="$(sed -n 's/^[[:space:]]*"version"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' "${dir}package.json" | head -1)"
+    printf '@ai-matrx/%s@%s\n' "$(basename "$dir")" "${version:-unknown}"
+  done | sort
+}
+
+# aimatrx_version_moves <boot list, space separated> — "name old→new; " for every package whose
+# version moved since boot ("new" when it was not installed then); nothing when none moved.
+aimatrx_version_moves() {
+  aimatrx_versions | awk -v boot="$1" '
+    BEGIN { n = split(boot, b, " "); for (i = 1; i <= n; i++) { at = match(b[i], /@[^@]*$/); if (at > 1) was[substr(b[i], 1, at - 1)] = substr(b[i], at + 1) } }
+    { at = match($0, /@[^@]*$/); name = substr($0, 1, at - 1); ver = substr($0, at + 1)
+      if (!(name in was)) printf "%s new→%s; ", name, ver
+      else if (was[name] != ver) printf "%s %s→%s; ", name, was[name], ver }'
+}
+
+# PACKAGES MOVED UNDER A RUNNING SERVER → RESTART IT (Arman, 2026-10-14: "catch these at the top").
+# A dev server keeps the module graph it booted with; after an install relinks @ai-matrx/* it
+# serves code that no longer exists on disk — "module factory is not available", two copies of
+# one package, a context provider invisible to its own hook — and every one of those reads as a
+# random bug in whatever page the person was on. Nothing was wrong with the page. Restarting is
+# the whole fix, and the blip is fine (CLAUDE.md: "everyone blips, that is fine").
+#
+# Wait for the install to SETTLE: the fingerprint must differ from the boot one and hold still for
+# NM_SETTLE_SEC, so a restart never lands mid-install (and never while node_modules is missing).
+# Returns 0 only when it stopped the server and started a fresh one.
+NM_SETTLE_SEC=15
+NM_CHECK_EVERY=5 # monitor ticks (2s each) between fingerprint reads
+NM_PENDING=""
+NM_PENDING_SINCE=0
+restart_if_node_modules_moved() {
+  local pid="$1" recorded current now moves
+  recorded="$(meta_value NM_FINGERPRINT)"
+  [[ -n "$recorded" ]] || return 1
+  current="$(nm_fingerprint)"
+  now="$(date +%s)"
+  if [[ "$current" == "$recorded" ]]; then
+    NM_PENDING=""
+    return 1
+  fi
+  if [[ "$current" != "$NM_PENDING" ]]; then
+    NM_PENDING="$current"
+    NM_PENDING_SINCE="$now"
+    return 1
+  fi
+  [[ "$current" != missing ]] || return 1
+  (( now - NM_PENDING_SINCE >= NM_SETTLE_SEC )) || return 1
+  moves="$(aimatrx_version_moves "$(meta_value AIMATRX_VERSIONS)")"
+  moves="${moves%; }"
+  # Re-check ownership: a preview:stop/start may have replaced this server meanwhile.
+  alive "$pid" && [[ "$(meta_value PID)" == "$pid" ]] || return 1
+  stop_for_limit "$pid" "${RECYCLED_PREFIX}restarted because packages were installed under it (${moves:-dependencies relinked}) — a running server keeps the code it booted with and would serve errors that are not bugs"
+  start_fresh_preview
+  return 0
+}
+
+# A fresh `start` from the monitor (already detached): same checkout, same inherited profile.
+start_fresh_preview() {
+  "$REPO_ROOT/scripts/agent-dev-server.sh" start >>"$LOG" 2>&1
 }
 
 report_previous_failure() {
@@ -541,8 +608,10 @@ cmd_start() {
   ensure_worktree_node_modules
 
   use_mode "$REQUESTED_MODE"
-  local next_bin
+  local next_bin boot_packages
   next_bin="$(resolve_next_bin)" || fail "dependencies are missing; run pnpm install first"
+  boot_packages="$(aimatrx_versions | tr '\n' ' ')"
+  boot_packages="${boot_packages% }"
 
   # Reclaim only servers dev-cleanup already classifies as runaway/abandoned.
   # With no live server above, this mainly clears stale tracking files.
@@ -576,7 +645,7 @@ cmd_start() {
   # exec_command owns and reaps its shell process group. Python's
   # start_new_session creates a real detached OS session that survives the tool
   # call while still giving us the exact root pid to track and stop.
-  pid="$(/usr/bin/python3 - "$REPO_ROOT" "$LOG" "$DISTDIR" "$PORT" "$next_bin" "$SHARED_SERVER_TOKEN" "$MODE" <<'PY'
+  pid="$(MATRX_PREVIEW_BOOT_PACKAGES="$boot_packages" /usr/bin/python3 - "$REPO_ROOT" "$LOG" "$DISTDIR" "$PORT" "$next_bin" "$SHARED_SERVER_TOKEN" "$MODE" <<'PY'
 import os
 import shutil
 import subprocess
@@ -642,6 +711,7 @@ PY
     echo "ROOT=$REPO_ROOT"
     echo "MAX_RSS_GB=$MAX_RSS_GB"
     echo "NM_FINGERPRINT=$(nm_fingerprint)"
+    echo "AIMATRX_VERSIONS=$boot_packages"
     echo "OWNER_SESSION=$SESSION_RAW"
     echo "OWNER_HOST=$SESSION_HOST"
     echo "MODE=$MODE"
@@ -947,7 +1017,7 @@ cmd_monitor() {
   alive "$expected_pid" || exit 0
   last_log_mtime="$(mtime "$LOG")"
   now="$(date +%s)"
-  local last_progress="$now"
+  local last_progress="$now" tick=0
   # Requests already in the log predate this monitor; start scanning at its end.
   SCAN_OFFSET="$(stat_fmt %s %z "$LOG" || echo 0)"
   [[ "$SCAN_OFFSET" =~ ^[0-9]+$ ]] || SCAN_OFFSET=0
@@ -964,6 +1034,12 @@ cmd_monitor() {
     fi
 
     rotate_oversized_log
+
+    # An install under the running server: restart it once the install settles.
+    tick=$(( tick + 1 ))
+    if (( tick % NM_CHECK_EVERY == 0 )) && restart_if_node_modules_moved "$expected_pid"; then
+      exit 0
+    fi
 
     if [[ ! -f "$READY" ]]; then
       log_mtime="$(mtime "$LOG")"

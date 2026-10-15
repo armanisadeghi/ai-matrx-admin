@@ -329,7 +329,7 @@ export function viewActionItems(
   if (plan.everyoneHref) {
     items.push({
       key: "everyone",
-      label: "Change for everyone",
+      label: "Open shape admin",
       tone: "quiet",
       href: crossDeploymentHref(plan.everyoneHref) ?? plan.everyoneHref,
     });

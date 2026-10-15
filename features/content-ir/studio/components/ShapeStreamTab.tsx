@@ -34,7 +34,7 @@ import { SafeBlockRenderer } from "@ai-matrx/rich-content/display/chat-markdown/
 import { kindRegistry } from "@/features/content-ir/registry/kind-registry";
 import { componentRegistry } from "@/features/content-ir/registry/component-registry";
 import { isPartialReadyKind } from "@ai-matrx/rich-content/kinds/react/partial-kind-route";
-import { resolveLoadingSlugForKind } from "@ai-matrx/rich-content/kinds/react/loading/resolve-loading-slug";
+import { useLoadingSlugForKind } from "@ai-matrx/rich-content/kinds/react/loading/use-loading-slug";
 import { useKindExamples } from "@/features/content-ir/studio/kind-examples";
 import {
   WIRE_MODE_LABEL,
@@ -200,8 +200,9 @@ export default function ShapeStreamTab({
 
   const partialReady = isPartialReadyKind(kind);
   // What the RUNTIME will actually render for this kind — declared, derived,
-  // or generic — from the one module the render path uses.
-  const resolvedLoading = resolveLoadingSlugForKind(kind);
+  // generic, or still being read — the one measured answer every surface reads
+  // (it re-reads when the schema lands, so tab order cannot change it).
+  const resolvedLoading = useLoadingSlugForKind(kind);
   const isStreamActive = runState === "playing";
 
   return (
@@ -315,37 +316,40 @@ export default function ShapeStreamTab({
               derivation). It also read DB metadata only, so ~23 kinds that
               declare a loader in CODE were reported as undeclared. */}
           <VerdictRow
-            ok={resolvedLoading.origin !== "generic"}
-            warn={resolvedLoading.invalidDeclared !== undefined}
+            ok={resolvedLoading.origin === "declared" || resolvedLoading.origin === "derived"}
+            warn={
+              resolvedLoading.origin === "pending" ||
+              resolvedLoading.origin === "generic" ||
+              resolvedLoading.invalidDeclared !== undefined
+            }
             title={
-              resolvedLoading.slug
-                ? `Loading component: ${resolvedLoading.slug}${
-                    resolvedLoading.origin === "derived" ? " (derived)" : ""
-                  }`
-                : "No loading component — generic skeleton"
+              resolvedLoading.origin === "pending"
+                ? "Loading component: checking"
+                : `Loading component: ${resolvedLoading.slug ?? "generic skeleton"}`
             }
             detail={
-              resolvedLoading.invalidDeclared !== undefined
-                ? `Declares “${resolvedLoading.invalidDeclared}”, which is not in the loading library — ignored, and ${
-                    resolvedLoading.slug
-                      ? `“${resolvedLoading.slug}” was derived from this shape's schema instead`
-                      : "nothing could be derived, so it streams behind the generic skeleton"
-                  }. Fix the declaration (unknown-loading-component).`
-                : resolvedLoading.origin === "declared"
-                  ? "Declared on the shape and present in the loading library."
-                  : resolvedLoading.origin === "derived"
-                    ? "Derived from this shape's own schema — a real, shape-appropriate loader. Declare one only to override it."
-                    : "This shape isn't distinctive enough to derive a loader, so it streams behind the generic skeleton. Set metadata.loading_component."
+              resolvedLoading.origin === "pending"
+                ? "Reading this shape's schema."
+                : resolvedLoading.invalidDeclared !== undefined
+                  ? `Declared “${resolvedLoading.invalidDeclared}” is not a known loader.`
+                  : resolvedLoading.origin === "declared"
+                    ? "Declared on the shape."
+                    : resolvedLoading.origin === "derived"
+                      ? "Derived from the shape's schema."
+                      : "The schema suggests no specific loader."
             }
           />
+          {/* The partial-value fact is the routing function's own answer
+              (`isPartialReadyKind`): progressive unless the kind opted out
+              with `partialReady: false` or its component threw this session. */}
           <VerdictRow
             ok={partialReady}
             warn={!partialReady}
-            title={partialReady ? "Partial-ready" : "Withheld while partial"}
+            title={partialReady ? "Fills in while streaming" : "Waits for the complete value"}
             detail={
               partialReady
-                ? "Opted in — the server's provisional values route into the real component mid-stream."
-                : "Not opted into partial rendering; on run pages this kind keeps its loading state until complete (withhold-by-default)."
+                ? "Partial values render in the real component."
+                : "Marked unsafe for partial values."
             }
           />
         </div>

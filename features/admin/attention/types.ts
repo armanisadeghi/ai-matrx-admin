@@ -173,4 +173,9 @@ export interface AttentionSourceState {
    * "N being fixed by agents" linking to where they are tracked. Not counted in the pill.
    */
   delegated?: { count: number; href: string } | null;
+  /**
+   * `true`: a fact about THIS machine (the local dev server) that the database has never heard
+   * of, so its triage holds no verdict for it. Its live items go on the card first, untriaged.
+   */
+  machineLocal?: boolean;
 }

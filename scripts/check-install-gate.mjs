@@ -334,6 +334,53 @@ check("the preview stays silent when node_modules did not change", () => {
 });
 
 // ---------------------------------------------------------------------------
+// The watchdog restarts a server whose packages moved under it — once the install settles.
+// Each run drives `restart_if_node_modules_moved` through a sequence of fingerprint readings
+// with a fake clock; stopping and starting are stubbed so nothing real is touched.
+// ---------------------------------------------------------------------------
+function restartDecisions(recorded, readings) {
+  const stateDir = mkdtempSync(join(tmpdir(), "preview-restart-"));
+  writeFileSync(
+    join(stateDir, "shared-next-dev.meta"),
+    `PORT=3001\nPID=${holder.pid}\nROOT=${REPO_ROOT}\nNM_FINGERPRINT=${recorded}\nAIMATRX_VERSIONS=@ai-matrx/api@0.0.1\n`,
+  );
+  writeFileSync(join(stateDir, "shared-next-dev.log"), "");
+  const script = `
+    source "${DEV_SERVER}"
+    stop_for_limit() { echo "STOP $2"; }
+    start_fresh_preview() { echo START; }
+    for r in ${readings.map(([t, fp]) => `"${t}:${fp}"`).join(" ")}; do
+      nm_fingerprint() { echo "\${r#*:}"; }
+      date() { echo "\${r%%:*}"; }
+      if restart_if_node_modules_moved ${holder.pid}; then echo "RESTARTED at \${r%%:*}"; fi
+    done`;
+  const out = execFileSync("bash", ["-c", script], {
+    env: { ...process.env, MATRX_PREVIEW_STATE_DIR: stateDir },
+    encoding: "utf8",
+  });
+  rmSync(stateDir, { recursive: true, force: true });
+  return out;
+}
+
+check("FAILING BASELINE: a moved node_modules restarts nothing until it holds still", () => {
+  const out = restartDecisions("boot", [[100, "mid1"], [110, "mid2"], [120, "mid3"]]);
+  assert.ok(!out.includes("RESTARTED"), `a still-moving install must not be interrupted:\n${out}`);
+});
+
+check("the watchdog restarts the server once the install settles, naming what moved", () => {
+  const out = restartDecisions("boot", [[100, "done"], [110, "done"], [116, "done"]]);
+  assert.ok(out.includes("RESTARTED at 116"), `it must restart after the settle window:\n${out}`);
+  assert.ok(!out.includes("RESTARTED at 110"), "never before the settle window");
+  assert.ok(out.includes("STOP RECYCLED: restarted because packages were installed under it"), out);
+  assert.ok(out.includes("START"), "a fresh server must be started");
+});
+
+check("an unchanged node_modules, or one mid-reinstall, never restarts", () => {
+  assert.ok(!restartDecisions("boot", [[100, "boot"], [200, "boot"]]).includes("RESTARTED"));
+  assert.ok(!restartDecisions("boot", [[100, "missing"], [200, "missing"]]).includes("RESTARTED"));
+});
+
+// ---------------------------------------------------------------------------
 try {
   process.kill(holder.pid);
 } catch {

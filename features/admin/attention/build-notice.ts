@@ -74,6 +74,10 @@ function triageSources(
         candidates.push({ source, item, rank: RANK[item.severity] * 10_000 + sourceIndex * 1_000 + i });
         return;
       }
+      if (source.machineLocal) {
+        candidates.push({ source, item, rank: -1_000 + i });
+        return;
+      }
       const verdict = triage.verdicts.get(item.key);
       if (verdict?.routedTo !== "owner_card") return;
       candidates.push({ source, item: asCardItem(item, verdict), rank: verdict.cardRank ?? 9_999 });

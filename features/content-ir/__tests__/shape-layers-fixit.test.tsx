@@ -170,7 +170,7 @@ describe("who gets which action", () => {
     expect(markup).toMatch(
       /<a[^>]*href="[^"]*\/administration\/utilities\/kind-registry\/brand_intake_facts"[^>]*target="_blank"[^>]*>|<a[^>]*target="_blank"[^>]*href="[^"]*\/administration\/utilities\/kind-registry\/brand_intake_facts"/,
     );
-    expect(markup).toContain("Change for everyone");
+    expect(markup).toContain("Open shape admin");
   });
 
   it("the bar never makes an admin-lane request", () => {
@@ -618,7 +618,7 @@ it("the shape page's render-status strip renders the SAME per-person actions (no
     "utf8",
   );
   expect(strip).toMatch(/<KindViewActionsRow\b/);
-  expect(strip).not.toMatch(/Make my view|For my organization|Change for everyone/);
+  expect(strip).not.toMatch(/Make my view|For my organization|Open shape admin/);
 });
 
 it("the registry reads the shared tier through the package's public resolveShared — never the private overlay", () => {

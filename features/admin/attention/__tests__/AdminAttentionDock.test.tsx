@@ -83,6 +83,12 @@ jest.mock("@/features/admin/system-errors/open-outages", () => {
 
 const fetchDeployFreshness = jest.fn();
 jest.mock("../deploy-freshness-service", () => ({ fetchDeployFreshness: () => fetchDeployFreshness() }));
+// Known-domain proposals (9bfa9e6a) is a LOUD source: unmocked, its read fails and every
+// "nothing live" case renders "A check could not be read".
+jest.mock("@/lib/web-domains/service", () => ({
+  fetchDomainProposals: async () => [],
+  decideDomainProposal: async () => {},
+}));
 const fetchDatedChanges = jest.fn();
 jest.mock("@/features/admin/dated-changes/service", () => {
   const actual = jest.requireActual("@/features/admin/dated-changes/service");
