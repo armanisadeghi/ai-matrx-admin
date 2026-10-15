@@ -26,6 +26,7 @@ import { aiTestModeHeaders } from "@/lib/api/ai-test-mode";
 import { adminDoorOpen } from "@/lib/api/adminDoor";
 import { fetchContextState } from "@/lib/api/context-api";
 import { apiGet, apiPatch, apiPost, buildPath } from "@/lib/api/chat-host-api";
+import { serverApi } from "@/lib/api/server-api";
 import { getAccessTokenOrNull, postJson, requestRaw, resolveBaseUrl } from "@/lib/python-client";
 import { AIDREAM_PRODUCTION_URL } from "@/lib/api/endpoints";
 import { mintCredential } from "@/lib/api/broker/client";
@@ -88,6 +89,8 @@ export const appChatServerApi = {
   adminDoorOpen,
   // context state
   fetchContextState,
+  // the website's one @ai-matrx/api client (chat >= the host-verb removal reads host.server.api.client)
+  client: serverApi,
   // typed client + python client
   apiGet,
   apiPost,
