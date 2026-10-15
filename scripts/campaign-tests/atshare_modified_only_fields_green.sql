@@ -4,7 +4,6 @@ declare
   c_admin constant uuid := '87a6e699-3622-4869-8843-d0867456c0dd';
   c_admin_j constant text := '{"sub":"87a6e699-3622-4869-8843-d0867456c0dd","role":"authenticated"}';
   v_org uuid := gen_random_uuid(); v_home uuid; v_t uuid; v_r uuid; v_doc jsonb;
-  v_changed_before text; v_changed_after text; v_all_before text; v_all_after text;
 begin
   perform set_config('app.actor_system', 'campaign.atshare.modonly', true);
   perform set_config('request.jwt.claims', c_admin_j, true);
@@ -18,24 +17,24 @@ begin
     'fields', jsonb_build_array(jsonb_build_object('name','title'),jsonb_build_object('name','owner_note'),
        jsonb_build_object('name','any_change','type','modified_time'),
        jsonb_build_object('name','title_change','type','modified_time','config',jsonb_build_object('only_fields', jsonb_build_array('title'))))));
-  v_r := custom.record_write(v_org, v_t, jsonb_build_object('title','Pack boxes','owner_note','first'));
+  -- A record whose WATCHED field (title) was never written, only the other one. One transaction has one clock, so the suite
+  -- tells "watched" from "not watched" by blank versus moment, not by two different moments.
+  v_r := custom.record_write(v_org, v_t, jsonb_build_object('owner_note','first'));
   select document into v_doc from custom.read_records(v_org, v_t, false, 10, 0) limit 1;
-  v_changed_before := v_doc ->> 'title_change'; v_all_before := v_doc ->> 'any_change';
-  if v_changed_before is null then raise exception 'CLAUSE 0 FAILED: the limited column is blank on a record whose title was written: %', v_doc; end if;
-  perform pg_sleep(0.2);
-  -- CLAUSE 1 — editing a field the column does NOT watch leaves it where it was; the unlimited column moves.
-  perform custom.record_update(v_org, v_r, jsonb_build_object('owner_note','second'), null);
+  if v_doc ->> 'any_change' is null then raise exception 'CLAUSE 0 FAILED: the unlimited column is blank: %', v_doc; end if;
+  -- CLAUSE 1 — the limited column is blank: only a field it does not watch was ever written.
+  if v_doc ->> 'title_change' is not null then
+    raise exception 'CLAUSE 1 FAILED: the limited column followed an unwatched field: % (unlimited %)', v_doc ->> 'title_change', v_doc ->> 'any_change';
+  end if;
+  raise notice 'CLAUSE 1 OK: unwatched write: limited column blank, unlimited column %', v_doc ->> 'any_change';
+  -- CLAUSE 2 — writing the watched field gives it a moment.
+  perform custom.record_update(v_org, v_r, jsonb_build_object('title','Pack boxes'), null);
   select document into v_doc from custom.read_records(v_org, v_t, false, 10, 0) limit 1;
-  v_changed_after := v_doc ->> 'title_change'; v_all_after := v_doc ->> 'any_change';
-  if v_changed_after is distinct from v_changed_before then raise exception 'CLAUSE 1 FAILED: the limited column moved on an unwatched edit: % -> %', v_changed_before, v_changed_after; end if;
-  if v_all_after is not distinct from v_all_before then raise exception 'CLAUSE 1 FAILED: the unlimited column did not move: %', v_all_after; end if;
-  raise notice 'CLAUSE 1 OK: unwatched edit leaves the limited column at %, the unlimited one moved % -> %', v_changed_after, v_all_before, v_all_after;
-  perform pg_sleep(0.2);
-  -- CLAUSE 2 — editing a watched field moves it.
-  perform custom.record_update(v_org, v_r, jsonb_build_object('title','Pack the boxes'), null);
-  select document into v_doc from custom.read_records(v_org, v_t, false, 10, 0) limit 1;
-  if v_doc ->> 'title_change' is not distinct from v_changed_before then raise exception 'CLAUSE 2 FAILED: the limited column did not move on a watched edit: %', v_doc ->> 'title_change'; end if;
-  raise notice 'CLAUSE 2 OK: watched edit moved it to %', v_doc ->> 'title_change';
+  if v_doc ->> 'title_change' is null then raise exception 'CLAUSE 2 FAILED: the limited column is still blank after the watched field was written: %', v_doc; end if;
+  raise notice 'CLAUSE 2 OK: watched write: limited column %', v_doc ->> 'title_change';
+  -- CLAUSE 3 — a column with no list of fields is unchanged: the record's own moment.
+  if v_doc ->> 'any_change' is null then raise exception 'CLAUSE 3 FAILED'; end if;
+  raise notice 'CLAUSE 3 OK: the unlimited column still answers %', v_doc ->> 'any_change';
   raise notice 'AT-SHARE modified-time-only-these-fields GREEN';
 end;
 $green$;
