@@ -36,6 +36,51 @@ export function safeRelativePath(
   return value;
 }
 
+/** The apex whose hosts may be returned to as absolute URLs (Office sheets./docs./… live here). */
+export const RETURN_URL_APEX = "aimatrx.com";
+
+/**
+ * Returns `value` normalized if it is an absolute `https://` URL on
+ * `aimatrx.com` or any `*.aimatrx.com` host; otherwise `null`.
+ *
+ * Refuses: other schemes, userinfo, explicit ports, backslashes/whitespace/
+ * control characters (parser differentials), and look-alike hosts such as
+ * `aimatrx.com.evil.com` or `evilaimatrx.com`.
+ */
+export function safeAbsoluteReturnUrl(
+  value: string | undefined | null,
+): string | null {
+  if (typeof value !== "string") return null;
+  if (!/^https:\/\//i.test(value)) return null;
+  if (/[\\\s\u0000-\u001f\u007f]/.test(value)) return null;
+  let url: URL;
+  try {
+    url = new URL(value);
+  } catch {
+    return null;
+  }
+  if (url.protocol !== "https:") return null;
+  if (url.username || url.password || url.port) return null;
+  const host = url.hostname.toLowerCase();
+  if (host !== RETURN_URL_APEX && !host.endsWith(`.${RETURN_URL_APEX}`)) {
+    return null;
+  }
+  return url.href;
+}
+
+/**
+ * Like `safeRelativePath`, but ALSO accepts an absolute return URL on the
+ * `aimatrx.com` family (see `safeAbsoluteReturnUrl`). Use where a signed-out
+ * visitor of another Office host (`docs.aimatrx.com`) is sent to sign in and
+ * must come back to that exact host.
+ */
+export function safeReturnUrl(
+  value: string | undefined | null,
+  fallback: string,
+): string {
+  return safeAbsoluteReturnUrl(value) ?? safeRelativePath(value, fallback);
+}
+
 /**
  * Validates an `x-forwarded-host` header value against a host allowlist and
  * returns the host if trusted, otherwise `null` (caller falls back to the
