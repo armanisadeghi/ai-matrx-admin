@@ -295,7 +295,7 @@ export function suggestContext(
   websites: (string | null)[],
   accountUrls: (string | null)[],
   name: string | null,
-  found: { accounts?: (string | null)[]; handles?: (string | null)[] } = {},
+  found: { accounts?: (string | null)[]; handles?: (string | null)[]; place?: string | null } = {},
 ): SuggestContext {
   const handle = (h: string | null) => (h ?? "").replace(/^@/, "").toLowerCase().replace(/[^a-z0-9]/g, "");
   return {
@@ -304,5 +304,6 @@ export function suggestContext(
     ourHosts: [...new Set(websites.filter((u): u is string => Boolean(u)).map((u) => websiteHost(u).replace(/^www\./, "")))],
     ourAccounts: accountUrls.filter((u): u is string => Boolean(u)).map(webAddress),
     name,
+    place: found.place || null,
   };
 }

@@ -54,7 +54,52 @@ export interface SuggestContext {
   foundAccounts?: string[];
   /** Handles of our confirmed or found accounts, comparison form (`ritualcoffee`): the same handle on an ordering or store host is ours. */
   ourHandles?: string[];
+  /** Where the business is ("Austin, TX", "Austin"): a same-named page in another city or state is someone else (MKT-039). */
+  place?: string | null;
 }
+
+const STATES: Record<string, string> = {
+  alabama: "al", alaska: "ak", arizona: "az", arkansas: "ar", california: "ca", colorado: "co", connecticut: "ct", delaware: "de",
+  florida: "fl", georgia: "ga", hawaii: "hi", idaho: "id", illinois: "il", indiana: "in", iowa: "ia", kansas: "ks", kentucky: "ky",
+  louisiana: "la", maine: "me", maryland: "md", massachusetts: "ma", michigan: "mi", minnesota: "mn", mississippi: "ms",
+  missouri: "mo", montana: "mt", nebraska: "ne", nevada: "nv", "new hampshire": "nh", "new jersey": "nj", "new mexico": "nm",
+  "new york": "ny", "north carolina": "nc", "north dakota": "nd", ohio: "oh", oklahoma: "ok", oregon: "or", pennsylvania: "pa",
+  "rhode island": "ri", "south carolina": "sc", "south dakota": "sd", tennessee: "tn", texas: "tx", utah: "ut", vermont: "vt",
+  virginia: "va", washington: "wa", "west virginia": "wv", wisconsin: "wi", wyoming: "wy",
+};
+const STATE_CODES = new Set(Object.values(STATES));
+
+/** US states a text names: a full name, or a two-letter code after a comma ("Phoenix, AZ"). */
+function statesIn(text: string): Set<string> {
+  const out = new Set<string>();
+  const lower = text.toLowerCase();
+  for (const [name, code] of Object.entries(STATES)) {
+    if (new RegExp(`\\b${name}\\b`).test(lower)) out.add(code);
+  }
+  for (const m of text.matchAll(/,\s*([A-Z]{2})\b/g)) {
+    const code = m[1].toLowerCase();
+    if (STATE_CODES.has(code)) out.add(code);
+  }
+  return out;
+}
+
+/**
+ * True when the page names another place than the business's own (MKT-039): it names a state that is not ours, or it
+ * names some state and never our city. A page that names no state at all proves nothing.
+ */
+function elsewhere(place: string | null | undefined, text: string): boolean {
+  if (!place) return false;
+  const city = norm(place.split(",")[0] ?? "");
+  const ours = statesIn(place);
+  const theirs = statesIn(text);
+  if (!theirs.size) return false;
+  if (ours.size) return ![...theirs].some((s) => ours.has(s));
+  return city.length >= 3 && !norm(text).includes(city);
+}
+
+const OBITUARY = /\b(obituar(?:y|ies)|funeral|in loving memory|passed away|survived by|memorial service)\b|legacy\.com|dignitymemorial|tributearchive/i;
+const PEOPLE_SEARCH =
+  /(whitepages|spokeo|radaris|truepeoplesearch|fastpeoplesearch|beenverified|peoplefinders|mylife|intelius|peekyou|ancientfaces|usphonebook|cyberbackgroundchecks|nuwber|sync\.me)\.|\b(people search|background check|public records?)\b/i;
 
 /** "https://www.Yelp.com/biz/x?y" → "yelp.com/biz/x" — the form the kinds' path rules read. */
 export function webAddress(url: string): string {
@@ -195,6 +240,12 @@ export function suggestKind(item: EvidenceItem, kinds: BrandRelationKind[], ctx:
     const named = [labels.length > 2 ? labels[0] : "", address.split("/")[1] ?? ""].map(norm).find((x) => x && handles.has(x));
     if (named) return { kind: "ours", reason: `Same name (${named}) as your account, on ${host}` };
   }
+  // An obituary or a people-search page that merely carries the name is Irrelevant (MKT-039).
+  if (has("irrelevant")) {
+    const pageText = `${item.label ?? ""} ${item.snippet ?? ""} ${url}`;
+    if (OBITUARY.test(pageText)) return { kind: "irrelevant", reason: "An obituary page, not the business" };
+    if (PEOPLE_SEARCH.test(pageText)) return { kind: "irrelevant", reason: "A people-search page, not the business" };
+  }
   // A social-platform page is never a review site or a listing to claim: it is an account (MKT-045).
   const social = isSocialPlatformPage(url);
   const ruled = kindByRules(url, kinds);
@@ -223,6 +274,17 @@ export function suggestKind(item: EvidenceItem, kinds: BrandRelationKind[], ctx:
   const foundAccount = (ctx.foundAccounts ?? []).some((a) => address === a || address.startsWith(`${a}/`));
   const articleAboutUs = Boolean(ctx.name) && parts.length > 2 && norm(ctx.name ?? "").length >= 3 && norm(lead).includes(norm(ctx.name ?? ""));
   const sameName = nameMatches(ctx.name ?? "", [lead, host.split(".").slice(0, -1).join(" "), firstPart]);
+  // The same name in another city or state is someone else, even when the page carries our whole name (MKT-039).
+  const pageSays = `${item.label ?? ""} ${item.snippet ?? ""} ${url}`;
+  const nameOnPage = Boolean(ctx.name) && norm(ctx.name ?? "").length >= 3 && norm(pageSays).includes(norm(ctx.name ?? ""));
+  if (ctx.name && (sameName || nameOnPage) && !foundAccount && !articleAboutUs && has("not_us") && elsewhere(ctx.place, `${item.label ?? ""} ${item.snippet ?? ""} ${url.replace(/[-_+/.]/g, " ").slice(0, 300)}`)) {
+    return { kind: "not_us", reason: `${ctx.name} in another place than ${ctx.place}: possibly someone else` };
+  }
+  // The same name AND our city on the page: it names us.
+  const ourCity = norm((ctx.place ?? "").split(",")[0] ?? "");
+  if (nameOnPage && ourCity.length >= 3 && norm(pageSays).includes(ourCity) && has("mention")) {
+    return { kind: "mention", reason: `Names ${ctx.name} in ${(ctx.place ?? "").split(",")[0]}` };
+  }
   if (ctx.name && sameName && !foundAccount && !articleAboutUs && has("not_us")) {
     return {
       kind: "not_us",
