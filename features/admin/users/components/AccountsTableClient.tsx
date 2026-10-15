@@ -20,6 +20,7 @@ import {
   GraduationCap,
   Gem,
   KeyRound,
+  LifeBuoy,
   Loader2,
   Mail,
   MailPlus,
@@ -80,6 +81,10 @@ import {
 } from "@/features/admin/limits/components/ChangePlanDialog";
 import { periodLabel } from "@/features/admin/limits/types";
 import { UserResearchDialog } from "./UserResearchDialog";
+import {
+  StartSupportSessionDialog,
+  type SupportSessionTarget,
+} from "../support-sessions/StartSupportSessionDialog";
 import { GiveFreeMonthsDialog, type FreeMonthsPerson } from "./GiveFreeMonthsDialog";
 import { SendTutorialDialog, type TutorialRecipient } from "@/features/guided-tutorials/admin/SendTutorialDialog";
 import { readUserResearch } from "../service/userResearch";
@@ -405,6 +410,7 @@ function AccountsRoster() {
   // In-app DM: create/find the direct conversation with the user, then send.
   const selectedOrganizationId = useAppSelector(selectOrganizationId);
   const [dmTarget, setDmTarget] = useState<AdminUserRow | null>(null);
+  const [supportTarget, setSupportTarget] = useState<SupportSessionTarget | null>(null);
   const [dmContent, setDmContent] = useState("");
   const [dmSending, setDmSending] = useState(false);
 
@@ -1077,6 +1083,18 @@ function AccountsRoster() {
                   <Building2 className="mr-2 h-4 w-4" /> Organizations
                 </DropdownMenuItem>
                 <DropdownMenuItem
+                  onClick={() =>
+                    setSupportTarget({
+                      id: row.id,
+                      email: row.email,
+                      displayName: row.display_name,
+                    })
+                  }
+                  disabled={!row.email || row.is_anonymous}
+                >
+                  <LifeBuoy className="mr-2 h-4 w-4" /> Start support session
+                </DropdownMenuItem>
+                <DropdownMenuItem
                   onClick={() => void sendAuthLink(row, "magiclink")}
                   disabled={!row.email}
                 >
@@ -1377,6 +1395,7 @@ function AccountsRoster() {
         onApplied={() => setRefreshKey((key) => key + 1)}
       />
       <SendTutorialDialog person={tutorialPerson} onClose={() => setTutorialPerson(null)} />
+      <StartSupportSessionDialog target={supportTarget} onClose={() => setSupportTarget(null)} />
       <ChangePlanDialog
         subject={planTarget}
         onClose={() => setPlanTarget(null)}

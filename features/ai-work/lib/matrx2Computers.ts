@@ -16,9 +16,18 @@ import { fetchConsoleDevices } from "@/features/files/devices/console/devices-qu
 import { fetchRelayStatus, relayConnectUrl, relaySubprotocols } from "@/features/files/devices/console/relay";
 import { clientLabelFor } from "@/features/files/devices/console/sessions/model";
 import type { DeviceRow } from "@/features/files/devices/types";
+import { CODING_MINOR, cloudSessionFilter, protocolMinor, type CodingDoors, type Matrx2Reach } from "@/features/ai-work/lib/matrx2Coding";
 
-/** The protocol minor that carries `coding.*`. */
-export const CODING_MINOR = 38;
+import {
+  checkLocalResumable,
+  readLocalRuntimeCapability,
+  reconcileCodingSession,
+  startLocalRuntimeSession,
+} from "@/features/ai-work/lib/matrxLocalRuntime";
+
+// One owner for the protocol floor (the door module); read here by Full Download and its tests.
+export { CODING_MINOR, protocolMinor };
+
 /** How long one computer gets to answer before the next is tried. */
 const READY_MS = 6_000;
 /** The most computers one door tries (newest check-in first). */
@@ -34,10 +43,26 @@ export function computerName(device: DeviceRow): string {
   return device.instance_name?.trim() || "Your computer";
 }
 
-/** "1.38" → 38; anything else → 0. Pure. */
-export function protocolMinor(version: string | null | undefined): number {
-  const minor = Number(String(version ?? "").split(".")[1]);
-  return Number.isFinite(minor) ? minor : 0;
+/**
+ * The page's own computer when it names one, filtered BEFORE the cap — so a named computer past
+ * the newest four is still the one asked. Pure.
+ */
+export function onlyDevice<D extends { id: string }>(devices: D[], deviceId?: string | null): D[] {
+  return (deviceId ? devices.filter((d) => d.id === deviceId) : devices).slice(0, MAX_COMPUTERS);
+}
+
+function webClient(deviceId: string): DesktopClient {
+  return createDesktopClient({
+    url: relayConnectUrl(deviceId),
+    protocols: async () => {
+      const fresh = await getAccessTokenOrNull();
+      if (!fresh) throw new Error("Not signed in");
+      return relaySubprotocols(fresh);
+    },
+    clientType: "web",
+    clientVersion: "web-1",
+    ...(typeof navigator === "undefined" ? {} : { clientLabel: clientLabelFor(navigator.userAgent) }),
+  });
 }
 
 /**
@@ -46,6 +71,7 @@ export function protocolMinor(version: string | null | undefined): number {
  */
 export async function askMatrx2Computers<T>(
   work: (client: DesktopClient, name: string) => Promise<T | null>,
+  options: { deviceId?: string | null } = {},
 ): Promise<ComputerAnswer<T> | { reasons: string[] }> {
   const token = await getAccessTokenOrNull();
   const {
@@ -53,7 +79,7 @@ export async function askMatrx2Computers<T>(
   } = await getClaimsUser(supabase);
   const userId = user?.id ?? null;
   if (!token || !userId) return { reasons: ["Sign in to reach your computers."] };
-  const devices = (await fetchConsoleDevices(supabase, userId).catch(() => [] as DeviceRow[])).slice(0, MAX_COMPUTERS);
+  const devices = onlyDevice(await fetchConsoleDevices(supabase, userId).catch(() => [] as DeviceRow[]), options.deviceId);
   if (devices.length === 0) return { reasons: ["No computer runs Matrx 2 on this account."] };
   const reasons: string[] = [];
   for (const device of devices) {
@@ -68,17 +94,7 @@ export async function askMatrx2Computers<T>(
       reasons.push(`${name}: update Matrx 2 to reach its coding sessions from here.`);
       continue;
     }
-    const client = createDesktopClient({
-      url: relayConnectUrl(device.id),
-      protocols: async () => {
-        const fresh = await getAccessTokenOrNull();
-        if (!fresh) throw new Error("Not signed in");
-        return relaySubprotocols(fresh);
-      },
-      clientType: "web",
-      clientVersion: "web-1",
-      ...(typeof navigator === "undefined" ? {} : { clientLabel: clientLabelFor(navigator.userAgent) }),
-    });
+    const client = webClient(device.id);
     try {
       client.connect();
       const welcome = await client.ready({ timeoutMs: READY_MS });
@@ -96,3 +112,61 @@ export async function askMatrx2Computers<T>(
   }
   return { reasons };
 }
+
+/**
+ * The browser's reach for the coding doors (`matrx2Coding.ts`): the relay's status for every
+ * computer (no socket), one socket to the chosen one, and the cloud lookup by chat id.
+ */
+export const browserMatrx2Reach: Matrx2Reach = {
+  async listComputers(deviceId) {
+    const token = await getAccessTokenOrNull();
+    const {
+      data: { user },
+    } = await getClaimsUser(supabase);
+    if (!token || !user?.id) return { reason: "Sign in to reach your computers." };
+    const devices = onlyDevice(await fetchConsoleDevices(supabase, user.id).catch(() => [] as DeviceRow[]), deviceId);
+    return Promise.all(
+      devices.map(async (device) => {
+        const status = await fetchRelayStatus(device.id, token).catch(() => null);
+        return { deviceId: device.id, name: computerName(device), online: status ? status.online : null, protocolVersion: status?.protocol_version ?? null };
+      }),
+    );
+  },
+  async withClient(computer, work) {
+    const client = webClient(computer.deviceId);
+    try {
+      client.connect();
+      const welcome = await client.ready({ timeoutMs: READY_MS });
+      if (protocolMinor(welcome.protocol_version) < CODING_MINOR) throw new Error("update Matrx 2 to reach its coding sessions from here.");
+      return await work(client as unknown as Parameters<typeof work>[0]);
+    } finally {
+      client.close();
+    }
+  },
+  async findConversation(providerSessionId) {
+    const {
+      data: { user },
+    } = await getClaimsUser(supabase);
+    if (!user?.id) return null;
+    const { data, error } = await supabase
+      .schema("chat")
+      .from("coding_session")
+      .select("conversation_id")
+      .eq("created_by", user.id)
+      .or(cloudSessionFilter(providerSessionId))
+      .limit(1);
+    if (error) throw new Error(error.message);
+    return (data?.[0]?.conversation_id as string | undefined) ?? null;
+  },
+};
+
+/** The doors as the browser opens them: Matrx 2 first, Matrx Local announced after. */
+export const browserCodingDoors: CodingDoors = {
+  reach: browserMatrx2Reach,
+  local: {
+    capability: readLocalRuntimeCapability,
+    start: startLocalRuntimeSession,
+    resumable: checkLocalResumable,
+    reconcile: reconcileCodingSession,
+  },
+};

@@ -1,3 +1,7 @@
+jest.mock("@/features/admin/users/support-sessions/service", () => ({
+  assertNotInSupportSession: jest.fn(async () => undefined),
+}));
+
 import { emailChangeCallback, readAccountAccess, requestEmailChange, signOutOtherSessions } from "./accountAccess";
 
 function client(user: { email?: string; new_email?: string } | null, error: Error | null = null) {
@@ -36,6 +40,19 @@ describe("account access controls", () => {
     const subject = client({ email: "owner@harbor.test" });
     await signOutOtherSessions(subject as never);
     expect(subject.auth.signOut).toHaveBeenCalledWith({ scope: "others" });
+  });
+
+  it("refuses login changes inside a support session before touching auth", async () => {
+    const subject = client({ email: "owner@harbor.test" });
+    const refuse = jest.fn(async () => {
+      throw new Error("Login details can't be changed during a support session.");
+    });
+    await expect(
+      requestEmailChange("new@harbor.test", "https://www.aimatrx.com", subject as never, refuse),
+    ).rejects.toThrow("support session");
+    await expect(signOutOtherSessions(subject as never, refuse)).rejects.toThrow("support session");
+    expect(subject.auth.updateUser).not.toHaveBeenCalled();
+    expect(subject.auth.signOut).not.toHaveBeenCalled();
   });
 
   it("refuses a stale or absent auth user", async () => {

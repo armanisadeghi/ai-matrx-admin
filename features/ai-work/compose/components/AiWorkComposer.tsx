@@ -35,7 +35,9 @@
  */
 
 import { InfoHint } from "@/components/official/InfoHint";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
+import { DesktopProtocolError } from "@ai-matrx/desktop-protocol";
 import Link from "next/link";
 import {
   ArrowUpRight,
@@ -102,6 +104,9 @@ import { HostedRunControls } from "./HostedRunControls";
 import { HostedBillingStep } from "./HostedBillingStep";
 import type { HostedBilling, OwnPlanStatus } from "@/features/ai-work/lib/ownPlan";
 import { DestinationStep } from "./DestinationStep";
+import { RunsOnStep, type ComputerPlan } from "./RunsOnStep";
+import { ErrorNotice } from "@ai-matrx/design-system";
+import { computerSessionLink, newClientRequestId } from "@/features/ai-work/lib/computerChooser";
 import { HomeStep } from "./HomeStep";
 
 /** Reasonable ceiling for the "did the conversation row land yet?" retry. */
@@ -209,6 +214,17 @@ function ComposerBody({
     INITIAL_LOCAL_CAPABILITY,
   );
   const [localFolder, setLocalFolder] = useState<string>("");
+  // ── "Runs on": null = the AI Matrx cloud (every destination below); a device id = one of the
+  //    person's Matrx 2 computers, where Claude Code or Codex starts through the relay.
+  const router = useRouter();
+  const [runsOnDevice, setRunsOnDevice] = useState<string | null>(null);
+  const [runsOnName, setRunsOnName] = useState<string | null>(null);
+  const [computerPlan, setComputerPlanState] = useState<ComputerPlan | null>(null);
+  const [computerRefusal, setComputerRefusal] = useState<string | null>(null);
+  const setComputerPlan = useCallback((plan: ComputerPlan | null) => {
+    setComputerPlanState(plan);
+    setComputerRefusal(null);
+  }, []);
   // ── The request text lives where every package composer keeps it: the run
   //    instance's input slot. Before the instance exists (a saved request
   //    opened on arrival) it is held here, and carried over the moment the
@@ -324,7 +340,9 @@ function ComposerBody({
 
   const canRun =
     requestText.trim().length > 0 &&
-    (destination === "ai-matrx"
+    (runsOnDevice !== null
+      ? computerPlan !== null
+      : destination === "ai-matrx"
       ? Boolean(conversationId)
       : destination === "claude-code"
         ? localCapability.available && Boolean(localFolder)
@@ -496,7 +514,37 @@ function ComposerBody({
     }
   };
 
+  /**
+   * Run on the chosen computer: `coding.start` through the relay (run once by its request id),
+   * then its Sessions view, open on the new session. A refusal shows the computer's own words.
+   */
+  const handleRunOnComputer = async () => {
+    const plan = computerPlan;
+    if (!plan || !requestText.trim()) return;
+    setLaunching(true);
+    setComputerRefusal(null);
+    try {
+      const started = await plan.client.request("coding.start", {
+        provider: plan.provider,
+        cwd: plan.folder,
+        prompt: requestText.trim(),
+        ...(plan.accountProfileId ? { account_profile_id: plan.accountProfileId } : {}),
+        client_request_id: newClientRequestId(),
+      });
+      router.push(computerSessionLink(plan.deviceId, started.session.id));
+    } catch (error) {
+      const said = DesktopProtocolError.from(error).message;
+      setComputerRefusal(`${plan.name} said: ${said}`);
+      toast.error(`${plan.name} did not start it`, { description: said });
+      setLaunching(false);
+    }
+  };
+
   const handleRun = async () => {
+    if (runsOnDevice !== null) {
+      await handleRunOnComputer();
+      return;
+    }
     if (destination === "claude-code") {
       await handleRunOnMyMac();
       return;
@@ -615,7 +663,9 @@ function ComposerBody({
         title="Who does the work"
         question="Choose where this work runs."
         answer={
-          destination === "ai-matrx"
+          runsOnDevice !== null
+            ? `${computerPlan?.provider === "codex" ? "Codex" : "Claude Code"} on ${runsOnName ?? "your computer"}`
+            : destination === "ai-matrx"
             ? "AI Matrx"
             : destination === "claude-code"
               ? "Claude Code on my Mac"
@@ -627,13 +677,25 @@ function ComposerBody({
         open={openStep === 1}
         onToggle={() => toggle(1)}
       >
-        <DestinationStep
-          value={destination}
-          bridgeCapability={bridgeCapability}
-          localCapability={localCapability}
-          onChange={setDestination}
+        <RunsOnStep
+          deviceId={runsOnDevice}
+          onChange={(deviceId, name) => {
+            setRunsOnDevice(deviceId);
+            setRunsOnName(name);
+          }}
+          onPlan={setComputerPlan}
         />
-        {destination === "claude-code" && localCapability.available && (
+        {runsOnDevice === null && (
+          <div className="mt-3">
+            <DestinationStep
+              value={destination}
+              bridgeCapability={bridgeCapability}
+              localCapability={localCapability}
+              onChange={setDestination}
+            />
+          </div>
+        )}
+        {runsOnDevice === null && destination === "claude-code" && localCapability.available && (
           <div className="mt-3 flex flex-col gap-1.5">
             <label
               htmlFor="ai-work-local-folder"
@@ -660,7 +722,7 @@ function ComposerBody({
             </p>
           </div>
         )}
-        {destination === "claude-code-hosted" &&
+        {runsOnDevice === null && destination === "claude-code-hosted" &&
           hostedAvailability.selectable && (
             <HostedBillingStep
               billing={hostedBilling}
@@ -843,7 +905,9 @@ function ComposerBody({
         <dl className="grid grid-cols-[9rem_1fr] gap-x-3 gap-y-1.5 text-xs">
           <dt className="text-muted-foreground">Destination</dt>
           <dd className="text-foreground">
-            {destination === "claude-code"
+            {runsOnDevice !== null
+              ? `${computerPlan?.provider === "codex" ? "Codex" : "Claude Code"} on ${runsOnName ?? "your computer"} — ${computerPlan?.folder || "no folder chosen"}`
+              : destination === "claude-code"
               ? `Claude Code on my Mac — ${localFolder || "no folder chosen"}`
               : destination === "claude-code-hosted"
                 ? "Claude Code in a Matrx Sandbox we start for you"
@@ -861,7 +925,9 @@ function ComposerBody({
           )}
           <dt className="text-muted-foreground">Expert system</dt>
           <dd className="text-foreground">
-            {destination === "claude-code"
+            {runsOnDevice !== null
+              ? "The coding app itself (that computer's own configuration)"
+              : destination === "claude-code"
               ? "Claude Code itself (your Mac's own configuration)"
               : (defaultAgentName ?? "The selected agent")}
           </dd>
@@ -896,6 +962,16 @@ function ComposerBody({
         {!requestText.trim() && (
           <span className="text-xs text-muted-foreground">
             Write your request first.
+          </span>
+        )}
+        {runsOnDevice !== null && requestText.trim() && !computerPlan && !computerRefusal && (
+          <span className="text-xs text-muted-foreground">
+            Choose a coding app and a folder on {runsOnName ?? "the computer"}.
+          </span>
+        )}
+        {computerRefusal && (
+          <span data-testid="runs-on-refusal">
+            <ErrorNotice size="inline" className="text-xs" message={computerRefusal} />
           </span>
         )}
         {destination === "claude-code-hosted" && !ownPlanReady && (

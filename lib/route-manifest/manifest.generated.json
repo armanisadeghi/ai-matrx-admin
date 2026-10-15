@@ -1,7 +1,7 @@
 {
   "version": 1,
   "app": "matrx-frontend",
-  "routeCount": 1431,
+  "routeCount": 1433,
   "routes": [
     {
       "pattern": "/",
@@ -1369,6 +1369,11 @@
       "source": "app/(admin)/administration/users/preferences/page.tsx"
     },
     {
+      "pattern": "/administration/users/support-sessions",
+      "status": "live",
+      "source": "app/(admin)/administration/users/support-sessions/page.tsx"
+    },
+    {
       "pattern": "/administration/users/usage",
       "status": "live",
       "source": "app/(admin)/administration/users/usage/page.tsx"
@@ -2007,6 +2012,11 @@
       "pattern": "/auth/desktop-handoff",
       "status": "live",
       "source": "app/auth/desktop-handoff/page.tsx"
+    },
+    {
+      "pattern": "/auth/support-session/ended",
+      "status": "live",
+      "source": "app/auth/support-session/ended/page.tsx"
     },
     {
       "pattern": "/auth/verifying",

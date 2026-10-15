@@ -9,6 +9,7 @@ import {
   DollarSign,
   Gauge,
   Gift,
+  LifeBuoy,
   Mail,
   MailPlus,
   Megaphone,
@@ -48,6 +49,11 @@ const NAV_ITEMS: AdminSectionTab[] = [
     label: "Admins & Levels",
     href: "/administration/users/admins",
     icon: ShieldCheck,
+  },
+  {
+    label: "Support sessions",
+    href: "/administration/users/support-sessions",
+    icon: LifeBuoy,
   },
   {
     label: "Invitations",

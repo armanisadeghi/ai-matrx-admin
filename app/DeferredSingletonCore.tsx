@@ -36,6 +36,7 @@ import ErrorInspectorBadge from "@/features/admin/error-inspector/ErrorInspector
 import NeedsYouAssistProducer from "@/features/capture-ladder/NeedsYouAssistProducer";
 import AdminAttentionDock from "@/features/admin/attention/AdminAttentionDock";
 import AiTestModeDock from "@/features/ai-test-mode/AiTestModeDock";
+import SupportSessionPill from "@/features/admin/users/support-sessions/SupportSessionPill";
 import { FirstSignInAgeGateMount } from "@/features/education/compliance/FirstSignInAgeGateMount";
 import { ensureScopeTree } from "@/features/scopes/redux/thunks/ensureScopeTree";
 import { ensureScopeSkeleton } from "@/features/scopes/redux/thunks/ensureScopeSkeleton";
@@ -204,6 +205,8 @@ export default function DeferredSingletonCore() {
           FLOATS: see the component header and styles/shell.css. */}
       <AdminAttentionDock />
       <AiTestModeDock />
+      {/* Only in a browser that redeemed a support link: the countdown, +time and End. */}
+      <SupportSessionPill />
       <LiveCaptureIndicator />
       {/* Render-free. Keeps ONE assist row in step with the capture queue; the
           assists dock above does the showing, so this corner holds one draggable

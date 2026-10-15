@@ -1,4 +1,5 @@
 import { createClient } from "@/utils/supabase/client";
+import { assertNotInSupportSession } from "@/features/admin/users/support-sessions/service";
 
 type AuthClient = Pick<ReturnType<typeof createClient>, "auth">;
 
@@ -27,7 +28,9 @@ export async function requestEmailChange(
   email: string,
   origin: string,
   client: AuthClient = createClient(),
+  guard: () => Promise<void> = assertNotInSupportSession,
 ): Promise<AccountAccessState> {
+  await guard();
   const current = await readAccountAccess(client);
   const next = email.trim().toLowerCase();
   if (!next || next === current.email.toLowerCase()) {
@@ -44,7 +47,11 @@ export async function requestEmailChange(
   return readAccountAccess(client);
 }
 
-export async function signOutOtherSessions(client: AuthClient = createClient()): Promise<void> {
+export async function signOutOtherSessions(
+  client: AuthClient = createClient(),
+  guard: () => Promise<void> = assertNotInSupportSession,
+): Promise<void> {
+  await guard();
   const { error } = await client.auth.signOut({ scope: "others" });
   if (error) throw error;
 }
