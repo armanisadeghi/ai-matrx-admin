@@ -20,11 +20,12 @@ import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { AnimatePresence, LayoutGroup, MotionConfig, motion, type Transition } from "motion/react";
 import { Check, ChevronUp, ExternalLink, Globe, Info, LayoutDashboard, Pencil, RotateCcw, Users, X } from "lucide-react";
-import { PANEL_MOTION_CLASS, Peek, PeekHoverCard, Skeleton, type PeekBlock } from "@ai-matrx/design-system";
+import { PANEL_MOTION_CLASS, Skeleton } from "@ai-matrx/design-system";
 import { Badge, Button, DecisionControl, Field, type WayOutItem } from "@ai-matrx/design-system/controls";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 import { formatCount } from "@ai-matrx/kit/format";
 import { useMediaQuery } from "@ai-matrx/kit/media-query";
+import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 import type { BrandRelationKind } from "@/features/marketing/data/service";
 import { PlatformMark } from "@/features/marketing/social/components/PlatformMark";
 import { SocialImage } from "@/features/marketing/social/components/SocialImage";
@@ -146,40 +147,56 @@ function Thumb({ item, size }: { item: FocusItem; size: number }) {
   );
 }
 
-/** Everything that grounds a finding — in THE peek on hover, never on the page. */
+/** Everything that grounds a finding — in a hover card, never on the page. */
 function Grounding({ item }: { item: FocusItem }) {
-  const body: PeekBlock[] = [];
-  if (item.source) body.push({ property: "Found", value: item.source });
-  if (item.certainty) body.push({ property: "Certainty", value: item.certainty });
-  if (item.followers !== null && item.followers !== undefined) body.push({ property: "Followers", value: formatCount(item.followers) });
-  if (item.detail) body.push({ section: item.kind === "fact" ? "Why" : "Snippet", text: item.detail, clamp: 4 });
-  if (item.spellings && item.spellings.length > 1) body.push({ property: "Spelled two ways", value: item.spellings.join(" · ") });
+  const lines: [string, ReactNode][] = [];
+  if (item.source) lines.push(["Found", item.source]);
+  if (item.certainty) lines.push(["Certainty", item.certainty]);
+  if (item.followers !== null && item.followers !== undefined) lines.push(["Followers", formatCount(item.followers)]);
+  if (item.detail) lines.push([item.kind === "fact" ? "Why" : "Snippet", item.detail]);
+  if (item.spellings && item.spellings.length > 1) lines.push(["Spelled two ways", item.spellings.join(" · ")]);
   const copies = item.folded ?? [];
-  if (copies.length) body.push({ section: "Also found as", items: copies.map((c) => (c.kind === "web" ? (c.title ?? c.value) : c.value)), limit: 6 });
   const evidence = [...new Set([...item.evidenceUrls, ...copies.flatMap((c) => c.evidenceUrls)])].slice(0, 6);
-  if (evidence.length) {
-    body.push({ section: "Evidence" });
-    for (const u of evidence) body.push({ fact: websiteHost(u), href: outboundHref(u) });
-  }
-  if (!body.length) return null;
+  if (!lines.length && !evidence.length && !copies.length) return null;
   return (
-    <PeekHoverCard
-      side="bottom"
-      align="end"
-      trigger={<Button variant="quiet" icon={<Info aria-hidden />} aria-label="Where this came from" data-testid="validate-grounding" />}
-    >
-      <Peek
-        size="sm"
-        record={{
-          kind: item.label,
-          id: item.key,
-          title: item.title ?? item.value,
-          subtitle: item.label,
-          body,
-          copyData: { label: item.label, value: item.value, source: item.source, certainty: item.certainty, detail: item.detail, evidence },
-        }}
-      />
-    </PeekHoverCard>
+    <HoverCard openDelay={120}>
+      <HoverCardTrigger asChild>
+        <Button variant="quiet" icon={<Info aria-hidden />} aria-label="Where this came from" data-testid="validate-grounding" />
+      </HoverCardTrigger>
+      <HoverCardContent>
+        <dl className="flex flex-col gap-2">
+          {lines.map(([k, v]) => (
+            <div key={k} className="flex flex-col">
+              <dt className="type-label">{k}</dt>
+              <dd className="type-body line-clamp-4 break-words">{v}</dd>
+            </div>
+          ))}
+          {copies.length ? (
+            <div className="flex flex-col">
+              <dt className="type-label">Also found as</dt>
+              {copies.slice(0, 6).map((c) => (
+                <dd key={c.key} className="truncate">
+                  {c.kind === "web" ? (c.title ?? c.value) : c.value}
+                </dd>
+              ))}
+              {copies.length > 6 ? <dd className="text-muted-foreground">+{copies.length - 6}</dd> : null}
+            </div>
+          ) : null}
+          {evidence.length ? (
+            <div className="flex flex-col">
+              <dt className="type-label">Evidence</dt>
+              {evidence.map((u) => (
+                <dd key={u} className="truncate">
+                  <OutboundLink href={outboundHref(u)} className="text-primary">
+                    {websiteHost(u)}
+                  </OutboundLink>
+                </dd>
+              ))}
+            </div>
+          ) : null}
+        </dl>
+      </HoverCardContent>
+    </HoverCard>
   );
 }
 

@@ -12,9 +12,10 @@
 
 import { useState } from "react";
 import { Check, Info, Plus, SearchX, UserX, X } from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage, Peek, PeekHoverCard } from "@ai-matrx/design-system";
+import { Avatar, AvatarFallback, AvatarImage } from "@ai-matrx/design-system";
 import { Button, Field } from "@ai-matrx/design-system/controls";
 import { formatCount } from "@ai-matrx/kit/format";
+import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 import { profileAvatarDoor } from "@/features/marketing/social/server";
 import { browserImageUrl } from "@/lib/media/external-image";
 import { PlatformMark, platformLabel } from "@/features/marketing/social/components/PlatformMark";
@@ -103,24 +104,28 @@ export function AnchorCard({
           </span>
         </div>
         <div className="flex shrink-0 items-center">
-          <PeekHoverCard side="bottom" align="end" trigger={<Button variant="quiet" icon={<Info aria-hidden />} aria-label="Why this was found" />}>
-            <Peek
-              record={{
-                kind: "Profile",
-                id: item.key,
-                title: name,
-                subtitle: `${platformLabel(platform)}${handle ? ` · ${handle}` : ""}`,
-                body: [
-                  { section: "Why this was found", items: a?.reasons ?? [] },
-                  ...(item.hits?.length
-                    ? [{ section: "Found in search", items: item.hits.map((h) => `${h.engine} #${h.rank}: ${h.query}`), limit: 4 }]
-                    : []),
-                ],
-                ...(url ? { href: url } : {}),
-                copyData: { name, platform: platformLabel(platform), handle, reasons: a?.reasons ?? [], hits: item.hits ?? [] },
-              }}
-            />
-          </PeekHoverCard>
+          <HoverCard openDelay={150}>
+            <HoverCardTrigger asChild>
+              <Button variant="quiet" icon={<Info aria-hidden />} aria-label="Why this was found" />
+            </HoverCardTrigger>
+            <HoverCardContent className="w-80 text-xs">
+              <p className="font-medium text-foreground">Why this was found</p>
+              <ul className="mt-1 list-disc pl-4 text-muted-foreground">
+                {(a?.reasons ?? []).map((r) => (
+                  <li key={r}>{r}</li>
+                ))}
+              </ul>
+              {item.hits?.length ? (
+                <ul className="mt-2 space-y-0.5 text-muted-foreground">
+                  {item.hits.slice(0, 4).map((h) => (
+                    <li key={`${h.engine}:${h.query}:${h.rank}`}>
+                      {h.engine} #{h.rank}: {h.query}
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
+            </HoverCardContent>
+          </HoverCard>
           <OpenLink url={url} />
         </div>
       </div>
