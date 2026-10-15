@@ -73,7 +73,7 @@ describe("Full Download on a Matrx 2 computer", () => {
     computerHas = null;
     localReply = { found: false, detail: "Matrx Local is not running." };
     const result = await fullDownloadOne(SOURCE, null);
-    expect(result.step).toEqual({ kind: "not_available", reasons: ["Arman's MacBook Pro: doesn't have this chat.", "Matrx Local is not running.", "No cloud backup: the owner has not turned it on."] });
+    expect(result.step).toEqual({ kind: "not_available", reasons: ["Matrx 2: Arman's MacBook Pro: doesn't have this chat.", "Matrx Local is not running.", "No cloud backup: the owner has not turned it on."] });
     expect(saved).toEqual([]);
   });
 
