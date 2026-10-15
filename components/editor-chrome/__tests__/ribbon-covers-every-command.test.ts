@@ -3,9 +3,9 @@
  * row and every toolbar tool of the Google look, names nothing the model lacks, and running a
  * ribbon control runs the very same row object the menu bar runs.
  */
-import { buildSheetMenus, buildSheetToolbar, type SheetChromeHost } from "@/features/workbooks/chrome/sheet-commands";
+import { buildSheetMenus, buildSheetToolbar, sheetPageSetupRow, type SheetChromeHost } from "@/features/workbooks/chrome/sheet-commands";
 import { buildDocMenus, buildDocToolbar, type DocChromeHost } from "@/features/documents/chrome/doc-commands";
-import { buildDeckMenus, buildDeckToolbar, type DeckChromeHost } from "@/features/presentations/deck-commands";
+import { buildDeckMenus, buildDeckToolbar, deckPageSetupRow, type DeckChromeHost } from "@/features/presentations/deck-commands";
 import { SHEET_RIBBON, SHEET_GOOGLE_ONLY } from "@/features/workbooks/chrome/sheet-ribbon";
 import { DOC_RIBBON, DOC_GOOGLE_ONLY } from "@/features/documents/chrome/doc-ribbon";
 import { DECK_RIBBON, DECK_GOOGLE_ONLY } from "@/features/presentations/deck-ribbon";
@@ -80,7 +80,7 @@ function deckHost(): DeckChromeHost {
 const editors: Array<[string, RibbonTabSpec[], GoogleOnlyRows, () => { menus: EditorMenu[]; toolbar: EditorToolbarItem[] }]> = [
   ["workbook", SHEET_RIBBON, SHEET_GOOGLE_ONLY, () => {
     const h = sheetHost();
-    return { menus: buildSheetMenus(h), toolbar: buildSheetToolbar(h) };
+    return { menus: [...buildSheetMenus(h), { id: "file", label: "File", items: [sheetPageSetupRow(() => {})] }], toolbar: buildSheetToolbar(h) };
   }],
   ["document", DOC_RIBBON, DOC_GOOGLE_ONLY, () => {
     const h = docHost();
@@ -89,7 +89,7 @@ const editors: Array<[string, RibbonTabSpec[], GoogleOnlyRows, () => { menus: Ed
   ["presentation", DECK_RIBBON, DECK_GOOGLE_ONLY, () => {
     const h = deckHost();
     const menus = buildDeckMenus(h);
-    return { menus, toolbar: buildDeckToolbar(h, menus) };
+    return { menus: [...menus, { id: "file", label: "File", items: [deckPageSetupRow(() => {})] }], toolbar: buildDeckToolbar(h, menus) };
   }],
 ];
 

@@ -47,6 +47,7 @@ import {
   Plus,
   DecimalsArrowLeft,
   DecimalsArrowRight,
+  FileCog,
 } from "lucide-react";
 
 import { promptForValues } from "@/components/dialogs/value-prompts/valuePromptsOpener";
@@ -535,6 +536,16 @@ const functionEntries = (h: SheetChromeHost): EditorMenuEntry[] => [
 ];
 
 // ─── the menus ───
+
+/** File → Page setup (the editor owns the File menu; the ribbon's Page Layout tab places this same row). */
+export const sheetPageSetupRow = (run: () => void): EditorMenuEntry => ({
+  kind: "action",
+  id: "file.page-setup",
+  label: "Page setup",
+  icon: FileCog,
+  keywords: ["orientation", "paper size", "margins", "scale", "print"],
+  run,
+});
 
 export function buildSheetMenus(h: SheetChromeHost): EditorMenu[] {
   const freeze = (rows: number | null, cols: number | null) =>

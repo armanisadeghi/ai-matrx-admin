@@ -51,6 +51,7 @@ import {
   Megaphone,
   MessageSquareWarning,
   MoveVertical,
+  FileCog,
   Palette,
   PenTool,
   Puzzle,
@@ -132,7 +133,6 @@ export const SHEET_RIBBON: RibbonTabSpec[] = [
           { ref: "tb.percent", size: "icon" },
           { ref: "tb.decimal-less", size: "icon" },
           { ref: "tb.decimal-more", size: "icon" },
-          { ref: "format.number", size: "icon", label: "Number format", icon: Hash },
         ],
       },
       {
@@ -234,7 +234,7 @@ export const SHEET_RIBBON: RibbonTabSpec[] = [
     label: "Page Layout",
     groups: [
       { id: "themes", label: "Themes", controls: [{ ref: "format.theme", size: "large", label: "Themes", icon: Palette }] },
-      { id: "print", label: "Print", controls: [{ ref: "tb.print", size: "large", label: "Print" }] },
+      { id: "print", label: "Page Setup", controls: [{ ref: "file.page-setup", size: "large", label: "Page Setup", icon: FileCog }, { ref: "tb.print", size: "large", label: "Print" }] },
       { id: "sheet-options", label: "Sheet Options", controls: [{ ref: "view.show", size: "large", label: "Gridlines", icon: TableCellsSplit }] },
     ],
   },
@@ -247,7 +247,6 @@ export const SHEET_RIBBON: RibbonTabSpec[] = [
         label: "Function Library",
         controls: [
           { ref: "insert.function", size: "large", label: "Insert Function", icon: SquareFunction },
-          { ref: "tb.functions", label: "AutoSum", icon: Sigma },
           { ref: "tools.functions", label: "Function list" },
         ],
       },
@@ -342,8 +341,7 @@ export const SHEET_RIBBON: RibbonTabSpec[] = [
         id: "zoom",
         label: "Zoom",
         controls: [
-          { ref: "view.zoom", size: "large", icon: ZoomIn },
-          { ref: "tb.zoom", size: "icon" },
+          { ref: "tb.zoom", size: "large", icon: ZoomIn },
         ],
       },
       {

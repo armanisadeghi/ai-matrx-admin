@@ -54,6 +54,7 @@ import {
   Type as TypeIcon,
   Video,
   Workflow,
+  FileCog,
 } from "lucide-react";
 
 import type { EditorMenu, EditorMenuEntry } from "@/components/editor-chrome/editor-menu-model";
@@ -124,6 +125,16 @@ function selectAllOnSlide() {
   }
   sel.selectAllChildren(stage);
 }
+
+/** File → Page setup / Slide size (the editor owns the File menu; the ribbon's Design tab places this same row). */
+export const deckPageSetupRow = (run: () => void): EditorMenuEntry => ({
+  kind: "action",
+  id: "file.page-setup",
+  label: "Page setup",
+  icon: FileCog,
+  keywords: ["slide size", "widescreen", "4:3", "16:9"],
+  run,
+});
 
 export function buildDeckMenus(h: DeckChromeHost): EditorMenu[] {
   const locked = () => !h.canEdit;

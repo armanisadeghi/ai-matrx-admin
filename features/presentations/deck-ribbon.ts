@@ -28,6 +28,7 @@ import {
   Music,
   Omega,
   PaintBucket,
+  FileCog,
   Palette,
   Play,
   Plus,
@@ -134,8 +135,7 @@ export const DECK_RIBBON: RibbonTabSpec[] = [
         id: "images",
         label: "Images",
         controls: [
-          { ref: "insert.image", size: "large", label: "Pictures", icon: Image },
-          { ref: "tb.image", label: "Image" },
+          { ref: "tb.image", size: "large", label: "Pictures", icon: Image },
         ],
       },
       { id: "tables", label: "Tables", controls: [{ ref: "insert.table", size: "large", label: "Table", icon: Table }] },
@@ -185,8 +185,7 @@ export const DECK_RIBBON: RibbonTabSpec[] = [
         id: "themes",
         label: "Themes",
         controls: [
-          { ref: "slide.theme", size: "large", label: "Themes", icon: Palette },
-          { ref: "tb.theme", size: "icon" },
+          { ref: "tb.theme", size: "large", label: "Themes", icon: Palette },
         ],
       },
       { id: "layout", label: "Layout", controls: [{ ref: "slide.layout", size: "large", label: "Layout", icon: LayoutTemplate }] },
@@ -194,6 +193,7 @@ export const DECK_RIBBON: RibbonTabSpec[] = [
         id: "customize",
         label: "Customize",
         controls: [
+          { ref: "file.page-setup", size: "large", label: "Slide Size", icon: FileCog },
           { ref: "slide.background", size: "large", label: "Format Background", icon: PaintBucket },
           { ref: "slide.edit-theme", label: "Edit theme" },
           { ref: "view.theme-builder", label: "Slide Master" },

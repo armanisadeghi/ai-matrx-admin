@@ -77,7 +77,7 @@ export const DOC_RIBBON: RibbonTabSpec[] = [
         controls: [
           { ref: "tb.font", size: "icon" },
           { ref: "tb.size", size: "icon" },
-          { ref: "tb.clear", size: "icon" },
+          { ref: "format.clear", size: "icon" },
           { ref: "tb.bold", size: "icon" },
           { ref: "tb.italic", size: "icon" },
           { ref: "tb.underline", size: "icon" },
@@ -96,7 +96,6 @@ export const DOC_RIBBON: RibbonTabSpec[] = [
           { ref: "tb.checklist", size: "icon" },
           { ref: "format.lists", size: "icon", label: "Lists", icon: ListTree },
           { ref: "tb.align", size: "icon" },
-          { ref: "format.align", size: "icon", label: "Align", icon: AlignJustify },
         ],
       },
       {
@@ -104,7 +103,6 @@ export const DOC_RIBBON: RibbonTabSpec[] = [
         label: "Styles",
         controls: [
           { ref: "tb.style", size: "large", label: "Styles", icon: Type },
-          { ref: "format.styles", label: "Paragraph styles" },
         ],
       },
       {
@@ -115,7 +113,6 @@ export const DOC_RIBBON: RibbonTabSpec[] = [
           { ref: "edit.find-replace", label: "Replace" },
           { ref: "edit.select-all", label: "Select all" },
           { ref: "edit.paste-plain", label: "Paste as text" },
-          { ref: "format.clear", label: "Clear formatting" },
         ],
       },
     ],
@@ -281,8 +278,7 @@ export const DOC_RIBBON: RibbonTabSpec[] = [
         id: "zoom",
         label: "Zoom",
         controls: [
-          { ref: "view.zoom", size: "large", icon: ZoomIn },
-          { ref: "tb.zoom", size: "icon" },
+          { ref: "tb.zoom", size: "large", icon: ZoomIn },
         ],
       },
       {

@@ -20,7 +20,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Bookmark, FileCog, FilePlus2, FolderOpen, History, Info, Loader2, MessageSquare, Printer, Sheet, Upload } from "lucide-react";
+import { Bookmark, FilePlus2, FolderOpen, History, Info, Loader2, MessageSquare, Printer, Sheet, Upload } from "lucide-react";
 import { EditorDetailsDialog, formatDetailDate } from "@/components/editor-chrome/EditorDetailsDialog";
 import { importWorkbookFile, unsupportedFileReason } from "@/features/workbooks/import-workbook-file";
 import { workbookSourceLabel } from "@/features/workbooks/workbook-service";
@@ -36,7 +36,7 @@ import { OfficeLookSwitch } from "@/features/file-actions/skin/OfficeLookSwitch"
 import { SHEET_RIBBON } from "@/features/workbooks/chrome/sheet-ribbon";
 import { EditorSaveStatus } from "@/components/editor-chrome/EditorTitleField";
 import { boundActions, matchesShortcut, type EditorMenuEntry } from "@/components/editor-chrome/editor-menu-model";
-import { buildSheetMenus, buildSheetToolbar, type SheetChromeHost, type SheetsApiLike } from "@/features/workbooks/chrome/sheet-commands";
+import { buildSheetMenus, buildSheetToolbar, sheetPageSetupRow, type SheetChromeHost, type SheetsApiLike } from "@/features/workbooks/chrome/sheet-commands";
 import { createWorkbook } from "@/features/workbooks/workbook-service";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
 import { downloadSheetAsCsv, downloadSheetAsHtml, downloadSheetAsPdf, downloadSheetAsTsv, printSheet } from "@/features/workbooks/sheet-output";
@@ -917,7 +917,7 @@ export default function WorkbookEditor({
     { kind: "action", id: "file.import", label: "Import", icon: Upload, keywords: ["xlsx", "csv", "upload"], run: () => importInputRef.current?.click() },
     { kind: "action", id: "file.history", label: "Version history", icon: History, shortcut: { key: "h", mod: true, alt: true, shift: true, bind: true }, run: snapshotHistory.toggle },
     { kind: "action", id: "file.print", label: "Print", icon: Printer, shortcut: { key: "p", mod: true, bind: true }, run: handlePrint },
-    { kind: "action", id: "file.page-setup", label: "Page setup", icon: FileCog, keywords: ["orientation", "paper size", "margins", "scale", "print"], run: () => setPageSetupOpen(true) },
+    sheetPageSetupRow(() => setPageSetupOpen(true)),
     { kind: "action", id: "file.details", label: "Details", icon: Info, keywords: ["info", "created", "modified"], run: () => setDetailsOpen(true) },
   ];
   const liveGoogle = useLiveGoogleAdapter("workbook", workbookId);
@@ -1218,7 +1218,7 @@ export default function WorkbookEditor({
       ribbon={
         <EditorRibbon
           tabs={SHEET_RIBBON}
-          menus={menus}
+          menus={[...menus, { id: "file", label: "File", items: fileExtras }]}
           toolbar={toolbarItems}
           fileMenu={bootState === "ready" ? fileMenu : null}
           extensions={extensionRows}
