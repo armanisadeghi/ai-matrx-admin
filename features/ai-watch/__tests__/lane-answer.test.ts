@@ -20,3 +20,19 @@ describe("Watch AI never shows a kind's JSON as it is written (MKT-122)", () => 
     ]);
   });
 });
+
+describe("a finished call shows its stored answer (MKT-126)", () => {
+  const { recordedAnswerRows } = require("../lane-answer");
+  it("reads fenced and bare kind JSON into rows", () => {
+    expect(recordedAnswerRows('```json\n{"__kind":"k","name":"Wool"}\n```').rows).toEqual([
+      { depth: 0, label: "name", text: "Wool" },
+    ]);
+    expect(recordedAnswerRows('Done. {"__kind":"k","name":"Wool"}')).toEqual({
+      prose: "Done.",
+      rows: [{ depth: 0, label: "name", text: "Wool" }],
+    });
+  });
+  it("leaves prose as prose", () => {
+    expect(recordedAnswerRows("Just words").rows).toBeNull();
+  });
+});

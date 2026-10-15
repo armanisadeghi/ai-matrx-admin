@@ -39,7 +39,7 @@ import {
   selectLiveKindValue,
   selectRequest,
 } from "@ai-matrx/chat/agents/redux/execution-system/active-requests/active-requests.selectors";
-import { formingRows, isKindJsonText } from "@/features/ai-watch/lane-answer";
+import { formingRows, isKindJsonText, recordedAnswerRows } from "@/features/ai-watch/lane-answer";
 import { isWorkflowLaneRequest } from "@/features/workflow-runtime/redux/lane-manager";
 import MarkdownStream from "@ai-matrx/chat/ui/markdown-stream/MarkdownStream";
 import { selectPageAiRuns, selectPageWorkflowRunIds } from "@/features/ai-watch/page-ai-runs";
@@ -469,9 +469,11 @@ function ChatSection({
         <div className="mr-8 rounded-md border border-border bg-card p-2">
           <div className="mb-1 font-medium text-muted-foreground">Assistant</div>
           {liveRequestId && isWorkflowLaneRequest(liveRequestId) ? (
-            <LaneAnswer requestId={liveRequestId} />
+            <LaneAnswer requestId={liveRequestId} recorded={recorded} live={live} />
           ) : liveRequestId ? (
             <LiveRunDisplay requestId={liveRequestId} variant="bare" bodyClassName="max-h-none" />
+          ) : recorded && recordedAnswerRows(recorded).rows ? (
+            <RecordedLaneAnswer text={recorded} />
           ) : recorded ? (
             <MarkdownStream content={recorded} isStreamActive={false} hideCopyButton />
           ) : (
@@ -488,11 +490,17 @@ function ChatSection({
  * JSON as readable rows (MKT-122). The JSON text itself (`"__kind"`, braces, keys) is never shown: it is how the
  * value travels, not what the model said.
  */
-function LaneAnswer({ requestId }: { requestId: string }) {
+function LaneAnswer({ requestId, recorded, live }: { requestId: string; recorded: string; live: boolean }) {
   const raw = useAppSelector((state) => selectRequest(requestId)(state)?.currentTextRunRaw) ?? "";
   const forming = useAppSelector(selectLiveKindValue(requestId));
   const writingJson = isKindJsonText(raw);
-  if (!raw && !forming) return <div className="text-muted-foreground">Waiting for the first words</div>;
+  if (!raw && !forming) {
+    // A finished call shows its stored answer; the waiting line is only for a call still running with no words.
+    if (recorded) return <RecordedLaneAnswer text={recorded} />;
+    return (
+      <div className="text-muted-foreground">{live ? "Waiting for the first words" : "No answer on record"}</div>
+    );
+  }
   const rows = forming ? formingRows(forming.value) : [];
   return (
     <div className="flex flex-col gap-2" data-testid="ai-watch-lane-answer">
@@ -517,6 +525,29 @@ function LaneAnswer({ requestId }: { requestId: string }) {
         </div>
       ) : writingJson ? (
         <div className="text-muted-foreground">Forming the answer</div>
+      ) : null}
+    </div>
+  );
+}
+
+function RecordedLaneAnswer({ text }: { text: string }) {
+  const { prose, rows } = recordedAnswerRows(text);
+  return (
+    <div className="flex flex-col gap-2" data-testid="ai-watch-lane-answer">
+      {prose ? (
+        <div data-kind-source="explicit" className="whitespace-pre-wrap break-words text-foreground">
+          {prose}
+        </div>
+      ) : null}
+      {rows ? (
+        <dl className="flex flex-col gap-0.5" data-testid="ai-watch-recorded-value">
+          {rows.map((r, i) => (
+            <div key={i} style={{ paddingLeft: r.depth * 12 }} className="flex gap-2">
+              {r.label ? <dt className="shrink-0 text-muted-foreground">{r.label}</dt> : null}
+              {r.text !== null ? <dd className="min-w-0 break-words text-foreground">{r.text}</dd> : null}
+            </div>
+          ))}
+        </dl>
       ) : null}
     </div>
   );
