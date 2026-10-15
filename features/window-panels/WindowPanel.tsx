@@ -111,6 +111,7 @@ import { defaultTraySnapshotCapture } from "./WindowTray/defaultTraySnapshotCapt
 import { MinimizedWindowContent } from "./WindowTray/MinimizedWindowContent";
 import { getTrayPreviewEntry } from "./registry/trayPreviewRegistry";
 import {
+  closeOverlay,
   DEFAULT_INSTANCE_ID,
   selectOverlayData,
 } from "@/lib/redux/slices/overlaySlice";
@@ -560,6 +561,7 @@ export function WindowPanel({
   const onTriggerPopout =
     !isMobile && popoutCapability !== "none" ? handleDragOutPopout : undefined;
 
+  const autoDispatch = useAppDispatch();
   // Pass title and our pre-computed id+trigger into the hook
   const {
     windowState,
@@ -578,6 +580,9 @@ export function WindowPanel({
     id,
     title,
     autoOpened,
+    onAutoNoRoom: autoOpened
+      ? () => autoDispatch(closeOverlay({ overlayId: overlayId as OverlayId, instanceId: effectiveInstanceId }))
+      : undefined,
     minWidth,
     minHeight,
     onTriggerPopout,

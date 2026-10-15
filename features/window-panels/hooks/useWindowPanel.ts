@@ -246,6 +246,11 @@ export interface UseWindowPanelOptions {
    */
   autoOpened?: boolean;
   /**
+   * MKT-104: an auto-opened window with no gutter left beside the page closes itself through this
+   * instead of parking a tray card over the page's controls.
+   */
+  onAutoNoRoom?: () => void;
+  /**
    * @deprecated Pass `width`, `height`, and `position` instead.
    * Low-level initial rect — overrides width/height/position when provided.
    */
@@ -353,6 +358,7 @@ export function useWindowPanel(
         siblings,
       });
       if (!autoPlaced.minimized) autoDocked.add(id);
+      else if (opts.onAutoNoRoom) window.setTimeout(() => opts.onAutoNoRoom?.(), 0);
     }
     const pos = autoPlaced
       ? { x: autoPlaced.rect.x, y: autoPlaced.rect.y }
@@ -442,6 +448,11 @@ export function useWindowPanel(
       });
       if (next.minimized) {
         autoDocked.delete(id);
+        if (opts.onAutoNoRoom) {
+          window.clearInterval(timer);
+          opts.onAutoNoRoom();
+          return;
+        }
         if (!isMin) {
           dispatch(minimizeWindow({ id, viewportWidth: vw, viewportHeight: vh }));
         }

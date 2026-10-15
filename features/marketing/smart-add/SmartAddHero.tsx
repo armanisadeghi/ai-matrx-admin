@@ -289,8 +289,10 @@ export function SmartAddHero({
       setSubmitted(true);
       return;
     }
-    onWebsite(siteOk ? site.trim() : bioLink ?? "");
-    onSocial(socialOkFor(pk) ? social.trim() : "");
+    // MKT-110: a link-in-bio page stays in the social box (and the address's `social=`): it is read as a
+    // web page, but it is still the person's link, never a website they typed.
+    onWebsite(siteOk ? site.trim() : "");
+    onSocial(socialOkFor(pk) ? social.trim() : bioLink ?? "");
     onPick(pk);
     onStarted?.();
     setSubmitted(true);

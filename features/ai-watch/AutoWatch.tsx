@@ -16,15 +16,16 @@
  * A run that is already over when the page adopts it (a reload, a resumed address) opens nothing.
  */
 
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { createSelector } from "@reduxjs/toolkit";
-import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
+import { useAppDispatch, useAppSelector, useAppStore } from "@/lib/redux/hooks";
 import { useCanWatchAi } from "./useCanWatchAi";
 import { isAutomatedRun, selectLivePageAiRuns } from "./page-ai-runs";
 import { AI_WATCH_PAGE_INSTANCE, watchAiRunAction } from "@/features/overlays/openers/aiWatchWindow";
-import { markAutoOpened } from "@/features/window-panels/utils/autoOpenPlacement";
+import { autoOpenHasRoom, markAutoOpened } from "@/features/window-panels/utils/autoOpenPlacement";
 import { openWorkflowRunWindowAction, workflowRunWindowInstanceId } from "@/features/overlays/openers/workflowRunWindow";
 import { runIsOver } from "@/features/workflow-runtime/types";
+import { selectOpenInstances } from "@/lib/redux/slices/overlaySlice";
 import type { RootState } from "@/lib/redux/store";
 
 /** Root runs on this page that are running right now, as one stable key. */
@@ -41,6 +42,7 @@ const selectLiveRootRunKey = createSelector(
 export default function AutoWatch() {
   const canWatch = useCanWatchAi();
   const dispatch = useAppDispatch();
+  const store = useAppStore();
   const liveRootRuns = useAppSelector(selectLiveRootRunKey);
   const live = useAppSelector(selectLivePageAiRuns);
   // A live workflow run makes every live AI call on the page its own; otherwise only workflow lanes count
@@ -50,18 +52,39 @@ export default function AutoWatch() {
     .map((r) => r.key)
     .join(",");
 
+  // MKT-104: nothing opens by itself unless a gutter beside the page's working column can hold it
+  // (a parked tray tile covers the page's own controls). Re-measured each second while a window
+  // is waiting, because a page lays itself out after a run starts.
+  const [room, setRoom] = useState(false);
+  const waiting = Boolean(liveRootRuns || automatedKeys);
+  useEffect(() => {
+    if (!canWatch || !waiting) return undefined;
+    const first = window.setTimeout(() => setRoom(autoOpenHasRoom()), 0);
+    const timer = window.setInterval(() => setRoom(autoOpenHasRoom()), 1000);
+    return () => {
+      window.clearTimeout(first);
+      window.clearInterval(timer);
+    };
+  }, [canWatch, waiting]);
+
   // MKT-076: Watch AI opens by itself once per page load; a close sticks until the person reopens it.
   const watchOpened = useRef(false);
   const openWatchAiOnce = useCallback(() => {
     if (watchOpened.current) return;
+    // Never a second copy: a window already open on the page's one instance is the one.
+    const open = selectOpenInstances(store.getState(), "aiWatchWindow");
+    if (open.some((i) => i.instanceId === AI_WATCH_PAGE_INSTANCE)) {
+      watchOpened.current = true;
+      return;
+    }
     watchOpened.current = true;
     markAutoOpened("aiWatchWindow", AI_WATCH_PAGE_INSTANCE);
     dispatch(watchAiRunAction());
-  }, [dispatch]);
+  }, [dispatch, store]);
 
   const openedRuns = useRef(new Set<string>());
   useEffect(() => {
-    if (!canWatch || !liveRootRuns) return;
+    if (!canWatch || !room || !liveRootRuns) return;
     const fresh = liveRootRuns.split(",").filter((id) => !openedRuns.current.has(id));
     if (!fresh.length) return;
     for (const runId of fresh) {
@@ -71,16 +94,16 @@ export default function AutoWatch() {
     }
     // Watch AI itself waits for the first AI call (below): a run with no call yet has nothing
     // to show, and the window would only sit over the page's input.
-  }, [canWatch, liveRootRuns, dispatch]);
+  }, [canWatch, room, liveRootRuns, dispatch]);
 
   const openedCalls = useRef(new Set<string>());
   useEffect(() => {
-    if (!canWatch || !automatedKeys) return;
+    if (!canWatch || !room || !automatedKeys) return;
     const fresh = automatedKeys.split(",").filter((k) => !openedCalls.current.has(k));
     if (!fresh.length) return;
     for (const k of fresh) openedCalls.current.add(k);
     openWatchAiOnce();
-  }, [canWatch, automatedKeys, openWatchAiOnce]);
+  }, [canWatch, room, automatedKeys, openWatchAiOnce]);
 
   return null;
 }

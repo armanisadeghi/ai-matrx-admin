@@ -12,8 +12,8 @@
  *      (button, link, field) in the page body. Anything outside that box takes no clicks anyway.
  *   3. The window is docked in the widest free side gutter, shrunk to fit, stacked under any other
  *      auto-opened window already there. No gutter wide enough (a narrow screen, a page that
- *      fills the width) → it opens minimized in the tray, one click from the screen. Never over
- *      the page.
+ *      fills the width) → it is not opened (`autoOpenHasRoom`), or, when the page grew under it,
+ *      it closes itself. A person's own press of Watch AI / Workflow run always opens it.
  *
  * Pure module: no Redux import (WindowPanel stays a leaf).
  */
@@ -77,6 +77,23 @@ export function measureWorkingColumn(): { left: number; right: number } | null {
     right = Math.max(right, r.right);
   }
   return Number.isFinite(left) ? { left, right } : null;
+}
+
+/**
+ * True when a gutter beside the page's working column can hold an auto-opened window right now.
+ * Callers that open windows by themselves check this FIRST: with no room the window is not opened
+ * (a parked tray tile sits over the page's own bottom-right controls — MKT-104).
+ */
+export function autoOpenHasRoom(): boolean {
+  if (typeof window === "undefined") return false;
+  const vw = window.innerWidth;
+  if (vw < 768) return false;
+  const column = measureWorkingColumn();
+  if (!column) return true;
+  const leftRoot =
+    document.querySelector<HTMLElement>("main")?.getBoundingClientRect().left ?? 0;
+  const free = Math.max(vw - column.right - GAP * 2, column.left - leftRoot - GAP * 2);
+  return free >= AUTO_OPEN_MIN_WIDTH;
 }
 
 export interface AutoOpenPlacement {

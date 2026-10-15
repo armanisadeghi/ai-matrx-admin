@@ -150,6 +150,7 @@ import { candidateItem } from "./helpers/candidateItem";
 import { onHelperAnswer, resetHelperAnswers, setHelperContext } from "./helpers/store";
 import { SmartAddGateLine } from "./SmartAddGateLine";
 import { SmartAddBioLinks } from "./SmartAddBioLinks";
+import { linkInBioService } from "@/features/marketing/lib/link-in-bio";
 import { SmartAddWebRow } from "./SmartAddWebRow";
 import { captureProvision } from "@/features/provision-window/data";
 import { useOpenProvisionWindow } from "@/features/overlays/openers/provisionWindow";
@@ -208,7 +209,8 @@ function accountSeedKey(seed: SocialSeed): string | null {
 
 /** A resumed address (`?run=`): the first round's seeds and typed keys, rebuilt from the typed fields. */
 function resumeTyped(a: SmartAddAddress): { seeds: RoundSeeds; keys: { website: string | null; social: string | null } } {
-  const site = a.prefill.website && /\.[a-z]{2,}/i.test(a.prefill.website) ? a.prefill.website : "";
+  const bio = a.prefill.social && linkInBioService(a.prefill.social) ? a.prefill.social.trim() : "";
+  const site = a.prefill.website && /\.[a-z]{2,}/i.test(a.prefill.website) ? a.prefill.website : bio;
   const parsed = resolveAccountInput({ text: a.prefill.social ?? "", picked: a.prefill.platform ?? null });
   const social = parsed.status === "ok" ? { handle_or_url: parsed.url, platform: parsed.platform } : null;
   return {
@@ -545,7 +547,9 @@ export function SmartAddBrand({
 
   // Typed fields → a round, debounced. Changing a field that already ran
   // supersedes everything (a different brand); filling the other field adds a round.
-  const typedWebsite = websiteText.trim() && /\.[a-z]{2,}/i.test(websiteText) ? websiteText.trim() : "";
+  // A link-in-bio page in the social box (MKT-110) is read as the web address but stays a social link.
+  const bioLink = linkInBioService(socialText) ? socialText.trim() : "";
+  const typedWebsite = websiteText.trim() && /\.[a-z]{2,}/i.test(websiteText) ? websiteText.trim() : bioLink;
   const typedSocial: SocialSeed | null =
     parsed.status === "ok" ? { handle_or_url: parsed.url, platform: parsed.platform } : null;
   const typedSocialKey = parsed.status === "ok" ? `social:${accountKey(parsed)}` : null;
