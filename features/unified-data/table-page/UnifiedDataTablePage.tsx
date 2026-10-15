@@ -19,6 +19,7 @@ import { useTable } from "@ai-matrx/records/react";
 import { SyncedTableBar } from "@/features/unified-data/connect-database/SyncedTableBar";
 import { FetchedTableBar } from "@/features/data-sources/FetchedTableBar";
 import { LiveDataColumnButton } from "@/features/data-sources/live-column/LiveDataColumnButton";
+import { NotionSyncBar } from "@/features/spaces/io/NotionSyncBar";
 import { SyncIntoWorkspaceButton } from "@/features/unified-data/connect-database/SyncIntoWorkspaceButton";
 import { TableWorkbookLinkButton } from "@/features/workbooks/table-link/TableWorkbookLinkButton";
 import type { PageView, ViewAddressState } from "@ai-matrx/records-ui";
@@ -101,6 +102,8 @@ function TableRouteHeader({
           <HeldWritesOnTable key="held" tableId={tableId} organizationId={organizationId} />
           {/* Synced from outside: the chip and Refresh (lane VISION-REACH wave 3). Absent otherwise. */}
           <SyncedTableBar key="synced" tableId={tableId} organizationId={organizationId} />
+          {/* Brought in from a connected Notion: Sync now and the sync report (lane NOTION-SYNC). Absent otherwise. */}
+          <NotionSyncBar key="notion-sync" tableId={tableId} organizationId={organizationId} />
           {/* Fetched with "Get data": source, when, rows, Refresh / Get more with points. Absent otherwise. */}
           <FetchedTableBar key="fetched" tableId={tableId} organizationId={organizationId} inline />
           {/* A column that fills itself from a data source, one metered fetch per row (points quoted first). */}

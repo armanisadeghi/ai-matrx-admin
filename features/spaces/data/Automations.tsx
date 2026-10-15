@@ -19,8 +19,8 @@ import { FlaskConical, History, Plus, RotateCcw, Trash2, X } from "lucide-react"
 import { Button, Input, Switch } from "@ai-matrx/design-system/controls";
 import { isButtonField } from "@ai-matrx/records";
 import type { AutomationAction, AutomationItem, AutomationRun, AutomationSpec, AutomationTrigger, AutomationValue, AutomationWeekday, ReadRow, SavedViewRow } from "@ai-matrx/records";
-import { useRecordsClient, useTable, type Field } from "@ai-matrx/records/react";
-import { rightsReason, useTableRights } from "@ai-matrx/records-ui";
+import { useMyLevel, useRecordsClient, type Field } from "@ai-matrx/records/react";
+import { whatYouMayDo } from "@ai-matrx/records-ui";
 
 import { useEffectiveKnob } from "@/lib/scoped-config/effectiveKnobs.client";
 
@@ -373,17 +373,21 @@ export function AutomationsPanel({ words = "spaces", ...rest }: { tableId: strin
 
 /**
  * WHY THE ON/OFF SWITCH (and archive / restore) IS CLOSED, in one short line, or null when it is open. The store's
- * doors (`automation_set_enabled` / `_archive` / `_restore`) ask the Editor level; a viewer pressing the switch
- * used to get nothing at all (lane AT-UIFIX item 4). Same ladder the door reads (`organise` = editor).
+ * doors (`automation_set_enabled` / `_archive` / `_restore`) ask Edit, so the panel asks Edit, no more (lane
+ * AT-UIFIX item 4). A viewer pressing the switch used to get nothing at all. The ladder's own word is said.
  */
-export function automationSwitchReason(rights: Parameters<typeof rightsReason>[0]): string | null {
-  return rightsReason(rights, "organise");
+export function automationSwitchReason(rights: { known: boolean; level: unknown; organise: boolean }): string | null {
+  if (!rights.known) return "Checking your access…";
+  if (rights.organise) return null;
+  return rights.level === null ? "You don't have access" : "Needs Edit access";
 }
 
 function AutomationsPanelBody({ tableId, organizationId, fields }: { tableId: string; organizationId: string | null; fields: Field[] }) {
   const say = useSay();
   const client = useRecordsClient();
-  const switchReason = automationSwitchReason(useTableRights(useTable(tableId as never)));
+  // The person's level on THIS table (the door's own question); a refusal is an answer: nothing held.
+  const mine = useMyLevel(tableId as never);
+  const switchReason = automationSwitchReason(whatYouMayDo(mine.error ? null : (mine.data ?? null), !mine.loading));
   const runsShown = Number(useEffectiveKnob(organizationId, null, RUNS_KNOB) ?? 20) || 20;
   const [list, setList] = useState<AutomationItem[] | null>(null);
   const [problem, setProblem] = useState<string | null>(null);
