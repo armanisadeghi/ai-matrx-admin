@@ -171,7 +171,7 @@ export function deckDownloads(loadDeck: () => Promise<Deck>, name: string): File
 export async function downloadSlideAsImage(deck: Deck, index: number, name: string, format: "png" | "jpeg" | "svg"): Promise<void> {
   const slide = deck.slides[index];
   if (!slide) throw new Error("This presentation has no slides yet");
-  const [{ elementToImage }, { downloadFile }, rendered] = await Promise.all([
+  const [{ renderElement, canvasToBlob }, { downloadFile }, rendered] = await Promise.all([
     import("@ai-matrx/alchemy/operate/capture"),
     import("@ai-matrx/kit/download"),
     renderDeckSlides({ ...deck, slides: [slide] }, { position: "fixed", left: "-10000px", top: "0", width: `${slideStage(slideSizeOf(deck)).width}px` }),
@@ -180,7 +180,7 @@ export async function downloadSlideAsImage(deck: Deck, index: number, name: stri
     const el = rendered.elements[0]!;
     const file = `${safeName(name)} - slide ${index + 1}`;
     if (format === "svg") {
-      const png = await elementToImage(el, { type: "image/png", scale: 2, backgroundColor: rendered.background });
+      const png = await canvasToBlob(await renderElement(el, { pixelRatio: 2, backgroundColor: rendered.background }), "image/png");
       const url = await new Promise<string>((resolve, reject) => {
         const fr = new FileReader();
         fr.onload = () => resolve(String(fr.result));
@@ -193,7 +193,8 @@ export async function downloadSlideAsImage(deck: Deck, index: number, name: stri
       return;
     }
     const type = format === "jpeg" ? "image/jpeg" : "image/png";
-    const blob = await elementToImage(el, { type, quality: 0.92, scale: 2, backgroundColor: rendered.background });
+    // The foreignObject renderer keeps the browser's own layout, so gradient titles (background-clip: text) draw as they do on screen.
+    const blob = await canvasToBlob(await renderElement(el, { pixelRatio: 2, backgroundColor: rendered.background }), type, 0.92);
     downloadFile(`${file}.${format === "jpeg" ? "jpg" : "png"}`, blob, type);
   } finally {
     rendered.done();
