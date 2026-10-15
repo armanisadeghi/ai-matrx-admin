@@ -96,7 +96,7 @@ export const FINDINGS_CHECKS = [
   {
     id: "api-contract-ratchet",
     watch: featureRegExp(/(^(features|app|lib|components|hooks)\/.*\.tsx?$)|^scripts\/api-contracts-baseline/),
-    fix: "Call the server through the typed client (lib/api/typed-client.ts, generated api-types) instead of importing the raw python client.",
+    fix: "Call the server through the generated operations (@ai-matrx/api/<domain> through lib/api/server-api.ts) instead of importing the raw python client.",
     ...fromRules("api-contract-ratchet"),
   },
   {

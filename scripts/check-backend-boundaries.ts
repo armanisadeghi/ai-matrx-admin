@@ -31,7 +31,8 @@ const APPROVALS_PATH = join(ROOT, "scripts", "backend-boundary-approvals.json");
 const SCAN_DIRS = ["app", "components", "features", "../aidream/apps/shared/chat/src", "hooks", "lib"];
 const CORE_TRANSPORTS = new Set([
   "lib/api/call-api.ts",
-  "lib/api/typed-client.ts",
+  "lib/api/server-api.ts",
+  "lib/api/chat-host-api.ts",
   "lib/python-client.ts",
   "hooks/useBackendApi.ts",
 ]);

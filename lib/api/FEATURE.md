@@ -1,6 +1,6 @@
 # FEATURE: Python API client — contract-bound calls
 
-**Status:** Active · **Owner:** platform · **Entry point:** [`lib/api/typed-client.ts`](./typed-client.ts)
+**Status:** Active · **Owner:** platform · **Entry point:** [`lib/api/server-api.ts`](./server-api.ts)
 
 The primary sanctioned way for feature code to call the Python backend
 (`https://server.app.matrxserver.com`). It binds every callsite to the
@@ -103,16 +103,21 @@ the deviation that shipped the 400.
 **2. Every backend call goes through the typed client, never the raw helpers.**
 `lib/python-client.ts` (`postJson<T>`, `postMultipart<T>`, …) takes a plain
 `string` path and an *asserted* response `T` — no link to the contract. Feature
-code uses `lib/api/typed-client.ts` instead, which is generic over a **path
-literal** and derives body + response from `operations[…]`:
+code calls the generated operations of `@ai-matrx/api/<domain>` through the website's one
+client, `serverApi` (`lib/api/server-api.ts`): each operation carries its own path, method,
+auth tier and organization rule, and takes `{ path, query, body }` typed from the contract.
+`serverApi` is `createApi` plus the website's identity (Redux credentials with the session-ready
+wait and 401 refresh, the admin server toggle per deployment, the active organization after
+admission, the guest fingerprint, admin-lane and AI-test-mode headers) and its error policy
+(every failure is a `BackendApiError`; usage / not-a-member refusals are noticed; Error Inspector
+capture except a caller's own cancel). A wrapper that still takes the old `RequestOptions`
+converts them with `callOptionsFrom(opts)`.
 
 ```ts
-import { apiPost, apiGet, apiMultipart, buildPath } from "@/lib/api/typed-client";
+import { listConverters } from "@ai-matrx/api/architecture";
+import { serverApi } from "@/lib/api/server-api";
 
-const { data } = await apiPost("/assets/preview", body); // body + data typed from contract
-const { data } = await apiGet(buildPath("/assets/{file_id}", { file_id }));
-// query params keep the path literal contract-checked:
-const { data } = await apiGet("/kg-cost/orgs", { query: { limit, offset } });
+const catalog = await listConverters(serverApi, {}); // response typed from the contract
 ```
 
 What this catches at compile time: wrong path (not a key of `paths`), wrong
@@ -162,7 +167,7 @@ hatch underneath the canonical clients. It exists for NDJSON, multipart, and
 other consumers that must inspect or stream the response body. It still owns
 active-server URL resolution, auth, request IDs, structured HTTP parsing, and
 Error Inspector capture. Feature code does not import it directly; add a
-contract-bound wrapper in `typed-client.ts` or use `callApi`.
+generated operation (`@ai-matrx/api/<domain>`) called through `serverApi`, or use `callApi`.
 
 ## Failure disclosure — a template is NEVER the answer
 
@@ -230,11 +235,10 @@ to 500 for exactly this reason; see aidream `api/FEATURE.md`).
 
 ## Proof / guardrail
 
-[`typed-client.contract-test.ts`](./typed-client.contract-test.ts) is a
-type-checked (never executed) file of `@ts-expect-error` assertions. If
-`pnpm type-check` reports an *unused* `@ts-expect-error` there, the guarantee
-regressed — the client stopped catching a wrong shape. Do not delete assertions
-to make it pass.
+[`__tests__/server-api.test.ts`](./__tests__/server-api.test.ts) characterizes what `serverApi`
+puts on the wire (credentials, organization gate, fingerprint, request ids, admin lane, base URL
+per deployment, the `BackendApiError` callers catch). `chat-host-api.ts` keeps the path-keyed verbs
+the `@ai-matrx/chat` host contract still asks for, until that package calls operations itself.
 
 `scripts/check-backend-boundaries.ts` performs the complementary site-wide
 transport audit. It detects legacy `useBackendApi` consumers, raw
@@ -355,6 +359,7 @@ query GETs (unblocked by `apiGet`'s `query` support), and
   for transcribe / transcribe-url / text-to-speech) + its test (mocks the
   typed-client boundary), and `features/podcasts/generator/usePodcastCastPreview.ts`
   (`apiGet` with typed `query`).
+- 2026-10-15 — `typed-client.ts` retired: every caller moved to generated `@ai-matrx/api/<domain>` operations through `serverApi` (`server-api.ts`); `chat-host-api.ts` holds the four verbs the chat package's host contract needs.
 - 2026-07-12 — Created. Built `typed-client.ts` (path-keyed, contract-derived
   wrappers) + contract-test proof. Converted `features/files/api/assets.ts`
   preview types + call as the reference. Fixes the Image Studio Convert 400.

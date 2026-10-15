@@ -25,7 +25,7 @@ import { adminLaneHeadersFor, adminLaneOrganizationId } from "@/lib/api/admin-la
 import { aiTestModeHeaders } from "@/lib/api/ai-test-mode";
 import { adminDoorOpen } from "@/lib/api/adminDoor";
 import { fetchContextState } from "@/lib/api/context-api";
-import { apiGet, apiPatch, apiPost, buildPath } from "@/lib/api/typed-client";
+import { apiGet, apiPatch, apiPost, buildPath } from "@/lib/api/chat-host-api";
 import { getAccessTokenOrNull, postJson, requestRaw, resolveBaseUrl } from "@/lib/python-client";
 import { AIDREAM_PRODUCTION_URL } from "@/lib/api/endpoints";
 import { mintCredential } from "@/lib/api/broker/client";

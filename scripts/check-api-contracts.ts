@@ -4,8 +4,8 @@
  * to ADD, while the existing backlog drains.
  *
  * Every call to the Python backend must go through the contract-bound typed
- * client (`@/lib/api/typed-client`), whose request body + response are DERIVED
- * from the generated OpenAPI types. The raw helpers in `@/lib/python-client`
+ * client (`@/lib/api/server-api` + the generated `@ai-matrx/api/<domain>` operations),
+ * whose request body + response are DERIVED from the generated contract. The raw helpers in `@/lib/python-client`
  * (`postJson<T>` / `postMultipart<T>` / …) take a plain string path and an
  * *asserted* response `T` — that gap shipped a production 400 (Image Studio
  * Convert: FE sent `key`, backend wanted `preset_id`, TS was green).
@@ -37,7 +37,7 @@ const SCAN_DIRS = ["features", "../aidream/apps/shared/chat/src", "app", "lib", 
 
 // Files/dirs allowed to import the raw client: the sanctioned client layer.
 const ALLOWED = [
-  "lib/api/", // the typed client itself
+  "lib/api/", // the server client itself
   "lib/python-client.ts", // the raw client module
   "hooks/useBackendApi.ts", // legacy adapter; consumers are gated by check-backend-boundaries
 ];
@@ -204,7 +204,7 @@ function run(): number {
       `${RED}${added.length} NEW file(s) import the raw @/lib/python-client instead of the${RESET}`,
     );
     console.log(
-      `${RED}contract-bound typed client. Route these through @/lib/api/typed-client${RESET}`,
+      `${RED}contract-bound typed client. Route these through @/lib/api/server-api${RESET}`,
     );
     console.log(
       `${RED}(apiGet/apiPost/apiPatch/apiPut/apiDelete/apiMultipart + buildPath) so the${RESET}`,
