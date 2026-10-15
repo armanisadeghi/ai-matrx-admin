@@ -315,6 +315,11 @@ jobs:
         # that runs. `pnpm check:parse --fix` repairs the injected-import
         # class; `pnpm check:parse:self-test` proves it can still fail.
         run: pnpm check:parse
+      - name: The app wears the same page as every package playground
+        # Arman 2026-10-14: playgrounds must look exactly like the app. Both wear
+        # @ai-matrx/design-system web-base.css + tokens.css; app/globals.css imports it, never
+        # restates its rules, never re-declares a design-system value differently. Self-test proves red.
+        run: pnpm check:host-parity && pnpm check:host-parity:self-test
       - name: No vendor names on customer screens
         # Arman 2026-10-11: "via ScrapeCreators" reached aimatrx.com. Data vendors are our business,
         # never the customer's. Static scan of customer-facing UI text; self-test proves it can fail.

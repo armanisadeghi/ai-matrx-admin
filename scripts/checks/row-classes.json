@@ -5,7 +5,7 @@
     "repo-only": "reads the repository and nothing else"
   },
   "counts": {
-    "repo-only": 186,
+    "repo-only": 192,
     "live-db": 70
   },
   "rows": {
@@ -945,6 +945,34 @@
       "label": "Writing boxes — self-test",
       "class": "repo-only",
       "cmd": "pnpm check:writing-boxes:self-test",
+      "reason": "no database access in 2 file(s) reached",
+      "evidence": []
+    },
+    "one-peek": {
+      "label": "One peek",
+      "class": "repo-only",
+      "cmd": "pnpm check:one-peek:strict",
+      "reason": "no database access in 2 file(s) reached",
+      "evidence": []
+    },
+    "one-peek-self-test": {
+      "label": "One peek — self-test",
+      "class": "repo-only",
+      "cmd": "pnpm check:one-peek:self-test",
+      "reason": "no database access in 2 file(s) reached",
+      "evidence": []
+    },
+    "raw-storage": {
+      "label": "Raw storage",
+      "class": "repo-only",
+      "cmd": "pnpm check:raw-storage:strict",
+      "reason": "no database access in 2 file(s) reached",
+      "evidence": []
+    },
+    "raw-storage-self-test": {
+      "label": "Raw storage — self-test",
+      "class": "repo-only",
+      "cmd": "pnpm check:raw-storage:self-test",
       "reason": "no database access in 2 file(s) reached",
       "evidence": []
     },
@@ -2021,7 +2049,7 @@
       "label": "Content IR / kinds test suite",
       "class": "repo-only",
       "cmd": "pnpm test:content-ir",
-      "reason": "no database access in 242 file(s) reached",
+      "reason": "no database access in 254 file(s) reached",
       "evidence": []
     },
     "whole-jest-suite-every-suite-not-ci-s-four-scopes": {
@@ -2287,6 +2315,20 @@
       "label": "Cursor law guard self-test",
       "class": "repo-only",
       "cmd": "pnpm check:cursor-law:self-test",
+      "reason": "no database access in 2 file(s) reached",
+      "evidence": []
+    },
+    "hover-card-or-tooltip-opens-from-a-container-holding-buttons": {
+      "label": "Hover card or tooltip opens from a container holding buttons",
+      "class": "repo-only",
+      "cmd": "pnpm check:hover-trigger-scope",
+      "reason": "no database access in 2 file(s) reached",
+      "evidence": []
+    },
+    "hover-trigger-scope-guard-self-test": {
+      "label": "Hover trigger scope guard self-test",
+      "class": "repo-only",
+      "cmd": "pnpm check:hover-trigger-scope:self-test",
       "reason": "no database access in 2 file(s) reached",
       "evidence": []
     },
