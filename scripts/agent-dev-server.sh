@@ -541,19 +541,32 @@ reuse_managed_meta() {
 }
 
 acquire_start_lock() {
-  mkdir "$LOCK" 2>/dev/null && return 0
+  if mkdir "$LOCK" 2>/dev/null; then
+    printf '%s\n' "$$" >"$LOCK/pid"
+    return 0
+  fi
 
-  # Another caller may be between fork and metadata write. Wait for its state
-  # instead of racing a second Next tree into existence.
-  local attempt
-  for attempt in $(seq 1 50); do
+  # Another caller is starting a server. Wait for its lease, or for it to die — never for a
+  # fixed time: on 2026-10-15 a start spent >10 s deleting a 30 GB cache, a second start judged
+  # its lock "stale" after 10 s and launched another next dev, and that one's boot wiped the
+  # running server's build folder (ENOENT routes-manifest.json: every page answered 500).
+  local attempt holder
+  for attempt in $(seq 1 900); do
     reuse_managed_meta && return 1
+    holder="$(head -1 "$LOCK/pid" 2>/dev/null)"
+    if [[ ! -d "$LOCK" ]]; then
+      if mkdir "$LOCK" 2>/dev/null; then printf '%s\n' "$$" >"$LOCK/pid"; return 0; fi
+    elif [[ -n "$holder" ]] && ! alive "$holder"; then
+      break # its holder died mid-start
+    elif [[ -z "$holder" ]] && (( attempt >= 50 )); then
+      break # a lock from before holders were recorded, empty for 10 s
+    fi
     sleep 0.2
   done
-
-  # An empty lock with no live metadata after ten seconds is stale.
-  rmdir "$LOCK" 2>/dev/null || fail "another preview start is still in progress"
+  (( attempt < 900 )) || fail "another preview start (pid ${holder:-unknown}) has been running for 3 min; not starting a second server"
+  rm -rf "$LOCK"
   mkdir "$LOCK" 2>/dev/null || fail "could not acquire the preview start lock"
+  printf '%s\n' "$$" >"$LOCK/pid"
   return 0
 }
 
@@ -718,15 +731,23 @@ cmd_start() {
   fi
 
   acquire_start_lock || return 0
-  trap 'rmdir "$LOCK" 2>/dev/null || true' EXIT
+  trap 'rm -rf "$LOCK" 2>/dev/null || true' EXIT
 
   # Close the small race between the first process scan and lock acquisition.
   running="$(running_server)"
   if [[ -n "$running" ]]; then
     read -r pid port owner <<<"$running"
-    rmdir "$LOCK" 2>/dev/null || true
+    rm -rf "$LOCK" 2>/dev/null || true
     slot_occupied "$pid" "$port" "$owner"
     return 0
+  fi
+
+  # Never a second next dev beside a live one, even one the process scan missed (still booting,
+  # or its lease lost): its boot clears the running server's build folder.
+  local listener
+  listener="$(lsof -nP -iTCP:"$PORT" -sTCP:LISTEN -t 2>/dev/null | head -1)"
+  if [[ -n "$listener" ]]; then
+    fail "pid $listener already listens on port $PORT — not starting a second server (its boot would wipe the running one's build folder); pnpm preview:ready reuses or repairs it"
   fi
 
   ensure_worktree_node_modules
@@ -753,12 +774,20 @@ cmd_start() {
   # recompile per route — nothing next to a 100 GB runaway that starves the box.
   local cache_dir cache_kb cache_cap_gb
   cache_dir="$REPO_ROOT/$DISTDIR/dev/cache/turbopack"
-  cache_cap_gb="${MATRX_PREVIEW_MAX_CACHE_GB:-20}"
+  # 40 GB since 2026-10-15: with the dev cache back on it reached 30 GB in an hour of shared churn,
+  # and a reset means every route compiles cold. The 2026-08-28 runaway was a 153 GB cache.
+  cache_cap_gb="${MATRX_PREVIEW_MAX_CACHE_GB:-40}"
   if [[ -d "$cache_dir" ]]; then
     cache_kb="$(du -sk "$cache_dir" 2>/dev/null | awk '{print $1 + 0}')"
     if (( cache_kb >= cache_cap_gb * 1048576 )); then
-      log "CACHE RESET: turbopack persistent cache is $(awk -v kb="$cache_kb" 'BEGIN { printf "%.1f", kb / 1048576 }') GB (cap ${cache_cap_gb} GB) — deleting $DISTDIR; oversized caches send every cold compile into a 100+ GB RSS runaway"
-      rm -rf "$REPO_ROOT/$DISTDIR"
+      log "CACHE RESET: turbopack persistent cache is $(awk -v kb="$cache_kb" 'BEGIN { printf "%.1f", kb / 1048576 }') GB (cap ${cache_cap_gb} GB) — moving $DISTDIR aside and deleting it in the background; oversized caches send every cold compile into a 100+ GB RSS runaway"
+      # A rename is instant; the delete of tens of GB happens detached, never inside the start.
+      local trash="$STATE_DIR/distdir-trash-$(date +%s)"
+      if mv "$REPO_ROOT/$DISTDIR" "$trash" 2>/dev/null; then
+        /usr/bin/python3 -c 'import subprocess, sys; subprocess.Popen(["rm", "-rf", sys.argv[1]], start_new_session=True, stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)' "$trash"
+      else
+        rm -rf "$REPO_ROOT/$DISTDIR"
+      fi
     fi
   fi
 
@@ -1320,7 +1349,7 @@ cmd_stop() {
   # previous server crashed or what it was serving (2026-10-15).
   [[ -f "$LOG" ]] && mv -f "$LOG" "$LOG.prev"
   rm -f "$META" "$READY" "$JAR" "$FAILED" "$USED" "$TOUCHED"
-  rmdir "$LOCK" 2>/dev/null || true
+  rm -rf "$LOCK" 2>/dev/null || true
   log "managed preview stopped; build cache $distdir was preserved"
 }
 
