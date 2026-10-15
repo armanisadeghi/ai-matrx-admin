@@ -87,6 +87,16 @@ import { pushAddressOrNavigate } from "@/lib/url-state/addressWithoutNavigating"
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { UntrustedCount } from "@ai-matrx/design-system";
 import { DATA_STORES_PATH } from "@/features/knowledge/modulePaths";
+import { RowSelectionBar, useRowSelection } from "@/lib/entity-list/RowSelectionBar";
+import {
+  mergeBulkActions,
+  runPerRow,
+  standardBulkActionsFor,
+} from "@/lib/entity-list/standardBulkActions";
+import type { EntityBulkAction } from "@/lib/entity-list/selection";
+import { createClient } from "@/utils/supabase/client";
+import { ragDb } from "@/utils/supabase/ragDb";
+import { writeOne } from "@/utils/supabase/writeOne";
 
 /** Canonical `ui_surface.name` this page emits. */
 const RAG_DATA_STORES_SURFACE = "matrx-user/knowledge-data-stores";
@@ -152,6 +162,64 @@ export function DataStoresPage() {
     ],
   );
 
+  // Bulk selection over the store list. A store the person can't change (shared with them,
+  // read-only) keeps its checkbox; the run skips and names it.
+  const storeSelection = useRowSelection(list.stores, (store) => store.id);
+  const storeBulkActions = mergeBulkActions<DataStoreWithMemberCount>(
+    (["Deactivate", "Activate"] as const).map(
+      (label): EntityBulkAction<DataStoreWithMemberCount> => {
+        const active = label === "Activate";
+        return {
+          id: active ? "activate-stores" : "deactivate-stores",
+          label,
+          confirm: active
+            ? undefined
+            : (target) => ({
+                title: `Deactivate ${target.count} ${target.count === 1 ? "store" : "stores"}?`,
+                description:
+                  "Agents stop searching inside them. Members and files are kept; Activate turns them back on.",
+                confirmLabel: "Deactivate",
+              }),
+          run: (target) =>
+            runPerRow(
+              target,
+              async (id) => {
+                await writeOne(
+                  ragDb(createClient())
+                    .from("data_stores")
+                    .update({ is_active: active })
+                    .eq("id", id)
+                    .select("id"),
+                  { action: "update", noun: "data store" },
+                );
+              },
+              {
+                done: active ? "Activated" : "Deactivated",
+                noun: "store",
+                labelOf: (store) => store.name,
+                skipReason: (store) =>
+                  store.readOnly ? "Shared with you read-only" : null,
+              },
+              (store) => store.id,
+            ),
+        };
+      },
+    ),
+    standardBulkActionsFor<DataStoreWithMemberCount>({
+      token: "data_store",
+      noun: "store",
+      rowIdOf: (store) => store.id,
+      labelOf: (store) => store.name,
+      config: {
+        appliesTo: (store) =>
+          store.readOnly || store.access === "granted"
+            ? "Shared with you, not yours to change"
+            : null,
+      },
+      favoritesShown: false,
+    }),
+  );
+
   const select = useCallback(
     (id: string | null) => {
       const params = new URLSearchParams(search?.toString() ?? "");
@@ -208,13 +276,41 @@ export function DataStoresPage() {
               : "No data stores yet. Create your first one above."}
           </div>
         )}
+        {list.stores.length > 0 && (
+          <div className="border-b border-border/50 p-1.5">
+            <RowSelectionBar
+              selection={storeSelection}
+              idOf={(store) => store.id}
+              actions={storeBulkActions}
+              noun="store"
+              plural="stores"
+              compact
+              onRefresh={list.refresh}
+              onRemoveRows={(ids) => {
+                storeSelection.clear();
+                if (storeId && ids.includes(storeId)) select(null);
+                list.refresh();
+              }}
+            />
+          </div>
+        )}
         {list.stores.map((s) => (
-          <StoreListRow
-            key={s.id}
-            store={s}
-            selected={s.id === storeId}
-            onSelect={() => select(s.id)}
-          />
+          <div key={s.id} className="flex items-stretch">
+            <div className="flex shrink-0 items-center pl-3">
+              <Checkbox
+                checked={storeSelection.has(s.id)}
+                onCheckedChange={() => storeSelection.toggle(s.id)}
+                aria-label={`Select ${s.name}`}
+              />
+            </div>
+            <div className="min-w-0 flex-1">
+              <StoreListRow
+                store={s}
+                selected={s.id === storeId}
+                onSelect={() => select(s.id)}
+              />
+            </div>
+          </div>
         ))}
       </div>
     </>

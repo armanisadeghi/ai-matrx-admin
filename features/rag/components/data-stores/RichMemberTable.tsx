@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Loader2 } from "lucide-react";
+import { Loader2, Trash2 } from "lucide-react";
 import {
   MatrxDataTable,
   type MatrxColumnDef,
@@ -38,6 +38,9 @@ import {
 } from "@/components/ui/tooltip";
 import { readOf } from "@ai-matrx/design-system";
 import { openOutbound } from "@ai-matrx/kit/outbound";
+import { useTableBulkSelection } from "@/lib/entity-list/useTableBulkSelection";
+import { runPerRow } from "@/lib/entity-list/standardBulkActions";
+import { bulkCountLabel } from "@/lib/entity-list/selection";
 
 function statusToDocStatus(s: RichMember["status"]): DocStatus {
   if (s === "no_processing") return "pending";
@@ -269,6 +272,47 @@ export function RichMemberTable({
     }
   };
 
+  // Membership rows are not a registered record type, so only the store's own verb applies:
+  // the same `onRemove` the row's trash button uses, one member at a time, refusals named.
+  const bulk = useTableBulkSelection<RichMember>({
+    noun: "member",
+    rows: members,
+    getRowId: memberId,
+    getRowName: (member) => member.name,
+    onRefresh: () => onRefresh?.(),
+    actions: readOnly
+      ? []
+      : [
+          {
+            id: "remove-from-store",
+            label: "Remove from store",
+            icon: Trash2,
+            variant: "destructive",
+            confirm: (target) => ({
+              title: `Remove ${bulkCountLabel(target.count, "member")} from this store?`,
+              description: `The files, ${RAG_VOCAB.segmentsShort.toLowerCase()} and embeddings are not deleted.`,
+              confirmLabel: "Remove",
+              variant: "destructive",
+            }),
+            run: (target) =>
+              runPerRow(
+                target,
+                async (_id, member) => {
+                  if (!member) throw new Error("No longer in this store");
+                  await onRemove(member.sourceKind, member.sourceId);
+                },
+                {
+                  done: "Removed from this store",
+                  noun: "member",
+                  labelOf: (member) => member.name,
+                  removesRows: true,
+                },
+                memberId,
+              ),
+          },
+        ],
+  });
+
   const actionsFor = (member: RichMember) => (
     <>
       <SearchTapButton
@@ -311,6 +355,7 @@ export function RichMemberTable({
         data={members}
         columns={[...(memberColumns()), { id: "custom-actions", header: "Actions", sortable: false, filter: false, customActions: (member) => actionsFor(member) }]}
         getRowId={memberId}
+        selection={bulk.selection}
         density="condensed"
         isLoading={loading && members.length === 0}
         isFetching={loading && members.length > 0}
