@@ -33,7 +33,6 @@ export function SmartAddBrandPage() {
             <SmartAddEnrichFlow key={enrichBrandId} brandId={enrichBrandId} carry={url.address.prefill} onChanged={() => router.refresh()} />
           ) : url.address.mode || validateAddressOwner(validateBrandId, liveBrandId) === "live" ? (
             <SmartAddBrand
-              onCreated={() => router.refresh()}
               onValidating={(brand) => {
                 setLiveBrandId(brand.id);
                 url.toValidate(brand.id);

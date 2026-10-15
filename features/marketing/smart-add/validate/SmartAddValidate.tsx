@@ -17,7 +17,7 @@ import { marketingSeg } from "@/features/marketing/lib/keys";
 import type { EvidenceItem as Ev } from "../evidence";
 import type { Decision, EvidenceItem } from "../evidence";
 import type { SuggestContext, WebChoice } from "../webKinds";
-import { buildQueue, decisionFor, gapFacts, mergeFacts, type Answer, type BrandFact, type CoreGap, type FocusItem } from "./queue";
+import { buildQueue, coreGaps, decisionFor, gapFacts, mergeFacts, type Answer, type BrandFact, type CoreGap, type FocusItem } from "./queue";
 import { persistAnswer, type Persisted } from "./persist";
 import { answeredKeysOf, EMPTY_KNOWN, foldQueue, logoImagesOf, logosLabel, type KnownOnBrand } from "./fold";
 import { loadSavedFindings } from "./fromSaved";
@@ -43,7 +43,7 @@ export function SmartAddValidate({
   working,
   onDecide,
   publish,
-  gaps = [],
+  gaps: liveGaps,
 }: {
   brand: MarketingBrand;
   organizationId: string;
@@ -55,7 +55,8 @@ export function SmartAddValidate({
   ctx: SuggestContext;
   broken: ReadonlySet<string>;
   working: boolean;
-  /** The part of the core Create saved without: its cards come first (MKT-143). */
+  /** The part of the core Create saved without: its cards come first (MKT-143). Absent (a reload, a return
+   *  visit): read from what the brand has saved. */
   gaps?: CoreGap[];
   /** The workflow-facing answer (null = cleared): a confirmed finding seeds / wakes the next round. */
   onDecide: (key: string, decision: Decision | null) => void;
@@ -114,6 +115,15 @@ export function SmartAddValidate({
   const answeredKeys = new Set(answered.flatMap((a) => answeredKeysOf(a.item)));
   // A gap is closed once its card is answered, or once an answered "ours" / "preferred" card gave that part of the core.
   const given = (g: CoreGap) => answered.some((a) => (g === "account" ? a.item.kind === "account" && a.answer === "ours" : g === "website" ? a.item.kind === "website" && a.answer === "ours" : a.item.kind === "name" && a.answer === "preferred"));
+  // The live session knows what Create saved without; a reload asks the brand itself (MKT-143).
+  const gaps: CoreGap[] =
+    liveGaps ??
+    (saved
+      ? coreGaps(
+          { name: brand.name || null, websiteUrl: brand.website_url || saved.known.hosts[0] || null, accounts: saved.known.accounts ?? [] },
+          brand.kind === "person",
+        )
+      : []);
   const raw = buildQueue({ items: allItems, facts: allFacts, decisions, webChoices, answered: answeredKeys, later, broken, kinds, ctx, gaps: gapFacts(gaps.filter((g) => !given(g))) });
   // A logo picture already answered (this visit or an earlier one) or saved as the brand's logo is never asked again,
   // whichever key a later round finds it under (MKT-139).

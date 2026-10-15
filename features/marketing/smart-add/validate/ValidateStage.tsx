@@ -581,7 +581,8 @@ export function ValidateStage({
   onUndo: (entry: AnsweredEntry) => void;
 }) {
   const current = queue[0] ?? null;
-  const [editing, setEditing] = useState(false);
+  // A core gap card is an empty field: it opens ready to type in — also when it is the very first card.
+  const [editing, setEditing] = useState(() => Boolean(current?.key.startsWith("gap:")));
   const [off, setOff] = useState<Set<string>>(new Set());
   const [dir, setDir] = useState<Throw>("yes");
   const lastAnswerAt = useRef(0);

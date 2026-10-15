@@ -125,7 +125,11 @@ export function useSmartAddAddress(): SmartAddAddressBinding {
     },
     setView,
     write,
-    toValidate: (brandId) => replaceAddressWithoutNavigating(smartAddValidateHref(brandId)),
+    // A soft router navigation, never a bare history write: the path changes ROUTE here, and a history write
+    // left Next's tree on /company — the next refresh then reloaded the whole document, dropping the live
+    // session (its findings and the missing-core cards) onto the saved-data page (MKT-143). The layout keeps
+    // its state across this navigation like it does for /company ↔ /person.
+    toValidate: (brandId) => router.replace(smartAddValidateHref(brandId), { scroll: false }),
     markSearch: () => pushAddressWithoutNavigating(currentPathWithSearch(window.location.search.replace(/^\?/, ""))),
   };
 }
