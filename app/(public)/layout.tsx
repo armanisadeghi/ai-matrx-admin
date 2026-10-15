@@ -13,6 +13,8 @@ const ONE_TAP_SKIP_PREFIXES = [
   "/l/",
   "/r/",
   "/sms",
+  // A share link mounts its own prompt with the owning organization's choice (s/[token]/page.tsx).
+  "/s/",
 ];
 
 export default function PublicLayout({

@@ -4,6 +4,7 @@ import { cache } from "react";
 import { createClient } from "@/utils/supabase/server";
 import { resolveShareToken } from "@/utils/permissions/shareLinks";
 import { resolveShareLensMeta } from "@/features/sharing/lenses/metadata";
+import { GoogleOneTapMount } from "@/features/auth/one-tap/GoogleOneTapMount";
 import { SharedResourceView } from "./SharedResourceView";
 import { ShareLinkError } from "./ShareLinkError";
 
@@ -58,5 +59,13 @@ export default async function SharedTokenPage({ params }: PageProps) {
     return <ShareLinkError message={result.message} />;
   }
 
-  return <SharedResourceView result={result} token={token} />;
+  const ownerOrganization = result.resource?.organization_id;
+  return (
+    <>
+      <SharedResourceView result={result} token={token} />
+      <GoogleOneTapMount
+        organizationId={typeof ownerOrganization === "string" ? ownerOrganization : null}
+      />
+    </>
+  );
 }

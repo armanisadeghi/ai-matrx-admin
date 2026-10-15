@@ -82,6 +82,8 @@ export function GoogleOneTap({ autoSelect, context = "use", destination, skipPre
               visitorId,
             });
             if (!result.ok) {
+              // An automatic sign-in that failed must not fail again on every page load.
+              window.google?.accounts?.id?.disableAutoSelect();
               toast.error(`Google sign-in failed: ${result.error}`);
               return;
             }

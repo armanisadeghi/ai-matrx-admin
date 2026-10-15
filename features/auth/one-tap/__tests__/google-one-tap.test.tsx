@@ -23,10 +23,11 @@ jest.mock("../actions", () => ({ signInWithGoogleOneTap: (...args: unknown[]) =>
 
 const initialize = jest.fn();
 const prompt = jest.fn();
+const disableAutoSelect = jest.fn();
 jest.mock("@/providers/google-provider/googleIdentityId", () => ({
   loadGoogleIdentityId: async () => {
     (window as unknown as { google: unknown }).google = {
-      accounts: { id: { initialize, prompt, cancel: jest.fn(), disableAutoSelect: jest.fn() } },
+      accounts: { id: { initialize, prompt, cancel: jest.fn(), disableAutoSelect } },
     };
     return true;
   },
@@ -101,5 +102,16 @@ it("stays quiet on a skipped path", async () => {
   mockPathname = "/unsubscribe/abc";
   const root = await mount({ autoSelect: true, skipPrefixes: ["/unsubscribe"] });
   expect(initialize).not.toHaveBeenCalled();
+  act(() => root.unmount());
+});
+
+it("a failed sign-in turns auto-select off so it cannot fail again on every load", async () => {
+  signIn.mockImplementationOnce(async () => ({ ok: false, error: "nope" }) as never);
+  disableAutoSelect.mockClear();
+  const root = await mount({ autoSelect: true });
+  await act(async () => initialize.mock.calls[0][0].callback({ credential: "bad" }));
+  await settle();
+  expect(disableAutoSelect).toHaveBeenCalledTimes(1);
+  expect(land).not.toHaveBeenCalled();
   act(() => root.unmount());
 });
