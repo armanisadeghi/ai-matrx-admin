@@ -14,7 +14,7 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { ArrowDown, ArrowUp, ChevronDown, ChevronRight, Plus, X } from "lucide-react";
 import { Button, Input, Select } from "@ai-matrx/design-system/controls";
-import { Popover, PopoverContent, PopoverTrigger } from "@ai-matrx/design-system";
+import { ErrorNotice, Popover, PopoverContent, PopoverTrigger } from "@ai-matrx/design-system";
 import { optionKey, optionLabel, type AutomationTrigger, type Field, type RuleExpression } from "@ai-matrx/records";
 import { useOptionalRecordsClient, useTables } from "@ai-matrx/records/react";
 import { ConditionGroup, type ConditionField } from "@ai-matrx/records-ui";
@@ -330,7 +330,7 @@ function FindWhere({ where, onChange, tableFields, sources }: { where: RuleExpre
   const parts: unknown[] = where && (where as { op?: string }).op === "and" ? ((where as unknown as { args: unknown[] }).args ?? []) : where ? [where] : [];
   const isTokenRow = (p: unknown) => {
     const c = rec(rec(p).args instanceof Array ? (rec(p).args as unknown[])[1] : null);
-    return typeof c.const === "string" && TOKEN.test(c.const) && ((TOKEN.lastIndex = 0), true);
+    return typeof c.const === "string" && new RegExp(TOKEN.source).test(c.const);
   };
   const tokenRows = parts.filter(isTokenRow);
   const rest = parts.filter((p) => !isTokenRow(p));
@@ -387,7 +387,7 @@ function MandateRows({ step, onChange, sources }: { step: Step; onChange: (s: St
   const entries = Object.values(catalogue ?? {}).sort((a, b) => a.label.localeCompare(b.label));
   return (
     <div className="flex flex-col gap-1" data-testid="automation-agent-step">
-      {problem ? <p className="text-xs text-destructive">{problem}</p> : null}
+      {problem ? <ErrorNotice size="inline" message={problem} /> : null}
       <Pick label="Agent" value={key} onChange={(k) => onChange({ ...step, mandate_key: k, variables: {} })} options={entries.map((m) => ({ value: m.mandate_key, label: m.label }))} />
       {key && surface.status === "ready"
         ? surface.surface.inputs.map((inp) => (
@@ -403,7 +403,7 @@ function MandateRows({ step, onChange, sources }: { step: Step; onChange: (s: St
           <TokenText label="Message to the agent" value={str(step.input)} onChange={(v) => onChange({ ...step, input: v })} sources={sources} />
         </div>
       ) : null}
-      {key && surface.status === "error" ? <p className="text-xs text-destructive">{surface.message}</p> : null}
+      {key && surface.status === "error" ? <ErrorNotice size="inline" message={surface.message} /> : null}
     </div>
   );
 }
@@ -643,13 +643,9 @@ function IfEditor({ step, n, onChange, scope, sources }: { step: Step; n: number
   const setBranch = (i: number, patch: Partial<{ label: string; when: Record<string, unknown>; actions: Step[] }>) =>
     onChange({ ...step, branches: branches.map((b, j) => (j === i ? { ...b, ...patch } : b)) });
   // numbers: the group is n; its paths' steps follow in order
-  let next = n + 1;
-  const starts = branches.map((b) => {
-    const s = next;
-    next += arr(b.actions).reduce((m, x) => m + stepCount(x), 0);
-    return s;
-  });
-  const elseStart = next;
+  const sizes = branches.map((b) => arr(b.actions).reduce((m, x) => m + stepCount(x), 0));
+  const starts = sizes.map((_, i) => n + 1 + sizes.slice(0, i).reduce((a, b) => a + b, 0));
+  const elseStart = n + 1 + sizes.reduce((a, b) => a + b, 0);
   const inner: Scope = scope;
   return (
     <div className="flex flex-col gap-2" data-testid="automation-if">
@@ -679,10 +675,8 @@ function IfEditor({ step, n, onChange, scope, sources }: { step: Step; n: number
 /** A list of steps, each numbered as the engine numbers it, each able to use what the steps before it hand over. */
 export function StepList({ steps, onChange, startN, scope }: { steps: Step[]; onChange: (s: Step[]) => void; startN: number; scope: Scope }) {
   const env = useEnv();
-  let n = startN;
   const cards = steps.map((s, i) => {
-    const my = n;
-    n += stepCount(s);
+    const my = startN + steps.slice(0, i).reduce((a, x) => a + stepCount(x), 0);
     const earlier: Scoped[] = [];
     let m = startN;
     for (let j = 0; j < i; j++) {
