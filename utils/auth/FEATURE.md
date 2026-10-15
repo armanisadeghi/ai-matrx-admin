@@ -189,8 +189,21 @@ retention-closed guests revived). Sign-up with email + password promotes the SAM
 (`promoteGuest`) and never falls back to a fresh account. A failed claim screams and keeps the guest cookie for
 the next replacement. Guard: `pnpm check:session-handover` (+ `:self-test`, CI).
 
+## Google One Tap — "Continue as <name>" for signed-out visitors (2026-10-14)
+
+`features/auth/one-tap/`: `GoogleOneTapMount` (server: reads `auth.one_tap_auto_select`, default on,
+organization-overridable, through the service lane — anon cannot read knobs) renders `GoogleOneTap` (client:
+FedCM prompt, sha256 nonce to Google, raw nonce + ID token to the `signInWithGoogleOneTap` action, which runs
+`signInWithIdToken` inside `handOverSession`). A new Google account is created by the same click; the page
+reloads in place, `/login` and `/sign-up` open the destination. Mounted on `/login`, `/sign-up`, `/` and the
+`(public)` layout (errand links skipped). Supabase accepts the web client (`NEXT_PUBLIC_GOOGLE_CLIENT_ID`)
+as a second comma-separated `external_google_client_id`; the first ID stays the redirect flow's. Google
+allows the prompt only on origins registered on that client: `https://www.aimatrx.com` and
+`http://localhost:3000` are; `http://localhost:3001` and `*.localhost` session hosts are not.
+
 ## Change Log
 
+- 2026-10-14 — Google One Tap for signed-out visitors (section above); knob `auth.one_tap_auto_select` seeded live.
 - 2026-10-09 (lane F12): `/sign-up` and `/login` show "Your N records come with you." to a guest (`lib/guest/guest-record-count.ts`, `AuthPageContainer note`); the primary button of a `HardRedirectForm` says "Getting ready…" and stays disabled until the page's script has loaded (`SubmitButton needsScript`) — an early press was a silent no-op.
 - 2026-10-09 — G2 guest data: the one session handover (`lib/guest/session-handover.ts`); the fail-open OAuth transfer (`lib/services/guest-oauth-transfer.ts`) and fingerprint-keyed `guest-promotion.ts` deleted; guard `check:session-handover`.
 
