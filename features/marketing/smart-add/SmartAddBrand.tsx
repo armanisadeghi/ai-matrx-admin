@@ -16,6 +16,7 @@
  * Watch window when it is built.
  */
 
+import { toPropertyKind } from "@/features/marketing/components/shared/PropertyKindMark";
 import { useEffect, useEffectEvent, useLayoutEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Check, ExternalLink, Globe, Loader2, RotateCcw, TriangleAlert, X } from "lucide-react";
@@ -77,6 +78,7 @@ import {
   isSocialPlatform,
   SOCIAL_PLATFORMS,
   SOCIAL_PLATFORM_LABELS,
+  TRACKABLE_PLATFORMS,
   type SocialPlatform,
 } from "@/features/marketing/social/types";
 import type { MarketingBrand } from "@/features/marketing/types";
@@ -301,6 +303,8 @@ export function SmartAddBrand({
   // whether the one grounded round (name + one confirmed anchor) has been sent.
   const personTyped = useRef<{ name: string; city: string } | null>(resumePerson?.name ? { name: resumePerson.name, city: resumePerson.city ?? "" } : null);
   // Person clues typed beside the city (Part 10): search clues only — they never ground the person.
+  // An email typed in any box (VISION Part 19): rides the next round once (its free lookups run once).
+  const emailPending = useRef("");
   const personMore = useRef<PersonMore>({ occupation: resumePerson?.occupation ?? "", company: resumePerson?.company ?? "", extra: "" });
   // Each round's path (brand.identify.path_decision), sent back as `path_history` so escalation fires live.
   const [pathByRun, setPathByRun] = useState<Record<string, RoundPath>>({});
@@ -360,7 +364,9 @@ export function SmartAddBrand({
       : null;
     const nowGrounded = Boolean(typed) && (personAnchors.length > 0 || affiliations.length > 0);
     const groundedRound = !find && nowGrounded && !groundedSent.current;
-    if (!seeds.website && seeds.socials.length === 0 && !woken.name && !woken.location && !find && !groundedRound) return;
+    const email = emailPending.current;
+    if (!seeds.website && seeds.socials.length === 0 && !woken.name && !woken.location && !find && !groundedRound && !email) return;
+    emailPending.current = "";
     if (groundedRound) groundedSent.current = true;
     // The person facts agent reads the anchors' profiles from THIS round's lookups (reused within the session):
     // a grounded round woken by a name alone still carries the confirmed accounts.
@@ -410,6 +416,7 @@ export function SmartAddBrand({
           inputs: {
             website: seeds.website,
             socials: seeds.socials,
+            ...(email ? { email } : {}),
             confirmed: confirmedFacts,
             woken,
             exclude_keys: exclude,
@@ -1168,13 +1175,15 @@ export function SmartAddBrand({
           const row = await createProperty({
             organizationId,
             brandId: brand.id,
-            kind: (item.platform ?? "website") as Parameters<typeof createProperty>[0]["kind"],
+            // A profile site (GitHub, Substack…) has no property kind of its own: it is kept as `other` with its address.
+            kind: toPropertyKind(item.platform ?? "website") as Parameters<typeof createProperty>[0]["kind"],
             url: item.url,
             handle: item.handle,
             displayName: item.label,
             status: "active",
           });
-          if (item.platform) accounts.push({ handle_or_url: item.url ?? item.value, platform: item.platform, property_id: row.id });
+          // Only a platform the server can look up is tracked; a profile site stays a property.
+          if (item.platform && TRACKABLE_PLATFORMS.has(item.platform)) accounts.push({ handle_or_url: item.url ?? item.value, platform: item.platform, property_id: row.id });
         } catch (error) {
           problems.push(`@${item.handle ?? ""}: ${extractErrorMessage(error)}`);
         }
@@ -1556,6 +1565,10 @@ export function SmartAddBrand({
           person={person}
           onPerson={setPerson}
           onFindPerson={findPerson}
+          onEmail={(email, startNow) => {
+            emailPending.current = email;
+            if (startNow) void startRound({ website: "", socials: [] }, {}, true);
+          }}
           initial={url ? (fresh ? url.address.prefill : (resume?.address.prefill ?? url.address.prefill)) : undefined}
           via={url ? url.address.viaParam : undefined}
           initialVia={url?.address.via ?? null}

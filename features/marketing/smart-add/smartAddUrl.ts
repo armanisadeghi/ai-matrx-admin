@@ -36,6 +36,8 @@ export interface SmartAddPrefill {
   city?: string;
   occupation?: string;
   company?: string;
+  /** An email address the person typed (VISION Part 19): its domain, name hints and free lookups. */
+  email?: string;
 }
 
 export interface SmartAddAddress {
@@ -52,7 +54,7 @@ export interface SmartAddAddress {
 }
 
 const VIAS: readonly SmartAddVia[] = ["website", "social", "name"];
-const TEXT_KEYS = ["website", "social", "name", "city", "occupation", "company"] as const;
+const TEXT_KEYS = ["website", "social", "name", "city", "occupation", "company", "email"] as const;
 type TextKey = (typeof TEXT_KEYS)[number];
 /** Every query name this module owns (anything else, e.g. `panels`, passes through untouched). */
 export const SMART_ADD_PARAMS = ["via", ...TEXT_KEYS, "platform", "run", "view"] as const;

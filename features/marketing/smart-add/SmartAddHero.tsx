@@ -17,7 +17,7 @@ import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { useEffect, useEffectEvent, useRef, useState, useSyncExternalStore, type KeyboardEvent, type ReactNode } from "react";
 import { AnimatePresence, MotionConfig, motion } from "motion/react";
 import { Button } from "@ai-matrx/design-system/controls";
-import {
+import { Mail,
   ArrowLeft,
   ArrowRight,
   AtSign,
@@ -38,6 +38,7 @@ import { PlatformMark, platformLabel } from "@/features/marketing/social/compone
 import { SocialImage } from "@/features/marketing/social/components/SocialImage";
 import { profileAvatarDoor } from "@/features/marketing/social/server";
 import type { SocialPlatform } from "@/features/marketing/social/types";
+import { emailIn } from "./emailInput";
 import { customItem, websiteHost, type EvidenceItem } from "./evidence";
 import type { RoundView } from "./SmartAddRound";
 import { AiTestReplayBadge } from "@/features/ai-test-mode/AiTestReplayBadge";
@@ -77,6 +78,7 @@ export function SmartAddHero({
   person,
   onPerson,
   onFindPerson,
+  onEmail,
   onWebsite,
   onSocial,
   onPick,
@@ -107,6 +109,8 @@ export function SmartAddHero({
   onPerson: (person: boolean) => void;
   /** Person name mode: start the anchor round ("Which of these is you?") on the typed name, city and clues. */
   onFindPerson?: (name: string, city: string, more: PersonMore) => void;
+  /** An email typed in any box (VISION Part 19); `startNow` = no other search starts, so run the email round. */
+  onEmail?: (email: string, startNow: boolean) => void;
   onWebsite: (v: string) => void;
   onSocial: (v: string) => void;
   onPick: (p: SocialPlatform | null) => void;
@@ -171,6 +175,7 @@ export function SmartAddHero({
   const [occupation, setOccupation] = useState(initial?.occupation ?? "");
   const [company, setCompany] = useState(initial?.company ?? "");
   const [extra, setExtra] = useState("");
+  const [email, setEmail] = useState(initial?.email ?? "");
   // Name + city only: ask once for the job or company before searching (a location never grounds a person).
   const [askedClue, setAskedClue] = useState(false);
   const [second, setSecond] = useState(false);
@@ -204,7 +209,9 @@ export function SmartAddHero({
       : mode === "name" ? name.trim().length > 1
       : false;
   };
-  const ready = readyFor(picked);
+  // An email in the main box is an email, whichever way in it was typed into (VISION Part 19).
+  const mainEmail = mode === "website" ? emailIn(site) : mode === "social" ? emailIn(social) : mode === "name" ? emailIn(name) : null;
+  const ready = Boolean(mainEmail) || readyFor(picked);
 
   const phase: "choose" | "enter" | "identifying" | "nothing" | "outcome" =
     submitted && (outcome || unreadable) ? "outcome" : submitted && nothingFound ? "nothing" : submitted || starting ? "identifying" : mode ? "enter" : "choose";
@@ -232,7 +239,16 @@ export function SmartAddHero({
   };
 
   const go = (pk: SocialPlatform | null) => {
+    if (mainEmail && onEmail) {
+      onEmail(mainEmail, true);
+      onStarted?.();
+      setSubmitted(true);
+      return;
+    }
+    const typedEmail = emailIn(email, extra);
+    if (typedEmail && mode !== "name") onEmail?.(typedEmail, false);
     if (mode === "name" && person && onFindPerson) {
+      if (typedEmail) onEmail?.(typedEmail, false);
       if (!occupation.trim() && !company.trim() && !askedClue) {
         setAskedClue(true);
         return;
@@ -245,6 +261,7 @@ export function SmartAddHero({
       const answers = [customItem("name", name)];
       if (city.trim()) answers.push(customItem("address", city));
       onAdd(answers);
+      if (typedEmail) onEmail?.(typedEmail, true);
       setSubmitted(true);
       return;
     }
@@ -256,7 +273,7 @@ export function SmartAddHero({
   };
   const held = useRef(false);
   const submit = (pk: SocialPlatform | null = picked) => {
-    if (!readyFor(pk)) return;
+    if (!mainEmail && !readyFor(pk)) return;
     if (!onBeforeStart) return go(pk);
     setStarting(true);
     void onBeforeStart({ website: siteOk ? site.trim() : "", social: socialOkFor(pk) ? social.trim() : "", platform: pk, name: name.trim(), city: city.trim() }).then((ok) => {
@@ -307,12 +324,13 @@ export function SmartAddHero({
       city: city.trim() || null,
       occupation: occupation.trim() || null,
       company: company.trim() || null,
+      email: email.trim() || null,
     }),
   );
   useEffect(() => {
     const timer = setTimeout(draft, SMART_ADD_ADDRESS_DEBOUNCE_MS);
     return () => clearTimeout(timer);
-  }, [site, social, picked, name, city, occupation, company]);
+  }, [site, social, picked, name, city, occupation, company, email]);
 
   // 1 / 2 / 3 pick a way in while nothing is focused for typing.
   useEffect(() => {
@@ -429,6 +447,16 @@ export function SmartAddHero({
                         placeholder="City (optional)"
                         label="City"
                       />
+                      <SubRow
+                        icon={<Mail className="size-[1.1rem]" />}
+                        value={email}
+                        onChange={setEmail}
+                        onKeyDown={onFieldKey}
+                        // ui-exception: an email address is a raw value, not prose
+                        placeholder="Email (optional)"
+                        label="Email"
+                        tag={email.trim() && !emailIn(email) ? "Not an email" : null}
+                      />
                       {person ? (
                         <>
                           <SubRow
@@ -488,6 +516,7 @@ export function SmartAddHero({
                           placeholder="yourbrand.com"
                           label="Website"
                           inputMode="url"
+                          tag={mainEmail ? "Email" : null}
                           go={<GoButton disabled={!ready} onClick={() => submit()} />}
                         />
                       ) : (
@@ -499,7 +528,7 @@ export function SmartAddHero({
                           // ui-exception: a handle or address is a raw value, not prose
                           placeholder="@handle or profile link"
                           label="Handle or link"
-                          tag={socialOk && parsed.status === "ok" ? platformLabel(parsed.platform) : null}
+                          tag={mainEmail ? "Email" : socialOk && parsed.status === "ok" ? platformLabel(parsed.platform) : null}
                           go={<GoButton disabled={!ready} onClick={() => submit()} />}
                         />
                       )}

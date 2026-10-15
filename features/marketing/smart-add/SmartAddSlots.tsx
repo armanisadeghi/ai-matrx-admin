@@ -22,6 +22,8 @@ import { Avatar, AvatarFallback, FirstUseHint, Peek, PeekHoverCard, type PeekBlo
 import { formatCount } from "@ai-matrx/kit/format";
 import { profileAvatarDoor } from "@/features/marketing/social/server";
 import { PlatformMark, platformLabel } from "@/features/marketing/social/components/PlatformMark";
+import { profileSiteUrl } from "@/features/marketing/social/profile-sites";
+import { isSocialPlatform } from "@/features/marketing/social/types";
 import { rankByAnchors, type PersonAnchors } from "./anchorRank";
 import { SocialImage } from "@/features/marketing/social/components/SocialImage";
 import { proxiedExternalImageUrl } from "@/lib/media/external-image";
@@ -844,6 +846,7 @@ function sourceLink(item: EvidenceItem): React.ReactNode {
 function accountUrl(item: EvidenceItem, candidate: Candidate | undefined): string | null {
   const own = candidate?.url ?? item.url ?? item.source.url ?? (/^https?:\/\//i.test(item.value) ? item.value : null);
   if (own) return own;
+  if (item.platform && item.handle && !isSocialPlatform(item.platform)) return profileSiteUrl(item.platform, item.handle);
   const platform = item.platform as Parameters<typeof profileUrlFor>[0] | null;
   return platform && item.handle ? profileUrlFor(platform, item.handle) : null;
 }

@@ -41,6 +41,7 @@ Smart Add Brand: a person types a website, a social link or a name, Smart Add fi
 | `?website=ritualcoffee.com` | company prefill | typing replaces it, debounced 400 ms |
 | `?social=@handle` or a profile URL (encoded) `&platform=instagram` | social prefill (`platform` only beside `social`) | replace |
 | `?name=…&occupation=…&company=…&city=…` | person prefill (`name` + `city` also name a business) | replace |
+| `?email=…` | an email typed on the name card (person or company); an email typed or pasted in ANY box (`emailInput.ts`) is read as one and starts the email round: aidream step `email` (domain → website unless a free mailbox host, name hints, free web/GitHub/Gravatar lookups). Developer/creator sites (GitHub, Hugging Face, Substack, Bluesky…) show as accounts through `social/profile-sites.ts` (label, tile, address); Create keeps them as `other` properties, never tracked accounts | replace |
 | `?run=<uuid>` (repeated, oldest first) | the session's rounds | replaced as each round starts |
 | `?view=compare` | the compare dialog (`compare/CompareDialog.tsx`; only slots with 2+ unsettled candidates, likeliest first) | push (Back closes it) |
 | `?panels=smart_add_helper:<method>` | a helper window (linkedin, google, facebook, instagram, threads, tiktok, youtube, grok) | the window-panels URL sync |

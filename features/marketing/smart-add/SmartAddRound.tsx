@@ -37,8 +37,8 @@ export const IDENTIFY_STEPS: SmartAddStepPair = ["probe", "page", "avatars", "so
 export const SETUP_STEPS: SmartAddStepPair = ["logo", "accounts", "history"];
 /** Steps whose output may carry the facts agent's `brand_basics` (read for facts only, not shown as steps). */
 const FACT_STEPS: SmartAddStepPair = ["facts", "brand_basics", "person_facts", "whats_new_1", "whats_new_2", "whats_new_3"];
-/** The person branch's anchor stage: its findings (read like any step's output, not shown as steps). */
-const ANCHOR_STEPS: SmartAddStepPair = ["person_anchor_search", "person_anchor_extract"];
+/** The person branch's anchor stage and the email step (aidream brand.identify.email): their findings (read like any step's output, not shown as steps). */
+const ANCHOR_STEPS: SmartAddStepPair = ["person_anchor_search", "person_anchor_extract", "email"];
 /** The web step's note when the page read found a parked domain after the search ran. */
 export const PARKED_WEB_NOTE = "Parked domain — web results set aside";
 /** The person / business verdict step (aidream brand.identify.person_signals). */
