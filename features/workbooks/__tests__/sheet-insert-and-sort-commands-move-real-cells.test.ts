@@ -33,7 +33,7 @@ import {
   InsertColAfterCommand,
   InsertRowBeforeCommand,
   InsertRowAfterCommand,
-} from "@univerjs/sheets";
+} from "@univerjs/preset-sheets-core";
 
 import { buildSheetMenus, type SheetChromeHost } from "../chrome/sheet-commands";
 import { flattenMenus } from "@/components/editor-chrome/editor-menu-model";
