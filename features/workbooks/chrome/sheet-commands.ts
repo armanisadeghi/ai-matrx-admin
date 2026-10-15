@@ -172,6 +172,13 @@ const FUNCTIONS = ["SUM", "AVERAGE", "COUNT", "MAX", "MIN"] as const;
 
 // ─── helpers ───
 
+/**
+ * Univer's insert-row-before / insert-col-before read the COUNT from `params.value` (`params.value || 0`),
+ * so with no params they insert zero rows and the menu row does nothing (found live 2026-10-14).
+ * The "-after" pair derives the count from the selection and needs none.
+ */
+const INSERT_ONE = { value: 1 } as const;
+
 const sheetOf = (h: SheetChromeHost) => h.api.getActiveWorkbook()?.getActiveSheet() ?? null;
 const rangeOf = (h: SheetChromeHost) => sheetOf(h)?.getSelection()?.getActiveRange() ?? null;
 const run = (h: SheetChromeHost, id: string, params?: object) => () =>
@@ -593,7 +600,7 @@ export function buildSheetMenus(h: SheetChromeHost): EditorMenu[] {
           id: "insert.rows",
           label: "Rows",
           items: [
-            { kind: "action", id: "insert.rows.above", label: "Insert 1 row above", keywords: ["insert row"], run: run(h, "sheet.command.insert-row-before") },
+            { kind: "action", id: "insert.rows.above", label: "Insert 1 row above", keywords: ["insert row"], run: run(h, "sheet.command.insert-row-before", INSERT_ONE) },
             { kind: "action", id: "insert.rows.below", label: "Insert 1 row below", keywords: ["insert row"], run: run(h, "sheet.command.insert-row-after") },
           ],
         },
@@ -602,7 +609,7 @@ export function buildSheetMenus(h: SheetChromeHost): EditorMenu[] {
           id: "insert.columns",
           label: "Columns",
           items: [
-            { kind: "action", id: "insert.columns.left", label: "Insert 1 column left", keywords: ["insert column"], run: run(h, "sheet.command.insert-col-before") },
+            { kind: "action", id: "insert.columns.left", label: "Insert 1 column left", keywords: ["insert column"], run: run(h, "sheet.command.insert-col-before", INSERT_ONE) },
             { kind: "action", id: "insert.columns.right", label: "Insert 1 column right", keywords: ["insert column"], run: run(h, "sheet.command.insert-col-after") },
           ],
         },
