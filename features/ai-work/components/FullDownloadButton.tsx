@@ -120,7 +120,7 @@ function FullDownloadOutcome({ result }: { result: FullDownloadResult }) {
         {name}: not available
         <ErrorAlchemyMenu error={clip(step.reasons.join(" "))} />
       </span>
-      {step.reasons.slice(0, 3).map((reason) => (
+      {step.reasons.map((reason) => (
         <span key={reason} className="text-muted-foreground">
           {clip(reason)}
         </span>

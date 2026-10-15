@@ -180,6 +180,8 @@ export type DeckAction =
   | { type: "addSlide"; after: number; layout?: EditorLayout }
   | { type: "duplicateSlide"; index: number }
   | { type: "deleteSlide"; index: number }
+  /** Edit → Paste: a copied slide (fresh id) lands after `after`. */
+  | { type: "pasteSlide"; after: number; slide: DeckSlide }
   | { type: "moveSlide"; from: number; to: number }
   | { type: "setLayout"; index: number; layout: EditorLayout }
   | { type: "setField"; index: number; path: string; value: string }
@@ -226,6 +228,11 @@ export function deckReducer(state: DeckState, action: DeckAction): DeckState {
       const slides = deck.slides.slice();
       slides.splice(action.index + 1, 0, { ...clone(src), id: newSlideId() });
       return { deck: { ...deck, slides }, current: action.index + 1 };
+    }
+    case "pasteSlide": {
+      const slides = deck.slides.slice();
+      slides.splice(action.after + 1, 0, { ...clone(action.slide), id: newSlideId() });
+      return { deck: { ...deck, slides }, current: action.after + 1 };
     }
     case "deleteSlide": {
       if (!deck.slides[action.index]) return state;

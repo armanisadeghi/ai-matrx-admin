@@ -141,7 +141,7 @@ function serverAnswers(diag: Record<string, unknown> | null): void {
 
 function reconcileButton(): HTMLButtonElement {
   const button = [...(container?.querySelectorAll("button") ?? [])].find(
-    (candidate) => /Reconcil|Reaching your Mac/.test(candidate.textContent ?? ""),
+    (candidate) => /Reconcil|Reaching your|Delivering on/.test(candidate.textContent ?? ""),
   );
   if (!button) throw new Error("the reconcile button is not on the screen");
   return button as HTMLButtonElement;
@@ -381,7 +381,7 @@ describe("the reconcile door", () => {
     await act(async () => {
       reconcileButton().click();
     });
-    expect(text()).toContain("Your computer is delivering what AI Matrx lacks");
+    expect(text()).toContain("Matrx Local is delivering what AI Matrx lacks");
     expect(reconcileButton().disabled).toBe(true);
 
     await act(async () => {
@@ -462,8 +462,11 @@ describe("the reconcile door", () => {
 });
 
 describe("the reconcile door on a Matrx 2 computer", () => {
+  afterEach(() => {
+    mockedDoors.reach.listComputers.mockResolvedValue([]);
+  });
   function onStudioMac(answer: { state: string; summary: string }) {
-    mockedDoors.reach.listComputers.mockResolvedValueOnce([
+    mockedDoors.reach.listComputers.mockResolvedValue([
       { deviceId: "d1", name: "Studio Mac", online: true, protocolVersion: "1.40" },
     ]);
     // The computer holds the chat (its own session), then reconciles.

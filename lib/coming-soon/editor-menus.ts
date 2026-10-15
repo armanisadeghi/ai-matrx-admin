@@ -28,7 +28,7 @@ const ROWS: Row[] = [
   ["presentations.download-image", "Download a slide as an image", "presentations", "Download the current slide as a JPEG, PNG or SVG image.", "Presentation File → Download"],
   ["presentations.import-slides", "Import slides", "presentations", "Bring slides in from another presentation or a PowerPoint file.", "Presentation File → Import slides"],
   // ── Edit / View / Insert / Format (shared) ──
-  ["editor.edit.paste-plain", "Paste without formatting", "file-actions", "Paste the clipboard as plain text, taking on the surrounding style.", "Document and Presentation Edit"],
+  ["editor.edit.paste-plain", "Paste without formatting", "file-actions", "Paste the clipboard as plain text, taking on the surrounding style.", "Presentation Edit → Paste without formatting"],
   ["editor.insert.drawing", "Drawing", "file-actions", "Draw shapes, lines and text boxes and place the drawing in the file.", "Editor Insert → Drawing"],
   ["editor.insert.chart", "Chart", "file-actions", "Insert a chart that stays linked to its data and updates with it.", "Editor Insert → Chart"],
   ["editor.insert.emoji", "Emoji", "file-actions", "Pick an emoji from a searchable panel and insert it at the cursor.", "Editor Insert → Emoji"],
@@ -70,7 +70,10 @@ const ROWS: Row[] = [
   ["workbooks.suggestion-controls", "Suggestion controls", "workbooks", "Choose which automatic suggestions (autocomplete, formulas) appear.", "Workbook Tools → Suggestion controls"],
   // ── Document only ──
   ["documents.mode", "Editing mode", "documents", "Switch between editing, suggesting and viewing.", "Document View → Mode"],
-  ["documents.show-layout", "Show layout aids", "documents", "Show the ruler, outline, print layout and non-printing characters.", "Document View → Show"],
+  ["documents.show-print-layout", "Show print layout", "documents", "Switch between page-by-page print layout and one continuous page.", "Document View → Show"],
+  ["documents.show-ruler", "Show ruler", "documents", "Show a ruler above the page for margins and indents.", "Document View → Show"],
+  ["documents.show-outline", "Show outline", "documents", "Show the document's headings as an outline beside the page.", "Document View → Show"],
+  ["documents.show-nonprinting", "Show non-printing characters", "documents", "Show spaces, tabs and paragraph marks while you write.", "Document View → Show"],
   ["documents.building-blocks", "Building blocks", "documents", "Insert ready-made blocks: meeting notes, project trackers, email drafts.", "Document Insert → Building blocks"],
   ["documents.footnote", "Footnote", "documents", "Add a numbered footnote at the cursor.", "Document Insert → Footnote"],
   ["documents.page-numbers", "Page numbers", "documents", "Number the pages in the header or footer.", "Document Insert/Format → Page numbers"],
@@ -89,8 +92,6 @@ const ROWS: Row[] = [
   ["documents.citations", "Citations", "documents", "Add sources and insert citations and a bibliography in your chosen style.", "Document Tools → Citations"],
   ["documents.translate", "Translate document", "documents", "Make a translated copy of this document in another language.", "Document Tools → Translate document"],
   // ── Presentation only ──
-  ["presentations.clipboard", "Cut, copy and paste", "presentations", "Cut, copy and paste slides and objects, within and between decks.", "Presentation Edit"],
-  ["presentations.select-all", "Select all", "presentations", "Select every object on the slide.", "Presentation Edit → Select all"],
   ["presentations.find-replace", "Find and replace", "presentations", "Find text across every slide and replace it.", "Presentation Edit → Find and replace"],
   ["presentations.motion", "Motion", "presentations", "Add transitions between slides and animations to objects.", "Presentation View → Motion / Slide → Transition"],
   ["presentations.master", "Theme builder", "presentations", "Edit the master slide and layouts that every slide inherits.", "Presentation View → Theme builder / Slide → Edit theme"],

@@ -1,6 +1,6 @@
 {
   "note": "Checked-in snapshot of public._schema_migrations for the files under migrations/campaign and migrations/inverse. Written by `pnpm db:apply` on every successful production apply and refreshed whole by the nightly catch-up. Never hand-edited: a self-written checksum is a claim nobody can check. Guard: pnpm check:ledgered-files-unedited.",
-  "generated_at": "2026-10-15T02:15:09.053Z",
+  "generated_at": "2026-10-15T02:28:26.154Z",
   "files": {
     "migrations/campaign/a_chunk_is_the_size_the_client_door_can_actually_carry.sql": {
       "source": "matrx-frontend",
@@ -3073,6 +3073,12 @@
       "filename": "drillusagepage_drill_declares_ai_usage.sql",
       "checksum": "883d0f30d762762396a645e2fb2ee59dbf9f157473e9dc4b93fc26594b86450d",
       "applied_at": "2026-09-30 02:36:42.268504+00"
+    },
+    "migrations/campaign/duplorg_a_a_copy_may_contain_rows_inside_rows.sql": {
+      "source": "matrx-frontend",
+      "filename": "duplorg_a_a_copy_may_contain_rows_inside_rows.sql",
+      "checksum": "71ff58cb60b17c85846bcd648d4e5f2814596c394fc87fb15a3a226904e9c80e",
+      "applied_at": "2026-10-15 02:28:24.358737+00"
     },
     "migrations/campaign/enrich_a_field_a_model_owns.sql": {
       "source": "matrx-frontend",

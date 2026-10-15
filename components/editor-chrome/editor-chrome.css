@@ -66,12 +66,19 @@
   flex: 0 0 18px;
   color: var(--editor-icon-ink);
 }
-/* Submenu caret on the right: smaller, muted. */
+/* Submenu indicator on the right: Google's filled triangle (the app's chevron is hidden here). */
 .matrx-editor-menu [role="menuitem"][aria-haspopup] > svg:last-child:not(:first-child) {
-  width: 16px;
-  height: 16px;
+  display: none;
+}
+.matrx-editor-menu [role="menuitem"][aria-haspopup]::after {
+  content: "";
+  flex: 0 0 auto;
+  width: 0;
+  height: 0;
   margin-left: auto;
-  color: var(--editor-muted-ink);
+  border-style: solid;
+  border-width: 4px 0 4px 6px;
+  border-color: transparent transparent transparent var(--editor-muted-ink);
 }
 /* Shortcut / trailing hint: Google's muted gray, plain spacing. */
 .matrx-editor-menu [role^="menuitem"] > span:last-child:not(:first-child) {

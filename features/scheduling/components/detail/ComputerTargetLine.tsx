@@ -40,15 +40,21 @@ export function ComputerTargetLine({ task }: { task: AgendaTask }) {
       // Not due yet: its computer claims it when the time comes.
       if (due !== null && Date.parse(due) > Date.now()) return answer(null);
       const listed = await browserCodingDoors.reach.listComputers(target);
-      if ("reason" in listed) return answer({ tone: "warn", text: `Waiting · the computer's status could not be read (${listed.reason})` });
+      if ("reason" in listed) {
+        console.warn("[ComputerTargetLine] status unread", listed.reason);
+        return answer({ tone: "warn", text: "Waiting · status unread" });
+      }
       const computer = listed.find((c) => c.deviceId === target);
-      if (!computer) return answer({ tone: "danger", text: "Computer removed: this schedule's computer is no longer yours" });
+      if (!computer) return answer({ tone: "danger", text: "Computer removed" });
       if (computer.online === true) return answer(null);
       const { data } = await supabase.from("app_instances").select("last_seen").eq("id", target).maybeSingle();
       const since = (data as { last_seen: string | null } | null)?.last_seen ?? null;
       const state = computer.online === null ? "status unknown" : since ? `offline since ${humanizeRelative(since)}` : "offline";
       answer({ tone: "warn", text: `Waiting for ${computer.name} · ${state}` });
-    })().catch((error: unknown) => answer({ tone: "warn", text: `Waiting · the computer's status could not be read (${error instanceof Error ? error.message : String(error)})` }));
+    })().catch((error: unknown) => {
+      console.warn("[ComputerTargetLine] status unread", error);
+      answer({ tone: "warn", text: "Waiting · status unread" });
+    });
     return () => {
       live = false;
     };

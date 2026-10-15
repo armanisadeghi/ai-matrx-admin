@@ -43,7 +43,7 @@ export function MessengerAgentsRoute({ initialLocation }: MessengerAgentsRoutePr
     () => ({
       name: name || "You",
       avatar: avatarUrl ? ({ kind: "image", src: avatarUrl } as const) : ({ kind: "monogram" } as const),
-      onSelect: () => router.push("/settings/profile"),
+      onSelect: () => router.push("/user-settings/account"),
     }),
     [name, avatarUrl, router],
   );

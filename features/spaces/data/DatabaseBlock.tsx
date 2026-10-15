@@ -40,6 +40,7 @@ import {
   SlidersHorizontal,
   Table2,
   X,
+  FileText,
 } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 
@@ -57,6 +58,8 @@ import { FieldList, MenuRow, SidePeek, ViewerSaveBar, ViewerSortButton, ViewTab,
 import { ChartView, choicesOfField } from "./ChartView";
 import { DEFAULT_CHART } from "./first-reads";
 import { effectiveHidden, kindOf, scalarFilters, viewSpec, type ViewWithSummaries } from "./view-spec";
+import { useOwningRow } from "./owning-row";
+import { resolveThisRow, thisRowValues, THIS_ROW, THIS_ROW_LABEL, usesThisRow } from "./this-row";
 import { BlockRecordsSeed } from "../page/space-seed-context";
 import { NewPropertyPanel } from "./NewProperty";
 import { LAYOUTS, viewIcon, type Layout } from "./view-icons";
@@ -150,7 +153,12 @@ function DatabaseFrame({
   const choice = sortChoices[active.id];
   // The toolbar filter is the viewer's own the same way, until an editor saves it for everyone.
   const [filterChoices, setFilterChoices] = useState<Record<string, FilterChoice>>({});
-  const shown: SpaceDbView = { ...active, sorts: shownSorts(active, choice), filters: shownFilters(active, filterChoices[active.id]) };
+  const asked: SpaceDbView = { ...active, sorts: shownSorts(active, choice), filters: shownFilters(active, filterChoices[active.id]) };
+  // "This page's row" (data/this-row.ts): resolved to the row this page belongs to before the store is asked.
+  const owning = useOwningRow(usesThisRow(asked.filters));
+  const ownerId = owning.state === "found" ? owning.row.recordId : owning.state === "none" || owning.state === "failed" ? null : undefined;
+  const resolved = resolveThisRow(asked.filters, ownerId);
+  const shown: SpaceDbView = resolved.state === "plain" || resolved.state === "resolved" ? { ...asked, filters: resolved.filters } : asked;
   const sortOverride = choice ?? null;
   // The viewer's search (the table's magnifier), per view, beside the sort and filter: never saved,
   // asked of the store's search by the grid (records-ui searchOverride).
@@ -168,7 +176,8 @@ function DatabaseFrame({
   // "+ New page" (F7): Notion adds a row in place and opens it. A refused empty row (a required
   // column, a read-only sample) falls back to the whole-record form, which says why.
   const addRow = () => {
-    void client.recordWrite({ table_id: tableId, data: {} }).then((res) => {
+    // A row added in a "This page's row" view starts linked to that row, so it stays in the view.
+    void client.recordWrite({ table_id: tableId, data: thisRowValues(asked.filters, ownerId) }).then((res) => {
       if (res.ok) {
         setFresh(res.data);
         setOpen(res.data);
@@ -177,7 +186,14 @@ function DatabaseFrame({
     });
   };
 
-  const body = (
+  const body =
+    resolved.state === "waiting" ? (
+      <div className="spaces-db-loading" />
+    ) : resolved.state === "no-row" ? (
+      <div className="spaces-db-note" data-this-row="none">
+        {owning.state === "failed" ? "This page’s row can’t be read right now." : "Shows the rows of this page’s row — this page isn’t a row."}
+      </div>
+    ) : (
     <DatabaseBody
       tableId={tableId}
       view={shown}
@@ -365,7 +381,7 @@ function DatabaseFrame({
       <Dialog open={expanded} onOpenChange={setExpanded}>
         <DialogContent size="2xl" height="tall" className="spaces-db-expanded overflow-auto">
           <DialogTitle>{props.title || sourceName}</DialogTitle>
-          <DatabaseBody tableId={tableId} view={shown} fields={fields} onOpenRecord={setOpen} editable={editable} shape={shape} sample={sample} overRows={sample || published} sortOverride={sortOverride} search={search} onSummaries={shape && !sample && !published ? (summaries) => saveView({ summaries } as Partial<SpaceDbView>) : undefined} onFormId={(formId) => saveView({ formId })} onLook={saveView} />
+          {resolved.state === "plain" || resolved.state === "resolved" ? <DatabaseBody tableId={tableId} view={shown} fields={fields} onOpenRecord={setOpen} editable={editable} shape={shape} sample={sample} overRows={sample || published} sortOverride={sortOverride} search={search} onSummaries={shape && !sample && !published ? (summaries) => saveView({ summaries } as Partial<SpaceDbView>) : undefined} onFormId={(formId) => saveView({ formId })} onLook={saveView} /> : body}
         </DialogContent>
       </Dialog>
     </div>
@@ -583,6 +599,11 @@ function AdvancedFilter({ view, fields, onSave, onClose }: { view: SpaceDbView; 
   );
 }
 
+/** A relation column: its filter can name "This page's row". */
+function isRelationField(f: Field | undefined): boolean {
+  return !!f && (kindOf(f) === "relation" || String(f.type) === "relation");
+}
+
 function FilterButton({
   view,
   fields,
@@ -618,7 +639,7 @@ function FilterButton({
         {showAdvanced ? null : Object.entries(filters).map(([k, v]) => (
           <MenuRow
             key={k}
-            label={`${fields.find((f) => f.key === k)?.label ?? k} is ${String(v)}`}
+            label={`${fields.find((f) => f.key === k)?.label ?? k} is ${v === THIS_ROW ? THIS_ROW_LABEL : String(v)}`}
             end={<X size={14} />}
             onClick={() => {
               const { [k]: _gone, ...rest } = filters;
@@ -645,6 +666,16 @@ function FilterButton({
           ) : field ? (
             <div className="flex flex-col gap-2 p-1">
               <span className="type-secondary text-muted-foreground">{fields.find((f) => f.key === field)?.label} is</span>
+              {isRelationField(fields.find((f) => f.key === field)) ? (
+                <MenuRow
+                  label={THIS_ROW_LABEL}
+                  icon={<FileText size={15} />}
+                  onClick={() => {
+                    onView({ filters: { ...filters, [field]: THIS_ROW } });
+                    setField(null);
+                  }}
+                />
+              ) : null}
               <Input
                 autoFocus
                 value={value}

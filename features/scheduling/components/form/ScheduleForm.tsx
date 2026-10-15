@@ -218,7 +218,7 @@ export function ScheduleForm({
           maxConcurrent: form.maxConcurrent,
           trigger,
         });
-        toast.success("Schedule saved: the agent runs on that computer while Matrx 2 is open there");
+        toast.success("Schedule saved");
         startTransition(() => router.push(`/schedules/${id}`));
       } catch (err) {
         setErrors({ runsOn: err instanceof Error ? err.message : String(err) });
@@ -249,7 +249,7 @@ export function ScheduleForm({
           accountProfileId: computer.accountProfileId.trim() || null,
           trigger,
         });
-        toast.success("Schedule saved: it runs on that computer while Matrx 2 is open there");
+        toast.success("Schedule saved");
         startTransition(() => router.push(`/schedules/${id}`));
       } catch (err) {
         setErrors({ runsOn: err instanceof Error ? err.message : String(err) });

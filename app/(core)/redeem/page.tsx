@@ -37,7 +37,7 @@ export default async function RedeemPage({ searchParams }: RedeemPageProps) {
             <RedeemCodeField autoCode={code} />
           </div>
           <div className="flex gap-3 text-sm">
-            <Link className="text-primary hover:underline" href="/settings?tab=plan">
+            <Link className="text-primary hover:underline" href="/user-settings/plan">
               Plan & usage
             </Link>
             <Link className="text-primary hover:underline" href="/dashboard">

@@ -45,6 +45,7 @@ import {
 import { cn } from "@/utils/cn";
 import { EntityRef } from "@/components/official/entity-ref/EntityRef";
 import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
+import { arrivedByLabel } from "@/features/ai-work/lib/matrx2Coding";
 import {
   fetchCodingSessionBindings,
   type CodingSessionBinding,
@@ -351,7 +352,7 @@ function BindingCard({
           )}
         </PropertyRow>
         <PropertyRow label="Workspace">{workspace ?? <Absent />}</PropertyRow>
-        <PropertyRow label="Arrived by">{humanizeIdentifier(binding.origin)}</PropertyRow>
+        <PropertyRow label="Arrived by">{arrivedByLabel(binding.origin, humanizeIdentifier)}</PropertyRow>
         <PropertyRow label="Binding state">{humanizeIdentifier(binding.status)}</PropertyRow>
         <PropertyRow label="Last delivery">
           <DeliveryValue binding={binding} />
@@ -648,7 +649,7 @@ export function ConversationProvenancePanel({
               {fidelityVerdict(current.fidelity).detail}
             </PropertyRow>
             <PropertyRow label="Binding state">{humanizeIdentifier(current.status)}</PropertyRow>
-            <PropertyRow label="Arrived by">{humanizeIdentifier(current.origin)}</PropertyRow>
+            <PropertyRow label="Arrived by">{arrivedByLabel(current.origin, humanizeIdentifier)}</PropertyRow>
             <PropertyRow label="Last delivery">
               <DeliveryValue binding={current} />
             </PropertyRow>

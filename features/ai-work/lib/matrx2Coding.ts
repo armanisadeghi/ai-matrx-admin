@@ -218,6 +218,18 @@ export function createMatrx2Reach(deps: ReachDeps): Matrx2Reach {
   };
 }
 
+/**
+ * "Arrived by" in words. The desktop history importer (shared by Matrx Local and Matrx 2) stamps
+ * every chat `matrx_local` — the server accepts only that or `matrx_sandbox` — so the record cannot
+ * tell which desktop app delivered it, and this says so instead of naming the wrong one. Pure.
+ */
+export function arrivedByLabel(origin: string | null | undefined, humanize: (value: string) => string): string {
+  if (!origin) return "Not recorded";
+  if (origin === "matrx_local") return "Desktop import (Matrx 2 or Matrx Local; not recorded which)";
+  if (origin === "matrx_sandbox") return "Matrx Sandbox";
+  return humanize(origin);
+}
+
 // ── Pure helpers ─────────────────────────────────────────────────────────────
 
 /** "1.38" → 38; anything else → 0. */
@@ -427,6 +439,32 @@ async function locateChat(client: DesktopProtocolLikeClient, computer: Matrx2Com
   } finally {
     transport.dispose();
   }
+}
+
+export type ChatHolding =
+  | { via: "matrx2"; computer: Matrx2Computer; updatedAt: string | null }
+  | { via: "none"; sentence: string };
+
+/**
+ * Which Matrx 2 computer holds this chat, and when it last changed there: what Matrx 2 can tell
+ * the sync panel. It cannot count transcript entries (no protocol op does), so it never fakes them.
+ */
+export async function readChatHolding(doors: CodingDoors, providerSessionId: string): Promise<ChatHolding> {
+  const id = nativeSessionId(providerSessionId);
+  const chosen = await pick(doors, null);
+  const found = await firstComputerWith<string | null>(doors, chosen, async (client, computer) => {
+    const transport = transportFor(client, computer.name);
+    try {
+      const sessions = await transport.call("listSessions");
+      if (sessions.some((x) => x.providerSessionId === id)) return { value: null };
+      const chat = (await transport.call("discoverSessions", { limit: DISCOVER_WINDOW })).find((c) => c.providerSessionId === id);
+      return chat ? { value: chat.updatedAt } : { notHere: `This chat is not among the newest ${DISCOVER_WINDOW} chats on ${computer.name}.` };
+    } finally {
+      transport.dispose();
+    }
+  });
+  if (found.found) return { via: "matrx2", computer: found.computer, updatedAt: found.value };
+  return { via: "none", sentence: [...found.reasons, ...(found.notHere.length ? [notHereSentence(found.notHere)] : [])].join(" ") || "No Matrx 2 computer answered." };
 }
 
 /** "not among the newest 200 chats on A." + "… on B." → one sentence naming both. Pure. */

@@ -118,7 +118,13 @@ function saveBlob(blob: Blob, fileName: string): void {
   saveFile(fileName, blob, blob.type);
 }
 
-/** One source, resolved through the three steps. Never throws for a "no". */
+/** "<Place>: why" — unless the sentence already names that place. Pure. */
+function place(label: string, why: string): string {
+  const named = why.toLowerCase().startsWith(label.toLowerCase()) || (label === "Cloud backup" && /^no cloud backup/i.test(why));
+  return named ? why : `${label}: ${why}`;
+}
+
+/** One source, resolved through the three steps (Matrx 2, Matrx Local, cloud backup). Never throws for a "no". */
 export async function fullDownloadOne(
   source: RawTranscriptSource,
   organizationId: string | null,
@@ -130,7 +136,9 @@ export async function fullDownloadOne(
   if (source.native_session_id && relayProvider) {
     const fromMatrx2 = await fromMatrx2Computer(relayProvider, source.native_session_id);
     if ("step" in fromMatrx2) return { ...base, step: fromMatrx2.step };
-    reasons.push(...fromMatrx2.reasons);
+    reasons.push(`Matrx 2: ${fromMatrx2.reasons.join(" ")}`);
+  } else {
+    reasons.push("Matrx 2: this chat's file name is not known, so no computer can be asked.");
   }
 
   if (source.native_session_id) {
@@ -162,12 +170,12 @@ export async function fullDownloadOne(
           },
         };
       }
-      reasons.push(reply.detail ?? "Not on this computer.");
+      reasons.push(place("Matrx Local", reply.detail ?? "not on this computer."));
     } catch (error) {
-      reasons.push(error instanceof Error ? error.message : String(error));
+      reasons.push(place("Matrx Local", error instanceof Error ? error.message : String(error)));
     }
   } else {
-    reasons.push("File name unknown on this computer.");
+    reasons.push("Matrx Local: file name unknown on this computer.");
   }
 
   if (source.backup_available && source.backup_file_id) {
@@ -187,10 +195,10 @@ export async function fullDownloadOne(
         step: { kind: "cloud_backup", fileName, thisComputer: reasons.join(" ") },
       };
     } catch (error) {
-      reasons.push(`Backup download failed: ${error instanceof Error ? error.message : String(error)}`);
+      reasons.push(`Cloud backup: the download failed (${error instanceof Error ? error.message : String(error)}).`);
       return { ...base, step: { kind: "not_available", reasons } };
     }
   }
-  reasons.push(source.backup_sentence);
+  reasons.push(place("Cloud backup", source.backup_sentence));
   return { ...base, step: { kind: "not_available", reasons } };
 }
