@@ -155,6 +155,41 @@ describe.each(editors)("%s ribbon", (_name, ribbon, googleOnly, build) => {
     expect(dupes).toEqual([]);
   });
 
+  it("within a tab, no two controls share a label or open the same menu", () => {
+    const { menus, toolbar } = build();
+    const labelOf = (c: ReturnType<typeof resolveRibbon>[number]["groups"][number]["controls"][number]): string => {
+      const model = c.kind === "toolbar" ? ("label" in c.item ? c.item.label : undefined) : c.kind === "action" ? c.action.label : c.submenu.label;
+      return (c.label ?? model ?? "").trim().toLowerCase();
+    };
+    const items = (c: ReturnType<typeof resolveRibbon>[number]["groups"][number]["controls"][number]) =>
+      c.kind === "submenu" ? c.submenu.items : c.kind === "toolbar" && c.item.kind === "menu" ? c.item.items : undefined;
+    const sig = (entries: unknown[]): string =>
+      JSON.stringify((entries as Array<{ kind: string; id?: string; label?: string; items?: unknown[] }>).map((e) => (e.kind === "separator" ? "-" : e.kind === "submenu" ? [e.id ?? e.label, sig(e.items ?? [])] : (e.id ?? e.label))));
+    const dupes: string[] = [];
+    for (const tab of resolveRibbon(ribbon, menus, toolbar)) {
+      const labels = new Map<string, string>();
+      const menuSigs = new Map<string, string>();
+      for (const g of tab.groups)
+        for (const c of g.controls) {
+          const where = `${tab.id}/${g.id}/${c.key.split("/").slice(2).join("/")}`;
+          const label = labelOf(c);
+          if (label) {
+            const prior = labels.get(label);
+            if (prior) dupes.push(`${where} repeats the label "${label}" of ${prior}`);
+            else labels.set(label, where);
+          }
+          const list = items(c);
+          if (list?.length) {
+            const s = sig(list);
+            const prior = menuSigs.get(s);
+            if (prior) dupes.push(`${where} opens the same menu as ${prior}`);
+            else menuSigs.set(s, where);
+          }
+        }
+    }
+    expect(dupes).toEqual([]);
+  });
+
   it("starts on Home and every tab has a group", () => {
     const { menus, toolbar } = build();
     const tabs = resolveRibbon(ribbon, menus, toolbar);
