@@ -782,11 +782,18 @@ export function ValidateStage({
                             <span>Building your brand page</span>
                           </li>
                         </ul>
-                        <Button asChild variant="primary">
-                          <a href={brandHref} data-testid="validate-open-brand">
-                            Open brand page
-                          </a>
-                        </Button>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <Button asChild variant="primary">
+                            <a href={brandHref} data-testid="validate-open-brand">
+                              Open brand page
+                            </a>
+                          </Button>
+                          <Button asChild variant="outline">
+                            <a href={`${brandHref.replace(/\/$/, "")}/offerings`} data-testid="validate-open-offerings">
+                              Products &amp; services
+                            </a>
+                          </Button>
+                        </div>
                       </>
                     )}
                   </motion.div>

@@ -7,7 +7,7 @@
 // Verify:      pnpm check:kind-types   (CI-blocking freshness gate)
 // Twin guard:  pnpm check:kind-type-twins
 //
-// 1555 active kinds. THESE ARE THE ONLY KIND PAYLOAD TYPES IN THE REPO.
+// 1559 active kinds. THESE ARE THE ONLY KIND PAYLOAD TYPES IN THE REPO.
 // A hand-written interface mirroring a registered kind is a defect — derive
 // (Pick/Omit) from the type here instead, and never re-declare it.
 //
@@ -21,7 +21,7 @@
 // ─────────────────────────────────────────────────────────────────────────
 
 /** Structural fingerprint of the registry rows this artifact was generated from. */
-export const KIND_REGISTRY_FINGERPRINT = "6219252830f5";
+export const KIND_REGISTRY_FINGERPRINT = "8a532d8a3e6b";
 
 // ─────────────────────────────────────────────────────────────────────────
 // Shared nested structures. Deduped by structure across the registry — an
@@ -40,6 +40,20 @@ export interface AccessoryComponent {
   description: string;
   part_number?: string | null;
   serial_number?: string | null;
+}
+
+/**
+ * * From kind `competitor_live_intelligence_v1`.
+ */
+export interface AdvertisingSignal {
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  interpretation: string;
+  messaging_themes?: string[];
+  platforms_active?: string[];
+  active_ad_estimate?: number | null;
 }
 
 /**
@@ -1593,6 +1607,86 @@ export interface BrandKeyPerson_BrandIntakeKeyPeople {
 }
 
 /**
+ * One product or service the text says the brand sells, in the text's own words.
+ *  *
+ *  * From kind `brand_offering_candidates`.
+ */
+export interface BrandOfferingCandidate {
+  /**
+   * The address of the text the quote is from, exactly as given.
+   */
+  url?: string | null;
+  /**
+   * product = a thing sold; service = work done.
+   */
+  kind: "product" | "service";
+  /**
+   * The offering's name as the text writes it (a span of the quote).
+   */
+  name: string;
+  /**
+   * The verbatim span of the text that says the brand offers it (copied exactly).
+   */
+  quote: string;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  /**
+   * The price as written, only when it is inside the quote.
+   */
+  price_text?: string | null;
+}
+
+/**
+ * One group and the offerings under it.
+ *  *
+ *  * From kind `brand_offering_tree`.
+ */
+export interface BrandOfferingGroup {
+  /**
+   * The keys of the offerings in this group, as given.
+   */
+  keys?: string[];
+  /**
+   * A group label exactly as given in the input, or 'Other'.
+   */
+  label: string;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+}
+
+/**
+ * One sentence that claims how many or how broad the brand's offerings are.
+ *  *
+ *  * From kind `brand_offering_scope_claims`.
+ */
+export interface BrandOfferingScopeClaim {
+  /**
+   * The address of the page it is on, exactly as given.
+   */
+  url?: string | null;
+  /**
+   * What is counted, in the quote's words (e.g. 'treatments').
+   */
+  what?: string | null;
+  /**
+   * The number it claims, only when the quote states one.
+   */
+  count?: number | null;
+  /**
+   * The sentence, copied exactly.
+   */
+  quote: string;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+}
+
+/**
  * What we think one candidate (an account, a website, a name or a logo) is to the brand.
  *  *
  *  * From kind `brand_we_think`.
@@ -1993,6 +2087,25 @@ export interface CompetitorItem {
    * 0.0-1.0: how sure the agent is that this is true of THIS brand.
    */
   confidence: number;
+}
+
+/**
+ * * From kind `competitor_live_intelligence_v1`.
+ */
+export interface CompetitorLiveProfile {
+  name: string;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  domain: string;
+  hiring: HiringSignal;
+  social: SocialSignal;
+  reputation: ReputationSignal;
+  advertising: AdvertisingSignal;
+  threat_read: string;
+  competitor_id?: string | null;
+  opportunity_for_us: string;
 }
 
 /**
@@ -3576,6 +3689,20 @@ export interface HashtagItem {
 }
 
 /**
+ * * From kind `competitor_live_intelligence_v1`.
+ */
+export interface HiringSignal {
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  open_roles?: number | null;
+  interpretation: string;
+  notable_titles?: string[];
+  hiring_intensity: string;
+}
+
+/**
  * * From kind `hook_set`.
  */
 export interface HookOption {
@@ -4559,6 +4686,37 @@ export interface LiftedChild {
    * The registered kind this payload is an instance of, when it is one.
    */
   __kind?: string;
+}
+
+/**
+ * * From kind `competitor_live_intelligence_v1`.
+ */
+export interface LiveEvidenceCoverage {
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  limitations?: string[];
+  sources_absent?: string[];
+  sources_present?: string[];
+  competitors_covered: number;
+}
+
+/**
+ * * From kind `competitor_live_intelligence_v1`.
+ */
+export interface LiveIntelligenceMove {
+  title: string;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  effort: string;
+  impact: string;
+  based_on: string[];
+  priority: number;
+  rationale: string;
+  first_step: string;
 }
 
 /**
@@ -7252,6 +7410,22 @@ export interface ReputationCase {
 }
 
 /**
+ * * From kind `competitor_live_intelligence_v1`.
+ */
+export interface ReputationSignal {
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  third_party?: ThirdPartyReviewStanding[];
+  top_praises?: string[];
+  google_rating?: number | null;
+  top_complaints?: string[];
+  sentiment_summary: string;
+  google_reviews_count?: number | null;
+}
+
+/**
  * * Shared by 4 kinds (commerce_intake.disposal_challenge.offer, commerce_intake.enrichment_bundle.offer, commerce_intake.valuation_dossier.offer, product_research).
  */
 export interface ResolvedIdentity {
@@ -8932,6 +9106,20 @@ export interface SocialProviderTrace {
 }
 
 /**
+ * * From kind `competitor_live_intelligence_v1`.
+ */
+export interface SocialSignal {
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  posting_cadence?: string | null;
+  follower_summary?: string | null;
+  presence_summary: string;
+  linkedin_employees?: number | null;
+}
+
+/**
  * * From kind `pr_moments_collect_result`.
  */
 export interface SourceCount {
@@ -9357,6 +9545,20 @@ export interface TextItem {
    * 0.0-1.0: how sure the agent is that this is true of THIS brand.
    */
   confidence: number;
+}
+
+/**
+ * * From kind `competitor_live_intelligence_v1`.
+ */
+export interface ThirdPartyReviewStanding {
+  url?: string | null;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  rating?: number | null;
+  platform: string;
+  reviews_count?: number | null;
 }
 
 /**
@@ -14874,7 +15076,7 @@ export interface BrandIntakeEarlyFactsOffer {
 }
 
 /**
- * Kind `brand_intake.identity_match.offer` (registry v15).
+ * Kind `brand_intake.identity_match.offer` (registry v16).
  */
 export interface BrandIntakeIdentityMatchOffer {
   /**
@@ -14986,6 +15188,10 @@ export interface BrandIntakeIdentityMatchOffer {
    * The account's address.
    */
   candidate_url: string;
+  /**
+   * The best address or city the round found while nothing is confirmed; a clue, never a fact.
+   */
+  hint_location?: string;
   rules_reasons?: string[];
   search_domain?: string;
   /**
@@ -17503,6 +17709,46 @@ export interface BrandLogoRanking {
    */
   __kind?: "brand_logo_ranking";
   variants?: LogoVariant[];
+}
+
+/**
+ * Products and services one text says the brand sells (mandates ``brand_offerings.read_page``,
+ * ``read_voices``, ``read_account``). Proposals: a person keeps or rejects each.
+ *  *
+ *  * Kind `brand_offering_candidates` (registry v2).
+ */
+export interface BrandOfferingCandidates {
+  items?: BrandOfferingCandidate[];
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "brand_offering_candidates";
+}
+
+/**
+ * Size or breadth claims (mandate ``brand_offerings.scope_claims``): they feed the coverage verdict only.
+ *  *
+ *  * Kind `brand_offering_scope_claims` (registry v2).
+ */
+export interface BrandOfferingScopeClaims {
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "brand_offering_scope_claims";
+  claims?: BrandOfferingScopeClaim[];
+}
+
+/**
+ * The found offerings arranged into the sources' own groups (mandate ``brand_offerings.structure``).
+ *  *
+ *  * Kind `brand_offering_tree` (registry v2).
+ */
+export interface BrandOfferingTree {
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "brand_offering_tree";
+  groups?: BrandOfferingGroup[];
 }
 
 /**
@@ -20180,6 +20426,27 @@ export interface ComparisonSet {
      */
     __kind?: string;
   };
+}
+
+/**
+ * Live-data competitive intelligence for one owned site across its competitor set.
+ *  *
+ *  * Kind `competitor_live_intelligence_v1` (registry v2).
+ */
+export interface CompetitorLiveIntelligenceV1 {
+  error?: string | null;
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "competitor_live_intelligence_v1";
+  site_id: string;
+  coverage: LiveEvidenceCoverage;
+  top_moves?: LiveIntelligenceMove[];
+  competitors?: CompetitorLiveProfile[];
+  site_domain: string;
+  report_version: string;
+  market_position: string;
+  executive_summary: string;
 }
 
 /**
@@ -46292,7 +46559,7 @@ export interface SeoCompetitorClassificationOffer {
 }
 
 /**
- * Kind `seo.competitor_opportunity_autopsy.offer` (registry v19).
+ * Kind `seo.competitor_opportunity_autopsy.offer` (registry v20).
  */
 export interface SeoCompetitorOpportunityAutopsyOffer {
   /**
@@ -46304,6 +46571,14 @@ export interface SeoCompetitorOpportunityAutopsyOffer {
    */
   __kind?: "seo.competitor_opportunity_autopsy.offer";
   /**
+   * The owned web.site this report is for.
+   */
+  site_id: string;
+  /**
+   * The owned site's display name.
+   */
+  site_name?: string;
+  /**
    * Everything this run could not establish, stated plainly.
    */
   limitations: string[];
@@ -46311,6 +46586,38 @@ export interface SeoCompetitorOpportunityAutopsyOffer {
    * The owned site's pages, page content stripped.
    */
   owned_pages: unknown;
+  /**
+   * The owned site's normalized domain.
+   */
+  site_domain: string;
+  /**
+   * The provider language code the run queried.
+   */
+  language_code: string;
+  /**
+   * The keyword used for local map-pack discovery; absent in national mode.
+   */
+  local_keyword?: string;
+  /**
+   * The provider location code the run queried (2840 = United States).
+   */
+  location_code: number;
+  /**
+   * Each competitor's active advertising across ad libraries — Meta, Google, LinkedIn and TikTok — active creative counts and recurring messaging themes. Fetchable via the social ads-search capability (aidream.services.social AdsSearch) by advertiser name/domain.
+   */
+  competitor_ads?: unknown;
+  /**
+   * The seo.competitor row id for each analyzed competitor, same order as the domains.
+   */
+  competitor_ids: string[];
+  /**
+   * 'local' when the map pack found rivals for a real place; otherwise 'national' (keyword-overlap against the owned domain).
+   */
+  discovery_mode: string;
+  /**
+   * The place used for local map-pack discovery; absent in national mode.
+   */
+  local_location?: string;
   /**
    * The per-page autopsy artifacts produced earlier in this same run (competitor_page_autopsy_v1).
    */
@@ -46320,9 +46627,49 @@ export interface SeoCompetitorOpportunityAutopsyOffer {
    */
   owned_backlinks: unknown;
   /**
+   * The URLs of the owned pages in scope (content stripped).
+   */
+  owned_page_urls: string[];
+  /**
+   * How many topic keyword maps were produced this run.
+   */
+  topic_map_count: number;
+  /**
+   * How many competitors this run discovered and classified.
+   */
+  competitor_count: number;
+  /**
+   * How many things this run could not establish (bounds every claim).
+   */
+  limitation_count: number;
+  /**
+   * How many pages the owned site has in scope for this run.
+   */
+  owned_page_count: number;
+  /**
+   * Every seo.collection_run id this run spent on provider evidence.
+   */
+  provider_run_ids: string[];
+  /**
+   * The owned site's stored description.
+   */
+  site_description?: string;
+  /**
    * Topic keyword maps produced for this run, keyed by topic slug.
    */
   page_keyword_maps: unknown;
+  /**
+   * Every analyzed competitor's normalized domain.
+   */
+  competitor_domains: string[];
+  /**
+   * How many competitor pages were successfully crawled this run.
+   */
+  crawled_page_count: number;
+  /**
+   * How many competitor_page_autopsy_v1 artifacts this run produced.
+   */
+  page_autopsy_count: number;
   /**
    * Which version of the analysis process produced this.
    */
@@ -46332,13 +46679,49 @@ export interface SeoCompetitorOpportunityAutopsyOffer {
    */
   owned_page_analyses: unknown;
   /**
+   * The questions people asked on each competitor's Google Business profile and the answers. Fetchable via DataForSEO business_data.google.questions_and_answers. Surfaces demand the competitor is or is not meeting.
+   */
+  competitor_google_qa?: unknown;
+  /**
    * Every competitor the discovery provider returned for this site, each with its identity, domain, and the provider's supporting evidence.
    */
   provider_competitors: unknown;
   /**
+   * Each competitor's current hiring — open-role count, role titles, locations and recency. A hiring-intensity signal for where a competitor is investing and growing. Fetchable from the competitor's careers page (matrx_scraper.capture_page) or a Google Jobs SERP.
+   */
+  competitor_job_openings?: unknown;
+  /**
+   * Each competitor's actual Google reviews — star distribution and the most recent review bodies with dates and any owner replies. Fetchable via DataForSEO business_data.google.reviews / extended_reviews. The raw material for a reputation read (what customers praise and complain about).
+   */
+  competitor_google_reviews?: unknown;
+  /**
+   * How many owned pages the page analyst read this run.
+   */
+  owned_page_analysis_count: number;
+  /**
    * Provider backlink metrics per domain (owned site + competitors).
    */
   provider_backlink_metrics: unknown;
+  /**
+   * Each competitor's Google Business / Maps profile — overall star rating, total review count, primary category, address, hours and price level. Fetchable via DataForSEO business_data.google.my_business_info keyed by competitor domain/name.
+   */
+  competitor_google_business?: unknown;
+  /**
+   * Each competitor's company-level social facts — LinkedIn employee count, follower counts, industry, and posting cadence on the platforms they are on. Fetchable via the social profile ingest (aidream.services.social ingest_profile) keyed to the competitor's handles.
+   */
+  competitor_social_profiles?: unknown;
+  /**
+   * Count of the owned site's active backlinks.
+   */
+  owned_active_backlink_count: number;
+  /**
+   * Each competitor's standing on third-party review platforms — Trustpilot (consumer), G2 (software) and Glassdoor (employer) — rating, review count and the source URL. Fetchable by capturing the competitor's profile page on each platform (matrx_scraper.capture_page) found via SERP. Which platforms apply depends on the competitor's vertical.
+   */
+  competitor_third_party_reviews?: unknown;
+  /**
+   * The provider's referring-domain / backlink metrics keyed by domain, owned site and every competitor together — the same numbers already in provider_backlink_metrics, flattened to one domain->metrics map for direct lookup.
+   */
+  provider_backlink_metrics_by_domain?: unknown;
 }
 
 /**
@@ -59834,6 +60217,9 @@ export type GeneratedKindSlug =
   | "brand_key_people"
   | "brand_key_person"
   | "brand_logo_ranking"
+  | "brand_offering_candidates"
+  | "brand_offering_scope_claims"
+  | "brand_offering_tree"
   | "brand_open_candidates"
   | "brand_relation_kinds"
   | "brand_we_think"
@@ -59913,6 +60299,7 @@ export type GeneratedKindSlug =
   | "company_endowment_portfolio"
   | "comparison_criterion"
   | "comparison_set"
+  | "competitor_live_intelligence_v1"
   | "competitor_lookup_result"
   | "competitor_opportunity_autopsy_result"
   | "competitor_opportunity_autopsy_v1"
@@ -61392,6 +61779,9 @@ export interface KindPayloadBySlug {
   "brand_key_people": BrandKeyPeople;
   "brand_key_person": BrandKeyPerson;
   "brand_logo_ranking": BrandLogoRanking;
+  "brand_offering_candidates": BrandOfferingCandidates;
+  "brand_offering_scope_claims": BrandOfferingScopeClaims;
+  "brand_offering_tree": BrandOfferingTree;
   "brand_open_candidates": BrandOpenCandidates;
   "brand_relation_kinds": BrandRelationKinds;
   "brand_we_think": BrandWeThink;
@@ -61471,6 +61861,7 @@ export interface KindPayloadBySlug {
   "company_endowment_portfolio": CompanyEndowmentPortfolio;
   "comparison_criterion": ComparisonCriterion;
   "comparison_set": ComparisonSet;
+  "competitor_live_intelligence_v1": CompetitorLiveIntelligenceV1;
   "competitor_lookup_result": CompetitorLookupResult;
   "competitor_opportunity_autopsy_result": CompetitorOpportunityAutopsyResult;
   "competitor_opportunity_autopsy_v1": CompetitorOpportunityAutopsyV1;
@@ -62954,6 +63345,9 @@ export const GENERATED_KIND_SLUGS: readonly GeneratedKindSlug[] = [
   "brand_key_people",
   "brand_key_person",
   "brand_logo_ranking",
+  "brand_offering_candidates",
+  "brand_offering_scope_claims",
+  "brand_offering_tree",
   "brand_open_candidates",
   "brand_relation_kinds",
   "brand_we_think",
@@ -63033,6 +63427,7 @@ export const GENERATED_KIND_SLUGS: readonly GeneratedKindSlug[] = [
   "company_endowment_portfolio",
   "comparison_criterion",
   "comparison_set",
+  "competitor_live_intelligence_v1",
   "competitor_lookup_result",
   "competitor_opportunity_autopsy_result",
   "competitor_opportunity_autopsy_v1",

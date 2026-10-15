@@ -196,6 +196,10 @@ export const marketingRoutes = {
 
   // ── The client workspace ──────────────────────────────────────────────
   brand: (brandId: string) => `/marketing/${brandId}`,
+  /** The brand's products and services (the offering tree, filling live while its run goes). */
+  brandOfferings: (brandId: string) => `/marketing/${brandId}/offerings`,
+  /** Open any brand's products and services, or add a brand. */
+  offeringsHome: () => "/marketing/brands/offerings",
   brandSection: (brandId: string, section: string) =>
     `/marketing/${brandId}/${section}`,
   /** The brand home. `view` = media | media/research | … */
