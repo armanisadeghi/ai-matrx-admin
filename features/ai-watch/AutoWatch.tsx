@@ -22,9 +22,12 @@ import { useAppDispatch, useAppSelector, useAppStore } from "@/lib/redux/hooks";
 import { useCanWatchAi } from "./useCanWatchAi";
 import { isAutomatedRun, selectLivePageAiRuns } from "./page-ai-runs";
 import { AI_WATCH_PAGE_INSTANCE, watchAiRunAction } from "@/features/overlays/openers/aiWatchWindow";
-import { autoOpenHasRoom, markAutoOpened } from "@/features/window-panels/utils/autoOpenPlacement";
+import { AUTO_OPEN_NO_ROOM_EVENT, autoOpenHasRoom, markAutoOpened } from "@/features/window-panels/utils/autoOpenPlacement";
 import { openWorkflowRunWindowAction, workflowRunWindowInstanceId } from "@/features/overlays/openers/workflowRunWindow";
 import { runIsOver } from "@/features/workflow-runtime/types";
+import { useOptionalCanvas } from "@ai-matrx/canvas/react";
+import { openToolInCanvas } from "@/features/canvas/host/toolCanvas";
+import { AI_WATCH_CANVAS_ID, AI_WATCH_CANVAS_KEY, WORKFLOW_RUN_CANVAS_ID } from "./canvas/runViewKinds";
 import { selectOpenInstances } from "@/lib/redux/slices/overlaySlice";
 import type { RootState } from "@/lib/redux/store";
 
@@ -52,10 +55,12 @@ export default function AutoWatch() {
     .map((r) => r.key)
     .join(",");
 
-  // MKT-104: nothing opens by itself unless a gutter beside the page's working column can hold it
-  // (a parked tray tile covers the page's own controls). Re-measured each second while a window
-  // is waiting, because a page lays itself out after a run starts.
-  const [room, setRoom] = useState(false);
+  // MKT-104: a floating window opens by itself only when a gutter beside the page's working column can
+  // hold it; with none, the same view opens in the shell's right-hand canvas column, which narrows the
+  // page instead of covering it. Nothing is ever skipped. Re-measured each second while something is
+  // waiting, because a page lays itself out after a run starts. `null` = not measured yet.
+  const canvas = useOptionalCanvas();
+  const [room, setRoom] = useState<boolean | null>(null);
   const waiting = Boolean(liveRootRuns || automatedKeys);
   useEffect(() => {
     if (!canWatch || !waiting) return undefined;
@@ -66,6 +71,28 @@ export default function AutoWatch() {
       window.clearInterval(timer);
     };
   }, [canWatch, waiting]);
+
+  const openRunInCanvas = useCallback(
+    (runId: string) => {
+      openToolInCanvas(canvas, { kind: WORKFLOW_RUN_CANVAS_ID, key: runId, title: "Workflow run", data: { runId } });
+    },
+    [canvas],
+  );
+  const openWatchInCanvas = useCallback(() => {
+    openToolInCanvas(canvas, { kind: AI_WATCH_CANVAS_ID, key: AI_WATCH_CANVAS_KEY, title: "Watch AI", data: {} });
+  }, [canvas]);
+
+  // A docked window the page grew over closes itself and says so here: its view moves to the canvas.
+  useEffect(() => {
+    const onNoRoom = (e: Event) => {
+      const { overlayId, instanceId } = (e as CustomEvent<{ overlayId: string; instanceId: string }>).detail;
+      if (overlayId === "workflowRunWindow" && instanceId.startsWith("workflow-run:")) {
+        openRunInCanvas(instanceId.slice("workflow-run:".length));
+      } else if (overlayId === "aiWatchWindow") openWatchInCanvas();
+    };
+    window.addEventListener(AUTO_OPEN_NO_ROOM_EVENT, onNoRoom);
+    return () => window.removeEventListener(AUTO_OPEN_NO_ROOM_EVENT, onNoRoom);
+  }, [openRunInCanvas, openWatchInCanvas]);
 
   // MKT-076: Watch AI opens by itself once per page load; a close sticks until the person reopens it.
   const watchOpened = useRef(false);
@@ -78,27 +105,35 @@ export default function AutoWatch() {
       return;
     }
     watchOpened.current = true;
+    if (!room) {
+      openWatchInCanvas();
+      return;
+    }
     markAutoOpened("aiWatchWindow", AI_WATCH_PAGE_INSTANCE);
     dispatch(watchAiRunAction());
-  }, [dispatch, store]);
+  }, [dispatch, store, room, openWatchInCanvas]);
 
   const openedRuns = useRef(new Set<string>());
   useEffect(() => {
-    if (!canWatch || !room || !liveRootRuns) return;
+    if (!canWatch || room === null || !liveRootRuns) return;
     const fresh = liveRootRuns.split(",").filter((id) => !openedRuns.current.has(id));
     if (!fresh.length) return;
     for (const runId of fresh) {
       openedRuns.current.add(runId);
+      if (!room) {
+        openRunInCanvas(runId);
+        continue;
+      }
       markAutoOpened("workflowRunWindow", workflowRunWindowInstanceId(runId));
       dispatch(openWorkflowRunWindowAction({ runId }));
     }
     // Watch AI itself waits for the first AI call (below): a run with no call yet has nothing
     // to show, and the window would only sit over the page's input.
-  }, [canWatch, room, liveRootRuns, dispatch]);
+  }, [canWatch, room, liveRootRuns, dispatch, openRunInCanvas]);
 
   const openedCalls = useRef(new Set<string>());
   useEffect(() => {
-    if (!canWatch || !room || !automatedKeys) return;
+    if (!canWatch || room === null || !automatedKeys) return;
     const fresh = automatedKeys.split(",").filter((k) => !openedCalls.current.has(k));
     if (!fresh.length) return;
     for (const k of fresh) openedCalls.current.add(k);

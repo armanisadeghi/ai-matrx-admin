@@ -31,6 +31,7 @@ import { AGENT_PAYLOAD_CANVAS_KIND } from "@/features/marketing/content-plan/can
 import { WAR_ROOM_RESOURCES_CANVAS_KIND } from "@/features/war-room/canvas/warRoomResourcesKind";
 import { COMMENT_THREAD_CANVAS_KIND } from "@/features/rich-document/annotations/canvas/commentThreadKind";
 import { GROUP_CHAT_INSPECTOR_CANVAS_KIND } from "@/features/vision-interview/group-chat/canvas/groupChatInspectorKind";
+import { AI_WATCH_CANVAS_KIND, WORKFLOW_RUN_CANVAS_KIND } from "@/features/ai-watch/canvas/runViewKinds";
 import { PAGE_PANEL_CANVAS_KIND } from "./pagePanel";
 import { withOutputDecisions } from "./kindOutputDecisions";
 
@@ -66,6 +67,9 @@ export const FEATURE_CANVAS_KINDS: readonly AnyCanvasKind[] = withOutputDecision
   GROUP_CHAT_INSPECTOR_CANVAS_KIND,
   // A page's own live panel (a table's row detail, an admin form) — see pagePanel.tsx.
   PAGE_PANEL_CANVAS_KIND,
+  // Debug mode's live run views when no gutter beside the page can hold a window (MKT-104).
+  WORKFLOW_RUN_CANVAS_KIND,
+  AI_WATCH_CANVAS_KIND,
 ]);
 
 export function registerFeatureCanvasKinds(): () => void {

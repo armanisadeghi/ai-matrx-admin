@@ -49,6 +49,14 @@ export function clearAutoOpened(overlayId: string, instanceId: string): void {
   marks().delete(markKey(overlayId, instanceId));
 }
 
+/** Width the shell's canvas column holds on the right (`--shell-canvas-w`): no window may dock under it. */
+function canvasWidth(): number {
+  if (typeof document === "undefined") return 0;
+  const raw = getComputedStyle(document.documentElement).getPropertyValue("--shell-canvas-w");
+  const px = Number.parseFloat(raw);
+  return Number.isFinite(px) && px > 0 ? px : 0;
+}
+
 const CONTROL_SELECTOR =
   'button, a[href], input, textarea, select, [role="button"], [role="tab"], [data-clickable]';
 
@@ -79,6 +87,9 @@ export function measureWorkingColumn(): { left: number; right: number } | null {
   return Number.isFinite(left) ? { left, right } : null;
 }
 
+/** Fired (detail `{ overlayId, instanceId }`) when a docked auto-opened window closes itself for lack of room. */
+export const AUTO_OPEN_NO_ROOM_EVENT = "matrx:auto-open-no-room";
+
 /**
  * True when a gutter beside the page's working column can hold an auto-opened window right now.
  * Callers that open windows by themselves check this FIRST: with no room the window is not opened
@@ -92,7 +103,7 @@ export function autoOpenHasRoom(): boolean {
   if (!column) return true;
   const leftRoot =
     document.querySelector<HTMLElement>("main")?.getBoundingClientRect().left ?? 0;
-  const free = Math.max(vw - column.right - GAP * 2, column.left - leftRoot - GAP * 2);
+  const free = Math.max(vw - canvasWidth() - column.right - GAP * 2, column.left - leftRoot - GAP * 2);
   return free >= AUTO_OPEN_MIN_WIDTH;
 }
 
@@ -114,7 +125,9 @@ export function resolveAutoOpenPlacement(args: {
   viewport: { vw: number; vh: number };
   siblings: WindowRect[];
 }): AutoOpenPlacement {
-  const { vw, vh } = args.viewport;
+  const { vh } = args.viewport;
+  // The canvas column owns the right edge: windows dock against ITS left edge, never under it.
+  const vw = args.viewport.vw - canvasWidth();
   const column = measureWorkingColumn();
   const rightFree = column ? vw - column.right - GAP * 2 : vw;
   const leftRoot =

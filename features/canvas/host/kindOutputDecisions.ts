@@ -74,6 +74,8 @@ export const KIND_OUTPUT_DECISIONS: Readonly<Record<string, KindOutputDecision>>
   "comment-thread": dom("A record's comment threads; plain DOM — the composer prints as an empty box."),
   "group-chat-inspector": dom("Who sees what in a room; plain DOM."),
   "page-panel": dom("A page's own panel (row detail, form); an embedded frame in it prints as a notice, a canvas as its picture."),
+  "workflow-run-view": noPrint("A live steps rail that changes while it runs — the finished run prints from its own page."),
+  "ai-watch-view": noPrint("A live list of AI calls with streaming transcripts — a call prints from its own record."),
 };
 
 /** Applies the table: a "none" decision becomes `print: false` / `capture: false` on the kind. */

@@ -64,7 +64,7 @@ import {
 } from "@/lib/redux/slices/windowManagerSlice";
 import type { GlobalLayoutType } from "./utils/windowArrangements";
 import { safeViewportDims } from "./utils/rectClamp";
-import { clearAutoOpened, isAutoOpened } from "./utils/autoOpenPlacement";
+import { AUTO_OPEN_NO_ROOM_EVENT, clearAutoOpened, isAutoOpened } from "./utils/autoOpenPlacement";
 import { useIsMobile } from "@ai-matrx/kit/media-query";
 import { useIsMounted } from "@/hooks/use-is-mounted";
 import { getStaticEntryByOverlayId } from "./registry/windowRegistryMetadata";
@@ -581,7 +581,12 @@ export function WindowPanel({
     title,
     autoOpened,
     onAutoNoRoom: autoOpened
-      ? () => autoDispatch(closeOverlay({ overlayId: overlayId as OverlayId, instanceId: effectiveInstanceId }))
+      ? () => {
+          window.dispatchEvent(
+            new CustomEvent(AUTO_OPEN_NO_ROOM_EVENT, { detail: { overlayId, instanceId: effectiveInstanceId } }),
+          );
+          autoDispatch(closeOverlay({ overlayId: overlayId as OverlayId, instanceId: effectiveInstanceId }));
+        }
       : undefined,
     minWidth,
     minHeight,

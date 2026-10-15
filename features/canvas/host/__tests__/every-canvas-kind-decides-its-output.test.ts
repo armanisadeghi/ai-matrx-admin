@@ -18,10 +18,10 @@ const DECIDED: readonly AnyCanvasKind[] = [SAVED_ITEMS_CANVAS_KIND, ...FEATURE_C
 const declared = (value: unknown): OutputMode => (typeof value === "function" ? "handler" : value === false ? "none" : "dom");
 
 describe("every non-artifact canvas kind decides its output", () => {
-  it("covers 19 feature kinds, 18 tool kinds and saved items (2026-10-08)", () => {
-    expect(FEATURE_CANVAS_KINDS).toHaveLength(19);
+  it("covers 22 feature kinds, 18 tool kinds and saved items (2026-10-08)", () => {
+    expect(FEATURE_CANVAS_KINDS).toHaveLength(22);
     expect(TOOL_CANVAS_KINDS).toHaveLength(18);
-    expect(DECIDED).toHaveLength(38);
+    expect(DECIDED).toHaveLength(41);
   });
 
   it.each(DECIDED.map((kind) => [kind.id, kind] as const))("%s: explicit decision, one-line reason, declaration matches", (_id, kind) => {
