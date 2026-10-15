@@ -19,7 +19,8 @@ import { FlaskConical, History, Plus, RotateCcw, Trash2, X } from "lucide-react"
 import { Button, Input, Switch } from "@ai-matrx/design-system/controls";
 import { isButtonField } from "@ai-matrx/records";
 import type { AutomationAction, AutomationItem, AutomationRun, AutomationSpec, AutomationTrigger, AutomationValue, AutomationWeekday, ReadRow, SavedViewRow } from "@ai-matrx/records";
-import { useRecordsClient, type Field } from "@ai-matrx/records/react";
+import { useRecordsClient, useTable, type Field } from "@ai-matrx/records/react";
+import { rightsReason, useTableRights } from "@ai-matrx/records-ui";
 
 import { useEffectiveKnob } from "@/lib/scoped-config/effectiveKnobs.client";
 
@@ -370,9 +371,19 @@ export function AutomationsPanel({ words = "spaces", ...rest }: { tableId: strin
   );
 }
 
+/**
+ * WHY THE ON/OFF SWITCH (and archive / restore) IS CLOSED, in one short line, or null when it is open. The store's
+ * doors (`automation_set_enabled` / `_archive` / `_restore`) ask the Editor level; a viewer pressing the switch
+ * used to get nothing at all (lane AT-UIFIX item 4). Same ladder the door reads (`organise` = editor).
+ */
+export function automationSwitchReason(rights: Parameters<typeof rightsReason>[0]): string | null {
+  return rightsReason(rights, "organise");
+}
+
 function AutomationsPanelBody({ tableId, organizationId, fields }: { tableId: string; organizationId: string | null; fields: Field[] }) {
   const say = useSay();
   const client = useRecordsClient();
+  const switchReason = automationSwitchReason(useTableRights(useTable(tableId as never)));
   const runsShown = Number(useEffectiveKnob(organizationId, null, RUNS_KNOB) ?? 20) || 20;
   const [list, setList] = useState<AutomationItem[] | null>(null);
   const [problem, setProblem] = useState<string | null>(null);
@@ -714,13 +725,13 @@ function AutomationsPanelBody({ tableId, organizationId, fields }: { tableId: st
                   ) : null}
                 </button>
                 {a.archived_at ? (
-                  <Button variant="quiet" icon={<RotateCcw size={14} />} aria-label="Restore automation" onClick={() => void flip(client.automationRestore({ automation_id: a.id }))} />
+                  <Button variant="quiet" icon={<RotateCcw size={14} />} aria-label="Restore automation" disabled={switchReason !== null} title={switchReason ?? undefined} onClick={() => void flip(client.automationRestore({ automation_id: a.id }))} />
                 ) : (
                   <>
-                    <Switch aria-label="Automation on" checked={a.enabled} onCheckedChange={(v: boolean) => void flip(client.automationSetEnabled({ automation_id: a.id, enabled: v }))} />
+                    <Switch aria-label="Automation on" checked={a.enabled} disabled={switchReason !== null} title={switchReason ?? undefined} onCheckedChange={(v: boolean) => void flip(client.automationSetEnabled({ automation_id: a.id, enabled: v }))} />
                     <Button variant="quiet" icon={<FlaskConical size={14} />} aria-label="Test automation" onClick={() => setTestOf(testOf === a.id ? null : a.id)} />
                     <Button variant="quiet" icon={<History size={14} />} aria-label="Runs" onClick={() => setRunsOf(runsOf === a.id ? null : a.id)} />
-                    <Button variant="quiet" icon={<Trash2 size={14} />} aria-label="Archive automation" onClick={() => void flip(client.automationArchive({ automation_id: a.id }))} />
+                    <Button variant="quiet" icon={<Trash2 size={14} />} aria-label="Archive automation" disabled={switchReason !== null} title={switchReason ?? undefined} onClick={() => void flip(client.automationArchive({ automation_id: a.id }))} />
                   </>
                 )}
               </div>
