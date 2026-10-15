@@ -108,6 +108,9 @@ export interface AiWatchWindowProps {
 type ActiveRoot = { activeRequests: { byRequestId: Record<string, ActiveRequest> } };
 
 /** The page's run ids Watch AI remembers across a reload (this tab, this page). */
+/** A running call with no client stream is re-read this often, for up to ~5 minutes (MKT-117). */
+const FOLLOW_READ_MS = 2000;
+const MAX_FOLLOW_READS = 150;
 const HISTORY_KEY_PREFIX = "matrx:ai-watch:runs:";
 const HISTORY_MAX = 10;
 
@@ -304,9 +307,12 @@ function AiWatchRunView({ serverId, requestIds }: { serverId: string | null; req
         if (cancelled) return;
         setRecord(next);
         setLoadError(null);
-        const settled =
-          next && next.status !== "pending" && next.status !== "running" && next.snapshots.length > 0;
-        if (!settled && attempt++ < 8) setTimeout(load, 1500);
+        const inFlight = !next || next.status === "pending" || next.status === "running";
+        const settled = !inFlight && next.snapshots.length > 0;
+        // A call still running (a workflow step's call has no client stream) is followed until its answer lands
+        // (MKT-117); a finished call whose record is late gets a few more reads.
+        const more = inFlight ? attempt++ < MAX_FOLLOW_READS : attempt++ < 8;
+        if (!settled && more) setTimeout(load, inFlight ? FOLLOW_READ_MS : 1500);
       } catch (err) {
         if (!cancelled) setLoadError(err instanceof Error ? err.message : String(err));
       }
@@ -346,7 +352,7 @@ function AiWatchRunView({ serverId, requestIds }: { serverId: string | null; req
       <ChatSection
         calls={request.calls}
         liveRequestId={latestId && latest && liveHasOutput ? latestId : null}
-        live={Boolean(latest && !liveDone)}
+        live={Boolean((latest && !liveDone) || (!latest && (!record || record.status === "pending" || record.status === "running")))}
       />
 
       <MandateSection identity={identity} attributedKey={record?.mandateKey ?? null} record={record} />
