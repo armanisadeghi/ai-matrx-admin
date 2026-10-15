@@ -51,6 +51,18 @@ describe.each(editors)("%s menus", (_name, build, order) => {
 
 const labels = (entries: EditorMenuEntry[]) => entries.map((e) => (e.kind === "separator" ? "|" : e.label));
 
+describe("Page setup never rides another editor's promise", () => {
+  const handlers = { download: () => {}, navigate: () => {} };
+  const pageSetup = (product: "sheets" | "slides" | "docs") =>
+    flattenMenus([{ id: "file", label: "File", items: buildEditorFileMenu({ product, rows: [], templatesHref: "/t", downloads: [] }, handlers) }]).find((r) => r.id === "file.page-setup");
+  it("Sheets and Slides each announce their own registered promise, in words about their own page", () => {
+    expect(pageSetup("sheets")?.soon).toBe("workbooks.page-setup");
+    expect(pageSetup("slides")?.soon).toBe("presentations.page-setup");
+    expect(getComingSoon("workbooks.page-setup")?.promise).toMatch(/print/i);
+    expect(getComingSoon("presentations.page-setup")?.promise).toMatch(/slide size/i);
+  });
+});
+
 describe("Google File menu", () => {
   const handlers = { share: () => {}, copy: () => {}, rename: () => {}, move: () => {}, trash: () => {}, saveAsTemplate: () => {}, download: () => {}, navigate: () => {} };
   const rows: EditorMenuEntry[] = ["file.new", "file.open", "file.import", "file.history", "file.print", "file.details"].map((id) => ({
@@ -66,7 +78,7 @@ describe("Google File menu", () => {
       "Share", "Email", "Download", "Approvals", "|",
       "Rename", "Move", "Move to trash", "|",
       "Version history", "Make available offline", "|",
-      "file.details", "Security limitations", "Settings", "|",
+      "file.details", "Security limitations", "Settings", "Page setup", "|",
       "file.print",
     ]);
     for (const a of flattenMenus([{ id: "file", label: "File", items: menu }]).filter((r) => r.soon)) expect(getComingSoon(a.soon!)).toBeDefined();
@@ -79,6 +91,7 @@ describe("Google File menu", () => {
     const l = labels(menu);
     expect(l).toContain("Import slides");
     expect(l).toContain("Language");
+    expect(l).toContain("Page setup");
     expect(l).not.toContain("Rename");
     expect(l).not.toContain("Move to trash");
     expect(l[l.length - 1]).toBe("file.print");

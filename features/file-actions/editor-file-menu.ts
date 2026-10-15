@@ -160,9 +160,15 @@ export function buildEditorFileMenu(spec: EditorFileSpec, h: EditorFileHandlers)
   push(soon("file.security", "Security limitations", "editor.file.security-limitations", { icon: ShieldAlert }));
   if (spec.product === "sheets") {
     push(row("file.settings") ?? soon("file.settings", "Settings", "workbooks.settings", { icon: Settings, keywords: ["locale", "time zone", "calculation"] }));
+    push(row("file.page-setup") ?? soon("file.page-setup", "Page setup", "workbooks.page-setup", { keywords: ["orientation", "paper size", "margins", "scale", "print"] }));
   } else {
     push(soon("file.language", "Language", "editor.file.language", { icon: Languages }));
-    push(row("file.page-setup") ?? soon("file.page-setup", "Page setup", "editor.file.page-setup"));
+    push(
+      row("file.page-setup") ??
+        soon("file.page-setup", "Page setup", spec.product === "slides" ? "presentations.page-setup" : "editor.file.page-setup", {
+          keywords: spec.product === "slides" ? ["slide size", "widescreen", "4:3", "16:9"] : ["paper size", "margins", "orientation"],
+        }),
+    );
   }
   push(sep);
 
