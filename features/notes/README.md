@@ -581,7 +581,7 @@ ALTER TABLE notes REPLICA IDENTITY FULL;
 
 `NotesContext.tsx` no longer owns this — the subscription is
 [`features/notes/redux/realtimeMiddleware.ts`](./redux/realtimeMiddleware.ts), Redux
-middleware built on `@ai-matrx/realtime` (`defineChannelNamespace` + the shared
+middleware built on `@ai-matrx/data/realtime` (`defineChannelNamespace` + the shared
 `RealtimeManager`). It does **not** hand-roll a `supabase.channel(...)` call, echo
 suppression, or a reconnect/backoff ladder — the package owns all of that (unique
 instance topics, the write ledger that classifies a note's own echo via the
@@ -614,7 +614,7 @@ What stays feature-specific, on top of the package:
 
 🚨 **Do not hand-write a `supabase.channel(...)` subscription anywhere in this
 project.** Every `postgres_changes`, broadcast, and presence subscription rides
-`@ai-matrx/realtime` (`defineChannelNamespace` + `useChannel` / the Redux manager) —
+`@ai-matrx/data/realtime` (`defineChannelNamespace` + `useChannel` / the Redux manager) —
 the package owns the single `event: '*'` binding, unique instance topics, cleanup,
 dedup, echo suppression via the write ledger, and jittered reconnect with
 `onBackfill` catch-up, which a hand-rolled channel structurally cannot have. Before

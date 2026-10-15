@@ -65,7 +65,7 @@ Every stream item below adds its case there.
       Kind-preserving breaks already routed. A break BEFORE `__kind` (kindless error envelope, or none) now
       settles as that kind with `kindState: "raw"` (`settleBrokenKindRoute`) — the broken-instance floor.
 - [x] A11. Cold registry at stream end → raw until the registry repaints.
-      `@ai-matrx/content-ir-react` 0.13.0: settling and a single-kind answer repaint every waiting kind. Host: an
+      `@ai-matrx/content-ir/react` 0.13.0: settling and a single-kind answer repaint every waiting kind. Host: an
       identified kind still `code` after the route is its loader while the block streams or the registry is cold.
 - [x] A12. Static splitter: ```JSON (capital) gets no envelope (`content-splitter-core.ts` case-sensitive check).
 

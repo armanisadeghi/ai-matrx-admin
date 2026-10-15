@@ -240,4 +240,4 @@ When a template's `source_variations` includes `pdf_page`, the aidream backend (
 
 ## Realtime
 
-Realtime moved onto `@ai-matrx/realtime` (2026-09-07). `usePageRunsRealtime` IS the durability story for a dropped SSE stream and had no catch-up of its own, so a socket that dropped with the stream froze the run's progress on screen forever; `onBackfill` now replays every page_run of the active run through the same reducer path. `useExtractionJobs` gained a catch-up and gave up its hand-copied refcount map to `lib/realtime/sharedChannel`.
+Realtime moved onto `@ai-matrx/data/realtime` (2026-09-07). `usePageRunsRealtime` IS the durability story for a dropped SSE stream and had no catch-up of its own, so a socket that dropped with the stream froze the run's progress on screen forever; `onBackfill` now replays every page_run of the active run through the same reducer path. `useExtractionJobs` gained a catch-up and gave up its hand-copied refcount map to `lib/realtime/sharedChannel`.

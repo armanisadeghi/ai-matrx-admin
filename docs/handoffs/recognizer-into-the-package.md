@@ -25,7 +25,7 @@ weaker than I assumed, and the risk did not.
 has the same break; a second implementation is a guaranteed divergence."
 
 **What is actually true (checked):** matrx-extend consumes
-`@ai-matrx/content-ir` and `@ai-matrx/content-ir-react` for RENDERING only —
+`@ai-matrx/content-ir` and `@ai-matrx/content-ir/react` for RENDERING only —
 `readEnvelope`, `reconstructRegionValue`, `RenderBlockView`, the host provider.
 It has no accumulator and does not parse streams. matrx-local declares neither
 package. **There is no second implementation today, so there is nothing

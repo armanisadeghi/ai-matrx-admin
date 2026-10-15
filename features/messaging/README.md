@@ -84,7 +84,7 @@ specifications to build are in the cross-repo handoff.
 
 `lib/extension-bridge/bridgeChannel.ts` came out of the deleted `lib/supabase/messaging.ts`. It
 is the Chrome extension's transport, it is the one hand-rolled Supabase channel left in this
-area, and its own header says why it is not on `@ai-matrx/realtime` yet.
+area, and its own header says why it is not on `@ai-matrx/data/realtime` yet.
 
 ## macOS presentation and review catalogue (2026-09-30)
 

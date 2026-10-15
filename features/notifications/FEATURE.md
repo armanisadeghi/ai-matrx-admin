@@ -63,7 +63,7 @@ say SUBSCRIBED and deliver nothing — the class `pnpm check:realtime-publicatio
 guards. Today: refetch on window focus, every `INBOX_POLL_INTERVAL_MS` (60 s),
 and after every mark-read. **Next:** a broadcast on insert (`realtime.send` to
 a per-recipient private topic from the dispatcher or a trigger) consumed
-through `@ai-matrx/realtime` — invoke the `supabase-realtime` skill first.
+through `@ai-matrx/data/realtime` — invoke the `supabase-realtime` skill first.
 
 ## Follow-ups (owned, not optional)
 

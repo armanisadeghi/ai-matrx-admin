@@ -12,10 +12,10 @@ The bridge has two transports with one request/reply contract:
   `requestId` fields for routing and correlation.
 
 `lib/types/bridge-envelope.ts` is the wire-format source of truth — including
-`EXTENSION_BRIDGE_CHANNEL`, the `@ai-matrx/realtime` namespace whose
+`EXTENSION_BRIDGE_CHANNEL`, the `@ai-matrx/data/realtime` namespace whose
 `foreignTopic` keeps `matrx-extension-bridge:<userId>` on the wire verbatim.
 🚨 **Nothing here opens a Supabase channel by hand.** The channel is
-`@ai-matrx/realtime`'s, in RAW-WIRE mode (`wire: {mode:"raw"}`), because the
+`@ai-matrx/data/realtime`'s, in RAW-WIRE mode (`wire: {mode:"raw"}`), because the
 deployed extension parses the bare `BridgeEnvelope`; wrapping it in the Matrx
 envelope would make both halves go mute with nothing failing loudly.
 `bridgeChannel.ts` is identity only — the channel spec and the envelope factory.
@@ -43,7 +43,7 @@ the database.
 ## Change Log
 
 - `2026-09-07` — The bridge's hand-rolled Supabase channel is gone: both this app
-  and matrx-extend now open it through `@ai-matrx/realtime` 0.5.0's raw-wire
+  and matrx-extend now open it through `@ai-matrx/data/realtime` 0.5.0's raw-wire
   mode, which the package grew for exactly this case. `bridgeChannel.ts` is
   identity-only, `useExtensionBridgeChannel` rides `useChannel` (the 5s readiness
   poll is gone — status is real; an unsendable request now fails immediately
