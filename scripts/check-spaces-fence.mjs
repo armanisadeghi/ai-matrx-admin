@@ -35,7 +35,18 @@ const SUBJECT = /^spaces[:(]/;
 // `features/spaces/data/AutomationsDoor` — the rule list/editor loads only when the dialog opens; no Spaces store needed.
 // The public web page of a published Space (`app/(link)/site/[slug]`, Notion Publish — phase 6, owner brief
 // 2026-10-07): the read-only page and the read of its one door.
-const ENTRY_POINTS = [/features\/spaces\/embed\/RecordBodySpace["'/]/, /features\/spaces\/embed\/useSpaceBuild["'/]/, /features\/spaces\/state\/templates["'/]/, /features\/spaces\/sidebar\/TemplateGalleryShell["'/]/, /features\/spaces\/public\/(?:PublicSpace|public-view)["'/]/, /features\/spaces\/spaces\.css["']/, /features\/spaces\/io\/NotionImportDoor["'/]/, /features\/spaces\/data\/AutomationsDoor["'/]/];
+// A table brought in from a connected Notion shows its sync chip on the table page (lane NOTION-SYNC):
+// `features/spaces/io/NotionSyncBar` — a props-light component that needs no Spaces store, rendered by
+// features/unified-data/table-page/UnifiedDataTablePage. Named here by lane ROW-PAGE-READ (2026-10-14).
+const ENTRY_POINTS = [/features\/spaces\/embed\/RecordBodySpace["'/]/, /features\/spaces\/embed\/useSpaceBuild["'/]/, /features\/spaces\/state\/templates["'/]/, /features\/spaces\/sidebar\/TemplateGalleryShell["'/]/, /features\/spaces\/public\/(?:PublicSpace|public-view)["'/]/, /features\/spaces\/spaces\.css["']/, /features\/spaces\/io\/NotionImportDoor["'/]/, /features\/spaces\/data\/AutomationsDoor["'/]/, /features\/spaces\/io\/NotionSyncBar["'/]/];
+// Commits pushed under a `spaces:` subject that already touched shared files outside the fence, named by
+// full sha with the reason. History cannot be rewritten, so each is judged once, here, and only by its exact
+// sha: a NEW `spaces:` commit that leaves the fence still fails. Add an entry only by owner decision.
+//   da849360e9: "spaces(nav): tiered breadcrumb" — built the shared tiered breadcrumb primitive
+//   (components/official/tiered-breadcrumb, which imports nothing from Spaces; the fenced
+//   features/spaces/nav/tiered-crumbs.tsx feeds it) and moved the record page's breadcrumb onto it
+//   (features/unified-data/table-page/UnifiedRecordPage.tsx). Later edits to those files use another prefix.
+const KNOWN_CROSS_FENCE_COMMITS = new Set(["da849360e99c097e83b22e7b125de0e9a49301d0"]);
 const IMPORT_INTO_FENCE = /(?:from\s+|import\s*\(\s*|require\s*\(\s*)["'](?:@\/features\/spaces(?:\/|["'])|[./]+(?:[^"']*\/)?features\/spaces(?:\/|["']))/;
 
 export function insideFence(path) {
@@ -60,7 +71,7 @@ export function judgeTracked(paths) {
 export function judgeCommits(commits) {
   const out = [];
   for (const c of commits) {
-    if (!SUBJECT.test(c.subject)) continue;
+    if (!SUBJECT.test(c.subject) || KNOWN_CROSS_FENCE_COMMITS.has(c.sha)) continue;
     for (const f of c.files) if (!insideFence(f) && f !== SELF && !OWNER_OPENED.some((re) => re.test(f))) out.push(`${c.sha.slice(0, 10)} "${c.subject}" touches ${f}`);
   }
   return out;
@@ -126,6 +137,10 @@ function selfTest() {
   expect("its heavy half and the importer may not", judgeImports([{ path: "features/unified-data/a.tsx", source: 'import D from "@/features/spaces/io/NotionImportDoorImpl";\nimport { useNotionImport } from "@/features/spaces/io/NotionImport";' }]), 1);
   expect("the Automations door may be imported", judgeImports([{ path: "features/unified-data/actions/TableAutomationsDialog.tsx", source: 'import { AutomationsDoor } from "@/features/spaces/data/AutomationsDoor";' }]), 0);
   expect("the Automations panel itself may not", judgeImports([{ path: "features/unified-data/actions/TableAutomationsDialog.tsx", source: 'import { AutomationsPanel } from "@/features/spaces/data/Automations";' }]), 1);
+  expect("the Notion sync chip may be imported", judgeImports([{ path: "features/unified-data/table-page/UnifiedDataTablePage.tsx", source: 'import { NotionSyncBar } from "@/features/spaces/io/NotionSyncBar";' }]), 0);
+  expect("a sibling of the sync chip may not", judgeImports([{ path: "features/unified-data/table-page/UnifiedDataTablePage.tsx", source: 'import { x } from "@/features/spaces/io/NotionSyncBarImpl";' }]), 1);
+  expect("the named cross-fence commit is judged by its exact sha", judgeCommits([{ sha: "da849360e99c097e83b22e7b125de0e9a49301d0", subject: "spaces(nav): tiered breadcrumb", files: ["components/official/tiered-breadcrumb/TieredBreadcrumb.tsx"] }]), 0);
+  expect("any other spaces: commit leaving the fence still fails", judgeCommits([{ sha: "e".repeat(40), subject: "spaces(nav): tiered breadcrumb", files: ["components/official/tiered-breadcrumb/TieredBreadcrumb.tsx"] }]), 1);
   expect("a sibling of the entry point may not", judgeImports([{ path: "features/data-tables/x.tsx", source: 'import { useRowBodySpace } from "@/features/spaces/embed/useRowBody";' }]), 1);
   expect("look-alike name is not the fence", judgeImports([{ path: "features/notes/c.tsx", source: 'import { Y } from "@/features/spaces-old/z";' }]), 0);
   expect("a spaces: commit may tighten the guard itself", judgeCommits([{ sha: "d".repeat(40), subject: "spaces: guard", files: ["scripts/check-spaces-fence.mjs", "features/spaces/a.ts"] }]), 0);
@@ -135,7 +150,7 @@ function selfTest() {
     console.error(`check:spaces-fence self-test FAILED\n  ${failures.join("\n  ")}`);
     process.exit(1);
   }
-  console.log("check:spaces-fence self-test passed (14 cases: planted violations fail, clean cases pass)");
+  console.log("check:spaces-fence self-test passed (18 cases: planted violations fail, clean cases pass)");
 }
 
 if (process.argv.includes("--self-test")) {

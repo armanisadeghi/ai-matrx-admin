@@ -45,7 +45,7 @@ export type RowBodyState = { state: "loading" } | { state: "none" } | { state: "
 
 const LOADING: RowBodyState = { state: "loading" };
 
-/** The Space that is this row's body (one live body per row), as the reader may see it. */
+/** The Space that is this row's body (one live body per row), as the reader may see it (door: content.row_page_for). */
 export function useRowBodySpace(recordId: string): RowBodyState {
   // The answer is kept with the row it answers: a new recordId reads as loading until its own answer
   // lands, with no reset written from the effect.
@@ -54,32 +54,25 @@ export function useRowBodySpace(recordId: string): RowBodyState {
     let live = true;
     const setFound = (state: RowBodyState) => setAnswer({ recordId, state });
     void (async () => {
-      const { data, error } = await createClient()
-        .schema("platform")
-        .from("associations")
-        .select("target_id")
-        .eq("source_type", "record")
-        .eq("source_id", recordId)
-        .eq("target_type", "document")
-        .eq("label", ROW_BODY_LABEL)
-        .is("deleted_at", null)
-        .maybeSingle();
+      let pageId: string | null = null;
+      let failure: { code?: string; message: string } | null = null;
+      try {
+        pageId = await findRowPageId(createClient() as unknown as RowPageDb, recordId);
+      } catch (err) {
+        failure = { message: err instanceof Error ? err.message : String(err) };
+      }
       if (!live) return;
-      if (error) {
+      if (failure) {
         captureError({
           source: "supabase-postgrest",
-          operation: "select",
-          schema: "platform",
-          relation: "associations",
-          code: error.code,
-          message: `Row body Space lookup failed: ${error.message}`,
-          details: error.details ?? undefined,
-          hint: error.hint ?? undefined,
+          operation: "rpc",
+          schema: "content",
+          relation: "row_page_for",
+          message: `Row body Space lookup failed: ${failure.message}`,
           callSite: "features/spaces/embed/RecordBodySpace.tsx useRowBodySpace",
         });
-        setFound({ state: "failed", message: error.message });
-      }
-      else setFound(data ? { state: "found", spaceId: data.target_id } : { state: "none" });
+        setFound({ state: "failed", message: failure.message });
+      } else setFound(pageId ? { state: "found", spaceId: pageId } : { state: "none" });
     })();
     return () => {
       live = false;
@@ -263,7 +256,7 @@ export async function saveRowPageAsTableTemplate(args: { organizationId: string;
   const db = createClient();
   await saveRowPageAsTemplate(
     db as unknown as RowPageDb,
-    { findPageId: (id) => findRowPageId(db as unknown as Parameters<typeof findRowPageId>[0], id), readPage: (id) => createDatabaseSpacesStore(args.organizationId).get(id) },
+    { findPageId: (id) => findRowPageId(db as unknown as RowPageDb, id), readPage: (id) => createDatabaseSpacesStore(args.organizationId).get(id) },
     args,
   );
 }

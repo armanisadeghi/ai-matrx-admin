@@ -1,6 +1,6 @@
 // A row's first page (embed/row-page.ts): its Notes migrate into the page without loss, then the table's
 // default template's blocks land with fresh ids and their "This page's row" views intact (row-pages PLAN §2, §5).
-import { ensureRowPage, freshBlockIds, presetsForEmptyColumns, readTemplateBody, rowPageSnapshot, type RowPageDb } from "../row-page";
+import { ensureRowPage, findRowPageId, freshBlockIds, presetsForEmptyColumns, readTemplateBody, rowPageSnapshot, type RowPageDb } from "../row-page";
 import { THIS_ROW } from "../../data/this-row";
 import type { SpaceBlock } from "@/lib/spaces-blocks/types";
 
@@ -82,5 +82,34 @@ describe("a new row page applies the template's preset values", () => {
     const applied: Array<Record<string, unknown>> = [];
     await ensureRowPage(fakeDb(false, { status: "Active" }), { ...base, document: {}, applyValues: async (p) => void applied.push(p) });
     expect(applied).toEqual([]);
+  });
+});
+
+describe("findRowPageId: the row's page through the read door (a reader of the row may resolve it)", () => {
+  const dbAnswering = (answer: { data: unknown; error: { message: string } | null }) => {
+    const calls: Array<{ schema: string; fn: string; args: Record<string, unknown> }> = [];
+    const db = {
+      schema: (schema: "custom" | "content") => ({
+        rpc: async (fn: string, args: Record<string, unknown>) => {
+          calls.push({ schema, fn, args });
+          return answer as never;
+        },
+      }),
+    };
+    return { db, calls };
+  };
+
+  it("asks content.row_page_for with the row id, never the hidden association", async () => {
+    const { db, calls } = dbAnswering({ data: "page-1", error: null });
+    await expect(findRowPageId(db, "row-1")).resolves.toBe("page-1");
+    expect(calls).toEqual([{ schema: "content", fn: "row_page_for", args: { p_record_id: "row-1" } }]);
+  });
+
+  it("is null when the door says no page or no access", async () => {
+    await expect(findRowPageId(dbAnswering({ data: null, error: null }).db, "row-1")).resolves.toBeNull();
+  });
+
+  it("says why when the door fails", async () => {
+    await expect(findRowPageId(dbAnswering({ data: null, error: { message: "boom" } }).db, "row-1")).rejects.toThrow("boom");
   });
 });

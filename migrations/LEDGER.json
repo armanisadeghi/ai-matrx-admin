@@ -6998,6 +6998,12 @@
       "checksum": "55dcf9f0be1489430affe0bd1f29708bb9151f1bfda86376b7119c0d53adc319",
       "applied_at": "2026-09-21 22:21:41.026035+00"
     },
+    "migrations/campaign/row_pages_read_door.sql": {
+      "source": "matrx-frontend",
+      "filename": "row_pages_read_door.sql",
+      "checksum": "ff54d71ff203c57f177f7c08780ac6039a8d061720ff82ef9486d514fa05379d",
+      "applied_at": "2026-10-15 04:35:25.767501+00"
+    },
     "migrations/campaign/rowlabel_a_a_table_names_its_records_by_a_formula.sql": {
       "source": "matrx-frontend",
       "filename": "rowlabel_a_a_table_names_its_records_by_a_formula.sql",
