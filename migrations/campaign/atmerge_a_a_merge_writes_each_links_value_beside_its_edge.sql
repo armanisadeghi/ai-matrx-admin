@@ -1,4 +1,3 @@
--- draft: AT-MERGE — remove this line once proven on a rolled-back transaction
 -- target: branch,production
 -- additive: yes
 -- guard: custom/system_enabled

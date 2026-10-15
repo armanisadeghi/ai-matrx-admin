@@ -140,10 +140,10 @@ begin
 
   -- 5. DUPLICATE the table with its records: every copied link carries a value, an edge and the copy's own field.
   perform set_config('role', 'authenticated', true);
-  v_dup := custom.table_duplicate(v_hold_t, true, 'Venue Holds copy', v_org);
+  v_dup := custom.table_duplicate(v_hold_t, true, 'Venue Holds copy', null);
   v_i := 0;
   while coalesce(v_dup ->> 'status', '') = 'copying' and v_i < 30 loop
-    v_dup := custom.table_duplicate_continue((v_dup ->> 'event_id')::uuid);
+    v_dup := custom.table_duplicate_continue((v_dup #>> '{table,id}')::uuid);
     v_i := v_i + 1;
   end loop;
   set constraints all immediate;
@@ -155,6 +155,32 @@ begin
    where a.role='venues' and a.deleted_at is null and a.relation_field_id is not null;
   if v_n = 0 then raise exception '5: the duplicated table holds no live venue edge (job %)', v_dup; end if;
   raise notice 'PART 5 PASSED — duplicate writes value and edge (% edges).', v_n;
+
+  -- 6. A SINGLE-VALUED link (the Wedding shoot / Client case): differing, equal and one-sided links all merge.
+  perform set_config('role', 'authenticated', true);
+  declare
+    v_t uuid; v_f uuid; v_c1 uuid; v_c2 uuid; v_x1 uuid; v_x2 uuid; v_k int;
+  begin
+    v_t := custom.table_declare(v_org, jsonb_build_object('name','Shoots','slug','shoots','type','entity',
+      'label_singular','Shoot','label_plural','Shoots','title_field','sname','display','list','weight','light',
+      'ordered',false,'row_order','sorted','default_sort','[]'::jsonb,'agent_writable',true,'retention_days',365,
+      'fields', jsonb_build_array(jsonb_build_object('name','sname')),'parent_id', v_home::text));
+    v_f := custom.field_declare(v_org, v_t, jsonb_build_object('key','client','label','Client','type','relation',
+      'multi',false,'relation_target',v_ven_t,'relation_max',1,'on_target_delete','restrict'));
+    for v_k in 1..3 loop
+      v_x1 := custom.record_write(v_org, v_t, jsonb_build_object('sname','Wedding shoot '||v_k,'parent_id',v_home::text)
+                || case when v_k in (1,2) then jsonb_build_object('client', v_v1::text) else '{}'::jsonb end);
+      v_x2 := custom.record_write(v_org, v_t, jsonb_build_object('sname','Wedding shoot '||(v_k+10),'parent_id',v_home::text)
+                || case when v_k = 1 then jsonb_build_object('client', v_v2::text)
+                        when v_k = 2 then jsonb_build_object('client', v_v1::text)
+                        else jsonb_build_object('client', v_v3::text) end);
+      perform custom.migrate_merge(v_org, v_x1, v_x2, 'atmerge single link '||v_k);
+      set constraints all immediate;
+      set constraints all deferred;
+    end loop;
+  end;
+  perform set_config('role', v_boss, true);
+  raise notice 'PART 6 PASSED — single-valued links merge (differing, equal, one-sided).';
 end
 $t$;
 rollback;
