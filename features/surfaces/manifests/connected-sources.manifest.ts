@@ -202,7 +202,7 @@ You are on Connected sources at /connected-sources. It shows what is inside the 
 connected_accounts lists every source and what it cannot reach; browsing is the account on screen; source_list is the visible page (condensed) and sources the same rows in full; browse_summary says how much the server read and whether more exists; load_error, when present, is why nothing could be read.
 selected_ids is what the person ticked.
 You can do the three reads a person can, on picked Google files: read_comments (comments and replies), read_history (who changed it, when) and read_speaker_notes (a Slides deck's notes). Each takes source ids, changes nothing, shows the person what it read and returns it to you.
-Nothing here can be connected, disconnected, renamed or deleted. To connect an account, send the person to /settings/integrations. To open an item, give the person its url.
+Nothing here can be connected, disconnected, renamed or deleted. To connect an account, send the person to /user-settings/integrations. To open an item, give the person its url.
 </surface_intro>`,
   groups,
   values: mergeBaselineValues(pickBaseline("selection", "context"), surfaceSpecific),
