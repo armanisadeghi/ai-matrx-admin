@@ -23,7 +23,8 @@ export type WorkbookSnapshotOrigin =
   | "autosave"
   | "manual"
   | "imported"
-  | "restored";
+  | "restored"
+  | "named";
 
 // ─── documents (mirror of workbooks; Univer preset-docs-core surface) ────────
 

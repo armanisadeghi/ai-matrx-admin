@@ -2,7 +2,7 @@
 
 Domain tree: content > workbooks. Split out of `features/data-tables` on 2026-10-07; routes
 `/workbooks` and `/workbooks/[id]` are unchanged. Documents (the Univer doc editor) are the sibling
-feature `features/documents`; both share `lib/univer/` (theme, facade, dispose, snapshot-mutation
+feature `features/documents`; both share `@ai-matrx/office src/univer/` (theme, facade, dispose, snapshot-mutation
 helpers) and `@ai-matrx/realtime/collab` (Yjs over Supabase Broadcast). `features/data-tables/export-targets.ts`
 still builds the workbook a table is exported into.
 

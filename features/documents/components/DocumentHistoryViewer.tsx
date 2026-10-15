@@ -4,7 +4,7 @@
  * Mirror of `WorkbookHistoryViewer`. Lists snapshots newest-first with a
  * Restore button that writes a NEW snapshot row labeled "Restored from <id>",
  * then shows it in the open editor and its collab peers through the one
- * content-replacement door (`lib/univer/openEditorContent`).
+ * content-replacement door (`@ai-matrx/office/univer openEditorContent`).
  */
 "use client";
 

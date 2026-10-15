@@ -5,7 +5,7 @@
  * live Univer doc, each lent to `GoogleLinkControl` as an adapter.
  *
  * Taking Google's version SAVES it first, then shows it through the one
- * content-replacement door (`lib/univer/openEditorContent`) — the same path
+ * content-replacement door (`@ai-matrx/office/univer openEditorContent`) — the same path
  * as a history restore, so collab peers follow and no autosave writes the old
  * content back. Never dispose / create Univer units here.
  */

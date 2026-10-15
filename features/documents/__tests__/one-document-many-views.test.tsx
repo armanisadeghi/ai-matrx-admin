@@ -104,18 +104,26 @@ jest.mock("@univerjs/preset-docs-drawing/locales/en-US", () => ({}));
 jest.mock("@univerjs/preset-docs-thread-comment", () => ({ UniverDocsThreadCommentPreset: () => ({}) }));
 jest.mock("@univerjs/preset-docs-thread-comment/locales/en-US", () => ({}));
 jest.mock("@univerjs/find-replace", () => ({ UniverFindReplacePlugin: class {} }));
-jest.mock("@ai-matrx/office/univer", () => ({ registerMissingUniverIcons: () => undefined }));
+// The Univer glue (`@ai-matrx/office/univer`): the real module with the pieces that boot Univer or touch the host stubbed.
+jest.mock("@ai-matrx/office/univer", () => ({
+  ...jest.requireActual<Record<string, unknown>>("@ai-matrx/office/univer"),
+  registerMissingUniverIcons: () => undefined,
+  routeUniverNotificationsToApp: () => ({ applied: true }),
+  registerMatrxImageStore: () => undefined,
+  matrxImagePorts: {},
+  identifyUniverUser: async () => undefined,
+  useUniverDarkModeSync: () => {},
+  registerUniverFacadeDependencies: () => {},
+  disposeUniverInstance: (u: { dispose: () => void } | null) => u?.dispose(),
+}));
+jest.mock("@/lib/univer-host", () => ({}));
 jest.mock("@univerjs/docs-find-replace", () => ({ UniverDocsFindReplacePlugin: class {} }));
 jest.mock("@univerjs/find-replace/locale/en-US", () => ({}));
-jest.mock("@ai-matrx/office/univer", () => ({ routeUniverNotificationsToApp: () => ({ applied: true }) }));
-jest.mock("@ai-matrx/office/univer", () => ({ registerMatrxImageStore: () => undefined }));
-jest.mock("@ai-matrx/office/univer", () => ({ matrxImagePorts: {} }));
 jest.mock("@/features/google-workspace/linked/EditorGoogleLinks", () => ({
   DocumentGoogleLink: () => null,
   WorkbookGoogleLink: () => null,
   useDocumentGoogleLink: () => ({ mark: null, items: null, dialog: null }),
 }));
-jest.mock("@ai-matrx/office/univer", () => ({ identifyUniverUser: async () => undefined }));
 jest.mock("@univerjs/preset-sheets-core", () => ({ DragManagerService: class {}, HoverManagerService: class {} }));
 jest.mock("@ai-matrx/realtime/react", () => ({ useRealtimeManager: () => null, useChannel: () => undefined }));
 jest.mock("@ai-matrx/realtime", () => ({
@@ -125,14 +133,9 @@ jest.mock("@/features/canvas/host/toolCanvas", () => ({
   ...jest.requireActual<typeof import("@/features/canvas/host/toolCanvas")>("@/features/canvas/host/toolCanvas"),
   useToolToggle: () => ({ isVisible: false, toggle: () => {} }),
 }));
-jest.mock("@ai-matrx/office/univer", () => ({ useUniverDarkModeSync: () => {} }));
 jest.mock("@/features/documents/hooks/useUniverDocSurfaceTheme", () => ({ useUniverDocSurfaceTheme: () => {} }));
 jest.mock("@/features/documents/univer-doc-canvas-colors", () => ({ renderDocumentCanvasColorsVerbatim: () => ({ applied: true }) }));
-jest.mock("@ai-matrx/office/univer", () => ({ registerUniverFacadeDependencies: () => {} }));
 jest.mock("@/features/documents/utils/sanitizeUniverDocSnapshot", () => ({ sanitizeUniverDocSnapshot: (s: unknown) => s }));
-jest.mock("@ai-matrx/office/univer", () => ({
-  disposeUniverInstance: (u: { dispose: () => void } | null) => u?.dispose(),
-}));
 jest.mock("@ai-matrx/realtime/collab/react", () => ({ RemotePeerChips: () => null }));
 jest.mock("@/features/documents/components/DocumentPageReferenceCopyButton", () => ({ DocumentPageReferenceCopyButton: () => null }));
 jest.mock("@/components/errors/ErrorAlchemyMenu", () => ({ ErrorAlchemyMenu: () => null }));

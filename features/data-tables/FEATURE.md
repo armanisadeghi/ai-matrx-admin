@@ -59,7 +59,7 @@ the dependent cell — an off-list value goes amber and the person decides.
 
 Univer workbooks and documents are their own features since 2026-10-07 (domain tree: content >
 workbooks, content > documents): `features/workbooks/FEATURE.md`, `features/documents/FEATURE.md`;
-the shared Univer runtime is `lib/univer/`, the Yjs collab provider `@ai-matrx/realtime/collab`. Guard:
+the shared Univer runtime is `@ai-matrx/office src/univer/`, the Yjs collab provider `@ai-matrx/realtime/collab`. Guard:
 `__tests__/univer-documents-and-workbooks-live-outside-data-tables.test.ts`.
 
 ## Validation rules — what a column ACCEPTS (2026-09-14)

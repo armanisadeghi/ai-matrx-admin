@@ -336,7 +336,7 @@ async function selfTest() {
   //    source rule and by the real-Univer token check; the resolver the editor
   //    installs today must be clean.
   const { resolveUniverCanvasColor } = await import(
-    "../lib/univer/univer-theme-token-color.ts"
+    "../../aidream/apps/shared/office/src/univer/univer-theme-token-color.ts"
   );
   const dumbTokens = await findTokenResolutionViolations((color) => color);
   const liveTokens = await findTokenResolutionViolations(resolveUniverCanvasColor);
@@ -431,7 +431,7 @@ for (const violation of colorViolations) {
 }
 
 const { resolveUniverCanvasColor } = await import(
-  "../lib/univer/univer-theme-token-color.ts"
+  "../../aidream/apps/shared/office/src/univer/univer-theme-token-color.ts"
 );
 const canvasColorsFile = "features/documents/univer-doc-canvas-colors.ts";
 for (const violation of [

@@ -58,7 +58,7 @@ All visual consumers migrated. Remaining `useAppSelector(…theme.mode…)` usag
 | `features/window-panels/windows/multi-file-smart-code-editor/MultiFileSmartCodeEditorWindow.tsx` | ✅ |
 | `features/administration/database-admin/SyntaxHighlighter.tsx` | ✅ |
 | `features/kg-graph/components/KgGraphCytoscape.tsx` | ✅ |
-| `lib/univer/useUniverDarkModeSync.ts` | ✅ |
+| `@ai-matrx/office src/univer/useUniverDarkModeSync.ts` | ✅ |
 | `features/workbooks/components/WorkbookEditor.tsx` | ✅ |
 | `features/documents/components/DocumentEditor.tsx` | ✅ |
 | `features/applet/builder/modules/field-builder/previews/FieldPreview.tsx` | ✅ |

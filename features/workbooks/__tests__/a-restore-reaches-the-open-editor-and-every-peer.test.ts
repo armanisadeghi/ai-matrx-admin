@@ -6,7 +6,7 @@
  * peers never heard, and the next autosave wrote the old content back over
  * the restore. Google's "Update" disposed the Univer unit by hand and threw
  * `getUnitId` of null. Now every whole-content replacement goes through ONE
- * door (`lib/univer/openEditorContent`): the open editor swaps in the saved
+ * door (`@ai-matrx/office/univer openEditorContent`): the open editor swaps in the saved
  * snapshot, its pending save writes nothing, and the collab room empties its
  * mutation log and tells every peer to reload.
  *

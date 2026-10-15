@@ -365,7 +365,7 @@ export class DocumentModel {
   }
 
   /**
-   * THE content swap (see lib/univer/openEditorContent): a SAVED snapshot
+   * THE content swap (see @ai-matrx/office/univer openEditorContent): a SAVED snapshot
    * replaces the document in every view and the kept editor. It is the saved
    * version from now on, so the pending save compares equal and writes
    * nothing (it would put the old content back over the new). In a collab

@@ -110,9 +110,9 @@ for (const [name, needle] of Object.entries(needles)) {
 // identifyUniverUser hands Univer the signed-in id. Univer's local authz
 // grants Owner/Editor by id PREFIX, so a bare uuid refuses every edit
 // ("The range is protected") — shipped once on 2026-10-10. Rebuild the id the
-// way lib/univer/identifyUniverUser.ts does and ask Univer's own authz.
+// way @ai-matrx/office src/univer/identifyUniverUser.ts does and ask Univer's own authz.
 {
-  const src = readFileSync(new URL("../lib/univer/identifyUniverUser.ts", import.meta.url), "utf8");
+  const src = readFileSync(new URL("../../aidream/apps/shared/office/src/univer/identifyUniverUser.ts", import.meta.url), "utf8");
   const tpl = src.match(/return `([^`$]*)\$\{userId\}`/);
   if (!/setCurrentUser\(\{ userID: univerOwnerId\(/.test(src) || !tpl) {
     fail("identifyUniverUser no longer builds the Univer id through univerOwnerId()");

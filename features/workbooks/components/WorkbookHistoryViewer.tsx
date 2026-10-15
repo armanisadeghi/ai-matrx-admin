@@ -5,7 +5,7 @@
  * imported / restored), created_at, and a Restore button that takes the
  * snapshot's JSON and writes a NEW snapshot row labeled "Restored from <version>" (its label, else when it was saved).
  * The open editor (and its collab peers) then shows it through the one
- * content-replacement door (`lib/univer/openEditorContent`).
+ * content-replacement door (`@ai-matrx/office/univer openEditorContent`).
  *
  * Read RLS already scopes by viewer permission of the parent workbook —
  * no extra gating needed here.
