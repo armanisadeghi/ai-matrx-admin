@@ -20,7 +20,9 @@ export default function ExtensionPrivacyPolicyPage() {
           <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
             Matrx Extend — Chrome Extension Privacy Policy
           </h1>
-          <p className="text-muted-foreground">Last updated: September 12, 2026</p>
+          <p className="text-muted-foreground">
+            Last updated: October 15, 2026
+          </p>
         </div>
 
         <div className="prose prose-neutral dark:prose-invert max-w-none space-y-8">
@@ -64,12 +66,12 @@ export default function ExtensionPrivacyPolicyPage() {
               Everything the extension does serves that one purpose: answering
               questions about the current page, pulling information out of it,
               and — only when you ask — performing actions on it such as filling
-              a form or navigating. Full-page processing runs for a feature
-              you invoke or automatic page capture you explicitly enable.
-              Vault login detection and saved-login matching are separate
-              controls, described below. The
-              default permission mode asks before actions that change a page;
-              privileged actions always require confirmation.
+              a form or navigating. Full-page processing runs for a feature you
+              invoke or automatic page capture you explicitly enable. Vault
+              login detection and saved-login matching are separate controls,
+              described below. The default permission mode asks before actions
+              that change a page; privileged actions always require
+              confirmation.
             </p>
           </section>
 
@@ -144,8 +146,8 @@ export default function ExtensionPrivacyPolicyPage() {
                 sites, and view, edit, or delete any saved login at any time.
               </li>
               <li>
-                <strong>Saved-login suggestions.</strong> When you are signed
-                in and &ldquo;Offer saved logins&rdquo; is enabled, focusing a
+                <strong>Saved-login suggestions.</strong> When you are signed in
+                and &ldquo;Offer saved logins&rdquo; is enabled, focusing a
                 supported login field can send the current site&rsquo;s origin
                 and path (without query parameters or fragment) to your Matrx
                 Vault to find matching saved-login metadata. The setting is on
@@ -154,6 +156,36 @@ export default function ExtensionPrivacyPolicyPage() {
                 content, and does not send a password to an AI model. You choose
                 an account before its authorized fields are filled. Signed-out
                 users do not receive Vault matches.
+              </li>
+              <li>
+                <strong>Swipe file items you choose to save.</strong> When you
+                are signed in and choose to save a supported social post or ad,
+                the extension sends its URL to the Matrx service to retrieve the
+                post and any available media or transcript. The service may use
+                external social-data providers to retrieve that public post. The
+                item is associated with a collection in your chosen
+                organization. The retrieved post and media may also remain in a
+                shared Matrx cache after you remove the item from your
+                collection. Notes or tags you add are saved with the item.
+                Visiting a post alone does not save it to your Swipe file.
+              </li>
+              <li>
+                <strong>Configuration diagnostics.</strong> The extension reads
+                public runtime settings from Supabase and keeps a last-seen copy
+                on your device. For a signed-in account, it registers the
+                extension installation with your account and organization and
+                periodically reports the app version and build identity,
+                report-interval start and end times, and each setting key's
+                first and last read times, read count, source counts, invalid
+                count, applied-status counts, and propagation status. It also
+                reports which setting keys were missing. Read records can wait
+                in local storage until a report succeeds. Records collected
+                while signed out may be included in reports after you sign in.
+                These diagnostics help us identify configuration problems.
+                App-config reads include a short fingerprint derived from the
+                last value read for each key; feature-knob reads do not include
+                their values. Reports do not include raw setting values, page
+                content, or a list of sites you visited.
               </li>
               <li>
                 <strong>Local preferences.</strong> Settings such as your
@@ -191,7 +223,7 @@ export default function ExtensionPrivacyPolicyPage() {
                 fresh install. If you enable it in Settings, the extension
                 captures the active page after navigation so it is ready for
                 your next chat request. The extension does not silently crawl
-                unrelated tabs, and it does not send browsing telemetry.
+                unrelated tabs, and it does not send a browsing-history list.
               </li>
               <li>
                 <strong>
@@ -215,7 +247,8 @@ export default function ExtensionPrivacyPolicyPage() {
               <li>
                 <strong>Supabase</strong> (operated by AI Matrx) — for
                 authentication and direct, row-level-secured reads/writes of
-                your saved captures, patterns, conversations, and audits.
+                your saved captures, patterns, conversations, Swipe file items,
+                and signed-in configuration diagnostics.
               </li>
               <li>
                 <strong>Matrx backend</strong> at{" "}
@@ -223,6 +256,12 @@ export default function ExtensionPrivacyPolicyPage() {
                 streaming responses, server-side processing, and your Vault of
                 saved website logins (stored encrypted at rest under your
                 account; never forwarded to an AI model provider).
+              </li>
+              <li>
+                <strong>Social-data providers.</strong> When you choose to save
+                a supported social post or ad, the Matrx service may send its
+                public URL to an external provider to retrieve the post and
+                available media or transcript.
               </li>
               <li>
                 <strong>AI model providers.</strong> To generate a response, the
@@ -236,10 +275,9 @@ export default function ExtensionPrivacyPolicyPage() {
               </li>
             </ul>
             <p>
-              No other third parties receive your content. If you have paired
-              the optional Matrx desktop companion app, the extension may
-              communicate with it locally on your machine; that traffic does not
-              leave your device.
+              If you have paired the optional Matrx desktop companion app, the
+              extension may communicate with it locally on your machine; that
+              traffic does not leave your device.
             </p>
           </section>
 
@@ -352,8 +390,9 @@ export default function ExtensionPrivacyPolicyPage() {
             </h2>
             <p>
               You can open the side panel and use the assistant immediately, as
-              a guest, without signing up. Guest use works the same way as
-              signed-in use, and this policy applies to it in full.
+              a guest, without signing up. Swipe file and signed-in
+              configuration reporting require a Matrx account. This policy
+              applies to guest use as described below.
             </p>
             <p>To make that work, when you use the extension as a guest:</p>
             <ul className="list-disc pl-6 space-y-2">
@@ -411,7 +450,10 @@ export default function ExtensionPrivacyPolicyPage() {
               <li>
                 <strong>Delete saved data</strong> (captures, patterns,
                 conversations, SEO audits) at any time from your Matrx account,
-                or by emailing us.
+                or by emailing us. You can remove a Swipe file item from your
+                collection; this removes the collection association but does not
+                necessarily erase the retrieved post from the shared Matrx
+                cache. Contact us about a deletion request for cached data.
               </li>
               <li>
                 <strong>Saved website logins</strong> can be viewed, changed, or
