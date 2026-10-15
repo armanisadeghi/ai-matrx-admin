@@ -130,8 +130,9 @@ export function SpecCard({ task }: Props) {
             <Row label="Account" anchor="schedule_account">
               <span className="text-sm">{work.accountProfileId ? "A saved account" : "Its signed-in account"}</span>
             </Row>
-            <Row label="Filed under" anchor="schedule_homes">
-              {work.homes.length ? (
+            {/* No homes: no row (a schedule that files nowhere has nothing to say here). */}
+            {work.homes.length > 0 && (
+              <Row label="Filed under" anchor="schedule_homes">
                 <span className="flex flex-wrap gap-1">
                   {work.homes.map((h) => (
                     // The name HomeStep stored with the home (never its id).
@@ -140,10 +141,8 @@ export function SpecCard({ task }: Props) {
                     </span>
                   ))}
                 </span>
-              ) : (
-                <span className="text-sm text-muted-foreground">Not filed</span>
-              )}
-            </Row>
+              </Row>
+            )}
           </>
         ) : (
         <Row label="Agent" anchor="schedule_agent_id">
