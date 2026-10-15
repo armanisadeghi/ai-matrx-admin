@@ -38,7 +38,6 @@ type ValueKind = "text" | "now" | "me" | "clear" | "from";
 /** One action as the panel edits it; `toAction` turns it into the store's spec. */
 type Draft =
   | { kind: "set"; field: string; value: ValueKind; text: string; from: string }
-  | { kind: "add"; title: string; dateField: string; inDays: string }
   | { kind: "edit"; whereField: string; whereIs: string; field: string; value: ValueKind; text: string; from: string }
   | { kind: "notify"; to: "author" | string; text: string }
   | { kind: "webhook"; url: string }
@@ -51,10 +50,11 @@ type Draft =
   | { kind: "flow"; step: Step };
 
 /** The step kinds the visual flow editor owns. */
-const FLOW_DO = new Set(["find", "update", "archive", "if", "for_each", "run_mandate", "gmail", "sms"]);
+const FLOW_DO = new Set(["add_row", "find", "update", "archive", "if", "for_each", "run_mandate", "gmail", "sms"]);
 
 /** AT-AUTO3: the starting shape of each flow step (the editor fills the rest by choosing). */
 const FLOW_BUTTONS: Array<[string, (tableId: string) => Step]> = [
+  ["Add page", (t) => ({ do: "add_row", table_id: t, values: {} })],
   ["Find records", (t) => ({ do: "find", table_id: t, limit: 50 })],
   ["Update records", (t) => ({ do: "update", table_id: t, record: "", values: {} })],
   ["Archive records", () => ({ do: "archive", record: "" })],
@@ -86,12 +86,6 @@ function toAction(d: Draft, tableId: string, titleField: string): AutomationActi
   switch (d.kind) {
     case "set":
       return { do: "set", values: { [d.field]: valueOf(d.value, d.text, d.from) } };
-    case "add":
-      return {
-        do: "add_row",
-        table_id: tableId,
-        values: { [titleField]: d.title, ...(d.dateField && d.inDays.trim() !== "" ? { [d.dateField]: { in_days: Number(d.inDays) || 0 } } : {}) },
-      };
     case "edit":
       return { do: "edit_rows", table_id: tableId, where: { op: "eq", args: [{ field: d.whereField }, { const: d.whereIs }] }, values: { [d.field]: valueOf(d.value, d.text, d.from) } };
     case "notify":
@@ -128,16 +122,6 @@ function toDraft(a: AutomationAction, firstField: string): Draft {
   switch (a.do) {
     case "set":
       return { kind: "set", ...one(a.values) };
-    case "add_row": {
-      const [titleId] = Object.keys(a.values);
-      const dated = Object.entries(a.values).find(([, v]) => v && typeof v === "object" && "in_days" in (v as object));
-      return {
-        kind: "add",
-        title: String(a.values[titleId ?? ""] ?? ""),
-        dateField: dated?.[0] ?? "",
-        inDays: dated ? String((dated[1] as { in_days: number }).in_days) : "",
-      };
-    }
     case "edit_rows": {
       const args = (a.where as { args?: Array<{ field?: string; const?: unknown }> }).args ?? [];
       return { kind: "edit", whereField: args[0]?.field ?? firstField, whereIs: String(args[1]?.const ?? ""), ...one(a.values) };
@@ -812,16 +796,6 @@ function AutomationsPanelBody({ tableId, organizationId, fields }: { tableId: st
                   <FieldPills fields={fields} value={d.field} onPick={(field) => put(i, { field })} />
                   <ValueEditor fields={fields} d={d} put={(p) => put(i, p)} />
                 </>
-              ) : d.kind === "add" ? (
-                <>
-                  <Input aria-label={say("New page name")} placeholder={say("Add a page named")} value={d.title} onChange={(e) => put(i, { title: e.target.value })} />
-                  {dateFields.length > 0 ? (
-                    <>
-                      <FieldPills fields={dateFields} value={d.dateField} onPick={(dateField) => put(i, { dateField: d.dateField === dateField ? "" : dateField })} />
-                      {d.dateField ? <Input aria-label="Days from now" type="number" className="w-16" placeholder="days" value={d.inDays} onChange={(e) => put(i, { inDays: e.target.value })} /> : null}
-                    </>
-                  ) : null}
-                </>
               ) : d.kind === "edit" ? (
                 <>
                   <span className="type-secondary">{say("Edit pages where")}</span>
@@ -898,7 +872,6 @@ function AutomationsPanelBody({ tableId, organizationId, fields }: { tableId: st
           ))}
           <div className="flex flex-wrap gap-1">
             {timed ? null : <Button variant="quiet" icon={<Plus size={14} />} onClick={() => setDrafts([...drafts, { kind: "set", field: firstField, value: "text", text: "", from: firstField }])}>{say("Set property")}</Button>}
-            <Button variant="quiet" icon={<Plus size={14} />} onClick={() => setDrafts([...drafts, { kind: "add", title: "", dateField: "", inDays: "" }])}>{say("Add page")}</Button>
             <Button variant="quiet" icon={<Plus size={14} />} onClick={() => setDrafts([...drafts, { kind: "edit", whereField: firstField, whereIs: "", field: firstField, value: "text", text: "", from: firstField }])}>{say("Edit pages")}</Button>
             <Button variant="quiet" icon={<Plus size={14} />} onClick={() => setDrafts([...drafts, { kind: "notify", to: "author", text: "" }])}>Send notification</Button>
             <Button variant="quiet" icon={<Plus size={14} />} onClick={() => setDrafts([...drafts, { kind: "email", to: "author", address: "", subject: "", body: "" }])}>Send email</Button>
@@ -907,7 +880,7 @@ function AutomationsPanelBody({ tableId, organizationId, fields }: { tableId: st
             <Button variant="quiet" icon={<Plus size={14} />} onClick={() => setDrafts([...drafts, { kind: "script", code: "", inputs: "" }])}>Run a script</Button>
             {FLOW_BUTTONS.map(([label, make]) => (
               <Button key={label} variant="quiet" icon={<Plus size={14} />} onClick={() => setDrafts([...drafts, { kind: "flow", step: make(tableId) }])}>
-                {label}
+                {say(label)}
               </Button>
             ))}
           </div>

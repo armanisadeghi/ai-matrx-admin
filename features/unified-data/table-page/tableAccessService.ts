@@ -124,3 +124,24 @@ export async function findDuplicates(organizationId: string, tableId: string, fi
   if (error) throw new Error(error.message);
   return parseDuplicates(data);
 }
+
+/** Merge needs Full on both records (`custom.migrate_merge`), so the group's Merge is offered at Full only. */
+export function canMergeDuplicates(level: string | null | undefined): boolean {
+  return level === "admin" || level === "owner";
+}
+
+/**
+ * Merges every other member of a group into the first through the existing merge door: the first record's values
+ * stay, a differing value of another becomes an alternate on it, and the whole merge can be undone.
+ * Returns how many were merged; stops at the first refusal and says it.
+ */
+export async function mergeDuplicateGroup(organizationId: string, memberIds: string[]): Promise<number> {
+  const [winner, ...losers] = memberIds;
+  let done = 0;
+  for (const loser of losers) {
+    const { error } = await storeDoors(supabase).rpc("migrate_merge", { p_organization_id: organizationId, p_winner_id: winner, p_loser_id: loser, p_note: "Merged from Find duplicates" });
+    if (error) throw new Error(done > 0 ? `${done} merged, then: ${error.message}` : error.message);
+    done += 1;
+  }
+  return done;
+}

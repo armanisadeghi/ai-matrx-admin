@@ -1,6 +1,6 @@
 // AT-SHARE rows 2 and 3 — the pure rules behind the table header's two controls.
 
-import { activitySentence, canAskForEdit, canFindDuplicates, parseActivity, parseDuplicates } from "../tableAccessService";
+import { activitySentence, canAskForEdit, canFindDuplicates, canMergeDuplicates, parseActivity, parseDuplicates } from "../tableAccessService";
 
 describe("who may ask for edit access", () => {
   it("a viewer and a commenter may; an editor, a Full holder and an owner may not; nobody known may not", () => {
@@ -56,5 +56,14 @@ describe("the duplicate finder", () => {
     });
     expect(groups).toEqual([{ members: [{ id: "a", title: "Ana Ruiz" }, { id: "b", title: "(untitled)" }] }]);
     expect(parseDuplicates(null)).toEqual([]);
+  });
+});
+
+describe("merging a duplicate group", () => {
+  it("is offered at Full only, because the merge door needs Full on both records", () => {
+    expect(canMergeDuplicates("editor")).toBe(false);
+    expect(canMergeDuplicates("admin")).toBe(true);
+    expect(canMergeDuplicates("owner")).toBe(true);
+    expect(canMergeDuplicates(null)).toBe(false);
   });
 });

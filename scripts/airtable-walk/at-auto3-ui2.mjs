@@ -1,0 +1,37 @@
+import { start, open, out } from "./lib.mjs";
+import { store } from "./store.mjs";
+import { readFileSync } from "node:fs";
+const S = JSON.parse(readFileSync("/tmp/airtable-walk/at-auto3.json", "utf8"));
+const { browser, page, who, errs } = await start(false);
+await open(page, S.ord);
+await page.getByRole("button", { name: "Table menu" }).first().click();
+await page.waitForTimeout(500);
+await page.getByText("Built on it").first().click().catch(() => {});
+await page.getByRole("menuitem", { name: /Automations/ }).first().click();
+await page.waitForTimeout(2500);
+const dlg = page.getByRole("dialog");
+await page.getByText("Tier onto new orders").first().click();
+await page.waitForTimeout(1500);
+out("steps at open:", JSON.stringify(await page.getByTestId("automation-step").evaluateAll((els) => els.map((e) => e.getAttribute("data-step-n") + ":" + e.getAttribute("data-step-kind")))));
+out("raw braces visible:", /\{\{/.test(await dlg.innerText()), "| status chips:", JSON.stringify(await page.getByTestId("automation-chip").allInnerTexts()));
+await page.getByRole("button", { name: "If / else" }).first().click();
+await page.waitForTimeout(800);
+const ifc = page.locator('[data-step-kind="if"]').first();
+// compare value: pick Step 1 tier from the token picker inside the when row
+await ifc.getByTestId("automation-when-row").getByTestId("automation-token-picker").first().click();
+await page.locator('[data-token="{{step1.first.tier}}"]').first().click();
+await ifc.getByTestId("automation-when-row").getByLabel("Compared with").fill("VIP");
+// add a step inside the If path: Send Gmail
+await ifc.getByTestId("automation-if-branch").getByTestId("automation-add-step").click();
+await page.locator('[data-step-kind="gmail"]').last().click();
+await page.waitForTimeout(600);
+await page.screenshot({ path: "/tmp/airtable-walk/aa3-4-if.png" });
+out("steps now:", JSON.stringify(await page.getByTestId("automation-step").evaluateAll((els) => els.map((e) => e.getAttribute("data-step-n") + ":" + e.getAttribute("data-step-kind")))));
+await page.getByRole("button", { name: "Save" }).click();
+await page.waitForTimeout(2500);
+const { client } = await store();
+const l = await client.automations({ table_id: S.ord });
+const a = l.data.automations.find((x) => x.spec.name === "Tier onto new orders");
+out("saved actions:", JSON.stringify(a.spec.actions.map((x) => x.do)), JSON.stringify(a.spec.actions[2]).slice(0, 400));
+out("console errors:", JSON.stringify(errs.filter((e) => !/accounts list|GSI/.test(e)).slice(0, 5)));
+await browser.close();

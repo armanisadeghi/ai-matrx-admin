@@ -1,6 +1,6 @@
 {
   "note": "Checked-in snapshot of public._schema_migrations for the files under migrations/campaign and migrations/inverse. Written by `pnpm db:apply` on every successful production apply and refreshed whole by the nightly catch-up. Never hand-edited: a self-written checksum is a claim nobody can check. Guard: pnpm check:ledgered-files-unedited.",
-  "generated_at": "2026-10-15T18:06:43.652Z",
+  "generated_at": "2026-10-15T18:21:01.314Z",
   "files": {
     "migrations/campaign/a_chunk_is_the_size_the_client_door_can_actually_carry.sql": {
       "source": "matrx-frontend",
@@ -661,6 +661,12 @@
       "filename": "atshare_e_an_access_request_names_the_table.sql",
       "checksum": "eea0bb78cee077fb75f01d79214732bb0ee96080c3271c91631a7b1c959b46c7",
       "applied_at": "2026-10-15 18:00:08.970635+00"
+    },
+    "migrations/campaign/atshare_f_a_base_without_a_home_record_has_a_feed.sql": {
+      "source": "matrx-frontend",
+      "filename": "atshare_f_a_base_without_a_home_record_has_a_feed.sql",
+      "checksum": "a4d5e85d5fe5d7f4b00ed187842a49915551a8c11bef349191d5fb4d50507901",
+      "applied_at": "2026-10-15 18:21:00.019706+00"
     },
     "migrations/campaign/auditorg_library_audit_names_the_acting_organization.sql": {
       "source": "matrx-frontend",
@@ -11221,12 +11227,6 @@
       "filename": "writeperf4_the_field_set_is_read_once_per_row_down.sql",
       "checksum": "faa8f0c7ba79f6453a6127a85cdf4549ca35ceb45a87cf6e5bee8ce5368ff7c6",
       "applied_at": "2026-09-22 09:33:14.786775+00"
-    },
-    "migrations/campaign/atauto3_a_find_reads_labels_and_the_server_runs_agents_emails_and_texts.sql": {
-      "source": "matrx-frontend",
-      "filename": "atauto3_a_find_reads_labels_and_the_server_runs_agents_emails_and_texts.sql",
-      "checksum": "27943868a512dbeccbf30cfc47d0a12ed2497383e48802fe119a87408a2f6853",
-      "applied_at": "2026-10-15 18:06:41.307265+00"
     }
   }
 }

@@ -68,6 +68,11 @@ begin
   exception when insufficient_privilege then
     raise notice 'CLAUSE 4 OK: the home itself refuses her';
   end;
+  -- CLAUSE 5 — a Base whose Home has no record (tables under a parent id that names nothing): the feed is the tables she may open.
+  perform set_config('request.jwt.claims', c_admin_j, true);
+  v_out := custom.base_activity(v_org, gen_random_uuid(), 50, null);
+  if v_out->>'subject' <> 'home' or jsonb_array_length(v_out->'entries') <> 0 then raise exception 'CLAUSE 5 FAILED: %', v_out; end if;
+  raise notice 'CLAUSE 5 OK: an unknown parent answers an empty home feed, not an error';
   raise notice 'AT-SHARE row 3 GREEN';
 end;
 $green$;

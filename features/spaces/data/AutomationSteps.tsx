@@ -216,7 +216,7 @@ function TokenText({ value, onChange, sources, placeholder, label }: { value: st
       {chips.map((c, i) => (
         <Chip key={`${c.token}${i}`} label={labelOf(c.token, sources)} onRemove={() => onChange(rebuild(lead + tail, chips.filter((_, j) => j !== i).map((x) => x.token)))} />
       ))}
-      <Input aria-label={label} placeholder={chips.length ? "" : placeholder} value={lead + tail} onChange={(e) => onChange(rebuild(e.target.value, chips.map((x) => x.token)))} />
+      <Input aria-label={label} className={chips.length ? "w-28" : undefined} placeholder={chips.length ? "add words" : placeholder} value={lead + tail} onChange={(e) => onChange(rebuild(e.target.value, chips.map((x) => x.token)))} />
       <SourceMenu sources={sources} webhook={env.trigger?.on === "webhook"} label="Use a value" onPick={(t) => onChange(rebuild(lead + tail, [...chips.map((x) => x.token), t]))} />
     </span>
   );
@@ -246,12 +246,13 @@ function ValueRows({ tableFields, values, onChange, sources }: { tableFields: Fi
     <div className="flex flex-col gap-1" data-testid="automation-value-rows">
       {entries.map(([k, v]) => {
         const f = tableFields.find((x) => x.id === k);
-        const mode = typeof v === "object" && v ? (rec(v).now ? "now" : rec(v).me ? "me" : rec(v).clear ? "clear" : "value") : "value";
+        const mode = typeof v === "object" && v ? (rec(v).now ? "now" : rec(v).me ? "me" : rec(v).clear ? "clear" : "in_days" in rec(v) ? "days" : "value") : "value";
         return (
           <div key={k} className="flex flex-wrap items-center gap-1">
             <Pick label="Field" value={k} onChange={(n) => setKey(k, n)} options={tableFields.filter((x) => x.id === k || !used.has(x.id)).map((x) => ({ value: x.id, label: x.label || x.key }))} />
             <span className="text-xs text-muted-foreground">to</span>
-            <Pick label="Kind of value" value={mode} onChange={(m) => setVal(k, m === "now" ? { now: true } : m === "me" ? { me: true } : m === "clear" ? { clear: true } : "")} options={[{ value: "value", label: "A value" }, { value: "now", label: "Now" }, { value: "me", label: "Me" }, { value: "clear", label: "Empty" }]} className="h-8 w-auto min-w-[6rem] text-xs" />
+            <Pick label="Kind of value" value={mode} onChange={(m) => setVal(k, m === "now" ? { now: true } : m === "me" ? { me: true } : m === "clear" ? { clear: true } : m === "days" ? { in_days: 0 } : "")} options={[{ value: "value", label: "A value" }, { value: "now", label: "Now" }, { value: "me", label: "Me" }, { value: "clear", label: "Empty" }, { value: "days", label: "In some days" }]} className="h-8 w-auto min-w-[6rem] text-xs" />
+            {mode === "days" ? <Input aria-label="Days from now" type="number" className="w-20" value={String(rec(v).in_days ?? 0)} onChange={(e) => setVal(k, { in_days: Number(e.target.value) || 0 })} /> : null}
             {mode === "value" ? <ChoiceOrText field={f} value={str(v)} onChange={(t) => setVal(k, t)} sources={sources} /> : null}
             <Button variant="quiet" aria-label="Remove field" icon={<X size={12} />} onClick={() => onChange(Object.fromEntries(entries.filter(([x]) => x !== k)))} />
           </div>

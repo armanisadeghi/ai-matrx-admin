@@ -21,6 +21,8 @@ import {
   activitySentence,
   canAskForEdit,
   canFindDuplicates,
+  canMergeDuplicates,
+  mergeDuplicateGroup,
   findDuplicates,
   type DuplicateGroup,
   readActivity,
@@ -162,13 +164,15 @@ export function ActivityFeedButton({ subjectId, organizationId }: { subjectId: s
 }
 
 /** AT-SHARE row 4, Dedupe: pick fields, see groups of likely duplicates, open each record (its page has the merge). Edit holders only. */
-function FindDuplicates({ tableId, organizationId }: { tableId: string; organizationId: string }) {
+function FindDuplicates({ tableId, organizationId, level }: { tableId: string; organizationId: string; level: string | null }) {
   const fields = useFields(tableId);
   const [open, setOpen] = useState(false);
   const [chosen, setChosen] = useState<string[]>([]);
   const [groups, setGroups] = useState<DuplicateGroup[] | null>(null);
   const [state, setState] = useState<"idle" | "loading" | "failed">("idle");
   const [why, setWhy] = useState<string | null>(null);
+  const [confirming, setConfirming] = useState<number | null>(null);
+  const [merged, setMerged] = useState<string | null>(null);
   const list = (fields.data ?? []).filter((f) => f.key && !["relation", "lookup", "rollup", "attachment"].includes(String(f.type)));
 
   const find = useCallback(async () => {
@@ -181,6 +185,24 @@ function FindDuplicates({ tableId, organizationId }: { tableId: string; organiza
       setState("failed");
     }
   }, [chosen, organizationId, tableId]);
+
+  const merge = useCallback(
+    async (index: number) => {
+      const group = groups?.[index];
+      if (!group) return;
+      setState("loading");
+      try {
+        const n = await mergeDuplicateGroup(organizationId, group.members.map((m) => m.id));
+        setMerged(`Merged ${n + 1} records into ${group.members[0]?.title ?? "the first"}. Undo is in the record's history.`);
+        setConfirming(null);
+        await find();
+      } catch (err) {
+        setWhy(err instanceof Error ? err.message : "The merge did not run.");
+        setState("failed");
+      }
+    },
+    [find, groups, organizationId],
+  );
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -220,16 +242,34 @@ function FindDuplicates({ tableId, organizationId }: { tableId: string; organiza
         </button>
         {state === "failed" && <p className="text-xs text-destructive">{why}</p>}
         {groups && groups.length === 0 && state === "idle" && <p className="text-xs text-muted-foreground">No duplicates found.</p>}
+        {merged && <p className="text-xs" data-duplicates-merged>{merged}</p>}
         {groups?.map((g, i) => (
-          <ul key={i} className="divide-y rounded border" data-duplicate-group>
-            {g.members.map((m) => (
-              <li key={m.id} className="px-2 py-1.5 text-xs">
-                <a className="underline-offset-2 hover:underline" href={recordPageHref(tableId, m.id)} target="_blank" rel="noreferrer">
-                  {m.title}
-                </a>
-              </li>
-            ))}
-          </ul>
+          <div key={i} className="space-y-1">
+            <ul className="divide-y rounded border" data-duplicate-group>
+              {g.members.map((m) => (
+                <li key={m.id} className="px-2 py-1.5 text-xs">
+                  <a className="underline-offset-2 hover:underline" href={recordPageHref(tableId, m.id)} target="_blank" rel="noreferrer">
+                    {m.title}
+                  </a>
+                </li>
+              ))}
+            </ul>
+            {canMergeDuplicates(level) &&
+              (confirming === i ? (
+                <div className="flex items-center gap-1 text-xs">
+                  <button type="button" className="rounded bg-primary px-2 py-1 text-primary-foreground disabled:opacity-60" disabled={state === "loading"} onClick={() => void merge(i)} data-duplicates-merge-confirm>
+                    Merge {g.members.length} into {g.members[0]?.title}
+                  </button>
+                  <button type="button" className={BUTTON} onClick={() => setConfirming(null)}>
+                    Cancel
+                  </button>
+                </div>
+              ) : (
+                <button type="button" className={BUTTON} onClick={() => setConfirming(i)} data-duplicates-merge>
+                  Merge
+                </button>
+              ))}
+          </div>
         ))}
       </PopoverContent>
     </Popover>
@@ -252,7 +292,7 @@ export function TableAccessBar({ tableId, organizationId }: { tableId: string; o
   return (
     <>
       <RequestEditAccess tableId={tableId} level={level} />
-      {canFindDuplicates(level) && <FindDuplicates tableId={tableId} organizationId={organizationId} />}
+      {canFindDuplicates(level) && <FindDuplicates tableId={tableId} organizationId={organizationId} level={level} />}
       <ActivityFeedButton subjectId={tableId} organizationId={organizationId} />
     </>
   );

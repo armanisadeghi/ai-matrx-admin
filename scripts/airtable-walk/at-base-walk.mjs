@@ -139,6 +139,10 @@ try {
   check("the Airtable picker asks for the token in a password field (the person types it)", (await page.locator('[data-airtable-import] input[type=password]').count()) === 1);
   say("(Airtable list and import are recorded answers; no token was typed or saved)");
   await browser.close().catch(() => {});
+} catch (e) {
+  fails.push("the walk stopped: " + (e && e.message ? e.message.split("\n")[0] : e));
+  say("FAIL the walk stopped:", e && e.message ? e.message.split("\n").slice(0, 3).join(" | ") : e);
+  await page.screenshot({ path: `${SHOTS}/zz-stopped.png` }).catch(() => {});
 } finally {
   say("console errors:", errs.slice(0, 5));
   if (!KEEP) {

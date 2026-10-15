@@ -6,6 +6,7 @@
 // with a name, icon, color and description a person can change. Duplicate base, snapshots and the two importers start here. The
 // whole-base verbs are @ai-matrx/records `duplicateBase` / `snapshotBase` / `restoreSnapshot` over the records client.
 
+import { ActivityFeedButton } from "@/features/unified-data/table-page/TableAccessBar";
 import { ensureTable } from "@ai-matrx/records/core";
 import { duplicateBase, restoreSnapshot, snapshotBase, type BaseCopyProgress, type BaseTable } from "@ai-matrx/records";
 import { useRecordsClient } from "@ai-matrx/records/react";
@@ -15,7 +16,9 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { MakeMount } from "@/features/make/MakeMount";
 import { TEMPLATE_GALLERY_HREF } from "@/features/make/gallery/galleryHref";
+import { useOrganizationRequired } from "@/features/organizations/useOrganizationRequired";
 
 import { AirtableImportDialog } from "./AirtableImportDialog";
 import { SheetsImportDialog } from "./SheetsImportDialog";
@@ -86,9 +89,23 @@ export function BasesHome() {
           ))}
         </ul>
       )}
-      <NewBaseDialog open={creating} onOpenChange={setCreating} onMade={(homeId) => router.push(`/data/bases/${homeId}`)} />
+      {creating ? <NewBaseHost onClose={() => setCreating(false)} onMade={(homeId) => router.push(`/data/bases/${homeId}`)} /> : null}
     </div>
   );
+}
+
+/** New things are saved in the organization the person set as where they save to (asked in place when none is). */
+function NewBaseHost({ onClose, onMade }: { onClose: () => void; onMade: (homeId: string) => void }) {
+  // org-filter: write-target a new base is made in the organization new things are saved to
+  const active = useOrganizationRequired();
+  if (active.organizationState !== "ready" || !active.organizationId) {
+    return (
+      <Dialog open onOpenChange={(o) => (!o ? onClose() : undefined)}>
+        <DialogContent className="max-w-[min(480px,96vw)] gap-3 p-4"><DialogTitle>New base</DialogTitle><Words>Choose the organization new things are saved in (top bar), then try again.</Words></DialogContent>
+      </Dialog>
+    );
+  }
+  return <MakeMount organizationId={active.organizationId}><NewBaseDialog open onOpenChange={(o) => (!o ? onClose() : undefined)} onMade={onMade} /></MakeMount>;
 }
 
 // ── create ──────────────────────────────────────────────────────────────────────────────────
@@ -147,7 +164,20 @@ interface Extras {
   automations: Array<{ id: string; name: string; enabled: boolean; table: string }>;
 }
 
+/** The page reads the base's tables first (row security, no store client), then mounts the record store for THE BASE'S OWN organization. */
 export function BasePage({ homeId }: { homeId: string }) {
+  const [org, setOrg] = useState<string | null | undefined>(undefined);
+  const [error, setError] = useState<string | null>(null);
+  useEffect(() => {
+    listHomeTables(homeId).then((ts) => setOrg(ts[0]?.organization_id ?? null), (e) => setError(e instanceof Error ? e.message : "The base could not be read."));
+  }, [homeId]);
+  if (error) return <div className="p-4"><Words>{error}</Words></div>;
+  if (org === undefined) return <div className="p-4"><Words>Reading the base…</Words></div>;
+  if (org === null) return <div className="p-4"><Words>This base has no tables you can open.</Words></div>;
+  return <MakeMount organizationId={org}><BasePageBody homeId={homeId} /></MakeMount>;
+}
+
+function BasePageBody({ homeId }: { homeId: string }) {
   const client = useRecordsClient();
   const [tables, setTables] = useState<HomeTable[] | null>(null);
   const [identity, setIdentity] = useState<BaseIdentity | null>(null);
@@ -190,6 +220,7 @@ export function BasePage({ homeId }: { homeId: string }) {
           {identity?.description ? <Words>{identity.description}</Words> : null}
         </div>
         <div className="flex flex-wrap justify-end gap-2">
+          <ActivityFeedButton subjectId={homeId} organizationId={org} />
           <Button variant="quiet" onClick={() => setDialog("edit")}>{identity ? "Edit" : "Name this base"}</Button>
           <Button variant="quiet" onClick={() => setDialog("duplicate")} data-base-duplicate="">Duplicate</Button>
           <Button variant="quiet" onClick={() => setDialog("snapshots")} data-base-snapshots="">Snapshots</Button>

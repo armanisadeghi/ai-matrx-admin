@@ -1,0 +1,36 @@
+import { start, open, out } from "./lib.mjs";
+import { readFileSync } from "node:fs";
+const S = JSON.parse(readFileSync("/tmp/airtable-walk/at-auto3.json", "utf8"));
+const { browser, page, who, errs } = await start(false);
+out("who", who);
+await open(page, S.ord);
+await page.getByRole("button", { name: "Table menu" }).first().click();
+await page.waitForTimeout(500);
+await page.getByText("Built on it").first().click().catch(() => {});
+await page.waitForTimeout(400);
+await page.getByRole("menuitem", { name: /Automations/ }).first().click();
+await page.waitForTimeout(2500);
+const dlg = page.getByRole("dialog");
+await page.getByText("Tier onto new orders").first().click();
+await page.waitForTimeout(1500);
+await page.screenshot({ path: "/tmp/airtable-walk/aa3-1-editor.png" });
+out("editor:", (await dlg.innerText()).replace(/\n/g, " | ").slice(0, 900));
+out("json textarea present:", await page.getByTestId("spaces-automation-step-json").count());
+out("chips:", JSON.stringify(await page.getByTestId("automation-chip").allInnerTexts()));
+out("raw braces visible:", /\{\{/.test(await dlg.innerText()));
+// add an If / else step and an Ask an agent step by button
+await page.getByRole("button", { name: "If / else" }).first().click();
+await page.getByRole("button", { name: "Repeat for each" }).first().click();
+await page.getByRole("button", { name: "Ask an agent" }).first().click();
+await page.waitForTimeout(1200);
+await page.screenshot({ path: "/tmp/airtable-walk/aa3-2-added.png" });
+out("steps:", JSON.stringify(await page.getByTestId("automation-step").evaluateAll((els) => els.map((e) => e.getAttribute("data-step-n") + ":" + e.getAttribute("data-step-kind")))));
+// the token picker on the add-row status value lists Step 1 values by name
+const pickers = page.getByTestId("automation-token-picker");
+out("pickers", await pickers.count());
+await pickers.nth(2).click();
+await page.waitForTimeout(500);
+await page.screenshot({ path: "/tmp/airtable-walk/aa3-3-picker.png" });
+out("picker options:", JSON.stringify(await page.locator("[data-token]").allInnerTexts()));
+out("console errors:", JSON.stringify(errs.slice(0, 5)));
+await browser.close();
