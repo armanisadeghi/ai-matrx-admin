@@ -18,6 +18,32 @@ import { createHmac, timingSafeEqual } from "node:crypto";
 
 import { createAdminClient } from "@/utils/supabase/adminClient";
 
+/**
+ * The generated database types do not know `files.webhooks` or the new receipts table, so this
+ * door names exactly the two calls it makes instead of leaning on them.
+ */
+interface Answer<T> {
+  data: T | null;
+  error: { message: string } | null;
+}
+interface HookRow {
+  id: string;
+  secret: string;
+  target_url: string | null;
+  organization_id: string | null;
+  created_by: string | null;
+}
+interface SinkDb {
+  schema(name: string): {
+    from(table: string): {
+      select(cols: string): {
+        eq(col: string, value: string): { maybeSingle(): Promise<Answer<HookRow>> };
+      };
+      insert(row: Record<string, unknown>): { select(cols: string): { single(): Promise<Answer<{ id: string }>> } };
+    };
+  };
+}
+
 export const SINK_PATH = "/api/webhooks/records-test-sink";
 
 /** `sha256=<hex>` as the dispatcher sends it. */
@@ -42,7 +68,7 @@ export async function receiveWebhookDelivery(request: {
   if (!webhookId || !/^[0-9a-f-]{36}$/i.test(webhookId)) {
     return { status: 400, error: "X-Matrx-Webhook-Id is missing" };
   }
-  const admin = createAdminClient();
+  const admin = createAdminClient() as unknown as SinkDb;
   const { data: hook, error: hookError } = await admin
     .schema("files")
     .from("webhooks")

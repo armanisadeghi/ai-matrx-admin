@@ -5,7 +5,7 @@
  * RED before atdbfix_a_a_block_keeps_its_id_so_a_chart_draws.sql: the ids come back missing.
  *   pnpm exec tsx scripts/campaign-tests/atdbfix_block_ids_green.mts
  */
-import { connectDirect, loadDbEnv } from "../lib/direct-db.ts";
+import { connectDirect, loadDbEnv } from "../lib/direct-db";
 
 const ADMIN = "87a6e699-3622-4869-8843-d0867456c0dd"; // admin@admin.com
 async function main() {
