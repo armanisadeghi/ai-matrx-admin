@@ -321,7 +321,7 @@ function toItem(approval: StoreApproval): StoreItem {
       said.fields.length || note || said.values !== undefined ? (
         <div className="flex flex-col gap-1.5">
           {note ? <p className="text-xs text-muted-foreground">{note}</p> : null}
-          <ChangeDiff fields={said.fields} />
+          {said.fields.length ? <ChangeDiff fields={said.fields} /> : null}
           {said.values !== undefined ? (
             <StructuredValueView value={said.values} footer={false} />
           ) : null}
