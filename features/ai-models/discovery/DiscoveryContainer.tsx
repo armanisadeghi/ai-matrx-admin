@@ -20,6 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { ErrorNotice } from "@ai-matrx/design-system";
 import { Input } from "@ai-matrx/design-system/controls";
 import { formatFileSize } from "@ai-matrx/kit/format";
 import { useAppSelector } from "@/lib/redux/hooks";
@@ -84,8 +85,18 @@ export default function DiscoveryContainer() {
   }, []);
 
   useEffect(() => {
-    void refresh();
-  }, [refresh]);
+    let alive = true;
+    listCandidates()
+      .then((rows) => {
+        if (alive) setCandidates(rows);
+      })
+      .catch((err: unknown) => {
+        if (alive) setLoadError(extractErrorMessage(err));
+      });
+    return () => {
+      alive = false;
+    };
+  }, []);
 
   const resolve = async () => {
     if (!link.trim()) return;
@@ -123,32 +134,30 @@ export default function DiscoveryContainer() {
           {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
           {busy ? "Reading files…" : "Check"}
         </Button>
-        {error ? <span className="text-sm text-destructive">{error}</span> : null}
+        {error ? <ErrorNotice message={error} size="inline" /> : null}
       </div>
       <div className="grid min-h-0 flex-1 grid-cols-[18rem_1fr]">
         <div className="min-h-0 overflow-y-auto border-r border-border">
-          {loadError ? <p className="p-3 text-sm text-destructive">{loadError}</p> : null}
+          {loadError ? <ErrorNotice message={loadError} size="compact" /> : null}
           {candidates.length === 0 && !loadError ? (
             <p className="p-3 text-sm text-muted-foreground">No candidates yet</p>
           ) : null}
           {candidates.map((c) => {
             const open = (c.suggested?.ambiguities ?? []).length;
             return (
-              <button
+              <Button
                 key={c.id}
-                type="button"
+                variant="quiet"
                 onClick={() => setSelectedId(c.id)}
-                className={cn(
-                  "flex w-full flex-col items-start gap-1 border-b border-border px-3 py-2 text-left hover:bg-muted",
-                  selectedId === c.id && "bg-muted",
-                )}
+                aria-pressed={selectedId === c.id}
+                className="h-auto w-full flex-col items-start gap-1 border-b border-border px-3 py-2 text-left"
               >
                 <span className="truncate text-sm font-medium text-foreground">{c.repo}</span>
                 <span className="flex gap-1">
                   <Badge variant="outline">{c.state}</Badge>
                   {open ? <Badge variant="destructive">{open} to resolve</Badge> : null}
                 </span>
-              </button>
+              </Button>
             );
           })}
         </div>
@@ -243,7 +252,6 @@ function CandidateDetail({
     <div className="space-y-5 p-5">
       <header className="flex items-start gap-3">
         {logo?.cdn_url ? (
-          // eslint-disable-next-line @next/next/no-img-element -- platform CDN file, sized here
           <img src={logo.cdn_url} alt={logo.alt} className="h-10 w-10 rounded-md object-cover" />
         ) : null}
         <div className="min-w-0 flex-1">
@@ -348,7 +356,6 @@ function CandidateDetail({
           <div className="flex flex-wrap gap-3">
             {images.map((m) => (
               <figure key={m.file_id} className="w-36 space-y-1">
-                {/* eslint-disable-next-line @next/next/no-img-element -- platform CDN file */}
                 <img
                   src={m.cdn_url ?? ""}
                   alt={m.alt}
@@ -385,9 +392,11 @@ function CandidateDetail({
             ))}
           </div>
           {(s.media ?? []).filter((m) => m.error).map((m) => (
-            <p key={m.source_url} className="text-xs text-destructive">
-              Not copied: {m.source_url} ({m.error})
-            </p>
+            <ErrorNotice
+              key={m.source_url}
+              size="inline"
+              message={`Image not copied: ${m.source_url} (${m.error})`}
+            />
           ))}
         </div>
       </section>
@@ -414,9 +423,13 @@ function CandidateDetail({
         </Button>
         <span className="text-xs text-muted-foreground">Offered untested shows “Not yet tested by us”</span>
         {message ? (
-          <p className={cn("w-full text-sm", message.ok ? "text-foreground" : "text-destructive")}>
-            {message.text}
-          </p>
+          message.ok ? (
+            <p className="w-full text-sm text-foreground">{message.text}</p>
+          ) : (
+            <div className="w-full">
+              <ErrorNotice message={message.text} size="compact" />
+            </div>
+          )
         ) : null}
       </footer>
     </div>
@@ -509,8 +522,18 @@ function PromotedPanel({ modelId, auth }: { modelId: string; auth: CallAuth }) {
   }, [modelId]);
 
   useEffect(() => {
-    void load();
-  }, [load]);
+    let alive = true;
+    loadPromoted(modelId)
+      .then((next) => {
+        if (alive) setState(next);
+      })
+      .catch((err: unknown) => {
+        if (alive) setError(extractErrorMessage(err));
+      });
+    return () => {
+      alive = false;
+    };
+  }, [modelId]);
 
   const runsByVariant = useMemo(() => {
     const map = new Map<string, VerificationRun[]>();
@@ -535,7 +558,7 @@ function PromotedPanel({ modelId, auth }: { modelId: string; auth: CallAuth }) {
     }
   };
 
-  if (error) return <p className="text-sm text-destructive">{error}</p>;
+  if (error) return <ErrorNotice title="The promoted model could not be read" message={error} size="compact" />;
   if (!state) return <p className="text-sm text-muted-foreground">Loading promoted model…</p>;
   return (
     <section className="space-y-2 rounded-md border border-border p-3" aria-label="Promoted model">
