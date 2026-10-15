@@ -14,6 +14,7 @@
  */
 import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
 import { sanitizeVariableName } from "@ai-matrx/chat/agents/utils/variable-utils";
+import { findVariableTokens } from "@ai-matrx/content-ir/source";
 
 /** The text the Name field shows for a variable. */
 export function shownVariableName(key: string, label: string | undefined): string {
@@ -61,4 +62,72 @@ export function resolveVariableNameEdit(input: {
   }
   if (existingNames.includes(sanitized)) return { kind: "duplicate" };
   return { kind: "rename", name: sanitized, label: next };
+}
+
+/**
+ * `text` with every reference to `from` pointed at `to`: `{{from}}`,
+ * `{{ from }}` and the section markers `{{#from}}` `{{^from}}` `{{/from}}`.
+ * Uses the ONE token finder, so `{{!from}}` (an author's example) and a
+ * longer name that merely starts with `from` are left alone.
+ */
+export function renameVariableInText(
+  text: string,
+  from: string,
+  to: string,
+): { text: string; count: number } {
+  let out = "";
+  let at = 0;
+  let count = 0;
+  for (const token of findVariableTokens(text)) {
+    if (token.name !== from) continue;
+    out += text.slice(at, token.start) + token.raw.replace(from, to);
+    at = token.end;
+    count++;
+  }
+  return count ? { text: out + text.slice(at), count } : { text, count: 0 };
+}
+
+function renameInValue(value: unknown, from: string, to: string): { value: unknown; count: number } {
+  if (typeof value === "string") {
+    const r = renameVariableInText(value, from, to);
+    return { value: r.text, count: r.count };
+  }
+  if (Array.isArray(value)) {
+    let count = 0;
+    const next = value.map((item) => {
+      const r = renameInValue(item, from, to);
+      count += r.count;
+      return r.value;
+    });
+    return count ? { value: next, count } : { value, count: 0 };
+  }
+  if (value && typeof value === "object") {
+    let count = 0;
+    const next: Record<string, unknown> = {};
+    for (const [key, item] of Object.entries(value)) {
+      if (key === "type" || key === "role") {
+        next[key] = item;
+        continue;
+      }
+      const r = renameInValue(item, from, to);
+      count += r.count;
+      next[key] = r.value;
+    }
+    return count ? { value: next, count } : { value, count: 0 };
+  }
+  return { value, count: 0 };
+}
+
+/**
+ * Every message — the system prompt is the `role: "system"` one — with each
+ * reference to variable `from` renamed to `to`, in every string the message
+ * holds (text blocks and any other block field), and how many were changed.
+ */
+export function renameVariableInMessages<M>(
+  messages: readonly M[],
+  from: string,
+  to: string,
+): { messages: M[]; count: number } {
+  const r = renameInValue(messages, from, to);
+  return { messages: r.value as M[], count: r.count };
 }

@@ -17,10 +17,11 @@
  */
 
 import React, { useEffect, useRef, useState } from "react";
+import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
 import { Label } from "@/components/ui/label";
 import { Input } from "@ai-matrx/design-system";
 import { SwitchLegacy as Switch } from "@/components/ui/switch";
-import { Button } from "@ai-matrx/design-system";
+import { Button, TextInputDialog } from "@ai-matrx/design-system";
 import { ProTextarea } from "@/components/official/ProTextarea";
 import { Loader2, WandSparkles } from "lucide-react";
 import { toast } from "@/lib/toast";
@@ -38,8 +39,12 @@ import type {
 import { VariableInputComponent } from "@ai-matrx/chat/agents/components/inputs/input-components/VariableInputComponent";
 import { useAppSelector, useAppDispatch, useAppStore } from "@/lib/redux/hooks";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
-import { selectAgentVariableDefinitions } from "@ai-matrx/chat/agents/redux/agent-definition/selectors";
 import {
+  selectAgentMessages,
+  selectAgentVariableDefinitions,
+} from "@ai-matrx/chat/agents/redux/agent-definition/selectors";
+import {
+  setAgentMessages,
   setAgentVariableDefinitions,
 } from "@/features/agents/redux/agent-builder.slice";
 import {
@@ -63,6 +68,7 @@ import { CustomComponentConfigurator } from "./CustomComponentConfigurator";
 import { ContextItemBindingEditor } from "./ContextItemBindingEditor";
 import {
   keyFollowsLabel,
+  renameVariableInMessages,
   resolveVariableNameEdit,
   shownVariableName,
 } from "./variable-name-edit";
@@ -132,6 +138,7 @@ export function AgentVariableEditor({
   const setNameDraft = (value: string) =>
     setNameDraftState({ sourceName: variableName, value });
   const [isConvertingPicklist, setIsConvertingPicklist] = useState(false);
+  const [isChangingKey, setIsChangingKey] = useState(false);
 
   if (!variable) {
     return (
@@ -161,12 +168,14 @@ export function AgentVariableEditor({
     !!sanitizedDraft &&
     sanitizedDraft !== variableName &&
     existingNames.includes(sanitizedDraft);
-  const keyLine = !keyIsLinked
-    ? variableName
-    : sanitizedDraft &&
-        (showSanitizationPreview || sanitizedDraft !== variableName)
+  // The draft's future key while a linked name is being retyped; the real key otherwise.
+  const draftKey =
+    keyIsLinked &&
+    sanitizedDraft &&
+    (showSanitizationPreview || sanitizedDraft !== variableName)
       ? sanitizedDraft
       : "";
+  const keyLine = draftKey || variableName;
 
   // ── Dispatch helpers ──────────────────────────────────────────────────────
 
@@ -226,6 +235,42 @@ export function AgentVariableEditor({
         return;
       }
     }
+  };
+
+  // An explicit key change: the definition AND every `{{old}}` in every
+  // message — the system prompt is the `role: "system"` one — move together.
+  const validateNewKey = (value: string) => {
+    const next = sanitizeVariableName(value.trim());
+    if (!next) return "Use letters, numbers or underscores";
+    if (next !== variableName && existingNames.includes(next)) return "This name is taken";
+    return null;
+  };
+
+  const handleChangeKey = (value: string) => {
+    const next = sanitizeVariableName(value.trim());
+    const from = currentName.current;
+    if (!next || next === from) return;
+    const state = store.getState();
+    const latest = selectAgentVariableDefinitions(state, agentId) ?? [];
+    const { messages, count } = renameVariableInMessages(
+      selectAgentMessages(state, agentId) ?? [],
+      from,
+      next,
+    );
+    const shown = shownVariableName(from, variable.label);
+    const label =
+      shown !== next && shown !== humanizeIdentifier(next) ? shown : undefined;
+    dispatchVariables(
+      latest.map((v) => (v.name === from ? { ...v, name: next, label } : v)),
+    );
+    if (count > 0) dispatch(setAgentMessages({ id: agentId, messages }));
+    currentName.current = next;
+    onRenamed?.(next);
+    toast.success(
+      count === 0
+        ? `Key changed to {{${next}}}`
+        : `Key changed — ${count} ${count === 1 ? "place" : "places"} updated`,
+    );
   };
 
   const handleDefaultValueChange = (v: unknown) =>
@@ -409,16 +454,33 @@ export function AgentVariableEditor({
           >
             {isDuplicate ? (
               "This name is taken"
-            ) : keyLine ? (
+            ) : (
               <>
                 In messages{" "}
                 <code className="font-mono text-foreground">{`{{${keyLine}}}`}</code>
+                {!draftKey && (
+                  <button
+                    type="button"
+                    onClick={() => setIsChangingKey(true)}
+                    className="ml-2 underline underline-offset-2 hover:text-foreground"
+                  >
+                    Change
+                  </button>
+                )}
               </>
-            ) : (
-              ""
             )}
           </p>
         )}
+        <TextInputDialog
+          open={isChangingKey}
+          onOpenChange={setIsChangingKey}
+          title="Change key"
+          description="Every {{key}} in the system prompt and messages is updated."
+          defaultValue={variableName}
+          confirmLabel="Change key"
+          validate={validateNewKey}
+          onConfirm={handleChangeKey}
+        />
       </div>
 
       {/* ── Help Text ────────────────────────────────────────────────────── */}
