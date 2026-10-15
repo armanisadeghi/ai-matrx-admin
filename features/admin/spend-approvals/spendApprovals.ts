@@ -40,10 +40,14 @@ import {
   type AutomationKind,
 } from "@/features/scheduling/service/automationCosts";
 import { featureLabelOf } from "@/features/mandates/feature-label";
+import { workflowHref } from "@/features/workflow-runtime/listings/types";
 import { storedMandateKey, type AnyMandateKey } from "@ai-matrx/agents/mandates";
 
 export type ApprovalStatus = "waiting" | "approved" | "temporary" | "rejected";
-export type ApprovalSubjectKind = "agent" | "mandate" | AutomationKind;
+/** Work subjects beyond agents and automations (Arman 2026-10-15): a workflow (a system workflow by
+ * its key, `system:<key>`, any other by its definition), an Agent Factory door, a coding-agent session. */
+export type WorkSubjectKind = "workflow" | "agent_factory" | "coding_session";
+export type ApprovalSubjectKind = "agent" | "mandate" | AutomationKind | WorkSubjectKind;
 export type ApprovalSeat = "admin" | "org";
 export type ApprovalDecision = "approve" | "approve_temporary" | "reject" | "reopen" | "details";
 
@@ -78,6 +82,9 @@ export const SUBJECT_KIND_LABEL: Record<ApprovalSubjectKind, string> = {
   scheduled_agent: "Scheduled agent",
   recurring_mandate: "Recurring mandate",
   workflow_trigger: "Workflow trigger",
+  workflow: "Workflow",
+  agent_factory: "Agent Factory",
+  coding_session: "Coding session",
 };
 
 /**
@@ -588,6 +595,12 @@ export function subjectHref(row: SpendApprovalRow, seat: ApprovalSeat, orgSlug?:
         : null;
     case "mandate":
       return seat === "org" && orgSlug ? orgMandateHref(orgSlug, row.subject_id) : mandateHref(row.subject_id);
+    case "workflow":
+      // A system workflow is one subject across every organization's copy: no single definition page.
+      return row.subject_id.startsWith("system:") ? null : workflowHref(row.subject_id);
+    case "agent_factory":
+    case "coding_session":
+      return null;
     default:
       return seat === "org" && orgSlug
         ? orgAutomationCostDetailHref(orgSlug, row.subject_kind, row.subject_id)
