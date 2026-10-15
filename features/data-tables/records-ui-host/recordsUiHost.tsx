@@ -44,6 +44,7 @@ import { MANDATE_KEYS } from "@ai-matrx/agents/mandates";
 import { useAgentLauncher } from "@ai-matrx/chat/agents/hooks/useAgentLauncher";
 import { recordPageHref } from "@/features/unified-data/table-page/recordPageHref";
 import { recordStoreShare } from "@/features/sharing/components/RecordStoreShareSurface";
+import { viewLinkPort } from "@/features/sharing/view-link/ViewLinkPanel";
 import { recordStoreColumnAccess } from "@/features/access-setup/components/ColumnAccessPanel";
 import { APPLETS_PORT } from "@/features/applets/embed/appletsPort";
 import { RecordScopedChat } from "@/features/unified-data/record-chat/RecordScopedChat";
@@ -79,6 +80,8 @@ export interface RecordsUiPorts {
   members: NonNullable<RecordsUiHost["members"]>;
   onAskForOne: (ask: AgentBuildAsk) => void;
   openRecords: (ask: OpenRecordsAsk) => void;
+  /** The router's push: the grid's open-record control moves in-app instead of reloading the page. */
+  navigate?: (href: string) => void;
   runAgentAction: (target: RowAgentActionTarget) => void;
   /** The table's Ask box, answered by the `table.ask` mandate (`askTable.ts`). */
   askTable?: RecordsUiHost["askTable"];
@@ -166,6 +169,7 @@ export function recordsUiHostFor({ ports, merged, gridContext, rights }: Records
     members: ports.members,
     onAskForOne: ports.onAskForOne,
     openRecords: ports.openRecords,
+    ...(ports.navigate ? { navigate: ports.navigate } : {}),
     runAgentAction: ports.runAgentAction,
     ...(ports.askTable ? { askTable: ports.askTable } : {}),
     ...(ports.enrich ? { enrich: ports.enrich } : {}),
@@ -189,6 +193,9 @@ export function recordsUiHostFor({ ports, merged, gridContext, rights }: Records
       },
     },
     share: recordStoreShare,
+    // "Share view link…" in the view menu (lane VIEW-LINK): an Anyone link on ONE saved view, opened at /v/<token>.
+    // Spread as its own object: a records-ui build before the port ignores the key.
+    ...{ shareViewLink: viewLinkPort },
     // "Who can see and edit…" on a column header (access-setup PLAN §12, records-ui `columnAccess`).
     // Spread as its own object: a records-ui build before the port ignores the key.
     ...{ columnAccess: recordStoreColumnAccess },
@@ -435,7 +442,8 @@ export function useRecordsUiPorts({
     [launchMandate, organizationId, store, askZone],
   );
 
-  return { members, onAskForOne, openRecords, runAgentAction, askTable, enrich, organizationId, linkRecord };
+  const navigate = useCallback((href: string) => router.push(href), [router]);
+  return { members, onAskForOne, openRecords, navigate, runAgentAction, askTable, enrich, organizationId, linkRecord };
 }
 
 
