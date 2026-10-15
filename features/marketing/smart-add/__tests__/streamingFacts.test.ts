@@ -1,8 +1,6 @@
-import type { CanonicalBlockIR } from "@ai-matrx/content-ir";
 import { ratchetFacts, streamingFacts } from "../streamingFacts";
 
-const env = (facts: unknown[]): CanonicalBlockIR =>
-  ({ root: { kind: "brand_basics", value: { __kind: "brand_basics", facts } } }) as unknown as CanonicalBlockIR;
+const env = (facts: unknown[]) => ({ kind: "brand_basics", value: { __kind: "brand_basics", facts } });
 const phone = { field: "phone", field_label: "Phone", value: "+1 503 555 0100", certainty: "likely" };
 const half = { field: "address", value: "123 Ma" };
 const full = { field: "address", value: "123 Main St, Portland OR" };
@@ -16,7 +14,7 @@ describe("streamingFacts (MKT-085)", () => {
   });
   it("ignores another kind and a missing envelope", () => {
     expect(streamingFacts(null, true)).toEqual([]);
-    expect(streamingFacts({ root: { kind: "other", value: { facts: [phone] } } } as unknown as CanonicalBlockIR, false)).toEqual([]);
+    expect(streamingFacts({ kind: "other", value: { facts: [phone] } }, false)).toEqual([]);
   });
   it("ratchet only adds: a fact shown mid-stream stays when a later read lacks it", () => {
     const shown = streamingFacts(env([phone, half]), true);

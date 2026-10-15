@@ -24,7 +24,7 @@ import {
 import { evidenceFromPayload, type EvidenceItem } from "./evidence";
 import { factsFromPayload, type BrandFact } from "./validate/queue";
 import { ratchetFacts, streamingFacts } from "./streamingFacts";
-import { selectKindEnvelope } from "@ai-matrx/chat/agents/redux/execution-system/active-requests/active-requests.selectors";
+import { selectLiveKindValue } from "@ai-matrx/chat/agents/redux/execution-system/active-requests/active-requests.selectors";
 import { brandNameFromPayload, factEvidence, webFirstData } from "./firstData";
 import { suggestionsFromPayload, type WeThinkSuggestion } from "./weThink";
 import { parseEntityKind, type EntityKind } from "./entityKind";
@@ -215,12 +215,15 @@ function StepWatch({
     replay: readAiTestReplay(output),
   };
   // MKT-085: the facts agent's answer lands in the slots AS IT STREAMS — each finished fact in the step's
-  // live envelope (the lane's own accumulator, stream-everything), ratcheted so a shown fact never leaves.
+  // live kind value (forming while the agent writes, verified once its block closes), ratcheted so a shown
+  // fact never leaves.
   const laneRequestId = invocation?.laneRequestId ?? null;
-  const envelope = useAppSelector((state) => (laneRequestId ? selectKindEnvelope(laneRequestId)(state) : null));
+  const selectLive = laneRequestId ? selectLiveKindValue(laneRequestId) : null;
+  const live = useAppSelector((state) => (selectLive ? selectLive(state) : null));
   const settled = aggregate.phase === "settled" || aggregate.phase === "failed" || aggregate.phase === "skipped";
   const [shownFacts, setShownFacts] = useState<BrandFact[]>([]);
-  const nextFacts = ratchetFacts(ratchetFacts(shownFacts, streamingFacts(envelope, !settled)), factsFromPayload(output));
+  const writing = !settled || !live?.verified;
+  const nextFacts = ratchetFacts(ratchetFacts(shownFacts, streamingFacts(live, writing)), factsFromPayload(output));
   if (nextFacts !== shownFacts) setShownFacts(nextFacts);
   const signature = JSON.stringify({
     view,
