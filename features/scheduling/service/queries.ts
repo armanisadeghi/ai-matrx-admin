@@ -14,7 +14,8 @@ import { computeNextDueAt, type ScheduledTriggerConfig } from "@ai-matrx/data/sc
 import { supabase } from "@/utils/supabase/client";
 import { schedulerDb } from "@/utils/supabase/schedulerDb";
 import type { SchedulableKind } from "../types";
-import { computerWorkOf, deviceOpWith, type ComputerCodingWork, type ComputerWorkHome } from "../utils/computerWork";
+import { computerWorkOf, type ComputerCodingWork, type ComputerWorkHome } from "../utils/computerWork";
+import { createDeviceTask, updateDeviceTask } from "./schedulerClient";
 import { tryWriteOne } from "@/utils/supabase/writeOne";
 import { pgErrorToError } from "@ai-matrx/data";
 import { withTransientRetry } from "@/lib/db/transientRetry";
@@ -736,12 +737,18 @@ export function firstDueAt(trigger: TriggerConfig, now: Date = new Date()): stri
  * chat under them (a pending filing on its own app_instances row, @ai-matrx/coding-sessions filing).
  */
 export async function createComputerCodingTask(input: ComputerCodingTaskInput): Promise<{ id: string }> {
-  const params: Record<string, unknown> = { provider: input.provider, cwd: input.folder, prompt: input.prompt };
-  if (input.accountProfileId) params.account_profile_id = input.accountProfileId;
-  return insertComputerTask(input, {
-    kind: "device_op",
-    metadata: { created_via: "web", device_op: { op: "coding.start", params, tool: "coding_sessions_drive", ...(input.homes?.length ? { homes: input.homes } : {}) } },
+  const toolArgs: Record<string, unknown> = { provider: input.provider, folder: input.folder, prompt: input.prompt };
+  if (input.accountProfileId) toolArgs.account_profile_id = input.accountProfileId;
+  const { id } = await createDeviceTask({
+    device_id: input.deviceId,
+    name: input.title,
+    description: input.description,
+    tool: "coding_sessions_drive",
+    tool_args: toolArgs,
+    ...(input.homes?.length ? { homes: input.homes } : {}),
+    trigger: input.trigger as unknown as Record<string, unknown>,
   });
+  return { id };
 }
 
 /** An agent scheduled on one Matrx 2 computer: the agent runs on AI Matrx, bound to that computer, started by it at each run. */
@@ -764,71 +771,20 @@ export interface ComputerAgentTaskInput {
  * computer's own organization. That computer claims it and starts the agent run with its own sign-in.
  */
 export async function createComputerAgentTask(input: ComputerAgentTaskInput): Promise<{ id: string }> {
-  return insertComputerTask(input, {
-    kind: "agent",
-    metadata: { created_via: "web" },
-    agentTask: {
+  const { id } = await createDeviceTask({
+    device_id: input.deviceId,
+    name: input.title,
+    description: input.description,
+    agent: {
       agent_id: input.agentId,
       prompt: input.prompt,
-      variables: input.variables as Json,
+      variables: input.variables,
       auth_mode: input.authMode,
       max_runtime_seconds: input.maxRuntimeSeconds,
       max_concurrent: input.maxConcurrent,
     },
+    trigger: input.trigger as unknown as Record<string, unknown>,
   });
-}
-
-/** One task aimed at one computer: its rows in that computer's organization, a time trigger; a partial save is undone and said. */
-async function insertComputerTask(
-  input: { title: string; description: string | null; deviceId: string; trigger: TriggerConfig },
-  shape: {
-    kind: "device_op" | "agent";
-    metadata: Record<string, unknown>;
-    agentTask?: { agent_id: string; prompt: string; variables: Json; auth_mode: string; max_runtime_seconds: number; max_concurrent: number };
-  },
-): Promise<{ id: string }> {
-  const due = firstDueAt(input.trigger);
-  if (!due) throw new Error("A schedule on a computer runs on a time: every N, a cron, or once.");
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) throw new Error("Sign in to schedule work on a computer.");
-  const device = await supabase.from("app_instances").select("organization_id").eq("id", input.deviceId).maybeSingle();
-  const organizationId = (device.data as { organization_id: string | null } | null)?.organization_id ?? null;
-  if (device.error || !organizationId) throw new Error(device.error?.message ?? "That computer is not in an organization; open Matrx 2 on it and sign in again.");
-  const { type, ...config } = input.trigger;
-  const task = await schedulerDb(supabase)
-    .from("sch_task")
-    .insert({
-      user_id: user.id,
-      organization_id: organizationId,
-      kind: shape.kind,
-      title: input.title,
-      description: input.description,
-      surfaces: ["desktop"],
-      enabled: true,
-      target_device_id: input.deviceId,
-      metadata: shape.metadata,
-    })
-    .select("id")
-    .single();
-  if (task.error || !task.data) throw new Error(task.error?.message ?? "The schedule was not saved.");
-  const id = (task.data as { id: string }).id;
-  const undo = () => schedulerDb(supabase).from("sch_task").update({ deleted_at: new Date().toISOString(), enabled: false }).eq("id", id);
-  if (shape.agentTask) {
-    const agent = await schedulerDb(supabase).from("sch_agent_task").insert({ id, organization_id: organizationId, ...shape.agentTask });
-    if (agent.error) {
-      await undo();
-      throw new Error(`The schedule's agent was not saved: ${agent.error.message}`);
-    }
-  }
-  const trigger = await schedulerDb(supabase)
-    .from("sch_trigger")
-    .insert({ user_id: user.id, organization_id: organizationId, task_id: id, type, config, enabled: true, next_due_at: due });
-  if (trigger.error) {
-    await undo();
-    throw new Error(`The schedule's time was not saved: ${trigger.error.message}`);
-  }
   return { id };
 }
 
@@ -841,16 +797,15 @@ export async function updateComputerCodingTask(
   task: { id: string; deviceOp: ComputerCodingWork | null; triggerId: string | null },
   edit: { title: string; description: string | null; deviceId: string; provider: "claude" | "codex"; folder: string; prompt: string; accountProfileId: string | null; homes?: ComputerWorkHome[]; trigger: TriggerConfig },
 ): Promise<void> {
-  const current = await schedulerDb(supabase).from("sch_task").select("metadata").eq("id", task.id).maybeSingle();
-  if (current.error || !current.data) throw new Error(current.error?.message ?? "The schedule was not found.");
-  const metadata = { ...((current.data as { metadata: Record<string, unknown> | null }).metadata ?? {}), device_op: deviceOpWith(task.deviceOp, edit) };
-  const saved = await schedulerDb(supabase).from("sch_task").update({ title: edit.title, description: edit.description, metadata, target_device_id: edit.deviceId }).eq("id", task.id);
-  if (saved.error) throw new Error(`The schedule was not saved: ${saved.error.message}`);
-  const due = firstDueAt(edit.trigger);
-  if (!due) throw new Error("A schedule on a computer runs on a time: every N, a cron, or once.");
-  const { type, ...config } = edit.trigger;
-  if (task.triggerId) {
-    const t = await schedulerDb(supabase).from("sch_trigger").update({ type, config, next_due_at: due }).eq("id", task.triggerId);
-    if (t.error) throw new Error(`The schedule's time was not saved: ${t.error.message}`);
-  }
+  const toolArgs: Record<string, unknown> = { provider: edit.provider, folder: edit.folder, prompt: edit.prompt };
+  if (edit.accountProfileId) toolArgs.account_profile_id = edit.accountProfileId;
+  await updateDeviceTask(task.id, {
+    device_id: edit.deviceId,
+    name: edit.title,
+    description: edit.description,
+    tool: "coding_sessions_drive",
+    tool_args: toolArgs,
+    ...(edit.homes ? { homes: edit.homes } : {}),
+    trigger: edit.trigger as unknown as Record<string, unknown>,
+  });
 }

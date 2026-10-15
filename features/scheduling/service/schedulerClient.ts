@@ -159,6 +159,31 @@ export function createTask(
 }
 
 /**
+ * A task on one chosen computer (aidream POST /scheduling/device-tasks): THE one writer the agent's
+ * desktop_schedule tool also uses, so the web never inserts sch_task rows for computer work itself.
+ * `trigger` is the form's own TriggerConfig; an agent on the computer passes `agent` instead of a tool.
+ */
+export interface DeviceTaskBody {
+  device_id: string;
+  name: string;
+  description: string | null;
+  tool?: string;
+  tool_args?: Record<string, unknown>;
+  homes?: Array<{ token: string; id: string; label: string }>;
+  agent?: { agent_id: string; prompt: string; variables: unknown; auth_mode: string; max_runtime_seconds: number; max_concurrent: number };
+  trigger: Record<string, unknown>;
+}
+
+export function createDeviceTask(body: DeviceTaskBody): Promise<{ id: string; next_run_at: string }> {
+  return request<{ id: string; next_run_at: string }>("/scheduling/device-tasks", { method: "POST", body: JSON.stringify(body) });
+}
+
+/** Edit a coding schedule on a computer (aidream PATCH /scheduling/device-tasks/{id}, the one editor). */
+export function updateDeviceTask(taskId: string, body: DeviceTaskBody): Promise<{ id: string; next_run_at: string }> {
+  return request<{ id: string; next_run_at: string }>(`/scheduling/device-tasks/${encodeURIComponent(taskId)}`, { method: "PATCH", body: JSON.stringify(body) });
+}
+
+/**
  * The caller's schedules that duplicate each other — same agent, prompt,
  * variables, queue and enabled trigger, regardless of what they are named
  * (THE SCHEDULER DUPLICATE GUARD). Paused and trigger-less schedules are
