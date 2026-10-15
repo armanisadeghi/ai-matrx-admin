@@ -62,3 +62,13 @@ it("offline: exactly the one sentence, with Retry now, no raw error", async () =
 it("a server refusal never claims the person is offline", () => {
   expect(remoteWriteFailureMessage(false)).toBe("Couldn't save your change. We'll keep trying.");
 });
+
+it("an account switch takes down the leaving person's notice — never a Retry that does nothing", async () => {
+  const scheduler = failingScheduler("TypeError: Failed to fetch");
+  scheduler.schedule("noticeCopy", { n: 1 });
+  await wait(6_700); // third failure: the notice is up
+  expect(toastError).toHaveBeenCalledTimes(1);
+  scheduler.onIdentitySwap();
+  expect(toastDismiss).toHaveBeenCalledWith("sync-remote-write-failing:noticeCopy");
+  scheduler.dispose();
+}, 20_000);

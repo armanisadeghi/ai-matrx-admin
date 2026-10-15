@@ -121,7 +121,26 @@ describe("bootSync", () => {
         expect(result.hydratedFromStorage).toEqual([]);
         // Default initial state retained.
         expect(store.getState().theme.mode).toBe("dark");
-        // Mismatched record cleared.
+        // A NEWER record belongs to a tab already on the next deploy: kept, never deleted.
+        expect(window.localStorage.getItem("matrx:theme")).not.toBeNull();
+    });
+
+    it("clears an OLDER stored version, which no tab can read again", async () => {
+        seedLocalStorage({
+            "matrx:theme": JSON.stringify({
+                version: 0,
+                identityKey: "auth:u",
+                body: { mode: "light" },
+            }),
+        });
+        const { policy, store } = makeThemeSetup();
+        const result = await bootSync({
+            store,
+            identity,
+            policies: [policy],
+            openChannel: () => fakeChannel(),
+        });
+        expect(result.hydratedFromStorage).toEqual([]);
         expect(window.localStorage.getItem("matrx:theme")).toBeNull();
     });
 
