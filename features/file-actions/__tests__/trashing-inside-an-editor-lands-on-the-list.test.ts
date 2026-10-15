@@ -39,4 +39,19 @@ describe("trashing from inside an open record", () => {
     expect(h.path()).toBe("/documents");
     expect(h.log).toEqual(["push /documents", "hard /documents"]);
   });
+
+  it("navigates hard when the router lands somewhere else (the record's In Trash screen at another address)", () => {
+    const stuck = harness(true);
+    stuck.deps.currentPath = () => "/workbooks/abc/trash";
+    leaveTrashedRecord("/workbooks", "/workbooks/abc", stuck.deps);
+    stuck.timers.forEach((t) => t());
+    expect(stuck.log).toEqual(["push /workbooks", "hard /workbooks"]);
+  });
+
+  it("does nothing more once the list is showing", () => {
+    const h = harness(false);
+    leaveTrashedRecord("/presentations", "/presentations/abc", h.deps);
+    h.timers.forEach((t) => t());
+    expect(h.log).toEqual(["push /presentations"]);
+  });
 });

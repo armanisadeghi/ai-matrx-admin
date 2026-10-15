@@ -17,9 +17,15 @@ export interface LeaveDeps {
 
 export const LEAVE_GRACE_MS = 2500;
 
-export function leaveTrashedRecord(listHref: string, recordHref: string, deps: LeaveDeps): void {
+/**
+ * `deps.push` should REPLACE the history entry (a Back press must not return to the trashed record's
+ * "In Trash" gate). After the grace period anyone still NOT on the list — the editor, or the page's own
+ * "In Trash" screen that swaps in at the same address — is sent there hard (review 2026-10-15: a
+ * workbook and a presentation trashed from inside their editors stayed on that screen; Documents did not).
+ */
+export function leaveTrashedRecord(listHref: string, _recordHref: string, deps: LeaveDeps): void {
   deps.push(listHref);
   deps.later(() => {
-    if (deps.currentPath() === recordHref) deps.hardNavigate(listHref);
+    if (deps.currentPath() !== listHref) deps.hardNavigate(listHref);
   }, LEAVE_GRACE_MS);
 }

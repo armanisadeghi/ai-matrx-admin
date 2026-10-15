@@ -71,7 +71,7 @@ export function useFileRecordMenu<Row extends { id: string; user_id: string }>(
         await trashRecord(base, row.id, name, {
           onTrashed: () =>
             leaveTrashedRecord(options.listHref, adapter.hrefFor(row.id), {
-              push: (href) => router.push(href),
+              push: (href) => router.replace(href),
               currentPath: () => window.location.pathname,
               hardNavigate: (href) => window.location.assign(href),
               later: (fn, ms) => void setTimeout(fn, ms),
