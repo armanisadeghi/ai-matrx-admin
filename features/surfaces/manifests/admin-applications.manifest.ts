@@ -118,7 +118,7 @@ const surfaceSpecific: SurfaceValue[] = [
     name: "active_tab",
     label: "Active tab",
     description:
-      'Which tab of the Applications hub is showing: "overview", "configuration", "catalogs", "installations", "packages", or "history". Derived from the pathname under /administration/applications. Always present.',
+      'Which tab of the Applications hub is showing: "overview", "configuration", "attestation", "catalogs", "installations", "packages", or "history". Derived from the pathname under /administration/applications. Always present.',
     valueType: "string",
     alwaysAvailable: true,
     typicalCharCount: 14,
@@ -507,6 +507,7 @@ export function createAdminApplicationsScope(values: {
   active_tab:
     | "overview"
     | "configuration"
+    | "attestation"
     | "catalogs"
     | "installations"
     | "packages"

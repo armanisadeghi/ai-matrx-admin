@@ -5,6 +5,7 @@
 import React from "react";
 import { usePathname } from "next/navigation";
 import {
+  BadgeCheck,
   HardDrive,
   History,
   LayoutDashboard,
@@ -35,6 +36,11 @@ const NAV_ITEMS: AdminSectionTab[] = [
     icon: MonitorCog,
   },
   {
+    label: "Attestation",
+    href: "/administration/applications/attestation",
+    icon: BadgeCheck,
+  },
+  {
     label: "Catalogs",
     href: "/administration/applications/catalogs",
     icon: LibraryBig,
@@ -59,6 +65,7 @@ const NAV_ITEMS: AdminSectionTab[] = [
 type ApplicationsTab =
   | "overview"
   | "configuration"
+  | "attestation"
   | "catalogs"
   | "installations"
   | "packages"
@@ -68,6 +75,8 @@ type ApplicationsTab =
 function tabFromPathname(pathname: string): ApplicationsTab {
   if (pathname.startsWith("/administration/applications/configuration"))
     return "configuration";
+  if (pathname.startsWith("/administration/applications/attestation"))
+    return "attestation";
   if (pathname.startsWith("/administration/applications/catalogs"))
     return "catalogs";
   if (pathname.startsWith("/administration/applications/installations"))
