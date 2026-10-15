@@ -1781,7 +1781,7 @@ export function SmartAddBrand({
         screenshot={person || !shotSite ? null : (screenshots?.desktop?.url ?? null)}
         capturing={!person && shotCapturing && shotSite}
         person={person}
-        kind={kindLabel.kind}
+        kind={kindLabel.resolve(personSignals?.verdict === "person" || personSignals?.verdict === "business" ? personSignals.verdict : null, !working)}
         onKind={answerKind}
         location={basics.facts.find((f) => f.field === "address")?.value ?? null}
       />

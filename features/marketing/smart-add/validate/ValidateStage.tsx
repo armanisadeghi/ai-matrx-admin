@@ -263,7 +263,8 @@ function Hero({
                 data-testid="validate-set-value"
               >
                 {isOff ? <X className="size-3.5 shrink-0" aria-hidden /> : <Check className="size-3.5 shrink-0 text-primary" aria-hidden />}
-                <span className="max-w-[28ch] truncate">{m.value}</span>
+                {/* Pixel cap, not ch: px-4 + icon + gap + this stays under the 320px pill budget at any font (MKT-129); the full value is the tooltip. */}
+                <span className="max-w-56 truncate" title={m.value}>{m.value}</span>
               </button>
             </li>
           );

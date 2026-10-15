@@ -167,7 +167,8 @@ export function BrandCard({
   /** The homepage picture is being taken right now, for a site the person has not turned down. */
   capturing?: boolean;
   person: boolean;
-  kind: "person" | "business" | "both";
+  /** null = the answer is still coming: no kind is shown (never the tab's default). */
+  kind: "person" | "business" | "both" | null;
   onKind: (kind: "person" | "business" | "both") => void;
   location: string | null;
 }) {
@@ -224,6 +225,9 @@ export function BrandCard({
           <span className={`truncate text-xl font-semibold ${empty ? "text-muted-foreground" : ""}`}>
             {basics.name ?? (person ? "Your name" : "Your brand")}
           </span>
+          {kind === null ? (
+            <Skeleton motion="shimmer" aria-hidden="true" className="h-3 w-12 shrink-0" data-testid="smart-add-kind-pending" />
+          ) : (
           <DropdownMenu>
             <DropdownMenuTrigger
               className="shrink-0 rounded text-xs text-muted-foreground hover:text-foreground focus-visible:outline-2"
@@ -239,6 +243,7 @@ export function BrandCard({
               ))}
             </DropdownMenuContent>
           </DropdownMenu>
+          )}
         </span>
         {basics.tagline || basics.category ? (
           <span className="truncate text-sm text-muted-foreground">{basics.tagline ?? basics.category}</span>

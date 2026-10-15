@@ -57,8 +57,8 @@ export function parseEntityKind(raw: unknown): EntityKind | null {
 }
 
 /**
- * The label's kind: the person's own change wins; else the step's answer; else the tab's kind.
- * `choose()` records the person's change (call it from the label's change menu); `reset()` starts over.
+ * The label's kind state. `choose()` records the person's change (call it from the label's change menu);
+ * `reset()` starts over. `resolve()` is the label: see `resolveEntityKind`.
  */
 export function useEntityKindLabel(tabKind: EntityKind) {
   const [suggested, setSuggested] = useState<EntityKind | null>(null);
@@ -69,9 +69,26 @@ export function useEntityKindLabel(tabKind: EntityKind) {
     setSuggested(null);
     setChosen(false);
   }, []);
-  return { kind: resolveEntityKind(tabKind, suggested, chosen), suggest, choose, reset };
+  const resolve = (evidence: "person" | "business" | null, settled: boolean) =>
+    resolveEntityKind(tabKind, suggested, chosen, evidence, settled);
+  return { resolve, suggest, choose, reset };
 }
 
-export function resolveEntityKind(tabKind: EntityKind, suggested: EntityKind | null, chosen: boolean): EntityKind {
-  return chosen || !suggested ? tabKind : suggested;
+/**
+ * The label's kind (MKT-128): the person's own change wins; else the step's answer; else the evidence-based
+ * guess (the person-signals verdict); else, once the round has settled with nothing better, the tab's kind.
+ * While the round is still working and nothing is known the answer is `null` — show no kind, never the tab's
+ * default (a person's card said "Business" for two seconds, then flipped).
+ */
+export function resolveEntityKind(
+  tabKind: EntityKind,
+  suggested: EntityKind | null,
+  chosen: boolean,
+  evidence: "person" | "business" | null = null,
+  settled = true,
+): EntityKind | null {
+  if (chosen) return tabKind;
+  if (suggested) return suggested;
+  if (evidence) return evidence;
+  return settled ? tabKind : null;
 }

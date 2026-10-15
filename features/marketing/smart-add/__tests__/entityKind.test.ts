@@ -17,9 +17,14 @@ describe("entity kind label default", () => {
     expect(parseEntityKind(null)).toBeNull();
     expect(parseEntityKind({})).toBeNull();
   });
-  it("shows the tab's kind until an answer lands, then the answer", () => {
+  it("shows the answer once it lands, and the tab's kind only when the round has settled (MKT-128)", () => {
     expect(resolveEntityKind("business", null, false)).toBe("business");
     expect(resolveEntityKind("business", "both", false)).toBe("both");
+  });
+  it("shows no kind while the round works and nothing is known: never the tab's default (MKT-128)", () => {
+    expect(resolveEntityKind("business", null, false, null, false)).toBeNull();
+    expect(resolveEntityKind("business", null, false, "person", false)).toBe("person");
+    expect(resolveEntityKind("business", "both", false, "person", false)).toBe("both");
   });
   it("lets the person's own change win over the answer", () => {
     expect(resolveEntityKind("person", "both", true)).toBe("person");
