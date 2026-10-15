@@ -15,8 +15,11 @@
  *   STALL_TIMEOUT_MS (20s) is dead, not idle — abort it, demote to polling,
  *   and retry SSE.
  * - Any SSE error demotes to polling IMMEDIATELY (never wait out the retry
- *   budget with neither transport delivering); SSE retries up to
- *   RECONNECT_LIMIT times, then the poller owns delivery for good.
+ *   budget with neither transport delivering); SSE reconnects with backoff
+ *   (2s doubling to 30s) through the restart window (RESTART_WINDOW_MS, a
+ *   release restarting the server — MKT-089), then the poller owns delivery
+ *   for good. A gateway 502/503/504 or failed fetch on a reconnect never
+ *   enters the error badge (the poller reports a real outage).
  * - document.hidden aborts the SSE fetch (browsers throttle background
  *   streams hard); polling continues. Guarded for non-DOM environments.
  * - Both transports advance the SAME per-run `seq` cursor (monotonic, never
@@ -37,6 +40,7 @@
  *   `onSilence` fires so the owner re-reads the run row itself.
  */
 
+import { RESTART_WINDOW_MS } from "./read-through-restart";
 import { streamSse } from "@/features/workflow-runtime/transport/sse";
 import { isNodeStreamEvent, isWorkflowRunEvent } from "@/features/workflow-runtime/types";
 import type {
@@ -70,8 +74,8 @@ export interface RunEventSourceConfig {
   onSilence?: () => void;
 }
 
-const RECONNECT_LIMIT = 3;
 const RECONNECT_DELAY_MS = 2_000;
+const RECONNECT_MAX_DELAY_MS = 30_000;
 /**
  * Must sit ABOVE the server's 15s SSE ping interval — fires only when even
  * pings stop, never on an idle-but-healthy stream.
@@ -97,7 +101,9 @@ export function startRunEventSource(config: RunEventSourceConfig): {
   /** THE one cursor — both transports advance it, neither may regress it. */
   let cursor: number | null = config.initialCursor ?? null;
   let mode: RunTransportMode = "idle";
-  let sseErrors = 0;
+  /** When the current run of SSE failures began (null while SSE is healthy). */
+  let sseFailingSince: number | null = null;
+  let reconnectDelay = RECONNECT_DELAY_MS;
   let sseGaveUp = false;
   let controller: AbortController | null = null;
   let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
@@ -214,10 +220,12 @@ export function startRunEventSource(config: RunEventSourceConfig): {
         headers: getHeaders(),
         lastEventId: cursor !== null ? String(cursor) : null,
         signal: controller.signal,
+        quietOnRestart: true,
         onFrame: () => {
           // First frame proves transport + parser end-to-end; only then
           // does SSE claim the wire so the poller can back off.
-          sseErrors = 0;
+          sseFailingSince = null;
+          reconnectDelay = RECONNECT_DELAY_MS;
           if (mode !== "sse") {
             setMode("sse");
             if (pollTimer !== null) {
@@ -242,15 +250,16 @@ export function startRunEventSource(config: RunEventSourceConfig): {
       // where neither transport delivers.
       setMode("polling");
       armPoller();
-      sseErrors += 1;
-      if (sseErrors >= RECONNECT_LIMIT) {
+      sseFailingSince ??= Date.now();
+      if (Date.now() - sseFailingSince + reconnectDelay > RESTART_WINDOW_MS) {
         sseGaveUp = true; // poller owns delivery for the rest of this run
         return;
       }
       reconnectTimer = setTimeout(() => {
         reconnectTimer = null;
         void connectSse();
-      }, RECONNECT_DELAY_MS);
+      }, reconnectDelay);
+      reconnectDelay = Math.min(reconnectDelay * 2, RECONNECT_MAX_DELAY_MS);
     }
   };
 
@@ -370,7 +379,8 @@ export function startRunEventSource(config: RunEventSourceConfig): {
       setMode("polling");
       armPoller();
     } else if (!sseGaveUp && (controller === null || controller.signal.aborted)) {
-      sseErrors = 0;
+      sseFailingSince = null;
+      reconnectDelay = RECONNECT_DELAY_MS;
       void connectSse();
     }
   };

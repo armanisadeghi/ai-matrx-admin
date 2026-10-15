@@ -33,6 +33,11 @@ export interface SseOptions {
   /** Resume cursor, sent as the `Last-Event-ID` request header. */
   lastEventId?: string | null;
   signal: AbortSignal;
+  /**
+   * A reconnecting follower: a gateway 502/503/504 or a failed fetch (a server restarting for a release) is not put
+   * in the error badge — the caller retries and reports a real outage itself (read-through-restart.ts).
+   */
+  quietOnRestart?: boolean;
   /** Fires on every parsed frame, comment heartbeats included. */
   onFrame?: () => void;
   /** Server origin to target instead of the active server (no trailing path). */
@@ -70,6 +75,7 @@ export async function streamSse(
       signal: options.signal,
       allowHttpError: true,
       baseUrlOverride: options.baseUrl,
+      ...(options.quietOnRestart ? { captureErrors: false, expectedErrorStatuses: [502, 503, 504] } : {}),
     },
   );
 

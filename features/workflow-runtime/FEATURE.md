@@ -180,6 +180,8 @@ that is the exit-test surface.
 
 ## Change Log
 
+- 2026-10-15 — **Run reads ride through a server restart (MKT-089).** `transport/read-through-restart.ts`: the attach reads (run row + each replay page) retry a failed fetch / timeout / gateway 502-503-504 with backoff for `RESTART_WINDOW_MS` (3 min, the runtime-continuity reconnect contract) — never a permanent "could not read this run" on one release blip; a refusal (400/401/403/404) still fails at once. Every run read enters the error badge on a refusal at once, on a restart only after it lasted the whole window. SSE reconnects with backoff (2 s → 30 s) through the same window instead of giving up after 3 tries; its gateway failures stay out of the badge (`streamSse` `quietOnRestart`).
+
 - `2026-10-09` — Scopes cutover (lane SCOPES-WEB-CONSUMERS): interrupt and served-form kinds use `ContextFieldKind` from `@ai-matrx/records/scopes` (was `ContextValueType`).
 
 - 2026-10-09 — **Warnings column.** `/workflows/all` (and System Workflows) shows Warnings: step warnings ("Check and Revise" misses in `workflow.run_log`) from runs started since the workflow's last edit, so fixing a step clears it. Sort and filter (Runs buckets, `0` = None) are server-side (`wfx_list_scoped` key `warnings`, `platform.entity_usage.warning_count`, `wfx_list_facets` kind `warnings`); the count opens the workflow's runs. `prefsVersion` 3. Migration (chair step, run named): `migrations/inverse/wfx_warnings_column.sql`.

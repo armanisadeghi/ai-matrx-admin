@@ -35,6 +35,8 @@ import { adminDoorPath } from "@/lib/api/adminDoor";
 import type { AppThunk } from "@/lib/redux/store";
 import { getJson } from "@/lib/python-client";
 import { captureError } from "@/lib/diagnostics/errorCaptureStore";
+import { capturePythonClientError, relationPathFromUrl } from "@/lib/diagnostics/capturePythonClientError";
+import { readThroughRestart, restartQuietCapture } from "../transport/read-through-restart";
 
 import {
   invocationKeyOf,
@@ -139,9 +141,20 @@ export function adoptWorkflowRun(
     // stands — the same posture the run transports always had.
     const getHeaders = (): Record<string, string> => ({});
 
+    // Every run read rides through a server restart (read-through-restart.ts, MKT-089): a 502/503/504 or a
+    // failed fetch enters the error badge only once it has lasted the whole restart window; a refusal at once.
+    const readClock = restartQuietCapture();
     const fetchJson = async <T>(path: string): Promise<T> => {
-      const { data } = await getJson<T>(path);
-      return data;
+      try {
+        const { data } = await getJson<T>(path, { captureErrors: false });
+        readClock.answered();
+        return data;
+      } catch (error) {
+        if (readClock.failed(error)) {
+          capturePythonClientError(error, { url: path, method: "GET", path: relationPathFromUrl(path) });
+        }
+        throw error;
+      }
     };
 
     // ── Tracked-tier meta batching (adversarial finding 7) ────────────────
@@ -527,12 +540,16 @@ export function adoptWorkflowRun(
     const replayDurableLog = async (
       runId: string,
       depth: number,
+      isStopped: () => boolean,
     ): Promise<number | null> => {
       let cursor: number | null = null;
       let total = 0;
       for (;;) {
-        const page: RunEventRecord[] = await fetchJson<RunEventRecord[]>(
-          `/runs/${runId}/events?after_seq=${cursor ?? 0}&limit=${REPLAY_PAGE_SIZE}`,
+        // Each page rides through a server restart on its own (never a re-replay of pages already routed).
+        const after = cursor ?? 0;
+        const page: RunEventRecord[] = await readThroughRestart(
+          () => fetchJson<RunEventRecord[]>(`/runs/${runId}/events?after_seq=${after}&limit=${REPLAY_PAGE_SIZE}`),
+          { isStopped },
         );
         for (const record of page) {
           const payload: unknown = {
@@ -602,9 +619,12 @@ export function adoptWorkflowRun(
         try {
           // The run row and the durable log are independent reads: ask for both at once (one round trip
           // fewer before the first frame lands on the screen).
-          const rowRead = fetchJson<RunRow>(adminDoorPath(`/runs/${runId}`));
+          // Both attach reads ride through a server restart (a release): retried for the restart window, never a
+          // permanent "could not read this run" on one gateway 502 (MKT-089).
+          const throughRestart = <T,>(read: () => Promise<T>) => readThroughRestart(read, { isStopped: () => stopped });
+          const rowRead = throughRestart(() => fetchJson<RunRow>(adminDoorPath(`/runs/${runId}`)));
           rowRead.catch(() => undefined); // a failure is raised below, where it is awaited
-          const cursor = await replayDurableLog(runId, depth);
+          const cursor = await replayDurableLog(runId, depth, () => stopped);
           const row = await rowRead;
           if (stopped) return;
           // Seed AFTER replay: the heartbeat tails only land on node
