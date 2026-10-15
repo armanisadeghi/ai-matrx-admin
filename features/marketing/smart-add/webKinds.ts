@@ -46,6 +46,10 @@ export interface SuggestContext {
   ourAccounts: string[];
   /** The brand's best name (confirmed, else found). */
   name: string | null;
+  /** Addresses of accounts we FOUND but the person has not answered yet: never called "Not us" (MKT-038). */
+  foundAccounts?: string[];
+  /** Handles of our confirmed or found accounts, comparison form (`ritualcoffee`): the same handle on an ordering or store host is ours. */
+  ourHandles?: string[];
 }
 
 /** "https://www.Yelp.com/biz/x?y" → "yelp.com/biz/x" — the form the kinds' path rules read. */
@@ -164,6 +168,7 @@ export function kindByRules(url: string, kinds: BrandRelationKind[]): { kind: Br
  *  4. the server classed it a review/listing page → Review site / Listing we can claim;
  *     a news/video/image result → Mentions us;
  *  5. its title or snippet names our website → Mentions us;
+ *  5b. the same handle as one of our accounts, as a page's subdomain or first path part → Ours;
  *  6. the page is ABOUT a same- or similar-named business (title lead, site name or first path
  *     part) on another site that never names our website → Not us (a possible mistaken identity);
  *  7. its title or snippet names us → Mentions us;
@@ -178,6 +183,14 @@ export function suggestKind(item: EvidenceItem, kinds: BrandRelationKind[], ctx:
   if (ourSite && has("ours")) return { kind: "ours", reason: `Same site as ${ourSite}, your website` };
   const ourAccount = ctx.ourAccounts.find((a) => address === a || address.startsWith(`${a}/`));
   if (ourAccount && has("ours")) return { kind: "ours", reason: `A page of ${ourAccount}, your account` };
+  // The same handle as one of our accounts, as the name of a page on another host (an order page at
+  // `ritualcoffee.square.site`, a store at `shop.example/ritualcoffee`): ours (MKT-038).
+  const handles = new Set((ctx.ourHandles ?? []).filter((h) => h.length >= 3));
+  if (handles.size && has("ours")) {
+    const labels = host.split(".");
+    const named = [labels.length > 2 ? labels[0] : "", address.split("/")[1] ?? ""].map(norm).find((x) => x && handles.has(x));
+    if (named) return { kind: "ours", reason: `Same name (${named}) as your account, on ${host}` };
+  }
   const ruled = kindByRules(url, kinds);
   if (ruled) return { kind: ruled.kind.key, reason: `${ruled.rule}: ${ruled.kind.label.toLowerCase()}` };
   if (item.field === "listing") {
@@ -197,7 +210,12 @@ export function suggestKind(item: EvidenceItem, kinds: BrandRelationKind[], ctx:
   const parts = address.split("/");
   // (a long slug is a page title, not a name: "i-j-healthcare-recruiter-full-spectrum-search-group").
   const firstPart = parts.length === 2 && norm(parts[1]).length <= norm(ctx.name ?? "").length + 8 ? parts[1] : "";
-  if (ctx.name && nameMatches(ctx.name, [lead, host.split(".").slice(0, -1).join(" "), firstPart]) && has("not_us")) {
+  // Never "Not us" for a page of an account we found, nor for a deeper page that merely carries our whole name
+  // in its title (an article about us): a wrong "Not us" is the worst error this step can make (MKT-038).
+  const foundAccount = (ctx.foundAccounts ?? []).some((a) => address === a || address.startsWith(`${a}/`));
+  const articleAboutUs = Boolean(ctx.name) && parts.length > 2 && norm(ctx.name ?? "").length >= 3 && norm(lead).includes(norm(ctx.name ?? ""));
+  const sameName = nameMatches(ctx.name ?? "", [lead, host.split(".").slice(0, -1).join(" "), firstPart]);
+  if (ctx.name && sameName && !foundAccount && !articleAboutUs && has("not_us")) {
     return {
       kind: "not_us",
       reason: ctx.ourHosts.length

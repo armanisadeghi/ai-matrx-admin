@@ -16,6 +16,8 @@ export interface KnownDomainRule {
   category: string;
   provenance: "seeded" | "learned" | "pattern" | "admin_approved";
   confidence: number;
+  /** Display name of the service or site ("Linktree"); empty = show the host. */
+  label: string;
 }
 
 /** `https://www.Yelp.com/biz/x?y` → `yelp.com/biz/x`. Mirrors SQL `web.domain_address` and aidream `address()`. */

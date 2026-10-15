@@ -32,6 +32,7 @@ export async function fetchKnownDomainRules(): Promise<KnownDomainRule[]> {
       category: r.category,
       provenance: (PROVENANCES.has(r.provenance) ? r.provenance : "seeded") as KnownDomainRule["provenance"],
       confidence: Number(r.confidence),
+      label: r.label ?? "",
     }));
     cache = { at: Date.now(), rules };
     setLiveKnownDomainRules(rules);

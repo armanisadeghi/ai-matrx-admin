@@ -145764,6 +145764,7 @@ export type Database = {
           category: string
           confidence: number
           host: string
+          label: string
           path_pattern: string
           provenance: string
         }[]

@@ -58,7 +58,7 @@ describe("link pages: their own spot, with their links", () => {
   it("fullspecstaff (stored round, no page item yet): the Linktree is their link page, its links under it", () => {
     const pages = linkPages(round);
     const main = pages.find((p) => p.url === LINKTREE);
-    expect(main?.service).toBe("linktr.ee");
+    expect(main?.service).toBe("Linktree");
     expect(main?.theirs).toBe(true);
     expect(main?.links.map((l) => l.url)).toContain("https://fullspecstaff.com/senior-living-jobs/");
     // The second Linktree it shows is a link page too, not a plain link.

@@ -22,18 +22,19 @@ import packagedLinkInBio from "@/lib/web-domains/link-in-bio.packaged.json";
 export interface LinkInBioService {
   /** The registry rule's host (`linktr.ee`, `beacons.ai`). */
   host: string;
-  /** Shown as the page's service name. */
+  /** Shown as the page's service name: the registry's label ("Linktree"), else the host. */
   name: string;
 }
 
 /** Until the live registry is read, the link_in_bio rules packaged from it (never hand-edited; a parity test guards the copy). */
-const PACKAGED_RULES = packagedLinkInBio as unknown as readonly { host: string; path_pattern: string; category: string; provenance: string; confidence: number }[];
+const PACKAGED_RULES = packagedLinkInBio as unknown as readonly { host: string; path_pattern: string; category: string; provenance: string; confidence: number; label?: string }[];
 const PACKAGED: readonly KnownDomainRule[] = PACKAGED_RULES.map((r) => ({
   host: r.host,
   pathPattern: r.path_pattern,
   category: r.category,
   provenance: r.provenance as KnownDomainRule["provenance"],
   confidence: r.confidence,
+  label: r.label ?? "",
 }));
 
 /** The service whose page this address is (profile or not), else null. Same rule as aidream's `link_in_bio_entry`. */
@@ -41,7 +42,7 @@ export function linkInBioService(raw: string | null | undefined): LinkInBioServi
   const url = parseHttpUrl(raw);
   if (!url) return null;
   const rule = ruleFor(url.href, ["link_in_bio"], liveKnownDomainRules() ?? PACKAGED);
-  return rule ? { host: rule.host, name: rule.host } : null;
+  return rule ? { host: rule.host, name: rule.label || rule.host } : null;
 }
 
 /** Short-link and smart-link hosts: they forward to something else, so they are never a website. */

@@ -3,6 +3,7 @@
 "category": "link_in_bio",
 "confidence": 1.0,
 "host": "allmylinks.com",
+"label": "AllMyLinks",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -10,6 +11,7 @@
 "category": "link_in_bio",
 "confidence": 1.0,
 "host": "beacons.ai",
+"label": "Beacons",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -17,6 +19,7 @@
 "category": "link_in_bio",
 "confidence": 1.0,
 "host": "beacons.page",
+"label": "Beacons",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -24,6 +27,7 @@
 "category": "link_in_bio",
 "confidence": 1.0,
 "host": "bio.link",
+"label": "Bio.link",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -31,6 +35,7 @@
 "category": "link_in_bio",
 "confidence": 1.0,
 "host": "bit.ly",
+"label": "Bitly Pages",
 "path_pattern": "^bit\\.ly/m/",
 "provenance": "seeded"
 },
@@ -38,6 +43,7 @@
 "category": "link_in_bio",
 "confidence": 1.0,
 "host": "campsite.bio",
+"label": "Campsite.bio",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -45,6 +51,7 @@
 "category": "link_in_bio",
 "confidence": 1.0,
 "host": "carrd.co",
+"label": "Carrd",
 "path_pattern": "^[a-z0-9-]+\\.carrd\\.co",
 "provenance": "seeded"
 },
@@ -52,6 +59,7 @@
 "category": "link_in_bio",
 "confidence": 1.0,
 "host": "direct.me",
+"label": "Direct.me",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -59,6 +67,7 @@
 "category": "link_in_bio",
 "confidence": 1.0,
 "host": "flow.page",
+"label": "Flowpage",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -66,6 +75,7 @@
 "category": "link_in_bio",
 "confidence": 1.0,
 "host": "hoo.be",
+"label": "Hoo.be",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -73,6 +83,7 @@
 "category": "link_in_bio",
 "confidence": 1.0,
 "host": "hopp.bio",
+"label": "Hopp by Wix",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -80,6 +91,7 @@
 "category": "link_in_bio",
 "confidence": 1.0,
 "host": "hopp.co",
+"label": "Hopp by Wix",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -87,6 +99,7 @@
 "category": "link_in_bio",
 "confidence": 1.0,
 "host": "komi.io",
+"label": "Komi",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -94,6 +107,7 @@
 "category": "link_in_bio",
 "confidence": 1.0,
 "host": "later.com",
+"label": "Later Link in Bio",
 "path_pattern": "^later\\.com/link-in-bio/",
 "provenance": "seeded"
 },
@@ -101,6 +115,7 @@
 "category": "link_in_bio",
 "confidence": 1.0,
 "host": "linkfly.to",
+"label": "Linkfly",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -108,6 +123,7 @@
 "category": "link_in_bio",
 "confidence": 1.0,
 "host": "linkin.bio",
+"label": "Later Link in Bio",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -115,6 +131,7 @@
 "category": "link_in_bio",
 "confidence": 1.0,
 "host": "linkpop.com",
+"label": "Linkpop",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -122,6 +139,7 @@
 "category": "link_in_bio",
 "confidence": 1.0,
 "host": "linktr.ee",
+"label": "Linktree",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -129,6 +147,7 @@
 "category": "link_in_bio",
 "confidence": 1.0,
 "host": "lnk.bio",
+"label": "Lnk.Bio",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -136,6 +155,7 @@
 "category": "link_in_bio",
 "confidence": 1.0,
 "host": "milkshake.app",
+"label": "Milkshake",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -143,6 +163,7 @@
 "category": "link_in_bio",
 "confidence": 1.0,
 "host": "msha.ke",
+"label": "Milkshake",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -150,6 +171,7 @@
 "category": "link_in_bio",
 "confidence": 1.0,
 "host": "shor.by",
+"label": "Shorby",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -157,6 +179,7 @@
 "category": "link_in_bio",
 "confidence": 1.0,
 "host": "shorby.com",
+"label": "Shorby",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -164,6 +187,7 @@
 "category": "link_in_bio",
 "confidence": 1.0,
 "host": "snipfeed.co",
+"label": "Snipfeed",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -171,6 +195,7 @@
 "category": "link_in_bio",
 "confidence": 1.0,
 "host": "solo.to",
+"label": "solo.to",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -178,6 +203,7 @@
 "category": "link_in_bio",
 "confidence": 1.0,
 "host": "stan.store",
+"label": "Stan Store",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -185,6 +211,7 @@
 "category": "link_in_bio",
 "confidence": 1.0,
 "host": "tap.bio",
+"label": "Tap.bio",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -192,6 +219,7 @@
 "category": "link_in_bio",
 "confidence": 1.0,
 "host": "taplink.at",
+"label": "Taplink",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -199,6 +227,7 @@
 "category": "link_in_bio",
 "confidence": 1.0,
 "host": "taplink.cc",
+"label": "Taplink",
 "path_pattern": "",
 "provenance": "seeded"
 }

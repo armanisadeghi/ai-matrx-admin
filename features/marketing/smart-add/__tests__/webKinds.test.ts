@@ -136,3 +136,22 @@ describe("a Not-us web exclusion keeps the query that names the page (MKT-073)",
     expect(exclusionMatchForUrl("https://yelp.com/biz/x?utm_source=a")).toEqual({ kind: "url", value: "yelp.com/biz/x" });
   });
 });
+
+describe("a wrong Not us is the worst error: own pages and articles are never Not us (MKT-038)", () => {
+  const RC: SuggestContext = { ...CTX, ourHandles: ["ritualcoffee"], foundAccounts: ["facebook.com/ritualcoffeeroasters"] };
+  it("an order page named with our account's handle is Ours", () => {
+    expect(suggestKind(web("https://ritualcoffee.square.site/", "Order online"), KINDS, RC)?.kind).toBe("ours");
+    expect(suggestKind(web("https://order.example.com/ritualcoffee", "Order"), KINDS, RC)?.kind).toBe("ours");
+  });
+  it("a found account of ours is never suggested Not us", () => {
+    const s = suggestKind(web("https://www.facebook.com/ritualcoffeeroasters", "Ritual Coffee Roasters | Facebook"), KINDS, RC);
+    expect(s?.kind).not.toBe("not_us");
+  });
+  it("an article whose title leads with our whole name is a mention, not Not us", () => {
+    const s = suggestKind(web("https://www.cntraveler.com/story/ritual-coffee-roasters", "Ritual Coffee Roasters — San Francisco | Condé Nast Traveler", { snippet: "Ritual Coffee Roasters opened" }), KINDS, RC);
+    expect(s?.kind).toBe("mention");
+  });
+  it("a namesake's own site is still possibly Not us", () => {
+    expect(suggestKind(web("https://ritualcoffeeroasters.co.uk/", "Ritual Coffee Roasters UK"), KINDS, RC)?.kind).toBe("not_us");
+  });
+});

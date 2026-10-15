@@ -3,7 +3,7 @@
  * thing must reach the stage once, and what the brand already knows must never be asked.
  */
 import { fromRow, type SavedRow } from "../validate/fromSaved";
-import { answeredKeysOf, foldQueue, sameSpokenName, socialIdentity, streetKey } from "../validate/fold";
+import { accountOfPost, answeredKeysOf, foldQueue, sameSpokenName, socialIdentity, streetKey } from "../validate/fold";
 import { buildQueue, type BrandFact } from "../validate/queue";
 import type { EvidenceItem } from "../evidence";
 
@@ -104,5 +104,13 @@ describe("validate fold", () => {
     expect(people).toHaveLength(1);
     expect(people[0].spellings?.sort()).toEqual(["John Akhoian", "John Akhoin"]);
     expect(answeredKeysOf(people[0])).toHaveLength(2);
+  });
+});
+
+describe("a page of our own account folds into the account (MKT-045)", () => {
+  it("names the account a post sits under, and none for a profile or a bare post address", () => {
+    expect(accountOfPost("https://www.facebook.com/ritualcoffee/posts/123")).toBe("acct:facebook:ritualcoffee");
+    expect(accountOfPost("https://www.facebook.com/ritualcoffee")).toBeNull();
+    expect(accountOfPost("https://www.instagram.com/p/DboJiddGte_")).toBeNull();
   });
 });

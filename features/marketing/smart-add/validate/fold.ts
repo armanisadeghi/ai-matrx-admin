@@ -88,6 +88,17 @@ export function socialIdentity(url: string): { key: string | null; post: boolean
   return { key: `acct:${platform}:${head.replace(/^@/, "")}`, post: false, person: false };
 }
 
+/** A post address → the account it sits under (`acct:facebook:ritualcoffee`), so a page of our own account folds into
+ *  that account's card and is never asked again as a second "web" card (MKT-045). Null for a profile or a non-post. */
+export function accountOfPost(url: string): string | null {
+  const social = socialIdentity(url);
+  if (!social.post) return null;
+  const platform = SOCIAL_HOSTS[domainHost(url)];
+  const head = domainAddress(url).split("/").slice(1).filter(Boolean)[0];
+  if (!platform || !head || platform === "linkedin" || POST_HEADS.has(head)) return null;
+  return `acct:${platform}:${head.replace(/^@/, "")}`;
+}
+
 const PHONE_FIELDS = new Set(["phone", "toll_free_phone", "sms_number", "fax"]);
 const ADDRESS_FIELDS = new Set(["address", "street_address", "additional_location", "headquarters_location"]);
 const NAME_FIELDS = new Set(["official_name", "legal_entity_name", "dba_name", "former_name", "also_known_as", "brand_name"]);
@@ -130,6 +141,8 @@ export function identities(item: FocusItem): string[] {
     keys.push(`url:${domainAddress(url)}`);
     const social = socialIdentity(url);
     if (social.key) keys.push(social.key);
+    const post = accountOfPost(url);
+    if (post) keys.push(post);
   }
   if (item.kind === "account" && item.platform && item.evidence?.handle && !socialIdentity(item.evidence.url ?? "").post) {
     keys.push(`acct:${item.platform === "twitter" ? "x" : item.platform}:${item.evidence.handle.toLowerCase().replace(/^@/, "")}`);

@@ -45,6 +45,7 @@ import { candidateCategory, websiteHost } from "../evidence";
 import { webIdentity } from "../webKinds";
 import { webSiteRoot } from "../relations";
 import { claimSite } from "../siteOwnership";
+import { siteNameOf } from "../siteName";
 import { liveSiteClaimDeps } from "../siteOwnershipLive";
 import type { Answer, FocusItem } from "./queue";
 
@@ -538,7 +539,7 @@ export async function persistAnswer(
           competitors: [
             ...list,
             {
-              name: item.title ?? item.value,
+              name: item.kind === "web" ? siteNameOf({ title: item.title, host: domain ?? websiteHost(item.value) }) : (item.title ?? item.value),
               ...(domain && item.kind !== "account" ? { domain } : {}),
               ...(item.kind === "account" ? { handles: [item.value] } : {}),
             },

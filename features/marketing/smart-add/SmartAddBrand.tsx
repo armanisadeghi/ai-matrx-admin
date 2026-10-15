@@ -130,6 +130,9 @@ import { PersonHarderStage } from "./harder/PersonHarderStage";
 import type { FindYouProvision, FocusState } from "./harder/types";
 import type { SweepFeed } from "@/features/builder-panel/components/BuilderDecisionsTab";
 import { FullNameAsk } from "./FullNameAsk";
+import { siteNameOf } from "./siteName";
+import { WebPersonAsk } from "./WebPersonAsk";
+import { personNameOnPage } from "./personParty";
 import type { NameStrength } from "./nameStrength";
 import type { FindLogEntry, HarderCandidate } from "./harder/types";
 import { AnchorCards, anchorItems, type AnchorAnswer } from "./AnchorCards";
@@ -262,6 +265,8 @@ export function SmartAddBrand({
   const [relations, setRelations] = useState<Record<string, RelatedCandidate>>({});
   // "On the web": what each web result is to the brand (web.brand_relation_kind key + sentiment).
   const [webChoices, setWebChoices] = useState<Record<string, WebChoice>>({});
+  // The name typed for a web result answered Founder / Key person (MKT-040): a page title is never a person's name.
+  const [webPersonNames, setWebPersonNames] = useState<Record<string, string>>({});
   // "Other → Skip for now" (finding keys / compare candidate ids), "Other → Tagline" (name key -> tagline finding) and the
   // web review's Ask me later / Ignore marks: answers like the rest, saved with the run (runMemory.ts).
   const [skipped, setSkipped] = useState<Set<string>>(new Set());
@@ -982,8 +987,22 @@ export function SmartAddBrand({
     [basics.websiteUrl, ...basics.otherWebsites, typedWebsite || null, ...rounds.map((r) => r.seeds.website || null)],
     basics.accounts.map((a) => a.url ?? a.value),
     basics.name ?? foundName?.value ?? null,
+    {
+      accounts: visible.filter((i) => i.field === "social").map((i) => i.url),
+      handles: [...basics.accounts.map((a) => a.handle ?? null), ...visible.filter((i) => i.field === "social").map((i) => i.handle)],
+    },
   );
   const webItems = visible.filter((i) => i.field === "listing" || i.field === "mention" || i.field === "web_page");
+  const webPersonRows = webItems.flatMap((item) => {
+    const k = relationKinds.find((x) => x.key === webChoices[item.key]?.kind);
+    return k && (k.routesTo === "owns" || k.routesTo === "key_person")
+      ? [{ item, relation: k.label, guess: personNameOnPage({ title: item.label, snippet: item.snippet }, webCtx.name) }]
+      : [];
+  });
+  const webPersonName = (key: string): string => {
+    const row = webPersonRows.find((r) => r.item.key === key);
+    return (webPersonNames[key] ?? row?.guess ?? "").trim();
+  };
   const webSuggestions = Object.fromEntries(webItems.map((i) => [i.key, suggestKind(i, relationKinds, webCtx)]));
   useEffect(() => {
     if (!builder.isActive) return;
@@ -1045,10 +1064,17 @@ export function SmartAddBrand({
       const related = Object.values(relations).filter((r) => !decisions[r.candidate.anchor.key]);
       // Web results answered founder / key person route to people exactly like an account does.
       const kindOf = (key: string) => relationKinds.find((k) => k.key === webChoices[key]?.kind);
+      const unnamedPeople = new Set<string>();
       for (const i of webItems) {
         const k = kindOf(i.key);
         if (k && (k.routesTo === "owns" || k.routesTo === "key_person")) {
-          related.push({ candidate: webCandidate(i), relation: { key: k.key, label: k.label, routesTo: k.routesTo } });
+          // Asked, not read off the title; a result left without a name stays a plain found page below.
+          const personName = webPersonName(i.key);
+          if (!personName) {
+            unnamedPeople.add(i.key);
+            continue;
+          }
+          related.push({ candidate: { ...webCandidate(i), name: personName }, relation: { key: k.key, label: k.label, routesTo: k.routesTo } });
         }
       }
       // Their link-in-bio pages (Linktree, Stan, …) are theirs without asking: kept as "Link-in-bio page".
@@ -1065,7 +1091,7 @@ export function SmartAddBrand({
         ...relatedCompetitors(related),
         ...webItems
           .filter((i) => kindOf(i.key)?.routesTo === "competitor")
-          .map((i) => ({ name: i.label ?? websiteHost(i.url ?? i.value), domain: websiteHost(i.url ?? i.value) })),
+          .map((i) => ({ name: siteNameOf({ title: i.label, host: websiteHost(i.url ?? i.value) }), domain: websiteHost(i.url ?? i.value) })),
       ];
       // A web result answered "Ours" that is a site of its own becomes one of the brand's websites.
       const webSites = webItems
@@ -1166,7 +1192,7 @@ export function SmartAddBrand({
       problems.push(...relatedSaved.problems);
       // Every answered web result keeps its answer, sentiment and where it was found; "Not us" (here and
       // in the compare rows) also lands on the brand's exclusion list.
-      const webSaved = await routeWebChoices(organizationId, brand.id, webItems, webChoices, relationKinds, webSuggestions);
+      const webSaved = await routeWebChoices(organizationId, brand.id, webItems, webChoices, relationKinds, webSuggestions, unnamedPeople);
       problems.push(...webSaved.problems);
       recordWebAnswers(organizationId, webItems, webChoices, relationKinds);
       for (const k of webSaved.keys) relatedSaved.keys.add(k);
@@ -1793,6 +1819,7 @@ export function SmartAddBrand({
         marks={webMarks}
         onMark={(key, mark) => setWebMarks(({ [key]: _drop, ...rest }) => (mark ? { ...rest, [key]: mark } : rest))}
       />
+      <WebPersonAsk rows={webPersonRows} names={Object.fromEntries(webPersonRows.map((r) => [r.item.key, webPersonNames[r.item.key] ?? r.guess ?? ""]))} onName={(key, name) => setWebPersonNames((cur) => ({ ...cur, [key]: name }))} />
       <SmartAddBioLinks items={visible} />
 
       {/* Create: the confirmed basics, one row. */}

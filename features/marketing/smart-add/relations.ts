@@ -191,6 +191,8 @@ export async function routeWebChoices(
   choices: Record<string, WebChoice>,
   kinds: BrandRelationKind[],
   suggestions: Record<string, WebSuggestion | null>,
+  /** Founder / Key person results the person gave no name for: kept as plain found pages, not people. */
+  unnamedPeople: ReadonlySet<string> = new Set(),
 ): Promise<{ keys: Set<string>; problems: string[] }> {
   const keys = new Set<string>();
   const problems: string[] = [];
@@ -199,7 +201,7 @@ export async function routeWebChoices(
   const answered = items
     .map((item) => ({ item, choice: choices[item.key], kind: byKey.get(choices[item.key]?.kind ?? "") }))
     .filter((x): x is { item: EvidenceItem; choice: WebChoice; kind: BrandRelationKind } => Boolean(x.choice && x.kind))
-    .filter(({ kind }) => kind.routesTo !== "owns" && kind.routesTo !== "key_person");
+    .filter(({ item, kind }) => unnamedPeople.has(item.key) || (kind.routesTo !== "owns" && kind.routesTo !== "key_person"));
   if (!answered.length) return { keys, problems };
   try {
     await createDiscoveredCandidates(
@@ -293,8 +295,12 @@ export function suggestContext(
   websites: (string | null)[],
   accountUrls: (string | null)[],
   name: string | null,
+  found: { accounts?: (string | null)[]; handles?: (string | null)[] } = {},
 ): SuggestContext {
+  const handle = (h: string | null) => (h ?? "").replace(/^@/, "").toLowerCase().replace(/[^a-z0-9]/g, "");
   return {
+    foundAccounts: (found.accounts ?? []).filter((u): u is string => Boolean(u)).map(webAddress),
+    ourHandles: [...new Set([...(found.handles ?? []).map(handle), ...accountUrls.map((u) => handle(webAddress(u ?? "").split("/")[1] ?? ""))].filter(Boolean))],
     ourHosts: [...new Set(websites.filter((u): u is string => Boolean(u)).map((u) => websiteHost(u).replace(/^www\./, "")))],
     ourAccounts: accountUrls.filter((u): u is string => Boolean(u)).map(webAddress),
     name,

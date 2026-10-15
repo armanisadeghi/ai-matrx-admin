@@ -3,6 +3,7 @@
 "category": "press_release",
 "confidence": 1.0,
 "host": "24-7pressrelease.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -10,6 +11,7 @@
 "category": "people_search",
 "confidence": 1.0,
 "host": "411.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -17,6 +19,7 @@
 "category": "news",
 "confidence": 1.0,
 "host": "abcnews.go.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -24,6 +27,7 @@
 "category": "directory",
 "confidence": 1.0,
 "host": "about.me",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -31,6 +35,7 @@
 "category": "academic_journal",
 "confidence": 1.0,
 "host": "academic.oup.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -38,6 +43,7 @@
 "category": "press_release",
 "confidence": 1.0,
 "host": "accesswire.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -45,6 +51,7 @@
 "category": "academic_journal",
 "confidence": 1.0,
 "host": "acs.org",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -52,6 +59,7 @@
 "category": "people_search",
 "confidence": 1.0,
 "host": "addresses.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -59,6 +67,7 @@
 "category": "people_search",
 "confidence": 1.0,
 "host": "advancedbackgroundchecks.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -66,6 +75,7 @@
 "category": "directory",
 "confidence": 1.0,
 "host": "alignable.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -73,6 +83,7 @@
 "category": "link_in_bio",
 "confidence": 1.0,
 "host": "allmylinks.com",
+"label": "AllMyLinks",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -80,6 +91,7 @@
 "category": "marketplace",
 "confidence": 1.0,
 "host": "amazon.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -87,6 +99,7 @@
 "category": "store_page",
 "confidence": 1.0,
 "host": "amazon.com",
+"label": "",
 "path_pattern": "^amazon\\.[a-z.]+/.*/dp/",
 "provenance": "seeded"
 },
@@ -94,6 +107,7 @@
 "category": "store_page",
 "confidence": 1.0,
 "host": "amazon.com",
+"label": "",
 "path_pattern": "^amazon\\.[a-z.]+/(stores|shops)/",
 "provenance": "seeded"
 },
@@ -101,6 +115,7 @@
 "category": "directory",
 "confidence": 1.0,
 "host": "angel.co",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -108,6 +123,7 @@
 "category": "review_site",
 "confidence": 1.0,
 "host": "angi.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -115,6 +131,7 @@
 "category": "people_search",
 "confidence": 1.0,
 "host": "anywho.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -122,6 +139,7 @@
 "category": "aggregator",
 "confidence": 1.0,
 "host": "aol.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -129,6 +147,7 @@
 "category": "news",
 "confidence": 1.0,
 "host": "apnews.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -136,6 +155,7 @@
 "category": "data_broker",
 "confidence": 1.0,
 "host": "apollo.io",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -143,6 +163,7 @@
 "category": "platform",
 "confidence": 1.0,
 "host": "apple.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -150,6 +171,7 @@
 "category": "aggregator",
 "confidence": 1.0,
 "host": "apple.news",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -157,6 +179,7 @@
 "category": "store_page",
 "confidence": 1.0,
 "host": "apps.apple.com",
+"label": "",
 "path_pattern": "^apps\\.apple\\.com/",
 "provenance": "seeded"
 },
@@ -164,6 +187,7 @@
 "category": "people_search",
 "confidence": 1.0,
 "host": "arrestfacts.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -171,6 +195,7 @@
 "category": "academic_journal",
 "confidence": 1.0,
 "host": "arxiv.org",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -178,6 +203,7 @@
 "category": "job_board",
 "confidence": 1.0,
 "host": "ashbyhq.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -185,6 +211,7 @@
 "category": "professional_registry",
 "confidence": 1.0,
 "host": "avvo.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -192,6 +219,7 @@
 "category": "review_site",
 "confidence": 1.0,
 "host": "avvo.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -199,6 +227,7 @@
 "category": "news",
 "confidence": 1.0,
 "host": "axios.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -206,6 +235,7 @@
 "category": "job_board",
 "confidence": 1.0,
 "host": "bamboohr.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -213,6 +243,7 @@
 "category": "news",
 "confidence": 1.0,
 "host": "barrons.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -220,6 +251,7 @@
 "category": "review_site",
 "confidence": 1.0,
 "host": "bbb.org",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -227,6 +259,7 @@
 "category": "location_page",
 "confidence": 1.0,
 "host": "bbb.org",
+"label": "",
 "path_pattern": "^bbb\\.org/us/",
 "provenance": "seeded"
 },
@@ -234,6 +267,7 @@
 "category": "news",
 "confidence": 1.0,
 "host": "bbc.co.uk",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -241,6 +275,7 @@
 "category": "news",
 "confidence": 1.0,
 "host": "bbc.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -248,6 +283,7 @@
 "category": "link_in_bio",
 "confidence": 1.0,
 "host": "beacons.ai",
+"label": "Beacons",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -255,6 +291,7 @@
 "category": "link_in_bio",
 "confidence": 1.0,
 "host": "beacons.page",
+"label": "Beacons",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -262,6 +299,7 @@
 "category": "people_search",
 "confidence": 1.0,
 "host": "beenverified.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -269,6 +307,7 @@
 "category": "directory",
 "confidence": 1.0,
 "host": "bing.com",
+"label": "",
 "path_pattern": "^bing\\.com/maps",
 "provenance": "seeded"
 },
@@ -276,6 +315,7 @@
 "category": "link_in_bio",
 "confidence": 1.0,
 "host": "bio.link",
+"label": "Bio.link",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -283,6 +323,7 @@
 "category": "academic_journal",
 "confidence": 1.0,
 "host": "biorxiv.org",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -290,6 +331,7 @@
 "category": "review_site",
 "confidence": 1.0,
 "host": "birdeye.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -297,6 +339,7 @@
 "category": "link_in_bio",
 "confidence": 1.0,
 "host": "bit.ly",
+"label": "Bitly Pages",
 "path_pattern": "^bit\\.ly/m/",
 "provenance": "seeded"
 },
@@ -304,6 +347,7 @@
 "category": "data_broker",
 "confidence": 1.0,
 "host": "bizapedia.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -311,6 +355,7 @@
 "category": "directory",
 "confidence": 1.0,
 "host": "bizapedia.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -318,6 +363,7 @@
 "category": "news",
 "confidence": 1.0,
 "host": "bizjournals.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -325,6 +371,7 @@
 "category": "data_broker",
 "confidence": 1.0,
 "host": "bizprofile.net",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -332,6 +379,7 @@
 "category": "aggregator",
 "confidence": 1.0,
 "host": "biztoc.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -339,6 +387,7 @@
 "category": "blog_platform",
 "confidence": 1.0,
 "host": "blogspot.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -346,6 +395,7 @@
 "category": "news",
 "confidence": 1.0,
 "host": "bloomberg.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -353,6 +403,7 @@
 "category": "directory",
 "confidence": 1.0,
 "host": "bloomberg.com",
+"label": "",
 "path_pattern": "^bloomberg\\.com/profile/",
 "provenance": "seeded"
 },
@@ -360,6 +411,7 @@
 "category": "academic_journal",
 "confidence": 1.0,
 "host": "bmj.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -367,6 +419,7 @@
 "category": "job_board",
 "confidence": 1.0,
 "host": "boards.greenhouse.io",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -374,6 +427,7 @@
 "category": "reference",
 "confidence": 1.0,
 "host": "britannica.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -381,6 +435,7 @@
 "category": "professional_registry",
 "confidence": 1.0,
 "host": "brokercheck.finra.org",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -388,6 +443,7 @@
 "category": "directory",
 "confidence": 1.0,
 "host": "brownbook.net",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -395,6 +451,7 @@
 "category": "social",
 "confidence": 1.0,
 "host": "bsky.app",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -402,6 +459,7 @@
 "category": "directory",
 "confidence": 1.0,
 "host": "business.google.com",
+"label": "",
 "path_pattern": "^business\\.google\\.com/",
 "provenance": "seeded"
 },
@@ -409,6 +467,7 @@
 "category": "news",
 "confidence": 1.0,
 "host": "businessinsider.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -416,6 +475,7 @@
 "category": "press_release",
 "confidence": 1.0,
 "host": "businesswire.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -423,6 +483,7 @@
 "category": "directory",
 "confidence": 1.0,
 "host": "buzzfile.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -430,6 +491,7 @@
 "category": "government",
 "confidence": 1.0,
 "host": "calbar.ca.gov",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -437,6 +499,7 @@
 "category": "professional_registry",
 "confidence": 1.0,
 "host": "calbar.ca.gov",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -444,6 +507,7 @@
 "category": "academic_journal",
 "confidence": 1.0,
 "host": "cambridge.org",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -451,6 +515,7 @@
 "category": "link_in_bio",
 "confidence": 1.0,
 "host": "campsite.bio",
+"label": "Campsite.bio",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -458,6 +523,7 @@
 "category": "review_site",
 "confidence": 1.0,
 "host": "capterra.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -465,6 +531,7 @@
 "category": "job_board",
 "confidence": 1.0,
 "host": "careerbuilder.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -472,6 +539,7 @@
 "category": "link_in_bio",
 "confidence": 1.0,
 "host": "carrd.co",
+"label": "Carrd",
 "path_pattern": "^[a-z0-9-]+\\.carrd\\.co",
 "provenance": "seeded"
 },
@@ -479,6 +547,7 @@
 "category": "directory",
 "confidence": 1.0,
 "host": "cbinsights.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -486,6 +555,7 @@
 "category": "news",
 "confidence": 1.0,
 "host": "cbsnews.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -493,6 +563,7 @@
 "category": "academic_journal",
 "confidence": 1.0,
 "host": "cell.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -500,6 +571,7 @@
 "category": "professional_registry",
 "confidence": 1.0,
 "host": "certificationmatters.org",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -507,6 +579,7 @@
 "category": "directory",
 "confidence": 1.0,
 "host": "chamberofcommerce.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -514,6 +587,7 @@
 "category": "people_search",
 "confidence": 1.0,
 "host": "checkpeople.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -521,6 +595,7 @@
 "category": "news",
 "confidence": 1.0,
 "host": "chicagotribune.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -528,6 +603,7 @@
 "category": "store_page",
 "confidence": 1.0,
 "host": "chrome.google.com",
+"label": "",
 "path_pattern": "^chrome\\.google\\.com/webstore",
 "provenance": "seeded"
 },
@@ -535,6 +611,7 @@
 "category": "store_page",
 "confidence": 1.0,
 "host": "chromewebstore.google.com",
+"label": "",
 "path_pattern": "^chromewebstore\\.google\\.com/",
 "provenance": "seeded"
 },
@@ -542,6 +619,7 @@
 "category": "review_site",
 "confidence": 1.0,
 "host": "citysearch.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -549,6 +627,7 @@
 "category": "people_search",
 "confidence": 1.0,
 "host": "classmates.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -556,6 +635,7 @@
 "category": "data_broker",
 "confidence": 1.0,
 "host": "clearbit.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -563,6 +643,7 @@
 "category": "people_search",
 "confidence": 1.0,
 "host": "clustrmaps.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -570,6 +651,7 @@
 "category": "review_site",
 "confidence": 1.0,
 "host": "clutch.co",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -577,6 +659,7 @@
 "category": "news",
 "confidence": 1.0,
 "host": "cnbc.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -584,6 +667,7 @@
 "category": "news",
 "confidence": 1.0,
 "host": "cnn.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -591,6 +675,7 @@
 "category": "review_site",
 "confidence": 1.0,
 "host": "complaintsboard.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -598,6 +683,7 @@
 "category": "review_site",
 "confidence": 1.0,
 "host": "consumeraffairs.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -605,6 +691,7 @@
 "category": "data_broker",
 "confidence": 1.0,
 "host": "contactout.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -612,6 +699,7 @@
 "category": "directory",
 "confidence": 1.0,
 "host": "craft.co",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -619,6 +707,7 @@
 "category": "directory",
 "confidence": 1.0,
 "host": "crunchbase.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -626,6 +715,7 @@
 "category": "people_search",
 "confidence": 1.0,
 "host": "cyberbackgroundchecks.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -633,6 +723,7 @@
 "category": "directory",
 "confidence": 1.0,
 "host": "cylex-usa.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -640,6 +731,7 @@
 "category": "directory",
 "confidence": 1.0,
 "host": "cylex.us.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -647,6 +739,7 @@
 "category": "news",
 "confidence": 1.0,
 "host": "dailycoffeenews.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -654,6 +747,7 @@
 "category": "video",
 "confidence": 1.0,
 "host": "dailymotion.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -661,6 +755,7 @@
 "category": "data_broker",
 "confidence": 1.0,
 "host": "datanyze.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -668,6 +763,7 @@
 "category": "government",
 "confidence": 1.0,
 "host": "dca.ca.gov",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -675,6 +771,7 @@
 "category": "professional_registry",
 "confidence": 1.0,
 "host": "dca.ca.gov",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -682,6 +779,7 @@
 "category": "link_in_bio",
 "confidence": 1.0,
 "host": "direct.me",
+"label": "Direct.me",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -689,6 +787,7 @@
 "category": "academic_journal",
 "confidence": 1.0,
 "host": "dl.acm.org",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -696,6 +795,7 @@
 "category": "data_broker",
 "confidence": 1.0,
 "host": "dnb.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -703,6 +803,7 @@
 "category": "directory",
 "confidence": 1.0,
 "host": "dnb.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -710,6 +811,7 @@
 "category": "review_site",
 "confidence": 1.0,
 "host": "doctor.webmd.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -717,6 +819,7 @@
 "category": "academic_journal",
 "confidence": 1.0,
 "host": "doi.org",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -724,6 +827,7 @@
 "category": "food_delivery",
 "confidence": 1.0,
 "host": "doordash.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -731,6 +835,7 @@
 "category": "professional_registry",
 "confidence": 1.0,
 "host": "doximity.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -738,6 +843,7 @@
 "category": "government",
 "confidence": 1.0,
 "host": "dre.ca.gov",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -745,6 +851,7 @@
 "category": "professional_registry",
 "confidence": 1.0,
 "host": "dre.ca.gov",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -752,6 +859,7 @@
 "category": "news",
 "confidence": 1.0,
 "host": "eater.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -759,6 +867,7 @@
 "category": "marketplace",
 "confidence": 1.0,
 "host": "ebay.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -766,6 +875,7 @@
 "category": "store_page",
 "confidence": 1.0,
 "host": "ebay.com",
+"label": "",
 "path_pattern": "^ebay\\.[a-z.]+/str/",
 "provenance": "seeded"
 },
@@ -773,6 +883,7 @@
 "category": "news",
 "confidence": 1.0,
 "host": "economist.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -780,6 +891,7 @@
 "category": "press_release",
 "confidence": 1.0,
 "host": "einpresswire.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -787,6 +899,7 @@
 "category": "academic_journal",
 "confidence": 1.0,
 "host": "elsevier.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -794,6 +907,7 @@
 "category": "academic_journal",
 "confidence": 1.0,
 "host": "emerald.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -801,6 +915,7 @@
 "category": "news",
 "confidence": 1.0,
 "host": "entrepreneur.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -808,6 +923,7 @@
 "category": "press_release",
 "confidence": 1.0,
 "host": "ereleases.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -815,6 +931,7 @@
 "category": "marketplace",
 "confidence": 1.0,
 "host": "etsy.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -822,6 +939,7 @@
 "category": "store_page",
 "confidence": 1.0,
 "host": "etsy.com",
+"label": "",
 "path_pattern": "^etsy\\.com/shop/",
 "provenance": "seeded"
 },
@@ -829,6 +947,7 @@
 "category": "academic_journal",
 "confidence": 1.0,
 "host": "europepmc.org",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -836,6 +955,7 @@
 "category": "directory",
 "confidence": 1.0,
 "host": "f6s.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -843,6 +963,7 @@
 "category": "social",
 "confidence": 1.0,
 "host": "facebook.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -850,6 +971,7 @@
 "category": "people_search",
 "confidence": 1.0,
 "host": "familytreenow.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -857,6 +979,7 @@
 "category": "people_search",
 "confidence": 1.0,
 "host": "fastbackgroundcheck.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -864,6 +987,7 @@
 "category": "news",
 "confidence": 1.0,
 "host": "fastcompany.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -871,6 +995,7 @@
 "category": "people_search",
 "confidence": 1.0,
 "host": "fastpeoplesearch.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -878,6 +1003,7 @@
 "category": "news",
 "confidence": 1.0,
 "host": "finance.yahoo.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -885,6 +1011,7 @@
 "category": "professional_registry",
 "confidence": 1.0,
 "host": "finra.org",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -892,6 +1019,7 @@
 "category": "image_board",
 "confidence": 1.0,
 "host": "flickr.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -899,6 +1027,7 @@
 "category": "aggregator",
 "confidence": 1.0,
 "host": "flipboard.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -906,6 +1035,7 @@
 "category": "link_in_bio",
 "confidence": 1.0,
 "host": "flow.page",
+"label": "Flowpage",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -913,6 +1043,7 @@
 "category": "news",
 "confidence": 1.0,
 "host": "forbes.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -920,6 +1051,7 @@
 "category": "news",
 "confidence": 1.0,
 "host": "fortune.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -927,6 +1059,7 @@
 "category": "directory",
 "confidence": 1.0,
 "host": "foursquare.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -934,6 +1067,7 @@
 "category": "location_page",
 "confidence": 1.0,
 "host": "foursquare.com",
+"label": "",
 "path_pattern": "^foursquare\\.com/v/",
 "provenance": "seeded"
 },
@@ -941,6 +1075,7 @@
 "category": "news",
 "confidence": 1.0,
 "host": "foxbusiness.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -948,6 +1083,7 @@
 "category": "press_release",
 "confidence": 1.0,
 "host": "free-press-release.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -955,6 +1091,7 @@
 "category": "academic_journal",
 "confidence": 1.0,
 "host": "frontiersin.org",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -962,6 +1099,7 @@
 "category": "professional_registry",
 "confidence": 1.0,
 "host": "fsmb.org",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -969,6 +1107,7 @@
 "category": "news",
 "confidence": 1.0,
 "host": "ft.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -976,6 +1115,7 @@
 "category": "directory",
 "confidence": 1.0,
 "host": "g.page",
+"label": "",
 "path_pattern": "^g\\.page/",
 "provenance": "seeded"
 },
@@ -983,6 +1123,7 @@
 "category": "review_site",
 "confidence": 1.0,
 "host": "g2.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -990,6 +1131,7 @@
 "category": "review_site",
 "confidence": 1.0,
 "host": "getapp.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -997,6 +1139,7 @@
 "category": "blog_platform",
 "confidence": 1.0,
 "host": "ghost.io",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1004,6 +1147,7 @@
 "category": "review_site",
 "confidence": 1.0,
 "host": "glassdoor.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1011,6 +1155,7 @@
 "category": "job_board",
 "confidence": 1.0,
 "host": "glassdoor.com",
+"label": "",
 "path_pattern": "^glassdoor\\.[a-z.]+/(job-listing|jobs)/",
 "provenance": "seeded"
 },
@@ -1018,6 +1163,7 @@
 "category": "press_release",
 "confidence": 1.0,
 "host": "globenewswire.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1025,6 +1171,7 @@
 "category": "data_broker",
 "confidence": 1.0,
 "host": "golden.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1032,6 +1179,7 @@
 "category": "people_search",
 "confidence": 1.0,
 "host": "golden.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1039,6 +1187,7 @@
 "category": "platform",
 "confidence": 1.0,
 "host": "google.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1046,6 +1195,7 @@
 "category": "directory",
 "confidence": 1.0,
 "host": "google.com",
+"label": "",
 "path_pattern": "^google\\.[a-z.]+/maps",
 "provenance": "seeded"
 },
@@ -1053,6 +1203,7 @@
 "category": "job_board",
 "confidence": 1.0,
 "host": "greenhouse.io",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1060,6 +1211,7 @@
 "category": "aggregator",
 "confidence": 1.0,
 "host": "ground.news",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1067,6 +1219,7 @@
 "category": "food_delivery",
 "confidence": 1.0,
 "host": "grubhub.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1074,6 +1227,7 @@
 "category": "aggregator",
 "confidence": 1.0,
 "host": "headtopics.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1081,6 +1235,7 @@
 "category": "review_site",
 "confidence": 1.0,
 "host": "healthgrades.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1088,6 +1243,7 @@
 "category": "review_site",
 "confidence": 1.0,
 "host": "homeadvisor.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1095,6 +1251,7 @@
 "category": "people_search",
 "confidence": 1.0,
 "host": "homes.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1102,6 +1259,7 @@
 "category": "real_estate",
 "confidence": 1.0,
 "host": "homes.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1109,6 +1267,7 @@
 "category": "link_in_bio",
 "confidence": 1.0,
 "host": "hoo.be",
+"label": "Hoo.be",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1116,6 +1275,7 @@
 "category": "link_in_bio",
 "confidence": 1.0,
 "host": "hopp.bio",
+"label": "Hopp by Wix",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1123,6 +1283,7 @@
 "category": "link_in_bio",
 "confidence": 1.0,
 "host": "hopp.co",
+"label": "Hopp by Wix",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1130,6 +1291,7 @@
 "category": "directory",
 "confidence": 1.0,
 "host": "hotfrog.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1137,6 +1299,7 @@
 "category": "review_site",
 "confidence": 1.0,
 "host": "houzz.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1144,6 +1307,7 @@
 "category": "news",
 "confidence": 1.0,
 "host": "huffpost.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1151,6 +1315,7 @@
 "category": "data_broker",
 "confidence": 1.0,
 "host": "hunter.io",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1158,6 +1323,7 @@
 "category": "press_release",
 "confidence": 1.0,
 "host": "i-newswire.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1165,6 +1331,7 @@
 "category": "people_search",
 "confidence": 1.0,
 "host": "idcrawl.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1172,6 +1339,7 @@
 "category": "academic_journal",
 "confidence": 1.0,
 "host": "ieeexplore.ieee.org",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1179,6 +1347,7 @@
 "category": "entertainment_database",
 "confidence": 1.0,
 "host": "imdb.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1186,6 +1355,7 @@
 "category": "reference",
 "confidence": 1.0,
 "host": "imdb.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1193,6 +1363,7 @@
 "category": "image_board",
 "confidence": 1.0,
 "host": "imgur.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1200,6 +1371,7 @@
 "category": "news",
 "confidence": 1.0,
 "host": "inc.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1207,6 +1379,7 @@
 "category": "job_board",
 "confidence": 1.0,
 "host": "indeed.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1214,6 +1387,7 @@
 "category": "job_board",
 "confidence": 1.0,
 "host": "indeed.com",
+"label": "",
 "path_pattern": "^indeed\\.com/(viewjob|jobs|q-|cmp/[^/]+/jobs)",
 "provenance": "seeded"
 },
@@ -1221,6 +1395,7 @@
 "category": "directory",
 "confidence": 1.0,
 "host": "indeed.com",
+"label": "",
 "path_pattern": "^indeed\\.com/cmp/[^/]+/?$",
 "provenance": "seeded"
 },
@@ -1228,6 +1403,7 @@
 "category": "review_site",
 "confidence": 1.0,
 "host": "indeed.com",
+"label": "",
 "path_pattern": "^indeed\\.com/cmp/[^/]+/reviews",
 "provenance": "seeded"
 },
@@ -1235,6 +1411,7 @@
 "category": "aggregator",
 "confidence": 1.0,
 "host": "inkl.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1242,6 +1419,7 @@
 "category": "social",
 "confidence": 1.0,
 "host": "instagram.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1249,6 +1427,7 @@
 "category": "people_search",
 "confidence": 1.0,
 "host": "instantcheckmate.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1256,6 +1435,7 @@
 "category": "people_search",
 "confidence": 1.0,
 "host": "intelius.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1263,6 +1443,7 @@
 "category": "academic_journal",
 "confidence": 1.0,
 "host": "iopscience.iop.org",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1270,6 +1451,7 @@
 "category": "press_release",
 "confidence": 1.0,
 "host": "issuewire.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1277,6 +1459,7 @@
 "category": "document_host",
 "confidence": 1.0,
 "host": "issuu.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1284,6 +1467,7 @@
 "category": "academic_journal",
 "confidence": 1.0,
 "host": "jamanetwork.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1291,6 +1475,7 @@
 "category": "job_board",
 "confidence": 1.0,
 "host": "jobs.lever.co",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1298,6 +1483,7 @@
 "category": "job_board",
 "confidence": 1.0,
 "host": "jobvite.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1305,6 +1491,7 @@
 "category": "academic_journal",
 "confidence": 1.0,
 "host": "journals.plos.org",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1312,6 +1499,7 @@
 "category": "professional_registry",
 "confidence": 1.0,
 "host": "justia.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1319,6 +1507,7 @@
 "category": "link_in_bio",
 "confidence": 1.0,
 "host": "komi.io",
+"label": "Komi",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1326,6 +1515,7 @@
 "category": "link_in_bio",
 "confidence": 1.0,
 "host": "later.com",
+"label": "Later Link in Bio",
 "path_pattern": "^later\\.com/link-in-bio/",
 "provenance": "seeded"
 },
@@ -1333,6 +1523,7 @@
 "category": "news",
 "confidence": 1.0,
 "host": "latimes.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1340,6 +1531,7 @@
 "category": "professional_registry",
 "confidence": 1.0,
 "host": "lawyers.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1347,6 +1539,7 @@
 "category": "data_broker",
 "confidence": 1.0,
 "host": "leadiq.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1354,6 +1547,7 @@
 "category": "academic_journal",
 "confidence": 1.0,
 "host": "link.springer.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1361,6 +1555,7 @@
 "category": "social",
 "confidence": 1.0,
 "host": "linkedin.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1368,6 +1563,7 @@
 "category": "directory",
 "confidence": 1.0,
 "host": "linkedin.com",
+"label": "",
 "path_pattern": "^linkedin\\.com/company/",
 "provenance": "seeded"
 },
@@ -1375,6 +1571,7 @@
 "category": "job_board",
 "confidence": 1.0,
 "host": "linkedin.com",
+"label": "",
 "path_pattern": "^linkedin\\.com/jobs/",
 "provenance": "seeded"
 },
@@ -1382,6 +1579,7 @@
 "category": "link_in_bio",
 "confidence": 1.0,
 "host": "linkfly.to",
+"label": "Linkfly",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1389,6 +1587,7 @@
 "category": "link_in_bio",
 "confidence": 1.0,
 "host": "linkin.bio",
+"label": "Later Link in Bio",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1396,6 +1595,7 @@
 "category": "link_in_bio",
 "confidence": 1.0,
 "host": "linkpop.com",
+"label": "Linkpop",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1403,6 +1603,7 @@
 "category": "link_in_bio",
 "confidence": 1.0,
 "host": "linktr.ee",
+"label": "Linktree",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1410,6 +1611,7 @@
 "category": "link_in_bio",
 "confidence": 1.0,
 "host": "lnk.bio",
+"label": "Lnk.Bio",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1417,6 +1619,7 @@
 "category": "directory",
 "confidence": 1.0,
 "host": "local.yahoo.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1424,6 +1627,7 @@
 "category": "people_search",
 "confidence": 1.0,
 "host": "locatefamily.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1431,6 +1635,7 @@
 "category": "data_broker",
 "confidence": 1.0,
 "host": "lusha.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1438,6 +1643,7 @@
 "category": "directory",
 "confidence": 1.0,
 "host": "manta.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1445,6 +1651,7 @@
 "category": "directory",
 "confidence": 1.0,
 "host": "mapquest.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1452,6 +1659,7 @@
 "category": "location_page",
 "confidence": 1.0,
 "host": "mapquest.com",
+"label": "",
 "path_pattern": "^mapquest\\.com/",
 "provenance": "seeded"
 },
@@ -1459,6 +1667,7 @@
 "category": "directory",
 "confidence": 1.0,
 "host": "maps.google.com",
+"label": "",
 "path_pattern": "^maps\\.google\\.",
 "provenance": "seeded"
 },
@@ -1466,6 +1675,7 @@
 "category": "aggregator",
 "confidence": 1.0,
 "host": "marketscreener.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1473,6 +1683,7 @@
 "category": "news",
 "confidence": 1.0,
 "host": "marketwatch.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1480,6 +1691,7 @@
 "category": "press_release",
 "confidence": 1.0,
 "host": "marketwired.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1487,6 +1699,7 @@
 "category": "professional_registry",
 "confidence": 1.0,
 "host": "martindale.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1494,6 +1707,7 @@
 "category": "social",
 "confidence": 1.0,
 "host": "mastodon.social",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1501,6 +1715,7 @@
 "category": "government",
 "confidence": 1.0,
 "host": "mbc.ca.gov",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1508,6 +1723,7 @@
 "category": "professional_registry",
 "confidence": 1.0,
 "host": "mbc.ca.gov",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1515,6 +1731,7 @@
 "category": "academic_journal",
 "confidence": 1.0,
 "host": "mdpi.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1522,6 +1739,7 @@
 "category": "blog_platform",
 "confidence": 1.0,
 "host": "medium.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1529,6 +1747,7 @@
 "category": "academic_journal",
 "confidence": 1.0,
 "host": "medrxiv.org",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1536,6 +1755,7 @@
 "category": "directory",
 "confidence": 1.0,
 "host": "merchantcircle.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1543,6 +1763,7 @@
 "category": "link_in_bio",
 "confidence": 1.0,
 "host": "milkshake.app",
+"label": "Milkshake",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1550,6 +1771,7 @@
 "category": "job_board",
 "confidence": 1.0,
 "host": "monster.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1557,6 +1779,7 @@
 "category": "link_in_bio",
 "confidence": 1.0,
 "host": "msha.ke",
+"label": "Milkshake",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1564,6 +1787,7 @@
 "category": "aggregator",
 "confidence": 1.0,
 "host": "msn.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1571,6 +1795,7 @@
 "category": "people_search",
 "confidence": 1.0,
 "host": "myheritage.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1578,6 +1803,7 @@
 "category": "people_search",
 "confidence": 1.0,
 "host": "mylife.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1585,6 +1811,7 @@
 "category": "store_page",
 "confidence": 1.0,
 "host": "myshopify.com",
+"label": "",
 "path_pattern": "^[a-z0-9-]+\\.myshopify\\.com",
 "provenance": "seeded"
 },
@@ -1592,6 +1819,7 @@
 "category": "academic_journal",
 "confidence": 1.0,
 "host": "nature.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1599,6 +1827,7 @@
 "category": "news",
 "confidence": 1.0,
 "host": "nbcnews.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1606,6 +1835,7 @@
 "category": "academic_journal",
 "confidence": 1.0,
 "host": "ncbi.nlm.nih.gov",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1613,6 +1843,7 @@
 "category": "academic_journal",
 "confidence": 1.0,
 "host": "nejm.org",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1620,6 +1851,7 @@
 "category": "aggregator",
 "confidence": 1.0,
 "host": "news.google.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1627,6 +1859,7 @@
 "category": "news",
 "confidence": 1.0,
 "host": "news.yahoo.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1634,6 +1867,7 @@
 "category": "forum",
 "confidence": 1.0,
 "host": "news.ycombinator.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1641,6 +1875,7 @@
 "category": "aggregator",
 "confidence": 1.0,
 "host": "newsbreak.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1648,6 +1883,7 @@
 "category": "press_release",
 "confidence": 1.0,
 "host": "newsdirect.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1655,6 +1891,7 @@
 "category": "press_release",
 "confidence": 1.0,
 "host": "newsfilecorp.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1662,6 +1899,7 @@
 "category": "aggregator",
 "confidence": 1.0,
 "host": "newsnow.co.uk",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1669,6 +1907,7 @@
 "category": "news",
 "confidence": 1.0,
 "host": "newsweek.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1676,6 +1915,7 @@
 "category": "press_release",
 "confidence": 1.0,
 "host": "newswire.ca",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1683,6 +1923,7 @@
 "category": "press_release",
 "confidence": 1.0,
 "host": "newswire.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1690,6 +1931,7 @@
 "category": "press_release",
 "confidence": 1.0,
 "host": "newswiretoday.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1697,6 +1939,7 @@
 "category": "news",
 "confidence": 1.0,
 "host": "newyorker.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1704,6 +1947,7 @@
 "category": "directory",
 "confidence": 1.0,
 "host": "nextdoor.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1711,6 +1955,7 @@
 "category": "social",
 "confidence": 1.0,
 "host": "nextdoor.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1718,6 +1963,7 @@
 "category": "professional_registry",
 "confidence": 1.0,
 "host": "nmlsconsumeraccess.org",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1725,6 +1971,7 @@
 "category": "professional_registry",
 "confidence": 1.0,
 "host": "npidb.org",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1732,6 +1979,7 @@
 "category": "professional_registry",
 "confidence": 1.0,
 "host": "npino.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1739,6 +1987,7 @@
 "category": "government",
 "confidence": 1.0,
 "host": "npiregistry.cms.hhs.gov",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1746,6 +1995,7 @@
 "category": "professional_registry",
 "confidence": 1.0,
 "host": "npiregistry.cms.hhs.gov",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1753,6 +2003,7 @@
 "category": "news",
 "confidence": 1.0,
 "host": "npr.org",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1760,6 +2011,7 @@
 "category": "people_search",
 "confidence": 1.0,
 "host": "nuwber.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1767,6 +2019,7 @@
 "category": "news",
 "confidence": 1.0,
 "host": "nymag.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1774,6 +2027,7 @@
 "category": "news",
 "confidence": 1.0,
 "host": "nytimes.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1781,6 +2035,7 @@
 "category": "news",
 "confidence": 1.0,
 "host": "ocregister.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1788,6 +2043,7 @@
 "category": "people_search",
 "confidence": 1.0,
 "host": "officialusa.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1795,6 +2051,7 @@
 "category": "review_site",
 "confidence": 1.0,
 "host": "onebite.app",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1802,6 +2059,7 @@
 "category": "academic_journal",
 "confidence": 1.0,
 "host": "onlinelibrary.wiley.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1809,6 +2067,7 @@
 "category": "directory",
 "confidence": 1.0,
 "host": "opencorporates.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1816,6 +2075,7 @@
 "category": "press_release",
 "confidence": 1.0,
 "host": "openpr.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1823,6 +2083,7 @@
 "category": "press_release",
 "confidence": 1.0,
 "host": "openpr.de",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1830,6 +2091,7 @@
 "category": "review_site",
 "confidence": 1.0,
 "host": "opentable.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1837,6 +2099,7 @@
 "category": "location_page",
 "confidence": 1.0,
 "host": "opentable.com",
+"label": "",
 "path_pattern": "^opentable\\.com/r/",
 "provenance": "seeded"
 },
@@ -1844,6 +2107,7 @@
 "category": "directory",
 "confidence": 1.0,
 "host": "owler.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1851,6 +2115,7 @@
 "category": "academic_journal",
 "confidence": 1.0,
 "host": "papers.ssrn.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1858,6 +2123,7 @@
 "category": "news",
 "confidence": 1.0,
 "host": "patch.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1865,6 +2131,7 @@
 "category": "people_search",
 "confidence": 1.0,
 "host": "peekyou.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1872,6 +2139,7 @@
 "category": "people_search",
 "confidence": 1.0,
 "host": "peoplefinders.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1879,6 +2147,7 @@
 "category": "people_search",
 "confidence": 1.0,
 "host": "peoplelooker.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1886,6 +2155,7 @@
 "category": "people_search",
 "confidence": 1.0,
 "host": "peoplesearchnow.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1893,6 +2163,7 @@
 "category": "people_search",
 "confidence": 1.0,
 "host": "persopo.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1900,6 +2171,7 @@
 "category": "image_board",
 "confidence": 1.0,
 "host": "pinterest.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1907,6 +2179,7 @@
 "category": "social",
 "confidence": 1.0,
 "host": "pinterest.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1914,6 +2187,7 @@
 "category": "people_search",
 "confidence": 1.0,
 "host": "pipl.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1921,6 +2195,7 @@
 "category": "review_site",
 "confidence": 1.0,
 "host": "pissedconsumer.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1928,6 +2203,7 @@
 "category": "directory",
 "confidence": 1.0,
 "host": "pitchbook.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1935,6 +2211,7 @@
 "category": "store_page",
 "confidence": 1.0,
 "host": "play.google.com",
+"label": "",
 "path_pattern": "^play\\.google\\.com/store/apps",
 "provenance": "seeded"
 },
@@ -1942,6 +2219,7 @@
 "category": "academic_journal",
 "confidence": 1.0,
 "host": "plos.org",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1949,6 +2227,7 @@
 "category": "academic_journal",
 "confidence": 1.0,
 "host": "pnas.org",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1956,6 +2235,7 @@
 "category": "news",
 "confidence": 1.0,
 "host": "politico.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1963,6 +2243,7 @@
 "category": "directory",
 "confidence": 1.0,
 "host": "porch.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1970,6 +2251,7 @@
 "category": "press_release",
 "confidence": 1.0,
 "host": "pr.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1977,6 +2259,7 @@
 "category": "press_release",
 "confidence": 1.0,
 "host": "pressat.co.uk",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1984,6 +2267,7 @@
 "category": "aggregator",
 "confidence": 1.0,
 "host": "pressreader.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1991,6 +2275,7 @@
 "category": "press_release",
 "confidence": 1.0,
 "host": "pressrelease.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -1998,6 +2283,7 @@
 "category": "press_release",
 "confidence": 1.0,
 "host": "pressreleasepoint.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2005,6 +2291,7 @@
 "category": "press_release",
 "confidence": 1.0,
 "host": "prfire.co.uk",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2012,6 +2299,7 @@
 "category": "people_search",
 "confidence": 1.0,
 "host": "privateeye.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2019,6 +2307,7 @@
 "category": "press_release",
 "confidence": 1.0,
 "host": "prlog.org",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2026,6 +2315,7 @@
 "category": "press_release",
 "confidence": 1.0,
 "host": "prnewswire.co.uk",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2033,6 +2323,7 @@
 "category": "press_release",
 "confidence": 1.0,
 "host": "prnewswire.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2040,6 +2331,7 @@
 "category": "press_release",
 "confidence": 1.0,
 "host": "prnob.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2047,6 +2339,7 @@
 "category": "directory",
 "confidence": 1.0,
 "host": "producthunt.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2054,6 +2347,7 @@
 "category": "review_site",
 "confidence": 1.0,
 "host": "productreview.com.au",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2061,6 +2355,7 @@
 "category": "press_release",
 "confidence": 1.0,
 "host": "prurgent.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2068,6 +2363,7 @@
 "category": "press_release",
 "confidence": 1.0,
 "host": "prweb.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2075,6 +2371,7 @@
 "category": "press_release",
 "confidence": 1.0,
 "host": "przoom.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2082,6 +2379,7 @@
 "category": "people_search",
 "confidence": 1.0,
 "host": "publicdatausa.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2089,6 +2387,7 @@
 "category": "people_search",
 "confidence": 1.0,
 "host": "publicrecordsnow.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2096,6 +2395,7 @@
 "category": "academic_journal",
 "confidence": 1.0,
 "host": "pubmed.ncbi.nlm.nih.gov",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2103,6 +2403,7 @@
 "category": "forum",
 "confidence": 1.0,
 "host": "quora.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2110,6 +2411,7 @@
 "category": "people_search",
 "confidence": 1.0,
 "host": "radaris.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2117,6 +2419,7 @@
 "category": "review_site",
 "confidence": 1.0,
 "host": "ratemds.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2124,6 +2427,7 @@
 "category": "real_estate",
 "confidence": 1.0,
 "host": "realtor.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2131,6 +2435,7 @@
 "category": "forum",
 "confidence": 1.0,
 "host": "reddit.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2138,6 +2443,7 @@
 "category": "real_estate",
 "confidence": 1.0,
 "host": "redfin.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2145,6 +2451,7 @@
 "category": "press_release",
 "confidence": 1.0,
 "host": "releasewire.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2152,6 +2459,7 @@
 "category": "academic_journal",
 "confidence": 1.0,
 "host": "researchsquare.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2159,6 +2467,7 @@
 "category": "news",
 "confidence": 1.0,
 "host": "reuters.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2166,6 +2475,7 @@
 "category": "review_site",
 "confidence": 1.0,
 "host": "reviews.io",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2173,6 +2483,7 @@
 "category": "review_site",
 "confidence": 1.0,
 "host": "ripoffreport.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2180,6 +2491,7 @@
 "category": "data_broker",
 "confidence": 1.0,
 "host": "rocketreach.co",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2187,6 +2499,7 @@
 "category": "video",
 "confidence": 1.0,
 "host": "rumble.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2194,6 +2507,7 @@
 "category": "academic_journal",
 "confidence": 1.0,
 "host": "sagepub.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2201,6 +2515,7 @@
 "category": "academic_journal",
 "confidence": 1.0,
 "host": "science.org",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2208,6 +2523,7 @@
 "category": "academic_journal",
 "confidence": 1.0,
 "host": "sciencedirect.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2215,6 +2531,7 @@
 "category": "document_host",
 "confidence": 1.0,
 "host": "scribd.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2222,6 +2539,7 @@
 "category": "data_broker",
 "confidence": 1.0,
 "host": "seamless.ai",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2229,6 +2547,7 @@
 "category": "people_search",
 "confidence": 1.0,
 "host": "searchpeoplefree.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2236,6 +2555,7 @@
 "category": "news",
 "confidence": 1.0,
 "host": "semafor.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2243,6 +2563,7 @@
 "category": "press_release",
 "confidence": 1.0,
 "host": "send2press.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2250,6 +2571,7 @@
 "category": "news",
 "confidence": 1.0,
 "host": "sfchronicle.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2257,6 +2579,7 @@
 "category": "news",
 "confidence": 1.0,
 "host": "sfgate.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2264,6 +2587,7 @@
 "category": "link_in_bio",
 "confidence": 1.0,
 "host": "shor.by",
+"label": "Shorby",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2271,6 +2595,7 @@
 "category": "link_in_bio",
 "confidence": 1.0,
 "host": "shorby.com",
+"label": "Shorby",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2278,6 +2603,7 @@
 "category": "directory",
 "confidence": 1.0,
 "host": "showmelocal.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2285,6 +2611,7 @@
 "category": "data_broker",
 "confidence": 1.0,
 "host": "signalhire.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2292,6 +2619,7 @@
 "category": "job_board",
 "confidence": 1.0,
 "host": "simplyhired.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2299,6 +2627,7 @@
 "category": "review_site",
 "confidence": 1.0,
 "host": "sitejabber.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2306,6 +2635,7 @@
 "category": "document_host",
 "confidence": 1.0,
 "host": "slideshare.net",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2313,6 +2643,7 @@
 "category": "aggregator",
 "confidence": 1.0,
 "host": "smartnews.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2320,6 +2651,7 @@
 "category": "job_board",
 "confidence": 1.0,
 "host": "smartrecruiters.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2327,6 +2659,7 @@
 "category": "social",
 "confidence": 1.0,
 "host": "snapchat.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2334,6 +2667,7 @@
 "category": "link_in_bio",
 "confidence": 1.0,
 "host": "snipfeed.co",
+"label": "Snipfeed",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2341,6 +2675,7 @@
 "category": "people_search",
 "confidence": 1.0,
 "host": "socialcatfish.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2348,6 +2683,7 @@
 "category": "link_in_bio",
 "confidence": 1.0,
 "host": "solo.to",
+"label": "solo.to",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2355,6 +2691,7 @@
 "category": "people_search",
 "confidence": 1.0,
 "host": "spokeo.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2362,6 +2699,7 @@
 "category": "academic_journal",
 "confidence": 1.0,
 "host": "springer.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2369,6 +2707,7 @@
 "category": "news",
 "confidence": 1.0,
 "host": "sprudge.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2376,6 +2715,7 @@
 "category": "people_search",
 "confidence": 1.0,
 "host": "spytox.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2383,6 +2723,7 @@
 "category": "academic_journal",
 "confidence": 1.0,
 "host": "ssrn.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2390,6 +2731,7 @@
 "category": "forum",
 "confidence": 1.0,
 "host": "stackexchange.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2397,6 +2739,7 @@
 "category": "forum",
 "confidence": 1.0,
 "host": "stackoverflow.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2404,6 +2747,7 @@
 "category": "link_in_bio",
 "confidence": 1.0,
 "host": "stan.store",
+"label": "Stan Store",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2411,6 +2755,7 @@
 "category": "press_release",
 "confidence": 1.0,
 "host": "stocktitan.net",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2418,6 +2763,7 @@
 "category": "blog_platform",
 "confidence": 1.0,
 "host": "substack.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2425,6 +2771,7 @@
 "category": "directory",
 "confidence": 1.0,
 "host": "superpages.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2432,6 +2779,7 @@
 "category": "academic_journal",
 "confidence": 1.0,
 "host": "tandfonline.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2439,6 +2787,7 @@
 "category": "link_in_bio",
 "confidence": 1.0,
 "host": "tap.bio",
+"label": "Tap.bio",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2446,6 +2795,7 @@
 "category": "link_in_bio",
 "confidence": 1.0,
 "host": "taplink.at",
+"label": "Taplink",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2453,6 +2803,7 @@
 "category": "link_in_bio",
 "confidence": 1.0,
 "host": "taplink.cc",
+"label": "Taplink",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2460,6 +2811,7 @@
 "category": "news",
 "confidence": 1.0,
 "host": "techcrunch.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2467,6 +2819,7 @@
 "category": "people_search",
 "confidence": 1.0,
 "host": "thatsthem.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2474,6 +2827,7 @@
 "category": "news",
 "confidence": 1.0,
 "host": "theatlantic.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2481,6 +2835,7 @@
 "category": "news",
 "confidence": 1.0,
 "host": "theguardian.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2488,6 +2843,7 @@
 "category": "news",
 "confidence": 1.0,
 "host": "thehill.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2495,6 +2851,7 @@
 "category": "review_site",
 "confidence": 1.0,
 "host": "theinfatuation.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2502,6 +2859,7 @@
 "category": "news",
 "confidence": 1.0,
 "host": "theinformation.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2509,6 +2867,7 @@
 "category": "academic_journal",
 "confidence": 1.0,
 "host": "thelancet.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2516,6 +2875,7 @@
 "category": "news",
 "confidence": 1.0,
 "host": "theverge.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2523,6 +2883,7 @@
 "category": "social",
 "confidence": 1.0,
 "host": "threads.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2530,6 +2891,7 @@
 "category": "social",
 "confidence": 1.0,
 "host": "threads.net",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2537,6 +2899,7 @@
 "category": "review_site",
 "confidence": 1.0,
 "host": "thumbtack.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2544,6 +2907,7 @@
 "category": "social",
 "confidence": 1.0,
 "host": "tiktok.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2551,6 +2915,7 @@
 "category": "news",
 "confidence": 1.0,
 "host": "time.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2558,6 +2923,7 @@
 "category": "aggregator",
 "confidence": 1.0,
 "host": "tradingview.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2565,6 +2931,7 @@
 "category": "review_site",
 "confidence": 1.0,
 "host": "tripadvisor.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2572,6 +2939,7 @@
 "category": "location_page",
 "confidence": 1.0,
 "host": "tripadvisor.com",
+"label": "",
 "path_pattern": "^tripadvisor\\.com/restaurant_review",
 "provenance": "seeded"
 },
@@ -2579,6 +2947,7 @@
 "category": "people_search",
 "confidence": 1.0,
 "host": "truepeoplesearch.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2586,6 +2955,7 @@
 "category": "real_estate",
 "confidence": 1.0,
 "host": "trulia.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2593,6 +2963,7 @@
 "category": "review_site",
 "confidence": 1.0,
 "host": "trustpilot.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2600,6 +2971,7 @@
 "category": "review_site",
 "confidence": 1.0,
 "host": "trustradius.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2607,6 +2979,7 @@
 "category": "people_search",
 "confidence": 1.0,
 "host": "truthfinder.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2614,6 +2987,7 @@
 "category": "blog_platform",
 "confidence": 1.0,
 "host": "tumblr.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2621,6 +2995,7 @@
 "category": "social",
 "confidence": 1.0,
 "host": "tumblr.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2628,6 +3003,7 @@
 "category": "social",
 "confidence": 1.0,
 "host": "twitch.tv",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2635,6 +3011,7 @@
 "category": "social",
 "confidence": 1.0,
 "host": "twitter.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2642,6 +3019,7 @@
 "category": "food_delivery",
 "confidence": 1.0,
 "host": "ubereats.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2649,6 +3027,7 @@
 "category": "people_search",
 "confidence": 1.0,
 "host": "unicourt.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2656,6 +3035,7 @@
 "category": "news",
 "confidence": 1.0,
 "host": "usatoday.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2663,6 +3043,7 @@
 "category": "people_search",
 "confidence": 1.0,
 "host": "usnews.com",
+"label": "",
 "path_pattern": "^usnews\\.com/people",
 "provenance": "seeded"
 },
@@ -2670,6 +3051,7 @@
 "category": "people_search",
 "confidence": 1.0,
 "host": "usphonebook.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2677,6 +3059,7 @@
 "category": "people_search",
 "confidence": 1.0,
 "host": "ussearch.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2684,6 +3067,7 @@
 "category": "news",
 "confidence": 1.0,
 "host": "venturebeat.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2691,6 +3075,7 @@
 "category": "people_search",
 "confidence": 1.0,
 "host": "veripages.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2698,6 +3083,7 @@
 "category": "video",
 "confidence": 1.0,
 "host": "vimeo.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2705,6 +3091,7 @@
 "category": "review_site",
 "confidence": 1.0,
 "host": "vitals.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2712,6 +3099,7 @@
 "category": "people_search",
 "confidence": 1.0,
 "host": "voterrecords.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2719,6 +3107,7 @@
 "category": "news",
 "confidence": 1.0,
 "host": "vox.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2726,6 +3115,7 @@
 "category": "marketplace",
 "confidence": 1.0,
 "host": "walmart.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2733,6 +3123,7 @@
 "category": "store_page",
 "confidence": 1.0,
 "host": "walmart.com",
+"label": "",
 "path_pattern": "^walmart\\.com/seller/",
 "provenance": "seeded"
 },
@@ -2740,6 +3131,7 @@
 "category": "news",
 "confidence": 1.0,
 "host": "washingtonpost.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2747,6 +3139,7 @@
 "category": "job_board",
 "confidence": 1.0,
 "host": "wayup.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2754,6 +3147,7 @@
 "category": "directory",
 "confidence": 1.0,
 "host": "wellfound.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2761,6 +3155,7 @@
 "category": "job_board",
 "confidence": 1.0,
 "host": "wellfound.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2768,6 +3163,7 @@
 "category": "people_search",
 "confidence": 1.0,
 "host": "whitepages.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2775,6 +3171,7 @@
 "category": "reference",
 "confidence": 1.0,
 "host": "wikidata.org",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2782,6 +3179,7 @@
 "category": "reference",
 "confidence": 1.0,
 "host": "wikipedia.org",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2789,6 +3187,7 @@
 "category": "news",
 "confidence": 1.0,
 "host": "wired.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2796,6 +3195,7 @@
 "category": "data_broker",
 "confidence": 1.0,
 "host": "wiza.co",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2803,6 +3203,7 @@
 "category": "blog_platform",
 "confidence": 1.0,
 "host": "wordpress.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2810,6 +3211,7 @@
 "category": "job_board",
 "confidence": 1.0,
 "host": "workable.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2817,6 +3219,7 @@
 "category": "news",
 "confidence": 1.0,
 "host": "wsj.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2824,6 +3227,7 @@
 "category": "social",
 "confidence": 1.0,
 "host": "x.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2831,6 +3235,7 @@
 "category": "aggregator",
 "confidence": 1.0,
 "host": "yahoo.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2838,6 +3243,7 @@
 "category": "review_site",
 "confidence": 1.0,
 "host": "yellowbot.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2845,6 +3251,7 @@
 "category": "directory",
 "confidence": 1.0,
 "host": "yellowpages.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2852,6 +3259,7 @@
 "category": "location_page",
 "confidence": 1.0,
 "host": "yellowpages.com",
+"label": "",
 "path_pattern": "^yellowpages\\.com/",
 "provenance": "seeded"
 },
@@ -2859,6 +3267,7 @@
 "category": "review_site",
 "confidence": 1.0,
 "host": "yelp.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2866,6 +3275,7 @@
 "category": "location_page",
 "confidence": 1.0,
 "host": "yelp.com",
+"label": "",
 "path_pattern": "^yelp\\.com/biz/",
 "provenance": "seeded"
 },
@@ -2873,6 +3283,7 @@
 "category": "video",
 "confidence": 1.0,
 "host": "youtu.be",
+"label": "",
 "path_pattern": "^youtu\\.be/",
 "provenance": "seeded"
 },
@@ -2880,6 +3291,7 @@
 "category": "social",
 "confidence": 1.0,
 "host": "youtube.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2887,6 +3299,7 @@
 "category": "video",
 "confidence": 1.0,
 "host": "youtube.com",
+"label": "",
 "path_pattern": "^youtube\\.com/watch",
 "provenance": "seeded"
 },
@@ -2894,6 +3307,7 @@
 "category": "people_search",
 "confidence": 1.0,
 "host": "zabasearch.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2901,6 +3315,7 @@
 "category": "real_estate",
 "confidence": 1.0,
 "host": "zillow.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2908,6 +3323,7 @@
 "category": "job_board",
 "confidence": 1.0,
 "host": "ziprecruiter.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2915,6 +3331,7 @@
 "category": "review_site",
 "confidence": 1.0,
 "host": "zocdoc.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 },
@@ -2922,6 +3339,7 @@
 "category": "data_broker",
 "confidence": 1.0,
 "host": "zoominfo.com",
+"label": "",
 "path_pattern": "",
 "provenance": "seeded"
 }

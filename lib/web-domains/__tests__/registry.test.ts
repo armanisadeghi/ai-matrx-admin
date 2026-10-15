@@ -9,12 +9,13 @@ import { webAnswerObservations } from "@/features/marketing/smart-add/learnDomai
 import type { BrandRelationKind } from "@/features/marketing/data/service";
 import raw from "./snapshot.fixture.json";
 
-const RULES: KnownDomainRule[] = (raw as { host: string; path_pattern: string; category: string; provenance: string; confidence: number }[]).map((r) => ({
+const RULES: KnownDomainRule[] = (raw as { host: string; path_pattern: string; category: string; provenance: string; confidence: number; label?: string }[]).map((r) => ({
   host: r.host,
   pathPattern: r.path_pattern,
   category: r.category,
   provenance: r.provenance as KnownDomainRule["provenance"],
   confidence: r.confidence,
+  label: r.label ?? "",
 }));
 
 const kind = (key: string, categories: string[]): BrandRelationKind => ({

@@ -6,6 +6,7 @@
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import fixture from "./snapshot.fixture.json";
+import { linkInBioService } from "@/features/marketing/lib/link-in-bio";
 import packaged from "../link-in-bio.packaged.json";
 
 type Rule = { host: string; path_pattern: string; category: string; provenance: string; confidence: number };
@@ -15,6 +16,14 @@ const linkRules = (rows: Rule[]) =>
 describe("link_in_bio registry copies", () => {
   it("the packaged frontend rules equal the registry export's link_in_bio rules", () => {
     expect(linkRules(packaged as Rule[])).toEqual(linkRules(fixture as Rule[]));
+  });
+
+  it("every link_in_bio rule has a display label, and the link page shows it instead of the host", () => {
+    const rules = linkRules(packaged as Rule[]) as (Rule & { label?: string })[];
+    expect(rules.filter((r) => !r.label)).toEqual([]);
+    expect(linkInBioService("https://linktr.ee/x")?.name).toBe("Linktree");
+    expect(linkInBioService("https://hopp.co/x")?.name).toBe("Hopp by Wix");
+    expect(linkInBioService("https://stan.store/x")?.name).toBe("Stan Store");
   });
 
   const aidreamDir = join(__dirname, "../../../../aidream/aidream");
