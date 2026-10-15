@@ -40,7 +40,7 @@ import { profileAvatarDoor } from "@/features/marketing/social/server";
 import type { SocialPlatform } from "@/features/marketing/social/types";
 import { linkInBioService } from "@/features/marketing/lib/link-in-bio";
 import { emailIn } from "./emailInput";
-import { personExtraPrefill } from "./personPrefill";
+import { personExtraPrefill, profileLinkIn } from "./personPrefill";
 import { useFediverseHost } from "./useFediverseHost";
 import { customItem, websiteHost, type EvidenceItem } from "./evidence";
 import type { RoundView } from "./SmartAddRound";
@@ -277,8 +277,7 @@ export function SmartAddHero({
         setAskedClue(true);
         return;
       }
-      onFindPerson(name.trim(), city.trim(), { occupation: occupation.trim(), company: company.trim(), extra: extra.trim() });
-      setSubmitted(true);
+      findPerson({ occupation: occupation.trim(), company: company.trim(), extra: extra.trim() });
       return;
     }
     if (mode === "name") {
@@ -295,6 +294,18 @@ export function SmartAddHero({
     onSocial(socialOkFor(pk) ? social.trim() : bioLink ?? "");
     onPick(pk);
     onStarted?.();
+    setSubmitted(true);
+  };
+  /** The person name way in. A profile or link-in-bio link typed in ANY Person box (MKT-110) is also the
+   *  social source: it rides `social=` and its own round reads it, beside the "Which of these is you?" round. */
+  const findPerson = (more: { occupation: string; company: string; extra: string }) => {
+    if (!onFindPerson) return;
+    onFindPerson(name.trim(), city.trim(), more);
+    const link = profileLinkIn(name, city, occupation, company, extra);
+    if (link) {
+      setSocial(link);
+      onSocial(link);
+    }
     setSubmitted(true);
   };
   const held = useRef(false);
@@ -520,8 +531,7 @@ export function SmartAddHero({
                                 type="button"
                                 className="shrink-0 text-sm font-medium text-primary hover:underline"
                                 onClick={() => {
-                                  onFindPerson?.(name.trim(), city.trim(), { occupation: "", company: "", extra: extra.trim() });
-                                  setSubmitted(true);
+                                  findPerson({ occupation: "", company: "", extra: extra.trim() });
                                 }}
                               >
                                 Search anyway
