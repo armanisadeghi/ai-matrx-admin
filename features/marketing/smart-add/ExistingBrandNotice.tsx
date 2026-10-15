@@ -7,6 +7,7 @@
  * (`position: absolute`), so it never pushes the page.
  */
 import { ExternalLink } from "lucide-react";
+import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { Button } from "@ai-matrx/design-system/controls";
 import { marketingRoutes } from "@/features/marketing/lib/routes";
 import { marketingSeg } from "@/features/marketing/lib/keys";
@@ -32,7 +33,7 @@ export function ExistingBrandNotice({
   if (!matches.length) {
     return error ? (
       <p role="status" className={`absolute inset-x-0 ${place} text-center text-xs text-muted-foreground`} data-testid="existing-brand-check-failed">
-        Couldn&apos;t check your brands
+        Couldn&apos;t check your brands <ErrorAlchemyMenu error={error} operation="Check for an existing brand" />
       </p>
     ) : null;
   }

@@ -76,8 +76,11 @@ Tests: `__tests__/entryOutcome.test.ts` (state machine, inference, copy budgets,
 
 Checked while the entry is typed (before any search is paid for; Go holds until the person answers) and again from the round's confirmed site, accounts and name. A brand the person can see in any organization matches on the same site domain, the same account (platform + handle), or the same normalized name with a shared city or domain name; a name of only common words never matches. One notice (`ExistingBrandNotice`, laid over the space under the entry row and above the Create bar, never moving the page): Open it, Add what's new to it (enrich, carrying the typed or confirmed website and account in `?website=&social=&platform=`), Create a separate brand. Create asks once with the canonical confirm when a match is unanswered. Reads: `brandMatchLive.ts` (four narrow queries under row security, then one for the matched brands).
 
+Each listed brand carries a detail line (organization, site, account count, created date) so same-name brands read apart. The rules are feature knobs `smart_add.brand_match.generic_words`, `.shared_hosts`, `.name_min_length`, `.candidate_limit` (organization-overridable; a missing knob raises, no fallback list). The Create step is `createGate.ts`.
+
 ## Change Log
 
+- 2026-10-14 — Duplicate check: detail line per brand, rules moved to feature knobs, Create step extracted and tested.
 - 2026-10-14 — Duplicate-brand detection: brandMatch, notice at entry and above Create, enrich carry.
 - 2026-10-14 — Honest endings: entry outcomes (server + inferred), up-front URL/handle checks, quiet-time "Still working…" with Stop / Start over, Edit truly restarts, browser Back returns to the entry, Start over with a confirm when work would be lost.
 
