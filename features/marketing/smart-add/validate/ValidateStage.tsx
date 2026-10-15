@@ -380,7 +380,7 @@ function FocusCard({
   const keys = useMediaQuery("(pointer: fine)");
   return (
     <div
-      className="flex h-full flex-col gap-6 rounded-3xl border border-border bg-card p-6 shadow-[0_1px_2px_rgb(0_0_0/0.04),0_18px_48px_-20px_rgb(0_0_0/0.28)] sm:p-8"
+      className="flex h-full flex-col gap-6 rounded-3xl border border-border bg-card p-4 shadow-[0_1px_2px_rgb(0_0_0/0.04),0_18px_48px_-20px_rgb(0_0_0/0.28)] sm:p-8"
       data-testid="validate-focus"
       data-key={item.key}
       data-kind={item.kind}
@@ -426,6 +426,7 @@ function FocusCard({
       <div className="flex flex-wrap items-center gap-2">
         <DecisionControl
           aria-label="Answer"
+          size="stage"
           value={null}
           shortcuts={keys ? KEY : undefined}
           suggested={glow(yes) ? "yes" : glow(no) ? "no" : glowOther ? "other" : null}
@@ -608,7 +609,7 @@ export function ValidateStage({
     <MotionConfig reducedMotion="user">
       <LayoutGroup>
         <div className="grid min-h-full lg:grid-cols-[minmax(0,1fr)_20rem]" data-testid="smart-add-validate">
-          <div ref={stageRef} className="flex flex-col items-center px-4 pt-[calc(var(--shell-header-h,0px)+1.5rem)] pb-28 lg:pb-10">
+          <div ref={stageRef} className="flex flex-col items-center px-3 pt-[calc(var(--shell-header-h,0px)+1.5rem)] pb-28 sm:px-4 lg:pb-10">
             <header className="flex w-full max-w-[40rem] items-center gap-3">
               {brandLogo ? <img src={brandLogo} alt="" className="size-7 shrink-0 rounded-md object-contain" /> : null}
               <span className="truncate text-base font-semibold">{brandName}</span>
