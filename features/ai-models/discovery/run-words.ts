@@ -10,6 +10,8 @@ export interface RunWords {
   reason: string | null;
   correctedBy: string | null;
   isCorrection: boolean;
+  /** A correction row whose corrected run is listed: its words show inside that run, so the row itself is not drawn. */
+  hideRow: boolean;
 }
 
 function str(v: unknown): string | null {
@@ -44,7 +46,35 @@ export function describeRun(run: VerificationRun, all: VerificationRun[]): RunWo
       ? (str(correction.measured?.reason)?.replace(/^correction:\s*/i, "") || null) ?? "a later row corrected this run"
       : null,
     isCorrection,
+    hideRow: isCorrection && targetShown,
   };
+}
+
+const ISO_UTC = /\b\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})/g;
+
+/** Replace any raw ISO timestamp inside a server sentence with the viewer's local time. */
+export function localizeTimes(text: string, when: (iso: string) => string): string {
+  return text.replace(ISO_UTC, (iso) => when(iso));
+}
+
+/**
+ * What the Run test click says. A request that is already waiting or running is already told by the
+ * variant's own request line, so the click adds nothing (said once); every other answer is shown with
+ * its times in local words.
+ */
+export function describeTestClick(
+  res: { status: string; detail?: string },
+  requestLineShown: boolean,
+  when: (iso: string) => string,
+): string | null {
+  const already = res.status === "already_running" || res.status === "already_queued";
+  if (already && requestLineShown) return null;
+  const text = res.detail
+    ? localizeTimes(res.detail, when)
+    : already
+      ? "A test for this variant is already waiting or running"
+      : "Test requested";
+  return text;
 }
 
 /** "x86_cpu verified · linux/x86_64 b9076" — one compat row with the build it is about. */

@@ -116,3 +116,24 @@ describe("promoteBlockedBecause — Promote is offered only when the server woul
     expect(promoteBlockedBecause(amb, new Set(["q8_0"]))).toBeNull();
   });
 });
+
+import { describeTestClick, localizeTimes } from "../run-words";
+
+describe("polish P1", () => {
+  const when = (iso: string) => `LOCAL(${iso.slice(0, 10)})`;
+  it("shows the viewer's local time instead of a raw ISO stamp, and says an already-shown request once", () => {
+    const res = { status: "already_queued", detail: "A test for this variant is already queued since 2026-10-15T22:36:41.222068+00:00." };
+    expect(localizeTimes(res.detail, when)).toBe("A test for this variant is already queued since LOCAL(2026-10-15).");
+    expect(describeTestClick(res, true, when)).toBeNull();
+    expect(describeTestClick(res, false, when)).toBe("A test for this variant is already queued since LOCAL(2026-10-15).");
+    expect(describeTestClick({ status: "queued", detail: "Queued at 2026-10-15T22:36:41Z" }, true, when)).toBe("Queued at LOCAL(2026-10-15)");
+  });
+
+  it("a correction row is not drawn on its own when the run it corrects is listed", () => {
+    const run = { ...base };
+    const fix: VerificationRun = { ...base, id: "9571c97c", result: "error", measured: { kind: "correction", corrects_run_id: "b66809d0", reason: "Correction: x." } };
+    expect(describeRun(fix, [run, fix]).hideRow).toBe(true);
+    expect(describeRun(run, [run, fix]).hideRow).toBe(false);
+    expect(describeRun(fix, [fix]).hideRow).toBe(false);
+  });
+});

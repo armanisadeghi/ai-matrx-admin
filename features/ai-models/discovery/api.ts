@@ -104,6 +104,20 @@ export interface PromotePicks {
   tags?: string[] | null;
   offer?: boolean;
   offer_without_test_run?: boolean;
+  /** Only sent when the admin changed them; omitted = promote's automatic choice. */
+  page?: string;
+  shelf?: string;
+  shelf_title?: string;
+}
+
+export interface Placement {
+  page: string;
+  shelf: string;
+  shelf_title: string;
+}
+
+export interface PlacementDefault extends Placement {
+  spec_pages: string[];
 }
 
 export interface PromoteResult {
@@ -153,6 +167,14 @@ export const discoveryApi = {
     post<Candidate>(auth, `/admin/ai-catalog/discovery/candidates/${candidateId}/dismiss`, {
       reason,
     }),
+  defaultPlacement: (auth: CallAuth, caps: { input: string[]; output: string[] }) =>
+    post<PlacementDefault>(auth, "/admin/ai-catalog/discovery/placement", caps),
+  movePlacement: (auth: CallAuth, modelId: string, to: Placement) =>
+    post<Placement & { model_id: string; words: string }>(
+      auth,
+      `/admin/ai-catalog/discovery/models/${modelId}/placement`,
+      to as unknown as Record<string, unknown>,
+    ),
   test: (auth: CallAuth, variantId: string) =>
     post<{ status: string; detail: string }>(
       auth,
@@ -280,6 +302,30 @@ export async function loadPromoted(modelId: string): Promise<{
     runs: (runsRes.data ?? []) as VerificationRun[],
     compat,
     inPublic: Boolean(publicRes.data),
+  };
+}
+
+/** Every Models page / shelf already in use (distinct, live rows), and optionally one model's current placement. */
+export async function loadPlacements(
+  modelId?: string,
+): Promise<{ inUse: Placement[]; current: Placement | null }> {
+  const { data, error } = await supabase
+    .schema("ai")
+    .from("model_presentation")
+    .select("model_id, page, shelf, shelf_title")
+    .is("deleted_at", null)
+    .not("page", "is", null)
+    .limit(2000);
+  if (error) throw error;
+  const rows = (data ?? []) as unknown as (Placement & { model_id: string })[];
+  const seen = new Map<string, Placement>();
+  for (const r of rows) {
+    if (r.page && r.shelf) seen.set(`${r.page}|${r.shelf}`, { page: r.page, shelf: r.shelf, shelf_title: r.shelf_title });
+  }
+  const mine = modelId ? rows.find((r) => r.model_id === modelId) : undefined;
+  return {
+    inUse: [...seen.values()],
+    current: mine ? { page: mine.page, shelf: mine.shelf, shelf_title: mine.shelf_title } : null,
   };
 }
 

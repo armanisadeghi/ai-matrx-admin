@@ -42,10 +42,20 @@ import {
   discoveryApi,
   listCandidates,
   listMakers,
+  type Placement,
+  loadPlacements,
   loadPromoted,
   testedLabel,
 } from "./api";
-import { compatLabel, describeRun, describeTestRequest, promoteBlockedBecause } from "./run-words";
+import { ImagePicker, PlacementFields, TagsField } from "./parts";
+import { placementWords, samePlacement } from "./placement";
+import {
+  compatLabel,
+  describeRun,
+  describeTestClick,
+  describeTestRequest,
+  promoteBlockedBecause,
+} from "./run-words";
 
 const TEST_POLL_SECONDS_KNOB = { feature: "ai.models", key: "test_poll_seconds" } as const;
 const TEST_POLL_COUNT_KNOB = { feature: "ai.models", key: "test_poll_count" } as const;
@@ -56,6 +66,8 @@ const USE_LABEL: Record<string, string> = {
   audio_in: "Audio",
   voices: "Voices",
 };
+
+const localTime = (iso: string) => new Date(iso).toLocaleString();
 
 function short(sha: string | null): string {
   return sha ? `${sha.slice(0, 12)}…` : "none";
@@ -71,6 +83,45 @@ function useAuth(): CallAuth {
     baseUrl: useAppSelector(selectResolvedBaseUrl) ?? null,
     organizationId: useServerOrganizationId(),
   };
+}
+
+/** The choices for page/shelf: the server's automatic choice for these capabilities, the spec pages, and what is in use. */
+function usePlacementChoices(auth: CallAuth, caps: { input: string[]; output: string[] } | null, modelId: string | null) {
+  const [state, setState] = useState<{
+    automatic: Placement | null;
+    specPages: string[];
+    inUse: Placement[];
+    current: Placement | null;
+    error: string | null;
+  }>({ automatic: null, specPages: [], inUse: [], current: null, error: null });
+  const capsKey = JSON.stringify(caps);
+  const { baseUrl, accessToken, organizationId } = auth;
+  useEffect(() => {
+    let alive = true;
+    const a: CallAuth = { baseUrl, accessToken, organizationId };
+    (async () => {
+      try {
+        const [def, placed] = await Promise.all([
+          caps ? discoveryApi.defaultPlacement(a, caps) : Promise.resolve(null),
+          loadPlacements(modelId ?? undefined),
+        ]);
+        if (!alive) return;
+        setState({
+          automatic: def ? { page: def.page, shelf: def.shelf, shelf_title: def.shelf_title } : null,
+          specPages: def?.spec_pages ?? [],
+          inUse: placed.inUse,
+          current: placed.current,
+          error: null,
+        });
+      } catch (err) {
+        if (alive) setState((p) => ({ ...p, error: extractErrorMessage(err) }));
+      }
+    })();
+    return () => {
+      alive = false;
+    };
+  }, [capsKey, modelId, baseUrl, accessToken, organizationId]);
+  return state;
 }
 
 export default function DiscoveryContainer() {
@@ -204,7 +255,7 @@ function CandidateDetail({
   const s = candidate.suggested;
   const variants = s.variants ?? [];
   const ambiguities = s.ambiguities ?? [];
-  const images = (s.media ?? []).filter((m) => m.kind === "image" && m.file_id);
+  const images = (s.media ?? []).filter((m) => m.kind === "image" && m.file_id && m.cdn_url);
   const logo = (s.media ?? []).find((m) => m.kind === "maker_logo");
   const [chosen, setChosen] = useState<Set<string>>(
     () => new Set(variants.filter((v) => !v.ambiguous).map((v) => v.key)),
@@ -223,6 +274,9 @@ function CandidateDetail({
   const [makers, setMakers] = useState<{ id: string; name: string; slug: string | null }[]>([]);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null);
+  const choices = usePlacementChoices(auth, s.capabilities ?? null, null);
+  const [pickedPlacement, setPickedPlacement] = useState<Placement | null>(null);
+  const placement = pickedPlacement ?? choices.automatic;
 
   useEffect(() => {
     void listMakers()
@@ -248,12 +302,16 @@ function CandidateDetail({
         gallery_file_ids: [...gallery].filter((id) => id !== hero),
         offer,
         offer_without_test_run: withoutTest,
+        // Only a changed placement is sent; otherwise promote chooses by itself.
+        ...(placement && choices.automatic && !samePlacement(placement, choices.automatic) ? placement : {}),
       });
       setMessage({
         ok: true,
         text: `Promoted ${result.model_name}: ${result.variants
           .map((v) => `${v.key} ${v.review_state}, files ${v.file_check}`)
-          .join("; ")}${result.notes?.length ? `. ${result.notes.join(" ")}` : ""}`,
+          .join("; ")}${result.notes?.length ? `. ${result.notes.join(" ")}` : ""}${
+          placement ? `. ${placementWords(placement)}` : ""
+        }`,
       });
       await onChanged();
     } catch (err) {
@@ -310,7 +368,7 @@ function CandidateDetail({
         </section>
       ) : null}
 
-      {candidate.model_id ? <PromotedPanel modelId={candidate.model_id} auth={auth} /> : null}
+      {candidate.model_id ? <PromotedPanel modelId={candidate.model_id} auth={auth} caps={s.capabilities ?? null} /> : null}
 
       <section className="space-y-2">
         <h3 className="text-sm font-semibold text-foreground">Variants</h3>
@@ -378,54 +436,24 @@ function CandidateDetail({
               </p>
             </>
           ) : null}
-          <span className="text-muted-foreground">Tags</span>
-          <Input aria-label="Tags" value={tags} onChange={(e) => setTags(e.target.value)} />
+          <TagsField value={tags} onChange={setTags} />
         </div>
         <div>
-          <p className="mb-2 text-xs text-muted-foreground">
-            Images are copied into our file storage. Pick the main image and which others to keep.
-          </p>
-          {images.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No images on the model card; the maker logo shows instead</p>
-          ) : null}
-          <div className="flex flex-wrap gap-3">
-            {images.map((m) => (
-              <figure key={m.file_id} className="w-36 space-y-1">
-                <img
-                  src={m.cdn_url ?? ""}
-                  alt={m.alt}
-                  className={cn(
-                    "h-24 w-36 rounded-md border object-cover",
-                    hero === m.file_id ? "border-primary" : "border-border",
-                  )}
-                />
-                <label className="flex items-center gap-1 text-xs">
-                  <input
-                    type="radio"
-                    name={`hero-${candidate.id}`}
-                    checked={hero === m.file_id}
-                    onChange={() => setHero(m.file_id)}
-                  />
-                  Main image
-                </label>
-                <label className="flex items-center gap-1 text-xs">
-                  <Checkbox
-                    checked={gallery.has(m.file_id as string) || hero === m.file_id}
-                    disabled={hero === m.file_id}
-                    onCheckedChange={(on) =>
-                      setGallery((prev) => {
-                        const next = new Set(prev);
-                        if (on) next.add(m.file_id as string);
-                        else next.delete(m.file_id as string);
-                        return next;
-                      })
-                    }
-                  />
-                  Keep
-                </label>
-              </figure>
-            ))}
-          </div>
+          <ImagePicker
+            candidateId={candidate.id}
+            media={s.media ?? []}
+            hero={hero}
+            gallery={gallery}
+            onHero={setHero}
+            onGallery={(id, on) =>
+              setGallery((prev) => {
+                const next = new Set(prev);
+                if (on) next.add(id);
+                else next.delete(id);
+                return next;
+              })
+            }
+          />
           {(s.media ?? []).filter((m) => m.error).map((m) => (
             <ErrorNotice
               key={m.source_url}
@@ -434,6 +462,23 @@ function CandidateDetail({
             />
           ))}
         </div>
+      </section>
+
+      <section className="space-y-2" aria-label="Where it shows">
+        <h3 className="text-sm font-semibold text-foreground">Where it shows on the Models page</h3>
+        {choices.error ? <ErrorNotice message={choices.error} size="inline" /> : null}
+        {placement ? (
+          <PlacementFields
+            value={placement}
+            automatic={choices.automatic}
+            inUse={choices.inUse}
+            specPages={choices.specPages}
+            onChange={setPickedPlacement}
+            onUseAutomatic={() => setPickedPlacement(null)}
+          />
+        ) : choices.error ? null : (
+          <p className="text-sm text-muted-foreground">Working out the automatic page and shelf…</p>
+        )}
       </section>
 
       {(s.notes ?? []).length ? (
@@ -539,7 +584,73 @@ function VariantCard({
   );
 }
 
-function PromotedPanel({ modelId, auth }: { modelId: string; auth: CallAuth }) {
+/** A promoted model's page/shelf: shown in words, changeable, saved through the server (ai.model_presentation). */
+function PromotedPlacement({
+  modelId,
+  auth,
+  caps,
+}: {
+  modelId: string;
+  auth: CallAuth;
+  caps: { input: string[]; output: string[] } | null;
+}) {
+  const [saved, setSaved] = useState<Placement | null>(null);
+  const choices = usePlacementChoices(auth, caps, `${modelId}`);
+  const [draft, setDraft] = useState<Placement | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [result, setResult] = useState<{ ok: boolean; text: string } | null>(null);
+  const shown = draft ?? saved ?? choices.current ?? choices.automatic;
+  const save = async () => {
+    if (!shown) return;
+    setSaving(true);
+    setResult(null);
+    try {
+      const res = await discoveryApi.movePlacement(auth, modelId, shown);
+      setResult({ ok: true, text: res.words || placementWords(res) });
+      setSaved({ page: res.page, shelf: res.shelf, shelf_title: res.shelf_title });
+      setDraft(null);
+    } catch (err) {
+      setResult({ ok: false, text: extractErrorMessage(err) });
+    } finally {
+      setSaving(false);
+    }
+  };
+  if (choices.error && !shown) return <ErrorNotice message={choices.error} size="inline" />;
+  if (!shown) return <p className="text-xs text-muted-foreground">Reading where it shows…</p>;
+  const current = saved ?? choices.current;
+  return (
+    <div className="space-y-2 border-t border-border pt-2" aria-label="Where it shows on the Models page">
+      <h4 className="text-xs font-semibold text-foreground">Where it shows on the Models page</h4>
+      <p className="text-xs text-muted-foreground">
+        {current ? placementWords(current) : "No page or shelf is saved for this model yet."}
+      </p>
+      <PlacementFields
+        value={shown}
+        automatic={choices.automatic}
+        inUse={choices.inUse}
+        specPages={choices.specPages}
+        onChange={setDraft}
+        onUseAutomatic={() => setDraft(choices.automatic)}
+        saveLabel="Save page and shelf"
+        onSave={() => void save()}
+        saving={saving}
+      />
+      {result ? (
+        result.ok ? <p className="text-xs text-foreground">{result.text}</p> : <ErrorNotice message={result.text} size="compact" />
+      ) : null}
+    </div>
+  );
+}
+
+function PromotedPanel({
+  modelId,
+  auth,
+  caps,
+}: {
+  modelId: string;
+  auth: CallAuth;
+  caps: { input: string[]; output: string[] } | null;
+}) {
   const [state, setState] = useState<{
     variants: PromotedVariant[];
     runs: VerificationRun[];
@@ -591,14 +702,12 @@ function PromotedPanel({ modelId, auth }: { modelId: string; auth: CallAuth }) {
     setTestMessage(null);
     try {
       const res = await discoveryApi.test(auth, variantId);
-      setTestMessage(
-        res.detail ||
-          (res.status === "already_running" || res.status === "already_queued"
-            ? "A test for this variant is already waiting or running"
-            : "Test requested"),
+      const shown = Boolean(
+        describeTestRequest(state?.variants.find((v) => v.id === variantId)?.metadata?.test_request, localTime),
       );
+      setTestMessage(describeTestClick(res, shown, localTime));
       if (typeof pollCount === "number") setWatchTicks(pollCount);
-      else setTestMessage((m) => `${m ?? ""} The page cannot watch for the result (refresh settings not loaded); reload to see it.`);
+      else setTestMessage((m) => `${m ?? ""} The page cannot watch for the result (refresh settings not loaded); reload to see it.`.trim());
       await load();
     } catch (err) {
       setTestMessage(extractErrorMessage(err));
@@ -651,7 +760,7 @@ function PromotedPanel({ modelId, auth }: { modelId: string; auth: CallAuth }) {
               {compat.length ? compat.map(compatLabel).join(" · ") : "none recorded"}
             </div>
             {(() => {
-              const line = describeTestRequest(v.metadata?.test_request, (iso) => new Date(iso).toLocaleString());
+              const line = describeTestRequest(v.metadata?.test_request, localTime);
               if (!line) return null;
               if (line.tone === "error")
                 return <ErrorNotice title="Queued test not run" message={line.text} size="compact" />;
@@ -663,6 +772,7 @@ function PromotedPanel({ modelId, auth }: { modelId: string; auth: CallAuth }) {
             })()}
             {runs.map((r) => {
               const w = describeRun(r, runs);
+              if (w.hideRow) return null; // said once, inside the run it corrects
               return (
                 <div key={r.id} className="text-xs text-muted-foreground">
                   <span className={r.result === "fail" && !w.correctedBy ? "text-destructive" : undefined}>
@@ -678,6 +788,7 @@ function PromotedPanel({ modelId, auth }: { modelId: string; auth: CallAuth }) {
         );
       })}
       {testMessage ? <p className="text-xs text-foreground">{testMessage}</p> : null}
+      <PromotedPlacement modelId={modelId} auth={auth} caps={caps} />
     </section>
   );
 }
