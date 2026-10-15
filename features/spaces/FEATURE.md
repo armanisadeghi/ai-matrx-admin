@@ -45,6 +45,16 @@ Block document: a tree of `SpaceBlock` (`id`, `type`, `text: RichSpan[]`, `color
 
 ## Change log
 
+- 2026-10-14 — Tiered breadcrumb (lane TIERED-NAV, Notion's breadcrumb menu). The topbar crumbs are the one shared
+  `components/official/tiered-breadcrumb` primitive (`nav/tiered-crumbs.tsx`): a segment opens "Other pages in <parent>"
+  (5, then "N more" → search; from the sidebar tree, no read); hovering a page reads it once and lists its database
+  blocks (`nav/page-databases.tsx`, nested too); hovering a database lists its views. A database row opens
+  `/spaces/<page>#block-<id>`; a view row adds `?view=<viewId>`, which `data/url-view.ts` turns into that block's
+  showing view for this viewer until the database is edited (nothing written). Phone = bottom sheet, drill in.
+  View layout icons moved to `data/view-icons.tsx`. Tests: `nav/__tests__/page-databases.test.ts`,
+  `components/official/tiered-breadcrumb/__tests__/tiered-breadcrumb.test.tsx`. The custom-table record page uses the
+  same primitive. Gap (not built): a row page holding linked views filtered to "this row", made by a row template.
+
 - 2026-10-09 — Board templates share this mechanism (SI-13). `state/templates.ts` helpers take a source type
   (`listTemplateIds(source = "document")`, `setTemplate(id, on, source)`; `"board"` uses the `board -> category`
   `labeled` association registered live the same day); `sidebar/TemplateGalleryShell.tsx` is the one gallery frame

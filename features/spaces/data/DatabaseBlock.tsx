@@ -60,6 +60,7 @@ import { effectiveHidden, kindOf, scalarFilters, viewSpec, type ViewWithSummarie
 import { BlockRecordsSeed } from "../page/space-seed-context";
 import { NewPropertyPanel } from "./NewProperty";
 import { LAYOUTS, viewIcon, type Layout } from "./view-icons";
+import { useUrlView } from "./url-view";
 import { useStructureEdit } from "../page/structure";
 import { AGENCY_SAMPLE_ID, newViewId, readDatabaseProps, type ChartSettings, type DatabaseBlockProps, type SpaceDbView, type SpaceViewLayout } from "./sources";
 
@@ -70,7 +71,15 @@ export interface DatabaseBlockViewProps {
   editable: boolean;
 }
 
-export function DatabaseBlock({ blockId, props: raw, onChange, editable }: DatabaseBlockViewProps) {
+export function DatabaseBlock({ blockId, props: stored, onChange: write, editable }: DatabaseBlockViewProps) {
+  // A link to this block with a view (the tiered breadcrumb) shows that view until the database is edited.
+  const urlView = useUrlView(blockId);
+  const named = urlView.viewId && Array.isArray(stored.views) && stored.views.some((v) => (v as { id?: unknown }).id === urlView.viewId);
+  const raw = named ? { ...stored, activeViewId: urlView.viewId } : stored;
+  const onChange = (next: Record<string, unknown>) => {
+    urlView.drop();
+    write(next);
+  };
   const props = readDatabaseProps(raw);
   const publishedEntities = usePublishedEntities();
   if (!props) return <div className="spaces-db-frame spaces-db-note">This database has no source.</div>;

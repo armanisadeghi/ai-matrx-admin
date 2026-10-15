@@ -44,6 +44,7 @@ import type { SpacesEditor } from "../editor/schema";
 import { blockIds, planStoredMerge } from "./merge-stored";
 import { SpaceEditor } from "../editor/SpaceEditor";
 import { useSpaces } from "../state/SpacesProvider";
+import { SpacesTieredBreadcrumb } from "../nav/tiered-crumbs";
 import { Cover, CoverPicker } from "./Cover";
 import { IconPicker } from "./IconPicker";
 import { AddPropertyMenu, PageProperties } from "./PageProperties";
@@ -880,17 +881,8 @@ function SpacePageScreen({ spaceId, initialDoc }: { spaceId: string; initialDoc?
             <ChevronsRight size={18} />
           </button>
         ) : null}
-        <nav className="spaces-breadcrumb" aria-label="Breadcrumb">
-          {(path.length ? path : [doc]).map((p, i, arr) => (
-            <span key={p.id} className="flex min-w-0 items-center">
-              {i > 0 ? <span className="spaces-breadcrumb-sep">/</span> : null}
-              <Link href={`/spaces/${p.id}`} className="spaces-breadcrumb-item" data-current={i === arr.length - 1 ? "true" : undefined}>
-                {p.icon ? <SpaceIcon media={p.icon} size={16} /> : null}
-                <span className="truncate">{p.title || "Untitled"}</span>
-              </Link>
-            </span>
-          ))}
-        </nav>
+        {/* Notion's breadcrumb: a segment opens its sibling pages, a page its databases, a database its views. */}
+        <SpacesTieredBreadcrumb className="spaces-breadcrumb" path={path.length ? path : [doc]} />
         <span className="flex-1" />
         {locked ? (
           <button type="button" className="spaces-locked-pill" onClick={() => fullEdit && setSettings({ locked: false })} disabled={!fullEdit} title={fullEdit ? "Unlock page" : "Locked"}>

@@ -9,16 +9,23 @@
 
 import { useRouter } from "next/navigation";
 import { RecordPanel, RecordsSkeleton, recordNameIn } from "@ai-matrx/records-ui";
-import { useRecord, useTable } from "@ai-matrx/records/react";
+import { useRecord, useRecordsClient, useTable } from "@ai-matrx/records/react";
+import { Eye, FileText, Table2 } from "lucide-react";
+import { TieredBreadcrumb } from "@/components/official/tiered-breadcrumb/TieredBreadcrumb";
+import { recordPageHref } from "@/features/unified-data/table-page/recordPageHref";
 import RouteHeader from "@/features/shell/components/header/RouteHeader";
 import { ChevronLeftTapButton } from "@ai-matrx/design-system/tap-target/buttons";
 import { NO_ADDRESS, UnifiedTableBody, useUnifiedTable } from "@/features/unified-data/table-page/UnifiedTable";
 import { RecordPageMenu } from "@/features/unified-data/table-page/RecordPageMenu";
 
+/** One page of a table's records for the record segment's menu; its search covers what was read. */
+const RECORD_SIBLINGS_READ = 200;
+
 function RecordCrumbs({ tableId, recordId }: { tableId: string; recordId: string }) {
   const router = useRouter();
   const table = useTable(tableId);
   const record = useRecord(recordId);
+  const client = useRecordsClient();
   const tableName = table.data?.name?.trim() || "Table";
   const recordName = record.data?.document ? recordNameIn(table.data, record.data.document) : "";
   const tableHref = `/data/${encodeURIComponent(tableId)}`;
@@ -34,15 +41,55 @@ function RecordCrumbs({ tableId, recordId }: { tableId: string; recordId: string
             }}
             ariaLabel="Back"
           />
-          <nav aria-label="Breadcrumb" className="flex min-w-0 items-center gap-1 px-1.5 text-sm">
-            <a href={tableHref} className="truncate text-muted-foreground hover:text-foreground" data-record-page-table="">
-              {tableName}
-            </a>
-            <span aria-hidden="true" className="text-muted-foreground">/</span>
-            <span className="truncate font-medium text-foreground" data-record-page-title="">
-              {recordName}
-            </span>
-          </nav>
+          {/* The one tiered breadcrumb: the table opens the other tables (each with its views); the
+              record opens the other records of this table. */}
+          <TieredBreadcrumb
+            className="gap-0.5 px-1.5 text-sm"
+            emptyChildren="No views"
+            segmentClassName="inline-flex h-7 max-w-60 items-center gap-1.5 rounded px-1 text-muted-foreground hover:bg-accent hover:text-foreground data-[current=true]:font-medium data-[current=true]:text-foreground"
+            segments={[
+              {
+                id: tableId,
+                label: tableName,
+                icon: <Table2 size={14} className="text-muted-foreground" />,
+                href: tableHref,
+                siblings: async () => {
+                  const res = await client.tableList();
+                  if (!res.ok) throw new Error(res.error.message);
+                  return {
+                    heading: "Other tables",
+                    items: res.data.map((t) => ({ id: t.id, label: t.name?.trim() || "Untitled", icon: <Table2 size={15} />, href: `/data/${encodeURIComponent(t.id)}`, current: t.id === tableId })),
+                  };
+                },
+              },
+              {
+                id: recordId,
+                label: recordName,
+                href: recordPageHref(tableId, recordId),
+                siblings: async () => {
+                  const res = await client.list({ table_id: tableId, limit: RECORD_SIBLINGS_READ });
+                  if (!res.ok) throw new Error(res.error.message);
+                  return {
+                    heading: `Other records in ${tableName}`,
+                    items: res.data.rows.map((row) => ({
+                      id: row.id,
+                      label: table.data ? recordNameIn(table.data, row.document) : "Untitled",
+                      icon: <FileText size={15} />,
+                      href: recordPageHref(tableId, row.id),
+                      current: row.id === recordId,
+                      expandable: false,
+                    })),
+                  };
+                },
+              },
+            ]}
+            loadChildren={async (item) => {
+              // A table's views (tier 2 under "Other tables"), each opening the table on that view.
+              const res = await client.views({ table_id: item.id });
+              if (!res.ok) throw new Error(res.error.message);
+              return res.data.map((v) => ({ id: v.view_id, label: v.name?.trim() || "Untitled view", icon: <Eye size={15} />, href: `/data/${encodeURIComponent(item.id)}?view=${encodeURIComponent(v.view_id)}`, expandable: false }));
+            }}
+          />
         </>
       }
     />
