@@ -12,8 +12,17 @@
  *     storm.
  *   - `AbortSignal` fires on: rapid re-change (abort the in-flight write),
  *     identity swap (cancel all pending + in-flight), or pagehide cleanup.
- *   - `pagehide` flushes any pending writes synchronously-best-effort (timers
- *     cleared, pending writes invoked without the debounce tail).
+ *   - `pagehide` AND `visibilitychange` → hidden flush every write still
+ *     waiting (debounce or retry backoff) without the tail. The server leg starts FIRST, synchronously,
+ *     before the device leg is awaited, so the request leaves the page while
+ *     it can (an `await` during unload is usually the last thing that runs).
+ *   - THE UNSAVED MARKER. At that same hidden moment every `remote.write`
+ *     slice still holding a pending or in-flight write is recorded in
+ *     localStorage (`matrx:unsaved:<slice>` = { body, base }, identity +
+ *     version stamped). It is removed when that slice's write lands with
+ *     nothing newer pending. The next page booting as the same person replays
+ *     it (`replayUnsavedWrites` in boot.ts): the slice shows the edit, the
+ *     write is queued again on its old base, and no load lands over it.
  */
 
 import type { Store } from "@reduxjs/toolkit";
@@ -86,6 +95,72 @@ export function remoteWriteFailureMessage(offline: boolean): string {
         : "Couldn't save your change. We'll keep trying.";
 }
 
+// ---------------------------------------------------------------------------
+// THE UNSAVED MARKER (see the header). Written only when the page is hidden or
+// closing — never per keystroke — so it costs one synchronous localStorage
+// write per slice at the one moment a tab may die with a save outstanding.
+// ---------------------------------------------------------------------------
+
+export const UNSAVED_MARKER_PREFIX = "matrx:unsaved:";
+
+export function unsavedMarkerKey(sliceName: string): string {
+    return `${UNSAVED_MARKER_PREFIX}${sliceName}`;
+}
+
+/** The marker's envelope body: the unsaved body and the base it diffs from. */
+export interface UnsavedMarkerBody {
+    body: unknown;
+    base: unknown;
+}
+
+export function isUnsavedMarkerBody(value: unknown): value is UnsavedMarkerBody {
+    return value !== null && typeof value === "object" && "body" in value;
+}
+
+/**
+ * Remove the slice's marker — only when it is this deploy's (an older one is
+ * dead anyway; a NEWER one belongs to a tab already on the next deploy).
+ */
+function clearUnsavedMarker(policy: Policy<any>): void {
+    const key = unsavedMarkerKey(policy.config.sliceName);
+    const marker = localStorageAdapter.read(key);
+    if (marker && marker.version <= policy.config.version) localStorageAdapter.remove(key);
+}
+
+export const REPLAY_UNSAVED_ACTION_TYPE = "sync/replayUnsavedWrite";
+
+/**
+ * Engine bookkeeping dispatched by boot after it rehydrated an unsaved marker's
+ * body: the middleware hands it to the scheduler (`replayUnsaved`), which puts
+ * the marker's base back and queues the write. No reducer handles it.
+ */
+export interface ReplayUnsavedAction {
+    type: typeof REPLAY_UNSAVED_ACTION_TYPE;
+    payload: { sliceName: string; body: unknown; base: unknown };
+    meta: { fromRehydrate: true };
+    [extra: string]: unknown;
+}
+
+export function buildReplayUnsavedAction(
+    sliceName: string,
+    body: unknown,
+    base: unknown,
+): ReplayUnsavedAction {
+    return {
+        type: REPLAY_UNSAVED_ACTION_TYPE,
+        payload: { sliceName, body, base },
+        meta: { fromRehydrate: true },
+    };
+}
+
+export function isReplayUnsavedAction(action: unknown): action is ReplayUnsavedAction {
+    return (
+        action !== null &&
+        typeof action === "object" &&
+        (action as { type?: unknown }).type === REPLAY_UNSAVED_ACTION_TYPE
+    );
+}
+
 function toastNotice(): RemoteWriteFailureNotice {
     const id = (sliceName: string) => `sync-remote-write-failing:${sliceName}`;
     return {
@@ -114,6 +189,21 @@ export interface RemoteWriteScheduler {
     adoptPeerBody(sliceName: string, body: unknown): void;
     /** Flush every pending write immediately (pagehide). */
     flushAll(): Promise<void>;
+    /**
+     * The page is hidden or closing: record every outstanding `remote.write`
+     * save as an unsaved marker (synchronous), then flush every write still
+     * waiting on its debounce or retry backoff now.
+     */
+    onPageHidden(): void;
+    /**
+     * Boot found an unsaved marker for this person and showed its body: put
+     * its base back and queue the write, so the server receives only what
+     * changed. Until it lands no load may land over it
+     * (`isUnsavedReplayPending`).
+     */
+    replayUnsaved(sliceName: string, body: unknown, base: unknown): void;
+    /** True while a replayed unsaved write for the slice is still pending. */
+    isReplaying(sliceName: string): boolean;
     /** Flush one slice's pending write now; resolves once it is stored (or refused). */
     flushSlice(sliceName: string): Promise<void>;
     /** Cancel in-flight + pending on identity swap — the new identity starts clean. */
@@ -146,7 +236,11 @@ export interface CreateRemoteWriteSchedulerOptions {
     policies: readonly Policy<any>[];
     store: Store;
     getIdentity: () => IdentityKey;
-    /** Test-only override; production hooks window.addEventListener('pagehide'). */
+    /**
+     * Test-only override; production hooks window `pagehide` and document
+     * `visibilitychange` (hidden). The handler records unsaved markers and
+     * flushes.
+     */
     attachPageHide?: (flush: () => void) => () => void;
     /** Test-only default debounce override. Policy-level debounceMs still wins. */
     defaultDebounceMs?: number;
@@ -195,6 +289,19 @@ export function isRemoteWritePending(sliceName: string): boolean {
     return false;
 }
 
+/**
+ * True while an unsaved edit a closed page left behind is being saved again
+ * here. Unlike an ordinary pending write, this one makes even a COLD-BOOT
+ * load wait: the slice already shows the edit, and the server's record is
+ * older than it.
+ */
+export function isUnsavedReplayPending(sliceName: string): boolean {
+    for (const scheduler of liveSchedulers) {
+        if (scheduler.hasPending(sliceName) && scheduler.isReplaying(sliceName)) return true;
+    }
+    return false;
+}
+
 export function createRemoteWriteScheduler(
     opts: CreateRemoteWriteSchedulerOptions,
 ): RemoteWriteScheduler {
@@ -227,6 +334,24 @@ export function createRemoteWriteScheduler(
     };
     /** The body the server holds, per slice — see `WriteContext.base`. */
     const baseBySlice = new Map<string, unknown>();
+    /** Slices whose pending write replays an unsaved marker from a closed page. */
+    const replaying = new Set<string>();
+
+    /** `policy.persistWhen` on the live slice; a throwing predicate is "not ready". */
+    function persistGateOpen(policy: Policy<any>): boolean {
+        const persistWhen = policy.config.persistWhen;
+        if (typeof persistWhen !== "function") return true;
+        try {
+            const live = (store.getState() as Record<string, unknown>)[policy.config.sliceName];
+            return persistWhen(live) === true;
+        } catch (err) {
+            logger.error("persist.gate.threw", {
+                sliceName: policy.config.sliceName,
+                meta: { error: extractErrorMessage(err) },
+            });
+            return false;
+        }
+    }
 
     async function flushOne(sliceName: string): Promise<void> {
         const record = pending.get(sliceName);
@@ -253,19 +378,8 @@ export function createRemoteWriteScheduler(
         // programmatic flush — lands here, so this is the one place a slice
         // that is not ready (its saved record has not loaded) is refused.
         // The body is HELD, never written; the next schedule replaces it.
-        const persistWhen = policy.config.persistWhen;
-        if (typeof persistWhen === "function") {
-            let ready = false;
-            try {
-                const live = (store.getState() as Record<string, unknown>)[sliceName];
-                ready = persistWhen(live) === true;
-            } catch (err) {
-                logger.error("persist.gate.threw", {
-                    sliceName,
-                    meta: { error: extractErrorMessage(err) },
-                });
-            }
-            if (!ready) {
+        if (typeof policy.config.persistWhen === "function") {
+            if (!persistGateOpen(policy)) {
                 // DROP the body — never keep it for a later flush (a pagehide
                 // after the load would write this pre-load body, defaults and
                 // all). The slice holds the edits itself and asks for one save
@@ -273,6 +387,7 @@ export function createRemoteWriteScheduler(
                 if (record.timerHandle) clearTimeout(record.timerHandle);
                 abortByCaller(record.inFlightController, "held until the saved record loads");
                 pending.delete(sliceName);
+                replaying.delete(sliceName);
                 logger.warn("persist.held", {
                     sliceName,
                     meta: {
@@ -296,6 +411,40 @@ export function createRemoteWriteScheduler(
 
         const identity = getIdentity();
         const sliceState = record.body;
+
+        // --- Remote leg FIRST (optional; only if the policy declares remote.write) ---
+        // Started synchronously, before the device leg is awaited: on pagehide
+        // anything behind an `await` is usually never run, and this request is
+        // the one that keeps the edit. The two legs then run side by side.
+        const writeFn = policy.config.remote?.write;
+        let remoteOutcome: Promise<{ ok: true } | { ok: false; error: unknown }> | null = null;
+        if (writeFn) {
+            const ctx: WriteContext<unknown> = {
+                identity,
+                signal: controller.signal,
+                body: sliceState,
+                base: baseBySlice.get(sliceName),
+            };
+            logger.debug("remote.write.flush", {
+                sliceName,
+                meta: { identity: identity.key, bytes: approximateBytes(sliceState) },
+            });
+            const markLanded = (): { ok: true } => {
+                // The server now holds this body's changes: the next write diffs
+                // from here. (A failed or aborted write keeps the old base, so its
+                // changes are sent again with the next one.)
+                if (!controller.signal.aborted) baseBySlice.set(sliceName, sliceState);
+                return { ok: true };
+            };
+            try {
+                remoteOutcome = Promise.resolve(writeFn(ctx as WriteContext<never>)).then(
+                    markLanded,
+                    (error: unknown) => ({ ok: false as const, error }),
+                );
+            } catch (error) {
+                remoteOutcome = Promise.resolve({ ok: false as const, error });
+            }
+        }
 
         // --- Storage leg (idb primary, localStorage fallback for warm-cache) ---
         if (holdDeviceLeg) {
@@ -324,42 +473,20 @@ export function createRemoteWriteScheduler(
             }
         }
 
-        // --- Remote leg (optional; only if policy declares remote.write) ---
-        const writeFn = policy.config.remote?.write;
-        if (!writeFn) {
+        if (!remoteOutcome) {
             // IDB-only slice: clean up pending entry and return.
             maybeClearPending(sliceName, controller);
             return;
         }
 
-        const ctx: WriteContext<unknown> = {
-            identity,
-            signal: controller.signal,
-            body: sliceState,
-            base: baseBySlice.get(sliceName),
-        };
+        const outcome = await remoteOutcome;
 
-        let failure: unknown = null;
-        try {
-            logger.debug("remote.write.flush", {
-                sliceName,
-                meta: { identity: identity.key, bytes: approximateBytes(sliceState) },
-            });
-            await writeFn(ctx as WriteContext<never>);
-            // The server now holds this body's changes: the next write diffs
-            // from here. (A failed or aborted write keeps the old base, so its
-            // changes are sent again with the next one.)
-            if (!controller.signal.aborted) baseBySlice.set(sliceName, sliceState);
-        } catch (err) {
-            failure = err;
-        }
-
-        if (failure !== null && !controller.signal.aborted) {
+        if (!outcome.ok && !controller.signal.aborted) {
             // NEVER dropped: keep the record pending and re-arm with backoff.
-            retryAfterFailure(sliceName, controller, failure);
+            retryAfterFailure(sliceName, controller, outcome.error);
             return;
         }
-        if (failure === null && !controller.signal.aborted && record.failures > 0) {
+        if (outcome.ok && !controller.signal.aborted && record.failures > 0) {
             logger.info("remote.write.recovered", {
                 sliceName,
                 meta: { afterFailures: record.failures },
@@ -370,6 +497,11 @@ export function createRemoteWriteScheduler(
             record.failures = 0;
         }
         maybeClearPending(sliceName, controller);
+        // Landed with nothing newer waiting: no edit of this slice is unsaved.
+        if (outcome.ok && !controller.signal.aborted && !pending.has(sliceName)) {
+            replaying.delete(sliceName);
+            clearUnsavedMarker(policy);
+        }
     }
 
     function retryAfterFailure(
@@ -508,6 +640,40 @@ export function createRemoteWriteScheduler(
         await Promise.all(names.map((n) => flushOne(n)));
     }
 
+    /**
+     * Record every outstanding server save as an unsaved marker. Synchronous
+     * (localStorage), so it is on disk even if the page dies right after.
+     * A slice whose save the persist gate would refuse is never marked — its
+     * body is not a record that may be stored.
+     */
+    function writeUnsavedMarkers(): void {
+        const identity = getIdentity();
+        for (const [sliceName, record] of pending) {
+            const policy = bySlice.get(sliceName);
+            if (!policy?.config.remote?.write) continue;
+            if (!persistGateOpen(policy)) continue;
+            const body: UnsavedMarkerBody = { body: record.body, base: baseBySlice.get(sliceName) };
+            localStorageAdapter.write(unsavedMarkerKey(sliceName), {
+                version: policy.config.version,
+                identityKey: identity.key,
+                body,
+            });
+        }
+    }
+
+    /** Remove markers that are not the incoming identity's: they can never be saved as it. */
+    function discardForeignMarkers(): void {
+        const current = getIdentity().key;
+        for (const policy of bySlice.values()) {
+            if (!policy.config.remote?.write) continue;
+            const key = unsavedMarkerKey(policy.config.sliceName);
+            const marker = localStorageAdapter.read(key);
+            if (marker && marker.identityKey !== current && marker.version <= policy.config.version) {
+                localStorageAdapter.remove(key);
+            }
+        }
+    }
+
     function onIdentitySwap(): void {
         const dropped: string[] = [];
         for (const [name, record] of pending) {
@@ -532,17 +698,34 @@ export function createRemoteWriteScheduler(
         }
     }
 
-    // --- pagehide wiring ---
-    function flushOnPageHide(): void {
-        void flushAll();
+    // --- hidden / pagehide wiring ---
+    // A tab that closes usually turns hidden first (mobile always; desktop on
+    // tab close and app switch), and `pagehide` may never fire on mobile. Both
+    // record the unsaved markers and flush.
+    // Only a write still WAITING (debounce or retry backoff) is flushed: an
+    // in-flight one is already on the wire, and aborting it to send it again
+    // on every tab switch would only risk losing the request during unload.
+    function onPageHidden(): void {
+        writeUnsavedMarkers();
+        const waiting = Array.from(pending)
+            .filter(([, record]) => record.timerHandle !== null)
+            .map(([name]) => name);
+        void Promise.all(waiting.map((name) => flushOne(name)));
     }
     let detachPageHide: (() => void) | null = null;
     if (opts.attachPageHide) {
-        detachPageHide = opts.attachPageHide(flushOnPageHide);
+        detachPageHide = opts.attachPageHide(onPageHidden);
     } else if (typeof window !== "undefined" && typeof window.addEventListener === "function") {
-        const handler = () => flushOnPageHide();
+        const handler = () => onPageHidden();
+        const onVisibility = () => {
+            if (typeof document !== "undefined" && document.visibilityState === "hidden") onPageHidden();
+        };
         window.addEventListener("pagehide", handler);
-        detachPageHide = () => window.removeEventListener("pagehide", handler);
+        if (typeof document !== "undefined") document.addEventListener("visibilitychange", onVisibility);
+        detachPageHide = () => {
+            window.removeEventListener("pagehide", handler);
+            if (typeof document !== "undefined") document.removeEventListener("visibilitychange", onVisibility);
+        };
     }
 
     const scheduler: RemoteWriteScheduler = {
@@ -552,6 +735,14 @@ export function createRemoteWriteScheduler(
             if (record && record.timerHandle !== null) record.body = body;
         },
         flushAll,
+        onPageHidden,
+        replayUnsaved(sliceName, body, base) {
+            if (!bySlice.get(sliceName)?.config.remote?.write) return;
+            baseBySlice.set(sliceName, base);
+            replaying.add(sliceName);
+            schedule(sliceName, body);
+        },
+        isReplaying: (sliceName) => replaying.has(sliceName),
         flushSlice: (sliceName) => flushOne(sliceName),
         onIdentitySwap() {
             // The new identity's read is a new wait: an early release was for
@@ -560,6 +751,11 @@ export function createRemoteWriteScheduler(
             clearHoldTimers();
             onIdentitySwap();
             baseBySlice.clear();
+            replaying.clear();
+            // The leaving person's unsaved marker can never be saved as anyone
+            // else. The incoming person's own marker (a page that rendered
+            // anonymous first) stays for their resync to replay.
+            discardForeignMarkers();
         },
         setBase(sliceName, body) {
             baseBySlice.set(sliceName, body);
@@ -589,6 +785,7 @@ export function createRemoteWriteScheduler(
             }
             pending.clear();
             baseBySlice.clear();
+            replaying.clear();
             heldForHydration.clear();
             releasedEarly.clear();
             clearHoldTimers();

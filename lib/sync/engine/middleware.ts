@@ -35,6 +35,7 @@ import { isRemoteFetchStatusAction } from "./remoteFetchStatus";
 import { applyPrePaintDescriptors } from "./applyPrePaint";
 import {
   createRemoteWriteScheduler,
+  isReplayUnsavedAction,
   type RemoteWriteScheduler,
 } from "./remoteWrite";
 import {
@@ -489,7 +490,16 @@ export function createSyncMiddleware(ctx: SyncMiddlewareContext): Middleware {
         }
         return remoteWriteScheduler;
       }
-      if (isIdentityResetAction(a)) {
+      if (isReplayUnsavedAction(a)) {
+        // THE UNSAVED REPLAY (boot found an edit a closed page never saved and
+        // already rehydrated it): the slice's current state is the baseline,
+        // and the scheduler queues the marker's body on the marker's base, so
+        // the server receives only what changed.
+        const { sliceName, body, base } = a.payload;
+        const live = selectSliceState(api.getState(), sliceName);
+        if (live !== undefined) lastPersistedRef.set(sliceName, live);
+        ensureRemoteWriteScheduler().replayUnsaved(sliceName, body, base);
+      } else if (isIdentityResetAction(a)) {
         // THE IDENTITY RESET IS NEVER SAVED. It clears the leaving person's slices to their
         // defaults; saving those defaults (stamped with the NEW identity, since the swap already
         // happened) overwrote the incoming person's own cached record moments before their read

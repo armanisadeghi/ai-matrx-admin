@@ -31,7 +31,7 @@ import { logger } from "../logger";
 import { writeSlice } from "../persistence/idb";
 import { localStorageAdapter } from "../persistence/local-storage";
 import { getPreset } from "../policies/presets";
-import { isRemoteWritePending } from "./remoteWrite";
+import { isRemoteWritePending, isUnsavedReplayPending } from "./remoteWrite";
 
 export interface InvokeRemoteFetchOptions {
     policy: Policy<any>;
@@ -57,6 +57,14 @@ export async function invokeRemoteFetch(opts: InvokeRemoteFetchOptions): Promise
     // refresh (timer or focus) reads the record with it.
     if (reason === "stale-refresh" && isRemoteWritePending(sliceName)) {
         logger.debug("fallback.deferred.pendingWrite", { sliceName });
+        return;
+    }
+    // An edit a closed page never got saved is being saved again (its marker
+    // was replayed at boot): the slice already shows it, and the server's
+    // record is older. Even a cold-boot load waits — it would revert the edit
+    // with no notice. One normal refresh after the write lands is fine.
+    if (reason !== "stale-refresh" && isUnsavedReplayPending(sliceName)) {
+        logger.info("fallback.deferred.unsavedReplay", { sliceName, meta: { reason } });
         return;
     }
 

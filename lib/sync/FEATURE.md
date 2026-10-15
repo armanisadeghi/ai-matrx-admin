@@ -76,6 +76,17 @@ hydration errors.
 
 ## Change log
 
+- 2026-10-14 — **An edit is never lost to a tab closing before its save
+  lands.** The server leg starts before the IndexedDB leg is awaited; a page
+  turning hidden flushes like `pagehide`; at that moment every outstanding
+  `remote.write` save is recorded as `matrx:unsaved:<slice>` ({ body, base },
+  identity + version stamped, cleared when the save lands). The next boot as
+  the same person shows it, re-queues it on its base, and no load (cold-boot
+  included, `isUnsavedReplayPending`) lands over it until it is saved; logged
+  `remote.write.replayed-unsaved`. Guards:
+  `__tests__/unsaved-edit-survives-tab-close.test.ts`,
+  `__tests__/save-leaves-before-the-page-hides.test.ts`.
+
 - 2026-10-14 — **One door to browser storage.** `client-storage.ts`
   (`defineClientKey` / `defineClientKeyFamily`, one `matrx:client:` prefix, a
   key registry with kind + reason, legacy-key moves) and the shrink-only guard

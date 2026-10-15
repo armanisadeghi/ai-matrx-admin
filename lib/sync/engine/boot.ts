@@ -33,6 +33,7 @@ import { buildIdentityResetAction } from "./identityReset";
 import { buildRehydrateAction } from "./rehydrate";
 import { announceLoadFailure } from "./remoteFetchStatus";
 import { createStaleRefreshScheduler, invokeRemoteFetch, type StaleRefreshRegistration } from "./remoteFetch";
+import { buildReplayUnsavedAction, isUnsavedMarkerBody, unsavedMarkerKey } from "./remoteWrite";
 import { extractErrorMessage } from "@/utils/errors";
 import { setMode, type ThemeMode, type ResolvedThemeMode } from "@/styles/themes/themeSlice";
 // MATRX-EXCEPTION: `Policy<any>` throughout this file — same invariant-TState
@@ -312,6 +313,94 @@ async function hydrateFromIdb(
 }
 
 /**
+ * THE UNSAVED REPLAY. A page that closed with a server save outstanding left
+ * `matrx:unsaved:<slice>` behind (`remoteWrite.ts`, written when it turned
+ * hidden). Run AFTER the cache passes, so the edit lands over the older cached
+ * record and is what the slice shows; then the write is queued again on the
+ * marker's base, and the load that follows waits for it
+ * (`isUnsavedReplayPending`).
+ *
+ *   - this person, this version → replayed (and said so, loudly)
+ *   - a NEWER version → left alone (a tab already on the next deploy owns it)
+ *   - an older version → removed
+ *   - another person → removed when a real person boots (the device is theirs
+ *     now); SKIPPED for a guest boot, because the anonymous first render comes
+ *     before the signed-in person whose marker this may be.
+ *
+ * Returns the replayed slice names (they count as hydrated).
+ */
+function replayUnsavedWrites(
+    policies: readonly Policy<any>[],
+    identity: IdentityKey,
+    store: Store,
+): string[] {
+    const replayed: string[] = [];
+    for (const policy of policies) {
+        if (!policy.config.remote?.write) continue;
+        if (getPreset(policy.config.preset).writeStrategy !== "debounced") continue;
+        const sliceName = policy.config.sliceName;
+        const key = unsavedMarkerKey(sliceName);
+        const marker = localStorageAdapter.read(key);
+        if (!marker) continue;
+        if (marker.version > policy.config.version) {
+            logger.info("remote.write.unsaved.newerVersion", {
+                sliceName,
+                meta: { got: marker.version, want: policy.config.version },
+            });
+            continue;
+        }
+        if (marker.version < policy.config.version) {
+            logger.warn("remote.write.unsaved-discarded", {
+                sliceName,
+                meta: { why: "older version", got: marker.version, want: policy.config.version },
+            });
+            localStorageAdapter.remove(key);
+            continue;
+        }
+        if (marker.identityKey !== identity.key) {
+            if (identity.type === "auth") {
+                logger.warn("remote.write.unsaved-discarded", {
+                    sliceName,
+                    meta: { why: "another person's unsaved edit", identity: identity.key },
+                });
+                localStorageAdapter.remove(key);
+            }
+            continue;
+        }
+        if (!isUnsavedMarkerBody(marker.body)) {
+            logger.error("remote.write.unsaved-malformed", { sliceName });
+            localStorageAdapter.remove(key);
+            continue;
+        }
+        const { body, base } = marker.body;
+        let state: unknown = body;
+        if (typeof policy.config.deserialize === "function") {
+            try {
+                state = policy.config.deserialize(body);
+            } catch (err) {
+                logger.error("remote.write.unsaved-deserialize.failed", {
+                    sliceName,
+                    meta: { error: extractErrorMessage(err) },
+                });
+                localStorageAdapter.remove(key);
+                continue;
+            }
+        }
+        store.dispatch(buildRehydrateAction(sliceName, state, { fromRehydrate: true }));
+        store.dispatch(buildReplayUnsavedAction(sliceName, body, base));
+        replayed.push(sliceName);
+        logger.warn("remote.write.replayed-unsaved", {
+            sliceName,
+            meta: {
+                identity: identity.key,
+                detail: "a page closed before this edit was saved — showing it and saving it again",
+            },
+        });
+    }
+    return replayed;
+}
+
+/**
  * Decide whether a policy that DID hydrate from cache still needs the
  * cold-boot fetch. Default (no `cacheSatisfies` declared) is the historical
  * behavior: a cache hit suppresses the fetch. A policy that declares
@@ -431,7 +520,11 @@ function purgeIdentityFromDevice(identityKey: string, policies: readonly Policy<
     for (const policy of policies) {
         // A slice that is not identity-scoped (theme) is the device's, and pre-paint reads it.
         if (policy.config.identityScoped === false) continue;
-        for (const key of [policy.storageKey, `matrx:idbFallback:${policy.config.sliceName}`]) {
+        for (const key of [
+            policy.storageKey,
+            `matrx:idbFallback:${policy.config.sliceName}`,
+            unsavedMarkerKey(policy.config.sliceName),
+        ]) {
             const record = localStorageAdapter.read(key);
             if (record?.identityKey === identityKey) localStorageAdapter.remove(key);
         }
@@ -485,9 +578,10 @@ async function resyncForIdentityInner(options: ResyncOptions): Promise<void> {
     // The identity may have swapped again while IDB was reading — the newer
     // resync owns the fetches.
     if (getIdentity().key !== identity.key) return;
+    const fromUnsaved = replayUnsavedWrites(policies, identity, store);
     scheduleColdBootFallbacks(
         policies,
-        new Set<string>([...fromLocal, ...fromIdb]),
+        new Set<string>([...fromLocal, ...fromIdb, ...fromUnsaved]),
         store,
         getIdentity,
     );
@@ -610,7 +704,15 @@ async function bootSyncInner(options: BootOptions): Promise<BootResult> {
         // new identity's hydration + fetches; scheduling boot's here would fire
         // them against state that is no longer this identity's.
         if (getIdentity().key !== identity.key) return hydrated;
-        const after = new Set<string>([...hydratedFromLocal, ...hydrated]);
+        let fromUnsaved: string[] = [];
+        try {
+            fromUnsaved = replayUnsavedWrites(policies, identity, store);
+        } catch (err) {
+            logger.error("boot.unsaved.replay.failed", {
+                meta: { error: extractErrorMessage(err) },
+            });
+        }
+        const after = new Set<string>([...hydratedFromLocal, ...hydrated, ...fromUnsaved]);
         try {
             scheduleColdBootFallbacks(policies, after, store, getIdentity);
         } catch (err) {
