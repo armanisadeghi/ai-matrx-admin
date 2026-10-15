@@ -60,7 +60,7 @@ import {
   acquireCameraLease,
   type CameraLease,
 } from "@/features/media-capture/runtime/camera-stream-manager";
-import { CameraPreview } from "@/features/media-capture/components/CameraPreview";
+import { CameraPreview } from "@ai-matrx/capture/react";
 
 const SYSTEM_DEFAULT = "__system_default__";
 

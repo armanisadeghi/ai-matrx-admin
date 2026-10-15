@@ -5801,14 +5801,6 @@
       "name": "MAX_PIXELS"
     },
     {
-      "file": "matrx-frontend/features/media-capture/recording/media-recorder-controller.ts",
-      "name": "DEFAULT_LIMIT_CHECK_MS"
-    },
-    {
-      "file": "matrx-frontend/features/media-capture/recording/media-recorder-controller.ts",
-      "name": "DEFAULT_TIMESLICE_MS"
-    },
-    {
       "file": "matrx-frontend/features/media-capture/runtime/mediaCaptureDiagnostics.ts",
       "name": "MAX_CAPTURE_FAILURES"
     },

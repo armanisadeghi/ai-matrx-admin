@@ -15,7 +15,7 @@ import { useState, useSyncExternalStore } from "react";
 import { Camera, ChevronDown, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CaptureStudio } from "@/features/media-capture/components/CaptureStudio";
-import type { CaptureQualityProfile } from "@/features/media-capture/core/capture-types";
+import type { CaptureQualityProfile } from "@ai-matrx/capture/runtime";
 import {
   getCameraStreamState,
   subscribeCameraStream,

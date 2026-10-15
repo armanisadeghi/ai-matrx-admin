@@ -17,13 +17,13 @@ import {
   buildAudioCaptureMetadata,
   buildVideoCaptureMetadata,
   type CaptureMetadata,
-} from "@/features/media-capture/core/capture-types";
-import { extensionForMime } from "@/features/media-capture/core/mime-selection";
+} from "@ai-matrx/capture/runtime";
+import { extensionForMime } from "@ai-matrx/capture/runtime";
 import {
   discardJournal,
   readChunks,
   type RecoverableJournal,
-} from "@/features/media-capture/recording/chunk-journal";
+} from "@ai-matrx/capture/runtime";
 import { uploadCapture } from "@/features/media-capture/upload/capture-uploader";
 import { recordCaptureFailure } from "@/features/media-capture/runtime/mediaCaptureDiagnostics";
 

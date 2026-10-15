@@ -25,8 +25,8 @@ import { useCallback, useState } from "react";
 import type {
   FramingMode,
   VisualSourceSettings,
-} from "@/features/media-capture/core/capture-types";
-import { sourceRect } from "@/features/media-capture/core/geometry";
+} from "@ai-matrx/capture/runtime";
+import { sourceRect } from "@ai-matrx/capture/runtime";
 import type { CameraLease } from "@/features/media-capture/runtime/camera-stream-manager";
 
 // ─── Types ───────────────────────────────────────────────────────────────────

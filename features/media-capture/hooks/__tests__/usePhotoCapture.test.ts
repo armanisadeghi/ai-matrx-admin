@@ -9,7 +9,7 @@ import {
   captureFileName,
   type CaptureVideoSource,
 } from "../usePhotoCapture";
-import { sourceRect } from "../../core/geometry";
+import { sourceRect } from "@ai-matrx/capture/runtime";
 
 interface MockCanvas {
   canvas: HTMLCanvasElement;

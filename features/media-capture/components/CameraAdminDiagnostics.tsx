@@ -23,7 +23,7 @@ import {
   getMediaDevicesSnapshot,
   subscribeMediaDevices,
 } from "@/features/media-devices/deviceManager";
-import { recordingMimeCandidates } from "@/features/media-capture/core/mime-selection";
+import { recordingMimeCandidates } from "@ai-matrx/capture/runtime";
 import {
   getMediaCaptureDiagnostics,
   subscribeMediaCaptureDiagnostics,

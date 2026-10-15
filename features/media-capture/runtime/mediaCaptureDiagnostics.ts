@@ -48,8 +48,8 @@ import { subscribeAudioSessions } from "@/features/audio/session/audioSessionReg
 import {
   listRecoverable,
   type JournalStatus,
-} from "@/features/media-capture/recording/chunk-journal";
-import type { CaptureMetadata } from "@/features/media-capture/core/capture-types";
+} from "@ai-matrx/capture/runtime";
+import type { CaptureMetadata } from "@ai-matrx/capture/runtime";
 
 // ─── Snapshot types ──────────────────────────────────────────────────────────
 

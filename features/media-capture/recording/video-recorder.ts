@@ -47,15 +47,15 @@ import {
   type RecorderControllerState,
   type RecorderTerminal,
   type RecorderTerminalReason,
-} from "@/features/media-capture/recording/media-recorder-controller";
+} from "@ai-matrx/capture/runtime";
 import {
   appendChunk,
   createJournal,
   discardJournal,
   finalizeJournal,
   readChunks,
-} from "@/features/media-capture/recording/chunk-journal";
-import type { RecordingKind } from "@/features/media-capture/core/mime-selection";
+} from "@ai-matrx/capture/runtime";
+import type { RecordingKind } from "@ai-matrx/capture/runtime";
 import { registerLiveCapture } from "@/features/media-capture/runtime/mediaCaptureDiagnostics";
 
 /** The one capture-lock id for studio recordings (video AND audio modes). */

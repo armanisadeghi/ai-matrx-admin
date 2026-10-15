@@ -77,7 +77,7 @@ const CAMERA_ADMIN_MAP: FeatureAdminMap = {
     },
     {
       name: "CameraPreview",
-      filePath: "features/media-capture/components/CameraPreview.tsx",
+      filePath: "@ai-matrx/capture (CameraPreview)",
       description:
         "Canonical live <video> for a camera lease (framing modes, preview-only mirror, intrinsic-size reporting). Renders only — never acquires leases.",
       status: "Live",

@@ -32,7 +32,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CaptureDeviceRail } from "@/features/media-capture/components/CaptureDeviceRail";
-import type { FramingMode } from "@/features/media-capture/core/capture-types";
+import type { FramingMode } from "@ai-matrx/capture/runtime";
 
 export type CaptureMode = "photo" | "video" | "audio";
 

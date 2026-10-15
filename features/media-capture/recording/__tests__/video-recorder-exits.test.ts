@@ -35,7 +35,7 @@ import {
   FakeMediaStreamTrack,
   installFakeMediaStreamGlobal,
 } from "@/features/media-capture/runtime/__tests__/fake-media-stream";
-import { __resetJournalDb, listRecoverable } from "@/features/media-capture/recording/chunk-journal";
+import { __resetJournalDb, listRecoverable } from "@ai-matrx/capture/runtime";
 import {
   startAudioRecording,
   startVideoRecording,

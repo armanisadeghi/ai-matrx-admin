@@ -39,7 +39,7 @@ import {
   subscribeMediaCaptureDiagnostics,
   type LiveCaptureInfo,
 } from "@/features/media-capture/runtime/mediaCaptureDiagnostics";
-import { interceptableHref } from "@/features/media-capture/runtime/live-capture-nav";
+import { interceptableHref } from "@ai-matrx/capture/runtime";
 import { formatClock } from "@/features/media-capture/components/RecordingHud";
 import { resolveGlobalCaptureControls } from "@/features/media-capture/components/live-capture-indicator-state";
 

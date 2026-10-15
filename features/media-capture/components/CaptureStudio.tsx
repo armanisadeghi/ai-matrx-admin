@@ -63,8 +63,8 @@ import {
   type CaptureQualityProfile,
   type FramingMode,
   type VisualSourceSettings,
-} from "@/features/media-capture/core/capture-types";
-import { extensionForMime } from "@/features/media-capture/core/mime-selection";
+} from "@ai-matrx/capture/runtime";
+import { extensionForMime } from "@ai-matrx/capture/runtime";
 import { usePhotoCapture } from "@/features/media-capture/hooks/usePhotoCapture";
 import { uploadCapture } from "@/features/media-capture/upload/capture-uploader";
 import {
@@ -79,7 +79,7 @@ import {
   listRecoverable,
   purgeExpired,
   type RecoverableJournal,
-} from "@/features/media-capture/recording/chunk-journal";
+} from "@ai-matrx/capture/runtime";
 import { finishJournalRecovery } from "@/features/media-capture/recording/journal-recovery";
 import {
   recordCaptureFailure,
@@ -87,7 +87,7 @@ import {
   type LiveCaptureSaveResult,
 } from "@/features/media-capture/runtime/mediaCaptureDiagnostics";
 import { VoiceTroubleshootingModal } from "@/features/audio/components/VoiceTroubleshootingModal";
-import { CameraPreview } from "@/features/media-capture/components/CameraPreview";
+import { CameraPreview } from "@ai-matrx/capture/react";
 import {
   CaptureControls,
   type CaptureMode,

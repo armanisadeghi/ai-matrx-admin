@@ -41,7 +41,7 @@ jest.mock("@/features/audio/session/audioSessionRegistry", () => ({
   subscribeAudioSessions: () => () => undefined,
 }));
 
-jest.mock("@/features/media-capture/recording/chunk-journal", () => ({
+jest.mock("@ai-matrx/capture/runtime", () => ({
   listRecoverable: () => listRecoverable(),
 }));
 

@@ -7,13 +7,13 @@ import { mkdirSync } from "node:fs";
 import { declareTable } from "@ai-matrx/records/core";
 import { store } from "./store.mjs";
 import { ORIGIN, env } from "./lib.mjs";
-import { signIn } from "../lib/seat-browser.mjs";
+import { walkSignIn } from "./walk-signin.mjs";
 import { withFixtureUser, testTarget, fixtureSessionCookies } from "../lib/persona.mjs";
 
 const say = (...a) => console.log(...a);
 const must = (r, w) => { if (!r.ok) throw new Error(w + ": " + JSON.stringify(r.error)); return r.data; };
 const KEEP = process.argv.includes("--keep");
-const SHOTS = "/tmp/at-interface";
+const SHOTS = process.env.SHOTS ?? "/tmp/at-interface";
 mkdirSync(SHOTS, { recursive: true });
 const { sb, client } = await store();
 const ORG = "884d1ce8-7b49-4fba-a2f3-0f7dd7c83d4f";
@@ -24,6 +24,7 @@ const NW = "dana.reyes@northwind-outfitters.com";
 const tables = [];
 let iface = null;
 let result = "FAIL";
+let walkVerdicts = [];
 const browser = await chromium.launch({ headless: true });
 try {
   await withFixtureUser(testTarget(), { suite: "at-interface/walk", purpose: "client contact opens the Agency Ops interface shared with them" }, async (contact) => {
@@ -89,7 +90,7 @@ try {
     const actx = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
     const ap = await actx.newPage();
     const aerr = []; ap.on("console", (m) => m.type() === "error" && aerr.push(m.text().slice(0, 160)));
-    await signIn(ap, ORIGIN, env.AI_ADMIN_USERNAME, env.AI_ADMIN_PASSWORD, "admin");
+    await walkSignIn(ap, ORIGIN, { member: false });
     await ap.goto(`${ORIGIN}/data/interfaces/${iface}`, { waitUntil: "domcontentloaded", timeout: 300000 });
     await ap.waitForSelector("[data-records-page-number]", { timeout: 300000 });
     await ap.waitForTimeout(5000);
@@ -113,12 +114,57 @@ try {
     await ap.click("[data-records-interface-clear]");
     await ap.waitForTimeout(3000);
     say("ADMIN after Clear changes, Publish offered:", await ap.locator("[data-records-interface-publish]").count());
+    const verdicts = [];
+    const check = (label, ok, detail = "") => { say((ok ? "PASS " : "FAIL ") + label + (ok ? "" : "  — " + String(detail).slice(0, 200))); verdicts.push([label, ok]); };
+    check("Clear changes removes the Publish button", (await ap.locator("[data-records-interface-publish]").count()) === 0);
+    // Publish: a draft rename, then Publish -> button gone, History lists two versions
+    const histCount = async () => { await ap.locator("[data-records-interface-history]").first().click().catch(() => {}); const n = await ap.getByRole("option").count(); await ap.keyboard.press("Escape"); return n; };
+    const before = await ap.locator("[data-records-interface-history]").count() ? await histCount() : 0;
+    const reviewId = pages[3].id;
+    await ap.click(`[data-records-interface-page="${reviewId}"]`);
+    await ap.waitForTimeout(3000);
+    const box = ap.locator('input[aria-label="Page name"]');
+    await box.fill("Approvals now"); await box.press("Tab");
+    await ap.waitForSelector("[data-records-interface-publish]", { timeout: 60000 });
+    await ap.click("[data-records-interface-publish]");
+    await ap.waitForFunction(() => !document.querySelector("[data-records-interface-publish]"), null, { timeout: 60000 }).catch(() => {});
+    await ap.waitForTimeout(3000);
+    check("Publish takes the Publish button away", (await ap.locator("[data-records-interface-publish]").count()) === 0);
+    check("the published page carries its new name in the nav", /Approvals now/.test(await ap.locator("[data-records-interface-pages]").innerText()));
+    const after = await histCount();
+    check("Publish adds a version to History", after > before, `${before} -> ${after}`);
+    // History restore: pick the oldest version; the old name returns
+    await ap.locator("[data-records-interface-history]").first().click();
+    await ap.getByRole("option").last().click();
+    await ap.waitForTimeout(4000);
+    const nav = await ap.locator("[data-records-interface-pages]").innerText();
+    check("History restore brings the earlier page name back", /Approval review/.test(nav) && !/Approvals now/.test(nav), nav.replace(/\n/g, " | "));
+    await ap.screenshot({ path: `${SHOTS}/admin-after-restore.png`, fullPage: true });
+    // CSV and Print on the review page
+    await ap.click(`[data-records-interface-page="${reviewId}"]`);
+    await ap.waitForSelector("[data-records-page-csv]", { timeout: 60000 }).catch(() => {});
+    const csvButtons = await ap.locator("[data-records-page-csv]").count();
+    check("a CSV button is offered on a list/review block", csvButtons > 0, csvButtons);
+    if (csvButtons) {
+      const [dl] = await Promise.all([ap.waitForEvent("download", { timeout: 60000 }).catch(() => null), ap.locator("[data-records-page-csv]").first().click()]);
+      if (dl) { const path = `${SHOTS}/${dl.suggestedFilename()}`; await dl.saveAs(path); const { readFileSync } = await import("node:fs"); const csv = readFileSync(path, "utf8"); check("CSV downloads the visible rows with a header", /title|Post/i.test(csv.split("\n")[0]) && /Comtech Q4 webinar promo/.test(csv), csv.slice(0, 160)); }
+      else check("CSV downloads a file", false, "no download event");
+    }
+    await ap.evaluate(() => { window.__printed = 0; window.__frames = 0; window.print = () => { window.__printed++; }; new MutationObserver((m) => m.forEach((r) => r.addedNodes.forEach((n) => { if (n.nodeName === "IFRAME") window.__frames++; }))).observe(document.documentElement, { childList: true, subtree: true }); });
+    const popup = ap.waitForEvent("popup", { timeout: 15000 }).catch(() => null);
+    await ap.locator("[data-records-page-print]").click();
+    const pop = await popup;
+    await ap.waitForTimeout(3000);
+    const sig = await ap.evaluate(() => ({ printed: window.__printed, frames: window.__frames }));
+    check("Print opens a print view of the page", !!pop || sig.printed > 0 || sig.frames > 0, JSON.stringify(sig));
+    if (pop) { const t = await pop.locator("body").innerText().catch(() => ""); check("the print view holds the page content", /Comtech Q4 webinar promo/.test(t), t.slice(0, 120)); await pop.close().catch(() => {}); }
+    walkVerdicts = verdicts;
     say("ADMIN console errors:", aerr.length, aerr.slice(0, 3).join(" || "));
 
     // MEMBER (test@test.com) — not shared: Request access, or the org lane opens it
     const mctx = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
     const mp = await mctx.newPage();
-    await signIn(mp, ORIGIN, "test@test.com", env.AI_MEMBER_PASSWORD, "member").catch((e) => say("MEMBER sign-in", e.message.slice(0, 80)));
+    await walkSignIn(mp, ORIGIN, { member: true }).catch((e) => say("MEMBER sign-in", e.message.slice(0, 80)));
     await mp.goto(`${ORIGIN}/data/interfaces/${iface}`, { waitUntil: "domcontentloaded", timeout: 300000 });
     await mp.waitForTimeout(15000);
     say("MEMBER sees:", (await mp.locator("main, body").first().innerText()).replace(/\s+/g, " ").slice(0, 160));
@@ -174,4 +220,5 @@ try {
     }
   }
 }
+say("VERDICTS", walkVerdicts.filter(([, ok]) => !ok).length ? "FAILED: " + walkVerdicts.filter(([, ok]) => !ok).map(([l]) => l).join("; ") : "all added checks passed");
 say("RESULT", result, "(screenshots in", SHOTS + ")");

@@ -27,7 +27,7 @@ import {
   discardJournal,
   listRecoverable,
   type RecoverableJournal,
-} from "@/features/media-capture/recording/chunk-journal";
+} from "@ai-matrx/capture/runtime";
 import { finishJournalRecovery } from "@/features/media-capture/recording/journal-recovery";
 import { refreshCaptureJournals } from "@/features/media-capture/runtime/mediaCaptureDiagnostics";
 import { formatFileSize } from "@ai-matrx/kit/format";

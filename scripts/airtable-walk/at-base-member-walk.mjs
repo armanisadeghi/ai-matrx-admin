@@ -25,7 +25,8 @@ try {
   check("the member's Bases list opens without an error", !/could not be read/i.test(list), list.slice(0, 200));
   check("the admin's base is not in the member's list", (await s.page.locator(`[data-base-card="${home}"]`).count()) === 0);
   await s.page.goto(`${ORIGIN}/data/bases/${home}`, { waitUntil: "domcontentloaded", timeout: 240000 });
-  await s.page.waitForTimeout(6000);
+  await s.page.waitForFunction(() => /not found, or you have not been given it|Choose the organization/i.test(document.body.innerText), null, { timeout: 90000 }).catch(() => {});
+  await s.page.screenshot({ path: `${process.env.SHOTS ?? "/tmp"}/member-base.png` });
   const body = await s.page.locator("body").innerText();
   check("a base the member was not given says so and shows nothing of it", /not found, or you have not been given it|Choose the organization/i.test(body) && !body.includes("Harbor member walk"), body.slice(0, 300));
   console.log("console errors:", s.errs.slice(0, 5));

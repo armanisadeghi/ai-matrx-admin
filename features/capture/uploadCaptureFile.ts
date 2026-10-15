@@ -22,7 +22,7 @@ import {
   buildAudioCaptureMetadata,
   buildPhotoCaptureMetadata,
   type CaptureMetadata,
-} from "@/features/media-capture/core/capture-types";
+} from "@ai-matrx/capture/runtime";
 import { uploadCapture } from "@/features/media-capture/upload/capture-uploader";
 
 /** The decoded pixel size of an image File, or nulls when it will not decode. */

@@ -43,7 +43,7 @@ import {
   acquireCameraLease,
   type CameraLease,
 } from "@/features/media-capture/runtime/camera-stream-manager";
-import { CameraPreview } from "@/features/media-capture/components/CameraPreview";
+import { CameraPreview } from "@ai-matrx/capture/react";
 import { capturePhotoFromVideo } from "@/features/media-capture/hooks/usePhotoCapture";
 
 const SCANNER_JPEG_QUALITY = 0.92;

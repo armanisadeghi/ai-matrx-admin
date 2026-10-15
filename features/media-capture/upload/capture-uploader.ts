@@ -33,7 +33,7 @@ import type { NormalizedFile } from "@/features/files/handler/types";
 import {
   isCaptureMetadata,
   type CaptureMetadata,
-} from "@/features/media-capture/core/capture-types";
+} from "@ai-matrx/capture/runtime";
 import { recordCaptureFailure } from "@/features/media-capture/runtime/mediaCaptureDiagnostics";
 
 /**

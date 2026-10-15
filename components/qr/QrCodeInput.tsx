@@ -31,7 +31,7 @@ import {
   acquireCameraLease,
   type CameraLease,
 } from "@/features/media-capture/runtime/camera-stream-manager";
-import { CameraPreview } from "@/features/media-capture/components/CameraPreview";
+import { CameraPreview } from "@ai-matrx/capture/react";
 
 /** How often the live preview is sampled for a code. 5/s reads instantly to a
  *  human while leaving the main thread alone between frames. */

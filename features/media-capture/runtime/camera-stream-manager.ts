@@ -66,13 +66,13 @@ import {
   prepareAudioSessionForCapture,
   releaseAudioSessionForCapture,
 } from "@ai-matrx/browser-audio/core";
-import type { CaptureQualityProfile } from "@/features/media-capture/core/capture-types";
+import type { CaptureQualityProfile } from "@ai-matrx/capture/runtime";
 import {
   buildVideoConstraints,
   summarizeTrackState,
   type TrackStateSummary,
   type VideoConstraintRequest,
-} from "@/features/media-capture/core/constraints";
+} from "@ai-matrx/capture/runtime";
 
 // ─── Public types ────────────────────────────────────────────────────────────
 

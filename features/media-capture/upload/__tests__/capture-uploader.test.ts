@@ -38,7 +38,7 @@ import {
   buildPhotoCaptureMetadata,
   isCaptureMetadata,
   type CaptureMetadata,
-} from "../../core/capture-types";
+} from "@ai-matrx/capture/runtime";
 
 const uploadMock = fileHandler.upload as jest.Mock;
 

@@ -27,7 +27,7 @@ const EXTENSIONS = new Set([".ts", ".tsx", ".js", ".jsx"]);
 const EXCLUDED_DIRS = new Set([".next", "node_modules", "dist", "build", "__tests__"]);
 /** File-capture metadata also uses `source_feature` — not CX attribution. */
 const EXCLUDED_PATH_PARTS = new Set(["media-capture"]);
-const CAPTURE_TYPES_MODULE = "@/features/media-capture/core/capture-types";
+const CAPTURE_TYPES_MODULE = "@ai-matrx/capture/runtime";
 const CAPTURE_METADATA_BUILDERS = new Set([
   "buildAudioCaptureMetadata",
   "buildPhotoCaptureMetadata",

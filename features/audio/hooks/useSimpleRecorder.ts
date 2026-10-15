@@ -30,7 +30,7 @@ import type { PlaybackSessionHandle } from '@/features/audio/session/types';
 import {
   createMediaRecorderController,
   type MediaRecorderController,
-} from '@/features/media-capture/recording/media-recorder-controller';
+} from '@ai-matrx/capture/runtime';
 
 export interface UseSimpleRecorderProps {
   onRecordingComplete?: (blob: Blob) => void;

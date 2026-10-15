@@ -55,7 +55,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { toast } from "@/lib/toast";
-import { CameraPreview } from "@/features/media-capture/components/CameraPreview";
+import { CameraPreview } from "@ai-matrx/capture/react";
 import { CaptureThumb } from "@/features/media-capture/components/CaptureThumb";
 import {
   fetchFileBlob,

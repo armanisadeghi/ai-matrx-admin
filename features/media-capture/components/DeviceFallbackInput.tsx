@@ -21,7 +21,7 @@ import type { ChangeEvent } from "react";
 import {
   buildPhotoCaptureMetadata,
   type PhotoCaptureMetadata,
-} from "@/features/media-capture/core/capture-types";
+} from "@ai-matrx/capture/runtime";
 import { captureFileName } from "@/features/media-capture/hooks/usePhotoCapture";
 
 /** ~24 MP — beyond this the re-encode downscales (uniform) to stay bounded. */

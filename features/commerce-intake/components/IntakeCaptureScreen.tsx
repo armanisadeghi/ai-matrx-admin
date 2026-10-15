@@ -69,14 +69,14 @@ import {
   acquireCameraLease,
   type CameraLease,
 } from "@/features/media-capture/runtime/camera-stream-manager";
-import { CameraPreview } from "@/features/media-capture/components/CameraPreview";
+import { CameraPreview } from "@ai-matrx/capture/react";
 import { CaptureModeBar } from "@/features/media-capture/components/CaptureModeBar";
 import { capturePhotoFromVideo } from "@/features/media-capture/hooks/usePhotoCapture";
 import {
   startVideoRecording,
   type CaptureRecordingHandle,
 } from "@/features/media-capture/recording/video-recorder";
-import { extensionForMime } from "@/features/media-capture/core/mime-selection";
+import { extensionForMime } from "@ai-matrx/capture/runtime";
 import { CaptureThumb } from "@/features/media-capture/components/CaptureThumb";
 // Prototype-proven leaf components, generic by props — shared until the
 // prototype feature is retired, at which point they move here.
