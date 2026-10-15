@@ -2081,6 +2081,19 @@ body[style*="pointer-events: none"] {
   pointer-events: none;
 }
 
+/* A scroller inside a floating window takes its runway from the same measure, per scroller:
+   FloatingClearanceSync writes how far its end reaches under any floating chrome
+   (lib/layout/floating-chrome.ts syncWindowScrollerRunways). No window pads by hand. */
+[data-matrx-window-runway]::after {
+  content: "";
+  display: block;
+  flex: none;
+  grid-column: 1 / -1;
+  block-size: var(--matrx-window-scroller-runway, 0px);
+  pointer-events: none;
+  visibility: hidden;
+}
+
 .shell-main::after,
 .shell-main
   > .h-full:is(.overflow-y-auto, .overflow-auto):not(

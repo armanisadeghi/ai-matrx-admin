@@ -176,3 +176,52 @@ export function findContentUnderFloatingChrome(
   }
   return worst;
 }
+
+// ── Scrollers inside a floating window (MKT-081) ───────────────────────────
+// The page runway (--matrx-floating-clearance) is measured against the viewport, so it
+// reaches `.shell-main` scrollers only. A window floats over the page: chrome that overlaps
+// it (the minimized tile, the assists pill, the dock) covers only SOME of the window's foot,
+// and which part depends on where the window sits. So each scroller inside a window takes its
+// own runway = how far its bottom edge reaches under any floating chrome (+ the gap), written
+// as WINDOW_SCROLLER_RUNWAY_VAR and flagged with WINDOW_SCROLLER_RUNWAY_ATTR; styles/shell.css
+// turns that into a final ::after flow item. A window never carries hand padding for this.
+
+export const WINDOW_SCROLLER_RUNWAY_VAR = "--matrx-window-scroller-runway";
+export const WINDOW_SCROLLER_RUNWAY_ATTR = "data-matrx-window-runway";
+const WINDOW_SCROLLER_SELECTOR = "[data-window-panel] :is(.overflow-y-auto, .overflow-auto, [data-matrx-page-scroll])";
+
+/** Px a scroller must reserve at its end so its last content clears every floating box. */
+export function windowScrollerRunwayPx(scrollerRect: { top: number; bottom: number }, boxes: FloatingBox[]): number {
+  let runway = 0;
+  for (const { rect } of boxes) {
+    if (rect.top >= scrollerRect.bottom || rect.bottom <= scrollerRect.top) continue;
+    runway = Math.max(runway, scrollerRect.bottom - rect.top + FLOATING_REQUIRED_GAP_PX + 4);
+  }
+  return Math.ceil(runway);
+}
+
+/**
+ * Writes the runway onto every scroller inside a window; clears it everywhere else. Floating
+ * chrome that is inside the scroller's own window (a minimized window IS the chrome) never counts.
+ */
+export function syncWindowScrollerRunways(boxes: FloatingBox[], doc: Document = document): void {
+  const stale = new Set(doc.querySelectorAll(`[${WINDOW_SCROLLER_RUNWAY_ATTR}]`));
+  for (const scroller of doc.querySelectorAll(WINDOW_SCROLLER_SELECTOR)) {
+    if (scroller.closest("[data-window-panel-state=minimized]")) continue;
+    const rect = scroller.getBoundingClientRect();
+    if (rect.width === 0 || rect.height === 0) continue;
+    const others = boxes.filter((b) => !scroller.contains(b.element) && !b.element.contains(scroller));
+    const px = windowScrollerRunwayPx(rect, others);
+    if (px <= 0) continue;
+    stale.delete(scroller);
+    const el = scroller as HTMLElement;
+    if (el.style.getPropertyValue(WINDOW_SCROLLER_RUNWAY_VAR) !== `${px}px`) {
+      el.style.setProperty(WINDOW_SCROLLER_RUNWAY_VAR, `${px}px`);
+    }
+    if (!el.hasAttribute(WINDOW_SCROLLER_RUNWAY_ATTR)) el.setAttribute(WINDOW_SCROLLER_RUNWAY_ATTR, "");
+  }
+  for (const el of stale) {
+    el.removeAttribute(WINDOW_SCROLLER_RUNWAY_ATTR);
+    (el as HTMLElement).style.removeProperty(WINDOW_SCROLLER_RUNWAY_VAR);
+  }
+}

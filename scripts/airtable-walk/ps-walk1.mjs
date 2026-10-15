@@ -3,6 +3,8 @@ const TABLE = process.env.TABLE; const SHOTS = process.env.SHOTS;
 const { browser, page, who, errs } = await start();
 out("who", who);
 await open(page, TABLE);
+await page.getByText("Mix and master").first().waitFor({ timeout: 180000 }).catch(() => out("rows never loaded"));
+await page.waitForTimeout(3000);
 await page.screenshot({ path: `${SHOTS}/01-grid.png` });
 const chips = await page.locator("[data-records-person-open]").count();
 out("openable person chips", chips);

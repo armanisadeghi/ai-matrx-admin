@@ -20,6 +20,7 @@ import {
   FLOATING_MEASURED_VAR,
   floatingBottomBoxes,
   measureFloatingClearance,
+  syncWindowScrollerRunways,
 } from "@/lib/layout/floating-chrome";
 import { useFloatingClearanceGuard } from "@/lib/layout/useFloatingClearanceGuard";
 
@@ -57,6 +58,8 @@ export default function FloatingClearanceSync() {
         lastFixed = fixed;
         root.style.setProperty(FLOATING_FIXED_MEASURED_VAR, `${fixed}px`);
       }
+      // Scrollers inside floating windows take their own runway under whatever overlaps them.
+      syncWindowScrollerRunways(boxes);
       // Observe exactly the chrome present now.
       const present = new Set(document.querySelectorAll(FLOATING_BOTTOM_SELECTOR));
       for (const element of observed) {

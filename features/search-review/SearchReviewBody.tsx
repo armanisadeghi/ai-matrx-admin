@@ -311,8 +311,7 @@ export function SearchReviewBody({ session }: { session: SearchReviewSession }) 
         />
       </div>
       {shown.length ? (
-        // A minimized tile docks over the window's foot: the runway lets the last result scroll clear (MKT-081).
-        <ul className="@container min-h-0 flex-1 overflow-y-auto pb-[var(--matrx-floating-measured,0px)]">
+        <ul className="@container min-h-0 flex-1 overflow-y-auto">
           {shown.map((r, i) => (
             <ResultCard
               key={r.key}
