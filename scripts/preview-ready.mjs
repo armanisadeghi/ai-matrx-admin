@@ -150,16 +150,50 @@ if (!st.running) {
 // any held run. Do it now only when no OTHER session holds the server — a restart under someone's run
 // is the very thing holds exist to stop. Otherwise go on: the page check below still restarts if the
 // stale code really breaks this page (STALE SERVER).
-const otherHolds = (st.text.match(/holds: ([^\n]*?)\s{3}ready:/)?.[1] || "")
-  .split(", ")
-  .map((h) => h.split(" (")[0].trim())
-  .filter((h) => h && h !== "none" && `${h}.localhost` !== HOST);
+function otherHoldsNow(text = status().text) {
+  return (text.match(/holds: ([^\n]*?)\s{3}ready:/)?.[1] || "")
+    .split(", ")
+    .map((h) => h.split(" (")[0].trim())
+    .filter((h) => h && h !== "none" && `${h}.localhost` !== HOST);
+}
+const otherHolds = otherHoldsNow(st.text);
 if (st.nmMoved && repair) {
   if (otherHolds.length) {
     say(`server: packages were installed under it; another run holds it (${otherHolds.join(", ")}), so it restarts after that run — this check goes on`);
   } else {
     say("server: packages were installed under the running server — restarting it now so it serves what is on disk");
     restartServer();
+  }
+}
+
+// ── 2b. an install running in this checkout ─────────────────────────────────
+// A pnpm install relinks node_modules under the live server: while it runs, pages render whole
+// packages as "not installed" placeholders (seen 2026-10-15 mid-run). Wait for it to finish; the
+// watchdog (or the stale check below) restarts the server onto what it installed.
+function installsRunning() {
+  const pids = sh("pgrep", ["-f", "pnpm (install|add|update|up|remove|i)( |$)"]).out.trim().split(/\s+/).filter(Boolean);
+  return pids.filter((pid) => {
+    const cwd = sh("lsof", ["-a", "-p", pid, "-d", "cwd", "-Fn"]).out.split("\n").find((l) => l.startsWith("n"))?.slice(1);
+    return cwd === ROOT;
+  });
+}
+{
+  let said = 0;
+  const installWaitUntil = Date.now() + Math.min(budgetSec * 1000, 10 * 60 * 1000);
+  for (let pids = installsRunning(); pids.length && Date.now() < installWaitUntil; pids = installsRunning()) {
+    if (Date.now() - said > 30000) {
+      say(`install: a package install is running in this checkout (pid ${pids.join(", ")}); waiting for it to finish (${secs()}s)`);
+      said = Date.now();
+    }
+    await new Promise((r) => setTimeout(r, 3000));
+  }
+  if (said) {
+    say(`install: finished (${secs()}s)`);
+    st = status();
+    if (st.nmMoved && repair && !otherHoldsNow().length) {
+      say("server: restarting it onto the packages just installed");
+      restartServer();
+    }
   }
 }
 
