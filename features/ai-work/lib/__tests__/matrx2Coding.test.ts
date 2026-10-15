@@ -4,6 +4,7 @@
  * against a real computer is matrx-desktop `test/live/web-coding-doors-live.test.ts`.
  * Every expected sentence is typed by hand.
  */
+import type { PendingFiling } from "@ai-matrx/coding-sessions";
 import {
   FALLBACK_ORDER,
   chooseComputer,
@@ -14,7 +15,6 @@ import {
   fileMatrx2Run,
   nativeSessionId,
   resumePendingFilings,
-  type PendingFiling,
   readCodingCapability,
   readContinueVerdict,
   type CodingDoors,

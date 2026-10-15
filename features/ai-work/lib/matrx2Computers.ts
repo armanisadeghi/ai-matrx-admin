@@ -9,8 +9,7 @@
  */
 import { getClaimsUser } from "@ai-matrx/auth";
 import { createDesktopClient } from "@ai-matrx/desktop-protocol/client";
-import { mergeJsonColumn, type JsonObject } from "@ai-matrx/data/db";
-import type { Json } from "@/types/database.types";
+import { createAppInstanceFilingStore, type PendingFilingStore } from "@ai-matrx/coding-sessions";
 
 import { supabase } from "@/utils/supabase/client";
 import { getAccessTokenOrNull } from "@/lib/python-client";
@@ -21,12 +20,8 @@ import type { DeviceRow } from "@/features/files/devices/types";
 import {
   CODING_MINOR,
   createMatrx2Reach,
-  filingsFromMetadata,
-  metadataWithFiling,
-  metadataWithoutFiling,
   protocolMinor,
   type CodingDoors,
-  type PendingFilingStore,
   type ReachClient,
   type ReachDeps,
 } from "@/features/ai-work/lib/matrx2Coding";
@@ -80,43 +75,12 @@ export const browserReachDeps: ReachDeps = {
 type FilingClient = Pick<typeof supabase, "from">;
 
 /**
- * Pending filings on the server: each in its computer's own `app_instances` row
- * (`metadata.ai_work.pending_filings`, merged under the row's version so Matrx 2's own metadata
- * keys survive). Row security is the person's own rows; nothing here widens it.
+ * Pending filings on the server: each in its computer's own `app_instances` row, merged under the
+ * row's version so Matrx 2's own metadata keys survive. THE store is `@ai-matrx/coding-sessions`'
+ * (shared with Matrx 2); row security is the person's own rows, nothing here widens it.
  */
 export function createServerFilingStore(client: FilingClient, userId: () => Promise<string | null>): PendingFilingStore {
-  const merge = async (deviceId: string, next: (metadata: Record<string, unknown>) => Record<string, unknown>) => {
-    const uid = await userId();
-    if (!uid) throw new Error("Sign in to file this chat.");
-    const result = await mergeJsonColumn<{ id: string; version: number; metadata: unknown }>({
-      fetchCurrent: () => client.from("app_instances").select("id, version, metadata").eq("id", deviceId).eq("user_id", uid).maybeSingle(),
-      readColumn: (row) => row.metadata,
-      merge: (current) => next(current) as JsonObject,
-      applyUpdate: ({ value, expectedVersion, nextVersion }) =>
-        client
-          .from("app_instances")
-          .update({ metadata: value as Json, version: nextVersion })
-          .eq("id", deviceId)
-          .eq("user_id", uid)
-          .eq("version", expectedVersion)
-          .select("id, version, metadata")
-          .maybeSingle(),
-    });
-    if (result.status === "saved") return;
-    const why = result.status === "error" ? (result.error instanceof Error ? result.error.message : String((result.error as { message?: string })?.message ?? result.error)) : result.status === "not_found" ? "that computer's row is not visible to you" : "it kept changing under another writer";
-    throw new Error(`The pending filing could not be saved: ${why}.`);
-  };
-  return {
-    async list() {
-      const uid = await userId();
-      if (!uid) return [];
-      const { data, error } = await client.from("app_instances").select("id, metadata").eq("user_id", uid).eq("is_active", true).is("deleted_at", null);
-      if (error) throw new Error(`Pending filings could not be read: ${error.message}`);
-      return (data ?? []).flatMap((row) => filingsFromMetadata((row as { metadata: unknown }).metadata));
-    },
-    put: (filing) => merge(filing.deviceId, (metadata) => metadataWithFiling(metadata, filing)),
-    remove: (filing) => merge(filing.deviceId, (metadata) => metadataWithoutFiling(metadata, filing.sessionId)),
-  };
+  return createAppInstanceFilingStore(client, userId);
 }
 
 export const browserFilingStore: PendingFilingStore = createServerFilingStore(supabase, async () => {

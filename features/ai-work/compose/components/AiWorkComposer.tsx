@@ -93,8 +93,8 @@ import {
   resumePendingFilings,
   startCodingRun,
   type DoorCapability,
-  type PendingFiling,
 } from "@/features/ai-work/lib/matrx2Coding";
+import type { PendingFiling } from "@ai-matrx/coding-sessions";
 import { browserCodingDoors } from "@/features/ai-work/lib/matrx2Computers";
 import { destinationAvailability, type WorkDestinationId } from "../destinations";
 import {

@@ -13,7 +13,7 @@ jest.mock("@/features/files/devices/console/sessions/model", () => ({ clientLabe
 jest.mock("@/features/ai-work/lib/matrxLocalRuntime", () => ({}));
 
 import { createServerFilingStore } from "../matrx2Computers";
-import type { PendingFiling } from "../matrx2Coding";
+import type { PendingFiling } from "@ai-matrx/coding-sessions";
 
 type Row = { id: string; user_id: string; is_active: boolean; deleted_at: string | null; version: number; metadata: Record<string, unknown> };
 
