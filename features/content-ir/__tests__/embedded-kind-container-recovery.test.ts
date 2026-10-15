@@ -243,7 +243,7 @@ it.each([
   const expected = [
     { type: "code", language: "xml", content: "<custom>\n**Nested result**\n", kind: null },
     { type: "code", language: "json", content: FLASHCARDS, kind: "flashcard_set" },
-    { type: "code", language: "xml", content: "\n</custom>", kind: null },
+    // The bare closing tag is the wrapper's chrome and is consumed (SHAPES-BUGS 2.2).
   ];
   expect(splitterBlocks(source)).toEqual(expected);
   for (const seed of [1, 17, 90211])

@@ -479,13 +479,8 @@ it("lifts a kind inside a generic XML fence interrupted by a tool (ruling b)", (
 it("lifts directive JSON out of incomplete generic XML, live = reload (ruling b)", () => {
   const source = '<x>\n{"__kind":"directive_v","value":"kept?"}';
   const staticBlocks = splitContentIntoBlocksV2(source);
-  expect(staticBlocks.map((block) => block.type)).toEqual(["code", "matrx"]);
-  expect(staticBlocks[0]).toEqual(
-    expect.objectContaining({
-      language: "xml",
-      metadata: { genericXmlContainer: true },
-    }),
-  );
+  // The bare `<x>` opening tag is the wrapper's chrome and is consumed (SHAPES-BUGS 2.2).
+  expect(staticBlocks.map((block) => block.type)).toEqual(["matrx"]);
   expect(expandTextBlocksInList(staticBlocks)).toEqual(staticBlocks);
 
   const latest = new Map<string, RenderBlockPayload>();
@@ -503,7 +498,7 @@ it("lifts directive JSON out of incomplete generic XML, live = reload (ruling b)
   expect(live.map((block) => (block.content ?? "").trim())).toEqual(
     staticBlocks.map((block) => block.content.trim()),
   );
-  expect(live[0]?.metadata).toEqual({ genericXmlContainer: true });
+  expect(live.map((block) => block.type)).toEqual(["matrx"]);
 });
 
 it("lifts a kind out of incomplete generic XML across a tool boundary (ruling b)", () => {

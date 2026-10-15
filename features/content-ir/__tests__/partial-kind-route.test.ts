@@ -187,16 +187,17 @@ describe("resolveProvisionalKindRender — the real quiz_set stream", () => {
   });
 });
 
-describe("the posture — withhold by default, opt in per kind", () => {
-  it("withholds a kind that has not opted in", () => {
+describe("the posture — progressive by default, opt out per kind", () => {
+  it("a bridged kind whose bridge is not provisional still withholds (progressive default, bridge declines)", () => {
     const row = (FIXTURES.clean_finish ?? []).find(
       (r) => resolveProvisionalKindRender(blockFor(r.event)) !== null,
     )!;
     const event = JSON.parse(JSON.stringify(row.event));
-    // presentation_deck is registered and bridged but has NOT opted in.
+    // presentation_deck is registered and bridged; progressive is the default
+    // (Arman, 2026-10-14), but its bridge does not take provisional values.
     event.root.kind = "presentation_deck";
     event.root.value.__kind = "presentation_deck";
-    expect(isPartialReadyKind("presentation_deck")).toBe(false);
+    expect(isPartialReadyKind("presentation_deck")).toBe(true);
     expect(resolveProvisionalKindRender(blockFor(event))).toBeNull();
   });
 
