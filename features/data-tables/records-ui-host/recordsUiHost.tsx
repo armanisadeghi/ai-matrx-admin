@@ -167,11 +167,13 @@ export function recordsUiHostFor({ ports, merged, gridContext, rights }: Records
     // …in the TABLE's organization: the file window lists only its files and uploads there.
     pickFiles: (ask) => RECORDS_FILES.pickFiles({ ...ask, organizationId: ports.organizationId }),
     members: ports.members,
-    // A kept-aside person opens the Person record it is, at /o/<id> (records-ui `openPerson`).
+    // A named person opens where people live: the table's organization workspace (a Person row has no
+    // screen of its own: /o/<person row> answers "no screen"). records-ui `openPerson`.
     // Spread as its own object: a records-ui build before the port ignores the key.
     ...{
-      openPerson: (target: { recordId: string }) => {
-        const href = `/o/${target.recordId}`;
+      openPerson: () => {
+        if (!ports.organizationId) return;
+        const href = `/organizations/${ports.organizationId}`;
         if (ports.navigate) ports.navigate(href);
         else window.open(href, "_blank", "noopener");
       },
