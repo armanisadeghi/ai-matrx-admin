@@ -1,6 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import { createRecordsClient, supabaseDataSource } from "@ai-matrx/records/core";
-import { env } from "./at-walk2-lib.mjs";
+import { env } from "./lib.mjs";
 export async function store() {
   const sb = createClient(env.NEXT_PUBLIC_SUPABASE_URL, env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY, { auth: { persistSession: false } });
   const { data: auth, error } = await sb.auth.signInWithPassword({ email: env.AI_ADMIN_USERNAME, password: env.AI_ADMIN_PASSWORD });

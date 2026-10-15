@@ -15,7 +15,7 @@ import { useState } from "react";
 import { Globe, Loader2, CalendarClock } from "lucide-react";
 
 import { toast } from "@/lib/toast";
-import { validateCron } from "@/lib/scheduler-client/next-due";
+import { validateCron } from "@ai-matrx/data/scheduler";
 import { cn } from "@/utils/cn";
 
 import {

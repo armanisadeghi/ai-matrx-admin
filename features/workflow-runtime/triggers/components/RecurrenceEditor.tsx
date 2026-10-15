@@ -12,14 +12,14 @@
  * verbatim (`fromCron` returns `advanced`), never rewritten.
  *
  * The next few real fire times are previewed with the platform's cron
- * primitives (`lib/scheduler-client/next-due.ts`), not a second parser.
+ * primitives (`@ai-matrx/data/scheduler`), not a second parser.
  */
 
 import { useMemo } from "react";
 
 import { OptionCombobox, Select } from "@ai-matrx/design-system/controls";
 
-import { nextNCronFires, validateCron } from "@/lib/scheduler-client/next-due";
+import { nextNCronFires, validateCron } from "@ai-matrx/data/scheduler";
 
 import {
   DAY_NAMES,

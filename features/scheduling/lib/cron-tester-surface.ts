@@ -18,7 +18,7 @@
 // the handler could accept a zone the picker cannot display, which would leave
 // the Select rendering blank over a value the agent believes it set.
 //
-// Validation reuses `validateCron` from `lib/scheduler-client/next-due` — the
+// Validation reuses `validateCron` from `@ai-matrx/data/scheduler` — the
 // exact function the page renders its error alert from — so the value a
 // handler accepts and the value the page previews can never drift.
 
@@ -28,7 +28,7 @@ import {
 } from "@/features/surfaces/manifests/admin-scheduling.manifest";
 import type { SurfaceScopePayload } from "@ai-matrx/chat/surfaces/types";
 import type { SurfaceWriteHandlers } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
-import { validateCron } from "@/lib/scheduler-client/next-due";
+import { validateCron } from "@ai-matrx/data/scheduler";
 
 export { ADMIN_SCHEDULING_SURFACE_NAME };
 

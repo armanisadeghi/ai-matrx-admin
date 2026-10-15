@@ -9,7 +9,7 @@
  * so nothing is ever silently rewritten.
  *
  * Cron evaluation itself is NOT reimplemented here: `validateCron` /
- * `nextNCronFires` in `lib/scheduler-client/next-due.ts` are the platform's
+ * `nextNCronFires` in `@ai-matrx/data/scheduler` are the platform's
  * cron primitives (cron-parser, timezone-aware) and every preview goes
  * through them.
  */

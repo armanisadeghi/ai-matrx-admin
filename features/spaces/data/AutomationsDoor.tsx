@@ -16,5 +16,5 @@ import type { Field } from "@ai-matrx/records/react";
 const AutomationsPanel = dynamic(() => import("./Automations").then((m) => m.AutomationsPanel), { ssr: false });
 
 export function AutomationsDoor(props: { tableId: string; organizationId: string | null; fields: Field[] }) {
-  return <AutomationsPanel {...props} />;
+  return <AutomationsPanel {...props} words="table" />;
 }

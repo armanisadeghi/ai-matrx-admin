@@ -1,0 +1,16 @@
+import { store } from "./store.mjs";
+import { T } from "./lib.mjs";
+const { client } = await store();
+const must = (r, w) => { if (!r.ok) throw new Error(w + ": " + JSON.stringify(r.error)); return r.data; };
+const d = must(await client.automationDeclare({ table_id: T.events, spec: { name: "Walk3 notify author", trigger: { on: "row_added" }, actions: [{ do: "notify", to: { author: true }, text: "A record was added" }] } }), "declare");
+console.log("declared", JSON.stringify(d).slice(0, 200));
+const list = must(await client.automations({ table_id: T.events }), "list");
+const a = list.automations.find((x) => x.spec.name === "Walk3 notify author");
+const page = must(await client.listPage({ table_id: T.events, limit: 1 }), "rows");
+const t = must(await client.automationTest({ automation_id: a.id, record_id: page.rows[0].id }), "test");
+console.log("test", JSON.stringify(t).slice(0, 300));
+const runs = must(await client.automationRuns({ automation_id: a.id }), "runs");
+console.log("runs", runs.runs.length, runs.runs[0]?.status, runs.runs[0]?.trigger);
+const off = must(await client.automationSetEnabled({ automation_id: a.id, enabled: false }), "off");
+const l2 = must(await client.automations({ table_id: T.events }), "list2");
+console.log("enabled after off:", l2.automations.find((x) => x.id === a.id).enabled, "id", a.id);
