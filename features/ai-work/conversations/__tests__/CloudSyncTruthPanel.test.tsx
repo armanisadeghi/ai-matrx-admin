@@ -516,4 +516,21 @@ describe("the reconcile door on a Matrx 2 computer", () => {
     expect(mockedReconcile).not.toHaveBeenCalled();
     expect(mockedCapability).not.toHaveBeenCalled();
   });
+
+  // RED WHEN: the server's "cannot tell" shows while a Matrx 2 computer holds and answers for the
+  // chat (walk 3, N1), or stops showing when none does.
+  it("shows the red 'cannot tell' only when no Matrx 2 computer holds the chat", async () => {
+    mockedApiPost.mockRejectedValue(new Error("Failed to fetch"));
+    onStudioMac({ state: "done", summary: "unused" });
+    await render();
+    expect(text()).not.toContain("Cannot tell whether this conversation is in sync");
+    expect(text()).toContain("Studio Mac (Matrx 2) holds this chat");
+    unmount();
+
+    mockedDoors.reach.listComputers.mockResolvedValue([]);
+    await render();
+    expect(text()).toContain("Cannot tell whether this conversation is in sync");
+    expect(text()).toContain("No Matrx 2 computer holds it");
+  });
 });
+
