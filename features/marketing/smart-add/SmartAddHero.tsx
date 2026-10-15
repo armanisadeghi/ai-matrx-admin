@@ -96,6 +96,7 @@ export function SmartAddHero({
   outcome = null,
   unreadable = false,
   slow = false,
+  loadingSession = false,
   onRestart,
   onStarted,
   notice = null,
@@ -136,6 +137,8 @@ export function SmartAddHero({
   unreadable?: boolean;
   /** No new step for the quiet-time knob while a round runs. */
   slow?: boolean;
+  /** A resumed session whose saved rounds are still being read: the stage says so instead of a blank. */
+  loadingSession?: boolean;
   /** Stop and reset the session ("over" also clears the address); false = the person kept going. */
   onRestart?: (how: "edit" | "retry" | "over") => Promise<boolean>;
   /** A search starts (one history entry: Back returns here). */
@@ -172,6 +175,9 @@ export function SmartAddHero({
   const [askedClue, setAskedClue] = useState(false);
   const [second, setSecond] = useState(false);
   const [submitted, setSubmitted] = useState(resumed);
+  // A search is being started (the existing-brand check runs first): the live stage is already up, so a
+  // link-started round and a pressed Go show the same stage from the first moment.
+  const [starting, setStarting] = useState(false);
 
   const parsed = resolveAccountInput({ text: social, picked });
   // Up-front checks: an address or handle that cannot exist never starts a paid run; the reason shows inline.
@@ -201,7 +207,7 @@ export function SmartAddHero({
   const ready = readyFor(picked);
 
   const phase: "choose" | "enter" | "identifying" | "nothing" | "outcome" =
-    submitted && (outcome || unreadable) ? "outcome" : submitted && nothingFound ? "nothing" : submitted ? "identifying" : mode ? "enter" : "choose";
+    submitted && (outcome || unreadable) ? "outcome" : submitted && nothingFound ? "nothing" : submitted || starting ? "identifying" : mode ? "enter" : "choose";
 
   /** Back to the field (what was typed kept): the search stops; asks first when findings or answers would go. */
   const edit = async () => {
@@ -252,9 +258,11 @@ export function SmartAddHero({
   const submit = (pk: SocialPlatform | null = picked) => {
     if (!readyFor(pk)) return;
     if (!onBeforeStart) return go(pk);
+    setStarting(true);
     void onBeforeStart({ website: siteOk ? site.trim() : "", social: socialOkFor(pk) ? social.trim() : "", platform: pk, name: name.trim(), city: city.trim() }).then((ok) => {
       held.current = !ok;
       if (ok) go(pk);
+      setStarting(false);
     });
   };
   const goHeld = useEffectEvent(() => {
@@ -594,6 +602,7 @@ export function SmartAddHero({
               settled={phase === "nothing" || phase === "outcome"}
               failed={failed}
               answerTitle={answer?.title ?? null}
+              loadingSession={loadingSession && phase === "identifying"}
               host={host}
               platform={parsed.status === "ok" && socialOk ? parsed.platform : null}
               typedName={mode === "name" ? name.trim() : null}
@@ -1093,6 +1102,7 @@ function Centerpiece({
   platform,
   typedName,
   answerTitle = null,
+  loadingSession = false,
 }: {
   items: EvidenceItem[];
   views: RoundView[];
@@ -1101,6 +1111,8 @@ function Centerpiece({
   failed: boolean;
   /** The entry's answer ("No account found"): wins over any name, so nothing is ever made from what was typed. */
   answerTitle?: string | null;
+  /** The saved rounds of a resumed session are still being read. */
+  loadingSession?: boolean;
   host: string | null;
   platform: SocialPlatform | null;
   typedName: string | null;
@@ -1133,9 +1145,10 @@ function Centerpiece({
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 24 }}
+      initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.12, duration: 0.6, ease: [0.2, 0.8, 0.2, 1] }}
+      // No delay: a link-started or restored round shows its stage from the first moment.
+      transition={{ duration: 0.3, ease: [0.2, 0.8, 0.2, 1] }}
       className={`flex w-full flex-col items-center ${settled ? `mt-8 ${styles.settled}` : "mt-12 sm:mt-14"}`}
       aria-live="polite"
     >
@@ -1197,6 +1210,10 @@ function Centerpiece({
           </Shared>
         ) : settled ? (
           <span className="text-2xl font-semibold tracking-tight sm:text-3xl">{failed ? "The lookup didn't finish" : "Nothing online yet"}</span>
+        ) : loadingSession ? (
+          <span className="text-base text-muted-foreground motion-safe:animate-pulse" data-testid="smart-add-loading-session">
+            Loading your session
+          </span>
         ) : (
           <span className="h-3 w-44 rounded-full bg-foreground/[0.07] motion-safe:animate-pulse" />
         )}

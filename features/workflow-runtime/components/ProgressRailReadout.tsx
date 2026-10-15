@@ -18,6 +18,7 @@
 
 import { useEffect, useState } from "react";
 import { formatDurationMs } from "@ai-matrx/kit/format";
+import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
 import { CheckCircle2, CircleDashed, Eye, Loader2 } from "lucide-react";
 
 import { useCanWatchAi } from "@/features/ai-watch/useCanWatchAi";
@@ -148,7 +149,7 @@ function RailNodeRow({
   const head = (
     <>
       <PhaseIcon phase={phase} />
-      <span className="truncate text-xs font-medium">{label ?? specType ?? nodeId}</span>
+      <span className="truncate text-xs font-medium">{label ?? (humanizeIdentifier(nodeId) || nodeId)}</span>
       {ai ? (
         <span className="shrink-0 rounded bg-primary/10 px-1 text-[10px] font-semibold text-primary">AI</span>
       ) : null}

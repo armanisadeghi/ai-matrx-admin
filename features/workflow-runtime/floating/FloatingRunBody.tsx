@@ -38,6 +38,8 @@ import {
   selectRunStatus,
 } from "../redux/workflow-runs.selectors";
 import { runIsOver } from "../types";
+import { useCanWatchAi } from "@/features/ai-watch/useCanWatchAi";
+import { useRunStepLabels } from "./useRunStepLabels";
 import { ProgressRailReadout } from "../components/ProgressRailReadout";
 import { parseInterruptPayload } from "../interrupt/interrupt-view";
 import { currentLivenessLine } from "./run-liveness";
@@ -48,7 +50,7 @@ const NO_STEP_LABELS: Record<string, string> = {};
 
 export function FloatingRunBody({
   runId,
-  stepLabels = NO_STEP_LABELS,
+  stepLabels: suppliedLabels = NO_STEP_LABELS,
 }: {
   runId: string;
   /**
@@ -59,6 +61,8 @@ export function FloatingRunBody({
    */
   stepLabels?: Record<string, string>;
 }) {
+  const stepLabels = useRunStepLabels(runId, suppliedLabels);
+  const canSeeRaw = useCanWatchAi();
   const status = useAppSelector(selectRunStatus(runId));
   const activity = useAppSelector(selectRunActivity(runId));
   const interrupt = useAppSelector(selectRunInterrupt(runId));
@@ -89,6 +93,7 @@ export function FloatingRunBody({
           <Loader2 className="mt-0.5 h-3.5 w-3.5 shrink-0 animate-spin text-primary" />
         ) : null}
         <p
+          title={canSeeRaw ? (line?.raw ?? undefined) : undefined}
           className={cn(
             "min-w-0 text-xs",
             live ? "text-foreground" : "text-muted-foreground",

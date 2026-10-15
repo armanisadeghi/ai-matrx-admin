@@ -64,6 +64,7 @@ import {
   selectRunStickyFacts,
 } from "../redux/workflow-runs.selectors";
 import { runIsOver } from "../types";
+import { plainProgress } from "./run/activity-copy";
 import type { NodeInvocationState } from "../redux/workflow-runs.slice";
 import {
   workflowFailureAgentInput,
@@ -109,7 +110,7 @@ function WorkingBody({ message }: { message: string | null }) {
     <div className="space-y-2">
       <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
         <Loader2 className="h-3.5 w-3.5 shrink-0 animate-spin text-primary" />
-        <span className="truncate">{message ?? "Working on this now"}</span>
+        <span className="truncate">{message === null ? "Working on this now" : plainProgress(message).text}</span>
       </div>
       <div aria-hidden className="space-y-1.5">
         <div className="h-2 w-[92%] animate-pulse rounded-full bg-muted" />

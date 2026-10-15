@@ -32,7 +32,7 @@ const PHASE_COPY: Record<string, string> = {
   // emitters and stay tolerated. `retrying` and `complete` are already spelled
   // out further down — the set is covered, not duplicated.
   preparing: "Getting ready",
-  streaming: "Writing it out",
+  streaming: "Writing the answer",
   tool: "Using a tool",
   reasoning: "Reasoning",
   finalizing: "Finishing up",
@@ -44,10 +44,28 @@ const PHASE_COPY: Record<string, string> = {
   structuring: "Structuring the material",
   searching: "Searching",
   retrying: "Trying again",
-  complete: "Finished a pass",
+  complete: "Done",
   "reasoning:started": "Reasoning",
   "reasoning:stopped": "Finished reasoning",
 };
+
+/**
+ * The engine's loop counter ("Tool iteration 1 of 100") is an internal
+ * number; people read "Thinking". The raw message stays available for the
+ * admin hover (`ActivityLine.raw`).
+ */
+const LOOP_COUNTER = /^\s*(?:tool\s+)?iteration\s+\d+\s+of\s+\d+\s*$/i;
+
+export function plainProgress(message: string | null): {
+  text: string;
+  raw: string | null;
+} {
+  if (message === null || message.trim() === "") {
+    return { text: "Working", raw: null };
+  }
+  if (LOOP_COUNTER.test(message)) return { text: "Thinking", raw: message };
+  return { text: message, raw: null };
+}
 
 export function phaseCopy(raw: string): string {
   const key = raw.trim().toLowerCase();
@@ -125,6 +143,8 @@ export interface ActivityLine {
   detail: string | null;
   /** Drives the icon + tint. */
   tone: "work" | "tool" | "done" | "warn" | "fail";
+  /** The raw engine text behind a plain-word line; admins see it on hover. */
+  raw?: string | null;
 }
 
 /**
@@ -181,13 +201,17 @@ export function activityLine(
       return { text: "Refused; the run ended here", stepLabel, detail, tone: "warn" };
     case "retry":
       return { text: "Trying again", stepLabel, detail, tone: "warn" };
-    case "progress":
+    case "progress": {
+      const plain = plainProgress(entry.text);
       return {
-        text: entry.text ?? "Working",
+        text: plain.text,
         stepLabel,
-        detail,
+        // The "n/total" detail of a loop counter is the same internal number.
+        detail: plain.raw ? null : detail,
         tone: "work",
+        raw: plain.raw ? `${plain.raw}${detail ? ` · ${detail}` : ""}` : null,
       };
+    }
     case "phase":
       return {
         text: phaseCopy(entry.text ?? ""),

@@ -15,6 +15,7 @@
  * arrived" — this is a live log, not a checklist.
  */
 
+import { useCanWatchAi } from "@/features/ai-watch/useCanWatchAi";
 import { useEffect, useRef, useState } from "react";
 import {
   AlertTriangle,
@@ -78,6 +79,7 @@ export function RunActivityFeed({
   stepLabels: Record<string, string>;
   className?: string;
 }) {
+  const canSeeRaw = useCanWatchAi();
   const activity = useAppSelector(selectRunActivity(runId));
   const status = useAppSelector(selectRunStatus(runId));
   const [open, setOpen] = useState(true);
@@ -169,6 +171,7 @@ export function RunActivityFeed({
                     </span>
                   ) : null}
                   <span
+                    title={canSeeRaw ? (line.raw ?? undefined) : undefined}
                     className={cn(
                       line.tone === "fail"
                         ? "text-destructive"

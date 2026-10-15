@@ -64,6 +64,7 @@ import {
   selectRunTransportMode,
 } from "../redux/workflow-runs.selectors";
 import { RunEmissions } from "./run/RunEmissions";
+import { plainProgress } from "./run/activity-copy";
 import {
   InterruptCard,
   InvocationBody,
@@ -128,7 +129,7 @@ function NodeRow({ runId, nodeId }: { runId: string; nodeId: string }) {
               <InvocationBody runId={runId} invocation={inv} />
               {inv.progress?.message ? (
                 <p className="mt-1 text-[11px] text-muted-foreground">
-                  {inv.progress.message}
+                  {plainProgress(inv.progress.message).text}
                 </p>
               ) : null}
             </div>

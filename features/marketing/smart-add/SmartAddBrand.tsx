@@ -1503,6 +1503,7 @@ export function SmartAddBrand({
           outcome={entryFailed ? entryOutcome : null}
           unreadable={runUnreadable}
           slow={quiet && working}
+          loadingSession={Boolean(resume) && !fresh && (!showable || rounds.some((r) => r.runId && !views[r.runId]))}
           onRestart={restart}
           onStarted={url?.markSearch}
           onWebsite={setWebsiteText}
