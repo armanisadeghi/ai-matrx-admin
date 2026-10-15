@@ -25,6 +25,32 @@ import type { Json } from "@/types/database.types";
 export const MATRX_SYSTEM_BOT_USER_ID =
   "71b55cc0-f333-462f-8176-f558f866ea5d";
 
+/** The bot's provenance on every message it sends: drawn as "Automation", filed under Agents. */
+export const SYSTEM_NOTICE_ACTOR = {
+  actor_kind: "automation",
+  actor_label: "Matrx System",
+  actor_id: "automation:matrx-system",
+} as const;
+
+/** Stamp `metadata.kind = system_notice` on the bot's direct line once (never overwrites a kind). */
+async function markSystemNoticeConversation(conversationId: string): Promise<void> {
+  const supabase = createAdminClient();
+  const { data } = await supabase
+    .schema("communication")
+    .from("dm_conversations")
+    .select("metadata")
+    .eq("id", conversationId)
+    .maybeSingle();
+  const meta = (data?.metadata ?? {}) as Record<string, Json>;
+  if (typeof meta.kind === "string" && meta.kind !== "") return;
+  const { error } = await supabase
+    .schema("communication")
+    .from("dm_conversations")
+    .update({ metadata: { ...meta, kind: "system_notice" } })
+    .eq("id", conversationId);
+  if (error) throw error;
+}
+
 /**
  * Find an existing direct-message conversation between two users, or create
  * one atomically (advisory-locked RPC). Returns the conversation id plus its
@@ -124,6 +150,8 @@ export async function sendDm(options: SendDmOptions): Promise<SendDmResult> {
         options.organizationId,
       );
     const supabase = createAdminClient();
+    const fromBot = senderId === MATRX_SYSTEM_BOT_USER_ID;
+    if (fromBot) await markSystemNoticeConversation(conversationId);
     const { error } = await supabase
       .schema("communication")
       .from("dm_messages")
@@ -136,6 +164,8 @@ export async function sendDm(options: SendDmOptions): Promise<SendDmResult> {
         status: "sent",
         action_data: (options.actionData ?? null) as Json,
         client_message_id: options.clientMessageId ?? null,
+        // The bot is an automation, never a person (twin: aidream notifications/direct_message.py).
+        ...(fromBot ? { metadata: SYSTEM_NOTICE_ACTOR } : {}),
         // Written only when set: lapsed is derived from it, never stamped.
         ...(options.softExpiresAt !== undefined
           ? { soft_expires_at: options.softExpiresAt }

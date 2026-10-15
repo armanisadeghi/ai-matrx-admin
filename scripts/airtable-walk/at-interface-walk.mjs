@@ -7,7 +7,7 @@ import { mkdirSync } from "node:fs";
 import { declareTable } from "@ai-matrx/records/core";
 import { store } from "./store.mjs";
 import { ORIGIN, env } from "./lib.mjs";
-import { signIn } from "../lib/seat-browser.mjs";
+import { walkSignIn } from "./walk-signin.mjs";
 import { withFixtureUser, testTarget, fixtureSessionCookies } from "../lib/persona.mjs";
 
 const say = (...a) => console.log(...a);
@@ -89,7 +89,7 @@ try {
     const actx = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
     const ap = await actx.newPage();
     const aerr = []; ap.on("console", (m) => m.type() === "error" && aerr.push(m.text().slice(0, 160)));
-    await signIn(ap, ORIGIN, env.AI_ADMIN_USERNAME, env.AI_ADMIN_PASSWORD, "admin");
+    await walkSignIn(ap, ORIGIN, { member: false });
     await ap.goto(`${ORIGIN}/data/interfaces/${iface}`, { waitUntil: "domcontentloaded", timeout: 300000 });
     await ap.waitForSelector("[data-records-page-number]", { timeout: 300000 });
     await ap.waitForTimeout(5000);
@@ -118,7 +118,7 @@ try {
     // MEMBER (test@test.com) — not shared: Request access, or the org lane opens it
     const mctx = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
     const mp = await mctx.newPage();
-    await signIn(mp, ORIGIN, "test@test.com", env.AI_MEMBER_PASSWORD, "member").catch((e) => say("MEMBER sign-in", e.message.slice(0, 80)));
+    await walkSignIn(mp, ORIGIN, { member: true }).catch((e) => say("MEMBER sign-in", e.message.slice(0, 80)));
     await mp.goto(`${ORIGIN}/data/interfaces/${iface}`, { waitUntil: "domcontentloaded", timeout: 300000 });
     await mp.waitForTimeout(15000);
     say("MEMBER sees:", (await mp.locator("main, body").first().innerText()).replace(/\s+/g, " ").slice(0, 160));

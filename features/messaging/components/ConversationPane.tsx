@@ -28,7 +28,6 @@ import "../messages-native.css";
  */
 
 import { useRef, useState } from "react";
-import { useRouter } from "next/navigation";
 import { MessagesConversationHeader } from "./MessagesConversationHeader";
 import {
   ConversationView,
@@ -52,6 +51,7 @@ import {
 } from "@/features/messaging/lib/messaging-menu-actions";
 import { useOpenSaveToTable } from "@/features/overlays/openers/saveToTable";
 import { useMessagingAiDemand } from "@/features/messaging/lib/messagingAiDemand";
+import { useOpenConversation } from "@/features/messaging/lib/openConversation";
 
 export interface ConversationPaneProps {
   conversationId: string;
@@ -80,7 +80,7 @@ export function ConversationPane({
   appearance,
   deliveryStatusFor,
 }: ConversationPaneProps) {
-  const router = useRouter();
+  const openConversation = useOpenConversation();
   // Declare that this surface renders the conversation AI bar, so the four
   // `messaging.*` mandates resolve. Ref-counted: it releases on unmount.
   useMessagingAiDemand(showAi);
@@ -152,7 +152,7 @@ export function ConversationPane({
             conversationId={conversationId}
             onBack={onBack}
             onSelect={
-              onSelectConversation ?? ((id) => router.push(`/messages/${id}`))
+              onSelectConversation ?? openConversation
             }
           />
         )}
