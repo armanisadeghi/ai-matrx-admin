@@ -19,6 +19,7 @@ export const DESIGNATED_TEST_INBOX = "info@aimatrx.com";
 export const TEST_ACCOUNT_USER_IDS: Readonly<Record<string, string>> = {
   "admin@admin.com": "87a6e699-3622-4869-8843-d0867456c0dd",
   "test@test.com": "4060701e-706a-4c76-b3ca-0bbc69fa5a14",
+  "automated.live-tests@fixtures.aimatrx.com": "288cae15-7190-4e88-8d86-a5b2e7069622",
 };
 
 /** The header every redirected message carries, naming who it was really for. */
