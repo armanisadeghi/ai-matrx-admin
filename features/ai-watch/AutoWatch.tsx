@@ -21,8 +21,9 @@ import { createSelector } from "@reduxjs/toolkit";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { useCanWatchAi } from "./useCanWatchAi";
 import { isAutomatedRun, selectLivePageAiRuns } from "./page-ai-runs";
-import { watchAiRunAction } from "@/features/overlays/openers/aiWatchWindow";
-import { openWorkflowRunWindowAction } from "@/features/overlays/openers/workflowRunWindow";
+import { AI_WATCH_PAGE_INSTANCE, watchAiRunAction } from "@/features/overlays/openers/aiWatchWindow";
+import { markAutoOpened } from "@/features/window-panels/utils/autoOpenPlacement";
+import { openWorkflowRunWindowAction, workflowRunWindowInstanceId } from "@/features/overlays/openers/workflowRunWindow";
 import { runIsOver } from "@/features/workflow-runtime/types";
 import type { RootState } from "@/lib/redux/store";
 
@@ -54,6 +55,7 @@ export default function AutoWatch() {
   const openWatchAiOnce = useCallback(() => {
     if (watchOpened.current) return;
     watchOpened.current = true;
+    markAutoOpened("aiWatchWindow", AI_WATCH_PAGE_INSTANCE);
     dispatch(watchAiRunAction());
   }, [dispatch]);
 
@@ -64,6 +66,7 @@ export default function AutoWatch() {
     if (!fresh.length) return;
     for (const runId of fresh) {
       openedRuns.current.add(runId);
+      markAutoOpened("workflowRunWindow", workflowRunWindowInstanceId(runId));
       dispatch(openWorkflowRunWindowAction({ runId }));
     }
     // Watch AI itself waits for the first AI call (below): a run with no call yet has nothing

@@ -18,7 +18,7 @@
  */
 
 import { useEffect, useRef, useCallback, useId, useState } from "react";
-import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
+import { useAppDispatch, useAppSelector, useAppStore } from "@/lib/redux/hooks";
 import {
   registerWindow,
   unregisterWindow,
@@ -43,6 +43,7 @@ import {
   type DragOutState,
 } from "../popout/popoutDragDetector";
 import { safeViewportDims } from "../utils/rectClamp";
+import { resolveAutoOpenPlacement } from "../utils/autoOpenPlacement";
 import { holdDragCursor, type DragCursor } from "@ai-matrx/design-system";
 
 // ─── Config ────────────────────────────────────────────────────────────────────
@@ -143,6 +144,9 @@ function nextCascadeStep(): number {
  */
 const NARROW_VIEWPORT = 768;
 
+/** Ids of auto-opened windows docked in a gutter, so the next one stacks under them. */
+const autoDocked = new Set<string>();
+
 /** The shell header's height (`--shell-header-h`) plus a gap; 44px fallback. */
 function shellHeaderClearance(): number {
   const GAP = 12;
@@ -225,6 +229,12 @@ export interface UseWindowPanelOptions {
   /** Park a brand-new desktop window in the tray without a visible flash. */
   initialState?: "windowed" | "minimized";
   /**
+   * The system (not a person) opened this window. It docks in a free gutter beside the page's
+   * working column, or parks in the tray when none fits — never over the page. See
+   * `utils/autoOpenPlacement.ts`. WindowPanel sets this from `markAutoOpened`.
+   */
+  autoOpened?: boolean;
+  /**
    * @deprecated Pass `width`, `height`, and `position` instead.
    * Low-level initial rect — overrides width/height/position when provided.
    */
@@ -299,6 +309,7 @@ export function useWindowPanel(
   const id = opts.id ?? reactId;
 
   const dispatch = useAppDispatch();
+  const store = useAppStore();
   const entry = useAppSelector(selectWindow(id));
 
   const minWidth = opts.minWidth ?? MIN_WIDTH;
@@ -315,20 +326,38 @@ export function useWindowPanel(
     const h =
       opts.initialRect?.height ?? resolveSize(opts.height, DEFAULT_HEIGHT);
     const { vw, vh } = safeViewportDims();
-    const pos =
-      opts.initialRect?.x !== undefined || opts.initialRect?.y !== undefined
+    let autoPlaced: ReturnType<typeof resolveAutoOpenPlacement> | null = null;
+    if (opts.autoOpened && vw >= NARROW_VIEWPORT) {
+      const siblings = Object.values(store.getState().windowManager.windows)
+        .filter((win) => win.state === "windowed" && autoDocked.has(win.id))
+        .map((win) => win.windowed);
+      autoPlaced = resolveAutoOpenPlacement({
+        width: w,
+        height: h,
+        minWidth,
+        top: shellHeaderClearance(),
+        viewport: { vw, vh },
+        siblings,
+      });
+      if (!autoPlaced.minimized) autoDocked.add(id);
+    }
+    const pos = autoPlaced
+      ? { x: autoPlaced.rect.x, y: autoPlaced.rect.y }
+      : opts.initialRect?.x !== undefined || opts.initialRect?.y !== undefined
         ? {
             x: opts.initialRect?.x ?? Math.max(0, (vw - w) / 2),
             y: opts.initialRect?.y ?? Math.max(0, (vh - h) / 4),
           }
         : resolvePosition(opts.position, w, h);
-    const initial: WindowRect = { ...pos, width: w, height: h };
+    const initial: WindowRect = autoPlaced
+      ? { ...autoPlaced.rect }
+      : { ...pos, width: w, height: h };
     dispatch(
       registerWindow({
         id,
         title: opts.title,
         initial,
-        initialState: opts.initialState,
+        initialState: autoPlaced?.minimized ? "minimized" : opts.initialState,
         persistence: opts.persistence,
         // Sanitized dims: a degenerate 0×0 measurement must never become the
         // clamp target, or every rect collapses to garbage (see safeViewportDims).
@@ -351,6 +380,7 @@ export function useWindowPanel(
       : null;
     return () => {
       if (confirmationTimer !== null) window.clearTimeout(confirmationTimer);
+      autoDocked.delete(id);
       dispatch(unregisterWindow(id));
     };
   }, [id]);

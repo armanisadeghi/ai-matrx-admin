@@ -64,6 +64,7 @@ import {
 } from "@/lib/redux/slices/windowManagerSlice";
 import type { GlobalLayoutType } from "./utils/windowArrangements";
 import { safeViewportDims } from "./utils/rectClamp";
+import { clearAutoOpened, isAutoOpened } from "./utils/autoOpenPlacement";
 import { useIsMobile } from "@ai-matrx/kit/media-query";
 import { useIsMounted } from "@/hooks/use-is-mounted";
 import { getStaticEntryByOverlayId } from "./registry/windowRegistryMetadata";
@@ -492,6 +493,21 @@ export function WindowPanel({
     ? getStaticEntryByOverlayId(overlayId)
     : undefined;
   const effectiveInstanceId = overlayInstanceId ?? DEFAULT_INSTANCE_ID;
+  // MKT-104: a window the system opened (debug auto-open) docks beside the page, never over it.
+  const [autoOpened] = useState(
+    () => Boolean(overlayId) && isAutoOpened(overlayId as string, effectiveInstanceId),
+  );
+  useEffect(() => {
+    if (!overlayId) return undefined;
+    let timer: number | undefined;
+    return () => {
+      timer = window.setTimeout(
+        () => clearAutoOpened(overlayId, effectiveInstanceId),
+        100,
+      );
+      void timer;
+    };
+  }, [overlayId, effectiveInstanceId]);
   const preservationEnabled = Boolean(
     overlayId &&
     registryEntry?.preservation &&
@@ -561,6 +577,7 @@ export function WindowPanel({
     ...hookOpts,
     id,
     title,
+    autoOpened,
     minWidth,
     minHeight,
     onTriggerPopout,
