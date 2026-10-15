@@ -153,6 +153,8 @@ import { SmartAddBioLinks } from "./SmartAddBioLinks";
 import { linkInBioService } from "@/features/marketing/lib/link-in-bio";
 import { SmartAddWebRow } from "./SmartAddWebRow";
 import { captureProvision } from "@/features/provision-window/data";
+import { autoOpenHasRoom, markAutoOpened } from "@/features/window-panels/utils/autoOpenPlacement";
+import { DEFAULT_INSTANCE_ID } from "@/lib/redux/slices/overlaySlice";
 import { useOpenProvisionWindow } from "@/features/overlays/openers/provisionWindow";
 import { ProvisionCaptures } from "@/features/provision-window/ProvisionCaptures";
 import { useBuilderFeed } from "@/hooks/useBuilderFeed";
@@ -1310,6 +1312,7 @@ export function SmartAddBrand({
   // PROVISION POINT — brand_intake.smart_add_create. This is where the brand-intake analysis
   // would run. No agent runs (Arman, 2026-10-12): the exact values available here are captured
   // and shown in the Provision window. Spec: smart-add-brand/PROVISION.md.
+  const provisionAutoOpened = useRef(false);
   const showProvision = async (
     brand: MarketingBrand,
     organizationId: string,
@@ -1328,7 +1331,18 @@ export function SmartAddBrand({
         ref: { type: "provision_snapshot", id: snapshot.id },
       });
       setProvisionTick((t) => t + 1);
-      if (open) openProvision(snapshot.id, `Brand analysis inputs: ${brand.name}`);
+      if (open) {
+        // MKT-133: Create opens this window by itself, so it follows the Watch AI rules (MKT-076 / MKT-104):
+        // once per page load (a close sticks), only when a gutter beside the working column holds it, never
+        // over the cards. A person's own press on "Brand analysis inputs" ("manual") always opens it.
+        if (trigger === "manual") {
+          openProvision(snapshot.id, `Brand analysis inputs: ${brand.name}`);
+        } else if (!provisionAutoOpened.current && autoOpenHasRoom()) {
+          provisionAutoOpened.current = true;
+          markAutoOpened("provisionWindow", DEFAULT_INSTANCE_ID);
+          openProvision(snapshot.id, `Brand analysis inputs: ${brand.name}`);
+        }
+      }
     } catch (error) {
       setSaveNotes((n) => [...n, extractErrorMessage(error)]);
     } finally {
@@ -1390,9 +1404,11 @@ export function SmartAddBrand({
     return () => clearTimeout(timer);
   }, [working, entryFailed, runUnreadable, lastEventAt, stallMs]);
   // A late not-found answer takes the findings page back down.
+  // MKT-134: never once the brand exists — the validation page is mounted by `structured`, and taking it down
+  // drops the Answered tray's state (5 answered became 1).
   useEffect(() => {
-    if (entryFailed) setStructured(false);
-  }, [entryFailed]);
+    if (entryFailed && !created) setStructured(false);
+  }, [entryFailed, created]);
 
   useEffect(() => {
     if (structured || !hasFindings || entryFailed) return;
@@ -1571,7 +1587,8 @@ export function SmartAddBrand({
       </>
     );
   }
-  if (!structured) {
+  // The validation page outranks the entry: nothing pulls it down while its answers are on screen (MKT-134).
+  if (!structured && !(created && validateOrg)) {
     return (
       <>
         <SmartAddHero
@@ -1839,7 +1856,8 @@ export function SmartAddBrand({
           items={visible}
           keyPeople={keyPeople}
           decisions={decisions}
-          working={working}
+          // MKT-135: once Create has been pressed the slots are final — an empty one says "Nothing found", never "Looking…".
+          working={working && !creating && !created}
           started={rounds.length > 0}
           locked={Boolean(created)}
           person={person}
