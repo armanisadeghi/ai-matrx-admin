@@ -46,6 +46,16 @@ import type { AgendaTask } from "../../types";
 import { TriggerChip } from "./TriggerChip";
 import { WATCHES_AN_ARCHIVED_TABLE } from "../../lib/triggerWatch";
 import { SurfacesChips } from "./SurfacesChips";
+import { computerScheduleLabel } from "../../utils/computerWork";
+import { runsOnComputer, useComputerStatus } from "../detail/ComputerTargetLine";
+
+/** A schedule on a computer says what runs where (never the "Desktop app" surface); others keep their surfaces. */
+function ComputerOrSurfaces({ task }: { task: AgendaTask }) {
+  const onComputer = runsOnComputer(task);
+  const computer = useComputerStatus(onComputer ? task.targetDeviceId : null);
+  if (!onComputer) return <SurfacesChips surfaces={task.surfaces} />;
+  return <span data-schedule-runs-on="">{computerScheduleLabel(task, computer.name)}</span>;
+}
 
 interface Props {
   task: AgendaTask;
@@ -160,7 +170,7 @@ export function ScheduleRow({
         )}
         <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
           <TriggerChip trigger={trigger} />
-          <SurfacesChips surfaces={task.surfaces} />
+          <ComputerOrSurfaces task={task} />
           <span className="ml-1">Next: {humanizeRelative(task.nextDueAt)}</span>
           <span>· Last: {humanizeRelative(task.lastRunAt)}</span>
         </div>

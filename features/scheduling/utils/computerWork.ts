@@ -75,3 +75,17 @@ export function deviceOpWith(
 export function homeLabel(h: ComputerWorkHome): string {
   return h.label && h.label !== h.id ? h.label : `A ${h.token.replace("_", " ")}`;
 }
+
+/**
+ * What a schedule on a computer is, as one label (the list row): a coding session there, or an agent
+ * bound to it. Null for a cloud schedule. Pure.
+ */
+export function computerScheduleLabel(
+  task: { kind: string; targetDeviceId?: string | null; surfaces: readonly string[]; deviceOp?: ComputerCodingWork | null },
+  computerName: string | null,
+): string | null {
+  const onComputer = task.targetDeviceId != null || (task.surfaces.length === 1 && task.surfaces[0] === "desktop");
+  if (!onComputer) return null;
+  const name = computerName ?? "your computer";
+  return task.deviceOp || task.kind === "device_op" ? `Coding session on ${name}` : `Agent on ${name}`;
+}
