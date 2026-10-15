@@ -14,6 +14,9 @@
  */
 
 import { isLinkInBioUrl } from "../lib/link-in-bio";
+import { accountKey } from "../social/account-input";
+import { parseSocialAccount } from "../social/link";
+import { SOCIAL_PLATFORMS, type SocialPlatform } from "../social/types";
 import { websiteHost, type Certainty, type EvidenceField, type EvidenceItem, type EvidenceSource } from "./evidence";
 import type { BrandFact } from "./validate/queue";
 
@@ -148,6 +151,7 @@ export function brandNameFromPayload(payload: unknown, depth = 0): string | null
  */
 const FACT_SLOT: Record<string, EvidenceField> = {
   name: "name",
+  official_name: "name",
   phone: "phone",
   email: "email",
   category: "category",
@@ -163,7 +167,19 @@ const FACT_SLOT: Record<string, EvidenceField> = {
   slogan: "tagline",
 };
 
+/** A brand statement this short is a tagline ("We're out to forever change the way people know coffee."); longer, it is About. */
+const TAGLINE_MAX_CHARS = 100;
+
+/** The facts agent's account fields (`social_instagram`, `linkedin_company_page`) → the platform they name. */
+function factPlatform(field: string): SocialPlatform | null {
+  const p = field === "linkedin_company_page" ? "linkedin" : field.startsWith("social_") ? field.slice(7) : null;
+  if (p === "twitter") return "x";
+  return p && (SOCIAL_PLATFORMS as readonly string[]).includes(p) ? (p as SocialPlatform) : null;
+}
+
 function factField(f: BrandFact): EvidenceField | null {
+  if (f.field === "brand_statement") return f.value.trim().length <= TAGLINE_MAX_CHARS ? "tagline" : "description";
+  if (factPlatform(f.field)) return "social";
   return FACT_SLOT[f.known_field ?? ""] ?? FACT_SLOT[f.field] ?? null;
 }
 
@@ -183,9 +199,23 @@ const FACT_CERTAINTY: Record<string, Certainty> = { confirmed: "certain", certai
 
 /** The slot finding's key a fact fed (name / phone / email / category / website / logo / about), so the person's answer there is the fact's. */
 export function factSlotKey(f: BrandFact): string | null {
+  if (factPlatform(f.field)) return factAccount(f)?.key ?? null;
   const field = factField(f);
   const value = field ? factValue(field, f.value) : null;
   return field && value ? evidenceKey(field, value) : null;
+}
+
+/**
+ * An account the facts agent found (`social_instagram: silverliningcreamerysd`, a profile address or a bare handle)
+ * as a Social accounts row, under the server's account key (aidream brand_identify.social_key) so the site read's or
+ * a lookup's copy of the same account merges into it.
+ */
+function factAccount(f: BrandFact): { key: string; platform: SocialPlatform; handle: string; url: string; label: string } | null {
+  const platform = factPlatform(f.field);
+  if (!platform) return null;
+  const parsed = parseSocialAccount(f.value.replace(/&amp;/g, "&"), platform);
+  if (parsed.status !== "ok" || parsed.platform !== platform) return null;
+  return { key: `social:${accountKey(parsed)}`, platform, handle: parsed.handle, url: parsed.url, label: parsed.label };
 }
 
 /** The facts agent's findings as slot rows, merged under the server's keys (added or refined, never reset). */
@@ -196,12 +226,27 @@ export function factEvidence(facts: BrandFact[], brandName: string | null): Evid
   for (const f of facts) {
     const field = factField(f);
     if (!field || f.conflict_with) continue;
-    const value = factValue(field, f.value);
-    if (!value) continue;
     const confidence = f.certainty === "confirmed" ? 0.85 : f.certainty === "likely" ? 0.7 : 0.5;
-    const extra: Partial<EvidenceItem> = {
+    const certainty: Partial<EvidenceItem> = {
       certainty: FACT_CERTAINTY[f.certainty] ?? "possible",
       ...(f.reason ? { certainty_reasons: [f.reason] } : {}),
+    };
+    if (field === "social") {
+      const account = factAccount(f);
+      if (account)
+        out.push({
+          ...item("social", account.url, src(f.evidence_urls[0] ?? null), confidence, certainty),
+          key: account.key,
+          url: account.url,
+          platform: account.platform,
+          handle: account.handle,
+        });
+      continue;
+    }
+    const value = factValue(field, f.value);
+    if (!value) continue;
+    const extra: Partial<EvidenceItem> = {
+      ...certainty,
       ...(field === "website" ? { url: value, label: websiteHost(value) } : {}),
       ...(field === "logo" ? { url: value, image_url: value } : {}),
     };

@@ -36,6 +36,7 @@ import { useExistingBrands } from "./useExistingBrands";
 import { ExistingBrandNotice } from "./ExistingBrandNotice";
 import { smartAddEnrichHref } from "./smartAddUrl";
 import { factSlotKey, typedWebsiteItem } from "./firstData";
+import { categoriesFor, liveKnownDomainRules } from "@/lib/web-domains/registry";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { formatCount } from "@ai-matrx/kit/format";
 import { startSystemRun } from "@/features/education/kits/systemRuns";
@@ -91,6 +92,8 @@ import {
   nameAnchors,
   releaseChanged,
   orderedEvidence,
+  withoutNonContactEmails,
+  withoutRepeatedText,
   seedKeys,
   linkPages,
   websiteHost,
@@ -904,7 +907,15 @@ export function SmartAddBrand({
   // A later round's judgment of a finding wins over an earlier one (it saw more).
   const suggestions: Record<string, WeThinkSuggestion> = Object.assign({}, ...rounds.map((r) => (r.runId ? suggestionsByRun[r.runId] : undefined) ?? {}));
   // Staff profiles' names, photos and bios never reach a business's own slots (they are key people).
-  const visible = withSuggestions(orderedEvidence(withoutStaffFacts(items.values(), person)), suggestions);
+  const visible = withSuggestions(
+    withoutRepeatedText(
+      withoutNonContactEmails(orderedEvidence(withoutStaffFacts(items.values(), person)), (host) =>
+        categoriesFor(host, liveKnownDomainRules() ?? []).includes("non_contact_mail"),
+      ),
+      decisions,
+    ),
+    suggestions,
+  );
   // What is known about the person ranks every candidate card (typed facts, confirmed sites): anchors over counts.
   const knownAnchors: PersonAnchors = {
     city: personTyped.current?.city ?? null,

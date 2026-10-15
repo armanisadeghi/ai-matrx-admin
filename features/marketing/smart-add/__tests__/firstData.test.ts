@@ -124,3 +124,40 @@ describe("an unreadable site still fills its slots", () => {
     expect([...after.values()].filter((i) => i.field === "website")).toHaveLength(1);
   });
 });
+
+// MKT-075 / MKT-084 (reviewer, 2026-10-15, silverliningcreamery.com and the recorded Ritual round): the facts agent's
+// [confirmed] Brand Statements never reached About or Tagline, and the accounts it found (Instagram, Snapchat) never
+// reached Social accounts.
+describe("the facts agent's statements and accounts reach their slots", () => {
+  const fact = (field: string, value: string, certainty = "confirmed"): BrandFact => ({
+    key: `fact:${field}:${value.toLowerCase()}`, field, field_label: field, value, certainty, reason: "Instagram biography.",
+    evidence_urls: ["https://www.instagram.com/x/"], known_field: "true",
+  });
+
+  it("a short brand statement is a tagline; a long one is About", () => {
+    const rows = factEvidence([
+      fact("brand_statement", "We're out to forever change the way people know coffee."),
+      fact("brand_statement", "SF Coffee Roastery with cafes in the Mission, Bayview, Haight, and Hayes Valley neighborhoods of San Francisco- and the Oxbow Public Market in Napa.", "likely"),
+    ], null);
+    expect(rows.filter((i) => i.field === "tagline").map((i) => [i.value, i.certainty])).toEqual([["We're out to forever change the way people know coffee.", "certain"]]);
+    expect(rows.filter((i) => i.field === "description").map((i) => i.certainty)).toEqual(["likely"]);
+  });
+
+  it("social_* facts are Social accounts under the server's account key, from a handle or an address", () => {
+    const facts = [
+      fact("social_instagram", "silverliningcreamerysd"),
+      fact("social_snapchat", "https://www.snapchat.com/add/SilverLiningRC", "likely"),
+      fact("linkedin_company_page", "https://www.linkedin.com/company/acme-roasters/"),
+      fact("social_instagram", "https://www.instagram.com/p/DboJiddGte_/"),
+    ];
+    const rows = factEvidence(facts, null).filter((i) => i.field === "social");
+    expect(rows.map((i) => [i.key, i.platform, i.handle, i.certainty])).toEqual([
+      ["social:instagram:silverliningcreamerysd", "instagram", "silverliningcreamerysd", "certain"],
+      ["social:snapchat:silverliningrc", "snapchat", "SilverLiningRC", "likely"],
+      ["social:linkedin:acme-roasters", "linkedin", "acme-roasters", "certain"],
+    ]);
+    // A post address is never an account; every account row's key is the fact's slot key (answers reach Create).
+    expect(factSlotKey(facts[3] as BrandFact)).toBeNull();
+    expect(factSlotKey(facts[0] as BrandFact)).toBe("social:instagram:silverliningcreamerysd");
+  });
+});

@@ -374,6 +374,62 @@ export function orderedEvidence(items: Iterable<EvidenceItem>): EvidenceItem[] {
   });
 }
 
+/** Text compared as a person reads it: case, punctuation, entities, spacing and a trailing "…" never make two values. */
+function readAs(value: string): string {
+  return value
+    .replace(/&(amp|quot|#39|#x27|nbsp);/g, " ")
+    .replace(/(\.\.\.|…)\s*$/, "")
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}]+/gu, " ")
+    .trim();
+}
+
+/** Text slots where two sources often bring the same words (the site's meta description and the search listing). */
+const TEXT_FIELDS: ReadonlySet<EvidenceField> = new Set(["description", "tagline", "name"]);
+
+/**
+ * One row per text a person would read as the same (MKT-083): the server keys an About by a hash of its text and the
+ * first-data/facts feeds by the text itself, so one description arrived as two rows. Same words, or one cut short
+ * ("…") of the other → one row: the answered one, else the fuller text, else the surer source.
+ */
+export function withoutRepeatedText(items: EvidenceItem[], decisions: Record<string, Decision>): EvidenceItem[] {
+  const better = (a: EvidenceItem, b: EvidenceItem) => {
+    if (Boolean(decisions[a.key]) !== Boolean(decisions[b.key])) return decisions[a.key] ? a : b;
+    const la = readAs(a.value).length;
+    const lb = readAs(b.value).length;
+    if (la !== lb) return la > lb ? a : b;
+    return a.confidence >= b.confidence ? a : b;
+  };
+  const kept: EvidenceItem[] = [];
+  for (const item of items) {
+    if (!TEXT_FIELDS.has(item.field)) {
+      kept.push(item);
+      continue;
+    }
+    const text = readAs(item.value);
+    const at = kept.findIndex((k) => {
+      if (k.field !== item.field) return false;
+      const other = readAs(k.value);
+      if (other === text) return true;
+      // One cut short of the other: only for About-length text, never a short name inside a longer one.
+      const [short, long] = other.length < text.length ? [other, text] : [text, other];
+      return item.field === "description" && short.length >= 40 && long.startsWith(short);
+    });
+    if (at < 0) kept.push(item);
+    else kept[at] = better(kept[at] as EvidenceItem, item);
+  }
+  return kept;
+}
+
+/**
+ * A Contact email row is never an address at a host the known web domains registry files as `non_contact_mail`
+ * (error trackers `…@sentry.io`, site-builder internals `…@sentry-next.wixpress.com`, placeholders `email@example.com`;
+ * MKT-082). The server drops them where it finds them; this keeps a stored round and the facts agent's rows honest too.
+ */
+export function withoutNonContactEmails(items: EvidenceItem[], isNonContactHost: (host: string) => boolean): EvidenceItem[] {
+  return items.filter((i) => i.field !== "email" || !isNonContactHost((i.value.split("@").pop() ?? "").trim().toLowerCase()));
+}
+
 /** Normalize a website address for comparison ("https://www.x.com/" → "x.com"). */
 export function websiteHost(url: string): string {
   try {
