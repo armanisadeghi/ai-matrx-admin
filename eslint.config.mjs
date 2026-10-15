@@ -1709,8 +1709,8 @@ export default [
       "matrx/no-raw-select": "error",
       // ALCHEMY TAKES DATA (Arman, 2026-10-14: "a linter that screams until they're fixed"): an
       // Alchemy host handed human/json/agent strings without `data`. The agent who touches the line
-      // converts it (lint-guard holds touched lines only, never a release).
-      "matrx/alchemy-data-in": "warn",
+      // converts it (lint-guard holds touched lines only, never a release). Census: grep the eslint output for alchemy-data-in.
+      "matrx/alchemy-data-in": "error",
       // THE CHIP LAW (owner, 2026-10-05): a hand-built tinted chip/tag/pill → the package Chip.
       // warn: the census of what is left is `pnpm findings` (ui-drift rule hand-built-chip,
       // shrink-only baseline). Never an eslint-disable.
