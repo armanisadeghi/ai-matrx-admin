@@ -4,7 +4,18 @@
  * those refusals were proven against live data with rolled-back transactions.)
  */
 const rpc = jest.fn();
-jest.mock("@/utils/supabase/client", () => ({ supabase: { schema: () => ({ rpc }) } }));
+// The real client's schema() carries rpc() AND from(); the guardrail bulk read goes
+// through from().select().in() and resolves to { data, error }.
+const guardrailRows = { data: [] as unknown[], error: null };
+const fromChain = () => {
+  const chain: Record<string, unknown> = {};
+  chain.select = () => chain;
+  chain.in = () => Promise.resolve(guardrailRows);
+  return chain;
+};
+jest.mock("@/utils/supabase/client", () => ({
+  supabase: { schema: () => ({ rpc, from: fromChain }) },
+}));
 jest.mock("@/utils/supabase/schedulerDb", () => ({
   schedulerDb: (c: { schema: (s: string) => unknown }) => c.schema("scheduler"),
 }));
