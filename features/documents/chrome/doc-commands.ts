@@ -62,6 +62,11 @@ export interface DocChromeHost {
   toggleFullScreen: () => void;
   /** Help → Send feedback (the app's feedback window). */
   sendFeedback?: () => void;
+  /** Format → Page setup: open the page setup dialog. */
+  openPageSetup?: () => void;
+  /** Whether the document is laid out pageless, and a way to switch (Format → Pageless). */
+  pageless?: () => boolean;
+  setPageless?: (pageless: boolean) => void;
 }
 
 export const DOC_STYLES = [
@@ -276,8 +281,14 @@ export function buildDocMenus(h: DocChromeHost): EditorMenu[] {
         { kind: "separator" },
         soon("format.headers-footers", "Headers and footers", "documents.headers-footers"),
         soon("format.page-numbers", "Page numbers", "documents.page-numbers"),
-        { kind: "action", id: "format.page-setup", label: "Page setup", keywords: ["margins", "orientation", "paper size"], run: run(h, "docs.operation.open-page-setting") },
-        soon("format.pageless", "Switch to Pageless format", "documents.pageless"),
+        { kind: "action", id: "format.page-setup", label: "Page setup", keywords: ["margins", "orientation", "paper size"], run: () => h.openPageSetup?.() },
+        {
+          kind: "action",
+          id: "format.pageless",
+          label: h.pageless?.() ? "Switch to Pages format" : "Switch to Pageless format",
+          keywords: ["pageless", "pages", "page break"],
+          run: () => h.setPageless?.(!h.pageless?.()),
+        },
         { kind: "separator" },
         soon("format.table", "Table", "documents.table-properties"),
         soon("format.image", "Image", "documents.image-options"),

@@ -123,7 +123,7 @@ export function PageSetupDialog({
             Margins (inches)
             <div className="grid grid-cols-4 gap-2">
               {MARGINS.map(({ key, label }) => (
-                <label key={key} className="grid gap-1">
+                <label key={key} className="grid min-w-0 gap-1">
                   {label}
                   <Field
                     type="number"
@@ -131,6 +131,7 @@ export function PageSetupDialog({
                     max={5}
                     step={0.25}
                     aria-label={`${label} margin`}
+                    className="w-full min-w-0"
                     value={margins[key]}
                     onChange={(e) => setMargins((m) => ({ ...m, [key]: e.target.value }))}
                   />

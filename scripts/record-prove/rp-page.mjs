@@ -1,0 +1,13 @@
+import { chromium } from "playwright";
+import { execSync } from "node:child_process";
+import { ORIGIN } from "../airtable-walk/lib.mjs";
+const [TB, ROW, shot] = process.argv.slice(2);
+const browser = await chromium.launch({ headless: true });
+const page = await (await browser.newContext({ viewport: { width: 1600, height: 1000 } })).newPage();
+const nonce = execSync(`cd ../.. && pnpm dev-login /data/${TB}/r/${ROW}`, { encoding: "utf8" }).match(/OPEN\s*:\s*(\S+)/)[1];
+await page.goto(nonce, { waitUntil: "domcontentloaded", timeout: 240000 });
+await page.waitForTimeout(12000);
+console.log("kept:", (await page.locator("[data-records-retired]").innerText().catch(() => "NONE")).replace(/\n+/g, " | ").slice(0, 400));
+console.log("file inputs", await page.locator("input[type=file]").count(), "attachment editors", await page.locator("[data-records-attachment-editor]").count());
+await page.screenshot({ path: shot, fullPage: true });
+await browser.close();

@@ -81,7 +81,7 @@ export function ViewLinkPanel({ viewId, name, onClose }: ViewLinkPanelProps) {
       return;
     }
     setPassword("");
-    setEndDate("");
+    if (change.expiresAt === null) setEndDate("");
     await load();
   }
 

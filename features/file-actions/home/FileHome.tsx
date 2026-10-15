@@ -19,7 +19,7 @@
  * with me tabs over a Name / Opened / Owner list, the app's colour and type. Same data, same menus.
  */
 
-import { useEffect, useState, useTransition, type ReactNode } from "react";
+import { useEffect, useRef, useState, useTransition, type ReactNode } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Check, FolderOpen, Home as HomeIcon, Plus, Star, Users } from "lucide-react";
@@ -43,6 +43,7 @@ import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { useListViewPrefs, type LegacyListViewImport } from "@/lib/list-views/useListViewPrefs";
 import { cn } from "@/lib/utils";
 import { fetchUserDisplayNames } from "@/features/mandates/notes";
+import { resolveVisiblePerson } from "@/features/organizations/people/visiblePeople";
 
 import { FileCardContextArea } from "../FileCardContextArea";
 import type { FileScope } from "../FileScopeBar";
@@ -52,6 +53,8 @@ import type { FileKindAdapter } from "../types";
 import type { HomeKind } from "./home-kinds";
 import { RecordThumb } from "./RecordThumb";
 import { FileHomeTable } from "./FileHomeTable";
+import { GOOGLE_LIST_COLUMNS, GoogleFileList } from "./GoogleFileList";
+import { useStickyHomeHeader } from "./useStickyHomeHeader";
 import { useFileHomeBulk } from "./useFileHomeBulk";
 import { HomeCardsSkeleton, HomePhoneRowsSkeleton, HomeTableSkeleton } from "./HomeSkeleton";
 import {
@@ -96,7 +99,16 @@ function useOwnerNames(ownerIds: readonly string[], userId: string | null): Read
   useEffect(() => {
     if (!others) return;
     let live = true;
-    void fetchUserDisplayNames(others.split(",")).then((m) => live && setNames(m));
+    // The ONE "who is this account?" lookup (people I share an organization with), then the
+    // profile name for anyone it cannot place (a file shared with me directly).
+    const ids = others.split(",");
+    void Promise.all(ids.map((id) => resolveVisiblePerson(id).catch(() => null))).then(async (people) => {
+      const found = new Map<string, string>();
+      people.forEach((p, i) => p?.name && found.set(ids[i], p.name));
+      const missing = ids.filter((id) => !found.has(id));
+      if (missing.length) (await fetchUserDisplayNames(missing)).forEach((name, id) => found.set(id, name));
+      if (live) setNames(found);
+    });
     return () => {
       live = false;
     };
@@ -214,6 +226,49 @@ export function FileHome<Row extends { id: string; user_id: string }>(props: Fil
     document.getElementById(`file-home-create-${kind.kind}`)?.scrollIntoView({ behavior: "smooth", block: "start" });
   const showList = !loading && !error && sorted.length > 0;
 
+  // The Google Look's desktop list is Google's calm list (not the data table); its sticky row
+  // names the time group under it. Office keeps its table (with bulk selection).
+  const googleList = !office && !isPhone && view === "table";
+  const groupLabels = new Map(groups.map((g) => [g.key, g.label]));
+  const sticky = useStickyHomeHeader(googleList ? groups.map((g) => g.key) : [], `${lookSettled}:${look}:${view}:${isPhone}:${loading}:${showList}`);
+  const stickyTitle = (sticky.currentGroup ? groupLabels.get(sticky.currentGroup) : groups[0]?.label) ?? heading;
+  const dateHeading = sort === "title" ? "Last modified" : (HOME_SORT_OPTIONS.find((o) => o.value === sort)?.label ?? "");
+  const sortControls = (
+    <SortGroup single={!props.onPickFile}>
+      {isPhone || office ? null : view === "cards" ? (
+        <ListTapButton variant={props.onPickFile ? "group" : "transparent"} ariaLabel="List view" tooltip="List view" onClick={() => setPrefs({ view: "table" })} />
+      ) : (
+        <LayoutGridTapButton variant={props.onPickFile ? "group" : "transparent"} ariaLabel="Grid view" tooltip="Grid view" onClick={() => setPrefs({ view: "cards" })} />
+      )}
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <ArrowDownUpTapButton
+            variant={props.onPickFile ? "group" : "transparent"}
+            ariaLabel={`Sort: ${HOME_SORT_OPTIONS.find((o) => o.value === sort)?.label ?? ""}`}
+            tooltip="Sort options"
+          />
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          {HOME_SORT_OPTIONS.map((o) => (
+            <DropdownMenuItem key={o.value} onSelect={() => setPrefs({ sort: o.value })}>
+              <Check className={sort === o.value ? "size-3.5 text-primary" : "size-3.5 opacity-0"} aria-hidden />
+              {o.label}
+            </DropdownMenuItem>
+          ))}
+        </DropdownMenuContent>
+      </DropdownMenu>
+      {props.onPickFile ? (
+        <TapTargetButtonForGroup
+          icon={props.pickingFile ? <Spinner size="xs" label="Opening" /> : <FolderOpen className="size-4" />}
+          ariaLabel="Open a file from this device"
+          tooltip="Open a file"
+          disabled={props.pickingFile}
+          onClick={props.onPickFile}
+        />
+      ) : null}
+    </SortGroup>
+  );
+
   // Until the person's saved look is read, the home is a placeholder — never the default look
   // flashing into theirs.
   const home = !lookSettled ? (
@@ -240,81 +295,89 @@ export function FileHome<Row extends { id: string; user_id: string }>(props: Fil
     {office ? <OfficeAppRail kind={kind} onCreate={scrollToCreate} onPickFile={props.onPickFile} /> : null}
     <div className="h-full min-w-0 flex-1 overflow-y-auto scrollbar-none" data-file-home={kind.kind}>
       <div className="pt-[var(--shell-header-h)]">
-        <div className="mx-auto flex w-full max-w-[72rem] items-center gap-2 px-3 pb-2 pt-1 sm:px-6">
+        {/* Google's search: one big filled pill (48px, ~720px) centred over the page, the Look switch
+            at the row's end. It stays here, not in the app header: the header is 44px (a 48px pill
+            cannot sit in it) and its right side is the app's own icons. */}
+        <div className="mx-auto flex w-full max-w-[72rem] flex-wrap items-center gap-x-3 gap-y-2 px-3 pb-3 pt-2 sm:grid sm:grid-cols-[minmax(14rem,1fr)_minmax(0,45rem)_minmax(14rem,1fr)] sm:px-6">
+          <span aria-hidden className="hidden sm:block" />
           <SearchField
+            filled
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder={`Search ${kind.pluralNoun}`}
             aria-label={`Search ${kind.pluralNoun}`}
-            className="mx-auto min-w-0 max-w-2xl flex-1"
+            className="min-w-0 basis-full sm:basis-auto"
           />
-          <OfficeLookSwitch className="shrink-0" />
+          <OfficeLookSwitch className="shrink-0 sm:justify-self-end" />
         </div>
         {trashed ? null : props.startBand}
         {trashed ? null : props.googleStrip ? (
           <div className="mx-auto w-full max-w-[72rem] px-3 pt-3 sm:px-6">{props.googleStrip}</div>
         ) : null}
 
-        <section aria-label={heading} className="mx-auto w-full max-w-[72rem] px-3 pb-6 pt-3 sm:px-6">
-          <div className="flex h-10 items-center gap-2">
-            {office && !isPhone ? (
-              <>
-                <h2 className="sr-only">{heading}</h2>
-                <Tabs
-                  aria-label="Show"
-                  value={scope}
-                  onValueChange={(v) => onScopeChange(v)}
-                  data={OFFICE_TABS}
-                  rule={false}
-                  className="min-w-0 flex-1"
-                />
-              </>
-            ) : (
-              <>
-                <h2 className="line-clamp-2 min-w-0 flex-1 text-sm font-medium leading-tight text-foreground">{heading}</h2>
-                <Select
-                  aria-label="Show"
-                  value={scope}
-                  options={office ? OFFICE_TABS : SCOPE_OPTIONS}
-                  onValueChange={(v) => onScopeChange(v)}
-                  align="end"
-                />
-              </>
+        <section aria-label={heading} className="w-full pb-6 pt-3">
+          <div ref={sticky.sentinelRef} aria-hidden className="h-0" />
+          {/* Google's sticky header row: sticks under the app header in every view, lifts with Google's
+              shadow only once stuck, and paints the strip above it (behind the see-through app header)
+              so nothing scrolls visibly behind the header while it holds. */}
+          <div
+            ref={sticky.barRef}
+            data-stuck={sticky.stuck || undefined}
+            className={cn(
+              "sticky top-[var(--shell-header-h)] z-20 bg-background transition-shadow duration-200",
+              sticky.stuck && "shadow-md",
             )}
-            <SortGroup single={!props.onPickFile}>
-              {isPhone || office ? null : view === "cards" ? (
-                <ListTapButton variant={props.onPickFile ? "group" : "transparent"} ariaLabel="List view" tooltip="List view" onClick={() => setPrefs({ view: "table" })} />
-              ) : (
-                <LayoutGridTapButton variant={props.onPickFile ? "group" : "transparent"} ariaLabel="Grid view" tooltip="Grid view" onClick={() => setPrefs({ view: "cards" })} />
+          >
+            <span
+              aria-hidden
+              className={cn(
+                "pointer-events-none absolute inset-x-0 bottom-full h-[var(--shell-header-h)] bg-background transition-opacity duration-200",
+                sticky.stuck ? "opacity-100" : "opacity-0",
               )}
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <ArrowDownUpTapButton
-                    variant={props.onPickFile ? "group" : "transparent"}
-                    ariaLabel={`Sort: ${HOME_SORT_OPTIONS.find((o) => o.value === sort)?.label ?? ""}`}
-                    tooltip="Sort options"
-                  />
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  {HOME_SORT_OPTIONS.map((o) => (
-                    <DropdownMenuItem key={o.value} onSelect={() => setPrefs({ sort: o.value })}>
-                      <Check className={sort === o.value ? "size-3.5 text-primary" : "size-3.5 opacity-0"} aria-hidden />
-                      {o.label}
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
-              {props.onPickFile ? (
-                <TapTargetButtonForGroup
-                  icon={props.pickingFile ? <Spinner size="xs" label="Opening" /> : <FolderOpen className="size-4" />}
-                  ariaLabel="Open a file from this device"
-                  tooltip="Open a file"
-                  disabled={props.pickingFile}
-                  onClick={props.onPickFile}
-                />
-              ) : null}
-            </SortGroup>
+            />
+            <div className="mx-auto w-full max-w-[72rem] px-3 sm:px-6">
+              {googleList ? (
+                <div className={cn(GOOGLE_LIST_COLUMNS, "h-14 px-4")}>
+                  <h2 className="truncate text-base font-medium text-foreground">{stickyTitle}</h2>
+                  <Select aria-label="Show" variant="inline" value={scope} options={SCOPE_OPTIONS} onValueChange={(v) => onScopeChange(v)} align="start" />
+                  <div className="col-span-2 flex min-w-0 items-center gap-2">
+                    <span className="min-w-0 flex-1 truncate text-sm font-medium text-foreground">{dateHeading}</span>
+                    {sortControls}
+                  </div>
+                </div>
+              ) : (
+                <div className="flex h-14 items-center gap-2">
+                  {office && !isPhone ? (
+                    <>
+                      <h2 className="sr-only">{heading}</h2>
+                      <Tabs
+                        aria-label="Show"
+                        value={scope}
+                        onValueChange={(v) => onScopeChange(v)}
+                        data={OFFICE_TABS}
+                        rule={false}
+                        className="min-w-0 flex-1"
+                      />
+                    </>
+                  ) : (
+                    <>
+                      <h2 className="line-clamp-2 min-w-0 flex-1 text-base font-medium leading-tight text-foreground">{heading}</h2>
+                      <Select
+                        aria-label="Show"
+                        variant={office ? "field" : "inline"}
+                        value={scope}
+                        options={office ? OFFICE_TABS : SCOPE_OPTIONS}
+                        onValueChange={(v) => onScopeChange(v)}
+                        align="end"
+                      />
+                    </>
+                  )}
+                  {sortControls}
+                </div>
+              )}
+            </div>
           </div>
+          <div className="mx-auto w-full max-w-[72rem] px-3 sm:px-6">
           {dialogs}
           {bulk.dialog}
 
@@ -365,7 +428,23 @@ export function FileHome<Row extends { id: string; user_id: string }>(props: Fil
             />
           ) : null}
 
-          {showList && !isPhone && view === "table" ? (
+          {showList && googleList ? (
+            <GoogleFileList
+              kind={kind}
+              groups={groups}
+              now={now}
+              starredIds={starredIds}
+              userId={userId}
+              ownerLabel={ownerLabel}
+              navigatingId={navigatingId}
+              onOpen={open}
+              menuFor={(row, control) => menuFor(row, trashed, control, { shareButton: false })}
+              marksFor={props.marksFor}
+              groupRef={sticky.groupRef}
+            />
+          ) : null}
+
+          {showList && !isPhone && office ? (
             <FileHomeTable
               kind={kind}
               items={sorted}
@@ -377,7 +456,7 @@ export function FileHome<Row extends { id: string; user_id: string }>(props: Fil
               menuFor={(row) => menuFor(row, trashed)}
               sectionsFor={(payload) => sectionsFor(payload, trashed)}
               marksFor={props.marksFor}
-              columns={office ? "office" : "google"}
+              columns="office"
               selection={bulk.selection}
             />
           ) : null}
@@ -385,7 +464,7 @@ export function FileHome<Row extends { id: string; user_id: string }>(props: Fil
           {showList && !isPhone && view === "cards"
             ? groups.map((g) => (
                 <div key={g.key} className="pt-2">
-                  {g.label ? <h3 className="pb-2 pt-3 text-xs font-medium text-muted-foreground">{g.label}</h3> : null}
+                  {g.label ? <h3 className="pb-3 pt-4 text-sm font-medium text-foreground">{g.label}</h3> : null}
                   <div className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,11.5rem),1fr))] gap-4">
                     {g.items.map((d) => (
                       <FileCardContextArea key={d.item.id} className="grid min-w-0" menu={(control) => menuFor(d.item.row, trashed, control, { shareButton: false })}>
@@ -409,6 +488,7 @@ export function FileHome<Row extends { id: string; user_id: string }>(props: Fil
                 </div>
               ))
             : null}
+          </div>
         </section>
       </div>
     </div>

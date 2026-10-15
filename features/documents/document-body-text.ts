@@ -39,6 +39,8 @@ export interface DocumentBodyPort {
   insertText: (at: number, text: string) => boolean;
   /** Run a Univer command in the open editor (File menu: find and replace, comments). */
   runCommand?: (commandId: string) => Promise<void>;
+  /** File → Page setup: open the page setup dialog in the open editor. */
+  openPageSetup?: () => void;
 }
 
 export interface BodyText {

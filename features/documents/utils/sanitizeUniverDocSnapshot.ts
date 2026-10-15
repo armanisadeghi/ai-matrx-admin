@@ -109,11 +109,16 @@ function restorePageStyle(snapshot: Partial<IDocumentData>, docId?: string) {
   // A document with no flavour at all is a paginated page too (Univer would otherwise pick pageless).
   const style = snapshot.documentStyle;
   if (style?.pageSize?.width && isLegacySqueezedPageStyle(style)) {
-    snapshot.documentStyle = { ...style, ...defaultDocumentPageStyle() };
+    const page = defaultDocumentPageStyle();
+    snapshot.documentStyle = { ...style, ...page, defaultParagraphStyle: style.defaultParagraphStyle ?? page.defaultParagraphStyle };
     return;
   }
   if (style?.pageSize?.width) {
-    if (!style.documentFlavor) style.documentFlavor = defaultDocumentPageStyle().documentFlavor;
+    if (!style.documentFlavor) {
+      const page = defaultDocumentPageStyle();
+      style.documentFlavor = page.documentFlavor;
+      style.defaultParagraphStyle ??= page.defaultParagraphStyle;
+    }
     return;
   }
 

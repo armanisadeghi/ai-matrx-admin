@@ -472,7 +472,7 @@ export default function DocumentEditor({
         // holds the document; re-read synchronously after the await, because
         // another view may have typed while the read was in flight.
         const opening = await model.openingSnapshot(() =>
-          defaultEmptyDocument(store.getState().userPreferences.documents?.defaultPageSetup ?? null),
+          defaultEmptyDocument((store.getState().userPreferences.documents?.defaultPageSetup as PageSetupValues | null | undefined) ?? null),
         );
         if (cancelled) {
           host.remove();
@@ -672,6 +672,19 @@ export default function DocumentEditor({
     </>
   ) : null;
 
+  const pageSetupDialog = ready ? (
+    <PageSetupDialog
+      open={pageSetupOpen}
+      onOpenChange={setPageSetupOpen}
+      initial={readPageSetup(apiRef.current as unknown as PageSetupApiLike)}
+      onApply={(values) => void changePage(values)}
+      onSetDefault={(values) => {
+        dispatch(setPreference({ module: "documents", preference: "defaultPageSetup", value: values }));
+        toast({ title: "Saved as the page for new documents" });
+      }}
+    />
+  ) : null;
+
   if (chrome) {
     return (
       <EditorDocumentHeader
@@ -750,6 +763,7 @@ export default function DocumentEditor({
         }
       >
         {googleLink.dialog}
+        {pageSetupDialog}
         <div className="matrx-univer-shell relative flex min-h-0 flex-1 flex-col" data-document-editor="">
           {bootState === "load_error" && (
             <div className="flex items-center gap-2 px-3 py-2 text-sm text-destructive">
@@ -773,6 +787,7 @@ export default function DocumentEditor({
     // Univer's portals and broke dark mode. The wrapper bg uses a semantic
     // token so it adapts with the app theme during boot.
     <div className="matrx-univer-shell flex h-full w-full flex-col" data-document-editor="">
+      {pageSetupDialog}
       <div className="flex items-center gap-2 border-b border-border px-2 py-1 text-xs min-w-0">
         <div className="text-muted-foreground flex-1 min-w-0 truncate">
           {bootState === "booting" && (
@@ -962,9 +977,17 @@ function defaultEmptyDocument(defaultPage: PageSetupValues | null = null): Parti
       sectionBreaks: [{ startIndex: 1, sectionId: createSectionId(new Set()) }],
     },
     documentStyle: defaultPage
-      ? { ...defaultDocumentPageStyle(), ...pageSetupCommandParams(defaultPage), [PAGE_COLOR_KEY]: defaultPage.pageColor }
+      ? ({ ...defaultDocumentPageStyle(), ...pageSetupCommandParams(defaultPage), [PAGE_COLOR_KEY]: defaultPage.pageColor } as NonNullable<IDocumentData["documentStyle"]>)
       : defaultDocumentPageStyle(),
   };
+}
+
+/** The open page's width in layout pixels (Letter's when the editor has no document yet). */
+function readPageSetupWidth(api: PageSetupApiLike | null): number {
+  const style = api?.getActiveDocument?.()?.getDocumentDataModel().getSnapshot().documentStyle as
+    | { pageSize?: { width?: number } }
+    | undefined;
+  return style?.pageSize?.width ?? defaultDocumentPageStyle().pageSize?.width ?? 816;
 }
 
 function cryptoRandomId() {

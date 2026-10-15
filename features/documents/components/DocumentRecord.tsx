@@ -20,7 +20,7 @@
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import dynamic from "next/dynamic";
-import { FilePlus2, FolderOpen, History, Info, Loader2, MessageSquare, Printer, Search } from "lucide-react";
+import { FileCog, FilePlus2, FolderOpen, History, Info, Loader2, MessageSquare, Printer, Search } from "lucide-react";
 import { EditorDetailsDialog, formatDetailDate } from "@/components/editor-chrome/EditorDetailsDialog";
 import { useRouter } from "next/navigation";
 import { useMenuBarState } from "@/components/editor-chrome/EditorMenuBar";
@@ -368,6 +368,7 @@ export function DocumentRecord({
     { kind: "action", id: "file.open", label: "Open", icon: FolderOpen, shortcut: { key: "o", mod: true, bind: true }, run: () => router.push("/documents") },
     { kind: "action", id: "file.history", label: "Version history", icon: History, shortcut: { key: "h", mod: true, alt: true, shift: true, bind: true }, run: history.toggle },
     { kind: "action", id: "file.print", label: "Print", icon: Printer, shortcut: { key: "p", mod: true, bind: true }, run: printDocument },
+    { kind: "action", id: "file.page-setup", label: "Page setup", icon: FileCog, keywords: ["margins", "orientation", "paper size", "pageless"], run: () => bodyPortRef.current?.openPageSetup?.() },
     { kind: "action", id: "file.details", label: "Details", icon: Info, keywords: ["info", "created", "modified"], run: () => setDetailsOpen(true) },
   ];
   const liveDocDownload = (label: string, format: "pdf" | "docx" | "markdown" | "text" | "html") => ({

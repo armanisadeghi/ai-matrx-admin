@@ -40,6 +40,9 @@ export const DEFAULT_DOCUMENT_PAGE_STYLE: DocumentStyle = {
   marginBottom: PX_PER_INCH,
   marginLeft: PX_PER_INCH,
   marginRight: PX_PER_INCH,
+  // Univer applies no paragraph spacing to a paginated page by itself; without this every paragraph
+  // runs into the next (Google Docs' own default: 1.15 lines, 10px after).
+  defaultParagraphStyle: { spaceAbove: { v: 0 }, spaceBelow: { v: 10 }, lineSpacing: 1.15 },
 };
 
 /** Fresh copy — Univer mutates the style it is handed. */
@@ -47,6 +50,7 @@ export function defaultDocumentPageStyle(): DocumentStyle {
   return {
     ...DEFAULT_DOCUMENT_PAGE_STYLE,
     pageSize: { ...DEFAULT_DOCUMENT_PAGE_STYLE.pageSize! },
+    defaultParagraphStyle: { ...DEFAULT_DOCUMENT_PAGE_STYLE.defaultParagraphStyle! },
   };
 }
 
