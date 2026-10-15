@@ -96,10 +96,14 @@ export function recordsRenderKind(args: KindArgs): ReactNode {
  * page at /data/pages/<id>, a new one on a table at /data/pages/new?table=<id>. A page names
  * itself like any other reference, so it travels with the reference ports into every host.
  */
-export function recordsPageHref(target: { pageId: string } | { newOnTable: string }): string {
-  return "pageId" in target
-    ? `/data/pages/${target.pageId}`
-    : `/data/pages/new?table=${encodeURIComponent(target.newOnTable)}`;
+export function recordsPageHref(
+  target: { pageId: string } | { newOnTable: string } | { interfaceId: string } | { newInterfaceOnTable: string },
+): string {
+  if ("pageId" in target) return `/data/pages/${target.pageId}`;
+  // AT-INTERFACE: an Interface opens at /data/interfaces/<id>; a new one on a table at /data/interfaces/new?table=<id>.
+  if ("interfaceId" in target) return `/data/interfaces/${target.interfaceId}`;
+  if ("newInterfaceOnTable" in target) return `/data/interfaces/new?table=${encodeURIComponent(target.newInterfaceOnTable)}`;
+  return `/data/pages/new?table=${encodeURIComponent(target.newOnTable)}`;
 }
 
 export const RECORDS_REFERENCES = {
