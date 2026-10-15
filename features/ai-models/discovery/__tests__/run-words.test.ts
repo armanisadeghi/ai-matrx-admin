@@ -1,4 +1,4 @@
-import { compatLabel, describeRun } from "../run-words";
+import { compatLabel, describeRun, describeTestRequest } from "../run-words";
 import type { VerificationRun } from "../api";
 
 const base: VerificationRun = {
@@ -49,5 +49,42 @@ describe("compatLabel", () => {
     expect(
       compatLabel({ hardware_class: "x86_cpu", status: "verified", runtime_build: { os: "linux", arch: "x86_64", runtime_version: "b9076" } }),
     ).toBe("x86_cpu verified (linux/x86_64 b9076)");
+  });
+});
+
+describe("describeTestRequest — every queued-test state has words", () => {
+  const when = (iso: string) => `@${iso}`;
+
+  it("waiting says since when and what the runner promised", () => {
+    const line = describeTestRequest(
+      { status: "queued", requested_at: "T1", expect: "Queued. The test runner checks the queue every 5 min." },
+      when,
+    );
+    expect(line).toEqual({ tone: "info", text: "Test queued since @T1. Queued. The test runner checks the queue every 5 min." });
+    expect(describeTestRequest({ status: "running", requested_at: "T1", started_at: "T2" }, when)?.text).toBe(
+      "Test running since @T2. The result appears below.",
+    );
+  });
+
+  it("a request that was not run is an error with its reason", () => {
+    expect(describeTestRequest({ status: "refused", reason: "Not run: The variant has no files to test." }, when)).toEqual({
+      tone: "error",
+      text: "Not run: The variant has no files to test.",
+    });
+    expect(describeTestRequest({ status: "error" }, when)).toEqual({
+      tone: "error",
+      text: "The queued test was not run; no reason was recorded.",
+    });
+  });
+
+  it("a finished request points at its run; an unknown state is named", () => {
+    expect(describeTestRequest({ status: "done", result: "pass", finished_at: "T3" }, when)?.text).toBe(
+      "Queued test finished: pass at @T3. Its run is listed below.",
+    );
+    expect(describeTestRequest({ status: "paused" }, when)).toEqual({
+      tone: "error",
+      text: "Queued test is in an unknown state: paused.",
+    });
+    expect(describeTestRequest(undefined, when)).toBeNull();
   });
 });

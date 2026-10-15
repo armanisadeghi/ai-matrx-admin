@@ -27,6 +27,9 @@ import { useAppSelector } from "@/lib/redux/hooks";
 import { selectAccessToken } from "@/lib/redux/slices/userSlice";
 import { selectResolvedBaseUrl } from "@/lib/redux/slices/apiConfigSlice";
 import { useServerOrganizationId } from "@/lib/api/useServerOrganizationId";
+import { selectUserId } from "@/lib/redux/selectors/userSelectors";
+import { selectOrganizationId } from "@/lib/redux/slices/appContextSlice";
+import { useEffectiveKnob } from "@/lib/scoped-config/effectiveKnobs.client";
 import { extractErrorMessage } from "@/utils/errors";
 import { cn } from "@/lib/utils";
 import {
@@ -42,7 +45,10 @@ import {
   loadPromoted,
   testedLabel,
 } from "./api";
-import { compatLabel, describeRun } from "./run-words";
+import { compatLabel, describeRun, describeTestRequest } from "./run-words";
+
+const TEST_POLL_SECONDS_KNOB = { feature: "ai.models", key: "test_poll_seconds" } as const;
+const TEST_POLL_COUNT_KNOB = { feature: "ai.models", key: "test_poll_count" } as const;
 
 const USE_LABEL: Record<string, string> = {
   core: "Always",
@@ -565,6 +571,12 @@ function PromotedPanel({ modelId, auth }: { modelId: string; auth: CallAuth }) {
     return map;
   }, [state]);
 
+  // How often and how long the panel re-reads after Run test: knobs ai.models.test_poll_seconds /
+  // test_poll_count (no code default; until they resolve the panel does not watch and says so).
+  const userId = useAppSelector(selectUserId);
+  const orgId = useAppSelector(selectOrganizationId);
+  const pollSeconds = useEffectiveKnob(orgId, userId, TEST_POLL_SECONDS_KNOB);
+  const pollCount = useEffectiveKnob(orgId, userId, TEST_POLL_COUNT_KNOB);
   const [watchTicks, setWatchTicks] = useState(0);
   const test = async (variantId: string) => {
     setTestMessage(null);
@@ -576,22 +588,23 @@ function PromotedPanel({ modelId, auth }: { modelId: string; auth: CallAuth }) {
             ? "A test for this variant is already waiting or running"
             : "Test requested"),
       );
-      setWatchTicks(60);
+      if (typeof pollCount === "number") setWatchTicks(pollCount);
+      else setTestMessage((m) => `${m ?? ""} The page cannot watch for the result (refresh settings not loaded); reload to see it.`);
       await load();
     } catch (err) {
       setTestMessage(extractErrorMessage(err));
     }
   };
 
-  // After a test request, re-read every 20 s for up to 20 minutes so the result shows up here.
+  // After a test request, re-read every test_poll_seconds, test_poll_count times, so the result shows up here.
   useEffect(() => {
-    if (watchTicks <= 0) return;
+    if (watchTicks <= 0 || typeof pollSeconds !== "number") return;
     const id = window.setTimeout(() => {
       setWatchTicks((n) => n - 1);
       void load();
-    }, 20_000);
+    }, pollSeconds * 1000);
     return () => window.clearTimeout(id);
-  }, [watchTicks, load]);
+  }, [watchTicks, load, pollSeconds]);
 
   if (error) return <ErrorNotice title="The promoted model could not be read" message={error} size="compact" />;
   if (!state) return <p className="text-sm text-muted-foreground">Loading promoted model…</p>;
@@ -628,15 +641,17 @@ function PromotedPanel({ modelId, auth }: { modelId: string; auth: CallAuth }) {
               Compatibility:{" "}
               {compat.length ? compat.map(compatLabel).join(" · ") : "none recorded"}
             </div>
-            {v.metadata?.test_request?.status === "queued" || v.metadata?.test_request?.status === "running" ? (
-              <div className="text-xs text-foreground">
-                Test {v.metadata.test_request.status}
-                {v.metadata.test_request.requested_at
-                  ? ` since ${new Date(v.metadata.test_request.requested_at).toLocaleString()}`
-                  : ""}
-                ; the result appears below
-              </div>
-            ) : null}
+            {(() => {
+              const line = describeTestRequest(v.metadata?.test_request, (iso) => new Date(iso).toLocaleString());
+              if (!line) return null;
+              if (line.tone === "error")
+                return <ErrorNotice title="Queued test not run" message={line.text} size="compact" />;
+              return (
+                <div className={line.tone === "info" ? "text-xs text-foreground" : "text-xs text-muted-foreground"}>
+                  {line.text}
+                </div>
+              );
+            })()}
             {runs.map((r) => {
               const w = describeRun(r, runs);
               return (

@@ -186,7 +186,18 @@ export interface PromotedVariant {
   architecture: string;
   chat_template_kind: string;
   format: ModelFormat;
-  metadata: { test_request?: { status: string; requested_at?: string; result?: string; reason?: string } } | null;
+  metadata: {
+    test_request?: {
+      status: string;
+      requested_at?: string;
+      started_at?: string;
+      finished_at?: string;
+      result?: string;
+      reason?: string;
+      expect?: string;
+      run_id?: string | null;
+    };
+  } | null;
 }
 
 export interface VerificationRun {
