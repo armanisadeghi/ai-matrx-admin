@@ -62,4 +62,15 @@ if [ -n "$STAGED" ]; then
         exit 1
     fi
 fi
+# LINT-GUARD (Arman, 2026-10-14): a lint error on a line THIS commit changed refuses the commit — the
+# agent that wrote it fixes it now, so it never reaches whoever releases next. Errors on lines the
+# commit did not touch never refuse; their author's conversation is mailed (once) instead.
+# The tool lives in matrx-ship (shared by every repo); a checkout without it skips this job.
+LINT_GUARD="$HOME/code/matrx-ship/scripts/lint-guard.py"
+if [ -f "$LINT_GUARD" ] && command -v python3 >/dev/null 2>&1; then
+    python3 "$LINT_GUARD" check --repo "$ROOT" --staged || {
+        echo "COMMIT REFUSED: fix the lint errors above (never disable the rule), then commit again." >&2
+        exit 1
+    }
+fi
 exit 0
