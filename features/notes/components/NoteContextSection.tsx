@@ -143,7 +143,7 @@ export function NoteContextStatusIcon({
           {hasContext ? <ShieldCheck /> : <ShieldAlert />}
         </button>
       </PopoverTrigger>
-      <PopoverContent align="end" className="max-h-[70dvh] w-[380px] overflow-y-auto p-2">
+      <PopoverContent align="end" className="max-h-[min(40rem,var(--radix-popover-content-available-height))] w-[380px] overflow-y-auto p-2">
         {open ? <NoteHomePanel noteId={noteId} onMoved={() => setOpen(false)} /> : null}
       </PopoverContent>
     </Popover>
