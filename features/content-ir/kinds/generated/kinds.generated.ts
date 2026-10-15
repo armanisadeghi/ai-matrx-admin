@@ -7,7 +7,7 @@
 // Verify:      pnpm check:kind-types   (CI-blocking freshness gate)
 // Twin guard:  pnpm check:kind-type-twins
 //
-// 1548 active kinds. THESE ARE THE ONLY KIND PAYLOAD TYPES IN THE REPO.
+// 1555 active kinds. THESE ARE THE ONLY KIND PAYLOAD TYPES IN THE REPO.
 // A hand-written interface mirroring a registered kind is a defect — derive
 // (Pick/Omit) from the type here instead, and never re-declare it.
 //
@@ -21,7 +21,7 @@
 // ─────────────────────────────────────────────────────────────────────────
 
 /** Structural fingerprint of the registry rows this artifact was generated from. */
-export const KIND_REGISTRY_FINGERPRINT = "ad814f1a7552";
+export const KIND_REGISTRY_FINGERPRINT = "6219252830f5";
 
 // ─────────────────────────────────────────────────────────────────────────
 // Shared nested structures. Deduped by structure across the registry — an
@@ -4073,6 +4073,36 @@ export interface IterationSettings {
 }
 
 /**
+ * * Shared by 2 kinds (job_result, job_search_results).
+ */
+export interface JobApplyLink {
+  url: string;
+  /**
+   * Where the posting lives (company site, LinkedIn…).
+   */
+  title: string;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+}
+
+/**
+ * * Shared by 2 kinds (job_result, job_search_results).
+ */
+export interface JobHighlight {
+  items?: string[];
+  /**
+   * Section name: Qualifications, Benefits, Responsibilities.
+   */
+  title: string;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+}
+
+/**
  * * Shared by 117 kinds (ad_creative, agent_assignment_batch_result, agent_iteration_plan, agent_react_result, …).
  */
 export type JsonValue = unknown;
@@ -7312,6 +7342,18 @@ export interface ReviewFinding {
 }
 
 /**
+ * * From kind `place_reviews`.
+ */
+export interface ReviewTopic {
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  keyword: string;
+  mentions: number;
+}
+
+/**
  * * Shared by 8 kinds (person_candidate_list, person_clue_list, person_find_history, person_search_filters, …).
  */
 export interface Row {
@@ -9596,6 +9638,55 @@ export interface TranscriptionUsage {
    * Audio duration billed by the transcription provider, in seconds.
    */
   duration_seconds?: number | null;
+}
+
+/**
+ * * From kind `trend_report`.
+ */
+export interface TrendPoint {
+  /**
+   * The period as shown ('Oct 12 – 18, 2025').
+   */
+  date: string;
+  /**
+   * Relative interest 0-100 (100 = peak in the window).
+   */
+  value: number;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  /**
+   * True for the still-open latest period.
+   */
+  partial?: boolean;
+  /**
+   * ISO-8601 UTC start of the period.
+   */
+  timestamp?: string | null;
+}
+
+/**
+ * * From kind `trend_report`.
+ */
+export interface TrendQuery {
+  /**
+   * Open this query's own trend page.
+   */
+  url?: string | null;
+  query: string;
+  /**
+   * The number behind it (percent growth for rising).
+   */
+  value?: number | null;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  /**
+   * As shown: '100' for top queries, '+3,500%' or 'Breakout' for rising.
+   */
+  value_text: string;
 }
 
 /**
@@ -14783,7 +14874,7 @@ export interface BrandIntakeEarlyFactsOffer {
 }
 
 /**
- * Kind `brand_intake.identity_match.offer` (registry v13).
+ * Kind `brand_intake.identity_match.offer` (registry v15).
  */
 export interface BrandIntakeIdentityMatchOffer {
   /**
@@ -14854,9 +14945,17 @@ export interface BrandIntakeIdentityMatchOffer {
     section?: string;
   };
   /**
+   * The address read by fixed rules: its domain, whether that is a free mailbox host, the website candidate, the name and handle hints from the part before the @, a shared-mailbox flag.
+   */
+  email_clues?: unknown;
+  /**
    * Present (true) only when the page reader found a parked / for-sale domain; the web searches built on it are then absent.
    */
   site_parked?: boolean;
+  /**
+   * The email address the person typed this round, as the screen sent it.
+   */
+  typed_email?: string;
   /**
    * Every raw web result an identify round read, from every search engine, in rank order.
    */
@@ -14952,6 +15051,16 @@ export interface BrandIntakeIdentityMatchOffer {
    */
   candidate_name?: string;
   confirmed_name?: string;
+  /**
+   * The findings one source of a Smart Add identify round produced (site, accounts or web).
+   */
+  email_findings?: {
+    items?: BrandFinding[];
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "brand_identify_findings";
+  };
   /**
    * The findings one source of a Smart Add identify round produced (site, accounts or web).
    */
@@ -15097,6 +15206,10 @@ export interface BrandIntakeIdentityMatchOffer {
     section?: string;
   };
   /**
+   * A link-in-bio or social-network address typed in the website or account box this round. It is a source of links, never the brand's own website.
+   */
+  typed_link_page?: string;
+  /**
    * One section of the provider answers available at a point, one row per source, each row naming its source.
    * Raw form: the provider's sub-object exactly as returned. Clean form: only the fields that carry facts.
    */
@@ -15113,6 +15226,10 @@ export interface BrandIntakeIdentityMatchOffer {
    */
   candidate_handle: string;
   confirmed_domain?: string;
+  /**
+   * One line per finding: '- <field>: <value> (found from the email: <where>)'.
+   */
+  email_found_text?: string;
   /**
    * One section of the provider answers available at a point, one row per source, each row naming its source.
    * Raw form: the provider's sub-object exactly as returned. Clean form: only the fields that carry facts.
@@ -18106,7 +18223,7 @@ export interface CategorizationResult {
 }
 
 /**
- * Kind `chart` (registry v5).
+ * Kind `chart` (registry v6).
  */
 export interface Chart {
   /**
@@ -20046,7 +20163,7 @@ export interface ComparisonCriterion {
 }
 
 /**
- * Kind `comparison_set` (registry v8).
+ * Kind `comparison_set` (registry v9).
  */
 export interface ComparisonSet {
   items: string[];
@@ -21928,7 +22045,7 @@ export interface ConversationLabelChatOffer {
 }
 
 /**
- * Kind `cooking_recipe` (registry v7).
+ * Kind `cooking_recipe` (registry v8).
  */
 export interface CookingRecipe {
   notes?: string;
@@ -23007,7 +23124,7 @@ export interface DataActionResult {
  * forced to the column count. A renderer pads; it must never silently drop a
  * cell it cannot place.
  *  *
- *  * Kind `data_table` (registry v5).
+ *  * Kind `data_table` (registry v6).
  */
 export interface DataTable {
   /**
@@ -23257,7 +23374,7 @@ export interface DecisionQuestions {
 }
 
 /**
- * Kind `decision_tree` (registry v8).
+ * Kind `decision_tree` (registry v9).
  */
 export interface DecisionTree {
   root: DecisionNode;
@@ -23400,7 +23517,7 @@ export interface DiagramNode {
 }
 
 /**
- * Kind `diagram_spec` (registry v8).
+ * Kind `diagram_spec` (registry v9).
  */
 export interface DiagramSpec {
   type?: string;
@@ -25896,7 +26013,7 @@ export interface FlashcardDeckCardsV1 {
 }
 
 /**
- * Kind `flashcard_set` (registry v12).
+ * Kind `flashcard_set` (registry v13).
  */
 export interface FlashcardSet {
   cards: (Flashcard | EnhancedFlashcard | TieredFlashcard)[];
@@ -28913,6 +29030,75 @@ export interface IterationThinkingDisplayNarrationOffer {
 }
 
 /**
+ * Kind `job_result` (registry v2).
+ */
+export interface JobResult {
+  /**
+   * The board or site the posting came from.
+   */
+  via?: string | null;
+  title: string;
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "job_result";
+  source: string;
+  company?: string | null;
+  benefits?: string[];
+  location?: string | null;
+  position: number;
+  /**
+   * Full-time, Part-time, Contractor…
+   */
+  schedule?: string | null;
+  /**
+   * The primary posting link.
+   */
+  apply_url?: string | null;
+  share_url?: string | null;
+  /**
+   * Company logo, when the source has one.
+   */
+  thumbnail?: string | null;
+  /**
+   * Every place the job can be applied for.
+   */
+  apply_urls?: JobApplyLink[];
+  highlights?: JobHighlight[];
+  /**
+   * The posting's own description text.
+   */
+  description?: string | null;
+  /**
+   * '3 days ago', verbatim.
+   */
+  posted_text?: string | null;
+  salary_text?: string | null;
+  /**
+   * 'No degree mentioned' and the like.
+   */
+  qualifications_text?: string | null;
+}
+
+/**
+ * Kind `job_search_results` (registry v2).
+ */
+export interface JobSearchResults {
+  jobs?: JobResult[];
+  query: string;
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "job_search_results";
+  source: string;
+  /**
+   * The place the search was run for.
+   */
+  location?: string | null;
+  more_available?: boolean;
+}
+
+/**
  * Kind `journalist_fit` (registry v5).
  */
 export interface JournalistFit {
@@ -29497,11 +29683,12 @@ export interface KindComponentCode {
 /**
  * ``kindcomp_get_context`` — the full component-authoring bundle.
  *  *
- *  * Kind `kind_component_context` (registry v6).
+ *  * Kind `kind_component_context` (registry v8).
  */
 export interface KindComponentContext {
   kind: KindDefinitionSummary;
   note?: string | null;
+  rules?: string;
   /**
    * The registered kind this payload is an instance of.
    */
@@ -29518,24 +29705,9 @@ export interface KindComponentContext {
   } | null;
   component_ids?: string[];
   open_incidents?: KindComponentIncidentGroup[];
-  props_contract?: {
-    /**
-     * The registered kind this payload is an instance of, when it is one.
-     */
-    __kind?: string;
-    [key: string]: string | undefined;
-  };
-  design_doctrine?: string;
   canonical_example?: JsonValue | null;
   incidents_visible?: boolean;
   alternate_examples?: JsonValue[];
-  platform_components?: {
-    /**
-     * The registered kind this payload is an instance of, when it is one.
-     */
-    __kind?: string;
-    [key: string]: string | undefined;
-  };
   canonical_example_status?: string | null;
 }
 
@@ -29635,7 +29807,7 @@ export interface KindComponentUpdateResult {
 /**
  * Receipt of ``kind_create_content_block`` — the palette render block.
  *  *
- *  * Kind `kind_content_block_result` (registry v4).
+ *  * Kind `kind_content_block_result` (registry v6).
  */
 export interface KindContentBlockResult {
   kind?: string;
@@ -29646,7 +29818,7 @@ export interface KindContentBlockResult {
   message?: string | null;
   block_id?: string;
   template_chars?: number;
-  render_definition_id?: string;
+  prompt_block_id?: string;
 }
 
 /**
@@ -31266,7 +31438,7 @@ export interface MandatesHolderDraftBriefOffer {
 }
 
 /**
- * Kind `map` (registry v5).
+ * Kind `map` (registry v6).
  */
 export interface MapKind {
   /**
@@ -33627,7 +33799,7 @@ export interface MasterworksVanillaArmOffer {
 }
 
 /**
- * Kind `math_problem` (registry v8).
+ * Kind `math_problem` (registry v9).
  */
 export interface MathProblem {
   hint?: string | null;
@@ -38406,6 +38578,94 @@ export interface PickListToolResult {
 }
 
 /**
+ * Kind `place_review` (registry v2).
+ */
+export interface PlaceReview {
+  /**
+   * Open this review.
+   */
+  url?: string | null;
+  text?: string | null;
+  likes?: number | null;
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "place_review";
+  author: string;
+  images?: string[];
+  /**
+   * This reviewer's stars (scale 5).
+   */
+  rating?: Rating | null;
+  source: string;
+  /**
+   * Visit facts: order type, group size, wait time…
+   */
+  details?: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+    [key: string]: string | undefined;
+  };
+  position: number;
+  /**
+   * '4 months ago', verbatim.
+   */
+  date_text?: string | null;
+  review_id?: string | null;
+  author_url?: string | null;
+  author_photo?: string | null;
+  /**
+   * ISO-8601 UTC when the source gives it.
+   */
+  published_at?: string | null;
+  /**
+   * The reviewer's original wording when it differs from text.
+   */
+  original_text?: string | null;
+  /**
+   * The owner's reply, when there is one.
+   */
+  response_text?: string | null;
+  /**
+   * Food / Service / Atmosphere style 1-5 scores.
+   */
+  aspect_ratings?: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+    [key: string]: number | string | undefined;
+  };
+  response_date_text?: string | null;
+  author_review_count?: number | null;
+  author_is_local_guide?: boolean | null;
+}
+
+/**
+ * Kind `place_reviews` (registry v2).
+ */
+export interface PlaceReviews {
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "place_reviews";
+  rating?: Rating | null;
+  source: string;
+  /**
+   * What reviewers keep mentioning.
+   */
+  topics?: ReviewTopic[];
+  address?: string | null;
+  reviews?: PlaceReview[];
+  category?: string | null;
+  place_id: string;
+  place_name?: string | null;
+  more_available?: boolean;
+}
+
+/**
  * Kind `plan_concept_name` (registry v5).
  */
 export interface PlanConceptName {
@@ -40749,7 +41009,7 @@ export interface PracticePrompt {
 }
 
 /**
- * Kind `presentation_deck` (registry v8).
+ * Kind `presentation_deck` (registry v9).
  */
 export interface PresentationDeck {
   theme?: {
@@ -41401,6 +41661,69 @@ export interface ProductResearchReport {
 }
 
 /**
+ * One product listing from a shopping search. Not the Brave web-result
+ * `ProductDetails` sidecar (a page's structured data); this IS the result.
+ *  *
+ *  * Kind `product_result` (registry v2).
+ */
+export interface ProductResult {
+  /**
+   * Sale badge text ('30% OFF').
+   */
+  tag?: string | null;
+  /**
+   * Where to look at the product (the provider's product view).
+   */
+  url: string;
+  /**
+   * Number parsed from the price, when the source gives one.
+   */
+  price?: number | null;
+  /**
+   * The merchant offering it.
+   */
+  store?: string | null;
+  title: string;
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "product_result";
+  rating?: Rating | null;
+  /**
+   * Provider that returned this result, e.g. 'google'.
+   */
+  source: string;
+  /**
+   * ISO 4217 code when the price text names one.
+   */
+  currency?: string | null;
+  /**
+   * 1-based rank in the result list.
+   */
+  position: number;
+  old_price?: number | null;
+  thumbnail?: string | null;
+  /**
+   * The price exactly as shown ('$60.17', 'ZAR 2,818').
+   */
+  price_text?: string | null;
+  product_id?: string | null;
+  store_logo?: string | null;
+  /**
+   * 'Free delivery by Tue' and the like.
+   */
+  delivery_text?: string | null;
+  /**
+   * The struck-through earlier price, when on sale.
+   */
+  old_price_text?: string | null;
+  /**
+   * True when several stores sell this exact product.
+   */
+  multiple_sources?: boolean | null;
+}
+
+/**
  * Kind `progress_phase` (registry v4).
  */
 export interface ProgressPhase {
@@ -41818,7 +42141,7 @@ export interface QuizQuestion {
 }
 
 /**
- * Kind `quiz_set` (registry v9).
+ * Kind `quiz_set` (registry v10).
  */
 export interface QuizSet {
   title: string;
@@ -49621,6 +49944,26 @@ export interface ShiftedDatetime {
 }
 
 /**
+ * Kind `shopping_results` (registry v2).
+ */
+export interface ShoppingResults {
+  query: string;
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "shopping_results";
+  /**
+   * Provider that served this response, e.g. 'google'.
+   */
+  source: string;
+  products?: ProductResult[];
+  /**
+   * Set when the provider answered a corrected spelling.
+   */
+  altered_query?: string | null;
+}
+
+/**
  * A short-form video script in a brand's voice, as timed beats.
  *  *
  *  * Kind `short_script` (registry v2).
@@ -51083,7 +51426,7 @@ export interface StudyPackSet {
 }
 
 /**
- * Kind `study_plan` (registry v4).
+ * Kind `study_plan` (registry v6).
  */
 export interface StudyPlan {
   /**
@@ -51569,7 +51912,7 @@ export interface TaskItem {
 }
 
 /**
- * Kind `task_list` (registry v7).
+ * Kind `task_list` (registry v8).
  */
 export interface TaskList {
   items: TaskItem[];
@@ -51994,7 +52337,7 @@ export interface TieredFlashcard {
 }
 
 /**
- * Kind `timeline` (registry v7).
+ * Kind `timeline` (registry v8).
  */
 export interface Timeline {
   title: string;
@@ -53398,7 +53741,30 @@ export interface TranslationCellUnsettledValue {
 }
 
 /**
- * Kind `troubleshooting_guide` (registry v7).
+ * Kind `trend_report` (registry v2).
+ */
+export interface TrendReport {
+  /**
+   * Region code ('US'); None means worldwide.
+   */
+  geo?: string | null;
+  top?: TrendQuery[];
+  query: string;
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "trend_report";
+  rising?: TrendQuery[];
+  series?: TrendPoint[];
+  source: string;
+  /**
+   * The window requested, as the source names it ('today 12-m').
+   */
+  timeframe: string;
+}
+
+/**
+ * Kind `troubleshooting_guide` (registry v9).
  */
 export interface TroubleshootingGuide {
   title: string;
@@ -59817,6 +60183,8 @@ export type GeneratedKindSlug =
   | "iteration.root_cause.offer"
   | "iteration.thinking_display.offer"
   | "iteration.thinking_display_narration.offer"
+  | "job_result"
+  | "job_search_results"
   | "journalist_fit"
   | "json"
   | "json_path_result"
@@ -60144,6 +60512,8 @@ export type GeneratedKindSlug =
   | "pick_list_approval_result"
   | "pick_list_item_update_result"
   | "pick_list_tool_result"
+  | "place_review"
+  | "place_reviews"
   | "plan_concept_name"
   | "plan_deferred_topic"
   | "plan_draft_section"
@@ -60235,6 +60605,7 @@ export type GeneratedKindSlug =
   | "product_knowledge_item"
   | "product_research"
   | "product_research_report"
+  | "product_result"
   | "progress_phase"
   | "progress_step"
   | "progress_tracker"
@@ -60503,6 +60874,7 @@ export type GeneratedKindSlug =
   | "shapes.picker_description.offer"
   | "shell_execution"
   | "shifted_datetime"
+  | "shopping_results"
   | "short_script"
   | "site_audit_issue"
   | "site_gate"
@@ -60645,6 +61017,7 @@ export type GeneratedKindSlug =
   | "translation_cell_evidence"
   | "translation_cell_proposal"
   | "translation_cell_unsettled_value"
+  | "trend_report"
   | "troubleshooting_guide"
   | "troubleshooting_issue"
   | "troubleshooting_link"
@@ -61368,6 +61741,8 @@ export interface KindPayloadBySlug {
   "iteration.root_cause.offer": IterationRootCauseOffer;
   "iteration.thinking_display.offer": IterationThinkingDisplayOffer;
   "iteration.thinking_display_narration.offer": IterationThinkingDisplayNarrationOffer;
+  "job_result": JobResult;
+  "job_search_results": JobSearchResults;
   "journalist_fit": JournalistFit;
   "json": Json;
   "json_path_result": JsonPathResult;
@@ -61695,6 +62070,8 @@ export interface KindPayloadBySlug {
   "pick_list_approval_result": PickListApprovalResult;
   "pick_list_item_update_result": PickListItemUpdateResult;
   "pick_list_tool_result": PickListToolResult;
+  "place_review": PlaceReview;
+  "place_reviews": PlaceReviews;
   "plan_concept_name": PlanConceptName;
   "plan_deferred_topic": PlanDeferredTopic;
   "plan_draft_section": PlanDraftSection;
@@ -61786,6 +62163,7 @@ export interface KindPayloadBySlug {
   "product_knowledge_item": ProductKnowledgeItem;
   "product_research": ProductResearch;
   "product_research_report": ProductResearchReport;
+  "product_result": ProductResult;
   "progress_phase": ProgressPhase;
   "progress_step": ProgressStep;
   "progress_tracker": ProgressTracker;
@@ -62054,6 +62432,7 @@ export interface KindPayloadBySlug {
   "shapes.picker_description.offer": ShapesPickerDescriptionOffer;
   "shell_execution": ShellExecution;
   "shifted_datetime": ShiftedDatetime;
+  "shopping_results": ShoppingResults;
   "short_script": ShortScript;
   "site_audit_issue": SiteAuditIssue;
   "site_gate": SiteGate;
@@ -62196,6 +62575,7 @@ export interface KindPayloadBySlug {
   "translation_cell_evidence": TranslationCellEvidence;
   "translation_cell_proposal": TranslationCellProposal;
   "translation_cell_unsettled_value": TranslationCellUnsettledValue;
+  "trend_report": TrendReport;
   "troubleshooting_guide": TroubleshootingGuide;
   "troubleshooting_issue": TroubleshootingIssue;
   "troubleshooting_link": TroubleshootingLink;
@@ -62923,6 +63303,8 @@ export const GENERATED_KIND_SLUGS: readonly GeneratedKindSlug[] = [
   "iteration.root_cause.offer",
   "iteration.thinking_display.offer",
   "iteration.thinking_display_narration.offer",
+  "job_result",
+  "job_search_results",
   "journalist_fit",
   "json",
   "json_path_result",
@@ -63250,6 +63632,8 @@ export const GENERATED_KIND_SLUGS: readonly GeneratedKindSlug[] = [
   "pick_list_approval_result",
   "pick_list_item_update_result",
   "pick_list_tool_result",
+  "place_review",
+  "place_reviews",
   "plan_concept_name",
   "plan_deferred_topic",
   "plan_draft_section",
@@ -63341,6 +63725,7 @@ export const GENERATED_KIND_SLUGS: readonly GeneratedKindSlug[] = [
   "product_knowledge_item",
   "product_research",
   "product_research_report",
+  "product_result",
   "progress_phase",
   "progress_step",
   "progress_tracker",
@@ -63609,6 +63994,7 @@ export const GENERATED_KIND_SLUGS: readonly GeneratedKindSlug[] = [
   "shapes.picker_description.offer",
   "shell_execution",
   "shifted_datetime",
+  "shopping_results",
   "short_script",
   "site_audit_issue",
   "site_gate",
@@ -63751,6 +64137,7 @@ export const GENERATED_KIND_SLUGS: readonly GeneratedKindSlug[] = [
   "translation_cell_evidence",
   "translation_cell_proposal",
   "translation_cell_unsettled_value",
+  "trend_report",
   "troubleshooting_guide",
   "troubleshooting_issue",
   "troubleshooting_link",
