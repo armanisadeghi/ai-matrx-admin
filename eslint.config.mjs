@@ -19,6 +19,7 @@ import { noNavigationForQueryState } from "./scripts/lint-rules/no-navigation-fo
 import { emptyStateNeedsReadGate, errorRenderCarriesAlchemy } from "./scripts/lint-rules/error-render-carries-alchemy.mjs";
 import { noCanonicalComponentOverride } from "./scripts/lint-rules/no-canonical-component-override.mjs";
 import { noRawSelect, noStyledRawButton, oneControl } from "./scripts/lint-rules/one-control-rule.mjs";
+import { alchemyDataIn } from "./scripts/lint-rules/alchemy-data-in.mjs";
 import { noHandBuiltChip } from "./scripts/lint-rules/hand-built-chip.mjs";
 
 // eslint-plugin-react's `version: "detect"` (what eslint-config-next sets) calls
@@ -210,6 +211,8 @@ const matrxLintPlugin = {
     "no-hand-built-chip": noHandBuiltChip,
     "no-styled-raw-button": noStyledRawButton,
     "no-raw-select": noRawSelect,
+    // Alchemy takes data, not hand-built human/json/agent strings (Arman, 2026-10-14).
+    "alchemy-data-in": alchemyDataIn,
     "no-raw-storage-media": {
       meta: {
         type: "problem",
@@ -1704,6 +1707,10 @@ export default [
       "matrx/no-styled-raw-button": "warn",
       // A native <select> is a hand-rolled control (owner, 2026-10-14): Select / OptionCombobox.
       "matrx/no-raw-select": "error",
+      // ALCHEMY TAKES DATA (Arman, 2026-10-14: "a linter that screams until they're fixed"): an
+      // Alchemy host handed human/json/agent strings without `data`. The agent who touches the line
+      // converts it (lint-guard holds touched lines only, never a release).
+      "matrx/alchemy-data-in": "warn",
       // THE CHIP LAW (owner, 2026-10-05): a hand-built tinted chip/tag/pill → the package Chip.
       // warn: the census of what is left is `pnpm findings` (ui-drift rule hand-built-chip,
       // shrink-only baseline). Never an eslint-disable.
