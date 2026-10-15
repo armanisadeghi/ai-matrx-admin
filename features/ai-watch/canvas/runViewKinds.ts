@@ -34,7 +34,8 @@ export const WORKFLOW_RUN_CANVAS_KIND: AnyCanvasKind = defineCanvasKind<CanvasJs
 
 export const AI_WATCH_CANVAS_KIND: AnyCanvasKind = defineCanvasKind<CanvasJson>({
   id: AI_WATCH_CANVAS_ID,
-  surface: "dom",
+  // Its transcripts render kind components in sandboxed iframes, which DOM print/capture cannot copy.
+  surface: "frame",
   label: "Watch AI",
   icon: Eye,
   load: () => import("./AiWatchCanvasView"),
