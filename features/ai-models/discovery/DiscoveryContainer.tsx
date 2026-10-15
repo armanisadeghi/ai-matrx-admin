@@ -27,6 +27,9 @@ import { useAppSelector } from "@/lib/redux/hooks";
 import { selectAccessToken } from "@/lib/redux/slices/userSlice";
 import { selectResolvedBaseUrl } from "@/lib/redux/slices/apiConfigSlice";
 import { useServerOrganizationId } from "@/lib/api/useServerOrganizationId";
+import { selectUserId } from "@/lib/redux/selectors/userSelectors";
+import { selectOrganizationId } from "@/lib/redux/slices/appContextSlice";
+import { useEffectiveKnob } from "@/lib/scoped-config/effectiveKnobs.client";
 import { extractErrorMessage } from "@/utils/errors";
 import { cn } from "@/lib/utils";
 import {
@@ -42,6 +45,10 @@ import {
   loadPromoted,
   testedLabel,
 } from "./api";
+import { compatLabel, describeRun, describeTestRequest } from "./run-words";
+
+const TEST_POLL_SECONDS_KNOB = { feature: "ai.models", key: "test_poll_seconds" } as const;
+const TEST_POLL_COUNT_KNOB = { feature: "ai.models", key: "test_poll_count" } as const;
 
 const USE_LABEL: Record<string, string> = {
   core: "Always",
@@ -238,7 +245,7 @@ function CandidateDetail({
         ok: true,
         text: `Promoted ${result.model_name}: ${result.variants
           .map((v) => `${v.key} ${v.review_state}, files ${v.file_check}`)
-          .join("; ")}`,
+          .join("; ")}${result.notes?.length ? `. ${result.notes.join(" ")}` : ""}`,
       });
       await onChanged();
     } catch (err) {
@@ -341,8 +348,28 @@ function CandidateDetail({
               ))}
             </SelectContent>
           </Select>
+          {s.maker_match && !s.maker_match.matched && !makerId ? (
+            <>
+              <span />
+              <p className="text-xs text-destructive">{s.maker_match.words}</p>
+            </>
+          ) : null}
           <span className="text-muted-foreground">Summary</span>
-          <Textarea aria-label="Summary" value={summary} onChange={(e) => setSummary(e.target.value)} rows={2} />
+          <div className="space-y-1">
+            <Textarea aria-label="Summary" value={summary} onChange={(e) => setSummary(e.target.value)} rows={2} />
+            <p className="text-xs text-muted-foreground">
+              {s.summary_source ? `From ${s.summary_source}` : "No description on the card; write one"}
+            </p>
+          </div>
+          {s.capabilities ? (
+            <>
+              <span className="text-muted-foreground">Capabilities</span>
+              <p className="text-xs text-foreground">
+                {s.capabilities.input.join(" + ")} in, {s.capabilities.output.join(" + ")} out ·{" "}
+                <span className="text-muted-foreground">{s.capabilities_basis}</span>
+              </p>
+            </>
+          ) : null}
           <span className="text-muted-foreground">Tags</span>
           <Input aria-label="Tags" value={tags} onChange={(e) => setTags(e.target.value)} />
         </div>
@@ -544,19 +571,40 @@ function PromotedPanel({ modelId, auth }: { modelId: string; auth: CallAuth }) {
     return map;
   }, [state]);
 
+  // How often and how long the panel re-reads after Run test: knobs ai.models.test_poll_seconds /
+  // test_poll_count (no code default; until they resolve the panel does not watch and says so).
+  const userId = useAppSelector(selectUserId);
+  const orgId = useAppSelector(selectOrganizationId);
+  const pollSeconds = useEffectiveKnob(orgId, userId, TEST_POLL_SECONDS_KNOB);
+  const pollCount = useEffectiveKnob(orgId, userId, TEST_POLL_COUNT_KNOB);
+  const [watchTicks, setWatchTicks] = useState(0);
   const test = async (variantId: string) => {
     setTestMessage(null);
     try {
       const res = await discoveryApi.test(auth, variantId);
       setTestMessage(
-        res.status === "dispatched"
-          ? "Test started on the cloud test machine; it takes several minutes"
-          : "A test is already running",
+        res.detail ||
+          (res.status === "already_running" || res.status === "already_queued"
+            ? "A test for this variant is already waiting or running"
+            : "Test requested"),
       );
+      if (typeof pollCount === "number") setWatchTicks(pollCount);
+      else setTestMessage((m) => `${m ?? ""} The page cannot watch for the result (refresh settings not loaded); reload to see it.`);
+      await load();
     } catch (err) {
       setTestMessage(extractErrorMessage(err));
     }
   };
+
+  // After a test request, re-read every test_poll_seconds, test_poll_count times, so the result shows up here.
+  useEffect(() => {
+    if (watchTicks <= 0 || typeof pollSeconds !== "number") return;
+    const id = window.setTimeout(() => {
+      setWatchTicks((n) => n - 1);
+      void load();
+    }, pollSeconds * 1000);
+    return () => window.clearTimeout(id);
+  }, [watchTicks, load, pollSeconds]);
 
   if (error) return <ErrorNotice title="The promoted model could not be read" message={error} size="compact" />;
   if (!state) return <p className="text-sm text-muted-foreground">Loading promoted model…</p>;
@@ -565,6 +613,10 @@ function PromotedPanel({ modelId, auth }: { modelId: string; auth: CallAuth }) {
       <h3 className="flex items-center gap-2 text-sm font-semibold text-foreground">
         <CheckCircle2 className="h-4 w-4" /> In the catalog
         <Badge variant="outline">{state.inPublic ? "Listed in models" : "Not listed"}</Badge>
+        {state.inPublic && !state.variants.some((v) => v.review_state === "offered") ? (
+          <Badge variant="destructive">Listed although no variant is offered</Badge>
+        ) : null}
+        {watchTicks > 0 ? <span className="text-xs text-muted-foreground">Watching for the result…</span> : null}
         <Button variant="quiet" onClick={() => void load()}>
           Refresh
         </Button>
@@ -587,20 +639,32 @@ function PromotedPanel({ modelId, auth }: { modelId: string; auth: CallAuth }) {
             </div>
             <div className="text-xs text-muted-foreground">
               Compatibility:{" "}
-              {compat.length
-                ? compat.map((c) => `${c.hardware_class} ${c.status}`).join(" · ")
-                : "none recorded"}
+              {compat.length ? compat.map(compatLabel).join(" · ") : "none recorded"}
             </div>
-            {runs.map((r) => (
-              <div key={r.id} className="text-xs text-muted-foreground">
-                {r.check_kind} · {r.result}
-                {r.hardware_class ? ` · ${r.os}/${r.arch} ${r.hardware_class}` : ""}
-                {typeof r.measured?.tokens_per_second === "string" && r.measured.tokens_per_second
-                  ? ` · ${r.measured.tokens_per_second} tokens/s`
-                  : ""}
-                {r.finished_at ? ` · ${new Date(r.finished_at).toLocaleString()}` : ""}
-              </div>
-            ))}
+            {(() => {
+              const line = describeTestRequest(v.metadata?.test_request, (iso) => new Date(iso).toLocaleString());
+              if (!line) return null;
+              if (line.tone === "error")
+                return <ErrorNotice title="Queued test not run" message={line.text} size="compact" />;
+              return (
+                <div className={line.tone === "info" ? "text-xs text-foreground" : "text-xs text-muted-foreground"}>
+                  {line.text}
+                </div>
+              );
+            })()}
+            {runs.map((r) => {
+              const w = describeRun(r, runs);
+              return (
+                <div key={r.id} className="text-xs text-muted-foreground">
+                  <span className={r.result === "fail" && !w.correctedBy ? "text-destructive" : undefined}>
+                    {w.headline}
+                  </span>
+                  {r.finished_at ? ` · ${new Date(r.finished_at).toLocaleString()}` : ""}
+                  {w.reason ? <div className="pl-3">{w.reason}</div> : null}
+                  {w.correctedBy ? <div className="pl-3 text-foreground">Corrected: {w.correctedBy}</div> : null}
+                </div>
+              );
+            })}
           </div>
         );
       })}
