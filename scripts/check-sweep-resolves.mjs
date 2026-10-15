@@ -50,7 +50,7 @@
 // Exit codes: 0 classified (holds or not) · 2 could not run — sync-main announces it, never silent.
 
 import { execFileSync } from "node:child_process";
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync, writeSync } from "node:fs";
 import { createRequire } from "node:module";
 import { tmpdir } from "node:os";
 import { basename, dirname, join, relative, resolve, sep } from "node:path";
@@ -642,7 +642,13 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
   try {
     const r = classify(root);
     if (args.includes("--json")) {
-      process.stdout.write(JSON.stringify(r) + "\n");
+      // Synchronous: stdout to a pipe is async, and process.exit() below drops whatever is past
+      // the first 64 KB — a large sweep's JSON arrived cut off and sync-main paused (2026-10-14).
+      const out = Buffer.from(JSON.stringify(r) + "\n");
+      for (let off = 0; off < out.length; ) {
+        try { off += writeSync(1, out, off, out.length - off); }
+        catch (e) { if (e?.code !== "EAGAIN") throw e; }   // a non-blocking pipe that is full: retry
+      }
     } else {
       console.log(`check-sweep-resolves: ${r.checked} changed file(s), ${r.deletions} deletion(s), ${r.hold.length} would break the build (${r.seconds}s)`);
       for (const h of r.hold) console.log(`  HOLD ${h.path}\n       ${h.reasons.join("\n       ")}`);
