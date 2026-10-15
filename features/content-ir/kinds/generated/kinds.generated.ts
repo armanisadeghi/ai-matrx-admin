@@ -7,7 +7,7 @@
 // Verify:      pnpm check:kind-types   (CI-blocking freshness gate)
 // Twin guard:  pnpm check:kind-type-twins
 //
-// 1541 active kinds. THESE ARE THE ONLY KIND PAYLOAD TYPES IN THE REPO.
+// 1548 active kinds. THESE ARE THE ONLY KIND PAYLOAD TYPES IN THE REPO.
 // A hand-written interface mirroring a registered kind is a defect — derive
 // (Pick/Omit) from the type here instead, and never re-declare it.
 //
@@ -21,7 +21,7 @@
 // ─────────────────────────────────────────────────────────────────────────
 
 /** Structural fingerprint of the registry rows this artifact was generated from. */
-export const KIND_REGISTRY_FINGERPRINT = "a1a2e9bd2114";
+export const KIND_REGISTRY_FINGERPRINT = "ad814f1a7552";
 
 // ─────────────────────────────────────────────────────────────────────────
 // Shared nested structures. Deduped by structure across the registry — an
@@ -1597,7 +1597,7 @@ export interface BrandKeyPerson_BrandIntakeKeyPeople {
  *  *
  *  * From kind `brand_we_think`.
  */
-export interface BrandWeThinkSuggestion {
+export interface BrandWeThinkSuggestion_BrandWeThink {
   /**
    * The candidate's key exactly as given (its identity in the list).
    */
@@ -1626,6 +1626,109 @@ export interface BrandWeThinkSuggestion {
    * Only when choice is related: one key of web.brand_relation_kind (founder, key_person, parent_company, sister_company, subsidiary, location, sub_brand, former_account, unofficial, partner, competitor…).
    */
   relation_key?: string | null;
+}
+
+/**
+ * One web result, classified against what is already known about the brand.
+ *  *
+ *  * From kind `brand_web_result_classification`.
+ */
+export interface BrandWebResultClass {
+  /**
+   * The result's address exactly as given (its identity in the batch).
+   */
+  url: string;
+  /**
+   * One key of web.brand_relation_kind (ours, review_site, mention, not_us, irrelevant…), or needs_person when the facts cannot decide.
+   */
+  kind: string;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  /**
+   * 15 words or fewer: what in the known facts and the result decides it (grounding; shown on hover only).
+   */
+  reason: string;
+  /**
+   * Only for ours / not_us: ONE short verbatim quote the reason rests on; empty for every other kind (grounding; hover only).
+   */
+  evidence?: string[];
+  /**
+   * Only for a kind whose has_sentiment is true (mention, review_site); else null.
+   */
+  sentiment?: "positive" | "neutral" | "negative" | null;
+  /**
+   * How likely this kind is right, 0–1.
+   */
+  probability: number;
+}
+
+/**
+ * A value in the source that contradicts a known fact.
+ *  *
+ *  * From kind `brand_whats_new`.
+ */
+export interface BrandWhatsNewConflict {
+  field: string;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  /**
+   * One line (grounding; hover only).
+   */
+  reason: string;
+  /**
+   * The contradicting value, exactly as the source shows it.
+   */
+  new_value: string;
+  field_label: string;
+  /**
+   * The known fact's value, as given.
+   */
+  known_value: string;
+  evidence_urls?: string[];
+}
+
+/**
+ * One genuinely new fact, in the brand_basics_fact shape (Arman's Brand Basics Fact Finder).
+ *  *
+ *  * From kind `brand_whats_new`.
+ */
+export interface BrandWhatsNewFact_BrandWhatsNew {
+  /**
+   * snake_case field, e.g. phone, street_address, founder, year_founded, service.
+   */
+  field: string;
+  /**
+   * The value exactly as the source shows it.
+   */
+  value: string;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  /**
+   * One line: what the source shows (grounding; hover only).
+   */
+  reason: string;
+  /**
+   * confirmed = the source directly states it about this brand; likely = points to it; possible = weak hint.
+   */
+  certainty: "confirmed" | "likely" | "possible";
+  /**
+   * The field as a person reads it, e.g. 'Phone'.
+   */
+  field_label: string;
+  /**
+   * True for a standard field of the facts catalog; false for a custom one.
+   */
+  known_field: boolean;
+  /**
+   * The source URL (grounding; hover only).
+   */
+  evidence_urls?: string[];
 }
 
 /**
@@ -6083,6 +6186,28 @@ export interface PerUnitVsLot {
 }
 
 /**
+ * One candidate account for a person known only by name.
+ *  *
+ *  * From kind `person_anchor_candidates`.
+ */
+export interface PersonAnchorCandidate {
+  url: string;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  handle: string;
+  /**
+   * One line (grounding; shown on hover only).
+   */
+  reason: string;
+  platform: string;
+  probability: number;
+  is_this_them: "yes" | "no" | "unsure";
+  evidence_urls?: string[];
+}
+
+/**
  * * From kind `brand_intake_profile`.
  */
 export interface PersonItem {
@@ -6105,6 +6230,21 @@ export interface PersonItem {
    */
   confidence: number;
   is_spokesperson?: boolean;
+}
+
+/**
+ * * From kind `person_anchor_candidates`.
+ */
+export interface PersonNamesake {
+  name: string;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  /**
+   * e.g. 'Sandra Lee, chef and TV host'.
+   */
+  what_they_are: string;
 }
 
 /**
@@ -17288,7 +17428,113 @@ export interface BrandWeThink {
    * The registered kind this payload is an instance of.
    */
   __kind?: "brand_we_think";
-  suggestions?: BrandWeThinkSuggestion[];
+  suggestions?: BrandWeThinkSuggestion_BrandWeThink[];
+}
+
+/**
+ * Kind `brand_we_think_suggestion` (registry v2).
+ */
+export interface BrandWeThinkSuggestion {
+  /**
+   * The candidate key exactly as given (its identity in the list).
+   */
+  key: string;
+  /**
+   * Block discriminator for render pipeline.
+   */
+  __kind?: "brand_we_think_suggestion";
+  /**
+   * What we think the candidate is to the brand.
+   */
+  choice: "preferred" | "ours" | "alias" | "not_us" | "related" | "ask_later";
+  /**
+   * One line: the known fact that decides it (hover only).
+   */
+  reason: string;
+  /**
+   * Known facts and candidate details the reason rests on (hover only).
+   */
+  evidence?: string[];
+  /**
+   * How likely the choice is right, 0-1.
+   */
+  probability: number;
+  /**
+   * Only when choice is related: the named relation.
+   */
+  relation_key?: string | null;
+}
+
+/**
+ * The web-result classifier's answer (mandate ``brand_intake.web_result_classifier``): per result, its
+ * relation to the brand with a probability and grounding. A proposal shown as the 'we think' glow in the
+ * Review search results window; it never answers for the person.
+ *  *
+ *  * Kind `brand_web_result_classification` (registry v2).
+ */
+export interface BrandWebResultClassification {
+  /**
+   * Up to 3 cautionary notes (name collisions…).
+   */
+  notes?: string[];
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "brand_web_result_classification";
+  results?: BrandWebResultClass[];
+}
+
+/**
+ * The what's-new agent's answer (mandate ``brand_intake.whats_new``): from one new clean source, ONLY the facts
+ * not already known, plus values that contradict a known fact. A proposal for the validation queue.
+ *  *
+ *  * Kind `brand_whats_new` (registry v2).
+ */
+export interface BrandWhatsNew {
+  facts?: BrandWhatsNewFact_BrandWhatsNew[];
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "brand_whats_new";
+  conflicts?: BrandWhatsNewConflict[];
+}
+
+/**
+ * Kind `brand_whats_new_fact` (registry v2).
+ */
+export interface BrandWhatsNewFact {
+  /**
+   * Machine-readable snake_case identifier for the fact (e.g., 'official_name', 'phone').
+   */
+  field: string;
+  /**
+   * The exact value of the fact as reported by the source.
+   */
+  value: string;
+  /**
+   * Block discriminator for render pipeline.
+   */
+  __kind: "brand_whats_new_fact";
+  /**
+   * A concise explanation stating what the source shows and why this certainty level was assigned.
+   */
+  reason: string;
+  /**
+   * The certainty level based on source credibility and corroboration.
+   */
+  certainty: "confirmed" | "likely" | "possible";
+  /**
+   * Human-readable display label for the field (e.g., 'Official Name').
+   */
+  field_label: string;
+  /**
+   * True if this belongs to the standard predefined field catalog; false if custom/unknown.
+   */
+  known_field: boolean;
+  /**
+   * List of verified URLs confirming or corroborating this fact.
+   */
+  evidence_urls: string[];
 }
 
 /**
@@ -37775,6 +38021,89 @@ export interface PerimeterEntry {
    * ICP ids covering the area; null when waived.
    */
   covered_by?: string[] | null;
+}
+
+/**
+ * The person anchor finder's answer (mandate ``brand_intake.person_anchor_finder``): per candidate, is it this
+ * person, plus the namesakes. A proposal shown as the 'we think' glow; it never selects for the person.
+ *  *
+ *  * Kind `person_anchor_candidates` (registry v2).
+ */
+export interface PersonAnchorCandidates {
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "person_anchor_candidates";
+  namesakes?: PersonNamesake[];
+  candidates?: PersonAnchorCandidate[];
+}
+
+/**
+ * Kind `person_basics` (registry v2).
+ */
+export interface PersonBasics {
+  /**
+   * Discovered facts about the person, each with evidence.
+   */
+  facts: PersonBasicsFact[];
+  /**
+   * Cautionary notes (name collisions, omitted sensitive data).
+   */
+  notes?: string[];
+  /**
+   * Block discriminator for render pipeline.
+   */
+  __kind: "person_basics";
+  /**
+   * The person's name as grounded by the evidence.
+   */
+  person_name: string;
+  /**
+   * What grounded the profile (name + confirmed profile URL, etc.).
+   */
+  identity_basis?: string;
+}
+
+/**
+ * Kind `person_basics_fact` (registry v2).
+ */
+export interface PersonBasicsFact {
+  /**
+   * Machine-readable snake_case identifier for the fact (e.g., 'official_name', 'phone').
+   */
+  field: string;
+  /**
+   * The exact value of the fact as reported by the source.
+   */
+  value: string;
+  /**
+   * Block discriminator for render pipeline.
+   */
+  __kind: "person_basics_fact";
+  /**
+   * A concise explanation stating what the source shows and why this certainty level was assigned.
+   */
+  reason: string;
+  /**
+   * The certainty level based on source credibility and corroboration.
+   */
+  certainty: "confirmed" | "likely" | "possible";
+  /**
+   * Human-readable display label for the field (e.g., 'Official Name').
+   */
+  field_label: string;
+  /**
+   * True if this belongs to the standard predefined field catalog; false if custom/unknown.
+   */
+  known_field: boolean;
+  /**
+   * How strongly the source ties this fact to the person (e.g. strong, weak).
+   */
+  match_basis?: string;
+  /**
+   * List of verified URLs confirming or corroborating this fact.
+   */
+  evidence_urls: string[];
 }
 
 /**
@@ -59142,6 +59471,10 @@ export type GeneratedKindSlug =
   | "brand_open_candidates"
   | "brand_relation_kinds"
   | "brand_we_think"
+  | "brand_we_think_suggestion"
+  | "brand_web_result_classification"
+  | "brand_whats_new"
+  | "brand_whats_new_fact"
   | "broken_link_prospecting_preview"
   | "broken_link_prospecting_report"
   | "browser_provision_result"
@@ -59793,6 +60126,9 @@ export type GeneratedKindSlug =
   | "pdf_table_extraction"
   | "pdf_text_extraction"
   | "perimeter_entry"
+  | "person_anchor_candidates"
+  | "person_basics"
+  | "person_basics_fact"
   | "person_candidate_list"
   | "person_clue_list"
   | "person_find_focus"
@@ -60686,6 +61022,10 @@ export interface KindPayloadBySlug {
   "brand_open_candidates": BrandOpenCandidates;
   "brand_relation_kinds": BrandRelationKinds;
   "brand_we_think": BrandWeThink;
+  "brand_we_think_suggestion": BrandWeThinkSuggestion;
+  "brand_web_result_classification": BrandWebResultClassification;
+  "brand_whats_new": BrandWhatsNew;
+  "brand_whats_new_fact": BrandWhatsNewFact;
   "broken_link_prospecting_preview": BrokenLinkProspectingPreview;
   "broken_link_prospecting_report": BrokenLinkProspectingReport;
   "browser_provision_result": BrowserProvisionResult;
@@ -61337,6 +61677,9 @@ export interface KindPayloadBySlug {
   "pdf_table_extraction": PdfTableExtraction;
   "pdf_text_extraction": PdfTextExtraction;
   "perimeter_entry": PerimeterEntry;
+  "person_anchor_candidates": PersonAnchorCandidates;
+  "person_basics": PersonBasics;
+  "person_basics_fact": PersonBasicsFact;
   "person_candidate_list": PersonCandidateList;
   "person_clue_list": PersonClueList;
   "person_find_focus": PersonFindFocus;
@@ -62234,6 +62577,10 @@ export const GENERATED_KIND_SLUGS: readonly GeneratedKindSlug[] = [
   "brand_open_candidates",
   "brand_relation_kinds",
   "brand_we_think",
+  "brand_we_think_suggestion",
+  "brand_web_result_classification",
+  "brand_whats_new",
+  "brand_whats_new_fact",
   "broken_link_prospecting_preview",
   "broken_link_prospecting_report",
   "browser_provision_result",
@@ -62885,6 +63232,9 @@ export const GENERATED_KIND_SLUGS: readonly GeneratedKindSlug[] = [
   "pdf_table_extraction",
   "pdf_text_extraction",
   "perimeter_entry",
+  "person_anchor_candidates",
+  "person_basics",
+  "person_basics_fact",
   "person_candidate_list",
   "person_clue_list",
   "person_find_focus",
