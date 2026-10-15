@@ -121,7 +121,7 @@ export function PageSetupDialog({
           </div>
           <div className="grid gap-1 text-xs text-muted-foreground">
             Margins (inches)
-            <div className="grid grid-cols-4 gap-2">
+            <div className="grid grid-cols-2 gap-2">
               {MARGINS.map(({ key, label }) => (
                 <label key={key} className="grid min-w-0 gap-1">
                   {label}
