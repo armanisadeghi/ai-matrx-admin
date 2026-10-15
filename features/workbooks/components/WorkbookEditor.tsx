@@ -86,6 +86,9 @@ import { UniverSheetsDrawingPreset } from "@univerjs/preset-sheets-drawing";
 import sheetsDrawingEnUS from "@univerjs/preset-sheets-drawing/locales/en-US";
 import "@univerjs/preset-sheets-drawing/lib/index.css";
 import { UniverSheetsNotePreset } from "@univerjs/preset-sheets-note";
+import actionRecorderEnUS from "@univerjs/action-recorder/locale/en-US";
+import { UniverActionRecorderPlugin } from "@univerjs/action-recorder";
+import "@univerjs/action-recorder/lib/index.css";
 import sheetsNoteEnUS from "@univerjs/preset-sheets-note/locales/en-US";
 import "@univerjs/preset-sheets-note/lib/index.css";
 import { UniverSheetsThreadCommentPreset } from "@univerjs/preset-sheets-thread-comment";
@@ -330,7 +333,7 @@ export default function WorkbookEditor({
         const { univer, univerAPI } = createUniver({
           locale: LocaleType.EN_US,
           locales: {
-            [LocaleType.EN_US]: merge({}, sheetsCoreEnUS, sheetsSortEnUS, sheetsFilterEnUS, sheetsTableEnUS, sheetsDVEnUS, sheetsCFEnUS, sheetsFREnUS, sheetsLinkEnUS, sheetsDrawingEnUS, sheetsNoteEnUS, sheetsCommentEnUS),
+            [LocaleType.EN_US]: merge({}, sheetsCoreEnUS, sheetsSortEnUS, sheetsFilterEnUS, sheetsTableEnUS, sheetsDVEnUS, sheetsCFEnUS, sheetsFREnUS, sheetsLinkEnUS, sheetsDrawingEnUS, sheetsNoteEnUS, sheetsCommentEnUS, actionRecorderEnUS),
           },
           theme: defaultTheme,
           darkMode: darkModeRef.current,
@@ -364,6 +367,7 @@ export default function WorkbookEditor({
           univer.dispose();
           return;
         }
+        univer.registerPlugin(UniverActionRecorderPlugin);
         univerRef.current = univer;
         apiRef.current = univerAPI;
         // ONE toaster per page: Univer's notices ride the app's toast path, and

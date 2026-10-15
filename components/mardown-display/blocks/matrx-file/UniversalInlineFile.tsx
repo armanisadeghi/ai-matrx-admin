@@ -283,7 +283,7 @@ function InlineSkeleton() {
 // ---------------------------------------------------------------------------
 
 // `fileNameFromUrl` used to live here. It is now the canonical recognizer's
-// (`@ai-matrx/data/files`, re-exported through `@/lib/media/our-file-sources`):
+// (`@ai-matrx/files/client`, re-exported through `@/lib/media/our-file-sources`):
 // same contract — the `response-content-disposition` filename when present,
 // else the last path segment ONLY when it looks like a real name, never a
 // UUID id. C9 collapse, adopting @ai-matrx/data 0.4.1.

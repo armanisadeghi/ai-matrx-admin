@@ -1,4 +1,4 @@
-import { SHEET_THEMES, applyThemeToSheet, columnStats, describeColumnStats } from "../chrome/sheet-extras";
+import { hasHeaderRow, SHEET_THEMES, applyThemeToSheet, columnStats, describeColumnStats } from "../chrome/sheet-extras";
 
 describe("Column stats", () => {
   it("counts filled, blank, unique and the most common values per column", () => {
@@ -17,6 +17,16 @@ describe("Column stats", () => {
     const text = describeColumnStats(columnStats([["a"], ["a"], ["b"]]), ["Name"]);
     expect(text).toContain("Name: 3 filled, 0 blank, 2 unique");
     expect(text).toContain("a (2)");
+  });
+});
+
+describe("Column stats headers and money", () => {
+  it("reads currency text as numbers and spots a title row", () => {
+    const rows = [["Jan"], ["$6,850"], ["($50)"]];
+    expect(hasHeaderRow(rows)).toBe(true);
+    expect(columnStats(rows.slice(1))[0]).toMatchObject({ numeric: 2, sum: 6800 });
+    expect(hasHeaderRow([[1], [2]])).toBe(false);
+    expect(hasHeaderRow([["only"]])).toBe(false);
   });
 });
 

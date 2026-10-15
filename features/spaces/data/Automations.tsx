@@ -15,9 +15,10 @@ import { ProInput } from "@/components/official/ProInput";
  * Nothing here decides access: every call runs as the person and the store refuses in its own words.
  */
 import { createContext, useContext, useEffect, useState } from "react";
-import { FlaskConical, History, Plus, RotateCcw, Trash2, X } from "lucide-react";
+import { Copy, FlaskConical, History, Plus, RotateCcw, Trash2, Undo2, X } from "lucide-react";
 import { Button, Input, Switch } from "@ai-matrx/design-system/controls";
-import { isButtonField } from "@ai-matrx/records";
+import { automationWebhookUrl, isButtonField } from "@ai-matrx/records";
+import { postJson, resolveBaseUrl } from "@/lib/python-client";
 import type { AutomationAction, AutomationItem, AutomationRun, AutomationSpec, AutomationTrigger, AutomationValue, AutomationWeekday, ReadRow, SavedViewRow } from "@ai-matrx/records";
 import { useMyLevel, useRecordsClient, type Field } from "@ai-matrx/records/react";
 import { whatYouMayDo } from "@ai-matrx/records-ui";
@@ -29,7 +30,7 @@ import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 const RUNS_KNOB = { feature: "spaces", key: "automation_runs_shown" } as const;
 
 type TriggerOn = AutomationTrigger["on"];
-type Every = "day" | "week" | "month";
+type Every = "day" | "week" | "month" | "hour" | "minutes";
 type DateWhen = "before" | "on" | "after";
 const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"] as const;
 type ValueKind = "text" | "now" | "me" | "clear" | "from";
@@ -42,7 +43,29 @@ type Draft =
   | { kind: "webhook"; url: string }
   | { kind: "email"; to: "author" | "address" | string; address: string; subject: string; body: string }
   | { kind: "slack"; url: string; text: string }
-  | { kind: "agent"; prompt: string };
+  | { kind: "agent"; prompt: string }
+  /** AT-AUTO2: a script step — JavaScript run by the server in the owner's sandbox; inputs are `name = {{token}}` lines. */
+  | { kind: "script"; code: string; inputs: string }
+  /** AT-AUTO2: find / update / archive / if-else / repeat, edited as the step's own JSON until the visual group editor lands. */
+  | { kind: "step"; json: string };
+
+/** AT-AUTO2: the starting shape of each advanced step, with tokens the run fills in. */
+const STEP_TEMPLATES: Record<string, (tableId: string) => unknown> = {
+  "Find records": (t) => ({ do: "find", table_id: t, where: { op: "eq", args: [{ field: "<field id>" }, { const: "{{trigger.body.email}}" }] }, limit: 1 }),
+  "Update records": (t) => ({ do: "update", table_id: t, record: "{{step1.records}}", values: { "<field id>": "{{trigger.body.status}}" } }),
+  "Archive records": () => ({ do: "archive", record: "{{step1.records}}" }),
+  "If / else": () => ({ do: "if", branches: [{ label: "VIP", when: { all: [{ value: "{{step1.first.tier}}", is: "equals", to: "VIP" }] }, actions: [] }], else: [] }),
+  "Repeat for each": () => ({ do: "for_each", list: "{{trigger.body.items}}", actions: [] }),
+};
+
+function scriptInputs(lines: string): Record<string, string> {
+  const out: Record<string, string> = {};
+  for (const line of lines.split("\n")) {
+    const at = line.indexOf("=");
+    if (at > 0) out[line.slice(0, at).trim()] = line.slice(at + 1).trim();
+  }
+  return out;
+}
 
 function valueOf(kind: ValueKind, text: string, from: string): AutomationValue {
   if (kind === "now") return { now: true };
@@ -79,6 +102,14 @@ function toAction(d: Draft, tableId: string, titleField: string): AutomationActi
       return { do: "slack", url: d.url.trim(), text: d.text };
     case "agent":
       return { do: "agent", prompt: d.prompt };
+    case "script":
+      return { do: "script", code: d.code, inputs: scriptInputs(d.inputs) };
+    case "step":
+      try {
+        return JSON.parse(d.json) as AutomationAction;
+      } catch {
+        return { do: "step-json-invalid" } as unknown as AutomationAction;
+      }
   }
 }
 
@@ -123,6 +154,14 @@ function toDraft(a: AutomationAction, firstField: string): Draft {
       return { kind: "slack", url: a.url, text: a.text };
     case "agent":
       return { kind: "agent", prompt: a.prompt };
+    case "script":
+      return { kind: "script", code: a.code, inputs: Object.entries(a.inputs ?? {}).map(([k, v]) => `${k} = ${String(v)}`).join("\n") };
+    case "find":
+    case "update":
+    case "archive":
+    case "if":
+    case "for_each":
+      return { kind: "step", json: JSON.stringify(a, null, 2) };
   }
 }
 
@@ -190,7 +229,11 @@ function describeTrigger(t: AutomationTrigger, fields: Field[], say: Say = space
       const rel = n === 0 ? "on" : n < 0 ? `${-n}d before` : `${n}d after`;
       return `${nameOf(fields, t.field)} ${rel}, ${clock(t.at)}`;
     }
+    case "webhook":
+      return "Webhook received";
     case "schedule":
+      if (t.every === "minutes") return `Every ${t.minutes} minutes`;
+      if (t.every === "hour") return `Every ${(t.hours ?? 1) === 1 ? "hour" : `${t.hours} hours`} at :${String(t.minute ?? 0).padStart(2, "0")}`;
       return t.every === "day"
         ? `Every day, ${clock(t.at)}`
         : t.every === "week"
@@ -363,6 +406,108 @@ function RunHistory({ automationId, limit }: { automationId: string; limit: numb
 }
 
 /** The Automations popover body: the list (on/off, runs, archive / restore), then the editor. */
+/** AT-AUTO2: a webhook automation's URL, with a copy button (the secret is part of it). */
+function WebhookUrl({ item }: { item: AutomationItem | null }) {
+  const url = item ? automationWebhookUrl(resolveBaseUrl(), item) : null;
+  if (!url) return <span className="type-secondary text-muted-foreground" data-testid="spaces-automation-webhook-url">URL after saving</span>;
+  return (
+    <div className="flex min-w-0 items-center gap-1" data-testid="spaces-automation-webhook-url">
+      <code className="min-w-0 flex-1 truncate font-mono text-xs">{url}</code>
+      <Button variant="quiet" icon={<Copy size={14} />} aria-label="Copy webhook URL" onClick={() => void navigator.clipboard.writeText(url)} />
+    </div>
+  );
+}
+
+/** AT-AUTO2: every save of an automation, newest first; Restore saves that version again. */
+function Versions({ automationId, onRestored }: { automationId: string; onRestored: () => void }) {
+  const client = useRecordsClient();
+  const [revs, setRevs] = useState<{ revision_id: string; at: string; note: string; spec: AutomationSpec }[] | null>(null);
+  const [said, setSaid] = useState<string | null>(null);
+  useEffect(() => {
+    let live = true;
+    void client.automationRevisions({ automation_id: automationId as never }).then((got) => {
+      if (!live) return;
+      if (got.ok) setRevs(got.data.revisions as never);
+      else setSaid(got.error.message || "The versions could not be read.");
+    });
+    return () => {
+      live = false;
+    };
+  }, [client, automationId]);
+  if (said) return <p className="type-secondary text-destructive">{said}</p>;
+  if (!revs) return <div className="h-6" aria-busy="true" />;
+  return (
+    <div className="flex flex-col gap-0.5" data-testid="spaces-automation-versions">
+      {revs.map((r, i) => (
+        <div key={r.revision_id} className="flex items-center gap-2 type-secondary">
+          <span className="w-36 shrink-0 tabular-nums">{new Date(r.at).toLocaleString()}</span>
+          <span className="min-w-0 flex-1 truncate">{r.spec.name}</span>
+          {i === 0 ? (
+            <span className="text-muted-foreground">Current</span>
+          ) : (
+            <Button variant="quiet" onClick={() => void client.automationRevisionRestore({ automation_id: automationId as never, revision_id: r.revision_id as never }).then((got) => (got.ok && got.data.ok ? onRestored() : setSaid(got.ok ? "Not restored." : got.error.message || "Not restored.")))}>
+              Restore
+            </Button>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/**
+ * AT-AUTO2: the table's Scripting panel — JavaScript run by hand in the person's own sandbox (the same runner as a
+ * script step), with this table's rows as `input.rows`. `output.set("writes", [{ id, values: { <field key>: v } }])`
+ * asks for edits; they are applied through the store's own record door, as the person.
+ */
+function TableScripting({ tableId, organizationId }: { tableId: string; organizationId: string | null }) {
+  const client = useRecordsClient();
+  const [code, setCode] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [result, setResult] = useState<{ ok: boolean; output: Record<string, unknown>; logs: string[]; error: string | null; wrote?: number } | null>(null);
+  const run = async () => {
+    setBusy(true);
+    setResult(null);
+    try {
+      const page = await client.listPage({ table_id: tableId as never, search: null, limit: 200 });
+      const rows = page.ok ? (page.data as unknown as { rows?: unknown[] }).rows ?? page.data : [];
+      const { data } = await postJson<{ ok: boolean; output: Record<string, unknown>; logs: string[]; error: string | null }>(
+        "/automations/script/run",
+        { code, input: { table_id: tableId, rows } },
+        { organizationId: organizationId ?? undefined },
+      );
+      let wrote = 0;
+      const writes = Array.isArray(data.output?.["writes"]) ? (data.output["writes"] as { id: string; values: Record<string, unknown> }[]) : [];
+      for (const w of writes.slice(0, 200)) {
+        const got = await client.recordUpdate({ record_id: w.id as never, patch: w.values as never });
+        if (got.ok) wrote += 1;
+      }
+      setResult({ ...data, wrote });
+    } catch (e) {
+      setResult({ ok: false, output: {}, logs: [], error: e instanceof Error ? e.message : "The script did not run." });
+    } finally {
+      setBusy(false);
+    }
+  };
+  return (
+    <div className="flex flex-col gap-1" data-testid="spaces-table-scripting">
+      <span className="type-secondary text-muted-foreground">Scripting</span>
+      <textarea aria-label="Table script" className="min-h-24 w-full rounded border border-border bg-background p-1 font-mono text-xs" placeholder={'console.log(input.rows.length); output.set("writes", []);'} value={code} onChange={(e) => setCode(e.target.value)} />
+      <div className="flex items-center gap-2">
+        <Button variant="quiet" disabled={busy || !code.trim()} onClick={() => void run()}>
+          {busy ? "Running" : "Run script"}
+        </Button>
+        {result ? <span className={result.ok ? "type-secondary" : "type-secondary text-destructive"}>{result.ok ? `Ran${result.wrote ? ` · ${result.wrote} edited` : ""}` : result.error}</span> : null}
+      </div>
+      {result && (result.logs.length > 0 || Object.keys(result.output).length > 0) ? (
+        <pre className="max-h-48 overflow-auto rounded bg-muted p-1 font-mono text-xs" data-testid="spaces-table-scripting-result">
+          {[...result.logs, ...(Object.keys(result.output).length ? [JSON.stringify(result.output, null, 2)] : [])].join("\n")}
+        </pre>
+      ) : null}
+    </div>
+  );
+}
+
 export function AutomationsPanel({ words = "spaces", ...rest }: { tableId: string; organizationId: string | null; fields: Field[]; words?: "spaces" | "table" }) {
   return (
     <SayContext.Provider value={words === "table" ? tableSay : spacesSay}>
@@ -408,6 +553,10 @@ function AutomationsPanelBody({ tableId, organizationId, fields }: { tableId: st
   const [every, setEvery] = useState<Every>("week");
   const [weekday, setWeekday] = useState<AutomationWeekday>(1);
   const [monthDay, setMonthDay] = useState("1");
+  const [minutesN, setMinutesN] = useState<5 | 10 | 15 | 30>(15);
+  const [hoursN, setHoursN] = useState("1");
+  const [minuteN, setMinuteN] = useState("0");
+  const [versionsOf, setVersionsOf] = useState<string | null>(null);
   const [condField, setCondField] = useState<string | null>(null);
   const [condIs, setCondIs] = useState("");
   const [drafts, setDrafts] = useState<Draft[]>([]);
@@ -415,7 +564,8 @@ function AutomationsPanelBody({ tableId, organizationId, fields }: { tableId: st
   const firstField = fields[0]?.id ?? "";
   const dateFields = fields.filter(isDateField);
   const buttonFields = fields.filter((f) => isButtonField(f as never));
-  const timed = on === "schedule";
+  // A schedule or a webhook has no triggering row (AT-AUTO2).
+  const timed = on === "schedule" || on === "webhook";
   const [epoch, setEpoch] = useState(0);
   const reread = () => setEpoch((n) => n + 1);
 
@@ -432,6 +582,12 @@ function AutomationsPanelBody({ tableId, organizationId, fields }: { tableId: st
       live = false;
     };
   }, [client, tableId, showArchived, epoch]);
+
+  // A failed-run notice opens /data/<table>?automation=<id>&run=<run>: show that automation's runs.
+  useEffect(() => {
+    const wanted = new URLSearchParams(window.location.search).get("automation");
+    if (wanted) setRunsOf(wanted);
+  }, []);
 
   useEffect(() => {
     let live = true;
@@ -475,10 +631,15 @@ function AutomationsPanelBody({ tableId, organizationId, fields }: { tableId: st
     const n = t.on === "date_arrives" ? (t.offset_days ?? 0) : 2;
     setDateWhen(n < 0 ? "before" : n > 0 ? "after" : "on");
     setDateDays(String(Math.abs(n)));
-    setAt(t.on === "date_arrives" || t.on === "schedule" ? clock(t.at) : "09:00");
+    setAt(t.on === "date_arrives" || (t.on === "schedule" && "at" in t) ? clock(t.at) : "09:00");
     setEvery(t.on === "schedule" ? t.every : "week");
-    setWeekday(t.on === "schedule" ? (t.weekday ?? 1) : 1);
-    setMonthDay(t.on === "schedule" ? String(t.day ?? 1) : "1");
+    setWeekday(t.on === "schedule" && "weekday" in t ? (t.weekday ?? 1) : 1);
+    setMonthDay(t.on === "schedule" && "day" in t ? String(t.day ?? 1) : "1");
+    if (t.on === "schedule" && t.every === "minutes") setMinutesN(t.minutes);
+    if (t.on === "schedule" && t.every === "hour") {
+      setHoursN(String(t.hours ?? 1));
+      setMinuteN(String(t.minute ?? 0));
+    }
     const c = condWords(a.spec.condition);
     setCondField(c.field);
     setCondIs(c.words);
@@ -499,8 +660,11 @@ function AutomationsPanelBody({ tableId, organizationId, fields }: { tableId: st
       const n = Math.abs(Math.trunc(Number(dateDays) || 0));
       return { on, field: trigField, offset_days: dateWhen === "before" ? -n : dateWhen === "after" ? n : 0, at };
     }
+    if (on === "webhook") return { on };
+    if (on === "schedule" && every === "minutes") return { on, every, minutes: minutesN };
+    if (on === "schedule" && every === "hour") return { on, every, hours: Math.trunc(Number(hoursN) || 1), minute: Math.trunc(Number(minuteN) || 0) };
     if (on === "schedule") {
-      return { on, every, at, ...(every === "week" ? { weekday } : {}), ...(every === "month" ? { day: Math.trunc(Number(monthDay) || 1) } : {}) };
+      return { on, every: every as "day" | "week" | "month", at, ...(every === "week" ? { weekday } : {}), ...(every === "month" ? { day: Math.trunc(Number(monthDay) || 1) } : {}) };
     }
     return { on };
   };
@@ -508,7 +672,7 @@ function AutomationsPanelBody({ tableId, organizationId, fields }: { tableId: st
     setOn(next);
     if (next === "date_arrives") setTrigField(dateFields[0]?.id ?? "");
     if (next === "button_pressed") setTrigField(buttonFields[0]?.id ?? "");
-    if (next === "schedule") setDrafts(drafts.filter((d) => d.kind !== "set"));
+    if (next === "schedule" || next === "webhook") setDrafts(drafts.filter((d) => d.kind !== "set"));
   };
   const save = async () => {
     const spec: AutomationSpec = {
@@ -544,6 +708,7 @@ function AutomationsPanelBody({ tableId, organizationId, fields }: { tableId: st
             <Pill on={on === "button_pressed"} onClick={() => pickTrigger("button_pressed")} disabledReason={buttonFields.length === 0 ? say("Add a button property first") : undefined}>Button pressed</Pill>
             <Pill on={on === "date_arrives"} onClick={() => pickTrigger("date_arrives")} disabledReason={dateFields.length === 0 ? say("Add a date property first") : undefined}>Date arrives</Pill>
             <Pill on={on === "schedule"} onClick={() => pickTrigger("schedule")}>Every…</Pill>
+            <Pill on={on === "webhook"} onClick={() => pickTrigger("webhook")}>Webhook received</Pill>
           </div>
           {on === "date_arrives" ? (
             <div className="flex flex-wrap items-center gap-1" data-testid="spaces-automation-date-trigger">
@@ -561,6 +726,22 @@ function AutomationsPanelBody({ tableId, organizationId, fields }: { tableId: st
               <Pill on={every === "day"} onClick={() => setEvery("day")}>Day</Pill>
               <Pill on={every === "week"} onClick={() => setEvery("week")}>Week</Pill>
               <Pill on={every === "month"} onClick={() => setEvery("month")}>Month</Pill>
+              <Pill on={every === "hour"} onClick={() => setEvery("hour")}>Hours</Pill>
+              <Pill on={every === "minutes"} onClick={() => setEvery("minutes")}>Minutes</Pill>
+              {every === "minutes"
+                ? ([5, 10, 15, 30] as const).map((m) => (
+                    <Pill key={m} on={minutesN === m} onClick={() => setMinutesN(m)}>
+                      {m} min
+                    </Pill>
+                  ))
+                : null}
+              {every === "hour" ? (
+                <>
+                  <Input aria-label="Every how many hours" type="number" min={1} max={12} className="w-16" value={hoursN} onChange={(e) => setHoursN(e.target.value)} />
+                  <span className="type-secondary">h at minute</span>
+                  <Input aria-label="Minute past the hour" type="number" min={0} max={59} className="w-16" value={minuteN} onChange={(e) => setMinuteN(e.target.value)} />
+                </>
+              ) : null}
               {every === "week"
                 ? WEEKDAYS.map((w, i) => (
                     <Pill key={w} on={weekday === i + 1} onClick={() => setWeekday((i + 1) as AutomationWeekday)}>
@@ -569,10 +750,17 @@ function AutomationsPanelBody({ tableId, organizationId, fields }: { tableId: st
                   ))
                 : null}
               {every === "month" ? <Input aria-label="Day of month" type="number" min={1} max={31} className="w-16" value={monthDay} onChange={(e) => setMonthDay(e.target.value)} /> : null}
-              <span className="type-secondary">at</span>
-              <Input aria-label="Time" type="time" className="w-28" value={at} onChange={(e) => setAt(e.target.value)} />
+              {every === "minutes" || every === "hour" ? (
+                <span className="type-secondary text-muted-foreground" data-testid="spaces-automation-born-off">Saved off</span>
+              ) : (
+                <>
+                  <span className="type-secondary">at</span>
+                  <Input aria-label="Time" type="time" className="w-28" value={at} onChange={(e) => setAt(e.target.value)} />
+                </>
+              )}
             </div>
           ) : null}
+          {on === "webhook" ? <WebhookUrl item={list.find((x) => x.id === editing.id) ?? null} /> : null}
           {on === "record_updated" ? (
             <div className="flex flex-wrap items-center gap-1" data-testid="spaces-automation-watch">
               <Pill on={watch.length === 0} onClick={() => setWatch([])}>{say("Any property")}</Pill>
@@ -680,6 +868,14 @@ function AutomationsPanelBody({ tableId, organizationId, fields }: { tableId: st
                   <Input aria-label="Slack webhook address" placeholder="https://hooks.slack.com/…" value={d.url} onChange={(e) => put(i, { url: e.target.value })} />
                   <Input aria-label="Slack message" placeholder={say("Message, {Name} for a property")} value={d.text} onChange={(e) => put(i, { text: e.target.value })} />
                 </>
+              ) : d.kind === "script" ? (
+                <div className="flex w-full flex-col gap-1" data-testid="spaces-automation-script">
+                  <span className="type-secondary">Run a script</span>
+                  <textarea aria-label="Script" className="min-h-24 w-full rounded border border-border bg-background p-1 font-mono text-xs" placeholder={'output.set("discount", input.total > 500 ? 5 : 0);'} value={d.code} onChange={(e) => put(i, { code: e.target.value })} />
+                  <textarea aria-label="Script inputs" className="min-h-10 w-full rounded border border-border bg-background p-1 font-mono text-xs" placeholder="total = {{trigger.body.total}}" value={d.inputs} onChange={(e) => put(i, { inputs: e.target.value })} />
+                </div>
+              ) : d.kind === "step" ? (
+                <textarea aria-label="Step" data-testid="spaces-automation-step-json" className="min-h-24 w-full rounded border border-border bg-background p-1 font-mono text-xs" value={d.json} onChange={(e) => put(i, { json: e.target.value })} />
               ) : (
                 <>
                   <Input aria-label="Agent prompt" placeholder="Ask an agent" value={d.prompt} onChange={(e) => put(i, { prompt: e.target.value })} />
@@ -698,6 +894,12 @@ function AutomationsPanelBody({ tableId, organizationId, fields }: { tableId: st
             <Button variant="quiet" icon={<Plus size={14} />} onClick={() => setDrafts([...drafts, { kind: "email", to: "author", address: "", subject: "", body: "" }])}>Send email</Button>
             <Button variant="quiet" icon={<Plus size={14} />} onClick={() => setDrafts([...drafts, { kind: "slack", url: "", text: "" }])}>Slack message</Button>
             <Button variant="quiet" icon={<Plus size={14} />} onClick={() => setDrafts([...drafts, { kind: "webhook", url: "" }])}>Webhook</Button>
+            <Button variant="quiet" icon={<Plus size={14} />} onClick={() => setDrafts([...drafts, { kind: "script", code: "", inputs: "" }])}>Run a script</Button>
+            {Object.entries(STEP_TEMPLATES).map(([label, make]) => (
+              <Button key={label} variant="quiet" icon={<Plus size={14} />} onClick={() => setDrafts([...drafts, { kind: "step", json: JSON.stringify(make(tableId), null, 2) }])}>
+                {label}
+              </Button>
+            ))}
             <Button variant="quiet" icon={<Plus size={14} />} onClick={() => setDrafts([...drafts, { kind: "agent", prompt: "" }])}>Agent</Button>
           </div>
           {said ? <p className="type-secondary text-destructive">{said}</p> : null}
@@ -735,12 +937,15 @@ function AutomationsPanelBody({ tableId, organizationId, fields }: { tableId: st
                     <Switch aria-label="Automation on" checked={a.enabled} disabled={switchReason !== null} title={switchReason ?? undefined} onCheckedChange={(v: boolean) => void flip(client.automationSetEnabled({ automation_id: a.id, enabled: v }))} />
                     <Button variant="quiet" icon={<FlaskConical size={14} />} aria-label="Test automation" onClick={() => setTestOf(testOf === a.id ? null : a.id)} />
                     <Button variant="quiet" icon={<History size={14} />} aria-label="Runs" onClick={() => setRunsOf(runsOf === a.id ? null : a.id)} />
+                    <Button variant="quiet" icon={<Undo2 size={14} />} aria-label="Versions" onClick={() => setVersionsOf(versionsOf === a.id ? null : a.id)} />
                     <Button variant="quiet" icon={<Trash2 size={14} />} aria-label="Archive automation" disabled={switchReason !== null} title={switchReason ?? undefined} onClick={() => void flip(client.automationArchive({ automation_id: a.id }))} />
                   </>
                 )}
               </div>
               {testOf === a.id ? <TestRun automation={a} tableId={tableId} fields={fields} onRan={() => { setRunsOf(null); reread(); }} /> : null}
               {runsOf === a.id ? <RunHistory automationId={a.id} limit={runsShown} /> : null}
+              {a.spec.trigger.on === "webhook" ? <WebhookUrl item={a} /> : null}
+              {versionsOf === a.id ? <Versions automationId={a.id} onRestored={() => { setVersionsOf(null); reread(); }} /> : null}
             </div>
           ))}
           {said ? <p className="type-secondary text-destructive">{said}</p> : null}
@@ -748,6 +953,7 @@ function AutomationsPanelBody({ tableId, organizationId, fields }: { tableId: st
             <Button variant="quiet" icon={<Plus size={14} />} onClick={startNew}>New automation</Button>
             <Button variant="quiet" onClick={() => setShowArchived(!showArchived)}>{showArchived ? "Hide archived" : "Show archived"}</Button>
           </div>
+          <TableScripting tableId={tableId} organizationId={organizationId} />
         </>
       )}
     </div>

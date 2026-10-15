@@ -4,7 +4,7 @@
  * the menu builders stay testable without React.
  */
 
-import { CircleHelp, Code2, FileText, GraduationCap, Megaphone, MessageSquareWarning, Puzzle, Repeat2, ShieldCheck } from "lucide-react";
+import { CircleHelp, Code2, FileText, GraduationCap, Megaphone, MessageSquareWarning, Puzzle, ShieldCheck } from "lucide-react";
 import type { ComponentType } from "react";
 import { openOutbound } from "@ai-matrx/kit/outbound";
 
@@ -32,13 +32,13 @@ export function soon(
 export type GoogleProduct = "sheets" | "docs" | "slides";
 
 /** Google's Extensions menu (the host's own tools follow these rows). */
-export function googleExtensionsMenu(product: GoogleProduct): EditorMenu {
+export function googleExtensionsMenu(product: GoogleProduct, built: { macros?: EditorMenuEntry } = {}): EditorMenu {
   return {
     id: "extensions",
     label: "Extensions",
     items: [
       soon("extensions.add-ons", "Add-ons", "editor.extensions.add-ons", { icon: Puzzle }),
-      ...(product === "sheets" ? [soon("extensions.macros", "Macros", "editor.extensions.macros", { icon: Repeat2 })] : []),
+      ...(product === "sheets" && built.macros ? [built.macros] : []),
       soon("extensions.scripts", "Scripts", "editor.extensions.scripts", { icon: Code2, keywords: ["apps script", "automation"] }),
     ],
   };

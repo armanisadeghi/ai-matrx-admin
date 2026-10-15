@@ -266,7 +266,7 @@ and zero layout shift, with Cache Components disabled by repository doctrine.
   its scrim and dialog at the application ceiling so ordinary clicks reach Drive items and actions.
 - **2026-08-30 — Menu-hosted uploads survive the native chooser.** Local file/folder actions keep the dropdown content mounted until selection returns, then close through the host callback; this prevents Files **New** from silently discarding every chosen file.
 - **2026-08-30** — **C9 collapse: `media-client/client.ts` is now a thin construction over
-  `@ai-matrx/data/files` 0.4.1** (436 → 202 lines, all injection per C22). Absorbed into the
+  `@ai-matrx/files/client` 0.4.1** (436 → 202 lines, all injection per C22). Absorbed into the
   package and DELETED here: ref normalization + byte-endpoint promotion (QA F2), the
   resolution/transport decisions, blob in-flight dedup, the ONE retry contract, the
   share-link door (REST against `/files/{id}/share-links` — the Redux share-link thunks no
