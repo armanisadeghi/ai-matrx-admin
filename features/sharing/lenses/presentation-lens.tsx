@@ -31,7 +31,7 @@ export function PresentationShareLens({ result }: ShareLensProps) {
           This presentation is too large to show here. Open it in AI Matrx.
         </p>
       ) : slides.length > 0 ? (
-        <Slideshow slides={slides} theme={content?.deck?.theme ?? null} />
+        <Slideshow slides={slides} theme={content?.deck?.theme ?? null} slideSize={content?.deck?.slideSize ?? null} />
       ) : (
         <p className="rounded-xl border border-border bg-card p-6 text-sm text-muted-foreground">
           This presentation has no slides yet.

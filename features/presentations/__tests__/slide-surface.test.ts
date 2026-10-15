@@ -12,6 +12,8 @@ const pptxCalls: { background?: { color: string }; texts: string[] }[] = [];
 jest.mock("@ai-matrx/alchemy/operate/pptx", () => ({
   buildPresentation: async (build: (p: unknown) => void) => {
     build({
+      layout: "",
+      defineLayout: () => {},
       addSlide: () => {
         const rec = { background: undefined as { color: string } | undefined, texts: [] as string[] };
         pptxCalls.push(rec);

@@ -25,6 +25,7 @@ import {
 
 import { SlideView, type SlideData, type SlideTheme, type SlideVariant } from "./SlideView";
 import { deckFontFamily, PRESET_LIST, presetTheme, resolveDeckTheme } from "./presets";
+import { normalizeSlideSize, slideAspect, slideStage, type SlideSize } from "./slide-size";
 import { ScaledSlide } from "./ScaledSlide";
 import { slideSurfaceStyle } from "./slide-surface";
 import { useCanvasPresentation } from "@ai-matrx/canvas/react";
@@ -39,6 +40,8 @@ const PresentationExportMenu = lazy(() => import("./PresentationExportMenu"));
 export interface PresentationData {
   slides: SlideData[];
   theme: (SlideTheme & { preset?: string }) | undefined | null;
+  /** The deck's slide size (File → Page setup); widescreen 16:9 when absent. */
+  slideSize?: SlideSize | null;
 }
 
 /** Per-viewer interaction state persisted for a presentation artifact. */
@@ -64,6 +67,7 @@ const Slideshow = (
   const {
     slides,
     theme,
+    slideSize,
     artifactId,
     conversationId,
     messageId,
@@ -78,6 +82,7 @@ const Slideshow = (
   const effectiveTheme = pickedPreset
     ? presetTheme(pickedPreset)
     : resolveDeckTheme(theme);
+  const size = normalizeSlideSize(slideSize);
   const variant: SlideVariant =
     (effectiveTheme.variant as SlideVariant) || "fancy";
   const activePresetKey =
@@ -324,13 +329,14 @@ const Slideshow = (
                   current={currentSlide}
                   onPick={goToSlide}
                   placement="side"
+                  size={size}
                 />
               )}
               <div
                 ref={slideContainerRef}
                 className="relative min-h-0 min-w-0 flex-1 bg-textured p-2"
               >
-                <ScaledSlide className="h-full w-full">
+                <ScaledSlide className="h-full w-full" stage={slideStage(size)}>
                   <div
                     key={currentSlide}
                     className="h-full w-full animate-fadeIn"
@@ -348,6 +354,7 @@ const Slideshow = (
                   current={currentSlide}
                   onPick={goToSlide}
                   placement="below"
+                  size={size}
                 />
               )}
             </div>
@@ -360,7 +367,7 @@ const Slideshow = (
               key={currentSlide}
               className={`w-full animate-fadeIn ${isFullScreen ? "max-w-6xl mx-auto" : "max-w-4xl mx-auto"}`}
             >
-              <div className="aspect-[16/9] w-full" style={{ ...slideSurfaceStyle(effectiveTheme), fontFamily: deckFontFamily(effectiveTheme.font) }}>
+              <div className="w-full" data-slide-aspect={slideAspect(size)} style={{ aspectRatio: slideAspect(size), ...slideSurfaceStyle(effectiveTheme), fontFamily: deckFontFamily(effectiveTheme.font) }}>
                 <SlideView
                   slide={slide}
                   theme={effectiveTheme}
@@ -439,7 +446,9 @@ function SlideThumbnails({
   current,
   onPick,
   placement,
+  size,
 }: {
+  size: SlideSize;
   slides: SlideData[];
   theme: SlideTheme;
   variant: SlideVariant;
@@ -467,11 +476,13 @@ function SlideThumbnails({
             placement === "side" ? "w-full" : "w-28"
           } ${index === current ? "border-primary" : "border-transparent hover:border-border"}`}
         >
-          <ScaledSlide className="pointer-events-none aspect-video w-full">
+          <div className="w-full" style={{ aspectRatio: slideAspect(size) }}>
+          <ScaledSlide className="pointer-events-none h-full w-full" stage={slideStage(size)}>
             <div className="h-full w-full" style={{ ...slideSurfaceStyle(theme), fontFamily: deckFontFamily(theme.font) }}>
               <SlideView slide={s} theme={theme} variant={variant} fullScreen={false} />
             </div>
           </ScaledSlide>
+          </div>
           <span className="absolute bottom-0.5 left-1 rounded bg-background/80 px-1 text-[10px] tabular-nums text-muted-foreground">
             {index + 1}
           </span>

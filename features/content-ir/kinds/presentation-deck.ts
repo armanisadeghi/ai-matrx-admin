@@ -110,6 +110,15 @@ export const presentationDeckKindSchema: KindSchema = {
         preset: { type: "enum", values: [...PRESENTATION_PRESET_KEYS] },
       },
     },
+    // File → Page setup: the slide size in inches (preset names the standard ones).
+    slideSize: {
+      type: "inline_object",
+      fields: {
+        preset: { type: "enum", values: ["16:9", "16:10", "4:3", "custom"] },
+        width: { type: "number" },
+        height: { type: "number" },
+      },
+    },
     additionalDetails: { type: "inline_object", open: true, fields: {} },
   },
 };

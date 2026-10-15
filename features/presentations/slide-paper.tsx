@@ -11,6 +11,7 @@
 import type { CSSProperties, ReactNode } from "react";
 import { SlideView, type SlideVariant } from "@/components/mardown-display/blocks/presentations/SlideView";
 import { ScaledSlide } from "@/components/mardown-display/blocks/presentations/ScaledSlide";
+import { slideSizeOf, slideStage } from "@/components/mardown-display/blocks/presentations/slide-size";
 import { deckFontFamily, resolveDeckTheme } from "@/components/mardown-display/blocks/presentations/presets";
 import { slideSurfaceStyle } from "@/components/mardown-display/blocks/presentations/slide-surface";
 import { cn } from "@/lib/utils";
@@ -27,17 +28,17 @@ export function deckLook(deck: Pick<Deck, "theme">) {
   return { theme, variant, fontFamily: deckFontFamily(theme.font) };
 }
 
-/** One slide on its 960×540 stage, scaled to the box the parent gives (`className`). */
+/** One slide on its stage (960×540 widescreen, or the deck's own slide size), scaled to the box the parent gives (`className`). */
 export function PaperSlide({
   deck,
   slide,
   className,
-  // The stage is always 960×540, so "full screen" type IS the slide's real size: the editor, the
+  // The stage is fixed per deck, so "full screen" type IS the slide's real size: the editor, the
   // rail, the cards and Present all show the same slide (WYSIWYG), only scaled.
   fullScreen = true,
   children,
 }: {
-  deck: Pick<Deck, "theme">;
+  deck: Pick<Deck, "theme" | "slideSize">;
   slide: DeckSlide | undefined;
   className?: string;
   fullScreen?: boolean;
@@ -46,7 +47,7 @@ export function PaperSlide({
 }) {
   const { theme, variant, fontFamily } = deckLook(deck);
   return (
-    <ScaledSlide className={cn("bg-transparent", className)}>
+    <ScaledSlide className={cn("bg-transparent", className)} stage={slideStage(slideSizeOf(deck))}>
       <div className="relative h-full w-full" style={{ ...slidePaperStyle(deck), fontFamily }}>
         {slide ? (
           <SlideView slide={slide} theme={theme} variant={variant} fullScreen={fullScreen} />

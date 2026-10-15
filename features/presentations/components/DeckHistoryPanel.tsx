@@ -13,6 +13,7 @@ import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { toast } from "@/lib/toast";
 import { getVersionSnapshot, listVersions, restoreVersion, type VersionEntry } from "@/lib/versioning/versionHistory";
 import { normalizeDeck, type Deck } from "../deck-model";
+import { slideAspect, slideSizeOf } from "@/components/mardown-display/blocks/presentations/slide-size";
 import { PaperSlide } from "../slide-paper";
 
 function when(iso: string): string {
@@ -82,7 +83,7 @@ export function DeckHistoryPanel({
       </div>
       {preview && (
         <div className="shrink-0 border-b border-border p-3">
-          <div className="aspect-video overflow-hidden rounded border border-border bg-white">
+          <div className="overflow-hidden rounded border border-border bg-white" style={{ aspectRatio: slideAspect(slideSizeOf(preview)) }}>
             <PaperSlide deck={preview} slide={preview.slides[0]} className="h-full w-full" />
           </div>
           <div className="mt-2 flex items-center gap-2">

@@ -8,13 +8,13 @@
 
 import type { FileDownload } from "@/features/file-actions/types";
 import type { PresentationData } from "@/components/mardown-display/blocks/presentations/Slideshow";
-import { SLIDE_STAGE } from "@/components/mardown-display/blocks/presentations/ScaledSlide";
+import { slideSizeOf, slideStage } from "@/components/mardown-display/blocks/presentations/slide-size";
 import { resolveDeckTheme } from "@/components/mardown-display/blocks/presentations/presets";
 import { slideSurface } from "@/components/mardown-display/blocks/presentations/slide-surface";
 import type { Deck } from "./deck-model";
 
 function asPresentationData(deck: Deck): PresentationData {
-  return { slides: deck.slides, theme: deck.theme ?? null };
+  return { slides: deck.slides, theme: deck.theme ?? null, slideSize: deck.slideSize ?? null };
 }
 
 function safeName(name: string): string {
@@ -60,12 +60,13 @@ async function renderDeckSlides(deck: Deck, hostStyle: Partial<CSSStyleDeclarati
   host.setAttribute("aria-hidden", "true");
   Object.assign(host.style, hostStyle);
   document.body.appendChild(host);
+  const stage = slideStage(slideSizeOf(deck));
   const roots: ReturnType<typeof createRoot>[] = [];
   const background = slideSurface(resolveDeckTheme(deck.theme ?? undefined)).background;
   const elements: HTMLElement[] = [];
   for (const slide of deck.slides) {
     const el = document.createElement("div");
-    Object.assign(el.style, { width: `${SLIDE_STAGE.width}px`, height: `${SLIDE_STAGE.height}px`, background });
+    Object.assign(el.style, { width: `${stage.width}px`, height: `${stage.height}px`, background });
     host.appendChild(el);
     const root = createRoot(el);
     roots.push(root);
@@ -78,17 +79,17 @@ async function renderDeckSlides(deck: Deck, hostStyle: Partial<CSSStyleDeclarati
     for (const r of roots) r.unmount();
     host.remove();
   };
-  return { host, elements, background, done };
+  return { host, elements, background, stage, done };
 }
 
 export async function downloadDeckAsPdf(deck: Deck, name: string): Promise<void> {
   if (deck.slides.length === 0) throw new Error("This presentation has no slides yet");
   const [{ exportToPDF }, rendered] = await Promise.all([
     import("@/components/mardown-display/blocks/presentations/presentation-export"),
-    renderDeckSlides(deck, { position: "fixed", left: "-10000px", top: "0", width: `${SLIDE_STAGE.width}px` }),
+    renderDeckSlides(deck, { position: "fixed", left: "-10000px", top: "0", width: `${slideStage(slideSizeOf(deck)).width}px` }),
   ]);
   try {
-    const res = await exportToPDF(rendered.elements, safeName(name), { quality: 2, backgroundColor: rendered.background });
+    const res = await exportToPDF(rendered.elements, safeName(name), { quality: 2, backgroundColor: rendered.background, slideSize: slideSizeOf(deck) });
     if (!res.success) throw new Error(res.error ?? res.message);
   } finally {
     rendered.done();
@@ -105,12 +106,12 @@ export async function downloadDeckAsText(deck: Deck, name: string): Promise<void
   downloadFile(`${safeName(name)}.txt`, new Blob([text], { type: "text/plain" }), "text/plain");
 }
 
-/** Print the deck: every slide on its own landscape page, through the browser's print dialog. */
+/** Print the deck: every slide on its own page of the deck's slide size, through the browser's print dialog. */
 export async function printDeck(deck: Deck): Promise<void> {
   if (deck.slides.length === 0) throw new Error("This presentation has no slides yet");
   const rendered = await renderDeckSlides(deck, {});
   const style = document.createElement("style");
-  style.textContent = `@page{size:${SLIDE_STAGE.width}px ${SLIDE_STAGE.height}px;margin:0}
+  style.textContent = `@page{size:${rendered.stage.width}px ${rendered.stage.height}px;margin:0}
 @media screen{[data-deck-print-host]{position:fixed;left:-10000px;top:0}}
 @media print{body>*:not([data-deck-print-host]){display:none!important}
 [data-deck-print-host]>div{break-after:page;page-break-after:always;overflow:hidden}

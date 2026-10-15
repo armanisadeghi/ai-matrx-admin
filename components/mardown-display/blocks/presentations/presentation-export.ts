@@ -1,6 +1,7 @@
 import { PresentationData } from "./Slideshow";
 import { resolveDeckTheme } from "./presets";
 import { slideSurface } from "./slide-surface";
+import { normalizeSlideSize, type SlideSize } from "./slide-size";
 import { palette } from "./SlideView";
 import type { JsonObject } from "@/types/json";
 import { markdownToPlainText } from "@/lib/markdown/plain-text";
@@ -25,6 +26,16 @@ export interface ExportOptions {
     returnBlob?: boolean;
     /** The page colour behind each captured slide (PDF); the deck's surface, default white. */
     backgroundColor?: string;
+    /** The deck's slide size (File → Page setup): the PDF page takes its shape. */
+    slideSize?: SlideSize | null;
+}
+
+/** The PDF page for a slide size: the longer side is A4-landscape's 297 mm, the shape is the slide's. */
+export function pdfPageMm(size: SlideSize | null | undefined): [number, number] {
+    const s = normalizeSlideSize(size);
+    const long = 297;
+    const mm = (n: number) => Math.round(n * 10000) / 10000;
+    return s.width >= s.height ? [long, mm((long * s.height) / s.width)] : [mm((long * s.width) / s.height), long];
 }
 
 export interface ExportResult {
@@ -49,14 +60,15 @@ export const exportToPDF = async (
 
         // A slide is a picture of a surface, so it goes through the browser's own renderer
         // (gradient text and Tailwind 4 colours survive; html2canvas flattens them), then one PDF
-        // page each on a 16:9 page (297 x 167 mm) so filling the page never stretches the slide.
+        // page each on a page of the deck's slide size (16:9 is 297 x 167 mm) so filling the page never stretches the slide.
         const { renderElement, pagesToPdf } = await import('@ai-matrx/alchemy/operate/capture');
         const pages = [];
         for (const el of slideElements) {
             const image = await renderElement(el, { pixelRatio: quality, backgroundColor, cacheBust: true });
             pages.push({ image, imageType: 'JPEG' as const, quality: 0.92, placement: 'fill' as const });
         }
-        const pdf = await pagesToPdf(pages, { orientation: 'landscape', unit: 'mm', format: [297, 167.0625] });
+        const [pageW, pageH] = pdfPageMm(options.slideSize);
+        const pdf = await pagesToPdf(pages, { orientation: pageW >= pageH ? 'landscape' : 'portrait', unit: 'mm', format: [pageW, pageH] });
         downloadFile(`${filename}.pdf`, pdf, 'application/pdf');
 
         return {
@@ -192,7 +204,11 @@ export const exportToPowerPoint = async (
         const surface = slideSurface(resolved);
         const hex = (c: string) => c.replace('#', '');
 
+        const size = normalizeSlideSize(presentationData.slideSize);
         const blob = await buildPresentation((pptx) => {
+            // The deck's slide size (File → Page setup) is the PowerPoint slide size.
+            pptx.defineLayout({ name: 'MATRX_DECK', width: size.width, height: size.height });
+            pptx.layout = 'MATRX_DECK';
             // Process each slide
             for (const slideData of slides) {
                 const slide = pptx.addSlide();

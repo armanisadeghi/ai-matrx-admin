@@ -7,6 +7,7 @@ import { PresentationData } from './Slideshow';
 import { resolveDeckTheme } from './presets';
 import { palette } from './SlideView';
 import { slideSurface } from './slide-surface';
+import { normalizeSlideSize } from './slide-size';
 
 /**
  * Generates a complete standalone HTML page with an interactive presentation
@@ -15,6 +16,8 @@ export function generatePresentationHTML(presentationData: PresentationData): st
     const { slides } = presentationData;
     const resolvedTheme = resolveDeckTheme(presentationData.theme);
     const surface = slideSurface(resolvedTheme);
+    const size = normalizeSlideSize(presentationData.slideSize);
+    const ratio = size.width / size.height;
     // The slide page is the deck's surface (same resolver as the editor canvas); only the backdrop around it differs.
     const theme = {
         ...palette(resolvedTheme),
@@ -330,6 +333,16 @@ export function generatePresentationHTML(presentationData: PresentationData): st
             }
         }
 
+        /* The deck's slide size (File → Page setup): the slide keeps its shape on every screen. */
+        .slides-wrapper {
+            height: auto !important;
+            min-height: 0 !important;
+            max-height: none !important;
+            aspect-ratio: ${size.width} / ${size.height};
+            width: min(100%, calc((100dvh - 200px) * ${ratio}));
+            margin: 0 auto;
+        }
+
         /* Print styles */
         @media print {
             body {
@@ -351,7 +364,7 @@ export function generatePresentationHTML(presentationData: PresentationData): st
 </head>
 <body>
     <div class="presentation-container">
-        <div class="slides-wrapper">
+        <div class="slides-wrapper" data-slide-size="${size.width}x${size.height}">
             ${slidesHTML}
         </div>
         

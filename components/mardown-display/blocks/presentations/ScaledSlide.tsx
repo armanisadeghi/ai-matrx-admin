@@ -15,9 +15,12 @@ export const SLIDE_STAGE = { width: 960, height: 540 } as const;
 export function ScaledSlide({
   children,
   className,
+  stage = SLIDE_STAGE,
 }: {
   children: React.ReactNode;
   className?: string;
+  /** The stage this deck is laid out on (its slide size); widescreen 960x540 unless the deck says otherwise. */
+  stage?: { width: number; height: number };
 }) {
   const boxRef = useRef<HTMLDivElement>(null);
   const [box, setBox] = useState({ width: 0, height: 0 });
@@ -34,19 +37,20 @@ export function ScaledSlide({
     return () => ro.disconnect();
   }, []);
 
-  const scale = fitScale(SLIDE_STAGE, box);
-  const left = (box.width - SLIDE_STAGE.width * scale) / 2;
-  const top = Math.max(0, (box.height - SLIDE_STAGE.height * scale) / 2);
+  const scale = fitScale(stage, box);
+  const left = (box.width - stage.width * scale) / 2;
+  const top = Math.max(0, (box.height - stage.height * scale) / 2);
 
   return (
     <div ref={boxRef} className={`relative overflow-hidden ${className ?? ""}`}>
       {scale > 0 && (
         <div
           data-slide-scale={scale.toFixed(3)}
+          data-slide-stage={`${stage.width}x${stage.height}`}
           className="absolute origin-top-left"
           style={{
-            width: SLIDE_STAGE.width,
-            height: SLIDE_STAGE.height,
+            width: stage.width,
+            height: stage.height,
             // A narrow-screen global max-width would clamp the stage to the
             // pane and reflow the slide; the stage is fixed by design.
             maxWidth: "none",

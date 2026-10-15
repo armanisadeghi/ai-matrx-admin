@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/context-menu/context-menu";
 import { cn } from "@/lib/utils";
 import type { Deck, DeckAction } from "../deck-model";
+import { slideAspect, slideSizeOf } from "@/components/mardown-display/blocks/presentations/slide-size";
 import { PaperSlide } from "../slide-paper";
 
 function RailItem({
@@ -73,11 +74,12 @@ function RailItem({
               }
             }}
             className={cn(
-              "relative aspect-video min-w-0 flex-1 overflow-hidden rounded-md border-2 bg-white outline-none",
+              "relative min-w-0 flex-1 overflow-hidden rounded-md border-2 bg-white outline-none",
               selected ? "border-amber-500" : "border-transparent ring-1 ring-border hover:ring-amber-400",
             )}
             {...attributes}
             {...listeners}
+            style={{ aspectRatio: slideAspect(slideSizeOf(deck)) }}
           >
             <span className="pointer-events-none absolute inset-0">
               <PaperSlide deck={deck} slide={slide} className="h-full w-full" />

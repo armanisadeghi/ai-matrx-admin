@@ -13,6 +13,7 @@
  */
 
 import type { SlideData, SlideTheme } from "@/components/mardown-display/blocks/presentations/SlideView";
+import { normalizeSlideSize, type SlideSize } from "@/components/mardown-display/blocks/presentations/slide-size";
 
 export const DECK_KIND = "presentation_deck";
 export const SLIDE_KIND = "presentation_slide";
@@ -23,6 +24,8 @@ export type Deck = {
   __kind: typeof DECK_KIND;
   title?: string;
   theme?: DeckTheme | null;
+  /** File → Page setup: the slide size (inches). Missing means widescreen 16:9. */
+  slideSize?: SlideSize | null;
   slides: DeckSlide[];
   [key: string]: unknown;
 };
@@ -177,6 +180,8 @@ export type DeckAction =
   | { type: "load"; deck: Deck }
   | { type: "setTitle"; title: string }
   | { type: "setPreset"; preset: string }
+  /** File → Page setup: the deck's slide size. */
+  | { type: "setSlideSize"; size: SlideSize }
   | { type: "addSlide"; after: number; layout?: EditorLayout }
   | { type: "duplicateSlide"; index: number }
   | { type: "deleteSlide"; index: number }
@@ -216,6 +221,8 @@ export function deckReducer(state: DeckState, action: DeckAction): DeckState {
       return { ...state, deck: { ...deck, title: action.title } };
     case "setPreset":
       return { ...state, deck: { ...deck, theme: { ...(deck.theme ?? {}), preset: action.preset } } };
+    case "setSlideSize":
+      return { ...state, deck: { ...deck, slideSize: normalizeSlideSize(action.size) } };
     case "addSlide": {
       const at = clamp(action.after + 1, 0, n);
       const slides = deck.slides.slice();

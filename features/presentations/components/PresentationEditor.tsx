@@ -18,7 +18,7 @@
 
 import { useEffect, useReducer, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { FilePlus2, FolderOpen, History, Info, Loader2, MonitorPlay, Presentation, Printer } from "lucide-react";
+import { FileCog, FilePlus2, FolderOpen, History, Info, Loader2, MonitorPlay, Presentation, Printer } from "lucide-react";
 import { EditorDetailsDialog, formatDetailDate } from "@/components/editor-chrome/EditorDetailsDialog";
 
 import { Button } from "@ai-matrx/design-system/controls";
@@ -72,6 +72,8 @@ import {
   type PresentationRow,
 } from "../presentation-service";
 import { PaperSlide } from "../slide-paper";
+import { slideSizeOf } from "@/components/mardown-display/blocks/presentations/slide-size";
+import { SlideSizeDialog } from "./SlideSizeDialog";
 import { SlideRail } from "./SlideRail";
 import { DeckPresenter } from "./DeckPresenter";
 import { DeckHistoryPanel } from "./DeckHistoryPanel";
@@ -92,6 +94,7 @@ export function PresentationEditor({ presentationId }: { presentationId: string 
   const isPhone = useIsMobile();
   const [row, setRow] = useState<PresentationRow | null>(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
+  const [sizeOpen, setSizeOpen] = useState(false);
   const openFeedback = useOpenFeedbackWindow();
   const [loadError, setLoadError] = useState<string | null>(null);
   const [canEdit, setCanEdit] = useState(false);
@@ -267,6 +270,7 @@ export function PresentationEditor({ presentationId }: { presentationId: string 
       shortcut: { key: "p", mod: true, bind: true },
       run: () => printDeck(deckRef.current),
     },
+    { kind: "action", id: "file.page-setup", label: "Page setup", icon: FileCog, keywords: ["slide size", "widescreen", "4:3", "16:9"], run: () => setSizeOpen(true) },
     { kind: "action", id: "file.details", label: "Details", icon: Info, keywords: ["info", "created", "modified"], run: () => setDetailsOpen(true) },
   ];
   const menus = buildDeckMenus(host);
@@ -486,6 +490,7 @@ export function PresentationEditor({ presentationId }: { presentationId: string 
           {!isPhone && rail}
           {canvas}
           {isPhone && rail}
+          <SlideSizeDialog open={sizeOpen} onOpenChange={setSizeOpen} initial={slideSizeOf(deck)} onApply={(size) => dispatch({ type: "setSlideSize", size })} />
           <EditorDetailsDialog
             open={detailsOpen}
             onOpenChange={setDetailsOpen}
