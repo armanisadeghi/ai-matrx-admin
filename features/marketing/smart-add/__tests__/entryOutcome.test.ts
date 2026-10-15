@@ -181,6 +181,22 @@ describe("sessionEntry — only a positive signal says doesn't exist", () => {
   it("the server's own not-found answer stands", () => {
     const server = { ...notFoundRound, view: { status: "completed", steps: [], entry: { status: "not_found" as const, subject: "account" as const, input: "x", platform: "instagram" } } };
     expect(sessionEntry([server], false).outcome?.status).toBe("not_found");
+  });  // Recorded run 5dfabe93 (vaturals.com, 2026-10-15): the site answered 403 to both reads, the server judged the entry
+  // confirmed (search found it, the facts agent ran), and nothing the screen counts as "read" came back.
+  it("the server's confirmed answer stands over a blocked-site note (MKT-093)", () => {
+    const steps = [
+      step("probe", ["vaturals.com could not be read directly: the site answered 403"]),
+      step("page", ["vaturals.com could not be read: blocked"]),
+      step("web"),
+    ];
+    const seeds = { website: "vaturals.com", socials: [] };
+    const confirmed = { seeds, view: { status: "completed", steps, entry: { status: "confirmed" as const, subject: "account" as const, input: "", platform: null } } };
+    expect(sessionEntry([confirmed], false)).toEqual({ outcome: null, unreadable: false });
+    // Without the server's answer (an older server) the notes still decide.
+    expect(sessionEntry([{ seeds, view: { status: "completed", steps } }], false).outcome?.status).toBe("blocked");
+    // And the screen names the unread site beside the results.
+    const unread = siteReadFailure({ steps }, "vaturals.com");
+    expect(unread && siteReadLine(unread)).toBe("vaturals.com blocked our reader");
   });
 });
 

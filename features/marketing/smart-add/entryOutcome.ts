@@ -179,6 +179,11 @@ export function sessionEntry(rounds: SessionRound[], foundReal: boolean): { outc
   if (!first || (!typed.website && !typed.social) || rounds.length > 1) return { outcome: null, unreadable };
   const server = first.view?.entry ?? null;
   if (isFailedEntry(server)) return { outcome: server, unreadable: false };
+  // The server judged the entry CONFIRMED (the web, an account or the facts agent found it): a blocked or timed-out
+  // page read is one failed source, never the session's answer (MKT-093, vaturals.com: a 403 on the site ended the
+  // screen at "The site blocked us" while the round's search and facts agent had found the brand). The screen names
+  // the unread site beside the results instead (`siteReadFailure`). Notes are read only when the server sent nothing.
+  if (server) return { outcome: null, unreadable: false };
   if (unreadable) return { outcome: null, unreadable };
   return { outcome: inferEntryOutcome(first.view, typed, foundReal), unreadable: false };
 }
