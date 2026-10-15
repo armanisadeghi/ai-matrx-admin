@@ -9,15 +9,20 @@
 //   "Activity"             who changed what on this table, newest first, paged, people by name.
 
 import { useCallback, useEffect, useState } from "react";
-import { Activity, Check, Loader2, LockKeyhole } from "lucide-react";
+import { Activity, Check, Copy, Loader2, LockKeyhole } from "lucide-react";
+import { useFields } from "@ai-matrx/records/react";
 import { Popover, PopoverContent, PopoverTrigger } from "@ai-matrx/design-system";
 
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
 import { createAccessRequest } from "@/features/access-gate/service/accessRequests";
+import { recordPageHref } from "./recordPageHref";
 import {
   activitySentence,
   canAskForEdit,
+  canFindDuplicates,
+  findDuplicates,
+  type DuplicateGroup,
   readActivity,
   readMyTableLevel,
   type ActivityEntry,
@@ -26,23 +31,12 @@ import {
 const BUTTON =
   "inline-flex h-8 shrink-0 items-center gap-1.5 rounded px-2 text-xs text-muted-foreground hover:bg-muted hover:text-foreground disabled:opacity-60";
 
-function RequestEditAccess({ tableId, organizationId }: { tableId: string; organizationId: string }) {
+function RequestEditAccess({ tableId, level }: { tableId: string; level: string | null }) {
   const userId = useAppSelector(selectUserId);
-  const [level, setLevel] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
   const [note, setNote] = useState("");
   const [state, setState] = useState<"idle" | "sending" | "sent" | "failed">("idle");
   const [said, setSaid] = useState<string | null>(null);
-
-  useEffect(() => {
-    let live = true;
-    readMyTableLevel(organizationId, tableId)
-      .then((l) => live && setLevel(l))
-      .catch(() => live && setLevel(null));
-    return () => {
-      live = false;
-    };
-  }, [organizationId, tableId]);
 
   const send = useCallback(async () => {
     setState("sending");
@@ -167,11 +161,98 @@ export function ActivityFeedButton({ subjectId, organizationId }: { subjectId: s
   );
 }
 
+/** AT-SHARE row 4, Dedupe: pick fields, see groups of likely duplicates, open each record (its page has the merge). Edit holders only. */
+function FindDuplicates({ tableId, organizationId }: { tableId: string; organizationId: string }) {
+  const fields = useFields(tableId);
+  const [open, setOpen] = useState(false);
+  const [chosen, setChosen] = useState<string[]>([]);
+  const [groups, setGroups] = useState<DuplicateGroup[] | null>(null);
+  const [state, setState] = useState<"idle" | "loading" | "failed">("idle");
+  const [why, setWhy] = useState<string | null>(null);
+  const list = (fields.data ?? []).filter((f) => f.key && !["relation", "lookup", "rollup", "attachment"].includes(String(f.type)));
+
+  const find = useCallback(async () => {
+    setState("loading");
+    try {
+      setGroups(await findDuplicates(organizationId, tableId, chosen));
+      setState("idle");
+    } catch (err) {
+      setWhy(err instanceof Error ? err.message : "The search did not run.");
+      setState("failed");
+    }
+  }, [chosen, organizationId, tableId]);
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <button type="button" className={BUTTON} data-find-duplicates>
+          <Copy className="h-3.5 w-3.5" />
+          Find duplicates
+        </button>
+      </PopoverTrigger>
+      <PopoverContent align="end" className="max-h-[70vh] w-96 space-y-2 overflow-y-auto p-3">
+        <div className="text-xs text-muted-foreground">Same value in every chosen field</div>
+        <div className="flex flex-wrap gap-1">
+          {list.map((f) => {
+            const on = chosen.includes(f.key);
+            return (
+              <button
+                key={f.key}
+                type="button"
+                aria-pressed={on}
+                onClick={() => setChosen((c) => (on ? c.filter((k) => k !== f.key) : [...c, f.key]))}
+                className={`rounded border px-2 py-0.5 text-xs ${on ? "bg-primary text-primary-foreground" : "hover:bg-muted"}`}
+              >
+                {f.label ?? f.key}
+              </button>
+            );
+          })}
+        </div>
+        <button
+          type="button"
+          onClick={() => void find()}
+          disabled={chosen.length === 0 || state === "loading"}
+          className="inline-flex h-8 w-full items-center justify-center gap-1.5 rounded bg-primary px-2 text-xs text-primary-foreground disabled:opacity-60"
+          data-find-duplicates-run
+        >
+          {state === "loading" && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+          Find
+        </button>
+        {state === "failed" && <p className="text-xs text-destructive">{why}</p>}
+        {groups && groups.length === 0 && state === "idle" && <p className="text-xs text-muted-foreground">No duplicates found.</p>}
+        {groups?.map((g, i) => (
+          <ul key={i} className="divide-y rounded border" data-duplicate-group>
+            {g.members.map((m) => (
+              <li key={m.id} className="px-2 py-1.5 text-xs">
+                <a className="underline-offset-2 hover:underline" href={recordPageHref(tableId, m.id)} target="_blank" rel="noreferrer">
+                  {m.title}
+                </a>
+              </li>
+            ))}
+          </ul>
+        ))}
+      </PopoverContent>
+    </Popover>
+  );
+}
+
 export function TableAccessBar({ tableId, organizationId }: { tableId: string; organizationId: string | null }) {
+  const [level, setLevel] = useState<string | null>(null);
+  useEffect(() => {
+    if (!organizationId) return;
+    let live = true;
+    readMyTableLevel(organizationId, tableId)
+      .then((l) => live && setLevel(l))
+      .catch(() => live && setLevel(null));
+    return () => {
+      live = false;
+    };
+  }, [organizationId, tableId]);
   if (!organizationId) return null;
   return (
     <>
-      <RequestEditAccess tableId={tableId} organizationId={organizationId} />
+      <RequestEditAccess tableId={tableId} level={level} />
+      {canFindDuplicates(level) && <FindDuplicates tableId={tableId} organizationId={organizationId} />}
       <ActivityFeedButton subjectId={tableId} organizationId={organizationId} />
     </>
   );

@@ -1,6 +1,6 @@
 // AT-SHARE rows 2 and 3 — the pure rules behind the table header's two controls.
 
-import { activitySentence, canAskForEdit, parseActivity } from "../tableAccessService";
+import { activitySentence, canAskForEdit, canFindDuplicates, parseActivity, parseDuplicates } from "../tableAccessService";
 
 describe("who may ask for edit access", () => {
   it("a viewer and a commenter may; an editor, a Full holder and an owner may not; nobody known may not", () => {
@@ -36,5 +36,25 @@ describe("the activity door's answer", () => {
   it("an empty or foreign answer is an empty page, not a crash", () => {
     expect(parseActivity(null)).toEqual({ entries: [], nextBefore: null });
     expect(parseActivity("nope")).toEqual({ entries: [], nextBefore: null });
+  });
+});
+
+describe("the duplicate finder", () => {
+  it("is offered at Edit and above only", () => {
+    expect(canFindDuplicates("viewer")).toBe(false);
+    expect(canFindDuplicates("commenter")).toBe(false);
+    expect(canFindDuplicates("editor")).toBe(true);
+    expect(canFindDuplicates("owner")).toBe(true);
+  });
+  it("reads groups of two or more named records and drops the rest", () => {
+    const groups = parseDuplicates({
+      groups: [
+        { size: 2, members: [{ id: "a", title: "Ana Ruiz" }, { id: "b", title: "" }] },
+        { size: 1, members: [{ id: "c", title: "Solo" }] },
+        { members: "bad" },
+      ],
+    });
+    expect(groups).toEqual([{ members: [{ id: "a", title: "Ana Ruiz" }, { id: "b", title: "(untitled)" }] }]);
+    expect(parseDuplicates(null)).toEqual([]);
   });
 });
