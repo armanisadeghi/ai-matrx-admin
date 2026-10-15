@@ -146,6 +146,17 @@ export function brandNameFromPayload(payload: unknown, depth = 0): string | null
 }
 
 /**
+ * The brand name from the facts agent's FORMING value (MKT-106): `brand_name` streams before `facts`, so once the
+ * list has begun the name is whole. Nothing before then (it may be half-written).
+ */
+export function brandNameFromLive(live: { kind: string; value: Record<string, unknown>; verified?: boolean } | null | undefined): string | null {
+  if (!live || live.kind !== "brand_basics") return null;
+  const name = text(live.value.brand_name);
+  const begun = live.verified || Array.isArray(live.value.facts) || Array.isArray(live.value.items);
+  return name && begun ? name : null;
+}
+
+/**
  * The facts agent's fields that land in a slot (validate/queue keeps every fact for the validation page). A slot the
  * site read left empty (a bot wall, a timeout) is filled by what the agent found, as a suggestion with its certainty.
  */

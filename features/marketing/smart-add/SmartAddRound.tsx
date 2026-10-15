@@ -25,7 +25,7 @@ import { evidenceFromPayload, type EvidenceItem } from "./evidence";
 import { factsFromPayload, type BrandFact } from "./validate/queue";
 import { ratchetFacts, streamingFacts } from "./streamingFacts";
 import { selectLiveKindValue } from "@ai-matrx/chat/agents/redux/execution-system/active-requests/active-requests.selectors";
-import { brandNameFromPayload, factEvidence, webFirstData } from "./firstData";
+import { brandNameFromLive, brandNameFromPayload, factEvidence, webFirstData } from "./firstData";
 import { suggestionsFromPayload, type WeThinkSuggestion } from "./weThink";
 import { parseEntityKind, type EntityKind } from "./entityKind";
 import { parseKeyPeople, type KeyPerson } from "./keyPeople";
@@ -298,7 +298,15 @@ export function SmartAddRound({
   const webAggregate = useAppSelector(selectNodeAggregate(runId, "web"));
   const webOut = webAggregate.invocations[webAggregate.invocations.length - 1]?.output ?? null;
   const factsAggregate = useAppSelector(selectNodeAggregate(runId, "facts"));
-  const factsOut = factsAggregate.invocations[factsAggregate.invocations.length - 1]?.output ?? null;
+  const factsInvocation = factsAggregate.invocations[factsAggregate.invocations.length - 1];
+  const factsOut = factsInvocation?.output ?? null;
+  // MKT-106: the brand name fills from the forming value too, not only the step's final output (ratcheted: once shown, it stays).
+  const factsLaneId = factsInvocation?.laneRequestId ?? null;
+  const selectFactsLive = factsLaneId ? selectLiveKindValue(factsLaneId) : null;
+  const factsLive = useAppSelector((state) => (selectFactsLive ? selectFactsLive(state) : null));
+  const [shownName, setShownName] = useState<string | null>(null);
+  const factsName = brandNameFromPayload(factsOut) ?? brandNameFromLive(factsLive) ?? shownName;
+  if (factsName !== shownName) setShownName(factsName);
   const facts = [
     ...emissions.flatMap((e) => factsFromPayload(e.payload)),
     ...[...steps, ...FACT_STEPS].flatMap((s) => stepState[s]?.facts ?? []),
@@ -307,7 +315,7 @@ export function SmartAddRound({
     ...live,
     ...webFirstData(webOut),
     ...[...steps, ...ANCHOR_STEPS].flatMap((s) => stepState[s]?.evidence ?? []),
-    ...factEvidence(facts, brandNameFromPayload(factsOut)),
+    ...factEvidence(facts, factsName),
   ].filter(keep);
   const signalsAggregate = useAppSelector(selectNodeAggregate(runId, SIGNALS_STEP));
   const signalsOut = signalsAggregate.invocations[signalsAggregate.invocations.length - 1]?.output ?? null;

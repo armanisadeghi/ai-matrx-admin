@@ -1,3 +1,4 @@
+import { brandNameFromLive } from "../firstData";
 import { ratchetFacts, streamingFacts } from "../streamingFacts";
 
 const env = (facts: unknown[]) => ({ kind: "brand_basics", value: { __kind: "brand_basics", facts } });
@@ -34,5 +35,15 @@ describe("streamingFacts (MKT-085)", () => {
     const later = ratchetFacts(early, streamingFacts(env([{ ...phone, reason: "Footer of the site", evidence_urls: ["https://a.b"] }]), false));
     expect(later).toHaveLength(1);
     expect(later[0].reason).toBe("Footer of the site");
+  });
+});
+
+describe("brandNameFromLive (MKT-106)", () => {
+  const live = (value: Record<string, unknown>, verified = false) => ({ kind: "brand_basics", value, verified });
+  it("waits while the name may be half-written, takes it once the facts list has begun", () => {
+    expect(brandNameFromLive(live({ brand_name: "Blue Lo" }))).toBeNull();
+    expect(brandNameFromLive(live({ brand_name: "Blue Lotus", facts: [] }))).toBe("Blue Lotus");
+    expect(brandNameFromLive(live({ brand_name: "Blue Lotus" }, true))).toBe("Blue Lotus");
+    expect(brandNameFromLive(null)).toBeNull();
   });
 });
