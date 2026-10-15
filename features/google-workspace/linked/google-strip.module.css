@@ -68,7 +68,7 @@
   align-items: center;
   gap: 8px;
   min-width: 0;
-  max-width: min(18rem, 60%);
+  max-width: 18rem;
   height: 32px;
   padding: 0 12px 0 4px;
   border: 1px solid var(--g-outline-variant);
@@ -77,6 +77,15 @@
   font-weight: 500;
   text-decoration: none;
   transition: background-color 150ms;
+}
+/* A phone keeps the account as its avatar (the address is in its tooltip and settings). */
+@media (max-width: 30rem) {
+  .account {
+    padding: 0 4px;
+  }
+  .account > .ellipsis {
+    display: none;
+  }
 }
 .account:hover {
   background: var(--g-chip-hover);
