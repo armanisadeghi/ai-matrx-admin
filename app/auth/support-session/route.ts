@@ -15,6 +15,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/utils/supabase/server";
 import { createAdminClient } from "@/utils/supabase/adminClient";
 import { handOverSession } from "@/lib/guest/session-handover";
+import { DEFAULT_AUTH_DESTINATION } from "@/utils/auth/auth-destination";
 import {
   SUPPORT_SESSION_COOKIE,
   SUPPORT_SESSION_ENDED_PATH,
@@ -44,24 +45,50 @@ async function startSupportSession(token: string): Promise<Outcome> {
     return { ok: false, why: "used" };
   }
 
+  const supabase = await createClient();
+  let signedIn = false;
+  // A start that fails after the sign-in landed must not leave an untimed sign-in as the person:
+  // end that sign-in (auth server + this browser's cookies), then close the row.
   const abort = async (reason: string) => {
     console.error(`[support-session] ${claim.id} failed to start: ${reason}`);
+    if (signedIn) {
+      try {
+        const out = await supabase.auth.signOut({ scope: "local" });
+        if (out.error) throw out.error;
+      } catch (error) {
+        console.error(`[support-session] ${claim.id} sign-out after a failed start did not complete:`, error);
+      }
+    }
     const { error } = await service.schema("admin").rpc("support_session_abort", { p_id: claim.id });
     if (error) console.error(`[support-session] ${claim.id} abort failed: ${error.message}`);
     return { ok: false, why: "failed" } as const;
   };
 
+  try {
+    return await signInAndBind(claim, service, supabase, () => (signedIn = true), abort);
+  } catch (error) {
+    return abort(error instanceof Error ? error.message : String(error));
+  }
+}
+
+async function signInAndBind(
+  claim: { id: string; target_email: string | null },
+  service: ReturnType<typeof createAdminClient>,
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  markSignedIn: () => void,
+  abort: (reason: string) => Promise<Outcome>,
+): Promise<Outcome> {
   if (!claim.target_email) return abort("the person has no email to sign in with");
 
   const link = await service.auth.admin.generateLink({ type: "magiclink", email: claim.target_email });
   const tokenHash = link.data?.properties?.hashed_token;
   if (link.error || !tokenHash) return abort(link.error?.message ?? "no token came back");
 
-  const supabase = await createClient();
   const verified = await handOverSession("email_otp", () =>
     supabase.auth.verifyOtp({ type: "magiclink", token_hash: tokenHash }),
   );
   const accessToken = verified.data?.session?.access_token;
+  if (accessToken) markSignedIn();
   if (verified.error || !accessToken) {
     return abort(verified.error instanceof Error ? verified.error.message : "the sign-in was refused");
   }
@@ -78,7 +105,8 @@ async function startSupportSession(token: string): Promise<Outcome> {
     path: "/",
     sameSite: "lax",
     secure: process.env.NODE_ENV === "production",
-    maxAge: 60 * 60 * 24,
+    // Only marks which browser asks; the database is the clock, so it may outlive any extension.
+    maxAge: 60 * 60 * 24 * 30,
   });
   return { ok: true };
 }
@@ -88,5 +116,5 @@ export async function GET(request: NextRequest) {
   const outcome: Outcome = /^[a-f0-9]{64}$/.test(token)
     ? await startSupportSession(token)
     : { ok: false, why: "invalid" };
-  redirect(outcome.ok ? "/" : `${SUPPORT_SESSION_ENDED_PATH}?why=${outcome.why}`);
+  redirect(outcome.ok ? DEFAULT_AUTH_DESTINATION : `${SUPPORT_SESSION_ENDED_PATH}?why=${outcome.why}`);
 }

@@ -41,6 +41,19 @@ async function leave(why: "ended" | "expired") {
   await performLocalSignOut(`${SUPPORT_SESSION_ENDED_PATH}?why=${why}`);
 }
 
+// Leaving signs this window out and navigates away; it must happen once, however many ticks or
+// checks ask for it (one bar per page, so module scope is the right owner).
+let leavingNow = false;
+function leaveOnce(why: "ended" | "expired") {
+  if (leavingNow) return;
+  leavingNow = true;
+  void leave(why);
+}
+
+function isPast(iso: string): boolean {
+  return new Date(iso).getTime() <= Date.now();
+}
+
 export default function SupportSessionPill() {
   const [session, setSession] = useState<CurrentSupportSession | null>(null);
   const [now, setNow] = useState(() => Date.now());
@@ -61,8 +74,7 @@ export default function SupportSessionPill() {
           return;
         }
         if (current.status !== "active") {
-          const ranOut = current.expires_at !== null && new Date(current.expires_at).getTime() <= Date.now();
-          await leave(ranOut ? "expired" : "ended");
+          leaveOnce(isPast(current.expires_at) ? "expired" : "ended");
           return;
         }
         setSession(current);
@@ -89,13 +101,26 @@ export default function SupportSessionPill() {
     ? Math.round((new Date(session.expires_at).getTime() - now) / 1000)
     : null;
 
-  // At zero the database closes it (support_session_current ends an expired session) and we leave.
+  // At zero, ask the database once: it ends an expired session (support_session_current) — or
+  // answers with a later end time when an admin added time from the console.
+  const reachedZero = secondsLeft !== null && secondsLeft <= 0;
   useEffect(() => {
-    if (secondsLeft === null || secondsLeft > 0) return;
-    void currentSupportSession()
-      .catch((error) => console.error("[support-session] closing at zero failed:", error))
-      .finally(() => void leave("expired"));
-  }, [secondsLeft]);
+    if (!reachedZero) return;
+    let active = true;
+    currentSupportSession()
+      .then((current) => {
+        if (!active) return;
+        if (current?.status === "active" && !isPast(current.expires_at)) setSession(current);
+        else leaveOnce("expired");
+      })
+      .catch((error) => {
+        console.error("[support-session] closing at zero failed:", error);
+        leaveOnce("expired");
+      });
+    return () => {
+      active = false;
+    };
+  }, [reachedZero]);
 
   if (!session || secondsLeft === null) return null;
 
@@ -105,6 +130,10 @@ export default function SupportSessionPill() {
     setBusy("extend");
     try {
       const expiresAt = await extendSupportSession(session.id, SUPPORT_SESSION_EXTEND_MINUTES);
+      if (!expiresAt) {
+        leaveOnce("expired");
+        return;
+      }
       setSession({ ...session, expires_at: expiresAt });
       toast.success(`Added ${SUPPORT_SESSION_EXTEND_MINUTES} minutes`);
     } catch (error) {
@@ -125,7 +154,7 @@ export default function SupportSessionPill() {
     setBusy("end");
     try {
       await endSupportSession(session.id);
-      await leave("ended");
+      leaveOnce("ended");
     } catch (error) {
       setBusy(null);
       toast.error(`Could not end the session: ${error instanceof Error ? error.message : String(error)}`);

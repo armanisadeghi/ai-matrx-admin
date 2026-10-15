@@ -141,9 +141,17 @@ export function SupportSessionsTableClient() {
     }
   }, []);
 
+  // First read: state starts as loading, so nothing is set until the answer arrives.
   useEffect(() => {
-    void load();
-  }, [load]);
+    let active = true;
+    listSupportSessions()
+      .then((list) => active && setRows(list.map(toRow)))
+      .catch((e) => active && setError(e))
+      .finally(() => active && setLoading(false));
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const end = async (row: Row) => {
     const ok = await confirm({

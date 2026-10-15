@@ -108,6 +108,11 @@ export async function performLocalSignOut(redirectTo: string): Promise<void> {
   // sign-out (it is identity-keyed anyway) so the next person on this browser
   // inherits nothing — on every Matrx surface of the apex.
   activeOrgCookie.clear();
+  // A support window that signs out ends its support session first (no-op everywhere else).
+  const { endSupportSessionOnSignOut } = await import(
+    "@/features/admin/users/support-sessions/service"
+  );
+  await endSupportSessionOnSignOut();
   await supabase.auth.signOut({ scope: "local" });
   window.location.href = redirectTo;
 }

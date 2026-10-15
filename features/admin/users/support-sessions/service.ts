@@ -64,14 +64,13 @@ export async function currentSupportSession(): Promise<CurrentSupportSession | n
   return data?.[0] ?? null;
 }
 
-export async function extendSupportSession(id: string, minutes: number): Promise<string> {
+/** The new end time, or `null` when the session had already ended (the database closed it). */
+export async function extendSupportSession(id: string, minutes: number): Promise<string | null> {
   const { data, error } = await createClient()
     .schema("admin")
     .rpc("support_session_extend", { p_id: id, p_minutes: minutes });
   if (error) throw error;
-  const expiresAt = data?.[0]?.expires_at;
-  if (!expiresAt) throw new Error("The new end time did not come back");
-  return expiresAt;
+  return data?.[0]?.expires_at ?? null;
 }
 
 export async function endSupportSession(id: string): Promise<void> {
@@ -104,5 +103,25 @@ export async function assertNotInSupportSession(): Promise<void> {
   const current = await currentSupportSession();
   if (current?.status === "active") {
     throw new Error("Login details can't be changed during a support session.");
+  }
+}
+
+/**
+ * A normal sign-out inside the support window ends the support session too, so the trail closes
+ * with it instead of waiting for the clock. The cookie holds the session id; the database still
+ * decides (only that window's own sign-in may end it).
+ */
+export async function endSupportSessionOnSignOut(): Promise<void> {
+  if (typeof document === "undefined") return;
+  const id = document.cookie
+    .split("; ")
+    .find((c) => c.startsWith(`${SUPPORT_SESSION_COOKIE}=`))
+    ?.slice(SUPPORT_SESSION_COOKIE.length + 1);
+  if (!id) return;
+  clearSupportSessionCookie();
+  try {
+    await endSupportSession(decodeURIComponent(id));
+  } catch (error) {
+    console.error("[support-session] ending it on sign-out failed:", error);
   }
 }
