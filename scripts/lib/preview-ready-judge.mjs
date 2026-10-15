@@ -39,7 +39,7 @@ export function verdictOf(r, target, say = () => {}) {
 }
 
 export async function diagnoseBuildError(text, ROOT) {
-  const out = { stale: false, lines: [] };
+  const out = { stale: false, uncommitted: false, lines: [] };
   const exp = text.match(/Export ([\w$]+) doesn't exist in target module/);
   const fileMatch = text.match(/\[project\]\/([^\s:\]]+\.(?:tsx?|jsx?|mjs|cjs))(?::(\d+))?/) || text.match(/\.\/([^\s:]+\.(?:tsx?|jsx?))[:(](\d+)/);
   const file = fileMatch ? fileMatch[1] : null;
@@ -73,6 +73,7 @@ export async function diagnoseBuildError(text, ROOT) {
     if (!out.stale) {
       const dirty = git(ROOT, ["status", "--porcelain", "--", file]);
       const last = git(ROOT, ["log", "-1", "--format=%h %an, %ar: %s", "--", file]);
+      out.uncommitted = Boolean(dirty);
       out.lines.push(
         dirty
           ? `owner: ${file} has an UNCOMMITTED edit in this shared checkout (another session's work in progress); last commit ${last || "none"}`

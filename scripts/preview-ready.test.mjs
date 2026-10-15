@@ -61,6 +61,7 @@ test("CODE: an import ahead of the installed package is named with its owner, ne
     assert.equal(d.stale, false, d.lines.join("\n"));
     assert.match(d.lines.join("\n"), /diagnosis: CODE/);
     assert.match(d.lines.join("\n"), /environment block for your test, not a defect of the page/);
+    assert.equal(d.uncommitted, false, "a file git does not track as modified is not an edit in progress");
   } finally {
     rmSync(root, { recursive: true, force: true });
   }

@@ -294,6 +294,7 @@ say(`listener: port ${PORT} answers (${secs()}s)`);
 
 let restarted = false;
 let capWaitSaid = 0;
+let settleWaits = 0;
 for (let attempt = 1; attempt <= 2; attempt++) {
   const logStart = logSize();
   const r = await signedInLoad(route);
@@ -331,6 +332,15 @@ for (let attempt = 1; attempt <= 2; attempt++) {
     restartServer();
     restarted = true;
     if (!(await waitForListener())) notReady("the restarted preview never answered");
+    continue;
+  }
+  // Another session's edit in progress: those usually settle within a minute (the next save fixes
+  // the file). Wait and look again a few times before calling it a block.
+  if (d.uncommitted && settleWaits < 3 && left() > 75000) {
+    settleWaits++;
+    say(`waiting 60s for that in-progress edit to settle (try ${settleWaits} of 3)`);
+    await sleep(60000);
+    attempt--;
     continue;
   }
   if (v.kind === "signed-out" && attempt === 1) continue; // one retry: a nonce raced another mint
