@@ -21,7 +21,9 @@ import { writeFileSync } from "node:fs";
 import { join } from "node:path";
 import type { DynamicRead } from "../settings-guards/lib";
 import { scanKnobReads, ROOT } from "../settings-guards/lib";
+import { followIndirection, poolMembers } from "./indirection";
 import { CEILING_REL, declaredAt, dynamicId, git, readCeiling, registryAt } from "./lib";
+import { packageContribution } from "./package-declarations";
 
 export interface Verdict {
   added: DynamicRead[];
@@ -83,7 +85,39 @@ function selfTest(): void {
     { strictConsts: true },
   );
   if (collide.sites.length !== 0 || collide.dynamic.length !== 1) throw new Error("self-test: a colliding constant name was guessed instead of unresolved");
-  console.log("✓ check:knob-reads-declared self-test: computed read fails, annotation passes, stale annotation and name collision are caught");
+  // Indirection (./indirection.ts): helpers, object key maps, typed parameters and package
+  // declarations resolve; a helper called with a computed argument stays unresolved at that call.
+  const planted = [
+    {
+      abs: "a",
+      rel: "matrx-frontend/features/x/a.ts",
+      text: [
+        'export const K = { one: { feature: "f.map", key: "m" } } as const;',
+        'const FEATURE = "f.helper";',
+        "const read = async (key: string) => resolveSessionKnob({ feature: FEATURE, key });",
+        'await read("h1");',
+        "await read(computeKey());",
+        "const pct = useSessionKnob(K.one);",
+        "const pkg = useSessionKnob(PKG_KNOBS.size);",
+        'type Kind = "t1" | "t2";',
+        'export function typed(key: Kind) { return knobInt("f.typed", key); }',
+      ].join("\n"),
+    },
+  ];
+  const first = scanKnobReads(planted, registry, { strictConsts: true });
+  const pkg = packageContribution([
+    { name: "@ai-matrx/planted", version: "1.0.0", missing: false, declaration: { format: 1, package: "@ai-matrx/planted", reads: [{ feature: "f.pkg", key: "inside", files: ["src/a.ts"] }], addresses: { "PKG_KNOBS.size": { feature: "f.pkg", key: "size" } }, unresolved: [] } },
+    { name: "@ai-matrx/gone", version: "9.9.9", missing: true, declaration: null },
+  ]);
+  const followed = followIndirection(planted, first, poolMembers(planted, pkg.addresses));
+  const got = [...followed.sites, ...pkg.sites].map((x) => `${x.feature}.${x.key}`).sort().join(" ");
+  const want = "f.helper.h1 f.map.m f.pkg.inside f.pkg.size f.typed.t1 f.typed.t2";
+  if (got !== want) throw new Error(`self-test: indirection resolved [${got}], expected [${want}]`);
+  if (followed.dynamic.length !== 1 || !/computeKey/.test(followed.dynamic[0].raw)) {
+    throw new Error(`self-test: the helper call with a computed argument was not left unresolved (${JSON.stringify(followed.dynamic)})`);
+  }
+  if (pkg.dynamic.length !== 1) throw new Error("self-test: a bundled package missing from the store was not counted unresolved");
+  console.log("✓ check:knob-reads-declared self-test: computed read fails, annotation passes, stale annotation and name collision are caught; indirection and package declarations resolve");
 }
 
 function main(): void {

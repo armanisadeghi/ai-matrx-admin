@@ -198,7 +198,7 @@ export function AttestationClient({
           </Button>
         </div>
 
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-6">
           <SummaryStat
             label="Health"
             value={health === null ? "—" : `${health}%`}
@@ -210,6 +210,11 @@ export function AttestationClient({
           <SummaryStat
             label="Declared keys"
             value={manifest ? manifest.key_count : "—"}
+          />
+          <SummaryStat
+            label="Unresolved"
+            value={manifest?.unresolved ?? "—"}
+            tone={manifest?.unresolved ? "warning" : undefined}
           />
         </div>
 

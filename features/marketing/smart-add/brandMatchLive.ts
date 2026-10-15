@@ -30,6 +30,7 @@ const literal = (s: string) => s.replace(/[\\%_,()"]/g, " ").trim();
 /** The matching rules and the read size, from the feature knobs (smart_add.brand_match.*). A missing knob raises by name. */
 async function loadRules(): Promise<{ rules: MatchRules; limit: number }> {
   const read = async (key: string) => {
+    // KNOB READS "smart_add" "brand_match.generic_words" "brand_match.shared_hosts" "brand_match.name_min_length" "brand_match.candidate_limit"
     const v = await resolveSessionKnob({ feature: FEATURE, key });
     if (v === undefined) throw new Error(`Smart Add setting ${key} could not be read`);
     return v;

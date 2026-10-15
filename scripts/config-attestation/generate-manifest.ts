@@ -81,11 +81,17 @@ export function generateManifest(sha: string): { manifest: ConfigManifest; unres
     },
   });
   manifest.app_config.keys.sort((a, b) => a.key.localeCompare(b.key));
+  // The read sites this build makes whose address could not be named (at run time each is filed
+  // `missing` -> red). Additive to the frozen v1 shape; the admin header shows the count.
+  const sites = d.dynamic
+    .map((x) => ({ file: x.file.replace(/^matrx-frontend\//, ""), line: x.line, call: `${x.fn}(${x.raw})`.slice(0, 160) }))
+    .sort((a, b) => (a.file === b.file ? a.line - b.line || (a.call < b.call ? -1 : 1) : a.file < b.file ? -1 : 1));
+  (manifest as ConfigManifest & { unresolved?: unknown }).unresolved = { count: sites.length, sites };
   // Deterministic: the commit's own time, so a re-run for the same sha hashes identically.
   manifest.generated_at = new Date(git(["show", "-s", "--format=%cI", sha]).trim()).toISOString();
   const summary =
     `${APP} ${sha.slice(0, 10)} v${appVersion}: ${manifest.knobs.length} knobs in ${byFeature.size} features, ` +
-    `${manifest.app_config.keys.length} app-config keys, ${d.dynamic.length} unresolved read sites` +
+    `${manifest.app_config.keys.length} app-config keys, ${d.dynamic.length} unresolved read sites; ${d.packages}` +
     (d.annotations.length ? `, ${d.annotations.length} KNOB READS annotations` : "");
   return { manifest, unresolved: d.dynamic.length, summary };
 }
