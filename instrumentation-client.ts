@@ -17,6 +17,10 @@
 import { installCaptureTap } from "@/lib/diagnostics/stream-capture/install-fetch-tap";
 import { installWebSocketTap } from "@/lib/diagnostics/stream-capture/install-websocket-tap";
 import { applyPersistedCaptureMode } from "@/lib/diagnostics/stream-capture/capture-mode";
+import { installLoadTrace } from "@/lib/diagnostics/loadTrace";
+
+// The ordered page-load timeline (`?trace=load`); a no-op unless switched on in this browser.
+installLoadTrace();
 
 installCaptureTap();
 installWebSocketTap();

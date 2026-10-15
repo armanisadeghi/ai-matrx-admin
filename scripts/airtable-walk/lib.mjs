@@ -1,6 +1,6 @@
 import { chromium } from "playwright";
 import { readFileSync } from "node:fs";
-import { signIn } from "../lib/seat-browser.mjs";
+import { walkSignIn } from "./walk-signin.mjs";
 export const ORIGIN = process.env.ORIGIN ?? "http://s96c6068c.localhost:3001";
 export const OUT = "/tmp/airtable-walk";
 export const env = Object.fromEntries(readFileSync(new URL("../../.env.local", import.meta.url), "utf8").split("\n").map((l) => l.match(/^([A-Z_]+)=(.*)$/)).filter(Boolean).map((m) => [m[1], m[2].replace(/^"|"$/g, "")]));
@@ -10,7 +10,7 @@ export async function start(member = false) {
   const ctx = await browser.newContext({ viewport: { width: 1600, height: 1000 } });
   const page = await ctx.newPage();
   const errs = []; page.on("console", (m) => m.type() === "error" && errs.push(m.text().slice(0, 160)));
-  const who = await signIn(page, ORIGIN, member ? "test@test.com" : env.AI_ADMIN_USERNAME, member ? env.AI_MEMBER_PASSWORD : env.AI_ADMIN_PASSWORD, member ? "member" : "admin").catch((e) => "ERR " + e.message.slice(0, 100));
+  const who = await walkSignIn(page, ORIGIN, { member }).catch((e) => "ERR " + e.message.slice(0, 100));
   return { browser, ctx, page, who, errs };
 }
 export const open = async (page, id) => { await page.goto(`${ORIGIN}/data/${id}`, { waitUntil: "domcontentloaded", timeout: 240000 }); await page.waitForSelector("[data-table-toolbar]", { timeout: 240000 }); await page.waitForTimeout(3000); };
