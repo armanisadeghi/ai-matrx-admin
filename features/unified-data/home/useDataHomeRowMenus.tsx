@@ -483,6 +483,7 @@ export function useDataHomeRowMenus({
           key={`duplicate-${asked.count}`}
           tableId={tableId}
           name={row.name}
+          organizationId={row.organizationId ?? null}
           open
           onOpenChange={(open) => {
             if (!open) close();
