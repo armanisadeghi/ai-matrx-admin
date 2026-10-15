@@ -104,9 +104,9 @@ export function appConfigReads(files: SourceFile[]): {
 } {
   const keys = new Map<string, Set<string>>();
   const dynamic: DynamicRead[] = [];
-  const re = /\b(readAppConfigKey|readAppFlag)\s*(?:<[^>()]*>)?\s*\(\s*([^,)]+?)\s*[,)]/g;
+  const re = /\b(readAppConfigKey|readAppFlag|useAppFlag)\s*(?:<[^>()]*>)?\s*\(\s*([^,)]+?)\s*[,)]/g;
   for (const f of files) {
-    if (!/readApp(?:ConfigKey|Flag)/.test(f.text) || /lib\/config-attestation\/appConfig\.ts$/.test(f.rel)) continue;
+    if (!/(?:readApp(?:ConfigKey|Flag)|useAppFlag)/.test(f.text) || /(?:lib\/config-attestation\/appConfig\.ts|components\/config-attestation\/useAppFlag\.ts)$/.test(f.rel)) continue;
     re.lastIndex = 0;
     for (let m = re.exec(f.text); m; m = re.exec(f.text)) {
       const before = f.text.slice(Math.max(0, m.index - 24), m.index);
@@ -117,7 +117,7 @@ export function appConfigReads(files: SourceFile[]): {
         dynamic.push({ file: f.rel, line, fn: m[1], raw: m[2].trim(), why: "app-config key is computed at run time" });
         continue;
       }
-      const key = m[1] === "readAppFlag" ? `flags.${lit[1]}` : lit[1];
+      const key = m[1] !== "readAppConfigKey" ? `flags.${lit[1]}` : lit[1];
       keys.set(key, (keys.get(key) ?? new Set()).add(f.rel));
     }
   }

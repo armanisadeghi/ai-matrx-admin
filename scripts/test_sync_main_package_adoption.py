@@ -126,13 +126,15 @@ class AdoptionRule(unittest.TestCase):
 FAKE_PNPM = r'''#!/usr/bin/env python3
 import json, os, re, shutil, subprocess, sys
 args = [a for a in sys.argv[1:] if a not in ("-s", "--silent")]
+with open(os.environ["FAKE_PNPM_LOG"], "a") as log:
+    log.write(json.dumps({"cwd": os.path.realpath(os.getcwd()), "args": args}) + "\n")
 if args[:1] == ["run"]:
     script = json.load(open("package.json"))["scripts"][args[1]]
     sys.exit(subprocess.call(script, shell=True))
 if args[:1] == ["install"]:
     v = re.search(r"'@ai-matrx/chat@([0-9.]+)'", open("pnpm-lock.yaml").read()).group(1)
     shutil.rmtree("node_modules/@ai-matrx/chat", ignore_errors=True)
-    shutil.copytree(".store/chat-" + v, "node_modules/@ai-matrx/chat")
+    shutil.copytree(os.path.join(os.environ["FAKE_STORE"], "chat-" + v), "node_modules/@ai-matrx/chat")
     sys.exit(0)
 sys.exit(0)
 '''
@@ -172,21 +174,31 @@ class Fixture:
         run("git", "clone", "-q", self.origin, self.work)
         for c in (["config", "user.email", "t@t"], ["config", "user.name", "t"], ["checkout", "-q", "-b", "main"]):
             run("git", *c)
+        # The package store lives OUTSIDE the checkout, as pnpm's global store does.
+        self.store = os.path.join(self.tmp, "store")
+        self.pnpm_log = os.path.join(self.tmp, "pnpm.log")
         for v, text in (("0.4.15", V0415), (next_version, next_exports)):
             for rel, body in chat_package(v, text).items():
-                self.write(".store/chat-%s/%s" % (v, rel), body)
-        shutil.copytree(os.path.join(self.work, ".store/chat-0.4.15"), os.path.join(self.work, "node_modules/@ai-matrx/chat"))
-        self.write(".gitignore", "node_modules/\n.store/\n")
+                p = os.path.join(self.store, "chat-%s" % v, rel)
+                os.makedirs(os.path.dirname(p), exist_ok=True)
+                with open(p, "w") as f:
+                    f.write(body)
+        shutil.copytree(os.path.join(self.store, "chat-0.4.15"), os.path.join(self.work, "node_modules/@ai-matrx/chat"))
+        self.write(".gitignore", "node_modules/\n")
         self.write("pnpm-lock.yaml", "packages:\n\n  '@ai-matrx/chat@0.4.15':\n    resolution: {integrity: sha512-x}\n")
         # The update: what `pnpm update "@ai-matrx/*" --latest` does — new lockfile, new node_modules.
         self.write("bump.sh", "set -e\nsed -i.bak 's/@ai-matrx\\/chat@0.4.15/@ai-matrx\\/chat@%s/' pnpm-lock.yaml && rm pnpm-lock.yaml.bak\n"
-                              "rm -rf node_modules/@ai-matrx/chat && cp -R .store/chat-%s node_modules/@ai-matrx/chat\n" % (next_version, next_version))
+                              "rm -rf node_modules/@ai-matrx/chat && mkdir -p node_modules/@ai-matrx && cp -R \"$FAKE_STORE/chat-%s\" node_modules/@ai-matrx/chat\n" % (next_version, next_version))
         self.write("package.json", json.dumps({"name": "clinic-portal", "private": True,
                                                "scripts": {"sync:matrx-packages": "sh bump.sh"},
                                                "dependencies": {"@ai-matrx/chat": "latest"}}))
         os.makedirs(os.path.join(self.work, "scripts", "checks"))
         shutil.copy(os.path.join(HERE, "check-matrx-imports.mjs"), os.path.join(self.work, "scripts"))
         shutil.copy(os.path.join(HERE, "checks", "items.mjs"), os.path.join(self.work, "scripts", "checks"))
+        os.makedirs(os.path.join(self.work, "scripts", "lib"))
+        shutil.copy(os.path.join(HERE, "lib", "matrx-package-resolve.mjs"), os.path.join(self.work, "scripts", "lib"))
+        # sync-main pauses (no release, no package step) without its sweep checker.
+        shutil.copy(os.path.join(HERE, "check-sweep-resolves.mjs"), os.path.join(self.work, "scripts"))
         self.write("features/canvas/side-chat.ts",
                    "import { SIDE_CHAT_PARAM } from '@ai-matrx/chat/canvas';\nexport const sideChatKey = SIDE_CHAT_PARAM;\n")
         run("git", "add", "-A")
@@ -201,12 +213,22 @@ class Fixture:
 
     def sync(self):
         env = dict(os.environ, PATH=self.bin + os.pathsep + os.environ["PATH"],
-                   NODE_PATH=os.path.join(REPO, "node_modules"))
+                   NODE_PATH=os.path.join(REPO, "node_modules"), FAKE_STORE=self.store, FAKE_PNPM_LOG=self.pnpm_log)
         return subprocess.run(["python3", SCRIPT], cwd=self.work, capture_output=True, text=True, env=env)
 
     def origin_lock(self):
         return subprocess.run(["git", "--git-dir", self.origin, "show", "main:pnpm-lock.yaml"],
                               capture_output=True, text=True).stdout
+
+    def pnpm_calls_here(self):
+        """Every pnpm call that ran inside the checkout itself (not the scratch trial tree)."""
+        here = os.path.realpath(self.work)
+        try:
+            with open(self.pnpm_log) as f:
+                calls = [json.loads(l) for l in f if l.strip()]
+        except OSError:
+            return []
+        return [c["args"] for c in calls if c["cwd"] == here]
 
     def installed(self):
         with open(os.path.join(self.work, "node_modules/@ai-matrx/chat/package.json")) as f:
@@ -224,7 +246,11 @@ class RealSync(unittest.TestCase):
             self.assertIn("'@ai-matrx/chat@0.4.15'", fx.origin_lock(),
                           "the sync pushed a lockfile on chat 0.5.0, which no longer exports SIDE_CHAT_PARAM:\n"
                           + out.stdout + out.stderr)
-            self.assertEqual(fx.installed(), "0.4.15", "node_modules was not put back to the lockfile")
+            self.assertEqual(fx.installed(), "0.4.15", "the checkout's node_modules moved")
+            # THE SHARED INSTALL ONLY MOVES FORWARD (2026-10-15): a refused update never relinks the
+            # checkout — the trial ran elsewhere, so there is nothing to put back.
+            self.assertEqual(fx.pnpm_calls_here(), [], "pnpm ran inside the checkout for a refused update: "
+                             "the shared node_modules went forward and back (two dev-server restarts)")
             self.assertIn("PACKAGE UPDATE NOT ADOPTED", out.stdout)
             self.assertIn("SIDE_CHAT_PARAM", out.stdout)
         finally:
@@ -236,6 +262,9 @@ class RealSync(unittest.TestCase):
             out = fx.sync()
             self.assertIn("'@ai-matrx/chat@0.4.16'", fx.origin_lock(), out.stdout + out.stderr)
             self.assertNotIn("NOT ADOPTED", out.stdout)
+            self.assertEqual(fx.installed(), "0.4.16", "an adopted update was not installed in the checkout")
+            self.assertEqual(fx.pnpm_calls_here(), [["install", "--frozen-lockfile"]],
+                             "an adopted update must reach the checkout as ONE forward install")
         finally:
             fx.close()
 

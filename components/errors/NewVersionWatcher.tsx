@@ -28,6 +28,7 @@ import { noteHardNavigationReason } from "@/lib/diagnostics/hardNavigationTrace"
 import { toast } from "@/lib/toast";
 import { readAppConfigKey } from "@/lib/config-attestation/appConfig";
 import { APP_VERSION_META } from "@/lib/config-attestation/meta";
+import { configAttestationCounters, noteConfigMissing } from "@/lib/config-attestation/readLedger";
 import {
   APP_BOOTED_FLAG,
   CHUNK_LOAD_ERROR_EVENT,
@@ -134,7 +135,10 @@ export function NewVersionWatcher({ deploymentId }: NewVersionWatcherProps) {
         return;
       }
       if (!minimum || !current) {
-        console.warn("[new-version] minimum-version check skipped", { minimum: minimum ?? null, current: current || null });
+        // Nothing fails silently: a check that cannot run is a counted error, not a warning.
+        configAttestationCounters.version_check_unusable += 1;
+        if (!minimum) noteConfigMissing("app_config", null, "min_supported_app_version");
+        console.error("[new-version] minimum-version check could not run", { minimum: minimum ?? null, current: current || null });
         return;
       }
       if (compareVersions(current, minimum) < 0) {

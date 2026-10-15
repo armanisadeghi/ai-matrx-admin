@@ -468,7 +468,7 @@ Block document: a tree of `SpaceBlock` (`id`, `type`, `text: RichSpan[]`, `color
   mention notices are `features/rich-document/annotations/service.ts`'s own calls; the composer is its `MentionComposer`, bodies its
   `CommentBody`. Page comments under the title ("Add comment" on title hover), selection-toolbar Comment, block-menu Comment, right
   panel All / Open / Resolved from the top bar, highlights by the CSS Custom Highlight API and margin count bubbles (`CommentMargin.tsx`).
-  `useSpaceRoom.ts`: ONE `@ai-matrx/realtime` channel per page (namespace `spaces-page`) — presence (top-bar avatars, +N) and
+  `useSpaceRoom.ts`: ONE `@ai-matrx/data/realtime` channel per page (namespace `spaces-page`) — presence (top-bar avatars, +N) and
   `platform.comments` changes. "@" in the page lists people (`cmt_mention_candidates`) before pages and stores `mention {kind:"person"}`.
   A save from someone else while this person is typing shows "Page updated · Show latest" instead of replacing the page. Share opens
   the platform `ShareModal` on `document` (Invite) beside Copy link.

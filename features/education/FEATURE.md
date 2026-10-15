@@ -35,6 +35,6 @@ Feature modules (each with its own FEATURE.md where listed): `assessment`, `clas
 - **`quick-` prefix** marks stock content in a non-permanent slot (`subjects/quick-math` beside dynamic `subjects/[slug]`).
 - **Microphone permission refusal is expected input**: show the in-page repair path; never route `NotAllowedError` through `console.error`.
 - **Scroll runway:** the layout owns `education-scroll-boundary scroll-page-end-space`; exactly one real scroll owner gets the space (a full-height tool marks its own scroller with `scroll-page-end-space`).
-- **Realtime:** the game room (`engage/realtime/useGameChannel.ts`) is a broadcast + presence room on `@ai-matrx/realtime`; echo suppression stays on.
+- **Realtime:** the game room (`engage/realtime/useGameChannel.ts`) is a broadcast + presence room on `@ai-matrx/data/realtime`; echo suppression stays on.
 - **Taxonomy is evidence-backed** (subject-first, three-band levels, flat exam-prep axis); re-check the research and the owner before restructuring.
 - **Flashcard card images:** [`flashcard-images/FEATURE.md`](../../../common-docs/systems/education/flashcard-images/FEATURE.md) is the contract; read it before adding image support.

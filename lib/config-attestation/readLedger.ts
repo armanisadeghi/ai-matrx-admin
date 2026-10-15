@@ -22,6 +22,8 @@ interface Pending {
   source: Source;
   invalid: boolean;
   value: unknown;
+  /** True = a stored key the code needed was absent (reported through `recorder.missing`). */
+  missing?: boolean;
 }
 
 /** Reads kept before the recorder attaches; beyond this the oldest are dropped and counted. */
@@ -38,6 +40,8 @@ export const configAttestationCounters = {
   missing_sha: 0,
   /** Failed attempts to register this browser's install row. */
   register_failures: 0,
+  /** Version checks that could not run: the stored minimum or this page's own version was absent. */
+  version_check_unusable: 0,
 };
 
 let queue: Pending[] = [];
@@ -58,6 +62,10 @@ function drain(): void {
   const batch = queue;
   queue = [];
   for (const r of batch) {
+    if (r.missing) {
+      recorder.missing({ kind: r.kind, feature: r.feature, key: r.key });
+      continue;
+    }
     recorder.read({ kind: r.kind, feature: r.feature, key: r.key, source: r.source, invalid: r.invalid, value: r.value });
   }
 }
@@ -74,6 +82,16 @@ export function noteConfigRead(
   if (disabled) return;
   configAttestationCounters.reads += 1;
   queue.push({ kind, feature, key, source, invalid, value });
+  if (!scheduled) {
+    scheduled = true;
+    queueMicrotask(drain);
+  }
+}
+
+/** Report a stored key the code needed but did not find (the manifest's "missing" list). */
+export function noteConfigMissing(kind: Kind, feature: string | null, key: string): void {
+  if (disabled) return;
+  queue.push({ kind, feature, key, source: "db", invalid: false, value: null, missing: true });
   if (!scheduled) {
     scheduled = true;
     queueMicrotask(drain);

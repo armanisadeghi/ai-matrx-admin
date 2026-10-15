@@ -39,8 +39,9 @@ WHAT IT DOES (Arman's sequence, 2026-09-24)
         with FACTS: when each side last changed it, its commit message, which side is newer, and
         exactly which lines each side has that the other lacks. Facts only; never a decision.
   4. every @ai-matrx package to npm latest: in each folder whose package.json defines
-     "sync:matrx-packages" (repo root and one level down, e.g. desktop/), run it and commit the
-     changed package.json / lockfile. Our packages are not external: a release on stale ones
+     "sync:matrx-packages" (repo root and one level down, e.g. desktop/), run it IN A SCRATCH COPY
+     of that folder (never in this checkout's node_modules), and adopt + commit the changed
+     package.json / lockfile with one forward install here. Our packages are not external: a release on stale ones
      breaks (Arman, 2026-09-26). Once per sync; a failed update is announced, never silent.
      First it waits (max 6 min) for aidream's npm publish runs already in flight
      (wait_for_publish_train()); an update that adds a build failure and fixes none is NOT
@@ -1565,8 +1566,8 @@ def wait_for_publish_train(now=time.time, sleep=time.sleep, runs=_gh_runs):
 # the kind sandbox (v0.4.2922, 2924, 2986). The same checks Vercel would fail on — every
 # @ai-matrx import resolves against the installed packages (check-matrx-imports) and the kind
 # sandbox bundle builds — are measured before and after the update. An update that adds a failure
-# and fixes none is NOT committed: the lockfile goes back to HEAD, node_modules is reinstalled
-# from it, and the package and the files it breaks are named. Releases keep shipping on the
+# and fixes none is NOT committed: it ran in a scratch tree, so this checkout's lockfile and
+# node_modules never moved, and the package and the files it breaks are named. Releases keep shipping on the
 # versions the code builds with; the update is retried every sync.
 ITEM_LINE = re.compile(r"^MATRX-ITEM (\{.*\})\s*$", re.M)
 LOCKED = re.compile(r"^\s+'?(@ai-matrx/[a-z0-9._-]+)@(\d[^('\":\s]*)", re.M)
@@ -1627,8 +1628,56 @@ def locked_versions(text):
 
 
 
+def _trial_files(d):
+    """Every file folder d's checkout holds (tracked + untracked-not-ignored), relative to d."""
+    r = subprocess.run(["git", "ls-files", "-z", "--cached", "--others", "--exclude-standard"],
+                       cwd=d, capture_output=True)
+    if r.returncode != 0:
+        return None
+    rels = []
+    for rel in r.stdout.decode("utf-8", "replace").split("\0"):
+        if rel and (os.path.isfile(os.path.join(d, rel)) or os.path.islink(os.path.join(d, rel))):
+            rels.append(rel)
+    return sorted(set(rels))
+
+
+def make_trial_tree(d):
+    """(tmp, rels): a scratch copy of folder d OUTSIDE the checkout, or (None, why)."""
+    rels = _trial_files(d)
+    if rels is None:
+        return None, "git ls-files failed in %s/" % d
+    # The REAL path (macOS: /var -> /private/var): a node script judging "am I the main module"
+    # compares its own real URL to argv[1], and silently does nothing when they differ.
+    tmp = os.path.realpath(tempfile.mkdtemp(prefix="sync-main-package-trial-"))
+    r = subprocess.run("tar --null -T - -cf - | tar -xf - -C %s" % _shq(tmp), shell=True, cwd=d,
+                       input=("\0".join(rels) + "\0").encode(), capture_output=True)
+    if r.returncode != 0:
+        shutil.rmtree(tmp, ignore_errors=True)
+        return None, "copying %s/ into a trial tree failed: %s" % (d, r.stderr.decode("utf-8", "replace")[-400:])
+    return tmp, rels
+
+
+def _shq(s):
+    return "'" + s.replace("'", "'\\''") + "'"
+
+
+def _read(path):
+    try:
+        with open(path, "rb") as f:
+            return f.read()
+    except OSError:
+        return None
+
+
+# THE SHARED INSTALL ONLY MOVES FORWARD (2026-10-15). The update used to run IN this checkout: the
+# trial install moved node_modules to npm latest, update_breaks_build() judged it, and a refusal put
+# it back with `pnpm install --frozen-lockfile` — two relinks per sync. In matrx-frontend the shared
+# :3001 preview restarts on every node_modules change, so each sync of a not-adopted update (every
+# 30 min, ship-all 2026-10-15_15-14-02: api 0.1.24->0.1.26, then 0.1.26->0.1.24) recycled the one
+# dev server twice and dropped every agent's browser test. Now the trial runs in a scratch copy of
+# the folder outside the checkout; the checkout's node_modules is touched only to ADOPT, once, forward.
 def update_matrx_packages():
-    """Step 4: run every "sync:matrx-packages" script here, commit what it changed. Returns a line."""
+    """Step 4: run every "sync:matrx-packages" script in a trial tree, adopt what may ship. Returns a line."""
     dirs = []
     for manifest in ["package.json"] + sorted(glob.glob("*/package.json")):
         if "node_modules" in manifest or not os.path.isfile(manifest):
@@ -1646,73 +1695,75 @@ def update_matrx_packages():
     train = wait_for_publish_train()
     say(train)
     not_adopted = []
+    changed = []
     for d in dirs:
         tool = "npm" if os.path.isfile(os.path.join(d, "package-lock.json")) else "pnpm"
-        lock = os.path.join(d, "package-lock.json" if tool == "npm" else "pnpm-lock.yaml")
-        before = package_health(d, tool)
-        say("updating @ai-matrx packages to npm latest in %s/ (%s run sync:matrx-packages)..." % (d, tool))
-        try:
-            r = subprocess.run([tool, "run", "sync:matrx-packages"], cwd=d, capture_output=True,
-                               text=True, timeout=900)
-            ok, out = r.returncode == 0, (r.stdout + r.stderr).strip()
-        except (OSError, subprocess.TimeoutExpired) as e:
-            ok, out = False, str(e)
-        if not ok:
+        lock_name = "package-lock.json" if tool == "npm" else "pnpm-lock.yaml"
+        tmp, rels = make_trial_tree(d)
+        if tmp is None:
             failed.append(d)
-            say("PACKAGES NOT FULLY UPDATED in %s/ — the release may run on stale @ai-matrx packages:\n%s"
-                % (d, "\n".join("  " + l for l in out.splitlines()[-15:])))
-        mine = [os.path.normpath(os.path.join(d, f)) for f in PACKAGE_FILES]
-        rc, _, _ = git("diff", "--quiet", "HEAD", "--", *mine, check=False)
-        if rc == 0:
-            continue
-        after = package_health(d, tool)
-        broke = update_breaks_build(before, after)
-        if not broke:
-            continue
-        _, head_lock, _ = git("show", "HEAD:%s" % os.path.normpath(lock), check=False)
-        try:
-            with open(lock) as f:
-                new_lock = f.read()
-        except OSError:
-            new_lock = ""
-        old_v, new_v = locked_versions(head_lock), locked_versions(new_lock)
-        moved = ["%s %s -> %s" % (n, old_v.get(n, "(new)"), v) for n, v in sorted(new_v.items()) if old_v.get(n) != v]
-        git("checkout", "HEAD", "--", *[p for p in mine if blob_at("HEAD", p)], check=False)
-        install = [tool, "ci"] if tool == "npm" else [tool, "install", "--frozen-lockfile"]
-        try:
-            ri = subprocess.run(install, cwd=d, capture_output=True, text=True, timeout=900)
-            reinstalled = ri.returncode == 0
-        except (OSError, subprocess.TimeoutExpired):
-            reinstalled = False
-        not_adopted.append(d)
-        say("PACKAGE UPDATE NOT ADOPTED in %s/ — it would break the build and fixes nothing, so the "
-            "lockfile stays at HEAD%s. The package moved something this repo still uses: fix the "
-            "importers below (or restore the export in the package), and the next sync adopts it.\n"
-            "  versions it would have moved: %s\n  what it breaks:\n%s"
-            % (d, "" if reinstalled else " (REINSTALL FAILED — run `%s` there)" % " ".join(install),
-               ", ".join(moved[:12]) or "(none parsed)", "\n".join("    " + b for b in broke[:12])))
-    _, st, _ = git("status", "--porcelain", "--untracked-files=no")
-    changed = [l[3:].strip() for l in st.splitlines() if os.path.basename(l[3:].strip()) in PACKAGE_FILES]
-    # 2026-10-05: a lockfile naming a version whose tarball npm still 404s breaks every frozen
-    # install (CI, Vercel, the next agent) and left node_modules half-uninstalled. A FAILED update
-    # never commits a lockfile that names an unserved version: those files go back to HEAD.
-    for d in failed:
-        guard = os.path.join(d, "scripts", "check-matrx-lockfile.mjs")
-        if not os.path.isfile(guard):
+            say("PACKAGES NOT UPDATED in %s/ — %s" % (d, rels))
             continue
         try:
-            g = subprocess.run(["node", guard], cwd=d, capture_output=True, text=True, timeout=120)
-        except (OSError, subprocess.TimeoutExpired):
-            continue
-        if g.returncode != 1:
-            continue
-        mine = [p for p in changed if (os.path.dirname(p) or ".") == d]
-        if mine:
-            git("checkout", "HEAD", "--", *mine)
-            changed = [p for p in changed if p not in mine]
-            say("LOCKFILE NOT COMMITTED in %s/ — it named an @ai-matrx version npm does not serve yet; "
-                "restored %s from HEAD. Run `pnpm install` there if node_modules is incomplete:\n%s"
-                % (d, ", ".join(mine), "\n".join("  " + l for l in (g.stdout + g.stderr).strip().splitlines()[-8:])))
+            say("updating @ai-matrx packages to npm latest in %s/ (%s run sync:matrx-packages, in a trial "
+                "tree — this checkout's node_modules is not touched unless the update is adopted)..." % (d, tool))
+            try:
+                r = subprocess.run([tool, "run", "sync:matrx-packages"], cwd=tmp, capture_output=True,
+                                   text=True, timeout=1200)
+                ok, out = r.returncode == 0, (r.stdout + r.stderr).strip()
+            except (OSError, subprocess.TimeoutExpired) as e:
+                ok, out = False, str(e)
+            moved_files = [rel for rel in rels if os.path.basename(rel) in PACKAGE_FILES
+                           and _read(os.path.join(tmp, rel)) != _read(os.path.join(d, rel))]
+            if not ok:
+                failed.append(d)
+                say("PACKAGES NOT FULLY UPDATED in %s/ — the release may run on stale @ai-matrx packages:\n%s"
+                    % (d, "\n".join("  " + l for l in out.splitlines()[-15:])))
+                # 2026-10-05: a lockfile naming a version whose tarball npm still 404s breaks every
+                # frozen install (CI, Vercel, the next agent). A FAILED update is adopted only when
+                # its lockfile names versions npm serves.
+                guard = os.path.join(tmp, "scripts", "check-matrx-lockfile.mjs")
+                if moved_files and os.path.isfile(guard):
+                    try:
+                        g = subprocess.run(["node", guard], cwd=tmp, capture_output=True, text=True, timeout=120)
+                    except (OSError, subprocess.TimeoutExpired):
+                        g = None
+                    if g is not None and g.returncode == 1:
+                        say("LOCKFILE NOT ADOPTED in %s/ — it named an @ai-matrx version npm does not serve yet; "
+                            "this checkout keeps its lockfile and node_modules:\n%s"
+                            % (d, "\n".join("  " + l for l in (g.stdout + g.stderr).strip().splitlines()[-8:])))
+                        continue
+            if not moved_files:
+                continue
+            before = package_health(d, tool)
+            after = package_health(tmp, tool)
+            broke = update_breaks_build(before, after)
+            if broke:
+                old_v = locked_versions((_read(os.path.join(d, lock_name)) or b"").decode("utf-8", "replace"))
+                new_v = locked_versions((_read(os.path.join(tmp, lock_name)) or b"").decode("utf-8", "replace"))
+                moved = ["%s %s -> %s" % (n, old_v.get(n, "(new)"), v) for n, v in sorted(new_v.items()) if old_v.get(n) != v]
+                not_adopted.append(d)
+                say("PACKAGE UPDATE NOT ADOPTED in %s/ — it would break the build and fixes nothing, so the "
+                    "lockfile and node_modules stay as they are (the trial ran in a scratch tree; nothing was "
+                    "installed here). The package moved something this repo still uses: fix the importers "
+                    "below (or restore the export in the package), and the next sync adopts it.\n"
+                    "  versions it would have moved: %s\n  what it breaks:\n%s"
+                    % (d, ", ".join(moved[:12]) or "(none parsed)", "\n".join("    " + b for b in broke[:12])))
+                continue
+            # ADOPT: the judged package files come home, then ONE forward install here.
+            for rel in moved_files:
+                shutil.copyfile(os.path.join(tmp, rel), os.path.join(d, rel))
+            install = [tool, "ci"] if tool == "npm" else [tool, "install", "--frozen-lockfile"]
+            try:
+                ri = subprocess.run(install, cwd=d, capture_output=True, text=True, timeout=1200)
+                if ri.returncode != 0:
+                    say("ADOPTED in %s/ but `%s` there failed — run it by hand:\n%s"
+                        % (d, " ".join(install), "\n".join("  " + l for l in (ri.stdout + ri.stderr).strip().splitlines()[-8:])))
+            except (OSError, subprocess.TimeoutExpired) as e:
+                say("ADOPTED in %s/ but `%s` there did not finish (%s) — run it by hand." % (d, " ".join(install), e))
+            changed += [os.path.normpath(os.path.join(d, rel)) for rel in moved_files]
+        finally:
+            shutil.rmtree(tmp, ignore_errors=True)
     if changed:
         git("add", "--", *changed)
         git("commit", "--no-verify", "-q", "-m", "chore(deps): every @ai-matrx package to npm latest (sync-main)",

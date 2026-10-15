@@ -59,7 +59,7 @@ the dependent cell — an off-list value goes amber and the person decides.
 
 Univer workbooks and documents are their own features since 2026-10-07 (domain tree: content >
 workbooks, content > documents): `features/workbooks/FEATURE.md`, `features/documents/FEATURE.md`;
-the shared Univer runtime is `@ai-matrx/office src/univer/`, the Yjs collab provider `@ai-matrx/realtime/collab`. Guard:
+the shared Univer runtime is `@ai-matrx/office src/univer/`, the Yjs collab provider `@ai-matrx/data/realtime/collab`. Guard:
 `__tests__/univer-documents-and-workbooks-live-outside-data-tables.test.ts`.
 
 ## Validation rules — what a column ACCEPTS (2026-09-14)
@@ -137,7 +137,7 @@ The table page listens through `useRecordStoreTableRealtime` (the store's broadc
 `createRecordsRealtimePort` from `@ai-matrx/records/realtime`, bound once per organization in `records-ui-host/recordsUiHost.tsx`): record ids come down the wire and are
 re-read through the store's id door; "the shape moved" triggers a metadata read. This browser's
 own writes never arrive (every write carries an op id the port drops). Workbook collab rides
-`@ai-matrx/realtime` (`SupabaseYjsProvider` as a broadcast room; `collab/FEATURE.md`).
+`@ai-matrx/data/realtime` (`SupabaseYjsProvider` as a broadcast room; `collab/FEATURE.md`).
 
 ## Change log
 

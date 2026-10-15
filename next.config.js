@@ -364,8 +364,13 @@ const nextConfig = {
     // scripts/build-cache.mjs does (S3, 2026-10-10). ON only for the profiles in
     // scripts/build-cache-policy.cjs, and never for a [no-cache] release.
     turbopackFileSystemCacheForBuild: require("./scripts/build-cache-policy.cjs").buildCacheDecision().on,
-    // Avoid the dev snapshot-coordinator panic that drops active review pages.
-    turbopackFileSystemCacheForDev: false,
+    // ON again (2026-10-15, trial with the watchdog's crash-loop budget as the net). It was turned
+    // off 2026-09-14 for a dev "snapshot-coordinator panic"; with it off, Turbopack's memory
+    // eviction is off too (eviction only runs with this cache), so the shared preview grew ~2 GB a
+    // minute to the 48 GB cap — the week's biggest single stop reason (40 cap stops in 12 sessions)
+    // — and every restart was a cold compile of minutes under load. If the panic returns
+    // ("panic" / "snapshot" in the preview log), set this back to false and say so here.
+    turbopackFileSystemCacheForDev: true,
     // ON (2026-08-11): enables `forbidden()` / `unauthorized()` from
     // next/navigation and their `forbidden.tsx` / `unauthorized.tsx`
     // boundaries. Required by `requireAccess(..., { forbid: true })` —

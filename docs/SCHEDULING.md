@@ -383,7 +383,7 @@ All four tables are RLS-protected with owner-only policies: a row is readable / 
 
 ## 10. Real-time updates (optional, but recommended)
 
-Live updates ride `@ai-matrx/realtime` — never a hand-rolled `supabase.channel(...)` (the
+Live updates ride `@ai-matrx/data/realtime` — never a hand-rolled `supabase.channel(...)` (the
 package owns reconnect, the mandatory `onBackfill` catch-up, echo suppression and dedup; a raw
 channel silently goes stale after a laptop sleep). This repo's scheduler surfaces already do
 this: `@ai-matrx/data/scheduler` opens the `scheduler-user` private-broadcast channel
@@ -391,8 +391,8 @@ with `wire: raw` and a `resync` door. For a per-task Run History view, declare a
 use the hook:
 
 ```ts
-import { defineChannelNamespace } from "@ai-matrx/realtime";
-import { useChannel } from "@ai-matrx/realtime/react";
+import { defineChannelNamespace } from "@ai-matrx/data/realtime";
+import { useChannel } from "@ai-matrx/data/realtime/react";
 
 const schRuns = defineChannelNamespace("sch-runs");
 

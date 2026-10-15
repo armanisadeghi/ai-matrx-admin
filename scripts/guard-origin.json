@@ -2,7 +2,7 @@
   "$comment": "WRITTEN BY aidream/scripts/sync_ts_package_guard.mjs. Never edit by hand. It names the aidream commit each guard family in this directory was distributed FROM, so this root can always say where its guard came from.",
   "originRepo": "aidream",
   "packagesGuard": {
-    "commit": "13d8f950d6e005c67490daa452109a0464987cac",
+    "commit": "1c7b4141fcd58998d5394de4dba1096dc65ae7fd",
     "files": [
       "check-matrx-packages.mjs"
     ]
@@ -21,7 +21,7 @@
     ]
   },
   "twinsCatalog": {
-    "commit": "9175c08da55fffa82cea34e4a2e5f91619ccbb2d",
+    "commit": "976a9f13e14e5e939ddc8ef63e15676642f4e7b5",
     "file": "package-twins.json"
   }
 }
