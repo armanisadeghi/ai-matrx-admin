@@ -21,7 +21,8 @@
 import { useState, type ReactNode } from "react";
 import { useOpenNotionImport } from "@/features/spaces/io/NotionImportDoor";
 import { useRouter } from "next/navigation";
-import { RecordsMount, TablePage, TablePageSkeleton, WhereItLives, skeletonLayoutFor } from "@ai-matrx/records-ui";
+import { OpeningTablePage } from "./OpeningTablePage";
+import { RecordsMount, TablePageSkeleton, WhereItLives, skeletonLayoutFor } from "@ai-matrx/records-ui";
 import type { PageView, RecordsMountProps, TablePageActionHost, ViewAddressState } from "@ai-matrx/records-ui";
 import type { RecordFilter } from "@ai-matrx/records";
 import { Button } from "@ai-matrx/design-system";
@@ -346,7 +347,8 @@ export function UnifiedTableBody({
     <>
       {before}
       <RecordStoreTableSurface channel={mount.gridContext} enabled={mount.mergedGrid} tableId={tableId}>
-        <TablePage
+        <OpeningTablePage
+          organizationId={mount.readingOrganizationId}
           tableId={tableId}
           onLeave={onLeave}
           activeDashboardId={address.dashboard}

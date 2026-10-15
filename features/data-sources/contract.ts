@@ -191,7 +191,11 @@ export function parseCatalog(raw: unknown): DataSourceCatalog {
       },
       example_url: str(s.example_url),
       url_pattern: urlPatternOf(s.url_pattern),
-      output_fields: Array.isArray(s.output_fields) ? s.output_fields.filter((f): f is string => typeof f === "string") : [],
+      output_fields: Array.isArray(s.output_fields)
+        ? s.output_fields
+            .map((f: unknown) => (typeof f === "string" ? f : str((f as { name?: unknown } | null)?.name)))
+            .filter((f: string | null | undefined): f is string => typeof f === "string" && f.length > 0)
+        : [],
       verified: s.verified === true,
       usd_per_record: price.usd,
       points_per_record: price.points,

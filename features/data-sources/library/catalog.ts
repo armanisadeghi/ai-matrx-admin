@@ -299,7 +299,7 @@ export function librarySections(sources: readonly LibrarySource[], minList = COM
 }
 
 /** Identity columns (a link, an id) say little on a card: they go after the telling ones. */
-const plumbing = (f: string) => /^(url|id)$|\b(url|id)$/i.test(f.trim());
+const plumbing = (f: string) => /(^|[\s_.-])(url|id)$/i.test(f.trim());
 
 /** Every field, the telling ones first and the identity columns (link, id) last. */
 export function orderTellingFields(fields: readonly string[]): string[] {
