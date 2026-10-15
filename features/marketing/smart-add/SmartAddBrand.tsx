@@ -18,12 +18,12 @@
 
 import { useEffect, useEffectEvent, useLayoutEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Check, ExternalLink, Globe, Loader2, RotateCcw, X } from "lucide-react";
+import { Check, ExternalLink, Globe, Loader2, RotateCcw, TriangleAlert, X } from "lucide-react";
 import { Button, Field, SegmentedControl, Select, type SelectOption } from "@ai-matrx/design-system/controls";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import { useWorkflowRunControls } from "@/features/workflow-runtime/hooks/useWorkflowRunControls";
-import { isFailedEntry, quietMs, sessionEntry } from "./entryOutcome";
+import { isFailedEntry, quietMs, sessionEntry, siteReadFailure, siteReadLine, stepCouldNotRead } from "./entryOutcome";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
 import { useCostDisplay } from "@/components/cost/useCostDisplay";
@@ -35,7 +35,7 @@ import { gateCreate } from "./createGate";
 import { useExistingBrands } from "./useExistingBrands";
 import { ExistingBrandNotice } from "./ExistingBrandNotice";
 import { smartAddEnrichHref } from "./smartAddUrl";
-import { factSlotKey } from "./firstData";
+import { factSlotKey, typedWebsiteItem } from "./firstData";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { formatCount } from "@ai-matrx/kit/format";
 import { startSystemRun } from "@/features/education/kits/systemRuns";
@@ -550,6 +550,9 @@ export function SmartAddBrand({
       socials: typedSocial && typedSocialKey && !base.has(typedSocialKey) ? [typedSocial] : [],
     };
     typedKeys.current = { website: typedWebsiteKey ?? prev.website, social: typedSocialKey ?? prev.social };
+    // The typed website is a Websites row from the first moment, whether or not the site lets us read it.
+    const typedSite = seeds.website ? typedWebsiteItem(seeds.website) : null;
+    if (typedSite) onEvidence([typedSite]);
     void startRound(seeds, {}, true);
   });
 
@@ -885,10 +888,13 @@ export function SmartAddBrand({
     roundViews.some((v) => !!v && !TERMINAL.includes(v.status ?? ""));
   const failedRound =
     rounds.some((r) => Boolean(r.error)) || roundViews.some((v) => roundFailed(v));
+  // A step that already said it could not open the site is not still "reading" it.
   const progressLines = roundViews
     .flatMap((v) => v?.steps ?? [])
-    .filter((s) => s.phase === "running" && s.progress)
+    .filter((s) => s.phase === "running" && s.progress && !stepCouldNotRead(s))
     .map((s) => s.progress as string);
+  // The typed site refused or timed out: the screen says so (its rows came from the web instead).
+  const siteUnread = rounds.map((r, i) => siteReadFailure(roundViews[i], r.seeds.website)).find(Boolean) ?? null;
   // Every paid step of every round (anchor searches and profile lookups included) and the setup run: never
   // "Free so far" after a paid lookup (PEOPLE-AND-CREATORS §10).
   const costUsd =
@@ -1678,6 +1684,12 @@ export function SmartAddBrand({
         ) : (
           <span className="truncate">Enter a website or a social link</span>
         )}
+        {siteUnread ? (
+          <span className="flex min-w-0 shrink items-center gap-1 truncate" data-testid="smart-add-site-unread">
+            <TriangleAlert className="size-3 shrink-0 text-warning" />
+            <span className="truncate">{siteReadLine(siteUnread)}</span>
+          </span>
+        ) : null}
         <span className="ml-auto shrink-0 tabular-nums">
           {rounds.length ? (costUsd > 0 ? format(costUsd) : "Free so far") : null}
         </span>

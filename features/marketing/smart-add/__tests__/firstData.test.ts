@@ -1,5 +1,5 @@
 import { mergeEvidence } from "../evidence";
-import { brandNameFromPayload, factEvidence, webFirstData } from "../firstData";
+import { brandNameFromPayload, factEvidence, factSlotKey, typedWebsiteItem, webFirstData } from "../firstData";
 import type { BrandFact } from "../validate/queue";
 
 // Recorded live on 2026-10-14 (run 363ea8bb, fullspecstaff.com): the site answers a bot wall, so the quick
@@ -74,5 +74,53 @@ describe("factEvidence", () => {
       "Full Spectrum Search Group",
     );
     expect(brandNameFromPayload({ content: "no kind here" })).toBeNull();
+  });
+});
+
+// Recorded live on 2026-10-15 (run 0f75b0ca, a coffee roaster typed as its website): the site answered 403 and the
+// scraper timed out, so the page read found nothing — yet the facts agent found the website [confirmed], a logo, two
+// taglines and a short description. Websites, Logo & images and About all said "Nothing found".
+describe("an unreadable site still fills its slots", () => {
+  const recorded = (field: string, value: string, certainty: string, url: string): BrandFact => ({
+    key: `fact:${field}:${value.toLowerCase()}`, field, field_label: field, value, certainty, reason: `${field} from ${url}`,
+    evidence_urls: [url], known_field: "true",
+  });
+  const FACTS = [
+    recorded("website", "https://www.dynamiteroasting.com", "confirmed", "https://www.dynamiteroasting.com/contact/"),
+    recorded("logo_url", "https://media.licdn.com/dms/image/C4D0/company-logo_200_200/0/1630550424733/logo?e=2147483647&amp;v=beta", "likely", "https://www.linkedin.com/company/x"),
+    recorded("tagline", "Pow! Coffee Now!", "likely", "https://www.facebook.com/x/"),
+    recorded("tagline", "Coffee for Everyone!", "likely", "https://incredibletowns.com/x/"),
+    recorded("short_description", "Amazing Fairtrade & Organic coffee roasted in the mountains of North Carolina.", "likely", "https://www.linkedin.com/company/x"),
+    recorded("business_category", "Coffee shop", "likely", "https://www.facebook.com/x/"),
+  ];
+
+  it("the typed website is a Websites row before anything is read, under the server's own key", () => {
+    const site = typedWebsiteItem("dynamiteroasting.com");
+    expect(site?.key).toBe("website:dynamiteroasting.com");
+    expect(site?.field).toBe("website");
+    expect(site?.source.where).toBe("the address itself");
+    expect(typedWebsiteItem("linktr.ee/someone")).toBeNull();
+    expect(typedWebsiteItem("")).toBeNull();
+  });
+
+  it("the facts agent's website, logo, taglines, description and category land in their slots with their certainty", () => {
+    const rows = factEvidence(FACTS, null);
+    const of = (f: string) => rows.filter((i) => i.field === f);
+    expect(of("website").map((i) => [i.key, i.certainty])).toEqual([["website:dynamiteroasting.com", "certain"]]);
+    expect(of("logo")[0]?.image_url).toBe("https://media.licdn.com/dms/image/C4D0/company-logo_200_200/0/1630550424733/logo?e=2147483647&v=beta");
+    expect(of("logo")[0]?.certainty).toBe("likely");
+    expect(of("tagline").map((i) => i.value)).toEqual(["Pow! Coffee Now!", "Coffee for Everyone!"]);
+    expect(of("description")).toHaveLength(1);
+    expect(of("category").map((i) => i.value)).toEqual(["Coffee shop"]);
+    // The fact's slot key is the row's key, so an answer on the slot is the fact's answer at Create.
+    for (const f of FACTS) expect(rows.map((r) => r.key)).toContain(factSlotKey(f));
+  });
+
+  it("the agent's website merges into the typed row — one Websites row, never two", () => {
+    const typed = typedWebsiteItem("dynamiteroasting.com");
+    const merged = mergeEvidence(new Map(), typed ? [typed] : []);
+    expect(merged.size).toBe(1);
+    const after = mergeEvidence(merged, factEvidence(FACTS, null));
+    expect([...after.values()].filter((i) => i.field === "website")).toHaveLength(1);
   });
 });

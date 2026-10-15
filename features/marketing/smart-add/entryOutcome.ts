@@ -105,6 +105,45 @@ export function inferEntryOutcome(
   return hit ? { status: hit[1], subject: "website", input: typed.website, platform: null } : null;
 }
 
+/** A page-read note that says the site's own pages could not be opened (aidream brand_identify_page notes). */
+const SITE_UNREAD = /could not be read|is not reachable/i;
+
+/** The step's notes say it could not open the site (its progress line, e.g. "the long way", is over). */
+export function stepCouldNotRead(step: Pick<RoundView["steps"][number], "step" | "notes">): boolean {
+  return (step.step === "page" || step.step === "probe") && step.notes.some((n) => SITE_UNREAD.test(n));
+}
+
+/**
+ * The typed site could not be read (a bot wall, a timeout) even though the round went on and found it on the web:
+ * the page read's own note says so. The screen names it instead of leaving the site's rows quietly empty.
+ */
+export function siteReadFailure(
+  view: Pick<RoundView, "steps"> | null | undefined,
+  website: string,
+): (EntryOutcome & { subject: "website" }) | null {
+  if (!view || !website.trim()) return null;
+  const page = view.steps.filter((s) => s.step === "page").flatMap((s) => s.notes);
+  if (!page.some((n) => SITE_UNREAD.test(n))) return null;
+  const note = [...view.steps.filter((s) => s.step === "probe").flatMap((s) => s.notes), ...page].join(" ");
+  const hit = SITE_NOTE.find(([re]) => re.test(note));
+  return { status: hit?.[1] ?? "site_error", subject: "website", input: website.trim(), platform: null };
+}
+
+/** The one short line for a site that could not be read. */
+export function siteReadLine(o: Pick<EntryOutcome, "status" | "subject" | "input">): string {
+  const who = entryLabel(o);
+  switch (o.status) {
+    case "blocked":
+      return `${who} blocked our reader`;
+    case "timed_out":
+      return `${who} didn't answer`;
+    case "no_such_site":
+      return `${who} doesn't exist`;
+    default:
+      return `Couldn't read ${who}`;
+  }
+}
+
 /**
  * The run could not be read back: the attach read was refused, or a FINISHED run came back with no step data at all
  * (every step idle, no notes) and nothing found. Shown as "Couldn't load this run" with a retry — never as an answer

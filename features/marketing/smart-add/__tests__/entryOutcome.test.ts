@@ -8,7 +8,10 @@ import {
   quietMs,
   replayUnreadable,
   sessionEntry,
+  siteReadFailure,
+  siteReadLine,
   stagePhase,
+  stepCouldNotRead,
   websiteProblem,
   type EntryOutcome,
   type StageInputs,
@@ -178,5 +181,31 @@ describe("sessionEntry — only a positive signal says doesn't exist", () => {
   it("the server's own not-found answer stands", () => {
     const server = { ...notFoundRound, view: { status: "completed", steps: [], entry: { status: "not_found" as const, subject: "account" as const, input: "x", platform: "instagram" } } };
     expect(sessionEntry([server], false).outcome?.status).toBe("not_found");
+  });
+});
+
+describe("siteReadFailure", () => {
+  // Recorded notes from run 0f75b0ca (2026-10-15): a 403 on the quick check, then the scraper timed out.
+  const view = {
+    steps: [
+      { step: "probe", phase: "completed", progress: null, notes: ["dynamiteroasting.com could not be read directly: the site answered 403"], costUsd: 0, skipped: false },
+      { step: "page", phase: "running", progress: "Reading dynamiteroasting.com the long way", notes: ["dynamiteroasting.com could not be read: request_error"], costUsd: 0, skipped: false },
+    ],
+  };
+
+  it("names a site that blocked the read, even when the round found it on the web", () => {
+    const o = siteReadFailure(view, "dynamiteroasting.com");
+    expect(o?.status).toBe("blocked");
+    expect(o && siteReadLine(o)).toBe("dynamiteroasting.com blocked our reader");
+  });
+
+  it("a step that said it could not read the site is no longer 'reading it the long way'", () => {
+    expect(stepCouldNotRead(view.steps[1])).toBe(true);
+    expect(stepCouldNotRead({ step: "page", notes: [] })).toBe(false);
+  });
+
+  it("is null when the page was read, or nothing was typed", () => {
+    expect(siteReadFailure({ steps: [{ ...view.steps[1], notes: [] }] }, "dynamiteroasting.com")).toBeNull();
+    expect(siteReadFailure(view, "")).toBeNull();
   });
 });

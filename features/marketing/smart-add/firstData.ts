@@ -13,7 +13,8 @@
  *     simply added to its slot.
  */
 
-import type { EvidenceField, EvidenceItem, EvidenceSource } from "./evidence";
+import { isLinkInBioUrl } from "../lib/link-in-bio";
+import { websiteHost, type Certainty, type EvidenceField, type EvidenceItem, type EvidenceSource } from "./evidence";
 import type { BrandFact } from "./validate/queue";
 
 function hostOf(url: unknown): string {
@@ -47,6 +48,7 @@ export function evidenceKey(field: EvidenceField, value: string): string {
   const v = value.replace(/\s+/g, " ").trim().toLowerCase();
   if (field === "phone") return `phone:${v.replace(/\D/g, "").slice(-10)}`;
   if (field === "description") return `description:${v.slice(0, 80)}`;
+  if (field === "website") return `website:${websiteHost(v)}`;
   return `${field}:${v}`;
 }
 
@@ -140,13 +142,50 @@ export function brandNameFromPayload(payload: unknown, depth = 0): string | null
   return null;
 }
 
-/** The facts agent's fields that land in a slot (validate/queue keeps every fact for the validation page). */
-const FACT_SLOT: Record<string, EvidenceField> = { name: "name", phone: "phone", email: "email", category: "category" };
+/**
+ * The facts agent's fields that land in a slot (validate/queue keeps every fact for the validation page). A slot the
+ * site read left empty (a bot wall, a timeout) is filled by what the agent found, as a suggestion with its certainty.
+ */
+const FACT_SLOT: Record<string, EvidenceField> = {
+  name: "name",
+  phone: "phone",
+  email: "email",
+  category: "category",
+  business_category: "category",
+  website: "website",
+  website_url: "website",
+  logo: "logo",
+  logo_url: "logo",
+  short_description: "description",
+  description: "description",
+  about: "description",
+  tagline: "tagline",
+  slogan: "tagline",
+};
 
-/** The slot finding's key a fact fed (name / phone / email / category), so the person's answer there is the fact's. */
+function factField(f: BrandFact): EvidenceField | null {
+  return FACT_SLOT[f.known_field ?? ""] ?? FACT_SLOT[f.field] ?? null;
+}
+
+/** The fact's value as its slot holds it: URLs decoded (`&amp;` in a scraped logo address), websites as addresses. */
+function factValue(field: EvidenceField, value: string): string | null {
+  const v = field === "logo" || field === "website" ? value.replace(/&amp;/g, "&").trim() : value.trim();
+  if (!v) return null;
+  if (field === "website") {
+    if (isLinkInBioUrl(v)) return null; // a link-in-bio page is never the brand's website
+    return /^https?:\/\//i.test(v) ? v : `https://${v}`;
+  }
+  if (field === "logo" && !/^https?:\/\//i.test(v)) return null;
+  return v;
+}
+
+const FACT_CERTAINTY: Record<string, Certainty> = { confirmed: "certain", certain: "certain", likely: "likely", possible: "possible" };
+
+/** The slot finding's key a fact fed (name / phone / email / category / website / logo / about), so the person's answer there is the fact's. */
 export function factSlotKey(f: BrandFact): string | null {
-  const field = FACT_SLOT[f.known_field ?? ""] ?? FACT_SLOT[f.field];
-  return field ? evidenceKey(field, f.value) : null;
+  const field = factField(f);
+  const value = field ? factValue(field, f.value) : null;
+  return field && value ? evidenceKey(field, value) : null;
 }
 
 /** The facts agent's findings as slot rows, merged under the server's keys (added or refined, never reset). */
@@ -155,10 +194,32 @@ export function factEvidence(facts: BrandFact[], brandName: string | null): Evid
   const out: EvidenceItem[] = [];
   if (brandName) out.push(item("name", brandName, src(null), 0.85));
   for (const f of facts) {
-    const field = FACT_SLOT[f.known_field ?? ""] ?? FACT_SLOT[f.field];
+    const field = factField(f);
     if (!field || f.conflict_with) continue;
+    const value = factValue(field, f.value);
+    if (!value) continue;
     const confidence = f.certainty === "confirmed" ? 0.85 : f.certainty === "likely" ? 0.7 : 0.5;
-    out.push(item(field, f.value, src(f.evidence_urls[0] ?? null), confidence));
+    const extra: Partial<EvidenceItem> = {
+      certainty: FACT_CERTAINTY[f.certainty] ?? "possible",
+      ...(f.reason ? { certainty_reasons: [f.reason] } : {}),
+      ...(field === "website" ? { url: value, label: websiteHost(value) } : {}),
+      ...(field === "logo" ? { url: value, image_url: value } : {}),
+    };
+    out.push(item(field, value, src(f.evidence_urls[0] ?? null), confidence, extra));
   }
   return out;
+}
+
+/**
+ * The website the person typed, as its own Websites row from the first moment — whether or not the site lets us read
+ * it (a bot wall, a timeout). Same key and source as the server's quick-check row (aidream brand_identify
+ * probe_evidence: "the address itself"), so a successful read merges into it instead of adding a second row.
+ */
+export function typedWebsiteItem(typed: string): EvidenceItem | null {
+  const raw = typed.trim();
+  if (!raw || isLinkInBioUrl(raw)) return null;
+  const host = websiteHost(raw);
+  if (!host || !host.includes(".")) return null;
+  const url = `https://${host}`;
+  return item("website", url, { node: "probe", kind: "website", url, where: "the address itself" }, 0.9, { url, label: host });
 }
