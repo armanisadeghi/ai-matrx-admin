@@ -748,10 +748,11 @@ export function SmartAddBrand({
 
   // Smart Add helpers (focused-session windows): they search with what this round knows, and their
   // "This is me / Not me / Namesake" answers land here exactly like an anchor card's.
-  const helperAnswer = useEffectEvent((item: EvidenceItem, answer: AnchorAnswer | null) => {
+  const applyHelperAnswer = (item: EvidenceItem, answer: AnchorAnswer | null) => {
     setItems((cur) => mergeEvidence(cur, [item]));
     answerAnchor(item, answer);
-  });
+  };
+  const helperAnswer = useEffectEvent(applyHelperAnswer);
   useEffect(() => onHelperAnswer((c, a) => helperAnswer(candidateItem(c), a)), []);
 
   /** A job, company or major affiliation also grounds a person (Part 9); it starts the grounded round. */
@@ -767,7 +768,7 @@ export function SmartAddBrand({
    *  it); an employer bio page or licence record is a page anchor; any other page only teaches clues. */
   const confirmFound = (c: HarderCandidate) => {
     if (c.bucket === "social" || c.bucket === "directory" || c.anchor_kind === "personal_site") {
-      helperAnswer(candidateItem(c), "me");
+      applyHelperAnswer(candidateItem(c), "me");
       return;
     }
     if (c.firm) setPageAnchors((cur) => (cur.includes(c.url) ? cur : [...cur, c.url]));
