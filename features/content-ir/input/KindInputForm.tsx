@@ -60,6 +60,10 @@ import {
   type KindInputPair,
 } from "./kind-input-values";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import {
+  humanizeStructuralMessage,
+  unclaimedStructuralMessages,
+} from "@/features/content-ir/input/humanize-structural-error";
 
 export interface KindInputFormProps {
   /** Canonical kind slug — the form resolves everything else from it. */
@@ -337,6 +341,11 @@ export default function KindInputForm({
     structuralDetail ?? undefined,
     pairs.map((pair) => pair.fieldKey),
   );
+  const formLevelMessages = unclaimedStructuralMessages(
+    structuralDetail,
+    attributed,
+    showFields,
+  );
 
   return (
     <form
@@ -419,7 +428,7 @@ export default function KindInputForm({
                     className="flex items-start gap-1.5 font-mono text-[11px] text-red-700 dark:text-red-300"
                   >
                     <X className="mt-0.5 h-3 w-3 shrink-0" />
-                    {message}
+                    {humanizeStructuralMessage(message)}
                     <ErrorAlchemyMenu error={message} />
                   </p>
                 ))}
@@ -454,20 +463,17 @@ export default function KindInputForm({
 
       {/* Unattributed / form-level structural errors, verbatim — attribution is
           best-effort string parsing and must never be the only view. */}
-      {structuralDetail && (
+      {formLevelMessages.length > 0 && (
         <div className="space-y-0.5 rounded-md border border-red-500/30 bg-red-500/5 px-3 py-2">
           <p className="text-[11px] font-medium text-red-700 dark:text-red-300">
             Doesn&apos;t match the shape:
           </p>
-          {(attributed.formLevel.length > 0
-            ? attributed.formLevel
-            : [structuralDetail]
-          ).map((message) => (
+          {formLevelMessages.map((message) => (
             <p
               key={message}
-              className="font-mono text-[11px] text-red-700 dark:text-red-300"
+              className="text-[11px] text-red-700 dark:text-red-300"
             >
-              {message}
+              {humanizeStructuralMessage(message)}
               <ErrorAlchemyMenu error={message} />
             </p>
           ))}

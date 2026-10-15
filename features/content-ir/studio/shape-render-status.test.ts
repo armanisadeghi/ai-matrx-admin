@@ -152,7 +152,7 @@ describe("deriveShapeRenderStatus", () => {
       }),
     );
     expect(status.problems).toEqual([
-      "This shape's family classifies it as data-only (no render leg expected) — but it has an active component and renders as itself. That looks like a family mismatch worth checking.",
+      "Marked as data only, yet it has its own view.",
     ]);
   });
 
@@ -197,7 +197,7 @@ describe("deriveShapeRenderStatus", () => {
     );
     expect(status.problems).toHaveLength(3);
     expect(status.problems[0]).toMatch(/not live/);
-    expect(status.problems[1]).toMatch(/data-only/);
+    expect(status.problems[1]).toMatch(/data only/);
     expect(status.problems[2]).toMatch(/turned off/);
   });
 });

@@ -45,3 +45,28 @@ export function humanizeStructuralMessage(message: string): string {
   if (shorter) return `${prefix}needs at least ${shorter[1]} items`;
   return `${prefix}${rest}`.trim();
 }
+
+/**
+ * The messages a form shows under its fields: what no field claimed. When the
+ * fields are hidden (JSON view) or nothing was attributed, every message lands
+ * here, one per entry — never the joined validator string.
+ */
+export function unclaimedStructuralMessages(
+  detail: string | null | undefined,
+  attributed: { byField: Record<string, string[]>; formLevel: string[] },
+  fieldsShown: boolean,
+): string[] {
+  if (!detail) return [];
+  if (attributed.formLevel.length > 0) return attributed.formLevel;
+  const claimed = Object.values(attributed.byField).flat().length;
+  if (fieldsShown && claimed > 0) return [];
+  return [
+    ...new Set(
+      detail
+        .replace(/^sample failed schema: /, "")
+        .split("; ")
+        .map((m) => m.trim())
+        .filter((m) => m !== ""),
+    ),
+  ];
+}

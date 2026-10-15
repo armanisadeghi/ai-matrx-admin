@@ -99,7 +99,7 @@ export function deriveShapeRenderStatus(
 
   if (dataOnly) {
     problems.push(
-      "This shape's family classifies it as data-only (no render leg expected) — but it has an active component and renders as itself. That looks like a family mismatch worth checking.",
+      "Marked as data only, yet it has its own view.",
     );
   }
 

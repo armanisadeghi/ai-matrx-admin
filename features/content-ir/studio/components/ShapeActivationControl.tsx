@@ -216,8 +216,8 @@ export default function ShapeActivationControl({
               {isActive
                 ? describeLiveRender(sharedView)
                 : verdict?.renderOk
-                  ? "Already renders through its registered component — activation is what makes it bindable to an agent's output."
-                  : "Renders through the generic JSON viewer and cannot be bound to an agent."}
+                  ? "Has its own view; turn on to bind it to agents"
+                  : "Shows as plain data; not bindable to agents yet"}
             </p>
           </div>
         </div>
@@ -296,18 +296,12 @@ export default function ShapeActivationControl({
           <div className="mt-2 space-y-2 border-t border-border pt-2">
             <p className="flex items-start gap-1.5 text-xs text-amber-700 dark:text-amber-300">
               <CircleAlert className="mt-0.5 h-3 w-3 shrink-0" />
-              <span>
-                This shape&apos;s family classifies it as data-only (no render
-                leg expected) — but it has an active render component. That
-                looks like a family mismatch worth checking.
-              </span>
+              <span>Marked as data only, yet it has its own view.</span>
             </p>
           </div>
         ) : (
           <p className="mt-2 border-t border-border pt-2 text-xs text-muted-foreground">
-            This shape is a data-only contract kind — it carries structured
-            data but is never rendered on screen, so no component is
-            required.
+            Data only — never shown on screen, so it needs no view.
           </p>
         )
       ) : null}
