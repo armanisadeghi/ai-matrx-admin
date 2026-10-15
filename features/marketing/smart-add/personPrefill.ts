@@ -6,6 +6,8 @@
  */
 import { linkInBioService } from "@/features/marketing/lib/link-in-bio";
 import { resolveAccountInput } from "@/features/marketing/social/account-input";
+import { learnFediverseFromText } from "@/features/marketing/social/fediverse";
+import { fediverseProfileShape } from "@/features/marketing/social/profile-sites";
 import type { SmartAddPrefill } from "./smartAddUrl";
 
 export function personExtraPrefill(person: boolean, initial: Pick<SmartAddPrefill, "name" | "social"> | undefined): string {
@@ -28,4 +30,17 @@ export function profileLinkIn(...texts: (string | null | undefined)[]): string |
     }
   }
   return null;
+}
+
+/**
+ * A Mastodon profile on its own server reads as a website until its host is checked (MKT-102), so a link typed in a
+ * Person box was dropped by {@link profileLinkIn} (MKT-119). Check every `host/@user` token first (free, cached by
+ * host); `profileLinkIn` then sees the account. Resolves when every check has answered. A failed check is a miss.
+ */
+export async function learnProfileLinkHosts(
+  texts: (string | null | undefined)[],
+  onLearned?: (host: string, url: string) => void,
+): Promise<void> {
+  const tokens = texts.flatMap((t) => (t ?? "").split(/[\s,;]+/)).map((raw) => raw.replace(/^[(<"']+|[)>"'.]+$/g, ""));
+  await Promise.all(tokens.filter((t) => fediverseProfileShape(t)).map((t) => learnFediverseFromText(t, { onLearned }).catch(() => false)));
 }

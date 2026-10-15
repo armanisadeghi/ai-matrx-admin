@@ -1,4 +1,5 @@
 import { parseEvidenceItem } from "../evidence";
+import { brandNameFromLive, brandNameFromPayload, factEvidence } from "../firstData";
 import { isPlaceholderName } from "../placeholderName";
 
 const raw = (over: Record<string, unknown>) => ({
@@ -20,5 +21,17 @@ describe("MKT-107 — a placeholder is never a name", () => {
     const item = parseEvidenceItem(raw({ field: "social", value: "https://github.com/x", label: "UNKNOWN" }));
     expect(item?.label).toBeNull();
     expect(item?.value).toBe("https://github.com/x");
+  });
+});
+
+describe("MKT-107 — the facts agent's UNKNOWN never becomes the header or a name card", () => {
+  it("brand_name UNKNOWN is no name (finished and forming)", () => {
+    expect(brandNameFromPayload({ __kind: "brand_basics", brand_name: "UNKNOWN" })).toBeNull();
+    expect(brandNameFromPayload({ __kind: "brand_basics", brand_name: "Deno" })).toBe("Deno");
+    expect(brandNameFromLive({ kind: "brand_basics", value: { brand_name: "UNKNOWN", facts: [] } })).toBeNull();
+  });
+  it("factEvidence offers no name row for UNKNOWN", () => {
+    expect(factEvidence([], "UNKNOWN").some((i) => i.field === "name")).toBe(false);
+    expect(factEvidence([], "Deno").some((i) => i.field === "name")).toBe(true);
   });
 });

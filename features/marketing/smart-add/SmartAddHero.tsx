@@ -40,7 +40,8 @@ import { profileAvatarDoor } from "@/features/marketing/social/server";
 import type { SocialPlatform } from "@/features/marketing/social/types";
 import { linkInBioService } from "@/features/marketing/lib/link-in-bio";
 import { emailIn } from "./emailInput";
-import { personExtraPrefill, profileLinkIn } from "./personPrefill";
+import { learnProfileLinkHosts, personExtraPrefill, profileLinkIn } from "./personPrefill";
+import { teachFediverseHost } from "./learnDomains";
 import { useFediverseHost } from "./useFediverseHost";
 import { customItem, websiteHost, type EvidenceItem } from "./evidence";
 import type { RoundView } from "./SmartAddRound";
@@ -191,8 +192,8 @@ export function SmartAddHero({
   // link-started round and a pressed Go show the same stage from the first moment.
   const [starting, setStarting] = useState(false);
 
-  useFediverseHost(social);
-  const parsed = resolveAccountInput({ text: social, picked });
+  const learned = useFediverseHost(social);
+  const parsed = resolveAccountInput({ text: social, picked, learned });
   // Up-front checks: an address or handle that cannot exist never starts a paid run; the reason shows inline.
   const siteProblem = websiteProblem(site);
   const handleIssue = parsed.status === "ok" ? handleProblem(parsed.platform, parsed.handle) : null;
@@ -206,7 +207,7 @@ export function SmartAddHero({
   const bioLink = social.trim() && linkInBioService(social) ? social.trim() : null;
   const socialOkFor = (pk: SocialPlatform | null) => {
     if (bioLink) return false;
-    const p = resolveAccountInput({ text: social, picked: pk });
+    const p = resolveAccountInput({ text: social, picked: pk, learned });
     return p.status === "ok" && (p.detected || Boolean(pk)) && !handleProblem(p.platform, p.handle);
   };
   // The one inline problem the entry row shows (only for what the open card holds). An email in the main box
@@ -277,7 +278,7 @@ export function SmartAddHero({
         setAskedClue(true);
         return;
       }
-      findPerson({ occupation: occupation.trim(), company: company.trim(), extra: extra.trim() });
+      void findPerson({ occupation: occupation.trim(), company: company.trim(), extra: extra.trim() });
       return;
     }
     if (mode === "name") {
@@ -298,8 +299,10 @@ export function SmartAddHero({
   };
   /** The person name way in. A profile or link-in-bio link typed in ANY Person box (MKT-110) is also the
    *  social source: it rides `social=` and its own round reads it, beside the "Which of these is you?" round. */
-  const findPerson = (more: { occupation: string; company: string; extra: string }) => {
+  const findPerson = async (more: { occupation: string; company: string; extra: string }) => {
     if (!onFindPerson) return;
+    // A self-hosted Mastodon link is only an account once its host is checked (MKT-119).
+    await learnProfileLinkHosts([name, city, occupation, company, extra], teachFediverseHost);
     onFindPerson(name.trim(), city.trim(), more);
     const link = profileLinkIn(name, city, occupation, company, extra);
     if (link) {
@@ -531,7 +534,7 @@ export function SmartAddHero({
                                 type="button"
                                 className="shrink-0 text-sm font-medium text-primary hover:underline"
                                 onClick={() => {
-                                  findPerson({ occupation: "", company: "", extra: extra.trim() });
+                                  void findPerson({ occupation: "", company: "", extra: extra.trim() });
                                 }}
                               >
                                 Search anyway

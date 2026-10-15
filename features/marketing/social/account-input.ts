@@ -14,6 +14,8 @@ export function resolveAccountInput(args: {
   text: string;
   picked?: SocialPlatform | null;
   contextPlatform?: SocialPlatform | null;
+  /** `useFediverseHost`'s count: not read here, it makes a memoized call read again once a Mastodon host is learned (MKT-102). */
+  learned?: number;
 }): ParsedAccount {
   return parseSocialAccount(args.text, args.picked ?? args.contextPlatform ?? null);
 }

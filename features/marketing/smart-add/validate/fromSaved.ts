@@ -141,6 +141,7 @@ export async function loadSavedFindings(brand: MarketingBrand): Promise<SavedFin
       ...(properties.data ?? []).map((p) => p.url ?? ""),
       ...(sites.data ?? []).map((x) => x.root_url ?? ""),
     ].filter(Boolean),
+    accounts: (properties.data ?? []).filter((p) => p.kind && p.handle).map((p) => `${p.kind}:${p.handle}`),
     values: (facts.data ?? []).map((f) => {
       const v = rec(f.value);
       return s(v.text) ?? s(v.url) ?? (typeof f.value === "string" ? f.value : "");

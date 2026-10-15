@@ -10,8 +10,8 @@ import { learnFediverseFromText } from "@/features/marketing/social/fediverse";
 import { fediverseProfileShape } from "@/features/marketing/social/profile-sites";
 import { teachFediverseHost } from "./learnDomains";
 
-export function useFediverseHost(text: string): void {
-  const [, setChecked] = useState(0);
+export function useFediverseHost(text: string): number {
+  const [checked, setChecked] = useState(0);
   useEffect(() => {
     if (!fediverseProfileShape(text)) return;
     let live = true;
@@ -20,4 +20,7 @@ export function useFediverseHost(text: string): void {
       live = false;
     };
   }, [text]);
+  // The learned hosts live outside React, and the React compiler memoizes `resolveAccountInput({ text })` by its
+  // arguments: callers pass this count as `learned` so the account is read again when a host has just been proven.
+  return checked;
 }

@@ -34,6 +34,8 @@ export interface KnownOnBrand {
   urls: string[];
   /** Confirmed facts' values (phones, emails, addresses, categories…). */
   values: string[];
+  /** Accounts the brand owns as `<platform>:<handle>` (a property row with a handle but no address still counts). */
+  accounts?: string[];
 }
 
 export const EMPTY_KNOWN: KnownOnBrand = { names: [], hosts: [], urls: [], values: [] };
@@ -181,6 +183,11 @@ function knownKeys(known: KnownOnBrand): Set<string> {
     keys.add(`url:${domainAddress(full)}`);
     const s = socialIdentity(full).key;
     if (s) keys.add(s);
+  }
+  for (const a of known.accounts ?? []) {
+    const [platform, ...rest] = a.toLowerCase().split(":");
+    const handle = rest.join(":").replace(/^@/, "");
+    if (platform && handle) keys.add(`acct:${platform === "twitter" ? "x" : platform}:${handle}`);
   }
   for (const v of known.values) {
     if (!v.trim()) continue;

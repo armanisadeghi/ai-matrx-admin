@@ -18,6 +18,7 @@ import {
   type EvidenceField,
   type EvidenceItem,
 } from "../evidence";
+import { webProfileAsAccount, withoutOwnAccountRows } from "../ownAccountRows";
 import { suggestKind, type SuggestContext, type WebChoice } from "../webKinds";
 
 // ── The trigger ──────────────────────────────────────────────────────────────────────
@@ -193,9 +194,21 @@ export function factsFromPayload(payload: unknown, depth = 0): BrandFact[] {
   });
 }
 
-/** `next` is the same fact with more of it written (a longer reason, more evidence): a fact released mid-stream grows into it. */
-export function isFullerFact(f: BrandFact, next: BrandFact): boolean {
-  return next.reason.length > f.reason.length || next.evidence_urls.length > f.evidence_urls.length;
+/**
+ * `f` grown by `next`, the same fact from another copy (a fact released mid-stream, the step's output, a second
+ * source): the longer reason's copy leads and the evidence is the union of both. `null` when `next` adds nothing.
+ *
+ * MKT-118: this is a JOIN, never "take the fuller one". Two copies that are each fuller in a different way (one has the
+ * longer reason, the other more evidence) used to swap places on every merge, so the merge never settled and the
+ * screen looped renders ("Maximum update depth exceeded", "Too many re-renders"). A join only ever grows, so merging
+ * the same copies again changes nothing.
+ */
+export function grownFact(f: BrandFact, next: BrandFact): BrandFact | null {
+  const longer = next.reason.length > f.reason.length;
+  const extra = next.evidence_urls.filter((u) => !f.evidence_urls.includes(u));
+  if (!longer && !extra.length) return null;
+  const base = longer ? next : f;
+  return { ...base, evidence_urls: [...f.evidence_urls, ...extra] };
 }
 
 export function mergeFacts(current: BrandFact[], incoming: BrandFact[]): BrandFact[] {
@@ -207,9 +220,12 @@ export function mergeFacts(current: BrandFact[], incoming: BrandFact[]): BrandFa
     if (!have) {
       byKey.set(f.key, f);
       changed = true;
-    } else if (isFullerFact(have, f)) {
-      byKey.set(f.key, { ...f, run_id: have.run_id ?? f.run_id });
-      changed = true;
+    } else {
+      const grown = grownFact(have, f);
+      if (grown) {
+        byKey.set(f.key, { ...grown, run_id: have.run_id ?? f.run_id });
+        changed = true;
+      }
     }
   }
   return changed ? [...byKey.values()] : current;
@@ -438,7 +454,10 @@ export interface QueueInput {
 }
 
 /** The open findings in focus order, the later pile last. Typed values and answered ones are out. */
-export function buildQueue(input: QueueInput): FocusItem[] {
+export function buildQueue(rawInput: QueueInput): FocusItem[] {
+  // A social page found on the web is that account's question, and a confirmed account's own pages are never a second
+  // "On the web" card (MKT-045): the same two rules the intake applies (ownAccountRows).
+  const input = { ...rawInput, items: withoutOwnAccountRows(rawInput.items.map(webProfileAsAccount), rawInput.decisions) };
   // One card per account: aliased addresses collapse, and so do two addresses of one stored profile
   // (a vanity and a numeric LinkedIn company address) — the readable one leads.
   const accounts = collapseAliasedAccounts(input.items.filter((i) => i.field === "social"));

@@ -1,5 +1,6 @@
 import { parseSmartAddUrl } from "../smartAddUrl";
-import { personExtraPrefill, profileLinkIn } from "../personPrefill";
+import { forgetFediverseHosts } from "@/features/marketing/social/profile-sites";
+import { learnProfileLinkHosts, personExtraPrefill, profileLinkIn } from "../personPrefill";
 
 describe("the Person start page reads social= like Company does (MKT-103)", () => {
   const a = parseSmartAddUrl("/marketing/brands/smart-add/person", "?name=Ben%20Werdmuller&social=https%3A%2F%2Fwerd.social%2F%40ben&platform=mastodon");
@@ -30,5 +31,23 @@ describe("a profile or link-in-bio link typed in any Person box is a source to r
     expect(profileLinkIn("Jane Doe", "Austin", "Painter", "Acme", "Stanford")).toBeNull();
     expect(profileLinkIn("", "", "", "", "@janedoe")).toBeNull();
     expect(profileLinkIn("", "", "", "", "janedoe.com")).toBeNull();
+  });
+});
+
+describe("a self-hosted Mastodon link typed in a Person box is kept (MKT-119)", () => {
+  const LINK = "https://social.example.dev/@jane";
+  beforeEach(() => forgetFediverseHosts());
+  it("is dropped until its host is checked, then read as the social link", async () => {
+    global.fetch = jest.fn(async () => ({ ok: true, json: async () => ({ acct: "jane", url: LINK }) })) as unknown as typeof fetch;
+    expect(profileLinkIn("Jane Doe", "", "", "", `find me ${LINK}`)).toBeNull();
+    const learned = jest.fn();
+    await learnProfileLinkHosts(["Jane Doe", `find me ${LINK}`], learned);
+    expect(learned).toHaveBeenCalledWith("social.example.dev", LINK);
+    expect(profileLinkIn("Jane Doe", "", "", "", `find me ${LINK}`)).toBe(LINK);
+  });
+  it("a plain website stays no link, and a failed check is a miss", async () => {
+    global.fetch = jest.fn(async () => ({ ok: false, json: async () => ({}) })) as unknown as typeof fetch;
+    await learnProfileLinkHosts([`see ${LINK}`, "https://example.com/about"]);
+    expect(profileLinkIn(`see ${LINK}`, "https://example.com/about")).toBeNull();
   });
 });

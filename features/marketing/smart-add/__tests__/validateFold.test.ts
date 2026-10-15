@@ -114,3 +114,29 @@ describe("a page of our own account folds into the account (MKT-045)", () => {
     expect(accountOfPost("https://www.instagram.com/p/DboJiddGte_")).toBeNull();
   });
 });
+
+describe("MKT-045 — the validate queue never asks a brand's own account again as a web page", () => {
+  const web = (url: string): EvidenceItem => {
+    const one = fromRow(row("link", "mention", url, { label: "TAQMIX" }, url));
+    if (!one || !("item" in one)) throw new Error("not an item");
+    return one.item;
+  };
+  const input = (items: EvidenceItem[], decisions: Record<string, "yes"> = {}) => ({
+    items, facts: [], decisions, webChoices: {}, answered: new Set<string>(), later: [], kinds: [], ctx: { ourHosts: [], ourAccounts: [], name: "X" },
+  });
+  it("an owned account known only by platform + handle drops its profile and its posts", () => {
+    const items = [web("https://www.facebook.com/TAQMIX/"), web("https://www.facebook.com/TAQMIX/posts/123")];
+    const known = { names: [], hosts: [], urls: [], values: [], accounts: ["facebook:@TAQMIX"] };
+    expect(foldQueue({ queue: buildQueue(input(items)), known, later: [] })).toEqual([]);
+  });
+  it("a social profile found on the web is an account question, not an On the web card", () => {
+    const q = buildQueue(input([web("https://www.instagram.com/taqmix/")]));
+    expect(q.map((f) => f.kind)).toEqual(["account"]);
+  });
+  it("a confirmed account's profile is dropped by the decision alone", () => {
+    const acct = web("https://www.facebook.com/TAQMIX/");
+    const items = [acct, { ...acct, key: "social:facebook:taqmix", field: "social" as const, platform: "facebook", handle: "TAQMIX" }, web("https://www.facebook.com/TAQMIX/photos/1")];
+    const q = buildQueue(input(items, { "social:facebook:taqmix": "yes" }));
+    expect(q.filter((f) => f.kind === "web")).toEqual([]);
+  });
+});

@@ -17,6 +17,7 @@ import { isLinkInBioUrl } from "../lib/link-in-bio";
 import { accountKey } from "../social/account-input";
 import { parseSocialAccount } from "../social/link";
 import { SOCIAL_PLATFORMS, type SocialPlatform } from "../social/types";
+import { isPlaceholderName } from "./placeholderName";
 import { websiteHost, type Certainty, type EvidenceField, type EvidenceItem, type EvidenceSource } from "./evidence";
 import type { BrandFact } from "./validate/queue";
 
@@ -44,6 +45,11 @@ function text(v: unknown): string | null {
     .replace(/\s+/g, " ")
     .trim();
   return t || null;
+}
+
+/** A name the facts agent wrote where it had none ("UNKNOWN", "N/A") is nothing: never a header, a card or a suggestion (MKT-107). */
+function realName(v: string | null): string | null {
+  return v && !isPlaceholderName(v) ? v : null;
 }
 
 /** The server's evidence key (aidream brand_identify._key) for the fields fed here. */
@@ -137,7 +143,7 @@ export function brandNameFromPayload(payload: unknown, depth = 0): string | null
     return null;
   }
   const o = payload as Record<string, unknown>;
-  if (o.__kind === "brand_basics" && text(o.brand_name)) return text(o.brand_name);
+  if (o.__kind === "brand_basics" && realName(text(o.brand_name))) return text(o.brand_name);
   for (const v of Object.values(o)) {
     const n = brandNameFromPayload(v, depth + 1);
     if (n) return n;
@@ -151,7 +157,7 @@ export function brandNameFromPayload(payload: unknown, depth = 0): string | null
  */
 export function brandNameFromLive(live: { kind: string; value: Record<string, unknown>; verified?: boolean } | null | undefined): string | null {
   if (!live || live.kind !== "brand_basics") return null;
-  const name = text(live.value.brand_name);
+  const name = realName(text(live.value.brand_name));
   const begun = live.verified || Array.isArray(live.value.facts) || Array.isArray(live.value.items);
   return name && begun ? name : null;
 }
@@ -233,7 +239,7 @@ function factAccount(f: BrandFact): { key: string; platform: SocialPlatform; han
 export function factEvidence(facts: BrandFact[], brandName: string | null): EvidenceItem[] {
   const src = (url: string | null): EvidenceSource => ({ node: "facts", kind: "web_search", url, where: "research" });
   const out: EvidenceItem[] = [];
-  if (brandName) out.push(item("name", brandName, src(null), 0.85));
+  if (realName(brandName)) out.push(item("name", brandName as string, src(null), 0.85));
   for (const f of facts) {
     const field = factField(f);
     if (!field || f.conflict_with) continue;
@@ -255,7 +261,7 @@ export function factEvidence(facts: BrandFact[], brandName: string | null): Evid
       continue;
     }
     const value = factValue(field, f.value);
-    if (!value) continue;
+    if (!value || (field === "name" && isPlaceholderName(value))) continue;
     const extra: Partial<EvidenceItem> = {
       ...certainty,
       ...(field === "website" ? { url: value, label: websiteHost(value) } : {}),

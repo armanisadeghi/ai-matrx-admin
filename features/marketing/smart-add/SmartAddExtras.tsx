@@ -24,6 +24,8 @@ import {
   type BrandRelationKind,
 } from "@/features/marketing/data/service";
 import { resolveAccountInput } from "@/features/marketing/social/account-input";
+import { learnFediverseFromText } from "@/features/marketing/social/fediverse";
+import { teachFediverseHost } from "./learnDomains";
 import { PlatformMark } from "@/features/marketing/social/components/PlatformMark";
 import {
   customItem,
@@ -70,10 +72,12 @@ export function CustomAdd({
   const [contactKind, setContactKind] = useState<"phone" | "email" | "address">("phone");
   const [problem, setProblem] = useState<string | null>(null);
 
-  const add = () => {
+  const add = async () => {
     const value = text.trim();
     if (!value) return;
     if (field === "social") {
+      // A Mastodon account on its own server looks like a website until its host is checked (MKT-102).
+      await learnFediverseFromText(value, { onLearned: teachFediverseHost });
       const parsed = resolveAccountInput({ text: value });
       if (parsed.status !== "ok") {
         setProblem(parsed.status === "needs_platform" ? "Paste the profile link" : "Not a social account");
