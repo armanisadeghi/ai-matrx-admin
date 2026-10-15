@@ -586,6 +586,14 @@ export const appContextPolicy = definePolicy<AppContextState>({
         typeof r.orgBootstrapFailure === "string" ? r.orgBootstrapFailure : null,
     };
   },
+  // 🚨 THE LADDER'S ANSWER REPAINTS THE CACHE (2026-10-14). The cache paints
+  // "the last organization this browser held", but nothing ever wrote the
+  // ladder's answer back — so a device whose cache held an organization the
+  // person is NOT a member of (admin@admin.com: "Alex Hart's Workspace") painted
+  // it on every load, forever, and every read that left on the paint was
+  // refused `42501 not a member`. A settled answer is saved (the serialized body
+  // is the id + name only, so it still paints as a paint, never as an answer).
+  persistAfterLoad: (state) => state.orgBootstrapResolved && state.organization_id != null,
   staleAfter: 5 * 60_000, // re-confirm the held organization is still a membership
   remote: {
     fetch: async ({ identity, signal }) => {

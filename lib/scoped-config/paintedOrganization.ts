@@ -9,7 +9,7 @@
 // account's last active organization) wins a moment later. A knob read on the painted organization
 // is one wasted `knob_snapshot_delta` for an organization the person then leaves. So a read keyed to
 // the organization the store is still only painting — or to no organization while the ladder has not
-// answered — waits for the ladder (at most HOLD_CAP_MS); any other organization (a page's own, an
+// answered — waits for the ladder (a painted one until it answers; "none yet" at most HOLD_CAP_MS); any other organization (a page's own, an
 // explicit one) is asked at once.
 
 import { useContext, useEffect, useState, useSyncExternalStore } from "react";
@@ -42,12 +42,18 @@ export function usePaintedOrganizationHeld(organizationId: string | null | undef
     () => (store ? isOnlyPainted(organizationId, store.getState() as StateWithContext) : false),
     () => false,
   );
+  // 🚨 A PAINTED ORGANIZATION IS NEVER READ, NOT EVEN AFTER THE CAP (2026-10-14). The cap exists
+  // for a surface with no shell, where NO organization ever arrives — it releases only the
+  // no-organization hold. A painted one comes from the cache of an app that IS running the ladder;
+  // releasing it after 4s on a slow load sent `knob_snapshot_delta` for an organization the person
+  // is not a member of (a stale paint) and every screen logged `42501 not a member`.
+  const capApplies = !organizationId;
   // The cap runs only while this reader is actually held — no timer, no re-render, otherwise.
   const [capped, setCapped] = useState(false);
   useEffect(() => {
-    if (!held || capped) return undefined;
+    if (!held || capped || !capApplies) return undefined;
     const timer = setTimeout(() => setCapped(true), HOLD_CAP_MS);
     return () => clearTimeout(timer);
-  }, [held, capped]);
-  return held && !capped;
+  }, [held, capped, capApplies]);
+  return held && !(capped && capApplies);
 }
