@@ -8,7 +8,7 @@ timestamp: 2026-10-01T00:00:00Z
 
 # <PB-01> — <the job a person is doing, in their words>
 
-Area: `<area>` · Weaknesses covered: W-02, W-05, W-07 · Written: <date> by <lane/agent> · Change: <one line>
+Scenario: `A check` / `B before a change` / `C shipped` / `D campaign` (safety-net §0) · Area: `<area>` · Weaknesses covered: W-02, W-05, W-07 · Written: <date> by <lane/agent> · Change: <one line>
 
 Triggers (one run each): `chat` · `context-menu` · `surface-binding` · `mandate` — strike the ones
 that cannot perform this job and say why.
@@ -38,6 +38,7 @@ state by any means other than the product's own screens.
 - C2 — the result of this query on the live database: `select … from … where …;`
 - C3 — the list of tool calls shown in the conversation, in order, with each tool's name.
 - C4 — a screenshot of <panel>.
+- CX4 (performance) from the addendum: yes / no.
 - Anything that stopped you: "could not complete step N because …".
 
 Return C1–C4 and nothing else. Do not say whether it worked.
@@ -52,6 +53,9 @@ Return C1–C4 and nothing else. Do not say whether it worked.
 | `Ask for insurance group number` | internal resource | C1 | — | W-05 |
 | `(notes page tool) update_note` | page context | C3, exactly once, after the confirmation | before the confirmation | W-07 |
 | row `updated_by` = admin, `version` +1 | the write | C2 | — | W-07 |
+
+When the subject is an AI agent or mandate, add the identity row: each mandate ran on the holder agent and version
+its binding names (read before the run) — `ledger`.
 
 Grade: PASS only when every row holds. FAIL names the first row that does not, which names the
 channel. INCONCLUSIVE when the runner did not finish — never a pass.

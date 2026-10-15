@@ -1,10 +1,10 @@
 ---
 name: safety-net
 type: Skill
-title: "safety-net — real tests written before a big change, proven to fail, run by a fresh agent after"
-description: "Real tests around a big code change: written first, proven to fail on a planted break, run by a fresh agent in the live product before and after. Use when told to use safety-net, or before a change wide enough that one agent cannot see every way it breaks. NOT for one test (forcing-function-tests)."
+title: "safety-net — real tests a fresh agent walks in the live product: a check of today, or a net around a change"
+description: "Real tests: a fresh agent walks the live product against sealed checks proven to catch a planted break. Use when told to use safety-net, to check whether an area really works now, or around a change too wide for one agent to see every break. NOT for one automated test (use forcing-function-tests)."
 tags: [testing, migration, verification, doctrine, adversarial]
-timestamp: 2026-10-01T00:00:00Z
+timestamp: 2026-10-15T00:00:00Z
 ---
 
 <!-- SYNCED COPY — do not edit here.
@@ -22,12 +22,24 @@ They're blocking because if they fail, you stop and address it, not because some
 one passing test means hundreds of things had to have worked perfectly."*
 
 A **real test** is a playbook: a plain-language procedure that a fresh, cheap agent walks in the live
-product against the live database as `admin@admin.com`, plus a **sealed check-sheet** that agent never sees. It is
-written **before** the change, **proven to fail** on a break it was not told about, run on the
-unchanged product, and run again after the change. Pass → ship. Fail → you stop and fix the product.
+product against the live database as `admin@admin.com`, plus a **sealed check-sheet** that agent never sees.
+It is **proven to fail** on a break it was not told about. Around a change it is written **before** the
+change, run on the unchanged product, and run again after. As a **check** of how something works today,
+it is run once on the product as it is (Arman, 2026-10-15: "simply test something that isn't being
+changed... when we're questioning the current state of the system"). Pass → done. Fail → you stop and
+fix the product.
 
 This is not a test suite, not CI, not a gate, not a dashboard. Nothing here runs on its own and
 nothing here blocks anyone. The playbooks are documents, and the discipline is yours.
+
+**A script is never a playbook.** Anything that grades itself is outside this skill: a Playwright or
+node script holding its own expected values, a fault switch an env var flips, an exit code that says
+pass or fail. Those are automated tests (`forcing-function-tests`). In matrx-frontend,
+`tests/smoke-journeys/` (smoke check) and `scripts/regression-bar/` (data-doctrine regression bar) are
+such suites. Green there never stands in for a real test, and a brief that says "run the script, all
+must pass" is not this skill. A red script is triaged like §4b (product first, then the script), but it
+is that suite's business, not the net's. (2026-10-15: an npm-campaign brief called its Playwright journeys "the
+safety net"; there was no weakness list, no sealed check, and the tests were edited until they passed.)
 
 **Mechanics live elsewhere; this skill only orders them:**
 | Need | Owner |
@@ -35,42 +47,68 @@ nothing here blocks anyone. The playbooks are documents, and the discipline is y
 | Planting a break in a shared checkout and restoring it no matter what (`plant.py`) | `forcing-function-tests` §3, §4a |
 | Finding every consumer and trigger path, including rows that are configuration | `safe-cutover` Step 1 |
 | Briefs that can return what you do not already believe | reality-is-the-referee · `subagent-dispatch` §1 |
-| Realistic data and people | test-data-looks-real · `@ai-matrx/records/use-cases` · persona factory |
+| Realistic data and people | test-data-looks-real · `@ai-matrx/records/use-cases` · persona factory · aidream `scripts/pick_test_subject.py` (businesses and people to test on) |
 | The database tests run on | the live database, as `admin@admin.com`, on disposable records (Arman, 2026-10-03). The nightly clone is only for rehearsing destructive migrations or jobs that lock live 10+ minutes (`operations/clone/CURRENT.md`) |
+| A working localhost before any runner | §4a below; matrx-frontend `pnpm preview:status` / `preview:start`; memory rules in `operations/real-tests/RUNNER-ADDENDUM.md` |
 
-## 0. When, and how much
+## 0. Pick the scenario first — it decides what "before" means
 
-- **Fires** when the person says "use safety-net", and on your own judgment before a change wide
-  enough that one agent cannot see every way it breaks: a shared primitive or package with many
-  consumers, a cross-repo contract, a rewrite of a path many surfaces reach.
+Name the scenario in the first line of the ledger. Each one uses the same weakness list, playbooks,
+runner and fault proof (§2–§5); they differ only in what the runs compare and what is committed when.
+
+| Scenario | When | The runs | Done when |
+|---|---|---|---|
+| **A. Check** | "Does this really work?" Nothing is being changed: an area, a set of agents or mandates, a feature someone doubts. Also a kept net rerun later, whenever the area is doubted again. | One **check run** per playbook on the product as it is. Every FAIL is classified (§4b); a product defect is fixed (own commit) and that playbook rerun. No before/after. On a kept net, a red rerun after a green row is a regression since that row. | Every playbook PASS and fault-proven (§5), or each one left open reported by name as open and not fault-proven. Often a red check run, the fixes, and a green rerun are the whole job. |
+| **B. Before a change** | A change not yet made, wide enough that one agent cannot see every break. | Baseline on the unchanged product (all PASS) → change → after-run (§1). | After-run PASS through every trigger → "shipped". |
+| **C. Change already shipped** | The change landed before anyone built a net (agent-variables, 2026-10-15). | The shipped product is the start state: run it as a **check (A)**. Never claim the change was safe; there is no before. | As A. The report says plainly that no before-state was captured. |
+| **D. Campaign over days** | Many changes by many lanes in one area (a package migration). | The owner builds ONE net at the start and runs it as a baseline. A **milestone** is a landed change that touches a channel a playbook covers; the owner (never the lane that made it) dispatches one after-run covering every milestone landed since the last, at most once a day, never per commit. | Each after-run PASS. On a FAIL, the lanes whose milestones since the last green run touched the failed marker's channel look first. Lanes receive this skill by name and their part of it, never a one-line command (§4). |
+
+- **Fires** when the person says "use safety-net"; when someone asks whether an area really works
+  (scenario A); and on your own judgment before a change wide enough that one agent cannot see every
+  way it breaks: a shared primitive or package with many consumers, a cross-repo contract, a rewrite
+  of a path many surfaces reach.
 - **Does not fire** for a change inside one feature (`forcing-function-tests` is enough) or one
   replaced contract (`safe-cutover`).
 - **Budget — this is where agents waste the owner's money, so it is a ceiling, not a target:**
-  three to six playbooks in total; each one under fifteen minutes for the runner; one blind fault
-  per playbook. Wide beats narrow: one playbook that crosses five channels is worth more than five
-  that cross one each, because one pass then proves the whole chain.
+  three to six playbooks in total; each one under fifteen minutes of walking for the runner (the end
+  captures in the addendum are extra and do not count); one blind fault per playbook. Wide beats
+  narrow: one playbook that crosses five channels is worth more than five that cross one each,
+  because one pass then proves the whole chain. When the area holds more units than six playbooks
+  reach (a dozen mandates, two dozen packages), chain them through the surfaces most people use and
+  the channels most consumers share, and list by name every unit no playbook reaches as **not covered**.
 - If the net takes longer to build and prove than the change takes to make, the change is too big
   for one net. Split the change.
 
 ## 1. Order is law, and the commits are the clock
 
 1. **Weakness list** (§2) — written by a fresh agent from reality.
-2. **Playbooks** (§3) — written by a different agent than step 1 when you can arrange it; at minimum,
-   step 1's list reaches step 2 as a file, never as your summary.
-3. **Baseline run** — a fresh runner (§4) walks every playbook on the **unchanged** product. All must
-   PASS. One that does not means the playbook or the product is already broken; find out which
-   before step 4. A product defect found here is fixed now, under its own commit.
+2. **Playbooks** (§3) — written by a different agent than step 1; when that truly cannot be arranged,
+   the ledger says why. Either way step 1's list reaches step 2 as a file, never as your summary.
+   **In A and C, commit the net now** (step 5's rules), before the first check run.
+3. **Baseline run** (B, D) or **check run** (A, C) — a fresh runner (§4) walks every playbook. In B
+   and D all must PASS on the unchanged product. A FAIL is graded by §4b before anything else: a
+   product defect is fixed now, under its own commit, and the playbook rerun (in B and D that fix is
+   not "the change"; it may precede the net commit). In A and C this step is a
+   loop: check run → classify (§4b) → fix → rerun, until each playbook passes or is reported open.
 4. **Fault proof** (§5) — one planted break per playbook, blind, fresh runner. Each must FAIL for
-   the right reason.
-5. **Commit the net** — playbooks and ledger, one commit, pushed. **This commit precedes every
-   commit of the change.** No script checks this. Anyone who doubts the order reads the history,
-   which cannot be rewritten on the shared remote.
-6. **The change.**
-7. **After-run** — a fresh runner walks every playbook through every trigger. All PASS → ship. Any
-   FAIL → stop. Fix the product. Rerun the failed playbook and every playbook that shares the
+   the right reason. A fault is planted only on a playbook that has already passed; a playbook still red
+   cannot tell the fault's FAIL from the defect's.
+5. **Commit the net** (B, D; A and C did it at step 2) — playbooks and ledger, one commit, pushed,
+   **naming its files by pathspec**. A sweeper commits strays under "local work not committed", and a
+   net nobody committed has no clock. In B and D **this commit precedes every commit of the change**.
+   Run rows, fixes and fault rows follow as their own commits in every scenario. No script checks this. Anyone who doubts
+   the order reads the history, which cannot be rewritten on the shared remote.
+6. **The change** (B, D only).
+7. **After-run** (B, D) — a fresh runner walks every playbook through every trigger. All PASS → ship.
+   Any FAIL → stop. Fix the product. Rerun the failed playbook and every playbook that shares the
    broken channel. **A playbook is never edited to make it pass.** It changes only when the intended
    behavior changed, and the ledger row says what changed and why.
 8. **Keep the playbooks** (§6). They are the asset; the next change in this area starts from them.
+
+**A defect the weakness list already names is not fixed before a run grades it.** The run's FAIL is
+the proof the bug existed and the rerun's PASS is the proof the fix works; a fix made from the list
+alone has neither (2026-10-15: fixes citing W-01…W-22 were pushed before any playbook existed). Write
+the playbooks, run them, then fix.
 
 The three cheats this order exists to stop, all observed in agents: writing the tests after the
 change so they describe what was built instead of what must hold; one agent writing, running and
@@ -97,11 +135,20 @@ about the change.
 **Each weakness** gets a stable id (`W-01`…), one line on what would go wrong *silently*, the
 channel it rides, and the sink where it would show. A weakness that would show in no sink is marked
 **UNTESTABLE**, stays on the list, and appears in the report. It is never dropped to make the
-coverage look complete.
+coverage look complete. A weakness the author proved with a probe is marked **CONFIRMED** with the
+probe output; it still waits for a run (§1).
 
-**Brief the list author like a discovery, not a confirmation:** the change, the outcome wanted, the
-area of the product. Not the files, not the words to search for, not your own list. What you already
-suspect you withhold and use as the test of what comes back.
+**Brief the list author like a discovery, not a confirmation — fill exactly these slots:**
+```
+Scenario: <A check / B before a change / C shipped / D campaign>
+Outcome wanted: <what must be true for a person, in their words>
+Area: <what a person does there, in their words — "add a business to Smart Add", never mandate keys>
+The owner's words: <verbatim>
+Return: WEAKNESSES.md in operations/real-tests/<area>/ per safety-net §2.
+```
+Nothing else. **Withheld:** file paths, table, mandate or agent keys, search words, bug lists, your own
+suspicions. The author finds those; what you withheld is the test of what comes back. (Both 2026-10-15
+nets handed the author files or mandate keys and a bug-list path.)
 
 ## 3. A playbook
 
@@ -111,7 +158,8 @@ One file per playbook, two halves under one id, template beside this skill: `pla
 - Precondition: which real-use-case dataset, and how the state is reached — created by the runner
   through the product, or seeded on live by you (as `admin@admin.com`, disposable records) before the run and named here.
 - The steps in the language a person would use: what to open, what to type, what to attach, what to
-  click, what to wait for.
+  click, what to wait for. Name controls with the words the page shows today (a sheet said
+  "Preferred / Ours / Not us"; the page offers Yes / No / Other).
 - What to **capture** afterward, as raw observations: the exact text of this note, the list of tool calls
   shown in the conversation, a screenshot of this panel, and **every entry in the Error Inspector** (copy all)
   at the end of the run. Capture, never judge. Database reads belong to the GRADER, run right after the run:
@@ -123,6 +171,11 @@ One file per playbook, two halves under one id, template beside this skill: `pla
 - For each marker: the sink where it **must** appear, and the sinks where it **must not** appear. The
   second half is what catches a swap, a leak, or content delivered through the wrong door.
 - Which weakness ids each marker covers.
+
+**When the subject is an AI agent or mandate**, every playbook carries an **identity row**: the grader
+reads the run ledger and checks that each mandate ran on the holder agent and version its binding
+names, read from the mandate binding before the run. A playbook that cannot say which agent answered
+cannot tell a regression from a swapped agent.
 
 **Every link must be addressable by the agent under test.** If the chain needs an agent to call another
 agent, the skill or context it reads must carry that agent's id, because the agent-call tool takes an id and
@@ -138,14 +191,23 @@ That is what makes one passing test worth hundreds of smaller ones.
 **Triggers are a slot, not a copy.** The same playbook names every entry point that can perform the
 job, and a run is one playbook through one trigger. The after-run covers every trigger.
 
+**No screen.** When what is tested has no page (a server path, a package, an agent behind a mandate),
+the runner's tool is the product's own door as the person: the AI Dream MCP (`agent_run`, the mandate
+route) or the API with a real session, never a database write. The sink is the reply and the rows the
+grader reads: for an agent run, the stored request snapshot and the run ledger row (`chat.request_snapshot`,
+`chat.user_request` metadata), noting that the snapshot redacts pick-list and reference text, so those
+channels prove themselves only by a marker the reply repeats. The halves, the markers and the blind fault
+are the same. **The extension and the desktop app** have no runner seat yet: a channel reachable only
+there is reached through the web page or the server door, or listed as UNTESTABLE.
+
 **Reference playbook (chat, client side):** the agent must edit a note on the notes page so it
 matches an attached markdown file and includes a detail that exists only in an attached internal
 resource. The run must show the confirmation control, the runner approves it, and the note must end
 up holding the file's marker and the resource's marker, in the note and nowhere else.
 
-**Server side, for later:** a chain of agent calls where a marker coming back in a reply proves
-several AI providers, dozens of tools and the state between them. The same playbook shape with the
-reply as the sink. Not expanded here.
+**Server side:** a chain of agent calls where a marker coming back in a reply proves several AI
+providers, dozens of tools and the state between them. The same playbook shape with the reply as the
+sink.
 
 ## 4. The runner
 
@@ -161,24 +223,68 @@ reply as the sink. Not expanded here.
   It never returns PASS or FAIL.
 - **You grade** by laying observations against the sealed checks: **PASS**, **FAIL** (the product
   produced the wrong state), or **INCONCLUSIVE** (the runner did not finish). INCONCLUSIVE is never a
-  pass. Twice on one playbook means the steps are unclear or the product is unusable at that step,
+  pass. Twice on one playbook, for reasons other than the environment (§4a), means the steps are unclear or the product is unusable at that step,
   and you find out which.
 - The product under test is localhost (the page, the local aidream, the one database at `https://db.matrxserver.com`), signed in as
   `admin@admin.com` (Arman, 2026-10-03: test on live; the clone is no longer a test target). The runner touches only
   that account's disposable records. A run during which another session changed the shared localhost server's build is
   INCONCLUSIVE. Never Arman's Chrome. Never a sign-in or sign-out on a Matrx host outside the runner's own hostname.
+- **Test subjects** (businesses, people) come from aidream `scripts/pick_test_subject.py`, one per run
+  (`--n 1`): it marks every subject it hands out as used, and a used subject is never reused. Record
+  each in the ledger.
+- **A person driving it** (Arman asked to "drive the test after Sonnet confirms"): after the check run
+  is graded, fixed and green, he gets the STEPS sheet and his own hostname, never the checks. He is a
+  runner; the grader grades what he returns.
+- **Delegating the net:** a manager who hands any step to a worker names this skill and the step in
+  the brief. A worker brief that says only "run X, all must pass" has dropped the sealed checks and
+  the fresh runner (2026-10-15, npm campaign).
 
 **The fix loop is cheap or it does not happen.** After the first run that reaches the end, the runner's own
 transcript is the script: a browser-only `quick` agent replays the same sheet for every fix and every fault
 run, and the owner grades from captures without re-reading the product. A fresh, unscripted runner is used
-twice only: the baseline and the final after-run. Never let the expensive owner model drive the browser.
+twice only: the baseline (or check run) and the final after-run. Never let the expensive owner model drive the browser.
 
 **Reset, then verify, before every run.** The grader restores the start state (the fixture's canonical content,
 values, chips) and PROVES it with the same queries the sealed checks use, before handing out the sheet. A run on a
 dirty start state is INCONCLUSIVE whatever it shows (2026-10-01: a fault proof ran on a note still holding the
 previous run's finished line; the agent "corrected" it instead of filling it, and the proof had to be repeated).
+A fresh test subject per run is a clean start state; say so in the run row.
 A shared preview that other lanes are editing hot-reloads the runner's page mid-run; sequence runs after fixes
 land, and treat "page changed by itself" as INCONCLUSIVE.
+
+### 4a. Preflight — the environment is proven before any runner is sent
+
+On 2026-10-15 three runs of one playbook spent about 25 minutes and 320k tokens and finished nothing:
+the preview had stopped itself after 30 idle minutes, then the in-app browser pane crashed from page
+memory twice. A runner is dispatched only after the grader has shown, in this turn:
+For a no-screen playbook the preflight is the AI Dream MCP `server_status` healthy plus one harmless
+call through the same door that returns; for a browser playbook:
+1. The preview answers: `pnpm preview:status` in matrx-frontend, and if it is down `pnpm preview:start`,
+   then a **signed-in page load of the sheet's first route** that renders without a build-error
+   overlay (the first compile takes about 75 seconds; wait for it). A curl of `/login` is not proof.
+2. A build error is diagnosed before it is blamed: an export missing right after a package install is
+   a stale install (restart the preview), not another lane's edit.
+3. The browser pane is open and showing (`preview_start` with a url brings it back).
+4. The memory rules in `RUNNER-ADDENDUM.md` (watcher, heap per step, test-only reset) are in the brief.
+
+**Two INCONCLUSIVE runs from the environment on one net → stop dispatching** (a crash that happened
+with the memory rules followed counts too). Fix the environment, or
+report "stopped, because the environment …". A third runner into the same broken environment is waste.
+
+### 4b. A FAIL is classified before anything is rerun
+
+Each FAIL or surprise is one of three, decided from the captures and written in the run row:
+- **Product wrong** → fix the product now, under its own commit, and rerun the playbook. When the
+  product is an AI agent or mandate, the fix goes through the agent builder (`create-agent`; agents
+  never author agents), never a hand edit of its row.
+- **Playbook wrong** (a control renamed, a step the intended behavior no longer has) → edit the
+  playbook with a ledger row saying what changed and why, **citing the capture that shows it**, then rerun. Never after a FAIL whose cause
+  is the product.
+- **Environment** (preview down, build error, pane crash, hot reload, a 500 on every page) →
+  INCONCLUSIVE; §4a; never recorded as a baseline.
+
+Never rerun hoping it comes back green, and never call a red run "flaky" without the captures that
+show the environment did it.
 
 ## 5. Fault proof — a test is trusted only after it catches a break it was not told about
 
@@ -189,7 +295,8 @@ land, and treat "page changed by itself" as INCONCLUSIVE.
   a denied write that returns as if it succeeded, channel A's payload delivered to channel B. A crash
   or a blank page proves nothing, because anything catches those.
 - **Prefer breaking disposable data over breaking code** (`admin@admin.com`'s own records on live, never anyone else's). Detach the resource, remove the tool from
-  the agent's definition, flip the binding, point the mandate at the old version. Reversible, no edit on the shared checkout. Restore it and read it back before the next run.
+  the agent's definition, flip the binding, point the mandate at the old version (a user-rung binding
+  for admin only). Reversible, no edit on the shared checkout. Restore it and read it back before the next run.
 - **Code faults only through `plant.py`**, with the runner dispatch as the planted command. It holds
   the repository lock, restores in `finally`, and screams with exit 5 if a peer commit captured the
   mutation. The preview hot-reloads, so the fault is live the moment it lands and gone the moment it
@@ -198,6 +305,8 @@ land, and treat "page changed by itself" as INCONCLUSIVE.
 - **Blind.** The runner is not told. The grade must be **FAIL**, and the marker that failed must be
   the channel the fault hit. A PASS, or a FAIL for a different reason, means the playbook cannot see
   that channel: rewrite it before anything else counts.
+- **A fault flag inside a script is not a fault proof.** The breaker must be someone other than the
+  runner, and the runner must not know.
 - **Every attempt is a ledger row**, caught or missed.
 
 **Where the fixtures live.** A chat or agent run goes through the production server, so a real test of chat runs on live, as the
@@ -231,31 +340,41 @@ on 2026-10-02 did eight minutes of work: one took the lane, the other seven star
 lock and ENDED THEIR TURN, returning "queued, no captures" as a completed task — a background wait dies with the
 turn. The owner dispatches one runner at a time, after a wait that sees the lock directory absent for thirty
 seconds, and the runner brief says in so many words: a report with no captures is a failed run; if the lane
-is held, wait in the foreground and walk the sheet in this same turn. Budget one lane-run at a time: eight
-playbooks of ten to twenty minutes each is two to three hours of wall clock, not ten minutes.
+is held, wait in the foreground and walk the sheet in this same turn. Budget one lane-run at a time: six
+fifteen-minute playbooks plus their end captures and preflight is two hours of wall clock, not ten minutes.
 
-**Performance is a capture, not an opinion.** Every rerun records, with the runner's own clock (`date +%s` before
+**Performance is a capture, not an opinion.** When the question includes speed, or a rerun is compared with an
+earlier one, the runner records, with its own clock (`date +%s` before
 step one, before each send, at the first visible word, at the finished state) and the page's navigation timing
 (`performance.getEntriesByType("navigation")`: ttfb, domReady, load, resource count), how long each step, each
 turn and each page load took; the grader adds the server's own per-turn rows (iterations, tool calls, model and
 tool milliseconds, tokens, cost) and the runner's harness usage. Numbers from two runs of the same sheet are the
-only honest "faster"/"slower"; a run file without them is a story. The capture rules are `RUNNER-ADDENDUM.md` CX4.
+only honest "faster"/"slower"; a speed claim without them is a story. The capture rules are `RUNNER-ADDENDUM.md` CX4;
+the sheet says whether CX4 applies.
 
 ## 6. Where it lives
 
 `common-docs/operations/real-tests/<area>/` — the playbooks and one `LEDGER.md`. Playbooks walk
-the product, not a repository, so they live in common-docs (`docs` skill). The ledger holds
-three small hand-written tables: the weakness list; playbook × weakness coverage, with the marker
-that covers each cell; and the runs — date, playbook, trigger, runner lane, commit, fault planted or
-none, grade, which marker decided it. Weakness ids and playbook ids are stable across changes in
-the area, so the next net starts from this one.
+the product, not a repository, so they live in common-docs (`docs` skill). The ledger names its
+scenario (§0) on its first line and holds three small hand-written tables: the weakness list; playbook
+× weakness coverage, with the marker that covers each cell; and the runs — date, playbook, trigger,
+runner lane, commit, test subject, fault planted or none, grade, which marker decided it, and for a
+FAIL its §4b class. Weakness ids and playbook ids are stable across changes in the area, so the next
+net starts from this one. When a net stops before it is finished, the ledger ends with a **Next step**
+line naming the exact run to dispatch, so the next owner starts there.
 
 ## 7. Report — plain language, in chat
 
 Where the weaknesses came from and how many · each playbook and the chain one pass proves · every
-fault, caught or missed, and what was rewritten when missed · the after-run grade per playbook per
-trigger · what is UNTESTABLE and why. End with **"shipped"** or **"stopped, because X"**. Never
-"tests pass" as the whole report, and never a pointer to the ledger in place of the words.
+fault, caught or missed, and what was rewritten when missed · the grade per playbook per trigger ·
+every defect fixed and the rerun that proved it · what is UNTESTABLE and why. End with exactly one of:
+- **"shipped"** (B, D: every after-run PASS);
+- **"checked: N pass, M fixed, K open"** (A, C), naming each open one and why it is open
+  (a defect not yet fixed, or "never completed: environment");
+- **"stopped, because X"**;
+- **"not finished: the next step is Y"** when the net is still being built.
+
+Never "tests pass" or "fixes pushed" as the report, and never a pointer to the ledger in place of the words.
 
 ## Rationalizations
 
@@ -266,6 +385,11 @@ trigger · what is UNTESTABLE and why. End with **"shipped"** or **"stopped, bec
 | "The existing test already covers this" — said before the fault proof | Until a planted break has made it fail, nobody knows what it covers. |
 | "I know the expected values, I'll run it myself to save a dispatch" | A runner who knows the answer can make the state true by other means. The dispatch is the test. |
 | "The change is urgent; the net can follow the first commits" (shared-checkout pressure) | The first commit is the change. A net that follows it has no baseline and proves nothing about the before. |
+| "Website safety net `run.mjs` all PASS before and after" (npm campaign brief, 2026-10-15) | That is a script grading itself. §0's opening rule: it is not a real test and never stands in for one. |
+| "Stale tests, not app defects" — then the tests were edited until green (npm campaign, 2026-10-12) | §4b: classify from the captures first. A playbook changes only for intended behavior, with a ledger row. |
+| Fixer brief citing W-01…W-22 before any playbook existed (agent variables, 2026-10-15) | §1: the run proves the bug and the rerun proves the fix. A fix from the list alone proves neither. |
+| "Another lane's import" — it was a stale install (agent variables, 2026-10-15) | §4a step 2: diagnose before blaming. |
+| "I'll wait in the background and resume when notified" (2026-10-02) | A background wait dies with the turn; wait in the foreground. |
 
 ## Red flags — thoughts that precede the violation
 
@@ -275,11 +399,16 @@ trigger · what is UNTESTABLE and why. End with **"shipped"** or **"stopped, bec
 - "The runner clearly got confused; I'll call it a pass."
 - "Eight playbooks is fine, they're small."
 - "I'll seed the final state directly so the run is quicker."
+- "The weakness list already proves it; I'll fix it now and test later."
+- "Probably flaky — send it again."
+- "The script has a fault switch, so it is proven."
 
 ## Banned
 
-Tests written after the change · one agent writing, running and grading · a runner with write tools
-or the sealed checks · PASS or FAIL from the runner's mouth · INCONCLUSIVE counted as a pass ·
-editing a playbook to make it pass · an obvious fault offered as proof · a hand-edited fault left on
-the shared checkout · a fault that touches anything but `admin@admin.com`'s disposable records · more than six playbooks · placeholder-looking
-markers · "tests pass" as the report · turning any of this into something that runs on its own.
+Tests written after the change (scenarios B, D) · one agent writing, running and grading · a runner with
+write tools or the sealed checks · PASS or FAIL from the runner's mouth · INCONCLUSIVE counted as a
+pass · editing a playbook to make it pass · an obvious fault offered as proof · a hand-edited fault
+left on the shared checkout · a fault that touches anything but `admin@admin.com`'s disposable records
+· more than six playbooks · placeholder-looking markers · "tests pass" as the report · a script that
+grades itself offered as the net · a fix from the weakness list before a run graded it · a runner sent
+without the §4a preflight · turning any of this into something that runs on its own.
