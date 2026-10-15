@@ -45,6 +45,22 @@ Block document: a tree of `SpaceBlock` (`id`, `type`, `text: RichSpan[]`, `color
 
 ## Change log
 
+- 2026-10-14 — Row pages (lane ROW-PAGE-VIEWS; plan `../common-docs/systems/data/custom-data/projects/row-pages/PLAN.md`).
+  EVERY ROW IS A PAGE: a custom-table row's body is its `row_body` Space in this editor (`embed/RecordBodySpace.tsx`);
+  someone who may edit a row with none gets one on open (`content.row_page_ensure`, never overwrites): the row's
+  Notes column as blocks (the column is not written), then the table's default row template (`custom.row_template_default`,
+  fresh block ids) — `embed/row-page.ts`. Readers keep the old body. A view filter value `"@this-row"` on a relation
+  column = "This page's row" (`data/this-row.ts`; Filter → relation → This page's row): resolved at render by
+  `data/owning-row.tsx` (`content.space_owning_row`, nested pages inherit; the editor provides the page id), never sent
+  to the store; no row → no rows plus one line; "New" in the view starts the row linked. The store reads a scalar on a
+  relation column as "contains" (`custom.record_filter_sql`), so one-to-many and many-to-many both work. The server
+  seed skips such views. Record page right-click › Page › "Use this page as the template" saves the page as the table's
+  default template. Row pages stay out of the sidebar (`content.space_list`). Tests: `data/__tests__/this-row.test.ts`,
+  `embed/__tests__/row-page.test.ts`; live proof `data/row-page-live-proof.ts` (18/18). Gap: the embedded grid's own
+  "+ New page" line and board/gallery adds write `{}` (records-ui has no new-row values prop), so a row added there
+  is unlinked and leaves the view — use the block's New button; the template's preset VALUES apply only through
+  "From template", its BODY only through the default template.
+
 - 2026-10-14 — Tiered breadcrumb (lane TIERED-NAV, Notion's breadcrumb menu). The topbar crumbs are the one shared
   `components/official/tiered-breadcrumb` primitive (`nav/tiered-crumbs.tsx`): a segment opens "Other pages in <parent>"
   (5, then "N more" → search; from the sidebar tree, no read); hovering a page reads it once and lists its database
