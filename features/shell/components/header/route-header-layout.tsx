@@ -114,6 +114,24 @@ export function isDestructiveAction(node: ReactNode): boolean {
   return false;
 }
 
+/**
+ * A SECONDARY action (`data-route-header-secondary` on the control, or on a
+ * host element wrapping exactly one control): on a phone it is never the row's
+ * primary — it goes to the ⋮ sheet, so a record title keeps the row
+ * (2026-10-15, /work/live: an "open in new tab" icon beside a session title on
+ * a 375px phone). Desktop is unchanged.
+ */
+export function isSecondaryAction(node: ReactNode): boolean {
+  if (!isValidElement(node)) return false;
+  const props = node.props as { children?: ReactNode; "data-route-header-secondary"?: unknown };
+  if (props["data-route-header-secondary"] !== undefined) return true;
+  if (typeof node.type === "string") {
+    const kids = Children.toArray(props.children);
+    return kids.length === 1 && isSecondaryAction(kids[0]);
+  }
+  return false;
+}
+
 export function isMenuAction(node: ReactNode): boolean {
   if (!isValidElement(node)) return false;
   const type = node.type as unknown;

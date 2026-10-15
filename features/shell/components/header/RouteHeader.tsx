@@ -45,7 +45,7 @@
 //     actions move into the shell's ⋮ sheet, the primary stays in the row (icon-only
 //     when it is a labelled tap button). On a phone a MENU is never the primary (it
 //     would be a second overflow beside the ⋮): it goes to the sheet, and the primary
-//     is the last non-menu action. Menus are known by identity (`isMenuAction`); a
+//     is the last non-menu action; one marked `data-route-header-secondary` goes to the sheet too. Menus are known by identity (`isMenuAction`); a
 //     page's own menu component declares `routeHeaderMenu = true`. Secondary actions fold first; then a
 //     labelled tap button (`label` + `icon`) goes icon-only — caption kept as its
 //     accessible name and tooltip — instead of folding into "…".
@@ -88,6 +88,7 @@ import {
   iconOnlyLabel,
   isDestructiveAction,
   isMenuAction,
+  isSecondaryAction,
   OverflowMenuItem,
   overflowItemLabel,
   RESPONSIVE_DISPLAY,
@@ -425,7 +426,10 @@ export default function RouteHeader({
   // phone, so the server HTML can mark it (`data-route-header-phone-primary`)
   // and the pre-hydration header draws the phone row exactly.
   const phonePrimaryCandidate =
-    [...actions].reverse().find((a) => !isMenuAction(a.node) && !isDestructiveAction(a.node)) ?? null;
+    [...actions]
+      .reverse()
+      .filter((a) => !isSecondaryAction(a.node))
+      .find((a) => !isMenuAction(a.node) && !isDestructiveAction(a.node)) ?? null;
   const phonePrimary = toSheet
     ? phonePrimaryCandidate
     : null;

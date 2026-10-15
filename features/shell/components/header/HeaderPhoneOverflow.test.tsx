@@ -53,6 +53,10 @@ function PresentedColumn() {
   return null;
 }
 
+// The AI test-mode row reads the store and the server; its own suite covers it.
+jest.mock("@/features/ai-test-mode/AiTestModeDock", () => ({
+  AiTestModeSheetRow: () => null,
+}));
 jest.mock("@/features/knowledge/command-bar/OpenCommandBarButtons", () => ({
   useOpenBarOrGate: () => openBar,
 }));

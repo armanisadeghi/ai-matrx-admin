@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import { Plus, Smile, X, Paperclip } from "lucide-react";
 import type { ComposerInputRenderProps } from "@ai-matrx/messaging/react";
@@ -20,6 +20,9 @@ const Tools = dynamic(() => import("./MessagesComposerTools"), {
   loading: () => <p className="p-4 text-sm">Opening picker…</p>,
 });
 
+/** Below this composer-line width the emoji button folds into "+". */
+const NARROW_LINE_PX = 440;
+
 export function MessagesComposerInput({
   input,
   surfaceName,
@@ -35,6 +38,19 @@ export function MessagesComposerInput({
   const selection = useRef({ start: 0, end: 0 });
   const [pickerError, setPickerError] = useState<Error | null>(null);
   const [menu, setMenu] = useState<"attach" | "emoji" | null>(null);
+  // A narrow line (a phone, a side panel) folds the emoji button into "+",
+  // so the field keeps room to type; phone keyboards carry emoji too.
+  const lineRef = useRef<HTMLDivElement>(null);
+  const [narrow, setNarrow] = useState(false);
+  useLayoutEffect(() => {
+    const el = lineRef.current;
+    if (!el) return;
+    const measure = () => setNarrow(el.offsetWidth > 0 && el.offsetWidth < NARROW_LINE_PX);
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
   function rememberSelection() {
     selection.current = {
       start: ref.current?.selectionStart ?? input.value.length,
@@ -102,6 +118,7 @@ export function MessagesComposerInput({
           >
             <Tools
               mode={kind}
+              offerEmoji={narrow}
               input={input}
               onClose={() => setMenu(null)}
               onEmoji={insertEmoji}
@@ -130,7 +147,7 @@ export function MessagesComposerInput({
           ))}
         </div>
       )}
-      <div className="messages-composer-line">
+      <div ref={lineRef} className="messages-composer-line">
         {attachmentsEnabled && picker("attach")}
         <ProTextarea
           ref={ref}
@@ -154,7 +171,7 @@ export function MessagesComposerInput({
           {...(getApplicationScope ? { getApplicationScope } : {})}
           wrapperClassName="messages-composer min-w-0 flex-1"
         />
-        {picker("emoji")}
+        {!narrow && picker("emoji")}
       </div>
     </div>
   );

@@ -77,7 +77,8 @@ export function SessionDetail({
             >
               <PresenceDot presence={session.presence} />
               <span className="min-w-0 truncate font-medium text-foreground">{session.title}</span>
-              <Icon className="size-3 shrink-0 text-muted-foreground" />
+              {/* A phone's row is the title's: the provider shows in the tooltip. */}
+              {layout.listBeside && <Icon className="size-3 shrink-0 text-muted-foreground" />}
               {layout.roomy && (
                 <span className="min-w-0 shrink-[4] truncate text-xs text-muted-foreground">{meta}</span>
               )}
@@ -93,13 +94,14 @@ export function SessionDetail({
         right={
           <>
             {needsClaudeAccount(lag) && (
-              <Button asChild variant="outline" className="shrink-0">
+              <Button asChild variant="outline" className="shrink-0" data-route-header-secondary="">
                 <Link href="/work/connections#claude-accounts">Connect Claude account</Link>
               </Button>
             )}
             {/* Opens the full conversation page in a NEW tab: an "open
                 elsewhere" icon never replaces the page you are on. */}
             <ExternalLinkTapButton
+              data-route-header-secondary=""
               variant="transparent"
               href={`/work/conversations/${session.address}`}
               target="_blank"

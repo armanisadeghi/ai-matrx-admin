@@ -3144,6 +3144,15 @@ html[data-board-embed] .shell-main {
   display: flex;
 }
 
+/* A PHONE'S TITLE KEEPS THE ROW (2026-10-15): below 768px the chat button
+   moves into the ⋮ sheet (HeaderPhoneOverflow's "Chat" row, the same door),
+   so the header holds hamburger · page · ⋮ and nothing else. */
+@media (max-width: 767px) {
+  .shell-root[data-shell-chat-available] .shell-chat-toggle {
+    display: none;
+  }
+}
+
 @media (min-width: 1024px) {
   .shell-root[data-shell-chat-available] .shell-chat-toggle {
     position: fixed;

@@ -81,6 +81,7 @@ export function RoomDetail({
   const addable = sessions.filter((s) => s.presence !== "ended" && !memberAddresses.has(s.address));
   const canEdit = kind === "agent_room";
   const deliveryStatusFor = useRoomDelivery(roomId, members, sessions, agentInfo);
+  const chipsLine = layout.listBeside ? "flex-wrap" : "flex-nowrap overflow-x-auto scrollbar-none";
 
   const run = async (op: () => Promise<unknown>) => {
     setBusy(true);
@@ -160,6 +161,7 @@ export function RoomDetail({
             )}
             {/* The same conversation in Messages, in a NEW tab. */}
             <ExternalLinkTapButton
+              data-route-header-secondary=""
               variant="transparent"
               href={`/messages/${roomId}`}
               target="_blank"
@@ -169,15 +171,17 @@ export function RoomDetail({
           </>
         }
       />
+      {/* On a phone the member chips are ONE sideways-scrolling line each, so
+          the conversation keeps the screen (they wrapped to several rows). */}
       <div className={cn("px-3", (inRoom.length > 0 || agentsInRoom.length > 0 || error) && "border-b border-border pb-2")}>
         {inRoom.length > 0 && (
-          <ul className="mt-2 flex flex-wrap gap-1.5" aria-label="Sessions in this room">
+          <ul className={cn("mt-2 flex gap-1.5", chipsLine)} aria-label="Sessions in this room">
             {inRoom.map((m) => {
               const s = sessionOf(m);
               return (
                 <li
                   key={m.id}
-                  className="flex max-w-[20rem] items-center gap-1.5 rounded-full border border-border py-0.5 pl-2 pr-1 text-xs"
+                  className="flex max-w-[20rem] shrink-0 items-center gap-1.5 rounded-full border border-border py-0.5 pl-2 pr-1 text-xs"
                 >
                   <PresenceDot presence={s?.presence ?? "ended"} className="size-2" />
                   <button
@@ -214,13 +218,13 @@ export function RoomDetail({
           </ul>
         )}
         {agentsInRoom.length > 0 && (
-          <ul className="mt-2 flex flex-wrap gap-1.5" aria-label="Manager agents in this room">
+          <ul className={cn("mt-2 flex gap-1.5", chipsLine)} aria-label="Manager agents in this room">
             {agentsInRoom.map((m) => {
               const info = agentInfo[m.member_id];
               return (
                 <li
                   key={m.id}
-                  className="flex max-w-[24rem] items-center gap-1.5 rounded-full border border-border py-0.5 pl-2 pr-1 text-xs"
+                  className="flex max-w-[24rem] shrink-0 items-center gap-1.5 rounded-full border border-border py-0.5 pl-2 pr-1 text-xs"
                 >
                   <AGENT_ICON className="size-3 shrink-0 text-muted-foreground" />
                   <Link href={`/work/conversations/${m.member_id}`} className="min-w-0 truncate hover:underline">
@@ -235,7 +239,7 @@ export function RoomDetail({
                     className="flex items-center gap-1 rounded-full px-1.5 py-0.5 text-muted-foreground hover:bg-accent hover:text-foreground"
                   >
                     <CalendarClock className="size-3" />
-                    Run on a schedule
+                    {layout.listBeside ? "Run on a schedule" : "Schedule"}
                   </Link>
                 </li>
               );

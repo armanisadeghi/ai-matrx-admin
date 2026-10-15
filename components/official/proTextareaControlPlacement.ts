@@ -93,3 +93,17 @@ export function clusterPlacementProblems(p: ClusterPlacement): string[] {
   }
   return problems;
 }
+
+/**
+ * Below this field width an inline-controls box is COMPACT (a phone composer,
+ * a narrow side panel): the mic drops its device chevron — the device choice
+ * moves into the "…" menu — so the text keeps room to type, and the live
+ * dictation strip draws ABOVE the field instead of over its one line
+ * (2026-10-15, /work/live on a 375px phone: mic + chevron + "…" + send left
+ * the text ~80px).
+ */
+export const INLINE_COMPACT_MAX_PX = 360;
+
+export function isInlineCompact(fieldWidthPx: number): boolean {
+  return fieldWidthPx > 0 && fieldWidthPx < INLINE_COMPACT_MAX_PX;
+}

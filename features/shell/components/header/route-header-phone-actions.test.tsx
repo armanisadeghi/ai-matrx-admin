@@ -128,6 +128,49 @@ describe("RouteHeader on a phone", () => {
     expect(store.getPhonePageActionCountForTest()).toBe(0);
   });
 
+  it("a lone SECONDARY action goes to the sheet — the title keeps the row (2026-10-15, /work/live)", () => {
+    PHONE = true;
+    rowEl = document.createElement("div");
+    document.body.appendChild(rowEl);
+    root = createRoot(rowEl);
+    act(() => {
+      root.render(
+        <RouteHeader
+          left={<span>Custom Data - Big 90 Tables</span>}
+          right={
+            <button type="button" data-route-header-secondary="">
+              Open in new tab
+            </button>
+          }
+        />,
+      );
+    });
+    expect(rowEl.querySelector("[data-route-header-right]")!.textContent).not.toContain("Open in new tab");
+    expect(hostEl.textContent).toContain("Open in new tab");
+    expect(store.getPhonePageActionCountForTest()).toBe(1);
+  });
+
+  it("a secondary action stays in the row on desktop", () => {
+    PHONE = false;
+    rowEl = document.createElement("div");
+    document.body.appendChild(rowEl);
+    root = createRoot(rowEl);
+    act(() => {
+      root.render(
+        <RouteHeader
+          left={<span>Room</span>}
+          right={
+            <span data-route-header-secondary="">
+              <button type="button">Open in new tab</button>
+            </span>
+          }
+        />,
+      );
+    });
+    expect(rowEl.querySelector("[data-route-header-right]")!.textContent).toContain("Open in new tab");
+    expect(hostEl.textContent).toBe("");
+  });
+
   it("keeps the row exactly as before on desktop", () => {
     PHONE = false;
     mount();

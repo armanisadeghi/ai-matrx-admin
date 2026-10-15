@@ -34,8 +34,11 @@ import {
   EllipsisVertical,
   Layers,
   MessageSquare,
+  MessagesSquare,
   Search,
 } from "lucide-react";
+import { SHELL_CHAT_TOGGLE_EVENT } from "@ai-matrx/chat/canvas/workspace/shell-chat-route";
+import { AiTestModeSheetRow } from "@/features/ai-test-mode/AiTestModeDock";
 import { TapTargetButtonTransparent } from "@ai-matrx/design-system/tap-target";
 import {
   Drawer,
@@ -274,6 +277,21 @@ export function HeaderPhoneOverflow({
     };
   }, [holder]);
 
+  // 🚨 ON A PHONE THE SHELL CHAT BUTTON LIVES HERE (2026-10-15): beside the
+  // hamburger it took a 44px box from every page title (/work/live on a
+  // 375px phone cut the session title to a few letters). `styles/shell.css`
+  // hides `.shell-chat-toggle` below 768px; this row is the same door.
+  const [chatAvailable, setChatAvailable] = useState(false);
+  const readChatAvailable = () => {
+    const root = document.querySelector(".shell-root");
+    setChatAvailable(
+      root != null &&
+        root.hasAttribute("data-shell-chat-available") &&
+        !root.hasAttribute("data-no-sidebar") &&
+        !root.hasAttribute("data-canvas-fullscreen"),
+    );
+  };
+
   const close = () => setOpen(false);
   const onOpenChange = (next: boolean) => {
     setOpen(next);
@@ -289,9 +307,15 @@ export function HeaderPhoneOverflow({
     <div className="shell-header-overflow relative shrink-0" data-header-phone-overflow>
       <div ref={setHolder} hidden aria-hidden />
       {isAuthenticated ? (
-        <SignedInOverflowTrigger onOpen={() => setOpen(true)} />
+        <SignedInOverflowTrigger onOpen={() => {
+            readChatAvailable();
+            setOpen(true);
+          }} />
       ) : (
-        <OverflowTrigger onOpen={() => setOpen(true)} unread={0} />
+        <OverflowTrigger onOpen={() => {
+            readChatAvailable();
+            setOpen(true);
+          }} unread={0} />
       )}
       <Drawer open={open} onOpenChange={onOpenChange}>
         <DrawerContent className="bg-textured pb-safe max-h-[85dvh]">
@@ -310,6 +334,16 @@ export function HeaderPhoneOverflow({
             <div className="matrx-touch-targets flex flex-col gap-0.5 px-2 pb-4">
               {host && pageActions.count > 0 ? (
                 <PageActionsSection host={host} holder={holder} onDone={close} />
+              ) : null}
+              {isAuthenticated && chatAvailable ? (
+                <Row
+                  icon={<MessagesSquare className="h-5 w-5" />}
+                  label="Chat"
+                  onClick={() => {
+                    close();
+                    window.dispatchEvent(new Event(SHELL_CHAT_TOGGLE_EVENT));
+                  }}
+                />
               ) : null}
               <Row
                 icon={<Search className="h-5 w-5" />}
@@ -361,6 +395,7 @@ export function HeaderPhoneOverflow({
                 }}
                 trailing={isAuthenticated ? <InboxRowTrailing /> : undefined}
               />
+              {isAuthenticated ? <AiTestModeSheetRow /> : null}
               {canvas.isAvailable || !canvas.availabilityKnown ? (
                 <Row
                   icon={<Layers className="h-5 w-5" />}

@@ -157,7 +157,7 @@ const TEXT_AGENT_ACTION_IDS = [
 ] as const;
 import { EditableContextMenu } from "@ai-matrx/context-menu/react";
 import { useIsInsideContextMenu } from "@ai-matrx/context-menu/react";
-import { Check, Loader2, Send } from "lucide-react";
+import { Check, Loader2, Mic, Send } from "lucide-react";
 import { motion } from "motion/react";
 import { useOpenDiffViewerWindow } from "@/features/overlays/openers/diffViewerWindow";
 import { useMicField } from "@/features/audio/hooks/useMicField";
@@ -176,6 +176,7 @@ import {
   PopoverContent,
 } from "@ai-matrx/design-system";
 import { MicWithDeviceMenu } from "@/components/audio/MicWithDeviceMenu";
+import { useOpenAudioDevices } from "@/features/overlays/openers/audioDevices";
 import { supabase } from "@/utils/supabase/client";
 import type { SessionContextItem } from "@/features/transcript-studio/types";
 import { VoiceTroubleshootingModal } from "@/features/audio/components/VoiceTroubleshootingModal";
@@ -230,6 +231,7 @@ import { ProTextAgentActionPopoverBody } from "./ProTextAgentActionPopoverBody";
 import {
   INLINE_CONTROLS_MIN_HEIGHT_PX,
   inlineControlsFieldPadding,
+  isInlineCompact,
   proTextareaClusterPlacement,
   type ProTextareaControls,
 } from "./proTextareaControlPlacement";
@@ -563,6 +565,22 @@ export const ProTextarea = React.forwardRef<
       observer.observe(el);
       return () => observer.disconnect();
     }, [inlineControls]);
+    // The field's own width decides the compact inline shape
+    // (`isInlineCompact`) — a question about this box, never the viewport.
+    const fieldBoxRef = useRef<HTMLDivElement>(null);
+    const [fieldBoxWidth, setFieldBoxWidth] = useState(0);
+    useLayoutEffect(() => {
+      if (!inlineControls) return;
+      const el = fieldBoxRef.current;
+      if (!el) return;
+      const measure = () => setFieldBoxWidth(el.offsetWidth);
+      measure();
+      const observer = new ResizeObserver(measure);
+      observer.observe(el);
+      return () => observer.disconnect();
+    }, [inlineControls]);
+    const compactInline = inlineControls && isInlineCompact(fieldBoxWidth);
+    const openAudioDevices = useOpenAudioDevices();
     const generatedId = useId();
     const inputId = idProp ?? (floatingLabel ? generatedId : undefined);
     const [isFocused, setIsFocused] = useState(false);
@@ -1351,6 +1369,8 @@ export const ProTextarea = React.forwardRef<
 
     const field = (
       <div
+        ref={fieldBoxRef}
+        data-pro-textarea-compact={compactInline ? "" : undefined}
         className={cn("relative group", wrapperClassName)}
         onMouseEnter={() => setIsHovered(true)}
         onMouseMove={() => {
@@ -1500,6 +1520,7 @@ export const ProTextarea = React.forwardRef<
                         : undefined
                     }
                     onMicClick={handleVoiceClick}
+                    {...(compactInline && showMenu ? { showDeviceMenu: false } : {})}
                     disabled={isVoiceDisabled}
                     isRecording={isRecording}
                     isTranscribing={isTranscribing}
@@ -1557,6 +1578,23 @@ export const ProTextarea = React.forwardRef<
                     >
                       {menuMode === "menu" ? (
                         <div className="flex flex-col p-1">
+                          {/* Compact: the mic's device chevron folded in here. */}
+                          {compactInline && enableVoice && isAudioAvailable ? (
+                            <>
+                              <button
+                                type="button"
+                                className="flex min-h-9 w-full items-center gap-2 rounded-md px-2 text-left text-sm text-foreground hover:bg-accent"
+                                onClick={() => {
+                                  setMenuOpen(false);
+                                  openAudioDevices();
+                                }}
+                              >
+                                <Mic className="h-4 w-4 text-muted-foreground" />
+                                Microphone
+                              </button>
+                              <div className="my-1 h-px bg-border" role="separator" />
+                            </>
+                          ) : null}
                           {/* The ONE action registry — the same actions a
                             rendered document offers (copy every way, save,
                             listen, share, rulebook…), plus this field's own
@@ -1694,9 +1732,16 @@ export const ProTextarea = React.forwardRef<
             {enableVoice && isRecording && (
               <div
                 className={cn(
-                  "absolute left-2 bottom-2 flex items-center gap-1.5 px-2 py-1 bg-primary/10 dark:bg-primary/15 rounded-md",
-                  // Clear the control row (mic + "…", plus submit when present).
-                  onSubmit ? "right-32" : "right-24",
+                  "absolute flex items-center gap-1.5 px-2 py-1 rounded-md",
+                  inlineControls
+                    ? // Inline: the field is one line tall, so the strip rides
+                      // ABOVE it and never covers what is being typed.
+                      "inset-x-0 bottom-full mb-1.5 border border-border bg-card shadow-sm"
+                    : cn(
+                        "left-2 bottom-2 bg-primary/10 dark:bg-primary/15",
+                        // Clear the control row (mic + "…", plus submit when present).
+                        onSubmit ? "right-32" : "right-24",
+                      ),
                 )}
               >
                 <motion.div
@@ -1712,7 +1757,12 @@ export const ProTextarea = React.forwardRef<
 
             {/* Transcribing Indicator (finalizing after recording stops) */}
             {enableVoice && isTranscribing && !isRecording && (
-              <div className="absolute left-2 bottom-2 flex items-center gap-1.5 px-2 py-1 bg-blue-100 dark:bg-blue-900/30 rounded-md">
+              <div
+                className={cn(
+                  "absolute flex items-center gap-1.5 px-2 py-1 rounded-md bg-blue-100 dark:bg-blue-900/30",
+                  inlineControls ? "left-0 bottom-full mb-1.5" : "left-2 bottom-2",
+                )}
+              >
                 <Loader2 className="w-3 h-3 animate-spin text-blue-600 dark:text-blue-400" />
                 <span className="type-secondary text-blue-600 dark:text-blue-400 font-medium">
                   Finalizing...

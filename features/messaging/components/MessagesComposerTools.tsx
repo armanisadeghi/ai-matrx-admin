@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import EmojiPicker, { Theme } from "emoji-picker-react";
-import { ArrowLeft, Files, Link2, Database } from "lucide-react";
+import { ArrowLeft, Files, Link2, Database, Smile } from "lucide-react";
 import type { ComposerInputRenderProps } from "@ai-matrx/messaging/react";
 import { ResourcePickerMenu } from "@/features/resource-manager/resource-picker/ResourcePickerMenu";
 import { ReferencePickerBody } from "@/features/matrx-envelope/components/reference-picker/ReferencePickerBody";
@@ -11,19 +11,22 @@ import { toast } from "@/lib/toast";
 
 export default function MessagesComposerTools({
   mode,
+  offerEmoji = false,
   input,
   onClose,
   onEmoji,
 }: {
   mode: "attach" | "emoji";
+  /** The composer folded its emoji button into "+": offer it here. */
+  offerEmoji?: boolean;
   input: ComposerInputRenderProps;
   onClose: () => void;
   onEmoji: (emoji: string) => void;
 }) {
-  const [view, setView] = useState<"menu" | "files" | "references" | "records">(
+  const [view, setView] = useState<"menu" | "files" | "references" | "records" | "emoji">(
     "menu",
   );
-  if (mode === "emoji")
+  if (mode === "emoji" || view === "emoji")
     return (
       <EmojiPicker
         onEmojiClick={(item) => onEmoji(item.emoji)}
@@ -59,6 +62,12 @@ export default function MessagesComposerTools({
             <Database size={19} />
             <span>Custom data</span>
           </button>
+          {offerEmoji && (
+            <button type="button" onClick={() => setView("emoji")}>
+              <Smile size={19} />
+              <span>Emoji</span>
+            </button>
+          )}
         </div>
       )}
       {view === "files" && (
