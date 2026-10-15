@@ -55,6 +55,7 @@ import { SpecCard } from "./SpecCard";
 import { TriggerCard } from "./TriggerCard";
 import { RunHistoryCard } from "./RunHistoryCard";
 import { SuspensionCard, approvalSentence } from "./SuspensionCard";
+import { ComputerTargetLine } from "./ComputerTargetLine";
 import { humanizeRelative } from "../../utils/triggerHumanize";
 
 /**
@@ -545,6 +546,7 @@ function ScheduleRecordBody({
         onRestore={canFlip ? () => void onSetEnabled(true) : undefined}
         restoring={flipping}
       />
+      <ComputerTargetLine task={task} />
       {/* Record-level copy. The plain click is the what-I-see payload (spec +
           trigger + run history with errors verbatim); the menu grades it into
           the two reasons this page gets copied. */}

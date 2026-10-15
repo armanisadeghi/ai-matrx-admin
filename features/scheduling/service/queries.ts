@@ -205,6 +205,7 @@ export function rowToAgendaTask(row: JoinedAgentTaskRow): AgendaTask {
     lastRunAt: row.last_run_at,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
+    targetDeviceId: row.target_device_id ?? null,
 
     // A task with no `sch_agent_task` row (`kind = 'ping'`) has no agent
     // extension. These are ABSENT, not defaulted-away: `agentId` is null and

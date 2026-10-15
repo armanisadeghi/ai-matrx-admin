@@ -170,6 +170,8 @@ export interface SchTaskRow {
   tags: string[];
   next_due_at: string | null;
   last_run_at: string | null;
+  /** The Matrx 2 computer that runs this task (null: the cloud, or the computer was removed). */
+  target_device_id?: string | null;
   /**
    * Non-null when the user soft-deleted this task. All user-facing read
    * paths (`listAgentTasks`, `getAgentTask`, the aidream `/scheduler/*`
@@ -262,6 +264,8 @@ export interface AgendaTask {
   lastRunAt: string | null;
   createdAt: string;
   updatedAt: string;
+  /** The Matrx 2 computer that runs this task; null on a desktop task means its computer was removed. */
+  targetDeviceId?: string | null;
 
   // agent extension
   agentId: string | null;
