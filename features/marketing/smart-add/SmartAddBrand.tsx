@@ -122,7 +122,8 @@ import {
 import { useRelationKinds } from "./SmartAddExtras";
 import { useEntityKindLabel } from "./entityKind";
 import { suggestKind, type WebChoice } from "./webKinds";
-import { recordWebAnswers } from "./learnDomains";
+import { recordWebAnswers, teachFediverseHost } from "./learnDomains";
+import { learnFediverseFromText } from "@/features/marketing/social/fediverse";
 import {
   SETUP_STEPS,
   SmartAddRound,
@@ -795,7 +796,9 @@ export function SmartAddBrand({
   };
 
   /** A profile link typed on the anchor cards: confirmed like any account the person adds. */
-  const addAnchorLink = (text: string) => {
+  const addAnchorLink = async (text: string) => {
+    // A Mastodon account on its own server looks like a website until the host is checked (MKT-102).
+    await learnFediverseFromText(text, { onLearned: teachFediverseHost });
     const parsed = resolveAccountInput({ text });
     if (parsed.status === "ok") addCustom(customItem("social", parsed.url, { platform: parsed.platform, handle: parsed.handle, url: parsed.url }));
     else addCustom(customItem("website", text));

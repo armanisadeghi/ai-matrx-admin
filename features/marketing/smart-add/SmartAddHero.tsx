@@ -39,6 +39,7 @@ import { SocialImage } from "@/features/marketing/social/components/SocialImage"
 import { profileAvatarDoor } from "@/features/marketing/social/server";
 import type { SocialPlatform } from "@/features/marketing/social/types";
 import { emailIn } from "./emailInput";
+import { personExtraPrefill } from "./personPrefill";
 import { customItem, websiteHost, type EvidenceItem } from "./evidence";
 import type { RoundView } from "./SmartAddRound";
 import { AiTestReplayBadge } from "@/features/ai-test-mode/AiTestReplayBadge";
@@ -174,7 +175,8 @@ export function SmartAddHero({
   // Person clues beside the city (VISION Part 10): occupation, company, anything else (school, a profile link).
   const [occupation, setOccupation] = useState(initial?.occupation ?? "");
   const [company, setCompany] = useState(initial?.company ?? "");
-  const [extra, setExtra] = useState("");
+  // A person's name way in has no handle row: a `social=` beside the name rides the "anything else" row, where a profile link goes (MKT-103).
+  const [extra, setExtra] = useState(personExtraPrefill(person, initial));
   const [email, setEmail] = useState(initial?.email ?? "");
   // Name + city only: ask once for the job or company before searching (a location never grounds a person).
   const [askedClue, setAskedClue] = useState(false);

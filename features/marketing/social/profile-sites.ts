@@ -83,6 +83,45 @@ function parse(text: string): URL | null {
 
 const hostIs = (host: string, base: string) => host === base || host.endsWith(`.${base}`);
 
+/**
+ * Hosts proven to run Mastodon (or a compatible server) by a free check (`fediverse.ts`), kept for the session.
+ * A Mastodon profile lives on ANY host, so the fixed list above is only the head start; this set is the rest.
+ * Twin of matrx_social `learn_fediverse_host`.
+ */
+const learnedFediverseHosts = new Set<string>();
+
+export function learnFediverseHost(host: string): void {
+  const h = host.trim().toLowerCase().replace(/^www\./, "");
+  if (h) learnedFediverseHosts.add(h);
+}
+
+export function isLearnedFediverseHost(host: string): boolean {
+  return learnedFediverseHosts.has(host.trim().toLowerCase().replace(/^www\./, ""));
+}
+
+/** Test seam: forget every learned host. */
+export function forgetFediverseHosts(): void {
+  learnedFediverseHosts.clear();
+}
+
+/**
+ * `{host, user}` when `text` has the shape of a Mastodon profile on a host nothing else claims: one `/@user` segment.
+ * The shape alone proves nothing (Medium, TikTok and Hashnode use it); `verifyFediverseProfile` does.
+ */
+export function fediverseProfileShape(text: string | null | undefined): { host: string; user: string } | null {
+  const url = parse(text ?? "");
+  if (!url) return null;
+  const host = url.hostname.toLowerCase().replace(/^www\./, "");
+  const segments = url.pathname.split("/").filter(Boolean).map((s) => decodeURIComponent(s));
+  if (segments.length !== 1 || !segments[0].startsWith("@")) return null;
+  const user = segments[0].slice(1);
+  if (!HANDLE.test(user) || !host.includes(".")) return null;
+  // A host a known profile site or social platform already owns is not a fediverse server.
+  const claimed = PROFILE_SITES.some((s) => s.id !== "mastodon" && ((s.hosts ?? []).some((h) => hostIs(host, h)) || (s.subHosts ?? []).some((h) => hostIs(host, h))));
+  const platformHost = /(^|\.)(tiktok|instagram|youtube|linkedin|facebook|fb|x|twitter|threads|pinterest|reddit|snapchat)\.(com|net)$|(^|\.)youtu\.be$/.test(host);
+  return claimed || platformHost ? null : { host, user };
+}
+
 /** `{site, handle}` when `text` is the address of an account on a profile site; null for a repo, post or site page. */
 export function profileSiteHandle(text: string | null | undefined): { site: string; handle: string } | null {
   const url = parse(text ?? "");
@@ -98,7 +137,7 @@ export function profileSiteHandle(text: string | null | undefined): { site: stri
         return HANDLE.test(sub) ? { site: site.id, handle: sub } : null;
       }
     }
-    if (!site.hosts.some((h) => hostIs(host, h))) continue;
+    if (!site.hosts.some((h) => hostIs(host, h)) && !(site.id === "mastodon" && learnedFediverseHosts.has(host))) continue;
     let handle: string;
     if (site.id === "mastodon") {
       if (segments.length !== 1 || !segments[0].startsWith("@")) return null;

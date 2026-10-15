@@ -3,6 +3,7 @@
  * the text is a post link or a profile. Pure; the server re-validates.
  */
 
+import { profileSiteHandle } from "./profile-sites";
 import { classifyRedditHandle, classifyRedditUrl } from "../lib/reddit-links";
 import type { SocialPlatform } from "./types";
 
@@ -246,7 +247,11 @@ export function parseSocialAccount(input: string | null | undefined, fallback?: 
   const url = parseUrl(text);
   if (url) {
     const platform = detectPlatform(text);
-    if (!platform) return { status: "invalid" };
+    if (!platform) {
+      // A Mastodon profile on any server: known hosts, and hosts a free check has proven (fediverse.ts).
+      const site = profileSiteHandle(text);
+      return site?.site === "mastodon" ? build("mastodon", site.handle, undefined, true) : { status: "invalid" };
+    }
     if (looksLikePostUrl(text)) return { status: "post", platform, url: url.href };
     const found = accountFromUrl(platform, url);
     if (!found || !found.handle.trim()) return { status: "invalid" };

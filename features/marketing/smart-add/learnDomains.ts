@@ -8,6 +8,7 @@
  */
 
 import type { BrandRelationKind } from "@/features/marketing/data/service";
+import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
 import { recordDomainObservation } from "@/lib/web-domains/service";
 import type { EvidenceItem } from "./evidence";
 import type { WebChoice } from "./webKinds";
@@ -38,4 +39,11 @@ export function recordWebAnswers(
   for (const o of webAnswerObservations(items, choices, kinds)) {
     void recordDomainObservation(organizationId, o.url, o.category, "person_answer", "smart_add");
   }
+}
+
+/** A host proven to run Mastodon is a social site for everyone: report it to the registry (fire and forget, MKT-102). */
+export function teachFediverseHost(_host: string, profileUrl: string): void {
+  void ensureOrgId(null)
+    .then((organizationId) => recordDomainObservation(organizationId, profileUrl, "social", "person_answer", "smart_add:fediverse"))
+    .catch((e) => console.error("[known-web-domains] fediverse host observation failed", e));
 }
