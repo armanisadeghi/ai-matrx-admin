@@ -17,7 +17,7 @@ import {
   configAttestationCounters,
   noteConfigMissing,
 } from "../readLedger";
-import { appConfigReads } from "../../../scripts/config-attestation/lib";
+import { appConfigReads } from "../../../scripts/config-attestation/app-config-reads";
 
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
