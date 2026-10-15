@@ -350,6 +350,15 @@ export interface WorkflowRunState {
   signals: RunRecordSignal[];
   /** Bumped on EVERY signal (parseable or not) — the coarse subscription. */
   signalRevision: number;
+  /**
+   * Lanes minted before their invocation existed, by invocationKey (MKT-106). A node's live frames
+   * (its `user_request` reserved record_update, a render_block) can beat its durable `node_started`
+   * over the wire; the lane is minted on the first frame, so `registerLane` must not drop the id —
+   * it waits here and the invocation takes it the moment it is created. Dropping it left the
+   * invocation without `laneRequestId` for its whole life: every reader of the forming value saw
+   * nothing until the step ended.
+   */
+  pendingLanes: Record<string, string>;
   /** Bumped per record_update table — the targeted subscription. */
   signalRevisionByTable: Record<string, number>;
   /** THE ACTIVITY TRUTH-FEED — bounded ring, oldest dropped (ACTIVITY_MAX). */
@@ -498,6 +507,7 @@ function makeRunState(
     },
     signals: [],
     signalRevision: 0,
+    pendingLanes: {},
     signalRevisionByTable: {},
     activity: [],
     activitySeq: 0,
@@ -742,6 +752,11 @@ function upsertInvocation(
   let invocation = run.nodes[key];
   if (!invocation) {
     invocation = makeInvocation(key, event, specType);
+    const pendingLane = run.pendingLanes?.[key];
+    if (pendingLane) {
+      invocation.laneRequestId = pendingLane;
+      delete run.pendingLanes[key];
+    }
     run.nodes[key] = invocation;
   } else if (specType !== null) {
     invocation.specType = specType;
@@ -1459,6 +1474,8 @@ const workflowRunsSlice = createSlice({
       const run = state.byRunId[action.payload.runId];
       const invocation = run?.nodes[action.payload.invocationKey];
       if (invocation) invocation.laneRequestId = action.payload.requestId;
+      // The lane's first frame beat the invocation's node_started: it takes the id when it is created.
+      else if (run) (run.pendingLanes ??= {})[action.payload.invocationKey] = action.payload.requestId;
     },
 
     releaseLane(
@@ -1468,6 +1485,7 @@ const workflowRunsSlice = createSlice({
       const run = state.byRunId[action.payload.runId];
       const invocation = run?.nodes[action.payload.invocationKey];
       if (invocation) invocation.laneRequestId = null;
+      if (run?.pendingLanes) delete run.pendingLanes[action.payload.invocationKey];
     },
 
     /**
