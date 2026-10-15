@@ -41,7 +41,6 @@ const ROWS: Row[] = [
   ["editor.tools.voice-typing", "Voice typing", "file-actions", "Dictate into the file (or the speaker notes) with your microphone.", "Editor Tools → Voice typing"],
   // ── Extensions + Help (shared) ──
   ["editor.extensions.add-ons", "Add-ons", "file-actions", "Install add-ons that bring new tools into the editor.", "Editor Extensions → Add-ons"],
-  ["editor.extensions.macros", "Macros", "workbooks", "Record a series of edits and replay it with one shortcut.", "Workbook Extensions → Macros"],
   ["editor.extensions.scripts", "Scripts", "file-actions", "Write scripts that automate this file and connect it to other services.", "Editor Extensions → Scripts"],
   ["editor.help.search", "Help", "file-actions", "Search help articles for this editor without leaving the file.", "Editor Help → Help"],
   ["editor.help.training", "Training", "file-actions", "Short lessons that teach this editor, from basics to advanced.", "Editor Help → Training"],

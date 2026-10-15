@@ -48,6 +48,7 @@ import {
   DecimalsArrowLeft,
   DecimalsArrowRight,
   FileCog,
+  Repeat2,
 } from "lucide-react";
 
 import { promptForValues } from "@/components/dialogs/value-prompts/valuePromptsOpener";
@@ -1011,7 +1012,21 @@ export function buildSheetMenus(h: SheetChromeHost): EditorMenu[] {
         { kind: "action", id: "tools.comments", label: "Comments panel", run: run(h, "sheet.operation.toggle-comment-panel") },
       ],
     },
-    googleExtensionsMenu("sheets"),
+    googleExtensionsMenu("sheets", {
+      macros: {
+        kind: "submenu",
+        id: "extensions.macros",
+        label: "Macros",
+        icon: Repeat2,
+        keywords: ["record", "replay", "automation"],
+        items: [
+          { kind: "action", id: "extensions.macros.record", label: "Record macro", run: run(h, "action-recorder.command.start-recording") },
+          { kind: "action", id: "extensions.macros.stop", label: "Stop and save recording", run: run(h, "action-recorder.command.complete-recording") },
+          { kind: "action", id: "extensions.macros.panel", label: "Manage macros", run: run(h, "action-recorder.operation.open-panel") },
+          { kind: "action", id: "extensions.macros.replay", label: "Replay saved macro", run: run(h, "action-recorder.command.replay-local-records") },
+        ],
+      },
+    }),
     {
       id: "help",
       label: "Help",
