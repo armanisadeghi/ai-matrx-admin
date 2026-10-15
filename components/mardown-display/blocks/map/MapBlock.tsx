@@ -23,6 +23,7 @@ import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { useCanvasPresentation } from "@ai-matrx/canvas/react";
 import { mapPlacesList } from "@ai-matrx/rich-content/display/blocks/canvas-adaptive";
 import { Button, Tile } from "@ai-matrx/design-system/controls";
+import { useBlockHostSlot } from "@ai-matrx/rich-content/display/block-host";
 
 
 const MapCanvas = dynamic(() => import("./MapCanvas"), {
@@ -64,6 +65,7 @@ export const MapBlock: React.FC<MapBlockProps> = ({
   const showList =
     placesList === "side" || (placesList === "toggle" && listOpen);
 
+  const host = useBlockHostSlot();
   const handleCopy = async () => {
     if (!(await copyText(content.trim()))) return;
     setCopied(true);
@@ -73,7 +75,8 @@ export const MapBlock: React.FC<MapBlockProps> = ({
   return (
     <div
       className={cn(
-        "my-3 overflow-hidden rounded-lg border border-border bg-card",
+        "my-3 overflow-hidden rounded-lg border bg-card transition-colors",
+        host.selected ? "border-primary" : "border-border",
         className,
       )}
     >
@@ -106,6 +109,7 @@ export const MapBlock: React.FC<MapBlockProps> = ({
                 <Copy />
               )} aria-label={copied ? "Copied" : "Copy source"} title={copied ? "Copied" : "Copy source"} onClick={handleCopy} />
           )}
+          {host.actions}
         </div>
       </div>
       <div className="p-3">

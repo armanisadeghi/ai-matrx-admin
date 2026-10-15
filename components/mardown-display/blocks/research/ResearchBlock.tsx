@@ -45,6 +45,7 @@ import { getArtifactDef } from '@/features/canvas/artifact-types/artifact-type-r
 import { cn } from '@/lib/utils';
 import { useCanvasFit } from '@ai-matrx/rich-content/display/blocks/canvas-fit';
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
+import { useBlockHostSlot } from "@ai-matrx/rich-content/display/block-host";
 
 interface UnrecognizedSection {
   id: string;
@@ -133,6 +134,7 @@ const ResearchBlock: React.FC<ResearchBlockProps> = ({
   blockIndex,
 }) => {
   const [isFullScreen, setIsFullScreen] = useState(false);
+  const host = useBlockHostSlot();
   // In the canvas the PANE sets the columns, not the viewport: the content is a
   // size container and every md:/lg: split reads the container instead, so a
   // 360px pane on a wide screen gets one column. Outside the canvas the
@@ -316,6 +318,7 @@ const ResearchBlock: React.FC<ResearchBlockProps> = ({
                       <Button variant="success" icon={<Maximize2 />} onClick={() => setIsFullScreen(true)}>
                         <span>Research View</span>
                       </Button>
+                      {host.actions}
                     </div>
                   )}
                 </div>

@@ -20,6 +20,7 @@ import { soleFence } from "@/lib/markdown/code-ranges";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { useCanvasFit } from "@ai-matrx/rich-content/display/blocks/canvas-fit";
 import { Button } from "@ai-matrx/design-system/controls";
+import { useBlockHostSlot } from "@ai-matrx/rich-content/display/block-host";
 
 interface StatItem {
   label: string;
@@ -95,6 +96,7 @@ export const StatsBlock: React.FC<StatsBlockProps> = ({ content = "", isStreamAc
   const maxCols = fit === "narrow" ? 1 : fit === "tight" ? 2 : 4;
   const cols = spec ? Math.min(spec.stats.length, maxCols) : Math.min(3, maxCols);
 
+  const host = useBlockHostSlot();
   const handleCopy = async () => {
     if (!(await copyText(content.trim()))) return;
     setCopied(true);
@@ -102,16 +104,19 @@ export const StatsBlock: React.FC<StatsBlockProps> = ({ content = "", isStreamAc
   };
 
   return (
-    <div className={cn("my-3 overflow-hidden rounded-lg border border-border bg-card", className)}>
+    <div className={cn("my-3 overflow-hidden rounded-lg border bg-card transition-colors", host.selected ? "border-primary" : "border-border", className)}>
       <div className="flex items-center justify-between gap-2 border-b border-border bg-muted/50 px-3 py-1.5">
         <div className="flex min-w-0 items-center gap-2">
           <BarChart3 className="h-3.5 w-3.5 shrink-0 text-primary" />
           <span className="truncate text-sm font-medium text-foreground">{spec?.title ?? "Key metrics"}</span>
           {isStreamActive && <span className="shrink-0 animate-pulse text-xs text-muted-foreground">…</span>}
         </div>
-        {!isStreamActive && spec && (
-          <Button variant="quiet" icon={copied ? <Check /> : <Copy />} aria-label={copied ? "Copied" : "Copy source"} title={copied ? "Copied" : "Copy source"} onClick={handleCopy} />
-        )}
+        <div className="flex shrink-0 items-center gap-0.5">
+          {!isStreamActive && spec && (
+            <Button variant="quiet" icon={copied ? <Check /> : <Copy />} aria-label={copied ? "Copied" : "Copy source"} title={copied ? "Copied" : "Copy source"} onClick={handleCopy} />
+          )}
+          {host.actions}
+        </div>
       </div>
       <div className="p-3">
         {isStreamActive ? (

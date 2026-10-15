@@ -48,6 +48,7 @@ import { getArtifactDef } from "@/features/canvas/artifact-types/artifact-type-r
 import ImportTasksModal from "@/features/tasks/components/ImportTasksModal";
 import { convertTroubleshootingToTasks } from "@/features/tasks/utils/importConverters";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
+import { useBlockHostSlot } from "@ai-matrx/rich-content/display/block-host";
 
 interface TroubleshootingData {
   title: string;
@@ -88,6 +89,7 @@ const TroubleshootingBlock: React.FC<TroubleshootingBlockProps> = ({
     notify: copyNotify,
   });
   const [isFullScreen, setIsFullScreen] = useState(false);
+  const host = useBlockHostSlot();
   const blockContentRef = useRef<HTMLDivElement>(null);
   const [isPrinting, setIsPrinting] = useState(false);
   const handlePrint = useCallback(async () => {
@@ -414,6 +416,7 @@ const TroubleshootingBlock: React.FC<TroubleshootingBlockProps> = ({
                       <Button variant="quiet" icon={<Maximize2 />} onClick={() => setIsFullScreen(true)}>
                         <span>Debug Mode</span>
                       </Button>
+                      {host.actions}
                     </div>
                   )}
                 </div>

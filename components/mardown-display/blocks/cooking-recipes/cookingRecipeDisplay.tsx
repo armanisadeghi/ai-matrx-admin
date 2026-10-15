@@ -32,6 +32,7 @@ import ImportTasksModal from "@/features/tasks/components/ImportTasksModal";
 import { recipeShoppingList } from "./recipe-shopping-list";
 import { useCanvasFit } from "@ai-matrx/rich-content/display/blocks/canvas-fit";
 import { Button } from "@ai-matrx/design-system/controls";
+import { useBlockHostSlot } from "@ai-matrx/rich-content/display/block-host";
 
 interface Ingredient {
   amount: string;
@@ -94,6 +95,7 @@ const RecipeViewer: React.FC<RecipeViewerProps> = ({
     () => new Set(initialState?.completedSteps ?? []),
   );
   const [isFullScreen, setIsFullScreen] = useState(false);
+  const host = useBlockHostSlot();
   // A narrow canvas pane: the quick stats wrap to two per row (four in 360px
   // leaves no room for a value), and ingredients sit above the steps. Outside
   // the canvas the fit is "outside" and the layout is unchanged.
@@ -289,7 +291,7 @@ const RecipeViewer: React.FC<RecipeViewerProps> = ({
       )}
 
       <div
-        className={`w-full border border-border rounded-xl ${isFullScreen ? "fixed inset-0 z-50 flex items-center justify-center p-2" : "py-2"}`}
+        className={`w-full border transition-colors ${host.selected ? "border-primary" : "border-border"} rounded-xl ${isFullScreen ? "fixed inset-0 z-50 flex items-center justify-center p-2" : "py-2"}`}
       >
         <div
           className={`max-w-6xl mx-auto ${isFullScreen ? "bg-textured rounded-xl shadow-2xl h-full max-h-[98dvh] w-full flex flex-col overflow-hidden border border-border" : ""}`}
@@ -373,6 +375,7 @@ const RecipeViewer: React.FC<RecipeViewerProps> = ({
                         tooltip="Cook mode (full screen)"
                         onClick={() => setIsFullScreen(true)}
                       />
+                      {host.actions}
                     </div>
                   )}
                 </div>

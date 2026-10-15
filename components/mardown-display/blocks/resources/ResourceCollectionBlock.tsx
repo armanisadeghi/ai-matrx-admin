@@ -40,6 +40,7 @@ import { matchesSearch as matchesSearchScoring } from "@ai-matrx/kit/search-scor
 
 import { DisclosureHeader, Select } from "@ai-matrx/design-system/controls";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
+import { useBlockHostSlot } from "@ai-matrx/rich-content/display/block-host";
 interface ResourceCollectionBlockProps {
   collection: ResourceCollectionData;
   taskId?: string;
@@ -87,6 +88,7 @@ const ResourceCollectionBlock: React.FC<ResourceCollectionBlockProps> = ({
   blockIndex,
 }) => {
   const [isFullScreen, setIsFullScreen] = useState(false);
+  const host = useBlockHostSlot();
   const blockContentRef = useRef<HTMLDivElement>(null);
   const [isPrinting, setIsPrinting] = useState(false);
   const handlePrint = useCallback(async () => {
@@ -285,7 +287,7 @@ const ResourceCollectionBlock: React.FC<ResourceCollectionBlockProps> = ({
       )}
 
       <div
-        className={`w-full border border-border rounded-xl ${isFullScreen ? "fixed inset-0 z-50 flex items-center justify-center p-2" : "py-2"}`}
+        className={`w-full border transition-colors ${host.selected ? "border-primary" : "border-border"} rounded-xl ${isFullScreen ? "fixed inset-0 z-50 flex items-center justify-center p-2" : "py-2"}`}
       >
         <div
           className={`max-w-6xl mx-auto ${isFullScreen ? "bg-textured rounded-xl shadow-2xl h-full max-h-[95dvh] w-full flex flex-col overflow-hidden border border-border" : ""}`}
@@ -354,6 +356,7 @@ const ResourceCollectionBlock: React.FC<ResourceCollectionBlockProps> = ({
                         tooltip="Expand to full screen"
                         onClick={() => setIsFullScreen(true)}
                       />
+                      {host.actions}
                     </div>
                   )}
                 </div>

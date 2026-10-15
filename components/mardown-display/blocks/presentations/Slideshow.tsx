@@ -31,6 +31,7 @@ import { useCanvasPresentation } from "@ai-matrx/canvas/react";
 import { slideThumbnailPlacement } from "@ai-matrx/rich-content/display/blocks/canvas-adaptive";
 import { Button } from "@ai-matrx/design-system/controls";
 import { SaveToPresentationsButton } from "@/features/presentations/components/SaveToPresentationsButton";
+import { useBlockHostSlot } from "@ai-matrx/rich-content/display/block-host";
 
 // Lazy load PresentationExportMenu to avoid loading GoogleAPIProvider on initial render
 const PresentationExportMenu = lazy(() => import("./PresentationExportMenu"));
@@ -92,6 +93,7 @@ const Slideshow = (
   });
   const [direction, setDirection] = useState("next");
   const [isFullScreen, setIsFullScreen] = useState(false);
+  const host = useBlockHostSlot();
   const slideContainerRef = useRef<HTMLDivElement>(null);
   // In a canvas pane the slide scales to fit the pane (aspect kept) with a
   // strip of thumbnails below a portrait pane or beside a wide one. Outside
@@ -304,6 +306,7 @@ const Slideshow = (
                   variant={isFullScreen ? "outline" : "default"}
                 />
               )}
+              {host.actions}
             </div>
           </div>
 

@@ -49,6 +49,7 @@ import { isMaterializedArtifactId } from "@/features/canvas/artifact-types/artif
 import { getArtifactDef } from "@/features/canvas/artifact-types/artifact-type-registry";
 import ImportTasksModal from "@/features/tasks/components/ImportTasksModal";
 import { convertProgressToTasks } from "@/features/tasks/utils/importConverters";
+import { useBlockHostSlot } from "@ai-matrx/rich-content/display/block-host";
 
 
 
@@ -81,6 +82,7 @@ const ProgressTrackerBlock: React.FC<ProgressTrackerBlockProps> = ({
   onStateChange,
 }) => {
   const [isFullScreen, setIsFullScreen] = useState(false);
+  const host = useBlockHostSlot();
   const blockContentRef = useRef<HTMLDivElement>(null);
   const [isPrinting, setIsPrinting] = useState(false);
   const handlePrint = useCallback(async () => {
@@ -427,6 +429,7 @@ const ProgressTrackerBlock: React.FC<ProgressTrackerBlockProps> = ({
                       <Button variant="quiet" icon={<Maximize2 />} onClick={() => setIsFullScreen(true)}>
                         <span>Focus</span>
                       </Button>
+                      {host.actions}
                     </div>
                   )}
                 </div>
