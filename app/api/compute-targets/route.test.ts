@@ -44,7 +44,8 @@ function sandboxQuery() {
 
 function appInstancesQuery() {
   return {
-    select: () => ({ eq: async () => ({ data: [], error: null }) }),
+    // onlyComputers() narrows the list with .or(platform …) after the owner filter.
+    select: () => ({ eq: () => ({ or: async () => ({ data: [], error: null }) }) }),
   };
 }
 
@@ -68,7 +69,19 @@ function tierQuery() {
   };
 }
 
+// The seeded knob onlyComputers() reads (aidream migration 20261016130000).
+const knobSchema = {
+  from: () => ({
+    select: () => ({
+      eq: () => ({
+        eq: () => ({ is: async () => ({ data: [{ value: ["web", "chrome-extension", "server"] }], error: null }) }),
+      }),
+    }),
+  }),
+};
+
 const supabase = {
+  schema: () => knobSchema,
   auth: mockWithClaims({
     getUser: async () => ({ data: { user: { id: "owner" } }, error: null }),
   }),

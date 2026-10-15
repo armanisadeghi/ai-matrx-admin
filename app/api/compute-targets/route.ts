@@ -24,6 +24,7 @@ import { isJsonObject } from "@/types/json";
 import { filesDb } from "@/features/files/filesDb";
 import { getClaimsUser } from "@ai-matrx/auth";
 import { isRestDeadlineError } from "@/utils/supabase/restDeadline";
+import { onlyComputers } from "@/lib/app-instances/computers";
 
 const DEVICE_FRESHNESS_WINDOW_MS = 10 * 60 * 1000;
 
@@ -88,12 +89,15 @@ export async function GET() {
       .eq("user_id", user.id)
       .is("deleted_at", null)
       .order("updated_at", { ascending: false }),
-    supabase
-      .from("app_instances")
-      .select(
-        "id, instance_id, instance_name, hostname, platform, tunnel_url, tunnel_active, last_seen, is_active",
-      )
-      .eq("user_id", user.id),
+    onlyComputers(
+      supabase
+        .from("app_instances")
+        .select(
+          "id, instance_id, instance_name, hostname, platform, tunnel_url, tunnel_active, last_seen, is_active",
+        )
+        .eq("user_id", user.id),
+      supabase,
+    ),
     resolveMaxSandboxes(supabase, user.id),
   ]);
 
