@@ -22,7 +22,7 @@ import { CalendarClock, PenLine, RotateCcw } from "lucide-react";
 
 import RouteHeader from "@/features/shell/components/header/RouteHeader";
 import { ChevronLeftTapButton } from "@ai-matrx/design-system/tap-target/buttons";
-import { TapTargetButton } from "@ai-matrx/design-system/tap-target";
+import { TapTargetButtonTransparent } from "@ai-matrx/design-system/tap-target";
 import { toast } from "@/lib/toast";
 import { AccessGate } from "@/features/access-gate/components/AccessGate";
 
@@ -221,6 +221,7 @@ export function WorkflowRunPage({
       left={
         <div className="flex min-w-0 items-center">
           <ChevronLeftTapButton
+            variant="transparent"
             href={workflowsListHref(workflowsBase)}
             ariaLabel="All workflows"
           />
@@ -250,21 +251,21 @@ export function WorkflowRunPage({
             />
           ) : null}
           {runId ? (
-            <TapTargetButton
+            <TapTargetButtonTransparent
               icon={<RotateCcw />}
               ariaLabel="Run it again"
               onClick={runAgain}
             />
           ) : null}
           {definitionId ? (
-            <TapTargetButton
+            <TapTargetButtonTransparent
               icon={<CalendarClock />}
               ariaLabel="Run it without me"
               href={workflowTriggersHref(definitionId, workflowsBase)}
             />
           ) : null}
           {definitionId ? (
-            <TapTargetButton
+            <TapTargetButtonTransparent
               icon={<PenLine />}
               ariaLabel="Design this workflow"
               href={workflowDesignHref(definitionId, workflowsBase)}

@@ -1,5 +1,5 @@
 import type { BrandRelationKind } from "@/features/marketing/data/service";
-import { buildQueue, coreGaps, coreSettled, gapFacts, decisionFor, factGroup, factsFromPayload, focusFromFact, LATER_FACT_GROUP, optionsFor, VALIDATION_THRESHOLD } from "../validate/queue";
+import { buildQueue, coreGaps, coreSettled, gapFacts, decisionFor, factGroup, factsFromPayload, focusFromFact, gapNoneLabel, isGapKey, LATER_FACT_GROUP, optionsFor, VALIDATION_THRESHOLD } from "../validate/queue";
 import { fixtureEvidence, fixtureFacts, FIXTURE_BRAND_BASICS } from "../validate/fixtures";
 
 const kind = (key: string, stance: BrandRelationKind["stance"]): BrandRelationKind => ({
@@ -131,6 +131,13 @@ describe("validation queue", () => {
     const card = focusFromFact(facts[0]);
     expect(card).toMatchObject({ kind: "fact", label: "Two values for Phone", value: "(949) 555-0199", title: "vs (949) 555-0100 (on file)",
       detail: "Contact page lists another number.", evidenceUrls: ["https://fullspecstaff.com/contact"] });
+  });
+
+  it("a gap card answered No reads from the gap, never as a bare Wrong (MKT-153)", () => {
+    const [card] = gapFacts(["account"]);
+    expect(isGapKey(card.key)).toBe(true);
+    expect(isGapKey("fact:x")).toBe(false);
+    expect(gapNoneLabel({ label: card.field_label })).toBe("Social account — none");
   });
 
   it("names the missing core, and its cards lead the queue until answered (MKT-143)", () => {

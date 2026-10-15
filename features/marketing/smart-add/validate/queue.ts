@@ -65,6 +65,16 @@ const GAP_COPY: Record<CoreGap, { label: string; reason: string }> = {
   account: { label: "Social account", reason: "One social account of the brand's (a link or @handle). Type it, or skip for now." },
 };
 
+/** True for a core gap card (an empty card for a part of the core Create saved without). */
+export function isGapKey(key: string): boolean {
+  return key.startsWith(GAP_PREFIX);
+}
+
+/** What a gap card answered without a typed value reads as in the tray: named from the gap, never "Wrong" (MKT-153). */
+export function gapNoneLabel(item: { label: string }): string {
+  return `${item.label} — none`;
+}
+
 /** The missing core as empty fact cards: the card opens in edit, the typed value is saved by persist.ts. */
 export function gapFacts(gaps: readonly CoreGap[]): BrandFact[] {
   return gaps.map((g) => ({

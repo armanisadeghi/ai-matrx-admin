@@ -36,7 +36,7 @@ import { outboundHref } from "../SmartAddExtras";
 import { STANCE_LABEL, STANCE_ORDER } from "../webKinds";
 import { WeThinkHint } from "../WeThinkHint";
 import { useLogoGroups } from "../logoGroups";
-import { ANSWER_LABEL, optionsFor, type Answer, type FocusItem } from "./queue";
+import { ANSWER_LABEL, isGapKey, optionsFor, type Answer, type FocusItem } from "./queue";
 import { SECTION_LABEL, sectionOf } from "./fold";
 
 export interface AnsweredEntry {
@@ -522,7 +522,7 @@ function TrayRow({ entry, onUndo }: { entry: AnsweredEntry; onUndo: () => void }
       <Thumb item={entry.item} size={28} />
       <span className="min-w-0 flex-1 truncate text-sm">{entry.value}</span>
       <span className="flex shrink-0 items-center gap-1 text-xs text-muted-foreground" title={entry.error ?? undefined}>
-        {entry.state === "failed" ? "Not saved" : (entry.relationLabel ?? ANSWER_LABEL[entry.answer])}
+        {entry.state === "failed" ? "Not saved" : (entry.relationLabel ?? (isGapKey(entry.item.key) && entry.answer === "wrong" ? "Left empty" : ANSWER_LABEL[entry.answer]))}
         {entry.state === "failed" && entry.error ? <ErrorAlchemyMenu error={entry.error} /> : null}
       </span>
       {entry.state === "failed" ? <X className="size-3.5 shrink-0 text-destructive" aria-label="Not saved" /> : null}
@@ -679,7 +679,7 @@ export function ValidateStage({
     <MotionConfig reducedMotion="user">
       <LayoutGroup>
         <div className="grid min-h-full lg:grid-cols-[minmax(0,1fr)_20rem]" data-testid="smart-add-validate">
-          <div ref={stageRef} className="flex flex-col items-center px-3 pt-[calc(var(--shell-header-h,0px)+1.5rem)] pb-28 sm:px-4 lg:pb-10">
+          <div ref={stageRef} className="flex flex-col items-center px-3 pt-[calc(var(--shell-header-h,0px)+1.5rem)] sm:px-4">
             <header className="flex w-full max-w-[40rem] items-center gap-3">
               {brandLogo ? <img src={brandLogo} alt="" className="size-7 shrink-0 rounded-md object-contain" /> : null}
               <span className="truncate text-base font-semibold">{brandName}</span>

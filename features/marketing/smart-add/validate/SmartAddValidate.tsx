@@ -17,7 +17,7 @@ import { marketingSeg } from "@/features/marketing/lib/keys";
 import type { EvidenceItem as Ev } from "../evidence";
 import type { Decision, EvidenceItem } from "../evidence";
 import type { SuggestContext, WebChoice } from "../webKinds";
-import { buildQueue, coreGaps, decisionFor, gapFacts, mergeFacts, type Answer, type BrandFact, type CoreGap, type FocusItem } from "./queue";
+import { buildQueue, coreGaps, decisionFor, gapFacts, gapNoneLabel, isGapKey, mergeFacts, type Answer, type BrandFact, type CoreGap, type FocusItem } from "./queue";
 import { persistAnswer, type Persisted } from "./persist";
 import { answeredKeysOf, EMPTY_KNOWN, foldQueue, logoImagesOf, logosLabel, type KnownOnBrand } from "./fold";
 import { loadSavedFindings } from "./fromSaved";
@@ -160,7 +160,7 @@ export function SmartAddValidate({
       item,
       answer,
       relationLabel,
-      value: opts.value?.trim() || (item.kind === "logo" ? logosLabel(item) : item.kind === "web" ? (item.title ?? item.value) : item.value),
+      value: opts.value?.trim() || (isGapKey(item.key) ? gapNoneLabel(item) : item.kind === "logo" ? logosLabel(item) : item.kind === "web" ? (item.title ?? item.value) : item.value),
       state: "saving",
       error: null,
       persisted: null,
