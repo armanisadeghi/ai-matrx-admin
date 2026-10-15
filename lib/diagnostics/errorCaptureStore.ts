@@ -36,6 +36,7 @@ import { pageIsLeaving } from "@ai-matrx/chat/agents/redux/execution-system/util
 import { classifyTier } from "@/lib/diagnostics/errorTierRules";
 import type { ErrorTier } from "@/lib/diagnostics/errorTiers";
 import { currentDeploymentId } from "@/lib/deployment/build-identity";
+import { defineClientKey } from "@/lib/sync/client-storage";
 
 /** How a captured error reached us. */
 export type CapturedErrorSource =
@@ -130,6 +131,13 @@ export type CapturedErrorSource =
   // ── Domain ────────────────────────────────────────────────────────────────
   /** An expiring/private media URL reached a render/store path (durability defect). */
   | "media-durability"
+  /**
+   * The browser persistence engine (lib/sync) raised a warn/error: a save to
+   * localStorage / IndexedDB that failed (full, disabled, private mode), a
+   * corrupt record, a cross-tab message it could not read, a failed boot step.
+   * Write losses are red; everything else is an orange dot (errorTierRules).
+   */
+  | "sync-engine"
   /**
    * `@ai-matrx/media`'s diagnostics port fired — a terminal media failure
    * (refused resolve, failed private-pixel bytes, a load error the ONE
@@ -607,7 +615,12 @@ function emit(): void {
 // costs persistence, never capture. Saves are debounced and flushed on
 // `pagehide`, so a reload right after an error still keeps it.
 
-const SESSION_KEY = "matrx:error-inspector:v1";
+const sessionRowsKey = defineClientKey({
+  id: "diagnostics.error-inspector.v1",
+  area: "session",
+  kind: "diagnostic",
+  reason: "This tab's captured errors, kept across a reload so the inspector shows what just broke.",
+});
 /** Rows restored after a reload (newest first). */
 const SESSION_MAX_ENTRIES = 100;
 /** A row's `raw` dump larger than this is replaced by a truncated preview. */
@@ -659,17 +672,14 @@ function saveSessionNow(): void {
     clearTimeout(sessionSaveTimer);
     sessionSaveTimer = null;
   }
-  try {
-    if (typeof window === "undefined") return;
-    if (entries.length === 0) {
-      window.sessionStorage.removeItem(SESSION_KEY);
-      return;
-    }
-    const text = serializeSession();
-    if (text !== null) window.sessionStorage.setItem(SESSION_KEY, text);
-  } catch {
-    /* storage blocked or full — capture itself is unaffected */
+  // Storage blocked or full — capture itself is unaffected.
+  if (typeof window === "undefined") return;
+  if (entries.length === 0) {
+    sessionRowsKey.remove();
+    return;
   }
+  const text = serializeSession();
+  if (text !== null) sessionRowsKey.set(text);
 }
 
 function scheduleSessionSave(): void {
@@ -713,7 +723,7 @@ function lastSeenOnThisDeployment(row: StoredCapturedError): boolean {
 function restoreSession(): void {
   try {
     if (typeof window === "undefined") return;
-    const text = window.sessionStorage.getItem(SESSION_KEY);
+    const text = sessionRowsKey.get();
     if (!text) return;
     const parsed = JSON.parse(text) as { v?: unknown; entries?: unknown };
     if (parsed?.v !== 1 || !Array.isArray(parsed.entries)) return;

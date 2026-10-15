@@ -107,6 +107,18 @@ export interface DowngradeRule {
 // non-errors and double as worked examples of the two tiers.
 // ════════════════════════════════════════════════════════════════════════
 export const DOWNGRADE_RULES: DowngradeRule[] = [
+  {
+    id: "sync-engine-warning",
+    tier: "orange",
+    persist: false,
+    reason:
+      "The browser persistence engine (lib/sync) noticed something it handled: a save it will retry, a corrupt record it ignored, a cross-tab message from another app version, a slow IndexedDB. Shown as a dot so an admin sees it; a write that was actually lost (level error) stays red and is filed.",
+    addedAt: "2026-10-14",
+    match: {
+      source: "sync-engine",
+      level: "warn",
+    },
+  },
   // ══════════════════════════════════════════════════════════════════════
   // CRITICAL ESCALATIONS / KNOWN-ERROR TRANSLATIONS — keep these FIRST.
   // Rules are first-match-wins, so a `tier: "red"` rule at the top acts as a

@@ -22,7 +22,8 @@ import {
 import { extractErrorMessage } from "@/utils/errors";
 import { isKnownThirdPartyNoise } from "@/lib/console-noise";
 import { isChunkLoadError } from "@/components/errors/chunk-load-recovery";
-import { isStructuredConsoleMirrorActive } from "./structuredConsoleMirror";
+import { isStructuredConsoleMirrorActive, mirrorCapturedErrorToConsole } from "./structuredConsoleMirror";
+import { setSyncConsoleErrorWriter, setSyncFailureSink, type SyncFailure } from "@/lib/sync/logger";
 import { installAppApiFetchCapture } from "@/lib/diagnostics/captureAppApiFetch";
 import { installMainThreadStallMonitor } from "@/lib/diagnostics/mainThreadStallMonitor";
 
@@ -177,12 +178,39 @@ export function isOpaqueCrossOriginScriptError(event: {
  * Install the global error listeners. Idempotent and browser-only — safe to
  * call from any client effect; subsequent calls are no-ops.
  */
+/** The browser persistence engine (lib/sync): a write that was lost is red; any other warn/error an orange dot. */
+export function syncFailureCaptureInput(failure: SyncFailure): CaptureInput {
+  const meta = failure.meta ?? {};
+  const storageKey = typeof meta.storageKey === "string" ? meta.storageKey : undefined;
+  const error = typeof meta.error === "string" ? meta.error : undefined;
+  return {
+    source: "sync-engine",
+    code: failure.event,
+    relation: failure.sliceName ?? storageKey ?? failure.event,
+    message: error ? `[sync] ${failure.event}: ${error}` : `[sync] ${failure.event}`,
+    level: failure.dataLoss || failure.level === "error" ? "error" : "warn",
+    details: Object.keys(meta).length ? JSON.stringify(serializeForErrorCapture(meta)) : undefined,
+  };
+}
+
+function installSyncEngineCapture(): void {
+  setSyncConsoleErrorWriter(mirrorCapturedErrorToConsole);
+  setSyncFailureSink((failure) => {
+    try {
+      captureError(syncFailureCaptureInput(failure));
+    } catch {
+      /* capture must never break the engine */
+    }
+  });
+}
+
 export function installGlobalErrorCapture(): void {
   if (installed || typeof window === "undefined") return;
   installed = true;
   installAppApiFetchCapture();
   installMainThreadStallMonitor();
   installHardNavigationTrace();
+  installSyncEngineCapture();
 
   // ── Uncaught runtime exceptions ──────────────────────────────────────────
   window.addEventListener("error", (event: ErrorEvent) => {

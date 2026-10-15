@@ -88,6 +88,7 @@ const SOURCE_LABELS: Record<CapturedErrorSource, string> = {
   "agent-stream-terminal-guard":
     "Stream held open after terminal (closed locally)",
   "media-durability": "Media durability violation",
+  "sync-engine": "Browser storage sync",
   media: "Media terminal failure (@ai-matrx/media diagnostics port)",
   "media-healed": "Media render HEALED after its primary lane died (root cause named)",
   "agent-catalog":
