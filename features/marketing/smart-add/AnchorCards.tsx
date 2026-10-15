@@ -111,7 +111,7 @@ export function AnchorCard({
                 title: name,
                 subtitle: `${platformLabel(platform)}${handle ? ` · ${handle}` : ""}`,
                 body: [
-                  { section: "Why this was found", items: a?.reasons ?? [] },
+                  ...(a?.reasons?.length ? [{ section: "Why this was found", items: a.reasons }] : []),
                   ...(item.hits?.length
                     ? [{ section: "Found in search", items: item.hits.map((h) => `${h.engine} #${h.rank}: ${h.query}`), limit: 4 }]
                     : []),

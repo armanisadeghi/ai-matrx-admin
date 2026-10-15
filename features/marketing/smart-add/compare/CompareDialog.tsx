@@ -305,7 +305,7 @@ function CandidateCard({
       <div className="flex min-w-0 items-start gap-2">
         {peek ? (
           <PeekHoverCard side="bottom" align="start" trigger={who}>
-            <Peek record={peek} />
+            <Peek size="sm" record={peek} />
           </PeekHoverCard>
         ) : (
           who

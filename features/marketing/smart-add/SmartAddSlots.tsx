@@ -597,7 +597,7 @@ function Row({
         {/* One line per row (Arman 2026-10-14: no secondary lines). Where it was found shows on hovering the found text. */}
         {peek ? (
           <PeekHoverCard side="bottom" align="start" trigger={value}>
-            <Peek record={peek} />
+            <Peek size="sm" record={peek} />
           </PeekHoverCard>
         ) : (
           value
