@@ -9,8 +9,9 @@
 // are USER-scoped: the backend filters the graph + mentions to what
 // `ctx.user_id` can see. Keep these shapes in sync with the Pydantic models.
 
-import { apiGet, buildPath } from "@/lib/api/typed-client";
 import type { GraphPayload, GraphQueryParams, MentionsPage } from "../types";
+import { getGraph, kgGraphListEntityMentions } from "@ai-matrx/api/knowledge";
+import { serverApi } from "@/lib/api/server-api";
 
 /**
  * GET /kg/graph — the org-wide graph (no scopeId) or one scope's neighborhood
@@ -20,16 +21,13 @@ export async function fetchKgGraph(
   params: GraphQueryParams = {},
   opts: { signal?: AbortSignal } = {},
 ): Promise<GraphPayload> {
-  const { data } = await apiGet("/kg/graph", {
-    signal: opts.signal,
-    query: {
+  const data = await getGraph(serverApi, { query: {
       organization_id: params.organizationId,
       scope_id: params.scopeId,
       kind: params.kind,
       depth: params.depth,
       limit: params.limit,
-    },
-  });
+    } }, { signal: opts.signal });
   return data;
 }
 
@@ -42,9 +40,6 @@ export async function fetchEntityMentions(
   params: { limit?: number; offset?: number } = {},
   opts: { signal?: AbortSignal } = {},
 ): Promise<MentionsPage> {
-  const { data } = await apiGet(
-    buildPath("/kg/graph/entity/{entity_id}/mentions", { entity_id: entityId }),
-    { signal: opts.signal, query: { limit: params.limit, offset: params.offset } },
-  );
+  const data = await kgGraphListEntityMentions(serverApi, { path: { entity_id: entityId }, query: { limit: params.limit, offset: params.offset } }, { signal: opts.signal });
   return data;
 }

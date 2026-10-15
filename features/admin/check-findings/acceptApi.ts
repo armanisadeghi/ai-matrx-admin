@@ -7,9 +7,10 @@
  * `findings accept` CLI uses, and records "landing" on the item until the next run confirms it.
  */
 
-import { apiGet, apiPost } from "@/lib/api/typed-client";
 import { BackendApiError } from "@ai-matrx/api";
 import type { AcceptInfo } from "./model";
+import { acceptAdapters, acceptFinding } from "@ai-matrx/api/architecture";
+import { serverApi } from "@/lib/api/server-api";
 
 export type AcceptOutcome =
   | {
@@ -42,7 +43,7 @@ function remedyOf(details: unknown): string | null {
 
 export async function markFindingOk(itemId: string, reason: string): Promise<AcceptOutcome> {
   try {
-    const { data } = await apiPost("/admin/checks/accept", { item_id: itemId, reason });
+    const data = await acceptFinding(serverApi, { body: { item_id: itemId, reason } });
     return {
       ok: true,
       status: data.status,
@@ -78,7 +79,7 @@ export async function markFindingOk(itemId: string, reason: string): Promise<Acc
  */
 export async function fetchAidreamAcceptAdapters(): Promise<Record<string, AcceptInfo> | null> {
   try {
-    const { data } = await apiGet("/admin/checks/accept-adapters");
+    const data = await acceptAdapters(serverApi, {});
     return Object.fromEntries(
       data.checks.map((c) => [c.id, { files: c.accept ? c.files ?? [] : null, noAccept: c.accept ? null : (c.no_accept ?? null) }]),
     );

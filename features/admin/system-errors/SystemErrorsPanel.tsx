@@ -23,7 +23,6 @@ import type {
   MatrxDataTableQueryState,
   MatrxDataTableToolbar,
 } from "@ai-matrx/design-system/data-table/types";
-import { apiGet } from "@/lib/api/typed-client";
 import { EntityRef } from "@/components/official/entity-ref/EntityRef";
 import type { components } from "@ai-matrx/api/types";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
@@ -32,6 +31,8 @@ import { DrillExplorer } from "@/components/official/drill-explorer/DrillExplore
 import { DrillOrList } from "@/components/official/drill-explorer/DrillOrList";
 import { SYSTEM_ORGANIZATION_ID } from "@/constants/platform-orgs";
 import { usageNameResolver } from "@/features/admin/usage-drill/useUsageDrill";
+import { recentErrors } from "@ai-matrx/api/architecture";
+import { serverApi } from "@/lib/api/server-api";
 
 type SystemErrorRow = components["schemas"]["SystemErrorRecord"];
 type RecentResponse =
@@ -171,8 +172,7 @@ function SystemErrorsList() {
     ],
     initialPageParam: INITIAL_PAGE_CURSOR,
     queryFn: async ({ pageParam }): Promise<RecentResponse> => {
-      const result = await apiGet("/admin/system-errors/recent", {
-        query: {
+      const result = await recentErrors(serverApi, { query: {
           // The server derives the cutoff from its issued snapshot, avoiding
           // browser-clock gaps at the newest edge of the evidence window.
           since_hours: hours,
@@ -183,9 +183,8 @@ function SystemErrorsList() {
           kind: trimmedKind || undefined,
           request_id: requestId || undefined,
           unresolved_only: unresolvedOnly || undefined,
-        },
-      });
-      return result.data;
+        } });
+      return result;
     },
     getNextPageParam: (lastPage): SystemErrorPageCursor | undefined =>
       lastPage.next_cursor_occurred_at && lastPage.next_cursor_id

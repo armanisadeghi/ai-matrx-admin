@@ -4,11 +4,12 @@
  * Database-defined (no-code) converters: `content_ir.converter_definition` rows, read and written
  * straight to Supabase under RLS; the check runs on aidream (`POST /admin/converters/definitions/{id}/check`).
  */
-import { apiPost, buildPath } from "@/lib/api/typed-client";
 import type { Database, Json } from "@/types/database.types";
 import { createClient } from "@/utils/supabase/client";
 
 import type { components } from "@ai-matrx/api/types";
+import { checkDefinitionDoor } from "@ai-matrx/api/architecture";
+import { serverApi } from "@/lib/api/server-api";
 
 export type ConverterDefinitionRow =
   Database["content_ir"]["Tables"]["converter_definition"]["Row"];
@@ -91,11 +92,8 @@ export async function createConverterDefinition(
 export async function checkConverterDefinition(
   id: string,
 ): Promise<ConverterDefinitionCheck> {
-  const { data } = await apiPost(
-    buildPath("/admin/converters/definitions/{definition_id}/check", {
+  const data = await checkDefinitionDoor(serverApi, { path: {
       definition_id: id,
-    }),
-    undefined,
-  );
+    } });
   return data;
 }

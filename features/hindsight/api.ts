@@ -9,7 +9,6 @@
  * `postJson` escape hatch with a contract-DERIVED response type — the same
  * pattern `features/rag/api/search-lab.ts` uses for `/knowledge/search-lab/inventory`.
  */
-import { apiDelete, apiGet, apiPatch, apiPost, buildPath } from "@/lib/api/typed-client";
 import { adminDoorOpen } from "@/lib/api/adminDoor";
 import { getJson } from "@/lib/python-client";
 import { postJson } from "@/lib/python-client";
@@ -38,6 +37,8 @@ import type {
   ToolSubject,
   UnitToken,
 } from "./types";
+import { applyFindingRoute, archiveEnrollment as archiveEnrollmentOp, createSnapshotRegressionCase, discussFindingRoute, discussReviewRoute, enroll as enrollOp, getChangeHistory as getChangeHistoryOp, getEnrollment as getEnrollmentOp, getFindingEffectiveness as getFindingEffectivenessOp, getPendingExamples as getPendingExamplesOp, getReplay as getReplayOp, getReview as getReviewOp, getThread, hindsightCosts, listCases, listEnrollments as listEnrollmentsOp, listToolSubjects as listToolSubjectsOp, patchEnrollment, rejectFindingRoute, revertFindingRoute, triggerReplay as triggerReplayOp } from "@ai-matrx/api/intelligence";
+import { serverApi } from "@/lib/api/server-api";
 
 // Inside the admin section these three reads use the super-admin twins under
 // `/admin` (every enrollment/review on the platform, same shapes); on a user
@@ -49,14 +50,12 @@ export async function listEnrollments(status?: string): Promise<Enrollment[]> {
     const { data } = await getJson<Enrollment[]>(`/admin/hindsight/enrollments${qs}`);
     return data;
   }
-  const { data } = await apiGet("/hindsight/enrollments", {
-    query: status ? { status } : undefined,
-  });
+  const data = await listEnrollmentsOp(serverApi, { query: status ? { status } : undefined });
   return data;
 }
 
 export async function enroll(body: EnrollRequest): Promise<Enrollment> {
-  const { data } = await apiPost("/hindsight/enrollments", body);
+  const data = await enrollOp(serverApi, { body: body });
   return data;
 }
 
@@ -67,9 +66,7 @@ export async function getEnrollment(id: string): Promise<EnrollmentDetail> {
     );
     return data;
   }
-  const { data } = await apiGet(
-    buildPath("/hindsight/enrollments/{enrollment_id}", { enrollment_id: id }),
-  );
+  const data = await getEnrollmentOp(serverApi, { path: { enrollment_id: id } });
   return data;
 }
 
@@ -77,17 +74,12 @@ export async function updateEnrollment(
   id: string,
   body: EnrollmentUpdateRequest,
 ): Promise<Enrollment> {
-  const { data } = await apiPatch(
-    buildPath("/hindsight/enrollments/{enrollment_id}", { enrollment_id: id }),
-    body,
-  );
+  const data = await patchEnrollment(serverApi, { path: { enrollment_id: id }, body: body });
   return data;
 }
 
 export async function archiveEnrollment(id: string): Promise<{ status: string }> {
-  const { data } = await apiDelete(
-    buildPath("/hindsight/enrollments/{enrollment_id}", { enrollment_id: id }),
-  );
+  const data = await archiveEnrollmentOp(serverApi, { path: { enrollment_id: id } });
   return data;
 }
 
@@ -121,11 +113,9 @@ export async function triggerReview(
  * skips; surfaces must warn and offer the focused door instead.
  */
 export async function getPendingExamples(id: string): Promise<PendingExamples> {
-  const { data } = await apiGet(
-    buildPath("/hindsight/enrollments/{enrollment_id}/pending-examples", {
+  const data = await getPendingExamplesOp(serverApi, { path: {
       enrollment_id: id,
-    }),
-  );
+    } });
   return data;
 }
 
@@ -136,9 +126,7 @@ export async function getReview(id: string): Promise<ReviewDetail> {
     );
     return data;
   }
-  const { data } = await apiGet(
-    buildPath("/hindsight/reviews/{review_id}", { review_id: id }),
-  );
+  const data = await getReviewOp(serverApi, { path: { review_id: id } });
   return data;
 }
 
@@ -148,9 +136,7 @@ export async function getReview(id: string): Promise<ReviewDetail> {
  * and `reason` carries the sentence to show instead of an empty void.
  */
 export async function getReviewThread(reviewId: string): Promise<ReviewThread> {
-  const { data } = await apiGet(
-    buildPath("/hindsight/reviews/{review_id}/thread", { review_id: reviewId }),
-  );
+  const data = await getThread(serverApi, { path: { review_id: reviewId } });
   return data;
 }
 
@@ -164,10 +150,7 @@ export async function discussReview(
   reviewId: string,
   message: string,
 ): Promise<DiscussResult> {
-  const { data } = await apiPost(
-    buildPath("/hindsight/reviews/{review_id}/discuss", { review_id: reviewId }),
-    { message },
-  );
+  const data = await discussReviewRoute(serverApi, { path: { review_id: reviewId }, body: { message } });
   return data;
 }
 
@@ -176,18 +159,12 @@ export async function discussFinding(
   findingId: string,
   message: string,
 ): Promise<DiscussResult> {
-  const { data } = await apiPost(
-    buildPath("/hindsight/findings/{finding_id}/discuss", { finding_id: findingId }),
-    { message },
-  );
+  const data = await discussFindingRoute(serverApi, { path: { finding_id: findingId }, body: { message } });
   return data;
 }
 
 export async function applyFinding(id: string): Promise<FindingDecision> {
-  const { data } = await apiPost(
-    buildPath("/hindsight/findings/{finding_id}/apply", { finding_id: id }),
-    undefined,
-  );
+  const data = await applyFindingRoute(serverApi, { path: { finding_id: id } });
   return data;
 }
 
@@ -201,18 +178,12 @@ export async function applyFinding(id: string): Promise<FindingDecision> {
  * refusal, not an exception case.
  */
 export async function revertFinding(id: string): Promise<FindingRevert> {
-  const { data } = await apiPost(
-    buildPath("/hindsight/findings/{finding_id}/revert", { finding_id: id }),
-    undefined,
-  );
+  const data = await revertFindingRoute(serverApi, { path: { finding_id: id } });
   return data;
 }
 
 export async function rejectFinding(id: string): Promise<FindingDecision> {
-  const { data } = await apiPost(
-    buildPath("/hindsight/findings/{finding_id}/reject", { finding_id: id }),
-    undefined,
-  );
+  const data = await rejectFindingRoute(serverApi, { path: { finding_id: id } });
   return data;
 }
 
@@ -239,29 +210,24 @@ export async function triggerReplay(
     variant?: string;
   },
 ): Promise<ReplayRunResult> {
-  const { data } = await apiPost(
-    buildPath("/hindsight/enrollments/{enrollment_id}/replay", {
+  const data = await triggerReplayOp(serverApi, { path: {
       enrollment_id: enrollmentId,
-    }),
-    body,
-  );
+    }, body: body });
   return data;
 }
 
 export async function getReplay(id: string): Promise<Replay> {
-  const { data } = await apiGet(
-    buildPath("/hindsight/replays/{replay_id}", { replay_id: id }),
-  );
+  const data = await getReplayOp(serverApi, { path: { replay_id: id } });
   return data;
 }
 
 export async function listToolSubjects(hours = 168): Promise<ToolSubject[]> {
-  const { data } = await apiGet("/hindsight/subjects/tools", { query: { hours } });
+  const data = await listToolSubjectsOp(serverApi, { query: { hours } });
   return data;
 }
 
 export async function getCosts(): Promise<HindsightCosts> {
-  const { data } = await apiGet("/hindsight/costs");
+  const data = await hindsightCosts(serverApi, {});
   return data;
 }
 
@@ -288,8 +254,7 @@ export async function getChangeHistory(params: {
   limit?: number;
   offset?: number;
 } = {}): Promise<ChangeHistory> {
-  const { data } = await apiGet("/hindsight/change-history", {
-    query: {
+  const data = await getChangeHistoryOp(serverApi, { query: {
       ...(params.unitToken ? { unit_token: params.unitToken } : {}),
       ...(params.unitId ? { unit_id: params.unitId } : {}),
       ...(params.changeRole ? { change_role: params.changeRole } : {}),
@@ -297,8 +262,7 @@ export async function getChangeHistory(params: {
       ...(params.withFindingsOnly ? { with_findings_only: true } : {}),
       ...(params.limit != null ? { limit: params.limit } : {}),
       ...(params.offset != null ? { offset: params.offset } : {}),
-    },
-  });
+    } });
   return data;
 }
 
@@ -306,12 +270,10 @@ export async function getFindingEffectiveness(params: {
   unitToken?: UnitToken;
   unitId?: string;
 } = {}): Promise<FindingEffectiveness[]> {
-  const { data } = await apiGet("/hindsight/finding-effectiveness", {
-    query: {
+  const data = await getFindingEffectivenessOp(serverApi, { query: {
       ...(params.unitToken ? { unit_token: params.unitToken } : {}),
       ...(params.unitId ? { unit_id: params.unitId } : {}),
-    },
-  });
+    } });
   return data;
 }
 
@@ -328,13 +290,11 @@ export async function listRegressionCases(params: {
   originFindingId?: string;
   status?: string;
 } = {}): Promise<RegressionCase[]> {
-  const { data } = await apiGet("/hindsight/regression-cases", {
-    query: {
+  const data = await listCases(serverApi, { query: {
       ...(params.snapshotId ? { snapshot_id: params.snapshotId } : {}),
       ...(params.originFindingId ? { origin_finding_id: params.originFindingId } : {}),
       ...(params.status ? { status: params.status } : {}),
-    },
-  });
+    } });
   return data;
 }
 
@@ -349,16 +309,13 @@ export async function createRegressionCaseFromFinding(
   snapshotId: string,
   finding: { id: string; title: string },
 ): Promise<RegressionCase> {
-  const { data } = await apiPost(
-    buildPath("/hindsight/snapshots/{snapshot_id}/regression-case", {
+  const data = await createSnapshotRegressionCase(serverApi, { path: {
       snapshot_id: snapshotId,
-    }),
-    {
+    }, body: {
       title: finding.title.slice(0, 300),
       origin: "finding",
       origin_finding_id: finding.id,
       notes: `Created from Hindsight finding ${finding.id}.`,
-    },
-  );
+    } });
   return data;
 }

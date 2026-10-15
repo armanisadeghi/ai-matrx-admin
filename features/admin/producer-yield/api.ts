@@ -3,13 +3,14 @@
  *
  * Contract-bound client for aidream's `/admin/producer-yield` surface.
  */
-import { apiGet } from "@/lib/api/typed-client";
 import { postJson } from "@/lib/python-client";
 
 import type { ProducerYieldOut, YieldCheckOut } from "./types";
+import { getProducerYield as getProducerYieldOp } from "@ai-matrx/api/intelligence";
+import { serverApi } from "@/lib/api/server-api";
 
 export async function getProducerYield(): Promise<ProducerYieldOut> {
-  const { data } = await apiGet("/admin/producer-yield");
+  const data = await getProducerYieldOp(serverApi, {});
   return data;
 }
 
