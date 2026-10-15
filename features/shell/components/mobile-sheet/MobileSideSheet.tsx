@@ -10,12 +10,7 @@
 //
 // NavActiveSync keeps .shell-root[data-pathname] live after client navigation.
 
-import {
-  navItemsForViewer,
-  primaryNavItems,
-  settingsItem,
-} from "../../constants/nav-data";
-import MobileNavigationDrawer from "./MobileNavigationDrawer";
+import PrimaryMobileNavigationDrawer from "./PrimaryMobileNavigationDrawer";
 
 interface MobileSideSheetProps {
   isAuthenticated: boolean;
@@ -27,8 +22,5 @@ export default function MobileSideSheet({
   isAuthenticated,
   pathname: _pathname,
 }: MobileSideSheetProps) {
-  const visibleItems = navItemsForViewer(primaryNavItems, isAuthenticated);
-  return (
-    <MobileNavigationDrawer items={visibleItems} settingsItem={settingsItem} />
-  );
+  return <PrimaryMobileNavigationDrawer isAuthenticated={isAuthenticated} />;
 }
