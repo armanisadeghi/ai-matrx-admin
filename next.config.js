@@ -1213,9 +1213,24 @@ function withPendingImportRescue(config) {
   return { ...config, turbopack: { ...config.turbopack, rules } };
 }
 
+// THE SHARED PREVIEW RUNS THE REACT COMPILER NATIVELY (2026-10-15). With the Babel React Compiler,
+// Turbopack runs EVERY app source file through a webpack-loader pool of child Node processes:
+// measured on the shared :3001 preview, 181 `pool_entry-[turbopack-node]_transforms_webpack-loaders`
+// children holding 14.3 GB real memory four minutes after boot, beside a 12 GB next-server — the
+// bulk of what drove it to the 48 GB watchdog cap (2026-10-15, 48.3 GB). The Rust port runs inside
+// Turbopack itself (node_modules/next/dist/docs/.../turbopackRustReactCompiler.md, Next 16.3+), so
+// those children only serve the few files a real loader still needs. DEV ONLY: builds keep the Babel
+// compiler that the release pipeline is measured on. Set false to go back to Babel in dev.
+const DEV_NATIVE_REACT_COMPILER = true;
+function withDevNativeReactCompiler(config) {
+  if (!DEV_NATIVE_REACT_COMPILER || !config.reactCompiler) return config;
+  return { ...config, experimental: { ...config.experimental, turbopackRustReactCompiler: true } };
+}
+
 copyFiles();
 module.exports = (phase) => {
   assertSharedDevServer(phase);
-  const config = phase === PHASE_DEVELOPMENT_SERVER ? withPendingImportRescue(nextConfig) : nextConfig;
+  const config =
+    phase === PHASE_DEVELOPMENT_SERVER ? withDevNativeReactCompiler(withPendingImportRescue(nextConfig)) : nextConfig;
   return withBundleAnalyzer(config);
 };
