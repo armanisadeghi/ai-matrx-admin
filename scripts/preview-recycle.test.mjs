@@ -127,11 +127,15 @@ test("keeps a small idle preview running however long it sits", () => {
   assert.equal(reason(15 * GB, 31 * 60), "");
 });
 
-test("a HOLD (a test run) blocks every idle stop and recycle — only the hard cap still fires", () => {
+test("a HOLD (a test run) blocks every idle stop and recycle — only the hard cap (raised to 64 GB) still fires", () => {
   const held = (kb, idleSec) => sourcedReason(`preview_stop_reason ${kb} ${idleSec} footprint 1 1`);
+  // Unheld, 50 GB is past the 48 GB cap.
+  assert.match(sourcedReason(`preview_stop_reason ${50 * GB} 0 footprint 0 1`), /\(cap 48 GB\)/);
   assert.equal(held(44 * GB, 60 * 60), "");
   assert.equal(held(30 * GB, 60 * 60), "");
-  assert.match(held(50 * GB, 0), /^preview restarted at 50\.0 GB/);
+  // A held run gets headroom to 64 GB; past it, the cap restart still fires.
+  assert.equal(held(50 * GB, 0), "");
+  assert.match(held(65 * GB, 0), /^preview restarted at 65\.0 GB real memory \(cap 64 GB, held\)/);
 });
 
 test("a server nobody used since its own start is never recycled for idleness (no restart loop)", () => {
