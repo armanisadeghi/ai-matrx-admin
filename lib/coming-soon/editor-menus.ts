@@ -54,7 +54,6 @@ const ROWS: Row[] = [
   ["workbooks.show-formulas", "Show formulas", "workbooks", "Show every cell's formula in place of its value.", "Workbook View → Show"],
   ["workbooks.show-protected-ranges", "Show protected ranges", "workbooks", "Shade every protected range so you can see what is locked.", "Workbook View → Show"],
   ["workbooks.group", "Group rows and columns", "workbooks", "Group rows or columns so they collapse and expand together.", "Workbook View → Group"],
-  ["workbooks.hidden-sheets", "Hidden sheets", "workbooks", "List the workbook's hidden sheets and show any of them again.", "Workbook View → Hidden sheets"],
   ["workbooks.timeline", "Timeline", "workbooks", "Turn rows with dates into a timeline view.", "Workbook Insert → Timeline"],
   ["workbooks.pivot-table", "Pivot table", "workbooks", "Summarise a range with a pivot table on a new sheet.", "Workbook Insert → Pivot table"],
   ["workbooks.theme", "Theme", "workbooks", "Apply a theme of fonts and colours to the whole workbook.", "Workbook Format → Theme"],

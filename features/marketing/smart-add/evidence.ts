@@ -14,6 +14,7 @@
 
 import { handleKeyPart } from "../social/account-input";
 import { isLinkInBioUrl, linkInBioService } from "../lib/link-in-bio";
+import { webProfileAsAccount } from "./ownAccountRows";
 
 export type EvidenceField =
   | "name"
@@ -247,7 +248,8 @@ export function evidenceFromPayload(payload: unknown): EvidenceItem[] {
 
 /** Add items to a keyed map; a repeated key keeps the higher confidence. Returns a new map only when something changed. */
 export function mergeEvidence(current: Map<string, EvidenceItem>, incoming: EvidenceItem[]): Map<string, EvidenceItem> {
-  const merged = mergeEvidenceRaw(current, incoming);
+  // A social profile found as a web row is that account's candidate, never an "On the web" row (MKT-045).
+  const merged = mergeEvidenceRaw(current, incoming.map(webProfileAsAccount));
   return merged === current ? current : withInferredIdentity(merged);
 }
 

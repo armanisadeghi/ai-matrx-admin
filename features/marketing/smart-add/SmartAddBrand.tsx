@@ -41,6 +41,7 @@ import { categoriesFor, liveKnownDomainRules } from "@/lib/web-domains/registry"
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { formatCount } from "@ai-matrx/kit/format";
 import { startSystemRun } from "@/features/education/kits/systemRuns";
+import { withoutOwnAccountRows } from "./ownAccountRows";
 import {
   createBrand,
   createBusinessFact,
@@ -902,6 +903,8 @@ export function SmartAddBrand({
     roundViews.some((v) => !!v && !TERMINAL.includes(v.status ?? ""));
   const failedRound =
     rounds.some((r) => Boolean(r.error)) || roundViews.some((v) => roundFailed(v));
+  // A round that never started says why (MKT-094): the screen names it beside its retry.
+  const startFailure = rounds.find((r) => r.error)?.error ?? null;
   // A step that already said it could not open the site is not still "reading" it.
   const progressLines = roundViews
     .flatMap((v) => v?.steps ?? [])
@@ -919,7 +922,7 @@ export function SmartAddBrand({
   // Staff profiles' names, photos and bios never reach a business's own slots (they are key people).
   const visible = withSuggestions(
     withoutRepeatedText(
-      withoutNonContactEmails(orderedEvidence(withoutStaffFacts(items.values(), person)), (host) =>
+      withoutNonContactEmails(orderedEvidence(withoutStaffFacts(withoutOwnAccountRows(items.values(), decisions), person)), (host) =>
         categoriesFor(host, liveKnownDomainRules() ?? []).includes("non_contact_mail"),
       ),
       decisions,
@@ -1599,6 +1602,7 @@ export function SmartAddBrand({
           items={visible}
           nothingFound={nothingFound}
           failed={failedRound}
+          failedReason={startFailure}
           onAdd={addCustom}
         />
         {listeners}

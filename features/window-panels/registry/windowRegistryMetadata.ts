@@ -722,6 +722,9 @@ const STATIC_REGISTRY: WindowStaticMetadata[] = [
         "label",
       ],
     },
+    // Never restored on load (MKT-096): a restored Watch AI sat over a page's start cards before any
+    // run. AutoWatch opens it again when the page's first AI call arrives (a live resumed run included).
+    ephemeral: true,
     mobilePresentation: "card",
     urlSync: { key: "ai-watch" },
   },

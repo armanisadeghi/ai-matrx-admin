@@ -81,6 +81,12 @@ export interface RangeLike {
 
 export interface WorksheetLike {
   getSheetId(): string;
+  getMaxRows?(): number;
+  getSheetName?(): string;
+  isSheetHidden?(): boolean;
+  hideSheet?(): unknown;
+  showSheet?(): unknown;
+  getMaxColumns?(): number;
   setFrozenRows(rows: number): unknown;
   setFrozenColumns(columns: number): unknown;
   getFrozenRows(): number;
@@ -99,7 +105,7 @@ export interface DataValidationBuilderLike {
 
 export interface SheetsApiLike {
   executeCommand(id: string, params?: object): Promise<unknown> | unknown;
-  getActiveWorkbook(): { getActiveSheet(): WorksheetLike | null } | null;
+  getActiveWorkbook(): { getId?(): string; getActiveSheet(): WorksheetLike | null; getSheets?(): WorksheetLike[] } | null;
   newDataValidation(): DataValidationBuilderLike;
 }
 
@@ -291,6 +297,89 @@ export function moveSelection(h: SheetChromeHost, axis: "row" | "column", step: 
       range: whole,
     });
   };
+}
+
+/**
+ * View → Rows / Columns → Hide / Unhide. Univer's own hide/unhide commands read ONLY whole-row (or
+ * whole-column) selections, so with a single cell selected they do nothing (found by review 2026-10-15).
+ * Google hides the rows/columns the selection touches: map the active selection to its whole rows
+ * (or columns) first, then hand the explicit range to the command that takes one.
+ */
+export function hideOrShowSelection(h: SheetChromeHost, axis: "row" | "column", action: "hide" | "show") {
+  return () => {
+    const sheet = sheetOf(h);
+    const unitId = h.api.getActiveWorkbook()?.getId?.();
+    const r = rangeOf(h)?.getRange();
+    if (!sheet || !unitId || !r) {
+      h.notify("Select cells first");
+      return undefined;
+    }
+    const [start, end] = axis === "row" ? [r.startRow, r.endRow] : [r.startColumn, r.endColumn];
+    const max = axis === "row" ? sheet.getMaxRows?.() : sheet.getMaxColumns?.();
+    if (action === "hide" && max !== undefined && end - start + 1 >= max) {
+      h.notify(axis === "row" ? "Can't hide every row" : "Can't hide every column");
+      return undefined;
+    }
+    const range =
+      axis === "row"
+        ? { startRow: start, endRow: end, startColumn: 0, endColumn: Math.max((sheet.getMaxColumns?.() ?? 16384) - 1, 0), rangeType: RANGE_ROW }
+        : { startRow: 0, endRow: Math.max((sheet.getMaxRows?.() ?? 1048576) - 1, 0), startColumn: start, endColumn: end, rangeType: RANGE_COLUMN };
+    const id =
+      action === "hide"
+        ? axis === "row" ? "sheet.command.set-rows-hidden" : "sheet.command.set-col-hidden"
+        : axis === "row" ? "sheet.command.set-specific-rows-visible" : "sheet.command.set-col-visible-on-cols";
+    return h.api.executeCommand(id, { unitId, subUnitId: sheet.getSheetId(), ranges: [range] });
+  };
+}
+
+/** View → Hidden sheets → Hide this sheet: the last visible sheet stays (Univer refuses it; say so). */
+export function hideThisSheet(h: SheetChromeHost) {
+  return () => {
+    const wb = h.api.getActiveWorkbook();
+    const sheet = wb?.getActiveSheet();
+    const visible = (wb?.getSheets?.() ?? []).filter((s) => !s.isSheetHidden?.());
+    if (!sheet?.hideSheet) return undefined;
+    if (visible.length <= 1) {
+      h.notify("A workbook keeps at least one visible sheet");
+      return undefined;
+    }
+    return sheet.hideSheet();
+  };
+}
+
+/** View → Hidden sheets → Show all hidden sheets. */
+export function showHiddenSheets(h: SheetChromeHost) {
+  return () => {
+    const hidden = (h.api.getActiveWorkbook()?.getSheets?.() ?? []).filter((s) => s.isSheetHidden?.());
+    if (!hidden.length) {
+      h.notify("No hidden sheets");
+      return undefined;
+    }
+    for (const s of hidden) s.showSheet?.();
+    return hidden.length;
+  };
+}
+
+/** Insert → Emoji: ask for the character(s) and append them to the active cell's text. */
+export function insertEmoji(h: SheetChromeHost) {
+  return withRange(h, async (r) => {
+    const answers = await promptForValues({
+      title: "Emoji",
+      submitLabel: "Insert",
+      fields: [{ name: "emoji", prompt: "Type or paste an emoji", required: true }],
+    });
+    const emoji = answers?.emoji?.trim();
+    if (!emoji) return undefined;
+    const values = r.getValues();
+    if (r.getFormulas()[0]?.[0]) {
+      h.notify("That cell holds a formula");
+      return undefined;
+    }
+    const first = values[0]?.[0];
+    const next = values.map((row) => row.map((v) => v ?? null));
+    next[0]![0] = `${first == null ? "" : String(first)}${emoji}`;
+    return r.setValues(next);
+  });
 }
 
 function numberFormatEntries(h: SheetChromeHost): EditorMenuEntry[] {
@@ -555,7 +644,16 @@ export function buildSheetMenus(h: SheetChromeHost): EditorMenu[] {
           ],
         },
         soon("view.group", "Group", "workbooks.group", { keywords: ["group rows", "group columns"] }),
-        soon("view.hidden-sheets", "Hidden sheets", "workbooks.hidden-sheets"),
+        {
+          kind: "submenu",
+          id: "view.hidden-sheets",
+          label: "Hidden sheets",
+          keywords: ["hide sheet", "unhide sheet", "show sheet"],
+          items: [
+            { kind: "action", id: "view.hidden-sheets.hide", label: "Hide this sheet", run: hideThisSheet(h) },
+            { kind: "action", id: "view.hidden-sheets.show", label: "Show all hidden sheets", run: showHiddenSheets(h) },
+          ],
+        },
         { kind: "submenu", id: "view.zoom", label: "Zoom", items: zoomEntries(h) },
         {
           kind: "submenu",
@@ -563,8 +661,8 @@ export function buildSheetMenus(h: SheetChromeHost): EditorMenu[] {
           label: "Rows",
           keywords: ["hide rows", "unhide rows"],
           items: [
-            { kind: "action", id: "view.rows.hide", label: "Hide selected rows", run: run(h, "sheet.command.hide-row-confirm") },
-            { kind: "action", id: "view.rows.show", label: "Unhide selected rows", run: run(h, "sheet.command.set-selected-rows-visible") },
+            { kind: "action", id: "view.rows.hide", label: "Hide selected rows", run: hideOrShowSelection(h, "row", "hide") },
+            { kind: "action", id: "view.rows.show", label: "Unhide selected rows", run: hideOrShowSelection(h, "row", "show") },
           ],
         },
         {
@@ -573,8 +671,8 @@ export function buildSheetMenus(h: SheetChromeHost): EditorMenu[] {
           label: "Columns",
           keywords: ["hide columns", "unhide columns"],
           items: [
-            { kind: "action", id: "view.columns.hide", label: "Hide selected columns", run: run(h, "sheet.command.hide-col-confirm") },
-            { kind: "action", id: "view.columns.show", label: "Unhide selected columns", run: run(h, "sheet.command.set-selected-cols-visible") },
+            { kind: "action", id: "view.columns.hide", label: "Hide selected columns", run: hideOrShowSelection(h, "column", "hide") },
+            { kind: "action", id: "view.columns.show", label: "Unhide selected columns", run: hideOrShowSelection(h, "column", "show") },
           ],
         },
         { kind: "separator" },
@@ -652,7 +750,7 @@ export function buildSheetMenus(h: SheetChromeHost): EditorMenu[] {
             return h.api.executeCommand("data-validation.operation.open-validation-panel", {});
           }),
         },
-        soon("insert.emoji", "Emoji", "editor.insert.emoji"),
+        { kind: "action", id: "insert.emoji", label: "Emoji", keywords: ["smiley", "character", "symbol"], run: insertEmoji(h) },
         soon("insert.smart-chips", "Smart chips", "editor.insert.smart-chips"),
         { kind: "separator" },
         { kind: "action", id: "insert.comment", label: "Comment", icon: MessageSquarePlus, shortcut: { key: "m", mod: true, alt: true }, run: run(h, "sheet.operation.show-comment-modal") },

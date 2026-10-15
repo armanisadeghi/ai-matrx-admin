@@ -133,3 +133,16 @@ describe("smartAddUrl — validate route", () => {
     expect(validateAddressOwner(null, ID)).toBeNull();
   });
 });
+
+describe("smartAddUrl — an email alone is a start (MKT-095)", () => {
+  it("a person link carrying only an email starts, on the name card", () => {
+    const a = parseSmartAddUrl("/person", "?email=jane%40example.org");
+    expect(hasSmartAddPrefill(a)).toBe(true);
+    expect(a.via).toBe("name");
+  });
+  it("a company link carrying only an email starts too", () => {
+    const a = parseSmartAddUrl("/company", "?email=hello%40example.org");
+    expect(hasSmartAddPrefill(a)).toBe(true);
+    expect(a.via).toBe("name");
+  });
+});

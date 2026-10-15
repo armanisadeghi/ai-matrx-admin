@@ -136,6 +136,7 @@ export class WorkbookCollabSession {
     // is set later via setCursor().
     this.awareness.setLocalState({
       uid: this.options.uid,
+      clientId: this.options.clientId,
       name: this.options.uid.slice(0, 8),
       color: pickColor(this.options.uid),
       sheetId: null,
@@ -336,15 +337,10 @@ export class WorkbookCollabSession {
     const states = Array.from(this.awareness.getStates().values()) as Array<
       Record<string, unknown>
     >;
-    const uids = states
-      .map((s) => (typeof s.uid === "string" ? s.uid : null))
-      .filter((u): u is string => u !== null)
-      .sort();
-    const hostUid = uids[0] ?? null;
     // Lowest uid wins ACROSS tabs; inside this tab only the room's tab leader
     // may be host, because every same-tab holder carries the same uid.
     const leader = this.provider?.isTabLeader?.() ?? true;
-    return { isHost: hostUid === this.options.uid && leader, hostUid };
+    return electCollabHost(states, this.options.uid, this.options.clientId, leader);
   }
 
   // ─── internals ────────────────────────────────────────────────────────
@@ -420,6 +416,32 @@ export class WorkbookCollabSession {
 }
 
 // ─── helpers ────────────────────────────────────────────────────────────
+
+/**
+ * THE host election (the host is the only client that writes the canonical snapshot). The lowest uid
+ * wins; two tabs of ONE person share a uid, so the tie breaks on the tab's own client id. Without
+ * that, both tabs were host and one edit was written twice: once by the tab that made it and again
+ * by the tab that received it (review 2026-10-15). Exactly one candidate, exactly one writer.
+ */
+export function electCollabHost(
+  states: Array<Record<string, unknown>>,
+  selfUid: string,
+  selfClientId: string,
+  tabLeader: boolean,
+): { isHost: boolean; hostUid: string | null } {
+  const keys = states
+    .filter((s): s is Record<string, unknown> & { uid: string } => typeof s.uid === "string")
+    .map((s) => ({ uid: s.uid, clientId: typeof s.clientId === "string" ? s.clientId : "" }))
+    .sort((a, b) => {
+      if (a.uid !== b.uid) return a.uid < b.uid ? -1 : 1;
+      return a.clientId < b.clientId ? -1 : a.clientId > b.clientId ? 1 : 0;
+    });
+  const host = keys[0] ?? null;
+  return {
+    isHost: !!host && host.uid === selfUid && host.clientId === selfClientId && tabLeader,
+    hostUid: host?.uid ?? null,
+  };
+}
 
 /**
  * A workbook holds no Univer DOCUMENT units of its own: the `doc.mutation.*` stream a sheet emits is

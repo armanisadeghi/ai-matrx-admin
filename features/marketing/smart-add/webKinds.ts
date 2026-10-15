@@ -12,6 +12,10 @@
 
 import type { BrandRelationKind, RelationStance } from "@/features/marketing/data/service";
 import { websiteHost, type EvidenceItem } from "./evidence";
+import { isSocialPlatformPage } from "./validate/fold";
+
+/** Kinds that say "a listing site's page about us" — never a social platform's page. */
+const LISTING_KINDS = new Set(["review_site", "claimable_listing"]);
 
 export type Sentiment = "positive" | "neutral" | "negative";
 
@@ -191,9 +195,13 @@ export function suggestKind(item: EvidenceItem, kinds: BrandRelationKind[], ctx:
     const named = [labels.length > 2 ? labels[0] : "", address.split("/")[1] ?? ""].map(norm).find((x) => x && handles.has(x));
     if (named) return { kind: "ours", reason: `Same name (${named}) as your account, on ${host}` };
   }
+  // A social-platform page is never a review site or a listing to claim: it is an account (MKT-045).
+  const social = isSocialPlatformPage(url);
   const ruled = kindByRules(url, kinds);
-  if (ruled) return { kind: ruled.kind.key, reason: `${ruled.rule}: ${ruled.kind.label.toLowerCase()}` };
-  if (item.field === "listing") {
+  if (ruled && !(social && LISTING_KINDS.has(ruled.kind.key))) {
+    return { kind: ruled.kind.key, reason: `${ruled.rule}: ${ruled.kind.label.toLowerCase()}` };
+  }
+  if (item.field === "listing" && !social) {
     const key = has("review_site") ? "review_site" : "claimable_listing";
     if (has(key)) return { kind: key, reason: `${item.label ?? host} page` };
   }

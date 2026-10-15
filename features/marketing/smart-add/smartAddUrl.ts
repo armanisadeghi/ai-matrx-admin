@@ -118,13 +118,17 @@ export function impliedVia(prefill: SmartAddPrefill, mode: SmartAddMode | null):
   if (prefill.website) return "website";
   if (prefill.social) return "social";
   if (prefill.name) return "name";
+  // An email alone is a full start (VISION Part 19); its row lives on the name card.
+  if (prefill.email) return "name";
   return null;
 }
 
 /** True when the address carries something to search for (a deep link that may start a run). */
 export function hasSmartAddPrefill(a: Pick<SmartAddAddress, "mode" | "prefill">): boolean {
   const p = a.prefill;
-  return a.mode === "person" ? Boolean(p.name || p.social || p.website) : Boolean(p.website || p.social || p.name);
+  return a.mode === "person"
+    ? Boolean(p.name || p.social || p.website || p.email)
+    : Boolean(p.website || p.social || p.name || p.email);
 }
 
 export interface SmartAddLink extends SmartAddPrefill {

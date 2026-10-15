@@ -63,6 +63,11 @@ const SOCIAL_HOSTS: Record<string, string> = {
   "threads.com": "threads",
 };
 
+/** True for any page on a social platform (a profile, a post, a group): it is an account question, never a listing. */
+export function isSocialPlatformPage(url: string): boolean {
+  return Boolean(SOCIAL_HOSTS[domainHost(url)]);
+}
+
 /** Path heads that name a post, a reel, a status — never an account. */
 const POST_HEADS = new Set(["p", "reel", "reels", "tv", "posts", "status", "video", "watch", "shorts", "events", "photo", "photos", "story", "stories", "hashtag", "explore", "share", "groups", "pulse"]);
 

@@ -67,6 +67,32 @@ export async function lookupSystemRun(
   return parseRun(obj(result.data).run);
 }
 
+/**
+ * A start refused only because the server that took it is older than the workflow (a rolling
+ * deploy: some servers lack a new step). The server says so with 503 `node_types_unavailable_here`;
+ * an older server says 422 "Unknown node type". Either way a retry lands on a newer server (MKT-094).
+ */
+export function isServerUpdatingRefusal(error: { status?: number; serverDetail?: unknown; message?: string } | null | undefined): boolean {
+  if (!error) return false;
+  const body = `${error.message ?? ""} ${(() => {
+    try {
+      return JSON.stringify(error.serverDetail ?? "");
+    } catch {
+      return "";
+    }
+  })()}`;
+  if (error.status === 503 && /node_types_unavailable_here/.test(body)) return true;
+  return error.status === 422 && /Unknown node type/i.test(body);
+}
+
+/** Waits between start retries while servers update (about 45 seconds in all). */
+export const SERVER_UPDATING_RETRY_DELAYS_MS = [1500, 3000, 5000, 8000, 12000, 15000];
+
+/** What the screen says when every retry still met an older server. */
+export const SERVER_UPDATING_MESSAGE = "Our servers are updating, so this couldn't start. Try again in a minute.";
+
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
 /** Start (or rejoin) the run of `key` about `subject`. */
 export async function startSystemRun(
   dispatch: AppDispatch,
@@ -79,22 +105,34 @@ export async function startSystemRun(
   },
   failure: string,
 ): Promise<{ runId: string; duplicate: boolean }> {
-  const result = await dispatch(
-    callApi({
-      path: SYSTEM_RUNS_PATH,
-      method: "POST",
-      pathParams: { key } as never,
-      scopeOverrides: { organization_id: input.organizationId },
-      body: {
-        subject: input.subject,
-        source_feature: input.sourceFeature,
-        // "detached": the server runs it in-process, beside this request; it
-        // finishes whether or not any page is still open.
-        mode: "detached",
-        inputs: input.inputs,
-      } as never,
-    }),
-  );
+  const send = () =>
+    dispatch(
+      callApi({
+        path: SYSTEM_RUNS_PATH,
+        method: "POST",
+        pathParams: { key } as never,
+        scopeOverrides: { organization_id: input.organizationId },
+        // A refusal from a server mid-update is retried below, never filed as an error.
+        expectedErrorStatuses: [503],
+        body: {
+          subject: input.subject,
+          source_feature: input.sourceFeature,
+          // "detached": the server runs it in-process, beside this request; it
+          // finishes whether or not any page is still open.
+          mode: "detached",
+          inputs: input.inputs,
+        } as never,
+      }),
+    );
+  let result = await send();
+  // A rolling deploy: the server that took the start lacks a step the workflow now has. Nothing was
+  // created, so the same start goes again and lands on an updated server.
+  for (const delay of SERVER_UPDATING_RETRY_DELAYS_MS) {
+    if (!isServerUpdatingRefusal(result.error)) break;
+    await sleep(delay);
+    result = await send();
+  }
+  if (isServerUpdatingRefusal(result.error)) throw new Error(SERVER_UPDATING_MESSAGE);
   if (result.error) throw new Error(result.error.message || failure);
   const data = obj(result.data);
   const runId = typeof data.run_id === "string" ? data.run_id : "";

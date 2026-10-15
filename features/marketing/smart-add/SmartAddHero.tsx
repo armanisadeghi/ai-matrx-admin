@@ -90,6 +90,7 @@ export function SmartAddHero({
   items,
   nothingFound,
   failed,
+  failedReason = null,
   onAdd,
   initial,
   via,
@@ -124,6 +125,8 @@ export function SmartAddHero({
   nothingFound: boolean;
   /** A round broke (not "searched and found nothing"). */
   failed: boolean;
+  /** Why a round could not start, in plain words (shown with a retry). */
+  failedReason?: string | null;
   onAdd: (items: EvidenceItem[]) => void;
   /** The Smart Add page's address (smartAddUrl.ts): typed values from a deep link or a resumed session. */
   initial?: SmartAddPrefill;
@@ -226,7 +229,12 @@ export function SmartAddHero({
       : false;
   };
   // An email in the main box is an email, whichever way in it was typed into (VISION Part 19).
-  const mainEmail = mode === "website" ? emailIn(site) : mode === "social" ? emailIn(social) : mode === "name" ? emailIn(name) : null;
+  // The name card's Email row alone (no name) is a full start too: an email by itself starts the search (MKT-095).
+  const mainEmail =
+    mode === "website" ? emailIn(site)
+    : mode === "social" ? emailIn(social)
+    : mode === "name" ? emailIn(name) ?? (name.trim() ? null : emailIn(email))
+    : null;
   const ready = Boolean(mainEmail) || readyFor(picked);
 
   const phase: "choose" | "enter" | "identifying" | "nothing" | "outcome" =
@@ -336,11 +344,12 @@ export function SmartAddHero({
       website: site.trim() || null,
       social: social.trim() || null,
       platform: picked,
-      name: name.trim() || null,
+      // An email typed in the name box rides the address as `email=`, never as a name (MKT-095).
+      name: emailIn(name) ? null : name.trim() || null,
       city: city.trim() || null,
       occupation: occupation.trim() || null,
       company: company.trim() || null,
-      email: email.trim() || null,
+      email: email.trim() || emailIn(name) || null,
     }),
   );
   useEffect(() => {
@@ -667,7 +676,7 @@ export function SmartAddHero({
               onReload={answer.reload ? () => window.location.reload() : undefined}
             />
           ) : null}
-          {phase === "nothing" ? <NothingFound failed={failed} person={person} onAnswer={onAdd} onRetry={() => void edit()} /> : null}
+          {phase === "nothing" ? <NothingFound failed={failed} reason={failedReason} person={person} onAnswer={onAdd} onRetry={() => void edit()} onTryAgain={() => void retry()} /> : null}
         </motion.div>
       </section>
     </MotionConfig>
@@ -1562,14 +1571,18 @@ function StillWorking({ onStop, onStartOver }: { onStop: () => void; onStartOver
 
 function NothingFound({
   failed,
+  reason = null,
   person,
   onAnswer,
   onRetry,
+  onTryAgain,
 }: {
   failed: boolean;
+  reason?: string | null;
   person: boolean;
   onAnswer: (items: EvidenceItem[]) => void;
   onRetry: () => void;
+  onTryAgain: () => void;
 }) {
   const [name, setName] = useState("");
   const [what, setWhat] = useState("");
@@ -1597,8 +1610,19 @@ function NothingFound({
       className="mt-6 flex w-full flex-col items-center gap-4"
       data-testid="smart-add-situation"
     >
+      {failed && reason ? (
+        <div className="flex flex-col items-center gap-2" data-testid="smart-add-start-failure">
+          <p className="flex items-center gap-1 text-base text-foreground">
+            <span>{reason}</span>
+            <ErrorAlchemyMenu error={reason} />
+          </p>
+          <Button variant="outline" onClick={onTryAgain} icon={<RotateCcw className="size-4" />}>
+            Try again
+          </Button>
+        </div>
+      ) : null}
       <p className="text-base text-muted-foreground">
-        {failed ? "Try again, or give three quick answers." : "Three quick answers and you're set."}
+        {failed && reason ? "Or give three quick answers." : failed ? "Try again, or give three quick answers." : "Three quick answers and you're set."}
       </p>
       <div className={`${styles.shell} w-full overflow-hidden rounded-[1.25rem]`}>
         <SubRow
