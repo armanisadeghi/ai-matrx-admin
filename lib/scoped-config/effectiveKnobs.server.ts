@@ -12,6 +12,7 @@
 import "server-only";
 
 import { createClient } from "@/utils/supabase/server";
+import { noteServerConfigRead } from "@/lib/config-attestation/serverReporter.server";
 
 /** The register's own (feature, key) pair, as `{ feature, key }`; the browser module is not imported here. */
 export async function readEffectiveKnobOnServer(address: { feature: string; key: string }): Promise<unknown> {
@@ -28,7 +29,9 @@ export async function readEffectiveKnobOnServer(address: { feature: string; key:
       return undefined;
     }
     const resolved = ((data ?? {}) as { resolved?: Record<string, unknown> }).resolved ?? {};
-    return resolved[`${feature}.${key}`];
+    const value = resolved[`${feature}.${key}`];
+    noteServerConfigRead("knob", feature, key, "db", value, value === undefined);
+    return value;
   } catch (error) {
     console.error(`[knob] server read of ${feature}.${key} threw; the page falls back to the browser's read.`, error);
     return undefined;
