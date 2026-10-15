@@ -43,6 +43,23 @@ describe("a published view", () => {
     expect(html).toContain("Juniper Yoga");
   });
 
+  it("collapses an empty column to a narrow header and gives populated ones a real width", () => {
+    const html = renderToStaticMarkup(<PublicViewBody view={base} />);
+    expect(html.match(/data-public-board-empty/g)).toHaveLength(1); // Idea has no card
+    expect(html.match(/data-public-board-lane/g)).toHaveLength(2);
+    expect(html).toContain("w-9"); // the narrow header
+    expect(html).not.toContain("w-64"); // no fixed 256px columns
+    expect(html).toContain("w-[calc(100vw-2rem)]"); // a phone: one column wide
+    expect(html).toContain("overflow-x-auto"); // sideways scroll inside the board's own box
+  });
+
+  it("drops empty groups altogether when the owner chose to hide them", () => {
+    const html = renderToStaticMarkup(<PublicViewBody view={{ ...base, board_hide_empty: true }} />);
+    expect(html).not.toContain("data-public-board-empty");
+    expect(html).not.toContain("Idea");
+    expect(html).toContain("Scripting");
+  });
+
   it("names an unmatched guest by name, never by id", () => {
     const html = renderToStaticMarkup(<PublicViewBody view={{ ...base, layout: "grid" }} />);
     expect(html).toContain("Maya Okafor");

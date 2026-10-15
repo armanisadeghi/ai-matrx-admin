@@ -27,7 +27,7 @@ await page.goto(url, { timeout: 180000 });
 if (page.url().includes("__dev-walk")) { await page.getByRole("button", { name: "Resume this preview" }).click(); await page.waitForURL(u=>!u.href.includes("__dev-walk"),{timeout:180000}); }
 await page.waitForTimeout(15000);
 await page.screenshot({ path: `${OUT}/1-loaded.png` });
-await page.getByRole("button", { name: "Group chat inspector" }).click();
+await page.getByRole("button", { name: "Group Chat inspector" }).click();
 await page.waitForTimeout(8000);
 await page.screenshot({ path: `${OUT}/2-inspector.png` });
 const trig = page.locator('[data-participant] [aria-label="Sees"]').first();
@@ -44,7 +44,7 @@ await setSees("No one");
 console.log("after No one:", await seesText());
 await page.goto(url.replace(/\/api\/dev-login.*next=/, "").replace(/^http:\/\/[^/]+/, (m)=>m) , { timeout: 120000 }).catch(()=>{});
 await page.waitForTimeout(12000);
-if (!(await page.locator('[aria-label="Sees"]').count())) { await page.getByRole("button", { name: "Group chat inspector" }).click(); await page.waitForTimeout(8000); }
+if (!(await page.locator('[aria-label="Sees"]').count())) { await page.getByRole("button", { name: "Group Chat inspector" }).click(); await page.waitForTimeout(8000); }
 const afterReload = (await seesText()).trim();
 console.log("after reload:", afterReload);
 await page.screenshot({ path: `${OUT}/4-reloaded.png` });

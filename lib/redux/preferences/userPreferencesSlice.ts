@@ -475,6 +475,20 @@ export interface ScratchpadPreferences {
   activeId: string | null;
 }
 
+/** The page every NEW document starts with, once a person chose File → Page setup → Set as default. */
+export interface DocumentsPreferences {
+  defaultPageSetup: {
+    pageless: boolean;
+    orientation: "portrait" | "landscape";
+    paper: string;
+    marginTop: number;
+    marginBottom: number;
+    marginLeft: number;
+    marginRight: number;
+    pageColor: string;
+  } | null;
+}
+
 /** User-owned Site Workbench sidebar bookmarks (synced). System bookmarks are fixed in code. */
 export interface SiteWorkbenchUserBookmark {
   id: string;
@@ -929,6 +943,7 @@ export interface UserPreferences {
   mediaDevices: MediaDevicePreferences;
   organization: OrganizationPreferences;
   scratchpad: ScratchpadPreferences;
+  documents: DocumentsPreferences;
   notes: NotesPreferences;
   siteWorkbench: SiteWorkbenchPreferences;
   listViews: ListViewsPreferences;
@@ -1469,6 +1484,9 @@ export const initializeUserPreferencesState = (
       // null = no scratchpad yet; the first open/type creates + activates one.
       activeId: null,
     },
+    documents: {
+      defaultPageSetup: null,
+    },
     notes: {
       defaultEditorMode: "write",
       defaultPhoneEditorMode: "write",
@@ -1570,6 +1588,10 @@ export const initializeUserPreferencesState = (
     scratchpad: {
       ...defaultPreferences.scratchpad,
       ...preferences.scratchpad,
+    },
+    documents: {
+      ...defaultPreferences.documents,
+      ...preferences.documents,
     },
     notes: {
       ...defaultPreferences.notes,
@@ -1734,6 +1756,9 @@ const preferenceEditReducers = {
       };
       state.scratchpad = {
         ...state._meta.loadedPreferences.scratchpad,
+      };
+      state.documents = {
+        ...state._meta.loadedPreferences.documents,
       };
       state.notes = {
         ...state._meta.loadedPreferences.notes,
@@ -2036,6 +2061,7 @@ const PERSISTED_PREFERENCE_MODULES: Record<keyof UserPreferences, true> = {
   mediaDevices: true,
   organization: true,
   scratchpad: true,
+  documents: true,
   notes: true,
   siteWorkbench: true,
   listViews: true,

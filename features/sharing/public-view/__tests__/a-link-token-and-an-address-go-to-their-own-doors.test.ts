@@ -21,7 +21,7 @@ it("sends a link token to shared_view_read, and only there", async () => {
   const view = await publishedView(TOKEN);
   expect(view).toMatchObject({ title: "Client Approval" });
   expect(rpc).toHaveBeenCalledTimes(1);
-  expect(rpc).toHaveBeenCalledWith("shared_view_read", { p_token: TOKEN });
+  expect(rpc).toHaveBeenCalledWith("shared_view_read", { p_token: TOKEN, p_password: null, p_unlock: null });
 });
 
 it("answers null (the 404) for a token the link door does not know, without trying the address door", async () => {

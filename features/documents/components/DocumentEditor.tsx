@@ -84,7 +84,7 @@ import { useRealtimeManager } from "@ai-matrx/realtime/react";
 
 import { supabase } from "@/utils/supabase/client";
 import { useThemeMode } from "@/styles/themes/useThemeMode";
-import { useAppSelector, useAppStore } from "@/lib/redux/hooks";
+import { useAppDispatch, useAppSelector, useAppStore } from "@/lib/redux/hooks";
 import { Button } from "@ai-matrx/design-system";
 import { Button as ControlButton } from "@ai-matrx/design-system/controls";
 import { cn } from "@/lib/utils";
@@ -92,7 +92,10 @@ import { useToolToggle } from "@/features/canvas/host/toolCanvas";
 import { toast } from "@/components/ui/use-toast";
 
 import { fitZoomRatio } from "@/features/documents/utils/fitZoomRatio";
-import { defaultDocumentPageStyle } from "@/features/documents/document-page-style";
+import { defaultDocumentPageStyle, PAGE_COLOR_KEY, pageSetupCommandParams, type PageSetupValues } from "@/features/documents/document-page-style";
+import { applyPageSetup, readPageSetup, type PageSetupApiLike } from "@/features/documents/page-setup-apply";
+import { PageSetupDialog } from "@/features/documents/components/PageSetupDialog";
+import { setPreference } from "@/lib/redux/preferences/userPreferencesSlice";
 import {
   renderDocumentCanvasColorsVerbatim,
   type ReplaceableInjector,
@@ -269,6 +272,7 @@ export default function DocumentEditor({
       deleteRange: (start, end) =>
         liveDocument().deleteRange({ startOffset: start, endOffset: end }),
       insertText: (at, text) => liveDocument().insertText(at, text),
+      openPageSetup: () => setPageSetupOpen(true),
       runCommand: async (commandId) => {
         const api = apiRef.current as unknown as { executeCommand?: (id: string) => Promise<unknown> | unknown } | null;
         if (!api?.executeCommand) throw new Error("The document editor is still opening. Try again in a moment.");
@@ -282,6 +286,11 @@ export default function DocumentEditor({
   // This reaches Univer's CHROME only — see the hook's header.
   useUniverDarkModeSync(apiRef, bootState === "ready");
 
+  // File → Page setup: the dialog's state, and a counter that re-fits the zoom to the new page width.
+  const [pageSetupOpen, setPageSetupOpen] = useState(false);
+  const [pageRev, setPageRev] = useState(0);
+  const dispatch = useAppDispatch();
+
   // A narrow editor (a phone) fits the page to its width, so the page reflows
   // into view instead of scrolling sideways. View-only: the saved page is untouched.
   useEffect(() => {
@@ -293,14 +302,14 @@ export default function DocumentEditor({
       } | null;
       void api?.executeCommand?.("doc.operation.set-zoom-ratio", {
         unitId,
-        zoomRatio: fitZoomRatio(container.clientWidth, defaultDocumentPageStyle().pageSize?.width ?? 595),
+        zoomRatio: fitZoomRatio(container.clientWidth, readPageSetupWidth(apiRef.current as unknown as PageSetupApiLike | null)),
       });
     };
     apply();
     const observer = new ResizeObserver(apply);
     observer.observe(container);
     return () => observer.disconnect();
-  }, [bootState, unitId]);
+  }, [bootState, unitId, pageRev]);
 
   // …and the page itself, which Univer paints from hardcoded LIGHT constants
   // no theme ever reaches. Without this the document renders as a page in the
@@ -462,7 +471,9 @@ export default function DocumentEditor({
         // The model's latest state, never a stale server copy while this tab
         // holds the document; re-read synchronously after the await, because
         // another view may have typed while the read was in flight.
-        const opening = await model.openingSnapshot(defaultEmptyDocument);
+        const opening = await model.openingSnapshot(() =>
+          defaultEmptyDocument(store.getState().userPreferences.documents?.defaultPageSetup ?? null),
+        );
         if (cancelled) {
           host.remove();
           disposeUniverInstance(univer);
@@ -479,6 +490,7 @@ export default function DocumentEditor({
         setUnitId(mountedUnit);
 
         const kept: KeptUniver = { host, univer, univerAPI, unitId: mountedUnit };
+        (window as unknown as Record<string, unknown>).__dbgDoc = { univer, univerAPI, unitId: mountedUnit }; // TEMPDBG
         detach = attachPort(kept);
         booted = kept;
         setBootState("ready");
@@ -587,6 +599,14 @@ export default function DocumentEditor({
     toast({ title: `${formatCount(words)} words`, description: `${formatCount(text.replace(/\s/g, "").length)} characters` });
   };
   const openFeedback = useOpenFeedbackWindow();
+  const changePage = async (values: PageSetupValues) => {
+    try {
+      await applyPageSetup(apiRef.current as unknown as PageSetupApiLike, values);
+      setPageRev((n) => n + 1);
+    } catch (err) {
+      toast({ title: "Page setup failed", description: err instanceof Error ? err.message : String(err) });
+    }
+  };
   const chromeHost: DocChromeHost | null =
     bootState === "ready" && apiRef.current
       ? {
@@ -599,6 +619,9 @@ export default function DocumentEditor({
           fullScreen: () => fullScreen,
           toggleFullScreen: () => setFullScreen((v) => !v),
           sendFeedback: () => openFeedback(),
+          openPageSetup: () => setPageSetupOpen(true),
+          pageless: () => readPageSetup(apiRef.current as unknown as PageSetupApiLike).pageless,
+          setPageless: (pageless) => void changePage({ ...readPageSetup(apiRef.current as unknown as PageSetupApiLike), pageless }),
         }
       : null;
   const menus = chromeHost ? buildDocMenus(chromeHost) : [];
@@ -926,7 +949,7 @@ function collabFactoryFor(documentId: string): DocumentCollabFactory {
  *
  * One empty paragraph + section break = a brand-new blank page.
  */
-function defaultEmptyDocument(): Partial<IDocumentData> {
+function defaultEmptyDocument(defaultPage: PageSetupValues | null = null): Partial<IDocumentData> {
   return {
     id: cryptoRandomId(),
     locale: LocaleType.EN_US,
@@ -938,7 +961,9 @@ function defaultEmptyDocument(): Partial<IDocumentData> {
       ],
       sectionBreaks: [{ startIndex: 1, sectionId: createSectionId(new Set()) }],
     },
-    documentStyle: defaultDocumentPageStyle(),
+    documentStyle: defaultPage
+      ? { ...defaultDocumentPageStyle(), ...pageSetupCommandParams(defaultPage), [PAGE_COLOR_KEY]: defaultPage.pageColor }
+      : defaultDocumentPageStyle(),
   };
 }
 

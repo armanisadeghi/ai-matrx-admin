@@ -1,7 +1,7 @@
 /**
  * @jest-environment jsdom
  *
- * The Group chat inspector opens at the canvas's default width (~360px). Its roster once was a
+ * The Group Chat inspector opens at the canvas's default width (~360px). Its roster once was a
  * <table> whose scroll container grew to 474px, clipping the Labels column. Layout cannot be
  * measured in jsdom, so this guard pins the structure that made it overflow: no table, no
  * horizontal scroller, no fixed pixel min-width anywhere in a rendered 360px host, and every

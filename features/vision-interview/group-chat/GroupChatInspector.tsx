@@ -5,7 +5,7 @@
 // The room's Group Chat inspector (the creator's lens, L4 minimal): one row per participant —
 // name, the round of its latest turn, and its view policy as compact controls edited in place —
 // and, for the selected participant's latest turn, exactly what it was shown (the receipt's
-// "Group chat" block), what was withheld and by which rule, and what it said. Dense, no prose.
+// "Group Chat" block), what was withheld and by which rule, and what it said. Dense, no prose.
 // The policy write is the server's (`useGroupChat`); the turn is read from `chat.message`.
 
 import { useEffect, useRef, useState } from "react";
@@ -389,7 +389,7 @@ export function GroupChatInspector({ anchorType, anchorId, initialKey }: { ancho
 
   if (state.status === "loading") return <Skeleton shape="block" height="lg" className="m-2" />;
   // read-gate-exempt: missing is its own answer; the error status is drawn on the next line
-  if (state.status === "missing") return <p className="px-3 py-2 type-secondary text-muted-foreground">No group chat in this room yet</p>;
+  if (state.status === "missing") return <p className="px-3 py-2 type-secondary text-muted-foreground">No Group Chat in this room yet</p>;
   if (state.status === "error") return <p className="px-3 py-2 type-secondary text-destructive">{state.message}<ErrorAlchemyMenu error={state.message} /></p>;
 
   const groupKeys = rows.flatMap((r) => (r.participant ? [r.participant.key] : []));

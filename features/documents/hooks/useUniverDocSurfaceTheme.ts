@@ -21,6 +21,7 @@
 import { useEffect } from "react";
 
 import { useThemeMode } from "@/styles/themes/useThemeMode";
+import { PAGE_COLOR_KEY } from "@/features/documents/document-page-style";
 
 import {
   domTokenReader,
@@ -53,7 +54,7 @@ interface FillColorTarget {
   getSkeleton?: () => {
     getViewModel?: () => {
       getDataModel?: () => {
-        getSnapshot?: () => { documentStyle?: { documentFlavor?: number } };
+        getSnapshot?: () => { documentStyle?: { documentFlavor?: number; [key: string]: unknown } };
       };
     };
   } | null;
@@ -78,12 +79,18 @@ export function surfaceColorsForFlavor(
     : colors;
 }
 
+function styleOf(background: FillColorTarget) {
+  return background.getSkeleton?.()?.getViewModel?.()?.getDataModel?.()?.getSnapshot?.()?.documentStyle;
+}
+
 function flavorOf(background: FillColorTarget): number | undefined {
-  return background
-    .getSkeleton?.()
-    ?.getViewModel?.()
-    ?.getDataModel?.()
-    ?.getSnapshot?.()?.documentStyle?.documentFlavor;
+  return styleOf(background)?.documentFlavor;
+}
+
+/** A page colour the person chose in Page setup (a light hex), else undefined. */
+function pageColorOf(background: FillColorTarget): string | undefined {
+  const c = styleOf(background)?.[PAGE_COLOR_KEY];
+  return typeof c === "string" && /^#[0-9a-f]{6}$/i.test(c) ? c : undefined;
 }
 
 /** Marks (and carries the state of) the wrapper installed below. */
@@ -133,8 +140,11 @@ export function applyUniverDocSurfaceColors(
     | undefined;
   // The flavour is read at every paint: a document can switch between paged
   // and pageless, and Univer re-runs `setFillColors` when it does.
-  const forDocument = (palette: UniverDocSurfaceColors) =>
-    background ? surfaceColorsForFlavor(palette, flavorOf(background)) : palette;
+  const forDocument = (palette: UniverDocSurfaceColors) => {
+    if (!background) return palette;
+    const chosen = pageColorOf(background);
+    return surfaceColorsForFlavor(chosen ? { ...palette, page: chosen } : palette, flavorOf(background));
+  };
 
   // The canvas ELEMENT's CSS background is what shows wherever the renderer
   // has not painted — the bright L-shaped margin in cold walk 18's screenshot.

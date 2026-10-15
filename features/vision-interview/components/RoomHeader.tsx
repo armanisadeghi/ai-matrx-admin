@@ -222,8 +222,8 @@ export function RoomHeader({
                 <Button
                   icon={<Users aria-hidden />}
                   variant={inspector.isVisible ? "outline" : "quiet"}
-                  title="Group chat: who sees what"
-                  aria-label="Group chat inspector"
+                  title="Group Chat: who sees what"
+                  aria-label="Group Chat inspector"
                   aria-pressed={inspector.isVisible}
                   onClick={inspector.toggle}
                 />

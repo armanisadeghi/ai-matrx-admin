@@ -91,13 +91,12 @@ const TOKEN_FALLBACKS: Record<ThemeModeName, { background: string; border: strin
 };
 
 /**
- * The paper. Deliberately theme-independent — see the header. Kept a hair off
- * pure white in dark so an A4 sheet on a dark desk is a page and not a lamp,
- * while staying far above the contrast the black ink needs.
+ * The paper. Deliberately theme-independent — see the header. White in both
+ * themes, like Google Docs: the sheet stays paper on a dark desk.
  */
 const PAPER: Record<ThemeModeName, string> = {
   light: "rgb(255, 255, 255)",
-  dark: "rgb(245, 245, 247)",
+  dark: "rgb(255, 255, 255)",
 };
 
 /**

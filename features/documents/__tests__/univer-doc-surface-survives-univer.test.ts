@@ -54,7 +54,7 @@ describe("every colour reaches Univer's renderer intact", () => {
     expect(isUniverParseableColor("hsl(240 5% 96%)")).toBe(false);
     const shipped = univerDocSurfaceViolations("dark", {
       frame: "hsl(240 4% 16%)",
-      page: "rgb(245, 245, 247)",
+      page: "rgb(255, 255, 255)",
       pageStroke: "hsl(240 4% 30%)",
       marginStroke: "rgba(158, 158, 158, 1)",
     });

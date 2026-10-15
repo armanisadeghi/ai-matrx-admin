@@ -23,10 +23,18 @@ export const PUBLIC_ADDRESS_SHAPE = /^[a-z0-9][a-z0-9-]{1,62}[a-z0-9]$/;
 /** The shape of a share-link token: `public.create_share_link` mints two uuids with the dashes removed. */
 export const SHARE_TOKEN_SHAPE = /^[0-9a-f]{64}$/;
 
-export const publishedView = cache(async (slug: string): Promise<PublishedView> => {
+/**
+ * `password` / `unlock` only matter for a password-protected share link: the password a visitor typed, or the fingerprint
+ * carried by the signed unlock cookie. The store checks them (`custom.shared_view_read`); nothing here decides.
+ */
+export const publishedView = cache(async (slug: string, password?: string, unlock?: string): Promise<PublishedView> => {
   if (!PUBLIC_ADDRESS_SHAPE.test(slug)) return null;
   if (SHARE_TOKEN_SHAPE.test(slug)) {
-    const { data, error } = await storeDoors(createAdminClient()).rpc("shared_view_read", { p_token: slug });
+    const { data, error } = await storeDoors(createAdminClient()).rpc("shared_view_read", {
+      p_token: slug,
+      p_password: password ?? null,
+      p_unlock: unlock ?? null,
+    });
     if (error) {
       throw new Error(`custom.shared_view_read refused: ${error.message}`);
     }

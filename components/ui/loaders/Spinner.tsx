@@ -73,6 +73,9 @@ const SPINNER_BOX: Record<SpinnerVariantSize, string> = {
     xl: "h-16 w-16",
 };
 
+/** Inline sizes: the label is the accessible name, never painted text. */
+const INLINE_SIZES = new Set<SpinnerVariantSize>(["xs", "sm"]);
+
 const normalizeSpinnerSize = (size: ComponentSize): SpinnerVariantSize => {
     if (size === "icon") return "sm";
     if (size === "2xl" || size === "3xl") return "xl";
@@ -109,7 +112,10 @@ const Spinner = forwardRef<HTMLDivElement, SpinnerProps>(
                         )}
                     />
                 </div>
-                {label && (
+                {/* A small spinner sits inline (in a button, beside a name): its label is its
+                    accessible name only. Painted, it overflowed the 16px box and slid out under
+                    the button's own text ("Working" below "Import", 2026-10-15). */}
+                {label && !INLINE_SIZES.has(normalizedSize) && (
                     <span className="type-body">{label}</span>
                 )}
             </div>

@@ -18,7 +18,7 @@ import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { useState, type ReactNode } from "react";
 import Link from "next/link";
 import { Roboto } from "next/font/google";
-import { ExternalLink, Plus, RotateCw, Upload } from "lucide-react";
+import { Download, ExternalLink, Plus, RotateCw, Upload } from "lucide-react";
 import { Spinner } from "@/components/ui/loaders/Spinner";
 
 import { errorSentence, recordToast, toast } from "@/lib/toast";
@@ -155,8 +155,10 @@ function GButton({
   ...rest
 }: { kind: "filled" | "tonal"; busy?: boolean; icon?: ReactNode; children: ReactNode } & React.ButtonHTMLAttributes<HTMLButtonElement>) {
   return (
-    <button type="button" className={`matrx-glyph-trim ${styles.btn} ${styles[kind]}`} {...rest}>
-      {busy ? <Spinner size="xs" label="Working" /> : icon}
+    <button type="button" aria-busy={busy || undefined} className={`matrx-glyph-trim ${styles.btn} ${styles[kind]}`} {...rest}>
+      {/* Google's busy pill: same size, same colour, the label stays; a 16px spinner in the button's
+          ink takes the icon's place (the trimmed 18px icon is 15.3–16px wide, so the pill holds still). */}
+      {busy ? <Spinner size="xs" label="Working" className="text-current" /> : icon}
       {children}
     </button>
   );
@@ -182,12 +184,13 @@ function SendChip({ kind, item, label, onSent }: { kind: StripKind; item: Unlink
     <button
       type="button"
       className={styles.chip}
+      aria-busy={busy || undefined}
       disabled={busy || !g.ready}
       title={`Send “${item.name}” to ${g.appName}`}
       aria-label={`Send ${item.name} to ${g.appName}`}
       onClick={() => void send()}
     >
-      {busy ? <Spinner size="xs" label="Sending" /> : <Mark />}
+      {busy ? <Spinner size="xs" label="Sending" className="text-current" /> : <Mark />}
       <span className={styles.ellipsis}>Send “{label}”</span>
       <Upload className={styles.chipTrail} aria-hidden />
     </button>
@@ -378,6 +381,7 @@ export function GoogleHomeStrip({
             <GButton
               kind="filled"
               busy={busy === "import"}
+              icon={<Download aria-hidden />}
               disabled={busy !== null}
               title={`Import from ${app}`}
               onClick={() => void runImport()}

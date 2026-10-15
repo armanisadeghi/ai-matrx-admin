@@ -26,7 +26,10 @@
 import { NamedStyleType } from "@univerjs/core";
 import type { IDocumentData } from "@univerjs/core";
 
-import { defaultDocumentPageStyle } from "@/features/documents/document-page-style";
+import {
+  defaultDocumentPageStyle,
+  isLegacySqueezedPageStyle,
+} from "@/features/documents/document-page-style";
 
 /**
  * Map of every string name that could appear in a legacy snapshot to its
@@ -100,7 +103,19 @@ export function sanitizeUniverDocSnapshot(
  */
 function restorePageStyle(snapshot: Partial<IDocumentData>, docId?: string) {
   if (!snapshot || typeof snapshot !== "object") return;
-  if (snapshot.documentStyle?.pageSize?.width) return;
+
+  // THE SQUEEZED PAGE (2026-10-15): documents carried A4-at-72dpi geometry in Univer's pageless
+  // flavour — a 415px text column with no paper. Move them to a real Letter page, unchanged text.
+  // A document with no flavour at all is a paginated page too (Univer would otherwise pick pageless).
+  const style = snapshot.documentStyle;
+  if (style?.pageSize?.width && isLegacySqueezedPageStyle(style)) {
+    snapshot.documentStyle = { ...style, ...defaultDocumentPageStyle() };
+    return;
+  }
+  if (style?.pageSize?.width) {
+    if (!style.documentFlavor) style.documentFlavor = defaultDocumentPageStyle().documentFlavor;
+    return;
+  }
 
   snapshot.documentStyle = {
     ...defaultDocumentPageStyle(),
@@ -110,7 +125,7 @@ function restorePageStyle(snapshot: Partial<IDocumentData>, docId?: string) {
 
   console.warn(
     `[data-tables] RECOVERY: document snapshot${docId ? ` ${docId}` : ""} had no ` +
-      `documentStyle.pageSize — restored the default A4 page geometry. Without a ` +
+      `documentStyle.pageSize — restored the default Letter page geometry. Without a ` +
       `page box Univer lays the body out unbounded: text does not wrap and the ` +
       `viewport has no scrollable extent, so the document appears frozen. Fix the ` +
       `snapshot writer (agent/markdown converters must stamp ` +

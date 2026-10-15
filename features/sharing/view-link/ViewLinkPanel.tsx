@@ -8,10 +8,10 @@
 // on the view; its refusal is shown as the sentence it sent.
 
 import { useCallback, useEffect, useState } from "react";
-import { Check, Copy, Link2, Loader2 } from "lucide-react";
+import { Check, Copy, Link2, Loader2, Lock } from "lucide-react";
 import { Button } from "@ai-matrx/design-system";
 
-import { listViewLinks, makeViewLink, turnOffViewLink, viewLinkUrl, type ViewLink } from "./viewLinkService";
+import { listViewLinks, makeViewLink, protectViewLink, turnOffViewLink, viewLinkUrl, type ViewLink, type ViewLinkProtection } from "./viewLinkService";
 
 export interface ViewLinkPanelProps {
   viewId: string;
@@ -29,6 +29,9 @@ export function ViewLinkPanel({ viewId, name, onClose }: ViewLinkPanelProps) {
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState<string | null>(null);
   const [confirmOff, setConfirmOff] = useState<string | null>(null);
+  const [optionsFor, setOptionsFor] = useState<string | null>(null);
+  const [password, setPassword] = useState("");
+  const [endDate, setEndDate] = useState("");
 
   const load = useCallback(async () => {
     try {
@@ -66,6 +69,26 @@ export function ViewLinkPanel({ viewId, name, onClose }: ViewLinkPanelProps) {
       return;
     }
     await load();
+  }
+
+  async function protect(id: string, change: ViewLinkProtection) {
+    setBusy(true);
+    setError(null);
+    const done = await protectViewLink(id, change);
+    setBusy(false);
+    if (!done.ok) {
+      setError(done.error);
+      return;
+    }
+    setPassword("");
+    setEndDate("");
+    await load();
+  }
+
+  function openOptions(link: ViewLink) {
+    setPassword("");
+    setEndDate(link.expiresAt ? link.expiresAt.slice(0, 10) : "");
+    setOptionsFor((now) => (now === link.id ? null : link.id));
   }
 
   async function copy(link: ViewLink) {
@@ -114,6 +137,7 @@ export function ViewLinkPanel({ viewId, name, onClose }: ViewLinkPanelProps) {
             <div className="flex items-center justify-between gap-2 text-[11px] text-muted-foreground">
               <span className="truncate" data-view-link-maker="">
                 {link.madeByMe ? "You" : (link.createdByName ?? "Someone")} · {when(link.createdAt)} · {link.useCount} {link.useCount === 1 ? "view" : "views"}
+                {link.expiresAt ? ` · ends ${when(link.expiresAt)}` : ""}
               </span>
               {confirmOff === link.id ? (
                 <span className="flex shrink-0 items-center gap-1">
@@ -130,6 +154,53 @@ export function ViewLinkPanel({ viewId, name, onClose }: ViewLinkPanelProps) {
                 </Button>
               )}
             </div>
+            <div className="flex items-center gap-1">
+              <Button size="sm" variant="ghost" className="h-6 px-2 text-[11px]" onClick={() => openOptions(link)} data-view-link-options="">
+                <Lock className="mr-1 h-3 w-3" />
+                {link.hasPassword ? "Password on" : "Password"}
+              </Button>
+            </div>
+            {optionsFor === link.id ? (
+              <div className="flex flex-col gap-1 border-t border-border pt-1.5" data-view-link-protection={link.id}>
+                <div className="flex items-center gap-1">
+                  <input
+                    type="password"
+                    autoComplete="new-password"
+                    aria-label="Link password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="h-7 min-w-0 flex-1 rounded border border-border bg-transparent px-1.5 text-base"
+                    data-view-link-password=""
+                  />
+                  <Button size="sm" variant="outline" className="h-7 px-2 text-xs" disabled={busy || password.length < 4} onClick={() => void protect(link.id, { password })} data-view-link-password-set="">
+                    {link.hasPassword ? "Change" : "Set"}
+                  </Button>
+                  {link.hasPassword ? (
+                    <Button size="sm" variant="ghost" className="h-7 px-2 text-xs" disabled={busy} onClick={() => void protect(link.id, { password: "" })} data-view-link-password-clear="">
+                      Remove
+                    </Button>
+                  ) : null}
+                </div>
+                <div className="flex items-center gap-1">
+                  <input
+                    type="date"
+                    aria-label="Link ends on"
+                    value={endDate}
+                    onChange={(e) => setEndDate(e.target.value)}
+                    className="h-7 min-w-0 flex-1 rounded border border-border bg-transparent px-1.5 text-base"
+                    data-view-link-end=""
+                  />
+                  <Button size="sm" variant="outline" className="h-7 px-2 text-xs" disabled={busy || endDate === ""} onClick={() => void protect(link.id, { expiresAt: new Date(`${endDate}T23:59:59`) })} data-view-link-end-set="">
+                    Set end
+                  </Button>
+                  {link.expiresAt ? (
+                    <Button size="sm" variant="ghost" className="h-7 px-2 text-xs" disabled={busy} onClick={() => void protect(link.id, { expiresAt: null })} data-view-link-end-clear="">
+                      Never
+                    </Button>
+                  ) : null}
+                </div>
+              </div>
+            ) : null}
           </div>
         ))
       )}

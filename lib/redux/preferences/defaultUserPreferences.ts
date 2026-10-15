@@ -245,6 +245,10 @@ export const defaultUserPreferences: UserPreferences = {
   scratchpad: {
     activeId: null,
   },
+  // File → Page setup → Set as default fills this; null = Letter, 1in margins.
+  documents: {
+    defaultPageSetup: null,
+  },
   // Notes open in Split on a desktop (plain text left, the formatted note live
   // right) and Plain on a phone, unless the person chose another mode; a note
   // last edited in Write reopens in Write (noteModes).

@@ -31,7 +31,7 @@ export function groupChatInspectorToggleInput(tab: GroupChatInspectorTab): ToolT
   return {
     kind: GROUP_CHAT_INSPECTOR_KIND,
     key: `${tab.anchorType}:${tab.anchorId}`,
-    title: "Group chat",
+    title: "Group Chat",
     data: { anchorType: tab.anchorType, anchorId: tab.anchorId, focusKey: tab.focusKey },
   };
 }
@@ -39,7 +39,7 @@ export function groupChatInspectorToggleInput(tab: GroupChatInspectorTab): ToolT
 export const GROUP_CHAT_INSPECTOR_CANVAS_KIND: AnyCanvasKind = defineCanvasKind<CanvasJson>({
   id: GROUP_CHAT_INSPECTOR_KIND,
   surface: "dom",
-  label: "Group chat",
+  label: "Group Chat",
   icon: Users,
   load: () => import("./GroupChatInspectorCanvasView"),
   unavailable: (data) => (readGroupChatInspectorTab(data) ? null : "No room"),

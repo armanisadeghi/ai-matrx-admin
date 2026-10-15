@@ -117,13 +117,40 @@ export async function printDeck(deck: Deck): Promise<void> {
 [data-deck-print-host]>div:last-child{break-after:auto;page-break-after:auto}}`;
   rendered.host.setAttribute("data-deck-print-host", "");
   document.head.appendChild(style);
-  const cleanup = () => {
-    window.removeEventListener("afterprint", cleanup);
+  attachPrintCleanup(() => {
     style.remove();
     rendered.done();
-  };
-  window.addEventListener("afterprint", cleanup);
+  });
   window.print();
+}
+
+/** Longest the offscreen print host may outlive `window.print()` when no afterprint ever fires. */
+export const PRINT_CLEANUP_FALLBACK_MS = 60_000;
+
+/**
+ * Runs `cleanup` exactly once, on whichever comes first: `afterprint`, the tab becoming visible again
+ * (a print dialog that closed without the event, e.g. a cancelled iOS/Safari sheet), or a timeout.
+ * Without the fallbacks the offscreen host and the print style leak for the life of the page.
+ */
+export function attachPrintCleanup(cleanup: () => void, timeoutMs = PRINT_CLEANUP_FALLBACK_MS): () => void {
+  let done = false;
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const once = () => {
+    if (done) return;
+    done = true;
+    window.removeEventListener("afterprint", once);
+    document.removeEventListener("visibilitychange", onVisible);
+    if (timer) clearTimeout(timer);
+    cleanup();
+  };
+  const onVisible = () => {
+    // Give afterprint a beat to win; visibility returning means the dialog is gone either way.
+    if (document.visibilityState === "visible") setTimeout(once, 1000);
+  };
+  window.addEventListener("afterprint", once);
+  document.addEventListener("visibilitychange", onVisible);
+  timer = setTimeout(once, timeoutMs);
+  return once;
 }
 
 /** The File menu / list menu downloads for a deck (a loader keeps the list cheap: the deck loads on click). */
