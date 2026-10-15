@@ -107,7 +107,11 @@ function AccountChip({ email, name }: { email: string; name: string | null }) {
   );
 }
 
-/** The frame every state shares: Google header row, product row, an optional chips row. */
+/**
+ * The frame every state shares, compact (Arman, 2026-10-15: the strip was tall and pushed Recent
+ * down): ONE Google bar — G mark, the raw product icon, the product name and its line, the account
+ * chip, the actions — then the send / open chips as a second row when there are any.
+ */
 function Strip({
   label,
   account,
@@ -127,20 +131,22 @@ function Strip({
 }) {
   return (
     <section className={`${styles.strip} ${roboto.className}`} aria-label={label} data-google-strip>
-      <div className={styles.head}>
-        <GoogleG className="size-[18px] shrink-0" />
-        <span className={styles.headLabel}>Google Workspace</span>
-        {account}
-      </div>
-      <div className={styles.body}>
+      <div className={styles.bar}>
         <div className={styles.product}>
-          <span className="flex size-8 shrink-0 items-center justify-center">{icon}</span>
+          <GoogleG className="size-[18px] shrink-0" />
+          <span className={styles.rule} aria-hidden />
+          <span className="flex size-6 shrink-0 items-center justify-center">{icon}</span>
           <div className={styles.productText}>
             <span className={styles.title}>{title}</span>
             <span className={styles.line}>{line}</span>
           </div>
         </div>
-        {actions ? <div className={styles.actions}>{actions}</div> : null}
+        {account || actions ? (
+          <div className={styles.actions}>
+            {account}
+            {actions}
+          </div>
+        ) : null}
       </div>
       {chips ? <div className={styles.chips}>{chips}</div> : null}
     </section>
@@ -227,7 +233,7 @@ export function GoogleHomeStrip({
   const { app, Mark, noun } = PRODUCT[kind];
   // Import a Google file / start a new linked one: Sheets and Docs. Slides sends and opens only.
   const canMake = kind !== "presentation" && onImported !== undefined;
-  const icon = <Mark className="size-8" />;
+  const icon = <Mark className="size-6" />;
 
   if (hidden) return null;
 
