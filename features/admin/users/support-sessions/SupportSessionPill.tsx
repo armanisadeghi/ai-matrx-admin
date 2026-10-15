@@ -1,6 +1,7 @@
 "use client";
 
-// The support window's countdown. Renders only in a browser that redeemed a support link (it holds
+// The support window's countdown bar — a floating control row, not a label pill (the pill guard's
+// 320px budget is for labels). Renders only in a browser that redeemed a support link (it holds
 // SUPPORT_SESSION_COOKIE), so nobody else pays a request. The database is the clock: it is asked on
 // mount and every minute (an admin may end the session from the console), and at zero the session
 // is closed there and this window signs out. Floats over the page; never moves content.
@@ -138,7 +139,7 @@ export default function SupportSessionPill() {
     >
       <div
         className={cn(
-          "pointer-events-auto flex items-center gap-2 rounded-full border py-1 pl-3 pr-1 shadow-lg",
+          "pointer-events-auto flex max-w-full items-center gap-2 rounded-lg border py-1 pl-3 pr-1 shadow-lg",
           endingSoon
             ? "border-destructive bg-destructive text-destructive-foreground"
             : "border-warning bg-warning text-warning-foreground",
