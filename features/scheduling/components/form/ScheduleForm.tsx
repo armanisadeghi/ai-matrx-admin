@@ -25,6 +25,7 @@ import { cn } from "@/lib/utils";
 import { TRIGGER_TYPES } from "../../constants/triggerTypes";
 import { SURFACE_META, SURFACE_VALUES } from "../../constants/surfaces";
 import {
+  fetchScheduledTask,
   createScheduledTask,
   updateScheduledTask,
 } from "../../redux/tasks/thunks";
@@ -262,6 +263,8 @@ export function ScheduleForm({
               trigger,
             },
           );
+          // The detail reads the store: refresh this row there before showing it (it was stale).
+          await dispatch(fetchScheduledTask(task.id));
           toast.success("Schedule updated");
           startTransition(() => router.push(`/schedules/${task.id}`));
           return;

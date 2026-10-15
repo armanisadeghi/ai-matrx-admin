@@ -17,7 +17,7 @@ import { EntityRef } from "@/components/official/entity-ref/EntityRef";
 import { SURFACE_META } from "../../constants/surfaces";
 import { humanLines, scheduleDetailLocation } from "../../lib/copy";
 import type { AgendaTask } from "../../types";
-import { runsOnComputer } from "./ComputerTargetLine";
+import { runsOnComputer, useComputerStatus } from "./ComputerTargetLine";
 
 interface Props {
   task: AgendaTask;
@@ -31,6 +31,9 @@ export function SpecCard({ task }: Props) {
   const prompt = work ? work.prompt : task.prompt;
   const app = work ? (work.provider === "codex" ? "Codex" : "Claude Code") : null;
   const onComputer = runsOnComputer(task);
+  const computer = useComputerStatus(onComputer ? task.targetDeviceId : null);
+  const computerName = computer.name ?? (computer.state === "removed" ? "a removed computer" : "your computer");
+  const heading = work ? `Coding session on ${computerName}` : onComputer ? `Agent on ${computerName}` : "Agent";
 
   // What this card renders — prompt included in full, since a truncated
   // prompt is the single most useless thing to hand an agent debugging one.
@@ -60,7 +63,7 @@ export function SpecCard({ task }: Props) {
     <Card className="group/spec">
       <CardContent className="p-4 sm:p-5 space-y-4">
         <div className="flex items-center justify-between gap-2">
-          <SectionTitle icon={Rocket} label="Agent" />
+          <SectionTitle icon={Rocket} label={heading} />
           <CopyButtons
             size="xs"
             unified
@@ -108,6 +111,13 @@ export function SpecCard({ task }: Props) {
             })}
           />
         </div>
+        {onComputer && (
+          <Row label="Runs on" anchor="schedule_computer">
+            <span className="text-sm" data-computer-state={computer.state}>
+              {computerName} · {computer.state === "loading" ? "checking…" : computer.state === "removed" ? "removed" : computer.state === "unknown" ? "status unknown" : computer.state}
+            </span>
+          </Row>
+        )}
         {work ? (
           <>
             <Row label="Coding app" anchor="schedule_coding_app">
@@ -123,7 +133,10 @@ export function SpecCard({ task }: Props) {
               {work.homes.length ? (
                 <span className="flex flex-wrap gap-1">
                   {work.homes.map((h) => (
-                    <EntityRef key={`${h.token}:${h.id}`} token={h.token} id={h.id} wrap nameClassName="text-xs" />
+                    // The name HomeStep stored with the home (never its id).
+                    <span key={`${h.token}:${h.id}`} className="text-xs">
+                      {h.label && h.label !== h.id ? h.label : `A ${h.token.replace("_", " ")}`}
+                    </span>
                   ))}
                 </span>
               ) : (

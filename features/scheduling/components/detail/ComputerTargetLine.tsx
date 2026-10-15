@@ -71,3 +71,27 @@ export function ComputerTargetLine({ task }: { task: AgendaTask }) {
     </div>
   );
 }
+
+
+/** The chosen computer's name and whether the relay sees it now, for the detail card. */
+export function useComputerStatus(deviceId: string | null | undefined): { name: string | null; state: "online" | "offline" | "unknown" | "loading" | "removed" } {
+  const [answer, setAnswer] = useState<{ key: string; name: string | null; state: "online" | "offline" | "unknown" | "removed" } | null>(null);
+  useEffect(() => {
+    if (!deviceId) return;
+    let live = true;
+    void browserCodingDoors.reach
+      .listComputers(deviceId)
+      .then((listed) => {
+        if (!live) return;
+        if ("reason" in listed) return setAnswer({ key: deviceId, name: null, state: "unknown" });
+        const c = listed.find((x) => x.deviceId === deviceId);
+        setAnswer(c ? { key: deviceId, name: c.name, state: c.online === true ? "online" : c.online === false ? "offline" : "unknown" } : { key: deviceId, name: null, state: "removed" });
+      })
+      .catch(() => live && setAnswer({ key: deviceId, name: null, state: "unknown" }));
+    return () => {
+      live = false;
+    };
+  }, [deviceId]);
+  if (!deviceId) return { name: null, state: "removed" };
+  return answer && answer.key === deviceId ? answer : { name: null, state: "loading" };
+}
