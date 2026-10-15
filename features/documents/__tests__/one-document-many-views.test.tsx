@@ -104,18 +104,18 @@ jest.mock("@univerjs/preset-docs-drawing/locales/en-US", () => ({}));
 jest.mock("@univerjs/preset-docs-thread-comment", () => ({ UniverDocsThreadCommentPreset: () => ({}) }));
 jest.mock("@univerjs/preset-docs-thread-comment/locales/en-US", () => ({}));
 jest.mock("@univerjs/find-replace", () => ({ UniverFindReplacePlugin: class {} }));
-jest.mock("@/lib/univer/registerMissingUniverIcons", () => ({ registerMissingUniverIcons: () => undefined }));
+jest.mock("@ai-matrx/office/univer", () => ({ registerMissingUniverIcons: () => undefined }));
 jest.mock("@univerjs/docs-find-replace", () => ({ UniverDocsFindReplacePlugin: class {} }));
 jest.mock("@univerjs/find-replace/locale/en-US", () => ({}));
-jest.mock("@/lib/univer/routeUniverNotificationsToApp", () => ({ routeUniverNotificationsToApp: () => ({ applied: true }) }));
-jest.mock("@/lib/univer/univerImageStore", () => ({ registerMatrxImageStore: () => undefined }));
-jest.mock("@/lib/univer/matrxImagePorts", () => ({ matrxImagePorts: {} }));
+jest.mock("@ai-matrx/office/univer", () => ({ routeUniverNotificationsToApp: () => ({ applied: true }) }));
+jest.mock("@ai-matrx/office/univer", () => ({ registerMatrxImageStore: () => undefined }));
+jest.mock("@ai-matrx/office/univer", () => ({ matrxImagePorts: {} }));
 jest.mock("@/features/google-workspace/linked/EditorGoogleLinks", () => ({
   DocumentGoogleLink: () => null,
   WorkbookGoogleLink: () => null,
   useDocumentGoogleLink: () => ({ mark: null, items: null, dialog: null }),
 }));
-jest.mock("@/lib/univer/identifyUniverUser", () => ({ identifyUniverUser: async () => undefined }));
+jest.mock("@ai-matrx/office/univer", () => ({ identifyUniverUser: async () => undefined }));
 jest.mock("@univerjs/preset-sheets-core", () => ({ DragManagerService: class {}, HoverManagerService: class {} }));
 jest.mock("@ai-matrx/realtime/react", () => ({ useRealtimeManager: () => null, useChannel: () => undefined }));
 jest.mock("@ai-matrx/realtime", () => ({
@@ -125,12 +125,12 @@ jest.mock("@/features/canvas/host/toolCanvas", () => ({
   ...jest.requireActual<typeof import("@/features/canvas/host/toolCanvas")>("@/features/canvas/host/toolCanvas"),
   useToolToggle: () => ({ isVisible: false, toggle: () => {} }),
 }));
-jest.mock("@/lib/univer/useUniverDarkModeSync", () => ({ useUniverDarkModeSync: () => {} }));
+jest.mock("@ai-matrx/office/univer", () => ({ useUniverDarkModeSync: () => {} }));
 jest.mock("@/features/documents/hooks/useUniverDocSurfaceTheme", () => ({ useUniverDocSurfaceTheme: () => {} }));
 jest.mock("@/features/documents/univer-doc-canvas-colors", () => ({ renderDocumentCanvasColorsVerbatim: () => ({ applied: true }) }));
-jest.mock("@/lib/univer/registerUniverFacadeDependencies", () => ({ registerUniverFacadeDependencies: () => {} }));
+jest.mock("@ai-matrx/office/univer", () => ({ registerUniverFacadeDependencies: () => {} }));
 jest.mock("@/features/documents/utils/sanitizeUniverDocSnapshot", () => ({ sanitizeUniverDocSnapshot: (s: unknown) => s }));
-jest.mock("@/lib/univer/disposeUniverInstance", () => ({
+jest.mock("@ai-matrx/office/univer", () => ({
   disposeUniverInstance: (u: { dispose: () => void } | null) => u?.dispose(),
 }));
 jest.mock("@ai-matrx/realtime/collab/react", () => ({ RemotePeerChips: () => null }));

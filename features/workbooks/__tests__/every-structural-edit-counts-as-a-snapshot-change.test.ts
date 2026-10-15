@@ -9,7 +9,7 @@ import { ICommandService, LocaleType, Univer, UniverInstanceType, type ICommandI
 import * as sheetsCore from "@univerjs/preset-sheets-core";
 import { UniverSheetsPlugin } from "@univerjs/preset-sheets-core";
 
-import { isWorkbookSnapshotMutation } from "@/lib/univer/isSnapshotMutation";
+import { isWorkbookSnapshotMutation } from "@ai-matrx/office/univer";
 
 const U = sheetsCore as unknown as Record<string, { id: string }>;
 

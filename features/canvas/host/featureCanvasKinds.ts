@@ -21,7 +21,7 @@ import { KG_SUGGESTIONS_CANVAS_KIND } from "@/features/kg-suggestions/canvas/kgS
 import {
   DOCUMENT_HISTORY_CANVAS_KIND,
   WORKBOOK_HISTORY_CANVAS_KIND,
-} from "@/lib/univer/historyKinds";
+} from "./univerHistoryKinds";
 import { KNOWLEDGE_ASSETS_CANVAS_KIND } from "@/features/rag/canvas/knowledgeAssetsKind";
 import { SYSTEM_CONTEXT_PREVIEW_CANVAS_KIND } from "@/features/admin/system-context/canvas/systemContextPreviewKind";
 import { AGENT_EDIT_HISTORY_CANVAS_KIND } from "./agent/agentEditHistoryKind";

@@ -52,7 +52,7 @@ export async function importWorkbookFile(
   const { xlsxToUniverWorkbook } =
     await import("@/features/workbooks/xlsx-to-univer");
   const droppedOnImport: string[] = [];
-  const { uploadImportedImage } = await import("@/lib/univer/matrxImagePorts");
+  const { uploadImportedImage } = await import("@/lib/univer-host").then(async () => import("@ai-matrx/office/univer"));
   const snapshot = await xlsxToUniverWorkbook(file, {
     uploadImage: uploadImportedImage,
     onDropped: (what) => droppedOnImport.push(what),

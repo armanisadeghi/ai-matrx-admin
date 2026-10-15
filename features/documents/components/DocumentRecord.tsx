@@ -29,7 +29,7 @@ import { type EditorMenuEntry, type DocumentRow } from "@ai-matrx/office/core";
 import { FileTitleMarks } from "@/features/file-actions/FileTitleMarks";
 import { useLiveFileName } from "@/features/file-actions/useLiveFileName";
 import { useToolToggle } from "@/features/canvas/host/toolCanvas";
-import { documentHistoryToggleInput } from "@/lib/univer/historyKinds";
+import { documentHistoryToggleInput } from "@ai-matrx/office/univer/history";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
 import { toast } from "@/lib/toast";
 import { useFileRecordMenu } from "@/features/file-actions/useFileRecordMenu";

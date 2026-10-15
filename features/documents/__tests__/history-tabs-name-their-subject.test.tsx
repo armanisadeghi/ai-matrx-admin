@@ -19,7 +19,7 @@ import { createSlimRootReducer } from "@/lib/redux/rootReducer";
 import { CanvasHostProvider } from "@/features/canvas/host/CanvasHostProvider";
 import { useToolToggle } from "@/features/canvas/host/toolCanvas";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { DOCUMENT_HISTORY_KIND, documentHistoryToggleInput } from "@/lib/univer/historyKinds";
+import { DOCUMENT_HISTORY_KIND, documentHistoryToggleInput } from "@ai-matrx/office/univer/history";
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 Element.prototype.scrollIntoView ??= function scrollIntoView() {};

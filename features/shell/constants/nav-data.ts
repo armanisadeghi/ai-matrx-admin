@@ -570,6 +570,15 @@ export const DATA_NAV_CHILDREN: ShellNavChild[] = [
     dashboard: true,
   },
   {
+    // One list of same-type things, the real facts, a ranked side-by-side. Metered in points.
+    label: "Compare",
+    href: "/compare",
+    iconName: "GitCompareArrows",
+    description: "Line up companies, places or products and see the numbers side by side",
+    color: "cyan",
+    dashboard: true,
+  },
+  {
     // Fetched records beside what a model would receive: handed over vs fetched by a tool.
     label: "Data to Model",
     href: "/data/library/lab",

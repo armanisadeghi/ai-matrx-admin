@@ -103,17 +103,18 @@ import { useToolToggle } from "@/features/canvas/host/toolCanvas";
 import { toast } from "@/components/ui/use-toast";
 
 import { useWorkbookRealtime } from "@/features/workbooks/hooks/useWorkbookRealtime";
-import { useUniverDarkModeSync } from "@/lib/univer/useUniverDarkModeSync";
-import { identifyUniverUser } from "@/lib/univer/identifyUniverUser";
-import { registerMatrxImageStore } from "@/lib/univer/univerImageStore";
-import { registerMissingUniverIcons } from "@/lib/univer/registerMissingUniverIcons";
+import "@/lib/univer-host";
+import { useUniverDarkModeSync } from "@ai-matrx/office/univer";
+import { identifyUniverUser } from "@ai-matrx/office/univer";
+import { registerMatrxImageStore } from "@ai-matrx/office/univer";
+import { registerMissingUniverIcons } from "@ai-matrx/office/univer";
 import {
   routeUniverNotificationsToApp,
   type NotificationReplaceableInjector,
-} from "@/lib/univer/routeUniverNotificationsToApp";
-import { matrxImagePorts } from "@/lib/univer/matrxImagePorts";
-import { disposeUniverInstance } from "@/lib/univer/disposeUniverInstance";
-import { isWorkbookSnapshotMutation } from "@/lib/univer/isSnapshotMutation";
+} from "@ai-matrx/office/univer";
+import { matrxImagePorts } from "@ai-matrx/office/univer";
+import { disposeUniverInstance } from "@ai-matrx/office/univer";
+import { isWorkbookSnapshotMutation } from "@ai-matrx/office/univer";
 import { mayAutosave, remoteOriginOf } from "@ai-matrx/realtime/collab";
 import { readCollabAntiEntropyMs } from "@/lib/knobs/collabAntiEntropy";
 import { RemotePeerChips as RemoteCursorsLayer } from "@ai-matrx/realtime/collab/react";
@@ -124,11 +125,11 @@ import { registerWorkbookScopeSource } from "@/features/workbooks/workbook-scope
 import { useSurfaceWriteHandlers } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
 import { isServiceFailure } from "@/features/data-tables/types";
 import { downloadUniverAsXlsx } from "@/features/workbooks/univer-to-xlsx";
-import { resolveExportImage } from "@/lib/univer/matrxImagePorts";
-import { workbookHistoryToggleInput } from "@/lib/univer/historyKinds";
+import { resolveExportImage } from "@ai-matrx/office/univer";
+import { workbookHistoryToggleInput } from "@ai-matrx/office/univer/history";
 import { copyActiveSheetReference } from "@/features/workbooks/components/WorkbookSheetReferenceCopyButton";
 import { useWorkbookTableLink } from "@/features/workbooks/table-link/WorkbookTableLink";
-import { swapContentGuarded, registerOpenEditorContent, type SavedEditorSnapshot } from "@/lib/univer/openEditorContent";
+import { swapContentGuarded, registerOpenEditorContent, type SavedEditorSnapshot } from "@ai-matrx/office/univer";
 
 import { getClaimsUser } from "@ai-matrx/auth";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";

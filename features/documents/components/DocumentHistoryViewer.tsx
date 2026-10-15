@@ -9,7 +9,7 @@
 "use client";
 
 import { formatRelativeTime } from "@/utils/datetime";
-import { showSavedSnapshot } from "@/lib/univer/openEditorContent";
+import { showSavedSnapshot } from "@ai-matrx/office/univer";
 import { useCallback, useEffect, useState } from "react";
 import {
   Clock,

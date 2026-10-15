@@ -33,7 +33,7 @@ import {
   WORKBOOK_HISTORY_KIND,
   documentHistoryToggleInput,
   workbookHistoryToggleInput,
-} from "@/lib/univer/historyKinds";
+} from "@ai-matrx/office/univer/history";
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 Element.prototype.scrollIntoView ??= function scrollIntoView() {};

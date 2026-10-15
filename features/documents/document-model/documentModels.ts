@@ -20,7 +20,7 @@ import { openShared } from "@/lib/realtime/sharedChannel";
 import { toast } from "@/components/ui/use-toast";
 import { getLatestDocumentSnapshot, saveDocumentSnapshot } from "@/features/documents/document-service";
 import { isServiceFailure } from "@/features/data-tables/types";
-import { registerOpenEditorContent } from "@/lib/univer/openEditorContent";
+import { registerOpenEditorContent } from "@ai-matrx/office/univer";
 import {
   DOCUMENT_SAVE_DELAY_MS,
   DocumentModel,

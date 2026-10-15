@@ -117,22 +117,23 @@ import {
   type ReplaceableInjector,
 } from "@/features/documents/univer-doc-canvas-colors";
 import { mountUniverDocument, replaceUniverDocument } from "@/features/documents/univer-mount-document";
-import { useUniverDarkModeSync } from "@/lib/univer/useUniverDarkModeSync";
+import "@/lib/univer-host";
+import { useUniverDarkModeSync } from "@ai-matrx/office/univer";
 import { useUniverDocSurfaceTheme } from "@/features/documents/hooks/useUniverDocSurfaceTheme";
 import { sanitizeUniverDocSnapshot } from "@/features/documents/utils/sanitizeUniverDocSnapshot";
-import { identifyUniverUser } from "@/lib/univer/identifyUniverUser";
-import { registerMatrxImageStore } from "@/lib/univer/univerImageStore";
-import { registerMissingUniverIcons } from "@/lib/univer/registerMissingUniverIcons";
+import { identifyUniverUser } from "@ai-matrx/office/univer";
+import { registerMatrxImageStore } from "@ai-matrx/office/univer";
+import { registerMissingUniverIcons } from "@ai-matrx/office/univer";
 import {
   routeUniverNotificationsToApp,
   type NotificationReplaceableInjector,
-} from "@/lib/univer/routeUniverNotificationsToApp";
-import { matrxImagePorts } from "@/lib/univer/matrxImagePorts";
-import { disposeUniverInstance } from "@/lib/univer/disposeUniverInstance";
-import { registerUniverFacadeDependencies } from "@/lib/univer/registerUniverFacadeDependencies";
+} from "@ai-matrx/office/univer";
+import { matrxImagePorts } from "@ai-matrx/office/univer";
+import { disposeUniverInstance } from "@ai-matrx/office/univer";
+import { registerUniverFacadeDependencies } from "@ai-matrx/office/univer";
 import { readCollabAntiEntropyMs } from "@/lib/knobs/collabAntiEntropy";
 import { RemotePeerChips as RemoteCursorsLayer } from "@ai-matrx/realtime/collab/react";
-import { documentHistoryToggleInput } from "@/lib/univer/historyKinds";
+import { documentHistoryToggleInput } from "@ai-matrx/office/univer/history";
 import { DocumentPageReferenceCopyButton } from "@/features/documents/components/DocumentPageReferenceCopyButton";
 import { DocumentGoogleLink, useDocumentGoogleLink } from "@/features/google-workspace/linked/EditorGoogleLinks";
 import { copyCompoundReference } from "@/features/matrx-envelope/components/CompoundReferenceCopyButton";

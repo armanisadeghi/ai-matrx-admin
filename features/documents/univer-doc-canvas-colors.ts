@@ -50,7 +50,7 @@
 import { ThemeService } from "@univerjs/core";
 import { ICanvasColorService } from "@univerjs/engine-render";
 
-import { resolveUniverCanvasColor } from "@/lib/univer/univer-theme-token-color";
+import { resolveUniverCanvasColor } from "@ai-matrx/office/univer";
 
 /** The slice of redi's `Injector` this needs. Structural on purpose. */
 export interface ReplaceableInjector {

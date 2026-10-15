@@ -4,7 +4,7 @@
 
 import type { CanvasKindProps } from "@ai-matrx/canvas/react";
 import { DocumentHistoryViewer } from "@/features/documents/components/DocumentHistoryViewer";
-import { readHistoryTab } from "@/lib/univer/historyKinds";
+import { readHistoryTab } from "@ai-matrx/office/univer/history";
 
 export default function DocumentHistoryCanvasView({ data }: CanvasKindProps) {
   const tab = readHistoryTab(data);

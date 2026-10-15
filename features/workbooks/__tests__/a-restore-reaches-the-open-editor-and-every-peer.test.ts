@@ -23,7 +23,7 @@ import {
   type CollabMutationInfo,
   type CommandServiceLike,
 } from "@/features/workbooks/collab/WorkbookCollabSession";
-import { registerOpenEditorContent, showSavedSnapshot } from "@/lib/univer/openEditorContent";
+import { registerOpenEditorContent, showSavedSnapshot } from "@ai-matrx/office/univer";
 import { defineWorkingCopyKind } from "@/lib/working-copy/workingCopyKind";
 import workingCopiesReducer from "@/lib/working-copy/workingCopySlice";
 import {

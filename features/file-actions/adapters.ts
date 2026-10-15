@@ -69,7 +69,7 @@ export const WORKBOOK_ADAPTER: FileKindAdapter<Workbook> = {
         const snapshot = await latestWorkbookSnapshot(id);
         const [{ downloadUniverAsXlsx }, { resolveExportImage }] = await Promise.all([
           import("@/features/workbooks/univer-to-xlsx"),
-          import("@/lib/univer/matrxImagePorts"),
+          import("@/lib/univer-host").then(async () => import("@ai-matrx/office/univer")),
         ]);
         await downloadUniverAsXlsx(snapshot as Parameters<typeof downloadUniverAsXlsx>[0], { filename: name, resolveImage: resolveExportImage });
       },

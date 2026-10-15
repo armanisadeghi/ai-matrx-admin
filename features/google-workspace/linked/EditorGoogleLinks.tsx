@@ -19,7 +19,7 @@ import { getLatestSnapshot, saveSnapshot } from "@/features/workbooks/workbook-s
 import { getLatestDocumentSnapshot, saveDocumentSnapshot } from "@/features/documents/document-service";
 import { univerDocToMarkdown } from "@/features/documents/univer-doc-to-markdown";
 import { markdownToUniverDoc } from "@/features/documents/markdown-to-univer-doc";
-import { showSavedSnapshot } from "@/lib/univer/openEditorContent";
+import { showSavedSnapshot } from "@ai-matrx/office/univer";
 import { deckAsPptxBase64 } from "@/features/presentations/deck-export";
 import { getPresentation } from "@/features/presentations/presentation-service";
 import type { Deck } from "@/features/presentations/deck-model";
