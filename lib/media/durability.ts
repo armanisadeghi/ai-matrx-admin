@@ -2,7 +2,7 @@
 //
 // The frontend twin of the database `mtx_is_durable_media_url` guard. The
 // classification itself (durable vs. expiring, the revocable-share-link
-// rule, the fail-closed share guard) is canonical in `@ai-matrx/data/files`
+// rule, the fail-closed share guard) is canonical in `@ai-matrx/files/client`
 // (the C9 collapse) and re-exported here so the 20+ existing call sites keep
 // one import path. What stays host-side is the LOUD violation report — it
 // writes to the app's Error Inspector capture store, which is host identity.
@@ -17,7 +17,7 @@ import {
   isDurableMediaUrl,
   shareableMediaUrl,
   type MediaUrlKind,
-} from "@ai-matrx/data/files";
+} from "@ai-matrx/files/client";
 import { captureError } from "@/lib/diagnostics/errorCaptureStore";
 
 export { classifyMediaUrl, isDurableMediaUrl, shareableMediaUrl };

@@ -50,7 +50,7 @@ import {
   formatResolvedSizeLabel,
   isFeaturedPhoto,
 } from "./mediaCategorization";
-import { fileNameFromUrl } from "@ai-matrx/data/files";
+import { fileNameFromUrl } from "@ai-matrx/files/client";
 import {
   embedInfo,
   videoPoster,
@@ -1158,7 +1158,7 @@ function docIcon(
 const SAVED_DOCS_FOLDER = "Research/Saved Documents";
 
 /** A best-effort upload filename: the real file name recognized from the URL
- * (`@ai-matrx/data/files` — null for a UUID or extension-less segment, so an
+ * (`@ai-matrx/files/client` — null for a UUID or extension-less segment, so an
  * id or a host never becomes a file name), else the alt-text/caption plus the
  * URL's extension, else `document.pdf`. */
 function uploadFileName(item: ResearchMedia): string {

@@ -2,7 +2,7 @@ import type { ResearchMedia } from "../../types";
 // YouTube/Vimeo id extraction lives in the shared primitives — never re-implement.
 import { youtubeId } from "@ai-matrx/rich-content/utils/youtube";
 import { vimeoId } from "@/lib/media/vimeo";
-import { fileNameFromUrl } from "@ai-matrx/data/files";
+import { fileNameFromUrl } from "@ai-matrx/files/client";
 
 export { youtubeId } from "@ai-matrx/rich-content/utils/youtube";
 export { vimeoId } from "@/lib/media/vimeo";
@@ -45,7 +45,7 @@ export function videoPoster(item: ResearchMedia): string | null {
 
 /**
  * A DISPLAY LABEL for a media URL: the recognized file name from
- * `@ai-matrx/data/files` (`response-content-disposition` name, else the last
+ * `@ai-matrx/files/client` (`response-content-disposition` name, else the last
  * path segment only when it carries an extension), otherwise the source host,
  * otherwise the raw URL. The package's ruling stands here: a segment that
  * does not look like a real name — a UUID, `report`, `download` — is NOT a

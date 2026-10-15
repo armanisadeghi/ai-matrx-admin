@@ -10,7 +10,7 @@
  */
 
 import { parseYouTubeUrl } from "@ai-matrx/rich-content/utils/youtube";
-import { fileNameFromUrl } from "@ai-matrx/data/files";
+import { fileNameFromUrl } from "@ai-matrx/files/client";
 
 // Normalize a URL by prepending https:// if no protocol is present
 export function normalizeUrl(url: string): string {

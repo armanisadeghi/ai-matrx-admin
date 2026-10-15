@@ -2,7 +2,7 @@
  * features/files/media-client/client.ts
  *
  * THE construction site for the app's ONE file-communication client
- * (`@ai-matrx/data/files` — the C9 collapse of the former 436-line host
+ * (`@ai-matrx/files/client` — the C9 collapse of the former 436-line host
  * adapter). Every hard part lives in the package: durable-ref resolution and
  * the transport decision (byte-endpoint promotion included — QA F2), the
  * `mx_files_session` freshness tracker, blob in-flight dedup, the ONE retry
@@ -41,7 +41,7 @@ import {
   type MediaMultiUploadResult,
   type MediaUploadOptions,
   type MediaUploadResult,
-} from "@ai-matrx/data/files";
+} from "@ai-matrx/files/client";
 import { resolveBaseUrl, resolveFilesBaseUrl } from "@/lib/python-client";
 import { getStoreSingleton } from "@/lib/redux/store-singleton";
 import {

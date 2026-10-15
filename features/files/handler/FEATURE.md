@@ -29,7 +29,7 @@ variants) · `errors.ts` · `intelligence/access.ts` (`decideForOwnedFile`) ·
 `../upload/tusUpload.ts` + `../upload/__tests__/transport-policy.test.ts` ·
 `../vault/vaultAttachmentTransport.ts`.
 
-## Durable URLs + the file-session cookie (`@ai-matrx/data/files` session)
+## Durable URLs + the file-session cookie (`@ai-matrx/files/client` session)
 
 Nothing mints signed URLs anymore — **every URL the platform emits or builds is durable**:
 `{base}/files/{id}/download` (`?inline=1` for render), `cdn_url` for public files. A durable URL
@@ -39,7 +39,7 @@ Auth lanes for the durable byte routes:
 
 - **`fetch()` through the python-client** — attaches `Authorization: Bearer` (all reads/downloads).
 - **Plain `<img>`/`<video>`/`<audio>` bindings and navigations** — authenticate via the HttpOnly
-  `mx_files_session` cookie. The session tracker lives in `@ai-matrx/data/files` (the C9
+  `mx_files_session` cookie. The session tracker lives in `@ai-matrx/files/client` (the C9
   collapse; the old `session.ts` is deleted) — `mediaFilesClient.ensureSession()`
   (`features/files/media-client/client.ts`, the ONE client instance) POSTs `/files/session` with
   normal auth headers + `credentials: 'include'`; the backend sets the cookie (SameSite=None,
@@ -48,7 +48,7 @@ Auth lanes for the durable byte routes:
   standalone files host) since cookies are per-host. In-memory dedupe/freshness only, owned by
   the client instance.
 - **Error recovery = session refresh, not URL re-mint.** `MediaClient.recoverLoadError`
-  (now package policy in `@ai-matrx/data/files`; consumed by `useMediaLoadRecovery` from
+  (now package policy in `@ai-matrx/files/client`; consumed by `useMediaLoadRecovery` from
   `@ai-matrx/media/core`) forces a fresh session once on a media load failure and re-requests
   the SAME URL (key bump). A second failure is terminal. The ONE retry contract — no
   consumer-side copies remain.
@@ -147,7 +147,7 @@ Then confirm the service is up: `curl https://files.matrxserver.com/files-servic
   against the installed version pre-publish). Loud console.error default applies
   until the port is live at the 0.3.0 install.
 
-- **2026-08-30** — **C9 collapse: the media-client rides `@ai-matrx/data/files` 0.4.1.**
+- **2026-08-30** — **C9 collapse: the media-client rides `@ai-matrx/files/client` 0.4.1.**
   `handler/session.ts` (+ test) DELETED — the `mx_files_session` tracker is package policy;
   the ONE door is `mediaFilesClient.ensureSession()` (consumers repointed:
   `AuthSessionWatcher`, `HrEmployeePhoto`, `usePdfRemoteSource`). The handler stays the

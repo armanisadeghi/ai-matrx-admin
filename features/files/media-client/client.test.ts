@@ -1,6 +1,6 @@
 /**
  * Host smoke for the C9 collapse: the app's construction of
- * `@ai-matrx/data/files` (the REAL package — nothing package-side is mocked)
+ * `@ai-matrx/files/client` (the REAL package — nothing package-side is mocked)
  * must preserve the media 0.2.2/0.2.3 parity items:
  *
  *   - QA F2 (feedback dc739d98): a pasted AUTHENTICATED byte-endpoint URL
