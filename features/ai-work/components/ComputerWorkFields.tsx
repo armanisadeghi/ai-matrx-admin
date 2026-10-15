@@ -18,6 +18,17 @@ export function nextStep(p: { label: string; why: string | null }, name: string)
   return `${p.label}: sign in on ${name} in Matrx 2 › Code › Accounts`;
 }
 
+/**
+ * Which "what to do" lines to show under Coding app. Pure. An app that cannot run says how to fix it
+ * only when it is the chosen app, or when nothing can run here (then those lines are the way
+ * forward); a working choice never carries another app's sign-in chore (its option already says why).
+ */
+export function hintsToShow<P extends { provider: CodingProvider }>(all: P[], chosen: CodingProvider, runnable: (p: P) => boolean): P[] {
+  const blocked = all.filter((p) => !runnable(p));
+  if (!all.some(runnable)) return blocked;
+  return blocked.filter((p) => p.provider === chosen);
+}
+
 type Loaded<T> = { state: "loading" } | { state: "ready"; value: T } | { state: "failed"; reason: string };
 
 function said(error: unknown): string {
@@ -151,13 +162,11 @@ export function ComputerWorkFields({
           />
         )}
         {providers.state === "ready" &&
-          providers.value
-            .filter((p) => !runnable(p))
-            .map((p) => (
-              <p key={p.provider} className="text-xs text-muted-foreground" data-testid={`next-step-${p.provider}`}>
-                {nextStep(p, computer.name)}
-              </p>
-            ))}
+          hintsToShow(providers.value, provider, runnable).map((p) => (
+            <p key={p.provider} className="text-xs text-muted-foreground" data-testid={`next-step-${p.provider}`}>
+              {nextStep(p, computer.name)}
+            </p>
+          ))}
       </div>
       {provider === "codex" && (
         <div className="flex flex-col gap-1.5">
