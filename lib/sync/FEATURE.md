@@ -3,6 +3,51 @@
 The sync engine is the single owner of browser-local persistence, cross-tab
 replication, and remote reconciliation for registered Redux slices.
 
+## Browser storage outside Redux — the one door
+
+`client-storage.ts` is the only way non-Redux code touches `localStorage` /
+`sessionStorage`. Browser storage is for what is specific to this browser at this
+moment; every choice about a chat, record, run or setting goes to
+`lib/redux/preferences` (server-saved, every device) or onto the record.
+
+- Declare each key once: `defineClientKey({ id, area, kind, reason, legacyKey? })`
+  or `defineClientKeyFamily(...)` for a key per record/surface. `kind` is one of
+  draft · ui-layout · cache · device · handoff · diagnostic · dev-demo — there is
+  no "setting" kind on purpose.
+- Every key is `matrx:client:<id>` (families `matrx:client:<id>:<suffix>`). A key
+  that lived under an old name declares `legacyKey`; the first read moves it.
+- Calls are SSR-safe and never throw (`get` → null, `set` → false on a blocked or
+  full store). `listClientKeys()` returns the registry.
+- A setting that used to live in browser storage moves to preferences and adopts
+  the old value once with `readRetiredKey` / `removeRetiredKey` (model:
+  `dataTools.truncator` in `components/official-candidate/json-truncator`).
+- A pre-paint inline `<script>` string cannot import the door; it reads the
+  declared key's `storageKey` and carries `raw-storage-exception: <reason>`.
+
+**Guard:** `pnpm check:raw-storage` (`:strict` in CI and the release gates,
+`:self-test`) flags raw calls, the storage object passed around, and functions
+typed to take a `Storage`, outside `lib/sync/`. Baseline
+`scripts/check-raw-storage/baseline.json` only shrinks (`--shrink` after a
+migration). The localStorage adapter's delete trigger (zero raw calls outside
+`lib/sync/`) is that baseline reaching empty.
+
+**Census 2026-10-14** (161 files, 490 raw calls): 26 files hold choices that
+belong on the server, 130 hold client-moment state, 5 are dead. Migrated first
+(reach: shared lib/components/hooks): device id, knob caches, diagnostics, run
+pointers, entity-list widths and slot sizes, first-touch attribution, API server
+choice, sandbox API surface, guest fingerprint, org chart, draggable float,
+canvas session, auth tab flags; JSON truncator and server-log filters moved to
+`userPreferences.dataTools`; a dead `google_auth_token` read in the Slides export
+replaced. Still in browser storage and owed to the server (the ones a person
+loses on another device): admin SQL query history, credential-expiry
+dismissals, JSON-path bookmarks (two copies), attention mutes, AI voice configs,
+board wheel mode, printer gate, connected-source account, **performance reviews
+(records kept only in the browser)**, export owner override, RAG upload toggle,
+flashcard grading style, gallery and spaces favorites, Google connection choice,
+marketing view toggle, link-valuation configs, outlier watchlists, personal
+spelling dictionary, product-capture QR mode, war-room agent roster, run view
+mode, the jump game's settings.
+
 ## Hydration boundary
 
 **Persisted Redux boot is post-hydration only.**
@@ -30,6 +75,13 @@ post-load idle callback, after descendant layout work, with no recoverable
 hydration errors.
 
 ## Change log
+
+- 2026-10-14 — **One door to browser storage.** `client-storage.ts`
+  (`defineClientKey` / `defineClientKeyFamily`, one `matrx:client:` prefix, a
+  key registry with kind + reason, legacy-key moves) and the shrink-only guard
+  `pnpm check:raw-storage`. Shared lib/components/hooks sites migrated; the JSON
+  truncator and server-log noise filters moved to `userPreferences.dataTools`
+  (old browser values adopted once). Census and the owed-to-server list above.
 
 - 2026-10-02 — **A peer tab's broadcast is never saved again here.** An
   action arriving with `meta.fromBroadcast` no longer schedules a warm-cache
