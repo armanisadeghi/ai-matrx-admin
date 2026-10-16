@@ -65,6 +65,8 @@ import {
   useSyncExternalStore,
 } from "react";
 import { createPortal } from "react-dom";
+import { usePathname } from "next/navigation";
+import { defineClientKeyFamily } from "@/lib/sync/client-storage";
 import { useIsMobile } from "@ai-matrx/kit/media-query";
 import {
   setPhonePageActionCount,
@@ -116,6 +118,26 @@ interface RouteHeaderProps {
 }
 
 const noopSubscribe = () => () => {};
+
+// THE ACTION CLUSTER KEEPS ITS WIDTH FROM THE FIRST PAINT. The page's actions arrive after hydration (a table's
+// views, share, add), and the right-aligned cluster grew leftwards from 451px to 603px, nudging the row (CLS 0.012-0.028
+// on /data/<table>). The cluster remembers the width it last settled at, per screen shape, and reserves it on the next
+// visit; a screen never seen reserves the measured first-visit width below (the same idea as useReservedSlot).
+const clusterWidths = defineClientKeyFamily({
+  id: "route-header.cluster-width",
+  area: "local",
+  kind: "ui-layout",
+  reason: "Settled width of a route header's action cluster on this screen, reserved before its actions mount.",
+  legacyKey: (suffix) => `matrx:route-header-cluster:${suffix}`,
+});
+/** Measured on a cold browser 2026-10-16, desktop width. A phone's cluster is the primary action alone. */
+const FIRST_VISIT_CLUSTER_PX: Record<string, number> = { "data-table:wide": 604 };
+const clusterSurface = (pathname: string | null, wide: boolean): string => {
+  const shape = (pathname ?? "")
+    .replace(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/g, "_")
+    .replace(/^\/data\/_$/, "data-table");
+  return `${shape}:${wide ? "wide" : "narrow"}`;
+};
 
 /** Breathing room an in-flow center keeps from the title and the actions. */
 export const CENTER_INFLOW_GUTTER = 16;
@@ -275,6 +297,13 @@ export default function RouteHeader({
   const primaryCanCompact = primary != null && iconOnlyLabel(primary.node) != null;
   const compact = compactPrimary && primaryCanCompact;
   const isPhone = useIsMobile();
+  const pathname = usePathname();
+  const surface = clusterSurface(pathname, !isPhone);
+  const [reservedCluster, setReservedCluster] = useState<number | null>(null);
+  useLayoutEffect(() => {
+    const stored = Number(clusterWidths.getJSON<number>(surface));
+    setReservedCluster(stored > 0 ? stored : (FIRST_VISIT_CLUSTER_PX[surface] ?? null));
+  }, [surface]);
   const { host: phoneHost } = usePhonePageActions();
   const yielded = useYieldedFallback(fallback);
   // The section nav folds too (page-pass shared defects, 2026-09-27): on a
@@ -365,6 +394,11 @@ export default function RouteHeader({
     if (root.parentElement) ro.observe(root.parentElement);
     if (leftRef.current) ro.observe(leftRef.current);
     if (rightRef.current) ro.observe(rightRef.current);
+    // The cluster's settled width is what the next visit reserves.
+    const remember = window.setTimeout(() => {
+      const w = Math.round(rightRef.current?.getBoundingClientRect().width ?? 0);
+      if (w > 0) clusterWidths.setJSON(surface, w);
+    }, 4000);
     // A nav can mount after this effect (a center that waits for data): watch
     // the center's content so its smallest trigger still gets its room.
     let navMinEl: HTMLElement | null = null;
@@ -384,12 +418,13 @@ export default function RouteHeader({
     if (centerEl) mo.observe(centerEl, { childList: true, subtree: true });
     return () => {
       cancelAnimationFrame(frame);
+      window.clearTimeout(remember);
       ro.disconnect();
       mo.disconnect();
     };
     // Re-measure when the row mounts and whenever the set of actions, the
     // fold point, or the presence of a center changes.
-  }, [root, actionKeys, fold, compact, hasCenter]);
+  }, [root, actionKeys, fold, compact, hasCenter, surface]);
 
   // 🚨 ON A PHONE THE SECONDARY ACTIONS LIVE IN THE SHELL'S ⋮ (page-pass
   // shared defects, 2026-09-27): one overflow button per phone header, and the
@@ -521,6 +556,7 @@ export default function RouteHeader({
           // title keeps TITLE_MIN_PX. With `min-w-0` here a long title once
           // crushed a phone's header door to an 8px sliver (2026-09-25).
           className="relative z-10 flex shrink-0 items-center justify-end"
+          style={reservedCluster ? { minWidth: reservedCluster, justifyContent: "flex-start" } : undefined}
         >
           {inert.map((a) => a.node)}
           {centerToSheet && phoneHost
