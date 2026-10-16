@@ -228,7 +228,7 @@ function ConnectedApps({ computer, picker }: { computer: ChooserComputer; picker
   );
 }
 
-interface AppsTablesProps {
+export interface AppsTablesProps {
   computerName: string | null;
   instances: AppInstance[];
   accounts: AppAccount[];
@@ -274,7 +274,8 @@ const time = (ms: number | null) => (ms ? new Date(ms).toLocaleString() : null);
 const ago = (ms: number | null, now: number) => (ms ? updatedWords(ms, now).replace(/^Updated /, "") : "—");
 const count = (n: number) => (n < 0 ? "—" : String(n));
 
-function AppsTables(p: AppsTablesProps) {
+/** Exported for the render test (`__tests__/coding-apps-tables.test.tsx`). */
+export function AppsTables(p: AppsTablesProps) {
   const [app, setApp] = useState<AppFilter>("all");
   const [note, setNote] = useState<string | null>(null);
   const [restarting, setRestarting] = useState<AppInstance | null>(null);
