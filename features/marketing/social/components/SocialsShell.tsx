@@ -13,7 +13,7 @@ import { usePathname, useSearchParams } from "next/navigation";
 import {
   Bookmark,
   Clapperboard,
-  Film,
+  Video,
   Megaphone,
   Plus,
   Target,
@@ -41,7 +41,7 @@ const TAB_ICONS: Record<SocialsTabId, LucideIcon> = {
   studio: Clapperboard,
   outliers: TrendingUp,
   swipe: Bookmark,
-  videos: Film,
+  videos: Video,
   ads: Megaphone,
   kpis: Target,
 };

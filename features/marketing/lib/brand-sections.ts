@@ -146,6 +146,16 @@ export const MARKETING_BRAND_SECTIONS = [
   },
   {
     slug: "socials",
+    name: "Videos",
+    titlePrefix: "Videos",
+    description: "Clones of outlier and swipe-file videos, with variants.",
+    letter: "Sv",
+    iconName: "Video",
+    group: "Social",
+    subPath: "videos",
+  },
+  {
+    slug: "socials",
     // "Ad library" — competitor ad research; never "Ads" beside the Advertising
     // section (the brand's own ad accounts), which read as the same thing.
     name: "Ad library",
