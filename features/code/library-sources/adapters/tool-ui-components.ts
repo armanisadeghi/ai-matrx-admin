@@ -1,7 +1,7 @@
 "use client";
 
 import { Wrench } from "lucide-react";
-import { extensionForLanguage } from "@/features/code-files/actions/languageOptions";
+import { extensionForLanguage } from "@ai-matrx/chat/window-panels/windows/code/language-options";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type {
   LibrarySourceAdapter,

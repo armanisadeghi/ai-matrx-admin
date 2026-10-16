@@ -8,8 +8,8 @@ import {
 } from "@ai-matrx/design-system";
 import { useIsMobile } from "@ai-matrx/kit/media-query";
 import { cn } from "@/lib/utils";
-import type { Note } from "@/features/notes/types";
-import { QuickNoteSaveCore, type PostSaveAction } from "./QuickNoteSaveCore";
+import type { QuickSaveNote } from "@ai-matrx/chat/window-panels/windows/notes/quick-save-notes-port";
+import { QuickNoteSaveCore, type PostSaveAction } from "@ai-matrx/chat/window-panels/windows/notes/QuickNoteSaveCore";
 
 export interface QuickNoteSavePopoverProps {
   open: boolean;
@@ -19,7 +19,7 @@ export interface QuickNoteSavePopoverProps {
   bucketTag?: string;
   side?: "top" | "right" | "bottom" | "left";
   align?: "start" | "center" | "end";
-  onSaved?: (note?: Note, action?: PostSaveAction) => void;
+  onSaved?: (note?: QuickSaveNote, action?: PostSaveAction) => void;
 }
 
 export function QuickNoteSavePopover({
@@ -34,7 +34,7 @@ export function QuickNoteSavePopover({
 }: QuickNoteSavePopoverProps) {
   const isMobile = useIsMobile();
 
-  const handleSaved = (note: Note, action: PostSaveAction) => {
+  const handleSaved = (note: QuickSaveNote, action: PostSaveAction) => {
     onSaved?.(note, action);
     onOpenChange(false);
   };

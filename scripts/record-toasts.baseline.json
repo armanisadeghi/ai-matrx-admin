@@ -79,8 +79,6 @@
     "features/assists/components/AssistCard.tsx::`${sourceLabel} is quiet — turn it back on from All assists`",
     "features/assists/manager/AssistsManager.tsx::`${suppression.label} is back on for ${count} assist${count === 1 ? \"\" : \"s\"}`",
     "features/cms/components/admin/AssetsPanel.tsx::`Deleted '${asset.file_name}'${force ? ' (forced)' : ''}`",
-    "features/code-files/actions/useQuickSaveCode.ts::`Created folder \"${folder.name}\"`",
-    "features/code-files/actions/useQuickSaveCode.ts::`Saved as ${created.name}`",
     "features/code/agent-context/useApplyFsChangesToOpenTabs.ts::`\"${tab.name}\" was deleted`",
     "features/code/agent-context/useApplyFsChangesToOpenTabs.ts::`\"${tab.name}\" was modified by the agent`",
     "features/code/agent-context/useApplyFsChangesToOpenTabs.ts::`\"${tab.name}\" was renamed`",

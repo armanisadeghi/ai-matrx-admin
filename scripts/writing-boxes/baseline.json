@@ -205,7 +205,6 @@
     "bare-text-field|features/cms/components/collections/CollectionEditorDialog.tsx": 4,
     "bare-text-field|features/cms/components/PageEditor.tsx": 4,
     "bare-text-field|features/cms/components/settings/SiteAdvancedSettings.tsx": 11,
-    "bare-text-field|features/code-files/actions/QuickSaveCodeCore.tsx": 1,
     "bare-text-field|features/code/views/sandboxes/CloneRepoDialog.tsx": 3,
     "bare-text-field|features/code/views/source-control/SourceControlPanel.tsx": 6,
     "bare-text-field|features/commerce-intake/labels/components/CreateLabelBatchDialog.tsx": 1,

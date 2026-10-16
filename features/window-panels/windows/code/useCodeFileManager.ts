@@ -34,7 +34,7 @@ import { codeFilesActions } from "@/features/code-files/redux/slice";
 import {
   extensionForLanguage,
   languageFromName,
-} from "@/features/code-files/actions/languageOptions";
+} from "@ai-matrx/chat/window-panels/windows/code/language-options";
 import type {
   CodeFileRecord,
   CodeFolder,

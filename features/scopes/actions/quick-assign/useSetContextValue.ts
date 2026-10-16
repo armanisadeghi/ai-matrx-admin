@@ -12,7 +12,7 @@ import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import {
   useRefinableContent,
   type RefinableContent,
-} from "@/components/content-refine/useRefinableContent";
+} from "@ai-matrx/chat/ui/content-refine/useRefinableContent";
 import { useToastManager } from "@/hooks/useToastManager";
 import { ensureContextValues } from "@/features/scopes/redux/thunks/ensureContextValues";
 import { setContextValue } from "@/features/scopes/redux/thunks/setContextValue";

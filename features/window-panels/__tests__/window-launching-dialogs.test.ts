@@ -33,10 +33,6 @@ describe("dialogs that launch WindowPanels", () => {
 
   it.each([
     {
-      file: "features/code-files/actions/QuickSaveCodeCore.tsx",
-      close: "setShowOverwrite(false);",
-    },
-    {
       file: "features/scopes/actions/quick-assign/SetContextValueCore.tsx",
       close: "setShowOverwriteWarning(false);",
     },
