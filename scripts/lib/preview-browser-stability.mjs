@@ -12,7 +12,12 @@ import { createRequire } from "node:module";
 const require = createRequire(import.meta.url);
 
 /** The pure verdict over what was observed. Exported for its test. */
-export function judgeStability({ navigationsAfterLoad, samples, hmrRestarts, windowSec }) {
+export function judgeStability({ samples, hmrRestarts, windowSec }) {
+  // A reload is a NEW DOCUMENT: performance.timeOrigin changes. A same-document URL update
+  // (router.replace / history.replaceState after load — the app does one on /notes) is not one;
+  // counting Playwright's "framenavigated" counted it and failed every /notes run (2026-10-16).
+  const origins = samples.filter((s) => typeof s.origin === "number").map((s) => s.origin);
+  const navigationsAfterLoad = origins.filter((o, i) => i > 0 && o !== origins[i - 1]).length;
   const clockResets = samples.filter((s, i) => i > 0 && s.up < samples[i - 1].up).length;
   const lastState = samples.length ? samples[samples.length - 1].state : "none";
   const unreadable = samples.filter((s) => s.state === "unreadable").length;
@@ -70,12 +75,6 @@ export async function browserStability({ url, port, windowSec = 20, timeoutMs = 
   try {
     const page = await (await browser.newContext({ viewport: { width: 1400, height: 900 } })).newPage();
     await page.goto(url, { waitUntil: "load", timeout: timeoutMs });
-    // The dev-login hop chain is over once "load" fires on the route; count main-frame navigations
-    // from here on.
-    let navigationsAfterLoad = 0;
-    page.on("framenavigated", (f) => {
-      if (f === page.mainFrame()) navigationsAfterLoad++;
-    });
     const hmr = countHmrRestarts(port, windowSec * 1000);
     const samples = [];
     const until = Date.now() + windowSec * 1000;
@@ -83,7 +82,7 @@ export async function browserStability({ url, port, windowSec = 20, timeoutMs = 
       try {
         samples.push(
           await Promise.race([
-            page.evaluate(() => ({ up: performance.now(), state: document.readyState, path: location.pathname })),
+            page.evaluate(() => ({ up: performance.now(), origin: performance.timeOrigin, state: document.readyState, path: location.pathname })),
             new Promise((_, rej) => setTimeout(() => rej(new Error("timeout")), 4000)),
           ]),
         );
@@ -93,7 +92,7 @@ export async function browserStability({ url, port, windowSec = 20, timeoutMs = 
       await new Promise((r) => setTimeout(r, 2000));
     }
     const hmrRestarts = await hmr;
-    const verdict = judgeStability({ navigationsAfterLoad, samples, hmrRestarts, windowSec });
+    const verdict = judgeStability({ samples, hmrRestarts, windowSec });
     const last = samples[samples.length - 1];
     if (last?.path && last.path.startsWith("/login")) return { ok: false, why: "the browser landed on /login: the sign-in did not stick in a real browser" };
     return verdict;
