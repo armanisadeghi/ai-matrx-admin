@@ -99,7 +99,7 @@ import {
   selectNoteScopesLoaded,
 } from "../redux/selectors";
 import { toast } from "@/lib/toast";
-import { useNoteHomes } from "../homes/useNoteHomes";
+import { useNoteHomeNames } from "../homes/useNoteHomes";
 import { moveNoteToHome } from "../homes/moveNoteToHome";
 import { EntityOrgFilter } from "@/lib/entity-list/components/EntityOrgFilter";
 import { useOrgFilterParam } from "@/lib/entity-list/orgFilterUrl";
@@ -215,7 +215,7 @@ export function NoteSidebar({ instanceId, onNoteOpened }: NoteSidebarProps) {
   // organization (and in a General's label when her notes span several).
   const { organizations: memberOrgs } = useUserOrganizations();
   const orgNameById = new Map(memberOrgs.map((o) => [o.id, o.name]));
-  const homes = useNoteHomes();
+  const homes = useNoteHomeNames(activeOrgId);
   const [orgFilter, setOrgFilter] = useOrgFilterParam([]);
 
   // ── The list shows EVERY note the person can access ─────────────────

@@ -119,3 +119,102 @@ export function useNoteHomes(): UseNoteHomesReturn {
     };
   }, [tree.organizations, tree.status, notesSpanManyOrganizations, outsideTree]);
 }
+
+// ── NAMES ONLY ───────────────────────────────────────────────────────────────────────────────────
+// A list that only NAMES the homes its notes live in (the sidebar) must not load the whole scope tree
+// (`context_tree`, `context_tree_types`, `context_scopes`): that is the first-paint contract's "nothing
+// fetches until engaged". This hook asks ONE specific read — `platform.home_names` — for the homes the
+// loaded notes sit in (plus the active organization's General, the always-present drop target), and
+// never reads `state.scopesTree`. The pickers keep `useNoteHomes` and load the tree when they open.
+
+export interface NoteHomeNames {
+  homes: ItemHome[];
+  byId: ReadonlyMap<string, ItemHome>;
+  generalByOrganization: ReadonlyMap<string, ItemHome>;
+  labelOf: (scopeId: string | null | undefined) => string | null;
+  notesSpanManyOrganizations: boolean;
+}
+
+const namedGeneralOrgs = new Set<string>();
+
+export function useNoteHomeNames(generalOfOrganizationId: string | null = null): NoteHomeNames {
+  const noteOrganizationIds = useAppSelector(selectNoteOrganizationIds);
+  const notesSpanManyOrganizations = noteOrganizationIds.length > 1;
+  const noteHomeIds = useAppSelector(selectNoteHomeIds);
+  const [named, setNamed] = useState<Record<string, ItemHome | null>>(() => ({ ...outsideTreeCache }));
+  useEffect(() => {
+    const listener = (next: Record<string, ItemHome | null>) => setNamed((prev) => ({ ...prev, ...next }));
+    homeLabelListeners.add(listener);
+    return () => {
+      homeLabelListeners.delete(listener);
+    };
+  }, []);
+  useEffect(() => {
+    const missing = noteHomeIds.filter(
+      (id) => !(id in named) && !(id in outsideTreeCache) && !homeLabelsInFlight.has(id),
+    );
+    const askGeneral =
+      generalOfOrganizationId !== null && !namedGeneralOrgs.has(generalOfOrganizationId);
+    if (missing.length === 0 && !askGeneral) return;
+    for (const id of missing) homeLabelsInFlight.add(id);
+    if (askGeneral) namedGeneralOrgs.add(generalOfOrganizationId);
+    // Not cancelled on cleanup: the answer fills the module cache for every mounted hook.
+    void supabase
+      .schema("platform")
+      .rpc("home_names" as never, { p_scope_ids: missing, p_general_orgs: askGeneral ? [generalOfOrganizationId] : [] } as never)
+      .then((result) => {
+        for (const id of missing) homeLabelsInFlight.delete(id);
+        const { data, error } = result as {
+          data: Array<{
+            scope_id: string;
+            name: string;
+            organization_id: string;
+            organization_name: string;
+            is_general: boolean;
+            scope_type_id: string;
+            scope_type_label: string;
+          }> | null;
+          error: { message: string } | null;
+        };
+        if (error) {
+          if (askGeneral) namedGeneralOrgs.delete(generalOfOrganizationId);
+          console.error("[notes homes] could not name the homes the notes live in", error);
+          return;
+        }
+        const next: Record<string, ItemHome | null> = {};
+        for (const id of missing) next[id] = null;
+        for (const row of data ?? []) {
+          next[row.scope_id] = {
+            scopeId: row.scope_id,
+            name: row.is_general ? "General" : row.name,
+            organizationId: row.organization_id,
+            organizationName: row.organization_name,
+            scopeTypeId: row.scope_type_id,
+            scopeTypeLabel: row.is_general ? "General" : row.scope_type_label,
+            isGeneral: row.is_general,
+          };
+        }
+        Object.assign(outsideTreeCache, next);
+        for (const listener of homeLabelListeners) listener(next);
+      });
+  }, [noteHomeIds, named, generalOfOrganizationId]);
+
+  return useMemo(() => {
+    const homes = Object.values(named).filter((home): home is ItemHome => home !== null);
+    const byId = new Map(homes.map((home) => [home.scopeId, home]));
+    const generalByOrganization = new Map<string, ItemHome>();
+    for (const home of homes) {
+      if (home.isGeneral && !generalByOrganization.has(home.organizationId)) {
+        generalByOrganization.set(home.organizationId, home);
+      }
+    }
+    const labels = homeLabels(homes, { notesSpanManyOrganizations });
+    const labelOf = (scopeId: string | null | undefined): string | null => {
+      if (!scopeId) return null;
+      const label = labels.get(scopeId);
+      if (label) return label;
+      return scopeId in named ? "Unavailable home" : null;
+    };
+    return { homes, byId, generalByOrganization, labelOf, notesSpanManyOrganizations };
+  }, [named, notesSpanManyOrganizations]);
+}
