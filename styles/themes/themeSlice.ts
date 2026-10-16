@@ -134,6 +134,33 @@ export const themePolicy = definePolicy<ThemeState>({
     ],
 });
 
+// ---- Saved-choice-known signal ------------------------------------------
+//
+// Until the sync boot has restored the saved choice, Redux holds the initial
+// "system" for EVERYONE, so nothing may repaint or post the device colour over
+// the server-painted theme. boot.ts calls `markThemeChoiceKnown()` once the
+// saved mode has been read; StoreProvider registers its "system" reconcile via
+// `whenThemeChoiceKnown`. Guard: providers/__tests__/theme-boot-never-flips.test.tsx
+let themeChoiceKnown = false;
+const themeChoiceWaiters: Array<() => void> = [];
+
+export function markThemeChoiceKnown(): void {
+    themeChoiceKnown = true;
+    for (const run of themeChoiceWaiters.splice(0)) run();
+}
+
+/** Run `run` every time the saved choice becomes known (immediately if it already is). */
+export function whenThemeChoiceKnown(run: () => void): void {
+    if (themeChoiceKnown) run();
+    else themeChoiceWaiters.push(run);
+}
+
+/** Test seam: forget that the choice was known. */
+export function resetThemeChoiceKnownForTests(): void {
+    themeChoiceKnown = false;
+    themeChoiceWaiters.length = 0;
+}
+
 // ---- Cookie mirror -------------------------------------------------------
 //
 // Phase 3 PR 3.B: server-side pre-paint needs a cookie so the first HTML

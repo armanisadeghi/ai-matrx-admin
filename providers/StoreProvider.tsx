@@ -22,6 +22,10 @@
 
 "use client";
 
+// The Sheets service's host ports (@ai-matrx/office/sheets), stated once on the client before any child renders.
+import "@/lib/sheets-host";
+// The Docs service's host ports (@ai-matrx/office/docs), stated once on the client before any child renders.
+import "@/lib/docs-host";
 import {
   makeStore as makeSlimStore,
   type AppStore as SlimAppStore,
@@ -31,7 +35,7 @@ import { Provider } from "react-redux";
 import { AdminLaneSync } from "@/providers/AdminLaneSync";
 import { AdminOrganizationSeat } from "@/providers/AdminOrganizationSeat";
 import { attachStore } from "@/lib/sync/identity";
-import { resolveThemeMode, themePolicy, writeThemeCookie, type ResolvedThemeMode, type ThemeMode } from "@/styles/themes/themeSlice";
+import { resolveThemeMode, themePolicy, whenThemeChoiceKnown, writeThemeCookie, type ResolvedThemeMode, type ThemeMode } from "@/styles/themes/themeSlice";
 import { applyPrePaintDescriptors } from "@/lib/sync/engine/applyPrePaint";
 import { SyncBootstrap } from "@/lib/sync/components/SyncBootstrap";
 
@@ -122,7 +126,15 @@ function getOrCreateClientStore(
       }
     };
     systemMedia.addEventListener("change", applySystemTheme);
-    applySystemTheme();
+    // 🚨 NOT called at creation: until the sync boot restores the saved
+    // choice, theme.mode is the initial "system", so repainting now would paint
+    // + post the DEVICE colour over a saved explicit choice, then flip back
+    // (light -> dark -> light, two /api/set-theme). The server cookie /
+    // SyncBootScript paint stands until the person's choice is known; the boot
+    // then signals it and this reconciles once (a no-op post when the cookie
+    // already holds the device colour).
+    whenThemeChoiceKnown(applySystemTheme);
+    // Guard: providers/__tests__/theme-boot-never-flips.test.tsx
   }
 
   clientStores.set(factory, store);
