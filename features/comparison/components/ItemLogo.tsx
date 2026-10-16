@@ -8,7 +8,7 @@
  * nothing shifts.
  */
 
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import Image from "next/image";
 
 import { cn } from "@/lib/utils";
@@ -35,11 +35,28 @@ export function ItemLogo({ name, logoUrl, website, size = 40, fill = false, clas
   const photo = fill && src === logoUrl;
   const letter = (name.trim()[0] ?? "?").toUpperCase();
 
+  // A site the favicon service doesn't know comes back as its 16px default globe: that is not the
+  // item's mark, so fall through to the next source (or the letter).
+  const settle = useCallback((img: HTMLImageElement) => {
+    if (src !== logoUrl && img.naturalWidth > 0 && img.naturalWidth <= 16) {
+      setFailed((n) => n + 1);
+      return;
+    }
+    setLoaded(true);
+  }, [src, logoUrl]);
+  // A cached picture can finish loading before React attaches onLoad; settle it on mount so the
+  // shimmer never stays over a picture that is already there.
+  const settleIfAlreadyLoaded = useCallback((img: HTMLImageElement | null) => {
+    if (img?.complete && img.naturalWidth > 0) settle(img);
+  }, [settle]);
+
   return (
     <span
       className={cn("relative inline-flex shrink-0 items-center justify-center overflow-hidden", fill ? "rounded-lg" : "rounded-md",
-        src && !photo && "dark:rounded-lg dark:bg-neutral-100 dark:p-[10%]", className)}
-      style={{ width: size, height: size }}
+        src && !photo && "dark:rounded-lg dark:bg-neutral-100 dark:p-[var(--logo-pad)]", className)}
+      // Fixed pixels, never a percentage: percent padding resolves against the PARENT's width and
+      // crushed small chips' logos to 0-3px.
+      style={{ width: size, height: size, ["--logo-pad" as string]: `${Math.max(2, Math.round(size * 0.1))}px` }}
       aria-hidden
     >
       {src ? (
@@ -52,7 +69,8 @@ export function ItemLogo({ name, logoUrl, website, size = 40, fill = false, clas
             width={size}
             height={size}
             unoptimized
-            onLoad={() => setLoaded(true)}
+            ref={settleIfAlreadyLoaded}
+            onLoad={(e) => settle(e.currentTarget)}
             onError={() => { setLoaded(false); setFailed((n) => n + 1); }}
             className={cn("h-full w-full", fill && src === logoUrl ? "object-cover" : "object-contain")}
           />

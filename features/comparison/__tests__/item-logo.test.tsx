@@ -25,4 +25,31 @@ describe("a logo is raw; dark mode only puts it on a light chip", () => {
     const letter = await render({ name: "Bar" });
     expect(letter.className).not.toContain("dark:bg-neutral-100");
   });
+  it("the chip pads in fixed pixels, never a percentage of the parent (which crushed small chips)", async () => {
+    const el = await render({ name: "Rothy's", logoUrl: "https://x.example/logo.png", size: 44 });
+    expect(el.className).not.toMatch(/p-\[\d+%\]/);
+    expect(el.style.getPropertyValue("--logo-pad")).toBe("4px");
+  });
+  it("a favicon service's 16px default globe is not the item's mark: it falls to the letter", async () => {
+    const el = await render({ name: "Tushy", website: "tushy.example", size: 44 });
+    const img = el.querySelector("img") as HTMLImageElement;
+    Object.defineProperty(img, "naturalWidth", { value: 16 });
+    await act(async () => { img.dispatchEvent(new Event("load")); });
+    expect(el.querySelector("img")).toBeNull();
+    expect(el.textContent).toBe("T");
+  });
+  it("a picture already loaded before hydration drops its shimmer", async () => {
+    const proto = HTMLImageElement.prototype;
+    const complete = Object.getOwnPropertyDescriptor(proto, "complete");
+    const natural = Object.getOwnPropertyDescriptor(proto, "naturalWidth");
+    Object.defineProperty(proto, "complete", { configurable: true, get: () => true });
+    Object.defineProperty(proto, "naturalWidth", { configurable: true, get: () => 400 });
+    try {
+      const el = await render({ name: "Bar", logoUrl: "https://x.example/p.jpg", fill: true });
+      expect(el.querySelector(".animate-pulse")).toBeNull();
+    } finally {
+      if (complete) Object.defineProperty(proto, "complete", complete);
+      if (natural) Object.defineProperty(proto, "naturalWidth", natural); else delete (proto as { naturalWidth?: number }).naturalWidth;
+    }
+  });
 });
