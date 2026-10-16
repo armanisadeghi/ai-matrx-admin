@@ -67,17 +67,26 @@ describe("describeRunError", () => {
   });
 });
 
-describe("isDocCleaned", () => {
+describe("isDocCleaned (server clean verdict)", () => {
   const page = (cleanedText: string, sectionKind: string | null = null) => ({ cleanedText, sectionKind });
-  it("a clean_content beside never-cleaned pages is not cleaned", () => {
-    expect(isDocCleaned([page(""), page("")], "raw copy")).toBe(false);
+  it("partially cleaned pages are not cleaned", () => {
+    expect(isDocCleaned([page(""), page("x")], null)).toBe(false);
   });
-  it("cleaned text or a section kind on any page is cleaned", () => {
-    expect(isDocCleaned([page(""), page("x")], null)).toBe(true);
+  it("every page cleaned, including illegible_scan cleaned to empty, is cleaned", () => {
+    expect(isDocCleaned([page("x"), page("", "illegible_scan")], null)).toBe(true);
     expect(isDocCleaned([page("", "body")], null)).toBe(true);
   });
-  it("legacy doc with no page rows falls back to clean_content", () => {
+  it("whole_document marker + clean_content is cleaned", () => {
+    expect(isDocCleaned([page(""), page("")], "text", "whole_document")).toBe(true);
+    expect(isDocCleaned([page("")], "", "whole_document")).toBe(false);
+  });
+  it("clean_content without the marker beside unmarked pages is not cleaned", () => {
+    expect(isDocCleaned([page(""), page("")], "raw copy")).toBe(false);
+    expect(isDocCleaned([page("")], "raw copy", "pages")).toBe(false);
+  });
+  it("no pages: cleaned iff clean_content is non-empty", () => {
     expect(isDocCleaned([], "text")).toBe(true);
+    expect(isDocCleaned([], "  ")).toBe(false);
     expect(isDocCleaned([], null)).toBe(false);
   });
 });

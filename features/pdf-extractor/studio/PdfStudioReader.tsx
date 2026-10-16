@@ -30,7 +30,7 @@ import { CopySplitButton } from "@ai-matrx/rich-content/copy/CopySplitButton";
 import { copyRichContent } from "@ai-matrx/rich-content/copy/copy-commands";
 import { useClipboard } from "@ai-matrx/kit/clipboard";
 import { copyNotify } from "@/lib/clipboard/copy-notify";
-import { preferAggregateClean } from "../service/cleanOutcome";
+import { isDocCleaned, preferAggregateClean } from "../service/cleanOutcome";
 import { useRouter } from "next/navigation";
 import {
   editSource,
@@ -1382,9 +1382,13 @@ function TextPane({
       {/* Suppress the blank-pages banner while a stream is mid-flight —
           the user is mid-action and shouldn't be told "run pipeline".
           The streaming preview below takes over the pane. */}
-      {allPagesEmpty && !streaming && (
+      {(field === "cleaned"
+        ? !isDocCleaned(pages, doc.cleanContent, doc.cleanMode)
+        : allPagesEmpty) &&
+        !streaming && (
         <BlankPagesBanner
           docHasAggregate={!!aggregateText}
+          allPagesEmpty={allPagesEmpty}
           field={field}
           onRunPipeline={onRunPipeline}
           pipelineRunning={pipelineRunning}
@@ -1520,6 +1524,7 @@ function TextPane({
 
 function BlankPagesBanner({
   docHasAggregate,
+  allPagesEmpty,
   field,
   onRunPipeline,
   pipelineRunning,
@@ -1527,6 +1532,7 @@ function BlankPagesBanner({
   aiCleanRunning,
 }: {
   docHasAggregate: boolean;
+  allPagesEmpty: boolean;
   field: "raw" | "cleaned";
   onRunPipeline: () => void | Promise<unknown>;
   pipelineRunning: boolean;
@@ -1545,7 +1551,9 @@ function BlankPagesBanner({
           </p>
           <p className="mt-0.5 text-amber-700/90 dark:text-amber-300/80 leading-snug">
             {isCleanPane
-              ? docHasAggregate
+              ? !allPagesEmpty
+                ? "Some pages are not cleaned yet."
+                : docHasAggregate
                 ? "No page has cleaned text. The document text is shown below."
                 : "No AI-cleaned text yet."
               : docHasAggregate

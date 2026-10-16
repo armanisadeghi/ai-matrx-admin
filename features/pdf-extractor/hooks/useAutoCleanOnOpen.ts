@@ -6,6 +6,7 @@
  * The server's run record (not a clock) says whether a run is already going.
  */
 import { useEffect } from "react";
+import { isDocCleaned } from "../service/cleanOutcome";
 import type { PdfDocument } from "./usePdfExtractor";
 
 const handledDocIds = new Set<string>();
@@ -26,11 +27,10 @@ export const AUTO_CLEAN_MAX_PAGES = 200;
 export interface AutoCleanOpts {
   busy: boolean;
   pagesSettled: boolean;
-  pagesHaveCleanText: boolean;
+  /** The doc's loaded page rows — the cleaned verdict reads every one of them. */
+  pages?: ReadonlyArray<{ cleanedText: string; sectionKind: string | null }>;
   /** Rows loaded for this doc — the page count when the doc row has none. */
   pageCount?: number;
-  /** Any page already carries a section_kind (e.g. an all-illegible doc is "cleaned"). */
-  pagesHaveSectionKind?: boolean;
   /**
    * The run record answered the by-link lookup (`usePdfDocRun().answered`).
    * Until it has, nothing is known about a server run — never auto-run.
@@ -49,31 +49,25 @@ export function needsAutoClean(
   doc: PdfDocument | null,
   opts: AutoCleanOpts,
 ): boolean {
-  if (!doc || opts.busy || !opts.runAnswered || !opts.pagesSettled || opts.pagesHaveCleanText) {
-    return false;
-  }
+  if (!doc || opts.busy || !opts.runAnswered || !opts.pagesSettled) return false;
   if (handledDocIds.has(doc.id)) return false;
   if (!isPdfDoc(doc)) return false;
-  if (opts.pagesHaveSectionKind) return false;
   const pages = doc.totalPages ?? opts.pageCount ?? 0;
   if (pages > AUTO_CLEAN_MAX_PAGES) return false;
   const hasText = Boolean(doc.content && doc.content.trim());
-  // Page rows are the cleaned verdict (see `isDocCleaned`): a doc-level
-  // clean_content beside never-cleaned pages is raw text from an old bug and
-  // is NOT cleaned. Only a doc with no page rows at all falls back to it.
-  const rowCount = opts.pageCount ?? 0;
-  const hasClean =
-    rowCount === 0 && Boolean(doc.cleanContent && doc.cleanContent.trim());
-  return hasText && !hasClean;
+  // The server's clean verdict, mirrored (`isDocCleaned`): a partially cleaned
+  // doc is NOT cleaned and resumes; `clean_content` beside unmarked, uncleaned
+  // pages is a legacy raw-text row and is NOT cleaned either.
+  const cleaned = isDocCleaned(opts.pages ?? [], doc.cleanContent, doc.cleanMode);
+  return hasText && !cleaned;
 }
 
 export function useAutoCleanOnOpen(args: {
   doc: PdfDocument | null;
   busy: boolean;
   pagesSettled: boolean;
-  pagesHaveCleanText: boolean;
+  pages?: ReadonlyArray<{ cleanedText: string; sectionKind: string | null }>;
   pageCount?: number;
-  pagesHaveSectionKind?: boolean;
   runAnswered: boolean;
   run: () => void;
 }): void {

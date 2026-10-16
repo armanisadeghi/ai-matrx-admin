@@ -112,15 +112,24 @@ export function describeRunError(
 }
 
 /**
- * Is the doc really cleaned? Page rows are the truth: a page with
- * `cleaned_text` or a `section_kind` was cleaned. With no page rows at all
- * (legacy doc) the aggregate `clean_content` is all there is. A `clean_content`
- * beside page rows that were never cleaned is NOT cleaned.
+ * Is the doc cleaned? Mirrors the server's clean verdict exactly
+ * (aidream documents FEATURE.md § "Clean verdict", `clean_claim.clean_verdict`):
+ *   - page rows exist AND EVERY page has non-empty `cleaned_text` or a
+ *     `section_kind` (an `illegible_scan` page cleaned to "" counts), OR
+ *   - `metadata.clean_mode === "whole_document"` AND `clean_content` non-empty, OR
+ *   - no page rows AND `clean_content` non-empty.
+ * Anything else — including a partially cleaned doc, or `clean_content` beside
+ * unmarked, never-cleaned pages (legacy raw text) — is NOT cleaned.
  */
 export function isDocCleaned(
   pages: ReadonlyArray<{ cleanedText: string; sectionKind: string | null }>,
   docCleanContent: string | null | undefined,
+  cleanMode?: string | null,
 ): boolean {
-  if (pages.length === 0) return Boolean(docCleanContent && docCleanContent.trim());
-  return pages.some((p) => p.cleanedText.trim().length > 0 || Boolean(p.sectionKind));
+  const hasClean = Boolean(docCleanContent && docCleanContent.trim());
+  if (pages.length === 0) return hasClean;
+  if (pages.every((p) => p.cleanedText.trim().length > 0 || Boolean(p.sectionKind))) {
+    return true;
+  }
+  return cleanMode === "whole_document" && hasClean;
 }
