@@ -15,6 +15,7 @@
  */
 
 import { createOpener } from "@ai-matrx/kit/opener";
+import { requestDialogHosts } from "@/components/dialogs/host/dialogHostsLatch";
 
 import type {
   ScopeMismatchChoice,
@@ -32,7 +33,7 @@ export const scopeMismatchOpener = createOpener<
   ScopeMismatchRequest,
   ScopeMismatchChoice
 >("matrx-frontend.scope-mismatch-opener-state", {
-  hostHint: "<ScopeMismatchDialogHost /> (mounted once in app/Providers.tsx)",
+  hostHint: "<DialogHosts /> (components/dialogs/host, mounted once in app/Providers.tsx)",
 });
 
 /**
@@ -44,5 +45,6 @@ export const scopeMismatchOpener = createOpener<
 export function promptScopeMismatch(
   req: ScopeMismatchRequest,
 ): Promise<ScopeMismatchChoice> {
+  requestDialogHosts();
   return scopeMismatchOpener.open(req);
 }

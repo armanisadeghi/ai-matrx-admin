@@ -1,5 +1,5 @@
 /**
- * components/dialogs/clipboard-fallback/ClipboardFallbackHostImpl.tsx
+ * components/dialogs/clipboard-fallback/ClipboardFallbackHostBody.tsx
  *
  * Heavy implementation of the global manual-copy host, mounted lazily by
  * `ClipboardFallbackHost.tsx`. Same queue-and-drain shape as
@@ -18,7 +18,7 @@ import {
   type ManualCopyOptions,
 } from "./manualCopyOpener";
 
-export default function ClipboardFallbackHostImpl() {
+export default function ClipboardFallbackHostBody() {
   const [active, setActive] = React.useState<ManualCopyOptions | null>(null);
   const [tick, setTick] = React.useState(0);
   const queueRef = React.useRef<ManualCopyOptions[]>([]);

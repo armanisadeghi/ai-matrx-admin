@@ -8,6 +8,7 @@
  */
 
 import { createOpener } from "@ai-matrx/kit/opener";
+import { requestDialogHosts } from "@/components/dialogs/host/dialogHostsLatch";
 import { isGovernedActionDenial } from "@/features/access-gate/lib/governedActionError";
 import { fetchRemovalRights } from "@/features/access-gate/service/hiddenByMe";
 
@@ -28,7 +29,7 @@ export type CantRemoveOutcome = "hidden" | "closed";
 
 export const cantRemoveOpener = createOpener<CantRemoveRequest, CantRemoveOutcome>(
   "matrx-frontend.cant-remove-opener-state",
-  { hostHint: "<CantRemoveDialogHost /> (mounted once in app/Providers.tsx)" },
+  { hostHint: "<DialogHosts /> (components/dialogs/host, mounted once in app/Providers.tsx)" },
 );
 
 /** Thrown by a removal path that checked first and found the record isn't the person's to remove. */
@@ -54,6 +55,7 @@ function openOnce(request: CantRemoveRequest) {
   const key = `${request.token}:${request.id}`;
   if (showing.has(key)) return;
   showing.add(key);
+  requestDialogHosts();
   void cantRemoveOpener
     .open(request)
     .catch(() => undefined)

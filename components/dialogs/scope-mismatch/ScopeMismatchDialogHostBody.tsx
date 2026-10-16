@@ -1,5 +1,5 @@
 /**
- * components/dialogs/scope-mismatch/ScopeMismatchDialogHostImpl.tsx
+ * components/dialogs/scope-mismatch/ScopeMismatchDialogHostBody.tsx
  *
  * Heavy implementation of the global chat↔scope mismatch dialog host.
  * Mounted lazily by `ScopeMismatchDialogHost.tsx` via
@@ -83,7 +83,7 @@ function ScopeSetList({
   );
 }
 
-export default function ScopeMismatchDialogHostImpl() {
+export default function ScopeMismatchDialogHostBody() {
   const { request, open, settle } = useOpenerHost(scopeMismatchOpener);
 
   const resolveWith = React.useCallback(

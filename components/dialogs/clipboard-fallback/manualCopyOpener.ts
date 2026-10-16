@@ -17,6 +17,8 @@
  * copy primitive that routes its terminal failure here.
  */
 
+import { requestDialogHosts } from "@/components/dialogs/host/dialogHostsLatch";
+
 export interface ManualCopyOptions {
   /** The text the user needs on their clipboard. */
   text: string;
@@ -31,13 +33,13 @@ interface HostController {
 let host: HostController | null = null;
 const queue: ManualCopyOptions[] = [];
 
-/** @internal Called by `ClipboardFallbackHostImpl` on mount. */
+/** @internal Called by `ClipboardFallbackHostBody` on mount. */
 export function _registerManualCopyHost(controller: HostController): void {
   host = controller;
   while (queue.length > 0) controller.show(queue.shift()!);
 }
 
-/** @internal Called by `ClipboardFallbackHostImpl` on unmount. */
+/** @internal Called by `ClipboardFallbackHostBody` on unmount. */
 export function _unregisterManualCopyHost(controller: HostController): void {
   if (host === controller) host = null;
 }
@@ -49,5 +51,8 @@ export function _unregisterManualCopyHost(controller: HostController): void {
 export function showManualCopy(opts: ManualCopyOptions): void {
   if (!opts.text) return;
   if (host) host.show(opts);
-  else queue.push(opts);
+  else {
+    queue.push(opts);
+    requestDialogHosts();
+  }
 }

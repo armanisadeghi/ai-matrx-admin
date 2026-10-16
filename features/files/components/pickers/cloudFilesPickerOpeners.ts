@@ -19,6 +19,7 @@
 
 import type { UseFolderPickerOpenOptions } from "./FolderPicker";
 import type { SaveAsDestination, UseSaveAsOpenOptions } from "./SaveAsDialog";
+import { ensureDialogHosts } from "@/components/dialogs/host/dialogHostsLatch";
 
 /**
  * Options for `openFilePicker`. Since 2026-07-20 the opener mounts THE one
@@ -98,11 +99,12 @@ export function _clearOpeners(): void {
 export async function openFilePicker(
   options: UseFilePickerOpenOptions = {},
 ): Promise<string[] | null> {
+  if (!activeFileOpener) await ensureDialogHosts();
   if (!activeFileOpener) {
     if (process.env.NODE_ENV !== "production") {
       // eslint-disable-next-line no-console
       console.warn(
-        "[cloud-files] openFilePicker called without a mounted <CloudFilesPickerHost />; returning null.",
+        "[cloud-files] openFilePicker called but <DialogHosts /> never registered the picker host; returning null.",
       );
     }
     return null;
@@ -117,11 +119,12 @@ export async function openFilePicker(
 export async function openFolderPicker(
   options: UseFolderPickerOpenOptions = {},
 ): Promise<string | null | undefined> {
+  if (!activeFolderOpener) await ensureDialogHosts();
   if (!activeFolderOpener) {
     if (process.env.NODE_ENV !== "production") {
       // eslint-disable-next-line no-console
       console.warn(
-        "[cloud-files] openFolderPicker called without a mounted <CloudFilesPickerHost />.",
+        "[cloud-files] openFolderPicker called but <DialogHosts /> never registered the picker host.",
       );
     }
     return undefined;
@@ -133,11 +136,12 @@ export async function openFolderPicker(
 export async function openSaveAs(
   options: UseSaveAsOpenOptions = {},
 ): Promise<SaveAsDestination | null> {
+  if (!activeSaveAsOpener) await ensureDialogHosts();
   if (!activeSaveAsOpener) {
     if (process.env.NODE_ENV !== "production") {
       // eslint-disable-next-line no-console
       console.warn(
-        "[cloud-files] openSaveAs called without a mounted <CloudFilesPickerHost />.",
+        "[cloud-files] openSaveAs called but <DialogHosts /> never registered the picker host.",
       );
     }
     return null;

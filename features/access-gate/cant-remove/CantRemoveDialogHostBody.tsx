@@ -9,7 +9,7 @@ import { useOpenerHost } from "@ai-matrx/kit/opener-react";
 import { GovernedActionDialog } from "@/features/access-gate/components/GovernedActionDialog";
 import { cantRemoveOpener } from "./cantRemoveOpener";
 
-export default function CantRemoveDialogHostImpl() {
+export default function CantRemoveDialogHostBody() {
   const { request, open, settle } = useOpenerHost(cantRemoveOpener);
   if (!request) return null;
   return (

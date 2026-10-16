@@ -1,5 +1,5 @@
 /**
- * features/files/components/pickers/CloudFilesPickerHostImpl.tsx
+ * features/files/components/pickers/CloudFilesPickerHostBody.tsx
  *
  * Heavy body for `<CloudFilesPickerHost />` — mounts the FilePicker,
  * FolderPicker, and SaveAsDialog and registers the imperative openers
@@ -50,7 +50,7 @@ function filterFromExtensions(
   return "all";
 }
 
-export default function CloudFilesPickerHostImpl() {
+export default function CloudFilesPickerHostBody() {
   // File picker state
   const [fileOpen, setFileOpen] = useState(false);
   const [pickedCount, setPickedCount] = useState(0);

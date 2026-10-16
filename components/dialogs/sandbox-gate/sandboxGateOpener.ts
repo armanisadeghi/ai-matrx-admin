@@ -21,6 +21,7 @@
  */
 
 import { createOpener } from "@ai-matrx/kit/opener";
+import { requestDialogHosts } from "@/components/dialogs/host/dialogHostsLatch";
 
 export type SandboxGateChoice = "attach" | "detach" | "cancel";
 
@@ -31,7 +32,7 @@ export interface SandboxGateOptions {
 export const sandboxGateOpener = createOpener<SandboxGateOptions, SandboxGateChoice>(
   "matrx-frontend.sandbox-gate-opener-state",
   {
-    hostHint: "<SandboxGateHost /> (mounted once in app/Providers.tsx)",
+    hostHint: "<DialogHosts /> (components/dialogs/host, mounted once in app/Providers.tsx)",
     // One gate per conversation: a double-fired send must not stack a second
     // dialog on top of the first — both sends await the one answer.
     dedupeKey: (opts) => opts.conversationId,
@@ -46,5 +47,6 @@ export const sandboxGateOpener = createOpener<SandboxGateOptions, SandboxGateCho
 export function openSandboxGate(
   opts: SandboxGateOptions,
 ): Promise<SandboxGateChoice> {
+  requestDialogHosts();
   return sandboxGateOpener.open(opts);
 }

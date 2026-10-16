@@ -11,9 +11,8 @@
  */
 
 import { useState } from "react";
-import { ChevronDown, Clock, EyeOff, Globe, Lightbulb, Link2, RotateCcw, Search } from "lucide-react";
+import { ChevronDown, Clock, EyeOff, Lightbulb, RotateCcw, Search } from "lucide-react";
 import {
-  Badge,
   Button,
   EmptyState,
   SegmentedControl,
@@ -22,8 +21,6 @@ import {
 } from "@ai-matrx/design-system/controls";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
-import { Peek, PeekHoverCard, Skeleton } from "@ai-matrx/design-system";
-import { PlatformMark } from "@/features/marketing/social/components/PlatformMark";
 import { SearchKindNested } from "@/components/mardown-display/blocks/search-kinds/SearchKindNested";
 import { CopyButtons } from "@/components/agent-copy/CopyButtons";
 import { useAppSelector } from "@/lib/redux/hooks";
@@ -35,7 +32,6 @@ import { resultTitle, resultUrl, toWebResultValue } from "./webResult";
 import type {
   ReviewAnswer,
   ReviewChoice,
-  ReviewLinkCheck,
   ReviewResult,
   ReviewSentiment,
   ReviewSuggestion,
@@ -135,71 +131,6 @@ function FoundPopover({ result, position, showEngines }: { result: ReviewResult;
   );
 }
 
-/**
- * Does the page link to the subject? A fixed-width slot right of the result, so the answer arriving never moves the
- * row: shimmer while checking, "Links to you" with a mark per target (exact links + anchor text on hover), a quiet
- * "Couldn't check" when the page could not be read, nothing when it has no link.
- */
-function LinksSlot({ links, resultKey }: { links: ReviewLinkCheck; resultKey: string }) {
-  const body =
-    links.state === "checking" ? (
-      <Skeleton motion="shimmer" aria-label="Checking links" className="h-[18px] w-24" data-testid="search-review-links-checking" />
-    ) : links.state === "failed" ? (
-      <span className="truncate text-xs text-muted-foreground" title={links.reason ?? undefined} data-testid="search-review-links-failed">
-        Couldn&apos;t check
-      </span>
-    ) : links.state === "found" ? (
-      <LinksFound links={links} resultKey={resultKey} />
-    ) : null;
-  return (
-    <span className="flex w-32 shrink-0 items-center justify-end" data-testid="search-review-links" data-state={links.state}>
-      {body}
-    </span>
-  );
-}
-
-function LinksFound({ links, resultKey }: { links: ReviewLinkCheck; resultKey: string }) {
-  const marks = [...new Map(links.targets.map((t) => [t.kind === "website" ? "website" : (t.platform ?? t.label), t])).values()];
-  return (
-    <PeekHoverCard
-      align="end"
-      label="Links to you"
-      trigger={
-        <span className="inline-flex cursor-default items-center gap-1" data-testid="search-review-links-found">
-          <Badge tone="success" icon={<Link2 aria-hidden />}>
-            Links to you
-          </Badge>
-          {marks.slice(0, 3).map((t) =>
-            t.kind === "website" || !t.platform ? (
-              <Globe key={t.label} aria-label={t.label} className="size-3.5 shrink-0 text-muted-foreground" />
-            ) : (
-              <PlatformMark key={t.platform} platform={t.platform} size={14} />
-            ),
-          )}
-        </span>
-      }
-    >
-      <Peek
-        size="sm"
-        record={{
-          kind: "Links",
-          id: `links:${resultKey}`,
-          title: "Links to you",
-          body: [
-            {
-              section: "Links on this page",
-              links: links.targets.slice(0, 6).map((t) => ({
-                text: t.anchorText ? `${t.label} · "${t.anchorText}"` : t.label,
-                href: t.url,
-              })),
-            },
-          ],
-        }}
-      />
-    </PeekHoverCard>
-  );
-}
-
 function ResultCard({
   result,
   choices,
@@ -235,7 +166,7 @@ function ResultCard({
   const pinned = choices.filter((c) => c.pinned);
   const more: SelectOption<string>[] = [
     { value: "", label: "More" },
-    ...groupedChoices(choices.filter((c) => !c.pinned)).map((c) => ({ value: c.key, label: c.label, ...(c.group ? { group: c.group } : {}) })),
+    ...choices.filter((c) => !c.pinned).map((c) => ({ value: c.key, label: c.label, meta: c.group ?? undefined })),
   ];
   const pick = (key: string) => {
     if (!key) return;
@@ -263,16 +194,6 @@ function ResultCard({
         <div className="min-w-0 flex-1">
           <SearchKindNested value={toWebResultValue(result)} />
         </div>
-        {result.placeKind ? (
-          <span
-            className="shrink-0 rounded-sm border border-border px-1.5 text-xs leading-5 text-muted-foreground"
-            title={result.placeKind.reason}
-            data-testid="search-review-place-kind"
-          >
-            {result.placeKind.label}
-          </span>
-        ) : null}
-        {result.links ? <LinksSlot links={result.links} resultKey={result.key} /> : null}
         <FoundPopover result={result} position={position} showEngines={showEngines} />
       </div>
       <div className="flex flex-wrap items-center gap-1.5" aria-busy={busy}>
@@ -331,16 +252,6 @@ function copyText(session: SearchReviewSession): string {
     lines.push(`- [${resultTitle(r.result) ?? r.key}](${resultUrl(r.result) ?? ""})${a ? ` — ${answerLabel(a, session.choices)}` : ""}`);
   }
   return lines.join("\n");
-}
-
-/** Keep each group's choices together (first appearance orders the groups) so the menu shows one heading per group. */
-function groupedChoices<T extends { group?: string | null }>(list: readonly T[]): T[] {
-  const order: string[] = [];
-  for (const c of list) {
-    const g = c.group ?? "";
-    if (!order.includes(g)) order.push(g);
-  }
-  return [...list].sort((a, b) => order.indexOf(a.group ?? "") - order.indexOf(b.group ?? ""));
 }
 
 export function SearchReviewBody({ session }: { session: SearchReviewSession }) {
