@@ -97,7 +97,10 @@ export function DashboardClient() {
                 canonical component — the same one the Person record and the
                 window panel render. It renders its own honest empty states, so
                 nothing here gates it. */}
-            <AgendaPanel />
+            {/* The panel's height is FIXED (its list scrolls inside): the skeleton, the empty
+                sentence and a full agenda all occupy the same space, so the sections below
+                never move when the agenda read lands (no layout shift ever). */}
+            <AgendaPanel className="h-56" />
             <PinnedSection />
             <DiscoverSection
               items={rotation.items}
